@@ -110,4 +110,64 @@ class WC_Subscription extends WC_Order {
 	public function get_transaction_id() {
 		throw new Exception( __METHOD__ . '() is not available on an instance of ' . __CLASS__ );
 	}
+
+
+	/*** Refund related functions are required for the Edit Order/Subscription screen, but they aren't used on a subscription ************/
+
+	/**
+	 * Get order refunds
+	 *
+	 * @since 2.2
+	 * @return array
+	 */
+	public function get_refunds() {
+		if ( ! is_array( $this->refunds ) ) {
+			$this->refunds = array();
+		}
+		return $this->refunds;
+	}
+
+	/**
+	 * Get amount already refunded
+	 *
+	 * @since 2.2
+	 * @return int|float
+	 */
+	public function get_total_refunded() {
+		return 0;
+	}
+
+	/**
+	 * Get the refunded amount for a line item
+	 *
+	 * @param  int $item_id ID of the item we're checking
+	 * @param  string $item_type type of the item we're checking, if not a line_item
+	 * @return integer
+	 */
+	public function get_qty_refunded_for_item( $item_id, $item_type = 'line_item' ) {
+		return 0;
+	}
+
+	/**
+	 * Get the refunded amount for a line item
+	 *
+	 * @param  int $item_id ID of the item we're checking
+	 * @param  string $item_type type of the item we're checking, if not a line_item
+	 * @return integer
+	 */
+	public function get_total_refunded_for_item( $item_id, $item_type = 'line_item' ) {
+		return 0;
+	}
+
+	/**
+	 * Get the refunded amount for a line item
+	 *
+	 * @param  int $item_id ID of the item we're checking
+	 * @param  int $tax_id ID of the tax we're checking
+	 * @param  string $item_type type of the item we're checking, if not a line_item
+	 * @return integer
+	 */
+	public function get_tax_refunded_for_item( $item_id, $tax_id, $item_type = 'line_item' ) {
+		return 0;
+	}
 }
