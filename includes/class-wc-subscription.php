@@ -309,6 +309,377 @@ class WC_Subscription extends WC_Order {
 	}
 
 
+	/*** Date methods *****************************************************/
+
+	/**
+	 * Get the MySQL formatted date for a specific piece of the subscriptions schedule
+	 *
+	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'
+	 * @param string $timezone The timezone of the $datetime param, either 'gmt' or 'site'. Default 'gmt'.
+	 */
+	public function get_date( $date_type, $timezone = 'gmt' ) {
+
+		// Accept dates with a '_date' suffix, like 'next_payment_date' or 'start_date'
+		$date_type = str_replace( '_date', '', $date_type );
+
+		if ( ! isset( $this->schedule->{$date_type} ) ) {
+			switch ( $date_type ) {
+				case 'start' :
+					$this->schedule->{$date_type} = get_gmt_from_date( $this->post->post_date ); // why not just use post_date_gmt? Because when a post is first created, it has a post_date but not a post_date_gmt value
+					break;
+				case 'next_payment' :
+				case 'trial_end' :
+				case 'end' :
+					$this->schedule->{$date_type} = get_post_meta( $this->id, $this->get_date_meta_key( $date_type ), true );
+					break;
+				case 'last_payment' :
+					$this->schedule->{$date_type} = $this->get_last_payment_date();
+					break;
+				default :
+					$this->schedule->{$date_type} = 0;
+					break;
+			}
+
+			if ( empty( $this->schedule->{$date_type} ) || false === $this->schedule->{$date_type} ) {
+				$this->schedule->{$date_type} = 0;
+			}
+		}
+
+		if ( 0 != $this->schedule->{$date_type} && 'gmt' != strtolower( $timezone ) ) {
+			$date = get_date_from_gmt( $this->schedule->{$date_type} );
+		} else {
+			$date = $this->schedule->{$date_type};
+		}
+
+		return apply_filters( 'woocommerce_subscription_get_' . $date_type . '_date', $date, $timezone, $this );
+	}
+
+	/**
+	 * Returns a string representation of a subscription date in the site's time (i.e. not GMT/UTC timezone).
+	 *
+	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment', 'end' or 'end_of_prepaid_term'
+	 */
+	public function get_date_to_display( $date_type = 'next_payment' ) {
+
+		$timestamp_gmt = $this->get_time( $date_type, 'gmt' );
+
+		if ( $timestamp_gmt > 0 ) {
+
+			$time_diff = $timestamp_gmt - current_time( 'timestamp', true );
+
+			if ( $time_diff > 0 && $time_diff < WEEK_IN_SECONDS ) {
+				$date_to_display = sprintf( __( 'In %s', 'woocommerce-subscriptions' ), human_time_diff( $current_gmt_time, $timestamp_gmt ) );
+			} else {
+				$date_to_display = date_i18n( wc_date_format(), $this->get_time( $date_type, 'site' ) );
+			}
+
+		} else {
+			switch ( $date_type ) {
+				case 'end' :
+					$date_to_display = __( 'Not yet ended', 'woocommerce-subscriptions' );
+					break;
+				case 'next_payment' :
+				case 'trial_end' :
+				default :
+					$date_to_display = __( '-', 'woocommerce-subscriptions' );
+					break;
+			}
+		}
+
+		return apply_filters( 'woocommerce_subscription_date_to_display', $date_to_display, $date_type, $this );
+	}
+
+	/**
+	 * Get the timestamp for a specific piece of the subscriptions schedule
+	 *
+	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment', 'end' or 'end_of_prepaid_term'
+	 * @param string $timezone The timezone of the $datetime param. Default 'gmt'.
+	 */
+	public function get_time( $date_type, $timezone = 'gmt' ) {
+
+		$datetime = $this->get_date( $date_type, $timezone );
+
+		if ( 0 !== $datetime ) {
+			$datetime = strtotime( $datetime );
+		}
+
+		return $datetime;
+	}
+
+	/**
+	 * Set a date on the subscription.
+	 *
+	 * Setting one date may actually affect others. For example, if setting the next payment date,
+	 * and there is a free trial and/or expiration date on the subscription, and the new payment date
+	 * is after those dates, they will be pushed back.
+	 *
+	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'
+	 * @param mixed $datetime A MySQL formatted Date/time string.
+	 * @param string $timezone The timezone of the $datetime param. Default 'gmt'.
+	 */
+	public function update_date( $date_type, $datetime, $timezone = 'gmt' ) {
+		global $wpdb;
+
+		if ( false === strptime( $datetime, '%Y-%m-%d %H:%M:%S' ) ) {
+			throw new InvalidArgumentException( __( 'The date must be of the format: "Y-m-d H:i:s".', 'woocommerce-subscriptions' ) );
+		}
+
+		$is_updated = false;
+
+		// Accept dates with a '_date' suffix, like 'next_payment_date' or 'start_date'
+		$date_type = str_replace( '_date', '', $date_type );
+
+		// Given date not in UTC, convert it
+		if ( 'gmt' != strtolower( $timezone ) ) {
+			$datetime = get_gmt_from_date( $datetime );
+		}
+
+		// Make sure some dates are before next payment date
+		if ( in_array( $date_type, array( 'start', 'trial_end' ) ) ) {
+			$next_payment_timestamp = $this->get_time( 'next_payment' );
+			if ( 0 != $next_payment_timestamp && strtotime( $datetime ) > $next_payment_timestamp ) {
+				throw new Exception( __( 'The date must occur before the next payment date.', 'woocommerce-subscriptions' ) );
+			}
+		}
+
+		// Make sure some dates are before the expiration date
+		if ( in_array( $date_type, array( 'start', 'trial_end', 'next_payment' ) ) ) {
+			$expiration_timestamp = $this->get_time( 'expiration' );
+			if ( 0 != $expiration_timestamp && strtotime( $datetime ) > $expiration_timestamp ) {
+				throw new Exception( __( 'The date must occur before the expiration date.', 'woocommerce-subscriptions' ) );
+			}
+		}
+
+		// Make sure next payment and expiration dates are after trial end date
+		if ( in_array( $date_type, array( 'next_payment', 'expiration' ) ) ) {
+			$trial_end_timestamp = $this->get_time( 'trial_end' );
+			if ( 0 != $trial_end_timestamp && strtotime( $datetime ) < $trial_end_timestamp ) {
+				throw new Exception( __( 'The date must occur after the trial end date.', 'woocommerce-subscriptions' ) );
+			}
+		}
+
+		// Make sure expiration date is after next payment
+		if ( in_array( $date_type, array( 'expiration' ) ) ) {
+			$next_payment_timestamp = $this->get_time( 'next_payment' );
+			if ( 0 != $next_payment_timestamp && strtotime( $datetime ) < $next_payment_timestamp ) {
+				throw new Exception( __( 'The expiration date must occur after the next payment date.', 'woocommerce-subscriptions' ) );
+			}
+		}
+
+		switch ( $date_type ) {
+			case 'next_payment' :
+			case 'trial_end' :
+			case 'end' :
+				$is_updated = update_post_meta( $this->id, $this->get_date_meta_key( $date_type ), $datetime );
+				break;
+			case 'start' :
+				$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET post_date = %s, post_date_gmt = %s WHERE ID = %s", get_date_from_gmt( $datetime ), $datetime, $this->id ) ); // Don't use wp_update_post() to avoid infinite loopshere array(
+				$is_updated = true;
+				break;
+			case 'last_payment' :
+				$this->update_last_payment_date( $datetime );
+				$is_updated = true;
+				break;
+		}
+
+		if ( $is_updated ) {
+			$this->schedule->{$date_type} = $datetime;
+			do_action( 'woocommerce_subscription_updated_date', $this->id, $date_type, $datetime, $timezone );
+		}
+	}
+
+	/**
+	 * Check if a given date type can be updated for this subscription.
+	 *
+	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'
+	 */
+	public function can_date_be_updated( $date_type ) {
+
+		switch( $date_type ) {
+			case 'start' :
+				if ( $this->has_status( 'pending' ) ) {
+					$can_date_be_updated = true;
+				} else {
+					$can_date_be_updated = false;
+				}
+			case 'trial_end' :
+				$next_payment_timestamp = $this->get_time( 'trial_end' );
+				if ( $this->get_completed_payment_count() < 2 && ! $this->has_ended() && ( $this->has_status( 'pending' ) || $this->payment_method_supports( 'subscription_date_changes' ) ) ) {
+					$can_date_be_updated = true;
+				} else {
+					$can_date_be_updated = false;
+				}
+				break;
+			case 'next_payment' :
+			case 'end' :
+				if ( ! $this->has_ended() && ( $this->has_status( 'pending' ) || $this->payment_method_supports( 'subscription_date_changes' ) ) ) {
+					$can_date_be_updated = true;
+				} else {
+					$can_date_be_updated = false;
+				}
+				break;
+			case 'last_payment' :
+				$can_date_be_updated = true;
+				break;
+			default :
+				$can_date_be_updated = false;
+				break;
+		}
+
+		return apply_filters( 'woocommerce_subscription_can_date_be_updated', $can_date_be_updated, $date_type, $this );
+	}
+
+	/**
+	 * Calculate a given date type
+	 *
+	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment', 'expiration' or 'end_of_prepaid_term'
+	 * @param string $timezone The timezone in which to return the date, either 'gmt' or it will be returned in the site's timezone
+	 */
+	public function calculate_date( $date_type, $timezone = 'gmt' ) {
+
+		switch ( $date_type ) {
+			case 'next_payment' :
+				$date = $this->calculate_next_payment_date();
+				break;
+			case 'trial_end' :
+				if ( $this->get_completed_payment_count() >= 2 ) {
+					$this->schedule->{$date_type} = 0;
+				} else {
+					// By default, trial end is the same as the next payment date
+					$date = $this->calculate_next_payment_date();
+				}
+				break;
+			case 'end' :
+				$this->schedule->{$date_type} = get_post_meta( $this->id, $this->get_date_meta_key( $date_type ), true );
+				break;
+			default :
+				$date = 0;
+				break;
+		}
+
+		return apply_filters( 'woocommerce_subscription_calculated_' . $date_type . '_date', $date, $timezone, $this );
+	}
+
+	/**
+	 * Calculates the next payment date for a subscription
+	 *
+	 */
+	protected function calculate_next_payment_date() {
+
+		$next_payment_date = 0;
+
+		// If the subscription is not active, there is no next payment date
+		if ( $this->has_status( 'active' ) ) {
+
+			$start_time        = $this->get_time( 'start' );
+			$trial_end_time    = $this->get_time( 'trial_end' );
+			$last_payment_time = $this->get_time( 'last_payment' );
+			$end_time          = $this->get_time( 'end' );
+
+			// If the subscription has a free trial period, and we're still in the free trial period, the next payment is due at the end of the free trial
+			if ( $trial_end_time > current_time( 'timestamp', true ) ) {
+
+				$next_payment_date = $this->get_date( 'trial_end' );
+
+			// The next payment date is {interval} billing periods from the start date, trial end date or last payment date
+			} else {
+
+				if ( $last_payment_time > $trial_end_time ) {
+					$from_timestamp = $last_payment_time;
+				} elseif ( $trial_end_time > $start_time ) {
+					$from_timestamp = $trial_end_time;
+				} else {
+					$from_timestamp = $start_time;
+				}
+
+				$next_payment_timestamp = wcs_add_time( $this->billing_interval, $this->billing_period, $from_timestamp );
+
+				// Make sure the next payment is in the future
+				$i = 1;
+				while ( $next_payment_timestamp < current_time( 'timestamp', true ) && $i < 30 ) {
+					$next_payment_timestamp = wcs_add_time( $this->billing_interval, $this->billing_period, $next_payment_timestamp );
+					$i += 1;
+				}
+
+			}
+
+			// If the subscription has an end date and the next billing period comes after that, return 0
+			if ( 0 != $end_time && ( $next_payment_timestamp + 120 ) > $end_time ) {
+				$next_payment_timestamp =  0;
+			}
+
+			if ( $next_payment_timestamp > 0 ) {
+				$next_payment_date = date( 'Y-m-d H:i:s', $next_payment_timestamp );
+			}
+		}
+
+		return apply_filters( 'woocommerce_subscription_calculated_next_payment_date', $next_payment_date, $this );
+	}
+
+	/**
+	 * Find the last payment date, either based on the original order used to purchase the subscription or it's last paid renewal order
+	 */
+	protected function get_last_payment_date() {
+
+		$last_paid_renewal_order = get_posts( array(
+			'posts_per_page' => 1,
+			'post_parent'    => $this->id,
+			'post_status'    => 'any',
+			'post_type'      => 'shop_order',
+			'orderby'        => 'date',
+			'order'          => 'desc',
+			'meta_key'       => '_paid_date',
+			'meta_compare'   => 'EXISTS',
+		) );
+
+		if ( ! empty( $last_paid_renewal_order ) ) {
+			$date = get_post_meta( $last_paid_renewal_order->ID, '_paid_date', true );
+		} elseif ( ! empty( $this->order ) && isset( $this->order->paid_date ) ) {
+			$date = $this->order->paid_date;
+		} else {
+			$date = 0;
+		}
+
+		return $date;
+	}
+
+	/**
+	 *
+	 * @param string $datetime A MySQL formatted date/time string in GMT/UTC timezone.
+	 */
+	protected function update_last_payment_date( $datetime ) {
+
+		$last_paid_renewal_order = get_posts( array(
+			'posts_per_page' => 1,
+			'post_parent'    => $this->id,
+			'post_status'    => 'any',
+			'post_type'      => 'shop_order',
+			'orderby'        => 'date',
+			'order'          => 'desc',
+			'meta_key'       => '_paid_date',
+			'meta_compare'   => 'EXISTS',
+		) );
+
+		if ( ! empty( $last_paid_renewal_order ) ) {
+			update_post_meta( $last_paid_renewal_order->ID, '_paid_date', $datetime );
+		} else {
+			update_post_meta( $this->order->id, '_paid_date', $datetime );
+		}
+
+		return $date;
+	}
+
+	/**
+	 * Get the meta key value for storing a date in the subscription's post meta table.
+	 *
+	 * @param string $date_type Internally, 'trial_end', 'next_payment' or 'end', but can be any string
+	 * @since 2.0
+	 */
+	protected function get_date_meta_key( $date_type ) {
+		return apply_filters( 'woocommerce_subscription_date_meta_key_prefix', sprintf( '_schedule_%s', $date_type ), $date_type, $this );
+	}
+
+
 	/** Formatted Totals Methods *******************************************************/
 
 	/**
