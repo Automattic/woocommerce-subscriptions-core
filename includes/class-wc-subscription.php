@@ -17,6 +17,9 @@ class WC_Subscription extends WC_Order {
 	/** @protected WC_Order Stores order data for the order in which the subscription was purchased (if any) */
 	protected $order;
 
+	/** @protected Object Cache dates relating to the subscription */
+	protected $schedule;
+
 	/** @protected Object Stores an instance of the WC_Payment_Gateway used to process recurring payments (if any) */
 	protected $payment_gateway = null;
 
@@ -30,6 +33,8 @@ class WC_Subscription extends WC_Order {
 		$this->order_type = 'shop_subscription';
 
 		parent::__construct( $subscription );
+
+		$this->schedule = new stdClass();;
 	}
 
 	/**
@@ -78,6 +83,41 @@ class WC_Subscription extends WC_Order {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Checks if the subscription has an unpaid order or renewal order (and therefore, needs payment).
+	 *
+	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
+	 * @param int $user_id The ID of the user who owns the subscriptions. Although this parameter is optional, if you have the User ID you should pass it to improve performance.
+	 * @return bool True if the subscription has an unpaid renewal order, false if the subscription has no unpaid renewal orders.
+	 * @since 2.0
+	 */
+	public function needs_payment() {
+
+		// Check if this subscription is pending or failed and has an order total > 0
+		$needs_payment = parent::needs_payment();
+
+		// Now check if the last renewal order needs payment
+		if ( false == $needs_payment ) {
+
+			$last_renewal_order_id = get_posts( array(
+				'post_parent'    => $this->id,
+				'post_type'      => 'shop_order',
+				'post_status'    => 'any',
+				'posts_per_page' => 1,
+				'orderby'        => 'ID',
+				'order'          => 'DESC',
+				'fields'         => 'ids',
+			));
+
+			if ( ! empty( $last_renewal_order_id ) ) {
+				$renewal_order = new WC_Order( $last_renewal_order_id[0] );
+				$needs_payment = $renewal_order->needs_payment();
+			}
+		}
+
+		return apply_filters( 'woocommerce_subscription_needs_payment', $needs_payment, $this );
 	}
 
 
