@@ -81,6 +81,291 @@ class WC_Subscription extends WC_Order {
 	}
 
 
+	/** Formatted Totals Methods *******************************************************/
+
+	/**
+	 * Gets line subtotal - formatted for display.
+	 *
+	 * @param array  $item
+	 * @param string $tax_display
+	 * @return string
+	 */
+	public function get_formatted_line_subtotal( $item, $tax_display = '' ) {
+
+		if ( ! $tax_display ) {
+			$tax_display = $this->tax_display_cart;
+		}
+
+		if ( ! isset( $item['line_subtotal'] ) || ! isset( $item['line_subtotal_tax'] ) ) {
+			return '';
+		}
+
+		if ( 'excl' == $tax_display ) {
+			$display_ex_tax_label = $this->prices_include_tax ? 1 : 0;
+			$subtotal = wcs_price_string( $this->get_price_string_details( $this->get_line_subtotal( $item ) ), $display_ex_tax_label );
+		} else {
+			$subtotal = wcs_price_string( $this->get_price_string_details( $this->get_line_subtotal( $item, true ) ) );
+		}
+
+		return apply_filters( 'woocommerce_order_formatted_line_subtotal', $subtotal, $item, $this );
+	}
+
+	/**
+	 * Gets order total - formatted for display.
+	 *
+	 * @return string
+	 */
+	public function get_formatted_order_total() {
+		if ( $this->get_total() > 0 && ! empty( $this->billing_period ) ) {
+			$formatted_order_total = wcs_price_string( $this->get_price_string_details( $this->get_total() ) );
+		} else {
+			$formatted_order_total = parent::get_formatted_order_total();
+		}
+		return apply_filters( 'woocommerce_get_formatted_subscription_total', $formatted_order_total, $this );
+	}
+
+	/**
+	 * Gets subtotal - subtotal is shown before discounts, but with localised taxes.
+	 *
+	 * @param bool $compound (default: false)
+	 * @param string $tax_display (default: the tax_display_cart value)
+	 * @return string
+	 */
+	public function get_subtotal_to_display( $compound = false, $tax_display = '' ) {
+
+		if ( ! $tax_display ) {
+			$tax_display = $this->tax_display_cart;
+		}
+
+		$subtotal = 0;
+
+		if ( ! $compound ) {
+			foreach ( $this->get_items() as $item ) {
+
+				if ( ! isset( $item['line_subtotal'] ) || ! isset( $item['line_subtotal_tax'] ) ) {
+					return '';
+				}
+
+				$subtotal += $item['line_subtotal'];
+
+				if ( 'incl' == $tax_display ) {
+					$subtotal += $item['line_subtotal_tax'];
+				}
+			}
+
+			$subtotal = wc_price( $subtotal, array('currency' => $this->get_order_currency()) );
+
+			if ( $tax_display == 'excl' && $this->prices_include_tax ) {
+				$subtotal .= ' <small>' . WC()->countries->ex_tax_or_vat() . '</small>';
+			}
+
+		} else {
+
+			if ( 'incl' == $tax_display ) {
+				return '';
+			}
+
+			foreach ( $this->get_items() as $item ) {
+
+				$subtotal += $item['line_subtotal'];
+
+			}
+
+			// Add Shipping Costs
+			$subtotal += $this->get_total_shipping();
+
+			// Remove non-compound taxes
+			foreach ( $this->get_taxes() as $tax ) {
+
+				if ( ! empty( $tax['compound'] ) ) {
+					continue;
+				}
+
+				$subtotal = $subtotal + $tax['tax_amount'] + $tax['shipping_tax_amount'];
+
+			}
+
+			// Remove discounts
+			$subtotal = $subtotal - $this->get_cart_discount();
+
+			$subtotal = wc_price( $subtotal, array('currency' => $this->get_order_currency()) );
+		}
+
+		return apply_filters( 'woocommerce_order_subtotal_to_display', $subtotal, $compound, $this );
+	}
+
+	/**
+	 * Get totals for display on pages and in emails.
+	 *
+	 * @return array
+	 */
+	public function get_order_item_totals( $tax_display = '' ) {
+
+		if ( ! $tax_display ) {
+			$tax_display = $this->tax_display_cart;
+		}
+
+		$total_rows = array();
+
+		if ( $subtotal = $this->get_subtotal_to_display( false, $tax_display ) ) {
+			$total_rows['cart_subtotal'] = array(
+				'label' => __( 'Cart Subtotal:', 'woocommerce' ),
+				'value'	=> $subtotal
+			);
+		}
+
+		if ( $this->get_cart_discount() > 0 ) {
+			$total_rows['cart_discount'] = array(
+				'label' => __( 'Cart Discount:', 'woocommerce' ),
+				'value'	=> '-' . $this->get_cart_discount_to_display()
+			);
+		}
+
+		if ( $this->get_shipping_method() ) {
+			$total_rows['shipping'] = array(
+				'label' => __( 'Shipping:', 'woocommerce' ),
+				'value'	=> $this->get_shipping_to_display()
+			);
+		}
+
+		if ( $fees = $this->get_fees() )
+
+			foreach( $fees as $id => $fee ) {
+
+				if ( apply_filters( 'woocommerce_get_order_item_totals_excl_free_fees', $fee['line_total'] + $fee['line_tax'] == 0, $id ) ) {
+					continue;
+				}
+
+				if ( 'excl' == $tax_display ) {
+
+					$total_rows[ 'fee_' . $id ] = array(
+						'label' => $fee['name'] . ':',
+						'value'	=> wc_price( $fee['line_total'], array('currency' => $this->get_order_currency()) )
+					);
+
+				} else {
+
+					$total_rows[ 'fee_' . $id ] = array(
+						'label' => $fee['name'] . ':',
+						'value'	=> wc_price( $fee['line_total'] + $fee['line_tax'], array('currency' => $this->get_order_currency()) )
+					);
+				}
+			}
+
+		// Tax for tax exclusive prices
+		if ( 'excl' == $tax_display ) {
+
+			if ( get_option( 'woocommerce_tax_total_display' ) == 'itemized' ) {
+
+				foreach ( $this->get_tax_totals() as $code => $tax ) {
+
+					$total_rows[ sanitize_title( $code ) ] = array(
+						'label' => $tax->label . ':',
+						'value'	=> $tax->formatted_amount
+					);
+				}
+
+			} else {
+
+				$total_rows['tax'] = array(
+					'label' => WC()->countries->tax_or_vat() . ':',
+					'value'	=> wc_price( $this->get_total_tax(), array('currency' => $this->get_order_currency()) )
+				);
+			}
+		}
+
+		if ( $this->get_order_discount() > 0 ) {
+			$total_rows['order_discount'] = array(
+				'label' => __( 'Subscription Discount:', 'woocommerce' ),
+				'value'	=> '-' . $this->get_order_discount_to_display()
+			);
+		}
+
+		if ( $this->get_total() > 0 ) {
+			$total_rows['payment_method'] = array(
+				'label' => __( 'Payment Method:', 'woocommerce' ),
+				'value' => $this->payment_method_title
+			);
+		}
+
+		$total_rows['order_total'] = array(
+			'label' => __( 'Recurring Total:', 'woocommerce' ),
+			'value'	=> $this->get_formatted_order_total()
+		);
+
+		// Tax for inclusive prices
+		if ( 'yes' == get_option( 'woocommerce_calc_taxes' ) && 'incl' == $tax_display ) {
+
+			$tax_string_array = array();
+
+			if ( 'itemized' == get_option( 'woocommerce_tax_total_display' ) ) {
+
+				foreach ( $this->get_tax_totals() as $code => $tax ) {
+					$tax_string_array[] = sprintf( '%s %s', $tax->formatted_amount, $tax->label );
+				}
+
+			} else {
+				$tax_string_array[] = sprintf( '%s %s', wc_price( $this->get_total_tax(), array('currency' => $this->get_order_currency()) ), WC()->countries->tax_or_vat() );
+			}
+
+			if ( ! empty( $tax_string_array ) ) {
+				$total_rows['order_total']['value'] .= ' ' . sprintf( __( '(Includes %s)', 'woocommerce' ), implode( ', ', $tax_string_array ) );
+			}
+		}
+
+		return apply_filters( 'woocommerce_get_order_item_totals', $total_rows, $this );
+	}
+
+	/**
+	 * Get the details of the subscription for use with @see wcs_price_string()
+	 *
+	 * @return array
+	 */
+	protected function get_price_string_details( $amount = 0, $display_ex_tax_label = false ) {
+
+		$subscription_details = array(
+			'currency'              => $this->get_order_currency(),
+			'recurring_amount'      => $amount,
+			'subscription_period'   => $this->billing_period,
+			'subscription_interval' => $this->billing_interval,
+			'display_ex_tax_label'  => $display_ex_tax_label,
+		);
+
+		return apply_filters('woocommerce_subscription_price_string_details', $subscription_details, $this );
+	}
+
+	/**
+	 * Cancel the order and restore the cart (before payment)
+	 *
+	 * @param string $note (default: '') Optional note to add
+	 */
+	public function cancel_order( $note = '' ) {
+
+		$next_payment_timestamp = $this->get_time( 'next_payment' );
+		$end_timestamp          = $this->get_time( 'end' );
+
+		// Cancel for real if we're already pending cancellation
+		if ( ! $this->has_status( 'pending-cancellation' ) && ( $next_payment_timestamp > 0 || $end_timestamp > 0 ) ) {
+
+			if ( $next_payment_timestamp > current_time( 'timestamp', true ) ) {
+				$end_time = $this->get_date( 'next_payment' );
+			} else {
+				$end_time = $this->get_date( 'end' );
+			}
+
+			$this->update_date( 'end', $end_time );
+			$this->update_status( 'pending-cancellation', $note );
+
+		// If the customer hasn't been through the pending cancellation period yet set the subscription to be pending cancellation
+		} else {
+
+			$this->update_date( 'end', current_time( 'mysql', true ) );
+			$this->update_status( 'cancelled', $note );
+
+		}
+	}
+
+
 	/*** Some of WC_Abstract_Order's methods should not be used on a WC_Subscription ***********/
 
 	/**
