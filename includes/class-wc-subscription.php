@@ -343,6 +343,36 @@ class WC_Subscription extends WC_Order {
 		return apply_filters( 'woocommerce_subscription_has_ended', $has_ended, $this );
 	}
 
+	/**
+	 * Get the number of payments completed for a subscription
+	 *
+	 * Completed payment include all renewal orders with a '_paid_date' set and potentially an
+	 * initial order (if the subscription was created as a result of a purchase from the front
+	 * end rather than manually by the store manager).
+	 *
+	 */
+	public function get_completed_payment_count() {
+
+		$completed_payment_count = ( ! empty( $this->order ) && isset( $this->order->paid_date ) ) ? 1 : 0;
+
+		$paid_renewal_orders = get_posts( array(
+			'posts_per_page' => -1,
+			'post_parent'    => $this->id,
+			'post_status'    => 'any',
+			'post_type'      => 'shop_order',
+			'orderby'        => 'date',
+			'order'          => 'desc',
+			'meta_key'       => '_paid_date',
+			'meta_compare'   => 'EXISTS',
+		) );
+
+		if ( ! empty( $paid_renewal_orders ) ) {
+			$completed_payment_count += count( $paid_renewal_orders );
+		}
+
+		return apply_filters( 'woocommerce_subscription_completed_payment_count', $completed_payment_count, $this );
+	}
+
 
 	/*** Date methods *****************************************************/
 
