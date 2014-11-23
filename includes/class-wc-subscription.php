@@ -308,6 +308,24 @@ class WC_Subscription extends WC_Order {
 		}
 	}
 
+	/**
+	 * Checks if the subscription has ended.
+	 *
+	 * A subscription has ended if it is cancelled, trashed, switched, expired or pending cancellation.
+	 */
+	public function has_ended() {
+
+		$ended_statuses = apply_filters( 'woocommerce_subscription_ended_statuses', array( 'cancelled', 'trash', 'expired', 'switched', 'pending-cancellation' ) );
+
+		if ( $this->has_status( $ended_statuses ) ) {
+			$has_ended = true;
+		} else {
+			$has_ended = false;
+		}
+
+		return apply_filters( 'woocommerce_subscription_has_ended', $has_ended, $this );
+	}
+
 
 	/*** Date methods *****************************************************/
 
