@@ -309,6 +309,23 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
+	 * Checks if the subscription requires manual renewal payments.
+	 *
+	 * @access public
+	 * @return bool
+	 */
+	public function is_manual() {
+
+		if ( WC_Subscriptions::is_duplicate_site() || empty( $this->payment_gateway ) || ( isset( $this->requires_manual_renewal ) && 'true' == $this->requires_manual_renewal ) ) {
+			$is_manual = true;
+		} else {
+			$is_manual = false;
+		}
+
+		return $is_manual;
+	}
+
+	/**
 	 * Checks if the subscription has ended.
 	 *
 	 * A subscription has ended if it is cancelled, trashed, switched, expired or pending cancellation.
