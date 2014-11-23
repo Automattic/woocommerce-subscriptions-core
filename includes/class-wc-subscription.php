@@ -146,6 +146,168 @@ class WC_Subscription extends WC_Order {
 		return apply_filters( 'woocommerce_subscription_payment_gateway_supports', $payment_gateway_supports, $this );
 	}
 
+	/**
+	 * Check if a the subscription can be changed to a new status or date
+	 */
+	public function can_be_updated_to( $new_status_or_meta ) {
+
+		switch( $new_status_or_meta ) {
+			case 'active' :
+				if ( $this->payment_method_supports( 'subscription_reactivation' ) && $this->has_status( 'on-hold' ) ) {
+					$can_be_updated = true;
+				} elseif ( 'pending' == $this->get_status() ) {
+					$can_be_updated = true;
+				} else {
+					$can_be_updated = false;
+				}
+				break;
+			case 'on-hold' :
+				if ( $this->payment_method_supports( 'subscription_suspension' ) && $this->has_status( array( 'active', 'pending' ) ) ) {
+					$can_be_updated = true;
+				} else {
+					$can_be_updated = false;
+				}
+				break;
+			case 'cancelled' :
+				if ( $this->payment_method_supports( 'subscription_cancellation' ) && ( $this->has_status( 'pending-cancellation' ) || ! $this->has_ended() ) ) {
+					$can_be_updated = true;
+				} else {
+					$can_be_updated = false;
+				}
+				break;
+			case 'pending-cancellation' :
+				// Only active subscriptions can be given the "pending cancellation" status, becuase it is used to account for a prepaid term
+				if ( $this->payment_method_supports( 'subscription_cancellation' ) && $this->has_status( 'active' ) ) {
+					$can_be_updated = true;
+				} else {
+					$can_be_updated = false;
+				}
+				break;
+			case 'expired' :
+				if ( ! $this->has_status( array( 'cancelled', 'trash' ) ) ) {
+					$can_be_updated = true;
+				} else {
+					$can_be_updated = false;
+				}
+				break;
+			case 'trash' :
+				if ( $this->has_status( array( 'cancelled', 'expired' ) ) || $this->can_be_updated_to( 'cancelled' ) ) {
+					$can_be_updated = true;
+				} else {
+					$can_be_updated = false;
+				}
+				break;
+			case 'deleted' :
+				if ( 'trash' == $this->get_status()  ) {
+					$can_be_updated = true;
+				} else {
+					$can_be_updated = false;
+				}
+				break;
+			default :
+				$can_be_updated = false;
+				break;
+		}
+
+		return apply_filters( 'woocommerce_can_subscription_be_updated_to_' . $new_status_or_meta, $can_be_updated, $this );
+	}
+
+	/**
+	 * Updates status of the subscription
+	 *
+	 * @param string $new_status Status to change the order to. No internal wc- prefix is required.
+	 * @param string $note (default: '') Optional note to add
+	 */
+	public function update_status( $new_status, $note = '' ) {
+
+		if ( ! $this->id ) {
+			return;
+		}
+
+		// Standardise status names.
+		$new_status     = 'wc-' === substr( $new_status, 0, 3 ) ? substr( $new_status, 3 ) : $new_status;
+		$new_status_key = ( 'trash' == $new_status ) ? $new_status : 'wc-' . $new_status;
+		$old_status     = $this->get_status();
+
+		// Only update is possible
+		if ( ! $this->can_be_updated_to( $new_status ) ) {
+
+			$message = sprintf( __( 'Unable to change subscription status to "%s".', 'woocommerce-subscriptions' ), $new_status );
+
+			$this->add_order_note( $message );
+
+			do_action( 'woocommerce_subscription_unable_to_change_status', $this->id, $new_status, $old_status );
+
+			// Let plugins handle it if they tried to change to an invalid status
+			throw new Exception( $message );
+
+		} elseif ( $new_status !== $old_status || ! in_array( $this->post_status, array_keys( wcs_get_subscription_statuses() ) ) ) {
+
+			switch ( $new_status ) {
+
+				case 'pending' :
+					// Nothing to do here
+				break;
+
+				case 'pending-cancellation' :
+
+					$next_payment_time = $this->get_time( 'next_payment' );
+					$end_time          = $this->get_time( 'end' );
+
+					// If there was a future payment, the customer has paid up until that payment date
+					if ( $subscription->get_time( 'next_payment' ) > current_time( 'timestamp', true ) ) {
+						$end_date = $subscription->get_date( 'next_payment' );
+
+					// If there is no future payment and no expiration date set, the customer has no prepaid term (this shouldn't be possible as only active subscriptions can be set to pending cancellation and an active subscription always has either an end date or next payment)
+					} elseif ( 0 == $next_payment || $end_time < current_time( 'timestamp', true ) ) {
+						$end_date = current_time( 'mysql', true );
+					} else {
+						$end_date = $this->get_date( 'end' );
+					}
+
+					$this->update_date( 'end', $end_date );
+				break;
+
+				case 'active' :
+					// Recalculate and set next payment date
+					$this->update_date( 'next_payment', $this->calculate_date( 'next_payment' ) );
+					// Trial end date and end/expiration date don't change at all - they should be set when the subscription is first created
+					wcs_make_user_active( $user_id );
+				break;
+
+				case 'on-hold' :
+					// Record date of suspension - 'post_modified' column?
+					update_post_meta( $this->id, '_suspension_count', $this->suspension_count + 1 );
+					wcs_maybe_make_user_inactive( $user_id );
+				break;
+				case 'cancelled' :
+				case 'switched' :
+				case 'expired' :
+					$this->update_date( 'end', current_time( 'mysql', true ) );
+					wcs_maybe_make_user_inactive( $user_id );
+				break;
+
+				case 'trash' :
+					// Run all cancellation related functions on the subscription
+					if ( ! $this->has_status( 'cancelled' ) ) {
+						$this->update_status( 'cancelled' );
+					}
+					wp_trash_post( $this->id );
+				break;
+			}
+
+			if ( 'trash' !== $new_status ) {
+				wp_update_post( array( 'ID' => $this->id, 'post_status' => $new_status_key ) );
+				$this->post_status = $new_status_key;
+			}
+
+			$this->add_order_note( trim( $note . ' ' . sprintf( __( 'Subscription status changed from %s to %s.', 'woocommerce-subscriptions' ), wc_get_order_status_name( $old_status ), wc_get_order_status_name( $new_status ) ) ) );
+
+			// Status was changed
+			do_action( 'woocommerce_subscription_updated_status', $this->id, $old_status, $new_status );
+		}
+	}
+
 
 	/** Formatted Totals Methods *******************************************************/
 
