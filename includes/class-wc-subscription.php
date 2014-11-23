@@ -120,6 +120,32 @@ class WC_Subscription extends WC_Order {
 		return apply_filters( 'woocommerce_subscription_needs_payment', $needs_payment, $this );
 	}
 
+	/**
+	 * Check if the subscription's payment method supports a certain feature, like date changes.
+	 *
+	 * If the subscription uses manual renewals as the payment method, it supports all features.
+	 * Otherwise, the feature will only be supported if the payment gateway set as the payment
+	 * method supports for the feature.
+	 *
+	 * @param string $payment_gateway_feature one of:
+	 *		'subscription_suspension'
+	 *		'subscription_reactivation'
+	 *		'subscription_cancellation'
+	 *		'subscription_date_changes'
+	 *		'subscription_amount_changes'
+	 * @since 2.0
+	 */
+	public function payment_method_supports( $payment_gateway_feature ) {
+
+		if ( $this->is_manual() || ( ! empty( $this->payment_gateway ) && $this->payment_gateway->supports( $payment_gateway_feature ) ) ) {
+			$payment_gateway_supports = true;
+		} else {
+			$payment_gateway_supports = false;
+		}
+
+		return apply_filters( 'woocommerce_subscription_payment_gateway_supports', $payment_gateway_supports, $this );
+	}
+
 
 	/** Formatted Totals Methods *******************************************************/
 
