@@ -151,3 +151,25 @@ function wcs_get_subscription_period_interval_strings( $interval = '' ) {
 	}
 }
 
+/**
+ * Return an i18n'ified associative array of all time periods allowed for subscriptions.
+ *
+ * @param string (Optional) Either 'singular' for singular trial periods or 'plural'.
+ * @since 2.0
+ */
+function wcs_get_available_time_periods( $form = 'singular' ) {
+
+	$number = ( 'singular' == $form ) ? 1 : 2;
+
+	$translated_periods = apply_filters( 'woocommerce_subscription_available_time_periods',
+		array(
+			'day'   => _n( 'day', 'days', $number, 'woocommerce-subscriptions' ),
+			'week'  => _n( 'week', 'weeks', $number, 'woocommerce-subscriptions' ),
+			'month' => _n( 'month', 'months', $number, 'woocommerce-subscriptions' ),
+			'year'  => _n( 'year', 'years', $number, 'woocommerce-subscriptions' )
+		)
+	);
+
+	return $translated_periods;
+}
+
