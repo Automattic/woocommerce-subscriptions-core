@@ -195,6 +195,25 @@ function wcs_get_subscription_trial_lengths( $subscription_period = '' ) {
 }
 
 /**
+ * Convenience wrapper for adding "{n} {periods}" to a timestamp (e.g. 2 months or 5 days).
+ *
+ * @param int The number of periods to add to the timestamp
+ * @param string One of day, week, month or year.
+ * @param int A Unix timestamp to add the time too.
+ * @since 2.0
+ */
+function wcs_add_time( $number_of_periods, $period, $from_timestamp ) {
+
+	if ( 'month' == $period ) {
+		$next_timestamp = wcs_add_months( $next_payment_timestamp, $number_of_periods );
+	} else {
+		$next_timestamp = strtotime( "+ {$number_of_periods} {$period}", $next_payment_timestamp );
+	}
+
+	return $next_timestamp;
+}
+
+/**
  * Workaround the last day of month quirk in PHP's strtotime function.
  *
  * Adding +1 month to the last day of the month can yield unexpected results with strtotime().
