@@ -173,3 +173,24 @@ function wcs_get_available_time_periods( $form = 'singular' ) {
 	return $translated_periods;
 }
 
+/**
+ * Returns an array of allowed trial period lengths.
+ *
+ * @param string (optional) One of day, week, month or year. If empty, all subscription trial period lengths are returned.
+ * @since 2.0
+ */
+function wcs_get_subscription_trial_lengths( $subscription_period = '' ) {
+
+	$all_trial_periods = wcs_get_subscription_ranges();
+
+	foreach ( $all_trial_periods as $period => $trial_periods ) {
+		$all_trial_periods[ $period ][0] = _x( 'no', 'no trial period', 'woocommerce-subscriptions' );
+	}
+
+	if ( ! empty( $subscription_period ) ) {
+		return $all_trial_periods[ $subscription_period ];
+	} else {
+		return $all_trial_periods;
+	}
+}
+
