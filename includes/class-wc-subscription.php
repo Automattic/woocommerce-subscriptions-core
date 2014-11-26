@@ -717,7 +717,7 @@ class WC_Subscription extends WC_Order {
 				break;
 			case 'trial_end' :
 				if ( $this->get_completed_payment_count() >= 2 ) {
-					$this->schedule->{$date_type} = 0;
+					$date = 0;
 				} else {
 					// By default, trial end is the same as the next payment date
 					$date = $this->calculate_next_payment_date();
