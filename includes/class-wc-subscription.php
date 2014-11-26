@@ -631,6 +631,34 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
+	 * Remove a date from a subscription.
+	 *
+	 * @param string $date_type 'trial_end', 'next_payment' or 'end'. The 'start' and 'last_payment' date types will throw an exception.
+	 */
+	public function delete_date( $date_type ) {
+
+		// Accept dates with a '_date' suffix, like 'next_payment_date' or 'start_date'
+		$date_type = str_replace( '_date', '', $date_type );
+
+		// Make sure some dates are before next payment date
+		if ( in_array( $date_type, array( 'start', 'last_payment' ) ) ) {
+			switch ( $date_type ) {
+				case 'start' :
+					$message = __( 'The start date of a subscription can not be deleted, only updated.', 'woocommerce-subscriptions' );
+				break;
+				case 'last_payment' :
+					$message = __( 'The last payment date of a subscription can not be deleted. You must delete the order.', 'woocommerce-subscriptions' );
+				break;
+			}
+			throw new Exception( $message );
+		}
+
+		$this->schedule->{$date_type} = 0;
+		update_post_meta( $this->id, $this->get_date_meta_key( $date_type ), $this->schedule->{$date_type} );
+		do_action( 'woocommerce_subscription_deleted_date', $this->id, $date_type );
+	}
+
+	/**
 	 * Check if a given date type can be updated for this subscription.
 	 *
 	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'
