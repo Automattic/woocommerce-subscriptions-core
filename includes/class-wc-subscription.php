@@ -238,19 +238,21 @@ class WC_Subscription extends WC_Order {
 		$new_status_key = ( 'trash' == $new_status ) ? $new_status : 'wc-' . $new_status;
 		$old_status     = $this->get_status();
 
-		// Only update is possible
-		if ( ! $this->can_be_updated_to( $new_status ) ) {
+		if ( $new_status !== $old_status || ! in_array( $this->post_status, array_keys( wcs_get_subscription_statuses() ) ) ) {
 
-			$message = sprintf( __( 'Unable to change subscription status to "%s".', 'woocommerce-subscriptions' ), $new_status );
+			// Only update is possible
+			if ( ! $this->can_be_updated_to( $new_status ) ) {
 
-			$this->add_order_note( $message );
+				$message = sprintf( __( 'Unable to change subscription status to "%s".', 'woocommerce-subscriptions' ), $new_status );
 
-			do_action( 'woocommerce_subscription_unable_to_change_status', $this->id, $new_status, $old_status );
+				$this->add_order_note( $message );
 
-			// Let plugins handle it if they tried to change to an invalid status
-			throw new Exception( $message );
+				do_action( 'woocommerce_subscription_unable_to_update_status', $this->id, $new_status, $old_status );
 
-		} elseif ( $new_status !== $old_status || ! in_array( $this->post_status, array_keys( wcs_get_subscription_statuses() ) ) ) {
+				// Let plugins handle it if they tried to change to an invalid status
+				throw new Exception( $message );
+
+			}
 
 			switch ( $new_status ) {
 
