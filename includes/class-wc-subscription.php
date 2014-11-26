@@ -559,7 +559,7 @@ class WC_Subscription extends WC_Order {
 		}
 
 		// Make sure next payment and expiration dates are after trial end date
-		if ( in_array( $date_type, array( 'next_payment', 'expiration' ) ) ) {
+		if ( in_array( $date_type, array( 'next_payment', 'end' ) ) ) {
 			$trial_end_timestamp = $this->get_time( 'trial_end' );
 			if ( 0 != $trial_end_timestamp && strtotime( $datetime ) < $trial_end_timestamp ) {
 				throw new Exception( __( 'The date must occur after the trial end date.', 'woocommerce-subscriptions' ) );
@@ -567,7 +567,7 @@ class WC_Subscription extends WC_Order {
 		}
 
 		// Make sure expiration date is after next payment
-		if ( in_array( $date_type, array( 'expiration' ) ) ) {
+		if ( in_array( $date_type, array( 'end' ) ) ) {
 			$next_payment_timestamp = $this->get_time( 'next_payment' );
 			if ( 0 != $next_payment_timestamp && strtotime( $datetime ) < $next_payment_timestamp ) {
 				throw new Exception( __( 'The expiration date must occur after the next payment date.', 'woocommerce-subscriptions' ) );
