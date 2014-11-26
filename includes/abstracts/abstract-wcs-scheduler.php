@@ -18,7 +18,7 @@ abstract class WCS_Scheduler {
 
 	public function __construct() {
 
-		$this->date_types_to_schedule = apply_filters( 'woocommerce_subscriptions_date_types_to_schedule', array_keys( wcs_subscription_dates() ) );
+		$this->date_types_to_schedule = apply_filters( 'woocommerce_subscriptions_date_types_to_schedule', array_keys( wcs_get_subscription_date_types() ) );
 
 		add_filter( 'woocommerce_subscription_updated_date', array( &$this, 'update_date' ), 10, 3 );
 
