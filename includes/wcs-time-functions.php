@@ -82,29 +82,18 @@ function wcs_get_subscription_ranges( $subscription_period = '' ) {
 		switch( $period ) {
 			case 'day':
 				$subscription_lengths[] = __( '1 day', 'woocommerce-subscriptions' );
-				break;
-			case 'week':
-				$subscription_lengths[] = __( '1 week', 'woocommerce-subscriptions' );
-				break;
-			case 'month':
-				$subscription_lengths[] = __( '1 month', 'woocommerce-subscriptions' );
-				break;
-			case 'year':
-				$subscription_lengths[] = __( '1 year', 'woocommerce-subscriptions' );
-				break;
-		}
-
-		switch( $period ) {
-			case 'day':
 				$subscription_range = range( 2, 90 );
 				break;
 			case 'week':
+				$subscription_lengths[] = __( '1 week', 'woocommerce-subscriptions' );
 				$subscription_range = range( 2, 52 );
 				break;
 			case 'month':
+				$subscription_lengths[] = __( '1 month', 'woocommerce-subscriptions' );
 				$subscription_range = range( 2, 24 );
 				break;
 			case 'year':
+				$subscription_lengths[] = __( '1 year', 'woocommerce-subscriptions' );
 				$subscription_range = range( 2, 5 );
 				break;
 		}
