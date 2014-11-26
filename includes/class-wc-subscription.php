@@ -1119,25 +1119,14 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function cancel_order( $note = '' ) {
 
-		$next_payment_timestamp = $this->get_time( 'next_payment' );
-		$end_timestamp          = $this->get_time( 'end' );
+		// If the customer hasn't been through the pending cancellation period yet set the subscription to be pending cancellation
+		if ( ! $this->has_status( array( 'pending-cancellation', 'cancelled' ) ) && $this->calculate_date( 'end_of_prepaid_term' ) > current_time( 'mysql', true ) ) {
 
-		// Cancel for real if we're already pending cancellation
-		if ( ! $this->has_status( 'pending-cancellation' ) && ( $next_payment_timestamp > 0 || $end_timestamp > 0 ) ) {
-
-			if ( $next_payment_timestamp > current_time( 'timestamp', true ) ) {
-				$end_time = $this->get_date( 'next_payment' );
-			} else {
-				$end_time = $this->get_date( 'end' );
-			}
-
-			$this->update_date( 'end', $end_time );
 			$this->update_status( 'pending-cancellation', $note );
 
-		// If the customer hasn't been through the pending cancellation period yet set the subscription to be pending cancellation
+		// Cancel for real if we're already pending cancellation
 		} else {
 
-			$this->update_date( 'end', current_time( 'mysql', true ) );
 			$this->update_status( 'cancelled', $note );
 
 		}
