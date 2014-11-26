@@ -12,9 +12,9 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 
 	/*@protected Array of $action_hook => $date_type values */
 	protected $action_hooks = array(
-		'scheduled_subscription_trial_end'  => '',
-		'scheduled_subscription_payment'    => '',
-		'scheduled_subscription_expiration' => '',
+		'scheduled_subscription_trial_end'  => 'trial_end',
+		'scheduled_subscription_payment'    => 'next_payment',
+		'scheduled_subscription_expiration' => 'end',
 
 	);
 
