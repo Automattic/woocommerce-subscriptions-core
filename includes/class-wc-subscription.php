@@ -551,15 +551,34 @@ class WC_Subscription extends WC_Order {
 		if ( in_array( $date_type, array( 'start', 'trial_end' ) ) ) {
 			$next_payment_timestamp = $this->get_time( 'next_payment' );
 			if ( 0 != $next_payment_timestamp && strtotime( $datetime ) > $next_payment_timestamp ) {
-				throw new Exception( __( 'The date must occur before the next payment date.', 'woocommerce-subscriptions' ) );
+				switch ( $date_type ) {
+					case 'start' :
+						$message = __( 'The start date must occur before the next payment date.', 'woocommerce-subscriptions' );
+					break;
+					case 'trial_end' :
+						$message = __( 'The trial end date must occur before the next payment date.', 'woocommerce-subscriptions' );
+					break;
+				}
+				throw new Exception( $message );
 			}
 		}
 
 		// Make sure some dates are before the expiration date
 		if ( in_array( $date_type, array( 'start', 'trial_end', 'next_payment' ) ) ) {
-			$expiration_timestamp = $this->get_time( 'expiration' );
-			if ( 0 != $expiration_timestamp && strtotime( $datetime ) > $expiration_timestamp ) {
-				throw new Exception( __( 'The date must occur before the expiration date.', 'woocommerce-subscriptions' ) );
+			$end_timestamp = $this->get_time( 'end' );
+			if ( 0 != $end_timestamp && strtotime( $datetime ) > $end_timestamp ) {
+				switch ( $date_type ) {
+					case 'start' :
+						$message = __( 'The start date must occur before the end date.', 'woocommerce-subscriptions' );
+					break;
+					case 'trial_end' :
+						$message = __( 'The trial end date must occur before the end date.', 'woocommerce-subscriptions' );
+					break;
+					case 'next_payment' :
+						$message = __( 'The next payment date must occur before the end date.', 'woocommerce-subscriptions' );
+					break;
+				}
+				throw new Exception( $message );
 			}
 		}
 
@@ -567,7 +586,15 @@ class WC_Subscription extends WC_Order {
 		if ( in_array( $date_type, array( 'next_payment', 'end' ) ) ) {
 			$trial_end_timestamp = $this->get_time( 'trial_end' );
 			if ( 0 != $trial_end_timestamp && strtotime( $datetime ) < $trial_end_timestamp ) {
-				throw new Exception( __( 'The date must occur after the trial end date.', 'woocommerce-subscriptions' ) );
+				switch ( $date_type ) {
+					case 'next_payment' :
+						$message = __( 'The next payment date must occur after the trial end date.', 'woocommerce-subscriptions' );
+					break;
+					case 'end' :
+						$message = __( 'The end date must occur after the trial end date.', 'woocommerce-subscriptions' );
+					break;
+				}
+				throw new Exception( $message );
 			}
 		}
 
