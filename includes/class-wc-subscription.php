@@ -528,6 +528,11 @@ class WC_Subscription extends WC_Order {
 	public function update_date( $date_type, $datetime, $timezone = 'gmt' ) {
 		global $wpdb;
 
+		// Do we actually need to delete the date?
+		if ( 0 == $datetime ) {
+			return $this->delete_date( $date_type );
+		}
+
 		if ( false === strptime( $datetime, '%Y-%m-%d %H:%M:%S' ) ) {
 			throw new InvalidArgumentException( __( 'Invalid date. The date must be of the format: "Y-m-d H:i:s".', 'woocommerce-subscriptions' ) );
 		}
