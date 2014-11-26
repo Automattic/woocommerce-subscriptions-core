@@ -47,3 +47,45 @@ function wcs_update_users_role( $user_id, $role_name ) {
 	do_action( 'woocommerce_subscriptions_updated_users_role', $role_name, $user );
 }
 
+/**
+ * Check if a user has a subscription, optionally to a specific product and/or with a certain status.
+ *
+ * @param int (optional) The ID of a user in the store. If left empty, the current user's ID will be used.
+ * @param int (optional) The ID of a product in the store. If left empty, the function will see if the user has any subscription.
+ * @param string (optional) A valid subscription status. If left empty, the function will see if the user has a subscription of any status.
+ * @since 2.0
+ */
+function wcs_user_has_subscription( $user_id = 0, $product_id = '', $status = 'any' ) {
+
+	$subscriptions = wcs_get_users_subscriptions( $user_id );
+
+	$has_subscription = false;
+
+	if ( empty( $product_id ) ) { // Any subscription
+
+		if ( ! empty( $status ) && 'any' != $status ) { // We need to check for a specific status
+			foreach ( $subscriptions as $subscription ) {
+				if ( $subscription->get_status() == $status ) {
+					$has_subscription = true;
+					break;
+				}
+			}
+		} elseif ( ! empty( $subscriptions ) ) {
+			$has_subscription = true;
+		}
+
+	} else {
+
+		foreach ( $subscriptions as $subscription ) {
+			$subscriptions_product_ids = wp_list_pluck( $subscription->get_items(), 'product_id' );
+			if ( in_array( $product_id, $subscriptions_product_ids ) && ( empty( $status ) || 'any' == $status || $subscription->get_status() == $status ) ) {
+				$has_subscription = true;
+				break;
+			}
+		}
+
+	}
+
+	return apply_filters( 'woocommerce_user_has_subscription', $has_subscription, $user_id, $product_id, $status );
+}
+
