@@ -194,9 +194,9 @@ function wcs_get_subscription_trial_lengths( $subscription_period = '' ) {
 function wcs_add_time( $number_of_periods, $period, $from_timestamp ) {
 
 	if ( 'month' == $period ) {
-		$next_timestamp = wcs_add_months( $next_payment_timestamp, $number_of_periods );
+		$next_timestamp = wcs_add_months( $from_timestamp, $number_of_periods );
 	} else {
-		$next_timestamp = strtotime( "+ {$number_of_periods} {$period}", $next_payment_timestamp );
+		$next_timestamp = strtotime( "+ {$number_of_periods} {$period}", $from_timestamp );
 	}
 
 	return $next_timestamp;
