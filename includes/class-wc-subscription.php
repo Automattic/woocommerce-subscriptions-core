@@ -723,8 +723,20 @@ class WC_Subscription extends WC_Order {
 					$date = $this->calculate_next_payment_date();
 				}
 				break;
-			case 'end' :
-				$this->schedule->{$date_type} = get_post_meta( $this->id, $this->get_date_meta_key( $date_type ), true );
+			case 'end_of_prepaid_term' :
+
+				$next_payment_time = $this->get_time( 'next_payment' );
+				$end_time          = $this->get_time( 'end' );
+
+				// If there was a future payment, the customer has paid up until that payment date
+				if ( $subscription->get_time( 'next_payment' ) >= current_time( 'timestamp', true ) ) {
+					$date = $subscription->get_date( 'next_payment' );
+				// If there is no future payment and no expiration date set, the customer has no prepaid term (this shouldn't be possible as only active subscriptions can be set to pending cancellation and an active subscription always has either an end date or next payment)
+				} elseif ( 0 == $next_payment || $end_time <= current_time( 'timestamp', true ) ) {
+					$date = current_time( 'mysql', true );
+				} else {
+					$date = $this->get_date( 'end' );
+				}
 				break;
 			default :
 				$date = 0;
