@@ -542,6 +542,11 @@ class WC_Subscription extends WC_Order {
 			$datetime = get_gmt_from_date( $datetime );
 		}
 
+		// Given date same as existing date, ignore it.
+		if ( $datetime == $this->get_date( $date_type ) ) {
+			return $is_updated;
+		}
+
 		// Make sure some dates are before next payment date
 		if ( in_array( $date_type, array( 'start', 'trial_end' ) ) ) {
 			$next_payment_timestamp = $this->get_time( 'next_payment' );
