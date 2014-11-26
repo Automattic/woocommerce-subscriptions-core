@@ -626,6 +626,8 @@ class WC_Subscription extends WC_Order {
 			$this->schedule->{$date_type} = $datetime;
 			do_action( 'woocommerce_subscription_updated_date', $this->id, $date_type, $datetime );
 		}
+
+		return $is_updated;
 	}
 
 	/**
