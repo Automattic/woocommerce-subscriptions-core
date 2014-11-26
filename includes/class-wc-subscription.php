@@ -428,7 +428,7 @@ class WC_Subscription extends WC_Order {
 		// Accept dates with a '_date' suffix, like 'next_payment_date' or 'start_date'
 		$date_type = str_replace( '_date', '', $date_type );
 
-		if ( ! isset( $this->schedule->{$date_type} ) ) {
+		if ( ! empty( $date_type ) && ! isset( $this->schedule->{$date_type} ) ) {
 			switch ( $date_type ) {
 				case 'start' :
 					$this->schedule->{$date_type} = get_gmt_from_date( $this->post->post_date ); // why not just use post_date_gmt? Because when a post is first created, it has a post_date but not a post_date_gmt value
@@ -451,7 +451,9 @@ class WC_Subscription extends WC_Order {
 			}
 		}
 
-		if ( 0 != $this->schedule->{$date_type} && 'gmt' != strtolower( $timezone ) ) {
+		if ( empty( $date_tye ) ) {
+			$date = 0;
+		} elseif ( 0 != $this->schedule->{$date_type} && 'gmt' != strtolower( $timezone ) ) {
 			$date = get_date_from_gmt( $this->schedule->{$date_type} );
 		} else {
 			$date = $this->schedule->{$date_type};
