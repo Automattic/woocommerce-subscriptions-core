@@ -283,19 +283,19 @@ class WC_Subscription extends WC_Order {
 					// Recalculate and set next payment date
 					$this->update_date( 'next_payment', $this->calculate_date( 'next_payment' ) );
 					// Trial end date and end/expiration date don't change at all - they should be set when the subscription is first created
-					wcs_make_user_active( $user_id );
+					wcs_make_user_active( $this->customer_user );
 				break;
 
 				case 'on-hold' :
 					// Record date of suspension - 'post_modified' column?
 					update_post_meta( $this->id, '_suspension_count', $this->suspension_count + 1 );
-					wcs_maybe_make_user_inactive( $user_id );
+					wcs_maybe_make_user_inactive( $this->customer_user );
 				break;
 				case 'cancelled' :
 				case 'switched' :
 				case 'expired' :
 					$this->update_date( 'end', current_time( 'mysql', true ) );
-					wcs_maybe_make_user_inactive( $user_id );
+					wcs_maybe_make_user_inactive( $this->customer_user );
 				break;
 
 				case 'trash' :
