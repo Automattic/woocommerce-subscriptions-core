@@ -119,6 +119,37 @@ function wcs_user_has_subscription( $user_id = 0, $product_id = '', $status = 'a
 }
 
 /**
+ * Gets all the active and inactive subscriptions for a user, as specified by $user_id
+ *
+ * @param int $user_id (optional) The id of the user whose subscriptions you want. Defaults to the currently logged in user.
+ * @since 2.0
+ */
+function wcs_get_users_subscriptions( $user_id = 0 ) {
+
+	if ( 0 === $user_id || empty( $user_id ) ) {
+		$user_id = get_current_user_id();
+	}
+
+	$post_ids = get_posts( array(
+		'posts_per_page' => -1,
+		'post_status'    => 'any',
+		'post_type'      => 'shop_subscription',
+		'order'          => 'desc',
+		'meta_key'       => '_customer_user',
+		'meta_value'     => $user_id,
+		'meta_compare'   => '=',
+	) );
+
+	$subscriptions = array();
+
+	foreach ( $post_ids as $post_id ) {
+		$subscriptions[ $post_id ] = wcs_get_subscription( $post_id );
+	}
+
+	return apply_filters( 'woocommerce_get_users_subscriptions', $subscriptions, $user_id );
+}
+
+/**
  * Return a link for subscribers to change the status of their subscription, as specified with $status parameter
  *
  * @param int $subscription_id A subscription's post ID
