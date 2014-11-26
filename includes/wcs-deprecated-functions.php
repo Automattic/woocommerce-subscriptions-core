@@ -39,3 +39,23 @@ function wcs_get_subscription_id_from_key( $subscription_key ) {
 }
 
 
+/**
+ * Return an instance of a WC_Subscription object for the given subscription key (if one exists).
+ *
+ * @param string $subscription_key A subscription key in the deprecated form created by @see self::get_subscription_key()
+ * @return WC_Subscription|null The subscription object if it can be found (i.e. an order exists) or null if no order exists for the subscription (i.e. it was manually created).
+ * @since 2.0
+ */
+function wcs_get_subscription_from_key( $subscription_key ) {
+
+	$subscription_id = self::get_subscription_id_from_key( $subscription_key );
+
+	if ( null !== $subscription_id && is_int( $subscription_id ) ) {
+		$subscription = wcs_get_subscription( $subscription_id );
+	} else {
+		$subscription = null;
+	}
+
+	return $subscription;
+}
+
