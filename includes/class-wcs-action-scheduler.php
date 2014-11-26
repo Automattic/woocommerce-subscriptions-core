@@ -27,7 +27,7 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 	 */
 	public function update_date( $subscription_id, $date_type, $datetime, $timezone ) {
 
-		if ( false !== $is_updated && in_array( $date_type, self::$date_types_to_schedule ) ) {
+		if ( in_array( $date_type, $this->date_types_to_schedule ) ) {
 
 			$action_hook = $this->get_scheduled_action_hook( $subscription_id, $date_type );
 

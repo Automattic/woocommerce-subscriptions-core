@@ -14,11 +14,11 @@
 abstract class WCS_Scheduler {
 
 	/** @protected array The types of dates which this class should schedule */
-	protected static $date_types_to_schedule;
+	protected $date_types_to_schedule;
 
 	public function __construct() {
 
-		$date_types_to_schedule = apply_filters( 'woocommerce_subscriptions_date_types_to_schedule', array_keys( wcs_subscription_dates() ) );
+		$this->date_types_to_schedule = apply_filters( 'woocommerce_subscriptions_date_types_to_schedule', array_keys( wcs_subscription_dates() ) );
 
 		add_filter( 'woocommerce_subscription_updated_date', array( __CLASS__, 'update_date' ), 10, 4 );
 
