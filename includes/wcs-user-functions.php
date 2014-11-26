@@ -118,3 +118,17 @@ function wcs_user_has_subscription( $user_id = 0, $product_id = '', $status = 'a
 	return apply_filters( 'woocommerce_user_has_subscription', $has_subscription, $user_id, $product_id, $status );
 }
 
+/**
+ * Return a link for subscribers to change the status of their subscription, as specified with $status parameter
+ *
+ * @param int $subscription_id A subscription's post ID
+ * @param string $status A subscription's post ID
+ * @since 1.0
+ */
+function wcs_get_users_change_status_link( $subscription_id, $status ) {
+
+	$action_link = add_query_arg( array( 'subscription_id' => $subscription_id, 'change_subscription_to' => $status ) );
+	$action_link = wp_nonce_url( $action_link, $subscription_id );
+
+	return apply_filters( 'woocommerce_subscriptions_users_change_status_link', $action_link, $subscription_id, $status );
+}
