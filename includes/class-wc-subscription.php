@@ -149,9 +149,9 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Check if a the subscription can be changed to a new status or date
 	 */
-	public function can_be_updated_to( $new_status_or_meta ) {
+	public function can_be_updated_to( $new_status ) {
 
-		switch( $new_status_or_meta ) {
+		switch( $new_status ) {
 			case 'active' :
 				if ( $this->payment_method_supports( 'subscription_reactivation' ) && $this->has_status( 'on-hold' ) ) {
 					$can_be_updated = true;
@@ -209,7 +209,7 @@ class WC_Subscription extends WC_Order {
 				break;
 		}
 
-		return apply_filters( 'woocommerce_can_subscription_be_updated_to_' . $new_status_or_meta, $can_be_updated, $this );
+		return apply_filters( 'woocommerce_can_subscription_be_updated_to_' . $new_status, $can_be_updated, $this );
 	}
 
 	/**
@@ -350,6 +350,7 @@ class WC_Subscription extends WC_Order {
 	 * initial order (if the subscription was created as a result of a purchase from the front
 	 * end rather than manually by the store manager).
 	 *
+	 * @since 2.0
 	 */
 	public function get_completed_payment_count() {
 
@@ -515,7 +516,7 @@ class WC_Subscription extends WC_Order {
 		global $wpdb;
 
 		if ( false === strptime( $datetime, '%Y-%m-%d %H:%M:%S' ) ) {
-			throw new InvalidArgumentException( __( 'The date must be of the format: "Y-m-d H:i:s".', 'woocommerce-subscriptions' ) );
+			throw new InvalidArgumentException( __( 'Invalid date. The date must be of the format: "Y-m-d H:i:s".', 'woocommerce-subscriptions' ) );
 		}
 
 		$is_updated = false;
@@ -624,10 +625,9 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Calculate a given date type
+	 * Calculate a given date for the subscription in GMT/UTC.
 	 *
-	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment', 'expiration' or 'end_of_prepaid_term'
-	 * @param string $timezone The timezone in which to return the date, either 'gmt' or it will be returned in the site's timezone
+	 * @param string $date_type 'trial_end', 'next_payment', 'end_of_prepaid_term' or 'end'
 	 */
 	public function calculate_date( $date_type, $timezone = 'gmt' ) {
 
