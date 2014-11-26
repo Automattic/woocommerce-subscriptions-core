@@ -16,6 +16,35 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 
 /**
+ * Give a user the Subscription's default subscriber role
+ *
+ * @since 2.0
+ */
+function wcs_make_user_active( $user_id ) {
+	wcs_update_users_role( $user_id, 'default_subscriber_role' );
+}
+
+/**
+ * Give a user the Subscription's default subscriber's inactive role
+ *
+ * @since 2.0
+ */
+function wcs_make_user_inactive( $user_id ) {
+	wcs_update_users_role( $user_id, 'default_inactive_role' );
+}
+
+/**
+ * Give a user the Subscription's default subscriber's inactive role if they do not have an active subscription
+ *
+ * @since 2.0
+ */
+function wcs_maybe_make_user_inactive( $user_id ) {
+	if ( ! wcs_user_has_subscription( $user_id, '', 'active' ) ) {
+		wcs_update_users_role( $user_id, 'default_inactive_role' );
+	}
+}
+
+/**
  * Update a user's role to a special subscription's role
  *
  * @param int The ID of a user
