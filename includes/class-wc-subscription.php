@@ -709,7 +709,7 @@ class WC_Subscription extends WC_Order {
 	 *
 	 * @param string $date_type 'trial_end', 'next_payment', 'end_of_prepaid_term' or 'end'
 	 */
-	public function calculate_date( $date_type, $timezone = 'gmt' ) {
+	public function calculate_date( $date_type ) {
 
 		switch ( $date_type ) {
 			case 'next_payment' :
