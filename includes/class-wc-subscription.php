@@ -151,6 +151,8 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function can_be_updated_to( $new_status ) {
 
+		$new_status = 'wc-' === substr( $new_status, 0, 3 ) ? substr( $new_status, 3 ) : $new_status;
+
 		switch( $new_status ) {
 			case 'active' :
 				if ( $this->payment_method_supports( 'subscription_reactivation' ) && $this->has_status( 'on-hold' ) ) {
