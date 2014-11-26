@@ -444,7 +444,7 @@ class WC_Subscription extends WC_Order {
 			}
 		}
 
-		if ( empty( $date_tye ) ) {
+		if ( empty( $date_type ) ) {
 			$date = 0;
 		} elseif ( 0 != $this->schedule->{$date_type} && 'gmt' != strtolower( $timezone ) ) {
 			$date = get_date_from_gmt( $this->schedule->{$date_type} );
