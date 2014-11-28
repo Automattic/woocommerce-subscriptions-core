@@ -1132,6 +1132,28 @@ class WC_Subscription extends WC_Order {
 		}
 	}
 
+	/**
+	 * Allow subscription amounts/items to bed edited if the gateway supports it.
+	 *
+	 * @access public
+	 * @return bool
+	 */
+	public function is_editable() {
+
+		if ( ! isset( $this->editable ) ) {
+
+			if ( $this->has_status( array( 'pending', 'draft', 'auto-draft' ) ) ) {
+				$this->editable = true;
+			} elseif ( $this->is_manual() || $this->payment_method_supports( 'subscription_amount_changes' ) ) {
+				$this->editable = true;
+			} else {
+				$this->editable = false;
+			}
+		}
+
+		return apply_filters( 'wc_order_is_editable', $this->editable, $this );
+	}
+
 
 	/*** Some of WC_Abstract_Order's methods should not be used on a WC_Subscription ***********/
 
