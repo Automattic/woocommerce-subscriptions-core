@@ -736,7 +736,7 @@ class WC_Subscription extends WC_Order {
 				break;
 		}
 
-		return apply_filters( 'woocommerce_subscription_calculated_' . $date_type . '_date', $date, $timezone, $this );
+		return apply_filters( 'woocommerce_subscription_calculated_' . $date_type . '_date', $date, $this );
 	}
 
 	/**
