@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Time Functions
+ * WooCommerce Subscriptions Temporal Functions
  *
  * Functions for time values and ranges
  *
