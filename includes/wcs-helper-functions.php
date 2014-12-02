@@ -1,4 +1,16 @@
 <?php
+/**
+ * WooCommerce Subscriptions Helper Functions
+ *
+ * @author 		Prospress
+ * @category 	Core
+ * @package 	WooCommerce Subscriptions/Functions
+ * @version     2.0
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly
+}
 
 /**
  * Display date/time input fields

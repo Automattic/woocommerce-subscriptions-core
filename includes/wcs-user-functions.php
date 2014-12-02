@@ -1,8 +1,6 @@
 <?php
 /**
- * WooCommerce User Functions
- *
- * Functions for managing user
+ * WooCommerce Subscriptions User Functions
  *
  * @author 		Prospress
  * @category 	Core

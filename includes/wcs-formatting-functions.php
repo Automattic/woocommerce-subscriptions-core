@@ -1,8 +1,8 @@
 <?php
 /**
- * WooCommerce Formatting
+ * WooCommerce Subscriptions Formatting
  *
- * Functions for formatting data.
+ * Functions for formatting subscription data.
  *
  * @author 		Prospress
  * @category 	Core
