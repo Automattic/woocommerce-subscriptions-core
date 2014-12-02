@@ -466,6 +466,11 @@ class WC_Subscription extends WC_Order {
 
 		$timestamp_gmt = $this->get_time( $date_type, 'gmt' );
 
+		// Don't display next payment date when the subscription is inactive
+		if ( 'next_payment' == $date_type && ! $this->has_status( 'active' ) ) {
+			$timestamp_gmt = 0;
+		}
+
 		if ( $timestamp_gmt > 0 ) {
 
 			$time_diff = $timestamp_gmt - current_time( 'timestamp', true );
