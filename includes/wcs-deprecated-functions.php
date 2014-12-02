@@ -94,29 +94,37 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 
 	$item = array_pop( $subscription->get_items() );
 
-	$deprecated_subscription_object = array(
-		'order_id'           => $subscription->order->id,
-		'product_id'         => isset( $item['product_id'] ) ? $item['product_id'] : 0,
-		'variation_id'       => isset( $item['variation_id'] ) ? $item['variation_id'] : 0,
-		'status'             => $subscription->get_status(),
+	if ( ! empty( $item ) ) {
 
-		// Subscription billing details
-		'period'             => $subscription->billing_period,
-		'interval'           => $subscription->billing_interval,
-		'length'             => null, // Subscriptions no longer have a length, just an expiration date
+		$deprecated_subscription_object = array(
+			'order_id'           => $subscription->order->id,
+			'product_id'         => isset( $item['product_id'] ) ? $item['product_id'] : 0,
+			'variation_id'       => isset( $item['variation_id'] ) ? $item['variation_id'] : 0,
+			'status'             => $subscription->get_status(),
 
-		// Subscription dates
-		'start_date'         => $subscription->get_date( 'start' ),
-		'expiry_date'        => $subscription->get_date( 'end' ),
-		'end_date'           => $subscription->has_ended() ? $subscription->get_date( 'end' ) : 0,
-		'trial_expiry_date'  => $subscription->get_date( 'trial_end' ),
+			// Subscription billing details
+			'period'             => $subscription->billing_period,
+			'interval'           => $subscription->billing_interval,
+			'length'             => null, // Subscriptions no longer have a length, just an expiration date
 
-		// Payment & status change history
-		'failed_payments'    => $subscription->failed_payment_count,
-		'completed_payments' => $completed_payments,
-		'suspension_count'   => $subscription->suspension_count,
-		'last_payment_date'  => $subscription->get_date( 'last_payment' ),
-	);
+			// Subscription dates
+			'start_date'         => $subscription->get_date( 'start' ),
+			'expiry_date'        => $subscription->get_date( 'end' ),
+			'end_date'           => $subscription->has_ended() ? $subscription->get_date( 'end' ) : 0,
+			'trial_expiry_date'  => $subscription->get_date( 'trial_end' ),
+
+			// Payment & status change history
+			'failed_payments'    => $subscription->failed_payment_count,
+			'completed_payments' => $completed_payments,
+			'suspension_count'   => $subscription->suspension_count,
+			'last_payment_date'  => $subscription->get_date( 'last_payment' ),
+		);
+
+	} else {
+
+		$deprecated_subscription_object = array();
+
+	}
 
 	return $deprecated_subscription_object;
 }
