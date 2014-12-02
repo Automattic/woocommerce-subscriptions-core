@@ -462,6 +462,8 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_date_to_display( $date_type = 'next_payment' ) {
 
+		$date_type = str_replace( '_date', '', $date_type );
+
 		$timestamp_gmt = $this->get_time( $date_type, 'gmt' );
 
 		if ( $timestamp_gmt > 0 ) {
