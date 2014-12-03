@@ -12,7 +12,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 } // Exit if accessed directly
 
-if ( ! class_exists( 'WCS_Admin_Post_Types' ) ) :
+if ( class_exists( 'WCS_Admin_Post_Types' ) ) {
+	new WCS_Admin_Post_Types();
+
+	return;
+}
 
 /**
  * WC_Admin_Post_Types Class
@@ -86,7 +90,7 @@ class WCS_Admin_Post_Types {
 		switch ( $column ) {
 			case 'status' :
 
-				echo $the_subscription->get_status();
+				echo esc_html( $the_subscription->get_status() );
 				//printf( '<mark class="%s tips" data-tip="%s">%s</mark>', sanitize_title( $the_subscription->get_status() ), wc_get_order_status_name( $the_subscription->get_status() ), wc_get_order_status_name( $the_subscription->get_status() ) );
 				break;
 
@@ -95,20 +99,23 @@ class WCS_Admin_Post_Types {
 				$customer_tip = '';
 
 				if ( $address = $the_subscription->get_formatted_billing_address() ) {
-					$customer_tip .= __( 'Billing:', 'woocommerce-subscriptions' ) . ' ' . $address;
+					$customer_tip .= __( 'Billing:', 'woocommerce-subscriptions' ) . ' ' . esc_html( $address );
 				}
 
 				if ( $the_subscription->billing_email ) {
-					$customer_tip .= '<br/><br/>' . __( 'Email:', 'woocommerce-subscriptions' ) . ' ' . $the_subscription->billing_email;
+					$customer_tip .= '<br/><br/>' . __( 'Email:', 'woocommerce-subscriptions' ) . ' ' . esc_attr( $the_subscription->billing_email );
 				}
 
 				if ( $the_subscription->billing_phone ) {
-					$customer_tip .= '<br/><br/>' . __( 'Tel:', 'woocommerce-subscriptions' ) . ' ' . $the_subscription->billing_phone;
+					$customer_tip .= '<br/><br/>' . __( 'Tel:', 'woocommerce-subscriptions' ) . ' ' . esc_html( $the_subscription->billing_phone );
 				}
 
 				if ( ! empty( $customer_tip ) ) {
 					echo '<div class="tips" data-tip="' . esc_attr( $customer_tip ) . '">';
 				}
+
+				// This is to stop PHP from complaining
+				$username = '';
 
 				if ( $the_subscription->get_user_id() ) {
 
@@ -129,7 +136,7 @@ class WCS_Admin_Post_Types {
 					$username = trim( $the_subscription->billing_first_name . ' ' . $the_subscription->billing_last_name );
 				}
 
-				printf( _x( '%s for %s', 'Subscription number for X', 'woocommerce-subscriptions' ), '<a href="' . admin_url( 'post.php?post=' . absint( $post->ID ) . '&action=edit' ) . '"><strong>' . esc_attr( $the_subscription->get_order_number() ) . '</strong></a>', $username );
+				printf( _x( '%s for %s', 'Subscription number for X', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post.php?post=' . absint( $post->ID ) . '&action=edit' ) ) . '"><strong>' . esc_attr( $the_subscription->get_order_number() ) . '</strong></a>', $username );
 
 				echo '</div>';
 
@@ -163,7 +170,7 @@ class WCS_Admin_Post_Types {
 							}
 							?>
 							<div class="order-item">
-								<?php echo $item_name; ?>
+								<?php echo wp_kses( $item_name, array( 'a' => array( 'href' => array() ) ) ); ?>
 								<?php if ( $item_meta_html ) : ?>
 								<a class="tips" href="#" data-tip="<?php echo esc_attr( $item_meta_html ); ?>">[?]</a>
 								<?php endif; ?>
@@ -172,7 +179,7 @@ class WCS_Admin_Post_Types {
 						}
 						break;
 					default :
-						echo '<a href="#" class="show_order_items">' . apply_filters( 'woocommerce_admin_order_item_count', sprintf( _n( '%d item', '%d items', $the_subscription->get_item_count(), 'woocommerce-subscriptions' ), $the_subscription->get_item_count() ), $the_subscription ) . '</a>';
+						echo '<a href="#" class="show_order_items">' . esc_html( apply_filters( 'woocommerce_admin_order_item_count', sprintf( _n( '%d item', '%d items', $the_subscription->get_item_count(), 'woocommerce-subscriptions' ), $the_subscription->get_item_count() ), $the_subscription ) ) . '</a>';
 						echo '<table class="order_items" cellspacing="0">';
 
 						foreach ( $the_subscription->get_items() as $item ) {
@@ -180,13 +187,16 @@ class WCS_Admin_Post_Types {
 							$item_meta      = new WC_Order_Item_Meta( $item['item_meta'] );
 							$item_meta_html = $item_meta->display( true, true );
 							?>
-							<tr class="<?php echo apply_filters( 'woocommerce_admin_order_item_class', '', $item ); ?>">
+							<tr class="<?php echo esc_attr( apply_filters( 'woocommerce_admin_order_item_class', '', $item ) ); ?>">
 								<td class="qty"><?php echo absint( $item['qty'] ); ?></td>
 								<td class="name">
-									<?php if ( wc_product_sku_enabled() && $_product && $_product->get_sku() ) echo $_product->get_sku() . ' - '; ?><?php echo apply_filters( 'woocommerce_order_item_name', $item['name'], $item ); ?>
-									<?php if ( $item_meta_html ) : ?>
+									<?php if ( wc_product_sku_enabled() && $_product && $_product->get_sku() ) {
+										echo esc_html( $_product->get_sku() ) . ' - ';
+									} ?>
+									<?php echo esc_html( apply_filters( 'woocommerce_order_item_name', $item['name'], $item ) ); ?>
+									<?php if ( $item_meta_html ) { ?>
 										<a class="tips" href="#" data-tip="<?php echo esc_attr( $item_meta_html ); ?>">[?]</a>
-									<?php endif; ?>
+									<?php } ?>
 								</td>
 							</tr>
 							<?php
@@ -201,7 +211,7 @@ class WCS_Admin_Post_Types {
 				echo esc_html( strip_tags( $the_subscription->get_formatted_order_total() ) );
 
 				if ( $the_subscription->payment_method_title ) {
-					echo '<small class="meta">' . sprintf( __( 'Via %s', 'woocommerce-subscriptions' ), esc_html( $the_subscription->payment_method_title ) ) . '</small>';
+					echo '<small class="meta">' . esc_html( sprintf( __( 'Via %s', 'woocommerce-subscriptions' ), $the_subscription->payment_method_title ) ) . '</small>';
 				}
 				break;
 
@@ -216,10 +226,10 @@ class WCS_Admin_Post_Types {
 					$column_content = sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( $the_subscription->get_time( $column, 'site' ) ), esc_html( $the_subscription->get_date_to_display( $column, 'site' ) ) );
 				}
 
-				echo $column_content;
+				echo wp_kses( $column_content, array( 'time' => array( 'class' => array(), 'title' => array() ) ) );
 				break;
 			case 'orders' :
-				echo count( $the_subscription->get_related_orders() );
+				echo esc_html( count( $the_subscription->get_related_orders() ) );
 				break;
 		}
 	}
@@ -276,7 +286,7 @@ class WCS_Admin_Post_Types {
 			'_shipping_city',
 			'_shipping_postcode',
 			'_shipping_country',
-			'_shipping_state'
+			'_shipping_state',
 		) ) );
 
 		$search_order_id = str_replace( 'Order #', '', $_GET['s'] );
@@ -385,7 +395,7 @@ class WCS_Admin_Post_Types {
 					case 'order_total' :
 						$vars = array_merge( $vars, array(
 							'meta_key' 	=> '_order_total',
-							'orderby' 	=> 'meta_value_num'
+							'orderby' 	=> 'meta_value_num',
 						) );
 					break;
 					case 'trial_end_date' :
@@ -395,7 +405,7 @@ class WCS_Admin_Post_Types {
 						$vars = array_merge( $vars, array(
 							'meta_key'     => sprintf( '_schedule_%s', str_replace( '_date', '', $vars['orderby'] ) ),
 							'meta_type'    => 'DATETIME',
-							'orderby'      => 'meta_value'
+							'orderby'      => 'meta_value',
 						) );
 					break;
 				}
@@ -405,7 +415,6 @@ class WCS_Admin_Post_Types {
 			if ( ! isset( $vars['post_status'] ) ) {
 				$vars['post_status'] = array_keys( wcs_get_subscription_statuses() );
 			}
-
 		}
 
 		return $vars;
@@ -438,7 +447,5 @@ class WCS_Admin_Post_Types {
 	}
 
 }
-
-endif;
 
 new WCS_Admin_Post_Types();
