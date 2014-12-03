@@ -176,7 +176,7 @@ function wcs_price_string( $subscription_details ) {
 		}
 	}
 
-	if ( $subscription_details['display_ex_tax_label'] && get_option( 'woocommerce_calc_taxes' ) == 'yes' ) {
+	if ( array_key_exists( 'display_ex_tax_label', $subscription_details ) && $subscription_details['display_ex_tax_label'] && get_option( 'woocommerce_calc_taxes' ) == 'yes' ) {
 		$subscription_string .= ' <small>' . WC()->countries->ex_tax_or_vat() . '</small>';
 	}
 
