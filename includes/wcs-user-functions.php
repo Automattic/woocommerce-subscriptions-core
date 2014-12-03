@@ -1,8 +1,6 @@
 <?php
 /**
- * WooCommerce User Functions
- *
- * Functions for managing user
+ * WooCommerce Subscriptions User Functions
  *
  * @author 		Prospress
  * @category 	Core
@@ -140,6 +138,7 @@ function wcs_get_users_subscriptions( $user_id = 0 ) {
 		'meta_key'       => '_customer_user',
 		'meta_value'     => $user_id,
 		'meta_compare'   => '=',
+		'fields'         => 'ids',
 	) );
 
 	$subscriptions = array();
