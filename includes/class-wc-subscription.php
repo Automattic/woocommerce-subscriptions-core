@@ -1251,4 +1251,46 @@ class WC_Subscription extends WC_Order {
 	public function get_tax_refunded_for_item( $item_id, $tax_id, $item_type = 'line_item' ) {
 		return 0;
 	}
+
+	/**
+	 * Get the related orders for a subscription, including renewal orders and the initial order (if any)
+	 *
+	 * @param string The columns to return, either 'all' or 'ids'
+	 * @since 2.0
+	 */
+	public function get_related_orders( $return_fields = 'ids' ) {
+
+		$return_fields = ( 'ids' == $return_fields ) ? $return_fields : 'all';
+
+		$related_orders = array();
+
+		$related_posts = get_posts( array(
+			'posts_per_page' => -1,
+			'post_parent'    => $this->id,
+			'post_status'    => 'any',
+			'post_type'      => 'shop_order',
+			'fields'         => $return_fields,
+		) );
+
+		if ( 'all' == $return_fields ) {
+
+			if ( ! empty( $this->order ) ) {
+				$related_orders[] = $this->order;
+			}
+
+			foreach ( $related_orders as $post_id ) {
+				$related_orders[] = wc_get_order( $post_id );
+			}
+		} else {
+
+			// Return IDs only
+			if ( ! empty( $this->order->id ) ) {
+				$related_orders[] = $this->order->id;
+			}
+
+			$related_orders = array_merge( $related_orders, $related_posts );
+		}
+
+		return apply_filters( 'woocommerce_subscription_related_orders', $related_posts, $this );
+	}
 }
