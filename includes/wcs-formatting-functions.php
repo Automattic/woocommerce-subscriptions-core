@@ -168,7 +168,7 @@ function wcs_price_string( $subscription_details ) {
 	}
 
 	if ( $subscription_details['trial_length'] > 0 ) {
-		$trial_length = self::get_subscription_trial_period_strings( $subscription_details['trial_length'], $subscription_details['trial_period'] );
+		$trial_length = wcs_get_subscription_trial_period_strings( $subscription_details['trial_length'], $subscription_details['trial_period'] );
 		if ( ! empty( $subscription_details['initial_amount'] ) ) {
 			$subscription_string = sprintf( __( '%s after %s free trial', 'woocommerce-subscriptions' ), $subscription_string, $trial_length );
 		} else {
@@ -176,7 +176,7 @@ function wcs_price_string( $subscription_details ) {
 		}
 	}
 
-	if ( $subscription_details['display_ex_tax_label'] && get_option( 'woocommerce_calc_taxes' ) == 'yes' ) {
+	if ( $subscription_details['display_excluding_tax_label'] && get_option( 'woocommerce_calc_taxes' ) == 'yes' ) {
 		$subscription_string .= ' <small>' . WC()->countries->ex_tax_or_vat() . '</small>';
 	}
 
