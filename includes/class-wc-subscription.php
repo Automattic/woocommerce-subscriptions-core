@@ -429,7 +429,7 @@ class WC_Subscription extends WC_Order {
 				case 'next_payment' :
 				case 'trial_end' :
 				case 'end' :
-					$this->schedule->{$date_type} = get_post_meta( $this->id, $this->get_date_meta_key( $date_type ), true );
+					$this->schedule->{$date_type} = get_post_meta( $this->id, wcs_get_date_meta_key( $date_type ), true );
 					break;
 				case 'last_payment' :
 					$this->schedule->{$date_type} = $this->get_last_payment_date();
@@ -615,7 +615,7 @@ class WC_Subscription extends WC_Order {
 			case 'next_payment' :
 			case 'trial_end' :
 			case 'end' :
-				$is_updated = update_post_meta( $this->id, $this->get_date_meta_key( $date_type ), $datetime );
+				$is_updated = update_post_meta( $this->id, wcs_get_date_meta_key( $date_type ), $datetime );
 				break;
 			case 'start' :
 				$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET post_date = %s, post_date_gmt = %s WHERE ID = %s", get_date_from_gmt( $datetime ), $datetime, $this->id ) ); // Don't use wp_update_post() to avoid infinite loopshere array(
@@ -659,7 +659,7 @@ class WC_Subscription extends WC_Order {
 		}
 
 		$this->schedule->{$date_type} = 0;
-		update_post_meta( $this->id, $this->get_date_meta_key( $date_type ), $this->schedule->{$date_type} );
+		update_post_meta( $this->id, wcs_get_date_meta_key( $date_type ), $this->schedule->{$date_type} );
 		do_action( 'woocommerce_subscription_deleted_date', $this->id, $date_type );
 	}
 
@@ -853,16 +853,6 @@ class WC_Subscription extends WC_Order {
 		}
 
 		return $date;
-	}
-
-	/**
-	 * Get the meta key value for storing a date in the subscription's post meta table.
-	 *
-	 * @param string $date_type Internally, 'trial_end', 'next_payment' or 'end', but can be any string
-	 * @since 2.0
-	 */
-	protected function get_date_meta_key( $date_type ) {
-		return apply_filters( 'woocommerce_subscription_date_meta_key_prefix', sprintf( '_schedule_%s', $date_type ), $date_type, $this );
 	}
 
 
