@@ -1337,16 +1337,18 @@ class WC_Subscription extends WC_Order {
 			foreach ( $related_orders as $post_id ) {
 				$related_orders[] = wc_get_order( $post_id );
 			}
+
 		} else {
 
 			// Return IDs only
-			if ( ! empty( $this->order->id ) ) {
+			if ( isset( $this->order->id ) ) {
 				$related_orders[] = $this->order->id;
 			}
 
 			$related_orders = array_merge( $related_orders, $related_posts );
 		}
 
-		return apply_filters( 'woocommerce_subscription_related_orders', $related_posts, $this );
+		return apply_filters( 'woocommerce_subscription_related_orders', $related_orders, $this );
 	}
+
 }
