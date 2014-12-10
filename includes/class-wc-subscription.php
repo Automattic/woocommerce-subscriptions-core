@@ -86,6 +86,24 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
+	 * Set or change the WC_Order ID which records the subscription's initial purchase.
+	 *
+	 * @param int $post_id
+	 */
+	public function update_parent( $order_id ) {
+
+		// Update the parent in the database
+		wp_update_post(  array(
+			'ID'          => $this->id,
+			'post_parent' => $order_id
+		) );
+
+		// And update the parent in memory
+		$this->post->post_parent = $order_id;
+		$this->_order = wc_get_order( $order_id );
+	}
+
+	/**
 	 * Checks if the subscription has an unpaid order or renewal order (and therefore, needs payment).
 	 *
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
