@@ -40,7 +40,7 @@ function wcs_get_subscription_id_from_key( $subscription_key ) {
 			WHERE posts.post_type = 'shop_subscription'
 			WHERE posts.psot_parent = %d
 				AND itemmeta.meta_value %d
-				AND itemmeta.meta_key   IN ( '_variation_id', '_product_id' )"
+				AND itemmeta.meta_key IN ( '_variation_id', '_product_id' )"
 		), $order_and_product_ids[0], $order_and_product_id[1] );
 
 	} elseif ( isset( $order_and_product_id[0] ) ) {
