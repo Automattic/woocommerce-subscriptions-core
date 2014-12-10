@@ -24,20 +24,39 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 2.0
  */
 function wcs_get_subscription_id_from_key( $subscription_key ) {
+	global $wpdb;
 
 	$order_and_product_id = explode( '_', $subscription_key );
 
-	$subscription_ids = get_posts( array(
-		'posts_per_page' => 1,
-		'post_parent'    => $order_and_product_ids[0],
-		'post_status'    => 'any',
-		'post_type'      => 'shop_subscription',
-		'fields'         => 'ids',
-	) );
+	$subscription_ids = array();
+
+	// If we have an order ID and product ID, query based on that
+	if ( isset( $order_and_product_id[0] ) && isset( $order_and_product_id[1] ) ) {
+
+		$subscription_ids = $wpdb->get_col( $wpdb->prepare( "
+			SELECT DISTINCT order_items.order_id FROM {$wpdb->prefix}woocommerce_order_items as order_items
+				LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS itemmeta ON order_items.order_item_id = itemmeta.order_item_id
+				LEFT JOIN {$wpdb->posts} AS posts ON order_items.order_id = posts.ID
+			WHERE posts.post_type = 'shop_subscription'
+			WHERE posts.psot_parent = %d
+				AND itemmeta.meta_value %d
+				AND itemmeta.meta_key   IN ( '_variation_id', '_product_id' )"
+		), $order_and_product_ids[0], $order_and_product_id[1] );
+
+	} elseif ( isset( $order_and_product_id[0] ) ) {
+
+		$subscription_ids = get_posts( array(
+			'posts_per_page' => 1,
+			'post_parent'    => $order_and_product_ids[0],
+			'post_status'    => 'any',
+			'post_type'      => 'shop_subscription',
+			'fields'         => 'ids',
+		) );
+
+	}
 
 	return ( ! empty( $subscription_ids ) ) ? $subscription_ids[0] : null;
 }
-
 
 /**
  * Return an instance of a WC_Subscription object for the given subscription key (if one exists).
