@@ -168,7 +168,7 @@ function wcs_price_string( $subscription_details ) {
 	}
 
 	if ( $subscription_details['trial_length'] > 0 ) {
-		$trial_length = self::get_subscription_trial_period_strings( $subscription_details['trial_length'], $subscription_details['trial_period'] );
+		$trial_length = wcs_get_subscription_trial_period_strings( $subscription_details['trial_length'], $subscription_details['trial_period'] );
 		if ( ! empty( $subscription_details['initial_amount'] ) ) {
 			$subscription_string = sprintf( __( '%s after %s free trial', 'woocommerce-subscriptions' ), $subscription_string, $trial_length );
 		} else {
