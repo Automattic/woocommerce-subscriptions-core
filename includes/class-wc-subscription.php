@@ -422,6 +422,19 @@ class WC_Subscription extends WC_Order {
 		return apply_filters( 'woocommerce_subscription_failed_payment_count', $failed_payment_count, $this );
 	}
 
+	/**
+	 * Returns the total amount charged at the outset of the Subscription.
+	 *
+	 * This may return 0 if there is a free trial period or the subscription was synchronised, and no sign up fee,
+	 * otherwise it will be the sum of the sign up fee and price per period.
+	 *
+	 * @return float The total initial amount charged when the subscription product in the order was first purchased, if any.
+	 * @since 2.0
+	 */
+	public function get_total_initial_payment() {
+		$initial_total = ( ! empty( $this->order ) ) ? $this->order->get_total() : 0;
+		return apply_filters( 'woocommerce_subscription_total_initial_payment', $initial_total, $this );
+	}
 
 	/*** Date methods *****************************************************/
 
