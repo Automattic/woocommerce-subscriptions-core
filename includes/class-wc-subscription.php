@@ -436,6 +436,18 @@ class WC_Subscription extends WC_Order {
 		return apply_filters( 'woocommerce_subscription_total_initial_payment', $initial_total, $this );
 	}
 
+	/**
+	 * Update the internal tally of suspensions on this subscription since the last payment.
+	 *
+	 * @return int The count of suspensions
+	 * @since 2.0
+	 */
+	public function update_suspension_count( $new_count ) {
+		$this->suspension_count = $new_count;
+		update_post_meta( $this->id, '_suspension_count', $this->suspension_count );
+		return $this->suspension_count;
+	}
+
 	/*** Date methods *****************************************************/
 
 	/**
