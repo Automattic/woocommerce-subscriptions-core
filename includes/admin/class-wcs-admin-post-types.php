@@ -163,7 +163,7 @@ class WCS_Admin_Post_Types {
 							$item_name = apply_filters( 'woocommerce_order_item_name', $item_name, $item );
 							$item_name = esc_html( $item_name );
 							if ( $item_quantity > 1 ) {
-								$item_name = sprintf( '% &times; %s', $item_quantity, $item_name );
+								$item_name = sprintf( '%s &times; %s', absint( $item_quantity ), $item_name );
 							}
 							if ( $_product ) {
 								$item_name = sprintf( '<a href="%s">%s</a>', get_edit_post_link( $_product->id ), $item_name );
