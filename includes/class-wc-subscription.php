@@ -1201,6 +1201,40 @@ class WC_Subscription extends WC_Order {
 		return apply_filters( 'wc_order_is_editable', $this->editable, $this );
 	}
 
+	/**
+	 * When payment is completed, either for the original purchase or a renewal payment, this function processes it.
+	 *
+	 * @param $transaction_id string Optional transaction id to store in post meta
+	 */
+	public function payment_complete( $transaction_id = '' ) {
+
+		// Reset suspension count
+		$this->update_suspension_count( 0 );
+
+		// Make sure subscriber has default role
+		wcs_update_users_role( $this->get_user_id(), 'default_subscriber_role' );
+
+		// Free trial & no-signup fee, no payment received
+		if ( 0 == $this->get_total_initial_payment() && 1 == $this->get_completed_payment_count() && ! empty( $this->order ) ) {
+
+			if ( $this->is_manual() ) {
+				$note = __( 'Free trial commenced for subscription.', 'woocommerce-subscriptions' );
+			} else {
+				$note = __( 'Recurring payment authorized.', 'woocommerce-subscriptions' );
+			}
+
+		} else {
+			$note = __( 'Payment received.', 'woocommerce-subscriptions' );
+		}
+
+		$this->add_order_note( $note );
+
+		do_action( 'woocommerce_processed_subscription_payment', $this );
+
+		if ( $this->get_completed_payment_count() > 1 ) {
+			do_action( 'processed_subscription_renewal_payment', $this );
+		}
+	}
 
 	/*** Some of WC_Abstract_Order's methods should not be used on a WC_Subscription ***********/
 
