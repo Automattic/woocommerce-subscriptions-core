@@ -17,12 +17,6 @@ class WC_Subscription extends WC_Order {
 	/** @protected WC_Order Stores order data for the order in which the subscription was purchased (if any) */
 	protected $order;
 
-	/** @protected Object Cache dates relating to the subscription */
-	protected $schedule;
-
-	/** @protected Object Stores an instance of the WC_Payment_Gateway used to process recurring payments (if any) */
-	protected $payment_gateway = null;
-
 	/**
 	 * Initialize the subscription object.
 	 *
@@ -44,6 +38,27 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function populate( $result ) {
 		parent::populate( $result );
+	}
+
+	/**
+	 * __isset function.
+	 *
+	 * @param mixed $key
+	 * @return mixed
+	 */
+	public function __isset( $key ) {
+
+		if ( in_array( $key, array( 'start_date', 'trial_end_date', 'next_payment_date', 'end_date', 'last_payment_date', 'order', 'payment_gateway' ) ) ) {
+
+			$is_set = true;
+
+		} else {
+
+			$is_set = parent::__isset( $key );
+
+		}
+
+		return $is_set;
 	}
 
 	/**
@@ -407,6 +422,31 @@ class WC_Subscription extends WC_Order {
 		return apply_filters( 'woocommerce_subscription_failed_payment_count', $failed_payment_count, $this );
 	}
 
+	/**
+	 * Returns the total amount charged at the outset of the Subscription.
+	 *
+	 * This may return 0 if there is a free trial period or the subscription was synchronised, and no sign up fee,
+	 * otherwise it will be the sum of the sign up fee and price per period.
+	 *
+	 * @return float The total initial amount charged when the subscription product in the order was first purchased, if any.
+	 * @since 2.0
+	 */
+	public function get_total_initial_payment() {
+		$initial_total = ( ! empty( $this->order ) ) ? $this->order->get_total() : 0;
+		return apply_filters( 'woocommerce_subscription_total_initial_payment', $initial_total, $this );
+	}
+
+	/**
+	 * Update the internal tally of suspensions on this subscription since the last payment.
+	 *
+	 * @return int The count of suspensions
+	 * @since 2.0
+	 */
+	public function update_suspension_count( $new_count ) {
+		$this->suspension_count = $new_count;
+		update_post_meta( $this->id, '_suspension_count', $this->suspension_count );
+		return $this->suspension_count;
+	}
 
 	/*** Date methods *****************************************************/
 
@@ -729,8 +769,8 @@ class WC_Subscription extends WC_Order {
 				$end_time          = $this->get_time( 'end' );
 
 				// If there was a future payment, the customer has paid up until that payment date
-				if ( $subscription->get_time( 'next_payment' ) >= current_time( 'timestamp', true ) ) {
-					$date = $subscription->get_date( 'next_payment' );
+				if ( $this->get_time( 'next_payment' ) >= current_time( 'timestamp', true ) ) {
+					$date = $this->get_date( 'next_payment' );
 				// If there is no future payment and no expiration date set, the customer has no prepaid term (this shouldn't be possible as only active subscriptions can be set to pending cancellation and an active subscription always has either an end date or next payment)
 				} elseif ( 0 == $next_payment || $end_time <= current_time( 'timestamp', true ) ) {
 					$date = current_time( 'mysql', true );
@@ -1152,6 +1192,32 @@ class WC_Subscription extends WC_Order {
 	}
 
 
+	/**
+	 * When a payment fails, either for the original purchase or a renewal payment, this function processes it.
+	 *
+	 * @since 2.0
+	 */
+	public function payment_failed( $new_status = 'on-hold' ) {
+
+		// Log payment failure on order
+		$this->add_order_note( __( 'Payment failed.', 'woocommerce-subscriptions' ) );
+
+		// Allow a short circuit for plugins & payment gateways to force max failed payments exceeded
+		if ( 'cancelled' == $new_status || apply_filters( 'woocommerce_subscription_max_failed_payments_exceeded', false, $this ) ) {
+
+			$this->update_status( 'cancelled' );
+
+			$this->add_order_note( __( 'Subscription Cancelled: maximum number of failed payments reached.', 'woocommerce-subscriptions' ) );
+
+		} else {
+
+			// Place the subscription on-hold
+			$this->update_status( $new_status );
+		}
+
+		do_action( 'woocommerce_processed_subscription_payment_failure', $this, $new_status );
+	}
+
 	/*** Some of WC_Abstract_Order's methods should not be used on a WC_Subscription ***********/
 
 	/**
@@ -1241,4 +1307,48 @@ class WC_Subscription extends WC_Order {
 	public function get_tax_refunded_for_item( $item_id, $tax_id, $item_type = 'line_item' ) {
 		return 0;
 	}
+
+	/**
+	 * Get the related orders for a subscription, including renewal orders and the initial order (if any)
+	 *
+	 * @param string The columns to return, either 'all' or 'ids'
+	 * @since 2.0
+	 */
+	public function get_related_orders( $return_fields = 'ids' ) {
+
+		$return_fields = ( 'ids' == $return_fields ) ? $return_fields : 'all';
+
+		$related_orders = array();
+
+		$related_posts = get_posts( array(
+			'posts_per_page' => -1,
+			'post_parent'    => $this->id,
+			'post_status'    => 'any',
+			'post_type'      => 'shop_order',
+			'fields'         => $return_fields,
+		) );
+
+		if ( 'all' == $return_fields ) {
+
+			if ( ! empty( $this->order ) ) {
+				$related_orders[] = $this->order;
+			}
+
+			foreach ( $related_orders as $post_id ) {
+				$related_orders[] = wc_get_order( $post_id );
+			}
+
+		} else {
+
+			// Return IDs only
+			if ( isset( $this->order->id ) ) {
+				$related_orders[] = $this->order->id;
+			}
+
+			$related_orders = array_merge( $related_orders, $related_posts );
+		}
+
+		return apply_filters( 'woocommerce_subscription_related_orders', $related_orders, $this );
+	}
+
 }
