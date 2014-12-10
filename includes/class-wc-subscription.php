@@ -17,12 +17,6 @@ class WC_Subscription extends WC_Order {
 	/** @protected WC_Order Stores order data for the order in which the subscription was purchased (if any) */
 	protected $order;
 
-	/** @protected Object Cache dates relating to the subscription */
-	protected $schedule;
-
-	/** @protected Object Stores an instance of the WC_Payment_Gateway used to process recurring payments (if any) */
-	protected $payment_gateway = null;
-
 	/**
 	 * Initialize the subscription object.
 	 *
@@ -44,6 +38,27 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function populate( $result ) {
 		parent::populate( $result );
+	}
+
+	/**
+	 * __isset function.
+	 *
+	 * @param mixed $key
+	 * @return mixed
+	 */
+	public function __isset( $key ) {
+
+		if ( in_array( $key, array( 'start_date', 'trial_end_date', 'next_payment_date', 'end_date', 'last_payment_date', 'order', 'payment_gateway' ) ) ) {
+
+			$is_set = true;
+
+		} else {
+
+			$is_set = parent::__isset( $key );
+
+		}
+
+		return $is_set;
 	}
 
 	/**
