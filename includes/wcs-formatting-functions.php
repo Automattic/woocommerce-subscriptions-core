@@ -98,9 +98,9 @@ function wcs_price_string( $subscription_details ) {
 				} else {
 					 // e.g. $5 every 2 weeks on Wednesday
 					if ( ! empty( $subscription_details['initial_amount'] ) ) {
-						$subscription_string = sprintf( __( '%s %s then %s every %s on %s', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, WC_Subscriptions_Manager::get_subscription_period_strings( $subscription_details['subscription_interval'], $subscription_details['subscription_period'] ), $payment_day_of_week );
+						$subscription_string = sprintf( __( '%s %s then %s every %s on %s', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, wcs_get_subscription_period_strings( $subscription_details['subscription_interval'], $subscription_details['subscription_period'] ), $payment_day_of_week );
 					} else {
-						$subscription_string = sprintf( __( '%s every %s on %s', 'woocommerce-subscriptions' ), $recurring_amount_string, WC_Subscriptions_Manager::get_subscription_period_strings( $subscription_details['subscription_interval'], $subscription_details['subscription_period'] ), $payment_day_of_week );
+						$subscription_string = sprintf( __( '%s every %s on %s', 'woocommerce-subscriptions' ), $recurring_amount_string, wcs_get_subscription_period_strings( $subscription_details['subscription_interval'], $subscription_details['subscription_period'] ), $payment_day_of_week );
 					}
 				}
 				break;
@@ -176,7 +176,7 @@ function wcs_price_string( $subscription_details ) {
 		}
 	}
 
-	if ( $subscription_details['display_ex_tax_label'] && get_option( 'woocommerce_calc_taxes' ) == 'yes' ) {
+	if ( $subscription_details['display_excluding_tax_label'] && get_option( 'woocommerce_calc_taxes' ) == 'yes' ) {
 		$subscription_string .= ' <small>' . WC()->countries->ex_tax_or_vat() . '</small>';
 	}
 
