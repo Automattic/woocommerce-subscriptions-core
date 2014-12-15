@@ -15,7 +15,7 @@
 class WC_Subscription extends WC_Order {
 
 	/** @protected WC_Order Stores order data for the order in which the subscription was purchased (if any) */
-	protected $order;
+	protected $_order;
 
 	/**
 	 * Initialize the subscription object.
@@ -32,12 +32,18 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Populates a subsciption from the loaded post data.
+	 * Populates a subscription from the loaded post data.
 	 *
 	 * @param mixed $result
 	 */
 	public function populate( $result ) {
 		parent::populate( $result );
+
+		if ( $this->post->post_parent > 0 ) {
+			$this->_order = wc_get_order( $this->post->post_parent );
+		} else {
+			$this->_order = new stdClass();
+		}
 	}
 
 	/**
@@ -75,11 +81,7 @@ class WC_Subscription extends WC_Order {
 
 		} elseif ( 'order' == $key ) {
 
-			if ( $this->post->post_parent > 0 ) {
-				$this->order = wc_get_order( $this->post->post_parent );
-			} else {
-				$this->order = null;
-			}
+			$value = $this->_order;
 
 		} elseif ( 'payment_gateway' == $key ) {
 
@@ -98,6 +100,24 @@ class WC_Subscription extends WC_Order {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Set or change the WC_Order ID which records the subscription's initial purchase.
+	 *
+	 * @param int $post_id
+	 */
+	public function update_parent( $order_id ) {
+
+		// Update the parent in the database
+		wp_update_post(  array(
+			'ID'          => $this->id,
+			'post_parent' => $order_id
+		) );
+
+		// And update the parent in memory
+		$this->post->post_parent = $order_id;
+		$this->_order = wc_get_order( $order_id );
 	}
 
 	/**
@@ -296,7 +316,7 @@ class WC_Subscription extends WC_Order {
 
 				case 'on-hold' :
 					// Record date of suspension - 'post_modified' column?
-					update_post_meta( $this->id, '_suspension_count', $this->suspension_count + 1 );
+					$this->update_suspension_count( $this->suspension_count + 1 );
 					wcs_maybe_make_user_inactive( $this->customer_user );
 				break;
 				case 'cancelled' :
@@ -339,6 +359,25 @@ class WC_Subscription extends WC_Order {
 			$is_manual = true;
 		} else {
 			$is_manual = false;
+		}
+
+		return $is_manual;
+	}
+
+	/**
+	 * Checks if the subscription requires manual renewal payments.
+	 *
+	 * @access public
+	 * @return bool
+	 */
+	public function update_manual( $is_manual = true ) {
+
+		if ( true == $is_manual || 'true' === $is_manual ) {
+			$this->requires_manual_renewal = 'true';
+			update_post_meta( $this->id, '_requires_manual_renewal', 'true' );
+		} else {
+			$this->requires_manual_renewal = 'false';
+			update_post_meta( $this->id, '_requires_manual_renewal', 'false' );
 		}
 
 		return $is_manual;
@@ -1191,6 +1230,40 @@ class WC_Subscription extends WC_Order {
 		return apply_filters( 'wc_order_is_editable', $this->editable, $this );
 	}
 
+	/**
+	 * When payment is completed, either for the original purchase or a renewal payment, this function processes it.
+	 *
+	 * @param $transaction_id string Optional transaction id to store in post meta
+	 */
+	public function payment_complete( $transaction_id = '' ) {
+
+		// Reset suspension count
+		$this->update_suspension_count( 0 );
+
+		// Make sure subscriber has default role
+		wcs_update_users_role( $this->get_user_id(), 'default_subscriber_role' );
+
+		// Free trial & no-signup fee, no payment received
+		if ( 0 == $this->get_total_initial_payment() && 1 == $this->get_completed_payment_count() && ! empty( $this->order ) ) {
+
+			if ( $this->is_manual() ) {
+				$note = __( 'Free trial commenced for subscription.', 'woocommerce-subscriptions' );
+			} else {
+				$note = __( 'Recurring payment authorized.', 'woocommerce-subscriptions' );
+			}
+
+		} else {
+			$note = __( 'Payment received.', 'woocommerce-subscriptions' );
+		}
+
+		$this->add_order_note( $note );
+
+		do_action( 'woocommerce_processed_subscription_payment', $this );
+
+		if ( $this->get_completed_payment_count() > 1 ) {
+			do_action( 'processed_subscription_renewal_payment', $this );
+		}
+	}
 
 	/**
 	 * When a payment fails, either for the original purchase or a renewal payment, this function processes it.
