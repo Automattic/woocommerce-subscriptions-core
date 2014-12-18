@@ -882,7 +882,12 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Find the last payment date, either based on the original order used to purchase the subscription or it's last paid renewal order
+	 * Get the last payment date for a subscription, in GMT/UTC.
+	 *
+	 * The last payment date is based on the original order used to purchase the subscription or
+	 * it's last paid renewal order, which ever is more recent.
+	 *
+	 * @since 2.0
 	 */
 	protected function get_last_payment_date() {
 
@@ -897,10 +902,11 @@ class WC_Subscription extends WC_Order {
 			'meta_compare'   => 'EXISTS',
 		) );
 
+		// Get the `'_paid_date'` on the last order and convert it to GMT/UTC
 		if ( ! empty( $last_paid_renewal_order ) ) {
-			$date = get_post_meta( $last_paid_renewal_order->ID, '_paid_date', true );
+			$date = get_gmt_from_date( get_post_meta( $last_paid_renewal_order->ID, '_paid_date', true ) );
 		} elseif ( ! empty( $this->order ) && isset( $this->order->paid_date ) ) {
-			$date = $this->order->paid_date;
+			$date = get_gmt_from_date( $this->order->paid_date );
 		} else {
 			$date = 0;
 		}
