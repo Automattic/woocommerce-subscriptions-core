@@ -35,6 +35,10 @@ class WCS_Admin_Post_Types {
 		add_filter( 'manage_edit-shop_subscription_sortable_columns', array( $this, 'shop_subscription_sortable_columns' ) );
 		add_action( 'manage_shop_subscription_posts_custom_column', array( $this, 'render_shop_subscription_columns' ), 2 );
 
+		// Bulk actions
+		add_action( 'admin_print_footer_scripts', array( $this, 'bulk_actions' ) );
+		add_action( 'load-edit.php', array( $this, 'parse_bulk_actions' ) );
+
 		// Subscription order/filter
 		add_filter( 'request', array( $this, 'request_query' ) );
 
@@ -44,6 +48,87 @@ class WCS_Admin_Post_Types {
 		add_action( 'parse_query', array( $this, 'shop_subscription_search_custom_fields' ) );
 
 		add_filter( 'post_updated_messages', array( $this, 'post_updated_messages' ) );
+	}
+
+	/**
+	 * Add extra options to the bulk actions dropdown
+	 *
+	 * It's only on the All Shop Subscriptions screen.
+	 * Introducing new filter: woocommerce_subscription_bulk_actions. This has to be done through jQuery as the
+	 * 'bulk_actions' filter that WordPress has can only be used to remove bulk actions, not to add them.
+	 *
+	 * This is a filterable array where the key is the action (will become query arg), and the value is a translatable
+	 * string. The same array is used to
+	 *
+	 */
+	public function print_bulk_actions_script() {
+		// We only want this on the shop_subscription all page
+		if ( 'shop_subscription' !== get_post_type() ) {
+			return;
+		}
+
+		// Make it filterable in case extensions want to change this
+		$bulk_actions = apply_filters( 'woocommerce_subscription_bulk_actions', array(
+			'active' => __( 'Reactivate', 'woocommerce-subscriptions' ),
+			'on-hold' => __( 'Put on-hold', 'woocommerce-subscriptions' ),
+			'cancelled' => __( 'Cancel', 'woocommerce-subscriptions' ),
+		) );
+
+		?>
+		<script type="text/javascript">
+			jQuery(document).ready(function($) {
+				<?php
+				foreach ( $bulk_actions as $action => $title ) {
+					?>
+					$('<option>')
+						.val('<?php echo esc_attr( $action ); ?>')
+						.text('<?php echo esc_html( $title ); ?>')
+						.appendTo("select[name='action'], select[name='action2']" );
+					<?php
+				}
+				?>
+			});
+		</script>
+		<?php
+	}
+
+	/**
+	 * Deals with bulk actions. The style is similar to what WooCommerce is doing. Extensions will have to define their
+	 * own logic by copying the concept behind this method.
+	 */
+	public function parse_bulk_actions() {
+		// We only want to deal with shop_subscriptions. In case any other CPTs have an 'active' action
+		if ( 'shop_subscription' !== $_REQUEST['post_type'] ) {
+			return;
+		}
+
+		$wp_list_table = _get_list_table( 'WP_Posts_List_Table' );
+		$action = $wp_list_table->current_action();
+
+		switch ( $action ) {
+			case 'active':
+			case 'on-hold':
+			case 'cancelled' :
+				$new_status = $action;
+				break;
+			default:
+				return;
+		}
+
+		$changed = 0;
+
+		$subscription_ids = array_map( 'absint', (array) $_REQUEST['post'] );
+
+		foreach ( $subscription_ids as $subscription_id ) {
+			$subscription = wcs_get_subscription( $subscription_id );
+			$subscription->update_status( $new_status, __( 'Order status changed by bulk edit:', 'woocommerce' ) );
+			$changed++;
+		}
+
+		$sendback = add_query_arg( array( 'post_type' => 'shop_subscription', 'changed' => $changed, 'ids' => join( ',', $subscription_ids ) ), '' );
+
+		wp_redirect( $sendback );
+		exit();
 	}
 
 	/**
@@ -266,7 +351,7 @@ class WCS_Admin_Post_Types {
 	public function shop_subscription_search_custom_fields( $wp ) {
 		global $pagenow, $wpdb;
 
-		if ( 'edit.php' != $pagenow || empty( $wp->query_vars['s'] ) || $wp->query_vars['post_type'] != 'shop_subscription' ) {
+		if ( 'edit.php' !== $pagenow || empty( $wp->query_vars['s'] ) || 'shop_subscription' !== $wp->query_vars['post_type'] ) {
 			return;
 		}
 
@@ -343,11 +428,11 @@ class WCS_Admin_Post_Types {
 	public function shop_subscription_search_label( $query ) {
 		global $pagenow, $typenow;
 
-		if ( 'edit.php' != $pagenow ) {
+		if ( 'edit.php' !== $pagenow ) {
 			return $query;
 		}
 
-		if ( $typenow != 'shop_subscription' ) {
+		if ( 'shop_subscription' !== $typenow ) {
 			return $query;
 		}
 
