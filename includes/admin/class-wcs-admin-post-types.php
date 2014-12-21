@@ -39,6 +39,7 @@ class WCS_Admin_Post_Types {
 		add_filter( 'bulk_actions-edit-shop_subscription', array( $this, 'remove_bulk_actions' ) );
 		add_action( 'admin_print_footer_scripts', array( $this, 'print_bulk_actions_script' ) );
 		add_action( 'load-edit.php', array( $this, 'parse_bulk_actions' ) );
+		add_action( 'admin_notices', array( $this, 'bulk_admin_notices' ) );
 
 		// Subscription order/filter
 		add_filter( 'request', array( $this, 'request_query' ) );
@@ -132,6 +133,8 @@ class WCS_Admin_Post_Types {
 				return;
 		}
 
+		$report_action = 'marked_' . $new_status;
+
 		$changed = 0;
 
 		$subscription_ids = array_map( 'absint', (array) $_REQUEST['post'] );
@@ -142,10 +145,37 @@ class WCS_Admin_Post_Types {
 			$changed++;
 		}
 
-		$sendback = add_query_arg( array( 'post_type' => 'shop_subscription', 'changed' => $changed, 'ids' => join( ',', $subscription_ids ) ), '' );
+		$sendback = add_query_arg( array( 'post_type' => 'shop_subscription', $report_action => true, 'changed' => $changed, 'ids' => join( ',', $subscription_ids ) ), '' );
 
 		wp_redirect( $sendback );
 		exit();
+	}
+
+	/**
+	 * Show confirmation message that subscription status was changed
+	 */
+	public function bulk_admin_notices() {
+		global $post_type, $pagenow;
+
+		// Bail out if not on shop order list page
+		if ( 'edit.php' !== $pagenow || 'shop_subscription' !== $post_type ) {
+			return;
+		}
+
+		$subscription_statuses = wcs_get_subscription_statuses();
+
+		// Check if any status changes happened
+		foreach ( $subscription_statuses as $slug => $name ) {
+
+			if ( isset( $_REQUEST[ 'marked_' . str_replace( 'wc-', '', $slug ) ] ) ) {
+
+				$number = isset( $_REQUEST['changed'] ) ? absint( $_REQUEST['changed'] ) : 0;
+				$message = sprintf( _n( 'Subscription status changed.', '%s subscription statuses changed.', $number, 'woocommerce-subscriptions' ), number_format_i18n( $number ) );
+				echo '<div class="updated"><p>' . $message . '</p></div>';
+
+				break;
+			}
+		}
 	}
 
 	/**
