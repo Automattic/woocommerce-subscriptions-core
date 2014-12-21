@@ -1258,10 +1258,10 @@ class WC_Subscription extends WC_Order {
 
 		$this->add_order_note( $note );
 
-		do_action( 'woocommerce_processed_subscription_payment', $this );
+		do_action( 'woocommerce_subscription_payment_complete', $this );
 
 		if ( $this->get_completed_payment_count() > 1 ) {
-			do_action( 'processed_subscription_renewal_payment', $this );
+			do_action( 'woocommerce_subscription_renewal_payment_complete', $this );
 		}
 	}
 
@@ -1277,18 +1277,12 @@ class WC_Subscription extends WC_Order {
 
 		// Allow a short circuit for plugins & payment gateways to force max failed payments exceeded
 		if ( 'cancelled' == $new_status || apply_filters( 'woocommerce_subscription_max_failed_payments_exceeded', false, $this ) ) {
-
-			$this->update_status( 'cancelled' );
-
-			$this->add_order_note( __( 'Subscription Cancelled: maximum number of failed payments reached.', 'woocommerce-subscriptions' ) );
-
+			$this->update_status( 'cancelled', __( 'Subscription Cancelled: maximum number of failed payments reached.', 'woocommerce-subscriptions' ) );
 		} else {
-
-			// Place the subscription on-hold
 			$this->update_status( $new_status );
 		}
 
-		do_action( 'woocommerce_processed_subscription_payment_failure', $this, $new_status );
+		do_action( 'woocommerce_subscription_payment_failed', $this->id, $new_status );
 	}
 
 	/*** Some of WC_Abstract_Order's methods should not be used on a WC_Subscription ***********/
