@@ -36,6 +36,7 @@ class WCS_Admin_Post_Types {
 		add_action( 'manage_shop_subscription_posts_custom_column', array( $this, 'render_shop_subscription_columns' ), 2 );
 
 		// Bulk actions
+		add_filter( 'bulk_actions-edit-shop_subscription', array( $this, 'remove_bulk_actions' ) );
 		add_action( 'admin_print_footer_scripts', array( $this, 'print_bulk_actions_script' ) );
 		add_action( 'load-edit.php', array( $this, 'parse_bulk_actions' ) );
 
@@ -48,6 +49,21 @@ class WCS_Admin_Post_Types {
 		add_action( 'parse_query', array( $this, 'shop_subscription_search_custom_fields' ) );
 
 		add_filter( 'post_updated_messages', array( $this, 'post_updated_messages' ) );
+	}
+
+	/**
+	 * Remove "edit" from the bulk actions.
+	 *
+	 * @param array $actions
+	 * @return array
+	 */
+	public function remove_bulk_actions( $actions ) {
+
+		if ( isset( $actions['edit'] ) ) {
+			unset( $actions['edit'] );
+		}
+
+		return $actions;
 	}
 
 	/**
