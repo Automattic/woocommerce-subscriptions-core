@@ -138,7 +138,7 @@ class WCS_Admin_Post_Types {
 
 		foreach ( $subscription_ids as $subscription_id ) {
 			$subscription = wcs_get_subscription( $subscription_id );
-			$subscription->update_status( $new_status, __( 'Order status changed by bulk edit:', 'woocommerce' ) );
+			$subscription->update_status( $new_status, __( 'Subscription status changed by bulk edit:', 'woocommerce-subscriptions' ) );
 			$changed++;
 		}
 
