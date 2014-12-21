@@ -36,7 +36,7 @@ class WCS_Admin_Post_Types {
 		add_action( 'manage_shop_subscription_posts_custom_column', array( $this, 'render_shop_subscription_columns' ), 2 );
 
 		// Bulk actions
-		add_action( 'admin_print_footer_scripts', array( $this, 'bulk_actions' ) );
+		add_action( 'admin_print_footer_scripts', array( $this, 'print_bulk_actions_script' ) );
 		add_action( 'load-edit.php', array( $this, 'parse_bulk_actions' ) );
 
 		// Subscription order/filter
