@@ -85,8 +85,8 @@ class WCS_Admin_Post_Types {
 
 		// Make it filterable in case extensions want to change this
 		$bulk_actions = apply_filters( 'woocommerce_subscription_bulk_actions', array(
-			'active' => __( 'Reactivate', 'woocommerce-subscriptions' ),
-			'on-hold' => __( 'Put on-hold', 'woocommerce-subscriptions' ),
+			'active'    => __( 'Activate', 'woocommerce-subscriptions' ),
+			'on-hold'   => __( 'Put on-hold', 'woocommerce-subscriptions' ),
 			'cancelled' => __( 'Cancel', 'woocommerce-subscriptions' ),
 		) );
 
@@ -113,6 +113,7 @@ class WCS_Admin_Post_Types {
 	 * own logic by copying the concept behind this method.
 	 */
 	public function parse_bulk_actions() {
+
 		// We only want to deal with shop_subscriptions. In case any other CPTs have an 'active' action
 		if ( 'shop_subscription' !== $_REQUEST['post_type'] ) {
 			return;
