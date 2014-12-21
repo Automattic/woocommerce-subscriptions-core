@@ -12,9 +12,9 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 
 	/*@protected Array of $action_hook => $date_type values */
 	protected $action_hooks = array(
-		'scheduled_subscription_trial_end'  => 'trial_end',
-		'scheduled_subscription_payment'    => 'next_payment',
-		'scheduled_subscription_expiration' => 'end',
+		'woocommerce_scheduled_subscription_trial_end'  => 'trial_end',
+		'woocommerce_scheduled_subscription_payment'    => 'next_payment',
+		'woocommerce_scheduled_subscription_expiration' => 'end',
 
 	);
 
@@ -98,15 +98,15 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 					wc_unschedule_action( $action_hook, $action_args );
 				}
 
-				$next_scheduled = wc_next_scheduled_action( 'scheduled_subscription_end_of_prepaid_term', $action_args );
+				$next_scheduled = wc_next_scheduled_action( 'woocommerce_scheduled_subscription_end_of_prepaid_term', $action_args );
 
 				if ( false !== $next_scheduled && $next_scheduled != $end_time ) {
-					wc_unschedule_action( 'scheduled_subscription_end_of_prepaid_term', $action_args );
+					wc_unschedule_action( 'woocommerce_scheduled_subscription_end_of_prepaid_term', $action_args );
 				}
 
 				// The end date was set in WC_Subscriptions::update_date() to the appropriate value, so we can schedule our action for that time
 				if ( $end_time > current_time( 'timestamp', true ) && $next_scheduled != $end_time ) {
-					wc_schedule_single_action( $end_time, 'scheduled_subscription_end_of_prepaid_term', $action_args );
+					wc_schedule_single_action( $end_time, 'woocommerce_scheduled_subscription_end_of_prepaid_term', $action_args );
 				}
 				break;
 			case 'on-hold' :
@@ -117,7 +117,7 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 				foreach( $this->action_hooks as $action_hook => $date_type ) {
 					wc_unschedule_action( $action_hook, $action_args );
 				}
-				wc_unschedule_action( 'scheduled_subscription_end_of_prepaid_term', $action_args );
+				wc_unschedule_action( 'woocommerce_scheduled_subscription_end_of_prepaid_term', $action_args );
 				break;
 		}
 	}
@@ -135,17 +135,17 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 
 		switch ( $date_type ) {
 			case 'next_payment' :
-				$hook = 'scheduled_subscription_payment';
+				$hook = 'woocommerce_scheduled_subscription_payment';
 				break;
 			case 'trial_end' :
-				$hook = 'scheduled_subscription_trial_end';
+				$hook = 'woocommerce_scheduled_subscription_trial_end';
 				break;
 			case 'end' :
 				// End dates may need either an expiration or end of prepaid term hook, depending on the status
 				if ( $subscription->has_status( 'cancelled' ) ) {
-					$hook = 'scheduled_subscription_end_of_prepaid_term';
+					$hook = 'woocommerce_scheduled_subscription_end_of_prepaid_term';
 				} elseif ( $subscription->has_status( 'active' ) ) {
-					$hook = 'scheduled_subscription_expiration';
+					$hook = 'woocommerce_scheduled_subscription_expiration';
 				}
 				break;
 		}
