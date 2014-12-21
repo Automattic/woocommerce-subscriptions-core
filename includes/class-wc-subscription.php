@@ -340,7 +340,7 @@ class WC_Subscription extends WC_Order {
 				$this->post_status = $new_status_key;
 			}
 
-			$this->add_order_note( trim( $note . ' ' . sprintf( __( 'Subscription status changed from %s to %s.', 'woocommerce-subscriptions' ), wc_get_order_status_name( $old_status ), wc_get_order_status_name( $new_status ) ) ) );
+			$this->add_order_note( trim( $note . ' ' . sprintf( __( 'Status changed from %s to %s.', 'woocommerce-subscriptions' ), wc_get_order_status_name( $old_status ), wc_get_order_status_name( $new_status ) ) ) );
 
 			// Status was changed
 			do_action( 'woocommerce_subscription_updated_status', $this->id, $old_status, $new_status );
