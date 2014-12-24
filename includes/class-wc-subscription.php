@@ -1422,4 +1422,21 @@ class WC_Subscription extends WC_Order {
 
 		return apply_filters( 'woocommerce_subscription_related_orders', $related_orders, $this );
 	}
+
+	/**
+	 * Returns a clickable link that takes you to a collection of orders relating to the subscription.
+	 *
+	 * @uses  self::get_related_orders()
+	 * @since  2.0
+	 * @return string 						the link string
+	 */
+	public function get_related_orders_link() {
+		$order_id = isset( $this->order->id ) ? $this->order->id : 0;
+
+		return sprintf(
+			'<a href="%s">%s</a>',
+			admin_url( 'edit.php?post_status=all&post_type=shop_order&_renewal_order_parent_id=' . $this->id . '&_renewal_order_id=' . $order_id ),
+			count( $this->get_related_orders() )
+		);
+	}
 }

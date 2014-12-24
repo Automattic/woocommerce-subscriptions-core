@@ -361,7 +361,7 @@ class WCS_Admin_Post_Types {
 				echo wp_kses( $column_content, array( 'time' => array( 'class' => array(), 'title' => array() ) ) );
 				break;
 			case 'orders' :
-				echo esc_html( count( $the_subscription->get_related_orders() ) );
+				echo wp_kses( $the_subscription->get_related_orders_link(), array( 'a' => array( 'href' => array() ) ) );
 				break;
 		}
 	}
