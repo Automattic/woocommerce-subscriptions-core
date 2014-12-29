@@ -361,7 +361,7 @@ class WCS_Admin_Post_Types {
 				echo wp_kses( $column_content, array( 'time' => array( 'class' => array(), 'title' => array() ) ) );
 				break;
 			case 'orders' :
-				echo esc_html( count( $the_subscription->get_related_orders() ) );
+				echo wp_kses( $this->get_related_orders_link( $the_subscription ), array( 'a' => array( 'href' => array() ) ) );
 				break;
 		}
 	}
@@ -576,6 +576,24 @@ class WCS_Admin_Post_Types {
 		);
 
 		return $messages;
+	}
+
+
+	/**
+	 * Returns a clickable link that takes you to a collection of orders relating to the subscription.
+	 *
+	 * @uses  self::get_related_orders()
+	 * @since  2.0
+	 * @return string 						the link string
+	 */
+	public function get_related_orders_link( $the_subscription ) {
+		$order_id = isset( $the_subscription->order->id ) ? $the_subscription->order->id : 0;
+
+		return sprintf(
+			'<a href="%s">%s</a>',
+			admin_url( 'edit.php?post_status=all&post_type=shop_order&_renewal_order_parent_id=' . $the_subscription->id . '&_original_order_id=' . $order_id ),
+			count( $the_subscription->get_related_orders() )
+		);
 	}
 
 }
