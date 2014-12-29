@@ -1435,7 +1435,7 @@ class WC_Subscription extends WC_Order {
 
 		return sprintf(
 			'<a href="%s">%s</a>',
-			admin_url( 'edit.php?post_status=all&post_type=shop_order&_renewal_order_parent_id=' . $this->id . '&_renewal_order_id=' . $order_id ),
+			admin_url( 'edit.php?post_status=all&post_type=shop_order&_renewal_order_parent_id=' . $this->id . '&_original_order_id=' . $order_id ),
 			count( $this->get_related_orders() )
 		);
 	}
