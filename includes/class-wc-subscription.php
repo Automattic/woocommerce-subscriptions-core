@@ -1407,7 +1407,7 @@ class WC_Subscription extends WC_Order {
 				$related_orders[] = $this->order;
 			}
 
-			foreach ( $related_orders as $post_id ) {
+			foreach ( $related_posts as $post_id ) {
 				$related_orders[] = wc_get_order( $post_id );
 			}
 
