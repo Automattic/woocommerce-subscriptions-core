@@ -50,7 +50,62 @@ class WCS_Admin_Post_Types {
 		add_action( 'parse_query', array( $this, 'shop_subscription_search_custom_fields' ) );
 
 		add_filter( 'post_updated_messages', array( $this, 'post_updated_messages' ) );
+
+		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_product' ) );
+
+		add_action( 'wp_ajax_woocommerce_subscriptions_json_search_products', array( 'WC_AJAX', 'json_search_products' ) );
 	}
+
+	/**
+	 * Displays the dropdown for the product filter
+	 * @return string 						the html dropdown element
+	 */
+	public function restrict_by_product() {
+		global $typenow;
+
+		if ( 'shop_subscription' !== $typenow ) {
+			return;
+		}
+
+		?>
+		<select id="dropdown_products" name="_wcs_product">
+			<option value=""><?php _e( 'Show all products', 'woocommerce-subscriptions' ) ?></option>
+			<?php
+			if ( ! empty( $_GET['_wcs_product'] ) ) {
+				$product = wc_get_product( absint( $_GET['_wcs_product'] ) );
+				echo '<option value="' . absint( $product->ID ) . '" ';
+				selected( 1, 1 );
+				echo '>' . esc_html( $product->get_title() ) . '</option>';
+			}
+			?>
+		</select>
+		<?php
+
+		wc_enqueue_js( "
+			jQuery('select#dropdown_products').css('width', '250px').ajaxChosen({
+				method: 		'GET',
+				url: 			'" . admin_url( 'admin-ajax.php' ) . "',
+				dataType: 		'json',
+				afterTypeDelay: 100,
+				minTermLength: 	1,
+				data:		{
+					action: 	'woocommerce_subscriptions_json_search_products',
+					security: 	'" . wp_create_nonce( 'search-products' ) . "',
+					default:	'" . __( 'Show all products', 'woocommerce-subscriptions' ) . "'
+				}
+			}, function (data) {
+
+				var terms = {};
+
+				$.each(data, function (i, val) {
+					terms[i] = val;
+				});
+
+				return terms;
+			});
+		" );
+	}
+
 
 	/**
 	 * Remove "edit" from the bulk actions.
@@ -171,7 +226,7 @@ class WCS_Admin_Post_Types {
 
 				$number = isset( $_REQUEST['changed'] ) ? absint( $_REQUEST['changed'] ) : 0;
 				$message = sprintf( _n( 'Subscription status changed.', '%s subscription statuses changed.', $number, 'woocommerce-subscriptions' ), number_format_i18n( $number ) );
-				echo '<div class="updated"><p>' . $message . '</p></div>';
+				echo '<div class="updated"><p>' . esc_html( $message ) . '</p></div>';
 
 				break;
 			}
@@ -504,6 +559,35 @@ class WCS_Admin_Post_Types {
 		return $public_query_vars;
 	}
 
+
+	/**
+	 * Gets an array of IDs that belong to subscriptions that have a given product associated with them
+	 *
+	 * @since  2.0
+	 * @param  integer 		$id 			the ID of the product we want to get the subscriptions for
+	 * @return array 						an array of subscription IDs that have the product in them
+	 */
+	private function get_subscriptions_by_prodcut_id( $id ) {
+		global $wpdb;
+
+		// Monster table joins for the win
+		$sql = $wpdb->prepare( "SELECT DISTINCT p.ID FROM {$wpdb->posts} p LEFT JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+			LEFT JOIN {$wpdb->prefix}woocommerce_order_items wooi ON wooi.order_id = pm.post_id
+			LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta wooim ON wooim.order_item_id = wooi.order_item_id
+			WHERE wooim.meta_key = '_product_id' AND wooim.meta_value = %d AND p.post_type = %s", $id, 'shop_subscription' );
+
+		$results = $wpdb->get_results( $sql );
+
+		$ids = array();
+
+		foreach ( $results as $result ) {
+			$ids[] = $result->ID;
+		}
+
+		return $ids;
+	}
+
+
 	/**
 	 * Filters and sorting handler
 	 *
@@ -519,6 +603,10 @@ class WCS_Admin_Post_Types {
 			if ( isset( $_GET['_customer_user'] ) && $_GET['_customer_user'] > 0 ) {
 				$vars['meta_key'] = '_customer_user';
 				$vars['meta_value'] = (int) $_GET['_customer_user'];
+			}
+
+			if ( isset( $_GET['_wcs_product'] ) && $_GET['_wcs_product'] > 0 ) {
+				$vars['post__in'] = $this->get_subscriptions_by_prodcut_id( (int) $_GET['_wcs_product'] );
 			}
 
 			// Sorting
