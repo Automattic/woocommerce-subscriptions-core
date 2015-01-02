@@ -372,7 +372,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function update_manual( $is_manual = true ) {
 
-		if ( true == $is_manual || 'true' === $is_manual ) {
+		if ( true === $is_manual || 'true' === $is_manual ) {
 			$this->requires_manual_renewal = 'true';
 			update_post_meta( $this->id, '_requires_manual_renewal', 'true' );
 		} else {
