@@ -443,7 +443,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_failed_payment_count() {
 
-		$failed_payment_count = ( ! empty( $this->order ) && $this->order->has_status( 'wc-failed' ) ) ? 1 : 0;
+		$failed_payment_count = ( ! empty( $this->order ) && $this->order instanceof WC_Order && $this->order->has_status( 'wc-failed' ) ) ? 1 : 0;
 
 		$failed_renewal_orders = get_posts( array(
 			'posts_per_page' => -1,
