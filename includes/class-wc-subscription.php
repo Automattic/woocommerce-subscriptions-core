@@ -39,11 +39,7 @@ class WC_Subscription extends WC_Order {
 	public function populate( $result ) {
 		parent::populate( $result );
 
-		if ( $this->post->post_parent > 0 ) {
-			$this->_order = wc_get_order( $this->post->post_parent );
-		} else {
-			$this->_order = new stdClass();
-		}
+		$this->_order = wc_get_order( $this->post->post_parent );
 	}
 
 	/**
@@ -412,7 +408,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_completed_payment_count() {
 
-		$completed_payment_count = ( ! empty( $this->order ) && isset( $this->order->paid_date ) ) ? 1 : 0;
+		$completed_payment_count = ( false !== $this->order && isset( $this->order->paid_date ) ) ? 1 : 0;
 
 		$paid_renewal_orders = get_posts( array(
 			'posts_per_page' => -1,
@@ -443,7 +439,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_failed_payment_count() {
 
-		$failed_payment_count = ( ! empty( $this->order ) && $this->order instanceof WC_Order && $this->order->has_status( 'wc-failed' ) ) ? 1 : 0;
+		$failed_payment_count = ( false !== $this->order && $this->order->has_status( 'wc-failed' ) ) ? 1 : 0;
 
 		$failed_renewal_orders = get_posts( array(
 			'posts_per_page' => -1,
@@ -471,7 +467,7 @@ class WC_Subscription extends WC_Order {
 	 * @since 2.0
 	 */
 	public function get_total_initial_payment() {
-		$initial_total = ( ! empty( $this->order ) ) ? $this->order->get_total() : 0;
+		$initial_total = ( false !== $this->order ) ? $this->order->get_total() : 0;
 		return apply_filters( 'woocommerce_subscription_total_initial_payment', $initial_total, $this );
 	}
 
@@ -899,7 +895,7 @@ class WC_Subscription extends WC_Order {
 
 		if ( ! empty( $last_paid_renewal_order ) ) {
 			$date = get_post_meta( $last_paid_renewal_order->ID, '_paid_date', true );
-		} elseif ( ! empty( $this->order ) && isset( $this->order->paid_date ) ) {
+		} elseif ( false !== $this->order && isset( $this->order->paid_date ) ) {
 			$date = $this->order->paid_date;
 		} else {
 			$date = 0;
@@ -1244,7 +1240,7 @@ class WC_Subscription extends WC_Order {
 		wcs_update_users_role( $this->get_user_id(), 'default_subscriber_role' );
 
 		// Free trial & no-signup fee, no payment received
-		if ( 0 == $this->get_total_initial_payment() && 1 == $this->get_completed_payment_count() && ! empty( $this->order ) ) {
+		if ( 0 == $this->get_total_initial_payment() && 1 == $this->get_completed_payment_count() && false !== $this->order ) {
 
 			if ( $this->is_manual() ) {
 				$note = __( 'Free trial commenced for subscription.', 'woocommerce-subscriptions' );
@@ -1403,7 +1399,7 @@ class WC_Subscription extends WC_Order {
 
 		if ( 'all' == $return_fields ) {
 
-			if ( ! empty( $this->order ) ) {
+			if ( false !== $this->order ) {
 				$related_orders[] = $this->order;
 			}
 
