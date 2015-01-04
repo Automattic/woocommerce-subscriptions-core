@@ -557,35 +557,6 @@ class WCS_Admin_Post_Types {
 		return $public_query_vars;
 	}
 
-
-	/**
-	 * Gets an array of IDs that belong to subscriptions that have a given product associated with them
-	 *
-	 * @since  2.0
-	 * @param  integer 		$id 			the ID of the product we want to get the subscriptions for
-	 * @return array 						an array of subscription IDs that have the product in them
-	 */
-	private function get_subscriptions_by_prodcut_id( $id ) {
-		global $wpdb;
-
-		// Monster table joins for the win
-		$sql = $wpdb->prepare( "SELECT DISTINCT p.ID FROM {$wpdb->posts} p LEFT JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
-			LEFT JOIN {$wpdb->prefix}woocommerce_order_items wooi ON wooi.order_id = pm.post_id
-			LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta wooim ON wooim.order_item_id = wooi.order_item_id
-			WHERE wooim.meta_key = '_product_id' AND wooim.meta_value = %d AND p.post_type = %s", $id, 'shop_subscription' );
-
-		$results = $wpdb->get_results( $sql );
-
-		$ids = array();
-
-		foreach ( $results as $result ) {
-			$ids[] = $result->ID;
-		}
-
-		return $ids;
-	}
-
-
 	/**
 	 * Filters and sorting handler
 	 *
@@ -603,8 +574,14 @@ class WCS_Admin_Post_Types {
 				$vars['meta_value'] = (int) $_GET['_customer_user'];
 			}
 
-			if ( isset( $_GET['_wcs_product'] ) && $_GET['_wcs_product'] > 0 ) {
-				$vars['post__in'] = $this->get_subscriptions_by_prodcut_id( (int) $_GET['_wcs_product'] );
+			if ( isset( $_GET['_wcs_product'] ) && $_GET['_wcs_product'] > 0 && wcs_get_subscriptions_for_product( (int) $_GET['_wcs_product'] ) ) {
+				// Because wcs_get_sub_for_product returns something different than an empty array (therefore we do have
+				// actual subscriptions to show)
+				$vars['post__in'] = wcs_get_subscriptions_for_product( (int) $_GET['_wcs_product'] );
+			} else if ( ! wcs_get_subscriptions_for_product( (int) $_GET['_wcs_product'] ) ) {
+				// we filtered by something, but it returned an empty array, but we need to pass SOMETHING to post__in
+				// in order to show an empty list
+				$vars['post__in'] = array( 0 );
 			}
 
 			// Sorting
