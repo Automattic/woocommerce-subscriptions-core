@@ -52,8 +52,6 @@ class WCS_Admin_Post_Types {
 		add_filter( 'post_updated_messages', array( $this, 'post_updated_messages' ) );
 
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_product' ) );
-
-		add_action( 'wp_ajax_woocommerce_subscriptions_json_search_products', array( 'WC_AJAX', 'json_search_products' ) );
 	}
 
 	/**
@@ -89,7 +87,7 @@ class WCS_Admin_Post_Types {
 				afterTypeDelay: 100,
 				minTermLength: 	1,
 				data:		{
-					action: 	'woocommerce_subscriptions_json_search_products',
+					action: 	'woocommerce_json_search_products_and_variations',
 					security: 	'" . wp_create_nonce( 'search-products' ) . "',
 					default:	'" . __( 'Show all products', 'woocommerce-subscriptions' ) . "'
 				}
