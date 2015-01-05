@@ -228,14 +228,14 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			case 'expired' :
-				if ( ! $this->has_status( array( 'cancelled', 'trash' ) ) ) {
+				if ( ! $this->has_status( array( 'cancelled', 'trash', 'switched' ) ) ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
 				}
 				break;
 			case 'trash' :
-				if ( $this->has_status( array( 'cancelled', 'expired' ) ) || $this->can_be_updated_to( 'cancelled' ) ) {
+				if ( $this->has_status( array( 'cancelled', 'expired', 'switched' ) ) || $this->can_be_updated_to( 'cancelled' ) ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
