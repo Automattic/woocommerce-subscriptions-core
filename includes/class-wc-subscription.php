@@ -28,7 +28,7 @@ class WC_Subscription extends WC_Order {
 
 		parent::__construct( $subscription );
 
-		$this->schedule = new stdClass();;
+		$this->schedule = new stdClass();
 	}
 
 	/**
