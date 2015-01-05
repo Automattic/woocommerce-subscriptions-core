@@ -556,6 +556,8 @@ class WC_Subscription extends WC_Order {
 
 			if ( $time_diff > 0 && $time_diff < WEEK_IN_SECONDS ) {
 				$date_to_display = sprintf( __( 'In %s', 'woocommerce-subscriptions' ), human_time_diff( current_time( 'timestamp', true ), $timestamp_gmt ) );
+			} elseif ( $time_diff < 0 && absint( $time_diff ) < WEEK_IN_SECONDS ) {
+				$date_to_display = sprintf( __( '%s ago', 'woocommerce-subscriptions' ), human_time_diff( current_time( 'timestamp', true ), $timestamp_gmt ) );
 			} else {
 				$date_to_display = date_i18n( wc_date_format(), $this->get_time( $date_type, 'site' ) );
 			}
@@ -882,7 +884,12 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Find the last payment date, either based on the original order used to purchase the subscription or it's last paid renewal order
+	 * Get the last payment date for a subscription, in GMT/UTC.
+	 *
+	 * The last payment date is based on the original order used to purchase the subscription or
+	 * it's last paid renewal order, which ever is more recent.
+	 *
+	 * @since 2.0
 	 */
 	protected function get_last_payment_date() {
 
@@ -897,10 +904,11 @@ class WC_Subscription extends WC_Order {
 			'meta_compare'   => 'EXISTS',
 		) );
 
+		// Get the `'_paid_date'` on the last order and convert it to GMT/UTC
 		if ( ! empty( $last_paid_renewal_order ) ) {
-			$date = get_post_meta( $last_paid_renewal_order->ID, '_paid_date', true );
+			$date = get_gmt_from_date( get_post_meta( $last_paid_renewal_order->ID, '_paid_date', true ) );
 		} elseif ( ! empty( $this->order ) && isset( $this->order->paid_date ) ) {
-			$date = $this->order->paid_date;
+			$date = get_gmt_from_date( $this->order->paid_date );
 		} else {
 			$date = 0;
 		}
