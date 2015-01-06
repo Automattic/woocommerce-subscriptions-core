@@ -73,7 +73,7 @@ class WCS_Admin_Post_Types {
 				$product = wc_get_product( absint( $_GET['_wcs_product'] ) );
 				echo '<option value="' . absint( $product->ID ) . '" ';
 				selected( 1, 1 );
-				echo '>' . esc_html( $product->get_title() ) . '</option>';
+				echo '>' . wp_kses( $product->get_formatted_name(), array( 'span' => array() ) ) . '</option>';
 			}
 			?>
 		</select>
@@ -578,7 +578,7 @@ class WCS_Admin_Post_Types {
 				// Because wcs_get_sub_for_product returns something different than an empty array (therefore we do have
 				// actual subscriptions to show)
 				$vars['post__in'] = wcs_get_subscriptions_for_product( (int) $_GET['_wcs_product'] );
-			} else if ( ! wcs_get_subscriptions_for_product( (int) $_GET['_wcs_product'] ) ) {
+			} else if ( isset( $_GET['_wcs_product'] ) && ! wcs_get_subscriptions_for_product( (int) $_GET['_wcs_product'] ) ) {
 				// we filtered by something, but it returned an empty array, but we need to pass SOMETHING to post__in
 				// in order to show an empty list
 				$vars['post__in'] = array( 0 );
