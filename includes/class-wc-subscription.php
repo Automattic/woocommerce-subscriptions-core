@@ -14,8 +14,8 @@
 
 class WC_Subscription extends WC_Order {
 
-	/** @protected WC_Order Stores order data for the order in which the subscription was purchased (if any) */
-	protected $_order;
+	/** @public WC_Order Stores order data for the order in which the subscription was purchased (if any) */
+	public $order = false;
 
 	/**
 	 * Initialize the subscription object.
@@ -40,9 +40,7 @@ class WC_Subscription extends WC_Order {
 		parent::populate( $result );
 
 		if ( $this->post->post_parent > 0 ) {
-			$this->_order = wc_get_order( $this->post->post_parent );
-		} else {
-			$this->_order = false;
+			$this->order = wc_get_order( $this->post->post_parent );
 		}
 	}
 
@@ -78,10 +76,6 @@ class WC_Subscription extends WC_Order {
 		if ( in_array( $key, array( 'start_date', 'trial_end_date', 'next_payment_date', 'end_date', 'last_payment_date' ) ) ) {
 
 			$value = $this->get_date( $key );
-
-		} elseif ( 'order' == $key ) {
-
-			$value = $this->_order;
 
 		} elseif ( 'payment_gateway' == $key ) {
 
