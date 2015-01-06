@@ -574,14 +574,18 @@ class WCS_Admin_Post_Types {
 				$vars['meta_value'] = (int) $_GET['_customer_user'];
 			}
 
-			if ( isset( $_GET['_wcs_product'] ) && $_GET['_wcs_product'] > 0 && wcs_get_subscriptions_for_product( (int) $_GET['_wcs_product'] ) ) {
-				// Because wcs_get_sub_for_product returns something different than an empty array (therefore we do have
-				// actual subscriptions to show)
-				$vars['post__in'] = wcs_get_subscriptions_for_product( (int) $_GET['_wcs_product'] );
-			} else if ( isset( $_GET['_wcs_product'] ) && ! wcs_get_subscriptions_for_product( (int) $_GET['_wcs_product'] ) ) {
-				// we filtered by something, but it returned an empty array, but we need to pass SOMETHING to post__in
-				// in order to show an empty list
-				$vars['post__in'] = array( 0 );
+			if ( isset( $_GET['_wcs_product'] ) && $_GET['_wcs_product'] > 0 ) {
+
+				$subscription_ids = wcs_get_subscriptions_for_product( (int) $_GET['_wcs_product'] );
+
+				if ( ! empty( $subscription_ids ) ) {
+					$vars['post__in'] = $subscription_ids;
+				} else {
+					// we filtered by something, but it returned an empty array, but we need to pass SOMETHING to post__in
+					// in order to show an empty list
+					$vars['post__in'] = array( 0 );
+				}
+
 			}
 
 			// Sorting
