@@ -39,7 +39,11 @@ class WC_Subscription extends WC_Order {
 	public function populate( $result ) {
 		parent::populate( $result );
 
-		$this->_order = wc_get_order( $this->post->post_parent );
+		if ( $this->post->post_parent > 0 ) {
+			$this->_order = wc_get_order( $this->post->post_parent );
+		} else {
+			$this->_order = false;
+		}
 	}
 
 	/**
