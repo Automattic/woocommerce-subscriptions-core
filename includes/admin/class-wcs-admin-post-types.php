@@ -576,7 +576,7 @@ class WCS_Admin_Post_Types {
 
 			if ( isset( $_GET['_wcs_product'] ) && $_GET['_wcs_product'] > 0 ) {
 
-				$subscription_ids = wcs_get_subscriptions_for_product( (int) $_GET['_wcs_product'] );
+				$subscription_ids = wcs_get_subscriptions_for_product( $_GET['_wcs_product'] );
 
 				if ( ! empty( $subscription_ids ) ) {
 					$vars['post__in'] = $subscription_ids;
