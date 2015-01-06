@@ -14,8 +14,8 @@
 
 class WC_Subscription extends WC_Order {
 
-	/** @protected WC_Order Stores order data for the order in which the subscription was purchased (if any) */
-	protected $_order;
+	/** @public WC_Order Stores order data for the order in which the subscription was purchased (if any) */
+	public $order = false;
 
 	/**
 	 * Initialize the subscription object.
@@ -28,7 +28,7 @@ class WC_Subscription extends WC_Order {
 
 		parent::__construct( $subscription );
 
-		$this->schedule = new stdClass();;
+		$this->schedule = new stdClass();
 	}
 
 	/**
@@ -40,9 +40,7 @@ class WC_Subscription extends WC_Order {
 		parent::populate( $result );
 
 		if ( $this->post->post_parent > 0 ) {
-			$this->_order = wc_get_order( $this->post->post_parent );
-		} else {
-			$this->_order = new stdClass();
+			$this->order = wc_get_order( $this->post->post_parent );
 		}
 	}
 
@@ -78,10 +76,6 @@ class WC_Subscription extends WC_Order {
 		if ( in_array( $key, array( 'start_date', 'trial_end_date', 'next_payment_date', 'end_date', 'last_payment_date' ) ) ) {
 
 			$value = $this->get_date( $key );
-
-		} elseif ( 'order' == $key ) {
-
-			$value = $this->_order;
 
 		} elseif ( 'payment_gateway' == $key ) {
 
@@ -228,14 +222,14 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			case 'expired' :
-				if ( ! $this->has_status( array( 'cancelled', 'trash' ) ) ) {
+				if ( ! $this->has_status( array( 'cancelled', 'trash', 'switched' ) ) ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
 				}
 				break;
 			case 'trash' :
-				if ( $this->has_status( array( 'cancelled', 'expired' ) ) || $this->can_be_updated_to( 'cancelled' ) ) {
+				if ( $this->has_status( array( 'cancelled', 'expired', 'switched' ) ) || $this->can_be_updated_to( 'cancelled' ) ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
@@ -372,7 +366,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function update_manual( $is_manual = true ) {
 
-		if ( true == $is_manual || 'true' === $is_manual ) {
+		if ( true === $is_manual || 'true' === $is_manual ) {
 			$this->requires_manual_renewal = 'true';
 			update_post_meta( $this->id, '_requires_manual_renewal', 'true' );
 		} else {
@@ -412,7 +406,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_completed_payment_count() {
 
-		$completed_payment_count = ( ! empty( $this->order ) && isset( $this->order->paid_date ) ) ? 1 : 0;
+		$completed_payment_count = ( false !== $this->order && isset( $this->order->paid_date ) ) ? 1 : 0;
 
 		$paid_renewal_orders = get_posts( array(
 			'posts_per_page' => -1,
@@ -443,7 +437,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_failed_payment_count() {
 
-		$failed_payment_count = ( ! empty( $this->order ) && $this->order->has_status( 'wc-failed' ) ) ? 1 : 0;
+		$failed_payment_count = ( false !== $this->order && $this->order->has_status( 'wc-failed' ) ) ? 1 : 0;
 
 		$failed_renewal_orders = get_posts( array(
 			'posts_per_page' => -1,
@@ -471,7 +465,7 @@ class WC_Subscription extends WC_Order {
 	 * @since 2.0
 	 */
 	public function get_total_initial_payment() {
-		$initial_total = ( ! empty( $this->order ) ) ? $this->order->get_total() : 0;
+		$initial_total = ( false !== $this->order ) ? $this->order->get_total() : 0;
 		return apply_filters( 'woocommerce_subscription_total_initial_payment', $initial_total, $this );
 	}
 
@@ -556,6 +550,8 @@ class WC_Subscription extends WC_Order {
 
 			if ( $time_diff > 0 && $time_diff < WEEK_IN_SECONDS ) {
 				$date_to_display = sprintf( __( 'In %s', 'woocommerce-subscriptions' ), human_time_diff( current_time( 'timestamp', true ), $timestamp_gmt ) );
+			} elseif ( $time_diff < 0 && absint( $time_diff ) < WEEK_IN_SECONDS ) {
+				$date_to_display = sprintf( __( '%s ago', 'woocommerce-subscriptions' ), human_time_diff( current_time( 'timestamp', true ), $timestamp_gmt ) );
 			} else {
 				$date_to_display = date_i18n( wc_date_format(), $this->get_time( $date_type, 'site' ) );
 			}
@@ -882,7 +878,12 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Find the last payment date, either based on the original order used to purchase the subscription or it's last paid renewal order
+	 * Get the last payment date for a subscription, in GMT/UTC.
+	 *
+	 * The last payment date is based on the original order used to purchase the subscription or
+	 * it's last paid renewal order, which ever is more recent.
+	 *
+	 * @since 2.0
 	 */
 	protected function get_last_payment_date() {
 
@@ -897,6 +898,7 @@ class WC_Subscription extends WC_Order {
 			'meta_compare'   => 'EXISTS',
 		) );
 
+		// Get the `'_paid_date'` on the last order and convert it to GMT/UTC
 		if ( ! empty( $last_paid_renewal_order ) ) {
 			$date = get_post_meta( $last_paid_renewal_order[0]->ID, '_paid_date', true );
 		} elseif ( ! empty( $this->order ) && isset( $this->order->paid_date ) ) {
@@ -1244,7 +1246,7 @@ class WC_Subscription extends WC_Order {
 		wcs_update_users_role( $this->get_user_id(), 'default_subscriber_role' );
 
 		// Free trial & no-signup fee, no payment received
-		if ( 0 == $this->get_total_initial_payment() && 1 == $this->get_completed_payment_count() && ! empty( $this->order ) ) {
+		if ( 0 == $this->get_total_initial_payment() && 1 == $this->get_completed_payment_count() && false !== $this->order ) {
 
 			if ( $this->is_manual() ) {
 				$note = __( 'Free trial commenced for subscription.', 'woocommerce-subscriptions' );
@@ -1403,11 +1405,11 @@ class WC_Subscription extends WC_Order {
 
 		if ( 'all' == $return_fields ) {
 
-			if ( ! empty( $this->order ) ) {
+			if ( false !== $this->order ) {
 				$related_orders[] = $this->order;
 			}
 
-			foreach ( $related_orders as $post_id ) {
+			foreach ( $related_posts as $post_id ) {
 				$related_orders[] = wc_get_order( $post_id );
 			}
 		} else {
