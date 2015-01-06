@@ -581,8 +581,7 @@ class WCS_Admin_Post_Types {
 				if ( ! empty( $subscription_ids ) ) {
 					$vars['post__in'] = $subscription_ids;
 				} else {
-					// we filtered by something, but it returned an empty array, but we need to pass SOMETHING to post__in
-					// in order to show an empty list
+					// no subscriptions contain this product, but we need to pass post__in an ID that no post will have because WP returns all posts when post__in is an empty array: https://core.trac.wordpress.org/ticket/28099
 					$vars['post__in'] = array( 0 );
 				}
 
