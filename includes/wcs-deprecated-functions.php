@@ -17,6 +17,36 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Get the string key for a subscription used in Subscriptions prior to 2.0.
+ *
+ * Previously, a subscription key was made up of the ID of the order used to purchase the subscription, and
+ * the product to which the subscription relates; however, in Subscriptions 2.0, subscriptions can actually
+ * relate to multiple products (because they can contain multiple line items) and they also no longer need
+ * to have an original order associated with them, to make manually adding subscriptions more accurate.
+ *
+ * Therefore, although the return value of this method is a string matching the key form used  inSubscriptions
+ * prior to 2.0, the actual value represented is not a perfect analogue. Specifically,
+ *  - if the subscription contains more than one product, only the ID of the first line item will be used in the ID
+ *  - if the subscription does not contain any products, the key still be missing that component of the
+ *  - if the subscription does not have an initial order, then the order ID used will be the WC_Subscription object's ID
+ *
+ * @param WC_Subscription $subscription An instance of WC_Subscription
+ * @return string $subscription_key A subscription key in the deprecated form previously created by @see self::get_subscription_key()
+ * @since 2.0
+ */
+function wcs_get_old_subscription_key( WC_Subscription $subscription ) {
+
+	// Get an ID to use as the order ID
+	$order_id = isset( $subscription->order->id ) ? $subscription->order->id : $subscription->id;
+
+	// Get an ID to use as the product ID
+	$subscription_items = $subscription->get_items();
+	$first_item         = reset( $subscription_items );
+
+	return $order_id . '_' . WC_Subscriptions_Order::get_items_product_id( $first_item );
+}
+
+/**
  * Return the post ID of a WC_Subscription object for the given subscription key (if one exists).
  *
  * @param string $subscription_key A subscription key in the deprecated form created by @see WC_Subscriptions_Manager::get_subscription_key()
