@@ -840,7 +840,7 @@ class WC_Subscription extends WC_Order {
 			// If the subscription has a free trial period, and we're still in the free trial period, the next payment is due at the end of the free trial
 			if ( $trial_end_time > current_time( 'timestamp', true ) ) {
 
-				$next_payment_date = $this->get_date( 'trial_end' );
+				$next_payment_timestamp = $trial_end_time;
 
 			// The next payment date is {interval} billing periods from the start date, trial end date or last payment date
 			} else {
