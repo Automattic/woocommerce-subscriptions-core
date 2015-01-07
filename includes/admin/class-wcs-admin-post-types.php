@@ -50,7 +50,60 @@ class WCS_Admin_Post_Types {
 		add_action( 'parse_query', array( $this, 'shop_subscription_search_custom_fields' ) );
 
 		add_filter( 'post_updated_messages', array( $this, 'post_updated_messages' ) );
+
+		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_product' ) );
 	}
+
+	/**
+	 * Displays the dropdown for the product filter
+	 * @return string 						the html dropdown element
+	 */
+	public function restrict_by_product() {
+		global $typenow;
+
+		if ( 'shop_subscription' !== $typenow ) {
+			return;
+		}
+
+		?>
+		<select id="dropdown_products" name="_wcs_product">
+			<option value=""><?php _e( 'Show all products', 'woocommerce-subscriptions' ) ?></option>
+			<?php
+			if ( ! empty( $_GET['_wcs_product'] ) ) {
+				$product = wc_get_product( absint( $_GET['_wcs_product'] ) );
+				echo '<option value="' . absint( $product->ID ) . '" ';
+				selected( 1, 1 );
+				echo '>' . wp_kses( $product->get_formatted_name(), array( 'span' => array() ) ) . '</option>';
+			}
+			?>
+		</select>
+		<?php
+
+		wc_enqueue_js( "
+			jQuery('select#dropdown_products').css('width', '250px').ajaxChosen({
+				method: 		'GET',
+				url: 			'" . admin_url( 'admin-ajax.php' ) . "',
+				dataType: 		'json',
+				afterTypeDelay: 100,
+				minTermLength: 	1,
+				data:		{
+					action: 	'woocommerce_json_search_products_and_variations',
+					security: 	'" . wp_create_nonce( 'search-products' ) . "',
+					default:	'" . __( 'Show all products', 'woocommerce-subscriptions' ) . "'
+				}
+			}, function (data) {
+
+				var terms = {};
+
+				$.each(data, function (i, val) {
+					terms[i] = val;
+				});
+
+				return terms;
+			});
+		" );
+	}
+
 
 	/**
 	 * Remove "edit" from the bulk actions.
@@ -171,7 +224,7 @@ class WCS_Admin_Post_Types {
 
 				$number = isset( $_REQUEST['changed'] ) ? absint( $_REQUEST['changed'] ) : 0;
 				$message = sprintf( _n( 'Subscription status changed.', '%s subscription statuses changed.', $number, 'woocommerce-subscriptions' ), number_format_i18n( $number ) );
-				echo '<div class="updated"><p>' . $message . '</p></div>';
+				echo '<div class="updated"><p>' . esc_html( $message ) . '</p></div>';
 
 				break;
 			}
@@ -519,6 +572,19 @@ class WCS_Admin_Post_Types {
 			if ( isset( $_GET['_customer_user'] ) && $_GET['_customer_user'] > 0 ) {
 				$vars['meta_key'] = '_customer_user';
 				$vars['meta_value'] = (int) $_GET['_customer_user'];
+			}
+
+			if ( isset( $_GET['_wcs_product'] ) && $_GET['_wcs_product'] > 0 ) {
+
+				$subscription_ids = wcs_get_subscriptions_for_product( $_GET['_wcs_product'] );
+
+				if ( ! empty( $subscription_ids ) ) {
+					$vars['post__in'] = $subscription_ids;
+				} else {
+					// no subscriptions contain this product, but we need to pass post__in an ID that no post will have because WP returns all posts when post__in is an empty array: https://core.trac.wordpress.org/ticket/28099
+					$vars['post__in'] = array( 0 );
+				}
+
 			}
 
 			// Sorting
