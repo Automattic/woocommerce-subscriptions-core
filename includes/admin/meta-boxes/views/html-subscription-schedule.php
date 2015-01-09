@@ -44,6 +44,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php endif;?>
 	<div id="subscription-<?php echo esc_attr( $date_key ); ?>-date" class="date-fields">
 		<strong><?php echo esc_html( $date_label ); ?>:</strong>
+		<input type="hidden" name="<?php echo esc_attr( $date_key ); ?>_timestamp_utc" id="<?php echo esc_attr( $date_key ); ?>_timestamp_utc" value="<?php echo $the_subscription->get_time( $date_key, 'gmt' ); ?>"/>
 		<?php if ( $the_subscription->can_date_be_updated( $date_key ) ) : ?>
 			<?php echo wcs_date_input( $the_subscription->get_time( $date_key, 'site' ), array( 'name_attr' => $date_key ) ); ?>
 		<?php else : ?>
