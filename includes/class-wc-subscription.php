@@ -266,6 +266,7 @@ class WC_Subscription extends WC_Order {
 		$new_status     = 'wc-' === substr( $new_status, 0, 3 ) ? substr( $new_status, 3 ) : $new_status;
 		$new_status_key = ( 'trash' == $new_status ) ? $new_status : 'wc-' . $new_status;
 		$old_status     = $this->get_status();
+		$old_status_key = $this->post_status;
 
 		if ( $new_status !== $old_status || ! in_array( $this->post_status, array_keys( wcs_get_subscription_statuses() ) ) ) {
 
@@ -283,61 +284,78 @@ class WC_Subscription extends WC_Order {
 
 			}
 
-			if ( 'trash' !== $new_status ) {
-				wp_update_post( array( 'ID' => $this->id, 'post_status' => $new_status_key ) );
-				$this->post_status = $new_status_key;
+			try {
+
+				if ( 'trash' !== $new_status ) {
+					wp_update_post( array( 'ID' => $this->id, 'post_status' => $new_status_key ) );
+					$this->post_status = $new_status_key;
+				}
+
+				switch ( $new_status ) {
+
+					case 'pending' :
+						// Nothing to do here
+					break;
+
+					case 'pending-cancellation' :
+
+						$end_date = $this->calculate_date( 'end_of_prepaid_term' );
+
+						// If there is no future payment and no expiration date set, the customer has no prepaid term (this shouldn't be possible as only active subscriptions can be set to pending cancellation and an active subscription always has either an end date or next payment)
+						if ( 0 == $end_date ) {
+							$end_date = current_time( 'mysql', true );
+						}
+
+						$this->update_date( 'end', $end_date );
+					break;
+
+					case 'active' :
+						// Recalculate and set next payment date
+						$this->update_date( 'next_payment', $this->calculate_date( 'next_payment' ) );
+						// Trial end date and end/expiration date don't change at all - they should be set when the subscription is first created
+						wcs_make_user_active( $this->customer_user );
+					break;
+
+					case 'on-hold' :
+						// Record date of suspension - 'post_modified' column?
+						$this->update_suspension_count( $this->suspension_count + 1 );
+						wcs_maybe_make_user_inactive( $this->customer_user );
+					break;
+					case 'cancelled' :
+					case 'switched' :
+					case 'expired' :
+						$this->update_date( 'end', current_time( 'mysql', true ) );
+						wcs_maybe_make_user_inactive( $this->customer_user );
+					break;
+
+					case 'trash' :
+						// Run all cancellation related functions on the subscription
+						if ( ! $this->has_status( 'cancelled' ) ) {
+							$this->update_status( 'cancelled' );
+						}
+						wp_trash_post( $this->id );
+					break;
+				}
+
+				$this->add_order_note( trim( $note . ' ' . sprintf( __( 'Status changed from %s to %s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ) );
+
+				// Status was changed
+				do_action( 'woocommerce_subscription_updated_status', $this->id, $old_status, $new_status );
+
+			} catch ( Exception $e ) {
+
+				// Make sure the old status is restored
+				if ( 'trash' !== $new_status ) {
+					wp_update_post( array( 'ID' => $this->id, 'post_status' => $old_status_key ) );
+					$this->post_status = $old_status_key;
+				}
+
+				$this->add_order_note( sprintf( __( 'Unable to change subscription status to "%s".', 'woocommerce-subscriptions' ), $new_status ) );
+
+				do_action( 'woocommerce_subscription_unable_to_update_status', $this->id, $new_status, $old_status );
+
+				throw $e;
 			}
-
-			switch ( $new_status ) {
-
-				case 'pending' :
-					// Nothing to do here
-				break;
-
-				case 'pending-cancellation' :
-
-					$end_date = $this->calculate_date( 'end_of_prepaid_term' );
-
-					// If there is no future payment and no expiration date set, the customer has no prepaid term (this shouldn't be possible as only active subscriptions can be set to pending cancellation and an active subscription always has either an end date or next payment)
-					if ( 0 == $end_date ) {
-						$end_date = current_time( 'mysql', true );
-					}
-
-					$this->update_date( 'end', $end_date );
-				break;
-
-				case 'active' :
-					// Recalculate and set next payment date
-					$this->update_date( 'next_payment', $this->calculate_date( 'next_payment' ) );
-					// Trial end date and end/expiration date don't change at all - they should be set when the subscription is first created
-					wcs_make_user_active( $this->customer_user );
-				break;
-
-				case 'on-hold' :
-					// Record date of suspension - 'post_modified' column?
-					$this->update_suspension_count( $this->suspension_count + 1 );
-					wcs_maybe_make_user_inactive( $this->customer_user );
-				break;
-				case 'cancelled' :
-				case 'switched' :
-				case 'expired' :
-					$this->update_date( 'end', current_time( 'mysql', true ) );
-					wcs_maybe_make_user_inactive( $this->customer_user );
-				break;
-
-				case 'trash' :
-					// Run all cancellation related functions on the subscription
-					if ( ! $this->has_status( 'cancelled' ) ) {
-						$this->update_status( 'cancelled' );
-					}
-					wp_trash_post( $this->id );
-				break;
-			}
-
-			$this->add_order_note( trim( $note . ' ' . sprintf( __( 'Status changed from %s to %s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ) );
-
-			// Status was changed
-			do_action( 'woocommerce_subscription_updated_status', $this->id, $old_status, $new_status );
 		}
 	}
 
