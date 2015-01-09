@@ -1262,7 +1262,7 @@ class WC_Subscription extends WC_Order {
 
 		do_action( 'woocommerce_subscription_payment_complete', $this );
 
-		if ( $this->get_completed_payment_count() > 1 ) {
+		if ( $this->get_completed_payment_count() >= 1 ) {
 			do_action( 'woocommerce_subscription_renewal_payment_complete', $this );
 		}
 	}
