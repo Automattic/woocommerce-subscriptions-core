@@ -283,6 +283,11 @@ class WC_Subscription extends WC_Order {
 
 			}
 
+			if ( 'trash' !== $new_status ) {
+				wp_update_post( array( 'ID' => $this->id, 'post_status' => $new_status_key ) );
+				$this->post_status = $new_status_key;
+			}
+
 			switch ( $new_status ) {
 
 				case 'pending' :
@@ -327,11 +332,6 @@ class WC_Subscription extends WC_Order {
 					}
 					wp_trash_post( $this->id );
 				break;
-			}
-
-			if ( 'trash' !== $new_status ) {
-				wp_update_post( array( 'ID' => $this->id, 'post_status' => $new_status_key ) );
-				$this->post_status = $new_status_key;
 			}
 
 			$this->add_order_note( trim( $note . ' ' . sprintf( __( 'Status changed from %s to %s.', 'woocommerce-subscriptions' ), wc_get_order_status_name( $old_status ), wc_get_order_status_name( $new_status ) ) ) );
