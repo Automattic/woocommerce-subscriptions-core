@@ -1285,6 +1285,10 @@ class WC_Subscription extends WC_Order {
 		}
 
 		do_action( 'woocommerce_subscription_payment_failed', $this->id, $new_status );
+
+		if ( $this->get_completed_payment_count() >= 1 ) {
+			do_action( 'woocommerce_subscription_renewal_payment_failed', $this );
+		}
 	}
 
 	/*** Some of WC_Abstract_Order's methods should not be used on a WC_Subscription ***********/
