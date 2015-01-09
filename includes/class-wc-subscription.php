@@ -334,7 +334,7 @@ class WC_Subscription extends WC_Order {
 				$this->post_status = $new_status_key;
 			}
 
-			$this->add_order_note( trim( $note . ' ' . sprintf( __( 'Subscription status changed from %s to %s.', 'woocommerce-subscriptions' ), wc_get_order_status_name( $old_status ), wc_get_order_status_name( $new_status ) ) ) );
+			$this->add_order_note( trim( $note . ' ' . sprintf( __( 'Status changed from %s to %s.', 'woocommerce-subscriptions' ), wc_get_order_status_name( $old_status ), wc_get_order_status_name( $new_status ) ) ) );
 
 			// Status was changed
 			do_action( 'woocommerce_subscription_updated_status', $this->id, $old_status, $new_status );
@@ -822,56 +822,57 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Calculates the next payment date for a subscription
+	 * Calculates the next payment date for a subscription.
 	 *
+	 * Although an inactive subscription does not have a next payment date, this function will still calculate the date
+	 * so that it can be used to determine the date the next payment should be charged for inactive subscriptions.
+	 *
+	 * @return int | string Zero if the subscription has no next payment date, or a MySQL formatted date time if there is a next payment date
 	 */
 	protected function calculate_next_payment_date() {
 
 		$next_payment_date = 0;
 
 		// If the subscription is not active, there is no next payment date
-		if ( $this->has_status( 'active' ) ) {
+		$start_time        = $this->get_time( 'start' );
+		$trial_end_time    = $this->get_time( 'trial_end' );
+		$last_payment_time = $this->get_time( 'last_payment' );
+		$end_time          = $this->get_time( 'end' );
 
-			$start_time        = $this->get_time( 'start' );
-			$trial_end_time    = $this->get_time( 'trial_end' );
-			$last_payment_time = $this->get_time( 'last_payment' );
-			$end_time          = $this->get_time( 'end' );
+		// If the subscription has a free trial period, and we're still in the free trial period, the next payment is due at the end of the free trial
+		if ( $trial_end_time > current_time( 'timestamp', true ) ) {
 
-			// If the subscription has a free trial period, and we're still in the free trial period, the next payment is due at the end of the free trial
-			if ( $trial_end_time > current_time( 'timestamp', true ) ) {
+			$next_payment_timestamp = $trial_end_time;
 
-				$next_payment_timestamp = $trial_end_time;
+		// The next payment date is {interval} billing periods from the start date, trial end date or last payment date
+		} else {
 
-			// The next payment date is {interval} billing periods from the start date, trial end date or last payment date
+			if ( $last_payment_time > $trial_end_time ) {
+				$from_timestamp = $last_payment_time;
+			} elseif ( $trial_end_time > $start_time ) {
+				$from_timestamp = $trial_end_time;
 			} else {
-
-				if ( $last_payment_time > $trial_end_time ) {
-					$from_timestamp = $last_payment_time;
-				} elseif ( $trial_end_time > $start_time ) {
-					$from_timestamp = $trial_end_time;
-				} else {
-					$from_timestamp = $start_time;
-				}
-
-				$next_payment_timestamp = wcs_add_time( $this->billing_interval, $this->billing_period, $from_timestamp );
-
-				// Make sure the next payment is in the future
-				$i = 1;
-				while ( $next_payment_timestamp < current_time( 'timestamp', true ) && $i < 30 ) {
-					$next_payment_timestamp = wcs_add_time( $this->billing_interval, $this->billing_period, $next_payment_timestamp );
-					$i += 1;
-				}
-
+				$from_timestamp = $start_time;
 			}
 
-			// If the subscription has an end date and the next billing period comes after that, return 0
-			if ( 0 != $end_time && ( $next_payment_timestamp + 120 ) > $end_time ) {
-				$next_payment_timestamp =  0;
+			$next_payment_timestamp = wcs_add_time( $this->billing_interval, $this->billing_period, $from_timestamp );
+
+			// Make sure the next payment is in the future
+			$i = 1;
+			while ( $next_payment_timestamp < current_time( 'timestamp', true ) && $i < 30 ) {
+				$next_payment_timestamp = wcs_add_time( $this->billing_interval, $this->billing_period, $next_payment_timestamp );
+				$i += 1;
 			}
 
-			if ( $next_payment_timestamp > 0 ) {
-				$next_payment_date = date( 'Y-m-d H:i:s', $next_payment_timestamp );
-			}
+		}
+
+		// If the subscription has an end date and the next billing period comes after that, return 0
+		if ( 0 != $end_time && ( $next_payment_timestamp + 120 ) > $end_time ) {
+			$next_payment_timestamp =  0;
+		}
+
+		if ( $next_payment_timestamp > 0 ) {
+			$next_payment_date = date( 'Y-m-d H:i:s', $next_payment_timestamp );
 		}
 
 		return apply_filters( 'woocommerce_subscription_calculated_next_payment_date', $next_payment_date, $this );
@@ -1260,10 +1261,10 @@ class WC_Subscription extends WC_Order {
 
 		$this->add_order_note( $note );
 
-		do_action( 'woocommerce_processed_subscription_payment', $this );
+		do_action( 'woocommerce_subscription_payment_complete', $this );
 
-		if ( $this->get_completed_payment_count() > 1 ) {
-			do_action( 'processed_subscription_renewal_payment', $this );
+		if ( $this->get_completed_payment_count() >= 1 ) {
+			do_action( 'woocommerce_subscription_renewal_payment_complete', $this );
 		}
 	}
 
@@ -1279,18 +1280,16 @@ class WC_Subscription extends WC_Order {
 
 		// Allow a short circuit for plugins & payment gateways to force max failed payments exceeded
 		if ( 'cancelled' == $new_status || apply_filters( 'woocommerce_subscription_max_failed_payments_exceeded', false, $this ) ) {
-
-			$this->update_status( 'cancelled' );
-
-			$this->add_order_note( __( 'Subscription Cancelled: maximum number of failed payments reached.', 'woocommerce-subscriptions' ) );
-
+			$this->update_status( 'cancelled', __( 'Subscription Cancelled: maximum number of failed payments reached.', 'woocommerce-subscriptions' ) );
 		} else {
-
-			// Place the subscription on-hold
 			$this->update_status( $new_status );
 		}
 
-		do_action( 'woocommerce_processed_subscription_payment_failure', $this, $new_status );
+		do_action( 'woocommerce_subscription_payment_failed', $this->id, $new_status );
+
+		if ( $this->get_completed_payment_count() >= 1 ) {
+			do_action( 'woocommerce_subscription_renewal_payment_failed', $this );
+		}
 	}
 
 	/*** Some of WC_Abstract_Order's methods should not be used on a WC_Subscription ***********/
