@@ -901,7 +901,7 @@ class WC_Subscription extends WC_Order {
 
 		// Get the `'_paid_date'` on the last order and convert it to GMT/UTC
 		if ( ! empty( $last_paid_renewal_order ) ) {
-			$date = get_gmt_from_date( get_post_meta( $last_paid_renewal_order->ID, '_paid_date', true ) );
+			$date = get_gmt_from_date( get_post_meta( $last_paid_renewal_order[0]->ID, '_paid_date', true ) );
 		} elseif ( false !== $this->order && isset( $this->order->paid_date ) ) {
 			$date = get_gmt_from_date( $this->order->paid_date );
 		} else {
