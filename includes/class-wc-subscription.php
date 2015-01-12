@@ -929,7 +929,7 @@ class WC_Subscription extends WC_Order {
 		) );
 
 		if ( ! empty( $last_paid_renewal_order ) ) {
-			update_post_meta( $last_paid_renewal_order->ID, '_paid_date', $datetime );
+			update_post_meta( $last_paid_renewal_order[0]->ID, '_paid_date', $datetime );
 		} else {
 			update_post_meta( $this->order->id, '_paid_date', $datetime );
 		}
