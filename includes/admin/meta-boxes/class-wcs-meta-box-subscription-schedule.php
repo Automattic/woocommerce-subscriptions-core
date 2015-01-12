@@ -42,6 +42,10 @@ class WCS_Meta_Box_Schedule {
 
 			foreach ( wcs_get_subscription_date_types() as $date_key => $date_label ) {
 
+				if ( 'last_payment' == $date_key ) {
+					continue;
+				}
+
 				$utc_timestamp_key = $date_key . '_timestamp_utc';
 
 				// A subscription needs a start date, even if it wasn't set

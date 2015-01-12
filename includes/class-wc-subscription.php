@@ -747,7 +747,7 @@ class WC_Subscription extends WC_Order {
 
 		switch( $date_type ) {
 			case 'start' :
-				if ( $this->has_status( 'pending' ) ) {
+				if ( $this->has_status( array( 'auto-draft', 'pending' ) ) ) {
 					$can_date_be_updated = true;
 				} else {
 					$can_date_be_updated = false;
