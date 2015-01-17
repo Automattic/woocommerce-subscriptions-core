@@ -167,7 +167,6 @@ class WCS_Admin_Post_Types {
 	 * own logic by copying the concept behind this method.
 	 */
 	public function parse_bulk_actions() {
-
 		// We only want to deal with shop_subscriptions. In case any other CPTs have an 'active' action
 		if ( 'shop_subscription' !== $_REQUEST['post_type'] ) {
 			return;
@@ -260,7 +259,7 @@ class WCS_Admin_Post_Types {
 	}
 
 	/**
-	 * Output custom columns for coupons
+	 * Output custom columns for subscriptions
 	 * @param  string $column
 	 */
 	public function render_shop_subscription_columns( $column ) {
@@ -274,9 +273,51 @@ class WCS_Admin_Post_Types {
 
 		switch ( $column ) {
 			case 'status' :
+				// The status label
+				printf( '<mark class="%s tips" data-tip="%s">%s</mark>', sanitize_title( $the_subscription->get_status() ), wc_get_order_status_name( $the_subscription->get_status() ), wc_get_order_status_name( $the_subscription->get_status() ) );
 
-				echo esc_html( $the_subscription->get_status() );
-				//printf( '<mark class="%s tips" data-tip="%s">%s</mark>', sanitize_title( $the_subscription->get_status() ), wc_get_order_status_name( $the_subscription->get_status() ), wc_get_order_status_name( $the_subscription->get_status() ) );
+				// Inline actions
+				$wp_list_table = _get_list_table( 'WP_Posts_List_Table' );
+
+				$actions = array();
+
+				$action_url = add_query_arg(
+					array(
+						'post' => array( $the_subscription->id ),
+						'_wpnonce'     => wp_create_nonce( $the_subscription->id ),
+					)
+				);
+
+				if ( isset( $_REQUEST['status'] ) ) {
+					$action_url = add_query_arg( array( 'status' => $_REQUEST['status'] ), $action_url );
+				}
+
+				$all_statuses = array(
+					'active'    => __( 'Reactivate', 'woocommerce-subscriptions' ),
+					'on-hold'   => __( 'Suspend', 'woocommerce-subscriptions' ),
+					'cancelled' => __( 'Cancel', 'woocommerce-subscriptions' ),
+					'trash'     => __( 'Trash', 'woocommerce-subscriptions' ),
+					'deleted'   => __( 'Delete Permanently', 'woocommerce-subscriptions' ),
+				);
+
+				foreach ( $all_statuses as $status => $label ) {
+					if ( $the_subscription->can_be_updated_to( $status ) ) {
+						$action = ( 'deleted' == $status ) ? 'delete' : $status; // For built in CSS
+						$actions[ $action ] = sprintf( '<a href="%s">%s</a>', add_query_arg( 'action', $status, $action_url ), $label );
+					}
+				}
+
+				if ( 'pending' === $the_subscription->get_status() ) {
+					unset( $actions['active'] );
+					unset( $actions['trash'] );
+				} elseif ( ! in_array( $the_subscription->get_status(), array( 'cancelled', 'expired', 'switched', 'suspended' ) ) ) {
+					unset( $actions['trash'] );
+				}
+
+				$actions = apply_filters( 'woocommerce_subscriptions_list_table_actions', $actions, $the_subscription );
+
+				echo $wp_list_table->row_actions( $actions );
+
 				break;
 
 			case 'order_title' :
