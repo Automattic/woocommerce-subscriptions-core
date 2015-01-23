@@ -161,6 +161,72 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	}
 
 	/**
+	 * Look at WC-API for creating orders - it's going to be very similar in that regard.
+	 *
+	 * @since 2.0
+	 * @param array data raw order data
+	 * @return array
+	 */
+	public function create_subscription( $data ) {
+
+		$data = isset( $data['subscription'] ) ? $data['subscription'] : array();
+
+		try {
+			// permission check
+			if ( ! current_user_can( 'publish_shop_orders' ) ) {
+				throw new WC_API_Exception( 'wcs_api_user_cannot_create_subscription', __( 'You do not have permission to create subscriptions', 'woocommerce-subscriptions' ), 401 );
+			}
+
+			add_filter( 'woocommerce_api_custom_create_order_method', array( $this, 'override_wc_create_order' ), 3, 10 );
+
+			$data['order'] = $data;
+			$subscription = $this->create_order( $data );
+			unset( $data['order'] );
+
+			if ( is_wp_error( $subscription ) ) {
+				throw new WC_API_Exception( $subscription->get_error_code(), $subscription->get_error_message(), 401 );
+			}
+
+			$subscription = wcs_get_subscription( $subscription['order']['id'] );
+			unset( $data['billing_period'] );
+			unset( $data['billing_interval'] );
+
+			$this->update_subscription_schedule( $subscription, $data );
+
+			// allow order total to be manually set, especially for those cases where there's no line items added to the subscription
+			if ( isset( $data['order_total'] ) ) {
+				update_post_meta( $subscription->id, '_order_total', wc_format_decimal( $data['order_total'], get_option( 'woocommerce_price_num_decimals' ) ) );
+			}
+
+			// payment method
+			if ( isset( $data['payment_details'] ) && is_array( $data['payment_details'] ) ) {
+
+				// payment method and title are required
+				if ( empty( $data['payment_details']['method_id'] ) || empty( $data['payment_details']['method_title'] ) ) {
+					throw new WC_API_Exception( 'wcs_api_invalid_payment_details', __( 'Recurring payment method ID and title are required', 'woocommerce' ), array( 'status' => 400 ) );
+				}
+
+				update_post_meta( $subscription->id, '_payment_method', $data['payment_details']['method_id'] );
+				update_post_meta( $subscription->id, '_payment_method_title', $data['payment_details']['method_title'] );
+
+				// set paid_date
+				if ( isset( $data['payment_details']['paid'] ) && 'true' === $data['payment_details']['paid'] ) {
+					$order->payment_complete( isset( $data['payment_details']['transaction_id'] ) ? $data['payment_details']['transaction_id'] : '' );
+				}
+
+			}
+
+			// Trigger action after subscription has been created - used by the WC_Subscriptions_Webhook class.
+			do_action( 'wcs_api_subscription_created', $subscription->id, $this );
+
+			return array( 'creating_subscription', wcs_get_subscription( $subscription->id ) );
+
+		} catch ( WC_API_Exception $e ) {
+			return new WP_Error( $e->getErrorCode(), $e->getMessage(), array( 'status' => $e->getCode() ) );
+		}
+	}
+
+	/**
 	 * Edit Subscription
 	 *
 	 * @since 2.0
