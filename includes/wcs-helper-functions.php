@@ -45,7 +45,6 @@ function wcs_date_input( $timestamp = 0, $args = array() ) {
 	}
 
 	$timestamp_utc = ( 0 !== $timestamp ) ? $timestamp - get_option( 'gmt_offset', 0 ) * HOUR_IN_SECONDS : $timestamp;
-	$date_input   .= '<input type="hidden" name="' . esc_attr( $args['name_attr'] ) . '_timestamp_utc" id="' . esc_attr( $args['name_attr'] ) . '_timestamp_utc" value="' . esc_attr( $timestamp_utc ) . '"/>';
 	$date_input    = '<div class="wcs-date-input">' . $date_input . '</div>';
 
 	return apply_filters( 'woocommerce_subscriptions_date_input', $date_input, $timestamp, $args );
