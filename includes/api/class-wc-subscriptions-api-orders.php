@@ -161,6 +161,20 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	}
 
 	/**
+	 * Override wc_create_order when calling WC_API_Orders:create_order();
+	 *
+	 * @since 2.0
+	 */
+	public function override_wc_create_order( $wc_order, $post_type, $data ) {
+
+		if ( 'shop_subscription' == $post_type ) {
+			return wcs_create_subscription( $data );
+		}
+
+		return $wc_order;
+	}
+
+	/**
 	 * Look at WC-API for creating orders - it's going to be very similar in that regard.
 	 *
 	 * @since 2.0
