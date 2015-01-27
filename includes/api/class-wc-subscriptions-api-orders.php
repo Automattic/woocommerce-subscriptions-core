@@ -454,7 +454,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 			$status = array_keys( wcs_get_subscription_statuses() );
 		}
 
-		return $this->get_order_count( $status, $filter );
+		return $this->get_orders_count( $status, $filter );
 
 	}
 
