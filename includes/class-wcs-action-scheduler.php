@@ -19,7 +19,7 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 	);
 
 	/**
-	 * Maybe set a schedule action if the new date is in the future 
+	 * Maybe set a schedule action if the new date is in the future
 	 *
 	 * @param int $subscription_id The ID for a WC_Subscription object
 	 * @param string $date_type Can be 'start', 'trial_end', 'next_payment', 'last_payment', 'end', 'end_of_prepaid_term' or a custom date type
