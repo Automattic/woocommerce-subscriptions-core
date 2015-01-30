@@ -228,13 +228,6 @@ class WC_Subscription extends WC_Order {
 					$can_be_updated = false;
 				}
 				break;
-			case 'trash' :
-				if ( $this->has_status( array( 'cancelled', 'expired', 'switched' ) ) || $this->can_be_updated_to( 'cancelled' ) ) {
-					$can_be_updated = true;
-				} else {
-					$can_be_updated = false;
-				}
-				break;
 			case 'deleted' :
 				if ( 'trash' == $this->get_status()  ) {
 					$can_be_updated = true;
@@ -264,7 +257,7 @@ class WC_Subscription extends WC_Order {
 
 		// Standardise status names.
 		$new_status     = 'wc-' === substr( $new_status, 0, 3 ) ? substr( $new_status, 3 ) : $new_status;
-		$new_status_key = ( 'trash' == $new_status ) ? $new_status : 'wc-' . $new_status;
+		$new_status_key = 'wc-' . $new_status;
 		$old_status     = $this->get_status();
 		$old_status_key = $this->post_status;
 
@@ -285,11 +278,6 @@ class WC_Subscription extends WC_Order {
 			}
 
 			try {
-
-				if ( 'trash' !== $new_status ) {
-					wp_update_post( array( 'ID' => $this->id, 'post_status' => $new_status_key ) );
-					$this->post_status = $new_status_key;
-				}
 
 				switch ( $new_status ) {
 
@@ -327,14 +315,6 @@ class WC_Subscription extends WC_Order {
 						$this->update_date( 'end', current_time( 'mysql', true ) );
 						wcs_maybe_make_user_inactive( $this->customer_user );
 					break;
-
-					case 'trash' :
-						// Run all cancellation related functions on the subscription
-						if ( ! $this->has_status( 'cancelled' ) ) {
-							$this->update_status( 'cancelled' );
-						}
-						wp_trash_post( $this->id );
-					break;
 				}
 
 				$this->add_order_note( trim( $note . ' ' . sprintf( __( 'Status changed from %s to %s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ) );
@@ -345,10 +325,8 @@ class WC_Subscription extends WC_Order {
 			} catch ( Exception $e ) {
 
 				// Make sure the old status is restored
-				if ( 'trash' !== $new_status ) {
-					wp_update_post( array( 'ID' => $this->id, 'post_status' => $old_status_key ) );
-					$this->post_status = $old_status_key;
-				}
+				wp_update_post( array( 'ID' => $this->id, 'post_status' => $old_status_key ) );
+				$this->post_status = $old_status_key;
 
 				$this->add_order_note( sprintf( __( 'Unable to change subscription status to "%s".', 'woocommerce-subscriptions' ), $new_status ) );
 
