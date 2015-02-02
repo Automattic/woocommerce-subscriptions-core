@@ -106,7 +106,7 @@ class WC_Subscription extends WC_Order {
 		// Update the parent in the database
 		wp_update_post(  array(
 			'ID'          => $this->id,
-			'post_parent' => $order_id
+			'post_parent' => $order_id,
 		) );
 
 		// And update the parent in memory
@@ -182,7 +182,7 @@ class WC_Subscription extends WC_Order {
 
 		$new_status = 'wc-' === substr( $new_status, 0, 3 ) ? substr( $new_status, 3 ) : $new_status;
 
-		switch( $new_status ) {
+		switch ( $new_status ) {
 			case 'pending' :
 				if ( $this->has_status( array( 'auto-draft', 'draft' ) ) ) {
 					$can_be_updated = true;
@@ -551,7 +551,6 @@ class WC_Subscription extends WC_Order {
 			} else {
 				$date_to_display = date_i18n( wc_date_format(), $this->get_time( $date_type, 'site' ) );
 			}
-
 		} else {
 			switch ( $date_type ) {
 				case 'end' :
@@ -741,7 +740,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function can_date_be_updated( $date_type ) {
 
-		switch( $date_type ) {
+		switch ( $date_type ) {
 			case 'start' :
 				if ( $this->has_status( array( 'auto-draft', 'pending' ) ) ) {
 					$can_date_be_updated = true;
@@ -802,7 +801,7 @@ class WC_Subscription extends WC_Order {
 				// If there was a future payment, the customer has paid up until that payment date
 				if ( $this->get_time( 'next_payment' ) >= current_time( 'timestamp', true ) ) {
 					$date = $this->get_date( 'next_payment' );
-				// If there is no future payment and no expiration date set, the customer has no prepaid term (this shouldn't be possible as only active subscriptions can be set to pending cancellation and an active subscription always has either an end date or next payment)
+					// If there is no future payment and no expiration date set, the customer has no prepaid term (this shouldn't be possible as only active subscriptions can be set to pending cancellation and an active subscription always has either an end date or next payment)
 				} elseif ( 0 == $next_payment_time || $end_time <= current_time( 'timestamp', true ) ) {
 					$date = current_time( 'mysql', true );
 				} else {
@@ -840,7 +839,7 @@ class WC_Subscription extends WC_Order {
 
 			$next_payment_timestamp = $trial_end_time;
 
-		// The next payment date is {interval} billing periods from the start date, trial end date or last payment date
+			// The next payment date is {interval} billing periods from the start date, trial end date or last payment date
 		} else {
 
 			if ( $last_payment_time > $trial_end_time ) {
@@ -859,12 +858,11 @@ class WC_Subscription extends WC_Order {
 				$next_payment_timestamp = wcs_add_time( $this->billing_interval, $this->billing_period, $next_payment_timestamp );
 				$i += 1;
 			}
-
 		}
 
 		// If the subscription has an end date and the next billing period comes after that, return 0
 		if ( 0 != $end_time && ( $next_payment_timestamp + 120 ) > $end_time ) {
-			$next_payment_timestamp =  0;
+			$next_payment_timestamp = 0;
 		}
 
 		if ( $next_payment_timestamp > 0 ) {
@@ -1006,12 +1004,11 @@ class WC_Subscription extends WC_Order {
 				}
 			}
 
-			$subtotal = wc_price( $subtotal, array('currency' => $this->get_order_currency()) );
+			$subtotal = wc_price( $subtotal, array( 'currency' => $this->get_order_currency() ) );
 
-			if ( $tax_display == 'excl' && $this->prices_include_tax ) {
+			if ( 'excl' == $tax_display && $this->prices_include_tax ) {
 				$subtotal .= ' <small>' . WC()->countries->ex_tax_or_vat() . '</small>';
 			}
-
 		} else {
 
 			if ( 'incl' == $tax_display ) {
@@ -1041,7 +1038,7 @@ class WC_Subscription extends WC_Order {
 			// Remove discounts
 			$subtotal = $subtotal - $this->get_cart_discount();
 
-			$subtotal = wc_price( $subtotal, array('currency' => $this->get_order_currency()) );
+			$subtotal = wc_price( $subtotal, array( 'currency' => $this->get_order_currency() ) );
 		}
 
 		return apply_filters( 'woocommerce_order_subtotal_to_display', $subtotal, $compound, $this );
@@ -1063,14 +1060,14 @@ class WC_Subscription extends WC_Order {
 		if ( $subtotal = $this->get_subtotal_to_display( false, $tax_display ) ) {
 			$total_rows['cart_subtotal'] = array(
 				'label' => __( 'Cart Subtotal:', 'woocommerce' ),
-				'value'	=> $subtotal
+				'value'	=> $subtotal,
 			);
 		}
 
 		if ( $this->get_cart_discount() > 0 ) {
 			$total_rows['cart_discount'] = array(
 				'label' => __( 'Cart Discount:', 'woocommerce' ),
-				'value'	=> '-' . $this->get_cart_discount_to_display()
+				'value'	=> '-' . $this->get_cart_discount_to_display(),
 			);
 		}
 
@@ -1081,11 +1078,11 @@ class WC_Subscription extends WC_Order {
 			);
 		}
 
-		if ( $fees = $this->get_fees() )
+		if ( $fees = $this->get_fees() ) {
 
-			foreach( $fees as $id => $fee ) {
+			foreach ( $fees as $id => $fee ) {
 
-				if ( apply_filters( 'woocommerce_get_order_item_totals_excl_free_fees', $fee['line_total'] + $fee['line_tax'] == 0, $id ) ) {
+				if ( apply_filters( 'woocommerce_get_order_item_totals_excl_free_fees', $fee['line_total'] + 0 == $fee['line_tax'], $id ) ) {
 					continue;
 				}
 
@@ -1093,36 +1090,36 @@ class WC_Subscription extends WC_Order {
 
 					$total_rows[ 'fee_' . $id ] = array(
 						'label' => $fee['name'] . ':',
-						'value'	=> wc_price( $fee['line_total'], array('currency' => $this->get_order_currency()) )
+						'value'	=> wc_price( $fee['line_total'], array( 'currency' => $this->get_order_currency() ) )
 					);
 
 				} else {
 
 					$total_rows[ 'fee_' . $id ] = array(
 						'label' => $fee['name'] . ':',
-						'value'	=> wc_price( $fee['line_total'] + $fee['line_tax'], array('currency' => $this->get_order_currency()) )
+						'value'	=> wc_price( $fee['line_total'] + $fee['line_tax'], array( 'currency' => $this->get_order_currency() ) )
 					);
 				}
 			}
+		}
 
 		// Tax for tax exclusive prices
 		if ( 'excl' == $tax_display ) {
 
-			if ( get_option( 'woocommerce_tax_total_display' ) == 'itemized' ) {
+			if ( 'itemized' == get_option( 'woocommerce_tax_total_display' ) ) {
 
 				foreach ( $this->get_tax_totals() as $code => $tax ) {
 
 					$total_rows[ sanitize_title( $code ) ] = array(
 						'label' => $tax->label . ':',
-						'value'	=> $tax->formatted_amount
+						'value'	=> $tax->formatted_amount,
 					);
 				}
-
 			} else {
 
 				$total_rows['tax'] = array(
 					'label' => WC()->countries->tax_or_vat() . ':',
-					'value'	=> wc_price( $this->get_total_tax(), array('currency' => $this->get_order_currency()) )
+					'value'	=> wc_price( $this->get_total_tax(), array( 'currency' => $this->get_order_currency() ) )
 				);
 			}
 		}
@@ -1137,7 +1134,7 @@ class WC_Subscription extends WC_Order {
 		if ( $this->get_total() > 0 ) {
 			$total_rows['payment_method'] = array(
 				'label' => __( 'Payment Method:', 'woocommerce' ),
-				'value' => $this->payment_method_title
+				'value' => $this->payment_method_title,
 			);
 		}
 
@@ -1156,9 +1153,8 @@ class WC_Subscription extends WC_Order {
 				foreach ( $this->get_tax_totals() as $code => $tax ) {
 					$tax_string_array[] = sprintf( '%s %s', $tax->formatted_amount, $tax->label );
 				}
-
 			} else {
-				$tax_string_array[] = sprintf( '%s %s', wc_price( $this->get_total_tax(), array('currency' => $this->get_order_currency()) ), WC()->countries->tax_or_vat() );
+				$tax_string_array[] = sprintf( '%s %s', wc_price( $this->get_total_tax(), array( 'currency' => $this->get_order_currency() ) ), WC()->countries->tax_or_vat() );
 			}
 
 			if ( ! empty( $tax_string_array ) ) {
@@ -1184,7 +1180,7 @@ class WC_Subscription extends WC_Order {
 			'display_ex_tax_label'  => $display_ex_tax_label,
 		);
 
-		return apply_filters('woocommerce_subscription_price_string_details', $subscription_details, $this );
+		return apply_filters( 'woocommerce_subscription_price_string_details', $subscription_details, $this );
 	}
 
 	/**
@@ -1199,7 +1195,7 @@ class WC_Subscription extends WC_Order {
 
 			$this->update_status( 'pending-cancellation', $note );
 
-		// Cancel for real if we're already pending cancellation
+			// Cancel for real if we're already pending cancellation
 		} else {
 
 			$this->update_status( 'cancelled', $note );
@@ -1250,7 +1246,6 @@ class WC_Subscription extends WC_Order {
 			} else {
 				$note = __( 'Recurring payment authorized.', 'woocommerce-subscriptions' );
 			}
-
 		} else {
 			$note = __( 'Payment received.', 'woocommerce-subscriptions' );
 		}
@@ -1407,7 +1402,6 @@ class WC_Subscription extends WC_Order {
 			foreach ( $related_posts as $post_id ) {
 				$related_orders[] = wc_get_order( $post_id );
 			}
-
 		} else {
 
 			// Return IDs only
