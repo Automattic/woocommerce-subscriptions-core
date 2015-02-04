@@ -37,43 +37,43 @@ class WC_API_Subscriptions extends WC_API_Orders {
 		$this->post_type = 'shop_subscription';
 
 		# GET /subscriptions
-		$routes[$this->base] = array(
+		$routes[ $this->base ] = array(
 			array( array( $this, 'get_subscriptions' ), WC_API_Server::READABLE ),
 			array( array( $this, 'create_subscription' ),   WC_API_Server::CREATABLE | WC_API_Server::ACCEPT_DATA ),
 		);
 
 		# GET /subscriptions/count
-		$routes[$this->base . '/count'] = array(
+		$routes[ $this->base . '/count' ] = array(
 			array( array( $this, 'get_subscription_count' ), WC_API_Server::READABLE ),
 		);
 
 		# GET /subscriptions/statuses
-		$routes[$this->base . '/statuses'] = array(
+		$routes[ $this->base . '/statuses' ] = array(
 			array( array( $this, 'get_statuses' ), WC_API_Server::READABLE ),
 		);
 
 		# GET|PUT|DELETE /subscriptions/<subscription_id>
-		$routes[$this->base . '/(?P<subscription_id>\d+)'] = array(
+		$routes[ $this->base . '/(?P<subscription_id>\d+)' ] = array(
 			array( array( $this, 'get_subscription' ), WC_API_Server::READABLE ),
 			array( array( $this, 'edit_subscription' ), WC_API_Server::EDITABLE | WC_API_Server::ACCEPT_DATA ),
 			array( array( $this, 'delete_subscription' ), WC_API_Server::DELETABLE ),
 		);
 
 		# GET /subscriptions/<subscription_id>/notes
-		$routes[$this->base . '/(?P<subscription_id>\d+)/notes'] = array(
+		$routes[ $this->base . '/(?P<subscription_id>\d+)/notes' ] = array(
 			array( array( $this, 'get_subscription_notes' ), WC_API_Server::READABLE ),
 			array( array( $this, 'create_subscription_note' ), WC_API_Server:: CREATABLE | WC_API_Server::ACCEPT_DATA ),
 		);
 
 		# GET /subscriptions/<subscription_id>/notes/<id>
-		$routes[$this->base . '/(?P<subscription_id>\d+)/notes/(?P<id>\d+)'] = array(
+		$routes[ $this->base . '/(?P<subscription_id>\d+)/notes/(?P<id>\d+)' ] = array(
 			array( array( $this, 'get_subscription_note' ), WC_API_Server::READABLE ),
 			array( array( $this, 'edit_subscription_note' ), WC_API_SERVER::EDITABLE | WC_API_Server::ACCEPT_DATA ),
 			array( array( $this, 'delete_subscription_note' ), WC_API_SERVER::DELETABLE ),
 		);
 
 		# GET /subscriptions/<subscription_id>/orders
-		$routes[$this->base . '/(?P<subscription_id>\d+)/orders'] = array(
+		$routes[ $this->base . '/(?P<subscription_id>\d+)/orders' ] = array(
 			array( array( $this, 'get_all_subscription_orders' ), WC_API_Server::READABLE ),
 		);
 
