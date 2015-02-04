@@ -598,16 +598,16 @@ class WC_Subscription extends WC_Order {
 		global $wpdb;
 
 		if ( ! is_array( $dates ) ) {
-			throw new InvalidArgumentException( __( 'Invalid format. <code>$dates</code> needs to be an array passed to update_dates().', 'woocommerce-subscriptions' ) );
+			throw new InvalidArgumentException( __( 'Invalid format. First parameter needs to be an array.', 'woocommerce-subscriptions' ) );
 		}
 
 		if ( empty( $dates ) ) {
-			throw new InvalidArgumentException( __( 'Invalid data. <code>$dates</code> was empty when passed to update_dates().', 'woocommerce-subscriptions' ) );
+			throw new InvalidArgumentException( __( 'Invalid data. First parameter was empty when passed to update_dates().', 'woocommerce-subscriptions' ) );
 		}
 
 		$date_keys = array_keys( wcs_get_subscription_date_types() );
 		if ( ! empty( array_diff( array_keys( $dates ), $date_keys ) ) ) {
-			throw new InvalidArgumentException( __( 'Invalid data. <code>$dates</code> has a date that is not in the registered date types.', 'woocommerce-subscriptions' ) );
+			throw new InvalidArgumentException( __( 'Invalid data. First parameter has a date that is not in the registered date types.', 'woocommerce-subscriptions' ) );
 		}
 
 		$timestamps = array();
@@ -615,7 +615,7 @@ class WC_Subscription extends WC_Order {
 			if ( false === strptime( $datetime, '%Y-%m-%d %H:%M:%S' ) ) {
 				throw new InvalidArgumentException(
 					sprintf(
-						__( 'Invalid <code>%s</code> date. The date must be of the format: "Y-m-d H:i:s".', 'woocommerce-subscriptions' ),
+						__( 'Invalid %s date. The date must be of the format: "Y-m-d H:i:s".', 'woocommerce-subscriptions' ),
 						$date_type
 					)
 				);
@@ -673,7 +673,7 @@ class WC_Subscription extends WC_Order {
 		}
 
 		if ( ! empty ( $messages ) ) {
-			throw new Exception( join( '<br />', $messages ) );
+			throw new Exception( join( ' ', $messages ) );
 		}
 
 		$is_updated = false;
