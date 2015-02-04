@@ -104,7 +104,7 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 					wc_unschedule_action( 'woocommerce_scheduled_subscription_end_of_prepaid_term', $action_args );
 				}
 
-				// The end date was set in WC_Subscriptions::update_date() to the appropriate value, so we can schedule our action for that time
+				// The end date was set in WC_Subscriptions::update_dates() to the appropriate value, so we can schedule our action for that time
 				if ( $end_time > current_time( 'timestamp', true ) && $next_scheduled != $end_time ) {
 					wc_schedule_single_action( $end_time, 'woocommerce_scheduled_subscription_end_of_prepaid_term', $action_args );
 				}
