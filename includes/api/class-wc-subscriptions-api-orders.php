@@ -159,21 +159,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	}
 
 	/**
-	 * Override wc_create_order when calling WC_API_Orders:create_order();
-	 *
-	 * @since 2.0
-	 */
-	public function override_wc_create_order( $wc_order, $post_type, $data ) {
-
-		if ( 'shop_subscription' == $post_type ) {
-			return wcs_create_subscription( $data );
-		}
-
-		return $wc_order;
-	}
-
-	/**
-	 * Look at WC-API for creating orders - it's going to be very similar in that regard.
+	 * Creating Subscription.
 	 *
 	 * @since 2.0
 	 * @param array data raw order data
@@ -188,8 +174,6 @@ class WC_API_Subscriptions extends WC_API_Orders {
 			if ( ! current_user_can( 'publish_shop_orders' ) ) {
 				throw new WC_API_Exception( 'wcs_api_user_cannot_create_subscription', __( 'You do not have permission to create subscriptions', 'woocommerce-subscriptions' ), 401 );
 			}
-
-			add_filter( 'woocommerce_api_custom_create_order_method', array( $this, 'override_wc_create_order' ), 3, 10 );
 
 			$data['order'] = $data;
 			$subscription = $this->create_order( $data );
@@ -297,6 +281,18 @@ class WC_API_Subscriptions extends WC_API_Orders {
 
 		}
 
+	}
+
+	/**
+	 * Override WC_API_Order::create_base_order() to create a subscription
+	 * instead of a WC_Order when calling WC_API_Order::create_order().
+	 *
+	 * @since 2.0
+	 * @param $array
+	 * @return WC_Subscription
+	 */
+	protected function create_base_order( $args ) {
+		return wcs_create_subscription( $args );
 	}
 
 	/**
