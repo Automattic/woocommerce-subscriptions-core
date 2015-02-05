@@ -124,7 +124,6 @@ class WC_API_Subscriptions extends WC_API_Orders {
 			return new WP_Error( 'wcs_api_user_cannot_read_susbcription_count', __( 'You do not have permission to read the subscriptions count', 'woocommerce-subscriptions' ), array( 'status' => 401 ) );
 		}
 
-		// add wc- prefix to status if it does not exist
 		$status = $this->format_statuses( $status );
 
 		if ( is_wp_error( $status ) ) {
@@ -139,7 +138,6 @@ class WC_API_Subscriptions extends WC_API_Orders {
 			'fields'      => 'ids',
 		);
 
-		// @see WC_API_Resource::merge_query_args()
 		$query_args = $this->merge_query_args( $base_args, $filter );
 
 		$query = $this->query_orders( $query_args );
@@ -186,7 +184,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 		$data = isset( $data['subscription'] ) ? $data['subscription'] : array();
 
 		try {
-			// permission check
+
 			if ( ! current_user_can( 'publish_shop_orders' ) ) {
 				throw new WC_API_Exception( 'wcs_api_user_cannot_create_subscription', __( 'You do not have permission to create subscriptions', 'woocommerce-subscriptions' ), 401 );
 			}
@@ -212,10 +210,8 @@ class WC_API_Subscriptions extends WC_API_Orders {
 				update_post_meta( $subscription->id, '_order_total', wc_format_decimal( $data['order_total'], get_option( 'woocommerce_price_num_decimals' ) ) );
 			}
 
-			// payment method
 			if ( isset( $data['payment_details'] ) && is_array( $data['payment_details'] ) ) {
 
-				// payment method and title are required
 				if ( empty( $data['payment_details']['method_id'] ) || empty( $data['payment_details']['method_title'] ) ) {
 					throw new WC_API_Exception( 'wcs_api_invalid_payment_details', __( 'Recurring payment method ID and title are required', 'woocommerce' ), array( 'status' => 400 ) );
 				}
@@ -258,24 +254,19 @@ class WC_API_Subscriptions extends WC_API_Orders {
 				throw new WC_API_Exception( 'wcs_api_cannot_edit_subscription', __( 'The requested subscription cannot be edited.', 'woocommerce-subscriptions' ), 400 );
 			}
 
-			// validate payment method before calling edit_order()
 			if ( isset( $data['payment_details'] ) && is_array( $data['payment_details'] ) ) {
 
-				// check payment method meta data exists in $data['payment_details']
 				if ( ! $this->validate_payment_method_data( $data['payment_details'] ) ) {
 					throw new WC_API_Exception( 'wcs_api_invalid_subscription_payment_data', __( 'Recurring Payment method meta data is invalid', 'woocommerce-subscriptiosn'), 400 );
 				}
 
-				// validate payment meta data if required
 				$data['payment_details']['post_meta'] = ( ! empty( $data['payment_details']['post_meta'] ) && is_array( $data['payment_details']['post_meta'] ) ) ? $data['payment_details']['post_meta'] : array();
 				$data['payment_details']['user_meta'] = ( ! empty( $data['payment_details']['user_meta'] ) && is_array( $data['payment_details']['user_meta'] ) ) ? $data['payment_details']['user_meta'] : array();
 
-				// update payment method post meta if necessary
 				foreach ( $data['payment_details']['post_meta'] as $meta_key => $meta_value ) {
 					update_post_meta( $subscription->id, $meta_key, $meta_value );
 				}
 
-				// update payment method user meta if set
 				foreach ( $data['payment_details']['user_meta'] as $meta_key => $meta_value ) {
 					update_user_meta( $subscription->customer_user, $meta_key, $meta_value );
 				}
@@ -292,10 +283,8 @@ class WC_API_Subscriptions extends WC_API_Orders {
 				throw new WC_API_Exception( 'wcs_api_cannot_edit_subscription', sprintf( __( 'Edit subscription failed with error: %s', 'woocommerce-subscriptions' ), $edited->get_error_message() ), $edited->get_error_code() );
 			}
 
-			// update subscription specific meta (i.e. billing period/interval and date fields)
 			$this->update_subscription_schedule( $subscription, $data );
 
-			// action called after successfully editing subscription
 			do_action( 'wcs_api_subscription_updated', $subscription_id, $data, $this );
 
 			return $this->get_subscription( $subscription_id );
@@ -325,7 +314,6 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	 */
 	protected function update_subscription_schedule( $subscription, $data ) {
 
-		// update billing interval
 		if ( ! empty( $data['billing_interval'] ) ) {
 
 			$interval = absint( $data['billing_interval'] );
@@ -338,12 +326,10 @@ class WC_API_Subscriptions extends WC_API_Orders {
 
 		}
 
-		// update billing period
 		if ( ! empty( $data['billing_period'] ) ) {
 
 			$period = strtolower( $data['billing_period'] );
 
-			// validate period
 			if ( ! in_array( strtolower( $period, array_keys( wcs_get_subscription_period_strings() ) ) ) ) {
 				throw new WC_API_Exception( 'wcs_api_invalid_subscription_meta', __( 'Invalid subscription billing period given.', 'woocommerce-subscriptions' ) );
 			}
@@ -351,9 +337,8 @@ class WC_API_Subscriptions extends WC_API_Orders {
 			update_post_meta( $subscription->id, '_billing_period', $period );
 		}
 
-		// date
 		foreach( array( 'start', 'trial_end', 'end', 'next_payment' ) as $date ) {
-			// check format
+
 			if ( empty( $data[ $date . '_date' ] ) ) {
 				continue;
 			}
@@ -414,7 +399,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	 * @return array
 	 */
 	public function get_subscription( $subscription_id, $fields = null, $filter = array() ) {
-		// check the subscription id
+
 		$subscription_id = $this->validate_request( $subscription_id, 'shop_subscription', 'read' );
 
 		if ( is_wp_error( $subscription_id ) ) {
@@ -450,12 +435,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	 */
 	public function get_subscription_count( $status = NULL, $filter = array() ) {
 
-		if ( empty( $status ) ) {
-			$status = array_keys( wcs_get_subscription_statuses() );
-		}
-
 		return $this->get_orders_count( $status, $filter );
-
 	}
 
 	/**
@@ -468,6 +448,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	 * @return WP_Error|array
 	 */
 	public function get_subscription_notes( $subscription_id, $fields = null ) {
+
 		$notes = $this->get_order_notes( $subscription_id, $fields );
 
 		if ( is_wp_error( $notes ) ) {
@@ -576,7 +557,6 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	 */
 	public function get_all_subscription_orders( $subscription_id, $filters = null ) {
 
-		// validate the subscription_id given @see WC_API_Resource::validate_request()
 		$subscription_id = $this->validate_request( $subscription_id, 'shop_subscription', 'read' );
 
 		if ( is_wp_error( $subscription_id ) ) {
