@@ -155,7 +155,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 
 		$this->server->add_pagination_headers( $query );
 
-		return array( 'subscriptions' => apply_filters( 'wcs_api_get_subscriptions_response', $subscriptions, $fields, $filters, $status, $page, $this->server ) );
+		return array( 'subscriptions' => apply_filters( 'wcs_api_get_subscriptions_response', $subscriptions, $fields, $filter, $status, $page, $this->server ) );
 	}
 
 	/**
@@ -219,20 +219,20 @@ class WC_API_Subscriptions extends WC_API_Orders {
 				update_post_meta( $subscription->id, '_payment_method', $data['payment_details']['method_id'] );
 				update_post_meta( $subscription->id, '_payment_method_title', $data['payment_details']['method_title'] );
 
-				// set paid_date
 				if ( isset( $data['payment_details']['paid'] ) && 'true' === $data['payment_details']['paid'] ) {
 					$order->payment_complete( isset( $data['payment_details']['transaction_id'] ) ? $data['payment_details']['transaction_id'] : '' );
 				}
 
 			}
 
-			// Trigger action after subscription has been created - used by the WC_Subscriptions_Webhook class.
 			do_action( 'wcs_api_subscription_created', $subscription->id, $this );
 
 			return array( 'creating_subscription', wcs_get_subscription( $subscription->id ) );
 
 		} catch ( WC_API_Exception $e ) {
 			return new WP_Error( $e->getErrorCode(), $e->getMessage(), array( 'status' => $e->getCode() ) );
+		} catch ( Exception $e ) {
+			return new WP_Error( 'wcs_api_cannot_create_subscription', $e->getMessage(), array( 'status' => $e->getCode() ) );
 		}
 	}
 
@@ -289,9 +289,12 @@ class WC_API_Subscriptions extends WC_API_Orders {
 
 			return $this->get_subscription( $subscription_id );
 
-		} catch( WC_API_Exception $e ) {
-
+		} catch( WC_API_Excpetion $e ) {
 			return new WP_Error( $e->getErrorCode(), $e->getMessage(), array( 'status' => $e->getCode() ) );
+
+		} catch( Exception $e ) {
+			return new WP_Error( 'wcs_api_cannot_edit_subscription', $e->getMessage(), array( 'status' => $e->getCode() ) );
+
 		}
 
 	}
@@ -570,9 +573,14 @@ class WC_API_Subscriptions extends WC_API_Orders {
 		if ( ! empty( $subscription_orders ) ) {
 			$orders = array();
 
+			// set post_type back to shop order so that get_orders doesn't try return a subscription.
+			$this->post_type = 'shop_order';
+
 			foreach ( $subscription_orders as $order_id ) {
 				$orders[] = $this->get_order( $order_id );
 			}
+
+			$this->post_type = 'shop_subscription';
 
 		} else {
 			$orders = sprintf( __( 'Subscription %s has no related orders.', 'woocommerce-subscriptions' ), '#' . $subscription_id );
