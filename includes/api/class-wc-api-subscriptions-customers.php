@@ -6,7 +6,7 @@
  *
  * @since 2.0
  */
-class WC_Subscriptions_API_Customers extends WC_API_Customers {
+class WC_API_Subscriptions_Customers extends WC_API_Customers {
 
 
 	/**

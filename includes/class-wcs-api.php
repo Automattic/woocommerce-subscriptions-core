@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class WC_Subscriptions_API {
+class WCS_API {
 
 	public static function init() {
 		add_filter( 'woocommerce_api_classes', __CLASS__ . '::includes' );
@@ -29,15 +29,15 @@ class WC_Subscriptions_API {
 	 */
 	public static function includes( $wc_api_classes ) {
 		// include the subscription api classes
-		require_once( 'api/class-wc-subscriptions-api-orders.php' );
-		require_once( 'api/class-wc-subscriptions-api-customers.php' );
+		require_once( 'api/class-wc-api-subscriptions.php' );
+		require_once( 'api/class-wc-api-subscriptions-customers.php' );
 
 		array_push( $wc_api_classes, 'WC_API_Subscriptions' );
-		array_push( $wc_api_classes, 'WC_Subscriptions_API_Customers' );
+		array_push( $wc_api_classes, 'WC_API_Subscriptions_Customers' );
 
 		return $wc_api_classes;
 	}
 
 }
 
-WC_Subscriptions_API::init();
+WCS_API::init();

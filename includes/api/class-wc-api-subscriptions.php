@@ -291,7 +291,11 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	 * @param $array
 	 * @return WC_Subscription
 	 */
-	protected function create_base_order( $args ) {
+	protected function create_base_order( $args, $data ) {
+
+		$args['billing_interval'] = ( ! empty( $data['billing_interval'] ) ) ? $data['billing_interval'] : '';
+		$args['billing_period'] = ( ! empty( $data['billing_period'] ) ) ? $data['billing_period'] : '';
+
 		return wcs_create_subscription( $args );
 	}
 
