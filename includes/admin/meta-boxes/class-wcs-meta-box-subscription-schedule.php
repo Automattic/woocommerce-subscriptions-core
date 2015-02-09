@@ -40,6 +40,8 @@ class WCS_Meta_Box_Schedule {
 
 			$subscription = wcs_get_subscription( $post_id );
 
+			$dates = array();
+
 			foreach ( wcs_get_subscription_date_types() as $date_key => $date_label ) {
 
 				if ( 'last_payment' == $date_key ) {
@@ -57,15 +59,13 @@ class WCS_Meta_Box_Schedule {
 					continue;
 				}
 
-				if ( 0 != $datetime ) {
-					$datetime = date( 'Y-m-d H:i:s', $datetime );
-				}
+				$dates[ $date_key ] = date( 'Y-m-d H:i:s', $datetime );
+			}
 
-				try {
-					$subscription->update_date( $date_key, $datetime, 'gmt' );
-				} catch ( Exception $e ) {
-					wcs_add_admin_notice( $e->getMessage(), 'error' );
-				}
+			try {
+				$subscription->update_dates( $dates, 'gmt' );
+			} catch ( Exception $e ) {
+				wcs_add_admin_notice( $e->getMessage(), 'error' );
 			}
 		}
 	}
