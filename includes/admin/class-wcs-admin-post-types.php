@@ -194,6 +194,17 @@ class WCS_Admin_Post_Types {
 		foreach ( $subscription_ids as $subscription_id ) {
 			$subscription = wcs_get_subscription( $subscription_id );
 			$subscription->update_status( $new_status, __( 'Subscription status changed by bulk edit:', 'woocommerce-subscriptions' ) );
+
+			// Fire the action hooks
+			switch ( $current_action ) {
+				case 'active' :
+				case 'on-hold' :
+				case 'cancelled' :
+				case 'trash' :
+					do_action( 'admin_changed_subscription_to_' . $current_action, $subscription_id );
+					break;
+			}
+
 			$changed++;
 		}
 
@@ -269,12 +280,12 @@ class WCS_Admin_Post_Types {
 			$the_subscription = wcs_get_subscription( $post->ID );
 		}
 
-		$column_content   = '';
+		$column_content = '';
 
 		switch ( $column ) {
 			case 'status' :
 				// The status label
-				printf( '<mark class="%s tips" data-tip="%s">%s</mark>', sanitize_title( $the_subscription->get_status() ), wc_get_order_status_name( $the_subscription->get_status() ), wc_get_order_status_name( $the_subscription->get_status() ) );
+				$column_content = sprintf( '<mark class="%s tips" data-tip="%s">%s</mark>', sanitize_title( $the_subscription->get_status() ), wc_get_order_status_name( $the_subscription->get_status() ), wc_get_order_status_name( $the_subscription->get_status() ) );
 
 				// Inline actions
 				$wp_list_table = _get_list_table( 'WP_Posts_List_Table' );
@@ -316,8 +327,9 @@ class WCS_Admin_Post_Types {
 
 				$actions = apply_filters( 'woocommerce_subscriptions_list_table_actions', $actions, $the_subscription );
 
-				echo $wp_list_table->row_actions( $actions );
+				$column_content .= $wp_list_table->row_actions( $actions );
 
+				$column_content = apply_filters( 'woocommerce_subscriptions_list_table_column_status_content', $column_content, $the_subscription, $actions, $this );
 				break;
 
 			case 'order_title' :
@@ -362,9 +374,9 @@ class WCS_Admin_Post_Types {
 					$username = trim( $the_subscription->billing_first_name . ' ' . $the_subscription->billing_last_name );
 				}
 
-				printf( _x( '%s for %s', 'Subscription number for X', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post.php?post=' . absint( $post->ID ) . '&action=edit' ) ) . '"><strong>' . esc_attr( $the_subscription->get_order_number() ) . '</strong></a>', $username );
+				$column_content = sprintf( _x( '%s for %s', 'Subscription number for X', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post.php?post=' . absint( $post->ID ) . '&action=edit' ) ) . '"><strong>' . esc_attr( $the_subscription->get_order_number() ) . '</strong></a>', $username );
 
-				echo '</div>';
+				$column_content .= '</div>';
 
 				break;
 			case 'order_items' :
@@ -372,7 +384,7 @@ class WCS_Admin_Post_Types {
 				$subscription_items = $the_subscription->get_items();
 				switch ( count( $subscription_items ) ) {
 					case 0 :
-						echo '&ndash;';
+						$column_content .= '&ndash;';
 						break;
 					case 1 :
 						foreach ( $the_subscription->get_items() as $item ) {
@@ -386,6 +398,7 @@ class WCS_Admin_Post_Types {
 								$item_name .= $_product->get_sku() . ' - ';
 							}
 							$item_name .= $item['name'];
+
 							$item_name = apply_filters( 'woocommerce_order_item_name', $item_name, $item );
 							$item_name = esc_html( $item_name );
 							if ( $item_quantity > 1 ) {
@@ -394,6 +407,7 @@ class WCS_Admin_Post_Types {
 							if ( $_product ) {
 								$item_name = sprintf( '<a href="%s">%s</a>', get_edit_post_link( $_product->id ), $item_name );
 							}
+							ob_start();
 							?>
 							<div class="order-item">
 								<?php echo wp_kses( $item_name, array( 'a' => array( 'href' => array() ) ) ); ?>
@@ -402,16 +416,18 @@ class WCS_Admin_Post_Types {
 								<?php endif; ?>
 							</div>
 							<?php
+							$column_content .= ob_get_clean();
 						}
 						break;
 					default :
-						echo '<a href="#" class="show_order_items">' . esc_html( apply_filters( 'woocommerce_admin_order_item_count', sprintf( _n( '%d item', '%d items', $the_subscription->get_item_count(), 'woocommerce-subscriptions' ), $the_subscription->get_item_count() ), $the_subscription ) ) . '</a>';
-						echo '<table class="order_items" cellspacing="0">';
+						$column_content .= '<a href="#" class="show_order_items">' . esc_html( apply_filters( 'woocommerce_admin_order_item_count', sprintf( _n( '%d item', '%d items', $the_subscription->get_item_count(), 'woocommerce-subscriptions' ), $the_subscription->get_item_count() ), $the_subscription ) ) . '</a>';
+						$column_content .= '<table class="order_items" cellspacing="0">';
 
 						foreach ( $the_subscription->get_items() as $item ) {
 							$_product       = apply_filters( 'woocommerce_order_item_product', $the_subscription->get_product_from_item( $item ), $item );
 							$item_meta      = new WC_Order_Item_Meta( $item['item_meta'] );
 							$item_meta_html = $item_meta->display( true, true );
+							ob_start();
 							?>
 							<tr class="<?php echo esc_attr( apply_filters( 'woocommerce_admin_order_item_class', '', $item ) ); ?>">
 								<td class="qty"><?php echo absint( $item['qty'] ); ?></td>
@@ -426,18 +442,19 @@ class WCS_Admin_Post_Types {
 								</td>
 							</tr>
 							<?php
+							$column_content .= ob_get_clean();
 						}
 
-						echo '</table>';
+						$column_content .= '</table>';
 						break;
 				}
 				break;
 
 			case 'recurring_total' :
-				echo esc_html( strip_tags( $the_subscription->get_formatted_order_total() ) );
+				$column_content .= esc_html( strip_tags( $the_subscription->get_formatted_order_total() ) );
 
 				if ( $the_subscription->payment_method_title ) {
-					echo '<small class="meta">' . esc_html( sprintf( __( 'Via %s', 'woocommerce-subscriptions' ), $the_subscription->payment_method_title ) ) . '</small>';
+					$column_content .= '<small class="meta">' . esc_html( sprintf( __( 'Via %s', 'woocommerce-subscriptions' ), $the_subscription->payment_method_title ) ) . '</small>';
 				}
 				break;
 
@@ -447,17 +464,19 @@ class WCS_Admin_Post_Types {
 			case 'last_payment_date':
 			case 'end_date':
 				if ( 0 == $the_subscription->get_time( $column, 'gmt' ) ) {
-					$column_content = '-';
+					$column_content .= '-';
 				} else {
-					$column_content = sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( $the_subscription->get_time( $column, 'site' ) ), esc_html( $the_subscription->get_date_to_display( $column, 'site' ) ) );
+					$column_content .= sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( $the_subscription->get_time( $column, 'site' ) ), esc_html( $the_subscription->get_date_to_display( $column, 'site' ) ) );
 				}
 
-				echo wp_kses( $column_content, array( 'time' => array( 'class' => array(), 'title' => array() ) ) );
+				$column_content .= wp_kses( $column_content, array( 'time' => array( 'class' => array(), 'title' => array() ) ) );
 				break;
 			case 'orders' :
-				echo wp_kses( $this->get_related_orders_link( $the_subscription ), array( 'a' => array( 'href' => array() ) ) );
+				$column_content .= wp_kses( $this->get_related_orders_link( $the_subscription ), array( 'a' => array( 'href' => array() ) ) );
 				break;
 		}
+
+		echo apply_filters( 'woocommerce_subscriptions_list_table_column_content', $column_content, $the_subscription, $column );
 	}
 
 	/**
