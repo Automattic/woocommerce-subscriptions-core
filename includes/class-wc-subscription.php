@@ -278,6 +278,9 @@ class WC_Subscription extends WC_Order {
 
 			try {
 
+				wp_update_post( array( 'ID' => $this->id, 'post_status' => $new_status_key ) );
+				$this->post_status = $new_status_key;
+
 				switch ( $new_status ) {
 
 					case 'pending' :
