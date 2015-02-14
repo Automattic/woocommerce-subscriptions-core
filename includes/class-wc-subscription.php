@@ -1063,111 +1063,15 @@ class WC_Subscription extends WC_Order {
 			$tax_display = $this->tax_display_cart;
 		}
 
-		$total_rows = array();
+		$total_rows = parent::get_order_item_totals( $tax_display );
 
-		if ( $subtotal = $this->get_subtotal_to_display( false, $tax_display ) ) {
-			$total_rows['cart_subtotal'] = array(
-				'label' => __( 'Cart Subtotal:', 'woocommerce' ),
-				'value'	=> $subtotal,
-			);
+		// Change some of the labels to remove "Order" and make it clear the value represents a recurring amount
+		if ( isset( $total_rows['order_discount'] ) ) {
+			$total_rows['order_discount']['label'] = __( 'Recurring Discount:', 'woocommerce-subscriptions' );
 		}
 
-		if ( $this->get_cart_discount() > 0 ) {
-			$total_rows['cart_discount'] = array(
-				'label' => __( 'Cart Discount:', 'woocommerce' ),
-				'value'	=> '-' . $this->get_cart_discount_to_display(),
-			);
-		}
-
-		if ( $this->get_shipping_method() ) {
-			$total_rows['shipping'] = array(
-				'label' => __( 'Shipping:', 'woocommerce' ),
-				'value'	=> $this->get_shipping_to_display()
-			);
-		}
-
-		if ( $fees = $this->get_fees() ) {
-
-			foreach ( $fees as $id => $fee ) {
-
-				if ( apply_filters( 'woocommerce_get_order_item_totals_excl_free_fees', $fee['line_total'] + 0 == $fee['line_tax'], $id ) ) {
-					continue;
-				}
-
-				if ( 'excl' == $tax_display ) {
-
-					$total_rows[ 'fee_' . $id ] = array(
-						'label' => $fee['name'] . ':',
-						'value'	=> wc_price( $fee['line_total'], array( 'currency' => $this->get_order_currency() ) )
-					);
-
-				} else {
-
-					$total_rows[ 'fee_' . $id ] = array(
-						'label' => $fee['name'] . ':',
-						'value'	=> wc_price( $fee['line_total'] + $fee['line_tax'], array( 'currency' => $this->get_order_currency() ) )
-					);
-				}
-			}
-		}
-
-		// Tax for tax exclusive prices
-		if ( 'excl' == $tax_display ) {
-
-			if ( 'itemized' == get_option( 'woocommerce_tax_total_display' ) ) {
-
-				foreach ( $this->get_tax_totals() as $code => $tax ) {
-
-					$total_rows[ sanitize_title( $code ) ] = array(
-						'label' => $tax->label . ':',
-						'value'	=> $tax->formatted_amount,
-					);
-				}
-			} else {
-
-				$total_rows['tax'] = array(
-					'label' => WC()->countries->tax_or_vat() . ':',
-					'value'	=> wc_price( $this->get_total_tax(), array( 'currency' => $this->get_order_currency() ) )
-				);
-			}
-		}
-
-		if ( $this->get_order_discount() > 0 ) {
-			$total_rows['order_discount'] = array(
-				'label' => __( 'Subscription Discount:', 'woocommerce' ),
-				'value'	=> '-' . $this->get_order_discount_to_display()
-			);
-		}
-
-		if ( $this->get_total() > 0 ) {
-			$total_rows['payment_method'] = array(
-				'label' => __( 'Payment Method:', 'woocommerce' ),
-				'value' => $this->payment_method_title,
-			);
-		}
-
-		$total_rows['order_total'] = array(
-			'label' => __( 'Recurring Total:', 'woocommerce' ),
-			'value'	=> $this->get_formatted_order_total()
-		);
-
-		// Tax for inclusive prices
-		if ( 'yes' == get_option( 'woocommerce_calc_taxes' ) && 'incl' == $tax_display ) {
-
-			$tax_string_array = array();
-
-			if ( 'itemized' == get_option( 'woocommerce_tax_total_display' ) ) {
-
-				foreach ( $this->get_tax_totals() as $code => $tax ) {
-					$tax_string_array[] = sprintf( '%s %s', $tax->formatted_amount, $tax->label );
-				}
-			} else {
-				$tax_string_array[] = sprintf( '%s %s', wc_price( $this->get_total_tax(), array( 'currency' => $this->get_order_currency() ) ), WC()->countries->tax_or_vat() );
-			}
-
-			if ( ! empty( $tax_string_array ) ) {
-				$total_rows['order_total']['value'] .= ' ' . sprintf( __( '(Includes %s)', 'woocommerce' ), implode( ', ', $tax_string_array ) );
-			}
+		if ( isset( $total_rows['order_total'] ) ) {
+			$total_rows['order_total']['label'] = __( 'Recurring Total:', 'woocommerce-subscriptions' );
 		}
 
 		return apply_filters( 'woocommerce_get_order_item_totals', $total_rows, $this );
