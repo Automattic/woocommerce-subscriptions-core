@@ -1289,9 +1289,10 @@ class WC_Subscription extends WC_Order {
 	 * Get the related orders for a subscription, including renewal orders and the initial order (if any)
 	 *
 	 * @param string The columns to return, either 'all' or 'ids'
+	 * @param string The type of orders to return, either 'renewal' or 'all'. Default 'all'.
 	 * @since 2.0
 	 */
-	public function get_related_orders( $return_fields = 'ids' ) {
+	public function get_related_orders( $return_fields = 'ids', $order_type = 'all' ) {
 
 		$return_fields = ( 'ids' == $return_fields ) ? $return_fields : 'all';
 
@@ -1303,21 +1304,24 @@ class WC_Subscription extends WC_Order {
 			'post_status'    => 'any',
 			'post_type'      => 'shop_order',
 			'fields'         => $return_fields,
+			'orderby'        => 'date',
+			'order'          => 'ASC',
 		) );
 
 		if ( 'all' == $return_fields ) {
 
-			if ( false !== $this->order ) {
+			if ( false !== $this->order && 'renewal' !== $order_type ) {
 				$related_orders[] = $this->order;
 			}
 
 			foreach ( $related_posts as $post_id ) {
 				$related_orders[] = wc_get_order( $post_id );
 			}
+
 		} else {
 
 			// Return IDs only
-			if ( isset( $this->order->id ) ) {
+			if ( isset( $this->order->id ) && 'renewal' !== $order_type ) {
 				$related_orders[] = $this->order->id;
 			}
 
