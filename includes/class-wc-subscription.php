@@ -81,8 +81,7 @@ class WC_Subscription extends WC_Order {
 
 			// Only set the payment gateway once and only when we first need it
 			if ( ! isset( $this->payment_gateway ) ) {
-				$payment_gateways = WC()->payment_gateways->payment_gateways();
-				$this->payment_gateway = isset( $payment_gateways[ $this->payment_method ] ) ? $payment_gateways[ $this->payment_method ] : null;
+				$this->payment_gateway = wc_get_payment_gateway_by_order( $this );
 			}
 
 			$value = $this->payment_gateway;
