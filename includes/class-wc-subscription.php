@@ -314,6 +314,7 @@ class WC_Subscription extends WC_Order {
 					case 'cancelled' :
 					case 'switched' :
 					case 'expired' :
+						$this->delete_date( 'next_payment' );
 						$this->update_dates( array( 'end' => current_time( 'mysql', true ) ) );
 						wcs_maybe_make_user_inactive( $this->customer_user );
 					break;
