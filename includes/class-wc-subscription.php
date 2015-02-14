@@ -1327,4 +1327,31 @@ class WC_Subscription extends WC_Order {
 		return apply_filters( 'woocommerce_subscription_related_orders', $related_orders, $this );
 	}
 
+
+	/**
+	 * Get the related orders for a subscription, including renewal orders and the initial order (if any)
+	 *
+	 * @param string The columns to return, either 'all' or 'ids'
+	 * @since 2.0
+	 */
+	public function get_payment_method_to_display() {
+
+		if ( $this->is_manual() ) {
+
+			$payment_method_to_display = __( 'Manual', 'woocommerce-subscriptions' );
+
+		// Use the current title of the payment gateway when available
+		} elseif ( false !== $this->payment_gateway ) {
+
+			$payment_method_to_display = $this->payment_gateway->get_title();
+
+		// Fallback to the title of the payment method when the subscripion was created
+		} else {
+
+			$payment_method_to_display = $this->payment_method_title;
+
+		}
+
+		return apply_filters( 'woocommerce_subscription_payment_method_to_display', $payment_method_to_display, $this );
+	}
 }
