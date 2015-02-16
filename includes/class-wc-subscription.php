@@ -1333,9 +1333,8 @@ class WC_Subscription extends WC_Order {
 
 
 	/**
-	 * Get the related orders for a subscription, including renewal orders and the initial order (if any)
+	 * Determine how the payment method should be displayed for a subscription.
 	 *
-	 * @param string The columns to return, either 'all' or 'ids'
 	 * @since 2.0
 	 */
 	public function get_payment_method_to_display() {
