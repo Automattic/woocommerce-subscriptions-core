@@ -34,3 +34,26 @@ function wcs_is_resubscribe_order( $order ) {
 
 	return apply_filters( 'woocommerce_subscriptions_is_resubscribe_order', $is_resubscribe_order, $order );
 }
+
+/**
+ * Checks the cart to see if it contains a subscription product renewal.
+ *
+ * @param  bool | Array The cart item containing the renewal, else false.
+ * @return string
+ * @since  2.0
+ */
+function wcs_cart_contains_resubscribe() {
+
+	$contains_resubscribe = false;
+
+	if ( ! empty( WC()->cart->cart_contents ) ) {
+		foreach ( WC()->cart->cart_contents as $cart_item ) {
+			if ( isset( $cart_item['subscription_resubscribe'] ) ) {
+				$contains_resubscribe = $cart_item;
+				break;
+			}
+		}
+	}
+
+	return $contains_resubscribe;
+}
