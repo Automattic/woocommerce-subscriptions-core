@@ -111,3 +111,34 @@ function wcs_create_renewal_order( $subscription ) {
 		return new WP_Error( 'renewal-order-error', $e->getMessage() );
 	}
 }
+
+/**
+ * Check if a given order is a subscription renewal order.
+ *
+ * @param WC_Order|int $order The WC_Order object or ID of a WC_Order order.
+ * @since 2.0
+ */
+function wcs_is_renewal_order( $order ) {
+
+	if ( ! is_object( $order ) ) {
+		$order = new WC_Order( $order );
+	}
+
+	if ( 0 == $order->post->post_parent ) { // It's a parent order or original order
+
+		$is_renewal = false;
+
+	} else {
+
+		$subscription = wcs_get_subscription( $order->post->post_parent );
+
+		if ( false === $subscription ) { // It's parent is something other than a subscription
+			$is_renewal = false;
+		} else {
+			$is_renewal = true;
+		}
+
+	}
+
+	return apply_filters( 'woocommerce_subscriptions_is_renewal_order', $is_renewal, $order );
+}
