@@ -142,3 +142,26 @@ function wcs_is_renewal_order( $order ) {
 
 	return apply_filters( 'woocommerce_subscriptions_is_renewal_order', $is_renewal, $order );
 }
+
+/**
+ * Checks the cart to see if it contains a subscription product renewal.
+ *
+ * @param  bool | Array The cart item containing the renewal, else false.
+ * @return string
+ * @since  2.0
+ */
+function wcs_cart_contains_renewal() {
+
+	$contains_renewal = false;
+
+	if ( ! empty( WC()->cart->cart_contents ) ) {
+		foreach ( WC()->cart->cart_contents as $cart_item ) {
+			if ( isset( $cart_item['subscription_renewal'] ) ) {
+				$contains_renewal = $cart_item;
+				break;
+			}
+		}
+	}
+
+	return $contains_renewal;
+}
