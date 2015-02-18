@@ -165,3 +165,25 @@ function wcs_cart_contains_renewal() {
 
 	return $contains_renewal;
 }
+
+/**
+ * Checks the cart to see if it contains a subscription product renewal for a failed renewal payment.
+ *
+ * @param  bool | Array The cart item containing the renewal, else false.
+ * @return string
+ * @since  2.0
+ */
+function wcs_cart_contains_failed_renewal_order_payment() {
+
+	$contains_renewal = false;
+	$cart_item        = wcs_cart_contains_renewal();
+
+	if ( false !== $cart_item && isset( $cart_item['subscription_renewal']['renewal_order_id'] ) ) {
+		$renewal_order = wc_get_order( $cart_item['subscription_renewal']['renewal_order_id'] );
+		if ( $renewal_order->has_status( 'failed' ) ) {
+			$contains_renewal = $cart_item;
+		}
+	}
+
+	return $contains_renewal;
+}
