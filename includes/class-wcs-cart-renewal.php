@@ -23,7 +23,11 @@ class WCS_Cart_Renewal {
 	 * @since 2.0
 	 */
 	public function __construct() {
+
 		$this->setup_hooks();
+
+		// Set URL parameter for manual subscription renewals
+		add_filter( 'woocommerce_get_checkout_payment_url', array( &$this, 'get_checkout_payment_url' ), 10, 2 );
 	}
 
 	/**
@@ -59,6 +63,22 @@ class WCS_Cart_Renewal {
 		}
 
 		return $is_purchasable;
+	}
+
+	/**
+	 * Flag payment of manual renewal orders via an extra URL param.
+	 *
+	 * This is particularly important to ensure renewals of limited subscriptions can be completed.
+	 *
+	 * @since 2.0
+	 */
+	public function get_checkout_payment_url( $pay_url, $order ) {
+
+		if ( wcs_is_renewal_order( $order ) ) {
+			$pay_url = add_query_arg( array( $this->cart_item_key => 'true' ), $pay_url );
+		}
+
+		return $pay_url;
 	}
 
 }
