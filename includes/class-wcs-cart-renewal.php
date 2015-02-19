@@ -40,6 +40,44 @@ class WCS_Cart_Renewal {
 		// Allow renewal of limited subscriptions
 		add_filter( 'woocommerce_subscription_is_purchasable', array( &$this, 'is_purchasable' ), 12, 2 );
 		add_filter( 'woocommerce_subscription_variation_is_purchasable', array( &$this, 'is_purchasable' ), 12, 2 );
+
+		// Check if a user is requesting to create a renewal order for a subscription, needs to happen after $wp->query_vars are set
+		add_action( 'template_redirect', array( &$this, 'maybe_setup_cart' ), 100 );
+	}
+
+	/**
+	 * Check if a payment is being made on a renewal order from 'My Account'. If so,
+	 * redirect the order into a cart/checkout payment flow so that the customer can
+	 * choose payment method, apply discounts set shipping and pay for the order.
+	 *
+	 * @since 2.0
+	 */
+	public function maybe_setup_cart() {
+		global $wp;
+
+		if ( isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) && isset( $wp->query_vars['order-pay'] ) ) {
+
+			// Pay for existing order
+			$order_key = $_GET[ 'key' ];
+			$order_id  = ( isset( $wp->query_vars['order-pay'] ) ) ? $wp->query_vars['order-pay'] : absint( $_GET['order_id'] );
+			$order     = wc_get_order( $wp->query_vars['order-pay'] );
+
+			if ( $order->order_key == $order_key && $order->has_status( array( 'pending', 'failed' ) ) && wcs_is_renewal_order( $order ) ) {
+
+				$subscription = wcs_get_subscription_for_renewal_order( $order );
+
+				$this->setup_cart( $subscription, array(
+					'subscription_id'  => $subscription->id,
+					'renewal_order_id' => $order_id,
+				) );
+
+				// Store renewal order's ID in session so it can be re-used after payment
+				WC()->session->set( 'order_awaiting_payment', $order_id );
+
+				wp_safe_redirect( WC()->cart->get_checkout_url() );
+				exit;
+			}
+		}
 	}
 
 	/**
