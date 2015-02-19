@@ -43,6 +43,60 @@ class WCS_Cart_Renewal {
 	}
 
 	/**
+	 * Set up cart item meta data for a to complete a subscription renewal via the cart.
+	 *
+	 * @since 2.0
+	 */
+	protected function setup_cart( $subscription, $cart_item_data ) {
+
+		WC()->cart->empty_cart( true );
+
+		foreach ( $subscription->get_items() as $line_item ) {
+
+			// Load all product info including variation data
+			$product_id   = (int) apply_filters( 'woocommerce_add_to_cart_product_id', $line_item['product_id'] );
+			$quantity     = (int) $line_item['qty'];
+			$variation_id = (int) $line_item['variation_id'];
+			$variations   = array();
+
+			foreach ( $line_item['item_meta'] as $meta_name => $meta_value ) {
+				if ( taxonomy_is_product_attribute( $meta_name ) ) {
+					$variations[ $meta_name ] = $meta_value[0];
+				} elseif ( meta_is_product_attribute( $meta_name, $meta_value, $product_id ) ) {
+					$variations[ $meta_name ] = $meta_value[0];
+				}
+			}
+
+			$product = get_product( $line_item['product_id'] );
+
+			// The notice displayed when a subscription product has been deleted and the custoemr attempts to manually renew or make a renewal payment for a failed recurring payment for that product/subscription
+			$product_deleted_error_message = apply_filters( 'woocommerce_subscriptions_renew_deleted_product_error_message', __( 'The %s product has been deleted and can no longer be renewed. Please choose a new product or contact us for assistance.', 'woocommerce-subscriptions' ) );
+
+			// Display error message for deleted products
+			if ( false === $product ) {
+
+				wc_add_notice( sprintf( $product_deleted_error_message, $line_item['name'] ), 'error' );
+
+			// Make sure we don't actually need the variation ID (if the product was a variation, it will have a variation ID; however, if the product has changed from a simple subscription to a variable subscription, there will be no variation_id)
+			} elseif ( $product->is_type( array( 'variable-subscription' ) ) && ! empty( $line_item['variation_id'] ) ) {
+
+				$variation = get_product( $variation_id );
+
+				// Display error message for deleted product variations
+				if ( false === $variation ) {
+					wc_add_notice( sprintf( $product_deleted_error_message, $line_item['name'] ), 'error' );
+				}
+			}
+
+			$cart_item_data = apply_filters( 'woocommerce_order_again_cart_item_data', array( $this->cart_item_key => $cart_item_data ), $line_item, $subscription );
+
+			WC()->cart->add_to_cart( $product_id, $quantity, $variation_id, $variations, $cart_item_data );
+		}
+
+		do_action( 'woocommerce_setup_cart_for_' . $this->cart_item_key, $subscription, $cart_item_data );
+	}
+
+	/**
 	 * If a product is being marked as not purchasable because it is limited and the customer has a subscription,
 	 * but the current request is to resubscribe to the subscription, then mark it as purchasable.
 	 *
