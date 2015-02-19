@@ -28,6 +28,9 @@ class WCS_Cart_Renewal {
 
 		// Set URL parameter for manual subscription renewals
 		add_filter( 'woocommerce_get_checkout_payment_url', array( &$this, 'get_checkout_payment_url' ), 10, 2 );
+
+		// When a renewal order's status changes, check if a corresponding subscription's status should be changed accordingly
+		add_filter( 'woocommerce_order_status_changed', array( &$this, 'maybe_change_subscription_status' ), 10, 3 );
 	}
 
 	/**
@@ -171,6 +174,74 @@ class WCS_Cart_Renewal {
 		}
 
 		return $pay_url;
+	}
+
+	/**
+	 * Process a renewal payment completed via checkout.
+	 *
+	 * This function is hooked to 'woocommerce_order_status_changed', rather than 'woocommerce_payment_complete', to ensure
+	 * subscriptions are updated even if payment is processed by a manual payment gateways (which would never trigger the
+	 * 'woocommerce_payment_complete' hook) or by some other means that circumvents that hook.
+	 *
+	 * @since 2.0
+	 */
+	public function maybe_change_subscription_status( $order_id, $orders_old_status, $orders_new_status ) {
+
+		if ( ! wcs_is_renewal_order( $order_id ) ) {
+			return;
+		}
+
+		$subscription = wcs_get_subscription_for_renewal_order( $order_id );
+
+		// Do we need to activate a subscription?
+		if ( in_array( $orders_new_status, array( 'processing', 'completed' ) ) ) {
+
+			if ( $subscription->is_manual() && in_array( $orders_old_status, array( 'pending', 'on-hold' ) ) ) {
+
+				$this->process_payment( $subscription );
+
+			} elseif ( 'failed' === $orders_old_status ) {
+
+				add_action( 'reactivated_subscription', 'WC_Subscriptions_Renewal_Order::trigger_processed_failed_renewal_order_payment_hook', 10, 2 );
+
+				$this->process_payment( $subscription );
+
+				remove_action( 'reactivated_subscription', 'WC_Subscriptions_Renewal_Order::trigger_processed_failed_renewal_order_payment_hook', 10, 2 );
+
+				do_action( 'woocommerce_subscriptions_paid_for_failed_renewal_order', wc_get_order( $order_id ), $subscription );
+
+			}
+
+		} elseif ( 'failed' == $orders_new_status ) {
+
+			// Don't duplicate renewal order
+			remove_action( 'woocommerce_subscription_renewal_payment_failed', __CLASS__ . '::create_failed_payment_renewal_order' );
+
+			$subscription->payment_failed();
+
+			// But make sure orders are still generated for other payments in the same request
+			add_action( 'woocommerce_subscription_renewal_payment_failed', __CLASS__ . '::create_failed_payment_renewal_order' );
+
+		}
+	}
+
+	/**
+	 * Once payment is completed on a renewal order, process the payment on the subscription and update it to active.
+	 *
+	 * @param WC_Subscription $subscription A WC_Subscription object
+	 * @since 2.0
+	 */
+	protected function process_payment( $subscription ) {
+
+		// Don't duplicate the renewal order
+		remove_action( 'woocommerce_subscription_renewal_payment_complete', 'WC_Subscriptions_Renewal_Order::create_paid_renewal_order', 10, 2 );
+
+		$subscription->payment_complete();
+
+		// But make sure orders are still generated for other payments in the same request
+		add_action( 'woocommerce_subscription_renewal_payment_complete', 'WC_Subscriptions_Renewal_Order::create_paid_renewal_order', 10, 2 );
+
+		$subscription->update_status( 'active' );
 	}
 
 }
