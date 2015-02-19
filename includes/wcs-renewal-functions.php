@@ -2,7 +2,7 @@
 /**
  * WooCommerce Subscriptions Renewal Functions
  *
- * Functions for managing user
+ * Functions for managing renewal of a subscription.
  *
  * @author 		Prospress
  * @category 	Core
