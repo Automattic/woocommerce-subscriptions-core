@@ -32,6 +32,52 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	}
 
 	/**
+	 * Checks if the current request is by a user to resubcribe to a subscription, and if it is setup a
+	 * subscription resubcribe process via the cart for the product/variation/s that are being renewed.
+	 *
+	 * @since 2.0
+	 */
+	public function maybe_setup_cart() {
+		global $woocommerce;
+
+		if ( isset( $_GET['resubscribe'] ) && isset( $_GET['_wpnonce'] ) ) {
+
+			$subscription = wcs_get_subscription( $_GET['resubscribe'] );
+			$redirect_to  = get_permalink( wc_get_page_id( 'myaccount' ) );
+
+			if ( wp_verify_nonce( $_GET['_wpnonce'], $subscription->id ) === false ) {
+
+				wc_add_notice( __( 'There was an error with your request to resubscribe. Please try again.', 'woocommerce-subscriptions' ), 'error' );
+
+			} elseif ( empty( $subscription ) ) {
+
+				wc_add_notice( __( 'That subscription does not exist. Has it been deleted?', 'woocommerce-subscriptions' ), 'error' );
+
+			} elseif ( get_current_user_id() !== $subscription->get_user_id() ) {
+
+				wc_add_notice( __( 'That doesn\'t appear to be one of your subscriptions.', 'woocommerce-subscriptions' ), 'error' );
+
+			} elseif ( ! wcs_can_user_resubscribe_to( $subscription ) ) {
+
+				wc_add_notice( __( 'You can not resubscribe to that subscription. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), 'error' );
+
+			} else {
+
+				wc_add_notice( __( 'Complete checkout to resubscribe.', 'woocommerce-subscriptions' ), 'success' );
+
+				$this->setup_cart( $subscription, array(
+					'subscription_id' => $subscription->id,
+				) );
+
+				$redirect_to = WC()->cart->get_checkout_url();
+			}
+
+			wp_safe_redirect( $redirect_to );
+			exit;
+		}
+	}
+
+	/**
 	 * When restoring the cart from the session, if the cart item contains addons, as well as
 	 * a resubscribe, do not adjust the price because the original order's price will
 	 * be used, and this includes the addons amounts.
