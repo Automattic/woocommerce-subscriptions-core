@@ -36,6 +36,35 @@ function wcs_is_resubscribe_order( $order ) {
 }
 
 /**
+ * Create a resubscribe order to record a customer resubscribing to an expired or cancelled subscription.
+ *
+ * This method is a wrapper for @see wcs_create_order() which creates an order with the same post meta, order
+ * items and order item meta as the subscription passed to it. No trial periods or sign up fees are applied
+ * to resubscribe orders.
+ *
+ * @param  int | WC_Subscription $subscription Post ID of a 'shop_subscription' post, or instance of a WC_Subscription object
+ * @return WC_Subscription
+ * @since  2.0
+ */
+function wcs_create_resubscribe_order( $subscription ) {
+
+	if ( ! is_object( $subscription ) ) {
+		$subscription = wcs_get_subscription( $subscription );
+	}
+
+	$renewal_order = wcs_create_renewal_order( $subscription );
+
+	if ( is_wp_error( $renewal_order ) ) {
+		return new WP_Error( 'resubscribe-order-error', $renewal_order->get_error_message() );
+	}
+
+	// Keep a record of the original subscription's ID on the new order
+	update_post_meta( $renewal_order->id, '_original_subscription', $subscription->id, true );
+
+	return apply_filters( 'wcs_resubscribe_order_created', $renewal_order, $subscription );
+}
+
+/**
  * Checks the cart to see if it contains a subscription product renewal.
  *
  * @param  bool | Array The cart item containing the renewal, else false.

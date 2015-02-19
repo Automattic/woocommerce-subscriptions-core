@@ -57,7 +57,6 @@ function wcs_create_renewal_order( $subscription ) {
 				 '_completed_date',
 				 '_order_key',
 				 '_edit_lock',
-				 '_original_order',
 				 '_wc_points_earned',
 				 '_transaction_id',
 				 '_billing_interval',
@@ -76,9 +75,6 @@ function wcs_create_renewal_order( $subscription ) {
 		foreach( $order_meta as $meta_item ) {
 			add_post_meta( $renewal_order->id, $meta_item['meta_key'], maybe_unserialize( $meta_item['meta_value'] ), true );
 		}
-
-		// Keep a record of the original order's ID on the renewal order
-		update_post_meta( $renewal_order->id, '_original_order', $subscription->id, true );
 
 		// Copy over line items and allow extensions to add/remove items or item meta
 		$items = apply_filters( 'wcs_renewal_order_items', $subscription->get_items( array( 'line_item', 'fee', 'shipping', 'tax' ) ), $subscription );
