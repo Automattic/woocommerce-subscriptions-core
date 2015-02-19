@@ -103,3 +103,78 @@ function wcs_cart_contains_resubscribe() {
 
 	return $contains_resubscribe;
 }
+
+/**
+ * Check if a user can resubscribe to an expired or cancelled subscription by creating a
+ * new subscription with the same terms.
+ *
+ * For it to be possile to resubscribe to a subscription, the user specificed with $user_id must
+ * and the subscription must:
+ * 1. be be inactive (expired or cancelled)
+ * 2. had at least one payment, to avoid circumventing sign-up fees
+ * 3. its parent order must not have already been superseded by a new order (to prevent
+ *    displaying "Resubscribe" links on subscriptions that have already been renewed)
+ * 4. the products to which the subscription relates must not have been deleted
+ *
+ * @param  int | WC_Subscription $subscription Post ID of a 'shop_subscription' post, or instance of a WC_Subscription object
+ * @param  int The ID of a user
+ * @return bool
+ * @since  2.0
+ */
+function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
+
+	if ( ! is_object( $subscription ) ) {
+		$subscription = wcs_get_subscription( $subscription );
+	}
+
+	if ( empty( $user_id ) ) {
+		$user_id = get_current_user_id();
+	}
+
+	if ( empty( $subscription ) ) {
+
+		$can_user_resubscribe = false;
+
+	} elseif ( $user_id !== $subscription->get_user_id() ) {
+
+		$can_user_resubscribe = false;
+
+	} else {
+
+		$resubscribe_orders = get_posts( array(
+			'meta_query'  => array(
+				array(
+					'key'     => '_original_subscription',
+					'compare' => '=',
+					'value'   => $subscription->id,
+					'type'    => 'numeric'
+				)
+			),
+			'post_type'   => 'shop_order',
+			'post_status' => 'any',
+			'post_parent' => 0
+		) );
+
+		// Make sure all line items still exist
+		$all_line_items_exist = true;
+
+		foreach ( $subscription->get_items() as $line_item ) {
+
+			$product = ( ! empty( $line_item['variation_id'] ) ) ? get_product( $line_item['variation_id'] ) : get_product( $line_item['product_id'] );
+
+			if ( false === $product ) {
+				$all_line_items_exist = false;
+				break;
+			}
+		}
+
+		if ( empty( $resubscribe_orders ) && $subscription->get_completed_payment_count() > 0 && true === $all_line_items_exist && $subscription->has_status( array( 'cancelled', 'expired', 'trash' ) ) ) {
+			$can_user_resubscribe = true;
+		} else {
+			$can_user_resubscribe = false;
+		}
+
+	}
+
+	return apply_filters( 'wcs_can_user_resubscribe_to_subscription', $can_user_resubscribe, $subscription, $user_id );
+}
