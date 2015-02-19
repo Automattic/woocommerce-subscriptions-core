@@ -82,6 +82,30 @@ function wcs_get_users_resubscribe_link( $subscription ) {
 }
 
 /**
+ * Returns a URL including required parameters for an authenticated user to renew a subscription by product ID.
+ *
+ * @param int $product_id The ID of a product post type.
+ * @since 1.2
+ */
+function wcs_get_users_resubscribe_link_for_product( $product_id ) {
+
+	$renewal_url = '';
+
+	if ( is_user_logged_in() ) {
+		foreach ( wcs_get_users_subscriptions() as $subscription ) {
+			foreach( $subscription->get_items() as $line_item ) {
+				if ( ( $line_item['product_id'] == $product_id || $line_item['variation_id'] == $product_id ) && wcs_can_user_resubscribe_to( $subscription ) ) {
+					$renewal_url = wcs_get_users_resubscribe_link( $subscription );
+					break;
+				}
+			}
+		}
+	}
+
+	return $renewal_url;
+}
+
+/**
  * Checks the cart to see if it contains a subscription product renewal.
  *
  * @param  bool | Array The cart item containing the renewal, else false.
