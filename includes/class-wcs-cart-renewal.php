@@ -36,6 +36,9 @@ class WCS_Cart_Renewal {
 		// Remove order action buttons from the My Account page
 		add_filter( 'woocommerce_my_account_my_orders_actions', array( &$this, 'filter_my_account_my_orders_actions' ), 10, 2 );
 
+		// Update customer's address on the subscription if it is changed during renewal
+		add_filter( 'woocommerce_checkout_update_customer_data', array( &$this, 'maybe_update_subscription_customer_data' ), 10, 2 );
+
 		// When a renewal order's status changes, check if a corresponding subscription's status should be changed accordingly
 		add_filter( 'woocommerce_order_status_changed', array( &$this, 'maybe_change_subscription_status' ), 10, 3 );
 	}
@@ -218,6 +221,43 @@ class WCS_Cart_Renewal {
 		}
 
 		return $price;
+	}
+
+	/**
+	 * When completing checkout for a subscription renewal, update the address on the subscription to use
+	 * the shipping/billing address entered in case it has changed since the subscription was first created.
+	 *
+	 * @since 2.0
+	 */
+	public function maybe_update_subscription_customer_data( $update_customer_data, $checkout_object ) {
+
+		$cart_renewal_item = wcs_cart_contains_renewal();
+
+		if ( false !== $cart_renewal_item ) {
+
+			$subscription = wcs_get_subscription( $cart_renewal_item[ $this->cart_item_key ]['subscription_id'] );
+
+			$billing_address = array();
+			if ( $checkout_object->checkout_fields['billing'] ) {
+				foreach ( array_keys( $checkout_object->checkout_fields['billing'] ) as $field ) {
+					$field_name = str_replace( 'billing_', '', $field );
+					$billing_address[ $field_name ] = $checkout_object->get_posted_address_data( $field_name );
+				}
+			}
+
+			$shipping_address = array();
+			if ( $checkout_object->checkout_fields['shipping'] ) {
+				foreach ( array_keys( $checkout_object->checkout_fields['shipping'] ) as $field ) {
+					$field_name = str_replace( 'shipping_', '', $field );
+					$shipping_address[ $field_name ] = $checkout_object->get_posted_address_data( $field_name, 'shipping' );
+				}
+			}
+
+			$subscription->set_address( $billing_address, 'billing' );
+			$subscription->set_address( $shipping_address, 'shipping' );
+		}
+
+		return $update_customer_data;
 	}
 
 	/**
