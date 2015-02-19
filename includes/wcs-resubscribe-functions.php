@@ -65,6 +65,23 @@ function wcs_create_resubscribe_order( $subscription ) {
 }
 
 /**
+ * Returns a URL including required parameters for an authenticated user to renew a subscription
+ *
+ * @param  int | WC_Subscription $subscription Post ID of a 'shop_subscription' post, or instance of a WC_Subscription object
+ * @return string
+ * @since  2.0
+ */
+function wcs_get_users_resubscribe_link( $subscription ) {
+
+	$subscription_id  = ( is_object( $subscription ) ) ? $subscription->id : $subscription;
+
+	$resubscribe_link = add_query_arg( array( 'resubscribe' => $subscription_id ), get_permalink( wc_get_page_id( 'myaccount' ) ) );
+	$resubscribe_link = wp_nonce_url( $resubscribe_link, $subscription_id );
+
+	return apply_filters( 'wcs_users_resubscribe_link', $resubscribe_link, $subscription_id );
+}
+
+/**
  * Checks the cart to see if it contains a subscription product renewal.
  *
  * @param  bool | Array The cart item containing the renewal, else false.
