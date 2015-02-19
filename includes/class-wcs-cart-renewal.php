@@ -33,6 +33,9 @@ class WCS_Cart_Renewal {
 		add_action( 'woocommerce_before_calculate_totals', array( &$this, 'set_renewal_discounts' ), 10 );
 		add_filter( 'woocommerce_get_discounted_price', array( &$this, 'get_discounted_price_for_renewal' ), 10, 3 );
 
+		// Remove order action buttons from the My Account page
+		add_filter( 'woocommerce_my_account_my_orders_actions', array( &$this, 'filter_my_account_my_orders_actions' ), 10, 2 );
+
 		// When a renewal order's status changes, check if a corresponding subscription's status should be changed accordingly
 		add_filter( 'woocommerce_order_status_changed', array( &$this, 'maybe_change_subscription_status' ), 10, 3 );
 	}
@@ -303,6 +306,27 @@ class WCS_Cart_Renewal {
 			add_action( 'woocommerce_subscription_renewal_payment_failed', __CLASS__ . '::create_failed_payment_renewal_order' );
 
 		}
+	}
+
+	/**
+	 * Customise which actions are shown against a subscription renewal order on the My Account page.
+	 *
+	 * @since 2.0
+	 */
+	public function filter_my_account_my_orders_actions( $actions, $order ) {
+
+		if ( wcs_is_renewal_order( $order ) ) {
+
+			unset( $actions['cancel'] );
+
+			// If the subscription has been deleted or reactivated some other way, don't support payment on the order
+			$subscription = wcs_get_subscription_for_renewal_order( $order );
+			if ( empty( $subscription ) || ! $subscription->has_status( array( 'on-hold', 'pending' ) ) ) {
+				unset( $actions['pay'] );
+			}
+		}
+
+		return $actions;
 	}
 
 	/**
