@@ -78,6 +78,33 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	}
 
 	/**
+	 * Restore renewal flag when cart is reset and modify Product object with renewal order related info
+	 *
+	 * @since 2.0
+	 */
+	public function get_cart_item_from_session( $cart_item_session_data, $cart_item, $key ) {
+
+		if ( isset( $cart_item[ $this->cart_item_key ] ) ) {
+
+			// Setup the cart as if it's a renewal (as the setup process is almost the same)
+			$cart_item_session_data = parent::get_cart_item_from_session( $cart_item_session_data, $cart_item, $key );
+
+			// Need to get the original subscription price, not the current price
+			$subscription = wcs_get_subscription( $cart_item[ $this->cart_item_key ]['subscription_id'] );
+
+			// Make sure the original subscription terms perisist
+			$_product                               = $cart_item_session_data['data'];
+			$_product->subscription_period          = $subscription->billing_period;
+			$_product->subscription_period_interval = $subscription->billing_interval;
+
+			// And don't give another free trial period
+			$_product->subscription_trial_length = 0;
+		}
+
+		return $cart_item_session_data;
+	}
+
+	/**
 	 * When restoring the cart from the session, if the cart item contains addons, as well as
 	 * a resubscribe, do not adjust the price because the original order's price will
 	 * be used, and this includes the addons amounts.

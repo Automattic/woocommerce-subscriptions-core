@@ -40,6 +40,9 @@ class WCS_Cart_Renewal {
 	 */
 	public function setup_hooks() {
 
+		// Make sure renewal meta data persists between sessions
+		add_filter( 'woocommerce_get_cart_item_from_session', array( &$this, 'get_cart_item_from_session' ), 10, 3 );
+
 		// Allow renewal of limited subscriptions
 		add_filter( 'woocommerce_subscription_is_purchasable', array( &$this, 'is_purchasable' ), 12, 2 );
 		add_filter( 'woocommerce_subscription_variation_is_purchasable', array( &$this, 'is_purchasable' ), 12, 2 );
@@ -135,6 +138,42 @@ class WCS_Cart_Renewal {
 		}
 
 		do_action( 'woocommerce_setup_cart_for_' . $this->cart_item_key, $subscription, $cart_item_data );
+	}
+
+	/**
+	 * Restore renewal flag when cart is reset and modify Product object with renewal order related info
+	 *
+	 * @since 2.0
+	 */
+	public function get_cart_item_from_session( $cart_item_session_data, $cart_item, $key ) {
+
+		if ( isset( $cart_item[ $this->cart_item_key ] ) ) {
+
+			$cart_item_session_data[ $this->cart_item_key ] = $cart_item[ $this->cart_item_key ];
+
+			$_product = $cart_item_session_data['data'];
+
+			// Need to get the original subscription price, not the current price
+			$subscription = wcs_get_subscription( $cart_item[ $this->cart_item_key ]['subscription_id'] );
+
+			foreach ( $subscription->get_items() as $item_id => $item ) {
+				if ( $_product->id == $item['product_id'] && ( ! isset( $_product->variation_id ) || $item['variation_id'] == $order_item['variation_id']) ) {
+					$item_to_renew = $item;
+				}
+			}
+
+			$_product->price = $item_to_renew['line_subtotal'] / $item_to_renew['qty'];
+
+			// Don't carry over any sign up fee
+			$_product->subscription_sign_up_fee = 0;
+
+			$_product->post->post_title = apply_filters( 'woocommerce_subscriptions_renewal_product_title', $_product->get_title(), $_product );
+
+			// Make sure the same quantity is renewed
+			$cart_item_session_data['quantity'] = $item_to_renew['qty'];
+		}
+
+		return $cart_item_session_data;
 	}
 
 	/**
