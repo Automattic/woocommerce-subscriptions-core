@@ -1426,8 +1426,17 @@ class WC_Subscription extends WC_Order {
 
 			update_post_meta( $this->id, '_payment_method', $payment_method );
 
-			$payment_method_title = wc_get_payment_gateway_by_order( $this )->get_title();
-			update_post_meta( $this->id, '_payment_method_title', $payment_method_title );
+			// Set subscription to manual when the payment method is empty.
+			if ( empty( $payment_method ) ) {
+
+				$this->update_manual( true );
+			} else {
+
+				$payment_method_title = wc_get_payment_gateway_by_order( $this )->get_title();
+				update_post_meta( $this->id, '_payment_method_title', $payment_method_title );
+
+			}
+
 
 		}
 
