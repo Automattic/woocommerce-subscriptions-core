@@ -1357,4 +1357,80 @@ class WC_Subscription extends WC_Order {
 
 		return apply_filters( 'woocommerce_subscription_payment_method_to_display', $payment_method_to_display, $this );
 	}
+
+	/**
+	 * Save new payment meta for the Subscription
+	 *
+	 * @since 2.0
+	 * @param $payment_method
+	 * @param $payment_meta array
+	 * @param $validate validate function string
+	 */
+	public function set_payment_method( $payment_method, $payment_meta = array(), $validate = '' ) {
+
+		$function_name = explode( '::', $validate );
+		if ( 1 == count( $function_name ) && function_exists( $function_name[0] ) ) {
+			$result = $validate( $this, $payment_method, $payment_meta );
+
+		} elseif ( 2 ==  count( $function_name ) && method_exists( $function_name[0], $function_name[1] ) ) {
+			$result = call_user_func( array( $function_name[0], $function_name[1] ), $this, $payment_method, $payment_meta );
+
+		} elseif ( ! empty( $validate ) ) {
+			throw new Exception( __( 'The new payment method data has not been saved because the validate function given does not exist.', 'woocommerce-subscriptions' ) );
+
+		}
+
+		if ( ! empty( $payment_meta ) && is_array( $payment_meta ) ) {
+
+			foreach ( $payment_meta as $meta_table => $meta ) {
+
+				// skip any non arrays in $payment_meta which includes the validate function if it exists.
+				if ( ! is_array( $meta ) ) {
+					continue;
+				}
+
+				foreach ( $meta as $meta_key => $meta_data ) {
+
+					if ( isset( $meta_data['value'] ) ) {
+
+						switch( $meta_table ) {
+							case 'user_meta':
+								update_user_meta( $this->customer_user, $meta_key, $meta_data['value'] );
+								break;
+							case 'post_meta':
+								update_post_meta( $this->id, $meta_key, $meta_data['value'] );
+								break;
+							case 'options':
+								update_option( $meta_key, $meta_data['value'] );
+								break;
+							case 'order_item_meta':
+								if ( empty( $meta_data['item_id'] ) ) {
+									throw new Exception( __( 'In order to add payment data to the woocommerce_order_item_it', 'woocommerce-subscriptions' ) );
+								}
+
+								wc_update_order_item_meta( $meta_data['item_id'], $meta_key, $meta_data['value'] );
+								break;
+							default:
+								do_action( 'wcs_save_other_payment_meta', $this, $meta_table, $meta_key, $meta_data['value'] );
+						}
+
+					}
+
+				}
+
+			}
+
+		}
+
+		if ( $this->payment_method !== $payment_method ) {
+
+			update_post_meta( $this->id, '_payment_method', $payment_method );
+
+			$payment_method_title = wc_get_payment_gateway_by_order( $this )->get_title();
+			update_post_meta( $this->id, '_payment_method_title', $payment_method_title );
+
+		}
+
+	}
+
 }
