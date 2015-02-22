@@ -33,11 +33,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 		self::init_address_fields();
 
-		if ( WC()->payment_gateways() ) {
-			$payment_gateways = WC()->payment_gateways->payment_gateways();
-		}
-
-		$payment_method = ! empty( $subscription->payment_method ) ? $subscription->payment_method : '';
+		$payment_method = ! empty( $subscription->payment_method ) ? $subscription->payment_method : 'Manual';
 
 		wp_nonce_field( 'woocommerce_save_data', 'woocommerce_meta_nonce' );
 		?>
@@ -82,32 +78,8 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							</select>
 						</p>
 
-						<p class="form-field form-field-wide">
-							<label><?php _e( 'Payment Method:', 'woocommerce' ); ?></label>
-							<select name="_payment_method" id="_payment_method" class="first">
-								<?php
-									$found_method = false;
-
-									foreach ( $payment_gateways as $gateway ) {
-										if ( $gateway->enabled == "yes" ) {
-											$selected = ( $subscription->is_manual() ) ? '' : selected( $payment_method, $gateway->id, false );
-											echo '<option value="' . esc_attr( $gateway->id ) . '" ' . $selected . '>' . esc_html( $gateway->get_title() ) . '</option>';
-											if ( $payment_method == $gateway->id ) {
-												$found_method = true;
-											}
-										}
-									}
-
-									if ( ! $found_method && ! empty( $payment_method ) ) {
-										echo '<option value="' . esc_attr( $payment_method ) . '" selected="selected">' . __( 'Other', 'woocommerce' ) . '</option>';
-									} else {
-										echo '<option value="" ' . selected( $subscription->is_manual(), true, false ) . '>' . __( 'Manual', 'woocommerce' ) . '</option>';
-									}
-								?>
-							</select>
-						</p>
-
 						<?php do_action( 'woocommerce_admin_order_data_after_order_details', $subscription ); ?>
+
 					</div>
 					<div class="order_data_column">
 						<h4><?php _e( 'Billing Details', 'woocommerce' ); ?> <a class="edit_address" href="#"><img src="<?php echo WC()->plugin_url(); ?>/assets/images/icons/edit.png" alt="<?php _e( 'Edit', 'woocommerce' ); ?>" width="14" /></a></h4>
@@ -154,6 +126,8 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 									break;
 								}
 							}
+
+							WC_Subscriptions_Change_Payment_Gateway::edit_subscription_payment_gateway_meta( $subscription );
 
 							echo '</div>';
 
