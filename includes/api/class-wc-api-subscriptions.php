@@ -187,7 +187,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 			unset( $data['billing_period'] );
 			unset( $data['billing_interval'] );
 
-			$this->update_subscription_schedule( $subscription, $data );
+			$this->update_schedule( $subscription, $data );
 
 			// allow order total to be manually set, especially for those cases where there's no line items added to the subscription
 			if ( isset( $data['order_total'] ) ) {
@@ -267,7 +267,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 				throw new WC_API_Exception( 'wcs_api_cannot_edit_subscription', sprintf( __( 'Edit subscription failed with error: %s', 'woocommerce-subscriptions' ), $edited->get_error_message() ), $edited->get_error_code() );
 			}
 
-			$this->update_subscription_schedule( $subscription, $data );
+			$this->update_schedule( $subscription, $data );
 
 			do_action( 'wcs_api_subscription_updated', $subscription_id, $data, $this );
 
@@ -315,7 +315,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	 * @param $data array
 	 * @param $subscription WC_Subscription
 	 */
-	protected function update_subscription_schedule( $subscription, $data ) {
+	protected function update_schedule( $subscription, $data ) {
 
 		if ( ! empty( $data['billing_interval'] ) ) {
 
