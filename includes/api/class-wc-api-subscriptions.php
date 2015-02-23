@@ -203,10 +203,6 @@ class WC_API_Subscriptions extends WC_API_Orders {
 				update_post_meta( $subscription->id, '_payment_method', $data['payment_details']['method_id'] );
 				update_post_meta( $subscription->id, '_payment_method_title', $data['payment_details']['method_title'] );
 
-				if ( isset( $data['payment_details']['paid'] ) && 'true' === $data['payment_details']['paid'] ) {
-					$order->payment_complete( isset( $data['payment_details']['transaction_id'] ) ? $data['payment_details']['transaction_id'] : '' );
-				}
-
 			}
 
 			do_action( 'wcs_api_subscription_created', $subscription->id, $this );
