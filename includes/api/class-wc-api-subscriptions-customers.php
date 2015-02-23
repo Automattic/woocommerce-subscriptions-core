@@ -50,7 +50,7 @@ class WC_API_Subscriptions_Customers extends WC_API_Customers {
 						FROM $wpdb->posts AS posts
 						LEFT JOIN {$wpdb->postmeta} AS meta on posts.ID = meta.post_id
 						WHERE meta.meta_key = '_customer_user'
-						AND   meta.meta_value = '%s'
+						AND   meta.meta_value = '%d'
 						AND   posts.post_type = 'shop_subscription'
 						AND   posts.post_status IN ( '" . implode( "','", array_keys( wcs_get_subscription_statuses() ) ) . "' )
 					", $id ) );
