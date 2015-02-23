@@ -294,7 +294,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	protected function create_base_order( $args, $data ) {
 
 		$args['billing_interval'] = ( ! empty( $data['billing_interval'] ) ) ? $data['billing_interval'] : '';
-		$args['billing_period'] = ( ! empty( $data['billing_period'] ) ) ? $data['billing_period'] : '';
+		$args['billing_period']   = ( ! empty( $data['billing_period'] ) ) ? $data['billing_period'] : '';
 
 		return wcs_create_subscription( $args );
 	}
@@ -351,7 +351,6 @@ class WC_API_Subscriptions extends WC_API_Orders {
 			}
 
 			$subscription->update_date( $date, $data[ $date . '_date' ] );
-
 
 		}
 
@@ -448,7 +447,6 @@ class WC_API_Subscriptions extends WC_API_Orders {
 		return array( 'subscription_statuses' => wcs_get_subscription_statuses() );
 	}
 
-
 	/**
 	 * Get the total number of subscriptions
 	 *
@@ -459,7 +457,6 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	 * @return int | WP_Error
 	 */
 	public function get_subscription_count( $status = NULL, $filter = array() ) {
-
 		return $this->get_orders_count( $status, $filter );
 	}
 
@@ -548,7 +545,6 @@ class WC_API_Subscriptions extends WC_API_Orders {
 
 		return array( 'subscription_note' => $note['order_note'] );
 	}
-
 
 	/**
 	 * Verify and delete subscription note.
