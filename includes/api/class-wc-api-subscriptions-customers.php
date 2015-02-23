@@ -47,7 +47,7 @@ class WC_API_Subscriptions_Customers extends WC_API_Customers {
 		}
 
 		$subscription_ids = $wpdb->get_col( $wpdb->prepare( "SELECT id
-						FROM $wpdb->posts AS posts
+						FROM {$wpdb->posts} AS posts
 						LEFT JOIN {$wpdb->postmeta} AS meta on posts.ID = meta.post_id
 						WHERE meta.meta_key = '_customer_user'
 						AND   meta.meta_value = '%d'
