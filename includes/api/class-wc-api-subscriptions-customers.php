@@ -60,7 +60,7 @@ class WC_API_Subscriptions_Customers extends WC_API_Customers {
 		$subscriptions = array();
 
 		foreach( $subscription_ids as $subscription_id ) {
-			$subscriptions[] = wcs_get_subscription( $subscription_id );
+			$subscriptions[] = WC()->api->WC_API_Subscriptions->get_subscription( $subscription_id, $fields );
 		}
 
 		return array( 'customer_subscriptions' => apply_filters( 'wc_subscriptions_api_customer_subscriptions', $subscriptions, $id, $fields, $subscription_ids, $this->server ) );

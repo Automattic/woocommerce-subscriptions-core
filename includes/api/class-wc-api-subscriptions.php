@@ -409,9 +409,31 @@ class WC_API_Subscriptions extends WC_API_Orders {
 			return $subscription_id;
 		}
 
-		$subscription = wcs_get_subscription( $subscription_id );
+		$subscription      = wcs_get_subscription( $subscription_id );
+		$order_data        = $this->get_order( $subscription_id );
+		$subscription_data = $order_data['order'];
 
-		return array( 'subscription' => apply_filters( 'wcs_api_get_subscription_response', $subscription, $fields, $filter, $this->server ) );
+		// Not all order meta relates to a subscription (a subscription doesn't "complete")
+		if ( isset( $subscription_data['completed_at'] ) ) {
+			unset( $subscription_data['completed_at'] );
+		}
+
+		$subscription_data['billing_schedule'] = array(
+			'period'          => $subscription->billing_period,
+			'interval'        => $subscription->billing_interval,
+			'start_at'        => $this->get_formatted_datetime( $subscription, 'start' ),
+			'trial_end_at'    => $this->get_formatted_datetime( $subscription, 'trial_end' ),
+			'next_payment_at' => $this->get_formatted_datetime( $subscription, 'next_payment' ),
+			'end_at'          => $this->get_formatted_datetime( $subscription, 'end' ),
+		);
+
+		if ( ! empty( $subscription->order ) ) {
+			$subscription_data['parent_order_id'] = $subscription->order->id;
+		} else {
+			$subscription_data['parent_order_id'] = array();
+		}
+
+		return array( 'subscription' => apply_filters( 'wcs_api_get_subscription_response', $subscription_data, $fields, $filter, $this->server ) );
 	}
 
 	/**
