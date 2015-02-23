@@ -359,7 +359,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	 */
 	public function delete_subscription( $subscription_id, $force = false ) {
 
-		$subscription_id = $this->validate_request( $subscription_id, 'shop_subscription', 'delete' );
+		$subscription_id = $this->validate_request( $subscription_id, $this->post_type, 'delete' );
 
 		if ( is_wp_error( $subscription_id ) ) {
 			return $subscription_id;
@@ -385,7 +385,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	 */
 	public function get_subscription( $subscription_id, $fields = null, $filter = array() ) {
 
-		$subscription_id = $this->validate_request( $subscription_id, 'shop_subscription', 'read' );
+		$subscription_id = $this->validate_request( $subscription_id, $this->post_type, 'read' );
 
 		if ( is_wp_error( $subscription_id ) ) {
 			return $subscription_id;
@@ -561,7 +561,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	 */
 	public function get_all_subscription_orders( $subscription_id, $filters = null ) {
 
-		$subscription_id = $this->validate_request( $subscription_id, 'shop_subscription', 'read' );
+		$subscription_id = $this->validate_request( $subscription_id, $this->post_type, 'read' );
 
 		if ( is_wp_error( $subscription_id ) ) {
 			return $subscription_id;
