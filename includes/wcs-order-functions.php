@@ -70,3 +70,25 @@ function wcs_copy_order_address( $from_order, $to_order, $address_type = 'all' )
 
 	return apply_filters( 'woocommerce_subscriptions_copy_order_address', $to_order, $from_order, $address_type );
 }
+
+/**
+ * Checks an order to see if it contains a subscription.
+ *
+ * @param mixed $order A WC_Order object or the ID of the order which the subscription was purchased in.
+ * @return bool True if the order contains a subscription, otherwise false.
+ * @since 2.0
+ */
+function wcs_order_contains_subscription( $order ) {
+
+	if ( ! is_object( $order ) ) {
+		$order = new WC_Order( $order );
+	}
+
+	if ( count ( wcs_get_subscriptions_for_order( $order->id ) ) > 0 ) {
+		$contains_subscription = true;
+	} else {
+		$contains_subscription = false;
+	}
+
+	return $contains_subscription;
+}

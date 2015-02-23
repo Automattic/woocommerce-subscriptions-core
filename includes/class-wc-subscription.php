@@ -81,8 +81,7 @@ class WC_Subscription extends WC_Order {
 
 			// Only set the payment gateway once and only when we first need it
 			if ( ! isset( $this->payment_gateway ) ) {
-				$payment_gateways = WC()->payment_gateways->payment_gateways();
-				$this->payment_gateway = isset( $payment_gateways[ $this->payment_method ] ) ? $payment_gateways[ $this->payment_method ] : null;
+				$this->payment_gateway = wc_get_payment_gateway_by_order( $this );
 			}
 
 			$value = $this->payment_gateway;
@@ -279,6 +278,9 @@ class WC_Subscription extends WC_Order {
 
 			try {
 
+				wp_update_post( array( 'ID' => $this->id, 'post_status' => $new_status_key ) );
+				$this->post_status = $new_status_key;
+
 				switch ( $new_status ) {
 
 					case 'pending' :
@@ -294,12 +296,12 @@ class WC_Subscription extends WC_Order {
 							$end_date = current_time( 'mysql', true );
 						}
 
-						$this->update_date( 'end', $end_date );
+						$this->update_dates( array( 'end' => $end_date ) );
 					break;
 
 					case 'active' :
 						// Recalculate and set next payment date
-						$this->update_date( 'next_payment', $this->calculate_date( 'next_payment' ) );
+						$this->update_dates( array( 'next_payment' => $this->calculate_date( 'next_payment' ) ) );
 						// Trial end date and end/expiration date don't change at all - they should be set when the subscription is first created
 						wcs_make_user_active( $this->customer_user );
 					break;
@@ -312,7 +314,8 @@ class WC_Subscription extends WC_Order {
 					case 'cancelled' :
 					case 'switched' :
 					case 'expired' :
-						$this->update_date( 'end', current_time( 'mysql', true ) );
+						$this->delete_date( 'next_payment' );
+						$this->update_dates( array( 'end' => current_time( 'mysql', true ) ) );
 						wcs_maybe_make_user_inactive( $this->customer_user );
 					break;
 				}
@@ -549,7 +552,7 @@ class WC_Subscription extends WC_Order {
 			} elseif ( $time_diff < 0 && absint( $time_diff ) < WEEK_IN_SECONDS ) {
 				$date_to_display = sprintf( __( '%s ago', 'woocommerce-subscriptions' ), human_time_diff( current_time( 'timestamp', true ), $timestamp_gmt ) );
 			} else {
-				$date_to_display = date_i18n( wc_date_format(), $this->get_time( $date_type, 'site' ) );
+				$date_to_display = date_i18n( wc_date_format(), $timestamp_gmt, true );
 			}
 		} else {
 			switch ( $date_type ) {
@@ -585,121 +588,126 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Set a date on the subscription.
+	 * Set the dates on the subscription.
 	 *
-	 * Setting one date may actually affect others. For example, if setting the next payment date,
-	 * and there is a free trial and/or expiration date on the subscription, and the new payment date
-	 * is after those dates, they will be pushed back.
+	 * Because dates are interdependent on each other, this function will take an array of dates, make sure that all
+	 * dates are in the right order in the right format, that there is at least something to update.
 	 *
-	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'
-	 * @param mixed $datetime A MySQL formatted Date/time string.
-	 * @param string $timezone The timezone of the $datetime param. Default 'gmt'.
+	 * @param array 		$dates 			array containing dates with keys: 'start', 'trial_end', 'next_payment',
+	 *                           			'last_payment' or 'end'. Values are time
+	 * @param string 		$timezone 		The timezone of the $datetime param. Default 'gmt'.
 	 */
-	public function update_date( $date_type, $datetime, $timezone = 'gmt' ) {
+	public function update_dates( $dates, $timezone = 'gmt' ) {
 		global $wpdb;
 
-		// Do we actually need to delete the date?
-		if ( 0 == $datetime ) {
-			return $this->delete_date( $date_type );
+		if ( ! is_array( $dates ) ) {
+			throw new InvalidArgumentException( __( 'Invalid format. First parameter needs to be an array.', 'woocommerce-subscriptions' ) );
 		}
 
-		if ( false === strptime( $datetime, '%Y-%m-%d %H:%M:%S' ) ) {
-			throw new InvalidArgumentException( __( 'Invalid date. The date must be of the format: "Y-m-d H:i:s".', 'woocommerce-subscriptions' ) );
+		if ( empty( $dates ) ) {
+			throw new InvalidArgumentException( __( 'Invalid data. First parameter was empty when passed to update_dates().', 'woocommerce-subscriptions' ) );
+		}
+
+		$date_keys = array_keys( wcs_get_subscription_date_types() );
+		if ( ! empty( array_diff( array_keys( $dates ), $date_keys ) ) ) {
+			throw new InvalidArgumentException( __( 'Invalid data. First parameter has a date that is not in the registered date types.', 'woocommerce-subscriptions' ) );
+		}
+
+		$timestamps = array();
+		foreach ( $dates as $date_type => $datetime ) {
+			if ( false === strptime( $datetime, '%Y-%m-%d %H:%M:%S' ) ) {
+				throw new InvalidArgumentException(
+					sprintf(
+						__( 'Invalid %s date. The date must be of the format: "Y-m-d H:i:s".', 'woocommerce-subscriptions' ),
+						$date_type
+					)
+				);
+			}
+
+			$date_type = str_replace( '_date', '', $date_type );
+
+			if ( 'gmt' !== strtolower( $timezone ) ) {
+				$timestamps[ $date_type ] = get_gmt_from_date( $timestamps[ $date_type ] );
+			} else {
+				$timestamps[ $date_type ] = strtotime( $datetime );
+			}
+		}
+
+		foreach ( $date_keys as $date_type ) {
+			if ( ! array_key_exists( $date_type, $timestamps ) ) {
+				$timestamps[ $date_type ] = $this->get_time( $date_type );
+			}
+
+			if ( 0 == $timestamps[ $date_type ] ) {
+				// Last payment is not in the UI, and it should NOT be deleted as that would mess with scheduling
+				if ( 'last_payment' != $date_type ) {
+					$this->delete_date( $date_type );
+				}
+				unset( $timestamps[ $date_type ] );
+				continue;
+			}
+		}
+
+		$messages = array();
+
+		// And then iterate over them. We need the two separate loops as we need a full array before we start checking
+		// the relationships between them.
+		foreach ( $timestamps as $date_type => $datetime ) {
+			switch ( $date_type ) {
+				case 'end' :
+					if ( array_key_exists( 'last_payment', $timestamps ) && $datetime <= $timestamps['last_payment'] ) {
+						$messages[] = sprintf( __( 'The %s date must occur after the last_payment date.', 'woocommerce-subscriptions' ), $date_type );
+					}
+
+					if ( array_key_exists( 'next_payment', $timestamps ) && $datetime <= $timestamps['next_payment'] ) {
+						$messages[] = sprintf( __( 'The %s date must occur after the next_payment date.', 'woocommerce-subscriptions' ), $date_type );
+					}
+				case 'next_payment' :
+					// Guarantees that end is strictly after trial_end, because if next_payment and end can't be at same
+					// time
+					if ( array_key_exists( 'trial_end', $timestamps ) && $datetime < $timestamps['trial_end'] ) {
+						$messages[] = sprintf( __( 'The %s date must occur after the trial_end date.', 'woocommerce-subscriptions' ), $date_type );
+					}
+				case 'trial_end' :
+					if ( $datetime <= $timestamps['start'] ) {
+						$messages[] = sprintf( __( 'The %s date must occur after the start date.', 'woocommerce-subscriptions' ), $date_type );
+					}
+			}
+		}
+
+		if ( ! empty ( $messages ) ) {
+			throw new Exception( join( ' ', $messages ) );
 		}
 
 		$is_updated = false;
 
-		// Accept dates with a '_date' suffix, like 'next_payment_date' or 'start_date'
-		$date_type = str_replace( '_date', '', $date_type );
+		foreach ( $timestamps as $date_type => $timestamp ) {
+			$datetime = date( 'Y-m-d H:i:s', $timestamp );
 
-		// Given date not in UTC, convert it
-		if ( 'gmt' != strtolower( $timezone ) ) {
-			$datetime = get_gmt_from_date( $datetime );
-		}
-
-		// Given date same as existing date, ignore it.
-		if ( $datetime == $this->get_date( $date_type ) ) {
-			return $is_updated;
-		}
-
-		// Make sure some dates are before next payment date
-		if ( in_array( $date_type, array( 'start', 'trial_end' ) ) ) {
-			$next_payment_timestamp = $this->get_time( 'next_payment' );
-			if ( 0 != $next_payment_timestamp && strtotime( $datetime ) > $next_payment_timestamp ) {
-				switch ( $date_type ) {
-					case 'start' :
-						$message = __( 'The start date must occur before the next payment date.', 'woocommerce-subscriptions' );
-					break;
-					case 'trial_end' :
-						$message = __( 'The trial end date must occur before the next payment date.', 'woocommerce-subscriptions' );
-					break;
-				}
-				throw new Exception( $message );
+			if ( $datetime == $this->get_date( $date_type ) ) {
+				continue;
 			}
-		}
 
-		// Make sure some dates are before the expiration date
-		if ( in_array( $date_type, array( 'start', 'trial_end', 'next_payment' ) ) ) {
-			$end_timestamp = $this->get_time( 'end' );
-			if ( 0 != $end_timestamp && strtotime( $datetime ) > $end_timestamp ) {
-				switch ( $date_type ) {
-					case 'start' :
-						$message = __( 'The start date must occur before the end date.', 'woocommerce-subscriptions' );
+			switch ( $date_type ) {
+				case 'next_payment' :
+				case 'trial_end' :
+				case 'end' :
+					$is_updated = update_post_meta( $this->id, wcs_get_date_meta_key( $date_type ), $datetime );
 					break;
-					case 'trial_end' :
-						$message = __( 'The trial end date must occur before the end date.', 'woocommerce-subscriptions' );
+				case 'start' :
+					$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET post_date = %s, post_date_gmt = %s WHERE ID = %s", get_date_from_gmt( $datetime ), $datetime, $this->id ) ); // Don't use wp_update_post() to avoid infinite loops here
+					$is_updated = true;
 					break;
-					case 'next_payment' :
-						$message = __( 'The next payment date must occur before the end date.', 'woocommerce-subscriptions' );
+				case 'last_payment' :
+					$this->update_last_payment_date( $datetime );
+					$is_updated = true;
 					break;
-				}
-				throw new Exception( $message );
 			}
-		}
 
-		// Make sure next payment and expiration dates are after trial end date
-		if ( in_array( $date_type, array( 'next_payment', 'end' ) ) ) {
-			$trial_end_timestamp = $this->get_time( 'trial_end' );
-			if ( 0 != $trial_end_timestamp && strtotime( $datetime ) < $trial_end_timestamp ) {
-				switch ( $date_type ) {
-					case 'next_payment' :
-						$message = __( 'The next payment date must occur after the trial end date.', 'woocommerce-subscriptions' );
-					break;
-					case 'end' :
-						$message = __( 'The end date must occur after the trial end date.', 'woocommerce-subscriptions' );
-					break;
-				}
-				throw new Exception( $message );
+			if ( $is_updated ) {
+				$this->schedule->{$date_type} = $datetime;
+				do_action( 'woocommerce_subscription_updated_date', $this->id, $date_type, $datetime );
 			}
-		}
-
-		// Make sure expiration date is after next payment
-		if ( in_array( $date_type, array( 'end' ) ) ) {
-			$next_payment_timestamp = $this->get_time( 'next_payment' );
-			if ( 0 != $next_payment_timestamp && strtotime( $datetime ) < $next_payment_timestamp ) {
-				throw new Exception( __( 'The expiration date must occur after the next payment date.', 'woocommerce-subscriptions' ) );
-			}
-		}
-
-		switch ( $date_type ) {
-			case 'next_payment' :
-			case 'trial_end' :
-			case 'end' :
-				$is_updated = update_post_meta( $this->id, wcs_get_date_meta_key( $date_type ), $datetime );
-				break;
-			case 'start' :
-				$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET post_date = %s, post_date_gmt = %s WHERE ID = %s", get_date_from_gmt( $datetime ), $datetime, $this->id ) ); // Don't use wp_update_post() to avoid infinite loopshere array(
-				$is_updated = true;
-				break;
-			case 'last_payment' :
-				$this->update_last_payment_date( $datetime );
-				$is_updated = true;
-				break;
-		}
-
-		if ( $is_updated ) {
-			$this->schedule->{$date_type} = $datetime;
-			do_action( 'woocommerce_subscription_updated_date', $this->id, $date_type, $datetime );
 		}
 
 		return $is_updated;
@@ -1055,111 +1063,15 @@ class WC_Subscription extends WC_Order {
 			$tax_display = $this->tax_display_cart;
 		}
 
-		$total_rows = array();
+		$total_rows = parent::get_order_item_totals( $tax_display );
 
-		if ( $subtotal = $this->get_subtotal_to_display( false, $tax_display ) ) {
-			$total_rows['cart_subtotal'] = array(
-				'label' => __( 'Cart Subtotal:', 'woocommerce' ),
-				'value'	=> $subtotal,
-			);
+		// Change some of the labels to remove "Order" and make it clear the value represents a recurring amount
+		if ( isset( $total_rows['order_discount'] ) ) {
+			$total_rows['order_discount']['label'] = __( 'Recurring Discount:', 'woocommerce-subscriptions' );
 		}
 
-		if ( $this->get_cart_discount() > 0 ) {
-			$total_rows['cart_discount'] = array(
-				'label' => __( 'Cart Discount:', 'woocommerce' ),
-				'value'	=> '-' . $this->get_cart_discount_to_display(),
-			);
-		}
-
-		if ( $this->get_shipping_method() ) {
-			$total_rows['shipping'] = array(
-				'label' => __( 'Shipping:', 'woocommerce' ),
-				'value'	=> $this->get_shipping_to_display()
-			);
-		}
-
-		if ( $fees = $this->get_fees() ) {
-
-			foreach ( $fees as $id => $fee ) {
-
-				if ( apply_filters( 'woocommerce_get_order_item_totals_excl_free_fees', $fee['line_total'] + 0 == $fee['line_tax'], $id ) ) {
-					continue;
-				}
-
-				if ( 'excl' == $tax_display ) {
-
-					$total_rows[ 'fee_' . $id ] = array(
-						'label' => $fee['name'] . ':',
-						'value'	=> wc_price( $fee['line_total'], array( 'currency' => $this->get_order_currency() ) )
-					);
-
-				} else {
-
-					$total_rows[ 'fee_' . $id ] = array(
-						'label' => $fee['name'] . ':',
-						'value'	=> wc_price( $fee['line_total'] + $fee['line_tax'], array( 'currency' => $this->get_order_currency() ) )
-					);
-				}
-			}
-		}
-
-		// Tax for tax exclusive prices
-		if ( 'excl' == $tax_display ) {
-
-			if ( 'itemized' == get_option( 'woocommerce_tax_total_display' ) ) {
-
-				foreach ( $this->get_tax_totals() as $code => $tax ) {
-
-					$total_rows[ sanitize_title( $code ) ] = array(
-						'label' => $tax->label . ':',
-						'value'	=> $tax->formatted_amount,
-					);
-				}
-			} else {
-
-				$total_rows['tax'] = array(
-					'label' => WC()->countries->tax_or_vat() . ':',
-					'value'	=> wc_price( $this->get_total_tax(), array( 'currency' => $this->get_order_currency() ) )
-				);
-			}
-		}
-
-		if ( $this->get_order_discount() > 0 ) {
-			$total_rows['order_discount'] = array(
-				'label' => __( 'Subscription Discount:', 'woocommerce' ),
-				'value'	=> '-' . $this->get_order_discount_to_display()
-			);
-		}
-
-		if ( $this->get_total() > 0 ) {
-			$total_rows['payment_method'] = array(
-				'label' => __( 'Payment Method:', 'woocommerce' ),
-				'value' => $this->payment_method_title,
-			);
-		}
-
-		$total_rows['order_total'] = array(
-			'label' => __( 'Recurring Total:', 'woocommerce' ),
-			'value'	=> $this->get_formatted_order_total()
-		);
-
-		// Tax for inclusive prices
-		if ( 'yes' == get_option( 'woocommerce_calc_taxes' ) && 'incl' == $tax_display ) {
-
-			$tax_string_array = array();
-
-			if ( 'itemized' == get_option( 'woocommerce_tax_total_display' ) ) {
-
-				foreach ( $this->get_tax_totals() as $code => $tax ) {
-					$tax_string_array[] = sprintf( '%s %s', $tax->formatted_amount, $tax->label );
-				}
-			} else {
-				$tax_string_array[] = sprintf( '%s %s', wc_price( $this->get_total_tax(), array( 'currency' => $this->get_order_currency() ) ), WC()->countries->tax_or_vat() );
-			}
-
-			if ( ! empty( $tax_string_array ) ) {
-				$total_rows['order_total']['value'] .= ' ' . sprintf( __( '(Includes %s)', 'woocommerce' ), implode( ', ', $tax_string_array ) );
-			}
+		if ( isset( $total_rows['order_total'] ) ) {
+			$total_rows['order_total']['label'] = __( 'Recurring Total:', 'woocommerce-subscriptions' );
 		}
 
 		return apply_filters( 'woocommerce_get_order_item_totals', $total_rows, $this );
@@ -1377,9 +1289,10 @@ class WC_Subscription extends WC_Order {
 	 * Get the related orders for a subscription, including renewal orders and the initial order (if any)
 	 *
 	 * @param string The columns to return, either 'all' or 'ids'
+	 * @param string The type of orders to return, either 'renewal' or 'all'. Default 'all'.
 	 * @since 2.0
 	 */
-	public function get_related_orders( $return_fields = 'ids' ) {
+	public function get_related_orders( $return_fields = 'ids', $order_type = 'all' ) {
 
 		$return_fields = ( 'ids' == $return_fields ) ? $return_fields : 'all';
 
@@ -1391,21 +1304,24 @@ class WC_Subscription extends WC_Order {
 			'post_status'    => 'any',
 			'post_type'      => 'shop_order',
 			'fields'         => $return_fields,
+			'orderby'        => 'date',
+			'order'          => 'ASC',
 		) );
 
 		if ( 'all' == $return_fields ) {
 
-			if ( false !== $this->order ) {
+			if ( false !== $this->order && 'renewal' !== $order_type ) {
 				$related_orders[] = $this->order;
 			}
 
 			foreach ( $related_posts as $post_id ) {
 				$related_orders[] = wc_get_order( $post_id );
 			}
+
 		} else {
 
 			// Return IDs only
-			if ( isset( $this->order->id ) ) {
+			if ( isset( $this->order->id ) && 'renewal' !== $order_type ) {
 				$related_orders[] = $this->order->id;
 			}
 
@@ -1415,4 +1331,30 @@ class WC_Subscription extends WC_Order {
 		return apply_filters( 'woocommerce_subscription_related_orders', $related_orders, $this );
 	}
 
+
+	/**
+	 * Determine how the payment method should be displayed for a subscription.
+	 *
+	 * @since 2.0
+	 */
+	public function get_payment_method_to_display() {
+
+		if ( $this->is_manual() ) {
+
+			$payment_method_to_display = __( 'Manual', 'woocommerce-subscriptions' );
+
+		// Use the current title of the payment gateway when available
+		} elseif ( false !== $this->payment_gateway ) {
+
+			$payment_method_to_display = $this->payment_gateway->get_title();
+
+		// Fallback to the title of the payment method when the subscripion was created
+		} else {
+
+			$payment_method_to_display = $this->payment_method_title;
+
+		}
+
+		return apply_filters( 'woocommerce_subscription_payment_method_to_display', $payment_method_to_display, $this );
+	}
 }
