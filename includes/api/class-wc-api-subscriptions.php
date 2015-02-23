@@ -336,18 +336,18 @@ class WC_API_Subscriptions extends WC_API_Orders {
 			update_post_meta( $subscription->id, '_billing_period', $period );
 		}
 
-		foreach( array( 'start', 'trial_end', 'end', 'next_payment' ) as $date ) {
+		$dates_to_update = array();
 
-			if ( empty( $data[ $date . '_date' ] ) ) {
-				continue;
+		foreach( array( 'start', 'trial_end', 'end', 'next_payment' ) as $date_type ) {
+
+			if ( isset( $data[ $date_type . '_date' ] ) ) {
+				$dates_to_update[ $date_type ] = $data[ $date_type . '_date' ];
 			}
 
-			if ( ! $subscription->can_date_be_updated( $date ) ) {
-				throw new WC_API_Exception( 'wcs_api_cannot_update_subscription_date', __( 'Cannot update subscription {$date} date', 'woocommerce-subscriptions' ) );
-			}
+		}
 
-			$subscription->update_date( $date, $data[ $date . '_date' ] );
-
+		if ( ! empty( $dates_to_update ) ) {
+			$subscription->update_dates( $dates_to_update );
 		}
 
 	}
