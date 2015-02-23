@@ -23,7 +23,7 @@ class WC_API_Subscriptions_Customers extends WC_API_Customers {
 
 		# GET /customers/<id>/subscriptions
 		$routes[ $this->base . '/(?P<id>\d+)/subscriptions' ] = array(
-			array( array( $this, 'get_customer_susbcriptions' ), WC_API_SERVER::READABLE ),
+			array( array( $this, 'get_customer_subscriptions' ), WC_API_SERVER::READABLE ),
 		);
 
 		return $routes;
@@ -36,7 +36,7 @@ class WC_API_Subscriptions_Customers extends WC_API_Customers {
 	 * @param $id int
 	 * @param $fields array
 	 */
-	public function get_customer_susbcriptions( $id, $fields = null ) {
+	public function get_customer_subscriptions( $id, $fields = null ) {
 		global $wpdb;
 
 		// check the customer id given is a valid customer in the store. We're able to leech off WC-API for this.
