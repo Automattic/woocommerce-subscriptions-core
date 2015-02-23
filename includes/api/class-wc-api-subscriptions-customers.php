@@ -46,13 +46,15 @@ class WC_API_Subscriptions_Customers extends WC_API_Customers {
 			return $id;
 		}
 
-		$subscription_ids = $wpdb->get_col( $wpdb->prepare( "SELECT id
+		$subscription_ids = $wpdb->get_col( $wpdb->prepare( "SELECT ID, post_date_gmt
 						FROM {$wpdb->posts} AS posts
 						LEFT JOIN {$wpdb->postmeta} AS meta on posts.ID = meta.post_id
 						WHERE meta.meta_key = '_customer_user'
 						AND   meta.meta_value = '%d'
 						AND   posts.post_type = 'shop_subscription'
 						AND   posts.post_status IN ( '" . implode( "','", array_keys( wcs_get_subscription_statuses() ) ) . "' )
+						GROUP BY posts.ID
+						ORDER BY posts.post_date_gmt DESC
 					", $id ) );
 
 		$subscriptions = array();
