@@ -570,23 +570,22 @@ class WC_API_Subscriptions extends WC_API_Orders {
 
 		$subscription_orders = $subscription->get_related_orders();
 
+		$formatted_orders = array();
+
 		if ( ! empty( $subscription_orders ) ) {
-			$orders = array();
 
 			// set post_type back to shop order so that get_orders doesn't try return a subscription.
 			$this->post_type = 'shop_order';
 
 			foreach ( $subscription_orders as $order_id ) {
-				$orders[] = $this->get_order( $order_id );
+				$formatted_orders[] = $this->get_order( $order_id );
 			}
 
 			$this->post_type = 'shop_subscription';
 
-		} else {
-			$orders = sprintf( __( 'Subscription %s has no related orders.', 'woocommerce-subscriptions' ), '#' . $subscription_id );
 		}
 
-		return array( 'subscription_orders' => apply_filters( 'wcs_api_subscription_orders_response', $orders, $subscription_id, $filters, $this->server ) );
+		return array( 'subscription_orders' => apply_filters( 'wcs_api_subscription_orders_response', $formatted_orders, $subscription_id, $filters, $this->server ) );
 	}
 
 }
