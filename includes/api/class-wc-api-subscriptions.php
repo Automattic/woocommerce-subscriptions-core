@@ -588,4 +588,24 @@ class WC_API_Subscriptions extends WC_API_Orders {
 		return array( 'subscription_orders' => apply_filters( 'wcs_api_subscription_orders_response', $formatted_orders, $subscription_id, $filters, $this->server ) );
 	}
 
+	/**
+	 * Get a certain date for a subscription, if it exists, formatted for return
+	 *
+	 * @since 2.0
+	 * @param $subscription
+	 * @param $date_type
+	 */
+	protected function get_formatted_datetime( $subscription, $date_type ) {
+
+		$timestamp = $subscription->get_time( $date_type );
+
+		if ( $timestamp > 0 ) {
+			$formatted_datetime = $this->server->format_datetime( $timestamp );
+		} else {
+			$formatted_datetime = '';
+		}
+
+		return $formatted_datetime;
+	}
+
 }
