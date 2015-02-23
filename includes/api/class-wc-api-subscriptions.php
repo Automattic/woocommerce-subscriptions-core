@@ -630,4 +630,39 @@ class WC_API_Subscriptions extends WC_API_Orders {
 		return $formatted_datetime;
 	}
 
+	/**
+	 * Helper method to get order post objects
+	 *
+	 * We need to override WC_API_Orders::query_orders() because it uses wc_get_order_statuses()
+	 * for the query, but subscriptions use the values returned by wcs_get_subscription_statuses().
+	 *
+	 * @since 2.0
+	 * @param array $args request arguments for filtering query
+	 * @return WP_Query
+	 */
+	protected function query_orders( $args ) {
+
+		// set base query arguments
+		$query_args = array(
+			'fields'      => 'ids',
+			'post_type'   => $this->post_type,
+			'post_status' => array_keys( wcs_get_subscription_statuses() ),
+		);
+
+		// add status argument
+		if ( ! empty( $args['status'] ) ) {
+
+			$statuses                  = 'wc-' . str_replace( ',', ',wc-', $args['status'] );
+			$statuses                  = explode( ',', $statuses );
+			$query_args['post_status'] = $statuses;
+
+			unset( $args['status'] );
+
+		}
+
+		$query_args = $this->merge_query_args( $query_args, $args );
+
+		return new WP_Query( $query_args );
+	}
+
 }
