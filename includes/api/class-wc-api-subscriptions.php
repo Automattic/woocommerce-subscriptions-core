@@ -313,7 +313,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	 */
 	protected function update_schedule( $subscription, $data ) {
 
-		if ( ! empty( $data['billing_interval'] ) ) {
+		if ( isset( $data['billing_interval'] ) ) {
 
 			$interval = absint( $data['billing_interval'] );
 
