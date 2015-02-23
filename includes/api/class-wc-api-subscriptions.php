@@ -357,7 +357,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	 *
 	 * @since 2.0
 	 */
-	public function delete_subscription( $subscription_id, $fields = array() ) {
+	public function delete_subscription( $subscription_id, $force = false ) {
 
 		$subscription_id = $this->validate_request( $subscription_id, 'shop_subscription', 'delete' );
 
@@ -365,24 +365,11 @@ class WC_API_Subscriptions extends WC_API_Orders {
 			return $subscription_id;
 		}
 
-		$subscription = wcs_get_subscription( $subscription_id );
+		wc_delete_shop_order_transients( $subscription_id );
 
-		// check the subscription can be deleted (moved to the trash)
-		try {
+		do_action( 'woocommerce_api_delete_subscription', $subscription_id, $this );
 
-			$subscription->update_status( 'trash' );
-
-			// Log deletion on order
-			$subscription->add_order_note( sprintf( __( 'Deleted Subscription "%s".', 'woocommerce-subscriptions' ), '[subscription_name]' ) );
-
-		} catch ( Exception $e ) {
-
-			return new WP_Error( 'wcs_api_subscription_cannot_be_deleted', $e->getMessage(), array( 'status' => 401 ) );
-		}
-
-		do_action( 'wcs_api_subscription_deleted', $subscription, $item, $fields );
-		return array( 'subscription_deleted', apply_filters( 'wcs_api_delete_subscription_response', $subscription, $fields, $this->server ) );
-
+		return $this->delete( $subscription_id, 'subscription', ( 'true' === $force ) );
 	}
 
 	/**
