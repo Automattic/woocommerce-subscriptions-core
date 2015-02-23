@@ -197,7 +197,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 			if ( isset( $data['payment_details'] ) && is_array( $data['payment_details'] ) ) {
 
 				if ( empty( $data['payment_details']['method_id'] ) || empty( $data['payment_details']['method_title'] ) ) {
-					throw new WC_API_Exception( 'wcs_api_invalid_payment_details', __( 'Recurring payment method ID and title are required', 'woocommerce' ), array( 'status' => 400 ) );
+					throw new WC_API_Exception( 'wcs_api_invalid_payment_details', __( 'Recurring payment method ID and title are required', 'woocommerce' ), 400 );
 				}
 
 				update_post_meta( $subscription->id, '_payment_method', $data['payment_details']['method_id'] );
@@ -322,7 +322,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 			$interval = absint( $data['billing_interval'] );
 
 			if ( 0 == $interval ) {
-				throw new WC_API_Exception( 'wcs_api_invalid_subscription_meta', __( 'Invalid subscription billing interval given. Must be an integer greater than 0.', 'woocommerce-subscriptions' ) );
+				throw new WC_API_Exception( 'wcs_api_invalid_subscription_meta', __( 'Invalid subscription billing interval given. Must be an integer greater than 0.', 'woocommerce-subscriptions' ), 400 );
 			}
 
 			update_post_meta( $subscription->id, '_billing_interval', $interval );
@@ -333,8 +333,8 @@ class WC_API_Subscriptions extends WC_API_Orders {
 
 			$period = strtolower( $data['billing_period'] );
 
-			if ( ! in_array( strtolower( $period, array_keys( wcs_get_subscription_period_strings() ) ) ) ) {
-				throw new WC_API_Exception( 'wcs_api_invalid_subscription_meta', __( 'Invalid subscription billing period given.', 'woocommerce-subscriptions' ) );
+			if ( ! in_array( strtolower( $period ), array_keys( wcs_get_subscription_period_strings() ) ) ) {
+				throw new WC_API_Exception( 'wcs_api_invalid_subscription_meta', __( 'Invalid subscription billing period given.', 'woocommerce-subscriptions' ), 400 );
 			}
 
 			update_post_meta( $subscription->id, '_billing_period', $period );
