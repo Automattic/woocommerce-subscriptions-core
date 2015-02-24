@@ -608,8 +608,9 @@ class WC_Subscription extends WC_Order {
 			throw new InvalidArgumentException( __( 'Invalid data. First parameter was empty when passed to update_dates().', 'woocommerce-subscriptions' ) );
 		}
 
-		$date_keys = array_keys( wcs_get_subscription_date_types() );
-		if ( ! empty( array_diff( array_keys( $dates ), $date_keys ) ) ) {
+		$date_keys  = array_keys( wcs_get_subscription_date_types() );
+		$extra_keys = array_diff( array_keys( $dates ), $date_keys );
+		if ( ! empty( $extra_keys ) ) {
 			throw new InvalidArgumentException( __( 'Invalid data. First parameter has a date that is not in the registered date types.', 'woocommerce-subscriptions' ) );
 		}
 
