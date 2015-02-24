@@ -13,9 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 } // Exit if accessed directly
 
 if ( class_exists( 'WCS_Admin_Post_Types' ) ) {
-	new WCS_Admin_Post_Types();
-
-	return;
+	return new WCS_Admin_Post_Types();
 }
 
 /**
@@ -294,8 +292,8 @@ class WCS_Admin_Post_Types {
 
 				$action_url = add_query_arg(
 					array(
-						'post' => array( $the_subscription->id ),
-						'_wpnonce'     => wp_create_nonce( $the_subscription->id ),
+						'post'     => array( $the_subscription->id ),
+						'_wpnonce' => wp_create_nonce( $the_subscription->id ),
 					)
 				);
 
@@ -466,7 +464,7 @@ class WCS_Admin_Post_Types {
 				if ( 0 == $the_subscription->get_time( $column, 'gmt' ) ) {
 					$column_content .= '-';
 				} else {
-					$column_content .= sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( $the_subscription->get_time( $column, 'site' ) ), esc_html( $the_subscription->get_date_to_display( $column, 'site' ) ) );
+					$column_content .= sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( $the_subscription->get_time( $column, 'site' ) ), esc_html( $the_subscription->get_date_to_display( $column ) ) );
 				}
 
 				$column_content .= wp_kses( $column_content, array( 'time' => array( 'class' => array(), 'title' => array() ) ) );
