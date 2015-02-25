@@ -641,7 +641,7 @@ class WC_Subscription extends WC_Order {
 
 			if ( 0 == $timestamps[ $date_type ] ) {
 				// Last payment is not in the UI, and it should NOT be deleted as that would mess with scheduling
-				if ( 'last_payment' != $date_type ) {
+				if ( 'last_payment' != $date_type && 'start' != $date_type ) {
 					$this->delete_date( $date_type );
 				}
 				unset( $timestamps[ $date_type ] );
