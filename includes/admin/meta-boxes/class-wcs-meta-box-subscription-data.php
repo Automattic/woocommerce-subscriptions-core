@@ -127,7 +127,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 								}
 							}
 
-							WC_Subscriptions_Change_Payment_Gateway::edit_subscription_payment_gateway_meta( $subscription );
+							WCS_Change_Payment_Method_Admin::display_change_subscription_payment_gateway_fields( $subscription );
 
 							echo '</div>';
 
@@ -219,29 +219,9 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 		}
 
 		$subscription   = wcs_get_subscription( $post_id );
-		$payment_method = wc_clean( $_POST['_payment_method'] );
-		$payment_method_meta = apply_filters( 'woocommerce_subscription_payment_meta', array(), $subscription );
-		$payment_method_meta = ( ! empty( $payment_method_meta[ $payment_method ] ) ) ? $payment_method_meta[ $payment_method ] : array();
-
-		// add the values in POST in the $payment_method_meta
-		if ( ! empty( $payment_method_meta ) ) {
-
-			foreach( $payment_method_meta as $meta_table => &$meta ) {
-
-				if ( ! is_array( $meta ) ) {
-					continue;
-				}
-
-				foreach ( $meta as $meta_key => &$meta_data ) {
-					$meta_data['value'] = ! empty( $_POST[ $meta_table . '-' . str_replace( ' ', '_', $meta_key ) ] ) ? $_POST[ $meta_table . '-' . str_replace( ' ', '_', $meta_key ) ] : '';
-
-				}
-
-			}
-		}
 
 		try {
-			$subscription->set_payment_method( $payment_method, $payment_method_meta, ( ! empty( $payment_method_meta['validate_function'] ) ) ? $payment_method_meta['validate_function'] : '' );
+			WCS_Change_Payment_Method_Admin::save_new_payment_data_from_post( $subscription );
 
 			$subscription->update_status( $_POST['order_status'] );
 
