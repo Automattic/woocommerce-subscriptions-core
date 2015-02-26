@@ -194,7 +194,7 @@ class WCS_Admin_Post_Types {
 			$subscription->update_status( $new_status, __( 'Subscription status changed by bulk edit:', 'woocommerce-subscriptions' ) );
 
 			// Fire the action hooks
-			switch ( $current_action ) {
+			switch ( $action ) {
 				case 'active' :
 				case 'on-hold' :
 				case 'cancelled' :
