@@ -123,11 +123,20 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function needs_payment() {
 
-		// Check if this subscription is pending or failed and has an order total > 0
-		$needs_payment = parent::needs_payment();
+		$needs_payment = false;
 
-		// Now check if the last renewal order needs payment
-		if ( false == $needs_payment ) {
+		// First check if the subscription is pending or failed or is for $0
+		if ( parent::needs_payment() ) {
+
+			$needs_payment = true;
+
+		// Now make sure the parent order doesn't need payment
+		} elseif ( false !== $this->order && ( $this->order->needs_payment() || $this->order->has_status( 'on-hold' ) ) ) {
+
+			$needs_payment = true;
+
+		// And finally, check that the last renewal order doesn't need payment
+		} else {
 
 			$last_renewal_order_id = get_posts( array(
 				'post_parent'    => $this->id,
@@ -137,11 +146,15 @@ class WC_Subscription extends WC_Order {
 				'orderby'        => 'ID',
 				'order'          => 'DESC',
 				'fields'         => 'ids',
-			));
+			) );
 
 			if ( ! empty( $last_renewal_order_id ) ) {
+
 				$renewal_order = new WC_Order( $last_renewal_order_id[0] );
-				$needs_payment = $renewal_order->needs_payment();
+
+				if ( $renewal_order->needs_payment() || $renewal_order->has_status( 'on-hold' ) ) {
+					$needs_payment = true;
+				}
 			}
 		}
 

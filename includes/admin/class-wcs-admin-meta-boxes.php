@@ -51,7 +51,7 @@ class WCS_Admin_Meta_Boxes {
 		remove_meta_box( 'woocommerce-order-data', 'shop_subscription', 'normal' );
 
 		// Only display the meta box if an order relates to a subscription
-		if ( 'shop_order' == $current_screen->id && ( WC_Subscriptions_Order::order_contains_subscription( $post_id ) || WC_Subscriptions_Renewal_Order::is_renewal( $post_id, array( 'order_role' => 'child' ) ) ) ) {
+		if ( 'shop_order' == $current_screen->id && ( wcs_order_contains_subscription( $post_id ) || WC_Subscriptions_Renewal_Order::is_renewal( $post_id, array( 'order_role' => 'child' ) ) ) ) {
 			add_meta_box( 'subscription_renewal_orders', __( 'Related Subscription Orders', 'woocommerce-subscriptions' ), __CLASS__ . '::related_orders_meta_box', 'shop_order', 'normal', 'low' );
 		}
 	}
