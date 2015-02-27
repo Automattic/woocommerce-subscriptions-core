@@ -164,3 +164,46 @@ function wcs_get_users_change_status_link( $subscription_id, $status ) {
 
 	return apply_filters( 'woocommerce_subscriptions_users_change_status_link', $action_link, $subscription_id, $status );
 }
+
+/**
+ * Return a link for subscribers to change the status of their subscription, as specified with $status parameter
+ *
+ * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
+ * @since 2.0
+ */
+function wcs_can_user_suspend_subscription( $subscription, $user = '' ) {
+
+	$user_can_suspend = false;
+
+	if ( empty( $user ) ) {
+		$user = wp_get_current_user();
+	} elseif ( is_int( $user ) ) {
+		$user = get_user_by( 'id', $user );
+	}
+
+	if ( user_can( $user, 'manage_woocommerce' ) ) { // Admin, so can always suspend a subscription
+
+		$user_can_suspend = true;
+
+	} else {  // Need to make sure user owns subscription & the suspension limit hasn't been reached
+
+		if ( ! is_object( $subscription ) ) {
+			$subscription = wcs_get_subscription( $subscription );
+		}
+
+		// Make sure current user owns subscription
+		if ( $user->ID == $subscription->get_user_id() ) {
+
+			// Make sure subscription suspension count hasn't been reached
+			$suspension_count    = $subscription->suspension_count;
+			$allowed_suspensions = get_option( WC_Subscriptions_Admin::$option_prefix . '_max_customer_suspensions', 0 );
+
+			if ( 'unlimited' === $allowed_suspensions || $allowed_suspensions > $suspension_count ) { // 0 not > anything so prevents a customer ever being able to suspend
+				$user_can_suspend = true;
+			}
+
+		}
+	}
+
+	return apply_filters( 'woocommerce_can_user_suspend_subscription', $user_can_suspend, $subscription );
+}

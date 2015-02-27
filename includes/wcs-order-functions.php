@@ -25,7 +25,7 @@ function wcs_get_subscriptions_for_order( $order_id ) {
 		$order_id = $order_id->id;
 	}
 
-	return wcs_get_subscriptions( array( 'order_id' => $order_id ) );;
+	return wcs_get_subscriptions( array( 'order_id' => $order_id ) );
 }
 
 /**
@@ -84,7 +84,7 @@ function wcs_order_contains_subscription( $order ) {
 		$order = new WC_Order( $order );
 	}
 
-	if ( count ( wcs_get_subscriptions_for_order( $order->id ) ) > 0 ) {
+	if ( count( wcs_get_subscriptions_for_order( $order->id ) ) > 0 ) {
 		$contains_subscription = true;
 	} else {
 		$contains_subscription = false;

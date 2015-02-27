@@ -608,8 +608,9 @@ class WC_Subscription extends WC_Order {
 			throw new InvalidArgumentException( __( 'Invalid data. First parameter was empty when passed to update_dates().', 'woocommerce-subscriptions' ) );
 		}
 
-		$date_keys = array_keys( wcs_get_subscription_date_types() );
-		if ( ! empty( array_diff( array_keys( $dates ), $date_keys ) ) ) {
+		$date_keys  = array_keys( wcs_get_subscription_date_types() );
+		$extra_keys = array_diff( array_keys( $dates ), $date_keys );
+		if ( ! empty( $extra_keys ) ) {
 			throw new InvalidArgumentException( __( 'Invalid data. First parameter has a date that is not in the registered date types.', 'woocommerce-subscriptions' ) );
 		}
 
@@ -640,7 +641,7 @@ class WC_Subscription extends WC_Order {
 
 			if ( 0 == $timestamps[ $date_type ] ) {
 				// Last payment is not in the UI, and it should NOT be deleted as that would mess with scheduling
-				if ( 'last_payment' != $date_type ) {
+				if ( 'last_payment' != $date_type && 'start' != $date_type ) {
 					$this->delete_date( $date_type );
 				}
 				unset( $timestamps[ $date_type ] );
@@ -1305,17 +1306,17 @@ class WC_Subscription extends WC_Order {
 			'post_type'      => 'shop_order',
 			'fields'         => $return_fields,
 			'orderby'        => 'date',
-			'order'          => 'ASC',
+			'order'          => 'DESC',
 		) );
 
 		if ( 'all' == $return_fields ) {
 
-			if ( false !== $this->order && 'renewal' !== $order_type ) {
-				$related_orders[] = $this->order;
-			}
-
 			foreach ( $related_posts as $post_id ) {
 				$related_orders[] = wc_get_order( $post_id );
+			}
+
+			if ( false !== $this->order && 'renewal' !== $order_type ) {
+				$related_orders[] = $this->order;
 			}
 
 		} else {
@@ -1325,7 +1326,7 @@ class WC_Subscription extends WC_Order {
 				$related_orders[] = $this->order->id;
 			}
 
-			$related_orders = array_merge( $related_orders, $related_posts );
+			$related_orders = array_merge( $related_posts, $related_orders );
 		}
 
 		return apply_filters( 'woocommerce_subscription_related_orders', $related_orders, $this );

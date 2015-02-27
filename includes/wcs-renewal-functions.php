@@ -2,7 +2,7 @@
 /**
  * WooCommerce Subscriptions Renewal Functions
  *
- * Functions for managing user
+ * Functions for managing renewal of a subscription.
  *
  * @author 		Prospress
  * @category 	Core
@@ -37,7 +37,7 @@ function wcs_create_renewal_order( $subscription ) {
 
 		$renewal_order = wc_create_order( array(
 			'customer_id'   => $subscription->get_user_id(),
-			'customer_note' => __( '', 'woocommerce-subscriptions' ),
+			'customer_note' => $subscription->customer_note,
 		) );
 
 		$renewal_order->post->post_title = sprintf( __( 'Subscription Renewal Order &ndash; %s', 'woocommerce-subscriptions' ), strftime( _x( '%b %d, %Y @ %I:%M %p', 'Order date parsed by strftime', 'woocommerce-subscriptions' ) ) );

@@ -161,6 +161,10 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 									}
 								}
 
+								if ( apply_filters( 'woocommerce_enable_order_notes_field', 'yes' == get_option( 'woocommerce_enable_order_comments', 'yes' ) ) && $post->post_excerpt ) {
+									echo '<p><strong>' . __( 'Customer Note', 'woocommerce-subscriptions' ) . ':</strong> ' . nl2br( esc_html( $post->post_excerpt ) ) . '</p>';
+								}
+
 							echo '</div>';
 
 							// Display form
@@ -181,6 +185,13 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 										break;
 									}
 								}
+							}
+
+							if ( apply_filters( 'woocommerce_enable_order_notes_field', 'yes' == get_option( 'woocommerce_enable_order_comments', 'yes' ) ) ) {
+								?>
+								<p class="form-field form-field-wide"><label for="excerpt"><?php _e( 'Customer Note:', 'woocommerce-subscriptions' ) ?></label>
+								<textarea rows="1" cols="40" name="excerpt" tabindex="6" id="excerpt" placeholder="<?php _e( 'Customer\'s notes about the order', 'woocommerce-subscriptions' ); ?>"><?php echo wp_kses_post( $post->post_excerpt ); ?></textarea></p>
+								<?php
 							}
 
 							echo '</div>';
