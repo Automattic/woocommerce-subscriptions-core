@@ -22,8 +22,6 @@ class WCS_Change_Payment_Method_Admin {
 		$payment_gateways     = self::get_valid_gateways( $subscription );
 		$payment_method       = ! empty( $subscription->payment_method ) ? $subscription->payment_method : '';
 
-		echo print_r( $payment_gateways, true );
-
 		if ( empty ( $payment_gateways ) ) {
 			return;
 		}
