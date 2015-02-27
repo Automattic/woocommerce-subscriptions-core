@@ -199,7 +199,7 @@ class WCS_Admin_Post_Types {
 				case 'on-hold' :
 				case 'cancelled' :
 				case 'trash' :
-					do_action( 'admin_changed_subscription_to_' . $current_action, $subscription_id );
+					do_action( 'admin_changed_subscription_to_' . $action, $subscription_id );
 					break;
 			}
 
