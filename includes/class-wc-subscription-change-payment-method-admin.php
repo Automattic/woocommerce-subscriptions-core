@@ -31,7 +31,7 @@ class WCS_Change_Payment_Method_Admin {
 		if ( count( $payment_gateways ) > 1 ) {
 
 			$found_method = false;
-			echo '<label>' . __( 'Payment Method', 'woocommerce' ) . ':</label><span class="tips">[?]</span>';
+			echo '<label>' . __( 'Payment Method', 'woocommerce' ) . ':</label>';
 			echo '<select class="wcs_payment_method_selector" name="_payment_method" id="_payment_method" class="first">';
 
 			foreach ( $payment_gateways as $gateway_id => $gateway_title ) {
