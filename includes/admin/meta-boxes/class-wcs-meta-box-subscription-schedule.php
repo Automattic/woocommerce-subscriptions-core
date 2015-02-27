@@ -35,8 +35,13 @@ class WCS_Meta_Box_Schedule {
 
 		if ( 'shop_subscription' == $post->post_type ) {
 
-			update_post_meta( $post_id, '_billing_interval', $_POST['_billing_interval'] );
-			update_post_meta( $post_id, '_billing_period', $_POST['_billing_period'] );
+			if ( isset( $_POST['_billing_interval'] ) ) {
+				update_post_meta( $post_id, '_billing_interval', $_POST['_billing_interval'] );
+			}
+
+			if ( ! empty( $_POST['_billing_period'] ) ) {
+				update_post_meta( $post_id, '_billing_period', $_POST['_billing_period'] );
+			}
 
 			$subscription = wcs_get_subscription( $post_id );
 
