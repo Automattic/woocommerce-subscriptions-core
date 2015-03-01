@@ -65,7 +65,7 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 	 * @param string $date_type Can be 'start', 'trial_end', 'next_payment', 'last_payment', 'end', 'end_of_prepaid_term' or a custom date type
 	 * @param string $datetime A MySQL formated date/time string in the GMT/UTC timezone.
 	 */
-	public function update_status( $subscription, $old_status, $new_status ) {
+	public function update_status( $subscription, $new_status, $old_status ) {
 
 		$action_args = array( 'subscription_id' => $subscription->id );
 

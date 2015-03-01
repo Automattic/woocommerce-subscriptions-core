@@ -20,11 +20,11 @@ abstract class WCS_Scheduler {
 
 		$this->date_types_to_schedule = apply_filters( 'woocommerce_subscriptions_date_types_to_schedule', array_keys( wcs_get_subscription_date_types() ) );
 
-		add_action( 'woocommerce_subscription_updated_date', array( &$this, 'update_date' ), 10, 3 );
+		add_action( 'woocommerce_subscription_date_updated', array( &$this, 'update_date' ), 10, 3 );
 
-		add_action( 'woocommerce_subscription_deleted_date', array( &$this, 'delete_date' ), 10, 2 );
+		add_action( 'woocommerce_subscription_date_deleted', array( &$this, 'delete_date' ), 10, 2 );
 
-		add_action( 'woocommerce_subscription_updated_status', array( &$this, 'update_status' ), 10, 3 );
+		add_action( 'woocommerce_subscription_status_updated', array( &$this, 'update_status' ), 10, 3 );
 	}
 
 	/**
@@ -51,5 +51,5 @@ abstract class WCS_Scheduler {
 	 * @param string $date_type Can be 'start', 'trial_end', 'next_payment', 'last_payment', 'end', 'end_of_prepaid_term' or a custom date type
 	 * @param string $datetime A MySQL formated date/time string in the GMT/UTC timezone.
 	 */
-	abstract public function update_status( $subscription, $old_status, $new_status );
+	abstract public function update_status( $subscription, $new_status, $old_status );
 }

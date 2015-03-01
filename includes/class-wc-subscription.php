@@ -340,7 +340,10 @@ class WC_Subscription extends WC_Order {
 				$this->add_order_note( trim( $note . ' ' . sprintf( __( 'Status changed from %s to %s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ) );
 
 				// Trigger a hook with params we want
-				do_action( 'woocommerce_subscription_updated_status', $this, $new_status, $old_status );
+				do_action( 'woocommerce_subscription_status_updated', $this, $new_status, $old_status );
+
+				// Trigger a hook with params matching WooCommerce's 'woocommerce_order_status_changed' hook so functions attached to it can be attached easily to subscription status changes
+				do_action( 'woocommerce_subscription_status_changed', $this->id, $old_status, $new_status );
 
 			} catch ( Exception $e ) {
 
@@ -724,7 +727,7 @@ class WC_Subscription extends WC_Order {
 
 			if ( $is_updated ) {
 				$this->schedule->{$date_type} = $datetime;
-				do_action( 'woocommerce_subscription_updated_date', $this, $date_type, $datetime );
+				do_action( 'woocommerce_subscription_date_updated', $this, $date_type, $datetime );
 			}
 		}
 
@@ -756,7 +759,7 @@ class WC_Subscription extends WC_Order {
 
 		$this->schedule->{$date_type} = 0;
 		update_post_meta( $this->id, wcs_get_date_meta_key( $date_type ), $this->schedule->{$date_type} );
-		do_action( 'woocommerce_subscription_deleted_date', $this, $date_type );
+		do_action( 'woocommerce_subscription_date_deleted', $this, $date_type );
 	}
 
 	/**
