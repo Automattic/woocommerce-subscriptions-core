@@ -117,7 +117,7 @@ function wcs_create_renewal_order( $subscription ) {
 function wcs_is_renewal_order( $order ) {
 
 	if ( ! is_object( $order ) ) {
-		$order = new WC_Order( $order );
+		$order = wc_get_order( $order );
 	}
 
 	if ( 0 == $order->post->post_parent ) { // It's a parent order or original order
