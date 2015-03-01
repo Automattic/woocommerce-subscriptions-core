@@ -338,12 +338,12 @@ class WCS_Cart_Renewal {
 		} elseif ( 'failed' == $orders_new_status ) {
 
 			// Don't duplicate renewal order
-			remove_action( 'woocommerce_subscription_renewal_payment_failed', __CLASS__ . '::create_failed_payment_renewal_order' );
+			remove_action( 'woocommerce_subscription_renewal_payment_failed', 'WC_Subscriptions_Renewal_Order::create_failed_payment_renewal_order' );
 
 			$subscription->payment_failed();
 
 			// But make sure orders are still generated for other payments in the same request
-			add_action( 'woocommerce_subscription_renewal_payment_failed', __CLASS__ . '::create_failed_payment_renewal_order' );
+			add_action( 'woocommerce_subscription_renewal_payment_failed', 'WC_Subscriptions_Renewal_Order::create_failed_payment_renewal_order' );
 
 		}
 	}
