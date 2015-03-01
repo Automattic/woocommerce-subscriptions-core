@@ -572,7 +572,7 @@ class WC_Subscription extends WC_Order {
 			} elseif ( $time_diff < 0 && absint( $time_diff ) < WEEK_IN_SECONDS ) {
 				$date_to_display = sprintf( __( '%s ago', 'woocommerce-subscriptions' ), human_time_diff( current_time( 'timestamp', true ), $timestamp_gmt ) );
 			} else {
-				$date_to_display = date_i18n( wc_date_format(), $timestamp_gmt, true );
+				$date_to_display = date_i18n( wc_date_format(), $timestamp_gmt, true ); // 3rd param 'true' tells WordPress to convert the date to the site's timezone
 			}
 		} else {
 			switch ( $date_type ) {
