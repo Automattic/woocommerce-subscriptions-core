@@ -41,6 +41,9 @@ class WCS_Cart_Renewal {
 
 		// When a renewal order's status changes, check if a corresponding subscription's status should be changed accordingly
 		add_filter( 'woocommerce_order_status_changed', array( &$this, 'maybe_change_subscription_status' ), 10, 3 );
+
+		// When a failed renewal order is paid for via checkout, make sure WC_Checkout::create_order() preserves its "failed" status until it is paid
+		add_filter( 'woocommerce_default_order_status', array( &$this, 'maybe_preserve_order_status' ) );
 	}
 
 	/**
@@ -388,5 +391,24 @@ class WCS_Cart_Renewal {
 		$subscription->update_status( 'active' );
 	}
 
+
+	/**
+	 * When a failed renewal order is being paid for via checkout, make sure WC_Checkout::create_order() preserves its
+	 * status as 'failed' until it is paid. By default, it will always set it to 'pending', but we need it left as 'failed'
+	 * so that we can correctly identify the status change in @see self::maybe_change_subscription_status().
+	 *
+	 * @param string Default order status for orders paid for via checkout. Default 'pending'
+	 * @since 2.0
+	 */
+	public function maybe_preserve_order_status( $order_status ) {
+
+		$order_id = absint( WC()->session->order_awaiting_payment );
+
+		if ( $order_id > 0 && ( $order = wc_get_order( $order_id ) ) && wcs_is_renewal_order( $order ) && $order->has_status( 'failed' ) ) {
+			$order_status = 'failed';
+		}
+
+		return $order_status;
+	}
 }
 new WCS_Cart_Renewal();
