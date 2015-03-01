@@ -120,7 +120,7 @@ function wcs_is_renewal_order( $order ) {
 		$order = wc_get_order( $order );
 	}
 
-	if ( 0 == $order->post->post_parent ) { // It's a parent order or original order
+	if ( 'simple' != $order->order_type || 0 == $order->post->post_parent ) { // It's a parent order or original order
 
 		$is_renewal = false;
 
