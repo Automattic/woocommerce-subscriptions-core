@@ -21,26 +21,26 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 	/**
 	 * Maybe set a schedule action if the new date is in the future
 	 *
-	 * @param int $subscription_id The ID for a WC_Subscription object
+	 * @param object $subscription An instance of a WC_Subscription object
 	 * @param string $date_type Can be 'start', 'trial_end', 'next_payment', 'last_payment', 'end', 'end_of_prepaid_term' or a custom date type
 	 * @param string $datetime A MySQL formated date/time string in the GMT/UTC timezone.
 	 */
-	public function update_date( $subscription_id, $date_type, $datetime ) {
+	public function update_date( $subscription, $date_type, $datetime ) {
 
 		if ( in_array( $date_type, $this->date_types_to_schedule ) ) {
 
-			$action_hook = $this->get_scheduled_action_hook( $subscription_id, $date_type );
+			$action_hook = $this->get_scheduled_action_hook( $subscription, $date_type );
 
 			if ( ! empty( $action_hook ) ) {
 
-				$action_args    = array( 'subscription_id' => $subscription_id );
+				$action_args    = array( 'subscription_id' => $subscription->id );
 				$timestamp      = strtotime( $datetime );
 
 				if ( $timestamp !== wc_next_scheduled_action( $action_hook, $action_args ) ) {
 					wc_unschedule_action( $action_hook, $action_args );
 
 					// Only reschedule if it's in the future
-					if ( $timestamp > current_time( 'timestamp', true ) && 'active' == wcs_get_subscription( $subscription_id )->get_status() ) {
+					if ( $timestamp > current_time( 'timestamp', true ) && 'active' == $subscription->get_status() ) {
 						wc_schedule_single_action( $datetime, $action_hook, $action_args );
 					}
 				}
@@ -51,27 +51,26 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 	/**
 	 * Delete a date from the action scheduler queue
 	 *
-	 * @param int $subscription_id The ID for a WC_Subscription object
+	 * @param object $subscription An instance of a WC_Subscription object
 	 * @param string $date_type Can be 'start', 'trial_end', 'next_payment', 'last_payment', 'end', 'end_of_prepaid_term' or a custom date type
 	 */
-	public function delete_date( $subscription_id, $date_type ) {
-		$this->update_date( $subscription_id, $date_type, 0 );
+	public function delete_date( $subscription, $date_type ) {
+		$this->update_date( $subscription, $date_type, 0 );
 	}
 
 	/**
 	 * When a subscription's status is updated, maybe schedule an event
 	 *
-	 * @param int $subscription_id The ID for a WC_Subscription object
+	 * @param object $subscription An instance of a WC_Subscription object
 	 * @param string $date_type Can be 'start', 'trial_end', 'next_payment', 'last_payment', 'end', 'end_of_prepaid_term' or a custom date type
 	 * @param string $datetime A MySQL formated date/time string in the GMT/UTC timezone.
 	 */
-	public function update_status( $subscription_id, $old_status, $new_status ) {
+	public function update_status( $subscription, $old_status, $new_status ) {
 
-		$action_args = array( 'subscription_id' => $subscription_id );
+		$action_args = array( 'subscription_id' => $subscription->id );
 
 		switch ( $new_status ) {
 			case 'active' :
-				$subscription = wcs_get_subscription( $subscription_id );
 
 				foreach( $this->action_hooks as $action_hook => $date_type ) {
 
@@ -90,7 +89,6 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 				break;
 			case 'pending-cancellation' :
 
-				$subscription = wcs_get_subscription( $subscription_id );
 				$end_time     = $subscription->get_time( 'end' ); // This will have been set to the correct date already
 
 				// Now that we have the current times, clear the scheduled hooks
@@ -128,10 +126,9 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 	 * @param string $date_type Can be 'start', 'trial_end', 'next_payment', 'last_payment', 'expiration', 'end_of_prepaid_term' or a custom date type
 	 * @param object $subscription An instance of WC_Subscription to get the hook for
 	 */
-	protected function get_scheduled_action_hook( $subscription_id, $date_type ) {
+	protected function get_scheduled_action_hook( $subscription, $date_type ) {
 
 		$hook = '';
-		$subscription = wcs_get_subscription( $subscription_id );
 
 		switch ( $date_type ) {
 			case 'next_payment' :

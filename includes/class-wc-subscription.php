@@ -282,7 +282,7 @@ class WC_Subscription extends WC_Order {
 
 				$this->add_order_note( $message );
 
-				do_action( 'woocommerce_subscription_unable_to_update_status', $this->id, $new_status, $old_status );
+				do_action( 'woocommerce_subscription_unable_to_update_status', $this, $new_status, $old_status );
 
 				// Let plugins handle it if they tried to change to an invalid status
 				throw new Exception( $message );
@@ -339,8 +339,8 @@ class WC_Subscription extends WC_Order {
 
 				$this->add_order_note( trim( $note . ' ' . sprintf( __( 'Status changed from %s to %s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ) );
 
-				// Status was changed
-				do_action( 'woocommerce_subscription_updated_status', $this->id, $old_status, $new_status );
+				// Trigger a hook with params we want
+				do_action( 'woocommerce_subscription_updated_status', $this, $new_status, $old_status );
 
 			} catch ( Exception $e ) {
 
@@ -350,7 +350,7 @@ class WC_Subscription extends WC_Order {
 
 				$this->add_order_note( sprintf( __( 'Unable to change subscription status to "%s".', 'woocommerce-subscriptions' ), $new_status ) );
 
-				do_action( 'woocommerce_subscription_unable_to_update_status', $this->id, $new_status, $old_status );
+				do_action( 'woocommerce_subscription_unable_to_update_status', $this, $new_status, $old_status );
 
 				throw $e;
 			}
@@ -724,7 +724,7 @@ class WC_Subscription extends WC_Order {
 
 			if ( $is_updated ) {
 				$this->schedule->{$date_type} = $datetime;
-				do_action( 'woocommerce_subscription_updated_date', $this->id, $date_type, $datetime );
+				do_action( 'woocommerce_subscription_updated_date', $this, $date_type, $datetime );
 			}
 		}
 
@@ -756,7 +756,7 @@ class WC_Subscription extends WC_Order {
 
 		$this->schedule->{$date_type} = 0;
 		update_post_meta( $this->id, wcs_get_date_meta_key( $date_type ), $this->schedule->{$date_type} );
-		do_action( 'woocommerce_subscription_deleted_date', $this->id, $date_type );
+		do_action( 'woocommerce_subscription_deleted_date', $this, $date_type );
 	}
 
 	/**
