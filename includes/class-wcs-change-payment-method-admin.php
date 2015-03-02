@@ -5,7 +5,7 @@
  *
  * @class    WCS_Change_Payment_Method_Admin
  * @version  2.0
- * @package  WooCommerce Subscriptions/Inluces
+ * @package  WooCommerce Subscriptions/Includes
  * @category Class
  * @author   Prospress
  */
@@ -17,24 +17,20 @@ class WCS_Change_Payment_Method_Admin {
 	 *
 	 * @since 2.0
 	 */
-	public static function display_change_subscription_payment_gateway_fields( $subscription ) {
+	public static function display_fields( $subscription ) {
 
-		$payment_gateways     = self::get_valid_gateways( $subscription );
-		$payment_method       = ! empty( $subscription->payment_method ) ? $subscription->payment_method : '';
-
-		if ( empty ( $payment_gateways ) ) {
-			return;
-		}
+		$payment_method        = ! empty( $subscription->payment_method ) ? $subscription->payment_method : '';
+		$valid_payment_methods = self::get_valid_payment_methods( $subscription );
 
 		echo '<p class="form-field form-field-wide">';
 
-		if ( count( $payment_gateways ) > 1 ) {
+		if ( count( $valid_payment_methods ) > 1 ) {
 
 			$found_method = false;
 			echo '<label>' . __( 'Payment Method', 'woocommerce' ) . ':</label>';
 			echo '<select class="wcs_payment_method_selector" name="_payment_method" id="_payment_method" class="first">';
 
-			foreach ( $payment_gateways as $gateway_id => $gateway_title ) {
+			foreach ( $valid_payment_methods as $gateway_id => $gateway_title ) {
 
 				echo '<option value="' . esc_attr( $gateway_id ) . '" ' . selected( $payment_method, $gateway_id, false ) . '>' . esc_html( $gateway_title ) . '</option>';
 				if ( $payment_method == $gateway_id ) {
@@ -44,25 +40,22 @@ class WCS_Change_Payment_Method_Admin {
 			}
 			echo '</select>';
 
-		} elseif ( count( $payment_gateways ) == 1 ) {
-			echo '<label>' . __( 'Payment Method', 'woocommerce' ) . ': ' . current( $payment_gateways ) . '</label>';
+		} elseif ( count( $valid_payment_methods ) == 1 ) {
+			echo '<strong>' . __( 'Payment Method', 'woocommerce' ) . ':</strong> ' . current( $valid_payment_methods );
+			echo '<input type="hidden" value="' . key( $valid_payment_methods ) . '" id="_payment_method" name="_payment_method">';
 		}
 
 		echo '</p>';
 
 		$payment_method_table = apply_filters( 'woocommerce_subscription_payment_meta', array(), $subscription );
 
-		if ( ! empty ( $payment_method_table ) ) {
+		if ( is_array( $payment_method_table ) ) {
 
 			foreach( $payment_method_table as $payment_method_id => $payment_method_meta ) {
 
 				echo '<div class="wcs_payment_method_meta_fields" id="wcs_' . esc_attr( $payment_method_id ) . '_fields" ' . ( ( $payment_method_id != $payment_method || $subscription->is_manual() ) ? 'style="display:none;"' : '' ) .' >';
 
 				foreach ( $payment_method_meta as $meta_table => $meta ) {
-
-					if ( ! is_array( $meta ) ) {
-						continue;
-					}
 
 					foreach ( $meta as $meta_key => $meta_data ) {
 
@@ -117,7 +110,8 @@ class WCS_Change_Payment_Method_Admin {
 			}
 		}
 
-		$subscription->set_payment_method( $payment_method, $payment_method_meta, ( ! empty( $payment_method_meta['validate_function'] ) ) ? $payment_method_meta['validate_function'] : '' );
+		$payment_gateway = ( 'manual' != $payment_method ) ? WC()->payment_gateways->payment_gateways()[ $payment_method ] : '';
+		$subscription->set_payment_method( $payment_gateway, $payment_method_meta );
 
 	}
 

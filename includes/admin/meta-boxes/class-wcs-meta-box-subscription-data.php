@@ -33,8 +33,6 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 		self::init_address_fields();
 
-		$payment_method = ! empty( $subscription->payment_method ) ? $subscription->payment_method : 'Manual';
-
 		wp_nonce_field( 'woocommerce_save_data', 'woocommerce_meta_nonce' );
 		?>
 		<style type="text/css">
@@ -94,6 +92,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 								}
 
 								foreach ( self::$billing_fields as $key => $field ) {
+
 									if ( isset( $field['show'] ) && false === $field['show'] ) {
 										continue;
 									}
@@ -126,8 +125,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 									break;
 								}
 							}
-
-							WCS_Change_Payment_Method_Admin::display_change_subscription_payment_gateway_fields( $subscription );
+							WCS_Change_Payment_Method_Admin::display_fields( $subscription );
 
 							echo '</div>';
 
@@ -229,10 +227,10 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 			}
 		}
 
-		$subscription   = wcs_get_subscription( $post_id );
+		$subscription = wcs_get_subscription( $post_id );
 
 		try {
-			WCS_Change_Payment_Method_Admin::save_new_payment_data_from_post( $subscription );
+			WCS_Change_Payment_Method_Admin::save_meta( $subscription );
 
 			$subscription->update_status( $_POST['order_status'] );
 
