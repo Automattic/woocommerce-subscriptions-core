@@ -104,6 +104,8 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 									}
 								}
 
+								echo '<p><strong>' . __( 'Payment Method', 'woocommerce-subscriptions' ) . ':</strong>'. nl2br( $subscription->get_payment_method_to_display() ) . '</p>';
+
 							echo '</div>';
 
 							// Display form
