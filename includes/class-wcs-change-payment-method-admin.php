@@ -83,19 +83,20 @@ class WCS_Change_Payment_Method_Admin {
 	 * the new admin change hook.
 	 *
 	 * @since 2.0
-	 * @param $subscription
+	 * @param $subscription WC_Subscription
 	 */
-	public static function save_new_payment_data_from_post( $subscription ) {
+	public static function save_meta( $subscription ) {
 
-		$payment_method      = wc_clean( $_POST['_payment_method'] );
+		$payment_method      = isset( $_POST['_payment_method'] ) ? wc_clean( $_POST['_payment_method'] ) : '';
 		$payment_method_meta = apply_filters( 'woocommerce_subscription_payment_meta', array(), $subscription );
 		$payment_method_meta = ( ! empty( $payment_method_meta[ $payment_method ] ) ) ? $payment_method_meta[ $payment_method ] : array();
 
-		if ( ! isset( self::get_valid_gateways( $subscription )[ $payment_method ] ) ) {
+		if ( ! isset( self::get_valid_payment_methods( $subscription )[ $payment_method ] ) ) {
 			throw new Exception( __( 'Please choose a valid payment gateway to change to.', 'woocommerce-subscriptions' ) );
 		}
 
 		if ( ! empty( $payment_method_meta ) ) {
+
 			foreach ( $payment_method_meta as $meta_table => &$meta ) {
 
 				if ( ! is_array( $meta ) ) {
@@ -119,12 +120,14 @@ class WCS_Change_Payment_Method_Admin {
 	 * Get a list of possible gateways that a subscription could be changed to by admins.
 	 *
 	 * @since 2.0
-	 * @param $subscription WC_Subscription
+	 * @param $subscription int | WC_Subscription
 	 * @return
 	 */
-	public static function get_valid_gateways() {
+	public static function get_valid_payment_methods( $subscription ) {
 
-		$subscription = wcs_get_subscription( 463 );
+		if ( ! $subscription instanceof WC_Subscription ) {
+			$subscription = wcs_get_subscription( $subscription );
+		}
 
 		$valid_gateways = array();
 
