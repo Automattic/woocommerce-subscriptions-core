@@ -402,10 +402,13 @@ class WCS_Cart_Renewal {
 	 */
 	public function maybe_preserve_order_status( $order_status ) {
 
-		$order_id = absint( WC()->session->order_awaiting_payment );
+		if ( null !== WC()->session ) {
 
-		if ( $order_id > 0 && ( $order = wc_get_order( $order_id ) ) && wcs_is_renewal_order( $order ) && $order->has_status( 'failed' ) ) {
-			$order_status = 'failed';
+			$order_id = absint( WC()->session->order_awaiting_payment );
+
+			if ( $order_id > 0 && ( $order = wc_get_order( $order_id ) ) && wcs_is_renewal_order( $order ) && $order->has_status( 'failed' ) ) {
+				$order_status = 'failed';
+			}
 		}
 
 		return $order_status;
