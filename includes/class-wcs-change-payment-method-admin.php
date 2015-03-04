@@ -91,7 +91,9 @@ class WCS_Change_Payment_Method_Admin {
 		$payment_method_meta = apply_filters( 'woocommerce_subscription_payment_meta', array(), $subscription );
 		$payment_method_meta = ( ! empty( $payment_method_meta[ $payment_method ] ) ) ? $payment_method_meta[ $payment_method ] : array();
 
-		if ( ! isset( self::get_valid_payment_methods( $subscription )[ $payment_method ] ) ) {
+		$valid_payment_methods = self::get_valid_payment_methods( $subscription );
+
+		if ( ! isset( $valid_payment_methods[ $payment_method ] ) ) {
 			throw new Exception( __( 'Please choose a valid payment gateway to change to.', 'woocommerce-subscriptions' ) );
 		}
 
@@ -111,7 +113,8 @@ class WCS_Change_Payment_Method_Admin {
 			}
 		}
 
-		$payment_gateway = ( 'manual' != $payment_method ) ? WC()->payment_gateways->payment_gateways()[ $payment_method ] : '';
+		$payment_gateways = WC()->payment_gateways->payment_gateways();
+		$payment_gateway  = ( 'manual' != $payment_method ) ? $payment_gateways[ $payment_method ] : '';
 		$subscription->set_payment_method( $payment_gateway, $payment_method_meta );
 
 	}
