@@ -59,7 +59,7 @@ class WCS_Change_Payment_Method_Admin {
 
 					foreach ( $meta as $meta_key => $meta_data ) {
 
-						$field_id    = esc_attr( $meta_table . '-' . $meta_key );
+						$field_id    = esc_attr( sprintf( '_payment_method_meta[%s][%s]', $meta_table , $meta_key ) );
 						$field_label = esc_html( ( ! empty( $meta_data['label'] ) ) ? $meta_data['label'] : $meta_key );
 
 						echo '<p class="form-field-wide">';
@@ -107,8 +107,7 @@ class WCS_Change_Payment_Method_Admin {
 				}
 
 				foreach ( $meta as $meta_key => &$meta_data ) {
-					$meta_data['value'] = ! empty( $_POST[ $meta_table . '-' . str_replace( ' ', '_', $meta_key ) ] ) ? $_POST[ $meta_table . '-' . str_replace( ' ', '_', $meta_key ) ] : '';
-
+					$meta_data['value'] = $_POST['_payment_method_meta'][ $meta_table ][ $meta_key ];
 				}
 
 			}
