@@ -451,11 +451,7 @@ class WCS_Admin_Post_Types {
 			case 'recurring_total' :
 				$column_content .= esc_html( strip_tags( $the_subscription->get_formatted_order_total() ) );
 
-				if ( $the_subscription->is_manual() ) {
-					$column_content .= '<small class="meta">' . esc_html( __( 'Via Manual Renewal', 'woocommerce-subscriptions' ) ) . '</small>';
-				} elseif ( $the_subscription->payment_method_title ) {
-					$column_content .= '<small class="meta">' . esc_html( sprintf( __( 'Via %s', 'woocommerce-subscriptions' ), $the_subscription->payment_method_title ) ) . '</small>';
-				}
+				$column_content .= '<small class="meta">' . esc_html( sprintf( __( 'Via %s', 'woocommerce-subscriptions' ), $the_subscription->get_payment_method_to_display() ) ) . '</small>';
 				break;
 
 			case 'start_date':
