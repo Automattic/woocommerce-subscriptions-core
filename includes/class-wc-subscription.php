@@ -1355,7 +1355,7 @@ class WC_Subscription extends WC_Order {
 
 		if ( $this->is_manual() ) {
 
-			$payment_method_to_display = __( 'Manual', 'woocommerce-subscriptions' );
+			$payment_method_to_display = __( 'Manual Renewal', 'woocommerce-subscriptions' );
 
 		// Use the current title of the payment gateway when available
 		} elseif ( false !== $this->payment_gateway ) {
