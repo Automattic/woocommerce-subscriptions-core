@@ -1158,6 +1158,13 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function payment_complete( $transaction_id = '' ) {
 
+		// Make sure the last order's status is updated
+		$last_order = $this->get_last_order( 'all' );
+
+		if ( false !== $last_order && $last_order->needs_payment() ) {
+			$last_order->payment_complete( $transaction_id );
+		}
+
 		// Reset suspension count
 		$this->update_suspension_count( 0 );
 
@@ -1191,6 +1198,13 @@ class WC_Subscription extends WC_Order {
 	 * @since 2.0
 	 */
 	public function payment_failed( $new_status = 'on-hold' ) {
+
+		// Make sure the last order's status is set to failed
+		$last_order = $this->get_last_order( 'all' );
+
+		if ( false !== $last_order && false === $last_order->has_status( 'failed' ) ) {
+			$last_order->update_status( 'failed' );
+		}
 
 		// Log payment failure on order
 		$this->add_order_note( __( 'Payment failed.', 'woocommerce-subscriptions' ) );
