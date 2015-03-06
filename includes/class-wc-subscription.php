@@ -152,7 +152,7 @@ class WC_Subscription extends WC_Order {
 
 				$renewal_order = new WC_Order( $last_renewal_order_id[0] );
 
-				if ( $renewal_order->needs_payment() || $renewal_order->has_status( 'on-hold' ) ) {
+				if ( $renewal_order->needs_payment() || $renewal_order->has_status( array( 'on-hold', 'failed', 'cancelled' ) ) ) {
 					$needs_payment = true;
 				}
 			}
