@@ -1347,6 +1347,53 @@ class WC_Subscription extends WC_Order {
 
 
 	/**
+	 * Gets the most recent order that relates to a subscription, including renewal orders and the initial order (if any).
+	 *
+	 * @param string The columns to return, either 'all' or 'ids'
+	 * @since 2.0
+	 */
+	public function get_last_order( $return_fields = 'ids' ) {
+
+		$return_fields = ( 'ids' == $return_fields ) ? $return_fields : 'all';
+
+		$last_order = false;
+
+		$related_orders = array();
+
+		$renewal_post_ids = get_posts( array(
+			'posts_per_page' => 1,
+			'post_parent'    => $this->id,
+			'post_status'    => 'any',
+			'post_type'      => 'shop_order',
+			'fields'         => 'ids',
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+		) );
+
+		// If there are no renewal orders, get the original order (if there is one)
+		if ( empty( $renewal_post_ids ) ) {
+
+			if ( false !== $this->order ) {
+				if ( 'all' == $return_fields ) {
+					$last_order = $this->order;
+				} else {
+					$last_order = $this->order->id;
+				}
+			}
+
+		} else {
+
+			$last_order = array_shift( $renewal_post_ids );
+
+			if ( 'all' == $return_fields ) {
+				$last_order = wc_get_order( $last_order );
+			}
+		}
+
+		return apply_filters( 'woocommerce_subscription_last_order', $last_order, $this );
+	}
+
+	/**
 	 * Determine how the payment method should be displayed for a subscription.
 	 *
 	 * @since 2.0
