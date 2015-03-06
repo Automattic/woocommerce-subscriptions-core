@@ -1312,19 +1312,19 @@ class WC_Subscription extends WC_Order {
 
 		$related_orders = array();
 
-		$related_posts = get_posts( array(
+		$related_post_ids = get_posts( array(
 			'posts_per_page' => -1,
 			'post_parent'    => $this->id,
 			'post_status'    => 'any',
 			'post_type'      => 'shop_order',
-			'fields'         => $return_fields,
+			'fields'         => 'ids',
 			'orderby'        => 'date',
 			'order'          => 'DESC',
 		) );
 
 		if ( 'all' == $return_fields ) {
 
-			foreach ( $related_posts as $post_id ) {
+			foreach ( $related_post_ids as $post_id ) {
 				$related_orders[] = wc_get_order( $post_id );
 			}
 
@@ -1339,7 +1339,7 @@ class WC_Subscription extends WC_Order {
 				$related_orders[] = $this->order->id;
 			}
 
-			$related_orders = array_merge( $related_posts, $related_orders );
+			$related_orders = array_merge( $related_post_ids, $related_orders );
 		}
 
 		return apply_filters( 'woocommerce_subscription_related_orders', $related_orders, $this );
