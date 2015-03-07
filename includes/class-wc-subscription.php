@@ -671,17 +671,17 @@ class WC_Subscription extends WC_Order {
 			switch ( $date_type ) {
 				case 'end' :
 					if ( array_key_exists( 'last_payment', $timestamps ) && $datetime <= $timestamps['last_payment'] ) {
-						$messages[] = sprintf( __( 'The %s date must occur after the last_payment date.', 'woocommerce-subscriptions' ), $date_type );
+						$messages[] = sprintf( __( 'The %s date must occur after the last payment date.', 'woocommerce-subscriptions' ), $date_type );
 					}
 
 					if ( array_key_exists( 'next_payment', $timestamps ) && $datetime <= $timestamps['next_payment'] ) {
-						$messages[] = sprintf( __( 'The %s date must occur after the next_payment date.', 'woocommerce-subscriptions' ), $date_type );
+						$messages[] = sprintf( __( 'The %s date must occur after the next payment date.', 'woocommerce-subscriptions' ), $date_type );
 					}
 				case 'next_payment' :
 					// Guarantees that end is strictly after trial_end, because if next_payment and end can't be at same
 					// time
 					if ( array_key_exists( 'trial_end', $timestamps ) && $datetime < $timestamps['trial_end'] ) {
-						$messages[] = sprintf( __( 'The %s date must occur after the trial_end date.', 'woocommerce-subscriptions' ), $date_type );
+						$messages[] = sprintf( __( 'The %s date must occur after the trial end date.', 'woocommerce-subscriptions' ), $date_type );
 					}
 				case 'trial_end' :
 					if ( $datetime <= $timestamps['start'] ) {
