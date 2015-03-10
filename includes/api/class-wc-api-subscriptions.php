@@ -282,11 +282,12 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	public function update_payment_method( $subscription, $payment_details, $updating ){
 
 		$payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
+		$payment_method   = ( ! empty( $payment_details['method_id'] ) ) ? $payment_details['method_id'] : 'manual';
 		$payment_gateway  = ( isset( $payment_gateways[ $payment_details['method_id'] ] ) ) ? $payment_gateways[ $payment_details['method_id'] ] : '';
 
 		try {
 
-			if ( $updating && ! $payment_gateway->supports( 'subscription_payment_method_change_admin' ) ) {
+			if ( $updating && ! array_key_exists( $payment_method, WCS_Change_Payment_Method_Admin::get_valid_payment_methods( $subscription ) ) ) {
 				throw new Exception( 'wcs_api_edit_subscription_error', __( 'Gateway does not support admin changing the payment method on a Subscription.', 'woocommerce-subscriptions' ) );
 			}
 
