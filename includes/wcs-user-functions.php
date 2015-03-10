@@ -166,12 +166,14 @@ function wcs_get_users_change_status_link( $subscription_id, $status ) {
 }
 
 /**
- * Return a link for subscribers to change the status of their subscription, as specified with $status parameter
+ * Check if a given user (or the currently logged in user) has permission to put a subscription on hold.
  *
- * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
+ * By default, a store manager can put all subscriptions on hold, while other users can only suspend their own subscriptions.
+ *
+ * @param int|WC_Subscription $subscription An instance of a WC_Snbscription object or ID representing a 'shop_subscription' post
  * @since 2.0
  */
-function wcs_can_user_suspend_subscription( $subscription, $user = '' ) {
+function wcs_can_user_put_subscription_on_hold( $subscription, $user = '' ) {
 
 	$user_can_suspend = false;
 
