@@ -195,13 +195,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 			}
 
 			if ( isset( $data['payment_details'] ) && is_array( $data['payment_details'] ) ) {
-
-				if ( empty( $data['payment_details']['method_id'] ) || empty( $data['payment_details']['method_title'] ) ) {
-					throw new WC_API_Exception( 'wcs_api_invalid_payment_details', __( 'Recurring payment method ID and title are required', 'woocommerce' ), 400 );
-				}
-
-				update_post_meta( $subscription->id, '_payment_method', $data['payment_details']['method_id'] );
-				update_post_meta( $subscription->id, '_payment_method_title', $data['payment_details']['method_title'] );
+				$this->update_payment_method( $subscription, $data['payment_details'], false );
 
 			}
 
@@ -230,26 +224,18 @@ class WC_API_Subscriptions extends WC_API_Orders {
 
 			$subscription = wcs_get_subscription( $subscription_id );
 
-			if ( ! $subscription->is_editable() ) {
+			if ( is_wp_error( $subscription ) || ! $subscription->is_editable() ) {
 				throw new WC_API_Exception( 'wcs_api_cannot_edit_subscription', __( 'The requested subscription cannot be edited.', 'woocommerce-subscriptions' ), 400 );
 			}
 
 			if ( isset( $data['payment_details'] ) && is_array( $data['payment_details'] ) ) {
 
-				if ( ! $this->validate_payment_method_data( $data['payment_details'] ) ) {
-					throw new WC_API_Exception( 'wcs_api_invalid_subscription_payment_data', __( 'Recurring Payment method meta data is invalid', 'woocommerce-subscriptiosn'), 400 );
+				if ( empty( $data['payment_details']['method_id'] ) || 'manual' == $data['payment_details']['method_id'] ) {
+					$subscription->update_manual( true );
+				} else {
+					$this->update_payment_method( $subscription, $data['payment_details'], true );
 				}
 
-				$data['payment_details']['post_meta'] = ( ! empty( $data['payment_details']['post_meta'] ) && is_array( $data['payment_details']['post_meta'] ) ) ? $data['payment_details']['post_meta'] : array();
-				$data['payment_details']['user_meta'] = ( ! empty( $data['payment_details']['user_meta'] ) && is_array( $data['payment_details']['user_meta'] ) ) ? $data['payment_details']['user_meta'] : array();
-
-				foreach ( $data['payment_details']['post_meta'] as $meta_key => $meta_value ) {
-					update_post_meta( $subscription->id, $meta_key, $meta_value );
-				}
-
-				foreach ( $data['payment_details']['user_meta'] as $meta_key => $meta_value ) {
-					update_user_meta( $subscription->customer_user, $meta_key, $meta_value );
-				}
 			}
 
 			// set $data['order'] = $data['subscription'] so that edit_order can read in the request
