@@ -201,7 +201,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 
 			do_action( 'wcs_api_subscription_created', $subscription->id, $this );
 
-			return array( 'creating_subscription', wcs_get_subscription( $subscription->id ) );
+			return array( 'creating_subscription' => wcs_get_subscription( $subscription->id ) );
 
 		} catch ( WC_API_Exception $e ) {
 			return new WP_Error( $e->getErrorCode(), $e->getMessage(), array( 'status' => $e->getCode() ) );
