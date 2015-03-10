@@ -33,12 +33,6 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 		self::init_address_fields();
 
-		if ( WC()->payment_gateways() ) {
-			$payment_gateways = WC()->payment_gateways->payment_gateways();
-		}
-
-		$payment_method = ! empty( $subscription->payment_method ) ? $subscription->payment_method : '';
-
 		wp_nonce_field( 'woocommerce_save_data', 'woocommerce_meta_nonce' );
 		?>
 		<style type="text/css">
@@ -82,32 +76,8 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							</select>
 						</p>
 
-						<p class="form-field form-field-wide">
-							<label><?php _e( 'Payment Method:', 'woocommerce' ); ?></label>
-							<select name="_payment_method" id="_payment_method" class="first">
-								<?php
-									$found_method = false;
-
-									foreach ( $payment_gateways as $gateway ) {
-										if ( $gateway->enabled == "yes" ) {
-											$selected = ( $subscription->is_manual() ) ? '' : selected( $payment_method, $gateway->id, false );
-											echo '<option value="' . esc_attr( $gateway->id ) . '" ' . $selected . '>' . esc_html( $gateway->get_title() ) . '</option>';
-											if ( $payment_method == $gateway->id ) {
-												$found_method = true;
-											}
-										}
-									}
-
-									if ( ! $found_method && ! empty( $payment_method ) ) {
-										echo '<option value="' . esc_attr( $payment_method ) . '" selected="selected">' . __( 'Other', 'woocommerce' ) . '</option>';
-									} else {
-										echo '<option value="" ' . selected( $subscription->is_manual(), true, false ) . '>' . __( 'Manual', 'woocommerce' ) . '</option>';
-									}
-								?>
-							</select>
-						</p>
-
 						<?php do_action( 'woocommerce_admin_order_data_after_order_details', $subscription ); ?>
+
 					</div>
 					<div class="order_data_column">
 						<h4><?php _e( 'Billing Details', 'woocommerce' ); ?> <a class="edit_address" href="#"><img src="<?php echo WC()->plugin_url(); ?>/assets/images/icons/edit.png" alt="<?php _e( 'Edit', 'woocommerce' ); ?>" width="14" /></a></h4>
@@ -122,6 +92,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 								}
 
 								foreach ( self::$billing_fields as $key => $field ) {
+
 									if ( isset( $field['show'] ) && false === $field['show'] ) {
 										continue;
 									}
@@ -132,6 +103,8 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 										echo '<p><strong>' . esc_html( $field['label'] ) . ':</strong> ' . make_clickable( esc_html( $subscription->$field_name ) ) . '</p>';
 									}
 								}
+
+								echo '<p' . ( ! empty( $subscription->payment_method ) ? ' class="' . esc_attr( $subscription->payment_method ) . '"' : '' ) . '><strong>' . __( 'Payment Method', 'woocommerce-subscriptions' ) . ':</strong>'. nl2br( $subscription->get_payment_method_to_display() ) . '</p>';
 
 							echo '</div>';
 
@@ -154,6 +127,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 									break;
 								}
 							}
+							WCS_Change_Payment_Method_Admin::display_fields( $subscription );
 
 							echo '</div>';
 
@@ -255,28 +229,16 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 			}
 		}
 
-		// Payment method handling
-		if ( get_post_meta( $post_id, '_payment_method', true ) !== stripslashes( $_POST['_payment_method'] ) ) {
-
-			$methods              = WC()->payment_gateways->payment_gateways();
-			$payment_method       = wc_clean( $_POST['_payment_method'] );
-			$payment_method_title = $payment_method;
-
-			if ( isset( $methods) && isset( $methods[ $payment_method ] ) ) {
-				$payment_method_title = $methods[ $payment_method ]->get_title();
-			}
-
-			update_post_meta( $post_id, '_payment_method', $payment_method );
-			update_post_meta( $post_id, '_payment_method_title', $payment_method_title );
-		}
-
-		// Data saved, now get it so we can manipulate status
 		$subscription = wcs_get_subscription( $post_id );
 
 		try {
+			WCS_Change_Payment_Method_Admin::save_meta( $subscription );
+
 			$subscription->update_status( $_POST['order_status'] );
+
 		} catch ( Exception $e ) {
 			wcs_add_admin_notice( $e->getMessage(), 'error' );
 		}
 	}
+
 }

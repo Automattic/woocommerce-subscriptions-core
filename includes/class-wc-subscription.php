@@ -152,7 +152,7 @@ class WC_Subscription extends WC_Order {
 
 				$renewal_order = new WC_Order( $last_renewal_order_id[0] );
 
-				if ( $renewal_order->needs_payment() || $renewal_order->has_status( 'on-hold' ) ) {
+				if ( $renewal_order->needs_payment() || $renewal_order->has_status( array( 'on-hold', 'failed', 'cancelled' ) ) ) {
 					$needs_payment = true;
 				}
 			}
@@ -1371,4 +1371,81 @@ class WC_Subscription extends WC_Order {
 
 		return apply_filters( 'woocommerce_subscription_payment_method_to_display', $payment_method_to_display, $this );
 	}
+
+	/**
+	 * Save new payment method for a subscription
+	 *
+	 * @since 2.0
+	 * @param WC_Payment_Gateway|empty $payment_method
+	 * @param array $payment_meta Associated array of the form: $database_table => array( value, )
+	 */
+	public function set_payment_method( $payment_gateway, $payment_meta = array() ) {
+
+		if ( ! empty( $payment_meta ) && isset( $payment_gateway->id ) ) {
+			$this->set_payment_method_meta( $payment_gateway->id, $payment_meta );
+		}
+
+		if ( empty( $payment_gateway ) || ! isset( $payment_gateway->id ) ) {
+
+			$this->update_manual( true );
+			update_post_meta( $this->id, '_payment_method', '' );
+			update_post_meta( $this->id, '_payment_method_title', '' );
+
+		} elseif ( $this->payment_gateway !== $payment_gateway->id ) {
+
+			// Set subscription to manual when the payment method doesn't support automatic payments
+			$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
+
+			if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+				$this->update_manual( true );
+			} elseif ( ! isset( $available_gateways[ $payment_gateway->id ] ) || ! $available_gateways[ $payment_gateway->id ]->supports( 'subscriptions' ) ) {
+				$this->update_manual( true );
+			} else {
+				$this->update_manual( false );
+			}
+
+			update_post_meta( $this->id, '_payment_method', $payment_gateway->id );
+			update_post_meta( $this->id, '_payment_method_title', $payment_gateway->get_title() );
+		}
+	}
+
+	/**
+	 * Save payment method meta data for the Subscription
+	 *
+	 * @since 2.0
+	 * @param array $payment_meta Associated array of the form: $database_table => array( value, )
+	 */
+	protected function set_payment_method_meta( $payment_method_id, $payment_meta ) {
+
+		if ( ! is_array( $payment_meta ) ) {
+			throw new InvalidArgumentException( __( 'Payment method meta must be an array.', 'woocommerce-subscriptions' ) );
+		}
+
+		// Allow payment gateway extensions to validate the data and throw exceptions if necessary
+		do_action( 'woocommerce_subscription_validate_payment_meta', $payment_method_id, $payment_meta, $this );
+
+		foreach ( $payment_meta as $meta_table => $meta ) {
+			foreach ( $meta as $meta_key => $meta_data ) {
+				if ( isset( $meta_data['value'] ) ) {
+					switch( $meta_table ) {
+						case 'user_meta':
+						case 'usermeta':
+							update_user_meta( $this->customer_user, $meta_key, $meta_data['value'] );
+							break;
+						case 'post_meta':
+						case 'postmeta':
+							update_post_meta( $this->id, $meta_key, $meta_data['value'] );
+							break;
+						case 'options':
+							update_option( $meta_key, $meta_data['value'] );
+							break;
+						default:
+							do_action( 'wcs_save_other_payment_meta', $this, $meta_table, $meta_key, $meta_data['value'] );
+					}
+				}
+			}
+		}
+
+	}
+
 }

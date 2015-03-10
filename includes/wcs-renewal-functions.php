@@ -57,7 +57,6 @@ function wcs_create_renewal_order( $subscription ) {
 				 '_completed_date',
 				 '_order_key',
 				 '_edit_lock',
-				 '_original_order',
 				 '_wc_points_earned',
 				 '_transaction_id',
 				 '_billing_interval',
@@ -76,9 +75,6 @@ function wcs_create_renewal_order( $subscription ) {
 		foreach( $order_meta as $meta_item ) {
 			add_post_meta( $renewal_order->id, $meta_item['meta_key'], maybe_unserialize( $meta_item['meta_value'] ), true );
 		}
-
-		// Keep a record of the original order's ID on the renewal order
-		update_post_meta( $renewal_order->id, '_original_order', $subscription->id, true );
 
 		// Copy over line items and allow extensions to add/remove items or item meta
 		$items = apply_filters( 'wcs_renewal_order_items', $subscription->get_items( array( 'line_item', 'fee', 'shipping', 'tax' ) ), $subscription );
@@ -110,4 +106,99 @@ function wcs_create_renewal_order( $subscription ) {
 		$wpdb->query( 'ROLLBACK' );
 		return new WP_Error( 'renewal-order-error', $e->getMessage() );
 	}
+}
+
+/**
+ * Check if a given order is a subscription renewal order.
+ *
+ * @param WC_Order|int $order The WC_Order object or ID of a WC_Order order.
+ * @since 2.0
+ */
+function wcs_is_renewal_order( $order ) {
+
+	if ( ! is_object( $order ) ) {
+		$order = wc_get_order( $order );
+	}
+
+	if ( 'simple' != $order->order_type || 0 == $order->post->post_parent ) { // It's a parent order or original order
+
+		$is_renewal = false;
+
+	} else {
+
+		$subscription = wcs_get_subscription( $order->post->post_parent );
+
+		if ( false === $subscription ) { // It's parent is something other than a subscription
+			$is_renewal = false;
+		} else {
+			$is_renewal = true;
+		}
+
+	}
+
+	return apply_filters( 'woocommerce_subscriptions_is_renewal_order', $is_renewal, $order );
+}
+
+/**
+ * Checks the cart to see if it contains a subscription product renewal.
+ *
+ * @param  bool | Array The cart item containing the renewal, else false.
+ * @return string
+ * @since  2.0
+ */
+function wcs_cart_contains_renewal() {
+
+	$contains_renewal = false;
+
+	if ( ! empty( WC()->cart->cart_contents ) ) {
+		foreach ( WC()->cart->cart_contents as $cart_item ) {
+			if ( isset( $cart_item['subscription_renewal'] ) ) {
+				$contains_renewal = $cart_item;
+				break;
+			}
+		}
+	}
+
+	return $contains_renewal;
+}
+
+/**
+ * Checks the cart to see if it contains a subscription product renewal for a failed renewal payment.
+ *
+ * @param  bool | Array The cart item containing the renewal, else false.
+ * @return string
+ * @since  2.0
+ */
+function wcs_cart_contains_failed_renewal_order_payment() {
+
+	$contains_renewal = false;
+	$cart_item        = wcs_cart_contains_renewal();
+
+	if ( false !== $cart_item && isset( $cart_item['subscription_renewal']['renewal_order_id'] ) ) {
+		$renewal_order = wc_get_order( $cart_item['subscription_renewal']['renewal_order_id'] );
+		if ( $renewal_order->has_status( 'failed' ) ) {
+			$contains_renewal = $cart_item;
+		}
+	}
+
+	return $contains_renewal;
+}
+
+/**
+ * Get the subscription to which a renewal order relates.
+ *
+ * @param WC_Order|int $order The WC_Order object or ID of a WC_Order order.
+ * @since 2.0
+ */
+function wcs_get_subscription_for_renewal_order( $renewal_order ) {
+
+	if ( ! is_object( $renewal_order ) ) {
+		$renewal_order = new WC_Order( $renewal_order );
+	}
+
+	if ( ! wcs_is_renewal_order( $renewal_order ) ) {
+		throw new InvalidArgumentException( __( __METHOD__ . '() expects parameter one to be a child renewal order.', 'woocommerce-subscriptions' ) );
+	}
+
+	return apply_filters( 'woocommerce_subscription_for_renewal_order', wcs_get_subscription( $renewal_order->post->post_parent ), $renewal_order );
 }
