@@ -280,6 +280,62 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	}
 
 	/**
+	 * Setup the new payment information to call WC_Subscription::set_payment_method()
+	 *
+	 * @param $subscription WC_Subscription
+	 * @param $payment_details array payment data from api request
+	 * @since 2.0
+	 */
+	public function update_payment_method( $subscription, $payment_details, $updating ){
+
+		$payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
+		$payment_gateway  = ( isset( $payment_gateways[ $payment_details['method_id'] ] ) ) ? $payment_gateways[ $payment_details['method_id'] ] : '';
+
+		try {
+
+			if ( $updating && ! $payment_gateway->supports( 'subscription_payment_method_change_admin' ) ) {
+				throw new Exception( 'wcs_api_edit_subscription_error', __( 'Gateway does not support admin changing the payment method on a Subscription.', 'woocommerce-subscriptions' ) );
+			}
+
+			$payment_method_meta = apply_filters( 'woocommerce_subscription_payment_meta', array(), $subscription );
+
+			if ( ! empty( $payment_gateway ) && isset( $payment_method_meta[ $payment_gateway->id ] ) ) {
+				$payment_method_meta = $payment_method_meta[ $payment_gateway->id ];
+
+				if ( ! empty( $payment_method_meta ) ) {
+
+					foreach ( $payment_method_meta as $meta_table => &$meta ) {
+
+						if ( ! is_array( $meta ) ) {
+							continue;
+						}
+
+						foreach ( $meta as $meta_key => &$meta_data ) {
+
+							if ( isset( $payment_details[ $meta_table ][ $meta_key ] ) ) {
+								$meta_data['value'] = $payment_details[ $meta_table ][ $meta_key ];
+							}
+						}
+
+					}
+				}
+
+			}
+
+			if ( empty( $subscription->payment_gateway ) ) {
+				$subscription->payment_gateway = $payment_gateway;
+			}
+
+			$subscription->set_payment_method( $payment_gateway, $payment_method_meta );
+
+		} catch ( Exception $e ) {
+			// make sure the subscription is set to renew manually and then throw an exception to be shown in the response
+			$subscription->update_manual( true );
+			throw new Exception( sprintf( __( 'Subscription payment method could not be set to %s and has been set to manual with error message: %s', 'woocommerce-subscriptions' ), ( ! empty( $payment_gateway->id ) ) ? $payment_gateway->id : 'manual', $e->getMessage() ) );
+		}
+	}
+
+	/**
 	 * Override WC_API_Order::create_base_order() to create a subscription
 	 * instead of a WC_Order when calling WC_API_Order::create_order().
 	 *
