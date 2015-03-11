@@ -1,4 +1,9 @@
 <?php
+/**
+ * Display the billing schedule for a subscription
+ *
+ * @var object $the_subscription The WC_Subscription object to display the billing schedule for
+ */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
