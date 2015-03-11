@@ -92,3 +92,88 @@ function wcs_order_contains_subscription( $order ) {
 
 	return $contains_subscription;
 }
+
+
+/**
+ * Save the download permissions on the individual subscriptions as well as the order. Hooked into
+ * 'woocommerce_grant_product_download_permissions', which is strictly after the order received all the info
+ * it needed, so we don't need to play with priorities.
+ *
+ * @param  integer 			$order_id 		the ID of the order. At this point it is guaranteed that it has files in it
+ *                                     		and that it hasn't been granted permissions before
+ */
+function wcs_save_downloadable_product_permissions( $order_id ) {
+	$order = wc_get_order( $order_id );
+
+	if ( ! wcs_order_contains_subscription( $order ) ) {
+		return;
+	}
+
+	$subscriptions = wcs_get_subscriptions_for_order( $order );
+
+	foreach ($subscriptions as $subscription) {
+		if ( sizeof( $subscription->get_items() ) > 0 ) {
+			foreach ( $subscription->get_items() as $item ) {
+				$_product = $subscription->get_product_from_item( $item );
+
+				if ( $_product && $_product->exists() && $_product->is_downloadable() ) {
+					$downloads = $_product->get_files();
+
+					foreach ( array_keys( $downloads ) as $download_id ) {
+						$item_id = $item['variation_id'] > 0 ? $item['variation_id'] : $item['product_id'];
+
+						wc_downloadable_file_permission( $download_id, $item_id, $subscription, $item['qty'] );
+						wcs_revoke_downloadable_file_permission( $item_id, $order_id, $order->user_id );
+					}
+				}
+			}
+		}
+		update_post_meta( $subscription->id, '_download_permissions_granted', 1 );
+	}
+}
+add_action( 'woocommerce_grant_product_download_permissions', 'wcs_save_downloadable_product_permissions' );
+
+
+/**
+ * Revokes download permissions from permissions table if a file has permissions on a subscription. If a product has
+ * multiple files, all permissions will be revoked from the original order.
+ *
+ * @param  integer 			$product_id 	the ID for the product (the downloadable file)
+ * @param  integer 			$order_id		the ID for the original order
+ * @param  integer 			$user_id		the user we're removing the permissions from
+ * @return boolean 							true on success, false on error
+ */
+function wcs_revoke_downloadable_file_permission( $product_id, $order_id, $user_id ) {
+	global $wpdb;
+
+	$table = $wpdb->prefix . 'woocommerce_downloadable_product_permissions';
+
+	$where = array(
+		'product_id' => $product_id,
+		'order_id' => $order_id,
+		'user_id' => $user_id,
+	);
+
+	$format = array( '%d', '%d', '%d' );
+
+	return $wpdb->delete( $table, $where, $format );
+}
+
+
+/**
+ * Function that will enable subscriptions to also have download permissions. Normally only "processing" or "completed"
+ * status orders are allowed to do that. This adds "wc-active" to it too. Hook is in WC_Subscriptions::init()
+ *
+ * @param  boolean 							$permission 	true, if order is completed or processing AND downloads
+ *                                     						allow for that
+ * @param  WC_Order / Subscription 			$order 			The order / subscription we want to check
+ * @return boolean 											if it's a subs, and active, true, otherwise default
+ */
+function wcs_enable_subscriptions_download( $permission, $order ) {
+	if ( ! wcs_is_subscription( $order ) ) {
+		return $permission;
+	}
+
+	return $order->has_status( 'active' );
+}
+add_filter( 'woocommerce_order_is_download_permitted', 'wcs_enable_subscriptions_download', 10, 2 );
