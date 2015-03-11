@@ -80,7 +80,7 @@ class WC_Subscription extends WC_Order {
 		} elseif ( 'payment_gateway' == $key ) {
 
 			// Only set the payment gateway once and only when we first need it
-			if ( ! isset( $this->payment_gateway ) ) {
+			if ( empty( $this->payment_gateway ) ) {
 				$this->payment_gateway = wc_get_payment_gateway_by_order( $this );
 			}
 
@@ -1159,6 +1159,13 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function payment_complete( $transaction_id = '' ) {
 
+		// Make sure the last order's status is updated
+		$last_order = $this->get_last_order( 'all' );
+
+		if ( false !== $last_order && $last_order->needs_payment() ) {
+			$last_order->payment_complete( $transaction_id );
+		}
+
 		// Reset suspension count
 		$this->update_suspension_count( 0 );
 
@@ -1179,6 +1186,8 @@ class WC_Subscription extends WC_Order {
 
 		$this->add_order_note( $note );
 
+		$this->update_status( 'active' );
+
 		do_action( 'woocommerce_subscription_payment_complete', $this );
 
 		if ( $this->get_completed_payment_count() >= 1 ) {
@@ -1192,6 +1201,13 @@ class WC_Subscription extends WC_Order {
 	 * @since 2.0
 	 */
 	public function payment_failed( $new_status = 'on-hold' ) {
+
+		// Make sure the last order's status is set to failed
+		$last_order = $this->get_last_order( 'all' );
+
+		if ( false !== $last_order && false === $last_order->has_status( 'failed' ) ) {
+			$last_order->update_status( 'failed' );
+		}
 
 		// Log payment failure on order
 		$this->add_order_note( __( 'Payment failed.', 'woocommerce-subscriptions' ) );
@@ -1346,6 +1362,53 @@ class WC_Subscription extends WC_Order {
 		return apply_filters( 'woocommerce_subscription_related_orders', $related_orders, $this );
 	}
 
+
+	/**
+	 * Gets the most recent order that relates to a subscription, including renewal orders and the initial order (if any).
+	 *
+	 * @param string The columns to return, either 'all' or 'ids'
+	 * @since 2.0
+	 */
+	public function get_last_order( $return_fields = 'ids' ) {
+
+		$return_fields = ( 'ids' == $return_fields ) ? $return_fields : 'all';
+
+		$last_order = false;
+
+		$related_orders = array();
+
+		$renewal_post_ids = get_posts( array(
+			'posts_per_page' => 1,
+			'post_parent'    => $this->id,
+			'post_status'    => 'any',
+			'post_type'      => 'shop_order',
+			'fields'         => 'ids',
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+		) );
+
+		// If there are no renewal orders, get the original order (if there is one)
+		if ( empty( $renewal_post_ids ) ) {
+
+			if ( false !== $this->order ) {
+				if ( 'all' == $return_fields ) {
+					$last_order = $this->order;
+				} else {
+					$last_order = $this->order->id;
+				}
+			}
+
+		} else {
+
+			$last_order = array_shift( $renewal_post_ids );
+
+			if ( 'all' == $return_fields ) {
+				$last_order = wc_get_order( $last_order );
+			}
+		}
+
+		return apply_filters( 'woocommerce_subscription_last_order', $last_order, $this );
+	}
 
 	/**
 	 * Determine how the payment method should be displayed for a subscription.
