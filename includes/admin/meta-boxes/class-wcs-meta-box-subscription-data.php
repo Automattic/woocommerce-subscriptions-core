@@ -212,6 +212,10 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 	public static function save( $post_id, $post ) {
 		global $wpdb;
 
+		if ( 'shop_subscription' != $post->post_type ) {
+			return;
+		}
+
 		self::init_address_fields();
 
 		// Update meta
