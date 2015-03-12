@@ -280,12 +280,14 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	 * @since 2.0
 	 */
 	public function update_payment_method( $subscription, $payment_details, $updating ){
+		global $wpdb;
 
 		$payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
 		$payment_method   = ( ! empty( $payment_details['method_id'] ) ) ? $payment_details['method_id'] : 'manual';
 		$payment_gateway  = ( isset( $payment_gateways[ $payment_details['method_id'] ] ) ) ? $payment_gateways[ $payment_details['method_id'] ] : '';
 
 		try {
+			$wpdb->query( 'START TRANSACTION' );
 
 			if ( $updating && ! array_key_exists( $payment_method, WCS_Change_Payment_Method_Admin::get_valid_payment_methods( $subscription ) ) ) {
 				throw new Exception( 'wcs_api_edit_subscription_error', __( 'Gateway does not support admin changing the payment method on a Subscription.', 'woocommerce-subscriptions' ) );
@@ -322,9 +324,11 @@ class WC_API_Subscriptions extends WC_API_Orders {
 
 			$subscription->set_payment_method( $payment_gateway, $payment_method_meta );
 
+			$wpdb->query( 'COMMIT' );
+
 		} catch ( Exception $e ) {
-			// make sure the subscription is set to renew manually and then throw an exception to be shown in the response
-			$subscription->update_manual( true );
+			$wpdb->query( 'ROLLBACK' );
+
 			throw new Exception( sprintf( __( 'Subscription payment method could not be set to %s and has been set to manual with error message: %s', 'woocommerce-subscriptions' ), ( ! empty( $payment_gateway->id ) ) ? $payment_gateway->id : 'manual', $e->getMessage() ) );
 		}
 	}
