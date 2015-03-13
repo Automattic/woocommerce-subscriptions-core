@@ -1226,37 +1226,6 @@ class WC_Subscription extends WC_Order {
 		}
 	}
 
-	/*** Some of WC_Abstract_Order's methods should not be used on a WC_Subscription ***********/
-
-	/**
-	 * Generates a URL for the thanks page (order received)
-	 *
-	 * @return string
-	 */
-	public function get_checkout_order_received_url() {
-		throw new Exception( __METHOD__ . '() is not available on an instance of ' . __CLASS__ );
-	}
-
-	/**
-	 * Generates a URL so that a customer can pay for their (unpaid - pending) order. Pass 'true' for the checkout version which doesn't offer gateway choices.
-	 *
-	 * @param  boolean $on_checkout
-	 * @return string
-	 */
-	public function get_checkout_payment_url( $on_checkout = false ) {
-		throw new Exception( __METHOD__ . '() is not available on an instance of ' . __CLASS__ );
-	}
-
-	/**
-	 * Get transaction id for the order
-	 *
-	 * @return string
-	 */
-	public function get_transaction_id() {
-		throw new Exception( __METHOD__ . '() is not available on an instance of ' . __CLASS__ );
-	}
-
-
 	/*** Refund related functions are required for the Edit Order/Subscription screen, but they aren't used on a subscription ************/
 
 	/**
