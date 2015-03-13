@@ -195,24 +195,25 @@ class WC_API_Subscriptions extends WC_API_Orders {
 			}
 
 			if ( isset( $data['payment_details'] ) && is_array( $data['payment_details'] ) ) {
-
-				if ( empty( $data['payment_details']['method_id'] ) || empty( $data['payment_details']['method_title'] ) ) {
-					throw new WC_API_Exception( 'wcs_api_invalid_payment_details', __( 'Recurring payment method ID and title are required', 'woocommerce' ), 400 );
-				}
-
-				update_post_meta( $subscription->id, '_payment_method', $data['payment_details']['method_id'] );
-				update_post_meta( $subscription->id, '_payment_method_title', $data['payment_details']['method_title'] );
+				$this->update_payment_method( $subscription, $data['payment_details'], false );
 
 			}
 
 			do_action( 'wcs_api_subscription_created', $subscription->id, $this );
 
-			return array( 'creating_subscription', wcs_get_subscription( $subscription->id ) );
+			return array( 'creating_subscription' => wcs_get_subscription( $subscription->id ) );
 
 		} catch ( WC_API_Exception $e ) {
 			return new WP_Error( $e->getErrorCode(), $e->getMessage(), array( 'status' => $e->getCode() ) );
 		} catch ( Exception $e ) {
-			return new WP_Error( 'wcs_api_cannot_create_subscription', $e->getMessage(), array( 'status' => $e->getCode() ) );
+			$response = array( 'error', array( 'wcs_api_error_create_subscription' => array( 'message' => $e->getMessage(), 'status' => $e->getCode() ) ) );
+
+			// show the subscription in response if it was still created but errored.
+			if ( ! empty( $subscription ) && ! is_wp_error( $subscription ) ) {
+				$response['creating_subscription'] = $this->get_subscription( $subscription->id );
+			}
+
+			return $response;
 		}
 	}
 
@@ -230,26 +231,18 @@ class WC_API_Subscriptions extends WC_API_Orders {
 
 			$subscription = wcs_get_subscription( $subscription_id );
 
-			if ( ! $subscription->is_editable() ) {
+			if ( is_wp_error( $subscription ) || ! $subscription->is_editable() ) {
 				throw new WC_API_Exception( 'wcs_api_cannot_edit_subscription', __( 'The requested subscription cannot be edited.', 'woocommerce-subscriptions' ), 400 );
 			}
 
 			if ( isset( $data['payment_details'] ) && is_array( $data['payment_details'] ) ) {
 
-				if ( ! $this->validate_payment_method_data( $data['payment_details'] ) ) {
-					throw new WC_API_Exception( 'wcs_api_invalid_subscription_payment_data', __( 'Recurring Payment method meta data is invalid', 'woocommerce-subscriptiosn'), 400 );
+				if ( empty( $data['payment_details']['method_id'] ) || 'manual' == $data['payment_details']['method_id'] ) {
+					$subscription->set_payment_method( '' );
+				} else {
+					$this->update_payment_method( $subscription, $data['payment_details'], true );
 				}
 
-				$data['payment_details']['post_meta'] = ( ! empty( $data['payment_details']['post_meta'] ) && is_array( $data['payment_details']['post_meta'] ) ) ? $data['payment_details']['post_meta'] : array();
-				$data['payment_details']['user_meta'] = ( ! empty( $data['payment_details']['user_meta'] ) && is_array( $data['payment_details']['user_meta'] ) ) ? $data['payment_details']['user_meta'] : array();
-
-				foreach ( $data['payment_details']['post_meta'] as $meta_key => $meta_value ) {
-					update_post_meta( $subscription->id, $meta_key, $meta_value );
-				}
-
-				foreach ( $data['payment_details']['user_meta'] as $meta_key => $meta_value ) {
-					update_user_meta( $subscription->customer_user, $meta_key, $meta_value );
-				}
 			}
 
 			// set $data['order'] = $data['subscription'] so that edit_order can read in the request
@@ -277,6 +270,67 @@ class WC_API_Subscriptions extends WC_API_Orders {
 
 		}
 
+	}
+
+	/**
+	 * Setup the new payment information to call WC_Subscription::set_payment_method()
+	 *
+	 * @param $subscription WC_Subscription
+	 * @param $payment_details array payment data from api request
+	 * @since 2.0
+	 */
+	public function update_payment_method( $subscription, $payment_details, $updating ){
+		global $wpdb;
+
+		$payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
+		$payment_method   = ( ! empty( $payment_details['method_id'] ) ) ? $payment_details['method_id'] : 'manual';
+		$payment_gateway  = ( isset( $payment_gateways[ $payment_details['method_id'] ] ) ) ? $payment_gateways[ $payment_details['method_id'] ] : '';
+
+		try {
+			$wpdb->query( 'START TRANSACTION' );
+
+			if ( $updating && ! array_key_exists( $payment_method, WCS_Change_Payment_Method_Admin::get_valid_payment_methods( $subscription ) ) ) {
+				throw new Exception( 'wcs_api_edit_subscription_error', __( 'Gateway does not support admin changing the payment method on a Subscription.', 'woocommerce-subscriptions' ) );
+			}
+
+			$payment_method_meta = apply_filters( 'woocommerce_subscription_payment_meta', array(), $subscription );
+
+			if ( ! empty( $payment_gateway ) && isset( $payment_method_meta[ $payment_gateway->id ] ) ) {
+				$payment_method_meta = $payment_method_meta[ $payment_gateway->id ];
+
+				if ( ! empty( $payment_method_meta ) ) {
+
+					foreach ( $payment_method_meta as $meta_table => &$meta ) {
+
+						if ( ! is_array( $meta ) ) {
+							continue;
+						}
+
+						foreach ( $meta as $meta_key => &$meta_data ) {
+
+							if ( isset( $payment_details[ $meta_table ][ $meta_key ] ) ) {
+								$meta_data['value'] = $payment_details[ $meta_table ][ $meta_key ];
+							}
+						}
+
+					}
+				}
+
+			}
+
+			if ( empty( $subscription->payment_gateway ) ) {
+				$subscription->payment_gateway = $payment_gateway;
+			}
+
+			$subscription->set_payment_method( $payment_gateway, $payment_method_meta );
+
+			$wpdb->query( 'COMMIT' );
+
+		} catch ( Exception $e ) {
+			$wpdb->query( 'ROLLBACK' );
+
+			throw new Exception( sprintf( __( 'Subscription payment method could not be set to %s and has been set to manual with error message: %s', 'woocommerce-subscriptions' ), ( ! empty( $payment_gateway->id ) ) ? $payment_gateway->id : 'manual', $e->getMessage() ) );
+		}
 	}
 
 	/**
