@@ -238,7 +238,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 			if ( isset( $data['payment_details'] ) && is_array( $data['payment_details'] ) ) {
 
 				if ( empty( $data['payment_details']['method_id'] ) || 'manual' == $data['payment_details']['method_id'] ) {
-					$subscription->update_manual( true );
+					$subscription->set_payment_method( '' );
 				} else {
 					$this->update_payment_method( $subscription, $data['payment_details'], true );
 				}
