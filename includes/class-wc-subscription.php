@@ -314,7 +314,10 @@ class WC_Subscription extends WC_Order {
 
 					case 'active' :
 						// Recalculate and set next payment date
-						$this->update_dates( array( 'next_payment' => $this->calculate_date( 'next_payment' ) ) );
+						$next_payment = $this->calculate_date( 'next_payment' );
+						if ( $next_payment > 0 ) {
+							$this->update_dates( array( 'next_payment' => $next_payment ) );
+						}
 						// Trial end date and end/expiration date don't change at all - they should be set when the subscription is first created
 						wcs_make_user_active( $this->customer_user );
 					break;
