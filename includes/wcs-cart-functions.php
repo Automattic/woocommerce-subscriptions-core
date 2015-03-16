@@ -16,6 +16,24 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Return a formatted price string for a given cart object
+ *
+ * @access public
+ * @return void
+ */
+function wcs_cart_price_string( $recurring_amount, $cart ) {
+
+	return wcs_price_string( apply_filters( 'woocommerce_cart_subscription_string_details', array(
+		'recurring_amount'      => $recurring_amount,
+
+		// Schedule details
+		'subscription_interval' => wcs_cart_pluck( $cart, 'subscription_period_interval' ),
+		'subscription_period'   => wcs_cart_pluck( $cart, 'subscription_period', '' ),
+		'subscription_length'   => wcs_cart_pluck( $cart, 'subscription_length' ),
+	)));
+}
+
+/**
  * Return a given piece of meta data from the cart
  *
  * The data can exist on the cart object, a cart item, or product data on a cart item.
