@@ -176,3 +176,25 @@ function wcs_cart_pluck( $cart, $field, $default = 0 ) {
 
 	return $value;
 }
+
+/**
+ * Append the first renewal payment date to a string (which is the order total HTML string by default)
+ *
+ * @access public
+ * @return string
+ */
+function wcs_add_cart_first_renewal_payment_date( $order_total_html, $cart ) {
+
+	// All products will have the same billing schedule
+	$variation_id  = wcs_cart_pluck( $cart, 'variation_id' );
+	$product_id    = empty( $variation_id ) ? wcs_cart_pluck( $cart, 'product_id' ) : $variation_id;
+	$first_renewal = WC_Subscriptions_Product::get_first_renewal_payment_time( $product_id, '', 'site' );
+
+	if ( $first_renewal !== 0 ) {
+		$first_renewal_date = date_i18n( woocommerce_date_format(), $first_renewal, false );
+		$order_total_html  .= '<div class="first-payment-date"><small>' . sprintf( __( 'First renewal: %s', 'woocommerce-subscriptions' ), $first_renewal_date ) .  '</small></div>';
+	}
+
+	return $order_total_html;
+}
+add_filter( 'wcs_cart_totals_order_total_html', 'wcs_add_cart_first_renewal_payment_date', 10, 2 );
