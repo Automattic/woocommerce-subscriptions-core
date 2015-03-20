@@ -33,16 +33,7 @@ class WCS_Template_Loader {
 		global $wp;
 
  		if ( 'myaccount/my-account.php' == $template_name && ! empty( $wp->query_vars['view-subscription'] ) ) {
-
-			if ( locate_template( 'view-subscription.php' ) != '' ) {
-
-				$located = locate_template( 'view-subscription.php' );
-
-			} else {
-				$located = dirname( dirname( __FILE__ ) ) . '/templates/myaccount/view-subscription.php';
-
-			}
-
+			$located = wc_locate_template( 'myaccount/view-subscription.php', $template_path, plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
 		}
 
 		return $located;
