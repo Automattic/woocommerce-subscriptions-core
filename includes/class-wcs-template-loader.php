@@ -8,7 +8,7 @@
 class WCS_Template_Loader {
 
 	public static function init() {
-		add_filter( 'wc_get_template', __CLASS__ . '::wcs_add_view_subscription_template', 10, 5 );
+		add_filter( 'wc_get_template', __CLASS__ . '::add_view_subscription_template', 10, 5 );
 	}
 
 	/**
@@ -21,7 +21,7 @@ class WCS_Template_Loader {
 	 * @param $default_path
 	 * @since 2.0
 	 */
-	public static function wcs_add_view_subscription_template( $located, $template_name, $args, $template_path, $default_path ) {
+	public static function add_view_subscription_template( $located, $template_name, $args, $template_path, $default_path ) {
 		global $wp;
 
  		if ( 'myaccount/my-account.php' == $template_name && ! empty( $wp->query_vars['view-subscription'] ) ) {
