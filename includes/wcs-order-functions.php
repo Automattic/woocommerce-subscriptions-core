@@ -177,3 +177,63 @@ function wcs_enable_subscriptions_download( $permission, $order ) {
 	return $order->has_status( 'active' );
 }
 add_filter( 'woocommerce_order_is_download_permitted', 'wcs_enable_subscriptions_download', 10, 2 );
+
+
+/**
+ * WooCommerce's function receives the original order ID, the item and the list of files. This does not work for
+ * download permissions stored on the subscription rather than the original order as the URL would have the wrong order
+ * key. This function takes the same parameters, but queries the database again for download ids belonging to all the
+ * subscriptions that were in the original order. Then for all subscriptions, it checks all items, and if the item
+ * passed in here is in that subscription, it creates the correct download link to be passsed to the email.
+ *
+ * @param  array 			$files 			List of files already included in the list
+ * @param  array 			$item 			An item (you get it by doing $order->get_items())
+ * @param  WC_Order			$order 			The original order
+ * @return array 							List of files with correct download urls
+ */
+function wcs_subscription_email_download_links( $files, $item, $order ) {
+	if ( ! wcs_order_contains_subscription( $order ) ) {
+		return $files;
+	}
+
+	global $wpdb;
+
+	$subscriptions = wcs_get_subscriptions_for_order( $order );
+
+	// This is needed because downloads are keyed to the subscriptions, not the original orders
+	$subs_keys = wp_list_pluck( $subscriptions, 'order_key' );
+
+	$product_id   = $item['variation_id'] > 0 ? $item['variation_id'] : $item['product_id'];
+
+	$download_ids = $wpdb->get_col( $wpdb->prepare("
+		SELECT download_id
+		FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions
+		WHERE user_email = %s
+		AND order_key IN ('%s')
+		AND product_id = %s
+		ORDER BY permission_id
+	", $order->billing_email, implode( "', '", $subs_keys ), $product_id ) );
+
+	foreach ( $subscriptions as $subscription ) {
+		$sub_products = $subscription->get_items();
+
+		foreach ( $sub_products as $sub_product ) {
+			$sub_product_id = $sub_product['variation_id'] > 0 ? $sub_product['variation_id'] : $sub_product['product_id'];
+
+			if ( $sub_product_id === $product_id ) {
+				$product = wc_get_product( $product_id );
+
+				foreach ( $download_ids as $download_id ) {
+
+					if ( $product->has_file( $download_id ) ) {
+						$files[ $download_id ]                 = $product->get_file( $download_id );
+						$files[ $download_id ]['download_url'] = $subscription->get_download_url( $product_id, $download_id );
+					}
+				}
+			}
+		}
+	}
+
+	return $files;
+}
+add_filter( 'woocommerce_get_item_downloads', 'wcs_subscription_email_download_links', 10, 3 );
