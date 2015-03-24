@@ -54,7 +54,7 @@ class WCS_Admin_Post_Types {
 
 	/**
 	 * Displays the dropdown for the product filter
-	 * @return string 						the html dropdown element
+	 * @return string the html dropdown element
 	 */
 	public function restrict_by_product() {
 		global $typenow;
@@ -63,43 +63,17 @@ class WCS_Admin_Post_Types {
 			return;
 		}
 
+		$product_id = '';
+		$product_string = '';
+
+		if ( ! empty( $_GET['_wcs_product'] ) ) {
+			$product_id     = absint( $_GET['_wcs_product'] );
+			$product_string = wc_get_product( $product_id )->get_formatted_name();
+		}
+
 		?>
-		<select id="dropdown_products" name="_wcs_product">
-			<option value=""><?php _e( 'Show all products', 'woocommerce-subscriptions' ) ?></option>
-			<?php
-			if ( ! empty( $_GET['_wcs_product'] ) ) {
-				$product = wc_get_product( absint( $_GET['_wcs_product'] ) );
-				echo '<option value="' . absint( $product->ID ) . '" ';
-				selected( 1, 1 );
-				echo '>' . wp_kses( $product->get_formatted_name(), array( 'span' => array() ) ) . '</option>';
-			}
-			?>
-		</select>
+		<input type="hidden" class="wc-product-search" name="_wcs_product" data-placeholder="<?php _e( 'Search for a product&hellip;', 'woocommerce-subscriptions' ); ?>" data-action="woocommerce_json_search_products_and_variations" data-selected="<?php echo wp_kses_post( $product_string ); ?>" value="<?php echo $product_id; ?>" data-allow_clear="true" />
 		<?php
-
-		wc_enqueue_js( "
-			jQuery('select#dropdown_products').css('width', '250px').ajaxChosen({
-				method: 		'GET',
-				url: 			'" . admin_url( 'admin-ajax.php' ) . "',
-				dataType: 		'json',
-				afterTypeDelay: 100,
-				minTermLength: 	1,
-				data:		{
-					action: 	'woocommerce_json_search_products_and_variations',
-					security: 	'" . wp_create_nonce( 'search-products' ) . "',
-					default:	'" . __( 'Show all products', 'woocommerce-subscriptions' ) . "'
-				}
-			}, function (data) {
-
-				var terms = {};
-
-				$.each(data, function (i, val) {
-					terms[i] = val;
-				});
-
-				return terms;
-			});
-		" );
 	}
 
 
