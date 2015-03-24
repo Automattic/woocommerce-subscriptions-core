@@ -48,17 +48,29 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 				<div class="order_data_column_container">
 					<div class="order_data_column">
 
-						<p class="form-field form-field-wide">
-							<label for="customer_user"><?php _e( 'Customer:', 'woocommerce' ) ?></label>
-							<select id="customer_user" name="customer_user" class="ajax_chosen_select_customer">
-								<option value=""><?php _e( 'Guest', 'woocommerce' ) ?></option>
-								<?php
-									if ( $subscription->get_user_id() ) {
-										$user = get_user_by( 'id', $subscription->get_user_id() );
-										echo '<option value="' . esc_attr( $user->ID ) . '" ' . selected( 1, 1, false ) . '>' . esc_html( $user->display_name ) . ' (#' . absint( $user->ID ) . ' &ndash; ' . esc_html( $user->user_email ) . ')</option>';
-									}
-								?>
-							</select>
+						<p class="form-field form-field-wide wc-customer-user">
+							<label for="customer_user"><?php _e( 'Customer:', 'woocommerce-subscriptions' ) ?> <?php
+								if ( ! empty( $subscription->customer_user ) ) {
+									$args = array( 'post_status' => 'all',
+										'post_type'      => 'shop_subscription',
+										'_customer_user' => absint( $subscription->customer_user )
+									);
+									printf( '<a href="%s">%s &rarr;</a>',
+										esc_url( add_query_arg( $args, admin_url( 'edit.php' ) ) ),
+										__( 'View other subscriptions', 'woocommerce-subscriptions' )
+									);
+								}
+							?></label>
+							<?php
+							$user_string = '';
+							$user_id     = '';
+							if ( ! empty( $subscription->customer_user ) ) {
+								$user_id     = absint( $subscription->customer_user );
+								$user        = get_user_by( 'id', $user_id );
+								$user_string = esc_html( $user->display_name ) . ' (#' . absint( $user->ID ) . ' &ndash; ' . esc_html( $user->user_email );
+							}
+							?>
+							<input type="hidden" class="wc-customer-search" id="customer_user" name="customer_user" data-placeholder="<?php _e( 'Search for a customer&hellip;', 'woocommerce-subscriptions' ); ?>" data-selected="<?php echo esc_attr( $user_string ); ?>" value="<?php echo $user_id; ?>" />
 						</p>
 
 						<p class="form-field form-field-wide">
