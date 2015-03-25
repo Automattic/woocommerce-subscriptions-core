@@ -20,36 +20,36 @@ abstract class WCS_Scheduler {
 
 		$this->date_types_to_schedule = apply_filters( 'woocommerce_subscriptions_date_types_to_schedule', array_keys( wcs_get_subscription_date_types() ) );
 
-		add_action( 'woocommerce_subscription_updated_date', array( &$this, 'update_date' ), 10, 3 );
+		add_action( 'woocommerce_subscription_date_updated', array( &$this, 'update_date' ), 10, 3 );
 
-		add_action( 'woocommerce_subscription_deleted_date', array( &$this, 'delete_date' ), 10, 2 );
+		add_action( 'woocommerce_subscription_date_deleted', array( &$this, 'delete_date' ), 10, 2 );
 
-		add_action( 'woocommerce_subscription_updated_status', array( &$this, 'update_status' ), 10, 3 );
+		add_action( 'woocommerce_subscription_status_updated', array( &$this, 'update_status' ), 10, 3 );
 	}
 
 	/**
 	 * When a subscription's date is updated, maybe schedule an event
 	 *
-	 * @param int $subscription_id The ID for a WC_Subscription object
+	 * @param object $subscription An instance of a WC_Subscription object
 	 * @param string $date_type Can be 'start', 'trial_end', 'next_payment', 'last_payment', 'end', 'end_of_prepaid_term' or a custom date type
 	 * @param string $datetime A MySQL formated date/time string in the GMT/UTC timezone.
 	 */
-	abstract public function update_date( $subscription_id, $date_type, $datetime );
+	abstract public function update_date( $subscription, $date_type, $datetime );
 
 	/**
 	 * When a subscription's date is deleted, clear it from the scheduler
 	 *
-	 * @param int $subscription_id The ID for a WC_Subscription object
+	 * @param object $subscription An instance of a WC_Subscription object
 	 * @param string $date_type Can be 'start', 'trial_end', 'next_payment', 'last_payment', 'end', 'end_of_prepaid_term' or a custom date type
 	 */
-	abstract public function delete_date( $subscription_id, $date_type );
+	abstract public function delete_date( $subscription, $date_type );
 
 	/**
 	 * When a subscription's status is updated, maybe schedule an event
 	 *
-	 * @param int $subscription_id The ID for a WC_Subscription object
+	 * @param object $subscription An instance of a WC_Subscription object
 	 * @param string $date_type Can be 'start', 'trial_end', 'next_payment', 'last_payment', 'end', 'end_of_prepaid_term' or a custom date type
 	 * @param string $datetime A MySQL formated date/time string in the GMT/UTC timezone.
 	 */
-	abstract public function update_status( $subscription_id, $old_status, $new_status );
+	abstract public function update_status( $subscription, $new_status, $old_status );
 }

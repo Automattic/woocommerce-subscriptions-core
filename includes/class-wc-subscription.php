@@ -282,7 +282,7 @@ class WC_Subscription extends WC_Order {
 
 				$this->add_order_note( $message );
 
-				do_action( 'woocommerce_subscription_unable_to_update_status', $this->id, $new_status, $old_status );
+				do_action( 'woocommerce_subscription_unable_to_update_status', $this, $new_status, $old_status );
 
 				// Let plugins handle it if they tried to change to an invalid status
 				throw new Exception( $message );
@@ -339,8 +339,11 @@ class WC_Subscription extends WC_Order {
 
 				$this->add_order_note( trim( $note . ' ' . sprintf( __( 'Status changed from %s to %s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ) );
 
-				// Status was changed
-				do_action( 'woocommerce_subscription_updated_status', $this->id, $old_status, $new_status );
+				// Trigger a hook with params we want
+				do_action( 'woocommerce_subscription_status_updated', $this, $new_status, $old_status );
+
+				// Trigger a hook with params matching WooCommerce's 'woocommerce_order_status_changed' hook so functions attached to it can be attached easily to subscription status changes
+				do_action( 'woocommerce_subscription_status_changed', $this->id, $old_status, $new_status );
 
 			} catch ( Exception $e ) {
 
@@ -350,7 +353,7 @@ class WC_Subscription extends WC_Order {
 
 				$this->add_order_note( sprintf( __( 'Unable to change subscription status to "%s".', 'woocommerce-subscriptions' ), $new_status ) );
 
-				do_action( 'woocommerce_subscription_unable_to_update_status', $this->id, $new_status, $old_status );
+				do_action( 'woocommerce_subscription_unable_to_update_status', $this, $new_status, $old_status );
 
 				throw $e;
 			}
@@ -569,7 +572,7 @@ class WC_Subscription extends WC_Order {
 			} elseif ( $time_diff < 0 && absint( $time_diff ) < WEEK_IN_SECONDS ) {
 				$date_to_display = sprintf( __( '%s ago', 'woocommerce-subscriptions' ), human_time_diff( current_time( 'timestamp', true ), $timestamp_gmt ) );
 			} else {
-				$date_to_display = date_i18n( wc_date_format(), $timestamp_gmt, true );
+				$date_to_display = date_i18n( wc_date_format(), $timestamp_gmt, true ); // 3rd param 'true' tells WordPress to convert the date to the site's timezone
 			}
 		} else {
 			switch ( $date_type ) {
@@ -724,7 +727,7 @@ class WC_Subscription extends WC_Order {
 
 			if ( $is_updated ) {
 				$this->schedule->{$date_type} = $datetime;
-				do_action( 'woocommerce_subscription_updated_date', $this->id, $date_type, $datetime );
+				do_action( 'woocommerce_subscription_date_updated', $this, $date_type, $datetime );
 			}
 		}
 
@@ -756,7 +759,7 @@ class WC_Subscription extends WC_Order {
 
 		$this->schedule->{$date_type} = 0;
 		update_post_meta( $this->id, wcs_get_date_meta_key( $date_type ), $this->schedule->{$date_type} );
-		do_action( 'woocommerce_subscription_deleted_date', $this->id, $date_type );
+		do_action( 'woocommerce_subscription_date_deleted', $this, $date_type );
 	}
 
 	/**
