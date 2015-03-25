@@ -265,7 +265,5 @@ function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 		);
 	}
 
-	$all_actions = apply_filters( 'woocommerce_my_subscriptions_actions', array( $subscription->id => $actions ), array( $subscription->id => $subscription ) );
-
-	return $all_actions;
+	return apply_filters( 'wcs_view_subscription_actions', $actions, $subscription );
 }
