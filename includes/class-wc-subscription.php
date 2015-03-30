@@ -1074,31 +1074,6 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Get totals for display on pages and in emails.
-	 *
-	 * @return array
-	 */
-	public function get_order_item_totals( $tax_display = '' ) {
-
-		if ( ! $tax_display ) {
-			$tax_display = $this->tax_display_cart;
-		}
-
-		$total_rows = parent::get_order_item_totals( $tax_display );
-
-		// Change some of the labels to remove "Order" and make it clear the value represents a recurring amount
-		if ( isset( $total_rows['order_discount'] ) ) {
-			$total_rows['order_discount']['label'] = __( 'Recurring Discount:', 'woocommerce-subscriptions' );
-		}
-
-		if ( isset( $total_rows['order_total'] ) ) {
-			$total_rows['order_total']['label'] = __( 'Recurring Total:', 'woocommerce-subscriptions' );
-		}
-
-		return apply_filters( 'woocommerce_get_order_item_totals', $total_rows, $this );
-	}
-
-	/**
 	 * Get the details of the subscription for use with @see wcs_price_string()
 	 *
 	 * @return array
