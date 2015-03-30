@@ -1074,31 +1074,6 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Get totals for display on pages and in emails.
-	 *
-	 * @return array
-	 */
-	public function get_order_item_totals( $tax_display = '' ) {
-
-		if ( ! $tax_display ) {
-			$tax_display = $this->tax_display_cart;
-		}
-
-		$total_rows = parent::get_order_item_totals( $tax_display );
-
-		// Change some of the labels to remove "Order" and make it clear the value represents a recurring amount
-		if ( isset( $total_rows['order_discount'] ) ) {
-			$total_rows['order_discount']['label'] = __( 'Recurring Discount:', 'woocommerce-subscriptions' );
-		}
-
-		if ( isset( $total_rows['order_total'] ) ) {
-			$total_rows['order_total']['label'] = __( 'Recurring Total:', 'woocommerce-subscriptions' );
-		}
-
-		return apply_filters( 'woocommerce_get_order_item_totals', $total_rows, $this );
-	}
-
-	/**
 	 * Get the details of the subscription for use with @see wcs_price_string()
 	 *
 	 * @return array
@@ -1484,6 +1459,18 @@ class WC_Subscription extends WC_Order {
 				}
 			}
 		}
+
+	}
+
+	/**
+	 * Now uses the URL /my-account/view-subscription/{post-id} when viewing a subscription from the My Account Page.
+	 *
+	 * @since 2.0
+	 */
+	public function get_view_order_url() {
+		$view_subscription_url = wc_get_endpoint_url( 'view-subscription', $this->id, wc_get_page_permalink( 'myaccount' ) );
+
+		return apply_filters( 'wcs_get_view_subscription_url', $view_subscription_url, $this->id );
 
 	}
 

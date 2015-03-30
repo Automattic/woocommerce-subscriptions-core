@@ -209,3 +209,61 @@ function wcs_can_user_put_subscription_on_hold( $subscription, $user = '' ) {
 
 	return apply_filters( 'woocommerce_can_user_suspend_subscription', $user_can_suspend, $subscription );
 }
+
+function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
+	$actions = array();
+
+	$admin_with_suspension_disallowed = ( current_user_can( 'manage_woocommerce' ) && 0 == get_option( WC_Subscriptions_Admin::$option_prefix . '_max_customer_suspensions', 0 ) ) ? true : false;
+	if ( $subscription->can_be_updated_to( 'on-hold' ) && wcs_can_user_put_subscription_on_hold( $subscription ) && ! $admin_with_suspension_disallowed ) {
+		$actions['suspend'] = array(
+			'url'  => wcs_get_users_change_status_link( $subscription->id, 'on-hold' ),
+			'name' => __( 'Suspend', 'woocommerce-subscriptions' )
+		);
+	} elseif ( $subscription->can_be_updated_to( 'active' ) && ! $subscription->needs_payment() ) {
+		$actions['reactivate'] = array(
+			'url'  => wcs_get_users_change_status_link( $subscription->id, 'active' ),
+			'name' => __( 'Reactivate', 'woocommerce-subscriptions' )
+		);
+	}
+
+	if ( wcs_can_user_resubscribe_to( $subscription, $user_id ) ) {
+		$actions['resubscribe'] = array(
+			'url'  => wcs_get_users_resubscribe_link( $subscription ),
+			'name' => __( 'Resubscribe', 'woocommerce-subscriptions' )
+		);
+	}
+
+	$renewal_order_ids = $subscription->get_related_orders( 'ids', 'renewal' );
+
+	if ( ! empty( $renewal_order_ids ) ) {
+
+		$last_renewal_order_id = array_shift( $renewal_order_ids );
+		$last_renewal_order    = wc_get_order( $last_renewal_order_id );
+
+		if ( $subscription->can_be_updated_to( 'active' ) && $last_renewal_order->has_status( array( 'pending', 'cancelled', 'failed' ) ) && ! is_numeric( get_post_meta( $last_renewal_order->id, '_failed_order_replaced_by', true ) ) ) {
+			$actions['pay'] = array(
+				'url'  => $last_renewal_order->get_checkout_payment_url(),
+				'name' => __( 'Pay', 'woocommerce-subscriptions' )
+			);
+		}
+
+	} else { // Check if the original order still needs to be paid
+
+		if ( false !== $subscription->order && $subscription->order->has_status( 'pending' ) && $subscription->can_be_updated_to( 'active' ) ) {
+			$actions['pay'] = array(
+				'url'  => $subscription->order->get_checkout_payment_url(),
+				'name' => __( 'Pay', 'woocommerce-subscriptions' )
+			);
+		}
+	}
+
+	// Show button for subscriptions which can be cancelled and which may actually require cancellation (i.e. has a future payment)
+	if ( $subscription->can_be_updated_to( 'cancelled' ) && $subscription->get_time( 'next_payment' ) > 0 ) {
+		$actions['cancel'] = array(
+			'url'  => wcs_get_users_change_status_link( $subscription->id, 'cancelled' ),
+			'name' => __( 'Cancel', 'woocommerce-subscriptions' )
+		);
+	}
+
+	return apply_filters( 'wcs_view_subscription_actions', $actions, $subscription );
+}
