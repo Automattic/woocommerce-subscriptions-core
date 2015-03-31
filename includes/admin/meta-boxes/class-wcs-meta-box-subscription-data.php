@@ -43,26 +43,38 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 			<input name="post_status" type="hidden" value="<?php echo esc_attr( $subscription->get_status() ); ?>" />
 			<div id="order_data" class="panel">
 
-				<h2><?php printf( __( 'Subscription %s details', 'woocommerce' ), esc_html( $subscription->get_order_number() ) ); ?></h2>
+				<h2><?php printf( __( 'Subscription %s details', 'woocommerce-subscriptions' ), esc_html( $subscription->get_order_number() ) ); ?></h2>
 
 				<div class="order_data_column_container">
 					<div class="order_data_column">
 
-						<p class="form-field form-field-wide">
-							<label for="customer_user"><?php _e( 'Customer:', 'woocommerce' ) ?></label>
-							<select id="customer_user" name="customer_user" class="ajax_chosen_select_customer">
-								<option value=""><?php _e( 'Guest', 'woocommerce' ) ?></option>
-								<?php
-									if ( $subscription->get_user_id() ) {
-										$user = get_user_by( 'id', $subscription->get_user_id() );
-										echo '<option value="' . esc_attr( $user->ID ) . '" ' . selected( 1, 1, false ) . '>' . esc_html( $user->display_name ) . ' (#' . absint( $user->ID ) . ' &ndash; ' . esc_html( $user->user_email ) . ')</option>';
-									}
-								?>
-							</select>
+						<p class="form-field form-field-wide wc-customer-user">
+							<label for="customer_user"><?php _e( 'Customer:', 'woocommerce-subscriptions' ) ?> <?php
+								if ( ! empty( $subscription->customer_user ) ) {
+									$args = array( 'post_status' => 'all',
+										'post_type'      => 'shop_subscription',
+										'_customer_user' => absint( $subscription->customer_user )
+									);
+									printf( '<a href="%s">%s &rarr;</a>',
+										esc_url( add_query_arg( $args, admin_url( 'edit.php' ) ) ),
+										__( 'View other subscriptions', 'woocommerce-subscriptions' )
+									);
+								}
+							?></label>
+							<?php
+							$user_string = '';
+							$user_id     = '';
+							if ( ! empty( $subscription->customer_user ) ) {
+								$user_id     = absint( $subscription->customer_user );
+								$user        = get_user_by( 'id', $user_id );
+								$user_string = esc_html( $user->display_name ) . ' (#' . absint( $user->ID ) . ' &ndash; ' . esc_html( $user->user_email );
+							}
+							?>
+							<input type="hidden" class="wc-customer-search" id="customer_user" name="customer_user" data-placeholder="<?php _e( 'Search for a customer&hellip;', 'woocommerce-subscriptions' ); ?>" data-selected="<?php echo esc_attr( $user_string ); ?>" value="<?php echo $user_id; ?>" />
 						</p>
 
 						<p class="form-field form-field-wide">
-							<label for="order_status"><?php _e( 'Subscription Status:', 'woocommerce' ); ?></label>
+							<label for="order_status"><?php _e( 'Subscription Status:', 'woocommerce-subscriptions' ); ?></label>
 							<select id="order_status" name="order_status">
 								<?php
 									$statuses = wcs_get_subscription_statuses();
@@ -80,15 +92,15 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 					</div>
 					<div class="order_data_column">
-						<h4><?php _e( 'Billing Details', 'woocommerce' ); ?> <a class="edit_address" href="#"><img src="<?php echo WC()->plugin_url(); ?>/assets/images/icons/edit.png" alt="<?php _e( 'Edit', 'woocommerce' ); ?>" width="14" /></a></h4>
+						<h4><?php _e( 'Billing Details', 'woocommerce-subscriptions' ); ?> <a class="edit_address" href="#"><img src="<?php echo WC()->plugin_url(); ?>/assets/images/icons/edit.png" alt="<?php _e( 'Edit', 'woocommerce-subscriptions' ); ?>" width="14" /></a></h4>
 						<?php
 							// Display values
 							echo '<div class="address">';
 
 								if ( $subscription->get_formatted_billing_address() ) {
-									echo '<p><strong>' . __( 'Address', 'woocommerce' ) . ':</strong>' . wp_kses( $subscription->get_formatted_billing_address(), array( 'br' => array() ) ) . '</p>';
+									echo '<p><strong>' . __( 'Address', 'woocommerce-subscriptions' ) . ':</strong>' . wp_kses( $subscription->get_formatted_billing_address(), array( 'br' => array() ) ) . '</p>';
 								} else {
-									echo '<p class="none_set"><strong>' . __( 'Address', 'woocommerce' ) . ':</strong> ' . __( 'No billing address set.', 'woocommerce' ) . '</p>';
+									echo '<p class="none_set"><strong>' . __( 'Address', 'woocommerce-subscriptions' ) . ':</strong> ' . __( 'No billing address set.', 'woocommerce-subscriptions' ) . '</p>';
 								}
 
 								foreach ( self::$billing_fields as $key => $field ) {
@@ -109,7 +121,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							echo '</div>';
 
 							// Display form
-							echo '<div class="edit_address"><p><button class="button load_customer_billing">' . __( 'Load billing address', 'woocommerce' ) . '</button></p>';
+							echo '<div class="edit_address"><p><button class="button load_customer_billing">' . __( 'Load billing address', 'woocommerce-subscriptions' ) . '</button></p>';
 
 							foreach ( self::$billing_fields as $key => $field ) {
 								if ( ! isset( $field['type'] ) ) {
@@ -136,15 +148,15 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 					</div>
 					<div class="order_data_column">
 
-						<h4><?php _e( 'Shipping Details', 'woocommerce' ); ?> <a class="edit_address" href="#"><img src="<?php echo WC()->plugin_url(); ?>/assets/images/icons/edit.png" alt="<?php _e( 'Edit', 'woocommerce' ); ?>" width="14" /></a></h4>
+						<h4><?php _e( 'Shipping Details', 'woocommerce-subscriptions' ); ?> <a class="edit_address" href="#"><img src="<?php echo WC()->plugin_url(); ?>/assets/images/icons/edit.png" alt="<?php _e( 'Edit', 'woocommerce-subscriptions' ); ?>" width="14" /></a></h4>
 						<?php
 							// Display values
 							echo '<div class="address">';
 
 								if ( $subscription->get_formatted_shipping_address() ) {
-									echo '<p><strong>' . __( 'Address', 'woocommerce' ) . ':</strong>' . wp_kses( $subscription->get_formatted_shipping_address(), array( 'br' => array() ) ) . '</p>';
+									echo '<p><strong>' . __( 'Address', 'woocommerce-subscriptions' ) . ':</strong>' . wp_kses( $subscription->get_formatted_shipping_address(), array( 'br' => array() ) ) . '</p>';
 								} else {
-									echo '<p class="none_set"><strong>' . __( 'Address', 'woocommerce' ) . ':</strong> ' . __( 'No shipping address set.', 'woocommerce' ) . '</p>';
+									echo '<p class="none_set"><strong>' . __( 'Address', 'woocommerce-subscriptions' ) . ':</strong> ' . __( 'No shipping address set.', 'woocommerce-subscriptions' ) . '</p>';
 								}
 
 								if ( self::$shipping_fields ) {
@@ -168,7 +180,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							echo '</div>';
 
 							// Display form
-							echo '<div class="edit_address"><p><button class="button load_customer_shipping">' . __( 'Load shipping address', 'woocommerce' ) . '</button> <button class="button billing-same-as-shipping">' . __( 'Copy from billing', 'woocommerce' ) . '</button></p>';
+							echo '<div class="edit_address"><p><button class="button load_customer_shipping">' . __( 'Load shipping address', 'woocommerce-subscriptions' ) . '</button> <button class="button billing-same-as-shipping">' . __( 'Copy from billing', 'woocommerce-subscriptions' ) . '</button></p>';
 
 							if ( self::$shipping_fields ) {
 								foreach ( self::$shipping_fields as $key => $field ) {
