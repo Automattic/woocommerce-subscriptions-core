@@ -68,9 +68,12 @@ class WCS_Admin_Meta_Boxes {
 	/**
 	 * Don't save save some order related meta boxes
 	 */
-	public function remove_meta_box_save() {
-		remove_action( 'woocommerce_process_shop_order_meta', 'WC_Meta_Box_Order_Data::save', 40, 2 );
-		remove_action( 'woocommerce_process_shop_order_meta', 'WC_Meta_Box_Order_Actions::save', 50, 2 );
+	public function remove_meta_box_save( $post_id, $post ) {
+
+		if ( 'shop_subscription' == $post->post_type ) {
+			remove_action( 'woocommerce_process_shop_order_meta', 'WC_Meta_Box_Order_Data::save', 40, 2 );
+			remove_action( 'woocommerce_process_shop_order_meta', 'WC_Meta_Box_Order_Actions::save', 50, 2 );
+		}
 	}
 
 	/**
