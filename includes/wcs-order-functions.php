@@ -237,3 +237,30 @@ function wcs_subscription_email_download_links( $files, $item, $order ) {
 	return $files;
 }
 add_filter( 'woocommerce_get_item_downloads', 'wcs_subscription_email_download_links', 10, 3 );
+
+
+/**
+ * Repairs a glitch in WordPress's save function. You cannot save a null value on update, see
+ * https://github.com/woothemes/woocommerce/issues/7861 for more info on this.
+ *
+ * @param  integer 			$post_id 		The ID of the subscription
+ */
+function wcs_repair_permission_data( $post_id ) {
+	if ( $post_id !== absint( $post_id ) ) {
+		return;
+	}
+
+	if ( 'shop_subscription' !== get_post_type( $post_id ) ) {
+		return;
+	}
+
+	global $wpdb;
+
+	$wpdb->query( $wpdb->prepare( "
+		UPDATE {$wpdb->prefix}woocommerce_downloadable_product_permissions
+		SET access_expires = null
+		WHERE order_id = %d
+		AND access_expires = %s
+	", $post_id, '0000-00-00 00:00:00' ) );
+}
+add_action( 'woocommerce_process_shop_order_meta', 'wcs_repair_permission_data', 60, 1 );
