@@ -51,6 +51,64 @@ class WCS_Remove_Item {
 	}
 
 	/**
+	 * Process the remove or re-add a line item from a subscription request.
+	 *
+	 * @since 2.0
+	 */
+	public static function maybe_remove_or_add_item_to_subscription() {
+
+		if ( isset( $_GET['subscription_id'] ) && ( isset( $_GET['remove_item'] ) || isset( $_GET['undo_remove_item'] ) ) && isset( $_GET['_wpnonce'] ) ) {
+
+			$subscription = ( wcs_is_subscription( $_GET['subscription_id'] ) ) ? wcs_get_subscription( $_GET['subscription_id'] ) : false;
+			$undo_request = ( isset( $_GET['undo_remove_item'] ) ) ? true : false;
+			$item_id      = ( $undo_request ) ? $_GET['undo_remove_item'] : $_GET['remove_item'];
+
+			if ( false === $subscription ) {
+
+				wc_add_notice( sprintf( __( 'Subscription #%s does not exist.', 'woocommerce-subscriptions' ), $_GET['subscription_id'] ), 'error' );
+				wp_safe_redirect( wc_get_page_permalink( 'myaccount') );
+				exit;
+			}
+
+			if ( self::validate_remove_items_request( $subscription, $item_id, $undo_request ) ) {
+
+				if ( $undo_request ) {
+					// handle undo request
+					$removed_item = WC()->session->get( 'removed_subscription_items', array() );
+
+					if ( ! empty( $removed_item[ $item_id ] ) && $subscription->id == $removed_item[ $item_id ] ) {
+
+						wc_update_order_item( $item_id, array( 'order_item_type' => 'line_item' ) );
+						unset( $removed_item[ $item_id ] );
+
+						WC()->session->set( 'removed_subscription_items', $removed_item );
+
+					} else {
+						wc_add_notice( __( 'Your request to undo your previous action was unsuccessful.', 'woocommerce-subscriptions' ) );
+					}
+
+				} else {
+					// handle remove item requests
+					WC()->session->set( 'removed_subscription_items', array( $item_id => $subscription->id ) );
+					$subscription_items = $subscription->get_items();
+
+					wc_add_notice( sprintf( __( 'You have successfully removed "%s" from your subscription. %sUndo?%s', 'woocommerce-subscription' ), $subscription_items[ $_GET['remove_item'] ]['name'], '<a href="' . self::get_undo_remove_url( $subscription->id, $_GET['remove_item'], $subscription->get_view_order_url() ) . '" >', '</a>' ) );
+
+					// remove the line item from subscription but preserve its data in the DB
+					wc_update_order_item( $item_id, array( 'order_item_type' => 'line_item_removed' ) );
+
+				}
+			}
+
+			$subscription->calculate_totals();
+			wp_safe_redirect( $subscription->get_view_order_url() );
+			exit;
+
+		}
+
+	}
+
+	/**
 	 * Validate the incoming request to either remove an item or add and item back to a subscription that was previously removed.
 	 * Add an descriptive notice to the page whether or not the request was validated or not.
 	 *
