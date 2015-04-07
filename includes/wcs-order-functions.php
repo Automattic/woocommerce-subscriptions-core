@@ -65,7 +65,7 @@ function wcs_copy_order_address( $from_order, $to_order, $address_type = 'all' )
 			'state'      => $from_order->billing_state,
 			'postcode'   => $from_order->billing_postcode,
 			'country'    => $from_order->billing_country,
-			'email'		 => $from_order->billing_email,
+			'email'      => $from_order->billing_email,
 		), 'billing' );
 	}
 
@@ -163,7 +163,7 @@ function wcs_revoke_downloadable_file_permission( $product_id, $order_id, $user_
 
 /**
  * Function that will enable subscriptions to also have download permissions. Normally only "processing" or "completed"
- * status orders are allowed to do that. This adds "wc-active" to it too. Hook is in WC_Subscriptions::init()
+ * status orders are allowed to do that. This adds "wc-active" and "wc-pending-cancel" to it too. Hook is in WC_Subscriptions::init()
  *
  * @param  boolean 							$permission 	true, if order is completed or processing AND downloads
  *                                     						allow for that
@@ -175,7 +175,7 @@ function wcs_enable_subscriptions_download( $permission, $order ) {
 		return $permission;
 	}
 
-	return $order->has_status( 'active' );
+	return $order->has_status( 'active' ) || $order->has_status( 'pending-cancel' );
 }
 add_filter( 'woocommerce_order_is_download_permitted', 'wcs_enable_subscriptions_download', 10, 2 );
 
