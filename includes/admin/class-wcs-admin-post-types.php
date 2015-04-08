@@ -279,14 +279,11 @@ class WCS_Admin_Post_Types {
 					'active'    => __( 'Reactivate', 'woocommerce-subscriptions' ),
 					'on-hold'   => __( 'Suspend', 'woocommerce-subscriptions' ),
 					'cancelled' => __( 'Cancel', 'woocommerce-subscriptions' ),
-					'trash'     => __( 'Trash', 'woocommerce-subscriptions' ),
-					'deleted'   => __( 'Delete Permanently', 'woocommerce-subscriptions' ),
 				);
 
 				foreach ( $all_statuses as $status => $label ) {
 					if ( $the_subscription->can_be_updated_to( $status ) ) {
-						$action = ( 'deleted' == $status ) ? 'delete' : $status; // For built in CSS
-						$actions[ $action ] = sprintf( '<a href="%s">%s</a>', add_query_arg( 'action', $status, $action_url ), $label );
+						$actions[ $status ] = sprintf( '<a href="%s">%s</a>', add_query_arg( 'action', $status, $action_url ), $label );
 					}
 				}
 
