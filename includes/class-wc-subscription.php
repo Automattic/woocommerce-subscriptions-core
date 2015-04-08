@@ -309,6 +309,8 @@ class WC_Subscription extends WC_Order {
 							$end_date = current_time( 'mysql', true );
 						}
 
+						$this->delete_date( 'trial_end' );
+						$this->delete_date( 'next_payment' );
 						$this->update_dates( array( 'end' => $end_date ) );
 					break;
 
