@@ -219,13 +219,13 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			case 'cancelled' :
-				if ( $this->payment_method_supports( 'subscription_cancellation' ) && ( $this->has_status( 'pending-cancellation' ) || ! $this->has_ended() ) ) {
+				if ( $this->payment_method_supports( 'subscription_cancellation' ) && ( $this->has_status( 'pending-cancel' ) || ! $this->has_ended() ) ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
 				}
 				break;
-			case 'pending-cancellation' :
+			case 'pending-cancel' :
 				// Only active subscriptions can be given the "pending cancellation" status, becuase it is used to account for a prepaid term
 				if ( $this->payment_method_supports( 'subscription_cancellation' ) && $this->has_status( 'active' ) ) {
 					$can_be_updated = true;
@@ -300,7 +300,7 @@ class WC_Subscription extends WC_Order {
 						// Nothing to do here
 					break;
 
-					case 'pending-cancellation' :
+					case 'pending-cancel' :
 
 						$end_date = $this->calculate_date( 'end_of_prepaid_term' );
 
@@ -405,7 +405,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function has_ended() {
 
-		$ended_statuses = apply_filters( 'woocommerce_subscription_ended_statuses', array( 'cancelled', 'trash', 'expired', 'switched', 'pending-cancellation' ) );
+		$ended_statuses = apply_filters( 'woocommerce_subscription_ended_statuses', array( 'cancelled', 'trash', 'expired', 'switched', 'pending-cancel' ) );
 
 		if ( $this->has_status( $ended_statuses ) ) {
 			$has_ended = true;
@@ -1101,9 +1101,9 @@ class WC_Subscription extends WC_Order {
 	public function cancel_order( $note = '' ) {
 
 		// If the customer hasn't been through the pending cancellation period yet set the subscription to be pending cancellation
-		if ( ! $this->has_status( array( 'pending-cancellation', 'cancelled' ) ) && $this->calculate_date( 'end_of_prepaid_term' ) > current_time( 'mysql', true ) ) {
+		if ( ! $this->has_status( array( 'pending-cancel', 'cancelled' ) ) && $this->calculate_date( 'end_of_prepaid_term' ) > current_time( 'mysql', true ) ) {
 
-			$this->update_status( 'pending-cancellation', $note );
+			$this->update_status( 'pending-cancel', $note );
 
 		// Cancel for real if we're already pending cancellation
 		} else {

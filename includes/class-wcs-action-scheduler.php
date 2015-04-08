@@ -87,7 +87,7 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 					}
 				}
 				break;
-			case 'pending-cancellation' :
+			case 'pending-cancel' :
 
 				$end_time     = $subscription->get_time( 'end' ); // This will have been set to the correct date already
 
