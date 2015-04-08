@@ -1101,7 +1101,7 @@ class WC_Subscription extends WC_Order {
 	public function cancel_order( $note = '' ) {
 
 		// If the customer hasn't been through the pending cancellation period yet set the subscription to be pending cancellation
-		if ( ! $this->has_status( array( 'pending-cancel', 'cancelled' ) ) && $this->calculate_date( 'end_of_prepaid_term' ) > current_time( 'mysql', true ) ) {
+		if ( $this->has_status( 'active' ) && $this->calculate_date( 'end_of_prepaid_term' ) > current_time( 'mysql', true ) ) {
 
 			$this->update_status( 'pending-cancel', $note );
 
