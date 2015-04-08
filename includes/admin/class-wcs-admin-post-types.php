@@ -257,7 +257,7 @@ class WCS_Admin_Post_Types {
 		switch ( $column ) {
 			case 'status' :
 				// The status label
-				$column_content = sprintf( '<mark class="%s tips" data-tip="%s">%s</mark>', sanitize_title( $the_subscription->get_status() ), wc_get_order_status_name( $the_subscription->get_status() ), wc_get_order_status_name( $the_subscription->get_status() ) );
+				$column_content = sprintf( '<mark class="%s tips" data-tip="%s">%s</mark>', sanitize_title( $the_subscription->get_status() ), wcs_get_subscription_status_name( $the_subscription->get_status() ), wcs_get_subscription_status_name( $the_subscription->get_status() ) );
 
 				// Inline actions
 				$wp_list_table = _get_list_table( 'WP_Posts_List_Table' );
