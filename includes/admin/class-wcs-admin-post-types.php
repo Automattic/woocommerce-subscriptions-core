@@ -266,7 +266,7 @@ class WCS_Admin_Post_Types {
 
 				$action_url = add_query_arg(
 					array(
-						'post'     => array( $the_subscription->id ),
+						'post'     => $the_subscription->id,
 						'_wpnonce' => wp_create_nonce( $the_subscription->id ),
 					)
 				);
