@@ -293,7 +293,9 @@ class WCS_Admin_Post_Types {
 				if ( 'pending' === $the_subscription->get_status() ) {
 					unset( $actions['active'] );
 					unset( $actions['trash'] );
-				} elseif ( ! in_array( $the_subscription->get_status(), array( 'cancelled', 'expired', 'switched', 'suspended' ) ) ) {
+				} elseif ( 'pending-cancel' === $the_subscription->get_status() ) {
+					unset( $actions['cancelled'] );
+				} elseif ( ! in_array( $the_subscription->get_status(), array( 'cancelled', 'pending-cancel', 'expired', 'switched', 'suspended' ) ) ) {
 					unset( $actions['trash'] );
 				}
 
