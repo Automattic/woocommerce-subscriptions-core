@@ -246,3 +246,27 @@ function wcs_repair_permission_data( $post_id ) {
 	", $post_id, '0000-00-00 00:00:00' ) );
 }
 add_action( 'woocommerce_process_shop_order_meta', 'wcs_repair_permission_data', 60, 1 );
+
+
+/**
+ * A wrapper for getting a specific item from a subscription.
+ *
+ * WooCommerce has a wc_add_order_item() function, wc_update_order_item() function and wc_delete_order_item() function,
+ * but no `wc_get_order_item()` function, so we need to add our own (for now).
+ *
+ * @param int $item_id The ID of an order item
+ * @return WC_Subscription Subscription details in post_id => WC_Subscription form.
+ * @since  2.0
+ */
+function wcs_get_order_item( $item_id, $subscription ) {
+
+	$item = array();
+
+	foreach( $subscription->get_items() as $line_item_id => $line_item ) {
+		if ( $item_id == $line_item_id ) {
+			$item = $line_item;
+		}
+	}
+
+	return $item;
+}
