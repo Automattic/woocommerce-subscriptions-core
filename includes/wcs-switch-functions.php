@@ -43,3 +43,25 @@ function wcs_order_contains_switch( $order ) {
 	return apply_filters( 'woocommerce_subscriptions_is_switch_order', $is_switch_order, $order );
 }
 
+/**
+ * Get the subscriptions that had an item switch for a given order (if any).
+ *
+ * @param int|WC_Order $order_id The post_id of a shop_order post or an intsance of a WC_Order object
+ * @return array Subscription details in post_id => WC_Subscription form.
+ * @since  2.0
+ */
+function wcs_get_subscriptions_for_switch_order( $order_id ) {
+
+	if ( is_object( $order_id ) ) {
+		$order_id = $order_id->id;
+	}
+
+	$subscriptions    = array();
+	$subscription_ids = get_post_meta( $order_id, '_subscription_switch_order', false );
+
+	foreach( $subscription_ids as $subscription_id ) {
+		$subscriptions[] = wcs_get_subscriptions( $subscription_id );
+	}
+
+	return $subscriptions;
+}
