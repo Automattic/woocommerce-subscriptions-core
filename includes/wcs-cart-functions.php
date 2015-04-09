@@ -198,3 +198,34 @@ function wcs_add_cart_first_renewal_payment_date( $order_total_html, $cart ) {
 	return $order_total_html;
 }
 add_filter( 'wcs_cart_totals_order_total_html', 'wcs_add_cart_first_renewal_payment_date', 10, 2 );
+
+/**
+ * Return a given piece of meta data from the cart
+ *
+ * The data can exist on the cart object, a cart item, or product data on a cart item.
+ * The first piece of data with a matching key (in that order) will be returned if it
+ * is found, otherwise, the value specified with $default, will be returned.
+ *
+ * @access public
+ * @return string
+ */
+function wcs_get_cart_item_name( $cart_item, $include = array() ) {
+
+	$include = wp_parse_args( $include, array(
+		'attributes' => false,
+	) );
+
+	$cart_item_name = $cart_item['data']->get_title();
+
+	if ( $include['attributes'] ) {
+
+		$attributes_string = WC()->cart->get_item_data( $cart_item, true );
+		$attributes_string = implode( ', ', array_filter( explode( "\n", $attributes_string ) ) );
+
+		if ( ! empty( $attributes_string ) ) {
+			$cart_item_name = sprintf( '%s (%s)', $cart_item_name, $attributes_string );
+		}
+	}
+
+	return $cart_item_name;
+}
