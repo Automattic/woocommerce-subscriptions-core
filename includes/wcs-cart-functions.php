@@ -189,6 +189,7 @@ function wcs_add_cart_first_renewal_payment_date( $order_total_html, $cart ) {
 	$variation_id  = wcs_cart_pluck( $cart, 'variation_id' );
 	$product_id    = empty( $variation_id ) ? wcs_cart_pluck( $cart, 'product_id' ) : $variation_id;
 	$first_renewal = WC_Subscriptions_Product::get_first_renewal_payment_time( $product_id, '', 'site' );
+	$first_renewal = apply_filters( 'wcs_cart_first_renewal_payment_timestamp', $first_renewal, $cart );
 
 	if ( $first_renewal !== 0 ) {
 		$first_renewal_date = date_i18n( woocommerce_date_format(), $first_renewal, false );
