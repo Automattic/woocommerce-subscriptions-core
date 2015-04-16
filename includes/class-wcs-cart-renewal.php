@@ -157,7 +157,7 @@ class WCS_Cart_Renewal {
 	 */
 	public function get_cart_item_from_session( $cart_item_session_data, $cart_item, $key ) {
 
-		if ( isset( $cart_item[ $this->cart_item_key ] ) ) {
+		if ( isset( $cart_item[ $this->cart_item_key ]['subscription_id'] ) ) {
 
 			$cart_item_session_data[ $this->cart_item_key ] = $cart_item[ $this->cart_item_key ];
 
