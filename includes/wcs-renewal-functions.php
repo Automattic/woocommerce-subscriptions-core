@@ -60,6 +60,7 @@ function wcs_create_renewal_order( $subscription ) {
 				 '_billing_period',
 				 '_subscription_resubscribe',
 				 '_subscription_renewal',
+				 '_subscription_switch',
 				 '_payment_method',
 				 '_payment_method_title'
 			 )",
