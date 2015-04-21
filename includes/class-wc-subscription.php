@@ -110,7 +110,7 @@ class WC_Subscription extends WC_Order {
 
 		// And update the parent in memory
 		$this->post->post_parent = $order_id;
-		$this->_order = wc_get_order( $order_id );
+		$this->order = wc_get_order( $order_id );
 	}
 
 	/**
