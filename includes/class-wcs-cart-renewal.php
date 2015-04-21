@@ -80,12 +80,14 @@ class WCS_Cart_Renewal {
 
 			if ( $order->order_key == $order_key && $order->has_status( array( 'pending', 'failed' ) ) && wcs_is_renewal_order( $order ) ) {
 
-				$subscription = wcs_get_subscription_for_renewal_order( $order );
+				$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
 
-				$this->setup_cart( $subscription, array(
-					'subscription_id'  => $subscription->id,
-					'renewal_order_id' => $order_id,
-				) );
+				foreach( $subscriptions as $subscription ) {
+					$this->setup_cart( $subscription, array(
+						'subscription_id'  => $subscription->id,
+						'renewal_order_id' => $order_id,
+					) );
+				}
 
 				// Store renewal order's ID in session so it can be re-used after payment
 				WC()->session->set( 'order_awaiting_payment', $order_id );
@@ -311,9 +313,13 @@ class WCS_Cart_Renewal {
 			unset( $actions['cancel'] );
 
 			// If the subscription has been deleted or reactivated some other way, don't support payment on the order
-			$subscription = wcs_get_subscription_for_renewal_order( $order );
-			if ( empty( $subscription ) || ! $subscription->has_status( array( 'on-hold', 'pending' ) ) ) {
-				unset( $actions['pay'] );
+			$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
+
+			foreach( $subscriptions as $subscription ) {
+				if ( empty( $subscription ) || ! $subscription->has_status( array( 'on-hold', 'pending' ) ) ) {
+					unset( $actions['pay'] );
+					break;
+				}
 			}
 		}
 

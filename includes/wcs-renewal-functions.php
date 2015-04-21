@@ -181,15 +181,22 @@ function wcs_cart_contains_failed_renewal_order_payment() {
  * @param WC_Order|int $order The WC_Order object or ID of a WC_Order order.
  * @since 2.0
  */
-function wcs_get_subscription_for_renewal_order( $renewal_order ) {
+function wcs_get_subscriptions_for_renewal_order( $renewal_order ) {
 
 	if ( ! is_object( $renewal_order ) ) {
-		$renewal_order = new WC_Order( $renewal_order );
+		$renewal_order = wc_get_order( $renewal_order );
 	}
 
 	if ( ! wcs_is_renewal_order( $renewal_order ) ) {
 		throw new InvalidArgumentException( __( __METHOD__ . '() expects parameter one to be a child renewal order.', 'woocommerce-subscriptions' ) );
 	}
 
-	return apply_filters( 'woocommerce_subscription_for_renewal_order', wcs_get_subscription( $renewal_order->post->post_parent ), $renewal_order );
+	$subscriptions    = array();
+	$subscription_ids = get_post_meta( $renewal_order->id, '_subscription_renewal', false );
+
+	foreach( $subscription_ids as $subscription_id ) {
+		$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
+	}
+
+	return apply_filters( 'woocommerce_subscriptions_for_renewal_order', $subscriptions );
 }
