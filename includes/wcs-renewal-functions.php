@@ -58,6 +58,7 @@ function wcs_create_renewal_order( $subscription ) {
 				 '_transaction_id',
 				 '_billing_interval',
 				 '_billing_period',
+				 '_subscription_resubscribe',
 				 '_subscription_renewal',
 				 '_payment_method',
 				 '_payment_method_title'
