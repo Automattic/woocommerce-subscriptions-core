@@ -108,7 +108,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	 */
 	public function get_cart_item_from_session( $cart_item_session_data, $cart_item, $key ) {
 
-		if ( isset( $cart_item[ $this->cart_item_key ] ) ) {
+		if ( isset( $cart_item[ $this->cart_item_key ]['subscription_id'] ) ) {
 
 			// Setup the cart as if it's a renewal (as the setup process is almost the same)
 			$cart_item_session_data = parent::get_cart_item_from_session( $cart_item_session_data, $cart_item, $key );
