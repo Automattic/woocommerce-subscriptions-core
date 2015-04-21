@@ -162,25 +162,6 @@ function wcs_revoke_downloadable_file_permission( $product_id, $order_id, $user_
 
 
 /**
- * Function that will enable subscriptions to also have download permissions. Normally only "processing" or "completed"
- * status orders are allowed to do that. This adds "wc-active" and "wc-pending-cancel" to it too. Hook is in WC_Subscriptions::init()
- *
- * @param  boolean 							$permission 	true, if order is completed or processing AND downloads
- *                                     						allow for that
- * @param  WC_Order / Subscription 			$order 			The order / subscription we want to check
- * @return boolean 											if it's a subs, and active, true, otherwise default
- */
-function wcs_enable_subscriptions_download( $permission, $order ) {
-	if ( ! wcs_is_subscription( $order ) ) {
-		return $permission;
-	}
-
-	return $order->has_status( 'active' ) || $order->has_status( 'pending-cancel' );
-}
-add_filter( 'woocommerce_order_is_download_permitted', 'wcs_enable_subscriptions_download', 10, 2 );
-
-
-/**
  * WooCommerce's function receives the original order ID, the item and the list of files. This does not work for
  * download permissions stored on the subscription rather than the original order as the URL would have the wrong order
  * key. This function takes the same parameters, but queries the database again for download ids belonging to all the

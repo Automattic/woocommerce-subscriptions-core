@@ -1476,4 +1476,12 @@ class WC_Subscription extends WC_Order {
 
 	}
 
+	/**
+	 * Checks if product download is permitted
+	 *
+	 * @return bool
+	 */
+	public function is_download_permitted() {
+		return apply_filters( 'woocommerce_order_is_download_permitted', ( $this->has_status( 'active' ) || $this->has_status( 'pending-cancel' ) ), $this );
+	}
 }
