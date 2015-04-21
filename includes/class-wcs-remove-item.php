@@ -78,25 +78,46 @@ class WCS_Remove_Item {
 
 					if ( ! empty( $removed_item[ $item_id ] ) && $subscription->id == $removed_item[ $item_id ] ) {
 
+						// restore the item
 						wc_update_order_item( $item_id, array( 'order_item_type' => 'line_item' ) );
 						unset( $removed_item[ $item_id ] );
 
 						WC()->session->set( 'removed_subscription_items', $removed_item );
+
+						// restore download permissions for this item
+						$line_items = $subscription->get_items();
+						$line_item  = $line_items[ $item_id ];
+						$_product   = $subscription->get_product_from_item( $line_item );
+
+						if ( $_product && $_product->exists() && $_product->is_downloadable() ) {
+
+							$downloads = $_product->get_files();
+
+							foreach ( array_keys( $downloads ) as $download_id ) {
+								$product_id = ( $line_item['variation_id'] > 0 ) ? $line_item['variation_id'] : $line_item['product_id'];
+								wc_downloadable_file_permission( $download_id, $product_id, $subscription, $line_item['qty'] );
+							}
+						}
 
 					} else {
 						wc_add_notice( __( 'Your request to undo your previous action was unsuccessful.', 'woocommerce-subscriptions' ) );
 					}
 
 				} else {
+
 					// handle remove item requests
 					WC()->session->set( 'removed_subscription_items', array( $item_id => $subscription->id ) );
-					$subscription_items = $subscription->get_items();
 
-					wc_add_notice( sprintf( __( 'You have successfully removed "%s" from your subscription. %sUndo?%s', 'woocommerce-subscription' ), $subscription_items[ $_GET['remove_item'] ]['name'], '<a href="' . self::get_undo_remove_url( $subscription->id, $_GET['remove_item'], $subscription->get_view_order_url() ) . '" >', '</a>' ) );
+					// remove download access for the item
+					$line_items = $subscription->get_items();
+					$line_item  = $line_items[ $item_id ];
+					$product_id = ( $line_item['variation_id'] > 0 ) ? $line_item['variation_id'] : $line_item['product_id'];
+					wcs_revoke_downloadable_file_permission( $product_id, $subscription->id, $subscription->get_user_id() );
 
 					// remove the line item from subscription but preserve its data in the DB
 					wc_update_order_item( $item_id, array( 'order_item_type' => 'line_item_removed' ) );
 
+					wc_add_notice( sprintf( __( 'You have successfully removed "%s" from your subscription. %sUndo?%s', 'woocommerce-subscription' ), $line_item['name'], '<a href="' . esc_url( self::get_undo_remove_url( $subscription->id, $item_id, $subscription->get_view_order_url() ) ) . '" >', '</a>' ) );
 				}
 			}
 
