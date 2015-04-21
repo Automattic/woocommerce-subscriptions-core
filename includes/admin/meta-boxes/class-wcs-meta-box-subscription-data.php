@@ -250,7 +250,11 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 		try {
 			WCS_Change_Payment_Method_Admin::save_meta( $subscription );
 
-			$subscription->update_status( $_POST['order_status'] );
+			if ( 'cancelled' == $_POST['order_status'] ) {
+				$subscription->cancel_order();
+			} else {
+				$subscription->update_status( $_POST['order_status'] );
+			}
 
 		} catch ( Exception $e ) {
 			wcs_add_admin_notice( $e->getMessage(), 'error' );
