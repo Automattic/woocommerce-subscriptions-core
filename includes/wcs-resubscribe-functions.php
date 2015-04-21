@@ -58,6 +58,8 @@ function wcs_create_resubscribe_order( $subscription ) {
 		return new WP_Error( 'resubscribe-order-error', $renewal_order->get_error_message() );
 	}
 
+	delete_post_meta( $renewal_order->id, '_subscription_renewal' );
+
 	// Keep a record of the original subscription's ID on the new order
 	update_post_meta( $renewal_order->id, '_original_subscription', $subscription->id, true );
 
@@ -176,7 +178,6 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 			),
 			'post_type'   => 'shop_order',
 			'post_status' => 'any',
-			'post_parent' => 0
 		) );
 
 		// Make sure all line items still exist

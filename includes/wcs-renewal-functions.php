@@ -42,9 +42,6 @@ function wcs_create_renewal_order( $subscription ) {
 
 		$renewal_order->post->post_title = sprintf( __( 'Subscription Renewal Order &ndash; %s', 'woocommerce-subscriptions' ), strftime( _x( '%b %d, %Y @ %I:%M %p', 'Order date parsed by strftime', 'woocommerce-subscriptions' ) ) );
 
-		// Keep a record of the subscription to which the renewal order relates
-		$renewal_order->post->post_parent = $subscription->id;
-
 		wp_update_post( $renewal_order->post );
 
 		$order_meta_query = $wpdb->prepare(
@@ -61,6 +58,7 @@ function wcs_create_renewal_order( $subscription ) {
 				 '_transaction_id',
 				 '_billing_interval',
 				 '_billing_period',
+				 '_subscription_renewal',
 				 '_payment_method',
 				 '_payment_method_title'
 			 )",
@@ -96,6 +94,9 @@ function wcs_create_renewal_order( $subscription ) {
 
 		}
 
+		// Keep a record of the subscription's ID on the renewal order
+		update_post_meta( $renewal_order->id, '_subscription_renewal', $subscription->id );
+
 		// If we got here, the subscription was created without problems
 		$wpdb->query( 'COMMIT' );
 
@@ -120,20 +121,10 @@ function wcs_is_renewal_order( $order ) {
 		$order = wc_get_order( $order );
 	}
 
-	if ( 'simple' != $order->order_type || 0 == $order->post->post_parent ) { // It's a parent order or original order
-
-		$is_renewal = false;
-
+	if ( 'simple' == $order->order_type && isset( $order->subscription_renewal ) && $order->subscription_renewal > 0 ) { // It's a parent order or original order
+		$is_renewal = true;
 	} else {
-
-		$subscription = wcs_get_subscription( $order->post->post_parent );
-
-		if ( false === $subscription ) { // It's parent is something other than a subscription
-			$is_renewal = false;
-		} else {
-			$is_renewal = true;
-		}
-
+		$is_renewal = false;
 	}
 
 	return apply_filters( 'woocommerce_subscriptions_is_renewal_order', $is_renewal, $order );
