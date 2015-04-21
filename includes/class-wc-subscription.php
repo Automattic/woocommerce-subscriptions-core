@@ -1549,7 +1549,7 @@ class WC_Subscription extends WC_Order {
 	 *
 	 * @since  2.0
 	 */
-	public static function get_first_items_product_id() {
+	public function get_first_items_product_id() {
 
 		$product_id = 0;
 
