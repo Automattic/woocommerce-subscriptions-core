@@ -41,8 +41,6 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	 * @since 2.0
 	 */
 	public function maybe_setup_cart() {
-		global $woocommerce;
-
 		if ( isset( $_GET['resubscribe'] ) && isset( $_GET['_wpnonce'] ) ) {
 
 			$subscription = wcs_get_subscription( $_GET['resubscribe'] );
