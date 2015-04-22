@@ -110,7 +110,7 @@ class WC_Subscription extends WC_Order {
 
 		// And update the parent in memory
 		$this->post->post_parent = $order_id;
-		$this->_order = wc_get_order( $order_id );
+		$this->order = wc_get_order( $order_id );
 	}
 
 	/**
@@ -139,13 +139,20 @@ class WC_Subscription extends WC_Order {
 		} else {
 
 			$last_renewal_order_id = get_posts( array(
-				'post_parent'    => $this->id,
+				'posts_per_page' => 1,
 				'post_type'      => 'shop_order',
 				'post_status'    => 'any',
-				'posts_per_page' => 1,
+				'fields'         => 'ids',
 				'orderby'        => 'ID',
 				'order'          => 'DESC',
-				'fields'         => 'ids',
+				'meta_query'     => array(
+					array(
+						'key'     => '_subscription_renewal',
+						'compare' => '=',
+						'value'   => $this->id,
+						'type'    => 'numeric'
+					),
+				),
 			) );
 
 			if ( ! empty( $last_renewal_order_id ) ) {
@@ -431,13 +438,23 @@ class WC_Subscription extends WC_Order {
 
 		$paid_renewal_orders = get_posts( array(
 			'posts_per_page' => -1,
-			'post_parent'    => $this->id,
 			'post_status'    => 'any',
 			'post_type'      => 'shop_order',
+			'fields'         => 'ids',
 			'orderby'        => 'date',
 			'order'          => 'desc',
-			'meta_key'       => '_paid_date',
-			'meta_compare'   => 'EXISTS',
+			'meta_query'     => array(
+				array(
+					'key'     => '_paid_date',
+					'compare' => 'EXISTS',
+				),
+				array(
+					'key'     => '_subscription_renewal',
+					'compare' => '=',
+					'value'   => $this->id,
+					'type'    => 'numeric'
+				),
+			),
 		) );
 
 		if ( ! empty( $paid_renewal_orders ) ) {
@@ -462,11 +479,19 @@ class WC_Subscription extends WC_Order {
 
 		$failed_renewal_orders = get_posts( array(
 			'posts_per_page' => -1,
-			'post_parent'    => $this->id,
 			'post_status'    => 'wc-failed',
 			'post_type'      => 'shop_order',
+			'fields'         => 'ids',
 			'orderby'        => 'date',
 			'order'          => 'desc',
+			'meta_query'     => array(
+				array(
+					'key'     => '_subscription_renewal',
+					'compare' => '=',
+					'value'   => $this->id,
+					'type'    => 'numeric'
+				),
+			),
 		) );
 
 		if ( ! empty( $failed_renewal_orders ) ) {
@@ -915,18 +940,28 @@ class WC_Subscription extends WC_Order {
 
 		$last_paid_renewal_order = get_posts( array(
 			'posts_per_page' => 1,
-			'post_parent'    => $this->id,
 			'post_status'    => 'any',
 			'post_type'      => 'shop_order',
+			'fields'         => 'ids',
 			'orderby'        => 'date',
 			'order'          => 'desc',
-			'meta_key'       => '_paid_date',
-			'meta_compare'   => 'EXISTS',
+			'meta_query'     => array(
+				array(
+					'key'     => '_paid_date',
+					'compare' => 'EXISTS',
+				),
+				array(
+					'key'     => '_subscription_renewal',
+					'compare' => '=',
+					'value'   => $this->id,
+					'type'    => 'numeric'
+				),
+			),
 		) );
 
 		// Get the `'_paid_date'` on the last order and convert it to GMT/UTC
 		if ( ! empty( $last_paid_renewal_order ) ) {
-			$date = get_gmt_from_date( get_post_meta( $last_paid_renewal_order[0]->ID, '_paid_date', true ) );
+			$date = get_gmt_from_date( get_post_meta( $last_paid_renewal_order[0], '_paid_date', true ) );
 		} elseif ( false !== $this->order && isset( $this->order->paid_date ) ) {
 			$date = get_gmt_from_date( $this->order->paid_date );
 		} else {
@@ -944,17 +979,27 @@ class WC_Subscription extends WC_Order {
 
 		$last_paid_renewal_order = get_posts( array(
 			'posts_per_page' => 1,
-			'post_parent'    => $this->id,
 			'post_status'    => 'any',
 			'post_type'      => 'shop_order',
+			'fields'         => 'ids',
 			'orderby'        => 'date',
 			'order'          => 'desc',
-			'meta_key'       => '_paid_date',
-			'meta_compare'   => 'EXISTS',
+			'meta_query'     => array(
+				array(
+					'key'     => '_paid_date',
+					'compare' => 'EXISTS',
+				),
+				array(
+					'key'     => '_subscription_renewal',
+					'compare' => '=',
+					'value'   => $this->id,
+					'type'    => 'numeric'
+				),
+			),
 		) );
 
 		if ( ! empty( $last_paid_renewal_order ) ) {
-			update_post_meta( $last_paid_renewal_order[0]->ID, '_paid_date', $datetime );
+			update_post_meta( $last_paid_renewal_order[0], '_paid_date', $datetime );
 		} else {
 			update_post_meta( $this->order->id, '_paid_date', $datetime );
 		}
@@ -1283,12 +1328,19 @@ class WC_Subscription extends WC_Order {
 
 		$related_post_ids = get_posts( array(
 			'posts_per_page' => -1,
-			'post_parent'    => $this->id,
-			'post_status'    => 'any',
 			'post_type'      => 'shop_order',
+			'post_status'    => 'any',
 			'fields'         => 'ids',
 			'orderby'        => 'date',
 			'order'          => 'DESC',
+			'meta_query'     => array(
+				array(
+					'key'     => '_subscription_renewal',
+					'compare' => '=',
+					'value'   => $this->id,
+					'type'    => 'numeric'
+				),
+			),
 		) );
 
 		if ( 'all' == $return_fields ) {
@@ -1331,12 +1383,19 @@ class WC_Subscription extends WC_Order {
 
 		$renewal_post_ids = get_posts( array(
 			'posts_per_page' => 1,
-			'post_parent'    => $this->id,
-			'post_status'    => 'any',
 			'post_type'      => 'shop_order',
+			'post_status'    => 'any',
 			'fields'         => 'ids',
 			'orderby'        => 'date',
 			'order'          => 'DESC',
+			'meta_query'     => array(
+				array(
+					'key'     => '_subscription_renewal',
+					'compare' => '=',
+					'value'   => $this->id,
+					'type'    => 'numeric'
+				),
+			),
 		) );
 
 		// If there are no renewal orders, get the original order (if there is one)

@@ -126,14 +126,23 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 
 		$paid_renewal_order_ids = get_posts( array(
 			'posts_per_page' => -1,
-			'post_parent'    => $subscription->id,
 			'post_status'    => 'any',
 			'post_type'      => 'shop_order',
 			'orderby'        => 'date',
 			'order'          => 'desc',
 			'fields'         => 'ids',
-			'meta_key'       => '_paid_date',
-			'meta_compare'   => 'EXISTS',
+			'meta_query'     => array(
+				array(
+					'key'     => '_paid_date',
+					'compare' => 'EXISTS',
+				),
+				array(
+					'key'     => '_subscription_renewal',
+					'compare' => '=',
+					'value'   => $subscription->id,
+					'type'    => 'numeric'
+				),
+			),
 		) );
 
 		foreach( $paid_renewal_order_ids as $paid_renewal_order_id ) {

@@ -26,7 +26,7 @@ function wcs_is_resubscribe_order( $order ) {
 		$order = new WC_Order( $order );
 	}
 
-	if ( '' !== get_post_meta( $order->id, '_original_subscription', true ) && 0 == $order->post->post_parent ) {
+	if ( '' !== get_post_meta( $order->id, '_subscription_resubscribe', true ) ) {
 		$is_resubscribe_order = true;
 	} else {
 		$is_resubscribe_order = false;
@@ -58,8 +58,10 @@ function wcs_create_resubscribe_order( $subscription ) {
 		return new WP_Error( 'resubscribe-order-error', $renewal_order->get_error_message() );
 	}
 
+	delete_post_meta( $renewal_order->id, '_subscription_renewal' );
+
 	// Keep a record of the original subscription's ID on the new order
-	update_post_meta( $renewal_order->id, '_original_subscription', $subscription->id, true );
+	update_post_meta( $renewal_order->id, '_subscription_resubscribe', $subscription->id, true );
 
 	return apply_filters( 'wcs_resubscribe_order_created', $renewal_order, $subscription );
 }
@@ -168,7 +170,7 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 		$resubscribe_orders = get_posts( array(
 			'meta_query'  => array(
 				array(
-					'key'     => '_original_subscription',
+					'key'     => '_subscription_resubscribe',
 					'compare' => '=',
 					'value'   => $subscription->id,
 					'type'    => 'numeric'
@@ -176,7 +178,6 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 			),
 			'post_type'   => 'shop_order',
 			'post_status' => 'any',
-			'post_parent' => 0
 		) );
 
 		// Make sure all line items still exist
