@@ -134,6 +134,7 @@ function wcs_get_users_subscriptions( $user_id = 0 ) {
 		'posts_per_page' => -1,
 		'post_status'    => 'any',
 		'post_type'      => 'shop_subscription',
+		'orderby'        => 'date',
 		'order'          => 'desc',
 		'meta_key'       => '_customer_user',
 		'meta_value'     => $user_id,
