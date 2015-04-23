@@ -169,7 +169,7 @@ class WCS_Cart_Renewal {
 			$subscription = wcs_get_subscription( $cart_item[ $this->cart_item_key ]['subscription_id'] );
 
 			foreach ( $subscription->get_items() as $item_id => $item ) {
-				if ( $_product->id == $item['product_id'] && ( ! isset( $_product->variation_id ) || $item['variation_id'] == $order_item['variation_id']) ) {
+				if ( $_product->id == $item['product_id'] && ( ! isset( $_product->variation_id ) || $_product->variation_id == $item['variation_id'] ) ) {
 					$item_to_renew = $item;
 				}
 			}
