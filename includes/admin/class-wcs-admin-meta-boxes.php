@@ -80,7 +80,7 @@ class WCS_Admin_Meta_Boxes {
 	 * Print admin styles/scripts
 	 */
 	public function enqueue_styles_scripts() {
-		global $woocommerce, $post;
+		global $post;
 
 		// Get admin screen id
 		$screen = get_current_screen();
