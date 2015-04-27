@@ -94,8 +94,7 @@ class WCS_Remove_Item {
 							$downloads = $_product->get_files();
 
 							foreach ( array_keys( $downloads ) as $download_id ) {
-								$product_id = ( $line_item['variation_id'] > 0 ) ? $line_item['variation_id'] : $line_item['product_id'];
-								wc_downloadable_file_permission( $download_id, $product_id, $subscription, $line_item['qty'] );
+								wc_downloadable_file_permission( $download_id, wcs_get_canonical_product_id( $line_item ), $subscription, $line_item['qty'] );
 							}
 						}
 
@@ -111,8 +110,7 @@ class WCS_Remove_Item {
 					// remove download access for the item
 					$line_items = $subscription->get_items();
 					$line_item  = $line_items[ $item_id ];
-					$product_id = ( $line_item['variation_id'] > 0 ) ? $line_item['variation_id'] : $line_item['product_id'];
-					wcs_revoke_downloadable_file_permission( $product_id, $subscription->id, $subscription->get_user_id() );
+					wcs_revoke_downloadable_file_permission( wcs_get_canonical_product_id( $line_item ), $subscription->id, $subscription->get_user_id() );
 
 					// remove the line item from subscription but preserve its data in the DB
 					wc_update_order_item( $item_id, array( 'order_item_type' => 'line_item_removed' ) );
