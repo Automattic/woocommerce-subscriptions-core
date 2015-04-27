@@ -35,9 +35,6 @@ class WCS_Webhooks {
 		add_action( 'woocommerce_subscription_created_for_order', __CLASS__ . '::add_subscription_created_callback', 10, 2 );
 
 		add_action( 'woocommerce_subscription_date_updated', __CLASS__ . '::add_subscription_updated_callback', 10, 1 );
-		// Callback hook after subscription has been removed.
-		add_action( 'trashed_post', __CLASS__ . '::process_after_subscription_deletion' );
-		add_action( 'deleted_post', __CLASS__ . '::process_after_subscription_deletion' );
 
 	}
 
@@ -62,7 +59,8 @@ class WCS_Webhooks {
 				'woocommerce_process_shop_order_meta',
 			),
 			'subscription.deleted' => array(
-				'wcs_subscription_deleted',
+				'woocommerce_subscription_status_trashed',
+				'woocommerce_subscription_status_deleted',
 				'woocommerce_api_delete_subscription',
 
 			),
@@ -125,19 +123,6 @@ class WCS_Webhooks {
 	public static function add_subscription_updated_callback( $subscription ) {
 
 		do_action( 'wcs_webhook_subscription_updated', $subscription->id );
-	}
-
-	/**
-	 * Create a `woocommerce_subscription_deleted` hook after a subscription has been trashed or deleted
-	 *
-	 * @param int $post_id
-	 * @since 2.0
-	 */
-	public static function add_subscription_deletion_callback( $post_id ) {
-
-		if ( 'shop_subscription' == get_post_type( $post_id ) ) {
-			do_action( 'wcs_subscription_deleted', $post_id );
-		}
 	}
 
 }
