@@ -121,9 +121,7 @@ function wcs_save_downloadable_product_permissions( $order_id ) {
 					$downloads = $_product->get_files();
 
 					foreach ( array_keys( $downloads ) as $download_id ) {
-						$item_id = $item['variation_id'] > 0 ? $item['variation_id'] : $item['product_id'];
-
-						wc_downloadable_file_permission( $download_id, $item_id, $subscription, $item['qty'] );
+						wc_downloadable_file_permission( $download_id, wcs_get_canonical_product_id( $item ), $subscription, $item['qty'] );
 						wcs_revoke_downloadable_file_permission( $item_id, $order_id, $order->user_id );
 					}
 				}
@@ -185,7 +183,7 @@ function wcs_subscription_email_download_links( $files, $item, $order ) {
 	// This is needed because downloads are keyed to the subscriptions, not the original orders
 	$subs_keys = wp_list_pluck( $subscriptions, 'order_key' );
 
-	$product_id   = $item['variation_id'] > 0 ? $item['variation_id'] : $item['product_id'];
+	$product_id = wcs_get_canonical_product_id( $item );
 
 	$download_ids = $wpdb->get_col( $wpdb->prepare("
 		SELECT download_id
@@ -200,7 +198,7 @@ function wcs_subscription_email_download_links( $files, $item, $order ) {
 		$sub_products = $subscription->get_items();
 
 		foreach ( $sub_products as $sub_product ) {
-			$sub_product_id = $sub_product['variation_id'] > 0 ? $sub_product['variation_id'] : $sub_product['product_id'];
+			$sub_product_id = wcs_get_canonical_product_id( $sub_product );
 
 			if ( $sub_product_id === $product_id ) {
 				$product = wc_get_product( $product_id );
