@@ -675,10 +675,10 @@ class WC_Subscription extends WC_Order {
 			$date_type = str_replace( '_date', '', $date_type );
 
 			if ( 'gmt' !== strtolower( $timezone ) ) {
-				$timestamps[ $date_type ] = get_gmt_from_date( $timestamps[ $date_type ] );
-			} else {
-				$timestamps[ $date_type ] = strtotime( $datetime );
+				$datetime = get_gmt_from_date( $datetime );
 			}
+
+			$timestamps[ $date_type ] = strtotime( $datetime );
 		}
 
 		foreach ( $date_keys as $date_type ) {
