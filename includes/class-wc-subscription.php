@@ -925,7 +925,7 @@ class WC_Subscription extends WC_Order {
 			$next_payment_date = date( 'Y-m-d H:i:s', $next_payment_timestamp );
 		}
 
-		return apply_filters( 'woocommerce_subscription_calculated_next_payment_date', $next_payment_date, $this );
+		return $next_payment_date;
 	}
 
 	/**
