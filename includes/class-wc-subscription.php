@@ -663,7 +663,7 @@ class WC_Subscription extends WC_Order {
 
 		$timestamps = array();
 		foreach ( $dates as $date_type => $datetime ) {
-			if ( false === strptime( $datetime, '%Y-%m-%d %H:%M:%S' ) ) {
+			if ( ! empty( $datetime ) && false === strptime( $datetime, '%Y-%m-%d %H:%M:%S' ) ) {
 				throw new InvalidArgumentException(
 					sprintf(
 						__( 'Invalid %s date. The date must be of the format: "Y-m-d H:i:s".', 'woocommerce-subscriptions' ),
@@ -674,9 +674,16 @@ class WC_Subscription extends WC_Order {
 
 			$date_type = str_replace( '_date', '', $date_type );
 
-			if ( 'gmt' !== strtolower( $timezone ) ) {
-				$timestamps[ $date_type ] = get_gmt_from_date( $timestamps[ $date_type ] );
+			if ( empty( $datetime ) ) {
+
+				$timestamps[ $date_type ] = 0;
+
 			} else {
+
+				if ( 'gmt' !== strtolower( $timezone ) ) {
+					$datetime = get_gmt_from_date( $datetime );
+				}
+
 				$timestamps[ $date_type ] = strtotime( $datetime );
 			}
 		}
