@@ -897,6 +897,7 @@ class WC_Subscription extends WC_Order {
 
 		// If the subscription is not active, there is no next payment date
 		$start_time        = $this->get_time( 'start' );
+		$next_payment_time = $this->get_time( 'next_payment' );
 		$trial_end_time    = $this->get_time( 'trial_end' );
 		$last_payment_time = $this->get_time( 'last_payment' );
 		$end_time          = $this->get_time( 'end' );
@@ -909,7 +910,9 @@ class WC_Subscription extends WC_Order {
 			// The next payment date is {interval} billing periods from the start date, trial end date or last payment date
 		} else {
 
-			if ( $last_payment_time > $trial_end_time ) {
+			if ( $next_payment_time < gmdate( 'U' ) && 1 == $this->get_completed_payment_count() ) {
+				$from_timestamp = $next_payment_time;
+			} elseif ( $last_payment_time > $trial_end_time ) {
 				$from_timestamp = $last_payment_time;
 			} elseif ( $trial_end_time > $start_time ) {
 				$from_timestamp = $trial_end_time;
