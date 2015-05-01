@@ -910,12 +910,12 @@ class WC_Subscription extends WC_Order {
 			// The next payment date is {interval} billing periods from the start date, trial end date or last payment date
 		} else {
 
-			if ( $next_payment_time < gmdate( 'U' ) && 1 == $this->get_completed_payment_count() ) {
+			if ( $next_payment_time < gmdate( 'U' ) && 1 <= $this->get_completed_payment_count() ) {
 				$from_timestamp = $next_payment_time;
-			} elseif ( $last_payment_time > $trial_end_time ) {
+			} elseif ( $last_payment_time > $start_time && apply_filters( 'wcs_calculate_next_payment_from_last_payment', true ) ) {
 				$from_timestamp = $last_payment_time;
-			} elseif ( $trial_end_time > $start_time ) {
-				$from_timestamp = $trial_end_time;
+			} elseif ( $next_payment_time > $start_time ) {
+				$from_timestamp = $next_payment_time;
 			} else {
 				$from_timestamp = $start_time;
 			}
