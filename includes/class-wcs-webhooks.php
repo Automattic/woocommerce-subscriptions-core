@@ -62,7 +62,6 @@ class WCS_Webhooks {
 				'woocommerce_subscription_trashed',
 				'woocommerce_subscription_deleted',
 				'woocommerce_api_delete_subscription',
-
 			),
 		);
 
@@ -99,6 +98,7 @@ class WCS_Webhooks {
 	 * @since 2.0
 	 */
 	public static function add_resource( $resources ) {
+
 		$resources[] = 'subscription';
 
 		return $resources;
@@ -111,7 +111,6 @@ class WCS_Webhooks {
 	 * @since 2.0
 	 */
 	public static function add_subscription_created_callback( $order, $subscription ) {
-
 		do_action( 'wcs_webhook_subscription_created', $subscription->id );
 	}
 
@@ -121,10 +120,8 @@ class WCS_Webhooks {
 	 * @since 2.0
 	 */
 	public static function add_subscription_updated_callback( $subscription ) {
-
 		do_action( 'wcs_webhook_subscription_updated', $subscription->id );
 	}
 
 }
-
 WCS_Webhooks::init();

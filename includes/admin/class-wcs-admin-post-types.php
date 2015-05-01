@@ -76,7 +76,6 @@ class WCS_Admin_Post_Types {
 		<?php
 	}
 
-
 	/**
 	 * Remove "edit" from the bulk actions.
 	 *
@@ -672,7 +671,6 @@ class WCS_Admin_Post_Types {
 
 		return $messages;
 	}
-
 
 	/**
 	 * Returns a clickable link that takes you to a collection of orders relating to the subscription.
