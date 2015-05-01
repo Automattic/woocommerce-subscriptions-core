@@ -277,14 +277,15 @@ class WCS_Admin_Post_Types {
 				$column_content = sprintf( '<mark class="%s tips" data-tip="%s">%s</mark>', sanitize_title( $the_subscription->get_status() ), wcs_get_subscription_status_name( $the_subscription->get_status() ), wcs_get_subscription_status_name( $the_subscription->get_status() ) );
 
 				// Inline actions
-				$wp_list_table = _get_list_table( 'WP_Posts_List_Table' );
+				$wp_list_table    = _get_list_table( 'WP_Posts_List_Table' );
+				$post_type_object = get_post_type_object( $post->post_type );
 
 				$actions = array();
 
 				$action_url = add_query_arg(
 					array(
 						'post'     => $the_subscription->id,
-						'_wpnonce' => wp_create_nonce( $the_subscription->id ),
+						'_wpnonce' => wp_create_nonce( 'bulk-posts' ),
 					)
 				);
 
@@ -296,11 +297,34 @@ class WCS_Admin_Post_Types {
 					'active'    => __( 'Reactivate', 'woocommerce-subscriptions' ),
 					'on-hold'   => __( 'Suspend', 'woocommerce-subscriptions' ),
 					'cancelled' => __( 'Cancel', 'woocommerce-subscriptions' ),
+					'trash'     => __( 'Trash', 'woocommerce-subscriptions' ),
+					'deleted'   => __( 'Delete Permanently', 'woocommerce-subscriptions' ),
 				);
 
 				foreach ( $all_statuses as $status => $label ) {
+
 					if ( $the_subscription->can_be_updated_to( $status ) ) {
-						$actions[ $status ] = sprintf( '<a href="%s">%s</a>', add_query_arg( 'action', $status, $action_url ), $label );
+
+						if ( in_array( $status, array( 'trash', 'deleted' ) ) ) {
+
+							if ( current_user_can( $post_type_object->cap->delete_post, $post->ID ) ) {
+
+								if ( 'trash' == $post->post_status ) {
+									$actions['untrash'] = '<a title="' . esc_attr( __( 'Restore this item from the Trash', 'woocommerce-subscriptions' ) ) . '" href="' . wp_nonce_url( admin_url( sprintf( $post_type_object->_edit_link . '&amp;action=untrash', $post->ID ) ), 'untrash-post_' . $post->ID ) . '">' . __( 'Restore', 'woocommerce-subscriptions' ) . '</a>';
+								} elseif ( EMPTY_TRASH_DAYS ) {
+									$actions['trash'] = '<a class="submitdelete" title="' . esc_attr( __( 'Move this item to the Trash', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $post->ID ) . '">' . __( 'Trash', 'woocommerce-subscriptions' ) . '</a>';
+								}
+
+								if ( 'trash' == $post->post_status || ! EMPTY_TRASH_DAYS ) {
+									$actions['delete'] = '<a class="submitdelete" title="' . esc_attr( __( 'Delete this item permanently', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $post->ID, '', true ) . '">' . __( 'Delete Permanently', 'woocommerce-subscriptions' ) . '</a>';
+								}
+							}
+
+						} else {
+
+							$actions[ $status ] = sprintf( '<a href="%s">%s</a>', add_query_arg( 'action', $status, $action_url ), $label );
+
+						}
 					}
 				}
 

@@ -247,6 +247,13 @@ class WC_Subscription extends WC_Order {
 					$can_be_updated = false;
 				}
 				break;
+			case 'trash' :
+				if ( $this->has_ended() || $this->can_be_updated_to( 'cancelled' ) ) {
+					$can_be_updated = true;
+				} else {
+					$can_be_updated = false;
+				}
+				break;
 			case 'deleted' :
 				if ( 'trash' == $this->get_status()  ) {
 					$can_be_updated = true;
