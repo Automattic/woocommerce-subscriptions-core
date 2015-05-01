@@ -103,8 +103,10 @@ class WCS_Admin_Post_Types {
 	 *
 	 */
 	public function print_bulk_actions_script() {
-		// We only want this on the shop_subscription all page
-		if ( 'shop_subscription' !== get_post_type() ) {
+
+		$post_status = ( isset( $_GET['post_status'] ) ) ? $_GET['post_status'] : '';
+
+		if ( 'shop_subscription' !== get_post_type() || in_array( $post_status, array( 'cancelled', 'trash', 'wc-expired' ) ) ) {
 			return;
 		}
 
@@ -114,6 +116,16 @@ class WCS_Admin_Post_Types {
 			'on-hold'   => __( 'Put on-hold', 'woocommerce-subscriptions' ),
 			'cancelled' => __( 'Cancel', 'woocommerce-subscriptions' ),
 		) );
+
+		// No need to display certain bulk actions if we know all the subscriptions on the page have that status already
+		switch ( $post_status ) {
+			case 'wc-active' :
+				unset( $bulk_actions['active'] );
+				break;
+			case 'wc-on-hold' :
+				unset( $bulk_actions['on-hold'] );
+				break;
+		}
 
 		?>
 		<script type="text/javascript">
