@@ -59,8 +59,8 @@ class WCS_Webhooks {
 				'woocommerce_process_shop_order_meta',
 			),
 			'subscription.deleted' => array(
-				'woocommerce_subscription_status_trashed',
-				'woocommerce_subscription_status_deleted',
+				'woocommerce_subscription_trashed',
+				'woocommerce_subscription_deleted',
 				'woocommerce_api_delete_subscription',
 
 			),
