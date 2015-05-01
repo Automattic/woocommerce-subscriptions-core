@@ -178,7 +178,6 @@ class WCS_Admin_Post_Types {
 			$subscription = wcs_get_subscription( $subscription_id );
 			$order_note   = __( 'Subscription status changed by bulk edit:', 'woocommerce-subscriptions' );
 
-
 			if ( 'cancelled' == $action ) {
 				$subscription->cancel_order( $order_note );
 			} else {
@@ -186,7 +185,14 @@ class WCS_Admin_Post_Types {
 			}
 
 			// Fire the action hooks
-			do_action( 'admin_changed_subscription_to_' . $action, $subscription_id );
+			switch ( $action ) {
+				case 'active' :
+				case 'on-hold' :
+				case 'cancelled' :
+				case 'trash' :
+					do_action( 'woocommerce_admin_changed_subscription_to_' . $action, $subscription_id );
+					break;
+			}
 
 			$changed++;
 		}
