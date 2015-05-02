@@ -78,7 +78,7 @@ class WCS_Cart_Renewal {
 			$order_id  = ( isset( $wp->query_vars['order-pay'] ) ) ? $wp->query_vars['order-pay'] : absint( $_GET['order_id'] );
 			$order     = wc_get_order( $wp->query_vars['order-pay'] );
 
-			if ( $order->order_key == $order_key && $order->has_status( array( 'pending', 'failed' ) ) && wcs_is_renewal_order( $order ) ) {
+			if ( $order->order_key == $order_key && $order->has_status( array( 'pending', 'failed' ) ) && wcs_order_contains_renewal( $order ) ) {
 
 				$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
 
@@ -294,7 +294,7 @@ class WCS_Cart_Renewal {
 	 */
 	public function get_checkout_payment_url( $pay_url, $order ) {
 
-		if ( wcs_is_renewal_order( $order ) ) {
+		if ( wcs_order_contains_renewal( $order ) ) {
 			$pay_url = add_query_arg( array( $this->cart_item_key => 'true' ), $pay_url );
 		}
 
@@ -308,7 +308,7 @@ class WCS_Cart_Renewal {
 	 */
 	public function filter_my_account_my_orders_actions( $actions, $order ) {
 
-		if ( wcs_is_renewal_order( $order ) ) {
+		if ( wcs_order_contains_renewal( $order ) ) {
 
 			unset( $actions['cancel'] );
 
@@ -340,7 +340,7 @@ class WCS_Cart_Renewal {
 
 			$order_id = absint( WC()->session->order_awaiting_payment );
 
-			if ( $order_id > 0 && ( $order = wc_get_order( $order_id ) ) && wcs_is_renewal_order( $order ) && $order->has_status( 'failed' ) ) {
+			if ( $order_id > 0 && ( $order = wc_get_order( $order_id ) ) && wcs_order_contains_renewal( $order ) && $order->has_status( 'failed' ) ) {
 				$order_status = 'failed';
 			}
 		}
