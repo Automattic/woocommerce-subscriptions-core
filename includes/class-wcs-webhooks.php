@@ -26,9 +26,9 @@ class WCS_Webhooks {
 	 */
 	public static function init() {
 
-		add_filter( 'woocommerce_webhook_topic_hooks', __CLASS__ . '::add_subscription_webhook_topics', 10, 1 );
+		add_filter( 'woocommerce_webhook_topic_hooks', __CLASS__ . '::add_topics', 10, 1 );
 
-		add_filter( 'woocommerce_webhook_payload', __CLASS__ . '::create_subscription_payload', 10, 4 );
+		add_filter( 'woocommerce_webhook_payload', __CLASS__ . '::create_payload', 10, 4 );
 
 		add_filter( 'woocommerce_valid_webhook_resources', __CLASS__ . '::add_resource', 10, 1 );
 
@@ -44,7 +44,7 @@ class WCS_Webhooks {
 	 * @param array $topic_hooks
 	 * @since 2.0
 	 */
-	public static function add_subscription_webhook_topics( $topic_hooks ) {
+	public static function add_topics( $topic_hooks ) {
 
 		$subscription_topics = array(
 			'subscription.created' => array(
@@ -73,7 +73,7 @@ class WCS_Webhooks {
 	 *
 	 * @since 2.0
 	 */
-	public static function create_subscription_payload( $payload, $resource, $resource_id, $id ) {
+	public static function create_payload( $payload, $resource, $resource_id, $id ) {
 
 		if ( 'subscription' == $resource && empty( $payload ) && wcs_is_subscription( $resource_id ) ) {
 
