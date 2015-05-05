@@ -36,6 +36,8 @@ class WCS_Webhooks {
 
 		add_action( 'woocommerce_subscription_date_updated', __CLASS__ . '::add_subscription_updated_callback', 10, 1 );
 
+		add_filter( 'woocommerce_webhook_topics' , __CLASS__ . '::add_topics_admin_menu', 10, 1 );
+
 	}
 
 	/**
@@ -66,6 +68,22 @@ class WCS_Webhooks {
 		);
 
 		return apply_filters( 'woocommerce_subscriptions_webhook_topics', array_merge( $subscription_topics, $topic_hooks ) );
+	}
+
+	/**
+	 * Add Subscription topics to the Webhooks dropdown menu in when creating a new webhook.
+	 *
+	 * @since 2.0
+	 */
+	public static function add_topics_admin_menu( $topics ) {
+
+		$front_end_topics = array(
+			'subscription.created' => __( ' Subscription Created', 'woocommerce-subscription' ),
+			'subscription.updated' => __( ' Subscription Updated', 'woocommerce-subscription' ),
+			'subscription.deleted' => __( ' Subscription Deleted', 'woocommerce-subscription' ),
+		);
+
+		return array_merge( $topics, $front_end_topics );
 	}
 
 	/**
