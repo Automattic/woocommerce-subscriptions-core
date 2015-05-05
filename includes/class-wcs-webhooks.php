@@ -49,7 +49,7 @@ class WCS_Webhooks {
 		$subscription_topics = array(
 			'subscription.created' => array(
 				'wcs_api_subscription_created',
-				'woocommerce_subscription_created',
+				'wcs_webhook_subscription_created',
 				'woocommerce_process_shop_order_meta',
 			),
 			'subscription.updated' => array(
