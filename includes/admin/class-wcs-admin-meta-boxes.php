@@ -53,7 +53,7 @@ class WCS_Admin_Meta_Boxes {
 		add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', 'shop_subscription', 'normal', 'low' );
 
 		// Only display the meta box if an order relates to a subscription
-		if ( wcs_order_contains_subscription( $post_id ) || wcs_is_renewal_order( $post_id ) ) {
+		if ( wcs_order_contains_subscription( $post_id ) || wcs_order_contains_renewal( $post_id ) ) {
 			add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', 'shop_order', 'normal', 'low' );
 		}
 	}
@@ -80,7 +80,7 @@ class WCS_Admin_Meta_Boxes {
 	 * Print admin styles/scripts
 	 */
 	public function enqueue_styles_scripts() {
-		global $woocommerce, $post;
+		global $post;
 
 		// Get admin screen id
 		$screen = get_current_screen();

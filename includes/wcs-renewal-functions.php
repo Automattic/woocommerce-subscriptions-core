@@ -116,7 +116,7 @@ function wcs_create_renewal_order( $subscription ) {
  * @param WC_Order|int $order The WC_Order object or ID of a WC_Order order.
  * @since 2.0
  */
-function wcs_is_renewal_order( $order ) {
+function wcs_order_contains_renewal( $order ) {
 
 	if ( ! is_object( $order ) ) {
 		$order = wc_get_order( $order );
@@ -188,7 +188,7 @@ function wcs_get_subscriptions_for_renewal_order( $renewal_order ) {
 		$renewal_order = wc_get_order( $renewal_order );
 	}
 
-	if ( ! wcs_is_renewal_order( $renewal_order ) ) {
+	if ( ! wcs_order_contains_renewal( $renewal_order ) ) {
 		throw new InvalidArgumentException( __( __METHOD__ . '() expects parameter one to be a child renewal order.', 'woocommerce-subscriptions' ) );
 	}
 
