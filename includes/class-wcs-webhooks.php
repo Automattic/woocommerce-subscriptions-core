@@ -22,7 +22,7 @@ class WCS_Webhooks {
 	/**
 	 * Setup webhook for subscriptions
 	 *
-	 * @since 2.2
+	 * @since 2.0
 	 */
 	public static function init() {
 
@@ -104,6 +104,8 @@ class WCS_Webhooks {
 			WC()->api->WC_API_Subscriptions->register_routes( array() );
 
 			$payload = WC()->api->WC_API_Subscriptions->get_subscription( $resource_id );
+
+			wp_set_current_user( $current_user );
 		}
 
 		return $payload;
