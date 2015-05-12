@@ -265,6 +265,7 @@ function wcs_get_order_item( $item_id, $subscription ) {
 	foreach( $subscription->get_items() as $line_item_id => $line_item ) {
 		if ( $item_id == $line_item_id ) {
 			$item = $line_item;
+			break;
 		}
 	}
 
