@@ -1550,4 +1550,24 @@ class WC_Subscription extends WC_Order {
 	public function is_download_permitted() {
 		return apply_filters( 'woocommerce_order_is_download_permitted', ( $this->has_status( 'active' ) || $this->has_status( 'pending-cancel' ) ), $this );
 	}
+
+	/**
+	 * Check if the subscription has a line item for a specific product, by ID.
+	 *
+	 * @param int A product or variation ID to check for.
+	 * @return bool
+	 */
+	public function has_product( $product_id ) {
+
+		$has_product = false;
+
+		foreach( $this->get_items() as $line_item ) {
+			if ( $line_item['product_id'] == $product_id || $line_item['variation_id'] == $product_id ) {
+				$has_product = true;
+				break;
+			}
+		}
+
+		return $has_product;
+	}
 }
