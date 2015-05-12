@@ -52,13 +52,13 @@ class WCS_Webhooks {
 			'subscription.created' => array(
 				'wcs_api_subscription_created',
 				'wcs_webhook_subscription_created',
-				'woocommerce_process_shop_order_meta',
+				'woocommerce_process_shop_subscription_meta',
 			),
 			'subscription.updated' => array(
 				'wc_api_subscription_updated',
 				'woocommerce_subscription_status_changed',
 				'wcs_webhook_subscription_updated',
-				'woocommerce_process_shop_order_meta',
+				'woocommerce_process_shop_subscription_meta',
 			),
 			'subscription.deleted' => array(
 				'woocommerce_subscription_trashed',
