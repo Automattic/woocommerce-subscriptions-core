@@ -1539,7 +1539,6 @@ class WC_Subscription extends WC_Order {
 		$view_subscription_url = wc_get_endpoint_url( 'view-subscription', $this->id, wc_get_page_permalink( 'myaccount' ) );
 
 		return apply_filters( 'wcs_get_view_subscription_url', $view_subscription_url, $this->id );
-
 	}
 
 	/**
