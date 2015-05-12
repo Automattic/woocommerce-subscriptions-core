@@ -150,7 +150,8 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 		}
 	}
 
-	$item = array_pop( $subscription->get_items() );
+	$items = $subscription->get_items();
+	$item  = array_pop( $items );
 
 	if ( ! empty( $item ) ) {
 
