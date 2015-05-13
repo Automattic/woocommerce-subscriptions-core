@@ -255,7 +255,7 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			default :
-				$can_be_updated = false;
+				$can_be_updated = apply_filters( 'woocommerce_can_subscription_be_updated_to', false, $new_status, $this );
 				break;
 		}
 
@@ -461,7 +461,7 @@ class WC_Subscription extends WC_Order {
 			$completed_payment_count += count( $paid_renewal_orders );
 		}
 
-		return apply_filters( 'woocommerce_subscription_completed_payment_count', $completed_payment_count, $this );
+		return apply_filters( 'woocommerce_subscription_completed_payments', $completed_payment_count, $this );
 	}
 
 	/**
@@ -498,7 +498,7 @@ class WC_Subscription extends WC_Order {
 			$failed_payment_count += count( $failed_renewal_orders );
 		}
 
-		return apply_filters( 'woocommerce_subscription_failed_payment_count', $failed_payment_count, $this );
+		return apply_filters( 'woocommerce_subscription_failed_payments', $failed_payment_count, $this );
 	}
 
 	/**
