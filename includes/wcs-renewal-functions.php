@@ -67,16 +67,16 @@ function wcs_create_renewal_order( $subscription ) {
 		 );
 
 		// Allow extensions to add/remove order meta
-		$order_meta_query = apply_filters( 'wcs_renewal_order_meta_query', $order_meta_query, $subscription );
+		$order_meta_query = apply_filters( 'wcs_renewal_order_meta_query', $order_meta_query, $renewal_order, $subscription );
 		$order_meta       = $wpdb->get_results( $order_meta_query, 'ARRAY_A' );
-		$order_meta       = apply_filters( 'wcs_renewal_order_meta', $order_meta, $subscription );
+		$order_meta       = apply_filters( 'wcs_renewal_order_meta', $order_meta, $renewal_order, $subscription );
 
 		foreach( $order_meta as $meta_item ) {
 			add_post_meta( $renewal_order->id, $meta_item['meta_key'], maybe_unserialize( $meta_item['meta_value'] ), true );
 		}
 
 		// Copy over line items and allow extensions to add/remove items or item meta
-		$items = apply_filters( 'wcs_renewal_order_items', $subscription->get_items( array( 'line_item', 'fee', 'shipping', 'tax' ) ), $subscription );
+		$items = apply_filters( 'wcs_renewal_order_items', $subscription->get_items( array( 'line_item', 'fee', 'shipping', 'tax' ) ), $renewal_order, $subscription );
 
 		foreach ( $items as $item_index => $item ) {
 

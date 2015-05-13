@@ -571,7 +571,7 @@ class WC_Subscription extends WC_Order {
 			$date = $this->schedule->{$date_type};
 		}
 
-		return apply_filters( 'woocommerce_subscription_get_' . $date_type . '_date', $date, $timezone, $this );
+		return apply_filters( 'woocommerce_subscription_get_' . $date_type . '_date', $date, $this, $timezone );
 	}
 
 	/**
@@ -1252,7 +1252,7 @@ class WC_Subscription extends WC_Order {
 			$this->update_status( $new_status );
 		}
 
-		do_action( 'woocommerce_subscription_payment_failed', $this->id, $new_status );
+		do_action( 'woocommerce_subscription_payment_failed', $this, $new_status );
 
 		if ( $this->get_completed_payment_count() >= 1 ) {
 			do_action( 'woocommerce_subscription_renewal_payment_failed', $this );
