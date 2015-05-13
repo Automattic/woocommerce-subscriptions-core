@@ -764,8 +764,6 @@ class WC_Subscription extends WC_Order {
 				do_action( 'woocommerce_subscription_date_updated', $this, $date_type, $datetime );
 			}
 		}
-
-		return $is_updated;
 	}
 
 	/**
