@@ -41,14 +41,14 @@ abstract class WCS_Hook_Deprecator {
 		$new_hook = current_filter();
 		$old_hook = ( isset( $this->deprecated_hooks[ $new_hook ] ) ) ? $this->deprecated_hooks[ $new_hook ] : '';
 
+		$new_callback_args = func_get_args();
+		$return_value      = $new_callback_args[0];
+
 		if ( ! empty( $old_hook ) && has_filter( $old_hook ) ) {
 
 			$this->display_notice( $old_hook, $new_hook );
 
-			$return_value = $this->trigger_hook( $old_hook, func_get_args() );
-
-		} else {
-			$return_value = null;
+			$return_value = $this->trigger_hook( $old_hook, $new_callback_args );
 		}
 
 		return $return_value;
