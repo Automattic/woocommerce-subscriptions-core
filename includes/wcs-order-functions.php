@@ -244,3 +244,60 @@ function wcs_repair_permission_data( $post_id ) {
 	", $post_id, '0000-00-00 00:00:00' ) );
 }
 add_action( 'woocommerce_process_shop_order_meta', 'wcs_repair_permission_data', 60, 1 );
+
+
+/**
+ * Get the full name for a order/subscription line item, including the items non hidden meta
+ * (i.e. attributes), as a flat string.
+ *
+ * @param array
+ * @return string
+ */
+function wcs_get_line_item_name( $line_item ) {
+
+	$item_meta_strings = array();
+
+	foreach ( $line_item['item_meta'] as $meta_key => $meta_value ) {
+
+		$meta_value = $meta_value[0];
+
+		// Skip hidden core fields
+		if ( in_array( $meta_key, apply_filters( 'woocommerce_hidden_order_itemmeta', array(
+			'_qty',
+			'_tax_class',
+			'_product_id',
+			'_variation_id',
+			'_line_subtotal',
+			'_line_subtotal_tax',
+			'_line_total',
+			'_line_tax',
+			'_line_tax_data',
+		) ) ) ) {
+			continue;
+		}
+
+		// Skip serialised meta
+		if ( is_serialized( $meta_value ) ) {
+			continue;
+		}
+
+		// Get attribute data
+		if ( taxonomy_exists( wc_sanitize_taxonomy_name( $meta_key ) ) ) {
+			$term       = get_term_by( 'slug', $meta_value, wc_sanitize_taxonomy_name( $meta_key ) );
+			$meta_key   = wc_attribute_label( wc_sanitize_taxonomy_name( $meta_key ) );
+			$meta_value = isset( $term->name ) ? $term->name : $meta_value;
+		} else {
+			$meta_key   = apply_filters( 'woocommerce_attribute_label', wc_attribute_label( $meta_key ), $meta_key );
+		}
+
+		$item_meta_strings[] = sprintf( '%s: %s', rawurldecode( $meta_key ), rawurldecode( $meta_value ) );
+	}
+
+	if ( ! empty( $item_meta_strings ) ) {
+		$line_item_name = sprintf( '%s (%s)', $line_item['name'], implode( ', ', $item_meta_strings ) );
+	} else {
+		$line_item_name = $line_item['name'];
+	}
+
+	return apply_filters( 'wcs_line_item_name', $line_item_name, $line_item );
+}
