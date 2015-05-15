@@ -48,32 +48,28 @@ class WCS_Webhooks {
 	 */
 	public static function add_topics( $topic_hooks, $webhook ) {
 
-		$resource = $webhook->get_resource();
-
-		if ( 'subscription' != $resource ) {
-			return $topic_hooks;
+		if ( 'subscription' == $webhook->get_resource() ) {
+			$topic_hooks = apply_filters( 'woocommerce_subscriptions_webhook_topics', array(
+				'subscription.created' => array(
+					'wcs_api_subscription_created',
+					'wcs_webhook_subscription_created',
+					'woocommerce_process_shop_subscription_meta',
+				),
+				'subscription.updated' => array(
+					'wc_api_subscription_updated',
+					'woocommerce_subscription_status_changed',
+					'wcs_webhook_subscription_updated',
+					'woocommerce_process_shop_subscription_meta',
+				),
+				'subscription.deleted' => array(
+					'woocommerce_subscription_trashed',
+					'woocommerce_subscription_deleted',
+					'woocommerce_api_delete_subscription',
+				),
+			), $webhook );
 		}
 
-		$subscription_topics = array(
-			'subscription.created' => array(
-				'wcs_api_subscription_created',
-				'wcs_webhook_subscription_created',
-				'woocommerce_process_shop_subscription_meta',
-			),
-			'subscription.updated' => array(
-				'wc_api_subscription_updated',
-				'woocommerce_subscription_status_changed',
-				'wcs_webhook_subscription_updated',
-				'woocommerce_process_shop_subscription_meta',
-			),
-			'subscription.deleted' => array(
-				'woocommerce_subscription_trashed',
-				'woocommerce_subscription_deleted',
-				'woocommerce_api_delete_subscription',
-			),
-		);
-
-		return apply_filters( 'woocommerce_subscriptions_webhook_topics', $subscription_topics, $webhook );
+		return $topic_hooks;
 	}
 
 	/**
