@@ -61,7 +61,7 @@ function wcs_get_subscription_id_from_key( $subscription_key ) {
 	$subscription_ids = array();
 
 	// If we have an order ID and product ID, query based on that
-	if ( isset( $order_and_product_id[0] ) && isset( $order_and_product_id[1] ) ) {
+	if ( ! empty( $order_and_product_id[0] ) && ! empty( $order_and_product_id[1] ) ) {
 
 		$subscription_ids = $wpdb->get_col( $wpdb->prepare( "
 			SELECT DISTINCT order_items.order_id FROM {$wpdb->prefix}woocommerce_order_items as order_items
@@ -73,7 +73,7 @@ function wcs_get_subscription_id_from_key( $subscription_key ) {
 				AND itemmeta.meta_key IN ( '_variation_id', '_product_id' )"
 		), $order_and_product_id[0], $order_and_product_id[1] );
 
-	} elseif ( isset( $order_and_product_id[0] ) ) {
+	} elseif ( ! empty( $order_and_product_id[0] ) ) {
 
 		$subscription_ids = get_posts( array(
 			'posts_per_page' => 1,
