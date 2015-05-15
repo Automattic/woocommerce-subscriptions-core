@@ -114,6 +114,7 @@ class WCS_Remove_Item {
 					$line_items = $subscription->get_items();
 					$line_item  = $line_items[ $item_id ];
 					$product_id = wcs_get_canonical_product_id( $line_item );
+
 					wcs_revoke_downloadable_file_permission( $product_id, $subscription->id, $subscription->get_user_id() );
 
 					// remove the line item from subscription but preserve its data in the DB
