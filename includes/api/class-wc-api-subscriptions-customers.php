@@ -59,7 +59,7 @@ class WC_API_Subscriptions_Customers extends WC_API_Customers {
 
 		$subscriptions = array();
 
-		foreach( $subscription_ids as $subscription_id ) {
+		foreach ( $subscription_ids as $subscription_id ) {
 			$subscriptions[] = WC()->api->WC_API_Subscriptions->get_subscription( $subscription_id, $fields );
 		}
 
