@@ -95,7 +95,7 @@ function wcs_get_users_resubscribe_link_for_product( $product_id ) {
 
 	if ( is_user_logged_in() ) {
 		foreach ( wcs_get_users_subscriptions() as $subscription ) {
-			foreach( $subscription->get_items() as $line_item ) {
+			foreach ( $subscription->get_items() as $line_item ) {
 				if ( ( $line_item['product_id'] == $product_id || $line_item['variation_id'] == $product_id ) && wcs_can_user_resubscribe_to( $subscription ) ) {
 					$renewal_url = wcs_get_users_resubscribe_link( $subscription );
 					break;
@@ -173,8 +173,8 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 					'key'     => '_subscription_resubscribe',
 					'compare' => '=',
 					'value'   => $subscription->id,
-					'type'    => 'numeric'
-				)
+					'type'    => 'numeric',
+				),
 			),
 			'post_type'   => 'shop_order',
 			'post_status' => 'any',
@@ -198,7 +198,6 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 		} else {
 			$can_user_resubscribe = false;
 		}
-
 	}
 
 	return apply_filters( 'wcs_can_user_resubscribe_to_subscription', $can_user_resubscribe, $subscription, $user_id );

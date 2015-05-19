@@ -24,7 +24,7 @@ class WCS_Template_Loader {
 	public static function add_view_subscription_template( $located, $template_name, $args, $template_path, $default_path ) {
 		global $wp;
 
- 		if ( 'myaccount/my-account.php' == $template_name && ! empty( $wp->query_vars['view-subscription'] ) ) {
+		if ( 'myaccount/my-account.php' == $template_name && ! empty( $wp->query_vars['view-subscription'] ) ) {
 			$located = wc_locate_template( 'myaccount/view-subscription.php', $template_path, plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
 		}
 
