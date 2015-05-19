@@ -79,7 +79,7 @@ function wcs_get_subscription_ranges( $subscription_period = '' ) {
 			__( 'all time', 'woocommerce-subscriptions' ),
 		);
 
-		switch( $period ) {
+		switch ( $period ) {
 			case 'day':
 				$subscription_lengths[] = __( '1 day', 'woocommerce-subscriptions' );
 				$subscription_range = range( 2, 90 );
@@ -128,7 +128,7 @@ function wcs_get_subscription_period_interval_strings( $interval = '' ) {
 	$intervals = array( 1 => __( 'every', 'woocommerce-subscriptions' ) );
 
 	foreach ( range( 2, 6 ) as $i ) {
-		$intervals[ $i ] = sprintf( __( 'every %s', 'woocommerce-subscriptions' ), WC_Subscriptions::append_numeral_suffix( $i )  );
+		$intervals[ $i ] = sprintf( __( 'every %s', 'woocommerce-subscriptions' ), WC_Subscriptions::append_numeral_suffix( $i ) );
 	}
 
 	$intervals = apply_filters( 'woocommerce_subscription_period_interval_strings', $intervals );

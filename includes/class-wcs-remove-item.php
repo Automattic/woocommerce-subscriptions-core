@@ -66,7 +66,7 @@ class WCS_Remove_Item {
 			if ( false === $subscription ) {
 
 				wc_add_notice( sprintf( __( 'Subscription #%s does not exist.', 'woocommerce-subscriptions' ), $_GET['subscription_id'] ), 'error' );
-				wp_safe_redirect( wc_get_page_permalink( 'myaccount') );
+				wp_safe_redirect( wc_get_page_permalink( 'myaccount' ) );
 				exit;
 			}
 
@@ -104,7 +104,6 @@ class WCS_Remove_Item {
 					} else {
 						wc_add_notice( __( 'Your request to undo your previous action was unsuccessful.', 'woocommerce-subscriptions' ) );
 					}
-
 				} else {
 
 					// handle remove item requests
