@@ -247,6 +247,90 @@ add_action( 'woocommerce_process_shop_order_meta', 'wcs_repair_permission_data',
 
 
 /**
+ * A wrapper for getting a specific item from a subscription.
+ *
+ * WooCommerce has a wc_add_order_item() function, wc_update_order_item() function and wc_delete_order_item() function,
+ * but no `wc_get_order_item()` function, so we need to add our own (for now).
+ *
+ * @param int $item_id The ID of an order item
+ * @return WC_Subscription Subscription details in post_id => WC_Subscription form.
+ * @since  2.0
+ */
+function wcs_get_order_item( $item_id, $subscription ) {
+
+	$item = array();
+
+	foreach( $subscription->get_items() as $line_item_id => $line_item ) {
+		if ( $item_id == $line_item_id ) {
+			$item = $line_item;
+			break;
+		}
+	}
+
+	return $item;
+}
+
+/**
+ * Create a string representing an order item's name and optionally include attributes.
+ *
+ * @param array $order_item An order item.
+ * @since 2.0
+ */
+function wcs_get_order_item_name( $order_item, $include = array() ) {
+
+	$include = wp_parse_args( $include, array(
+		'attributes' => false,
+	) );
+
+	$order_item_name = $order_item['name'];
+
+	if ( $include['attributes'] && ! empty( $order_item['item_meta'] ) ) {
+
+		$attribute_strings = array();
+
+		foreach ( $order_item['item_meta'] as $meta_key => $meta_value ) {
+
+			$meta_value = $meta_value[0];
+
+			// Skip hidden core fields
+			if ( in_array( $meta_key, apply_filters( 'woocommerce_hidden_order_itemmeta', array(
+				'_qty',
+				'_tax_class',
+				'_product_id',
+				'_variation_id',
+				'_line_subtotal',
+				'_line_subtotal_tax',
+				'_line_total',
+				'_line_tax',
+				'_switched_subscription_item_id',
+			) ) ) ) {
+				continue;
+			}
+
+			// Skip serialised meta
+			if ( is_serialized( $meta_value ) ) {
+				continue;
+			}
+
+			// Get attribute data
+			if ( taxonomy_exists( wc_sanitize_taxonomy_name( $meta_key ) ) ) {
+				$term       = get_term_by( 'slug', $meta_value, wc_sanitize_taxonomy_name( $meta_key ) );
+				$meta_key   = wc_attribute_label( wc_sanitize_taxonomy_name( $meta_key ) );
+				$meta_value = isset( $term->name ) ? $term->name : $meta_value;
+			} else {
+				$meta_key   = apply_filters( 'woocommerce_attribute_label', wc_attribute_label( $meta_key ), $meta_key );
+			}
+
+			$attribute_strings[] = sprintf( '%s: %s', wp_kses_post( rawurldecode( $meta_key ) ), wp_kses_post( rawurldecode( $meta_value ) ) );
+		}
+
+		$order_item_name = sprintf( '%s (%s)', $order_item_name, implode( ', ', $attribute_strings ) );
+	}
+
+	return apply_filters( 'wcs_get_order_item_name', $order_item_name, $order_item, $include );
+}
+
+/**
  * Get the full name for a order/subscription line item, including the items non hidden meta
  * (i.e. attributes), as a flat string.
  *

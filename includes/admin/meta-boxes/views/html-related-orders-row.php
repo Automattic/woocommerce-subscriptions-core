@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</a>
 	</td>
 	<td style="border-top: 0;">
-		<?php esc_html_e( ucfirst( $order->order_type ) ); ?>
+		<?php esc_html_e( ucfirst( $order->relationship ) ); ?>
 	</td>
 	<td style="border-top: 0;"><?php
 
