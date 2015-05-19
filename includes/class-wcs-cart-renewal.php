@@ -74,7 +74,7 @@ class WCS_Cart_Renewal {
 		if ( isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) && isset( $wp->query_vars['order-pay'] ) ) {
 
 			// Pay for existing order
-			$order_key = $_GET[ 'key' ];
+			$order_key = $_GET['key'];
 			$order_id  = ( isset( $wp->query_vars['order-pay'] ) ) ? $wp->query_vars['order-pay'] : absint( $_GET['order_id'] );
 			$order     = wc_get_order( $wp->query_vars['order-pay'] );
 
@@ -82,7 +82,7 @@ class WCS_Cart_Renewal {
 
 				$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
 
-				foreach( $subscriptions as $subscription ) {
+				foreach ( $subscriptions as $subscription ) {
 					$this->setup_cart( $subscription, array(
 						'subscription_id'  => $subscription->id,
 						'renewal_order_id' => $order_id,
@@ -315,7 +315,7 @@ class WCS_Cart_Renewal {
 			// If the subscription has been deleted or reactivated some other way, don't support payment on the order
 			$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
 
-			foreach( $subscriptions as $subscription ) {
+			foreach ( $subscriptions as $subscription ) {
 				if ( empty( $subscription ) || ! $subscription->has_status( array( 'on-hold', 'pending' ) ) ) {
 					unset( $actions['pay'] );
 					break;
