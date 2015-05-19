@@ -74,7 +74,7 @@ function wcs_price_string( $subscription_details ) {
 
 	if ( $subscription_details['subscription_length'] > 0 && $subscription_details['subscription_length'] == $subscription_details['subscription_interval'] ) {
 		if ( ! empty( $subscription_details['initial_amount'] ) ) {
-			if (  $subscription_details['subscription_interval'] == $subscription_details['subscription_length'] && 0 == $subscription_details['trial_length'] ) {
+			if ( $subscription_details['subscription_interval'] == $subscription_details['subscription_length'] && 0 == $subscription_details['trial_length'] ) {
 				$subscription_string = $initial_amount_string;
 			} else {
 				$subscription_string = sprintf( __( '%s %s then %s', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string );
