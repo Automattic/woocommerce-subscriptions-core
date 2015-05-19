@@ -39,7 +39,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 		# GET /subscriptions
 		$routes[ $this->base ] = array(
 			array( array( $this, 'get_subscriptions' ), WC_API_Server::READABLE ),
-			array( array( $this, 'create_subscription' ),   WC_API_Server::CREATABLE | WC_API_Server::ACCEPT_DATA ),
+			array( array( $this, 'create_subscription' ), WC_API_Server::CREATABLE | WC_API_Server::ACCEPT_DATA ),
 		);
 
 		# GET /subscriptions/count
@@ -144,7 +144,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 
 		$subscriptions = array();
 
-		foreach( $query->posts as $subscription_id ) {
+		foreach ( $query->posts as $subscription_id ) {
 
 			if ( ! $this->is_readable( $subscription_id ) ) {
 				continue;
@@ -242,7 +242,6 @@ class WC_API_Subscriptions extends WC_API_Orders {
 				} else {
 					$this->update_payment_method( $subscription, $data['payment_details'], true );
 				}
-
 			}
 
 			// set $data['order'] = $data['subscription'] so that edit_order can read in the request
@@ -262,10 +261,10 @@ class WC_API_Subscriptions extends WC_API_Orders {
 
 			return $this->get_subscription( $subscription_id );
 
-		} catch( WC_API_Excpetion $e ) {
+		} catch ( WC_API_Excpetion $e ) {
 			return new WP_Error( $e->getErrorCode(), $e->getMessage(), array( 'status' => $e->getCode() ) );
 
-		} catch( Exception $e ) {
+		} catch ( Exception $e ) {
 			return new WP_Error( 'wcs_api_cannot_edit_subscription', $e->getMessage(), array( 'status' => $e->getCode() ) );
 
 		}
@@ -312,10 +311,8 @@ class WC_API_Subscriptions extends WC_API_Orders {
 								$meta_data['value'] = $payment_details[ $meta_table ][ $meta_key ];
 							}
 						}
-
 					}
 				}
-
 			}
 
 			if ( empty( $subscription->payment_gateway ) ) {
@@ -392,12 +389,11 @@ class WC_API_Subscriptions extends WC_API_Orders {
 
 		$dates_to_update = array();
 
-		foreach( array( 'start', 'trial_end', 'end', 'next_payment' ) as $date_type ) {
+		foreach ( array( 'start', 'trial_end', 'end', 'next_payment' ) as $date_type ) {
 
 			if ( isset( $data[ $date_type . '_date' ] ) ) {
 				$dates_to_update[ $date_type ] = $data[ $date_type . '_date' ];
 			}
-
 		}
 
 		if ( ! empty( $dates_to_update ) ) {
@@ -493,7 +489,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	 * @param $filter array
 	 * @return int | WP_Error
 	 */
-	public function get_subscription_count( $status = NULL, $filter = array() ) {
+	public function get_subscription_count( $status = null, $filter = array() ) {
 		return $this->get_orders_count( $status, $filter );
 	}
 
