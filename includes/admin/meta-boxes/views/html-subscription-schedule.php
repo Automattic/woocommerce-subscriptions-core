@@ -43,7 +43,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<?php endif; ?>
 	</div>
 
-	<?php foreach( wcs_get_subscription_date_types() as $date_key => $date_label ) : ?>
+	<?php foreach ( wcs_get_subscription_date_types() as $date_key => $date_label ) : ?>
 		<?php if ( 'last_payment' === $date_key ) : ?>
 			<?php continue; ?>
 		<?php endif;?>
