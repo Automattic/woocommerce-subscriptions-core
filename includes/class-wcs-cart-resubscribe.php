@@ -168,7 +168,6 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 						break;
 					}
 				}
-
 			}
 		}
 
