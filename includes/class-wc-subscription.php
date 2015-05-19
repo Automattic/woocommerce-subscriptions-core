@@ -1564,22 +1564,4 @@ class WC_Subscription extends WC_Order {
 	public function is_download_permitted() {
 		return apply_filters( 'woocommerce_order_is_download_permitted', ( $this->has_status( 'active' ) || $this->has_status( 'pending-cancel' ) ), $this );
 	}
-
-	/**
-	 * Get the first product within a subscription.
-	 *
-	 * @since  2.0
-	 */
-	public function get_first_items_product_id() {
-
-		$product_id = 0;
-
-		foreach ( $this->get_items() as $item_id => $line_item ) {
-			$product_id = ( 0 != $line_item['variation_id'] ) ? $line_item['variation_id'] : $line_item['product_id'];
-			break;
-		}
-
-		return $product_id;
-	}
-
 }
