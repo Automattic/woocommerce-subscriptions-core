@@ -105,8 +105,7 @@ function wcs_user_has_subscription( $user_id = 0, $product_id = '', $status = 'a
 	} else {
 
 		foreach ( $subscriptions as $subscription ) {
-			$subscriptions_product_ids = wp_list_pluck( $subscription->get_items(), 'product_id' );
-			if ( in_array( $product_id, $subscriptions_product_ids ) && ( empty( $status ) || 'any' == $status || $subscription->get_status() == $status ) ) {
+			if ( $subscription->has_product( $product_id ) && ( empty( $status ) || 'any' == $status || $subscription->get_status() == $status ) ) {
 				$has_subscription = true;
 				break;
 			}

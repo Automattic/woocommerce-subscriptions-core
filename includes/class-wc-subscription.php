@@ -247,6 +247,13 @@ class WC_Subscription extends WC_Order {
 					$can_be_updated = false;
 				}
 				break;
+			case 'trash' :
+				if ( $this->has_ended() || $this->can_be_updated_to( 'cancelled' ) ) {
+					$can_be_updated = true;
+				} else {
+					$can_be_updated = false;
+				}
+				break;
 			case 'deleted' :
 				if ( 'trash' == $this->get_status()  ) {
 					$can_be_updated = true;
@@ -323,9 +330,13 @@ class WC_Subscription extends WC_Order {
 
 					case 'active' :
 						// Recalculate and set next payment date
-						$next_payment = $this->calculate_date( 'next_payment' );
-						if ( $next_payment > 0 ) {
-							$this->update_dates( array( 'next_payment' => $next_payment ) );
+						$next_payment = $this->get_time( 'next_payment' );
+
+						if ( $next_payment < gmdate( 'U' ) ) { // also accounts for a $next_payment of 0, meaning it's not set
+							$next_payment = $this->calculate_date( 'next_payment' );
+							if ( $next_payment > 0 ) {
+								$this->update_dates( array( 'next_payment' => $next_payment ) );
+							}
 						}
 						// Trial end date and end/expiration date don't change at all - they should be set when the subscription is first created
 						wcs_make_user_active( $this->customer_user );
@@ -891,6 +902,7 @@ class WC_Subscription extends WC_Order {
 
 		// If the subscription is not active, there is no next payment date
 		$start_time        = $this->get_time( 'start' );
+		$next_payment_time = $this->get_time( 'next_payment' );
 		$trial_end_time    = $this->get_time( 'trial_end' );
 		$last_payment_time = $this->get_time( 'last_payment' );
 		$end_time          = $this->get_time( 'end' );
@@ -900,13 +912,15 @@ class WC_Subscription extends WC_Order {
 
 			$next_payment_timestamp = $trial_end_time;
 
-			// The next payment date is {interval} billing periods from the start date, trial end date or last payment date
 		} else {
 
-			if ( $last_payment_time > $trial_end_time ) {
+			// The next payment date is {interval} billing periods from the start date, trial end date or last payment date
+			if ( $next_payment_time < gmdate( 'U' ) && 1 <= $this->get_completed_payment_count() ) {
+				$from_timestamp = $next_payment_time;
+			} elseif ( $last_payment_time > $start_time && apply_filters( 'wcs_calculate_next_payment_from_last_payment', true ) ) {
 				$from_timestamp = $last_payment_time;
-			} elseif ( $trial_end_time > $start_time ) {
-				$from_timestamp = $trial_end_time;
+			} elseif ( $next_payment_time > $start_time ) { // Use the currently scheduled next payment to preserve synchronisation
+				$from_timestamp = $next_payment_time;
 			} else {
 				$from_timestamp = $start_time;
 			}
@@ -1537,7 +1551,6 @@ class WC_Subscription extends WC_Order {
 		$view_subscription_url = wc_get_endpoint_url( 'view-subscription', $this->id, wc_get_page_permalink( 'myaccount' ) );
 
 		return apply_filters( 'wcs_get_view_subscription_url', $view_subscription_url, $this->id );
-
 	}
 
 	/**
@@ -1547,5 +1560,25 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function is_download_permitted() {
 		return apply_filters( 'woocommerce_order_is_download_permitted', ( $this->has_status( 'active' ) || $this->has_status( 'pending-cancel' ) ), $this );
+	}
+
+	/**
+	 * Check if the subscription has a line item for a specific product, by ID.
+	 *
+	 * @param int A product or variation ID to check for.
+	 * @return bool
+	 */
+	public function has_product( $product_id ) {
+
+		$has_product = false;
+
+		foreach( $this->get_items() as $line_item ) {
+			if ( $line_item['product_id'] == $product_id || $line_item['variation_id'] == $product_id ) {
+				$has_product = true;
+				break;
+			}
+		}
+
+		return $has_product;
 	}
 }

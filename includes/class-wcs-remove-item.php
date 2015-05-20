@@ -66,7 +66,7 @@ class WCS_Remove_Item {
 			if ( false === $subscription ) {
 
 				wc_add_notice( sprintf( __( 'Subscription #%s does not exist.', 'woocommerce-subscriptions' ), $_GET['subscription_id'] ), 'error' );
-				wp_safe_redirect( wc_get_page_permalink( 'myaccount') );
+				wp_safe_redirect( wc_get_page_permalink( 'myaccount' ) );
 				exit;
 			}
 
@@ -104,7 +104,6 @@ class WCS_Remove_Item {
 					} else {
 						wc_add_notice( __( 'Your request to undo your previous action was unsuccessful.', 'woocommerce-subscriptions' ) );
 					}
-
 				} else {
 
 					// handle remove item requests
@@ -114,6 +113,7 @@ class WCS_Remove_Item {
 					$line_items = $subscription->get_items();
 					$line_item  = $line_items[ $item_id ];
 					$product_id = wcs_get_canonical_product_id( $line_item );
+
 					wcs_revoke_downloadable_file_permission( $product_id, $subscription->id, $subscription->get_user_id() );
 
 					// remove the line item from subscription but preserve its data in the DB

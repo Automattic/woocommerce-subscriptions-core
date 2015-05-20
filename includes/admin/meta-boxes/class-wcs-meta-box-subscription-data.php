@@ -259,6 +259,8 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 		} catch ( Exception $e ) {
 			wcs_add_admin_notice( $e->getMessage(), 'error' );
 		}
+
+		do_action( 'woocommerce_process_shop_subscription_meta', $post_id, $post );
 	}
 
 }

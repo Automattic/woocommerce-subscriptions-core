@@ -51,7 +51,7 @@ class WCS_Change_Payment_Method_Admin {
 
 		if ( is_array( $payment_method_table ) ) {
 
-			foreach( $payment_method_table as $payment_method_id => $payment_method_meta ) {
+			foreach ( $payment_method_table as $payment_method_id => $payment_method_meta ) {
 
 				echo '<div class="wcs_payment_method_meta_fields" id="wcs_' . esc_attr( $payment_method_id ) . '_fields" ' . ( ( $payment_method_id != $payment_method || $subscription->is_manual() ) ? 'style="display:none;"' : '' ) .' >';
 
@@ -73,7 +73,6 @@ class WCS_Change_Payment_Method_Admin {
 				echo '</div>';
 
 			}
-
 		}
 
 	}
@@ -109,7 +108,6 @@ class WCS_Change_Payment_Method_Admin {
 				foreach ( $meta as $meta_key => &$meta_data ) {
 					$meta_data['value'] = $_POST['_payment_method_meta'][ $meta_table ][ $meta_key ];
 				}
-
 			}
 		}
 
@@ -139,7 +137,7 @@ class WCS_Change_Payment_Method_Admin {
 
 		$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
 
-		foreach( $available_gateways as $gateway_id => $gateway ) {
+		foreach ( $available_gateways as $gateway_id => $gateway ) {
 
 			if ( $gateway->supports( 'subscription_payment_method_change_admin' ) && 'no' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) || ( ! $subscription->is_manual() && $gateway_id == $subscription->payment_method ) ) {
 				$valid_gateways[ $gateway_id ] = $gateway->get_title();
