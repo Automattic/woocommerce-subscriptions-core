@@ -472,7 +472,7 @@ class WC_Subscription extends WC_Order {
 			$completed_payment_count += count( $paid_renewal_orders );
 		}
 
-		return apply_filters( 'woocommerce_subscription_completed_payments', $completed_payment_count, $this );
+		return apply_filters( 'woocommerce_subscription_payment_completed_count', $completed_payment_count, $this );
 	}
 
 	/**
@@ -509,7 +509,7 @@ class WC_Subscription extends WC_Order {
 			$failed_payment_count += count( $failed_renewal_orders );
 		}
 
-		return apply_filters( 'woocommerce_subscription_failed_payments', $failed_payment_count, $this );
+		return apply_filters( 'woocommerce_subscription_payment_failed_count', $failed_payment_count, $this );
 	}
 
 	/**

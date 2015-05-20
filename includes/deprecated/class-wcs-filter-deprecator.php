@@ -22,8 +22,8 @@ class WCS_Filter_Deprecator extends WCS_Hook_Deprecator {
 		// Subscription Meta Filters
 		'wc_subscription_statuses'                                   => 'woocommerce_subscriptions_custom_status_string', //no replacement as Subscriptions now uses wcs_get_subscription_statuses() for everything (the deprecator could use 'wc_subscription_statuses' and loop over all statuses to set it in the returned value)
 		'wc_subscription_statuses'                                   => 'woocommerce_subscriptions_status_string',
-		'woocommerce_subscription_failed_payments'                   => 'woocommerce_subscription_failed_payment_count',
-		'woocommerce_subscription_completed_payments'                => 'woocommerce_subscription_completed_payment_count',
+		'woocommerce_subscription_payment_failed_count'                   => 'woocommerce_subscription_failed_payment_count',
+		'woocommerce_subscription_payment_completed_count'                => 'woocommerce_subscription_completed_payment_count',
 		'woocommerce_subscription_get_end_date'                      => 'woocommerce_subscription_expiration_date',
 		'woocommerce_subscription_get_trial_end_date'                => 'woocommerce_subscription_trial_expiration_date',
 		'woocommerce_subscription_date_updated'                      => 'woocommerce_subscriptions_set_expiration_date',
