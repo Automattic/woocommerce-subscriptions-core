@@ -50,16 +50,16 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 						<p class="form-field form-field-wide wc-customer-user">
 							<label for="customer_user"><?php _e( 'Customer:', 'woocommerce-subscriptions' ) ?> <?php
-								if ( ! empty( $subscription->customer_user ) ) {
-									$args = array( 'post_status' => 'all',
-										'post_type'      => 'shop_subscription',
-										'_customer_user' => absint( $subscription->customer_user )
-									);
-									printf( '<a href="%s">%s &rarr;</a>',
-										esc_url( add_query_arg( $args, admin_url( 'edit.php' ) ) ),
-										__( 'View other subscriptions', 'woocommerce-subscriptions' )
-									);
-								}
+							if ( ! empty( $subscription->customer_user ) ) {
+								$args = array( 'post_status' => 'all',
+									'post_type'      => 'shop_subscription',
+									'_customer_user' => absint( $subscription->customer_user )
+								);
+								printf( '<a href="%s">%s &rarr;</a>',
+									esc_url( add_query_arg( $args, admin_url( 'edit.php' ) ) ),
+									__( 'View other subscriptions', 'woocommerce-subscriptions' )
+								);
+							}
 							?></label>
 							<?php
 							$user_string = '';
@@ -78,12 +78,12 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							<select id="order_status" name="order_status">
 								<?php
 									$statuses = wcs_get_subscription_statuses();
-									foreach ( $statuses as $status => $status_name ) {
-										if ( 'auto-draft' !== $subscription->post->post_status && 'draft' !== $subscription->post->post_status && ! $subscription->can_be_updated_to( $status ) && ! $subscription->has_status( str_replace( 'wc-', '', $status ) ) ) {
-											continue;
-										}
-										echo '<option value="' . esc_attr( $status ) . '" ' . selected( $status, 'wc-' . $subscription->get_status(), false ) . '>' . esc_html( $status_name ) . '</option>';
+								foreach ( $statuses as $status => $status_name ) {
+									if ( 'auto-draft' !== $subscription->post->post_status && 'draft' !== $subscription->post->post_status && ! $subscription->can_be_updated_to( $status ) && ! $subscription->has_status( str_replace( 'wc-', '', $status ) ) ) {
+										continue;
 									}
+									echo '<option value="' . esc_attr( $status ) . '" ' . selected( $status, 'wc-' . $subscription->get_status(), false ) . '>' . esc_html( $status_name ) . '</option>';
+								}
 								?>
 							</select>
 						</p>
@@ -97,24 +97,24 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							// Display values
 							echo '<div class="address">';
 
-								if ( $subscription->get_formatted_billing_address() ) {
-									echo '<p><strong>' . __( 'Address', 'woocommerce-subscriptions' ) . ':</strong>' . wp_kses( $subscription->get_formatted_billing_address(), array( 'br' => array() ) ) . '</p>';
-								} else {
-									echo '<p class="none_set"><strong>' . __( 'Address', 'woocommerce-subscriptions' ) . ':</strong> ' . __( 'No billing address set.', 'woocommerce-subscriptions' ) . '</p>';
-								}
+						if ( $subscription->get_formatted_billing_address() ) {
+							echo '<p><strong>' . __( 'Address', 'woocommerce-subscriptions' ) . ':</strong>' . wp_kses( $subscription->get_formatted_billing_address(), array( 'br' => array() ) ) . '</p>';
+						} else {
+							echo '<p class="none_set"><strong>' . __( 'Address', 'woocommerce-subscriptions' ) . ':</strong> ' . __( 'No billing address set.', 'woocommerce-subscriptions' ) . '</p>';
+						}
 
-								foreach ( self::$billing_fields as $key => $field ) {
+						foreach ( self::$billing_fields as $key => $field ) {
 
-									if ( isset( $field['show'] ) && false === $field['show'] ) {
-										continue;
-									}
+							if ( isset( $field['show'] ) && false === $field['show'] ) {
+								continue;
+							}
 
-									$field_name = 'billing_' . $key;
+							$field_name = 'billing_' . $key;
 
-									if ( $subscription->$field_name ) {
-										echo '<p><strong>' . esc_html( $field['label'] ) . ':</strong> ' . make_clickable( esc_html( $subscription->$field_name ) ) . '</p>';
-									}
-								}
+							if ( $subscription->$field_name ) {
+								echo '<p><strong>' . esc_html( $field['label'] ) . ':</strong> ' . make_clickable( esc_html( $subscription->$field_name ) ) . '</p>';
+							}
+						}
 
 								echo '<p' . ( ! empty( $subscription->payment_method ) ? ' class="' . esc_attr( $subscription->payment_method ) . '"' : '' ) . '><strong>' . __( 'Payment Method', 'woocommerce-subscriptions' ) . ':</strong>'. nl2br( $subscription->get_payment_method_to_display() ) . '</p>';
 
@@ -123,22 +123,22 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							// Display form
 							echo '<div class="edit_address"><p><button class="button load_customer_billing">' . __( 'Load billing address', 'woocommerce-subscriptions' ) . '</button></p>';
 
-							foreach ( self::$billing_fields as $key => $field ) {
-								if ( ! isset( $field['type'] ) ) {
-									$field['type'] = 'text';
-								}
-
-								switch ( $field['type'] ) {
-									case 'select' :
-										// allow for setting a default value programaticaly, and draw the selectbox
-										woocommerce_wp_select( array( 'id' => '_billing_' . $key, 'label' => $field['label'], 'options' => $field['options'], 'value' => isset( $field['value'] ) ? $field['value'] : null ) );
-									break;
-									default :
-										// allow for setting a default value programaticaly, and draw the textbox
-										woocommerce_wp_text_input( array( 'id' => '_billing_' . $key, 'label' => $field['label'], 'value' => isset( $field['value'] ) ? $field['value'] : null ) );
-									break;
-								}
+						foreach ( self::$billing_fields as $key => $field ) {
+							if ( ! isset( $field['type'] ) ) {
+								$field['type'] = 'text';
 							}
+
+							switch ( $field['type'] ) {
+								case 'select' :
+									// allow for setting a default value programaticaly, and draw the selectbox
+									woocommerce_wp_select( array( 'id' => '_billing_' . $key, 'label' => $field['label'], 'options' => $field['options'], 'value' => isset( $field['value'] ) ? $field['value'] : null ) );
+									break;
+								default :
+									// allow for setting a default value programaticaly, and draw the textbox
+									woocommerce_wp_text_input( array( 'id' => '_billing_' . $key, 'label' => $field['label'], 'value' => isset( $field['value'] ) ? $field['value'] : null ) );
+									break;
+							}
+						}
 							WCS_Change_Payment_Method_Admin::display_fields( $subscription );
 
 							echo '</div>';
@@ -153,58 +153,58 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							// Display values
 							echo '<div class="address">';
 
-								if ( $subscription->get_formatted_shipping_address() ) {
-									echo '<p><strong>' . __( 'Address', 'woocommerce-subscriptions' ) . ':</strong>' . wp_kses( $subscription->get_formatted_shipping_address(), array( 'br' => array() ) ) . '</p>';
-								} else {
-									echo '<p class="none_set"><strong>' . __( 'Address', 'woocommerce-subscriptions' ) . ':</strong> ' . __( 'No shipping address set.', 'woocommerce-subscriptions' ) . '</p>';
+						if ( $subscription->get_formatted_shipping_address() ) {
+							echo '<p><strong>' . __( 'Address', 'woocommerce-subscriptions' ) . ':</strong>' . wp_kses( $subscription->get_formatted_shipping_address(), array( 'br' => array() ) ) . '</p>';
+						} else {
+							echo '<p class="none_set"><strong>' . __( 'Address', 'woocommerce-subscriptions' ) . ':</strong> ' . __( 'No shipping address set.', 'woocommerce-subscriptions' ) . '</p>';
+						}
+
+						if ( self::$shipping_fields ) {
+							foreach ( self::$shipping_fields as $key => $field ) {
+								if ( isset( $field['show'] ) && false === $field['show'] ) {
+									continue;
 								}
 
-								if ( self::$shipping_fields ) {
-									foreach ( self::$shipping_fields as $key => $field ) {
-										if ( isset( $field['show'] ) && false === $field['show'] ) {
-											continue;
-										}
+								$field_name = 'shipping_' . $key;
 
-										$field_name = 'shipping_' . $key;
-
-										if ( ! empty( $subscription->$field_name ) ) {
-											echo '<p><strong>' . esc_html( $field['label'] ) . ':</strong> ' . make_clickable( esc_html( $subscription->$field_name ) ) . '</p>';
-										}
-									}
+								if ( ! empty( $subscription->$field_name ) ) {
+									echo '<p><strong>' . esc_html( $field['label'] ) . ':</strong> ' . make_clickable( esc_html( $subscription->$field_name ) ) . '</p>';
 								}
+							}
+						}
 
-								if ( apply_filters( 'woocommerce_enable_order_notes_field', 'yes' == get_option( 'woocommerce_enable_order_comments', 'yes' ) ) && $post->post_excerpt ) {
-									echo '<p><strong>' . __( 'Customer Note', 'woocommerce-subscriptions' ) . ':</strong> ' . nl2br( esc_html( $post->post_excerpt ) ) . '</p>';
-								}
+						if ( apply_filters( 'woocommerce_enable_order_notes_field', 'yes' == get_option( 'woocommerce_enable_order_comments', 'yes' ) ) && $post->post_excerpt ) {
+							echo '<p><strong>' . __( 'Customer Note', 'woocommerce-subscriptions' ) . ':</strong> ' . nl2br( esc_html( $post->post_excerpt ) ) . '</p>';
+						}
 
 							echo '</div>';
 
 							// Display form
 							echo '<div class="edit_address"><p><button class="button load_customer_shipping">' . __( 'Load shipping address', 'woocommerce-subscriptions' ) . '</button> <button class="button billing-same-as-shipping">' . __( 'Copy from billing', 'woocommerce-subscriptions' ) . '</button></p>';
 
-							if ( self::$shipping_fields ) {
-								foreach ( self::$shipping_fields as $key => $field ) {
-									if ( ! isset( $field['type'] ) ) {
-										$field['type'] = 'text';
-									}
+						if ( self::$shipping_fields ) {
+							foreach ( self::$shipping_fields as $key => $field ) {
+								if ( ! isset( $field['type'] ) ) {
+									$field['type'] = 'text';
+								}
 
-									switch ( $field['type'] ) {
-										case 'select' :
-											woocommerce_wp_select( array( 'id' => '_shipping_' . $key, 'label' => $field['label'], 'options' => $field['options'] ) );
+								switch ( $field['type'] ) {
+									case 'select' :
+										woocommerce_wp_select( array( 'id' => '_shipping_' . $key, 'label' => $field['label'], 'options' => $field['options'] ) );
 										break;
-										default :
-											woocommerce_wp_text_input( array( 'id' => '_shipping_' . $key, 'label' => $field['label'] ) );
+									default :
+										woocommerce_wp_text_input( array( 'id' => '_shipping_' . $key, 'label' => $field['label'] ) );
 										break;
-									}
 								}
 							}
+						}
 
-							if ( apply_filters( 'woocommerce_enable_order_notes_field', 'yes' == get_option( 'woocommerce_enable_order_comments', 'yes' ) ) ) {
-								?>
-								<p class="form-field form-field-wide"><label for="excerpt"><?php _e( 'Customer Note:', 'woocommerce-subscriptions' ) ?></label>
+						if ( apply_filters( 'woocommerce_enable_order_notes_field', 'yes' == get_option( 'woocommerce_enable_order_comments', 'yes' ) ) ) {
+							?>
+							<p class="form-field form-field-wide"><label for="excerpt"><?php _e( 'Customer Note:', 'woocommerce-subscriptions' ) ?></label>
 								<textarea rows="1" cols="40" name="excerpt" tabindex="6" id="excerpt" placeholder="<?php _e( 'Customer\'s notes about the order', 'woocommerce-subscriptions' ); ?>"><?php echo wp_kses_post( $post->post_excerpt ); ?></textarea></p>
 								<?php
-							}
+						}
 
 							echo '</div>';
 
@@ -255,7 +255,6 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 			} else {
 				$subscription->update_status( $_POST['order_status'] );
 			}
-
 		} catch ( Exception $e ) {
 			wcs_add_admin_notice( $e->getMessage(), 'error' );
 		}
