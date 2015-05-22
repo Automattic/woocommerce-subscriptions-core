@@ -11,14 +11,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 <tr>
 	<td style="border-top: 0;">
-		<a href="<?php echo get_edit_post_link( $order->id ); ?>">
+		<a href="<?php echo esc_url( get_edit_post_link( $order->id ) ); ?>">
 			<?php echo esc_html( _x( '#', 'hash before order number', 'woocommerce-subscriptions' ) . $order->get_order_number() ); ?>
 		</a>
 	</td>
 	<td style="border-top: 0;">
 		<?php esc_html_e( ucfirst( $order->relationship ) ); ?>
 	</td>
-	<td style="border-top: 0;"><?php
+	<td style="border-top: 0;">
+		<?php
 
 		$timestamp_gmt = strtotime( $order->post->post_date_gmt );
 
