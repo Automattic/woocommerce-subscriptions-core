@@ -203,7 +203,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 						if ( apply_filters( 'woocommerce_enable_order_notes_field', 'yes' == get_option( 'woocommerce_enable_order_comments', 'yes' ) ) ) {
 							?>
 							<p class="form-field form-field-wide"><label for="excerpt"><?php esc_html_e( 'Customer Note:', 'woocommerce-subscriptions' ) ?></label>
-								<textarea rows="1" cols="40" name="excerpt" tabindex="6" id="excerpt" placeholder="<?php esc_html_e( 'Customer\'s notes about the order', 'woocommerce-subscriptions' ); ?>"><?php echo wp_kses_post( $post->post_excerpt ); ?></textarea></p>
+								<textarea rows="1" cols="40" name="excerpt" tabindex="6" id="excerpt" placeholder="<?php esc_attr_e( 'Customer\'s notes about the order', 'woocommerce-subscriptions' ); ?>"><?php echo wp_kses_post( $post->post_excerpt ); ?></textarea></p>
 								<?php
 						}
 
