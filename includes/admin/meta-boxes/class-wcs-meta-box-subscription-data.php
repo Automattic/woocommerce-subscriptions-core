@@ -80,7 +80,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 								<?php
 								$statuses = wcs_get_subscription_statuses();
 								foreach ( $statuses as $status => $status_name ) {
-									if ( 'auto-draft' !== $subscription->post->post_status && 'draft' !== $subscription->post->post_status && ! $subscription->can_be_updated_to( $status ) && ! $subscription->has_status( str_replace( 'wc-', '', $status ) ) ) {
+									if ( ! $subscription->can_be_updated_to( $status ) && ! $subscription->has_status( str_replace( 'wc-', '', $status ) ) ) {
 										continue;
 									}
 									echo '<option value="' . esc_attr( $status ) . '" ' . selected( $status, 'wc-' . $subscription->get_status(), false ) . '>' . esc_html( $status_name ) . '</option>';
