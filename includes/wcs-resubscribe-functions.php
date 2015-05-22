@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param WC_Order|int $order The WC_Order object or ID of a WC_Order order.
  * @since 2.0
  */
-function wcs_is_resubscribe_order( $order ) {
+function wcs_order_contains_resubscribe( $order ) {
 
 	if ( ! is_object( $order ) ) {
 		$order = new WC_Order( $order );
