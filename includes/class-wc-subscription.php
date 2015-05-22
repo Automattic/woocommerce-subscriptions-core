@@ -212,7 +212,7 @@ class WC_Subscription extends WC_Order {
 			case 'active' :
 				if ( $this->payment_method_supports( 'subscription_reactivation' ) && $this->has_status( 'on-hold' ) ) {
 					$can_be_updated = true;
-				} elseif ( $this->has_status( array( 'pending', 'auto-draft', 'draft' ) ) ) {
+				} elseif ( $this->has_status( 'pending' ) ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
@@ -432,6 +432,24 @@ class WC_Subscription extends WC_Order {
 		}
 
 		return apply_filters( 'woocommerce_subscription_has_ended', $has_ended, $this );
+	}
+
+	/**
+	 * Overrides the WC Order get_status function for draft and auto-draft statuses for a subscription
+	 * so that it will return a pending status instead of draft / auto-draft.
+	 *
+	 * @since 2.0
+	 * @return string Status
+	 */
+	public function get_status() {
+		if ( in_array( get_post_status( $this->id ), array( 'draft', 'auto-draft' ) ) ) {
+			$this->post_status = 'wc-pending';
+			$status = apply_filters( 'woocommerce_order_get_status', 'pending', $this );
+		} else {
+			$status = parent::get_status();
+		}
+
+		return $status;
 	}
 
 	/**
