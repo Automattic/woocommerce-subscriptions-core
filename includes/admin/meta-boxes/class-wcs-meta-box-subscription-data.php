@@ -71,7 +71,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 								$user_string = esc_html( $user->display_name ) . ' (#' . absint( $user->ID ) . ' &ndash; ' . esc_html( $user->user_email );
 							}
 							?>
-							<input type="hidden" class="wc-customer-search" id="customer_user" name="customer_user" data-placeholder="<?php esc_html_e( 'Search for a customer&hellip;', 'woocommerce-subscriptions' ); ?>" data-selected="<?php esc_attr_e( $user_string ); ?>" value="<?php esc_attr_e( $user_id ); ?>" />
+							<input type="hidden" class="wc-customer-search" id="customer_user" name="customer_user" data-placeholder="<?php esc_attr_e( 'Search for a customer&hellip;', 'woocommerce-subscriptions' ); ?>" data-selected="<?php esc_attr_e( $user_string ); ?>" value="<?php esc_attr_e( $user_id ); ?>" />
 						</p>
 
 						<p class="form-field form-field-wide">
@@ -93,7 +93,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 					</div>
 					<div class="order_data_column">
-						<h4><?php esc_html_e( 'Billing Details', 'woocommerce-subscriptions' ); ?> <a class="edit_address" href="#"><img src="<?php echo esc_url( WC()->plugin_url() . '/assets/images/icons/edit.png' ); ?>" alt="<?php esc_html_e( 'Edit', 'woocommerce-subscriptions' ); ?>" width="14" /></a></h4>
+						<h4><?php esc_html_e( 'Billing Details', 'woocommerce-subscriptions' ); ?> <a class="edit_address" href="#"><img src="<?php echo esc_url( WC()->plugin_url() . '/assets/images/icons/edit.png' ); ?>" alt="<?php esc_attr_e( 'Edit', 'woocommerce-subscriptions' ); ?>" width="14" /></a></h4>
 						<?php
 						// Display values
 						echo '<div class="address">';
