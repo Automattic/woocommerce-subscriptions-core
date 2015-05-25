@@ -50,7 +50,7 @@ function wcs_copy_order_address( $from_order, $to_order, $address_type = 'all' )
 			'city'       => $from_order->shipping_city,
 			'state'      => $from_order->shipping_state,
 			'postcode'   => $from_order->shipping_postcode,
-			'country'    => $from_order->shipping_country
+			'country'    => $from_order->shipping_country,
 		), 'shipping' );
 	}
 
@@ -112,7 +112,7 @@ function wcs_save_downloadable_product_permissions( $order_id ) {
 
 	$subscriptions = wcs_get_subscriptions_for_order( $order );
 
-	foreach ($subscriptions as $subscription) {
+	foreach ( $subscriptions as $subscription ) {
 		if ( sizeof( $subscription->get_items() ) > 0 ) {
 			foreach ( $subscription->get_items() as $item ) {
 				$_product = $subscription->get_product_from_item( $item );
@@ -260,7 +260,7 @@ function wcs_get_order_item( $item_id, $subscription ) {
 
 	$item = array();
 
-	foreach( $subscription->get_items() as $line_item_id => $line_item ) {
+	foreach ( $subscription->get_items() as $line_item_id => $line_item ) {
 		if ( $item_id == $line_item_id ) {
 			$item = $line_item;
 			break;
