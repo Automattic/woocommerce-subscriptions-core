@@ -45,7 +45,6 @@ function wcs_cart_totals_shipping_method( $method, $cart ) {
 				$label .= ' <small>' . WC()->countries->inc_tax_or_vat() . '</small>';
 			}
 		}
-
 	} else {
 		$label = __( 'Free', 'woocommerce-subscriptions' );
 	}
@@ -113,8 +112,9 @@ function wcs_cart_totals_order_total_html( $cart ) {
 		$tax_string_array = array();
 
 		if ( get_option( 'woocommerce_tax_total_display' ) == 'itemized' ) {
-			foreach ( $cart->get_tax_totals() as $code => $tax )
+			foreach ( $cart->get_tax_totals() as $code => $tax ) {
 				$tax_string_array[] = sprintf( '%s %s', $tax->formatted_amount, $tax->label );
+			}
 		} else {
 			$tax_string_array[] = sprintf( '%s %s', wc_price( $cart->get_taxes_total( true, true ) ), WC()->countries->tax_or_vat() );
 		}
@@ -165,7 +165,7 @@ function wcs_cart_pluck( $cart, $field, $default = 0 ) {
 	if ( isset( $cart->$field ) ) {
 		$value = $cart->$field;
 	} else {
-		foreach( $cart->get_cart() as $cart_item ) {
+		foreach ( $cart->get_cart() as $cart_item ) {
 			if ( isset( $cart_item[ $field ] ) ) {
 				$value = $cart_item[ $field ];
 			} elseif ( $cart_item['data']->$field ) {
