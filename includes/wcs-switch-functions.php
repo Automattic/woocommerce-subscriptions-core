@@ -37,7 +37,6 @@ function wcs_order_contains_switch( $order ) {
 		} else {
 			$is_switch_order = false;
 		}
-
 	}
 
 	return apply_filters( 'woocommerce_subscriptions_is_switch_order', $is_switch_order, $order );
@@ -59,7 +58,7 @@ function wcs_get_subscriptions_for_switch_order( $order_id ) {
 	$subscriptions    = array();
 	$subscription_ids = get_post_meta( $order_id, '_subscription_switch', false );
 
-	foreach( $subscription_ids as $subscription_id ) {
+	foreach ( $subscription_ids as $subscription_id ) {
 		$subscriptions[] = wcs_get_subscriptions( $subscription_id );
 	}
 
