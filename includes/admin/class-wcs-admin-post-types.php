@@ -72,7 +72,7 @@ class WCS_Admin_Post_Types {
 		}
 
 		?>
-		<input type="hidden" class="wc-product-search" name="_wcs_product" data-placeholder="<?php _e( 'Search for a product&hellip;', 'woocommerce-subscriptions' ); ?>" data-action="woocommerce_json_search_products_and_variations" data-selected="<?php echo wp_kses_post( $product_string ); ?>" value="<?php echo $product_id; ?>" data-allow_clear="true" />
+		<input type="hidden" class="wc-product-search" name="_wcs_product" data-placeholder="<?php esc_attr_e( 'Search for a product&hellip;', 'woocommerce-subscriptions' ); ?>" data-action="woocommerce_json_search_products_and_variations" data-selected="<?php echo wp_kses_post( $product_string ); ?>" value="<?php echo esc_attr( $product_id ); ?>" data-allow_clear="true" />
 		<?php
 	}
 
@@ -319,7 +319,6 @@ class WCS_Admin_Post_Types {
 									$actions['delete'] = '<a class="submitdelete" title="' . esc_attr( __( 'Delete this item permanently', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $post->ID, '', true ) . '">' . __( 'Delete Permanently', 'woocommerce-subscriptions' ) . '</a>';
 								}
 							}
-
 						} else {
 
 							$actions[ $status ] = sprintf( '<a href="%s">%s</a>', add_query_arg( 'action', $status, $action_url ), $label );
@@ -444,11 +443,12 @@ class WCS_Admin_Post_Types {
 							<tr class="<?php echo esc_attr( apply_filters( 'woocommerce_admin_order_item_class', '', $item ) ); ?>">
 								<td class="qty"><?php echo absint( $item['qty'] ); ?></td>
 								<td class="name">
-									<?php if ( wc_product_sku_enabled() && $_product && $_product->get_sku() ) {
+									<?php
+									if ( wc_product_sku_enabled() && $_product && $_product->get_sku() ) {
 										echo esc_html( $_product->get_sku() ) . ' - ';
-									} ?>
-									<?php echo esc_html( apply_filters( 'woocommerce_order_item_name', $item['name'], $item ) ); ?>
-									<?php if ( $item_meta_html ) { ?>
+									}
+									echo esc_html( apply_filters( 'woocommerce_order_item_name', $item['name'], $item ) );
+									if ( $item_meta_html ) { ?>
 										<a class="tips" href="#" data-tip="<?php echo esc_attr( $item_meta_html ); ?>">[?]</a>
 									<?php } ?>
 								</td>
@@ -654,7 +654,6 @@ class WCS_Admin_Post_Types {
 					// no subscriptions contain this product, but we need to pass post__in an ID that no post will have because WP returns all posts when post__in is an empty array: https://core.trac.wordpress.org/ticket/28099
 					$vars['post__in'] = array( 0 );
 				}
-
 			}
 
 			// Sorting
