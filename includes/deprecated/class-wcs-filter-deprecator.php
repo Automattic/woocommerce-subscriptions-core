@@ -120,7 +120,7 @@ class WCS_Filter_Deprecator extends WCS_Hook_Deprecator {
 				break;
 
 			// New arg spec: $expiration_date, $product_id, $from_date
-			// Old arg spec: $expiration_date, $subscription_key, $user_id 
+			// Old arg spec: $expiration_date, $subscription_key, $user_id
 			case 'woocommerce_subscription_calculated_expiration_date' :
 				$return_value = apply_filters( $old_hook, $return_value, '', 0 );
 				break;
