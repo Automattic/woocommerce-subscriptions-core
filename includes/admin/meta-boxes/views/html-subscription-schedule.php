@@ -57,5 +57,5 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php endif; ?>
 	</div>
 	<?php endforeach; ?>
-	<p><?php _e( 'Timezone:', 'woocommerce-subscriptoins' ); ?> <span id="wcs-timezone"><?php _e( 'Error: unable to find timezone of your browser.', 'woocommerce-subscriptions' ); ?></span></p>
+	<p><?php esc_html_e( 'Timezone:', 'woocommerce-subscriptoins' ); ?> <span id="wcs-timezone"><?php esc_html_e( 'Error: unable to find timezone of your browser.', 'woocommerce-subscriptions' ); ?></span></p>
 </div>
