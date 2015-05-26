@@ -71,7 +71,7 @@ function wcs_get_subscription_id_from_key( $subscription_key ) {
 				AND posts.post_parent = %d
 				AND itemmeta.meta_value = %d
 				AND itemmeta.meta_key IN ( '_variation_id', '_product_id' )",
-				$order_and_product_id[0], $order_and_product_id[1] ) );
+		$order_and_product_id[0], $order_and_product_id[1] ) );
 
 	} elseif ( ! empty( $order_and_product_id[0] ) ) {
 
@@ -140,12 +140,12 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 					'key'     => '_subscription_renewal',
 					'compare' => '=',
 					'value'   => $subscription->id,
-					'type'    => 'numeric'
+					'type'    => 'numeric',
 				),
 			),
 		) );
 
-		foreach( $paid_renewal_order_ids as $paid_renewal_order_id ) {
+		foreach ( $paid_renewal_order_ids as $paid_renewal_order_id ) {
 			$completed_payments[] = get_post_meta( $paid_renewal_order_id, '_paid_date', true );
 		}
 	}
