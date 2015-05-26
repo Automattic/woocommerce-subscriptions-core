@@ -12,7 +12,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-
 /**
  * Give a user the Subscription's default subscriber role
  *
@@ -114,7 +113,7 @@ function wcs_user_has_subscription( $user_id = 0, $product_id = '', $status = 'a
 
 	}
 
-	return apply_filters( 'woocommerce_user_has_subscription', $has_subscription, $user_id, $product_id, $status );
+	return apply_filters( 'wcs_user_has_subscription', $has_subscription, $user_id, $product_id, $status );
 }
 
 /**
@@ -147,7 +146,7 @@ function wcs_get_users_subscriptions( $user_id = 0 ) {
 		$subscriptions[ $post_id ] = wcs_get_subscription( $post_id );
 	}
 
-	return apply_filters( 'woocommerce_get_users_subscriptions', $subscriptions, $user_id );
+	return apply_filters( 'wcs_get_users_subscriptions', $subscriptions, $user_id );
 }
 
 /**
@@ -162,7 +161,7 @@ function wcs_get_users_change_status_link( $subscription_id, $status ) {
 	$action_link = add_query_arg( array( 'subscription_id' => $subscription_id, 'change_subscription_to' => $status ) );
 	$action_link = wp_nonce_url( $action_link, $subscription_id );
 
-	return apply_filters( 'woocommerce_subscriptions_users_change_status_link', $action_link, $subscription_id, $status );
+	return apply_filters( 'wcs_users_change_status_link', $action_link, $subscription_id, $status );
 }
 
 /**
@@ -207,7 +206,7 @@ function wcs_can_user_put_subscription_on_hold( $subscription, $user = '' ) {
 		}
 	}
 
-	return apply_filters( 'woocommerce_can_user_suspend_subscription', $user_can_suspend, $subscription );
+	return apply_filters( 'wcs_can_user_put_subscription_on_hold', $user_can_suspend, $subscription );
 }
 
 function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {

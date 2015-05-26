@@ -337,11 +337,11 @@ class WCS_Admin_Post_Types {
 					unset( $actions['trash'] );
 				}
 
-				$actions = apply_filters( 'woocommerce_subscriptions_list_table_actions', $actions, $the_subscription );
+				$actions = apply_filters( 'woocommerce_subscription_list_table_actions', $actions, $the_subscription );
 
 				$column_content .= $wp_list_table->row_actions( $actions );
 
-				$column_content = apply_filters( 'woocommerce_subscriptions_list_table_column_status_content', $column_content, $the_subscription, $actions, $this );
+				$column_content = apply_filters( 'woocommerce_subscription_list_table_column_status_content', $column_content, $the_subscription, $actions );
 				break;
 
 			case 'order_title' :
@@ -486,7 +486,7 @@ class WCS_Admin_Post_Types {
 				break;
 		}
 
-		echo apply_filters( 'woocommerce_subscriptions_list_table_column_content', $column_content, $the_subscription, $column );
+		echo apply_filters( 'woocommerce_subscription_list_table_column_content', $column_content, $the_subscription, $column );
 	}
 
 	/**

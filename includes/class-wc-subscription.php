@@ -262,7 +262,7 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			default :
-				$can_be_updated = false;
+				$can_be_updated = apply_filters( 'woocommerce_can_subscription_be_updated_to', false, $new_status, $this );
 				break;
 		}
 
@@ -490,7 +490,7 @@ class WC_Subscription extends WC_Order {
 			$completed_payment_count += count( $paid_renewal_orders );
 		}
 
-		return apply_filters( 'woocommerce_subscription_completed_payment_count', $completed_payment_count, $this );
+		return apply_filters( 'woocommerce_subscription_payment_completed_count', $completed_payment_count, $this );
 	}
 
 	/**
@@ -527,7 +527,7 @@ class WC_Subscription extends WC_Order {
 			$failed_payment_count += count( $failed_renewal_orders );
 		}
 
-		return apply_filters( 'woocommerce_subscription_failed_payment_count', $failed_payment_count, $this );
+		return apply_filters( 'woocommerce_subscription_payment_failed_count', $failed_payment_count, $this );
 	}
 
 	/**
@@ -600,7 +600,7 @@ class WC_Subscription extends WC_Order {
 			$date = $this->schedule->{$date_type};
 		}
 
-		return apply_filters( 'woocommerce_subscription_get_' . $date_type . '_date', $date, $timezone, $this );
+		return apply_filters( 'woocommerce_subscription_get_' . $date_type . '_date', $date, $this, $timezone );
 	}
 
 	/**
@@ -793,8 +793,6 @@ class WC_Subscription extends WC_Order {
 				do_action( 'woocommerce_subscription_date_updated', $this, $date_type, $datetime );
 			}
 		}
-
-		return $is_updated;
 	}
 
 	/**
@@ -1286,7 +1284,7 @@ class WC_Subscription extends WC_Order {
 			$this->update_status( $new_status );
 		}
 
-		do_action( 'woocommerce_subscription_payment_failed', $this->id, $new_status );
+		do_action( 'woocommerce_subscription_payment_failed', $this, $new_status );
 
 		if ( $this->get_completed_payment_count() >= 1 ) {
 			do_action( 'woocommerce_subscription_renewal_payment_failed', $this );
