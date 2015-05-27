@@ -44,6 +44,7 @@ function wcs_display_admin_notices( $clear = true ) {
 
 	if ( false !== $notices && ! empty( $notices ) ) {
 
+		// @codingStandardsIgnoreStart
 		if ( ! empty( $notices['success'] ) ) {
 			array_walk( $notices['success'], 'esc_html' );
 			echo '<div id="moderated" class="updated"><p>' . implode( "</p>\n<p>", $notices['success'] ) . '</p></div>';
@@ -53,6 +54,7 @@ function wcs_display_admin_notices( $clear = true ) {
 			array_walk( $notices['error'], 'esc_html' );
 			echo '<div id="moderated" class="error"><p>' . implode( "</p>\n<p>", $notices['error'] ) . '</p></div>';
 		}
+		// @codingStandardsIgnoreEnd
 	}
 
 	if ( false !== $clear ) {
