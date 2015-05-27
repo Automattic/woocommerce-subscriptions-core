@@ -233,3 +233,52 @@ function wcs_add_months( $from_timestamp, $months_to_add ) {
 
 	return $next_timestamp;
 }
+
+/**
+ * Estimate how many days, weeks, months or years there are between now and a given
+ * date in the future. Estimates the minimum total of periods.
+ *
+ * @param int A Unix timestamp at some time in the future.
+ * @param string A unit of time, either day, week month or year.
+ * @since 2.0
+ */
+function wcs_estimate_periods_until( $until_timestamp, $unit_of_time = 'month' ) {
+
+	if ( $until_timestamp <= gmdate( 'U' ) ) {
+
+		$periods_until = 0;
+
+	} elseif ( $unit_of_time == 'month' ) {
+
+		// Calculate the number of times this day will occur until we'll be in a time after the given timestamp
+		$timestamp = gmdate( 'U' );
+
+		for ( $periods_until = 0; $timestamp < $until_timestamp; $periods_until++ ) {
+			$timestamp = wcs_add_months( $timestamp, 1 );
+		}
+
+	} else {
+
+		$seconds_until_timestamp = $until_timestamp - gmdate( 'U' );
+
+		switch ( $unit_of_time ) {
+
+			case 'day' :
+				$denominator = DAY_IN_SECONDS;
+				break;
+
+			case 'week' :
+				$denominator = WEEK_IN_SECONDS;
+				break;
+
+			case 'year' :
+				$denominator = YEAR_IN_SECONDS;
+				break;
+		}
+
+		$periods_until = floor( $seconds_until_timestamp / $denominator );
+
+	}
+
+	return $periods_until;
+}
