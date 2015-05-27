@@ -113,7 +113,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							$field_name = 'billing_' . $key;
 
 							if ( $subscription->$field_name ) {
-								echo '<p><strong>' . esc_html( $field['label'] ) . ':</strong> ' . make_clickable( esc_html( $subscription->$field_name ) ) . '</p>';
+								echo '<p><strong>' . esc_html( $field['label'] ) . ':</strong> ' . make_clickable( $subscription->$field_name ) . '</p>';
 							}
 						}
 
@@ -169,7 +169,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 								$field_name = 'shipping_' . $key;
 
 								if ( ! empty( $subscription->$field_name ) ) {
-									echo '<p><strong>' . esc_html( $field['label'] ) . ':</strong> ' . make_clickable( esc_html( $subscription->$field_name ) ) . '</p>';
+									echo '<p><strong>' . esc_html( $field['label'] ) . ':</strong> ' . make_clickable( $subscription->$field_name ) . '</p>';
 								}
 							}
 						}
