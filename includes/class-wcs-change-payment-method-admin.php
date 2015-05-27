@@ -35,14 +35,13 @@ class WCS_Change_Payment_Method_Admin {
 				echo '<option value="' . esc_attr( $gateway_id ) . '" ' . selected( $payment_method, $gateway_id, false ) . '>' . esc_html( $gateway_title ) . '</option>';
 				if ( $payment_method == $gateway_id ) {
 					$found_method = true;
-
 				}
 			}
 			echo '</select>';
 
 		} elseif ( count( $valid_payment_methods ) == 1 ) {
-			echo '<strong>' . esc_html__( 'Payment Method', 'woocommerce' ) . ':</strong> ' . current( $valid_payment_methods );
-			echo '<input type="hidden" value="' . key( $valid_payment_methods ) . '" id="_payment_method" name="_payment_method">';
+			echo '<strong>' . esc_html__( 'Payment Method', 'woocommerce' ) . ':</strong> ' . esc_html( current( $valid_payment_methods ) );
+			echo '<input type="hidden" value="' . esc_attr( key( $valid_payment_methods ) ) . '" id="_payment_method" name="_payment_method">';
 		}
 
 		echo '</p>';
