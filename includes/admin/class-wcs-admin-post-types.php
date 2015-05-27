@@ -486,7 +486,9 @@ class WCS_Admin_Post_Types {
 				break;
 		}
 
+		// @codingStandardsIgnoreStart
 		echo apply_filters( 'woocommerce_subscription_list_table_column_content', $column_content, $the_subscription, $column );
+		// @codingStandardsIgnoreEnd
 	}
 
 	/**
