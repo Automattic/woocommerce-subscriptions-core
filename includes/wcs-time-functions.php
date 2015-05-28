@@ -242,24 +242,24 @@ function wcs_add_months( $from_timestamp, $months_to_add ) {
  * @param string A unit of time, either day, week month or year.
  * @since 2.0
  */
-function wcs_estimate_periods_until( $until_timestamp, $unit_of_time = 'month' ) {
+function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_of_time = 'month' ) {
 
-	if ( $until_timestamp <= gmdate( 'U' ) ) {
+	if ( $end_timestamp <= $start_timestamp ) {
 
 		$periods_until = 0;
 
 	} elseif ( $unit_of_time == 'month' ) {
 
 		// Calculate the number of times this day will occur until we'll be in a time after the given timestamp
-		$timestamp = gmdate( 'U' );
+		$timestamp = $start_timestamp;
 
-		for ( $periods_until = 0; $timestamp < $until_timestamp; $periods_until++ ) {
+		for ( $periods_until = 0; $timestamp < $end_timestamp; $periods_until++ ) {
 			$timestamp = wcs_add_months( $timestamp, 1 );
 		}
 
 	} else {
 
-		$seconds_until_timestamp = $until_timestamp - gmdate( 'U' );
+		$seconds_until_timestamp = $end_timestamp - $start_timestamp;
 
 		switch ( $unit_of_time ) {
 
