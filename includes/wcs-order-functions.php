@@ -226,7 +226,7 @@ add_filter( 'woocommerce_get_item_downloads', 'wcs_subscription_email_download_l
  * @param  integer 			$post_id 		The ID of the subscription
  */
 function wcs_repair_permission_data( $post_id ) {
-	if ( $post_id !== absint( $post_id ) ) {
+	if ( absint( $post_id ) !== $post_id ) {
 		return;
 	}
 
