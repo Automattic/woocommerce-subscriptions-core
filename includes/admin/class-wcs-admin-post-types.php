@@ -479,16 +479,14 @@ class WCS_Admin_Post_Types {
 					$column_content .= sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( $the_subscription->get_time( $column, 'site' ) ), esc_html( $the_subscription->get_date_to_display( $column ) ) );
 				}
 
-				$column_content = wp_kses( $column_content, array( 'time' => array( 'class' => array(), 'title' => array() ) ) );
+				$column_content = $column_content ;
 				break;
 			case 'orders' :
-				$column_content .= wp_kses( $this->get_related_orders_link( $the_subscription ), array( 'a' => array( 'href' => array() ) ) );
+				$column_content .= $this->get_related_orders_link( $the_subscription );
 				break;
 		}
 
-		// @codingStandardsIgnoreStart
-		echo apply_filters( 'woocommerce_subscription_list_table_column_content', $column_content, $the_subscription, $column );
-		// @codingStandardsIgnoreEnd
+		echo wp_kses( apply_filters( 'woocommerce_subscription_list_table_column_content', $column_content, $the_subscription, $column ), array( 'a' => array( 'class' => array(), 'href' => array(), 'data-tip' => array(), 'title' => array() ), 'time' => array( 'class' => array(), 'title' => array() ), 'mark' => array( 'class' => array(), 'data-tip' => array() ), 'small' = array( 'class' => array() ), 'table' => array( 'class' => array(), 'cellspacing' => array(), 'cellpadding' => array() ), 'tr' => array( 'class' => array() ), 'td' => array( 'class' => array() ), 'div' => array( 'class' => array(), 'data-tip' => array() ), 'br' => array(), 'strong' => array(), 'span' => array( 'class' => array() ), 'p' => array( 'class' => array() ) ) );
 	}
 
 	/**
