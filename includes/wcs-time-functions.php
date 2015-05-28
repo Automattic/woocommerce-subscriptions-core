@@ -276,7 +276,7 @@ function wcs_estimate_periods_until( $until_timestamp, $unit_of_time = 'month' )
 				break;
 		}
 
-		$periods_until = floor( $seconds_until_timestamp / $denominator );
+		$periods_until = floor( $seconds_until_timestamp / $denominator ); // use floor() because we want the total number of complete periods between now and the given timestamp
 
 	}
 
