@@ -33,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			} elseif ( $time_diff < 0 && absint( $time_diff ) < WEEK_IN_SECONDS ) {
 				$date_to_display = sprintf( __( '%s ago', 'woocommerce-subscriptions' ), human_time_diff( current_time( 'timestamp', true ), $timestamp_gmt ) );
 			} else {
-				$timestamp_site  = strtotime( get_date_from_gmt( date( 'Y-m-d H:i:s', $timestamp_gmt ) );
+				$timestamp_site  = strtotime( get_date_from_gmt( date( 'Y-m-d H:i:s', $timestamp_gmt ) ) );
 				$date_to_display = date_i18n( wc_date_format(), $timestamp_site ) . ' ' . date_i18n( wc_time_format(), $timestamp_site );
 			}
 		} else {
