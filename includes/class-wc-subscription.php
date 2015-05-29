@@ -150,7 +150,7 @@ class WC_Subscription extends WC_Order {
 						'key'     => '_subscription_renewal',
 						'compare' => '=',
 						'value'   => $this->id,
-						'type'    => 'numeric'
+						'type'    => 'numeric',
 					),
 				),
 			) );
@@ -199,7 +199,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function can_be_updated_to( $new_status ) {
 
-		$new_status = 'wc-' === substr( $new_status, 0, 3 ) ? substr( $new_status, 3 ) : $new_status;
+		$new_status = ( 'wc-' === substr( $new_status, 0, 3 ) ) ? substr( $new_status, 3 ) : $new_status;
 
 		switch ( $new_status ) {
 			case 'pending' :
@@ -282,7 +282,7 @@ class WC_Subscription extends WC_Order {
 		}
 
 		// Standardise status names.
-		$new_status     = 'wc-' === substr( $new_status, 0, 3 ) ? substr( $new_status, 3 ) : $new_status;
+		$new_status     = ( 'wc-' === substr( $new_status, 0, 3 ) ) ? substr( $new_status, 3 ) : $new_status;
 		$new_status_key = 'wc-' . $new_status;
 		$old_status     = $this->get_status();
 		$old_status_key = $this->post_status;
@@ -481,7 +481,7 @@ class WC_Subscription extends WC_Order {
 					'key'     => '_subscription_renewal',
 					'compare' => '=',
 					'value'   => $this->id,
-					'type'    => 'numeric'
+					'type'    => 'numeric',
 				),
 			),
 		) );
@@ -518,7 +518,7 @@ class WC_Subscription extends WC_Order {
 					'key'     => '_subscription_renewal',
 					'compare' => '=',
 					'value'   => $this->id,
-					'type'    => 'numeric'
+					'type'    => 'numeric',
 				),
 			),
 		) );
@@ -991,7 +991,7 @@ class WC_Subscription extends WC_Order {
 					'key'     => '_subscription_renewal',
 					'compare' => '=',
 					'value'   => $this->id,
-					'type'    => 'numeric'
+					'type'    => 'numeric',
 				),
 			),
 		) );
@@ -1030,7 +1030,7 @@ class WC_Subscription extends WC_Order {
 					'key'     => '_subscription_renewal',
 					'compare' => '=',
 					'value'   => $this->id,
-					'type'    => 'numeric'
+					'type'    => 'numeric',
 				),
 			),
 		) );
@@ -1375,7 +1375,7 @@ class WC_Subscription extends WC_Order {
 					'key'     => '_subscription_renewal',
 					'compare' => '=',
 					'value'   => $this->id,
-					'type'    => 'numeric'
+					'type'    => 'numeric',
 				),
 			),
 		) );
@@ -1389,7 +1389,6 @@ class WC_Subscription extends WC_Order {
 			if ( false !== $this->order && 'renewal' !== $order_type ) {
 				$related_orders[] = $this->order;
 			}
-
 		} else {
 
 			// Return IDs only
@@ -1430,7 +1429,7 @@ class WC_Subscription extends WC_Order {
 					'key'     => '_subscription_renewal',
 					'compare' => '=',
 					'value'   => $this->id,
-					'type'    => 'numeric'
+					'type'    => 'numeric',
 				),
 			),
 		) );
@@ -1445,7 +1444,6 @@ class WC_Subscription extends WC_Order {
 					$last_order = $this->order->id;
 				}
 			}
-
 		} else {
 
 			$last_order = array_shift( $renewal_post_ids );
@@ -1539,7 +1537,7 @@ class WC_Subscription extends WC_Order {
 		foreach ( $payment_meta as $meta_table => $meta ) {
 			foreach ( $meta as $meta_key => $meta_data ) {
 				if ( isset( $meta_data['value'] ) ) {
-					switch( $meta_table ) {
+					switch ( $meta_table ) {
 						case 'user_meta':
 						case 'usermeta':
 							update_user_meta( $this->customer_user, $meta_key, $meta_data['value'] );
@@ -1590,7 +1588,7 @@ class WC_Subscription extends WC_Order {
 
 		$has_product = false;
 
-		foreach( $this->get_items() as $line_item ) {
+		foreach ( $this->get_items() as $line_item ) {
 			if ( $line_item['product_id'] == $product_id || $line_item['variation_id'] == $product_id ) {
 				$has_product = true;
 				break;

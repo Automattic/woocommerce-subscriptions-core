@@ -64,15 +64,15 @@ function wcs_create_renewal_order( $subscription ) {
 				 '_payment_method',
 				 '_payment_method_title'
 			 )",
-			 $subscription->id
-		 );
+			$subscription->id
+		);
 
 		// Allow extensions to add/remove order meta
 		$order_meta_query = apply_filters( 'wcs_renewal_order_meta_query', $order_meta_query, $renewal_order, $subscription );
 		$order_meta       = $wpdb->get_results( $order_meta_query, 'ARRAY_A' );
 		$order_meta       = apply_filters( 'wcs_renewal_order_meta', $order_meta, $renewal_order, $subscription );
 
-		foreach( $order_meta as $meta_item ) {
+		foreach ( $order_meta as $meta_item ) {
 			add_post_meta( $renewal_order->id, $meta_item['meta_key'], maybe_unserialize( $meta_item['meta_value'] ), true );
 		}
 
@@ -93,7 +93,6 @@ function wcs_create_renewal_order( $subscription ) {
 			foreach ( $item['item_meta'] as $meta_key => $meta_value ) {
 				wc_add_order_item_meta( $recurring_item_id, $meta_key, maybe_unserialize( $meta_value[0] ) );
 			}
-
 		}
 
 		// Keep a record of the subscription's ID on the renewal order
@@ -196,7 +195,7 @@ function wcs_get_subscriptions_for_renewal_order( $renewal_order ) {
 	$subscriptions    = array();
 	$subscription_ids = get_post_meta( $renewal_order->id, '_subscription_renewal', false );
 
-	foreach( $subscription_ids as $subscription_id ) {
+	foreach ( $subscription_ids as $subscription_id ) {
 		$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
 	}
 

@@ -27,7 +27,7 @@ class WCS_Change_Payment_Method_Admin {
 		if ( count( $valid_payment_methods ) > 1 ) {
 
 			$found_method = false;
-			echo '<label>' . __( 'Payment Method', 'woocommerce' ) . ':</label>';
+			echo '<label>' . esc_html__( 'Payment Method', 'woocommerce' ) . ':</label>';
 			echo '<select class="wcs_payment_method_selector" name="_payment_method" id="_payment_method" class="first">';
 
 			foreach ( $valid_payment_methods as $gateway_id => $gateway_title ) {
@@ -41,7 +41,7 @@ class WCS_Change_Payment_Method_Admin {
 			echo '</select>';
 
 		} elseif ( count( $valid_payment_methods ) == 1 ) {
-			echo '<strong>' . __( 'Payment Method', 'woocommerce' ) . ':</strong> ' . current( $valid_payment_methods );
+			echo '<strong>' . esc_html__( 'Payment Method', 'woocommerce' ) . ':</strong> ' . current( $valid_payment_methods );
 			echo '<input type="hidden" value="' . key( $valid_payment_methods ) . '" id="_payment_method" name="_payment_method">';
 		}
 
@@ -59,12 +59,13 @@ class WCS_Change_Payment_Method_Admin {
 
 					foreach ( $meta as $meta_key => $meta_data ) {
 
-						$field_id    = esc_attr( sprintf( '_payment_method_meta[%s][%s]', $meta_table , $meta_key ) );
-						$field_label = esc_html( ( ! empty( $meta_data['label'] ) ) ? $meta_data['label'] : $meta_key );
+						$field_id    = sprintf( '_payment_method_meta[%s][%s]', $meta_table , $meta_key );
+						$field_label = ( ! empty( $meta_data['label'] ) ) ? $meta_data['label'] : $meta_key ;
+						$field_value = ( ! empty( $meta_data['value'] ) ) ? $meta_data['value'] : null ;
 
 						echo '<p class="form-field-wide">';
-						echo '<label for="' . $field_id . '">' . $field_label . '</label>';
-						echo '<input type="text" class="short" name="' . $field_id . '" id="' . $field_id . '" value="' . esc_attr( ! empty( $meta_data['value'] ) ? $meta_data['value'] : null ) . '" placeholder="">';
+						echo '<label for="' . esc_attr( $field_id ) . '">' . esc_html( $field_label ) . '</label>';
+						echo '<input type="text" class="short" name="' . esc_attr( $field_id ) . '" id="' . esc_attr( $field_id ) . '" value="' . esc_attr( $field_value ) . '" placeholder="">';
 						echo '</p>';
 
 					}

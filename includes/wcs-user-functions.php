@@ -63,7 +63,7 @@ function wcs_update_users_role( $user_id, $role_name ) {
 		return;
 	}
 
-	if ( $role_name == 'default_subscriber_role' ) {
+	if ( 'default_subscriber_role' == $role_name ) {
 		$role_name = get_option( WC_Subscriptions_Admin::$option_prefix . '_subscriber_role' );
 	} elseif ( in_array( $role_name, array( 'default_inactive_role', 'default_cancelled_role' ) ) ) {
 		$role_name = get_option( WC_Subscriptions_Admin::$option_prefix . '_cancelled_role' );
@@ -101,7 +101,6 @@ function wcs_user_has_subscription( $user_id = 0, $product_id = '', $status = 'a
 		} elseif ( ! empty( $subscriptions ) ) {
 			$has_subscription = true;
 		}
-
 	} else {
 
 		foreach ( $subscriptions as $subscription ) {
@@ -110,7 +109,6 @@ function wcs_user_has_subscription( $user_id = 0, $product_id = '', $status = 'a
 				break;
 			}
 		}
-
 	}
 
 	return apply_filters( 'wcs_user_has_subscription', $has_subscription, $user_id, $product_id, $status );
@@ -202,7 +200,6 @@ function wcs_can_user_put_subscription_on_hold( $subscription, $user = '' ) {
 			if ( 'unlimited' === $allowed_suspensions || $allowed_suspensions > $suspension_count ) { // 0 not > anything so prevents a customer ever being able to suspend
 				$user_can_suspend = true;
 			}
-
 		}
 	}
 
@@ -249,7 +246,6 @@ function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 					'name' => __( 'Pay', 'woocommerce-subscriptions' )
 				);
 			}
-
 		} else { // Check if the original order still needs to be paid
 
 			if ( false !== $subscription->order && $subscription->order->has_status( 'pending' ) && $subscription->can_be_updated_to( 'active' ) ) {
@@ -267,7 +263,6 @@ function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 				'name' => __( 'Cancel', 'woocommerce-subscriptions' )
 			);
 		}
-
 	}
 
 	return apply_filters( 'wcs_view_subscription_actions', $actions, $subscription );
