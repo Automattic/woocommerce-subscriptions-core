@@ -931,7 +931,7 @@ class WC_Subscriptions_Upgrader {
 	 * @access public
 	 * @return void
 	 */
-	public function admin_css() {
+	public static function admin_css() {
 		wp_enqueue_style( 'woocommerce-subscriptions-about', plugins_url( '/css/about.css', WC_Subscriptions::$plugin_file ), array(), self::$active_version );
 	}
 
@@ -941,7 +941,7 @@ class WC_Subscriptions_Upgrader {
 	 * @access public
 	 * @return void
 	 */
-	public function admin_head() {
+	public static function admin_head() {
 		remove_submenu_page( 'index.php', 'wcs-about' );
 		remove_submenu_page( 'index.php', 'wcs-credits' );
 		remove_submenu_page( 'index.php', 'wcs-translators' );
@@ -950,7 +950,7 @@ class WC_Subscriptions_Upgrader {
 	/**
 	 * Output the about screen.
 	 */
-	public function about_screen() {
+	public static function about_screen() {
 		$settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 		?>
 	<div class="wrap about-wrap">
