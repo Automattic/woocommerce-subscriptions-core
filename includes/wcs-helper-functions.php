@@ -50,3 +50,18 @@ function wcs_date_input( $timestamp = 0, $args = array() ) {
 	return apply_filters( 'woocommerce_subscriptions_date_input', $date_input, $timestamp, $args );
 }
 
+/**
+ * Get the edit post link without checking if the user can edit that post or not.
+ *
+ * @param int $post_id
+ * @since 2.0
+ */
+function wcs_get_edit_post_link( $post_id ) {
+	$post_type_object = get_post_type_object( get_post_type( $post_id ) );
+
+	if ( ! $post_type_object || ! in_array( $post_type_object->name, array( 'shop_order', 'shop_subscription' ) ) ) {
+		return;
+	}
+
+    return apply_filters( 'get_edit_post_link', admin_url( sprintf( $post_type_object->_edit_link . '&action=edit', $post_id ) ),$post_id, '' );
+}
