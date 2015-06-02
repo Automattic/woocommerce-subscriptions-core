@@ -464,7 +464,7 @@ class WC_Subscriptions_Upgrader {
 
 		// Can't get subscription count with database structure < 1.4
 		if ( 'false' == $script_data['really_old_version'] ) {
-			$subscription_count = WC_Subscriptions::get_total_subscription_count();
+			$subscription_count = self::get_total_subscription_count();
 			$estimated_duration = ceil( $subscription_count / 500 );
 		}
 
@@ -518,6 +518,26 @@ class WC_Subscriptions_Upgrader {
 	public static function about_screen() {
 		$active_version = self::$active_version;
 		include_once( 'templates/wcs-about.php' );
+	}
+
+	/**
+	 * In v2.0 and newer, it's possible to simply use wp_count_posts( 'shop_subscription' ) to count subscriptions,
+	 * but not in v1.5, because a subscription data is still stored in order item meta. This function queries the
+	 * v1.5 database structure.
+	 *
+	 * @since 2.0
+	 */
+	private static function get_total_subscription_count() {
+		global $wpdb;
+
+		$query = "SELECT meta.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS meta
+				  WHERE meta.meta_key = '_subscription_status'
+				  AND meta.meta_value <> 'trash'
+				  GROUP BY meta.order_item_id";
+
+		$wpdb->get_results( $query );
+
+		return $wpdb->num_rows;
 	}
 }
 add_action( 'after_setup_theme', 'WC_Subscriptions_Upgrader::init', 11 );
