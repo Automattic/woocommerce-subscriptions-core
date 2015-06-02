@@ -18,11 +18,15 @@ class WC_Subscriptions_Upgrader {
 
 	private static $active_version;
 
-	private static $upgrade_limit;
+	private static $upgrade_limit_hooks;
 
 	private static $about_page_url;
 
 	private static $last_upgraded_user_id = false;
+
+	public static $is_wc_version_2 = false;
+
+	public static $updated_to_wc_2_0;
 
 	/**
 	 * Hooks upgrade function to init.
@@ -33,7 +37,9 @@ class WC_Subscriptions_Upgrader {
 
 		self::$active_version = get_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '0' );
 
-		self::$upgrade_limit = apply_filters( 'woocommerce_subscriptions_hooks_to_upgrade', 250 );
+		self::$is_wc_version_2 = version_compare( get_option( 'woocommerce_db_version' ), '2.0', '>=' );
+
+		self::$upgrade_limit_hooks = apply_filters( 'woocommerce_subscriptions_hooks_to_upgrade', 250 );
 
 		self::$about_page_url = admin_url( 'index.php?page=wcs-about&wcs-updated=true' );
 
@@ -49,7 +55,7 @@ class WC_Subscriptions_Upgrader {
 
 			} elseif ( isset( $_GET['wcs_upgrade_step'] ) || version_compare( self::$active_version, WC_Subscriptions::$version, '<' ) ) {
 
-				// Run updates as soon as admin hits site
+				// Run upgrades as soon as admin hits site
 				add_action( 'init', __CLASS__ . '::upgrade', 11 );
 
 			} elseif ( is_admin() && isset( $_GET['page'] ) && 'wcs-about' == $_GET['page'] ) {
@@ -103,16 +109,6 @@ class WC_Subscriptions_Upgrader {
 			self::upgrade_to_version_1_5();
 		}
 
-		// Update to new system to limit subscriptions by status rather than in a binary way
-		if ( '0' != self::$active_version && version_compare( self::$active_version, '1.5.4', '<' ) ) {
-			$wpdb->query(
-				"UPDATE $wpdb->postmeta
-				SET meta_value = 'any'
-				WHERE meta_key LIKE '_subscription_limit'
-				AND meta_value LIKE 'yes'"
-			);
-		}
-
 		self::upgrade_complete();
 	}
 
@@ -122,7 +118,7 @@ class WC_Subscriptions_Upgrader {
 	 * @since 1.2
 	 */
 	public static function upgrade_complete() {
-		// Set the new version now that all upgrade routines have completed
+
 		update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', WC_Subscriptions::$version );
 
 		do_action( 'woocommerce_subscriptions_upgraded', WC_Subscriptions::$version );
@@ -171,109 +167,29 @@ class WC_Subscriptions_Upgrader {
 
 		set_transient( 'wc_subscriptions_is_upgrading', 'true', 60 * 2 );
 
-		if ( 'really_old_version' == $_POST['upgrade_step'] ) {
+		switch ( $_POST['upgrade_step'] ) {
 
-			$database_updates = '';
+			case 'really_old_version':
+				$upgraded_versions = self::upgrade_really_old_versions();
+				$results = array(
+					'message' => sprintf( __( 'Database updated to version %s', 'woocommerce-subscriptions' ), $upgraded_versions ),
+				);
+				break;
 
-			if ( '0' != self::$active_version && version_compare( self::$active_version, '1.2', '<' ) ) {
-				self::upgrade_database_to_1_2();
-				self::generate_renewal_orders();
-				update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '1.2' );
-				$database_updates = '1.2, ';
-			}
+			case 'products':
+				$upgraded_product_count = self::upgrade_products_1_5();
+				$results = array(
+					'message' => sprintf( __( 'Marked %s subscription products as "sold individually".', 'woocommerce-subscriptions' ), $upgraded_product_count ),
+				);
+				break;
 
-			// Add Variable Subscription product type term
-			if ( '0' != self::$active_version && version_compare( self::$active_version, '1.3', '<' ) ) {
-				self::upgrade_database_to_1_3();
-				update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '1.3' );
-				$database_updates .= '1.3 & ';
-			}
-
-			// Moving subscription meta out of user meta and into item meta
-			if ( '0' != self::$active_version && version_compare( self::$active_version, '1.4', '<' ) ) {
-				self::upgrade_database_to_1_4();
-				update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '1.4' );
-				$database_updates .= '1.4.';
-			}
-
-			$results = array(
-				'message' => sprintf( __( 'Database updated to version %s', 'woocommerce-subscriptions' ), $database_updates )
-			);
-
-		} elseif ( 'products' == $_POST['upgrade_step'] ) {
-
-			// Set status to 'sold individually' for all existing subscriptions that haven't already been updated
-			$sql = "SELECT DISTINCT ID FROM {$wpdb->posts} as posts
-				JOIN {$wpdb->postmeta} as postmeta
-					ON posts.ID = postmeta.post_id
-					AND (postmeta.meta_key LIKE '_subscription%')
-				JOIN  {$wpdb->postmeta} AS soldindividually
-					ON posts.ID = soldindividually.post_id
-					AND ( soldindividually.meta_key LIKE '_sold_individually' AND soldindividually.meta_value !=  'yes' )
-				WHERE posts.post_type = 'product'";
-
-			$subscription_product_ids = $wpdb->get_results( $sql );
-
-			foreach ( $subscription_product_ids as $product_id ) {
-				update_post_meta( $product_id->ID, '_sold_individually', 'yes' );
-			}
-
-			$results = array(
-				'message' => sprintf( __( 'Marked %s subscription products as "sold individually".', 'woocommerce-subscriptions' ), count( $subscription_product_ids ) )
-			);
-
-		} else {
-
-			$counter  = 0;
-
-			$before_cron_update = microtime( true );
-
-			// update all of the current Subscription cron tasks to the new Action Scheduler
-			$cron = _get_cron_array();
-
-			foreach ( $cron as $timestamp => $actions ) {
-				foreach ( $actions as $hook => $details ) {
-					if ( 'scheduled_subscription_payment' == $hook || 'scheduled_subscription_expiration' == $hook || 'scheduled_subscription_end_of_prepaid_term' == $hook || 'scheduled_subscription_trial_end' == $hook || 'paypal_check_subscription_payment' == $hook ) {
-						foreach ( $details as $hook_key => $values ) {
-
-							if ( ! wc_next_scheduled_action( $hook, $values['args'] ) ) {
-								wc_schedule_single_action( $timestamp, $hook, $values['args'] );
-								unset( $cron[ $timestamp ][ $hook ][ $hook_key ] );
-								$counter++;
-							}
-
-							if ( $counter >= self::$upgrade_limit ) {
-								break;
-							}
-						}
-
-						// If there are no other jobs scheduled for this hook at this timestamp, remove the entire hook
-						if ( 0 == count( $cron[ $timestamp ][ $hook ] ) ) {
-							unset( $cron[ $timestamp ][ $hook ] );
-						}
-						if ( $counter >= self::$upgrade_limit ) {
-							break;
-						}
-					}
-				}
-
-				// If there are no actions schedued for this timestamp, remove the entire schedule
-				if ( 0 == count( $cron[ $timestamp ] ) ) {
-					unset( $cron[ $timestamp ] );
-				}
-				if ( $counter >= self::$upgrade_limit ) {
-					break;
-				}
-			}
-
-			// Set the cron with the removed schedule
-			_set_cron_array( $cron );
-
-			$results = array(
-				'upgraded_count' => $counter,
-				'message'        => sprintf( __( 'Migrated %s subscription related hooks to the new scheduler (in {execution_time} seconds).', 'woocommerce-subscriptions' ), $counter )
-			);
-
+			case 'hooks':
+				$upgraded_hook_count = self::upgrade_hooks_1_5();
+				$results = array(
+					'upgraded_count' => $upgraded_hook_count,
+					'message'        => sprintf( __( 'Migrated %s subscription related hooks to the new scheduler (in {execution_time} seconds).', 'woocommerce-subscriptions' ), $upgraded_hook_count ),
+				);
+				break;
 		}
 
 		if ( isset( $counter ) && $counter < self::$upgrade_limit ) {
@@ -285,6 +201,128 @@ class WC_Subscriptions_Upgrader {
 		header( 'Content-Type: application/json; charset=utf-8' );
 		echo json_encode( $results );
 		exit();
+	}
+
+	/**
+	 * Set status to 'sold individually' for all existing subscription products that haven't already been updated.
+	 *
+	 * Subscriptions 1.5 made it possible for a product to be sold individually or in multiple quantities, whereas
+	 * previously it was possible only to buy a subscription product in a single quantity.
+	 *
+	 * @since 2.0
+	 */
+	private static function upgrade_products_1_5() {
+		global $wpdb;
+
+		$sql = "SELECT DISTINCT ID FROM {$wpdb->posts} as posts
+			JOIN {$wpdb->postmeta} as postmeta
+				ON posts.ID = postmeta.post_id
+				AND (postmeta.meta_key LIKE '_subscription%')
+			JOIN  {$wpdb->postmeta} AS soldindividually
+				ON posts.ID = soldindividually.post_id
+				AND ( soldindividually.meta_key LIKE '_sold_individually' AND soldindividually.meta_value !=  'yes' )
+			WHERE posts.post_type = 'product'";
+
+		$subscription_product_ids = $wpdb->get_results( $sql );
+
+		foreach ( $subscription_product_ids as $product_id ) {
+			update_post_meta( $product_id->ID, '_sold_individually', 'yes' );
+		}
+
+		// Update to new system to limit subscriptions by status rather than in a binary way
+		if ( '0' != self::$active_version && version_compare( self::$active_version, '1.5.4', '<' ) ) {
+			$wpdb->query(
+				"UPDATE $wpdb->postmeta
+				SET meta_value = 'any'
+				WHERE meta_key LIKE '_subscription_limit'
+				AND meta_value LIKE 'yes'"
+			);
+		}
+
+		return count( $subscription_product_ids );
+	}
+
+	/**
+	 * Update subscription WP-Cron tasks to Action Scheduler.
+	 *
+	 * @since 2.0
+	 */
+	private static function upgrade_hooks_1_5() {
+
+		$counter = 0;
+
+		$cron = _get_cron_array();
+
+		foreach ( $cron as $timestamp => $actions ) {
+			foreach ( $actions as $hook => $details ) {
+				if ( 'scheduled_subscription_payment' == $hook || 'scheduled_subscription_expiration' == $hook || 'scheduled_subscription_end_of_prepaid_term' == $hook || 'scheduled_subscription_trial_end' == $hook || 'paypal_check_subscription_payment' == $hook ) {
+					foreach ( $details as $hook_key => $values ) {
+
+						if ( ! wc_next_scheduled_action( $hook, $values['args'] ) ) {
+							wc_schedule_single_action( $timestamp, $hook, $values['args'] );
+							unset( $cron[ $timestamp ][ $hook ][ $hook_key ] );
+							$counter++;
+						}
+
+						if ( $counter >= self::$upgrade_limit_hooks ) {
+							break;
+						}
+					}
+
+					// If there are no other jobs scheduled for this hook at this timestamp, remove the entire hook
+					if ( 0 == count( $cron[ $timestamp ][ $hook ] ) ) {
+						unset( $cron[ $timestamp ][ $hook ] );
+					}
+					if ( $counter >= self::$upgrade_limit_hooks ) {
+						break;
+					}
+				}
+			}
+
+			// If there are no actions schedued for this timestamp, remove the entire schedule
+			if ( 0 == count( $cron[ $timestamp ] ) ) {
+				unset( $cron[ $timestamp ] );
+			}
+			if ( $counter >= self::$upgrade_limit_hooks ) {
+				break;
+			}
+		}
+
+		// Set the cron with the removed schedule
+		_set_cron_array( $cron );
+
+		return $counter;
+	}
+
+	/**
+	 * Handle upgrades for really old versions.
+	 *
+	 * @since 2.0
+	 */
+	private static function upgrade_really_old_versions() {
+
+		if ( '0' != self::$active_version && version_compare( self::$active_version, '1.2', '<' ) ) {
+			self::upgrade_database_to_1_2();
+			self::generate_renewal_orders();
+			update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '1.2' );
+			$upgraded_versions = '1.2, ';
+		}
+
+		// Add Variable Subscription product type term
+		if ( '0' != self::$active_version && version_compare( self::$active_version, '1.3', '<' ) ) {
+			self::upgrade_database_to_1_3();
+			update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '1.3' );
+			$upgraded_versions .= '1.3 & ';
+		}
+
+		// Moving subscription meta out of user meta and into item meta
+		if ( '0' != self::$active_version && version_compare( self::$active_version, '1.4', '<' ) ) {
+			self::upgrade_database_to_1_4();
+			update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '1.4' );
+			$upgraded_versions .= '1.4.';
+		}
+
+		return $upgraded_versions;
 	}
 
 	/**
