@@ -479,7 +479,7 @@ class WCS_Admin_Post_Types {
 					$column_content .= sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( $the_subscription->get_time( $column, 'site' ) ), esc_html( $the_subscription->get_date_to_display( $column ) ) );
 				}
 
-				$column_content = $column_content ;
+				$column_content = $column_content;
 				break;
 			case 'orders' :
 				$column_content .= $this->get_related_orders_link( $the_subscription );
