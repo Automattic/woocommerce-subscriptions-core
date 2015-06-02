@@ -4,14 +4,14 @@
  *
  * This class is used to make all reasonable attempts to neatly upgrade data between versions of Subscriptions.
  *
- * For example, the subscription meta data associated with an order significantly changed between 1.1.n and 1.2.
- * It was imperative the data be upgraded to the new schema without hassle. A hassle could easily occur if 100,000
- * orders were being modified - memory exhaustion, script time out etc.
+ * For example, the way subscription data is stored changed significantly between v1.n and v2.0. It was imperative
+ * the data be upgraded to the new schema without hassle. A hassle could easily occur if 100,000 orders were being
+ * modified - memory exhaustion, script time out etc.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Checkout
- * @category	Class
- * @author		Brent Shepherd
+ * @author		Prospress
+ * @category	Admin
+ * @package		WooCommerce Subscriptions/Admin/Upgrades
+ * @version		2.0.0
  * @since		1.2
  */
 class WC_Subscriptions_Upgrader {
@@ -486,6 +486,11 @@ class WC_Subscriptions_Upgrader {
 		include_once( 'templates/wcs-upgrade-in-progress.php' );
 	}
 
+	/**
+	 * Display the Subscriptions welcome/about page after successfully upgrading to the latest version.
+	 *
+	 * @since 1.4
+	 */
 	public static function updated_welcome_page() {
 		$about_page = add_dashboard_page( __( 'Welcome to WooCommerce Subscriptions 1.5', 'woocommerce-subscriptions' ), __( 'About WooCommerce Subscriptions', 'woocommerce-subscriptions' ), 'manage_options', 'wcs-about', __CLASS__ . '::about_screen' );
 		add_action( 'admin_print_styles-'. $about_page, __CLASS__ . '::admin_css' );
