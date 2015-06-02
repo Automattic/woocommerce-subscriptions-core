@@ -44,17 +44,15 @@ function wcs_display_admin_notices( $clear = true ) {
 
 	if ( false !== $notices && ! empty( $notices ) ) {
 
-		// @codingStandardsIgnoreStart
 		if ( ! empty( $notices['success'] ) ) {
 			array_walk( $notices['success'], 'esc_html' );
-			echo '<div id="moderated" class="updated"><p>' . implode( "</p>\n<p>", $notices['success'] ) . '</p></div>';
+			echo '<div id="moderated" class="updated"><p>' . wp_kses_post( implode( "</p>\n<p>", $notices['success'] ) ) . '</p></div>';
 		}
 
 		if ( ! empty( $notices['error'] ) ) {
 			array_walk( $notices['error'], 'esc_html' );
-			echo '<div id="moderated" class="error"><p>' . implode( "</p>\n<p>", $notices['error'] ) . '</p></div>';
+			echo '<div id="moderated" class="error"><p>' . wp_kses_post( implode( "</p>\n<p>", $notices['error'] ) ) . '</p></div>';
 		}
-		// @codingStandardsIgnoreEnd
 	}
 
 	if ( false !== $clear ) {
