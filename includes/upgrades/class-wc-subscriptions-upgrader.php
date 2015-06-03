@@ -22,7 +22,6 @@ class WC_Subscriptions_Upgrader {
 
 	private static $about_page_url;
 
-	private static $last_upgraded_user_id = false;
 
 	public static $is_wc_version_2 = false;
 
@@ -178,7 +177,7 @@ class WC_Subscriptions_Upgrader {
 
 			case 'products':
 
-				require_once( 'upgrade-1-5.php' );
+				require_once( 'class-wcs-upgrade-1-5.php' );
 
 				$upgraded_product_count = WCS_Upgrade_1_5::upgrade_products();
 				$results = array(
@@ -188,7 +187,7 @@ class WC_Subscriptions_Upgrader {
 
 			case 'hooks':
 
-				require_once( 'upgrade-1-5.php' );
+				require_once( 'class-wcs-upgrade-1-5.php' );
 
 				$upgraded_hook_count = WCS_Upgrade_1_5::upgrade_hooks( self::$upgrade_limit_hooks );
 				$results = array(
@@ -219,7 +218,7 @@ class WC_Subscriptions_Upgrader {
 	private static function upgrade_really_old_versions() {
 
 		if ( '0' != self::$active_version && version_compare( self::$active_version, '1.2', '<' ) ) {
-			self::upgrade_database_to_1_2();
+			include_once( 'class-wcs-upgrade-1-2.php' );
 			self::generate_renewal_orders();
 			update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '1.2' );
 			$upgraded_versions = '1.2, ';
@@ -227,34 +226,19 @@ class WC_Subscriptions_Upgrader {
 
 		// Add Variable Subscription product type term
 		if ( '0' != self::$active_version && version_compare( self::$active_version, '1.3', '<' ) ) {
-			self::upgrade_database_to_1_3();
+			include_once( 'class-wcs-upgrade-1-3.php' );
 			update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '1.3' );
 			$upgraded_versions .= '1.3 & ';
 		}
 
 		// Moving subscription meta out of user meta and into item meta
 		if ( '0' != self::$active_version && version_compare( self::$active_version, '1.4', '<' ) ) {
-			self::upgrade_database_to_1_4();
+			include_once( 'class-wcs-upgrade-1-4.php' );
 			update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '1.4' );
 			$upgraded_versions .= '1.4.';
 		}
 
 		return $upgraded_versions;
-	}
-
-	/**
-	 * Version 1.2 introduced a massive change to the order meta data schema. This function goes
-	 * through and upgrades the existing data on all orders to the new schema.
-	 *
-	 * The upgrade process is timeout safe as it keeps a record of the orders upgraded and only
-	 * deletes this record once all orders have been upgraded successfully. If operating on a huge
-	 * number of orders and the upgrade process times out, only the orders not already upgraded
-	 * will be upgraded in future requests that trigger this function.
-	 *
-	 * @since 1.2
-	 */
-	private static function upgrade_database_to_1_2() {
-		include_once( 'upgrade-1-2.php' );
 	}
 
 	/**
@@ -319,43 +303,6 @@ class WC_Subscriptions_Upgrader {
 				}
 			}
 		}
-	}
-
-	/**
-	 * Upgrade cron lock values to be options rather than transients to work around potential early deletion by W3TC
-	 * and other caching plugins. Also add the Variable Subscription product type (if it doesn't exist).
-	 *
-	 * @since 1.3
-	 */
-	private static function upgrade_database_to_1_3() {
-		include_once( 'upgrade-1-3.php' );
-	}
-
-	/**
-	 * Version 1.4 moved subscription meta out of usermeta and into the new WC2.0 order item meta
-	 * table.
-	 *
-	 * @since 1.4
-	 */
-	private static function upgrade_database_to_1_4() {
-		include_once( 'upgrade-1-4.php' );
-	}
-
-	/**
-	 * Used to check if a user ID is greater than the last user upgraded to version 1.4.
-	 *
-	 * Needs to be a separate function so that it can use a static variable (and therefore avoid calling get_option() thousands
-	 * of times when iterating over thousands of users).
-	 *
-	 * @since 1.4
-	 */
-	public static function is_user_upgraded_to_1_4( $user_id ) {
-
-		if ( false === self::$last_upgraded_user_id ) {
-			self::$last_upgraded_user_id = get_option( 'wcs_1_4_last_upgraded_user_id', 0 );
-		}
-
-		return ( $user_id > self::$last_upgraded_user_id ) ? true : false;
 	}
 
 	/**
@@ -460,6 +407,19 @@ class WC_Subscriptions_Upgrader {
 		$wpdb->get_results( $query );
 
 		return $wpdb->num_rows;
+	}
+
+	/**
+	 * Used to check if a user ID is greater than the last user upgraded to version 1.4.
+	 *
+	 * Needs to be a separate function so that it can use a static variable (and therefore avoid calling get_option() thousands
+	 * of times when iterating over thousands of users).
+	 *
+	 * @since 1.4
+	 */
+	public static function is_user_upgraded_to_1_4( $user_id ) {
+		_deprecated_function( __METHOD__, '2.0', 'WCS_Upgrade_1_4::is_user_upgraded( $user_id )' );
+		return WCS_Upgrade_1_4::is_user_upgraded( $user_id );
 	}
 }
 add_action( 'after_setup_theme', 'WC_Subscriptions_Upgrader::init', 11 );
