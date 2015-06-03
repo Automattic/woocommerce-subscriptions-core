@@ -52,6 +52,41 @@ class WCS_Admin_Post_Types {
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_product' ) );
 	}
 
+
+	/**
+	 * Modifies the actual SQL that is needed to order by last payment date on subscriptions. Data is pulled from related
+	 * but independent posts, so subqueries are needed. That's something we can't get by filtering the request. This is hooked
+	 * in @see WCS_Admin_Post_Types::request_query function.
+	 *
+	 * @param  array 	$pieces 	all the pieces of the resulting SQL once WordPress has finished parsing it
+	 * @param  WP_Query $query  	the query object that forms the basis of the SQL
+	 * @return array 				modified pieces of the SQL query
+	 */
+	public function posts_clauses( $pieces, $query ) {
+		global $wpdb;
+
+		if ( ! is_admin() || ! isset ( $query->query['post_type'] ) || 'shop_subscription' !== $query->query['post_type'] ) {
+			return $pieces;
+		}
+
+		// we need to name ID again due to name conflict if we don't
+		$pieces['fields'] .= ", {$wpdb->posts}.ID AS original_id, {$wpdb->posts}.post_parent AS original_parent, CASE (SELECT COUNT(*) FROM {$wpdb->postmeta} WHERE meta_key = '_subscription_renewal' AND meta_value = original_id)
+			WHEN 0 THEN CASE (SELECT COUNT(*) FROM {$wpdb->posts} WHERE ID = original_parent)
+				WHEN 0 THEN 0
+				ELSE (SELECT post_date_gmt FROM {$wpdb->posts} WHERE ID = original_parent)
+				END
+			ELSE (SELECT p.post_date_gmt FROM {$wpdb->postmeta} pm LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id WHERE pm.meta_key = '_subscription_renewal' AND meta_value = original_id ORDER BY p.post_date_gmt DESC LIMIT 1)
+			END
+			AS last_payment";
+
+		$order = strtoupper( $query->query['order'] );
+
+		$pieces['orderby'] = "CAST(last_payment AS DATETIME) {$order}";
+
+		return $pieces;
+	}
+
+
 	/**
 	 * Displays the dropdown for the product filter
 	 * @return string the html dropdown element
@@ -665,9 +700,11 @@ class WCS_Admin_Post_Types {
 							'orderby' 	=> 'meta_value_num',
 						) );
 					break;
+					case 'last_payment_date' :
+						add_filter( 'posts_clauses', array( $this, 'posts_clauses' ), 10, 2 );
+						break;
 					case 'trial_end_date' :
 					case 'next_payment_date' :
-					case 'last_payment_date' :
 					case 'end_date' :
 						$vars = array_merge( $vars, array(
 							'meta_key'     => sprintf( '_schedule_%s', str_replace( '_date', '', $vars['orderby'] ) ),

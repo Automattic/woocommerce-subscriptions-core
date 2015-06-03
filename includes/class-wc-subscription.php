@@ -974,38 +974,13 @@ class WC_Subscription extends WC_Order {
 	 * @since 2.0
 	 */
 	protected function get_last_payment_date() {
+		$last_order = $this->get_last_order( 'all' );
 
-		$last_paid_renewal_order = get_posts( array(
-			'posts_per_page' => 1,
-			'post_status'    => 'any',
-			'post_type'      => 'shop_order',
-			'fields'         => 'ids',
-			'orderby'        => 'date',
-			'order'          => 'desc',
-			'meta_query'     => array(
-				array(
-					'key'     => '_paid_date',
-					'compare' => 'EXISTS',
-				),
-				array(
-					'key'     => '_subscription_renewal',
-					'compare' => '=',
-					'value'   => $this->id,
-					'type'    => 'numeric',
-				),
-			),
-		) );
-
-		// Get the `'_paid_date'` on the last order and convert it to GMT/UTC
-		if ( ! empty( $last_paid_renewal_order ) ) {
-			$date = get_gmt_from_date( get_post_meta( $last_paid_renewal_order[0], '_paid_date', true ) );
-		} elseif ( false !== $this->order && isset( $this->order->paid_date ) ) {
-			$date = get_gmt_from_date( $this->order->paid_date );
-		} else {
-			$date = 0;
+		if ( ! $last_order ) {
+			return 0;
 		}
 
-		return $date;
+		return $last_order->post->post_date_gmt;
 	}
 
 	/**
@@ -1013,35 +988,21 @@ class WC_Subscription extends WC_Order {
 	 * @param string $datetime A MySQL formatted date/time string in GMT/UTC timezone.
 	 */
 	protected function update_last_payment_date( $datetime ) {
+		$last_order = $this->get_last_order();
 
-		$last_paid_renewal_order = get_posts( array(
-			'posts_per_page' => 1,
-			'post_status'    => 'any',
-			'post_type'      => 'shop_order',
-			'fields'         => 'ids',
-			'orderby'        => 'date',
-			'order'          => 'desc',
-			'meta_query'     => array(
-				array(
-					'key'     => '_paid_date',
-					'compare' => 'EXISTS',
-				),
-				array(
-					'key'     => '_subscription_renewal',
-					'compare' => '=',
-					'value'   => $this->id,
-					'type'    => 'numeric',
-				),
-			),
-		) );
-
-		if ( ! empty( $last_paid_renewal_order ) ) {
-			update_post_meta( $last_paid_renewal_order[0], '_paid_date', $datetime );
-		} else {
-			update_post_meta( $this->order->id, '_paid_date', $datetime );
+		if ( ! $last_order ) {
+			return false;
 		}
 
-		return $date;
+		$updated_post_data = array(
+			'ID' => $last_order,
+			'post_date' => get_date_from_gmt( $datetime ),
+			'post_date_gmt' => $datetime,
+		);
+
+		wp_update_post( $updated_post_data );
+
+		return $datetime;
 	}
 
 
