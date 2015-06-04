@@ -186,7 +186,7 @@ function wcs_cart_pluck( $cart, $field, $default = 0 ) {
 function wcs_add_cart_first_renewal_payment_date( $order_total_html, $cart ) {
 
 	if ( 0 !== $cart->next_payment_date ) {
-		$first_renewal_date = date_i18n( woocommerce_date_format(), strtotime( $cart->next_payment_date ), false );
+		$first_renewal_date = date_i18n( woocommerce_date_format(), strtotime( get_date_from_gmt( $cart->next_payment_date ) ) );
 		$order_total_html  .= '<div class="first-payment-date"><small>' . sprintf( __( 'First renewal: %s', 'woocommerce-subscriptions' ), $first_renewal_date ) .  '</small></div>';
 	}
 

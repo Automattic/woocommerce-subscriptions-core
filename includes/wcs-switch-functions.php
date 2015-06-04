@@ -59,7 +59,7 @@ function wcs_get_subscriptions_for_switch_order( $order_id ) {
 	$subscription_ids = get_post_meta( $order_id, '_subscription_switch', false );
 
 	foreach ( $subscription_ids as $subscription_id ) {
-		$subscriptions[] = wcs_get_subscriptions( $subscription_id );
+		$subscriptions[] = wcs_get_subscription( $subscription_id );
 	}
 
 	return $subscriptions;

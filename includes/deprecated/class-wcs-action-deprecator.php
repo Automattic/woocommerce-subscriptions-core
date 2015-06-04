@@ -50,8 +50,6 @@ class WCS_Action_Deprecator extends WCS_Hook_Deprecator {
 			// New arg spec: $subscription_id
 			// Old arg spec: $user_id, $subscription_key
 			case 'scheduled_subscription_payment' :
-			case 'processed_subscription_payment' :
-			case 'processed_subscription_renewal_payment' :
 				$subscription = wcs_get_subscription( $new_callback_args[0] );
 				do_action( $old_hook, $subscription->get_user_id(), wcs_get_old_subscription_key( $subscription ) );
 				break;
