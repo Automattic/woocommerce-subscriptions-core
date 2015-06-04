@@ -120,22 +120,18 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 	$completed_payments = array();
 
 	if ( $subscription->get_completed_payment_count() ) {
-		if ( isset( $subscription->order->paid_date ) ) {
-			$completed_payments[] = $subscription->order->paid_date;
+		if ( $subscription->order->has_status( apply_filters( 'woocommerce_payment_complete_order_status', array( 'processing', 'completed' ) ) ) ) {
+			$completed_payments[] = $subscription->order->post->post_date_gmt;
 		}
 
 		$paid_renewal_order_ids = get_posts( array(
 			'posts_per_page' => -1,
-			'post_status'    => 'any',
+			'post_status'    => apply_filters( 'woocommerce_payment_complete_order_status', array( 'wc-processing', 'wc-completed' ) ),
 			'post_type'      => 'shop_order',
 			'orderby'        => 'date',
 			'order'          => 'desc',
 			'fields'         => 'ids',
 			'meta_query'     => array(
-				array(
-					'key'     => '_paid_date',
-					'compare' => 'EXISTS',
-				),
 				array(
 					'key'     => '_subscription_renewal',
 					'compare' => '=',
@@ -146,7 +142,7 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 		) );
 
 		foreach ( $paid_renewal_order_ids as $paid_renewal_order_id ) {
-			$completed_payments[] = get_post_meta( $paid_renewal_order_id, '_paid_date', true );
+			$completed_payments[] = get_post_field( 'post_date_gmt', $paid_renewal_order_id );
 		}
 	}
 

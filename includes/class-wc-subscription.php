@@ -455,28 +455,24 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Get the number of payments completed for a subscription
 	 *
-	 * Completed payment include all renewal orders with a '_paid_date' set and potentially an
-	 * initial order (if the subscription was created as a result of a purchase from the front
-	 * end rather than manually by the store manager).
+	 * Completed payment include all renewal orders and potentially an initial order (if the
+	 * subscription was created as a result of a purchase from the front end rather than
+	 * manually by the store manager).
 	 *
 	 * @since 2.0
 	 */
 	public function get_completed_payment_count() {
 
-		$completed_payment_count = ( false !== $this->order && isset( $this->order->paid_date ) ) ? 1 : 0;
+		$completed_payment_count = ( false !== $this->order && $this->order->has_status( apply_filters( 'woocommerce_payment_complete_order_status', array( 'processing', 'completed' ) ) ) ) ? 1 : 0;
 
 		$paid_renewal_orders = get_posts( array(
 			'posts_per_page' => -1,
-			'post_status'    => 'any',
+			'post_status'    => apply_filters( 'woocommerce_payment_complete_order_status', array('wc-processing', 'wc-completed') ),
 			'post_type'      => 'shop_order',
 			'fields'         => 'ids',
 			'orderby'        => 'date',
 			'order'          => 'desc',
 			'meta_query'     => array(
-				array(
-					'key'     => '_paid_date',
-					'compare' => 'EXISTS',
-				),
 				array(
 					'key'     => '_subscription_renewal',
 					'compare' => '=',
@@ -494,11 +490,9 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Get the number of payments completed for a subscription
+	 * Get the number of payments failed
 	 *
-	 * Completed payment include all renewal orders with a '_paid_date' set and potentially an
-	 * initial order (if the subscription was created as a result of a purchase from the front
-	 * end rather than manually by the store manager).
+	 * Failed orders are the number of orders that have wc-failed as the status
 	 *
 	 * @since 2.0
 	 */
