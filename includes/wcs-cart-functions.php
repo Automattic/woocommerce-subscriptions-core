@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return string
  */
 function wcs_cart_totals_subtotal_html( $cart ) {
-	echo wcs_cart_price_string( $cart->get_cart_subtotal(), $cart );
+	echo wp_kses_post( wcs_cart_price_string( $cart->get_cart_subtotal(), $cart ) );
 }
 
 /**
@@ -60,7 +60,7 @@ function wcs_cart_totals_shipping_method( $method, $cart ) {
  */
 function wcs_cart_totals_taxes_total_html( $cart ) {
 	$value = apply_filters( 'woocommerce_cart_totals_taxes_total_html', $cart->get_taxes_total() );
-	echo apply_filters( 'wcs_cart_totals_taxes_total_html', wcs_cart_price_string( $value, $cart ), $cart );
+	echo wp_kses_post( apply_filters( 'wcs_cart_totals_taxes_total_html', wcs_cart_price_string( $value, $cart ), $cart ) );
 }
 
 /**
@@ -95,7 +95,7 @@ function wcs_cart_totals_coupon_html( $coupon, $cart ) {
 	// Apply WooCommerce core filter
 	$value = apply_filters( 'woocommerce_cart_totals_coupon_html', $value, $coupon );
 
-	echo apply_filters( 'wcs_cart_totals_coupon_html', wcs_cart_price_string( $value, $cart ), $coupon, $cart );
+	echo wp_kses_post( apply_filters( 'wcs_cart_totals_coupon_html', wcs_cart_price_string( $value, $cart ), $coupon, $cart ) );
 }
 
 /**
@@ -127,7 +127,7 @@ function wcs_cart_totals_order_total_html( $cart ) {
 	// Apply WooCommerce core filter
 	$value = apply_filters( 'woocommerce_cart_totals_order_total_html', $value );
 
-	echo apply_filters( 'wcs_cart_totals_order_total_html', wcs_cart_price_string( $value, $cart ), $cart );
+	echo wp_kses_post( apply_filters( 'wcs_cart_totals_order_total_html', wcs_cart_price_string( $value, $cart ), $cart ) );
 }
 
 /**

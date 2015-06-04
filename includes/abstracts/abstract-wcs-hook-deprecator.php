@@ -60,7 +60,7 @@ abstract class WCS_Hook_Deprecator {
 	 * @since 2.0
 	 */
 	protected static function display_notice( $old_hook, $new_hook ) {
-		_deprecated_function( sprintf( 'The "%s" hook uses out of date data structures so', $old_hook ), '2.0 of WooCommerce Subscriptions', $new_hook );
+		_deprecated_function( sprintf( 'The "%s" hook uses out of date data structures so', esc_html( $old_hook ) ), '2.0 of WooCommerce Subscriptions', esc_html( $new_hook ) );
 	}
 
 	/**

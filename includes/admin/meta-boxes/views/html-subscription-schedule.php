@@ -39,7 +39,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</div>
 		<?php else : ?>
 		<strong><?php esc_html_e( 'Recurring:', 'woocommerce-subscriptions' ); ?></strong>
-		<?php printf( '%s %s', wcs_get_subscription_period_interval_strings( $the_subscription->billing_interval ), wcs_get_subscription_period_strings( 1, $the_subscription->billing_period ) ); ?>
+		<?php printf( '%s %s', esc_html( wcs_get_subscription_period_interval_strings( $the_subscription->billing_interval ) ), esc_html( wcs_get_subscription_period_strings( 1, $the_subscription->billing_period ) ) ); ?>
 	<?php endif; ?>
 	</div>
 
@@ -49,11 +49,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php endif;?>
 	<div id="subscription-<?php echo esc_attr( $date_key ); ?>-date" class="date-fields">
 		<strong><?php echo esc_html( $date_label ); ?>:</strong>
-		<input type="hidden" name="<?php echo esc_attr( $date_key ); ?>_timestamp_utc" id="<?php echo esc_attr( $date_key ); ?>_timestamp_utc" value="<?php echo $the_subscription->get_time( $date_key, 'gmt' ); ?>"/>
+		<input type="hidden" name="<?php echo esc_attr( $date_key ); ?>_timestamp_utc" id="<?php echo esc_attr( $date_key ); ?>_timestamp_utc" value="<?php echo esc_attr( $the_subscription->get_time( $date_key, 'gmt' ) ); ?>"/>
 		<?php if ( $the_subscription->can_date_be_updated( $date_key ) ) : ?>
-			<?php echo wcs_date_input( $the_subscription->get_time( $date_key, 'site' ), array( 'name_attr' => $date_key ) ); ?>
+			<?php echo wp_kses( wcs_date_input( $the_subscription->get_time( $date_key, 'site' ), array( 'name_attr' => $date_key ) ), array( 'input' => array( 'type' => array(), 'class' => array(), 'placeholder' => array(), 'name' => array(), 'id' => array(), 'maxlength' => array(), 'size' => array(), 'value' => array(), 'patten' => array() ), 'div' => array( 'class' => array() ), 'span' => array(), 'br' => array() ) ); ?>
 		<?php else : ?>
-			<?php echo $the_subscription->get_date_to_display( $date_key ); ?>
+			<?php echo esc_html( $the_subscription->get_date_to_display( $date_key ) ); ?>
 		<?php endif; ?>
 	</div>
 	<?php endforeach; ?>

@@ -47,6 +47,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php echo esc_html( ucwords( $order->get_status() ) ); ?>
 	</td>
 	<td style="border-top: 0; text-align:right;">
-		<span class="amount"><?php echo $order->get_formatted_order_total(); ?></span>
+		<span class="amount"><?php echo wp_kses( $order->get_formatted_order_total(), array( 'small' => array(), 'span' => array( 'class' => array() ) ) ); ?></span>
 	</td>
 </tr>

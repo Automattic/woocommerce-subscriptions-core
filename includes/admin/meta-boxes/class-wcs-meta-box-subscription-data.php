@@ -113,11 +113,11 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							$field_name = 'billing_' . $key;
 
 							if ( $subscription->$field_name ) {
-								echo '<p><strong>' . esc_html( $field['label'] ) . ':</strong> ' . make_clickable( esc_html( $subscription->$field_name ) ) . '</p>';
+								echo '<p><strong>' . esc_html( $field['label'] ) . ':</strong> ' . wp_kses_post( make_clickable( esc_html( $subscription->$field_name ) ) ) . '</p>';
 							}
 						}
 
-						echo '<p' . ( ! empty( $subscription->payment_method ) ? ' class="' . esc_attr( $subscription->payment_method ) . '"' : '' ) . '><strong>' . esc_html__( 'Payment Method', 'woocommerce-subscriptions' ) . ':</strong>'. nl2br( $subscription->get_payment_method_to_display() ) . '</p>';
+						echo '<p' . ( ! empty( $subscription->payment_method ) ? ' class="' . esc_attr( $subscription->payment_method ) . '"' : '' ) . '><strong>' . esc_html__( 'Payment Method', 'woocommerce-subscriptions' ) . ':</strong>' . wp_kses( nl2br( $subscription->get_payment_method_to_display() ), array( 'br' => array() ) ) . '</p>';
 
 						echo '</div>';
 
@@ -169,13 +169,13 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 								$field_name = 'shipping_' . $key;
 
 								if ( ! empty( $subscription->$field_name ) ) {
-									echo '<p><strong>' . esc_html( $field['label'] ) . ':</strong> ' . make_clickable( esc_html( $subscription->$field_name ) ) . '</p>';
+									echo '<p><strong>' . esc_html( $field['label'] ) . ':</strong> ' . wp_kses_post( make_clickable( esc_html( $subscription->$field_name ) ) ) . '</p>';
 								}
 							}
 						}
 
 						if ( apply_filters( 'woocommerce_enable_order_notes_field', 'yes' == get_option( 'woocommerce_enable_order_comments', 'yes' ) ) && $post->post_excerpt ) {
-							echo '<p><strong>' . esc_html__( 'Customer Note', 'woocommerce-subscriptions' ) . ':</strong> ' . nl2br( esc_html( $post->post_excerpt ) ) . '</p>';
+							echo '<p><strong>' . esc_html__( 'Customer Note', 'woocommerce-subscriptions' ) . ':</strong> ' . wp_kses_post( nl2br( $post->post_excerpt ) ) . '</p>';
 						}
 
 						echo '</div>';
