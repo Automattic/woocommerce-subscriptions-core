@@ -48,6 +48,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<h2><?php esc_html_e( 'Update Complete', 'woocommerce-subscriptions' ); ?></h2>
 			<p><?php esc_html_e( 'Your database has been successfully updated!', 'woocommerce-subscriptions' ); ?></p>
 			<p class="step"><a class="button" href="<?php echo esc_url( $about_page_url ); ?>"><?php esc_html_e( 'Continue', 'woocommerce-subscriptions' ); ?></a></p>
+			<p class="log-notice"><?php esc_html_e( sprintf( 'To record the progress of the upgrade a new log file was created. This file will be automatically deleted in %d weeks. If you would like to delete it sooner, you can find it here:', WCS_Upgrade_Logger::$weeks_until_cleanup, '<code>', wc_get_log_file_path( WCS_Upgrade_Logger::$handle ), '</code>' ), 'woocommerce-subscriptions' ); ?></small>
+			<code class="log-notice"><?php echo wc_get_log_file_path( WCS_Upgrade_Logger::$handle ); ?></code>
 		</div>
 		<div id="update-error">
 			<h2><?php esc_html_e( 'Update Error', 'woocommerce-subscriptions' ); ?></h2>
