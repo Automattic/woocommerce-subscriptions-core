@@ -15,6 +15,89 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WCS_Upgrade_2_0 {
 
 	/**
+	 * Migrate subscriptions out of order item meta and into post/post meta tables for their own post type.
+	 *
+	 * @since 2.0
+	 */
+	public static function upgrade_subscriptions( $batch_size ) {
+		global $wpdb;
+
+		WCS_Upgrade_Logger::add( sprintf( 'Upgrading batch of %d subscriptions', $batch_size ) );
+
+		$upgraded_subscription_count = 0;
+
+		foreach ( self::get_subscriptions( $batch_size ) as $original_order_item_id => $old_subscription ) {
+
+			try {
+
+				// don't allow data to be half upgraded on a subscription (but we need the subscription to be the atomic level, not the whole batch, to ensure that resubscribe and switch updates in the same batch have the new subscription available)
+				$wpdb->query( 'START TRANSACTION' );
+
+				WCS_Upgrade_Logger::add( sprintf( 'For order %d: beginning subscription upgrade process', $old_subscription['order_id'] ) );
+
+				$original_order = wc_get_order( $old_subscription['order_id'] );
+
+				// If we're still in a prepaid term, the new subscription has the new pending cancellation status
+				if ( 'cancelled' == $old_subscription['status'] && false != wc_next_scheduled_action( 'subscription_end_of_prepaid_term', array( 'user_id' => $old_subscription['user_id'], 'subscription_key' => $old_subscription['subscription_key'] ) ) ) {
+					$subscription_status = 'pending-cancel';
+				} elseif ( 'trash' == $old_subscription['status'] ) {
+					$subscription_status = 'cancelled'; // we'll trash it properly after migrating it
+				} else {
+					$subscription_status = $old_subscription['status'];
+				}
+
+				// Create a new subscription for this user
+				$new_subscription = wcs_create_subscription( array(
+					'status'           => $subscription_status,
+					'order_id'         => $old_subscription['order_id'],
+					'customer_id'      => $old_subscription['user_id'],
+					'start_date'       => $old_subscription['start_date'],
+					'billing_period'   => $old_subscription['period'],
+					'billing_interval' => $old_subscription['interval'],
+					'order_version'    => ( ! empty( $original_order->order_version ) ) ? $original_order->order_version : '', // Subscriptions will default to WC_Version if $original_order->order_version is not set, but we want the version set at the time of the order
+				) );
+
+				if ( ! is_wp_error( $new_subscription ) ) {
+
+					WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: post created', $new_subscription->id ) );
+
+					// If the subscription was in the trash, now that we've set on the meta on it, we need to trash it
+					if ( 'trash' == $old_subscription['status'] ) {
+						wp_trash_post( $new_subscription->id );
+					}
+
+					WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: upgrade complete', $new_subscription->id ) );
+
+				} else {
+
+					WCS_Upgrade_Logger::add( sprintf( '!!! For order %d: unable to create subscription. Error: %s', $old_subscription['order_id'], $new_subscription->get_error_message() ) );
+
+				}
+
+				// If we got here, the batch was upgraded without problems
+				$wpdb->query( 'COMMIT' );
+
+				$upgraded_subscription_count++;
+
+			} catch ( Exception $e ) {
+
+				// we couldn't upgrade this subscription don't commit the query
+				$wpdb->query( 'ROLLBACK' );
+
+				throw $e;
+			}
+
+			if ( $upgraded_subscription_count >= $batch_size ) {
+				break;
+			}
+		}
+
+		WCS_Upgrade_Logger::add( sprintf( 'Upgraded batch of %d subscriptions', $upgraded_subscription_count ) );
+
+		return $upgraded_subscription_count;
+	}
+
+	/**
 	 * Gets an array of subscriptions from the v1.5 database structure and returns them in the in the v1.5 structure of
 	 * 'order_item_id' => subscripton details array().
 	 *
