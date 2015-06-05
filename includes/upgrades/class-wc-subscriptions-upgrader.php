@@ -105,7 +105,7 @@ class WC_Subscriptions_Upgrader {
 
 		// Add support for quantities  & migrate wp_cron schedules to the new action-scheduler system.
 		if ( '0' != self::$active_version && version_compare( self::$active_version, '1.5', '<' ) ) {
-			self::upgrade_to_version_1_5();
+			self::ajax_upgrade_handler();
 		}
 
 		self::upgrade_complete();
@@ -127,9 +127,9 @@ class WC_Subscriptions_Upgrader {
 	 * Add support for quantities for subscriptions.
 	 * Update all current subscription wp_cron tasks to the new action-scheduler system.
 	 *
-	 * @since 1.5
+	 * @since 2.0
 	 */
-	private static function upgrade_to_version_1_5() {
+	private static function ajax_upgrade_handler() {
 
 		$_GET['wcs_upgrade_step'] = ( ! isset( $_GET['wcs_upgrade_step'] ) ) ? 0 : $_GET['wcs_upgrade_step'];
 
