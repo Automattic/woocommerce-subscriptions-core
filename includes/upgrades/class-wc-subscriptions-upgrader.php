@@ -96,17 +96,12 @@ class WC_Subscriptions_Upgrader {
 			WC_Subscriptions::set_duplicate_site_url_lock();
 		}
 
-		// Don't autoload cron locks
-		if ( '0' != self::$active_version && version_compare( self::$active_version, '1.4.3', '<' ) ) {
-			$wpdb->query(
-				"UPDATE $wpdb->options
-				SET autoload = 'no'
-				WHERE option_name LIKE 'wcs_blocker_%'"
-			);
-		}
-
 		// Migrate products, WP-Cron hooks and subscriptions to the latest architecture, via Ajax
 		if ( '0' != self::$active_version && version_compare( self::$active_version, '2.0', '<' ) ) {
+
+			// Delete old cron locks
+			$deleted_rows = $wpdb->query( "DELETE FROM {$wpdb->options} WHERE `option_name` LIKE 'wcs_blocker_%'" );
+
 			self::ajax_upgrade_handler();
 		}
 
