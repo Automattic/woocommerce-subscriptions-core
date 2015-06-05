@@ -91,6 +91,9 @@ class WCS_Upgrade_2_0 {
 					// Set dates on the subscription
 					self::migrate_dates( $new_subscription, $old_subscription );
 
+					// Set some meta from order meta
+					self::migrate_post_meta( $new_subscription->id, $original_order );
+
 					// If the subscription was in the trash, now that we've set on the meta on it, we need to trash it
 					if ( 'trash' == $old_subscription['status'] ) {
 						wp_trash_post( $new_subscription->id );
@@ -101,6 +104,8 @@ class WCS_Upgrade_2_0 {
 				} else {
 
 					self::deprecate_item_meta( $original_order_item_id );
+
+					self::deprecate_post_meta( $old_subscription['order_id'] );
 
 					WCS_Upgrade_Logger::add( sprintf( '!!! For order %d: unable to create subscription. Error: %s', $old_subscription['order_id'], $new_subscription->get_error_message() ) );
 
@@ -418,5 +423,118 @@ class WCS_Upgrade_2_0 {
 		}
 
 		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: updated dates = %s', $new_subscription->id, str_replace( array( '{', '}', '"' ), '', json_encode( $dates_to_update ) ) ) );
+	}
+
+	/**
+	 * Copy an assortment of meta data from the original order's post meta table to the new subscription's post meta table.
+	 *
+	 * @param int $subscription_id The ID of a 'shop_subscription' post type
+	 * @param WC_Order $order The original order used to purchase a subscription
+	 * @return null
+	 * @since 2.0
+	 */
+	private static function migrate_post_meta( $subscription_id, $order ) {
+		global $wpdb;
+
+		// Form: new meta key => old meta key
+		$post_meta_to_copy = array(
+			// Order totals
+			'_order_total'              => 'order_recurring_total',
+			'_order_tax'                => 'order_recurring_tax_total',
+			'_order_shipping'           => 'order_recurring_shipping_total',
+			'_order_shipping_tax'       => 'order_recurring_shipping_tax_total',
+			'_cart_discount'            => 'order_recurring_discount_cart',
+			'_cart_discount_tax'        => 'order_recurring_discount_cart_tax',
+			'_order_discount'           => 'order_recurring_discount_total', // deprecated since WC 2.3
+
+			// Misc meta data
+			'_order_currency'           => 'order_currency',
+			'_prices_include_tax'       => 'prices_include_tax',
+			'_payment_method'           => 'recurring_payment_method',
+			'_payment_method_title'     => 'recurring_payment_method_title',
+
+			// PayPay meta data
+			'_old_paypal_subscriber_id' => '_old_paypal_subscriber_id',
+			'_old_payment_method'       => '_old_payment_method',
+			'_paypal_ipn_tracking_ids'  => '_paypal_ipn_tracking_ids',
+			'_paypal_transaction_ids'   => '_paypal_transaction_ids',
+			'Payer PayPal address'      => 'Payer PayPal address',
+			'Payer PayPal first name'   => 'Payer PayPal first name',
+			'PayPal Payment type'       => 'PayPal Payment type',
+			'PayPal Subscriber ID'      => 'PayPal Subscriber ID',
+
+			// Very old PayPal meta keys
+			'PayPal Payment type'       => 'Payment type',
+			'Payer PayPal last name'    => 'Payer first name',
+			'Payer PayPal first name'   => 'Payer last name',
+
+			// Long meta keys...
+			'_paypal_first_ipn_ignored_for_pdt' => 'paypal_first_ipn_ignored_for_pdt',
+			'_contains_synced_subscription'     => 'order_contains_synced_subscription',
+			'_subscription_suspension_count'    => 'subscription_suspension_count',
+		);
+
+		foreach ( $post_meta_to_copy as $subscription_meta_key => $order_meta_key ) {
+
+			// Access post meta via the function for the PayPal keys with whitespace in the name (as they won't work as variable property names)
+			if ( preg_match( '/\s/', $order_meta_key ) ) {
+
+				$order_meta_value = get_post_meta( $order->id, $order_meta_key, true );
+
+				if ( '' !== $order_meta_value ) {
+					update_post_meta( $subscription_id, $subscription_meta_key, $order->order_currency );
+				}
+
+			} elseif ( isset( $order->$order_meta_key ) ) {
+				update_post_meta( $subscription_id, $subscription_meta_key, $order->$order_meta_key );
+			}
+		}
+
+		// Now that we've copied over the old data, deprecate it
+		$rows_affected = self::deprecate_post_meta( $order->id );
+
+		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: %d rows of post meta deprecated', $subscription_id, $rows_affected ) );
+	}
+
+	/**
+	 * Deprecate post meta data stored on the original order that used to make up the subscription by prefixing it with with '_wcs_migrated'
+	 *
+	 * @param int $subscription_id The ID of a 'shop_subscription' post type
+	 * @param WC_Order $order The original order used to purchase a subscription
+	 * @return null
+	 * @since 2.0
+	 */
+	private static function deprecate_post_meta( $order_id ) {
+		global $wpdb;
+
+		$post_meta_to_deprecate = array(
+			// Order totals
+			'_order_recurring_total',
+			'_order_recurring_tax_total',
+			'_order_recurring_shipping_total',
+			'_order_recurring_shipping_tax_total',
+			'_order_recurring_discount_cart',
+			'_order_recurring_discount_cart_tax',
+			'_order_recurring_discount_total',
+			'_recurring_payment_method',
+			'_recurring_payment_method_title',
+			'_old_paypal_subscriber_id',
+			'_old_payment_method',
+			'_paypal_ipn_tracking_ids',
+			'_paypal_transaction_ids',
+			'_paypal_first_ipn_ignored_for_pdt',
+			'_order_contains_synced_subscription',
+			'_subscription_suspension_count',
+		);
+
+		$post_meta_to_deprecate = implode( "','", esc_sql( $post_meta_to_deprecate ) );
+
+		$rows_affected = $wpdb->query( $wpdb->prepare(
+			"UPDATE {$wpdb->postmeta} SET `meta_key` = concat( '_wcs_migrated', `meta_key` )
+			WHERE `post_id` = %d AND `meta_key` IN ('{$post_meta_to_deprecate}')",
+			$order_id
+		) );
+
+		return $rows_affected;
 	}
 }
