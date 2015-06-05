@@ -103,6 +103,9 @@ class WCS_Upgrade_2_0 {
 					// Update renewal orders to link via post meta key instead of post_parent column
 					self::migrate_renewal_orders( $new_subscription->id, $original_order->id );
 
+					// Make sure the resubscribe meta data is migrated to use the new subscription ID + meta key
+					self::migrate_resubscribe_orders( $new_subscription->id, $original_order->id );
+
 					// If the subscription was in the trash, now that we've set on the meta on it, we need to trash it
 					if ( 'trash' == $old_subscription['status'] ) {
 						wp_trash_post( $new_subscription->id );
@@ -649,5 +652,38 @@ class WCS_Upgrade_2_0 {
 		);
 
 		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: %d rows of renewal order post_parent values changed', $subscription_id, count( $renewal_order_ids ) ) );
+	}
+
+	/**
+	 * The '_original_order' post meta value is no longer used to relate a resubscribe order with a subscription/order, instead, we use
+	 * a '_subscription_resubscribe' post meta value, so the '_original_order' of all resubscribe orders needs to be changed from the
+	 * original order's ID, to 0, and then the new subscription's ID should be set as the '_subscription_resubscribe' post meta value
+	 * on the resubscribe order.
+	 *
+	 * @param int $subscription_id The ID of a 'shop_subscription' post type
+	 * @param int $resubscribe_order_id The ID of a 'shop_order' which created this susbcription
+	 * @return null
+	 * @since 2.0
+	 */
+	private static function migrate_resubscribe_orders( $new_subscription_id, $resubscribe_order_id ) {
+		global $wpdb;
+
+		// Set the post meta on the new subscription and old order
+		foreach ( get_post_meta( $resubscribe_order_id, '_original_order', false ) as $original_order_id ) {
+
+			// Because self::get_subscriptions() orders by order ID, it's safe to use wcs_get_subscriptions_for_order() here because the subscription in the new format will have been created for the original order (because its ID will be < the resubscribe order's ID)
+			foreach ( wcs_get_subscriptions_for_order( $original_order_id ) as $old_subscription ) {
+				update_post_meta( $resubscribe_order_id, '_subscription_resubscribe', $old_subscription->id, true );
+				update_post_meta( $new_subscription_id, '_subscription_resubscribe', $old_subscription->id, true );
+			}
+
+			$wpdb->query( $wpdb->prepare(
+				"UPDATE {$wpdb->postmeta} SET `meta_key` = concat( '_wcs_migrated', `meta_key` )
+				WHERE `post_id` = %d AND `meta_key` = '_original_order'",
+				$resubscribe_order_id
+			) );
+
+			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: migrated data for resubscribe order %d', $new_subscription_id, $original_order_id ) );
+		}
 	}
 }
