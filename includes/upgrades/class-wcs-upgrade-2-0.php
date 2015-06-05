@@ -88,6 +88,9 @@ class WCS_Upgrade_2_0 {
 					// Add the line item from the order
 					$subscription_item_id = self::add_product( $new_subscription, $original_order_item_id, wcs_get_order_item( $original_order_item_id, $original_order ) );
 
+					// Set dates on the subscription
+					self::migrate_dates( $new_subscription, $old_subscription );
+
 					// If the subscription was in the trash, now that we've set on the meta on it, we need to trash it
 					if ( 'trash' == $old_subscription['status'] ) {
 						wp_trash_post( $new_subscription->id );
@@ -345,5 +348,75 @@ class WCS_Upgrade_2_0 {
 		) );
 
 		return $rows_affected;
+	}
+
+	/**
+	 * Migrate the trial expiration, next payment and expiration/end dates to a new subscription.
+	 *
+	 * @since 2.0
+	 */
+	private static function migrate_dates( $new_subscription, $old_subscription ) {
+
+		$dates_to_update = array();
+
+		// old hook => new hook
+		$date_keys = array(
+			'trial_end' => array(
+				'old_subscription_key' => 'trial_expiry_date',
+				'old_scheduled_hook'   => 'scheduled_subscription_trial_end',
+			),
+			'end' => array(
+				'old_subscription_key' => 'expiry_date',
+				'old_scheduled_hook'   => 'scheduled_subscription_expiration',
+			),
+			'end_date' => array(
+				'old_subscription_key' => '_subscription_end_date', // this is the actual end date, not just the date it was scheduled to expire
+				'old_scheduled_hook'   => '',
+			),
+			'next_payment' => array(
+				'old_subscription_key' => '',
+				'old_scheduled_hook'   => 'scheduled_subscription_payment',
+			),
+			'end_of_prepaid_term' => array(
+				'old_subscription_key' => '',
+				'old_scheduled_hook'   => 'subscription_end_of_prepaid_term',
+			),
+		);
+
+		$old_hook_args = array(
+			'user_id'          => $old_subscription['user_id'],
+			'subscription_key' => $old_subscription['subscription_key']
+		);
+
+		foreach ( $date_keys as $new_key => $old_keys ) {
+
+			// First check if there is a date stored on the subscription, and if so, use that
+			if ( ! empty( $old_keys['old_subscription_key'] ) && ( isset( $old_subscription[ $old_keys['old_subscription_key'] ] ) && 0 !== $old_subscription[ $old_keys['old_subscription_key'] ] ) ) {
+
+				$dates_to_update[ $new_key ] = $old_subscription[ $old_keys['old_subscription_key'] ];
+
+			} elseif ( ! empty( $old_keys['old_scheduled_hook'] ) ) {
+
+				// Now check if there is a scheduled date, this is for next payment and end of prepaid term dates
+				$next_scheduled = wc_next_scheduled_action( $old_keys['old_scheduled_hook'], $old_hook_args );
+
+				if ( $next_scheduled > 0 ) {
+
+					if ( $new_key == '' ) {
+						wc_schedule_single_action( $next_scheduled, 'woocommerce_scheduled_subscription_end_of_prepaid_term', array( 'subscription_id' => $new_subscription->id ) );
+					} else {
+						$dates_to_update[ $new_key ] = date( 'Y-m-d H:i:s', $next_scheduled );
+					}
+
+					wc_unschedule_action( $old_keys['old_scheduled_hook'], $old_hook_args );
+				}
+			}
+		}
+
+		if ( ! empty( $dates_to_update ) ) {
+			$new_subscription->update_dates( $dates_to_update );
+		}
+
+		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: updated dates = %s', $new_subscription->id, str_replace( array( '{', '}', '"' ), '', json_encode( $dates_to_update ) ) ) );
 	}
 }
