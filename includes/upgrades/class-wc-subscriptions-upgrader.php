@@ -20,8 +20,9 @@ class WC_Subscriptions_Upgrader {
 
 	private static $upgrade_limit_hooks;
 
-	private static $about_page_url;
+	private static $upgrade_limit_subscriptions;
 
+	private static $about_page_url;
 
 	public static $is_wc_version_2 = false;
 
@@ -38,7 +39,8 @@ class WC_Subscriptions_Upgrader {
 
 		self::$is_wc_version_2 = version_compare( get_option( 'woocommerce_db_version' ), '2.0', '>=' );
 
-		self::$upgrade_limit_hooks = apply_filters( 'woocommerce_subscriptions_hooks_to_upgrade', 250 );
+		self::$upgrade_limit_hooks         = apply_filters( 'woocommerce_subscriptions_hooks_to_upgrade', 250 );
+		self::$upgrade_limit_subscriptions = apply_filters( 'woocommerce_subscriptions_to_upgrade', 50 );
 
 		self::$about_page_url = admin_url( 'index.php?page=wcs-about&wcs-updated=true' );
 
@@ -321,6 +323,7 @@ class WC_Subscriptions_Upgrader {
 		$script_data = array(
 			'really_old_version' => ( version_compare( self::$active_version, '1.4', '<' ) ) ? 'true' : 'false',
 			'hooks_per_request' => self::$upgrade_limit_hooks,
+			'subscriptions_per_request' => self::$upgrade_limit_subscriptions,
 			'ajax_url' => admin_url( 'admin-ajax.php' ),
 		);
 
