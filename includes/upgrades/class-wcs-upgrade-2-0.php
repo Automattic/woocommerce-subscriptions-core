@@ -106,6 +106,9 @@ class WCS_Upgrade_2_0 {
 					// Make sure the resubscribe meta data is migrated to use the new subscription ID + meta key
 					self::migrate_resubscribe_orders( $new_subscription->id, $original_order->id );
 
+					// If the order for this subscription contains a switch, make sure the switch meta data is migrated to use the new subscription ID + meta key
+					self::migrate_switch_meta( $new_subscription, $original_order, $subscription_item_id );
+
 					// If the subscription was in the trash, now that we've set on the meta on it, we need to trash it
 					if ( 'trash' == $old_subscription['status'] ) {
 						wp_trash_post( $new_subscription->id );
@@ -685,5 +688,73 @@ class WCS_Upgrade_2_0 {
 
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: migrated data for resubscribe order %d', $new_subscription_id, $original_order_id ) );
 		}
+	}
+
+	/**
+	 * The '_switched_subscription_key' and '_switched_subscription_new_order' post meta values are no longer used to relate orders
+	 * and switched subscriptions, instead, we need to set a '_subscription_switch' value on the switch order and depreacted the old
+	 * meta keys by prefixing them with '_wcs_migrated'.
+	 *
+	 * Subscriptions also sets a '_switched_subscription_item_id' value on the new line item of for the switched item and a item meta
+	 * value of '_switched_subscription_new_item_id' on the old line item on the subscription, but the old switching process didn't
+	 * change order items, it just created a new order with the new item, so we won't bother setting this as it is purely for record
+	 * keeping.
+	 *
+	 * @param WC_Subscription $new_subscription A subscription object
+	 * @param WC_Order $switch_order The original order used to purchase the subscription
+	 * @param int $subscription_item_id The order item ID of the item added to the subscription by self::add_product()
+	 * @return null
+	 * @since 2.0
+	 */
+	private static function migrate_switch_meta( $new_subscription, $switch_order, $subscription_item_id ) {
+		global $wpdb;
+
+		// If the order doesn't contain a switch, we don't need to do anything
+		if ( '' == get_post_meta( $switch_order->id, '_switched_subscription_key', true ) ) {
+			return;
+		}
+
+		// Store the new subscription's ID using the new switch meta key
+		update_post_meta( $switch_order->id, '_subscription_switch', $new_subscription->id );
+
+		$wpdb->query( $wpdb->prepare(
+			"UPDATE {$wpdb->postmeta} SET `meta_key` = concat( '_wcs_migrated', `meta_key` )
+			WHERE `post_id` = %d AND `meta_key` IN ('_switched_subscription_first_payment_timestamp','_switched_subscription_key')",
+			$switch_order->id
+		) );
+
+		// Select the orders which had the items which were switched by this order
+		$previous_order_id = get_posts( array(
+			'post_type'      => 'shop_order',
+			'post_status'    => 'any',
+			'fields'         => 'ids',
+			'posts_per_page' => -1,
+			'meta_query' => array(
+				array(
+					'key'   => '_switched_subscription_new_order',
+					'value' => $switch_order->id,
+				),
+			),
+		) );
+
+		$previous_order_id = $previous_order_id[0];
+
+		$wpdb->query( $wpdb->prepare(
+			"UPDATE {$wpdb->postmeta} SET `meta_key` = concat( '_wcs_migrated', `meta_key` )
+			WHERE `post_id` = %d AND `meta_key` = '_switched_subscription_new_order'",
+			$previous_order_id
+		) );
+
+		// Because self::get_subscriptions() orders by order ID, it's safe to use wcs_get_subscriptions_for_order() here because the subscription in the new format will have been created for the original order (because its ID will be < the switch order's ID)
+		$old_subscriptions = wcs_get_subscriptions_for_order( $previous_order_id );
+		$old_subscription  = array_shift( $old_subscriptions ); // there could be only one
+
+		// Now store the new/old item IDs for record keeping
+		foreach ( $old_subscription->get_items() as $item_id => $item ) {
+			wc_add_order_item_meta( $item_id, '_switched_subscription_new_item_id', $subscription_item_id, true );
+			wc_add_order_item_meta( $subscription_item_id, '_switched_subscription_item_id', $item_id, true );
+		}
+
+		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: migrated switch data for subscription %d purchased in order %d', $new_subscription->id, $old_subscription->id, $previous_order_id ) );
 	}
 }
