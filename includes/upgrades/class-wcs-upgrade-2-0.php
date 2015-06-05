@@ -14,6 +14,30 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WCS_Upgrade_2_0 {
 
+	/* Cache of order item meta keys that were used to store subscription data in v1.5 */
+	private static $subscription_item_meta_keys = array(
+		'_recurring_line_total',
+		'_recurring_line_tax',
+		'_recurring_line_subtotal',
+		'_recurring_line_subtotal_tax',
+		'_recurring_line_tax_data',
+		'_subscription_suspension_count',
+		'_subscription_period',
+		'_subscription_interval',
+		'_subscription_trial_length',
+		'_subscription_trial_period',
+		'_subscription_length',
+		'_subscription_sign_up_fee',
+		'_subscription_failed_payments',
+		'_subscription_recurring_amount',
+		'_subscription_start_date',
+		'_subscription_trial_expiry_date',
+		'_subscription_expiry_date',
+		'_subscription_end_date',
+		'_subscription_status',
+		'_subscription_completed_payments',
+	);
+
 	/**
 	 * Migrate subscriptions out of order item meta and into post/post meta tables for their own post type.
 	 *
@@ -61,6 +85,9 @@ class WCS_Upgrade_2_0 {
 
 					WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: post created', $new_subscription->id ) );
 
+					// Add the line item from the order
+					$subscription_item_id = self::add_product( $new_subscription, $original_order_item_id, wcs_get_order_item( $original_order_item_id, $original_order ) );
+
 					// If the subscription was in the trash, now that we've set on the meta on it, we need to trash it
 					if ( 'trash' == $old_subscription['status'] ) {
 						wp_trash_post( $new_subscription->id );
@@ -69,6 +96,8 @@ class WCS_Upgrade_2_0 {
 					WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: upgrade complete', $new_subscription->id ) );
 
 				} else {
+
+					self::deprecate_item_meta( $original_order_item_id );
 
 					WCS_Upgrade_Logger::add( sprintf( '!!! For order %d: unable to create subscription. Error: %s', $old_subscription['order_id'], $new_subscription->get_error_message() ) );
 
@@ -165,4 +194,156 @@ class WCS_Upgrade_2_0 {
 		return $subscriptions;
 	}
 
+	/**
+	 * Add the details of an order item to a subscription as a produdct line item.
+	 *
+	 * When adding a product to a subscription, we can't use WC_Abstract_Order::add_product() because it requires a product object
+	 * and the details of the product may have changed since it was purchased so we can't simply instantiate an instance of the
+	 * product based on ID.
+	 *
+	 * @param WC_Subscription $new_subscription A subscription object
+	 * @param int $order_item_id ID of the subscription item on the original order
+	 * @param array $order_item An array of order item data in the form returned by WC_Abstract_Order::get_items()
+	 * @return int Subscription $item_id The order item id of the new line item added to the subscription.
+	 * @since 2.0
+	 */
+	private static function add_product( $new_subscription, $order_item_id, $order_item ) {
+
+		$item_id = wc_add_order_item( $new_subscription->id, array(
+			'order_item_name' => $order_item['name'],
+			'order_item_type' => 'line_item'
+		) );
+
+		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: new line item ID %d added', $new_subscription->id, $item_id ) );
+
+		wc_add_order_item_meta( $item_id, '_qty',          $order_item['qty'] );
+		wc_add_order_item_meta( $item_id, '_tax_class',    $order_item['tax_class'] );
+		wc_add_order_item_meta( $item_id, '_product_id',   $order_item['product_id'] );
+		wc_add_order_item_meta( $item_id, '_variation_id', $order_item['variation_id'] );
+
+		// Set line item totals, either passed in or from the product
+		wc_add_order_item_meta( $item_id, '_line_subtotal',     $order_item['recurring_line_subtotal'] );
+		wc_add_order_item_meta( $item_id, '_line_total',        $order_item['recurring_line_total'] );
+		wc_add_order_item_meta( $item_id, '_line_subtotal_tax', $order_item['recurring_line_subtotal_tax'] );
+		wc_add_order_item_meta( $item_id, '_line_tax',          $order_item['recurring_line_tax'] );
+
+		// Save tax data array added in WC 2.2 (so it won't exist for all orders/subscriptions)
+		self::add_line_tax_data( $item_id, $order_item_id, $order_item );
+
+		if ( $order_item['subscription_trial_length'] > 0 ) {
+			wc_add_order_item_meta( $item_id, '_has_trial', 'true' );
+		}
+
+		// Don't copy item meta already copied
+		$reserved_item_meta_keys = array(
+			'_item_meta',
+			'_qty',
+			'_tax_class',
+			'_product_id',
+			'_variation_id',
+			'_line_subtotal',
+			'_line_total',
+			'_line_tax',
+			'_line_tax_data',
+			'_line_subtotal_tax',
+		);
+
+		$meta_keys_to_copy = array_diff( array_keys( $order_item['item_meta'] ), array_merge( $reserved_item_meta_keys, self::$subscription_item_meta_keys ) );
+
+		// Add variation and any other meta
+		foreach ( $meta_keys_to_copy as $meta_key ) {
+			foreach( $order_item['item_meta'][ $meta_key ] as $meta_value ) {
+				wc_add_order_item_meta( $item_id, $meta_key, $meta_value );
+			}
+		}
+
+		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: for item %d added %s', $new_subscription->id, $item_id, implode( ', ', $meta_keys_to_copy ) ) );
+
+		// Now that we've copied over the old data, prefix some the subscription meta keys with _wcs_migrated to deprecate it without deleting it (yet)
+		$rows_affected = self::deprecate_item_meta( $order_item_id );
+
+		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: %s rows of line item meta deprecated', $new_subscription->id, $rows_affected ) );
+
+		return $item_id;
+	}
+
+	/**
+	 * Copy or recreate line tax data to the new subscription.
+	 *
+	 * @param int $new_order_item_id ID of the line item on the new subscription post type
+	 * @param int $old_order_item_id ID of the line item on the original order that in v1.5 represented the subscription
+	 * @param array $old_order_item The line item on the original order that in v1.5 represented the subscription
+	 * @since 2.0
+	 */
+	private static function add_line_tax_data( $new_order_item_id, $old_order_item_id, $old_order_item ) {
+
+		// If we have _recurring_line_tax_data, use that
+		if ( isset( $order_item['item_meta']['_recurring_line_tax_data'] ) ) {
+
+			$line_tax_data      = maybe_unserialize( $order_item['item_meta']['_recurring_line_tax_data'][0] );
+			$recurring_tax_data = array();
+			$tax_data_keys      = array( 'total', 'subtotal' );
+
+			foreach( $tax_data_keys as $tax_data_key ) {
+				foreach( $line_tax_data[ $tax_data_key ] as $tax_index => $tax_value ) {
+					$recurring_tax_data[ $tax_data_key ][ $tax_index ] = wc_format_decimal( $tax_value );
+				}
+			}
+
+			wc_add_order_item_meta( $new_order_item_id, '_line_tax_data', $recurring_tax_data );
+
+		// Otherwise try to calculate the recurring values from _line_tax_data
+		} elseif ( isset( $order_item['item_meta']['_line_tax_data'] ) ) {
+
+			// Copy line tax data if the order doesn't have a '_recurring_line_tax_data' (for backward compatibility)
+			$line_tax_data        = maybe_unserialize( $order_item['item_meta']['_line_tax_data'][0] );
+			$line_total           = maybe_unserialize( $order_item['item_meta']['_line_total'][0] );
+			$recurring_line_total = maybe_unserialize( $order_item['item_meta']['_recurring_line_total'][0] );
+
+			// There will only be recurring tax data if the recurring amount is > 0 and we can only retroactively calculate recurring amount from initial amoutn if it is > 0
+			if ( $line_total > 0 && $recurring_line_total > 0) {
+
+				// Make sure we account for any sign-up fees by determining what proportion of the initial amount the recurring total represents
+				$recurring_ratio = $recurring_line_total / $line_total;
+
+				$recurring_tax_data = array();
+				$tax_data_keys      = array( 'total', 'subtotal' );
+
+				foreach( $tax_data_keys as $tax_data_key ) {
+					foreach( $line_tax_data[ $tax_data_key ] as $tax_index => $tax_value ) {
+
+						// Use total tax amount for both total and subtotal because we don't want any initial discounts to be applied to recurring amounts
+						$total_tax_amount = $line_tax_data['total'][ $tax_index ];
+
+						$recurring_tax_data[ $tax_data_key ][ $tax_index ] = wc_format_decimal( $failed_payment_multiplier * ( $recurring_ratio * $total_tax_amount ) );
+					}
+				}
+			} else {
+				$recurring_tax_data = array( 'total' => array(), 'subtotal' => array() );
+			}
+
+			wc_add_order_item_meta( $new_order_item_id, '_line_tax_data', $recurring_tax_data );
+		}
+	}
+
+	/**
+	 * Deprecate order item meta data stored on the original order that used to make up the subscription by prefixing it with with '_wcs_migrated'
+	 *
+	 * @param int $order_item_id ID of the subscription item on the original order
+	 * @since 2.0
+	 */
+	private static function deprecate_item_meta( $order_item_id ) {
+		global $wpdb;
+
+		// Now that we've copied over the old data, prefix some the subscription meta keys with _wcs_migrated to deprecate it without deleting it (yet)
+		$subscription_item_meta_key_string = implode( "','", esc_sql( self::$subscription_item_meta_keys ) );
+
+		$rows_affected = $wpdb->query( $wpdb->prepare(
+			"UPDATE `{$wpdb->prefix}woocommerce_order_itemmeta` SET `meta_key` = concat( '_wcs_migrated', `meta_key` )
+			WHERE `order_item_id` = %d AND `meta_key` IN ('{$subscription_item_meta_key_string}')",
+			$order_item_id
+		) );
+
+		return $rows_affected;
+	}
 }
