@@ -105,8 +105,8 @@ class WC_Subscriptions_Upgrader {
 			);
 		}
 
-		// Add support for quantities  & migrate wp_cron schedules to the new action-scheduler system.
-		if ( '0' != self::$active_version && version_compare( self::$active_version, '1.5', '<' ) ) {
+		// Migrate products, WP-Cron hooks and subscriptions to the latest architecture, via Ajax
+		if ( '0' != self::$active_version && version_compare( self::$active_version, '2.0', '<' ) ) {
 			self::ajax_upgrade_handler();
 		}
 
@@ -196,6 +196,33 @@ class WC_Subscriptions_Upgrader {
 					'upgraded_count' => $upgraded_hook_count,
 					'message'        => sprintf( __( 'Migrated %s subscription related hooks to the new scheduler (in {execution_time} seconds).', 'woocommerce-subscriptions' ), $upgraded_hook_count ),
 				);
+				break;
+
+			case 'subscriptions':
+
+				require_once( 'class-wcs-upgrade-2-0.php' );
+
+				try {
+
+					$upgraded_subscriptions = WCS_Upgrade_2_0::upgrade_subscriptions( self::$upgrade_limit_subscriptions );
+
+					$results = array(
+						'upgraded_count' => $upgraded_subscriptions,
+						'message'        => sprintf( __( 'Migrated %s subscriptions to the new structure (in {execution_time} seconds).', 'woocommerce-subscriptions' ), $upgraded_subscriptions ),
+						'status'         => 'success',
+					);
+
+				} catch ( Exception $e ) {
+
+					WCS_Upgrade_Logger::add( sprintf( 'Error on upgrade step: %s. Error: %s', $_POST['upgrade_step'], $e->getMessage() ) );
+
+					$results = array(
+						'upgraded_count' => 0,
+						'message'        => sprintf( __( 'Unable to upgrade subscriptions.<br/>Error: %s<br/>Please refresh the page and try again. If problem persists, %scontact support%s.', 'woocommerce-subscriptions' ), '<code>' . $e->getMessage(). '</code>', '<a href="' . esc_url( 'https://woothemes.com/my-account/create-a-ticket/' ) . '">', '</a>' ),
+						'status'         => 'error',
+					);
+				}
+
 				break;
 		}
 
@@ -322,6 +349,7 @@ class WC_Subscriptions_Upgrader {
 
 		$script_data = array(
 			'really_old_version' => ( version_compare( self::$active_version, '1.4', '<' ) ) ? 'true' : 'false',
+			'upgrade_to_1_5' => ( version_compare( self::$active_version, '1.5', '<' ) ) ? 'true' : 'false',
 			'hooks_per_request' => self::$upgrade_limit_hooks,
 			'subscriptions_per_request' => self::$upgrade_limit_subscriptions,
 			'ajax_url' => admin_url( 'admin-ajax.php' ),
