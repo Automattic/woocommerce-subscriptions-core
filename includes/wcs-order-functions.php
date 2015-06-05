@@ -192,7 +192,7 @@ function wcs_subscription_email_download_links( $files, $item, $order ) {
 		AND order_key IN ('%s')
 		AND product_id = %s
 		ORDER BY permission_id
-	", $order->billing_email, implode( "', '", $subs_keys ), $product_id ) );
+	", $order->billing_email, implode( "', '", esc_sql( $subs_keys ) ), $product_id ) );
 
 	foreach ( $subscriptions as $subscription ) {
 		$sub_products = $subscription->get_items();
