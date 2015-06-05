@@ -52,7 +52,7 @@ class WC_Subscriptions_Upgrader {
 
 			if ( 'true' == get_transient( 'wc_subscriptions_is_upgrading' ) ) {
 
-				self::upgrade_in_progress_notice();
+				add_action( 'init', __CLASS__ . '::upgrade_in_progress_notice', 11 );
 
 			} elseif ( isset( $_GET['wcs_upgrade_step'] ) || version_compare( self::$active_version, WC_Subscriptions::$version, '<' ) ) {
 
