@@ -97,6 +97,9 @@ class WCS_Upgrade_2_0 {
 					// Copy over order notes which are now logged on the subscription
 					self::migrate_order_notes( $new_subscription->id, $original_order->id );
 
+					// Migrate recurring tax, shipping and coupon line items to be plain line items on the subscription
+					self::migrate_order_items( $new_subscription->id, $original_order->id );
+
 					// If the subscription was in the trash, now that we've set on the meta on it, we need to trash it
 					if ( 'trash' == $old_subscription['status'] ) {
 						wp_trash_post( $new_subscription->id );
@@ -566,5 +569,36 @@ class WCS_Upgrade_2_0 {
 		) );
 
 		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: migrated %d order notes', $subscription_id, $rows_affected ) );
+	}
+
+	/**
+	 * Migrate recurring_tax, recurring_shipping and recurring_coupon line items to be plain tax, shipping and coupon line
+	 * items on a subscription.
+	 *
+	 * @param int $subscription_id The ID of a 'shop_subscription' post type
+	 * @param WC_Order $order The original order used to purchase a subscription
+	 * @return null
+	 * @since 2.0
+	 */
+	private static function migrate_order_items( $subscription_id, $order_id ) {
+		global $wpdb;
+
+		foreach ( array( 'tax', 'shipping', 'coupon' ) as $line_item_type ) {
+			$rows_affected = $wpdb->update(
+				$wpdb->prefix . 'woocommerce_order_items',
+				array(
+					'order_item_type' => $line_item_type,
+					'order_id'        => $subscription_id
+				),
+				array(
+					'order_item_type' => 'recurring_' . $line_item_type,
+					'order_id'        => $order_id
+				),
+				array( '%s', '%d' ),
+				array( '%s', '%d' )
+			);
+
+			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: migrated %d %s item/s', $subscription_id, $rows_affected, $line_item_type ) );
+		}
 	}
 }
