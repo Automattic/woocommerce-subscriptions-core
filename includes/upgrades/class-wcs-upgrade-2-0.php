@@ -94,6 +94,9 @@ class WCS_Upgrade_2_0 {
 					// Set some meta from order meta
 					self::migrate_post_meta( $new_subscription->id, $original_order );
 
+					// Copy over order notes which are now logged on the subscription
+					self::migrate_order_notes( $new_subscription->id, $original_order->id );
+
 					// If the subscription was in the trash, now that we've set on the meta on it, we need to trash it
 					if ( 'trash' == $old_subscription['status'] ) {
 						wp_trash_post( $new_subscription->id );
@@ -536,5 +539,32 @@ class WCS_Upgrade_2_0 {
 		) );
 
 		return $rows_affected;
+	}
+
+	/**
+	 * Migrate order notes relating to subscription events to the new subscription as these are now logged on the subscription
+	 * not the order.
+	 *
+	 * @param int $subscription_id The ID of a 'shop_subscription' post type
+	 * @param WC_Order $order The original order used to purchase a subscription
+	 * @return null
+	 * @since 2.0
+	 */
+	private static function migrate_order_notes( $subscription_id, $order_id ) {
+		global $wpdb;
+
+		$rows_affected = $wpdb->query( $wpdb->prepare(
+			"UPDATE {$wpdb->comments} SET `comment_post_ID` = %d
+			WHERE `comment_post_id` = %d
+			AND (
+				`comment_content` LIKE '%%subscription%%'
+				OR `comment_content` LIKE '%%Recurring%%'
+				OR `comment_content` LIKE '%%Renewal%%'
+				OR `comment_content` LIKE '%%Simplify payment error%%'
+			)",
+			$subscription_id, $order_id
+		) );
+
+		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: migrated %d order notes', $subscription_id, $rows_affected ) );
 	}
 }
