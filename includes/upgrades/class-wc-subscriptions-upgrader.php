@@ -102,6 +102,8 @@ class WC_Subscriptions_Upgrader {
 			// Delete old cron locks
 			$deleted_rows = $wpdb->query( "DELETE FROM {$wpdb->options} WHERE `option_name` LIKE 'wcs_blocker_%'" );
 
+			WCS_Upgrade_Logger::add( sprintf( 'Deleted %d rows of "wcs_blocker_"', $deleted_rows ) );
+
 			self::ajax_upgrade_handler();
 		}
 
@@ -157,6 +159,8 @@ class WC_Subscriptions_Upgrader {
 	 */
 	public static function ajax_upgrade() {
 		global $wpdb;
+
+		WCS_Upgrade_Logger::add( sprintf( 'Starting upgrade step: %s', $_POST['upgrade_step'] ) );
 
 		@set_time_limit( 600 );
 		@ini_set( 'memory_limit', apply_filters( 'admin_memory_limit', WP_MAX_MEMORY_LIMIT ) );
@@ -362,6 +366,7 @@ class WC_Subscriptions_Upgrader {
 
 		@header( 'Content-Type: ' . get_option( 'html_type' ) . '; charset=' . get_option( 'blog_charset' ) );
 		include_once( 'templates/wcs-upgrade.php' );
+		WCS_Upgrade_Logger::add( 'Loaded database upgrade helper' );
 	}
 
 	/**
@@ -374,6 +379,7 @@ class WC_Subscriptions_Upgrader {
 	 */
 	public static function upgrade_in_progress_notice() {
 		include_once( 'templates/wcs-upgrade-in-progress.php' );
+		WCS_Upgrade_Logger::add( 'Loaded database upgrade in progress notice...' );
 	}
 
 	/**
