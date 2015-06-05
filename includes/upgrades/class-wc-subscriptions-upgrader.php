@@ -77,6 +77,9 @@ class WC_Subscriptions_Upgrader {
 
 		update_option( WC_Subscriptions_Admin::$option_prefix . '_previous_version', self::$active_version );
 
+		// Block WP-Cron until upgrading finishes
+		set_transient( 'doing_cron', 'true', 0 );
+
 		// Update the hold stock notification to be one week (if it's still at the default 60 minutes) to prevent cancelling subscriptions using manual renewals and payment methods that can take more than 1 hour (i.e. PayPal eCheck)
 		if ( '0' == self::$active_version || version_compare( self::$active_version, '1.4', '<' ) ) {
 
@@ -118,6 +121,7 @@ class WC_Subscriptions_Upgrader {
 	public static function upgrade_complete() {
 
 		update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', WC_Subscriptions::$version );
+		delete_transient( 'doing_cron' );
 
 		do_action( 'woocommerce_subscriptions_upgraded', WC_Subscriptions::$version );
 	}
