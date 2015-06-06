@@ -100,6 +100,9 @@ class WCS_Upgrade_2_0 {
 					// Migrate recurring tax, shipping and coupon line items to be plain line items on the subscription
 					self::migrate_order_items( $new_subscription->id, $original_order->id );
 
+					// Update renewal orders to link via post meta key instead of post_parent column
+					self::migrate_renewal_orders( $new_subscription->id, $original_order->id );
+
 					// If the subscription was in the trash, now that we've set on the meta on it, we need to trash it
 					if ( 'trash' == $old_subscription['status'] ) {
 						wp_trash_post( $new_subscription->id );
@@ -600,5 +603,51 @@ class WCS_Upgrade_2_0 {
 
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: migrated %d %s item/s', $subscription_id, $rows_affected, $line_item_type ) );
 		}
+	}
+
+	/**
+	 * The 'post_parent' column is no longer used to relate a renewal order with a subscription/order, instead, we use a
+	 * '_subscription_renewal' post meta value, so the 'post_parent' of all renewal orders needs to be changed from the original
+	 * order's ID, to 0, and then the new subscription's ID should be set as the '_subscription_renewal' post meta value on
+	 * the renewal order.
+	 *
+	 * @param int $subscription_id The ID of a 'shop_subscription' post type
+	 * @param int $order_id The ID of a 'shop_order' which created this susbcription
+	 * @return null
+	 * @since 2.0
+	 */
+	private static function migrate_renewal_orders( $subscription_id, $order_id ) {
+		global $wpdb;
+
+		// Get the renewal order IDs
+		$renewal_order_ids = get_posts( array(
+			'posts_per_page' => -1,
+			'post_status'    => 'any',
+			'post_type'      => 'shop_order',
+			'post_parent'    => $order_id,
+			'fields'         => 'ids',
+		) );
+
+		// Set the post meta
+		foreach ( $renewal_order_ids as $renewal_order_id ) {
+			update_post_meta( $renewal_order_id, '_subscription_renewal', $subscription_id );
+		}
+
+		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: migrated data for renewal orders %s', $subscription_id, implode( ', ', $renewal_order_ids ) ) );
+
+		$rows_affected = $wpdb->update(
+			$wpdb->posts,
+			array(
+				'post_parent' => 0,
+			),
+			array(
+				'post_parent' => $order_id,
+				'post_type'   => 'shop_order',
+			),
+			array( '%d' ),
+			array( '%d', '%s' )
+		);
+
+		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: %d rows of renewal order post_parent values changed', $subscription_id, count( $renewal_order_ids ) ) );
 	}
 }
