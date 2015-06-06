@@ -16,10 +16,6 @@ $upgrade_transient_timeout = get_option( '_transient_timeout_wc_subscriptions_is
 
 $time_until_update_allowed = $upgrade_transient_timeout - time();
 
-// Find out how many subscriptions can be processed before running out of memory on this installation. Subscriptions can process around 2500 with the usual 64M memory
-$memory_limit = ini_get( 'memory_limit' );
-$subscription_before_exhuastion = round( ( 3500 / 250 ) * str_replace( 'M', '', $memory_limit ) );
-
 @header( 'Content-Type: ' . get_option( 'html_type' ) . '; charset=' . get_option( 'blog_charset' ) ); ?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" <?php language_attributes(); ?>>
@@ -33,7 +29,7 @@ $subscription_before_exhuastion = round( ( 3500 / 250 ) * str_replace( 'M', '', 
 		<h1 id="logo"><img alt="WooCommerce Subscriptions" width="325px" height="120px" src="<?php echo esc_url( plugins_url( 'images/woocommerce_subscriptions_logo.png', WC_Subscriptions::$plugin_file ) ); ?>" /></h1>
 		<h2><?php esc_html_e( 'The Upgrade is in Progress', 'woocommerce-subscriptions' ); ?></h2>
 		<p><?php esc_html_e( 'The WooCommerce Subscriptions plugin is currently running its database upgrade routine.', 'woocommerce-subscriptions' ); ?></p>
-		<p><?php printf( esc_html__( 'If you received a server error and reloaded the page to find this notice, please refresh the page in %s seconds and the upgrade routine will recommence without issues. Subscriptions can update approximately %s subscriptions before exhausting the memory available on your PHP installation (which has %s allocated). It will update approxmiately 750 subscriptions per minute.', 'woocommerce-subscriptions' ), esc_html__( $time_until_update_allowed ), esc_html__( $subscription_before_exhuastion ), esc_html__( $memory_limit ) ); ?></p>
+		<p><?php printf( esc_html__( 'If you received a server error and reloaded the page to find this notice, please refresh the page in %s seconds and the upgrade routine will recommence without issues. Subscriptions can update approximately 200 subscriptions per minute.', 'woocommerce-subscriptions' ), esc_html__( $time_until_update_allowed ) ); ?></p>
 		<p><?php esc_html_e( 'Rest assured, although the update process may take a little while, it is coded to prevent defects, your site is safe and will be up and running again, faster than ever, shortly.', 'woocommerce-subscriptions' ); ?></p>
 	</body>
 </html>
