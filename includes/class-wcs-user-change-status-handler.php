@@ -26,18 +26,17 @@ class WCS_User_Change_Status_Handler {
 	public static function maybe_change_users_subscription() {
 
 		if ( isset( $_GET['change_subscription_to'] ) && isset( $_GET['subscription_id'] ) && isset( $_GET['_wpnonce'] )  ) {
-			
+
 			$user_id      = get_current_user_id();
 			$subscription = wcs_get_subscription( $_GET['subscription_id'] );
 			$new_status   = $_GET['change_subscription_to'];
-			$wpnonce      = $_GET['_wpnonce'];
 
-			if( self::validate_request( $user_id, $subscription, $new_status, $wpnonce ) ) {
+			if( self::validate_request( $user_id, $subscription, $new_status, $_GET['_wpnonce'] ) ) {
 				self::change_users_subscription( $subscription, $new_status );
-			}
 
-			wp_safe_redirect( $subscription->get_view_order_url() );
-			exit;
+				wp_safe_redirect( $subscription->get_view_order_url() );
+				exit;
+			}
 		}
 	}
 
@@ -47,6 +46,8 @@ class WCS_User_Change_Status_Handler {
 	 * @since 2.0
 	 */
 	public static function change_users_subscription( $subscription, $new_status ) {
+		$subscription = ( ! is_object( $subscription ) ) ? wcs_get_subscription( $subscription ) : $subscription;
+
 		switch ( $new_status ) {
 			case 'active' :
 				if ( $subscription->needs_payment() ) {
@@ -71,7 +72,6 @@ class WCS_User_Change_Status_Handler {
 		}
 
 		if ( isset( $status_message ) ) {
-
 			$subscription->add_order_note( sprintf( __( 'Subscription %s by the subscriber from their account page.', 'woocommerce-subscriptions' ), $status_message ) );
 			WC_Subscriptions::add_notice( sprintf( __( 'Your subscription has been %s.', 'woocommerce-subscriptions' ), $status_message ), 'success' );
 
@@ -84,14 +84,15 @@ class WCS_User_Change_Status_Handler {
 	 *
 	 * @since 2.0
 	 */
-	public static function validate_request( $user_id, $subscription, $new_status, $wpnonce ) {
+	public static function validate_request( $user_id, $subscription, $new_status, $wpnonce = '' ) {
+		$subscription = ( ! is_object( $subscription ) ) ? wcs_get_subscription( $subscription ) : $subscription;
 
-		if ( wp_verify_nonce( $wpnonce, $subscription->id ) === false ) {
-			WC_Subscriptions::add_notice( __( 'Security error. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), 'error' );
+		if ( ! wcs_is_subscription( $subscription ) ) {
+			WC_Subscriptions::add_notice( __( 'That subscription does not exist. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), 'error' );
 			return false;
 
-		} elseif ( empty( $subscription ) ) {
-			WC_Subscriptions::add_notice( __( 'That subscription does not exist. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), 'error' );
+		} elseif ( ! empty( $wpnonce ) && wp_verify_nonce( $wpnonce, $subscription->id ) === false ) {
+			WC_Subscriptions::add_notice( __( 'Security error. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), 'error' );
 			return false;
 
 		} elseif ( $user_id !== $subscription->get_user_id() ) {
@@ -99,7 +100,6 @@ class WCS_User_Change_Status_Handler {
 			return false;
 
 		} elseif ( ! $subscription->can_be_updated_to( $new_status ) ) {
-
 			WC_Subscriptions::add_notice( sprintf( __( 'That subscription can not be changed to %s. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), $new_status ), 'error' );
 			return false;
 		}
