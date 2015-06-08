@@ -427,10 +427,10 @@ class WCS_Upgrade_2_0 {
 					} else {
 						$dates_to_update[ $new_key ] = date( 'Y-m-d H:i:s', $next_scheduled );
 					}
-
-					wc_unschedule_action( $old_keys['old_scheduled_hook'], $old_hook_args );
 				}
 			}
+
+			wc_unschedule_action( $old_keys['old_scheduled_hook'], $old_hook_args );
 		}
 
 		if ( ! empty( $dates_to_update ) ) {
