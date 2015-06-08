@@ -201,7 +201,7 @@ class WCS_Upgrade_2_0 {
 					'name'     => $raw_subscription->order_item_name,
 				);
 
-				$subscriptions[ $raw_subscription->order_item_id ]['user_id'] = get_post_meta( $raw_subscription->order_id, '_customer_user', true );
+				$subscriptions[ $raw_subscription->order_item_id ]['user_id'] = (int)get_post_meta( $raw_subscription->order_id, '_customer_user', true );
 			}
 
 			$meta_key = str_replace( '_subscription', '', $raw_subscription->meta_key );
