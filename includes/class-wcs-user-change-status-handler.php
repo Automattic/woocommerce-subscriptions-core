@@ -75,7 +75,7 @@ class WCS_User_Change_Status_Handler {
 			$subscription->add_order_note( sprintf( __( 'Subscription %s by the subscriber from their account page.', 'woocommerce-subscriptions' ), $status_message ) );
 			WC_Subscriptions::add_notice( sprintf( __( 'Your subscription has been %s.', 'woocommerce-subscriptions' ), $status_message ), 'success' );
 
-			do_action( 'woocommerce_customer_changed_subscription_to_' . $status_message, $subscription );
+			do_action( 'woocommerce_customer_changed_subscription_to_' . $new_status, $subscription );
 		}
 	}
 
