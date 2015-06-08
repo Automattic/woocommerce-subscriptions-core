@@ -18,8 +18,8 @@ class WCS_User_Change_Status_Handler {
 	}
 
 	/**
-	* Checks if the current request is by a user to change the status of their subscription, and if it is
-	* validate the subscription cancellation request and maybe processes the cancellation.
+	* Checks if the current request is by a user to change the status of their subscription, and if it is,
+	* validate the request and proceed to change to the subscription.
 	*
 	* @since 2.0
 	*/
@@ -42,8 +42,7 @@ class WCS_User_Change_Status_Handler {
 	}
 
 	/**
-	* Changes the status of their subscription, validate the subscription cancellation
-	* request and maybe processes the cancellation.
+	* Change the status of a subscription and show a notice to the user if there was an issue.
 	*
 	* @since 2.0
 	*/
@@ -83,7 +82,7 @@ class WCS_User_Change_Status_Handler {
 	}
 
 	/**
-	* Checks if the current request is by a user to change the status of their subscription.
+	* Checks if the user's current request to change the status of their subscription is valid.
 	*
 	* @since 2.0
 	*/
