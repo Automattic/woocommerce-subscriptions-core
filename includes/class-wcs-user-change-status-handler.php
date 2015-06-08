@@ -18,11 +18,11 @@ class WCS_User_Change_Status_Handler {
 	}
 
 	/**
-	* Checks if the current request is by a user to change the status of their subscription, and if it is,
-	* validate the request and proceed to change to the subscription.
-	*
-	* @since 2.0
-	*/
+	 * Checks if the current request is by a user to change the status of their subscription, and if it is,
+	 * validate the request and proceed to change to the subscription.
+	 *
+	 * @since 2.0
+	 */
 	public static function maybe_change_users_subscription() {
 
 		if ( isset( $_GET['change_subscription_to'] ) && isset( $_GET['subscription_id'] ) && isset( $_GET['_wpnonce'] )  ) {
@@ -30,7 +30,7 @@ class WCS_User_Change_Status_Handler {
 			$user_id      = get_current_user_id();
 			$subscription = wcs_get_subscription( $_GET['subscription_id'] );
 			$new_status   = $_GET['change_subscription_to'];
-			$wpnonce	  = $_GET['_wpnonce'];
+			$wpnonce      = $_GET['_wpnonce'];
 
 			if( self::validate_request( $user_id, $subscription, $new_status, $wpnonce ) ) {
 				self::change_users_subscription( $subscription, $new_status );
@@ -42,10 +42,10 @@ class WCS_User_Change_Status_Handler {
 	}
 
 	/**
-	* Change the status of a subscription and show a notice to the user if there was an issue.
-	*
-	* @since 2.0
-	*/
+	 * Change the status of a subscription and show a notice to the user if there was an issue.
+	 *
+	 * @since 2.0
+	 */
 	public static function change_users_subscription( $subscription, $new_status ) {
 		switch ( $new_status ) {
 			case 'active' :
@@ -73,33 +73,28 @@ class WCS_User_Change_Status_Handler {
 		if ( isset( $status_message ) ) {
 
 			$subscription->add_order_note( sprintf( __( 'Subscription %s by the subscriber from their account page.', 'woocommerce-subscriptions' ), $status_message ) );
-
 			WC_Subscriptions::add_notice( sprintf( __( 'Your subscription has been %s.', 'woocommerce-subscriptions' ), $status_message ), 'success' );
 
 			do_action( 'woocommerce_customer_changed_subscription_to_' . $status_message, $subscription );
 		}
-
 	}
 
 	/**
-	* Checks if the user's current request to change the status of their subscription is valid.
-	*
-	* @since 2.0
-	*/
+	 * Checks if the user's current request to change the status of their subscription is valid.
+	 *
+	 * @since 2.0
+	 */
 	public static function validate_request( $user_id, $subscription, $new_status, $wpnonce ) {
 
 		if ( wp_verify_nonce( $wpnonce, $subscription->id ) === false ) {
-
 			WC_Subscriptions::add_notice( __( 'Security error. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), 'error' );
 			return false;
 
 		} elseif ( empty( $subscription ) ) {
-
 			WC_Subscriptions::add_notice( __( 'That subscription does not exist. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), 'error' );
 			return false;
 
 		} elseif ( $user_id !== $subscription->get_user_id() ) {
-
 			WC_Subscriptions::add_notice( __( 'That doesn\'t appear to be one of your subscriptions.', 'woocommerce-subscriptions' ), 'error' );
 			return false;
 
@@ -111,7 +106,5 @@ class WCS_User_Change_Status_Handler {
 
 		return true;
 	}
-
 }
-
 WCS_User_Change_Status_Handler::init();
