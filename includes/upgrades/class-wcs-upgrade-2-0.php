@@ -639,11 +639,11 @@ class WCS_Upgrade_2_0 {
 				$wpdb->prefix . 'woocommerce_order_items',
 				array(
 					'order_item_type' => $line_item_type,
-					'order_id'        => $subscription_id
+					'order_id'        => $subscription_id,
 				),
 				array(
 					'order_item_type' => 'recurring_' . $line_item_type,
-					'order_id'        => $order_id
+					'order_id'        => $order_id,
 				),
 				array( '%s', '%d' ),
 				array( '%s', '%d' )

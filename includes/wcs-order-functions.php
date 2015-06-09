@@ -100,8 +100,7 @@ function wcs_order_contains_subscription( $order ) {
  * 'woocommerce_grant_product_download_permissions', which is strictly after the order received all the info
  * it needed, so we don't need to play with priorities.
  *
- * @param  integer 			$order_id 		the ID of the order. At this point it is guaranteed that it has files in it
- *                                     		and that it hasn't been granted permissions before
+ * @param integer $order_id the ID of the order. At this point it is guaranteed that it has files in it and that it hasn't been granted permissions before
  */
 function wcs_save_downloadable_product_permissions( $order_id ) {
 	$order = wc_get_order( $order_id );
@@ -137,10 +136,10 @@ add_action( 'woocommerce_grant_product_download_permissions', 'wcs_save_download
  * Revokes download permissions from permissions table if a file has permissions on a subscription. If a product has
  * multiple files, all permissions will be revoked from the original order.
  *
- * @param  integer 			$product_id 	the ID for the product (the downloadable file)
- * @param  integer 			$order_id		the ID for the original order
- * @param  integer 			$user_id		the user we're removing the permissions from
- * @return boolean 							true on success, false on error
+ * @param int $product_id the ID for the product (the downloadable file)
+ * @param int $order_id the ID for the original order
+ * @param int $user_id the user we're removing the permissions from
+ * @return boolean true on success, false on error
  */
 function wcs_revoke_downloadable_file_permission( $product_id, $order_id, $user_id ) {
 	global $wpdb;
@@ -166,10 +165,10 @@ function wcs_revoke_downloadable_file_permission( $product_id, $order_id, $user_
  * subscriptions that were in the original order. Then for all subscriptions, it checks all items, and if the item
  * passed in here is in that subscription, it creates the correct download link to be passsed to the email.
  *
- * @param  array 			$files 			List of files already included in the list
- * @param  array 			$item 			An item (you get it by doing $order->get_items())
- * @param  WC_Order			$order 			The original order
- * @return array 							List of files with correct download urls
+ * @param array $files List of files already included in the list
+ * @param array $item An item (you get it by doing $order->get_items())
+ * @param WC_Order $order The original order
+ * @return array List of files with correct download urls
  */
 function wcs_subscription_email_download_links( $files, $item, $order ) {
 	if ( ! wcs_order_contains_subscription( $order ) ) {
@@ -223,7 +222,7 @@ add_filter( 'woocommerce_get_item_downloads', 'wcs_subscription_email_download_l
  * Repairs a glitch in WordPress's save function. You cannot save a null value on update, see
  * https://github.com/woothemes/woocommerce/issues/7861 for more info on this.
  *
- * @param  integer 			$post_id 		The ID of the subscription
+ * @param integer $post_id The ID of the subscription
  */
 function wcs_repair_permission_data( $post_id ) {
 	if ( absint( $post_id ) !== $post_id ) {
@@ -254,7 +253,7 @@ add_action( 'woocommerce_process_shop_order_meta', 'wcs_repair_permission_data',
  *
  * @param int $item_id The ID of an order item
  * @return WC_Subscription Subscription details in post_id => WC_Subscription form.
- * @since  2.0
+ * @since 2.0
  */
 function wcs_get_order_item( $item_id, $subscription ) {
 
