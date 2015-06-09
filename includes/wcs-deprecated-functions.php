@@ -126,7 +126,7 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 
 		$paid_renewal_order_ids = get_posts( array(
 			'posts_per_page' => -1,
-			'post_status'    => apply_filters( 'woocommerce_payment_complete_order_status', array( 'wc-processing', 'wc-completed' ) ),
+			'post_status'    => $subscription->get_paid_post_statuses(),
 			'post_type'      => 'shop_order',
 			'orderby'        => 'date',
 			'order'          => 'desc',

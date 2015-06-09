@@ -453,6 +453,32 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
+	 * WooCommerce handles statuses without the wc- prefix in has_status, get_status and update_status, however in the database
+	 * it stores it with the prefix. This makes it hard to use the same filters / status names in both WC's methods AND WP's
+	 * get_posts functions. This function bridges that gap and returns the prefixed versions of completed statuses.
+	 *
+	 * @since 2.0
+	 * @return array By default: wc-processing and wc-completed
+	 */
+	public function get_paid_post_statuses() {
+		$paid_statuses = array(
+			'processing',
+			'completed',
+			'wc-processing',
+			'wc-completed',
+		);
+
+		$custom_status = apply_filters( 'woocommerce_payment_complete_order_status', 'completed', $this->id );
+
+		if ( '' !== $custom_status && ! in_array( $custom_status, $paid_statuses ) && ! in_array( 'wc-' . $custom_status, $paid_statuses ) ) {
+		    $paid_statuses[] = $custom_status;
+		    $paid_statuses[] = 'wc-' . $custom_status;
+		}
+
+		return $paid_statuses;
+	}
+
+	/**
 	 * Get the number of payments completed for a subscription
 	 *
 	 * Completed payment include all renewal orders and potentially an initial order (if the
@@ -463,11 +489,11 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_completed_payment_count() {
 
-		$completed_payment_count = ( false !== $this->order && $this->order->has_status( apply_filters( 'woocommerce_payment_complete_order_status', array( 'processing', 'completed' ) ) ) ) ? 1 : 0;
+		$completed_payment_count = ( false !== $this->order && $this->order->has_status( $this->get_paid_post_statuses() ) ) ? 1 : 0;
 
 		$paid_renewal_orders = get_posts( array(
 			'posts_per_page' => -1,
-			'post_status'    => apply_filters( 'woocommerce_payment_complete_order_status', array('wc-processing', 'wc-completed') ),
+			'post_status'    => $this->get_paid_post_statuses(),
 			'post_type'      => 'shop_order',
 			'fields'         => 'ids',
 			'orderby'        => 'date',
