@@ -206,13 +206,18 @@ function wcs_can_user_put_subscription_on_hold( $subscription, $user = '' ) {
 	return apply_filters( 'wcs_can_user_put_subscription_on_hold', $user_can_suspend, $subscription );
 }
 
+/**
+ * Retrieve available actions that a user can perform on the subscription
+ *
+ * @since 2.0
+ */
 function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 
 	$actions = array();
 
 	if ( $user_id == $subscription->get_user_id() ) {
 
-		$admin_with_suspension_disallowed = ( current_user_can( 'manage_woocommerce' ) && 0 == get_option( WC_Subscriptions_Admin::$option_prefix . '_max_customer_suspensions', 0 ) ) ? true : false;
+		$admin_with_suspension_disallowed = ( current_user_can( 'manage_woocommerce' ) && 0 === get_option( WC_Subscriptions_Admin::$option_prefix . '_max_customer_suspensions', 0 ) ) ? true : false;
 
 		if ( $subscription->can_be_updated_to( 'on-hold' ) && wcs_can_user_put_subscription_on_hold( $subscription, $user_id ) && ! $admin_with_suspension_disallowed ) {
 			$actions['suspend'] = array(
