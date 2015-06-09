@@ -505,8 +505,6 @@ class WCS_Upgrade_2_0 {
 			'_order_discount'           => 'order_recurring_discount_total', // deprecated since WC 2.3
 
 			// Misc meta data
-			'_order_currency'           => 'order_currency',
-			'_prices_include_tax'       => 'prices_include_tax',
 			'_payment_method'           => 'recurring_payment_method',
 			'_payment_method_title'     => 'recurring_payment_method_title',
 
