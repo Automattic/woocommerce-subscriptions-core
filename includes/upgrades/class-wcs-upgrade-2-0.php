@@ -87,6 +87,11 @@ class WCS_Upgrade_2_0 {
 
 					wcs_copy_order_address( $original_order, $new_subscription );
 
+					// Set the order to be manual
+					if ( isset( $original_order->wcs_requires_manual_renewal ) && 'true' == $original_order->wcs_requires_manual_renewal ) {
+						$new_subscription->update_manual( true );
+					}
+
 					// Add the line item from the order
 					$subscription_item_id = self::add_product( $new_subscription, $original_order_item_id, wcs_get_order_item( $original_order_item_id, $original_order ) );
 
