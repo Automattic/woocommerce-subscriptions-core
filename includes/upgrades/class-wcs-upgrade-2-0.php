@@ -95,6 +95,9 @@ class WCS_Upgrade_2_0 {
 					// Add the line item from the order
 					$subscription_item_id = self::add_product( $new_subscription, $original_order_item_id, wcs_get_order_item( $original_order_item_id, $original_order ) );
 
+					// Add the line item from the order
+					self::migrate_download_permissions( $new_subscription, $subscription_item_id, $original_order );
+
 					// Set dates on the subscription
 					self::migrate_dates( $new_subscription, $old_subscription );
 
@@ -375,6 +378,38 @@ class WCS_Upgrade_2_0 {
 		) );
 
 		return $rows_affected;
+	}
+
+	/**
+	 * Move download permissions from original order to the new subscription created for the order.
+	 *
+	 * @param WC_Subscription $subscription A subscription object
+	 * @param int $subscription_item_id ID of the product line item on the subscription
+	 * @param WC_Order $original_order The original order that was created to purchase the subscription
+	 * @since 2.0
+	 */
+	private static function migrate_download_permissions( $subscription, $subscription_item_id, $order ) {
+		global $wpdb;
+
+		$product_id = wcs_get_canonical_product_id( wcs_get_order_item( $subscription_item_id, $subscription ) );
+
+		$rows_affected = $wpdb->update(
+			$wpdb->prefix . 'woocommerce_downloadable_product_permissions',
+			array(
+				'order_id'  => $subscription->id,
+				'order_key' => $subscription->order_key,
+			),
+			array(
+				'order_id'   => $order->id,
+				'order_key'  => $order->order_key,
+				'product_id' => $product_id,
+				'user_id'    => absint( $subscription->get_user_id() ),
+			),
+			array( '%d', '%s' ),
+			array( '%d', '%s', '%d', '%d' )
+		);
+
+		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: migrated %d download permissions for product %d', $subscription->id, $rows_affected, $product_id ) );
 	}
 
 	/**
