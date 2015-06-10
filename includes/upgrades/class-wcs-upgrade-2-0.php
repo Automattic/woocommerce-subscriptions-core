@@ -754,9 +754,6 @@ class WCS_Upgrade_2_0 {
 			return;
 		}
 
-		// Store the new subscription's ID using the new switch meta key
-		update_post_meta( $switch_order->id, '_subscription_switch', $new_subscription->id );
-
 		$wpdb->query( $wpdb->prepare(
 			"UPDATE {$wpdb->postmeta} SET `meta_key` = concat( '_wcs_migrated', `meta_key` )
 			WHERE `post_id` = %d AND `meta_key` IN ('_switched_subscription_first_payment_timestamp','_switched_subscription_key')",
@@ -787,7 +784,10 @@ class WCS_Upgrade_2_0 {
 
 		// Because self::get_subscriptions() orders by order ID, it's safe to use wcs_get_subscriptions_for_order() here because the subscription in the new format will have been created for the original order (because its ID will be < the switch order's ID)
 		$old_subscriptions = wcs_get_subscriptions_for_order( $previous_order_id );
-		$old_subscription  = array_shift( $old_subscriptions ); // there could be only one
+		$old_subscription  = array_shift( $old_subscriptions ); // there can be only one
+
+		// Link the old subscription's ID to the switch order using the new switch meta key
+		update_post_meta( $switch_order->id, '_subscription_switch', $old_subscription->id );
 
 		// Now store the new/old item IDs for record keeping
 		foreach ( $old_subscription->get_items() as $item_id => $item ) {
