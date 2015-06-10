@@ -85,8 +85,6 @@ class WCS_Upgrade_2_0 {
 
 					WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: post created', $new_subscription->id ) );
 
-					wcs_copy_order_address( $original_order, $new_subscription );
-
 					// Set the order to be manual
 					if ( isset( $original_order->wcs_requires_manual_renewal ) && 'true' == $original_order->wcs_requires_manual_renewal ) {
 						$new_subscription->update_manual( true );
@@ -494,55 +492,82 @@ class WCS_Upgrade_2_0 {
 		global $wpdb;
 
 		// Form: new meta key => old meta key
-		$post_meta_to_copy = array(
+		$post_meta_with_new_key = array(
 			// Order totals
-			'_order_total'              => 'order_recurring_total',
-			'_order_tax'                => 'order_recurring_tax_total',
-			'_order_shipping'           => 'order_recurring_shipping_total',
-			'_order_shipping_tax'       => 'order_recurring_shipping_tax_total',
-			'_cart_discount'            => 'order_recurring_discount_cart',
-			'_cart_discount_tax'        => 'order_recurring_discount_cart_tax',
-			'_order_discount'           => 'order_recurring_discount_total', // deprecated since WC 2.3
+			'_order_total'                  => '_order_recurring_total',
+			'_order_tax'                    => '_order_recurring_tax_total',
+			'_order_shipping'               => '_order_recurring_shipping_total',
+			'_order_shipping_tax'           => '_order_recurring_shipping_tax_total',
+			'_cart_discount'                => '_order_recurring_discount_cart',
+			'_cart_discount_tax'            => '_order_recurring_discount_cart_tax',
+			'_order_discount'               => '_order_recurring_discount_total', // deprecated since WC 2.3
 
 			// Misc meta data
-			'_payment_method'           => 'recurring_payment_method',
-			'_payment_method_title'     => 'recurring_payment_method_title',
-
-			// PayPay meta data
-			'_old_paypal_subscriber_id' => '_old_paypal_subscriber_id',
-			'_old_payment_method'       => '_old_payment_method',
-			'_paypal_ipn_tracking_ids'  => '_paypal_ipn_tracking_ids',
-			'_paypal_transaction_ids'   => '_paypal_transaction_ids',
-			'Payer PayPal address'      => 'Payer PayPal address',
-			'Payer PayPal first name'   => 'Payer PayPal first name',
-			'PayPal Payment type'       => 'PayPal Payment type',
-			'PayPal Subscriber ID'      => 'PayPal Subscriber ID',
-
-			// Very old PayPal meta keys
-			'PayPal Payment type'       => 'Payment type',
-			'Payer PayPal last name'    => 'Payer first name',
-			'Payer PayPal first name'   => 'Payer last name',
-
-			// Long meta keys...
-			'_paypal_first_ipn_ignored_for_pdt' => 'paypal_first_ipn_ignored_for_pdt',
-			'_contains_synced_subscription'     => 'order_contains_synced_subscription',
-			'_subscription_suspension_count'    => 'subscription_suspension_count',
+			'_payment_method'               => '_recurring_payment_method',
+			'_payment_method_title'         => '_recurring_payment_method_title',
+			'_suspension_count'             => '_subscription_suspension_count',
+			'_contains_synced_subscription' => '_order_contains_synced_subscription',
 		);
 
-		foreach ( $post_meta_to_copy as $subscription_meta_key => $order_meta_key ) {
+		$order_meta = get_post_meta( $order->id );
 
-			// Access post meta via the function for the PayPal keys with whitespace in the name (as they won't work as variable property names)
-			if ( preg_match( '/\s/', $order_meta_key ) ) {
+		foreach ( $post_meta_with_new_key as $subscription_meta_key => $order_meta_key ) {
 
-				$order_meta_value = get_post_meta( $order->id, $order_meta_key, true );
+			$order_meta_value = get_post_meta( $order->id, $order_meta_key, true );
 
-				if ( '' !== $order_meta_value ) {
-					update_post_meta( $subscription_id, $subscription_meta_key, $order->order_currency );
-				}
-
-			} elseif ( isset( $order->$order_meta_key ) ) {
-				update_post_meta( $subscription_id, $subscription_meta_key, $order->$order_meta_key );
+			if ( isset( $order_meta[ $order_meta_key ] ) && '' !== $order_meta[ $order_meta_key ] ) {
+				update_post_meta( $subscription_id, $subscription_meta_key, $order_meta_value );
 			}
+		}
+
+		// Don't copy any of the data we've already copied or known data which isn't relevant to a subscription
+		$meta_keys_to_ignore = array_merge( array_values( $post_meta_with_new_key ), array_keys( $post_meta_with_new_key ), array(
+			'_completed_date',
+			'_customer_ip_address',
+			'_customer_user_agent',
+			'_customer_user',
+			'_order_currency',
+			'_order_key',
+			'_paid_date',
+			'_recorded_sales',
+			'_transaction_id',
+			'_transaction_id_original',
+			'_switched_subscription_first_payment_timestamp',
+			'_switched_subscription_new_order',
+			'_switched_subscription_key',
+			'_old_recurring_payment_method',
+			'_old_recurring_payment_method_title',
+			'_wc_points_earned',
+			'_wcs_requires_manual_renewal',
+		) );
+
+		// Also allow extensions to unset or modify data that will be copied
+		$order_meta = apply_filters( 'wcs_upgrade_subscription_meta_to_copy', $order_meta, $subscription_id, $order );
+
+		// Prepare the meta data for a bulk insert
+		$query_meta_values  = array();
+		$query_placeholders = array();
+
+		foreach( $order_meta as $meta_key => $meta_value ) {
+			if ( ! in_array( $meta_key, $meta_keys_to_ignore ) ) {
+				$query_meta_values = array_merge( $query_meta_values, array(
+					$subscription_id,
+					$meta_key,
+					$meta_value[0],
+				) );
+				$query_placeholders[] = '(%d, %s, %s)';
+			}
+		}
+
+		// Do a single bulk insert instead of using update_post_meta() to massively reduce query time
+		if ( ! empty( $query_meta_values ) ) {
+			$rows_affected = $wpdb->query( $wpdb->prepare(
+				"INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value)
+				 VALUES " . implode( ', ', $query_placeholders ),
+				$query_meta_values )
+			);
+
+			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: %d rows of post meta added', $subscription_id, $rows_affected ) );
 		}
 
 		// Now that we've copied over the old data, deprecate it
