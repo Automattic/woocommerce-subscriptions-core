@@ -58,5 +58,4 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</div>
 	<?php endforeach; ?>
 	<p><?php esc_html_e( 'Timezone:', 'woocommerce-subscriptoins' ); ?> <span id="wcs-timezone"><?php esc_html_e( 'Error: unable to find timezone of your browser.', 'woocommerce-subscriptions' ); ?></span></p>
-	<?php wp_nonce_field( 'subscription_billing_schedule', '_wcsnonce', false ); ?>
 </div>
