@@ -460,7 +460,7 @@ class WC_Subscription extends WC_Order {
 	 * @since 2.0
 	 * @return array By default: wc-processing and wc-completed
 	 */
-	public function get_paid_post_statuses() {
+	public function get_paid_order_statuses() {
 		$paid_statuses = array(
 			'processing',
 			'completed',
@@ -489,11 +489,11 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_completed_payment_count() {
 
-		$completed_payment_count = ( false !== $this->order && $this->order->has_status( $this->get_paid_post_statuses() ) ) ? 1 : 0;
+		$completed_payment_count = ( false !== $this->order && $this->order->has_status( $this->get_paid_order_statuses() ) ) ? 1 : 0;
 
 		$paid_renewal_orders = get_posts( array(
 			'posts_per_page' => -1,
-			'post_status'    => $this->get_paid_post_statuses(),
+			'post_status'    => $this->get_paid_order_statuses(),
 			'post_type'      => 'shop_order',
 			'fields'         => 'ids',
 			'orderby'        => 'date',

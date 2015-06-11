@@ -120,13 +120,13 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 	$completed_payments = array();
 
 	if ( $subscription->get_completed_payment_count() ) {
-		if ( ! empty( $subscription->order ) && $subscription->order->has_status( $subscription->get_paid_post_statuses() ) ) {
+		if ( ! empty( $subscription->order ) && $subscription->order->has_status( $subscription->get_paid_order_statuses() ) ) {
 			$completed_payments[] = $subscription->order->post->post_date_gmt;
 		}
 
 		$paid_renewal_order_ids = get_posts( array(
 			'posts_per_page' => -1,
-			'post_status'    => $subscription->get_paid_post_statuses(),
+			'post_status'    => $subscription->get_paid_order_statuses(),
 			'post_type'      => 'shop_order',
 			'orderby'        => 'date',
 			'order'          => 'desc',
