@@ -471,8 +471,8 @@ class WC_Subscription extends WC_Order {
 		$custom_status = apply_filters( 'woocommerce_payment_complete_order_status', 'completed', $this->id );
 
 		if ( '' !== $custom_status && ! in_array( $custom_status, $paid_statuses ) && ! in_array( 'wc-' . $custom_status, $paid_statuses ) ) {
-		    $paid_statuses[] = $custom_status;
-		    $paid_statuses[] = 'wc-' . $custom_status;
+			$paid_statuses[] = $custom_status;
+			$paid_statuses[] = 'wc-' . $custom_status;
 		}
 
 		return $paid_statuses;
