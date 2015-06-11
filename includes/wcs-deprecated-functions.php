@@ -120,7 +120,7 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 	$completed_payments = array();
 
 	if ( $subscription->get_completed_payment_count() ) {
-		if ( $subscription->order->has_status( apply_filters( 'woocommerce_payment_complete_order_status', array( 'processing', 'completed' ) ) ) ) {
+		if ( ! empty( $subscription->order ) && $subscription->order->has_status( $subscription->get_paid_post_statuses() ) ) {
 			$completed_payments[] = $subscription->order->post->post_date_gmt;
 		}
 
