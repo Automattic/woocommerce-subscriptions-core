@@ -37,7 +37,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div id="update-messages">
 			<h2><?php esc_html_e( 'Update in Progress', 'woocommerce-subscriptions' ); ?></h2>
 			<?php if ( 'false' == $script_data['really_old_version'] ) : ?>
-			<p><?php printf( esc_html__( 'The full update process for the %s subscriptions on your site will take approximately %s to %s minutes. Customers can continue to browser and purchase from your store during this time and no renewals will be processed until the upgrader completes.', 'woocommerce-subscriptions' ), esc_html( $subscription_count ), esc_html( $estimated_duration ), esc_html( $estimated_duration * 2 ) ); ?></p>
+			<p><?php printf( esc_html__( 'The full update process for the %s subscriptions on your site will take approximately %s to %s minutes. Customers can continue to browse and purchase from your store during this time and no renewals will be processed until the upgrader completes.', 'woocommerce-subscriptions' ), esc_html( $subscription_count ), esc_html( $estimated_duration ), esc_html( $estimated_duration * 2 ) ); ?></p>
 			<?php endif; ?>
 			<p><?php esc_html_e( 'This page will display the results of the process as each batch of subscriptions is updated. No need to refresh or restart the process. Customers and other non-administrative users will continue to be able to browse your site without interuption while the update is in progress.', 'woocommerce-subscriptions' ); ?></p>
 			<ol>
