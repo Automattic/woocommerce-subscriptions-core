@@ -1578,4 +1578,58 @@ class WC_Subscription extends WC_Order {
 
 		return $has_product;
 	}
+
+	/**
+	 * Check if a given line item on the subscription had a sign-up fee, and if so, return the value of the sign-up fee.
+	 *
+	 * The single quantity sign-up fee will be returned instead of the total sign-up fee paid. For example, if 3 x a product
+	 * with a 10 BTC sign-up fee was purchased, a total 30 BTC was paid as the sign-up fee but this function will return 10 BTC.
+	 *
+	 * @param array|int Either an order item (in the array format returned by self::get_items()) or the ID of an order item.
+	 * @return bool
+	 * @since 2.0
+	 */
+	public function get_items_sign_up_fee( $line_item ) {
+
+		if ( ! is_array( $line_item ) ) {
+			$line_item = wcs_get_order_item( $line_item, $this );
+		}
+
+		// If there was no original order, nothing was paid up-front which means no sign-up fee
+		if ( empty( $this->order ) ) {
+
+			$sign_up_fee = 0;
+
+		} else {
+
+			$original_order_item = '';
+
+			// Find the matching item on the order
+			foreach( $this->order->get_items() as $order_item ) {
+				if ( wcs_get_canonical_product_id( $line_item ) == wcs_get_canonical_product_id( $order_item ) ) {
+					$original_order_item = $order_item;
+					break;
+				}
+			}
+
+			// No matching order item, so this item wasn't purchased in the original order
+			if ( empty( $original_order_item ) ) {
+
+				$sign_up_fee = 0;
+
+			} elseif ( isset( $line_item['item_meta']['_has_trial'] ) ) {
+
+				// Sign up was was total amount paid for this item on original order
+				$sign_up_fee = $original_order_item['line_total'] / $original_order_item['qty'];
+
+			} else {
+
+				// Sign-up fee is any amount on top of recurring amount
+				$sign_up_fee = max( $original_order_item['line_total'] / $original_order_item['qty'] - $line_item['line_total'] / $line_item['qty'], 0 );
+			}
+
+		}
+
+		return apply_filters( 'woocommerce_subscription_items_sign_up_fee', $sign_up_fee );
+	}
 }
