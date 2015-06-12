@@ -1580,6 +1580,24 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
+	 * The total sign-up fee for the subscription if any.
+	 *
+	 * @param array|int Either an order item (in the array format returned by self::get_items()) or the ID of an order item.
+	 * @return bool
+	 * @since 2.0
+	 */
+	public function get_sign_up_fee() {
+
+		$sign_up_fee = 0;
+
+		foreach( $this->get_items() as $line_item ) {
+			$sign_up_fee += $this->get_items_sign_up_fee( $line_item );
+		}
+
+		return apply_filters( 'woocommerce_subscription_sign_up_fee', $sign_up_fee );
+	}
+
+	/**
 	 * Check if a given line item on the subscription had a sign-up fee, and if so, return the value of the sign-up fee.
 	 *
 	 * The single quantity sign-up fee will be returned instead of the total sign-up fee paid. For example, if 3 x a product
