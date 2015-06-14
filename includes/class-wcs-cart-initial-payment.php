@@ -43,28 +43,21 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 
 				$subscriptions = wcs_get_subscriptions_for_order( $order );
 
-				if ( ! empty( $subscriptions ) ) {
+				if ( get_current_user_id() !== $order->get_user_id() ) {
+					wc_add_notice( __( 'That doesn\'t appear to be your order.', 'woocommerce-subscriptions' ), 'error' );
 
-					foreach ( $subscriptions as $subscription ) {
+					wp_safe_redirect( get_permalink( wc_get_page_id( 'myaccount' ) ) );
+					exit;
 
-						if ( ! $subscription->needs_payment() ) {
-							continue;
+				} elseif ( ! empty( $subscriptions ) ) {
 
-						} elseif ( get_current_user_id() !== $subscription->get_user_id() ) {
-							wc_add_notice( __( 'That doesn\'t appear to be one of your subscriptions.', 'woocommerce-subscriptions' ), 'error' );
+					// Setup cart with all the original order's line items
+					$this->setup_cart( $order );
 
-						} elseif ( 0 == $subscription->get_completed_payment_count() ) {
+					WC()->session->set( 'order_awaiting_payment', $order_id );
 
-							$this->setup_cart( $subscription, array(
-								'subscription_id'  => $subscription->id,
-							) );
-
-							WC()->session->set( 'order_awaiting_payment', $order_id );
-
-							wp_safe_redirect( WC()->cart->get_checkout_url() );
-							exit;
-						}
-					}
+					wp_safe_redirect( WC()->cart->get_checkout_url() );
+					exit;
 				}
 			}
 		}
