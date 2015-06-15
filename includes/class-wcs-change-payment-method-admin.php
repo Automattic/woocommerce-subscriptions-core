@@ -86,6 +86,10 @@ class WCS_Change_Payment_Method_Admin {
 	 */
 	public static function save_meta( $subscription ) {
 
+		if ( empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) {
+			return;
+		}
+
 		$payment_gateways    = WC()->payment_gateways->payment_gateways();
 		$payment_method      = isset( $_POST['_payment_method'] ) ? wc_clean( $_POST['_payment_method'] ) : '';
 		$payment_method_meta = apply_filters( 'woocommerce_subscription_payment_meta', array(), $subscription );
