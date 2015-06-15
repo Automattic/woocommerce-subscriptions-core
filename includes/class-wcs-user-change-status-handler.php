@@ -31,7 +31,7 @@ class WCS_User_Change_Status_Handler {
 			$subscription = wcs_get_subscription( $_GET['subscription_id'] );
 			$new_status   = $_GET['change_subscription_to'];
 
-			if( self::validate_request( $user_id, $subscription, $new_status, $_GET['_wpnonce'] ) ) {
+			if ( self::validate_request( $user_id, $subscription, $new_status, $_GET['_wpnonce'] ) ) {
 				self::change_users_subscription( $subscription, $new_status );
 
 				wp_safe_redirect( $subscription->get_view_order_url() );

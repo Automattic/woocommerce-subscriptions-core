@@ -66,6 +66,7 @@ function wcs_copy_order_address( $from_order, $to_order, $address_type = 'all' )
 			'postcode'   => $from_order->billing_postcode,
 			'country'    => $from_order->billing_country,
 			'email'      => $from_order->billing_email,
+			'phone'      => $from_order->billing_phone,
 		), 'billing' );
 	}
 
