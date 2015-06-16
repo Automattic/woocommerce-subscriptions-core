@@ -354,11 +354,11 @@ class WC_Subscriptions_Upgrader {
 		wp_register_script( 'wcs-upgrade', plugins_url( '/js/wcs-upgrade.js', WC_Subscriptions::$plugin_file ), 'jquery' );
 
 		$script_data = array(
-			'really_old_version' => ( version_compare( self::$active_version, '1.4', '<' ) ) ? 'true' : 'false',
-			'upgrade_to_1_5' => ( version_compare( self::$active_version, '1.5', '<' ) ) ? 'true' : 'false',
-			'hooks_per_request' => self::$upgrade_limit_hooks,
+			'really_old_version'        => ( version_compare( self::$active_version, '1.4', '<' ) ) ? 'true' : 'false',
+			'upgrade_to_1_5'            => ( version_compare( self::$active_version, '1.5', '<' ) ) ? 'true' : 'false',
+			'hooks_per_request'         => self::$upgrade_limit_hooks,
 			'subscriptions_per_request' => self::$upgrade_limit_subscriptions,
-			'ajax_url' => admin_url( 'admin-ajax.php' ),
+			'ajax_url'                  => admin_url( 'admin-ajax.php' ),
 		);
 
 		wp_localize_script( 'wcs-upgrade', 'wcs_update_script_data', $script_data );
