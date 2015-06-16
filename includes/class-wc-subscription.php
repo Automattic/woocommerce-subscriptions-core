@@ -1364,20 +1364,22 @@ class WC_Subscription extends WC_Order {
 		if ( 'all' == $return_fields ) {
 
 			foreach ( $related_post_ids as $post_id ) {
-				$related_orders[] = wc_get_order( $post_id );
+				$related_orders[ $post_id ] = wc_get_order( $post_id );
 			}
 
 			if ( false !== $this->order && 'renewal' !== $order_type ) {
-				$related_orders[] = $this->order;
+				$related_orders[ $this->order->id ] = $this->order;
 			}
 		} else {
 
 			// Return IDs only
 			if ( isset( $this->order->id ) && 'renewal' !== $order_type ) {
-				$related_orders[] = $this->order->id;
+				$related_orders[ $this->order->id ] = $this->order->id;
 			}
 
-			$related_orders = array_merge( $related_post_ids, $related_orders );
+			foreach ( $related_post_ids as $post_id ) {
+				$related_orders[ $post_id ] = $post_id;
+			}
 		}
 
 		return apply_filters( 'woocommerce_subscription_related_orders', $related_orders, $this );
