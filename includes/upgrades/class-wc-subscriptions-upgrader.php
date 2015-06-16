@@ -24,6 +24,8 @@ class WC_Subscriptions_Upgrader {
 
 	private static $about_page_url;
 
+	private static $old_subscription_count = null;
+
 	public static $is_wc_version_2 = false;
 
 	public static $updated_to_wc_2_0;
@@ -438,14 +440,19 @@ class WC_Subscriptions_Upgrader {
 	private static function get_total_subscription_count() {
 		global $wpdb;
 
-		$query = "SELECT meta.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS meta
-				  WHERE meta.meta_key = '_subscription_status'
-				  AND meta.meta_value <> 'trash'
-				  GROUP BY meta.order_item_id";
+		if ( null === self::$old_subscription_count ) {
 
-		$wpdb->get_results( $query );
+			$query = "SELECT meta.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS meta
+					  WHERE meta.meta_key = '_subscription_status'
+					  AND meta.meta_value <> 'trash'
+					  GROUP BY meta.order_item_id";
 
-		return $wpdb->num_rows;
+			$wpdb->get_results( $query );
+
+			self::$old_subscription_count = $wpdb->num_rows;
+		}
+
+		return self::$old_subscription_count;
 	}
 
 	/**
