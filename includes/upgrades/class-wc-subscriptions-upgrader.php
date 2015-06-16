@@ -74,7 +74,7 @@ class WC_Subscriptions_Upgrader {
 	protected static function set_upgrade_limits() {
 
 		if ( self::get_total_subscription_count() > 10000 ) {
-			$base_upgrade_limit = 25;
+			$base_upgrade_limit = 20;
 		} elseif ( self::get_total_subscription_count() > 5000 ) {
 			$base_upgrade_limit = 35;
 		} else {
