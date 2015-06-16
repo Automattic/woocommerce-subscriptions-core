@@ -453,30 +453,52 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
+	 * WooCommerce handles statuses without the wc- prefix in has_status, get_status and update_status, however in the database
+	 * it stores it with the prefix. This makes it hard to use the same filters / status names in both WC's methods AND WP's
+	 * get_posts functions. This function bridges that gap and returns the prefixed versions of completed statuses.
+	 *
+	 * @since 2.0
+	 * @return array By default: wc-processing and wc-completed
+	 */
+	public function get_paid_order_statuses() {
+		$paid_statuses = array(
+			'processing',
+			'completed',
+			'wc-processing',
+			'wc-completed',
+		);
+
+		$custom_status = apply_filters( 'woocommerce_payment_complete_order_status', 'completed', $this->id );
+
+		if ( '' !== $custom_status && ! in_array( $custom_status, $paid_statuses ) && ! in_array( 'wc-' . $custom_status, $paid_statuses ) ) {
+			$paid_statuses[] = $custom_status;
+			$paid_statuses[] = 'wc-' . $custom_status;
+		}
+
+		return $paid_statuses;
+	}
+
+	/**
 	 * Get the number of payments completed for a subscription
 	 *
-	 * Completed payment include all renewal orders with a '_paid_date' set and potentially an
-	 * initial order (if the subscription was created as a result of a purchase from the front
-	 * end rather than manually by the store manager).
+	 * Completed payment include all renewal orders and potentially an initial order (if the
+	 * subscription was created as a result of a purchase from the front end rather than
+	 * manually by the store manager).
 	 *
 	 * @since 2.0
 	 */
 	public function get_completed_payment_count() {
 
-		$completed_payment_count = ( false !== $this->order && isset( $this->order->paid_date ) ) ? 1 : 0;
+		$completed_payment_count = ( false !== $this->order && $this->order->has_status( $this->get_paid_order_statuses() ) ) ? 1 : 0;
 
 		$paid_renewal_orders = get_posts( array(
 			'posts_per_page' => -1,
-			'post_status'    => 'any',
+			'post_status'    => $this->get_paid_order_statuses(),
 			'post_type'      => 'shop_order',
 			'fields'         => 'ids',
 			'orderby'        => 'date',
 			'order'          => 'desc',
 			'meta_query'     => array(
-				array(
-					'key'     => '_paid_date',
-					'compare' => 'EXISTS',
-				),
 				array(
 					'key'     => '_subscription_renewal',
 					'compare' => '=',
@@ -494,11 +516,9 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Get the number of payments completed for a subscription
+	 * Get the number of payments failed
 	 *
-	 * Completed payment include all renewal orders with a '_paid_date' set and potentially an
-	 * initial order (if the subscription was created as a result of a purchase from the front
-	 * end rather than manually by the store manager).
+	 * Failed orders are the number of orders that have wc-failed as the status
 	 *
 	 * @since 2.0
 	 */
@@ -975,38 +995,13 @@ class WC_Subscription extends WC_Order {
 	 * @since 2.0
 	 */
 	protected function get_last_payment_date() {
+		$last_order = $this->get_last_order( 'all' );
 
-		$last_paid_renewal_order = get_posts( array(
-			'posts_per_page' => 1,
-			'post_status'    => 'any',
-			'post_type'      => 'shop_order',
-			'fields'         => 'ids',
-			'orderby'        => 'date',
-			'order'          => 'desc',
-			'meta_query'     => array(
-				array(
-					'key'     => '_paid_date',
-					'compare' => 'EXISTS',
-				),
-				array(
-					'key'     => '_subscription_renewal',
-					'compare' => '=',
-					'value'   => $this->id,
-					'type'    => 'numeric',
-				),
-			),
-		) );
-
-		// Get the `'_paid_date'` on the last order and convert it to GMT/UTC
-		if ( ! empty( $last_paid_renewal_order ) ) {
-			$date = get_gmt_from_date( get_post_meta( $last_paid_renewal_order[0], '_paid_date', true ) );
-		} elseif ( false !== $this->order && isset( $this->order->paid_date ) ) {
-			$date = get_gmt_from_date( $this->order->paid_date );
-		} else {
-			$date = 0;
+		if ( ! $last_order ) {
+			return 0;
 		}
 
-		return $date;
+		return $last_order->post->post_date_gmt;
 	}
 
 	/**
@@ -1014,35 +1009,21 @@ class WC_Subscription extends WC_Order {
 	 * @param string $datetime A MySQL formatted date/time string in GMT/UTC timezone.
 	 */
 	protected function update_last_payment_date( $datetime ) {
+		$last_order = $this->get_last_order();
 
-		$last_paid_renewal_order = get_posts( array(
-			'posts_per_page' => 1,
-			'post_status'    => 'any',
-			'post_type'      => 'shop_order',
-			'fields'         => 'ids',
-			'orderby'        => 'date',
-			'order'          => 'desc',
-			'meta_query'     => array(
-				array(
-					'key'     => '_paid_date',
-					'compare' => 'EXISTS',
-				),
-				array(
-					'key'     => '_subscription_renewal',
-					'compare' => '=',
-					'value'   => $this->id,
-					'type'    => 'numeric',
-				),
-			),
-		) );
-
-		if ( ! empty( $last_paid_renewal_order ) ) {
-			update_post_meta( $last_paid_renewal_order[0], '_paid_date', $datetime );
-		} else {
-			update_post_meta( $this->order->id, '_paid_date', $datetime );
+		if ( ! $last_order ) {
+			return false;
 		}
 
-		return $date;
+		$updated_post_data = array(
+			'ID' => $last_order,
+			'post_date' => get_date_from_gmt( $datetime ),
+			'post_date_gmt' => $datetime,
+		);
+
+		wp_update_post( $updated_post_data );
+
+		return $datetime;
 	}
 
 

@@ -248,7 +248,7 @@ function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_o
 
 		$periods_until = 0;
 
-	} elseif ( $unit_of_time == 'month' ) {
+	} elseif ( 'month' == $unit_of_time ) {
 
 		// Calculate the number of times this day will occur until we'll be in a time after the given timestamp
 		$timestamp = $start_timestamp;
@@ -256,7 +256,6 @@ function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_o
 		for ( $periods_until = 0; $timestamp < $end_timestamp; $periods_until++ ) {
 			$timestamp = wcs_add_months( $timestamp, 1 );
 		}
-
 	} else {
 
 		$seconds_until_timestamp = $end_timestamp - $start_timestamp;
