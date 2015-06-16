@@ -261,7 +261,7 @@ class WCS_Upgrade_2_0 {
 		// Save tax data array added in WC 2.2 (so it won't exist for all orders/subscriptions)
 		self::add_line_tax_data( $item_id, $order_item_id, $order_item );
 
-		if ( $order_item['subscription_trial_length'] > 0 ) {
+		if ( isset( $order_item['subscription_trial_length'] ) && $order_item['subscription_trial_length'] > 0 ) {
 			wc_add_order_item_meta( $item_id, '_has_trial', 'true' );
 		}
 
