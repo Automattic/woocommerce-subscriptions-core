@@ -762,7 +762,7 @@ class WCS_Admin_Post_Types {
 
 		return sprintf(
 			'<a href="%s">%s</a>',
-			admin_url( 'edit.php?post_status=all&post_type=shop_order&_subscription_renewal=' . $the_subscription->id . '&_original_order_id=' . $order_id ),
+			admin_url( 'edit.php?post_status=all&post_type=shop_order&_subscription_related_orders=' . absint( $the_subscription->id ) ),
 			count( $the_subscription->get_related_orders() )
 		);
 	}
