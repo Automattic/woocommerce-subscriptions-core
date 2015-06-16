@@ -1594,7 +1594,7 @@ class WC_Subscription extends WC_Order {
 			$sign_up_fee += $this->get_items_sign_up_fee( $line_item );
 		}
 
-		return apply_filters( 'woocommerce_subscription_sign_up_fee', $sign_up_fee );
+		return apply_filters( 'woocommerce_subscription_sign_up_fee', $sign_up_fee, $this );
 	}
 
 	/**
@@ -1648,6 +1648,6 @@ class WC_Subscription extends WC_Order {
 
 		}
 
-		return apply_filters( 'woocommerce_subscription_items_sign_up_fee', $sign_up_fee );
+		return apply_filters( 'woocommerce_subscription_items_sign_up_fee', $sign_up_fee, $line_item, $this );
 	}
 }
