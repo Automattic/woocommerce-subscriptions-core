@@ -41,9 +41,6 @@ class WC_Subscriptions_Upgrader {
 
 		self::$is_wc_version_2 = version_compare( get_option( 'woocommerce_db_version' ), '2.0', '>=' );
 
-		self::$upgrade_limit_hooks         = apply_filters( 'woocommerce_subscriptions_hooks_to_upgrade', 250 );
-		self::$upgrade_limit_subscriptions = apply_filters( 'woocommerce_subscriptions_to_upgrade', 50 );
-
 		self::$about_page_url = admin_url( 'index.php?page=wcs-about&wcs-updated=true' );
 
 		if ( isset( $_POST['action'] ) && 'wcs_upgrade' == $_POST['action'] ) {
@@ -70,12 +67,33 @@ class WC_Subscriptions_Upgrader {
 	}
 
 	/**
+	 * Set limits on the number of items to upgrade at any one time based on the size of the site.
+	 *
+	 * @since 2.0
+	 */
+	protected static function set_upgrade_limits() {
+
+		if ( self::get_total_subscription_count() > 10000 ) {
+			$base_upgrade_limit = 25;
+		} elseif ( self::get_total_subscription_count() > 5000 ) {
+			$base_upgrade_limit = 35;
+		} else {
+			$base_upgrade_limit = 50;
+		}
+
+		self::$upgrade_limit_hooks         = apply_filters( 'woocommerce_subscriptions_hooks_to_upgrade', $base_upgrade_limit * 5 );
+		self::$upgrade_limit_subscriptions = apply_filters( 'woocommerce_subscriptions_to_upgrade', $base_upgrade_limit );
+	}
+
+	/**
 	 * Checks which upgrades need to run and calls the necessary functions for that upgrade.
 	 *
 	 * @since 1.2
 	 */
 	public static function upgrade(){
 		global $wpdb;
+
+		self::set_upgrade_limits();
 
 		update_option( WC_Subscriptions_Admin::$option_prefix . '_previous_version', self::$active_version );
 
@@ -168,6 +186,8 @@ class WC_Subscriptions_Upgrader {
 	 */
 	public static function ajax_upgrade() {
 		global $wpdb;
+
+		self::set_upgrade_limits();
 
 		WCS_Upgrade_Logger::add( sprintf( 'Starting upgrade step: %s', $_POST['upgrade_step'] ) );
 
