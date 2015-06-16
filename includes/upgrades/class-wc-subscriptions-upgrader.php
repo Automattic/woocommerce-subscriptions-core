@@ -73,12 +73,22 @@ class WC_Subscriptions_Upgrader {
 	 */
 	protected static function set_upgrade_limits() {
 
-		if ( self::get_total_subscription_count() > 10000 ) {
+		$total_subscription_count = self::get_total_subscription_count();
+
+		if ( $total_subscription_count > 15000 ) {
+			$base_upgrade_limit = 15;
+		} elseif ( $total_subscription_count > 10000 ) {
 			$base_upgrade_limit = 20;
-		} elseif ( self::get_total_subscription_count() > 5000 ) {
-			$base_upgrade_limit = 35;
-		} else {
+		} elseif ( $total_subscription_count > 7500 ) {
+			$base_upgrade_limit = 30;
+		} elseif ( $total_subscription_count > 5000 ) {
+			$base_upgrade_limit = 40;
+		} elseif ( $total_subscription_count > 2000 ) {
 			$base_upgrade_limit = 50;
+		} elseif ( $total_subscription_count > 1000 ) {
+			$base_upgrade_limit = 60;
+		} else {
+			$base_upgrade_limit = 70;
 		}
 
 		self::$upgrade_limit_hooks         = apply_filters( 'woocommerce_subscriptions_hooks_to_upgrade', $base_upgrade_limit * 5 );
