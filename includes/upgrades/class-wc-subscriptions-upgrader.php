@@ -43,6 +43,13 @@ class WC_Subscriptions_Upgrader {
 
 		self::$about_page_url = admin_url( 'index.php?page=wcs-about&wcs-updated=true' );
 
+		$version_out_of_date = version_compare( self::$active_version, WC_Subscriptions::$version, '<' );
+
+		// Set the cron lock on every request with an out of date version, regardless of authentication level, as we can only lock cron for up to 10 minutes at a time, but we need to keep it locked until the upgrade is complete, regardless of who is browing the site
+		if ( $version_out_of_date ) {
+			self::set_cron_lock();
+		}
+
 		if ( isset( $_POST['action'] ) && 'wcs_upgrade' == $_POST['action'] ) {
 
 			add_action( 'wp_ajax_wcs_upgrade', __CLASS__ . '::ajax_upgrade', 10 );
@@ -53,7 +60,7 @@ class WC_Subscriptions_Upgrader {
 
 				add_action( 'init', __CLASS__ . '::upgrade_in_progress_notice', 11 );
 
-			} elseif ( isset( $_GET['wcs_upgrade_step'] ) || version_compare( self::$active_version, WC_Subscriptions::$version, '<' ) ) {
+			} elseif ( isset( $_GET['wcs_upgrade_step'] ) || $version_out_of_date ) {
 
 				// Run upgrades as soon as admin hits site
 				add_action( 'init', __CLASS__ . '::upgrade', 11 );
@@ -96,6 +103,17 @@ class WC_Subscriptions_Upgrader {
 	}
 
 	/**
+	 * Try to block WP-Cron until upgrading finishes. spawn_cron() will only let us steal the lock for 10 minutes into the future, so
+	 * we can actually only block it for 9 minutes confidently. But as long as the upgrade process continues, the lock will remain.
+	 *
+	 * @since 2.0
+	 */
+	protected static function set_cron_lock() {
+		delete_transient( 'doing_cron' );
+		set_transient( 'doing_cron', sprintf( '%.22F', 9 * MINUTE_IN_SECONDS + microtime( true ) ), 0 );
+	}
+
+	/**
 	 * Checks which upgrades need to run and calls the necessary functions for that upgrade.
 	 *
 	 * @since 1.2
@@ -106,9 +124,6 @@ class WC_Subscriptions_Upgrader {
 		self::set_upgrade_limits();
 
 		update_option( WC_Subscriptions_Admin::$option_prefix . '_previous_version', self::$active_version );
-
-		// Block WP-Cron until upgrading finishes
-		set_transient( 'doing_cron', 'WCS', 0 );
 
 		// Update the hold stock notification to be one week (if it's still at the default 60 minutes) to prevent cancelling subscriptions using manual renewals and payment methods that can take more than 1 hour (i.e. PayPal eCheck)
 		if ( '0' == self::$active_version || version_compare( self::$active_version, '1.4', '<' ) ) {
