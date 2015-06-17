@@ -195,11 +195,7 @@ function wcs_add_cart_first_renewal_payment_date( $order_total_html, $cart ) {
 add_filter( 'wcs_cart_totals_order_total_html', 'wcs_add_cart_first_renewal_payment_date', 10, 2 );
 
 /**
- * Return a given piece of meta data from the cart
- *
- * The data can exist on the cart object, a cart item, or product data on a cart item.
- * The first piece of data with a matching key (in that order) will be returned if it
- * is found, otherwise, the value specified with $default, will be returned.
+ * Return the cart item name for specific cart item
  *
  * @access public
  * @return string

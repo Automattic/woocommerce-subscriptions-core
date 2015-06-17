@@ -238,29 +238,6 @@ function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 			);
 		}
 
-		$renewal_order_ids = $subscription->get_related_orders( 'ids', 'renewal' );
-
-		if ( ! empty( $renewal_order_ids ) ) {
-
-			$last_renewal_order_id = array_shift( $renewal_order_ids );
-			$last_renewal_order    = wc_get_order( $last_renewal_order_id );
-
-			if ( $subscription->can_be_updated_to( 'active' ) && $last_renewal_order->has_status( array( 'pending', 'cancelled', 'failed' ) ) && ! is_numeric( get_post_meta( $last_renewal_order->id, '_failed_order_replaced_by', true ) ) ) {
-				$actions['pay'] = array(
-					'url'  => $last_renewal_order->get_checkout_payment_url(),
-					'name' => __( 'Pay', 'woocommerce-subscriptions' )
-				);
-			}
-		} else { // Check if the original order still needs to be paid
-
-			if ( false !== $subscription->order && $subscription->order->has_status( 'pending' ) && $subscription->can_be_updated_to( 'active' ) ) {
-				$actions['pay'] = array(
-					'url'  => $subscription->order->get_checkout_payment_url(),
-					'name' => __( 'Pay', 'woocommerce-subscriptions' )
-				);
-			}
-		}
-
 		// Show button for subscriptions which can be cancelled and which may actually require cancellation (i.e. has a future payment)
 		if ( $subscription->can_be_updated_to( 'cancelled' ) && $subscription->get_time( 'next_payment' ) > 0 ) {
 			$actions['cancel'] = array(
