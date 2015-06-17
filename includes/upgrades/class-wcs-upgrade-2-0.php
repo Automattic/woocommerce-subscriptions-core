@@ -416,6 +416,7 @@ class WCS_Upgrade_2_0 {
 	 * @since 2.0
 	 */
 	private static function migrate_dates( $new_subscription, $old_subscription ) {
+		global $wpdb;
 
 		$dates_to_update = array();
 
@@ -469,9 +470,10 @@ class WCS_Upgrade_2_0 {
 					}
 				}
 			}
-
-			wc_unschedule_action( $old_keys['old_scheduled_hook'], $old_hook_args );
 		}
+
+		// Trash all the hooks in one go to save write requests
+		$wpdb->update( $wpdb->posts, array( 'post_status' => 'trash' ), array( 'post_type' => ActionScheduler_wpPostStore::POST_TYPE, 'post_content' => json_encode( $old_hook_args ) ), array( '%s', '%s' ) );
 
 		if ( ! empty( $dates_to_update ) ) {
 			$new_subscription->update_dates( $dates_to_update );
