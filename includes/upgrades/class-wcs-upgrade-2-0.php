@@ -475,11 +475,42 @@ class WCS_Upgrade_2_0 {
 		// Trash all the hooks in one go to save write requests
 		$wpdb->update( $wpdb->posts, array( 'post_status' => 'trash' ), array( 'post_type' => ActionScheduler_wpPostStore::POST_TYPE, 'post_content' => json_encode( $old_hook_args ) ), array( '%s', '%s' ) );
 
-		if ( ! empty( $dates_to_update ) ) {
-			$new_subscription->update_dates( $dates_to_update );
+		$dates_to_update['start'] = $new_subscription->post->post_date_gmt;
+
+		// v2.0 enforces new rules for dates when they are being set, so we need to massage the old data to conform to these new rules
+		foreach ( $dates_to_update as $date_type => $date ) {
+
+			if ( 0 == $date ) {
+				continue;
+			}
+
+			switch ( $date_type ) {
+				case 'end' :
+					if ( array_key_exists( 'next_payment', $dates_to_update ) && $date <= $dates_to_update['next_payment'] ) {
+						$dates_to_update[ $date_type ] = $date;
+					}
+				case 'next_payment' :
+					if ( array_key_exists( 'trial_end', $dates_to_update ) && $date < $dates_to_update['trial_end'] ) {
+						$dates_to_update[ $date_type ] = $date;
+					}
+				case 'trial_end' :
+					if ( array_key_exists( 'start', $dates_to_update ) && $date <= $timestamps['start'] ) {
+						$dates_to_update[ $date_type ] = $date;
+					}
+			}
 		}
 
-		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: updated dates = %s', $new_subscription->id, str_replace( array( '{', '}', '"' ), '', json_encode( $dates_to_update ) ) ) );
+		try {
+
+			if ( ! empty( $dates_to_update ) ) {
+				$new_subscription->update_dates( $dates_to_update );
+			}
+
+			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: updated dates = %s', $new_subscription->id, str_replace( array( '{', '}', '"' ), '', json_encode( $dates_to_update ) ) ) );
+
+		} catch ( Exception $e ) {
+			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: unable to update dates, exception "%s"', $new_subscription->id, $e->getMessage() ) );
+		}
 	}
 
 	/**
