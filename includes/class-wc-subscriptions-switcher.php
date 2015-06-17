@@ -597,6 +597,8 @@ class WC_Subscriptions_Switcher {
 
 					if ( 0 !== $cart_item['subscription_switch']['first_payment_timestamp'] && $next_payment_timestamp !== $cart_item['subscription_switch']['first_payment_timestamp'] ) {
 						$is_different_payment_date = true;
+					} elseif ( 0 !== $cart_item['subscription_switch']['first_payment_timestamp'] && 0 == $subscription->get_time( 'next_payment' ) ) { // if the subscription doesn't have a next payment but the switched item does
+						$is_different_payment_date = true;
 					} else {
 						$is_different_payment_date = false;
 					}
