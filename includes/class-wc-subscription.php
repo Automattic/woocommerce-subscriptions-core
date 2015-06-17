@@ -953,7 +953,7 @@ class WC_Subscription extends WC_Order {
 		} else {
 
 			// The next payment date is {interval} billing periods from the start date, trial end date or last payment date
-			if ( $next_payment_time < gmdate( 'U' ) && 1 <= $this->get_completed_payment_count() ) {
+			if ( 0 !== $next_payment_time && $next_payment_time < gmdate( 'U' ) && 1 <= $this->get_completed_payment_count() ) {
 				$from_timestamp = $next_payment_time;
 			} elseif ( $last_payment_time > $start_time && apply_filters( 'wcs_calculate_next_payment_from_last_payment', true, $this ) ) {
 				$from_timestamp = $last_payment_time;
