@@ -75,6 +75,8 @@ class WC_Subscriptions_Switcher {
 
 		// Make sure the first renewal date takes into account any prorated length of time for upgrades/downgrades
 		add_filter( 'wcs_recurring_cart_next_payment_date', __CLASS__ . '::recurring_cart_next_payment_date', 100, 2 );
+		// Make sure the new end date starts from the end of the time that has already paid for
+		add_filter( 'wcs_recurring_cart_end_date', __CLASS__ . '::recurring_cart_end_date', 100, 3 );
 
 		// Make sure the switch process persists when having to choose product addons
 		add_action( 'addons_add_to_cart_url', __CLASS__ . '::addons_add_to_cart_url', 10 );
@@ -1193,6 +1195,30 @@ class WC_Subscriptions_Switcher {
 		}
 
 		return $first_renewal_date;
+	}
+
+	/**
+	 * Make sure the end date of the switched subscription starts after already paid term
+	 *
+	 * @since 2.0
+	 */
+	public static function recurring_cart_end_date( $end_date, $cart, $product ) {
+
+		if ( $end_date > 0 ) {
+			foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
+
+				if ( isset( $cart_item['subscription_switch']['subscription_id'] ) && isset( $cart_item['data'] ) && $product == $cart_item['data'] ) {
+					$subscription = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
+
+					if ( ! empty( $subscription ) && $subscription->get_time( 'next_payment' ) > gmdate( 'U' ) ) {
+						$end_date = WC_Subscriptions_Product::get_expiration_date( $product, $subscription->get_date( 'next_payment' ) );
+						break;
+					}
+				}
+			}
+		}
+
+		return $end_date;
 	}
 
 	/**
