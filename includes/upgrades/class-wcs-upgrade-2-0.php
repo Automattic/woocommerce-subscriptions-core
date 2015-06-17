@@ -494,7 +494,7 @@ class WCS_Upgrade_2_0 {
 						$dates_to_update[ $date_type ] = $date;
 					}
 				case 'trial_end' :
-					if ( array_key_exists( 'start', $dates_to_update ) && $date <= $timestamps['start'] ) {
+					if ( array_key_exists( 'start', $dates_to_update ) && $date <= $dates_to_update['start'] ) {
 						$dates_to_update[ $date_type ] = $date;
 					}
 			}
