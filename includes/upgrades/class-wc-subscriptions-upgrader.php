@@ -76,26 +76,23 @@ class WC_Subscriptions_Upgrader {
 	/**
 	 * Set limits on the number of items to upgrade at any one time based on the size of the site.
 	 *
+	 * The size of subscription at the time the upgrade is started is used to determine the batch size.
+	 *
 	 * @since 2.0
 	 */
 	protected static function set_upgrade_limits() {
 
-		$total_subscription_count = self::get_total_subscription_count();
+		$total_subscription_count_at_start = get_option( 'wcs_upgrade_start_total_subscription_count', false );
 
-		if ( $total_subscription_count > 15000 ) {
-			$base_upgrade_limit = 15;
-		} elseif ( $total_subscription_count > 10000 ) {
-			$base_upgrade_limit = 20;
-		} elseif ( $total_subscription_count > 7500 ) {
-			$base_upgrade_limit = 30;
-		} elseif ( $total_subscription_count > 5000 ) {
-			$base_upgrade_limit = 40;
-		} elseif ( $total_subscription_count > 2000 ) {
-			$base_upgrade_limit = 50;
-		} elseif ( $total_subscription_count > 1000 ) {
-			$base_upgrade_limit = 60;
+		if ( false === $total_subscription_count_at_start ) {
+			$total_subscription_count_at_start = self::get_total_subscription_count();
+			update_option( 'wcs_upgrade_start_total_subscription_count', $total_subscription_count_at_start );
+		}
+
+		if ( $total_subscription_count_at_start > 10000 ) {
+			$base_upgrade_limit = 25;
 		} else {
-			$base_upgrade_limit = 70;
+			$base_upgrade_limit = 50;
 		}
 
 		self::$upgrade_limit_hooks         = apply_filters( 'woocommerce_subscriptions_hooks_to_upgrade', $base_upgrade_limit * 5 );
