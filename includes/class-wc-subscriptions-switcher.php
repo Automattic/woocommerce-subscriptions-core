@@ -75,6 +75,7 @@ class WC_Subscriptions_Switcher {
 
 		// Make sure the first renewal date takes into account any prorated length of time for upgrades/downgrades
 		add_filter( 'wcs_recurring_cart_next_payment_date', __CLASS__ . '::recurring_cart_next_payment_date', 100, 2 );
+
 		// Make sure the new end date starts from the end of the time that has already paid for
 		add_filter( 'wcs_recurring_cart_end_date', __CLASS__ . '::recurring_cart_end_date', 100, 3 );
 
@@ -644,6 +645,7 @@ class WC_Subscriptions_Switcher {
 						}
 
 						$updated_dates = array();
+
 						if ( $is_different_payment_date ) {
 							$updated_dates['next_payment'] = date( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] );
 						}
