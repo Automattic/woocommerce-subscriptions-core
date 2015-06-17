@@ -641,12 +641,17 @@ class WC_Subscriptions_Switcher {
 							update_post_meta( $subscription->id, '_billing_interval', absint( $cart_item['data']->subscription_period_interval ) );
 						}
 
+						$updated_dates = array();
 						if ( $is_different_payment_date ) {
-							$subscription->update_dates( array( 'next_payment' => date( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] ) ) );
+							$updated_dates['next_payment'] = date( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] );
 						}
 
 						if ( $is_different_length ) {
-							$subscription->update_dates( array( 'end' => $recurring_cart->end_date ) );
+							$updated_dates['end'] = $recurring_cart->end_date;
+						}
+
+						if ( ! empty( $updated_dates ) ) {
+							$subscription->update_dates( $updated_dates );
 						}
 					}
 
