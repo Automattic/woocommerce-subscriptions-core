@@ -52,7 +52,7 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 				} elseif ( ! empty( $subscriptions ) ) {
 
 					// Setup cart with all the original order's line items
-					$this->setup_cart( $order );
+					$this->setup_cart( $order, array() );
 
 					WC()->session->set( 'order_awaiting_payment', $order_id );
 
