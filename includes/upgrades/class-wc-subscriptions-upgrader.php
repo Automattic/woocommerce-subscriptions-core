@@ -82,14 +82,9 @@ class WC_Subscriptions_Upgrader {
 	 */
 	protected static function set_upgrade_limits() {
 
-		$total_subscription_count_at_start = get_option( 'wcs_upgrade_start_total_subscription_count', false );
+		$total_initial_subscription_count = self::get_total_subscription_count( true );
 
-		if ( false === $total_subscription_count_at_start ) {
-			$total_subscription_count_at_start = self::get_total_subscription_count();
-			update_option( 'wcs_upgrade_start_total_subscription_count', $total_subscription_count_at_start );
-		}
-
-		if ( $total_subscription_count_at_start > 10000 ) {
+		if ( $total_initial_subscription_count > 10000 ) {
 			$base_upgrade_limit = 25;
 		} else {
 			$base_upgrade_limit = 50;
@@ -479,22 +474,36 @@ class WC_Subscriptions_Upgrader {
 	 *
 	 * @since 2.0
 	 */
-	private static function get_total_subscription_count() {
+	private static function get_total_subscription_count( $initial = false ) {
 		global $wpdb;
 
-		if ( null === self::$old_subscription_count ) {
+		if ( $initial ) {
 
-			$query = "SELECT meta.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS meta
-					  WHERE meta.meta_key = '_subscription_status'
-					  AND meta.meta_value <> 'trash'
-					  GROUP BY meta.order_item_id";
+			$subscription_count = get_option( 'wcs_upgrade_initial_total_subscription_count', false );
 
-			$wpdb->get_results( $query );
+			if ( false === $subscription_count ) {
+				$subscription_count = self::get_total_subscription_count();
+				update_option( 'wcs_upgrade_initial_total_subscription_count', $subscription_count );
+			}
 
-			self::$old_subscription_count = $wpdb->num_rows;
+		} else {
+
+			if ( null === self::$old_subscription_count ) {
+
+				$query = "SELECT meta.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS meta
+						  WHERE meta.meta_key = '_subscription_status'
+						  AND meta.meta_value <> 'trash'
+						  GROUP BY meta.order_item_id";
+
+				$wpdb->get_results( $query );
+
+				self::$old_subscription_count = $wpdb->num_rows;
+			}
+
+			$subscription_count = self::$old_subscription_count;
 		}
 
-		return self::$old_subscription_count;
+		return $subscription_count;
 	}
 
 	/**
