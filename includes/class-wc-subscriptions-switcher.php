@@ -1208,7 +1208,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function recurring_cart_end_date( $end_date, $cart, $product ) {
 
-		if ( $end_date > 0 ) {
+		if ( 0 !== $end_date ) {
 			foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
 
 				if ( isset( $cart_item['subscription_switch']['subscription_id'] ) && isset( $cart_item['data'] ) && $product == $cart_item['data'] ) {
