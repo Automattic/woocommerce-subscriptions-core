@@ -409,7 +409,9 @@ class WC_Subscriptions_Upgrader {
 
 		// Can't get subscription count with database structure < 1.4
 		if ( 'false' == $script_data['really_old_version'] ) {
+
 			$subscription_count = self::get_total_subscription_count( true );
+			$batch_size         = self::$upgrade_limit_subscriptions;
 
 			// The base duration is 150 subscriptions per minute (i.e. approximately 20 seconds per batch of 50)
 			$estimated_duration = ceil( $subscription_count / 150 );
