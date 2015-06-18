@@ -86,6 +86,8 @@ class WC_Subscriptions_Upgrader {
 
 		if ( $total_initial_subscription_count > 10000 ) {
 			$base_upgrade_limit = 25;
+		} elseif ( $total_initial_subscription_count > 5000 ) {
+			$base_upgrade_limit = 35;
 		} else {
 			$base_upgrade_limit = 50;
 		}
