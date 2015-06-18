@@ -620,7 +620,7 @@ class WC_Subscriptions_Switcher {
 					}
 
 					// If the item is on the same schedule, we can just add it to the new subscription and remove the old item
-					if ( $is_single_item_subscription || ( false === $is_different_billing_schedule && false === $is_different_payment_date ) ) {
+					if ( $is_single_item_subscription || ( false === $is_different_billing_schedule && false === $is_different_payment_date && false === $is_different_length ) ) {
 
 						// Add the new item
 						$item_id = WC_Subscriptions_Checkout::add_cart_item( $subscription, $cart_item, $cart_item_key );
