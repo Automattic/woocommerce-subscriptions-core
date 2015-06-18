@@ -1015,8 +1015,6 @@ class WC_Subscriptions_Switcher {
 			// Set the date on which the first payment for the new subscription should be charged
 			WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $cart_item['subscription_switch']['next_payment_timestamp'];
 
-			$is_virtual_product = ( 'no' != $item_data->virtual ) ? true : false;
-
 			// Add any extra sign up fees required to switch to the new subscription
 			if ( 'yes' == $apportion_sign_up_fee ) {
 
@@ -1194,7 +1192,7 @@ class WC_Subscriptions_Switcher {
 
 		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
 			if ( isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) ) {
-				$first_renewal_date = date( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] );
+				$first_renewal_date = ( '1' !== $cart_item['data']->subscription_length ) ? date( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] ) : 0;
 			}
 		}
 
@@ -1212,12 +1210,20 @@ class WC_Subscriptions_Switcher {
 			foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
 
 				if ( isset( $cart_item['subscription_switch']['subscription_id'] ) && isset( $cart_item['data'] ) && $product == $cart_item['data'] ) {
-					$subscription = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
+					$subscription      = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
+					$prorated_end_date = isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) ? $cart_item['subscription_switch']['first_payment_timestamp'] : 0;
 
-					if ( ! empty( $subscription ) && 0 !== $subscription->get_time( 'last_payment' ) ) {
+					if ( '1' == $cart_item['data']->subscription_length && 0 !== $prorated_end_date ) {
+
+						$end_date = date( 'Y-m-d H:i:s', $prorated_end_date );
+
+					} elseif ( ! empty( $subscription ) && 0 !== $subscription->get_time( 'last_payment' ) ) {
+
 						$end_date = WC_Subscriptions_Product::get_expiration_date( $product, $subscription->get_date( 'last_payment' ) );
-						break;
+
 					}
+
+					break;
 				}
 			}
 		}
