@@ -1214,8 +1214,8 @@ class WC_Subscriptions_Switcher {
 				if ( isset( $cart_item['subscription_switch']['subscription_id'] ) && isset( $cart_item['data'] ) && $product == $cart_item['data'] ) {
 					$subscription = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
 
-					if ( ! empty( $subscription ) && $subscription->get_time( 'next_payment' ) > gmdate( 'U' ) ) {
-						$end_date = WC_Subscriptions_Product::get_expiration_date( $product, $subscription->get_date( 'next_payment' ) );
+					if ( ! empty( $subscription ) && 0 !== $subscription->get_time( 'last_payment' ) ) {
+						$end_date = WC_Subscriptions_Product::get_expiration_date( $product, $subscription->get_date( 'last_payment' ) );
 						break;
 					}
 				}
