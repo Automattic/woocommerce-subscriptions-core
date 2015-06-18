@@ -75,7 +75,7 @@ class WCS_Change_Payment_Method_Admin {
 			}
 		}
 
-		wp_nonce_field( 'wcs_change_payment_method', '_wcsnonce' );
+		wp_nonce_field( 'wcs_change_payment_method_admin', '_wcsnonce' );
 
 	}
 
@@ -88,7 +88,7 @@ class WCS_Change_Payment_Method_Admin {
 	 */
 	public static function save_meta( $subscription ) {
 
-		if ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_change_payment_method' ) ) {
+		if ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_change_payment_method_admin' ) ) {
 			return;
 		}
 
