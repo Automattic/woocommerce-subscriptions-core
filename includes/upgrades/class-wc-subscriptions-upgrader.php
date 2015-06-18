@@ -71,6 +71,9 @@ class WC_Subscriptions_Upgrader {
 
 			}
 		}
+
+		// While the upgrade is in progress, we need to block PayPal IPN messages to avoid renewals failing to process
+		add_action( 'woocommerce_api_wc_gateway_paypal', __CLASS__ . '::maybe_block_paypal_ipn', 0 );
 	}
 
 	/**
@@ -519,6 +522,23 @@ class WC_Subscriptions_Upgrader {
 		}
 
 		return $subscription_count;
+	}
+
+	/**
+	 * While the upgrade is in progress, we need to block IPN messages to avoid renewals failing to process correctly.
+	 *
+	 * PayPal will retry the IPNs for up to a day or two until it has a successful request, so the store will continue to receive
+	 * IPN messages during the upgrade process, then once it is completed, the IPN will be successfully processed.
+	 *
+	 * The method returns a 409 Conflict HTTP response code to indicate that the IPN is conflicting with the upgrader.
+	 *
+	 * @since 2.0
+	 */
+	public static function maybe_block_paypal_ipn() {
+		if ( 'true' == get_transient( 'wc_subscriptions_is_upgrading' ) ) {
+			WCS_Upgrade_Logger::add( '*** PayPal IPN Request blocked: ' . print_r( wp_unslash( $_POST ), true ) );
+			wp_die( 'PayPal IPN Request Failure', 'PayPal IPN', array( 'response' => 409 ) );
+		}
 	}
 
 	/**
