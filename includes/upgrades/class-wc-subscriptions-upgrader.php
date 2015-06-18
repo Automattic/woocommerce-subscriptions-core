@@ -406,8 +406,21 @@ class WC_Subscriptions_Upgrader {
 
 		// Can't get subscription count with database structure < 1.4
 		if ( 'false' == $script_data['really_old_version'] ) {
-			$subscription_count = self::get_total_subscription_count();
-			$estimated_duration = ceil( $subscription_count / 500 );
+			$subscription_count = self::get_total_subscription_count( true );
+
+			// The base duration is 150 subscriptions per minute (i.e. approximately 20 seconds per batch of 50)
+			$estimated_duration = ceil( $subscription_count / 150 );
+
+			// Large sites take about 2-3x as long (i.e. approximately 40 seconds per batch of 35)
+			if ( $subscription_count > 5000 ) {
+				$estimated_duration *= 3;
+			}
+
+			// And really large sites take around 5-6x as long (i.e. approximately 50 seconds per batch of 25)
+			if ( $subscription_count > 10000 ) {
+				$estimated_duration *= 2;
+			}
+
 		}
 
 		$about_page_url = self::$about_page_url;
