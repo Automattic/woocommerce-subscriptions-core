@@ -160,7 +160,7 @@ class WC_Subscriptions_Upgrader {
 			flush_rewrite_rules();
 
 			// Delete old cron locks
-			$deleted_rows = $wpdb->query( "DELETE FROM {$wpdb->options} WHERE `option_name` LIKE 'wcs_blocker_%'" );
+			$deleted_rows = $wpdb->query( "DELETE FROM {$wpdb->options} WHERE `option_name` LIKE 'wcs\_blocker\_%'" );
 
 			WCS_Upgrade_Logger::add( sprintf( 'Deleted %d rows of "wcs_blocker_"', $deleted_rows ) );
 
