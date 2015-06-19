@@ -59,8 +59,40 @@ function wcs_get_subscriptions_for_switch_order( $order_id ) {
 	$subscription_ids = get_post_meta( $order_id, '_subscription_switch', false );
 
 	foreach ( $subscription_ids as $subscription_id ) {
-		$subscriptions[] = wcs_get_subscription( $subscription_id );
+		$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
 	}
 
 	return $subscriptions;
+}
+
+/**
+ * Get all the orders which have recorded a switch for a given subscription.
+ *
+ * @param int|WC_Subscription $subscription_id The post_id of a shop_subscription post or an intsance of a WC_Subscription object
+ * @return array Order details in post_id => WC_Order form.
+ * @since  2.0
+ */
+function wcs_get_switch_orders_for_subscription( $subscription_id ) {
+
+	$orders = array();
+
+	// Select the orders which switched item/s from this subscription
+	$order_ids = get_posts( array(
+		'post_type'      => 'shop_order',
+		'post_status'    => 'any',
+		'fields'         => 'ids',
+		'posts_per_page' => -1,
+		'meta_query' => array(
+			array(
+				'key'   => '_subscription_switch',
+				'value' => $subscription_id,
+			),
+		),
+	) );
+
+	foreach ( $order_ids as $order_id ) {
+		$orders[ $order_id ] = wc_get_order( $order_id );
+	}
+
+	return $orders;
 }

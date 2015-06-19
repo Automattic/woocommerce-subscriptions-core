@@ -107,7 +107,7 @@ class WCS_Admin_Post_Types {
 		}
 
 		?>
-		<input type="hidden" class="wc-product-search" name="_wcs_product" data-placeholder="<?php esc_attr_e( 'Search for a product&hellip;', 'woocommerce-subscriptions' ); ?>" data-action="woocommerce_json_search_products_and_variations" data-selected="<?php echo wp_kses_post( $product_string ); ?>" value="<?php echo esc_attr( $product_id ); ?>" data-allow_clear="true" />
+		<input type="hidden" class="wc-product-search" name="_wcs_product" data-placeholder="<?php esc_attr_e( 'Search for a product&hellip;', 'woocommerce-subscriptions' ); ?>" data-action="woocommerce_json_search_products_and_variations" data-selected="<?php echo esc_attr( strip_tags( $product_string ) ); ?>" value="<?php echo esc_attr( $product_id ); ?>" data-allow_clear="true" />
 		<?php
 	}
 
@@ -762,7 +762,7 @@ class WCS_Admin_Post_Types {
 
 		return sprintf(
 			'<a href="%s">%s</a>',
-			admin_url( 'edit.php?post_status=all&post_type=shop_order&_subscription_renewal=' . $the_subscription->id . '&_original_order_id=' . $order_id ),
+			admin_url( 'edit.php?post_status=all&post_type=shop_order&_subscription_related_orders=' . absint( $the_subscription->id ) ),
 			count( $the_subscription->get_related_orders() )
 		);
 	}
