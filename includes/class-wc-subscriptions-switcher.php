@@ -1006,11 +1006,12 @@ class WC_Subscriptions_Switcher {
 				continue;
 			}
 
-			$subscription  = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
-			$existing_item = wcs_get_order_item( $cart_item['subscription_switch']['item_id'], $subscription );
-			$item_data     = $cart_item['data'];
-			$product_id    = wcs_get_canonical_product_id( $cart_item );
-			$product       = get_product( $product_id );
+			$subscription       = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
+			$existing_item      = wcs_get_order_item( $cart_item['subscription_switch']['item_id'], $subscription );
+			$item_data          = $cart_item['data'];
+			$product_id         = wcs_get_canonical_product_id( $cart_item );
+			$product            = get_product( $product_id );
+			$is_virtual_product = $product->is_virtual();
 
 			// Set the date on which the first payment for the new subscription should be charged
 			WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $cart_item['subscription_switch']['next_payment_timestamp'];
