@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$upgrade_transient_timeout = get_option( '_transient_timeout_wc_subscriptions_is_upgrading' );
+$upgrade_transient_timeout = get_option( 'wc_subscriptions_is_upgrading' );
 
 $time_until_update_allowed = $upgrade_transient_timeout - time();
 

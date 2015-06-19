@@ -56,7 +56,15 @@ class WC_Subscriptions_Upgrader {
 
 		} elseif ( @current_user_can( 'activate_plugins' ) ) {
 
-			if ( 'true' == get_transient( 'wc_subscriptions_is_upgrading' ) ) {
+			$is_upgrading = get_option( 'wc_subscriptions_is_upgrading', false );
+
+			// Check if we've exceeded the 2 minute upgrade window we use for blocking upgrades (we could seemingly use transients here to get the check for free if transients were guaranteed to exist: http://journal.rmccue.io/296/youre-using-transients-wrong/)
+			if ( false !== $is_upgrading && $is_upgrading < gmdate( 'U' ) ) {
+				$is_upgrading = false;
+				delete_option( 'wc_subscriptions_is_upgrading' );
+			}
+
+			if ( false !== $is_upgrading ) {
 
 				add_action( 'init', __CLASS__ . '::upgrade_in_progress_notice', 11 );
 
@@ -166,7 +174,10 @@ class WC_Subscriptions_Upgrader {
 	public static function upgrade_complete() {
 
 		update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', WC_Subscriptions::$version );
+
 		delete_transient( 'doing_cron' );
+
+		delete_option( 'wc_subscriptions_is_upgrading' );
 
 		do_action( 'woocommerce_subscriptions_upgraded', WC_Subscriptions::$version );
 	}
@@ -216,7 +227,7 @@ class WC_Subscriptions_Upgrader {
 		@set_time_limit( 600 );
 		@ini_set( 'memory_limit', apply_filters( 'admin_memory_limit', WP_MAX_MEMORY_LIMIT ) );
 
-		set_transient( 'wc_subscriptions_is_upgrading', 'true', 60 * 2 );
+		update_option( 'wc_subscriptions_is_upgrading', gmdate( 'U' ) + 60 * 2 );
 
 		switch ( $_POST['upgrade_step'] ) {
 
@@ -279,8 +290,6 @@ class WC_Subscriptions_Upgrader {
 		if ( isset( $upgraded_subscriptions ) && $upgraded_subscriptions < self::$upgrade_limit_subscriptions ) {
 			self::upgrade_complete();
 		}
-
-		delete_transient( 'wc_subscriptions_is_upgrading' );
 
 		WCS_Upgrade_Logger::add( sprintf( 'Completed upgrade step: %s', $_POST['upgrade_step'] ) );
 
@@ -537,7 +546,7 @@ class WC_Subscriptions_Upgrader {
 	 * @since 2.0
 	 */
 	public static function maybe_block_paypal_ipn() {
-		if ( 'true' == get_transient( 'wc_subscriptions_is_upgrading' ) ) {
+		if ( false !== get_option( 'wc_subscriptions_is_upgrading', false ) ) {
 			WCS_Upgrade_Logger::add( '*** PayPal IPN Request blocked: ' . print_r( wp_unslash( $_POST ), true ) );
 			wp_die( 'PayPal IPN Request Failure', 'PayPal IPN', array( 'response' => 409 ) );
 		}
