@@ -56,22 +56,26 @@ class WC_Subscriptions_Upgrader {
 
 		} elseif ( @current_user_can( 'activate_plugins' ) ) {
 
-			$is_upgrading = get_option( 'wc_subscriptions_is_upgrading', false );
+			if ( isset( $_GET['wcs_upgrade_step'] ) || $version_out_of_date ) {
 
-			// Check if we've exceeded the 2 minute upgrade window we use for blocking upgrades (we could seemingly use transients here to get the check for free if transients were guaranteed to exist: http://journal.rmccue.io/296/youre-using-transients-wrong/)
-			if ( false !== $is_upgrading && $is_upgrading < gmdate( 'U' ) ) {
-				$is_upgrading = false;
-				delete_option( 'wc_subscriptions_is_upgrading' );
-			}
+				$is_upgrading = get_option( 'wc_subscriptions_is_upgrading', false );
 
-			if ( false !== $is_upgrading ) {
+				// Check if we've exceeded the 2 minute upgrade window we use for blocking upgrades (we could seemingly use transients here to get the check for free if transients were guaranteed to exist: http://journal.rmccue.io/296/youre-using-transients-wrong/)
+				if ( false !== $is_upgrading && $is_upgrading < gmdate( 'U' ) ) {
+					$is_upgrading = false;
+					delete_option( 'wc_subscriptions_is_upgrading' );
+				}
 
-				add_action( 'init', __CLASS__ . '::upgrade_in_progress_notice', 11 );
+				if ( false !== $is_upgrading ) {
 
-			} elseif ( isset( $_GET['wcs_upgrade_step'] ) || $version_out_of_date ) {
+					add_action( 'init', __CLASS__ . '::upgrade_in_progress_notice', 11 );
 
-				// Run upgrades as soon as admin hits site
-				add_action( 'init', __CLASS__ . '::upgrade', 11 );
+				} else {
+
+					// Run upgrades as soon as admin hits site
+					add_action( 'init', __CLASS__ . '::upgrade', 11 );
+
+				}
 
 			} elseif ( is_admin() && isset( $_GET['page'] ) && 'wcs-about' == $_GET['page'] ) {
 
