@@ -1211,16 +1211,18 @@ class WC_Subscriptions_Switcher {
 
 				if ( isset( $cart_item['subscription_switch']['subscription_id'] ) && isset( $cart_item['data'] ) && $product == $cart_item['data'] ) {
 					$subscription      = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
-					$prorated_end_date = isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) ? $cart_item['subscription_switch']['first_payment_timestamp'] : 0;
+					$next_payment_time = isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) ? $cart_item['subscription_switch']['first_payment_timestamp'] : 0;
 
-					if ( '1' == $cart_item['data']->subscription_length && 0 !== $prorated_end_date ) {
+					if ( 1 == $cart_item['data']->subscription_length && 0 !== $next_payment_time ) {
+						$end_date = date( 'Y-m-d H:i:s', $next_payment_time );
 
-						$end_date = date( 'Y-m-d H:i:s', $prorated_end_date );
+					} elseif ( 0 !== $next_payment_time && ! in_array( $cart_item['data']->subscription_length, array( 0, 1 ) ) ) {
+						$cart_item['data']->subscription_length--;
+						$end_date = WC_Subscriptions_Product::get_expiration_date( $cart_item['data'], date( 'Y-m-d H:i:s', $next_payment_time ) );
+						$cart_item['data']->subscription_length++;
 
 					} elseif ( ! empty( $subscription ) && 0 !== $subscription->get_time( 'last_payment' ) ) {
-
 						$end_date = WC_Subscriptions_Product::get_expiration_date( $product, $subscription->get_date( 'last_payment' ) );
-
 					}
 
 					break;
