@@ -239,6 +239,7 @@ class WCS_Upgrade_2_0 {
 	 * @since 2.0
 	 */
 	private static function add_product( $new_subscription, $order_item_id, $order_item ) {
+		global $wpdb;
 
 		$item_id = wc_add_order_item( $new_subscription->id, array(
 			'order_item_name' => $order_item['name'],
@@ -247,16 +248,29 @@ class WCS_Upgrade_2_0 {
 
 		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: new line item ID %d added', $new_subscription->id, $item_id ) );
 
-		wc_add_order_item_meta( $item_id, '_qty',          $order_item['qty'] );
-		wc_add_order_item_meta( $item_id, '_tax_class',    $order_item['tax_class'] );
-		wc_add_order_item_meta( $item_id, '_product_id',   $order_item['product_id'] );
-		wc_add_order_item_meta( $item_id, '_variation_id', $order_item['variation_id'] );
+		$wpdb->query( $wpdb->prepare(
+			"INSERT INTO `{$wpdb->prefix}woocommerce_order_itemmeta` (`order_item_id`, `meta_key`, `meta_value`)
+			 VALUES
+				(%d, '_qty', %s),
+				(%d, '_tax_class', %s),
+				(%d, '_product_id', %s),
+				(%d, '_variation_id', %s),
 
-		// Set line item totals, either passed in or from the product
-		wc_add_order_item_meta( $item_id, '_line_subtotal',     $order_item['recurring_line_subtotal'] );
-		wc_add_order_item_meta( $item_id, '_line_total',        $order_item['recurring_line_total'] );
-		wc_add_order_item_meta( $item_id, '_line_subtotal_tax', $order_item['recurring_line_subtotal_tax'] );
-		wc_add_order_item_meta( $item_id, '_line_tax',          $order_item['recurring_line_tax'] );
+				(%d, '_line_subtotal', %s),
+				(%d, '_line_total', %s),
+				(%d, '_line_subtotal_tax', %s),
+				(%d, '_line_tax', %s)",
+
+				$item_id, $order_item['qty'],
+				$item_id, $order_item['tax_class'],
+				$item_id, $order_item['product_id'],
+				$item_id, $order_item['variation_id'],
+
+				$item_id, $order_item['recurring_line_subtotal'],
+				$item_id, $order_item['recurring_line_total'],
+				$item_id, $order_item['recurring_line_subtotal_tax'],
+				$item_id, $order_item['recurring_line_tax']
+		) );
 
 		// Save tax data array added in WC 2.2 (so it won't exist for all orders/subscriptions)
 		self::add_line_tax_data( $item_id, $order_item_id, $order_item );
