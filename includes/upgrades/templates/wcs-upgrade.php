@@ -30,11 +30,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<p><?php esc_html_e( 'The WooCommerce Subscriptions plugin has been updated!', 'woocommerce-subscriptions' ); ?></p>
 			<p><?php printf( esc_html__( 'Before we send you on your way, we need to update your database to the newest version. If you do not have a recent backup of your site, %snow is the time to create one%s.', 'woocommerce-subscriptions' ), '<a target="_blank" href="https://codex.wordpress.org/Backing_Up_Your_Database">', '</a>' ); ?></p>
 			<?php if ( 'false' == $script_data['really_old_version'] ) : ?>
-			<p><?php printf( esc_html__( 'The full update process for the %s subscriptions on your site will take approximately %s minutes.', 'woocommerce-subscriptions' ), esc_html( $subscription_count ), esc_html( $estimated_duration ) ); ?></p>
+			<p><?php printf( esc_html__( 'The full update process for the %s subscriptions on your site will take between %d and %d minutes.', 'woocommerce-subscriptions' ), esc_html( $subscription_count ), round( $estimated_duration * 0.75 ), round( $estimated_duration * 1.5 )  ); ?></p>
 			<?php else : ?>
 			<p><?php esc_html_e( 'The update process may take a little while, so please be patient.', 'woocommerce-subscriptions' ); ?></p>
 			<?php endif; ?>
-			<p><?php esc_html_e( 'Customers and other non-administrative can browse and purchase from your store without interuption while the update is in progress.', 'woocommerce-subscriptions' ); ?></p>
+			<p><?php esc_html_e( 'Customers and other non-administrative users can browse and purchase from your store without interuption while the update is in progress.', 'woocommerce-subscriptions' ); ?></p>
 			<form id="subscriptions-upgrade" method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>">
 				<input type="submit" class="button" value="<?php esc_attr_e( 'Update Database', 'woocommerce-subscriptions' ); ?>">
 			</form>
@@ -42,7 +42,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div id="update-messages">
 			<h2><?php esc_html_e( 'Update in Progress', 'woocommerce-subscriptions' ); ?></h2>
 			<?php if ( 'false' == $script_data['really_old_version'] ) : ?>
-			<p><?php printf( esc_html__( 'The full update process for the %s subscriptions on your site will take approximately %s minutes. Customers can continue to browse and purchase from your store during this time. No renewals will be processed until the update process completes.', 'woocommerce-subscriptions' ), esc_html( $subscription_count ), esc_html( $estimated_duration ) ); ?></p>
 			<p><?php printf( esc_html__( 'This page will display the results of the process as each batch of %s subscriptions is updated.', 'woocommerce-subscriptions' ), esc_html( $batch_size ) ); ?></p>
 			<?php else : ?>
 			<p><?php esc_html_e( 'This page will display the results of the process as each batch of data is updated.', 'woocommerce-subscriptions' ); ?></p>
