@@ -152,6 +152,11 @@ class WCS_Upgrade_2_0 {
 			}
 		}
 
+		// Double check we actually have no more subscriptions to upgrade as sometimes they can fall through the cracks
+		if ( $upgraded_subscription_count < $batch_size && $upgraded_subscription_count > 0 ) {
+			$upgraded_subscription_count += self::upgrade_subscriptions( $batch_size );
+		}
+
 		WCS_Upgrade_Logger::add( sprintf( 'Upgraded batch of %d subscriptions', $upgraded_subscription_count ) );
 
 		return $upgraded_subscription_count;
