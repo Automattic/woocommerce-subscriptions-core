@@ -73,7 +73,7 @@ class WC_Subscriptions_Upgrader {
 				} else {
 
 					// Run upgrades as soon as admin hits site
-					add_action( 'init', __CLASS__ . '::upgrade', 11 );
+					add_action( 'wp_loaded', __CLASS__ . '::upgrade', 11 );
 
 				}
 
