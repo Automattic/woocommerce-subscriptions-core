@@ -704,8 +704,9 @@ class WC_Subscription extends WC_Order {
 			throw new InvalidArgumentException( __( 'Invalid data. First parameter was empty when passed to update_dates().', 'woocommerce-subscriptions' ) );
 		}
 
-		$date_keys  = array_keys( wcs_get_subscription_date_types() );
-		$extra_keys = array_diff( array_keys( $dates ), $date_keys );
+		$allowed_date_keys = array_keys( wcs_get_subscription_date_types() );
+		$passed_date_keys  = array_keys( $dates );
+		$extra_keys        = array_diff( str_replace( '_date', '', $passed_date_keys ), $allowed_date_keys );
 		if ( ! empty( $extra_keys ) ) {
 			throw new InvalidArgumentException( __( 'Invalid data. First parameter has a date that is not in the registered date types.', 'woocommerce-subscriptions' ) );
 		}
@@ -737,7 +738,7 @@ class WC_Subscription extends WC_Order {
 			}
 		}
 
-		foreach ( $date_keys as $date_type ) {
+		foreach ( $allowed_date_keys as $date_type ) {
 			if ( ! array_key_exists( $date_type, $timestamps ) ) {
 				$timestamps[ $date_type ] = $this->get_time( $date_type );
 			}
