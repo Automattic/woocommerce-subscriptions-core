@@ -35,7 +35,7 @@ class WCS_Meta_Box_Schedule {
 	 */
 	public static function save( $post_id, $post ) {
 
-		if ( 'shop_subscription' == $post->post_type && ! empty( $_POST['woocommerce_meta_nonce'] ) || wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) {
+		if ( 'shop_subscription' == $post->post_type && ! empty( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) {
 
 			if ( isset( $_POST['_billing_interval'] ) ) {
 				update_post_meta( $post_id, '_billing_interval', $_POST['_billing_interval'] );
