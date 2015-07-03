@@ -413,7 +413,8 @@ class WC_Subscriptions_Switcher {
 	 */
 	protected static function add_switch_query_args( $subscription_id, $item_id, $permalink ) {
 
-		$permalink = add_query_arg( array( 'switch-subscription' => absint( $subscription_id ), 'item' => absint( $item_id ) ), $permalink );
+		// manually add a nonce because we can't use wp_nonce_url() (it would escape the URL)
+		$permalink = add_query_arg( array( 'switch-subscription' => absint( $subscription_id ), 'item' => absint( $item_id ), '_wcsnonce' => wp_create_nonce( 'wcs_switch_request' ) ), $permalink );
 
 		return apply_filters( 'woocommerce_subscriptions_add_switch_query_args', $permalink, $subscription_id, $item_id );
 	}
@@ -848,8 +849,12 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function validate_switch_request( $is_valid, $product_id, $quantity, $variation_id = '' ){
 
-		if ( ! isset ( $_GET['switch-subscription'] ) ) {
+		if ( ! isset( $_GET['switch-subscription'] ) ) {
 			return $is_valid;
+		}
+
+		if ( empty( $_GET['_wcsnonce'] ) || ! wp_verify_nonce( $_GET['_wcsnonce'], 'wcs_switch_request' ) ) {
+			return false;
 		}
 
 		$subscription = wcs_get_subscription( $_GET['switch-subscription'] );
