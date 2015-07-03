@@ -407,8 +407,8 @@ class WC_Subscriptions_Upgrader {
 	 */
 	public static function display_database_upgrade_helper() {
 
-		wp_register_style( 'wcs-upgrade', plugins_url( '/css/wcs-upgrade.css', WC_Subscriptions::$plugin_file ) );
-		wp_register_script( 'wcs-upgrade', plugins_url( '/js/wcs-upgrade.js', WC_Subscriptions::$plugin_file ), 'jquery' );
+		wp_register_style( 'wcs-upgrade', plugins_url( '/assets/css/wcs-upgrade.css', WC_Subscriptions::$plugin_file ) );
+		wp_register_script( 'wcs-upgrade', plugins_url( '/assets/js/wcs-upgrade.js', WC_Subscriptions::$plugin_file ), 'jquery' );
 
 		$script_data = array(
 			'really_old_version'        => ( version_compare( self::$active_version, '1.4', '<' ) ) ? 'true' : 'false',
@@ -479,7 +479,7 @@ class WC_Subscriptions_Upgrader {
 	 * @return void
 	 */
 	public static function admin_css() {
-		wp_enqueue_style( 'woocommerce-subscriptions-about', plugins_url( '/css/about.css', WC_Subscriptions::$plugin_file ), array(), self::$active_version );
+		wp_enqueue_style( 'woocommerce-subscriptions-about', plugins_url( '/assets/css/about.css', WC_Subscriptions::$plugin_file ), array(), self::$active_version );
 	}
 
 	/**
