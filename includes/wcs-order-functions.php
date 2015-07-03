@@ -73,6 +73,49 @@ function wcs_copy_order_address( $from_order, $to_order, $address_type = 'all' )
 	return apply_filters( 'woocommerce_subscriptions_copy_order_address', $to_order, $from_order, $address_type );
 }
 
+
+/**
+ * Wrapper function to get the address from an order / subscription in array format
+ * @param  WC_Order $order The order / subscription we want to get the order from
+ * @param  string $address_type shipping|billing. Default is shipping
+ * @return array
+ */
+function wcs_get_order_address( $order, $address_type = 'shipping' ) {
+	if ( ! is_object( $order ) ) {
+		return array();
+	}
+
+	if ( 'billing' == $address_type ) {
+		$address = array(
+			'first_name' => $order->billing_first_name,
+			'last_name'  => $order->billing_last_name,
+			'company'    => $order->billing_company,
+			'address_1'  => $order->billing_address_1,
+			'address_2'  => $order->billing_address_2,
+			'city'       => $order->billing_city,
+			'state'      => $order->billing_state,
+			'postcode'   => $order->billing_postcode,
+			'country'    => $order->billing_country,
+			'email'      => $order->billing_email,
+			'phone'      => $order->billing_phone,
+		);
+	} else {
+		$address = array(
+			'first_name' => $order->shipping_first_name,
+			'last_name'  => $order->shipping_last_name,
+			'company'    => $order->shipping_company,
+			'address_1'  => $order->shipping_address_1,
+			'address_2'  => $order->shipping_address_2,
+			'city'       => $order->shipping_city,
+			'state'      => $order->shipping_state,
+			'postcode'   => $order->shipping_postcode,
+			'country'    => $order->shipping_country,
+		);
+	}
+
+	return apply_filters( 'wcs_get_order_address', $address, $address_type, $order );
+}
+
 /**
  * Checks an order to see if it contains a subscription.
  *
