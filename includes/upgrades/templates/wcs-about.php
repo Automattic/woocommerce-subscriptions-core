@@ -40,7 +40,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 
 		<div class="feature-section col two-col">
 			<div class="feature-image">
-				<img src="<?php echo esc_url( plugins_url( '/images/checkout-recurring-totals.png', WC_Subscriptions::$plugin_file ) ); ?>" />
+				<img src="<?php echo esc_url( plugins_url( '/assets/images/checkout-recurring-totals.png', WC_Subscriptions::$plugin_file ) ); ?>" />
 			</div>
 
 			<div class="last-feature feature-copy">
@@ -54,7 +54,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 		<div class="feature-section col two-col">
 
 			<div class="last-feature feature-right feature-image">
-				<img src="<?php echo esc_url( plugins_url( '/images/add-edit-subscription-screen.png', WC_Subscriptions::$plugin_file ) ); ?>" />
+				<img src="<?php echo esc_url( plugins_url( '/assets/images/add-edit-subscription-screen.png', WC_Subscriptions::$plugin_file ) ); ?>" />
 			</div>
 
 			<div class="feature-copy">
@@ -67,7 +67,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 
 		<div class="feature-section col two-col">
 			<div class="feature-image">
-				<img src="<?php echo esc_url( plugins_url( '/images/view-subscription.png', WC_Subscriptions::$plugin_file ) ); ?>" />
+				<img src="<?php echo esc_url( plugins_url( '/assets/images/view-subscription.png', WC_Subscriptions::$plugin_file ) ); ?>" />
 			</div>
 
 			<div class="last-feature feature-copy">
@@ -83,19 +83,19 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 		<div class="feature-section col three-col">
 
 			<div>
-				<img src="<?php echo esc_url( plugins_url( '/images/new-subscriptions-list-table.jpg', WC_Subscriptions::$plugin_file ) ); ?>" />
+				<img src="<?php echo esc_url( plugins_url( '/assets/images/new-subscriptions-list-table.jpg', WC_Subscriptions::$plugin_file ) ); ?>" />
 				<h3><?php esc_html_e( 'Improved Subscriptions Table', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php printf( esc_html__( 'The Subscriptions administration table has been redesigned. In addition to being faster to search, sort and filter, it now displays more of a subscription\'s information, including the recurring total and payment method.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'edit.php?post_type=shop_subscription' ) ) . '">', '</a>' ); ?></p>
 			</div>
 
 			<div>
-				<img src="<?php echo esc_url( plugins_url( '/images/admin-change-payment-method.jpg', WC_Subscriptions::$plugin_file ) ); ?>" />
+				<img src="<?php echo esc_url( plugins_url( '/assets/images/admin-change-payment-method.jpg', WC_Subscriptions::$plugin_file ) ); ?>" />
 				<h3><?php esc_html_e( 'Change Payment Method', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php printf( esc_html__( 'For a store manager to change a subscription from automatic to manual renewal payments (or manual to automatic) with Subscriptions v1.5, the database needed to be modified directly. Subscriptions now provides a way for payment gateways to allow you to change that from the new %sEdit Subscription%s interface.', 'woocommerce-subscriptions' ), '<strong>', '</strong>' ); ?></p>
 			</div>
 
 			<div class="last-feature">
-				<img src="<?php echo esc_url( plugins_url( '/images/billing-schedules-meta-box.png', WC_Subscriptions::$plugin_file ) ); ?>" />
+				<img src="<?php echo esc_url( plugins_url( '/assets/images/billing-schedules-meta-box.png', WC_Subscriptions::$plugin_file ) ); ?>" />
 				<h3><?php esc_html_e( 'Change Trial and End Dates', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php printf( esc_html__( 'It was already possible to change a subscription\'s next payment date, but some store managers wanted to provide a customer with an extended free trial or add an extra month to the expiration date. Now you can change all of these dates from the %sEdit Subscription%s screen.', 'woocommerce-subscriptions' ), '<strong>', '</strong>' ); ?></p>
 			</div>
