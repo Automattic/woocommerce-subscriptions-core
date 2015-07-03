@@ -228,7 +228,7 @@ class WC_Subscriptions_Switcher {
 	public static function add_switch_query_arg_grouped( $permalink ) {
 
 		if ( isset ( $_GET['switch-subscription'] ) ) {
-			$permalink = add_query_arg( array( 'switch-subscription' => absint( $_GET['switch-subscription'] ), 'item' => absint( $_GET['item'] ) ), $permalink );
+			$permalink = self::add_switch_query_args( $_GET['switch-subscription'], $_GET['item'], $permalink );
 		}
 
 		return $permalink;
@@ -253,7 +253,7 @@ class WC_Subscriptions_Switcher {
 			return $permalink;
 		}
 
-		return add_query_arg( array( 'switch-subscription' => absint( $_GET['switch-subscription'] ), 'item' => absint( $_GET['item'] ) ), $permalink );
+		return self::add_switch_query_args( $_GET['switch-subscription'], $_GET['item'], $permalink );
 	}
 
 	/**
@@ -399,9 +399,23 @@ class WC_Subscriptions_Switcher {
 			$switch_url = get_permalink( $product->id );
 		}
 
-		$switch_url = add_query_arg( array( 'switch-subscription' => $subscription->id, 'item' => $item_id ), $switch_url );
+		$switch_url = self::add_switch_query_args( $subscription->id, $item_id, $switch_url );
 
 		return apply_filters( 'woocommerce_subscriptions_switch_url', $switch_url, $item_id, $item, $subscription );
+	}
+
+	/**
+	 * Add the switch parameters to a URL for a given subscription and item.
+	 *
+	 * @param WC_Subscription $subscription An instance of WC_Subscription
+	 * @param array $item An order item on the subscription
+	 * @since 2.0
+	 */
+	protected static function add_switch_query_args( $subscription_id, $item_id, $permalink ) {
+
+		$permalink = add_query_arg( array( 'switch-subscription' => absint( $subscription_id ), 'item' => absint( $item_id ) ), $permalink );
+
+		return apply_filters( 'woocommerce_subscriptions_add_switch_query_args', $permalink, $subscription_id, $item_id );
 	}
 
 	/**
@@ -1326,7 +1340,7 @@ class WC_Subscriptions_Switcher {
 	public static function addons_add_to_cart_url( $add_to_cart_url ) {
 
 		if ( isset( $_GET['switch-subscription'] ) && false === strpos( $add_to_cart_url, 'switch-subscription' ) ) {
-			$add_to_cart_url = add_query_arg( array( 'switch-subscription' => absint( $_GET['switch-subscription'] ), 'item' => absint( $_GET['item'] ) ), $add_to_cart_url );
+			$add_to_cart_url = self::add_switch_query_args( $_GET['switch-subscription'], $_GET['item'], $add_to_cart_url );
 		}
 
 		return $add_to_cart_url;
