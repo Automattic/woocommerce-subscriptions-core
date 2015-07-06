@@ -661,6 +661,8 @@ class WC_Subscriptions_Switcher {
 
 					// Finally, change the addresses but only if they've changed
 					self::maybe_update_subscription_address( $order, $subscription );
+
+					$subscription->calculate_totals();
 				}
 			}
 
