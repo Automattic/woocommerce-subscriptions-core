@@ -164,27 +164,7 @@ class WC_Subscriptions_Checkout {
 				do_action( 'woocommerce_add_order_fee_meta', $order_id, $item_id, $fee, $fee_key );
 			}
 
-			// Store shipping for all packages
-			foreach ( $cart->get_shipping_packages() as $base_package ) {
-
-				$package = WC()->shipping->calculate_shipping_for_package( $base_package );
-
-				foreach ( WC()->shipping->get_packages() as $package_key => $package_to_ignore ) {
-
-					if ( isset( $package['rates'][ WC()->checkout()->shipping_methods[ $package_key ] ] ) ) {
-
-						$item_id = $subscription->add_shipping( $package['rates'][ WC()->checkout()->shipping_methods[ $package_key ] ] );
-
-						if ( ! $item_id ) {
-							throw new Exception( __( 'Error: Unable to create subscription. Please try again.', 'woocommerce-subscriptions' ) );
-						}
-
-						// Allows plugins to add order item meta to shipping
-						do_action( 'woocommerce_add_shipping_order_item', $subscription->id, $item_id, $package_key );
-						do_action( 'woocommerce_subscriptions_add_recurring_shipping_order_item', $subscription->id, $item_id, $package_key );
-					}
-				}
-			}
+			self::add_shipping( $subscription, $cart );
 
 			// Store tax rows
 			foreach ( array_keys( $cart->taxes + $cart->shipping_taxes ) as $tax_rate_id ) {
@@ -218,6 +198,36 @@ class WC_Subscriptions_Checkout {
 		}
 
 		return $subscription;
+	}
+
+
+	/**
+	 * Stores shipping info on the subscription
+	 * @param WC_Subscription $subscription instance of a subscriptions object
+	 * @param WC_Cart $cart A cart with recurring items in it
+	 */
+	public static function add_shipping( $subscription, $cart ) {
+		// Store shipping for all packages
+		foreach ( $cart->get_shipping_packages() as $base_package ) {
+
+			$package = WC()->shipping->calculate_shipping_for_package( $base_package );
+
+			foreach ( WC()->shipping->get_packages() as $package_key => $package_to_ignore ) {
+
+				if ( isset( $package['rates'][ WC()->checkout()->shipping_methods[ $package_key ] ] ) ) {
+
+					$item_id = $subscription->add_shipping( $package['rates'][ WC()->checkout()->shipping_methods[ $package_key ] ] );
+
+					if ( ! $item_id ) {
+						throw new Exception( __( 'Error: Unable to create subscription. Please try again.', 'woocommerce-subscriptions' ) );
+					}
+
+					// Allows plugins to add order item meta to shipping
+					do_action( 'woocommerce_add_shipping_order_item', $subscription->id, $item_id, $package_key );
+					do_action( 'woocommerce_subscriptions_add_recurring_shipping_order_item', $subscription->id, $item_id, $package_key );
+				}
+			}
+		}
 	}
 
 	/**
