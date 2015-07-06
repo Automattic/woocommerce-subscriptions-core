@@ -648,7 +648,7 @@ class WC_Subscriptions_Switcher {
 
 						if ( $is_different_payment_date ) {
 							$updated_dates['next_payment'] = date( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] );
-						} elseif ( 1 == $cart_item['data']->subscription_length || $cart_item['subscription_switch']['first_payment_timestamp'] >= $recurring_cart->end_date ) {
+						} elseif ( 1 == $cart_item['data']->subscription_length || date( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] ) >= $recurring_cart->end_date ) {
 							$subscription->delete_date( 'next_payment' );
 						}
 
