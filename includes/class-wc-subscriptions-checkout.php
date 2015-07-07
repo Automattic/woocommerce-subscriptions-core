@@ -203,11 +203,12 @@ class WC_Subscriptions_Checkout {
 
 	/**
 	 * Stores shipping info on the subscription
+	 *
 	 * @param WC_Subscription $subscription instance of a subscriptions object
 	 * @param WC_Cart $cart A cart with recurring items in it
 	 */
 	public static function add_shipping( $subscription, $cart ) {
-		// Store shipping for all packages
+
 		foreach ( $cart->get_shipping_packages() as $base_package ) {
 
 			$package = WC()->shipping->calculate_shipping_for_package( $base_package );

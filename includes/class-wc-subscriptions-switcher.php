@@ -679,11 +679,13 @@ class WC_Subscriptions_Switcher {
 
 	/**
 	 * Update shipping method on the subscription if the order changed anything
+	 *
 	 * @param  WC_Order $order The new order
 	 * @param  WC_Subscription $subscription The original subscription
 	 * @param  WC_Cart $recurring_cart A recurring cart
 	 */
-	public static function update_shipping_methods( $order, $subscription, $recurring_cart ) {
+	public static function update_shipping_methods( $subscription, $recurring_cart ) {
+
 		// First, archive all the shipping methods
 		foreach ( $subscription->get_shipping_methods() as $shipping_method_id => $shipping_method ) {
 			wc_update_order_item( $shipping_method_id, array( 'order_item_type' => 'shipping_switched' ) );
@@ -695,6 +697,7 @@ class WC_Subscriptions_Switcher {
 
 	/**
 	 * Updates address on the subscription if one of them is changed.
+	 *
 	 * @param  WC_Order $order The new order
 	 * @param  WC_Subscription $subscription The original subscription
 	 */
