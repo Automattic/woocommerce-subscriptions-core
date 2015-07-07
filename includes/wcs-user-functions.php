@@ -222,19 +222,19 @@ function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 		if ( $subscription->can_be_updated_to( 'on-hold' ) && wcs_can_user_put_subscription_on_hold( $subscription, $user_id ) && ! $admin_with_suspension_disallowed ) {
 			$actions['suspend'] = array(
 				'url'  => wcs_get_users_change_status_link( $subscription->id, 'on-hold' ),
-				'name' => __( 'Suspend', 'woocommerce-subscriptions' )
+				'name' => __( 'Suspend', 'woocommerce-subscriptions' ),
 			);
 		} elseif ( $subscription->can_be_updated_to( 'active' ) && ! $subscription->needs_payment() ) {
 			$actions['reactivate'] = array(
 				'url'  => wcs_get_users_change_status_link( $subscription->id, 'active' ),
-				'name' => __( 'Reactivate', 'woocommerce-subscriptions' )
+				'name' => __( 'Reactivate', 'woocommerce-subscriptions' ),
 			);
 		}
 
 		if ( wcs_can_user_resubscribe_to( $subscription, $user_id ) ) {
 			$actions['resubscribe'] = array(
 				'url'  => wcs_get_users_resubscribe_link( $subscription ),
-				'name' => __( 'Resubscribe', 'woocommerce-subscriptions' )
+				'name' => __( 'Resubscribe', 'woocommerce-subscriptions' ),
 			);
 		}
 
@@ -242,7 +242,7 @@ function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 		if ( $subscription->can_be_updated_to( 'cancelled' ) && $subscription->get_time( 'next_payment' ) > 0 ) {
 			$actions['cancel'] = array(
 				'url'  => wcs_get_users_change_status_link( $subscription->id, 'cancelled' ),
-				'name' => __( 'Cancel', 'woocommerce-subscriptions' )
+				'name' => __( 'Cancel', 'woocommerce-subscriptions' ),
 			);
 		}
 	}

@@ -118,7 +118,7 @@ class WCS_Email_Completed_Switch_Order extends WC_Email_Customer_Completed_Order
 			array(
 				'order'         => $this->object,
 				'subscriptions' => $this->subscriptions,
-				'email_heading' => $this->get_heading()
+				'email_heading' => $this->get_heading(),
 			),
 			'',
 			$this->template_base
@@ -139,7 +139,7 @@ class WCS_Email_Completed_Switch_Order extends WC_Email_Customer_Completed_Order
 			array(
 				'order'         => $this->object,
 				'subscriptions' => $this->subscriptions,
-				'email_heading' => $this->get_heading()
+				'email_heading' => $this->get_heading(),
 			),
 			'',
 			$this->template_base

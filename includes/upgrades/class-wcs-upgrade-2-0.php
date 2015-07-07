@@ -248,7 +248,7 @@ class WCS_Upgrade_2_0 {
 
 		$item_id = wc_add_order_item( $new_subscription->id, array(
 			'order_item_name' => $order_item['name'],
-			'order_item_type' => 'line_item'
+			'order_item_type' => 'line_item',
 		) );
 
 		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: new line item ID %d added', $new_subscription->id, $item_id ) );
@@ -302,7 +302,7 @@ class WCS_Upgrade_2_0 {
 
 		// Add variation and any other meta
 		foreach ( $meta_keys_to_copy as $meta_key ) {
-			foreach( $order_item['item_meta'][ $meta_key ] as $meta_value ) {
+			foreach ( $order_item['item_meta'][ $meta_key ] as $meta_value ) {
 				wc_add_order_item_meta( $item_id, $meta_key, $meta_value );
 			}
 		}
@@ -465,7 +465,7 @@ class WCS_Upgrade_2_0 {
 
 		$old_hook_args = array(
 			'user_id'          => $old_subscription['user_id'],
-			'subscription_key' => $old_subscription['subscription_key']
+			'subscription_key' => $old_subscription['subscription_key'],
 		);
 
 		foreach ( $date_keys as $new_key => $old_keys ) {
@@ -482,7 +482,7 @@ class WCS_Upgrade_2_0 {
 
 				if ( $next_scheduled > 0 ) {
 
-					if ( $new_key == 'end_of_prepaid_term' ) {
+					if ( 'end_of_prepaid_term' == $new_key ) {
 						wc_schedule_single_action( $next_scheduled, 'woocommerce_scheduled_subscription_end_of_prepaid_term', array( 'subscription_id' => $new_subscription->id ) );
 					} else {
 						$dates_to_update[ $new_key ] = date( 'Y-m-d H:i:s', $next_scheduled );
@@ -600,7 +600,7 @@ class WCS_Upgrade_2_0 {
 		$query_meta_values  = array();
 		$query_placeholders = array();
 
-		foreach( $order_meta as $meta_key => $meta_value ) {
+		foreach ( $order_meta as $meta_key => $meta_value ) {
 			if ( ! in_array( $meta_key, $meta_keys_to_ignore ) ) {
 				$query_meta_values = array_merge( $query_meta_values, array(
 					$subscription_id,

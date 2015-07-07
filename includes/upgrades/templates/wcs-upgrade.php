@@ -30,7 +30,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<p><?php esc_html_e( 'The WooCommerce Subscriptions plugin has been updated!', 'woocommerce-subscriptions' ); ?></p>
 			<p><?php printf( esc_html__( 'Before we send you on your way, we need to update your database to the newest version. If you do not have a recent backup of your site, %snow is the time to create one%s.', 'woocommerce-subscriptions' ), '<a target="_blank" href="https://codex.wordpress.org/Backing_Up_Your_Database">', '</a>' ); ?></p>
 			<?php if ( 'false' == $script_data['really_old_version'] ) : ?>
-			<p><?php printf( esc_html__( 'The full update process for the %s subscriptions on your site will take between %d and %d minutes.', 'woocommerce-subscriptions' ), esc_html( $subscription_count ), round( $estimated_duration * 0.75 ), round( $estimated_duration * 1.5 )  ); ?></p>
+			<p><?php printf( esc_html__( 'The full update process for the %s subscriptions on your site will take between %d and %d minutes.', 'woocommerce-subscriptions' ), esc_html( $subscription_count ), round( $estimated_duration * 0.75 ), round( $estimated_duration * 1.5 ) ); ?></p>
 			<?php else : ?>
 			<p><?php esc_html_e( 'The update process may take a little while, so please be patient.', 'woocommerce-subscriptions' ); ?></p>
 			<?php endif; ?>

@@ -780,7 +780,7 @@ class WC_Subscription extends WC_Order {
 			}
 		}
 
-		if ( ! empty ( $messages ) ) {
+		if ( ! empty( $messages ) ) {
 			throw new Exception( join( ' ', $messages ) );
 		}
 
@@ -1593,7 +1593,7 @@ class WC_Subscription extends WC_Order {
 
 		$sign_up_fee = 0;
 
-		foreach( $this->get_items() as $line_item ) {
+		foreach ( $this->get_items() as $line_item ) {
 			$sign_up_fee += $this->get_items_sign_up_fee( $line_item );
 		}
 
@@ -1626,7 +1626,7 @@ class WC_Subscription extends WC_Order {
 			$original_order_item = '';
 
 			// Find the matching item on the order
-			foreach( $this->order->get_items() as $order_item ) {
+			foreach ( $this->order->get_items() as $order_item ) {
 				if ( wcs_get_canonical_product_id( $line_item ) == wcs_get_canonical_product_id( $order_item ) ) {
 					$original_order_item = $order_item;
 					break;
@@ -1648,7 +1648,6 @@ class WC_Subscription extends WC_Order {
 				// Sign-up fee is any amount on top of recurring amount
 				$sign_up_fee = max( $original_order_item['line_total'] / $original_order_item['qty'] - $line_item['line_total'] / $line_item['qty'], 0 );
 			}
-
 		}
 
 		return apply_filters( 'woocommerce_subscription_items_sign_up_fee', $sign_up_fee, $line_item, $this );

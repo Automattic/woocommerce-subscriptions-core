@@ -76,7 +76,6 @@ class WC_Subscriptions_Upgrader {
 					add_action( 'wp_loaded', __CLASS__ . '::upgrade', 11 );
 
 				}
-
 			} elseif ( is_admin() && isset( $_GET['page'] ) && 'wcs-about' == $_GET['page'] ) {
 
 				add_action( 'admin_menu', __CLASS__ . '::updated_welcome_page' );
@@ -438,7 +437,6 @@ class WC_Subscriptions_Upgrader {
 			if ( $subscription_count > 10000 ) {
 				$estimated_duration *= 2;
 			}
-
 		}
 
 		$about_page_url = self::$about_page_url;
@@ -518,7 +516,6 @@ class WC_Subscriptions_Upgrader {
 				$subscription_count = self::get_total_subscription_count();
 				update_option( 'wcs_upgrade_initial_total_subscription_count', $subscription_count );
 			}
-
 		} else {
 
 			if ( null === self::$old_subscription_count ) {
