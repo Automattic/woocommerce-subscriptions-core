@@ -1620,7 +1620,7 @@ class WC_Subscriptions_Cart {
 			'subscription_interval' => self::get_cart_subscription_interval(),
 			'subscription_period'   => self::get_cart_subscription_period(),
 			'trial_length'          => self::get_cart_subscription_trial_length(),
-			'trial_period'          => self::get_cart_subscription_trial_period()
+			'trial_period'          => self::get_cart_subscription_trial_period(),
 		);
 
 		$is_one_payment = ( self::get_cart_subscription_length() > 0 && self::get_cart_subscription_length() == self::get_cart_subscription_interval() ) ? true : false;

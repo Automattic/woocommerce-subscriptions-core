@@ -136,7 +136,7 @@ class WCS_Upgrade_1_4 {
 		$order_ids = implode( ',', array_map( 'absint', array_unique( $order_ids ) ) );
 
 		// Now set the order totals to $0 (can't use $wpdb->update as it only allows joining WHERE clauses with AND)
-		if ( ! empty ( $order_ids ) ) {
+		if ( ! empty( $order_ids ) ) {
 			$wpdb->query(
 				"UPDATE $wpdb->postmeta
 				SET `meta_value` = 0

@@ -65,7 +65,7 @@ class WCS_Admin_Post_Types {
 	public function posts_clauses( $pieces, $query ) {
 		global $wpdb;
 
-		if ( ! is_admin() || ! isset ( $query->query['post_type'] ) || 'shop_subscription' !== $query->query['post_type'] ) {
+		if ( ! is_admin() || ! isset( $query->query['post_type'] ) || 'shop_subscription' !== $query->query['post_type'] ) {
 			return $pieces;
 		}
 
@@ -744,7 +744,7 @@ class WCS_Admin_Post_Types {
 			7 => __( 'Subscription saved.', 'woocommerce-subscriptions' ),
 			8 => __( 'Subscription submitted.', 'woocommerce-subscriptions' ),
 			9 => sprintf( __( 'Subscription scheduled for: <strong>%1$s</strong>.', 'woocommerce-subscriptions' ), date_i18n( __( 'M j, Y @ G:i', 'woocommerce-subscriptions' ), strtotime( $post->post_date ) ) ),
-			10 => __( 'Subscription draft updated.', 'woocommerce-subscriptions' )
+			10 => __( 'Subscription draft updated.', 'woocommerce-subscriptions' ),
 		);
 
 		return $messages;

@@ -114,7 +114,7 @@ class WCS_Email_Completed_Renewal_Order extends WC_Email_Customer_Completed_Orde
 			$this->template_html,
 			array(
 				'order'         => $this->object,
-				'email_heading' => $this->get_heading()
+				'email_heading' => $this->get_heading(),
 			),
 			'',
 			$this->template_base
@@ -134,7 +134,7 @@ class WCS_Email_Completed_Renewal_Order extends WC_Email_Customer_Completed_Orde
 			$this->template_plain,
 			array(
 				'order'         => $this->object,
-				'email_heading' => $this->get_heading()
+				'email_heading' => $this->get_heading(),
 			),
 			'',
 			$this->template_base

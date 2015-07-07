@@ -29,7 +29,7 @@ function wcs_get_subscription_period_strings( $number = 1, $period = '' ) {
 			'day'   => sprintf( _n( 'day', '%s days', $number, 'woocommerce-subscriptions' ), $number ),
 			'week'  => sprintf( _n( 'week', '%s weeks', $number, 'woocommerce-subscriptions' ), $number ),
 			'month' => sprintf( _n( 'month', '%s months', $number, 'woocommerce-subscriptions' ), $number ),
-			'year'  => sprintf( _n( 'year', '%s years', $number, 'woocommerce-subscriptions' ), $number )
+			'year'  => sprintf( _n( 'year', '%s years', $number, 'woocommerce-subscriptions' ), $number ),
 		)
 	);
 
@@ -50,7 +50,7 @@ function wcs_get_subscription_trial_period_strings( $number = 1, $period = '' ) 
 			'day'   => sprintf( _n( '%s day', 'a %s-day', $number, 'woocommerce-subscriptions' ), $number ),
 			'week'  => sprintf( _n( '%s week', 'a %s-week', $number, 'woocommerce-subscriptions' ), $number ),
 			'month' => sprintf( _n( '%s month', 'a %s-month', $number, 'woocommerce-subscriptions' ), $number ),
-			'year'  => sprintf( _n( '%s year', 'a %s-year', $number, 'woocommerce-subscriptions' ), $number )
+			'year'  => sprintf( _n( '%s year', 'a %s-year', $number, 'woocommerce-subscriptions' ), $number ),
 		)
 	);
 
@@ -155,7 +155,7 @@ function wcs_get_available_time_periods( $form = 'singular' ) {
 			'day'   => _n( 'day', 'days', $number, 'woocommerce-subscriptions' ),
 			'week'  => _n( 'week', 'weeks', $number, 'woocommerce-subscriptions' ),
 			'month' => _n( 'month', 'months', $number, 'woocommerce-subscriptions' ),
-			'year'  => _n( 'year', 'years', $number, 'woocommerce-subscriptions' )
+			'year'  => _n( 'year', 'years', $number, 'woocommerce-subscriptions' ),
 		)
 	);
 

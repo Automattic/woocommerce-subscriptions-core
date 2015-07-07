@@ -120,7 +120,7 @@ class WCS_Email_Customer_Renewal_Invoice extends WC_Email_Customer_Invoice {
 			$this->template_html,
 			array(
 				'order'         => $this->object,
-				'email_heading' => $this->get_heading()
+				'email_heading' => $this->get_heading(),
 			),
 			'',
 			$this->template_base
@@ -140,7 +140,7 @@ class WCS_Email_Customer_Renewal_Invoice extends WC_Email_Customer_Invoice {
 			$this->template_plain,
 			array(
 				'order'         => $this->object,
-				'email_heading' => $this->get_heading()
+				'email_heading' => $this->get_heading(),
 			),
 			'',
 			$this->template_base
@@ -166,7 +166,7 @@ class WCS_Email_Customer_Renewal_Invoice extends WC_Email_Customer_Invoice {
 					'type'    => 'checkbox',
 					'label'   => __( 'Enable this email notification', 'woocommerce' ),
 					'default' => 'yes',
-				)
+				),
 			),
 			$this->form_fields
 		);

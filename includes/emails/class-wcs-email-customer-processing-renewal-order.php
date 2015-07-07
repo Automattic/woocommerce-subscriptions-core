@@ -110,7 +110,7 @@ class WCS_Email_Processing_Renewal_Order extends WC_Email_Customer_Processing_Or
 			$this->template_html,
 			array(
 				'order'         => $this->object,
-				'email_heading' => $this->get_heading()
+				'email_heading' => $this->get_heading(),
 			),
 			'',
 			$this->template_base
@@ -130,7 +130,7 @@ class WCS_Email_Processing_Renewal_Order extends WC_Email_Customer_Processing_Or
 			$this->template_plain,
 			array(
 				'order'         => $this->object,
-				'email_heading' => $this->get_heading()
+				'email_heading' => $this->get_heading(),
 			),
 			'',
 			$this->template_base

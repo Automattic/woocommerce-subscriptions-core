@@ -519,7 +519,7 @@ class WC_Subscriptions_Coupon {
 	 */
 	public static function restore_coupons( $cart ) {
 
-		if ( ! empty ( self::$removed_coupons ) ) {
+		if ( ! empty( self::$removed_coupons ) ) {
 
 			// Can't use $cart->add_dicount here as it calls calculate_totals()
 			WC()->cart->applied_coupons = array_merge( WC()->cart->applied_coupons, self::$removed_coupons );

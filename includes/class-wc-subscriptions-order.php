@@ -114,7 +114,7 @@ class WC_Subscriptions_Order {
 				// We only want sign-up fees for certain product
 				$order_item = self::get_item_by_product_id( $order, $product_id );
 
-				foreach( $subscription->get_items() as $line_item ) {
+				foreach ( $subscription->get_items() as $line_item ) {
 					if ( $line_item['product_id'] == $product_id || $line_item['variation_id'] == $product_id ) {
 						$sign_up_fee += $subscription->get_items_sign_up_fee( $line_item );
 					}
@@ -259,7 +259,7 @@ class WC_Subscriptions_Order {
 
 		$item = self::get_item_by_product_id( $order, $product_id );
 
-		if ( ! empty ( $item ) && isset( $item['item_meta'][ $meta_key ] ) ) {
+		if ( ! empty( $item ) && isset( $item['item_meta'][ $meta_key ] ) ) {
 			$meta_value = $item['item_meta'][ $meta_key ][0];
 		}
 
@@ -354,7 +354,7 @@ class WC_Subscriptions_Order {
 
 			$thank_you_message = '<p>' . _n( 'Your subscription will be activated when payment clears.', 'Your subscriptions will be activated when payment clears.', $subscription_count, 'woocommerce-subscriptions' ) . '</p>';
 			$thank_you_message = sprintf( _n( '%sView the status of your subscription in %syour account%s.%s', '%sView the status of your subscriptions in %syour account%s.%s', $subscription_count, 'woocommerce-subscriptions' ), '<p>', '<a href="' . get_permalink( woocommerce_get_page_id( 'myaccount' ) ) . '">', '</a>','</p>' );
-			echo wp_kses( apply_filters( 'woocommerce_subscriptions_thank_you_message', $thank_you_message, $order_id ), array( 'a' => array( 'href' => array(), 'title' => array() ), 'p' => array(), 'em' => array(), 'strong' => array(), ) );
+			echo wp_kses( apply_filters( 'woocommerce_subscriptions_thank_you_message', $thank_you_message, $order_id ), array( 'a' => array( 'href' => array(), 'title' => array() ), 'p' => array(), 'em' => array(), 'strong' => array() ) );
 		}
 
 	}
@@ -668,7 +668,7 @@ class WC_Subscriptions_Order {
 		$subscriptions         = wcs_get_subscriptions_for_order( $order );
 		$matching_subscription = null;
 
-		if ( ! empty ( $product_id ) ) {
+		if ( ! empty( $product_id ) ) {
 			foreach ( $subscriptions as $subscription ) {
 				foreach ( $subscription->get_items() as $line_item ) {
 					if ( wcs_get_canonical_product_id( $line_item ) == $product_id ) {
@@ -734,7 +734,7 @@ class WC_Subscriptions_Order {
 				'_line_subtotal_tax',
 			);
 
-			foreach( $old_recurring_meta_keys as $index => $meta_key ) {
+			foreach ( $old_recurring_meta_keys as $index => $meta_key ) {
 				$old_recurring_meta_keys[ $index ] = sprintf( '_wcs_migrated_recurring%s', $meta_key );
 			}
 
@@ -758,7 +758,7 @@ class WC_Subscriptions_Order {
 				'_suspension_count',
 			);
 
-			foreach( $old_subscription_meta_keys as $index => $meta_key ) {
+			foreach ( $old_subscription_meta_keys as $index => $meta_key ) {
 				$old_subscription_meta_keys[ $index ] = sprintf( '_wcs_migrated_subscription%s', $meta_key );
 			}
 
