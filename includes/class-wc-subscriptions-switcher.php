@@ -656,11 +656,13 @@ class WC_Subscriptions_Switcher {
 
 					$subscription->add_order_note( sprintf( __( 'Customer switched from: %s to %s.', 'woocommerce-subscriptions' ), $old_item_name, $new_item_name ) );
 
-					// Recalculate new totals for the subscription
-					$subscription->calculate_totals();
+					// Change the shipping
+					self::update_shipping_methods( $subscription, $recurring_cart );
 
 					// Finally, change the addresses but only if they've changed
 					self::maybe_update_subscription_address( $order, $subscription );
+
+					$subscription->calculate_totals();
 				}
 			}
 
@@ -676,7 +678,26 @@ class WC_Subscriptions_Switcher {
 
 
 	/**
+	 * Update shipping method on the subscription if the order changed anything
+	 *
+	 * @param  WC_Order $order The new order
+	 * @param  WC_Subscription $subscription The original subscription
+	 * @param  WC_Cart $recurring_cart A recurring cart
+	 */
+	public static function update_shipping_methods( $subscription, $recurring_cart ) {
+
+		// First, archive all the shipping methods
+		foreach ( $subscription->get_shipping_methods() as $shipping_method_id => $shipping_method ) {
+			wc_update_order_item( $shipping_method_id, array( 'order_item_type' => 'shipping_switched' ) );
+		}
+
+		WC_Subscriptions_Checkout::add_shipping( $subscription, $recurring_cart );
+	}
+
+
+	/**
 	 * Updates address on the subscription if one of them is changed.
+	 *
 	 * @param  WC_Order $order The new order
 	 * @param  WC_Subscription $subscription The original subscription
 	 */
