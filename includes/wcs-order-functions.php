@@ -157,7 +157,7 @@ function wcs_save_downloadable_product_permissions( $order_id ) {
 
 	foreach ( $subscriptions as $subscription ) {
 		if ( sizeof( $subscription->get_items() ) > 0 ) {
-			foreach ( $subscription->get_items() as $item ) {
+			foreach ( $subscription->get_items() as $item_id => $item ) {
 				$_product = $subscription->get_product_from_item( $item );
 
 				if ( $_product && $_product->exists() && $_product->is_downloadable() ) {
