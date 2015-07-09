@@ -164,8 +164,10 @@ function wcs_save_downloadable_product_permissions( $order_id ) {
 					$downloads = $_product->get_files();
 
 					foreach ( array_keys( $downloads ) as $download_id ) {
-						wc_downloadable_file_permission( $download_id, wcs_get_canonical_product_id( $item ), $subscription, $item['qty'] );
-						wcs_revoke_downloadable_file_permission( $item_id, $order_id, $order->user_id );
+						$product_id = wcs_get_canonical_product_id( $item );
+
+						wc_downloadable_file_permission( $download_id, $product_id, $subscription, $item['qty'] );
+						wcs_revoke_downloadable_file_permission( $product_id, $order_id, $order->user_id );
 					}
 				}
 			}
