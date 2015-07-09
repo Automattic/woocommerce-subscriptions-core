@@ -1097,7 +1097,7 @@ class WC_Subscriptions_Order {
 		$subscription_item = self::get_matching_subscription_item( $order, $product_id );
 
 		if ( isset( $subscription_item['line_total'] ) ) {
-			$recurring_amount = $order_item['line_total'] / $order_item['qty'];
+			$recurring_amount = $subscription_item['line_total'] / $subscription_item['qty'];
 		} else {
 			$recurring_amount = 0;
 		}
@@ -1224,12 +1224,12 @@ class WC_Subscriptions_Order {
 
 			// Find the total for all recurring items
 			if ( empty( $product_id ) ) {
-				$recurring_discount_cart_tax += $subscription->get_shipping_tax();
+				$recurring_shipping_tax_total += $subscription->get_shipping_tax();
 			} else {
 				// We want the amount for a specific item (so we need to find if this subscription contains that item)
 				foreach ( $subscription->get_items() as $line_item ) {
 					if ( wcs_get_canonical_product_id( $line_item ) == $product_id ) {
-						$recurring_discount_cart_tax += $subscription->get_shipping_tax();
+						$recurring_shipping_tax_total += $subscription->get_shipping_tax();
 						break;
 					}
 				}
