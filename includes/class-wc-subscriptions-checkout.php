@@ -20,7 +20,7 @@ class WC_Subscriptions_Checkout {
 	 *
 	 * @since 1.0
 	 */
-	public static function init(){
+	public static function init() {
 
 		// We need to create subscriptions on checkout and want to do it after almost all other extensions have added their products/items/fees
 		add_action( 'woocommerce_checkout_order_processed', __CLASS__ . '::process_checkout', 100, 2 );
@@ -248,7 +248,7 @@ class WC_Subscriptions_Checkout {
 					'total'        => $cart_item['line_total'],
 					'tax'          => $cart_item['line_tax'],
 					'tax_data'     => $cart_item['line_tax_data'],
-				)
+				),
 			)
 		);
 
