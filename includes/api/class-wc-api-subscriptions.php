@@ -278,7 +278,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	 * @param $payment_details array payment data from api request
 	 * @since 2.0
 	 */
-	public function update_payment_method( $subscription, $payment_details, $updating ){
+	public function update_payment_method( $subscription, $payment_details, $updating ) {
 		global $wpdb;
 
 		$payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
