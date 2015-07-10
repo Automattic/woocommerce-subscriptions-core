@@ -451,7 +451,7 @@ class WC_Subscriptions_Manager {
 						'total'        => $product->get_price(),
 						'tax'          => 0,
 						'tax_data'     => array( 'subtotal' => array(), 'total' => array() ),
-					)
+					),
 				)
 			);
 
@@ -2181,7 +2181,7 @@ class WC_Subscriptions_Manager {
 
 		} else {
 
-			$new_payment_date      = sprintf( '%s-%s-%s %s', (int)$_POST['wcs_year'], zeroise( (int)$_POST['wcs_month'], 2 ), zeroise( (int)$_POST['wcs_day'], 2 ), date( 'H:i:s', current_time( 'timestamp' ) ) );
+			$new_payment_date      = sprintf( '%s-%s-%s %s', (int) $_POST['wcs_year'], zeroise( (int) $_POST['wcs_month'], 2 ), zeroise( (int) $_POST['wcs_day'], 2 ), date( 'H:i:s', current_time( 'timestamp' ) ) );
 			$new_payment_timestamp = self::update_next_payment_date( $new_payment_date, $_POST['wcs_subscription_key'], self::get_user_id_from_subscription_key( $_POST['wcs_subscription_key'] ), 'user' );
 
 			if ( is_wp_error( $new_payment_timestamp ) ) {
