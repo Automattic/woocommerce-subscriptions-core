@@ -324,6 +324,10 @@ function wcs_get_order_item( $item_id, $subscription ) {
 		throw new InvalidArgumentException( __( 'Invalid data. No valid subscription was passed in.', 'woocommerce-subscriptions' ) );
 	}
 
+	if ( ! absint( $item_id ) ) {
+		throw new InvalidArgumentException( __( 'Invalid data. No valid item id was passed in.', 'woocommerce-subscriptions' ) );
+	}
+
 	foreach ( $subscription->get_items() as $line_item_id => $line_item ) {
 		if ( $item_id == $line_item_id ) {
 			$item = $line_item;

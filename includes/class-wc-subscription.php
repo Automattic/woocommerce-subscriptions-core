@@ -1594,7 +1594,11 @@ class WC_Subscription extends WC_Order {
 		$sign_up_fee = 0;
 
 		foreach ( $this->get_items() as $line_item ) {
-			$sign_up_fee += $this->get_items_sign_up_fee( $line_item );
+			try {
+				$sign_up_fee += $this->get_items_sign_up_fee( $line_item );
+			} catch( Exception $e ) {
+				$sign_up_fee += 0;
+			}
 		}
 
 		return apply_filters( 'woocommerce_subscription_sign_up_fee', $sign_up_fee, $this );

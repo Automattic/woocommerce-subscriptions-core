@@ -863,54 +863,59 @@ class WC_Subscriptions_Switcher {
 	 * @since 1.4
 	 */
 	public static function validate_switch_request( $is_valid, $product_id, $quantity, $variation_id = '' ){
+		try {
 
-		if ( ! isset( $_GET['switch-subscription'] ) ) {
-			return $is_valid;
-		}
-
-		if ( empty( $_GET['_wcsnonce'] ) || ! wp_verify_nonce( $_GET['_wcsnonce'], 'wcs_switch_request' ) ) {
-			return false;
-		}
-
-		$subscription = wcs_get_subscription( $_GET['switch-subscription'] );
-		$item_id      = absint( $_GET['item'] );
-		$item         = wcs_get_order_item( $item_id, $subscription );
-
-		// Check if the chosen variation's attributes are different to the existing subscription's attributes (to support switching between a "catch all" variation)
-		if ( empty( $item ) ) {
-
-			wc_add_notice( __( 'We can not find your old subscription item.', 'woocommerce-subscriptions' ), 'error' );
-			$is_valid = false;
-
-		} else {
-
-			$identical_attributes = true;
-
-			foreach ( $_POST as $key => $value ) {
-				if ( false !== strpos( $key, 'attribute_' ) && ! empty( $item[ str_replace( 'attribute_', '', $key ) ] ) && strtolower( $item[ str_replace( 'attribute_', '', $key ) ] ) != $value ) {
-					$identical_attributes = false;
-					break;
-				}
+			if ( ! isset ( $_GET['switch-subscription'] ) ) {
+				return $is_valid;
 			}
 
-			if ( $product_id == $item['product_id'] && ( empty( $variation_id ) || ( $variation_id == $item['variation_id'] && true == $identical_attributes ) ) && $quantity == $item['qty'] ) {
-				wc_add_notice( __( 'You can not switch to the same subscription.', 'woocommerce-subscriptions' ), 'error' );
+			if ( empty( $_GET['_wcsnonce'] ) || ! wp_verify_nonce( $_GET['_wcsnonce'], 'wcs_switch_request' ) ) {
+				return false;
+			}
+
+			$subscription = wcs_get_subscription( $_GET['switch-subscription'] );
+			$item_id      = absint( $_GET['item'] );
+			$item         = wcs_get_order_item( $item_id, $subscription );
+
+			// Check if the chosen variation's attributes are different to the existing subscription's attributes (to support switching between a "catch all" variation)
+			if ( empty( $item ) ) {
+
+				wc_add_notice( __( 'We can not find your old subscription item.', 'woocommerce-subscriptions' ), 'error' );
 				$is_valid = false;
-			}
 
-			// Also remove any existing items in the cart for switching this item (but don't make the switch invalid)
-			if ( $is_valid ) {
+			} else {
 
-				$existing_switch_items = self::cart_contains_switches();
+				$identical_attributes = true;
 
-				if ( false !== $existing_switch_items ) {
-					foreach ( $existing_switch_items as $cart_item_key => $switch_item ) {
-						if ( $switch_item['item_id'] == $item_id ) {
-							WC()->cart->remove_cart_item( $cart_item_key );
+				foreach ( $_POST as $key => $value ) {
+					if ( false !== strpos( $key, 'attribute_' ) && ! empty( $item[ str_replace( 'attribute_', '', $key ) ] ) && $item[ str_replace( 'attribute_', '', $key ) ] != $value ) {
+						$identical_attributes = false;
+						break;
+					}
+				}
+
+				if ( $product_id == $item['product_id'] && ( empty( $variation_id ) || ( $variation_id == $item['variation_id'] && true == $identical_attributes ) ) && $quantity == $item['qty'] ) {
+					wc_add_notice( __( 'You can not switch to the same subscription.', 'woocommerce-subscriptions' ), 'error' );
+					$is_valid = false;
+				}
+
+				// Also remove any existing items in the cart for switching this item (but don't make the switch invalid)
+				if ( $is_valid ) {
+
+					$existing_switch_items = self::cart_contains_switches();
+
+					if ( false !== $existing_switch_items ) {
+						foreach ( $existing_switch_items as $cart_item_key => $switch_item ) {
+							if ( $switch_item['item_id'] == $item_id ) {
+								WC()->cart->remove_cart_item( $cart_item_key );
+							}
 						}
 					}
 				}
 			}
+		} catch( Exception $e ) {
+			wc_add_notice( __( 'We can not find your old subscription item.', 'woocommerce-subscriptions' ), 'error' );
+			$is_valid = false;
 		}
 
 		return $is_valid;
@@ -923,46 +928,55 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function set_switch_details_in_cart( $cart_item_data, $product_id, $variation_id ) {
 
-		if ( ! isset( $_GET['switch-subscription'] ) ) {
+		try {
+			if ( ! isset( $_GET['switch-subscription'] ) ) {
+				return $cart_item_data;
+			}
+
+			$subscription = wcs_get_subscription( $_GET['switch-subscription'] );
+
+			// Requesting a switch for someone elses subscription
+			if ( $subscription->get_user_id() !== get_current_user_id() ) {
+				WC_Subscriptions::add_notice( __( 'You can not switch this subscription. It appears you do not own the subscription.', 'woocommerce-subscriptions' ), 'error' );
+				WC()->cart->empty_cart( true );
+				wp_redirect( get_permalink( $subscription['product_id'] ) );
+				exit();
+			}
+
+			$item = wcs_get_order_item( absint( $_GET['item'] ), $subscription );
+
+			// Else it's a valid switch
+			$product = get_product( $item['product_id'] );
+
+			$child_products = ( 0 !== $product->post->post_parent ) ? get_product( $product->post->post_parent )->get_children() : array();
+
+			if ( $product_id != $item['product_id'] && ! in_array( $item['product_id'], $child_products ) ) {
+				return $cart_item_data;
+			}
+
+			$next_payment_timestamp = $subscription->get_time( 'next_payment' );
+
+			// If there are no more payments due on the subscription, because we're in the last billing period, we need to use the subscription's expiration date, not next payment date
+			if ( false == $next_payment_timestamp ) {
+				$next_payment_timestamp = $subscription->get_time( 'end' );
+			}
+
+			$cart_item_data['subscription_switch'] = array(
+				'subscription_id'         => $subscription->id,
+				'item_id'                 => absint( $_GET['item'] ),
+				'next_payment_timestamp'  => $next_payment_timestamp,
+				'upgraded_or_downgraded'  => '',
+			);
+
 			return $cart_item_data;
-		}
 
-		$subscription = wcs_get_subscription( $_GET['switch-subscription'] );
+		} catch( Exception $e ) {
 
-		// Requesting a switch for someone elses subscription
-		if ( $subscription->get_user_id() !== get_current_user_id() ) {
-			WC_Subscriptions::add_notice( __( 'You can not switch this subscription. It appears you do not own the subscription.', 'woocommerce-subscriptions' ), 'error' );
+			WC_Subscriptions::add_notice( __( 'There was an error locating the switch details.', 'woocommerce-subscriptions' ), 'error' );
 			WC()->cart->empty_cart( true );
-			wp_redirect( get_permalink( $subscription['product_id'] ) );
+			wp_redirect( get_permalink( wc_get_page_id( 'cart' ) ) );
 			exit();
 		}
-
-		$item = wcs_get_order_item( absint( $_GET['item'] ), $subscription );
-
-		// Else it's a valid switch
-		$product = get_product( $item['product_id'] );
-
-		$child_products = ( 0 !== $product->post->post_parent ) ? get_product( $product->post->post_parent )->get_children() : array();
-
-		if ( $product_id != $item['product_id'] && ! in_array( $item['product_id'], $child_products ) ) {
-			return $cart_item_data;
-		}
-
-		$next_payment_timestamp = $subscription->get_time( 'next_payment' );
-
-		// If there are no more payments due on the subscription, because we're in the last billing period, we need to use the subscription's expiration date, not next payment date
-		if ( false == $next_payment_timestamp ) {
-			$next_payment_timestamp = $subscription->get_time( 'end' );
-		}
-
-		$cart_item_data['subscription_switch'] = array(
-			'subscription_id'         => $subscription->id,
-			'item_id'                 => absint( $_GET['item'] ),
-			'next_payment_timestamp'  => $next_payment_timestamp,
-			'upgraded_or_downgraded'  => '',
-		);
-
-		return $cart_item_data;
 	}
 
 	/**
