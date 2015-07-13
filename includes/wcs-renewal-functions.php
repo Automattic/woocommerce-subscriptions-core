@@ -90,8 +90,10 @@ function wcs_create_renewal_order( $subscription ) {
 			) );
 
 			// Remove recurring line items and set item totals based on recurring line totals
-			foreach ( $item['item_meta'] as $meta_key => $meta_value ) {
-				wc_add_order_item_meta( $recurring_item_id, $meta_key, maybe_unserialize( $meta_value[0] ) );
+			foreach ( $item['item_meta'] as $meta_key => $meta_values ) {
+				foreach ( $meta_values as $meta_value ) {
+					wc_add_order_item_meta( $recurring_item_id, $meta_key, maybe_unserialize( $meta_value ) );
+				}
 			}
 		}
 

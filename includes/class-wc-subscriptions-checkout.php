@@ -263,6 +263,8 @@ class WC_Subscriptions_Checkout {
 		}
 
 		// Allow plugins to add order item meta
+		do_action( 'woocommerce_add_order_item_meta', $item_id, $cart_item, $cart_item_key );
+
 		do_action( 'woocommerce_add_subscription_item_meta', $item_id, $cart_item, $cart_item_key );
 
 		return $item_id;
