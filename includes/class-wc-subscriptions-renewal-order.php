@@ -80,6 +80,8 @@ class WC_Subscriptions_Renewal_Order {
 
 				if ( in_array( $orders_old_status, array( 'pending', 'on-hold', 'failed' ) ) ) {
 					$subscription->payment_complete();
+
+					do_action( 'subscriptions_activated_for_order', $order_id );
 				}
 
 				if ( 'failed' === $orders_old_status ) {

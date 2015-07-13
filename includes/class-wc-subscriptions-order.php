@@ -418,6 +418,9 @@ class WC_Subscriptions_Order {
 					if ( in_array( $old_order_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ) ) ) ) {
 						$subscription->update_dates( array( 'start' => current_time( 'mysql', true ) ) );
 						$subscription->payment_complete();
+
+						// call deprecated hook
+						do_action( 'subscriptions_activated_for_order', $order_id );
 					}
 
 				} elseif ( 'failed' == $old_order_status ) {
