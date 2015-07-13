@@ -39,7 +39,7 @@ class WC_Subscriptions_Order {
 		add_action( 'woocommerce_admin_order_data_after_order_details', __CLASS__ . '::contains_subscription_hidden_field', 10, 1 );
 
 		// Record initial payment against the subscription & set start date based on that payment
-		add_action( 'woocommerce_payment_complete', __CLASS__ . '::maybe_record_subscription_payment', 9, 3 );
+		add_action( 'woocommerce_order_status_changed', __CLASS__ . '::maybe_record_subscription_payment', 9, 3 );
 
 		// Sometimes, even if the order total is $0, the order still needs payment
 		add_filter( 'woocommerce_order_needs_payment', __CLASS__ . '::order_needs_payment' , 10, 3 );
