@@ -19,13 +19,19 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return array Subscription details in post_id => WC_Subscription form.
  * @since  2.0
  */
-function wcs_get_subscriptions_for_order( $order_id ) {
+function wcs_get_subscriptions_for_order( $order_id, $args = array() ) {
 
 	if ( is_object( $order_id ) ) {
 		$order_id = $order_id->id;
 	}
 
-	return wcs_get_subscriptions( array( 'order_id' => $order_id ) );
+	$args = wp_parse_args( $args, array(
+			'order_id'               => $order_id,
+			'subscriptions_per_page' => -1,
+		)
+	);
+
+	return wcs_get_subscriptions( $args );
 }
 
 /**
