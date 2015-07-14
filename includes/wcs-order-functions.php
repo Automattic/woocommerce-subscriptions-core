@@ -88,6 +88,67 @@ function wcs_copy_order_address( $from_order, $to_order, $address_type = 'all' )
 	return apply_filters( 'woocommerce_subscriptions_copy_order_address', $to_order, $from_order, $address_type );
 }
 
+/**
+ * Utility function to copy order meta between two orders. Originally intended to copy meta between
+ * first order and subscription object, then between subscription and renewal orders.
+ *
+ * The hooks used here in those cases are
+ * - wcs_subscription_meta_query
+ * - wcs_subscription_meta
+ * - wcs_renewal_order_meta_query
+ * - wcs_renewal_order_meta
+ *
+ * @param  WC_Order $from_order Order to copy meta from
+ * @param  WC_Order $to_order   Order to copy meta to
+ * @param  string $type type of copy
+ */
+function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
+	global $wpdb;
+
+	if ( ! is_a( $from_order, 'WC_Abstract_Order' ) || ! is_a( $to_order, 'WC_Abstract_Order' ) ) {
+		throw new InvalidArgumentException( __( 'Invalid data. Orders expected aren\'t orders.', 'woocommerce-subscriptions' ) );
+	}
+
+	if ( ! is_string( $type ) ) {
+		throw new InvalidArgumentException( __( 'Invalid data. Type of copy is not a string.', 'woocommerce-subscriptions' ) );
+	}
+
+	if ( ! in_array( $type, array( 'subscription', 'renewal_order' ) ) ) {
+		$type = 'copy_order';
+	}
+
+	$meta_query = $wpdb->prepare(
+		"SELECT `meta_key`, `meta_value`
+		 FROM {$wpdb->postmeta}
+		 WHERE `post_id` = %d
+		 AND `meta_key` NOT LIKE '_schedule_%%'
+		 AND `meta_key` NOT IN (
+			 '_paid_date',
+			 '_completed_date',
+			 '_order_key',
+			 '_edit_lock',
+			 '_wc_points_earned',
+			 '_transaction_id',
+			 '_billing_interval',
+			 '_billing_period',
+			 '_subscription_resubscribe',
+			 '_subscription_renewal',
+			 '_subscription_switch',
+			 '_payment_method',
+			 '_payment_method_title'
+		 )",
+		$from_order->id
+	);
+
+	// Allow extensions to add/remove order meta
+	$meta_query = apply_filters( 'wcs_' . $type . '_meta_query', $meta_query, $to_order, $from_order );
+	$meta       = $wpdb->get_results( $meta_query, 'ARRAY_A' );
+	$meta       = apply_filters( 'wcs_' . $type . '_meta', $meta, $to_query, $from_query );
+
+	foreach ( $meta as $meta_item ) {
+		add_post_meta( $to_order->id, $meta_item['meta_key'], maybe_unserialize( $meta_item['meta_value'] ), true );
+	}
+}
 
 /**
  * Wrapper function to get the address from an order / subscription in array format
