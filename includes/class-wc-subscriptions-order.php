@@ -409,6 +409,7 @@ class WC_Subscriptions_Order {
 		if ( ! wcs_order_contains_renewal( $order_id ) ) {
 
 			$subscriptions = wcs_get_subscriptions_for_order( $order_id );
+			$was_activated = false;
 
 			foreach ( $subscriptions as $subscription ) {
 
@@ -419,14 +420,17 @@ class WC_Subscriptions_Order {
 						$subscription->update_dates( array( 'start' => current_time( 'mysql', true ) ) );
 						$subscription->payment_complete();
 
-						// call deprecated hook
-						do_action( 'subscriptions_activated_for_order', $order_id );
+						$was_activated = true;
 					}
 
 				} elseif ( 'failed' == $old_order_status ) {
 
 					$subscription->payment_failed();
 				}
+			}
+
+			if ( $was_activated ) {
+				do_action( 'subscriptions_activated_for_order', $order_id );
 			}
 		}
 	}

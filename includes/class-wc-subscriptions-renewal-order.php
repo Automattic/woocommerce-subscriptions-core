@@ -72,6 +72,7 @@ class WC_Subscriptions_Renewal_Order {
 		}
 
 		$subscriptions = wcs_get_subscriptions_for_renewal_order( $order_id );
+		$was_activated = false;
 
 		foreach ( $subscriptions as $subscription ) {
 
@@ -80,8 +81,7 @@ class WC_Subscriptions_Renewal_Order {
 
 				if ( in_array( $orders_old_status, array( 'pending', 'on-hold', 'failed' ) ) ) {
 					$subscription->payment_complete();
-
-					do_action( 'subscriptions_activated_for_order', $order_id );
+					$was_activated = true;
 				}
 
 				if ( 'failed' === $orders_old_status ) {
@@ -92,6 +92,10 @@ class WC_Subscriptions_Renewal_Order {
 				$subscription->payment_failed();
 
 			}
+		}
+
+		if ( $was_activated ) {
+			do_action( 'subscriptions_activated_for_order', $order_id );
 		}
 	}
 
