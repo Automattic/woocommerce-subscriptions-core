@@ -147,6 +147,38 @@ class WC_Subscriptions_Checkout {
 				$subscription->update_manual( 'true' );
 			}
 
+			$order_meta_query = $wpdb->prepare(
+				"SELECT `meta_key`, `meta_value`
+				 FROM {$wpdb->postmeta}
+				 WHERE `post_id` = %d
+				 AND `meta_key` NOT LIKE '_schedule_%%'
+				 AND `meta_key` NOT IN (
+					 '_paid_date',
+					 '_completed_date',
+					 '_order_key',
+					 '_edit_lock',
+					 '_wc_points_earned',
+					 '_transaction_id',
+					 '_billing_interval',
+					 '_billing_period',
+					 '_subscription_resubscribe',
+					 '_subscription_renewal',
+					 '_subscription_switch',
+					 '_payment_method',
+					 '_payment_method_title'
+				 )",
+				$order->id
+			);
+
+			// Allow extensions to add/remove order meta
+			$order_meta_query = apply_filters( 'wcs_subscription_meta_query', $order_meta_query, $subscription, $order );
+			$order_meta       = $wpdb->get_results( $order_meta_query, 'ARRAY_A' );
+			$order_meta       = apply_filters( 'wcs_subscription_meta', $order_meta, $subscription, $order );
+
+			foreach ( $order_meta as $meta_item ) {
+				add_post_meta( $subscription->id, $meta_item['meta_key'], maybe_unserialize( $meta_item['meta_value'] ), true );
+			}
+
 			// Store the line items
 			foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
 				$item_id = self::add_cart_item( $subscription, $cart_item, $cart_item_key );
