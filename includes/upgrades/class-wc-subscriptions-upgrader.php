@@ -126,7 +126,7 @@ class WC_Subscriptions_Upgrader {
 	 *
 	 * @since 1.2
 	 */
-	public static function upgrade(){
+	public static function upgrade() {
 		global $wpdb;
 
 		self::set_upgrade_limits();
@@ -195,7 +195,7 @@ class WC_Subscriptions_Upgrader {
 
 		$_GET['wcs_upgrade_step'] = ( ! isset( $_GET['wcs_upgrade_step'] ) ) ? 0 : $_GET['wcs_upgrade_step'];
 
-		switch ( (int)$_GET['wcs_upgrade_step'] ) {
+		switch ( (int) $_GET['wcs_upgrade_step'] ) {
 			case 1:
 				self::display_database_upgrade_helper();
 				break;
@@ -347,7 +347,7 @@ class WC_Subscriptions_Upgrader {
 		// Don't send any order emails
 		$email_actions = array( 'woocommerce_low_stock', 'woocommerce_no_stock', 'woocommerce_product_on_backorder', 'woocommerce_order_status_pending_to_processing', 'woocommerce_order_status_pending_to_completed', 'woocommerce_order_status_pending_to_on-hold', 'woocommerce_order_status_failed_to_processing', 'woocommerce_order_status_failed_to_completed', 'woocommerce_order_status_pending_to_processing', 'woocommerce_order_status_pending_to_on-hold', 'woocommerce_order_status_completed', 'woocommerce_new_customer_note' );
 		foreach ( $email_actions as $action ) {
-			remove_action( $action, array( &$woocommerce, 'send_transactional_email') );
+			remove_action( $action, array( &$woocommerce, 'send_transactional_email' ) );
 		}
 
 		remove_action( 'woocommerce_payment_complete', 'WC_Subscriptions_Renewal_Order::maybe_record_renewal_order_payment', 10, 1 );

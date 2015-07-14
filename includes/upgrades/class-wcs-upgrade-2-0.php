@@ -214,7 +214,7 @@ class WCS_Upgrade_2_0 {
 					'name'     => $raw_subscription->order_item_name,
 				);
 
-				$subscriptions[ $raw_subscription->order_item_id ]['user_id'] = (int)get_post_meta( $raw_subscription->order_id, '_customer_user', true );
+				$subscriptions[ $raw_subscription->order_item_id ]['user_id'] = (int) get_post_meta( $raw_subscription->order_id, '_customer_user', true );
 			}
 
 			$meta_key = str_replace( '_subscription', '', $raw_subscription->meta_key );
@@ -334,8 +334,8 @@ class WCS_Upgrade_2_0 {
 			$recurring_tax_data = array();
 			$tax_data_keys      = array( 'total', 'subtotal' );
 
-			foreach( $tax_data_keys as $tax_data_key ) {
-				foreach( $line_tax_data[ $tax_data_key ] as $tax_index => $tax_value ) {
+			foreach ( $tax_data_keys as $tax_data_key ) {
+				foreach ( $line_tax_data[ $tax_data_key ] as $tax_index => $tax_value ) {
 					$recurring_tax_data[ $tax_data_key ][ $tax_index ] = wc_format_decimal( $tax_value );
 				}
 			}
@@ -351,7 +351,7 @@ class WCS_Upgrade_2_0 {
 			$recurring_line_total = maybe_unserialize( $order_item['item_meta']['_recurring_line_total'][0] );
 
 			// There will only be recurring tax data if the recurring amount is > 0 and we can only retroactively calculate recurring amount from initial amoutn if it is > 0
-			if ( $line_total > 0 && $recurring_line_total > 0) {
+			if ( $line_total > 0 && $recurring_line_total > 0 ) {
 
 				// Make sure we account for any sign-up fees by determining what proportion of the initial amount the recurring total represents
 				$recurring_ratio = $recurring_line_total / $line_total;
@@ -359,8 +359,8 @@ class WCS_Upgrade_2_0 {
 				$recurring_tax_data = array();
 				$tax_data_keys      = array( 'total', 'subtotal' );
 
-				foreach( $tax_data_keys as $tax_data_key ) {
-					foreach( $line_tax_data[ $tax_data_key ] as $tax_index => $tax_value ) {
+				foreach ( $tax_data_keys as $tax_data_key ) {
+					foreach ( $line_tax_data[ $tax_data_key ] as $tax_index => $tax_value ) {
 
 						// Use total tax amount for both total and subtotal because we don't want any initial discounts to be applied to recurring amounts
 						$total_tax_amount = $line_tax_data['total'][ $tax_index ];

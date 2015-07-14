@@ -346,7 +346,7 @@ class WC_Subscriptions_Order {
 	 *
 	 * @since 1.0
 	 */
-	public static function subscription_thank_you( $order_id ){
+	public static function subscription_thank_you( $order_id ) {
 
 		if ( wcs_order_contains_subscription( $order_id ) || wcs_order_contains_switch( $order_id ) ) {
 
@@ -581,7 +581,7 @@ class WC_Subscriptions_Order {
 		<select name='shop_order_subtype' id='dropdown_shop_order_subtype'>
 			<option value=""><?php esc_html_e( 'Show all types', 'woocommerce-subscriptions' ); ?></option>
 			<?php
-			$terms = array('Original', 'Renewal');
+			$terms = array( 'Original', 'Renewal' );
 
 			foreach ( $terms as $term ) {
 				echo '<option value="' . esc_attr( $term ) . '"';
