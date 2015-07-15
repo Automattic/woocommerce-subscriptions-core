@@ -1026,11 +1026,11 @@ class WC_Subscriptions_Admin {
 
 			array(
 				'name'          => __( 'Subscription Dates In Email', 'woocommerce-subscriptions' ),
-				'desc'          => __( 'Add subscription start/end information to order email.', 'woocommerce-subscriptions' ),
+				'desc'          => __( 'Add subscription start/end information to order emails.', 'woocommerce-subscriptions' ),
 				'id'            => self::$option_prefix . '_add_sub_info_email',
 				'default'       => 'no',
 				'type'          => 'checkbox',
-				'desc_tip'      => __( 'Add details about the subscription start and end date in the completed order email.', 'woocommerce-subscriptions' ),
+				'desc_tip'      => __( 'Add details about the subscription start and end date to order emails.', 'woocommerce-subscriptions' ),
 			),
 
 			array( 'type' => 'sectionend', 'id' => self::$option_prefix . '_miscellaneous' ),

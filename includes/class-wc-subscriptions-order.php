@@ -525,11 +525,10 @@ class WC_Subscriptions_Order {
 	 * @since 1.5
 	 */
 	public static function add_sub_info_email( $order, $is_admin_email ) {
-
 		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_add_sub_info_email', 'yes' ) && ! $is_admin_email ) {
 
 			$subscriptions = wcs_get_subscriptions_for_order( $order );
-			if ( empty( $subscriptions ) ) {
+			if ( empty( $subscriptions ) && wcs_order_contains_renewal( $order ) ) {
 				$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
 			}
 
