@@ -225,7 +225,7 @@ class WC_Subscriptions_Admin {
 		global $post;
 
 		echo '</div>';
-		echo '<div class="options_group limit_subscription">';
+		echo '<div class="options_group limit_subscription show_if_subscription show_if_variable-subscription">';
 
 		// Only one Subscription per customer
 		woocommerce_wp_select( array(
