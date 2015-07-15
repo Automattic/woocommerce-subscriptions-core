@@ -16,6 +16,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  * A wrapper for @see wcs_get_subscriptions() which accepts simply an order ID
  *
  * @param int|WC_Order $order_id The post_id of a shop_order post or an intsance of a WC_Order object
+ * @param array $args A set of name value pairs to filter the returned value.
+ *		'subscriptions_per_page' The number of subscriptions to return. Default set to -1 to return all.
+ *		'offset' An optional number of subscription to displace or pass over. Default 0.
+ *		'orderby' The field which the subscriptions should be ordered by. Can be 'start_date', 'trial_end_date', 'end_date', 'status' or 'order_id'. Defaults to 'start_date'.
+ *		'order' The order of the values returned. Can be 'ASC' or 'DESC'. Defaults to 'DESC'
+ *		'customer_id' The user ID of a customer on the site.
+ *		'product_id' The post ID of a WC_Product_Subscription, WC_Product_Variable_Subscription or WC_Product_Subscription_Variation object
+ *		'order_id' The post ID of a shop_order post/WC_Order object which was used to create the subscription
+ *		'subscription_status' Any valid subscription status. Can be 'any', 'active', 'cancelled', 'suspended', 'expired', 'pending' or 'trash'. Defaults to 'any'.
  * @return array Subscription details in post_id => WC_Subscription form.
  * @since  2.0
  */
