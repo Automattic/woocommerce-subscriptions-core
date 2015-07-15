@@ -407,8 +407,9 @@ class WC_Subscriptions_Switcher {
 	/**
 	 * Add the switch parameters to a URL for a given subscription and item.
 	 *
-	 * @param WC_Subscription $subscription An instance of WC_Subscription
-	 * @param array $item An order item on the subscription
+	 * @param int $subscription_id A subscription's post ID
+	 * @param int $item_id The order item ID of a subscription line item
+	 * @param string $permalink The permalink of the product
 	 * @since 2.0
 	 */
 	protected static function add_switch_query_args( $subscription_id, $item_id, $permalink ) {
