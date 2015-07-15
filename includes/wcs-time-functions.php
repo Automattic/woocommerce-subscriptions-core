@@ -148,7 +148,7 @@ function wcs_get_subscription_period_interval_strings( $interval = '' ) {
  */
 function wcs_get_available_time_periods( $form = 'singular' ) {
 
-	$number = ( 'singular' == $form ) ? 1 : 2;
+	$number = ( 'singular' === $form ) ? 1 : 2;
 
 	$translated_periods = apply_filters( 'woocommerce_subscription_available_time_periods',
 		array(
