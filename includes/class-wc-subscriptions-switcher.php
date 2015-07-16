@@ -111,6 +111,12 @@ class WC_Subscriptions_Switcher {
 
 			$subscription = wcs_get_subscription( $_GET['switch-subscription'] );
 
+			// Switch link doesn't contain a valid nonce
+			if ( empty( $_GET['_wcsnonce'] ) || ! wp_verify_nonce( $_GET['_wcsnonce'], 'wcs_switch_request' ) ) {
+				wp_redirect( remove_query_arg( array( 'switch-subscription', 'auto-switch', 'item' ) ) );
+				exit();
+			}
+
 			// Visiting a switch link for someone elses subscription
 			if ( ! is_object( $subscription ) || $subscription->get_user_id() != $user_id ) {
 
