@@ -19,7 +19,7 @@ class WC_Subscriptions_Payment_Gateways {
 	 *
 	 * @since 1.0
 	 */
-	public static function init(){
+	public static function init() {
 
 		add_filter( 'woocommerce_available_payment_gateways', __CLASS__ . '::get_available_payment_gateways' );
 

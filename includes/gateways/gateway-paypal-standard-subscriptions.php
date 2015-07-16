@@ -755,7 +755,7 @@ class WC_PayPal_Standard_Subscriptions {
 	 *
 	 * @since 1.0
 	 */
-	public static function add_subscription_form_fields(){
+	public static function add_subscription_form_fields() {
 		foreach ( WC()->payment_gateways->payment_gateways as $key => $gateway ) {
 
 			if ( WC()->payment_gateways->payment_gateways[ $key ]->id !== 'paypal' ) {
@@ -905,7 +905,7 @@ class WC_PayPal_Standard_Subscriptions {
 
 			WC_Gateway_Paypal::log( "Calling PayPal to change_subscription_status for $profile_id has Failed: " . $parsed_response['L_LONGMESSAGE0'] );
 
-			if ( 10002 == (int)$parsed_response['L_ERRORCODE0'] ) {
+			if ( 10002 == (int) $parsed_response['L_ERRORCODE0'] ) {
 
 				// Store the profile IDs affected
 				$profile_ids   = get_option( 'wcs_paypal_credentials_error_affected_profiles', '' );

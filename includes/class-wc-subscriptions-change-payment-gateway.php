@@ -23,7 +23,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 *
 	 * @since 1.4
 	 */
-	public static function init(){
+	public static function init() {
 
 		// Maybe allow for a recurring payment method to be changed
 		add_action( 'plugins_loaded', __CLASS__ . '::set_change_payment_method_flag' );

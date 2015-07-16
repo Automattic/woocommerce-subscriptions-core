@@ -346,7 +346,7 @@ class WC_Subscriptions_Order {
 	 *
 	 * @since 1.0
 	 */
-	public static function subscription_thank_you( $order_id ){
+	public static function subscription_thank_you( $order_id ) {
 
 		if ( wcs_order_contains_subscription( $order_id ) || wcs_order_contains_switch( $order_id ) ) {
 
@@ -525,11 +525,10 @@ class WC_Subscriptions_Order {
 	 * @since 1.5
 	 */
 	public static function add_sub_info_email( $order, $is_admin_email ) {
-
 		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_add_sub_info_email', 'yes' ) && ! $is_admin_email ) {
 
 			$subscriptions = wcs_get_subscriptions_for_order( $order );
-			if ( empty( $subscriptions ) ) {
+			if ( empty( $subscriptions ) && wcs_order_contains_renewal( $order ) ) {
 				$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
 			}
 
@@ -581,7 +580,7 @@ class WC_Subscriptions_Order {
 		<select name='shop_order_subtype' id='dropdown_shop_order_subtype'>
 			<option value=""><?php esc_html_e( 'Show all types', 'woocommerce-subscriptions' ); ?></option>
 			<?php
-			$terms = array('Original', 'Renewal');
+			$terms = array( 'Original', 'Renewal' );
 
 			foreach ( $terms as $term ) {
 				echo '<option value="' . esc_attr( $term ) . '"';
@@ -1097,7 +1096,7 @@ class WC_Subscriptions_Order {
 		$subscription_item = self::get_matching_subscription_item( $order, $product_id );
 
 		if ( isset( $subscription_item['line_total'] ) ) {
-			$recurring_amount = $order_item['line_total'] / $order_item['qty'];
+			$recurring_amount = $subscription_item['line_total'] / $subscription_item['qty'];
 		} else {
 			$recurring_amount = 0;
 		}
@@ -1224,12 +1223,12 @@ class WC_Subscriptions_Order {
 
 			// Find the total for all recurring items
 			if ( empty( $product_id ) ) {
-				$recurring_discount_cart_tax += $subscription->get_shipping_tax();
+				$recurring_shipping_tax_total += $subscription->get_shipping_tax();
 			} else {
 				// We want the amount for a specific item (so we need to find if this subscription contains that item)
 				foreach ( $subscription->get_items() as $line_item ) {
 					if ( wcs_get_canonical_product_id( $line_item ) == $product_id ) {
-						$recurring_discount_cart_tax += $subscription->get_shipping_tax();
+						$recurring_shipping_tax_total += $subscription->get_shipping_tax();
 						break;
 					}
 				}
