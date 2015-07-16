@@ -853,7 +853,7 @@ class WC_Subscriptions_Switcher {
 			$identical_attributes = true;
 
 			foreach ( $_POST as $key => $value ) {
-				if ( false !== strpos( $key, 'attribute_' ) && ! empty( $item[ str_replace( 'attribute_', '', $key ) ] ) && $item[ str_replace( 'attribute_', '', $key ) ] != $value ) {
+				if ( false !== strpos( $key, 'attribute_' ) && ! empty( $item[ str_replace( 'attribute_', '', $key ) ] ) && strtolower( $item[ str_replace( 'attribute_', '', $key ) ] ) != $value ) {
 					$identical_attributes = false;
 					break;
 				}
