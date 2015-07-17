@@ -699,8 +699,9 @@ class WC_Subscriptions_Switcher {
 			$wpdb->query( 'COMMIT' );
 
 		} catch ( Exception $e ) {
-			// There was an error adding the subscription
+			// There was an error adding the subscription, roll back and delete pending order for switch
 			$wpdb->query( 'ROLLBACK' );
+			wp_delete_post( $order_id, true );
 			throw $e;
 		}
 	}
