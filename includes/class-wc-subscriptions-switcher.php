@@ -1235,7 +1235,7 @@ class WC_Subscriptions_Switcher {
 
 		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
 			if ( isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) ) {
-				$first_renewal_date = ( '1' !== $cart_item['data']->subscription_length ) ? date( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] ) : 0;
+				$first_renewal_date = ( '1' != $cart_item['data']->subscription_length ) ? date( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] ) : 0;
 			}
 		}
 
