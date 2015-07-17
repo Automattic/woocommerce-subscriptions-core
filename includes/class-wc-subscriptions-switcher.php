@@ -1254,7 +1254,7 @@ class WC_Subscriptions_Switcher {
 
 				if ( isset( $cart_item['subscription_switch']['subscription_id'] ) && isset( $cart_item['data'] ) && $product == $cart_item['data'] ) {
 					$subscription      = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
-					$next_payment_time = isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) ? $cart_item['subscription_switch']['first_payment_timestamp'] : 0;
+					$next_payment_time = ( isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) && '1' != $cart_item['data']->subscription_length ) ? $cart_item['subscription_switch']['first_payment_timestamp'] : 0;
 
 					// remove trial period on the switched subscription when calculating the new end date
 					$trial_length = $cart_item['data']->subscription_trial_length;
