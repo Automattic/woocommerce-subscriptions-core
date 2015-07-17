@@ -65,7 +65,7 @@ class WCS_Admin_Post_Types {
 	public function posts_clauses( $pieces, $query ) {
 		global $wpdb;
 
-		if ( ! is_admin() || ! isset ( $query->query['post_type'] ) || 'shop_subscription' !== $query->query['post_type'] ) {
+		if ( ! is_admin() || ! isset( $query->query['post_type'] ) || 'shop_subscription' !== $query->query['post_type'] ) {
 			return $pieces;
 		}
 
@@ -354,7 +354,12 @@ class WCS_Admin_Post_Types {
 									$actions['delete'] = '<a class="submitdelete" title="' . esc_attr( __( 'Delete this item permanently', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $post->ID, '', true ) . '">' . __( 'Delete Permanently', 'woocommerce-subscriptions' ) . '</a>';
 								}
 							}
+
 						} else {
+
+							if ( 'pending-cancel' === $the_subscription->get_status() ) {
+								$label = __( 'Cancel Now', 'woocommerce-subscriptions' );
+							}
 
 							$actions[ $status ] = sprintf( '<a href="%s">%s</a>', add_query_arg( 'action', $status, $action_url ), $label );
 
@@ -365,8 +370,6 @@ class WCS_Admin_Post_Types {
 				if ( 'pending' === $the_subscription->get_status() ) {
 					unset( $actions['active'] );
 					unset( $actions['trash'] );
-				} elseif ( 'pending-cancel' === $the_subscription->get_status() ) {
-					unset( $actions['cancelled'] );
 				} elseif ( ! in_array( $the_subscription->get_status(), array( 'cancelled', 'pending-cancel', 'expired', 'switched', 'suspended' ) ) ) {
 					unset( $actions['trash'] );
 				}
@@ -744,7 +747,7 @@ class WCS_Admin_Post_Types {
 			7 => __( 'Subscription saved.', 'woocommerce-subscriptions' ),
 			8 => __( 'Subscription submitted.', 'woocommerce-subscriptions' ),
 			9 => sprintf( __( 'Subscription scheduled for: <strong>%1$s</strong>.', 'woocommerce-subscriptions' ), date_i18n( __( 'M j, Y @ G:i', 'woocommerce-subscriptions' ), strtotime( $post->post_date ) ) ),
-			10 => __( 'Subscription draft updated.', 'woocommerce-subscriptions' )
+			10 => __( 'Subscription draft updated.', 'woocommerce-subscriptions' ),
 		);
 
 		return $messages;

@@ -14,7 +14,7 @@ class WCS_Query extends WC_Query {
 		add_filter( 'the_title', array( $this, 'get_endpoint_title' ), 11, 1 );
 
 		if ( ! is_admin() ) {
-			add_filter( 'query_vars', array( $this, 'add_query_vars'), 0 );
+			add_filter( 'query_vars', array( $this, 'add_query_vars' ), 0 );
 		}
 
 		$this->init_query_vars();

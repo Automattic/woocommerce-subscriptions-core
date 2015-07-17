@@ -221,7 +221,7 @@ class WC_PayPal_Standard_Subscriptions {
 			// Make sure the IPN request has not already been handled
 			$handled_ipn_requests = get_post_meta( $subscription->id, '_paypal_ipn_tracking_ids', true );
 
-			if ( empty ( $handled_ipn_requests ) ) {
+			if ( empty( $handled_ipn_requests ) ) {
 				$handled_ipn_requests = array();
 			}
 
@@ -239,7 +239,7 @@ class WC_PayPal_Standard_Subscriptions {
 			// Make sure the IPN request has not already been handled
 			$handled_transactions = get_post_meta( $subscription->id, '_paypal_transaction_ids', true );
 
-			if ( empty ( $handled_transactions ) ) {
+			if ( empty( $handled_transactions ) ) {
 				$handled_transactions = array();
 			}
 
@@ -755,7 +755,7 @@ class WC_PayPal_Standard_Subscriptions {
 	 *
 	 * @since 1.0
 	 */
-	public static function add_subscription_form_fields(){
+	public static function add_subscription_form_fields() {
 		foreach ( WC()->payment_gateways->payment_gateways as $key => $gateway ) {
 
 			if ( WC()->payment_gateways->payment_gateways[ $key ]->id !== 'paypal' ) {
@@ -905,12 +905,12 @@ class WC_PayPal_Standard_Subscriptions {
 
 			WC_Gateway_Paypal::log( "Calling PayPal to change_subscription_status for $profile_id has Failed: " . $parsed_response['L_LONGMESSAGE0'] );
 
-			if ( 10002 == (int)$parsed_response['L_ERRORCODE0'] ) {
+			if ( 10002 == (int) $parsed_response['L_ERRORCODE0'] ) {
 
 				// Store the profile IDs affected
 				$profile_ids   = get_option( 'wcs_paypal_credentials_error_affected_profiles', '' );
 
-				if ( ! empty ( $profile_ids ) ) {
+				if ( ! empty( $profile_ids ) ) {
 					$profile_ids .= ', ';
 				}
 				$profile_ids .= $profile_id;
@@ -1209,7 +1209,7 @@ class WC_PayPal_Standard_Subscriptions {
 	 */
 	public static function schedule_payment_check( $subscription_id ) {
 		if ( 'paypal' == get_post_meta( $subscription_id, '_payment_method' ) ) {
-			wc_schedule_single_action( 2 * DAY_IN_SECONDS + gmdate( 'U' ), 'paypal_check_subscription_payment', array( 'subscription_id' => $subscription_id, ) );
+			wc_schedule_single_action( 2 * DAY_IN_SECONDS + gmdate( 'U' ), 'paypal_check_subscription_payment', array( 'subscription_id' => $subscription_id ) );
 		}
 	}
 

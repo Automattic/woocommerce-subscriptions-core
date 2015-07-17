@@ -58,6 +58,8 @@ class WC_Subscriptions_Cart {
 		add_action( 'wp_ajax_woocommerce_get_refreshed_fragments', __CLASS__ . '::pre_get_refreshed_fragments', 1 );
 		add_action( 'wp_ajax_nopriv_woocommerce_get_refreshed_fragments', __CLASS__ . '::pre_get_refreshed_fragments', 1, 1 );
 
+		add_action( 'woocommerce_ajax_added_to_cart', __CLASS__ . '::pre_get_refreshed_fragments', 1, 1 );
+
 		// Display grouped recurring amounts after order totals on the cart/checkout pages
 		add_action( 'woocommerce_cart_totals_after_order_total', __CLASS__ . '::display_recurring_totals' );
 		add_action( 'woocommerce_review_order_after_order_total', __CLASS__ . '::display_recurring_totals' );
@@ -660,20 +662,20 @@ class WC_Subscriptions_Cart {
 
 			$carts_with_multiple_payments = 0;
 
-			// Create shipping packages for each subscription item
-			if ( self::cart_contains_subscriptions_needing_shipping() ) {
+			// Create new subscriptions for each subscription product in the cart (that is not a renewal)
+			foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
 
-				$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+				// Cart contains more than one payment
+				if ( 0 != $recurring_cart->next_payment_date ) {
+					$carts_with_multiple_payments++;
 
-				// Don't remove any subscriptions with a free trial from the shipping packages
-				remove_filter( 'woocommerce_cart_shipping_packages', __CLASS__ . '::set_cart_shipping_packages', -10, 1 );
+					// Create shipping packages for each subscription item
+					if ( self::cart_contains_subscriptions_needing_shipping() ) {
 
-				// Create new subscriptions for each subscription product in the cart (that is not a renewal)
-				foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
+						$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
 
-					// Cart contains more than one payment
-					if ( 0 != $recurring_cart->next_payment_date ) {
-						$carts_with_multiple_payments++;
+						// Don't remove any subscriptions with a free trial from the shipping packages
+						remove_filter( 'woocommerce_cart_shipping_packages', __CLASS__ . '::set_cart_shipping_packages', -10, 1 );
 
 						foreach ( $recurring_cart->get_shipping_packages() as $base_package ) {
 
@@ -686,11 +688,11 @@ class WC_Subscriptions_Cart {
 								}
 							}
 						}
+
+						// But make sure any subscriptions with a free trial are removed from anything else access it
+						add_filter( 'woocommerce_cart_shipping_packages', __CLASS__ . '::set_cart_shipping_packages', -10, 1 );
 					}
 				}
-
-				// But make sure any subscriptions with a free trial are removed from anything else access it
-				add_filter( 'woocommerce_cart_shipping_packages', __CLASS__ . '::set_cart_shipping_packages', -10, 1 );
 			}
 
 			if ( $carts_with_multiple_payments >= 1 ) {
@@ -1620,7 +1622,7 @@ class WC_Subscriptions_Cart {
 			'subscription_interval' => self::get_cart_subscription_interval(),
 			'subscription_period'   => self::get_cart_subscription_period(),
 			'trial_length'          => self::get_cart_subscription_trial_length(),
-			'trial_period'          => self::get_cart_subscription_trial_period()
+			'trial_period'          => self::get_cart_subscription_trial_period(),
 		);
 
 		$is_one_payment = ( self::get_cart_subscription_length() > 0 && self::get_cart_subscription_length() == self::get_cart_subscription_interval() ) ? true : false;

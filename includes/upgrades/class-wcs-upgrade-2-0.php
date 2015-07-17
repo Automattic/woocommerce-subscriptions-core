@@ -214,7 +214,7 @@ class WCS_Upgrade_2_0 {
 					'name'     => $raw_subscription->order_item_name,
 				);
 
-				$subscriptions[ $raw_subscription->order_item_id ]['user_id'] = (int)get_post_meta( $raw_subscription->order_id, '_customer_user', true );
+				$subscriptions[ $raw_subscription->order_item_id ]['user_id'] = (int) get_post_meta( $raw_subscription->order_id, '_customer_user', true );
 			}
 
 			$meta_key = str_replace( '_subscription', '', $raw_subscription->meta_key );
@@ -248,7 +248,7 @@ class WCS_Upgrade_2_0 {
 
 		$item_id = wc_add_order_item( $new_subscription->id, array(
 			'order_item_name' => $order_item['name'],
-			'order_item_type' => 'line_item'
+			'order_item_type' => 'line_item',
 		) );
 
 		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: new line item ID %d added', $new_subscription->id, $item_id ) );
@@ -302,7 +302,7 @@ class WCS_Upgrade_2_0 {
 
 		// Add variation and any other meta
 		foreach ( $meta_keys_to_copy as $meta_key ) {
-			foreach( $order_item['item_meta'][ $meta_key ] as $meta_value ) {
+			foreach ( $order_item['item_meta'][ $meta_key ] as $meta_value ) {
 				wc_add_order_item_meta( $item_id, $meta_key, $meta_value );
 			}
 		}
@@ -334,8 +334,8 @@ class WCS_Upgrade_2_0 {
 			$recurring_tax_data = array();
 			$tax_data_keys      = array( 'total', 'subtotal' );
 
-			foreach( $tax_data_keys as $tax_data_key ) {
-				foreach( $line_tax_data[ $tax_data_key ] as $tax_index => $tax_value ) {
+			foreach ( $tax_data_keys as $tax_data_key ) {
+				foreach ( $line_tax_data[ $tax_data_key ] as $tax_index => $tax_value ) {
 					$recurring_tax_data[ $tax_data_key ][ $tax_index ] = wc_format_decimal( $tax_value );
 				}
 			}
@@ -351,7 +351,7 @@ class WCS_Upgrade_2_0 {
 			$recurring_line_total = maybe_unserialize( $order_item['item_meta']['_recurring_line_total'][0] );
 
 			// There will only be recurring tax data if the recurring amount is > 0 and we can only retroactively calculate recurring amount from initial amoutn if it is > 0
-			if ( $line_total > 0 && $recurring_line_total > 0) {
+			if ( $line_total > 0 && $recurring_line_total > 0 ) {
 
 				// Make sure we account for any sign-up fees by determining what proportion of the initial amount the recurring total represents
 				$recurring_ratio = $recurring_line_total / $line_total;
@@ -359,8 +359,8 @@ class WCS_Upgrade_2_0 {
 				$recurring_tax_data = array();
 				$tax_data_keys      = array( 'total', 'subtotal' );
 
-				foreach( $tax_data_keys as $tax_data_key ) {
-					foreach( $line_tax_data[ $tax_data_key ] as $tax_index => $tax_value ) {
+				foreach ( $tax_data_keys as $tax_data_key ) {
+					foreach ( $line_tax_data[ $tax_data_key ] as $tax_index => $tax_value ) {
 
 						// Use total tax amount for both total and subtotal because we don't want any initial discounts to be applied to recurring amounts
 						$total_tax_amount = $line_tax_data['total'][ $tax_index ];
@@ -465,7 +465,7 @@ class WCS_Upgrade_2_0 {
 
 		$old_hook_args = array(
 			'user_id'          => $old_subscription['user_id'],
-			'subscription_key' => $old_subscription['subscription_key']
+			'subscription_key' => $old_subscription['subscription_key'],
 		);
 
 		foreach ( $date_keys as $new_key => $old_keys ) {
@@ -482,7 +482,7 @@ class WCS_Upgrade_2_0 {
 
 				if ( $next_scheduled > 0 ) {
 
-					if ( $new_key == 'end_of_prepaid_term' ) {
+					if ( 'end_of_prepaid_term' == $new_key ) {
 						wc_schedule_single_action( $next_scheduled, 'woocommerce_scheduled_subscription_end_of_prepaid_term', array( 'subscription_id' => $new_subscription->id ) );
 					} else {
 						$dates_to_update[ $new_key ] = date( 'Y-m-d H:i:s', $next_scheduled );
@@ -600,7 +600,7 @@ class WCS_Upgrade_2_0 {
 		$query_meta_values  = array();
 		$query_placeholders = array();
 
-		foreach( $order_meta as $meta_key => $meta_value ) {
+		foreach ( $order_meta as $meta_key => $meta_value ) {
 			if ( ! in_array( $meta_key, $meta_keys_to_ignore ) ) {
 				$query_meta_values = array_merge( $query_meta_values, array(
 					$subscription_id,

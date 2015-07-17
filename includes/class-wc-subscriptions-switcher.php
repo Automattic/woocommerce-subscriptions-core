@@ -114,8 +114,8 @@ class WC_Subscriptions_Switcher {
 
 			$subscription = wcs_get_subscription( $_GET['switch-subscription'] );
 
-			// Visiting a switch link for someone elses subscription
-			if ( ! is_object( $subscription ) || $subscription->get_user_id() != $user_id ) {
+			// Visiting a switch link for someone elses subscription or if the switch link doesn't contain a valid nonce
+			if ( ! is_object( $subscription ) || $subscription->get_user_id() != $user_id || empty( $_GET['_wcsnonce'] ) || ! wp_verify_nonce( $_GET['_wcsnonce'], 'wcs_switch_request' )  ) {
 
 				wp_redirect( remove_query_arg( array( 'switch-subscription', 'auto-switch', 'item' ) ) );
 				exit();
@@ -231,7 +231,7 @@ class WC_Subscriptions_Switcher {
 	public static function add_switch_query_arg_grouped( $permalink ) {
 
 		if ( isset ( $_GET['switch-subscription'] ) ) {
-			$permalink = add_query_arg( array( 'switch-subscription' => absint( $_GET['switch-subscription'] ), 'item' => absint( $_GET['item'] ) ), $permalink );
+			$permalink = self::add_switch_query_args( $_GET['switch-subscription'], $_GET['item'], $permalink );
 		}
 
 		return $permalink;
@@ -256,7 +256,7 @@ class WC_Subscriptions_Switcher {
 			return $permalink;
 		}
 
-		return add_query_arg( array( 'switch-subscription' => absint( $_GET['switch-subscription'] ), 'item' => absint( $_GET['item'] ) ), $permalink );
+		return self::add_switch_query_args( $_GET['switch-subscription'], $_GET['item'], $permalink );
 	}
 
 	/**
@@ -402,9 +402,25 @@ class WC_Subscriptions_Switcher {
 			$switch_url = get_permalink( $product->id );
 		}
 
-		$switch_url = add_query_arg( array( 'switch-subscription' => $subscription->id, 'item' => $item_id ), $switch_url );
+		$switch_url = self::add_switch_query_args( $subscription->id, $item_id, $switch_url );
 
 		return apply_filters( 'woocommerce_subscriptions_switch_url', $switch_url, $item_id, $item, $subscription );
+	}
+
+	/**
+	 * Add the switch parameters to a URL for a given subscription and item.
+	 *
+	 * @param int $subscription_id A subscription's post ID
+	 * @param int $item_id The order item ID of a subscription line item
+	 * @param string $permalink The permalink of the product
+	 * @since 2.0
+	 */
+	protected static function add_switch_query_args( $subscription_id, $item_id, $permalink ) {
+
+		// manually add a nonce because we can't use wp_nonce_url() (it would escape the URL)
+		$permalink = add_query_arg( array( 'switch-subscription' => absint( $subscription_id ), 'item' => absint( $item_id ), '_wcsnonce' => wp_create_nonce( 'wcs_switch_request' ) ), $permalink );
+
+		return apply_filters( 'woocommerce_subscriptions_add_switch_query_args', $permalink, $subscription_id, $item_id );
 	}
 
 	/**
@@ -669,11 +685,13 @@ class WC_Subscriptions_Switcher {
 
 					$subscription->add_order_note( sprintf( __( 'Customer switched from: %s to %s.', 'woocommerce-subscriptions' ), $old_item_name, $new_item_name ) );
 
-					// Recalculate new totals for the subscription
-					$subscription->calculate_totals();
+					// Change the shipping
+					self::update_shipping_methods( $subscription, $recurring_cart );
 
 					// Finally, change the addresses but only if they've changed
 					self::maybe_update_subscription_address( $order, $subscription );
+
+					$subscription->calculate_totals();
 				}
 			}
 
@@ -689,7 +707,26 @@ class WC_Subscriptions_Switcher {
 
 
 	/**
+	 * Update shipping method on the subscription if the order changed anything
+	 *
+	 * @param  WC_Order $order The new order
+	 * @param  WC_Subscription $subscription The original subscription
+	 * @param  WC_Cart $recurring_cart A recurring cart
+	 */
+	public static function update_shipping_methods( $subscription, $recurring_cart ) {
+
+		// First, archive all the shipping methods
+		foreach ( $subscription->get_shipping_methods() as $shipping_method_id => $shipping_method ) {
+			wc_update_order_item( $shipping_method_id, array( 'order_item_type' => 'shipping_switched' ) );
+		}
+
+		WC_Subscriptions_Checkout::add_shipping( $subscription, $recurring_cart );
+	}
+
+
+	/**
 	 * Updates address on the subscription if one of them is changed.
+	 *
 	 * @param  WC_Order $order The new order
 	 * @param  WC_Subscription $subscription The original subscription
 	 */
@@ -826,8 +863,12 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function validate_switch_request( $is_valid, $product_id, $quantity, $variation_id = '' ){
 
-		if ( ! isset ( $_GET['switch-subscription'] ) ) {
+		if ( ! isset( $_GET['switch-subscription'] ) ) {
 			return $is_valid;
+		}
+
+		if ( empty( $_GET['_wcsnonce'] ) || ! wp_verify_nonce( $_GET['_wcsnonce'], 'wcs_switch_request' ) ) {
+			return false;
 		}
 
 		$subscription = wcs_get_subscription( $_GET['switch-subscription'] );
@@ -845,7 +886,7 @@ class WC_Subscriptions_Switcher {
 			$identical_attributes = true;
 
 			foreach ( $_POST as $key => $value ) {
-				if ( false !== strpos( $key, 'attribute_' ) && ! empty( $item[ str_replace( 'attribute_', '', $key ) ] ) && $item[ str_replace( 'attribute_', '', $key ) ] != $value ) {
+				if ( false !== strpos( $key, 'attribute_' ) && ! empty( $item[ str_replace( 'attribute_', '', $key ) ] ) && strtolower( $item[ str_replace( 'attribute_', '', $key ) ] ) != $value ) {
 					$identical_attributes = false;
 					break;
 				}
@@ -1357,7 +1398,7 @@ class WC_Subscriptions_Switcher {
 	public static function addons_add_to_cart_url( $add_to_cart_url ) {
 
 		if ( isset( $_GET['switch-subscription'] ) && false === strpos( $add_to_cart_url, 'switch-subscription' ) ) {
-			$add_to_cart_url = add_query_arg( array( 'switch-subscription' => absint( $_GET['switch-subscription'] ), 'item' => absint( $_GET['item'] ) ), $add_to_cart_url );
+			$add_to_cart_url = self::add_switch_query_args( $_GET['switch-subscription'], $_GET['item'], $add_to_cart_url );
 		}
 
 		return $add_to_cart_url;

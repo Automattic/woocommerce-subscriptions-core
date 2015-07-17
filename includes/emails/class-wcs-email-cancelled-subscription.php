@@ -152,8 +152,8 @@ class WCS_Email_Cancelled_Subscription extends WC_Email {
 					'plain'		 	=> __( 'Plain text', 'woocommerce-subscriptions' ),
 					'html' 			=> __( 'HTML', 'woocommerce-subscriptions' ),
 					'multipart' 	=> __( 'Multipart', 'woocommerce-subscriptions' ),
-				)
-			)
+				),
+			),
 		);
 	}
 }
