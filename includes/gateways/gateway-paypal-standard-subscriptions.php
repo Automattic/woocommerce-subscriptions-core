@@ -402,13 +402,15 @@ class WC_PayPal_Standard_Subscriptions {
 				} elseif ( in_array( strtolower( $transaction_details['payment_status'] ), array( 'pending', 'failed' ) ) ) {
 
 					// Subscription Payment completed
-					$subscription->add_order_note( sprintf( __( 'IPN subscription payment %s.', 'woocommerce-subscriptions' ), $transaction_details['payment_status'] ) );
+					/* translators: placeholder is payment status (eg "completed") */
+					$subscription->add_order_note( sprintf( _x( 'IPN subscription payment %s.', 'used in order note', 'woocommerce-subscriptions' ), $transaction_details['payment_status'] ) );
 
 					if ( ! $is_first_payment ) {
 
 						update_post_meta( $renewal_order->id, '_transaction_id', $transaction_details['txn_id'] );
 
-						$renewal_order->add_order_note( sprintf( __( 'IPN subscription payment %s.', 'woocommerce-subscriptions' ), $transaction_details['payment_status'] ) );
+						/* translators: placeholder is payment status (eg "completed") */
+						$renewal_order->add_order_note( sprintf( _x( 'IPN subscription payment %s.', 'used in order note', 'woocommerce-subscriptions' ), $transaction_details['payment_status'] ) );
 
 						$subscription->payment_failed();
 					}
@@ -554,7 +556,8 @@ class WC_PayPal_Standard_Subscriptions {
 				}
 			}
 
-			$paypal_args['item_name'] = self::paypal_item_name( sprintf( __( 'Subscription %s (Order %s) - %s', 'woocommerce-subscriptions' ), $subscription->get_order_number(), $order->get_order_number(), implode( ', ', $item_names ) ) );
+			/* translators: 1$: subscription ID, 2$: order ID, 3$: names of items, comma separated */
+			$paypal_args['item_name'] = self::paypal_item_name( sprintf( _x( 'Subscription %1$s (Order %2$s) - %3$s', 'item name sent to paypal', 'woocommerce-subscriptions' ), $subscription->get_order_number(), $order->get_order_number(), implode( ', ', $item_names ) ) );
 
 			$unconverted_periods = array(
 				'billing_period' => $subscription->billing_period,
@@ -872,7 +875,8 @@ class WC_PayPal_Standard_Subscriptions {
 			'METHOD'    => 'ManageRecurringPaymentsProfileStatus',
 			'PROFILEID' => $profile_id,
 			'ACTION'    => $new_status,
-			'NOTE'      => html_entity_decode( sprintf( __( 'Subscription %s at %s', 'woocommerce-subscriptions' ), $new_status_string, get_bloginfo( 'name' ) ), ENT_NOQUOTES, 'UTF-8' ),
+			/* translators: %1: new status (eg "cancelled"), %2: blog name */
+			'NOTE'      => html_entity_decode( sprintf( _x( 'Subscription %1$s at %2$s', 'data sent to paypal', 'woocommerce-subscriptions' ), $new_status_string, get_bloginfo( 'name' ) ), ENT_NOQUOTES, 'UTF-8' ),
 		);
 
 		$post_data = apply_filters( 'woocommerce_subscriptions_paypal_change_status_data', $post_data, $new_status, $order, $profile_id );
@@ -1088,10 +1092,11 @@ class WC_PayPal_Standard_Subscriptions {
 <div id="message" class="updated error">
 	<p>
 		<?php
-		printf( esc_html__( 'PayPal is inactive for subscription transactions. Please %sset up the PayPal IPN%s and %senter your API credentials%s to enable PayPal for Subscriptions.', 'woocommerce-subscriptions' ),
+		/* translators: placeholders are opening and closing link tags. 1-2: to docs on woothemes, 3-4 to gateway settings on the site */
+		printf( esc_html__( 'PayPal is inactive for subscription transactions. Please %1$sset up the PayPal IPN%2$s and %3$senter your API credentials%4$s to enable PayPal for Subscriptions.', 'woocommerce-subscriptions' ),
 			'<a href="http://docs.woothemes.com/document/subscriptions/store-manager-guide/#section-4" target="_blank">',
 			'</a>',
-			'<a href="' . esc_attr__( $payment_gateway_tab_url ) . '">',
+			'<a href="' . esc_url( $payment_gateway_tab_url ) . '">',
 			'</a>'
 		); ?>
 	</p>
@@ -1102,8 +1107,9 @@ class WC_PayPal_Standard_Subscriptions {
 <div id="message" class="updated error">
 	<p>
 		<?php
-		printf( esc_html__( 'There is a problem with PayPal. Your API credentials may be incorrect. Please update your %sAPI credentials%s. %sLearn more%s.', 'woocommerce-subscriptions' ),
-			'<a href="' . esc_attr__( $payment_gateway_tab_url ) . '">',
+		/* translators: placeholders are link opening and closing tags. 1-2: to gateway settings, 3-4: support docs on woothemes.com */
+		printf( esc_html__( 'There is a problem with PayPal. Your API credentials may be incorrect. Please update your %1$sAPI credentials%2$s. %3$sLearn more%4$s.', 'woocommerce-subscriptions' ),
+			'<a href="' . esc_url( $payment_gateway_tab_url ) . '">',
 			'</a>',
 			'<a href="https://support.woothemes.com/hc/en-us/articles/202882473#paypal-credentials" target="_blank">',
 			'</a>'
@@ -1117,7 +1123,8 @@ class WC_PayPal_Standard_Subscriptions {
 <div id="message" class="updated error">
 	<p>
 		<?php
-		printf( esc_html__( 'There is a problem with PayPal. Your PayPal account is issuing out-of-date subscription IDs. %sLearn more%s. %sDismiss%s.', 'woocommerce-subscriptions' ),
+		/* translators: placeholders are opening and closing link tags. 1-2: docs on woothemes, 3-4: dismiss link */
+		printf( esc_html__( 'There is a problem with PayPal. Your PayPal account is issuing out-of-date subscription IDs. %1$sLearn more%2$s. %3$sDismiss%4$s.', 'woocommerce-subscriptions' ),
 			'<a href="https://support.woothemes.com/hc/en-us/articles/202882473#old-paypal-account" target="_blank">',
 			'</a>',
 			'<a href="' . esc_url( add_query_arg( 'wcs_disable_paypal_invalid_profile_id_notice', 'true' ) ) . '">',
