@@ -67,7 +67,7 @@ class WC_Subscriptions_Addresses {
 
 			if ( isset( $_GET['subscription'] ) ) {
 
-				printf( esc_html__( '%sBoth the shipping address used for the subscription and your default shipping address for future purchases will be updated.%s', 'woocommerce-subscriptions' ), '<p>', '</p>' );
+				echo '<p>' . esc_html__( 'Both the shipping address used for the subscription and your default shipping address for future purchases will be updated.', 'woocommerce-subscriptions' ) . '</p>';
 
 				echo '<input type="hidden" name="update_subscription_address" value="' . absint( $_GET['subscription'] ) . '" id="update_subscription_address" />';
 
@@ -79,7 +79,7 @@ class WC_Subscriptions_Addresses {
 					$address_type = ( ! isset( $_GET['address'] ) ) ? esc_attr( $_GET['address'] ) . ' ' : '';
 				}
 
-				$label = sprintf( __( 'Update the %saddress used for <strong>all</strong> of my active subscriptions', 'woocommerce-subscriptions' ), $address_type );
+				$label = sprintf( __( 'Update the %s address used for %sall%s of my active subscriptions', 'woocommerce-subscriptions' ), $address_type, '<strong>', '</strong>' );
 
 				woocommerce_form_field( 'update_all_subscriptions_addresses', array(
 					'type'  => 'checkbox',
