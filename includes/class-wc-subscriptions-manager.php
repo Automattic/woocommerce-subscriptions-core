@@ -1660,8 +1660,8 @@ class WC_Subscriptions_Manager {
 			$month_numeral = zeroise( $i, 2 );
 			$month_input .= '<option value="' . $month_numeral . '"';
 			$month_input .= ( $i == $month ) ? ' selected="selected"' : '';
-			/* translators: 1: month number (01, 02, etc.), 2: month abbreviation */
-			$month_input .= '>' . sprintf( __( '%1$s-%2$s' ), $month_numeral, $wp_locale->get_month_abbrev( $wp_locale->get_month( $i ) ) ) . "</option>\n";
+			/* translators: 1: month number (01), 2: month abbreviation (Jan) */
+			$month_input .= '>' . sprintf( _x( '%1$s-%2$s', 'used in a select box', 'woocommerce-subscriptions' ), $month_numeral, $wp_locale->get_month_abbrev( $wp_locale->get_month( $i ) ) ) . "</option>\n";
 		}
 		$month_input .= '</select>';
 
@@ -1673,12 +1673,12 @@ class WC_Subscriptions_Manager {
 			$hour_input   = '<input type="text" ' . ( $args['multiple'] ? '' : 'id="edit-hour" ' ) . 'name="edit-hour" value="' . mysql2date( 'H', $args['date'], false ) . '" size="2" maxlength="2"' . $tab_index_attribute . ' autocomplete="off" />';
 			$minute_input = '<input type="text" ' . ( $args['multiple'] ? '' : 'id="edit-minute" ' ) . 'name="edit-minute" value="' . mysql2date( 'i', $args['date'], false ) . '" size="2" maxlength="2"' . $tab_index_attribute . ' autocomplete="off" />';
 
-			/* translators: 1: month input, 2: day input, 3: year input, 4: hour input, 5: minute input */
-			$touch_time = sprintf( __( '%1$s%2$s, %3$s @ %4$s : %5$s' ), $month_input, $day_input, $year_input, $hour_input, $minute_input );
+			/* translators: all fields are full html nodes: 1: month input, 2: day input, 3: year input, 4: hour input, 5: minute input. Change the order if you'd like */
+			$touch_time = sprintf( __( '%1$s%2$s, %3$s @ %4$s : %5$s', 'woocommerce-subscriptions' ), $month_input, $day_input, $year_input, $hour_input, $minute_input );
 
 		} else {
-			/* translators: 1: month input, 2: day input, 3: year input */
-			$touch_time = sprintf( __( '%1$s%2$s, %3$s' ), $month_input, $day_input, $year_input );
+			/* translators: all fields are full html nodes: 1: month input, 2: day input, 3: year input. Change the order if you'd like */
+			$touch_time = sprintf( __( '%1$s%2$s, %3$s', 'woocommerce-subscriptions' ), $month_input, $day_input, $year_input );
 		}
 
 		if ( $args['include_buttons'] ) {
@@ -2080,6 +2080,7 @@ class WC_Subscriptions_Manager {
 		$subscription->update_status( 'on-hold' );
 
 		// Log failure on order
+		/* translators: placeholder is subscription ID */
 		$subscription->order->add_order_note( sprintf( __( 'Failed sign-up for subscription %s.', 'woocommerce-subscriptions' ), $subscription->id ) );
 
 		do_action( 'subscription_sign_up_failed', $user_id, $subscription_key );
@@ -2167,15 +2168,15 @@ class WC_Subscriptions_Manager {
 
 		if ( ! wp_verify_nonce( $_POST['wcs_nonce'], 'woocommerce-subscriptions' ) ) {
 
-			$response['message'] = sprintf( '<div class="error">%s</div>', __( 'Invalid security token, please reload the page and try again.', 'woocommerce-subscriptions' ) );
+			$response['message'] = '<div class="error">' . __( 'Invalid security token, please reload the page and try again.', 'woocommerce-subscriptions' ) . '</div>';
 
 		} elseif ( ! current_user_can( 'manage_woocommerce' ) ) {
 
-			$response['message'] = sprintf( '<div class="error">%s</div>', __( 'Only store managers can edit payment dates.', 'woocommerce-subscriptions' ) );
+			$response['message'] = '<div class="error">' . __( 'Only store managers can edit payment dates.', 'woocommerce-subscriptions' ) . '</div>';
 
 		} elseif ( empty( $_POST['wcs_day'] ) || empty( $_POST['wcs_month'] ) || empty( $_POST['wcs_year'] ) ) {
 
-			$response['message'] = sprintf( '<div class="error">%s</div>', __( 'Please enter all date fields.', 'woocommerce-subscriptions' ) );
+			$response['message'] = '<div class="error">' . __( 'Please enter all date fields.', 'woocommerce-subscriptions' ) . '</div>';
 
 		} else {
 
@@ -2193,13 +2194,14 @@ class WC_Subscriptions_Manager {
 				$time_diff = $new_payment_timestamp - gmdate( 'U' );
 
 				if ( $time_diff > 0 && $time_diff < 7 * 24 * 60 * 60 ) {
+					/* translators: placeholder is human time diff (eg 3 weeks) */
 					$date_to_display = sprintf( __( 'In %s', 'woocommerce-subscriptions' ), human_time_diff( gmdate( 'U' ), $new_payment_timestamp ) );
 				} else {
 					$date_to_display = date_i18n( woocommerce_date_format(), $new_payment_timestamp_user_time );
 				}
 
 				$response['status']        = 'success';
-				$response['message']       = sprintf( '<div class="updated">%s</div>', __( 'Date Changed', 'woocommerce-subscriptions' ) );
+				$response['message']       = '<div class="updated">' . __( 'Date Changed', 'woocommerce-subscriptions' ) . '</div>';
 				$response['dateToDisplay'] = $date_to_display;
 				$response['timestamp']     = $new_payment_timestamp_user_time;
 
