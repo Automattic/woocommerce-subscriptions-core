@@ -40,7 +40,11 @@ function wcs_create_renewal_order( $subscription ) {
 			'customer_note' => $subscription->customer_note,
 		) );
 
-		$renewal_order->post->post_title = sprintf( __( 'Subscription Renewal Order &ndash; %s', 'woocommerce-subscriptions' ), strftime( _x( '%b %d, %Y @ %I:%M %p', 'Order date parsed by strftime', 'woocommerce-subscriptions' ) ) );
+		/* translators: order date parsed by strftime */
+		$order_date =  strftime( _x( '%b %d, %Y @ %I:%M %p', 'Used in subscription post title. "Subscription renewal order -  <this>"', 'woocommerce-subscriptions' ) );
+
+		/* translators: placeholder is a date */
+		$renewal_order->post->post_title = sprintf( __( 'Subscription Renewal Order &ndash; %s', 'woocommerce-subscriptions' ), $order_date );
 
 		wp_update_post( $renewal_order->post );
 
@@ -161,7 +165,8 @@ function wcs_get_subscriptions_for_renewal_order( $renewal_order ) {
 	}
 
 	if ( ! wcs_order_contains_renewal( $renewal_order ) ) {
-		throw new InvalidArgumentException( __( __METHOD__ . '() expects parameter one to be a child renewal order.', 'woocommerce-subscriptions' ) );
+		/* translators: placeholder is current method name */
+		throw new InvalidArgumentException( sprintf( __( '%s() expects parameter one to be a child renewal order.', 'woocommerce-subscriptions' ), __METHOD__ ) );
 	}
 
 	$subscriptions    = array();
