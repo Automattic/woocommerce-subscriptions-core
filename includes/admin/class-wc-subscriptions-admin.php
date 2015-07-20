@@ -1166,7 +1166,15 @@ class WC_Subscriptions_Admin {
 
 			if ( isset( $_GET['_subscription_related_orders'] ) && $_GET['_subscription_related_orders'] > 0 ) {
 
-				$related_orders = wcs_get_subscription( absint( $_GET['_subscription_related_orders'] ) )->get_related_orders( 'ids' );
+				$subscription_id = absint( $_GET['_subscription_related_orders'] );
+
+				$subscription = wcs_get_subscription( $subscription_id );
+
+				if ( ! is_a( $subscription, 'WC_Subscription' ) ) {
+					wp_die( sprintf( _x( 'We can\'t find a subscription with ID #%d. Perhaps it was deleted?', 'placeholder is a number', 'woocommerce-subscriptions' ), $subscription_id ), 'Can\'t find subscription', array( 'response' => 404 ) );
+				}
+
+				$related_orders = $subscription->get_related_orders( 'ids' );
 
 				if ( ! empty( $related_orders ) ) {
 					$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", implode( ',', array_map( 'absint', array_unique( $related_orders ) ) ) );
