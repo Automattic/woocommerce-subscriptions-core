@@ -116,20 +116,21 @@ class WCS_Email_Cancelled_Subscription extends WC_Email {
 	function init_form_fields() {
 		$this->form_fields = array(
 			'enabled' => array(
-				'title' 		=> __( 'Enable/Disable', 'woocommerce-subscriptions' ),
+				'title' 		=> _x( 'Enable/Disable', 'an email notification', 'woocommerce-subscriptions' ),
 				'type' 			=> 'checkbox',
 				'label' 		=> __( 'Enable this email notification', 'woocommerce-subscriptions' ),
 				'default' 		=> 'no',
 			),
 			'recipient' => array(
-				'title' 		=> __( 'Recipient(s)', 'woocommerce-subscriptions' ),
+				'title' 		=> _x( 'Recipient(s)', 'of an email', 'woocommerce-subscriptions' ),
 				'type' 			=> 'text',
+				/* translators: placeholder is admin email */
 				'description' 	=> sprintf( __( 'Enter recipients (comma separated) for this email. Defaults to <code>%s</code>.', 'woocommerce-subscriptions' ), esc_attr( get_option( 'admin_email' ) ) ),
 				'placeholder' 	=> '',
 				'default' 		=> '',
 			),
 			'subject' => array(
-				'title' 		=> __( 'Subject', 'woocommerce-subscriptions' ),
+				'title' 		=> _x( 'Subject', 'of an email', 'woocommerce-subscriptions' ),
 				'type' 			=> 'text',
 				'description' 	=> sprintf( __( 'This controls the email subject line. Leave blank to use the default subject: <code>%s</code>.', 'woocommerce-subscriptions' ), $this->subject ),
 				'placeholder' 	=> '',
@@ -149,9 +150,9 @@ class WCS_Email_Cancelled_Subscription extends WC_Email {
 				'default' 		=> 'html',
 				'class'			=> 'email_type',
 				'options'		=> array(
-					'plain'		 	=> __( 'Plain text', 'woocommerce-subscriptions' ),
-					'html' 			=> __( 'HTML', 'woocommerce-subscriptions' ),
-					'multipart' 	=> __( 'Multipart', 'woocommerce-subscriptions' ),
+					'plain'		 	=> _x( 'Plain text', 'email type', 'woocommerce-subscriptions' ),
+					'html' 			=> _x( 'HTML', 'email type', 'woocommerce-subscriptions' ),
+					'multipart' 	=> _x( 'Multipart', 'email type', 'woocommerce-subscriptions' ),
 				),
 			),
 		);
