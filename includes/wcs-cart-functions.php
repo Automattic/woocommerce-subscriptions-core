@@ -46,7 +46,7 @@ function wcs_cart_totals_shipping_method( $method, $cart ) {
 			}
 		}
 	} else {
-		$label = __( 'Free', 'woocommerce-subscriptions' );
+		$label = _x( 'Free', 'shipping method price', 'woocommerce-subscriptions' );
 	}
 
 	return apply_filters( 'wcs_cart_totals_shipping_method', $label, $method, $cart );
@@ -86,7 +86,7 @@ function wcs_cart_totals_coupon_html( $coupon, $cart ) {
 	$value[] = apply_filters( 'woocommerce_coupon_discount_amount_html', $discount_html, $coupon );
 
 	if ( $coupon->enable_free_shipping() ) {
-		$value[] = __( 'Free shipping coupon', 'woocommerce' );
+		$value[] = __( 'Free shipping coupon', 'woocommerce-subscriptions' );
 	}
 
 	// get rid of empty array elements
@@ -120,7 +120,8 @@ function wcs_cart_totals_order_total_html( $cart ) {
 		}
 
 		if ( ! empty( $tax_string_array ) ) {
-			$value .= '<small class="includes_tax">' . sprintf( __( '(Includes %s)', 'woocommerce' ), implode( ', ', $tax_string_array ) ) . '</small>';
+			/* translators: placeholder is price string, denotes tax included in cart/order total */
+			$value .= '<small class="includes_tax">' . sprintf( __( '(Includes %s)', 'woocommerce-subscriptions' ), implode( ', ', $tax_string_array ) ) . '</small>';
 		}
 	}
 
@@ -187,6 +188,7 @@ function wcs_add_cart_first_renewal_payment_date( $order_total_html, $cart ) {
 
 	if ( 0 !== $cart->next_payment_date ) {
 		$first_renewal_date = date_i18n( woocommerce_date_format(), strtotime( get_date_from_gmt( $cart->next_payment_date ) ) );
+		/* translators: placeholder is a date */
 		$order_total_html  .= '<div class="first-payment-date"><small>' . sprintf( __( 'First renewal: %s', 'woocommerce-subscriptions' ), $first_renewal_date ) .  '</small></div>';
 	}
 
