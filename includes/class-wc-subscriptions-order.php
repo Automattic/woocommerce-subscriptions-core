@@ -406,25 +406,22 @@ class WC_Subscriptions_Order {
 	 */
 	public static function maybe_record_subscription_payment( $order_id, $old_order_status, $new_order_status ) {
 
-		if ( ! wcs_order_contains_renewal( $order_id ) ) {
+		if ( wcs_order_contains_subscription( $order_id ) && ! wcs_order_contains_renewal( $order_id ) ) {
 
-			$subscriptions = wcs_get_subscriptions_for_order( $order_id );
-			$was_activated = false;
+			$subscriptions   = wcs_get_subscriptions_for_order( $order_id );
+			$was_activated   = false;
+			$order_completed = in_array( $new_order_status, array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id ), 'processing', 'completed' ) ) && in_array( $old_order_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ) ) );
 
 			foreach ( $subscriptions as $subscription ) {
 
 				// Do we need to activate a subscription?
-				if ( in_array( $new_order_status, array( 'processing', 'completed' ) ) && ! $subscription->has_status( 'active' ) ) {
+				if ( $order_completed && ! $subscription->has_status( 'active' ) ) {
 
-					if ( in_array( $old_order_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ) ) ) ) {
-						$subscription->update_dates( array( 'start' => current_time( 'mysql', true ) ) );
-						$subscription->payment_complete();
+					$subscription->update_dates( array( 'start' => current_time( 'mysql', true ) ) );
+					$subscription->payment_complete();
+					$was_activated = true;
 
-						$was_activated = true;
-					}
-
-				} elseif ( 'failed' == $old_order_status ) {
-
+				} elseif ( 'failed' == $new_order_status ) {
 					$subscription->payment_failed();
 				}
 			}
