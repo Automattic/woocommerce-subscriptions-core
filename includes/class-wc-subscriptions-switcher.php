@@ -1201,7 +1201,7 @@ class WC_Subscriptions_Switcher {
 					WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $next_payment_timestamp + ( $days_to_add * 60 * 60 * 24 );
 
 				} // The old price per day == the new price per day, no need to change anything
-
+				WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['prorate_recurring_payment'] = true;
 			}
 
 			// Finally, if we need to make sure the initial total doesn't include any recurring amount, we can by spoofing a free trial
@@ -1254,13 +1254,14 @@ class WC_Subscriptions_Switcher {
 
 				if ( isset( $cart_item['subscription_switch']['subscription_id'] ) && isset( $cart_item['data'] ) && $product == $cart_item['data'] ) {
 					$subscription      = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
-					$next_payment_time = ( isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) && '1' != $cart_item['data']->subscription_length ) ? $cart_item['subscription_switch']['first_payment_timestamp'] : 0;
+					$next_payment_time = isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) ? $cart_item['subscription_switch']['first_payment_timestamp'] : 0;
 
 					// remove trial period on the switched subscription when calculating the new end date
 					$trial_length = $cart_item['data']->subscription_trial_length;
 					$cart_item['data']->subscription_trial_length = 0;
 
-					if ( 1 == $cart_item['data']->subscription_length && 0 !== $next_payment_time ) {
+					// only use the next payment as the end date if it has been prorated, otherwise calculate it from the last payment
+					if ( 1 == $cart_item['data']->subscription_length && 0 !== $next_payment_time && isset( $cart_item['subscription_switch']['prorate_recurring_payment'] ) ) {
 						$end_date = date( 'Y-m-d H:i:s', $next_payment_time );
 
 					} elseif ( 0 !== $next_payment_time && ! in_array( $cart_item['data']->subscription_length, array( 0, 1 ) ) ) {
