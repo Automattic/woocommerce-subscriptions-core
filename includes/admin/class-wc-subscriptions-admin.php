@@ -1170,8 +1170,12 @@ class WC_Subscriptions_Admin {
 
 				$subscription = wcs_get_subscription( $subscription_id );
 
-				if ( ! is_a( $subscription, 'WC_Subscription' ) ) {
-					wp_die( sprintf( _x( 'We can\'t find a subscription with ID #%d. Perhaps it was deleted?', 'placeholder is a number', 'woocommerce-subscriptions' ), $subscription_id ), 'Can\'t find subscription', array( 'response' => 404 ) );
+				if ( ! wcs_is_subscription( $subscription ) ) {
+					wcs_add_admin_notice( sprintf( _x( 'We can\'t find a subscription with ID #%d. Perhaps it was deleted?', 'placeholder is a number', 'woocommerce-subscriptions' ), $subscription_id ), 'error' );
+
+					add_filter( 'woocommerce_subscriptions_found_related_orders', '__return_false' );
+
+					return $where;
 				}
 
 				$related_orders = $subscription->get_related_orders( 'ids' );
@@ -1195,7 +1199,7 @@ class WC_Subscriptions_Admin {
 
 		$query_arg = '_subscription_related_orders';
 
-		if ( isset( $_GET[ $query_arg ] ) && $_GET[ $query_arg ] > 0 ) {
+		if ( isset( $_GET[ $query_arg ] ) && $_GET[ $query_arg ] > 0 && apply_filters( 'woocommerce_subscriptions_found_related_orders', true ) ) {
 
 			$initial_order = new WC_Order( absint( $_GET[ $query_arg ] ) );
 
