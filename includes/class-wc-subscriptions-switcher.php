@@ -1216,7 +1216,7 @@ class WC_Subscriptions_Switcher {
 				$length_remaining   = $base_length - $completed_payments;
 
 				// Default to the base length if more payments have already been made than this subscription requires
-				if ( $length_remaining < 0 ) {
+				if ( $length_remaining <= 0 ) {
 					$length_remaining = $base_length;
 				}
 
