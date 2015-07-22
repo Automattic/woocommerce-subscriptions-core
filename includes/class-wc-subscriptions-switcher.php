@@ -816,7 +816,12 @@ class WC_Subscriptions_Switcher {
 		if ( isset( WC()->cart ) ) {
 			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 				if ( isset( $cart_item['subscription_switch'] ) ) {
-					$subscription_switches[ $cart_item_key ] = $cart_item['subscription_switch'];
+					if ( wcs_is_subscription( $cart_item['subscription_switch']['subscription_id'] ) ) {
+						$subscription_switches[ $cart_item_key ] = $cart_item['subscription_switch'];
+					} else {
+						WC()->cart->remove_cart_item( $cart_item_key );
+						WC_Subscriptions::add_notice( __( 'Your cart contained an invalid subscription switch request. It has been removed.', 'woocommerce-subscriptions' ), 'error' );
+					}
 				}
 			}
 		}
