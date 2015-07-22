@@ -1264,7 +1264,7 @@ class WC_Subscriptions_Switcher {
 					$cart_item['data']->subscription_trial_length = 0;
 
 					// if the subscription is length 1 and prorated, we want to use the prorated the next payment date as the end date
-					if ( 1 == $cart_item['data']->subscription_length && 0 !== $next_payment_time && isset( $cart_item['subscription_switch']['prorate_recurring_payment'] ) ) {
+					if ( 1 == $cart_item['data']->subscription_length && 0 !== $next_payment_time && isset( $cart_item['subscription_switch']['recurring_payment_prorated'] ) ) {
 						$end_date = date( 'Y-m-d H:i:s', $next_payment_time );
 
 					// if the subscription is more than 1 (and not 0) and we have a next payment date (prorated or not) we want to calculate the new end date from that
