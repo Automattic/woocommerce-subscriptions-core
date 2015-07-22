@@ -1201,7 +1201,10 @@ class WC_Subscriptions_Switcher {
 					WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $next_payment_timestamp + ( $days_to_add * 60 * 60 * 24 );
 
 				} // The old price per day == the new price per day, no need to change anything
-				WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['prorate_recurring_payment'] = true;
+
+				if ( WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] != $subscription->get_time( 'next_payment' ) ) {
+					WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['recurring_payment_prorated'] = true;
+				}
 			}
 
 			// Finally, if we need to make sure the initial total doesn't include any recurring amount, we can by spoofing a free trial
@@ -1260,15 +1263,17 @@ class WC_Subscriptions_Switcher {
 					$trial_length = $cart_item['data']->subscription_trial_length;
 					$cart_item['data']->subscription_trial_length = 0;
 
-					// only use the next payment as the end date if it has been prorated, otherwise calculate it from the last payment
+					// if the subscription is length 1 and prorated, we want to use the prorated the next payment date as the end date
 					if ( 1 == $cart_item['data']->subscription_length && 0 !== $next_payment_time && isset( $cart_item['subscription_switch']['prorate_recurring_payment'] ) ) {
 						$end_date = date( 'Y-m-d H:i:s', $next_payment_time );
 
-					} elseif ( 0 !== $next_payment_time && ! in_array( $cart_item['data']->subscription_length, array( 0, 1 ) ) ) {
+					// if the subscription is more than 1 (and not 0) and we have a next payment date (prorated or not) we want to calculate the new end date from that
+					} elseif ( 0 !== $next_payment_time && $cart_item['data']->subscription_length > 1 ) {
 						$cart_item['data']->subscription_length--;
 						$end_date = WC_Subscriptions_Product::get_expiration_date( $cart_item['data'], date( 'Y-m-d H:i:s', $next_payment_time ) );
 						$cart_item['data']->subscription_length++;
 
+					// elseif fallback to calculating the end date from the last payment date
 					} elseif ( ! empty( $subscription ) && 0 !== $subscription->get_time( 'last_payment' ) ) {
 						$end_date = WC_Subscriptions_Product::get_expiration_date( $product, $subscription->get_date( 'last_payment' ) );
 					}
