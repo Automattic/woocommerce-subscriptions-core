@@ -147,6 +147,8 @@ class WC_Subscriptions_Checkout {
 				$subscription->update_manual( 'true' );
 			}
 
+			wcs_copy_order_meta( $order, $subscription, 'subscription' );
+
 			// Store the line items
 			foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
 				$item_id = self::add_cart_item( $subscription, $cart_item, $cart_item_key );
@@ -263,6 +265,8 @@ class WC_Subscriptions_Checkout {
 		}
 
 		// Allow plugins to add order item meta
+		do_action( 'woocommerce_add_order_item_meta', $item_id, $cart_item, $cart_item_key );
+
 		do_action( 'woocommerce_add_subscription_item_meta', $item_id, $cart_item, $cart_item_key );
 
 		return $item_id;
