@@ -1175,14 +1175,13 @@ class WC_Subscriptions_Admin {
 
 					add_filter( 'woocommerce_subscriptions_found_related_orders', '__return_false' );
 
-					return $where;
+					$related_orders = array();
+				} else {
+					self::$found_related_orders = true;
+					$related_orders = $subscription->get_related_orders( 'ids' );
 				}
 
-				$related_orders = $subscription->get_related_orders( 'ids' );
-
-				if ( ! empty( $related_orders ) ) {
-					$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", implode( ',', array_map( 'absint', array_unique( $related_orders ) ) ) );
-				}
+				$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", implode( ',', array_map( 'absint', array_unique( $related_orders ) ) ) );
 			}
 		}
 
