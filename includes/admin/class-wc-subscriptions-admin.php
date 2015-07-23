@@ -1179,13 +1179,12 @@ class WC_Subscriptions_Admin {
 
 				if ( ! wcs_is_subscription( $subscription ) ) {
 					wcs_add_admin_notice( sprintf( _x( 'We can\'t find a subscription with ID #%d. Perhaps it was deleted?', 'placeholder is a number', 'woocommerce-subscriptions' ), $subscription_id ), 'error' );
-					$related_orders = array();
+					$where .= " AND {$wpdb->posts}.ID = 0";
 				} else {
 					self::$found_related_orders = true;
-					$related_orders = $subscription->get_related_orders( 'ids' );
+					$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", implode( ',', array_map( 'absint', array_unique( $subscription->get_related_orders( 'ids' ) ) ) ) );
 				}
 
-				$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", implode( ',', array_map( 'absint', array_unique( $related_orders ) ) ) );
 			}
 		}
 
