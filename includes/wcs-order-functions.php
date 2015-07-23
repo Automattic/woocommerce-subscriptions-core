@@ -143,7 +143,7 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 	// Allow extensions to add/remove order meta
 	$meta_query = apply_filters( 'wcs_' . $type . '_meta_query', $meta_query, $to_order, $from_order );
 	$meta       = $wpdb->get_results( $meta_query, 'ARRAY_A' );
-	$meta       = apply_filters( 'wcs_' . $type . '_meta', $meta, $to_query, $from_query );
+	$meta       = apply_filters( 'wcs_' . $type . '_meta', $meta, $to_order, $from_order );
 
 	foreach ( $meta as $meta_item ) {
 		add_post_meta( $to_order->id, $meta_item['meta_key'], maybe_unserialize( $meta_item['meta_value'] ), true );
