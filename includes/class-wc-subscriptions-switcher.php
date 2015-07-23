@@ -1170,6 +1170,15 @@ class WC_Subscriptions_Switcher {
 
 						$extra_to_pay = $days_until_next_payment * ( $new_price_per_day - $old_price_per_day );
 
+						// when calculating a subscription with one length (no more next payment date and the end date may have been pushed back) we need to pay for those extra days at the new price per day between the old next payment date and new end date
+						if ( 1 == $item_data->subscription_length ) {
+							$days_to_new_end = floor( ( $end_timestamp - $next_payment_timestamp ) / ( 60 * 60 * 24 ) );
+
+							if ( $days_to_new_end > 0 ) {
+								$extra_to_pay += $days_to_new_end * $new_price_per_day;
+							}
+						}
+
 						// We need to find the per item extra to pay so we can set it as the sign-up fee (WC will then multiply it by the quantity)
 						$extra_to_pay = $extra_to_pay / $cart_item['quantity'];
 
