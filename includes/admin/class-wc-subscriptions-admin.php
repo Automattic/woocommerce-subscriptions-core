@@ -35,6 +35,13 @@ class WC_Subscriptions_Admin {
 	private static $subscriptions_list_table;
 
 	/**
+	 * Store an instance of the list table
+	 *
+	 * @since 2.0
+	 */
+	private static $found_related_orders = false;
+
+	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
 	 * @since 1.0
@@ -1166,11 +1173,19 @@ class WC_Subscriptions_Admin {
 
 			if ( isset( $_GET['_subscription_related_orders'] ) && $_GET['_subscription_related_orders'] > 0 ) {
 
-				$related_orders = wcs_get_subscription( absint( $_GET['_subscription_related_orders'] ) )->get_related_orders( 'ids' );
+				$subscription_id = absint( $_GET['_subscription_related_orders'] );
 
-				if ( ! empty( $related_orders ) ) {
-					$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", implode( ',', array_map( 'absint', array_unique( $related_orders ) ) ) );
+				$subscription = wcs_get_subscription( $subscription_id );
+
+				if ( ! wcs_is_subscription( $subscription ) ) {
+					wcs_add_admin_notice( sprintf( _x( 'We can\'t find a subscription with ID #%d. Perhaps it was deleted?', 'placeholder is a number', 'woocommerce-subscriptions' ), $subscription_id ), 'error' );
+					$related_orders = array();
+				} else {
+					self::$found_related_orders = true;
+					$related_orders = $subscription->get_related_orders( 'ids' );
 				}
+
+				$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", implode( ',', array_map( 'absint', array_unique( $related_orders ) ) ) );
 			}
 		}
 
@@ -1187,7 +1202,7 @@ class WC_Subscriptions_Admin {
 
 		$query_arg = '_subscription_related_orders';
 
-		if ( isset( $_GET[ $query_arg ] ) && $_GET[ $query_arg ] > 0 ) {
+		if ( isset( $_GET[ $query_arg ] ) && $_GET[ $query_arg ] > 0 && true === self::$found_related_orders ) {
 
 			$initial_order = new WC_Order( absint( $_GET[ $query_arg ] ) );
 

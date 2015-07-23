@@ -141,10 +141,25 @@ class WCS_Upgrade_2_0 {
 
 			} catch ( Exception $e ) {
 
-				// we couldn't upgrade this subscription don't commit the query
-				$wpdb->query( 'ROLLBACK' );
+				// We can still recover from here.
+				if ( 422 == $e->getCode() ) {
 
-				throw $e;
+					self::deprecate_item_meta( $original_order_item_id );
+
+					self::deprecate_post_meta( $old_subscription['order_id'] );
+
+					WCS_Upgrade_Logger::add( sprintf( '!!! For order %d: unable to create subscription. Error: %s', $old_subscription['order_id'], $e->getMessage() ) );
+
+					$wpdb->query( 'COMMIT' );
+
+					$upgraded_subscription_count++;
+
+				} else {
+					// we couldn't upgrade this subscription don't commit the query
+					$wpdb->query( 'ROLLBACK' );
+
+					throw $e;
+				}
 			}
 
 			if ( $upgraded_subscription_count >= $batch_size ) {

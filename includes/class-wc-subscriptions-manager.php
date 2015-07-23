@@ -34,8 +34,6 @@ class WC_Subscriptions_Manager {
 		add_action( 'woocommerce_order_status_cancelled', __CLASS__ . '::cancel_subscriptions_for_order' );
 		add_action( 'woocommerce_order_status_failed', __CLASS__ . '::failed_subscription_sign_ups_for_order' );
 		add_action( 'woocommerce_order_status_on-hold', __CLASS__ . '::put_subscription_on_hold_for_order' );
-		add_action( 'woocommerce_order_status_processing', __CLASS__ . '::activate_subscriptions_for_order' );
-		add_action( 'woocommerce_order_status_completed', __CLASS__ . '::activate_subscriptions_for_order' );
 
 		// Expire a user's subscription
 		add_action( 'woocommerce_scheduled_subscription_expiration', __CLASS__ . '::expire_subscription', 10, 1 );

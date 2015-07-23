@@ -1237,7 +1237,7 @@ class WC_Subscription extends WC_Order {
 
 		do_action( 'woocommerce_subscription_payment_complete', $this );
 
-		if ( $this->get_completed_payment_count() >= 1 ) {
+		if ( $this->get_completed_payment_count() > 1 ) {
 			do_action( 'woocommerce_subscription_renewal_payment_complete', $this );
 		}
 	}
@@ -1268,7 +1268,7 @@ class WC_Subscription extends WC_Order {
 
 		do_action( 'woocommerce_subscription_payment_failed', $this, $new_status );
 
-		if ( $this->get_completed_payment_count() >= 1 ) {
+		if ( $this->get_completed_payment_count() > 1 ) {
 			do_action( 'woocommerce_subscription_renewal_payment_failed', $this );
 		}
 	}
@@ -1594,7 +1594,11 @@ class WC_Subscription extends WC_Order {
 		$sign_up_fee = 0;
 
 		foreach ( $this->get_items() as $line_item ) {
-			$sign_up_fee += $this->get_items_sign_up_fee( $line_item );
+			try {
+				$sign_up_fee += $this->get_items_sign_up_fee( $line_item );
+			} catch( Exception $e ) {
+				$sign_up_fee += 0;
+			}
 		}
 
 		return apply_filters( 'woocommerce_subscription_sign_up_fee', $sign_up_fee, $this );
