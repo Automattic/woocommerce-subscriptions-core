@@ -142,7 +142,7 @@ class WCS_Upgrade_2_0 {
 			} catch ( Exception $e ) {
 
 				// We can still recover from here.
-				if ( "Invalid data. No valid subscription was passed in." == $e->getMessage() ) {
+				if ( 422 == $e->getCode() ) {
 
 					self::deprecate_item_meta( $original_order_item_id );
 
