@@ -35,6 +35,13 @@ class WC_Subscriptions_Admin {
 	private static $subscriptions_list_table;
 
 	/**
+	 * Store an instance of the list table
+	 *
+	 * @since 2.0
+	 */
+	private static $found_related_orders = false;
+
+	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
 	 * @since 1.0
@@ -1172,9 +1179,6 @@ class WC_Subscriptions_Admin {
 
 				if ( ! wcs_is_subscription( $subscription ) ) {
 					wcs_add_admin_notice( sprintf( _x( 'We can\'t find a subscription with ID #%d. Perhaps it was deleted?', 'placeholder is a number', 'woocommerce-subscriptions' ), $subscription_id ), 'error' );
-
-					add_filter( 'woocommerce_subscriptions_found_related_orders', '__return_false' );
-
 					$related_orders = array();
 				} else {
 					self::$found_related_orders = true;
@@ -1198,7 +1202,7 @@ class WC_Subscriptions_Admin {
 
 		$query_arg = '_subscription_related_orders';
 
-		if ( isset( $_GET[ $query_arg ] ) && $_GET[ $query_arg ] > 0 && apply_filters( 'woocommerce_subscriptions_found_related_orders', true ) ) {
+		if ( isset( $_GET[ $query_arg ] ) && $_GET[ $query_arg ] > 0 && true === self::$found_related_orders ) {
 
 			$initial_order = new WC_Order( absint( $_GET[ $query_arg ] ) );
 
