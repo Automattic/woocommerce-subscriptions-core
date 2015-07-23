@@ -1061,7 +1061,7 @@ class WC_Subscription extends WC_Order {
 	 *
 	 * @return string
 	 */
-	public function get_formatted_order_total() {
+	public function get_formatted_order_total( $tax_display = '' ) {
 		if ( $this->get_total() > 0 && ! empty( $this->billing_period ) ) {
 			$formatted_order_total = wcs_price_string( $this->get_price_string_details( $this->get_total() ) );
 		} else {
