@@ -39,9 +39,7 @@ class WC_Subscriptions_Order {
 		add_action( 'woocommerce_admin_order_data_after_order_details', __CLASS__ . '::contains_subscription_hidden_field', 10, 1 );
 
 		// Record initial payment against the subscription & set start date based on that payment
-		add_action( 'woocommerce_payment_complete', __CLASS__ . '::maybe_record_order_payment', 9, 1 );
-		add_action( 'woocommerce_order_status_processing', __CLASS__ . '::maybe_record_order_payment', 9, 1 );
-		add_action( 'woocommerce_order_status_completed', __CLASS__ . '::maybe_record_order_payment', 9, 1 );
+		add_action( 'woocommerce_order_status_changed', __CLASS__ . '::maybe_record_subscription_payment', 9, 3 );
 
 		// Sometimes, even if the order total is $0, the order still needs payment
 		add_filter( 'woocommerce_order_needs_payment', __CLASS__ . '::order_needs_payment' , 10, 3 );
@@ -395,29 +393,41 @@ class WC_Subscriptions_Order {
 	/**
 	 * Records the initial payment against a subscription.
 	 *
-	 * This function is called when a gateway calls @see WC_Order::payment_complete() and payment
-	 * is completed on an order. It is also called when an orders status is changed to completed or
-	 * processing for those gateways which never call @see WC_Order::payment_complete(), like the
-	 * core WooCommerce Cheque and Bank Transfer gateways.
+	 * This function is called when an orders status is changed to completed or processing
+	 * for those gateways which never call @see WC_Order::payment_complete(), like the core
+	 * WooCommerce Cheque and Bank Transfer gateways.
 	 *
 	 * It will also set the start date on the subscription to the time the payment is completed.
 	 *
-	 * @param WC_Order|int $order A WC_Order object or ID of a WC_Order order.
-	 * @since 1.1.2
+	 * @param $order_id int|WC_Order
+	 * @param $old_order_status
+	 * @param $new_order_status
+	 * @since 2.0
 	 */
-	public static function maybe_record_order_payment( $order ) {
+	public static function maybe_record_subscription_payment( $order_id, $old_order_status, $new_order_status ) {
 
-		if ( ! wcs_order_contains_renewal( $order ) ) {
+		if ( wcs_order_contains_subscription( $order_id ) && ! wcs_order_contains_renewal( $order_id ) ) {
 
-			$subscriptions = wcs_get_subscriptions_for_order( $order );
+			$subscriptions   = wcs_get_subscriptions_for_order( $order_id );
+			$was_activated   = false;
+			$order_completed = in_array( $new_order_status, array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id ), 'processing', 'completed' ) ) && in_array( $old_order_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ) ) );
 
-			foreach ( $subscriptions as $subscription_id => $subscription ) {
+			foreach ( $subscriptions as $subscription ) {
 
-				// No payments have been recorded yet
-				if ( 0 == $subscription->get_completed_payment_count() ) {
+				// Do we need to activate a subscription?
+				if ( $order_completed && ! $subscription->has_status( 'active' ) ) {
+
 					$subscription->update_dates( array( 'start' => current_time( 'mysql', true ) ) );
 					$subscription->payment_complete();
+					$was_activated = true;
+
+				} elseif ( 'failed' == $new_order_status ) {
+					$subscription->payment_failed();
 				}
+			}
+
+			if ( $was_activated ) {
+				do_action( 'subscriptions_activated_for_order', $order_id );
 			}
 		}
 	}
@@ -1822,6 +1832,38 @@ class WC_Subscriptions_Order {
 	public static function get_item_sign_up_fee( $order, $product_id = '' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_items_sign_up_fee() or WC_Subscriptions_Order::get_sign_up_fee()' );
 		return self::get_sign_up_fee( $order, $product_id );
+	}
+
+	/**
+	 * Records the initial payment against a subscription.
+	 *
+	 * This function is called when a gateway calls @see WC_Order::payment_complete() and payment
+	 * is completed on an order. It is also called when an orders status is changed to completed or
+	 * processing for those gateways which never call @see WC_Order::payment_complete(), like the
+	 * core WooCommerce Cheque and Bank Transfer gateways.
+	 *
+	 * It will also set the start date on the subscription to the time the payment is completed.
+	 *
+	 * @param WC_Order|int $order A WC_Order object or ID of a WC_Order order.
+	 * @since 1.1.2
+	 * @deprecated 2.0
+	 */
+	public static function maybe_record_order_payment( $order ) {
+		_deprecated_function( __METHOD__, '2.0', __CLASS__ . 'maybe_record_subscription_payment::( $order, $old_status, $new_status )' );
+
+		if ( ! wcs_order_contains_renewal( $order ) ) {
+
+			$subscriptions = wcs_get_subscriptions_for_order( $order );
+
+			foreach ( $subscriptions as $subscription_id => $subscription ) {
+
+				// No payments have been recorded yet
+				if ( 0 == $subscription->get_completed_payment_count() ) {
+					$subscription->update_dates( array( 'start' => current_time( 'mysql', true ) ) );
+					$subscription->payment_complete();
+				}
+			}
+		}
 	}
 }
 WC_Subscriptions_Order::init();

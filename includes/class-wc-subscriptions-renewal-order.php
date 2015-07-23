@@ -71,25 +71,31 @@ class WC_Subscriptions_Renewal_Order {
 			return;
 		}
 
-		$subscriptions = wcs_get_subscriptions_for_renewal_order( $order_id );
+		$subscriptions        = wcs_get_subscriptions_for_renewal_order( $order_id );
+		$was_activated        = false;
+		$order_completed      = in_array( $orders_new_status, array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id ), 'processing', 'completed' ) );
+		$order_needed_payment = in_array( $orders_old_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ) ) );
 
 		foreach ( $subscriptions as $subscription ) {
 
 			// Do we need to activate a subscription?
-			if ( in_array( $orders_new_status, array( 'processing', 'completed' ) ) && ! $subscription->has_status( 'active' ) ) {
+			if ( $order_completed && ! $subscription->has_status( 'active' ) ) {
 
-				if ( in_array( $orders_old_status, array( 'pending', 'on-hold', 'failed' ) ) ) {
+				if ( $order_needed_payment ) {
 					$subscription->payment_complete();
+					$was_activated = true;
 				}
 
 				if ( 'failed' === $orders_old_status ) {
 					do_action( 'woocommerce_subscriptions_paid_for_failed_renewal_order', wc_get_order( $order_id ), $subscription );
 				}
 			} elseif ( 'failed' == $orders_new_status ) {
-
 				$subscription->payment_failed();
-
 			}
+		}
+
+		if ( $was_activated ) {
+			do_action( 'subscriptions_activated_for_order', $order_id );
 		}
 	}
 
