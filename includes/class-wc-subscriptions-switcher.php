@@ -76,6 +76,9 @@ class WC_Subscriptions_Switcher {
 		// Make sure the first renewal date takes into account any prorated length of time for upgrades/downgrades
 		add_filter( 'wcs_recurring_cart_next_payment_date', __CLASS__ . '::recurring_cart_next_payment_date', 100, 2 );
 
+		// Make sure the new end date starts from the end of the time that has already paid for
+		add_filter( 'wcs_recurring_cart_end_date', __CLASS__ . '::recurring_cart_end_date', 100, 3 );
+
 		// Make sure the switch process persists when having to choose product addons
 		add_action( 'addons_add_to_cart_url', __CLASS__ . '::addons_add_to_cart_url', 10 );
 
@@ -613,6 +616,8 @@ class WC_Subscriptions_Switcher {
 
 					if ( 0 !== $cart_item['subscription_switch']['first_payment_timestamp'] && $next_payment_timestamp !== $cart_item['subscription_switch']['first_payment_timestamp'] ) {
 						$is_different_payment_date = true;
+					} elseif ( 0 !== $cart_item['subscription_switch']['first_payment_timestamp'] && 0 == $subscription->get_time( 'next_payment' ) ) { // if the subscription doesn't have a next payment but the switched item does
+						$is_different_payment_date = true;
 					} else {
 						$is_different_payment_date = false;
 					}
@@ -631,7 +636,7 @@ class WC_Subscriptions_Switcher {
 					}
 
 					// If the item is on the same schedule, we can just add it to the new subscription and remove the old item
-					if ( $is_single_item_subscription || ( false === $is_different_billing_schedule && false === $is_different_payment_date ) ) {
+					if ( $is_single_item_subscription || ( false === $is_different_billing_schedule && false === $is_different_payment_date && false === $is_different_length ) ) {
 
 						// Add the new item
 						$item_id = WC_Subscriptions_Checkout::add_cart_item( $subscription, $cart_item, $cart_item_key );
@@ -655,12 +660,20 @@ class WC_Subscriptions_Switcher {
 							update_post_meta( $subscription->id, '_billing_interval', absint( $cart_item['data']->subscription_period_interval ) );
 						}
 
-						if ( $is_different_payment_date ) {
-							$subscription->update_dates( array( 'next_payment' => date( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] ) ) );
+						$updated_dates = array();
+
+						if ( '1' == $cart_item['data']->subscription_length || ( 0 != $recurring_cart->end_date && date( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] ) >= $recurring_cart->end_date ) ) {
+							$subscription->delete_date( 'next_payment' );
+						} else if ( $is_different_payment_date ) {
+							$updated_dates['next_payment'] = date( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] );
 						}
 
 						if ( $is_different_length ) {
-							$subscription->update_dates( array( 'end' => $recurring_cart->end_date ) );
+							$updated_dates['end'] = $recurring_cart->end_date;
+						}
+
+						if ( ! empty( $updated_dates ) ) {
+							$subscription->update_dates( $updated_dates );
 						}
 					}
 
@@ -686,8 +699,9 @@ class WC_Subscriptions_Switcher {
 			$wpdb->query( 'COMMIT' );
 
 		} catch ( Exception $e ) {
-			// There was an error adding the subscription
+			// There was an error adding the subscription, roll back and delete pending order for switch
 			$wpdb->query( 'ROLLBACK' );
+			wp_delete_post( $order_id, true );
 			throw $e;
 		}
 	}
@@ -1034,16 +1048,15 @@ class WC_Subscriptions_Switcher {
 				continue;
 			}
 
-			$subscription  = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
-			$existing_item = wcs_get_order_item( $cart_item['subscription_switch']['item_id'], $subscription );
-			$item_data     = $cart_item['data'];
-			$product_id    = wcs_get_canonical_product_id( $cart_item );
-			$product       = get_product( $product_id );
+			$subscription       = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
+			$existing_item      = wcs_get_order_item( $cart_item['subscription_switch']['item_id'], $subscription );
+			$item_data          = $cart_item['data'];
+			$product_id         = wcs_get_canonical_product_id( $cart_item );
+			$product            = get_product( $product_id );
+			$is_virtual_product = $product->is_virtual();
 
 			// Set the date on which the first payment for the new subscription should be charged
 			WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $cart_item['subscription_switch']['next_payment_timestamp'];
-
-			$is_virtual_product = ( 'no' != $item_data->virtual ) ? true : false;
 
 			// Add any extra sign up fees required to switch to the new subscription
 			if ( 'yes' == $apportion_sign_up_fee ) {
@@ -1189,6 +1202,9 @@ class WC_Subscriptions_Switcher {
 
 				} // The old price per day == the new price per day, no need to change anything
 
+				if ( WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] != $subscription->get_time( 'next_payment' ) ) {
+					WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['recurring_payment_prorated'] = true;
+				}
 			}
 
 			// Finally, if we need to make sure the initial total doesn't include any recurring amount, we can by spoofing a free trial
@@ -1203,7 +1219,7 @@ class WC_Subscriptions_Switcher {
 				$length_remaining   = $base_length - $completed_payments;
 
 				// Default to the base length if more payments have already been made than this subscription requires
-				if ( $length_remaining < 0 ) {
+				if ( $length_remaining <= 0 ) {
 					$length_remaining = $base_length;
 				}
 
@@ -1222,11 +1238,54 @@ class WC_Subscriptions_Switcher {
 
 		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
 			if ( isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) ) {
-				$first_renewal_date = date( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] );
+				$first_renewal_date = ( '1' != $cart_item['data']->subscription_length ) ? date( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] ) : 0;
 			}
 		}
 
 		return $first_renewal_date;
+	}
+
+	/**
+	 * Make sure the end date of the switched subscription starts after already paid term
+	 *
+	 * @since 2.0
+	 */
+	public static function recurring_cart_end_date( $end_date, $cart, $product ) {
+
+		if ( 0 !== $end_date ) {
+			foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
+
+				if ( isset( $cart_item['subscription_switch']['subscription_id'] ) && isset( $cart_item['data'] ) && $product == $cart_item['data'] ) {
+					$subscription      = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
+					$next_payment_time = isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) ? $cart_item['subscription_switch']['first_payment_timestamp'] : 0;
+
+					// remove trial period on the switched subscription when calculating the new end date
+					$trial_length = $cart_item['data']->subscription_trial_length;
+					$cart_item['data']->subscription_trial_length = 0;
+
+					// if the subscription is length 1 and prorated, we want to use the prorated the next payment date as the end date
+					if ( 1 == $cart_item['data']->subscription_length && 0 !== $next_payment_time && isset( $cart_item['subscription_switch']['recurring_payment_prorated'] ) ) {
+						$end_date = date( 'Y-m-d H:i:s', $next_payment_time );
+
+					// if the subscription is more than 1 (and not 0) and we have a next payment date (prorated or not) we want to calculate the new end date from that
+					} elseif ( 0 !== $next_payment_time && $cart_item['data']->subscription_length > 1 ) {
+						$cart_item['data']->subscription_length--;
+						$end_date = WC_Subscriptions_Product::get_expiration_date( $cart_item['data'], date( 'Y-m-d H:i:s', $next_payment_time ) );
+						$cart_item['data']->subscription_length++;
+
+					// elseif fallback to calculating the end date from the last payment date
+					} elseif ( ! empty( $subscription ) && 0 !== $subscription->get_time( 'last_payment' ) ) {
+						$end_date = WC_Subscriptions_Product::get_expiration_date( $product, $subscription->get_date( 'last_payment' ) );
+					}
+
+					// add back the trial length if it has been spoofed
+					$cart_item['data']->subscription_trial_length = $trial_length;
+					break;
+				}
+			}
+		}
+
+		return $end_date;
 	}
 
 	/**
