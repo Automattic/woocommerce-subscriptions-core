@@ -419,6 +419,8 @@ class WC_Subscriptions_Upgrader {
 		wp_register_style( 'wcs-upgrade', plugins_url( '/assets/css/wcs-upgrade.css', WC_Subscriptions::$plugin_file ) );
 		wp_register_script( 'wcs-upgrade', plugins_url( '/assets/js/wcs-upgrade.js', WC_Subscriptions::$plugin_file ), 'jquery' );
 
+		$subscription_count = self::get_total_subscription_count();
+
 		$script_data = array(
 			'really_old_version'        => ( version_compare( self::$active_version, '1.4', '<' ) ) ? 'true' : 'false',
 			'upgrade_to_1_5'            => ( version_compare( self::$active_version, '1.5', '<' ) ) ? 'true' : 'false',
@@ -426,6 +428,7 @@ class WC_Subscriptions_Upgrader {
 			'subscriptions_per_request' => self::$upgrade_limit_subscriptions,
 			'ajax_url'                  => admin_url( 'admin-ajax.php' ),
 			'upgrade_nonce'             => wp_create_nonce( 'wcs_upgrade_process' ),
+			'subscription_count'        => $subscription_count,
 		);
 
 		wp_localize_script( 'wcs-upgrade', 'wcs_update_script_data', $script_data );
@@ -433,7 +436,6 @@ class WC_Subscriptions_Upgrader {
 		// Can't get subscription count with database structure < 1.4
 		if ( 'false' == $script_data['really_old_version'] ) {
 
-			$subscription_count = self::get_total_subscription_count( true );
 			$batch_size         = self::$upgrade_limit_subscriptions;
 
 			// The base duration is 150 subscriptions per minute (i.e. approximately 20 seconds per batch of 50)
