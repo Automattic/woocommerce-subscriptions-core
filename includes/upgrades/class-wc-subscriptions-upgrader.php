@@ -519,7 +519,6 @@ class WC_Subscriptions_Upgrader {
 	 * @since 2.0
 	 */
 	private static function get_total_subscription_count( $initial = false ) {
-		global $wpdb;
 
 		if ( $initial ) {
 
@@ -532,21 +531,31 @@ class WC_Subscriptions_Upgrader {
 		} else {
 
 			if ( null === self::$old_subscription_count ) {
-
-				$query = "SELECT meta.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS meta
-						  WHERE meta.meta_key = '_subscription_status'
-						  AND meta.meta_value <> 'trash'
-						  GROUP BY meta.order_item_id";
-
-				$wpdb->get_results( $query );
-
-				self::$old_subscription_count = $wpdb->num_rows;
+				self::$old_subscription_count = self::get_total_subscription_count_query();
 			}
 
 			$subscription_count = self::$old_subscription_count;
 		}
 
 		return $subscription_count;
+	}
+
+
+	/**
+	 * Returns the number of subscriptions left in the 1.5 structure
+	 * @return integer number of 1.5 subscriptions left
+	 */
+	private static function get_total_subscription_count_query() {
+		global $wpdb;
+
+		$query = "SELECT meta.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS meta
+				  WHERE meta.meta_key = '_subscription_status'
+				  AND meta.meta_value <> 'trash'
+				  GROUP BY meta.order_item_id";
+
+		$wpdb->get_results( $query );
+
+		return $wpdb->num_rows;
 	}
 
 	/**
