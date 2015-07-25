@@ -439,15 +439,15 @@ class WC_Subscriptions_Upgrader {
 
 			$batch_size         = self::$upgrade_limit_subscriptions;
 
-			// The base duration is 150 subscriptions per minute (i.e. approximately 20 seconds per batch of 50)
-			$estimated_duration = ceil( $subscription_count / 150 );
+			// The base duration is 50 subscriptions per minute (i.e. approximately 60 seconds per batch of 50)
+			$estimated_duration = ceil( $subscription_count / 50 );
 
-			// Large sites take about 2-3x as long (i.e. approximately 40 seconds per batch of 35)
+			// Large sites take about 2-3x as long (i.e. approximately 80 seconds per batch of 35)
 			if ( $subscription_count > 5000 ) {
 				$estimated_duration *= 3;
 			}
 
-			// And really large sites take around 5-6x as long (i.e. approximately 50 seconds per batch of 25)
+			// And really large sites take around 5-6x as long (i.e. approximately 100 seconds per batch of 25)
 			if ( $subscription_count > 10000 ) {
 				$estimated_duration *= 2;
 			}
