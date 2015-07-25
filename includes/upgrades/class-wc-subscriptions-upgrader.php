@@ -229,7 +229,10 @@ class WC_Subscriptions_Upgrader {
 
 		WCS_Upgrade_Logger::add( sprintf( 'Starting upgrade step: %s', $_POST['upgrade_step'] ) );
 
-		@set_time_limit( 600 );
+		if ( ini_get( 'max_execution_time' ) < 600 ) {
+			@set_time_limit( 600 );
+		}
+
 		@ini_set( 'memory_limit', apply_filters( 'admin_memory_limit', WP_MAX_MEMORY_LIMIT ) );
 
 		update_option( 'wc_subscriptions_is_upgrading', gmdate( 'U' ) + 60 * 2 );
