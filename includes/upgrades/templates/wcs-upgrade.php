@@ -63,6 +63,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<ol>
 			</ol>
 			<img id="update-ajax-loader" alt="loading..." width="16px" height="16px" src="<?php echo esc_url( plugins_url( '/assets/images/ajax-loader@2x.gif', WC_Subscriptions::$plugin_file ) ); ?>" />
+			<p id="estimated_time"></p>
 		</div>
 		<div id="update-complete">
 			<h2><?php esc_html_e( 'Update Complete', 'woocommerce-subscriptions' ); ?></h2>

@@ -283,6 +283,7 @@ class WC_Subscriptions_Upgrader {
 						// translators: placeholder is number of subscriptions upgraded
 						'message'        => sprintf( __( 'Migrated %s subscriptions to the new structure (in {execution_time} seconds).', 'woocommerce-subscriptions' ), $upgraded_subscriptions ),
 						'status'         => 'success',
+						'time_message'   => __( 'Estimated time left (minutes:seconds): {time_left}', 'woocommerce-subscriptions' ),
 					);
 
 				} catch ( Exception $e ) {
