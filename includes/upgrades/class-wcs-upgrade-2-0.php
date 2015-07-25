@@ -52,6 +52,8 @@ class WCS_Upgrade_2_0 {
 
 		$upgraded_subscription_count = 0;
 
+		$execution_time_start = time();
+
 		foreach ( self::get_subscriptions( $batch_size ) as $original_order_item_id => $old_subscription ) {
 
 			try {
@@ -164,13 +166,14 @@ class WCS_Upgrade_2_0 {
 				}
 			}
 
-			if ( $upgraded_subscription_count >= $batch_size ) {
+			if ( $upgraded_subscription_count >= $batch_size || ( array_key_exists( 'WPENGINE_ACCOUNT', $_SERVER ) && ( time() - $execution_time_start ) > 50 ) ) {
 				break;
 			}
 		}
 
+
 		// Double check we actually have no more subscriptions to upgrade as sometimes they can fall through the cracks
-		if ( $upgraded_subscription_count < $batch_size && $upgraded_subscription_count > 0 ) {
+		if ( $upgraded_subscription_count < $batch_size && $upgraded_subscription_count > 0 && ! array_key_exists( 'WPENGINE_ACCOUNT', $_SERVER ) ) {
 			$upgraded_subscription_count += self::upgrade_subscriptions( $batch_size );
 		}
 

@@ -300,7 +300,7 @@ class WC_Subscriptions_Upgrader {
 				break;
 		}
 
-		if ( isset( $upgraded_subscriptions ) && $upgraded_subscriptions < self::$upgrade_limit_subscriptions ) {
+		if ( 0 === self::get_total_subscription_count_query() ) {
 			self::upgrade_complete();
 		}
 
