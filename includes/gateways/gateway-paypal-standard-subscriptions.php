@@ -898,7 +898,7 @@ class WC_PayPal_Standard_Subscriptions {
 		parse_str( $response['body'], $parsed_response );
 
 		if ( ( 0 == sizeof( $parsed_response ) || ! array_key_exists( 'ACK', $parsed_response ) ) ) {
-			WC_Gateway_Paypal::log( "Invalid HTTP Response for change_subscription_status POST request($api_request) to " . self::$api_endpoint );
+			WC_Gateway_Paypal::log( 'Invalid HTTP Response for change_subscription_status to ' . self::$api_endpoint . ' with $post_data = ' . print_r( $post_data, true ) );
 		}
 
 		if ( 'Failure' == $parsed_response['ACK'] ) {
