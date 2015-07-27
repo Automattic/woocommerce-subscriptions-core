@@ -1241,6 +1241,7 @@ class WC_Subscriptions_Admin {
 		if ( 'combined' == $form ) {
 			$error_message = sprintf( __( 'The trial period can not exceed: %1s, %2s, %3s or %4s.', 'woocommerce-subscriptions' ), array_pop( $subscription_ranges['day'] ), array_pop( $subscription_ranges['week'] ), array_pop( $subscription_ranges['month'] ), array_pop( $subscription_ranges['year'] ) );
 		} else {
+			$error_message = array();
 			foreach ( wcs_get_available_time_periods() as $period => $string ) {
 				$error_message[ $period ] = sprintf( __( 'The trial period can not exceed %1s.', 'woocommerce-subscriptions' ), array_pop( $subscription_ranges[ $period ] ) );
 			}
