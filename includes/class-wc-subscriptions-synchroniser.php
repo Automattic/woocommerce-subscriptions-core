@@ -997,7 +997,7 @@ class WC_Subscriptions_Synchroniser {
 	public static function subscription_contains_synced_product( $subscription_id ) {
 
 		if ( is_object( $subscription_id ) ) {
-			$subscription_id = $subscription->id;
+			$subscription_id = $subscription_id->id;
 		}
 
 		return ( 'true' == get_post_meta( $subscription_id, '_contains_synced_subscription', true ) ) ? true : false;
