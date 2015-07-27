@@ -163,7 +163,7 @@ class WC_Subscriptions_Checkout {
 				}
 
 				// Allow plugins to add order item meta to fees
-				do_action( 'woocommerce_add_order_fee_meta', $order_id, $item_id, $fee, $fee_key );
+				do_action( 'woocommerce_add_order_fee_meta', $order->id, $item_id, $fee, $fee_key );
 			}
 
 			self::add_shipping( $subscription, $cart );

@@ -556,7 +556,7 @@ class WC_Subscriptions_Cart {
 
 			$has_trial = self::cart_contains_free_trial();
 
-			if ( $recurring_total > 0 && ( false === $is_one_period || true === $has_trial || ( false !== $is_syncd && false == WC_Subscriptions_Synchroniser::is_today( WC_Subscriptions_Synchroniser::calculate_first_payment_date( $is_syncd['data'], 'timestamp' ) ) ) ) ) {
+			if ( $recurring_total > 0 && ( false === $is_one_period || true === $has_trial || ( false !== $is_synced && false == WC_Subscriptions_Synchroniser::is_today( WC_Subscriptions_Synchroniser::calculate_first_payment_date( $is_synced['data'], 'timestamp' ) ) ) ) ) {
 				$needs_payment = true;
 			}
 		}
@@ -882,7 +882,7 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function get_discounts_before_tax( $discount, $cart ) {
 		_deprecated_function( __METHOD__, '1.2', __CLASS__ .'::get_formatted_discounts_before_tax( $discount )' );
-		return self::get_formatted_discounts_before_tax( $total );
+		return self::get_formatted_discounts_before_tax( $discount );
 	}
 
 	/**
@@ -893,7 +893,7 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function get_discounts_after_tax( $discount, $cart ) {
 		_deprecated_function( __METHOD__, '1.2', __CLASS__ .'::get_formatted_discounts_after_tax( $discount )' );
-		return self::get_formatted_discounts_after_tax( $total );
+		return self::get_formatted_discounts_after_tax( $discount );
 	}
 
 	/**
@@ -904,7 +904,7 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function get_cart_subtotal( $cart_subtotal, $compound, $cart ) {
 		_deprecated_function( __METHOD__, '1.2', __CLASS__ .'::get_formatted_cart_subtotal( $cart_subtotal, $compound, $cart )' );
-		return self::get_formatted_cart_subtotal( $total, $compound, $cart );
+		return self::get_formatted_cart_subtotal( $cart_subtotal, $compound, $cart );
 	}
 
 	/**
