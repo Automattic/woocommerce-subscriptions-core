@@ -143,7 +143,7 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 	// Allow extensions to add/remove order meta
 	$meta_query = apply_filters( 'wcs_' . $type . '_meta_query', $meta_query, $to_order, $from_order );
 	$meta       = $wpdb->get_results( $meta_query, 'ARRAY_A' );
-	$meta       = apply_filters( 'wcs_' . $type . '_meta', $meta, $to_query, $from_query );
+	$meta       = apply_filters( 'wcs_' . $type . '_meta', $meta, $to_order, $from_order );
 
 	foreach ( $meta as $meta_item ) {
 		add_post_meta( $to_order->id, $meta_item['meta_key'], maybe_unserialize( $meta_item['meta_value'] ), true );
@@ -377,19 +377,19 @@ add_action( 'woocommerce_process_shop_order_meta', 'wcs_repair_permission_data',
  * @return WC_Subscription Subscription details in post_id => WC_Subscription form.
  * @since 2.0
  */
-function wcs_get_order_item( $item_id, $subscription ) {
+function wcs_get_order_item( $item_id, $order ) {
 
 	$item = array();
 
-	if ( ! is_object ( $subscription ) || 'shop_subscription' !== $subscription->order_type ) {
-		throw new InvalidArgumentException( __( 'Invalid data. No valid subscription was passed in.', 'woocommerce-subscriptions' ), 422 );
+	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
+		throw new InvalidArgumentException( __( 'Invalid data. No valid subscription / order was passed in.', 'woocommerce-subscriptions' ), 422 );
 	}
 
 	if ( ! absint( $item_id ) ) {
 		throw new InvalidArgumentException( __( 'Invalid data. No valid item id was passed in.', 'woocommerce-subscriptions' ), 422 );
 	}
 
-	foreach ( $subscription->get_items() as $line_item_id => $line_item ) {
+	foreach ( $order->get_items() as $line_item_id => $line_item ) {
 		if ( $item_id == $line_item_id ) {
 			$item = $line_item;
 			break;
