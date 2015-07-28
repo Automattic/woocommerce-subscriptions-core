@@ -1212,7 +1212,7 @@ class WC_Subscriptions_Switcher {
 
 				} // The old price per day == the new price per day, no need to change anything
 
-				if ( WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] != $subscription->get_time( 'next_payment' ) ) {
+				if ( WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] != $cart_item['subscription_switch']['next_payment_timestamp'] ) {
 					WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['recurring_payment_prorated'] = true;
 				}
 			}
@@ -1290,6 +1290,8 @@ class WC_Subscriptions_Switcher {
 					} elseif ( ! empty( $end_timestamp ) ) {
 						$end_date = date( 'Y-m-d H:i:s', $end_timestamp );
 					}
+
+					break;
 				}
 			}
 		}
