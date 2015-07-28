@@ -72,6 +72,11 @@ class WC_Subscriptions_Product {
 		return $sign_up_fee_including_tax;
 	}
 
+	/**
+	 * Returns the raw sign up fee value (ignoring tax) by filtering the products price.
+	 *
+	 * @return string
+	 */
 	public static function get_sign_up_fee_filter( $price, $product ) {
 
 		return self::get_sign_up_fee( $product );
@@ -95,7 +100,7 @@ class WC_Subscriptions_Product {
 	}
 
 	/**
-	 * Override the WooCommerce "Add to Cart" text with "Sign Up Now"
+	 * Override the WooCommerce "Add to Cart" text with "Sign Up Now".
 	 *
 	 * @since 1.0
 	 */
@@ -111,6 +116,8 @@ class WC_Subscriptions_Product {
 
 	/**
 	 * Checks a given product to determine if it is a subscription.
+	 * When the received arg is a product object, make sure it is passed into the filter intact -
+	 * This is the only elegant way to pass useful data into hooked functions.
 	 *
 	 * @param int|WC_Product $product_id Either a product object or product's post ID.
 	 * @since 1.0
