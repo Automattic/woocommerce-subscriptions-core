@@ -586,7 +586,7 @@ class WC_Subscriptions_Manager {
 				wp_delete_post( $subscription->id );
 			} else {
 				// There is no direct analog for this in WC_Subscription, so we need to call the deprecated method
-				self::update_subscription( $subscription_key, $subscription_details );
+				self::update_subscription( $subscription_key, $new_subscription_details );
 			}
 		}
 
@@ -1372,7 +1372,7 @@ class WC_Subscriptions_Manager {
 			}
 		}
 
-		return apply_filters( 'woocommerce_all_users_subscriptions', $subscriptions_in_old_format, $user_id );
+		return apply_filters( 'woocommerce_all_users_subscriptions', $subscriptions_in_old_format );
 	}
 
 	/**

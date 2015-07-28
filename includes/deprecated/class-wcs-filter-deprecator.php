@@ -140,6 +140,7 @@ class WCS_Filter_Deprecator extends WCS_Hook_Deprecator {
 			case 'woocommerce_subscriptions_set_expiration_date' :
 
 				$subscription = $new_callback_args[0];
+				$data_type    = $new_callback_args[1];
 
 				if ( ( 'next_payment' == $date_type && in_array( $old_hook, array( 'woocommerce_subscriptions_set_trial_expiration_date', 'woocommerce_subscription_set_next_payment_date' ) ) ) || ( 'end_date' == $date_type && 'woocommerce_subscriptions_set_expiration_date' == $old_hook ) ) {
 					// Here the old return value was a boolean where as now there is no equivalent filter, so we apply the filter to the action (which is only triggered when the old filter's value would have been true) and ignore the return value
@@ -188,7 +189,8 @@ class WCS_Filter_Deprecator extends WCS_Hook_Deprecator {
 			// Old arg spec: $renewal_order_id, $original_order, $product_id, $new_order_role
 			case 'woocommerce_subscriptions_renewal_order_id' :
 
-				$subscription = $new_callback_args[1];
+				$renewal_order = $new_callback_args[0];
+				$subscription  = $new_callback_args[1];
 
 				// Now we need to find the new orders role, if the calling function is wcs_create_resubscribe_order(), the role is parent, otherwise it's child
 				$backtrace  = debug_backtrace();

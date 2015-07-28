@@ -1179,13 +1179,12 @@ class WC_Subscriptions_Admin {
 
 				if ( ! wcs_is_subscription( $subscription ) ) {
 					wcs_add_admin_notice( sprintf( _x( 'We can\'t find a subscription with ID #%d. Perhaps it was deleted?', 'placeholder is a number', 'woocommerce-subscriptions' ), $subscription_id ), 'error' );
-					$related_orders = array();
+					$where .= " AND {$wpdb->posts}.ID = 0";
 				} else {
 					self::$found_related_orders = true;
-					$related_orders = $subscription->get_related_orders( 'ids' );
+					$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", implode( ',', array_map( 'absint', array_unique( $subscription->get_related_orders( 'ids' ) ) ) ) );
 				}
 
-				$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", implode( ',', array_map( 'absint', array_unique( $related_orders ) ) ) );
 			}
 		}
 
@@ -1241,6 +1240,7 @@ class WC_Subscriptions_Admin {
 		if ( 'combined' == $form ) {
 			$error_message = sprintf( __( 'The trial period can not exceed: %1s, %2s, %3s or %4s.', 'woocommerce-subscriptions' ), array_pop( $subscription_ranges['day'] ), array_pop( $subscription_ranges['week'] ), array_pop( $subscription_ranges['month'] ), array_pop( $subscription_ranges['year'] ) );
 		} else {
+			$error_message = array();
 			foreach ( wcs_get_available_time_periods() as $period => $string ) {
 				$error_message[ $period ] = sprintf( __( 'The trial period can not exceed %1s.', 'woocommerce-subscriptions' ), array_pop( $subscription_ranges[ $period ] ) );
 			}

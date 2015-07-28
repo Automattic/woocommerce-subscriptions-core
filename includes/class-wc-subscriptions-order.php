@@ -351,7 +351,7 @@ class WC_Subscriptions_Order {
 			$subscription_count = count( wcs_get_subscriptions_for_order( $order_id ) );
 
 			$thank_you_message = '<p>' . _n( 'Your subscription will be activated when payment clears.', 'Your subscriptions will be activated when payment clears.', $subscription_count, 'woocommerce-subscriptions' ) . '</p>';
-			$thank_you_message = sprintf( _n( '%sView the status of your subscription in %syour account%s.%s', '%sView the status of your subscriptions in %syour account%s.%s', $subscription_count, 'woocommerce-subscriptions' ), '<p>', '<a href="' . get_permalink( woocommerce_get_page_id( 'myaccount' ) ) . '">', '</a>','</p>' );
+			$thank_you_message .= sprintf( _n( '%sView the status of your subscription in %syour account%s.%s', '%sView the status of your subscriptions in %syour account%s.%s', $subscription_count, 'woocommerce-subscriptions' ), '<p>', '<a href="' . get_permalink( woocommerce_get_page_id( 'myaccount' ) ) . '">', '</a>','</p>' );
 			echo wp_kses( apply_filters( 'woocommerce_subscriptions_thank_you_message', $thank_you_message, $order_id ), array( 'a' => array( 'href' => array(), 'title' => array() ), 'p' => array(), 'em' => array(), 'strong' => array() ) );
 		}
 
