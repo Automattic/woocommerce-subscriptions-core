@@ -1080,8 +1080,9 @@ class WC_Subscriptions_Switcher {
 			$product            = get_product( $product_id );
 			$is_virtual_product = $product->is_virtual();
 
-			// Set the date on which the first payment for the new subscription should be charged
+			// Set when the first payment and end date for the new subscription should occur
 			WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $cart_item['subscription_switch']['next_payment_timestamp'];
+			WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['end_timestamp'] = $end_timestamp = strtotime( WC_Subscriptions_Product::get_expiration_date( $product_id, $subscription->get_date( 'last_payment' ) ) );
 
 			// Add any extra sign up fees required to switch to the new subscription
 			if ( 'yes' == $apportion_sign_up_fee ) {
@@ -1194,6 +1195,15 @@ class WC_Subscriptions_Switcher {
 
 						$extra_to_pay = $days_until_next_payment * ( $new_price_per_day - $old_price_per_day );
 
+						// when calculating a subscription with one length (no more next payment date and the end date may have been pushed back) we need to pay for those extra days at the new price per day between the old next payment date and new end date
+						if ( 1 == $item_data->subscription_length ) {
+							$days_to_new_end = floor( ( $end_timestamp - $next_payment_timestamp ) / ( 60 * 60 * 24 ) );
+
+							if ( $days_to_new_end > 0 ) {
+								$extra_to_pay += $days_to_new_end * $new_price_per_day;
+							}
+						}
+
 						// We need to find the per item extra to pay so we can set it as the sign-up fee (WC will then multiply it by the quantity)
 						$extra_to_pay = $extra_to_pay / $cart_item['quantity'];
 
@@ -1227,7 +1237,7 @@ class WC_Subscriptions_Switcher {
 
 				} // The old price per day == the new price per day, no need to change anything
 
-				if ( WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] != $subscription->get_time( 'next_payment' ) ) {
+				if ( WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] != $cart_item['subscription_switch']['next_payment_timestamp'] ) {
 					WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['recurring_payment_prorated'] = true;
 				}
 			}
@@ -1281,12 +1291,8 @@ class WC_Subscriptions_Switcher {
 			foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
 
 				if ( isset( $cart_item['subscription_switch']['subscription_id'] ) && isset( $cart_item['data'] ) && $product == $cart_item['data'] ) {
-					$subscription      = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
 					$next_payment_time = isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) ? $cart_item['subscription_switch']['first_payment_timestamp'] : 0;
-
-					// remove trial period on the switched subscription when calculating the new end date
-					$trial_length = $cart_item['data']->subscription_trial_length;
-					$cart_item['data']->subscription_trial_length = 0;
+					$end_timestamp     = WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['end_timestamp'];
 
 					// if the subscription is length 1 and prorated, we want to use the prorated the next payment date as the end date
 					if ( 1 == $cart_item['data']->subscription_length && 0 !== $next_payment_time && isset( $cart_item['subscription_switch']['recurring_payment_prorated'] ) ) {
@@ -1294,22 +1300,26 @@ class WC_Subscriptions_Switcher {
 
 					// if the subscription is more than 1 (and not 0) and we have a next payment date (prorated or not) we want to calculate the new end date from that
 					} elseif ( 0 !== $next_payment_time && $cart_item['data']->subscription_length > 1 ) {
+						// remove trial period on the switched subscription when calculating the new end date
+						$trial_length = $cart_item['data']->subscription_trial_length;
+						$cart_item['data']->subscription_trial_length = 0;
+
 						$cart_item['data']->subscription_length--;
 						$end_date = WC_Subscriptions_Product::get_expiration_date( $cart_item['data'], date( 'Y-m-d H:i:s', $next_payment_time ) );
 						$cart_item['data']->subscription_length++;
 
-					// elseif fallback to calculating the end date from the last payment date
-					} elseif ( ! empty( $subscription ) && 0 !== $subscription->get_time( 'last_payment' ) ) {
-						$end_date = WC_Subscriptions_Product::get_expiration_date( $product, $subscription->get_date( 'last_payment' ) );
+						// add back the trial length if it has been spoofed
+						$cart_item['data']->subscription_trial_length = $trial_length;
+
+					// elseif fallback to using the end date set on the cart item
+					} elseif ( ! empty( $end_timestamp ) ) {
+						$end_date = date( 'Y-m-d H:i:s', $end_timestamp );
 					}
 
-					// add back the trial length if it has been spoofed
-					$cart_item['data']->subscription_trial_length = $trial_length;
 					break;
 				}
 			}
 		}
-
 		return $end_date;
 	}
 
