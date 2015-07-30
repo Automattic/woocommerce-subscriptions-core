@@ -240,9 +240,10 @@ function wcs_add_months( $from_timestamp, $months_to_add ) {
  *
  * @param int A Unix timestamp at some time in the future.
  * @param string A unit of time, either day, week month or year.
+ * @param string A rounding method, either ceil (default) or floor for anything else
  * @since 2.0
  */
-function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_of_time = 'month' ) {
+function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_of_time = 'month', $rounding_method = 'ceil' ) {
 
 	if ( $end_timestamp <= $start_timestamp ) {
 
@@ -253,9 +254,16 @@ function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_o
 		// Calculate the number of times this day will occur until we'll be in a time after the given timestamp
 		$timestamp = $start_timestamp;
 
-		for ( $periods_until = 0; $timestamp < $end_timestamp; $periods_until++ ) {
-			$timestamp = wcs_add_months( $timestamp, 1 );
+		if ( 'ceil' == $rounding_method ) {
+			for ( $periods_until = 0; $timestamp < $end_timestamp; $periods_until++ ) {
+				$timestamp = wcs_add_months( $timestamp, 1 );
+			}
+		} else {
+			for ( $periods_until = -1; $timestamp <= $end_timestamp; $periods_until++ ) {
+				$timestamp = wcs_add_months( $timestamp, 1 );
+			}
 		}
+
 	} else {
 
 		$seconds_until_timestamp = $end_timestamp - $start_timestamp;
@@ -275,8 +283,7 @@ function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_o
 				break;
 		}
 
-		$periods_until = ceil( $seconds_until_timestamp / $denominator );
-
+		$periods_until = ( 'ceil' == $rounding_method ) ? ceil( $seconds_until_timestamp / $denominator ) : floor( $seconds_until_timestamp / $denominator );
 	}
 
 	return $periods_until;
