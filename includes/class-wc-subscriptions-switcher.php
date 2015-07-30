@@ -1304,9 +1304,7 @@ class WC_Subscriptions_Switcher {
 						$trial_length = $cart_item['data']->subscription_trial_length;
 						$cart_item['data']->subscription_trial_length = 0;
 
-						$cart_item['data']->subscription_length--;
 						$end_date = WC_Subscriptions_Product::get_expiration_date( $cart_item['data'], date( 'Y-m-d H:i:s', $next_payment_time ) );
-						$cart_item['data']->subscription_length++;
 
 						// add back the trial length if it has been spoofed
 						$cart_item['data']->subscription_trial_length = $trial_length;
