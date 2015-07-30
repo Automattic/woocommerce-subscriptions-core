@@ -275,7 +275,7 @@ function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_o
 				break;
 		}
 
-		$periods_until = floor( $seconds_until_timestamp / $denominator ); // use floor() because we want the total number of complete periods between now and the given timestamp
+		$periods_until = ceil( $seconds_until_timestamp / $denominator );
 
 	}
 
