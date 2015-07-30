@@ -549,10 +549,23 @@ class WC_Subscriptions_Upgrader {
 	private static function get_total_subscription_count_query() {
 		global $wpdb;
 
-		$query = "SELECT meta.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS meta
-				  WHERE meta.meta_key = '_subscription_status'
-				  AND meta.meta_value <> 'trash'
-				  GROUP BY meta.order_item_id";
+		$query = "SELECT DISTINCT items.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS meta
+			LEFT JOIN `{$wpdb->prefix}woocommerce_order_items` AS items USING (order_item_id)
+			LEFT JOIN (
+				SELECT a.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS a
+				LEFT JOIN (
+					SELECT `{$wpdb->prefix}woocommerce_order_itemmeta`.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta`
+					WHERE `{$wpdb->prefix}woocommerce_order_itemmeta`.meta_key = '_subscription_status'
+				) AS s
+				USING (order_item_id)
+				WHERE 1=1
+				AND a.order_item_id = s.order_item_id
+				AND a.meta_key = '_subscription_start_date'
+				ORDER BY CASE WHEN CAST(a.meta_value AS DATETIME) IS NULL THEN 1 ELSE 0 END, CAST(a.meta_value AS DATETIME) ASC
+				LIMIT 0, 18446744073709551615
+			) AS a3 USING (order_item_id)
+			WHERE meta.meta_key REGEXP '_subscription_(.*)|_product_id|_variation_id'
+			AND meta.order_item_id = a3.order_item_id";
 
 		$wpdb->get_results( $query );
 
