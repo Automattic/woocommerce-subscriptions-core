@@ -15,7 +15,7 @@ class WC_Subscriptions_Switcher {
 	 *
 	 * @since 1.4
 	 */
-	public static function init(){
+	public static function init() {
 
 		// Check if the current request is for switching a subscription and if so, start he switching process
 		add_filter( 'template_redirect', __CLASS__ . '::subscription_switch_handler', 100 );
@@ -110,7 +110,7 @@ class WC_Subscriptions_Switcher {
 		$user_id = get_current_user_id();
 
 		// If the current user doesn't own the subscription, remove the query arg from the URL
-		if ( isset ( $_GET['switch-subscription'] ) ) {
+		if ( isset( $_GET['switch-subscription'] ) ) {
 
 			$subscription = wcs_get_subscription( $_GET['switch-subscription'] );
 
@@ -230,7 +230,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function add_switch_query_arg_grouped( $permalink ) {
 
-		if ( isset ( $_GET['switch-subscription'] ) ) {
+		if ( isset( $_GET['switch-subscription'] ) ) {
 			$permalink = self::add_switch_query_args( $_GET['switch-subscription'], $_GET['item'], $permalink );
 		}
 
@@ -246,7 +246,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function add_switch_query_arg_post_link( $permalink, $post ) {
 
-		if ( ! isset ( $_GET['switch-subscription'] ) || ! is_main_query() || ! is_product() || 'product' !== $post->post_type ) {
+		if ( ! isset( $_GET['switch-subscription'] ) || ! is_main_query() || ! is_product() || 'product' !== $post->post_type ) {
 			return $permalink;
 		}
 
@@ -439,7 +439,7 @@ class WC_Subscriptions_Switcher {
 
 		$product = get_product( $item['product_id'] );
 
-		if ( empty ( $product ) || 'line_item' !== $item['type'] ) {
+		if ( empty( $product ) || 'line_item' !== $item['type'] ) {
 
 			$is_product_switchable = false;
 
@@ -867,10 +867,10 @@ class WC_Subscriptions_Switcher {
 	 *
 	 * @since 1.4
 	 */
-	public static function validate_switch_request( $is_valid, $product_id, $quantity, $variation_id = '' ){
+	public static function validate_switch_request( $is_valid, $product_id, $quantity, $variation_id = '' ) {
 		try {
 
-			if ( ! isset ( $_GET['switch-subscription'] ) ) {
+			if ( ! isset( $_GET['switch-subscription'] ) ) {
 				return $is_valid;
 			}
 
@@ -918,7 +918,7 @@ class WC_Subscriptions_Switcher {
 					}
 				}
 			}
-		} catch( Exception $e ) {
+		} catch ( Exception $e ) {
 			wc_add_notice( __( 'We can not find your old subscription item.', 'woocommerce-subscriptions' ), 'error' );
 			$is_valid = false;
 		}
@@ -975,7 +975,7 @@ class WC_Subscriptions_Switcher {
 
 			return $cart_item_data;
 
-		} catch( Exception $e ) {
+		} catch ( Exception $e ) {
 
 			WC_Subscriptions::add_notice( __( 'There was an error locating the switch details.', 'woocommerce-subscriptions' ), 'error' );
 			WC()->cart->empty_cart( true );
@@ -1378,7 +1378,7 @@ class WC_Subscriptions_Switcher {
 		if ( false === $is_purchasable && self::is_product_of_switchable_type( $product ) && WC_Subscriptions_Product::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && is_user_logged_in() && wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) {
 
 			// Adding to cart from the product page
-			if ( isset ( $_GET['switch-subscription'] ) ) {
+			if ( isset( $_GET['switch-subscription'] ) ) {
 
 				$is_purchasable = true;
 
