@@ -345,7 +345,7 @@ class WCS_Admin_Post_Types {
 							if ( current_user_can( $post_type_object->cap->delete_post, $post->ID ) ) {
 
 								if ( 'trash' == $post->post_status ) {
-									$actions['untrash'] = '<a title="' . esc_attr( __( 'Restore this item from the Trash', 'woocommerce-subscriptions' ) ) . '" href="' . wp_nonce_url( admin_url( $post_type_object->_edit_link . '&amp;action=untrash' ), 'untrash-post_' . $post->ID ) . '">' . __( 'Restore', 'woocommerce-subscriptions' ) . '</a>';
+									$actions['untrash'] = '<a title="' . esc_attr( __( 'Restore this item from the Trash', 'woocommerce-subscriptions' ) ) . '" href="' . wp_nonce_url( admin_url( sprintf( $post_type_object->_edit_link . '&amp;action=untrash', $post->ID ) ), 'untrash-post_' . $post->ID ) . '">' . __( 'Restore', 'woocommerce-subscriptions' ) . '</a>';
 								} elseif ( EMPTY_TRASH_DAYS ) {
 									$actions['trash'] = '<a class="submitdelete" title="' . esc_attr( __( 'Move this item to the Trash', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $post->ID ) . '">' . __( 'Trash', 'woocommerce-subscriptions' ) . '</a>';
 								}
