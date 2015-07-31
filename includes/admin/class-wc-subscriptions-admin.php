@@ -145,9 +145,8 @@ class WC_Subscriptions_Admin {
 			'custom_attributes' => array(
 					'step' => 'any',
 					'min'  => '0',
-				),
-			)
-		);
+			),
+		) );
 
 		// Subscription Period Interval
 		woocommerce_wp_select( array(
@@ -189,19 +188,17 @@ class WC_Subscriptions_Admin {
 			'desc_tip'    => true,
 			'type'        => 'text',
 			'custom_attributes' => array(
-					'step' => 'any',
-					'min'  => '0',
-				),
-			)
-		);
+				'step' => 'any',
+				'min'  => '0',
+			),
+		));
 
 		// Trial Length
 		woocommerce_wp_text_input( array(
 			'id'          => '_subscription_trial_length',
 			'class'       => 'wc_input_subscription_trial_length',
 			'label'       => __( 'Free Trial', 'woocommerce-subscriptions' ),
-			)
-		);
+		));
 
 		// Trial Period
 		woocommerce_wp_select( array(
@@ -212,8 +209,7 @@ class WC_Subscriptions_Admin {
 			'description' => sprintf( __( 'Include an optional period of time to wait before charging the first recurring payment. Any sign up fee will still be charged at the outset of the subscription. %s', 'woocommerce-subscriptions' ), self::get_trial_period_validation_message() ),
 			'desc_tip'    => true,
 			'value'       => WC_Subscriptions_Product::get_trial_period( $post->ID ), // Explicity set value in to ensure backward compatibility
-			)
-		);
+		));
 
 		do_action( 'woocommerce_subscriptions_product_options_pricing' );
 
@@ -640,7 +636,7 @@ class WC_Subscriptions_Admin {
 
 			$script_params['ajaxLoaderImage'] = WC()->plugin_url() . '/assets/images/ajax-loader.gif';
 			$script_params['ajaxUrl']         = admin_url( 'admin-ajax.php' );
-			$script_params['isWCPre23']       = var_export( WC_Subscriptions::is_woocommerce_pre_2_3(), true );
+			$script_params['isWCPre23']       = ( WC_Subscriptions::is_woocommerce_pre_2_3() ) ? 'true' : 'false';
 
 			wp_enqueue_script( 'woocommerce_subscriptions_admin', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/admin.js', $dependencies, filemtime( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/admin.js' ) );
 			wp_localize_script( 'woocommerce_subscriptions_admin', 'WCSubscriptions', apply_filters( 'woocommerce_subscriptions_admin_script_parameters', $script_params ) );
@@ -1098,7 +1094,7 @@ class WC_Subscriptions_Admin {
 	 * @since 1.0
 	 */
 	public static function admin_installed_notice() {
-	?>
+		?>
 		<div id="message" class="updated woocommerce-message wc-connect woocommerce-subscriptions-activated">
 			<div class="squeezer">
 				<h4><?php printf( esc_html__( '%sWooCommerce Subscriptions Installed%s &#8211; %sYou\'re ready to start selling subscriptions!%s', 'woocommerce-subscriptions' ), '<strong>', '</strong>', '<em>', '</em>' ); ?></h4>
@@ -1111,7 +1107,7 @@ class WC_Subscriptions_Admin {
 				</p>
 			</div>
 		</div>
-	<?php
+		<?php
 	}
 
 	/**

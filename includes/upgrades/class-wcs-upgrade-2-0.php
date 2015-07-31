@@ -275,21 +275,19 @@ class WCS_Upgrade_2_0 {
 				(%d, '_tax_class', %s),
 				(%d, '_product_id', %s),
 				(%d, '_variation_id', %s),
-
 				(%d, '_line_subtotal', %s),
 				(%d, '_line_total', %s),
 				(%d, '_line_subtotal_tax', %s),
 				(%d, '_line_tax', %s)",
-
-				$item_id, $order_item['qty'],
-				$item_id, $order_item['tax_class'],
-				$item_id, $order_item['product_id'],
-				$item_id, $order_item['variation_id'],
-
-				$item_id, $order_item['recurring_line_subtotal'],
-				$item_id, $order_item['recurring_line_total'],
-				$item_id, $order_item['recurring_line_subtotal_tax'],
-				$item_id, $order_item['recurring_line_tax']
+			// The substitutions
+			$item_id, $order_item['qty'],
+			$item_id, $order_item['tax_class'],
+			$item_id, $order_item['product_id'],
+			$item_id, $order_item['variation_id'],
+			$item_id, $order_item['recurring_line_subtotal'],
+			$item_id, $order_item['recurring_line_total'],
+			$item_id, $order_item['recurring_line_subtotal_tax'],
+			$item_id, $order_item['recurring_line_tax']
 		) );
 
 		// Save tax data array added in WC 2.2 (so it won't exist for all orders/subscriptions)
@@ -630,9 +628,9 @@ class WCS_Upgrade_2_0 {
 		if ( ! empty( $query_meta_values ) ) {
 			$rows_affected = $wpdb->query( $wpdb->prepare(
 				"INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value)
-				 VALUES " . implode( ', ', $query_placeholders ),
-				$query_meta_values )
-			);
+				VALUES " . implode( ', ', $query_placeholders ),
+				$query_meta_values
+			));
 
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: %d rows of post meta added', $subscription_id, $rows_affected ) );
 		}
