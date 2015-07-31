@@ -1596,7 +1596,7 @@ class WC_Subscription extends WC_Order {
 		foreach ( $this->get_items() as $line_item ) {
 			try {
 				$sign_up_fee += $this->get_items_sign_up_fee( $line_item );
-			} catch( Exception $e ) {
+			} catch ( Exception $e ) {
 				$sign_up_fee += 0;
 			}
 		}
