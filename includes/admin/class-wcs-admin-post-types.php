@@ -354,7 +354,6 @@ class WCS_Admin_Post_Types {
 									$actions['delete'] = '<a class="submitdelete" title="' . esc_attr( __( 'Delete this item permanently', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $post->ID, '', true ) . '">' . __( 'Delete Permanently', 'woocommerce-subscriptions' ) . '</a>';
 								}
 							}
-
 						} else {
 
 							if ( 'pending-cancel' === $the_subscription->get_status() ) {

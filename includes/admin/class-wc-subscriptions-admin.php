@@ -111,7 +111,7 @@ class WC_Subscriptions_Admin {
 	 * @return array Array of Product types & their labels, including the Subscription product type.
 	 * @since 1.0
 	 */
-	public static function add_subscription_products_to_select( $product_types ){
+	public static function add_subscription_products_to_select( $product_types ) {
 
 		$product_types['subscription']          = __( 'Simple subscription', 'woocommerce-subscriptions' );
 		$product_types['variable-subscription'] = __( 'Variable subscription', 'woocommerce-subscriptions' );
@@ -144,7 +144,7 @@ class WC_Subscriptions_Admin {
 			'custom_attributes' => array(
 					'step' => 'any',
 					'min'  => '0',
-				)
+				),
 			)
 		);
 
@@ -191,7 +191,7 @@ class WC_Subscriptions_Admin {
 			'custom_attributes' => array(
 					'step' => 'any',
 					'min'  => '0',
-				)
+				),
 			)
 		);
 
@@ -616,7 +616,7 @@ class WC_Subscriptions_Admin {
 				);
 			} else if ( 'edit-shop_order' == $screen->id ) {
 				$script_params = array(
-					'bulkTrashWarning' => __( "You are about to trash one or more orders which contain a subscription.\n\nTrashing the orders will also trash the subscriptions purchased with these orders.", 'woocommerce-subscriptions' )
+					'bulkTrashWarning' => __( "You are about to trash one or more orders which contain a subscription.\n\nTrashing the orders will also trash the subscriptions purchased with these orders.", 'woocommerce-subscriptions' ),
 				);
 			} else if ( 'shop_order' == $screen->id ) {
 				$dependencies[] = $woocommerce_admin_script_handle;
@@ -633,7 +633,7 @@ class WC_Subscriptions_Admin {
 				);
 			} else if ( 'users' == $screen->id ) {
 				$script_params = array(
-					'deleteUserWarning' => __( 'WARNING: Deleting a user will also remove them from any subscription.', 'woocommerce-subscriptions' )
+					'deleteUserWarning' => __( 'WARNING: Deleting a user will also remove them from any subscription.', 'woocommerce-subscriptions' ),
 				);
 			}
 
@@ -1086,20 +1086,21 @@ class WC_Subscriptions_Admin {
 	 *
 	 * @since 1.0
 	 */
-	public static function admin_installed_notice() { ?>
-<div id="message" class="updated woocommerce-message wc-connect woocommerce-subscriptions-activated">
-	<div class="squeezer">
-		<h4><?php printf( esc_html__( '%sWooCommerce Subscriptions Installed%s &#8211; %sYou\'re ready to start selling subscriptions!%s', 'woocommerce-subscriptions' ), '<strong>', '</strong>', '<em>', '</em>' ); ?></h4>
+	public static function admin_installed_notice() {
+	?>
+		<div id="message" class="updated woocommerce-message wc-connect woocommerce-subscriptions-activated">
+			<div class="squeezer">
+				<h4><?php printf( esc_html__( '%sWooCommerce Subscriptions Installed%s &#8211; %sYou\'re ready to start selling subscriptions!%s', 'woocommerce-subscriptions' ), '<strong>', '</strong>', '<em>', '</em>' ); ?></h4>
 
-		<p class="submit">
-			<a href="<?php echo esc_url( self::add_subscription_url() ); ?>" class="button button-primary"><?php esc_html_e( 'Add a Subscription Product', 'woocommerce-subscriptions' ); ?></a>
-			<a href="<?php echo esc_url( self::settings_tab_url() ); ?>" class="docs button button-primary"><?php esc_html_e( 'Settings', 'woocommerce-subscriptions' ); ?></a>
-			<a href="https://twitter.com/share" class="twitter-share-button" data-url="http://www.woothemes.com/products/woocommerce-subscriptions/" data-text="Woot! I can sell subscriptions with #WooCommerce" data-via="WooThemes" data-size="large">Tweet</a>
-			<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-		</p>
-	</div>
-</div>
-		<?php
+				<p class="submit">
+					<a href="<?php echo esc_url( self::add_subscription_url() ); ?>" class="button button-primary"><?php esc_html_e( 'Add a Subscription Product', 'woocommerce-subscriptions' ); ?></a>
+					<a href="<?php echo esc_url( self::settings_tab_url() ); ?>" class="docs button button-primary"><?php esc_html_e( 'Settings', 'woocommerce-subscriptions' ); ?></a>
+					<a href="https://twitter.com/share" class="twitter-share-button" data-url="http://www.woothemes.com/products/woocommerce-subscriptions/" data-text="Woot! I can sell subscriptions with #WooCommerce" data-via="WooThemes" data-size="large">Tweet</a>
+					<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+				</p>
+			</div>
+		</div>
+	<?php
 	}
 
 	/**
@@ -1107,7 +1108,7 @@ class WC_Subscriptions_Admin {
 	 *
 	 * @since 1.0
 	 */
-	public static function show_user_pointers(){
+	public static function show_user_pointers() {
 		// Get dismissed pointers
 		$dismissed = explode( ',', (string) get_user_meta( get_current_user_id(), 'dismissed_wp_pointers', true ) );
 
@@ -1164,7 +1165,7 @@ class WC_Subscriptions_Admin {
 	 * @return string
 	 * @since 2.0
 	 */
-	public static function filter_orders( $where )  {
+	public static function filter_orders( $where ) {
 		global $typenow, $wpdb;
 
 		if ( is_admin() && 'shop_order' == $typenow ) {
@@ -1184,7 +1185,6 @@ class WC_Subscriptions_Admin {
 					self::$found_related_orders = true;
 					$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", implode( ',', array_map( 'absint', array_unique( $subscription->get_related_orders( 'ids' ) ) ) ) );
 				}
-
 			}
 		}
 
@@ -1456,7 +1456,7 @@ class WC_Subscriptions_Admin {
 	 * @param array $request
 	 * @return array
 	 */
-	public static function filter_orders_by_renewal_parent( $request )  {
+	public static function filter_orders_by_renewal_parent( $request ) {
 		_deprecated_function( __METHOD__, '2.0' );
 		return $request;
 	}
