@@ -46,7 +46,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 			<div class="last-feature feature-copy">
 				<h3><?php esc_html_e( 'Multiple Subscriptions', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php esc_html_e( 'It\'s now easier for your customers to buy more subscriptions!', 'woocommerce-subscriptions' ); ?></p>
-				<p><?php esc_html_e( 'Customers can now purchase multiple different subscription products in one transaction. The products can bill on any schedule and have any combination of sign-up fees and/or free trials.', 'woocommerce-subscriptions' ); ?></p>
+				<p><?php esc_html_e( 'Customers can now purchase different subscription products in one transaction. The products can bill on any schedule and have any combination of sign-up fees and/or free trials.', 'woocommerce-subscriptions' ); ?></p>
 				<p><?php printf( esc_html__( 'Learn more about the new %smultiple subscriptions%s feature.', 'woocommerce-subscriptions' ), '<a href="' .  esc_url( 'http://docs.woothemes.com/document/subscriptions/multiple-subscriptions/' ) . '">', '</a>' ); ?></p>
 			</div>
 		</div>
