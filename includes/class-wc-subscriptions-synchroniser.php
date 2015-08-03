@@ -174,7 +174,7 @@ class WC_Subscriptions_Synchroniser {
 			),
 
 			array( 'type' => 'sectionend', 'id' => self::$setting_id . '_title' ),
-		));
+		) );
 
 		return $settings;
 	}

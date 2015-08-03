@@ -191,14 +191,14 @@ class WC_Subscriptions_Admin {
 				'step' => 'any',
 				'min'  => '0',
 			),
-		));
+		) );
 
 		// Trial Length
 		woocommerce_wp_text_input( array(
 			'id'          => '_subscription_trial_length',
 			'class'       => 'wc_input_subscription_trial_length',
 			'label'       => __( 'Free Trial', 'woocommerce-subscriptions' ),
-		));
+		) );
 
 		// Trial Period
 		woocommerce_wp_select( array(
@@ -209,7 +209,7 @@ class WC_Subscriptions_Admin {
 			'description' => sprintf( __( 'Include an optional period of time to wait before charging the first recurring payment. Any sign up fee will still be charged at the outset of the subscription. %s', 'woocommerce-subscriptions' ), self::get_trial_period_validation_message() ),
 			'desc_tip'    => true,
 			'value'       => WC_Subscriptions_Product::get_trial_period( $post->ID ), // Explicity set value in to ensure backward compatibility
-		));
+		) );
 
 		do_action( 'woocommerce_subscriptions_product_options_pricing' );
 
@@ -241,7 +241,7 @@ class WC_Subscriptions_Admin {
 				'active' => __( 'Limit to one active subscription', 'woocommerce-subscriptions' ),
 				'any'    => __( 'Limit to one of any status', 'woocommerce-subscriptions' ),
 			),
-		));
+		) );
 
 		do_action( 'woocommerce_subscriptions_product_options_advanced' );
 
@@ -1068,7 +1068,7 @@ class WC_Subscriptions_Admin {
 				'type'          => 'informational',
 			),
 
-		));
+		) );
 
 	}
 

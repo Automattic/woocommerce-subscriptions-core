@@ -628,9 +628,9 @@ class WCS_Upgrade_2_0 {
 		if ( ! empty( $query_meta_values ) ) {
 			$rows_affected = $wpdb->query( $wpdb->prepare(
 				"INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value)
-				VALUES " . implode( ', ', $query_placeholders ),
+				 VALUES " . implode( ', ', $query_placeholders ),
 				$query_meta_values
-			));
+			) );
 
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: %d rows of post meta added', $subscription_id, $rows_affected ) );
 		}

@@ -403,7 +403,7 @@ class WC_Subscriptions_Manager {
 		$args = wp_parse_args( $args, array(
 			'start_date'  => get_gmt_from_date( $order->order_date ),
 			'expiry_date' => '',
-		));
+		) );
 
 		$billing_period   = WC_Subscriptions_Product::get_period( $product_id );
 		$billing_interval = WC_Subscriptions_Product::get_interval( $product_id );

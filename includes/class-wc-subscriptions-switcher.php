@@ -321,7 +321,7 @@ class WC_Subscriptions_Switcher {
 				'type'    => 'select',
 				'options' => array(
 					'no'                 => _x( 'Never (do not charge a sign up fee)', 'when to prorate signup fee when switching', 'woocommerce-subscriptions' ),
-					'full'               => _x( 'Never (charge the full sign up fee)', 'when to prorate signup fee when switching','woocommerce-subscriptions' ),
+					'full'               => _x( 'Never (charge the full sign up fee)', 'when to prorate signup fee when switching', 'woocommerce-subscriptions' ),
 					'yes'                => _x( 'Always', 'when to prorate signup fee when switching','woocommerce-subscriptions' ),
 				),
 				'desc_tip' => true,
@@ -355,7 +355,7 @@ class WC_Subscriptions_Switcher {
 			),
 
 			array( 'type' => 'sectionend', 'id' => WC_Subscriptions_Admin::$option_prefix . '_switch_settings' ),
-		));
+		) );
 
 		return $settings;
 	}

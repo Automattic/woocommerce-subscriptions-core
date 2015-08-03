@@ -956,7 +956,7 @@ class WC_PayPal_Standard_Subscriptions {
 						'compare' => 'NOT EXISTS',
 					),
 				),
-			));
+			) );
 
 			if ( ! empty( $posts ) ) {
 				$order_id  = $posts[0]->ID;

@@ -41,7 +41,7 @@ function wcs_create_renewal_order( $subscription ) {
 		) );
 
 		/* translators: order date parsed by strftime */
-		$order_date = strftime( _x( '%b %d, %Y @ %I:%M %p', 'Used in subscription post title. "Subscription renewal order -  <this>"', 'woocommerce-subscriptions' ) );
+		$order_date = strftime( _x( '%b %d, %Y @ %I:%M %p', 'Used in subscription post title. "Subscription renewal order - <this>"', 'woocommerce-subscriptions' ) );
 
 		/* translators: placeholder is a date */
 		$renewal_order->post->post_title = sprintf( __( 'Subscription Renewal Order &ndash; %s', 'woocommerce-subscriptions' ), $order_date );
