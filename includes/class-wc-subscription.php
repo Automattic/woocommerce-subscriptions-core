@@ -1399,8 +1399,6 @@ class WC_Subscription extends WC_Order {
 
 		$last_order = false;
 
-		$related_orders = array();
-
 		$renewal_post_ids = get_posts( array(
 			'posts_per_page' => 1,
 			'post_type'      => 'shop_order',
