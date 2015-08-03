@@ -68,10 +68,13 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 				<h3><?php esc_html_e( 'New Add/Edit Subscription Screen', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php esc_html_e( 'Subscriptions v2.0 introduces a new administration interface to add or edit a subscription. You can make all the familiar changes, like modifying recurring totals or subscription status. You can also make some new modifications, like changing the expiration date, adding a shipping cost or adding a product line item.', 'woocommerce-subscriptions' ); ?></p>
 				<p><?php
-					/*  translators: placeholders are opening and closing <strong> tags */
+					// translators: placeholders are opening and closing <strong> tags
 					printf( esc_html__( 'The new interface is also built on the existing %sEdit Order%s screen. If you\'ve ever modified an order, you already know how to modify a subscription.', 'woocommerce-subscriptions' ), '<strong>', '</strong>' ); ?>
 				</p>
-				<p><?php printf( esc_html_x( '%1$sAdd a subscription%2$s now or %3$slearn more%4$s about the new interface.', 'placeholers are link tags: 1-2 new subscription page, 3-4: docs on woothemes', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post-new.php?post_type=shop_subscription' ) ) . '">', '</a>', '<a href="' . esc_url( 'http://docs.woothemes.com/document/subscriptions/add-or-modify-a-subscription/' ) . '">', '</a>' ); ?></p>
+				<p><?php
+					// translators: placeholers are link tags: 1$-2$ new subscription page, 3$-4$: docs on woothemes
+					printf( esc_html__( '%1$sAdd a subscription%2$s now or %3$slearn more%4$s about the new interface.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post-new.php?post_type=shop_subscription' ) ) . '">', '</a>', '<a href="' . esc_url( 'http://docs.woothemes.com/document/subscriptions/add-or-modify-a-subscription/' ) . '">', '</a>' ); ?>
+				</p>
 			</div>
 		</div>
 
@@ -88,7 +91,8 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 					printf( esc_html__( 'Your customers can now view the full details of a subscription, including line items, billing and shipping address, billing schedule and renewal orders, from a special %sMy Account > View Subscription%s page.', 'woocommerce-subscriptions' ), '<strong>', '</strong>' ); ?>
 				</p>
 				<p><?php esc_html_e( 'This new page is also where the customer can suspend or cancel their subscription, change payment method, change shipping address or upgrade/downgrade an item.', 'woocommerce-subscriptions' ); ?></p>
-				<p><?php
+				<p>
+					<?php
 					// translators: placeholders are opening and closing link tags
 					printf( esc_html__( 'Learn more about the new %sView Subscription page%s.', 'woocommerce-subscriptions' ), '<a href="' .  esc_url( 'http://docs.woothemes.com/document/subscriptions/customers-view/' ) . '">', '</a>' ); ?>
 				</p>
