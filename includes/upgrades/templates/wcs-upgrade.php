@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" <?php language_attributes(); ?>>
 	<head>
-		<meta http-equiv="Content-Type" content="<?php bloginfo( 'html_type' ); ?>"; charset="<?php echo esc_attr( get_option( 'blog_charset' ) ); ?>" />
+		<meta http-equiv="Content-Type" content="<?php bloginfo( 'html_type' ); ?>; charset=<?php echo esc_attr( get_option( 'blog_charset' ) ); ?>" />
 		<title><?php esc_html_e( 'WooCommerce Subscriptions Update', 'woocommerce-subscriptions' ); ?></title>
 		<?php wp_admin_css( 'install', true ); ?>
 		<?php wp_admin_css( 'ie', true ); ?>
