@@ -223,7 +223,7 @@ class WC_Subscriptions_Upgrader {
 	public static function ajax_upgrade() {
 		global $wpdb;
 
-		check_admin_referer( 'subs_2_upgrade_process' );
+		check_admin_referer( 'wcs_upgrade_process' );
 
 		self::set_upgrade_limits();
 
@@ -422,7 +422,7 @@ class WC_Subscriptions_Upgrader {
 			'hooks_per_request'         => self::$upgrade_limit_hooks,
 			'subscriptions_per_request' => self::$upgrade_limit_subscriptions,
 			'ajax_url'                  => admin_url( 'admin-ajax.php' ),
-			'upgrade_nonce'             => wp_create_nonce( 'subs_2_upgrade_process' ),
+			'upgrade_nonce'             => wp_create_nonce( 'wcs_upgrade_process' ),
 		);
 
 		wp_localize_script( 'wcs-upgrade', 'wcs_update_script_data', $script_data );
