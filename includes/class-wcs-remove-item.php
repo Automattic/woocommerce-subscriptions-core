@@ -65,7 +65,7 @@ class WCS_Remove_Item {
 
 			if ( false === $subscription ) {
 
-				wc_add_notice( sprintf( _x( 'Subscription #%s does not exist.', 'hash before subscription ID', 'woocommerce-subscriptions' ), $_GET['subscription_id'] ), 'error' );
+				wc_add_notice( sprintf( _x( 'Subscription #%d does not exist.', 'hash before subscription ID', 'woocommerce-subscriptions' ), $_GET['subscription_id'] ), 'error' );
 				wp_safe_redirect( wc_get_page_permalink( 'myaccount' ) );
 				exit;
 			}
