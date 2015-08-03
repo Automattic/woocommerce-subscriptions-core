@@ -79,7 +79,7 @@ class WC_Subscriptions_Renewal_Order {
 		foreach ( $subscriptions as $subscription ) {
 
 			// Do we need to activate a subscription?
-			if ( $order_completed && ! $subscription->has_status( 'active' ) ) {
+			if ( $order_completed && ! $subscription->has_ended() && ! $subscription->has_status( 'active' ) ) {
 
 				if ( $order_needed_payment ) {
 					$subscription->payment_complete();
