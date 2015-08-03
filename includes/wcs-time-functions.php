@@ -128,7 +128,7 @@ function wcs_get_subscription_period_interval_strings( $interval = '' ) {
 	$intervals = array( 1 => _x( 'every', 'period interval (eg "$10 _every_ 2 weeks")', 'woocommerce-subscriptions' ) );
 
 	foreach ( range( 2, 6 ) as $i ) {
-		/* translators: period interval, placeholder is numeral (eg "$10 _every 2nd/3rd/4th_", etc) */
+		/* translators: period interval, placeholder is ordinal (eg "$10 every _2nd/3rd/4th_", etc) */
 		$intervals[ $i ] = sprintf( __( 'every %s', 'woocommerce-subscriptions' ), WC_Subscriptions::append_numeral_suffix( $i ) );
 	}
 
