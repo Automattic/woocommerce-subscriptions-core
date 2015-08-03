@@ -90,8 +90,8 @@ function wcs_price_string( $subscription_details ) {
 			case 'week':
 				$payment_day_of_week = WC_Subscriptions_Synchroniser::get_weekday( $payment_day );
 				if ( 1 == $subscription_details['subscription_interval'] ) {
-					/* translators: 1$: initial amount, 2$: initial description (eg "up front"), 3$: recurring amount string, 4$: payment day of the week, e.g $15 up front, then $10 every Wednesday */
 					if ( ! empty( $subscription_details['initial_amount'] ) ) {
+						/* translators: 1$: initial amount, 2$: initial description (eg "up front"), 3$: recurring amount string, 4$: payment day of the week, e.g $15 up front, then $10 every Wednesday */
 						$subscription_string = sprintf( __( '%1$s %2$s then %3$s every %4$s', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, $payment_day_of_week );
 					} else {
 						/* translators: 1$: recurring amount string, 2$: day of the week, eg $10 every Wednesday */
