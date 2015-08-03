@@ -644,10 +644,10 @@ class WC_Subscription extends WC_Order {
 			$time_diff = $timestamp_gmt - current_time( 'timestamp', true );
 
 			if ( $time_diff > 0 && $time_diff < WEEK_IN_SECONDS ) {
-				// translators: placeholder is human time diff (eg 3 weeks)
+				// translators: placeholder is human time diff (e.g. "3 weeks")
 				$date_to_display = sprintf( __( 'In %s', 'woocommerce-subscriptions' ), human_time_diff( current_time( 'timestamp', true ), $timestamp_gmt ) );
 			} elseif ( $time_diff < 0 && absint( $time_diff ) < WEEK_IN_SECONDS ) {
-				// translators: placeholder is human time diff (eg 3 weeks)
+				// translators: placeholder is human time diff (e.g. "3 weeks")
 				$date_to_display = sprintf( __( '%s ago', 'woocommerce-subscriptions' ), human_time_diff( current_time( 'timestamp', true ), $timestamp_gmt ) );
 			} else {
 				$date_to_display = date_i18n( wc_date_format(), $this->get_time( $date_type, 'site' ) );
@@ -716,7 +716,7 @@ class WC_Subscription extends WC_Order {
 		$timestamps = array();
 		foreach ( $dates as $date_type => $datetime ) {
 			if ( ! empty( $datetime ) && false === strptime( $datetime, '%Y-%m-%d %H:%M:%S' ) ) {
-				// translators: placeholder is date type (eg "end", "next_payment"...)
+				// translators: placeholder is date type (e.g. "end", "next_payment"...)
 				throw new InvalidArgumentException( sprintf( _x( 'Invalid %s date. The date must be of the format: "Y-m-d H:i:s".', 'appears in an error message if date is wrong format', 'woocommerce-subscriptions' ), $date_type ) );
 			}
 

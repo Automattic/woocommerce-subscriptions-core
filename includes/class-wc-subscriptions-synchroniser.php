@@ -46,7 +46,7 @@ class WC_Subscriptions_Synchroniser {
 
 		self::$sync_field_label      = __( 'Synchronise Renewals', 'woocommerce-subscriptions' );
 		self::$sync_description      = __( 'Align the payment date for all customers who purchase this subscription to a specific day of the week or month.', 'woocommerce-subscriptions' );
-		// translators: placeholder is a year (eg 2016)
+		// translators: placeholder is a year (e.g. "2016")
 		self::$sync_description_year = sprintf( _x( 'Align the payment date for this subscription to a specific day of the year. If the date has already taken place this year, the first payment will be processed in %s. Set the day to 0 to disable payment syncing for this product.', 'used in subscription product edit screen', 'woocommerce-subscriptions' ), date( 'Y', strtotime( '+1 year' ) ) );
 
 		// Add the settings to control whether syncing is enabled and how it will behave
@@ -618,7 +618,7 @@ class WC_Subscriptions_Synchroniser {
 
 			// Month
 			foreach ( range( 1, 27 ) as $i ) {
-				// translators: placeholder is a number of day with language specific suffix applied (1st, 3rd, 5th, etc...)
+				// translators: placeholder is a number of day with language specific suffix applied (e.g. "1st", "3rd", "5th", etc...)
 				self::$billing_period_ranges['month'][ $i ] = sprintf( __( '%s day of the month', 'woocommerce-subscriptions' ), WC_Subscriptions::append_numeral_suffix( $i ) );
 			}
 			self::$billing_period_ranges['month'][28] = __( 'Last day of the month', 'woocommerce-subscriptions' );

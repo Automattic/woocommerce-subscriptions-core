@@ -50,10 +50,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 			$time_diff = $timestamp_gmt - current_time( 'timestamp', true );
 
 			if ( $time_diff > 0 && $time_diff < WEEK_IN_SECONDS ) {
-				// translators: placeholder is human time difference (eg 3 weeks)
+				// translators: placeholder is human time difference (e.g. "3 weeks")
 				$date_to_display = sprintf( _x( 'In %s', 'used in "Related Orders" as the date when the related order happened in relation to now. Date is in the future.', 'woocommerce-subscriptions' ), human_time_diff( current_time( 'timestamp', true ), $timestamp_gmt ) );
 			} elseif ( $time_diff < 0 && absint( $time_diff ) < WEEK_IN_SECONDS ) {
-				// translators: placeholder is human time difference (eg 3 weeks)
+				// translators: placeholder is human time difference (e.g. "3 weeks")
 				$date_to_display = sprintf( _x( '%s ago', 'used in "Related Orders" as the date when the related order happened in relation to now. Date is in the past.', 'woocommerce-subscriptions' ), human_time_diff( current_time( 'timestamp', true ), $timestamp_gmt ) );
 			} else {
 				$timestamp_site  = strtotime( get_date_from_gmt( date( 'Y-m-d H:i:s', $timestamp_gmt ) ) );

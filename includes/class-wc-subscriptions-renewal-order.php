@@ -176,7 +176,7 @@ class WC_Subscriptions_Renewal_Order {
 
 		if ( wcs_order_contains_renewal( $order ) ) {
 			$blogname = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
-			// translators: (1$): blog name, (2$): order number
+			// translators: 1$: blog name, 2$: order number
 			$subject  = apply_filters( 'woocommerce_subscriptions_email_subject_new_renewal_order', sprintf( _x( '[%1$s] New Subscription Renewal Order (%2$s)', 'used in new renewal order email, deprecated', 'woocommerce-subscriptions' ), $blogname, $order->get_order_number() ), $order );
 		}
 

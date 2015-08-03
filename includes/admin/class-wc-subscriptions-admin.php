@@ -647,10 +647,10 @@ class WC_Subscriptions_Admin {
 				$dependencies[] = 'wp-pointer';
 
 				$pointer_script_params = array(
-					// translators: placeholders are for HTML tags
-					'typePointerContent'  => sprintf( _x( '%sChoose Subscription%sThe WooCommerce Subscriptions extension adds two new subscription product types - %sSimple subscription%s and %sVariable subscription%s.%s', 'used in admin pointer script params in javascript as type pointer content', 'woocommerce-subscriptions' ), '<h3>', '</h3><p>', '<em>', '</em>', '<em>', '</em>', '</p>' ),
-					// translators: placeholders are for HTML tags
-					'pricePointerContent' => sprintf( _x( '%sSet a Price%sSubscription prices are a little different to other product prices. For a subscription, you can set a billing period, length, sign-up fee and free trial.%s', 'used in admin pointer script params in javascript as price pointer content', 'woocommerce-subscriptions' ), '<h3>', '</h3><p>', '</p>' ),
+					// translators: placeholders are for HTML tags. They are 1$: "<h3>", 2$: "</h3>", 3$: "<p>", 4$: "<em>", 5$: "</em>", 6$: "<em>", 7$: "</em>", 8$: "</p>"
+					'typePointerContent'  => sprintf( _x( '%1$sChoose Subscription%2$s%3$sThe WooCommerce Subscriptions extension adds two new subscription product types - %4$sSimple subscription%5$s and %6$sVariable subscription%7$s.%8$s', 'used in admin pointer script params in javascript as type pointer content', 'woocommerce-subscriptions' ), '<h3>', '</h3>', '<p>', '<em>', '</em>', '<em>', '</em>', '</p>' ),
+					// translators: placeholders are for HTML tags. They are 1$: "<h3>", 2$: "</h3>", 3$: "<p>", 4$: "</p>"
+					'pricePointerContent' => sprintf( _x( '%1$sSet a Price%2$s%3$sSubscription prices are a little different to other product prices. For a subscription, you can set a billing period, length, sign-up fee and free trial.%4$s', 'used in admin pointer script params in javascript as price pointer content', 'woocommerce-subscriptions' ), '<h3>', '</h3>', '<p>', '</p>' ),
 				);
 
 				wp_enqueue_script( 'woocommerce_subscriptions_admin_pointers', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/admin-pointers.js', $dependencies, WC_Subscriptions::$version );
@@ -906,8 +906,8 @@ class WC_Subscriptions_Admin {
 			// translators: placeholder is name of a gateway
 			$available_gateways_description = sprintf( __( 'The %s gateway can process automatic subscription payments.', 'woocommerce-subscriptions' ), '<strong>' . $available_gateways[0] . '</strong>' );
 		} elseif ( count( $available_gateways ) > 1 ) {
-			// translators: first placeholder is a comma separated list of gateway names, 2nd is one name of gateway
-			$available_gateways_description = sprintf( __( 'The %s & %s gateways can process automatic subscription payments.', 'woocommerce-subscriptions' ), '<strong>' . implode( '</strong>, <strong>', array_slice( $available_gateways, 0, count( $available_gateways ) - 1 ) ) . '</strong>', '<strong>' . array_pop( $available_gateways ) . '</strong>' );
+			// translators: 1$: a comma separated list of gateway names (e.g. "stripe, paypal, worldpay"), 2$: one name of gateway (e.g. "authorize.net")
+			$available_gateways_description = sprintf( __( 'The %1$s & %s gateways can process automatic subscription payments.', 'woocommerce-subscriptions' ), '<strong>' . implode( '</strong>, <strong>', array_slice( $available_gateways, 0, count( $available_gateways ) - 1 ) ) . '</strong>', '<strong>' . array_pop( $available_gateways ) . '</strong>' );
 		}
 
 		return apply_filters( 'woocommerce_subscription_settings', array(
@@ -1248,12 +1248,12 @@ class WC_Subscriptions_Admin {
 		$subscription_ranges = wcs_get_subscription_ranges();
 
 		if ( 'combined' == $form ) {
-			// translators: number of %1: days, %2: weeks, %3: months, %4: years
+			// translators: number of 1$: days, 2$: weeks, 3$: months, 4$: years
 			$error_message = sprintf( __( 'The trial period can not exceed: %1s, %2s, %3s or %4s.', 'woocommerce-subscriptions' ), array_pop( $subscription_ranges['day'] ), array_pop( $subscription_ranges['week'] ), array_pop( $subscription_ranges['month'] ), array_pop( $subscription_ranges['year'] ) );
 		} else {
 			$error_message = array();
 			foreach ( wcs_get_available_time_periods() as $period => $string ) {
-				// translators: placeholder is a time period (eg: 4 weeks)
+				// translators: placeholder is a time period (e.g. "4 weeks")
 				$error_message[ $period ] = sprintf( __( 'The trial period can not exceed %s.', 'woocommerce-subscriptions' ), array_pop( $subscription_ranges[ $period ] ) );
 			}
 		}

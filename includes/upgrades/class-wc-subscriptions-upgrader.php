@@ -239,7 +239,7 @@ class WC_Subscriptions_Upgrader {
 			case 'really_old_version':
 				$upgraded_versions = self::upgrade_really_old_versions();
 				$results = array(
-					// translators: placeholder is a list of version numbers (eg "1.3 & 1.4 & 1.5")
+					// translators: placeholder is a list of version numbers (e.g. "1.3 & 1.4 & 1.5")
 					'message' => sprintf( __( 'Database updated to version %s', 'woocommerce-subscriptions' ), $upgraded_versions ),
 				);
 				break;

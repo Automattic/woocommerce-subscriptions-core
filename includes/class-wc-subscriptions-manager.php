@@ -1660,7 +1660,7 @@ class WC_Subscriptions_Manager {
 			$month_numeral = zeroise( $i, 2 );
 			$month_input .= '<option value="' . $month_numeral . '"';
 			$month_input .= ( $i == $month ) ? ' selected="selected"' : '';
-			// translators: 1: month number (01), 2: month abbreviation (Jan)
+			// translators: 1$: month number (e.g. "01"), 2$: month abbreviation (e.g. "Jan")
 			$month_input .= '>' . sprintf( _x( '%1$s-%2$s', 'used in a select box', 'woocommerce-subscriptions' ), $month_numeral, $wp_locale->get_month_abbrev( $wp_locale->get_month( $i ) ) ) . "</option>\n";
 		}
 		$month_input .= '</select>';
@@ -1673,11 +1673,11 @@ class WC_Subscriptions_Manager {
 			$hour_input   = '<input type="text" ' . ( $args['multiple'] ? '' : 'id="edit-hour" ' ) . 'name="edit-hour" value="' . mysql2date( 'H', $args['date'], false ) . '" size="2" maxlength="2"' . $tab_index_attribute . ' autocomplete="off" />';
 			$minute_input = '<input type="text" ' . ( $args['multiple'] ? '' : 'id="edit-minute" ' ) . 'name="edit-minute" value="' . mysql2date( 'i', $args['date'], false ) . '" size="2" maxlength="2"' . $tab_index_attribute . ' autocomplete="off" />';
 
-			// translators: all fields are full html nodes: 1: month input, 2: day input, 3: year input, 4: hour input, 5: minute input. Change the order if you'd like
+			// translators: all fields are full html nodes: 1$: month input, 2$: day input, 3$: year input, 4$: hour input, 5$: minute input. Change the order if you'd like
 			$touch_time = sprintf( __( '%1$s%2$s, %3$s @ %4$s : %5$s', 'woocommerce-subscriptions' ), $month_input, $day_input, $year_input, $hour_input, $minute_input );
 
 		} else {
-			// translators: all fields are full html nodes: 1: month input, 2: day input, 3: year input. Change the order if you'd like
+			// translators: all fields are full html nodes: 1$: month input, 2$: day input, 3$: year input. Change the order if you'd like
 			$touch_time = sprintf( __( '%1$s%2$s, %3$s', 'woocommerce-subscriptions' ), $month_input, $day_input, $year_input );
 		}
 
@@ -2194,7 +2194,7 @@ class WC_Subscriptions_Manager {
 				$time_diff = $new_payment_timestamp - gmdate( 'U' );
 
 				if ( $time_diff > 0 && $time_diff < 7 * 24 * 60 * 60 ) {
-					// translators: placeholder is human time diff (eg 3 weeks)
+					// translators: placeholder is human time diff (e.g. "3 weeks")
 					$date_to_display = sprintf( __( 'In %s', 'woocommerce-subscriptions' ), human_time_diff( gmdate( 'U' ), $new_payment_timestamp ) );
 				} else {
 					$date_to_display = date_i18n( woocommerce_date_format(), $new_payment_timestamp_user_time );

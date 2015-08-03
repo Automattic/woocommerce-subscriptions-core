@@ -72,9 +72,9 @@ class WCS_User_Change_Status_Handler {
 		}
 
 		if ( isset( $status_message ) ) {
-			// translators: placeholder is status (eg reactivated, cancelled)
+			// translators: placeholder is status (e.g. "reactivated", "cancelled")
 			$subscription->add_order_note( sprintf( __( 'Subscription %s by the subscriber from their account page.', 'woocommerce-subscriptions' ), $status_message ) );
-			// translators: placeholder is status (eg reactivated, cancelled)
+			// translators: placeholder is status (e.g. "reactivated", "cancelled")
 			WC_Subscriptions::add_notice( sprintf( __( 'Your subscription has been %s.', 'woocommerce-subscriptions' ), $status_message ), 'success' );
 
 			do_action( 'woocommerce_customer_changed_subscription_to_' . $new_status, $subscription );
