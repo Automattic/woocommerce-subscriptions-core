@@ -288,11 +288,11 @@ class WC_Subscriptions_Product {
 						$payment_day_of_week = WC_Subscriptions_Synchroniser::get_weekday( $payment_day );
 						if ( 1 == $billing_interval ) {
 							 // e.g. $5 every Wednesday
-							/* translators: (1$) <price> every (2$) <day of the week>, eg: $5 every Wednesday */
+							// translators: (1$) <price> every (2$) <day of the week>, eg: $5 every Wednesday
 							$subscription_string = sprintf( __( '%1$s every %2$s', 'woocommerce-subscriptions' ), $price, $payment_day_of_week );
 						} else {
 							 // e.g. $5 every 2 weeks on Wednesday
-							 /* translators: (1$) <price> every (2$) <period> on (3$) <day>, eg: $5 every 2 weeks on Wednesday */
+							 // translators: (1$) <price> every (2$) <period> on (3$) <day>, eg: $5 every 2 weeks on Wednesday
 							$subscription_string = sprintf( __( '%s every %s on %s', 'woocommerce-subscriptions' ), $price, wcs_get_subscription_period_strings( $billing_interval, $billing_period ), $payment_day_of_week );
 						}
 						break;
@@ -300,58 +300,58 @@ class WC_Subscriptions_Product {
 						if ( 1 == $billing_interval ) {
 							// e.g. $15 on the 15th of each month
 							if ( $payment_day > 27 ) {
-								/* translators: placeholder is price */
+								// translators: placeholder is price
 								$subscription_string = sprintf( __( '%s on the last day of each month', 'woocommerce-subscriptions' ), $price );
 							} else {
-								/* translators: <price> on the <date> of each month, eg $5 every 4th of each month */
+								// translators: <price> on the <date> of each month, eg $5 every 4th of each month
 								$subscription_string = sprintf( __( '%s on the %s of each month', 'woocommerce-subscriptions' ), $price, WC_Subscriptions::append_numeral_suffix( $payment_day ) );
 							}
 						} else {
 							// e.g. $15 on the 15th of every 3rd month
 							if ( $payment_day > 27 ) {
-								/* translators: <price> on the last day of every <interval> month */
+								// translators: <price> on the last day of every <interval> month
 								$subscription_string = sprintf( __( '%s on the last day of every %s month', 'woocommerce-subscriptions' ), $price, WC_Subscriptions::append_numeral_suffix( $billing_interval ) );
 							} else {
-								/* translators: <price> on the <date> day of every <interval> month */
+								// translators: <price> on the <date> day of every <interval> month
 								$subscription_string = sprintf( __( '%s on the %s day of every %s month', 'woocommerce-subscriptions' ), $price, WC_Subscriptions::append_numeral_suffix( $payment_day ), WC_Subscriptions::append_numeral_suffix( $billing_interval ) );
 							}
 						}
 						break;
 					case 'year':
 						if ( 1 == $billing_interval ) {
-							/* translators: <price> on <date> <month> each year, eg $15 on March 15th each year */
+							// translators: <price> on <date> <month> each year, eg $15 on March 15th each year
 							$subscription_string = sprintf( __( '%s on %s %s each year', 'woocommerce-subscriptions' ), $price, $wp_locale->month[ $payment_day['month'] ], WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ) );
 						} else {
-							/* translators: <price> on <date> <month> every <interval> year, e.g. $15 on March 15th every 3rd year */
+							// translators: <price> on <date> <month> every <interval> year, e.g. $15 on March 15th every 3rd year
 							$subscription_string = sprintf( __( '%s on %s %s every %s year', 'woocommerce-subscriptions' ), $price, $wp_locale->month[ $payment_day['month'] ], WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ), WC_Subscriptions::append_numeral_suffix( $billing_interval ) );
 						}
 						break;
 				}
 			} else {
-				/* translators: <price> / <interval>, eg $15 / month */
+				// translators: <price> / <interval>, eg $15 / month
 				$subscription_string = sprintf( _n( '%s / %s', ' %s every %s', $billing_interval, 'woocommerce-subscriptions' ), $price, wcs_get_subscription_period_strings( $billing_interval, $billing_period ) );
 			}
 		} elseif ( $include['subscription_price'] ) {
 			$subscription_string = $price;
 		} elseif ( $include['subscription_period'] ) {
-			/* translators: billing period, eg "every week" */
+			// translators: billing period, eg "every week"
 			$subscription_string = sprintf( _n( '%s', 'every %s', $billing_interval, 'woocommerce-subscriptions' ), wcs_get_subscription_period_strings( $billing_interval, $billing_period ) );
 		}
 
 		// Add the length to the end
 		if ( $include_length ) {
-			/* translators: eg: <every 3 weeks> for <6 weeks> */
+			// translators: eg: <every 3 weeks> for <6 weeks>
 			$subscription_string = sprintf( __( '%s for %s', 'woocommerce-subscriptions' ), $subscription_string, $ranges[ $subscription_length ] );
 		}
 
 		if ( $include['trial_length'] && 0 != $trial_length ) {
 			$trial_string = wcs_get_subscription_trial_period_strings( $trial_length, $trial_period );
-			/* translators: <price string> with <time> free trial */
+			// translators: <price string> with <time> free trial
 			$subscription_string = sprintf( __( '%s with %s free trial', 'woocommerce-subscriptions' ), $subscription_string, $trial_string );
 		}
 
 		if ( $include['sign_up_fee'] && self::get_sign_up_fee( $product ) > 0 ) {
-			/* translators: <$10/month> and a <price> signup fee */
+			// translators: <$10/month> and a <price> signup fee
 			$subscription_string = sprintf( __( '%s and a %s sign-up fee', 'woocommerce-subscriptions' ), $subscription_string, $sign_up_fee );
 		}
 

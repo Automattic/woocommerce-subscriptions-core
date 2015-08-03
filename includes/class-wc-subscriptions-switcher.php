@@ -271,7 +271,7 @@ class WC_Subscriptions_Switcher {
 			array(
 				'name'     => __( 'Switching', 'woocommerce-subscriptions' ),
 				'type'     => 'title',
-				/* translators: placeholders are opening and closing link tags */
+				// translators: placeholders are opening and closing link tags
 				'desc'     => sprintf( __( 'Allow subscribers to switch (upgrade or downgrade) between different subscriptions. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( 'http://docs.woothemes.com/document/subscriptions/switching-guide/' ) . '">', '</a>' ),
 				'id'       => WC_Subscriptions_Admin::$option_prefix . '_switch_settings',
 			),
@@ -684,7 +684,7 @@ class WC_Subscriptions_Switcher {
 					$old_item_name = wcs_get_order_item_name( $existing_item, array( 'attributes' => true ) );
 					$new_item_name = wcs_get_cart_item_name( $cart_item, array( 'attributes' => true ) );
 
-					/* translators: 1$: old item, 2$: new item when switching */
+					// translators: 1$: old item, 2$: new item when switching
 					$subscription->add_order_note( sprintf( _x( 'Customer switched from: %1$s to %2$s.', 'used in order notes', 'woocommerce-subscriptions' ), $old_item_name, $new_item_name ) );
 
 					// Change the shipping
@@ -1562,7 +1562,7 @@ class WC_Subscriptions_Switcher {
 				break;
 			}
 
-			/* translators: %1: product subtotal, %2: direction (upgrade, downgrade, crossgrade) */
+			// translators: %1: product subtotal, %2: direction (upgrade, downgrade, crossgrade)
 			$product_subtotal = sprintf( _x( '%1$s (%2$s)', 'product subtotal string', 'woocommerce-subscriptions' ), $product_subtotal, $direction );
 
 		}

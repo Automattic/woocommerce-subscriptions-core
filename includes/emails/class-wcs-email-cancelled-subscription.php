@@ -124,7 +124,7 @@ class WCS_Email_Cancelled_Subscription extends WC_Email {
 			'recipient' => array(
 				'title'         => _x( 'Recipient(s)', 'of an email', 'woocommerce-subscriptions' ),
 				'type'          => 'text',
-				/* translators: placeholder is admin email */
+				// translators: placeholder is admin email
 				'description'   => sprintf( __( 'Enter recipients (comma separated) for this email. Defaults to <code>%s</code>.', 'woocommerce-subscriptions' ), esc_attr( get_option( 'admin_email' ) ) ),
 				'placeholder'   => '',
 				'default'       => '',

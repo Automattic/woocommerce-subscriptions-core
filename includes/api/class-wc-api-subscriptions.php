@@ -326,7 +326,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 		} catch ( Exception $e ) {
 			$wpdb->query( 'ROLLBACK' );
 
-			/* translators: 1$: gateway id, 2$: error message */
+			// translators: 1$: gateway id, 2$: error message
 			throw new Exception( sprintf( __( 'Subscription payment method could not be set to %1$s and has been set to manual with error message: %2$s', 'woocommerce-subscriptions' ), ( ! empty( $payment_gateway->id ) ) ? $payment_gateway->id : 'manual', $e->getMessage() ) );
 		}
 	}

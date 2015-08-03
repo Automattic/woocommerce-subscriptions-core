@@ -30,7 +30,7 @@ $time_until_update_allowed = $upgrade_transient_timeout - time();
 		<h2><?php esc_html_e( 'The Upgrade is in Progress', 'woocommerce-subscriptions' ); ?></h2>
 		<p><?php esc_html_e( 'The WooCommerce Subscriptions plugin is currently running its database upgrade routine.', 'woocommerce-subscriptions' ); ?></p>
 		<p><?php
-			/* translators: placeholder is number of seconds */
+			// translators: placeholder is number of seconds
 			printf( esc_html__( 'If you received a server error and reloaded the page to find this notice, please refresh the page in %s seconds and the upgrade routine will recommence without issues.', 'woocommerce-subscriptions' ), esc_html( $time_until_update_allowed ) ); ?>
 		</p>
 		<p><?php esc_html_e( 'Rest assured, although the update process may take a little while, it is coded to prevent defects, your site is safe and will be up and running again, faster than ever, shortly.', 'woocommerce-subscriptions' ); ?></p>

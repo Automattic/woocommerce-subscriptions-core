@@ -502,7 +502,7 @@ class WCS_Admin_Post_Types {
 			case 'recurring_total' :
 				$column_content .= esc_html( strip_tags( $the_subscription->get_formatted_order_total() ) );
 
-				/* translators: placeholder is payment method used */
+				// translators: placeholder is payment method used
 				$column_content .= '<small class="meta">' . esc_html( sprintf( _x( 'Via %s', 'used in admin list table on recurring total', 'woocommerce-subscriptions' ), $the_subscription->get_payment_method_to_display() ) ) . '</small>';
 				break;
 
@@ -742,12 +742,12 @@ class WCS_Admin_Post_Types {
 			2 => __( 'Custom field updated.', 'woocommerce-subscriptions' ),
 			3 => __( 'Custom field deleted.', 'woocommerce-subscriptions' ),
 			4 => __( 'Subscription updated.', 'woocommerce-subscriptions' ),
-			/* translators: placeholder is previous post title */
+			// translators: placeholder is previous post title
 			5 => isset( $_GET['revision'] ) ? sprintf( _x( 'Subscription restored to revision from %s', 'used in post updated messages', 'woocommerce-subscriptions' ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
 			6 => __( 'Subscription updated.', 'woocommerce-subscriptions' ),
 			7 => __( 'Subscription saved.', 'woocommerce-subscriptions' ),
 			8 => __( 'Subscription submitted.', 'woocommerce-subscriptions' ),
-			/* translators: php date string */
+			// translators: php date string
 			9 => sprintf( __( 'Subscription scheduled for: %1$s.', 'woocommerce-subscriptions' ), '<strong>' . date_i18n( _x( 'M j, Y @ G:i', 'used in "Subscription scheduled for <date>"', 'woocommerce-subscriptions' ), strtotime( $post->post_date ) ) . '</strong>' ),
 			10 => __( 'Subscription draft updated.', 'woocommerce-subscriptions' ),
 		);

@@ -143,13 +143,13 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		} else {
 
 			if ( $subscription->get_time( 'next_payment' ) > 0 ) {
-				/* translators: placeholder is next payment's date */
+				// translators: placeholder is next payment's date
 				$next_payment_string = sprintf( __( ' Next payment is due %s.', 'woocommerce-subscriptions' ), $subscription->get_date_to_display( 'next_payment' ) );
 			} else {
 				$next_payment_string = '';
 			}
 
-			/* translators: placeholder is either empty or "Next payment is due..." */
+			// translators: placeholder is either empty or "Next payment is due..."
 			WC_Subscriptions::add_notice( sprintf( __( 'Choose a new payment method.%s', 'woocommerce-subscriptions' ), $next_payment_string ), 'notice' );
 			WC_Subscriptions::print_notices();
 
