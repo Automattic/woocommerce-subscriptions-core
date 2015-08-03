@@ -196,24 +196,7 @@ class WCS_Upgrade_2_0 {
 	private static function get_subscriptions( $batch_size ) {
 		global $wpdb;
 
-		$query = sprintf(
-			"SELECT meta.*, items.* FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS meta
-			LEFT JOIN `{$wpdb->prefix}woocommerce_order_items` AS items USING (order_item_id)
-			LEFT JOIN (
-				SELECT a.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS a
-				LEFT JOIN (
-					SELECT `{$wpdb->prefix}woocommerce_order_itemmeta`.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta`
-					WHERE `{$wpdb->prefix}woocommerce_order_itemmeta`.meta_key = '_subscription_status'
-				) AS s
-				USING (order_item_id)
-				WHERE 1=1
-				AND a.order_item_id = s.order_item_id
-				AND a.meta_key = '_subscription_start_date'
-				ORDER BY CASE WHEN CAST(a.meta_value AS DATETIME) IS NULL THEN 1 ELSE 0 END, CAST(a.meta_value AS DATETIME) ASC
-				LIMIT 0, %s
-			) AS a3 USING (order_item_id)
-			WHERE meta.meta_key REGEXP '_subscription_(.*)|_product_id|_variation_id'
-			AND meta.order_item_id = a3.order_item_id", $batch_size );
+		$query = WC_Subscriptions_Upgrader::get_subscription_query( $batch_size );
 
 		$wpdb->query( 'SET SQL_BIG_SELECTS = 1;' );
 

@@ -549,7 +549,31 @@ class WC_Subscriptions_Upgrader {
 	private static function get_total_subscription_count_query() {
 		global $wpdb;
 
-		$query = "SELECT DISTINCT items.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS meta
+		$query = self::get_subscription_query();
+
+		$wpdb->get_results( $query );
+
+		return $wpdb->num_rows;
+	}
+
+
+	/**
+	 * Single source of truth for the query
+	 * @param  integer $limit the number of subscriptions to get
+	 * @return string        SQL query of what we need
+	 */
+	public static function get_subscription_query( $batch_size = null ) {
+		global $wpdb;
+
+		if ( null === $batch_size ) {
+			$select = "SELECT DISTINCT items.order_item_id";
+			$limit = '';
+		} else {
+			$select = "SELECT meta.*, items.*";
+			$limit = sprintf( " LIMIT 0, %d", $batch_size );
+		}
+
+		$query =  sprintf( "%s FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS meta
 			LEFT JOIN `{$wpdb->prefix}woocommerce_order_items` AS items USING (order_item_id)
 			LEFT JOIN (
 				SELECT a.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS a
@@ -562,14 +586,12 @@ class WC_Subscriptions_Upgrader {
 				AND a.order_item_id = s.order_item_id
 				AND a.meta_key = '_subscription_start_date'
 				ORDER BY CASE WHEN CAST(a.meta_value AS DATETIME) IS NULL THEN 1 ELSE 0 END, CAST(a.meta_value AS DATETIME) ASC
-				LIMIT 0, 18446744073709551615
+				%s
 			) AS a3 USING (order_item_id)
 			WHERE meta.meta_key REGEXP '_subscription_(.*)|_product_id|_variation_id'
-			AND meta.order_item_id = a3.order_item_id";
+			AND meta.order_item_id = a3.order_item_id", $select, $limit );
 
-		$wpdb->get_results( $query );
-
-		return $wpdb->num_rows;
+		return $query;
 	}
 
 	/**
