@@ -17,7 +17,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 
 <div class="wrap about-wrap">
 
-	<h1><?php esc_html_e( 'Welcome to Subscriptions v2.0', 'woocommerce-subscriptions' ); ?></h1>
+	<h1><?php esc_html_e( 'Welcome to Subscriptions 2.0', 'woocommerce-subscriptions' ); ?></h1>
 
 	<div class="about-text woocommerce-about-text">
 		<?php esc_html_e( 'Thank you for updating to the latest version of WooCommerce Subscriptions.', 'woocommerce-subscriptions' ); ?>
@@ -135,7 +135,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 	<div class="changelog under-the-hood">
 
 		<h2><?php esc_html_e( 'Peek Under the Hood for Developers', 'woocommerce-subscriptions' ); ?></h2>
-		<p><?php esc_html_e( 'Subscriptions v2.0 also introduces a completely new architecture built on WooCommerce Custom Order Types API.', 'woocommerce-subscriptions' ); ?></p>
+		<p><?php esc_html_e( 'Subscriptions v2.0 introduces a new architecture built on the WooCommerce Custom Order Types API.', 'woocommerce-subscriptions' ); ?></p>
 
 		<div class="feature-section col three-col">
 			<div>
@@ -143,10 +143,10 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 					// translators: placeholders are opening and closing code tags
 					printf( esc_html__( 'New %sshop_subscription%s Post Type', 'woocommerce-subscriptions' ), '<code>', '</code>' ); ?>
 				</h3>
-				<p><?php esc_html_e( 'By making a subscription a Custom Order Type, a subscription is also now a custom post type. This makes it faster to query subscriptions and it uses a database schema that is as scalable as WordPress itself.', 'woocommerce-subscriptions' ); ?></p>
+				<p><?php esc_html_e( 'By making a subscription a Custom Order Type, a subscription is also now a custom post type. This makes it faster to query subscriptions and it uses a database schema that is as scalable as WordPress posts and pages.', 'woocommerce-subscriptions' ); ?></p>
 				<p><?php
 					// translators: placeholders are opening and closing <code> tags
-					printf( esc_html__( 'Developers can also use all the familiar WordPress functions, like %sget_posts()%s, to query or modify subscription data.', 'woocommerce-subscriptions' ), '<code>', '</code>' ); ?>
+					printf( esc_html__( 'Developers can also now use all the familiar WordPress functions, like %sget_posts()%s, to query or modify subscription data.', 'woocommerce-subscriptions' ), '<code>', '</code>' ); ?>
 				</p>
 			</div>
 			<div>
@@ -154,10 +154,10 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 					// translators: placeholders are opening and closing <code> tags
 					printf( esc_html__( 'New %sWC_Subscription%s Object', 'woocommerce-subscriptions' ), '<code>', '</code>' ); ?>
 				</h3>
-				<p><?php esc_html_e( 'Subscriptions v2.0 also introduces a new object for working with a subscription in memory. The days of having to use cumbersome APIs to retreive or modify a subscription\'s data are gone!', 'woocommerce-subscriptions' ); ?></p>
+				<p><?php esc_html_e( 'Subscriptions v2.0 introduces a new object for working with a subscription at the application level. The cumbersome APIs for retreiving or modifying a subscription\'s data are gone!', 'woocommerce-subscriptions' ); ?></p>
 				<p><?php
 					// translators: all placeholders are opening and closing <code> tags
-					printf( esc_html__( 'Because the %sWC_Subscription%s class extends %sWC_Order%s, you can also use all of its methods, like %s$subscription->update_status()%s or %s$subscription->get_total()%s.', 'woocommerce-subscriptions' ), '<code>', '</code>', '<code>', '</code>', '<code>', '</code>', '<code>', '</code>' ); ?>
+					printf( esc_html__( 'Because the %sWC_Subscription%s class extends %sWC_Order%s, you can use its familiar methods, like %s$subscription->update_status()%s or %s$subscription->get_total()%s.', 'woocommerce-subscriptions' ), '<code>', '</code>', '<code>', '</code>', '<code>', '</code>', '<code>', '</code>' ); ?>
 				</p>
 			</div>
 			<div class="last-feature">
