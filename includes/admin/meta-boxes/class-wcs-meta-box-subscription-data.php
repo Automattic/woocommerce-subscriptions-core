@@ -43,7 +43,9 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 			<input name="post_status" type="hidden" value="<?php echo esc_attr( $subscription->get_status() ); ?>" />
 			<div id="order_data" class="panel">
 
-				<h2><?php printf( esc_html__( 'Subscription %s details', 'woocommerce-subscriptions' ), esc_html( $subscription->get_order_number() ) ); ?></h2>
+				<h2><?php
+				// translators: placeholder is the ID of the subscription
+				printf( esc_html_x( 'Subscription %s details', 'edit subscription header', 'woocommerce-subscriptions' ), esc_html( $subscription->get_order_number() ) ); ?></h2>
 
 				<div class="order_data_column_container">
 					<div class="order_data_column">
@@ -71,7 +73,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 								$user_string = esc_html( $user->display_name ) . ' (#' . absint( $user->ID ) . ' &ndash; ' . esc_html( $user->user_email );
 							}
 							?>
-							<input type="hidden" class="wc-customer-search" id="customer_user" name="customer_user" data-placeholder="<?php esc_attr_e( 'Search for a customer&hellip;', 'woocommerce-subscriptions' ); ?>" data-selected="<?php esc_attr_e( $user_string ); ?>" value="<?php esc_attr_e( $user_id ); ?>" />
+							<input type="hidden" class="wc-customer-search" id="customer_user" name="customer_user" data-placeholder="<?php esc_attr_e( 'Search for a customer&hellip;', 'woocommerce-subscriptions' ); ?>" data-selected="<?php echo esc_attr( $user_string ); ?>" value="<?php echo esc_attr( $user_id ); ?>" />
 						</p>
 
 						<p class="form-field form-field-wide">
@@ -122,7 +124,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 						echo '</div>';
 
 						// Display form
-						echo '<div class="edit_address"><p><button class="button load_customer_billing">' . esc_html__( 'Load billing address', 'woocommerce-subscriptions' ) . '</button></p>';
+						echo '<div class="edit_address"><p><button class="button load_customer_billing">' . esc_html_x( 'Load billing address','to populate address from user details', 'woocommerce-subscriptions' ) . '</button></p>';
 
 						foreach ( self::$billing_fields as $key => $field ) {
 							if ( ! isset( $field['type'] ) ) {

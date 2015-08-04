@@ -80,9 +80,9 @@ class WCS_Webhooks {
 	public static function add_topics_admin_menu( $topics ) {
 
 		$front_end_topics = array(
-			'subscription.created' => __( ' Subscription Created', 'woocommerce-subscription' ),
-			'subscription.updated' => __( ' Subscription Updated', 'woocommerce-subscription' ),
-			'subscription.deleted' => __( ' Subscription Deleted', 'woocommerce-subscription' ),
+			'subscription.created' => __( ' Subscription Created', 'woocommerce-subscriptions' ),
+			'subscription.updated' => __( ' Subscription Updated', 'woocommerce-subscriptions' ),
+			'subscription.deleted' => __( ' Subscription Deleted', 'woocommerce-subscriptions' ),
 		);
 
 		return array_merge( $topics, $front_end_topics );

@@ -46,7 +46,8 @@ class WC_Subscriptions_Synchroniser {
 
 		self::$sync_field_label      = __( 'Synchronise Renewals', 'woocommerce-subscriptions' );
 		self::$sync_description      = __( 'Align the payment date for all customers who purchase this subscription to a specific day of the week or month.', 'woocommerce-subscriptions' );
-		self::$sync_description_year = sprintf( __( 'Align the payment date for this subscription to a specific day of the year. If the date has already taken place this year, the first payment will be processed in %s. Set the day to 0 to disable payment syncing for this product.', 'woocommerce-subscriptions' ), date( 'Y', strtotime( '+1 year' ) ) );
+		// translators: placeholder is a year (e.g. "2016")
+		self::$sync_description_year = sprintf( _x( 'Align the payment date for this subscription to a specific day of the year. If the date has already taken place this year, the first payment will be processed in %s. Set the day to 0 to disable payment syncing for this product.', 'used in subscription product edit screen', 'woocommerce-subscriptions' ), date( 'Y', strtotime( '+1 year' ) ) );
 
 		// Add the settings to control whether syncing is enabled and how it will behave
 		add_filter( 'woocommerce_subscription_settings', __CLASS__ . '::add_settings' );
@@ -143,7 +144,8 @@ class WC_Subscriptions_Synchroniser {
 			array(
 				'name'          => __( 'Synchronisation', 'woocommerce-subscriptions' ),
 				'type'          => 'title',
-				'desc'          => sprintf( __( 'Align subscription renewal to a specific day of the week, month or year. For example, the first day of the month. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( 'http://docs.woothemes.com/document/subscriptions/renewal-synchronisation/' ) . '">', '</a>' ),
+				// translators: placeholders are opening and closing link tags
+				'desc'          => sprintf( _x( 'Align subscription renewal to a specific day of the week, month or year. For example, the first day of the month. %sLearn more%s.', 'used in the general subscription options page', 'woocommerce-subscriptions' ), '<a href="' . esc_url( 'http://docs.woothemes.com/document/subscriptions/renewal-synchronisation/' ) . '">', '</a>' ),
 				'id'            => self::$setting_id . '_title',
 			),
 
@@ -164,15 +166,15 @@ class WC_Subscriptions_Synchroniser {
 				'default'       => 'no',
 				'type'          => 'select',
 				'options'       => array(
-					'no'           => __( 'Never', 'woocommerce-subscriptions' ),
-					'virtual'      => __( 'For Virtual Subscription Products Only', 'woocommerce-subscriptions' ),
-					'yes'          => __( 'For All Subscription Products', 'woocommerce-subscriptions' ),
+					'no'           => _x( 'Never', 'when to prorate first payment when synching', 'woocommerce-subscriptions' ),
+					'virtual'      => _x( 'For Virtual Subscription Products Only', 'when to prorate first payment when synching', 'woocommerce-subscriptions' ),
+					'yes'          => _x( 'For All Subscription Products', 'when to prorate first payment when synching', 'woocommerce-subscriptions' ),
 				),
 				'desc_tip'      => true,
 			),
 
 			array( 'type' => 'sectionend', 'id' => self::$setting_id . '_title' ),
-		));
+		) );
 
 		return $settings;
 	}
@@ -610,11 +612,13 @@ class WC_Subscriptions_Synchroniser {
 			$weekdays = array_merge( $wp_locale->weekday, array( $wp_locale->weekday[0] ) );
 			unset( $weekdays[0] );
 			foreach ( $weekdays as $i => $weekly_billing_period ) {
+				// translators: placeholder is a day of the week
 				self::$billing_period_ranges['week'][ $i ] = sprintf( __( '%s each week', 'woocommerce-subscriptions' ), $weekly_billing_period );
 			}
 
 			// Month
 			foreach ( range( 1, 27 ) as $i ) {
+				// translators: placeholder is a number of day with language specific suffix applied (e.g. "1st", "3rd", "5th", etc...)
 				self::$billing_period_ranges['month'][ $i ] = sprintf( __( '%s day of the month', 'woocommerce-subscriptions' ), WC_Subscriptions::append_numeral_suffix( $i ) );
 			}
 			self::$billing_period_ranges['month'][28] = __( 'Last day of the month', 'woocommerce-subscriptions' );
@@ -671,8 +675,10 @@ class WC_Subscriptions_Synchroniser {
 				}
 
 				if ( self::is_product_prorated( $product ) && ! $is_first_payment_today ) {
+					// translators: placeholder is a date
 					$first_payment_date = sprintf( __( 'First payment prorated. Next payment: %s', 'woocommerce-subscriptions' ), $payment_date_string );
 				} else {
+					// translators: placeholder is a date
 					$first_payment_date = sprintf( __( 'First payment: %s', 'woocommerce-subscriptions' ), $payment_date_string );
 				}
 

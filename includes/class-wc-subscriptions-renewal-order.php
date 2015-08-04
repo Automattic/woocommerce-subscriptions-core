@@ -116,7 +116,12 @@ class WC_Subscriptions_Renewal_Order {
 		}
 
 		if ( is_a( $renewal_order, 'WC_Order' ) && wcs_is_subscription( $subscription ) ) {
-			$subscription->add_order_note( sprintf( __( 'Order %s created to record renewal.', 'woocommerce-subscriptions' ), sprintf( '<a href="%s">%s%s</a> ', esc_url( wcs_get_edit_post_link( $renewal_order->id ) ), _x( '#', 'hash before order number', 'woocommerce-subscriptions' ), $renewal_order->get_order_number() ) ) );
+
+			// translators: placeholder is order number, hash before order number
+			$order_number = sprintf( __( '#%s', 'woocommerce-subscriptions' ), $renewal_order->get_order_number() );
+
+			// translators: placeholder is order ID
+			$subscription->add_order_note( sprintf( __( 'Order %s created to record renewal.', 'woocommerce-subscriptions' ), sprintf( '<a href="%s">%s</a> ', esc_url( wcs_get_edit_post_link( $renewal_order->id ) ), $order_number ) ) );
 		}
 
 		return $renewal_order;
@@ -171,11 +176,8 @@ class WC_Subscriptions_Renewal_Order {
 
 		if ( wcs_order_contains_renewal( $order ) ) {
 			$blogname = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
-			$subject  = apply_filters(
-				'woocommerce_subscriptions_email_subject_new_renewal_order',
-				sprintf( __( '[%s] New Subscription Renewal Order (%s)', 'woocommerce-subscriptions' ), $blogname, $order->get_order_number() ),
-				$order
-			);
+			// translators: 1$: blog name, 2$: order number
+			$subject  = apply_filters( 'woocommerce_subscriptions_email_subject_new_renewal_order', sprintf( _x( '[%1$s] New Subscription Renewal Order (%2$s)', 'used in new renewal order email, deprecated', 'woocommerce-subscriptions' ), $blogname, $order->get_order_number() ), $order );
 		}
 
 		return $subject;
@@ -196,7 +198,8 @@ class WC_Subscriptions_Renewal_Order {
 			$blogname = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
 			$subject  = apply_filters(
 				'woocommerce_subscriptions_email_subject_customer_procesing_renewal_order',
-				sprintf( __( '[%s] Subscription Renewal Order', 'woocommerce-subscriptions' ), $blogname ),
+				// translators: placeholder is blog name
+				sprintf( _x( '[%s] Subscription Renewal Order', 'used in processing renewal order email to customer', 'woocommerce-subscriptions' ), $blogname ),
 				$order
 			);
 		}
@@ -219,7 +222,8 @@ class WC_Subscriptions_Renewal_Order {
 			$blogname = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
 			$subject  = apply_filters(
 				'woocommerce_subscriptions_email_subject_customer_completed_renewal_order',
-				sprintf( __( '[%s] Subscription Renewal Order', 'woocommerce-subscriptions' ), $blogname ),
+				// translators: placeholder is blog name
+				sprintf( _x( '[%s] Subscription Renewal Order', 'used in completed renewal order email to customer', 'woocommerce-subscriptions' ), $blogname ),
 				$order
 			);
 		}

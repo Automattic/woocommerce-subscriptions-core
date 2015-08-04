@@ -271,6 +271,7 @@ class WC_Subscriptions_Switcher {
 			array(
 				'name'     => __( 'Switching', 'woocommerce-subscriptions' ),
 				'type'     => 'title',
+				// translators: placeholders are opening and closing link tags
 				'desc'     => sprintf( __( 'Allow subscribers to switch (upgrade or downgrade) between different subscriptions. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( 'http://docs.woothemes.com/document/subscriptions/switching-guide/' ) . '">', '</a>' ),
 				'id'       => WC_Subscriptions_Admin::$option_prefix . '_switch_settings',
 			),
@@ -284,10 +285,10 @@ class WC_Subscriptions_Switcher {
 				'default' => 'no',
 				'type'    => 'select',
 				'options' => array(
-					'no'               => __( 'Never', 'woocommerce-subscriptions' ),
-					'variable'         => __( 'Between Subscription Variations', 'woocommerce-subscriptions' ),
-					'grouped'          => __( 'Between Grouped Subscriptions', 'woocommerce-subscriptions' ),
-					'variable_grouped' => __( 'Between Both Variations & Grouped Subscriptions', 'woocommerce-subscriptions' ),
+					'no'               => _x( 'Never', 'when to allow switching', 'woocommerce-subscriptions' ),
+					'variable'         => _x( 'Between Subscription Variations', 'when to allow switching', 'woocommerce-subscriptions' ),
+					'grouped'          => _x( 'Between Grouped Subscriptions', 'when to allow switching', 'woocommerce-subscriptions' ),
+					'variable_grouped' => _x( 'Between Both Variations & Grouped Subscriptions', 'when to allow switching', 'woocommerce-subscriptions' ),
 				),
 				'desc_tip' => true,
 			),
@@ -301,11 +302,11 @@ class WC_Subscriptions_Switcher {
 				'default' => 'no',
 				'type'    => 'select',
 				'options' => array(
-					'no'              => __( 'Never', 'woocommerce-subscriptions' ),
-					'virtual-upgrade' => __( 'For Upgrades of Virtual Subscription Products Only', 'woocommerce-subscriptions' ),
-					'yes-upgrade'     => __( 'For Upgrades of All Subscription Products', 'woocommerce-subscriptions' ),
-					'virtual'         => __( 'For Upgrades & Downgrades of Virtual Subscription Products Only', 'woocommerce-subscriptions' ),
-					'yes'             => __( 'For Upgrades & Downgrades of All Subscription Products', 'woocommerce-subscriptions' ),
+					'no'              => _x( 'Never', 'when to prorate recurring fee when switching', 'woocommerce-subscriptions' ),
+					'virtual-upgrade' => _x( 'For Upgrades of Virtual Subscription Products Only', 'when to prorate recurring fee when switching', 'woocommerce-subscriptions' ),
+					'yes-upgrade'     => _x( 'For Upgrades of All Subscription Products', 'when to prorate recurring fee when switching', 'woocommerce-subscriptions' ),
+					'virtual'         => _x( 'For Upgrades & Downgrades of Virtual Subscription Products Only', 'when to prorate recurring fee when switching', 'woocommerce-subscriptions' ),
+					'yes'             => _x( 'For Upgrades & Downgrades of All Subscription Products', 'when to prorate recurring fee when switching', 'woocommerce-subscriptions' ),
 				),
 				'desc_tip' => true,
 			),
@@ -319,9 +320,9 @@ class WC_Subscriptions_Switcher {
 				'default' => 'no',
 				'type'    => 'select',
 				'options' => array(
-					'no'                 => __( 'Never (do not charge a sign up fee)', 'woocommerce-subscriptions' ),
-					'full'               => __( 'Never (charge the full sign up fee)', 'woocommerce-subscriptions' ),
-					'yes'                => __( 'Always', 'woocommerce-subscriptions' ),
+					'no'                 => _x( 'Never (do not charge a sign up fee)', 'when to prorate signup fee when switching', 'woocommerce-subscriptions' ),
+					'full'               => _x( 'Never (charge the full sign up fee)', 'when to prorate signup fee when switching', 'woocommerce-subscriptions' ),
+					'yes'                => _x( 'Always', 'when to prorate signup fee when switching','woocommerce-subscriptions' ),
 				),
 				'desc_tip' => true,
 			),
@@ -335,9 +336,9 @@ class WC_Subscriptions_Switcher {
 				'default' => 'no',
 				'type'    => 'select',
 				'options' => array(
-					'no'                 => __( 'Never', 'woocommerce-subscriptions' ),
-					'virtual'            => __( 'For Virtual Subscription Products Only', 'woocommerce-subscriptions' ),
-					'yes'                => __( 'For All Subscription Products', 'woocommerce-subscriptions' ),
+					'no'                 => _x( 'Never', 'when to prorate subs length when switching', 'woocommerce-subscriptions' ),
+					'virtual'            => _x( 'For Virtual Subscription Products Only', 'when to prorate subs length when switching', 'woocommerce-subscriptions' ),
+					'yes'                => _x( 'For All Subscription Products', 'when to prorate subs length when switching', 'woocommerce-subscriptions' ),
 				),
 				'desc_tip' => true,
 			),
@@ -354,7 +355,7 @@ class WC_Subscriptions_Switcher {
 			),
 
 			array( 'type' => 'sectionend', 'id' => WC_Subscriptions_Admin::$option_prefix . '_switch_settings' ),
-		));
+		) );
 
 		return $settings;
 	}
@@ -683,7 +684,8 @@ class WC_Subscriptions_Switcher {
 					$old_item_name = wcs_get_order_item_name( $existing_item, array( 'attributes' => true ) );
 					$new_item_name = wcs_get_cart_item_name( $cart_item, array( 'attributes' => true ) );
 
-					$subscription->add_order_note( sprintf( __( 'Customer switched from: %s to %s.', 'woocommerce-subscriptions' ), $old_item_name, $new_item_name ) );
+					// translators: 1$: old item, 2$: new item when switching
+					$subscription->add_order_note( sprintf( _x( 'Customer switched from: %1$s to %2$s.', 'used in order notes', 'woocommerce-subscriptions' ), $old_item_name, $new_item_name ) );
 
 					// Change the shipping
 					self::update_shipping_methods( $subscription, $recurring_cart );
@@ -1550,17 +1552,18 @@ class WC_Subscriptions_Switcher {
 
 			switch ( $cart_item['subscription_switch']['upgraded_or_downgraded'] ) {
 				case 'downgraded' :
-					$direction = __( 'Downgrade', 'woocommerce-subscriptions' );
+					$direction = _x( 'Downgrade', 'a switch order', 'woocommerce-subscriptions' );
 					break;
 				case 'upgraded' :
-					$direction = __( 'Upgrade', 'woocommerce-subscriptions' );
+					$direction = _x( 'Upgrade', 'a switch order', 'woocommerce-subscriptions' );
 					break;
 				default :
-					$direction = __( 'Crossgrade', 'woocommerce-subscriptions' );
+					$direction = _x( 'Crossgrade', 'a switch order', 'woocommerce-subscriptions' );
 				break;
 			}
 
-			$product_subtotal = sprintf( __( '%s (%s)', 'woocommerce-subscriptions' ), $product_subtotal, $direction );
+			// translators: %1: product subtotal, %2: direction (upgrade, downgrade, crossgrade)
+			$product_subtotal = sprintf( _x( '%1$s (%2$s)', 'product subtotal string', 'woocommerce-subscriptions' ), $product_subtotal, $direction );
 
 		}
 

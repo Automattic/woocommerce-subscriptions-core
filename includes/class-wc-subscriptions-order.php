@@ -351,7 +351,9 @@ class WC_Subscriptions_Order {
 			$subscription_count = count( wcs_get_subscriptions_for_order( $order_id ) );
 
 			$thank_you_message = '<p>' . _n( 'Your subscription will be activated when payment clears.', 'Your subscriptions will be activated when payment clears.', $subscription_count, 'woocommerce-subscriptions' ) . '</p>';
-			$thank_you_message .= sprintf( _n( '%sView the status of your subscription in %syour account%s.%s', '%sView the status of your subscriptions in %syour account%s.%s', $subscription_count, 'woocommerce-subscriptions' ), '<p>', '<a href="' . get_permalink( woocommerce_get_page_id( 'myaccount' ) ) . '">', '</a>','</p>' );
+
+			// translators: placeholders are opening and closing link tags
+			$thank_you_message .= '<p>' . sprintf( _n( 'View the status of your subscription in %syour account%s.', 'View the status of your subscriptions in %syour account%s.', $subscription_count, 'woocommerce-subscriptions' ), '<a href="' . get_permalink( woocommerce_get_page_id( 'myaccount' ) ) . '">', '</a>' ) . '</p>';
 			echo wp_kses( apply_filters( 'woocommerce_subscriptions_thank_you_message', $thank_you_message, $order_id ), array( 'a' => array( 'href' => array(), 'title' => array() ), 'p' => array(), 'em' => array(), 'strong' => array() ) );
 		}
 
@@ -599,7 +601,16 @@ class WC_Subscriptions_Order {
 					selected( $term, $_GET['shop_order_subtype'] );
 				}
 
-				echo '>' . esc_html__( $term, 'woocommerce' ) . '</option>';
+				switch ( $term ) {
+					case 'Original':
+						$term_text = _x( 'Original', 'An order type', 'woocommerce-subscriptions' );
+						break;
+					case 'Renewal':
+						$term_text = _x( 'Renewal', 'An order type', 'woocommerce-subscriptions' );
+						break;
+				}
+
+				echo '>' . esc_html( $term_text ) . '</option>';
 			}
 			?>
 			</select>
