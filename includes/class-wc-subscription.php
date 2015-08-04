@@ -1499,6 +1499,8 @@ class WC_Subscription extends WC_Order {
 			update_post_meta( $this->id, '_payment_method', $payment_gateway->id );
 			update_post_meta( $this->id, '_payment_method_title', $payment_gateway->get_title() );
 		}
+
+		$this->payment_gateway = wc_get_payment_gateway_by_order( $this );
 	}
 
 	/**
