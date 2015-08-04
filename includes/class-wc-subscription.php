@@ -1399,8 +1399,6 @@ class WC_Subscription extends WC_Order {
 
 		$last_order = false;
 
-		$related_orders = array();
-
 		$renewal_post_ids = get_posts( array(
 			'posts_per_page' => 1,
 			'post_type'      => 'shop_order',
@@ -1485,7 +1483,7 @@ class WC_Subscription extends WC_Order {
 			update_post_meta( $this->id, '_payment_method', '' );
 			update_post_meta( $this->id, '_payment_method_title', '' );
 
-		} elseif ( $this->payment_gateway !== $payment_gateway->id ) {
+		} elseif ( $this->payment_method !== $payment_gateway->id ) {
 
 			// Set subscription to manual when the payment method doesn't support automatic payments
 			$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
