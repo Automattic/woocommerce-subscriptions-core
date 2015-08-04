@@ -1483,7 +1483,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function hidden_order_itemmeta( $hidden_meta_keys ) {
 
-		if ( ! defined( 'WCS_DEBUG' ) ) {
+		if ( ! defined( 'WCS_DEBUG' ) || true !== WCS_DEBUG ) {
 			$hidden_meta_keys = array_merge( $hidden_meta_keys, array(
 				'_switched_subscription_item_id',
 				'_switched_subscription_new_item_id',
