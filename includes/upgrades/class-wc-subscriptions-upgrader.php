@@ -223,7 +223,7 @@ class WC_Subscriptions_Upgrader {
 	public static function ajax_upgrade() {
 		global $wpdb;
 
-		check_admin_referer( 'wcs_upgrade_process' );
+		check_admin_referer( 'wcs_upgrade_process', 'nonce' );
 
 		self::set_upgrade_limits();
 
