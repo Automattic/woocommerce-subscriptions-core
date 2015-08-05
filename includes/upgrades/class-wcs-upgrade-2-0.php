@@ -58,6 +58,8 @@ class WCS_Upgrade_2_0 {
 
 			try {
 
+				self::maybe_repair_subscription( $old_subscription, $original_order_item_id );
+
 				// don't allow data to be half upgraded on a subscription (but we need the subscription to be the atomic level, not the whole batch, to ensure that resubscribe and switch updates in the same batch have the new subscription available)
 				$wpdb->query( 'START TRANSACTION' );
 
@@ -877,5 +879,145 @@ class WCS_Upgrade_2_0 {
 
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: migrated switch data for subscription %d purchased in order %d', $new_subscription->id, $old_subscription->id, $previous_order_id ) );
 		}
+	}
+
+	private static function integrity_check( $subscription ) {
+
+		// if ( ! array_key_exists( 'order_id', $subscription ) || ! is_numeric( $subscription['order_id'] ) ) {
+		// 	throw new InvalidArgumentException( __( 'Invalid data. The subscription did not have an order ID associated with it.', 'woocommerce-subscriptions' ), 422 );
+		// }
+
+		// $meta = get_post_meta( $subscription['order_id'] );
+		// $productmeta = wc_get_order_item_meta( $id, null, false );
+
+		$repairs_needed = array();
+
+		// paid date?
+		//
+		foreach ( array(
+			'order_id',
+			'product_id',
+			'variation_id',
+			'status',
+			'period',
+			'interval',
+			'length',
+			'start_date',
+			'trial_expiry_date',
+			'expiry_date',
+			'end_date',
+			// 'failed_payments',
+			// 'completed_payments',
+			// 'suspension_count',
+			// 'recurring_amount',
+			// 'sign_up_fee',
+			'recurring_line_total',
+			'recurring_line_tax',
+			'recurring_line_subtotal',
+			'recurring_line_subtotal_tax' ) as $meta ) {
+			if ( ! array_key_exists( $meta, $subscription ) || empty( $subscription[ $meta ] ) ) {
+				$repairs_needed[] = $meta;
+			}
+		}
+
+		return $repairs_needed;
+	}
+
+
+	public static function maybe_repair_subscription( $subscription, $item_id ) {
+		global $wpdb;
+
+		foreach (self::integrity_check( $subscription ) as $function ) {
+			$subscription = call_user_func( 'WC_Repair_2_0::repair_' . $function, $subscription, $item_id );
+		}
+
+
+		#17 - healthy
+		// #20 - missing order_id
+		#23 - missing product_id
+		// #26 - missing variation_id
+		#29 - missing subscription_status
+		#32 - missing subscription_period
+		#35 - missing subscription_interval
+		#38 - missing subscription_length
+		#41 - missing start_date
+		#44 - missing subscription trial_expiry_date
+		#47 - missing subscription_expiry date
+		#50 - missing subscription_end_date
+		#53 - missing subscription_failed_payments
+		#56 - missing subscription_completed_payments
+		#59 - missing subscription_suspension_count
+		#62 - missing subscription_last_payment_date
+		#65 - missing subscription_recurring_amount
+		#68 - missing subscription_signup_fee
+		#71 - missing recurring_line_total
+		#74 - missing recurring_line_tax
+		#77 - missing recurring_line_subtotal
+		#80 - missing recurring_line_subtotal_tax
+	}
+}
+
+
+class WC_Repair_2_0 {
+
+	public static function repair_order_id( $subscription, $item_id ) {
+		// 'order_id': a subscription can exist without an original order in v2.0, so technically the order ID is no longer required. However, if some or all order item meta data that constitutes a subscription exists without a corresponding parent order, we can deem the issue to be that the subscription meta data was not deleted, not that the subscription should exist. Meta data could be orphaned in v1.n if the order row in the wp_posts table was deleted directly in the database, or the subscription/order were for a customer that was deleted in WordPress administration interface prior to Subscriptions v1.3.8. In both cases, the subscription, including meta data, should have been permanently deleted. However, deleting data is not a good idea during an upgrade. So I propose instead that we create a subscription without a parent order, but move it to the trash.
+	}
+
+	public static function repair_product_id( $subscription, $item_id ) {
+		// '_product_id': the only way to derive a order item's product ID would be to match the order item's name to a product name/title. This is quite hacky, so we may be better copying the empty product ID to the new subscription. A subscription to a deleted produced should be able to exist.
+	}
+
+	public static function repair_variation_id( $subscription, $item_id ) {
+		// '_variation_id': the only way to derive a order item's product ID would be to match the order item's name to a product name/title. This is quite hacky, so we may be better copying the empty product ID to the new subscription. A subscription to a deleted produced should be able to exist.
+
+	}
+
+	public static function repair_status( $subscription, $item_id ) {
+		// '_subscription_status': we could default to cancelled (and then potentially trash) if no status exists because the cancelled status is irreversible. But we can also take this a step further. If the subscription has a '_subscription_expiry_date' value and a '_subscription_end_date' value, and they are within a few minutes of each other, we can assume the subscription's status should be expired. If there is a '_subscription_end_date' value that is different to the '_subscription_expiry_date' value (either because the expiration value is 0 or some other date), then we can assume the status should be cancelled). If there is no end date value, we're a bit lost as technically the subscription hasn't ended, but we should make sure it is not active, so cancelled is still the best default.
+	}
+
+	public static function repair_period( $subscription, $item_id ) {
+		// '_subscription_period': we can attempt to derive this from the time between renewal orders. For example, if there are two renewal orders found 3 months apart, the billing period would be month. If there are not two or more renewal orders (we can't use a single renewal order because that would account for the free trial) and a _product_id value , if the product still exists, we can use the current value set on that product. It won't always be correct, but it's the closest we can get to an accurate estimate.
+	}
+
+	public static function repair_interval( $subscription, $item_id ) {
+		// '_subscription_interval': we can attempt to derive this from the time between renewal orders. For example, if there are two renewal orders found 3 months apart, the billing period would be month. If there are not two or more renewal orders (we can't use a single renewal order because that would account for the free trial) and a _product_id value , if the product still exists, we can use the current value set on that product. It won't always be correct, but it's the closest we can get to an accurate estimate.
+	}
+
+	public static function repair_length( $subscription, $item_id ) {
+		// '_subscription_length': if there is are '_subscription_expiry_date' and '_subscription_start_date' values, we can use those to determine how many billing periods fall between them, and therefore, the length of the subscription. This data is low value however as it is no longer stored in v2.0 and mainly used to determine the expiration date.
+	}
+
+	public static function repair_start_date( $subscription, $item_id ) {
+		// '_subscription_start_date': the original order's '_paid_date' value (stored in post meta) can be used as the subscription's start date. If no '_paid_date' exists, because the order used a payment method that doesn't call $order->payment_complete(), like BACs or Cheque, then we can use the post_date_gmt column in the wp_posts table of the original order.
+	}
+
+	public static function repair_trial_expiry_date( $subscription, $item_id ) {
+		// '_subscription_trial_expiry_date': if the subscription has at least one renewal order, we can set the trial expiration date to the date of the first renewal order. However, this is generally safe to default to 0 if it is not set. Especially if the subscription is inactive and/or has 1 or more renewals (because its no longer used and is simply for record keeping).
+	}
+
+	public static function repair_expiry_date( $subscription, $item_id ) {
+		// '_subscription_expiry_date': if the subscription has a '_subscription_length' value, that can be used to calculate the expiration date (from the '_subscription_start_date' or '_subscription_trial_expiry_date' if one is set). If no length is set, but the subscription has an expired status, the '_subscription_end_date' can be used. In most other cases, this is generally safe to default to 0 if the subscription is cancelled because its no longer used and is simply for record keeping.
+	}
+
+	public static function repair_end_date( $subscription, $item_id ) {
+		// '_subscription_end_date': if the subscription has a '_subscription_length' value and status of expired, the length can be used to calculate the end date as it will be the same as the expiration date. If no length is set, or the subscription has a cancelled status, some time within 24 hours after the last renewal order's date can be used to provide a rough estimate.
+	}
+
+	public static function repair_recurring_line_total( $subscription, $item_id ) {
+		// _recurring_line_total': if the subscription has at least one renewal order, this value can be derived from the '_line_total' value of that order. If no renewal orders exist, it can be derived roughly by deducting the '_subscription_sign_up_fee' value from the original order's total if there is no trial expiration date.
+	}
+
+	public static function repair_recurring_line_tax( $subscription, $item_id ) {
+		// _recurring_line_total': if the subscription has at least one renewal order, this value can be derived from the '_line_total' value of that order. If no renewal orders exist, it can be derived roughly by deducting the '_subscription_sign_up_fee' value from the original order's total if there is no trial expiration date.
+	}
+
+	public static function repair_recurring_line_subtotal( $subscription, $item_id ) {
+		// _recurring_line_total': if the subscription has at least one renewal order, this value can be derived from the '_line_total' value of that order. If no renewal orders exist, it can be derived roughly by deducting the '_subscription_sign_up_fee' value from the original order's total if there is no trial expiration date.
+	}
+
+	public static function repair_recurring_line_subtotal_tax( $subscription, $item_id ) {
+		// _recurring_line_total': if the subscription has at least one renewal order, this value can be derived from the '_line_total' value of that order. If no renewal orders exist, it can be derived roughly by deducting the '_subscription_sign_up_fee' value from the original order's total if there is no trial expiration date.
 	}
 }
