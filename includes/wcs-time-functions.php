@@ -264,7 +264,6 @@ function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_o
 				$timestamp = wcs_add_months( $timestamp, 1 );
 			}
 		}
-
 	} else {
 
 		$seconds_until_timestamp = $end_timestamp - $start_timestamp;
