@@ -1149,7 +1149,16 @@ class WC_Repair_2_0 {
 	}
 
 	public static function repair_start_date( $subscription, $item_id, $item_meta ) {
+		global $wpdb;
 		// '_subscription_start_date': the original order's '_paid_date' value (stored in post meta) can be used as the subscription's start date. If no '_paid_date' exists, because the order used a payment method that doesn't call $order->payment_complete(), like BACs or Cheque, then we can use the post_date_gmt column in the wp_posts table of the original order.
+		$start_date = get_post_meta( $subscription['order_id'], '_paid_date', true );
+
+		if ( empty( $start_date ) ) {
+			$start_date = $wpdb->get_var( $wpdb->prepare( "SELECT post_date_gmt FROM {$wpdb->posts} WHERE ID = %d", $subscription['order_id'] ) );
+		}
+
+		$subscription['start_date'] = $start_date;
+		return $subscription;
 	}
 
 	public static function repair_trial_expiry_date( $subscription, $item_id, $item_meta ) {
