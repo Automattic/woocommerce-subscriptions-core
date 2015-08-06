@@ -1186,6 +1186,30 @@ class WC_Repair_2_0 {
 
 	public static function repair_end_date( $subscription, $item_id, $item_meta ) {
 		// '_subscription_end_date': if the subscription has a '_subscription_length' value and status of expired, the length can be used to calculate the end date as it will be the same as the expiration date. If no length is set, or the subscription has a cancelled status, some time within 24 hours after the last renewal order's date can be used to provide a rough estimate.
+		if ( array_key_exists( '_subscription_end_date', $item_meta ) ) {
+			WCS_Upgrade_Logger::add( '-- Copying end date from item_meta' );
+			$subscription['end_date'] = $item_meta['_subscription_end_date'][0];
+			return $subscription;
+		}
+
+		if ( 'expired' == $subscription['status'] && array_key_exists( 'expiry_date', $subscription ) && ! empty( $subscription['expiry_date'] ) ) {
+			$subscription['end_date'] = $subscription['expiry_date'];
+			return $subscription;
+		}
+
+		if ( 'cancelled' == $subscription['status'] || ! array_key_exists( 'length', $subscription ) || empty( $subscription['length'] ) ) {
+			// get renewal orders
+			$renewal_orders = self::get_renewal_orders( $subscription );
+			$last_order = array_shift( $renewal_orders );
+
+			$subscription['end_date'] = wcs_add_time( 5, 'hours', strtotime( $last_order->order_date ) );
+			return $subscription;
+		}
+
+		// if everything failed, let's have an empty one
+		$subscription['end_date'] = 0;
+
+		return $subscription;
 	}
 
 	public static function repair_recurring_line_total( $subscription, $item_id, $item_meta ) {
