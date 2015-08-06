@@ -1038,12 +1038,12 @@ class WC_Repair_2_0 {
 		WCS_Upgrade_Logger::add( sprintf( 'Repairing period for subscription %d.', $subscription['order_id'] ) );
 
 		// Get info from the product
-		// if ( array_key_exists( '_subscription_period', $item_meta ) && ! empty( $item_meta['_subscription_period'] ) ) {
-		// 	WCS_Upgrade_Logger::add( '-- Getting info from item meta and returning.' );
+		if ( array_key_exists( '_subscription_period', $item_meta ) && ! empty( $item_meta['_subscription_period'] ) ) {
+			WCS_Upgrade_Logger::add( '-- Getting info from item meta and returning.' );
 
-		// 	$subscription['period'] = $item_meta['_subscription_period'][0];
-		// 	return $subscription;
-		// }
+			$subscription['period'] = $item_meta['_subscription_period'][0];
+			return $subscription;
+		}
 
 		// let's get the renewal orders
 		$renewal_orders = self::get_renewal_orders( $subscription );
@@ -1071,15 +1071,6 @@ class WC_Repair_2_0 {
 			$interval = $subscription['interval'];
 		}
 
-		$possible_periods = array();
-
-		foreach ( array( 'day', 'week', 'month', 'year' ) as $period ) {
-			$possible_periods[$period] = wcs_estimate_periods_between( $second_renewal_ts, $last_renewal_ts, $period );
-		}
-
-		wp_die( es_preit( array( $possible_periods, $second_renewal_ts, $last_renewal_ts ), false ) );
-
-
 		WCS_Upgrade_Logger::add( '-- Passing info to maybe_get_period...' );
 		$period = self::maybe_get_period( $last_renewal_date, $second_renewal_date, $interval );
 
@@ -1102,6 +1093,7 @@ class WC_Repair_2_0 {
 
 		$subscription['period'] = $period;
 
+		return $subscription;
 	}
 
 	public static function repair_interval( $subscription, $item_id, $item_meta ) {
