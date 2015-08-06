@@ -1155,10 +1155,14 @@ class WC_Repair_2_0 {
 
 	public static function repair_trial_expiry_date( $subscription, $item_id, $item_meta ) {
 		// '_subscription_trial_expiry_date': if the subscription has at least one renewal order, we can set the trial expiration date to the date of the first renewal order. However, this is generally safe to default to 0 if it is not set. Especially if the subscription is inactive and/or has 1 or more renewals (because its no longer used and is simply for record keeping).
+		$subscription['trial_expiry_date'] = 0;
+		return $subscription;
 	}
 
 	public static function repair_expiry_date( $subscription, $item_id, $item_meta ) {
 		// '_subscription_expiry_date': if the subscription has a '_subscription_length' value, that can be used to calculate the expiration date (from the '_subscription_start_date' or '_subscription_trial_expiry_date' if one is set). If no length is set, but the subscription has an expired status, the '_subscription_end_date' can be used. In most other cases, this is generally safe to default to 0 if the subscription is cancelled because its no longer used and is simply for record keeping.
+		$subscription['expiry_date'] = 0;
+		return $subscription;
 	}
 
 	public static function repair_end_date( $subscription, $item_id, $item_meta ) {
