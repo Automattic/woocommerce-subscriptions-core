@@ -1214,6 +1214,17 @@ class WC_Repair_2_0 {
 
 	public static function repair_recurring_line_total( $subscription, $item_id, $item_meta ) {
 		// _recurring_line_total': if the subscription has at least one renewal order, this value can be derived from the '_line_total' value of that order. If no renewal orders exist, it can be derived roughly by deducting the '_subscription_sign_up_fee' value from the original order's total if there is no trial expiration date.
+		// I'm not using line_total on subscription because it might contain non-sub bits
+
+		if ( array_key_exists( '_line_total', $item_meta ) ) {
+			WCS_Upgrade_Logger::add( '-- Copying end date from item_meta' );
+			$subscription['recurring_line_total'] = $item_meta['_line_total'][0];
+			return $subscription;
+		}
+
+		$subscription['recurring_line_total'] = 0;
+
+		return $subscription;
 	}
 
 	public static function repair_recurring_line_tax( $subscription, $item_id, $item_meta ) {
