@@ -1108,9 +1108,37 @@ class WC_Repair_2_0 {
 		// '_subscription_interval': we can attempt to derive this from the time between renewal orders. For example, if there are two renewal orders found 3 months apart, the billing period would be month. If there are not two or more renewal orders (we can't use a single renewal order because that would account for the free trial) and a _product_id value , if the product still exists, we can use the current value set on that product. It won't always be correct, but it's the closest we can get to an accurate estimate.
 
 		// let's see if we can have info from the product
+		// Get info from the product
+		if ( array_key_exists( '_subscription_interval', $item_meta ) && ! empty( $item_meta['_subscription_interval'] ) ) {
+			WCS_Upgrade_Logger::add( '-- Getting info from item meta and returning.' );
+
+			$subscription['interval'] = $item_meta['_subscription_interval'][0];
+			return $subscription;
+		}
+
+		// by this time we already have a period on our hand
+		// let's get the renewal orders
+		$renewal_orders = self::get_renewal_orders( $subscription );
+
+		if ( count( $renewal_orders ) < 2 ) {
+			// default to month
+			$subscription['interval'] = 1;
+			// return $subscription;
+		}
 
 
-		// info from the renewal orders (last 2 RENEWAL). If there's less than 3, use product, otherwise default to 'month'
+		// let's get the last 2 renewal orders
+		$last_renewal_order = array_shift( $renewal_orders );
+		$last_renewal_date = $last_renewal_order->order_date;
+		$last_renewal_ts = strtotime( $last_renewal_date );
+
+		$second_renewal_order = array_shift( $renewal_orders );
+		$second_renewal_date = $second_renewal_order->order_date;
+		$second_renewal_ts = strtotime( $second_renewal_date );
+
+		$subscription['interval'] = wcs_estimate_periods_between( $second_renewal_ts, $last_renewal_ts, $subscription['period'] );
+
+		return $subscription;
 	}
 
 	public static function repair_length( $subscription, $item_id, $item_meta ) {
