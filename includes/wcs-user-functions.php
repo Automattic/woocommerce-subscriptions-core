@@ -249,3 +249,29 @@ function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 
 	return apply_filters( 'wcs_view_subscription_actions', $actions, $subscription );
 }
+
+/**
+ * Checks if a user has a certain capability
+ *
+ * @access public
+ * @param array $allcaps
+ * @param array $caps
+ * @param array $args
+ * @return bool
+ */
+function wcs_user_has_capability( $allcaps, $caps, $args ) {
+	if ( isset( $caps[0] ) ) {
+		switch ( $caps[0] ) {
+			case 'edit_subscription' :
+				$user_id  = $args[1];
+				$subscription_user_id = $args[2];
+
+				if ( $user_id === $subscription_user_id ) {
+					$allcaps['edit_subscription'] = true;
+				}
+			break;
+		}
+	}
+	return $allcaps;
+}
+add_filter( 'user_has_cap', 'wcs_user_has_capability', 10, 3 );

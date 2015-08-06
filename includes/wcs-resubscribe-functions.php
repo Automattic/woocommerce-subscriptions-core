@@ -161,7 +161,7 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 
 		$can_user_resubscribe = false;
 
-	} elseif ( $user_id !== $subscription->get_user_id() ) {
+	} elseif ( ! user_can( $user_id, 'edit_subscription', $subscription->get_user_id() ) ) {
 
 		$can_user_resubscribe = false;
 
