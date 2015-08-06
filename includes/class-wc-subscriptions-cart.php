@@ -55,6 +55,7 @@ class WC_Subscriptions_Cart {
 		add_filter( 'woocommerce_cart_product_price', __CLASS__ . '::cart_product_price' , 10, 2 );
 
 		// Make sure cart totals are calculated when setting up the cart widget
+		add_action( 'wc_ajax_get_refreshed_fragments', __CLASS__ . '::pre_get_refreshed_fragments' , 1 );
 		add_action( 'wp_ajax_woocommerce_get_refreshed_fragments', __CLASS__ . '::pre_get_refreshed_fragments', 1 );
 		add_action( 'wp_ajax_nopriv_woocommerce_get_refreshed_fragments', __CLASS__ . '::pre_get_refreshed_fragments', 1, 1 );
 
@@ -848,7 +849,6 @@ class WC_Subscriptions_Cart {
 	}
 
 	public static function get_sign_up_fee_fields() {
-
 		_deprecated_function( __METHOD__, '1.2' );
 
 		return array(

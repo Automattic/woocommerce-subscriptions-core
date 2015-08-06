@@ -348,21 +348,10 @@ class WC_Subscriptions_Coupon {
 		if ( ! in_array( $coupon->type, array( 'recurring_fee', 'sign_up_fee', 'recurring_percent', 'sign_up_fee_percent' ) ) ) {
 
 			// but make sure there is actually something for the coupon to be applied to (i.e. not a free trial)
-			if ( WC_Subscriptions_Cart::all_cart_items_have_free_trial() && 0 == WC_Subscriptions_Cart::get_cart_subscription_sign_up_fee() && 1 == count( WC()->cart->cart_contents ) ) { // make sure there are no products in the cart which the coupon could be applied to - WC()->cart->get_cart_contents_count() returns the quantity of items in the cart, not the total number of unique items, we need to use WC()->cart->cart_contents for that.
-
-				$error_message = __( 'Sorry, this coupon is only valid for an initial payment and the subscription does not have an initial payment.', 'woocommerce-subscriptions' );
-
-				// now make sure there is actually something for the coupon to be applied to (i.e. not a free trial or sync'd subscription without any prorated initial amount)
-				if ( WC_Subscriptions_Cart::cart_contains_free_trial() && 0 == WC_Subscriptions_Cart::get_cart_subscription_sign_up_fee() ) {
-
-					self::$coupon_error = $error_message;
-
-				} elseif ( WC_Subscriptions_Synchroniser::cart_contains_synced_subscription() && ! WC_Subscriptions_Synchroniser::cart_contains_prorated_subscription() ) {
-
-					self::$coupon_error = $error_message;
-
-				}
+			if ( 0 == WC()->cart->subtotal ) {
+				self::$coupon_error = __( 'Sorry, this coupon is only valid for an initial payment and the subscription does not have an initial payment.', 'woocommerce-subscriptions' );
 			}
+
 		} else {
 
 			// prevent subscription coupons from being applied to renewal payments

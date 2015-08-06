@@ -70,7 +70,8 @@ class WC_Subscriptions_Admin {
 		add_action( 'save_post', __CLASS__ . '::save_subscription_meta', 11 );
 
 		// Save variable subscription meta
-		add_action( 'woocommerce_process_product_meta_variable-subscription', __CLASS__ . '::process_product_meta_variable_subscription' );
+		add_action( 'woocommerce_process_product_meta_variable-subscription', __CLASS__ . '::process_product_meta_variable_subscription' ); // WC < 2.4
+		add_action( 'woocommerce_ajax_save_product_variations', __CLASS__ . '::process_product_meta_variable_subscription' );
 
 		add_filter( 'woocommerce_settings_tabs_array', __CLASS__ . '::add_subscription_settings_tab', 50 );
 
@@ -269,7 +270,7 @@ class WC_Subscriptions_Admin {
 			$thepostid = $variation->post_parent;
 		}
 
-		if ( WC_Subscriptions::is_woocommerce_pre_2_3() ) {
+		if ( WC_Subscriptions::is_woocommerce_pre( '2.3' ) ) {
 			include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/deprecated/html-variation-price.php' );
 		} else {
 			include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/html-variation-price.php' );
@@ -500,18 +501,14 @@ class WC_Subscriptions_Admin {
 		// Make sure WooCommerce calculates correct prices
 		$_POST['variable_regular_price'] = isset( $_POST['variable_subscription_price'] ) ? $_POST['variable_subscription_price'] : 0;
 
-		// Run WooCommerce core saving routine
-		if ( class_exists( 'WC_Meta_Box_Product_Data' ) ) {
-
+		// Run WooCommerce core saving routine for WC < 2.4
+		if ( ! is_ajax() ) {
 			WC_Meta_Box_Product_Data::save_variations( $post_id, get_post( $post_id ) );
-
-		} else { // WC < 2.1
-
-			process_product_meta_variable( $post_id );
-
 		}
 
-		update_post_meta( $post_id, '_subscription_limit', stripslashes( $_REQUEST['_subscription_limit'] ) );
+		if ( isset( $_REQUEST['_subscription_limit'] ) ) {
+			update_post_meta( $post_id, '_subscription_limit', stripslashes( $_REQUEST['_subscription_limit'] ) );
+		}
 
 		if ( ! isset( $_REQUEST['variable_post_id'] ) ) {
 			return;
@@ -636,7 +633,8 @@ class WC_Subscriptions_Admin {
 
 			$script_params['ajaxLoaderImage'] = WC()->plugin_url() . '/assets/images/ajax-loader.gif';
 			$script_params['ajaxUrl']         = admin_url( 'admin-ajax.php' );
-			$script_params['isWCPre23']       = ( WC_Subscriptions::is_woocommerce_pre_2_3() ) ? 'true' : 'false';
+			$script_params['isWCPre23']       = var_export( WC_Subscriptions::is_woocommerce_pre( '2.3' ), true );
+			$script_params['isWCPre24']       = var_export( WC_Subscriptions::is_woocommerce_pre( '2.4' ), true );
 
 			wp_enqueue_script( 'woocommerce_subscriptions_admin', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/admin.js', $dependencies, filemtime( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/admin.js' ) );
 			wp_localize_script( 'woocommerce_subscriptions_admin', 'WCSubscriptions', apply_filters( 'woocommerce_subscriptions_admin_script_parameters', $script_params ) );
@@ -712,7 +710,6 @@ class WC_Subscriptions_Admin {
 	public static function user_column_values( $value, $column_name, $user_id ) {
 
 		if ( 'woocommerce_active_subscriber' == $column_name ) {
-
 			if ( wcs_user_has_subscription( $user_id, '', 'active' ) ) {
 				$value = '<div class="active-subscriber"></div>';
 			} else {
@@ -1339,6 +1336,7 @@ class WC_Subscriptions_Admin {
 	 * @return string
 	 */
 	public static function settings_tab_url() {
+
 		$settings_tab_url = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 
 		return apply_filters( 'woocommerce_subscriptions_settings_tab_url', $settings_tab_url );
