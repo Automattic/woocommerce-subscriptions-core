@@ -351,7 +351,6 @@ class WC_Subscriptions_Coupon {
 			if ( 0 == WC()->cart->subtotal ) {
 				self::$coupon_error = __( 'Sorry, this coupon is only valid for an initial payment and the subscription does not have an initial payment.', 'woocommerce-subscriptions' );
 			}
-
 		} else {
 
 			// prevent subscription coupons from being applied to renewal payments
