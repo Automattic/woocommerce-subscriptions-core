@@ -58,7 +58,7 @@ class WCS_Upgrade_2_0 {
 
 			try {
 
-				self::maybe_repair_subscription( $old_subscription, $original_order_item_id );
+				$old_subscription = self::maybe_repair_subscription( $old_subscription, $original_order_item_id );
 
 				// don't allow data to be half upgraded on a subscription (but we need the subscription to be the atomic level, not the whole batch, to ensure that resubscribe and switch updates in the same batch have the new subscription available)
 				$wpdb->query( 'START TRANSACTION' );
@@ -881,19 +881,28 @@ class WCS_Upgrade_2_0 {
 		}
 	}
 
+
+	/**
+	 * Does sanity check on every subscription, and repairs them as needed
+	 * @param  array $subscription subscription data to be upgraded
+	 * @param  integer $item_id      id of order item meta
+	 * @return array               a repaired subscription array
+	 */
+	public static function maybe_repair_subscription( $subscription, $item_id ) {
+		global $wpdb;
+
+		$item_meta = get_metadata( 'order_item', $item_id );
+
+		foreach ( self::integrity_check( $subscription ) as $function ) {
+			$subscription = call_user_func( 'WC_Repair_2_0::repair_' . $function, $subscription, $item_id, $item_meta );
+		}
+
+		return $subscription;
+	}
+
 	private static function integrity_check( $subscription ) {
-
-		// if ( ! array_key_exists( 'order_id', $subscription ) || ! is_numeric( $subscription['order_id'] ) ) {
-		// 	throw new InvalidArgumentException( __( 'Invalid data. The subscription did not have an order ID associated with it.', 'woocommerce-subscriptions' ), 422 );
-		// }
-
-		// $meta = get_post_meta( $subscription['order_id'] );
-		// $productmeta = wc_get_order_item_meta( $id, null, false );
-
 		$repairs_needed = array();
 
-		// paid date?
-		//
 		foreach ( array(
 			'order_id',
 			'product_id',
@@ -906,11 +915,6 @@ class WCS_Upgrade_2_0 {
 			'trial_expiry_date',
 			'expiry_date',
 			'end_date',
-			// 'failed_payments',
-			// 'completed_payments',
-			// 'suspension_count',
-			// 'recurring_amount',
-			// 'sign_up_fee',
 			'recurring_line_total',
 			'recurring_line_tax',
 			'recurring_line_subtotal',
@@ -921,43 +925,6 @@ class WCS_Upgrade_2_0 {
 		}
 
 		return $repairs_needed;
-	}
-
-
-	public static function maybe_repair_subscription( $subscription, $item_id ) {
-		global $wpdb;
-
-		$item_meta = get_metadata( 'order_item', $item_id );
-
-		$subscription = WC_Repair_2_0::repair_period( $subscription, $item_id, $item_meta );
-
-		// foreach (self::integrity_check( $subscription ) as $function ) {
-		// 	$subscription = call_user_func( 'WC_Repair_2_0::repair_' . $function, $subscription, $item_id, $item_meta );
-		// }
-
-
-		#17 - healthy
-		// #20 - missing order_id
-		#23 - missing product_id
-		// #26 - missing variation_id
-		#29 - missing subscription_status
-		#32 - missing subscription_period
-		#35 - missing subscription_interval
-		#38 - missing subscription_length
-		#41 - missing start_date
-		#44 - missing subscription trial_expiry_date
-		#47 - missing subscription_expiry date
-		#50 - missing subscription_end_date
-		#53 - missing subscription_failed_payments
-		#56 - missing subscription_completed_payments
-		#59 - missing subscription_suspension_count
-		#62 - missing subscription_last_payment_date
-		#65 - missing subscription_recurring_amount
-		#68 - missing subscription_signup_fee
-		#71 - missing recurring_line_total
-		#74 - missing recurring_line_tax
-		#77 - missing recurring_line_subtotal
-		#80 - missing recurring_line_subtotal_tax
 	}
 }
 
