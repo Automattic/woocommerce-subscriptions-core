@@ -155,7 +155,7 @@ class WCS_Remove_Item {
 
 			wc_add_notice( __( 'Security error. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), 'error' );
 
-		} elseif ( ! current_user_can( 'edit_subscription', $subscription->get_user_id() ) ) {
+		} elseif ( ! current_user_can( 'edit_shop_subscription_line_items', $subscription->get_user_id() ) ) {
 
 			wc_add_notice( __( 'You cannot modify a subscription that does not belong to you.', 'woocommerce-subscriptions' ), 'error' );
 

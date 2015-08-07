@@ -113,7 +113,7 @@ class WC_Subscriptions_Switcher {
 			$subscription = wcs_get_subscription( $_GET['switch-subscription'] );
 
 			// Visiting a switch link for someone elses subscription or if the switch link doesn't contain a valid nonce
-			if ( ! is_object( $subscription ) || ! current_user_can( 'edit_subscription', $subscription->get_user_id() ) || empty( $_GET['_wcsnonce'] ) || ! wp_verify_nonce( $_GET['_wcsnonce'], 'wcs_switch_request' )  ) {
+			if ( ! is_object( $subscription ) || ! current_user_can( 'switch_shop_subscription', $subscription->get_user_id() ) || empty( $_GET['_wcsnonce'] ) || ! wp_verify_nonce( $_GET['_wcsnonce'], 'wcs_switch_request' )  ) {
 
 				wp_redirect( remove_query_arg( array( 'switch-subscription', 'auto-switch', 'item' ) ) );
 				exit();
@@ -137,7 +137,7 @@ class WC_Subscriptions_Switcher {
 
 				$subscription = wcs_get_subscription( $switch_item['subscription_id'] );
 
-				if ( ! is_object( $subscription ) || ! current_user_can( 'edit_subscription', $subscription->get_user_id() ) || ! self::is_product_of_switchable_type( WC()->cart->cart_contents[ $cart_item_key ]['data'] ) ) {
+				if ( ! is_object( $subscription ) || ! current_user_can( 'switch_shop_subscription', $subscription->get_user_id() ) || ! self::is_product_of_switchable_type( WC()->cart->cart_contents[ $cart_item_key ]['data'] ) ) {
 					WC()->cart->remove_cart_item( $cart_item_key );
 					$removed_item_count++;
 				}
@@ -500,7 +500,7 @@ class WC_Subscriptions_Switcher {
 
 		$item_can_be_switched = false;
 
-		if ( user_can( $user_id, 'edit_subscription', $subscription->get_user_id() ) && self::can_item_be_switched( $item, $subscription ) ) {
+		if ( user_can( $user_id, 'switch_shop_subscription', $subscription->get_user_id() ) && self::can_item_be_switched( $item, $subscription ) ) {
 			$item_can_be_switched = true;
 		}
 
@@ -941,7 +941,7 @@ class WC_Subscriptions_Switcher {
 			$subscription = wcs_get_subscription( $_GET['switch-subscription'] );
 
 			// Requesting a switch for someone elses subscription
-			if ( ! current_user_can( 'edit_subscription', $subscription->get_user_id() ) ) {
+			if ( ! current_user_can( 'switch_shop_subscription', $subscription->get_user_id() ) ) {
 				WC_Subscriptions::add_notice( __( 'You can not switch this subscription. It appears you do not own the subscription.', 'woocommerce-subscriptions' ), 'error' );
 				WC()->cart->empty_cart( true );
 				wp_redirect( get_permalink( $subscription['product_id'] ) );
