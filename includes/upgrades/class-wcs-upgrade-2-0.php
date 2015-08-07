@@ -933,6 +933,7 @@ class WC_Repair_2_0 {
 	public static function repair_order_id( $subscription ) {
 		// 'order_id': a subscription can exist without an original order in v2.0, so technically the order ID is no longer required. However, if some or all order item meta data that constitutes a subscription exists without a corresponding parent order, we can deem the issue to be that the subscription meta data was not deleted, not that the subscription should exist. Meta data could be orphaned in v1.n if the order row in the wp_posts table was deleted directly in the database, or the subscription/order were for a customer that was deleted in WordPress administration interface prior to Subscriptions v1.3.8. In both cases, the subscription, including meta data, should have been permanently deleted. However, deleting data is not a good idea during an upgrade. So I propose instead that we create a subscription without a parent order, but move it to the trash.
 		// Additional idea was to check whether the given order_id exists, but since that's another database read, it would slow down a lot of things.
+		// A subscription will not make it to this point if it doesn't have an order id, so this function will practically never be run
 		WCS_Upgrade_Logger::add( sprintf( 'Repairing order_id for subscription %d: Status changed to trash', $subscription['order_id'] ) );
 
 		$subscription['status'] = 'trash';
@@ -1017,7 +1018,7 @@ class WC_Repair_2_0 {
 		if ( count( $renewal_orders ) < 2 ) {
 			// default to month
 			$subscription['period'] = 'month';
-			// return $subscription;
+			return $subscription;
 		}
 
 		// let's get the last 2 renewal orders
@@ -1051,7 +1052,6 @@ class WC_Repair_2_0 {
 			if ( $period == $period2 ) {
 				WCS_Upgrade_Logger::add( sprintf( '-- Second check confirmed, we are very confident period is %s', $period ) );
 				$subscription['period'] = $period;
-				// log add that we're really sure
 			}
 		}
 
@@ -1079,7 +1079,7 @@ class WC_Repair_2_0 {
 		if ( count( $renewal_orders ) < 2 ) {
 			// default to month
 			$subscription['interval'] = 1;
-			// return $subscription;
+			return $subscription;
 		}
 
 		// let's get the last 2 renewal orders
@@ -1246,7 +1246,11 @@ class WC_Repair_2_0 {
 		return abs( $to - $from );
 	}
 
-
+	/**
+	 * Utility function to get all renewal orders in the old structure.
+	 * @param  array $subscription the sub we're looking for the renewal orders
+	 * @return array               of WC_Orders
+	 */
 	private static function get_renewal_orders( $subscription ) {
 		$related_orders = array();
 
