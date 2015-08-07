@@ -295,13 +295,15 @@ function wcs_revoke_downloadable_file_permission( $product_id, $order_id, $user_
  * @return array List of files with correct download urls
  */
 function wcs_subscription_email_download_links( $files, $item, $order ) {
-	if ( ! wcs_order_contains_subscription( $order ) ) {
-		return $files;
-	}
-
 	global $wpdb;
 
-	$subscriptions = wcs_get_subscriptions_for_order( $order );
+	if ( wcs_order_contains_subscription( $order ) ) {
+		$subscriptions = wcs_get_subscriptions_for_order( $order );
+	} elseif ( wcs_order_contains_renewal( $order ) ) {
+		$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
+	} else {
+		return $files;
+	}
 
 	// This is needed because downloads are keyed to the subscriptions, not the original orders
 	$subs_keys = wp_list_pluck( $subscriptions, 'order_key' );
