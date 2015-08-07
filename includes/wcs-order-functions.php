@@ -225,11 +225,13 @@ function wcs_order_contains_subscription( $order ) {
 function wcs_save_downloadable_product_permissions( $order_id ) {
 	$order = wc_get_order( $order_id );
 
-	if ( ! wcs_order_contains_subscription( $order ) ) {
+	if ( wcs_order_contains_subscription( $order ) ) {
+		$subscriptions = wcs_get_subscriptions_for_order( $order );
+	} elseif ( wcs_order_contains_renewal( $order ) ) {
+		$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
+	} else {
 		return;
 	}
-
-	$subscriptions = wcs_get_subscriptions_for_order( $order );
 
 	foreach ( $subscriptions as $subscription ) {
 		if ( sizeof( $subscription->get_items() ) > 0 ) {
