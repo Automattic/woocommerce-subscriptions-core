@@ -276,6 +276,8 @@ class WC_Subscriptions_Admin {
 			include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/html-variation-price.php' );
 		}
 
+		wp_nonce_field( 'wcs_subscription_variations', '_wcsnonce_save_variations', false );
+
 		do_action( 'woocommerce_variable_subscription_pricing', $loop, $variation_data, $variation );
 	}
 
@@ -494,7 +496,7 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function process_product_meta_variable_subscription( $post_id ) {
 
-		if ( ! WC_Subscriptions_Product::is_subscription( $post_id ) || empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) ) {
+		if ( ! WC_Subscriptions_Product::is_subscription( $post_id ) || empty( $_POST['_wcsnonce_save_variations'] ) || ! wp_verify_nonce( $_POST['_wcsnonce_save_variations'], 'wcs_subscription_variations' ) ) {
 			return;
 		}
 
