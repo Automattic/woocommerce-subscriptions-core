@@ -54,7 +54,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 
 				wc_add_notice( __( 'That subscription does not exist. Has it been deleted?', 'woocommerce-subscriptions' ), 'error' );
 
-			} elseif ( ! current_user_can( 'subscribe_again', $subscription->get_user_id() ) ) {
+			} elseif ( ! current_user_can( 'subscribe_again', $subscription->id ) ) {
 
 				wc_add_notice( __( 'That doesn\'t appear to be one of your subscriptions.', 'woocommerce-subscriptions' ), 'error' );
 
