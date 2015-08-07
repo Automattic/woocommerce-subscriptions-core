@@ -215,7 +215,7 @@ function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 
 	$actions = array();
 
-	if ( $user_id == $subscription->get_user_id() ) {
+	if ( user_can( $user_id, 'edit_shop_subscription_status', $subscription->get_user_id() ) ) {
 
 		$admin_with_suspension_disallowed = ( current_user_can( 'manage_woocommerce' ) && 0 === get_option( WC_Subscriptions_Admin::$option_prefix . '_max_customer_suspensions', 0 ) ) ? true : false;
 
