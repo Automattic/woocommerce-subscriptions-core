@@ -173,7 +173,6 @@ class WCS_Upgrade_2_0 {
 			}
 		}
 
-
 		// Double check we actually have no more subscriptions to upgrade as sometimes they can fall through the cracks
 		if ( $upgraded_subscription_count < $batch_size && $upgraded_subscription_count > 0 && ! array_key_exists( 'WPENGINE_ACCOUNT', $_SERVER ) ) {
 			$upgraded_subscription_count += self::upgrade_subscriptions( $batch_size );
@@ -881,7 +880,6 @@ class WCS_Upgrade_2_0 {
 		}
 	}
 
-
 	/**
 	 * Does sanity check on every subscription, and repairs them as needed
 	 * @param  array $subscription subscription data to be upgraded
@@ -918,7 +916,8 @@ class WCS_Upgrade_2_0 {
 			'recurring_line_total',
 			'recurring_line_tax',
 			'recurring_line_subtotal',
-			'recurring_line_subtotal_tax' ) as $meta ) {
+			'recurring_line_subtotal_tax',
+			) as $meta ) {
 			if ( ! array_key_exists( $meta, $subscription ) || empty( $subscription[ $meta ] ) ) {
 				$repairs_needed[] = $meta;
 			}
@@ -945,7 +944,7 @@ class WC_Repair_2_0 {
 		// '_product_id': the only way to derive a order item's product ID would be to match the order item's name to a product name/title. This is quite hacky, so we may be better copying the empty product ID to the new subscription. A subscription to a deleted produced should be able to exist.
 		WCS_Upgrade_Logger::add( sprintf( 'Repairing product_id for subscription %d.', $subscription['order_id'] ) );
 
-		if ( array_key_exists( 'product_id', $item_meta ) && ! empty ( $item_meta['product_id'] ) ) {
+		if ( array_key_exists( 'product_id', $item_meta ) && ! empty( $item_meta['product_id'] ) ) {
 
 			WCS_Upgrade_Logger::add( '-- Copying product_id from item_meta' );
 			$subscription['product_id'] = $item_meta['product_id'][0];
@@ -961,7 +960,7 @@ class WC_Repair_2_0 {
 		// '_variation_id': the only way to derive a order item's product ID would be to match the order item's name to a product name/title. This is quite hacky, so we may be better copying the empty product ID to the new subscription. A subscription to a deleted produced should be able to exist.
 		WCS_Upgrade_Logger::add( sprintf( 'Repairing variation_id for subscription %d.', $subscription['order_id'] ) );
 
-		if ( array_key_exists( 'variation_id', $item_meta ) && ! empty ( $item_meta['variation_id'] ) ) {
+		if ( array_key_exists( 'variation_id', $item_meta ) && ! empty( $item_meta['variation_id'] ) ) {
 			WCS_Upgrade_Logger::add( '-- Copying variation_id from item_meta' );
 			$subscription['variation_id'] = $item_meta['variation_id'][0];
 		} elseif ( ! array_key_exists( 'variation_id', $item_meta ) ) {
@@ -977,7 +976,7 @@ class WC_Repair_2_0 {
 		WCS_Upgrade_Logger::add( sprintf( 'Repairing status for subscription %d.', $subscription['order_id'] ) );
 
 		// only reset this if we didn't repair the order_id
-		if ( ! array_key_exists( 'order_id', $subscription ) || empty( $subscription[ 'order_id' ] ) ) {
+		if ( ! array_key_exists( 'order_id', $subscription ) || empty( $subscription['order_id'] ) ) {
 			WCS_Upgrade_Logger::add( '-- Previously set it to trash with order_id missing, bailing.' );
 			return $subscription;
 		}
@@ -1021,7 +1020,6 @@ class WC_Repair_2_0 {
 			// return $subscription;
 		}
 
-
 		// let's get the last 2 renewal orders
 		$last_renewal_order = array_shift( $renewal_orders );
 		$last_renewal_date = $last_renewal_order->order_date;
@@ -1051,7 +1049,6 @@ class WC_Repair_2_0 {
 			$period2 = self::maybe_get_period( $second_renewal_date, $third_renewal_date, $interval );
 
 			if ( $period == $period2 ) {
-
 				WCS_Upgrade_Logger::add( sprintf( '-- Second check confirmed, we are very confident period is %s', $period ) );
 				$subscription['period'] = $period;
 				// log add that we're really sure
@@ -1085,7 +1082,6 @@ class WC_Repair_2_0 {
 			// return $subscription;
 		}
 
-
 		// let's get the last 2 renewal orders
 		$last_renewal_order = array_shift( $renewal_orders );
 		$last_renewal_date = $last_renewal_order->order_date;
@@ -1107,14 +1103,14 @@ class WC_Repair_2_0 {
 		$subscription['length'] = 0;
 
 		// Let's see if the item meta has that
-		if ( array_key_exists( '_subscription_length', $item_meta ) && ! empty ( $item_meta['_subscription_length'] ) ) {
+		if ( array_key_exists( '_subscription_length', $item_meta ) && ! empty( $item_meta['_subscription_length'] ) ) {
 			WCS_Upgrade_Logger::add( '-- Copying subscription_length from item_meta' );
 			$subscription['length'] = $item_meta['_subscription_length'][0];
 			return $subscription;
 		}
 
 		// If we can calculate it from start date and expiry date
-		if ( $subscription['status'] == 'expired' && array_key_exists( 'expiry_date', $susbcription ) && ! empty( $subscription['expiry_date'] ) && array_key_exists( 'start_date', $subscription ) && ! empty( $subscription['start_date'] ) && array_key_exists( 'period', $subscription ) && ! empty( $subscription['period'] ) && array_key_exists( 'interval', $subscription ) && ! empty( $subscription['interval'] ) ) {
+		if ( 'expired' == $subscription['status'] && array_key_exists( 'expiry_date', $susbcription ) && ! empty( $subscription['expiry_date'] ) && array_key_exists( 'start_date', $subscription ) && ! empty( $subscription['start_date'] ) && array_key_exists( 'period', $subscription ) && ! empty( $subscription['period'] ) && array_key_exists( 'interval', $subscription ) && ! empty( $subscription['interval'] ) ) {
 			$intervals = wcs_estimate_periods_between( strtotime( $subscription['start_date'] ), strtotime( $subscription['expiry_date'] ), $subscription['period'], 'floor' );
 
 			$intervals = floor( $intervals / $subscription['interval'] );
@@ -1124,7 +1120,6 @@ class WC_Repair_2_0 {
 
 		return $subscription;
 	}
-
 
 	public static function repair_start_date( $subscription, $item_id, $item_meta ) {
 		global $wpdb;
@@ -1147,6 +1142,7 @@ class WC_Repair_2_0 {
 
 	public static function repair_expiry_date( $subscription, $item_id, $item_meta ) {
 		// '_subscription_expiry_date': if the subscription has a '_subscription_length' value, that can be used to calculate the expiration date (from the '_subscription_start_date' or '_subscription_trial_expiry_date' if one is set). If no length is set, but the subscription has an expired status, the '_subscription_end_date' can be used. In most other cases, this is generally safe to default to 0 if the subscription is cancelled because its no longer used and is simply for record keeping.
+
 		$subscription['expiry_date'] = 0;
 		return $subscription;
 	}
@@ -1212,7 +1208,7 @@ class WC_Repair_2_0 {
 		// _recurring_line_total': if the subscription has at least one renewal order, this value can be derived from the '_line_total' value of that order. If no renewal orders exist, it can be derived roughly by deducting the '_subscription_sign_up_fee' value from the original order's total if there is no trial expiration date.
 
 		if ( array_key_exists( '_line_subtotal', $item_meta ) ) {
-			WCS_Upgrade_Logger::add( '-- Copying end date from item_meta' );
+			WCS_Upgrade_Logger::add( '-- Copying end date from item_me©ta' );
 			$subscription['recurring_line_subtotal'] = $item_meta['_line_subtotal'][0];
 			return $subscription;
 		}
@@ -1244,7 +1240,6 @@ class WC_Repair_2_0 {
 	 * @return integer       number of seconds between the two
 	 */
 	private static function time_diff( $to, $from ) {
-
 		$to = strtotime( $to );
 		$from = strtotime( $from );
 
@@ -1253,7 +1248,6 @@ class WC_Repair_2_0 {
 
 
 	private static function get_renewal_orders( $subscription ) {
-
 		$related_orders = array();
 
 		$related_post_ids = get_posts( array(
@@ -1263,17 +1257,15 @@ class WC_Repair_2_0 {
 			'fields'         => 'ids',
 			'orderby'        => 'date',
 			'order'          => 'DESC',
-			'post_parent'    => $subscription['order_id']
+			'post_parent'    => $subscription['order_id'],
 		) );
 
 		foreach ( $related_post_ids as $post_id ) {
 			$related_orders[ $post_id ] = wc_get_order( $post_id );
 		}
 
-
 		return $related_orders;
 	}
-
 
 	/**
 	 * Method to try to determine the period of subscriptions if data is missing. It tries the following, in order:
@@ -1311,7 +1303,7 @@ class WC_Repair_2_0 {
 
 		// check for different time spans
 		foreach ( array( 'year' => YEAR_IN_SECONDS, 'month' => $days_in_month * DAY_IN_SECONDS, 'week' => WEEK_IN_SECONDS, 'day' => DAY_IN_SECONDS ) as $time => $seconds ) {
-			$possible_periods[$time] = array(
+			$possible_periods[ $time ] = array(
 				'intervals' => floor( $period_in_seconds / $seconds ),
 				'remainder' => $remainder = $period_in_seconds % $seconds,
 				'fraction' => $remainder / $seconds,
@@ -1346,7 +1338,7 @@ class WC_Repair_2_0 {
 				// only one matched the interval as our best guess
 				return $period_data['period'];
 			}
-		} elseif( count( $possible_periods_interval_match ) > 1 ) {
+		} elseif ( count( $possible_periods_interval_match ) > 1 ) {
 			WCS_Upgrade_Logger::add( '---- More than 1 periods with matching intervals left.' );
 			$possible_periods = $possible_periods_interval_match;
 		}
@@ -1383,7 +1375,7 @@ class WC_Repair_2_0 {
 	private static function discard_high_deviations( $array ) {
 		switch ( $array['period'] ) {
 			case 'year':
-				return $array['fraction'] < ( 1/300 );
+				return $array['fraction'] < ( 1 / 300 );
 				break;
 			case 'month':
 				return $array['fraction'] < ( 1 / ( $array['days_in_month'] - 2 ) );

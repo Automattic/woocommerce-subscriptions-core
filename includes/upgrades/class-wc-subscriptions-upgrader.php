@@ -566,14 +566,14 @@ class WC_Subscriptions_Upgrader {
 		global $wpdb;
 
 		if ( null === $batch_size ) {
-			$select = "SELECT DISTINCT items.order_item_id";
+			$select = 'SELECT DISTINCT items.order_item_id';
 			$limit = '';
 		} else {
-			$select = "SELECT meta.*, items.*";
-			$limit = sprintf( " LIMIT 0, %d", $batch_size );
+			$select = 'SELECT meta.*, items.*';
+			$limit = sprintf( ' LIMIT 0, %d', $batch_size );
 		}
 
-		$query =  sprintf( "%s FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS meta
+		$query = sprintf( "%s FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS meta
 			LEFT JOIN `{$wpdb->prefix}woocommerce_order_items` AS items USING (order_item_id)
 			LEFT JOIN (
 				SELECT a.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS a
