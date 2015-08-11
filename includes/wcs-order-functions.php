@@ -140,6 +140,10 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 		$from_order->id
 	);
 
+	if ( 'renewal_order' == $type ) {
+		$meta_query .= " AND `meta_key` NOT LIKE '_download_permissions_granted' ";
+	}
+
 	// Allow extensions to add/remove order meta
 	$meta_query = apply_filters( 'wcs_' . $type . '_meta_query', $meta_query, $to_order, $from_order );
 	$meta       = $wpdb->get_results( $meta_query, 'ARRAY_A' );
