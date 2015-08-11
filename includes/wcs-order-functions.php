@@ -227,6 +227,7 @@ function wcs_order_contains_subscription( $order ) {
  * @param integer $order_id the ID of the order. At this point it is guaranteed that it has files in it and that it hasn't been granted permissions before
  */
 function wcs_save_downloadable_product_permissions( $order_id ) {
+	global $wpdb;
 	$order = wc_get_order( $order_id );
 
 	if ( wcs_order_contains_subscription( $order ) ) {
@@ -243,12 +244,14 @@ function wcs_save_downloadable_product_permissions( $order_id ) {
 				$_product = $subscription->get_product_from_item( $item );
 
 				if ( $_product && $_product->exists() && $_product->is_downloadable() ) {
-					$downloads = $_product->get_files();
+					$downloads  = $_product->get_files();
+					$product_id = wcs_get_canonical_product_id( $item );
 
 					foreach ( array_keys( $downloads ) as $download_id ) {
-						$product_id = wcs_get_canonical_product_id( $item );
-
-						wc_downloadable_file_permission( $download_id, $product_id, $subscription, $item['qty'] );
+						// grant access on subscription if it does not already exist
+						if ( ! $wpdb->get_var( $wpdb->prepare( "SELECT download_id FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions WHERE `order_id` = %d AND `product_id` = %d AND `download_id` = '%s'", $subscription->id, $product_id, $download_id ) ) ) {
+							wc_downloadable_file_permission( $download_id, $product_id, $subscription, $item['qty'] );
+						}
 						wcs_revoke_downloadable_file_permission( $product_id, $order_id, $order->user_id );
 					}
 				}
