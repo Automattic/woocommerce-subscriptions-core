@@ -120,7 +120,7 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 			'post_type'      => 'product_variation',
 			'fields'         => 'ids',
 			'post_status'    => 'publish',
-		));
+		) );
 
 		$lowest_initial_amount             = $highest_initial_amount = $lowest_price = $highest_price = '';
 		$shortest_initial_period           = $longest_initial_period = $shortest_trial_period = $longest_trial_period = $shortest_trial_length = $longest_trial_length = '';

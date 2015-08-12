@@ -400,6 +400,24 @@ function wcs_get_order_item( $item_id, $order ) {
 }
 
 /**
+ * Get an instance of WC_Order_Item_Meta for an order item
+ *
+ * @param array
+ * @return WC_Order_Item_Meta
+ * @since 2.0
+ */
+function wcs_get_order_item_meta( $item, $product = null ) {
+
+	if ( WC_Subscriptions::is_woocommerce_pre( '2.4' ) ) {
+		$item_meta = new WC_Order_Item_Meta( $item['item_meta'], $product );
+	} else {
+		$item_meta = new WC_Order_Item_Meta( $item, $product );
+	}
+
+	return $item_meta;
+}
+
+/**
  * Create a string representing an order item's name and optionally include attributes.
  *
  * @param array $order_item An order item.

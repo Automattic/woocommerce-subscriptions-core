@@ -99,7 +99,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 					$status = 'wc-' . $status;
 
 					if ( ! array_key_exists( $status, wcs_get_subscription_statuses() ) ) {
-						return new WP_Error( 'wcs_api_invalid_subscription_status', __( 'Invalid subscription status given.', 'woocommerce-subscription' ) );
+						return new WP_Error( 'wcs_api_invalid_subscription_status', __( 'Invalid subscription status given.', 'woocommerce-subscriptions' ) );
 					}
 				}
 			}
@@ -326,7 +326,8 @@ class WC_API_Subscriptions extends WC_API_Orders {
 		} catch ( Exception $e ) {
 			$wpdb->query( 'ROLLBACK' );
 
-			throw new Exception( sprintf( __( 'Subscription payment method could not be set to %s and has been set to manual with error message: %s', 'woocommerce-subscriptions' ), ( ! empty( $payment_gateway->id ) ) ? $payment_gateway->id : 'manual', $e->getMessage() ) );
+			// translators: 1$: gateway id, 2$: error message
+			throw new Exception( sprintf( __( 'Subscription payment method could not be set to %1$s and has been set to manual with error message: %2$s', 'woocommerce-subscriptions' ), ( ! empty( $payment_gateway->id ) ) ? $payment_gateway->id : 'manual', $e->getMessage() ) );
 		}
 	}
 

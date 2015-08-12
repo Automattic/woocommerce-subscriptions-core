@@ -143,11 +143,13 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		} else {
 
 			if ( $subscription->get_time( 'next_payment' ) > 0 ) {
+				// translators: placeholder is next payment's date
 				$next_payment_string = sprintf( __( ' Next payment is due %s.', 'woocommerce-subscriptions' ), $subscription->get_date_to_display( 'next_payment' ) );
 			} else {
 				$next_payment_string = '';
 			}
 
+			// translators: placeholder is either empty or "Next payment is due..."
 			WC_Subscriptions::add_notice( sprintf( __( 'Choose a new payment method.%s', 'woocommerce-subscriptions' ), $next_payment_string ), 'notice' );
 			WC_Subscriptions::print_notices();
 
@@ -304,7 +306,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		}
 
 		// Log change on order
-		$subscription->add_order_note( sprintf( __( 'Payment method changed from "%s" to "%s" by the subscriber from their account page.', 'woocommerce-subscriptions' ), $old_payment_method_title, $new_payment_method_title ) );
+		$subscription->add_order_note( sprintf( _x( 'Payment method changed from "%1$s" to "%2$s" by the subscriber from their account page.', '%1$s: old payment title, %2$s: new payment title', 'woocommerce-subscriptions' ), $old_payment_method_title, $new_payment_method_title ) );
 
 		do_action( 'woocommerce_subscription_payment_method_updated', $subscription, $new_payment_method, $old_payment_method );
 		do_action( 'woocommerce_subscription_payment_method_updated_to_' . $new_payment_method, $subscription, $old_payment_method );

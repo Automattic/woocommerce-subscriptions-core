@@ -55,6 +55,7 @@ class WC_Subscriptions_Cart {
 		add_filter( 'woocommerce_cart_product_price', __CLASS__ . '::cart_product_price' , 10, 2 );
 
 		// Make sure cart totals are calculated when setting up the cart widget
+		add_action( 'wc_ajax_get_refreshed_fragments', __CLASS__ . '::pre_get_refreshed_fragments' , 1 );
 		add_action( 'wp_ajax_woocommerce_get_refreshed_fragments', __CLASS__ . '::pre_get_refreshed_fragments', 1 );
 		add_action( 'wp_ajax_nopriv_woocommerce_get_refreshed_fragments', __CLASS__ . '::pre_get_refreshed_fragments', 1, 1 );
 
@@ -587,7 +588,7 @@ class WC_Subscriptions_Cart {
 				$city     = apply_filters( 'woocommerce_shipping_calculator_enable_city', false ) ? wc_clean( $_POST['calc_shipping_city'] ) : '';
 
 				if ( $postcode && ! WC_Validation::is_postcode( $postcode, $country ) ) {
-					throw new Exception( __( 'Please enter a valid postcode/ZIP.', 'woocommerce' ) );
+					throw new Exception( __( 'Please enter a valid postcode/ZIP.', 'woocommerce-subscriptions' ) );
 				} elseif ( $postcode ) {
 					$postcode = wc_format_postcode( $postcode, $country );
 				}
@@ -849,7 +850,6 @@ class WC_Subscriptions_Cart {
 	}
 
 	public static function get_sign_up_fee_fields() {
-
 		_deprecated_function( __METHOD__, '1.2' );
 
 		return array(

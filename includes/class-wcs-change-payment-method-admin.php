@@ -27,7 +27,7 @@ class WCS_Change_Payment_Method_Admin {
 		if ( count( $valid_payment_methods ) > 1 ) {
 
 			$found_method = false;
-			echo '<label>' . esc_html__( 'Payment Method', 'woocommerce' ) . ':</label>';
+			echo '<label>' . esc_html__( 'Payment Method', 'woocommerce-subscriptions' ) . ':</label>';
 			echo '<select class="wcs_payment_method_selector" name="_payment_method" id="_payment_method" class="first">';
 
 			foreach ( $valid_payment_methods as $gateway_id => $gateway_title ) {
@@ -40,7 +40,7 @@ class WCS_Change_Payment_Method_Admin {
 			echo '</select>';
 
 		} elseif ( count( $valid_payment_methods ) == 1 ) {
-			echo '<strong>' . esc_html__( 'Payment Method', 'woocommerce' ) . ':</strong> ' . esc_html( current( $valid_payment_methods ) );
+			echo '<strong>' . esc_html__( 'Payment Method', 'woocommerce-subscriptions' ) . ':</strong> ' . esc_html( current( $valid_payment_methods ) );
 			echo '<input type="hidden" value="' . esc_attr( key( $valid_payment_methods ) ) . '" id="_payment_method" name="_payment_method">';
 		}
 

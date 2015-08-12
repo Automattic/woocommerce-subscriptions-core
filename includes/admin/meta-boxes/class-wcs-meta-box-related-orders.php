@@ -60,7 +60,7 @@ class WCS_Meta_Box_Related_Orders {
 
 		// First, display all the subscriptions
 		foreach ( $subscriptions as $subscription ) {
-			$subscription->relationship = __( 'Subscription', 'woocommerce-subscriptions' );
+			$subscription->relationship = _x( 'Subscription', 'relation to order', 'woocommerce-subscriptions' );
 			$orders[] = $subscription;
 		}
 
@@ -68,7 +68,7 @@ class WCS_Meta_Box_Related_Orders {
 		if ( 1 == count( $subscriptions ) ) {
 			foreach ( $subscriptions as $subscription ) {
 				if ( false !== $subscription->order ) {
-					$subscription->order->relationship = __( 'Parent Order', 'woocommerce-subscriptions' );
+					$subscription->order->relationship = _x( 'Parent Order', 'relation to order', 'woocommerce-subscriptions' );
 					$orders[] = $subscription->order;
 				}
 			}
@@ -77,7 +77,7 @@ class WCS_Meta_Box_Related_Orders {
 		// Finally, display the renewal orders
 		foreach ( $subscriptions as $subscription ) {
 			foreach ( $subscription->get_related_orders( 'all', 'renewal' ) as $order ) {
-				$order->relationship = __( 'Renewal Order', 'woocommerce-subscriptions' );
+				$order->relationship = _x( 'Renewal Order', 'relation to order', 'woocommerce-subscriptions' );
 				$orders[] = $order;
 			}
 		}
