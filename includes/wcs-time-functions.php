@@ -76,7 +76,7 @@ function wcs_get_subscription_ranges( $subscription_period = '' ) {
 	foreach ( array( 'day', 'week', 'month', 'year' ) as $period ) {
 
 		$subscription_lengths = array(
-			__( 'all time', 'woocommerce-subscriptions' ),
+			_x( 'all time', 'Subscription length (eg "$10 per month for _all time_")', 'woocommerce-subscriptions' ),
 		);
 
 		switch ( $period ) {
@@ -125,9 +125,10 @@ function wcs_get_subscription_ranges( $subscription_period = '' ) {
  */
 function wcs_get_subscription_period_interval_strings( $interval = '' ) {
 
-	$intervals = array( 1 => __( 'every', 'woocommerce-subscriptions' ) );
+	$intervals = array( 1 => _x( 'every', 'period interval (eg "$10 _every_ 2 weeks")', 'woocommerce-subscriptions' ) );
 
 	foreach ( range( 2, 6 ) as $i ) {
+		// translators: period interval, placeholder is ordinal (eg "$10 every _2nd/3rd/4th_", etc)
 		$intervals[ $i ] = sprintf( __( 'every %s', 'woocommerce-subscriptions' ), WC_Subscriptions::append_numeral_suffix( $i ) );
 	}
 
@@ -240,9 +241,10 @@ function wcs_add_months( $from_timestamp, $months_to_add ) {
  *
  * @param int A Unix timestamp at some time in the future.
  * @param string A unit of time, either day, week month or year.
+ * @param string A rounding method, either ceil (default) or floor for anything else
  * @since 2.0
  */
-function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_of_time = 'month' ) {
+function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_of_time = 'month', $rounding_method = 'ceil' ) {
 
 	if ( $end_timestamp <= $start_timestamp ) {
 
@@ -253,8 +255,14 @@ function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_o
 		// Calculate the number of times this day will occur until we'll be in a time after the given timestamp
 		$timestamp = $start_timestamp;
 
-		for ( $periods_until = 0; $timestamp < $end_timestamp; $periods_until++ ) {
-			$timestamp = wcs_add_months( $timestamp, 1 );
+		if ( 'ceil' == $rounding_method ) {
+			for ( $periods_until = 0; $timestamp < $end_timestamp; $periods_until++ ) {
+				$timestamp = wcs_add_months( $timestamp, 1 );
+			}
+		} else {
+			for ( $periods_until = -1; $timestamp <= $end_timestamp; $periods_until++ ) {
+				$timestamp = wcs_add_months( $timestamp, 1 );
+			}
 		}
 	} else {
 
@@ -275,8 +283,7 @@ function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_o
 				break;
 		}
 
-		$periods_until = floor( $seconds_until_timestamp / $denominator ); // use floor() because we want the total number of complete periods between now and the given timestamp
-
+		$periods_until = ( 'ceil' == $rounding_method ) ? ceil( $seconds_until_timestamp / $denominator ) : floor( $seconds_until_timestamp / $denominator );
 	}
 
 	return $periods_until;

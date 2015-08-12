@@ -42,7 +42,7 @@ class WCS_Query extends WC_Query {
 
 		if ( is_main_query() && in_the_loop() && is_page() && ! empty( $wp->query_vars['view-subscription'] ) ) {
 			$subscription = wcs_get_subscription( $wp->query_vars['view-subscription'] );
-			$title        = ( $subscription ) ? sprintf( __( 'Subscription %s', 'woocommerce' ), _x( '#', 'hash before order number', 'woocommerce' ) . $subscription->get_order_number() ) : '';
+			$title        = ( $subscription ) ? sprintf( _x( 'Subscription #%s', 'hash before order number', 'woocommerce-subscriptions' ), $subscription->get_order_number() ) : '';
 		}
 
 		return $title;

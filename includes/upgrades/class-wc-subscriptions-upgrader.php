@@ -50,7 +50,7 @@ class WC_Subscriptions_Upgrader {
 			self::set_cron_lock();
 		}
 
-		if ( isset( $_POST['action'] ) && 'wcs_upgrade' == $_POST['action'] ) {
+		if ( isset( $_POST['action'] ) && 'wcs_upgrade' == $_POST['action'] ) { // We're checking for CSRF in ajax_upgrade
 
 			add_action( 'wp_ajax_wcs_upgrade', __CLASS__ . '::ajax_upgrade', 10 );
 
@@ -223,6 +223,8 @@ class WC_Subscriptions_Upgrader {
 	public static function ajax_upgrade() {
 		global $wpdb;
 
+		check_admin_referer( 'wcs_upgrade_process', 'nonce' );
+
 		self::set_upgrade_limits();
 
 		WCS_Upgrade_Logger::add( sprintf( 'Starting upgrade step: %s', $_POST['upgrade_step'] ) );
@@ -237,6 +239,7 @@ class WC_Subscriptions_Upgrader {
 			case 'really_old_version':
 				$upgraded_versions = self::upgrade_really_old_versions();
 				$results = array(
+					// translators: placeholder is a list of version numbers (e.g. "1.3 & 1.4 & 1.5")
 					'message' => sprintf( __( 'Database updated to version %s', 'woocommerce-subscriptions' ), $upgraded_versions ),
 				);
 				break;
@@ -247,7 +250,8 @@ class WC_Subscriptions_Upgrader {
 
 				$upgraded_product_count = WCS_Upgrade_1_5::upgrade_products();
 				$results = array(
-					'message' => sprintf( __( 'Marked %s subscription products as "sold individually".', 'woocommerce-subscriptions' ), $upgraded_product_count ),
+					// translators: placeholder is number of upgraded subscriptions
+					'message' => sprintf( _x( 'Marked %s subscription products as "sold individually".', 'used in the subscriptions upgrader', 'woocommerce-subscriptions' ), $upgraded_product_count ),
 				);
 				break;
 
@@ -258,6 +262,7 @@ class WC_Subscriptions_Upgrader {
 				$upgraded_hook_count = WCS_Upgrade_1_5::upgrade_hooks( self::$upgrade_limit_hooks );
 				$results = array(
 					'upgraded_count' => $upgraded_hook_count,
+					// translators: placeholder is number of action scheduler hooks upgraded
 					'message'        => sprintf( __( 'Migrated %s subscription related hooks to the new scheduler (in {execution_time} seconds).', 'woocommerce-subscriptions' ), $upgraded_hook_count ),
 				);
 				break;
@@ -272,6 +277,7 @@ class WC_Subscriptions_Upgrader {
 
 					$results = array(
 						'upgraded_count' => $upgraded_subscriptions,
+						// translators: placeholder is number of subscriptions upgraded
 						'message'        => sprintf( __( 'Migrated %s subscriptions to the new structure (in {execution_time} seconds).', 'woocommerce-subscriptions' ), $upgraded_subscriptions ),
 						'status'         => 'success',
 					);
@@ -282,7 +288,8 @@ class WC_Subscriptions_Upgrader {
 
 					$results = array(
 						'upgraded_count' => 0,
-						'message'        => sprintf( __( 'Unable to upgrade subscriptions.<br/>Error: %s<br/>Please refresh the page and try again. If problem persists, %scontact support%s.', 'woocommerce-subscriptions' ), '<code>' . $e->getMessage(). '</code>', '<a href="' . esc_url( 'https://woothemes.com/my-account/create-a-ticket/' ) . '">', '</a>' ),
+						// translators: 1$: error message, 2$: opening link tag, 3$: closing link tag
+						'message'        => sprintf( __( 'Unable to upgrade subscriptions.<br/>Error: %1$s<br/>Please refresh the page and try again. If problem persists, %2$scontact support%3$s.', 'woocommerce-subscriptions' ), '<code>' . $e->getMessage(). '</code>', '<a href="' . esc_url( 'https://woothemes.com/my-account/create-a-ticket/' ) . '">', '</a>' ),
 						'status'         => 'error',
 					);
 				}
@@ -415,6 +422,7 @@ class WC_Subscriptions_Upgrader {
 			'hooks_per_request'         => self::$upgrade_limit_hooks,
 			'subscriptions_per_request' => self::$upgrade_limit_subscriptions,
 			'ajax_url'                  => admin_url( 'admin-ajax.php' ),
+			'upgrade_nonce'             => wp_create_nonce( 'wcs_upgrade_process' ),
 		);
 
 		wp_localize_script( 'wcs-upgrade', 'wcs_update_script_data', $script_data );
@@ -548,7 +556,7 @@ class WC_Subscriptions_Upgrader {
 	 */
 	public static function maybe_block_paypal_ipn() {
 		if ( false !== get_option( 'wc_subscriptions_is_upgrading', false ) ) {
-			WCS_Upgrade_Logger::add( '*** PayPal IPN Request blocked: ' . print_r( wp_unslash( $_POST ), true ) );
+			WCS_Upgrade_Logger::add( '*** PayPal IPN Request blocked: ' . print_r( wp_unslash( $_POST ), true ) ); // No CSRF needed as it's from outside
 			wp_die( 'PayPal IPN Request Failure', 'PayPal IPN', array( 'response' => 409 ) );
 		}
 	}

@@ -44,17 +44,17 @@ class WCS_Admin_Meta_Boxes {
 	public function add_meta_boxes() {
 		global $current_screen, $post_ID;
 
-		add_meta_box( 'woocommerce-subscription-data', __( 'Subscription Data', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Subscription_Data::output', 'shop_subscription', 'normal', 'high' );
+		add_meta_box( 'woocommerce-subscription-data', _x( 'Subscription Data', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Subscription_Data::output', 'shop_subscription', 'normal', 'high' );
 
-		add_meta_box( 'woocommerce-subscription-schedule', __( 'Billing Schedule', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Schedule::output', 'shop_subscription', 'side', 'default' );
+		add_meta_box( 'woocommerce-subscription-schedule', _x( 'Billing Schedule', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Schedule::output', 'shop_subscription', 'side', 'default' );
 
 		remove_meta_box( 'woocommerce-order-data', 'shop_subscription', 'normal' );
 
-		add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', 'shop_subscription', 'normal', 'low' );
+		add_meta_box( 'subscription_renewal_orders', _x( 'Related Orders', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', 'shop_subscription', 'normal', 'low' );
 
 		// Only display the meta box if an order relates to a subscription
-		if ( wcs_order_contains_subscription( $post_ID ) || wcs_order_contains_renewal( $post_ID ) || wcs_order_contains_switch( $post_ID ) ) {
-			add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', 'shop_order', 'normal', 'low' );
+		if ( 'shop_order' === get_post_type( $post_ID ) && ( wcs_order_contains_subscription( $post_ID ) || wcs_order_contains_renewal( $post_ID ) || wcs_order_contains_switch( $post_ID ) ) ) {
+			add_meta_box( 'subscription_renewal_orders', _x( 'Related Orders', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', 'shop_order', 'normal', 'low' );
 		}
 	}
 

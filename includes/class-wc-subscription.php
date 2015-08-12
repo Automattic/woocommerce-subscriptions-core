@@ -644,8 +644,10 @@ class WC_Subscription extends WC_Order {
 			$time_diff = $timestamp_gmt - current_time( 'timestamp', true );
 
 			if ( $time_diff > 0 && $time_diff < WEEK_IN_SECONDS ) {
+				// translators: placeholder is human time diff (e.g. "3 weeks")
 				$date_to_display = sprintf( __( 'In %s', 'woocommerce-subscriptions' ), human_time_diff( current_time( 'timestamp', true ), $timestamp_gmt ) );
 			} elseif ( $time_diff < 0 && absint( $time_diff ) < WEEK_IN_SECONDS ) {
+				// translators: placeholder is human time diff (e.g. "3 weeks")
 				$date_to_display = sprintf( __( '%s ago', 'woocommerce-subscriptions' ), human_time_diff( current_time( 'timestamp', true ), $timestamp_gmt ) );
 			} else {
 				$date_to_display = date_i18n( wc_date_format(), $this->get_time( $date_type, 'site' ) );
@@ -658,7 +660,7 @@ class WC_Subscription extends WC_Order {
 				case 'next_payment' :
 				case 'trial_end' :
 				default :
-					$date_to_display = __( '-', 'woocommerce-subscriptions' );
+					$date_to_display = _x( '-', 'original denotes there is no date to display', 'woocommerce-subscriptions' );
 					break;
 			}
 		}
@@ -714,12 +716,8 @@ class WC_Subscription extends WC_Order {
 		$timestamps = array();
 		foreach ( $dates as $date_type => $datetime ) {
 			if ( ! empty( $datetime ) && false === strptime( $datetime, '%Y-%m-%d %H:%M:%S' ) ) {
-				throw new InvalidArgumentException(
-					sprintf(
-						__( 'Invalid %s date. The date must be of the format: "Y-m-d H:i:s".', 'woocommerce-subscriptions' ),
-						$date_type
-					)
-				);
+				// translators: placeholder is date type (e.g. "end", "next_payment"...)
+				throw new InvalidArgumentException( sprintf( _x( 'Invalid %s date. The date must be of the format: "Y-m-d H:i:s".', 'appears in an error message if date is wrong format', 'woocommerce-subscriptions' ), $date_type ) );
 			}
 
 			$date_type = str_replace( '_date', '', $date_type );
@@ -1399,8 +1397,6 @@ class WC_Subscription extends WC_Order {
 
 		$last_order = false;
 
-		$related_orders = array();
-
 		$renewal_post_ids = get_posts( array(
 			'posts_per_page' => 1,
 			'post_type'      => 'shop_order',
@@ -1485,7 +1481,7 @@ class WC_Subscription extends WC_Order {
 			update_post_meta( $this->id, '_payment_method', '' );
 			update_post_meta( $this->id, '_payment_method_title', '' );
 
-		} elseif ( $this->payment_gateway !== $payment_gateway->id ) {
+		} elseif ( $this->payment_method !== $payment_gateway->id ) {
 
 			// Set subscription to manual when the payment method doesn't support automatic payments
 			$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
@@ -1501,6 +1497,8 @@ class WC_Subscription extends WC_Order {
 			update_post_meta( $this->id, '_payment_method', $payment_gateway->id );
 			update_post_meta( $this->id, '_payment_method_title', $payment_gateway->get_title() );
 		}
+
+		$this->payment_gateway = wc_get_payment_gateway_by_order( $this );
 	}
 
 	/**
@@ -1596,7 +1594,7 @@ class WC_Subscription extends WC_Order {
 		foreach ( $this->get_items() as $line_item ) {
 			try {
 				$sign_up_fee += $this->get_items_sign_up_fee( $line_item );
-			} catch( Exception $e ) {
+			} catch ( Exception $e ) {
 				$sign_up_fee += 0;
 			}
 		}
