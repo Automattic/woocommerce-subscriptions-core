@@ -180,7 +180,8 @@ class WC_API_Subscriptions extends WC_API_Orders {
 			unset( $data['order'] );
 
 			if ( is_wp_error( $subscription ) ) {
-				throw new WC_API_Exception( $subscription->get_error_code(), $subscription->get_error_message(), 401 );
+				$data = $subscription->get_error_data();
+				throw new WC_API_Exception( $subscription->get_error_code(), $subscription->get_error_message(), $data['status'] );
 			}
 
 			$subscription = wcs_get_subscription( $subscription['order']['id'] );
@@ -224,7 +225,6 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	 * @return array
 	 */
 	public function edit_subscription( $subscription_id, $data, $fields = null ) {
-
 		$data = apply_filters( 'wcs_api_edit_subscription_data', isset( $data['subscription'] ) ? $data['subscription'] : array(), $subscription_id, $fields );
 
 		try {
@@ -252,7 +252,8 @@ class WC_API_Subscriptions extends WC_API_Orders {
 			unset( $data['order'] );
 
 			if ( is_wp_error( $edited ) ) {
-				throw new WC_API_Exception( 'wcs_api_cannot_edit_subscription', sprintf( __( 'Edit subscription failed with error: %s', 'woocommerce-subscriptions' ), $edited->get_error_message() ), $edited->get_error_code() );
+				$data = $edited->get_error_data();
+				throw new WC_API_Exception( 'wcs_api_cannot_edit_subscription', sprintf( __( 'Edit subscription failed with error: %s', 'woocommerce-subscriptions' ), $edited->get_error_message() ), $data['status'] );
 			}
 
 			$this->update_schedule( $subscription, $data );
