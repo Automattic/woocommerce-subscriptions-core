@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Subscriptions API Orders Class
+ * WooCommerce Subscriptions API Subscriptions Class
  *
  * Handles requests to the /subscriptions endpoint
  *
