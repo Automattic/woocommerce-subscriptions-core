@@ -149,14 +149,13 @@ class WCS_Remove_Item {
 	private static function validate_remove_items_request( $subscription, $order_item_id, $undo_request = false ) {
 
 		$subscription_items = $subscription->get_items();
-		$user_id            = get_current_user_id();
 		$response           = false;
 
 		if ( ! wp_verify_nonce( $_GET['_wpnonce'], $_GET['subscription_id'] ) ) {
 
 			wc_add_notice( __( 'Security error. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), 'error' );
 
-		} elseif ( $user_id !== $subscription->get_user_id() ) {
+		} elseif ( ! current_user_can( 'edit_shop_subscription_line_items', $subscription->id ) ) {
 
 			wc_add_notice( __( 'You cannot modify a subscription that does not belong to you.', 'woocommerce-subscriptions' ), 'error' );
 
