@@ -63,7 +63,8 @@ class WC_Subscriptions_Synchroniser {
 		add_action( 'woocommerce_process_product_meta_subscription', __CLASS__ . '::save_subscription_meta', 10 );
 
 		// Save sync options when a variable subscription product is saved
-		add_action( 'woocommerce_process_product_meta_variable-subscription', __CLASS__ . '::process_product_meta_variable_subscription' );
+		add_action( 'woocommerce_process_product_meta_variable-subscription', __CLASS__ . '::process_product_meta_variable_subscription' ); // WC < 2.4
+		add_action( 'woocommerce_ajax_save_product_variations', __CLASS__ . '::process_product_meta_variable_subscription' );
 
 		// Make sure the expiration date is calculated from the synced start date
 		add_filter( 'woocommerce_subscriptions_product_expiration_date', __CLASS__ . '::recalculate_product_expiration_date', 10, 3 );
@@ -280,7 +281,7 @@ class WC_Subscriptions_Synchroniser {
 				$payment_month = date( 'm' );
 			}
 
-			if ( WC_Subscriptions::is_woocommerce_pre_2_3() ) {
+			if ( WC_Subscriptions::is_woocommerce_pre( '2.3' ) ) {
 				include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/deprecated/html-variation-synchronisation.php' );
 			} else {
 				include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/html-variation-synchronisation.php' );
