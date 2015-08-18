@@ -229,11 +229,13 @@ class WC_API_Subscriptions extends WC_API_Orders {
 
 		try {
 
-			$subscription = wcs_get_subscription( $subscription_id );
+			$subscription_id = $this->validate_request( $subscription_id, $this->post_type, 'edit' );
 
-			if ( is_wp_error( $subscription ) || ! $subscription->is_editable() ) {
+			if ( is_wp_error( $subscription_id ) ) {
 				throw new WC_API_Exception( 'wcs_api_cannot_edit_subscription', __( 'The requested subscription cannot be edited.', 'woocommerce-subscriptions' ), 400 );
 			}
+
+			$subscription = wcs_get_subscription( $subscription_id );
 
 			if ( isset( $data['payment_details'] ) && is_array( $data['payment_details'] ) ) {
 
