@@ -84,9 +84,9 @@ class WC_Subscriptions_Coupon {
 
 		$calculation_type = WC_Subscriptions_Cart::get_calculation_type();
 
-		if ( ! empty( $cart->applied_coupons ) ) {
+		if ( ! empty( WC()->cart->applied_coupons ) ) {
 
-			foreach ( $cart->applied_coupons as $code ) {
+			foreach ( WC()->cart->applied_coupons as $code ) {
 
 				$coupon = new WC_Coupon( $code );
 
