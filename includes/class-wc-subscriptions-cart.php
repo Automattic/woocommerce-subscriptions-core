@@ -526,7 +526,9 @@ class WC_Subscriptions_Cart {
 			WC()->cart->coupon_discount_amounts[ $code ] = 0;
 		}
 
-		WC()->cart->coupon_discount_amounts[ $code ] += $amount;
+		if ( 'recurring_total' != self::$calculation_type ) {
+			WC()->cart->coupon_discount_amounts[ $code ] += $amount;
+		}
 	}
 
 	/**
