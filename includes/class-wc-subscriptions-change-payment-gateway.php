@@ -132,7 +132,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 			WC_Subscriptions::add_notice( __( 'Invalid subscription.', 'woocommerce-subscriptions' ), 'error' );
 
-		} elseif ( $subscription->get_user_id() != get_current_user_id() ) {
+		} elseif ( ! current_user_can( 'edit_shop_subscription_payment_method', $subscription->id ) ) {
 
 			WC_Subscriptions::add_notice( __( 'That doesn\'t appear to be one of your subscriptions.', 'woocommerce-subscriptions' ), 'error' );
 
