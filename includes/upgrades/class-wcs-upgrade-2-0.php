@@ -917,6 +917,7 @@ class WCS_Upgrade_2_0 {
 			'recurring_line_tax',
 			'recurring_line_subtotal',
 			'recurring_line_subtotal_tax',
+			'subscription_key',
 			) as $meta ) {
 			if ( ! array_key_exists( $meta, $subscription ) || empty( $subscription[ $meta ] ) ) {
 				$repairs_needed[] = $meta;
@@ -1228,6 +1229,13 @@ class WC_Repair_2_0 {
 		}
 
 		$subscription['recurring_line_subtotal_tax'] = 0;
+
+		return $subscription;
+	}
+
+	public static function repair_subscription_key( $subscription, $item_id, $item_meta ) {
+		// If the subscription does not have a subscription key for whatever reason (probably becuase the product_id was missing), then this one fills in the blank.
+		$subscription['subscription_key'] = $subscription['order_id'] . '_' . $item_id;
 
 		return $subscription;
 	}
