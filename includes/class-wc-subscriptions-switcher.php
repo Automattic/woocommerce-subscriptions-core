@@ -814,7 +814,7 @@ class WC_Subscriptions_Switcher {
 		}
 
 		if ( isset( WC()->cart ) ) {
-			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			foreach ( WC()->cart->cart_contents as $cart_item_key => $cart_item ) {
 				if ( isset( $cart_item['subscription_switch'] ) ) {
 					if ( wcs_is_subscription( $cart_item['subscription_switch']['subscription_id'] ) ) {
 						$subscription_switches[ $cart_item_key ] = $cart_item['subscription_switch'];
