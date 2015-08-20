@@ -185,12 +185,14 @@ class WCS_Admin_Post_Types {
 	 * own logic by copying the concept behind this method.
 	 */
 	public function parse_bulk_actions() {
+
 		// We only want to deal with shop_subscriptions. In case any other CPTs have an 'active' action
 		if ( ! isset( $_REQUEST['post_type'] ) || 'shop_subscription' !== $_REQUEST['post_type'] ) {
 			return;
 		}
 
 		$wp_list_table = _get_list_table( 'WP_Posts_List_Table' );
+
 		$action = $wp_list_table->current_action();
 
 		switch ( $action ) {
@@ -209,32 +211,44 @@ class WCS_Admin_Post_Types {
 
 		$subscription_ids = array_map( 'absint', (array) $_REQUEST['post'] );
 
-		foreach ( $subscription_ids as $subscription_id ) {
-			$subscription = wcs_get_subscription( $subscription_id );
-			$order_note   = __( 'Subscription status changed by bulk edit:', 'woocommerce-subscriptions' );
+		$sendback_args = array(
+			'post_type'    => 'shop_subscription',
+			$report_action => true,
+			'ids'          => join( ',', $subscription_ids ),
+		);
 
-			if ( 'cancelled' == $action ) {
-				$subscription->cancel_order( $order_note );
-			} else {
-				$subscription->update_status( $new_status, $order_note );
+		try {
+
+			foreach ( $subscription_ids as $subscription_id ) {
+				$subscription = wcs_get_subscription( $subscription_id );
+				$order_note   = __( 'Subscription status changed by bulk edit:', 'woocommerce-subscriptions' );
+
+				if ( 'cancelled' == $action ) {
+					$subscription->cancel_order( $order_note );
+				} else {
+					$subscription->update_status( $new_status, $order_note );
+				}
+
+				// Fire the action hooks
+				switch ( $action ) {
+					case 'active' :
+					case 'on-hold' :
+					case 'cancelled' :
+					case 'trash' :
+						do_action( 'woocommerce_admin_changed_subscription_to_' . $action, $subscription_id );
+						break;
+				}
+
+				$changed++;
 			}
-
-			// Fire the action hooks
-			switch ( $action ) {
-				case 'active' :
-				case 'on-hold' :
-				case 'cancelled' :
-				case 'trash' :
-					do_action( 'woocommerce_admin_changed_subscription_to_' . $action, $subscription_id );
-					break;
-			}
-
-			$changed++;
+		} catch ( Exception $e ) {
+			$sendback_args['error'] = urlencode( $e->getMessage() );
 		}
 
-		$sendback = add_query_arg( array( 'post_type' => 'shop_subscription', $report_action => true, 'changed' => $changed, 'ids' => join( ',', $subscription_ids ) ), '' );
-
+		$sendback_args['changed'] = $changed;
+		$sendback = add_query_arg( $sendback_args, '' );
 		wp_redirect( $sendback );
+
 		exit();
 	}
 
@@ -254,12 +268,25 @@ class WCS_Admin_Post_Types {
 		// Check if any status changes happened
 		foreach ( $subscription_statuses as $slug => $name ) {
 
+			$class = 'updated';
+
 			if ( isset( $_REQUEST[ 'marked_' . str_replace( 'wc-', '', $slug ) ] ) ) {
 
 				$number = isset( $_REQUEST['changed'] ) ? absint( $_REQUEST['changed'] ) : 0;
-				$message = sprintf( _n( 'Subscription status changed.', '%s subscription statuses changed.', $number, 'woocommerce-subscriptions' ), number_format_i18n( $number ) );
-				echo '<div class="updated"><p>' . esc_html( $message ) . '</p></div>';
 
+				if ( ! empty( $_REQUEST['error'] ) ) {
+					$error_msg = isset( $_REQUEST['error'] ) ? stripslashes( $_REQUEST['error'] ) : '';
+					$ids = isset( $_REQUEST['ids'] ) ? $_REQUEST['ids'] : '';
+					$difference = count( explode( ',', $ids ) ) - $number;
+					$class = 'error';
+					// translators: 1$: is the number of subscriptions not updated, 2$: is the error message
+					$message = sprintf( _n( 'Subscription could not be updated: %2$s', '%1$s subscriptions could not be updated: %2$s', $difference, 'woocommerce-subscriptions' ), number_format_i18n( $difference ), $error_msg );
+				} else {
+					// translators: placeholder is the number of subscriptions updated
+					$message = sprintf( _n( 'Subscription status changed.', '%s subscription statuses changed.', $number, 'woocommerce-subscriptions' ), number_format_i18n( $number ) );
+				}
+
+				echo '<div class="' . esc_attr( $class ) . '"><p>' . esc_html( $message ) . '</p></div>';
 				break;
 			}
 		}
