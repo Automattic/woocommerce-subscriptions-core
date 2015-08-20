@@ -257,6 +257,8 @@ class WCS_Upgrade_2_0 {
 
 		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: new line item ID %d added', $new_subscription->id, $item_id ) );
 
+		$order_item = self::maybe_repair_order_item( $order_item );
+
 		$wpdb->query( $wpdb->prepare(
 			"INSERT INTO `{$wpdb->prefix}woocommerce_order_itemmeta` (`order_item_id`, `meta_key`, `meta_value`)
 			 VALUES
@@ -317,6 +319,21 @@ class WCS_Upgrade_2_0 {
 		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: %s rows of line item meta deprecated', $new_subscription->id, $rows_affected ) );
 
 		return $item_id;
+	}
+
+	/**
+	 * Takes care of undefine notices in the upgrade process
+	 * @param  array $order_item item meta
+	 * @return array             repaired item meta
+	 */
+	private static function maybe_repair_order_item( $order_item ) {
+		foreach ( array( 'qty', 'tax_class', 'product_id', 'variation_id', 'recurring_line_subtotal', 'recurring_line_total', 'recurring_line_subtotal_tax', 'recurring_line_tax' ) as $key ) {
+			if ( ! array_key_exists( $key, $order_item ) ) {
+				$order_item[ $key ] = '';
+			}
+		}
+
+		return $order_item;
 	}
 
 	/**
