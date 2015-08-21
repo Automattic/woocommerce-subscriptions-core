@@ -215,7 +215,7 @@ function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 
 	$actions = array();
 
-	if ( $user_id == $subscription->get_user_id() ) {
+	if ( user_can( $user_id, 'edit_shop_subscription_status', $subscription->id ) ) {
 
 		$admin_with_suspension_disallowed = ( current_user_can( 'manage_woocommerce' ) && 0 === get_option( WC_Subscriptions_Admin::$option_prefix . '_max_customer_suspensions', 0 ) ) ? true : false;
 
@@ -249,3 +249,61 @@ function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 
 	return apply_filters( 'wcs_view_subscription_actions', $actions, $subscription );
 }
+
+/**
+ * Checks if a user has a certain capability
+ *
+ * @access public
+ * @param array $allcaps
+ * @param array $caps
+ * @param array $args
+ * @return bool
+ */
+function wcs_user_has_capability( $allcaps, $caps, $args ) {
+	if ( isset( $caps[0] ) ) {
+		switch ( $caps[0] ) {
+			case 'edit_shop_subscription_payment_method' :
+				$user_id  = $args[1];
+				$subscription = wcs_get_subscription( $args[2] );
+
+				if ( $user_id === $subscription->get_user_id() ) {
+					$allcaps['edit_shop_subscription_payment_method'] = true;
+				}
+			break;
+			case 'edit_shop_subscription_status' :
+				$user_id  = $args[1];
+				$subscription = wcs_get_subscription( $args[2] );
+
+				if ( $user_id === $subscription->get_user_id() ) {
+					$allcaps['edit_shop_subscription_status'] = true;
+				}
+			break;
+			case 'edit_shop_subscription_line_items' :
+				$user_id  = $args[1];
+				$subscription = wcs_get_subscription( $args[2] );
+
+				if ( $user_id === $subscription->get_user_id() ) {
+					$allcaps['edit_shop_subscription_line_items'] = true;
+				}
+			break;
+			case 'switch_shop_subscription' :
+				$user_id  = $args[1];
+				$subscription = wcs_get_subscription( $args[2] );
+
+				if ( $user_id === $subscription->get_user_id() ) {
+					$allcaps['switch_shop_subscription'] = true;
+				}
+			break;
+			case 'subscribe_again' :
+				$user_id  = $args[1];
+				$subscription = wcs_get_subscription( $args[2] );
+
+				if ( $user_id === $subscription->get_user_id() ) {
+					$allcaps['subscribe_again'] = true;
+				}
+			break;
+		}
+	}
+	return $allcaps;
+}
+add_filter( 'user_has_cap', 'wcs_user_has_capability', 10, 3 );

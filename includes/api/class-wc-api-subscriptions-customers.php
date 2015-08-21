@@ -1,4 +1,17 @@
 <?php
+/**
+ * WooCommerce Subscriptions API Customers Class
+ *
+ * Handles requests to the /customers/subscriptions endpoint
+ *
+ * @author      Prospress
+ * @category    API
+ * @since       2.0
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly
+}
 
 /**
  * Class: WC_Subscription_API_Customers

@@ -437,7 +437,7 @@ class WCS_Admin_Post_Types {
 					case 1 :
 						foreach ( $the_subscription->get_items() as $item ) {
 							$_product       = apply_filters( 'woocommerce_order_item_product', $the_subscription->get_product_from_item( $item ), $item );
-							$item_meta      = new WC_Order_Item_Meta( $item['item_meta'] );
+							$item_meta      = wcs_get_order_item_meta( $item, $_product );
 							$item_meta_html = $item_meta->display( true, true );
 							$item_quantity  = absint( $item['qty'] );
 
@@ -473,7 +473,7 @@ class WCS_Admin_Post_Types {
 
 						foreach ( $the_subscription->get_items() as $item ) {
 							$_product       = apply_filters( 'woocommerce_order_item_product', $the_subscription->get_product_from_item( $item ), $item );
-							$item_meta      = new WC_Order_Item_Meta( $item['item_meta'] );
+							$item_meta      = wcs_get_order_item_meta( $item, $_product );
 							$item_meta_html = $item_meta->display( true, true );
 							ob_start();
 							?>

@@ -12,6 +12,16 @@
  */
 class WC_Subscriptions_Product {
 
+	protected static $subscription_meta_fields = array(
+		'_subscription_price',
+		'_subscription_sign_up_fee',
+		'_subscription_period',
+		'_subscription_period_interval',
+		'_subscription_length',
+		'_subscription_trial_period',
+		'_subscription_trial_length',
+	);
+
 	/**
 	 * Set up the class, including it's hooks & filters, when the file is loaded.
 	 *
@@ -53,6 +63,9 @@ class WC_Subscriptions_Product {
 		// Trash variations instead of deleting them to prevent headaches from deleted products
 		add_action( 'wp_ajax_woocommerce_remove_variation', __CLASS__ . '::remove_variations', 9, 2 );
 		add_action( 'wp_ajax_woocommerce_remove_variations', __CLASS__ . '::remove_variations', 9, 2 );
+
+		// Handle bulk edits to subscription data in WC 2.4
+		add_action( 'woocommerce_bulk_edit_variations', __CLASS__ . '::bulk_edit_variations', 10, 4 );
 	}
 
 	/**
@@ -882,6 +895,35 @@ class WC_Subscriptions_Product {
 		}
 
 		return $is_purchasable;
+	}
+
+	/**
+	 * Save variation meta data when it is bulk edited from the Edit Product screen
+	 *
+	 * @param string $bulk_action The bulk edit action being performed
+	 * @param array $data An array of data relating to the bulk edit action. $data['value'] represents the new value for the meta.
+	 * @param int $variable_product_id The post ID of the parent variable product.
+	 * @param array $variation_ids An array of post IDs for the variable prodcut's variations.
+	 * @since 1.5.29
+	 */
+	public static function bulk_edit_variations( $bulk_action, $data, $variable_product_id, $variation_ids ) {
+
+		if ( ! self::is_subscription( $variable_product_id ) ) {
+			return;
+		}
+
+		$meta_key = str_replace( 'variable', '', $bulk_action );
+
+		// Update the subscription price when updating regular price on a variable subscription product
+		if ( '_regular_price' == $meta_key ) {
+			$meta_key = '_subscription_price';
+		}
+
+		if ( in_array( $meta_key, self::$subscription_meta_fields ) ) {
+			foreach ( $variation_ids as $variation_id ) {
+				update_post_meta( $variation_id, $meta_key, stripslashes( $data['value'] ) );
+			}
+		}
 	}
 
 	/**
