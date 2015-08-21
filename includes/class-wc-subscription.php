@@ -1515,6 +1515,7 @@ class WC_Subscription extends WC_Order {
 
 		// Allow payment gateway extensions to validate the data and throw exceptions if necessary
 		do_action( 'woocommerce_subscription_validate_payment_meta', $payment_method_id, $payment_meta, $this );
+		do_action( 'woocommerce_subscription_validate_payment_meta_' . $payment_method_id, $payment_meta, $this );
 
 		foreach ( $payment_meta as $meta_table => $meta ) {
 			foreach ( $meta as $meta_key => $meta_data ) {
