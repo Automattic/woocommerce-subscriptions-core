@@ -905,8 +905,8 @@ class WC_Subscriptions_Admin {
 			// translators: placeholder is name of a gateway
 			$available_gateways_description = sprintf( __( 'The %s gateway can process automatic subscription payments.', 'woocommerce-subscriptions' ), '<strong>' . $available_gateways[0] . '</strong>' );
 		} elseif ( count( $available_gateways ) > 1 ) {
-			// translators: 1$: a comma separated list of gateway names (e.g. "stripe, paypal, worldpay"), 2$: one name of gateway (e.g. "authorize.net")
-			$available_gateways_description = sprintf( __( 'The %1$s & %s gateways can process automatic subscription payments.', 'woocommerce-subscriptions' ), '<strong>' . implode( '</strong>, <strong>', array_slice( $available_gateways, 0, count( $available_gateways ) - 1 ) ) . '</strong>', '<strong>' . array_pop( $available_gateways ) . '</strong>' );
+			// translators: %1$s - a comma separated list of gateway names (e.g. "stripe, paypal, worldpay"), %2$s - one name of gateway (e.g. "authorize.net")
+			$available_gateways_description = sprintf( __( 'The %1$s & %2$s gateways can process automatic subscription payments.', 'woocommerce-subscriptions' ), '<strong>' . implode( '</strong>, <strong>', array_slice( $available_gateways, 0, count( $available_gateways ) - 1 ) ) . '</strong>', '<strong>' . array_pop( $available_gateways ) . '</strong>' );
 		}
 
 		return apply_filters( 'woocommerce_subscription_settings', array(
@@ -1370,12 +1370,21 @@ class WC_Subscriptions_Admin {
 
 		echo '<td class="renewals">';
 		if ( ( is_array( $gateway->supports ) && in_array( 'subscriptions', $gateway->supports ) ) || $gateway->id == 'paypal' ) {
-			echo '<span class="status-enabled tips" data-tip="' . esc_attr__( 'Supports automatic renewal payments with the WooCommerce Subscriptions extension.', 'woocommerce-subscriptions' ) . '">' . esc_html__( 'Yes', 'woocommerce-subscriptions' ) . '</span>';
+			$status_html = '<span class="status-enabled tips" data-tip="' . esc_attr__( 'Supports automatic renewal payments with the WooCommerce Subscriptions extension.', 'woocommerce-subscriptions' ) . '">' . esc_html__( 'Yes', 'woocommerce-subscriptions' ) . '</span>';
 		} else {
-			echo '-';
+			$status_html = '-';
 		}
-		echo '</td>';
 
+		/**
+		 * Automatic Renewal Payments Support Status HTML Filter.
+		 *
+		 * @since 2.0-bleeding
+		 * @param string $status_html
+		 * @param \WC_Payment_Gateway $gateway
+		 */
+		echo apply_filters( 'woocommerce_payment_gateways_renewal_support_status_html', $status_html, $gateway );
+
+		echo '</td>';
 	}
 
 	/**
