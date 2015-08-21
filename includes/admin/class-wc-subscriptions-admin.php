@@ -1370,12 +1370,21 @@ class WC_Subscriptions_Admin {
 
 		echo '<td class="renewals">';
 		if ( ( is_array( $gateway->supports ) && in_array( 'subscriptions', $gateway->supports ) ) || $gateway->id == 'paypal' ) {
-			echo '<span class="status-enabled tips" data-tip="' . esc_attr__( 'Supports automatic renewal payments with the WooCommerce Subscriptions extension.', 'woocommerce-subscriptions' ) . '">' . esc_html__( 'Yes', 'woocommerce-subscriptions' ) . '</span>';
+			$status_html = '<span class="status-enabled tips" data-tip="' . esc_attr__( 'Supports automatic renewal payments with the WooCommerce Subscriptions extension.', 'woocommerce-subscriptions' ) . '">' . esc_html__( 'Yes', 'woocommerce-subscriptions' ) . '</span>';
 		} else {
-			echo '-';
+			$status_html = '-';
 		}
-		echo '</td>';
 
+		/**
+		 * Automatic Renewal Payments Support Status HTML Filter.
+		 *
+		 * @since 2.0-bleeding
+		 * @param string $status_html
+		 * @param \WC_Payment_Gateway $gateway
+		 */
+		echo apply_filters( 'woocommerce_payment_gateways_renewal_support_status_html', $status_html, $gateway );
+
+		echo '</td>';
 	}
 
 	/**
