@@ -256,6 +256,8 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 					$result = $available_gateways[ $new_payment_method ]->process_payment( $subscription->id );
 
+					$result = apply_filters( 'woocommerce_subscriptions_process_payment_for_change_method_via_pay_shortcode', $result, $subscription );
+
 					// Redirect to success/confirmation/payment page
 					if ( 'success' == $result['result'] ) {
 						WC_Subscriptions::add_notice( __( 'Payment method updated.', 'woocommerce-subscriptions' ), 'success' );
