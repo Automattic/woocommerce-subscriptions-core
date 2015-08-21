@@ -129,8 +129,7 @@ class WC_Subscriptions_Product {
 
 	/**
 	 * Checks a given product to determine if it is a subscription.
-	 * When the received arg is a product object, make sure it is passed into the filter intact -
-	 * This is the only elegant way to pass useful data into hooked functions.
+	 * When the received arg is a product object, make sure it is passed into the filter intact in order to retain any properties added on the fly.
 	 *
 	 * @param int|WC_Product $product_id Either a product object or product's post ID.
 	 * @since 1.0
@@ -138,22 +137,16 @@ class WC_Subscriptions_Product {
 	public static function is_subscription( $product_id ) {
 
 		$is_subscription = false;
-		$product         = false;
 
 		if ( is_object( $product_id ) ) {
 			$product    = $product_id;
 			$product_id = $product->id;
+		} elseif ( is_numeric( $product_id ) ) {
+			$product = wc_get_product( $product_id );
 		}
 
-		$post_type = get_post_type( $product_id );
-
-		if ( in_array( $post_type, array( 'product', 'product_variation' ) ) ) {
-
-			$subscription = WC_Subscriptions::get_product( $product_id );
-
-			if ( $subscription->is_type( array( 'subscription', 'subscription_variation', 'variable-subscription' ) ) ) {
-				$is_subscription = true;
-			}
+		if ( $product->is_type( array( 'subscription', 'subscription_variation', 'variable-subscription' ) ) ) {
+			$is_subscription = true;
 		}
 
 		return apply_filters( 'woocommerce_is_subscription', $is_subscription, $product_id, $product );
