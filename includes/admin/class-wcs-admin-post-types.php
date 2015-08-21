@@ -215,13 +215,14 @@ class WCS_Admin_Post_Types {
 			'post_type'    => 'shop_subscription',
 			$report_action => true,
 			'ids'          => join( ',', $subscription_ids ),
+			'error_count'  => 0,
 		);
 
-		try {
+		foreach ( $subscription_ids as $subscription_id ) {
+			$subscription = wcs_get_subscription( $subscription_id );
+			$order_note   = __( 'Subscription status changed by bulk edit:', 'woocommerce-subscriptions' );
 
-			foreach ( $subscription_ids as $subscription_id ) {
-				$subscription = wcs_get_subscription( $subscription_id );
-				$order_note   = __( 'Subscription status changed by bulk edit:', 'woocommerce-subscriptions' );
+			try {
 
 				if ( 'cancelled' == $action ) {
 					$subscription->cancel_order( $order_note );
@@ -240,9 +241,11 @@ class WCS_Admin_Post_Types {
 				}
 
 				$changed++;
+
+			} catch ( Exception $e ) {
+				$sendback_args['error'] = urlencode( $e->getMessage() );
+				$sendback_args['error_count']++;
 			}
-		} catch ( Exception $e ) {
-			$sendback_args['error'] = urlencode( $e->getMessage() );
 		}
 
 		$sendback_args['changed'] = $changed;
@@ -268,25 +271,22 @@ class WCS_Admin_Post_Types {
 		// Check if any status changes happened
 		foreach ( $subscription_statuses as $slug => $name ) {
 
-			$class = 'updated';
-
 			if ( isset( $_REQUEST[ 'marked_' . str_replace( 'wc-', '', $slug ) ] ) ) {
 
 				$number = isset( $_REQUEST['changed'] ) ? absint( $_REQUEST['changed'] ) : 0;
 
-				if ( ! empty( $_REQUEST['error'] ) ) {
+				// translators: placeholder is the number of subscriptions updated
+				$message = sprintf( _n( 'Subscription status changed.', '%s subscription statuses changed.', $number, 'woocommerce-subscriptions' ), number_format_i18n( $number ) );
+				echo '<div class="updated"><p>' . esc_html( $message ) . '</p></div>';
+
+				if ( ! empty( $_REQUEST['error_count'] ) ) {
 					$error_msg = isset( $_REQUEST['error'] ) ? stripslashes( $_REQUEST['error'] ) : '';
-					$ids = isset( $_REQUEST['ids'] ) ? $_REQUEST['ids'] : '';
-					$difference = count( explode( ',', $ids ) ) - $number;
-					$class = 'error';
+					$error_count = isset( $_REQUEST['error_count'] ) ? absint( $_REQUEST['error_count'] ) : 0;
 					// translators: 1$: is the number of subscriptions not updated, 2$: is the error message
-					$message = sprintf( _n( 'Subscription could not be updated: %2$s', '%1$s subscriptions could not be updated: %2$s', $difference, 'woocommerce-subscriptions' ), number_format_i18n( $difference ), $error_msg );
-				} else {
-					// translators: placeholder is the number of subscriptions updated
-					$message = sprintf( _n( 'Subscription status changed.', '%s subscription statuses changed.', $number, 'woocommerce-subscriptions' ), number_format_i18n( $number ) );
+					$message = sprintf( _n( 'Subscription could not be updated: %2$s', '%1$s subscriptions could not be updated: %2$s', $error_count, 'woocommerce-subscriptions' ), number_format_i18n( $error_count ), $error_msg );
+					echo '<div class="error"><p>' . esc_html( $message ) . '</p></div>';
 				}
 
-				echo '<div class="' . esc_attr( $class ) . '"><p>' . esc_html( $message ) . '</p></div>';
 				break;
 			}
 		}
