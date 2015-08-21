@@ -67,7 +67,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							<?php
 							$user_string = '';
 							$user_id     = '';
-							if ( ! empty( $subscription->customer_user ) ) {
+							if ( ! empty( $subscription->customer_user ) && ( false !== get_userdata( $subscription->customer_user ) ) ) {
 								$user_id     = absint( $subscription->customer_user );
 								$user        = get_user_by( 'id', $user_id );
 								$user_string = esc_html( $user->display_name ) . ' (#' . absint( $user->ID ) . ' &ndash; ' . esc_html( $user->user_email );
