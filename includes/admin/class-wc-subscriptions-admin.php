@@ -1382,7 +1382,7 @@ class WC_Subscriptions_Admin {
 		 * @param string $status_html
 		 * @param \WC_Payment_Gateway $gateway
 		 */
-		echo apply_filters( 'woocommerce_payment_gateways_renewal_support_status_html', $status_html, $gateway );
+		echo wp_kses_post( apply_filters( 'woocommerce_payment_gateways_renewal_support_status_html', $status_html, $gateway ) );
 
 		echo '</td>';
 	}
