@@ -403,7 +403,7 @@ class WCS_Admin_Post_Types {
 				// This is to stop PHP from complaining
 				$username = '';
 
-				if ( $the_subscription->get_user_id() && ( false !== $user_info = get_userdata( $the_subscription->get_user_id() ) ) ) {
+				if ( $the_subscription->get_user_id() && ( false !== ( $user_info = get_userdata( $the_subscription->get_user_id() ) ) ) ) {
 
 					$username  = '<a href="user-edit.php?user_id=' . absint( $user_info->ID ) . '">';
 
