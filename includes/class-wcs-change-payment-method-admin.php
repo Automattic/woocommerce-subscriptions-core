@@ -63,7 +63,7 @@ class WCS_Change_Payment_Method_Admin {
 						$field_label = ( ! empty( $meta_data['label'] ) ) ? $meta_data['label'] : $meta_key ;
 						$field_value = ( ! empty( $meta_data['value'] ) ) ? $meta_data['value'] : null ;
 
-						echo '<p class="form-field-wide">';
+						echo '<p class="form-field form-field-wide">';
 						echo '<label for="' . esc_attr( $field_id ) . '">' . esc_html( $field_label ) . '</label>';
 						echo '<input type="text" class="short" name="' . esc_attr( $field_id ) . '" id="' . esc_attr( $field_id ) . '" value="' . esc_attr( $field_value ) . '" placeholder="">';
 						echo '</p>';
