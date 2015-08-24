@@ -14,10 +14,24 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WCS_Repair_2_0 {
 
+
+	/**
+	 * 'order_id': a subscription can exist without an original order in v2.0, so technically the order ID is no longer required.
+	 * However, if some or all order item meta data that constitutes a subscription exists without a corresponding parent order,
+	 * we can deem the issue to be that the subscription meta data was not deleted, not that the subscription should exist. Meta
+	 * data could be orphaned in v1.n if the order row in the wp_posts table was deleted directly in the database, or the
+	 * subscription/order were for a customer that was deleted in WordPress administration interface prior to Subscriptions v1.3.8.
+	 * In both cases, the subscription, including meta data, should have been permanently deleted. However, deleting data is not a
+	 * good idea during an upgrade. So I propose instead that we create a subscription without a parent order, but move it to the trash.
+	 *
+	 * Additional idea was to check whether the given order_id exists, but since that's another database read, it would slow down a lot of things.
+	 *
+	 * A subscription will not make it to this point if it doesn't have an order id, so this function will practically never be run
+	 *
+	 * @param  array $subscription data about the subscription
+	 * @return array               repaired data about the subscription
+	 */
 	public static function repair_order_id( $subscription ) {
-		// 'order_id': a subscription can exist without an original order in v2.0, so technically the order ID is no longer required. However, if some or all order item meta data that constitutes a subscription exists without a corresponding parent order, we can deem the issue to be that the subscription meta data was not deleted, not that the subscription should exist. Meta data could be orphaned in v1.n if the order row in the wp_posts table was deleted directly in the database, or the subscription/order were for a customer that was deleted in WordPress administration interface prior to Subscriptions v1.3.8. In both cases, the subscription, including meta data, should have been permanently deleted. However, deleting data is not a good idea during an upgrade. So I propose instead that we create a subscription without a parent order, but move it to the trash.
-		// Additional idea was to check whether the given order_id exists, but since that's another database read, it would slow down a lot of things.
-		// A subscription will not make it to this point if it doesn't have an order id, so this function will practically never be run
 		WCS_Upgrade_Logger::add( sprintf( 'Repairing order_id for subscription %d: Status changed to trash', $subscription['order_id'] ) );
 
 		$subscription['status'] = 'trash';
@@ -25,8 +39,17 @@ class WCS_Repair_2_0 {
 		return $subscription;
 	}
 
+	/**
+	 * '_product_id': the only way to derive a order item's product ID would be to match the order item's name to a product name/title.
+	 * This is quite hacky, so we may be better copying the empty product ID to the new subscription. A subscription to a deleted
+	 * produced should be able to exist.
+	 *
+	 * @param  array $subscription data about the subscription
+	 * @param  numeric $item_id    the id of the product we're missing the id for
+	 * @param  array $item_meta    meta data about the product
+	 * @return array               repaired data about the subscription
+	 */
 	public static function repair_product_id( $subscription, $item_id, $item_meta ) {
-		// '_product_id': the only way to derive a order item's product ID would be to match the order item's name to a product name/title. This is quite hacky, so we may be better copying the empty product ID to the new subscription. A subscription to a deleted produced should be able to exist.
 		WCS_Upgrade_Logger::add( sprintf( 'Repairing product_id for subscription %d.', $subscription['order_id'] ) );
 
 		if ( array_key_exists( 'product_id', $item_meta ) && ! empty( $item_meta['product_id'] ) ) {
@@ -41,8 +64,17 @@ class WCS_Repair_2_0 {
 		return $subscription;
 	}
 
+	/**
+	 * '_variation_id': the only way to derive a order item's product ID would be to match the order item's name to a product name/title.
+	 * This is quite hacky, so we may be better copying the empty product ID to the new subscription. A subscription to a deleted produced
+	 * should be able to exist.
+	 *
+	 * @param  array $subscription data about the subscription
+	 * @param  numeric $item_id    the id of the product we're missing variation id for
+	 * @param  array $item_meta    meta data about the product
+	 * @return array               repaired data about the subscription
+	 */
 	public static function repair_variation_id( $subscription, $item_id, $item_meta ) {
-		// '_variation_id': the only way to derive a order item's product ID would be to match the order item's name to a product name/title. This is quite hacky, so we may be better copying the empty product ID to the new subscription. A subscription to a deleted produced should be able to exist.
 		WCS_Upgrade_Logger::add( sprintf( 'Repairing variation_id for subscription %d.', $subscription['order_id'] ) );
 
 		if ( array_key_exists( 'variation_id', $item_meta ) && ! empty( $item_meta['variation_id'] ) ) {
@@ -56,8 +88,21 @@ class WCS_Repair_2_0 {
 		return $subscription;
 	}
 
+	/**
+	 * '_subscription_status': we could default to cancelled (and then potentially trash) if no status exists because the cancelled status
+	 * is irreversible. But we can also take this a step further. If the subscription has a '_subscription_expiry_date' value and a
+	 * '_subscription_end_date' value, and they are within a few minutes of each other, we can assume the subscription's status should be
+	 * expired. If there is a '_subscription_end_date' value that is different to the '_subscription_expiry_date' value (either because the
+	 * expiration value is 0 or some other date), then we can assume the status should be cancelled). If there is no end date value, we're
+	 * a bit lost as technically the subscription hasn't ended, but we should make sure it is not active, so cancelled is still the best
+	 * default.
+	 *
+	 * @param  array $subscription data about the subscription
+	 * @param  numeric $item_id    the id of the product we're missing variation id for
+	 * @param  array $item_meta    meta data about the product
+	 * @return array               repaired data about the subscription
+	 */
 	public static function repair_status( $subscription, $item_id, $item_meta ) {
-		// '_subscription_status': we could default to cancelled (and then potentially trash) if no status exists because the cancelled status is irreversible. But we can also take this a step further. If the subscription has a '_subscription_expiry_date' value and a '_subscription_end_date' value, and they are within a few minutes of each other, we can assume the subscription's status should be expired. If there is a '_subscription_end_date' value that is different to the '_subscription_expiry_date' value (either because the expiration value is 0 or some other date), then we can assume the status should be cancelled). If there is no end date value, we're a bit lost as technically the subscription hasn't ended, but we should make sure it is not active, so cancelled is still the best default.
 		WCS_Upgrade_Logger::add( sprintf( 'Repairing status for subscription %d.', $subscription['order_id'] ) );
 
 		// only reset this if we didn't repair the order_id
@@ -66,26 +111,33 @@ class WCS_Repair_2_0 {
 			return $subscription;
 		}
 
-		// default to cancelled
-		WCS_Upgrade_Logger::add( '-- Setting the default to "cancelled".' );
-		$subscription['status'] = 'cancelled';
-
 		// if expiry_date and end_date are within 4 minutes (arbitrary), let it be expired
 		if ( array_key_exists( 'expiry_date' ) && ! empty( $subscription['expiry_date'] ) && array_key_exists( 'end_date', $subscription ) && ! empty( $subscription['end_date'] ) && ( 4 * MINUTE_IN_SECONDS ) > self::time_diff( $subscription['expiry_date'], $subscription['end_date'] ) ) {
 			WCS_Upgrade_Logger::add( '-- There are end dates and expiry dates, they are close to each other, setting status to "expired" and returning.' );
 
 			$subscription['status'] = 'expired';
-
-			return $subscription;
+		} else {
+			// default to cancelled
+			WCS_Upgrade_Logger::add( '-- Setting the default to "cancelled".' );
+			$subscription['status'] = 'cancelled';
 		}
 
-		// we already have cancelled, so if there's no end value, or if end date and expiry date are further apart, then we're still good
-		WCS_Upgrade_Logger::add( '-- Returning the default "cancelled" status.' );
+		WCS_Upgrade_Logger::add( sprintf( '-- Returning the status with %s', $subscription['status'] ) );
 		return $subscription;
 	}
 
+	/**
+	 * '_subscription_period': we can attempt to derive this from the time between renewal orders. For example, if there are two renewal
+	 * orders found 3 months apart, the billing period would be month. If there are not two or more renewal orders (we can't use a single
+	 * renewal order because that would account for the free trial) and a _product_id value , if the product still exists, we can use the
+	 * current value set on that product. It won't always be correct, but it's the closest we can get to an accurate estimate.
+	 *
+	 * @param  array $subscription data about the subscription
+	 * @param  numeric $item_id    the id of the product we're missing variation id for
+	 * @param  array $item_meta    meta data about the product
+	 * @return array               repaired data about the subscription
+	 */
 	public static function repair_period( $subscription, $item_id, $item_meta ) {
-		// '_subscription_period': we can attempt to derive this from the time between renewal orders. For example, if there are two renewal orders found 3 months apart, the billing period would be month. If there are not two or more renewal orders (we can't use a single renewal order because that would account for the free trial) and a _product_id value , if the product still exists, we can use the current value set on that product. It won't always be correct, but it's the closest we can get to an accurate estimate.
 		WCS_Upgrade_Logger::add( sprintf( 'Repairing period for subscription %d.', $subscription['order_id'] ) );
 
 		// Get info from the product
@@ -108,11 +160,11 @@ class WCS_Repair_2_0 {
 		// let's get the last 2 renewal orders
 		$last_renewal_order = array_shift( $renewal_orders );
 		$last_renewal_date = $last_renewal_order->order_date;
-		$last_renewal_ts = strtotime( $last_renewal_date );
+		$last_renewal_timestamp = strtotime( $last_renewal_date );
 
 		$second_renewal_order = array_shift( $renewal_orders );
 		$second_renewal_date = $second_renewal_order->order_date;
-		$second_renewal_ts = strtotime( $second_renewal_date );
+		$second_renewal_timestamp = strtotime( $second_renewal_date );
 
 		$interval = 1;
 
@@ -144,9 +196,18 @@ class WCS_Repair_2_0 {
 		return $subscription;
 	}
 
+	/**
+	 * '_subscription_interval': we can attempt to derive this from the time between renewal orders. For example, if there are two renewal
+	 * orders found 3 months apart, the billing period would be month. If there are not two or more renewal orders (we can't use a single
+	 * renewal order because that would account for the free trial) and a _product_id value , if the product still exists, we can use the
+	 * current value set on that product. It won't always be correct, but it's the closest we can get to an accurate estimate.
+	 *
+	 * @param  array $subscription data about the subscription
+	 * @param  numeric $item_id    the id of the product we're missing variation id for
+	 * @param  array $item_meta    meta data about the product
+	 * @return array               repaired data about the subscription
+	 */
 	public static function repair_interval( $subscription, $item_id, $item_meta ) {
-		// '_subscription_interval': we can attempt to derive this from the time between renewal orders. For example, if there are two renewal orders found 3 months apart, the billing period would be month. If there are not two or more renewal orders (we can't use a single renewal order because that would account for the free trial) and a _product_id value , if the product still exists, we can use the current value set on that product. It won't always be correct, but it's the closest we can get to an accurate estimate.
-
 		// let's see if we can have info from the product
 		// Get info from the product
 		if ( array_key_exists( '_subscription_interval', $item_meta ) && ! empty( $item_meta['_subscription_interval'] ) ) {
@@ -169,20 +230,28 @@ class WCS_Repair_2_0 {
 		// let's get the last 2 renewal orders
 		$last_renewal_order = array_shift( $renewal_orders );
 		$last_renewal_date = $last_renewal_order->order_date;
-		$last_renewal_ts = strtotime( $last_renewal_date );
+		$last_renewal_timestamp = strtotime( $last_renewal_date );
 
 		$second_renewal_order = array_shift( $renewal_orders );
 		$second_renewal_date = $second_renewal_order->order_date;
-		$second_renewal_ts = strtotime( $second_renewal_date );
+		$second_renewal_timestamp = strtotime( $second_renewal_date );
 
-		$subscription['interval'] = wcs_estimate_periods_between( $second_renewal_ts, $last_renewal_ts, $subscription['period'] );
+		$subscription['interval'] = wcs_estimate_periods_between( $second_renewal_timestamp, $last_renewal_timestamp, $subscription['period'] );
 
 		return $subscription;
 	}
 
+	/**
+	 * '_subscription_length': if there is are '_subscription_expiry_date' and '_subscription_start_date' values, we can use those to
+	 * determine how many billing periods fall between them, and therefore, the length of the subscription. This data is low value however as
+	 * it is no longer stored in v2.0 and mainly used to determine the expiration date.
+	 *
+	 * @param  array $subscription data about the subscription
+	 * @param  numeric $item_id    the id of the product we're missing variation id for
+	 * @param  array $item_meta    meta data about the product
+	 * @return array               repaired data about the subscription
+	 */
 	public static function repair_length( $subscription, $item_id, $item_meta ) {
-		// '_subscription_length': if there is are '_subscription_expiry_date' and '_subscription_start_date' values, we can use those to determine how many billing periods fall between them, and therefore, the length of the subscription. This data is low value however as it is no longer stored in v2.0 and mainly used to determine the expiration date.
-
 		// Set a default
 		$subscription['length'] = 0;
 
@@ -205,9 +274,19 @@ class WCS_Repair_2_0 {
 		return $subscription;
 	}
 
+
+	/**
+	 * '_subscription_start_date': the original order's '_paid_date' value (stored in post meta) can be used as the subscription's start date.
+	 * If no '_paid_date' exists, because the order used a payment method that doesn't call $order->payment_complete(), like BACs or Cheque,
+	 * then we can use the post_date_gmt column in the wp_posts table of the original order.
+	 *
+	 * @param  array $subscription data about the subscription
+	 * @param  numeric $item_id    the id of the product we're missing variation id for
+	 * @param  array $item_meta    meta data about the product
+	 * @return array               repaired data about the subscription
+	 */
 	public static function repair_start_date( $subscription, $item_id, $item_meta ) {
 		global $wpdb;
-		// '_subscription_start_date': the original order's '_paid_date' value (stored in post meta) can be used as the subscription's start date. If no '_paid_date' exists, because the order used a payment method that doesn't call $order->payment_complete(), like BACs or Cheque, then we can use the post_date_gmt column in the wp_posts table of the original order.
 		$start_date = get_post_meta( $subscription['order_id'], '_paid_date', true );
 
 		if ( empty( $start_date ) ) {
@@ -218,21 +297,49 @@ class WCS_Repair_2_0 {
 		return $subscription;
 	}
 
+
+	/**
+	 * '_subscription_trial_expiry_date': if the subscription has at least one renewal order, we can set the trial expiration date to the date
+	 * of the first renewal order. However, this is generally safe to default to 0 if it is not set. Especially if the subscription is
+	 * inactive and/or has 1 or more renewals (because its no longer used and is simply for record keeping).
+	 *
+	 * @param  array $subscription data about the subscription
+	 * @param  numeric $item_id    the id of the product we're missing variation id for
+	 * @param  array $item_meta    meta data about the product
+	 * @return array               repaired data about the subscription
+	 */
 	public static function repair_trial_expiry_date( $subscription, $item_id, $item_meta ) {
-		// '_subscription_trial_expiry_date': if the subscription has at least one renewal order, we can set the trial expiration date to the date of the first renewal order. However, this is generally safe to default to 0 if it is not set. Especially if the subscription is inactive and/or has 1 or more renewals (because its no longer used and is simply for record keeping).
 		$subscription['trial_expiry_date'] = 0;
 		return $subscription;
 	}
 
+	/**
+	 * '_subscription_expiry_date': if the subscription has a '_subscription_length' value, that can be used to calculate the expiration date
+	 * (from the '_subscription_start_date' or '_subscription_trial_expiry_date' if one is set). If no length is set, but the subscription has
+	 * an expired status, the '_subscription_end_date' can be used. In most other cases, this is generally safe to default to 0 if the
+	 * subscription is cancelled because its no longer used and is simply for record keeping.
+	 *
+	 * @param  array $subscription data about the subscription
+	 * @param  numeric $item_id    the id of the product we're missing variation id for
+	 * @param  array $item_meta    meta data about the product
+	 * @return array               repaired data about the subscription
+	 */
 	public static function repair_expiry_date( $subscription, $item_id, $item_meta ) {
-		// '_subscription_expiry_date': if the subscription has a '_subscription_length' value, that can be used to calculate the expiration date (from the '_subscription_start_date' or '_subscription_trial_expiry_date' if one is set). If no length is set, but the subscription has an expired status, the '_subscription_end_date' can be used. In most other cases, this is generally safe to default to 0 if the subscription is cancelled because its no longer used and is simply for record keeping.
-
 		$subscription['expiry_date'] = 0;
 		return $subscription;
 	}
 
+	/**
+	 * '_subscription_end_date': if the subscription has a '_subscription_length' value and status of expired, the length can be used to
+	 * calculate the end date as it will be the same as the expiration date. If no length is set, or the subscription has a cancelled status,
+	 * some time within 24 hours after the last renewal order's date can be used to provide a rough estimate.
+	 *
+	 * @param  array $subscription data about the subscription
+	 * @param  numeric $item_id    the id of the product we're missing variation id for
+	 * @param  array $item_meta    meta data about the product
+	 * @return array               repaired data about the subscription
+	 */
 	public static function repair_end_date( $subscription, $item_id, $item_meta ) {
-		// '_subscription_end_date': if the subscription has a '_subscription_length' value and status of expired, the length can be used to calculate the end date as it will be the same as the expiration date. If no length is set, or the subscription has a cancelled status, some time within 24 hours after the last renewal order's date can be used to provide a rough estimate.
 		if ( array_key_exists( '_subscription_end_date', $item_meta ) ) {
 			WCS_Upgrade_Logger::add( '-- Copying end date from item_meta' );
 			$subscription['end_date'] = $item_meta['_subscription_end_date'][0];
@@ -259,10 +366,18 @@ class WCS_Repair_2_0 {
 		return $subscription;
 	}
 
+	/**
+	 * _recurring_line_total': if the subscription has at least one renewal order, this value can be derived from the '_line_total' value of
+	 * that order. If no renewal orders exist, it can be derived roughly by deducting the '_subscription_sign_up_fee' value from the original
+	 * order's total if there is no trial expiration date.
+	 *
+	 * @param  array $subscription data about the subscription
+	 * @param  numeric $item_id    the id of the product we're missing variation id for
+	 * @param  array $item_meta    meta data about the product
+	 * @return array               repaired data about the subscription
+	 */
 	public static function repair_recurring_line_total( $subscription, $item_id, $item_meta ) {
-		// _recurring_line_total': if the subscription has at least one renewal order, this value can be derived from the '_line_total' value of that order. If no renewal orders exist, it can be derived roughly by deducting the '_subscription_sign_up_fee' value from the original order's total if there is no trial expiration date.
 		// I'm not using line_total on subscription because it might contain non-sub bits
-
 		if ( array_key_exists( '_line_total', $item_meta ) ) {
 			WCS_Upgrade_Logger::add( '-- Copying end date from item_meta' );
 			$subscription['recurring_line_total'] = $item_meta['_line_total'][0];
@@ -274,9 +389,17 @@ class WCS_Repair_2_0 {
 		return $subscription;
 	}
 
+	/**
+	 * _recurring_line_total': if the subscription has at least one renewal order, this value can be derived from the '_line_total' value
+	 * of that order. If no renewal orders exist, it can be derived roughly by deducting the '_subscription_sign_up_fee' value from the
+	 * original order's total if there is no trial expiration date.
+	 *
+	 * @param  array $subscription data about the subscription
+	 * @param  numeric $item_id    the id of the product we're missing variation id for
+	 * @param  array $item_meta    meta data about the product
+	 * @return array               repaired data about the subscription
+	 */
 	public static function repair_recurring_line_tax( $subscription, $item_id, $item_meta ) {
-		// _recurring_line_total': if the subscription has at least one renewal order, this value can be derived from the '_line_total' value of that order. If no renewal orders exist, it can be derived roughly by deducting the '_subscription_sign_up_fee' value from the original order's total if there is no trial expiration date.
-
 		if ( array_key_exists( '_line_tax', $item_meta ) ) {
 			WCS_Upgrade_Logger::add( '-- Copying end date from item_meta' );
 			$subscription['recurring_line_tax'] = $item_meta['_line_tax'][0];
@@ -288,9 +411,17 @@ class WCS_Repair_2_0 {
 		return $subscription;
 	}
 
+	/**
+	 * _recurring_line_total': if the subscription has at least one renewal order, this value can be derived from the '_line_total' value of
+	 * that order. If no renewal orders exist, it can be derived roughly by deducting the '_subscription_sign_up_fee' value from the original
+	 * order's total if there is no trial expiration date
+	 *
+	 * @param  array $subscription data about the subscription
+	 * @param  numeric $item_id    the id of the product we're missing variation id for
+	 * @param  array $item_meta    meta data about the product
+	 * @return array               repaired data about the subscription
+	 */
 	public static function repair_recurring_line_subtotal( $subscription, $item_id, $item_meta ) {
-		// _recurring_line_total': if the subscription has at least one renewal order, this value can be derived from the '_line_total' value of that order. If no renewal orders exist, it can be derived roughly by deducting the '_subscription_sign_up_fee' value from the original order's total if there is no trial expiration date.
-
 		if ( array_key_exists( '_line_subtotal', $item_meta ) ) {
 			WCS_Upgrade_Logger::add( '-- Copying end date from item_me©ta' );
 			$subscription['recurring_line_subtotal'] = $item_meta['_line_subtotal'][0];
@@ -302,9 +433,17 @@ class WCS_Repair_2_0 {
 		return $subscription;
 	}
 
+	/**
+	 * _recurring_line_total': if the subscription has at least one renewal order, this value can be derived from the '_line_total' value of
+	 * that order. If no renewal orders exist, it can be derived roughly by deducting the '_subscription_sign_up_fee' value from the original
+	 * order's total if there is no trial expiration date.
+	 *
+	 * @param  array $subscription data about the subscription
+	 * @param  numeric $item_id    the id of the product we're missing variation id for
+	 * @param  array $item_meta    meta data about the product
+	 * @return array               repaired data about the subscription
+	 */
 	public static function repair_recurring_line_subtotal_tax( $subscription, $item_id, $item_meta ) {
-		// _recurring_line_total': if the subscription has at least one renewal order, this value can be derived from the '_line_total' value of that order. If no renewal orders exist, it can be derived roughly by deducting the '_subscription_sign_up_fee' value from the original order's total if there is no trial expiration date.
-
 		if ( array_key_exists( '_line_subtotal_tax', $item_meta ) ) {
 			WCS_Upgrade_Logger::add( '-- Copying end date from item_meta' );
 			$subscription['recurring_line_subtotal_tax'] = $item_meta['_line_subtotal_tax'][0];
@@ -316,8 +455,16 @@ class WCS_Repair_2_0 {
 		return $subscription;
 	}
 
+	/**
+	 * If the subscription does not have a subscription key for whatever reason (probably becuase the product_id was missing), then this one
+	 * fills in the blank.
+	 *
+	 * @param  array $subscription data about the subscription
+	 * @param  numeric $item_id    the id of the product we're missing variation id for
+	 * @param  array $item_meta    meta data about the product
+	 * @return array               repaired data about the subscription
+	 */
 	public static function repair_subscription_key( $subscription, $item_id, $item_meta ) {
-		// If the subscription does not have a subscription key for whatever reason (probably becuase the product_id was missing), then this one fills in the blank.
 		$subscription['subscription_key'] = $subscription['order_id'] . '_' . $item_id;
 
 		return $subscription;
@@ -384,13 +531,13 @@ class WCS_Repair_2_0 {
 			$interval = 1;
 		}
 
-		$last_ts = strtotime( $last_date );
-		$second_ts = strtotime( $second_date );
+		$last_timestamp = strtotime( $last_date );
+		$second_timestamp = strtotime( $second_date );
 
-		$earlier_ts = min( $last_ts, $second_ts );
-		$days_in_month = date( 't', $earlier_ts );
+		$earlier_timestamp = min( $last_timestamp, $second_timestamp );
+		$days_in_month = date( 't', $earlier_timestamp );
 
-		$difference = absint( $last_ts - $second_ts );
+		$difference = absint( $last_timestamp - $second_timestamp );
 
 		$period_in_seconds = round( $difference / $interval );
 
