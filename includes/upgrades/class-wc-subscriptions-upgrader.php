@@ -272,6 +272,7 @@ class WC_Subscriptions_Upgrader {
 
 			case 'subscriptions':
 
+				require_once( 'class-wcs-repair-2-0.php' );
 				require_once( 'class-wcs-upgrade-2-0.php' );
 
 				try {
