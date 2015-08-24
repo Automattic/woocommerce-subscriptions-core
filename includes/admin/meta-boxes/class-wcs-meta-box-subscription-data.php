@@ -123,10 +123,8 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 						// Display help tip
 						if ( ! empty( $subscription->payment_method ) && ! $subscription->is_manual() ) {
-
 							echo '<img class="help_tip" data-tip="Gateway ID: [' . esc_attr( $subscription->payment_gateway->id ) . ']" src="' . esc_url( WC()->plugin_url() ) . '/assets/images/help.png" height="16" width="16" />';
-
-						} 
+						}
 
 						echo '</p>';
 
