@@ -1375,6 +1375,9 @@ class WC_Subscriptions_Admin {
 			$status_html = '-';
 		}
 
+		$allowed_html = wp_kses_allowed_html( 'post' );
+		$allowed_html['span']['data-tip'] = true;
+
 		/**
 		 * Automatic Renewal Payments Support Status HTML Filter.
 		 *
@@ -1382,7 +1385,7 @@ class WC_Subscriptions_Admin {
 		 * @param string $status_html
 		 * @param \WC_Payment_Gateway $gateway
 		 */
-		echo wp_kses_post( apply_filters( 'woocommerce_payment_gateways_renewal_support_status_html', $status_html, $gateway ) );
+		echo wp_kses( apply_filters( 'woocommerce_payment_gateways_renewal_support_status_html', $status_html, $gateway ), $allowed_html );
 
 		echo '</td>';
 	}
