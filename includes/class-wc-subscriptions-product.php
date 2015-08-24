@@ -101,7 +101,7 @@ class WC_Subscriptions_Product {
 	 *
 	 * @return string
 	 */
-	public function get_sign_up_fee_excluding_tax( $product, $qty = 1 ) {
+	public static function get_sign_up_fee_excluding_tax( $product, $qty = 1 ) {
 
 		add_filter( 'woocommerce_get_price', __CLASS__ . '::get_sign_up_fee_filter', 100, 2 );
 
