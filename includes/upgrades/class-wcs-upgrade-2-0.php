@@ -46,6 +46,8 @@ class WCS_Upgrade_2_0 {
 	public static function upgrade_subscriptions( $batch_size ) {
 		global $wpdb;
 
+		WC()->payment_gateways();
+
 		WCS_Upgrade_Logger::add( sprintf( 'Upgrading batch of %d subscriptions', $batch_size ) );
 
 		$upgraded_subscription_count = 0;
