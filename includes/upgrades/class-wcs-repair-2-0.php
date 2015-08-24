@@ -108,6 +108,40 @@ class WCS_Repair_2_0 {
 	}
 
 	/**
+	 * Combined functionality for the following functions:
+	 * - repair_product_id
+	 * - repair_variation_id
+	 * - repair_recurring_line_total
+	 * - repair_recurring_line_tax
+	 * - repair_recurring_line_subtotal
+	 * - repair_recurring_line_subtotal_tax
+	 *
+	 * @param  array   $subscription          data about the subscription
+	 * @param  numeric $item_id               the id of the product we're missing the id for
+	 * @param  array   $item_meta             meta data about the product
+	 * @param  string  $item_meta_key         the meta key for the data on the item meta
+	 * @param  string  $subscription_meta_key the meta key for the data on the subscription
+	 * @return array                          repaired data about the subscription
+	 */
+	public static function repair_from_item_meta( $subscription, $item_id, $item_meta, $subscription_meta_key = null, $item_meta_key = null, $default_value = '' ) {
+		if ( ! is_string( $subscription_meta_key ) || ! is_string( $item_meta_key ) || ( ! is_string( $default_value ) && ! is_numeric( $default_value ) ) ) {
+			return $subscription;
+		}
+
+		WCS_Upgrade_Logger::add( sprintf( 'Repairing %s for subscription %d.', $subscription_meta_key, $subscription['order_id'] ) );
+
+		if ( array_key_exists( $item_meta_key, $item_meta ) && ! empty( $item_meta[ $item_meta_key ] ) ) {
+			WCS_Upgrade_Logger::add( sprintf( '-- Copying %s from item_meta to %s on subscription', $item_meta_key, $subscription_meta_key ) );
+			$subscription[ $subscription_meta_key ] = $item_meta[ $item_meta_key ][0];
+		} elseif ( ! array_key_exists( $subscription_meta_key, $subscription ) ) {
+			WCS_Upgrade_Logger::add( sprintf( '-- Setting an empty %s on old subscription, item meta was not helpful.', $subscription_meta_key ) );
+			$subscription[ $subscription_meta_key ] = $default_value;
+		}
+
+		return $subscription;
+	}
+
+	/**
 	 * '_product_id': the only way to derive a order item's product ID would be to match the order item's name to a product name/title.
 	 * This is quite hacky, so we may be better copying the empty product ID to the new subscription. A subscription to a deleted
 	 * produced should be able to exist.
@@ -118,18 +152,7 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_product_id( $subscription, $item_id, $item_meta ) {
-		WCS_Upgrade_Logger::add( sprintf( 'Repairing product_id for subscription %d.', $subscription['order_id'] ) );
-
-		if ( array_key_exists( 'product_id', $item_meta ) && ! empty( $item_meta['product_id'] ) ) {
-
-			WCS_Upgrade_Logger::add( '-- Copying product_id from item_meta' );
-			$subscription['product_id'] = $item_meta['product_id'][0];
-		} elseif ( ! array_key_exists( 'product_id', $subscription ) ) {
-			WCS_Upgrade_Logger::add( '-- Setting an empty product_id on old subscription, item meta was not helpful.' );
-			$subscription['product_id'] = '';
-		}
-
-		return $subscription;
+		return self::repair_from_item_meta( $subscription, $item_id, $item_meta, 'product_id', 'product_id' );
 	}
 
 	/**
@@ -143,17 +166,7 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_variation_id( $subscription, $item_id, $item_meta ) {
-		WCS_Upgrade_Logger::add( sprintf( 'Repairing variation_id for subscription %d.', $subscription['order_id'] ) );
-
-		if ( array_key_exists( 'variation_id', $item_meta ) && ! empty( $item_meta['variation_id'] ) ) {
-			WCS_Upgrade_Logger::add( '-- Copying variation_id from item_meta' );
-			$subscription['variation_id'] = $item_meta['variation_id'][0];
-		} elseif ( ! array_key_exists( 'variation_id', $item_meta ) ) {
-			WCS_Upgrade_Logger::add( '-- Setting an empty variation_id on old subscription, item meta was not helpful.' );
-			$subscription['variation_id'] = '';
-		}
-
-		return $subscription;
+		return self::repair_from_item_meta( $subscription, $item_id, $item_meta, 'variation_id', 'variation_id' );
 	}
 
 	/**
@@ -445,16 +458,7 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_recurring_line_total( $subscription, $item_id, $item_meta ) {
-		// I'm not using line_total on subscription because it might contain non-sub bits
-		if ( array_key_exists( '_line_total', $item_meta ) ) {
-			WCS_Upgrade_Logger::add( '-- Copying end date from item_meta' );
-			$subscription['recurring_line_total'] = $item_meta['_line_total'][0];
-			return $subscription;
-		}
-
-		$subscription['recurring_line_total'] = 0;
-
-		return $subscription;
+		return self::repair_from_item_meta( $subscription, $item_id, $item_meta, 'recurring_line_total', '_line_total', 0 );
 	}
 
 	/**
@@ -468,15 +472,7 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_recurring_line_tax( $subscription, $item_id, $item_meta ) {
-		if ( array_key_exists( '_line_tax', $item_meta ) ) {
-			WCS_Upgrade_Logger::add( '-- Copying end date from item_meta' );
-			$subscription['recurring_line_tax'] = $item_meta['_line_tax'][0];
-			return $subscription;
-		}
-
-		$subscription['recurring_line_tax'] = 0;
-
-		return $subscription;
+		return self::repair_from_item_meta( $subscription, $item_id, $item_meta, 'recurring_line_tax', '_line_tax', 0 );
 	}
 
 	/**
@@ -490,15 +486,7 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_recurring_line_subtotal( $subscription, $item_id, $item_meta ) {
-		if ( array_key_exists( '_line_subtotal', $item_meta ) ) {
-			WCS_Upgrade_Logger::add( '-- Copying end date from item_me©ta' );
-			$subscription['recurring_line_subtotal'] = $item_meta['_line_subtotal'][0];
-			return $subscription;
-		}
-
-		$subscription['recurring_line_subtotal'] = 0;
-
-		return $subscription;
+		return self::repair_from_item_meta( $subscription, $item_id, $item_meta, 'recurring_line_subtotal', '_line_subtotal', 0 );
 	}
 
 	/**
@@ -512,15 +500,7 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_recurring_line_subtotal_tax( $subscription, $item_id, $item_meta ) {
-		if ( array_key_exists( '_line_subtotal_tax', $item_meta ) ) {
-			WCS_Upgrade_Logger::add( '-- Copying end date from item_meta' );
-			$subscription['recurring_line_subtotal_tax'] = $item_meta['_line_subtotal_tax'][0];
-			return $subscription;
-		}
-
-		$subscription['recurring_line_subtotal_tax'] = 0;
-
-		return $subscription;
+		return self::repair_from_item_meta( $subscription, $item_id, $item_meta, 'recurring_line_subtotal_tax', '_line_subtotal_tax', 0 );
 	}
 
 	/**
