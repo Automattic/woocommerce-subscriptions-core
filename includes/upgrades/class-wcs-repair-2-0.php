@@ -233,8 +233,12 @@ class WCS_Repair_2_0 {
 		$renewal_orders = self::get_renewal_orders( $subscription );
 
 		if ( count( $renewal_orders ) < 2 ) {
-			// default to month
+			// default to month. Because we're defaulting, we also need to cancel this to avoid charging customers on a schedule they didn't
+			// agree to.
+			WCS_Upgrade_Logger::add( sprintf( 'Setting default subscription period to month on order id %d.', $subscription['order_id'] ) );
+			WCS_Upgrade_Logger::add( sprintf( 'Shop owner: please review: %d.', $subscription['order_id'] ) );
 			$subscription['period'] = 'month';
+			$subscription['status'] = 'cancelled';
 			return $subscription;
 		}
 
