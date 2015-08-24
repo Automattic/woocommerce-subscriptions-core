@@ -40,7 +40,8 @@ class WCS_Change_Payment_Method_Admin {
 			echo '</select>';
 
 		} elseif ( count( $valid_payment_methods ) == 1 ) {
-			echo '<strong>' . esc_html__( 'Payment Method', 'woocommerce-subscriptions' ) . ':</strong> ' . esc_html( current( $valid_payment_methods ) );
+			echo '<strong>' . esc_html__( 'Payment Method', 'woocommerce-subscriptions' ) . ':</strong><br/>' . esc_html( current( $valid_payment_methods ) );
+			echo '<img class="help_tip" data-tip="Gateway ID: [' . esc_attr( key( $valid_payment_methods ) ) . ']" src="' . esc_url( WC()->plugin_url() ) . '/assets/images/help.png" height="16" width="16" />';
 			echo '<input type="hidden" value="' . esc_attr( key( $valid_payment_methods ) ) . '" id="_payment_method" name="_payment_method">';
 		}
 
