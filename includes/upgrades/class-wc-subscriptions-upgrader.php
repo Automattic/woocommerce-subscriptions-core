@@ -426,7 +426,6 @@ class WC_Subscriptions_Upgrader {
 			'really_old_version'        => ( version_compare( self::$active_version, '1.4', '<' ) ) ? 'true' : 'false',
 			'upgrade_to_1_5'            => ( version_compare( self::$active_version, '1.5', '<' ) ) ? 'true' : 'false',
 			'hooks_per_request'         => self::$upgrade_limit_hooks,
-			'subscriptions_per_request' => self::$upgrade_limit_subscriptions,
 			'ajax_url'                  => admin_url( 'admin-ajax.php' ),
 			'upgrade_nonce'             => wp_create_nonce( 'wcs_upgrade_process' ),
 			'subscription_count'        => $subscription_count,
@@ -437,7 +436,7 @@ class WC_Subscriptions_Upgrader {
 		// Can't get subscription count with database structure < 1.4
 		if ( 'false' == $script_data['really_old_version'] ) {
 
-			$batch_size         = self::$upgrade_limit_subscriptions;
+			$batch_size = self::$upgrade_limit_subscriptions;
 
 			// The base duration is 50 subscriptions per minute (i.e. approximately 60 seconds per batch of 50)
 			$estimated_duration = ceil( $subscription_count / 50 );
