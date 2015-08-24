@@ -13,7 +13,75 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class WCS_Repair_2_0 {
+	/**
+	 * Takes care of undefine notices in the upgrade process
+	 *
+	 * @param  array $order_item item meta
+	 * @return array             repaired item meta
+	 */
+	public static function maybe_repair_order_item( $order_item ) {
+		foreach ( array( 'qty', 'tax_class', 'product_id', 'variation_id', 'recurring_line_subtotal', 'recurring_line_total', 'recurring_line_subtotal_tax', 'recurring_line_tax' ) as $key ) {
+			if ( ! array_key_exists( $key, $order_item ) ) {
+				$order_item[ $key ] = '';
+			}
+		}
 
+		return $order_item;
+	}
+
+	/**
+	 * Does sanity check on every subscription, and repairs them as needed
+	 *
+	 * @param  array $subscription subscription data to be upgraded
+	 * @param  integer $item_id      id of order item meta
+	 * @return array               a repaired subscription array
+	 */
+	public static function maybe_repair_subscription( $subscription, $item_id ) {
+		global $wpdb;
+
+		$item_meta = get_metadata( 'order_item', $item_id );
+
+		foreach ( self::integrity_check( $subscription ) as $function ) {
+			$subscription = call_user_func( 'WCS_Repair_2_0::repair_' . $function, $subscription, $item_id, $item_meta );
+		}
+
+		return $subscription;
+	}
+
+	/**
+	 * Checks for missing data on a subscription
+	 *
+	 * @param  array $subscription data about the subscription
+	 * @return array               a list of repair functions to run on the subscription
+	 */
+	public static function integrity_check( $subscription ) {
+		$repairs_needed = array();
+
+		foreach ( array(
+			'order_id',
+			'product_id',
+			'variation_id',
+			'status',
+			'period',
+			'interval',
+			'length',
+			'start_date',
+			'trial_expiry_date',
+			'expiry_date',
+			'end_date',
+			'recurring_line_total',
+			'recurring_line_tax',
+			'recurring_line_subtotal',
+			'recurring_line_subtotal_tax',
+			'subscription_key',
+			) as $meta ) {
+			if ( ! array_key_exists( $meta, $subscription ) || empty( $subscription[ $meta ] ) ) {
+				$repairs_needed[] = $meta;
+			}
+		}
+
+		return $repairs_needed;
+	}
 
 	/**
 	 * 'order_id': a subscription can exist without an original order in v2.0, so technically the order ID is no longer required.

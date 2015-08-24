@@ -58,7 +58,7 @@ class WCS_Upgrade_2_0 {
 
 			try {
 
-				$old_subscription = self::maybe_repair_subscription( $old_subscription, $original_order_item_id );
+				$old_subscription = WCS_Repair_2_0::maybe_repair_subscription( $old_subscription, $original_order_item_id );
 
 				// don't allow data to be half upgraded on a subscription (but we need the subscription to be the atomic level, not the whole batch, to ensure that resubscribe and switch updates in the same batch have the new subscription available)
 				$wpdb->query( 'START TRANSACTION' );
@@ -257,7 +257,7 @@ class WCS_Upgrade_2_0 {
 
 		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: new line item ID %d added', $new_subscription->id, $item_id ) );
 
-		$order_item = self::maybe_repair_order_item( $order_item );
+		$order_item = WCS_Repair_2_0::maybe_repair_order_item( $order_item );
 
 		$wpdb->query( $wpdb->prepare(
 			"INSERT INTO `{$wpdb->prefix}woocommerce_order_itemmeta` (`order_item_id`, `meta_key`, `meta_value`)
@@ -319,21 +319,6 @@ class WCS_Upgrade_2_0 {
 		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: %s rows of line item meta deprecated', $new_subscription->id, $rows_affected ) );
 
 		return $item_id;
-	}
-
-	/**
-	 * Takes care of undefine notices in the upgrade process
-	 * @param  array $order_item item meta
-	 * @return array             repaired item meta
-	 */
-	private static function maybe_repair_order_item( $order_item ) {
-		foreach ( array( 'qty', 'tax_class', 'product_id', 'variation_id', 'recurring_line_subtotal', 'recurring_line_total', 'recurring_line_subtotal_tax', 'recurring_line_tax' ) as $key ) {
-			if ( ! array_key_exists( $key, $order_item ) ) {
-				$order_item[ $key ] = '';
-			}
-		}
-
-		return $order_item;
 	}
 
 	/**
@@ -895,52 +880,5 @@ class WCS_Upgrade_2_0 {
 
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: migrated switch data for subscription %d purchased in order %d', $new_subscription->id, $old_subscription->id, $previous_order_id ) );
 		}
-	}
-
-	/**
-	 * Does sanity check on every subscription, and repairs them as needed
-	 * @param  array $subscription subscription data to be upgraded
-	 * @param  integer $item_id      id of order item meta
-	 * @return array               a repaired subscription array
-	 */
-	public static function maybe_repair_subscription( $subscription, $item_id ) {
-		global $wpdb;
-
-		$item_meta = get_metadata( 'order_item', $item_id );
-
-		foreach ( self::integrity_check( $subscription ) as $function ) {
-			$subscription = call_user_func( 'WCS_Repair_2_0::repair_' . $function, $subscription, $item_id, $item_meta );
-		}
-
-		return $subscription;
-	}
-
-	private static function integrity_check( $subscription ) {
-		$repairs_needed = array();
-
-		foreach ( array(
-			'order_id',
-			'product_id',
-			'variation_id',
-			'status',
-			'period',
-			'interval',
-			'length',
-			'start_date',
-			'trial_expiry_date',
-			'expiry_date',
-			'end_date',
-			'recurring_line_total',
-			'recurring_line_tax',
-			'recurring_line_subtotal',
-			'recurring_line_subtotal_tax',
-			'subscription_key',
-			) as $meta ) {
-			if ( ! array_key_exists( $meta, $subscription ) || empty( $subscription[ $meta ] ) ) {
-				$repairs_needed[] = $meta;
-			}
-		}
-
-		return $repairs_needed;
 	}
 }
