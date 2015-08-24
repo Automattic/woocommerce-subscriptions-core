@@ -256,7 +256,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 			if ( 'cancelled' == $_POST['order_status'] ) {
 				$subscription->cancel_order();
 			} else {
-				$subscription->update_status( $_POST['order_status'] );
+				$subscription->update_status( $_POST['order_status'], '', true );
 			}
 		} catch ( Exception $e ) {
 			wcs_add_admin_notice( $e->getMessage(), 'error' );
