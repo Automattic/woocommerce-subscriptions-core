@@ -288,3 +288,146 @@ function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_o
 
 	return $periods_until;
 }
+
+/**
+ * Method to try to determine the period of subscriptions if data is missing. It tries the following, in order:
+ *
+ * - defaults to month
+ * - comes up with an array of possible values given the standard time spans (day / week / month / year)
+ * - ranks them
+ * - discards 0 interval values
+ * - discards high deviation values
+ * - tries to match with passed in interval
+ * - if all else fails, sorts by interval and returns the one having the lowest interval, or the first, if equal (that should
+ *   not happen though)
+ *
+ * @param  string  $last_date   mysql date string
+ * @param  string  $second_date mysql date string
+ * @param  integer $interval    potential interval
+ * @return string               period string
+ */
+function wcs_estimate_period_between( $last_date, $second_date, $interval = 1 ) {
+
+	if ( ! is_int( $interval ) ) {
+		$interval = 1;
+	}
+
+	$last_timestamp = strtotime( $last_date );
+	$second_timestamp = strtotime( $second_date );
+
+	$earlier_timestamp = min( $last_timestamp, $second_timestamp );
+	$days_in_month = date( 't', $earlier_timestamp );
+
+	$difference = absint( $last_timestamp - $second_timestamp );
+
+	$period_in_seconds = round( $difference / $interval );
+
+	$possible_periods = array();
+
+	// check for different time spans
+	foreach ( array( 'year' => YEAR_IN_SECONDS, 'month' => $days_in_month * DAY_IN_SECONDS, 'week' => WEEK_IN_SECONDS, 'day' => DAY_IN_SECONDS ) as $time => $seconds ) {
+		$possible_periods[ $time ] = array(
+			'intervals' => floor( $period_in_seconds / $seconds ),
+			'remainder' => $remainder = $period_in_seconds % $seconds,
+			'fraction' => $remainder / $seconds,
+			'period' => $time,
+			'days_in_month' => $days_in_month,
+			'original_interval' => $interval,
+		);
+	}
+
+	// filter out ones that are less than one period
+	$possible_periods = array_filter( $possible_periods, 'wcs_discard_zero_intervals' );
+
+	// filter out ones that have too high of a deviation
+	$possible_periods_no_hd = array_filter( $possible_periods, 'wcs_discard_high_deviations' );
+
+	if ( count( $possible_periods_no_hd ) == 1 ) {
+		// only one matched, let's return that as our best guess
+		return $possible_periods_no_hd['period'];
+	} elseif ( count( $possible_periods_no_hd > 1 ) ) {
+		$possible_periods = $possible_periods_no_hd;
+	}
+
+	// check for interval equality
+	$possible_periods_interval_match = array_filter( $possible_periods, 'wcs_match_intervals' );
+
+	if ( count( $possible_periods_interval_match ) == 1 ) {
+		foreach ( $possible_periods_interval_match as $period_data ) {
+			// only one matched the interval as our best guess
+			return $period_data['period'];
+		}
+	} elseif ( count( $possible_periods_interval_match ) > 1 ) {
+		$possible_periods = $possible_periods_interval_match;
+	}
+
+	// order by number of intervals and return the lowest
+
+	usort( $possible_periods, 'wcs_sort_by_intervals' );
+
+	$least_interval = array_shift( $possible_periods );
+
+	return $least_interval['period'];
+}
+
+/**
+ * Used in an array_filter, removes elements where intervals are less than 0
+ *
+ * @param  array $array elements of an array
+ * @return bool        true if at least 1 interval
+ */
+function wcs_discard_zero_intervals( $array ) {
+	return $array['intervals'] > 0;
+}
+
+/**
+ * Used in an array_filter, discards high deviation elements.
+ * - for days it's 1/24th
+ * - for week it's 1/7th
+ * - for year it's 1/300th
+ * - for month it's 1/($days_in_months-2)
+ *
+ * @param  array $array elements of the filtered array
+ * @return bool        true if value is within deviation limit
+ */
+function wcs_discard_high_deviations( $array ) {
+	switch ( $array['period'] ) {
+		case 'year':
+			return $array['fraction'] < ( 1 / 300 );
+			break;
+		case 'month':
+			return $array['fraction'] < ( 1 / ( $array['days_in_month'] - 2 ) );
+			break;
+		case 'week':
+			return $array['fraction'] < ( 1 / 7 );
+			break;
+		case 'day':
+			return $array['fraction'] < ( 1 / 24 );
+			break;
+		default:
+			return false;
+	}
+}
+
+/**
+ * Used in an array_filter, tries to match intervals against passed in interval
+ * @param  array $array elements of filtered array
+ * @return bool        true if intervals match
+ */
+function wcs_match_intervals( $array ) {
+	return $array['intervals'] == $array['original_interval'];
+}
+
+/**
+ * Used in a usort, responsible for making sure the array is sorted in ascending order by intervals
+ *
+ * @param  array $a one element of the sorted array
+ * @param  array $b different element of the sorted array
+ * @return int    0 if equal, -1 if $b is larger, 1 if $a is larger
+ */
+function wcs_sort_by_intervals( $a, $b ) {
+	if ( $a['intervals'] == $b['intervals'] ) {
+		return 0;
+	}
+	return ( $a['intervals'] < $b['intervals'] ) ? -1 : 1;
+}
