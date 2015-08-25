@@ -71,8 +71,6 @@ function wcs_get_subscription_trial_period_strings( $number = 1, $period = '' ) 
  */
 function wcs_get_subscription_ranges( $subscription_period = '' ) {
 
-	$subscription_periods = wcs_get_subscription_period_strings();
-
 	foreach ( array( 'day', 'week', 'month', 'year' ) as $period ) {
 
 		$subscription_lengths = array(
