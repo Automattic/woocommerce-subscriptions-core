@@ -164,7 +164,6 @@ class WC_Subscriptions_Admin {
 			'class'       => 'wc_input_subscription_period',
 			'label'       => __( 'Billing Period', 'woocommerce-subscriptions' ),
 			'value'       => $subscription_period,
-			'description' => _x( 'for', 'for in "Every month _for_ 12 months"', 'woocommerce-subscriptions' ),
 			'options'     => wcs_get_subscription_period_strings(),
 			)
 		);
