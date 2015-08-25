@@ -61,6 +61,7 @@ class WCS_Repair_2_0 {
 			'order_id',
 			'product_id',
 			'variation_id',
+			'subscription_key',
 			'status',
 			'period',
 			'interval',
@@ -73,7 +74,6 @@ class WCS_Repair_2_0 {
 			'recurring_line_tax',
 			'recurring_line_subtotal',
 			'recurring_line_subtotal_tax',
-			'subscription_key',
 			) as $meta ) {
 			if ( ! array_key_exists( $meta, $subscription ) || empty( $subscription[ $meta ] ) ) {
 				$repairs_needed[] = $meta;
@@ -167,6 +167,21 @@ class WCS_Repair_2_0 {
 	 */
 	public static function repair_variation_id( $subscription, $item_id, $item_meta ) {
 		return self::repair_from_item_meta( $subscription, $item_id, $item_meta, 'variation_id', 'variation_id' );
+	}
+
+	/**
+	 * If the subscription does not have a subscription key for whatever reason (probably becuase the product_id was missing), then this one
+	 * fills in the blank.
+	 *
+	 * @param  array $subscription data about the subscription
+	 * @param  numeric $item_id    the id of the product we're missing variation id for
+	 * @param  array $item_meta    meta data about the product
+	 * @return array               repaired data about the subscription
+	 */
+	public static function repair_subscription_key( $subscription, $item_id, $item_meta ) {
+		$subscription['subscription_key'] = $subscription['order_id'] . '_' . $item_id;
+
+		return $subscription;
 	}
 
 	/**
@@ -394,7 +409,8 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_trial_expiry_date( $subscription, $item_id, $item_meta ) {
-		$subscription['trial_expiry_date'] = 0;
+		$subscription['trial_expiry_date'] = self::maybe_get_date_from_action_scheduler( 'scheduled_subscription_trial_end', $subscription['subscription_key'] );
+
 		return $subscription;
 	}
 
@@ -410,7 +426,7 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_expiry_date( $subscription, $item_id, $item_meta ) {
-		$subscription['expiry_date'] = 0;
+		$subscription['expiry_date'] = self::maybe_get_date_from_action_scheduler( 'scheduled_subscription_expiration', $subscription['subscription_key'] );
 		return $subscription;
 	}
 
@@ -508,21 +524,6 @@ class WCS_Repair_2_0 {
 	}
 
 	/**
-	 * If the subscription does not have a subscription key for whatever reason (probably becuase the product_id was missing), then this one
-	 * fills in the blank.
-	 *
-	 * @param  array $subscription data about the subscription
-	 * @param  numeric $item_id    the id of the product we're missing variation id for
-	 * @param  array $item_meta    meta data about the product
-	 * @return array               repaired data about the subscription
-	 */
-	public static function repair_subscription_key( $subscription, $item_id, $item_meta ) {
-		$subscription['subscription_key'] = $subscription['order_id'] . '_' . $item_id;
-
-		return $subscription;
-	}
-
-	/**
 	 * Utility function to calculate the seconds between two timestamps. Order is not important, it's just the difference.
 	 *
 	 * @param  string $to   mysql timestamp
@@ -560,5 +561,32 @@ class WCS_Repair_2_0 {
 		}
 
 		return $related_orders;
+	}
+
+	/**
+	 * Utility method to check the action scheduler for dates
+	 *
+	 * @param  string $type             the type of scheduled action
+	 * @param  string $subscription_key key of subscription in the format of order_id_item_id
+	 * @return string                   either 0 or mysql date
+	 */
+	private static function maybe_get_date_from_action_scheduler( $type, $subscription_key ) {
+		$action_scheduler = new ActionScheduler_wpPostStore;
+
+		$action_id = $action_scheduler->find_action( $type, array( 'subscription_key' => $subscription_key ) );
+
+		if ( is_numeric( $action_id ) ) {
+			try {
+				$date = $action_scheduler->get_date( $action_id );
+				$formatted_date = $date->format( 'Y-m-d H:i:s' );
+			} catch ( Exception $e ) {
+				WCS_Upgrade_Logger::add( '-- While fetching date from action scheduler, an error occurred. No such action id. Setting trial expiry to 0.' );
+				$formatted_date = 0;
+			}
+		} else {
+			$formatted_date = 0;
+		}
+
+		return $formatted_date;
 	}
 }
