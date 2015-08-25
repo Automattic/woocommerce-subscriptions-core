@@ -173,7 +173,7 @@ class WC_Subscriptions_Admin {
 			'id'          => '_subscription_length',
 			'class'       => 'wc_input_subscription_length',
 			'label'       => __( 'End Aftter', 'woocommerce-subscriptions' ),
-			'options'     => wcs_get_subscription_ranges( $subscription_period ),
+			'options'     => wcs_get_subscription_payment_ranges( $subscription_period ),
 			'description' => __( 'The number of payments that the user will be charged as part of the subscription. This is also known as the length of the subscription.', 'woocommerce-subscriptions' ),
 			'desc_tip'    => true,
 			)
@@ -605,7 +605,7 @@ class WC_Subscriptions_Admin {
 					'productType'              => WC_Subscriptions::$name,
 					'trialPeriodSingular'      => wcs_get_available_time_periods(),
 					'trialPeriodPlurals'       => wcs_get_available_time_periods( 'plural' ),
-					'subscriptionLengths'      => wcs_get_subscription_ranges(),
+					'subscriptionLengths'      => wcs_get_subscription_payment_ranges(),
 					'trialTooLongMessages'     => self::get_trial_period_validation_message( 'separate' ),
 					'bulkEditPeriodMessage'    => __( 'Enter the new period, either day, week, month or year:', 'woocommerce-subscriptions' ),
 					'bulkEditLengthMessage'    => __( 'Enter a new length (e.g. 5):', 'woocommerce-subscriptions' ),

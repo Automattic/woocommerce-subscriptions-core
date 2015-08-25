@@ -116,6 +116,61 @@ function wcs_get_subscription_ranges( $subscription_period = '' ) {
 }
 
 /**
+ * Returns an array of subscription payment ranges.
+ *
+ * PayPal Standard Allowable Ranges
+ * D – for days; allowable range is 1 to 90
+ * W – for weeks; allowable range is 1 to 52
+ * M – for months; allowable range is 1 to 24
+ * Y – for years; allowable range is 1 to 5
+ *
+ * @param string (optional) One of day, week, month or year. If empty, all subscription payment ranges are returned.
+ * @since 2.0
+ */
+function wcs_get_subscription_payment_ranges( $subscription_period = '' ) {
+
+	foreach ( array( 'day', 'week', 'month', 'year' ) as $period ) {
+
+		$subscription_lengths = array(
+			_x( 'Never expire', 'Refers to a subscription with unlimited payments i.e. it "never expires"', 'woocommerce-subscriptions' ),
+		);
+
+		switch ( $period ) {
+			case 'day':
+				$subscription_range = range( 1, 90 );
+				break;
+			case 'week':
+				$subscription_range = range( 1, 52 );
+				break;
+			case 'month':
+				$subscription_range = range( 1, 24 );
+				break;
+			case 'year':
+				$subscription_range = range( 1, 5 );
+				break;
+		}
+
+		foreach ( $subscription_range as $number ) {
+			// translators: placeholder is the number of payments that will be charged in a subscription
+			$subscription_range[ $number ] = sprintf( _n( '%s payment', '%s payments', $number, 'woocommerce-subscriptions' ), $number );
+		}
+
+		// Add the possible range to "never expire" range
+		$subscription_lengths += $subscription_range;
+
+		$subscription_ranges[ $period ] = $subscription_lengths;
+	}
+
+	$subscription_ranges = apply_filters( 'woocommerce_subscription_payment_ranges', $subscription_ranges, $subscription_period );
+
+	if ( ! empty( $subscription_period ) ) {
+		return $subscription_ranges[ $subscription_period ];
+	} else {
+		return $subscription_ranges;
+	}
+}
+
+/**
  * Return an i18n'ified associative array of all possible subscription periods.
  *
  * @param int (optional) An interval in the range 1-6
