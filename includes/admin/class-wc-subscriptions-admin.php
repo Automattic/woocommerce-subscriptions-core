@@ -172,8 +172,10 @@ class WC_Subscriptions_Admin {
 		woocommerce_wp_select( array(
 			'id'          => '_subscription_length',
 			'class'       => 'wc_input_subscription_length',
-			'label'       => __( 'Subscription Length', 'woocommerce-subscriptions' ),
+			'label'       => __( 'End Aftter', 'woocommerce-subscriptions' ),
 			'options'     => wcs_get_subscription_ranges( $subscription_period ),
+			'description' => __( 'The number of payments that the user will be charged as part of the subscription. This is also known as the length of the subscription.', 'woocommerce-subscriptions' ),
+			'desc_tip'    => true,
 			)
 		);
 
@@ -293,7 +295,7 @@ class WC_Subscriptions_Admin {
 							<option value="variable_subscription_sign_up_fee"><?php esc_html_e( 'Subscription sign-up fee', 'woocommerce-subscriptions' ); ?></option>
 							<option value="variable_subscription_period_interval"><?php esc_html_e( 'Subscription billing interval', 'woocommerce-subscriptions' ); ?></option>
 							<option value="variable_subscription_period"><?php esc_html_e( 'Subscription period', 'woocommerce-subscriptions' ); ?></option>
-							<option value="variable_subscription_length"><?php esc_html_e( 'Subscription length', 'woocommerce-subscriptions' ); ?></option>
+							<option value="variable_subscription_length"><?php esc_html_e( 'End after', 'woocommerce-subscriptions' ); ?></option>
 							<option value="variable_subscription_trial_length"><?php esc_html_e( 'Free trial length', 'woocommerce-subscriptions' ); ?></option>
 							<option value="variable_subscription_trial_period"><?php esc_html_e( 'Free trial period', 'woocommerce-subscriptions' ); ?></option>
 						</optgroup>
