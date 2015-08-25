@@ -172,7 +172,7 @@ class WC_Subscriptions_Admin {
 		woocommerce_wp_select( array(
 			'id'          => '_subscription_length',
 			'class'       => 'wc_input_subscription_length',
-			'label'       => __( 'End Aftter', 'woocommerce-subscriptions' ),
+			'label'       => __( 'End After', 'woocommerce-subscriptions' ),
 			'options'     => wcs_get_subscription_payment_ranges( $subscription_period ),
 			'description' => __( 'The number of payments that the user will be charged as part of the subscription. This is also known as the length of the subscription.', 'woocommerce-subscriptions' ),
 			'desc_tip'    => true,
