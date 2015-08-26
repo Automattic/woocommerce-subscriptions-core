@@ -124,8 +124,8 @@ class WCS_Repair_2_0 {
 	 * @param  string  $subscription_meta_key the meta key for the data on the subscription
 	 * @return array                          repaired data about the subscription
 	 */
-	public static function repair_from_item_meta( $subscription, $item_id, $item_meta, $subscription_meta_key = null, $item_meta_key = null, $default_value = '' ) {
-		if ( ! is_string( $subscription_meta_key ) || ! is_string( $item_meta_key ) || ( ! is_string( $default_value ) && ! is_numeric( $default_value ) ) ) {
+	public static function repair_from_item_meta( array $subscription, $item_id, $item_meta, $subscription_meta_key = null, $item_meta_key = null, $default_value = '' ) {
+		if ( ! is_array( $subscription ) || ! is_numeric( $item_id ) || ! is_array( $item_meta ) || ! is_string( $subscription_meta_key ) || ! is_string( $item_meta_key ) || ( ! is_string( $default_value ) && ! is_numeric( $default_value ) ) ) {
 			return $subscription;
 		}
 
@@ -153,7 +153,7 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_product_id( $subscription, $item_id, $item_meta ) {
-		return self::repair_from_item_meta( $subscription, $item_id, $item_meta, 'product_id', 'product_id' );
+		return self::repair_from_item_meta( $subscription, $item_id, $item_meta, 'product_id', '_product_id' );
 	}
 
 	/**
