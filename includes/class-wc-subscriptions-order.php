@@ -45,7 +45,7 @@ class WC_Subscriptions_Order {
 		add_filter( 'woocommerce_order_needs_payment', __CLASS__ . '::order_needs_payment' , 10, 3 );
 
 		// Add subscription information to the order complete emails.
-		add_action( 'woocommerce_email_after_order_table', __CLASS__ . '::add_sub_info_email', 15, 2 );
+		add_action( 'woocommerce_email_after_order_table', __CLASS__ . '::add_sub_info_email', 15, 3 );
 
 		// Add dropdown to admin orders screen to filter on order type
 		add_action( 'restrict_manage_posts', __CLASS__ . '::restrict_manage_subscriptions', 50 );
@@ -536,7 +536,7 @@ class WC_Subscriptions_Order {
 	 *
 	 * @since 1.5
 	 */
-	public static function add_sub_info_email( $order, $is_admin_email ) {
+	public static function add_sub_info_email( $order, $is_admin_email, $plaintext = false ) {
 		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_add_sub_info_email', 'yes' ) ) {
 
 			$subscriptions = wcs_get_subscriptions_for_order( $order );
@@ -547,7 +547,7 @@ class WC_Subscriptions_Order {
 			if ( ! empty( $subscriptions ) ) {
 
 				$template_base  = plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/';
-				$template = ( 'plain' == WC()->mailer()->emails['WC_Email_Customer_Completed_Order']->email_type ) ? 'emails/plain/subscription-info.php' : 'emails/subscription-info.php';
+				$template = ( $plaintext ) ? 'emails/plain/subscription-info.php' : 'emails/subscription-info.php';
 
 				wc_get_template(
 					$template,
