@@ -814,7 +814,8 @@ class WC_Subscriptions_Switcher {
 		}
 
 		if ( isset( WC()->cart ) ) {
-			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			// We use WC()->cart->cart_contents instead of WC()->cart->get_cart() to prevent recursion caused when get_cart_from_session() too early is called ref: https://github.com/woothemes/woocommerce/commit/1f3365f2066b1e9d7e84aca7b1d7e89a6989c213
+			foreach ( WC()->cart->cart_contents as $cart_item_key => $cart_item ) {
 				if ( isset( $cart_item['subscription_switch'] ) ) {
 					if ( wcs_is_subscription( $cart_item['subscription_switch']['subscription_id'] ) ) {
 						$subscription_switches[ $cart_item_key ] = $cart_item['subscription_switch'];

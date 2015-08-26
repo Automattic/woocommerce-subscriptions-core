@@ -275,7 +275,7 @@ class WC_Subscription extends WC_Order {
 	 * @param string $new_status Status to change the order to. No internal wc- prefix is required.
 	 * @param string $note (default: '') Optional note to add
 	 */
-	public function update_status( $new_status, $note = '' ) {
+	public function update_status( $new_status, $note = '', $manual = false ) {
 
 		if ( ! $this->id ) {
 			return;
@@ -357,7 +357,7 @@ class WC_Subscription extends WC_Order {
 					break;
 				}
 
-				$this->add_order_note( trim( $note . ' ' . sprintf( __( 'Status changed from %s to %s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ) );
+				$this->add_order_note( trim( $note . ' ' . sprintf( __( 'Status changed from %s to %s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ), 0, $manual );
 
 				// Trigger a hook with params we want
 				do_action( 'woocommerce_subscription_status_updated', $this, $new_status, $old_status );
@@ -1515,6 +1515,7 @@ class WC_Subscription extends WC_Order {
 
 		// Allow payment gateway extensions to validate the data and throw exceptions if necessary
 		do_action( 'woocommerce_subscription_validate_payment_meta', $payment_method_id, $payment_meta, $this );
+		do_action( 'woocommerce_subscription_validate_payment_meta_' . $payment_method_id, $payment_meta, $this );
 
 		foreach ( $payment_meta as $meta_table => $meta ) {
 			foreach ( $meta as $meta_key => $meta_data ) {

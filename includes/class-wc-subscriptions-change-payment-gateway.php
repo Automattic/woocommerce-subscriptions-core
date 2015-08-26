@@ -38,7 +38,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		add_filter( 'wcs_view_subscription_actions', __CLASS__ . '::change_payment_method_button', 10, 2 );
 
 		// Maybe allow for a recurring payment method to be changed
-		add_action( 'init', __CLASS__ . '::change_payment_method_via_pay_shortcode', 20 );
+		add_action( 'wp_loaded', __CLASS__ . '::change_payment_method_via_pay_shortcode', 20 );
 
 		// Filter the available payment gateways to only show those which support acting as the new payment method
 		add_filter( 'woocommerce_available_payment_gateways', __CLASS__ . '::get_available_payment_gateways' );
@@ -255,6 +255,8 @@ class WC_Subscriptions_Change_Payment_Gateway {
 				if ( wc_notice_count( 'error' ) == 0 ) {
 
 					$result = $available_gateways[ $new_payment_method ]->process_payment( $subscription->id );
+
+					$result = apply_filters( 'woocommerce_subscriptions_process_payment_for_change_method_via_pay_shortcode', $result, $subscription );
 
 					// Redirect to success/confirmation/payment page
 					if ( 'success' == $result['result'] ) {
