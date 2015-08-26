@@ -100,7 +100,8 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_order_id( $subscription ) {
-		WCS_Upgrade_Logger::add( sprintf( 'Repairing order_id for subscription %d: Status changed to trash', $subscription['order_id'] ) );
+		WCS_Upgrade_Logger::add( 'Repairing order_id for subscription that is missing order id: Status changed to trash' );
+		WCS_Upgrade_Logger::add( 'Shop owner: please review new trashed subscriptions. There is at least one with missing order id.' );
 
 		$subscription['status'] = 'trash';
 
@@ -211,10 +212,12 @@ class WCS_Repair_2_0 {
 		if ( array_key_exists( 'expiry_date' ) && ! empty( $subscription['expiry_date'] ) && array_key_exists( 'end_date', $subscription ) && ! empty( $subscription['end_date'] ) && ( 4 * MINUTE_IN_SECONDS ) > self::time_diff( $subscription['expiry_date'], $subscription['end_date'] ) ) {
 			WCS_Upgrade_Logger::add( '-- There are end dates and expiry dates, they are close to each other, setting status to "expired" and returning.' );
 
+			WCS_Upgrade_Logger::add( sprintf( 'Shop owner: please review: %d.', $subscription['order_id'] ) );
 			$subscription['status'] = 'expired';
 		} else {
 			// default to cancelled
 			WCS_Upgrade_Logger::add( '-- Setting the default to "cancelled".' );
+			WCS_Upgrade_Logger::add( sprintf( 'Shop owner: please review: %d.', $subscription['order_id'] ) );
 			$subscription['status'] = 'cancelled';
 		}
 
