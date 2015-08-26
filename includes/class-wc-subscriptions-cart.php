@@ -83,10 +83,6 @@ class WC_Subscriptions_Cart {
 			return;
 		}
 
-		// Set defaults for required values
-		WC()->cart->base_recurring_prices = array();
-		WC()->cart->base_sign_up_fees = array();
-
 		// Set which price should be used for calculation
 		add_filter( 'woocommerce_get_price', __CLASS__ . '::set_subscription_prices_for_calculation', 100, 2 );
 	}
