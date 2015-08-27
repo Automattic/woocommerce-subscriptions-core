@@ -316,6 +316,8 @@ function wcs_estimate_period_between( $last_date, $second_date, $interval = 1 ) 
 	$second_timestamp = strtotime( $second_date );
 
 	$earlier_timestamp = min( $last_timestamp, $second_timestamp );
+	$later_timestamp = max( $last_timestamp, $second_timestamp );
+
 	$days_in_month = date( 't', $earlier_timestamp );
 
 	$difference = absint( $last_timestamp - $second_timestamp );
@@ -324,8 +326,20 @@ function wcs_estimate_period_between( $last_date, $second_date, $interval = 1 ) 
 
 	$possible_periods = array();
 
+	// check for months
+	$full_months = wcs_find_full_months_between( $earlier_timestamp, $later_timestamp );
+	$possible_periods[ 'month' ] = array(
+		'intervals' => $full_months['months'],
+		'remainder' => $remainder = $full_months['remainder'],
+		'fraction' => $remainder / ( 30 * DAY_IN_SECONDS ),
+		'period' => 'month',
+		'days_in_month' => $days_in_month,
+		'original_interval' => $interval,
+	);
+
+
 	// check for different time spans
-	foreach ( array( 'year' => YEAR_IN_SECONDS, 'month' => $days_in_month * DAY_IN_SECONDS, 'week' => WEEK_IN_SECONDS, 'day' => DAY_IN_SECONDS ) as $time => $seconds ) {
+	foreach ( array( 'year' => YEAR_IN_SECONDS, 'week' => WEEK_IN_SECONDS, 'day' => DAY_IN_SECONDS ) as $time => $seconds ) {
 		$possible_periods[ $time ] = array(
 			'intervals' => floor( $period_in_seconds / $seconds ),
 			'remainder' => $remainder = $period_in_seconds % $seconds,
@@ -337,15 +351,22 @@ function wcs_estimate_period_between( $last_date, $second_date, $interval = 1 ) 
 	}
 
 	// filter out ones that are less than one period
-	$possible_periods = array_filter( $possible_periods, 'wcs_discard_zero_intervals' );
+	$possible_periods_zero_filtered = array_filter( $possible_periods, 'wcs_discard_zero_intervals' );
+	if ( empty( $possible_periods_zero_filtered ) ) {
+		// fall back if the difference is less than a day and return default 'day'
+		return 'day';
+	} else {
+		$possible_periods = $possible_periods_zero_filtered;
+	}
 
 	// filter out ones that have too high of a deviation
 	$possible_periods_no_hd = array_filter( $possible_periods, 'wcs_discard_high_deviations' );
 
 	if ( count( $possible_periods_no_hd ) == 1 ) {
 		// only one matched, let's return that as our best guess
+		$possible_periods_no_hd = array_shift( $possible_periods_no_hd );
 		return $possible_periods_no_hd['period'];
-	} elseif ( count( $possible_periods_no_hd > 1 ) ) {
+	} elseif ( count( $possible_periods_no_hd ) > 1 ) {
 		$possible_periods = $possible_periods_no_hd;
 	}
 
@@ -368,6 +389,40 @@ function wcs_estimate_period_between( $last_date, $second_date, $interval = 1 ) 
 	$least_interval = array_shift( $possible_periods );
 
 	return $least_interval['period'];
+}
+
+/**
+ * Finds full months between two dates and the remaining seconds after the end of the last full month. Takes into account
+ * leap years and variable number of days in months. Uses wcs_add_months
+ *
+ * @param  numeric $start_timestamp unix timestamp of a start date
+ * @param  numeric $end_timestamp   unix timestamp of an end date
+ * @return array                    with keys 'months' (integer) and 'remainder' (seconds, integer)
+ */
+function wcs_find_full_months_between( $start_timestamp, $end_timestamp ) {
+	$number_of_months = 0;
+	$remainder = null;
+	$previous_remainder = null;
+
+	while ( 0 <= $remainder ) {
+		$previous_timestamp = $start_timestamp;
+		$start_timestamp = wcs_add_months( $start_timestamp, 1 );
+		$previous_remainder = $remainder;
+		$remainder = $end_timestamp - $start_timestamp;
+
+		if ( $remainder >= 0 ) {
+			$number_of_months++;
+		} elseif( null === $previous_remainder ) {
+			$previous_remainder = $end_timestamp - $previous_timestamp;
+		}
+	}
+
+	$time_difference = array(
+		'months' => $number_of_months,
+		'remainder' => $previous_remainder,
+	);
+
+	return $time_difference;
 }
 
 /**
@@ -430,4 +485,18 @@ function wcs_sort_by_intervals( $a, $b ) {
 		return 0;
 	}
 	return ( $a['intervals'] < $b['intervals'] ) ? -1 : 1;
+}
+
+/**
+ * Used in a usort, responsible for making sure the array is sorted in descending order by fraction.
+ *
+ * @param  array $a one element of the sorted array
+ * @param  array $b different element of the sorted array
+ * @return int    0 if equal, -1 if $b is larger, 1 if $a is larger
+ */
+function wcs_sort_by_fractions( $a, $b ) {
+	if ( $a['fraction'] == $b['fraction'] ) {
+		return 0;
+	}
+	return ( $a['fraction'] > $b['fraction'] ) ? -1 : 1;
 }
