@@ -532,34 +532,32 @@ class WC_Subscriptions_Order {
 	}
 
 	/**
-	 * Adds the subscription information to our order emails if enabled.
+	 * Adds the subscription information to our order emails.
 	 *
 	 * @since 1.5
 	 */
 	public static function add_sub_info_email( $order, $is_admin_email, $plaintext = false ) {
-		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_add_sub_info_email', 'yes' ) ) {
 
-			$subscriptions = wcs_get_subscriptions_for_order( $order );
-			if ( empty( $subscriptions ) && wcs_order_contains_renewal( $order ) ) {
-				$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
-			}
+		$subscriptions = wcs_get_subscriptions_for_order( $order );
+		if ( empty( $subscriptions ) && wcs_order_contains_renewal( $order ) ) {
+			$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
+		}
 
-			if ( ! empty( $subscriptions ) ) {
+		if ( ! empty( $subscriptions ) ) {
 
-				$template_base  = plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/';
-				$template = ( $plaintext ) ? 'emails/plain/subscription-info.php' : 'emails/subscription-info.php';
+			$template_base  = plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/';
+			$template = ( $plaintext ) ? 'emails/plain/subscription-info.php' : 'emails/subscription-info.php';
 
-				wc_get_template(
-					$template,
-					array(
-						'order'         => $order,
-						'subscriptions' => $subscriptions,
-						'is_admin'      => $is_admin_email,
-					),
-					'',
-					$template_base
-				);
-			}
+			wc_get_template(
+				$template,
+				array(
+					'order'         => $order,
+					'subscriptions' => $subscriptions,
+					'is_admin'      => $is_admin_email,
+				),
+				'',
+				$template_base
+			);
 		}
 	}
 

@@ -1035,15 +1035,6 @@ class WC_Subscriptions_Admin {
 				'desc_tip'      => __( 'Allow subscriptions and products to be purchased in a single transaction.', 'woocommerce-subscriptions' ),
 			),
 
-			array(
-				'name'          => __( 'Subscription Dates In Email', 'woocommerce-subscriptions' ),
-				'desc'          => __( 'Add subscription start/end information to order emails.', 'woocommerce-subscriptions' ),
-				'id'            => self::$option_prefix . '_add_sub_info_email',
-				'default'       => 'no',
-				'type'          => 'checkbox',
-				'desc_tip'      => __( 'Add details about the subscription start and end date to order emails.', 'woocommerce-subscriptions' ),
-			),
-
 			array( 'type' => 'sectionend', 'id' => self::$option_prefix . '_miscellaneous' ),
 
 			array(
