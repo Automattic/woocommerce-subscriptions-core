@@ -245,10 +245,9 @@ class WCS_Repair_2_0 {
 		WCS_Upgrade_Logger::add( sprintf( 'Repairing period for subscription %d.', $subscription['order_id'] ) );
 
 		// Get info from the product
-		if ( array_key_exists( '_subscription_period', $item_meta ) && ! empty( $item_meta['_subscription_period'] ) ) {
-			WCS_Upgrade_Logger::add( '-- Getting info from item meta and returning.' );
+		$subscription = self::repair_from_item_meta( $subscription, $item_id, $item_meta, 'period', '_subscription_period', '' );
 
-			$subscription['period'] = $item_meta['_subscription_period'][0];
+		if ( '' !== $subscription['period'] ) {
 			return $subscription;
 		}
 
