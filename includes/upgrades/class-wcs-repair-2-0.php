@@ -624,7 +624,7 @@ class WCS_Repair_2_0 {
 			// calculate the end of trial from interval, period and start date
 			$effective_date = date( 'Y-m-d H:i:s', strtotime( '+' . $subscription['trial_length'] . ' ' . $subscription['trial_period'], strtotime( $subscription['start_date'] ) ) );
 
-		} elseif( array_key_exists( 'start_date', $subscription ) && ! empty( $subscription['start_date'] ) ) {
+		} elseif ( array_key_exists( 'start_date', $subscription ) && ! empty( $subscription['start_date'] ) ) {
 
 			$effective_date = $subscription['start_date'];
 

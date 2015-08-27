@@ -328,7 +328,7 @@ function wcs_estimate_period_between( $last_date, $second_date, $interval = 1 ) 
 
 	// check for months
 	$full_months = wcs_find_full_months_between( $earlier_timestamp, $later_timestamp );
-	$possible_periods[ 'month' ] = array(
+	$possible_periods['month'] = array(
 		'intervals' => $full_months['months'],
 		'remainder' => $remainder = $full_months['remainder'],
 		'fraction' => $remainder / ( 30 * DAY_IN_SECONDS ),
@@ -336,7 +336,6 @@ function wcs_estimate_period_between( $last_date, $second_date, $interval = 1 ) 
 		'days_in_month' => $days_in_month,
 		'original_interval' => $interval,
 	);
-
 
 	// check for different time spans
 	foreach ( array( 'year' => YEAR_IN_SECONDS, 'week' => WEEK_IN_SECONDS, 'day' => DAY_IN_SECONDS ) as $time => $seconds ) {
@@ -412,7 +411,7 @@ function wcs_find_full_months_between( $start_timestamp, $end_timestamp ) {
 
 		if ( $remainder >= 0 ) {
 			$number_of_months++;
-		} elseif( null === $previous_remainder ) {
+		} elseif ( null === $previous_remainder ) {
 			$previous_remainder = $end_timestamp - $previous_timestamp;
 		}
 	}
