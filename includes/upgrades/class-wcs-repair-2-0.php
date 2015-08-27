@@ -350,7 +350,7 @@ class WCS_Repair_2_0 {
 	}
 
 	/**
-	 * '_subscription_length': if there is are '_subscription_expiry_date' and '_subscription_start_date' values, we can use those to
+	 * '_subscription_length': if there are '_subscription_expiry_date' and '_subscription_start_date' values, we can use those to
 	 * determine how many billing periods fall between them, and therefore, the length of the subscription. This data is low value however as
 	 * it is no longer stored in v2.0 and mainly used to determine the expiration date.
 	 *
@@ -360,23 +360,21 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_length( $subscription, $item_id, $item_meta ) {
-		// Set a default
-		$subscription['length'] = 0;
-
 		// Let's see if the item meta has that
-		if ( array_key_exists( '_subscription_length', $item_meta ) && ! empty( $item_meta['_subscription_length'] ) ) {
-			WCS_Upgrade_Logger::add( '-- Copying subscription_length from item_meta' );
-			$subscription['length'] = $item_meta['_subscription_length'][0];
+		$subscription = self::repair_from_item_meta( $subscription, $item_id, $item_meta, 'length', '_subscription_length', '' );
+
+		if ( '' !== $subscription['length'] ) {
 			return $subscription;
 		}
 
-		// If we can calculate it from start date and expiry date
-		if ( 'expired' == $subscription['status'] && array_key_exists( 'expiry_date', $susbcription ) && ! empty( $subscription['expiry_date'] ) && array_key_exists( 'start_date', $subscription ) && ! empty( $subscription['start_date'] ) && array_key_exists( 'period', $subscription ) && ! empty( $subscription['period'] ) && array_key_exists( 'interval', $subscription ) && ! empty( $subscription['interval'] ) ) {
-			$intervals = wcs_estimate_periods_between( strtotime( $subscription['start_date'] ), strtotime( $subscription['expiry_date'] ), $subscription['period'], 'floor' );
+		$effective_start_date = self::get_effective_start_date( $subscription );
 
-			$intervals = floor( $intervals / $subscription['interval'] );
-
+		// If we can calculate it from the effective date and expiry date
+		if ( 'expired' == $subscription['status'] && array_key_exists( 'expiry_date', $subscription ) && ! empty( $subscription['expiry_date'] ) && null !== $effective_start_date && array_key_exists( 'period', $subscription ) && ! empty( $subscription['period'] ) && array_key_exists( 'interval', $subscription ) && ! empty( $subscription['interval'] ) ) {
+			$intervals = wcs_estimate_periods_between( strtotime( $effective_start_date ), strtotime( $subscription['expiry_date'] ), $subscription['period'], 'floor' );
 			$subscription['length'] = $intervals;
+		} else {
+			$subscription['length'] = 0;
 		}
 
 		return $subscription;
