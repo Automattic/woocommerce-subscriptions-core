@@ -173,7 +173,10 @@ function wcs_get_subscriptions_for_renewal_order( $renewal_order ) {
 	$subscription_ids = get_post_meta( $renewal_order->id, '_subscription_renewal', false );
 
 	foreach ( $subscription_ids as $subscription_id ) {
-		$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
+
+		if ( wcs_is_subscription( $subscription_id ) ) {
+			$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
+		}
 	}
 
 	return apply_filters( 'woocommerce_subscriptions_for_renewal_order', $subscriptions );
