@@ -329,8 +329,11 @@ class WCS_Repair_2_0 {
 		$renewal_orders = self::get_renewal_orders( $subscription );
 
 		if ( count( $renewal_orders ) < 2 ) {
-			// default to month
+			// default to 1
+			WCS_Upgrade_Logger::add( sprintf( 'Setting default subscription interval to 1 on order id %d.', $subscription['order_id'] ) );
+			WCS_Upgrade_Logger::add( sprintf( 'Shop owner: please review: %d.', $subscription['order_id'] ) );
 			$subscription['interval'] = 1;
+			$subscription['status'] = 'cancelled';
 			return $subscription;
 		}
 
