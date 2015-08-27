@@ -180,7 +180,13 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_subscription_key( $subscription, $item_id, $item_meta ) {
-		$subscription['subscription_key'] = $subscription['order_id'] . '_' . $item_id;
+		if ( ! is_numeric( $item_id ) ) {
+			// because item_id can be either product id or variation id, we can't use
+			// item meta to backfill this
+			$subscription['subscription_key'] = '';
+		} else {
+			$subscription['subscription_key'] = $subscription['order_id'] . '_' . $item_id;
+		}
 
 		return $subscription;
 	}
