@@ -597,4 +597,34 @@ class WCS_Repair_2_0 {
 
 		return $formatted_date;
 	}
+
+	/**
+	 * Utility function to return the effective start date for interval calculations (end of trial period -> start date -> null )
+	 *
+	 * @param  array $subscription subscription data
+	 * @return mixed               mysql formatted date, or null if none found
+	 */
+	public static function get_effective_start_date( $subscription ) {
+
+		if ( array_key_exists( 'trial_expiry_date', $subscription ) && ! empty( $subscription['trial_expiry_date'] ) ) {
+
+			$effective_date = $subscription['trial_expiry_date'];
+
+		} elseif ( array_key_exists( 'trial_period', $subscription ) && ! empty( $subscription['trial_period'] ) && array_key_exists( 'trial_length', $subscription ) && ! empty( $subscription['trial_length'] ) && array_key_exists( 'start_date', $subscription ) && ! empty( $subscription['start_date'] ) ) {
+
+			// calculate the end of trial from interval, period and start date
+			$effective_date = date( 'Y-m-d H:i:s', strtotime( '+' . $subscription['trial_length'] . ' ' . $subscription['trial_period'], strtotime( $subscription['start_date'] ) ) );
+
+		} elseif( array_key_exists( 'start_date', $subscription ) && ! empty( $subscription['start_date'] ) ) {
+
+			$effective_date = $subscription['start_date'];
+
+		} else {
+
+			$effective_date = null;
+
+		}
+
+		return $effective_date;
+	}
 }
