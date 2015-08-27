@@ -447,28 +447,37 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_end_date( $subscription, $item_id, $item_meta ) {
-		if ( array_key_exists( '_subscription_end_date', $item_meta ) ) {
-			WCS_Upgrade_Logger::add( '-- Copying end date from item_meta' );
-			$subscription['end_date'] = $item_meta['_subscription_end_date'][0];
+		$subscription = self::repair_from_item_meta( $subscription, $item_id, $item_meta, 'end_date', '_subscription_end_date', '' );
+
+		if ( '' !== $subscription['end_date'] ) {
 			return $subscription;
 		}
 
 		if ( 'expired' == $subscription['status'] && array_key_exists( 'expiry_date', $subscription ) && ! empty( $subscription['expiry_date'] ) ) {
-			$subscription['end_date'] = $subscription['expiry_date'];
-			return $subscription;
-		}
 
-		if ( 'cancelled' == $subscription['status'] || ! array_key_exists( 'length', $subscription ) || empty( $subscription['length'] ) ) {
+			$subscription['end_date'] = $subscription['expiry_date'];
+
+		} elseif ( 'cancelled' == $subscription['status'] || ! array_key_exists( 'length', $subscription ) || empty( $subscription['length'] ) ) {
+
 			// get renewal orders
 			$renewal_orders = self::get_renewal_orders( $subscription );
 			$last_order = array_shift( $renewal_orders );
 
-			$subscription['end_date'] = wcs_add_time( 5, 'hours', strtotime( $last_order->order_date ) );
-			return $subscription;
-		}
+			if ( empty( $last_order ) ) {
 
-		// if everything failed, let's have an empty one
-		$subscription['end_date'] = 0;
+				$subscription['end_date'] = 0;
+
+			} else {
+
+				$subscription['end_date'] = wcs_add_time( 5, 'hours', strtotime( $last_order->order_date ) );
+
+			}
+		} else {
+
+			// if everything failed, let's have an empty one
+			$subscription['end_date'] = 0;
+
+		}
 
 		return $subscription;
 	}
