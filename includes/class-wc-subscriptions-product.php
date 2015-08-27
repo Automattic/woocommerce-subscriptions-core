@@ -69,7 +69,51 @@ class WC_Subscriptions_Product {
 	}
 
 	/**
-	 * Override the WooCommerce "Add to Cart" text with "Sign Up Now"
+	 * Returns the sign up fee (including tax) by filtering the products price used in
+	 * @see WC_Product::get_price_including_tax( $qty )
+	 *
+	 * @return string
+	 */
+	public static function get_sign_up_fee_including_tax( $product, $qty = 1 ) {
+
+		add_filter( 'woocommerce_get_price', __CLASS__ . '::get_sign_up_fee_filter', 100, 2 );
+
+		$sign_up_fee_including_tax = $product->get_price_including_tax( $qty );
+
+		remove_filter( 'woocommerce_get_price', __CLASS__ . '::get_sign_up_fee_filter', 100, 2 );
+
+		return $sign_up_fee_including_tax;
+	}
+
+	/**
+	 * Returns the raw sign up fee value (ignoring tax) by filtering the products price.
+	 *
+	 * @return string
+	 */
+	public static function get_sign_up_fee_filter( $price, $product ) {
+
+		return self::get_sign_up_fee( $product );
+	}
+
+	/**
+	 * Returns the sign up fee (excluding tax) by filtering the products price used in
+	 * @see WC_Product::get_price_excluding_tax( $qty )
+	 *
+	 * @return string
+	 */
+	public static function get_sign_up_fee_excluding_tax( $product, $qty = 1 ) {
+
+		add_filter( 'woocommerce_get_price', __CLASS__ . '::get_sign_up_fee_filter', 100, 2 );
+
+		$sign_up_fee_excluding_tax = $product->get_price_excluding_tax( $qty );
+
+		remove_filter( 'woocommerce_get_price', __CLASS__ . '::get_sign_up_fee_filter', 100, 2 );
+
+		return $sign_up_fee_excluding_tax;
+	}
+
+	/**
+	 * Override the WooCommerce "Add to Cart" text with "Sign Up Now".
 	 *
 	 * @since 1.0
 	 */
@@ -85,6 +129,7 @@ class WC_Subscriptions_Product {
 
 	/**
 	 * Checks a given product to determine if it is a subscription.
+	 * When the received arg is a product object, make sure it is passed into the filter intact in order to retain any properties added on the fly.
 	 *
 	 * @param int|WC_Product $product_id Either a product object or product's post ID.
 	 * @since 1.0
@@ -94,21 +139,17 @@ class WC_Subscriptions_Product {
 		$is_subscription = false;
 
 		if ( is_object( $product_id ) ) {
-			$product_id = $product_id->id;
+			$product    = $product_id;
+			$product_id = $product->id;
+		} elseif ( is_numeric( $product_id ) ) {
+			$product = wc_get_product( $product_id );
 		}
 
-		$post_type = get_post_type( $product_id );
-
-		if ( in_array( $post_type, array( 'product', 'product_variation' ) ) ) {
-
-			$product = WC_Subscriptions::get_product( $product_id );
-
-			if ( $product->is_type( array( 'subscription', 'subscription_variation', 'variable-subscription' ) ) ) {
-				$is_subscription = true;
-			}
+		if ( $product->is_type( array( 'subscription', 'subscription_variation', 'variable-subscription' ) ) ) {
+			$is_subscription = true;
 		}
 
-		return apply_filters( 'woocommerce_is_subscription', $is_subscription, $product_id );
+		return apply_filters( 'woocommerce_is_subscription', $is_subscription, $product_id, $product );
 	}
 
 	/**
@@ -244,7 +285,7 @@ class WC_Subscriptions_Product {
 				}
 
 				if ( true === $include['sign_up_fee'] ) {
-					$sign_up_fee = $product->get_sign_up_fee_excluding_tax();
+					$sign_up_fee = self::get_sign_up_fee_excluding_tax( $product );
 				}
 			} else { // Add Tax
 
@@ -255,7 +296,7 @@ class WC_Subscriptions_Product {
 				}
 
 				if ( true === $include['sign_up_fee'] ) {
-					$sign_up_fee = $product->get_sign_up_fee_including_tax();
+					$sign_up_fee = self::get_sign_up_fee_including_tax( $product );
 				}
 			}
 		} else {
@@ -668,31 +709,6 @@ class WC_Subscriptions_Product {
 		}
 
 		return apply_filters( 'woocommerce_subscriptions_product_trial_expiration_date', $trial_expiration_date, $product_id, $from_date );
-	}
-
-	/**
-	 * Returns the sign-up fee for a subscription excluding tax - ignores tax_class filters since the price may *include* tax and thus needs subtracting
-	 *
-	 * @param mixed $product A WC_Product object or product ID
-	 * @return float The value of the sign-up fee, or 0 if the product is not a subscription or the subscription has no sign-up fee
-	 * @since 1.0
-	 */
-	public static function get_sign_up_fee_excluding_tax( $product ) {
-
-		$price = self::get_sign_up_fee( $product );
-
-		if ( $product->is_taxable() && get_option( 'woocommerce_prices_include_tax' ) == 'yes' ) :
-
-			$_tax = new WC_Tax();
-
-			$tax_rates  = $_tax->get_shop_base_rate( $product->tax_class );
-			$taxes      = $_tax->calc_tax( $price, $tax_rates, true );
-			$tax_amount = $_tax->get_tax_total( $taxes );
-			$price      = round( $price - $tax_amount, 2 );
-
-		endif;
-
-		return $price;
 	}
 
 	/**

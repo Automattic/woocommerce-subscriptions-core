@@ -227,7 +227,7 @@ class WCS_Admin_Post_Types {
 				if ( 'cancelled' == $action ) {
 					$subscription->cancel_order( $order_note );
 				} else {
-					$subscription->update_status( $new_status, $order_note );
+					$subscription->update_status( $new_status, $order_note, true );
 				}
 
 				// Fire the action hooks
