@@ -206,16 +206,15 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_status( $subscription, $item_id, $item_meta ) {
-		WCS_Upgrade_Logger::add( sprintf( 'Repairing status for subscription %d.', $subscription['order_id'] ) );
-
 		// only reset this if we didn't repair the order_id
 		if ( ! array_key_exists( 'order_id', $subscription ) || empty( $subscription['order_id'] ) ) {
-			WCS_Upgrade_Logger::add( '-- Previously set it to trash with order_id missing, bailing.' );
+			WCS_Upgrade_Logger::add( 'Tried to repair status. Previously set it to trash with order_id missing, bailing.' );
 			return $subscription;
 		}
+		WCS_Upgrade_Logger::add( sprintf( 'Repairing status for subscription %d.', $subscription['order_id'] ) );
 
 		// if expiry_date and end_date are within 4 minutes (arbitrary), let it be expired
-		if ( array_key_exists( 'expiry_date' ) && ! empty( $subscription['expiry_date'] ) && array_key_exists( 'end_date', $subscription ) && ! empty( $subscription['end_date'] ) && ( 4 * MINUTE_IN_SECONDS ) > self::time_diff( $subscription['expiry_date'], $subscription['end_date'] ) ) {
+		if ( array_key_exists( 'expiry_date', $subscription ) && ! empty( $subscription['expiry_date'] ) && array_key_exists( 'end_date', $subscription ) && ! empty( $subscription['end_date'] ) && ( 4 * MINUTE_IN_SECONDS ) >= self::time_diff( $subscription['expiry_date'], $subscription['end_date'] ) ) {
 			WCS_Upgrade_Logger::add( '-- There are end dates and expiry dates, they are close to each other, setting status to "expired" and returning.' );
 
 			WCS_Upgrade_Logger::add( sprintf( 'Shop owner: please review: %d.', $subscription['order_id'] ) );
