@@ -167,7 +167,7 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_variation_id( $subscription, $item_id, $item_meta ) {
-		return self::repair_from_item_meta( $subscription, $item_id, $item_meta, 'variation_id', 'variation_id' );
+		return self::repair_from_item_meta( $subscription, $item_id, $item_meta, 'variation_id', '_variation_id' );
 	}
 
 	/**
