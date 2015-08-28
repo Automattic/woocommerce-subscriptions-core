@@ -62,7 +62,7 @@ class WC_Subscriptions_Coupon {
 				'sign_up_fee'         => __( 'Sign Up Fee Discount', 'woocommerce-subscriptions' ),
 				'sign_up_fee_percent' => __( 'Sign Up Fee % Discount', 'woocommerce-subscriptions' ),
 				'recurring_fee'       => __( 'Recurring Product Discount', 'woocommerce-subscriptions' ),
-				'recurring_percent'   => __( 'Recurring product % Discount', 'woocommerce-subscriptions' ),
+				'recurring_percent'   => __( 'Recurring Product % Discount', 'woocommerce-subscriptions' ),
 			)
 		);
 	}
