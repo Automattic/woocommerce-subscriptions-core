@@ -209,6 +209,7 @@ class WC_Subscription extends WC_Order {
 					$can_be_updated = false;
 				}
 				break;
+			case 'completed' : // core WC order status mapped internally to avoid exceptions
 			case 'active' :
 				if ( $this->payment_method_supports( 'subscription_reactivation' ) && $this->has_status( 'on-hold' ) ) {
 					$can_be_updated = true;
@@ -218,6 +219,7 @@ class WC_Subscription extends WC_Order {
 					$can_be_updated = false;
 				}
 				break;
+			case 'failed' : // core WC order status mapped internally to avoid exceptions
 			case 'on-hold' :
 				if ( $this->payment_method_supports( 'subscription_suspension' ) && $this->has_status( array( 'active', 'pending' ) ) ) {
 					$can_be_updated = true;
@@ -328,6 +330,7 @@ class WC_Subscription extends WC_Order {
 						$this->update_dates( array( 'end' => $end_date ) );
 					break;
 
+					case 'completed' : // core WC order status mapped internally to avoid exceptions
 					case 'active' :
 						// Recalculate and set next payment date
 						$next_payment = $this->get_time( 'next_payment' );
@@ -342,6 +345,7 @@ class WC_Subscription extends WC_Order {
 						wcs_make_user_active( $this->customer_user );
 					break;
 
+					case 'failed' : // core WC order status mapped internally to avoid exceptions
 					case 'on-hold' :
 						// Record date of suspension - 'post_modified' column?
 						$this->update_suspension_count( $this->suspension_count + 1 );
