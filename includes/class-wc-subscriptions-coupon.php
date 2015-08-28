@@ -100,7 +100,7 @@ class WC_Subscriptions_Coupon {
 						$apply_recurring_percent_coupon = ( 'recurring_percent' == $coupon->type ) ? true : false;
 					}
 
-					if ( $calculation_type == 'none' ) {
+					if ( 'none' == $calculation_type ) {
 
 						// Apply recurring discounts to initial total
 						if ( ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
@@ -212,7 +212,7 @@ class WC_Subscriptions_Coupon {
 					$apply_recurring_percent_coupon = ( 'recurring_percent' == $coupon->type ) ? true : false;
 				}
 
-				if ( $calculation_type == 'none' ) {
+				if ( 'none' == $calculation_type ) {
 
 					// Apply recurring discounts to initial total
 					if ( ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
