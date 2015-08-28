@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class WCS_Repair_2_0 {
+
 	/**
 	 * Takes care of undefine notices in the upgrade process
 	 *
@@ -265,12 +266,12 @@ class WCS_Repair_2_0 {
 		}
 
 		// let's get the last 2 renewal orders
-		$last_renewal_order = array_shift( $renewal_orders );
-		$last_renewal_date = $last_renewal_order->order_date;
-		$last_renewal_timestamp = strtotime( $last_renewal_date );
+		$last_renewal_order       = array_shift( $renewal_orders );
+		$last_renewal_date        = $last_renewal_order->order_date;
+		$last_renewal_timestamp   = strtotime( $last_renewal_date );
 
-		$second_renewal_order = array_shift( $renewal_orders );
-		$second_renewal_date = $second_renewal_order->order_date;
+		$second_renewal_order     = array_shift( $renewal_orders );
+		$second_renewal_date      = $second_renewal_order->order_date;
 		$second_renewal_timestamp = strtotime( $second_renewal_date );
 
 		$interval = 1;
@@ -315,7 +316,7 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_interval( $subscription, $item_id, $item_meta ) {
-		// let's see if we can have info from the product
+
 		// Get info from the product
 		if ( array_key_exists( '_subscription_interval', $item_meta ) && ! empty( $item_meta['_subscription_interval'] ) ) {
 			WCS_Upgrade_Logger::add( '-- Getting info from item meta and returning.' );
@@ -333,17 +334,17 @@ class WCS_Repair_2_0 {
 			WCS_Upgrade_Logger::add( sprintf( 'Setting default subscription interval to 1 on order id %d.', $subscription['order_id'] ) );
 			WCS_Upgrade_Logger::add( sprintf( 'Shop owner: please review: %d.', $subscription['order_id'] ) );
 			$subscription['interval'] = 1;
-			$subscription['status'] = 'cancelled';
+			$subscription['status']   = 'cancelled';
 			return $subscription;
 		}
 
 		// let's get the last 2 renewal orders
-		$last_renewal_order = array_shift( $renewal_orders );
-		$last_renewal_date = $last_renewal_order->order_date;
-		$last_renewal_timestamp = strtotime( $last_renewal_date );
+		$last_renewal_order       = array_shift( $renewal_orders );
+		$last_renewal_date        = $last_renewal_order->order_date;
+		$last_renewal_timestamp   = strtotime( $last_renewal_date );
 
-		$second_renewal_order = array_shift( $renewal_orders );
-		$second_renewal_date = $second_renewal_order->order_date;
+		$second_renewal_order     = array_shift( $renewal_orders );
+		$second_renewal_date      = $second_renewal_order->order_date;
 		$second_renewal_timestamp = strtotime( $second_renewal_date );
 
 		$subscription['interval'] = wcs_estimate_periods_between( $second_renewal_timestamp, $last_renewal_timestamp, $subscription['period'] );
@@ -382,7 +383,6 @@ class WCS_Repair_2_0 {
 		return $subscription;
 	}
 
-
 	/**
 	 * '_subscription_start_date': the original order's '_paid_date' value (stored in post meta) can be used as the subscription's start date.
 	 * If no '_paid_date' exists, because the order used a payment method that doesn't call $order->payment_complete(), like BACs or Cheque,
@@ -395,6 +395,7 @@ class WCS_Repair_2_0 {
 	 */
 	public static function repair_start_date( $subscription, $item_id, $item_meta ) {
 		global $wpdb;
+
 		$start_date = get_post_meta( $subscription['order_id'], '_paid_date', true );
 
 		if ( empty( $start_date ) ) {
@@ -404,7 +405,6 @@ class WCS_Repair_2_0 {
 		$subscription['start_date'] = $start_date;
 		return $subscription;
 	}
-
 
 	/**
 	 * '_subscription_trial_expiry_date': if the subscription has at least one renewal order, we can set the trial expiration date to the date
@@ -449,6 +449,7 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_end_date( $subscription, $item_id, $item_meta ) {
+
 		$subscription = self::repair_from_item_meta( $subscription, $item_id, $item_meta, 'end_date', '_subscription_end_date', '' );
 
 		if ( '' !== $subscription['end_date'] ) {
@@ -548,7 +549,7 @@ class WCS_Repair_2_0 {
 	 * @return integer       number of seconds between the two
 	 */
 	private static function time_diff( $to, $from ) {
-		$to = strtotime( $to );
+		$to   = strtotime( $to );
 		$from = strtotime( $from );
 
 		return abs( $to - $from );

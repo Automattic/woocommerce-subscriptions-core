@@ -312,39 +312,37 @@ function wcs_estimate_period_between( $last_date, $second_date, $interval = 1 ) 
 		$interval = 1;
 	}
 
-	$last_timestamp = strtotime( $last_date );
-	$second_timestamp = strtotime( $second_date );
+	$last_timestamp    = strtotime( $last_date );
+	$second_timestamp  = strtotime( $second_date );
 
 	$earlier_timestamp = min( $last_timestamp, $second_timestamp );
-	$later_timestamp = max( $last_timestamp, $second_timestamp );
+	$later_timestamp   = max( $last_timestamp, $second_timestamp );
 
-	$days_in_month = date( 't', $earlier_timestamp );
-
-	$difference = absint( $last_timestamp - $second_timestamp );
-
+	$days_in_month     = date( 't', $earlier_timestamp );
+	$difference        = absint( $last_timestamp - $second_timestamp );
 	$period_in_seconds = round( $difference / $interval );
-
-	$possible_periods = array();
+	$possible_periods  = array();
 
 	// check for months
 	$full_months = wcs_find_full_months_between( $earlier_timestamp, $later_timestamp );
+
 	$possible_periods['month'] = array(
-		'intervals' => $full_months['months'],
-		'remainder' => $remainder = $full_months['remainder'],
-		'fraction' => $remainder / ( 30 * DAY_IN_SECONDS ),
-		'period' => 'month',
-		'days_in_month' => $days_in_month,
+		'intervals'         => $full_months['months'],
+		'remainder'         => $remainder = $full_months['remainder'],
+		'fraction'          => $remainder / ( 30 * DAY_IN_SECONDS ),
+		'period'            => 'month',
+		'days_in_month'     => $days_in_month,
 		'original_interval' => $interval,
 	);
 
 	// check for different time spans
 	foreach ( array( 'year' => YEAR_IN_SECONDS, 'week' => WEEK_IN_SECONDS, 'day' => DAY_IN_SECONDS ) as $time => $seconds ) {
 		$possible_periods[ $time ] = array(
-			'intervals' => floor( $period_in_seconds / $seconds ),
-			'remainder' => $remainder = $period_in_seconds % $seconds,
-			'fraction' => $remainder / $seconds,
-			'period' => $time,
-			'days_in_month' => $days_in_month,
+			'intervals'         => floor( $period_in_seconds / $seconds ),
+			'remainder'         => $remainder = $period_in_seconds % $seconds,
+			'fraction'          => $remainder / $seconds,
+			'period'            => $time,
+			'days_in_month'     => $days_in_month,
 			'original_interval' => $interval,
 		);
 	}
