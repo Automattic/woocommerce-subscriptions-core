@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * When adding new downloadable content to a subscription product, we don't
+ * When adding new downloadable content to a subscription product, check if we don't
  * want to automatically add the new downloadable files to the subscription or initial and 
  * renewal orders.
  *
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function wcs_revoke_immediate_access_to_new_files( $grant_access, $download_id, $product_id, $order ) {
 
-	if ( wcs_is_subscription( $order->id ) || wcs_order_contains_subscription( $order ) || wcs_order_contains_renewal( $order ) || wcs_order_contains_switch( $order ) ) {
+	if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_drip_downloadable_content_on_renewal', 'no' ) && ( wcs_is_subscription( $order->id ) || wcs_order_contains_subscription( $order ) || wcs_order_contains_renewal( $order ) || wcs_order_contains_switch( $order ) ) ) {
 		$grant_access = false;
 	}
 	return $grant_access;
