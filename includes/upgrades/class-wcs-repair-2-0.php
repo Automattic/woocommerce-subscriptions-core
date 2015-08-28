@@ -101,8 +101,8 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_order_id( $subscription ) {
-		WCS_Upgrade_Logger::add( 'Repairing order_id for subscription that is missing order id: Status changed to trash' );
-		WCS_Upgrade_Logger::add( 'Shop owner: please review new trashed subscriptions. There is at least one with missing order id.' );
+		WCS_Upgrade_Logger::add( '-- Repairing order_id for subscription that is missing order id: Status changed to trash' );
+		WCS_Upgrade_Logger::add( '-- Shop owner: please review new trashed subscriptions. There is at least one with missing order id.' );
 
 		$subscription['status'] = 'trash';
 
@@ -130,13 +130,13 @@ class WCS_Repair_2_0 {
 			return $subscription;
 		}
 
-		WCS_Upgrade_Logger::add( sprintf( 'Repairing %s for subscription %d.', $subscription_meta_key, $subscription['order_id'] ) );
+		WCS_Upgrade_Logger::add( sprintf( '-- For order %d: Repairing %s for subscription.', $subscription['order_id'], $subscription_meta_key ) );
 
 		if ( array_key_exists( $item_meta_key, $item_meta ) && ! empty( $item_meta[ $item_meta_key ] ) ) {
-			WCS_Upgrade_Logger::add( sprintf( '-- Copying %s from item_meta to %s on subscription', $item_meta_key, $subscription_meta_key ) );
+			WCS_Upgrade_Logger::add( sprintf( '-- For order %d: copying %s from item_meta to %s on subscription.', $subscription['order_id'], $item_meta_key, $subscription_meta_key ) );
 			$subscription[ $subscription_meta_key ] = $item_meta[ $item_meta_key ][0];
 		} elseif ( ! array_key_exists( $subscription_meta_key, $subscription ) ) {
-			WCS_Upgrade_Logger::add( sprintf( '-- Setting an empty %s on old subscription, item meta was not helpful.', $subscription_meta_key ) );
+			WCS_Upgrade_Logger::add( sprintf( '-- For order %d: setting an empty %s on old subscription, item meta was not helpful.', $subscription['order_id'], $subscription_meta_key ) );
 			$subscription[ $subscription_meta_key ] = $default_value;
 		}
 
@@ -209,25 +209,22 @@ class WCS_Repair_2_0 {
 	public static function repair_status( $subscription, $item_id, $item_meta ) {
 		// only reset this if we didn't repair the order_id
 		if ( ! array_key_exists( 'order_id', $subscription ) || empty( $subscription['order_id'] ) ) {
-			WCS_Upgrade_Logger::add( 'Tried to repair status. Previously set it to trash with order_id missing, bailing.' );
+			WCS_Upgrade_Logger::add( '-- Tried to repair status. Previously set it to trash with order_id missing, bailing.' );
 			return $subscription;
 		}
-		WCS_Upgrade_Logger::add( sprintf( 'Repairing status for subscription %d.', $subscription['order_id'] ) );
+		WCS_Upgrade_Logger::add( sprintf( '-- For order %d: repairing status for subscription.', $subscription['order_id'] ) );
 
 		// if expiry_date and end_date are within 4 minutes (arbitrary), let it be expired
 		if ( array_key_exists( 'expiry_date', $subscription ) && ! empty( $subscription['expiry_date'] ) && array_key_exists( 'end_date', $subscription ) && ! empty( $subscription['end_date'] ) && ( 4 * MINUTE_IN_SECONDS ) >= self::time_diff( $subscription['expiry_date'], $subscription['end_date'] ) ) {
-			WCS_Upgrade_Logger::add( '-- There are end dates and expiry dates, they are close to each other, setting status to "expired" and returning.' );
-
-			WCS_Upgrade_Logger::add( sprintf( 'Shop owner: please review: %d.', $subscription['order_id'] ) );
+			WCS_Upgrade_Logger::add( sprintf( '-- For order %d: there are end dates and expiry dates, they are close to each other, setting status to "expired" and returning.', $subscription['order_id'] ) );
 			$subscription['status'] = 'expired';
 		} else {
 			// default to cancelled
-			WCS_Upgrade_Logger::add( '-- Setting the default to "cancelled".' );
-			WCS_Upgrade_Logger::add( sprintf( 'Shop owner: please review: %d.', $subscription['order_id'] ) );
+			WCS_Upgrade_Logger::add( sprintf( '-- For order %d: setting the default to "cancelled".', $subscription['order_id'] ) );
 			$subscription['status'] = 'cancelled';
 		}
-
-		WCS_Upgrade_Logger::add( sprintf( '-- Returning the status with %s', $subscription['status'] ) );
+		self::log_store_owner_review( $subscription );
+		WCS_Upgrade_Logger::add( sprintf( '-- For order %d: returning the status with %s', $subscription['order_id'], $subscription['status'] ) );
 		return $subscription;
 	}
 
@@ -243,7 +240,7 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_period( $subscription, $item_id, $item_meta ) {
-		WCS_Upgrade_Logger::add( sprintf( 'Repairing period for subscription %d.', $subscription['order_id'] ) );
+		WCS_Upgrade_Logger::add( sprintf( '-- For order %d: repairing period for subscription', $subscription['order_id'] ) );
 
 		// Get info from the product
 		$subscription = self::repair_from_item_meta( $subscription, $item_id, $item_meta, 'period', '_subscription_period', '' );
@@ -258,8 +255,8 @@ class WCS_Repair_2_0 {
 		if ( count( $renewal_orders ) < 2 ) {
 			// default to month. Because we're defaulting, we also need to cancel this to avoid charging customers on a schedule they didn't
 			// agree to.
-			WCS_Upgrade_Logger::add( sprintf( 'Setting default subscription period to month on order id %d.', $subscription['order_id'] ) );
-			WCS_Upgrade_Logger::add( sprintf( 'Shop owner: please review: %d.', $subscription['order_id'] ) );
+			WCS_Upgrade_Logger::add( sprintf( '-- For order %d: setting default subscription period to month.', $subscription['order_id'] ) );
+			self::log_store_owner_review( $subscription );
 			$subscription['period'] = 'month';
 			$subscription['status'] = 'cancelled';
 			return $subscription;
@@ -281,12 +278,12 @@ class WCS_Repair_2_0 {
 			$interval = $subscription['interval'];
 		}
 
-		WCS_Upgrade_Logger::add( '-- Passing info to wcs_estimate_period_between...' );
+		WCS_Upgrade_Logger::add( sprintf( '-- For order %d: calling wcs_estimate_period_between().', $subscription['order_id'] ) );
 		$period = wcs_estimate_period_between( $last_renewal_date, $second_renewal_date, $interval );
 
 		// if we have 3 renewal orders, do a double check
 		if ( ! empty( $renewal_orders ) ) {
-			WCS_Upgrade_Logger::add( '-- We have 3 renewal orders, trying to make sure we are right.' );
+			WCS_Upgrade_Logger::add( sprintf( '-- For order %d: we have 3 renewal orders, trying to make sure we are right.', $subscription['order_id'] ) );
 
 			$third_renewal_order = array_shift( $renewal_orders );
 			$third_renewal_date = $third_renewal_order->order_date;
@@ -294,7 +291,7 @@ class WCS_Repair_2_0 {
 			$period2 = wcs_estimate_period_between( $second_renewal_date, $third_renewal_date, $interval );
 
 			if ( $period == $period2 ) {
-				WCS_Upgrade_Logger::add( sprintf( '-- Second check confirmed, we are very confident period is %s', $period ) );
+				WCS_Upgrade_Logger::add( sprintf( '-- For order %d: second check confirmed, we are very confident period is %s.', $subscription['order_id'], $period ) );
 				$subscription['period'] = $period;
 			}
 		}
@@ -319,7 +316,7 @@ class WCS_Repair_2_0 {
 
 		// Get info from the product
 		if ( array_key_exists( '_subscription_interval', $item_meta ) && ! empty( $item_meta['_subscription_interval'] ) ) {
-			WCS_Upgrade_Logger::add( '-- Getting info from item meta and returning.' );
+			WCS_Upgrade_Logger::add( sprintf( '-- For order %d: getting interval from item meta and returning.', $subscription['order_id'] ) );
 
 			$subscription['interval'] = $item_meta['_subscription_interval'][0];
 			return $subscription;
@@ -331,8 +328,8 @@ class WCS_Repair_2_0 {
 
 		if ( count( $renewal_orders ) < 2 ) {
 			// default to 1
-			WCS_Upgrade_Logger::add( sprintf( 'Setting default subscription interval to 1 on order id %d.', $subscription['order_id'] ) );
-			WCS_Upgrade_Logger::add( sprintf( 'Shop owner: please review: %d.', $subscription['order_id'] ) );
+			WCS_Upgrade_Logger::add( sprintf( '-- For order %d: setting default subscription interval to 1.', $subscription['order_id'] ) );
+			self::log_store_owner_review( $subscription );
 			$subscription['interval'] = 1;
 			$subscription['status']   = 'cancelled';
 			return $subscription;
@@ -417,8 +414,7 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_trial_expiry_date( $subscription, $item_id, $item_meta ) {
-		$subscription['trial_expiry_date'] = self::maybe_get_date_from_action_scheduler( 'scheduled_subscription_trial_end', $subscription['subscription_key'] );
-
+		$subscription['trial_expiry_date'] = self::maybe_get_date_from_action_scheduler( 'scheduled_subscription_trial_end', $subscription );
 		return $subscription;
 	}
 
@@ -434,7 +430,7 @@ class WCS_Repair_2_0 {
 	 * @return array               repaired data about the subscription
 	 */
 	public static function repair_expiry_date( $subscription, $item_id, $item_meta ) {
-		$subscription['expiry_date'] = self::maybe_get_date_from_action_scheduler( 'scheduled_subscription_expiration', $subscription['subscription_key'] );
+		$subscription['expiry_date'] = self::maybe_get_date_from_action_scheduler( 'scheduled_subscription_expiration', $subscription );
 		return $subscription;
 	}
 
@@ -588,17 +584,17 @@ class WCS_Repair_2_0 {
 	 * @param  string $subscription_key key of subscription in the format of order_id_item_id
 	 * @return string                   either 0 or mysql date
 	 */
-	private static function maybe_get_date_from_action_scheduler( $type, $subscription_key ) {
+	private static function maybe_get_date_from_action_scheduler( $type, $subscription ) {
 		$action_scheduler = new ActionScheduler_wpPostStore;
 
-		$action_id = $action_scheduler->find_action( $type, array( 'subscription_key' => $subscription_key ) );
+		$action_id = $action_scheduler->find_action( $type, array( 'subscription_key' => $subscription['subscription_key'] ) );
 
 		if ( is_numeric( $action_id ) ) {
 			try {
 				$date = $action_scheduler->get_date( $action_id );
 				$formatted_date = $date->format( 'Y-m-d H:i:s' );
 			} catch ( Exception $e ) {
-				WCS_Upgrade_Logger::add( '-- While fetching date from action scheduler, an error occurred. No such action id. Setting trial expiry to 0.' );
+				WCS_Upgrade_Logger::add( sprintf( '-- For order %d: while fetching date from action scheduler, an error occurred. No such action id.', $subscription['order_id'] ) );
 				$formatted_date = 0;
 			}
 		} else {
@@ -636,5 +632,15 @@ class WCS_Repair_2_0 {
 		}
 
 		return $effective_date;
+	}
+
+
+	/**
+	 * Logs an entry for the store owner to review an issue.
+	 *
+	 * @param array $subscription subscription data
+	 */
+	protected static function log_store_owner_review( $subscription ) {
+		WCS_Upgrade_Logger::add( sprintf( '-- For order %d: shop owner please review subscription.', $subscription['order_id'] ) );
 	}
 }
