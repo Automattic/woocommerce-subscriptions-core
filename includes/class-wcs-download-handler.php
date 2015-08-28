@@ -32,6 +32,7 @@ class WCS_Download_Handler {
 
 		add_action( 'woocommerce_process_shop_order_meta', __CLASS__ . '::repair_permission_data', 60, 1 );
 
+		add_action( 'deleted_post', __CLASS__ . '::delete_subscription_permissions' );
 	}
 
 	/**
@@ -206,5 +207,17 @@ class WCS_Download_Handler {
 		", $post_id, '0000-00-00 00:00:00' ) );
 	}
 
+	/**
+	 * Remove download permissions attached to a subscription when it is permenantly deleted.
+	 *
+	 * @since 2.0
+	 */
+	public static function delete_subscription_permissions( $post_id ) {
+		global $wpdb;
+
+		if ( 'shop_subscription' == get_post_type( $post_id ) ) {
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions WHERE order_id = %d", $post_id ) );
+		}
+	}
 }
 WCS_Download_Handler::init();
