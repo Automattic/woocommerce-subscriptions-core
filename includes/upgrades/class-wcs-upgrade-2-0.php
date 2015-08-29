@@ -52,9 +52,13 @@ class WCS_Upgrade_2_0 {
 
 		$upgraded_subscription_count = 0;
 
+		$execution_time_start = time();
+
 		foreach ( self::get_subscriptions( $batch_size ) as $original_order_item_id => $old_subscription ) {
 
 			try {
+
+				$old_subscription = WCS_Repair_2_0::maybe_repair_subscription( $old_subscription, $original_order_item_id );
 
 				// don't allow data to be half upgraded on a subscription (but we need the subscription to be the atomic level, not the whole batch, to ensure that resubscribe and switch updates in the same batch have the new subscription available)
 				$wpdb->query( 'START TRANSACTION' );
@@ -164,13 +168,13 @@ class WCS_Upgrade_2_0 {
 				}
 			}
 
-			if ( $upgraded_subscription_count >= $batch_size ) {
+			if ( $upgraded_subscription_count >= $batch_size || ( array_key_exists( 'WPENGINE_ACCOUNT', $_SERVER ) && ( time() - $execution_time_start ) > 50 ) ) {
 				break;
 			}
 		}
 
 		// Double check we actually have no more subscriptions to upgrade as sometimes they can fall through the cracks
-		if ( $upgraded_subscription_count < $batch_size && $upgraded_subscription_count > 0 ) {
+		if ( $upgraded_subscription_count < $batch_size && $upgraded_subscription_count > 0 && ! array_key_exists( 'WPENGINE_ACCOUNT', $_SERVER ) ) {
 			$upgraded_subscription_count += self::upgrade_subscriptions( $batch_size );
 		}
 
@@ -193,24 +197,7 @@ class WCS_Upgrade_2_0 {
 	private static function get_subscriptions( $batch_size ) {
 		global $wpdb;
 
-		$query = sprintf(
-			"SELECT meta.*, items.* FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS meta
-			LEFT JOIN `{$wpdb->prefix}woocommerce_order_items` AS items USING (order_item_id)
-			LEFT JOIN (
-				SELECT a.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS a
-				LEFT JOIN (
-					SELECT `{$wpdb->prefix}woocommerce_order_itemmeta`.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta`
-					WHERE `{$wpdb->prefix}woocommerce_order_itemmeta`.meta_key = '_subscription_status'
-				) AS s
-				USING (order_item_id)
-				WHERE 1=1
-				AND a.order_item_id = s.order_item_id
-				AND a.meta_key = '_subscription_start_date'
-				ORDER BY CASE WHEN CAST(a.meta_value AS DATETIME) IS NULL THEN 1 ELSE 0 END, CAST(a.meta_value AS DATETIME) ASC
-				LIMIT 0, %s
-			) AS a3 USING (order_item_id)
-			WHERE meta.meta_key REGEXP '_subscription_(.*)|_product_id|_variation_id'
-			AND meta.order_item_id = a3.order_item_id", $batch_size );
+		$query = WC_Subscriptions_Upgrader::get_subscription_query( $batch_size );
 
 		$wpdb->query( 'SET SQL_BIG_SELECTS = 1;' );
 
@@ -269,6 +256,8 @@ class WCS_Upgrade_2_0 {
 		) );
 
 		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: new line item ID %d added', $new_subscription->id, $item_id ) );
+
+		$order_item = WCS_Repair_2_0::maybe_repair_order_item( $order_item );
 
 		$wpdb->query( $wpdb->prepare(
 			"INSERT INTO `{$wpdb->prefix}woocommerce_order_itemmeta` (`order_item_id`, `meta_key`, `meta_value`)
