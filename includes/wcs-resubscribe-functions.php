@@ -134,7 +134,7 @@ function wcs_cart_contains_resubscribe() {
  * Check if a user can resubscribe to an expired or cancelled subscription by creating a
  * new subscription with the same terms.
  *
- * For it to be possile to resubscribe to a subscription, the user specificed with $user_id must
+ * For it to be possible to resubscribe to a subscription, the user specified with $user_id must
  * and the subscription must:
  * 1. be be inactive (expired or cancelled)
  * 2. had at least one payment, to avoid circumventing sign-up fees

@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Creates a subscription price string from an array of subscription details. For example, ""$5 / month for 12 months".
+ * Creates a subscription price string from an array of subscription details. For example, "$5 / month for 12 months".
  *
  * @param array $subscription_details A set of name => value pairs for the subscription details to include in the string. Available keys:
  *		'initial_amount': The upfront payment for the subscription, including sign up fees, as a string from the @see wc_price(). Default empty string (no initial payment)

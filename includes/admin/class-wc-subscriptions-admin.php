@@ -211,7 +211,7 @@ class WC_Subscriptions_Admin {
 			'options'     => wcs_get_available_time_periods(),
 			'description' => sprintf( __( 'Include an optional period of time to wait before charging the first recurring payment. Any sign up fee will still be charged at the outset of the subscription. %s', 'woocommerce-subscriptions' ), self::get_trial_period_validation_message() ),
 			'desc_tip'    => true,
-			'value'       => WC_Subscriptions_Product::get_trial_period( $post->ID ), // Explicity set value in to ensure backward compatibility
+			'value'       => WC_Subscriptions_Product::get_trial_period( $post->ID ), // Explicitly set value in to ensure backward compatibility
 			)
 		);
 
@@ -571,7 +571,7 @@ class WC_Subscriptions_Admin {
 			}
 		}
 
-		// Now that all the varation's meta is saved, sync the min variation price
+		// Now that all the variation's meta is saved, sync the min variation price
 		$variable_subscription = get_product( $post_id );
 		$variable_subscription->variable_product_sync();
 
@@ -919,7 +919,7 @@ class WC_Subscriptions_Admin {
 
 			array(
 				'name'     => __( 'Add to Cart Button Text', 'woocommerce-subscriptions' ),
-				'desc'     => __( 'A product displays a button with the text "Add to Cart". By default, a subscription changes this to "Sign Up Now". You can customise the button text for subscriptions here.', 'woocommerce-subscriptions' ),
+				'desc'     => __( 'A product displays a button with the text "Add to Cart". By default, a subscription changes this to "Sign Up Now". You can customize the button text for subscriptions here.', 'woocommerce-subscriptions' ),
 				'tip'      => '',
 				'id'       => self::$option_prefix . '_add_to_cart_button_text',
 				'css'      => 'min-width:150px;',
@@ -930,7 +930,7 @@ class WC_Subscriptions_Admin {
 
 			array(
 				'name'     => __( 'Place Order Button Text', 'woocommerce-subscriptions' ),
-				'desc'     => __( 'Use this field to customise the text displayed on the checkout button when an order contains a subscription. Normally the checkout submission button displays "Place Order". When the cart contains a subscription, this is changed to "Sign Up Now".', 'woocommerce-subscriptions' ),
+				'desc'     => __( 'Use this field to customize the text displayed on the checkout button when an order contains a subscription. Normally the checkout submission button displays "Place Order". When the cart contains a subscription, this is changed to "Sign Up Now".', 'woocommerce-subscriptions' ),
 				'tip'      => '',
 				'id'       => self::$option_prefix . '_order_button_text',
 				'css'      => 'min-width:150px;',
@@ -1434,7 +1434,7 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Removes anything that's not a digit or a dot from a string. Sadly it assmes that the decimal separator is a dot.
+	 * Removes anything that's not a digit or a dot from a string. Sadly it assumes that the decimal separator is a dot.
 	 * That however can be changed in WooCommerce settings, surfacing bugs such as 9,90 becoming 990, a hundred fold
 	 * increase. Use wc_format_decimal instead.
 	 *

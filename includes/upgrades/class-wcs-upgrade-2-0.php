@@ -179,7 +179,7 @@ class WCS_Upgrade_2_0 {
 
 	/**
 	 * Gets an array of subscriptions from the v1.5 database structure and returns them in the in the v1.5 structure of
-	 * 'order_item_id' => subscripton details array().
+	 * 'order_item_id' => subscription details array().
 	 *
 	 * The subscription will be orders from oldest to newest, which is important because self::migrate_resubscribe_orders()
 	 * method expects a subscription to exist in order to migrate the resubscribe meta data correctly.
@@ -246,7 +246,7 @@ class WCS_Upgrade_2_0 {
 	}
 
 	/**
-	 * Add the details of an order item to a subscription as a produdct line item.
+	 * Add the details of an order item to a subscription as a product line item.
 	 *
 	 * When adding a product to a subscription, we can't use WC_Abstract_Order::add_product() because it requires a product object
 	 * and the details of the product may have changed since it was purchased so we can't simply instantiate an instance of the

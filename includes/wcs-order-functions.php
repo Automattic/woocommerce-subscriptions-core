@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * A wrapper for @see wcs_get_subscriptions() which accepts simply an order ID
  *
- * @param int|WC_Order $order_id The post_id of a shop_order post or an intsance of a WC_Order object
+ * @param int|WC_Order $order_id The post_id of a shop_order post or an instance of a WC_Order object
  * @param array $args A set of name value pairs to filter the returned value.
  *		'subscriptions_per_page' The number of subscriptions to return. Default set to -1 to return all.
  *		'offset' An optional number of subscription to displace or pass over. Default 0.
@@ -285,7 +285,7 @@ function wcs_revoke_downloadable_file_permission( $product_id, $order_id, $user_
  * download permissions stored on the subscription rather than the original order as the URL would have the wrong order
  * key. This function takes the same parameters, but queries the database again for download ids belonging to all the
  * subscriptions that were in the original order. Then for all subscriptions, it checks all items, and if the item
- * passed in here is in that subscription, it creates the correct download link to be passsed to the email.
+ * passed in here is in that subscription, it creates the correct download link to be passed to the email.
  *
  * @param array $files List of files already included in the list
  * @param array $item An item (you get it by doing $order->get_items())
@@ -436,7 +436,7 @@ function wcs_get_order_item_name( $order_item, $include = array() ) {
 				continue;
 			}
 
-			// Skip serialised meta
+			// Skip serialized meta
 			if ( is_serialized( $meta_value ) ) {
 				continue;
 			}

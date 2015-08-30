@@ -45,7 +45,7 @@ function wcs_order_contains_switch( $order ) {
 /**
  * Get the subscriptions that had an item switch for a given order (if any).
  *
- * @param int|WC_Order $order_id The post_id of a shop_order post or an intsance of a WC_Order object
+ * @param int|WC_Order $order_id The post_id of a shop_order post or an instance of a WC_Order object
  * @return array Subscription details in post_id => WC_Subscription form.
  * @since  2.0
  */
@@ -68,7 +68,7 @@ function wcs_get_subscriptions_for_switch_order( $order_id ) {
 /**
  * Get all the orders which have recorded a switch for a given subscription.
  *
- * @param int|WC_Subscription $subscription_id The post_id of a shop_subscription post or an intsance of a WC_Subscription object
+ * @param int|WC_Subscription $subscription_id The post_id of a shop_subscription post or an instance of a WC_Subscription object
  * @return array Order details in post_id => WC_Order form.
  * @since  2.0
  */
