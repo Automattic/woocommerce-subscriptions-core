@@ -209,7 +209,7 @@ class WC_Subscriptions_Admin {
 			'options'     => wcs_get_available_time_periods(),
 			'description' => sprintf( __( 'Include an optional period of time to wait before charging the first recurring payment. Any sign up fee will still be charged at the outset of the subscription. %s', 'woocommerce-subscriptions' ), self::get_trial_period_validation_message() ),
 			'desc_tip'    => true,
-			'value'       => WC_Subscriptions_Product::get_trial_period( $post->ID ), // Explicity set value in to ensure backward compatibility
+			'value'       => WC_Subscriptions_Product::get_trial_period( $post->ID ), // Explicitly set value in to ensure backward compatibility
 		) );
 
 		do_action( 'woocommerce_subscriptions_product_options_pricing' );
@@ -567,7 +567,7 @@ class WC_Subscriptions_Admin {
 			}
 		}
 
-		// Now that all the varation's meta is saved, sync the min variation price
+		// Now that all the variation's meta is saved, sync the min variation price
 		$variable_subscription = get_product( $post_id );
 		$variable_subscription->variable_product_sync();
 
@@ -1458,7 +1458,7 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Removes anything that's not a digit or a dot from a string. Sadly it assmes that the decimal separator is a dot.
+	 * Removes anything that's not a digit or a dot from a string. Sadly it assumes that the decimal separator is a dot.
 	 * That however can be changed in WooCommerce settings, surfacing bugs such as 9,90 becoming 990, a hundred fold
 	 * increase. Use wc_format_decimal instead.
 	 *
