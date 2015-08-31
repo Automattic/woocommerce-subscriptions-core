@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Display date/time input fields
  *
  * @param int (optional) A timestamp for a certain date in the site's timezome. If left empty, or 0, it will be set to today's date.
- * @param array $args A set of name => value pairs to customize the input fields
+ * @param array $args A set of name => value pairs to customise the input fields
  *		'id_attr': (string) the date to display in the selector in MySQL format ('Y-m-d H:i:s'). Required.
  *		'date': (string) the date to display in the selector in MySQL format ('Y-m-d H:i:s'). Required.
  *		'tab_index': (int) the tab index for the element. Optional. Default 0.

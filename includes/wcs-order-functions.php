@@ -454,7 +454,7 @@ function wcs_get_order_item_name( $order_item, $include = array() ) {
 				continue;
 			}
 
-			// Skip serialized meta
+			// Skip serialised meta
 			if ( is_serialized( $meta_value ) ) {
 				continue;
 			}
