@@ -551,9 +551,9 @@ class WC_Subscriptions_Order {
 			wc_get_template(
 				$template,
 				array(
-					'order'         => $order,
-					'subscriptions' => $subscriptions,
-					'is_admin'      => $is_admin_email,
+					'order'          => $order,
+					'subscriptions'  => $subscriptions,
+					'is_admin_email' => $is_admin_email,
 				),
 				'',
 				$template_base
