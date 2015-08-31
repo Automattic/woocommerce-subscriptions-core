@@ -42,7 +42,7 @@ class WCS_Query extends WC_Query {
 	public function add_breadcrumb( $crumbs, $breadcrumb ) {
 		global $wp;
 
-		if ( is_main_query() && is_page() && ! empty( $wp->query_vars['view-subscription'] ) ) {
+		if ( $this->is_query( 'view-subscription' ) ) {
 			$crumbs[] = array( $this->get_endpoint_title( 'view-subscription' ) );
 		}
 		return $crumbs;
@@ -57,7 +57,7 @@ class WCS_Query extends WC_Query {
 	public function change_endpoint_title( $title ) {
 		global $wp;
 
-		if ( is_main_query() && in_the_loop() && is_page() && ! empty( $wp->query_vars['view-subscription'] ) ) {
+		if ( $this->is_query( 'view-subscription' ) && in_the_loop() ) {
 			$title = $this->get_endpoint_title( 'view-subscription' );
 		}
 		return $title;
@@ -83,6 +83,24 @@ class WCS_Query extends WC_Query {
 		}
 
 		return $title;
+	}
+
+	/**
+	 * Check if the current query is for a type we want to override.
+	 *
+	 * @param  string $query_var the string for a query to check for
+	 * @return bool
+	 */
+	protected function is_query( $query_var ) {
+		global $wp;
+
+		if ( is_main_query() && is_page() && ! empty( $wp->query_vars[ $query_var ] ) ) {
+			$is_view_subscription_query = true;
+		} else {
+			$is_view_subscription_query = false;
+		}
+
+		return apply_filters( 'wcs_query_is_query', $is_view_subscription_query, $query_var );
 	}
 }
 new WCS_Query();
