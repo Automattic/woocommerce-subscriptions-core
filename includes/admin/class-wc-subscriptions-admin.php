@@ -1041,7 +1041,7 @@ class WC_Subscriptions_Admin {
 				'id'            => self::$option_prefix . '_drip_downloadable_content_on_renewal',
 				'default'       => 'no',
 				'type'          => 'checkbox',
-				'desc_tip'      => sprintf( __( 'Choose this option to only grant access to new downloadable content after the next renewal is processed.%sBy default, access to new downloadable content is granted immediately to any customer that has an active subscription with that product.', 'woocommerce-subscriptions' ), '<br />' ),
+				'desc_tip'      => sprintf( __( 'Enabling this grants access to new downloadable files added to a product only after the next renewal is processed.%sBy default, access to new downloadable files added to a product is granted immediately to any customer that has an active subscription with that product.', 'woocommerce-subscriptions' ), '<br />' ),
 			),
 
 			array( 'type' => 'sectionend', 'id' => self::$option_prefix . '_miscellaneous' ),
