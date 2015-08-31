@@ -1,6 +1,6 @@
 <?php
 /**
- * Download Handler for WooCommerce Subscriptions 
+ * Download Handler for WooCommerce Subscriptions
  *
  * Functions for download related things within the Subscription Extension.
  *
@@ -37,8 +37,7 @@ class WCS_Download_Handler {
 
 	/**
 	 * When adding new downloadable content to a subscription product, check if we don't
-	 * want to automatically add the new downloadable files to the subscription or initial and 
-	 * renewal orders.
+	 * want to automatically add the new downloadable files to the subscription or initial and renewal orders.
 	 *
 	 * @param bool $grant_access
 	 * @param string $download_id
