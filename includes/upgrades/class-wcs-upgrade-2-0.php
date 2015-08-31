@@ -46,13 +46,19 @@ class WCS_Upgrade_2_0 {
 	public static function upgrade_subscriptions( $batch_size ) {
 		global $wpdb;
 
+		WC()->payment_gateways();
+
 		WCS_Upgrade_Logger::add( sprintf( 'Upgrading batch of %d subscriptions', $batch_size ) );
 
 		$upgraded_subscription_count = 0;
 
+		$execution_time_start = time();
+
 		foreach ( self::get_subscriptions( $batch_size ) as $original_order_item_id => $old_subscription ) {
 
 			try {
+
+				$old_subscription = WCS_Repair_2_0::maybe_repair_subscription( $old_subscription, $original_order_item_id );
 
 				// don't allow data to be half upgraded on a subscription (but we need the subscription to be the atomic level, not the whole batch, to ensure that resubscribe and switch updates in the same batch have the new subscription available)
 				$wpdb->query( 'START TRANSACTION' );
@@ -162,13 +168,13 @@ class WCS_Upgrade_2_0 {
 				}
 			}
 
-			if ( $upgraded_subscription_count >= $batch_size ) {
+			if ( $upgraded_subscription_count >= $batch_size || ( array_key_exists( 'WPENGINE_ACCOUNT', $_SERVER ) && ( time() - $execution_time_start ) > 50 ) ) {
 				break;
 			}
 		}
 
 		// Double check we actually have no more subscriptions to upgrade as sometimes they can fall through the cracks
-		if ( $upgraded_subscription_count < $batch_size && $upgraded_subscription_count > 0 ) {
+		if ( $upgraded_subscription_count < $batch_size && $upgraded_subscription_count > 0 && ! array_key_exists( 'WPENGINE_ACCOUNT', $_SERVER ) ) {
 			$upgraded_subscription_count += self::upgrade_subscriptions( $batch_size );
 		}
 
@@ -191,24 +197,7 @@ class WCS_Upgrade_2_0 {
 	private static function get_subscriptions( $batch_size ) {
 		global $wpdb;
 
-		$query = sprintf(
-			"SELECT meta.*, items.* FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS meta
-			LEFT JOIN `{$wpdb->prefix}woocommerce_order_items` AS items USING (order_item_id)
-			LEFT JOIN (
-				SELECT a.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS a
-				LEFT JOIN (
-					SELECT `{$wpdb->prefix}woocommerce_order_itemmeta`.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta`
-					WHERE `{$wpdb->prefix}woocommerce_order_itemmeta`.meta_key = '_subscription_status'
-				) AS s
-				USING (order_item_id)
-				WHERE 1=1
-				AND a.order_item_id = s.order_item_id
-				AND a.meta_key = '_subscription_start_date'
-				ORDER BY CASE WHEN CAST(a.meta_value AS DATETIME) IS NULL THEN 1 ELSE 0 END, CAST(a.meta_value AS DATETIME) ASC
-				LIMIT 0, %s
-			) AS a3 USING (order_item_id)
-			WHERE meta.meta_key REGEXP '_subscription_(.*)|_product_id|_variation_id'
-			AND meta.order_item_id = a3.order_item_id", $batch_size );
+		$query = WC_Subscriptions_Upgrader::get_subscription_query( $batch_size );
 
 		$wpdb->query( 'SET SQL_BIG_SELECTS = 1;' );
 
@@ -268,6 +257,8 @@ class WCS_Upgrade_2_0 {
 
 		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: new line item ID %d added', $new_subscription->id, $item_id ) );
 
+		$order_item = WCS_Repair_2_0::maybe_repair_order_item( $order_item );
+
 		$wpdb->query( $wpdb->prepare(
 			"INSERT INTO `{$wpdb->prefix}woocommerce_order_itemmeta` (`order_item_id`, `meta_key`, `meta_value`)
 			 VALUES
@@ -275,21 +266,19 @@ class WCS_Upgrade_2_0 {
 				(%d, '_tax_class', %s),
 				(%d, '_product_id', %s),
 				(%d, '_variation_id', %s),
-
 				(%d, '_line_subtotal', %s),
 				(%d, '_line_total', %s),
 				(%d, '_line_subtotal_tax', %s),
 				(%d, '_line_tax', %s)",
-
-				$item_id, $order_item['qty'],
-				$item_id, $order_item['tax_class'],
-				$item_id, $order_item['product_id'],
-				$item_id, $order_item['variation_id'],
-
-				$item_id, $order_item['recurring_line_subtotal'],
-				$item_id, $order_item['recurring_line_total'],
-				$item_id, $order_item['recurring_line_subtotal_tax'],
-				$item_id, $order_item['recurring_line_tax']
+			// The substitutions
+			$item_id, $order_item['qty'],
+			$item_id, $order_item['tax_class'],
+			$item_id, $order_item['product_id'],
+			$item_id, $order_item['variation_id'],
+			$item_id, $order_item['recurring_line_subtotal'],
+			$item_id, $order_item['recurring_line_total'],
+			$item_id, $order_item['recurring_line_subtotal_tax'],
+			$item_id, $order_item['recurring_line_tax']
 		) );
 
 		// Save tax data array added in WC 2.2 (so it won't exist for all orders/subscriptions)
@@ -631,8 +620,8 @@ class WCS_Upgrade_2_0 {
 			$rows_affected = $wpdb->query( $wpdb->prepare(
 				"INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value)
 				 VALUES " . implode( ', ', $query_placeholders ),
-				$query_meta_values )
-			);
+				$query_meta_values
+			) );
 
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: %d rows of post meta added', $subscription_id, $rows_affected ) );
 		}

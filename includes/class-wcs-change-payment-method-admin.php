@@ -27,7 +27,7 @@ class WCS_Change_Payment_Method_Admin {
 		if ( count( $valid_payment_methods ) > 1 ) {
 
 			$found_method = false;
-			echo '<label>' . esc_html__( 'Payment Method', 'woocommerce' ) . ':</label>';
+			echo '<label>' . esc_html__( 'Payment Method', 'woocommerce-subscriptions' ) . ':</label>';
 			echo '<select class="wcs_payment_method_selector" name="_payment_method" id="_payment_method" class="first">';
 
 			foreach ( $valid_payment_methods as $gateway_id => $gateway_title ) {
@@ -40,7 +40,8 @@ class WCS_Change_Payment_Method_Admin {
 			echo '</select>';
 
 		} elseif ( count( $valid_payment_methods ) == 1 ) {
-			echo '<strong>' . esc_html__( 'Payment Method', 'woocommerce' ) . ':</strong> ' . esc_html( current( $valid_payment_methods ) );
+			echo '<strong>' . esc_html__( 'Payment Method', 'woocommerce-subscriptions' ) . ':</strong><br/>' . esc_html( current( $valid_payment_methods ) );
+			echo '<img class="help_tip" data-tip="Gateway ID: [' . esc_attr( key( $valid_payment_methods ) ) . ']" src="' . esc_url( WC()->plugin_url() ) . '/assets/images/help.png" height="16" width="16" />';
 			echo '<input type="hidden" value="' . esc_attr( key( $valid_payment_methods ) ) . '" id="_payment_method" name="_payment_method">';
 		}
 
@@ -62,7 +63,7 @@ class WCS_Change_Payment_Method_Admin {
 						$field_label = ( ! empty( $meta_data['label'] ) ) ? $meta_data['label'] : $meta_key ;
 						$field_value = ( ! empty( $meta_data['value'] ) ) ? $meta_data['value'] : null ;
 
-						echo '<p class="form-field-wide">';
+						echo '<p class="form-field form-field-wide">';
 						echo '<label for="' . esc_attr( $field_id ) . '">' . esc_html( $field_label ) . '</label>';
 						echo '<input type="text" class="short" name="' . esc_attr( $field_id ) . '" id="' . esc_attr( $field_id ) . '" value="' . esc_attr( $field_value ) . '" placeholder="">';
 						echo '</p>';

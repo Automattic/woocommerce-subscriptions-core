@@ -147,9 +147,9 @@ class WCS_Admin_Post_Types {
 
 		// Make it filterable in case extensions want to change this
 		$bulk_actions = apply_filters( 'woocommerce_subscription_bulk_actions', array(
-			'active'    => __( 'Activate', 'woocommerce-subscriptions' ),
-			'on-hold'   => __( 'Put on-hold', 'woocommerce-subscriptions' ),
-			'cancelled' => __( 'Cancel', 'woocommerce-subscriptions' ),
+			'active'    => _x( 'Activate', 'action on bulk subscriptions', 'woocommerce-subscriptions' ),
+			'on-hold'   => _x( 'Put on-hold', 'action on bulk subscriptions', 'woocommerce-subscriptions' ),
+			'cancelled' => _x( 'Cancel', 'action on bulk subscriptions', 'woocommerce-subscriptions' ),
 		) );
 
 		// No need to display certain bulk actions if we know all the subscriptions on the page have that status already
@@ -185,12 +185,14 @@ class WCS_Admin_Post_Types {
 	 * own logic by copying the concept behind this method.
 	 */
 	public function parse_bulk_actions() {
+
 		// We only want to deal with shop_subscriptions. In case any other CPTs have an 'active' action
 		if ( ! isset( $_REQUEST['post_type'] ) || 'shop_subscription' !== $_REQUEST['post_type'] ) {
 			return;
 		}
 
 		$wp_list_table = _get_list_table( 'WP_Posts_List_Table' );
+
 		$action = $wp_list_table->current_action();
 
 		switch ( $action ) {
@@ -209,32 +211,47 @@ class WCS_Admin_Post_Types {
 
 		$subscription_ids = array_map( 'absint', (array) $_REQUEST['post'] );
 
+		$sendback_args = array(
+			'post_type'    => 'shop_subscription',
+			$report_action => true,
+			'ids'          => join( ',', $subscription_ids ),
+			'error_count'  => 0,
+		);
+
 		foreach ( $subscription_ids as $subscription_id ) {
 			$subscription = wcs_get_subscription( $subscription_id );
 			$order_note   = __( 'Subscription status changed by bulk edit:', 'woocommerce-subscriptions' );
 
-			if ( 'cancelled' == $action ) {
-				$subscription->cancel_order( $order_note );
-			} else {
-				$subscription->update_status( $new_status, $order_note );
-			}
+			try {
 
-			// Fire the action hooks
-			switch ( $action ) {
-				case 'active' :
-				case 'on-hold' :
-				case 'cancelled' :
-				case 'trash' :
-					do_action( 'woocommerce_admin_changed_subscription_to_' . $action, $subscription_id );
-					break;
-			}
+				if ( 'cancelled' == $action ) {
+					$subscription->cancel_order( $order_note );
+				} else {
+					$subscription->update_status( $new_status, $order_note, true );
+				}
 
-			$changed++;
+				// Fire the action hooks
+				switch ( $action ) {
+					case 'active' :
+					case 'on-hold' :
+					case 'cancelled' :
+					case 'trash' :
+						do_action( 'woocommerce_admin_changed_subscription_to_' . $action, $subscription_id );
+						break;
+				}
+
+				$changed++;
+
+			} catch ( Exception $e ) {
+				$sendback_args['error'] = urlencode( $e->getMessage() );
+				$sendback_args['error_count']++;
+			}
 		}
 
-		$sendback = add_query_arg( array( 'post_type' => 'shop_subscription', $report_action => true, 'changed' => $changed, 'ids' => join( ',', $subscription_ids ) ), '' );
-
+		$sendback_args['changed'] = $changed;
+		$sendback = add_query_arg( $sendback_args, '' );
 		wp_redirect( $sendback );
+
 		exit();
 	}
 
@@ -257,8 +274,18 @@ class WCS_Admin_Post_Types {
 			if ( isset( $_REQUEST[ 'marked_' . str_replace( 'wc-', '', $slug ) ] ) ) {
 
 				$number = isset( $_REQUEST['changed'] ) ? absint( $_REQUEST['changed'] ) : 0;
-				$message = sprintf( _n( 'Subscription status changed.', '%s subscription statuses changed.', $number, 'woocommerce-subscriptions' ), number_format_i18n( $number ) );
+
+				// translators: placeholder is the number of subscriptions updated
+				$message = sprintf( _n( '%s subscription status changed.', '%s subscription statuses changed.', $number, 'woocommerce-subscriptions' ), number_format_i18n( $number ) );
 				echo '<div class="updated"><p>' . esc_html( $message ) . '</p></div>';
+
+				if ( ! empty( $_REQUEST['error_count'] ) ) {
+					$error_msg = isset( $_REQUEST['error'] ) ? stripslashes( $_REQUEST['error'] ) : '';
+					$error_count = isset( $_REQUEST['error_count'] ) ? absint( $_REQUEST['error_count'] ) : 0;
+					// translators: 1$: is the number of subscriptions not updated, 2$: is the error message
+					$message = sprintf( _n( '%1$s subscription could not be updated: %2$s', '%1$s subscriptions could not be updated: %2$s', $error_count, 'woocommerce-subscriptions' ), number_format_i18n( $error_count ), $error_msg );
+					echo '<div class="error"><p>' . esc_html( $message ) . '</p></div>';
+				}
 
 				break;
 			}
@@ -278,16 +305,16 @@ class WCS_Admin_Post_Types {
 
 		$columns = array(
 			'cb'                => '<input type="checkbox" />',
-			'status'            => __( 'Status', 'woocommerce-subscriptions' ),
-			'order_title'       => __( 'Subscription', 'woocommerce-subscriptions' ),
-			'order_items'       => __( 'Items', 'woocommerce-subscriptions' ),
-			'recurring_total'   => __( 'Total', 'woocommerce-subscriptions' ),
-			'start_date'        => __( 'Start Date', 'woocommerce-subscriptions' ),
-			'trial_end_date'    => __( 'Trial End', 'woocommerce-subscriptions' ),
-			'next_payment_date' => __( 'Next Payment', 'woocommerce-subscriptions' ),
-			'last_payment_date' => __( 'Last Payment', 'woocommerce-subscriptions' ),
-			'end_date'          => __( 'End Date', 'woocommerce-subscriptions' ),
-			'orders'            => __( 'Orders', 'woocommerce-subscriptions' ),
+			'status'            => _x( 'Status', 'list column title', 'woocommerce-subscriptions' ),
+			'order_title'       => _x( 'Subscription', 'list column title', 'woocommerce-subscriptions' ),
+			'order_items'       => _x( 'Items', 'list column title', 'woocommerce-subscriptions' ),
+			'recurring_total'   => _x( 'Total', 'list column title', 'woocommerce-subscriptions' ),
+			'start_date'        => _x( 'Start Date', 'list column title', 'woocommerce-subscriptions' ),
+			'trial_end_date'    => _x( 'Trial End', 'list column title', 'woocommerce-subscriptions' ),
+			'next_payment_date' => _x( 'Next Payment', 'list column title', 'woocommerce-subscriptions' ),
+			'last_payment_date' => _x( 'Last Payment', 'list column title', 'woocommerce-subscriptions' ),
+			'end_date'          => _x( 'End Date', 'list column title', 'woocommerce-subscriptions' ),
+			'orders'            => _x( 'Orders', 'list column title', 'woocommerce-subscriptions' ),
 		);
 
 		return $columns;
@@ -385,7 +412,7 @@ class WCS_Admin_Post_Types {
 				$customer_tip = '';
 
 				if ( $address = $the_subscription->get_formatted_billing_address() ) {
-					$customer_tip .= __( 'Billing:', 'woocommerce-subscriptions' ) . ' ' . esc_html( $address );
+					$customer_tip .= _x( 'Billing:', 'meaning billing address', 'woocommerce-subscriptions' ) . ' ' . esc_html( $address );
 				}
 
 				if ( $the_subscription->billing_email ) {
@@ -403,9 +430,8 @@ class WCS_Admin_Post_Types {
 				// This is to stop PHP from complaining
 				$username = '';
 
-				if ( $the_subscription->get_user_id() ) {
+				if ( $the_subscription->get_user_id() && ( false !== ( $user_info = get_userdata( $the_subscription->get_user_id() ) ) ) ) {
 
-					$user_info = get_userdata( $the_subscription->get_user_id() );
 					$username  = '<a href="user-edit.php?user_id=' . absint( $user_info->ID ) . '">';
 
 					if ( $the_subscription->billing_first_name || $the_subscription->billing_last_name ) {
@@ -437,7 +463,7 @@ class WCS_Admin_Post_Types {
 					case 1 :
 						foreach ( $the_subscription->get_items() as $item ) {
 							$_product       = apply_filters( 'woocommerce_order_item_product', $the_subscription->get_product_from_item( $item ), $item );
-							$item_meta      = new WC_Order_Item_Meta( $item['item_meta'] );
+							$item_meta      = wcs_get_order_item_meta( $item, $_product );
 							$item_meta_html = $item_meta->display( true, true );
 							$item_quantity  = absint( $item['qty'] );
 
@@ -473,7 +499,7 @@ class WCS_Admin_Post_Types {
 
 						foreach ( $the_subscription->get_items() as $item ) {
 							$_product       = apply_filters( 'woocommerce_order_item_product', $the_subscription->get_product_from_item( $item ), $item );
-							$item_meta      = new WC_Order_Item_Meta( $item['item_meta'] );
+							$item_meta      = wcs_get_order_item_meta( $item, $_product );
 							$item_meta_html = $item_meta->display( true, true );
 							ob_start();
 							?>
@@ -502,7 +528,8 @@ class WCS_Admin_Post_Types {
 			case 'recurring_total' :
 				$column_content .= esc_html( strip_tags( $the_subscription->get_formatted_order_total() ) );
 
-				$column_content .= '<small class="meta">' . esc_html( sprintf( __( 'Via %s', 'woocommerce-subscriptions' ), $the_subscription->get_payment_method_to_display() ) ) . '</small>';
+				// translators: placeholder is payment method used
+				$column_content .= '<small class="meta">' . esc_html( sprintf( _x( 'Via %s', 'used in admin list table on recurring total', 'woocommerce-subscriptions' ), $the_subscription->get_payment_method_to_display() ) ) . '</small>';
 				break;
 
 			case 'start_date':
@@ -741,11 +768,13 @@ class WCS_Admin_Post_Types {
 			2 => __( 'Custom field updated.', 'woocommerce-subscriptions' ),
 			3 => __( 'Custom field deleted.', 'woocommerce-subscriptions' ),
 			4 => __( 'Subscription updated.', 'woocommerce-subscriptions' ),
-			5 => isset( $_GET['revision'] ) ? sprintf( __( 'Subscription restored to revision from %s', 'woocommerce-subscriptions' ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
+			// translators: placeholder is previous post title
+			5 => isset( $_GET['revision'] ) ? sprintf( _x( 'Subscription restored to revision from %s', 'used in post updated messages', 'woocommerce-subscriptions' ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
 			6 => __( 'Subscription updated.', 'woocommerce-subscriptions' ),
 			7 => __( 'Subscription saved.', 'woocommerce-subscriptions' ),
 			8 => __( 'Subscription submitted.', 'woocommerce-subscriptions' ),
-			9 => sprintf( __( 'Subscription scheduled for: <strong>%1$s</strong>.', 'woocommerce-subscriptions' ), date_i18n( __( 'M j, Y @ G:i', 'woocommerce-subscriptions' ), strtotime( $post->post_date ) ) ),
+			// translators: php date string
+			9 => sprintf( __( 'Subscription scheduled for: %1$s.', 'woocommerce-subscriptions' ), '<strong>' . date_i18n( _x( 'M j, Y @ G:i', 'used in "Subscription scheduled for <date>"', 'woocommerce-subscriptions' ), strtotime( $post->post_date ) ) . '</strong>' ),
 			10 => __( 'Subscription draft updated.', 'woocommerce-subscriptions' ),
 		);
 

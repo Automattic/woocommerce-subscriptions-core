@@ -55,6 +55,7 @@ class WC_Subscriptions_Cart {
 		add_filter( 'woocommerce_cart_product_price', __CLASS__ . '::cart_product_price' , 10, 2 );
 
 		// Make sure cart totals are calculated when setting up the cart widget
+		add_action( 'wc_ajax_get_refreshed_fragments', __CLASS__ . '::pre_get_refreshed_fragments' , 1 );
 		add_action( 'wp_ajax_woocommerce_get_refreshed_fragments', __CLASS__ . '::pre_get_refreshed_fragments', 1 );
 		add_action( 'wp_ajax_nopriv_woocommerce_get_refreshed_fragments', __CLASS__ . '::pre_get_refreshed_fragments', 1, 1 );
 
@@ -173,7 +174,8 @@ class WC_Subscriptions_Cart {
 
 		// Group the subscription items by their cart item key based on billing schedule
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-			if ( WC_Subscriptions_Product::is_subscription( $cart_item['product_id'] ) ) {
+
+			if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 				$subscription_groups[ self::get_recurring_cart_key( $cart_item ) ][] = $cart_item_key;
 			}
 		}
@@ -298,7 +300,7 @@ class WC_Subscriptions_Cart {
 		$all_items_have_free_trial = true;
 
 		foreach ( WC()->cart->get_cart() as $cart_item ) {
-			if ( ! WC_Subscriptions_Product::is_subscription( $cart_item['product_id'] ) ) {
+			if ( ! WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 				$all_items_have_free_trial = false;
 				break;
 			} else {
@@ -374,12 +376,12 @@ class WC_Subscriptions_Cart {
 			// Avoid infinite loop
 			remove_filter( 'woocommerce_cart_product_subtotal', __CLASS__ . '::get_formatted_product_subtotal', 11, 4 );
 
-			add_filter( 'woocommerce_get_price', array( &$product, 'get_sign_up_fee' ), 100, 0 );
+			add_filter( 'woocommerce_get_price', 'WC_Subscriptions_Product::get_sign_up_fee_filter', 100, 2 );
 
 			// And get the appropriate sign up fee string
 			$sign_up_fee_string = $cart->get_product_subtotal( $product, $quantity );
 
-			remove_filter( 'woocommerce_get_price', array( &$product, 'get_sign_up_fee' ), 100, 0 );
+			remove_filter( 'woocommerce_get_price',  'WC_Subscriptions_Product::get_sign_up_fee_filter', 100, 2 );
 
 			add_filter( 'woocommerce_cart_product_subtotal', __CLASS__ . '::get_formatted_product_subtotal', 11, 4 );
 
@@ -433,7 +435,7 @@ class WC_Subscriptions_Cart {
 
 		if ( ! empty( WC()->cart->cart_contents ) && ! wcs_cart_contains_renewal() ) {
 			foreach ( WC()->cart->cart_contents as $cart_item ) {
-				if ( WC_Subscriptions_Product::is_subscription( $cart_item['product_id'] ) ) {
+				if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 					$contains_subscription = true;
 					break;
 				}
@@ -586,7 +588,7 @@ class WC_Subscriptions_Cart {
 				$city     = apply_filters( 'woocommerce_shipping_calculator_enable_city', false ) ? wc_clean( $_POST['calc_shipping_city'] ) : '';
 
 				if ( $postcode && ! WC_Validation::is_postcode( $postcode, $country ) ) {
-					throw new Exception( __( 'Please enter a valid postcode/ZIP.', 'woocommerce' ) );
+					throw new Exception( __( 'Please enter a valid postcode/ZIP.', 'woocommerce-subscriptions' ) );
 				} elseif ( $postcode ) {
 					$postcode = wc_format_postcode( $postcode, $country );
 				}
@@ -848,7 +850,6 @@ class WC_Subscriptions_Cart {
 	}
 
 	public static function get_sign_up_fee_fields() {
-
 		_deprecated_function( __METHOD__, '1.2' );
 
 		return array(

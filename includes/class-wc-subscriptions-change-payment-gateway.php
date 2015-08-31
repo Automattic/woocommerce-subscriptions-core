@@ -38,7 +38,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		add_filter( 'wcs_view_subscription_actions', __CLASS__ . '::change_payment_method_button', 10, 2 );
 
 		// Maybe allow for a recurring payment method to be changed
-		add_action( 'init', __CLASS__ . '::change_payment_method_via_pay_shortcode', 20 );
+		add_action( 'wp_loaded', __CLASS__ . '::change_payment_method_via_pay_shortcode', 20 );
 
 		// Filter the available payment gateways to only show those which support acting as the new payment method
 		add_filter( 'woocommerce_available_payment_gateways', __CLASS__ . '::get_available_payment_gateways' );
@@ -132,7 +132,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 			WC_Subscriptions::add_notice( __( 'Invalid subscription.', 'woocommerce-subscriptions' ), 'error' );
 
-		} elseif ( $subscription->get_user_id() != get_current_user_id() ) {
+		} elseif ( ! current_user_can( 'edit_shop_subscription_payment_method', $subscription->id ) ) {
 
 			WC_Subscriptions::add_notice( __( 'That doesn\'t appear to be one of your subscriptions.', 'woocommerce-subscriptions' ), 'error' );
 
@@ -143,11 +143,13 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		} else {
 
 			if ( $subscription->get_time( 'next_payment' ) > 0 ) {
+				// translators: placeholder is next payment's date
 				$next_payment_string = sprintf( __( ' Next payment is due %s.', 'woocommerce-subscriptions' ), $subscription->get_date_to_display( 'next_payment' ) );
 			} else {
 				$next_payment_string = '';
 			}
 
+			// translators: placeholder is either empty or "Next payment is due..."
 			WC_Subscriptions::add_notice( sprintf( __( 'Choose a new payment method.%s', 'woocommerce-subscriptions' ), $next_payment_string ), 'notice' );
 			WC_Subscriptions::print_notices();
 
@@ -254,6 +256,8 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 					$result = $available_gateways[ $new_payment_method ]->process_payment( $subscription->id );
 
+					$result = apply_filters( 'woocommerce_subscriptions_process_payment_for_change_method_via_pay_shortcode', $result, $subscription );
+
 					// Redirect to success/confirmation/payment page
 					if ( 'success' == $result['result'] ) {
 						WC_Subscriptions::add_notice( __( 'Payment method updated.', 'woocommerce-subscriptions' ), 'success' );
@@ -304,7 +308,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		}
 
 		// Log change on order
-		$subscription->add_order_note( sprintf( __( 'Payment method changed from "%s" to "%s" by the subscriber from their account page.', 'woocommerce-subscriptions' ), $old_payment_method_title, $new_payment_method_title ) );
+		$subscription->add_order_note( sprintf( _x( 'Payment method changed from "%1$s" to "%2$s" by the subscriber from their account page.', '%1$s: old payment title, %2$s: new payment title', 'woocommerce-subscriptions' ), $old_payment_method_title, $new_payment_method_title ) );
 
 		do_action( 'woocommerce_subscription_payment_method_updated', $subscription, $new_payment_method, $old_payment_method );
 		do_action( 'woocommerce_subscription_payment_method_updated_to_' . $new_payment_method, $subscription, $old_payment_method );

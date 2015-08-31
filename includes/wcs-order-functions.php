@@ -146,7 +146,7 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 	$meta       = apply_filters( 'wcs_' . $type . '_meta', $meta, $to_order, $from_order );
 
 	foreach ( $meta as $meta_item ) {
-		add_post_meta( $to_order->id, $meta_item['meta_key'], maybe_unserialize( $meta_item['meta_value'] ), true );
+		update_post_meta( $to_order->id, $meta_item['meta_key'], maybe_unserialize( $meta_item['meta_value'] ) );
 	}
 }
 
@@ -397,6 +397,24 @@ function wcs_get_order_item( $item_id, $order ) {
 	}
 
 	return $item;
+}
+
+/**
+ * Get an instance of WC_Order_Item_Meta for an order item
+ *
+ * @param array
+ * @return WC_Order_Item_Meta
+ * @since 2.0
+ */
+function wcs_get_order_item_meta( $item, $product = null ) {
+
+	if ( WC_Subscriptions::is_woocommerce_pre( '2.4' ) ) {
+		$item_meta = new WC_Order_Item_Meta( $item['item_meta'], $product );
+	} else {
+		$item_meta = new WC_Order_Item_Meta( $item, $product );
+	}
+
+	return $item_meta;
 }
 
 /**

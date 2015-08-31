@@ -50,7 +50,7 @@ class WC_Subscriptions_Upgrader {
 			self::set_cron_lock();
 		}
 
-		if ( isset( $_POST['action'] ) && 'wcs_upgrade' == $_POST['action'] ) {
+		if ( isset( $_POST['action'] ) && 'wcs_upgrade' == $_POST['action'] ) { // We're checking for CSRF in ajax_upgrade
 
 			add_action( 'wp_ajax_wcs_upgrade', __CLASS__ . '::ajax_upgrade', 10 );
 
@@ -223,11 +223,16 @@ class WC_Subscriptions_Upgrader {
 	public static function ajax_upgrade() {
 		global $wpdb;
 
+		check_admin_referer( 'wcs_upgrade_process', 'nonce' );
+
 		self::set_upgrade_limits();
 
 		WCS_Upgrade_Logger::add( sprintf( 'Starting upgrade step: %s', $_POST['upgrade_step'] ) );
 
-		@set_time_limit( 600 );
+		if ( ini_get( 'max_execution_time' ) < 600 ) {
+			@set_time_limit( 600 );
+		}
+
 		@ini_set( 'memory_limit', apply_filters( 'admin_memory_limit', WP_MAX_MEMORY_LIMIT ) );
 
 		update_option( 'wc_subscriptions_is_upgrading', gmdate( 'U' ) + 60 * 2 );
@@ -237,6 +242,7 @@ class WC_Subscriptions_Upgrader {
 			case 'really_old_version':
 				$upgraded_versions = self::upgrade_really_old_versions();
 				$results = array(
+					// translators: placeholder is a list of version numbers (e.g. "1.3 & 1.4 & 1.5")
 					'message' => sprintf( __( 'Database updated to version %s', 'woocommerce-subscriptions' ), $upgraded_versions ),
 				);
 				break;
@@ -247,7 +253,8 @@ class WC_Subscriptions_Upgrader {
 
 				$upgraded_product_count = WCS_Upgrade_1_5::upgrade_products();
 				$results = array(
-					'message' => sprintf( __( 'Marked %s subscription products as "sold individually".', 'woocommerce-subscriptions' ), $upgraded_product_count ),
+					// translators: placeholder is number of upgraded subscriptions
+					'message' => sprintf( _x( 'Marked %s subscription products as "sold individually".', 'used in the subscriptions upgrader', 'woocommerce-subscriptions' ), $upgraded_product_count ),
 				);
 				break;
 
@@ -258,12 +265,14 @@ class WC_Subscriptions_Upgrader {
 				$upgraded_hook_count = WCS_Upgrade_1_5::upgrade_hooks( self::$upgrade_limit_hooks );
 				$results = array(
 					'upgraded_count' => $upgraded_hook_count,
+					// translators: placeholder is number of action scheduler hooks upgraded
 					'message'        => sprintf( __( 'Migrated %s subscription related hooks to the new scheduler (in {execution_time} seconds).', 'woocommerce-subscriptions' ), $upgraded_hook_count ),
 				);
 				break;
 
 			case 'subscriptions':
 
+				require_once( 'class-wcs-repair-2-0.php' );
 				require_once( 'class-wcs-upgrade-2-0.php' );
 
 				try {
@@ -272,8 +281,10 @@ class WC_Subscriptions_Upgrader {
 
 					$results = array(
 						'upgraded_count' => $upgraded_subscriptions,
+						// translators: placeholder is number of subscriptions upgraded
 						'message'        => sprintf( __( 'Migrated %s subscriptions to the new structure (in {execution_time} seconds).', 'woocommerce-subscriptions' ), $upgraded_subscriptions ),
 						'status'         => 'success',
+						'time_message'   => __( 'Estimated time left (minutes:seconds): {time_left}', 'woocommerce-subscriptions' ),
 					);
 
 				} catch ( Exception $e ) {
@@ -282,7 +293,8 @@ class WC_Subscriptions_Upgrader {
 
 					$results = array(
 						'upgraded_count' => 0,
-						'message'        => sprintf( __( 'Unable to upgrade subscriptions.<br/>Error: %s<br/>Please refresh the page and try again. If problem persists, %scontact support%s.', 'woocommerce-subscriptions' ), '<code>' . $e->getMessage(). '</code>', '<a href="' . esc_url( 'https://woothemes.com/my-account/create-a-ticket/' ) . '">', '</a>' ),
+						// translators: 1$: error message, 2$: opening link tag, 3$: closing link tag
+						'message'        => sprintf( __( 'Unable to upgrade subscriptions.<br/>Error: %1$s<br/>Please refresh the page and try again. If problem persists, %2$scontact support%3$s.', 'woocommerce-subscriptions' ), '<code>' . $e->getMessage(). '</code>', '<a href="' . esc_url( 'https://woothemes.com/my-account/create-a-ticket/' ) . '">', '</a>' ),
 						'status'         => 'error',
 					);
 				}
@@ -290,7 +302,7 @@ class WC_Subscriptions_Upgrader {
 				break;
 		}
 
-		if ( isset( $upgraded_subscriptions ) && $upgraded_subscriptions < self::$upgrade_limit_subscriptions ) {
+		if ( 0 === self::get_total_subscription_count_query() ) {
 			self::upgrade_complete();
 		}
 
@@ -409,12 +421,15 @@ class WC_Subscriptions_Upgrader {
 		wp_register_style( 'wcs-upgrade', plugins_url( '/assets/css/wcs-upgrade.css', WC_Subscriptions::$plugin_file ) );
 		wp_register_script( 'wcs-upgrade', plugins_url( '/assets/js/wcs-upgrade.js', WC_Subscriptions::$plugin_file ), 'jquery' );
 
+		$subscription_count = self::get_total_subscription_count();
+
 		$script_data = array(
 			'really_old_version'        => ( version_compare( self::$active_version, '1.4', '<' ) ) ? 'true' : 'false',
 			'upgrade_to_1_5'            => ( version_compare( self::$active_version, '1.5', '<' ) ) ? 'true' : 'false',
 			'hooks_per_request'         => self::$upgrade_limit_hooks,
-			'subscriptions_per_request' => self::$upgrade_limit_subscriptions,
 			'ajax_url'                  => admin_url( 'admin-ajax.php' ),
+			'upgrade_nonce'             => wp_create_nonce( 'wcs_upgrade_process' ),
+			'subscription_count'        => $subscription_count,
 		);
 
 		wp_localize_script( 'wcs-upgrade', 'wcs_update_script_data', $script_data );
@@ -422,18 +437,17 @@ class WC_Subscriptions_Upgrader {
 		// Can't get subscription count with database structure < 1.4
 		if ( 'false' == $script_data['really_old_version'] ) {
 
-			$subscription_count = self::get_total_subscription_count( true );
-			$batch_size         = self::$upgrade_limit_subscriptions;
+			$batch_size = self::$upgrade_limit_subscriptions;
 
-			// The base duration is 150 subscriptions per minute (i.e. approximately 20 seconds per batch of 50)
-			$estimated_duration = ceil( $subscription_count / 150 );
+			// The base duration is 50 subscriptions per minute (i.e. approximately 60 seconds per batch of 50)
+			$estimated_duration = ceil( $subscription_count / 50 );
 
-			// Large sites take about 2-3x as long (i.e. approximately 40 seconds per batch of 35)
+			// Large sites take about 2-3x as long (i.e. approximately 80 seconds per batch of 35)
 			if ( $subscription_count > 5000 ) {
 				$estimated_duration *= 3;
 			}
 
-			// And really large sites take around 5-6x as long (i.e. approximately 50 seconds per batch of 25)
+			// And really large sites take around 5-6x as long (i.e. approximately 100 seconds per batch of 25)
 			if ( $subscription_count > 10000 ) {
 				$estimated_duration *= 2;
 			}
@@ -506,7 +520,6 @@ class WC_Subscriptions_Upgrader {
 	 * @since 2.0
 	 */
 	private static function get_total_subscription_count( $initial = false ) {
-		global $wpdb;
 
 		if ( $initial ) {
 
@@ -519,21 +532,66 @@ class WC_Subscriptions_Upgrader {
 		} else {
 
 			if ( null === self::$old_subscription_count ) {
-
-				$query = "SELECT meta.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS meta
-						  WHERE meta.meta_key = '_subscription_status'
-						  AND meta.meta_value <> 'trash'
-						  GROUP BY meta.order_item_id";
-
-				$wpdb->get_results( $query );
-
-				self::$old_subscription_count = $wpdb->num_rows;
+				self::$old_subscription_count = self::get_total_subscription_count_query();
 			}
 
 			$subscription_count = self::$old_subscription_count;
 		}
 
 		return $subscription_count;
+	}
+
+
+	/**
+	 * Returns the number of subscriptions left in the 1.5 structure
+	 * @return integer number of 1.5 subscriptions left
+	 */
+	private static function get_total_subscription_count_query() {
+		global $wpdb;
+
+		$query = self::get_subscription_query();
+
+		$wpdb->get_results( $query );
+
+		return $wpdb->num_rows;
+	}
+
+
+	/**
+	 * Single source of truth for the query
+	 * @param  integer $limit the number of subscriptions to get
+	 * @return string        SQL query of what we need
+	 */
+	public static function get_subscription_query( $batch_size = null ) {
+		global $wpdb;
+
+		if ( null === $batch_size ) {
+			$select = 'SELECT DISTINCT items.order_item_id';
+			$limit = '';
+		} else {
+			$select = 'SELECT meta.*, items.*';
+			$limit = sprintf( ' LIMIT 0, %d', $batch_size );
+		}
+
+		$query = sprintf( "%s FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS meta
+			LEFT JOIN `{$wpdb->prefix}woocommerce_order_items` AS items USING (order_item_id)
+			LEFT JOIN (
+				SELECT a.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta` AS a
+				LEFT JOIN (
+					SELECT `{$wpdb->prefix}woocommerce_order_itemmeta`.order_item_id FROM `{$wpdb->prefix}woocommerce_order_itemmeta`
+					WHERE `{$wpdb->prefix}woocommerce_order_itemmeta`.meta_key = '_subscription_status'
+				) AS s
+				USING (order_item_id)
+				WHERE 1=1
+				AND a.order_item_id = s.order_item_id
+				AND a.meta_key = '_subscription_start_date'
+				ORDER BY CASE WHEN CAST(a.meta_value AS DATETIME) IS NULL THEN 1 ELSE 0 END, CAST(a.meta_value AS DATETIME) ASC
+				%s
+			) AS a3 USING (order_item_id)
+			WHERE meta.meta_key REGEXP '_subscription_(.*)|_product_id|_variation_id'
+			AND meta.order_item_id = a3.order_item_id", $select, $limit );
+
+		return $query;
 	}
 
 	/**
@@ -548,7 +606,7 @@ class WC_Subscriptions_Upgrader {
 	 */
 	public static function maybe_block_paypal_ipn() {
 		if ( false !== get_option( 'wc_subscriptions_is_upgrading', false ) ) {
-			WCS_Upgrade_Logger::add( '*** PayPal IPN Request blocked: ' . print_r( wp_unslash( $_POST ), true ) );
+			WCS_Upgrade_Logger::add( '*** PayPal IPN Request blocked: ' . print_r( wp_unslash( $_POST ), true ) ); // No CSRF needed as it's from outside
 			wp_die( 'PayPal IPN Request Failure', 'PayPal IPN', array( 'response' => 409 ) );
 		}
 	}

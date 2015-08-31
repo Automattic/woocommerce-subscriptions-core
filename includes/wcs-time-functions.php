@@ -76,7 +76,7 @@ function wcs_get_subscription_ranges( $subscription_period = '' ) {
 	foreach ( array( 'day', 'week', 'month', 'year' ) as $period ) {
 
 		$subscription_lengths = array(
-			__( 'all time', 'woocommerce-subscriptions' ),
+			_x( 'all time', 'Subscription length (eg "$10 per month for _all time_")', 'woocommerce-subscriptions' ),
 		);
 
 		switch ( $period ) {
@@ -125,9 +125,10 @@ function wcs_get_subscription_ranges( $subscription_period = '' ) {
  */
 function wcs_get_subscription_period_interval_strings( $interval = '' ) {
 
-	$intervals = array( 1 => __( 'every', 'woocommerce-subscriptions' ) );
+	$intervals = array( 1 => _x( 'every', 'period interval (eg "$10 _every_ 2 weeks")', 'woocommerce-subscriptions' ) );
 
 	foreach ( range( 2, 6 ) as $i ) {
+		// translators: period interval, placeholder is ordinal (eg "$10 every _2nd/3rd/4th_", etc)
 		$intervals[ $i ] = sprintf( __( 'every %s', 'woocommerce-subscriptions' ), WC_Subscriptions::append_numeral_suffix( $i ) );
 	}
 
@@ -240,9 +241,10 @@ function wcs_add_months( $from_timestamp, $months_to_add ) {
  *
  * @param int A Unix timestamp at some time in the future.
  * @param string A unit of time, either day, week month or year.
+ * @param string A rounding method, either ceil (default) or floor for anything else
  * @since 2.0
  */
-function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_of_time = 'month' ) {
+function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_of_time = 'month', $rounding_method = 'ceil' ) {
 
 	if ( $end_timestamp <= $start_timestamp ) {
 
@@ -253,8 +255,14 @@ function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_o
 		// Calculate the number of times this day will occur until we'll be in a time after the given timestamp
 		$timestamp = $start_timestamp;
 
-		for ( $periods_until = 0; $timestamp < $end_timestamp; $periods_until++ ) {
-			$timestamp = wcs_add_months( $timestamp, 1 );
+		if ( 'ceil' == $rounding_method ) {
+			for ( $periods_until = 0; $timestamp < $end_timestamp; $periods_until++ ) {
+				$timestamp = wcs_add_months( $timestamp, 1 );
+			}
+		} else {
+			for ( $periods_until = -1; $timestamp <= $end_timestamp; $periods_until++ ) {
+				$timestamp = wcs_add_months( $timestamp, 1 );
+			}
 		}
 	} else {
 
@@ -275,9 +283,217 @@ function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_o
 				break;
 		}
 
-		$periods_until = floor( $seconds_until_timestamp / $denominator ); // use floor() because we want the total number of complete periods between now and the given timestamp
-
+		$periods_until = ( 'ceil' == $rounding_method ) ? ceil( $seconds_until_timestamp / $denominator ) : floor( $seconds_until_timestamp / $denominator );
 	}
 
 	return $periods_until;
+}
+
+/**
+ * Method to try to determine the period of subscriptions if data is missing. It tries the following, in order:
+ *
+ * - defaults to month
+ * - comes up with an array of possible values given the standard time spans (day / week / month / year)
+ * - ranks them
+ * - discards 0 interval values
+ * - discards high deviation values
+ * - tries to match with passed in interval
+ * - if all else fails, sorts by interval and returns the one having the lowest interval, or the first, if equal (that should
+ *   not happen though)
+ *
+ * @param  string  $last_date   mysql date string
+ * @param  string  $second_date mysql date string
+ * @param  integer $interval    potential interval
+ * @return string               period string
+ */
+function wcs_estimate_period_between( $last_date, $second_date, $interval = 1 ) {
+
+	if ( ! is_int( $interval ) ) {
+		$interval = 1;
+	}
+
+	$last_timestamp    = strtotime( $last_date );
+	$second_timestamp  = strtotime( $second_date );
+
+	$earlier_timestamp = min( $last_timestamp, $second_timestamp );
+	$later_timestamp   = max( $last_timestamp, $second_timestamp );
+
+	$days_in_month     = date( 't', $earlier_timestamp );
+	$difference        = absint( $last_timestamp - $second_timestamp );
+	$period_in_seconds = round( $difference / $interval );
+	$possible_periods  = array();
+
+	// check for months
+	$full_months = wcs_find_full_months_between( $earlier_timestamp, $later_timestamp );
+
+	$possible_periods['month'] = array(
+		'intervals'         => $full_months['months'],
+		'remainder'         => $remainder = $full_months['remainder'],
+		'fraction'          => $remainder / ( 30 * DAY_IN_SECONDS ),
+		'period'            => 'month',
+		'days_in_month'     => $days_in_month,
+		'original_interval' => $interval,
+	);
+
+	// check for different time spans
+	foreach ( array( 'year' => YEAR_IN_SECONDS, 'week' => WEEK_IN_SECONDS, 'day' => DAY_IN_SECONDS ) as $time => $seconds ) {
+		$possible_periods[ $time ] = array(
+			'intervals'         => floor( $period_in_seconds / $seconds ),
+			'remainder'         => $remainder = $period_in_seconds % $seconds,
+			'fraction'          => $remainder / $seconds,
+			'period'            => $time,
+			'days_in_month'     => $days_in_month,
+			'original_interval' => $interval,
+		);
+	}
+
+	// filter out ones that are less than one period
+	$possible_periods_zero_filtered = array_filter( $possible_periods, 'wcs_discard_zero_intervals' );
+	if ( empty( $possible_periods_zero_filtered ) ) {
+		// fall back if the difference is less than a day and return default 'day'
+		return 'day';
+	} else {
+		$possible_periods = $possible_periods_zero_filtered;
+	}
+
+	// filter out ones that have too high of a deviation
+	$possible_periods_no_hd = array_filter( $possible_periods, 'wcs_discard_high_deviations' );
+
+	if ( count( $possible_periods_no_hd ) == 1 ) {
+		// only one matched, let's return that as our best guess
+		$possible_periods_no_hd = array_shift( $possible_periods_no_hd );
+		return $possible_periods_no_hd['period'];
+	} elseif ( count( $possible_periods_no_hd ) > 1 ) {
+		$possible_periods = $possible_periods_no_hd;
+	}
+
+	// check for interval equality
+	$possible_periods_interval_match = array_filter( $possible_periods, 'wcs_match_intervals' );
+
+	if ( count( $possible_periods_interval_match ) == 1 ) {
+		foreach ( $possible_periods_interval_match as $period_data ) {
+			// only one matched the interval as our best guess
+			return $period_data['period'];
+		}
+	} elseif ( count( $possible_periods_interval_match ) > 1 ) {
+		$possible_periods = $possible_periods_interval_match;
+	}
+
+	// order by number of intervals and return the lowest
+
+	usort( $possible_periods, 'wcs_sort_by_intervals' );
+
+	$least_interval = array_shift( $possible_periods );
+
+	return $least_interval['period'];
+}
+
+/**
+ * Finds full months between two dates and the remaining seconds after the end of the last full month. Takes into account
+ * leap years and variable number of days in months. Uses wcs_add_months
+ *
+ * @param  numeric $start_timestamp unix timestamp of a start date
+ * @param  numeric $end_timestamp   unix timestamp of an end date
+ * @return array                    with keys 'months' (integer) and 'remainder' (seconds, integer)
+ */
+function wcs_find_full_months_between( $start_timestamp, $end_timestamp ) {
+	$number_of_months = 0;
+	$remainder = null;
+	$previous_remainder = null;
+
+	while ( 0 <= $remainder ) {
+		$previous_timestamp = $start_timestamp;
+		$start_timestamp = wcs_add_months( $start_timestamp, 1 );
+		$previous_remainder = $remainder;
+		$remainder = $end_timestamp - $start_timestamp;
+
+		if ( $remainder >= 0 ) {
+			$number_of_months++;
+		} elseif ( null === $previous_remainder ) {
+			$previous_remainder = $end_timestamp - $previous_timestamp;
+		}
+	}
+
+	$time_difference = array(
+		'months' => $number_of_months,
+		'remainder' => $previous_remainder,
+	);
+
+	return $time_difference;
+}
+
+/**
+ * Used in an array_filter, removes elements where intervals are less than 0
+ *
+ * @param  array $array elements of an array
+ * @return bool        true if at least 1 interval
+ */
+function wcs_discard_zero_intervals( $array ) {
+	return $array['intervals'] > 0;
+}
+
+/**
+ * Used in an array_filter, discards high deviation elements.
+ * - for days it's 1/24th
+ * - for week it's 1/7th
+ * - for year it's 1/300th
+ * - for month it's 1/($days_in_months-2)
+ *
+ * @param  array $array elements of the filtered array
+ * @return bool        true if value is within deviation limit
+ */
+function wcs_discard_high_deviations( $array ) {
+	switch ( $array['period'] ) {
+		case 'year':
+			return $array['fraction'] < ( 1 / 300 );
+			break;
+		case 'month':
+			return $array['fraction'] < ( 1 / ( $array['days_in_month'] - 2 ) );
+			break;
+		case 'week':
+			return $array['fraction'] < ( 1 / 7 );
+			break;
+		case 'day':
+			return $array['fraction'] < ( 1 / 24 );
+			break;
+		default:
+			return false;
+	}
+}
+
+/**
+ * Used in an array_filter, tries to match intervals against passed in interval
+ * @param  array $array elements of filtered array
+ * @return bool        true if intervals match
+ */
+function wcs_match_intervals( $array ) {
+	return $array['intervals'] == $array['original_interval'];
+}
+
+/**
+ * Used in a usort, responsible for making sure the array is sorted in ascending order by intervals
+ *
+ * @param  array $a one element of the sorted array
+ * @param  array $b different element of the sorted array
+ * @return int    0 if equal, -1 if $b is larger, 1 if $a is larger
+ */
+function wcs_sort_by_intervals( $a, $b ) {
+	if ( $a['intervals'] == $b['intervals'] ) {
+		return 0;
+	}
+	return ( $a['intervals'] < $b['intervals'] ) ? -1 : 1;
+}
+
+/**
+ * Used in a usort, responsible for making sure the array is sorted in descending order by fraction.
+ *
+ * @param  array $a one element of the sorted array
+ * @param  array $b different element of the sorted array
+ * @return int    0 if equal, -1 if $b is larger, 1 if $a is larger
+ */
+function wcs_sort_by_fractions( $a, $b ) {
+	if ( $a['fraction'] == $b['fraction'] ) {
+		return 0;
+	}
+	return ( $a['fraction'] > $b['fraction'] ) ? -1 : 1;
 }

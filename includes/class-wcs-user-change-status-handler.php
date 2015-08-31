@@ -72,7 +72,9 @@ class WCS_User_Change_Status_Handler {
 		}
 
 		if ( isset( $status_message ) ) {
+			// translators: placeholder is status (e.g. "reactivated", "cancelled")
 			$subscription->add_order_note( sprintf( __( 'Subscription %s by the subscriber from their account page.', 'woocommerce-subscriptions' ), $status_message ) );
+			// translators: placeholder is status (e.g. "reactivated", "cancelled")
 			WC_Subscriptions::add_notice( sprintf( __( 'Your subscription has been %s.', 'woocommerce-subscriptions' ), $status_message ), 'success' );
 
 			do_action( 'woocommerce_customer_changed_subscription_to_' . $new_status, $subscription );
@@ -95,7 +97,7 @@ class WCS_User_Change_Status_Handler {
 			WC_Subscriptions::add_notice( __( 'Security error. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), 'error' );
 			return false;
 
-		} elseif ( $user_id !== $subscription->get_user_id() ) {
+		} elseif ( ! user_can( $user_id, 'edit_shop_subscription_status', $subscription->id ) ) {
 			WC_Subscriptions::add_notice( __( 'That doesn\'t appear to be one of your subscriptions.', 'woocommerce-subscriptions' ), 'error' );
 			return false;
 

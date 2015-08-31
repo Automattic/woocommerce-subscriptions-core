@@ -209,6 +209,7 @@ class WC_Subscription extends WC_Order {
 					$can_be_updated = false;
 				}
 				break;
+			case 'completed' : // core WC order status mapped internally to avoid exceptions
 			case 'active' :
 				if ( $this->payment_method_supports( 'subscription_reactivation' ) && $this->has_status( 'on-hold' ) ) {
 					$can_be_updated = true;
@@ -218,6 +219,7 @@ class WC_Subscription extends WC_Order {
 					$can_be_updated = false;
 				}
 				break;
+			case 'failed' : // core WC order status mapped internally to avoid exceptions
 			case 'on-hold' :
 				if ( $this->payment_method_supports( 'subscription_suspension' ) && $this->has_status( array( 'active', 'pending' ) ) ) {
 					$can_be_updated = true;
@@ -275,7 +277,7 @@ class WC_Subscription extends WC_Order {
 	 * @param string $new_status Status to change the order to. No internal wc- prefix is required.
 	 * @param string $note (default: '') Optional note to add
 	 */
-	public function update_status( $new_status, $note = '' ) {
+	public function update_status( $new_status, $note = '', $manual = false ) {
 
 		if ( ! $this->id ) {
 			return;
@@ -328,6 +330,7 @@ class WC_Subscription extends WC_Order {
 						$this->update_dates( array( 'end' => $end_date ) );
 					break;
 
+					case 'completed' : // core WC order status mapped internally to avoid exceptions
 					case 'active' :
 						// Recalculate and set next payment date
 						$next_payment = $this->get_time( 'next_payment' );
@@ -342,6 +345,7 @@ class WC_Subscription extends WC_Order {
 						wcs_make_user_active( $this->customer_user );
 					break;
 
+					case 'failed' : // core WC order status mapped internally to avoid exceptions
 					case 'on-hold' :
 						// Record date of suspension - 'post_modified' column?
 						$this->update_suspension_count( $this->suspension_count + 1 );
@@ -357,7 +361,7 @@ class WC_Subscription extends WC_Order {
 					break;
 				}
 
-				$this->add_order_note( trim( $note . ' ' . sprintf( __( 'Status changed from %s to %s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ) );
+				$this->add_order_note( trim( $note . ' ' . sprintf( __( 'Status changed from %s to %s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ), 0, $manual );
 
 				// Trigger a hook with params we want
 				do_action( 'woocommerce_subscription_status_updated', $this, $new_status, $old_status );
@@ -644,8 +648,10 @@ class WC_Subscription extends WC_Order {
 			$time_diff = $timestamp_gmt - current_time( 'timestamp', true );
 
 			if ( $time_diff > 0 && $time_diff < WEEK_IN_SECONDS ) {
+				// translators: placeholder is human time diff (e.g. "3 weeks")
 				$date_to_display = sprintf( __( 'In %s', 'woocommerce-subscriptions' ), human_time_diff( current_time( 'timestamp', true ), $timestamp_gmt ) );
 			} elseif ( $time_diff < 0 && absint( $time_diff ) < WEEK_IN_SECONDS ) {
+				// translators: placeholder is human time diff (e.g. "3 weeks")
 				$date_to_display = sprintf( __( '%s ago', 'woocommerce-subscriptions' ), human_time_diff( current_time( 'timestamp', true ), $timestamp_gmt ) );
 			} else {
 				$date_to_display = date_i18n( wc_date_format(), $this->get_time( $date_type, 'site' ) );
@@ -658,7 +664,7 @@ class WC_Subscription extends WC_Order {
 				case 'next_payment' :
 				case 'trial_end' :
 				default :
-					$date_to_display = __( '-', 'woocommerce-subscriptions' );
+					$date_to_display = _x( '-', 'original denotes there is no date to display', 'woocommerce-subscriptions' );
 					break;
 			}
 		}
@@ -714,12 +720,8 @@ class WC_Subscription extends WC_Order {
 		$timestamps = array();
 		foreach ( $dates as $date_type => $datetime ) {
 			if ( ! empty( $datetime ) && false === strptime( $datetime, '%Y-%m-%d %H:%M:%S' ) ) {
-				throw new InvalidArgumentException(
-					sprintf(
-						__( 'Invalid %s date. The date must be of the format: "Y-m-d H:i:s".', 'woocommerce-subscriptions' ),
-						$date_type
-					)
-				);
+				// translators: placeholder is date type (e.g. "end", "next_payment"...)
+				throw new InvalidArgumentException( sprintf( _x( 'Invalid %s date. The date must be of the format: "Y-m-d H:i:s".', 'appears in an error message if date is wrong format', 'woocommerce-subscriptions' ), $date_type ) );
 			}
 
 			$date_type = str_replace( '_date', '', $date_type );
@@ -1399,8 +1401,6 @@ class WC_Subscription extends WC_Order {
 
 		$last_order = false;
 
-		$related_orders = array();
-
 		$renewal_post_ids = get_posts( array(
 			'posts_per_page' => 1,
 			'post_type'      => 'shop_order',
@@ -1485,7 +1485,7 @@ class WC_Subscription extends WC_Order {
 			update_post_meta( $this->id, '_payment_method', '' );
 			update_post_meta( $this->id, '_payment_method_title', '' );
 
-		} elseif ( $this->payment_gateway !== $payment_gateway->id ) {
+		} elseif ( $this->payment_method !== $payment_gateway->id ) {
 
 			// Set subscription to manual when the payment method doesn't support automatic payments
 			$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
@@ -1501,6 +1501,8 @@ class WC_Subscription extends WC_Order {
 			update_post_meta( $this->id, '_payment_method', $payment_gateway->id );
 			update_post_meta( $this->id, '_payment_method_title', $payment_gateway->get_title() );
 		}
+
+		$this->payment_gateway = wc_get_payment_gateway_by_order( $this );
 	}
 
 	/**
@@ -1517,6 +1519,7 @@ class WC_Subscription extends WC_Order {
 
 		// Allow payment gateway extensions to validate the data and throw exceptions if necessary
 		do_action( 'woocommerce_subscription_validate_payment_meta', $payment_method_id, $payment_meta, $this );
+		do_action( 'woocommerce_subscription_validate_payment_meta_' . $payment_method_id, $payment_meta, $this );
 
 		foreach ( $payment_meta as $meta_table => $meta ) {
 			foreach ( $meta as $meta_key => $meta_data ) {
