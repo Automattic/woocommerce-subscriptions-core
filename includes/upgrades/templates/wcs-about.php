@@ -42,12 +42,12 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 		<h2><?php esc_html_e( "Check Out What's New", 'woocommerce-subscriptions' ); ?></h2>
 		<hr/>
 
-		<div class="feature-section col two-col">
-			<div class="feature-image">
+		<div class="feature-section two-col">
+			<div class="feature-image col">
 				<img src="<?php echo esc_url( plugins_url( '/assets/images/checkout-recurring-totals.png', WC_Subscriptions::$plugin_file ) ); ?>" />
 			</div>
 
-			<div class="last-feature feature-copy">
+			<div class="col last-feature feature-copy">
 				<h3><?php esc_html_e( 'Multiple Subscriptions', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php esc_html_e( 'It\'s now easier for your customers to buy more subscriptions!', 'woocommerce-subscriptions' ); ?></p>
 				<p><?php esc_html_e( 'Customers can now purchase different subscription products in one transaction. The products can bill on any schedule and have any combination of sign-up fees and/or free trials.', 'woocommerce-subscriptions' ); ?></p>
@@ -58,13 +58,13 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 			</div>
 		</div>
 
-		<div class="feature-section col two-col">
+		<div class="feature-section two-col">
 
-			<div class="last-feature feature-right feature-image">
+			<div class="col last-feature feature-right feature-image">
 				<img src="<?php echo esc_url( plugins_url( '/assets/images/add-edit-subscription-screen.png', WC_Subscriptions::$plugin_file ) ); ?>" />
 			</div>
 
-			<div class="feature-copy">
+			<div class="col feature-copy">
 				<h3><?php esc_html_e( 'New Add/Edit Subscription Screen', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php esc_html_e( 'Subscriptions v2.0 introduces a new administration interface to add or edit a subscription. You can make all the familiar changes, like modifying recurring totals or subscription status. You can also make some new modifications, like changing the expiration date, adding a shipping cost or adding a product line item.', 'woocommerce-subscriptions' ); ?></p>
 				<p><?php
@@ -78,12 +78,12 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 			</div>
 		</div>
 
-		<div class="feature-section col two-col">
-			<div class="feature-image">
+		<div class="feature-section two-col">
+			<div class="col feature-image">
 				<img src="<?php echo esc_url( plugins_url( '/assets/images/view-subscription.png', WC_Subscriptions::$plugin_file ) ); ?>" />
 			</div>
 
-			<div class="last-feature feature-copy">
+			<div class="col last-feature feature-copy">
 				<h3><?php esc_html_e( 'New View Subscription Page', 'woocommerce-subscriptions' ); ?></h3>
 				<p>
 					<?php
@@ -101,9 +101,9 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 	</div>
 	<div class="changelog">
 
-		<div class="feature-section col three-col">
+		<div class="feature-section three-col">
 
-			<div>
+			<div class="col">
 				<img src="<?php echo esc_url( plugins_url( '/assets/images/new-subscriptions-list-table.jpg', WC_Subscriptions::$plugin_file ) ); ?>" />
 				<h3><?php esc_html_e( 'Improved Subscriptions Table', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php
@@ -112,7 +112,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 				</p>
 			</div>
 
-			<div>
+			<div class="col">
 				<img src="<?php echo esc_url( plugins_url( '/assets/images/admin-change-payment-method.jpg', WC_Subscriptions::$plugin_file ) ); ?>" />
 				<h3><?php esc_html_e( 'Change Payment Method', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php
@@ -121,7 +121,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 				</p>
 			</div>
 
-			<div class="last-feature">
+			<div class="col last-feature">
 				<img src="<?php echo esc_url( plugins_url( '/assets/images/billing-schedules-meta-box.png', WC_Subscriptions::$plugin_file ) ); ?>" />
 				<h3><?php esc_html_e( 'Change Trial and End Dates', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php
@@ -137,8 +137,8 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 		<h2><?php esc_html_e( 'Peek Under the Hood for Developers', 'woocommerce-subscriptions' ); ?></h2>
 		<p><?php esc_html_e( 'Subscriptions v2.0 introduces a new architecture built on the WooCommerce Custom Order Types API.', 'woocommerce-subscriptions' ); ?></p>
 
-		<div class="feature-section col three-col">
-			<div>
+		<div class="feature-section three-col">
+			<div class="col">
 				<h3><?php
 					// translators: placeholders are opening and closing code tags
 					printf( esc_html__( 'New %sshop_subscription%s Post Type', 'woocommerce-subscriptions' ), '<code>', '</code>' ); ?>
@@ -149,7 +149,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 					printf( esc_html__( 'Developers can also now use all the familiar WordPress functions, like %sget_posts()%s, to query or modify subscription data.', 'woocommerce-subscriptions' ), '<code>', '</code>' ); ?>
 				</p>
 			</div>
-			<div>
+			<div class="col">
 				<h3><?php
 					// translators: placeholders are opening and closing <code> tags
 					printf( esc_html__( 'New %sWC_Subscription%s Object', 'woocommerce-subscriptions' ), '<code>', '</code>' ); ?>
@@ -160,7 +160,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 					printf( esc_html__( 'Because the %sWC_Subscription%s class extends %sWC_Order%s, you can use its familiar methods, like %s$subscription->update_status()%s or %s$subscription->get_total()%s.', 'woocommerce-subscriptions' ), '<code>', '</code>', '<code>', '</code>', '<code>', '</code>', '<code>', '</code>' ); ?>
 				</p>
 			</div>
-			<div class="last-feature">
+			<div class="col last-feature">
 				<h3><?php esc_html_e( 'REST API Endpoints', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php esc_html_e( 'We didn\'t just improve interfaces for humans, we also improved them for computers. Your applications can now create, read, update or delete subscriptions via RESTful API endpoints.', 'woocommerce-subscriptions' ); ?></p>
 				<p><?php
