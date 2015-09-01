@@ -46,7 +46,6 @@ class WC_Subscriptions_Coupon {
 
 		// Remove coupons which don't apply to certain cart calculations
 		add_action( 'woocommerce_before_calculate_totals', __CLASS__ . '::remove_coupons', 10 );
-		add_action( 'woocommerce_calculate_totals', __CLASS__ . '::restore_coupons', 10 );
 	}
 
 	/**
@@ -494,26 +493,6 @@ class WC_Subscriptions_Coupon {
 	}
 
 	/**
-	 * Restores discount coupons which had been removed for special subscription calculations.
-	 *
-	 * @since 1.3.5
-	 */
-	public static function restore_coupons( $cart ) {
-
-		if ( ! empty( self::$removed_coupons ) ) {
-
-			// Can't use $cart->add_dicount here as it calls calculate_totals()
-			$cart->applied_coupons = array_merge( $cart->applied_coupons, self::$removed_coupons );
-
-			if ( isset( $cart->coupons ) ) { // WC 2.3+
-				$cart->coupons = $cart->get_coupons();
-			}
-
-			self::$removed_coupons = array();
-		}
-	}
-
-	/**
 	 * Store how much discount each coupon grants.
 	 *
 	 * @since 2.0
@@ -561,6 +540,28 @@ class WC_Subscriptions_Coupon {
 		_deprecated_function( __METHOD__, '1.3.5', __CLASS__ .'::cart_contains_discount( "sign_up_fee" )' );
 
 		return self::cart_contains_discount( 'sign_up_fee' );
+	}
+
+	/**
+	 * Restores discount coupons which had been removed for special subscription calculations.
+	 *
+	 * @since 1.3.5
+	 */
+	public static function restore_coupons( $cart ) {
+
+		_deprecated_function( __METHOD__, '2.0' );
+
+		if ( ! empty( self::$removed_coupons ) ) {
+
+			// Can't use $cart->add_dicount here as it calls calculate_totals()
+			$cart->applied_coupons = array_merge( $cart->applied_coupons, self::$removed_coupons );
+
+			if ( isset( $cart->coupons ) ) { // WC 2.3+
+				$cart->coupons = $cart->get_coupons();
+			}
+
+			self::$removed_coupons = array();
+		}
 	}
 }
 
