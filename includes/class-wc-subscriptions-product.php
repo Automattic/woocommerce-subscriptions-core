@@ -29,7 +29,7 @@ class WC_Subscriptions_Product {
 	 **/
 	public static function init() {
 
-		// Overide the WC default "Add to Cart" text to "Sign Up Now" (in various places/templates) for WC < 2.1
+		// Override the WC default "Add to Cart" text to "Sign Up Now" (in various places/templates) for WC < 2.1
 		add_filter( 'add_to_cart_text', __CLASS__ . '::add_to_cart_text' );
 		add_filter( 'single_add_to_cart_text', __CLASS__ . '::add_to_cart_text', 10, 2 );
 
@@ -385,7 +385,7 @@ class WC_Subscriptions_Product {
 			$subscription_string = $price;
 		} elseif ( $include['subscription_period'] ) {
 			// translators: billing period (e.g. "every week")
-			$subscription_string = sprintf( _n( '%s', 'every %s', $billing_interval, 'woocommerce-subscriptions' ), wcs_get_subscription_period_strings( $billing_interval, $billing_period ) );
+			$subscription_string = sprintf( __( 'every %s', 'woocommerce-subscriptions' ), wcs_get_subscription_period_strings( $billing_interval, $billing_period ) );
 		}
 
 		// Add the length to the end
@@ -738,7 +738,7 @@ class WC_Subscriptions_Product {
 	/**
 	 * Ensures a price is displayed for subscription variation where WC would normally ignore it (i.e. when prices are equal).
 	 *
-	 * @return array $variation_details Set of name/value pairs repesenting the subscription.
+	 * @return array $variation_details Set of name/value pairs representing the subscription.
 	 * @since 1.3.6
 	 */
 	public static function maybe_set_variations_price_html( $variation_details, $variable_product, $variation ) {
@@ -855,7 +855,7 @@ class WC_Subscriptions_Product {
 	 * This is hooked to 'wp_ajax_woocommerce_remove_variation' & 'wp_ajax_woocommerce_remove_variations'
 	 * before WooCommerce's WC_AJAX::remove_variation() or WC_AJAX::remove_variations() functions are run.
 	 * The WooCommerce functions will still run after this, but if the variation is a subscription, the
-	 * request will either terminate or in the case of bulk deleting, the varition's ID will be removed
+	 * request will either terminate or in the case of bulk deleting, the variation's ID will be removed
 	 * from the $_POST.
 	 *
 	 * @since 1.4.9
