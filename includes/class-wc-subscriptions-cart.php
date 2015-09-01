@@ -511,24 +511,6 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
-	 * Store how much discount each coupon grants.
-	 *
-	 * @param mixed $code
-	 * @param mixed $amount
-	 * @return void
-	 */
-	public static function increase_coupon_discount_amount( $code, $amount ) {
-
-		if ( empty( WC()->cart->coupon_discount_amounts[ $code ] ) ) {
-			WC()->cart->coupon_discount_amounts[ $code ] = 0;
-		}
-
-		if ( 'recurring_total' != self::$calculation_type ) {
-			WC()->cart->coupon_discount_amounts[ $code ] += $amount;
-		}
-	}
-
-	/**
 	 * Check whether the cart needs payment even if the order total is $0
 	 *
 	 * @param bool $needs_payment The existing flag for whether the cart needs payment or not.
@@ -1717,6 +1699,26 @@ class WC_Subscriptions_Cart {
 	public static function get_items_product_id( $cart_item ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_get_canonical_product_id( $cart_item )' );
 		return wcs_get_canonical_product_id( $cart_item );
+	}
+
+	/**
+	 * Store how much discount each coupon grants.
+	 *
+	 * @param mixed $code
+	 * @param mixed $amount
+	 * @return void
+	 */
+	public static function increase_coupon_discount_amount( $code, $amount ) {
+
+		_deprecated_function( __METHOD__, '2.0' );
+
+		if ( empty( WC()->cart->coupon_discount_amounts[ $code ] ) ) {
+			WC()->cart->coupon_discount_amounts[ $code ] = 0;
+		}
+
+		if ( 'recurring_total' != self::$calculation_type ) {
+			WC()->cart->coupon_discount_amounts[ $code ] += $amount;
+		}
 	}
 }
 WC_Subscriptions_Cart::init();

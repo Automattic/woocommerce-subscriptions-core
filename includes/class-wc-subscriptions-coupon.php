@@ -135,7 +135,7 @@ class WC_Subscriptions_Coupon {
 
 						// add to discount totals
 						$cart->discount_cart = $cart->discount_cart + ( $discount_amount * $cart_item['quantity'] );
-						WC_Subscriptions_Cart::increase_coupon_discount_amount( $coupon->code, $discount_amount * $cart_item['quantity'] );
+						$cart = self::increase_coupon_discount_amount( $cart, $coupon->code, $discount_amount * $cart_item['quantity'] );
 
 						$price = $price - $discount_amount;
 
@@ -147,7 +147,7 @@ class WC_Subscriptions_Coupon {
 						$discount_amount = round( ( $calculation_price / 100 ) * $coupon->amount, WC()->cart->dp );
 
 						$cart->discount_cart = $cart->discount_cart + ( $discount_amount * $cart_item['quantity'] );
-						WC_Subscriptions_Cart::increase_coupon_discount_amount( $coupon->code, $discount_amount * $cart_item['quantity'] );
+						$cart = self::increase_coupon_discount_amount( $cart, $coupon->code, $discount_amount * $cart_item['quantity'] );
 
 						$price = $price - $discount_amount;
 
@@ -177,7 +177,7 @@ class WC_Subscriptions_Coupon {
 						$discount_amount = round( ( $amount_to_discount / 100 ) * $coupon->amount, WC()->cart->dp );
 
 						$cart->discount_cart = $cart->discount_cart + $discount_amount * $cart_item['quantity'];
-						WC_Subscriptions_Cart::increase_coupon_discount_amount( $coupon->code, $discount_amount * $cart_item['quantity'] );
+						$cart = self::increase_coupon_discount_amount( $cart, $coupon->code, $discount_amount * $cart_item['quantity'] );
 
 						$price = $price - $discount_amount;
 
@@ -511,6 +511,26 @@ class WC_Subscriptions_Coupon {
 
 			self::$removed_coupons = array();
 		}
+	}
+
+	/**
+	 * Store how much discount each coupon grants.
+	 *
+	 * @since 2.0
+	 * @param WC_Cart $cart The WooCommerce cart object.
+	 * @param mixed $code
+	 * @param mixed $amount
+	 * @return WC_Cart $cart
+	 */
+	public static function increase_coupon_discount_amount( $cart, $code, $amount ) {
+
+		if ( empty( $cart->coupon_discount_amounts[ $code ] ) ) {
+			$cart->coupon_discount_amounts[ $code ] = 0;
+		}
+
+		$cart->coupon_discount_amounts[ $code ] += $amount;
+
+		return $cart;
 	}
 
 	/* Deprecated */
