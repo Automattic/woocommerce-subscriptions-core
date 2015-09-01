@@ -206,8 +206,6 @@ class WC_Subscriptions_Cart {
 			$recurring_cart->next_payment_date  = apply_filters( 'wcs_recurring_cart_next_payment_date', WC_Subscriptions_Product::get_first_renewal_payment_date( $product, $recurring_cart->start_date ), $recurring_cart, $product );
 			$recurring_cart->end_date           = apply_filters( 'wcs_recurring_cart_end_date', WC_Subscriptions_Product::get_expiration_date( $product, $recurring_cart->start_date ), $recurring_cart, $product );
 
-			WC_Subscriptions_Coupon::remove_coupons( $recurring_cart );
-
 			// No fees recur (yet)
 			$recurring_cart->fees = array();
 			$recurring_cart->fee_total = 0;
