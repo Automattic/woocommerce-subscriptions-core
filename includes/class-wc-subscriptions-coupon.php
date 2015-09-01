@@ -84,9 +84,9 @@ class WC_Subscriptions_Coupon {
 
 		$calculation_type = WC_Subscriptions_Cart::get_calculation_type();
 
-		if ( ! empty( WC()->cart->applied_coupons ) ) {
+		if ( ! empty( $cart->applied_coupons ) ) {
 
-			foreach ( WC()->cart->applied_coupons as $code ) {
+			foreach ( $cart->applied_coupons as $code ) {
 
 				$coupon = new WC_Coupon( $code );
 
@@ -134,7 +134,7 @@ class WC_Subscriptions_Coupon {
 						$discount_amount = ( $calculation_price < $coupon->amount ) ? $calculation_price : $coupon->amount;
 
 						// add to discount totals
-						WC()->cart->discount_cart = WC()->cart->discount_cart + ( $discount_amount * $cart_item['quantity'] );
+						$cart->discount_cart = $cart->discount_cart + ( $discount_amount * $cart_item['quantity'] );
 						WC_Subscriptions_Cart::increase_coupon_discount_amount( $coupon->code, $discount_amount * $cart_item['quantity'] );
 
 						$price = $price - $discount_amount;
@@ -146,7 +146,7 @@ class WC_Subscriptions_Coupon {
 
 						$discount_amount = round( ( $calculation_price / 100 ) * $coupon->amount, WC()->cart->dp );
 
-						WC()->cart->discount_cart = WC()->cart->discount_cart + ( $discount_amount * $cart_item['quantity'] );
+						$cart->discount_cart = $cart->discount_cart + ( $discount_amount * $cart_item['quantity'] );
 						WC_Subscriptions_Cart::increase_coupon_discount_amount( $coupon->code, $discount_amount * $cart_item['quantity'] );
 
 						$price = $price - $discount_amount;
@@ -176,7 +176,7 @@ class WC_Subscriptions_Coupon {
 
 						$discount_amount = round( ( $amount_to_discount / 100 ) * $coupon->amount, WC()->cart->dp );
 
-						WC()->cart->discount_cart = WC()->cart->discount_cart + $discount_amount * $cart_item['quantity'];
+						$cart->discount_cart = $cart->discount_cart + $discount_amount * $cart_item['quantity'];
 						WC_Subscriptions_Cart::increase_coupon_discount_amount( $coupon->code, $discount_amount * $cart_item['quantity'] );
 
 						$price = $price - $discount_amount;
@@ -484,10 +484,10 @@ class WC_Subscriptions_Coupon {
 				$cart->remove_coupons();
 
 				// And re-apply those which relate to this calculation
-				WC()->cart->applied_coupons = $coupons_to_reapply;
+				$cart->applied_coupons = $coupons_to_reapply;
 
-				if ( isset( WC()->cart->coupons ) ) { // WC 2.3+
-					WC()->cart->coupons = WC()->cart->get_coupons();
+				if ( isset( $cart->coupons ) ) { // WC 2.3+
+					$cart->coupons = $cart->get_coupons();
 				}
 			}
 		}
@@ -503,10 +503,10 @@ class WC_Subscriptions_Coupon {
 		if ( ! empty( self::$removed_coupons ) ) {
 
 			// Can't use $cart->add_dicount here as it calls calculate_totals()
-			WC()->cart->applied_coupons = array_merge( WC()->cart->applied_coupons, self::$removed_coupons );
+			$cart->applied_coupons = array_merge( $cart->applied_coupons, self::$removed_coupons );
 
-			if ( isset( WC()->cart->coupons ) ) { // WC 2.3+
-				WC()->cart->coupons = WC()->cart->get_coupons();
+			if ( isset( $cart->coupons ) ) { // WC 2.3+
+				$cart->coupons = $cart->get_coupons();
 			}
 
 			self::$removed_coupons = array();
