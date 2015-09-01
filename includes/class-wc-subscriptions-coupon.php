@@ -91,7 +91,7 @@ class WC_Subscriptions_Coupon {
 
 				if ( $coupon->apply_before_tax() && $coupon->is_valid() ) {
 
-					$apply_sign_up_coupon = $apply_sign_up_percent_coupon = $apply_recurring_coupon = $apply_recurring_percent_coupon = $apply_initial_coupon = $apply_initial_percent_coupon = false;
+					$apply_recurring_coupon = $apply_recurring_percent_coupon = $apply_initial_coupon = $apply_initial_percent_coupon = false;
 
 					// Apply recurring fee discounts to recurring total calculations
 					if ( 'recurring_total' == $calculation_type ) {
@@ -117,18 +117,18 @@ class WC_Subscriptions_Coupon {
 						if ( ! empty( $cart_item['data']->subscription_sign_up_fee ) ) {
 
 							if ( 'sign_up_fee' == $coupon->type ) {
-								$apply_sign_up_coupon = $apply_initial_coupon = true;
+								$apply_initial_coupon = true;
 							}
 
 							if ( 'sign_up_fee_percent' == $coupon->type ) {
-								$apply_sign_up_percent_coupon = $apply_initial_percent_coupon = true;
+								$apply_initial_percent_coupon = true;
 							}
 
 							$calculation_price = $cart_item['data']->subscription_sign_up_fee;
 						}
 					}
 
-					if ( $apply_sign_up_coupon || $apply_recurring_coupon || $apply_initial_coupon ) {
+					if ( $apply_recurring_coupon || $apply_initial_coupon ) {
 
 						$discount_amount = ( $calculation_price < $coupon->amount ) ? $calculation_price : $coupon->amount;
 
@@ -138,7 +138,7 @@ class WC_Subscriptions_Coupon {
 
 						$price = $price - $discount_amount;
 
-					} elseif ( $apply_sign_up_percent_coupon || $apply_recurring_percent_coupon ) {
+					} elseif ( $apply_recurring_percent_coupon ) {
 
 						$discount_amount = round( ( $calculation_price / 100 ) * $coupon->amount, WC()->cart->dp );
 
@@ -147,27 +147,15 @@ class WC_Subscriptions_Coupon {
 
 						$price = $price - $discount_amount;
 
-					} elseif ( $apply_initial_percent_coupon ) { // Need to calculate percent from base price
+					} elseif ( $apply_initial_percent_coupon ) {
 
-						// We need to calculate the right amount to discount when the price is the combined sign-up fee and recurring amount
-						if ( 'none' == $calculation_type && ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() && ! empty( $cart_item['data']->subscription_sign_up_fee ) ) {
-
-							$base_total = $cart_item['data']->subscription_sign_up_fee + $cart_item['data']->subscription_price;
-
-							if ( 'recurring_percent' == $coupon->type ) {
-								$portion_of_total = $cart_item['data']->subscription_price / $base_total;
-							}
-
-							if ( 'sign_up_fee_percent' == $coupon->type ) {
-								$portion_of_total = $cart_item['data']->subscription_sign_up_fee / $base_total;
-							}
-
-							$amount_to_discount = WC_Subscriptions_Manager::get_amount_from_proportion( $base_total, $portion_of_total );
-
+						// sign up fee coupons only apply to sign up fees and recurring coupons only apply when there is no free trial
+						if ( 'sign_up_fee_percent' == $coupon->type ) {
+							$amount_to_discount = $cart_item['data']->subscription_sign_up_fee;
+						} elseif ( 'recurring_percent' == $coupon->type && empty( $cart_item['data']->subscription_trial_length ) ) {
+							$amount_to_discount = $cart_item['data']->subscription_price;
 						} else {
-
-							$amount_to_discount = $cart_item['data']->get_price();
-
+							$amount_to_discount = 0;
 						}
 
 						$discount_amount = round( ( $amount_to_discount / 100 ) * $coupon->amount, WC()->cart->dp );
@@ -176,7 +164,6 @@ class WC_Subscriptions_Coupon {
 						$cart = self::increase_coupon_discount_amount( $cart, $coupon->code, $discount_amount * $cart_item['quantity'] );
 
 						$price = $price - $discount_amount;
-
 					}
 				}
 			}
@@ -459,36 +446,33 @@ class WC_Subscriptions_Coupon {
 			// Keep track of which coupons, if any, need to be reapplied immediately
 			$coupons_to_reapply = array();
 
-			if ( in_array( $calculation_type, array( 'combined_total', 'sign_up_fee_total', 'recurring_total' ) ) ) {
+			foreach ( $applied_coupons as $coupon_code ) {
 
-				foreach ( $applied_coupons as $coupon_code ) {
+				$coupon = new WC_Coupon( $coupon_code );
 
-					$coupon = new WC_Coupon( $coupon_code );
-
-					if ( in_array( $coupon->type, array( 'recurring_fee', 'recurring_percent' ) ) ) {  // always apply coupons to their specific calculation case
-						if ( 'recurring_total' == $calculation_type ) {
-							$coupons_to_reapply[] = $coupon_code;
-						} elseif ( 'combined_total' == $calculation_type && ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) { // sometimes apply recurring coupons to initial total
-							$coupons_to_reapply[] = $coupon_code;
-						} else {
-							self::$removed_coupons[] = $coupon_code;
-						}
-					} elseif ( in_array( $calculation_type, array( 'combined_total', 'sign_up_fee_total', 'none' ) ) && ! in_array( $coupon->type, array( 'recurring_fee', 'recurring_percent' ) ) ) { // apply all coupons to the first payment
+				if ( in_array( $coupon->type, array( 'recurring_fee', 'recurring_percent' ) ) ) {  // always apply coupons to their specific calculation case
+					if ( 'recurring_total' == $calculation_type ) {
+						$coupons_to_reapply[] = $coupon_code;
+					} elseif ( 'none' == $calculation_type && ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) { // sometimes apply recurring coupons to initial total
 						$coupons_to_reapply[] = $coupon_code;
 					} else {
 						self::$removed_coupons[] = $coupon_code;
 					}
+				} elseif ( ( 'none' == $calculation_type ) && ! in_array( $coupon->type, array( 'recurring_fee', 'recurring_percent' ) ) ) { // apply all coupons to the first payment
+					$coupons_to_reapply[] = $coupon_code;
+				} else {
+					self::$removed_coupons[] = $coupon_code;
 				}
+			}
 
-				// Now remove all coupons (WC only provides a function to remove all coupons)
-				$cart->remove_coupons();
+			// Now remove all coupons (WC only provides a function to remove all coupons)
+			$cart->remove_coupons();
 
-				// And re-apply those which relate to this calculation
-				$cart->applied_coupons = $coupons_to_reapply;
+			// And re-apply those which relate to this calculation
+			$cart->applied_coupons = $coupons_to_reapply;
 
-				if ( isset( $cart->coupons ) ) { // WC 2.3+
-					$cart->coupons = $cart->get_coupons();
-				}
+			if ( isset( $cart->coupons ) ) { // WC 2.3+
+				$cart->coupons = $cart->get_coupons();
 			}
 		}
 	}
