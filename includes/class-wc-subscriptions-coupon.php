@@ -138,9 +138,6 @@ class WC_Subscriptions_Coupon {
 
 						$price = $price - $discount_amount;
 
-						if ( $price < 0 ) {
-							$price = 0;
-						}
 					} elseif ( $apply_sign_up_percent_coupon || $apply_recurring_percent_coupon ) {
 
 						$discount_amount = round( ( $calculation_price / 100 ) * $coupon->amount, WC()->cart->dp );
@@ -182,6 +179,10 @@ class WC_Subscriptions_Coupon {
 
 					}
 				}
+			}
+
+			if ( $price < 0 ) {
+				$price = 0;
 			}
 		}
 
