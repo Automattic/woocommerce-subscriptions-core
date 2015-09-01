@@ -17,6 +17,9 @@ class WC_Subscription extends WC_Order {
 	/** @public WC_Order Stores order data for the order in which the subscription was purchased (if any) */
 	public $order = false;
 
+	/** @public string Order type */
+	public $order_type = 'shop_subscription';
+
 	/**
 	 * Initialize the subscription object.
 	 *
@@ -24,9 +27,9 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function __construct( $subscription ) {
 
-		$this->order_type = 'shop_subscription';
-
 		parent::__construct( $subscription );
+
+		$this->order_type = 'shop_subscription';
 
 		$this->schedule = new stdClass();
 	}
