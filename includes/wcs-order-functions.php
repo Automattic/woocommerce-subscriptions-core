@@ -113,7 +113,7 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 		throw new InvalidArgumentException( __( 'Invalid data. Type of copy is not a string.', 'woocommerce-subscriptions' ) );
 	}
 
-	if ( ! in_array( $type, array( 'subscription', 'renewal_order' ) ) ) {
+	if ( ! in_array( $type, array( 'subscription', 'renewal_order', 'resubscribe_order' ) ) ) {
 		$type = 'copy_order';
 	}
 
@@ -148,6 +148,124 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 	foreach ( $meta as $meta_item ) {
 		update_post_meta( $to_order->id, $meta_item['meta_key'], maybe_unserialize( $meta_item['meta_value'] ) );
 	}
+}
+
+
+/**
+ * Function to create an order from a subscription. It can be used for a renewal or for a resubscribe
+ * order creation. It is the common in both of those instances.
+ *
+ * @param  WC_Subscription|int $subscription Subscription we're basing the order off of
+ * @param  string $type        Type of new order. Default values are 'renewal_order'|'resubscribe_order'
+ * @return WC_Order            New order
+ */
+function wcs_create_order_from_subscription( $subscription, $type ) {
+
+	$type = wcs_validate_new_order_type( $type );
+
+	if ( is_wp_error( $type ) ) {
+		return $type;
+	}
+
+	global $wpdb;
+
+	try {
+
+		$wpdb->query( 'START TRANSACTION' );
+
+		if ( ! is_object( $subscription ) ) {
+			$subscription = wcs_get_subscription( $subscription );
+		}
+
+		$new_order = wc_create_order( array(
+			'customer_id'   => $subscription->get_user_id(),
+			'customer_note' => $subscription->customer_note,
+		) );
+
+		$new_order->post->post_title = wcs_get_new_order_title( $type );
+
+		wcs_copy_order_meta( $subscription, $new_order, $type );
+
+		// Copy over line items and allow extensions to add/remove items or item meta
+		$items = apply_filters( 'wcs_new_order_items', $subscription->get_items( array( 'line_item', 'fee', 'shipping', 'tax' ) ), $new_order, $subscription );
+		$items = apply_filters( 'wcs_new_' . $type . '_items', $items, $new_order, $subscription );
+
+		foreach ( $items as $item_index => $item ) {
+
+			$item_name = apply_filters( 'wcs_new_order_item_name', $item['name'], $item, $subscription );
+			$item_name = apply_filters( 'wcs_new_' . $type . '_item_name', $item_name, $item, $subscription );
+
+			// Create order line item on the renewal order
+			$recurring_item_id = wc_add_order_item( $new_order->id, array(
+				'order_item_name' => $item_name,
+				'order_item_type' => $item['type'],
+			) );
+
+			// Remove recurring line items and set item totals based on recurring line totals
+			foreach ( $item['item_meta'] as $meta_key => $meta_values ) {
+				foreach ( $meta_values as $meta_value ) {
+					wc_add_order_item_meta( $recurring_item_id, $meta_key, maybe_unserialize( $meta_value ) );
+				}
+			}
+		}
+
+		// If we got here, the subscription was created without problems
+		$wpdb->query( 'COMMIT' );
+
+		return apply_filters( 'wcs_new_order_created', $new_order, $subscription );
+
+	} catch ( Exception $e ) {
+		// There was an error adding the subscription
+		$wpdb->query( 'ROLLBACK' );
+		return new WP_Error( 'new-order-error', $e->getMessage() );
+	}
+}
+
+/**
+ * Function to create a post title based on the type and the current date and time for new orders. By
+ * default it's either renewal or resubscribe orders.
+ *
+ * @param  string $type type of new order. By default 'renewal_order'|'resubscribe_order'
+ * @return string       new title for a post
+ */
+function wcs_get_new_order_title( $type ) {
+	$type = wcs_validate_new_order_type( $type );
+
+	$order_date = strftime( _x( '%b %d, %Y @ %I:%M %p', 'Used in subscription post title. "Subscription renewal order - <this>"', 'woocommerce-subscriptions' ) );
+
+	switch ( $type ) {
+		case 'renewal_order':
+			$title = sprintf( __( 'Subscription Renewal Order &ndash; %s', 'woocommerce-subscriptions' ), $order_date );
+			break;
+		case 'resubscribe_order':
+			$title = sprintf( __( 'Resubscribe Order &ndash; %s', 'woocommerce-subscriptions' ), $order_date );
+			break;
+		default:
+			$title = '';
+			break;
+	}
+
+	return apply_filters( 'wcs_new_order_title', $title, $type, $order_date );
+}
+
+/**
+ * Utility function to check type. Filterable. Rejects if not in allowed new order types, rejects
+ * if not actually string.
+ *
+ * @param  string $type type of new order
+ * @return string       the same type thing if no problems are found
+ */
+function wcs_validate_new_order_type( $type ) {
+	if ( ! is_string( $type ) ) {
+		return new WP_Error( 'order_from_subscription_type_type', sprintf( __( '$type passed to the function was not a string.', 'woocommerce-subscriptions' ), $type ) );
+
+	}
+
+	if ( ! in_array( $type, apply_filters( 'wcs_new_order_types', array( 'renewal_order', 'resubscribe_order' ) ) ) ) {
+		return new WP_Error( 'order_from_subscription_type', sprintf( __( '"%s" is not a valid new order type.', 'woocommerce-subscriptions' ), $type ) );
+	}
+
+	return $type;
 }
 
 /**
