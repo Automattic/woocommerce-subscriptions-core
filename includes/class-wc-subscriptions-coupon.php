@@ -101,7 +101,7 @@ class WC_Subscriptions_Coupon {
 
 					if ( 'none' == $calculation_type ) {
 
-						// If all items have a free trial we don't need to apply recurring coupons to the initial totals
+						// If all items have a free trial we don't need to apply recurring coupons to the initial total
 						if ( ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
 
 							if ( 'recurring_fee' == $coupon->type ) {
@@ -132,12 +132,11 @@ class WC_Subscriptions_Coupon {
 
 						$discount_amount = ( $calculation_price < $coupon->amount ) ? $calculation_price : $coupon->amount;
 
-						// recurring coupons still only apply when there is no free trial (carts can have a mix of free trial and non free trial items)
+						// Recurring coupons only apply when there is no free trial (carts can have a mix of free trial and non free trial items)
 						if ( $apply_initial_coupon && 'recurring_fee' == $coupon->type && ! empty( $cart_item['data']->subscription_trial_length ) ) {
 							$discount_amount = 0;
 						}
 
-						// add to discount totals
 						$cart->discount_cart = $cart->discount_cart + ( $discount_amount * $cart_item['quantity'] );
 						$cart = self::increase_coupon_discount_amount( $cart, $coupon->code, $discount_amount * $cart_item['quantity'] );
 
@@ -154,14 +153,14 @@ class WC_Subscriptions_Coupon {
 
 					} elseif ( $apply_initial_percent_coupon ) {
 
-						// recurring coupons only apply when there is no free trial (carts can have a mix of free trial and non free trial items)
+						// Recurring coupons only apply when there is no free trial (carts can have a mix of free trial and non free trial items)
 						if ( 'recurring_percent' == $coupon->type && empty( $cart_item['data']->subscription_trial_length ) ) {
 							$amount_to_discount = $cart_item['data']->subscription_price;
 						} else {
 							$amount_to_discount = 0;
 						}
 
-						// sign up fee coupons only apply to sign up fees
+						// Sign up fee coupons only apply to sign up fees
 						if ( 'sign_up_fee_percent' == $coupon->type ) {
 							$amount_to_discount = $cart_item['data']->subscription_sign_up_fee;
 						}
