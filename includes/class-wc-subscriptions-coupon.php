@@ -164,7 +164,7 @@ class WC_Subscriptions_Coupon {
 						// sign up fee coupons only apply to sign up fees
 						if ( 'sign_up_fee_percent' == $coupon->type ) {
 							$amount_to_discount = $cart_item['data']->subscription_sign_up_fee;
-						} 
+						}
 
 						$discount_amount = round( ( $amount_to_discount / 100 ) * $coupon->amount, WC()->cart->dp );
 
