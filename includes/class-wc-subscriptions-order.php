@@ -55,6 +55,8 @@ class WC_Subscriptions_Order {
 
 		// Don't display migrated order item meta on the Edit Order screen
 		add_filter( 'woocommerce_hidden_order_itemmeta', __CLASS__ . '::hide_order_itemmeta' );
+
+		add_action( 'woocommerce_order_details_after_order_table', __CLASS__ . '::add_subscriptions_to_view_order_templates', 10, 1 );
 	}
 
 	/*
@@ -654,6 +656,21 @@ class WC_Subscriptions_Order {
 		}
 
 		return $vars;
+	}
+
+	/**
+	 * Add related subscriptions below order details tables.
+	 *
+	 * @since 2.0
+	 */
+	public static function add_subscriptions_to_view_order_templates( $order_id ) {
+
+		$template      = 'myaccount/related-subscriptions.php';
+		$subscriptions = ( wcs_order_contains_renewal( $order_id ) ) ? wcs_get_subscriptions_for_renewal_order( $order_id ) : wcs_get_subscriptions_for_order( $order_id );
+
+		if ( ! empty( $subscriptions ) ) {
+			wc_get_template( $template, array( 'order_id' => $order_id, 'subscriptions' => $subscriptions ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+		}
 	}
 
 	/**
