@@ -33,7 +33,7 @@ class WC_Subscriptions_Coupon {
 		add_filter( 'woocommerce_coupon_discount_types', __CLASS__ . '::add_discount_types' );
 
 		// Handle before tax discounts
-		add_filter( 'woocommerce_get_discounted_price', __CLASS__ . '::apply_subscription_discount_before_tax', 10, 3 );
+		add_filter( 'woocommerce_get_discounted_price', __CLASS__ . '::apply_subscription_discount', 10, 3 );
 
 		// Validate subscription coupons
 		add_filter( 'woocommerce_coupon_is_valid', __CLASS__ . '::validate_subscription_coupon', 10, 2 );
@@ -61,11 +61,11 @@ class WC_Subscriptions_Coupon {
 	}
 
 	/**
-	 * Apply sign up fee or recurring fee discount before tax is calculated
+	 * Apply sign up fee or recurring fee discount
 	 *
 	 * @since 1.2
 	 */
-	public static function apply_subscription_discount_before_tax( $original_price, $cart_item, $cart ) {
+	public static function apply_subscription_discount( $original_price, $cart_item, $cart ) {
 
 		$product_id = ( $cart_item['data']->is_type( array( 'subscription_variation' ) ) ) ? $cart_item['data']->variation_id : $cart_item['data']->id;
 
@@ -444,6 +444,18 @@ class WC_Subscriptions_Coupon {
 
 			self::$removed_coupons = array();
 		}
+	}
+
+	/**
+	 * Apply sign up fee or recurring fee discount before tax is calculated
+	 *
+	 * @since 1.2
+	 */
+	public static function apply_subscription_discount_before_tax( $original_price, $cart_item, $cart ) {
+
+		_deprecated_function( __METHOD__, '2.0', __CLASS__ .'::apply_subscription_discount( $original_price, $cart_item, $cart )' );
+
+		return self::apply_subscription_discount( $original_price, $cart_item, $cart );
 	}
 
 	/**
