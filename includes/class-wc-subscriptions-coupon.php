@@ -32,7 +32,7 @@ class WC_Subscriptions_Coupon {
 		// Add custom coupon types
 		add_filter( 'woocommerce_coupon_discount_types', __CLASS__ . '::add_discount_types' );
 
-		// Handle before tax discounts
+		// Handle discounts
 		add_filter( 'woocommerce_get_discounted_price', __CLASS__ . '::apply_subscription_discount', 10, 3 );
 
 		// Validate subscription coupons
