@@ -165,7 +165,7 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 			// Subscription dates
 			'start_date'         => $subscription->get_date( 'start' ),
 			'expiry_date'        => $subscription->get_date( 'end' ),
-			'end_date'           => $subscription->has_ended() ? $subscription->get_date( 'end' ) : 0,
+			'end_date'           => $subscription->has_status( wcs_get_subscription_ended_statuses() ) ? $subscription->get_date( 'end' ) : 0,
 			'trial_expiry_date'  => $subscription->get_date( 'trial_end' ),
 
 			// Payment & status change history

@@ -228,7 +228,7 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			case 'cancelled' :
-				if ( $this->payment_method_supports( 'subscription_cancellation' ) && ( $this->has_status( 'pending-cancel' ) || ! $this->has_ended() ) ) {
+				if ( $this->payment_method_supports( 'subscription_cancellation' ) && ( $this->has_status( 'pending-cancel' ) || ! $this->has_status( wcs_get_subscription_ended_statuses() ) ) ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
@@ -250,7 +250,7 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			case 'trash' :
-				if ( $this->has_ended() || $this->can_be_updated_to( 'cancelled' ) ) {
+				if ( $this->has_status( wcs_get_subscription_ended_statuses() ) || $this->can_be_updated_to( 'cancelled' ) ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
@@ -862,7 +862,7 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			case 'trial_end' :
-				if ( $this->get_completed_payment_count() < 2 && ! $this->has_ended() && ( $this->has_status( 'pending' ) || $this->payment_method_supports( 'subscription_date_changes' ) ) ) {
+				if ( $this->get_completed_payment_count() < 2 && ! $this->has_status( wcs_get_subscription_ended_statuses() ) && ( $this->has_status( 'pending' ) || $this->payment_method_supports( 'subscription_date_changes' ) ) ) {
 					$can_date_be_updated = true;
 				} else {
 					$can_date_be_updated = false;
@@ -870,7 +870,7 @@ class WC_Subscription extends WC_Order {
 				break;
 			case 'next_payment' :
 			case 'end' :
-				if ( ! $this->has_ended() && ( $this->has_status( 'pending' ) || $this->payment_method_supports( 'subscription_date_changes' ) ) ) {
+				if ( ! $this->has_status( wcs_get_subscription_ended_statuses() ) && ( $this->has_status( 'pending' ) || $this->payment_method_supports( 'subscription_date_changes' ) ) ) {
 					$can_date_be_updated = true;
 				} else {
 					$can_date_be_updated = false;
