@@ -1315,7 +1315,7 @@ class WC_Subscriptions_Admin {
 		$debug_data['wcs_staging'] = array(
 			'name'    => __( 'Subscriptions Mode', 'woocommerce-subscriptions' ),
 			'note'    => '<strong>' . ( WC_Subscriptions::is_duplicate_site() ) ? _x( 'Staging', 'refers to staging site', 'woocommerce-subscriptions' ) :  _x( 'Live', 'refers to live site', 'woocommerce-subscriptions' ),
-			'success' => ( WC_Subscriptions::is_duplicate_site() ) ? 0 :  1,
+			'success' => ( WC_Subscriptions::is_duplicate_site() ) ? 0 : 1,
 		);
 
 		return $debug_data;
