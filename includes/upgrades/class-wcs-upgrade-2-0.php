@@ -869,16 +869,18 @@ class WCS_Upgrade_2_0 {
 			$old_subscriptions = wcs_get_subscriptions_for_order( $previous_order_id );
 			$old_subscription  = array_shift( $old_subscriptions ); // there can be only one
 
-			// Link the old subscription's ID to the switch order using the new switch meta key
-			update_post_meta( $switch_order->id, '_subscription_switch', $old_subscription->id );
+			if ( wcs_is_subscription( $old_subscription ) ) {
+				// Link the old subscription's ID to the switch order using the new switch meta key
+				update_post_meta( $switch_order->id, '_subscription_switch', $old_subscription->id );
 
-			// Now store the new/old item IDs for record keeping
-			foreach ( $old_subscription->get_items() as $item_id => $item ) {
-				wc_add_order_item_meta( $item_id, '_switched_subscription_new_item_id', $subscription_item_id, true );
-				wc_add_order_item_meta( $subscription_item_id, '_switched_subscription_item_id', $item_id, true );
+				// Now store the new/old item IDs for record keeping
+				foreach ( $old_subscription->get_items() as $item_id => $item ) {
+					wc_add_order_item_meta( $item_id, '_switched_subscription_new_item_id', $subscription_item_id, true );
+					wc_add_order_item_meta( $subscription_item_id, '_switched_subscription_item_id', $item_id, true );
+				}
+
+				WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: migrated switch data for subscription %d purchased in order %d', $new_subscription->id, $old_subscription->id, $previous_order_id ) );
 			}
-
-			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: migrated switch data for subscription %d purchased in order %d', $new_subscription->id, $old_subscription->id, $previous_order_id ) );
 		}
 	}
 }

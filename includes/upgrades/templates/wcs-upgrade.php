@@ -71,8 +71,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<p class="log-notice"><?php
 				// translators: placeholder is number of weeks
 				printf( esc_html__( 'To record the progress of the update a new log file was created. This file will be automatically deleted in %d weeks. If you would like to delete it sooner, you can find it here:', 'woocommerce-subscriptions' ), esc_html( WCS_Upgrade_Logger::$weeks_until_cleanup ) ); ?>
+				<code class="log-notice"><?php echo esc_html( wc_get_log_file_path( WCS_Upgrade_Logger::$handle ) ); ?></code>
 			</p>
-			<code class="log-notice"><?php echo esc_html( wc_get_log_file_path( WCS_Upgrade_Logger::$handle ) ); ?></code>
 		</div>
 		<div id="update-error">
 			<h2><?php esc_html_e( 'Update Error', 'woocommerce-subscriptions' ); ?></h2>
