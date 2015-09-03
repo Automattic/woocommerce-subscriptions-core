@@ -64,6 +64,8 @@ class WC_Subscriptions_Cart {
 		// Display grouped recurring amounts after order totals on the cart/checkout pages
 		add_action( 'woocommerce_cart_totals_after_order_total', __CLASS__ . '::display_recurring_totals' );
 		add_action( 'woocommerce_review_order_after_order_total', __CLASS__ . '::display_recurring_totals' );
+
+		add_action( 'woocommerce_add_to_cart_validation', __CLASS__ . '::check_valid_add_to_cart', 10, 3 );
 	}
 
 	/**
@@ -763,6 +765,22 @@ class WC_Subscriptions_Cart {
 		}
 
 		return apply_filters( 'woocommerce_subscriptions_recurring_cart_key', $cart_key, $cart_item );
+	}
+
+	/**
+	 * Don't allow other subscriptions to be added to the cart while it contains a renewal
+	 *
+	 * @since 2.0
+	 */
+	public static function check_valid_add_to_cart( $is_valid, $product, $quantity ) {
+
+		if ( $is_valid && wcs_cart_contains_renewal() && WC_Subscriptions_Product::is_subscription( $product ) ) {
+
+			wc_add_notice( __( 'That subscription product can not be added to your cart as it already contains a subscription renewal.', 'woocommerce-subscriptions' ), 'error' );
+			$is_valid = false;
+		}
+
+		return $is_valid;
 	}
 
 	/* Deprecated */
