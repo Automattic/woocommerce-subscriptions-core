@@ -743,7 +743,7 @@ class WC_Subscriptions_Manager {
 
 			$subscription = wcs_get_subscription( $post_id );
 
-			if ( ! $subscription->has_ended() ) {
+			if ( ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) ) {
 
 				$subscription->update_status( 'cancelled' );
 
