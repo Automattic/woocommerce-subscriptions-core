@@ -104,11 +104,11 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 		<div class="feature-section three-col">
 
 			<div class="col">
-				<img src="<?php echo esc_url( plugins_url( '/assets/images/new-subscriptions-list-table.jpg', WC_Subscriptions::$plugin_file ) ); ?>" />
-				<h3><?php esc_html_e( 'Improved Subscriptions Table', 'woocommerce-subscriptions' ); ?></h3>
+				<img src="<?php echo esc_url( plugins_url( '/assets/images/drip-downloadable-content.jpg', WC_Subscriptions::$plugin_file ) ); ?>" />
+				<h3><?php esc_html_e( 'Drip Downloadable Content', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php
-					// translators: placeholders are opening and closing link tags
-					printf( esc_html__( 'The %sSubscriptions administration table%s has been redesigned. In addition to being faster to search, sort and filter, it now displays more of a subscription\'s information, including the recurring total and payment method.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'edit.php?post_type=shop_subscription' ) ) . '">', '</a>' ); ?>
+					// translators: placeholders are for opening and closing link (<a>) tags
+					printf( esc_html__( 'By default, adding new files to an existing subscription product will automatically provide active subscribers with access to the new files. However, now you can enable a %snew content dripping setting%s to provide subscribers with access to new files only after the next renewal payment.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( $settings_page ) . '">', '</a>' ); ?>
 				</p>
 			</div>
 
