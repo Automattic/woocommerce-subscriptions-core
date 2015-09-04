@@ -144,36 +144,12 @@ class WCS_Download_Handler {
 			return $files;
 		}
 
-		// This is needed because downloads are keyed to the subscriptions, not the original orders
-		$subs_keys = wp_list_pluck( $subscriptions, 'order_key' );
-
 		$product_id = wcs_get_canonical_product_id( $item );
 
-		$download_ids = $wpdb->get_col( $wpdb->prepare("
-			SELECT download_id
-			FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions
-			WHERE user_email = %s
-			AND order_key IN ('%s')
-			AND product_id = %s
-			ORDER BY permission_id
-		", $order->billing_email, implode( "', '", esc_sql( $subs_keys ) ), $product_id ) );
-
 		foreach ( $subscriptions as $subscription ) {
-			$sub_products = $subscription->get_items();
-
-			foreach ( $sub_products as $sub_product ) {
-				$sub_product_id = wcs_get_canonical_product_id( $sub_product );
-
-				if ( $sub_product_id === $product_id ) {
-					$product = wc_get_product( $product_id );
-
-					foreach ( $download_ids as $download_id ) {
-
-						if ( $product->has_file( $download_id ) ) {
-							$files[ $download_id ]                 = $product->get_file( $download_id );
-							$files[ $download_id ]['download_url'] = $subscription->get_download_url( $product_id, $download_id );
-						}
-					}
+			foreach ( $subscription->get_items() as $subscription_item ) {
+				if ( wcs_get_canonical_product_id( $subscription_item ) === $product_id ) {
+					$files = $subscription->get_item_downloads( $subscription_item );
 				}
 			}
 		}
