@@ -466,7 +466,7 @@ class WC_Subscriptions_Coupon {
 	 */
 	public static function apply_subscription_discount_after_tax( $coupon, $cart_item, $price ) {
 
-		_deprecated_function( __METHOD__, '2.0' );
+		_deprecated_function( __METHOD__, '2.0', 'WooCommerce 2.3 removed after tax discounts. Use ' . __CLASS__ .'::apply_subscription_discount( $original_price, $cart_item, $cart )' );
 
 		$calculation_type = WC_Subscriptions_Cart::get_calculation_type();
 
