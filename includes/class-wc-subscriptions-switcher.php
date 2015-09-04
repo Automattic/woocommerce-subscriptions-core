@@ -463,7 +463,7 @@ class WC_Subscriptions_Switcher {
 			}
 		}
 
-		if ( $subscription->has_status( 'active' ) || ( $subscription->has_status( 'on-hold' ) && isset( $subscription->order->paid_date ) ) ) {
+		if ( $subscription->has_status( 'active' ) && 0 !== $subscription->get_date( 'last_payment' ) ) {
 			$is_subscription_switchable = true;
 		} else {
 			$is_subscription_switchable = false;
