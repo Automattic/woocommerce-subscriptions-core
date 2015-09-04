@@ -1644,4 +1644,22 @@ class WC_Subscription extends WC_Order {
 
 		return apply_filters( 'woocommerce_subscription_items_sign_up_fee', $sign_up_fee, $line_item, $this );
 	}
+
+	/**
+	 * Get the downloadable files for an item in this subscription if the subscription is active
+	 *
+	 * @param  array $item
+	 * @return array
+	 */
+	public function get_item_downloads( $item ) {
+		global $wpdb;
+
+		$files = array();
+
+		if ( $this->has_status( apply_filters( 'woocommerce_subscription_item_download_statuses', array( 'active', 'pending-cancel' ) ) ) ) {
+			$files = parent::get_item_downloads( $item );
+		}
+
+		return apply_filters( 'woocommerce_get_item_downloads', $files, $item, $this );
+	}
 }
