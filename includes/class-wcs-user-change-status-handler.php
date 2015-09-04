@@ -14,7 +14,7 @@ class WCS_User_Change_Status_Handler {
 
 	public static function init() {
 		// Check if a user is requesting to cancel their subscription
-		add_action( 'init', __CLASS__ . '::maybe_change_users_subscription', 100 );
+		add_action( 'wp_loaded', __CLASS__ . '::maybe_change_users_subscription', 100 );
 	}
 
 	/**
