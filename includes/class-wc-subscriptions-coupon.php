@@ -226,7 +226,7 @@ class WC_Subscriptions_Coupon {
 
 			// but make sure there is actually something for the coupon to be applied to (i.e. not a free trial)
 			if ( 0 == WC()->cart->subtotal ) {
-				self::$coupon_error = __( 'Sorry, this coupon is only valid for an initial payment and the subscription does not have an initial payment.', 'woocommerce-subscriptions' );
+				self::$coupon_error = __( 'Sorry, this coupon is only valid for an initial payment and the cart does not require an initial payment.', 'woocommerce-subscriptions' );
 			}
 		} else {
 
