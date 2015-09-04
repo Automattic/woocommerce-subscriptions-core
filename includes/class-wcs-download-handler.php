@@ -112,8 +112,8 @@ class WCS_Download_Handler {
 
 		$where = array(
 			'product_id' => $product_id,
-			'order_id' => $order_id,
-			'user_id' => $user_id,
+			'order_id'   => $order_id,
+			'user_id'    => $user_id,
 		);
 
 		$format = array( '%d', '%d', '%d' );
