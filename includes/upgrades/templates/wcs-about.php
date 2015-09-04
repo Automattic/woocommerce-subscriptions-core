@@ -73,7 +73,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 				</p>
 				<p><?php
 					// translators: placeholers are link tags: 1$-2$ new subscription page, 3$-4$: docs on woothemes
-					printf( esc_html__( '%1$sAdd a subscription%2$s now or %3$slearn more%4$s about the new interface.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post-new.php?post_type=shop_subscription' ) ) . '">', '</a>', '<a href="' . esc_url( 'http://docs.woothemes.com/document/subscriptions/add-or-modify-a-subscription/' ) . '">', '</a>' ); ?>
+					printf( esc_html__( '%1$sAdd a subscription%2$s now or %3$slearn more%4$s about the new interface.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post-new.php?post_type=shop_subscription' ) ) . '">', '</a>', '<a href="' . esc_url( 'http://docs.woothemes.com/document/subscriptions/version-2/#section-3' ) . '">', '</a>' ); ?>
 				</p>
 			</div>
 		</div>
@@ -94,7 +94,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 				<p>
 					<?php
 					// translators: placeholders are opening and closing link tags
-					printf( esc_html__( 'Learn more about the new %sView Subscription page%s.', 'woocommerce-subscriptions' ), '<a href="' .  esc_url( 'http://docs.woothemes.com/document/subscriptions/customers-view/' ) . '">', '</a>' ); ?>
+					printf( esc_html__( 'Learn more about the new %sView Subscription page%s.', 'woocommerce-subscriptions' ), '<a href="' .  esc_url( 'http://docs.woothemes.com/document/subscriptions/version-2/#section-5' ) . '">', '</a>' ); ?>
 				</p>
 			</div>
 		</div>
@@ -110,6 +110,10 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 					// translators: placeholders are for opening and closing link (<a>) tags
 					printf( esc_html__( 'By default, adding new files to an existing subscription product will automatically provide active subscribers with access to the new files. However, now you can enable a %snew content dripping setting%s to provide subscribers with access to new files only after the next renewal payment.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( $settings_page ) . '">', '</a>' ); ?>
 				</p>
+				<p><?php
+					// translators: placeholders are for opening and closing link (<a>) tags
+					printf( esc_html__( '%sLearn more &raquo;%s', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/version-2/#section-4">', '</a>' ); ?>
+				</p>
 			</div>
 
 			<div class="col">
@@ -118,6 +122,10 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 				<p><?php
 					// translators: placeholders are opening and closing <strong> tags
 					printf( esc_html__( 'For a store manager to change a subscription from automatic to manual renewal payments (or manual to automatic) with Subscriptions v1.5, the database needed to be modified directly. Subscriptions now provides a way for payment gateways to allow you to change that from the new %sEdit Subscription%s interface.', 'woocommerce-subscriptions' ), '<strong>', '</strong>' ); ?>
+				</p>
+				<p><?php
+					// translators: placeholders are for opening and closing link (<a>) tags
+					printf( esc_html__( '%sLearn more &raquo;%s', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/version-2/#change-payment-method-admin">', '</a>' ); ?>
 				</p>
 			</div>
 
@@ -128,10 +136,22 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 					// translators: placeholders are opening and closing <strong> tags
 					printf( esc_html__( 'It was already possible to change a subscription\'s next payment date, but some store managers wanted to provide a customer with an extended free trial or add an extra month to the expiration date. Now you can change all of these dates from the %sEdit Subscription%s screen.', 'woocommerce-subscriptions' ), '<strong>', '</strong>' ); ?>
 				</p>
+				<p><?php
+					// translators: placeholders are for opening and closing link (<a>) tags
+					printf( esc_html__( '%sLearn more &raquo;%s', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/version-2/#change-billing-schedule">', '</a>' ); ?>
+				</p>
 			</div>
 
 		</div>
 	</div>
+
+	<div class="changelog">
+		<div class="feature-section">
+			<h2><?php esc_html_e( 'And much more...', 'woocommerce-subscriptions' ); ?></h2>
+			<p><?php printf( esc_html( 'Learn about all the great new features in the guide to %sWhat\'s new in Subscriptions version 2%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/version-2/">', '</a>' ); ?></p>
+		</div>
+	</div>
+
 	<div class="changelog">
 
 		<h2><?php esc_html_e( 'Peek Under the Hood for Developers', 'woocommerce-subscriptions' ); ?></h2>
