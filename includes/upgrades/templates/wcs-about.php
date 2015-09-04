@@ -132,12 +132,12 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 
 		</div>
 	</div>
-	<div class="changelog under-the-hood">
+	<div class="changelog">
 
 		<h2><?php esc_html_e( 'Peek Under the Hood for Developers', 'woocommerce-subscriptions' ); ?></h2>
 		<p><?php esc_html_e( 'Subscriptions v2.0 introduces a new architecture built on the WooCommerce Custom Order Types API.', 'woocommerce-subscriptions' ); ?></p>
 
-		<div class="feature-section three-col">
+		<div class="feature-section under-the-hood three-col">
 			<div class="col">
 				<h3><?php
 					// translators: placeholders are opening and closing code tags
