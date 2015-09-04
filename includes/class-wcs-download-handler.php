@@ -28,7 +28,7 @@ class WCS_Download_Handler {
 
 		add_action( 'woocommerce_grant_product_download_permissions', __CLASS__ . '::save_downloadable_product_permissions' );
 
-		add_filter( 'woocommerce_get_item_downloads', __CLASS__ . '::get_email_download_links', 10, 3 );
+		add_filter( 'woocommerce_get_item_downloads', __CLASS__ . '::get_item_downloads', 10, 3 );
 
 		add_action( 'woocommerce_process_shop_order_meta', __CLASS__ . '::repair_permission_data', 60, 1 );
 
@@ -133,7 +133,7 @@ class WCS_Download_Handler {
 	 * @param WC_Order $order The original order
 	 * @return array List of files with correct download urls
 	 */
-	public static function get_email_download_links( $files, $item, $order ) {
+	public static function get_item_downloads( $files, $item, $order ) {
 		global $wpdb;
 
 		if ( wcs_order_contains_subscription( $order ) ) {
