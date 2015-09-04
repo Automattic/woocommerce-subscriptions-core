@@ -1035,6 +1035,15 @@ class WC_Subscriptions_Admin {
 				'desc_tip'      => __( 'Allow subscriptions and products to be purchased in a single transaction.', 'woocommerce-subscriptions' ),
 			),
 
+			array(
+				'name'          => __( 'Drip downloadable content', 'woocommerce-subscriptions' ),
+				'desc'          => __( 'Enable dripping for downloadable content on subscription products.', 'woocommerce-subscriptions' ),
+				'id'            => self::$option_prefix . '_drip_downloadable_content_on_renewal',
+				'default'       => 'no',
+				'type'          => 'checkbox',
+				'desc_tip'      => sprintf( __( 'Enabling this grants access to new downloadable files added to a product only after the next renewal is processed.%sBy default, access to new downloadable files added to a product is granted immediately to any customer that has an active subscription with that product.', 'woocommerce-subscriptions' ), '<br />' ),
+			),
+
 			array( 'type' => 'sectionend', 'id' => self::$option_prefix . '_miscellaneous' ),
 
 			array(
