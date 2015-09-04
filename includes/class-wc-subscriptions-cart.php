@@ -1708,7 +1708,7 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function increase_coupon_discount_amount( $code, $amount ) {
 
-		_deprecated_function( __METHOD__, '2.0' );
+		_deprecated_function( __METHOD__, '2.0', 'WC_Subscriptions_Coupon::increase_coupon_discount_amount( WC()->cart, $code, $amount )' );
 
 		if ( empty( WC()->cart->coupon_discount_amounts[ $code ] ) ) {
 			WC()->cart->coupon_discount_amounts[ $code ] = 0;
