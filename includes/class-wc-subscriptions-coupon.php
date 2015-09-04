@@ -404,9 +404,7 @@ class WC_Subscriptions_Coupon {
 	 * @since 1.2
 	 */
 	public static function cart_contains_recurring_discount() {
-
 		_deprecated_function( __METHOD__, '1.3.5', __CLASS__ .'::cart_contains_discount( "recurring_fee" )' );
-
 		return self::cart_contains_discount( 'recurring_fee' );
 	}
 
@@ -418,9 +416,7 @@ class WC_Subscriptions_Coupon {
 	 * @since 1.2
 	 */
 	public static function cart_contains_sign_up_discount() {
-
 		_deprecated_function( __METHOD__, '1.3.5', __CLASS__ .'::cart_contains_discount( "sign_up_fee" )' );
-
 		return self::cart_contains_discount( 'sign_up_fee' );
 	}
 
@@ -430,7 +426,6 @@ class WC_Subscriptions_Coupon {
 	 * @since 1.3.5
 	 */
 	public static function restore_coupons( $cart ) {
-
 		_deprecated_function( __METHOD__, '2.0' );
 
 		if ( ! empty( self::$removed_coupons ) ) {
@@ -452,9 +447,7 @@ class WC_Subscriptions_Coupon {
 	 * @since 1.2
 	 */
 	public static function apply_subscription_discount_before_tax( $original_price, $cart_item, $cart ) {
-
 		_deprecated_function( __METHOD__, '2.0', __CLASS__ .'::apply_subscription_discount( $original_price, $cart_item, $cart )' );
-
 		return self::apply_subscription_discount( $original_price, $cart_item, $cart );
 	}
 
@@ -465,7 +458,6 @@ class WC_Subscriptions_Coupon {
 	 * @version 1.3.6
 	 */
 	public static function apply_subscription_discount_after_tax( $coupon, $cart_item, $price ) {
-
 		_deprecated_function( __METHOD__, '2.0', 'WooCommerce 2.3 removed after tax discounts. Use ' . __CLASS__ .'::apply_subscription_discount( $original_price, $cart_item, $cart )' );
 
 		$calculation_type = WC_Subscriptions_Cart::get_calculation_type();
