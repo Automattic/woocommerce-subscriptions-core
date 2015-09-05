@@ -85,10 +85,6 @@ class WC_Subscriptions_Cart {
 			return;
 		}
 
-		// Set defaults for required values
-		WC()->cart->base_recurring_prices = array();
-		WC()->cart->base_sign_up_fees = array();
-
 		// Set which price should be used for calculation
 		add_filter( 'woocommerce_get_price', __CLASS__ . '::set_subscription_prices_for_calculation', 100, 2 );
 	}
@@ -512,22 +508,6 @@ class WC_Subscriptions_Cart {
 		}
 
 		return apply_filters( 'woocommerce_subscriptions_cart_sign_up_fee', $sign_up_fee );
-	}
-
-	/**
-	 * Store how much discount each coupon grants.
-	 *
-	 * @param mixed $code
-	 * @param mixed $amount
-	 * @return void
-	 */
-	public static function increase_coupon_discount_amount( $code, $amount ) {
-
-		if ( empty( WC()->cart->coupon_discount_amounts[ $code ] ) ) {
-			WC()->cart->coupon_discount_amounts[ $code ] = 0;
-		}
-
-		WC()->cart->coupon_discount_amounts[ $code ] += $amount;
 	}
 
 	/**
@@ -1735,6 +1715,25 @@ class WC_Subscriptions_Cart {
 	public static function get_items_product_id( $cart_item ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_get_canonical_product_id( $cart_item )' );
 		return wcs_get_canonical_product_id( $cart_item );
+	}
+
+	/**
+	 * Store how much discount each coupon grants.
+	 *
+	 * @param mixed $code
+	 * @param mixed $amount
+	 * @return void
+	 */
+	public static function increase_coupon_discount_amount( $code, $amount ) {
+		_deprecated_function( __METHOD__, '2.0', 'WC_Subscriptions_Coupon::increase_coupon_discount_amount( WC()->cart, $code, $amount )' );
+
+		if ( empty( WC()->cart->coupon_discount_amounts[ $code ] ) ) {
+			WC()->cart->coupon_discount_amounts[ $code ] = 0;
+		}
+
+		if ( 'recurring_total' != self::$calculation_type ) {
+			WC()->cart->coupon_discount_amounts[ $code ] += $amount;
+		}
 	}
 }
 WC_Subscriptions_Cart::init();
