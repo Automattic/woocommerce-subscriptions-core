@@ -48,22 +48,16 @@ function wcs_order_contains_resubscribe( $order ) {
  */
 function wcs_create_resubscribe_order( $subscription ) {
 
-	if ( ! is_object( $subscription ) ) {
-		$subscription = wcs_get_subscription( $subscription );
-	}
+	$resubscribe_order = wcs_create_order_from_subscription( $subscription, 'resubscribe_order' );
 
-	$renewal_order = wcs_create_renewal_order( $subscription );
-
-	if ( is_wp_error( $renewal_order ) ) {
+	if ( is_wp_error( $resubscribe_order ) ) {
 		return new WP_Error( 'resubscribe-order-error', $renewal_order->get_error_message() );
 	}
 
-	delete_post_meta( $renewal_order->id, '_subscription_renewal' );
-
 	// Keep a record of the original subscription's ID on the new order
-	update_post_meta( $renewal_order->id, '_subscription_resubscribe', $subscription->id, true );
+	update_post_meta( $resubscribe_order->id, '_subscription_resubscribe', $subscription->id, true );
 
-	return apply_filters( 'wcs_resubscribe_order_created', $renewal_order, $subscription );
+	return apply_filters( 'wcs_resubscribe_order_created', $resubscribe_order, $subscription );
 }
 
 /**
