@@ -309,7 +309,7 @@ class WC_Subscriptions_Manager {
 			foreach ( $subscriptions as $subscription ) {
 
 				try {
-					if ( ! $subscription->has_ended() ) {
+					if ( ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) ) {
 						$subscription->update_status( 'on-hold' );
 					}
 				} catch ( Exception $e ) {
@@ -336,7 +336,7 @@ class WC_Subscriptions_Manager {
 			foreach ( $subscriptions as $subscription ) {
 
 				try {
-					if ( ! $subscription->has_ended() ) {
+					if ( ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) ) {
 						$subscription->cancel_order();
 					}
 				} catch ( Exception $e ) {
@@ -363,7 +363,7 @@ class WC_Subscriptions_Manager {
 			foreach ( $subscriptions as $subscription ) {
 
 				try {
-					if ( ! $subscription->has_ended() ) {
+					if ( ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) ) {
 						$subscription->update_status( 'expired' );
 					}
 				} catch ( Exception $e ) {
