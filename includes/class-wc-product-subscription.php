@@ -75,6 +75,8 @@ class WC_Product_Subscription extends WC_Product_Simple {
 
 		$this->subscription_payment_sync_date = ( ! isset( $this->product_custom_fields['_subscription_payment_sync_date'][0] ) ) ? 0 : maybe_unserialize( $this->product_custom_fields['_subscription_payment_sync_date'][0] );
 
+		$this->subscription_one_time_shipping = ( ! isset( $this->product_custom_fields['_subscription_one_time_shipping'][0] ) ) ? 'no' : $this->product_custom_fields['_subscription_one_time_shipping'][0];
+
 		if ( ! isset( $this->product_custom_fields['_subscription_limit'][0] ) ) {
 			$this->limit_subscriptions = 'no';
 		} elseif ( 'yes' == $this->product_custom_fields['_subscription_limit'][0] ) { // backward compatibility

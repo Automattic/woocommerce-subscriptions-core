@@ -54,6 +54,9 @@ class WC_Subscriptions_Admin {
 		// Add subscription pricing fields on edit product page
 		add_action( 'woocommerce_product_options_general_product_data', __CLASS__ . '::subscription_pricing_fields' );
 
+		// Add subscription shipping options on edit product page
+		add_action( 'woocommerce_product_options_shipping', __CLASS__ . '::subscription_shipping_fields' );
+
 		// Add advanced subscription options on edit product page
 		add_action( 'woocommerce_product_options_reviews', __CLASS__ . '::subscription_advanced_fields' );
 
@@ -222,6 +225,29 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
+	 * Output subscription shipping options on the "Edit Product" admin screen
+	 *
+	 * @since 2.0
+	 */
+	public static function subscription_shipping_fields() {
+		global $post;
+
+		echo '</div>';
+		echo '<div class="options_group subscription_one_time_shipping show_if_subscription show_if_variable-subscription">';
+
+		// Only one Subscription per customer
+		woocommerce_wp_checkbox( array(
+			'id'          => '_subscription_one_time_shipping',
+			'label'       => __( 'One Time Shipping', 'woocommerce-subscriptions' ),
+			'description' => __( 'Shipping for subscription products is normally charged on the initial order and all renewal orders. Enable this to only charge shipping once on the initial order. Note: for shipping to be charged on the initial order, the subscription must not have a free trial.', 'woocommerce-subscriptions' ),
+			'desc_tip'    => true,
+		) );
+
+		do_action( 'woocommerce_subscriptions_product_options_shipping' );
+
+	}
+
+	/**
 	 * Output advanced subscription options on the "Edit Product" admin screen
 	 *
 	 * @since 1.3.5
@@ -358,7 +384,8 @@ class WC_Subscriptions_Admin {
 
 		update_post_meta( $post_id, '_subscription_trial_length', $_POST['_subscription_trial_length'] );
 
-		$_REQUEST['_subscription_sign_up_fee'] = wc_format_decimal( $_REQUEST['_subscription_sign_up_fee'] );
+		$_REQUEST['_subscription_sign_up_fee']       = wc_format_decimal( $_REQUEST['_subscription_sign_up_fee'] );
+		$_REQUEST['_subscription_one_time_shipping'] = isset( $_REQUEST['_subscription_one_time_shipping'] ) ? 'yes' : 'no';
 
 		$subscription_fields = array(
 			'_subscription_sign_up_fee',
@@ -367,6 +394,7 @@ class WC_Subscriptions_Admin {
 			'_subscription_length',
 			'_subscription_trial_period',
 			'_subscription_limit',
+			'_subscription_one_time_shipping',
 		);
 
 		foreach ( $subscription_fields as $field_name ) {
@@ -391,6 +419,8 @@ class WC_Subscriptions_Admin {
 		if ( isset( $_REQUEST['_subscription_limit'] ) ) {
 			update_post_meta( $post_id, '_subscription_limit', stripslashes( $_REQUEST['_subscription_limit'] ) );
 		}
+
+		update_post_meta( $post_id, '_subscription_one_time_shipping', stripslashes( isset( $_REQUEST['_subscription_one_time_shipping'] ) ? 'yes' : 'no' ) );
 
 	}
 

@@ -67,6 +67,8 @@ class WC_Subscriptions_Cart {
 		add_action( 'woocommerce_review_order_after_order_total', __CLASS__ . '::display_recurring_totals' );
 
 		add_action( 'woocommerce_add_to_cart_validation', __CLASS__ . '::check_valid_add_to_cart', 10, 3 );
+
+		add_filter( 'woocommerce_cart_needs_shipping', __CLASS__ . '::cart_needs_shipping', 11, 1 );
 	}
 
 	/**
@@ -288,6 +290,24 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
+	 * The cart needs shipping only if it needs shipping up front and/or for recurring items.
+	 *
+	 * @since 2.0
+	 */
+	public static function cart_needs_shipping( $needs_shipping ) {
+
+		if ( self::cart_contains_subscription() ) {
+			if ( true == $needs_shipping && ! self::charge_shipping_up_front() && ! self::cart_contains_subscriptions_needing_shipping() ) {
+				$needs_shipping = false;
+			} elseif ( false == $needs_shipping && ( self::charge_shipping_up_front() || self::cart_contains_subscriptions_needing_shipping() ) ) {
+				$needs_shipping = false;
+			}
+		}
+
+		return $needs_shipping;
+	}
+
+	/**
 	 * Check whether all the subscription product items in the cart have a free trial.
 	 *
 	 * Useful for determining if certain up-front amounts should be charged.
@@ -330,7 +350,7 @@ class WC_Subscriptions_Cart {
 		if ( self::cart_contains_subscription() ) {
 			foreach ( WC()->cart->cart_contents as $cart_item_key => $values ) {
 				$_product = $values['data'];
-				if ( WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() ) {
+				if ( WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && 'yes' !== $_product->subscription_one_time_shipping ) {
 					$cart_contains_subscriptions_needing_shipping = true;
 				}
 			}
@@ -352,6 +372,14 @@ class WC_Subscriptions_Cart {
 				foreach ( $package['contents'] as $cart_item_key => $cart_item ) {
 					$trial_length = ( isset( $cart_item['data']->subscription_trial_length ) ) ? $cart_item['data']->subscription_trial_length : WC_Subscriptions_Product::get_trial_length( $cart_item['data'] );
 					if ( $trial_length > 0 ) {
+						unset( $packages[ $index ]['contents'][ $cart_item_key ] );
+					}
+				}
+			}
+		} elseif ( 'recurring_total' == self::$calculation_type ) {
+			foreach ( $packages as $index => $package ) {
+				foreach ( $package['contents'] as $cart_item_key => $cart_item ) {
+					if ( isset( $cart_item['data']->subscription_one_time_shipping ) && 'yes' == $cart_item['data']->subscription_one_time_shipping ) {
 						unset( $packages[ $index ]['contents'][ $cart_item_key ] );
 					}
 				}
@@ -643,6 +671,9 @@ class WC_Subscriptions_Cart {
 
 		if ( self::cart_contains_subscription() ) {
 
+			// We only want shipping for recurring amounts, and they need to be calculated again here
+			self::$calculation_type = 'recurring_total';
+
 			$shipping_methods = array();
 
 			$carts_with_multiple_payments = 0;
@@ -660,8 +691,6 @@ class WC_Subscriptions_Cart {
 						$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', array() );
 
 						// Don't remove any subscriptions with a free trial from the shipping packages
-						remove_filter( 'woocommerce_cart_shipping_packages', __CLASS__ . '::set_cart_shipping_packages', -10, 1 );
-
 						foreach ( $recurring_cart->get_shipping_packages() as $base_package ) {
 
 							$package = WC()->shipping->calculate_shipping_for_package( $base_package );
@@ -673,9 +702,6 @@ class WC_Subscriptions_Cart {
 								}
 							}
 						}
-
-						// But make sure any subscriptions with a free trial are removed from anything else access it
-						add_filter( 'woocommerce_cart_shipping_packages', __CLASS__ . '::set_cart_shipping_packages', -10, 1 );
 					}
 				}
 			}
@@ -683,6 +709,8 @@ class WC_Subscriptions_Cart {
 			if ( $carts_with_multiple_payments >= 1 ) {
 				wc_get_template( 'checkout/recurring-totals.php', array( 'shipping_methods' => $shipping_methods, 'recurring_carts' => WC()->cart->recurring_carts, 'carts_with_multiple_payments' => $carts_with_multiple_payments ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
 			}
+
+			self::$calculation_type = 'none';
 		}
 	}
 
