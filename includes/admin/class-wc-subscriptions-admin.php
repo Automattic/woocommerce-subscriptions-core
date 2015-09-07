@@ -68,6 +68,7 @@ class WC_Subscriptions_Admin {
 
 		// Save subscription meta only when a subscription product is saved, can't run on the "'woocommerce_process_product_meta_' . $product_type" action because we need to override some WC defaults
 		add_action( 'save_post', __CLASS__ . '::save_subscription_meta', 11 );
+		add_action( 'save_post', __CLASS__ . '::save_variable_subscription_meta', 11 );
 
 		// Save variable subscription meta
 		add_action( 'woocommerce_process_product_meta_variable-subscription', __CLASS__ . '::process_product_meta_variable_subscription' ); // WC < 2.4
@@ -375,6 +376,25 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
+	 * Save meta data for variable subscription product type when the "Edit Product" form is submitted.
+	 *
+	 * @param array Array of Product types & their labels, excluding the Subscription product type.
+	 * @return array Array of Product types & their labels, including the Subscription product type.
+	 * @since 2.0
+	 */
+	public static function save_variable_subscription_meta( $post_id ) {
+
+		if ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) || ! isset( $_POST['product-type'] ) || ! in_array( $_POST['product-type'], apply_filters( 'woocommerce_subscription_variable_product_types', array( 'variable-subscription' ) ) ) ) {
+			return;
+		}
+
+		if ( isset( $_REQUEST['_subscription_limit'] ) ) {
+			update_post_meta( $post_id, '_subscription_limit', stripslashes( $_REQUEST['_subscription_limit'] ) );
+		}
+
+	}
+
+	/**
 	 * Calculate and set a simple subscription's prices when edited via the bulk edit
 	 *
 	 * @param object $product An instance of a WC_Product_* object.
@@ -506,10 +526,6 @@ class WC_Subscriptions_Admin {
 		// Run WooCommerce core saving routine for WC < 2.4
 		if ( ! is_ajax() ) {
 			WC_Meta_Box_Product_Data::save_variations( $post_id, get_post( $post_id ) );
-		}
-
-		if ( isset( $_REQUEST['_subscription_limit'] ) ) {
-			update_post_meta( $post_id, '_subscription_limit', stripslashes( $_REQUEST['_subscription_limit'] ) );
 		}
 
 		if ( ! isset( $_REQUEST['variable_post_id'] ) ) {
