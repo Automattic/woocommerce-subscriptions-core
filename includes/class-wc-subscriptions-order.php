@@ -57,6 +57,8 @@ class WC_Subscriptions_Order {
 		add_filter( 'woocommerce_hidden_order_itemmeta', __CLASS__ . '::hide_order_itemmeta' );
 
 		add_action( 'woocommerce_order_details_after_order_table', __CLASS__ . '::add_subscriptions_to_view_order_templates', 10, 1 );
+
+		add_action( 'woocommerce_subscription_details_after_subscription_table', __CLASS__ . '::get_related_orders_template', 10, 1 );
 	}
 
 	/*
@@ -670,6 +672,20 @@ class WC_Subscriptions_Order {
 
 		if ( ! empty( $subscriptions ) ) {
 			wc_get_template( $template, array( 'order_id' => $order_id, 'subscriptions' => $subscriptions ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+		}
+	}
+
+	/**
+	 * Loads the related orders table on the view subscription page
+	 *
+	 * @since 2.0
+	 */
+	public static function get_related_orders_template( $subscription ) {
+
+		$subscription_orders = $subscription->get_related_orders();
+
+		if ( 0 !== count( $subscription_orders ) ) {
+			wc_get_template( 'myaccount/related-orders.php', array( 'subscription_orders' => $subscription_orders, 'subscription' => $subscription ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
 		}
 	}
 
