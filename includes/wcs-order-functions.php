@@ -335,19 +335,34 @@ function wcs_get_order_address( $order, $address_type = 'shipping' ) {
  * Checks an order to see if it contains a subscription.
  *
  * @param mixed $order A WC_Order object or the ID of the order which the subscription was purchased in.
- * @return bool True if the order contains a subscription, otherwise false.
+ * @param array $order_type Can include 'parent', 'renewal', 'resubscribe' and/or 'switch'. Defaults to 'parent'.
+ * @return bool True if the order contains a subscription that belongs to any of the given order types, otherwise false.
  * @since 2.0
  */
-function wcs_order_contains_subscription( $order ) {
+function wcs_order_contains_subscription( $order, $order_types = array( 'parent' ) ) {
+
+	if ( ! is_array( $order_types ) ) {
+		return false;
+	}
 
 	if ( ! is_object( $order ) ) {
 		$order = new WC_Order( $order );
 	}
 
-	if ( count( wcs_get_subscriptions_for_order( $order->id ) ) > 0 ) {
+	$contains_subscription = false;
+
+	if ( in_array( 'parent', $order_types ) && count( wcs_get_subscriptions_for_order( $order->id ) ) > 0 ) {
 		$contains_subscription = true;
-	} else {
-		$contains_subscription = false;
+
+	} else if ( in_array( 'renewal', $order_types ) && wcs_order_contains_renewal( $order ) ) {
+		$contains_subscription = true;
+
+	} else if ( in_array( 'resubscribe', $order_types ) && wcs_order_contains_resubscribe( $order ) ) {
+		$contains_subscription = true;
+
+	} else if ( in_array( 'switch', $order_types ) && wcs_order_contains_switch( $order ) ) {
+		$contains_subscription = true;
+
 	}
 
 	return $contains_subscription;
