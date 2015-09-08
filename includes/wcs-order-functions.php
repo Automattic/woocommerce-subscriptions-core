@@ -25,6 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *		'product_id' The post ID of a WC_Product_Subscription, WC_Product_Variable_Subscription or WC_Product_Subscription_Variation object
  *		'order_id' The post ID of a shop_order post/WC_Order object which was used to create the subscription
  *		'subscription_status' Any valid subscription status. Can be 'any', 'active', 'cancelled', 'suspended', 'expired', 'pending' or 'trash'. Defaults to 'any'.
+ *		'order_type' Get subscriptions for the any order type in this array. Can include 'any', 'parent', 'renewal' or 'switch', defaults to parent.
  * @return array Subscription details in post_id => WC_Subscription form.
  * @since  2.0
  */
@@ -37,10 +38,26 @@ function wcs_get_subscriptions_for_order( $order_id, $args = array() ) {
 	$args = wp_parse_args( $args, array(
 			'order_id'               => $order_id,
 			'subscriptions_per_page' => -1,
+			'order_types'            => array( 'parent' ),
 		)
 	);
 
-	return wcs_get_subscriptions( $args );
+	$subscriptions = array();
+	$get_all       = ( in_array( 'any', $args['order_types'] ) ) ? true : false;
+
+	if ( in_array( 'parent', $args['order_types'] ) || $get_all ) {
+		$subscriptions = wcs_get_subscriptions( $args );
+	}
+
+	if ( wcs_order_contains_renewal( $order_id ) && in_array( 'renewal', $args['order_types'] ) || $get_all ) {
+		$subscriptions = array_merge( $subscriptions, wcs_get_subscriptions_for_renewal_order( $order_id ) );
+	}
+
+	if ( wcs_order_contains_switch( $order_id ) && in_array( $args['order_types'], 'switch' )  || $get_all ) {
+		$subscriptions = array_merge( $subscriptions, wcs_get_subscriptions_for_switch_order( $order_id ) );
+	}
+
+	return $subscriptions; ;
 }
 
 /**
