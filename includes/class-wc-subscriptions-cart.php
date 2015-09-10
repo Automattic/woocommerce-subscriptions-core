@@ -211,8 +211,8 @@ class WC_Subscriptions_Cart {
 			// No fees recur (yet)
 			$recurring_cart->fees = array();
 			$recurring_cart->fee_total = 0;
-			$recurring_cart->calculate_totals();
 			self::maybe_recalculate_shipping();
+			$recurring_cart->calculate_totals();
 
 			// Store this groups cart details
 			$recurring_carts[ $recurring_cart_key ] = clone $recurring_cart;
@@ -225,8 +225,8 @@ class WC_Subscriptions_Cart {
 		self::$calculation_type = 'none';
 
 		// We need to reset the packages and totals stored in WC()->shipping too
-		WC()->cart->calculate_shipping();
 		self::maybe_recalculate_shipping();
+		WC()->cart->calculate_shipping();
 
 		// If there is no sign-up fee and a free trial, and no products being purchased with the subscription, we need to zero the fees for the first billing period
 		if ( 0 == self::get_cart_subscription_sign_up_fee() && self::all_cart_items_have_free_trial() ) {
