@@ -595,7 +595,7 @@ class WC_Subscriptions_Cart {
 		}
 
 		// Now make sure the correct shipping method is set
-		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', array() );
 
 		if ( isset( $_POST['shipping_method'] ) && is_array( $_POST['shipping_method'] ) ) {
 			foreach ( $_POST['shipping_method'] as $i => $value ) {
