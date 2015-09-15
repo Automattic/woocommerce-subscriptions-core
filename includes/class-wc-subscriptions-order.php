@@ -350,7 +350,7 @@ class WC_Subscriptions_Order {
 	 */
 	public static function subscription_thank_you( $order_id ) {
 
-		if ( wcs_order_contains_subscription( $order_id ) || wcs_order_contains_renewal( $order_id ) || wcs_order_contains_switch( $order_id ) ) {
+		if ( wcs_order_contains_subscription( $order_id, array( 'parent', 'renewal', 'switch' ) ) ) {
 
 			$subscription_count = count( wcs_get_subscriptions_for_order( $order_id ) );
 

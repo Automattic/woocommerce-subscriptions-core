@@ -25,6 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *		'product_id' The post ID of a WC_Product_Subscription, WC_Product_Variable_Subscription or WC_Product_Subscription_Variation object
  *		'order_id' The post ID of a shop_order post/WC_Order object which was used to create the subscription
  *		'subscription_status' Any valid subscription status. Can be 'any', 'active', 'cancelled', 'suspended', 'expired', 'pending' or 'trash'. Defaults to 'any'.
+ *		'order_type' Get subscriptions for the any order type in this array. Can include 'any', 'parent', 'renewal' or 'switch', defaults to parent.
  * @return array Subscription details in post_id => WC_Subscription form.
  * @since  2.0
  */
@@ -37,10 +38,26 @@ function wcs_get_subscriptions_for_order( $order_id, $args = array() ) {
 	$args = wp_parse_args( $args, array(
 			'order_id'               => $order_id,
 			'subscriptions_per_page' => -1,
+			'order_types'            => array( 'parent' ),
 		)
 	);
 
-	return wcs_get_subscriptions( $args );
+	$subscriptions = array();
+	$get_all       = ( in_array( 'any', $args['order_types'] ) ) ? true : false;
+
+	if ( $order_id && in_array( 'parent', $args['order_types'] ) || $get_all ) {
+		$subscriptions = wcs_get_subscriptions( $args );
+	}
+
+	if ( wcs_order_contains_renewal( $order_id ) && ( in_array( 'renewal', $args['order_types'] ) || $get_all ) ) {
+		$subscriptions = wcs_get_subscriptions_for_renewal_order( $order_id );
+	}
+
+	if ( wcs_order_contains_switch( $order_id ) && ( in_array( 'switch', $args['order_types'] ) || $get_all ) ) {
+		$subscriptions = wcs_get_subscriptions_for_switch_order( $order_id );
+	}
+
+	return $subscriptions;
 }
 
 /**
@@ -318,19 +335,34 @@ function wcs_get_order_address( $order, $address_type = 'shipping' ) {
  * Checks an order to see if it contains a subscription.
  *
  * @param mixed $order A WC_Order object or the ID of the order which the subscription was purchased in.
- * @return bool True if the order contains a subscription, otherwise false.
+ * @param array $order_type Can include 'parent', 'renewal', 'resubscribe' and/or 'switch'. Defaults to 'parent'.
+ * @return bool True if the order contains a subscription that belongs to any of the given order types, otherwise false.
  * @since 2.0
  */
-function wcs_order_contains_subscription( $order ) {
+function wcs_order_contains_subscription( $order, $order_types = array( 'parent' ) ) {
+
+	if ( ! is_array( $order_types ) ) {
+		return false;
+	}
 
 	if ( ! is_object( $order ) ) {
 		$order = new WC_Order( $order );
 	}
 
-	if ( count( wcs_get_subscriptions_for_order( $order->id ) ) > 0 ) {
+	$contains_subscription = false;
+
+	if ( in_array( 'parent', $order_types ) && count( wcs_get_subscriptions_for_order( $order->id ) ) > 0 ) {
 		$contains_subscription = true;
-	} else {
-		$contains_subscription = false;
+
+	} else if ( in_array( 'renewal', $order_types ) && wcs_order_contains_renewal( $order ) ) {
+		$contains_subscription = true;
+
+	} else if ( in_array( 'resubscribe', $order_types ) && wcs_order_contains_resubscribe( $order ) ) {
+		$contains_subscription = true;
+
+	} else if ( in_array( 'switch', $order_types ) && wcs_order_contains_switch( $order ) ) {
+		$contains_subscription = true;
+
 	}
 
 	return $contains_subscription;
