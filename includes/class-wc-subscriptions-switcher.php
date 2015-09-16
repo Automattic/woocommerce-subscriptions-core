@@ -924,7 +924,7 @@ class WC_Subscriptions_Switcher {
 			$is_valid = false;
 		}
 
-		return $is_valid;
+		return apply_filters( 'woocommerce_subscriptions_is_switch_valid', $is_valid, $product_id, $quantity, $variation_id );
 	}
 
 	/**
