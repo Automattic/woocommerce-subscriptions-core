@@ -271,7 +271,8 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 				$subscription->update_status( $_POST['order_status'], '', true );
 			}
 		} catch ( Exception $e ) {
-			wcs_add_admin_notice( $e->getMessage(), 'error' );
+			// translators: placeholder is error message from by payment gateway
+			wcs_add_admin_notice( sprintf( __( 'Unable to change payment method: %s'), $e->getMessage() ), 'error' );
 		}
 
 		do_action( 'woocommerce_process_shop_subscription_meta', $post_id, $post );
