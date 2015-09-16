@@ -99,7 +99,7 @@ function wcs_get_subscription_from_key( $subscription_key ) {
 
 	$subscription_id = wcs_get_subscription_id_from_key( $subscription_key );
 
-	if ( null !== $subscription_id && is_int( $subscription_id ) ) {
+	if ( null !== $subscription_id && is_numeric( $subscription_id ) ) {
 		$subscription = wcs_get_subscription( $subscription_id );
 	} else {
 		$subscription = null;
