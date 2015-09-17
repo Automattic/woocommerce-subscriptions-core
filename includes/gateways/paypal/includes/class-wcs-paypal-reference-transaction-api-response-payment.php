@@ -30,9 +30,6 @@ class WCS_PayPal_Reference_Transaction_API_Response_Payment extends WCS_PayPal_R
 	/** in progress transaction response payment status */
 	const TRANSACTION_PROCESSED = 'Processed';
 
-	/** held for review transaction response payment status */
-	const TRANSACTION_COMPLETED_HELD = 'Completed-Funds-Held';
-
 	/** pending transaction response payment status */
 	const TRANSACTION_PENDING = 'Pending';
 
@@ -53,7 +50,6 @@ class WCS_PayPal_Reference_Transaction_API_Response_Payment extends WCS_PayPal_R
 
 		$this->successful_statuses = array(
 			self::TRANSACTION_COMPLETED,
-			self::TRANSACTION_COMPLETED_HELD,
 			self::TRANSACTION_PROCESSED,
 			self::TRANSACTION_INPROGRESS,
 		);
@@ -116,11 +112,6 @@ class WCS_PayPal_Reference_Transaction_API_Response_Payment extends WCS_PayPal_R
 
 			// PayPal's "pending" is our Held
 			$message = $this->get_pending_reason();
-
-		} elseif ( self::TRANSACTION_COMPLETED_HELD == $this->get_payment_status() ) {
-
-			// Completed-Held means the payment was successful, but the merchant needs to take action to receive the funds
-			$message = $this->get_held_reason();
 
 		} elseif ( 'echeck' == $this->get_payment_type() ) {
 
@@ -185,18 +176,6 @@ class WCS_PayPal_Reference_Transaction_API_Response_Payment extends WCS_PayPal_R
 	private function get_pending_reason() {
 
 		return $this->has_parameter( 'PENDINGREASON' ) ? $this->get_parameter( 'PENDINGREASON' ) : 'N/A';
-	}
-
-
-	/**
-	 * Gets the held reason
-	 *
-	 * @return string
-	 * @since 2.0
-	 */
-	private function get_held_reason() {
-
-		return $this->has_parameter( 'HOLDDECISION' ) ? $this->get_parameter( 'HOLDDECISION' ) : 'N/A';
 	}
 
 
