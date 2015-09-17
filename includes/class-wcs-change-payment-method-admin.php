@@ -113,7 +113,7 @@ class WCS_Change_Payment_Method_Admin {
 				}
 
 				foreach ( $meta as $meta_key => &$meta_data ) {
-					$meta_data['value'] = $_POST['_payment_method_meta'][ $meta_table ][ $meta_key ];
+					$meta_data['value'] = isset( $_POST['_payment_method_meta'][ $meta_table ][ $meta_key ] ) ? $_POST['_payment_method_meta'][ $meta_table ][ $meta_key ] : '';
 				}
 			}
 		}
