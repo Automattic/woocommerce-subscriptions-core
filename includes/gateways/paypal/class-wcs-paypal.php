@@ -84,6 +84,9 @@ class WCS_PayPal {
 		// Don't copy over PayPal details to Resubscribe Orders
 		add_filter( 'wcs_resubscribe_order_created', __CLASS__ . '::remove_resubscribe_order_meta', 10, 2 );
 
+		// Triggered by WCS_SV_API_Base::broadcast_request() whenever an API request is made
+		add_action( 'wc_paypal_api_request_performed', __CLASS__ . '::log_api_requests', 10, 2 );
+
 		WCS_PayPal_Supports::init();
 		WCS_PayPal_Status_Manager::init();
 
@@ -454,6 +457,18 @@ class WCS_PayPal {
 		self::$paypal_settings = get_option( 'woocommerce_paypal_settings' );
 
 		return self::$paypal_settings;
+	}
+
+	/** Logging **/
+
+	/**
+	 * Log API request/response data
+	 *
+	 * @since 2.0
+	 */
+	public static function log_api_requests( $request_data, $response_data ) {
+		WC_Gateway_Paypal::log( 'Subscription Request Parameters: ' . print_r( $request_data, true ) );
+		WC_Gateway_Paypal::log( 'Subscription Request Response: ' . print_r( $response_data, true ) );
 	}
 
 	/** Method required by WCS_SV_API_Base, which normally requires an instance of SV_WC_Plugin **/
