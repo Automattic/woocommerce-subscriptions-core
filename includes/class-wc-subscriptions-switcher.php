@@ -1561,8 +1561,8 @@ class WC_Subscriptions_Switcher {
 				break;
 			}
 
-			// translators: %1: product subtotal, %2: direction (upgrade, downgrade, crossgrade)
-			$product_subtotal = sprintf( _x( '%1$s (%2$s)', 'product subtotal string', 'woocommerce-subscriptions' ), $product_subtotal, $direction );
+			// translators: %1: product subtotal, %2: HTML span tag, %3: direction (upgrade, downgrade, crossgrade), %4: closing HTML span tag
+			$product_subtotal = sprintf( _x( '%1$s %2$s(%3$s)%4$s', 'product subtotal string', 'woocommerce-subscriptions' ), $product_subtotal, '<span class="subscription-switch-direction">', $direction, '</span>' );
 
 		}
 
