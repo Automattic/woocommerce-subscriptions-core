@@ -54,7 +54,6 @@ class WCS_Filter_Deprecator extends WCS_Hook_Deprecator {
 		'wcs_get_users_subscriptions'                                => 'woocommerce_users_subscriptions',
 		'wcs_users_change_status_link'                               => 'woocommerce_subscriptions_users_action_link',
 		'wcs_user_has_subscription'                                  => 'woocommerce_user_has_subscription',
-		'wcs_get_users_subscriptions'                                => 'woocommerce_users_subscriptions',
 
 		// Misc Filters
 		'woocommerce_subscription_max_failed_payments_exceeded'      => 'woocommerce_subscriptions_max_failed_payments_exceeded',
