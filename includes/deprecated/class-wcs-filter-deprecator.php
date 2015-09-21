@@ -139,7 +139,7 @@ class WCS_Filter_Deprecator extends WCS_Hook_Deprecator {
 			case 'woocommerce_subscriptions_set_expiration_date' :
 
 				$subscription = $new_callback_args[0];
-				$data_type    = $new_callback_args[1];
+				$date_type    = $new_callback_args[1];
 
 				if ( ( 'next_payment' == $date_type && in_array( $old_hook, array( 'woocommerce_subscriptions_set_trial_expiration_date', 'woocommerce_subscription_set_next_payment_date' ) ) ) || ( 'end_date' == $date_type && 'woocommerce_subscriptions_set_expiration_date' == $old_hook ) ) {
 					// Here the old return value was a boolean where as now there is no equivalent filter, so we apply the filter to the action (which is only triggered when the old filter's value would have been true) and ignore the return value
