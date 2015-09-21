@@ -668,7 +668,7 @@ class WC_Subscriptions_Order {
 	public static function add_subscriptions_to_view_order_templates( $order_id ) {
 
 		$template      = 'myaccount/related-subscriptions.php';
-		$subscriptions = ( wcs_order_contains_renewal( $order_id ) ) ? wcs_get_subscriptions_for_renewal_order( $order_id ) : wcs_get_subscriptions_for_order( $order_id );
+		$subscriptions = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'any' ) );
 
 		if ( ! empty( $subscriptions ) ) {
 			wc_get_template( $template, array( 'order_id' => $order_id, 'subscriptions' => $subscriptions ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
