@@ -49,7 +49,7 @@ abstract class WCS_Dynamic_Hook_Deprecator extends WCS_Hook_Deprecator {
 				$this->deprecated_hooks[ $current_filter ] = $old_hook;
 
 				// and attach our handler now that we know the hooks
-				add_filter( $current_filter, array( &$this, 'maybe_handle_deprecated_hook' ), -1000 );
+				add_filter( $current_filter, array( &$this, 'maybe_handle_deprecated_hook' ), -1000, 8 );
 			}
 		}
 	}
