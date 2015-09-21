@@ -254,7 +254,7 @@ class WCS_Filter_Deprecator extends WCS_Hook_Deprecator {
 				$all_actions = apply_filters( $old_hook, $return_value, $subscription_in_deprecated_structure );
 
 				// Only change the return value if a new value was returned by the filter
-				if ( $all_actions[ $old_key ] !== $return_value ) {
+				if ( $all_actions !== $return_value ) {
 					$return_value = $all_actions[ $old_key ];
 				}
 				break;
