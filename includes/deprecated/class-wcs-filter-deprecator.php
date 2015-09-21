@@ -324,7 +324,7 @@ class WCS_Filter_Deprecator extends WCS_Hook_Deprecator {
 				$args->order                      = self::get_order( $subscription );
 				$args->payment_gateway            = $subscription->payment_method;
 				$args->order_uses_manual_payments = $subscription->is_manual();
-				$return_value = apply_filters( $old_hook, $return_value, $subscription, $args );
+				$return_value = apply_filters( $old_hook, $return_value, $args );
 				break;
 		}
 
