@@ -38,9 +38,14 @@ function wcs_get_subscriptions_for_order( $order_id, $args = array() ) {
 	$args = wp_parse_args( $args, array(
 			'order_id'               => $order_id,
 			'subscriptions_per_page' => -1,
-			'order_type'             => array( 'parent' ),
+			'order_type'             => 'parent',
 		)
 	);
+
+	// Accept either an array or string (to make it more convenient for singular types, like 'parent' or 'any')
+	if ( ! is_array( $args['order_type'] ) ) {
+		$args['order_type'] = array( $args['order_type'] );
+	}
 
 	$subscriptions = array();
 	$get_all       = ( in_array( 'any', $args['order_type'] ) ) ? true : false;
