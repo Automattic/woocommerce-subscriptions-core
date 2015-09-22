@@ -19,6 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once( 'includes/wcs-paypal-functions.php' );
 require_once( 'includes/class-wcs-paypal-supports.php' );
 require_once( 'includes/class-wcs-paypal-status-manager.php' );
+require_once( 'includes/class-wcs-paypal-standard-switcher.php' );
 require_once( 'includes/class-wcs-paypal-standard-request.php' );
 require_once( 'includes/class-wcs-paypal-standard-change-payment-method.php' );
 require_once( 'includes/admin/class-wcs-paypal-admin.php' );
@@ -89,6 +90,7 @@ class WCS_PayPal {
 
 		WCS_PayPal_Supports::init();
 		WCS_PayPal_Status_Manager::init();
+		WCS_PayPal_Standard_Switcher::init();
 
 		if ( is_admin() ) {
 			WCS_PayPal_Admin::init();
