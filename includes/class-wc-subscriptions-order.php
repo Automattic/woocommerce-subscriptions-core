@@ -352,7 +352,7 @@ class WC_Subscriptions_Order {
 
 		if ( wcs_order_contains_subscription( $order_id, array( 'parent', 'renewal', 'switch' ) ) ) {
 
-			$subscription_count = count( wcs_get_subscriptions_for_order( $order_id ) );
+			$subscription_count = count( wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => array( 'parent', 'renewal', 'switch' ) ) ) );
 
 			$thank_you_message = '<p>' . _n( 'Your subscription will be activated when payment clears.', 'Your subscriptions will be activated when payment clears.', $subscription_count, 'woocommerce-subscriptions' ) . '</p>';
 
