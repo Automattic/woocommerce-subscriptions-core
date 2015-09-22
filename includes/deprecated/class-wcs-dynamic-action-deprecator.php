@@ -21,8 +21,10 @@ class WCS_Dynamic_Action_Deprecator extends WCS_Dynamic_Hook_Deprecator {
 		'woocommerce_subscription_failing_payment_method_updated_' => 'woocommerce_subscriptions_changed_failing_payment_method_',
 
 		// Gateway status change hooks
-		'woocommerce_subscription_activated_'                      => 'activated_subscription_',
-		'woocommerce_subscription_activated_'                      => 'reactivated_subscription_',
+		'woocommerce_subscription_activated_'                      => array(
+			'activated_subscription_',
+			'reactivated_subscription_',
+		),
 		'woocommerce_subscription_on-hold_'                        => 'subscription_put_on-hold_',
 		'woocommerce_subscription_cancelled_'                      => 'cancelled_subscription_',
 		'woocommerce_subscription_switched_'                       => 'subscription_switched_',

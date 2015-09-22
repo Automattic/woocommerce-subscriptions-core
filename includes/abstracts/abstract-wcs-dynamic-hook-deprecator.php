@@ -25,32 +25,49 @@ abstract class WCS_Dynamic_Hook_Deprecator extends WCS_Hook_Deprecator {
 	 * @since 2.0
 	 */
 	public function __construct() {
-		add_filter( 'all', array( &$this, 'check_for_deprecated_hook' ) );
+		add_filter( 'all', array( &$this, 'check_for_deprecated_hooks' ) );
 	}
 
 	/**
-	 * Check if the current hook contains the prefix of a dynamic hook that has been deprecated.
+	 * Check if the current hook contains the prefix of any dynamic hook that has been deprecated.
 	 *
 	 * @since 2.0
 	 */
-	public function check_for_deprecated_hook() {
+	public function check_for_deprecated_hooks() {
 
 		$current_filter = current_filter();
 
-		foreach ( $this->deprecated_hook_prefixes as $new_hook_prefix => $old_hook_prefix ) {
+		foreach ( $this->deprecated_hook_prefixes as $new_hook_prefix => $old_hook_prefixes ) {
 
-			if ( false !== strpos( $current_filter, $new_hook_prefix ) ) {
-
-				// Get the dynamic suffix on the hook, usually a payment gateway name, like 'stripe' or 'authorize_net_cim'
-				$hook_suffix = str_replace( $new_hook_prefix, '', $current_filter );
-				$old_hook    = $old_hook_prefix . $hook_suffix;
-
-				// register the entire new and old hook
-				$this->deprecated_hooks[ $current_filter ] = $old_hook;
-
-				// and attach our handler now that we know the hooks
-				add_filter( $current_filter, array( &$this, 'maybe_handle_deprecated_hook' ), -1000, 8 );
+			if ( is_array( $old_hook_prefixes ) ) {
+				foreach ( $old_hook_prefixes as $old_hook_prefix ) {
+					$this->check_for_deprecated_hook( $current_filter, $new_hook_prefix, $old_hook_prefix );
+				}
+			} else {
+				$this->check_for_deprecated_hook( $current_filter, $new_hook_prefix, $old_hook_prefixes );
 			}
+		}
+	}
+
+	/**
+	 * Check if a given hook contains the prefix and if it does, attach the @see $this->maybe_handle_deprecated_hook() method
+	 * as a callback to it.
+	 *
+	 * @since 2.0
+	 */
+	protected function check_for_deprecated_hook( $current_hook, $new_hook_prefix, $old_hook_prefix ) {
+
+		if ( false !== strpos( $current_hook, $new_hook_prefix ) ) {
+
+			// Get the dynamic suffix on the hook, usually a payment gateway name, like 'stripe' or 'authorize_net_cim'
+			$hook_suffix = str_replace( $new_hook_prefix, '', $current_hook );
+			$old_hook    = $old_hook_prefix . $hook_suffix;
+
+			// register the entire new and old hook
+			$this->deprecated_hooks[ $current_hook ][] = $old_hook;
+
+			// and attach our handler now that we know the hooks
+			add_filter( $current_hook, array( &$this, 'maybe_handle_deprecated_hook' ), -1000, 8 );
 		}
 	}
 }

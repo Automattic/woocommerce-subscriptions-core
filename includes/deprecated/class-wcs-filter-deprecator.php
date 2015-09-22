@@ -20,8 +20,6 @@ class WCS_Filter_Deprecator extends WCS_Hook_Deprecator {
 	protected $deprecated_hooks = array(
 
 		// Subscription Meta Filters
-		'wcs_subscription_statuses'                                  => 'woocommerce_subscriptions_custom_status_string', //no replacement as Subscriptions now uses wcs_get_subscription_statuses() for everything (the deprecator could use 'wc_subscription_statuses' and loop over all statuses to set it in the returned value)
-		'wcs_subscription_statuses'                                  => 'woocommerce_subscriptions_status_string',
 		'woocommerce_subscription_payment_failed_count'              => 'woocommerce_subscription_failed_payment_count',
 		'woocommerce_subscription_payment_completed_count'           => 'woocommerce_subscription_completed_payment_count',
 		'woocommerce_subscription_get_end_date'                      => 'woocommerce_subscription_expiration_date',
@@ -32,16 +30,22 @@ class WCS_Filter_Deprecator extends WCS_Hook_Deprecator {
 		'woocommerce_subscription_get_last_payment_date'             => 'woocommerce_subscription_last_payment_date',
 		'woocommerce_subscription_calculated_next_payment_date'      => 'woocommerce_subscriptions_calculated_next_payment_date',
 		'woocommerce_subscription_date_updated'                      => 'woocommerce_subscriptions_set_trial_expiration_date',
+		'wcs_subscription_statuses'                                  => array(
+			'woocommerce_subscriptions_custom_status_string', //no replacement as Subscriptions now uses wcs_get_subscription_statuses() for everything (the deprecator could use 'wc_subscription_statuses' and loop over all statuses to set it in the returned value)
+			'woocommerce_subscriptions_status_string',
+		),
 
 		// Renewal Filters
 		'wcs_renewal_order_items'                                    => 'woocommerce_subscriptions_renewal_order_items',
 		'wcs_renewal_order_meta_query'                               => 'woocommerce_subscriptions_renewal_order_meta_query',
 		'wcs_renewal_order_meta'                                     => 'woocommerce_subscriptions_renewal_order_meta',
 		'wcs_renewal_order_item_name'                                => 'woocommerce_subscriptions_renewal_order_item_name',
-		'wcs_renewal_order_created'                                  => 'woocommerce_subscriptions_renewal_order_created',
-		'wcs_renewal_order_created'                                  => 'woocommerce_subscriptions_renewal_order_id',
 		'wcs_users_resubscribe_link'                                 => 'woocommerce_subscriptions_users_renewal_link',
 		'wcs_can_user_resubscribe_to_subscription'                   => 'woocommerce_can_subscription_be_renewed',
+		'wcs_renewal_order_created'                                  => array(
+			'woocommerce_subscriptions_renewal_order_created', // Even though 'woocommerce_subscriptions_renewal_order_created' is an action, as it is attached to a filter, we need to handle it in here
+			'woocommerce_subscriptions_renewal_order_id',
+		),
 
 		// List Table Filters
 		'woocommerce_subscription_list_table_actions'                => 'woocommerce_subscriptions_list_table_actions',
