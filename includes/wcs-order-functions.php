@@ -50,11 +50,11 @@ function wcs_get_subscriptions_for_order( $order_id, $args = array() ) {
 	}
 
 	if ( wcs_order_contains_renewal( $order_id ) && ( in_array( 'renewal', $args['order_types'] ) || $get_all ) ) {
-		$subscriptions = wcs_get_subscriptions_for_renewal_order( $order_id );
+		$subscriptions += wcs_get_subscriptions_for_renewal_order( $order_id );
 	}
 
 	if ( wcs_order_contains_switch( $order_id ) && ( in_array( 'switch', $args['order_types'] ) || $get_all ) ) {
-		$subscriptions = wcs_get_subscriptions_for_switch_order( $order_id );
+		$subscriptions += wcs_get_subscriptions_for_switch_order( $order_id );
 	}
 
 	return $subscriptions;
