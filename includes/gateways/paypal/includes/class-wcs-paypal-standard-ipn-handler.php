@@ -98,7 +98,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 		$is_renewal_sign_up_after_failure = false;
 
 		// If the invoice ID doesn't match the default invoice ID and contains the string '-wcsfrp-', the IPN is for a subscription payment to fix up a failed payment
-		if ( false !== strpos( $transaction_details['invoice'], '-wcsfrp-' ) && in_array( $transaction_details['txn_type'], array( 'subscr_signup', 'subscr_payment' ) ) ) {
+		if ( in_array( $transaction_details['txn_type'], array( 'subscr_signup', 'subscr_payment' ) ) && false !== strpos( $transaction_details['invoice'], '-wcsfrp-' ) ) {
 
 			$renewal_order = wc_get_order( substr( $transaction_details['invoice'], strrpos( $transaction_details['invoice'], '-' ) + 1 ) );
 
@@ -111,7 +111,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 		}
 
 		// If the invoice ID doesn't match the default invoice ID and contains the string '-wcscpm-', the IPN is for a subscription payment method change
-		if ( false !== strpos( $transaction_details['invoice'], '-wcscpm-' ) && 'subscr_signup' == $transaction_details['txn_type'] ) {
+		if ( 'subscr_signup' == $transaction_details['txn_type'] && false !== strpos( $transaction_details['invoice'], '-wcscpm-' ) ) {
 			$is_payment_change = true;
 		} else {
 			$is_payment_change = false;
