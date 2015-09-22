@@ -38,22 +38,22 @@ function wcs_get_subscriptions_for_order( $order_id, $args = array() ) {
 	$args = wp_parse_args( $args, array(
 			'order_id'               => $order_id,
 			'subscriptions_per_page' => -1,
-			'order_types'            => array( 'parent' ),
+			'order_type'             => array( 'parent' ),
 		)
 	);
 
 	$subscriptions = array();
-	$get_all       = ( in_array( 'any', $args['order_types'] ) ) ? true : false;
+	$get_all       = ( in_array( 'any', $args['order_type'] ) ) ? true : false;
 
-	if ( $order_id && in_array( 'parent', $args['order_types'] ) || $get_all ) {
+	if ( $order_id && in_array( 'parent', $args['order_type'] ) || $get_all ) {
 		$subscriptions = wcs_get_subscriptions( $args );
 	}
 
-	if ( wcs_order_contains_renewal( $order_id ) && ( in_array( 'renewal', $args['order_types'] ) || $get_all ) ) {
+	if ( wcs_order_contains_renewal( $order_id ) && ( in_array( 'renewal', $args['order_type'] ) || $get_all ) ) {
 		$subscriptions += wcs_get_subscriptions_for_renewal_order( $order_id );
 	}
 
-	if ( wcs_order_contains_switch( $order_id ) && ( in_array( 'switch', $args['order_types'] ) || $get_all ) ) {
+	if ( wcs_order_contains_switch( $order_id ) && ( in_array( 'switch', $args['order_type'] ) || $get_all ) ) {
 		$subscriptions += wcs_get_subscriptions_for_switch_order( $order_id );
 	}
 
