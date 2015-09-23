@@ -1439,7 +1439,7 @@ class WC_Subscriptions_Order {
 	 * @since 1.0
 	 */
 	public static function get_order_subscription_string( $order, $deprecated_price = '', $deprecated_sign_up_fee = '' ) {
-		_deprecated_function( __METHOD__, '2.0', 'the value for the subscription object' );
+		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_formatted_order_total()' );
 
 		$initial_amount = wc_price( self::get_total_initial_payment( $order ) );
 
