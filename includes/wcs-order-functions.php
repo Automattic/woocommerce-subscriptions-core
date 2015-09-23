@@ -176,7 +176,6 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 	}
 }
 
-
 /**
  * Function to create an order from a subscription. It can be used for a renewal or for a resubscribe
  * order creation. It is the common in both of those instances.
