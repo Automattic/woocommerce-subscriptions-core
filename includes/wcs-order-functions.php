@@ -340,14 +340,15 @@ function wcs_get_order_address( $order, $address_type = 'shipping' ) {
  * Checks an order to see if it contains a subscription.
  *
  * @param mixed $order A WC_Order object or the ID of the order which the subscription was purchased in.
- * @param array $order_type Can include 'parent', 'renewal', 'resubscribe' and/or 'switch'. Defaults to 'parent'.
+ * @param array|string $order_type Can include 'parent', 'renewal', 'resubscribe' and/or 'switch'. Defaults to 'parent'.
  * @return bool True if the order contains a subscription that belongs to any of the given order types, otherwise false.
  * @since 2.0
  */
 function wcs_order_contains_subscription( $order, $order_types = array( 'parent' ) ) {
 
+	// Accept either an array or string (to make it more convenient for singular types, like 'parent' or 'any')
 	if ( ! is_array( $order_types ) ) {
-		return false;
+		$order_types = array( $order_types );
 	}
 
 	if ( ! is_object( $order ) ) {
