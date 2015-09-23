@@ -356,17 +356,18 @@ function wcs_order_contains_subscription( $order, $order_types = array( 'parent'
 	}
 
 	$contains_subscription = false;
+	$get_all               = ( in_array( 'any', $order_types ) ) ? true : false;
 
-	if ( in_array( 'parent', $order_types ) && count( wcs_get_subscriptions_for_order( $order->id ) ) > 0 ) {
+	if ( ( in_array( 'parent', $order_types ) || $get_all ) && count( wcs_get_subscriptions_for_order( $order->id ) ) > 0 ) {
 		$contains_subscription = true;
 
-	} else if ( in_array( 'renewal', $order_types ) && wcs_order_contains_renewal( $order ) ) {
+	} else if ( ( in_array( 'renewal', $order_types ) || $get_all ) && wcs_order_contains_renewal( $order ) ) {
 		$contains_subscription = true;
 
-	} else if ( in_array( 'resubscribe', $order_types ) && wcs_order_contains_resubscribe( $order ) ) {
+	} else if ( ( in_array( 'resubscribe', $order_types ) || $get_all ) && wcs_order_contains_resubscribe( $order ) ) {
 		$contains_subscription = true;
 
-	} else if ( in_array( 'switch', $order_types ) && wcs_order_contains_switch( $order ) ) {
+	} else if ( ( in_array( 'switch', $order_types ) || $get_all )&& wcs_order_contains_switch( $order ) ) {
 		$contains_subscription = true;
 
 	}
