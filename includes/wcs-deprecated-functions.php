@@ -56,6 +56,11 @@ function wcs_get_old_subscription_key( WC_Subscription $subscription ) {
 function wcs_get_subscription_id_from_key( $subscription_key ) {
 	global $wpdb;
 
+	// it can be either 8_13 or just 8. If it's 8, it'll be an integer
+	if ( ! is_string( $subscription_key ) && ! is_int( $subscription_key ) ) {
+		return null;
+	}
+
 	$order_and_product_id = explode( '_', $subscription_key );
 
 	$subscription_ids = array();
