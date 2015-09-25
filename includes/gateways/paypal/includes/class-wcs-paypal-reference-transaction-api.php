@@ -191,9 +191,7 @@ class WCS_PayPal_Reference_Transaction_API extends WCS_SV_API_Base {
 	}
 
 	/**
-	 * Perform a refund for the given order
-	 *
-	 * If the gateway does not support refunds, this method can be a no-op.
+	 * Perform a reference transaction for the given order
 	 *
 	 * @see SV_WC_Payment_Gateway_API::refund()
 	 * @param WC_Order $order order object
@@ -215,9 +213,7 @@ class WCS_PayPal_Reference_Transaction_API extends WCS_SV_API_Base {
 	}
 
 	/**
-	 * Perform a refund for the given order
-	 *
-	 * If the gateway does not support refunds, this method can be a no-op.
+	 * Change the status of a subscription for a given order/profile ID
 	 *
 	 * @since 2.0.0
 	 * @see SV_WC_Payment_Gateway_API::refund()
