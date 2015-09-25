@@ -269,13 +269,4 @@ class WCS_PayPal_Reference_Transaction_API extends WCS_SV_API_Base {
 	protected function get_plugin() {
 		return WCS_PayPal::instance();
 	}
-
-	/**
-	 * Check if the response has any errors
-	 *
-	 * @see \WCS_SV_API_Base::do_post_parse_response_validation()
-	 * @throws \SV_WC_API_Exception if response has API error
-	 * @since 2.0
-	 */
-	protected function do_post_parse_response_validation() { }
 }
