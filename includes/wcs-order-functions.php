@@ -176,7 +176,6 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 	}
 }
 
-
 /**
  * Function to create an order from a subscription. It can be used for a renewal or for a resubscribe
  * order creation. It is the common in both of those instances.
@@ -340,14 +339,15 @@ function wcs_get_order_address( $order, $address_type = 'shipping' ) {
  * Checks an order to see if it contains a subscription.
  *
  * @param mixed $order A WC_Order object or the ID of the order which the subscription was purchased in.
- * @param array $order_type Can include 'parent', 'renewal', 'resubscribe' and/or 'switch'. Defaults to 'parent'.
+ * @param array|string $order_type Can include 'parent', 'renewal', 'resubscribe' and/or 'switch'. Defaults to 'parent'.
  * @return bool True if the order contains a subscription that belongs to any of the given order types, otherwise false.
  * @since 2.0
  */
-function wcs_order_contains_subscription( $order, $order_types = array( 'parent' ) ) {
+function wcs_order_contains_subscription( $order, $order_type = array( 'parent' ) ) {
 
-	if ( ! is_array( $order_types ) ) {
-		return false;
+	// Accept either an array or string (to make it more convenient for singular types, like 'parent' or 'any')
+	if ( ! is_array( $order_type ) ) {
+		$order_type = array( $order_type );
 	}
 
 	if ( ! is_object( $order ) ) {
@@ -355,17 +355,18 @@ function wcs_order_contains_subscription( $order, $order_types = array( 'parent'
 	}
 
 	$contains_subscription = false;
+	$get_all               = ( in_array( 'any', $order_type ) ) ? true : false;
 
-	if ( in_array( 'parent', $order_types ) && count( wcs_get_subscriptions_for_order( $order->id ) ) > 0 ) {
+	if ( ( in_array( 'parent', $order_type ) || $get_all ) && count( wcs_get_subscriptions_for_order( $order->id ) ) > 0 ) {
 		$contains_subscription = true;
 
-	} else if ( in_array( 'renewal', $order_types ) && wcs_order_contains_renewal( $order ) ) {
+	} else if ( ( in_array( 'renewal', $order_type ) || $get_all ) && wcs_order_contains_renewal( $order ) ) {
 		$contains_subscription = true;
 
-	} else if ( in_array( 'resubscribe', $order_types ) && wcs_order_contains_resubscribe( $order ) ) {
+	} else if ( ( in_array( 'resubscribe', $order_type ) || $get_all ) && wcs_order_contains_resubscribe( $order ) ) {
 		$contains_subscription = true;
 
-	} else if ( in_array( 'switch', $order_types ) && wcs_order_contains_switch( $order ) ) {
+	} else if ( ( in_array( 'switch', $order_type ) || $get_all )&& wcs_order_contains_switch( $order ) ) {
 		$contains_subscription = true;
 
 	}

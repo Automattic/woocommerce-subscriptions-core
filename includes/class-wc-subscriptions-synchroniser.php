@@ -1188,7 +1188,7 @@ class WC_Subscriptions_Synchroniser {
 	 * @deprecated 2.0
 	 */
 	public static function order_contains_synced_subscription( $order_id ) {
-		_deprecated_function( __METHOD__, '2.0' );
+		_deprecated_function( __METHOD__, '2.0', __CLASS__ . '::subscription_contains_synced_product()' );
 
 		if ( is_object( $order_id ) ) {
 			$order_id = $order_id->id;
