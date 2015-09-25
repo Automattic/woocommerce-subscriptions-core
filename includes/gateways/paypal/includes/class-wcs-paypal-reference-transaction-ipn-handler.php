@@ -111,7 +111,7 @@ class WCS_PayPal_Reference_Transaction_IPN_Handler extends WCS_PayPal_Standard_I
 			return;
 		}
 
-		$note = __( 'Billing agreement cancelled at PayPal.', 'woocommerce-subscriptions' );
+		$note = esc_html__( 'Billing agreement cancelled at PayPal.', 'woocommerce-subscriptions' );
 
 		foreach ( $subscription_ids as $subscription_id ) {
 
