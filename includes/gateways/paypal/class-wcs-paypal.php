@@ -244,7 +244,7 @@ class WCS_PayPal {
 	 */
 	public static function get_paypal_args( $paypal_args, $order ) {
 
-		if ( wcs_order_contains_subscription( $order, array( 'parent', 'renewal', 'resubscribe', 'switch' ) ) ) {
+		if ( wcs_order_contains_subscription( $order, array( 'parent', 'renewal', 'resubscribe', 'switch' ) ) || wcs_is_subscription( $order ) ) {
 			if ( self::are_reference_transactions_enabled() ) {
 				$paypal_args = self::get_api()->get_paypal_args( $paypal_args, $order );
 			} else {
