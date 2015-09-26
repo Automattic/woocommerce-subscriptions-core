@@ -117,15 +117,9 @@ function wcs_calculate_paypal_trial_periods_until( $future_timestamp ) {
 			$first_trial_length = floor( $days_until_next_payment / 365 );
 			$first_trial_period = 'Y';
 
-			$days_remaining = $days_until_next_payment % 365;
+			$second_trial_length = $days_until_next_payment % 365;
+			$second_trial_period = 'D';
 
-			if ( $days_remaining <= 90 ) { // We can use days
-				$second_trial_length = $days_remaining;
-				$second_trial_period = 'D';
-			} else { // We need to use weeks
-				$second_trial_length = floor( $days_remaining / 7 );
-				$second_trial_period = 'W';
-			}
 		} elseif ( $days_until_next_payment > 365 ) { // Less than two years but more than one, use months
 
 			$first_trial_length = floor( $days_until_next_payment / 30 );
