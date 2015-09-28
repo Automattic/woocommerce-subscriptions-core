@@ -60,10 +60,10 @@ class WCS_Cart_Renewal {
 		// Check if a user is requesting to create a renewal order for a subscription, needs to happen after $wp->query_vars are set
 		add_action( 'template_redirect', array( &$this, 'maybe_setup_cart' ), 100 );
 
-		add_action( 'woocommerce_remove_cart_item', array( &$this, 'maybe_remove_renewal_order_items' ), 10, 1 );
-		add_action( 'woocommerce_before_cart_item_quantity_zero', array( &$this, 'maybe_remove_renewal_order_items' ), 10, 1 );
+		add_action( 'woocommerce_remove_cart_item', array( &$this, 'maybe_remove_renewal_items' ), 10, 1 );
+		add_action( 'woocommerce_before_cart_item_quantity_zero', array( &$this, 'maybe_remove_renewal_items' ), 10, 1 );
 
-		add_filter( 'woocommerce_cart_item_removed_title', array( &$this, 'renewal_order_items_removed_title' ), 10, 2 );
+		add_filter( 'woocommerce_cart_item_removed_title', array( &$this, 'renewal_items_removed_title' ), 10, 2 );
 
 		add_action( 'woocommerce_cart_item_restored', array( &$this, 'maybe_restore_all_renewal_items' ), 10, 1 );
 	}
@@ -360,45 +360,45 @@ class WCS_Cart_Renewal {
 	 * @param string $cart_item_key The cart item key of the item removed from the cart.
 	 * @since 2.0
 	 */
-	public function maybe_remove_renewal_order_items( $cart_item_key ) {
+	public function maybe_remove_renewal_items( $cart_item_key ) {
 
-		if ( isset( WC()->cart->cart_contents[ $cart_item_key ] ) && isset( WC()->cart->cart_contents[ $cart_item_key ]['subscription_renewal'] ) ) {
+		if ( isset( WC()->cart->cart_contents[ $cart_item_key ] ) && isset( WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ] ) ) {
 
-			$renewal_item_count = 0;
+			$removed_item_count = 0;
+			$subscription_id    = WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['subscription_id'];
 
 			foreach ( WC()->cart->cart_contents as $key => $cart_item ) {
 
-				if ( isset( $cart_item['subscription_renewal'] ) ) {
+				if ( isset( $cart_item[ $this->cart_item_key ] ) && $subscription_id == $cart_item[ $this->cart_item_key ]['subscription_id'] ) {
 					WC()->cart->removed_cart_contents[ $key ] = WC()->cart->cart_contents[ $key ];
 					unset( WC()->cart->cart_contents[ $key ] );
-					$renewal_item_count++;
+					$removed_item_count++;
 				}
 			}
 
 			//remove the renewal order flag
 			unset( WC()->session->order_awaiting_payment );
 
-			if ( $renewal_item_count > 1 ){
-				wc_add_notice( __( 'All subscription renewal items have been removed from the cart.', 'woocommerce-subscriptions' ), 'notice' );
+			if ( $removed_item_count > 1 && 'woocommerce_before_cart_item_quantity_zero' == current_filter() ) {
+				wc_add_notice( esc_html__( 'All linked subscription items have been removed from the cart.', 'woocommerce-subscriptions' ), 'notice' );
 			}
 		}
 	}
 
 	/**
 	 * Formats the title of the product removed from the cart. Because we have removed all
-	 * renewal products from the cart we need a product title to to reflect that.
+	 * renewal products from the cart we need a product title to reflect that.
 	 *
 	 * @param string $product_title
 	 * @param $cart_item
 	 * @return string $product_title
 	 * @since 2.0
 	 */
-	public function renewal_order_items_removed_title( $product_title, $cart_item ) {
+	public function renewal_items_removed_title( $product_title, $cart_item ) {
 
-		if ( isset( $cart_item['subscription_renewal']['renewal_order_id'] ) ) {
-
-			$renewal_order = wc_get_order( absint( $cart_item['subscription_renewal']['renewal_order_id'] ) );
-			$product_title = ( count( $renewal_order->get_items() ) > 1 ) ? esc_html__( 'All subscription renewal items were', 'woocommerce-subscriptions' ) : $product_title;
+		if ( isset( $cart_item[ $this->cart_item_key ] ) ) {
+			$subscription  = wcs_get_subscription( absint( $cart_item[ $this->cart_item_key ]['subscription_id'] ) );
+			$product_title = ( count( $subscription->get_items() ) > 1 ) ? esc_html__( 'All linked subscription items were', 'woocommerce-subscriptions' ) : $product_title;
 		}
 
 		return $product_title;
@@ -412,20 +412,22 @@ class WCS_Cart_Renewal {
 	 */
 	public function maybe_restore_all_renewal_items( $cart_item_key ) {
 
-		if ( isset( WC()->cart->cart_contents[ $cart_item_key ]['subscription_renewal'] ) ) {
+		if ( isset( WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ] ) ) {
 
-			$renewal_order = WC()->cart->cart_contents[ $cart_item_key ]['subscription_renewal']['renewal_order_id'];
+			$subscription_id = WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['subscription_id'];
 
 			foreach ( WC()->cart->removed_cart_contents as $key => $cart_item ) {
 
-				if ( isset( $cart_item['subscription_renewal'] ) && $key != $cart_item_key && $cart_item['subscription_renewal']['renewal_order_id'] == $renewal_order ) {
+				if ( isset( $cart_item[ $this->cart_item_key ] ) && $key != $cart_item_key && $cart_item[ $this->cart_item_key ]['subscription_id'] == $subscription_id ) {
 					WC()->cart->cart_contents[ $key ] = WC()->cart->removed_cart_contents[ $key ];
 					unset( WC()->cart->removed_cart_contents[ $key ] );
 				}
 			}
 
 			//restore the renewal order flag
-			WC()->session->set( 'order_awaiting_payment', WC()->cart->cart_contents[ $cart_item_key ]['subscription_renewal']['renewal_order_id'] );
+			if ( isset( WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['renewal_order_id'] ) ) {
+				WC()->session->set( 'order_awaiting_payment', WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['renewal_order_id'] );
+			}
 		}
 	}
 }
