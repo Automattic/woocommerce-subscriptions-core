@@ -60,12 +60,12 @@ class WCS_Cart_Renewal {
 		// Check if a user is requesting to create a renewal order for a subscription, needs to happen after $wp->query_vars are set
 		add_action( 'template_redirect', array( &$this, 'maybe_setup_cart' ), 100 );
 
-		add_action( 'woocommerce_remove_cart_item', array( &$this, 'maybe_remove_renewal_items' ), 10, 1 );
-		add_action( 'woocommerce_before_cart_item_quantity_zero', array( &$this, 'maybe_remove_renewal_items' ), 10, 1 );
+		add_action( 'woocommerce_remove_cart_item', array( &$this, 'maybe_remove_items' ), 10, 1 );
+		add_action( 'woocommerce_before_cart_item_quantity_zero', array( &$this, 'maybe_remove_items' ), 10, 1 );
 
-		add_filter( 'woocommerce_cart_item_removed_title', array( &$this, 'renewal_items_removed_title' ), 10, 2 );
+		add_filter( 'woocommerce_cart_item_removed_title', array( &$this, 'items_removed_title' ), 10, 2 );
 
-		add_action( 'woocommerce_cart_item_restored', array( &$this, 'maybe_restore_all_renewal_items' ), 10, 1 );
+		add_action( 'woocommerce_cart_item_restored', array( &$this, 'maybe_restore_items' ), 10, 1 );
 	}
 
 	/**
@@ -355,12 +355,12 @@ class WCS_Cart_Renewal {
 	}
 
 	/**
-	 * Removes all the renewal items from the cart if a renewal item is removed.
+	 * Removes all the linked renewal/resubscribe items from the cart if a renewal/resubscribe item is removed.
 	 *
 	 * @param string $cart_item_key The cart item key of the item removed from the cart.
 	 * @since 2.0
 	 */
-	public function maybe_remove_renewal_items( $cart_item_key ) {
+	public function maybe_remove_items( $cart_item_key ) {
 
 		if ( isset( WC()->cart->cart_contents[ $cart_item_key ] ) && isset( WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ] ) ) {
 
@@ -387,14 +387,14 @@ class WCS_Cart_Renewal {
 
 	/**
 	 * Formats the title of the product removed from the cart. Because we have removed all
-	 * renewal products from the cart we need a product title to reflect that.
+	 * linked renewal/resubscribe items from the cart we need a product title to reflect that.
 	 *
 	 * @param string $product_title
 	 * @param $cart_item
 	 * @return string $product_title
 	 * @since 2.0
 	 */
-	public function renewal_items_removed_title( $product_title, $cart_item ) {
+	public function items_removed_title( $product_title, $cart_item ) {
 
 		if ( isset( $cart_item[ $this->cart_item_key ] ) ) {
 			$subscription  = wcs_get_subscription( absint( $cart_item[ $this->cart_item_key ]['subscription_id'] ) );
@@ -405,12 +405,12 @@ class WCS_Cart_Renewal {
 	}
 
 	/**
-	 * Restores all renewal order items to the cart if the customer has restored one.
+	 * Restores all linked renewal/resubscribe items to the cart if the customer has restored one.
 	 *
 	 * @param string $cart_item_key The cart item key of the item being restored to the cart.
 	 * @since 2.0
 	 */
-	public function maybe_restore_all_renewal_items( $cart_item_key ) {
+	public function maybe_restore_items( $cart_item_key ) {
 
 		if ( isset( WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ] ) ) {
 
