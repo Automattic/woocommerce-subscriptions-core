@@ -67,11 +67,13 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 	 */
 	public function set_express_checkout( $args ) {
 
+		$default_description = sprintf( _x( 'Orders with %s', 'data sent to paypal', 'woocommerce-subscriptions' ), get_bloginfo( 'name' ) );
+
 		$defaults = array(
 			'currency'            => get_woocommerce_currency(),
 			'billing_type'        => apply_filters( 'woocommerce_subscriptions_paypal_billing_agreement_type', 'MerchantInitiatedBillingSingleAgreement', $args ),
 			// translators: placeholder is for blog name
-			'billing_description' => html_entity_decode( sprintf( _x( 'Orders with %s', 'data sent to paypal', 'woocommerce-subscriptions' ), get_bloginfo( 'name' ) ), ENT_NOQUOTES, 'UTF-8' ),
+			'billing_description' => html_entity_decode( apply_filters( 'woocommerce_subscriptions_paypal_billing_agreement_description', $default_description, $args ), ENT_NOQUOTES, 'UTF-8' ),
 			'maximum_amount'      => null,
 			'no_shipping'         => 1,
 			'page_style'          => null,
