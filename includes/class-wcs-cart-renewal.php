@@ -59,6 +59,13 @@ class WCS_Cart_Renewal {
 
 		// Check if a user is requesting to create a renewal order for a subscription, needs to happen after $wp->query_vars are set
 		add_action( 'template_redirect', array( &$this, 'maybe_setup_cart' ), 100 );
+
+		add_action( 'woocommerce_remove_cart_item', array( &$this, 'maybe_remove_items' ), 10, 1 );
+		add_action( 'woocommerce_before_cart_item_quantity_zero', array( &$this, 'maybe_remove_items' ), 10, 1 );
+
+		add_filter( 'woocommerce_cart_item_removed_title', array( &$this, 'items_removed_title' ), 10, 2 );
+
+		add_action( 'woocommerce_cart_item_restored', array( &$this, 'maybe_restore_items' ), 10, 1 );
 	}
 
 	/**
@@ -345,6 +352,83 @@ class WCS_Cart_Renewal {
 		}
 
 		return $order_status;
+	}
+
+	/**
+	 * Removes all the linked renewal/resubscribe items from the cart if a renewal/resubscribe item is removed.
+	 *
+	 * @param string $cart_item_key The cart item key of the item removed from the cart.
+	 * @since 2.0
+	 */
+	public function maybe_remove_items( $cart_item_key ) {
+
+		if ( isset( WC()->cart->cart_contents[ $cart_item_key ] ) && isset( WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ] ) ) {
+
+			$removed_item_count = 0;
+			$subscription_id    = WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['subscription_id'];
+
+			foreach ( WC()->cart->cart_contents as $key => $cart_item ) {
+
+				if ( isset( $cart_item[ $this->cart_item_key ] ) && $subscription_id == $cart_item[ $this->cart_item_key ]['subscription_id'] ) {
+					WC()->cart->removed_cart_contents[ $key ] = WC()->cart->cart_contents[ $key ];
+					unset( WC()->cart->cart_contents[ $key ] );
+					$removed_item_count++;
+				}
+			}
+
+			//remove the renewal order flag
+			unset( WC()->session->order_awaiting_payment );
+
+			if ( $removed_item_count > 1 && 'woocommerce_before_cart_item_quantity_zero' == current_filter() ) {
+				wc_add_notice( esc_html__( 'All linked subscription items have been removed from the cart.', 'woocommerce-subscriptions' ), 'notice' );
+			}
+		}
+	}
+
+	/**
+	 * Formats the title of the product removed from the cart. Because we have removed all
+	 * linked renewal/resubscribe items from the cart we need a product title to reflect that.
+	 *
+	 * @param string $product_title
+	 * @param $cart_item
+	 * @return string $product_title
+	 * @since 2.0
+	 */
+	public function items_removed_title( $product_title, $cart_item ) {
+
+		if ( isset( $cart_item[ $this->cart_item_key ] ) ) {
+			$subscription  = wcs_get_subscription( absint( $cart_item[ $this->cart_item_key ]['subscription_id'] ) );
+			$product_title = ( count( $subscription->get_items() ) > 1 ) ? esc_html__( 'All linked subscription items were', 'woocommerce-subscriptions' ) : $product_title;
+		}
+
+		return $product_title;
+	}
+
+	/**
+	 * Restores all linked renewal/resubscribe items to the cart if the customer has restored one.
+	 *
+	 * @param string $cart_item_key The cart item key of the item being restored to the cart.
+	 * @since 2.0
+	 */
+	public function maybe_restore_items( $cart_item_key ) {
+
+		if ( isset( WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ] ) ) {
+
+			$subscription_id = WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['subscription_id'];
+
+			foreach ( WC()->cart->removed_cart_contents as $key => $cart_item ) {
+
+				if ( isset( $cart_item[ $this->cart_item_key ] ) && $key != $cart_item_key && $cart_item[ $this->cart_item_key ]['subscription_id'] == $subscription_id ) {
+					WC()->cart->cart_contents[ $key ] = WC()->cart->removed_cart_contents[ $key ];
+					unset( WC()->cart->removed_cart_contents[ $key ] );
+				}
+			}
+
+			//restore the renewal order flag
+			if ( isset( WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['renewal_order_id'] ) ) {
+				WC()->session->set( 'order_awaiting_payment', WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['renewal_order_id'] );
+			}
+		}
 	}
 }
 new WCS_Cart_Renewal();
