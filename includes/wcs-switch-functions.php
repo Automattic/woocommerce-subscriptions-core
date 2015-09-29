@@ -96,3 +96,44 @@ function wcs_get_switch_orders_for_subscription( $subscription_id ) {
 
 	return $orders;
 }
+
+/**
+ * Checks if a given product is of a switchable type
+ *
+ * @param int|WC_Product $product A WC_Product object or the ID of a product to check
+ * @return bool
+ * @since  2.0
+ */
+function wcs_is_product_switchable_type( $product ) {
+
+	if ( ! is_object( $product ) ) {
+		$product = get_product( $product );
+	}
+
+	if ( empty( $product ) ) {
+
+		$is_product_switchable = false;
+
+	} else {
+
+		$allow_switching = get_option( WC_Subscriptions_Admin::$option_prefix . '_allow_switching', 'no' );
+
+		switch ( $allow_switching ) {
+			case 'variable' :
+				$is_product_switchable = ( $product->is_type( 'variable-subscription' ) ) ? true : false;
+				break;
+			case 'grouped' :
+				$is_product_switchable = ( 0 !== $product->post->post_parent ) ? true : false;
+				break;
+			case 'variable_grouped' :
+				$is_product_switchable = ( $product->is_type( 'variable-subscription' ) || 0 !== $product->post->post_parent ) ? true : false;
+				break;
+			case 'no' :
+			default:
+				$is_product_switchable = false;
+				break;
+		}
+	}
+
+	return $is_product_switchable;
+}

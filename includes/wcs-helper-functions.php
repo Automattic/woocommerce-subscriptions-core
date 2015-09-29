@@ -68,3 +68,26 @@ function wcs_get_edit_post_link( $post_id ) {
 
 	return apply_filters( 'get_edit_post_link', admin_url( sprintf( $post_type_object->_edit_link . '&action=edit', $post_id ) ),$post_id, '' );
 }
+
+/**
+ * Returns a string with all non-ASCII characters removed. This is useful for any string functions that expect only
+ * ASCII chars and can't safely handle UTF-8
+ *
+ * Based on the SV_WC_Helper::str_to_ascii() method developed by the masterful SkyVerge team
+ *
+ * Note: We must do a strict false check on the iconv() output due to a bug in PHP/glibc {@link https://bugs.php.net/bug.php?id=63450}
+ *
+ * @param string $string string to make ASCII
+ * @return string|null ASCII string or null if error occurred
+ * @since 2.0
+ */
+function wcs_str_to_ascii( $string ) {
+
+	$ascii = false;
+
+	if ( function_exists( 'iconv' ) ) {
+		$ascii = iconv( 'UTF-8', 'ASCII//IGNORE', $string );
+	}
+
+	return false === $ascii ? preg_replace( '/[^a-zA-Z0-9_\-]/', '', $string ) : $ascii;
+}

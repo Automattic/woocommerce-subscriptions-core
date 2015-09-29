@@ -194,7 +194,7 @@ class WC_Subscription extends WC_Order {
 			$payment_gateway_supports = false;
 		}
 
-		return apply_filters( 'woocommerce_subscription_payment_gateway_supports', $payment_gateway_supports, $this );
+		return apply_filters( 'woocommerce_subscription_payment_gateway_supports', $payment_gateway_supports, $payment_gateway_feature, $this );
 	}
 
 	/**

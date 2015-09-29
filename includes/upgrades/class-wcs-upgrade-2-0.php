@@ -563,6 +563,7 @@ class WCS_Upgrade_2_0 {
 			'_payment_method_title'         => '_recurring_payment_method_title',
 			'_suspension_count'             => '_subscription_suspension_count',
 			'_contains_synced_subscription' => '_order_contains_synced_subscription',
+			'_paypal_subscription_id'       => 'PayPal Subscriber ID',
 		);
 
 		$order_meta = get_post_meta( $order->id );

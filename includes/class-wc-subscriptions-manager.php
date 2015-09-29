@@ -286,7 +286,7 @@ class WC_Subscriptions_Manager {
 				try {
 					$subscription->update_status( 'active' );
 				} catch ( Exception $e ) {
-					$subscription->add_order_note( sprintf( __( 'Failed to activate subscription status for order #%s.', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->id : $order ) );
+					$subscription->add_order_note( sprintf( __( 'Failed to activate subscription status for order #%s: %s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
 				}
 			}
 
@@ -313,7 +313,7 @@ class WC_Subscriptions_Manager {
 						$subscription->update_status( 'on-hold' );
 					}
 				} catch ( Exception $e ) {
-					$subscription->add_order_note( sprintf( __( 'Failed to update subscription status after order #%s was put on-hold.', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->id : $order ) );
+					$subscription->add_order_note( sprintf( __( 'Failed to update subscription status after order #%s was put on-hold: %s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
 				}
 			}
 
@@ -340,7 +340,7 @@ class WC_Subscriptions_Manager {
 						$subscription->cancel_order();
 					}
 				} catch ( Exception $e ) {
-					$subscription->add_order_note( sprintf( __( 'Failed to cancel subscription after order #%s was cancelled.', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->id : $order ) );
+					$subscription->add_order_note( sprintf( __( 'Failed to cancel subscription after order #%s was cancelled: %s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
 				}
 			}
 
@@ -367,7 +367,7 @@ class WC_Subscriptions_Manager {
 						$subscription->update_status( 'expired' );
 					}
 				} catch ( Exception $e ) {
-					$subscription->add_order_note( sprintf( __( 'Failed to set subscription as expired for order #%s.', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->id : $order ) );
+					$subscription->add_order_note( sprintf( __( 'Failed to set subscription as expired for order #%s: %s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
 				}
 			}
 
@@ -402,7 +402,7 @@ class WC_Subscriptions_Manager {
 					$subscription->payment_failed();
 
 				} catch ( Exception $e ) {
-					$subscription->add_order_note( sprintf( __( 'Failed to process failed payment on subscription for order #%s.', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->id : $order ) );
+					$subscription->add_order_note( sprintf( __( 'Failed to process failed payment on subscription for order #%s: %s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
 				}
 			}
 
