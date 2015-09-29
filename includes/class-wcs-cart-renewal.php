@@ -118,7 +118,7 @@ class WCS_Cart_Renewal {
 			foreach ( $line_item['item_meta'] as $meta_name => $meta_value ) {
 				if ( taxonomy_is_product_attribute( $meta_name ) ) {
 					$variations[ $meta_name ] = $meta_value[0];
-				} elseif ( meta_is_product_attribute( $meta_name, $meta_value, $product_id ) ) {
+				} elseif ( meta_is_product_attribute( $meta_name, $meta_value[0], $product_id ) ) {
 					$variations[ $meta_name ] = $meta_value[0];
 				}
 			}
@@ -145,9 +145,7 @@ class WCS_Cart_Renewal {
 				}
 			}
 
-			$cart_item_data = apply_filters( 'woocommerce_order_again_cart_item_data', array( $this->cart_item_key => $cart_item_data ), $line_item, $subscription );
-
-			WC()->cart->add_to_cart( $product_id, $quantity, $variation_id, $variations, $cart_item_data );
+			WC()->cart->add_to_cart( $product_id, $quantity, $variation_id, $variations, apply_filters( 'woocommerce_order_again_cart_item_data', array( $this->cart_item_key => $cart_item_data ), $line_item, $subscription ) );
 		}
 
 		do_action( 'woocommerce_setup_cart_for_' . $this->cart_item_key, $subscription, $cart_item_data );
