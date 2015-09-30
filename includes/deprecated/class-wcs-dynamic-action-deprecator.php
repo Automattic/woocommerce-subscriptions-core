@@ -67,7 +67,7 @@ class WCS_Dynamic_Action_Deprecator extends WCS_Dynamic_Hook_Deprecator {
 				$subscription = array_pop( $subscriptions );
 				do_action( $old_hook, $new_callback_args[0], self::get_order( $subscription ), self::get_product_id( $subscription ) );
 			}
-		} elseif ( 0 === strpos( $old_hook, 'activated_subscription_' ) || 0 === strpos( $old_hook, 'subscription_put_on-hold_' ) || 0 === strpos( $old_hook, 'cancelled_subscription_' ) || 0 === strpos( $old_hook, 'subscription_expired_' ) ) {
+		} elseif ( 0 === strpos( $old_hook, 'activated_subscription_' ) || 0 === strpos( $old_hook, 'reactivated_subscription_' ) || 0 === strpos( $old_hook, 'subscription_put_on-hold_' ) || 0 === strpos( $old_hook, 'cancelled_subscription_' ) || 0 === strpos( $old_hook, 'subscription_expired_' ) ) {
 
 			// New arg spec: $subscription
 			// Old arg spec: $order, $product_id
