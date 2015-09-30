@@ -388,8 +388,13 @@ class WC_Subscriptions_Cart {
 			foreach ( $packages as $index => $package ) {
 				foreach ( $package['contents'] as $cart_item_key => $cart_item ) {
 					if ( isset( $cart_item['data']->subscription_one_time_shipping ) && 'yes' == $cart_item['data']->subscription_one_time_shipping ) {
+						$packages[ $index ]['contents_cost'] -= $cart_item['line_total'];
 						unset( $packages[ $index ]['contents'][ $cart_item_key ] );
 					}
+				}
+
+				if ( empty( $packages[ $index ]['contents'] ) ) {
+					unset( $packages[ $index ] );
 				}
 			}
 		}
