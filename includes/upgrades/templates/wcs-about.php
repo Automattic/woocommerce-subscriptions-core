@@ -174,7 +174,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 					// translators: placeholders are opening and closing <code> tags
 					printf( esc_html__( 'New %sWC_Subscription%s Object', 'woocommerce-subscriptions' ), '<code>', '</code>' ); ?>
 				</h3>
-				<p><?php esc_html_e( 'Subscriptions v2.0 introduces a new object for working with a subscription at the application level. The cumbersome APIs for retreiving or modifying a subscription\'s data are gone!', 'woocommerce-subscriptions' ); ?></p>
+				<p><?php esc_html_e( 'Subscriptions v2.0 introduces a new object for working with a subscription at the application level. The cumbersome APIs for retrieving or modifying a subscription\'s data are gone!', 'woocommerce-subscriptions' ); ?></p>
 				<p><?php
 					// translators: all placeholders are opening and closing <code> tags
 					printf( esc_html__( 'Because the %sWC_Subscription%s class extends %sWC_Order%s, you can use its familiar methods, like %s$subscription->update_status()%s or %s$subscription->get_total()%s.', 'woocommerce-subscriptions' ), '<code>', '</code>', '<code>', '</code>', '<code>', '</code>', '<code>', '</code>' ); ?>
