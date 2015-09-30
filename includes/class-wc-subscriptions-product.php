@@ -29,10 +29,6 @@ class WC_Subscriptions_Product {
 	 **/
 	public static function init() {
 
-		// Override the WC default "Add to Cart" text to "Sign Up Now" (in various places/templates) for WC < 2.1
-		add_filter( 'add_to_cart_text', __CLASS__ . '::add_to_cart_text' );
-		add_filter( 'single_add_to_cart_text', __CLASS__ . '::add_to_cart_text', 10, 2 );
-
 		// Because the standard price meta field is empty, we need to output our custom subscription description
 		add_filter( 'woocommerce_grouped_price_html', __CLASS__ . '::get_grouped_price_html', 10, 2 );
 
