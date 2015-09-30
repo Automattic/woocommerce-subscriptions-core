@@ -106,8 +106,11 @@ function wcs_get_subscription_from_key( $subscription_key ) {
 
 	if ( null !== $subscription_id && is_numeric( $subscription_id ) ) {
 		$subscription = wcs_get_subscription( $subscription_id );
-	} else {
-		$subscription = null;
+	}
+
+	if ( ! is_object( $subscription ) ) {
+		// translators: placeholder is either subscription key or a subscription id, or, failing that, empty (e.g. "145_21" or "145")
+		throw new InvalidArgumentException( sprintf( __( 'Could not get subscription. Most likely the subscription key does not refer to a subscription. The key was: "%s".', 'woocommerce-subscriptions' ), $subscription_key ) );
 	}
 
 	return $subscription;
