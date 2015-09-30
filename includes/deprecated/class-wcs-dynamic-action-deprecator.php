@@ -27,7 +27,6 @@ class WCS_Dynamic_Action_Deprecator extends WCS_Dynamic_Hook_Deprecator {
 		),
 		'woocommerce_subscription_on-hold_'                        => 'subscription_put_on-hold_',
 		'woocommerce_subscription_cancelled_'                      => 'cancelled_subscription_',
-		'woocommerce_subscription_switched_'                       => 'subscription_switched_',
 		'woocommerce_subscription_expired_'                        => 'subscription_expired_',
 	);
 
