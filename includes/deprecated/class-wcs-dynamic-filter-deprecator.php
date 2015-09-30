@@ -38,7 +38,7 @@ class WCS_Dynamic_Filter_Deprecator extends WCS_Dynamic_Hook_Deprecator {
 		// Return value is always the first param
 		$return_value = $new_callback_args[0];
 
-		if ( 0 === strpos( $old_hook, 'woocommerce_can_subscription_be_changed_to_' ) ) {
+		if ( 0 === strpos( $old_hook, 'woocommerce_subscription_can_be_changed_to_' ) ) {
 			// New arg spec: $can_be_updated, $subscription
 			// Old arg spec: $can_be_changed, $subscription, $order
 			$subscription = $new_callback_args[1];
