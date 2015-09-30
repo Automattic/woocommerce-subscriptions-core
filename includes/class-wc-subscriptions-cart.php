@@ -297,10 +297,18 @@ class WC_Subscriptions_Cart {
 	public static function cart_needs_shipping( $needs_shipping ) {
 
 		if ( self::cart_contains_subscription() ) {
-			if ( true == $needs_shipping && ! self::charge_shipping_up_front() && ! self::cart_contains_subscriptions_needing_shipping() ) {
-				$needs_shipping = false;
-			} elseif ( false == $needs_shipping && ( self::charge_shipping_up_front() || self::cart_contains_subscriptions_needing_shipping() ) ) {
-				$needs_shipping = false;
+			if ( 'none' == self::$calculation_type ) {
+				if ( true == $needs_shipping && ! self::charge_shipping_up_front() && ! self::cart_contains_subscriptions_needing_shipping() ) {
+					$needs_shipping = false;
+				} elseif ( false == $needs_shipping && ( self::charge_shipping_up_front() || self::cart_contains_subscriptions_needing_shipping() ) ) {
+					$needs_shipping = false;
+				}
+			} elseif ( 'recurring_total' == self::$calculation_type ) {
+				if ( true == $needs_shipping && ! self::cart_contains_subscriptions_needing_shipping() ) {
+					$needs_shipping = false;
+				} elseif ( false == $needs_shipping && self::cart_contains_subscriptions_needing_shipping() ) {
+					$needs_shipping = true;
+				}
 			}
 		}
 
