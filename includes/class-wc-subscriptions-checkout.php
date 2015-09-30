@@ -211,6 +211,9 @@ class WC_Subscriptions_Checkout {
 	 */
 	public static function add_shipping( $subscription, $cart ) {
 
+		// We need to make sure we only get recurring shipping packages
+		WC_Subscriptions_Cart::set_calculation_type( 'recurring_total' );
+
 		foreach ( $cart->get_shipping_packages() as $base_package ) {
 
 			$package = WC()->shipping->calculate_shipping_for_package( $base_package );
@@ -231,6 +234,8 @@ class WC_Subscriptions_Checkout {
 				}
 			}
 		}
+
+		WC_Subscriptions_Cart::set_calculation_type( 'none' );
 	}
 
 	/**
