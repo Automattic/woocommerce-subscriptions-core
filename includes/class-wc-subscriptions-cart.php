@@ -514,6 +514,18 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
+	 * Gets the recalculate flag
+	 *
+	 * @since 2.0
+	 */
+	public static function set_calculation_type( $calculation_type ) {
+
+		self::$calculation_type = $calculation_type;
+
+		return $calculation_type;
+	}
+
+	/**
 	 * Gets the subscription sign up fee for the cart and returns it
 	 *
 	 * Currently short-circuits to return just the sign-up fee of the first subscription, because only
