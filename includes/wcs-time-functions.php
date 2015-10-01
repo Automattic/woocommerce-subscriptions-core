@@ -510,6 +510,10 @@ function wcs_is_datetime_mysql_format( $time ) {
 		return false;
 	}
 
+	if ( function_exists( 'strptime' ) ) {
+		return strptime( $time, '%Y-%m-%d %H:%M:%S' );
+	}
+
 	// parses for the pattern of YYYY-MM-DD HH:MM:SS, but won't check whether it's a valid timedate
 	$match = preg_match( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $time );
 
