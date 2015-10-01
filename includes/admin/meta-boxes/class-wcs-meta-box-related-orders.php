@@ -52,10 +52,8 @@ class WCS_Meta_Box_Related_Orders {
 		// On the subscription page, just show related orders
 		if ( wcs_is_subscription( $post->ID ) ) {
 			$subscriptions[] = wcs_get_subscription( $post->ID );
-		} elseif ( wcs_order_contains_renewal( $post->ID ) ) {
-			$subscriptions = array_merge( $subscriptions, wcs_get_subscriptions_for_renewal_order( $post->ID ) );
-		} elseif ( wcs_order_contains_subscription( $post->ID ) ) {
-			$subscriptions = wcs_get_subscriptions_for_order( $post->ID );
+		} elseif ( wcs_order_contains_subscription( $post->ID, 'any' ) ) {
+			$subscriptions = wcs_get_subscriptions_for_order( $post->ID, array( 'post_type' => 'any' ) );
 		}
 
 		// First, display all the subscriptions
