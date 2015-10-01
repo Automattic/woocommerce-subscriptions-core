@@ -127,6 +127,30 @@ function wcs_cart_contains_resubscribe() {
 }
 
 /**
+ * Get the subscription to which a renewal order relates.
+ *
+ * @param WC_Order|int $order The WC_Order object or ID of a WC_Order order.
+ * @since 2.0
+ */
+function wcs_get_subscriptions_for_resubscribe_order( $order ) {
+
+	if ( ! is_object( $order ) ) {
+		$order = wc_get_order( $order );
+	}
+
+	$subscriptions    = array();
+	$subscription_ids = get_post_meta( $order->id, '_subscription_resubscribe', false );
+
+	foreach ( $subscription_ids as $subscription_id ) {
+		if ( wcs_is_subscription( $subscription_id ) ) {
+			$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
+		}
+	}
+
+	return apply_filters( 'wcs_subscriptions_for_resubscribe_order', $subscriptions, $order );
+}
+
+/**
  * Check if a user can resubscribe to an expired or cancelled subscription by creating a
  * new subscription with the same terms.
  *
