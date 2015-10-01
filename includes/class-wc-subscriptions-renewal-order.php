@@ -345,7 +345,7 @@ class WC_Subscriptions_Renewal_Order {
 	public static function get_renewal_order_count( $order_id ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_related_orders()' );
 
-		$subscriptions_for_order = wcs_get_subscriptions_for_order( $order_id );
+		$subscriptions_for_order = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'parent' ) );
 
 		if ( ! empty( $subscriptions_for_order ) ) {
 
@@ -446,7 +446,7 @@ class WC_Subscriptions_Renewal_Order {
 	public static function generate_renewal_order( $original_order, $product_id, $args = array() ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_create_renewal_order() or wcs_create_resubscribe_order()' );
 
-		if ( ! wcs_order_contains_subscription( $original_order ) ) {
+		if ( ! wcs_order_contains_subscription( $original_order, 'parent' ) ) {
 			return false;
 		}
 
@@ -456,7 +456,7 @@ class WC_Subscriptions_Renewal_Order {
 			)
 		);
 
-		$subscriptions = wcs_get_subscriptions_for_order( $original_order );
+		$subscriptions = wcs_get_subscriptions_for_order( $original_order, array( 'order_type' => 'parent' ) );
 		$subscription  = array_shift( $subscriptions );
 
 		if ( 'parent' == $args['new_order_role'] ) {
@@ -523,7 +523,7 @@ class WC_Subscriptions_Renewal_Order {
 	public static function get_renewal_orders( $order_id, $output = 'ID' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_related_orders()' );
 
-		$subscriptions = wcs_get_subscriptions_for_order( $order_id );
+		$subscriptions = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'parent' ) );
 		$subscription  = array_shift( $subscriptions );
 
 		if ( 'WC_Order' == $output ) {
