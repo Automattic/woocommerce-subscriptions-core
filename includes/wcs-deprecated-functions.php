@@ -56,6 +56,11 @@ function wcs_get_old_subscription_key( WC_Subscription $subscription ) {
 function wcs_get_subscription_id_from_key( $subscription_key ) {
 	global $wpdb;
 
+	// it can be either 8_13 or just 8. If it's 8, it'll be an integer
+	if ( ! is_string( $subscription_key ) && ! is_int( $subscription_key ) ) {
+		return null;
+	}
+
 	$order_and_product_id = explode( '_', $subscription_key );
 
 	$subscription_ids = array();
@@ -99,7 +104,7 @@ function wcs_get_subscription_from_key( $subscription_key ) {
 
 	$subscription_id = wcs_get_subscription_id_from_key( $subscription_key );
 
-	if ( null !== $subscription_id && is_int( $subscription_id ) ) {
+	if ( null !== $subscription_id && is_numeric( $subscription_id ) ) {
 		$subscription = wcs_get_subscription( $subscription_id );
 	} else {
 		$subscription = null;
@@ -165,7 +170,7 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 			// Subscription dates
 			'start_date'         => $subscription->get_date( 'start' ),
 			'expiry_date'        => $subscription->get_date( 'end' ),
-			'end_date'           => $subscription->has_ended() ? $subscription->get_date( 'end' ) : 0,
+			'end_date'           => $subscription->has_status( wcs_get_subscription_ended_statuses() ) ? $subscription->get_date( 'end' ) : 0,
 			'trial_expiry_date'  => $subscription->get_date( 'trial_end' ),
 
 			// Payment & status change history

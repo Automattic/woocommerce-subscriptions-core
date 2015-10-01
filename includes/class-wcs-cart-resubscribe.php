@@ -168,6 +168,13 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 						break;
 					}
 				}
+			} elseif ( isset( $_GET['resubscribe'] ) ) { // Is a request to resubscribe
+
+				$subscription = wcs_get_subscription( absint( $_GET['resubscribe'] ) );
+
+				if ( false !== $subscription && $subscription->has_product( $product->id ) && wcs_can_user_resubscribe_to( $subscription ) ) {
+					$is_purchasable = true;
+				}
 			}
 		}
 

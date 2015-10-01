@@ -42,12 +42,12 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 		<h2><?php esc_html_e( "Check Out What's New", 'woocommerce-subscriptions' ); ?></h2>
 		<hr/>
 
-		<div class="feature-section col two-col">
-			<div class="feature-image">
+		<div class="feature-section two-col">
+			<div class="feature-image col">
 				<img src="<?php echo esc_url( plugins_url( '/assets/images/checkout-recurring-totals.png', WC_Subscriptions::$plugin_file ) ); ?>" />
 			</div>
 
-			<div class="last-feature feature-copy">
+			<div class="col last-feature feature-copy">
 				<h3><?php esc_html_e( 'Multiple Subscriptions', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php esc_html_e( 'It\'s now easier for your customers to buy more subscriptions!', 'woocommerce-subscriptions' ); ?></p>
 				<p><?php esc_html_e( 'Customers can now purchase different subscription products in one transaction. The products can bill on any schedule and have any combination of sign-up fees and/or free trials.', 'woocommerce-subscriptions' ); ?></p>
@@ -58,13 +58,13 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 			</div>
 		</div>
 
-		<div class="feature-section col two-col">
+		<div class="feature-section two-col">
 
-			<div class="last-feature feature-right feature-image">
+			<div class="col last-feature feature-right feature-image">
 				<img src="<?php echo esc_url( plugins_url( '/assets/images/add-edit-subscription-screen.png', WC_Subscriptions::$plugin_file ) ); ?>" />
 			</div>
 
-			<div class="feature-copy">
+			<div class="col feature-copy">
 				<h3><?php esc_html_e( 'New Add/Edit Subscription Screen', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php esc_html_e( 'Subscriptions v2.0 introduces a new administration interface to add or edit a subscription. You can make all the familiar changes, like modifying recurring totals or subscription status. You can also make some new modifications, like changing the expiration date, adding a shipping cost or adding a product line item.', 'woocommerce-subscriptions' ); ?></p>
 				<p><?php
@@ -73,17 +73,17 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 				</p>
 				<p><?php
 					// translators: placeholers are link tags: 1$-2$ new subscription page, 3$-4$: docs on woothemes
-					printf( esc_html__( '%1$sAdd a subscription%2$s now or %3$slearn more%4$s about the new interface.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post-new.php?post_type=shop_subscription' ) ) . '">', '</a>', '<a href="' . esc_url( 'http://docs.woothemes.com/document/subscriptions/add-or-modify-a-subscription/' ) . '">', '</a>' ); ?>
+					printf( esc_html__( '%1$sAdd a subscription%2$s now or %3$slearn more%4$s about the new interface.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post-new.php?post_type=shop_subscription' ) ) . '">', '</a>', '<a href="' . esc_url( 'http://docs.woothemes.com/document/subscriptions/version-2/#section-3' ) . '">', '</a>' ); ?>
 				</p>
 			</div>
 		</div>
 
-		<div class="feature-section col two-col">
-			<div class="feature-image">
+		<div class="feature-section two-col">
+			<div class="col feature-image">
 				<img src="<?php echo esc_url( plugins_url( '/assets/images/view-subscription.png', WC_Subscriptions::$plugin_file ) ); ?>" />
 			</div>
 
-			<div class="last-feature feature-copy">
+			<div class="col last-feature feature-copy">
 				<h3><?php esc_html_e( 'New View Subscription Page', 'woocommerce-subscriptions' ); ?></h3>
 				<p>
 					<?php
@@ -94,51 +94,71 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 				<p>
 					<?php
 					// translators: placeholders are opening and closing link tags
-					printf( esc_html__( 'Learn more about the new %sView Subscription page%s.', 'woocommerce-subscriptions' ), '<a href="' .  esc_url( 'http://docs.woothemes.com/document/subscriptions/customers-view/' ) . '">', '</a>' ); ?>
+					printf( esc_html__( 'Learn more about the new %sView Subscription page%s.', 'woocommerce-subscriptions' ), '<a href="' .  esc_url( 'http://docs.woothemes.com/document/subscriptions/version-2/#section-5' ) . '">', '</a>' ); ?>
 				</p>
 			</div>
 		</div>
 	</div>
 	<div class="changelog">
 
-		<div class="feature-section col three-col">
+		<div class="feature-section three-col">
 
-			<div>
-				<img src="<?php echo esc_url( plugins_url( '/assets/images/new-subscriptions-list-table.jpg', WC_Subscriptions::$plugin_file ) ); ?>" />
-				<h3><?php esc_html_e( 'Improved Subscriptions Table', 'woocommerce-subscriptions' ); ?></h3>
+			<div class="col">
+				<img src="<?php echo esc_url( plugins_url( '/assets/images/drip-downloadable-content.jpg', WC_Subscriptions::$plugin_file ) ); ?>" />
+				<h3><?php esc_html_e( 'Drip Downloadable Content', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php
-					// translators: placeholders are opening and closing link tags
-					printf( esc_html__( 'The %sSubscriptions administration table%s has been redesigned. In addition to being faster to search, sort and filter, it now displays more of a subscription\'s information, including the recurring total and payment method.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'edit.php?post_type=shop_subscription' ) ) . '">', '</a>' ); ?>
+					// translators: placeholders are for opening and closing link (<a>) tags
+					printf( esc_html__( 'By default, adding new files to an existing subscription product will automatically provide active subscribers with access to the new files. However, now you can enable a %snew content dripping setting%s to provide subscribers with access to new files only after the next renewal payment.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( $settings_page ) . '">', '</a>' ); ?>
+				</p>
+				<p><?php
+					// translators: placeholders are for opening and closing link (<a>) tags
+					printf( esc_html__( '%sLearn more &raquo;%s', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/version-2/#section-4">', '</a>' ); ?>
 				</p>
 			</div>
 
-			<div>
+			<div class="col">
 				<img src="<?php echo esc_url( plugins_url( '/assets/images/admin-change-payment-method.jpg', WC_Subscriptions::$plugin_file ) ); ?>" />
 				<h3><?php esc_html_e( 'Change Payment Method', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php
 					// translators: placeholders are opening and closing <strong> tags
 					printf( esc_html__( 'For a store manager to change a subscription from automatic to manual renewal payments (or manual to automatic) with Subscriptions v1.5, the database needed to be modified directly. Subscriptions now provides a way for payment gateways to allow you to change that from the new %sEdit Subscription%s interface.', 'woocommerce-subscriptions' ), '<strong>', '</strong>' ); ?>
 				</p>
+				<p><?php
+					// translators: placeholders are for opening and closing link (<a>) tags
+					printf( esc_html__( '%sLearn more &raquo;%s', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/version-2/#change-payment-method-admin">', '</a>' ); ?>
+				</p>
 			</div>
 
-			<div class="last-feature">
+			<div class="col last-feature">
 				<img src="<?php echo esc_url( plugins_url( '/assets/images/billing-schedules-meta-box.png', WC_Subscriptions::$plugin_file ) ); ?>" />
 				<h3><?php esc_html_e( 'Change Trial and End Dates', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php
 					// translators: placeholders are opening and closing <strong> tags
 					printf( esc_html__( 'It was already possible to change a subscription\'s next payment date, but some store managers wanted to provide a customer with an extended free trial or add an extra month to the expiration date. Now you can change all of these dates from the %sEdit Subscription%s screen.', 'woocommerce-subscriptions' ), '<strong>', '</strong>' ); ?>
 				</p>
+				<p><?php
+					// translators: placeholders are for opening and closing link (<a>) tags
+					printf( esc_html__( '%sLearn more &raquo;%s', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/version-2/#change-billing-schedule">', '</a>' ); ?>
+				</p>
 			</div>
 
 		</div>
 	</div>
-	<div class="changelog under-the-hood">
+
+	<div class="changelog">
+		<div class="feature-section">
+			<h2><?php esc_html_e( 'And much more...', 'woocommerce-subscriptions' ); ?></h2>
+			<p><?php printf( esc_html( 'Learn about all the great new features in the guide to %sWhat\'s new in Subscriptions version 2%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/version-2/">', '</a>' ); ?></p>
+		</div>
+	</div>
+
+	<div class="changelog">
 
 		<h2><?php esc_html_e( 'Peek Under the Hood for Developers', 'woocommerce-subscriptions' ); ?></h2>
 		<p><?php esc_html_e( 'Subscriptions v2.0 introduces a new architecture built on the WooCommerce Custom Order Types API.', 'woocommerce-subscriptions' ); ?></p>
 
-		<div class="feature-section col three-col">
-			<div>
+		<div class="feature-section under-the-hood three-col">
+			<div class="col">
 				<h3><?php
 					// translators: placeholders are opening and closing code tags
 					printf( esc_html__( 'New %sshop_subscription%s Post Type', 'woocommerce-subscriptions' ), '<code>', '</code>' ); ?>
@@ -149,18 +169,18 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 					printf( esc_html__( 'Developers can also now use all the familiar WordPress functions, like %sget_posts()%s, to query or modify subscription data.', 'woocommerce-subscriptions' ), '<code>', '</code>' ); ?>
 				</p>
 			</div>
-			<div>
+			<div class="col">
 				<h3><?php
 					// translators: placeholders are opening and closing <code> tags
 					printf( esc_html__( 'New %sWC_Subscription%s Object', 'woocommerce-subscriptions' ), '<code>', '</code>' ); ?>
 				</h3>
-				<p><?php esc_html_e( 'Subscriptions v2.0 introduces a new object for working with a subscription at the application level. The cumbersome APIs for retreiving or modifying a subscription\'s data are gone!', 'woocommerce-subscriptions' ); ?></p>
+				<p><?php esc_html_e( 'Subscriptions v2.0 introduces a new object for working with a subscription at the application level. The cumbersome APIs for retrieving or modifying a subscription\'s data are gone!', 'woocommerce-subscriptions' ); ?></p>
 				<p><?php
 					// translators: all placeholders are opening and closing <code> tags
 					printf( esc_html__( 'Because the %sWC_Subscription%s class extends %sWC_Order%s, you can use its familiar methods, like %s$subscription->update_status()%s or %s$subscription->get_total()%s.', 'woocommerce-subscriptions' ), '<code>', '</code>', '<code>', '</code>', '<code>', '</code>', '<code>', '</code>' ); ?>
 				</p>
 			</div>
-			<div class="last-feature">
+			<div class="col last-feature">
 				<h3><?php esc_html_e( 'REST API Endpoints', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php esc_html_e( 'We didn\'t just improve interfaces for humans, we also improved them for computers. Your applications can now create, read, update or delete subscriptions via RESTful API endpoints.', 'woocommerce-subscriptions' ); ?></p>
 				<p><?php

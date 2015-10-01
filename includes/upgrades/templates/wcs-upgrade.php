@@ -50,7 +50,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php if ( 'false' == $script_data['really_old_version'] ) : ?>
 			<p><?php printf( esc_html__( 'This page will display the results of the process as each batch of %s subscriptions is updated.', 'woocommerce-subscriptions' ), esc_html( $batch_size ) ); ?></p>
 			<?php else : ?>
-			<p><?php esc_html_e( 'This page will display the results of the process as each batch of data is updated.', 'woocommerce-subscriptions' ); ?></p>
+			<p><?php printf( esc_html__( 'This page will display the results of the process as each batch of at %s is updated.', 'woocommerce-subscriptions' ), esc_html( $batch_size ) ); ?></p>
+			<?php endif; ?>
+			<?php if ( array_key_exists( 'WPENGINE_ACCOUNT', $_SERVER ) ) : ?>
+			<p><?php printf( esc_html__( 'Because the site is on WP Engine, the batch might be smaller, and will take at most 60 seconds.', 'woocommerce-subscriptions' ), esc_html( $batch_size ) ); ?></p>
 			<?php endif; ?>
 			<p><?php esc_html_e( 'Please keep this page open until the update process completes. No need to refresh or restart the process.', 'woocommerce-subscriptions' ); ?></p>
 			<?php if ( $estimated_duration > 20 ) : ?>
@@ -59,6 +62,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<ol>
 			</ol>
 			<img id="update-ajax-loader" alt="loading..." width="16px" height="16px" src="<?php echo esc_url( plugins_url( '/assets/images/ajax-loader@2x.gif', WC_Subscriptions::$plugin_file ) ); ?>" />
+			<p id="estimated_time"></p>
 		</div>
 		<div id="update-complete">
 			<h2><?php esc_html_e( 'Update Complete', 'woocommerce-subscriptions' ); ?></h2>
@@ -67,8 +71,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<p class="log-notice"><?php
 				// translators: placeholder is number of weeks
 				printf( esc_html__( 'To record the progress of the update a new log file was created. This file will be automatically deleted in %d weeks. If you would like to delete it sooner, you can find it here:', 'woocommerce-subscriptions' ), esc_html( WCS_Upgrade_Logger::$weeks_until_cleanup ) ); ?>
+				<code class="log-notice"><?php echo esc_html( wc_get_log_file_path( WCS_Upgrade_Logger::$handle ) ); ?></code>
 			</p>
-			<code class="log-notice"><?php echo esc_html( wc_get_log_file_path( WCS_Upgrade_Logger::$handle ) ); ?></code>
 		</div>
 		<div id="update-error">
 			<h2><?php esc_html_e( 'Update Error', 'woocommerce-subscriptions' ); ?></h2>

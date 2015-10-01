@@ -185,12 +185,14 @@ class WCS_Admin_Post_Types {
 	 * own logic by copying the concept behind this method.
 	 */
 	public function parse_bulk_actions() {
+
 		// We only want to deal with shop_subscriptions. In case any other CPTs have an 'active' action
 		if ( ! isset( $_REQUEST['post_type'] ) || 'shop_subscription' !== $_REQUEST['post_type'] ) {
 			return;
 		}
 
 		$wp_list_table = _get_list_table( 'WP_Posts_List_Table' );
+
 		$action = $wp_list_table->current_action();
 
 		switch ( $action ) {
@@ -209,32 +211,47 @@ class WCS_Admin_Post_Types {
 
 		$subscription_ids = array_map( 'absint', (array) $_REQUEST['post'] );
 
+		$sendback_args = array(
+			'post_type'    => 'shop_subscription',
+			$report_action => true,
+			'ids'          => join( ',', $subscription_ids ),
+			'error_count'  => 0,
+		);
+
 		foreach ( $subscription_ids as $subscription_id ) {
 			$subscription = wcs_get_subscription( $subscription_id );
 			$order_note   = __( 'Subscription status changed by bulk edit:', 'woocommerce-subscriptions' );
 
-			if ( 'cancelled' == $action ) {
-				$subscription->cancel_order( $order_note );
-			} else {
-				$subscription->update_status( $new_status, $order_note, true );
-			}
+			try {
 
-			// Fire the action hooks
-			switch ( $action ) {
-				case 'active' :
-				case 'on-hold' :
-				case 'cancelled' :
-				case 'trash' :
-					do_action( 'woocommerce_admin_changed_subscription_to_' . $action, $subscription_id );
-					break;
-			}
+				if ( 'cancelled' == $action ) {
+					$subscription->cancel_order( $order_note );
+				} else {
+					$subscription->update_status( $new_status, $order_note, true );
+				}
 
-			$changed++;
+				// Fire the action hooks
+				switch ( $action ) {
+					case 'active' :
+					case 'on-hold' :
+					case 'cancelled' :
+					case 'trash' :
+						do_action( 'woocommerce_admin_changed_subscription_to_' . $action, $subscription_id );
+						break;
+				}
+
+				$changed++;
+
+			} catch ( Exception $e ) {
+				$sendback_args['error'] = urlencode( $e->getMessage() );
+				$sendback_args['error_count']++;
+			}
 		}
 
-		$sendback = add_query_arg( array( 'post_type' => 'shop_subscription', $report_action => true, 'changed' => $changed, 'ids' => join( ',', $subscription_ids ) ), '' );
-
+		$sendback_args['changed'] = $changed;
+		$sendback = add_query_arg( $sendback_args, '' );
 		wp_redirect( $sendback );
+
 		exit();
 	}
 
@@ -257,8 +274,18 @@ class WCS_Admin_Post_Types {
 			if ( isset( $_REQUEST[ 'marked_' . str_replace( 'wc-', '', $slug ) ] ) ) {
 
 				$number = isset( $_REQUEST['changed'] ) ? absint( $_REQUEST['changed'] ) : 0;
-				$message = sprintf( _n( 'Subscription status changed.', '%s subscription statuses changed.', $number, 'woocommerce-subscriptions' ), number_format_i18n( $number ) );
+
+				// translators: placeholder is the number of subscriptions updated
+				$message = sprintf( _n( '%s subscription status changed.', '%s subscription statuses changed.', $number, 'woocommerce-subscriptions' ), number_format_i18n( $number ) );
 				echo '<div class="updated"><p>' . esc_html( $message ) . '</p></div>';
+
+				if ( ! empty( $_REQUEST['error_count'] ) ) {
+					$error_msg = isset( $_REQUEST['error'] ) ? stripslashes( $_REQUEST['error'] ) : '';
+					$error_count = isset( $_REQUEST['error_count'] ) ? absint( $_REQUEST['error_count'] ) : 0;
+					// translators: 1$: is the number of subscriptions not updated, 2$: is the error message
+					$message = sprintf( _n( '%1$s subscription could not be updated: %2$s', '%1$s subscriptions could not be updated: %2$s', $error_count, 'woocommerce-subscriptions' ), number_format_i18n( $error_count ), $error_msg );
+					echo '<div class="error"><p>' . esc_html( $message ) . '</p></div>';
+				}
 
 				break;
 			}
@@ -403,9 +430,8 @@ class WCS_Admin_Post_Types {
 				// This is to stop PHP from complaining
 				$username = '';
 
-				if ( $the_subscription->get_user_id() ) {
+				if ( $the_subscription->get_user_id() && ( false !== ( $user_info = get_userdata( $the_subscription->get_user_id() ) ) ) ) {
 
-					$user_info = get_userdata( $the_subscription->get_user_id() );
 					$username  = '<a href="user-edit.php?user_id=' . absint( $user_info->ID ) . '">';
 
 					if ( $the_subscription->billing_first_name || $the_subscription->billing_last_name ) {

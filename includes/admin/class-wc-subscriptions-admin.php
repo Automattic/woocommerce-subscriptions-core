@@ -68,6 +68,7 @@ class WC_Subscriptions_Admin {
 
 		// Save subscription meta only when a subscription product is saved, can't run on the "'woocommerce_process_product_meta_' . $product_type" action because we need to override some WC defaults
 		add_action( 'save_post', __CLASS__ . '::save_subscription_meta', 11 );
+		add_action( 'save_post', __CLASS__ . '::save_variable_subscription_meta', 11 );
 
 		// Save variable subscription meta
 		add_action( 'woocommerce_process_product_meta_variable-subscription', __CLASS__ . '::process_product_meta_variable_subscription' ); // WC < 2.4
@@ -210,7 +211,7 @@ class WC_Subscriptions_Admin {
 			'options'     => wcs_get_available_time_periods(),
 			'description' => sprintf( __( 'Include an optional period of time to wait before charging the first recurring payment. Any sign up fee will still be charged at the outset of the subscription. %s', 'woocommerce-subscriptions' ), self::get_trial_period_validation_message() ),
 			'desc_tip'    => true,
-			'value'       => WC_Subscriptions_Product::get_trial_period( $post->ID ), // Explicity set value in to ensure backward compatibility
+			'value'       => WC_Subscriptions_Product::get_trial_period( $post->ID ), // Explicitly set value in to ensure backward compatibility
 		) );
 
 		do_action( 'woocommerce_subscriptions_product_options_pricing' );
@@ -376,6 +377,25 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
+	 * Save meta data for variable subscription product type when the "Edit Product" form is submitted.
+	 *
+	 * @param array Array of Product types & their labels, excluding the Subscription product type.
+	 * @return array Array of Product types & their labels, including the Subscription product type.
+	 * @since 2.0
+	 */
+	public static function save_variable_subscription_meta( $post_id ) {
+
+		if ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) || ! isset( $_POST['product-type'] ) || ! in_array( $_POST['product-type'], apply_filters( 'woocommerce_subscription_variable_product_types', array( 'variable-subscription' ) ) ) ) {
+			return;
+		}
+
+		if ( isset( $_REQUEST['_subscription_limit'] ) ) {
+			update_post_meta( $post_id, '_subscription_limit', stripslashes( $_REQUEST['_subscription_limit'] ) );
+		}
+
+	}
+
+	/**
 	 * Calculate and set a simple subscription's prices when edited via the bulk edit
 	 *
 	 * @param object $product An instance of a WC_Product_* object.
@@ -509,10 +529,6 @@ class WC_Subscriptions_Admin {
 			WC_Meta_Box_Product_Data::save_variations( $post_id, get_post( $post_id ) );
 		}
 
-		if ( isset( $_REQUEST['_subscription_limit'] ) ) {
-			update_post_meta( $post_id, '_subscription_limit', stripslashes( $_REQUEST['_subscription_limit'] ) );
-		}
-
 		if ( ! isset( $_REQUEST['variable_post_id'] ) ) {
 			return;
 		}
@@ -568,7 +584,7 @@ class WC_Subscriptions_Admin {
 			}
 		}
 
-		// Now that all the varation's meta is saved, sync the min variation price
+		// Now that all the variation's meta is saved, sync the min variation price
 		$variable_subscription = get_product( $post_id );
 		$variable_subscription->variable_product_sync();
 
@@ -1037,12 +1053,12 @@ class WC_Subscriptions_Admin {
 			),
 
 			array(
-				'name'          => __( 'Subscription Dates In Email', 'woocommerce-subscriptions' ),
-				'desc'          => __( 'Add subscription start/end information to order emails.', 'woocommerce-subscriptions' ),
-				'id'            => self::$option_prefix . '_add_sub_info_email',
+				'name'          => __( 'Drip downloadable content', 'woocommerce-subscriptions' ),
+				'desc'          => __( 'Enable dripping for downloadable content on subscription products.', 'woocommerce-subscriptions' ),
+				'id'            => self::$option_prefix . '_drip_downloadable_content_on_renewal',
 				'default'       => 'no',
 				'type'          => 'checkbox',
-				'desc_tip'      => __( 'Add details about the subscription start and end date to order emails.', 'woocommerce-subscriptions' ),
+				'desc_tip'      => sprintf( __( 'Enabling this grants access to new downloadable files added to a product only after the next renewal is processed.%sBy default, access to new downloadable files added to a product is granted immediately to any customer that has an active subscription with that product.', 'woocommerce-subscriptions' ), '<br />' ),
 			),
 
 			array( 'type' => 'sectionend', 'id' => self::$option_prefix . '_miscellaneous' ),
@@ -1324,8 +1340,8 @@ class WC_Subscriptions_Admin {
 
 		$debug_data['wcs_staging'] = array(
 			'name'    => __( 'Subscriptions Mode', 'woocommerce-subscriptions' ),
-			'note'    => '<strong>' . ( WC_Subscriptions::is_duplicate_site() ) ? _x( 'Staging', 'refers to staging site', 'woocommerce-subscriptions' ) :  _x( 'Live', 'refers to live site', 'woocommerce-subscriptions' ),
-			'success' => ( WC_Subscriptions::is_duplicate_site() ) ? 0 :  1,
+			'note'    => '<strong>' . ( ( WC_Subscriptions::is_duplicate_site() ) ? _x( 'Staging', 'refers to staging site', 'woocommerce-subscriptions' ) :  _x( 'Live', 'refers to live site', 'woocommerce-subscriptions' ) ) . '</strong>',
+			'success' => ( WC_Subscriptions::is_duplicate_site() ) ? 0 : 1,
 		);
 
 		return $debug_data;
@@ -1459,7 +1475,7 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Removes anything that's not a digit or a dot from a string. Sadly it assmes that the decimal separator is a dot.
+	 * Removes anything that's not a digit or a dot from a string. Sadly it assumes that the decimal separator is a dot.
 	 * That however can be changed in WooCommerce settings, surfacing bugs such as 9,90 becoming 990, a hundred fold
 	 * increase. Use wc_format_decimal instead.
 	 *

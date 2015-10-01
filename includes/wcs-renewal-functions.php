@@ -25,65 +25,16 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since  2.0
  */
 function wcs_create_renewal_order( $subscription ) {
-	global $wpdb;
 
-	try {
+	$renewal_order = wcs_create_order_from_subscription( $subscription, 'renewal_order' );
 
-		$wpdb->query( 'START TRANSACTION' );
-
-		if ( ! is_object( $subscription ) ) {
-			$subscription = wcs_get_subscription( $subscription );
-		}
-
-		$renewal_order = wc_create_order( array(
-			'customer_id'   => $subscription->get_user_id(),
-			'customer_note' => $subscription->customer_note,
-		) );
-
-		// translators: order date parsed by strftime
-		$order_date = strftime( _x( '%b %d, %Y @ %I:%M %p', 'Used in subscription post title. "Subscription renewal order - <this>"', 'woocommerce-subscriptions' ) );
-
-		// translators: placeholder is a date
-		$renewal_order->post->post_title = sprintf( __( 'Subscription Renewal Order &ndash; %s', 'woocommerce-subscriptions' ), $order_date );
-
-		wp_update_post( $renewal_order->post );
-
-		wcs_copy_order_meta( $subscription, $renewal_order, 'renewal_order' );
-
-		// Copy over line items and allow extensions to add/remove items or item meta
-		$items = apply_filters( 'wcs_renewal_order_items', $subscription->get_items( array( 'line_item', 'fee', 'shipping', 'tax' ) ), $renewal_order, $subscription );
-
-		foreach ( $items as $item_index => $item ) {
-
-			$item_name = apply_filters( 'wcs_renewal_order_item_name', $item['name'], $item, $subscription );
-
-			// Create order line item on the renewal order
-			$recurring_item_id = wc_add_order_item( $renewal_order->id, array(
-				'order_item_name' => $item_name,
-				'order_item_type' => $item['type'],
-			) );
-
-			// Remove recurring line items and set item totals based on recurring line totals
-			foreach ( $item['item_meta'] as $meta_key => $meta_values ) {
-				foreach ( $meta_values as $meta_value ) {
-					wc_add_order_item_meta( $recurring_item_id, $meta_key, maybe_unserialize( $meta_value ) );
-				}
-			}
-		}
-
-		// Keep a record of the subscription's ID on the renewal order
-		update_post_meta( $renewal_order->id, '_subscription_renewal', $subscription->id );
-
-		// If we got here, the subscription was created without problems
-		$wpdb->query( 'COMMIT' );
-
-		return apply_filters( 'wcs_renewal_order_created', $renewal_order, $subscription );
-
-	} catch ( Exception $e ) {
-		// There was an error adding the subscription
-		$wpdb->query( 'ROLLBACK' );
-		return new WP_Error( 'renewal-order-error', $e->getMessage() );
+	if ( is_wp_error( $renewal_order ) ) {
+		return new WP_Error( 'renewal-order-error', $renewal_order->get_error_message() );
 	}
+
+	update_post_meta( $renewal_order->id, '_subscription_renewal', $subscription->id );
+
+	return apply_filters( 'wcs_renewal_order_created', $renewal_order, $subscription );
 }
 
 /**
@@ -173,7 +124,10 @@ function wcs_get_subscriptions_for_renewal_order( $renewal_order ) {
 	$subscription_ids = get_post_meta( $renewal_order->id, '_subscription_renewal', false );
 
 	foreach ( $subscription_ids as $subscription_id ) {
-		$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
+
+		if ( wcs_is_subscription( $subscription_id ) ) {
+			$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
+		}
 	}
 
 	return apply_filters( 'woocommerce_subscriptions_for_renewal_order', $subscriptions );

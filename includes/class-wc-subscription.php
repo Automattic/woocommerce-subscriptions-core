@@ -17,6 +17,9 @@ class WC_Subscription extends WC_Order {
 	/** @public WC_Order Stores order data for the order in which the subscription was purchased (if any) */
 	public $order = false;
 
+	/** @public string Order type */
+	public $order_type = 'shop_subscription';
+
 	/**
 	 * Initialize the subscription object.
 	 *
@@ -24,9 +27,9 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function __construct( $subscription ) {
 
-		$this->order_type = 'shop_subscription';
-
 		parent::__construct( $subscription );
+
+		$this->order_type = 'shop_subscription';
 
 		$this->schedule = new stdClass();
 	}
@@ -191,7 +194,7 @@ class WC_Subscription extends WC_Order {
 			$payment_gateway_supports = false;
 		}
 
-		return apply_filters( 'woocommerce_subscription_payment_gateway_supports', $payment_gateway_supports, $this );
+		return apply_filters( 'woocommerce_subscription_payment_gateway_supports', $payment_gateway_supports, $payment_gateway_feature, $this );
 	}
 
 	/**
@@ -209,6 +212,7 @@ class WC_Subscription extends WC_Order {
 					$can_be_updated = false;
 				}
 				break;
+			case 'completed' : // core WC order status mapped internally to avoid exceptions
 			case 'active' :
 				if ( $this->payment_method_supports( 'subscription_reactivation' ) && $this->has_status( 'on-hold' ) ) {
 					$can_be_updated = true;
@@ -218,6 +222,7 @@ class WC_Subscription extends WC_Order {
 					$can_be_updated = false;
 				}
 				break;
+			case 'failed' : // core WC order status mapped internally to avoid exceptions
 			case 'on-hold' :
 				if ( $this->payment_method_supports( 'subscription_suspension' ) && $this->has_status( array( 'active', 'pending' ) ) ) {
 					$can_be_updated = true;
@@ -226,7 +231,7 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			case 'cancelled' :
-				if ( $this->payment_method_supports( 'subscription_cancellation' ) && ( $this->has_status( 'pending-cancel' ) || ! $this->has_ended() ) ) {
+				if ( $this->payment_method_supports( 'subscription_cancellation' ) && ( $this->has_status( 'pending-cancel' ) || ! $this->has_status( wcs_get_subscription_ended_statuses() ) ) ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
@@ -248,7 +253,7 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			case 'trash' :
-				if ( $this->has_ended() || $this->can_be_updated_to( 'cancelled' ) ) {
+				if ( $this->has_status( wcs_get_subscription_ended_statuses() ) || $this->can_be_updated_to( 'cancelled' ) ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
@@ -328,6 +333,7 @@ class WC_Subscription extends WC_Order {
 						$this->update_dates( array( 'end' => $end_date ) );
 					break;
 
+					case 'completed' : // core WC order status mapped internally to avoid exceptions
 					case 'active' :
 						// Recalculate and set next payment date
 						$next_payment = $this->get_time( 'next_payment' );
@@ -342,6 +348,7 @@ class WC_Subscription extends WC_Order {
 						wcs_make_user_active( $this->customer_user );
 					break;
 
+					case 'failed' : // core WC order status mapped internally to avoid exceptions
 					case 'on-hold' :
 						// Record date of suspension - 'post_modified' column?
 						$this->update_suspension_count( $this->suspension_count + 1 );
@@ -358,6 +365,10 @@ class WC_Subscription extends WC_Order {
 				}
 
 				$this->add_order_note( trim( $note . ' ' . sprintf( __( 'Status changed from %s to %s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ), 0, $manual );
+
+				// dynamic hooks for convenience
+				do_action( 'woocommerce_subscription_status_' . $new_status, $this );
+				do_action( 'woocommerce_subscription_status_' . $old_status . '_to_' . $new_status, $this );
 
 				// Trigger a hook with params we want
 				do_action( 'woocommerce_subscription_status_updated', $this, $new_status, $old_status );
@@ -414,24 +425,6 @@ class WC_Subscription extends WC_Order {
 		}
 
 		return $is_manual;
-	}
-
-	/**
-	 * Checks if the subscription has ended.
-	 *
-	 * A subscription has ended if it is cancelled, trashed, switched, expired or pending cancellation.
-	 */
-	public function has_ended() {
-
-		$ended_statuses = apply_filters( 'woocommerce_subscription_ended_statuses', array( 'cancelled', 'trash', 'expired', 'switched', 'pending-cancel' ) );
-
-		if ( $this->has_status( $ended_statuses ) ) {
-			$has_ended = true;
-		} else {
-			$has_ended = false;
-		}
-
-		return apply_filters( 'woocommerce_subscription_has_ended', $has_ended, $this );
 	}
 
 	/**
@@ -858,7 +851,7 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			case 'trial_end' :
-				if ( $this->get_completed_payment_count() < 2 && ! $this->has_ended() && ( $this->has_status( 'pending' ) || $this->payment_method_supports( 'subscription_date_changes' ) ) ) {
+				if ( $this->get_completed_payment_count() < 2 && ! $this->has_status( wcs_get_subscription_ended_statuses() ) && ( $this->has_status( 'pending' ) || $this->payment_method_supports( 'subscription_date_changes' ) ) ) {
 					$can_date_be_updated = true;
 				} else {
 					$can_date_be_updated = false;
@@ -866,7 +859,7 @@ class WC_Subscription extends WC_Order {
 				break;
 			case 'next_payment' :
 			case 'end' :
-				if ( ! $this->has_ended() && ( $this->has_status( 'pending' ) || $this->payment_method_supports( 'subscription_date_changes' ) ) ) {
+				if ( ! $this->has_status( wcs_get_subscription_ended_statuses() ) && ( $this->has_status( 'pending' ) || $this->payment_method_supports( 'subscription_date_changes' ) ) ) {
 					$can_date_be_updated = true;
 				} else {
 					$can_date_be_updated = false;
@@ -1654,5 +1647,23 @@ class WC_Subscription extends WC_Order {
 		}
 
 		return apply_filters( 'woocommerce_subscription_items_sign_up_fee', $sign_up_fee, $line_item, $this );
+	}
+
+	/**
+	 * Get the downloadable files for an item in this subscription if the subscription is active
+	 *
+	 * @param  array $item
+	 * @return array
+	 */
+	public function get_item_downloads( $item ) {
+		global $wpdb;
+
+		$files = array();
+
+		if ( $this->has_status( apply_filters( 'woocommerce_subscription_item_download_statuses', array( 'active', 'pending-cancel' ) ) ) ) {
+			$files = parent::get_item_downloads( $item );
+		}
+
+		return apply_filters( 'woocommerce_get_item_downloads', $files, $item, $this );
 	}
 }

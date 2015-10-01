@@ -45,7 +45,7 @@ function wcs_order_contains_switch( $order ) {
 /**
  * Get the subscriptions that had an item switch for a given order (if any).
  *
- * @param int|WC_Order $order_id The post_id of a shop_order post or an intsance of a WC_Order object
+ * @param int|WC_Order $order_id The post_id of a shop_order post or an instance of a WC_Order object
  * @return array Subscription details in post_id => WC_Subscription form.
  * @since  2.0
  */
@@ -68,7 +68,7 @@ function wcs_get_subscriptions_for_switch_order( $order_id ) {
 /**
  * Get all the orders which have recorded a switch for a given subscription.
  *
- * @param int|WC_Subscription $subscription_id The post_id of a shop_subscription post or an intsance of a WC_Subscription object
+ * @param int|WC_Subscription $subscription_id The post_id of a shop_subscription post or an instance of a WC_Subscription object
  * @return array Order details in post_id => WC_Order form.
  * @since  2.0
  */
@@ -95,4 +95,45 @@ function wcs_get_switch_orders_for_subscription( $subscription_id ) {
 	}
 
 	return $orders;
+}
+
+/**
+ * Checks if a given product is of a switchable type
+ *
+ * @param int|WC_Product $product A WC_Product object or the ID of a product to check
+ * @return bool
+ * @since  2.0
+ */
+function wcs_is_product_switchable_type( $product ) {
+
+	if ( ! is_object( $product ) ) {
+		$product = get_product( $product );
+	}
+
+	if ( empty( $product ) ) {
+
+		$is_product_switchable = false;
+
+	} else {
+
+		$allow_switching = get_option( WC_Subscriptions_Admin::$option_prefix . '_allow_switching', 'no' );
+
+		switch ( $allow_switching ) {
+			case 'variable' :
+				$is_product_switchable = ( $product->is_type( 'variable-subscription' ) ) ? true : false;
+				break;
+			case 'grouped' :
+				$is_product_switchable = ( 0 !== $product->post->post_parent ) ? true : false;
+				break;
+			case 'variable_grouped' :
+				$is_product_switchable = ( $product->is_type( 'variable-subscription' ) || 0 !== $product->post->post_parent ) ? true : false;
+				break;
+			case 'no' :
+			default:
+				$is_product_switchable = false;
+				break;
+		}
+	}
+
+	return $is_product_switchable;
 }

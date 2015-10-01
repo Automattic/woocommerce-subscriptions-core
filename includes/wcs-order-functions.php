@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * A wrapper for @see wcs_get_subscriptions() which accepts simply an order ID
  *
- * @param int|WC_Order $order_id The post_id of a shop_order post or an intsance of a WC_Order object
+ * @param int|WC_Order $order_id The post_id of a shop_order post or an instance of a WC_Order object
  * @param array $args A set of name value pairs to filter the returned value.
  *		'subscriptions_per_page' The number of subscriptions to return. Default set to -1 to return all.
  *		'offset' An optional number of subscription to displace or pass over. Default 0.
@@ -25,6 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *		'product_id' The post ID of a WC_Product_Subscription, WC_Product_Variable_Subscription or WC_Product_Subscription_Variation object
  *		'order_id' The post ID of a shop_order post/WC_Order object which was used to create the subscription
  *		'subscription_status' Any valid subscription status. Can be 'any', 'active', 'cancelled', 'suspended', 'expired', 'pending' or 'trash'. Defaults to 'any'.
+ *		'order_type' Get subscriptions for the any order type in this array. Can include 'any', 'parent', 'renewal' or 'switch', defaults to parent.
  * @return array Subscription details in post_id => WC_Subscription form.
  * @since  2.0
  */
@@ -37,10 +38,31 @@ function wcs_get_subscriptions_for_order( $order_id, $args = array() ) {
 	$args = wp_parse_args( $args, array(
 			'order_id'               => $order_id,
 			'subscriptions_per_page' => -1,
+			'order_type'             => 'parent',
 		)
 	);
 
-	return wcs_get_subscriptions( $args );
+	// Accept either an array or string (to make it more convenient for singular types, like 'parent' or 'any')
+	if ( ! is_array( $args['order_type'] ) ) {
+		$args['order_type'] = array( $args['order_type'] );
+	}
+
+	$subscriptions = array();
+	$get_all       = ( in_array( 'any', $args['order_type'] ) ) ? true : false;
+
+	if ( $order_id && in_array( 'parent', $args['order_type'] ) || $get_all ) {
+		$subscriptions = wcs_get_subscriptions( $args );
+	}
+
+	if ( wcs_order_contains_renewal( $order_id ) && ( in_array( 'renewal', $args['order_type'] ) || $get_all ) ) {
+		$subscriptions += wcs_get_subscriptions_for_renewal_order( $order_id );
+	}
+
+	if ( wcs_order_contains_switch( $order_id ) && ( in_array( 'switch', $args['order_type'] ) || $get_all ) ) {
+		$subscriptions += wcs_get_subscriptions_for_switch_order( $order_id );
+	}
+
+	return $subscriptions;
 }
 
 /**
@@ -113,7 +135,7 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 		throw new InvalidArgumentException( __( 'Invalid data. Type of copy is not a string.', 'woocommerce-subscriptions' ) );
 	}
 
-	if ( ! in_array( $type, array( 'subscription', 'renewal_order' ) ) ) {
+	if ( ! in_array( $type, array( 'subscription', 'renewal_order', 'resubscribe_order' ) ) ) {
 		$type = 'copy_order';
 	}
 
@@ -140,6 +162,10 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 		$from_order->id
 	);
 
+	if ( 'renewal_order' == $type ) {
+		$meta_query .= " AND `meta_key` NOT LIKE '_download_permissions_granted' ";
+	}
+
 	// Allow extensions to add/remove order meta
 	$meta_query = apply_filters( 'wcs_' . $type . '_meta_query', $meta_query, $to_order, $from_order );
 	$meta       = $wpdb->get_results( $meta_query, 'ARRAY_A' );
@@ -148,6 +174,123 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 	foreach ( $meta as $meta_item ) {
 		update_post_meta( $to_order->id, $meta_item['meta_key'], maybe_unserialize( $meta_item['meta_value'] ) );
 	}
+}
+
+/**
+ * Function to create an order from a subscription. It can be used for a renewal or for a resubscribe
+ * order creation. It is the common in both of those instances.
+ *
+ * @param  WC_Subscription|int $subscription Subscription we're basing the order off of
+ * @param  string $type        Type of new order. Default values are 'renewal_order'|'resubscribe_order'
+ * @return WC_Order            New order
+ */
+function wcs_create_order_from_subscription( $subscription, $type ) {
+
+	$type = wcs_validate_new_order_type( $type );
+
+	if ( is_wp_error( $type ) ) {
+		return $type;
+	}
+
+	global $wpdb;
+
+	try {
+
+		$wpdb->query( 'START TRANSACTION' );
+
+		if ( ! is_object( $subscription ) ) {
+			$subscription = wcs_get_subscription( $subscription );
+		}
+
+		$new_order = wc_create_order( array(
+			'customer_id'   => $subscription->get_user_id(),
+			'customer_note' => $subscription->customer_note,
+		) );
+
+		$new_order->post->post_title = wcs_get_new_order_title( $type );
+
+		wcs_copy_order_meta( $subscription, $new_order, $type );
+
+		// Copy over line items and allow extensions to add/remove items or item meta
+		$items = apply_filters( 'wcs_new_order_items', $subscription->get_items( array( 'line_item', 'fee', 'shipping', 'tax' ) ), $new_order, $subscription );
+		$items = apply_filters( 'wcs_' . $type . '_items', $items, $new_order, $subscription );
+
+		foreach ( $items as $item_index => $item ) {
+
+			$item_name = apply_filters( 'wcs_new_order_item_name', $item['name'], $item, $subscription );
+			$item_name = apply_filters( 'wcs_' . $type . '_item_name', $item_name, $item, $subscription );
+
+			// Create order line item on the renewal order
+			$recurring_item_id = wc_add_order_item( $new_order->id, array(
+				'order_item_name' => $item_name,
+				'order_item_type' => $item['type'],
+			) );
+
+			// Remove recurring line items and set item totals based on recurring line totals
+			foreach ( $item['item_meta'] as $meta_key => $meta_values ) {
+				foreach ( $meta_values as $meta_value ) {
+					wc_add_order_item_meta( $recurring_item_id, $meta_key, maybe_unserialize( $meta_value ) );
+				}
+			}
+		}
+
+		// If we got here, the subscription was created without problems
+		$wpdb->query( 'COMMIT' );
+
+		return apply_filters( 'wcs_new_order_created', $new_order, $subscription );
+
+	} catch ( Exception $e ) {
+		// There was an error adding the subscription
+		$wpdb->query( 'ROLLBACK' );
+		return new WP_Error( 'new-order-error', $e->getMessage() );
+	}
+}
+
+/**
+ * Function to create a post title based on the type and the current date and time for new orders. By
+ * default it's either renewal or resubscribe orders.
+ *
+ * @param  string $type type of new order. By default 'renewal_order'|'resubscribe_order'
+ * @return string       new title for a post
+ */
+function wcs_get_new_order_title( $type ) {
+	$type = wcs_validate_new_order_type( $type );
+
+	$order_date = strftime( _x( '%b %d, %Y @ %I:%M %p', 'Used in subscription post title. "Subscription renewal order - <this>"', 'woocommerce-subscriptions' ) );
+
+	switch ( $type ) {
+		case 'renewal_order':
+			$title = sprintf( __( 'Subscription Renewal Order &ndash; %s', 'woocommerce-subscriptions' ), $order_date );
+			break;
+		case 'resubscribe_order':
+			$title = sprintf( __( 'Resubscribe Order &ndash; %s', 'woocommerce-subscriptions' ), $order_date );
+			break;
+		default:
+			$title = '';
+			break;
+	}
+
+	return apply_filters( 'wcs_new_order_title', $title, $type, $order_date );
+}
+
+/**
+ * Utility function to check type. Filterable. Rejects if not in allowed new order types, rejects
+ * if not actually string.
+ *
+ * @param  string $type type of new order
+ * @return string       the same type thing if no problems are found
+ */
+function wcs_validate_new_order_type( $type ) {
+	if ( ! is_string( $type ) ) {
+		return new WP_Error( 'order_from_subscription_type_type', sprintf( __( '$type passed to the function was not a string.', 'woocommerce-subscriptions' ), $type ) );
+
+	}
+
+	if ( ! in_array( $type, apply_filters( 'wcs_new_order_types', array( 'renewal_order', 'resubscribe_order' ) ) ) ) {
+		return new WP_Error( 'order_from_subscription_type', sprintf( __( '"%s" is not a valid new order type.', 'woocommerce-subscriptions' ), $type ) );
+	}
+
+	return $type;
 }
 
 /**
@@ -196,176 +339,40 @@ function wcs_get_order_address( $order, $address_type = 'shipping' ) {
  * Checks an order to see if it contains a subscription.
  *
  * @param mixed $order A WC_Order object or the ID of the order which the subscription was purchased in.
- * @return bool True if the order contains a subscription, otherwise false.
+ * @param array|string $order_type Can include 'parent', 'renewal', 'resubscribe' and/or 'switch'. Defaults to 'parent'.
+ * @return bool True if the order contains a subscription that belongs to any of the given order types, otherwise false.
  * @since 2.0
  */
-function wcs_order_contains_subscription( $order ) {
+function wcs_order_contains_subscription( $order, $order_type = array( 'parent' ) ) {
+
+	// Accept either an array or string (to make it more convenient for singular types, like 'parent' or 'any')
+	if ( ! is_array( $order_type ) ) {
+		$order_type = array( $order_type );
+	}
 
 	if ( ! is_object( $order ) ) {
 		$order = new WC_Order( $order );
 	}
 
-	if ( count( wcs_get_subscriptions_for_order( $order->id ) ) > 0 ) {
+	$contains_subscription = false;
+	$get_all               = ( in_array( 'any', $order_type ) ) ? true : false;
+
+	if ( ( in_array( 'parent', $order_type ) || $get_all ) && count( wcs_get_subscriptions_for_order( $order->id ) ) > 0 ) {
 		$contains_subscription = true;
-	} else {
-		$contains_subscription = false;
+
+	} else if ( ( in_array( 'renewal', $order_type ) || $get_all ) && wcs_order_contains_renewal( $order ) ) {
+		$contains_subscription = true;
+
+	} else if ( ( in_array( 'resubscribe', $order_type ) || $get_all ) && wcs_order_contains_resubscribe( $order ) ) {
+		$contains_subscription = true;
+
+	} else if ( ( in_array( 'switch', $order_type ) || $get_all )&& wcs_order_contains_switch( $order ) ) {
+		$contains_subscription = true;
+
 	}
 
 	return $contains_subscription;
 }
-
-
-/**
- * Save the download permissions on the individual subscriptions as well as the order. Hooked into
- * 'woocommerce_grant_product_download_permissions', which is strictly after the order received all the info
- * it needed, so we don't need to play with priorities.
- *
- * @param integer $order_id the ID of the order. At this point it is guaranteed that it has files in it and that it hasn't been granted permissions before
- */
-function wcs_save_downloadable_product_permissions( $order_id ) {
-	$order = wc_get_order( $order_id );
-
-	if ( ! wcs_order_contains_subscription( $order ) ) {
-		return;
-	}
-
-	$subscriptions = wcs_get_subscriptions_for_order( $order );
-
-	foreach ( $subscriptions as $subscription ) {
-		if ( sizeof( $subscription->get_items() ) > 0 ) {
-			foreach ( $subscription->get_items() as $item ) {
-				$_product = $subscription->get_product_from_item( $item );
-
-				if ( $_product && $_product->exists() && $_product->is_downloadable() ) {
-					$downloads = $_product->get_files();
-
-					foreach ( array_keys( $downloads ) as $download_id ) {
-						$product_id = wcs_get_canonical_product_id( $item );
-
-						wc_downloadable_file_permission( $download_id, $product_id, $subscription, $item['qty'] );
-						wcs_revoke_downloadable_file_permission( $product_id, $order_id, $order->user_id );
-					}
-				}
-			}
-		}
-		update_post_meta( $subscription->id, '_download_permissions_granted', 1 );
-	}
-}
-add_action( 'woocommerce_grant_product_download_permissions', 'wcs_save_downloadable_product_permissions' );
-
-
-/**
- * Revokes download permissions from permissions table if a file has permissions on a subscription. If a product has
- * multiple files, all permissions will be revoked from the original order.
- *
- * @param int $product_id the ID for the product (the downloadable file)
- * @param int $order_id the ID for the original order
- * @param int $user_id the user we're removing the permissions from
- * @return boolean true on success, false on error
- */
-function wcs_revoke_downloadable_file_permission( $product_id, $order_id, $user_id ) {
-	global $wpdb;
-
-	$table = $wpdb->prefix . 'woocommerce_downloadable_product_permissions';
-
-	$where = array(
-		'product_id' => $product_id,
-		'order_id' => $order_id,
-		'user_id' => $user_id,
-	);
-
-	$format = array( '%d', '%d', '%d' );
-
-	return $wpdb->delete( $table, $where, $format );
-}
-
-
-/**
- * WooCommerce's function receives the original order ID, the item and the list of files. This does not work for
- * download permissions stored on the subscription rather than the original order as the URL would have the wrong order
- * key. This function takes the same parameters, but queries the database again for download ids belonging to all the
- * subscriptions that were in the original order. Then for all subscriptions, it checks all items, and if the item
- * passed in here is in that subscription, it creates the correct download link to be passsed to the email.
- *
- * @param array $files List of files already included in the list
- * @param array $item An item (you get it by doing $order->get_items())
- * @param WC_Order $order The original order
- * @return array List of files with correct download urls
- */
-function wcs_subscription_email_download_links( $files, $item, $order ) {
-	if ( ! wcs_order_contains_subscription( $order ) ) {
-		return $files;
-	}
-
-	global $wpdb;
-
-	$subscriptions = wcs_get_subscriptions_for_order( $order );
-
-	// This is needed because downloads are keyed to the subscriptions, not the original orders
-	$subs_keys = wp_list_pluck( $subscriptions, 'order_key' );
-
-	$product_id = wcs_get_canonical_product_id( $item );
-
-	$download_ids = $wpdb->get_col( $wpdb->prepare("
-		SELECT download_id
-		FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions
-		WHERE user_email = %s
-		AND order_key IN ('%s')
-		AND product_id = %s
-		ORDER BY permission_id
-	", $order->billing_email, implode( "', '", esc_sql( $subs_keys ) ), $product_id ) );
-
-	foreach ( $subscriptions as $subscription ) {
-		$sub_products = $subscription->get_items();
-
-		foreach ( $sub_products as $sub_product ) {
-			$sub_product_id = wcs_get_canonical_product_id( $sub_product );
-
-			if ( $sub_product_id === $product_id ) {
-				$product = wc_get_product( $product_id );
-
-				foreach ( $download_ids as $download_id ) {
-
-					if ( $product->has_file( $download_id ) ) {
-						$files[ $download_id ]                 = $product->get_file( $download_id );
-						$files[ $download_id ]['download_url'] = $subscription->get_download_url( $product_id, $download_id );
-					}
-				}
-			}
-		}
-	}
-
-	return $files;
-}
-add_filter( 'woocommerce_get_item_downloads', 'wcs_subscription_email_download_links', 10, 3 );
-
-
-/**
- * Repairs a glitch in WordPress's save function. You cannot save a null value on update, see
- * https://github.com/woothemes/woocommerce/issues/7861 for more info on this.
- *
- * @param integer $post_id The ID of the subscription
- */
-function wcs_repair_permission_data( $post_id ) {
-	if ( absint( $post_id ) !== $post_id ) {
-		return;
-	}
-
-	if ( 'shop_subscription' !== get_post_type( $post_id ) ) {
-		return;
-	}
-
-	global $wpdb;
-
-	$wpdb->query( $wpdb->prepare( "
-		UPDATE {$wpdb->prefix}woocommerce_downloadable_product_permissions
-		SET access_expires = null
-		WHERE order_id = %d
-		AND access_expires = %s
-	", $post_id, '0000-00-00 00:00:00' ) );
-}
-add_action( 'woocommerce_process_shop_order_meta', 'wcs_repair_permission_data', 60, 1 );
-
 
 /**
  * A wrapper for getting a specific item from a subscription.

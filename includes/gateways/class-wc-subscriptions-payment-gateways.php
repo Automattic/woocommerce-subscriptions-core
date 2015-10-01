@@ -21,6 +21,8 @@ class WC_Subscriptions_Payment_Gateways {
 	 */
 	public static function init() {
 
+		add_action( 'init', __CLASS__ . '::init_paypal', 10 );
+
 		add_filter( 'woocommerce_available_payment_gateways', __CLASS__ . '::get_available_payment_gateways' );
 
 		add_filter( 'woocommerce_no_available_payment_methods_message', __CLASS__ . '::no_available_payment_methods_message' );
@@ -30,6 +32,16 @@ class WC_Subscriptions_Payment_Gateways {
 
 		// Create a gateway specific hooks for subscription events
 		add_action( 'woocommerce_subscription_status_updated', __CLASS__ . '::trigger_gateway_status_updated_hook', 10, 2 );
+	}
+
+	/**
+	 * Instantiate our custom PayPal class
+	 *
+	 * @since 2.0
+	 */
+	public static function init_paypal() {
+		require_once( 'paypal/class-wcs-paypal.php' );
+		WCS_PayPal::init();
 	}
 
 	/**

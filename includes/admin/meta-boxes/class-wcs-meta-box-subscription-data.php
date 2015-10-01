@@ -67,7 +67,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							<?php
 							$user_string = '';
 							$user_id     = '';
-							if ( ! empty( $subscription->customer_user ) ) {
+							if ( ! empty( $subscription->customer_user ) && ( false !== get_userdata( $subscription->customer_user ) ) ) {
 								$user_id     = absint( $subscription->customer_user );
 								$user        = get_user_by( 'id', $user_id );
 								$user_string = esc_html( $user->display_name ) . ' (#' . absint( $user->ID ) . ' &ndash; ' . esc_html( $user->user_email );
@@ -95,7 +95,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 					</div>
 					<div class="order_data_column">
-						<h4><?php esc_html_e( 'Billing Details', 'woocommerce-subscriptions' ); ?> <a class="edit_address" href="#"><img src="<?php echo esc_url( WC()->plugin_url() . '/assets/images/icons/edit.png' ); ?>" alt="<?php esc_attr_e( 'Edit', 'woocommerce-subscriptions' ); ?>" width="14" /></a></h4>
+						<h4><?php esc_html_e( 'Billing Details', 'woocommerce-subscriptions' ); ?> <a class="edit_address" href="#"><a href="#" class="tips load_customer_billing" data-tip="Load billing address" style="display:none;">Load billing address</a></a></h4>
 						<?php
 						// Display values
 						echo '<div class="address">';
@@ -119,12 +119,19 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							}
 						}
 
-						echo '<p' . ( ! empty( $subscription->payment_method ) ? ' class="' . esc_attr( $subscription->payment_method ) . '"' : '' ) . '><strong>' . esc_html__( 'Payment Method', 'woocommerce-subscriptions' ) . ':</strong>' . wp_kses( nl2br( $subscription->get_payment_method_to_display() ), array( 'br' => array() ) ) . '</p>';
+						echo '<p' . ( ! empty( $subscription->payment_method ) ? ' class="' . esc_attr( $subscription->payment_method ) . '"' : '' ) . '><strong>' . esc_html__( 'Payment Method', 'woocommerce-subscriptions' ) . ':</strong>' . wp_kses_post( nl2br( $subscription->get_payment_method_to_display() ) );
+
+						// Display help tip
+						if ( ! empty( $subscription->payment_method ) && ! $subscription->is_manual() ) {
+							echo '<img class="help_tip" data-tip="Gateway ID: [' . esc_attr( $subscription->payment_gateway->id ) . ']" src="' . esc_url( WC()->plugin_url() ) . '/assets/images/help.png" height="16" width="16" />';
+						}
+
+						echo '</p>';
 
 						echo '</div>';
 
 						// Display form
-						echo '<div class="edit_address"><p><button class="button load_customer_billing">' . esc_html_x( 'Load billing address','to populate address from user details', 'woocommerce-subscriptions' ) . '</button></p>';
+						echo '<div class="edit_address">';
 
 						foreach ( self::$billing_fields as $key => $field ) {
 							if ( ! isset( $field['type'] ) ) {
@@ -151,7 +158,12 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 					</div>
 					<div class="order_data_column">
 
-						<h4><?php esc_html_e( 'Shipping Details', 'woocommerce-subscriptions' ); ?> <a class="edit_address" href="#"><img src="<?php echo esc_url( WC()->plugin_url() . '/assets/images/icons/edit.png' ); ?>" alt="<?php esc_attr_e( 'Edit', 'woocommerce-subscriptions' ); ?>" width="14" /></a></h4>
+						<h4><?php esc_html_e( 'Shipping Details', 'woocommerce-subscriptions' ); ?>
+							<a class="edit_address" href="#">
+								<a href="#" class="tips billing-same-as-shipping" data-tip="Copy from billing" style="display:none;">Copy from billing</a>
+								<a href="#" class="tips load_customer_shipping" data-tip="Load shipping address" style="display:none;">Load shipping address</a>
+							</a>
+						</h4>
 						<?php
 						// Display values
 						echo '<div class="address">';
@@ -183,7 +195,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 						echo '</div>';
 
 						// Display form
-						echo '<div class="edit_address"><p><button class="button load_customer_shipping">' . esc_html__( 'Load shipping address', 'woocommerce-subscriptions' ) . '</button> <button class="button billing-same-as-shipping">' . esc_html__( 'Copy from billing', 'woocommerce-subscriptions' ) . '</button></p>';
+						echo '<div class="edit_address">';
 
 						if ( self::$shipping_fields ) {
 							foreach ( self::$shipping_fields as $key => $field ) {
@@ -259,7 +271,8 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 				$subscription->update_status( $_POST['order_status'], '', true );
 			}
 		} catch ( Exception $e ) {
-			wcs_add_admin_notice( $e->getMessage(), 'error' );
+			// translators: placeholder is error message from by payment gateway
+			wcs_add_admin_notice( sprintf( __( 'Unable to change payment method: %s' ), $e->getMessage() ), 'error' );
 		}
 
 		do_action( 'woocommerce_process_shop_subscription_meta', $post_id, $post );

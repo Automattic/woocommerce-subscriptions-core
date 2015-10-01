@@ -45,7 +45,7 @@ class WC_Subscriptions_Order {
 		add_filter( 'woocommerce_order_needs_payment', __CLASS__ . '::order_needs_payment' , 10, 3 );
 
 		// Add subscription information to the order complete emails.
-		add_action( 'woocommerce_email_after_order_table', __CLASS__ . '::add_sub_info_email', 15, 2 );
+		add_action( 'woocommerce_email_after_order_table', __CLASS__ . '::add_sub_info_email', 15, 3 );
 
 		// Add dropdown to admin orders screen to filter on order type
 		add_action( 'restrict_manage_posts', __CLASS__ . '::restrict_manage_subscriptions', 50 );
@@ -55,6 +55,10 @@ class WC_Subscriptions_Order {
 
 		// Don't display migrated order item meta on the Edit Order screen
 		add_filter( 'woocommerce_hidden_order_itemmeta', __CLASS__ . '::hide_order_itemmeta' );
+
+		add_action( 'woocommerce_order_details_after_order_table', __CLASS__ . '::add_subscriptions_to_view_order_templates', 10, 1 );
+
+		add_action( 'woocommerce_subscription_details_after_subscription_table', __CLASS__ . '::get_related_orders_template', 10, 1 );
 	}
 
 	/*
@@ -346,9 +350,9 @@ class WC_Subscriptions_Order {
 	 */
 	public static function subscription_thank_you( $order_id ) {
 
-		if ( wcs_order_contains_subscription( $order_id ) || wcs_order_contains_renewal( $order_id ) || wcs_order_contains_switch( $order_id ) ) {
+		if ( wcs_order_contains_subscription( $order_id, array( 'parent', 'renewal', 'switch' ) ) ) {
 
-			$subscription_count = count( wcs_get_subscriptions_for_order( $order_id ) );
+			$subscription_count = count( wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => array( 'parent', 'renewal', 'switch' ) ) ) );
 
 			$thank_you_message = '<p>' . _n( 'Your subscription will be activated when payment clears.', 'Your subscriptions will be activated when payment clears.', $subscription_count, 'woocommerce-subscriptions' ) . '</p>';
 
@@ -417,7 +421,7 @@ class WC_Subscriptions_Order {
 			foreach ( $subscriptions as $subscription ) {
 
 				// Do we need to activate a subscription?
-				if ( $order_completed && ! $subscription->has_ended() && ! $subscription->has_status( 'active' ) ) {
+				if ( $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( 'active' ) ) {
 
 					$subscription->update_dates( array( 'start' => current_time( 'mysql', true ) ) );
 					$subscription->payment_complete();
@@ -532,33 +536,32 @@ class WC_Subscriptions_Order {
 	}
 
 	/**
-	 * Adds the subscription information to our order emails if enabled.
+	 * Adds the subscription information to our order emails.
 	 *
 	 * @since 1.5
 	 */
-	public static function add_sub_info_email( $order, $is_admin_email ) {
-		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_add_sub_info_email', 'yes' ) && ! $is_admin_email ) {
+	public static function add_sub_info_email( $order, $is_admin_email, $plaintext = false ) {
 
-			$subscriptions = wcs_get_subscriptions_for_order( $order );
-			if ( empty( $subscriptions ) && wcs_order_contains_renewal( $order ) ) {
-				$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
-			}
+		$subscriptions = wcs_get_subscriptions_for_order( $order );
+		if ( empty( $subscriptions ) && wcs_order_contains_renewal( $order ) ) {
+			$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
+		}
 
-			if ( ! empty( $subscriptions ) ) {
+		if ( ! empty( $subscriptions ) ) {
 
-				$template_base  = plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/';
-				$template = ( 'plain' == WC()->mailer()->emails['WC_Email_Customer_Completed_Order']->email_type ) ? 'emails/plain/subscription-info.php' : 'emails/subscription-info.php';
+			$template_base  = plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/';
+			$template = ( $plaintext ) ? 'emails/plain/subscription-info.php' : 'emails/subscription-info.php';
 
-				wc_get_template(
-					$template,
-					array(
-						'order'         => $order,
-						'subscriptions' => $subscriptions,
-					),
-					'',
-					$template_base
-				);
-			}
+			wc_get_template(
+				$template,
+				array(
+					'order'          => $order,
+					'subscriptions'  => $subscriptions,
+					'is_admin_email' => $is_admin_email,
+				),
+				'',
+				$template_base
+			);
 		}
 	}
 
@@ -655,6 +658,35 @@ class WC_Subscriptions_Order {
 		}
 
 		return $vars;
+	}
+
+	/**
+	 * Add related subscriptions below order details tables.
+	 *
+	 * @since 2.0
+	 */
+	public static function add_subscriptions_to_view_order_templates( $order_id ) {
+
+		$template      = 'myaccount/related-subscriptions.php';
+		$subscriptions = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'any' ) );
+
+		if ( ! empty( $subscriptions ) ) {
+			wc_get_template( $template, array( 'order_id' => $order_id, 'subscriptions' => $subscriptions ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+		}
+	}
+
+	/**
+	 * Loads the related orders table on the view subscription page
+	 *
+	 * @since 2.0
+	 */
+	public static function get_related_orders_template( $subscription ) {
+
+		$subscription_orders = $subscription->get_related_orders();
+
+		if ( 0 !== count( $subscription_orders ) ) {
+			wc_get_template( 'myaccount/related-orders.php', array( 'subscription_orders' => $subscription_orders, 'subscription' => $subscription ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+		}
 	}
 
 	/**
@@ -1407,7 +1439,7 @@ class WC_Subscriptions_Order {
 	 * @since 1.0
 	 */
 	public static function get_order_subscription_string( $order, $deprecated_price = '', $deprecated_sign_up_fee = '' ) {
-		_deprecated_function( __METHOD__, '2.0', 'the value for the subscription object' );
+		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_formatted_order_total()' );
 
 		$initial_amount = wc_price( self::get_total_initial_payment( $order ) );
 

@@ -21,11 +21,12 @@ class WCS_Dynamic_Action_Deprecator extends WCS_Dynamic_Hook_Deprecator {
 		'woocommerce_subscription_failing_payment_method_updated_' => 'woocommerce_subscriptions_changed_failing_payment_method_',
 
 		// Gateway status change hooks
-		'woocommerce_subscription_activated_'                      => 'activated_subscription_',
-		'woocommerce_subscription_activated_'                      => 'reactivated_subscription_',
+		'woocommerce_subscription_activated_'                      => array(
+			'activated_subscription_',
+			'reactivated_subscription_',
+		),
 		'woocommerce_subscription_on-hold_'                        => 'subscription_put_on-hold_',
 		'woocommerce_subscription_cancelled_'                      => 'cancelled_subscription_',
-		'woocommerce_subscription_switched_'                       => 'subscription_switched_',
 		'woocommerce_subscription_expired_'                        => 'subscription_expired_',
 	);
 
@@ -57,12 +58,16 @@ class WCS_Dynamic_Action_Deprecator extends WCS_Dynamic_Hook_Deprecator {
 
 		} elseif ( 0 === strpos( $old_hook, 'scheduled_subscription_payment_' ) ) {
 
-			// New arg spec: $amount, $subscription
-			// Old arg spec: $amount, $order, $product_id
-			$subscription = $new_callback_args[0];
-			do_action( $old_hook, $subscription->get_total(), self::get_order( $subscription ), self::get_product_id( $subscription ) );
+			// New arg spec: $amount, $renewal_order
+			// Old arg spec: $amount, $original_order, $product_id
+			$subscription  = $new_callback_args[0];
+			$subscriptions = wcs_get_subscriptions_for_renewal_order( $new_callback_args[1] );
 
-		} elseif ( 0 === strpos( $old_hook, 'activated_subscription_' ) || 0 === strpos( $old_hook, 'subscription_put_on-hold_' ) || 0 === strpos( $old_hook, 'cancelled_subscription_' ) || 0 === strpos( $old_hook, 'subscription_expired_' ) ) {
+			if ( ! empty( $subscriptions ) ) {
+				$subscription = array_pop( $subscriptions );
+				do_action( $old_hook, $new_callback_args[0], self::get_order( $subscription ), self::get_product_id( $subscription ) );
+			}
+		} elseif ( 0 === strpos( $old_hook, 'activated_subscription_' ) || 0 === strpos( $old_hook, 'reactivated_subscription_' ) || 0 === strpos( $old_hook, 'subscription_put_on-hold_' ) || 0 === strpos( $old_hook, 'cancelled_subscription_' ) || 0 === strpos( $old_hook, 'subscription_expired_' ) ) {
 
 			// New arg spec: $subscription
 			// Old arg spec: $order, $product_id

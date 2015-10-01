@@ -64,6 +64,8 @@ class WC_Subscriptions_Cart {
 		// Display grouped recurring amounts after order totals on the cart/checkout pages
 		add_action( 'woocommerce_cart_totals_after_order_total', __CLASS__ . '::display_recurring_totals' );
 		add_action( 'woocommerce_review_order_after_order_total', __CLASS__ . '::display_recurring_totals' );
+
+		add_action( 'woocommerce_add_to_cart_validation', __CLASS__ . '::check_valid_add_to_cart', 10, 3 );
 	}
 
 	/**
@@ -82,10 +84,6 @@ class WC_Subscriptions_Cart {
 		if ( ! self::cart_contains_subscription() ) {
 			return;
 		}
-
-		// Set defaults for required values
-		WC()->cart->base_recurring_prices = array();
-		WC()->cart->base_sign_up_fees = array();
 
 		// Set which price should be used for calculation
 		add_filter( 'woocommerce_get_price', __CLASS__ . '::set_subscription_prices_for_calculation', 100, 2 );
@@ -213,8 +211,8 @@ class WC_Subscriptions_Cart {
 			// No fees recur (yet)
 			$recurring_cart->fees = array();
 			$recurring_cart->fee_total = 0;
-			$recurring_cart->calculate_totals();
 			self::maybe_recalculate_shipping();
+			$recurring_cart->calculate_totals();
 
 			// Store this groups cart details
 			$recurring_carts[ $recurring_cart_key ] = clone $recurring_cart;
@@ -227,8 +225,8 @@ class WC_Subscriptions_Cart {
 		self::$calculation_type = 'none';
 
 		// We need to reset the packages and totals stored in WC()->shipping too
-		WC()->cart->calculate_shipping();
 		self::maybe_recalculate_shipping();
+		WC()->cart->calculate_shipping();
 
 		// If there is no sign-up fee and a free trial, and no products being purchased with the subscription, we need to zero the fees for the first billing period
 		if ( 0 == self::get_cart_subscription_sign_up_fee() && self::all_cart_items_have_free_trial() ) {
@@ -513,22 +511,6 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
-	 * Store how much discount each coupon grants.
-	 *
-	 * @param mixed $code
-	 * @param mixed $amount
-	 * @return void
-	 */
-	public static function increase_coupon_discount_amount( $code, $amount ) {
-
-		if ( empty( WC()->cart->coupon_discount_amounts[ $code ] ) ) {
-			WC()->cart->coupon_discount_amounts[ $code ] = 0;
-		}
-
-		WC()->cart->coupon_discount_amounts[ $code ] += $amount;
-	}
-
-	/**
 	 * Check whether the cart needs payment even if the order total is $0
 	 *
 	 * @param bool $needs_payment The existing flag for whether the cart needs payment or not.
@@ -613,7 +595,7 @@ class WC_Subscriptions_Cart {
 		}
 
 		// Now make sure the correct shipping method is set
-		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', array() );
 
 		if ( isset( $_POST['shipping_method'] ) && is_array( $_POST['shipping_method'] ) ) {
 			foreach ( $_POST['shipping_method'] as $i => $value ) {
@@ -763,6 +745,22 @@ class WC_Subscriptions_Cart {
 		}
 
 		return apply_filters( 'woocommerce_subscriptions_recurring_cart_key', $cart_key, $cart_item );
+	}
+
+	/**
+	 * Don't allow other subscriptions to be added to the cart while it contains a renewal
+	 *
+	 * @since 2.0
+	 */
+	public static function check_valid_add_to_cart( $is_valid, $product, $quantity ) {
+
+		if ( $is_valid && wcs_cart_contains_renewal() && WC_Subscriptions_Product::is_subscription( $product ) ) {
+
+			wc_add_notice( __( 'That subscription product can not be added to your cart as it already contains a subscription renewal.', 'woocommerce-subscriptions' ), 'error' );
+			$is_valid = false;
+		}
+
+		return $is_valid;
 	}
 
 	/* Deprecated */
@@ -1717,6 +1715,25 @@ class WC_Subscriptions_Cart {
 	public static function get_items_product_id( $cart_item ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_get_canonical_product_id( $cart_item )' );
 		return wcs_get_canonical_product_id( $cart_item );
+	}
+
+	/**
+	 * Store how much discount each coupon grants.
+	 *
+	 * @param mixed $code
+	 * @param mixed $amount
+	 * @return void
+	 */
+	public static function increase_coupon_discount_amount( $code, $amount ) {
+		_deprecated_function( __METHOD__, '2.0', 'WC_Subscriptions_Coupon::increase_coupon_discount_amount( WC()->cart, $code, $amount )' );
+
+		if ( empty( WC()->cart->coupon_discount_amounts[ $code ] ) ) {
+			WC()->cart->coupon_discount_amounts[ $code ] = 0;
+		}
+
+		if ( 'recurring_total' != self::$calculation_type ) {
+			WC()->cart->coupon_discount_amounts[ $code ] += $amount;
+		}
 	}
 }
 WC_Subscriptions_Cart::init();

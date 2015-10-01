@@ -436,34 +436,13 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function can_item_be_switched( $item, $subscription = null ) {
 
-		$product = get_product( $item['product_id'] );
-
-		if ( empty( $product ) || 'line_item' !== $item['type'] ) {
-
-			$is_product_switchable = false;
-
+		if ( 'line_item' == $item['type'] && wcs_is_product_switchable_type( $item['product_id'] ) ) {
+			$is_product_switchable = true;
 		} else {
-
-			$allow_switching = get_option( WC_Subscriptions_Admin::$option_prefix . '_allow_switching', 'no' );
-
-			switch ( $allow_switching ) {
-				case 'variable' :
-					$is_product_switchable = ( $product->is_type( 'variable-subscription' ) ) ? true : false;
-					break;
-				case 'grouped' :
-					$is_product_switchable = ( 0 !== $product->post->post_parent ) ? true : false;
-					break;
-				case 'variable_grouped' :
-					$is_product_switchable = ( $product->is_type( 'variable-subscription' ) || 0 !== $product->post->post_parent ) ? true : false;
-					break;
-				case 'no' :
-				default:
-					$is_product_switchable = false;
-					break;
-			}
+			$is_product_switchable = false;
 		}
 
-		if ( $subscription->has_status( 'active' ) || ( $subscription->has_status( 'on-hold' ) && isset( $subscription->order->paid_date ) ) ) {
+		if ( $subscription->has_status( 'active' ) && 0 !== $subscription->get_date( 'last_payment' ) ) {
 			$is_subscription_switchable = true;
 		} else {
 			$is_subscription_switchable = false;
@@ -706,7 +685,6 @@ class WC_Subscriptions_Switcher {
 		}
 	}
 
-
 	/**
 	 * Update shipping method on the subscription if the order changed anything
 	 *
@@ -723,7 +701,6 @@ class WC_Subscriptions_Switcher {
 
 		WC_Subscriptions_Checkout::add_shipping( $subscription, $recurring_cart );
 	}
-
 
 	/**
 	 * Updates address on the subscription if one of them is changed.
@@ -924,7 +901,7 @@ class WC_Subscriptions_Switcher {
 			$is_valid = false;
 		}
 
-		return $is_valid;
+		return apply_filters( 'woocommerce_subscriptions_is_switch_valid', $is_valid, $product_id, $quantity, $variation_id );
 	}
 
 	/**
@@ -1561,8 +1538,8 @@ class WC_Subscriptions_Switcher {
 				break;
 			}
 
-			// translators: %1: product subtotal, %2: direction (upgrade, downgrade, crossgrade)
-			$product_subtotal = sprintf( _x( '%1$s (%2$s)', 'product subtotal string', 'woocommerce-subscriptions' ), $product_subtotal, $direction );
+			// translators: %1: product subtotal, %2: HTML span tag, %3: direction (upgrade, downgrade, crossgrade), %4: closing HTML span tag
+			$product_subtotal = sprintf( _x( '%1$s %2$s(%3$s)%4$s', 'product subtotal string', 'woocommerce-subscriptions' ), $product_subtotal, '<span class="subscription-switch-direction">', $direction, '</span>' );
 
 		}
 

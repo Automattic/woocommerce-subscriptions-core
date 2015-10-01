@@ -5,10 +5,10 @@
  * Functions for cart specific things, based on wc-cart-functions.php but overloaded
  * for use with recurring carts.
  *
- * @author 		WooThemes
+ * @author 		Prospress
  * @category 	Core
- * @package 	WooCommerce/Functions
- * @version     2.1.0
+ * @package 	WooCommerce Subscriptions/Functions
+ * @version     2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

@@ -38,13 +38,34 @@ abstract class WCS_Hook_Deprecator {
 	 */
 	public function maybe_handle_deprecated_hook() {
 
-		$new_hook = current_filter();
-		$old_hook = ( isset( $this->deprecated_hooks[ $new_hook ] ) ) ? $this->deprecated_hooks[ $new_hook ] : '';
+		$new_hook  = current_filter();
+		$old_hooks = ( isset( $this->deprecated_hooks[ $new_hook ] ) ) ? $this->deprecated_hooks[ $new_hook ] : '';
 
 		$new_callback_args = func_get_args();
 		$return_value      = $new_callback_args[0];
 
-		if ( ! empty( $old_hook ) && has_filter( $old_hook ) ) {
+		if ( ! empty( $old_hooks ) ) {
+
+			if ( is_array( $old_hooks ) ) {
+				foreach ( $old_hooks as $old_hook ) {
+					$return_value = $this->handle_deprecated_hook( $new_hook, $old_hook, $new_callback_args, $return_value );
+				}
+			} else {
+				$return_value = $this->handle_deprecated_hook( $new_hook, $old_hooks, $new_callback_args, $return_value );
+			}
+		}
+
+		return $return_value;
+	}
+
+	/**
+	 * Check if an old hook still has callbacks attached to it, and if so, display a notice and trigger the old hook.
+	 *
+	 * @since 2.0
+	 */
+	protected function handle_deprecated_hook( $new_hook, $old_hook, $new_callback_args, $return_value ) {
+
+		if ( has_filter( $old_hook ) ) {
 
 			$this->display_notice( $old_hook, $new_hook );
 
