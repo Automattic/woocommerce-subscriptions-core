@@ -350,9 +350,9 @@ class WC_Subscriptions_Order {
 	 */
 	public static function subscription_thank_you( $order_id ) {
 
-		if ( wcs_order_contains_subscription( $order_id, array( 'parent', 'renewal', 'switch' ) ) ) {
+		if ( wcs_order_contains_subscription( $order_id, 'any' ) ) {
 
-			$subscription_count = count( wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => array( 'parent', 'renewal', 'switch' ) ) ) );
+			$subscription_count = count( wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'any' ) ) );
 
 			$thank_you_message = '<p>' . _n( 'Your subscription will be activated when payment clears.', 'Your subscriptions will be activated when payment clears.', $subscription_count, 'woocommerce-subscriptions' ) . '</p>';
 
@@ -542,10 +542,7 @@ class WC_Subscriptions_Order {
 	 */
 	public static function add_sub_info_email( $order, $is_admin_email, $plaintext = false ) {
 
-		$subscriptions = wcs_get_subscriptions_for_order( $order );
-		if ( empty( $subscriptions ) && wcs_order_contains_renewal( $order ) ) {
-			$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
-		}
+		$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'any' ) );
 
 		if ( ! empty( $subscriptions ) ) {
 
