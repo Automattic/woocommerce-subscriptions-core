@@ -863,14 +863,8 @@ class WC_Subscriptions_Manager {
 			$new_status_or_meta = 'on-hold';
 		}
 
-		$subscription = wcs_get_subscription_from_key( $subscription_key );
-
-		// Preserve old filters
-		if ( empty( $subscription ) ) {
-
-			$subscription_can_be_changed = false;
-
-		} else {
+		try {
+			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
 			switch ( $new_status_or_meta ) {
 				case 'new-payment-date' :
@@ -887,6 +881,8 @@ class WC_Subscriptions_Manager {
 					$subscription_can_be_changed = $subscription->can_be_updated_to( $new_status_or_meta );
 					break;
 			}
+		} catch ( Exception $e ) {
+			$subscription_can_be_changed = false;
 		}
 
 		return $subscription_can_be_changed;
@@ -911,10 +907,11 @@ class WC_Subscriptions_Manager {
 		}
 
 		_deprecated_function( __METHOD__, '2.0', 'wcs_get_subscription( $subscription_id )' );
-		$subscription = wcs_get_subscription_from_key( $subscription_key );
-		if ( null !== $subscription ) {
+
+		try {
+			$subscription = wcs_get_subscription_from_key( $subscription_key );
 			$subscription = wcs_get_subscription_in_deprecated_structure( $subscription );
-		} else {
+		} catch ( Exception $e ) {
 			$subscription = array();
 		}
 
@@ -1768,9 +1765,13 @@ class WC_Subscriptions_Manager {
 	public static function maybe_put_subscription_on_hold( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_status()' );
 
-		$subscription = wcs_get_subscription_from_key( $deprecated );
+		try {
+			$subscription = wcs_get_subscription_from_key( $deprecated );
 
-		if ( empty( $subscription ) || $subscription->has_status( 'on-hold' ) ) {
+			if ( $subscription->has_status( 'on-hold' ) ) {
+				return false;
+			}
+		} catch ( Exception $e ) {
 			return false;
 		}
 
@@ -1992,9 +1993,13 @@ class WC_Subscriptions_Manager {
 	public static function activate_subscription( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0' );
 
-		$subscription = wcs_get_subscription_from_key( $subscription_key );
+		try {
+			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-		if ( empty( $subscription ) || $subscription->has_status( 'active' ) ) {
+			if ( $subscription->has_status( 'active' ) ) {
+				return false;
+			}
+		} catch ( Exception $e ) {
 			return false;
 		}
 
@@ -2042,9 +2047,13 @@ class WC_Subscriptions_Manager {
 	public static function put_subscription_on_hold( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_status( "on-hold" )' );
 
-		$subscription = wcs_get_subscription_from_key( $subscription_key );
+		try {
+			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-		if ( empty( $subscription ) || $subscription->has_status( 'on-hold' ) ) {
+			if ( $subscription->has_status( 'on-hold' ) ) {
+				return false;
+			}
+		} catch ( Exception $e ) {
 			return false;
 		}
 
@@ -2073,9 +2082,13 @@ class WC_Subscriptions_Manager {
 	public static function cancel_subscription( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscriptions::cancel_order()' );
 
-		$subscription = wcs_get_subscription_from_key( $subscription_key );
+		try {
+			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-		if ( empty( $subscription ) || $subscription->has_status( array( 'pending-cancel', 'cancelled' ) ) ) {
+			if ( $subscription->has_status( array( 'pending-cancel', 'cancelled' ) ) ) {
+				return false;
+			}
+		} catch ( Exception $e ) {
 			return false;
 		}
 
@@ -2102,9 +2115,13 @@ class WC_Subscriptions_Manager {
 	public static function failed_subscription_signup( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0' );
 
-		$subscription = wcs_get_subscription_from_key( $subscription_key );
+		try {
+			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-		if ( empty( $subscription ) || $subscription->has_status( 'on-hold' ) ) {
+			if ( $subscription->has_status( 'on-hold' ) ) {
+				return false;
+			}
+		} catch ( Exception $e ) {
 			return false;
 		}
 
@@ -2128,9 +2145,13 @@ class WC_Subscriptions_Manager {
 	public static function trash_subscription( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', 'wp_trash_post()' );
 
-		$subscription = wcs_get_subscription_from_key( $subscription_key );
+		try {
+			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-		if ( empty( $subscription ) || $subscription->has_status( 'trash' ) ) {
+			if ( $subscription->has_status( 'trash' ) ) {
+				return false;
+			}
+		} catch ( Exception $e ) {
 			return false;
 		}
 
@@ -2161,9 +2182,9 @@ class WC_Subscriptions_Manager {
 	public static function delete_subscription( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', 'wp_delete_post()' );
 
-		$subscription = wcs_get_subscription_from_key( $subscription_key );
-
-		if ( empty( $subscription ) ) {
+		try {
+			$subscription = wcs_get_subscription_from_key( $subscription_key );
+		} catch ( Exception $e ) {
 			return false;
 		}
 
