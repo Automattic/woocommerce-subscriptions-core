@@ -91,11 +91,14 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 		if ( false !== $cart_item ) {
 
 			$old_subscription = wcs_get_subscription( $cart_item[ $this->cart_item_key ]['subscription_id'] );
-			$subscriptions    = wcs_get_subscriptions_for_order( $order_id );
+			$subscriptions    = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'resubscribe' ) );
 			$new_subscription = array_shift( $subscriptions );
 
 			update_post_meta( $order_id, '_subscription_resubscribe', $old_subscription->id, true );
-			update_post_meta( $new_subscription->id, '_subscription_resubscribe', $old_subscription->id, true );
+
+			foreach ( $subscriptions as $new_subscription ) {
+				update_post_meta( $new_subscription->id, '_subscription_resubscribe', $old_subscription->id, true );
+			}
 		}
 	}
 
