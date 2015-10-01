@@ -130,5 +130,5 @@ function wcs_get_subscriptions_for_renewal_order( $renewal_order ) {
 		}
 	}
 
-	return apply_filters( 'woocommerce_subscriptions_for_renewal_order', $subscriptions );
+	return apply_filters( 'wcs_subscriptions_for_renewal_order', $subscriptions, $renewal_order );
 }
