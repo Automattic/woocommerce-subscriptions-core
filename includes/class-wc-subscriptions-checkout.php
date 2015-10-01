@@ -60,7 +60,7 @@ class WC_Subscriptions_Checkout {
 		$subscriptions = array();
 
 		// First clear out any subscriptions created for a failed payment to give us a clean slate for creating new subscriptions
-		$subscriptions = wcs_get_subscriptions_for_order( $order->id );
+		$subscriptions = wcs_get_subscriptions_for_order( $order->id, array( 'order_type' => 'parent' ) );
 
 		if ( ! empty( $subscriptions ) ) {
 			foreach ( $subscriptions as $subscription ) {
