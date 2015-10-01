@@ -52,8 +52,8 @@ class WCS_Meta_Box_Related_Orders {
 		// On the subscription page, just show related orders
 		if ( wcs_is_subscription( $post->ID ) ) {
 			$subscriptions[] = wcs_get_subscription( $post->ID );
-		} elseif ( wcs_order_contains_subscription( $post->ID, 'any' ) ) {
-			$subscriptions = wcs_get_subscriptions_for_order( $post->ID, array( 'post_type' => 'any' ) );
+		} elseif ( wcs_order_contains_subscription( $post->ID, array( 'parent', 'renewal' ) ) ) {
+			$subscriptions = wcs_get_subscriptions_for_order( $post->ID, array( 'order_type' => array( 'parent', 'renewal' ) ) );
 		}
 
 		// First, display all the subscriptions
