@@ -16,27 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</a>
 	</td>
 	<td style="border-top: 0;">
-		<?php
-		switch ( strtolower( $order->relationship ) ) {
-			case 'subscription':
-				esc_html_e( 'Subscription', 'woocommerce-subscriptions' );
-				break;
-			case 'parent order':
-				esc_html_e( 'Parent Order', 'woocommerce-subscriptions' );
-				break;
-			case 'renewal order':
-				esc_html_e( 'Renewal Order', 'woocommerce-subscriptions' );
-				break;
-			case 'switch order':
-				esc_html_e( 'Switch Order', 'woocommerce-subscriptions' );
-				break;
-			case 'switched subscription':
-				esc_html_e( 'Switched Subscription', 'woocommerce-subscriptions' );
-				break;
-			default:
-				printf( esc_html_x( 'Unknown: %s', 'A type of related order', 'woocommerce-subscriptions' ), esc_html( $order->relationship ) );
-		}
-		?>
+		<?php echo esc_html( $order->relationship ); ?>
 	</td>
 	<td style="border-top: 0;">
 		<?php
