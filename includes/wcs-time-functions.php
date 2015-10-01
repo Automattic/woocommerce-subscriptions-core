@@ -497,3 +497,24 @@ function wcs_sort_by_fractions( $a, $b ) {
 	}
 	return ( $a['fraction'] > $b['fraction'] ) ? -1 : 1;
 }
+
+/**
+ * PHP on Windows does not have strptime function. Therefore this is what we're using to check
+ * whether the given time is of a specific format.
+ *
+ * @param  string $time the mysql time string
+ * @return boolean      true if it matches our mysql pattern of YYYY-MM-DD HH:MM:SS
+ */
+function wcs_is_datetime_mysql_format( $time ) {
+	if ( ! is_string( $time ) ) {
+		return false;
+	}
+
+	// parses for the pattern of YYYY-MM-DD HH:MM:SS, but won't check whether it's a valid timedate
+	$match = preg_match( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $time );
+
+	// parses time, returns false for invalid dates
+	$valid_time = strtotime( $time );
+
+	return ( $match && $valid_time ) ? true : false;
+}
