@@ -38,7 +38,7 @@ function wcs_get_subscriptions_for_order( $order_id, $args = array() ) {
 	$args = wp_parse_args( $args, array(
 			'order_id'               => $order_id,
 			'subscriptions_per_page' => -1,
-			'order_type'             => 'parent',
+			'order_type'             => array( 'parent', 'switch' ),
 		)
 	);
 
@@ -52,6 +52,10 @@ function wcs_get_subscriptions_for_order( $order_id, $args = array() ) {
 
 	if ( $order_id && in_array( 'parent', $args['order_type'] ) || $get_all ) {
 		$subscriptions = wcs_get_subscriptions( $args );
+	}
+
+	if ( wcs_order_contains_resubscribe( $order_id ) && ( in_array( 'resubscribe', $args['order_type'] ) || $get_all ) ) {
+		$subscriptions += wcs_get_subscriptions_for_resubscribe_order( $order_id );
 	}
 
 	if ( wcs_order_contains_renewal( $order_id ) && ( in_array( 'renewal', $args['order_type'] ) || $get_all ) ) {
@@ -343,7 +347,7 @@ function wcs_get_order_address( $order, $address_type = 'shipping' ) {
  * @return bool True if the order contains a subscription that belongs to any of the given order types, otherwise false.
  * @since 2.0
  */
-function wcs_order_contains_subscription( $order, $order_type = array( 'parent' ) ) {
+function wcs_order_contains_subscription( $order, $order_type = array( 'parent', 'resubscribe', 'switch' ) ) {
 
 	// Accept either an array or string (to make it more convenient for singular types, like 'parent' or 'any')
 	if ( ! is_array( $order_type ) ) {
@@ -357,16 +361,16 @@ function wcs_order_contains_subscription( $order, $order_type = array( 'parent' 
 	$contains_subscription = false;
 	$get_all               = ( in_array( 'any', $order_type ) ) ? true : false;
 
-	if ( ( in_array( 'parent', $order_type ) || $get_all ) && count( wcs_get_subscriptions_for_order( $order->id ) ) > 0 ) {
+	if ( ( in_array( 'parent', $order_type ) || $get_all ) && count( wcs_get_subscriptions_for_order( $order->id, array( 'order_type' => 'parent' ) ) ) > 0 ) {
 		$contains_subscription = true;
 
-	} else if ( ( in_array( 'renewal', $order_type ) || $get_all ) && wcs_order_contains_renewal( $order ) ) {
+	} elseif ( ( in_array( 'renewal', $order_type ) || $get_all ) && wcs_order_contains_renewal( $order ) ) {
 		$contains_subscription = true;
 
-	} else if ( ( in_array( 'resubscribe', $order_type ) || $get_all ) && wcs_order_contains_resubscribe( $order ) ) {
+	} elseif ( ( in_array( 'resubscribe', $order_type ) || $get_all ) && wcs_order_contains_resubscribe( $order ) ) {
 		$contains_subscription = true;
 
-	} else if ( ( in_array( 'switch', $order_type ) || $get_all )&& wcs_order_contains_switch( $order ) ) {
+	} elseif ( ( in_array( 'switch', $order_type ) || $get_all )&& wcs_order_contains_switch( $order ) ) {
 		$contains_subscription = true;
 
 	}

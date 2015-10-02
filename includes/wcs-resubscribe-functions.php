@@ -110,12 +110,16 @@ function wcs_get_users_resubscribe_link_for_product( $product_id ) {
  * @return string
  * @since  2.0
  */
-function wcs_cart_contains_resubscribe() {
+function wcs_cart_contains_resubscribe( $cart = '' ) {
 
 	$contains_resubscribe = false;
 
-	if ( ! empty( WC()->cart->cart_contents ) ) {
-		foreach ( WC()->cart->cart_contents as $cart_item ) {
+	if ( empty( $cart ) ) {
+		$cart = WC()->cart;
+	}
+
+	if ( ! empty( $cart->cart_contents ) ) {
+		foreach ( $cart->cart_contents as $cart_item ) {
 			if ( isset( $cart_item['subscription_resubscribe'] ) ) {
 				$contains_resubscribe = $cart_item;
 				break;
@@ -124,6 +128,30 @@ function wcs_cart_contains_resubscribe() {
 	}
 
 	return $contains_resubscribe;
+}
+
+/**
+ * Get the subscription to which a renewal order relates.
+ *
+ * @param WC_Order|int $order The WC_Order object or ID of a WC_Order order.
+ * @since 2.0
+ */
+function wcs_get_subscriptions_for_resubscribe_order( $order ) {
+
+	if ( ! is_object( $order ) ) {
+		$order = wc_get_order( $order );
+	}
+
+	$subscriptions    = array();
+	$subscription_ids = get_post_meta( $order->id, '_subscription_resubscribe', false );
+
+	foreach ( $subscription_ids as $subscription_id ) {
+		if ( wcs_is_subscription( $subscription_id ) ) {
+			$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
+		}
+	}
+
+	return apply_filters( 'wcs_subscriptions_for_resubscribe_order', $subscriptions, $order );
 }
 
 /**

@@ -105,7 +105,7 @@ class WC_Subscriptions_Order {
 
 		$sign_up_fee = 0;
 
-		foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
+		foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) ) as $subscription ) {
 
 			if ( empty( $product_id ) ) {
 
@@ -350,9 +350,9 @@ class WC_Subscriptions_Order {
 	 */
 	public static function subscription_thank_you( $order_id ) {
 
-		if ( wcs_order_contains_subscription( $order_id, array( 'parent', 'renewal', 'switch' ) ) ) {
+		if ( wcs_order_contains_subscription( $order_id, 'any' ) ) {
 
-			$subscription_count = count( wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => array( 'parent', 'renewal', 'switch' ) ) ) );
+			$subscription_count = count( wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'any' ) ) );
 
 			$thank_you_message = '<p>' . _n( 'Your subscription will be activated when payment clears.', 'Your subscriptions will be activated when payment clears.', $subscription_count, 'woocommerce-subscriptions' ) . '</p>';
 
@@ -377,7 +377,7 @@ class WC_Subscriptions_Order {
 		global $post;
 
 		if ( 'order_status' == $column ) {
-			$contains_subscription = wcs_order_contains_subscription( $post->ID ) ? 'true' : 'false';
+			$contains_subscription = wcs_order_contains_subscription( $post->ID, 'parent' ) ? 'true' : 'false';
 			printf( '<span class="contains_subscription" data-contains_subscription="%s" style="display: none;"></span>', esc_attr( $contains_subscription ) );
 		}
 	}
@@ -391,7 +391,7 @@ class WC_Subscriptions_Order {
 	 */
 	public static function contains_subscription_hidden_field( $order_id ) {
 
-		$has_subscription = wcs_order_contains_subscription( $order_id ) ? 'true' : 'false';
+		$has_subscription = wcs_order_contains_subscription( $order_id, 'parent' ) ? 'true' : 'false';
 
 		echo '<input type="hidden" name="contains_subscription" value="' . esc_attr( $has_subscription ) . '">';
 	}
@@ -412,7 +412,7 @@ class WC_Subscriptions_Order {
 	 */
 	public static function maybe_record_subscription_payment( $order_id, $old_order_status, $new_order_status ) {
 
-		if ( wcs_order_contains_subscription( $order_id ) && ! wcs_order_contains_renewal( $order_id ) ) {
+		if ( wcs_order_contains_subscription( $order_id ) ) {
 
 			$subscriptions   = wcs_get_subscriptions_for_order( $order_id );
 			$was_activated   = false;
@@ -456,7 +456,7 @@ class WC_Subscriptions_Order {
 		$order_items_product_id = wcs_get_canonical_product_id( $order_item );
 		$item_is_subscription   = false;
 
-		foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
+		foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) ) as $subscription ) {
 			foreach ( $subscription->get_items() as $line_item ) {
 				if ( wcs_get_canonical_product_id( $line_item ) == $order_items_product_id ) {
 					$item_is_subscription = true;
@@ -507,7 +507,7 @@ class WC_Subscriptions_Order {
 		) );
 
 		foreach ( $order_ids as $index => $order_id ) {
-			if ( ! wcs_order_contains_subscription( $order_id ) ) {
+			if ( ! wcs_order_contains_subscription( $order_id, 'parent' ) ) {
 				unset( $order_ids[ $index ] );
 			}
 		}
@@ -542,10 +542,7 @@ class WC_Subscriptions_Order {
 	 */
 	public static function add_sub_info_email( $order, $is_admin_email, $plaintext = false ) {
 
-		$subscriptions = wcs_get_subscriptions_for_order( $order );
-		if ( empty( $subscriptions ) && wcs_order_contains_renewal( $order ) ) {
-			$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
-		}
+		$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'any' ) );
 
 		if ( ! empty( $subscriptions ) ) {
 
@@ -717,7 +714,7 @@ class WC_Subscriptions_Order {
 	 */
 	private static function get_matching_subscription( $order, $product_id = '' ) {
 
-		$subscriptions         = wcs_get_subscriptions_for_order( $order );
+		$subscriptions         = wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) );
 		$matching_subscription = null;
 
 		if ( ! empty( $product_id ) ) {
@@ -1105,7 +1102,7 @@ class WC_Subscriptions_Order {
 
 		$requires_manual_renewal = true;
 
-		foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
+		foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) ) as $subscription ) {
 			if ( ! $subscription->is_manual() ) {
 				$requires_manual_renewal = false;
 				break;
@@ -1168,7 +1165,7 @@ class WC_Subscriptions_Order {
 
 		$recurring_discount_cart = 0;
 
-		foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
+		foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) ) as $subscription ) {
 
 			// Find the total discount for all recurring items
 			if ( empty( $product_id ) ) {
@@ -1198,7 +1195,7 @@ class WC_Subscriptions_Order {
 
 		$recurring_discount_cart_tax = 0;
 
-		foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
+		foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) ) as $subscription ) {
 
 			// Find the total discount for all recurring items
 			if ( empty( $product_id ) ) {
@@ -1272,7 +1269,7 @@ class WC_Subscriptions_Order {
 
 		$recurring_shipping_tax_total = 0;
 
-		foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
+		foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) ) as $subscription ) {
 
 			// Find the total for all recurring items
 			if ( empty( $product_id ) ) {
@@ -1304,7 +1301,7 @@ class WC_Subscriptions_Order {
 
 		$recurring_shipping_total = 0;
 
-		foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
+		foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) ) as $subscription ) {
 
 			// Find the total for all recurring items
 			if ( empty( $product_id ) ) {
@@ -1333,7 +1330,7 @@ class WC_Subscriptions_Order {
 
 		$recurring_shipping_methods = array();
 
-		foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
+		foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) ) as $subscription ) {
 			$recurring_shipping_methods = array_merge( $recurring_shipping_methods, $subscription->get_shipping_methods() );
 		}
 
@@ -1351,7 +1348,7 @@ class WC_Subscriptions_Order {
 
 		$recurring_taxes = array();
 
-		foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
+		foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) ) as $subscription ) {
 			$recurring_taxes = array_merge( $recurring_taxes, $subscription->get_taxes() );
 		}
 
@@ -1369,7 +1366,7 @@ class WC_Subscriptions_Order {
 
 		$recurring_total_tax = 0;
 
-		foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
+		foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) ) as $subscription ) {
 
 			// Find the total for all recurring items
 			if ( empty( $product_id ) ) {
@@ -1411,7 +1408,7 @@ class WC_Subscriptions_Order {
 
 		$recurring_total = 0;
 
-		foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
+		foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) ) as $subscription ) {
 
 			// Find the total for all recurring items
 			if ( empty( $product_id ) ) {
@@ -1503,7 +1500,7 @@ class WC_Subscriptions_Order {
 
 		$billing_period = '';
 
-		foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
+		foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) ) as $subscription ) {
 
 			// Find the billing period discount for all recurring items
 			if ( empty( $product_id ) ) {
@@ -1538,7 +1535,7 @@ class WC_Subscriptions_Order {
 
 		$billing_interval = '';
 
-		foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
+		foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) ) as $subscription ) {
 
 			// Find the billing interval for all recurring items
 			if ( empty( $product_id ) ) {
@@ -1896,7 +1893,7 @@ class WC_Subscriptions_Order {
 
 		if ( ! wcs_order_contains_renewal( $order ) ) {
 
-			$subscriptions = wcs_get_subscriptions_for_order( $order );
+			$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) );
 
 			foreach ( $subscriptions as $subscription_id => $subscription ) {
 

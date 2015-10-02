@@ -48,7 +48,7 @@ class WCS_Download_Handler {
 	 */
 	public static function maybe_revoke_immediate_access( $grant_access, $download_id, $product_id, $order ) {
 
-		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_drip_downloadable_content_on_renewal', 'no' ) && ( wcs_is_subscription( $order->id ) || wcs_order_contains_subscription( $order, array( 'parent', 'renewal', 'switch' ) ) ) ) {
+		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_drip_downloadable_content_on_renewal', 'no' ) && ( wcs_is_subscription( $order->id ) || wcs_order_contains_subscription( $order, 'any' ) ) ) {
 			$grant_access = false;
 		}
 		return $grant_access;
@@ -65,8 +65,8 @@ class WCS_Download_Handler {
 		global $wpdb;
 		$order = wc_get_order( $order_id );
 
-		if ( wcs_order_contains_subscription( $order, array( 'parent', 'renewal' ) ) ) {
-			$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => array( 'parent', 'renewal' ) ) );
+		if ( wcs_order_contains_subscription( $order, 'any' ) ) {
+			$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => array( 'any' ) ) );
 		} else {
 			return;
 		}
@@ -134,8 +134,8 @@ class WCS_Download_Handler {
 	public static function get_item_downloads( $files, $item, $order ) {
 		global $wpdb;
 
-		if ( wcs_order_contains_subscription( $order, array( 'parent', 'renewal' ) ) ) {
-			$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => array( 'parent', 'renewal' ) ) );
+		if ( wcs_order_contains_subscription( $order, 'any' ) ) {
+			$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => array( 'any' ) ) );
 		} else {
 			return $files;
 		}

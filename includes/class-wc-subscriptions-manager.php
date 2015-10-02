@@ -565,7 +565,7 @@ class WC_Subscriptions_Manager {
 			_deprecated_argument( __METHOD__, '1.2', 'The "suspend" status value is deprecated. Use "on-hold"' );
 		}
 
-		foreach ( wcs_get_subscriptions_for_order( $order->id ) as $subscription_id => $subscription ) {
+		foreach ( wcs_get_subscriptions_for_order( $order->id, array( 'order_type' => 'parent' ) ) as $subscription_id => $subscription ) {
 
 			switch ( $status ) {
 				case 'cancelled' :
@@ -738,7 +738,7 @@ class WC_Subscriptions_Manager {
 	 */
 	public static function clear_users_subscriptions_from_order( $order ) {
 
-		foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription_id => $subscription ) {
+		foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) ) as $subscription_id => $subscription ) {
 			wp_delete_post( $subscription->id );
 		}
 
@@ -757,7 +757,7 @@ class WC_Subscriptions_Manager {
 		if ( 'shop_order' == get_post_type( $post_id ) ) {
 
 			// delete subscription
-			foreach ( wcs_get_subscriptions_for_order( $post_id ) as $subscription ) {
+			foreach ( wcs_get_subscriptions_for_order( $post_id, array( 'order_type' => 'parent' ) ) as $subscription ) {
 				wp_trash_post( $subscription->id );
 			}
 		}
@@ -1051,7 +1051,7 @@ class WC_Subscriptions_Manager {
 		// Get the ID of the first order item in a subscription created by this order
 		if ( empty( $product_id ) ) {
 
-			$subscriptions = wcs_get_subscriptions_for_order( $order_id );
+			$subscriptions = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'parent' ) );
 
 			foreach ( $subscriptions as $subscription ) {
 				$subscription_items = $subscription->get_items();
