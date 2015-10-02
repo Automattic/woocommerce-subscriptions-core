@@ -28,7 +28,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 		$this->setup_hooks();
 
 		// When a resubscribe order is created on checkout, record the resubscribe, attached after WC_Subscriptions_Checkout::process_checkout()
-		add_action( 'woocommerce_checkout_order_processed', array( &$this, 'maybe_record_resubscribe' ), 101 );
+		add_action( 'woocommerce_checkout_subscription_created', array( &$this, 'maybe_record_resubscribe' ), 10, 3 );
 
 		// Use original order price when resubscribing to products with addons (to ensure the adds on prices are included)
 		add_filter( 'woocommerce_product_addons_adjust_price', array( &$this, 'product_addons_adjust_price' ), 10, 2 );
@@ -84,21 +84,13 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	 *
 	 * @since 2.0
 	 */
-	public function maybe_record_resubscribe( $order_id ) {
+	public function maybe_record_resubscribe( $new_subscription, $order, $recurring_cart ) {
 
-		$cart_item = wcs_cart_contains_resubscribe();
+		$cart_item = wcs_cart_contains_resubscribe( $recurring_cart );
 
 		if ( false !== $cart_item ) {
-
-			$old_subscription = wcs_get_subscription( $cart_item[ $this->cart_item_key ]['subscription_id'] );
-			$subscriptions    = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'resubscribe' ) );
-			$new_subscription = array_shift( $subscriptions );
-
-			update_post_meta( $order_id, '_subscription_resubscribe', $old_subscription->id, true );
-
-			foreach ( $subscriptions as $new_subscription ) {
-				update_post_meta( $new_subscription->id, '_subscription_resubscribe', $old_subscription->id, true );
-			}
+			update_post_meta( $order->id, '_subscription_resubscribe', $cart_item[ $this->cart_item_key ]['subscription_id'], true );
+			update_post_meta( $new_subscription->id, '_subscription_resubscribe', $cart_item[ $this->cart_item_key ]['subscription_id'], true );
 		}
 	}
 
