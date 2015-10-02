@@ -149,19 +149,19 @@ class WC_Subscriptions_Admin {
 
 		// Subscription Price, Interval and Period
 		?><p class="form-field _subscription_price_fields _subscription_price_field">
-			<label for="_subscription_price"><?php echo sprintf( __( 'Subscription Price (%s)', 'woocommerce-subscriptions' ), get_woocommerce_currency_symbol() ); ?></label>
+			<label for="_subscription_price"><?php printf( esc_html__( 'Subscription Price (%s)', 'woocommerce-subscriptions' ), esc_html( get_woocommerce_currency_symbol() ) ); ?></label>
 			<span class="wrap">
-				<input type="text" id="_subscription_price" name="_subscription_price" class="wc_input_subscription_price" placeholder="<?php echo _x( 'e.g. 5.90', 'example price', 'woocommerce-subscriptions' ); ?>" step="any" min="0" value="<?php echo $chosen_price; ?>" />
+				<input type="text" id="_subscription_price" name="_subscription_price" class="wc_input_subscription_price" placeholder="<?php echo esc_attr_x( 'e.g. 5.90', 'example price', 'woocommerce-subscriptions' ); ?>" step="any" min="0" value="<?php echo esc_attr( $chosen_price ); ?>" />
 				<label for="_subscription_period_interval" class="wcs_hidden_label"><?php esc_html_e( 'Subscription Interval', 'woocommerce-subscriptions' ); ?></label>
 				<select id="_subscription_period_interval" name="_subscription_period_interval" class="wc_input_subscription_period_interval">
 				<?php foreach ( wcs_get_subscription_period_interval_strings() as $value => $label ) { ?>
-					<option value="<?php echo $value; ?>" <?php selected( $value, $chosen_interval, true ) ?>><?php echo $label; ?></option>
+					<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $value, $chosen_interval, true ) ?>><?php echo esc_html( $label ); ?></option>
 				<?php } ?>
 				</select>
 				<label for="_subscription_period" class="wcs_hidden_label"><?php esc_html_e( 'Subscription Period', 'woocommerce-subscriptions' ); ?></label>
 				<select id="_subscription_period" name="_subscription_period" class="wc_input_subscription_period last" >
 				<?php foreach ( wcs_get_subscription_period_strings() as $value => $label ) { ?>
-					<option value="<?php echo $value; ?>" <?php selected( $value, $chosen_period, true ) ?>><?php echo $label; ?></option>
+					<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $value, $chosen_period, true ) ?>><?php echo esc_html( $label ); ?></option>
 				<?php } ?>
 				</select>
 			</span>
@@ -197,18 +197,18 @@ class WC_Subscriptions_Admin {
 
 		// Trial Length
 		?><p class="form-field _subscription_trial_length_field">
-			<label for="_subscription_trial_length"><?php echo __( 'Free Trial', 'woocommerce-subscriptions' ); ?></label>
+			<label for="_subscription_trial_length"><?php esc_html_e( 'Free Trial', 'woocommerce-subscriptions' ); ?></label>
 			<span class="wrap">
-				<input type="text" id="_subscription_trial_length" name="_subscription_trial_length" class="wc_input_subscription_trial_length" value="<?php echo $chosen_trial_length; ?>" />
+				<input type="text" id="_subscription_trial_length" name="_subscription_trial_length" class="wc_input_subscription_trial_length" value="<?php echo esc_attr( $chosen_trial_length ); ?>" />
 				<label for="_subscription_trial_period" class="wcs_hidden_label"><?php esc_html_e( 'Subscription Trial Period', 'woocommerce-subscriptions' ); ?></label>
 				<select id="_subscription_trial_period" name="_subscription_trial_period" class="wc_input_subscription_trial_period last" >
 					<?php foreach ( wcs_get_available_time_periods() as $value => $label ) { ?>
-						<option value="<?php echo $value; ?>" <?php selected( $value, $chosen_trial_period, true ) ?>><?php echo $label; ?></option>
+						<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $value, $chosen_trial_period, true ) ?>><?php echo esc_html( $label ); ?></option>
 					<?php } ?>
 				</select>
 			</span>
 			<?php // translators: placeholder is trial period validation message if passed an invalid value (e.g. "Trial period can not exceed 4 weeks") ?>
-			<img class="help_tip" data-tip="<?php echo sprintf( _x( 'An optional period of time to wait before charging the first recurring payment. Any sign up fee will still be charged at the outset of the subscription. %s', 'Trial period field tooltip on Edit Product administration screen', 'woocommerce-subscriptions' ), self::get_trial_period_validation_message() ); ?>" src="<?php echo esc_url( WC()->plugin_url() ); ?>/assets/images/help.png" height="16" width="16" />
+			<img class="help_tip" data-tip="<?php printf( esc_attr_x( 'An optional period of time to wait before charging the first recurring payment. Any sign up fee will still be charged at the outset of the subscription. %s', 'Trial period field tooltip on Edit Product administration screen', 'woocommerce-subscriptions' ), esc_html( self::get_trial_period_validation_message() ) ); ?>" src="<?php echo esc_url( WC()->plugin_url() ); ?>/assets/images/help.png" height="16" width="16" />
 		</p><?php
 
 		do_action( 'woocommerce_subscriptions_product_options_pricing' );
