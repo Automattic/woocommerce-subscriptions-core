@@ -708,7 +708,7 @@ class WC_Subscription extends WC_Order {
 
 		$timestamps = array();
 		foreach ( $dates as $date_type => $datetime ) {
-			if ( ! empty( $datetime ) && false === strptime( $datetime, '%Y-%m-%d %H:%M:%S' ) ) {
+			if ( ! empty( $datetime ) && false === wcs_is_datetime_mysql_format( $datetime ) ) {
 				// translators: placeholder is date type (e.g. "end", "next_payment"...)
 				throw new InvalidArgumentException( sprintf( _x( 'Invalid %s date. The date must be of the format: "Y-m-d H:i:s".', 'appears in an error message if date is wrong format', 'woocommerce-subscriptions' ), $date_type ) );
 			}
