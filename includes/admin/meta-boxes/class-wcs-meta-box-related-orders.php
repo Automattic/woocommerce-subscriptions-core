@@ -62,6 +62,26 @@ class WCS_Meta_Box_Related_Orders {
 			$orders[] = $subscription;
 		}
 
+		//Resubscribed
+		$resubscribed_subscriptions = get_posts( array(
+			'meta_key' => '_subscription_resubscribe',
+			'meta_value' => $post->ID,
+			'post_type' => 'shop_subscription',
+			'post_status' => 'any',
+			'posts_per_page' => -1,
+		) );
+
+		foreach ( $resubscribed_subscriptions as $subscription ) {
+			$subscription = wcs_get_subscription( $subscription );
+			$subscription->relationship = _x( 'Resubscribed Subscription', 'relation to order', 'woocommerce-subscriptions' );
+			$orders[] = $subscription;
+		}
+
+		foreach ( wcs_get_subscriptions_for_order( $subscription->id, array( 'order_type' => array( 'resubscribe' ) ) ) as $subscription ) {
+			$subscription->relationship = _x( 'Original Subscription', 'relation to order', 'woocommerce-subscriptions' );
+			$orders[] = $subscription;
+		}
+
 		// Now, if we're on a single subscription or renewal order's page, display the parent orders
 		if ( 1 == count( $subscriptions ) ) {
 			foreach ( $subscriptions as $subscription ) {
@@ -74,6 +94,7 @@ class WCS_Meta_Box_Related_Orders {
 
 		// Finally, display the renewal orders
 		foreach ( $subscriptions as $subscription ) {
+
 			foreach ( $subscription->get_related_orders( 'all', 'renewal' ) as $order ) {
 				$order->relationship = _x( 'Renewal Order', 'relation to order', 'woocommerce-subscriptions' );
 				$orders[] = $order;
