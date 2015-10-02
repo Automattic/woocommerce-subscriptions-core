@@ -110,12 +110,16 @@ function wcs_get_users_resubscribe_link_for_product( $product_id ) {
  * @return string
  * @since  2.0
  */
-function wcs_cart_contains_resubscribe() {
+function wcs_cart_contains_resubscribe( $cart = '' ) {
 
 	$contains_resubscribe = false;
 
-	if ( ! empty( WC()->cart->cart_contents ) ) {
-		foreach ( WC()->cart->cart_contents as $cart_item ) {
+	if ( empty( $cart ) ) {
+		$cart = WC()->cart;
+	}
+
+	if ( ! empty( $cart->cart_contents ) ) {
+		foreach ( $cart->cart_contents as $cart_item ) {
 			if ( isset( $cart_item['subscription_resubscribe'] ) ) {
 				$contains_resubscribe = $cart_item;
 				break;
