@@ -511,7 +511,7 @@ function wcs_is_datetime_mysql_format( $time ) {
 	}
 
 	if ( function_exists( 'strptime' ) ) {
-		return strptime( $time, '%Y-%m-%d %H:%M:%S' );
+		return ( false !== strptime( $time, '%Y-%m-%d %H:%M:%S' ) ) ? true : false;
 	}
 
 	// parses for the pattern of YYYY-MM-DD HH:MM:SS, but won't check whether it's a valid timedate
