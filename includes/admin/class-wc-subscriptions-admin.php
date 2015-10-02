@@ -152,11 +152,13 @@ class WC_Subscriptions_Admin {
 			<label for="_subscription_price"><?php echo sprintf( __( 'Subscription Price (%s)', 'woocommerce-subscriptions' ), get_woocommerce_currency_symbol() ); ?></label>
 			<span class="wrap">
 				<input type="text" id="_subscription_price" name="_subscription_price" class="wc_input_subscription_price" placeholder="<?php echo _x( 'e.g. 5.90', 'example price', 'woocommerce-subscriptions' ); ?>" step="any" min="0" value="<?php echo $chosen_price; ?>" />
+				<label for="_subscription_period_interval" class="wcs_hidden_label"><?php esc_html_e( 'Subscription Interval', 'woocommerce-subscriptions' ); ?></label>
 				<select id="_subscription_period_interval" name="_subscription_period_interval" class="wc_input_subscription_period_interval">
 				<?php foreach ( wcs_get_subscription_period_interval_strings() as $value => $label ) { ?>
 					<option value="<?php echo $value; ?>" <?php selected( $value, $chosen_interval, true ) ?>><?php echo $label; ?></option>
 				<?php } ?>
 				</select>
+				<label for="_subscription_period" class="wcs_hidden_label"><?php esc_html_e( 'Subscription Period', 'woocommerce-subscriptions' ); ?></label>
 				<select id="_subscription_period" name="_subscription_period" class="wc_input_subscription_period last" >
 				<?php foreach ( wcs_get_subscription_period_strings() as $value => $label ) { ?>
 					<option value="<?php echo $value; ?>" <?php selected( $value, $chosen_period, true ) ?>><?php echo $label; ?></option>
@@ -198,7 +200,7 @@ class WC_Subscriptions_Admin {
 			<label for="_subscription_trial_length"><?php echo __( 'Free Trial', 'woocommerce-subscriptions' ); ?></label>
 			<span class="wrap">
 				<input type="text" id="_subscription_trial_length" name="_subscription_trial_length" class="wc_input_subscription_trial_length" value="<?php echo $chosen_trial_length; ?>" />
-
+				<label for="_subscription_trial_period" class="wcs_hidden_label"><?php esc_html_e( 'Subscription Trial Period', 'woocommerce-subscriptions' ); ?></label>
 				<select id="_subscription_trial_period" name="_subscription_trial_period" class="wc_input_subscription_trial_period last" >
 					<?php foreach ( wcs_get_available_time_periods() as $value => $label ) { ?>
 						<option value="<?php echo $value; ?>" <?php selected( $value, $chosen_trial_period, true ) ?>><?php echo $label; ?></option>

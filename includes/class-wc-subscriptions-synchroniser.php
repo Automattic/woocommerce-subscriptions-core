@@ -234,6 +234,7 @@ class WC_Subscriptions_Synchroniser {
 				<span class="wrap">
 					<input type="number" id="<?php echo self::$post_meta_key_day; ?>" name="<?php echo self::$post_meta_key_day; ?>" class="wc_input_subscription_payment_sync" value="<?php echo $payment_day; ?>" placeholder="<?php echo _x( 'Day', 'input field placeholder for day field for annual subscriptions', 'woocommerce-subscriptions' ); ?>"  />
 
+					<label for="<?php echo self::$post_meta_key_month; ?>" class="wcs_hidden_label"><?php esc_html_e( 'Month for Synchronisation', 'woocommerce-subscriptions' ); ?></label>
 					<select id="<?php echo self::$post_meta_key_month; ?>" name="<?php echo self::$post_meta_key_month; ?>" class="wc_input_subscription_payment_sync last" >
 						<?php foreach ( $wp_locale->month as $value => $label ) { ?>
 							<option value="<?php echo $value; ?>" <?php selected( $value, $payment_month, true ) ?>><?php echo $label; ?></option>
