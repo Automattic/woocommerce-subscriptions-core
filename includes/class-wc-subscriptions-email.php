@@ -200,8 +200,7 @@ class WC_Subscriptions_Email {
 	 * @deprecated 2.0
 	 */
 	public static function send_subscription_email( $user_id, $subscription_key ) {
-		_deprecated_function( __FUNCTION__, '2.0', __CLASS__ . '::send_email()' );
-		self::send_email( wcs_get_subscription_from_key( $subscription_key ) );
+		_deprecated_function( __FUNCTION__, '2.0' );
 	}
 }
 
