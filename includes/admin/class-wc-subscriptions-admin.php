@@ -135,6 +135,11 @@ class WC_Subscriptions_Admin {
 	public static function subscription_pricing_fields() {
 		global $post;
 
+		$subscription_price           = get_post_meta( $post->ID, '_subscription_price', true );
+		$subscription_period_interval = get_post_meta( $post->ID, '_subscription_period_interval', true );
+		$subscription_trial_length    = WC_Subscriptions_Product::get_trial_length( $post->ID );
+		$subscription_trial_period    = WC_Subscriptions_Product::get_trial_period( $post->ID );
+
 		// Set month as the default billing period
 		if ( ! $subscription_period = get_post_meta( $post->ID, '_subscription_period', true ) ) {
 		 	$subscription_period = 'month';
@@ -142,43 +147,29 @@ class WC_Subscriptions_Admin {
 
 		echo '<div class="options_group subscription_pricing show_if_subscription">';
 
-		// Subscription Price
-		woocommerce_wp_text_input( array(
-			'id'          => '_subscription_price',
-			'class'       => 'wc_input_subscription_price',
-			// translators: placeholder is a currency symbol / code
-			'label'       => sprintf( __( 'Subscription Price (%s)', 'woocommerce-subscriptions' ), get_woocommerce_currency_symbol() ),
-			'placeholder' => _x( 'e.g. 9.90', 'example price', 'woocommerce-subscriptions' ),
-			'type'        => 'text',
-			'custom_attributes' => array(
-					'step' => 'any',
-					'min'  => '0',
-			),
-		) );
-
-		// Subscription Period Interval
-		woocommerce_wp_select( array(
-			'id'          => '_subscription_period_interval',
-			'class'       => 'wc_input_subscription_period_interval',
-			'label'       => __( 'Subscription Periods', 'woocommerce-subscriptions' ),
-			'options'     => wcs_get_subscription_period_interval_strings(),
-			)
-		);
-
-		// Billing Period
-		woocommerce_wp_select( array(
-			'id'          => '_subscription_period',
-			'class'       => 'wc_input_subscription_period',
-			'label'       => __( 'Billing Period', 'woocommerce-subscriptions' ),
-			'value'       => $subscription_period,
-			'options'     => wcs_get_subscription_period_strings(),
-			)
-		);
+		// Subscription Price, Interval and Period
+		?><p class="form-field _subscription_price_fields _subscription_price_field">
+			<label for="_subscription_price"><?php echo sprintf( __( 'Subscription Price (%s)', 'woocommerce-subscriptions' ), get_woocommerce_currency_symbol() ); ?></label>
+			<span class="wrap">
+				<input type="text" id="_subscription_price" name="_subscription_price" class="wc_input_subscription_price" placeholder="<?php echo _x( 'e.g. 5.90', 'example price', 'woocommerce-subscriptions' ); ?>" step="any" min="0" value="<?php echo $subscription_price; ?>" />
+				<select id="_subscription_period_interval" name="_subscription_period_interval" class="wc_input_subscription_period_interval">
+				<?php foreach ( wcs_get_subscription_period_interval_strings() as $value => $label ) { ?>
+					<option value="<?php echo $value; ?>" <?php selected( $value, $subscription_period_interval, true ) ?>><?php echo $label; ?></option>
+				<?php } ?>
+				</select>
+				<select id="_subscription_period" name="_subscription_period" class="wc_input_subscription_period last" >
+				<?php foreach ( wcs_get_subscription_period_strings() as $value => $label ) { ?>
+					<option value="<?php echo $value; ?>" <?php selected( $value, $subscription_period, true ) ?>><?php echo $label; ?></option>
+				<?php } ?>
+				</select>
+			</span>
+			<img class="help_tip" data-tip="<?php esc_attr_e( 'Choose the subscription price, billing interval and period.', 'woocommerce-subscriptions' ); ?>" src="<?php echo esc_url( WC()->plugin_url() ); ?>/assets/images/help.png" height="16" width="16" />
+		</p><?php
 
 		// Subscription Length
 		woocommerce_wp_select( array(
 			'id'          => '_subscription_length',
-			'class'       => 'wc_input_subscription_length',
+			'class'       => 'wc_input_subscription_length select short',
 			'label'       => __( 'Subscription Length', 'woocommerce-subscriptions' ),
 			'options'     => wcs_get_subscription_ranges( $subscription_period ),
 			'desc_tip'    => true,
@@ -189,7 +180,7 @@ class WC_Subscriptions_Admin {
 		// Sign-up Fee
 		woocommerce_wp_text_input( array(
 			'id'          => '_subscription_sign_up_fee',
-			'class'       => 'wc_input_subscription_intial_price',
+			'class'       => 'wc_input_subscription_intial_price short',
 			// translators: %s is a currency symbol / code
 			'label'       => sprintf( __( 'Sign-up Fee (%s)', 'woocommerce-subscriptions' ), get_woocommerce_currency_symbol() ),
 			'placeholder' => _x( 'e.g. 9.90', 'example price', 'woocommerce-subscriptions' ),
@@ -203,23 +194,20 @@ class WC_Subscriptions_Admin {
 		) );
 
 		// Trial Length
-		woocommerce_wp_text_input( array(
-			'id'          => '_subscription_trial_length',
-			'class'       => 'wc_input_subscription_trial_length',
-			'label'       => __( 'Free Trial', 'woocommerce-subscriptions' ),
-		) );
+		?><p class="form-field _subscription_trial_length_field">
+			<label for="_subscription_trial_length"><?php echo __( 'Free Trial', 'woocommerce-subscriptions' ); ?></label>
+			<span class="wrap">
+				<input type="text" id="_subscription_trial_length" name="_subscription_trial_length" class="wc_input_subscription_trial_length" value="<?php echo $subscription_trial_length; ?>" />
 
-		// Trial Period
-		woocommerce_wp_select( array(
-			'id'          => '_subscription_trial_period',
-			'class'       => 'wc_input_subscription_trial_period',
-			'label'       => __( 'Subscription Trial Period', 'woocommerce-subscriptions' ),
-			'options'     => wcs_get_available_time_periods(),
-			// translators: placeholder is trial period validation message if passed an invalid value (e.g. "Trial period can not exceed 4 weeks")
-			'description' => sprintf( _x( 'An optional period of time to wait before charging the first recurring payment. Any sign up fee will still be charged at the outset of the subscription. %s', 'Trial period dropdown\'s description in pricing fields', 'woocommerce-subscriptions' ), self::get_trial_period_validation_message() ),
-			'desc_tip'    => true,
-			'value'       => WC_Subscriptions_Product::get_trial_period( $post->ID ), // Explicitly set value in to ensure backward compatibility
-		) );
+				<select id="_subscription_trial_period" name="_subscription_trial_period" class="wc_input_subscription_trial_period last" >
+					<?php foreach ( wcs_get_available_time_periods() as $value => $label ) { ?>
+						<option value="<?php echo $value; ?>" <?php selected( $value, $subscription_trial_period, true ) ?>><?php echo $label; ?></option>
+					<?php } ?>
+				</select>
+			</span>
+			<?php // translators: placeholder is trial period validation message if passed an invalid value (e.g. "Trial period can not exceed 4 weeks") ?>
+			<img class="help_tip" data-tip="<?php echo sprintf( _x( 'An optional period of time to wait before charging the first recurring payment. Any sign up fee will still be charged at the outset of the subscription. %s', 'Trial period field tooltip on Edit Product administration screen', 'woocommerce-subscriptions' ), self::get_trial_period_validation_message() ); ?>" src="<?php echo esc_url( WC()->plugin_url() ); ?>/assets/images/help.png" height="16" width="16" />
+		</p><?php
 
 		do_action( 'woocommerce_subscriptions_product_options_pricing' );
 

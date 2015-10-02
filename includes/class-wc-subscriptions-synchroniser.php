@@ -216,7 +216,7 @@ class WC_Subscriptions_Synchroniser {
 
 			woocommerce_wp_select( array(
 				'id'          => self::$post_meta_key,
-				'class'       => 'wc_input_subscription_payment_sync',
+				'class'       => 'wc_input_subscription_payment_sync select short',
 				'label'       => self::$sync_field_label . ':',
 				'options'     => self::get_billing_period_ranges( $subscription_period ),
 				'description' => self::$sync_description,
@@ -229,26 +229,21 @@ class WC_Subscriptions_Synchroniser {
 
 			echo '<div class="subscription_sync_annual" style="' . esc_attr( $display_annual_select ) . '">';
 
-			woocommerce_wp_text_input( array(
-				'id'            => self::$post_meta_key_day,
-				'class'         => 'wc_input_subscription_payment_sync',
-				'label'         => self::$sync_field_label . ':',
-				'placeholder'   => _x( 'Day', 'input field placeholder for day field for annual subscriptions', 'woocommerce-subscriptions' ),
-				'value'         => $payment_day,
-				'type'          => 'number',
-				)
-			);
+			?><p class="form-field _subscription_payment_sync_date_day_field">
+				<label for="_subscription_payment_sync_date_day"><?php echo self::$sync_field_label . ':'; ?></label>
+				<span class="wrap">
+					<input type="number" id="<?php echo self::$post_meta_key_day; ?>" name="<?php echo self::$post_meta_key_day; ?>" class="wc_input_subscription_payment_sync" value="<?php echo $payment_day; ?>" placeholder="<?php echo _x( 'Day', 'input field placeholder for day field for annual subscriptions', 'woocommerce-subscriptions' ); ?>"  />
 
-			woocommerce_wp_select( array(
-				'id'          => self::$post_meta_key_month,
-				'class'       => 'wc_input_subscription_payment_sync',
-				'label'       => '',
-				'options'     => $wp_locale->month,
-				'description' => self::$sync_description_year,
-				'desc_tip'    => true,
-				'value'       => $payment_month, // Explicity set value in to ensure backward compatibility
-				)
-			);
+					<select id="<?php echo self::$post_meta_key_month; ?>" name="<?php echo self::$post_meta_key_month; ?>" class="wc_input_subscription_payment_sync last" >
+						<?php foreach ( $wp_locale->month as $value => $label ) { ?>
+							<option value="<?php echo $value; ?>" <?php selected( $value, $payment_month, true ) ?>><?php echo $label; ?></option>
+						<?php } ?>
+					</select>
+
+					</select>
+				</span>
+				<img class="help_tip" data-tip="<?php echo self::$sync_description_year; ?>" src="<?php echo esc_url( WC()->plugin_url() ); ?>/assets/images/help.png" height="16" width="16" />
+			</p><?php
 
 			echo '</div>';
 			echo '</div>';
