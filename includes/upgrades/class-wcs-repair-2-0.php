@@ -71,12 +71,8 @@ class WCS_Repair_2_0 {
 			'trial_expiry_date',
 			'expiry_date',
 			'end_date',
-			'recurring_line_total',
-			'recurring_line_tax',
-			'recurring_line_subtotal',
-			'recurring_line_subtotal_tax',
 			) as $meta ) {
-			if ( ! array_key_exists( $meta, $subscription ) || empty( $subscription[ $meta ] ) ) {
+			if ( ! array_key_exists( $meta, $subscription ) || '' === $subscription[ $meta ] ) {
 				$repairs_needed[] = $meta;
 			}
 		}
