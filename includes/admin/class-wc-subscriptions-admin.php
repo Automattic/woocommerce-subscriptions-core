@@ -165,6 +165,7 @@ class WC_Subscriptions_Admin {
 			'class'       => 'wc_input_subscription_period',
 			'label'       => __( 'Billing Period', 'woocommerce-subscriptions' ),
 			'value'       => $subscription_period,
+			'description' => _x( 'for', 'for in "Every month _for_ 12 months"', 'woocommerce-subscriptions' ),
 			'options'     => wcs_get_subscription_period_strings(),
 			)
 		);
@@ -173,10 +174,8 @@ class WC_Subscriptions_Admin {
 		woocommerce_wp_select( array(
 			'id'          => '_subscription_length',
 			'class'       => 'wc_input_subscription_length',
-			'label'       => __( 'End After', 'woocommerce-subscriptions' ),
-			'options'     => wcs_get_subscription_payment_ranges( $subscription_period ),
-			'description' => __( 'The number of payments that the user will be charged as part of the subscription. This is also known as the length of the subscription.', 'woocommerce-subscriptions' ),
-			'desc_tip'    => true,
+			'label'       => __( 'Subscription Length', 'woocommerce-subscriptions' ),
+			'options'     => wcs_get_subscription_ranges( $subscription_period ),
 			)
 		);
 
@@ -296,7 +295,7 @@ class WC_Subscriptions_Admin {
 							<option value="variable_subscription_sign_up_fee"><?php esc_html_e( 'Subscription sign-up fee', 'woocommerce-subscriptions' ); ?></option>
 							<option value="variable_subscription_period_interval"><?php esc_html_e( 'Subscription billing interval', 'woocommerce-subscriptions' ); ?></option>
 							<option value="variable_subscription_period"><?php esc_html_e( 'Subscription period', 'woocommerce-subscriptions' ); ?></option>
-							<option value="variable_subscription_length"><?php esc_html_e( 'End after', 'woocommerce-subscriptions' ); ?></option>
+							<option value="variable_subscription_length"><?php esc_html_e( 'Subscription length', 'woocommerce-subscriptions' ); ?></option>
 							<option value="variable_subscription_trial_length"><?php esc_html_e( 'Free trial length', 'woocommerce-subscriptions' ); ?></option>
 							<option value="variable_subscription_trial_period"><?php esc_html_e( 'Free trial period', 'woocommerce-subscriptions' ); ?></option>
 						</optgroup>
@@ -621,7 +620,7 @@ class WC_Subscriptions_Admin {
 					'productType'              => WC_Subscriptions::$name,
 					'trialPeriodSingular'      => wcs_get_available_time_periods(),
 					'trialPeriodPlurals'       => wcs_get_available_time_periods( 'plural' ),
-					'subscriptionLengths'      => wcs_get_subscription_payment_ranges(),
+					'subscriptionLengths'      => wcs_get_subscription_ranges(),
 					'trialTooLongMessages'     => self::get_trial_period_validation_message( 'separate' ),
 					'bulkEditPeriodMessage'    => __( 'Enter the new period, either day, week, month or year:', 'woocommerce-subscriptions' ),
 					'bulkEditLengthMessage'    => __( 'Enter a new length (e.g. 5):', 'woocommerce-subscriptions' ),
@@ -695,7 +694,7 @@ class WC_Subscriptions_Admin {
 		}
 
 		if ( $is_woocommerce_screen || $is_activation_screen ) {
-			wp_enqueue_style( 'woocommerce_admin_styles' );
+			wp_enqueue_style( 'woocommerce_admin_styles', WC()->plugin_url() . '/assets/css/admin.css', array(), WC_Subscriptions::$version );
 			wp_enqueue_style( 'woocommerce_subscriptions_admin', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/css/admin.css', array( 'woocommerce_admin_styles' ), WC_Subscriptions::$version );
 		}
 
