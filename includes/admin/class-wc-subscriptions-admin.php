@@ -106,6 +106,11 @@ class WC_Subscriptions_Admin {
 		add_filter( 'woocommerce_get_formatted_order_total', __CLASS__ . '::maybe_remove_formatted_order_total_filter', 0, 2 );
 
 		add_filter( 'woocommerce_order_actions', __CLASS__ . '::add_subscription_actions', 10, 1 );
+
+		add_action( 'woocommerce_order_action_wcs_process_renewal', __CLASS__ .  '::process_renewal_action_request', 10, 1 );
+		add_action( 'woocommerce_order_action_wcs_generate_pending_renewal', __CLASS__ .  '::generate_pending_renewal_action_request', 10, 1 );
+
+
 	}
 
 	/**
@@ -1448,6 +1453,14 @@ class WC_Subscriptions_Admin {
 		}
 
 		return $actions;
+	}
+
+	public static function process_renewal_action_request( $subscription ){
+
+	}
+
+	public static function generate_pending_renewal_action_request( $subscription ){
+
 	}
 
 	/**
