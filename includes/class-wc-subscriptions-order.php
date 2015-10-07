@@ -1404,8 +1404,6 @@ class WC_Subscriptions_Order {
 	 * @since 1.2
 	 */
 	public static function get_recurring_total( $order ) {
-		_deprecated_function( __METHOD__, '2.0', 'the total for each subscription object. Recurring totals are now stored against the subscription object since Subscriptions v2.0 as an order can be used to create multiple different subscriptions with different recurring totals, so use the subscription object' );
-
 		$recurring_total = 0;
 
 		foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) ) as $subscription ) {
