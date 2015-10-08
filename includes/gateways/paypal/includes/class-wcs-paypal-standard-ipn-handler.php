@@ -463,7 +463,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 				}
 			} else { // WC 1.6.5 - WC 2.0 or invalid data
 
-				$order_id  = str_replace( self::$invoice_prefix, '', $args['invoice'] );
+				$order_id  = str_replace( WCS_PayPal::get_option( 'invoice_prefix' ), '', $args['invoice'] );
 				$order_key = $args['custom'];
 
 			}
