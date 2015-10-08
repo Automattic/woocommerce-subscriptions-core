@@ -90,7 +90,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			$subscription = wcs_get_subscription( wc_get_order_id_by_order_key( $subscription_key ) );
 		}
 
-		if ( $subscription->order_key !== $subscription_key ) {
+		if ( $subscription->order_key != $subscription_key ) {
 			WC_Gateway_Paypal::log( 'Subscription IPN Error: Subscription Key does not match invoice.' );
 			exit;
 		}
@@ -457,9 +457,18 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 					$order_id  = $order_details[0];
 					$order_key = $order_details[1];
 				} else {
-					// Subscription, but we didn't have the subscription data in old, serialized value
-					$order_id  = '';
-					$order_key = '';
+
+					// Subscription, but we didn't have the subscription data in old, serialized value, so we need to pull it based on the order
+					$subscriptions = wcs_get_subscriptions_for_order( $order_details[0], array( 'order_type' => array( 'parent' ) ) );
+
+					if ( ! empty( $subscriptions ) ) {
+						$subscription = array_pop( $subscriptions );
+						$order_id  = $subscription->id;
+						$order_key = $subscription->order_key;
+					} else {
+						$order_id  = '';
+						$order_key = '';
+					}
 				}
 			} else { // WC 1.6.5 - WC 2.0 or invalid data
 
