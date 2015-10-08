@@ -1397,7 +1397,7 @@ class WC_Subscriptions_Admin {
 		/**
 		 * Automatic Renewal Payments Support Status HTML Filter.
 		 *
-		 * @since 2.0-bleeding
+		 * @since 2.0
 		 * @param string $status_html
 		 * @param \WC_Payment_Gateway $gateway
 		 */
