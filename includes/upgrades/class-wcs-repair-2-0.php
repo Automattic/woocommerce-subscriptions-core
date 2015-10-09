@@ -126,12 +126,14 @@ class WCS_Repair_2_0 {
 			return $subscription;
 		}
 
-		WCS_Upgrade_Logger::add( sprintf( '-- For order %d: Repairing %s for subscription.', $subscription['order_id'], $subscription_meta_key ) );
-
 		if ( array_key_exists( $item_meta_key, $item_meta ) && ! empty( $item_meta[ $item_meta_key ] ) ) {
-			WCS_Upgrade_Logger::add( sprintf( '-- For order %d: copying %s from item_meta to %s on subscription.', $subscription['order_id'], $item_meta_key, $subscription_meta_key ) );
-			$subscription[ $subscription_meta_key ] = $item_meta[ $item_meta_key ][0];
-		} elseif ( ! array_key_exists( $subscription_meta_key, $subscription ) ) {
+			// only do the copy if the value on item meta is actually different to what the subscription has
+			// otherwise it'd be an extra line in the log file for no actual use
+			if ( ! array_key_exists( $subscription_meta_key, $subscription ) || $item_meta[ $item_meta_key ][0] != $subscription[ $subscription_meta_key ] ) {
+				WCS_Upgrade_Logger::add( sprintf( '-- For order %d: copying %s from item_meta to %s on subscription.', $subscription['order_id'], $item_meta_key, $subscription_meta_key ) );
+				$subscription[ $subscription_meta_key ] = $item_meta[ $item_meta_key ][0];
+			}
+		} elseif ( ! array_key_exists( $item_meta_key, $item_meta ) ) {
 			WCS_Upgrade_Logger::add( sprintf( '-- For order %d: setting an empty %s on old subscription, item meta was not helpful.', $subscription['order_id'], $subscription_meta_key ) );
 			$subscription[ $subscription_meta_key ] = $default_value;
 		}
