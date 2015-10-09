@@ -115,7 +115,7 @@ class WCS_Remove_Item {
 					$line_item  = $line_items[ $item_id ];
 					$product_id = wcs_get_canonical_product_id( $line_item );
 
-					wcs_revoke_downloadable_file_permission( $product_id, $subscription->id, $subscription->get_user_id() );
+					WCS_Download_Handler::revoke_downloadable_file_permission( $product_id, $subscription->id, $subscription->get_user_id() );
 
 					// remove the line item from subscription but preserve its data in the DB
 					wc_update_order_item( $item_id, array( 'order_item_type' => 'line_item_removed' ) );
