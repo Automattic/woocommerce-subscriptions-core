@@ -416,6 +416,15 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			update_post_meta( $subscription->id, '_paypal_transaction_ids', $handled_transactions );
 		}
 
+		// Log completion
+		$log_message = 'IPN subscription request processed for ' . $subscription->id;
+
+		if ( isset( $ipn_id ) && ! empty( $ipn_id ) ) {
+			$log_message .= sprintf( ' (%s)', $ipn_id );
+		}
+
+		WC_Gateway_Paypal::log( $log_message );
+
 		// Prevent default IPN handling for subscription txn_types
 		exit;
 	}
