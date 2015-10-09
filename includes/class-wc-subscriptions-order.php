@@ -1370,12 +1370,12 @@ class WC_Subscriptions_Order {
 
 			// Find the total for all recurring items
 			if ( empty( $product_id ) ) {
-				$recurring_total_tax += $subscription->get_tax_totals();
+				$recurring_total_tax += $subscription->get_total_tax();
 			} else {
 				// We want the discount for a specific item (so we need to find if this subscription contains that item)
 				foreach ( $subscription->get_items() as $line_item ) {
 					if ( wcs_get_canonical_product_id( $line_item ) == $product_id ) {
-						$recurring_total_tax += $subscription->get_tax_totals();
+						$recurring_total_tax += $subscription->get_total_tax();
 						break;
 					}
 				}
