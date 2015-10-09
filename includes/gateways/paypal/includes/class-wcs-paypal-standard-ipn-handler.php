@@ -90,6 +90,11 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			$subscription = wcs_get_subscription( wc_get_order_id_by_order_key( $subscription_key ) );
 		}
 
+		if ( empty( $subscription ) ) {
+			WC_Gateway_Paypal::log( 'Subscription IPN Error: Could not find matching Subscription.' );
+			exit;
+		}
+
 		if ( $subscription->order_key != $subscription_key ) {
 			WC_Gateway_Paypal::log( 'Subscription IPN Error: Subscription Key does not match invoice.' );
 			exit;
