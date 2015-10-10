@@ -393,12 +393,24 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 				break;
 
 			case 'subscr_failed': // Subscription sign up failed
-			case 'recurring_payment_suspended_due_to_max_failed_payment': // Subscription sign up failed
+			case 'recurring_payment_suspended_due_to_max_failed_payment': // Recurring payment failed
+
+				$ipn_failure_note = __( 'IPN subscription payment failure.', 'woocommerce-subscriptions' );
+
+				if ( ! $is_first_payment && ! $is_renewal_sign_up_after_failure ) {
+					// Generate a renewal order to record the failed payment
+					$renewal_order = wcs_create_renewal_order( $subscription );
+
+					// Set PayPal as the payment method
+					$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
+					$renewal_order->set_payment_method( $available_gateways['paypal'] );
+					$renewal_order->add_order_note( $ipn_failure_note );
+				}
 
 				WC_Gateway_Paypal::log( 'IPN subscription payment failure for subscription ' . $subscription->id );
 
 				// Subscription Payment completed
-				$subscription->add_order_note( __( 'IPN subscription payment failure.', 'woocommerce-subscriptions' ) );
+				$subscription->add_order_note( $ipn_failure_note );
 
 				$subscription->payment_failed();
 
