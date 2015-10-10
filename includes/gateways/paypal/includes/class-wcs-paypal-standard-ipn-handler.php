@@ -61,11 +61,6 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			return;
 		}
 
-		if ( 'recurring_payment_suspended_due_to_max_failed_payment' == $transaction_details['txn_type'] && isset( $transaction_details['rp_invoice_id'] ) ) {
-			WC_Gateway_Paypal::log( 'Returning as "recurring_payment_suspended_due_to_max_failed_payment" transaction is for a subscription created with Express Checkout' );
-			return;
-		}
-
 		$transaction_details['txn_type'] = strtolower( $transaction_details['txn_type'] );
 
 		$this->process_ipn_request( $transaction_details );
@@ -88,6 +83,11 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 		// We have an invalid $subscription, probably because invoice_prefix has changed since the subscription was first created, so get the subscription by order key
 		if ( ! isset( $subscription->id ) ) {
 			$subscription = wcs_get_subscription( wc_get_order_id_by_order_key( $subscription_key ) );
+		}
+
+		if ( 'recurring_payment_suspended_due_to_max_failed_payment' == $transaction_details['txn_type'] && empty( $subscription ) ) {
+			WC_Gateway_Paypal::log( 'Returning as "recurring_payment_suspended_due_to_max_failed_payment" transaction is for a subscription created with Express Checkout' );
+			return;
 		}
 
 		if ( empty( $subscription ) ) {
