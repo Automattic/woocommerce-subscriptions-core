@@ -41,6 +41,10 @@ class WC_Subscriptions_Order {
 		// Record initial payment against the subscription & set start date based on that payment
 		add_action( 'woocommerce_order_status_changed', __CLASS__ . '::maybe_record_subscription_payment', 9, 3 );
 
+		// Also hook onto `woocommerce_order_status_processing` and `woocommerce_order_status_completed` to process status and inital payment before order emails are sent (ensures download links are handled correctly)
+		add_action( 'woocommerce_order_status_processing', __CLASS__ . '::maybe_record_subscription_payment', 9, 1 );
+		add_action( 'woocommerce_order_status_completed', __CLASS__ . '::maybe_record_subscription_payment', 9, 1 );
+
 		// Sometimes, even if the order total is $0, the order still needs payment
 		add_filter( 'woocommerce_order_needs_payment', __CLASS__ . '::order_needs_payment' , 10, 3 );
 
@@ -410,13 +414,23 @@ class WC_Subscriptions_Order {
 	 * @param $new_order_status
 	 * @since 2.0
 	 */
-	public static function maybe_record_subscription_payment( $order_id, $old_order_status, $new_order_status ) {
+	public static function maybe_record_subscription_payment( $order_id, $old_order_status = '', $new_order_status = '' ) {
 
 		if ( wcs_order_contains_subscription( $order_id ) ) {
 
 			$subscriptions   = wcs_get_subscriptions_for_order( $order_id );
 			$was_activated   = false;
 			$order_completed = in_array( $new_order_status, array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id ), 'processing', 'completed' ) ) && in_array( $old_order_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ) ) );
+
+			// Fall back if only the order_id is provided
+			if ( empty( $old_order_status ) && empty( $new_order_status ) ) {
+				$order = wc_get_order( $order_id );
+				$new_order_status = $order->get_status();
+
+				if ( $order->has_status( array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id ), 'processing', 'completed' ) ) ) {
+					$order_completed = true;
+				}
+			}
 
 			foreach ( $subscriptions as $subscription ) {
 
