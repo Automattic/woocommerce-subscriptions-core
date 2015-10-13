@@ -313,6 +313,21 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 							}
 						}
 
+						// to cover the case when PayPal drank too much coffee and sent IPNs early - needs to happen before $renewal_order->payment_complete
+						$update_dates = array();
+
+						if ( $is_first_payment && $subscription->get_time( 'trial_end' ) > current_time( 'timestamp', true ) ) {
+							$update_dates['trial_end'] = gmdate( 'Y-m-d H:i:s', gmdate( 'U' ) - 1 );
+						}
+
+						if ( $subscription->get_time( 'next_payment' ) > current_time( 'timestamp', true ) ) {
+							$update_dates['next_payment'] = gmdate( 'Y-m-d H:i:s', gmdate( 'U' ) - 1 );
+						}
+
+						if ( ! empty( $update_dates ) ) {
+							$subscription->update_dates( $update_dates );
+						}
+
 						$renewal_order->payment_complete( $transaction_details['txn_id'] );
 
 						$renewal_order->add_order_note( __( 'IPN subscription payment completed.', 'woocommerce-subscriptions' ) );
