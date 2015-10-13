@@ -254,6 +254,11 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			case 'subscr_payment':
 
 				if ( ! $is_first_payment && ! $is_renewal_sign_up_after_failure ) {
+
+					if ( $subscription->has_status( 'active' ) ) {
+						$subscription->update_status( 'on-hold' );
+					}
+
 					// Generate a renewal order to record the payment (and determine how much is due)
 					$renewal_order = wcs_create_renewal_order( $subscription );
 
