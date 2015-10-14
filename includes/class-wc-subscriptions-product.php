@@ -902,7 +902,7 @@ class WC_Subscriptions_Product {
 	 */
 	public static function is_purchasable( $is_purchasable, $product ) {
 
-		if ( self::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && is_user_logged_in() && ( ( 'active' == $product->limit_subscriptions && wcs_user_has_subscription( 0, $product->id, 'on-hold' ) ) || wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) && false === strpos( $_SERVER['REQUEST_URI'], 'order-received' ) ) { // we can't use is_order_received_page() becuase get_cart_from_session() is called before the query vars are setup
+		if ( self::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && is_user_logged_in() && ( ( 'active' == $product->limit_subscriptions && wcs_user_has_subscription( 0, $product->id, 'on-hold' ) ) || wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) && false === strpos( $_SERVER['REQUEST_URI'], 'order-received' ) && false === strpos( $_SERVER['REQUEST_URI'], 'wc-api/wcs_paypal' ) ) { // we can't use is_order_received_page() becuase get_cart_from_session() is called before the query vars are setup
 			$is_purchasable = false;
 		}
 
