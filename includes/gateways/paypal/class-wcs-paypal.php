@@ -203,6 +203,12 @@ class WCS_PayPal {
 							throw new Exception( $billing_agreement_response->get_api_error_message(), $billing_agreement_response->get_api_error_code() );
 						}
 
+						// We're changing the payment method for a subscription, make sure we update it before updating the billing agreement ID so that an old PayPal subscription can be cancelled if the existing payment method is also PayPal
+						if ( wcs_is_subscription( $order ) ) {
+							WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $order, 'paypal' );
+							$redirect_url = add_query_arg( 'utm_nooverride', '1', $order->get_view_order_url() );
+						}
+
 						// Store the billing agreement ID on the order and subscriptions
 						wcs_set_paypal_id( $order, $billing_agreement_response->get_billing_agreement_id() );
 
@@ -210,10 +216,13 @@ class WCS_PayPal {
 							wcs_set_paypal_id( $subscription, $billing_agreement_response->get_billing_agreement_id() );
 						}
 
-						self::process_subscription_payment( $order->get_total(), $order );
+						if ( ! wcs_is_subscription( $order ) ) {
+							self::process_subscription_payment( $order->get_total(), $order );
+							$redirect_url = add_query_arg( 'utm_nooverride', '1', $order->get_checkout_order_received_url() );
+						}
 
 						// redirect customer to order received page
-						wp_safe_redirect( esc_url( add_query_arg( 'utm_nooverride', '1', $order->get_checkout_order_received_url() ) ) );
+						wp_safe_redirect( esc_url( $redirect_url ) );
 
 					} else {
 
