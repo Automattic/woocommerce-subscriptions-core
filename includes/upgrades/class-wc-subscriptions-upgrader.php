@@ -589,7 +589,8 @@ class WC_Subscriptions_Upgrader {
 				%s
 			) AS a3 USING (order_item_id)
 			WHERE meta.meta_key REGEXP '_subscription_(.*)|_product_id|_variation_id'
-			AND meta.order_item_id = a3.order_item_id", $select, $limit );
+			AND meta.order_item_id = a3.order_item_id
+			AND items.order_item_id IS NOT NULL", $select, $limit );
 
 		return $query;
 	}
