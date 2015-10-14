@@ -656,7 +656,7 @@ class WC_Subscriptions_Cart {
 					// Create shipping packages for each subscription item
 					if ( self::cart_contains_subscriptions_needing_shipping() ) {
 
-						$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+						$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', array() );
 
 						// Don't remove any subscriptions with a free trial from the shipping packages
 						remove_filter( 'woocommerce_cart_shipping_packages', __CLASS__ . '::set_cart_shipping_packages', -10, 1 );
