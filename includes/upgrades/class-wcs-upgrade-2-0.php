@@ -82,6 +82,7 @@ class WCS_Upgrade_2_0 {
 					'order_id'         => $old_subscription['order_id'],
 					'customer_id'      => $old_subscription['user_id'],
 					'start_date'       => $old_subscription['start_date'],
+					'customer_note'    => ( ! empty( $original_order->customer_note ) ) ? $original_order->customer_note : '',
 					'billing_period'   => $old_subscription['period'],
 					'billing_interval' => $old_subscription['interval'],
 					'order_version'    => ( ! empty( $original_order->order_version ) ) ? $original_order->order_version : '', // Subscriptions will default to WC_Version if $original_order->order_version is not set, but we want the version set at the time of the order
