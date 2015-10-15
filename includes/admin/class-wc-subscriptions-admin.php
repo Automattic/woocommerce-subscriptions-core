@@ -1431,11 +1431,11 @@ class WC_Subscriptions_Admin {
 	 * @since 2.0
 	 */
 	public static function add_subscription_actions( $actions ) {
+		global $theorder;
 
-		if ( isset( $_GET['post'] ) && wcs_is_subscription( $_GET['post'] ) ) {
+		if ( wcs_is_subscription( $theorder ) ) {
 
 			$subscription = wcs_get_subscription( $_GET['post'] );
-
 			if ( $subscription->payment_method_supports( 'subscriptions' ) && $subscription->payment_method_supports( 'subscription_date_changes' ) ) {
 				$actions['wcs_process_renewal']          = 'Process renewal';
 				$actions['wcs_generate_pending_renewal'] = 'Generate pending renewal order';
@@ -1445,12 +1445,24 @@ class WC_Subscriptions_Admin {
 		return $actions;
 	}
 
+	/**
+	 * Handles the action request to process a renewal order.
+	 *
+	 * @param array $subscription
+	 * @since 2.0
+	 */
 	public static function process_renewal_action_request( $subscription ){
-
+		do_action( 'woocommerce_scheduled_subscription_payment', $subscription->id );
 	}
 
+	/**
+	 * Handles the action request to generate a pending renewal order.
+	 *
+	 * @param array $subscription
+	 * @since 2.0
+	 */
 	public static function generate_pending_renewal_action_request( $subscription ){
-
+		WC_Subscriptions_Manager::prepare_renewal( $subscription->id );
 	}
 
 	/**
