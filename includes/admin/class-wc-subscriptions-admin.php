@@ -1435,10 +1435,10 @@ class WC_Subscriptions_Admin {
 
 		if ( wcs_is_subscription( $theorder ) ) {
 
-			$subscription = wcs_get_subscription( $_GET['post'] );
+			$subscription = wcs_get_subscription( $theorder );
 			if ( $subscription->payment_method_supports( 'subscriptions' ) && $subscription->payment_method_supports( 'subscription_date_changes' ) ) {
-				$actions['wcs_process_renewal']          = 'Process renewal';
-				$actions['wcs_generate_pending_renewal'] = 'Generate pending renewal order';
+				$actions['wcs_process_renewal']          = esc_html__( 'Process renewal', 'woocommerce-subscriptions' );
+				$actions['wcs_generate_pending_renewal'] = esc_html__( 'Generate pending renewal order', 'woocommerce-subscriptions' );
 			}
 		}
 
