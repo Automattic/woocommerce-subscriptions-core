@@ -185,7 +185,7 @@ class WCS_Filter_Deprecator extends WCS_Hook_Deprecator {
 			// New arg spec: $renewal_order, $subscription
 			// Old arg spec: $renewal_order, $original_order, $product_id, $new_order_role
 			case 'woocommerce_subscriptions_renewal_order_created' :
-				$return_value = apply_filters( $old_hook, $return_value, self::get_order( $new_callback_args[1] ), self::get_product_id( $new_callback_args[1] ), 'child' );
+				do_action( $old_hook, $return_value, self::get_order( $new_callback_args[1] ), self::get_product_id( $new_callback_args[1] ), 'child' );
 				break;
 
 			// New arg spec: $renewal_order, $subscription

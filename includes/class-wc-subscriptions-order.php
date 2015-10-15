@@ -1370,12 +1370,12 @@ class WC_Subscriptions_Order {
 
 			// Find the total for all recurring items
 			if ( empty( $product_id ) ) {
-				$recurring_total_tax += $subscription->get_tax_totals();
+				$recurring_total_tax += $subscription->get_total_tax();
 			} else {
 				// We want the discount for a specific item (so we need to find if this subscription contains that item)
 				foreach ( $subscription->get_items() as $line_item ) {
 					if ( wcs_get_canonical_product_id( $line_item ) == $product_id ) {
-						$recurring_total_tax += $subscription->get_tax_totals();
+						$recurring_total_tax += $subscription->get_total_tax();
 						break;
 					}
 				}
@@ -1404,8 +1404,6 @@ class WC_Subscriptions_Order {
 	 * @since 1.2
 	 */
 	public static function get_recurring_total( $order ) {
-		_deprecated_function( __METHOD__, '2.0', 'the total for each subscription object. Recurring totals are now stored against the subscription object since Subscriptions v2.0 as an order can be used to create multiple different subscriptions with different recurring totals, so use the subscription object' );
-
 		$recurring_total = 0;
 
 		foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) ) as $subscription ) {

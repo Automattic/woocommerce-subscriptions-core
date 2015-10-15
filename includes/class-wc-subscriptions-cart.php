@@ -36,6 +36,7 @@ class WC_Subscriptions_Cart {
 		// Make sure WC calculates total on sign up fee + price per period, and keep a record of the price per period
 		add_action( 'woocommerce_before_calculate_totals', __CLASS__ . '::add_calculation_price_filter', 10 );
 		add_action( 'woocommerce_calculate_totals', __CLASS__ . '::remove_calculation_price_filter', 10 );
+		add_action( 'woocommerce_after_calculate_totals', __CLASS__ . '::remove_calculation_price_filter', 10 );
 
 		add_filter( 'woocommerce_calculated_total', __CLASS__ . '::calculate_subscription_totals', 1000, 2 );
 
@@ -656,7 +657,7 @@ class WC_Subscriptions_Cart {
 					// Create shipping packages for each subscription item
 					if ( self::cart_contains_subscriptions_needing_shipping() ) {
 
-						$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+						$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', array() );
 
 						// Don't remove any subscriptions with a free trial from the shipping packages
 						remove_filter( 'woocommerce_cart_shipping_packages', __CLASS__ . '::set_cart_shipping_packages', -10, 1 );

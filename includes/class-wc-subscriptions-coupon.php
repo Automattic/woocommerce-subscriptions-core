@@ -219,6 +219,10 @@ class WC_Subscriptions_Coupon {
 	 */
 	public static function validate_subscription_coupon( $valid, $coupon ) {
 
+		if ( ! apply_filters( 'woocommerce_subscriptions_validate_coupon_type', true, $coupon, $valid ) ) {
+			return $valid;
+		}
+
 		self::$coupon_error = '';
 
 		// ignore non-subscription coupons

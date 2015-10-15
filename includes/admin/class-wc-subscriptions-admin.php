@@ -1297,9 +1297,9 @@ class WC_Subscriptions_Admin {
 				'status'  => 'active',
 			)
 		);
-		$status = $attributes['status'];
 
 		$subscriptions = wcs_get_users_subscriptions( $attributes['user_id'] );
+
 		if ( empty( $subscriptions ) ) {
 			return '<ul class="user-subscriptions no-user-subscriptions">
 						<li>No subscriptions found.</li>
@@ -1307,20 +1307,10 @@ class WC_Subscriptions_Admin {
 		}
 
 		$list = '<ul class="user-subscriptions">';
+
 		foreach ( $subscriptions as $subscription ) {
-			if ( $subscription['status'] == $status || 'all' == $status ) {
-
-				$subscription_details = WC_Subscriptions_Order::get_item_name( $subscription['order_id'], $subscription['product_id'] );
-
-				$order      = new WC_Order( $subscription['order_id'] );
-				$order_item = WC_Subscriptions_Order::get_item_by_product_id( $subscription['order_id'], $subscription['product_id'] );
-				$product    = $order->get_product_from_item( $order_item );
-
-				if ( isset( $product->variation_data ) ) {
-					$subscription_details .= ' <span class="subscription-variation-data">(' . woocommerce_get_formatted_variation( $product->variation_data, true ) . ')</span>';
-				}
-
-				$list .= sprintf( '<li>%s</li>', $subscription_details );
+			if ( 'all' == $attributes['status'] || $subscription->has_status( $attributes['status'] ) ) {
+				$list .= sprintf( '<li><a href="%s">Subscription %s</a></li>', $subscription->get_view_order_url(), $subscription->get_order_number() );
 			}
 		}
 		$list .= '</ul>';
@@ -1404,7 +1394,7 @@ class WC_Subscriptions_Admin {
 		/**
 		 * Automatic Renewal Payments Support Status HTML Filter.
 		 *
-		 * @since 2.0-bleeding
+		 * @since 2.0
 		 * @param string $status_html
 		 * @param \WC_Payment_Gateway $gateway
 		 */

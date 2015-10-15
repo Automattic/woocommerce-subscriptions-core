@@ -61,11 +61,6 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			return;
 		}
 
-		if ( 'recurring_payment_suspended_due_to_max_failed_payment' == $transaction_details['txn_type'] && isset( $transaction_details['rp_invoice_id'] ) ) {
-			WC_Gateway_Paypal::log( 'Returning as "recurring_payment_suspended_due_to_max_failed_payment" transaction is for a subscription created with Express Checkout' );
-			return;
-		}
-
 		$transaction_details['txn_type'] = strtolower( $transaction_details['txn_type'] );
 
 		$this->process_ipn_request( $transaction_details );
@@ -90,7 +85,17 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			$subscription = wcs_get_subscription( wc_get_order_id_by_order_key( $subscription_key ) );
 		}
 
-		if ( $subscription->order_key !== $subscription_key ) {
+		if ( 'recurring_payment_suspended_due_to_max_failed_payment' == $transaction_details['txn_type'] && empty( $subscription ) ) {
+			WC_Gateway_Paypal::log( 'Returning as "recurring_payment_suspended_due_to_max_failed_payment" transaction is for a subscription created with Express Checkout' );
+			return;
+		}
+
+		if ( empty( $subscription ) ) {
+			WC_Gateway_Paypal::log( 'Subscription IPN Error: Could not find matching Subscription.' );
+			exit;
+		}
+
+		if ( $subscription->order_key != $subscription_key ) {
 			WC_Gateway_Paypal::log( 'Subscription IPN Error: Subscription Key does not match invoice.' );
 			exit;
 		}
@@ -249,6 +254,11 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			case 'subscr_payment':
 
 				if ( ! $is_first_payment && ! $is_renewal_sign_up_after_failure ) {
+
+					if ( $subscription->has_status( 'active' ) ) {
+						$subscription->update_status( 'on-hold' );
+					}
+
 					// Generate a renewal order to record the payment (and determine how much is due)
 					$renewal_order = wcs_create_renewal_order( $subscription );
 
@@ -306,6 +316,21 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 								$subscription->add_order_note( __( 'IPN subscription failing payment method changed.', 'woocommerce-subscriptions' ) );
 							}
+						}
+
+						// to cover the case when PayPal drank too much coffee and sent IPNs early - needs to happen before $renewal_order->payment_complete
+						$update_dates = array();
+
+						if ( $is_first_payment && $subscription->get_time( 'trial_end' ) > current_time( 'timestamp', true ) ) {
+							$update_dates['trial_end'] = gmdate( 'Y-m-d H:i:s', gmdate( 'U' ) - 1 );
+						}
+
+						if ( $subscription->get_time( 'next_payment' ) > current_time( 'timestamp', true ) ) {
+							$update_dates['next_payment'] = gmdate( 'Y-m-d H:i:s', gmdate( 'U' ) - 1 );
+						}
+
+						if ( ! empty( $update_dates ) ) {
+							$subscription->update_dates( $update_dates );
 						}
 
 						$renewal_order->payment_complete( $transaction_details['txn_id'] );
@@ -388,12 +413,24 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 				break;
 
 			case 'subscr_failed': // Subscription sign up failed
-			case 'recurring_payment_suspended_due_to_max_failed_payment': // Subscription sign up failed
+			case 'recurring_payment_suspended_due_to_max_failed_payment': // Recurring payment failed
+
+				$ipn_failure_note = __( 'IPN subscription payment failure.', 'woocommerce-subscriptions' );
+
+				if ( ! $is_first_payment && ! $is_renewal_sign_up_after_failure ) {
+					// Generate a renewal order to record the failed payment
+					$renewal_order = wcs_create_renewal_order( $subscription );
+
+					// Set PayPal as the payment method
+					$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
+					$renewal_order->set_payment_method( $available_gateways['paypal'] );
+					$renewal_order->add_order_note( $ipn_failure_note );
+				}
 
 				WC_Gateway_Paypal::log( 'IPN subscription payment failure for subscription ' . $subscription->id );
 
 				// Subscription Payment completed
-				$subscription->add_order_note( __( 'IPN subscription payment failure.', 'woocommerce-subscriptions' ) );
+				$subscription->add_order_note( $ipn_failure_note );
 
 				$subscription->payment_failed();
 
@@ -410,6 +447,15 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			$handled_transactions[] = $transaction_id;
 			update_post_meta( $subscription->id, '_paypal_transaction_ids', $handled_transactions );
 		}
+
+		// Log completion
+		$log_message = 'IPN subscription request processed for ' . $subscription->id;
+
+		if ( isset( $ipn_id ) && ! empty( $ipn_id ) ) {
+			$log_message .= sprintf( ' (%s)', $ipn_id );
+		}
+
+		WC_Gateway_Paypal::log( $log_message );
 
 		// Prevent default IPN handling for subscription txn_types
 		exit;
@@ -431,41 +477,94 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 	 */
 	public static function get_order_id_and_key( $args, $order_type = 'shop_order' ) {
 
-		// WC < 1.6.5
-		if ( is_numeric( $args['custom'] ) && 'shop_order' == $order_type ) {
-
-			$order_id  = $args['custom'];
-			$order_key = $args['invoice'];
-
+		if ( isset( $args['subscr_id'] ) ) { // PayPal Standard IPN message
+			$subscription_id = $args['subscr_id'];
+		} elseif ( isset( $args['recurring_payment_id'] ) ) { // PayPal Express Checkout IPN, most likely 'recurring_payment_suspended_due_to_max_failed_payment', for a PayPal Standard Subscription
+			$subscription_id = $args['recurring_payment_id'];
 		} else {
+			$subscription_id = '';
+		}
 
-			$order_details = json_decode( $args['custom'] );
+		// First try and get the order ID by the subscription ID
+		if ( ! empty( $subscription_id ) ) {
 
-			if ( is_object( $order_details ) ) { // WC 2.3.11+ converted the custom value to JSON, if we have an object, we've got valid JSON
+			$posts = get_posts( array(
+				'numberposts'      => 1,
+				'orderby'          => 'ID',
+				'order'            => 'ASC',
+				'meta_key'         => '_paypal_subscription_id',
+				'meta_value'       => $subscription_id,
+				'post_type'        => $order_type,
+				'post_status'      => 'any',
+				'post_parent'      => 0,
+				'suppress_filters' => true,
+			) );
 
-				if ( 'shop_order' == $order_type ) {
-					$order_id  = $order_details->order_id;
-					$order_key = $order_details->order_key;
-				} else {
-					// Subscription
-					$order_id  = $order_details->subscription_id;
-					$order_key = $order_details->subscription_key;
+			if ( ! empty( $posts ) ) {
+				$order_id  = $posts[0]->ID;
+				$order_key = get_post_meta( $order_id, '_order_key', true );
+			}
+		}
+
+		// Couldn't find the order ID by subscr_id, so it's either not set on the order yet or the $args doesn't have a subscr_id, either way, let's get it from the args
+		if ( ! isset( $order_id ) ) {
+			// WC < 1.6.5
+			if ( is_numeric( $args['custom'] ) && 'shop_order' == $order_type ) {
+
+				$order_id  = $args['custom'];
+				$order_key = $args['invoice'];
+
+			} else {
+
+				$order_details = json_decode( $args['custom'] );
+
+				if ( is_object( $order_details ) ) { // WC 2.3.11+ converted the custom value to JSON, if we have an object, we've got valid JSON
+
+					if ( 'shop_order' == $order_type ) {
+						$order_id  = $order_details->order_id;
+						$order_key = $order_details->order_key;
+					} elseif ( isset( $order_details->subscription_id ) ) {
+						// Subscription created with Subscriptions 2.0+
+						$order_id  = $order_details->subscription_id;
+						$order_key = $order_details->subscription_key;
+					} else {
+						// Subscription created with Subscriptions < 2.0
+						$subscriptions = wcs_get_subscriptions_for_order( $order_details->order_id, array( 'order_type' => array( 'parent' ) ) );
+
+						if ( ! empty( $subscriptions ) ) {
+							$subscription = array_pop( $subscriptions );
+							$order_id  = $subscription->id;
+							$order_key = $subscription->order_key;
+						} else {
+							$order_id  = '';
+							$order_key = '';
+						}
+					}
+				} elseif ( preg_match( '/^a:2:{/', $args['custom'] ) && ! preg_match( '/[CO]:\+?[0-9]+:"/', $args['custom'] ) && ( $order_details = maybe_unserialize( $args['custom'] ) ) ) {  // WC 2.0 - WC 2.3.11, only allow serialized data in the expected format, do not allow objects or anything nasty to sneak in
+
+					if ( 'shop_order' == $order_type ) {
+						$order_id  = $order_details[0];
+						$order_key = $order_details[1];
+					} else {
+
+						// Subscription, but we didn't have the subscription data in old, serialized value, so we need to pull it based on the order
+						$subscriptions = wcs_get_subscriptions_for_order( $order_details[0], array( 'order_type' => array( 'parent' ) ) );
+
+						if ( ! empty( $subscriptions ) ) {
+							$subscription = array_pop( $subscriptions );
+							$order_id  = $subscription->id;
+							$order_key = $subscription->order_key;
+						} else {
+							$order_id  = '';
+							$order_key = '';
+						}
+					}
+				} else { // WC 1.6.5 - WC 2.0 or invalid data
+
+					$order_id  = str_replace( WCS_PayPal::get_option( 'invoice_prefix' ), '', $args['invoice'] );
+					$order_key = $args['custom'];
+
 				}
-			} elseif ( preg_match( '/^a:2:{/', $args['custom'] ) && ! preg_match( '/[CO]:\+?[0-9]+:"/', $args['custom'] ) && ( $order_details = maybe_unserialize( $args['custom'] ) ) ) {  // WC 2.0 - WC 2.3.11, only allow serialized data in the expected format, do not allow objects or anything nasty to sneak in
-
-				if ( 'shop_order' == $order_type ) {
-					$order_id  = $order_details[0];
-					$order_key = $order_details[1];
-				} else {
-					// Subscription, but we didn't have the subscription data in old, serialized value
-					$order_id  = '';
-					$order_key = '';
-				}
-			} else { // WC 1.6.5 - WC 2.0 or invalid data
-
-				$order_id  = str_replace( self::$invoice_prefix, '', $args['invoice'] );
-				$order_key = $args['custom'];
-
 			}
 		}
 
