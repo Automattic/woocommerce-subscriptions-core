@@ -109,8 +109,6 @@ class WC_Subscriptions_Admin {
 
 		add_action( 'woocommerce_order_action_wcs_process_renewal', __CLASS__ .  '::process_renewal_action_request', 10, 1 );
 		add_action( 'woocommerce_order_action_wcs_generate_pending_renewal', __CLASS__ .  '::generate_pending_renewal_action_request', 10, 1 );
-
-
 	}
 
 	/**
@@ -1451,7 +1449,7 @@ class WC_Subscriptions_Admin {
 	 * @param array $subscription
 	 * @since 2.0
 	 */
-	public static function process_renewal_action_request( $subscription ){
+	public static function process_renewal_action_request( $subscription ) {
 		do_action( 'woocommerce_scheduled_subscription_payment', $subscription->id );
 	}
 
@@ -1461,7 +1459,7 @@ class WC_Subscriptions_Admin {
 	 * @param array $subscription
 	 * @since 2.0
 	 */
-	public static function generate_pending_renewal_action_request( $subscription ){
+	public static function generate_pending_renewal_action_request( $subscription ) {
 		WC_Subscriptions_Manager::prepare_renewal( $subscription->id );
 	}
 
