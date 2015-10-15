@@ -280,11 +280,20 @@ class WCS_Cart_Renewal {
 		// If the product is being set as not-purchasable by Subscriptions (due to limiting)
 		if ( false === $is_purchasable && false === WC_Subscriptions_Product::is_purchasable( $is_purchasable, $product ) ) {
 
-			// Adding to cart from the product page
-			if ( isset( $_GET[ $this->cart_item_key ] ) ) {
+			// Adding to cart from the product page or paying for a renewal
+			if ( isset( $_GET[ $this->cart_item_key ] ) || isset( $_GET['subscription_renewal'] ) || wcs_cart_contains_renewal() ) {
 
 				$is_purchasable = true;
 
+			} else if ( WC()->session->cart ) {
+
+				foreach ( WC()->session->cart as $cart_item_key => $cart_item ) {
+
+					if ( $product->id == $cart_item['product_id'] && isset( $cart_item['subscription_renewal'] ) ) {
+						$is_purchasable = true;
+						break;
+					}
+				}
 			}
 		}
 
