@@ -109,6 +109,8 @@ class WCS_Admin_Meta_Boxes {
 				'i18n_end_date_notice'           => __( 'Please enter a date after the next payment.', 'woocommerce-subscriptions' ),
 				'search_customers_nonce'         => wp_create_nonce( 'search-customers' ),
 			) ) );
+
+			wp_localize_script( 'wcs-admin-meta-boxes-subscription', 'wcs_admin_meta_boxes', array( 'process_renewal_action_warning' => __( 'The process renewal action will trigger a payment and email the customer.', 'woocommerce-subscriptions' ) ) );
 		}
 	}
 
