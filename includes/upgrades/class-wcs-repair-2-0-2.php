@@ -19,7 +19,7 @@ class WCS_Repair_2_0_2 {
 	 *
 	 * @return array IDs of subscription that have not been checked or repaired
 	 */
-	public static function get_subscription_to_repair( $batch_size ) {
+	public static function get_subscriptions_to_repair( $batch_size ) {
 
 		// Get any subscriptions that haven't already been checked for repair
 		$subscription_ids_to_repair = get_posts( array(

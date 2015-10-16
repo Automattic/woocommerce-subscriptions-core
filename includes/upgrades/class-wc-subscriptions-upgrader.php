@@ -313,7 +313,7 @@ class WC_Subscriptions_Upgrader {
 
 				require_once( 'class-wcs-repair-2-0-2.php' );
 
-				$subscription_ids_to_repair = WCS_Repair_2_0_2::get_subscription_to_repair( self::$upgrade_repair_batch_size );
+				$subscription_ids_to_repair = WCS_Repair_2_0_2::get_subscriptions_to_repair( self::$upgrade_repair_batch_size );
 
 				try {
 
@@ -350,7 +350,7 @@ class WC_Subscriptions_Upgrader {
 
 		} elseif ( 'subscription_dates_repair' == $_POST['upgrade_step'] ) {
 
-			$subscriptions_to_repair = WCS_Repair_2_0_2::get_subscription_to_repair( self::$upgrade_repair_batch_size );
+			$subscriptions_to_repair = WCS_Repair_2_0_2::get_subscriptions_to_repair( self::$upgrade_repair_batch_size );
 
 			if ( empty( $subscriptions_to_repair ) ) {
 				self::upgrade_complete();
