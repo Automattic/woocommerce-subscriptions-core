@@ -256,7 +256,13 @@ class WCS_Repair_2_0_2 {
 			} else {
 
 				// let's just double check we shouldn't have a date set by recalculating it
-				$repair_date = $subscription->calculate_date( 'next_payment' );
+				$calculated_next_payment_date = $subscription->calculate_date( 'next_payment' );
+
+				if ( 0 != $calculated_next_payment_date && strtotime( $calculated_next_payment_date ) > gmdate( 'U' ) ) {
+					$repair_date = $calculated_next_payment_date;
+				} else {
+					$repair_date = false;
+				}
 
 				WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: no old next payment date, setting it to %s.', $subscription->id, var_export( $repair_date, true ) ) );
 			}
