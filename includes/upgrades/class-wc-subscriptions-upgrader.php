@@ -169,8 +169,8 @@ class WC_Subscriptions_Upgrader {
 			self::ajax_upgrade_handler();
 		}
 
-		// Migrate products, WP-Cron hooks and subscriptions to the latest architecture, via Ajax
-		if ( version_compare( self::$active_version, '2.0.0', '>=' ) && version_compare( self::$active_version, '2.0.2', '<' ) ) {
+		// Repair incorrect dates set when upgrading with 2.0.0
+		if ( version_compare( self::$active_version, '2.0.0', '>=' ) && version_compare( self::$active_version, '2.0.2', '<' ) && self::migrated_subscription_count() > 0 ) {
 			self::ajax_upgrade_handler();
 		}
 
@@ -641,6 +641,22 @@ class WC_Subscriptions_Upgrader {
 			AND items.order_item_id IS NOT NULL", $select, $limit );
 
 		return $query;
+	}
+
+	/**
+	 * Check if the database has some data that was migrated from 1.5 to 2.0
+	 *
+	 * @return bool True if it detects some v1.5 migrated data, otherwise false
+	 */
+	protected static function migrated_subscription_count() {
+		global $wpdb;
+
+		$migrated_subscription_count = $wpdb->get_var(
+			"SELECT COUNT(DISTINCT `post_id`) FROM $wpdb->postmeta
+			 WHERE `meta_key` LIKE '%wcs\_migrated%'"
+		);
+
+		return $migrated_subscription_count;
 	}
 
 	/**
