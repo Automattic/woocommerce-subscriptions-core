@@ -109,6 +109,8 @@ class WC_Subscriptions_Admin {
 
 		add_action( 'woocommerce_order_action_wcs_process_renewal', __CLASS__ .  '::process_renewal_action_request', 10, 1 );
 		add_action( 'woocommerce_order_action_wcs_generate_pending_renewal', __CLASS__ .  '::generate_pending_renewal_action_request', 10, 1 );
+
+		add_filter( 'woocommerce_resend_order_emails_available', __CLASS__ . '::subscription_available_emails', 0, 1 );
 	}
 
 	/**
@@ -1434,10 +1436,13 @@ class WC_Subscriptions_Admin {
 		if ( wcs_is_subscription( $theorder ) ) {
 
 			$subscription = wcs_get_subscription( $theorder );
-			if ( $subscription->payment_method_supports( 'subscriptions' ) && $subscription->payment_method_supports( 'subscription_date_changes' ) ) {
+
+			if ( $subscription->payment_method_supports( 'subscription_date_changes' ) ) {
 				$actions['wcs_process_renewal']          = esc_html__( 'Process renewal', 'woocommerce-subscriptions' );
-				$actions['wcs_generate_pending_renewal'] = esc_html__( 'Generate pending renewal order', 'woocommerce-subscriptions' );
 			}
+
+			$actions['wcs_generate_pending_renewal'] = esc_html__( 'Generate pending renewal order', 'woocommerce-subscriptions' );
+
 		}
 
 		return $actions;
@@ -1451,6 +1456,7 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function process_renewal_action_request( $subscription ) {
 		do_action( 'woocommerce_scheduled_subscription_payment', $subscription->id );
+		$subscription->add_order_note( esc_html__( 'Process renewal order action requested by admin.', 'woocommerce-subscriptions' ), false, true );
 	}
 
 	/**
@@ -1460,7 +1466,43 @@ class WC_Subscriptions_Admin {
 	 * @since 2.0
 	 */
 	public static function generate_pending_renewal_action_request( $subscription ) {
-		WC_Subscriptions_Manager::prepare_renewal( $subscription->id );
+
+		$subscription->update_status( 'on-hold' );
+
+		$renewal_order = wcs_create_renewal_order( $subscription );
+
+		if ( 0 == $subscription->get_total() ) {
+
+			$renewal_order->payment_complete();
+
+			$subscription->update_status( 'active' );
+
+		} else {
+
+			if ( $subscription->is_manual() ) {
+				do_action( 'woocommerce_generated_manual_renewal_order', $renewal_order->id );
+			} else {
+				$renewal_order->set_payment_method( $subscription->payment_gateway );
+			}
+		}
+
+		$subscription->add_order_note( esc_html__( 'Generate pending renewal order requested by admin action.', 'woocommerce-subscriptions' ), false, true );
+	}
+
+	/**
+	 * Removes order related emails from the available actions.
+	 *
+	 * @param array $available_emails
+	 * @since 2.0
+	 */
+	public static function subscription_available_emails( $available_emails ) {
+		global $theorder;
+
+		if ( wcs_is_subscription( $theorder ) ) {
+			$available_emails = array();
+		}
+
+		return $available_emails;
 	}
 
 	/**
