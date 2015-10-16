@@ -110,7 +110,7 @@ class WCS_Admin_Meta_Boxes {
 				'search_customers_nonce'         => wp_create_nonce( 'search-customers' ),
 			) ) );
 
-			wp_localize_script( 'wcs-admin-meta-boxes-subscription', 'wcs_admin_meta_boxes', array( 'process_renewal_action_warning' => __( "Are you sure you want to process a renewal? \n\nThis will charge the customer and email the customer the renewal order (if emails are enabled).", 'woocommerce-subscriptions' ) ) );
+			wp_localize_script( 'wcs-admin-meta-boxes-subscription', 'wcs_admin_meta_boxes', array( 'process_renewal_action_warning' => __( "Are you sure you want to process a renewal?\n\nThis will charge the customer and email them the renewal order (if emails are enabled).", 'woocommerce-subscriptions' ) ) );
 		}
 	}
 
