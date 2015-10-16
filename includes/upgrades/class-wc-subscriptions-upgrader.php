@@ -110,7 +110,7 @@ class WC_Subscriptions_Upgrader {
 
 		self::$upgrade_limit_hooks         = apply_filters( 'woocommerce_subscriptions_hooks_to_upgrade', $base_upgrade_limit * 5 );
 		self::$upgrade_limit_subscriptions = apply_filters( 'woocommerce_subscriptions_to_upgrade', $base_upgrade_limit );
-		self::$upgrade_repair_batch_size   = apply_filters( 'woocommerce_subscriptions_repair_batch_size', $base_upgrade_limit * 3 );
+		self::$upgrade_repair_batch_size   = apply_filters( 'woocommerce_subscriptions_repair_batch_size', $base_upgrade_limit * 2 );
 	}
 
 	/**
