@@ -186,6 +186,7 @@ class WCS_Repair_2_0_2 {
 
 			$old_trial_end_date = isset( $former_order_item_meta['_wcs_migrated_subscription_trial_expiry_date'][0] ) ? $former_order_item_meta['_wcs_migrated_subscription_trial_expiry_date'][0] : 0;
 
+			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: new trial end date = %s.', $subscription->id, var_export( $subscription->get_date( 'trial_end' ), true ) ) );
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: old trial end date = %s.', $subscription->id, var_export( $old_trial_end_date, true ) ) );
 
 			// if the subscription has a trial end time whereas previously it didn't, we need it to be deleted
@@ -238,6 +239,7 @@ class WCS_Repair_2_0_2 {
 				json_encode( $old_hook_args )
 			) );
 
+			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: new next payment date = %s.', $subscription->id, var_export( $subscription->get_date( 'next_payment' ), true ) ) );
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: old next payment date = %s.', $subscription->id, var_export( $old_next_payment_date, true ) ) );
 
 			// we have a date, let's make sure 
@@ -292,6 +294,7 @@ class WCS_Repair_2_0_2 {
 				$old_end_date = isset( $former_order_item_meta['_wcs_migrated_subscription_expiry_date'][0] ) ? $former_order_item_meta['_wcs_migrated_subscription_expiry_date'][0] : 0;
 			}
 
+			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: new end date = %s.', $subscription->id, var_export( $subscription->get_date( 'end' ), true ) ) );
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: old end date = %s.', $subscription->id, var_export( $old_end_date, true ) ) );
 
 			// if the subscription has an end time whereas previously it didn't, we need it to be deleted so set it 0
