@@ -210,7 +210,7 @@ class WCS_Repair_2_0_2 {
 		global $wpdb;
 
 		// the subscription doesn't have a next payment date set, let's see if it should
-		if ( 0 == $subscription->get_time( 'next_payment' ) ) {
+		if ( 0 == $subscription->get_time( 'next_payment' ) && $subscription->has_status( 'active' ) ) {
 
 			$old_hook_args = array(
 				'user_id'          => (int) $subscription->get_user_id(),
