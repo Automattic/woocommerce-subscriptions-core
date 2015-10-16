@@ -60,12 +60,12 @@ class WCS_Repair_2_0_2 {
 			if ( false !== $subscription && self::maybe_repair_subscription( $subscription ) ) {
 				WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: repair completed', $subscription->id ) );
 				$repaired_count++;
+				update_post_meta( $subscription_id, '_wcs_repaired_2_0_2', 'true' );
 			} else {
 				WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: no repair needed', $subscription->id ) );
 				$unrepaired_count++;
+				update_post_meta( $subscription_id, '_wcs_repaired_2_0_2', 'false' );
 			}
-
-			update_post_meta( $subscription_id, '_wcs_repaired_2_0_2', 'true' );
 		}
 
 		$wpdb->query( 'COMMIT' );
