@@ -110,7 +110,7 @@ class WC_Subscriptions_Admin {
 		add_action( 'woocommerce_order_action_wcs_process_renewal', __CLASS__ .  '::process_renewal_action_request', 10, 1 );
 		add_action( 'woocommerce_order_action_wcs_generate_pending_renewal', __CLASS__ .  '::generate_pending_renewal_action_request', 10, 1 );
 
-		add_filter( 'woocommerce_resend_order_emails_available', __CLASS__ . '::subscription_available_emails', 0, 1 );
+		add_filter( 'woocommerce_resend_order_emails_available', __CLASS__ . '::remove_order_email_actions', 0, 1 );
 	}
 
 	/**
@@ -1453,7 +1453,7 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function process_renewal_action_request( $subscription ) {
 		do_action( 'woocommerce_scheduled_subscription_payment', $subscription->id );
-		$subscription->add_order_note( esc_html__( 'Process renewal order action requested by admin.', 'woocommerce-subscriptions' ), false, true );
+		$subscription->add_order_note( __( 'Process renewal order action requested by admin.', 'woocommerce-subscriptions' ), false, true );
 	}
 
 	/**
@@ -1483,7 +1483,7 @@ class WC_Subscriptions_Admin {
 			}
 		}
 
-		$subscription->add_order_note( esc_html__( 'Generate pending renewal order requested by admin action.', 'woocommerce-subscriptions' ), false, true );
+		$subscription->add_order_note( __( 'Generate pending renewal order requested by admin action.', 'woocommerce-subscriptions' ), false, true );
 	}
 
 	/**
@@ -1492,14 +1492,14 @@ class WC_Subscriptions_Admin {
 	 * @param array $available_emails
 	 * @since 2.0
 	 */
-	public static function subscription_available_emails( $available_emails ) {
+	public static function remove_order_email_actions( $email_actions ) {
 		global $theorder;
 
 		if ( wcs_is_subscription( $theorder ) ) {
-			$available_emails = array();
+			$email_actions = array();
 		}
 
-		return $available_emails;
+		return $email_actions;
 	}
 
 	/**
