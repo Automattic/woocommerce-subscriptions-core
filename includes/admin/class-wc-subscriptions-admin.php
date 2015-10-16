@@ -1435,7 +1435,7 @@ class WC_Subscriptions_Admin {
 
 		if ( wcs_is_subscription( $theorder ) && ! $theorder->has_status( wcs_get_subscription_ended_statuses() ) ) {
 
-			if ( $theorder->payment_method_supports( 'subscription_date_changes' ) ) {
+			if ( $theorder->payment_method_supports( 'subscription_date_changes' ) && $theorder->has_status( 'active' ) ) {
 				$actions['wcs_process_renewal'] = esc_html__( 'Process renewal', 'woocommerce-subscriptions' );
 			}
 
