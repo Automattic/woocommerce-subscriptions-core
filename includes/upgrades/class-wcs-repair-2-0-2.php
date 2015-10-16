@@ -229,7 +229,7 @@ class WCS_Repair_2_0_2 {
 			);
 
 			// get the latest scheduled subscription payment in v1.5
-			$old_next_payment_date = $wpdb->get_var( $wpdb->prepare( 
+			$old_next_payment_date = $wpdb->get_var( $wpdb->prepare(
 				"SELECT post_date_gmt FROM $wpdb->posts
 				 WHERE post_type = %s
 				 AND post_content = %s
@@ -242,7 +242,7 @@ class WCS_Repair_2_0_2 {
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: new next payment date = %s.', $subscription->id, var_export( $subscription->get_date( 'next_payment' ), true ) ) );
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: old next payment date = %s.', $subscription->id, var_export( $old_next_payment_date, true ) ) );
 
-			// we have a date, let's make sure 
+			// if we have a date, make sure it's valid
 			if ( null !== $old_next_payment_date ) {
 				if ( strtotime( $old_next_payment_date ) <= gmdate( 'U' ) ) {
 					$repair_date = $subscription->calculate_date( 'next_payment' );
