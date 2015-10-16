@@ -40,7 +40,7 @@ class WCS_Admin_Meta_Boxes {
 		add_filter( 'woocommerce_order_actions', __CLASS__ . '::add_subscription_actions', 10, 1 );
 
 		add_action( 'woocommerce_order_action_wcs_process_renewal', __CLASS__ .  '::process_renewal_action_request', 10, 1 );
-		add_action( 'woocommerce_order_action_wcs_generate_pending_renewal', __CLASS__ .  '::generate_pending_renewal_action_request', 10, 1 );
+		add_action( 'woocommerce_order_action_wcs_create_pending_renewal', __CLASS__ .  '::create_pending_renewal_action_request', 10, 1 );
 
 		add_filter( 'woocommerce_resend_order_emails_available', __CLASS__ . '::remove_order_email_actions', 0, 1 );
 	}
@@ -128,7 +128,7 @@ class WCS_Admin_Meta_Boxes {
 				$actions['wcs_process_renewal'] = esc_html__( 'Process renewal', 'woocommerce-subscriptions' );
 			}
 
-			$actions['wcs_generate_pending_renewal'] = esc_html__( 'Generate pending renewal order', 'woocommerce-subscriptions' );
+			$actions['wcs_create_pending_renewal'] = esc_html__( 'Create pending renewal order', 'woocommerce-subscriptions' );
 		}
 
 		return $actions;
@@ -146,12 +146,12 @@ class WCS_Admin_Meta_Boxes {
 	}
 
 	/**
-	 * Handles the action request to generate a pending renewal order.
+	 * Handles the action request to create a pending renewal order.
 	 *
 	 * @param array $subscription
 	 * @since 2.0
 	 */
-	public static function generate_pending_renewal_action_request( $subscription ) {
+	public static function create_pending_renewal_action_request( $subscription ) {
 
 		$subscription->update_status( 'on-hold' );
 
@@ -172,7 +172,7 @@ class WCS_Admin_Meta_Boxes {
 			}
 		}
 
-		$subscription->add_order_note( __( 'Generate pending renewal order requested by admin action.', 'woocommerce-subscriptions' ), false, true );
+		$subscription->add_order_note( __( 'Create pending renewal order requested by admin action.', 'woocommerce-subscriptions' ), false, true );
 	}
 
 	/**
