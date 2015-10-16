@@ -1424,7 +1424,7 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Adds actions to the admin edit subscriptions page, if the subscription's payment method supports them.
+	 * Adds actions to the admin edit subscriptions page, if the subscription hasn't ended and the payment method supports them.
 	 *
 	 * @param array $actions An array of available actions
 	 * @return array An array of updated actions
@@ -1433,16 +1433,13 @@ class WC_Subscriptions_Admin {
 	public static function add_subscription_actions( $actions ) {
 		global $theorder;
 
-		if ( wcs_is_subscription( $theorder ) ) {
+		if ( wcs_is_subscription( $theorder ) && ! $theorder->has_status( wcs_get_subscription_ended_statuses() ) ) {
 
-			$subscription = wcs_get_subscription( $theorder );
-
-			if ( $subscription->payment_method_supports( 'subscription_date_changes' ) ) {
-				$actions['wcs_process_renewal']          = esc_html__( 'Process renewal', 'woocommerce-subscriptions' );
+			if ( $theorder->payment_method_supports( 'subscription_date_changes' ) ) {
+				$actions['wcs_process_renewal'] = esc_html__( 'Process renewal', 'woocommerce-subscriptions' );
 			}
 
 			$actions['wcs_generate_pending_renewal'] = esc_html__( 'Generate pending renewal order', 'woocommerce-subscriptions' );
-
 		}
 
 		return $actions;
