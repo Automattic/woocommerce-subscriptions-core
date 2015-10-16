@@ -178,11 +178,8 @@ class WCS_Repair_2_0_2 {
 
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: old trial end date = %s.', $subscription->id, var_export( $old_trial_end_date, true ) ) );
 
-			if ( $old_trial_end_date > 0 && $new_trial_end_time != strtotime( $old_trial_end_date ) ) {
-				// the subscription had a trial end time that was different to the current value, so let's restore it
-				$repair_date = $old_trial_end_date;
-			} elseif ( 0 == $old_trial_end_date ) {
-				// the subscription has a trial end time whereas previously it didn't, so we need it to be deleted
+			// if the subscription has a trial end time whereas previously it didn't, we need it to be deleted
+			if ( 0 == $old_trial_end_date ) {
 				$repair_date = 0;
 			} else {
 				$repair_date = false;
