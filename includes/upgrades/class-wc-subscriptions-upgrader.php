@@ -22,6 +22,8 @@ class WC_Subscriptions_Upgrader {
 
 	private static $upgrade_limit_subscriptions;
 
+	private static $upgrade_repair_batch_size;
+
 	private static $about_page_url;
 
 	private static $old_subscription_count = null;
@@ -108,6 +110,7 @@ class WC_Subscriptions_Upgrader {
 
 		self::$upgrade_limit_hooks         = apply_filters( 'woocommerce_subscriptions_hooks_to_upgrade', $base_upgrade_limit * 5 );
 		self::$upgrade_limit_subscriptions = apply_filters( 'woocommerce_subscriptions_to_upgrade', $base_upgrade_limit );
+		self::$upgrade_repair_batch_size   = apply_filters( 'woocommerce_subscriptions_repair_batch_size', $base_upgrade_limit * 3 );
 	}
 
 	/**
@@ -163,6 +166,11 @@ class WC_Subscriptions_Upgrader {
 
 			WCS_Upgrade_Logger::add( sprintf( 'Deleted %d rows of "wcs_blocker_"', $deleted_rows ) );
 
+			self::ajax_upgrade_handler();
+		}
+
+		// Migrate products, WP-Cron hooks and subscriptions to the latest architecture, via Ajax
+		if ( version_compare( self::$active_version, '2.0.0', '>=' ) && version_compare( self::$active_version, '2.0.2', '<' ) ) {
 			self::ajax_upgrade_handler();
 		}
 
@@ -300,6 +308,38 @@ class WC_Subscriptions_Upgrader {
 				}
 
 				break;
+
+			case 'subscription_dates_repair':
+
+				require_once( 'class-wcs-repair-2-0-2.php' );
+
+				try {
+
+					$subscription_counts = WCS_Repair_2_0_2::maybe_repair_subscriptions( self::$upgrade_repair_batch_size );
+
+					$results = array(
+						'repaired_count'   => $subscription_counts['repaired_count'],
+						'unrepaired_count' => $subscription_counts['unrepaired_count'],
+						// translators: placeholder is number of subscriptions upgraded
+						'message'          => sprintf( __( 'Repaired %d subscriptions with corrupted dates. %d other subscriptions were checked and did not need repair. (in {execution_time} seconds).', 'woocommerce-subscriptions' ), $subscription_counts['repaired_count'], $subscription_counts['unrepaired_count'] ),
+						'status'           => 'success',
+						'time_message'     => __( 'Estimated time left (minutes:seconds): {time_left}', 'woocommerce-subscriptions' ),
+					);
+
+				} catch ( Exception $e ) {
+
+					WCS_Upgrade_Logger::add( sprintf( 'Error on upgrade step: %s. Error: %s', $_POST['upgrade_step'], $e->getMessage() ) );
+
+					$results = array(
+						'repaired_count'   => 0,
+						'unrepaired_count' => 0,
+						// translators: 1$: error message, 2$: opening link tag, 3$: closing link tag
+						'message'          => sprintf( __( 'Unable to repair subscriptions.<br/>Error: %1$s<br/>Please refresh the page and try again. If problem persists, %2$scontact support%3$s.', 'woocommerce-subscriptions' ), '<code>' . $e->getMessage(). '</code>', '<a href="' . esc_url( 'https://woothemes.com/my-account/create-a-ticket/' ) . '">', '</a>' ),
+						'status'           => 'error',
+					);
+				}
+
+				break;
 		}
 
 		if ( 0 === self::get_total_subscription_count_query() ) {
@@ -421,11 +461,23 @@ class WC_Subscriptions_Upgrader {
 		wp_register_style( 'wcs-upgrade', plugins_url( '/assets/css/wcs-upgrade.css', WC_Subscriptions::$plugin_file ) );
 		wp_register_script( 'wcs-upgrade', plugins_url( '/assets/js/wcs-upgrade.js', WC_Subscriptions::$plugin_file ), 'jquery' );
 
-		$subscription_count = self::get_total_subscription_count();
+		if ( version_compare( self::$active_version, '2.0.0', '<' ) ) {
+			// We're running the 2.0 upgrade routine
+			$subscription_count = self::get_total_subscription_count();
+		} elseif ( version_compare( self::$active_version, '2.0.0', '>=' ) && version_compare( self::$active_version, '2.0.2', '<' ) ) {
+			// We're running the 2.0.2 repair routine
+			$subscription_counts = wp_count_posts( 'shop_subscription' );
+			$subscription_count  = array_sum( (array) $subscription_counts ) - $subscription_counts->trash - $subscription_counts->{'auto-draft'};
+		} else {
+			// How did we get here?
+			$subscription_count = 0;
+		}
 
 		$script_data = array(
 			'really_old_version'        => ( version_compare( self::$active_version, '1.4', '<' ) ) ? 'true' : 'false',
 			'upgrade_to_1_5'            => ( version_compare( self::$active_version, '1.5', '<' ) ) ? 'true' : 'false',
+			'upgrade_to_2_0'            => ( version_compare( self::$active_version, '2.0.0', '<' ) ) ? 'true' : 'false',
+			'repair_2_0'                => ( version_compare( self::$active_version, '2.0.0', '>=' ) && version_compare( self::$active_version, '2.0.2', '<' ) ) ? 'true' : 'false',
 			'hooks_per_request'         => self::$upgrade_limit_hooks,
 			'ajax_url'                  => admin_url( 'admin-ajax.php' ),
 			'upgrade_nonce'             => wp_create_nonce( 'wcs_upgrade_process' ),
@@ -436,8 +488,6 @@ class WC_Subscriptions_Upgrader {
 
 		// Can't get subscription count with database structure < 1.4
 		if ( 'false' == $script_data['really_old_version'] ) {
-
-			$batch_size = self::$upgrade_limit_subscriptions;
 
 			// The base duration is 50 subscriptions per minute (i.e. approximately 60 seconds per batch of 50)
 			$estimated_duration = ceil( $subscription_count / 50 );
@@ -541,7 +591,6 @@ class WC_Subscriptions_Upgrader {
 		return $subscription_count;
 	}
 
-
 	/**
 	 * Returns the number of subscriptions left in the 1.5 structure
 	 * @return integer number of 1.5 subscriptions left
@@ -555,7 +604,6 @@ class WC_Subscriptions_Upgrader {
 
 		return $wpdb->num_rows;
 	}
-
 
 	/**
 	 * Single source of truth for the query
