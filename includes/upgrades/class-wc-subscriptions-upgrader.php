@@ -313,9 +313,11 @@ class WC_Subscriptions_Upgrader {
 
 				require_once( 'class-wcs-repair-2-0-2.php' );
 
+				$subscription_ids_to_repair = WCS_Repair_2_0_2::get_subscription_to_repair( self::$upgrade_repair_batch_size );
+
 				try {
 
-					$subscription_counts = WCS_Repair_2_0_2::maybe_repair_subscriptions( self::$upgrade_repair_batch_size );
+					$subscription_counts = WCS_Repair_2_0_2::maybe_repair_subscriptions( $subscription_ids_to_repair );
 
 					$results = array(
 						'repaired_count'   => $subscription_counts['repaired_count'],
@@ -342,8 +344,17 @@ class WC_Subscriptions_Upgrader {
 				break;
 		}
 
-		if ( 0 === self::get_total_subscription_count_query() ) {
+		if ( 'subscriptions' == $_POST['upgrade_step'] && 0 === self::get_total_subscription_count_query() ) {
+
 			self::upgrade_complete();
+
+		} elseif ( 'subscription_dates_repair' == $_POST['upgrade_step'] ) {
+
+			$subscriptions_to_repair = WCS_Repair_2_0_2::get_subscription_to_repair( self::$upgrade_repair_batch_size );
+
+			if ( empty( $subscriptions_to_repair ) ) {
+				self::upgrade_complete();
+			}
 		}
 
 		WCS_Upgrade_Logger::add( sprintf( 'Completed upgrade step: %s', $_POST['upgrade_step'] ) );

@@ -15,15 +15,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WCS_Repair_2_0_2 {
 
 	/**
-	 * Get a batch of subscriptions and update any that need to be repaired.
+	 * Get a batch of subscriptions subscriptions that haven't already been checked for repair.
 	 *
-	 * @return array The counts of repaired and unrepaired subscriptions
+	 * @return array IDs of subscription that have not been checked or repaired
 	 */
-	public static function maybe_repair_subscriptions( $batch_size ) {
-		global $wpdb;
-
-		// don't allow data to be half upgraded on a subscription in case of a script timeout or other non-recoverable error
-		$wpdb->query( 'START TRANSACTION' );
+	public static function get_subscription_to_repair( $batch_size ) {
 
 		// Get any subscriptions that haven't already been checked for repair
 		$subscription_ids_to_repair = get_posts( array(
@@ -40,6 +36,20 @@ class WCS_Repair_2_0_2 {
 				),
 			),
 		) );
+
+		return $subscription_ids_to_repair;
+	}
+
+	/**
+	 * Update any subscription that need to be repaired.
+	 *
+	 * @return array The counts of repaired and unrepaired subscriptions
+	 */
+	public static function maybe_repair_subscriptions( $subscription_ids_to_repair ) {
+		global $wpdb;
+
+		// don't allow data to be half upgraded on a subscription in case of a script timeout or other non-recoverable error
+		$wpdb->query( 'START TRANSACTION' );
 
 		$repaired_count = $unrepaired_count = 0;
 
