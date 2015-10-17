@@ -156,7 +156,7 @@ class WCS_Repair_2_0_2 {
 			}
 
 			try {
-				self::maybe_repair_status( $subscription, $matching_line_item_meta );
+				self::maybe_repair_status( $subscription, $matching_line_item_meta, $dates_to_update );
 			} catch ( Exception $e ) {
 				WCS_Upgrade_Logger::add( sprintf( '!! For subscription %d: unable to repair status. Exception: "%s"', $subscription->id, str_replace( array( '{', '}', '"' ), '', json_encode( $dates_to_update ) ), $e->getMessage() ) );
 			}
@@ -327,9 +327,9 @@ class WCS_Repair_2_0_2 {
 	 * @param  WC_Subscription $subscription data about the subscription
 	 * @return bool true if the trial date was repaired, otherwise false
 	 */
-	protected static function maybe_repair_status( $subscription, $former_order_item_meta ) {
+	protected static function maybe_repair_status( $subscription, $former_order_item_meta, $dates_to_update ) {
 
-		if ( $subscription->has_status( 'expired' ) && 'expired' != $former_order_item_meta['_wcs_migrated_subscription_status'][0] && $subscription->get_date( 'end' ) != $former_order_item_meta['_wcs_migrated_subscription_expiry_date'][0] ) {
+		if ( $subscription->has_status( 'expired' ) && 'expired' != $former_order_item_meta['_wcs_migrated_subscription_status'][0] && isset( $dates_to_update['end'] ) ) {
 
 			if ( $subscription->payment_method_supports( 'subscription_date_changes' ) ) {
 
