@@ -158,7 +158,7 @@ class WCS_Repair_2_0_2 {
 			try {
 				self::maybe_repair_status( $subscription, $matching_line_item_meta, $dates_to_update );
 			} catch ( Exception $e ) {
-				WCS_Upgrade_Logger::add( sprintf( '!! For subscription %d: unable to repair status. Exception: "%s"', $subscription->id, str_replace( array( '{', '}', '"' ), '', json_encode( $dates_to_update ) ), $e->getMessage() ) );
+				WCS_Upgrade_Logger::add( sprintf( '!! For subscription %d: unable to repair status. Exception: "%s"', $subscription->id, $e->getMessage() ) );
 			}
 
 			$repaired_subscription = true;
