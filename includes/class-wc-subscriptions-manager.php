@@ -471,14 +471,6 @@ class WC_Subscriptions_Manager {
 			) );
 			
 			if ( is_wp_error( $subscription ) ) {
-/* do we need to email or log the error ?
-				$note = $subscription->get_error_message();
-
-				$admin_email = array( get_option('admin_email') );
-				wp_mail( $admin_email, __( 'Subcription error', 'woocommerce-subscriptions' ), $note );
-
-				$order->add_order_note( $note );
-*/
 				throw new Exception( __( 'Error: Unable to create subscription. Please try again.', 'woocommerce-subscriptions' ) );
 			}
 
@@ -498,7 +490,7 @@ class WC_Subscriptions_Manager {
 			);
 
 			if ( ! $item_id ) {
-				throw new Exception( __( 'Error: Unable to create subscription. Please try again.', 'woocommerce-subscriptions' ) );
+				throw new Exception( __( 'Error: Unable to add product to created subscription. Please try again.', 'woocommerce-subscriptions' ) );
 			}
 		}
 
