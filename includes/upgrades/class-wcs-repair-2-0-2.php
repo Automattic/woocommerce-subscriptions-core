@@ -349,18 +349,26 @@ class WCS_Repair_2_0_2 {
 
 		if ( $subscription->has_status( 'expired' ) && 'expired' != $former_order_item_meta['_wcs_migrated_subscription_status'][0] && isset( $dates_to_update['end'] ) ) {
 
-			if ( $subscription->payment_method_supports( 'subscription_date_changes' ) ) {
+			try {
 
 				// we need to bypass the update_status() method here because normally an expired subscription can't have it's status changed, we also don't want normal status change hooks to be fired
 				wp_update_post( array( 'ID' => $subscription->id, 'post_status' => 'wc-on-hold' ) );
 
-				if ( 'active' == $former_order_item_meta['_wcs_migrated_subscription_status'][0] ) {
+				// if the payment method doesn't support date changes, we still want to reactivate the subscription but we also need to process a special failed payment at the next renewal to fix up the payment method so we'll set a special flag in post meta to handle that
+				if ( ! $subscription->payment_method_supports( 'subscription_date_changes' ) && 0 == $subscription->get_total() > 0 ) {
+					update_post_meta( $subscription->id, '_wcs_repaired_2_0_2_needs_failed_payment', 'true' );
+					WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: payment method does not support "subscription_date_changes" and total > 0, setting "_wcs_repaired_2_0_2_needs_failed_payment" post meta flag.', $subscription->id ) );
+				}
+
+				if ( 'active' == $former_order_item_meta['_wcs_migrated_subscription_status'][0] && $subscription->can_be_updated_to( 'active' ) ) {
 					$subscription->update_status( 'active' );
 				}
+
 				WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: repaired status. Status was "expired", it is now "%s".', $subscription->id, $subscription->get_status() ) );
 				$repair_status = true;
-			} else {
-				WCS_Upgrade_Logger::add( sprintf( '!!! For subscription %d: unable to repair status, payment method does not support "subscription_date_changes".', $subscription->id ) );
+
+			} catch ( Exception $e ) {
+				WCS_Upgrade_Logger::add( sprintf( '!!! For subscription %d: unable to repair status, exception "%s"', $subscription->id, $e->getMessage() ) );
 				$repair_status = false;
 			}
 		} else {

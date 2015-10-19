@@ -44,6 +44,9 @@ class WC_Subscriptions_Manager {
 		// Subscription Trial End
 		add_action( 'woocommerce_scheduled_subscription_trial_end', __CLASS__ . '::subscription_trial_end', 0, 2 );
 
+		// Check if the subscription needs to use the failed payment process to repair its status
+		add_action( 'woocommerce_scheduled_subscription_payment', __CLASS__ . '::maybe_process_failed_renewal_for_repair', 0, 1 );
+
 		// Whenever a renewal payment is due, put the subscription on hold and create a renewal order before anything else, in case things don't go to plan
 		add_action( 'woocommerce_scheduled_subscription_payment', __CLASS__ . '::prepare_renewal', 1, 1 );
 
@@ -1778,6 +1781,37 @@ class WC_Subscriptions_Manager {
 		// If the subscription is using manual payments, the gateway isn't active or it manages scheduled payments
 		if ( 0 == $subscription->get_total() || $subscription->is_manual() || empty( $subscription->payment_method ) || ! $subscription->payment_method_supports( 'gateway_scheduled_payments' ) ) {
 			$subscription->update_status( 'on-hold', __( 'Subscription renewal payment due:', 'woocommerce-subscriptions' ) );
+		}
+	}
+
+	/**
+	 * Check if the subscription needs to use the failed payment process to repair its status after it incorrectly expired due to a date migration
+	 * bug in upgrade process for 2.0.0 of Subscriptions (i.e. not 2.0.1 or newer). See WCS_Repair_2_0_2::maybe_repair_status() for more details.
+	 *
+	 * @param int $subscription_id The ID of a 'shop_subscription' post
+	 * @since 2.0.2
+	 */
+	public static function maybe_process_failed_renewal_for_repair( $subscription_id ) {
+
+		if ( 'true' == get_post_meta( $subscription_id, '_wcs_repaired_2_0_2_needs_failed_payment', true ) ) {
+
+			$subscription = wcs_get_subscription( $subscription_id );
+
+			// Always put the subscription on hold in case something goes wrong while trying to process renewal
+			$subscription->update_status( 'on-hold', __( 'Subscription renewal payment due:', 'woocommerce-subscriptions' ) );
+
+			// Create a renewal order to record the failed payment which can then be used by the customer to reactivate the subscription
+			$renewal_order = wcs_create_renewal_order( $subscription );
+
+			// Mark the payment as failed so the customer can login to fix up the failed payment
+			$subscription->payment_failed();
+
+			// Only force the failed payment once
+			update_post_meta( $subscription_id, '_wcs_repaired_2_0_2_needs_failed_payment', 'false' );
+
+			// We've already processed the renewal
+			remove_action( 'woocommerce_scheduled_subscription_payment', __CLASS__ . '::prepare_renewal' );
+			remove_action( 'woocommerce_scheduled_subscription_payment', 'WC_Subscriptions_Payment_Gateways::gateway_scheduled_subscription_payment', 10, 1 );
 		}
 	}
 
