@@ -167,6 +167,24 @@ class WCS_Repair_2_0_2 {
 			$repaired_subscription = false;
 		}
 
+		if ( ! empty( $subscription->order->customer_note ) && empty( $subscription->customer_note ) ) {
+
+			$post_data = array(
+				'ID'           => $subscription->id,
+				'post_excerpt' => $subscription->order->customer_note,
+			);
+
+			$updated_post_id = wp_update_post( $post_data, true );
+
+			if ( ! is_wp_error( $updated_post_id ) ) {
+				WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: repaired missing customer note.', $subscription->id ) );
+				$repaired_subscription = true;
+			} else {
+				WCS_Upgrade_Logger::add( sprintf( '!! For subscription %d: unable to repair missing customer note. Exception: "%s"', $subscription->id, $updated_post_id->get_error_message() ) );
+				$repaired_subscription = false;
+			}
+		}
+
 		return $repaired_subscription;
 	}
 
