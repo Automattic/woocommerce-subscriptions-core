@@ -327,16 +327,16 @@ class WCS_Upgrade_2_0 {
 	 *
 	 * @param int $new_order_item_id ID of the line item on the new subscription post type
 	 * @param int $old_order_item_id ID of the line item on the original order that in v1.5 represented the subscription
-	 * @param array $old_order_item The line item on the original order that in v1.5 represented the subscription
+	 * @param array $order_item The line item on the original order that in v1.5 represented the subscription
 	 * @since 2.0
 	 */
-	private static function add_line_tax_data( $new_order_item_id, $old_order_item_id, $old_order_item ) {
+	private static function add_line_tax_data( $new_order_item_id, $old_order_item_id, $order_item ) {
 
 		// If we have _recurring_line_tax_data, use that
 		if ( isset( $order_item['item_meta']['_recurring_line_tax_data'] ) ) {
 
 			$line_tax_data      = maybe_unserialize( $order_item['item_meta']['_recurring_line_tax_data'][0] );
-			$recurring_tax_data = array();
+			$recurring_tax_data = array( 'total' => array(), 'subtotal' => array() );
 			$tax_data_keys      = array( 'total', 'subtotal' );
 
 			foreach ( $tax_data_keys as $tax_data_key ) {
@@ -344,8 +344,6 @@ class WCS_Upgrade_2_0 {
 					$recurring_tax_data[ $tax_data_key ][ $tax_index ] = wc_format_decimal( $tax_value );
 				}
 			}
-
-			wc_add_order_item_meta( $new_order_item_id, '_line_tax_data', $recurring_tax_data );
 
 		// Otherwise try to calculate the recurring values from _line_tax_data
 		} elseif ( isset( $order_item['item_meta']['_line_tax_data'] ) ) {
@@ -355,30 +353,50 @@ class WCS_Upgrade_2_0 {
 			$line_total           = maybe_unserialize( $order_item['item_meta']['_line_total'][0] );
 			$recurring_line_total = maybe_unserialize( $order_item['item_meta']['_recurring_line_total'][0] );
 
-			// There will only be recurring tax data if the recurring amount is > 0 and we can only retroactively calculate recurring amount from initial amoutn if it is > 0
+			// There will only be recurring tax data if the recurring amount is > 0 and we can only retroactively calculate recurring amount from initial amount if it is > 0
 			if ( $line_total > 0 && $recurring_line_total > 0 ) {
 
 				// Make sure we account for any sign-up fees by determining what proportion of the initial amount the recurring total represents
 				$recurring_ratio = $recurring_line_total / $line_total;
 
-				$recurring_tax_data = array();
+				$recurring_tax_data = array( 'total' => array(), 'subtotal' => array() );
 				$tax_data_keys      = array( 'total', 'subtotal' );
 
 				foreach ( $tax_data_keys as $tax_data_key ) {
 					foreach ( $line_tax_data[ $tax_data_key ] as $tax_index => $tax_value ) {
 
-						// Use total tax amount for both total and subtotal because we don't want any initial discounts to be applied to recurring amounts
-						$total_tax_amount = $line_tax_data['total'][ $tax_index ];
+						if ( $line_total != $recurring_line_total ) {
+							// Use total tax amount for both total and subtotal because we don't want any initial discounts to be applied to recurring amounts
+							$total_tax_amount = $line_tax_data['total'][ $tax_index ];
+						} else {
+							$total_tax_amount = $line_tax_data[ $tax_data_key ][ $tax_index ];
+						}
 
 						$recurring_tax_data[ $tax_data_key ][ $tax_index ] = wc_format_decimal( $recurring_ratio * $total_tax_amount );
 					}
 				}
+			} elseif ( 0 == $line_total && $recurring_line_total > 0 ) { // free trial, we don't have the tax data but we can use 100% of line taxes
+
+				// Can we derive the tax rate key from the line tax data?
+				if ( ! empty( $line_tax_data ) && ! empty( $line_tax_data['total'] ) ) {
+					$tax_rate_key = key( $line_tax_data['total'] );
+				} else {
+					// we have no way of knowing what the tax rate key is
+					$tax_rate_key = 0;
+				}
+
+				$recurring_tax_data = array(
+					'subtotal' => array( $tax_rate_key => $order_item['item_meta']['_recurring_line_subtotal_tax'][0] ),
+					'total'    => array( $tax_rate_key => $order_item['item_meta']['_recurring_line_tax'][0] ),
+				);
 			} else {
 				$recurring_tax_data = array( 'total' => array(), 'subtotal' => array() );
 			}
-
-			wc_add_order_item_meta( $new_order_item_id, '_line_tax_data', $recurring_tax_data );
+		} else {
+			$recurring_tax_data = array( 'total' => array(), 'subtotal' => array() );
 		}
+
+		return wc_add_order_item_meta( $new_order_item_id, '_line_tax_data', $recurring_tax_data, true );
 	}
 
 	/**
