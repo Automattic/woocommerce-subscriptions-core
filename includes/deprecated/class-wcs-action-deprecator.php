@@ -27,6 +27,10 @@ class WCS_Action_Deprecator extends WCS_Hook_Deprecator {
 		'woocommerce_subscription_payment_failed'                          => 'processed_subscription_payment_failure',
 		'woocommerce_subscription_change_payment_method_via_pay_shortcode' => 'woocommerce_subscriptions_change_payment_method_via_pay_shortcode',
 		'subscriptions_put_on_hold_for_order'                              => 'subscriptions_suspended_for_order',
+		'woocommerce_subscription_status_active'                           => 'activated_subscription',
+		'woocommerce_subscription_status_on-hold'                          => array( 'suspended_subscription', 'subscription_put_on-hold' ),
+		'woocommerce_subscription_status_cancelled'                        => 'cancelled_subscription',
+		'woocommerce_subscription_status_on-hold_to_active'                => 'reactivated_subscription',
 	);
 
 	/**
@@ -100,6 +104,17 @@ class WCS_Action_Deprecator extends WCS_Hook_Deprecator {
 			case 'woocommerce_subscriptions_change_payment_method_via_pay_shortcode' :
 				$subscription = $new_callback_args[0];
 				do_action( $old_hook, wcs_get_old_subscription_key( $subscription ), self::get_order( $subscription ) );
+				break;
+
+			// New arg spec: $subscription
+			// Old arg spec: $user_id, $subscription_key
+			case 'activated_subscription' :
+			case 'subscription_put_on-hold' :
+			case 'suspended_subscription' :
+			case 'cancelled_subscription' :
+			case 'reactivated_subscription' :
+				$subscription  = $new_callback_args[0];
+				do_action( $old_hook, $subscription->get_user_id(), wcs_get_old_subscription_key( $subscription ) );
 				break;
 		}
 	}
