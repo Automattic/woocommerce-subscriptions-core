@@ -392,7 +392,7 @@ class WCS_Upgrade_2_0 {
 			$recurring_tax_data = array( 'total' => array(), 'subtotal' => array() );
 		}
 
-		return wc_add_order_item_meta( $new_order_item_id, '_line_tax_data', $recurring_tax_data );
+		return wc_add_order_item_meta( $new_order_item_id, '_line_tax_data', $recurring_tax_data, true );
 	}
 
 	/**
