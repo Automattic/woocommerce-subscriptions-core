@@ -359,7 +359,7 @@ class WCS_Upgrade_2_0 {
 				// Make sure we account for any sign-up fees by determining what proportion of the initial amount the recurring total represents
 				$recurring_ratio = $recurring_line_total / $line_total;
 
-				$recurring_tax_data = array();
+				$recurring_tax_data = array( 'total' => array(), 'subtotal' => array() );
 				$tax_data_keys      = array( 'total', 'subtotal' );
 
 				foreach ( $tax_data_keys as $tax_data_key ) {
