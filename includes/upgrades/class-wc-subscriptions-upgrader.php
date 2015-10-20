@@ -317,11 +317,19 @@ class WC_Subscriptions_Upgrader {
 
 					$subscription_counts = WCS_Repair_2_0_2::maybe_repair_subscriptions( $subscription_ids_to_repair );
 
+					$repair_message = sprintf( __( 'Repaired %d subscriptions with incorrect dates, line tax data or missing customer notes.', 'woocommerce-subscriptions' ), $subscription_counts['repaired_count'] );
+
+					if ( $subscription_counts['unrepaired_count']  > 0 ) {
+						$repair_message .= ' ' . sprintf( _n( '%d other subscription was checked and did not need any repairs.', '%d other subscriptions were checked and did not need any repairs.', $subscription_counts['unrepaired_count'], 'woocommerce-subscriptions' ), $subscription_counts['unrepaired_count'] );
+					}
+
+					$repair_message .= ' ' . __( '(in {execution_time} seconds)', 'woocommerce-subscriptions' );
+
 					$results = array(
 						'repaired_count'   => $subscription_counts['repaired_count'],
 						'unrepaired_count' => $subscription_counts['unrepaired_count'],
 						// translators: placeholder is number of subscriptions upgraded
-						'message'          => sprintf( __( 'Repaired %d subscriptions with incorrect dates, line tax data or missing customer notes. %d other subscriptions were checked and did not need any repairs. (in {execution_time} seconds).', 'woocommerce-subscriptions' ), $subscription_counts['repaired_count'], $subscription_counts['unrepaired_count'] ),
+						'message'          => $repair_message,
 						'status'           => 'success',
 						'time_message'     => __( 'Estimated time left (minutes:seconds): {time_left}', 'woocommerce-subscriptions' ),
 					);
