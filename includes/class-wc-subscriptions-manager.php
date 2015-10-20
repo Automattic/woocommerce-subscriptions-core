@@ -469,7 +469,7 @@ class WC_Subscriptions_Manager {
 				'billing_interval' => $billing_interval,
 				'customer_note'    => $order->customer_note,
 			) );
-			
+
 			if ( is_wp_error( $subscription ) ) {
 				throw new Exception( __( 'Error: Unable to create subscription. Please try again.', 'woocommerce-subscriptions' ) );
 			}
