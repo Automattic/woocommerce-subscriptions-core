@@ -89,7 +89,6 @@ abstract class WCS_SV_API_Base {
 	 * @since 2.2.0
 	 * @param object $request class instance which implements \SV_WC_API_Request
 	 * @throws Exception
-	 * @throws \SV_WC_API_Exception
 	 * @return object class instance which implements \SV_WC_API_Response
 	 */
 	protected function perform_request( $request ) {
@@ -113,7 +112,7 @@ abstract class WCS_SV_API_Base {
 			// parse & validate response
 			$response = $this->handle_response( $response );
 
-		} catch ( SV_WC_Plugin_Exception $e ) {
+		} catch ( Exception $e ) {
 
 			// alert other actors that a request has been made
 			$this->broadcast_request();
@@ -145,14 +144,14 @@ abstract class WCS_SV_API_Base {
 	 *
 	 * @since 2.2.0
 	 * @param array|WP_Error $response response data
-	 * @throws \SV_WC_API_Exception network issues, timeouts, API errors, etc
+	 * @throws Exception network issues, timeouts, API errors, etc
 	 * @return object request class instance that implements SV_WC_API_Request
 	 */
 	protected function handle_response( $response ) {
 
 		// check for WP HTTP API specific errors (network timeout, etc)
 		if ( is_wp_error( $response ) ) {
-			throw new SV_WC_API_Exception( $response->get_error_message(), (int) $response->get_error_code() );
+			throw new Exception( $response->get_error_message(), (int) $response->get_error_code() );
 		}
 
 		// set response data
@@ -206,7 +205,7 @@ abstract class WCS_SV_API_Base {
 	 * exist in the parsed response.
 	 *
 	 * A child class implementing this method should simply return true if the response
-	 * processing should continue, or throw a \SV_WC_API_Exception with a
+	 * processing should continue, or throw an Exception with a
 	 * relevant error message & code to stop processing.
 	 *
 	 * Note: Response body sanitization is handled automatically
