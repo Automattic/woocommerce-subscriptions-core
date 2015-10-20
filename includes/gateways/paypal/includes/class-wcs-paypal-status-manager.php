@@ -24,8 +24,8 @@ class WCS_PayPal_Status_Manager extends WCS_PayPal {
 
 		// When a subscriber or store manager changes a subscription's status in the store, change the status with PayPal
 		add_action( 'woocommerce_subscription_cancelled_paypal', __CLASS__ . '::cancel_subscription' );
-		add_action( 'woocommerce_subscription_pending-cancel_paypal', __CLASS__ . '::cancel_subscription' );
-		add_action( 'woocommerce_subscription_expired_paypal', __CLASS__ . '::cancel_subscription' );
+		add_action( 'woocommerce_subscription_pending-cancel_paypal', __CLASS__ . '::suspend_subscription' );
+		add_action( 'woocommerce_subscription_expired_paypal', __CLASS__ . '::suspend_subscription' );
 		add_action( 'woocommerce_subscription_on-hold_paypal', __CLASS__ . '::suspend_subscription' );
 		add_action( 'woocommerce_subscription_activated_paypal', __CLASS__ . '::reactivate_subscription' );
 	}
