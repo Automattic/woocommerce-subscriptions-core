@@ -353,7 +353,7 @@ class WCS_Upgrade_2_0 {
 			$line_total           = maybe_unserialize( $order_item['item_meta']['_line_total'][0] );
 			$recurring_line_total = maybe_unserialize( $order_item['item_meta']['_recurring_line_total'][0] );
 
-			// There will only be recurring tax data if the recurring amount is > 0 and we can only retroactively calculate recurring amount from initial amoutn if it is > 0
+			// There will only be recurring tax data if the recurring amount is > 0 and we can only retroactively calculate recurring amount from initial amount if it is > 0
 			if ( $line_total > 0 && $recurring_line_total > 0 ) {
 
 				// Make sure we account for any sign-up fees by determining what proportion of the initial amount the recurring total represents
