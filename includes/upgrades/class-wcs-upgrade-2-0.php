@@ -371,6 +371,20 @@ class WCS_Upgrade_2_0 {
 						$recurring_tax_data[ $tax_data_key ][ $tax_index ] = wc_format_decimal( $recurring_ratio * $total_tax_amount );
 					}
 				}
+			} elseif ( 0 == $line_total && $recurring_line_total > 0 ) { // free trial, we don't have the tax data but we can use 100% of line taxes
+
+				// Can we derive the tax rate key from the line tax data?
+				if ( ! empty( $line_tax_data ) && ! empty( $line_tax_data['total'] ) ) {
+					$tax_rate_key = key( $line_tax_data['total'] );
+				} else {
+					// we have no way of knowing what the tax rate key is
+					$tax_rate_key = 0;
+				}
+
+				$recurring_tax_data = array(
+					'subtotal' => array( $tax_rate_key => $order_item['item_meta']['_recurring_line_subtotal_tax'][0] ),
+					'total'    => array( $tax_rate_key => $order_item['item_meta']['_recurring_line_tax'][0] ),
+				);
 			} else {
 				$recurring_tax_data = array( 'total' => array(), 'subtotal' => array() );
 			}
