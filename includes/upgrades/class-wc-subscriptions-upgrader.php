@@ -22,8 +22,6 @@ class WC_Subscriptions_Upgrader {
 
 	private static $upgrade_limit_subscriptions;
 
-	private static $upgrade_repair_batch_size;
-
 	private static $about_page_url;
 
 	private static $old_subscription_count = null;
@@ -110,7 +108,6 @@ class WC_Subscriptions_Upgrader {
 
 		self::$upgrade_limit_hooks         = apply_filters( 'woocommerce_subscriptions_hooks_to_upgrade', $base_upgrade_limit * 5 );
 		self::$upgrade_limit_subscriptions = apply_filters( 'woocommerce_subscriptions_to_upgrade', $base_upgrade_limit );
-		self::$upgrade_repair_batch_size   = apply_filters( 'woocommerce_subscriptions_repair_batch_size', $base_upgrade_limit * 2 );
 	}
 
 	/**
@@ -314,7 +311,7 @@ class WC_Subscriptions_Upgrader {
 				require_once( 'class-wcs-upgrade-2-0.php' );
 				require_once( 'class-wcs-repair-2-0-2.php' );
 
-				$subscription_ids_to_repair = WCS_Repair_2_0_2::get_subscriptions_to_repair( self::$upgrade_repair_batch_size );
+				$subscription_ids_to_repair = WCS_Repair_2_0_2::get_subscriptions_to_repair( self::$upgrade_limit_subscriptions );
 
 				try {
 
@@ -351,7 +348,7 @@ class WC_Subscriptions_Upgrader {
 
 		} elseif ( 'subscription_dates_repair' == $_POST['upgrade_step'] ) {
 
-			$subscriptions_to_repair = WCS_Repair_2_0_2::get_subscriptions_to_repair( self::$upgrade_repair_batch_size );
+			$subscriptions_to_repair = WCS_Repair_2_0_2::get_subscriptions_to_repair( self::$upgrade_limit_subscriptions );
 
 			if ( empty( $subscriptions_to_repair ) ) {
 				self::upgrade_complete();
