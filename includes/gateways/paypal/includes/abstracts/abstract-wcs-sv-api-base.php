@@ -205,7 +205,7 @@ abstract class WCS_SV_API_Base {
 	 * exist in the parsed response.
 	 *
 	 * A child class implementing this method should simply return true if the response
-	 * processing should continue, or throw a \SV_WC_API_Exception with a
+	 * processing should continue, or throw an Exception with a
 	 * relevant error message & code to stop processing.
 	 *
 	 * Note: Response body sanitization is handled automatically
