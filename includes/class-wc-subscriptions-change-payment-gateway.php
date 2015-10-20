@@ -261,7 +261,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 					// Redirect to success/confirmation/payment page
 					if ( 'success' == $result['result'] ) {
 						WC_Subscriptions::add_notice( __( 'Payment method updated.', 'woocommerce-subscriptions' ), 'success' );
-						wp_redirect( $result['redirect'] );
+						wp_redirect( $subscription->get_view_order_url() );
 						exit;
 					}
 				}
