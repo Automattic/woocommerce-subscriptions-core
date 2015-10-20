@@ -98,10 +98,10 @@ class WC_Subscriptions_Upgrader {
 
 		$total_initial_subscription_count = self::get_total_subscription_count( true );
 
-		if ( $total_initial_subscription_count > 10000 ) {
-			$base_upgrade_limit = 25;
-		} elseif ( $total_initial_subscription_count > 5000 ) {
-			$base_upgrade_limit = 35;
+		if ( $total_initial_subscription_count > 5000 ) {
+			$base_upgrade_limit = 20;
+		} elseif ( $total_initial_subscription_count > 1500 ) {
+			$base_upgrade_limit = 30;
 		} else {
 			$base_upgrade_limit = 50;
 		}
