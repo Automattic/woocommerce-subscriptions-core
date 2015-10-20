@@ -336,7 +336,7 @@ class WCS_Upgrade_2_0 {
 		if ( isset( $order_item['item_meta']['_recurring_line_tax_data'] ) ) {
 
 			$line_tax_data      = maybe_unserialize( $order_item['item_meta']['_recurring_line_tax_data'][0] );
-			$recurring_tax_data = array();
+			$recurring_tax_data = array( 'total' => array(), 'subtotal' => array() );
 			$tax_data_keys      = array( 'total', 'subtotal' );
 
 			foreach ( $tax_data_keys as $tax_data_key ) {
