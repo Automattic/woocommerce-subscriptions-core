@@ -362,7 +362,7 @@ class WCS_Repair_2_0_2 {
 				wp_update_post( array( 'ID' => $subscription->id, 'post_status' => 'wc-on-hold' ) );
 
 				// if the payment method doesn't support date changes, we still want to reactivate the subscription but we also need to process a special failed payment at the next renewal to fix up the payment method so we'll set a special flag in post meta to handle that
-				if ( ! $subscription->payment_method_supports( 'subscription_date_changes' ) && 0 == $subscription->get_total() > 0 ) {
+				if ( ! $subscription->payment_method_supports( 'subscription_date_changes' ) && $subscription->get_total() > 0 ) {
 					update_post_meta( $subscription->id, '_wcs_repaired_2_0_2_needs_failed_payment', 'true' );
 					WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: payment method does not support "subscription_date_changes" and total > 0, setting "_wcs_repaired_2_0_2_needs_failed_payment" post meta flag.', $subscription->id ) );
 				}
