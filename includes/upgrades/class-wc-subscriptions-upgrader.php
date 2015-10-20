@@ -321,7 +321,7 @@ class WC_Subscriptions_Upgrader {
 						'repaired_count'   => $subscription_counts['repaired_count'],
 						'unrepaired_count' => $subscription_counts['unrepaired_count'],
 						// translators: placeholder is number of subscriptions upgraded
-						'message'          => sprintf( __( 'Repaired %d subscriptions with corrupted dates or missing customer notes. %d other subscriptions were checked and did not need any repairs. (in {execution_time} seconds).', 'woocommerce-subscriptions' ), $subscription_counts['repaired_count'], $subscription_counts['unrepaired_count'] ),
+						'message'          => sprintf( __( 'Repaired %d subscriptions with incorrect dates, line tax data or missing customer notes. %d other subscriptions were checked and did not need any repairs. (in {execution_time} seconds).', 'woocommerce-subscriptions' ), $subscription_counts['repaired_count'], $subscription_counts['unrepaired_count'] ),
 						'status'           => 'success',
 						'time_message'     => __( 'Estimated time left (minutes:seconds): {time_left}', 'woocommerce-subscriptions' ),
 					);
