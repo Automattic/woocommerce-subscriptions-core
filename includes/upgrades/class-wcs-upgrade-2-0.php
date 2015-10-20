@@ -336,7 +336,7 @@ class WCS_Upgrade_2_0 {
 		if ( isset( $order_item['item_meta']['_recurring_line_tax_data'] ) ) {
 
 			$line_tax_data      = maybe_unserialize( $order_item['item_meta']['_recurring_line_tax_data'][0] );
-			$recurring_tax_data = array();
+			$recurring_tax_data = array( 'total' => array(), 'subtotal' => array() );
 			$tax_data_keys      = array( 'total', 'subtotal' );
 
 			foreach ( $tax_data_keys as $tax_data_key ) {
@@ -365,8 +365,12 @@ class WCS_Upgrade_2_0 {
 				foreach ( $tax_data_keys as $tax_data_key ) {
 					foreach ( $line_tax_data[ $tax_data_key ] as $tax_index => $tax_value ) {
 
-						// Use total tax amount for both total and subtotal because we don't want any initial discounts to be applied to recurring amounts
-						$total_tax_amount = $line_tax_data['total'][ $tax_index ];
+						if ( $line_total != $recurring_line_total ) {
+							// Use total tax amount for both total and subtotal because we don't want any initial discounts to be applied to recurring amounts
+							$total_tax_amount = $line_tax_data['total'][ $tax_index ];
+						} else {
+							$total_tax_amount = $line_tax_data[ $tax_data_key ][ $tax_index ];
+						}
 
 						$recurring_tax_data[ $tax_data_key ][ $tax_index ] = wc_format_decimal( $recurring_ratio * $total_tax_amount );
 					}
