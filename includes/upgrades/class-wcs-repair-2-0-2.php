@@ -86,16 +86,18 @@ class WCS_Repair_2_0_2 {
 	 */
 	protected static function maybe_repair_subscription( $subscription ) {
 
+		$repaired_subscription = false;
+
 		// if the subscription doesn't have an order, it must have been created in 2.0, so we can ignore it
 		if ( false === $subscription->order ) {
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: no need to repair: it has no order.', $subscription->id ) );
-			return false;
+			return $repaired_subscription;
 		}
 
 		// if the subscription has been cancelled, we don't need to repair it
 		if ( $subscription->has_status( array( 'pending-cancel', 'cancelled' ) ) ) {
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: no need to repair: it has cancelled status.', $subscription->id ) );
-			return false;
+			return $repaired_subscription;
 		}
 
 		$subscription_line_items = $subscription->get_items();
@@ -103,7 +105,7 @@ class WCS_Repair_2_0_2 {
 		// if the subscription has more than one line item, it must have been created in 2.0, so we can ignore it
 		if ( count( $subscription_line_items ) > 1 ) {
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: no need to repair: it has more than one line item.', $subscription->id ) );
-			return false;
+			return $repaired_subscription;
 		}
 
 		$subscription_line_item = array_shift( $subscription_line_items );
@@ -119,7 +121,7 @@ class WCS_Repair_2_0_2 {
 		// we couldn't find a matching line item so we can't repair it
 		if ( ! isset( $matching_line_item ) ) {
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: can not repair: it has no matching line item.', $subscription->id ) );
-			return false;
+			return $repaired_subscription;
 		}
 
 		$matching_line_item_meta = $matching_line_item['item_meta'];
@@ -127,7 +129,7 @@ class WCS_Repair_2_0_2 {
 		// if the order item doesn't have migrated subscription data, the subscription wasn't migrated from 1.5
 		if ( ! isset( $matching_line_item_meta['_wcs_migrated_subscription_status'] ) && ! isset( $matching_line_item_meta['_wcs_migrated_subscription_start_date'] )  ) {
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: no need to repair: matching line item has no migrated meta data.', $subscription->id ) );
-			return false;
+			return $repaired_subscription;
 		}
 
 		$dates_to_update = array();
@@ -162,9 +164,6 @@ class WCS_Repair_2_0_2 {
 			}
 
 			$repaired_subscription = true;
-
-		} else {
-			$repaired_subscription = false;
 		}
 
 		if ( ! empty( $subscription->order->customer_note ) && empty( $subscription->customer_note ) ) {
@@ -181,7 +180,6 @@ class WCS_Repair_2_0_2 {
 				$repaired_subscription = true;
 			} else {
 				WCS_Upgrade_Logger::add( sprintf( '!! For subscription %d: unable to repair missing customer note. Exception: "%s"', $subscription->id, $updated_post_id->get_error_message() ) );
-				$repaired_subscription = false;
 			}
 		}
 
