@@ -330,7 +330,7 @@ class WCS_Upgrade_2_0 {
 	 * @param array $order_item The line item on the original order that in v1.5 represented the subscription
 	 * @since 2.0
 	 */
-	private static function add_line_tax_data( $new_order_item_id, $old_order_item_id, $order_item ) {
+	public static function add_line_tax_data( $new_order_item_id, $old_order_item_id, $order_item ) {
 
 		// If we have _recurring_line_tax_data, use that
 		if ( isset( $order_item['item_meta']['_recurring_line_tax_data'] ) ) {

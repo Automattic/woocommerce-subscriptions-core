@@ -311,6 +311,7 @@ class WC_Subscriptions_Upgrader {
 
 			case 'subscription_dates_repair':
 
+				require_once( 'class-wcs-upgrade-2-0.php' );
 				require_once( 'class-wcs-repair-2-0-2.php' );
 
 				$subscription_ids_to_repair = WCS_Repair_2_0_2::get_subscriptions_to_repair( self::$upgrade_repair_batch_size );

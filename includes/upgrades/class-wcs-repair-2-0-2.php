@@ -94,12 +94,6 @@ class WCS_Repair_2_0_2 {
 			return $repaired_subscription;
 		}
 
-		// if the subscription has been cancelled, we don't need to repair it
-		if ( $subscription->has_status( array( 'pending-cancel', 'cancelled' ) ) ) {
-			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: no need to repair: it has cancelled status.', $subscription->id ) );
-			return $repaired_subscription;
-		}
-
 		$subscription_line_items = $subscription->get_items();
 
 		// if the subscription has more than one line item, it must have been created in 2.0, so we can ignore it
@@ -108,12 +102,14 @@ class WCS_Repair_2_0_2 {
 			return $repaired_subscription;
 		}
 
-		$subscription_line_item = array_shift( $subscription_line_items );
+		$subscription_line_item_id = key( $subscription_line_items );
+		$subscription_line_item    = array_shift( $subscription_line_items );
 
 		// Get old order item's meta
 		foreach ( $subscription->order->get_items() as $line_item_id => $line_item ) {
 			if ( wcs_get_canonical_product_id( $line_item ) == wcs_get_canonical_product_id( $subscription_line_item ) ) {
-				$matching_line_item = $line_item;
+				$matching_line_item_id = $line_item_id;
+				$matching_line_item    = $line_item;
 				break;
 			}
 		}
@@ -129,6 +125,19 @@ class WCS_Repair_2_0_2 {
 		// if the order item doesn't have migrated subscription data, the subscription wasn't migrated from 1.5
 		if ( ! isset( $matching_line_item_meta['_wcs_migrated_subscription_status'] ) && ! isset( $matching_line_item_meta['_wcs_migrated_subscription_start_date'] )  ) {
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: no need to repair: matching line item has no migrated meta data.', $subscription->id ) );
+			return $repaired_subscription;
+		}
+
+		if ( false !== self::maybe_repair_line_tax_data( $subscription_line_item_id, $matching_line_item_id, $matching_line_item ) ) {
+			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: repaired missing line tax data.', $subscription->id ) );
+			$repaired_subscription = true;
+		} else {
+			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: line tax data not added.', $subscription->id ) );
+		}
+
+		// if the subscription has been cancelled, we don't need to repair any other data
+		if ( $subscription->has_status( array( 'pending-cancel', 'cancelled' ) ) ) {
+			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: no need to repair: it has cancelled status.', $subscription->id ) );
 			return $repaired_subscription;
 		}
 
@@ -374,5 +383,30 @@ class WCS_Repair_2_0_2 {
 			$repair_status = false;
 		}
 		return $repair_status;
+	}
+
+	/**
+	 * There was a bug in the WCS_Upgrade_2_0::add_line_tax_data() method in Subscriptions 2.0.0 and 2.0.1 which
+	 * prevented recurring line tax data from being copied correctly to newly created subscriptions. This bug was
+	 * fixed in 2.0.2, so we can now use that method to make sure line tax data is set correctly. But to do that,
+	 * we first need to massage some of the deprecated line item meta to use the original meta keys.
+	 *
+	 * @param  int $subscription_line_item_id ID of the new subscription line item
+	 * @param  int $old_order_item_id ID of the old order line item
+	 * @param  array $old_order_item The old line item
+	 * @return bool|int the meta ID of the newly added '_line_tax_data' meta data row, or false if no line tax data was added.
+	 */
+	protected static function maybe_repair_line_tax_data( $subscription_line_item_id, $old_order_item_id, $old_order_item ) {
+
+		// we need item meta in the old format so that we can use the (now fixed) WCS_Upgrade_2_0::add_line_tax_data() method and save duplicating its code
+		$old_order_item['item_meta']['_recurring_line_total']        = isset( $old_order_item['item_meta']['_wcs_migrated_recurring_line_total'] ) ? $old_order_item['item_meta']['_wcs_migrated_recurring_line_total']: 0;
+		$old_order_item['item_meta']['_recurring_line_tax']          = isset( $old_order_item['item_meta']['_wcs_migrated_recurring_line_tax'] ) ? $old_order_item['item_meta']['_wcs_migrated_recurring_line_tax'] : 0;
+		$old_order_item['item_meta']['_recurring_line_subtotal_tax'] = isset( $old_order_item['item_meta']['_wcs_migrated_recurring_line_subtotal_tax'] ) ? $old_order_item['item_meta']['_wcs_migrated_recurring_line_subtotal_tax'] : 0;
+
+		if ( isset( $old_order_item['item_meta']['_wcs_migrated_recurring_line_tax_data'] ) ) {
+			$old_order_item['item_meta']['_recurring_line_tax_data'] = $old_order_item['item_meta']['_wcs_migrated_recurring_line_tax_data'];
+		}
+
+		return WCS_Upgrade_2_0::add_line_tax_data( $subscription_line_item_id, $old_order_item_id, $old_order_item );
 	}
 }
