@@ -473,6 +473,10 @@ class WC_Subscriptions_Manager {
 				'customer_note'    => $order->customer_note,
 			) );
 
+			if ( is_wp_error( $subscription ) ) {
+				throw new Exception( __( 'Error: Unable to create subscription. Please try again.', 'woocommerce-subscriptions' ) );
+			}
+
 			$item_id = $subscription->add_product(
 				$product,
 				1,
@@ -489,7 +493,7 @@ class WC_Subscriptions_Manager {
 			);
 
 			if ( ! $item_id ) {
-				throw new Exception( __( 'Error: Unable to create subscription. Please try again.', 'woocommerce-subscriptions' ) );
+				throw new Exception( __( 'Error: Unable to add product to created subscription. Please try again.', 'woocommerce-subscriptions' ) );
 			}
 		}
 
