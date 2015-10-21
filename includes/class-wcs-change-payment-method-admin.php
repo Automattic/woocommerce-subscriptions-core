@@ -136,11 +136,7 @@ class WCS_Change_Payment_Method_Admin {
 			$subscription = wcs_get_subscription( $subscription );
 		}
 
-		$valid_gateways = array();
-
-		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals', 'no' ) || $subscription->is_manual() ) {
-			$valid_gateways['manual'] = __( 'Manual Renewal', 'woocommerce-subscriptions' );
-		}
+		$valid_gateways = array( 'manual' => __( 'Manual Renewal', 'woocommerce-subscriptions' ) );
 
 		$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
 
