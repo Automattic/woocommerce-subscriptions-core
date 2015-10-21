@@ -47,14 +47,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</div>
 		<div id="update-messages">
 			<h2><?php esc_html_e( 'Update in Progress', 'woocommerce-subscriptions' ); ?></h2>
-			<?php if ( 'false' == $script_data['really_old_version'] ) : ?>
-			<p><?php printf( esc_html__( 'This page will display the results of the process as each batch of %s subscriptions is updated.', 'woocommerce-subscriptions' ), esc_html( $batch_size ) ); ?></p>
-			<?php else : ?>
-			<p><?php printf( esc_html__( 'This page will display the results of the process as each batch of at %s is updated.', 'woocommerce-subscriptions' ), esc_html( $batch_size ) ); ?></p>
-			<?php endif; ?>
-			<?php if ( array_key_exists( 'WPENGINE_ACCOUNT', $_SERVER ) ) : ?>
-			<p><?php printf( esc_html__( 'Because the site is on WP Engine, the batch might be smaller, and will take at most 60 seconds.', 'woocommerce-subscriptions' ), esc_html( $batch_size ) ); ?></p>
-			<?php endif; ?>
+			<p><?php esc_html_e( 'This page will display the results of the process as each batch of subscriptions is updated.', 'woocommerce-subscriptions' ); ?></p>
 			<p><?php esc_html_e( 'Please keep this page open until the update process completes. No need to refresh or restart the process.', 'woocommerce-subscriptions' ); ?></p>
 			<?php if ( $estimated_duration > 20 ) : ?>
 			<p><?php esc_html_e( 'Remember, although the update process may take a while, customers and other non-administrative users can browse and purchase from your store without interuption while the update is in progress.', 'woocommerce-subscriptions' ); ?></p>
