@@ -319,7 +319,7 @@ class WC_Subscriptions_Upgrader {
 
 					$repair_message = sprintf( __( 'Repaired %d subscriptions with incorrect dates, line tax data or missing customer notes.', 'woocommerce-subscriptions' ), $subscription_counts['repaired_count'] );
 
-					if ( $subscription_counts['unrepaired_count']  > 0 ) {
+					if ( $subscription_counts['unrepaired_count'] > 0 ) {
 						$repair_message .= ' ' . sprintf( _n( '%d other subscription was checked and did not need any repairs.', '%d other subscriptions were checked and did not need any repairs.', $subscription_counts['unrepaired_count'], 'woocommerce-subscriptions' ), $subscription_counts['unrepaired_count'] );
 					}
 
