@@ -351,15 +351,6 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	}
 
 	/**
-	 *
-	 *
-	 * @since 2.0
-	 */
-	public function validate_payment_method_data( $payment_details ) {
-		return true;
-	}
-
-	/**
 	 * Update all subscription specific meta (i.e. Billing interval/period and date fields )
 	 *
 	 * @since 2.0
