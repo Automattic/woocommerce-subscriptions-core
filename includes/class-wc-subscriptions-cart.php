@@ -214,6 +214,7 @@ class WC_Subscriptions_Cart {
 			// No fees recur (yet)
 			$recurring_cart->fees = array();
 			$recurring_cart->fee_total = 0;
+			WC()->shipping->reset_shipping();
 			self::maybe_recalculate_shipping();
 			$recurring_cart->calculate_totals();
 
