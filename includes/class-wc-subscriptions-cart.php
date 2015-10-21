@@ -295,6 +295,8 @@ class WC_Subscriptions_Cart {
 	 * @since 2.0
 	 */
 	public static function cart_needs_shipping( $needs_shipping ) {
+		// Back up the shipping method. Chances are WC is going to wipe the chosen_shipping_methods data
+		WC()->session->set( 'ost_shipping_methods', WC()->session->get( 'chosen_shipping_methods' ) );
 
 		if ( self::cart_contains_subscription() ) {
 			if ( 'none' == self::$calculation_type ) {
@@ -647,6 +649,9 @@ class WC_Subscriptions_Cart {
 				}
 			}
 		}
+
+		// If we had one time shipping in the carts, we may have wiped the WC chosen shippings. Restore them.
+		self::maybe_restore_chosen_shipping_method();
 
 		// Now make sure the correct shipping method is set
 		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', array() );
@@ -1787,6 +1792,22 @@ class WC_Subscriptions_Cart {
 
 		if ( 'recurring_total' != self::$calculation_type ) {
 			WC()->cart->coupon_discount_amounts[ $code ] += $amount;
+		}
+	}
+
+	/**
+	 * One time shipping can null the need for shipping needs. WooCommerce treats that as no need to ship, therefore it will call
+	 * WC()->shipping->reset() on it, which will wipe the preferences saved. That can cause the chosen shipping method for the one
+	 * time shipping feature to be lost, and the first default to be applied instead. To counter that, we save the chosen shipping
+	 * method to a key that's not going to get wiped by WC's method, and then later restore it.
+	 */
+	public static function maybe_restore_chosen_shipping_method() {
+		$onetime_shipping = WC()->session->get( 'ost_shipping_methods', false );
+		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', array() );
+
+		if ( $onetime_shipping && empty( $chosen_shipping_methods ) ) {
+			WC()->session->set( 'chosen_shipping_methods', $onetime_shipping );
+			unset( WC()->session->ost_shipping_methods );
 		}
 	}
 }
