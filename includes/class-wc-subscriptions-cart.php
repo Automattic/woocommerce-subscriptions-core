@@ -67,6 +67,8 @@ class WC_Subscriptions_Cart {
 		add_action( 'woocommerce_review_order_after_order_total', __CLASS__ . '::display_recurring_totals' );
 
 		add_action( 'woocommerce_add_to_cart_validation', __CLASS__ . '::check_valid_add_to_cart', 10, 3 );
+
+		add_filter( 'woocommerce_cart_needs_shipping', __CLASS__ . '::cart_needs_shipping', 11, 1 );
 	}
 
 	/**
@@ -212,6 +214,7 @@ class WC_Subscriptions_Cart {
 			// No fees recur (yet)
 			$recurring_cart->fees = array();
 			$recurring_cart->fee_total = 0;
+			WC()->shipping->reset_shipping();
 			self::maybe_recalculate_shipping();
 			$recurring_cart->calculate_totals();
 
@@ -288,6 +291,34 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
+	 * The cart needs shipping only if it needs shipping up front and/or for recurring items.
+	 *
+	 * @since 2.0
+	 */
+	public static function cart_needs_shipping( $needs_shipping ) {
+
+		if ( self::cart_contains_subscription() ) {
+			// Back up the shipping method. Chances are WC is going to wipe the chosen_shipping_methods data
+			WC()->session->set( 'ost_shipping_methods', WC()->session->get( 'chosen_shipping_methods' ) );
+			if ( 'none' == self::$calculation_type ) {
+				if ( true == $needs_shipping && ! self::charge_shipping_up_front() && ! self::cart_contains_subscriptions_needing_shipping() ) {
+					$needs_shipping = false;
+				} elseif ( false == $needs_shipping && ( self::charge_shipping_up_front() || self::cart_contains_subscriptions_needing_shipping() ) ) {
+					$needs_shipping = false;
+				}
+			} elseif ( 'recurring_total' == self::$calculation_type ) {
+				if ( true == $needs_shipping && ! self::cart_contains_subscriptions_needing_shipping() ) {
+					$needs_shipping = false;
+				} elseif ( false == $needs_shipping && self::cart_contains_subscriptions_needing_shipping() ) {
+					$needs_shipping = true;
+				}
+			}
+		}
+
+		return $needs_shipping;
+	}
+
+	/**
 	 * Check whether all the subscription product items in the cart have a free trial.
 	 *
 	 * Useful for determining if certain up-front amounts should be charged.
@@ -330,7 +361,7 @@ class WC_Subscriptions_Cart {
 		if ( self::cart_contains_subscription() ) {
 			foreach ( WC()->cart->cart_contents as $cart_item_key => $values ) {
 				$_product = $values['data'];
-				if ( WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() ) {
+				if ( WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && 'yes' !== $_product->subscription_one_time_shipping ) {
 					$cart_contains_subscriptions_needing_shipping = true;
 				}
 			}
@@ -354,6 +385,19 @@ class WC_Subscriptions_Cart {
 					if ( $trial_length > 0 ) {
 						unset( $packages[ $index ]['contents'][ $cart_item_key ] );
 					}
+				}
+			}
+		} elseif ( 'recurring_total' == self::$calculation_type ) {
+			foreach ( $packages as $index => $package ) {
+				foreach ( $package['contents'] as $cart_item_key => $cart_item ) {
+					if ( isset( $cart_item['data']->subscription_one_time_shipping ) && 'yes' == $cart_item['data']->subscription_one_time_shipping ) {
+						$packages[ $index ]['contents_cost'] -= $cart_item['line_total'];
+						unset( $packages[ $index ]['contents'][ $cart_item_key ] );
+					}
+				}
+
+				if ( empty( $packages[ $index ]['contents'] ) ) {
+					unset( $packages[ $index ] );
 				}
 			}
 		}
@@ -478,6 +522,18 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
+	 * Gets the recalculate flag
+	 *
+	 * @since 2.0
+	 */
+	public static function set_calculation_type( $calculation_type ) {
+
+		self::$calculation_type = $calculation_type;
+
+		return $calculation_type;
+	}
+
+	/**
 	 * Gets the subscription sign up fee for the cart and returns it
 	 *
 	 * Currently short-circuits to return just the sign-up fee of the first subscription, because only
@@ -595,6 +651,9 @@ class WC_Subscriptions_Cart {
 			}
 		}
 
+		// If we had one time shipping in the carts, we may have wiped the WC chosen shippings. Restore them.
+		self::maybe_restore_chosen_shipping_method();
+
 		// Now make sure the correct shipping method is set
 		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', array() );
 
@@ -643,6 +702,9 @@ class WC_Subscriptions_Cart {
 
 		if ( self::cart_contains_subscription() ) {
 
+			// We only want shipping for recurring amounts, and they need to be calculated again here
+			self::$calculation_type = 'recurring_total';
+
 			$shipping_methods = array();
 
 			$carts_with_multiple_payments = 0;
@@ -660,8 +722,6 @@ class WC_Subscriptions_Cart {
 						$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', array() );
 
 						// Don't remove any subscriptions with a free trial from the shipping packages
-						remove_filter( 'woocommerce_cart_shipping_packages', __CLASS__ . '::set_cart_shipping_packages', -10, 1 );
-
 						foreach ( $recurring_cart->get_shipping_packages() as $base_package ) {
 
 							$package = WC()->shipping->calculate_shipping_for_package( $base_package );
@@ -673,9 +733,6 @@ class WC_Subscriptions_Cart {
 								}
 							}
 						}
-
-						// But make sure any subscriptions with a free trial are removed from anything else access it
-						add_filter( 'woocommerce_cart_shipping_packages', __CLASS__ . '::set_cart_shipping_packages', -10, 1 );
 					}
 				}
 			}
@@ -683,6 +740,8 @@ class WC_Subscriptions_Cart {
 			if ( $carts_with_multiple_payments >= 1 ) {
 				wc_get_template( 'checkout/recurring-totals.php', array( 'shipping_methods' => $shipping_methods, 'recurring_carts' => WC()->cart->recurring_carts, 'carts_with_multiple_payments' => $carts_with_multiple_payments ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
 			}
+
+			self::$calculation_type = 'none';
 		}
 	}
 
@@ -1734,6 +1793,22 @@ class WC_Subscriptions_Cart {
 
 		if ( 'recurring_total' != self::$calculation_type ) {
 			WC()->cart->coupon_discount_amounts[ $code ] += $amount;
+		}
+	}
+
+	/**
+	 * One time shipping can null the need for shipping needs. WooCommerce treats that as no need to ship, therefore it will call
+	 * WC()->shipping->reset() on it, which will wipe the preferences saved. That can cause the chosen shipping method for the one
+	 * time shipping feature to be lost, and the first default to be applied instead. To counter that, we save the chosen shipping
+	 * method to a key that's not going to get wiped by WC's method, and then later restore it.
+	 */
+	public static function maybe_restore_chosen_shipping_method() {
+		$onetime_shipping = WC()->session->get( 'ost_shipping_methods', false );
+		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', array() );
+
+		if ( $onetime_shipping && empty( $chosen_shipping_methods ) ) {
+			WC()->session->set( 'chosen_shipping_methods', $onetime_shipping );
+			unset( WC()->session->ost_shipping_methods );
 		}
 	}
 }
