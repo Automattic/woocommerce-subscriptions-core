@@ -296,10 +296,10 @@ class WC_Subscriptions_Cart {
 	 * @since 2.0
 	 */
 	public static function cart_needs_shipping( $needs_shipping ) {
-		// Back up the shipping method. Chances are WC is going to wipe the chosen_shipping_methods data
-		WC()->session->set( 'ost_shipping_methods', WC()->session->get( 'chosen_shipping_methods' ) );
 
 		if ( self::cart_contains_subscription() ) {
+			// Back up the shipping method. Chances are WC is going to wipe the chosen_shipping_methods data
+			WC()->session->set( 'ost_shipping_methods', WC()->session->get( 'chosen_shipping_methods' ) );
 			if ( 'none' == self::$calculation_type ) {
 				if ( true == $needs_shipping && ! self::charge_shipping_up_front() && ! self::cart_contains_subscriptions_needing_shipping() ) {
 					$needs_shipping = false;
