@@ -289,10 +289,10 @@ class WC_Subscription extends WC_Order {
 		// Standardise status names.
 		$new_status     = ( 'wc-' === substr( $new_status, 0, 3 ) ) ? substr( $new_status, 3 ) : $new_status;
 		$new_status_key = 'wc-' . $new_status;
-		$old_status     = $this->get_status();
-		$old_status_key = $this->post_status;
+		$old_status     = ( 'wc-' === substr( $this->get_status(), 0, 3 ) ) ? substr( $this->get_status(), 3 ) : $this->get_status();
+		$old_status_key = 'wc-' . $old_status;
 
-		if ( $new_status !== $old_status || ! in_array( $this->post_status, array_keys( wcs_get_subscription_statuses() ) ) ) {
+		if ( $new_status !== $old_status || ! in_array( $old_status_key, array_keys( wcs_get_subscription_statuses() ) ) ) {
 
 			// Only update is possible
 			if ( ! $this->can_be_updated_to( $new_status ) ) {
