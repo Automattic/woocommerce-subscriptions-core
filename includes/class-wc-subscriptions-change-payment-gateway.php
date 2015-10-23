@@ -256,6 +256,10 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 					$result = $available_gateways[ $new_payment_method ]->process_payment( $subscription->id );
 
+					if ( 'success' == $result['result'] && wc_get_page_permalink( 'myaccount' ) == $result['redirect'] ) {
+						$result['redirect'] = $subscription->get_view_order_url();
+					}
+
 					$result = apply_filters( 'woocommerce_subscriptions_process_payment_for_change_method_via_pay_shortcode', $result, $subscription );
 
 					// Redirect to success/confirmation/payment page
