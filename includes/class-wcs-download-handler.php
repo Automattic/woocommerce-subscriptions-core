@@ -36,7 +36,7 @@ class WCS_Download_Handler {
 
 		add_action( 'woocommerce_order_item_meta_start', array( __CLASS__, 'add_get_item_downloads_status_override' ), 10, 3 );
 
-		remove_action( 'woocommerce_order_item_meta_end', array( __CLASS__, 'add_get_item_downloads_status_override' ), 10, 3 );
+		add_action( 'woocommerce_order_item_meta_end', array( __CLASS__, 'remove_get_item_downloads_status_override' ), 10, 3 );
 	}
 
 	/**
@@ -196,15 +196,31 @@ class WCS_Download_Handler {
 	}
 
 	/**
-	 * Used to add/remove the `get_item_downloads_status_override()` filter within the `email-order-items.php` template
+	 * Used to add the `get_item_downloads_status_override()` before the email/order item details tables are displayed
 	 *
 	 * @param  int $item_id the ID of the item being displayed
 	 * @param  object $item The item being displayed
 	 * @param  WC_Order $order the order
 	 */
 	public static function add_get_item_downloads_status_override( $item_id, $item, $order ) {
-		add_filter( 'woocommerce_subscription_item_download_statuses', array( __CLASS__, 'get_item_downloads_status_override' ), 10, 1 );
+		if ( ! is_account_page() && ! is_wc_endpoint_url() ) {
+			add_filter( 'woocommerce_subscription_item_download_statuses', array( __CLASS__, 'get_item_downloads_status_override' ), 10, 1 );
+		}
 	}
+
+	/**
+	 * Used to remove the `get_item_downloads_status_override()` after the email/order item details tables are displayed
+	 *
+	 * @param  int $item_id the ID of the item being displayed
+	 * @param  object $item The item being displayed
+	 * @param  WC_Order $order the order
+	 */
+	public static function remove_get_item_downloads_status_override( $item_id, $item, $order ) {
+		if ( ! is_account_page() && ! is_wc_endpoint_url() ) {
+			remove_filter( 'woocommerce_subscription_item_download_statuses', array( __CLASS__, 'get_item_downloads_status_override' ), 10, 1 );
+		}
+	}
+
 
 	/**
 	 * Hack for the `get_item_download()` status check when order emails are generated/sent so that download links are added correctly to the order item table
