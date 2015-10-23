@@ -91,3 +91,26 @@ function wcs_str_to_ascii( $string ) {
 
 	return false === $ascii ? preg_replace( '/[^a-zA-Z0-9_\-]/', '', $string ) : $ascii;
 }
+
+/**
+ * Hacky way to determine if we are currently sending a WC email.
+ *
+ * `$email->sending` is set to true within `$email->get_content()` so won't be useful for every situation.
+ *
+ * @return bool defaults to false
+ */
+function wcs_is_sending_email() {
+
+	$sending = false;
+
+	$mailer = WC()->mailer();
+
+	foreach ( $mailer->emails as $email ) {
+		if ( true == $email->sending ) {
+			$sending = true;
+			break;
+		}
+	}
+
+	return $sending;
+}

@@ -1660,7 +1660,7 @@ class WC_Subscription extends WC_Order {
 
 		$files = array();
 
-		if ( $this->has_status( apply_filters( 'woocommerce_subscription_item_download_statuses', array( 'active', 'pending-cancel' ) ) ) ) {
+		if ( $this->has_status( apply_filters( 'woocommerce_subscription_item_download_statuses', array( 'active', 'pending-cancel' ) ) ) || wcs_is_sending_email() ) { // WC Emails are sent before the subscription status is updated to active etc. so we need a way to ensure download links are added to the emails before being sent
 			$files = parent::get_item_downloads( $item );
 		}
 
