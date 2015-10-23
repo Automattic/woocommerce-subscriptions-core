@@ -585,7 +585,7 @@ class WC_Subscription extends WC_Order {
 		if ( ! empty( $date_type ) && ! isset( $this->schedule->{$date_type} ) ) {
 			switch ( $date_type ) {
 				case 'start' :
-					$this->schedule->{$date_type} = get_gmt_from_date( $this->post->post_date ); // why not just use post_date_gmt? Because when a post is first created, it has a post_date but not a post_date_gmt value
+					$this->schedule->{$date_type} = ( '0000-00-00 00:00:00' != $this->post->post_date_gmt ) ? $this->post->post_date_gmt : get_gmt_from_date( $this->post->post_date ); // why not always use post_date_gmt? Because when a post is first created via the Add Subscription screen, it has a post_date but not a post_date_gmt value yet
 					break;
 				case 'next_payment' :
 				case 'trial_end' :
