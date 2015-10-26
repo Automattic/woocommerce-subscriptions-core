@@ -507,7 +507,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 		}
 
 		// Couldn't find the order ID by subscr_id, so it's either not set on the order yet or the $args doesn't have a subscr_id, either way, let's get it from the args
-		if ( ! isset( $order_id ) ) {
+		if ( ! isset( $order_id ) && isset( $args['custom'] ) ) {
 			// WC < 1.6.5
 			if ( is_numeric( $args['custom'] ) && 'shop_order' == $order_type ) {
 
