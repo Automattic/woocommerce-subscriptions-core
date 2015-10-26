@@ -477,6 +477,8 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 	 */
 	public static function get_order_id_and_key( $args, $order_type = 'shop_order' ) {
 
+		$order_id = $order_key = '';
+
 		if ( isset( $args['subscr_id'] ) ) { // PayPal Standard IPN message
 			$subscription_id = $args['subscr_id'];
 		} elseif ( isset( $args['recurring_payment_id'] ) ) { // PayPal Express Checkout IPN, most likely 'recurring_payment_suspended_due_to_max_failed_payment', for a PayPal Standard Subscription
@@ -507,7 +509,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 		}
 
 		// Couldn't find the order ID by subscr_id, so it's either not set on the order yet or the $args doesn't have a subscr_id, either way, let's get it from the args
-		if ( ! isset( $order_id ) && isset( $args['custom'] ) ) {
+		if ( empty( $order_id ) && isset( $args['custom'] ) ) {
 			// WC < 1.6.5
 			if ( is_numeric( $args['custom'] ) && 'shop_order' == $order_type ) {
 
@@ -535,9 +537,6 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 							$subscription = array_pop( $subscriptions );
 							$order_id  = $subscription->id;
 							$order_key = $subscription->order_key;
-						} else {
-							$order_id  = '';
-							$order_key = '';
 						}
 					}
 				} elseif ( preg_match( '/^a:2:{/', $args['custom'] ) && ! preg_match( '/[CO]:\+?[0-9]+:"/', $args['custom'] ) && ( $order_details = maybe_unserialize( $args['custom'] ) ) ) {  // WC 2.0 - WC 2.3.11, only allow serialized data in the expected format, do not allow objects or anything nasty to sneak in
@@ -554,9 +553,6 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 							$subscription = array_pop( $subscriptions );
 							$order_id  = $subscription->id;
 							$order_key = $subscription->order_key;
-						} else {
-							$order_id  = '';
-							$order_key = '';
 						}
 					}
 				} else { // WC 1.6.5 - WC 2.0 or invalid data
