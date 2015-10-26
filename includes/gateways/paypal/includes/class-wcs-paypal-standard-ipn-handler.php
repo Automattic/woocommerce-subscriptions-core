@@ -572,6 +572,35 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 	}
 
 	/**
+	 * Cancel a specific PayPal Standard Subscription Profile with PayPal.
+	 *
+	 * Used when switching payment methods with PayPal Standard to make sure that
+	 * the old subscription's profile ID is cancelled, not the new one.
+	 *
+	 * @param WC_Subscription A subscription object
+	 * @param string A PayPal Subscription Profile ID
+	 * @since 2.0
+	 */
+	protected static function cancel_subscription( $subscription, $old_paypal_subscriber_id ) {
+
+		// No need to cancel billing agreements
+		if ( wcs_is_paypal_profile_a( $old_paypal_subscriber_id, 'billing_agreement' ) ) {
+			return;
+		}
+
+		$current_profile_id = wcs_get_paypal_id( $subscription->id );
+
+		// Update the subscription using the old profile ID
+		wcs_set_paypal_id( $subscription, $old_paypal_subscriber_id );
+
+		// Call update_subscription_status() directly as we don't want the notes added by WCS_PayPal_Status_Manager::cancel_subscription()
+		WCS_PayPal_Status_Manager::update_subscription_status( $subscription, 'Cancel' );
+
+		// Restore the current profile ID
+		wcs_set_paypal_id( $subscription, $current_profile_id );
+	}
+
+	/**
 	 * Check for a valid transaction type
 	 *
 	 * @param  string $txn_type
