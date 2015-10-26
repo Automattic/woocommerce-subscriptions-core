@@ -43,7 +43,7 @@ class WCS_PayPal_Standard_Change_Payment_Method {
 	 */
 	public static function maybe_remove_subscription_cancelled_callback( $subscription, $new_payment_method, $old_payment_method ) {
 		if ( 'paypal' == $new_payment_method && 'paypal' == $old_payment_method ) {
-			remove_action( 'woocommerce_subscription_cancelled_paypal', __CLASS__ . '::cancel_subscription' );
+			remove_action( 'woocommerce_subscription_cancelled_paypal', 'WCS_PayPal_Status_Manager::cancel_subscription' );
 		}
 	}
 
@@ -55,7 +55,7 @@ class WCS_PayPal_Standard_Change_Payment_Method {
 	 */
 	public static function maybe_reattach_subscription_cancelled_callback( $subscription, $new_payment_method, $old_payment_method ) {
 		if ( 'paypal' == $new_payment_method && 'paypal' == $old_payment_method ) {
-			add_action( 'woocommerce_subscription_cancelled_paypal', __CLASS__ . '::cancel_subscription' );
+			add_action( 'woocommerce_subscription_cancelled_paypal', 'WCS_PayPal_Status_Manager::cancel_subscription' );
 		}
 	}
 
