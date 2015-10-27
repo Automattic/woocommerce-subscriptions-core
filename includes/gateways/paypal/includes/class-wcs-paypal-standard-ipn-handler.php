@@ -335,9 +335,6 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 						$renewal_order->add_order_note( __( 'IPN subscription payment completed.', 'woocommerce-subscriptions' ) );
 
 						wcs_set_paypal_id( $renewal_order, $transaction_details['subscr_id'] );
-
-						add_action( 'woocommerce_subscription_activated_paypal', __CLASS__ . '::reactivate_subscription' );
-
 					}
 				} elseif ( in_array( strtolower( $transaction_details['payment_status'] ), array( 'pending', 'failed' ) ) ) {
 
@@ -371,11 +368,11 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 				if ( ! $subscription->has_status( 'on-hold' ) ) {
 
 					// We don't need to suspend the subscription at PayPal because it's already on-hold there
-					remove_action( 'woocommerce_subscription_on-hold_paypal', __CLASS__ . '::suspend_subscription' );
+					remove_action( 'woocommerce_subscription_on-hold_paypal', 'WCS_PayPal_Status_Manager::suspend_subscription' );
 
 					$subscription->update_status( 'on-hold', __( 'IPN subscription suspended.', 'woocommerce-subscriptions' ) );
 
-					add_action( 'woocommerce_subscription_activated_paypal', __CLASS__ . '::reactivate_subscription' );
+					add_action( 'woocommerce_subscription_on-hold_paypal', 'WCS_PayPal_Status_Manager::suspend_subscription' );
 
 					WC_Gateway_Paypal::log( 'IPN subscription suspended for subscription ' . $subscription->id );
 
