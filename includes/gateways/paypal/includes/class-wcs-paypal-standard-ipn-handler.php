@@ -297,9 +297,6 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 					// Process the payment if the subscription is active
 					} elseif ( ! $subscription->has_status( array( 'cancelled', 'expired', 'switched', 'trash' ) ) ) {
 
-						// We don't need to reactivate the subscription because Subs didn't suspend it
-						remove_action( 'woocommerce_subscription_activated_paypal', __CLASS__ . '::reactivate_subscription' );
-
 						if ( true === $is_renewal_sign_up_after_failure && is_object( $renewal_order ) ) {
 
 							update_post_meta( $subscription->id, '_paypal_failed_sign_up_recorded', $renewal_order->id );
