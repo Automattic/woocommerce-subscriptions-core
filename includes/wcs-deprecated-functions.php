@@ -168,7 +168,7 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 			// Subscription billing details
 			'period'             => $subscription->billing_period,
 			'interval'           => $subscription->billing_interval,
-			'length'             => null, // Subscriptions no longer have a length, just an expiration date
+			'length'             => wcs_estimate_periods_between( ( 0 == $subscription->get_time( 'trial_end' ) ) ? $subscription->get_time( 'start' ) : $subscription->get_time( 'trial_end' ), $subscription->get_time( 'end' ) + 120, $subscription->billing_period, 'floor' ) / $subscription->billing_interval, // Since subscriptions no longer have a length, we need to calculate the length given the start and end dates and the period.
 
 			// Subscription dates
 			'start_date'         => $subscription->get_date( 'start' ),
