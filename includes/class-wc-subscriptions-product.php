@@ -902,7 +902,14 @@ class WC_Subscriptions_Product {
 	 */
 	public static function is_purchasable( $is_purchasable, $product ) {
 
-		if ( self::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && is_user_logged_in() && ( ( 'active' == $product->limit_subscriptions && wcs_user_has_subscription( 0, $product->id, 'on-hold' ) ) || wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) && false === strpos( $_SERVER['REQUEST_URI'], 'order-received' ) && false === strpos( $_SERVER['REQUEST_URI'], 'wc-api/wcs_paypal' ) ) { // we can't use is_order_received_page() becuase get_cart_from_session() is called before the query vars are setup
+		if ( isset( WC()->session->order_awaiting_payment ) || isset( $_GET['pay_for_order'] ) ) {
+
+			$order_id = isset( WC()->session->order_awaiting_payment ) ? WC()->session->order_awaiting_payment : wc_get_order_id_by_order_key( $_GET['key'] );
+			$order    = wc_get_order( $order_id );
+
+			$is_purchasable = $order->has_status( array( 'pending', 'failed' ) );
+
+		} else if ( self::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && is_user_logged_in() && ( ( 'active' == $product->limit_subscriptions && wcs_user_has_subscription( 0, $product->id, 'on-hold' ) ) || wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) && false === strpos( $_SERVER['REQUEST_URI'], 'order-received' ) && false === strpos( $_SERVER['REQUEST_URI'], 'wc-api/wcs_paypal' ) ) { // we can't use is_order_received_page() becuase get_cart_from_session() is called before the query vars are setup
 			$is_purchasable = false;
 		}
 
