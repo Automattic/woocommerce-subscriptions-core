@@ -42,11 +42,11 @@ function wcs_set_paypal_id( $order, $paypal_subscription_id ) {
 		$order = wc_get_order( $order );
 	}
 
-	if ( ! in_array( $paypal_subscription_id, get_user_meta( $order->get_user_id(), '_paypal_subscription_id', false ) ) ) {
-		add_user_meta( $order->get_user_id(), '_paypal_subscription_id', $paypal_subscription_id );
+	if ( wcs_is_paypal_profile_a( $paypal_subscription_id, 'billing_agreement' ) ) {
+		if ( ! in_array( $paypal_subscription_id, get_user_meta( $order->get_user_id(), '_paypal_subscription_id', false ) ) ) {
+			add_user_meta( $order->get_user_id(), '_paypal_subscription_id', $paypal_subscription_id );
+		}
 	}
-
-	update_user_meta( $order->get_user_id(), '_paypal_subscription_id', $paypal_subscription_id );
 
 	return update_post_meta( $order->id, '_paypal_subscription_id', $paypal_subscription_id );
 }
