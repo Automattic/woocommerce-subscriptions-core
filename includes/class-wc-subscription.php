@@ -957,9 +957,9 @@ class WC_Subscription extends WC_Order {
 
 			$next_payment_timestamp = wcs_add_time( $this->billing_interval, $this->billing_period, $from_timestamp );
 
-			// Make sure the next payment is in the future
+			// Make sure the next payment is more than 23 hours in the future, this ensures changes to the site's timezone or daylight savings will never cause a 2nd renewal payment to be processed on the same day
 			$i = 1;
-			while ( $next_payment_timestamp < current_time( 'timestamp', true ) && $i < 30 ) {
+			while ( $next_payment_timestamp < ( current_time( 'timestamp', true ) + 23 * HOUR_IN_SECONDS ) && $i < 30 ) {
 				$next_payment_timestamp = wcs_add_time( $this->billing_interval, $this->billing_period, $next_payment_timestamp );
 				$i += 1;
 			}
