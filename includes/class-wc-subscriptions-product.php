@@ -901,21 +901,35 @@ class WC_Subscriptions_Product {
 	 * @return bool
 	 */
 	public static function is_purchasable( $is_purchasable, $product ) {
+		global $wp;
 
 		if ( self::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && is_user_logged_in() && ( ( 'active' == $product->limit_subscriptions && wcs_user_has_subscription( 0, $product->id, 'on-hold' ) ) || wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) && false === strpos( $_SERVER['REQUEST_URI'], 'order-received' ) && false === strpos( $_SERVER['REQUEST_URI'], 'wc-api/wcs_paypal' ) ) { // we can't use is_order_received_page() becuase get_cart_from_session() is called before the query vars are setup
+
 			$is_purchasable = false;
-		}
 
-		if ( self::is_subscription( $product->id ) && ( isset( WC()->session->order_awaiting_payment ) || isset( $_GET['pay_for_order'] ) ) ) {
+			if ( isset( WC()->session->order_awaiting_payment ) || isset( $_GET['pay_for_order'] ) ) {
 
-			$order_id = isset( WC()->session->order_awaiting_payment ) ? WC()->session->order_awaiting_payment : wc_get_order_id_by_order_key( $_GET['key'] );
-			$order    = wc_get_order( $order_id );
+				$order_id = isset( WC()->session->order_awaiting_payment ) ? WC()->session->order_awaiting_payment : $wp->query_vars['order-pay'];
+				$order    = wc_get_order( absint( $order_id ) );
 
-			if ( $order->has_status( array( 'pending', 'failed' ) ) ) {
-				foreach ( $order->get_items() as $item ) {
-					if ( $item['product_id'] == $product->id || $item['variation_id'] == $product->id ) {
-						$is_purchasable = true;
-						break;
+				if ( $order->has_status( array( 'pending', 'failed' ) ) ) {
+					foreach ( $order->get_items() as $item ) {
+						if ( $item['product_id'] == $product->id || $item['variation_id'] == $product->id ) {
+
+							$subscriptions = wcs_get_subscriptions( array(
+								'order_id'   => $order->id,
+								'product_id' => $product->id,
+							) );
+
+							if ( ! empty( $subscriptions ) ) {
+								$subscription = array_pop( $subscriptions );
+
+								if ( $subscription->has_status( array( 'pending', 'on-hold' ) ) ) {
+									$is_purchasable = true;
+								}
+							}
+							break;
+						}
 					}
 				}
 			}
