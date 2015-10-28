@@ -152,7 +152,12 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 			// Validating when restoring cart from session
 			if ( false !== wcs_cart_contains_resubscribe() ) {
 
-				$is_purchasable = true;
+				$resubscribe_cart_item = wcs_cart_contains_resubscribe();
+				$subscription          = wcs_get_subscription( $resubscribe_cart_item['subscription_resubscribe']['subscription_id'] );
+
+				if ( $subscription->has_product( $product->id ) ) {
+					$is_purchasable = true;
+				}
 
 			// Restoring cart from session, so need to check the cart in the session (wcs_cart_contains_renewal() only checks the cart)
 			} elseif ( isset( WC()->session->cart ) ) {
