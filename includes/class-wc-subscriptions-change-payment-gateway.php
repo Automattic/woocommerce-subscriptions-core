@@ -117,20 +117,20 @@ class WC_Subscriptions_Change_Payment_Gateway {
 				?>
 				<ul class="order_details">
 					<li class="order">
-						<?php _e( 'Subscription Number:', 'woocommerce-subscriptions' ); ?>
+						<?php esc_html_e( 'Subscription Number:', 'woocommerce-subscriptions' ); ?>
 						<strong><?php echo esc_html( $subscription->get_order_number() ); ?></strong>
 					</li>
 					<li class="date">
-						<?php _e( 'Next Payment Date:', 'woocommerce-subscriptions' ); ?>
+						<?php esc_html_e( 'Next Payment Date:', 'woocommerce-subscriptions' ); ?>
 						<strong><?php echo esc_html( $subscription->get_date_to_display( 'next_payment' ) ); ?></strong>
 					</li>
 					<li class="total">
-						<?php _e( 'Total:', 'woocommerce-subscriptions' ); ?>
+						<?php esc_html_e( 'Total:', 'woocommerce-subscriptions' ); ?>
 						<strong><?php echo wp_kses_post( $subscription->get_formatted_order_total() ); ?></strong>
 					</li>
 					<?php if ( $subscription->payment_method_title ) : ?>
 					<li class="method">
-						<?php _e( 'Payment Method:', 'woocommerce-subscriptions' ); ?>
+						<?php esc_html_e( 'Payment Method:', 'woocommerce-subscriptions' ); ?>
 						<strong><?php
 							echo esc_html( $subscription->get_payment_method_to_display() );
 						?></strong>
