@@ -107,6 +107,8 @@ function wcs_get_subscription_ranges_tlc() {
 
 		$subscription_ranges[ $period ] = $subscription_lengths;
 	}
+
+	return $subscription_ranges;
 }
 
 /**
