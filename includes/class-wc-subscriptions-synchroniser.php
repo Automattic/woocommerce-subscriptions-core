@@ -85,7 +85,7 @@ class WC_Subscriptions_Synchroniser {
 		add_action( 'woocommerce_review_order_before_shipping', __CLASS__ . '::maybe_set_free_trial' );
 		add_action( 'woocommerce_review_order_after_shipping', __CLASS__ . '::maybe_unset_free_trial' );
 
-		// Set prorated initial amount when calculating combined_total or initial total
+		// Set prorated initial amount when calculating initial total
 		add_filter( 'woocommerce_subscriptions_cart_get_price', __CLASS__ . '::set_prorated_price_for_calculation', 10, 2 );
 
 		// When creating a subscription check if it contains a synced product and make sure the correct meta is set on the subscription
@@ -843,7 +843,7 @@ class WC_Subscriptions_Synchroniser {
 	 */
 	public static function set_prorated_price_for_calculation( $price, $product ) {
 
-		if ( WC_Subscriptions_Product::is_subscription( $product ) && self::is_product_prorated( $product ) && in_array( WC_Subscriptions_Cart::get_calculation_type(), array( 'combined_total', 'none' ) ) ) {
+		if ( WC_Subscriptions_Product::is_subscription( $product ) && self::is_product_prorated( $product ) && 'none' == WC_Subscriptions_Cart::get_calculation_type() ) {
 
 			$next_payment_date = self::calculate_first_payment_date( $product, 'timestamp' );
 
@@ -865,17 +865,12 @@ class WC_Subscriptions_Synchroniser {
 
 			$days_until_next_payment = ceil( ( $next_payment_date - gmdate( 'U' ) ) / ( 60 * 60 * 24 ) );
 
-			if ( 'combined_total' == WC_Subscriptions_Cart::get_calculation_type() ) {
+			$sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( $product );
 
-				$sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( $product );
-
-				if ( $sign_up_fee > 0 && 0 == WC_Subscriptions_Product::get_trial_length( $product ) ) {
-					$price = $sign_up_fee + ( $days_until_next_payment * ( ( $price - $sign_up_fee ) / $days_in_cycle ) );
-				}
-			} elseif ( 'none' == WC_Subscriptions_Cart::get_calculation_type() ) {
-
+			if ( $sign_up_fee > 0 && 0 == WC_Subscriptions_Product::get_trial_length( $product ) ) {
+				$price = $sign_up_fee + ( $days_until_next_payment * ( ( $price - $sign_up_fee ) / $days_in_cycle ) );
+			} else {
 				$price = $days_until_next_payment * ( $price / $days_in_cycle );
-
 			}
 		}
 
