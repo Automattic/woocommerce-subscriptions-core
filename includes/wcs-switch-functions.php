@@ -135,5 +135,5 @@ function wcs_is_product_switchable_type( $product ) {
 		}
 	}
 
-	return $is_product_switchable;
+	return apply_filters( 'wcs_is_product_switchable', $is_product_switchable, $product );
 }
