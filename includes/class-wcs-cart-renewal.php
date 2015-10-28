@@ -371,7 +371,7 @@ class WCS_Cart_Renewal {
 	 */
 	public function maybe_remove_items( $cart_item_key ) {
 
-		if ( isset( WC()->cart->cart_contents[ $cart_item_key ] ) && isset( WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ] ) ) {
+		if ( isset( WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['subscription_id'] ) ) {
 
 			$removed_item_count = 0;
 			$subscription_id    = WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['subscription_id'];
@@ -405,7 +405,7 @@ class WCS_Cart_Renewal {
 	 */
 	public function items_removed_title( $product_title, $cart_item ) {
 
-		if ( isset( $cart_item[ $this->cart_item_key ] ) ) {
+		if ( isset( $cart_item[ $this->cart_item_key ]['subscription_id'] ) ) {
 			$subscription  = wcs_get_subscription( absint( $cart_item[ $this->cart_item_key ]['subscription_id'] ) );
 			$product_title = ( count( $subscription->get_items() ) > 1 ) ? esc_html__( 'All linked subscription items were', 'woocommerce-subscriptions' ) : $product_title;
 		}
@@ -421,7 +421,7 @@ class WCS_Cart_Renewal {
 	 */
 	public function maybe_restore_items( $cart_item_key ) {
 
-		if ( isset( WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ] ) ) {
+		if ( isset( WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['subscription_id'] ) ) {
 
 			$subscription_id = WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['subscription_id'];
 
