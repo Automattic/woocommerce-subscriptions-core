@@ -97,83 +97,98 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 * @since 1.4
 	 */
 	public static function maybe_replace_pay_shortcode() {
-
-		if ( ! self::$is_request_to_change_payment ) {
-			return;
-		}
-
+		global $wp;
 		$valid_request = false;
 
-		ob_clean();
+		// if the request to pay for the order belongs to a subscription but there's no GET params for changing payment method, show receipt page.
+		if ( ! self::$is_request_to_change_payment && isset( $wp->query_vars['order-pay'] ) && wcs_is_subscription( absint( $wp->query_vars['order-pay'] ) ) ) {
 
-		do_action( 'before_woocommerce_pay' );
+			$valid_request = true;
+			$subscription  = wcs_get_subscription( absint( $wp->query_vars['order-pay'] ) );
 
-		echo '<div class="woocommerce">';
+			ob_clean();
 
-		if ( ! empty( self::$woocommerce_errors ) ) {
-			foreach ( self::$woocommerce_errors as $error ) {
-				WC_Subscriptions::add_notice( $error, 'error' );
-			}
-		}
+			do_action( 'before_woocommerce_pay' );
+			echo '<div class="woocommerce">';
 
-		if ( ! empty( self::$woocommerce_messages ) ) {
-			foreach ( self::$woocommerce_messages as $message ) {
-				WC_Subscriptions::add_notice( $message, 'success' );
-			}
-		}
+			do_action( 'woocommerce_receipt_' . $subscription->payment_method, $subscription->id );
 
-		$subscription = wcs_get_subscription( absint( $_GET['change_payment_method'] ) );
-
-		if ( wp_verify_nonce( $_GET['_wpnonce'], __FILE__ ) === false ) {
-
-			WC_Subscriptions::add_notice( __( 'There was an error with your request. Please try again.', 'woocommerce-subscriptions' ), 'error' );
-
-		} elseif ( empty( $subscription ) ) {
-
-			WC_Subscriptions::add_notice( __( 'Invalid subscription.', 'woocommerce-subscriptions' ), 'error' );
-
-		} elseif ( ! current_user_can( 'edit_shop_subscription_payment_method', $subscription->id ) ) {
-
-			WC_Subscriptions::add_notice( __( 'That doesn\'t appear to be one of your subscriptions.', 'woocommerce-subscriptions' ), 'error' );
-
-		} elseif ( ! $subscription->can_be_updated_to( 'new-payment-method' ) ) {
-
-			WC_Subscriptions::add_notice( __( 'The payment method can not be changed for that subscription.', 'woocommerce-subscriptions' ), 'error' );
+		} elseif ( ! self::$is_request_to_change_payment ) {
+			return;
 
 		} else {
 
-			if ( $subscription->get_time( 'next_payment' ) > 0 ) {
-				// translators: placeholder is next payment's date
-				$next_payment_string = sprintf( __( ' Next payment is due %s.', 'woocommerce-subscriptions' ), $subscription->get_date_to_display( 'next_payment' ) );
-			} else {
-				$next_payment_string = '';
+			ob_clean();
+
+			do_action( 'before_woocommerce_pay' );
+
+			echo '<div class="woocommerce">';
+
+			if ( ! empty( self::$woocommerce_errors ) ) {
+				foreach ( self::$woocommerce_errors as $error ) {
+					WC_Subscriptions::add_notice( $error, 'error' );
+				}
 			}
 
-			// translators: placeholder is either empty or "Next payment is due..."
-			WC_Subscriptions::add_notice( sprintf( __( 'Choose a new payment method.%s', 'woocommerce-subscriptions' ), $next_payment_string ), 'notice' );
-			WC_Subscriptions::print_notices();
-
-			if ( $subscription->order_key == $_GET['key'] ) {
-
-				// Set customer location to order location
-				if ( $subscription->billing_country ) {
-					WC()->customer->set_country( $subscription->billing_country );
+			if ( ! empty( self::$woocommerce_messages ) ) {
+				foreach ( self::$woocommerce_messages as $message ) {
+					WC_Subscriptions::add_notice( $message, 'success' );
 				}
-				if ( $subscription->billing_state ) {
-					WC()->customer->set_state( $subscription->billing_state );
-				}
-				if ( $subscription->billing_postcode ) {
-					WC()->customer->set_postcode( $subscription->billing_postcode );
-				}
+			}
 
-				wc_get_template( 'checkout/form-change-payment-method.php', array( 'subscription' => $subscription ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+			$subscription = wcs_get_subscription( absint( $_GET['change_payment_method'] ) );
 
-				$valid_request = true;
+			if ( wp_verify_nonce( $_GET['_wpnonce'], __FILE__ ) === false ) {
+
+				WC_Subscriptions::add_notice( __( 'There was an error with your request. Please try again.', 'woocommerce-subscriptions' ), 'error' );
+
+			} elseif ( empty( $subscription ) ) {
+
+				WC_Subscriptions::add_notice( __( 'Invalid subscription.', 'woocommerce-subscriptions' ), 'error' );
+
+			} elseif ( ! current_user_can( 'edit_shop_subscription_payment_method', $subscription->id ) ) {
+
+				WC_Subscriptions::add_notice( __( 'That doesn\'t appear to be one of your subscriptions.', 'woocommerce-subscriptions' ), 'error' );
+
+			} elseif ( ! $subscription->can_be_updated_to( 'new-payment-method' ) ) {
+
+				WC_Subscriptions::add_notice( __( 'The payment method can not be changed for that subscription.', 'woocommerce-subscriptions' ), 'error' );
 
 			} else {
 
-				WC_Subscriptions::add_notice( __( 'Invalid order.', 'woocommerce-subscriptions' ), 'error' );
+				if ( $subscription->get_time( 'next_payment' ) > 0 ) {
+					// translators: placeholder is next payment's date
+					$next_payment_string = sprintf( __( ' Next payment is due %s.', 'woocommerce-subscriptions' ), $subscription->get_date_to_display( 'next_payment' ) );
+				} else {
+					$next_payment_string = '';
+				}
 
+				// translators: placeholder is either empty or "Next payment is due..."
+				WC_Subscriptions::add_notice( sprintf( __( 'Choose a new payment method.%s', 'woocommerce-subscriptions' ), $next_payment_string ), 'notice' );
+				WC_Subscriptions::print_notices();
+
+				if ( $subscription->order_key == $_GET['key'] ) {
+
+					// Set customer location to order location
+					if ( $subscription->billing_country ) {
+						WC()->customer->set_country( $subscription->billing_country );
+					}
+					if ( $subscription->billing_state ) {
+						WC()->customer->set_state( $subscription->billing_state );
+					}
+					if ( $subscription->billing_postcode ) {
+						WC()->customer->set_postcode( $subscription->billing_postcode );
+					}
+
+					wc_get_template( 'checkout/form-change-payment-method.php', array( 'subscription' => $subscription ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+
+					$valid_request = true;
+
+				} else {
+
+					WC_Subscriptions::add_notice( __( 'Invalid order.', 'woocommerce-subscriptions' ), 'error' );
+
+				}
 			}
 		}
 
