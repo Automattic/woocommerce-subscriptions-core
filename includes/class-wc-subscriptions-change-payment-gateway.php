@@ -115,6 +115,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			if ( $subscription->id == absint( $wp->query_vars['order-pay'] ) && $subscription->order_key == $subscription_key ) {
 
 				?>
+			<div class="woocommerce">
 				<ul class="order_details">
 					<li class="order">
 						<?php esc_html_e( 'Subscription Number:', 'woocommerce-subscriptions' ); ?>
