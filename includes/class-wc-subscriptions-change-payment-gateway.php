@@ -104,14 +104,50 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		if ( ! self::$is_request_to_change_payment && isset( $wp->query_vars['order-pay'] ) && wcs_is_subscription( absint( $wp->query_vars['order-pay'] ) ) ) {
 
 			$valid_request = true;
-			$subscription  = wcs_get_subscription( absint( $wp->query_vars['order-pay'] ) );
 
 			ob_clean();
 
 			do_action( 'before_woocommerce_pay' );
-			echo '<div class="woocommerce">';
 
-			do_action( 'woocommerce_receipt_' . $subscription->payment_method, $subscription->id );
+			$subscription_key = isset( $_GET['key'] ) ? wc_clean( $_GET['key'] ) : '';
+			$subscription     = wcs_get_subscription( absint( $wp->query_vars['order-pay'] ) );
+
+			if ( $subscription->id == absint( $wp->query_vars['order-pay'] ) && $subscription->order_key == $subscription_key ) {
+
+				?>
+				<ul class="order_details">
+					<li class="order">
+						<?php _e( 'Subscription Number:', 'woocommerce-subscriptions' ); ?>
+						<strong><?php echo esc_html( $subscription->get_order_number() ); ?></strong>
+					</li>
+					<li class="date">
+						<?php _e( 'Next Payment Date:', 'woocommerce-subscriptions' ); ?>
+						<strong><?php echo esc_html( $subscription->get_date_to_display( 'next_payment' ) ); ?></strong>
+					</li>
+					<li class="total">
+						<?php _e( 'Total:', 'woocommerce-subscriptions' ); ?>
+						<strong><?php echo wp_kses_post( $subscription->get_formatted_order_total() ); ?></strong>
+					</li>
+					<?php if ( $subscription->payment_method_title ) : ?>
+					<li class="method">
+						<?php _e( 'Payment Method:', 'woocommerce-subscriptions' ); ?>
+						<strong><?php
+							echo esc_html( $subscription->get_payment_method_to_display() );
+						?></strong>
+					</li>
+					<?php endif; ?>
+				</ul>
+
+				<?php do_action( 'woocommerce_receipt_' . $subscription->payment_method, $subscription->id ); ?>
+
+				<div class="clear"></div>
+				<?php
+
+			} else {
+				wc_add_notice( __( 'Sorry, this subscription change payment method request is invalid and cannot be processed.', 'woocommerce-subscriptions' ), 'error' );
+			}
+
+			wc_print_notices();
 
 		} elseif ( ! self::$is_request_to_change_payment ) {
 			return;
