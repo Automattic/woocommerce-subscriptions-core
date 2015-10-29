@@ -846,6 +846,8 @@ class WC_Subscriptions_Switcher {
 	 * @since 1.4
 	 */
 	public static function validate_switch_request( $is_valid, $product_id, $quantity, $variation_id = '' ) {
+		$error_message = '';
+
 		try {
 
 			if ( ! isset( $_GET['switch-subscription'] ) ) {
@@ -863,8 +865,7 @@ class WC_Subscriptions_Switcher {
 			// Check if the chosen variation's attributes are different to the existing subscription's attributes (to support switching between a "catch all" variation)
 			if ( empty( $item ) ) {
 
-				wc_add_notice( __( 'We can not find your old subscription item.', 'woocommerce-subscriptions' ), 'error' );
-				$is_valid = false;
+				throw new Exception(  __( 'We can not find your old subscription item.', 'woocommerce-subscriptions' ) );
 
 			} else {
 
@@ -878,8 +879,9 @@ class WC_Subscriptions_Switcher {
 				}
 
 				if ( $product_id == $item['product_id'] && ( empty( $variation_id ) || ( $variation_id == $item['variation_id'] && true == $identical_attributes ) ) && $quantity == $item['qty'] ) {
-					wc_add_notice( __( 'You can not switch to the same subscription.', 'woocommerce-subscriptions' ), 'error' );
-					$is_valid = false;
+					
+					throw new Exception(  __( 'You can not switch to the same subscription.', 'woocommerce-subscriptions' ) );
+
 				}
 
 				// Also remove any existing items in the cart for switching this item (but don't make the switch invalid)
@@ -897,11 +899,17 @@ class WC_Subscriptions_Switcher {
 				}
 			}
 		} catch ( Exception $e ) {
-			wc_add_notice( __( 'We can not find your old subscription item.', 'woocommerce-subscriptions' ), 'error' );
+			$error_message = $e->getMessage();
 			$is_valid = false;
 		}
 
-		return apply_filters( 'woocommerce_subscriptions_is_switch_valid', $is_valid, $product_id, $quantity, $variation_id );
+		$is_valid = apply_filters( 'woocommerce_subscriptions_is_switch_valid', $is_valid, $product_id, $quantity, $variation_id );
+
+		if( ! $is_valid && $error_message ){
+			wc_add_notice( $error_message, 'error' );
+		}
+
+		return $is_valid;
 	}
 
 	/**
