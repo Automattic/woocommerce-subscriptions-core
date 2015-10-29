@@ -34,7 +34,7 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 			if ( ! empty( $action_hook ) ) {
 
 				$action_args    = array( 'subscription_id' => $subscription->id );
-				$timestamp      = strtotime( $datetime );
+				$timestamp      = wcs_date_to_time( $datetime );
 
 				if ( wc_next_scheduled_action( $action_hook, $action_args ) !== $timestamp ) {
 					wc_unschedule_action( $action_hook, $action_args );

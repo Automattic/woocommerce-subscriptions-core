@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<td style="border-top: 0;">
 		<?php
 
-		$timestamp_gmt = strtotime( $order->post->post_date_gmt );
+		$timestamp_gmt = wcs_date_to_time( $order->post->post_date_gmt );
 
 		if ( $timestamp_gmt > 0 ) {
 
@@ -36,7 +36,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				// translators: placeholder is human time difference (e.g. "3 weeks")
 				$date_to_display = sprintf( _x( '%s ago', 'used in "Related Orders" as the date when the related order happened in relation to now. Date is in the past.', 'woocommerce-subscriptions' ), human_time_diff( current_time( 'timestamp', true ), $timestamp_gmt ) );
 			} else {
-				$timestamp_site  = strtotime( get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $timestamp_gmt ) ) );
+				$timestamp_site  = wcs_date_to_time( get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $timestamp_gmt ) ) );
 				$date_to_display = date_i18n( wc_date_format(), $timestamp_site ) . ' ' . date_i18n( wc_time_format(), $timestamp_site );
 			}
 		} else {

@@ -1747,7 +1747,7 @@ class WC_Subscriptions_Order {
 			$next_payment = $subscription->calculate_date( 'next_payment' );
 		}
 
-		$next_payment = ( 'mysql' == $type && 0 != $next_payment ) ? $next_payment : strtotime( $next_payment );
+		$next_payment = ( 'mysql' == $type && 0 != $next_payment ) ? $next_payment : wcs_date_to_time( $next_payment );
 		return apply_filters( 'woocommerce_subscriptions_calculated_next_payment_date', $next_payment, $order, $product_id, $type, $from_date, $from_date );
 	}
 

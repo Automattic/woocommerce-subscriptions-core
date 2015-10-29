@@ -616,11 +616,11 @@ class WC_Subscriptions_Product {
 			// If the subscription has a free trial period, the first renewal is the same as the expiration of the free trial
 			if ( $trial_length > 0 ) {
 
-				$first_renewal_timestamp = strtotime( self::get_trial_expiration_date( $product_id, $from_date ) );
+				$first_renewal_timestamp = wcs_date_to_time( self::get_trial_expiration_date( $product_id, $from_date ) );
 
 			} else {
 
-				$from_timestamp = strtotime( $from_date );
+				$from_timestamp = wcs_date_to_time( $from_date );
 				$billing_period = self::get_period( $product_id );
 
 				if ( 'month' == $billing_period ) {
@@ -662,7 +662,7 @@ class WC_Subscriptions_Product {
 				$from_date = gmdate( 'Y-m-d H:i:s' );
 			}
 
-			$expiration_date = gmdate( 'Y-m-d H:i:s', strtotime( "+ $trial_length {$trial_period}s + $subscription_length {$subscription_period}s", strtotime( $from_date ) ) );
+			$expiration_date = gmdate( 'Y-m-d H:i:s', strtotime( "+ $trial_length {$trial_period}s + $subscription_length {$subscription_period}s", wcs_date_to_time( $from_date ) ) );
 
 		} else {
 
@@ -694,9 +694,9 @@ class WC_Subscriptions_Product {
 			}
 
 			if ( 'month' == $trial_period ) {
-				$trial_expiration_date = gmdate( 'Y-m-d H:i:s', wcs_add_months( strtotime( $from_date ), $trial_length ) );
+				$trial_expiration_date = gmdate( 'Y-m-d H:i:s', wcs_add_months( wcs_date_to_time( $from_date ), $trial_length ) );
 			} else { // Safe to just add the billing periods
-				$trial_expiration_date = gmdate( 'Y-m-d H:i:s', strtotime( "+ {$trial_length} {$trial_period}s", strtotime( $from_date ) ) );
+				$trial_expiration_date = gmdate( 'Y-m-d H:i:s', strtotime( "+ {$trial_length} {$trial_period}s", wcs_date_to_time( $from_date ) ) );
 			}
 		} else {
 

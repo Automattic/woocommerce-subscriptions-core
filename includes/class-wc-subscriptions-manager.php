@@ -1225,7 +1225,7 @@ class WC_Subscriptions_Manager {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::calculate_date( "next_payment" )' );
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
 		$next_payment = $subscription->calculate_date( 'next_payment' );
-		return ( 'mysql' == $type ) ? $next_payment : strtotime( $next_payment );
+		return ( 'mysql' == $type ) ? $next_payment : wcs_date_to_time( $next_payment );
 	}
 
 	/**
@@ -1274,7 +1274,7 @@ class WC_Subscriptions_Manager {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::calculate_date( "trial_end" )' );
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
 		$trial_end    = $subscription->calculate_date( 'trial_end' );
-		$trial_end    = ( 'mysql' == $type ) ? $trial_end : strtotime( $trial_end );
+		$trial_end    = ( 'mysql' == $type ) ? $trial_end : wcs_date_to_time( $trial_end );
 		return apply_filters( 'woocommerce_subscription_calculated_trial_expiration_date' , $trial_end, $subscription_key, $user_id );
 	}
 
@@ -1536,7 +1536,7 @@ class WC_Subscriptions_Manager {
 	public static function update_next_payment_date( $new_payment_date, $subscription_key, $user_id = '', $timezone = 'server' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_dates( array( "next_payment" => $new_payment_date ) )' );
 
-		$new_payment_timestamp = ( is_numeric( $new_payment_date ) ) ? $new_payment_date : strtotime( $new_payment_date );
+		$new_payment_timestamp = ( is_numeric( $new_payment_date ) ) ? $new_payment_date : wcs_date_to_time( $new_payment_date );
 
 		// The date needs to be converted to GMT/UTC
 		if ( 'server' != $timezone ) {

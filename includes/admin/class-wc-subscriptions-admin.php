@@ -350,8 +350,8 @@ class WC_Subscriptions_Admin {
 		update_post_meta( $post_id, '_regular_price', $subscription_price );
 		update_post_meta( $post_id, '_sale_price', $sale_price );
 
-		$date_from = ( isset( $_POST['_sale_price_dates_from'] ) ) ? strtotime( $_POST['_sale_price_dates_from'] ) : '';
-		$date_to   = ( isset( $_POST['_sale_price_dates_to'] ) ) ? strtotime( $_POST['_sale_price_dates_to'] ) : '';
+		$date_from = ( isset( $_POST['_sale_price_dates_from'] ) ) ? wcs_date_to_time( $_POST['_sale_price_dates_from'] ) : '';
+		$date_to   = ( isset( $_POST['_sale_price_dates_to'] ) ) ? wcs_date_to_time( $_POST['_sale_price_dates_to'] ) : '';
 
 		$now = gmdate( 'U' );
 

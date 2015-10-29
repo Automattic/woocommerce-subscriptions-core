@@ -699,7 +699,7 @@ class WC_Subscription extends WC_Order {
 		$datetime = $this->get_date( $date_type, $timezone );
 
 		if ( 0 !== $datetime ) {
-			$datetime = strtotime( $datetime );
+			$datetime = wcs_date_to_time( $datetime );
 		}
 
 		return $datetime;
@@ -751,7 +751,7 @@ class WC_Subscription extends WC_Order {
 					$datetime = get_gmt_from_date( $datetime );
 				}
 
-				$timestamps[ $date_type ] = strtotime( $datetime );
+				$timestamps[ $date_type ] = wcs_date_to_time( $datetime );
 			}
 		}
 

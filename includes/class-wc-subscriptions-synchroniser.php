@@ -47,7 +47,7 @@ class WC_Subscriptions_Synchroniser {
 		self::$sync_field_label      = __( 'Synchronise Renewals', 'woocommerce-subscriptions' );
 		self::$sync_description      = __( 'Align the payment date for all customers who purchase this subscription to a specific day of the week or month.', 'woocommerce-subscriptions' );
 		// translators: placeholder is a year (e.g. "2016")
-		self::$sync_description_year = sprintf( _x( 'Align the payment date for this subscription to a specific day of the year. If the date has already taken place this year, the first payment will be processed in %s. Set the day to 0 to disable payment syncing for this product.', 'used in subscription product edit screen', 'woocommerce-subscriptions' ), gmdate( 'Y', strtotime( '+1 year' ) ) );
+		self::$sync_description_year = sprintf( _x( 'Align the payment date for this subscription to a specific day of the year. If the date has already taken place this year, the first payment will be processed in %s. Set the day to 0 to disable payment syncing for this product.', 'used in subscription product edit screen', 'woocommerce-subscriptions' ), gmdate( 'Y', wcs_date_to_time( '+1 year' ) ) );
 
 		// Add the settings to control whether syncing is enabled and how it will behave
 		add_filter( 'woocommerce_subscription_settings', __CLASS__ . '::add_settings' );
@@ -496,7 +496,7 @@ class WC_Subscriptions_Synchroniser {
 			$from_date = WC_Subscriptions_Product::get_trial_expiration_date( $product, $from_date );
 		}
 
-		$from_timestamp = strtotime( $from_date ) + ( get_option( 'gmt_offset' ) * 3600 ); // Site time
+		$from_timestamp = wcs_date_to_time( $from_date ) + ( get_option( 'gmt_offset' ) * 3600 ); // Site time
 
 		$payment_day = self::get_products_payment_day( $product );
 
