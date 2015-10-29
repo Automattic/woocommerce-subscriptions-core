@@ -213,10 +213,14 @@ function wcs_get_subscription_trial_lengths( $subscription_period = '' ) {
  */
 function wcs_add_time( $number_of_periods, $period, $from_timestamp ) {
 
-	if ( 'month' == $period ) {
-		$next_timestamp = wcs_add_months( $from_timestamp, $number_of_periods );
+	if ( $number_of_periods > 0 ) {
+		if ( 'month' == $period ) {
+			$next_timestamp = wcs_add_months( $from_timestamp, $number_of_periods );
+		} else {
+			$next_timestamp = strtotime( "+ {$number_of_periods} {$period}", $from_timestamp );
+		}
 	} else {
-		$next_timestamp = strtotime( "+ {$number_of_periods} {$period}", $from_timestamp );
+		$next_timestamp = $from_timestamp;
 	}
 
 	return $next_timestamp;
