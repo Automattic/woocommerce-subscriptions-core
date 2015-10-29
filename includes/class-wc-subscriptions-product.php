@@ -620,14 +620,7 @@ class WC_Subscriptions_Product {
 
 			} else {
 
-				$from_timestamp = wcs_date_to_time( $from_date );
-				$billing_period = self::get_period( $product_id );
-
-				if ( 'month' == $billing_period ) {
-					$first_renewal_timestamp = wcs_add_months( $from_timestamp, $billing_interval );
-				} else {
-					$first_renewal_timestamp = strtotime( "+ $billing_interval {$billing_period}s", $from_timestamp );
-				}
+				$first_renewal_timestamp = wcs_add_time( $billing_interval, self::get_period( $product_id ), wcs_date_to_time( $from_date ) );
 
 				if ( 'site' == $timezone ) {
 					$first_renewal_timestamp += ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
@@ -654,15 +647,15 @@ class WC_Subscriptions_Product {
 
 		if ( $subscription_length > 0 ) {
 
-			$subscription_period = self::get_period( $product_id );
-			$trial_period        = self::get_trial_period( $product_id );
-			$trial_length        = self::get_trial_length( $product_id );
-
 			if ( empty( $from_date ) ) {
 				$from_date = gmdate( 'Y-m-d H:i:s' );
 			}
 
-			$expiration_date = gmdate( 'Y-m-d H:i:s', strtotime( "+ $trial_length {$trial_period}s + $subscription_length {$subscription_period}s", wcs_date_to_time( $from_date ) ) );
+			if ( self::get_trial_length( $product_id ) > 0 ) {
+				$from_date = self::get_trial_expiration_date( $product_id, $from_date );
+			}
+
+			$expiration_date = gmdate( 'Y-m-d H:i:s', wcs_add_time( $subscription_length, self::get_period( $product_id ), wcs_date_to_time( $from_date ) ) );
 
 		} else {
 
@@ -684,7 +677,6 @@ class WC_Subscriptions_Product {
 	 */
 	public static function get_trial_expiration_date( $product_id, $from_date = '' ) {
 
-		$trial_period = self::get_trial_period( $product_id );
 		$trial_length = self::get_trial_length( $product_id );
 
 		if ( $trial_length > 0 ) {
@@ -693,11 +685,8 @@ class WC_Subscriptions_Product {
 				$from_date = gmdate( 'Y-m-d H:i:s' );
 			}
 
-			if ( 'month' == $trial_period ) {
-				$trial_expiration_date = gmdate( 'Y-m-d H:i:s', wcs_add_months( wcs_date_to_time( $from_date ), $trial_length ) );
-			} else { // Safe to just add the billing periods
-				$trial_expiration_date = gmdate( 'Y-m-d H:i:s', strtotime( "+ {$trial_length} {$trial_period}s", wcs_date_to_time( $from_date ) ) );
-			}
+			$trial_expiration_date = gmdate( 'Y-m-d H:i:s', wcs_add_time( $trial_length, self::get_trial_period( $product_id ), wcs_date_to_time( $from_date ) ) );
+
 		} else {
 
 			$trial_expiration_date = 0;
