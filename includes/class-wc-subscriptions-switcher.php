@@ -620,7 +620,7 @@ class WC_Subscriptions_Switcher {
 						$is_different_payment_date = false;
 					}
 
-					if ( date( 'Y-m-d', strtotime( $recurring_cart->end_date ) ) !== date( 'Y-m-d', $subscription->get_time( 'end' ) ) ) {
+					if ( gmdate( 'Y-m-d', wcs_date_to_time( $recurring_cart->end_date ) ) !== gmdate( 'Y-m-d', $subscription->get_time( 'end' ) ) ) {
 						$is_different_length = true;
 					} else {
 						$is_different_length = false;
@@ -660,10 +660,10 @@ class WC_Subscriptions_Switcher {
 
 						$updated_dates = array();
 
-						if ( '1' == $cart_item['data']->subscription_length || ( 0 != $recurring_cart->end_date && date( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] ) >= $recurring_cart->end_date ) ) {
+						if ( '1' == $cart_item['data']->subscription_length || ( 0 != $recurring_cart->end_date && gmdate( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] ) >= $recurring_cart->end_date ) ) {
 							$subscription->delete_date( 'next_payment' );
 						} else if ( $is_different_payment_date ) {
-							$updated_dates['next_payment'] = date( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] );
+							$updated_dates['next_payment'] = gmdate( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] );
 						}
 
 						if ( $is_different_length ) {
@@ -1279,7 +1279,7 @@ class WC_Subscriptions_Switcher {
 
 		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
 			if ( isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) ) {
-				$first_renewal_date = ( '1' != $cart_item['data']->subscription_length ) ? date( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] ) : 0;
+				$first_renewal_date = ( '1' != $cart_item['data']->subscription_length ) ? gmdate( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] ) : 0;
 			}
 		}
 
@@ -1302,7 +1302,7 @@ class WC_Subscriptions_Switcher {
 
 					// if the subscription is length 1 and prorated, we want to use the prorated the next payment date as the end date
 					if ( 1 == $cart_item['data']->subscription_length && 0 !== $next_payment_time && isset( $cart_item['subscription_switch']['recurring_payment_prorated'] ) ) {
-						$end_date = date( 'Y-m-d H:i:s', $next_payment_time );
+						$end_date = gmdate( 'Y-m-d H:i:s', $next_payment_time );
 
 					// if the subscription is more than 1 (and not 0) and we have a next payment date (prorated or not) we want to calculate the new end date from that
 					} elseif ( 0 !== $next_payment_time && $cart_item['data']->subscription_length > 1 ) {
@@ -1310,14 +1310,14 @@ class WC_Subscriptions_Switcher {
 						$trial_length = $cart_item['data']->subscription_trial_length;
 						$cart_item['data']->subscription_trial_length = 0;
 
-						$end_date = WC_Subscriptions_Product::get_expiration_date( $cart_item['data'], date( 'Y-m-d H:i:s', $next_payment_time ) );
+						$end_date = WC_Subscriptions_Product::get_expiration_date( $cart_item['data'], gmdate( 'Y-m-d H:i:s', $next_payment_time ) );
 
 						// add back the trial length if it has been spoofed
 						$cart_item['data']->subscription_trial_length = $trial_length;
 
 					// elseif fallback to using the end date set on the cart item
 					} elseif ( ! empty( $end_timestamp ) ) {
-						$end_date = date( 'Y-m-d H:i:s', $end_timestamp );
+						$end_date = gmdate( 'Y-m-d H:i:s', $end_timestamp );
 					}
 
 					break;
@@ -1781,7 +1781,7 @@ class WC_Subscriptions_Switcher {
 			$first_payment_timestamp = get_post_meta( $subscription->order->id, '_switched_subscription_first_payment_timestamp', true );
 
 			if ( 0 != $first_payment_timestamp ) {
-				$next_payment_date = ( 'mysql' == $type ) ? date( 'Y-m-d H:i:s', $first_payment_timestamp ) : $first_payment_timestamp;
+				$next_payment_date = ( 'mysql' == $type ) ? gmdate( 'Y-m-d H:i:s', $first_payment_timestamp ) : $first_payment_timestamp;
 			}
 		}
 

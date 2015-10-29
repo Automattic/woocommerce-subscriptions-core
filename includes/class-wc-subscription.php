@@ -802,7 +802,7 @@ class WC_Subscription extends WC_Order {
 		$is_updated = false;
 
 		foreach ( $timestamps as $date_type => $timestamp ) {
-			$datetime = date( 'Y-m-d H:i:s', $timestamp );
+			$datetime = gmdate( 'Y-m-d H:i:s', $timestamp );
 
 			if ( $datetime == $this->get_date( $date_type ) ) {
 				continue;
@@ -995,7 +995,7 @@ class WC_Subscription extends WC_Order {
 		}
 
 		if ( $next_payment_timestamp > 0 ) {
-			$next_payment_date = date( 'Y-m-d H:i:s', $next_payment_timestamp );
+			$next_payment_date = gmdate( 'Y-m-d H:i:s', $next_payment_timestamp );
 		}
 
 		return $next_payment_date;

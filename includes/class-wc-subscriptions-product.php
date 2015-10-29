@@ -577,7 +577,7 @@ class WC_Subscriptions_Product {
 		$first_renewal_timestamp = self::get_first_renewal_payment_time( $product_id, $from_date, $timezone );
 
 		if ( $first_renewal_timestamp > 0 ) {
-			$first_renewal_date = date( 'Y-m-d H:i:s', $first_renewal_timestamp );
+			$first_renewal_date = gmdate( 'Y-m-d H:i:s', $first_renewal_timestamp );
 		} else {
 			$first_renewal_date = 0;
 		}
@@ -662,7 +662,7 @@ class WC_Subscriptions_Product {
 				$from_date = gmdate( 'Y-m-d H:i:s' );
 			}
 
-			$expiration_date = date( 'Y-m-d H:i:s', strtotime( "+ $trial_length {$trial_period}s + $subscription_length {$subscription_period}s", strtotime( $from_date ) ) );
+			$expiration_date = gmdate( 'Y-m-d H:i:s', strtotime( "+ $trial_length {$trial_period}s + $subscription_length {$subscription_period}s", strtotime( $from_date ) ) );
 
 		} else {
 
@@ -694,9 +694,9 @@ class WC_Subscriptions_Product {
 			}
 
 			if ( 'month' == $trial_period ) {
-				$trial_expiration_date = date( 'Y-m-d H:i:s', wcs_add_months( strtotime( $from_date ), $trial_length ) );
+				$trial_expiration_date = gmdate( 'Y-m-d H:i:s', wcs_add_months( strtotime( $from_date ), $trial_length ) );
 			} else { // Safe to just add the billing periods
-				$trial_expiration_date = date( 'Y-m-d H:i:s', strtotime( "+ {$trial_length} {$trial_period}s", strtotime( $from_date ) ) );
+				$trial_expiration_date = gmdate( 'Y-m-d H:i:s', strtotime( "+ {$trial_length} {$trial_period}s", strtotime( $from_date ) ) );
 			}
 		} else {
 

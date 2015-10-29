@@ -47,7 +47,7 @@ class WC_Subscriptions_Synchroniser {
 		self::$sync_field_label      = __( 'Synchronise Renewals', 'woocommerce-subscriptions' );
 		self::$sync_description      = __( 'Align the payment date for all customers who purchase this subscription to a specific day of the week or month.', 'woocommerce-subscriptions' );
 		// translators: placeholder is a year (e.g. "2016")
-		self::$sync_description_year = sprintf( _x( 'Align the payment date for this subscription to a specific day of the year. If the date has already taken place this year, the first payment will be processed in %s. Set the day to 0 to disable payment syncing for this product.', 'used in subscription product edit screen', 'woocommerce-subscriptions' ), date( 'Y', strtotime( '+1 year' ) ) );
+		self::$sync_description_year = sprintf( _x( 'Align the payment date for this subscription to a specific day of the year. If the date has already taken place this year, the first payment will be processed in %s. Set the day to 0 to disable payment syncing for this product.', 'used in subscription product edit screen', 'woocommerce-subscriptions' ), gmdate( 'Y', strtotime( '+1 year' ) ) );
 
 		// Add the settings to control whether syncing is enabled and how it will behave
 		add_filter( 'woocommerce_subscription_settings', __CLASS__ . '::add_settings' );
@@ -206,7 +206,7 @@ class WC_Subscriptions_Synchroniser {
 				$payment_month = $payment_day['month'];
 				$payment_day   = $payment_day['day'];
 			} else {
-				$payment_month = date( 'm' );
+				$payment_month = gmdate( 'm' );
 			}
 
 			echo '<div class="options_group subscription_pricing subscription_sync show_if_subscription">';
@@ -278,7 +278,7 @@ class WC_Subscriptions_Synchroniser {
 				$payment_month = $payment_day['month'];
 				$payment_day   = $payment_day['day'];
 			} else {
-				$payment_month = date( 'm' );
+				$payment_month = gmdate( 'm' );
 			}
 
 			if ( WC_Subscriptions::is_woocommerce_pre( '2.3' ) ) {
@@ -515,7 +515,7 @@ class WC_Subscriptions_Synchroniser {
 
 			} elseif ( gmdate( 'j', $from_timestamp ) > $payment_day ) { // today is later than specified day in the from date, we need the next month
 
-				$month = date( 'F', wcs_add_months( $from_timestamp, 1 ) );
+				$month = gmdate( 'F', wcs_add_months( $from_timestamp, 1 ) );
 
 			} else { // specified day is either today or still to come in the month of the from date
 
@@ -590,7 +590,7 @@ class WC_Subscriptions_Synchroniser {
 		// And convert it to the UTC equivalent of 3am on that day
 		$first_payment_timestamp -= ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
 
-		$first_payment = ( 'mysql' == $type && 0 != $first_payment_timestamp ) ? date( 'Y-m-d H:i:s', $first_payment_timestamp ) : $first_payment_timestamp;
+		$first_payment = ( 'mysql' == $type && 0 != $first_payment_timestamp ) ? gmdate( 'Y-m-d H:i:s', $first_payment_timestamp ) : $first_payment_timestamp;
 
 		return apply_filters( 'woocommerce_subscriptions_synced_first_payment_date', $first_payment, $product, $type, $from_date, $from_date_param );
 	}
@@ -814,7 +814,7 @@ class WC_Subscriptions_Synchroniser {
 		// Convert timestamp to site's time
 		$timestamp += get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
 
-		return ( gmdate( 'Y-m-d', current_time( 'timestamp' ) ) == date( 'Y-m-d', $timestamp ) ) ? true : false;
+		return ( gmdate( 'Y-m-d', current_time( 'timestamp' ) ) == gmdate( 'Y-m-d', $timestamp ) ) ? true : false;
 	}
 
 	/**
@@ -856,10 +856,10 @@ class WC_Subscriptions_Synchroniser {
 					$days_in_cycle = 7 * $product->subscription_period_interval;
 					break;
 				case 'month' :
-					$days_in_cycle = date( 't' ) * $product->subscription_period_interval;
+					$days_in_cycle = gmdate( 't' ) * $product->subscription_period_interval;
 					break;
 				case 'year' :
-					$days_in_cycle = ( 365 + date( 'L' ) ) * $product->subscription_period_interval;
+					$days_in_cycle = ( 365 + gmdate( 'L' ) ) * $product->subscription_period_interval;
 					break;
 			}
 
@@ -1143,7 +1143,7 @@ class WC_Subscriptions_Synchroniser {
 				$first_payment_timestamp = self::calculate_first_payment_date( $product_id, 'timestamp', $order->order_date );
 
 				if ( 0 != $first_payment_timestamp ) {
-					$first_payment_date = ( 'mysql' == $type ) ? date( 'Y-m-d H:i:s', $first_payment_timestamp ) : $first_payment_timestamp;
+					$first_payment_date = ( 'mysql' == $type ) ? gmdate( 'Y-m-d H:i:s', $first_payment_timestamp ) : $first_payment_timestamp;
 				}
 			}
 		}
@@ -1166,7 +1166,7 @@ class WC_Subscriptions_Synchroniser {
 		$first_payment_date = self::get_first_payment_date( $payment_date, $order, $product_id, 'timestamp' );
 
 		if ( ! self::is_today( $first_payment_date ) ) {
-			$payment_date = ( 'timestamp' == $type ) ? $first_payment_date : date( 'Y-m-d H:i:s', $first_payment_date );
+			$payment_date = ( 'timestamp' == $type ) ? $first_payment_date : gmdate( 'Y-m-d H:i:s', $first_payment_date );
 		}
 
 		return $payment_date;

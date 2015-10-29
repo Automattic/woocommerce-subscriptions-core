@@ -416,7 +416,7 @@ class WC_Subscriptions_Manager {
 		$billing_interval = WC_Subscriptions_Product::get_interval( $product_id );
 
 		// Support passing timestamps
-		$args['start_date'] = is_numeric( $args['start_date'] ) ? date( 'Y-m-d H:i:s', $args['start_date'] ) : $args['start_date'];
+		$args['start_date'] = is_numeric( $args['start_date'] ) ? gmdate( 'Y-m-d H:i:s', $args['start_date'] ) : $args['start_date'];
 
 		$product = wc_get_product( $product_id );
 
@@ -476,7 +476,7 @@ class WC_Subscriptions_Manager {
 		// Adding a new subscription so set the expiry date/time from the order date
 		if ( ! empty( $args['expiry_date'] ) ) {
 			if ( is_numeric( $args['expiry_date'] ) ) {
-				$args['expiry_date'] = date( 'Y-m-d H:i:s', $args['expiry_date'] );
+				$args['expiry_date'] = gmdate( 'Y-m-d H:i:s', $args['expiry_date'] );
 			}
 
 			$expiration = $args['expiry_date'];
@@ -1112,7 +1112,7 @@ class WC_Subscriptions_Manager {
 	public static function set_expiration_date( $subscription_key, $user_id = '', $expiration_date = '' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_dates( array( "end" => $expiration_date ) )' );
 		if ( is_int( $expiration_date ) ) {
-			$expiration_date = date( 'Y-m-d H:i:s', $expiration_date );
+			$expiration_date = gmdate( 'Y-m-d H:i:s', $expiration_date );
 		}
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
 		return apply_filters( 'woocommerce_subscriptions_set_expiration_date', $subscription->update_dates( array( 'end' => $expiration_date ) ), $subscription->get_date( 'end' ), $subscription_key, $user_id );
@@ -1173,7 +1173,7 @@ class WC_Subscriptions_Manager {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_dates( array( "next_payment" => $next_payment ) )' );
 
 		if ( is_int( $next_payment ) ) {
-			$next_payment = date( 'Y-m-d H:i:s', $next_payment );
+			$next_payment = gmdate( 'Y-m-d H:i:s', $next_payment );
 		}
 
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
@@ -1255,7 +1255,7 @@ class WC_Subscriptions_Manager {
 	public static function set_trial_expiration_date( $subscription_key, $user_id = '', $trial_expiration_date = '' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_dates( array( "trial_end" => $expiration_date ) )' );
 		if ( is_int( $trial_expiration_date ) ) {
-			$trial_expiration_date = date( 'Y-m-d H:i:s', $trial_expiration_date );
+			$trial_expiration_date = gmdate( 'Y-m-d H:i:s', $trial_expiration_date );
 		}
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
 		return apply_filters( 'woocommerce_subscriptions_set_trial_expiration_date', $subscription->update_dates( array( 'trial_end' => $trial_expiration_date ) ), $subscription->get_date( 'trial_end' ), $subscription_key, $user_id );
@@ -1543,7 +1543,7 @@ class WC_Subscriptions_Manager {
 			$new_payment_timestamp = $new_payment_timestamp - ( get_option( 'gmt_offset' ) * 3600 );
 		}
 
-		$new_payment_date = date( 'Y-m-d H:i:s', $new_payment_timestamp );
+		$new_payment_date = gmdate( 'Y-m-d H:i:s', $new_payment_timestamp );
 
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
 
@@ -2245,7 +2245,7 @@ class WC_Subscriptions_Manager {
 
 		} else {
 
-			$new_payment_date      = sprintf( '%s-%s-%s %s', (int) $_POST['wcs_year'], zeroise( (int) $_POST['wcs_month'], 2 ), zeroise( (int) $_POST['wcs_day'], 2 ), date( 'H:i:s', current_time( 'timestamp' ) ) );
+			$new_payment_date      = sprintf( '%s-%s-%s %s', (int) $_POST['wcs_year'], zeroise( (int) $_POST['wcs_month'], 2 ), zeroise( (int) $_POST['wcs_day'], 2 ), gmdate( 'H:i:s', current_time( 'timestamp' ) ) );
 			$new_payment_timestamp = self::update_next_payment_date( $new_payment_date, $_POST['wcs_subscription_key'], self::get_user_id_from_subscription_key( $_POST['wcs_subscription_key'] ), 'user' );
 
 			if ( is_wp_error( $new_payment_timestamp ) ) {

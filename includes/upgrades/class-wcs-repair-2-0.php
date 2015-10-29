@@ -602,7 +602,7 @@ class WCS_Repair_2_0 {
 			$formatted_date = 0;
 			WCS_Upgrade_Logger::add( sprintf( '-- For order %d: Repairing date type "%s": fetch of date unsuccessfull: no action present. Date is 0.', $subscription['order_id'], $type ) );
 		} else {
-			$formatted_date = date( 'Y-m-d H:i:s', $next_date_timestamp );
+			$formatted_date = gmdate( 'Y-m-d H:i:s', $next_date_timestamp );
 			WCS_Upgrade_Logger::add( sprintf( '-- For order %d: Repairing date type "%s": fetch of date successfull. New date is %s', $subscription['order_id'], $type, $formatted_date ) );
 		}
 
@@ -624,7 +624,7 @@ class WCS_Repair_2_0 {
 		} elseif ( array_key_exists( 'trial_period', $subscription ) && ! empty( $subscription['trial_period'] ) && array_key_exists( 'trial_length', $subscription ) && ! empty( $subscription['trial_length'] ) && array_key_exists( 'start_date', $subscription ) && ! empty( $subscription['start_date'] ) ) {
 
 			// calculate the end of trial from interval, period and start date
-			$effective_date = date( 'Y-m-d H:i:s', strtotime( '+' . $subscription['trial_length'] . ' ' . $subscription['trial_period'], strtotime( $subscription['start_date'] ) ) );
+			$effective_date = gmdate( 'Y-m-d H:i:s', strtotime( '+' . $subscription['trial_length'] . ' ' . $subscription['trial_period'], strtotime( $subscription['start_date'] ) ) );
 
 		} elseif ( array_key_exists( 'start_date', $subscription ) && ! empty( $subscription['start_date'] ) ) {
 

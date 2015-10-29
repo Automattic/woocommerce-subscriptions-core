@@ -238,14 +238,14 @@ function wcs_add_time( $number_of_periods, $period, $from_timestamp ) {
  */
 function wcs_add_months( $from_timestamp, $months_to_add ) {
 
-	$first_day_of_month = date( 'Y-m', $from_timestamp ) . '-1';
-	$days_in_next_month = date( 't', strtotime( "+ {$months_to_add} month", strtotime( $first_day_of_month ) ) );
+	$first_day_of_month = gmdate( 'Y-m', $from_timestamp ) . '-1';
+	$days_in_next_month = gmdate( 't', strtotime( "+ {$months_to_add} month", strtotime( $first_day_of_month ) ) );
 
 	// Payment is on the last day of the month OR number of days in next billing month is less than the the day of this month (i.e. current billing date is 30th January, next billing date can't be 30th February)
-	if ( date( 'd m Y', $from_timestamp ) === date( 't m Y', $from_timestamp ) || date( 'd', $from_timestamp ) > $days_in_next_month ) {
+	if ( gmdate( 'd m Y', $from_timestamp ) === gmdate( 't m Y', $from_timestamp ) || gmdate( 'd', $from_timestamp ) > $days_in_next_month ) {
 		for ( $i = 1; $i <= $months_to_add; $i++ ) {
 			$next_month = strtotime( '+ 3 days', $from_timestamp ); // Add 3 days to make sure we get to the next month, even when it's the 29th day of a month with 31 days
-			$next_timestamp = $from_timestamp = strtotime( date( 'Y-m-t H:i:s', $next_month ) ); // NB the "t" to get last day of next month
+			$next_timestamp = $from_timestamp = strtotime( gmdate( 'Y-m-t H:i:s', $next_month ) ); // NB the "t" to get last day of next month
 		}
 	} else { // Safe to just add a month
 		$next_timestamp = strtotime( "+ {$months_to_add} month", $from_timestamp );
@@ -337,7 +337,7 @@ function wcs_estimate_period_between( $last_date, $second_date, $interval = 1 ) 
 	$earlier_timestamp = min( $last_timestamp, $second_timestamp );
 	$later_timestamp   = max( $last_timestamp, $second_timestamp );
 
-	$days_in_month     = date( 't', $earlier_timestamp );
+	$days_in_month     = gmdate( 't', $earlier_timestamp );
 	$difference        = absint( $last_timestamp - $second_timestamp );
 	$period_in_seconds = round( $difference / $interval );
 	$possible_periods  = array();
