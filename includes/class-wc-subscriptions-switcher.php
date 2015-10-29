@@ -865,7 +865,7 @@ class WC_Subscriptions_Switcher {
 			// Check if the chosen variation's attributes are different to the existing subscription's attributes (to support switching between a "catch all" variation)
 			if ( empty( $item ) ) {
 
-				throw new Exception(  __( 'We can not find your old subscription item.', 'woocommerce-subscriptions' ) );
+				throw new Exception( __( 'We can not find your old subscription item.', 'woocommerce-subscriptions' ) );
 
 			} else {
 
@@ -879,9 +879,7 @@ class WC_Subscriptions_Switcher {
 				}
 
 				if ( $product_id == $item['product_id'] && ( empty( $variation_id ) || ( $variation_id == $item['variation_id'] && true == $identical_attributes ) ) && $quantity == $item['qty'] ) {
-					
-					throw new Exception(  __( 'You can not switch to the same subscription.', 'woocommerce-subscriptions' ) );
-
+					throw new Exception( __( 'You can not switch to the same subscription.', 'woocommerce-subscriptions' ) );
 				}
 
 				// Also remove any existing items in the cart for switching this item (but don't make the switch invalid)
@@ -905,7 +903,7 @@ class WC_Subscriptions_Switcher {
 
 		$is_valid = apply_filters( 'woocommerce_subscriptions_is_switch_valid', $is_valid, $product_id, $quantity, $variation_id );
 
-		if( ! $is_valid && $error_message ){
+		if ( false === $is_valid && ! empty( $error_message ) ) {
 			wc_add_notice( $error_message, 'error' );
 		}
 
