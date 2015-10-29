@@ -503,7 +503,7 @@ class WC_Subscriptions_Synchroniser {
 		if ( 'week' == $period ) {
 
 			// strtotime() will figure out if the day is in the future or today (see: https://gist.github.com/thenbrent/9698083)
-			$first_payment_timestamp = strtotime( self::$weekdays[ $payment_day ], $from_timestamp );
+			$first_payment_timestamp = wcs_strtotime_dark_knight( self::$weekdays[ $payment_day ], $from_timestamp );
 
 		} elseif ( 'month' == $period ) {
 
@@ -523,7 +523,7 @@ class WC_Subscriptions_Synchroniser {
 
 			}
 
-			$first_payment_timestamp = strtotime( "{$payment_day} {$month}", $from_timestamp );
+			$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day} {$month}", $from_timestamp );
 
 		} elseif ( 'year' == $period ) {
 
@@ -567,7 +567,7 @@ class WC_Subscriptions_Synchroniser {
 					break;
 			}
 
-			$first_payment_timestamp = strtotime( "{$payment_day['day']} {$month}", $from_timestamp );
+			$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month}", $from_timestamp );
 		}
 
 		// Make sure the next payment is in the future and after the $from_date, as strtotime() will return the date this year for any day in the past when adding months or years (see: https://gist.github.com/thenbrent/9698083)

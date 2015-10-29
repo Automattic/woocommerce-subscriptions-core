@@ -217,7 +217,7 @@ function wcs_add_time( $number_of_periods, $period, $from_timestamp ) {
 		if ( 'month' == $period ) {
 			$next_timestamp = wcs_add_months( $from_timestamp, $number_of_periods );
 		} else {
-			$next_timestamp = strtotime( "+ {$number_of_periods} {$period}", $from_timestamp );
+			$next_timestamp = wcs_strtotime_dark_knight( "+ {$number_of_periods} {$period}", $from_timestamp );
 		}
 	} else {
 		$next_timestamp = $from_timestamp;
@@ -243,7 +243,7 @@ function wcs_add_time( $number_of_periods, $period, $from_timestamp ) {
 function wcs_add_months( $from_timestamp, $months_to_add ) {
 
 	$first_day_of_month = gmdate( 'Y-m', $from_timestamp ) . '-1';
-	$days_in_next_month = gmdate( 't', strtotime( "+ {$months_to_add} month", wcs_date_to_time( $first_day_of_month ) ) );
+	$days_in_next_month = gmdate( 't', wcs_strtotime_dark_knight( "+ {$months_to_add} month", wcs_date_to_time( $first_day_of_month ) ) );
 
 	// Payment is on the last day of the month OR number of days in next billing month is less than the the day of this month (i.e. current billing date is 30th January, next billing date can't be 30th February)
 	if ( gmdate( 'd m Y', $from_timestamp ) === gmdate( 't m Y', $from_timestamp ) || gmdate( 'd', $from_timestamp ) > $days_in_next_month ) {
@@ -252,7 +252,7 @@ function wcs_add_months( $from_timestamp, $months_to_add ) {
 			$next_timestamp = $from_timestamp = wcs_date_to_time( gmdate( 'Y-m-t H:i:s', $next_month ) ); // NB the "t" to get last day of next month
 		}
 	} else { // Safe to just add a month
-		$next_timestamp = strtotime( "+ {$months_to_add} month", $from_timestamp );
+		$next_timestamp = wcs_strtotime_dark_knight( "+ {$months_to_add} month", $from_timestamp );
 	}
 
 	return $next_timestamp;
@@ -568,4 +568,32 @@ function wcs_date_to_time( $date_string ) {
 	$date_obj = new DateTime( $date_string, new DateTimeZone( 'UTC' ) );
 
 	return $date_obj->format( 'U' );
+}
+
+/**
+ * A wrapper for strtotime() designed to stand up against those who want to watch the WordPress burn.
+ *
+ * One day WordPress will require Harvey Dent (aka PHP 5.3) then we can use DateTime::add() instead,
+ * but for now, this ensures when using strtotime() to add time to a timestamp, there are no additional
+ * changes for server specific timezone additions or deductions.
+ *
+ * @param string $date_string A date string formatted in MySQl or similar format that will map correctly when instantiating an instance of DateTime()
+ * @return int Unix timestamp representation of the timestamp passed in without any changes for timezones
+ */
+function wcs_strtotime_dark_knight( $time_string, $from_timestamp = null ) {
+
+	$original_timezone = date_default_timezone_get();
+
+	// this should be UTC anyway as WordPress sets it to that, but some plugins and l33t h4xors just want to watch the world burn and set it to something else
+	date_default_timezone_set( 'UTC' );
+
+	if ( null === $from_timestamp ) {
+		$next_timestamp = strtotime( $time_string );
+	} else {
+		$next_timestamp = strtotime( $time_string, $from_timestamp );
+	}
+
+	date_default_timezone_set( $original_timezone );
+
+	return $next_timestamp;
 }
