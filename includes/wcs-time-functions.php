@@ -69,7 +69,7 @@ function wcs_get_subscription_trial_period_strings( $number = 1, $period = '' ) 
  * @param string (optional) One of day, week, month or year. If empty, all subscription ranges are returned.
  * @since 2.0
  */
-function wcs_get_subscription_ranges( $subscription_period = '' ) {
+function wcs_get_subscription_ranges_tlc() {
 
 	$subscription_periods = wcs_get_subscription_period_strings();
 
@@ -107,6 +107,25 @@ function wcs_get_subscription_ranges( $subscription_period = '' ) {
 
 		$subscription_ranges[ $period ] = $subscription_lengths;
 	}
+
+	return $subscription_ranges;
+}
+
+/**
+ * Retaining the API, it makes use of the transient functionality.
+ *
+ * @param string $period
+ * @return bool|mixed
+ */
+function wcs_get_subscription_ranges( $subscription_period = '' ) {
+	if ( ! is_string( $subscription_period ) ) {
+		$subscription_period = '';
+	}
+
+	$subscription_ranges = tlc_transient( 'wcs-sub-ranges' )
+		->updates_with( 'wcs_get_subscription_ranges_tlc' )
+		->expires_in( 86400 )
+		->get();
 
 	$subscription_ranges = apply_filters( 'woocommerce_subscription_lengths', $subscription_ranges, $subscription_period );
 
