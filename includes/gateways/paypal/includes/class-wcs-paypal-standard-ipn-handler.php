@@ -256,7 +256,9 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 				if ( ! $is_first_payment && ! $is_renewal_sign_up_after_failure ) {
 
 					if ( $subscription->has_status( 'active' ) ) {
+						remove_action( 'woocommerce_subscription_on-hold_paypal', 'WCS_PayPal_Status_Manager::suspend_subscription' );
 						$subscription->update_status( 'on-hold' );
+						add_action( 'woocommerce_subscription_on-hold_paypal', 'WCS_PayPal_Status_Manager::suspend_subscription' );
 					}
 
 					// Generate a renewal order to record the payment (and determine how much is due)
@@ -330,9 +332,13 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 							$subscription->update_dates( $update_dates );
 						}
 
+						remove_action( 'woocommerce_subscription_activated_paypal', 'WCS_PayPal_Status_Manager::reactivate_subscription' );
+
 						$renewal_order->payment_complete( $transaction_details['txn_id'] );
 
 						$renewal_order->add_order_note( __( 'IPN subscription payment completed.', 'woocommerce-subscriptions' ) );
+
+						add_action( 'woocommerce_subscription_activated_paypal', 'WCS_PayPal_Status_Manager::reactivate_subscription' );
 
 						wcs_set_paypal_id( $renewal_order, $transaction_details['subscr_id'] );
 					}
