@@ -432,7 +432,11 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 				// Subscription Payment completed
 				$subscription->add_order_note( $ipn_failure_note );
 
-				$subscription->payment_failed();
+				try {
+					$subscription->payment_failed();
+				} catch ( Exception $e ) {
+					WC_Gateway_Paypal::log( sprintf( 'IPN subscription payment failure, unable to process payment failure. Exception: %s ', $e->getMessage() ) );
+				}
 
 				break;
 		}
