@@ -141,7 +141,7 @@ class WC_Subscriptions_Product {
 			$product = wc_get_product( $product_id );
 		}
 
-		if ( $product->is_type( array( 'subscription', 'subscription_variation', 'variable-subscription' ) ) ) {
+		if ( is_object( $product ) && $product->is_type( array( 'subscription', 'subscription_variation', 'variable-subscription' ) ) ) {
 			$is_subscription = true;
 		}
 
