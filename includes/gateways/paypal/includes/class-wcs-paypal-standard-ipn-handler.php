@@ -320,7 +320,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 						// to cover the case when PayPal drank too much coffee and sent IPNs early - needs to happen before $renewal_order->payment_complete
 						$update_dates = array();
 
-						if ( $is_first_payment && $subscription->get_time( 'trial_end' ) > current_time( 'timestamp', true ) ) {
+						if ( $subscription->get_time( 'trial_end' ) > current_time( 'timestamp', true ) ) {
 							$update_dates['trial_end'] = gmdate( 'Y-m-d H:i:s', gmdate( 'U' ) - 1 );
 						}
 
