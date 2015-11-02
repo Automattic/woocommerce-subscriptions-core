@@ -705,7 +705,7 @@ class WC_Subscriptions_Manager {
 
 			foreach ( $subscriptions as $subscription ) {
 				if ( $subscription->can_be_updated_to( 'cancelled' ) ) {
-					$subscription->update_status( 'cancelled' );
+					$subscription->update_status( 'cancelled', sprintf( __( 'User %d deleted.', 'woocommerce-subscriptions' ), $user_id ) );
 				}
 			}
 
