@@ -317,24 +317,39 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 							}
 						}
 
-						// to cover the case when PayPal drank too much coffee and sent IPNs early - needs to happen before $renewal_order->payment_complete
-						$update_dates = array();
+						try {
 
-						if ( $subscription->get_time( 'trial_end' ) > gmdate( 'U' ) ) {
-							$update_dates['trial_end'] = gmdate( 'Y-m-d H:i:s', gmdate( 'U' ) - 1 );
-						}
+							// to cover the case when PayPal drank too much coffee and sent IPNs early - needs to happen before $renewal_order->payment_complete
+							$update_dates = array();
 
-						if ( $subscription->get_time( 'next_payment' ) > gmdate( 'U' ) ) {
-							$update_dates['next_payment'] = gmdate( 'Y-m-d H:i:s', gmdate( 'U' ) - 1 );
-						}
+							if ( $subscription->get_time( 'trial_end' ) > gmdate( 'U' ) ) {
+								$update_dates['trial_end'] = gmdate( 'Y-m-d H:i:s', gmdate( 'U' ) - 1 );
+								WC_Gateway_Paypal::log( sprintf( 'IPN subscription payment for subscription %d: trial_end is in futute (date: %s) setting to %s.', $subscription->id, $subscription->get_date( 'trial_end' ), $update_dates['trial_end'] ) );
+							} else {
+								WC_Gateway_Paypal::log( sprintf( 'IPN subscription payment for subscription %d: trial_end is in past (date: %s).', $subscription->id, $subscription->get_date( 'trial_end' ) ) );
+							}
 
-						if ( ! empty( $update_dates ) ) {
-							$subscription->update_dates( $update_dates );
+							if ( $subscription->get_time( 'next_payment' ) > gmdate( 'U' ) ) {
+								$update_dates['next_payment'] = gmdate( 'Y-m-d H:i:s', gmdate( 'U' ) - 1 );
+								WC_Gateway_Paypal::log( sprintf( 'IPN subscription payment for subscription %d: next_payment is in futute (date: %s) setting to %s.', $subscription->id, $subscription->get_date( 'trial_end' ), $update_dates['trial_end'] ) );
+							} else {
+								WC_Gateway_Paypal::log( sprintf( 'IPN subscription payment for subscription %d: next_payment is in past (date: %s).', $subscription->id, $subscription->get_date( 'next_payment' ) ) );
+							}
+
+							if ( ! empty( $update_dates ) ) {
+								$subscription->update_dates( $update_dates );
+							}
+						} catch ( Exception $e ) {
+							WC_Gateway_Paypal::log( sprintf( 'IPN subscription payment exception subscription %d: %s.', $subscription->id, $e->getMessage() ) );
 						}
 
 						remove_action( 'woocommerce_subscription_activated_paypal', 'WCS_PayPal_Status_Manager::reactivate_subscription' );
 
-						$renewal_order->payment_complete( $transaction_details['txn_id'] );
+						try {
+							$renewal_order->payment_complete( $transaction_details['txn_id'] );
+						} catch ( Exception $e ) {
+							WC_Gateway_Paypal::log( sprintf( 'IPN subscription payment exception calling $renewal_order->payment_complete() for subscription %d: %s.', $subscription->id, $e->getMessage() ) );
+						}
 
 						$renewal_order->add_order_note( __( 'IPN subscription payment completed.', 'woocommerce-subscriptions' ) );
 
@@ -417,7 +432,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 				$ipn_failure_note = __( 'IPN subscription payment failure.', 'woocommerce-subscriptions' );
 
-				if ( ! $is_first_payment && ! $is_renewal_sign_up_after_failure ) {
+				if ( ! $is_first_payment && ! $is_renewal_sign_up_after_failure && 'recurring_payment_suspended_due_to_max_failed_payment' == $transaction_details['txn_type'] ) {
 					// Generate a renewal order to record the failed payment
 					$renewal_order = wcs_create_renewal_order( $subscription );
 

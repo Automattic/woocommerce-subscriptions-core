@@ -686,9 +686,8 @@ class WC_Subscription extends WC_Order {
 	 * Because dates are interdependent on each other, this function will take an array of dates, make sure that all
 	 * dates are in the right order in the right format, that there is at least something to update.
 	 *
-	 * @param array 		$dates 			array containing dates with keys: 'start', 'trial_end', 'next_payment',
-	 *                           			'last_payment' or 'end'. Values are time
-	 * @param string 		$timezone 		The timezone of the $datetime param. Default 'gmt'.
+	 * @param array $dates array containing dates with keys: 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'. Values are time
+	 * @param string $timezone The timezone of the $datetime param. Default 'gmt'.
 	 */
 	public function update_dates( $dates, $timezone = 'gmt' ) {
 		global $wpdb;
@@ -748,8 +747,7 @@ class WC_Subscription extends WC_Order {
 
 		$messages = array();
 
-		// And then iterate over them. We need the two separate loops as we need a full array before we start checking
-		// the relationships between them.
+		// And then iterate over them. We need the two separate loops as we need a full array before we start checking the relationships between them.
 		foreach ( $timestamps as $date_type => $datetime ) {
 			switch ( $date_type ) {
 				case 'end' :
@@ -761,8 +759,7 @@ class WC_Subscription extends WC_Order {
 						$messages[] = sprintf( __( 'The %s date must occur after the next payment date.', 'woocommerce-subscriptions' ), $date_type );
 					}
 				case 'next_payment' :
-					// Guarantees that end is strictly after trial_end, because if next_payment and end can't be at same
-					// time
+					// Guarantees that end is strictly after trial_end, because if next_payment and end can't be at same time
 					if ( array_key_exists( 'trial_end', $timestamps ) && $datetime < $timestamps['trial_end'] ) {
 						$messages[] = sprintf( __( 'The %s date must occur after the trial end date.', 'woocommerce-subscriptions' ), $date_type );
 					}
