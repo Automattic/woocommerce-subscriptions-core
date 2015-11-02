@@ -1052,9 +1052,11 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Gets order total - formatted for display.
 	 *
+	 * @param string $tax_display only used for method signature match
+	 * @param bool $display_refunded only used for method signature match
 	 * @return string
 	 */
-	public function get_formatted_order_total( $tax_display = '' ) {
+	public function get_formatted_order_total( $tax_display = '', $display_refunded = true ) {
 		if ( $this->get_total() > 0 && ! empty( $this->billing_period ) ) {
 			$formatted_order_total = wcs_price_string( $this->get_price_string_details( $this->get_total() ) );
 		} else {
