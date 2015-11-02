@@ -166,9 +166,7 @@ class WCS_Admin_Meta_Boxes {
 
 		} else {
 
-			if ( $subscription->is_manual() ) {
-				do_action( 'woocommerce_generated_manual_renewal_order', $renewal_order->id );
-			} else {
+			if ( ! $subscription->is_manual() ) {
 				$renewal_order->set_payment_method( $subscription->payment_gateway );
 			}
 		}
