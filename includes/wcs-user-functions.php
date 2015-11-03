@@ -70,7 +70,7 @@ function wcs_update_users_role( $user_id, $role_new = '' ) {
 	if ( 'default_subscriber_role' == $role_new ) {
 		$role_old = $default_cancelled_role;
 		$role_new = $default_subscriber_role;
-	} elseif ( in_array( $role_name, array( 'default_inactive_role', 'default_cancelled_role' ) ) ) {
+	} elseif ( in_array( $role_new, array( 'default_inactive_role', 'default_cancelled_role' ) ) ) {
 		$role_old = $default_subscriber_role;
 		$role_new = $default_cancelled_role;
 	}
