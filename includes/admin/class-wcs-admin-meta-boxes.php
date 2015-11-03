@@ -158,19 +158,8 @@ class WCS_Admin_Meta_Boxes {
 
 		$renewal_order = wcs_create_renewal_order( $subscription );
 
-		if ( 0 == $subscription->get_total() ) {
-
-			$renewal_order->payment_complete();
-
-			$subscription->update_status( 'active' );
-
-		} else {
-
-			if ( $subscription->is_manual() ) {
-				do_action( 'woocommerce_generated_manual_renewal_order', $renewal_order->id );
-			} else {
-				$renewal_order->set_payment_method( $subscription->payment_gateway );
-			}
+		if ( ! $subscription->is_manual() ) {
+			$renewal_order->set_payment_method( $subscription->payment_gateway );
 		}
 
 		$subscription->add_order_note( __( 'Create pending renewal order requested by admin action.', 'woocommerce-subscriptions' ), false, true );
