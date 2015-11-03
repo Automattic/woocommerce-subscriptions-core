@@ -160,9 +160,17 @@ class WCS_Admin_Meta_Boxes {
 
 		if ( 0 == $subscription->get_total() ) {
 
+			remove_action( 'woocommerce_order_status_completed', 'WC_Subscriptions_Email::send_renewal_order_email', 10 );
+			remove_action( 'woocommerce_order_status_pending_to_processing', 'WC_Subscriptions_Email::send_renewal_order_email', 10 );
+			remove_action( 'woocommerce_order_status_pending_to_completed', 'WC_Subscriptions_Email::send_renewal_order_email', 10 );
+
 			$renewal_order->payment_complete();
 
 			$subscription->update_status( 'active' );
+
+			add_action( 'woocommerce_order_status_completed', 'WC_Subscriptions_Email::send_renewal_order_email', 10 );
+			add_action( 'woocommerce_order_status_pending_to_processing', 'WC_Subscriptions_Email::send_renewal_order_email', 10 );
+			add_action( 'woocommerce_order_status_pending_to_completed', 'WC_Subscriptions_Email::send_renewal_order_email', 10 );
 
 		} else {
 
