@@ -97,6 +97,9 @@ class WC_Subscriptions_Switcher {
 
 		// Display/indicate whether a cart switch item is a upgrade/downgrade/crossgrade
 		add_filter( 'woocommerce_cart_item_subtotal', __CLASS__ . '::add_cart_item_switch_direction', 10, 3 );
+
+		// Check if the new order was to record a switch request and maybe call a "switch completed" action.
+		add_action( 'subscriptions_created_for_order', __CLASS__ . '::maybe_add_switched_callback', 10, 1 );
 	}
 
 	/**
@@ -1551,6 +1554,32 @@ class WC_Subscriptions_Switcher {
 		}
 
 		return $product_subtotal;
+	}
+
+	/**
+	 * Creates a 2.0 updated version of the "subscriptions_switched" callback for developers to hook onto.
+	 *
+	 * The subscription passed to the new `woocommerce_subscriptions_switched_item` callback is strictly the subscription
+	 * to which the `$new_order_item` belongs to; this may be a new or the original subscription.
+	 *
+	 * @since 2.0.5
+	 * @param WC_Order $order
+	 */
+	public static function maybe_add_switched_callback( $order ) {
+		$switched_ids = get_post_meta( $order->id, '_subscription_switch', false );
+
+		if ( ! empty( $switched_ids ) ) {
+
+			$subscriptions = wcs_get_subscriptions_for_order( $order );
+
+			foreach ( $subscriptions as $subscription ) {
+				foreach ( $subscription->get_items() as $new_order_item ) {
+					if ( isset( $new_order_item['switched_subscription_item_id'] ) ) {
+						do_action( 'woocommerce_subscriptions_switched_item', $subscription, $new_order_item, WC_Subscriptions_Order::get_item_by_id( $new_order_item['switched_subscription_item_id'] ) );
+					}
+				}
+			}
+		}
 	}
 
 	/** Deprecated Methods **/
