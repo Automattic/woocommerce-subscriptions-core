@@ -517,7 +517,6 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 				'meta_value'       => $subscription_id,
 				'post_type'        => $order_type,
 				'post_status'      => 'any',
-				'post_parent'      => 0,
 				'suppress_filters' => true,
 			) );
 
