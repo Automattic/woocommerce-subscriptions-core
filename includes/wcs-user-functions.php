@@ -78,7 +78,7 @@ function wcs_update_users_role( $user_id, $role_new = '' ) {
 	$user->remove_role( $role_old );
 	$user->add_role( $role_new );
 
-	do_action( 'woocommerce_subscriptions_updated_users_role', $role_new, $user );
+	do_action( 'woocommerce_subscriptions_updated_users_role', $role_new, $user, $role_old );
 	return $user;
 }
 
