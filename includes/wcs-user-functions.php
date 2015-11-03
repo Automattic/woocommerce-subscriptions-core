@@ -49,7 +49,7 @@ function wcs_maybe_make_user_inactive( $user_id ) {
  * @return WP_User The user with the new role.
  * @since 2.0
  */
-function wcs_update_users_role( $user_id, $role_name ) {
+function wcs_update_users_role( $user_id, $role_new ) {
 
 	$user = new WP_User( $user_id );
 
@@ -59,19 +59,25 @@ function wcs_update_users_role( $user_id, $role_name ) {
 	}
 
 	// Allow plugins to prevent Subscriptions from handling roles
-	if ( ! apply_filters( 'woocommerce_subscriptions_update_users_role', true, $user, $role_name ) ) {
+	if ( ! apply_filters( 'woocommerce_subscriptions_update_users_role', true, $user, $role_new ) ) {
 		return;
 	}
 
-	if ( 'default_subscriber_role' == $role_name ) {
-		$role_name = get_option( WC_Subscriptions_Admin::$option_prefix . '_subscriber_role' );
+	$default_subscriber_role = get_option( WC_Subscriptions_Admin::$option_prefix . '_subscriber_role' );
+	$default_cancelled_role = get_option( WC_Subscriptions_Admin::$option_prefix . '_cancelled_role' );
+
+	if ( 'default_subscriber_role' == $role_new ) {
+		$role_old = $default_cancelled_role;
+		$role_new = $default_subscriber_role;
 	} elseif ( in_array( $role_name, array( 'default_inactive_role', 'default_cancelled_role' ) ) ) {
-		$role_name = get_option( WC_Subscriptions_Admin::$option_prefix . '_cancelled_role' );
+		$role_old = $default_subscriber_role;
+		$role_new = $default_cancelled_role;
 	}
 
-	$user->set_role( $role_name );
+	$user->remove_role( $role_old );
+	$user->add_role( $role_new );
 
-	do_action( 'woocommerce_subscriptions_updated_users_role', $role_name, $user );
+	do_action( 'woocommerce_subscriptions_updated_users_role', $role_new, $user );
 	return $user;
 }
 
