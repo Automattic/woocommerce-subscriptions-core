@@ -158,25 +158,8 @@ class WCS_Admin_Meta_Boxes {
 
 		$renewal_order = wcs_create_renewal_order( $subscription );
 
-		if ( 0 == $subscription->get_total() ) {
-
-			remove_action( 'woocommerce_order_status_completed', 'WC_Subscriptions_Email::send_renewal_order_email', 10 );
-			remove_action( 'woocommerce_order_status_pending_to_processing', 'WC_Subscriptions_Email::send_renewal_order_email', 10 );
-			remove_action( 'woocommerce_order_status_pending_to_completed', 'WC_Subscriptions_Email::send_renewal_order_email', 10 );
-
-			$renewal_order->payment_complete();
-
-			$subscription->update_status( 'active' );
-
-			add_action( 'woocommerce_order_status_completed', 'WC_Subscriptions_Email::send_renewal_order_email', 10 );
-			add_action( 'woocommerce_order_status_pending_to_processing', 'WC_Subscriptions_Email::send_renewal_order_email', 10 );
-			add_action( 'woocommerce_order_status_pending_to_completed', 'WC_Subscriptions_Email::send_renewal_order_email', 10 );
-
-		} else {
-
-			if ( ! $subscription->is_manual() ) {
-				$renewal_order->set_payment_method( $subscription->payment_gateway );
-			}
+		if ( ! $subscription->is_manual() ) {
+			$renewal_order->set_payment_method( $subscription->payment_gateway );
 		}
 
 		$subscription->add_order_note( __( 'Create pending renewal order requested by admin action.', 'woocommerce-subscriptions' ), false, true );
