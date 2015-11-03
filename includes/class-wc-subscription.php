@@ -1159,6 +1159,11 @@ class WC_Subscription extends WC_Order {
 
 			$this->update_status( 'pending-cancel', $note );
 
+		// If the subscription has already ended or can't be cancelled for some other reason, just record the note
+		} elseif ( ! $this->can_be_updated_to( 'cancelled' ) ) {
+
+			$this->add_order_note( $note );
+
 		// Cancel for real if we're already pending cancellation
 		} else {
 
