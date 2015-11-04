@@ -1575,7 +1575,15 @@ class WC_Subscriptions_Switcher {
 			foreach ( $subscriptions as $subscription ) {
 				foreach ( $subscription->get_items() as $new_order_item ) {
 					if ( isset( $new_order_item['switched_subscription_item_id'] ) ) {
-						do_action( 'woocommerce_subscriptions_switched_item', $subscription, $new_order_item, WC_Subscriptions_Order::get_item_by_id( $new_order_item['switched_subscription_item_id'] ) );
+
+						$product_id = wcs_get_canonical_product_id( $new_order_item );
+						// we need to check if the switch order contains the line item that has just been switched so that we don't call the hook on items that were previously switched in another order
+						foreach ( $order->get_items() as $order_item ) {
+							if ( wcs_get_canonical_product_id( $order_item ) == $product_id ) {
+								do_action( 'woocommerce_subscriptions_switched_item', $subscription, $new_order_item, WC_Subscriptions_Order::get_item_by_id( $new_order_item['switched_subscription_item_id'] ) );
+								break;
+							}
+						}
 					}
 				}
 			}
