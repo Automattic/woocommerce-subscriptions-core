@@ -277,7 +277,7 @@ class WCS_PayPal {
 		require_once( 'includes/class-wcs-paypal-standard-ipn-handler.php' );
 		require_once( 'includes/class-wcs-paypal-reference-transaction-ipn-handler.php' );
 
-		if ( ! in_array( $transaction_details['txn_type'], array_merge( self::get_ipn_handler( 'standard' )->get_transaction_types(), self::get_ipn_handler( 'reference' )->get_transaction_types() ) ) ) {
+		if ( ! isset( $transaction_details['txn_type'] ) || ! in_array( $transaction_details['txn_type'], array_merge( self::get_ipn_handler( 'standard' )->get_transaction_types(), self::get_ipn_handler( 'reference' )->get_transaction_types() ) ) ) {
 			return;
 		}
 
