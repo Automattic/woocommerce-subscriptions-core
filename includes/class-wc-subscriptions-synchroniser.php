@@ -912,7 +912,7 @@ class WC_Subscriptions_Synchroniser {
 
 		$order = wc_get_order( $order_id );
 
-		if ( 'processing' == $new_order_status && $order->get_total() == 0 ) {
+		if ( 'processing' == $new_order_status && $order->get_total() == 0 && wcs_order_contains_subscription( $order ) ) {
 
 			$subscriptions   = wcs_get_subscriptions_for_order( $order_id );
 			$all_synced      = true;
