@@ -907,9 +907,9 @@ class WC_Subscriptions_Product {
 
 			$is_purchasable = false;
 
-			if ( isset( WC()->session->order_awaiting_payment ) || isset( $_GET['pay_for_order'] ) ) {
+			if ( ! empty( WC()->session->order_awaiting_payment ) || isset( $_GET['pay_for_order'] ) ) {
 
-				$order_id = isset( WC()->session->order_awaiting_payment ) ? WC()->session->order_awaiting_payment : $wp->query_vars['order-pay'];
+				$order_id = ! empty( WC()->session->order_awaiting_payment ) ? WC()->session->order_awaiting_payment : $wp->query_vars['order-pay'];
 				$order    = wc_get_order( absint( $order_id ) );
 
 				if ( $order->has_status( array( 'pending', 'failed' ) ) ) {
