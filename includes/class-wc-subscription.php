@@ -470,7 +470,7 @@ class WC_Subscription extends WC_Order {
 			$paid_statuses[] = 'wc-' . $custom_status;
 		}
 
-		return $paid_statuses;
+		return apply_filters( 'woocommerce_subscriptions_paid_order_statuses', $paid_statuses, $this );
 	}
 
 	/**
