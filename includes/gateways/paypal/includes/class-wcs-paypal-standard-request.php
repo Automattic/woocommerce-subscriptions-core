@@ -60,7 +60,7 @@ class WCS_PayPal_Standard_Request {
 			$paypal_args['cmd'] = '_xclick-subscriptions';
 
 			// Store the subscription ID in the args sent to PayPal so we can access them later
-			$paypal_args['custom'] = json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key, 'subscription_id' => $subscription->id, 'subscription_key' => $subscription->order_key ) );
+			$paypal_args['custom'] = wp_json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key, 'subscription_id' => $subscription->id, 'subscription_key' => $subscription->order_key ) );
 
 			foreach ( $subscription->get_items() as $item ) {
 				if ( $item['qty'] > 1 ) {
@@ -141,7 +141,7 @@ class WCS_PayPal_Standard_Request {
 
 				// Set the invoice details to the original order's invoice but also append a special string and this renewal orders ID so that we can match it up as a failed renewal order payment later
 				$paypal_args['invoice'] = WCS_PayPal::get_option( 'invoice_prefix' ) . $order_number . $suffix;
-				$paypal_args['custom']  = json_encode( array_merge( $order_id_key, array( 'subscription_id' => $subscription->id, 'subscription_key' => $subscription->order_key ) ) );
+				$paypal_args['custom']  = wp_json_encode( array_merge( $order_id_key, array( 'subscription_id' => $subscription->id, 'subscription_key' => $subscription->order_key ) ) );
 
 			}
 

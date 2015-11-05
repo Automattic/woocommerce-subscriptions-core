@@ -141,7 +141,7 @@ class WCS_PayPal {
 
 		if ( self::are_credentials_set() ) {
 
-			$accounts_with_reference_transactions_enabled = json_decode( get_option( 'wcs_paypal_rt_enabled_accounts' , json_encode( array() ) ) );
+			$accounts_with_reference_transactions_enabled = json_decode( get_option( 'wcs_paypal_rt_enabled_accounts' , wp_json_encode( array() ) ) );
 
 			if ( in_array( $api_username, $accounts_with_reference_transactions_enabled ) ) {
 
@@ -151,7 +151,7 @@ class WCS_PayPal {
 
 				if ( self::get_api()->are_reference_transactions_enabled() ) {
 					$accounts_with_reference_transactions_enabled[] = $api_username;
-					update_option( 'wcs_paypal_rt_enabled_accounts', json_encode( $accounts_with_reference_transactions_enabled ) );
+					update_option( 'wcs_paypal_rt_enabled_accounts', wp_json_encode( $accounts_with_reference_transactions_enabled ) );
 					$reference_transactions_enabled = true;
 				} else {
 					set_transient( $transient_key, $api_username, DAY_IN_SECONDS );

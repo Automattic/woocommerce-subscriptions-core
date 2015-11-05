@@ -35,7 +35,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				)
 			);
 			?>
-			<input type="hidden" name="wcs-lengths" id="wcs-lengths" data-subscription_lengths="<?php echo esc_attr( json_encode( wcs_get_subscription_ranges() ) ); ?>">
+			<input type="hidden" name="wcs-lengths" id="wcs-lengths" data-subscription_lengths="<?php echo esc_attr( wp_json_encode( wcs_get_subscription_ranges() ) ); ?>">
 		</div>
 		<?php else : ?>
 		<strong><?php esc_html_e( 'Recurring:', 'woocommerce-subscriptions' ); ?></strong>

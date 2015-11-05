@@ -206,7 +206,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 			'return_fraud_filters' => 1,
 			'notify_url'           => WC()->api_request_url( 'WC_Gateway_Paypal' ),
 			'invoice_number'       => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) ),
-			'custom'               => json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key ) ),
+			'custom'               => wp_json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key ) ),
 		);
 
 		$args = wp_parse_args( $args, $defaults );

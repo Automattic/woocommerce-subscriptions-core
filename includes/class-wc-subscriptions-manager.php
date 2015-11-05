@@ -2319,7 +2319,7 @@ class WC_Subscriptions_Manager {
 			}
 		}
 
-		echo json_encode( $response );
+		echo wp_json_encode( $response );
 
 		exit();
 	}
