@@ -180,7 +180,13 @@ class WCS_Cart_Renewal {
 				}
 			}
 
-			$_product->price = $item_to_renew['line_subtotal'] / $item_to_renew['qty'];
+			$price = $item_to_renew['line_subtotal'];
+
+			if ( 'yes' === get_option( 'woocommerce_prices_include_tax' ) ) {
+				$price += $item_to_renew['line_subtotal_tax'];
+			}
+
+			$_product->price = $price / $item_to_renew['qty'];
 
 			// Don't carry over any sign up fee
 			$_product->subscription_sign_up_fee = 0;
