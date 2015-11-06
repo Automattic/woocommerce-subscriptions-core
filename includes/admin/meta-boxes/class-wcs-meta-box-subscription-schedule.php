@@ -71,6 +71,8 @@ class WCS_Meta_Box_Schedule {
 
 			try {
 				$subscription->update_dates( $dates, 'gmt' );
+
+				wp_cache_delete( $post_id, 'posts' );
 			} catch ( Exception $e ) {
 				wcs_add_admin_notice( $e->getMessage(), 'error' );
 			}
