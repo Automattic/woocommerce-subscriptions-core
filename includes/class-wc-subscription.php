@@ -470,7 +470,7 @@ class WC_Subscription extends WC_Order {
 			$paid_statuses[] = 'wc-' . $custom_status;
 		}
 
-		return $paid_statuses;
+		return apply_filters( 'woocommerce_subscriptions_paid_order_statuses', $paid_statuses, $this );
 	}
 
 	/**
@@ -484,9 +484,10 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_completed_payment_count() {
 
-		$completed_payment_count = ( false !== $this->order && $this->order->has_status( $this->get_paid_order_statuses() ) ) ? 1 : 0;
+		$completed_payment_count = ( false !== $this->order && ( isset( $this->order->paid_date ) || $this->order->has_status( $this->get_paid_order_statuses() ) ) ) ? 1 : 0;
 
-		$paid_renewal_orders = get_posts( array(
+		// not all gateways will call $order->payment_complete() so we need to find renewal orders with a paid status rather than just a _paid_date
+		$paid_status_renewal_orders = get_posts( array(
 			'posts_per_page' => -1,
 			'post_status'    => $this->get_paid_order_statuses(),
 			'post_type'      => 'shop_order',
@@ -502,6 +503,30 @@ class WC_Subscription extends WC_Order {
 				),
 			),
 		) );
+
+		// because some stores may be using custom order status plugins, we also can't rely on order status to find paid orders, so also check for a _paid_date
+		$paid_date_renewal_orders = get_posts( array(
+			'posts_per_page' => -1,
+			'post_status'    => 'any',
+			'post_type'      => 'shop_order',
+			'fields'         => 'ids',
+			'orderby'        => 'date',
+			'order'          => 'desc',
+			'meta_query'     => array(
+				array(
+					'key'     => '_subscription_renewal',
+					'compare' => '=',
+					'value'   => $this->id,
+					'type'    => 'numeric',
+				),
+				array(
+					'key'     => '_paid_date',
+					'compare' => 'EXISTS',
+				),
+			),
+		) );
+
+		$paid_renewal_orders = array_unique( array_merge( $paid_date_renewal_orders, $paid_status_renewal_orders ) );
 
 		if ( ! empty( $paid_renewal_orders ) ) {
 			$completed_payment_count += count( $paid_renewal_orders );
