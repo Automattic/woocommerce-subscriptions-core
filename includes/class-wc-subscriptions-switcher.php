@@ -1566,9 +1566,7 @@ class WC_Subscriptions_Switcher {
 	 * @param WC_Order $order
 	 */
 	public static function maybe_add_switched_callback( $order ) {
-		$switched_ids = get_post_meta( $order->id, '_subscription_switch', false );
-
-		if ( ! empty( $switched_ids ) ) {
+		if ( wcs_order_contains_switch( $order ) ) {
 
 			$subscriptions = wcs_get_subscriptions_for_order( $order );
 
