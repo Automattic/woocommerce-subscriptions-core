@@ -901,7 +901,7 @@ class WC_Subscriptions_Switcher {
 			$is_valid = false;
 		}
 
-		$is_valid = apply_filters( 'woocommerce_subscriptions_is_switch_valid', $is_valid, $product_id, $quantity, $variation_id );
+		$is_valid = apply_filters( 'woocommerce_subscriptions_is_switch_valid', $is_valid, $product_id, $quantity, $variation_id, $subscription, $item );
 
 		if ( false === $is_valid && ! empty( $error_message ) ) {
 			wc_add_notice( $error_message, 'error' );
