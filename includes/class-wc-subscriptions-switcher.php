@@ -899,16 +899,16 @@ class WC_Subscriptions_Switcher {
 			}
 		} catch ( Exception $e ) {
 			$error_message = $e->getMessage();
+		}
+
+		$error_message = apply_filters( 'woocommerce_subscriptions_switch_error_message', $error_message, $product_id, $quantity, $variation_id, $subscription, $item );
+
+		if ( ! empty( $error_message ) ) {
+			wc_add_notice( $error_message, 'error' );
 			$is_valid = false;
 		}
 
-		$is_valid = apply_filters( 'woocommerce_subscriptions_is_switch_valid', $is_valid, $product_id, $quantity, $variation_id, $subscription, $item );
-
-		if ( false === $is_valid && ! empty( $error_message ) ) {
-			wc_add_notice( $error_message, 'error' );
-		}
-
-		return $is_valid;
+		return apply_filters( 'woocommerce_subscriptions_is_switch_valid', $is_valid, $product_id, $quantity, $variation_id, $subscription, $item );
 	}
 
 	/**
