@@ -427,9 +427,17 @@ class WC_Subscriptions_Order {
 
 					$dates = array( 'start' => current_time( 'mysql', true ) );
 
+					if ( 0 != $subscription->get_time( 'trial_end' ) ) {
+						$dates['trial_end'] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'trial_end' ) + $new_start_date_offset );
+					}
+
 					if ( 0 != $subscription->get_time( 'next_payment' ) ) {
+
 						if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
-							if ( $subscription->get_time( 'next_payment' ) < current_time( 'timestamp', true ) ) {
+
+							$prior_date = isset( $dates['trial_end'] ) ? $dates['trial_end'] : $dates['start'];
+
+							if ( $subscription->get_time( 'next_payment' ) < strtotime( $prior_date ) ) {
 
 								foreach ( $subscription->get_items() as $item ) {
 									$product_id = wcs_get_canonical_product_id( $item );
@@ -447,20 +455,6 @@ class WC_Subscriptions_Order {
 
 					if ( 0 != $subscription->get_time( 'end' ) ) {
 						$dates['end'] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'end' ) + $new_start_date_offset );
-					}
-
-					if ( 0 != $subscription->get_time( 'trial_end' ) ) {
-
-						$trial_end = $subscription->get_time( 'trial_end' ) + $new_start_date_offset;
-
-						//if the next payment date isn't getting updated (either sync or not set) make sure the new trial date doesn't exceed the original/unchanged next payment date.
-						if ( ! isset( $dates['next_payment'] ) && $trial_end > $subscription->get_time( 'next_payment' ) ) {
-							$dates['trial_end'] = $subscription->get_date( 'next_payment' );
-						} else if ( isset( $dates['next_payment'] ) && $trial_end > strtotime( $dates['next_payment'] . ' GMT' ) ) {
-							$dates['trial_end'] = $dates['next_payment'];
-						} else {
-							$dates['trial_end'] = gmdate( 'Y-m-d H:i:s', $trial_end );
-						}
 					}
 
 					$subscription->update_dates( $dates );
