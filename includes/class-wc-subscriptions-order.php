@@ -423,19 +423,41 @@ class WC_Subscriptions_Order {
 				// Do we need to activate a subscription?
 				if ( $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( 'active' ) ) {
 
-					$new_start_date_offset = current_time( 'timestamp', true ) - strtotime( $subscription->get_date( 'start' ) . ' GMT' );
+					$new_start_date_offset = current_time( 'timestamp', true ) - $subscription->get_time( 'start' );
 
-					$dates = array(
-						'start'        => current_time( 'mysql', true ),
-						'next_payment' => gmdate( 'Y-m-d H:i:s', strtotime( $subscription->get_date( 'next_payment' ) . ' GMT' ) + $new_start_date_offset ),
-					);
+					$dates = array( 'start' => current_time( 'mysql', true ) );
 
-					if ( 0 != strtotime( $subscription->get_date( 'end' ) . ' GMT' ) ) {
-						$dates['end'] = gmdate( 'Y-m-d H:i:s', strtotime( $subscription->get_date( 'end' ) . ' GMT' ) + $new_start_date_offset );
+					if ( 0 != $subscription->get_time( 'next_payment' ) ) {
+
+						$next_payment = $subscription->get_time( 'next_payment' ) + $new_start_date_offset;
+
+						if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) && $next_payment > current_time( 'timestamp', true ) ) {
+
+							foreach ( $subscription->get_items() as $item ) {
+
+								$product_id = wcs_get_canonical_product_id( $item );
+
+								if ( WC_Subscriptions_Synchroniser::is_product_synced( $product_id ) ) {
+									$next_payment = WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product_id, 'timestamp' );
+									break;
+								}
+							}
+						}
+
+						$dates['next_payment'] = gmdate( 'Y-m-d H:i:s', $next_payment );
 					}
 
-					if ( 0 != strtotime( $subscription->get_date( 'trial_end' ) . ' GMT' ) ) {
-						$dates['trial_end'] = gmdate( 'Y-m-d H:i:s', strtotime( $subscription->get_date( 'trial_end' ) . ' GMT' ) + $new_start_date_offset );
+					if ( 0 != $subscription->get_time( 'end' ) ) {
+						$dates['end'] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'end' ) + $new_start_date_offset );
+					}
+
+					if ( 0 != $subscription->get_time( 'trial_end' ) ) {
+
+						$trial_end = $subscription->get_time( 'trial_end' ) + $new_start_date_offset;
+
+						if ( isset( $dates['next_payment'] ) && ( $subscription->get_time( 'next_payment' ) + $new_start_date_offset ) > $trial_end ) {
+							$dates['trial_end'] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'trial_end' ) + $new_start_date_offset );
+						}
 					}
 
 					$subscription->update_dates( $dates );
