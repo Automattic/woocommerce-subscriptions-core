@@ -49,7 +49,7 @@ function wcs_maybe_make_user_inactive( $user_id ) {
  * @return WP_User The user with the new role.
  * @since 2.0
  */
-function wcs_update_users_role( $user_id, $role_new = '' ) {
+function wcs_update_users_role( $user_id, $role_new ) {
 
 	$user = new WP_User( $user_id );
 
@@ -75,7 +75,10 @@ function wcs_update_users_role( $user_id, $role_new = '' ) {
 		$role_new = $default_cancelled_role;
 	}
 
-	$user->remove_role( $role_old );
+	if ( ! empty( $role_old ) ) {
+		$user->remove_role( $role_old );
+	}
+
 	$user->add_role( $role_new );
 
 	do_action( 'woocommerce_subscriptions_updated_users_role', $role_new, $user, $role_old );
