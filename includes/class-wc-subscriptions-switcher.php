@@ -500,7 +500,7 @@ class WC_Subscriptions_Switcher {
 
 		if ( false !== $switches ) {
 			foreach ( $switches as $switch_details ) {
-				update_post_meta( $order_id, '_subscription_switch', $switch_details['subscription_id'] );
+				add_post_meta( $order_id, '_subscription_switch', $switch_details['subscription_id'] );
 			}
 		}
 	}
