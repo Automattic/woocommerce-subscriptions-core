@@ -846,6 +846,7 @@ class WC_Subscriptions_Switcher {
 	 * @since 1.4
 	 */
 	public static function validate_switch_request( $is_valid, $product_id, $quantity, $variation_id = '' ) {
+
 		$error_message = '';
 
 		try {
