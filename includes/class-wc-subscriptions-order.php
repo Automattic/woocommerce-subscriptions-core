@@ -456,6 +456,8 @@ class WC_Subscriptions_Order {
 						//if the next payment date isn't getting updated (either sync or not set) make sure the new trial date doesn't exceed the original/unchanged next payment date.
 						if ( ! isset( $dates['next_payment'] ) && $trial_end > $subscription->get_time( 'next_payment' ) ) {
 							$dates['trial_end'] = $subscription->get_date( 'next_payment' );
+						} else if ( isset( $dates['next_payment'] ) && $trial_end > strtotime( $dates['next_payment'] . ' GMT' ) ) {
+							$dates['trial_end'] = $dates['next_payment'];
 						} else {
 							$dates['trial_end'] = gmdate( 'Y-m-d H:i:s', $trial_end );
 						}
