@@ -429,22 +429,20 @@ class WC_Subscriptions_Order {
 
 					if ( 0 != $subscription->get_time( 'next_payment' ) ) {
 
-						$next_payment = $subscription->get_time( 'next_payment' ) + $new_start_date_offset;
+						if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
+							if ( $subscription->get_time( 'next_payment' ) < current_time( 'timestamp', true ) ) {
+								foreach ( $subscription->get_items() as $item ) {
+									$product_id = wcs_get_canonical_product_id( $item );
 
-						if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) && $next_payment > current_time( 'timestamp', true ) ) {
-
-							foreach ( $subscription->get_items() as $item ) {
-
-								$product_id = wcs_get_canonical_product_id( $item );
-
-								if ( WC_Subscriptions_Synchroniser::is_product_synced( $product_id ) ) {
-									$next_payment = WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product_id, 'timestamp' );
-									break;
+									if ( WC_Subscriptions_Synchroniser::is_product_synced( $product_id ) ) {
+										$dates['next_payment'] = WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product_id );
+										break;
+									}
 								}
 							}
+						} else {
+							$dates['next_payment'] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'next_payment' ) + $new_start_date_offset );
 						}
-
-						$dates['next_payment'] = gmdate( 'Y-m-d H:i:s', $next_payment );
 					}
 
 					if ( 0 != $subscription->get_time( 'end' ) ) {
