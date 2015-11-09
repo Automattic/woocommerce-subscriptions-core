@@ -100,6 +100,61 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			exit;
 		}
 
+		if ( isset( $transaction_details['ipn_track_id'] ) ) {
+
+			// Make sure the IPN request has not already been handled
+			$handled_ipn_requests = get_post_meta( $subscription->id, '_paypal_ipn_tracking_ids', true );
+
+			if ( empty( $handled_ipn_requests ) ) {
+				$handled_ipn_requests = array();
+			}
+
+			// The 'ipn_track_id' is not a unique ID and is shared between different transaction types, so create a unique ID by prepending the transaction type
+			$ipn_id = $transaction_details['txn_type'] . '_' . $transaction_details['ipn_track_id'];
+
+			if ( in_array( $ipn_id, $handled_ipn_requests ) ) {
+				WC_Gateway_Paypal::log( 'Subscription IPN Error: IPN ' . $ipn_id . ' message has already been correctly handled.' );
+				exit;
+			}
+		}
+
+		if ( isset( $transaction_details['txn_id'] ) ) {
+
+			// Make sure the IPN request has not already been handled
+			$handled_transactions = get_post_meta( $subscription->id, '_paypal_transaction_ids', true );
+
+			if ( empty( $handled_transactions ) ) {
+				$handled_transactions = array();
+			}
+
+			$transaction_id = $transaction_details['txn_id'];
+
+			if ( isset( $transaction_details['txn_type'] ) ) {
+				$transaction_id .= '_' . $transaction_details['txn_type'];
+			}
+
+			// The same transaction ID is used for different payment statuses, so make sure we handle it only once. See: http://stackoverflow.com/questions/9240235/paypal-ipn-unique-identifier
+			if ( isset( $transaction_details['payment_status'] ) ) {
+				$transaction_id .= '_' . $transaction_details['payment_status'];
+			}
+
+			if ( in_array( $transaction_id, $handled_transactions ) ) {
+				WC_Gateway_Paypal::log( 'Subscription IPN Error: transaction ' . $transaction_id . ' has already been correctly handled.' );
+				exit;
+			}
+		}
+
+		// Store the transaction IDs to avoid handling requests duplicated by PayPal
+		if ( isset( $transaction_details['ipn_track_id'] ) ) {
+			$handled_ipn_requests[] = $ipn_id;
+			update_post_meta( $subscription->id, '_paypal_ipn_tracking_ids', $handled_ipn_requests );
+		}
+
+		if ( isset( $transaction_details['txn_id'] ) ) {
+			$handled_transactions[] = $transaction_id;
+			update_post_meta( $subscription->id, '_paypal_transaction_ids', $handled_transactions );
+		}
+
 		$is_renewal_sign_up_after_failure = false;
 
 		// If the invoice ID doesn't match the default invoice ID and contains the string '-wcsfrp-', the IPN is for a subscription payment to fix up a failed payment
@@ -147,50 +202,6 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 				WC_Gateway_Paypal::log( 'IPN ignored, recurring payment method has changed.' );
 				exit;
 
-			}
-		}
-
-		if ( isset( $transaction_details['ipn_track_id'] ) ) {
-
-			// Make sure the IPN request has not already been handled
-			$handled_ipn_requests = get_post_meta( $subscription->id, '_paypal_ipn_tracking_ids', true );
-
-			if ( empty( $handled_ipn_requests ) ) {
-				$handled_ipn_requests = array();
-			}
-
-			// The 'ipn_track_id' is not a unique ID and is shared between different transaction types, so create a unique ID by prepending the transaction type
-			$ipn_id = $transaction_details['txn_type'] . '_' . $transaction_details['ipn_track_id'];
-
-			if ( in_array( $ipn_id, $handled_ipn_requests ) ) {
-				WC_Gateway_Paypal::log( 'Subscription IPN Error: IPN ' . $ipn_id . ' message has already been correctly handled.' );
-				exit;
-			}
-		}
-
-		if ( isset( $transaction_details['txn_id'] ) ) {
-
-			// Make sure the IPN request has not already been handled
-			$handled_transactions = get_post_meta( $subscription->id, '_paypal_transaction_ids', true );
-
-			if ( empty( $handled_transactions ) ) {
-				$handled_transactions = array();
-			}
-
-			$transaction_id = $transaction_details['txn_id'];
-
-			if ( isset( $transaction_details['txn_type'] ) ) {
-				$transaction_id .= '_' . $transaction_details['txn_type'];
-			}
-
-			// The same transaction ID is used for different payment statuses, so make sure we handle it only once. See: http://stackoverflow.com/questions/9240235/paypal-ipn-unique-identifier
-			if ( isset( $transaction_details['payment_status'] ) ) {
-				$transaction_id .= '_' . $transaction_details['payment_status'];
-			}
-
-			if ( in_array( $transaction_id, $handled_transactions ) ) {
-				WC_Gateway_Paypal::log( 'Subscription IPN Error: transaction ' . $transaction_id . ' has already been correctly handled.' );
-				exit;
 			}
 		}
 
@@ -454,17 +465,6 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 				}
 
 				break;
-		}
-
-		// Store the transaction IDs to avoid handling requests duplicated by PayPal
-		if ( isset( $transaction_details['ipn_track_id'] ) ) {
-			$handled_ipn_requests[] = $ipn_id;
-			update_post_meta( $subscription->id, '_paypal_ipn_tracking_ids', $handled_ipn_requests );
-		}
-
-		if ( isset( $transaction_details['txn_id'] ) ) {
-			$handled_transactions[] = $transaction_id;
-			update_post_meta( $subscription->id, '_paypal_transaction_ids', $handled_transactions );
 		}
 
 		// Log completion
