@@ -116,6 +116,7 @@ class WCS_Action_Deprecator extends WCS_Hook_Deprecator {
 			case 'cancelled_subscription' :
 			case 'reactivated_subscription' :
 			case 'subscription_expired' :
+			case 'subscription_end_of_prepaid_term' :
 				$subscription  = $new_callback_args[0];
 				do_action( $old_hook, $subscription->get_user_id(), wcs_get_old_subscription_key( $subscription ) );
 				break;
