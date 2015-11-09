@@ -1142,7 +1142,7 @@ class WC_Subscriptions_Switcher {
 
 				WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['upgraded_or_downgraded'] = 'upgraded';
 
-			} elseif ( $old_price_per_day > $new_price_per_day && $new_price_per_day > 0 ) {
+			} elseif ( $old_price_per_day > $new_price_per_day && $new_price_per_day >= 0 ) {
 
 				WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['upgraded_or_downgraded'] = 'downgraded';
 
