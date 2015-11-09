@@ -132,9 +132,6 @@ class WC_Subscriptions_Manager {
 		}
 
 		$subscription->update_status( 'expired' );
-
-		// Backward compatibility
-		do_action( 'subscription_expired', $subscription->get_user_id(), wcs_get_old_subscription_key( $subscription ) );
 	}
 
 	/**
@@ -153,9 +150,6 @@ class WC_Subscriptions_Manager {
 		}
 
 		$subscription->update_status( 'cancelled' );
-
-		// Backward compatibility
-		do_action( 'subscription_end_of_prepaid_term', $subscription->get_user_id(), wcs_get_old_subscription_key( $subscription ) ); // Backward compatibility
 	}
 
 	/**
@@ -173,8 +167,7 @@ class WC_Subscriptions_Manager {
 			$subscription = wcs_get_subscription( $subscription_id );
 		}
 
-		// Backward compatibility
-		do_action( 'subscription_trial_end', $subscription->get_user_id(), wcs_get_old_subscription_key( $subscription ) ); // Backward compatibility
+		do_action( 'woocommerce_subscription_trial_end', $subscription->get_user_id(), $subscription_id );
 	}
 
 	/**
