@@ -574,7 +574,7 @@ class WC_Subscriptions_Synchroniser {
 		if ( 'year' == $period || 'month' == $period ) {
 
 			// First make sure the day is in the past so that we don't end up jumping a month or year because of a few hours difference between now and the billing date
-			if ( gmdate( 'j', $first_payment_timestamp ) < gmdate( 'j' ) && gmdate( 'n', $first_payment_timestamp ) <= gmdate( 'n' ) && gmdate( 'Y', $first_payment_timestamp ) <= gmdate( 'Y' ) ) {
+			if ( gmdate( 'Ymd', $first_payment_timestamp ) < gmdate( 'Ymd' ) ) {
 				$i = 1;
 				// Then make sure the date and time of the payment is in the future
 				while ( ( $first_payment_timestamp < gmdate( 'U' ) || $first_payment_timestamp < $from_timestamp ) && $i < 30 ) {
