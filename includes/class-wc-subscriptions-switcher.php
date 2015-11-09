@@ -186,7 +186,7 @@ class WC_Subscriptions_Switcher {
 						}
 
 						// If the product is limited
-						if ( 'any' == $limitation || $limitation == $subscription->get_status() || ( 'active' == $limitation && 'on-hold' == $subscription->get_status() ) ) {
+						if ( 'any' == $limitation || $subscription->has_status( $limitation ) || ( 'active' == $limitation && $subscription->has_status( 'on-hold' ) ) ) {
 
 							// If switching is enabled for this product type, initiate the auto-switch process
 							if ( self::is_product_of_switchable_type( $product ) ) {
