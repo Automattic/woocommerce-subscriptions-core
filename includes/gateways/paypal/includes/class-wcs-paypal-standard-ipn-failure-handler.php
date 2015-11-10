@@ -31,6 +31,22 @@ class WCS_PayPal_Standard_IPN_Failure_Handler {
 	}
 
 	/**
+	 * On PHP shutdown log any unexpected failures from PayPal IPN processing
+	 *
+	 * @since 2.0.6
+	 */
+	public static function catch_unexpected_shutdown() {
+
+		if ( ! empty( self::$transaction_details ) && $error = error_get_last() ) {
+			if ( E_ERROR == $error['type'] ) {
+				do_action( 'wcs_paypal_ipn_process_failure', self::$transaction_details, $error );
+			}
+		}
+
+		self::$transaction_details = null;
+	}
+
+	/**
 	 * Log any fatal errors occurred while Subscriptions is trying to process IPN messages
 	 *
 	 * @since 2.0.6
