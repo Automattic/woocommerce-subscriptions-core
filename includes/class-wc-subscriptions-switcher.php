@@ -188,26 +188,43 @@ class WC_Subscriptions_Switcher {
 						// If the product is limited
 						if ( 'any' == $limitation || $subscription->has_status( $limitation ) || ( 'active' == $limitation && $subscription->has_status( 'on-hold' ) ) ) {
 
+							$subscribed_notice = __( 'You have already subscribed to this product and it is limited to one per customer. You can not purchase the product again.', 'woocommerce-subscriptions' );
+
 							// If switching is enabled for this product type, initiate the auto-switch process
 							if ( self::is_product_of_switchable_type( $product ) ) {
 
-								$product_id = ( $subscription_product_id ) ? $subscription_product_id : $product->id;
+								// Don't initiate auto-switching when the subscription requires payment
+								if ( $subscription->needs_payment() ) {
 
-								// Get the matching item
-								foreach ( $subscription->get_items() as $line_item_id => $line_item ) {
-									if ( $line_item['product_id'] == $product_id || $line_item['variation_id'] == $product_id ) {
-										$item_id = $line_item_id;
-										$item    = $line_item;
-										break;
+									$last_order = $subscription->get_last_order( 'all' );
+
+									if ( $last_order->needs_payment() ) {
+										// translators: 1$: is the "You have already subscribed to this product" notice, 2$-4$: opening/closing link tags, 3$: an order number
+										$subscribed_notice = sprintf( __( '%1$s Complete payment on %2$sOrder %3$s%4$s to be able to change your subscription.', 'woocommerce-subscriptions' ), $subscribed_notice, sprintf( '<a href="%s">', $last_order->get_checkout_payment_url() ), $last_order->get_order_number(), '</a>' );
 									}
+
+									WC_Subscriptions::add_notice( $subscribed_notice, 'notice' );
+									break;
+
+								} else {
+
+									$product_id = ( $subscription_product_id ) ? $subscription_product_id : $product->id;
+
+									// Get the matching item
+									foreach ( $subscription->get_items() as $line_item_id => $line_item ) {
+										if ( $line_item['product_id'] == $product_id || $line_item['variation_id'] == $product_id ) {
+											$item_id = $line_item_id;
+											$item    = $line_item;
+											break;
+										}
+									}
+
+									wp_redirect( add_query_arg( 'auto-switch', 'true', self::get_switch_url( $item_id, $item, $subscription ) ) );
+									exit;
 								}
-
-								wp_redirect( add_query_arg( 'auto-switch', 'true', self::get_switch_url( $item_id, $item, $subscription ) ) );
-								exit;
-
 							} else {
 
-								WC_Subscriptions::add_notice( __( 'You have already subscribed to this product and it is limited to one per customer. You can not purchase the product again.', 'woocommerce-subscriptions' ), 'notice' );
+								WC_Subscriptions::add_notice( $subscribed_notice, 'notice' );
 								break;
 							}
 						}
