@@ -22,15 +22,6 @@ class WCS_PayPal_Standard_IPN_Failure_Handler {
 	public static $log = null;
 
 	/**
-	 * Initialise fialure handler related admin hooks and filters
-	 *
-	 * @since 2.0.6
-	 */
-	public static function init() {
-
-	}
-
-	/**
 	 * On PHP shutdown log any unexpected failures from PayPal IPN processing
 	 *
 	 * @since 2.0.6
