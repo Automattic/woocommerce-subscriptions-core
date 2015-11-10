@@ -169,7 +169,7 @@ class WCS_PayPal_Admin {
 		}
 
 		if ( ! empty( $notices ) ) {
-			include_once( __DIR__ . '/../templates/admin-notices.php' );
+			include_once( dirname( __FILE__ ) . '/../templates/admin-notices.php' );
 		}
 	}
 
