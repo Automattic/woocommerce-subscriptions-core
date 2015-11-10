@@ -41,9 +41,6 @@ class WC_Subscriptions_Manager {
 		// Expire a user's subscription
 		add_action( 'woocommerce_scheduled_subscription_end_of_prepaid_term', __CLASS__ . '::subscription_end_of_prepaid_term', 10, 1 );
 
-		// Subscription Trial End
-		add_action( 'woocommerce_scheduled_subscription_trial_end', __CLASS__ . '::subscription_trial_end', 0, 2 );
-
 		// Check if the subscription needs to use the failed payment process to repair its status
 		add_action( 'woocommerce_scheduled_subscription_payment', __CLASS__ . '::maybe_process_failed_renewal_for_repair', 0, 1 );
 
@@ -150,24 +147,6 @@ class WC_Subscriptions_Manager {
 		}
 
 		$subscription->update_status( 'cancelled' );
-	}
-
-	/**
-	 * Fires when the trial period for a subscription has completed.
-	 *
-	 * @param int $subscription_id The ID of a 'shop_subscription' post
-	 * @since 1.0
-	 */
-	public static function subscription_trial_end( $subscription_id, $deprecated = null ) {
-
-		if ( null !== $deprecated ) {
-			_deprecated_argument( __METHOD__, '2.0', 'The subscription key is deprecated. Use a subscription post ID' );
-			$subscription = wcs_get_subscription_from_key( $deprecated );
-		} else {
-			$subscription = wcs_get_subscription( $subscription_id );
-		}
-
-		do_action( 'woocommerce_subscription_trial_end', $subscription->get_user_id(), $subscription_id );
 	}
 
 	/**
@@ -2352,6 +2331,17 @@ class WC_Subscriptions_Manager {
 				do_action( 'rescheduled_subscription_payment', $user_id, $subscription_key );
 			}
 		}
+	}
+
+	/**
+	 * Fires when the trial period for a subscription has completed.
+	 *
+	 * @param int $subscription_id The ID of a 'shop_subscription' post
+	 * @since 1.0
+	 * @deprecated 2.0
+	 */
+	public static function subscription_trial_end( $subscription_id, $deprecated = null ) {
+		_deprecated_function( __METHOD__, '2.0' );
 	}
 }
 
