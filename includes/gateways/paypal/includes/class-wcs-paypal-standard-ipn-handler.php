@@ -80,6 +80,20 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 		try {
 			WCS_PayPal_Standard_IPN_Failure_Handler::attach( $transaction_details );
 
+			$transient_key = 'wcs_paypal_ipn_error_occurred';
+			$api_username  = WCS_PayPal::get_option( 'api_username' );
+
+			// try to enable debug logging if errors were previously found
+			if ( get_transient( $transient_key ) == $api_username ) {
+				if ( ! defined( 'WP_DEBUG' ) ) {
+					define( 'WP_DEBUG', true );
+				}
+
+				if ( ! defined( 'WP_DEBUG_LOG' ) ) {
+					define( 'WP_DEBUG_LOG', true );
+				}
+			}
+
 			// Get the subscription ID and order_key with backward compatibility
 			$subscription_id_and_key = self::get_order_id_and_key( $transaction_details, 'shop_subscription' );
 			$subscription            = wcs_get_subscription( $subscription_id_and_key['order_id'] );
