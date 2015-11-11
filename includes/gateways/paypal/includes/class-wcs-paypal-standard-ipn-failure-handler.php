@@ -2,7 +2,7 @@
 /**
  * PayPal Standard IPN Failure Handler
  *
- * Introduces a new handler to take care of failing IPN requests 
+ * Introduces a new handler to take care of failing IPN requests
  *
  * @package		WooCommerce Subscriptions
  * @subpackage	Gateways/PayPal
@@ -89,7 +89,6 @@ class WCS_PayPal_Standard_IPN_Failure_Handler {
 			if ( ! empty( $error['trace'] ) ) {
 				self::log_to_failure( sprintf( 'Stack trace: %s', PHP_EOL . $error['trace'] ) );
 			}
-
 		}
 
 		set_transient( 'wcs_paypal_ipn_error_occurred', WCS_PayPal::get_option( 'api_username' ), WEEK_IN_SECONDS );
@@ -122,7 +121,7 @@ class WCS_PayPal_Standard_IPN_Failure_Handler {
 			'message' => $exception->getMessage(),
 			'file'    => $exception->getFile(),
 			'line'    => $exception->getLine(),
-			'trace'   => $exception->getTraceAsString()
+			'trace'   => $exception->getTraceAsString(),
 		);
 
 		if ( empty( $error['message'] ) ) {
