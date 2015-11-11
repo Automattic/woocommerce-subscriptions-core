@@ -187,7 +187,7 @@ class WCS_Admin_Post_Types {
 	public function parse_bulk_actions() {
 
 		// We only want to deal with shop_subscriptions. In case any other CPTs have an 'active' action
-		if ( ! isset( $_REQUEST['post_type'] ) || 'shop_subscription' !== $_REQUEST['post_type'] || ! isset( $_REQUEST['action'] ) ) {
+		if ( ! isset( $_REQUEST['post_type'] ) || 'shop_subscription' !== $_REQUEST['post_type'] || ! isset( $_REQUEST['post'] ) ) {
 			return;
 		}
 
@@ -253,7 +253,7 @@ class WCS_Admin_Post_Types {
 		}
 
 		$sendback_args['changed'] = $changed;
-		$sendback = add_query_arg( $sendback_args, '' );
+		$sendback = add_query_arg( $sendback_args, wp_get_referer() ? wp_get_referer() : '' );
 		wp_redirect( $sendback );
 
 		exit();
