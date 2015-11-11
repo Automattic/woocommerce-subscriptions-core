@@ -25,7 +25,6 @@ require_once( 'includes/class-wcs-paypal-standard-change-payment-method.php' );
 require_once( 'includes/admin/class-wcs-paypal-admin.php' );
 require_once( 'includes/admin/class-wcs-paypal-change-payment-method-admin.php' );
 require_once( 'includes/deprecated/class-wc-paypal-standard-subscriptions.php' );
-require_once( 'includes/class-wcs-paypal-standard-ipn-failure-handler.php' );
 
 class WCS_PayPal {
 
