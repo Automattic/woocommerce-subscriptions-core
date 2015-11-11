@@ -517,7 +517,7 @@ class WC_Subscriptions_Switcher {
 
 		if ( false !== $switches ) {
 			foreach ( $switches as $switch_details ) {
-				update_post_meta( $order_id, '_subscription_switch', $switch_details['subscription_id'] );
+				add_post_meta( $order_id, '_subscription_switch', $switch_details['subscription_id'] );
 			}
 		}
 	}
@@ -1412,9 +1412,21 @@ class WC_Subscriptions_Switcher {
 	public static function subscription_switch_autocomplete( $new_order_status, $order_id ) {
 
 		if ( 'processing' == $new_order_status && wcs_order_contains_switch( $order_id ) ) {
-			$order = wc_get_order( $order_id );
-			if ( 1 == count( $order->get_items() ) && 0 == $order->get_total() ) { // Can't use $order->get_item_count() because it takes quantity into account
-				$new_order_status = 'completed';
+			$order        = wc_get_order( $order_id );
+			$all_switched = true;
+
+			if ( 0 == $order->get_total() ) {
+
+				foreach ( $order->get_items() as $item ) {
+					if ( ! isset( $item['switched_subscription_price_prorated'] ) ) {
+						$all_switched = false;
+						break;
+					}
+				}
+
+				if ( $all_switched || 1 == count( $order->get_items() ) ) {
+					$new_order_status = 'completed';
+				}
 			}
 		}
 
