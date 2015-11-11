@@ -19,6 +19,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
+require_once( 'class-wcs-paypal-standard-ipn-failure-handler.php' );
+
 class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 	/** @var Array transaction types this class can handle */
@@ -76,6 +78,8 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 	protected function process_ipn_request( $transaction_details ) {
 
 		try {
+			WCS_PayPal_Standard_IPN_Failure_Handler::attach( $transaction_details );
+
 			// Get the subscription ID and order_key with backward compatibility
 			$subscription_id_and_key = self::get_order_id_and_key( $transaction_details, 'shop_subscription' );
 			$subscription            = wcs_get_subscription( $subscription_id_and_key['order_id'] );

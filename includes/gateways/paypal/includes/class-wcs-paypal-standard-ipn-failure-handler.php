@@ -22,6 +22,21 @@ class WCS_PayPal_Standard_IPN_Failure_Handler {
 	public static $log = null;
 
 	/**
+	 * Attaches all IPN failure handler related hooks and filters and also sets logging to enabled.
+	 *
+	 * @since 2.0.6
+	 * @param array $transaction_details
+	 */
+	public static function attach( $transaction_details ) {
+		self::$transaction_details = $transaction_details;
+
+		WC_Gateway_Paypal::$log_enabled = true;
+
+		add_action( 'wcs_paypal_ipn_process_failure', __CLASS__ . '::log_ipn_errors', 10, 2 );
+		add_action( 'shutdown', __CLASS__ . '::catch_unexpected_shutdown' );
+	}
+
+	/**
 	 * On PHP shutdown log any unexpected failures from PayPal IPN processing
 	 *
 	 * @since 2.0.6
