@@ -80,22 +80,28 @@ class WCS_PayPal_Standard_IPN_Failure_Handler {
 		// we want to make sure the ipn error admin notice is always displayed when a new error occurs
 		delete_option( 'wcs_fatal_error_handling_ipn_ignored' );
 
+		self::log_to_failure( sprintf( 'Subscription transaction details: %s', print_r( $transaction_details, true ) ) );
+
+		if ( ! empty( $error ) ) {
+			update_option( 'wcs_fatal_error_handling_ipn', $error['message'] );
+			self::log_to_failure( sprintf( __( 'Unexcepted shutdown when processing subscription IPN messages. PHP Fatal error %s in %s on line %s.', 'woocommerce-subscriptions' ), $error['message'], $error['file'], $error['line'] ) );
+		}
+
+		set_transient( 'wcs_paypal_ipn_error_occurred', WCS_PayPal::get_option( 'api_username' ), WEEK_IN_SECONDS );
+	}
+
+	/**
+	 * Log any unexpected fatal errors to wcs-ipn-failures log file
+	 *
+	 * @since 2.0.6
+	 * @param string $message
+	 */
+	public static function log_to_failure( $message ) {
+
 		if ( empty( self::$log ) ) {
 			self::$log = new WC_Logger();
 		}
 
-		self::$log->add( 'wcs-paypal', sprintf( 'Subscription transaction details: %s', print_r( $transaction_details, true ) ) );
-		$message = get_option( 'wcs_fatal_error_handling_ipn', '' );
-
-		if ( ! empty( $message ) ) {
-			self::$log->add( 'wcs-paypal', sprintf( 'Subscription exception caught: %s', $message ) );
-			WC_Gateway_PayPal::log( $message );
-		}
-
-		if ( ! empty( $error ) ) {
-			self::$log->add( 'wcs-paypal', sprintf( __( 'Unexcepted shutdown when processing subscription IPN messages. PHP Fatal error %s in %s on line %s.', 'woocommerce-subscriptions' ), $error['message'], $error['file'], $error['line'] ) );
-		}
+		self::$log->add( 'wcs-ipn-failures', $message );
 	}
 }
-
-WCS_PayPal_Standard_IPN_Failure_Handler::init();
