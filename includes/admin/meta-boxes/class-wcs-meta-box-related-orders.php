@@ -82,7 +82,6 @@ class WCS_Meta_Box_Related_Orders {
 				$subscription->relationship = _x( 'Resubscribed Subscription', 'relation to order', 'woocommerce-subscriptions' );
 				$orders[] = $subscription;
 			}
-
 		} else if ( wcs_order_contains_subscription( $post->ID, array( 'resubscribe' ) ) ) {
 			$initial_subscriptions = wcs_get_subscriptions_for_order( $post->ID, array( 'order_type' => array( 'resubscribe' ) ) );
 		}
