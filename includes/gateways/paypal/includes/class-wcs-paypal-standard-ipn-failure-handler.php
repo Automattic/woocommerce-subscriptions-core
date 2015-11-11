@@ -84,7 +84,12 @@ class WCS_PayPal_Standard_IPN_Failure_Handler {
 
 		if ( ! empty( $error ) ) {
 			update_option( 'wcs_fatal_error_handling_ipn', $error['message'] );
-			self::log_to_failure( sprintf( __( 'Unexcepted shutdown when processing subscription IPN messages. PHP Fatal error %s in %s on line %s.', 'woocommerce-subscriptions' ), $error['message'], $error['file'], $error['line'] ) );
+			self::log_to_failure( sprintf( 'Unexcepted shutdown when processing subscription IPN messages. PHP Fatal error %s in %s on line %s.', $error['message'], $error['file'], $error['line'] ) );
+
+			if ( ! empty( $error['trace'] ) ) {
+				self::log_to_failure( sprintf( 'Stack trace: %s', PHP_EOL . $error['trace'] ) );
+			}
+
 		}
 
 		set_transient( 'wcs_paypal_ipn_error_occurred', WCS_PayPal::get_option( 'api_username' ), WEEK_IN_SECONDS );
@@ -116,7 +121,8 @@ class WCS_PayPal_Standard_IPN_Failure_Handler {
 		$error = array(
 			'message' => $exception->getMessage(),
 			'file'    => $exception->getFile(),
-			'line'    => $exception->getLine()
+			'line'    => $exception->getLine(),
+			'trace'   => $exception->getTraceAsString()
 		);
 
 		if ( empty( $error['message'] ) ) {
