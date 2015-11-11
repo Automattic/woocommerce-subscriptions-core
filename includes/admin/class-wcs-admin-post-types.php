@@ -187,13 +187,11 @@ class WCS_Admin_Post_Types {
 	public function parse_bulk_actions() {
 
 		// We only want to deal with shop_subscriptions. In case any other CPTs have an 'active' action
-		if ( ! isset( $_REQUEST['post_type'] ) || 'shop_subscription' !== $_REQUEST['post_type'] ) {
+		if ( ! isset( $_REQUEST['post_type'] ) || 'shop_subscription' !== $_REQUEST['post_type'] || ! isset( $_REQUEST['action'] ) ) {
 			return;
 		}
 
-		$wp_list_table = _get_list_table( 'WP_Posts_List_Table' );
-
-		$action = $wp_list_table->current_action();
+		$action = $_REQUEST['action'];
 
 		switch ( $action ) {
 			case 'active':
