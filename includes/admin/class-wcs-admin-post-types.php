@@ -191,7 +191,13 @@ class WCS_Admin_Post_Types {
 			return;
 		}
 
-		$action = $_REQUEST['action'];
+		$action = '';
+
+		if ( isset( $_REQUEST['action'] ) && -1 != $_REQUEST['action'] ) {
+			$action = $_REQUEST['action'];
+		} else if ( isset( $_REQUEST['action2'] ) && -1 != $_REQUEST['action2'] ) {
+			$action = $_REQUEST['action2'];
+		}
 
 		switch ( $action ) {
 			case 'active':
