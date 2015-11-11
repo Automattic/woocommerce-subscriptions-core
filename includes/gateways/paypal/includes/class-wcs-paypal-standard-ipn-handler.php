@@ -495,7 +495,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 			WC_Gateway_Paypal::log( $log_message );
 		} catch ( Exception $e ) {
-
+			WCS_PayPal_Standard_IPN_Failure_Handler::log_unexpected_exception( $e );
 		}
 
 		// Prevent default IPN handling for subscription txn_types

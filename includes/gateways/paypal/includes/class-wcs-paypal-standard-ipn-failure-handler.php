@@ -104,4 +104,25 @@ class WCS_PayPal_Standard_IPN_Failure_Handler {
 
 		self::$log->add( 'wcs-ipn-failures', $message );
 	}
+
+	/**
+	 * Builds an error array from exception and call @see self::log_ipn_errors() to log unhandled
+	 * exceptions in a separate paypal log.
+	 *
+	 * @since 2.0.6
+	 * @param Exception $exception
+	 */
+	public static function log_unexpected_exception( $exception ) {
+		$error = array(
+			'message' => $exception->getMessage(),
+			'file'    => $exception->getFile(),
+			'line'    => $exception->getLine()
+		);
+
+		if ( empty( $error['message'] ) ) {
+			$error['message'] = 'Unhandled Exception: no message';
+		}
+
+		self::log_ipn_errors( self::$transaction_details, $error );
+	}
 }
