@@ -26,6 +26,9 @@ class WC_Subscriptions_Renewal_Order {
 		add_filter( 'woocommerce_order_status_changed', __CLASS__ . '::maybe_record_subscription_payment', 10, 3 );
 
 		add_filter( 'wcs_renewal_order_created', __CLASS__ . '::add_order_note', 10, 2 );
+
+		// Prevent users from cancelling renewal orders. Needs to be hooked after wc_customer_has_capability()
+		add_filter( 'user_has_cap', __CLASS__ . '::customer_can_not_cancel_renewal_orders', 11, 3 );
 	}
 
 	/* Helper functions */
@@ -125,6 +128,24 @@ class WC_Subscriptions_Renewal_Order {
 		}
 
 		return $renewal_order;
+	}
+
+	/**
+	 * Do not allow customers to cancel renewal orders.
+	 *
+	 * @since 2.0
+	 */
+	public static function customer_can_not_cancel_renewal_orders( $allcaps, $caps, $args ) {
+
+		if ( isset( $caps[0] ) && 'cancel_order' == $caps[0] && isset( $allcaps['cancel_order'] ) ) {
+			$user_id = $args[1];
+			$order   = wc_get_order( $args[2] );
+
+			if ( wcs_order_contains_renewal( $order ) ) {
+				unset( $allcaps['cancel_order'] );
+			}
+		}
+		return $allcaps;
 	}
 
 	/* Deprecated functions */
