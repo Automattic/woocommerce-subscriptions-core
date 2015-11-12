@@ -437,7 +437,7 @@ class WC_Subscriptions_Order {
 
 							$prior_date = isset( $dates['trial_end'] ) ? $dates['trial_end'] : $dates['start'];
 
-							if ( $subscription->get_time( 'next_payment' ) < strtotime( $prior_date ) ) {
+							if ( $subscription->get_time( 'next_payment' ) < wcs_date_to_time( $prior_date ) ) {
 
 								foreach ( $subscription->get_items() as $item ) {
 									$product_id = wcs_get_canonical_product_id( $item );
