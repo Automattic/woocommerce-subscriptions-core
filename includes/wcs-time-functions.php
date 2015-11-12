@@ -566,7 +566,7 @@ function wcs_is_datetime_mysql_format( $time ) {
 function wcs_date_to_time( $date_string ) {
 
 	if ( 0 == $date_string ) {
-		return $date_string;
+		return 0;
 	}
 
 	$date_obj = new DateTime( $date_string, new DateTimeZone( 'UTC' ) );
