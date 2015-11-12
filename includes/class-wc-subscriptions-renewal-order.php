@@ -138,8 +138,7 @@ class WC_Subscriptions_Renewal_Order {
 	public static function customer_can_not_cancel_renewal_orders( $allcaps, $caps, $args ) {
 
 		if ( isset( $caps[0] ) && 'cancel_order' == $caps[0] && isset( $allcaps['cancel_order'] ) ) {
-			$user_id = $args[1];
-			$order   = wc_get_order( $args[2] );
+			$order = wc_get_order( $args[2] );
 
 			if ( wcs_order_contains_renewal( $order ) ) {
 				unset( $allcaps['cancel_order'] );
