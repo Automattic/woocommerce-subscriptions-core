@@ -187,13 +187,17 @@ class WCS_Admin_Post_Types {
 	public function parse_bulk_actions() {
 
 		// We only want to deal with shop_subscriptions. In case any other CPTs have an 'active' action
-		if ( ! isset( $_REQUEST['post_type'] ) || 'shop_subscription' !== $_REQUEST['post_type'] ) {
+		if ( ! isset( $_REQUEST['post_type'] ) || 'shop_subscription' !== $_REQUEST['post_type'] || ! isset( $_REQUEST['post'] ) ) {
 			return;
 		}
 
-		$wp_list_table = _get_list_table( 'WP_Posts_List_Table' );
+		$action = '';
 
-		$action = $wp_list_table->current_action();
+		if ( isset( $_REQUEST['action'] ) && -1 != $_REQUEST['action'] ) {
+			$action = $_REQUEST['action'];
+		} else if ( isset( $_REQUEST['action2'] ) && -1 != $_REQUEST['action2'] ) {
+			$action = $_REQUEST['action2'];
+		}
 
 		switch ( $action ) {
 			case 'active':
@@ -249,8 +253,8 @@ class WCS_Admin_Post_Types {
 		}
 
 		$sendback_args['changed'] = $changed;
-		$sendback = add_query_arg( $sendback_args, '' );
-		wp_redirect( $sendback );
+		$sendback = add_query_arg( $sendback_args, wp_get_referer() ? wp_get_referer() : '' );
+		wp_safe_redirect( esc_url_raw( $sendback ) );
 
 		exit();
 	}
