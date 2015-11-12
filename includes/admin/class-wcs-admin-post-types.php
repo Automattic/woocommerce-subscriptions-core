@@ -254,7 +254,7 @@ class WCS_Admin_Post_Types {
 
 		$sendback_args['changed'] = $changed;
 		$sendback = add_query_arg( $sendback_args, wp_get_referer() ? wp_get_referer() : '' );
-		wp_redirect( $sendback );
+		wp_safe_redirect( esc_url_raw( $sendback ) );
 
 		exit();
 	}
