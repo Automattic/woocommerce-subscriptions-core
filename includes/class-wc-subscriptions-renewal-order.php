@@ -142,9 +142,9 @@ class WC_Subscriptions_Renewal_Order {
 			$order    = wc_get_order( $order_id );
 			$redirect = $_GET['redirect'] ? $_GET['redirect'] : $order->get_cancel_endpoint();
 
-			if ( ! $order->has_status( 'cancelled' ) && wcs_order_contains_renewal( $order ) ) {
+			if ( wcs_order_contains_renewal( $order ) ) {
 
-				wc_add_notice( __( 'You can not cancel renewal orders.', 'woocommerce-subscriptions' ), 'notice' );
+				wc_add_notice( __( 'You can not cancel subscription renewal orders.', 'woocommerce-subscriptions' ), 'notice' );
 
 				wp_safe_redirect( $redirect );
 				exit;
