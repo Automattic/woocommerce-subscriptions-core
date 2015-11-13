@@ -27,8 +27,8 @@ class WC_Subscriptions_Renewal_Order {
 
 		add_filter( 'wcs_renewal_order_created', __CLASS__ . '::add_order_note', 10, 2 );
 
-		// Prevent customers from cancelling renewal orders. Needs to be hooked before WC_Form_Handler::cancel_order()
-		add_filter( 'wp_loaded', __CLASS__ . '::prevent_cancelling_renewal_orders', 10, 3 );
+		// Prevent customers from cancelling renewal orders. Needs to be hooked before WC_Form_Handler::cancel_order() (20)
+		add_filter( 'wp_loaded', __CLASS__ . '::prevent_cancelling_renewal_orders', 19, 3 );
 	}
 
 	/* Helper functions */
@@ -140,14 +140,16 @@ class WC_Subscriptions_Renewal_Order {
 
 			$order_id = absint( $_GET['order_id'] );
 			$order    = wc_get_order( $order_id );
-			$redirect = $_GET['redirect'] ? $_GET['redirect'] : $order->get_cancel_endpoint();
+			$redirect = $_GET['redirect'];
 
 			if ( wcs_order_contains_renewal( $order ) ) {
+				remove_action( 'wp_loaded', 'WC_Form_Handler::cancel_order', 20 );
+				wc_add_notice( __( 'Subscription renewal orders cannot be cancelled.', 'woocommerce-subscriptions' ), 'notice' );
 
-				wc_add_notice( __( 'You can not cancel subscription renewal orders.', 'woocommerce-subscriptions' ), 'notice' );
-
-				wp_safe_redirect( $redirect );
-				exit;
+				if ( $redirect ) {
+					wp_safe_redirect( $redirect );
+					exit;
+				}
 			}
 		}
 	}
