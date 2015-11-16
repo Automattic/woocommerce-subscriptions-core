@@ -138,11 +138,9 @@ class WC_API_Subscriptions extends WC_API_Orders {
 			'fields'      => 'ids',
 		);
 
-		$query_args = $this->merge_query_args( $base_args, $filter );
-
-		$query = $this->query_orders( $query_args );
-
 		$subscriptions = array();
+		$query_args    = array_merge( $base_args, $filter );
+		$query         = $this->query_orders( $query_args );
 
 		foreach ( $query->posts as $subscription_id ) {
 
