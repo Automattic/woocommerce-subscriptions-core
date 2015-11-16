@@ -50,6 +50,7 @@ class WCS_Admin_Post_Types {
 		add_filter( 'post_updated_messages', array( $this, 'post_updated_messages' ) );
 
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_product' ) );
+		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_payment_method' ) );
 	}
 
 
@@ -729,6 +730,34 @@ class WCS_Admin_Post_Types {
 				}
 			}
 
+			if ( ! empty( $_GET['_payment_method'] ) ) {
+
+				$query_vars = array(
+					'post_type'   => 'shop_subscription',
+					'post_status' => 'any',
+					'fields'      => 'ids',
+					'meta_query'  => array(
+						array(
+							'key' => '_payment_method',
+							'value' => $_GET['_payment_method'],
+						),
+					),
+				);
+
+				// If there are already set post restrictions (post__in) apply them to this query
+				if ( isset( $vars['post__in'] ) ) {
+					$query_vars['post__in'] = $vars['post__in'];
+				}
+
+				$subscription_ids = get_posts( $query_vars );
+
+				if ( ! empty( $subscription_ids ) ) {
+					$vars['post__in'] = $subscription_ids;
+				} else {
+					$vars['post__in'] = array( 0 );
+				}
+			}
+
 			// Sorting
 			if ( isset( $vars['orderby'] ) ) {
 				switch ( $vars['orderby'] ) {
@@ -807,6 +836,29 @@ class WCS_Admin_Post_Types {
 		);
 	}
 
+	/**
+	 * Displays the dropdown for the payment method filter.
+	 *
+	 * @since 2.0
+	 */
+	public static function restrict_by_payment_method() {
+		global $typenow;
+
+		if ( 'shop_subscription' !== $typenow ) {
+			return;
+		}
+
+		$selected_gateway_id = ( ! empty( $_GET['_payment_method'] ) ) ? $_GET['_payment_method'] : ''; ?>
+
+		<select class="wcs_payment_method_selector" name="_payment_method" id="_payment_method" class="first">
+			<option value=""><?php esc_html_e( 'Any Payment Method', 'woocommerce-subscriptions' ) ?></option>
+		<?php
+
+		foreach ( WC()->payment_gateways->get_available_payment_gateways() as $gateway_id => $gateway ) {
+			echo '<option value="' . esc_attr( $gateway_id ) . '"' . ( $selected_gateway_id == $gateway_id  ? 'selected' : '' ) . '>' . esc_html( $gateway->title ) . '</option>';
+		}?>
+		</select> <?php
+	}
 }
 
 new WCS_Admin_Post_Types();
