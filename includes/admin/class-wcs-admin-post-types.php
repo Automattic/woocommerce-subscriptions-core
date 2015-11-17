@@ -709,12 +709,10 @@ class WCS_Admin_Post_Types {
 
 			// Filter the orders by the posted customer.
 			if ( isset( $_GET['_customer_user'] ) && $_GET['_customer_user'] > 0 ) {
-				$vars['meta_query'] = array(
-					array(
-						'key'   => '_customer_user',
-						'value' => (int) $_GET['_customer_user'],
-						'compare' => '=',
-					),
+				$vars['meta_query'][] = array(
+					'key'   => '_customer_user',
+					'value' => (int) $_GET['_customer_user'],
+					'compare' => '=',
 				);
 			}
 
@@ -738,7 +736,7 @@ class WCS_Admin_Post_Types {
 					'fields'      => 'ids',
 					'meta_query'  => array(
 						array(
-							'key' => '_payment_method',
+							'key'   => '_payment_method',
 							'value' => $_GET['_payment_method'],
 						),
 					),
