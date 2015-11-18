@@ -222,7 +222,7 @@ class WCS_PayPal {
 						}
 
 						// redirect customer to order received page
-						wp_safe_redirect( esc_url( $redirect_url ) );
+						wp_safe_redirect( esc_url_raw( $redirect_url ) );
 
 					} else {
 
