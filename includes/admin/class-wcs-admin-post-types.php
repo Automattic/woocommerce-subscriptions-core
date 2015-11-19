@@ -730,6 +730,8 @@ class WCS_Admin_Post_Types {
 
 			if ( ! empty( $_GET['_payment_method'] ) ) {
 
+				$payment_gateway_filter = ( 'none' == $_GET['_payment_method'] ) ? '' : $_GET['_payment_method'];
+
 				$query_vars = array(
 					'post_type'   => 'shop_subscription',
 					'post_status' => 'any',
@@ -737,7 +739,7 @@ class WCS_Admin_Post_Types {
 					'meta_query'  => array(
 						array(
 							'key'   => '_payment_method',
-							'value' => $_GET['_payment_method'],
+							'value' => $payment_gateway_filter,
 						),
 					),
 				);
@@ -850,6 +852,7 @@ class WCS_Admin_Post_Types {
 
 		<select class="wcs_payment_method_selector" name="_payment_method" id="_payment_method" class="first">
 			<option value=""><?php esc_html_e( 'Any Payment Method', 'woocommerce-subscriptions' ) ?></option>
+			<option value="none" <?php echo 'none' == $selected_gateway_id ? 'selected' : '' . '>' . esc_html__( 'None', 'woocommerce-subscriptions' ) ?></option>
 		<?php
 
 		foreach ( WC()->payment_gateways->get_available_payment_gateways() as $gateway_id => $gateway ) {
