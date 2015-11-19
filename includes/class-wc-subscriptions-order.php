@@ -423,7 +423,22 @@ class WC_Subscriptions_Order {
 				// Do we need to activate a subscription?
 				if ( $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( 'active' ) ) {
 
-					$subscription->update_dates( array( 'start' => current_time( 'mysql', true ) ) );
+					$new_start_date_offset = current_time( 'timestamp', true ) - strtotime( $subscription->get_date( 'start' ) . ' GMT' );
+
+					$dates = array(
+						'start'        => current_time( 'mysql', true ),
+						'next_payment' => gmdate( 'Y-m-d H:i:s', strtotime( $subscription->get_date( 'next_payment' ) . ' GMT' ) + $new_start_date_offset ),
+					);
+
+					if ( 0 != strtotime( $subscription->get_date( 'end' ) . ' GMT' ) ) {
+						$dates['end'] = gmdate( 'Y-m-d H:i:s', strtotime( $subscription->get_date( 'end' ) . ' GMT' ) + $new_start_date_offset );
+					}
+
+					if ( 0 != strtotime( $subscription->get_date( 'trial_end' ) . ' GMT' ) ) {
+						$dates['trial_end'] = gmdate( 'Y-m-d H:i:s', strtotime( $subscription->get_date( 'trial_end' ) . ' GMT' ) + $new_start_date_offset );
+					}
+
+					$subscription->update_dates( $dates );
 					$subscription->payment_complete();
 					$was_activated = true;
 
