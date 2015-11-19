@@ -342,7 +342,7 @@ class WC_Subscription extends WC_Order {
 						if ( $next_payment < ( gmdate( 'U' ) + 2 * HOUR_IN_SECONDS ) ) { // also accounts for a $next_payment of 0, meaning it's not set
 
 							$next_payment = $this->calculate_date( 'next_payment' );
-							if ( $next_payment >= 0 ) {
+							if ( $next_payment > 0 ) {
 								$this->update_dates( array( 'next_payment' => $next_payment ) );
 							}
 						}
@@ -992,6 +992,7 @@ class WC_Subscription extends WC_Order {
 		// If the subscription has an end date and the next billing period comes after that, return 0
 		if ( 0 != $end_time && ( $next_payment_timestamp + 120 ) > $end_time ) {
 			$next_payment_timestamp = 0;
+			$this->delete_date( 'next_payment' );
 		}
 
 		if ( $next_payment_timestamp > 0 ) {
