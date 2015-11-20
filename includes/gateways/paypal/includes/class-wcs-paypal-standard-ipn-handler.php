@@ -123,7 +123,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			if ( 'in-progress' == get_transient( $ipn_lock_transient_name ) && 'recurring_payment_suspended_due_to_max_failed_payment' !== $transaction_details['txn_type'] ) {
 
 				if ( self::$debug ) {
-					self::$log->add( 'paypal', 'Subscription IPN Error: an older IPN request with ID ' . $ipn_id . ' is still in progress.' );
+					WC_Gateway_Paypal::log( 'Subscription IPN Error: an older IPN request with ID ' . $ipn_id . ' is still in progress.' );
 				}
 
 				// We need to send an error code to make sure PayPal does retry the IPN after our lock expires, in case something is actually going wrong and the server isn't just taking a long time to process the request
@@ -163,11 +163,11 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 		}
 
 		if ( self::$debug ) {
-			self::$log->add( 'paypal', 'Subscription Transaction Type: ' . $transaction_details['txn_type'] );
+			WC_Gateway_Paypal::log( 'Subscription Transaction Type: ' . $transaction_details['txn_type'] );
 		}
 
 		if ( self::$debug ) {
-			self::$log->add( 'paypal', 'Subscription transaction details: ' . print_r( $transaction_details, true ) );
+			WC_Gateway_Paypal::log( 'Subscription transaction details: ' . print_r( $transaction_details, true ) );
 		}
 
 		$is_renewal_sign_up_after_failure = false;
