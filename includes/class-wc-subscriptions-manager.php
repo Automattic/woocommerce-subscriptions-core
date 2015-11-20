@@ -810,9 +810,9 @@ class WC_Subscriptions_Manager {
 		if ( ! empty( $subscriptions ) ) {
 
 			foreach ( $subscriptions as $subscription ) {
-					wp_trash_post( $subscription->id );
-				}
+				wp_trash_post( $subscription->id );
 			}
+		}
 	}
 
 	/**
