@@ -1363,6 +1363,33 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
+	 * Extracting the query from get_related_orders and get_last_order so it can be moved in a cached
+	 * value.
+	 *
+	 * @return array
+	 */
+	public function get_related_orders_query( $id ) {
+		$related_post_ids = get_posts( array(
+			'posts_per_page' => -1,
+			'post_type'      => 'shop_order',
+			'post_status'    => 'any',
+			'fields'         => 'ids',
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+			'meta_query'     => array(
+				array(
+					'key'     => '_subscription_renewal',
+					'compare' => '=',
+					'value'   => $id,
+					'type'    => 'numeric',
+				),
+			),
+		) );
+
+		return $related_post_ids;
+	}
+
+	/**
 	 * Get the related orders for a subscription, including renewal orders and the initial order (if any)
 	 *
 	 * @param string The columns to return, either 'all' or 'ids'
@@ -1375,22 +1402,14 @@ class WC_Subscription extends WC_Order {
 
 		$related_orders = array();
 
-		$related_post_ids = get_posts( array(
-			'posts_per_page' => -1,
-			'post_type'      => 'shop_order',
-			'post_status'    => 'any',
-			'fields'         => 'ids',
-			'orderby'        => 'date',
-			'order'          => 'DESC',
-			'meta_query'     => array(
-				array(
-					'key'     => '_subscription_renewal',
-					'compare' => '=',
-					'value'   => $this->id,
-					'type'    => 'numeric',
-				),
-			),
-		) );
+		if ( null === $this->related ) {
+			$related_post_ids = tlc_transient( 'wcs-related-orders-to-' . $this->id )
+				->updates_with( array( $this, 'get_related_orders_query' ), array( $this->id ) )
+				->get();
+			$this->related = $related_post_ids;
+		} else {
+			$related_post_ids = $this->related;
+		}
 
 		if ( 'all' == $return_fields ) {
 
@@ -1429,22 +1448,14 @@ class WC_Subscription extends WC_Order {
 
 		$last_order = false;
 
-		$renewal_post_ids = get_posts( array(
-			'posts_per_page' => 1,
-			'post_type'      => 'shop_order',
-			'post_status'    => 'any',
-			'fields'         => 'ids',
-			'orderby'        => 'date',
-			'order'          => 'DESC',
-			'meta_query'     => array(
-				array(
-					'key'     => '_subscription_renewal',
-					'compare' => '=',
-					'value'   => $this->id,
-					'type'    => 'numeric',
-				),
-			),
-		) );
+		if ( null === $this->related ) {
+			$renewal_post_ids = tlc_transient( 'wcs-related-orders-to-' . $this->id )
+				->updates_with( array( $this, 'get_related_orders_query' ), array( $this->id ) )
+				->get();
+			$this->related = $renewal_post_ids;
+		} else {
+			$renewal_post_ids = $this->related;
+		}
 
 		// If there are no renewal orders, get the original order (if there is one)
 		if ( empty( $renewal_post_ids ) ) {
