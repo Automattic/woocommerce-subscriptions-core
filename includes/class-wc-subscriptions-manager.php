@@ -51,10 +51,10 @@ class WC_Subscriptions_Manager {
 		add_action( 'wp_trash_post', __CLASS__ . '::maybe_trash_subscription', 10 );
 
 		// When a user is being deleted from the site, via standard WordPress functions, make sure their subscriptions are cancelled
-		add_action( 'delete_user', __CLASS__ . '::cancel_users_subscriptions' );
+		add_action( 'delete_user', __CLASS__ . '::trash_users_subscriptions' );
 
 		// Do the same thing for WordPress networks
-		add_action( 'wpmu_delete_user', __CLASS__ . '::cancel_users_subscriptions_for_network' );
+		add_action( 'wpmu_delete_user', __CLASS__ . '::trash_users_subscriptions_for_network' );
 
 		// make sure a subscription is cancelled before it is trashed/deleted
 		add_action( 'wp_trash_post', __CLASS__ . '::maybe_cancel_subscription', 10, 1 );
@@ -677,7 +677,7 @@ class WC_Subscriptions_Manager {
 
 			foreach ( $subscriptions as $subscription ) {
 				if ( $subscription->can_be_updated_to( 'cancelled' ) ) {
-					$subscription->update_status( 'cancelled', sprintf( __( 'User %d deleted.', 'woocommerce-subscriptions' ), $user_id ) );
+					$subscription->update_status( 'cancelled' );
 				}
 			}
 
@@ -794,6 +794,47 @@ class WC_Subscriptions_Manager {
 
 		if ( 'shop_subscription' == get_post_type( $post_id ) ) {
 			do_action( 'woocommerce_subscription_trashed', $post_id );
+		}
+	}
+
+	/**
+	 * Takes a user ID and trashes any subscriptions that user has.
+	 *
+	 * @param int $user_id The ID of the user whose subscriptions will be trashed
+	 * @since 2.0
+	 */
+	public static function trash_users_subscriptions( $user_id ) {
+
+		$subscriptions = wcs_get_users_subscriptions( $user_id );
+
+		if ( ! empty( $subscriptions ) ) {
+
+			foreach ( $subscriptions as $subscription ) {
+				wp_trash_post( $subscription->id );
+			}
+		}
+	}
+
+	/**
+	 * Takes a user ID and trashes any subscriptions that user has on any site in a WordPress network
+	 *
+	 * @param int $user_id The ID of the user whose subscriptions will be trashed
+	 * @since 2.0
+	 */
+	public static function trash_users_subscriptions_for_network( $user_id ) {
+
+		$sites = get_blogs_of_user( $user_id );
+
+		if ( ! empty( $sites ) ) {
+
+			foreach ( $sites as $site ) {
+
+				switch_to_blog( $site->userblog_id );
+
+				self::trash_users_subscriptions( $user_id );
+
+				restore_current_blog();
+			}
 		}
 	}
 
