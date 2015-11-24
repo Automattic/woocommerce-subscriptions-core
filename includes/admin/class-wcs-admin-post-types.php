@@ -852,7 +852,7 @@ class WCS_Admin_Post_Types {
 
 		<select class="wcs_payment_method_selector" name="_payment_method" id="_payment_method" class="first">
 			<option value=""><?php esc_html_e( 'Any Payment Method', 'woocommerce-subscriptions' ) ?></option>
-			<option value="none" <?php echo 'none' == $selected_gateway_id ? 'selected' : '' . '>' . esc_html__( 'None', 'woocommerce-subscriptions' ) ?></option>
+			<option value="none" <?php echo ( 'none' == $selected_gateway_id ? 'selected' : '' ) . '>' . esc_html__( 'None', 'woocommerce-subscriptions' ) ?></option>
 		<?php
 
 		foreach ( WC()->payment_gateways->get_available_payment_gateways() as $gateway_id => $gateway ) {
