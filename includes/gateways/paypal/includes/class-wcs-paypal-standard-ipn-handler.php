@@ -100,56 +100,6 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			exit;
 		}
 
-		$is_renewal_sign_up_after_failure = false;
-
-		// If the invoice ID doesn't match the default invoice ID and contains the string '-wcsfrp-', the IPN is for a subscription payment to fix up a failed payment
-		if ( in_array( $transaction_details['txn_type'], array( 'subscr_signup', 'subscr_payment' ) ) && false !== strpos( $transaction_details['invoice'], '-wcsfrp-' ) ) {
-
-			$renewal_order = wc_get_order( substr( $transaction_details['invoice'], strrpos( $transaction_details['invoice'], '-' ) + 1 ) );
-
-			// check if the failed signup has been previously recorded
-			if ( $renewal_order->id != get_post_meta( $subscription->id, '_paypal_failed_sign_up_recorded', true ) ) {
-
-				$is_renewal_sign_up_after_failure = true;
-
-			}
-		}
-
-		// If the invoice ID doesn't match the default invoice ID and contains the string '-wcscpm-', the IPN is for a subscription payment method change
-		if ( 'subscr_signup' == $transaction_details['txn_type'] && false !== strpos( $transaction_details['invoice'], '-wcscpm-' ) ) {
-			$is_payment_change = true;
-		} else {
-			$is_payment_change = false;
-		}
-
-		if ( $is_renewal_sign_up_after_failure || $is_payment_change ) {
-
-			// Store the old profile ID on the order (for the first IPN message that comes through)
-			$existing_profile_id = wcs_get_paypal_id( $subscription );
-
-			if ( empty( $existing_profile_id ) || $existing_profile_id !== $transaction_details['subscr_id'] ) {
-				update_post_meta( $subscription->id, '_old_paypal_subscriber_id', $existing_profile_id );
-				update_post_meta( $subscription->id, '_old_payment_method', $subscription->payment_method );
-			}
-		}
-
-		// Ignore IPN messages when the payment method isn't PayPal
-		if ( 'paypal' != $subscription->payment_method ) {
-
-			// The 'recurring_payment_suspended' transaction is actually an Express Checkout transaction type, but PayPal also send it for PayPal Standard Subscriptions suspended by admins at PayPal, so we need to handle it *if* the subscription has PayPal as the payment method, or leave it if the subscription is using a different payment method (because it might be using PayPal Express Checkout or PayPal Digital Goods)
-			if ( 'recurring_payment_suspended' == $transaction_details['txn_type'] ) {
-
-				WC_Gateway_Paypal::log( '"recurring_payment_suspended" IPN ignored: recurring payment method is not "PayPal". Returning to allow another extension to process the IPN, like PayPal Digital Goods.' );
-				return;
-
-			} elseif ( false === $is_renewal_sign_up_after_failure && false === $is_payment_change ) {
-
-				WC_Gateway_Paypal::log( 'IPN ignored, recurring payment method has changed.' );
-				exit;
-
-			}
-		}
-
 		if ( isset( $transaction_details['ipn_track_id'] ) ) {
 
 			// Make sure the IPN request has not already been handled
@@ -166,6 +116,22 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 				WC_Gateway_Paypal::log( 'Subscription IPN Error: IPN ' . $ipn_id . ' message has already been correctly handled.' );
 				exit;
 			}
+
+			// Make sure we're not in the process of handling this IPN request on a server under extreme load and therefore, taking more than a minute to process it (which is the amount of time PayPal allows before resending the IPN request)
+			$ipn_lock_transient_name = 'wcs_pp_' . $ipn_id; // transient names need to be less than 45 characters and the $ipn_id will be around 30 characters, e.g. subscr_payment_5ab4c38e1f39d
+
+			if ( 'in-progress' == get_transient( $ipn_lock_transient_name ) && 'recurring_payment_suspended_due_to_max_failed_payment' !== $transaction_details['txn_type'] ) {
+
+				WC_Gateway_Paypal::log( 'Subscription IPN Error: an older IPN request with ID ' . $ipn_id . ' is still in progress.' );
+
+				// We need to send an error code to make sure PayPal does retry the IPN after our lock expires, in case something is actually going wrong and the server isn't just taking a long time to process the request
+				http_response_code( 503 ); // 503 Service Unavailable: server is currently unavailable (because it is overloaded or down for maintenance).
+				exit;
+			}
+
+			// Set a transient to block IPNs with this transaction ID for the next 5 minutes
+			set_transient( $ipn_lock_transient_name, 'in-progress', apply_filters( 'woocommerce_subscriptions_paypal_ipn_request_lock_time', 5 * MINUTE_IN_SECONDS ) );
+
 		}
 
 		if ( isset( $transaction_details['txn_id'] ) ) {
@@ -191,6 +157,57 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			if ( in_array( $transaction_id, $handled_transactions ) ) {
 				WC_Gateway_Paypal::log( 'Subscription IPN Error: transaction ' . $transaction_id . ' has already been correctly handled.' );
 				exit;
+			}
+		}
+
+		WC_Gateway_Paypal::log( 'Subscription transaction details: ' . print_r( $transaction_details, true ) );
+		WC_Gateway_Paypal::log( 'Subscription Transaction Type: ' . $transaction_details['txn_type'] );
+
+		$is_renewal_sign_up_after_failure = false;
+
+		// If the invoice ID doesn't match the default invoice ID and contains the string '-wcsfrp-', the IPN is for a subscription payment to fix up a failed payment
+		if ( in_array( $transaction_details['txn_type'], array( 'subscr_signup', 'subscr_payment' ) ) && false !== strpos( $transaction_details['invoice'], '-wcsfrp-' ) ) {
+
+			$renewal_order = wc_get_order( substr( $transaction_details['invoice'], strrpos( $transaction_details['invoice'], '-' ) + 1 ) );
+
+			// check if the failed signup has been previously recorded
+			if ( $renewal_order->id != get_post_meta( $subscription->id, '_paypal_failed_sign_up_recorded', true ) ) {
+				$is_renewal_sign_up_after_failure = true;
+			}
+		}
+
+		// If the invoice ID doesn't match the default invoice ID and contains the string '-wcscpm-', the IPN is for a subscription payment method change
+		if ( 'subscr_signup' == $transaction_details['txn_type'] && false !== strpos( $transaction_details['invoice'], '-wcscpm-' ) ) {
+			$is_payment_change = true;
+		} else {
+			$is_payment_change = false;
+		}
+
+		// Ignore IPN messages when the payment method isn't PayPal
+		if ( 'paypal' != $subscription->payment_method ) {
+
+			// The 'recurring_payment_suspended' transaction is actually an Express Checkout transaction type, but PayPal also send it for PayPal Standard Subscriptions suspended by admins at PayPal, so we need to handle it *if* the subscription has PayPal as the payment method, or leave it if the subscription is using a different payment method (because it might be using PayPal Express Checkout or PayPal Digital Goods)
+			if ( 'recurring_payment_suspended' == $transaction_details['txn_type'] ) {
+
+				WC_Gateway_Paypal::log( '"recurring_payment_suspended" IPN ignored: recurring payment method is not "PayPal". Returning to allow another extension to process the IPN, like PayPal Digital Goods.' );
+				return;
+
+			} elseif ( false === $is_renewal_sign_up_after_failure && false === $is_payment_change ) {
+
+				WC_Gateway_Paypal::log( 'IPN ignored, recurring payment method has changed.' );
+				exit;
+
+			}
+		}
+
+		if ( $is_renewal_sign_up_after_failure || $is_payment_change ) {
+
+			// Store the old profile ID on the order (for the first IPN message that comes through)
+			$existing_profile_id = wcs_get_paypal_id( $subscription );
+
+			if ( empty( $existing_profile_id ) || $existing_profile_id !== $transaction_details['subscr_id'] ) {
+				update_post_meta( $subscription->id, '_old_paypal_subscriber_id', $existing_profile_id );
+				update_post_meta( $subscription->id, '_old_payment_method', $subscription->payment_method );
 			}
 		}
 
@@ -465,6 +482,11 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 		if ( isset( $transaction_details['txn_id'] ) ) {
 			$handled_transactions[] = $transaction_id;
 			update_post_meta( $subscription->id, '_paypal_transaction_ids', $handled_transactions );
+		}
+
+		// And delete the transient that's preventing other IPN's being processed
+		if ( isset( $ipn_lock_transient_name ) ) {
+			delete_transient( $ipn_lock_transient_name );
 		}
 
 		// Log completion
