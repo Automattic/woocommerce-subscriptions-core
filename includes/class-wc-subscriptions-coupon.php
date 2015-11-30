@@ -229,7 +229,7 @@ class WC_Subscriptions_Coupon {
 		if ( ! in_array( $coupon->type, array( 'recurring_fee', 'sign_up_fee', 'recurring_percent', 'sign_up_fee_percent' ) ) ) {
 
 			// but make sure there is actually something for the coupon to be applied to (i.e. not a free trial)
-			if ( 0 == WC()->cart->subtotal ) {
+			if ( ( wcs_cart_contains_renewal() || WC_Subscriptions_Cart::cart_contains_subscription() ) && 0 == WC()->cart->subtotal ) {
 				self::$coupon_error = __( 'Sorry, this coupon is only valid for an initial payment and the cart does not require an initial payment.', 'woocommerce-subscriptions' );
 			}
 		} else {
