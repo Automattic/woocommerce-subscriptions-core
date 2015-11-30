@@ -217,7 +217,11 @@ class WCS_PayPal {
 						}
 
 						if ( ! wcs_is_subscription( $order ) ) {
-							self::process_subscription_payment( $order->get_total(), $order );
+
+							if ( $order->needs_payment() ) {
+								self::process_subscription_payment( $order->get_total(), $order );
+							}
+
 							$redirect_url = add_query_arg( 'utm_nooverride', '1', $order->get_checkout_order_received_url() );
 						}
 
