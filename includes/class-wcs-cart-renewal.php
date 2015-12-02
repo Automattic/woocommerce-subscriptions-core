@@ -96,8 +96,10 @@ class WCS_Cart_Renewal {
 					) );
 				}
 
-				// Store renewal order's ID in session so it can be re-used after payment
-				WC()->session->set( 'order_awaiting_payment', $order_id );
+				if ( WC()->cart->cart_contents_count != 0 ) {
+					// Store renewal order's ID in session so it can be re-used after payment
+					WC()->session->set( 'order_awaiting_payment', $order_id );
+				}
 
 				wp_safe_redirect( WC()->cart->get_checkout_url() );
 				exit;
@@ -152,7 +154,14 @@ class WCS_Cart_Renewal {
 				}
 			}
 
-			WC()->cart->add_to_cart( $product_id, $quantity, $variation_id, $variations, apply_filters( 'woocommerce_order_again_cart_item_data', array( $this->cart_item_key => $cart_item_data ), $line_item, $subscription ) );
+			$cart_item_key = WC()->cart->add_to_cart( $product_id, $quantity, $variation_id, $variations, apply_filters( 'woocommerce_order_again_cart_item_data', array( $this->cart_item_key => $cart_item_data ), $line_item, $subscription ) );
+
+			// If a product linked to a subscription failed to be added to the cart prevent partially paying for the order by removing all items that have been added and prevent any further products to be added.
+			if ( false == $cart_item_key && wcs_is_subscription( $subscription ) ) {
+				wc_add_notice( sprintf( esc_html__( 'An error has occurred adding products for Subscription #%d to cart.', 'woocommerce-subscriptions' ), $subscription->id ) , 'error' );
+				WC()->cart->empty_cart( true );
+				break;
+			}
 		}
 
 		do_action( 'woocommerce_setup_cart_for_' . $this->cart_item_key, $subscription, $cart_item_data );
