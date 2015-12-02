@@ -64,11 +64,13 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 
 			} else {
 
-				wc_add_notice( __( 'Complete checkout to resubscribe.', 'woocommerce-subscriptions' ), 'success' );
-
 				$this->setup_cart( $subscription, array(
 					'subscription_id' => $subscription->id,
 				) );
+
+				if ( WC()->cart->get_cart_contents_count() != 0 ) {
+					wc_add_notice( __( 'Complete checkout to resubscribe.', 'woocommerce-subscriptions' ), 'success' );
+				}
 
 				$redirect_to = WC()->cart->get_checkout_url();
 			}
