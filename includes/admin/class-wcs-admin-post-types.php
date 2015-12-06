@@ -70,17 +70,16 @@ class WCS_Admin_Post_Types {
 			return $pieces;
 		}
 
+		// Let's create a temporary table, drop the previous one, because otherwise this query is hella slow
+		$wpdb->query( "DROP TEMPORARY TABLE IF EXISTS {$wpdb->prefix}tmp_lastpayment" );
+
+		$wpdb->query( "CREATE TEMPORARY TABLE {$wpdb->prefix}tmp_lastpayment (id INT, INDEX USING BTREE (id), last_payment DATETIME) AS SELECT pm.meta_value as id, MAX( p.post_date_gmt ) as last_payment FROM {$wpdb->postmeta} pm LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id WHERE pm.meta_key = '_subscription_renewal' GROUP BY pm.meta_value" );
+		// Magic ends here
+
 		$pieces['fields'] .= ', COALESCE(lp.last_payment, o.post_date_gmt, 0) as last_payment';
 
-		$pieces['join'] .= "LEFT JOIN
-				(SELECT
-					MAX( p.post_date_gmt ) as last_payment,
-					pm.meta_value
-				FROM {$wpdb->postmeta} pm
-				LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id
-				WHERE pm.meta_key = '_subscription_renewal'
-				GROUP BY pm.meta_value) lp
-			ON {$wpdb->posts}.ID = lp.meta_value
+		$pieces['join'] .= "LEFT JOIN {$wpdb->prefix}tmp_lastpayment lp
+			ON {$wpdb->posts}.ID = lp.id
 			LEFT JOIN {$wpdb->posts} o on {$wpdb->posts}.post_parent = o.ID";
 
 		$order = strtoupper( $query->query['order'] );
