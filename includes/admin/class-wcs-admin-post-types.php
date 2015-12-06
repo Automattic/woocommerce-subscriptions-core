@@ -70,15 +70,18 @@ class WCS_Admin_Post_Types {
 			return $pieces;
 		}
 
-		// we need to name ID again due to name conflict if we don't
-		$pieces['fields'] .= ", {$wpdb->posts}.ID AS original_id, {$wpdb->posts}.post_parent AS original_parent, CASE (SELECT COUNT(*) FROM {$wpdb->postmeta} WHERE meta_key = '_subscription_renewal' AND meta_value = original_id)
-			WHEN 0 THEN CASE (SELECT COUNT(*) FROM {$wpdb->posts} WHERE ID = original_parent)
-				WHEN 0 THEN 0
-				ELSE (SELECT post_date_gmt FROM {$wpdb->posts} WHERE ID = original_parent)
-				END
-			ELSE (SELECT p.post_date_gmt FROM {$wpdb->postmeta} pm LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id WHERE pm.meta_key = '_subscription_renewal' AND meta_value = original_id ORDER BY p.post_date_gmt DESC LIMIT 1)
-			END
-			AS last_payment";
+		$pieces['fields'] .= ', COALESCE(lp.last_payment, o.post_date_gmt, 0) as last_payment';
+
+		$pieces['join'] .= "LEFT JOIN
+				(SELECT
+					MAX( p.post_date_gmt ) as last_payment,
+					pm.meta_value
+				FROM {$wpdb->postmeta} pm
+				LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+				WHERE pm.meta_key = '_subscription_renewal'
+				GROUP BY pm.meta_value) lp
+			ON {$wpdb->posts}.ID = lp.meta_value
+			LEFT JOIN {$wpdb->posts} o on {$wpdb->posts}.post_parent = o.ID";
 
 		$order = strtoupper( $query->query['order'] );
 
