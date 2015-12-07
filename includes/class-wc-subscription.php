@@ -1159,6 +1159,12 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Get the details of the subscription for use with @see wcs_price_string()
 	 *
+	 * This is protected because it should not be used directly by outside methods. If you need
+	 * to display the price of a subscription, use the @see $this->get_formatted_order_total(),
+	 * @see $this->get_subtotal_to_display() or @see $this->get_formatted_line_subtotal() method.If
+	 * If you want to customise which aspects of a price string are displayed for all subscriptions,
+	 * use the filter 'woocommerce_subscription_price_string_details'.
+	 *
 	 * @return array
 	 */
 	protected function get_price_string_details( $amount = 0, $display_ex_tax_label = false ) {
