@@ -36,7 +36,7 @@ class WCS_PayPal_Status_Manager extends WCS_PayPal {
 	 * @since 2.0
 	 */
 	public static function cancel_subscription( $subscription ) {
-		if ( ! wcs_is_paypal_profile_a( wcs_get_paypal_id( $subscription->id ), 'billing_agreement' ) && self::update_subscription_status( $subscription, 'Cancel' ) ) {
+		if ( ! wcs_is_paypal_profile_a( wcs_get_paypal_id( $subscription->id ), 'billing_agreement' ) && self::update_subscription_status( $subscription, 'Suspend' ) ) {
 			$subscription->add_order_note( __( 'Subscription cancelled with PayPal', 'woocommerce-subscriptions' ) );
 		}
 	}
