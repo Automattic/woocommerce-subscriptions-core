@@ -115,6 +115,7 @@ class WCS_Cart_Renewal {
 	protected function setup_cart( $subscription, $cart_item_data ) {
 
 		WC()->cart->empty_cart( true );
+		$success = true;
 
 		foreach ( $subscription->get_items() as $line_item ) {
 
@@ -155,13 +156,13 @@ class WCS_Cart_Renewal {
 			}
 
 			$cart_item_key = WC()->cart->add_to_cart( $product_id, $quantity, $variation_id, $variations, apply_filters( 'woocommerce_order_again_cart_item_data', array( $this->cart_item_key => $cart_item_data ), $line_item, $subscription ) );
+			$success       = $success && (bool) $cart_item_key;
+		}
 
-			// If a product linked to a subscription failed to be added to the cart prevent partially paying for the order by removing all items that have been added and prevent any further products to be added.
-			if ( false == $cart_item_key && wcs_is_subscription( $subscription ) ) {
-				wc_add_notice( sprintf( esc_html__( 'An error has occurred adding products for Subscription #%d to cart.', 'woocommerce-subscriptions' ), $subscription->id ) , 'error' );
-				WC()->cart->empty_cart( true );
-				break;
-			}
+		// If a product linked to a subscription failed to be added to the cart prevent partially paying for the order by removing all cart items.
+		if ( ! $success && wcs_is_subscription( $subscription ) ) {
+			wc_add_notice( sprintf( esc_html__( 'Subscription #%d has not been added to the cart.', 'woocommerce-subscriptions' ), $subscription->id ) , 'error' );
+			WC()->cart->empty_cart( true );
 		}
 
 		do_action( 'woocommerce_setup_cart_for_' . $this->cart_item_key, $subscription, $cart_item_data );
