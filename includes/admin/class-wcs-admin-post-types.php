@@ -70,10 +70,13 @@ class WCS_Admin_Post_Types {
 			return $pieces;
 		}
 
-		// Let's create a temporary table, drop the previous one, because otherwise this query is hella slow
-		$wpdb->query( "DROP TEMPORARY TABLE IF EXISTS {$wpdb->prefix}tmp_lastpayment" );
+		// in case multiple users sort at the same time
+		$user_id = get_current_user_id();
 
-		$wpdb->query( "CREATE TEMPORARY TABLE {$wpdb->prefix}tmp_lastpayment (id INT, INDEX USING BTREE (id), last_payment DATETIME) AS SELECT pm.meta_value as id, MAX( p.post_date_gmt ) as last_payment FROM {$wpdb->postmeta} pm LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id WHERE pm.meta_key = '_subscription_renewal' GROUP BY pm.meta_value" );
+		// Let's create a temporary table, drop the previous one, because otherwise this query is hella slow
+		$wpdb->query( "DROP TEMPORARY TABLE IF EXISTS {$wpdb->prefix}tmp_{$user_id}_lastpayment" );
+
+		$wpdb->query( "CREATE TEMPORARY TABLE {$wpdb->prefix}tmp_{$user_id}_lastpayment (id INT, INDEX USING BTREE (id), last_payment DATETIME) AS SELECT pm.meta_value as id, MAX( p.post_date_gmt ) as last_payment FROM {$wpdb->postmeta} pm LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id WHERE pm.meta_key = '_subscription_renewal' GROUP BY pm.meta_value" );
 		// Magic ends here
 
 		$pieces['fields'] .= ', COALESCE(lp.last_payment, o.post_date_gmt, 0) as last_payment';
