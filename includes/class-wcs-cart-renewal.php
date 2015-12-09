@@ -114,8 +114,7 @@ class WCS_Cart_Renewal {
 
 		WC()->cart->empty_cart( true );
 
-		foreach ( $subscription->get_items() as $line_item ) {
-
+		foreach ( $subscription->get_items() as $item_id => $line_item ) {
 			// Load all product info including variation data
 			$product_id   = (int) apply_filters( 'woocommerce_add_to_cart_product_id', $line_item['product_id'] );
 			$quantity     = (int) $line_item['qty'];
@@ -152,6 +151,10 @@ class WCS_Cart_Renewal {
 				}
 			}
 
+			if ( wcs_is_subscription( $subscription ) ) {
+				$cart_item_data['subscription_line_item_id'] = $item_id;
+			}
+
 			WC()->cart->add_to_cart( $product_id, $quantity, $variation_id, $variations, apply_filters( 'woocommerce_order_again_cart_item_data', array( $this->cart_item_key => $cart_item_data ), $line_item, $subscription ) );
 		}
 
@@ -172,13 +175,9 @@ class WCS_Cart_Renewal {
 			$_product = $cart_item_session_data['data'];
 
 			// Need to get the original subscription price, not the current price
-			$subscription = wcs_get_subscription( $cart_item[ $this->cart_item_key ]['subscription_id'] );
-
-			foreach ( $subscription->get_items() as $item_id => $item ) {
-				if ( $_product->id == $item['product_id'] && ( ! isset( $_product->variation_id ) || $_product->variation_id == $item['variation_id'] ) ) {
-					$item_to_renew = $item;
-				}
-			}
+			$subscription       = wcs_get_subscription( $cart_item[ $this->cart_item_key ]['subscription_id'] );
+			$subscription_items = $subscription->get_items();
+			$item_to_renew      = $subscription_items[ $cart_item_session_data[ $this->cart_item_key ]['subscription_line_item_id'] ];
 
 			$price = $item_to_renew['line_subtotal'];
 
