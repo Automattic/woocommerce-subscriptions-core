@@ -83,7 +83,7 @@ class WC_Subscription extends WC_Order {
 		} elseif ( 'payment_gateway' == $key ) {
 
 			// Only set the payment gateway once and only when we first need it
-			if ( empty( $this->payment_gateway ) ) {
+			if ( ! property_exists( 'WC_Subscription','payment_gateway' ) || empty( $this->payment_gateway ) ) {
 				$this->payment_gateway = wc_get_payment_gateway_by_order( $this );
 			}
 
@@ -1159,6 +1159,12 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Get the details of the subscription for use with @see wcs_price_string()
 	 *
+	 * This is protected because it should not be used directly by outside methods. If you need
+	 * to display the price of a subscription, use the @see $this->get_formatted_order_total(),
+	 * @see $this->get_subtotal_to_display() or @see $this->get_formatted_line_subtotal() method.If
+	 * If you want to customise which aspects of a price string are displayed for all subscriptions,
+	 * use the filter 'woocommerce_subscription_price_string_details'.
+	 *
 	 * @return array
 	 */
 	protected function get_price_string_details( $amount = 0, $display_ex_tax_label = false ) {
@@ -1277,7 +1283,7 @@ class WC_Subscription extends WC_Order {
 		if ( false !== $last_order && false === $last_order->has_status( 'failed' ) ) {
 			remove_filter( 'woocommerce_order_status_changed', 'WC_Subscriptions_Renewal_Order::maybe_record_subscription_payment' );
 			$last_order->update_status( 'failed' );
-			add_filter( 'woocommerce_order_status_changed', 'WC_Subscriptions_Renewal_Order::maybe_record_subscription_payment' );
+			add_filter( 'woocommerce_order_status_changed', 'WC_Subscriptions_Renewal_Order::maybe_record_subscription_payment', 10, 3 );
 		}
 
 		// Log payment failure on order
