@@ -80,8 +80,8 @@ class WCS_Admin_Post_Types {
 		$order = strtoupper( $query->query['order'] );
 
 		// fields and order are identical in both cases
-		$pieces['fields'] .= ', COALESCE(lp.last_payment, o.post_date_gmt, 0) as last_payment';
-		$pieces['orderby'] = "CAST(last_payment AS DATETIME) {$order}";
+		$pieces['fields'] .= ', COALESCE(lp.last_payment, o.post_date_gmt, 0) as lp';
+		$pieces['orderby'] = "CAST(lp AS DATETIME) {$order}";
 
 		return $pieces;
 	}
@@ -145,7 +145,7 @@ class WCS_Admin_Post_Types {
 		$wpdb->query( "CREATE TEMPORARY TABLE {$wpdb->prefix}tmp_{$user_id}_lastpayment (id INT, INDEX USING BTREE (id), last_payment DATETIME) AS SELECT pm.meta_value as id, MAX( p.post_date_gmt ) as last_payment FROM {$wpdb->postmeta} pm LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id WHERE pm.meta_key = '_subscription_renewal' GROUP BY pm.meta_value" );
 		// Magic ends here
 
-		$pieces['join'] .= "LEFT JOIN {$wpdb->prefix}tmp_lastpayment lp
+		$pieces['join'] .= "LEFT JOIN {$wpdb->prefix}tmp_{$user_id}_lastpayment lp
 			ON {$wpdb->posts}.ID = lp.id
 			LEFT JOIN {$wpdb->posts} o on {$wpdb->posts}.post_parent = o.ID";
 
