@@ -118,11 +118,13 @@ class WCS_Change_Payment_Method_Admin {
 			}
 		}
 
-		$payment_gateway  = ( 'manual' != $payment_method ) ? $payment_gateways[ $payment_method ] : '';
+		$payment_gateway = ( 'manual' != $payment_method ) ? $payment_gateways[ $payment_method ] : '';
 
-		if ( ! $subscription->is_manual() && ( $subscription->payment_gateway->id != $payment_gateway ) ) {
-			// Before updating to a new payment gateway make sure the subscription is cancelled with the current gateway
-			WC_Subscriptions_Payment_Gateways::trigger_gateway_status_updated_hook( $subscription, 'cancelled' );
+		if ( ! $subscription->is_manual() && ( $subscription->payment_gateway->id != $payment_gateway->id ) ) {
+
+			// Before updating to a new payment gateway make sure the subscription status is updated with the current gateway
+			$gateway_status = ( 'paypal' == $subscription->payment_gateway->id ) ? 'on-hold' : 'cancelled';
+			WC_Subscriptions_Payment_Gateways::trigger_gateway_status_updated_hook( $subscription, $gateway_status );
 		}
 
 		$subscription->set_payment_method( $payment_gateway, $payment_method_meta );

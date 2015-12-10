@@ -401,7 +401,7 @@ class WCS_PayPal {
 		if ( 'paypal' === $subscription->payment_method ) {
 
 			$paypal_profile_id  = wcs_get_paypal_id( $subscription->id );
-			$is_paypal_standard = wcs_is_paypal_profile_a( $paypal_profile_id, 'out_of_date_id' );
+			$is_paypal_standard = ! wcs_is_paypal_profile_a( $paypal_profile_id, 'billing_agreement' );
 
 			if ( $is_paypal_standard ) {
 				$script_parameters['change_payment_method_warning'] = __( "Are you sure you want to change the payment method from PayPal standard?\n\nThis will suspend the subscription at PayPal.", 'woocommerce-subscriptions' );
