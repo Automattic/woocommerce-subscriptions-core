@@ -516,25 +516,31 @@ class WC_Subscription extends WC_Order {
 		) );
 
 		// because some stores may be using custom order status plugins, we also can't rely on order status to find paid orders, so also check for a _paid_date
+		$renewal_orders = get_posts( array(
+			'posts_per_page'         => -1,
+			'post_status'            => 'any',
+			'post_type'              => 'shop_order',
+			'fields'                 => 'ids',
+			'orderby'                => 'date',
+			'order'                  => 'desc',
+			'meta_key'               => '_subscription_renewal',
+			'meta_compare'           => '=',
+			'meta_value'             => $this->id,
+			'update_post_term_cache' => false,
+		) );
+
+		// more efficient to find paid date renewal orders using post__in
 		$paid_date_renewal_orders = get_posts( array(
-			'posts_per_page' => -1,
-			'post_status'    => 'any',
-			'post_type'      => 'shop_order',
-			'fields'         => 'ids',
-			'orderby'        => 'date',
-			'order'          => 'desc',
-			'meta_query'     => array(
-				array(
-					'key'     => '_subscription_renewal',
-					'compare' => '=',
-					'value'   => $this->id,
-					'type'    => 'numeric',
-				),
-				array(
-					'key'     => '_paid_date',
-					'compare' => 'EXISTS',
-				),
-			),
+			'posts_per_page'         => -1,
+			'post_status'            => 'any',
+			'post_type'              => 'shop_order',
+			'fields'                 => 'ids',
+			'orderby'                => 'date',
+			'order'                  => 'desc',
+			'post__in'               => $renewal_orders,
+			'meta_key'               => '_paid_date',
+			'meta_compare'           => 'EXISTS',
+			'update_post_term_cache' => false,
 		) );
 
 		$paid_renewal_orders = array_unique( array_merge( $paid_date_renewal_orders, $paid_status_renewal_orders ) );
