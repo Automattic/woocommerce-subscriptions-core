@@ -20,6 +20,9 @@ class WC_Subscription extends WC_Order {
 	/** @public string Order type */
 	public $order_type = 'shop_subscription';
 
+	/** @public int Stores get_completed_payment_count when used multiple times in payment_complete() */
+	public $cached_completed_payment_count = false;
+
 	/**
 	 * Initialize the subscription object.
 	 *
@@ -989,8 +992,15 @@ class WC_Subscription extends WC_Order {
 
 		} else {
 
+			// Use cached version if called by payment_complete()
+			if ( false === $this->cached_completed_payment_count ) {
+				$completed_payment_count = $this->get_completed_payment_count();
+			} else {
+				$completed_payment_count = $this->cached_completed_payment_count;
+			}
+
 			// The next payment date is {interval} billing periods from the start date, trial end date or last payment date
-			if ( 0 !== $next_payment_time && $next_payment_time < gmdate( 'U' ) && 1 <= $this->get_completed_payment_count() ) {
+			if ( 0 !== $next_payment_time && $next_payment_time < gmdate( 'U' ) && 1 <= $completed_payment_count ) {
 				$from_timestamp = $next_payment_time;
 			} elseif ( $last_payment_time > $start_time && apply_filters( 'wcs_calculate_next_payment_from_last_payment', true, $this ) ) {
 				$from_timestamp = $last_payment_time;
@@ -1268,8 +1278,11 @@ class WC_Subscription extends WC_Order {
 		// Make sure subscriber has default role
 		wcs_update_users_role( $this->get_user_id(), 'default_subscriber_role' );
 
+		// Store the completed payment count to avoid hitting the database again
+		$this->cached_completed_payment_count = $this->get_completed_payment_count();
+
 		// Free trial & no-signup fee, no payment received
-		if ( 0 == $this->get_total_initial_payment() && 1 == $this->get_completed_payment_count() && false !== $this->order ) {
+		if ( 0 == $this->get_total_initial_payment() && 1 == $this->cached_completed_payment_count && false !== $this->order ) {
 
 			if ( $this->is_manual() ) {
 				$note = __( 'Free trial commenced for subscription.', 'woocommerce-subscriptions' );
@@ -1286,9 +1299,12 @@ class WC_Subscription extends WC_Order {
 
 		do_action( 'woocommerce_subscription_payment_complete', $this );
 
-		if ( $this->get_completed_payment_count() > 1 ) {
+		if ( $this->cached_completed_payment_count > 1 ) {
 			do_action( 'woocommerce_subscription_renewal_payment_complete', $this );
 		}
+
+		// Clear the cached payment count
+		$this->cached_completed_payment_count = false;
 	}
 
 	/**
