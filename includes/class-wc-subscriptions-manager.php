@@ -1740,31 +1740,31 @@ class WC_Subscriptions_Manager {
 		}
 
 		$allowed_html = array(
-		    'select' => array(
-		        'id' => array(),
-		        'name' => array(),
-		        'tabindex' => array(),
-		    ),
-		    'option' => array(
-		        'value' => array(),
-		        'selected' => array(),
-		    ),
-		    'input' => array(
-		    	'type' => array(),
-		    	'id' => array(),
-		    	'name' => array(),
-		        'value' => array(),
-		        'size' => array(),
-		        'tabindex' => array(),
-		        'maxlength' => array(),
-		        'autocomplete' => array(),
-		    ),
-		    'p' => array(),
-		    'a' => array(
-		        'href' => array(),
-		        'title' => array(),
-		        'class' => array(),
-		    ),
+			'select' => array(
+				'id' => array(),
+				'name' => array(),
+				'tabindex' => array(),
+			),
+			'option' => array(
+				'value' => array(),
+				'selected' => array(),
+			),
+			'input' => array(
+				'type' => array(),
+				'id' => array(),
+				'name' => array(),
+				'value' => array(),
+				'size' => array(),
+				'tabindex' => array(),
+				'maxlength' => array(),
+				'autocomplete' => array(),
+			),
+			'p' => array(),
+			'a' => array(
+				'href' => array(),
+				'title' => array(),
+				'class' => array(),
+			),
 		);
 
 		if ( $args['echo'] ) {
