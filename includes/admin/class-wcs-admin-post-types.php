@@ -149,15 +149,17 @@ class WCS_Admin_Post_Types {
 		global $wpdb;
 
 		// in case multiple users sort at the same time
-		$user_id = get_current_user_id();
+		$session = wp_get_session_token();
+
+		$table_name = substr( "{$wpdb->prefix}tmp_{$session}_lastpayment", 0, 64 );
 
 		// Let's create a temporary table, drop the previous one, because otherwise this query is hella slow
-		$wpdb->query( "DROP TEMPORARY TABLE IF EXISTS {$wpdb->prefix}tmp_{$user_id}_lastpayment" );
+		$wpdb->query( "DROP TEMPORARY TABLE IF EXISTS {$table_name}" );
 
-		$wpdb->query( "CREATE TEMPORARY TABLE {$wpdb->prefix}tmp_{$user_id}_lastpayment (id INT, INDEX USING BTREE (id), last_payment DATETIME) AS SELECT pm.meta_value as id, MAX( p.post_date_gmt ) as last_payment FROM {$wpdb->postmeta} pm LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id WHERE pm.meta_key = '_subscription_renewal' GROUP BY pm.meta_value" );
+		$wpdb->query( "CREATE TEMPORARY TABLE {$table_name} (id INT, INDEX USING BTREE (id), last_payment DATETIME) AS SELECT pm.meta_value as id, MAX( p.post_date_gmt ) as last_payment FROM {$wpdb->postmeta} pm LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id WHERE pm.meta_key = '_subscription_renewal' GROUP BY pm.meta_value" );
 		// Magic ends here
 
-		$pieces['join'] .= "LEFT JOIN {$wpdb->prefix}tmp_{$user_id}_lastpayment lp
+		$pieces['join'] .= "LEFT JOIN {$table_name} lp
 			ON {$wpdb->posts}.ID = lp.id
 			LEFT JOIN {$wpdb->posts} o on {$wpdb->posts}.post_parent = o.ID";
 
