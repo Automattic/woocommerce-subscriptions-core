@@ -1788,7 +1788,7 @@ class WC_Subscriptions_Manager {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_status()' );
 
 		try {
-			$subscription = wcs_get_subscription_from_key( $deprecated );
+			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
 			if ( $subscription->has_status( 'on-hold' ) ) {
 				return false;
