@@ -93,11 +93,23 @@ class WCS_Admin_Post_Types {
 	 * @return bool
 	 */
 	public function is_db_user_privileged() {
+		$permissions = $this->get_special_database_privileges();
+
+		return ( in_array( 'CREATE TEMPORARY TABLES', $permissions ) && in_array( 'INDEX', $permissions ) && in_array( 'DROP', $permissions ) );
+	}
+
+	/**
+	 * Return the privileges a database user has out of CREATE TEMPORARY TABLES, INDEX and DROP. This is so we can use
+	 * these discrete values on a debug page.
+	 *
+	 * @return array
+	 */
+	public function get_special_database_privileges() {
 		global $wpdb;
 
 		$permissions = $wpdb->get_col( "SELECT PRIVILEGE_TYPE FROM information_schema.user_privileges WHERE GRANTEE = CONCAT( '''', REPLACE( CURRENT_USER(), '@', '''@''' ), '''' ) AND PRIVILEGE_TYPE IN ('CREATE TEMPORARY TABLES', 'INDEX', 'DROP')" );
 
-		return ( in_array( 'CREATE TEMPORARY TABLES', $permissions ) && in_array( 'INDEX', $permissions ) && in_array( 'DROP', $permissions ) );
+		return $permissions;
 	}
 
 	/**
