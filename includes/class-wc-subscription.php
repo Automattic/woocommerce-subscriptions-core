@@ -138,10 +138,10 @@ class WC_Subscription extends WC_Order {
 
 			$needs_payment = true;
 
-		// And finally, check that the last renewal order doesn't need payment
+		// And finally, check that the latest order (switch or renewal) doesn't need payment
 		} else {
 
-			$last_renewal_order_id = get_posts( array(
+			$last_order_id = get_posts( array(
 				'posts_per_page' => 1,
 				'post_type'      => 'shop_order',
 				'post_status'    => 'any',
@@ -155,14 +155,21 @@ class WC_Subscription extends WC_Order {
 						'value'   => $this->id,
 						'type'    => 'numeric',
 					),
+					array(
+						'key'     => '_subscription_switch',
+						'compare' => '=',
+						'value'   => $this->id,
+						'type'    => 'numeric',
+					),
+					'relation' => 'OR',
 				),
 			) );
 
-			if ( ! empty( $last_renewal_order_id ) ) {
+			if ( ! empty( $last_order_id ) ) {
 
-				$renewal_order = new WC_Order( $last_renewal_order_id[0] );
+				$order = new WC_Order( $last_order_id[0] );
 
-				if ( $renewal_order->needs_payment() || $renewal_order->has_status( array( 'on-hold', 'failed', 'cancelled' ) ) ) {
+				if ( $order->needs_payment() || $order->has_status( array( 'on-hold', 'failed', 'cancelled' ) ) ) {
 					$needs_payment = true;
 				}
 			}
