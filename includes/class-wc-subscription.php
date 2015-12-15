@@ -1402,9 +1402,7 @@ class WC_Subscription extends WC_Order {
 
 		$related_orders = array();
 
-		$related_post_ids = tlc_transient( 'wcs-related-orders-to-' . $this->id )
-			->updates_with( array( $this, 'get_related_orders_query' ), array( $this->id ) )
-			->get();
+		$related_post_ids = WC_Subscriptions::$cache->cache_and_get( 'wcs-related-orders-to-' . $this->id, array( $this, 'get_related_orders_query' ), array( $this->id ) );
 
 		if ( 'all' == $return_fields ) {
 
@@ -1443,9 +1441,7 @@ class WC_Subscription extends WC_Order {
 
 		$last_order = false;
 
-		$renewal_post_ids = tlc_transient( 'wcs-related-orders-to-' . $this->id )
-			->updates_with( array( $this, 'get_related_orders_query' ), array( $this->id ) )
-			->get();
+		$renewal_post_ids = WC_Subscriptions::$cache->cache_and_get( 'wcs-related-orders-to-' . $this->id, array( $this, 'get_related_orders_query' ), array( $this->id ) );
 
 		// If there are no renewal orders, get the original order (if there is one)
 		if ( empty( $renewal_post_ids ) ) {
