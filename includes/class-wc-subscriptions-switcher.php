@@ -725,7 +725,7 @@ class WC_Subscriptions_Switcher {
 		WC_Subscriptions_Checkout::add_shipping( $subscription, $recurring_cart );
 
 		// Now update subscription object order_shipping to reflect updated values so it doesn't stay 0
-		$subscription->order_shipping = get_post_meta($subscription->ID, '_order_shipping', true );
+		$subscription->order_shipping = get_post_meta( $subscription->id, '_order_shipping', true );
 	}
 
 	/**
