@@ -719,6 +719,9 @@ class WC_Subscriptions_Switcher {
 			wc_update_order_item( $shipping_method_id, array( 'order_item_type' => 'shipping_switched' ) );
 		}
 
+		// Then zero the order_shipping total so we have a clean slate to add to
+		$subscription->order_shipping = 0;
+
 		WC_Subscriptions_Checkout::add_shipping( $subscription, $recurring_cart );
 	}
 
