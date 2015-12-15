@@ -1392,8 +1392,8 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Get the related orders for a subscription, including renewal orders and the initial order (if any)
 	 *
-	 * @param string The columns to return, either 'all' or 'ids'
-	 * @param string The type of orders to return, either 'renewal' or 'all'. Default 'all'.
+	 * @param string $return_fields The columns to return, either 'all' or 'ids'
+	 * @param string $order_type The type of orders to return, either 'renewal' or 'all'. Default 'all'.
 	 * @since 2.0
 	 */
 	public function get_related_orders( $return_fields = 'ids', $order_type = 'all' ) {
@@ -1432,7 +1432,7 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Gets the most recent order that relates to a subscription, including renewal orders and the initial order (if any).
 	 *
-	 * @param string The columns to return, either 'all' or 'ids'
+	 * @param string $return_fields The columns to return, either 'all' or 'ids'
 	 * @since 2.0
 	 */
 	public function get_last_order( $return_fields = 'ids' ) {
