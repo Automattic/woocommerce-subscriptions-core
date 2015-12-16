@@ -908,6 +908,7 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			case 'trial_end' :
+				$this->cached_completed_payment_count = false;
 				if ( $this->get_completed_payment_count() < 2 && ! $this->has_status( wcs_get_subscription_ended_statuses() ) && ( $this->has_status( 'pending' ) || $this->payment_method_supports( 'subscription_date_changes' ) ) ) {
 					$can_date_be_updated = true;
 				} else {
