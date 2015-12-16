@@ -43,7 +43,7 @@ abstract class WCS_Cache_Manager {
 	 *
 	 * @return mixed
 	 */
-	abstract public function cache_and_get( $key, $callback, $params );
+	abstract public function cache_and_get( $key, $callback, $params = array() );
 
 	/**
 	 * Deletes a cached version of data.
