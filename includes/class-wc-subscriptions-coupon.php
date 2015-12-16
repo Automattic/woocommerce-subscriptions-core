@@ -42,7 +42,7 @@ class WC_Subscriptions_Coupon {
 		add_action( 'woocommerce_before_calculate_totals', __CLASS__ . '::remove_coupons', 10 );
 
 		// Add our recurring product coupon types to the list of coupon types that apply to individual products
-		add_filter( 'woocommerce_product_coupon_types', __CLASS__ . '::filter_product_coupon_types', 10 );
+		add_filter( 'woocommerce_product_coupon_types', __CLASS__ . '::filter_product_coupon_types', 10, 1 );
 	}
 
 	/**
@@ -411,7 +411,7 @@ class WC_Subscriptions_Coupon {
 	public static function filter_product_coupon_types( $product_coupon_types ) {
 
 		if ( is_array( $product_coupon_types ) ) {
-			array_merge( $product_coupon_types, array( 'recurring_fee', 'recurring_percent' ) );
+			$product_coupon_types = array_merge( $product_coupon_types, array( 'recurring_fee', 'recurring_percent' ) );
 		}
 
 		return $product_coupon_types;
