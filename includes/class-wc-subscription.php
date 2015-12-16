@@ -1370,18 +1370,12 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Get the related orders for a subscription, including renewal orders and the initial order (if any)
+	 * Extracting the query from get_related_orders and get_last_order so it can be moved in a cached
+	 * value.
 	 *
-	 * @param string The columns to return, either 'all' or 'ids'
-	 * @param string The type of orders to return, either 'renewal' or 'all'. Default 'all'.
-	 * @since 2.0
+	 * @return array
 	 */
-	public function get_related_orders( $return_fields = 'ids', $order_type = 'all' ) {
-
-		$return_fields = ( 'ids' == $return_fields ) ? $return_fields : 'all';
-
-		$related_orders = array();
-
+	public function get_related_orders_query( $id ) {
 		$related_post_ids = get_posts( array(
 			'posts_per_page' => -1,
 			'post_type'      => 'shop_order',
@@ -1393,11 +1387,29 @@ class WC_Subscription extends WC_Order {
 				array(
 					'key'     => '_subscription_renewal',
 					'compare' => '=',
-					'value'   => $this->id,
+					'value'   => $id,
 					'type'    => 'numeric',
 				),
 			),
 		) );
+
+		return $related_post_ids;
+	}
+
+	/**
+	 * Get the related orders for a subscription, including renewal orders and the initial order (if any)
+	 *
+	 * @param string $return_fields The columns to return, either 'all' or 'ids'
+	 * @param string $order_type The type of orders to return, either 'renewal' or 'all'. Default 'all'.
+	 * @since 2.0
+	 */
+	public function get_related_orders( $return_fields = 'ids', $order_type = 'all' ) {
+
+		$return_fields = ( 'ids' == $return_fields ) ? $return_fields : 'all';
+
+		$related_orders = array();
+
+		$related_post_ids = WC_Subscriptions::$cache->cache_and_get( 'wcs-related-orders-to-' . $this->id, array( $this, 'get_related_orders_query' ), array( $this->id ) );
 
 		if ( 'all' == $return_fields ) {
 
@@ -1427,7 +1439,7 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Gets the most recent order that relates to a subscription, including renewal orders and the initial order (if any).
 	 *
-	 * @param string The columns to return, either 'all' or 'ids'
+	 * @param string $return_fields The columns to return, either 'all' or 'ids'
 	 * @since 2.0
 	 */
 	public function get_last_order( $return_fields = 'ids' ) {
@@ -1436,22 +1448,7 @@ class WC_Subscription extends WC_Order {
 
 		$last_order = false;
 
-		$renewal_post_ids = get_posts( array(
-			'posts_per_page' => 1,
-			'post_type'      => 'shop_order',
-			'post_status'    => 'any',
-			'fields'         => 'ids',
-			'orderby'        => 'date',
-			'order'          => 'DESC',
-			'meta_query'     => array(
-				array(
-					'key'     => '_subscription_renewal',
-					'compare' => '=',
-					'value'   => $this->id,
-					'type'    => 'numeric',
-				),
-			),
-		) );
+		$renewal_post_ids = WC_Subscriptions::$cache->cache_and_get( 'wcs-related-orders-to-' . $this->id, array( $this, 'get_related_orders_query' ), array( $this->id ) );
 
 		// If there are no renewal orders, get the original order (if there is one)
 		if ( empty( $renewal_post_ids ) ) {
