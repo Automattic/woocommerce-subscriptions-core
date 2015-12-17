@@ -63,7 +63,7 @@ function wcs_update_users_role( $user_id, $role_new ) {
 		return;
 	}
 
-	$roles = wcs_get_default_user_roles( $role_new );
+	$roles = wcs_get_new_user_role_names( $role_new );
 
 	$role_new = $roles['new'];
 	$role_old = $roles['old'];
@@ -85,7 +85,7 @@ function wcs_update_users_role( $user_id, $role_new ) {
  * @param $role_new string the new role of the user
  * @return array with keys 'old' and 'new'.
  */
-function wcs_get_default_user_roles( $role_new ) {
+function wcs_get_new_user_role_names( $role_new ) {
 	$default_subscriber_role = get_option( WC_Subscriptions_Admin::$option_prefix . '_subscriber_role' );
 	$default_cancelled_role = get_option( WC_Subscriptions_Admin::$option_prefix . '_cancelled_role' );
 	$role_old = '';
