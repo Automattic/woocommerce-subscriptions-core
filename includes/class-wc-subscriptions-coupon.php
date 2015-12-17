@@ -86,7 +86,7 @@ class WC_Subscriptions_Coupon {
 
 				$coupon = new WC_Coupon( $code );
 
-				if ( $coupon->apply_before_tax() && $coupon->is_valid() ) {
+				if ( $coupon->apply_before_tax() && $coupon->is_valid() && ( $coupon->is_valid_for_product( wc_get_product( $product_id ), $cart_item ) || $coupon->is_valid_for_cart() ) ) {
 
 					$apply_recurring_coupon = $apply_recurring_percent_coupon = $apply_initial_coupon = $apply_initial_percent_coupon = false;
 
