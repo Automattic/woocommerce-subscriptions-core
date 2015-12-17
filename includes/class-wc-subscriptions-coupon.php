@@ -86,7 +86,7 @@ class WC_Subscriptions_Coupon {
 
 				$coupon = new WC_Coupon( $code );
 
-				if ( $coupon->apply_before_tax() && $coupon->is_valid() && ( $coupon->is_valid_for_product( wc_get_product( $product_id ), $cart_item ) || $coupon->is_valid_for_cart() ) ) {
+				if ( $coupon->apply_before_tax() && $coupon->is_valid() && $coupon->is_valid_for_product( wc_get_product( $product_id ), $cart_item ) ) {
 
 					$apply_recurring_coupon = $apply_recurring_percent_coupon = $apply_initial_coupon = $apply_initial_percent_coupon = false;
 
@@ -411,7 +411,7 @@ class WC_Subscriptions_Coupon {
 	public static function filter_product_coupon_types( $product_coupon_types ) {
 
 		if ( is_array( $product_coupon_types ) ) {
-			$product_coupon_types = array_merge( $product_coupon_types, array( 'recurring_fee', 'recurring_percent' ) );
+			$product_coupon_types = array_merge( $product_coupon_types, array( 'recurring_fee', 'recurring_percent', 'sign_up_fee', 'sign_up_fee_percent' ) );
 		}
 
 		return $product_coupon_types;
