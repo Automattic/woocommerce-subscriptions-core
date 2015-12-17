@@ -44,8 +44,8 @@ function wcs_maybe_make_user_inactive( $user_id ) {
 /**
  * Update a user's role to a special subscription's role
  *
- * @param int The ID of a user
- * @param string The special name assigned to the role by Subscriptions, one of 'default_subscriber_role', 'default_inactive_role' or 'default_cancelled_role'
+ * @param int $user_id The ID of a user
+ * @param string $role_new The special name assigned to the role by Subscriptions, one of 'default_subscriber_role', 'default_inactive_role' or 'default_cancelled_role'
  * @return WP_User The user with the new role.
  * @since 2.0
  */
