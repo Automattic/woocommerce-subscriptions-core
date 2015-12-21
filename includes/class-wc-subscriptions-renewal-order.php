@@ -29,6 +29,8 @@ class WC_Subscriptions_Renewal_Order {
 
 		// Prevent customers from cancelling renewal orders. Needs to be hooked before WC_Form_Handler::cancel_order() (20)
 		add_filter( 'wp_loaded', __CLASS__ . '::prevent_cancelling_renewal_orders', 19, 3 );
+
+		add_action( 'woocommerce_order_status_refunded', __CLASS__ . '::maybe_cancel_subscription' );
 	}
 
 	/* Helper functions */
@@ -149,6 +151,29 @@ class WC_Subscriptions_Renewal_Order {
 				if ( $redirect ) {
 					wp_safe_redirect( $redirect );
 					exit;
+				}
+			}
+		}
+	}
+
+	/**
+	 * If the subscription is pending cancellation and a renewal order is refunded, cancel the subscription.
+	 *
+	 * @param $order_id
+	 *
+	 * @since 2.0
+	 */
+	public static function maybe_cancel_subscription( $order_id ) {
+
+		if ( wcs_order_contains_renewal( $order_id ) ) {
+
+			$subscriptions = wcs_get_subscriptions_for_renewal_order( $order_id );
+
+			foreach ( $subscriptions as $subscription ) {
+
+				if ( $subscription->has_status( 'pending-cancel' ) && $subscription->can_be_updated_to( 'cancelled' ) ) {
+
+					$subscription->update_status( 'cancelled', sprintf( __( 'Subscription cancelled for refunded renewal order %s.', 'woocommerce-subscriptions' ), sprintf( '<a href="%s">#%s</a>', esc_url( wcs_get_edit_post_link( $order_id ) ), $order_id ) ) );
 				}
 			}
 		}
