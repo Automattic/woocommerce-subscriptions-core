@@ -200,14 +200,14 @@ class WCS_Cart_Renewal {
 		}
 
 		if ( $removed_count_subscription ) {
-			$error_message = esc_html( _n( 'We couldn\'t find the original subscription to an item in your cart. The item was removed.', 'We couldn\'t find original subscriptions to items in your cart. The items were removed', $removed_count_subscription, 'woocommerce-subscriptions' ) );
+			$error_message = esc_html( _n( 'We couldn\'t find the original subscription for an item in your cart. The item was removed.', 'We couldn\'t find the original subscriptions for items in your cart. The items were removed.', $removed_count_subscription, 'woocommerce-subscriptions' ) );
 			if ( ! wc_has_notice( $error_message, 'notice' ) ) {
 				wc_add_notice( $error_message, 'notice' );
 			}
 		}
 
 		if ( $removed_count_order ) {
-			$error_message = esc_html( _n( 'We couldn\'t find the original renewal order to an item in your cart. The item was removed.', 'We couldn\'t find original renewal orders to items in your cart. The items were removed', $removed_count_order, 'woocommerce-subscriptions' ) );
+			$error_message = esc_html( _n( 'We couldn\'t find the original renewal order for an item in your cart. The item was removed.', 'We couldn\'t find the original renewal orders for items in your cart. The items were removed.', $removed_count_order, 'woocommerce-subscriptions' ) );
 			if ( ! wc_has_notice( $error_message, 'notice' ) ) {
 				wc_add_notice( $error_message, 'notice' );
 			}
