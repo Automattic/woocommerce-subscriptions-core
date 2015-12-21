@@ -581,7 +581,7 @@ function wcs_date_to_time( $date_string ) {
  * but for now, this ensures when using strtotime() to add time to a timestamp, there are no additional
  * changes for server specific timezone additions or deductions.
  *
- * @param string $date_string A date string formatted in MySQl or similar format that will map correctly when instantiating an instance of DateTime()
+ * @param string $time_string A string representation of a date in any format that can be parsed by strtotime()
  * @return int Unix timestamp representation of the timestamp passed in without any changes for timezones
  */
 function wcs_strtotime_dark_knight( $time_string, $from_timestamp = null ) {
