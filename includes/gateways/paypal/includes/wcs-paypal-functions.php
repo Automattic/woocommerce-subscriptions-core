@@ -60,8 +60,8 @@ function wcs_set_paypal_id( $order, $paypal_subscription_id ) {
  * - PayPal Standard Subscription IDs
  * - outdated PayPal Standard Subscription IDs (for accounts prior to 2009 that have not been upgraded).
  *
- * @param string A PayPal Standard Subscription ID or Express Checkout Billing Agreement ID
- * @param string A type of profile ID, can be 'billing_agreement' or 'old_id'.
+ * @param string $profile_id A PayPal Standard Subscription ID or Express Checkout Billing Agreement ID
+ * @param string $profile_type A type of profile ID, can be 'billing_agreement' or 'old_id'.
  * @since 2.0
  */
 function wcs_is_paypal_profile_a( $profile_id, $profile_type ) {
