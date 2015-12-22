@@ -52,6 +52,7 @@ class WCS_Cart_Renewal {
 
 		// Make sure renewal meta data persists between sessions
 		add_filter( 'woocommerce_get_cart_item_from_session', array( &$this, 'get_cart_item_from_session' ), 10, 3 );
+		add_action( 'woocommerce_cart_loaded_from_session', array( &$this, 'cart_items_loaded_from_session' ), 10 );
 
 		// Allow renewal of limited subscriptions
 		add_filter( 'woocommerce_subscription_is_purchasable', array( &$this, 'is_purchasable' ), 12, 2 );
@@ -172,6 +173,48 @@ class WCS_Cart_Renewal {
 	}
 
 	/**
+	 * Does some housekeeping. Fires after the items have been passed through the get items from session filter. Because
+	 * that filter is not good for removing cart items, we need to work around that by doing it later, in the cart
+	 * loaded from session action.
+	 *
+	 * This checks cart items whether underlying subscriptions / renewal orders they depend exist. If not, they are
+	 * removed from the cart.
+	 *
+	 * @param $cart WC_Cart the one we got from session
+	 */
+	public function cart_items_loaded_from_session( $cart ) {
+		$removed_count_subscription = $removed_count_order = 0;
+
+		foreach ( $cart->cart_contents as $key => $item ) {
+			if ( isset( $item[ $this->cart_item_key ]['subscription_id'] ) && ! wcs_is_subscription( $item[ $this->cart_item_key ]['subscription_id'] ) ) {
+				$cart->remove_cart_item( $key );
+				$removed_count_subscription++;
+				continue;
+			}
+
+			if ( isset( $item[ $this->cart_item_key ]['renewal_order_id'] ) && ! 'shop_order' == get_post_type( $item[ $this->cart_item_key ]['renewal_order_id'] ) ) {
+				$cart->remove_cart_item( $key );
+				$removed_count_order++;
+				continue;
+			}
+		}
+
+		if ( $removed_count_subscription ) {
+			$error_message = esc_html( _n( 'We couldn\'t find the original subscription for an item in your cart. The item was removed.', 'We couldn\'t find the original subscriptions for items in your cart. The items were removed.', $removed_count_subscription, 'woocommerce-subscriptions' ) );
+			if ( ! wc_has_notice( $error_message, 'notice' ) ) {
+				wc_add_notice( $error_message, 'notice' );
+			}
+		}
+
+		if ( $removed_count_order ) {
+			$error_message = esc_html( _n( 'We couldn\'t find the original renewal order for an item in your cart. The item was removed.', 'We couldn\'t find the original renewal orders for items in your cart. The items were removed.', $removed_count_order, 'woocommerce-subscriptions' ) );
+			if ( ! wc_has_notice( $error_message, 'notice' ) ) {
+				wc_add_notice( $error_message, 'notice' );
+			}
+		}
+	}
+
+	/**
 	 * Restore renewal flag when cart is reset and modify Product object with renewal order related info
 	 *
 	 * @since 2.0
@@ -179,31 +222,33 @@ class WCS_Cart_Renewal {
 	public function get_cart_item_from_session( $cart_item_session_data, $cart_item, $key ) {
 
 		if ( isset( $cart_item[ $this->cart_item_key ]['subscription_id'] ) ) {
-
 			$cart_item_session_data[ $this->cart_item_key ] = $cart_item[ $this->cart_item_key ];
 
 			$_product = $cart_item_session_data['data'];
 
 			// Need to get the original subscription price, not the current price
 			$subscription       = wcs_get_subscription( $cart_item[ $this->cart_item_key ]['subscription_id'] );
-			$subscription_items = $subscription->get_items();
-			$item_to_renew      = $subscription_items[ $cart_item_session_data[ $this->cart_item_key ]['subscription_line_item_id'] ];
 
-			$price = $item_to_renew['line_subtotal'];
+			if ( $subscription ) {
+				$subscription_items = $subscription->get_items();
+				$item_to_renew      = $subscription_items[ $cart_item_session_data[ $this->cart_item_key ]['subscription_line_item_id'] ];
 
-			if ( 'yes' === get_option( 'woocommerce_prices_include_tax' ) ) {
-				$price += $item_to_renew['line_subtotal_tax'];
+				$price = $item_to_renew['line_subtotal'];
+
+				if ( 'yes' === get_option( 'woocommerce_prices_include_tax' ) ) {
+					$price += $item_to_renew['line_subtotal_tax'];
+				}
+
+				$_product->price = $price / $item_to_renew['qty'];
+
+				// Don't carry over any sign up fee
+				$_product->subscription_sign_up_fee = 0;
+
+				$_product->post->post_title = apply_filters( 'woocommerce_subscriptions_renewal_product_title', $_product->get_title(), $_product );
+
+				// Make sure the same quantity is renewed
+				$cart_item_session_data['quantity'] = $item_to_renew['qty'];
 			}
-
-			$_product->price = $price / $item_to_renew['qty'];
-
-			// Don't carry over any sign up fee
-			$_product->subscription_sign_up_fee = 0;
-
-			$_product->post->post_title = apply_filters( 'woocommerce_subscriptions_renewal_product_title', $_product->get_title(), $_product );
-
-			// Make sure the same quantity is renewed
-			$cart_item_session_data['quantity'] = $item_to_renew['qty'];
 		}
 
 		return $cart_item_session_data;
