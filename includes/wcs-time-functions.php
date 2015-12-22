@@ -122,10 +122,7 @@ function wcs_get_subscription_ranges( $subscription_period = '' ) {
 		$subscription_period = '';
 	}
 
-	$subscription_ranges = tlc_transient( 'wcs-sub-ranges' )
-		->updates_with( 'wcs_get_subscription_ranges_tlc' )
-		->expires_in( 86400 )
-		->get();
+	$subscription_ranges = WC_Subscriptions::$cache->cache_and_get( 'wcs-sub-ranges', 'wcs_get_subscription_ranges_tlc', array(), 86400 );
 
 	$subscription_ranges = apply_filters( 'woocommerce_subscription_lengths', $subscription_ranges, $subscription_period );
 
