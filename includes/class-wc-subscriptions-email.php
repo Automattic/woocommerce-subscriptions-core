@@ -182,6 +182,55 @@ class WC_Subscriptions_Email {
 	}
 
 	/**
+	 * Generate an order items table using a WC compatible version of the function.
+	 *
+	 * @param object $order
+	 * @param array $args {
+	 *     @type bool  'show_download_links'
+	 *     @type bool  'show_sku'
+	 *     @type bool  'show_purchase_note'
+	 *     @type array 'image_size'
+	 *     @type bool  'plain_text'
+	 * }
+	 * @return string email order items table html
+	 */
+	public static function email_order_items_table( $order, $args = array() ) {
+		$items_table = '';
+
+		if ( is_numeric( $order ) ) {
+			$order = wc_get_order( $order );
+		}
+
+		if ( is_a( $order, 'WC_Abstract_Order' ) ) {
+
+			if ( WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
+
+				$items_table = call_user_func_array( array( $order, 'email_order_items_table' ), $args );
+			} else {
+
+				$show_download_links          = reset( $args );
+				$show_download_links_callback = ( isset( $show_download_links ) && $show_download_links ) ? '__return_true' : '__return_false';
+
+				// 2.5 doesn't support the show_download_links parameter but uses $order->is_download_permitted instead
+				array_shift( $args );
+
+				$array_keys = array( 'show_sku', 'show_image', 'image_size', 'plain_text' );
+
+				foreach ( $args as $key => $arg ) {
+					$args[ $array_keys[ $key ] ] = $arg;
+					unset( $args[ $key ] );
+				}
+
+				add_filter( 'woocommerce_order_is_download_permitted', $show_download_links_callback );
+				$items_table = $order->email_order_items_table( $args );
+				remove_filter( 'woocommerce_order_is_download_permitted', $show_download_links_callback );
+			}
+		}
+
+		return $items_table;
+	}
+
+	/**
 	 * Init the mailer and call the notifications for the current filter.
 	 *
 	 * @param int $user_id The ID of the user who the subscription belongs to
