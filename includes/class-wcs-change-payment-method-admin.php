@@ -120,7 +120,7 @@ class WCS_Change_Payment_Method_Admin {
 
 		$payment_gateway = ( 'manual' != $payment_method ) ? $payment_gateways[ $payment_method ] : '';
 
-		if ( ! $subscription->is_manual() && ( ( $payment_gateway == '' && isset( $subscription->payment_gateway->id ) ) || ( $subscription->payment_gateway->id != $payment_gateway->id ) ) ) {
+		if ( ! $subscription->is_manual() && ( ( '' == $payment_gateway && isset( $subscription->payment_gateway->id ) ) || ( $subscription->payment_gateway->id != $payment_gateway->id ) ) ) {
 
 			// Before updating to a new payment gateway make sure the subscription status is updated with the current gateway
 			$gateway_status = apply_filters( 'wcs_gateway_status_payment_changed', 'cancelled', $subscription, $payment_gateway );
