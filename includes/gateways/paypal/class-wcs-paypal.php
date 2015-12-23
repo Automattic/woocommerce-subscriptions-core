@@ -88,6 +88,8 @@ class WCS_PayPal {
 		// Triggered by WCS_SV_API_Base::broadcast_request() whenever an API request is made
 		add_action( 'wc_paypal_api_request_performed', __CLASS__ . '::log_api_requests', 10, 2 );
 
+		add_filter( 'wcs_gateway_change_payment_button_text', __CLASS__ . '::change_payment_button_text', 10 , 2 );
+
 		add_filter( 'woocommerce_subscriptions_admin_meta_boxes_script_parameters', __CLASS__ . '::maybe_add_change_payment_method_warning' );
 
 		add_filter( 'wcs_gateway_status_payment_changed', __CLASS__ . '::suspend_subscription_on_payment_changed', 10, 2 );
@@ -425,6 +427,22 @@ class WCS_PayPal {
 		return ( 'paypal' == $subscription->payment_gateway->id ) ? 'on-hold' : $status;
 	}
 
+	/**
+	 * Change the "Change Payment Method" button for PayPal
+	 *
+	 * @param string $change_button_text
+	 * @param WC_Payment_Gateway $gateway
+	 * @since 2.0.8
+	 */
+	public static function change_payment_button_text( $change_button_text, $gateway ) {
+
+		if ( is_object( $gateway ) && isset( $gateway->id ) && 'paypal' == $gateway->id && ! empty( $gateway->order_button_text ) ) {
+			$change_button_text = $gateway->order_button_text;
+		}
+
+		return $change_button_text;
+	}
+
 	/** Getters ******************************************************/
 
 	/**
@@ -541,4 +559,5 @@ class WCS_PayPal {
 	public function get_id() {
 		return 'paypal';
 	}
+
 }
