@@ -154,10 +154,6 @@ class WC_Subscriptions_Upgrader {
 
 		// Migrate products, WP-Cron hooks and subscriptions to the latest architecture, via Ajax
 		if ( '0' != self::$active_version && version_compare( self::$active_version, '2.0', '<' ) ) {
-
-			// Make sure the new /my-account/view-subscription/{id} endpoints will work
-			flush_rewrite_rules();
-
 			// Delete old cron locks
 			$deleted_rows = $wpdb->query( "DELETE FROM {$wpdb->options} WHERE `option_name` LIKE 'wcs\_blocker\_%'" );
 
