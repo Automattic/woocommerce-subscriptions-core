@@ -40,6 +40,9 @@ class WC_Subscriptions_Coupon {
 
 		// Remove coupons which don't apply to certain cart calculations
 		add_action( 'woocommerce_before_calculate_totals', __CLASS__ . '::remove_coupons', 10 );
+
+		// Add our recurring product coupon types to the list of coupon types that apply to individual products
+		add_filter( 'woocommerce_product_coupon_types', __CLASS__ . '::filter_product_coupon_types', 10, 1 );
 	}
 
 	/**
@@ -83,7 +86,7 @@ class WC_Subscriptions_Coupon {
 
 				$coupon = new WC_Coupon( $code );
 
-				if ( $coupon->apply_before_tax() && $coupon->is_valid() ) {
+				if ( $coupon->apply_before_tax() && $coupon->is_valid() && $coupon->is_valid_for_product( wc_get_product( $product_id ), $cart_item ) ) {
 
 					$apply_recurring_coupon = $apply_recurring_percent_coupon = $apply_initial_coupon = $apply_initial_percent_coupon = false;
 
@@ -396,6 +399,22 @@ class WC_Subscriptions_Coupon {
 		$cart->coupon_discount_amounts[ $code ] += $amount;
 
 		return $cart;
+	}
+
+	/**
+	 * Add our recurring product coupon types to the list of coupon types that apply to individual products.
+	 * Used to control which validation rules will apply.
+	 *
+	 * @param array $product_coupon_types
+	 * @return array $product_coupon_types
+	 */
+	public static function filter_product_coupon_types( $product_coupon_types ) {
+
+		if ( is_array( $product_coupon_types ) ) {
+			$product_coupon_types = array_merge( $product_coupon_types, array( 'recurring_fee', 'recurring_percent', 'sign_up_fee', 'sign_up_fee_percent' ) );
+		}
+
+		return $product_coupon_types;
 	}
 
 	/* Deprecated */
