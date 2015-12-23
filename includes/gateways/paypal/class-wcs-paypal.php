@@ -88,6 +88,10 @@ class WCS_PayPal {
 		// Triggered by WCS_SV_API_Base::broadcast_request() whenever an API request is made
 		add_action( 'wc_paypal_api_request_performed', __CLASS__ . '::log_api_requests', 10, 2 );
 
+		add_filter( 'woocommerce_subscriptions_admin_meta_boxes_script_parameters', __CLASS__ . '::maybe_add_change_payment_method_warning' );
+
+		add_filter( 'wcs_gateway_status_payment_changed', __CLASS__ . '::suspend_subscription_on_payment_changed', 10, 2 );
+
 		WCS_PayPal_Supports::init();
 		WCS_PayPal_Status_Manager::init();
 		WCS_PayPal_Standard_Switcher::init();
@@ -381,6 +385,44 @@ class WCS_PayPal {
 		}
 
 		return $resubscribe_order;
+	}
+
+	/**
+	 * Maybe adds a warning message to subscription script parameters which is used in a Javascript dialog if the
+	 * payment method of the subscription is set to be changed. The warning message is only added if the subscriptions
+	 * payment gateway is PayPal Standard.
+	 *
+	 * @param array $script_parameters The script parameters used in subscription meta boxes.
+	 * @return array $script_parameters
+	 * @since 2.0
+	 */
+	public static function maybe_add_change_payment_method_warning( $script_parameters ) {
+		global $post;
+		$subscription = wcs_get_subscription( $post );
+
+		if ( 'paypal' === $subscription->payment_method ) {
+
+			$paypal_profile_id  = wcs_get_paypal_id( $subscription->id );
+			$is_paypal_standard = ! wcs_is_paypal_profile_a( $paypal_profile_id, 'billing_agreement' );
+
+			if ( $is_paypal_standard ) {
+				$script_parameters['change_payment_method_warning'] = __( "Are you sure you want to change the payment method from PayPal standard?\n\nThis will suspend the subscription at PayPal.", 'woocommerce-subscriptions' );
+			}
+		}
+
+		return $script_parameters;
+	}
+
+	/**
+	 * When changing the payment method on edit subscription screen from PayPal, only suspend the subscription rather
+	 * than cancelling it.
+	 *
+	 * @param string $status The subscription status sent to the current payment gateway before changing subscription payment method.
+	 * @return object $subscription
+	 * @since 2.0
+	 */
+	public static function suspend_subscription_on_payment_changed( $status, $subscription ) {
+		return ( 'paypal' == $subscription->payment_gateway->id ) ? 'on-hold' : $status;
 	}
 
 	/** Getters ******************************************************/
