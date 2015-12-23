@@ -208,22 +208,20 @@ class WC_Subscriptions_Email {
 				$items_table = call_user_func_array( array( $order, 'email_order_items_table' ), $args );
 			} else {
 
-				$show_download_links          = reset( $args );
-				$show_download_links_callback = ( isset( $show_download_links ) && $show_download_links ) ? '__return_true' : '__return_false';
+				// 2.5 doesn't support both the show_download_links or show_purchase_note parameters but uses $order->is_download_permitted and  $order->is_paid instead
+				$show_download_links_callback = ( isset( $args['show_download_links'] ) && $args['show_download_links'] ) ? '__return_true' : '__return_false';
+				$show_purchase_note_callback  = ( isset( $args['show_purchase_note'] ) && $args['show_purchase_note'] ) ? '__return_true' : '__return_false';
 
-				// 2.5 doesn't support the show_download_links parameter but uses $order->is_download_permitted instead
-				array_shift( $args );
-
-				$array_keys = array( 'show_sku', 'show_image', 'image_size', 'plain_text' );
-
-				foreach ( $args as $key => $arg ) {
-					$args[ $array_keys[ $key ] ] = $arg;
-					unset( $args[ $key ] );
-				}
+				unset( $args['show_download_links'] );
+				unset( $args['show_purchase_note'] );
 
 				add_filter( 'woocommerce_order_is_download_permitted', $show_download_links_callback );
+				add_filter( 'woocommerce_order_is_paid', $show_purchase_note_callback );
+
 				$items_table = $order->email_order_items_table( $args );
+
 				remove_filter( 'woocommerce_order_is_download_permitted', $show_download_links_callback );
+				remove_filter( 'woocommerce_order_is_paid', $show_purchase_note_callback );
 			}
 		}
 
