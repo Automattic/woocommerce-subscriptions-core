@@ -83,7 +83,7 @@ class WC_Subscription extends WC_Order {
 		} elseif ( 'payment_gateway' == $key ) {
 
 			// Only set the payment gateway once and only when we first need it
-			if ( ! property_exists( 'WC_Subscription','payment_gateway' ) || empty( $this->payment_gateway ) ) {
+			if ( ! property_exists( $this, 'payment_gateway' ) || empty( $this->payment_gateway ) ) {
 				$this->payment_gateway = wc_get_payment_gateway_by_order( $this );
 			}
 
