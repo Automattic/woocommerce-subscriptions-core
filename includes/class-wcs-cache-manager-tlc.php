@@ -53,10 +53,17 @@ class WCS_Cache_Manager_TLC extends WCS_Cache_Manager {
 	 *
 	 * @return bool|mixed
 	 */
-	public function cache_and_get( $key, $callback, $params = array() ) {
-		return tlc_transient( $key )
-			->updates_with( $callback, $params )
-			->get();
+	public function cache_and_get( $key, $callback, $params = array(), $expires = 0 ) {
+		$expires = absint( $expires );
+
+		$transient = tlc_transient( $key )
+			->updates_with( $callback, $params );
+
+		if ( $expires ) {
+			$transient->expires_in( $expires );
+		}
+
+		return $transient->get();
 	}
 
 	/**
