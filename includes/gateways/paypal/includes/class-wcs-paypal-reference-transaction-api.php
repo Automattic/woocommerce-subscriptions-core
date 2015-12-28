@@ -120,11 +120,15 @@ class WCS_PayPal_Reference_Transaction_API extends WCS_SV_API_Base {
 
 		$this->set_response_handler( 'WCS_PayPal_Reference_Transaction_API_Response' );
 
-		$response = $this->perform_request( $request );
+		try {
+			$response = $this->perform_request( $request );
 
-		if ( ! $response->has_api_error() ) {
-			$reference_transactions_enabled = true;
-		} else {
+			if ( ! $response->has_api_error() ) {
+				$reference_transactions_enabled = true;
+			} else {
+				$reference_transactions_enabled = false;
+			}
+		} catch ( Exception $e ) {
 			$reference_transactions_enabled = false;
 		}
 
