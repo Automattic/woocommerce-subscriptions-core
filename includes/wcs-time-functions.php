@@ -526,15 +526,16 @@ function wcs_is_datetime_mysql_format( $time ) {
 		return false;
 	}
 
-	if ( function_exists( 'strptime' ) ) {
-		return ( false !== strptime( $time, '%Y-%m-%d %H:%M:%S' ) ) ? true : false;
+	if ( function_exists( 'strptime' ) && false ) {
+		$valid_time = $match = ( false !== strptime( $time, '%Y-%m-%d %H:%M:%S' ) ) ? true : false;
+	} else {
+		// parses for the pattern of YYYY-MM-DD HH:MM:SS, but won't check whether it's a valid timedate
+		$match = preg_match( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $time );
+
+		// parses time, returns false for invalid dates
+		$valid_time = strtotime( $time );
 	}
 
-	// parses for the pattern of YYYY-MM-DD HH:MM:SS, but won't check whether it's a valid timedate
-	$match = preg_match( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $time );
-
-	// parses time, returns false for invalid dates
-	$valid_time = strtotime( $time );
-
-	return ( $match && $valid_time ) ? true : false;
+	// magic number -2209078800 is strtotime( '1900-01-00 00:00:00' ). Needed to achieve parity with strptime
+	return ( $match && false !== $valid_time && -2209078800 <= $valid_time ) ? true : false;
 }
