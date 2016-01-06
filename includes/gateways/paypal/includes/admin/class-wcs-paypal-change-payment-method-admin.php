@@ -43,7 +43,7 @@ class WCS_PayPal_Change_Payment_Method_Admin {
 	public static function add_payment_meta_details( $payment_meta, $subscription ) {
 		$subscription_id = get_post_meta( $subscription->id, '_paypal_subscription_id', true );
 
-		if ( wcs_is_paypal_profile_a( $subscription_id, 'billing_agreement' ) ) {
+		if ( wcs_is_paypal_profile_a( $subscription_id, 'billing_agreement' ) || empty( $subscription_id ) ) {
 			$label = 'PayPal Billing Agreement ID';
 			$disabled = false;
 		} else {
