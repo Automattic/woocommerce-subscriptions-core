@@ -41,17 +41,25 @@ class WCS_PayPal_Change_Payment_Method_Admin {
 	 * @since 2.0
 	 */
 	public static function add_payment_meta_details( $payment_meta, $subscription ) {
+		$subscription_id = get_post_meta( $subscription->id, '_paypal_subscription_id', true );
 
-		if ( WCS_PayPal::are_reference_transactions_enabled() ) {
-			$payment_meta['paypal'] = array(
-				'post_meta' => array(
-					'_paypal_subscription_id' => array(
-						'value' => get_post_meta( $subscription->id, '_paypal_subscription_id', true ),
-						'label' => 'PayPal Billing Agreement ID',
-					),
-				),
-			);
+		if ( wcs_is_paypal_profile_a( $subscription_id, 'billing_agreement' ) || empty( $subscription_id ) ) {
+			$label = 'PayPal Billing Agreement ID';
+			$disabled = false;
+		} else {
+			$label = 'PayPal Standard Subscription ID';
+			$disabled = true;
 		}
+
+		$payment_meta['paypal'] = array(
+			'post_meta' => array(
+				'_paypal_subscription_id' => array(
+					'value' => $subscription_id,
+					'label' => $label,
+					'disabled' => $disabled,
+				),
+			),
+		);
 
 		return $payment_meta;
 	}
