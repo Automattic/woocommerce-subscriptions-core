@@ -113,7 +113,7 @@ function wcs_is_product_switchable_type( $product ) {
 	$variation = null;
 
 	// back compat for parent products
-	if( $product->is_type( 'subscription_variation' ) && ! empty( $product->parent ) ){
+	if ( $product->is_type( 'subscription_variation' ) && ! empty( $product->parent ) ) {
 		$variation = $product;
 		$product = $product->parent;
 	}
