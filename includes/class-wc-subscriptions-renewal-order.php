@@ -31,6 +31,10 @@ class WC_Subscriptions_Renewal_Order {
 		add_filter( 'wp_loaded', __CLASS__ . '::prevent_cancelling_renewal_orders', 19, 3 );
 
 		add_action( 'woocommerce_order_status_refunded', __CLASS__ . '::maybe_cancel_subscription' );
+
+		add_action( 'woocommerce_order_partially_refunded', __CLASS__ . '::maybe_cancel_subscription_on_partial_refund' );
+
+		add_action( 'woocommerce_order_fully_refunded', __CLASS__ . '::maybe_cancel_subscription' );
 	}
 
 	/* Helper functions */
@@ -163,7 +167,7 @@ class WC_Subscriptions_Renewal_Order {
 	 *
 	 * @since 2.0
 	 */
-	public static function maybe_cancel_subscription( $order_id ) {
+	public static function maybe_cancel_subscription_on_full_refund( $order_id ) {
 
 		if ( wcs_order_contains_renewal( $order_id ) ) {
 
@@ -175,6 +179,35 @@ class WC_Subscriptions_Renewal_Order {
 
 					$subscription->update_status( 'cancelled', sprintf( __( 'Subscription cancelled for refunded renewal order %s.', 'woocommerce-subscriptions' ), sprintf( '<a href="%s">#%s</a>', esc_url( wcs_get_edit_post_link( $order_id ) ), $order_id ) ) );
 				}
+			}
+		}
+	}
+
+	/**
+	 * If the subscription is pending cancellation and a renewal order is refunded, cancel the subscription.
+	 *
+	 * @param $order_id
+	 *
+	 * @since 2.0
+	 */
+	public static function maybe_cancel_subscription_on_partial_refund( $order_id ) {
+
+		if ( wcs_order_contains_renewal( $order_id ) && WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
+
+			$order                 = wc_get_order( $order_id );
+			$remaining_order_total = wc_format_decimal( $order->get_total() - $order->get_total_refunded() );
+			$remaining_order_items = absint( $order->get_item_count() - $order->get_item_count_refunded() );
+			$order_has_free_item   = false;
+
+			foreach ( $order->get_items() as $item ) {
+				if ( ! $item['line_total'] ) {
+					$order_has_free_item = true;
+					break;
+				}
+			}
+
+			if ( ! ( $remaining_order_total > 0 || ( $order_has_free_item && $remaining_order_items > 0 ) ) ) {
+				self::maybe_cancel_subscription_on_full_refund( $order_id );
 			}
 		}
 	}
