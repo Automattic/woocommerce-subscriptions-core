@@ -675,7 +675,7 @@ class WC_Subscriptions_Admin {
 				);
 			} else if ( 'users' == $screen->id ) {
 				$script_params = array(
-					'deleteUserWarning' => __( "Warning: Deleting a user will also delete the user's subscriptions. The user's orders will remain but be reassigned to the 'Guest' user.\n\nDo you want to contniue to delete this user and any associated subscriptions?", 'woocommerce-subscriptions' ),
+					'deleteUserWarning' => __( "Warning: Deleting a user will also delete the user's subscriptions. The user's orders will remain but be reassigned to the 'Guest' user.\n\nDo you want to continue to delete this user and any associated subscriptions?", 'woocommerce-subscriptions' ),
 				);
 			}
 
