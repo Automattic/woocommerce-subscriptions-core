@@ -456,7 +456,9 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function can_item_be_switched( $item, $subscription = null ) {
 
-		if ( 'line_item' == $item['type'] && wcs_is_product_switchable_type( $item['product_id'] ) ) {
+		$product_id = wcs_get_canonical_product_id( $item );
+
+		if ( 'line_item' == $item['type'] && wcs_is_product_switchable_type( $product_id ) ) {
 			$is_product_switchable = true;
 		} else {
 			$is_product_switchable = false;

@@ -110,6 +110,14 @@ function wcs_is_product_switchable_type( $product ) {
 		$product = get_product( $product );
 	}
 
+	$variation = null;
+
+	// back compat for parent products
+	if ( $product->is_type( 'subscription_variation' ) && ! empty( $product->parent ) ) {
+		$variation = $product;
+		$product = $product->parent;
+	}
+
 	if ( empty( $product ) ) {
 
 		$is_product_switchable = false;
@@ -135,5 +143,5 @@ function wcs_is_product_switchable_type( $product ) {
 		}
 	}
 
-	return apply_filters( 'wcs_is_product_switchable', $is_product_switchable, $product );
+	return apply_filters( 'wcs_is_product_switchable', $is_product_switchable, $product, $variation );
 }
