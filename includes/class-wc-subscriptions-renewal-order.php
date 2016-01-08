@@ -184,7 +184,7 @@ class WC_Subscriptions_Renewal_Order {
 	}
 
 	/**
-	 * If the subscription is pending cancellation and a renewal order is refunded, cancel the subscription.
+	 * Handles partial refunds on renewal orders in WC versions pre 2.5 which would be considered full refunds in WC 2.5.
 	 *
 	 * @param $order_id
 	 *
