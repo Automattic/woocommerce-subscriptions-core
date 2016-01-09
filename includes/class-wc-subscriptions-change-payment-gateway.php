@@ -294,7 +294,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 				}
 
 				// Update payment method
-				$new_payment_method = woocommerce_clean( $_POST['payment_method'] );
+				$new_payment_method = wc_clean( $_POST['payment_method'] );
 
 				// Allow some payment gateways which can't process the payment immediately, like PayPal, to do it later after the payment/sign-up is confirmed
 				if ( apply_filters( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', true, $new_payment_method, $subscription ) ) {
@@ -441,7 +441,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		if ( ! $subscription->is_manual() ) {
 
 			if ( ! empty( $_POST['_wcsnonce'] ) && wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_change_payment_method' ) && isset( $_POST['payment_method'] ) ) {
-				$new_payment_method = woocommerce_clean( $_POST['payment_method'] );
+				$new_payment_method = wc_clean( $_POST['payment_method'] );
 			} else {
 				$new_payment_method = $renewal_order->payment_method;
 			}

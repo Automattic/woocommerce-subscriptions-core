@@ -257,7 +257,7 @@ class WCS_Upgrade_1_2 {
 					wc_add_order_item_meta( $index, '_recurring_line_subtotal_tax', $order_item['line_subtotal_tax'] );
 
 					if ( $sign_up_fee_total > 0 ) { // Order totals have changed
-						wc_update_order_item_meta( $index, '_line_subtotal', wc_format_decimal( $order_item['line_subtotal'] ) );
+						wc_update_order_item_meta( $index, '_line_subtotal', wc_format_decimalw( $order_item['line_subtotal'] ) );
 						wc_update_order_item_meta( $index, '_line_subtotal_tax', wc_format_decimal( $order_item['line_subtotal_tax'] ) );
 						wc_update_order_item_meta( $index, '_line_total', wc_format_decimal( $order_item['line_total'] ) );
 						wc_update_order_item_meta( $index, '_line_tax', wc_format_decimal( $order_item['line_tax'] ) );
