@@ -83,7 +83,7 @@ class WC_Subscription extends WC_Order {
 		} elseif ( 'payment_gateway' == $key ) {
 
 			// Only set the payment gateway once and only when we first need it
-			if ( empty( $this->payment_gateway ) ) {
+			if ( ! property_exists( $this, 'payment_gateway' ) || empty( $this->payment_gateway ) ) {
 				$this->payment_gateway = wc_get_payment_gateway_by_order( $this );
 			}
 
@@ -138,10 +138,10 @@ class WC_Subscription extends WC_Order {
 
 			$needs_payment = true;
 
-		// And finally, check that the last renewal order doesn't need payment
+		// And finally, check that the latest order (switch or renewal) doesn't need payment
 		} else {
 
-			$last_renewal_order_id = get_posts( array(
+			$last_order_id = get_posts( array(
 				'posts_per_page' => 1,
 				'post_type'      => 'shop_order',
 				'post_status'    => 'any',
@@ -155,14 +155,21 @@ class WC_Subscription extends WC_Order {
 						'value'   => $this->id,
 						'type'    => 'numeric',
 					),
+					array(
+						'key'     => '_subscription_switch',
+						'compare' => '=',
+						'value'   => $this->id,
+						'type'    => 'numeric',
+					),
+					'relation' => 'OR',
 				),
 			) );
 
-			if ( ! empty( $last_renewal_order_id ) ) {
+			if ( ! empty( $last_order_id ) ) {
 
-				$renewal_order = new WC_Order( $last_renewal_order_id[0] );
+				$order = new WC_Order( $last_order_id[0] );
 
-				if ( $renewal_order->needs_payment() || $renewal_order->has_status( array( 'on-hold', 'failed', 'cancelled' ) ) ) {
+				if ( $order->needs_payment() || $order->has_status( array( 'on-hold', 'failed', 'cancelled' ) ) ) {
 					$needs_payment = true;
 				}
 			}
@@ -1159,6 +1166,12 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Get the details of the subscription for use with @see wcs_price_string()
 	 *
+	 * This is protected because it should not be used directly by outside methods. If you need
+	 * to display the price of a subscription, use the @see $this->get_formatted_order_total(),
+	 * @see $this->get_subtotal_to_display() or @see $this->get_formatted_line_subtotal() method.If
+	 * If you want to customise which aspects of a price string are displayed for all subscriptions,
+	 * use the filter 'woocommerce_subscription_price_string_details'.
+	 *
 	 * @return array
 	 */
 	protected function get_price_string_details( $amount = 0, $display_ex_tax_label = false ) {
@@ -1277,7 +1290,7 @@ class WC_Subscription extends WC_Order {
 		if ( false !== $last_order && false === $last_order->has_status( 'failed' ) ) {
 			remove_filter( 'woocommerce_order_status_changed', 'WC_Subscriptions_Renewal_Order::maybe_record_subscription_payment' );
 			$last_order->update_status( 'failed' );
-			add_filter( 'woocommerce_order_status_changed', 'WC_Subscriptions_Renewal_Order::maybe_record_subscription_payment' );
+			add_filter( 'woocommerce_order_status_changed', 'WC_Subscriptions_Renewal_Order::maybe_record_subscription_payment', 10, 3 );
 		}
 
 		// Log payment failure on order
@@ -1357,18 +1370,12 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Get the related orders for a subscription, including renewal orders and the initial order (if any)
+	 * Extracting the query from get_related_orders and get_last_order so it can be moved in a cached
+	 * value.
 	 *
-	 * @param string The columns to return, either 'all' or 'ids'
-	 * @param string The type of orders to return, either 'renewal' or 'all'. Default 'all'.
-	 * @since 2.0
+	 * @return array
 	 */
-	public function get_related_orders( $return_fields = 'ids', $order_type = 'all' ) {
-
-		$return_fields = ( 'ids' == $return_fields ) ? $return_fields : 'all';
-
-		$related_orders = array();
-
+	public function get_related_orders_query( $id ) {
 		$related_post_ids = get_posts( array(
 			'posts_per_page' => -1,
 			'post_type'      => 'shop_order',
@@ -1380,11 +1387,29 @@ class WC_Subscription extends WC_Order {
 				array(
 					'key'     => '_subscription_renewal',
 					'compare' => '=',
-					'value'   => $this->id,
+					'value'   => $id,
 					'type'    => 'numeric',
 				),
 			),
 		) );
+
+		return $related_post_ids;
+	}
+
+	/**
+	 * Get the related orders for a subscription, including renewal orders and the initial order (if any)
+	 *
+	 * @param string $return_fields The columns to return, either 'all' or 'ids'
+	 * @param string $order_type The type of orders to return, either 'renewal' or 'all'. Default 'all'.
+	 * @since 2.0
+	 */
+	public function get_related_orders( $return_fields = 'ids', $order_type = 'all' ) {
+
+		$return_fields = ( 'ids' == $return_fields ) ? $return_fields : 'all';
+
+		$related_orders = array();
+
+		$related_post_ids = WC_Subscriptions::$cache->cache_and_get( 'wcs-related-orders-to-' . $this->id, array( $this, 'get_related_orders_query' ), array( $this->id ) );
 
 		if ( 'all' == $return_fields ) {
 
@@ -1414,7 +1439,7 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Gets the most recent order that relates to a subscription, including renewal orders and the initial order (if any).
 	 *
-	 * @param string The columns to return, either 'all' or 'ids'
+	 * @param string $return_fields The columns to return, either 'all' or 'ids'
 	 * @since 2.0
 	 */
 	public function get_last_order( $return_fields = 'ids' ) {
@@ -1423,22 +1448,7 @@ class WC_Subscription extends WC_Order {
 
 		$last_order = false;
 
-		$renewal_post_ids = get_posts( array(
-			'posts_per_page' => 1,
-			'post_type'      => 'shop_order',
-			'post_status'    => 'any',
-			'fields'         => 'ids',
-			'orderby'        => 'date',
-			'order'          => 'DESC',
-			'meta_query'     => array(
-				array(
-					'key'     => '_subscription_renewal',
-					'compare' => '=',
-					'value'   => $this->id,
-					'type'    => 'numeric',
-				),
-			),
-		) );
+		$renewal_post_ids = WC_Subscriptions::$cache->cache_and_get( 'wcs-related-orders-to-' . $this->id, array( $this, 'get_related_orders_query' ), array( $this->id ) );
 
 		// If there are no renewal orders, get the original order (if there is one)
 		if ( empty( $renewal_post_ids ) ) {

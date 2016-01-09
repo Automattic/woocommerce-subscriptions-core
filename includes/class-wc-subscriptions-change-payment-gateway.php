@@ -59,6 +59,9 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 		// Change the "Pay for Order" page title to "Change Payment Method"
 		add_filter( 'the_title', __CLASS__ . '::change_payment_method_page_title', 100 );
+
+		// Maybe filter subscriptions_needs_payment to return false when processing change-payment-gateway requests
+		add_filter( 'woocommerce_subscription_needs_payment', __CLASS__ . '::maybe_override_needs_payment', 10, 1 );
 	}
 
 	/**
@@ -493,6 +496,25 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		}
 
 		return $title;
+	}
+
+	/**
+	 * When processing a change_payment_method request on a subscription that has a failed or pending renewal,
+	 * we don't want the `$order->needs_payment()` check inside WC_Shortcode_Checkout::order_pay() to pass.
+	 * This is causing `$gateway->payment_fields()` to be called multiple times.
+	 *
+	 * @param bool $needs_payment
+	 * @param WC_Subscription $subscription
+	 * @return bool
+	 * @since 2.0.7
+	 */
+	public static function maybe_override_needs_payment( $needs_payment ) {
+
+		if ( $needs_payment && self::$is_request_to_change_payment ) {
+			$needs_payment = false;
+		}
+
+		return $needs_payment;
 	}
 
 	/** Deprecated Functions **/

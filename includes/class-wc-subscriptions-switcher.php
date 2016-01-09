@@ -140,7 +140,7 @@ class WC_Subscriptions_Switcher {
 
 				$subscription = wcs_get_subscription( $switch_item['subscription_id'] );
 
-				if ( ! is_object( $subscription ) || ! current_user_can( 'switch_shop_subscription', $subscription->id ) || ! self::is_product_of_switchable_type( WC()->cart->cart_contents[ $cart_item_key ]['data'] ) ) {
+				if ( ! is_object( $subscription ) || ! current_user_can( 'switch_shop_subscription', $subscription->id ) || ! wcs_is_product_switchable_type( WC()->cart->cart_contents[ $cart_item_key ]['data'] ) ) {
 					WC()->cart->remove_cart_item( $cart_item_key );
 					$removed_item_count++;
 				}
@@ -157,7 +157,7 @@ class WC_Subscriptions_Switcher {
 			}
 		} elseif ( is_product() && $product = get_product( $post ) ) { // Automatically initiate the switch process for limited variable subscriptions
 
-			if ( ( $product->is_type( array( 'variable-subscription', 'subscription_variation', 'grouped' ) ) || 0 !== $product->post->post_parent ) && 'no' != $product->limit_subscriptions ) {
+			if ( wcs_is_product_switchable_type( $product ) && 'no' != $product->limit_subscriptions ) {
 
 				// Check if the user has an active subscription for this product, and if so, initiate the switch process
 				$subscriptions = wcs_get_users_subscriptions();
@@ -194,7 +194,7 @@ class WC_Subscriptions_Switcher {
 							$subscribed_notice = __( 'You have already subscribed to this product and it is limited to one per customer. You can not purchase the product again.', 'woocommerce-subscriptions' );
 
 							// If switching is enabled for this product type, initiate the auto-switch process
-							if ( self::is_product_of_switchable_type( $product ) ) {
+							if ( wcs_is_product_switchable_type( $product ) ) {
 
 								// Don't initiate auto-switching when the subscription requires payment
 								if ( $subscription->needs_payment() ) {
@@ -456,7 +456,9 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function can_item_be_switched( $item, $subscription = null ) {
 
-		if ( 'line_item' == $item['type'] && wcs_is_product_switchable_type( $item['product_id'] ) ) {
+		$product_id = wcs_get_canonical_product_id( $item );
+
+		if ( 'line_item' == $item['type'] && wcs_is_product_switchable_type( $product_id ) ) {
 			$is_product_switchable = true;
 		} else {
 			$is_product_switchable = false;
@@ -719,7 +721,13 @@ class WC_Subscriptions_Switcher {
 			wc_update_order_item( $shipping_method_id, array( 'order_item_type' => 'shipping_switched' ) );
 		}
 
+		// Then zero the order_shipping total so we have a clean slate to add to
+		$subscription->order_shipping = 0;
+
 		WC_Subscriptions_Checkout::add_shipping( $subscription, $recurring_cart );
+
+		// Now update subscription object order_shipping to reflect updated values so it doesn't stay 0
+		$subscription->order_shipping = get_post_meta( $subscription->id, '_order_shipping', true );
 	}
 
 	/**
@@ -1379,7 +1387,7 @@ class WC_Subscriptions_Switcher {
 	 * @return bool
 	 */
 	public static function is_purchasable( $is_purchasable, $product ) {
-		if ( false === $is_purchasable && self::is_product_of_switchable_type( $product ) && WC_Subscriptions_Product::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && is_user_logged_in() && wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) {
+		if ( false === $is_purchasable && wcs_is_product_switchable_type( $product ) && WC_Subscriptions_Product::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && is_user_logged_in() && wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) {
 
 			// Adding to cart from the product page
 			if ( isset( $_GET['switch-subscription'] ) ) {
@@ -1468,6 +1476,8 @@ class WC_Subscriptions_Switcher {
 	 * @since 1.5.21
 	 */
 	public static function is_product_of_switchable_type( $product ) {
+
+		_deprecated_function( __METHOD__, '2.0.7', 'wcs_is_product_switchable_type' );
 
 		$allow_switching = false;
 		$switch_setting  = get_option( WC_Subscriptions_Admin::$option_prefix . '_allow_switching', 'no' );

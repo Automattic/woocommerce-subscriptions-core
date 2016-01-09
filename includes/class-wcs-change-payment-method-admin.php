@@ -62,10 +62,11 @@ class WCS_Change_Payment_Method_Admin {
 						$field_id    = sprintf( '_payment_method_meta[%s][%s]', $meta_table , $meta_key );
 						$field_label = ( ! empty( $meta_data['label'] ) ) ? $meta_data['label'] : $meta_key ;
 						$field_value = ( ! empty( $meta_data['value'] ) ) ? $meta_data['value'] : null ;
+						$field_disabled = ( isset( $meta_data['disabled'] ) && true == $meta_data['disabled'] ) ? ' disabled="disabled"' : '';
 
 						echo '<p class="form-field form-field-wide">';
 						echo '<label for="' . esc_attr( $field_id ) . '">' . esc_html( $field_label ) . '</label>';
-						echo '<input type="text" class="short" name="' . esc_attr( $field_id ) . '" id="' . esc_attr( $field_id ) . '" value="' . esc_attr( $field_value ) . '" placeholder="">';
+						echo '<input type="text" class="short" name="' . esc_attr( $field_id ) . '" id="' . esc_attr( $field_id ) . '" value="' . esc_attr( $field_value ) . '" placeholder="" ' . esc_attr( $field_disabled ) . '>';
 						echo '</p>';
 
 					}
@@ -118,9 +119,16 @@ class WCS_Change_Payment_Method_Admin {
 			}
 		}
 
-		$payment_gateway  = ( 'manual' != $payment_method ) ? $payment_gateways[ $payment_method ] : '';
-		$subscription->set_payment_method( $payment_gateway, $payment_method_meta );
+		$payment_gateway = ( 'manual' != $payment_method ) ? $payment_gateways[ $payment_method ] : '';
 
+		if ( ! $subscription->is_manual() && property_exists( $subscription->payment_gateway, 'id' ) && ( '' == $payment_gateway || ( $subscription->payment_gateway->id != $payment_gateway->id ) ) ) {
+			// Before updating to a new payment gateway make sure the subscription status is updated with the current gateway
+			$gateway_status = apply_filters( 'wcs_gateway_status_payment_changed', 'cancelled', $subscription, $payment_gateway );
+
+			WC_Subscriptions_Payment_Gateways::trigger_gateway_status_updated_hook( $subscription, $gateway_status );
+		}
+
+		$subscription->set_payment_method( $payment_gateway, $payment_method_meta );
 	}
 
 	/**

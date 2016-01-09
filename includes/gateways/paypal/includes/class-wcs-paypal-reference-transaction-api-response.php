@@ -34,7 +34,7 @@ class WCS_PayPal_Reference_Transaction_API_Response extends WC_Gateway_Paypal_Re
 	public function __construct( $response ) {
 
 		// URL decode the response string and parse it
-		parse_str( urldecode( $response ), $this->parameters );
+		wp_parse_str( urldecode( $response ), $this->parameters );
 	}
 
 	/**
