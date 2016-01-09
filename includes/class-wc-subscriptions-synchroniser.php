@@ -1068,7 +1068,7 @@ class WC_Subscriptions_Synchroniser {
 
 			$product_id = WC_Subscriptions_Cart::get_items_product_id( $cart_item );
 
-			if ( woocommerce_price( 0 ) == $subscription_details['initial_amount'] && 0 == $subscription_details['trial_length'] ) {
+			if ( wc_price( 0 ) == $subscription_details['initial_amount'] && 0 == $subscription_details['trial_length'] ) {
 				$subscription_details['initial_amount'] = '';
 			}
 		}

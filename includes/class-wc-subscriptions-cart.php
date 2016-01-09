@@ -1702,8 +1702,8 @@ class WC_Subscriptions_Cart {
 			}
 		}
 
-		$initial_amount_string   = ( is_numeric( $subscription_details['initial_amount'] ) ) ? woocommerce_price( $subscription_details['initial_amount'] ) : $subscription_details['initial_amount'];
-		$recurring_amount_string = ( is_numeric( $subscription_details['recurring_amount'] ) ) ? woocommerce_price( $subscription_details['recurring_amount'] ) : $subscription_details['recurring_amount'];
+		$initial_amount_string   = ( is_numeric( $subscription_details['initial_amount'] ) ) ? wc_price( $subscription_details['initial_amount'] ) : $subscription_details['initial_amount'];
+		$recurring_amount_string = ( is_numeric( $subscription_details['recurring_amount'] ) ) ? wc_price( $subscription_details['recurring_amount'] ) : $subscription_details['recurring_amount'];
 
 		// Don't show up front fees when there is no trial period and no sign up fee and they are the same as the recurring amount
 		if ( self::get_cart_subscription_trial_length() == 0 && self::get_cart_subscription_sign_up_fee() == 0 && $initial_amount_string == $recurring_amount_string ) {

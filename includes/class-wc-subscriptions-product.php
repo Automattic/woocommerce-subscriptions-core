@@ -205,7 +205,7 @@ class WC_Subscriptions_Product {
 			$price .= $grouped_product->get_price_html_from_text();
 		}
 
-		$price .= woocommerce_price( $min_price );
+		$price .= wc_price( $min_price );
 
 		return $price;
 	}
@@ -300,7 +300,7 @@ class WC_Subscriptions_Product {
 			if ( isset( $include['price'] ) ) {
 				$price = $include['price'];
 			} else {
-				$price = woocommerce_price( $base_price );
+				$price = wc_price( $base_price );
 			}
 		}
 
@@ -313,7 +313,7 @@ class WC_Subscriptions_Product {
 		$trial_period        = self::get_trial_period( $product );
 
 		if ( is_numeric( $sign_up_fee ) ) {
-			$sign_up_fee = woocommerce_price( $sign_up_fee );
+			$sign_up_fee = wc_price( $sign_up_fee );
 		}
 
 		if ( $include['subscription_length'] ) {
