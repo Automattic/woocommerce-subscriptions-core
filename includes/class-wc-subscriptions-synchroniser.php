@@ -672,7 +672,7 @@ class WC_Subscriptions_Synchroniser {
 				if ( $is_first_payment_today ) {
 					$payment_date_string = __( 'Today!', 'woocommerce-subscriptions' );
 				} else {
-					$payment_date_string = date_i18n( woocommerce_date_format(), $first_payment_timestamp + ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) );
+					$payment_date_string = date_i18n( wc_date_format(), $first_payment_timestamp + ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) );
 				}
 
 				if ( self::is_product_prorated( $product ) && ! $is_first_payment_today ) {

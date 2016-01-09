@@ -2303,7 +2303,7 @@ class WC_Subscriptions_Manager {
 					// translators: placeholder is human time diff (e.g. "3 weeks")
 					$date_to_display = sprintf( __( 'In %s', 'woocommerce-subscriptions' ), human_time_diff( gmdate( 'U' ), $new_payment_timestamp ) );
 				} else {
-					$date_to_display = date_i18n( woocommerce_date_format(), $new_payment_timestamp_user_time );
+					$date_to_display = date_i18n( wc_date_format(), $new_payment_timestamp_user_time );
 				}
 
 				$response['status']        = 'success';
