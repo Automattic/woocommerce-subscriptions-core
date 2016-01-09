@@ -164,9 +164,9 @@ class WCS_Upgrade_1_2 {
 
 					// Add line item meta
 					if ( $item_id ) {
-						woocommerce_update_order_item_meta( $item_id, 'compound', absint( isset( $order_taxes[ $index ]['compound'] ) ? $order_taxes[ $index ]['compound'] : 0 ) );
-						woocommerce_update_order_item_meta( $item_id, 'tax_amount', wc_format_decimal( $order_taxes[ $index ]['cart_tax'] ) );
-						woocommerce_update_order_item_meta( $item_id, 'shipping_tax_amount', wc_format_decimal( $order_taxes[ $index ]['shipping_tax'] ) );
+						wc_update_order_item_meta( $item_id, 'compound', absint( isset( $order_taxes[ $index ]['compound'] ) ? $order_taxes[ $index ]['compound'] : 0 ) );
+						wc_update_order_item_meta( $item_id, 'tax_amount', wc_format_decimal( $order_taxes[ $index ]['cart_tax'] ) );
+						wc_update_order_item_meta( $item_id, 'shipping_tax_amount', wc_format_decimal( $order_taxes[ $index ]['shipping_tax'] ) );
 					}
 				}
 			}
@@ -257,10 +257,10 @@ class WCS_Upgrade_1_2 {
 					wc_add_order_item_meta( $index, '_recurring_line_subtotal_tax', $order_item['line_subtotal_tax'] );
 
 					if ( $sign_up_fee_total > 0 ) { // Order totals have changed
-						woocommerce_update_order_item_meta( $index, '_line_subtotal', woocommerce_format_decimal( $order_item['line_subtotal'] ) );
-						woocommerce_update_order_item_meta( $index, '_line_subtotal_tax', woocommerce_format_decimal( $order_item['line_subtotal_tax'] ) );
-						woocommerce_update_order_item_meta( $index, '_line_total', woocommerce_format_decimal( $order_item['line_total'] ) );
-						woocommerce_update_order_item_meta( $index, '_line_tax', woocommerce_format_decimal( $order_item['line_tax'] ) );
+						wc_update_order_item_meta( $index, '_line_subtotal', woocommerce_format_decimal( $order_item['line_subtotal'] ) );
+						wc_update_order_item_meta( $index, '_line_subtotal_tax', woocommerce_format_decimal( $order_item['line_subtotal_tax'] ) );
+						wc_update_order_item_meta( $index, '_line_total', woocommerce_format_decimal( $order_item['line_total'] ) );
+						wc_update_order_item_meta( $index, '_line_tax', woocommerce_format_decimal( $order_item['line_tax'] ) );
 					}
 				}
 			}
