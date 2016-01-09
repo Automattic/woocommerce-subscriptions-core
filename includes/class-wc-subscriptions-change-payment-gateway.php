@@ -420,7 +420,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	public static function get_return_url( $return_url ) {
 
 		if ( ! empty( $_POST['_wcsnonce'] ) && wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_change_payment_method' ) && isset( $_POST['woocommerce_change_payment'] ) ) {
-			$return_url = get_permalink( woocommerce_get_page_id( 'myaccount' ) );
+			$return_url = get_permalink( wc_get_page_id( 'myaccount' ) );
 		}
 
 		return $return_url;
