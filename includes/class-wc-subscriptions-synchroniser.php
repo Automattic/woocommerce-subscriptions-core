@@ -406,7 +406,7 @@ class WC_Subscriptions_Synchroniser {
 	public static function is_product_synced( $product ) {
 
 		if ( ! is_object( $product ) ) {
-			$product = get_product( $product );
+			$product = wc_get_product( $product );
 		}
 
 		if ( ! is_object( $product ) || ! self::is_syncing_enabled() || 'day' == $product->subscription_period || ! $product->is_type( array( 'subscription', 'variable-subscription', 'subscription_variation' ) ) ) {

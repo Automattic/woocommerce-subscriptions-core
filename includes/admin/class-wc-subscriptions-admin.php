@@ -614,7 +614,7 @@ class WC_Subscriptions_Admin {
 		}
 
 		// Now that all the variation's meta is saved, sync the min variation price
-		$variable_subscription = get_product( $post_id );
+		$variable_subscription = wc_get_product( $post_id );
 		$variable_subscription->variable_product_sync();
 
 	}

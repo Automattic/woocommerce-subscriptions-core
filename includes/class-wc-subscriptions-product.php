@@ -165,7 +165,7 @@ class WC_Subscriptions_Product {
 
 				$contains_subscription = true;
 
-				$child_product = get_product( $child_product_id );
+				$child_product = wc_get_product( $child_product_id );
 
 				$child_price = $child_product->get_price();
 				$sign_up_fee = $child_product->get_sign_up_fee();
@@ -761,7 +761,7 @@ class WC_Subscriptions_Product {
 
 			$user_id = $args[2];
 			$post_id = $args[2];
-			$product = get_product( $post_id );
+			$product = wc_get_product( $post_id );
 
 			if ( false !== $product && 'trash' == $product->post->post_status && $product->is_type( array( 'subscription', 'variable-subscription', 'subscription_variation' ) ) ) {
 
@@ -876,7 +876,7 @@ class WC_Subscriptions_Product {
 
 			if ( $variation_post && $variation_post->post_type == 'product_variation' ) {
 
-				$variation_product = get_product( $variation_id );
+				$variation_product = wc_get_product( $variation_id );
 
 				if ( $variation_product && $variation_product->is_type( 'subscription_variation' ) ) {
 

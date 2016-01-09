@@ -209,7 +209,7 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 
 		foreach ( $subscription->get_items() as $line_item ) {
 
-			$product = ( ! empty( $line_item['variation_id'] ) ) ? get_product( $line_item['variation_id'] ) : get_product( $line_item['product_id'] );
+			$product = ( ! empty( $line_item['variation_id'] ) ) ? wc_get_product( $line_item['variation_id'] ) : wc_get_product( $line_item['product_id'] );
 
 			if ( false === $product ) {
 				$all_line_items_exist = false;

@@ -133,7 +133,7 @@ class WCS_Cart_Renewal {
 				}
 			}
 
-			$product = get_product( $line_item['product_id'] );
+			$product = wc_get_product( $line_item['product_id'] );
 
 			// The notice displayed when a subscription product has been deleted and the custoemr attempts to manually renew or make a renewal payment for a failed recurring payment for that product/subscription
 			// translators: placeholder is an item name
@@ -147,7 +147,7 @@ class WCS_Cart_Renewal {
 			// Make sure we don't actually need the variation ID (if the product was a variation, it will have a variation ID; however, if the product has changed from a simple subscription to a variable subscription, there will be no variation_id)
 			} elseif ( $product->is_type( array( 'variable-subscription' ) ) && ! empty( $line_item['variation_id'] ) ) {
 
-				$variation = get_product( $variation_id );
+				$variation = wc_get_product( $variation_id );
 
 				// Display error message for deleted product variations
 				if ( false === $variation ) {
