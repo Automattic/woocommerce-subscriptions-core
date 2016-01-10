@@ -41,9 +41,6 @@ class WC_Subscriptions_Manager {
 		// Expire a user's subscription
 		add_action( 'woocommerce_scheduled_subscription_end_of_prepaid_term', __CLASS__ . '::subscription_end_of_prepaid_term', 10, 1 );
 
-		// Subscription Trial End
-		add_action( 'woocommerce_scheduled_subscription_trial_end', __CLASS__ . '::subscription_trial_end', 0, 2 );
-
 		// Check if the subscription needs to use the failed payment process to repair its status
 		add_action( 'woocommerce_scheduled_subscription_payment', __CLASS__ . '::maybe_process_failed_renewal_for_repair', 0, 1 );
 
@@ -54,10 +51,10 @@ class WC_Subscriptions_Manager {
 		add_action( 'wp_trash_post', __CLASS__ . '::maybe_trash_subscription', 10 );
 
 		// When a user is being deleted from the site, via standard WordPress functions, make sure their subscriptions are cancelled
-		add_action( 'delete_user', __CLASS__ . '::cancel_users_subscriptions' );
+		add_action( 'delete_user', __CLASS__ . '::trash_users_subscriptions' );
 
 		// Do the same thing for WordPress networks
-		add_action( 'wpmu_delete_user', __CLASS__ . '::cancel_users_subscriptions_for_network' );
+		add_action( 'wpmu_delete_user', __CLASS__ . '::trash_users_subscriptions_for_network' );
 
 		// make sure a subscription is cancelled before it is trashed/deleted
 		add_action( 'wp_trash_post', __CLASS__ . '::maybe_cancel_subscription', 10, 1 );
@@ -132,9 +129,6 @@ class WC_Subscriptions_Manager {
 		}
 
 		$subscription->update_status( 'expired' );
-
-		// Backward compatibility
-		do_action( 'subscription_expired', $subscription->get_user_id(), wcs_get_old_subscription_key( $subscription ) );
 	}
 
 	/**
@@ -153,28 +147,6 @@ class WC_Subscriptions_Manager {
 		}
 
 		$subscription->update_status( 'cancelled' );
-
-		// Backward compatibility
-		do_action( 'subscription_end_of_prepaid_term', $subscription->get_user_id(), wcs_get_old_subscription_key( $subscription ) ); // Backward compatibility
-	}
-
-	/**
-	 * Fires when the trial period for a subscription has completed.
-	 *
-	 * @param int $subscription_id The ID of a 'shop_subscription' post
-	 * @since 1.0
-	 */
-	public static function subscription_trial_end( $subscription_id, $deprecated = null ) {
-
-		if ( null !== $deprecated ) {
-			_deprecated_argument( __METHOD__, '2.0', 'The subscription key is deprecated. Use a subscription post ID' );
-			$subscription = wcs_get_subscription_from_key( $deprecated );
-		} else {
-			$subscription = wcs_get_subscription( $subscription_id );
-		}
-
-		// Backward compatibility
-		do_action( 'subscription_trial_end', $subscription->get_user_id(), wcs_get_old_subscription_key( $subscription ) ); // Backward compatibility
 	}
 
 	/**
@@ -705,7 +677,7 @@ class WC_Subscriptions_Manager {
 
 			foreach ( $subscriptions as $subscription ) {
 				if ( $subscription->can_be_updated_to( 'cancelled' ) ) {
-					$subscription->update_status( 'cancelled', sprintf( __( 'User %d deleted.', 'woocommerce-subscriptions' ), $user_id ) );
+					$subscription->update_status( 'cancelled' );
 				}
 			}
 
@@ -822,6 +794,47 @@ class WC_Subscriptions_Manager {
 
 		if ( 'shop_subscription' == get_post_type( $post_id ) ) {
 			do_action( 'woocommerce_subscription_trashed', $post_id );
+		}
+	}
+
+	/**
+	 * Takes a user ID and trashes any subscriptions that user has.
+	 *
+	 * @param int $user_id The ID of the user whose subscriptions will be trashed
+	 * @since 2.0
+	 */
+	public static function trash_users_subscriptions( $user_id ) {
+
+		$subscriptions = wcs_get_users_subscriptions( $user_id );
+
+		if ( ! empty( $subscriptions ) ) {
+
+			foreach ( $subscriptions as $subscription ) {
+				wp_delete_post( $subscription->id );
+			}
+		}
+	}
+
+	/**
+	 * Takes a user ID and trashes any subscriptions that user has on any site in a WordPress network
+	 *
+	 * @param int $user_id The ID of the user whose subscriptions will be trashed
+	 * @since 2.0
+	 */
+	public static function trash_users_subscriptions_for_network( $user_id ) {
+
+		$sites = get_blogs_of_user( $user_id );
+
+		if ( ! empty( $sites ) ) {
+
+			foreach ( $sites as $site ) {
+
+				switch_to_blog( $site->userblog_id );
+
+				self::trash_users_subscriptions( $user_id );
+
+				restore_current_blog();
+			}
 		}
 	}
 
@@ -1727,31 +1740,31 @@ class WC_Subscriptions_Manager {
 		}
 
 		$allowed_html = array(
-		    'select' => array(
-		        'id' => array(),
-		        'name' => array(),
-		        'tabindex' => array(),
-		    ),
-		    'option' => array(
-		        'value' => array(),
-		        'selected' => array(),
-		    ),
-		    'input' => array(
-		    	'type' => array(),
-		    	'id' => array(),
-		    	'name' => array(),
-		        'value' => array(),
-		        'size' => array(),
-		        'tabindex' => array(),
-		        'maxlength' => array(),
-		        'autocomplete' => array(),
-		    ),
-		    'p' => array(),
-		    'a' => array(
-		        'href' => array(),
-		        'title' => array(),
-		        'class' => array(),
-		    ),
+			'select' => array(
+				'id' => array(),
+				'name' => array(),
+				'tabindex' => array(),
+			),
+			'option' => array(
+				'value' => array(),
+				'selected' => array(),
+			),
+			'input' => array(
+				'type' => array(),
+				'id' => array(),
+				'name' => array(),
+				'value' => array(),
+				'size' => array(),
+				'tabindex' => array(),
+				'maxlength' => array(),
+				'autocomplete' => array(),
+			),
+			'p' => array(),
+			'a' => array(
+				'href' => array(),
+				'title' => array(),
+				'class' => array(),
+			),
 		);
 
 		if ( $args['echo'] ) {
@@ -1775,7 +1788,7 @@ class WC_Subscriptions_Manager {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_status()' );
 
 		try {
-			$subscription = wcs_get_subscription_from_key( $deprecated );
+			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
 			if ( $subscription->has_status( 'on-hold' ) ) {
 				return false;
@@ -2359,6 +2372,17 @@ class WC_Subscriptions_Manager {
 				do_action( 'rescheduled_subscription_payment', $user_id, $subscription_key );
 			}
 		}
+	}
+
+	/**
+	 * Fires when the trial period for a subscription has completed.
+	 *
+	 * @param int $subscription_id The ID of a 'shop_subscription' post
+	 * @since 1.0
+	 * @deprecated 2.0
+	 */
+	public static function subscription_trial_end( $subscription_id, $deprecated = null ) {
+		_deprecated_function( __METHOD__, '2.0' );
 	}
 }
 

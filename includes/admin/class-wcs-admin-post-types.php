@@ -50,6 +50,7 @@ class WCS_Admin_Post_Types {
 		add_filter( 'post_updated_messages', array( $this, 'post_updated_messages' ) );
 
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_product' ) );
+		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_payment_method' ) );
 	}
 
 
@@ -187,13 +188,17 @@ class WCS_Admin_Post_Types {
 	public function parse_bulk_actions() {
 
 		// We only want to deal with shop_subscriptions. In case any other CPTs have an 'active' action
-		if ( ! isset( $_REQUEST['post_type'] ) || 'shop_subscription' !== $_REQUEST['post_type'] ) {
+		if ( ! isset( $_REQUEST['post_type'] ) || 'shop_subscription' !== $_REQUEST['post_type'] || ! isset( $_REQUEST['post'] ) ) {
 			return;
 		}
 
-		$wp_list_table = _get_list_table( 'WP_Posts_List_Table' );
+		$action = '';
 
-		$action = $wp_list_table->current_action();
+		if ( isset( $_REQUEST['action'] ) && -1 != $_REQUEST['action'] ) {
+			$action = $_REQUEST['action'];
+		} else if ( isset( $_REQUEST['action2'] ) && -1 != $_REQUEST['action2'] ) {
+			$action = $_REQUEST['action2'];
+		}
 
 		switch ( $action ) {
 			case 'active':
@@ -249,8 +254,8 @@ class WCS_Admin_Post_Types {
 		}
 
 		$sendback_args['changed'] = $changed;
-		$sendback = add_query_arg( $sendback_args, '' );
-		wp_redirect( $sendback );
+		$sendback = add_query_arg( $sendback_args, wp_get_referer() ? wp_get_referer() : '' );
+		wp_safe_redirect( esc_url_raw( $sendback ) );
 
 		exit();
 	}
@@ -704,8 +709,11 @@ class WCS_Admin_Post_Types {
 
 			// Filter the orders by the posted customer.
 			if ( isset( $_GET['_customer_user'] ) && $_GET['_customer_user'] > 0 ) {
-				$vars['meta_key'] = '_customer_user';
-				$vars['meta_value'] = (int) $_GET['_customer_user'];
+				$vars['meta_query'][] = array(
+					'key'   => '_customer_user',
+					'value' => (int) $_GET['_customer_user'],
+					'compare' => '=',
+				);
 			}
 
 			if ( isset( $_GET['_wcs_product'] ) && $_GET['_wcs_product'] > 0 ) {
@@ -716,6 +724,36 @@ class WCS_Admin_Post_Types {
 					$vars['post__in'] = $subscription_ids;
 				} else {
 					// no subscriptions contain this product, but we need to pass post__in an ID that no post will have because WP returns all posts when post__in is an empty array: https://core.trac.wordpress.org/ticket/28099
+					$vars['post__in'] = array( 0 );
+				}
+			}
+
+			if ( ! empty( $_GET['_payment_method'] ) ) {
+
+				$payment_gateway_filter = ( 'none' == $_GET['_payment_method'] ) ? '' : $_GET['_payment_method'];
+
+				$query_vars = array(
+					'post_type'   => 'shop_subscription',
+					'post_status' => 'any',
+					'fields'      => 'ids',
+					'meta_query'  => array(
+						array(
+							'key'   => '_payment_method',
+							'value' => $payment_gateway_filter,
+						),
+					),
+				);
+
+				// If there are already set post restrictions (post__in) apply them to this query
+				if ( isset( $vars['post__in'] ) ) {
+					$query_vars['post__in'] = $vars['post__in'];
+				}
+
+				$subscription_ids = get_posts( $query_vars );
+
+				if ( ! empty( $subscription_ids ) ) {
+					$vars['post__in'] = $subscription_ids;
+				} else {
 					$vars['post__in'] = array( 0 );
 				}
 			}
@@ -798,6 +836,30 @@ class WCS_Admin_Post_Types {
 		);
 	}
 
+	/**
+	 * Displays the dropdown for the payment method filter.
+	 *
+	 * @since 2.0
+	 */
+	public static function restrict_by_payment_method() {
+		global $typenow;
+
+		if ( 'shop_subscription' !== $typenow ) {
+			return;
+		}
+
+		$selected_gateway_id = ( ! empty( $_GET['_payment_method'] ) ) ? $_GET['_payment_method'] : ''; ?>
+
+		<select class="wcs_payment_method_selector" name="_payment_method" id="_payment_method" class="first">
+			<option value=""><?php esc_html_e( 'Any Payment Method', 'woocommerce-subscriptions' ) ?></option>
+			<option value="none" <?php echo esc_attr( 'none' == $selected_gateway_id ? 'selected' : '' ) . '>' . esc_html__( 'None', 'woocommerce-subscriptions' ) ?></option>
+		<?php
+
+		foreach ( WC()->payment_gateways->get_available_payment_gateways() as $gateway_id => $gateway ) {
+			echo '<option value="' . esc_attr( $gateway_id ) . '"' . ( $selected_gateway_id == $gateway_id  ? 'selected' : '' ) . '>' . esc_html( $gateway->title ) . '</option>';
+		}?>
+		</select> <?php
+	}
 }
 
 new WCS_Admin_Post_Types();

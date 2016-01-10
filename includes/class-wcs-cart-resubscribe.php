@@ -100,7 +100,6 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	 * @since 2.0
 	 */
 	public function get_cart_item_from_session( $cart_item_session_data, $cart_item, $key ) {
-
 		if ( isset( $cart_item[ $this->cart_item_key ]['subscription_id'] ) ) {
 
 			// Setup the cart as if it's a renewal (as the setup process is almost the same)
@@ -108,14 +107,15 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 
 			// Need to get the original subscription price, not the current price
 			$subscription = wcs_get_subscription( $cart_item[ $this->cart_item_key ]['subscription_id'] );
+			if ( $subscription ) {
+				// Make sure the original subscription terms perisist
+				$_product                               = $cart_item_session_data['data'];
+				$_product->subscription_period          = $subscription->billing_period;
+				$_product->subscription_period_interval = $subscription->billing_interval;
 
-			// Make sure the original subscription terms perisist
-			$_product                               = $cart_item_session_data['data'];
-			$_product->subscription_period          = $subscription->billing_period;
-			$_product->subscription_period_interval = $subscription->billing_interval;
-
-			// And don't give another free trial period
-			$_product->subscription_trial_length = 0;
+				// And don't give another free trial period
+				$_product->subscription_trial_length = 0;
+			}
 		}
 
 		return $cart_item_session_data;

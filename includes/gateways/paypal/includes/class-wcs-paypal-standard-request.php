@@ -130,10 +130,10 @@ class WCS_PayPal_Standard_Request {
 				// Change the 'invoice' and the 'custom' values to be for the original order (if there is one)
 				if ( false === $subscription->order ) {
 					// No original order so we need to use the subscriptions values instead
-					$order_number = ltrim( $subscription->get_order_number(), '#' ). '-subscription';
+					$order_number = ltrim( $subscription->get_order_number(), _x( '#', 'hash before the order number', 'woocommerce-subscriptions' ) ) . '-subscription';
 					$order_id_key = array( 'order_id' => $subscription->id, 'order_key' => $subscription->order_key );
 				} else {
-					$order_number = ltrim( $subscription->order->get_order_number(), '#' );
+					$order_number = ltrim( $subscription->order->get_order_number(), _x( '#', 'hash before the order number', 'woocommerce-subscriptions' ) );
 					$order_id_key = array( 'order_id' => $subscription->order->id, 'order_key' => $subscription->order->order_key );
 				}
 

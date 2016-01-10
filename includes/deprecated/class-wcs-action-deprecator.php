@@ -31,6 +31,9 @@ class WCS_Action_Deprecator extends WCS_Hook_Deprecator {
 		'woocommerce_subscription_status_on-hold'                          => array( 'suspended_subscription', 'subscription_put_on-hold' ),
 		'woocommerce_subscription_status_cancelled'                        => 'cancelled_subscription',
 		'woocommerce_subscription_status_on-hold_to_active'                => 'reactivated_subscription',
+		'woocommerce_subscription_status_expired'                          => 'subscription_expired',
+		'woocommerce_scheduled_subscription_trial_end'                     => 'subscription_trial_end',
+		'woocommerce_scheduled_subscription_end_of_prepaid_term'           => 'subscription_end_of_prepaid_term',
 	);
 
 	/**
@@ -54,6 +57,8 @@ class WCS_Action_Deprecator extends WCS_Hook_Deprecator {
 			// New arg spec: $subscription_id
 			// Old arg spec: $user_id, $subscription_key
 			case 'scheduled_subscription_payment' :
+			case 'subscription_end_of_prepaid_term' :
+			case 'subscription_trial_end' :
 				$subscription = wcs_get_subscription( $new_callback_args[0] );
 				do_action( $old_hook, $subscription->get_user_id(), wcs_get_old_subscription_key( $subscription ) );
 				break;
@@ -113,6 +118,7 @@ class WCS_Action_Deprecator extends WCS_Hook_Deprecator {
 			case 'suspended_subscription' :
 			case 'cancelled_subscription' :
 			case 'reactivated_subscription' :
+			case 'subscription_expired' :
 				$subscription  = $new_callback_args[0];
 				do_action( $old_hook, $subscription->get_user_id(), wcs_get_old_subscription_key( $subscription ) );
 				break;
