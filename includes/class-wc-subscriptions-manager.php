@@ -58,7 +58,7 @@ class WC_Subscriptions_Manager {
 
 		// make sure a subscription is cancelled before it is trashed/deleted
 		add_action( 'wp_trash_post', __CLASS__ . '::maybe_cancel_subscription', 10, 1 );
-		add_action( 'wp_delete_post', __CLASS__ . '::maybe_cancel_subscription', 10, 1 );
+		add_action( 'delete_post', __CLASS__ . '::maybe_cancel_subscription', 10, 1 );
 
 		// set correct status to restore after a subscription is trashed/deleted
 		add_action( 'trashed_post', __CLASS__ . '::fix_trash_meta_status' );
