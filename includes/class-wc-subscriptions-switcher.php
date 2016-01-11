@@ -100,6 +100,9 @@ class WC_Subscriptions_Switcher {
 
 		// Check if the new order was to record a switch request and maybe call a "switch completed" action.
 		add_action( 'subscriptions_created_for_order', __CLASS__ . '::maybe_add_switched_callback', 10, 1 );
+
+		// Revoke download permissions from old switch item
+		add_action( 'woocommerce_subscriptions_switched_item', __CLASS__ . '::remove_download_permissions_after_switch', 10, 3 );
 	}
 
 	/**
@@ -1626,6 +1629,24 @@ class WC_Subscriptions_Switcher {
 				}
 			}
 		}
+	}
+
+	/**
+	* Revoke download permissions granted on the old switch item.
+	*
+	* @since 2.0.9
+	* @param WC_Subscription $subscription
+	* @param array $new_item
+	* @param array $old_item
+	*/
+	public static function remove_download_permissions_after_switch( $subscription, $new_item, $old_item ) {
+
+		if ( ! is_object( $subscription ) ) {
+			$subscription = wcs_get_subscription( $subscription );
+		}
+
+		$product_id = wcs_get_canonical_product_id( $old_item );
+		WCS_Download_Handler::revoke_downloadable_file_permission( $product_id, $subscription->id, $subscription->customer_user );
 	}
 
 	/** Deprecated Methods **/
