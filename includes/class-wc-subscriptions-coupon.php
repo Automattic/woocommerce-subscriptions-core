@@ -86,7 +86,14 @@ class WC_Subscriptions_Coupon {
 
 				$coupon = new WC_Coupon( $code );
 
-				if ( $coupon->apply_before_tax() && $coupon->is_valid() && $coupon->is_valid_for_product( wc_get_product( $product_id ), $cart_item ) ) {
+				// Pre 2.5 is_valid_for_product() does not use wc_get_product_coupon_types()
+				if ( WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
+					$is_valid_for_product = true;
+				} else {
+					$is_valid_for_product = $coupon->is_valid_for_product( wc_get_product( $product_id ), $cart_item );
+				}
+
+				if ( $coupon->apply_before_tax() && $coupon->is_valid() && $is_valid_for_product ) {
 
 					$apply_recurring_coupon = $apply_recurring_percent_coupon = $apply_initial_coupon = $apply_initial_percent_coupon = false;
 
