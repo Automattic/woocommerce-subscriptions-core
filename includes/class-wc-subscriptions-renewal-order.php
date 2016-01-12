@@ -30,11 +30,11 @@ class WC_Subscriptions_Renewal_Order {
 		// Prevent customers from cancelling renewal orders. Needs to be hooked before WC_Form_Handler::cancel_order() (20)
 		add_filter( 'wp_loaded', __CLASS__ . '::prevent_cancelling_renewal_orders', 19, 3 );
 
-		add_action( 'woocommerce_order_status_refunded', __CLASS__ . '::maybe_cancel_subscription' );
+		add_action( 'woocommerce_order_status_refunded', __CLASS__ . '::maybe_cancel_subscription_on_full_refund' );
 
 		add_action( 'woocommerce_order_partially_refunded', __CLASS__ . '::maybe_cancel_subscription_on_partial_refund' );
 
-		add_action( 'woocommerce_order_fully_refunded', __CLASS__ . '::maybe_cancel_subscription' );
+		add_action( 'woocommerce_order_fully_refunded', __CLASS__ . '::maybe_cancel_subscription_on_full_refund' );
 	}
 
 	/* Helper functions */
