@@ -41,6 +41,8 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	 * @since 2.0
 	 */
 	public function maybe_setup_cart() {
+		global $wp;
+
 		if ( isset( $_GET['resubscribe'] ) && isset( $_GET['_wpnonce'] ) ) {
 
 			$subscription = wcs_get_subscription( $_GET['resubscribe'] );
@@ -75,6 +77,29 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 
 			wp_safe_redirect( $redirect_to );
 			exit;
+
+		} elseif ( isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) && isset( $wp->query_vars['order-pay'] ) ) {
+
+			$order_id     = ( isset( $wp->query_vars['order-pay'] ) ) ? $wp->query_vars['order-pay'] : absint( $_GET['order_id'] );
+			$order        = wc_get_order( $wp->query_vars['order-pay'] );
+			$order_key    = $_GET['key'];
+
+			if ( $order->order_key == $order_key && $order->has_status( array( 'pending', 'failed' ) ) && wcs_order_contains_resubscribe( $order ) ) {
+
+				wc_add_notice( __( 'Complete checkout to resubscribe.', 'woocommerce-subscriptions' ), 'success' );
+
+				$subscriptions = wcs_get_subscriptions_for_resubscribe_order( $order );
+
+				foreach ( $subscriptions as $subscription ) {
+					$this->setup_cart( $subscription, array(
+						'subscription_id' => $subscription->id,
+					) );
+				}
+
+				$redirect_to = WC()->cart->get_checkout_url();
+				wp_safe_redirect( $redirect_to );
+				exit;
+			}
 		}
 	}
 
