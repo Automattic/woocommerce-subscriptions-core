@@ -31,7 +31,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 		$this->calculate_future_range( $current_range );
 
 		$base_query = $wpdb->prepare(
-					"SELECT
+			"SELECT
 						SUM(m.meta_value) as recurring_total,
 						COUNT(m.meta_value) as total_renewals,
 						o.scheduled_date
@@ -55,8 +55,9 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 						) o ON m.post_id = o.order_id
 						WHERE m.meta_key = '_order_total'
 						GROUP BY {$this->group_by_query}",
-						date( 'Y-m-d H:i:s', $this->start_date ),
-						date( 'Y-m-d H:i:s', $this->end_date ));
+			date( 'Y-m-d H:i:s', $this->start_date ),
+			date( 'Y-m-d H:i:s', $this->end_date )
+		);
 
 		$this->order_ids_recurring_totals = $wpdb->get_results( $base_query );
 
