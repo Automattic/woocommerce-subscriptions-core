@@ -1,0 +1,335 @@
+<?php
+/**
+ * Subscriptions Admin Report - Subscription Events by Date
+ *
+ * Creates the subscription admin reports area.
+ *
+ * @package		WooCommerce Subscriptions
+ * @subpackage	WC_Subscriptions_Admin_Reports
+ * @category	Class
+ * @author		Prospress
+ * @since		2.1
+ */
+class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
+	public $chart_colours = array();
+	private $report_data;
+
+	/**
+	 * Get report data
+	 * @return array
+	 */
+	public function get_report_data() {
+		if ( empty( $this->report_data ) ) {
+			$this->query_report_data();
+		}
+		return $this->report_data;
+	}
+
+	/**
+	 * Get all data needed for this report and store in the class
+	 */
+	private function query_report_data() {
+
+		global $wpdb;
+
+		$this->report_data = new stdClass;
+
+		$this->report_data->renewal_counts = (array) $this->get_order_report_data( array(
+			'data' => array(
+				'ID' => array(
+					'type'     => 'post_data',
+					'function' => 'COUNT',
+					'name'     => 'count',
+					'distinct' => true,
+				),
+				'post_date' => array(
+					'type'     => 'post_data',
+					'function' => '',
+					'name'     => 'post_date',
+				),
+				'_subscription_renewal' => array(
+					'type'     => 'meta',
+					'function' => '',
+					'name'     => 'renewal_orders',
+				),
+			),
+			'group_by'            => $this->group_by_query,
+			'order_by'            => 'post_date ASC',
+			'query_type'          => 'get_results',
+			'filter_range'        => true,
+			'order_types'         => wc_get_order_types( 'order-count' ),
+		) );
+
+		$this->report_data->switch_counts = (array) $this->get_order_report_data( array(
+			'data' => array(
+				'ID' => array(
+					'type'     => 'post_data',
+					'function' => 'COUNT',
+					'name'     => 'count',
+					'distinct' => true,
+				),
+				'post_date' => array(
+					'type'     => 'post_data',
+					'function' => '',
+					'name'     => 'post_date',
+				),
+				'_subscription_switch' => array(
+					'type'     => 'meta',
+					'function' => '',
+					'name'     => 'switch_orders',
+				),
+			),
+			'group_by'            => $this->group_by_query,
+			'order_by'            => 'post_date ASC',
+			'query_type'          => 'get_results',
+			'filter_range'        => true,
+			'order_types'         => wc_get_order_types( 'order-count' ),
+		) );
+
+		/*
+		* New subscription orders
+		*/
+		$query = "SELECT COUNT(DISTINCT wcsubs.ID) AS count, wcsubs.post_date as post_date
+			FROM {$wpdb->posts} AS wcsubs
+			INNER JOIN {$wpdb->posts} AS wcorder
+				ON wcsubs.post_parent = wcorder.ID
+			WHERE  wcorder.post_type IN ( 'shop_order' )
+				AND wcsubs.post_type IN ( 'shop_subscription' )
+				AND wcorder.post_status IN ('wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
+				AND wcorder.post_date >= '" . date( 'Y-m-d', $this->start_date ) . "'
+				AND wcorder.post_date < '" . date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) ) . "'
+			GROUP BY YEAR(wcsubs.post_date), MONTH(wcsubs.post_date), DAY(wcsubs.post_date)
+			ORDER BY post_date ASC";
+
+		// TODO cache this
+		$query_results = (array) $wpdb->get_results( $query );
+		$this->report_data->signup_counts = $query_results;
+
+		// Total up the query data
+		$this->report_data->total_signups  = absint( array_sum( wp_list_pluck( $this->report_data->signup_counts, 'count' ) ) );
+		$this->report_data->total_renewals = absint( array_sum( wp_list_pluck( $this->report_data->renewal_counts, 'count' ) ) );
+		$this->report_data->total_switches = absint( array_sum( wp_list_pluck( $this->report_data->switch_counts, 'count' ) ) );
+
+	}
+
+	/**
+	 * Get the legend for the main chart sidebar
+	 * @return array
+	 */
+	public function get_chart_legend() {
+		$legend = array();
+		$data   = $this->get_report_data();
+
+		$legend[] = array(
+			'title' => sprintf( __( '%s subscription signups', 'woocommerce-subscriptions' ), '<strong>' . $this->report_data->total_signups . '</strong>' ),
+			'color' => $this->chart_colours['signup_count'],
+			'highlight_series' => 1,
+		);
+
+		$legend[] = array(
+			'title' => sprintf( __( '%s switched subscriptions', 'woocommerce-subscriptions' ), '<strong>' . $data->total_switches . '</strong>' ),
+			'color' => $this->chart_colours['switch_count'],
+			'highlight_series' => 0,
+		);
+
+		$legend[] = array(
+			'title' => sprintf( __( '%s subscription renewals', 'woocommerce-subscriptions' ), '<strong>' . $data->total_renewals . '</strong>' ),
+			'color' => $this->chart_colours['renewal_count'],
+			'highlight_series' => 2,
+		);
+
+		return $legend;
+	}
+
+	/**
+	 * Output the report
+	 */
+	public function output_report() {
+		$ranges = array(
+			'year'         => __( 'Year', 'woocommerce-subscriptions' ),
+			'last_month'   => __( 'Last Month', 'woocommerce-subscriptions' ),
+			'month'        => __( 'This Month', 'woocommerce-subscriptions' ),
+			'7day'         => __( 'Last 7 Days', 'woocommerce-subscriptions' ),
+		);
+
+		$this->chart_colours = array(
+			'signup_count'     => '#5da5da',
+			'switch_count'     => '#439ad9',
+			'renewal_count'    => '#f29ec4',
+		);
+
+		$current_range = ! empty( $_GET['range'] ) ? sanitize_text_field( $_GET['range'] ) : '7day';
+
+		if ( ! in_array( $current_range, array( 'custom', 'year', 'last_month', 'month', '7day' ) ) ) {
+			$current_range = '7day';
+		}
+
+		$this->calculate_current_range( $current_range );
+
+		include( WC()->plugin_path() . '/includes/admin/views/html-report-by-date.php' );
+	}
+
+	/**
+	 * Output an export link
+	 */
+	public function get_export_button() {
+		$current_range = ! empty( $_GET['range'] ) ? sanitize_text_field( $_GET['range'] ) : '7day';
+		?>
+		<a
+			href="#"
+			download="report-<?php echo esc_attr( $current_range ); ?>-<?php echo esc_attr( date_i18n( 'Y-m-d', current_time( 'timestamp' ) ) ); ?>.csv"
+			class="export_csv"
+			data-export="chart"
+			data-xaxes="<?php esc_attr_e( 'Date', 'woocommerce-subscriptions' ); ?>"
+			data-exclude_series="2"
+			data-groupby="<?php echo esc_attr( $this->chart_groupby ); ?>"
+		>
+			<?php esc_attr_e( 'Export CSV', 'woocommerce-subscriptions' ); ?>
+		</a>
+		<?php
+	}
+
+
+	/**
+	 * Get the main chart
+	 *
+	 * @return string
+	 */
+	public function get_main_chart() {
+		global $wp_locale;
+
+		// Prepare data for report
+		$signup_counts  = $this->prepare_chart_data( $this->report_data->signup_counts, 'post_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
+		$renewal_counts = $this->prepare_chart_data( $this->report_data->renewal_counts, 'post_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
+		$switch_counts  = $this->prepare_chart_data( $this->report_data->switch_counts, 'post_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
+
+		// Encode in json format
+		$chart_data = array(
+			'signup_counts'     => array_values( $signup_counts ),
+			'renewal_counts'    => array_values( $renewal_counts ),
+			'switch_counts'     => array_values( $switch_counts ),
+		);
+
+		$timeformat = ( $this->chart_groupby == 'day' ? '%d %b' : '%b' );
+
+		?>
+		<div class="chart-container">
+			<div class="chart-placeholder main"></div>
+		</div>
+		<script type="text/javascript">
+
+			var main_chart;
+
+			jQuery(function(){
+				var order_data = jQuery.parseJSON( '<?php echo json_encode( $chart_data ); ?>' );
+				var drawGraph = function( highlight ) {
+					var series = [
+						{
+							label: "<?php echo esc_js( __( 'Switched subscriptions', 'woocommerce-subscriptions' ) ) ?>",
+							data: order_data.switch_counts,
+							color: '<?php echo esc_js( $this->chart_colours['switch_count'] ); ?>',
+							bars: { fillColor: '<?php echo esc_js( $this->chart_colours['switch_count'] ); ?>', order: 1, fill: true, show: true, lineWidth: 0, barWidth: <?php echo esc_js( $this->barwidth ); ?> * 0.5, align: 'center' },
+							shadowSize: 0,
+							hoverable: false,
+						},
+						{
+							label: "<?php echo esc_js( __( 'Subscriptions signups', 'woocommerce-subscriptions' ) ) ?>",
+							data: order_data.signup_counts,
+							color: '<?php echo esc_js( $this->chart_colours['signup_count'] ); ?>',
+							bars: { order: 1, fill: true, show: true, lineWidth: 0, barWidth: <?php echo esc_js( $this->barwidth ); ?> * 0.5, align: 'center' },
+							shadowSize: 0,
+							hoverable: false,
+						},
+						{
+							label: "<?php echo esc_js( __( 'Number of renewals', 'woocommerce-subscriptions' ) ) ?>",
+							data: order_data.renewal_counts,
+							color: '<?php echo esc_js( $this->chart_colours['renewal_count'] ); ?>',
+							bars: { fillColor: '<?php echo esc_js( $this->chart_colours['renewal_count'] ); ?>', order: 2, fill: true, show: true, lineWidth: 0, barWidth: <?php echo esc_js( $this->barwidth ); ?> * 0.5, align: 'center' },
+							shadowSize: 0,
+							hoverable: false,
+						},
+					];
+
+					if ( highlight !== 'undefined' && series[ highlight ] ) {
+						highlight_series = series[ highlight ];
+
+						highlight_series.color = '#9c5d90';
+
+						if ( highlight_series.bars ) {
+							highlight_series.bars.fillColor = '#9c5d90';
+						}
+
+						if ( highlight_series.lines ) {
+							highlight_series.lines.lineWidth = 5;
+						}
+					}
+
+					main_chart = jQuery.plot(
+						jQuery('.chart-placeholder.main'),
+						series,
+						{
+							legend: {
+								show: false
+							},
+							grid: {
+								color: '#aaa',
+								borderColor: 'transparent',
+								borderWidth: 0,
+								hoverable: true
+							},
+							xaxes: [ {
+								color: '#aaa',
+								position: "bottom",
+								tickColor: 'transparent',
+								mode: "time",
+								timeformat: "<?php echo esc_js( $timeformat ) ?>",
+								monthNames: <?php echo json_encode( array_values( $wp_locale->month_abbrev ) ) ?>,
+								tickLength: 1,
+								minTickSize: [1, "<?php echo esc_js( $this->chart_groupby ); ?>"],
+								font: {
+									color: "#aaa"
+								}
+							} ],
+							yaxes: [
+								{
+									min: 0,
+									minTickSize: 1,
+									tickDecimals: 0,
+									color: '#d4d9dc',
+									font: { color: "#aaa" }
+								},
+								{
+									position: "right",
+									min: 0,
+									tickDecimals: 2,
+									alignTicksWithAxis: 1,
+									color: 'transparent',
+									font: { color: "#aaa" }
+								}
+							],
+							stack: true,
+							bars:{ // show the bars with a width of .4
+        						show: true,
+        						barWidth: .4
+   							},
+						}
+					);
+
+					jQuery('.chart-placeholder').resize();
+				}
+
+				drawGraph();
+
+				jQuery('.highlight_series').hover(
+					function() {
+						drawGraph( jQuery(this).data('series') );
+					},
+					function() {
+						drawGraph();
+					}
+				);
+			});
+		</script>
+		<?php
+	}
+}
