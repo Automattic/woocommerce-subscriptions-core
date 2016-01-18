@@ -295,6 +295,8 @@ function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_o
 
 			case 'year' :
 				$denominator = YEAR_IN_SECONDS;
+				// we need to adjust this because YEAR_IN_SECONDS assumes a 365 day year. See notes on wcs_number_of_leap_days
+				$seconds_until_timestamp = $seconds_until_timestamp - wcs_number_of_leap_days( $start_timestamp, $end_timestamp ) * DAY_IN_SECONDS;
 				break;
 		}
 
@@ -304,6 +306,55 @@ function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_o
 	return $periods_until;
 }
 
+/**
+ * Utility function to find out how many leap days are there between two given dates. The reason we need this is because
+ * the constant YEAR_IN_SECONDS assumes a 365 year, which means some of the calculations are going to be off by a day.
+ * This has caused problems where if there's a leap year, wcs_estimate_periods_between would return 2 years instead of
+ * 1, making certain payments wildly inaccurate.
+ *
+ * @param int $start_timestamp A unix timestamp
+ * @param int $end_timestamp A unix timestamp
+ *
+ * @return int number of leap days between the start and end timstamps
+ */
+function wcs_number_of_leap_days( $start_timestamp, $end_timestamp ) {
+	if ( ! is_int( $start_timestamp ) || ! is_int( $end_timestamp ) ) {
+		throw new InvalidArgumentException( 'Start or end times are not integers' );
+	}
+	// Years to check
+	$years = range( date( 'Y', $start_timestamp ), date( 'Y', $end_timestamp ) );
+	$leap_years = array_filter( $years, 'wcs_is_leap_year' );
+	$total_feb_29s = 0;
+
+	if ( ! empty( $leap_years ) ) {
+		// Let's get the first feb 29 in the list
+		$first_feb_29 = mktime( 23, 59, 59, 2, 29, reset( $leap_years ) );
+		$last_feb_29 = mktime( 0, 0, 0, 2, 29, end( $leap_years ) );
+
+		$is_first_feb_covered = ( $first_feb_29 >= $start_timestamp )? 1: 0;
+		$is_last_feb_covered = ( $last_feb_29 <= $end_timestamp )? 1: 0;
+
+		if ( count( $leap_years ) > 1 ) {
+			// the feb 29s are in different years
+			$total_feb_29s = count( $leap_years ) - 2 + $is_first_feb_covered + $is_last_feb_covered;
+		} else {
+			$total_feb_29s = ( $first_feb_29 >= $start_timestamp && $last_feb_29 <= $end_timestamp )? 1: 0;
+		}
+	}
+
+	return $total_feb_29s;
+}
+
+/**
+ * Filter function used in wcs_number_of_leap_days
+ *
+ * @param $year int A four digit year, eg 2017
+ *
+ * @return bool|string
+ */
+function wcs_is_leap_year( $year ) {
+	return date( 'L', mktime( 0, 0, 0, 1, 1, $year ) );
+}
 /**
  * Method to try to determine the period of subscriptions if data is missing. It tries the following, in order:
  *
