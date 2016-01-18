@@ -227,8 +227,8 @@ function wcs_add_time( $number_of_periods, $period, $from_timestamp ) {
  *
  * What humans usually want is for the date to continue on the last day of the month.
  *
- * @param int A Unix timestamp to add the months too.
- * @param int The number of months to add to the timestamp.
+ * @param int $from_timestamp A Unix timestamp to add the months too.
+ * @param int $months_to_add The number of months to add to the timestamp.
  * @since 2.0
  */
 function wcs_add_months( $from_timestamp, $months_to_add ) {
@@ -253,9 +253,10 @@ function wcs_add_months( $from_timestamp, $months_to_add ) {
  * Estimate how many days, weeks, months or years there are between now and a given
  * date in the future. Estimates the minimum total of periods.
  *
- * @param int A Unix timestamp at some time in the future.
- * @param string A unit of time, either day, week month or year.
- * @param string A rounding method, either ceil (default) or floor for anything else
+ * @param int $start_timestamp A Unix timestamp
+ * @param int $end_timestamp A Unix timestamp at some time in the future
+ * @param string $end_timestamp A unit of time, either day, week month or year.
+ * @param string $unit_of_time A rounding method, either ceil (default) or floor for anything else
  * @since 2.0
  */
 function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_of_time = 'month', $rounding_method = 'ceil' ) {
