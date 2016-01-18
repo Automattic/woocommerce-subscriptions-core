@@ -321,6 +321,10 @@ function wcs_number_of_leap_days( $start_timestamp, $end_timestamp ) {
 	if ( ! is_int( $start_timestamp ) || ! is_int( $end_timestamp ) ) {
 		throw new InvalidArgumentException( 'Start or end times are not integers' );
 	}
+	// save the date! ;)
+	$default_tz = date_default_timezone_get();
+	date_default_timezone_set( 'UTC' );
+
 	// Years to check
 	$years = range( date( 'Y', $start_timestamp ), date( 'Y', $end_timestamp ) );
 	$leap_years = array_filter( $years, 'wcs_is_leap_year' );
@@ -341,6 +345,7 @@ function wcs_number_of_leap_days( $start_timestamp, $end_timestamp ) {
 			$total_feb_29s = ( $first_feb_29 >= $start_timestamp && $last_feb_29 <= $end_timestamp )? 1: 0;
 		}
 	}
+	date_default_timezone_set( $default_tz );
 
 	return $total_feb_29s;
 }
