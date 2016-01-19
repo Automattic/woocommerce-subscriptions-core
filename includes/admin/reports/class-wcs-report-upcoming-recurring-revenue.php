@@ -32,9 +32,14 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 
 		$base_query = $wpdb->prepare(
 			"SELECT
+						DATE_FORMAT(o.scheduled_date, '%s') as scheduled_date,
 						SUM(m.meta_value) as recurring_total,
 						COUNT(m.meta_value) as total_renewals,
-						o.scheduled_date
+						group_concat(o.subscription_id) as subscription_ids,
+		        group_concat(mi.meta_value) as billing_intervals,
+		        group_concat(mp.meta_value) as billing_periods,
+		        group_concat(me.meta_value) as scheduled_ends,
+						group_concat(m.meta_value) as subscription_totals
 						FROM {$wpdb->prefix}postmeta m
 						RIGHT JOIN (
 							SELECT
@@ -47,31 +52,82 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 									'}',
 									1),
 								post_content
-							) as order_id,
+							) as subscription_id,
 							post_date as scheduled_date
 							FROM {$wpdb->prefix}posts
 							WHERE post_title = 'woocommerce_scheduled_subscription_payment' AND post_status = 'pending'
 							 AND post_date BETWEEN '%s' AND '%s'
-						) o ON m.post_id = o.order_id
+						) o ON m.post_id = o.subscription_id
+						LEFT JOIN {$wpdb->prefix}postmeta mi
+			        ON m.post_id = mi.post_id
+		        LEFT JOIN {$wpdb->prefix}postmeta mp
+			        ON m.post_id = mp.post_id
+		        LEFT JOIN {$wpdb->prefix}postmeta me
+			        ON m.post_id = me.post_id
 						WHERE m.meta_key = '_order_total'
-						GROUP BY {$this->group_by_query}",
-			date( 'Y-m-d H:i:s', $this->start_date ),
+							AND mi.meta_key = '_billing_interval'
+			      	AND mp.meta_key = '_billing_period'
+			      	AND me.meta_key = '_schedule_end '
+						GROUP BY {$this->group_by_query}
+						ORDER BY o.scheduled_date ASC",
+			'%Y-%m-%d',
+			date( 'Y-m-d H:i:s' ),
 			date( 'Y-m-d H:i:s', $this->end_date )
 		);
 
-		$this->order_ids_recurring_totals = $wpdb->get_results( $base_query );
+		$this->order_ids_recurring_totals = $wpdb->get_results( $base_query, OBJECT_K );
 
 		$total_renewal_revenue = 0;
 		$total_renewal_count = 0;
 
 		foreach ( $this->order_ids_recurring_totals as $r ) {
-			$total_renewal_revenue += $r->recurring_total;
-			$total_renewal_count   += $r->total_renewals;
+
+			if ( strtotime( $r->scheduled_date ) >= $this->start_date  ) {
+				$total_renewal_revenue += $r->recurring_total;
+				$total_renewal_count   += $r->total_renewals;
+			}
+
+			$subscription_ids    = explode( ',', $r->subscription_ids );
+			$billing_intervals   = explode( ',', $r->billing_intervals );
+			$billing_periods     = explode( ',', $r->billing_periods );
+			$scheduled_ends      = explode( ',', $r->scheduled_ends );
+			$subscription_totals = explode( ',', $r->subscription_totals );
+
+			// Loop through each returned subscription ID and check if there are any more renewals in this period.
+			foreach ( $subscription_ids as $key => $subscription_id ) {
+
+				$next_payment_timestamp = strtotime( $r->scheduled_date );
+
+				// Keep calculating all the new payments until we hit the end date of the search
+				while ( true ) {
+
+					$next_payment_timestamp = wcs_add_time( $billing_intervals[ $key ], $billing_periods[ $key ], $next_payment_timestamp );
+
+					// If there are more renewals add them to the existing object or create a new one
+					if ( $next_payment_timestamp <= $this->end_date && ( 0 == $scheduled_ends[ $key ] || $next_payment_timestamp < strtotime( $scheduled_ends[ $key ] ) ) ) {
+						$update_key = date( 'Y-m-d', $next_payment_timestamp );
+
+						if ( $next_payment_timestamp >= $this->start_date ) {
+
+							if ( ! isset( $this->order_ids_recurring_totals[ $update_key ] ) ) {
+								$this->order_ids_recurring_totals[ $update_key ] = new stdClass();
+								$this->order_ids_recurring_totals[ $update_key ]->scheduled_date = $update_key;
+							}
+							$this->order_ids_recurring_totals[ $update_key ]->total_renewals  += 1;
+							$this->order_ids_recurring_totals[ $update_key ]->recurring_total += $subscription_totals[ $key ];
+							$total_renewal_revenue += $subscription_totals[ $key ];;
+							$total_renewal_count   += 1;
+						}
+					} else {
+						break;
+					}
+				}
+			}
 		}
 
-		$legend   = array();
+		$legend = array();
 
-		$this->average_sales = $total_renewal_revenue / $total_renewal_count;
+		$this->average_sales = ( 0 != $total_renewal_count ? $total_renewal_revenue / $total_renewal_count : 0);
 
 		$legend[] = array(
 			'title' => sprintf( __( '%s renewal income in this period', 'woocommerce-subscriptions' ), '<strong>' . wc_price( $total_renewal_revenue ) . '</strong>' ),
@@ -105,9 +161,9 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 		);
 
 		$this->chart_colours = array(
-			'renewals_amount' => '#1abc9c',
-			'renewals_count'  => '#e67e22',
-			'renewals_average'   => '#d4d9dc',
+			'renewals_amount'  => '#1abc9c',
+			'renewals_count'   => '#e67e22',
+			'renewals_average' => '#d4d9dc',
 		);
 
 		$current_range = ! empty( $_GET['range'] ) ? sanitize_text_field( $_GET['range'] ) : '7day';
