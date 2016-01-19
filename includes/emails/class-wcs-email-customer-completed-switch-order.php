@@ -25,6 +25,7 @@ class WCS_Email_Completed_Switch_Order extends WC_Email_Customer_Completed_Order
 		$this->id             = 'customer_completed_switch_order';
 		$this->title          = __( 'Subscription Switch Complete', 'woocommerce-subscriptions' );
 		$this->description    = __( 'Subscription switch complete emails are sent to the customer when a subscription is switched successfully.', 'woocommerce-subscriptions' );
+		$this->customer_email = true;
 
 		$this->heading        = __( 'Your subscription change is complete', 'woocommerce-subscriptions' );
 		$this->subject        = __( 'Your {blogname} subscription change from {order_date} is complete', 'woocommerce-subscriptions' );

@@ -26,6 +26,7 @@ class WCS_Email_Customer_Renewal_Invoice extends WC_Email_Customer_Invoice {
 		$this->id             = 'customer_renewal_invoice';
 		$this->title          = __( 'Customer Renewal Invoice', 'woocommerce-subscriptions' );
 		$this->description    = __( 'Sent to a customer when the subscription is due for renewal and the renewal requires a manual payment, either because it uses manual renewals or the automatic recurring payment failed. The email contains renewal order information and payment links.', 'woocommerce-subscriptions' );
+		$this->customer_email = true;
 
 		$this->template_html  = 'emails/customer-renewal-invoice.php';
 		$this->template_plain = 'emails/plain/customer-renewal-invoice.php';
