@@ -32,44 +32,33 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 
 		$base_query = $wpdb->prepare(
 			"SELECT
-						DATE_FORMAT(o.scheduled_date, '%s') as scheduled_date,
-						SUM(m.meta_value) as recurring_total,
-						COUNT(m.meta_value) as total_renewals,
-						group_concat(o.subscription_id) as subscription_ids,
+						DATE_FORMAT(ms.meta_value, '%s') as scheduled_date,
+						SUM(mo.meta_value) as recurring_total,
+						COUNT(mo.meta_value) as total_renewals,
+						group_concat(p.ID) as subscription_ids,
 		        group_concat(mi.meta_value) as billing_intervals,
 		        group_concat(mp.meta_value) as billing_periods,
 		        group_concat(me.meta_value) as scheduled_ends,
-						group_concat(m.meta_value) as subscription_totals
-						FROM {$wpdb->prefix}postmeta m
-						RIGHT JOIN (
-							SELECT
-							IF(
-								LOCATE('subscription_id\":', post_content) > 0,
-								SUBSTRING_INDEX (
-									SUBSTRING(
-										post_content,
-										LOCATE('subscription_id\":', post_content) + 17),
-									'}',
-									1),
-								post_content
-							) as subscription_id,
-							post_date as scheduled_date
-							FROM {$wpdb->prefix}posts
-							WHERE post_title = 'woocommerce_scheduled_subscription_payment' AND post_status = 'pending'
-							 AND post_date BETWEEN '%s' AND '%s'
-						) o ON m.post_id = o.subscription_id
+						group_concat(mo.meta_value) as subscription_totals
+						FROM {$wpdb->prefix}posts p
+						LEFT JOIN {$wpdb->prefix}postmeta ms
+			        ON p.ID = ms.post_id
+						LEFT JOIN {$wpdb->prefix}postmeta mo
+			        ON p.ID = mo.post_id
 						LEFT JOIN {$wpdb->prefix}postmeta mi
-			        ON m.post_id = mi.post_id
+			        ON p.ID = mi.post_id
 		        LEFT JOIN {$wpdb->prefix}postmeta mp
-			        ON m.post_id = mp.post_id
+			        ON p.ID = mp.post_id
 		        LEFT JOIN {$wpdb->prefix}postmeta me
-			        ON m.post_id = me.post_id
-						WHERE m.meta_key = '_order_total'
+			        ON p.ID = me.post_id
+						WHERE mo.meta_key = '_order_total'
+							AND ms.meta_key = '_schedule_next_payment'
+							AND ms.meta_value BETWEEN '%s' AND '%s'
 							AND mi.meta_key = '_billing_interval'
 			      	AND mp.meta_key = '_billing_period'
 			      	AND me.meta_key = '_schedule_end '
 						GROUP BY {$this->group_by_query}
-						ORDER BY o.scheduled_date ASC",
+						ORDER BY ms.meta_value ASC",
 			'%Y-%m-%d',
 			date( 'Y-m-d H:i:s' ),
 			date( 'Y-m-d H:i:s', $this->end_date )
@@ -373,12 +362,12 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 		// Group by
 		switch ( $this->chart_groupby ) {
 			case 'day' :
-				$this->group_by_query       = 'YEAR(o.scheduled_date), MONTH(o.scheduled_date), DAY(o.scheduled_date)';
+				$this->group_by_query       = 'YEAR(ms.meta_value), MONTH(ms.meta_value), DAY(ms.meta_value)';
 				$this->chart_interval       = ceil( max( 0, ( $this->end_date - $this->start_date ) / ( 60 * 60 * 24 ) ) );
 				$this->barwidth             = 60 * 60 * 24 * 1000;
 			break;
 			case 'month' :
-				$this->group_by_query       = 'YEAR(o.scheduled_date), MONTH(o.scheduled_date)';
+				$this->group_by_query       = 'YEAR(ms.meta_value), MONTH(ms.meta_value)';
 				$this->chart_interval = 0;
 				$min_date             = $this->start_date;
 				while ( ( $min_date   = wcs_add_months( $min_date, '1' ) ) <= $this->end_date ) {
