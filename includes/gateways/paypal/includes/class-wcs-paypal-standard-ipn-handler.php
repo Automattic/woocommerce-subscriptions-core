@@ -403,7 +403,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			// Admins can suspend subscription at PayPal triggering this IPN
 			case 'recurring_payment_suspended':
 
-				if ( ! $subscription->has_status( array( 'on-hold', 'pending-cancel' ) ) ) {
+				if ( ! $subscription->has_status( array( 'on-hold', 'pending-cancel', 'expired' ) ) ) {
 
 					// We don't need to suspend the subscription at PayPal because it's already on-hold there
 					remove_action( 'woocommerce_subscription_on-hold_paypal', 'WCS_PayPal_Status_Manager::suspend_subscription' );
