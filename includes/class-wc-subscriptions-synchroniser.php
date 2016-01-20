@@ -406,7 +406,7 @@ class WC_Subscriptions_Synchroniser {
 	public static function is_product_synced( $product ) {
 
 		if ( ! is_object( $product ) ) {
-			$product = get_product( $product );
+			$product = wc_get_product( $product );
 		}
 
 		if ( ! is_object( $product ) || ! self::is_syncing_enabled() || 'day' == $product->subscription_period || ! $product->is_type( array( 'subscription', 'variable-subscription', 'subscription_variation' ) ) ) {
@@ -672,7 +672,7 @@ class WC_Subscriptions_Synchroniser {
 				if ( $is_first_payment_today ) {
 					$payment_date_string = __( 'Today!', 'woocommerce-subscriptions' );
 				} else {
-					$payment_date_string = date_i18n( woocommerce_date_format(), $first_payment_timestamp + ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) );
+					$payment_date_string = date_i18n( wc_date_format(), $first_payment_timestamp + ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) );
 				}
 
 				if ( self::is_product_prorated( $product ) && ! $is_first_payment_today ) {
@@ -1068,7 +1068,7 @@ class WC_Subscriptions_Synchroniser {
 
 			$product_id = WC_Subscriptions_Cart::get_items_product_id( $cart_item );
 
-			if ( woocommerce_price( 0 ) == $subscription_details['initial_amount'] && 0 == $subscription_details['trial_length'] ) {
+			if ( wc_price( 0 ) == $subscription_details['initial_amount'] && 0 == $subscription_details['trial_length'] ) {
 				$subscription_details['initial_amount'] = '';
 			}
 		}

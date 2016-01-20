@@ -107,7 +107,7 @@ function wcs_get_switch_orders_for_subscription( $subscription_id ) {
 function wcs_is_product_switchable_type( $product ) {
 
 	if ( ! is_object( $product ) ) {
-		$product = get_product( $product );
+		$product = wc_get_product( $product );
 	}
 
 	$variation = null;

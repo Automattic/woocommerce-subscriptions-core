@@ -526,7 +526,7 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 	 * @return object WC_Product_Subscription or WC_Product_Subscription_Variation
 	 */
 	public function get_child( $child_id ) {
-		return get_product( $child_id, array(
+		return wc_get_product( $child_id, array(
 			'product_type' => 'Subscription_Variation',
 			'parent_id'    => $this->id,
 			'parent'       => $this,

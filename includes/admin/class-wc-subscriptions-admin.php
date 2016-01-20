@@ -608,13 +608,13 @@ class WC_Subscriptions_Admin {
 
 			foreach ( $subscription_fields as $field_name ) {
 				if ( isset( $_POST[ 'variable' . $field_name ][ $i ] ) ) {
-					update_post_meta( $variation_id, $field_name, woocommerce_clean( $_POST[ 'variable' . $field_name ][ $i ] ) );
+					update_post_meta( $variation_id, $field_name, wc_clean( $_POST[ 'variable' . $field_name ][ $i ] ) );
 				}
 			}
 		}
 
 		// Now that all the variation's meta is saved, sync the min variation price
-		$variable_subscription = get_product( $post_id );
+		$variable_subscription = wc_get_product( $post_id );
 		$variable_subscription->variable_product_sync();
 
 	}

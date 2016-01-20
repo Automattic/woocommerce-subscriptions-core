@@ -114,7 +114,7 @@ class WC_Subscriptions_Addresses {
 
 		foreach ( $address_fields as $key => $field ) {
 			if ( isset( $_POST[ $key ] ) ) {
-				$address[ str_replace( $address_type . '_', '', $key ) ] = woocommerce_clean( $_POST[ $key ] );
+				$address[ str_replace( $address_type . '_', '', $key ) ] = wc_clean( $_POST[ $key ] );
 			}
 		}
 

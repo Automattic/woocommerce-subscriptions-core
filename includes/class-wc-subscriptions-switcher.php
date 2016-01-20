@@ -158,7 +158,7 @@ class WC_Subscriptions_Switcher {
 				wp_redirect( WC()->cart->get_cart_url() );
 				exit();
 			}
-		} elseif ( is_product() && $product = get_product( $post ) ) { // Automatically initiate the switch process for limited variable subscriptions
+		} elseif ( is_product() && $product = wc_get_product( $post ) ) { // Automatically initiate the switch process for limited variable subscriptions
 
 			if ( wcs_is_product_switchable_type( $product ) && 'no' != $product->limit_subscriptions ) {
 
@@ -185,7 +185,7 @@ class WC_Subscriptions_Switcher {
 
 						// For grouped products, we need to check the child products limitations, not the grouped product's (which will have no limitation)
 						if ( $subscription_product_id ) {
-							$child_product = get_product( $subscription_product_id );
+							$child_product = wc_get_product( $subscription_product_id );
 							$limitation    = $child_product->limit_subscriptions;
 						} else {
 							$limitation    = $product->limit_subscriptions;
@@ -415,7 +415,7 @@ class WC_Subscriptions_Switcher {
 			$subscription = wcs_get_subscription( $subscription );
 		}
 
-		$product = get_product( $item['product_id'] );
+		$product = wc_get_product( $item['product_id'] );
 
 		// Grouped product
 		if ( 0 !== $product->post->post_parent ) {
@@ -860,7 +860,7 @@ class WC_Subscriptions_Switcher {
 
 				// If the switch is for a grouped product, we need to check the other products grouped with this one
 				if ( 0 !== $product->post->post_parent ) {
-					$switch_product_ids = array_unique( array_merge( $switch_product_ids, get_product( $product->post->post_parent )->get_children() ) );
+					$switch_product_ids = array_unique( array_merge( $switch_product_ids, wc_get_product( $product->post->post_parent )->get_children() ) );
 				} else {
 					$switch_product_ids[] = $switch_product->id;
 				}
@@ -967,9 +967,9 @@ class WC_Subscriptions_Switcher {
 			$item = wcs_get_order_item( absint( $_GET['item'] ), $subscription );
 
 			// Else it's a valid switch
-			$product = get_product( $item['product_id'] );
+			$product = wc_get_product( $item['product_id'] );
 
-			$child_products = ( 0 !== $product->post->post_parent ) ? get_product( $product->post->post_parent )->get_children() : array();
+			$child_products = ( 0 !== $product->post->post_parent ) ? wc_get_product( $product->post->post_parent )->get_children() : array();
 
 			if ( $product_id != $item['product_id'] && ! in_array( $item['product_id'], $child_products ) ) {
 				return $cart_item_data;
@@ -1093,7 +1093,7 @@ class WC_Subscriptions_Switcher {
 
 			$item_data          = $cart_item['data'];
 			$product_id         = wcs_get_canonical_product_id( $cart_item );
-			$product            = get_product( $product_id );
+			$product            = wc_get_product( $product_id );
 			$is_virtual_product = $product->is_virtual();
 
 			// Set when the first payment and end date for the new subscription should occur
