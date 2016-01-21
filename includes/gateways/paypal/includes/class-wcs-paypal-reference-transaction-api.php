@@ -83,6 +83,7 @@ class WCS_PayPal_Reference_Transaction_API extends WCS_SV_API_Base {
 			'cancel_url' => $paypal_args['cancel_return'],
 			'notify_url' => $paypal_args['notify_url'],
 			'custom'     => $paypal_args['custom'],
+			'order'      => $order,
 		) );
 
 		$paypal_args = array(
