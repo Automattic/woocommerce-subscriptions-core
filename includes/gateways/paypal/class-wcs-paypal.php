@@ -195,7 +195,7 @@ class WCS_PayPal {
 
 						$order = $express_checkout_details_response->get_order();
 
-						if ( false === $order ) {
+						if ( is_null( $order ) ) {
 							throw new Exception( __( 'Unable to find order for PayPal billing agreement.', 'woocommerce-subscriptions' ) );
 						}
 
