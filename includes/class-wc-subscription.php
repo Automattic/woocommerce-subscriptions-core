@@ -992,7 +992,6 @@ class WC_Subscription extends WC_Order {
 		// If the subscription has an end date and the next billing period comes after that, return 0
 		if ( 0 != $end_time && ( $next_payment_timestamp + 120 ) > $end_time ) {
 			$next_payment_timestamp = 0;
-			$this->delete_date( 'next_payment' );
 		}
 
 		if ( $next_payment_timestamp > 0 ) {
