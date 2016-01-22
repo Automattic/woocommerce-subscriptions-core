@@ -855,7 +855,7 @@ class WC_Subscriptions_Order {
 	}
 
 	/**
-	 * If the subscription is pending cancellation and a renewal order is refunded, cancel the subscription.
+	 * If the subscription is pending cancellation and a latest order is refunded, cancel the subscription.
 	 *
 	 * @param $order_id
 	 *
@@ -872,14 +872,14 @@ class WC_Subscriptions_Order {
 
 				if ( $order_id == $latest_order && $subscription->has_status( 'pending-cancel' ) && $subscription->can_be_updated_to( 'cancelled' ) ) {
 
-					$subscription->update_status( 'cancelled', sprintf( __( 'Subscription cancelled for refunded renewal order %s.', 'woocommerce-subscriptions' ), sprintf( '<a href="%s">#%s</a>', esc_url( wcs_get_edit_post_link( $order_id ) ), $order_id ) ) );
+					$subscription->update_status( 'cancelled', sprintf( __( 'Subscription cancelled for refunded order %s.', 'woocommerce-subscriptions' ), sprintf( '<a href="%s">#%s</a>', esc_url( wcs_get_edit_post_link( $order_id ) ), $order_id ) ) );
 				}
 			}
 		}
 	}
 
 	/**
-	 * Handles partial refunds on renewal orders in WC versions pre 2.5 which would be considered full refunds in WC 2.5.
+	 * Handles partial refunds on orders in WC versions pre 2.5 which would be considered full refunds in WC 2.5.
 	 *
 	 * @param $order_id
 	 *
