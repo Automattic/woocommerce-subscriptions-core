@@ -336,14 +336,17 @@ class WC_Subscription extends WC_Order {
 					case 'completed' : // core WC order status mapped internally to avoid exceptions
 					case 'active' :
 						// Recalculate and set next payment date
-						$next_payment = $this->get_time( 'next_payment' );
+						$stored_next_payment = $this->get_time( 'next_payment' );
 
 						// Make sure the next payment date is more than 2 hours in the future
-						if ( $next_payment < ( gmdate( 'U' ) + 2 * HOUR_IN_SECONDS ) ) { // also accounts for a $next_payment of 0, meaning it's not set
+						if ( $stored_next_payment < ( gmdate( 'U' ) + 2 * HOUR_IN_SECONDS ) ) { // also accounts for a $stored_next_payment of 0, meaning it's not set
 
-							$next_payment = $this->calculate_date( 'next_payment' );
-							if ( $next_payment > 0 ) {
-								$this->update_dates( array( 'next_payment' => $next_payment ) );
+							$calculated_next_payment = $this->calculate_date( 'next_payment' );
+
+							if ( $calculated_next_payment > 0 ) {
+								$this->update_dates( array( 'next_payment' => $calculated_next_payment ) );
+							} elseif ( $stored_next_payment < gmdate( 'U' ) ) { // delete the stored date if it's in the past as we're not updating it (the calculated next payment date is 0 or none)
+								$this->delete_date( 'next_payment' );
 							}
 						}
 						// Trial end date and end/expiration date don't change at all - they should be set when the subscription is first created
