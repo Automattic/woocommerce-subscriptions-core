@@ -100,7 +100,7 @@ function wcs_get_users_resubscribe_link_for_product( $product_id ) {
 		}
 	}
 
-	return $renewal_url;
+	return apply_filters( 'wcs_users_resubscribe_link_for_product', $renewal_url, $product_id );
 }
 
 /**
@@ -127,7 +127,7 @@ function wcs_cart_contains_resubscribe( $cart = '' ) {
 		}
 	}
 
-	return $contains_resubscribe;
+	return apply_filters( 'wcs_cart_contains_resubscribe', $contains_resubscribe, $cart );
 }
 
 /**
