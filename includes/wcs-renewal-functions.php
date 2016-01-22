@@ -78,7 +78,7 @@ function wcs_cart_contains_renewal() {
 		}
 	}
 
-	return $contains_renewal;
+	return apply_filters( 'wcs_cart_contains_renewal', $contains_renewal );
 }
 
 /**
@@ -100,7 +100,7 @@ function wcs_cart_contains_failed_renewal_order_payment() {
 		}
 	}
 
-	return $contains_renewal;
+	return apply_filters( 'wcs_cart_contains_failed_renewal_order_payment', $contains_renewal );
 }
 
 /**
