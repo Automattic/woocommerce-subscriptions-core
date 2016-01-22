@@ -862,7 +862,7 @@ class WC_Subscriptions_Order {
 	 * @since 2.0
 	 */
 	public static function maybe_cancel_subscription_on_full_refund( $order_id ) {
-		error_log('maybe cancel subscription');
+
 		if ( wcs_order_contains_subscription( $order_id, array( 'parent', 'renewal' ) ) ) {
 
 			$subscriptions = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => array( 'parent', 'renewal' ) ) );
