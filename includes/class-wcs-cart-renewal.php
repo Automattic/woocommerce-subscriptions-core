@@ -29,10 +29,6 @@ class WCS_Cart_Renewal {
 		// Set URL parameter for manual subscription renewals
 		add_filter( 'woocommerce_get_checkout_payment_url', array( &$this, 'get_checkout_payment_url' ), 10, 2 );
 
-		// Set correct discounts on renewal orders
-		add_action( 'woocommerce_before_calculate_totals', array( &$this, 'set_renewal_discounts' ), 10 );
-		add_filter( 'woocommerce_get_discounted_price', array( &$this, 'get_discounted_price_for_renewal' ), 10, 3 );
-
 		// Remove order action buttons from the My Account page
 		add_filter( 'woocommerce_my_account_my_orders_actions', array( &$this, 'filter_my_account_my_orders_actions' ), 10, 2 );
 
@@ -258,43 +254,6 @@ class WCS_Cart_Renewal {
 	}
 
 	/**
-	 * For subscription renewal via cart, use original order discount
-	 *
-	 * @since 2.0
-	 */
-	public function set_renewal_discounts( $cart ) {
-
-		$cart_item = wcs_cart_contains_renewal();
-
-		if ( $cart_item ) {
-
-			$subscription = wcs_get_subscription( $cart_item[ $this->cart_item_key ]['subscription_id'] );
-
-			$cart->discount_cart     = $subscription->cart_discount;
-			$cart->discount_cart_tax = $subscription->cart_discount_tax;
-		}
-	}
-
-	/**
-	 * For subscription renewal via cart, previously adjust item price by original order discount
-	 *
-	 * No longer required as of 1.3.5 as totals are calculated correctly internally.
-	 *
-	 * @since 2.0
-	 */
-	public function get_discounted_price_for_renewal( $price, $cart_item, $cart ) {
-
-		$cart_item = wcs_cart_contains_renewal();
-
-		if ( $cart_item ) {
-			$original_order_id = $cart_item[ $this->cart_item_key ]['subscription_id'];
-			$price -= WC_Subscriptions_Order::get_meta( $original_order_id, '_order_recurring_discount_cart', 0 );
-		}
-
-		return $price;
-	}
-
-	/**
 	 * When completing checkout for a subscription renewal, update the address on the subscription to use
 	 * the shipping/billing address entered in case it has changed since the subscription was first created.
 	 *
@@ -501,6 +460,28 @@ class WCS_Cart_Renewal {
 				WC()->session->set( 'order_awaiting_payment', WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['renewal_order_id'] );
 			}
 		}
+	}
+
+	/* Deprecated */
+
+	/**
+	 * For subscription renewal via cart, use original order discount
+	 *
+	 * @since 2.0
+	 */
+	public function set_renewal_discounts( $cart ) {
+		_deprecated_function( __METHOD__, '2.0.9', 'Applying original subscription discounts to renewals via cart are now handled within ' . __CLASS__ .'::maybe_setup_cart()' );
+	}
+
+	/**
+	 * For subscription renewal via cart, previously adjust item price by original order discount
+	 *
+	 * No longer required as of 1.3.5 as totals are calculated correctly internally.
+	 *
+	 * @since 2.0
+	 */
+	public function get_discounted_price_for_renewal( $price, $cart_item, $cart ) {
+		_deprecated_function( __METHOD__, '2.0.9', 'No longer required as of 1.3.5 as totals are calculated correctly internally.' );
 	}
 }
 new WCS_Cart_Renewal();
