@@ -60,6 +60,7 @@ class WCS_Cart_Renewal {
 		// Apply renewal discounts as pseudo coupons
 		add_action( 'wcs_after_renewal_setup_cart_subscription', array( &$this, 'maybe_setup_discounts' ), 10, 1 );
 		add_filter( 'woocommerce_get_shop_coupon_data', array( &$this, 'renewal_coupon_data' ), 10, 2 );
+		add_action( 'wcs_before_renewal_setup_cart_subscriptions', array( &$this, 'clear_coupons' ), 10 );
 
 		add_action( 'woocommerce_remove_cart_item', array( &$this, 'maybe_remove_items' ), 10, 1 );
 		add_action( 'woocommerce_before_cart_item_quantity_zero', array( &$this, 'maybe_remove_items' ), 10, 1 );
@@ -642,6 +643,26 @@ class WCS_Cart_Renewal {
 			$renewal_coupons[ $subscription_id ] = $coupon;
 			WC()->session->set( 'wcs_renewal_coupons', $renewal_coupons );
 		}
+	}
+
+	/**
+	 * Clear renewal coupons - protects against confusing customer facing notices if customers add one renewal order to the cart with a set of coupons and then decide to add another renewal order with a different set of coupons
+	 *
+	 * @since 2.0.9
+	 */
+	public function clear_coupons() {
+
+		$renewal_coupons = WC()->session->get( 'wcs_renewal_coupons' );
+
+		// Remove the coupons from the cart
+		if ( ! empty( $renewal_coupons ) ) {
+			foreach ( $renewal_coupons as $subscription_id => $coupon ) {
+				WC()->cart->remove_coupons( $coupon->code );
+			}
+		}
+
+		// Clear the session information we have stored
+		WC()->session->set( 'wcs_renewal_coupons', array() );
 	}
 
 	/* Deprecated */
