@@ -73,6 +73,7 @@ class WCS_Cart_Renewal {
 	 * @since 2.0
 	 */
 	public function maybe_setup_cart() {
+
 		global $wp;
 
 		if ( isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) && isset( $wp->query_vars['order-pay'] ) ) {
@@ -86,12 +87,22 @@ class WCS_Cart_Renewal {
 
 				$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
 
+				do_action( 'wcs_before_renewal_setup_cart_subscriptions', $subscriptions, $order );
+
 				foreach ( $subscriptions as $subscription ) {
+
+					do_action( 'wcs_before_renewal_setup_cart_subscription', $subscription, $order );
+
+					// Add the existing subscription items to the cart
 					$this->setup_cart( $subscription, array(
 						'subscription_id'  => $subscription->id,
 						'renewal_order_id' => $order_id,
 					) );
+
+					do_action( 'wcs_after_renewal_setup_cart_subscription', $subscription, $order );
 				}
+
+				do_action( 'wcs_after_renewal_setup_cart_subscriptions', $subscriptions, $order );
 
 				if ( WC()->cart->cart_contents_count != 0 ) {
 					// Store renewal order's ID in session so it can be re-used after payment
