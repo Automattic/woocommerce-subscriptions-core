@@ -59,6 +59,7 @@ class WCS_Cart_Renewal {
 
 		// Apply renewal discounts as pseudo coupons
 		add_action( 'wcs_after_renewal_setup_cart_subscription', array( &$this, 'maybe_setup_discounts' ), 10, 1 );
+		add_filter( 'woocommerce_get_shop_coupon_data', array( &$this, 'renewal_coupon_data' ), 10, 2 );
 
 		add_action( 'woocommerce_remove_cart_item', array( &$this, 'maybe_remove_items' ), 10, 1 );
 		add_action( 'woocommerce_before_cart_item_quantity_zero', array( &$this, 'maybe_remove_items' ), 10, 1 );
@@ -560,6 +561,49 @@ class WCS_Cart_Renewal {
 				WC()->session->set( 'order_awaiting_payment', WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['renewal_order_id'] );
 			}
 		}
+	}
+
+	/**
+	 * Return our custom pseudo coupon data for renewal coupons
+	 *
+	 * @param array $data the coupon data
+	 * @param string $code the coupon code that data is being requested for
+	 * @return array the custom coupon data
+	 * @since 2.0.9
+	 */
+	public function renewal_coupon_data( $data, $code ) {
+
+		$renewal_coupons = WC()->session->get( 'wcs_renewal_coupons' );
+
+		if ( empty( $renewal_coupons ) ) {
+			return $data;
+		}
+
+		foreach ( $renewal_coupons as $subscription_id => $coupon ) {
+
+			// Tweak the coupon data for renewal coupons
+			if ( $code == $coupon->code ) {
+
+				$data = array(
+					'discount_type'              => $coupon->type,
+					'coupon_amount'              => $coupon->amount,
+					'individual_use'             => ( $coupon->individual_use ) ? $coupon->individual_use : 'no',
+					'product_ids'                => ( $coupon->product_ids ) ? $coupon->product_ids : array(),
+					'exclude_product_ids'        => ( $coupon->exclude_product_ids ) ? $coupon->exclude_product_ids : array(),
+					'usage_limit'                => '',
+					'usage_count'                => '',
+					'expiry_date'                => '',
+					'free_shipping'              => ( $coupon->free_shipping ) ? $coupon->free_shipping : '',
+					'product_categories'         => ( $coupon->product_categories ) ? $coupon->product_categories : array(),
+					'exclude_product_categories' => ( $coupon->exclude_product_categories ) ? $coupon->exclude_product_categories : array(),
+					'exclude_sale_items'         => ( $coupon->exclude_sale_items ) ? $coupon->exclude_sale_items : 'no',
+					'minimum_amount'             => ( $coupon->minimum_amount ) ? $coupon->minimum_amount : '',
+					'maximum_amount'             => ( $coupon->maximum_amount ) ? $coupon->maximum_amount : '',
+					'customer_email'             => ( $coupon->customer_email ) ? $coupon->customer_email : array(),
+				);
+			}
+		}
+		return $data;
 	}
 
 	/**
