@@ -452,8 +452,8 @@ class WCS_Admin_Post_Types {
 				} elseif ( $the_subscription->billing_first_name || $the_subscription->billing_last_name ) {
 					$username = trim( $the_subscription->billing_first_name . ' ' . $the_subscription->billing_last_name );
 				}
-
-				$column_content = sprintf( _x( '%s for %s', 'Subscription number for X', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post.php?post=' . absint( $post->ID ) . '&action=edit' ) ) . '"><strong>' . esc_attr( $the_subscription->get_order_number() ) . '</strong></a>', $username );
+				// translators: $1: is opening link, $2: is subscription order number, $3: is closing link tag, $4: is user's name
+				$column_content = sprintf( _x( '%1$s#%2$s%3$s for %4$s', 'Subscription number for X', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post.php?post=' . absint( $post->ID ) . '&action=edit' ) ) . '">', '<strong>' . esc_attr( $the_subscription->get_order_number() ) . '</strong>', '</a>', $username );
 
 				$column_content .= '</div>';
 
