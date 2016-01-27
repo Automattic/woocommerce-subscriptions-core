@@ -82,7 +82,7 @@ class WC_Subscriptions_Coupon {
 			return $discount;
 		}
 		// But if cart contains a renewal, we need to handle both subscription products and manually added non-susbscription products that could be part of a subscription
-		if ( wcs_cart_contains_renewal() && ! self::is_subsbcription_renewal_line_item( $product_id, $cart_item, $cart ) ) {
+		if ( wcs_cart_contains_renewal() && ! self::is_subsbcription_renewal_line_item( $product_id, $cart_item ) ) {
 			return $discount;
 		}
 
@@ -481,7 +481,7 @@ class WC_Subscriptions_Coupon {
 			}
 		}
 
-		return apply_filters( 'woocommerce_is_subscription_renewal_line_item', $is_subscription_line_item, $product_id, $cart_item, $cart );
+		return apply_filters( 'woocommerce_is_subscription_renewal_line_item', $is_subscription_line_item, $product_id, $cart_item );
 	}
 
 	/* Deprecated */
