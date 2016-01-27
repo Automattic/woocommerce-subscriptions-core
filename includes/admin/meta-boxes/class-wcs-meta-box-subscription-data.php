@@ -45,7 +45,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 				<h2><?php
 				// translators: placeholder is the ID of the subscription
-				printf( esc_html_x( 'Subscription %s details', 'edit subscription header', 'woocommerce-subscriptions' ), esc_html( $subscription->get_order_number() ) ); ?></h2>
+				printf( esc_html_x( 'Subscription #%s details', 'edit subscription header', 'woocommerce-subscriptions' ), esc_html( $subscription->get_order_number() ) ); ?></h2>
 
 				<div class="order_data_column_container">
 					<div class="order_data_column">
