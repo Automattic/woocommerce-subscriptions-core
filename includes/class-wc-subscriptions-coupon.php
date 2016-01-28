@@ -187,11 +187,6 @@ class WC_Subscriptions_Coupon {
 			$discount_amount = ( $coupon->amount * $discount_percent ) / $cart_item_qty;
 		}
 
-		// Double check to ensure we don't have a negative discount
-		if ( $discount_amount < 0 ) {
-			$discount_amount = 0;
-		}
-
 		// Round - consistent with WC approach
 		$discount_amount = round( $discount_amount, WC_ROUNDING_PRECISION );
 
