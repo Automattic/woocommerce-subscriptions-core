@@ -103,6 +103,7 @@ class WC_Subscriptions_Synchroniser {
 
 		// Maybe recalculate trial end for a synced subscription in case it includes 1 day trial used to mock cart totals.
 		add_filter( 'wcs_recurring_cart_trial_end_date', __CLASS__ . '::recalculate_trial_end_date', 15, 3 );
+		add_filter( 'wcs_recurring_cart_end_date', __CLASS__ . '::recalculate_end_date', 15, 3 );
 
 		add_filter( 'woocommerce_subscriptions_recurring_cart_key', __CLASS__ . '::add_to_recurring_cart_key', 10, 2 );
 	}
@@ -759,6 +760,22 @@ class WC_Subscriptions_Synchroniser {
 		}
 
 		return $trial_end_date;
+	}
+
+	/**
+	 * Maybe recalculate the end date for synced subscription products that contain the unnecessary
+	 * "one day trial" period.
+	 *
+	 * @since 2.0.9
+	 */
+	public static function recalculate_end_date( $end_date, $recurring_cart, $product ) {
+
+		if ( self::is_product_synced( $product ) ) {
+			$product_id  = ( isset( $product->variation_id ) ) ? $product->variation_id : $product->id;
+			$end_date = WC_Subscriptions_Product::get_expiration_date( $product_id );
+		}
+
+		return $end_date;
 	}
 
 	/**
