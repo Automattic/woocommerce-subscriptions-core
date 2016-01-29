@@ -37,8 +37,6 @@ class WC_Subscriptions_Product {
 		add_filter( 'woocommerce_gform_total_price', __CLASS__ . '::get_gravity_form_prices', 10, 2 );
 		add_filter( 'woocommerce_gform_variation_total_price', __CLASS__ . '::get_gravity_form_prices', 10, 2 );
 
-		add_action( 'woocommerce_variable-subscription_add_to_cart', 'woocommerce_variable_add_to_cart' );
-
 		add_filter( 'woocommerce_product_class', __CLASS__ . '::set_subscription_variation_class', 10, 4 );
 
 		// Make sure a subscriptions price is included in subscription variations when required
