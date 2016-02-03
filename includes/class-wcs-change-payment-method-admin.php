@@ -22,6 +22,14 @@ class WCS_Change_Payment_Method_Admin {
 		$payment_method        = ! empty( $subscription->payment_method ) ? $subscription->payment_method : '';
 		$valid_payment_methods = self::get_valid_payment_methods( $subscription );
 
+		if ( ! isset( $valid_payment_methods[ $payment_method ] ) ) {
+			$subscription_payment_gateway = WC_Subscriptions_Payment_Gateways::get_payment_gateway( $payment_method );
+
+			if ( false != $subscription_payment_gateway ) {
+				$valid_payment_methods[ $payment_method ] = $subscription_payment_gateway->title;
+			}
+		}
+
 		echo '<p class="form-field form-field-wide">';
 
 		if ( count( $valid_payment_methods ) > 1 ) {
