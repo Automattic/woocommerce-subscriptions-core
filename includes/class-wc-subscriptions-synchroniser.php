@@ -872,6 +872,9 @@ class WC_Subscriptions_Synchroniser {
 			} else {
 				$price = $days_until_next_payment * ( $price / $days_in_cycle );
 			}
+
+			// Now round the amount to the number of decimals displayed for prices to avoid rounding errors in the total calculations (we don't want to use WC_DISCOUNT_ROUNDING_PRECISION here because it can still lead to rounding errors). For full details, see: https://github.com/Prospress/woocommerce-subscriptions/pull/1134#issuecomment-178395062
+			$price = round( $price, wc_get_price_decimals() );
 		}
 
 		return $price;
