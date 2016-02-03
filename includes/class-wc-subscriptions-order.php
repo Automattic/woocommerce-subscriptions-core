@@ -876,7 +876,7 @@ class WC_Subscriptions_Order {
 
 				if ( $order->id == $latest_order && $subscription->has_status( 'pending-cancel' ) && $subscription->can_be_updated_to( 'cancelled' ) ) {
 
-					$subscription->update_status( 'cancelled', sprintf( __( 'Subscription cancelled for refunded order %s.', 'woocommerce-subscriptions' ), sprintf( '<a href="%s">#%s</a>', esc_url( wcs_get_edit_post_link( $order->id ) ), $order->id ) ) );
+					$subscription->update_status( 'cancelled', sprintf( __( 'Subscription cancelled for refunded order %s.', 'woocommerce-subscriptions' ), sprintf( '<a href="%s">#%s</a>', esc_url( wcs_get_edit_post_link( $order->id ) ), $order->get_order_number() ) ) );
 				}
 			}
 		}
