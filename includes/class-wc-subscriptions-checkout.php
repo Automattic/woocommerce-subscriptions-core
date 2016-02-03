@@ -63,9 +63,11 @@ class WC_Subscriptions_Checkout {
 		$subscriptions = wcs_get_subscriptions_for_order( $order->id, array( 'order_type' => 'parent' ) );
 
 		if ( ! empty( $subscriptions ) ) {
+			remove_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 			foreach ( $subscriptions as $subscription ) {
 				wp_delete_post( $subscription->id );
 			}
+			add_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 		}
 
 		// Create new subscriptions for each group of subscription products in the cart (that is not a renewal)
