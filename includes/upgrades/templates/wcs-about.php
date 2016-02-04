@@ -118,7 +118,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 
 			<div class="col">
 				<img src="<?php echo esc_url( plugins_url( '/assets/images/admin-change-payment-method.jpg', WC_Subscriptions::$plugin_file ) ); ?>" />
-				<h3><?php esc_html_e( 'Change Payment Method', 'woocommerce-subscriptions' ); ?></h3>
+				<h3><?php echo esc_html_x( 'Change Payment Method', 'h3 on the About Subscriptions page for this new feature', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php
 					// translators: placeholders are opening and closing <strong> tags
 					printf( esc_html__( 'For a store manager to change a subscription from automatic to manual renewal payments (or manual to automatic) with Subscriptions v1.5, the database needed to be modified directly. Subscriptions now provides a way for payment gateways to allow you to change that from the new %sEdit Subscription%s interface.', 'woocommerce-subscriptions' ), '<strong>', '</strong>' ); ?>
