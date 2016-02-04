@@ -189,7 +189,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 						}
 
 						if ( apply_filters( 'woocommerce_enable_order_notes_field', 'yes' == get_option( 'woocommerce_enable_order_comments', 'yes' ) ) && $post->post_excerpt ) {
-							echo '<p><strong>' . esc_html__( 'Customer Note', 'woocommerce-subscriptions' ) . ':</strong> ' . wp_kses_post( nl2br( $post->post_excerpt ) ) . '</p>';
+							echo '<p><strong>' . esc_html__( 'Customer Note:', 'woocommerce-subscriptions' ) . '</strong> ' . wp_kses_post( nl2br( $post->post_excerpt ) ) . '</p>';
 						}
 
 						echo '</div>';
