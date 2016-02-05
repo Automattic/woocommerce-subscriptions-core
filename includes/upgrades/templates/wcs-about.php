@@ -155,7 +155,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 	<div class="changelog">
 
 		<h2><?php esc_html_e( 'Peek Under the Hood for Developers', 'woocommerce-subscriptions' ); ?></h2>
-		<p><?php esc_html_e( 'Subscriptions v2.0 introduces a new architecture built on the WooCommerce Custom Order Types API.', 'woocommerce-subscriptions' ); ?></p>
+		<p><?php esc_html_e( 'Subscriptions 2.0 introduces a new architecture built on the WooCommerce Custom Order Types API.', 'woocommerce-subscriptions' ); ?></p>
 
 		<div class="feature-section under-the-hood three-col">
 			<div class="col">
@@ -174,9 +174,9 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 					// translators: placeholders are opening and closing <code> tags
 					printf( esc_html__( 'New %sWC_Subscription%s Object', 'woocommerce-subscriptions' ), '<code>', '</code>' ); ?>
 				</h3>
-				<p><?php esc_html_e( 'Subscriptions v2.0 introduces a new object for working with a subscription at the application level. The cumbersome APIs for retrieving or modifying a subscription\'s data are gone!', 'woocommerce-subscriptions' ); ?></p>
+				<p><?php esc_html_e( 'Subscriptions 2.0 introduces a new object for working with a subscription at the application level. The cumbersome APIs for retrieving or modifying a subscription\'s data are gone!', 'woocommerce-subscriptions' ); ?></p>
 				<p><?php
-					// translators: all placeholders are opening and closing <code> tags
+					// translators: all placeholders are opening and closing <code> tags, no need to order them
 					printf( esc_html__( 'Because the %sWC_Subscription%s class extends %sWC_Order%s, you can use its familiar methods, like %s$subscription->update_status()%s or %s$subscription->get_total()%s.', 'woocommerce-subscriptions' ), '<code>', '</code>', '<code>', '</code>', '<code>', '</code>', '<code>', '</code>' ); ?>
 				</p>
 			</div>
@@ -184,7 +184,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 				<h3><?php esc_html_e( 'REST API Endpoints', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php esc_html_e( 'We didn\'t just improve interfaces for humans, we also improved them for computers. Your applications can now create, read, update or delete subscriptions via RESTful API endpoints.', 'woocommerce-subscriptions' ); ?></p>
 				<p><?php
-					// translators: all placeholders are opening and closing <code> tags
+					// translators: all placeholders are opening and closing <code> tags, no need to order them
 					printf( esc_html__( 'Want to list all the subscriptions on a site? Get %sexample.com/wc-api/v2/subscriptions/%s. Want the details of a specific subscription? Get %s/wc-api/v2/subscriptions/<id>/%s.', 'woocommerce-subscriptions' ), '<code>', '</code>', '<code>', '</code>' ); ?>
 				</p>
 			</div>
