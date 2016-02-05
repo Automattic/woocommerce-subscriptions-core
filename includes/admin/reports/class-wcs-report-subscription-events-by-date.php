@@ -34,78 +34,91 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 
 		$this->report_data = new stdClass;
 
-		$this->report_data->renewal_counts = (array) $this->get_order_report_data( array(
-			'data' => array(
-				'ID' => array(
-					'type'     => 'post_data',
-					'function' => 'COUNT',
-					'name'     => 'count',
-					'distinct' => true,
+		$this->report_data->renewal_counts = (array) $this->get_order_report_data(
+			array(
+				'data' => array(
+					'ID' => array(
+						'type'     => 'post_data',
+						'function' => 'COUNT',
+						'name'     => 'count',
+						'distinct' => true,
+					),
+					'post_date' => array(
+						'type'     => 'post_data',
+						'function' => '',
+						'name'     => 'post_date',
+					),
+					'_subscription_renewal' => array(
+						'type'      => 'meta',
+						'function'  => '',
+						'name'      => 'renewal_orders',
+					),
+					'_order_total' => array(
+						'type'      => 'meta',
+						'function'  => 'SUM',
+						'name'      => 'renewal_totals',
+						'join_type' => 'LEFT',   // To avoid issues if there is no renewal_total meta
+						),
 				),
-				'post_date' => array(
-					'type'     => 'post_data',
-					'function' => '',
-					'name'     => 'post_date',
-				),
-				'_subscription_renewal' => array(
-					'type'     => 'meta',
-					'function' => '',
-					'name'     => 'renewal_orders',
-				),
-			),
-			'group_by'            => $this->group_by_query,
-			'order_by'            => 'post_date ASC',
-			'query_type'          => 'get_results',
-			'filter_range'        => true,
-			'order_types'         => wc_get_order_types( 'order-count' ),
-		) );
+				'group_by'            => $this->group_by_query,
+				'order_by'            => 'post_date ASC',
+				'query_type'          => 'get_results',
+				'filter_range'        => true,
+				'order_types'         => wc_get_order_types( 'order-count' ),
+			)
+		);
 
-		$this->report_data->switch_counts = (array) $this->get_order_report_data( array(
-			'data' => array(
-				'ID' => array(
-					'type'     => 'post_data',
-					'function' => 'COUNT',
-					'name'     => 'count',
-					'distinct' => true,
+		$this->report_data->switch_counts = (array) $this->get_order_report_data(
+			array(
+				'data' => array(
+					'ID' => array(
+						'type'     => 'post_data',
+						'function' => 'COUNT',
+						'name'     => 'count',
+						'distinct' => true,
+					),
+					'post_date' => array(
+						'type'     => 'post_data',
+						'function' => '',
+						'name'     => 'post_date',
+					),
+					'_subscription_switch' => array(
+						'type'     => 'meta',
+						'function' => '',
+						'name'     => 'switch_orders',
+					),
 				),
-				'post_date' => array(
-					'type'     => 'post_data',
-					'function' => '',
-					'name'     => 'post_date',
-				),
-				'_subscription_switch' => array(
-					'type'     => 'meta',
-					'function' => '',
-					'name'     => 'switch_orders',
-				),
-			),
-			'group_by'            => $this->group_by_query,
-			'order_by'            => 'post_date ASC',
-			'query_type'          => 'get_results',
-			'filter_range'        => true,
-			'order_types'         => wc_get_order_types( 'order-count' ),
-		) );
+				'group_by'            => $this->group_by_query,
+				'order_by'            => 'post_date ASC',
+				'query_type'          => 'get_results',
+				'filter_range'        => true,
+				'order_types'         => wc_get_order_types( 'order-count' ),
+			)
+		);
 
 		/*
 		* New subscription orders
 		*/
-		$query = "SELECT COUNT(DISTINCT wcsubs.ID) AS count, wcsubs.post_date as post_date
-			FROM {$wpdb->posts} AS wcsubs
-			INNER JOIN {$wpdb->posts} AS wcorder
-				ON wcsubs.post_parent = wcorder.ID
-			WHERE  wcorder.post_type IN ( 'shop_order' )
-				AND wcsubs.post_type IN ( 'shop_subscription' )
-				AND wcorder.post_status IN ('wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
-				AND wcorder.post_date >= '" . date( 'Y-m-d', $this->start_date ) . "'
-				AND wcorder.post_date < '" . date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) ) . "'
-			GROUP BY YEAR(wcsubs.post_date), MONTH(wcsubs.post_date), DAY(wcsubs.post_date)
-			ORDER BY post_date ASC";
+		$query = $wpdb->prepare(
+			"SELECT COUNT(DISTINCT wcsubs.ID) AS count, wcsubs.post_date as post_date
+				FROM {$wpdb->posts} AS wcsubs
+				INNER JOIN {$wpdb->posts} AS wcorder
+					ON wcsubs.post_parent = wcorder.ID
+				WHERE  wcorder.post_type IN ( 'shop_order' )
+					AND wcsubs.post_type IN ( 'shop_subscription' )
+					AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
+					AND wcorder.post_date >= '" . date( 'Y-m-d', $this->start_date ) . "'
+					AND wcorder.post_date < '" . date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) ) . "'
+				GROUP BY YEAR(wcsubs.post_date), MONTH(wcsubs.post_date), DAY(wcsubs.post_date)
+				ORDER BY post_date ASC"
+		);
 
 		// TODO cache this
 		$query_results = (array) $wpdb->get_results( $query );
 		$this->report_data->signup_counts = $query_results;
 
 		// Total up the query data
+		$this->report_data->renewal_totals = absint( array_sum( wp_list_pluck( $this->report_data->renewal_counts, 'renewal_totals' ) ) );
 		$this->report_data->total_signups  = absint( array_sum( wp_list_pluck( $this->report_data->signup_counts, 'count' ) ) );
 		$this->report_data->total_renewals = absint( array_sum( wp_list_pluck( $this->report_data->renewal_counts, 'count' ) ) );
 		$this->report_data->total_switches = absint( array_sum( wp_list_pluck( $this->report_data->switch_counts, 'count' ) ) );
@@ -120,6 +133,12 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$legend = array();
 		$data   = $this->get_report_data();
 
+		$legend[] = array(
+			'title'            => sprintf( __( '%s renewal revenue in this period', 'woocommerce' ), '<strong>' . wc_price( $data->renewal_totals ) . '</strong>' ),
+			'placeholder'      => __( 'The sum of all renewal orders including tax and shipping.', 'woocommerce-subscriptions' ),
+			'color'            => $this->chart_colours['renewal_total'],
+			'highlight_series' => 3,
+		);
 		$legend[] = array(
 			'title' => sprintf( __( '%s subscription signups', 'woocommerce-subscriptions' ), '<strong>' . $this->report_data->total_signups . '</strong>' ),
 			'color' => $this->chart_colours['signup_count'],
@@ -156,6 +175,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			'signup_count'     => '#5da5da',
 			'switch_count'     => '#439ad9',
 			'renewal_count'    => '#f29ec4',
+			'renewal_total'    => '#99CC00',
 		);
 
 		$current_range = ! empty( $_GET['range'] ) ? sanitize_text_field( $_GET['range'] ) : '7day';
@@ -199,12 +219,14 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		global $wp_locale;
 
 		// Prepare data for report
+		$renewal_totals = $this->prepare_chart_data( $this->report_data->renewal_counts, 'post_date', 'renewal_totals', $this->chart_interval, $this->start_date, $this->chart_groupby );
 		$signup_counts  = $this->prepare_chart_data( $this->report_data->signup_counts, 'post_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
 		$renewal_counts = $this->prepare_chart_data( $this->report_data->renewal_counts, 'post_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
 		$switch_counts  = $this->prepare_chart_data( $this->report_data->switch_counts, 'post_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
 
 		// Encode in json format
 		$chart_data = array(
+			'renewal_totals'    => array_map( array( $this, 'round_chart_totals' ), array_values( $renewal_totals ) ),
 			'signup_counts'     => array_values( $signup_counts ),
 			'renewal_counts'    => array_values( $renewal_counts ),
 			'switch_counts'     => array_values( $switch_counts ),
@@ -247,6 +269,16 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 							bars: { fillColor: '<?php echo esc_js( $this->chart_colours['renewal_count'] ); ?>', order: 2, fill: true, show: true, lineWidth: 0, barWidth: <?php echo esc_js( $this->barwidth ); ?> * 0.5, align: 'center' },
 							shadowSize: 0,
 							hoverable: false,
+						},
+						{
+							label: "<?php echo esc_js( __( 'Renewal Totals', 'woocommerce' ) ) ?>",
+							data: order_data.renewal_totals,
+							yaxis: 2,
+							color: '<?php echo $this->chart_colours['renewal_total']; ?>',
+							points: { show: true, radius: 5, lineWidth: 2, fillColor: '#fff', fill: true },
+							lines: { show: true, lineWidth: 2, fill: false },
+							shadowSize: 0,
+							<?php echo $this->get_currency_tooltip(); ?>
 						},
 					];
 
@@ -331,5 +363,18 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			});
 		</script>
 		<?php
+	}
+
+	/**
+	 * Round our totals correctly.
+	 * @param  string $amount
+	 * @return string
+	 */
+	private function round_chart_totals( $amount ) {
+		if ( is_array( $amount ) ) {
+			return array( $amount[0], wc_format_decimal( $amount[1], wc_get_price_decimals() ) );
+		} else {
+			return wc_format_decimal( $amount, wc_get_price_decimals() );
+		}
 	}
 }
