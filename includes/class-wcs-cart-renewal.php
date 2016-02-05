@@ -54,6 +54,9 @@ class WCS_Cart_Renewal {
 		add_filter( 'woocommerce_get_cart_item_from_session', array( &$this, 'get_cart_item_from_session' ), 10, 3 );
 		add_action( 'woocommerce_cart_loaded_from_session', array( &$this, 'cart_items_loaded_from_session' ), 10 );
 
+		// Make sure fees are added to the cart
+		add_action( 'woocommerce_cart_calculate_fees', array( &$this, 'maybe_add_subscription_fees' ), 10, 1 );
+
 		// Allow renewal of limited subscriptions
 		add_filter( 'woocommerce_subscription_is_purchasable', array( &$this, 'is_purchasable' ), 12, 2 );
 		add_filter( 'woocommerce_subscription_variation_is_purchasable', array( &$this, 'is_purchasable' ), 12, 2 );
@@ -512,6 +515,31 @@ class WCS_Cart_Renewal {
 	 */
 	protected function cart_contains() {
 		return wcs_cart_contains_renewal();
+	}
+
+	/**
+	 * Adds fees associated with a subscription to the cart when a renewal or resubscribe is in the cart.
+	 *
+	 * @param WC_Cart $cart
+	 * @since 2.0.10
+	 */
+	public function maybe_add_subscription_fees( $cart ) {
+
+		if ( wcs_cart_contains_renewal() || wcs_cart_contains_resubscribe() ) {
+			$subscriptions = array();
+
+			foreach( $cart->cart_contents as $cart_item ) {
+
+				if ( isset( $cart_item[ $this->cart_item_key ]['subscription_id'] ) && ! in_array( $cart_item[ $this->cart_item_key ]['subscription_id'], $subscriptions ) ) {
+					$subscription    = wcs_get_subscription( $cart_item[ $this->cart_item_key ]['subscription_id'] );
+					$subscriptions[] = $subscription->id;
+
+					foreach ( $subscription->get_fees() as $fee ) {
+						$cart->add_fee( $fee['name'], $fee['line_total'], $fee['line_subtotal_tax'] > 0, $fee['tax_class'] );
+					}
+				}
+			}
+		}
 	}
 }
 new WCS_Cart_Renewal();
