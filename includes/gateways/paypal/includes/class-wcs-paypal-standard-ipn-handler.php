@@ -125,7 +125,11 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 				WC_Gateway_Paypal::log( 'Subscription IPN Error: an older IPN request with ID ' . $ipn_id . ' is still in progress.' );
 
 				// We need to send an error code to make sure PayPal does retry the IPN after our lock expires, in case something is actually going wrong and the server isn't just taking a long time to process the request
-				header( 'HTTP/1.0 503 Service Temporarily Unavailable' ); // 503 Service Unavailable: server is currently unavailable (because it is overloaded or down for maintenance).
+				$protocol = 'HTTP/1.0';
+				if ( 'HTTP/1.1' == $_SERVER['SERVER_PROTOCOL'] ) {
+					$protocol = 'HTTP/1.1';
+				}
+				header( "$protocol 503 Service Unavailable", true, 503 ); // 503 Service Unavailable: server is currently unavailable (because it is overloaded or down for maintenance).
 				exit;
 			}
 
