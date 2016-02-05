@@ -518,7 +518,7 @@ class WCS_Cart_Renewal {
 	}
 
 	/**
-	 * Adds fees associated with a subscription to the cart when a renewal or resubscribe is in the cart.
+	 * Adds subscription fees to the cart when a renewal or resubscribe is in the cart.
 	 *
 	 * @param WC_Cart $cart
 	 * @since 2.0.10
@@ -528,7 +528,7 @@ class WCS_Cart_Renewal {
 		if ( wcs_cart_contains_renewal() || wcs_cart_contains_resubscribe() ) {
 			$subscriptions = array();
 
-			foreach( $cart->cart_contents as $cart_item ) {
+			foreach ( $cart->cart_contents as $cart_item ) {
 
 				if ( isset( $cart_item[ $this->cart_item_key ]['subscription_id'] ) && ! in_array( $cart_item[ $this->cart_item_key ]['subscription_id'], $subscriptions ) ) {
 					$subscription    = wcs_get_subscription( $cart_item[ $this->cart_item_key ]['subscription_id'] );
