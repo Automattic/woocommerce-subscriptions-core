@@ -88,7 +88,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 				$next_payment_timestamp = strtotime( $r->scheduled_date );
 
 				// Keep calculating all the new payments until we hit the end date of the search
-				while ( true ) {
+				do {
 
 					$next_payment_timestamp = wcs_add_time( $billing_intervals[ $key ], $billing_periods[ $key ], $next_payment_timestamp );
 
@@ -107,10 +107,8 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 							$total_renewal_revenue += $subscription_totals[ $key ];;
 							$total_renewal_count   += 1;
 						}
-					} else {
-						break;
 					}
-				}
+				} while ( $next_payment_timestamp <= $this->end_date && ( 0 == $scheduled_ends[ $key ] || $next_payment_timestamp < strtotime( $scheduled_ends[ $key ] ) ) );
 			}
 		}
 
