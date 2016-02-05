@@ -861,18 +861,22 @@ class WC_Subscriptions_Order {
 	 *
 	 * @since 2.0
 	 */
-	public static function maybe_cancel_subscription_on_full_refund( $order_id ) {
+	public static function maybe_cancel_subscription_on_full_refund( $order ) {
 
-		if ( wcs_order_contains_subscription( $order_id, array( 'parent', 'renewal' ) ) ) {
+		if ( ! is_object( $order ) ) {
+			$order = new WC_Order( $order );
+		}
 
-			$subscriptions = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => array( 'parent', 'renewal' ) ) );
+		if ( wcs_order_contains_subscription( $order, array( 'parent', 'renewal' ) ) ) {
+
+			$subscriptions = wcs_get_subscriptions_for_order( $order->id, array( 'order_type' => array( 'parent', 'renewal' ) ) );
 
 			foreach ( $subscriptions as $subscription ) {
 				$latest_order = $subscription->get_last_order();
 
-				if ( $order_id == $latest_order && $subscription->has_status( 'pending-cancel' ) && $subscription->can_be_updated_to( 'cancelled' ) ) {
+				if ( $order->id == $latest_order && $subscription->has_status( 'pending-cancel' ) && $subscription->can_be_updated_to( 'cancelled' ) ) {
 
-					$subscription->update_status( 'cancelled', sprintf( __( 'Subscription cancelled for refunded order %s.', 'woocommerce-subscriptions' ), sprintf( '<a href="%s">#%s</a>', esc_url( wcs_get_edit_post_link( $order_id ) ), $order_id ) ) );
+					$subscription->update_status( 'cancelled', sprintf( __( 'Subscription cancelled for refunded order %s.', 'woocommerce-subscriptions' ), sprintf( '<a href="%s">#%s</a>', esc_url( wcs_get_edit_post_link( $order->id ) ), $order->get_order_number() ) ) );
 				}
 			}
 		}
@@ -902,7 +906,7 @@ class WC_Subscriptions_Order {
 			}
 
 			if ( ! ( $remaining_order_total > 0 || ( $order_has_free_item && $remaining_order_items > 0 ) ) ) {
-				self::maybe_cancel_subscription_on_full_refund( $order_id );
+				self::maybe_cancel_subscription_on_full_refund( $order );
 			}
 		}
 	}

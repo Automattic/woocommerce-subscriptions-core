@@ -165,7 +165,7 @@ class WCS_Cart_Renewal {
 
 		// If a product linked to a subscription failed to be added to the cart prevent partially paying for the order by removing all cart items.
 		if ( ! $success && wcs_is_subscription( $subscription ) ) {
-			wc_add_notice( sprintf( esc_html__( 'Subscription #%d has not been added to the cart.', 'woocommerce-subscriptions' ), $subscription->id ) , 'error' );
+			wc_add_notice( sprintf( esc_html__( 'Subscription #%s has not been added to the cart.', 'woocommerce-subscriptions' ), $subscription->get_order_number() ) , 'error' );
 			WC()->cart->empty_cart( true );
 		}
 
