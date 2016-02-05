@@ -492,7 +492,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	public static function change_payment_method_page_title( $title ) {
 
 		if ( is_main_query() && in_the_loop() && is_page() && is_checkout_pay_page() && self::$is_request_to_change_payment ) {
-			$title = __( 'Change Payment Method', 'woocommerce-subscriptions' );
+			$title = _x( 'Change Payment Method', 'the page title of the change payment method form', 'woocommerce-subscriptions' );
 		}
 
 		return $title;
