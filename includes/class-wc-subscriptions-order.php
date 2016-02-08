@@ -437,7 +437,7 @@ class WC_Subscriptions_Order {
 
 							$prior_date = isset( $dates['trial_end'] ) ? $dates['trial_end'] : $dates['start'];
 
-							if ( $subscription->get_time( 'next_payment' ) < strtotime( $prior_date ) ) {
+							if ( $subscription->get_time( 'next_payment' ) < wcs_date_to_time( $prior_date ) ) {
 
 								foreach ( $subscription->get_items() as $item ) {
 									$product_id = wcs_get_canonical_product_id( $item );
@@ -1747,7 +1747,7 @@ class WC_Subscriptions_Order {
 			$next_payment = $subscription->calculate_date( 'next_payment' );
 		}
 
-		$next_payment = ( 'mysql' == $type && 0 != $next_payment ) ? $next_payment : strtotime( $next_payment );
+		$next_payment = ( 'mysql' == $type && 0 != $next_payment ) ? $next_payment : wcs_date_to_time( $next_payment );
 		return apply_filters( 'woocommerce_subscriptions_calculated_next_payment_date', $next_payment, $order, $product_id, $type, $from_date, $from_date );
 	}
 
