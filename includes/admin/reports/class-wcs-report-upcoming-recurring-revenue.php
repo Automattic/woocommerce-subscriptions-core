@@ -101,6 +101,8 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 							if ( ! isset( $this->order_ids_recurring_totals[ $update_key ] ) ) {
 								$this->order_ids_recurring_totals[ $update_key ] = new stdClass();
 								$this->order_ids_recurring_totals[ $update_key ]->scheduled_date = $update_key;
+								$this->order_ids_recurring_totals[ $update_key ]->recurring_total = 0;
+								$this->order_ids_recurring_totals[ $update_key ]->total_renewals = 0;
 							}
 							$this->order_ids_recurring_totals[ $update_key ]->total_renewals  += 1;
 							$this->order_ids_recurring_totals[ $update_key ]->recurring_total += $subscription_totals[ $key ];
