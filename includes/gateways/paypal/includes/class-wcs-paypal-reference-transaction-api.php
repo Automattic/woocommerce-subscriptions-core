@@ -83,6 +83,7 @@ class WCS_PayPal_Reference_Transaction_API extends WCS_SV_API_Base {
 			'cancel_url' => $paypal_args['cancel_return'],
 			'notify_url' => $paypal_args['notify_url'],
 			'custom'     => $paypal_args['custom'],
+			'order'      => $order,
 		) );
 
 		$paypal_args = array(
@@ -195,6 +196,28 @@ class WCS_PayPal_Reference_Transaction_API extends WCS_SV_API_Base {
 	}
 
 	/**
+	 * Process an express checkout payment and billing agreement creation
+	 *
+	 * @param string $token PayPal Express Checkout token returned by SetExpressCheckout operation
+	 * @param WC_Order $order order object
+	 * @param array $args
+	 * @return WCS_PayPal_Reference_Transaction_API_Response_Payment refund response
+	 * @since 2.0.9
+	 */
+	public function do_express_checkout( $token, $order, $args ) {
+
+		$this->order = $order;
+
+		$request = $this->get_new_request();
+
+		$request->do_express_checkout( $token, $order, $args );
+
+		$this->set_response_handler( 'WCS_PayPal_Reference_Transaction_API_Response_Payment' );
+
+		return $this->perform_request( $request );
+	}
+
+	/**
 	 * Perform a reference transaction for the given order
 	 *
 	 * @see SV_WC_Payment_Gateway_API::refund()
@@ -211,7 +234,7 @@ class WCS_PayPal_Reference_Transaction_API extends WCS_SV_API_Base {
 
 		$request->do_reference_transaction( $reference_id, $order, $args );
 
-		$this->set_response_handler( 'WCS_PayPal_Reference_Transaction_API_Response_Payment' );
+		$this->set_response_handler( 'WCS_PayPal_Reference_Transaction_API_Response_Recurring_Payment' );
 
 		return $this->perform_request( $request );
 	}

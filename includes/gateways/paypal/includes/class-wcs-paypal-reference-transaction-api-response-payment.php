@@ -1,10 +1,10 @@
 <?php
 /**
- * PayPal Reference Transaction API API Do Reference Transaction Response Class
+ * PayPal Reference Transaction API Do Express Checkout Response Class
  *
- * Parses DoReferenceTransact response
+ * Parses DoExpressCheckout response which are used to process initial payments (if any) when checking out.
  *
- * @link https://developer.paypal.com/webapps/developer/docs/classic/api/merchant/DoReferenceTransaction_API_Operation_NVP/
+ * @link https://developer.paypal.com/docs/classic/api/merchant/DoExpressCheckoutPayment_API_Operation_NVP/
  *
  * Heavily inspired by the WC_Paypal_Express_API_Payment_Response class developed by the masterful SkyVerge team
  *
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-class WCS_PayPal_Reference_Transaction_API_Response_Payment extends WCS_PayPal_Reference_Transaction_API_Response {
+class WCS_PayPal_Reference_Transaction_API_Response_Payment extends WCS_PayPal_Reference_Transaction_API_Response_Billing_Agreement {
 
 
 	/** approved transaction response payment status */
@@ -116,7 +116,7 @@ class WCS_PayPal_Reference_Transaction_API_Response_Payment extends WCS_PayPal_R
 		} elseif ( 'echeck' == $this->get_payment_type() ) {
 
 			// add some additional info for eCheck payments
-			$message = sprintf( __( 'expected clearing date %s', 'woocommerce-subscriptions' ), date_i18n( wc_date_format(), strtotime( $this->get_parameter( 'PAYMENTINFO_n_EXPECTEDECHECKCLEARDATE' ) ) ) );
+			$message = sprintf( __( 'expected clearing date %s', 'woocommerce-subscriptions' ), date_i18n( wc_date_format(), strtotime( $this->get_payment_parameter( 'EXPECTEDECHECKCLEARDATE' ) ) ) );
 		}
 
 		// add fraud filters
@@ -139,7 +139,7 @@ class WCS_PayPal_Reference_Transaction_API_Response_Payment extends WCS_PayPal_R
 	 */
 	public function get_transaction_id() {
 
-		return $this->get_parameter( 'TRANSACTIONID' );
+		return $this->get_payment_parameter( 'TRANSACTIONID' );
 	}
 
 
@@ -156,6 +156,18 @@ class WCS_PayPal_Reference_Transaction_API_Response_Payment extends WCS_PayPal_R
 
 
 	/**
+	 * Get the PayPal payment type, either `none`, `echeck`, or `instant`
+	 *
+	 * @since 2.0.9
+	 * @return string
+	 */
+	public function get_payment_type() {
+
+		return $this->get_payment_parameter( 'PAYMENTTYPE' );
+	}
+
+
+	/**
 	 * Gets payment status
 	 *
 	 * @return string
@@ -163,7 +175,7 @@ class WCS_PayPal_Reference_Transaction_API_Response_Payment extends WCS_PayPal_R
 	 */
 	private function get_payment_status() {
 
-		return $this->has_parameter( 'PAYMENTSTATUS' ) ? $this->get_parameter( 'PAYMENTSTATUS' ) : 'N/A';
+		return $this->has_payment_parameter( 'PAYMENTSTATUS' ) ? $this->get_payment_parameter( 'PAYMENTSTATUS' ) : 'N/A';
 	}
 
 
@@ -175,7 +187,7 @@ class WCS_PayPal_Reference_Transaction_API_Response_Payment extends WCS_PayPal_R
 	 */
 	private function get_pending_reason() {
 
-		return $this->has_parameter( 'PENDINGREASON' ) ? $this->get_parameter( 'PENDINGREASON' ) : 'N/A';
+		return $this->has_payment_parameter( 'PENDINGREASON' ) ? $this->get_payment_parameter( 'PENDINGREASON' ) : 'N/A';
 	}
 
 
@@ -299,5 +311,47 @@ class WCS_PayPal_Reference_Transaction_API_Response_Payment extends WCS_PayPal_R
 		return $filters;
 	}
 
+
+	/**
+	 * Check if the response has a specific payment parameter.
+	 *
+	 * A wrapper around @see WCS_PayPal_Reference_Transaction_API_Response::has_parameter()
+	 * that prepends the @see self::get_payment_parameter_prefix().
+	 *
+	 * @since 2.0.9
+	 * @param string $name parameter name
+	 * @return bool
+	 */
+	protected function has_payment_parameter( $name ) {
+		return $this->has_parameter( $this->get_payment_parameter_prefix() . $name );
+	}
+
+
+	/**
+	 * Gets a given payment parameter's value, or null if parameter is not set or empty.
+	 *
+	 * A wrapper around @see WCS_PayPal_Reference_Transaction_API_Response::get_parameter()
+	 * that prepends the @see self::get_payment_parameter_prefix().
+	 *
+	 * @since 2.0.9
+	 * @param string $name parameter name
+	 * @return string|null
+	 */
+	protected function get_payment_parameter( $name ) {
+		return $this->get_parameter( $this->get_payment_parameter_prefix() . $name );
+	}
+
+
+	/**
+	 * DoExpressCheckoutPayment API responses have a prefix for the payment
+	 * parameters. Parallels payments are not used, so the numeric portion of
+	 * the prefix is always '0'
+	 *
+	 * @since 2.0.9
+	 * @return string
+	 */
+	protected function get_payment_parameter_prefix() {
+		return 'PAYMENTINFO_0_';
+	}
 
 }
