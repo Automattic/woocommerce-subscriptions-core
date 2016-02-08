@@ -277,7 +277,7 @@ class WC_Subscriptions_Manager {
 	 */
 	public static function put_subscription_on_hold_for_order( $order ) {
 
-		$subscriptions = wcs_get_subscriptions_for_order( $order );
+		$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) );
 
 		if ( ! empty( $subscriptions ) ) {
 
@@ -304,7 +304,7 @@ class WC_Subscriptions_Manager {
 	 */
 	public static function cancel_subscriptions_for_order( $order ) {
 
-		$subscriptions = wcs_get_subscriptions_for_order( $order );
+		$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) );
 
 		if ( ! empty( $subscriptions ) ) {
 
@@ -358,7 +358,7 @@ class WC_Subscriptions_Manager {
 	 */
 	public static function failed_subscription_sign_ups_for_order( $order ) {
 
-		$subscriptions = wcs_get_subscriptions_for_order( $order );
+		$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) );
 
 		if ( ! empty( $subscriptions ) ) {
 
