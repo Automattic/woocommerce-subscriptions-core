@@ -274,11 +274,11 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 							label: "<?php echo esc_js( __( 'Renewal Totals', 'woocommerce' ) ) ?>",
 							data: order_data.renewal_totals,
 							yaxis: 2,
-							color: '<?php echo $this->chart_colours['renewal_total']; ?>',
+							color: '<?php echo esc_js( $this->chart_colours['renewal_total'] ); ?>',
 							points: { show: true, radius: 5, lineWidth: 2, fillColor: '#fff', fill: true },
 							lines: { show: true, lineWidth: 2, fill: false },
 							shadowSize: 0,
-							<?php echo $this->get_currency_tooltip(); ?>
+							<?php echo esc_js( $this->get_currency_tooltip() ); ?>
 						},
 					];
 
