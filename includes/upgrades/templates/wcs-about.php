@@ -33,7 +33,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 
 	<p class="woocommerce-actions">
 		<a href="<?php echo esc_url( $settings_page ); ?>" class="button button-primary"><?php esc_html_e( 'Settings', 'woocommerce-subscriptions' ); ?></a>
-		<a class="docs button button-primary" href="<?php echo esc_url( apply_filters( 'woocommerce_docs_url', 'http://docs.woothemes.com/documentation/subscriptions/', 'woocommerce-subscriptions' ) ); ?>"><?php esc_html_e( 'Docs', 'woocommerce-subscriptions' ); ?></a>
+		<a class="docs button button-primary" href="<?php echo esc_url( apply_filters( 'woocommerce_docs_url', 'http://docs.woothemes.com/documentation/subscriptions/', 'woocommerce-subscriptions' ) ); ?>"><?php echo esc_html_x( 'Docs', 'short for documents', 'woocommerce-subscriptions' ); ?></a>
 		<a href="https://twitter.com/share" class="twitter-share-button" data-url="http://www.woothemes.com/products/woocommerce-subscriptions/" data-text="I just upgraded to WooCommerce Subscriptions v2.0, woot!" data-via="WooThemes" data-size="large" data-hashtags="WooCommerce">Tweet</a>
 <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
 	</p>
