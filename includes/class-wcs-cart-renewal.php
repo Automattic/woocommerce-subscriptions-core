@@ -518,7 +518,7 @@ class WCS_Cart_Renewal {
 	}
 
 	/**
-	 * Adds subscription fees to the cart when a renewal or resubscribe is in the cart.
+	 * Add subscription fee line items to the cart when a renewal order or resubscribe is in the cart.
 	 *
 	 * @param WC_Cart $cart
 	 * @since 2.0.10
