@@ -26,10 +26,14 @@ function wcs_get_subscription_period_strings( $number = 1, $period = '' ) {
 
 	$translated_periods = apply_filters( 'woocommerce_subscription_periods',
 		array(
-			'day'   => sprintf( _n( 'day', '%s days', $number, 'woocommerce-subscriptions' ), $number ),
-			'week'  => sprintf( _n( 'week', '%s weeks', $number, 'woocommerce-subscriptions' ), $number ),
-			'month' => sprintf( _n( 'month', '%s months', $number, 'woocommerce-subscriptions' ), $number ),
-			'year'  => sprintf( _n( 'year', '%s years', $number, 'woocommerce-subscriptions' ), $number ),
+			// translators: placeholder is number of days. (e.g. "Bill this every day / 4 days")
+			'day'   => sprintf( _nx( 'day',   '%s days',   $number, 'Subscription billing period.', 'woocommerce-subscriptions' ), $number ),
+			// translators: placeholder is number of weeks. (e.g. "Bill this every week / 4 weeks")
+			'week'  => sprintf( _nx( 'week',  '%s weeks',  $number, 'Subscription billing period.', 'woocommerce-subscriptions' ), $number ),
+			// translators: placeholder is number of months. (e.g. "Bill this every month / 4 months")
+			'month' => sprintf( _nx( 'month', '%s months', $number, 'Subscription billing period.', 'woocommerce-subscriptions' ), $number ),
+			// translators: placeholder is number of years. (e.g. "Bill this every year / 4 years")
+			'year'  => sprintf( _nx( 'year',  '%s years',  $number, 'Subscription billing period.', 'woocommerce-subscriptions' ), $number ),
 		)
 	);
 
@@ -79,19 +83,19 @@ function wcs_get_subscription_ranges_tlc() {
 
 		switch ( $period ) {
 			case 'day':
-				$subscription_lengths[] = __( '1 day', 'woocommerce-subscriptions' );
+				$subscription_lengths[] = _x( '1 day', 'Subscription lengths. e.g. "For 1 day..."', 'woocommerce-subscriptions' );
 				$subscription_range = range( 2, 90 );
 				break;
 			case 'week':
-				$subscription_lengths[] = __( '1 week', 'woocommerce-subscriptions' );
+				$subscription_lengths[] = _x( '1 week', 'Subscription lengths. e.g. "For 1 week..."', 'woocommerce-subscriptions' );
 				$subscription_range = range( 2, 52 );
 				break;
 			case 'month':
-				$subscription_lengths[] = __( '1 month', 'woocommerce-subscriptions' );
+				$subscription_lengths[] = _x( '1 month', 'Subscription lengths. e.g. "For 1 month..."', 'woocommerce-subscriptions' );
 				$subscription_range = range( 2, 24 );
 				break;
 			case 'year':
-				$subscription_lengths[] = __( '1 year', 'woocommerce-subscriptions' );
+				$subscription_lengths[] = _x( '1 year', 'Subscription lengths. e.g. "For 1 year..."', 'woocommerce-subscriptions' );
 				$subscription_range = range( 2, 5 );
 				break;
 		}
@@ -167,10 +171,10 @@ function wcs_get_available_time_periods( $form = 'singular' ) {
 
 	$translated_periods = apply_filters( 'woocommerce_subscription_available_time_periods',
 		array(
-			'day'   => _n( 'day', 'days', $number, 'woocommerce-subscriptions' ),
-			'week'  => _n( 'week', 'weeks', $number, 'woocommerce-subscriptions' ),
-			'month' => _n( 'month', 'months', $number, 'woocommerce-subscriptions' ),
-			'year'  => _n( 'year', 'years', $number, 'woocommerce-subscriptions' ),
+			'day'   => _nx( 'day',   'days',   $number, 'Used in the trial period dropdown. Number is in text field. 0, 2+ will need plural, 1 will need singular.', 'woocommerce-subscriptions' ),
+			'week'  => _nx( 'week',  'weeks',  $number, 'Used in the trial period dropdown. Number is in text field. 0, 2+ will need plural, 1 will need singular.', 'woocommerce-subscriptions' ),
+			'month' => _nx( 'month', 'months', $number, 'Used in the trial period dropdown. Number is in text field. 0, 2+ will need plural, 1 will need singular.', 'woocommerce-subscriptions' ),
+			'year'  => _nx( 'year',  'years',  $number, 'Used in the trial period dropdown. Number is in text field. 0, 2+ will need plural, 1 will need singular.', 'woocommerce-subscriptions' ),
 		)
 	);
 
