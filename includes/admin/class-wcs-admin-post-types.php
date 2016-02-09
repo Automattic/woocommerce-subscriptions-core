@@ -734,6 +734,7 @@ class WCS_Admin_Post_Types {
 
 				$query_vars = array(
 					'post_type'   => 'shop_subscription',
+					'posts_per_page' => -1,
 					'post_status' => 'any',
 					'fields'      => 'ids',
 					'meta_query'  => array(
