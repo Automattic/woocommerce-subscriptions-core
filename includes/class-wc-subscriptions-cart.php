@@ -215,7 +215,7 @@ class WC_Subscriptions_Cart {
 			$recurring_cart->fees = array();
 			$recurring_cart->fee_total = 0;
 			WC()->shipping->reset_shipping();
-			self::maybe_recalculate_shipping();
+			self::maybe_restore_shipping_methods();
 			$recurring_cart->calculate_totals();
 
 			// Store this groups cart details
@@ -229,7 +229,7 @@ class WC_Subscriptions_Cart {
 		self::$calculation_type = 'none';
 
 		// We need to reset the packages and totals stored in WC()->shipping too
-		self::maybe_recalculate_shipping();
+		self::maybe_restore_shipping_methods();
 		WC()->cart->calculate_shipping();
 
 		// If there is no sign-up fee and a free trial, and no products being purchased with the subscription, we need to zero the fees for the first billing period
@@ -606,7 +606,7 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
-	 * Re-calculate a shipping and tax estimate when on the cart page.
+	 * Restore shipping method, as well as cost and tax estimate when on the cart page.
 	 *
 	 * The WC_Shortcode_Cart actually calculates shipping when the "Calculate Shipping" form is submitted on the
 	 * cart page. Because of that, our own @see self::calculate_totals() method calculates incorrect values on
@@ -615,7 +615,7 @@ class WC_Subscriptions_Cart {
 	 *
 	 * @since 1.4.10
 	 */
-	private static function maybe_recalculate_shipping() {
+	private static function maybe_restore_shipping_methods() {
 		if ( ! empty( $_POST['calc_shipping'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'woocommerce-cart' ) && function_exists( 'WC' ) ) {
 
 			try {
