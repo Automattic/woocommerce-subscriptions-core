@@ -216,24 +216,24 @@ class WC_Subscriptions_Checkout {
 		// We need to make sure we only get recurring shipping packages
 		WC_Subscriptions_Cart::set_calculation_type( 'recurring_total' );
 
-		foreach ( $cart->get_shipping_packages() as $base_package ) {
+		foreach ( $cart->get_shipping_packages() as $package_index => $base_package ) {
 
 			$package = WC()->shipping->calculate_shipping_for_package( $base_package );
 
-			foreach ( WC()->shipping->get_packages() as $package_key => $package_to_ignore ) {
+			$package_key = isset( WC()->checkout()->shipping_methods[ $package_index ] ) ? WC()->checkout()->shipping_methods[ $package_index ] : '';
+			$package_key = isset( WC()->checkout()->shipping_methods[ $cart->recurring_cart_key . '_' . $package_index ] ) ? WC()->checkout()->shipping_methods[ $cart->recurring_cart_key . '_' . $package_index ] : $package_key;
 
-				if ( isset( $package['rates'][ WC()->checkout()->shipping_methods[ $package_key ] ] ) ) {
+			if ( isset( $package['rates'][ $package_key ] ) ) {
 
-					$item_id = $subscription->add_shipping( $package['rates'][ WC()->checkout()->shipping_methods[ $package_key ] ] );
+				$item_id = $subscription->add_shipping( $package['rates'][ $package_key ] );
 
-					if ( ! $item_id ) {
-						throw new Exception( __( 'Error: Unable to create subscription. Please try again.', 'woocommerce-subscriptions' ) );
-					}
-
-					// Allows plugins to add order item meta to shipping
-					do_action( 'woocommerce_add_shipping_order_item', $subscription->id, $item_id, $package_key );
-					do_action( 'woocommerce_subscriptions_add_recurring_shipping_order_item', $subscription->id, $item_id, $package_key );
+				if ( ! $item_id ) {
+					throw new Exception( __( 'Error: Unable to create subscription. Please try again.', 'woocommerce-subscriptions' ) );
 				}
+
+				// Allows plugins to add order item meta to shipping
+				do_action( 'woocommerce_add_shipping_order_item', $subscription->id, $item_id, $package_key );
+				do_action( 'woocommerce_subscriptions_add_recurring_shipping_order_item', $subscription->id, $item_id, $package_key );
 			}
 		}
 

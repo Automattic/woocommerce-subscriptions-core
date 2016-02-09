@@ -27,6 +27,13 @@ class WC_Subscriptions_Cart {
 	private static $calculation_type = 'none';
 
 	/**
+	 * An internal pointer to the current recurring cart calculation (if any)
+	 *
+	 * @since 2.0.10
+	 */
+	private static $recurring_cart_key = 'none';
+
+	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
 	 * @since 1.0
@@ -69,6 +76,12 @@ class WC_Subscriptions_Cart {
 		add_action( 'woocommerce_add_to_cart_validation', __CLASS__ . '::check_valid_add_to_cart', 10, 3 );
 
 		add_filter( 'woocommerce_cart_needs_shipping', __CLASS__ . '::cart_needs_shipping', 11, 1 );
+
+		// Massage our shipping methods into the format used by WC core (we can't use normal form elements to do this as WC overrides them)
+		add_action( 'woocommerce_checkout_update_order_review', array( __CLASS__, 'add_shipping_method_post_data' ) );
+
+		// Make sure we use our recurring shipping method for recurring shipping calculations not the default method
+		add_filter( 'woocommerce_shipping_chosen_method', array( __CLASS__, 'set_chosen_shipping_method' ), 10, 2 );
 	}
 
 	/**
@@ -194,6 +207,8 @@ class WC_Subscriptions_Cart {
 			$recurring_cart   = clone WC()->cart;
 			$product          = null;
 
+			self::$recurring_cart_key = $recurring_cart->recurring_cart_key = $recurring_cart_key;
+
 			// Remove any items not in this subscription group
 			foreach ( $recurring_cart->get_cart() as $cart_item_key => $cart_item ) {
 				if ( ! in_array( $cart_item_key, $subscription_group ) ) {
@@ -224,9 +239,10 @@ class WC_Subscriptions_Cart {
 			// And remove some other floatsam
 			$recurring_carts[ $recurring_cart_key ]->removed_cart_contents = array();
 			$recurring_carts[ $recurring_cart_key ]->cart_session_data = array();
+
 		}
 
-		self::$calculation_type = 'none';
+		self::$calculation_type = self::$recurring_cart_key = 'none';
 
 		// We need to reset the packages and totals stored in WC()->shipping too
 		self::maybe_restore_shipping_methods();
@@ -316,6 +332,58 @@ class WC_Subscriptions_Cart {
 		}
 
 		return $needs_shipping;
+	}
+
+	/**
+	 * Parse recurring shipping rates from the front end and put them into the $_POST['shipping_method'] used by WooCommerce.
+	 *
+	 * When WooCommerce takes the value of inputs for shipping methods selection from the cart and checkout pages, it uses a
+	 * JavaScript array and therefore, can only use numerical indexes. This works for WC core, because it only needs shipping
+	 * selection for different packages. However, we want to use string indexes to differentiate between different recurring
+	 * cart shipping selection inputs *and* packages. To do this, we need to get our shipping methods from the $_POST['post_data']
+	 * values and manually add them $_POST['shipping_method'] array.
+	 *
+	 * We can't do this on the cart page unfortunately because it doesn't pass the entire forms post data and instead only
+	 * sends the shipping methods with a numerical index.
+	 *
+	 * @return null
+	 * @since 2.0.10
+	 */
+	public static function add_shipping_method_post_data() {
+
+		check_ajax_referer( 'update-order-review', 'security' );
+
+		parse_str( $_POST['post_data'], $form_data );
+
+		foreach ( $form_data['shipping_method'] as $key => $methods ) {
+			if ( ! is_numeric( $key ) && ! array_key_exists( $key, $_POST['shipping_method'] ) ) {
+				$_POST['shipping_method'][ $key ] = $methods;
+			}
+		}
+	}
+
+	/**
+	 * Set the chosen shipping method for recurring cart calculations
+	 *
+	 * In WC_Shipping::calculate_shipping(), WooCommerce tries to determine the chosen shipping method
+	 * based on the package index and stores rates. However, for recurring cart shipping selection, we
+	 * use the recurring cart key instead of numeric index. Therefore, we need to hook in to override
+	 * the default shipping method when WooCommerce could not find a matching shipping method.
+	 *
+	 * @param string $default_method the default shipping method for the customer/store returned by WC_Shipping::get_default_method()
+	 * @param array $available_methods set of shipping rates for this calculation
+	 * @param int $package_index WC doesn't pass the package index to callbacks on the 'woocommerce_shipping_chosen_method' filter (yet) so we set a default value of 0 for it in the function params
+	 * @since 2.0.10
+	 */
+	public static function set_chosen_shipping_method( $default_method, $available_methods, $package_index = 0 ) {
+
+		$chosen_methods = WC()->session->get( 'chosen_shipping_methods' );
+
+		if ( 'none' !== self::$recurring_cart_key && isset( $chosen_methods[ self::$recurring_cart_key . '_' . $package_index ] ) ) {
+			$default_method = $chosen_methods[ self::$recurring_cart_key . '_' . $package_index ];
+		}
+
+		return $default_method;
 	}
 
 	/**
@@ -715,25 +783,6 @@ class WC_Subscriptions_Cart {
 				// Cart contains more than one payment
 				if ( 0 != $recurring_cart->next_payment_date ) {
 					$carts_with_multiple_payments++;
-
-					// Create shipping packages for each subscription item
-					if ( self::cart_contains_subscriptions_needing_shipping() ) {
-
-						$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', array() );
-
-						// Don't remove any subscriptions with a free trial from the shipping packages
-						foreach ( $recurring_cart->get_shipping_packages() as $base_package ) {
-
-							$package = WC()->shipping->calculate_shipping_for_package( $base_package );
-
-							// Only display the costs for the chosen shipping method
-							foreach ( $chosen_shipping_methods as $package_key ) {
-								if ( isset( $package['rates'][ $package_key ] ) ) {
-									$shipping_methods[ $recurring_cart_key ] = $package['rates'][ $package_key ];
-								}
-							}
-						}
-					}
 				}
 			}
 

@@ -26,6 +26,75 @@ function wcs_cart_totals_subtotal_html( $cart ) {
 }
 
 /**
+ * Get recurring shipping methods.
+ *
+ * @access public
+ */
+function wcs_cart_totals_shipping_html() {
+
+	$initial_packages = WC()->shipping->get_packages();
+
+	$recurring_cart_count = count( WC()->cart->recurring_carts );
+
+	// Create new subscriptions for each subscription product in the cart (that is not a renewal)
+	foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
+
+		// Create shipping packages for each subscription item
+		if ( WC_Subscriptions_Cart::cart_contains_subscriptions_needing_shipping() ) {
+
+			$packages = $recurring_cart->get_shipping_packages();
+
+			// Don't remove any subscriptions with a free trial from the shipping packages
+			foreach ( $packages as $i => $base_package ) {
+
+				$package = WC()->shipping->calculate_shipping_for_package( $base_package );
+
+				foreach ( $package['contents'] as $item_id => $values ) {
+					$product_names[] = $values['data']->get_title() . ' &times;' . $values['quantity'];
+				}
+				$package_details = implode( ', ', $product_names );
+
+				$chosen_initial_method   = isset( WC()->session->chosen_shipping_methods[ $i ] ) ? WC()->session->chosen_shipping_methods[ $i ] : '';
+				$chosen_recurring_method = isset( WC()->session->chosen_shipping_methods[ $recurring_cart_key . '_' . $i ] ) ? WC()->session->chosen_shipping_methods[ $recurring_cart_key . '_' . $i ] : $chosen_initial_method;
+
+				if ( $package['rates'] == $initial_packages[ $i ]['rates'] && apply_filters( 'wcs_cart_totals_shipping_html_price_only', true, $package, $recurring_cart ) ) {
+					$shipping_method = $package['rates'][ $chosen_initial_method ];
+					// packages match, display shipping amounts only
+					?>
+					<tr class="shipping recurring-total">
+						<th><?php echo esc_html( wcs_cart_price_string( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ), $recurring_cart ) ); ?></th>
+						<td>
+							<?php echo wp_kses_post( wcs_cart_totals_shipping_method( $shipping_method, $recurring_cart ) ); ?>
+							<?php echo '<p class="woocommerce-shipping-contents"><small>' . esc_html( $package_details ) . '</small></p>'; ?>
+						</td>
+					</tr>
+					<?php
+				} else {
+					// Display the options
+					$product_names = array();
+
+					$package_name = apply_filters( 'wcs_cart_shipping_package_name', apply_filters( 'woocommerce_shipping_package_name', wcs_cart_price_string( __( 'Shipping', 'woocommerce-subscriptions' ), $recurring_cart ), $i, $package ), $recurring_cart_count, $recurring_cart );
+
+					wc_get_template( 'cart/cart-recurring-shipping.php', array(
+							'package'              => $package,
+							'available_methods'    => $package['rates'],
+							'show_package_details' => true,
+							'package_details'      => $package_details,
+							'package_name'         => $package_name,
+							'index'                => $i,
+							'chosen_method'        => $chosen_recurring_method,
+							'recurring_cart_key'   => $recurring_cart_key,
+						),
+						'',
+						plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/'
+					);
+				}
+			}
+		}
+	}
+}
+
+/**
  * Display a recurring shipping methods price
  * @param  object $method
  * @return string
