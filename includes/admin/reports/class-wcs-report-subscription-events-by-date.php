@@ -280,7 +280,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 							points: { show: true, radius: 5, lineWidth: 2, fillColor: '#fff', fill: true },
 							lines: { show: true, lineWidth: 2, fill: false },
 							shadowSize: 0,
-							<?php $this->get_currency_tooltip(); ?>
+							<?php echo $this->get_currency_tooltip(); ?>
 						},
 					];
 
