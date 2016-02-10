@@ -716,7 +716,7 @@ class WC_Subscriptions_Switcher {
 			}
 
 			// Everything seems to be in order.
-			// Store the required meta on the order so it can be handled on successful payment and rollback the changes made.
+			// Rollback the changes and store the required meta on the order so it can be handled on successful payment.
 			$wpdb->query( 'ROLLBACK' );
 
 			update_post_meta( $order_id, '_subscription_switch_data', $switch_order_data );
