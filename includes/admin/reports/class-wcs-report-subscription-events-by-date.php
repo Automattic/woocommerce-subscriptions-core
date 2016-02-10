@@ -107,10 +107,12 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				WHERE  wcorder.post_type IN ( 'shop_order' )
 					AND wcsubs.post_type IN ( 'shop_subscription' )
 					AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
-					AND wcorder.post_date >= '" . date( 'Y-m-d', $this->start_date ) . "'
-					AND wcorder.post_date < '" . date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) ) . "'
+					AND wcorder.post_date >= '%s'
+					AND wcorder.post_date < '%s'
 				GROUP BY YEAR(wcsubs.post_date), MONTH(wcsubs.post_date), DAY(wcsubs.post_date)
-				ORDER BY post_date ASC"
+				ORDER BY post_date ASC",
+			date( 'Y-m-d', $this->start_date ),
+			date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) )
 		);
 
 		// TODO cache this
@@ -278,7 +280,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 							points: { show: true, radius: 5, lineWidth: 2, fillColor: '#fff', fill: true },
 							lines: { show: true, lineWidth: 2, fill: false },
 							shadowSize: 0,
-							<?php echo esc_js( $this->get_currency_tooltip() ); ?>
+							<?php $this->get_currency_tooltip(); ?>
 						},
 					];
 
