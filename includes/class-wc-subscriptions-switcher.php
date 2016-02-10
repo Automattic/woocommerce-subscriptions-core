@@ -104,12 +104,11 @@ class WC_Subscriptions_Switcher {
 		// Check if the new order was to record a switch request and maybe call a "switch completed" action.
 		add_action( 'subscriptions_created_for_order', __CLASS__ . '::maybe_add_switched_callback', 10, 1 );
 
-<<<<<<< b4066564aaa0a89c5d806c42b86b767c554fc9f8
 		// Revoke download permissions from old switch item
 		add_action( 'woocommerce_subscriptions_switched_item', __CLASS__ . '::remove_download_permissions_after_switch', 10, 3 );
-=======
-		add_action( 'woocommerce_order_status_changed', __CLASS__ . '::maybe_process_subscription_switch', 10, 3 );
->>>>>>> Adds the core changes required to handle switches on completed orders.
+
+		// Process subscription switch changes on completed switch orders status
+		add_action( 'woocommerce_order_status_changed', __CLASS__ . '::process_subscription_switches', 10, 3 );
 	}
 
 	/**
@@ -710,20 +709,6 @@ class WC_Subscriptions_Switcher {
 
 					$old_item_name = wcs_get_order_item_name( $existing_item, array( 'attributes' => true ) );
 					$new_item_name = wcs_get_cart_item_name( $cart_item, array( 'attributes' => true ) );
-<<<<<<< b4066564aaa0a89c5d806c42b86b767c554fc9f8
-
-					// translators: 1$: old item name, 2$: new item name when switching
-					$subscription->add_order_note( sprintf( _x( 'Customer switched from: %1$s to %2$s.', 'used in order notes', 'woocommerce-subscriptions' ), $old_item_name, $new_item_name ) );
-
-					// Change the shipping
-					self::update_shipping_methods( $subscription, $recurring_cart );
-
-					// Finally, change the addresses but only if they've changed
-					self::maybe_update_subscription_address( $order, $subscription );
-
-					$subscription->calculate_totals();
-=======
->>>>>>> Adds the core changes required to handle switches on completed orders.
 				}
 			}
 
@@ -1515,7 +1500,7 @@ class WC_Subscriptions_Switcher {
 	 * @param array $order_new_status The new order status
 	 * @since 2.0.10
 	 */
-	public static function maybe_process_subscription_switch( $order_id, $order_old_status, $order_new_status ) {
+	public static function process_subscription_switches( $order_id, $order_old_status, $order_new_status ) {
 		global $wpdb;
 
 		$switch_processed = get_post_meta( $order_id, '_completed_subscription_switch', true );
