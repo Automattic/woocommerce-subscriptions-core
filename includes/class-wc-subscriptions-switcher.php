@@ -706,9 +706,6 @@ class WC_Subscriptions_Switcher {
 					// Remove the old item from the subscription but don't delete it completely by changing its line item type to "line_item_switched"
 					wc_update_order_item( $cart_item['subscription_switch']['item_id'], array( 'order_item_type' => 'line_item_switched' ) );
 					$switch_order_data[ $subscription->id ]['remove_subscription_items'][] = $cart_item['subscription_switch']['item_id'];
-
-					$old_item_name = wcs_get_order_item_name( $existing_item, array( 'attributes' => true ) );
-					$new_item_name = wcs_get_cart_item_name( $cart_item, array( 'attributes' => true ) );
 				}
 			}
 
