@@ -120,9 +120,9 @@ class WCS_Admin_Reports {
 	public static function track_cancellation_dates( $subscription, $new_status, $old_status ) {
 
 		if ( 'pending-cancel' == $new_status ) {
-			update_post_meta( $subscription->id, '_subscription_cancelled_date', current_time( 'mysql', true ) );
+			update_post_meta( $subscription->id, wcs_get_date_meta_key( 'cancelled' ), current_time( 'mysql', true ) );
 		} elseif ( 'cancelled' == $new_status ) {
-			add_post_meta( $subscription->id, '_subscription_cancelled_date', current_time( 'mysql', true ), true );
+			add_post_meta( $subscription->id, wcs_get_date_meta_key( 'cancelled' ), current_time( 'mysql', true ), true );
 		}
 
 	}
