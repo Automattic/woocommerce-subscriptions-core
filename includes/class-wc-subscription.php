@@ -376,7 +376,8 @@ class WC_Subscription extends WC_Order {
 					break;
 				}
 
-				$this->add_order_note( trim( $note . ' ' . sprintf( __( 'Status changed from %s to %s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ), 0, $manual );
+				// translators: $1 note why the status changes (if any), $2: old status, $3: new status
+				$this->add_order_note( trim( sprintf( __( '%1$s Status changed from %2$s to %3$s.', 'woocommerce-subscriptions' ), $note, wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ), 0, $manual );
 
 				// dynamic hooks for convenience
 				do_action( 'woocommerce_subscription_status_' . $new_status, $this );

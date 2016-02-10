@@ -91,7 +91,7 @@ class WC_Subscriptions_Manager {
 		if ( 0 == $subscription->get_total() || $subscription->is_manual() || empty( $subscription->payment_method ) || ! $subscription->payment_method_supports( 'gateway_scheduled_payments' ) ) {
 
 			// Always put the subscription on hold in case something goes wrong while trying to process renewal
-			$subscription->update_status( 'on-hold', __( 'Subscription renewal payment due:', 'woocommerce-subscriptions' ) );
+			$subscription->update_status( 'on-hold', _x( 'Subscription renewal payment due:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
 
 			// Generate a renewal order for payment gateways to use to record the payment (and determine how much is due)
 			$renewal_order = wcs_create_renewal_order( $subscription );
@@ -261,7 +261,8 @@ class WC_Subscriptions_Manager {
 				try {
 					$subscription->update_status( 'active' );
 				} catch ( Exception $e ) {
-					$subscription->add_order_note( sprintf( __( 'Failed to activate subscription status for order #%s: %s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
+					// translators: $1: order number, $2: error message
+					$subscription->add_order_note( sprintf( __( 'Failed to activate subscription status for order #%1$s: %2$s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
 				}
 			}
 
@@ -288,7 +289,8 @@ class WC_Subscriptions_Manager {
 						$subscription->update_status( 'on-hold' );
 					}
 				} catch ( Exception $e ) {
-					$subscription->add_order_note( sprintf( __( 'Failed to update subscription status after order #%s was put on-hold: %s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
+					// translators: $1: order number, $2: error message
+					$subscription->add_order_note( sprintf( __( 'Failed to update subscription status after order #%1$s was put on-hold: %2$s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
 				}
 			}
 
@@ -315,7 +317,8 @@ class WC_Subscriptions_Manager {
 						$subscription->cancel_order();
 					}
 				} catch ( Exception $e ) {
-					$subscription->add_order_note( sprintf( __( 'Failed to cancel subscription after order #%s was cancelled: %s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
+					// translators: $1: order number, $2: error message
+					$subscription->add_order_note( sprintf( __( 'Failed to cancel subscription after order #%1$s was cancelled: %2$s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
 				}
 			}
 
@@ -342,7 +345,8 @@ class WC_Subscriptions_Manager {
 						$subscription->update_status( 'expired' );
 					}
 				} catch ( Exception $e ) {
-					$subscription->add_order_note( sprintf( __( 'Failed to set subscription as expired for order #%s: %s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
+					// translators: $1: order number, $2: error message
+					$subscription->add_order_note( sprintf( __( 'Failed to set subscription as expired for order #%1$s: %2$s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
 				}
 			}
 
@@ -377,7 +381,8 @@ class WC_Subscriptions_Manager {
 					$subscription->payment_failed();
 
 				} catch ( Exception $e ) {
-					$subscription->add_order_note( sprintf( __( 'Failed to process failed payment on subscription for order #%s: %s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
+					// translators: $1: order number, $2: error message
+					$subscription->add_order_note( sprintf( __( 'Failed to process failed payment on subscription for order #%1$s: %2$s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
 				}
 			}
 
@@ -1799,7 +1804,7 @@ class WC_Subscriptions_Manager {
 
 		// If the subscription is using manual payments, the gateway isn't active or it manages scheduled payments
 		if ( 0 == $subscription->get_total() || $subscription->is_manual() || empty( $subscription->payment_method ) || ! $subscription->payment_method_supports( 'gateway_scheduled_payments' ) ) {
-			$subscription->update_status( 'on-hold', __( 'Subscription renewal payment due:', 'woocommerce-subscriptions' ) );
+			$subscription->update_status( 'on-hold', _x( 'Subscription renewal payment due:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
 		}
 	}
 
@@ -1817,7 +1822,7 @@ class WC_Subscriptions_Manager {
 			$subscription = wcs_get_subscription( $subscription_id );
 
 			// Always put the subscription on hold in case something goes wrong while trying to process renewal
-			$subscription->update_status( 'on-hold', __( 'Subscription renewal payment due:', 'woocommerce-subscriptions' ) );
+			$subscription->update_status( 'on-hold', _x( 'Subscription renewal payment due:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
 
 			// Create a renewal order to record the failed payment which can then be used by the customer to reactivate the subscription
 			$renewal_order = wcs_create_renewal_order( $subscription );
