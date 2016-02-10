@@ -707,6 +707,9 @@ class WC_Subscriptions_Switcher {
 					wc_update_order_item( $cart_item['subscription_switch']['item_id'], array( 'order_item_type' => 'line_item_switched' ) );
 					$switch_order_data[ $subscription->id ]['remove_subscription_items'][] = $cart_item['subscription_switch']['item_id'];
 
+					// Change the shipping
+					self::update_shipping_methods( $subscription, $recurring_cart );
+
 					// Finally, change the addresses but only if they've changed
 					self::maybe_update_subscription_address( $order, $subscription );
 				}
