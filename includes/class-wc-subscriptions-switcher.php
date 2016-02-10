@@ -1505,12 +1505,10 @@ class WC_Subscriptions_Switcher {
 	}
 
 	/**
-	 * Completes subscription switches on completed order status changes
+	 * Completes subscription switches on completed order status changes.
 	 *
-	 * If the item is on the same billing schedule as the old subscription (and the next payment date is the same) or the
-	 * item is the only item on the subscription, the subscription item will be updated (and a note left on the order).
-	 * If the item is on a new billing schedule and there are other items on the existing subscription, the old item will
-	 * be removed and the new item will be added to a new subscription by @see WC_Subscriptions_Checkout::process_checkout()
+	 * Commits all the changes calculated and saved by @see WC_Subscriptions_Switcher::process_checkout(), updating subscription
+	 * line items, schedule, dates and totals to reflect the changes made in this switch order.
 	 *
 	 * @param int $order_id The post_id of a shop_order post/WC_Order object
 	 * @param array $order_old_status The old order status
