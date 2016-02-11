@@ -654,7 +654,7 @@ class WC_Subscriptions_Switcher {
 						$item_id = WC_Subscriptions_Checkout::add_cart_item( $subscription, $cart_item, $cart_item_key );
 
 						foreach ( $order_items as $item_id => $item ) {
-							if ( wcs_get_canonical_product_id( $item ) == wcs_get_canonical_product_id( $cart_item ) && ( empty( $switch_order_data[ $subscription->id ]['add_items']) || ! in_array( $item_id, $switch_order_data[ $subscription->id ]['add_items'] ) ) ) {
+							if ( wcs_get_canonical_product_id( $item ) == wcs_get_canonical_product_id( $cart_item ) && ( empty( $switch_order_data[ $subscription->id ]['add_items'] ) || ! in_array( $item_id, $switch_order_data[ $subscription->id ]['add_items'] ) ) ) {
 
 								// We can't use the prorated order item price upon successful payment so store the cart price
 								$switch_order_data[ $subscription->id ]['add_order_items'][ $item_id ] = array(
@@ -1727,7 +1727,7 @@ class WC_Subscriptions_Switcher {
 		$order             = wc_get_order( $order_id );
 		$switch_order_data = get_post_meta( $order_id, '_subscription_switch_data', true );
 
-		foreach( $switch_order_data as $subcription_id => $switch_data ) {
+		foreach ( $switch_order_data as $subcription_id => $switch_data ) {
 
 			$subscription = wcs_get_subscription( $subcription_id );
 
@@ -1740,7 +1740,7 @@ class WC_Subscriptions_Switcher {
 					$product       = WC_Subscriptions::get_product( wcs_get_canonical_product_id( $order_item ) );
 					$line_tax_data = wc_get_order_item_meta( $order_item_id, '_line_tax_data', true );
 
-					$item_id = $subscription->add_product( $product, $order_item[ 'qty' ], array(
+					$item_id = $subscription->add_product( $product, $order_item['qty'], array(
 						'variation' => ( method_exists( $product, 'get_variation_attributes' ) ) ? $product->get_variation_attributes() : array(),
 						'totals'    => $item_totals,
 					) );
@@ -1759,7 +1759,7 @@ class WC_Subscriptions_Switcher {
 			if ( ! empty( $switch_data['dates'] ) ) {
 
 				if ( ! empty( $switch_data['dates']['delete'] ) ) {
-					foreach( $switch_data['dates']['delete'] as $date ) {
+					foreach ( $switch_data['dates']['delete'] as $date ) {
 						$subscription->delete_date( $date );
 					}
 				}
@@ -1779,7 +1779,7 @@ class WC_Subscriptions_Switcher {
 					$new_order_item = wcs_get_order_item( $order_item_ids[ $index ], $order );
 
 					if ( empty( $old_order_item ) ) {
-						throw new Exception('The original subscription item being switched cannot be found.');
+						throw new Exception( 'The original subscription item being switched cannot be found.' );
 					} else {
 						$old_item_name  = wcs_get_order_item_name( $old_order_item, array( 'attributes' => true ) );
 						$new_item_name  = wcs_get_order_item_name( $new_order_item, array( 'attributes' => true ) );
