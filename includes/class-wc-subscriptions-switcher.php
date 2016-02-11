@@ -109,6 +109,9 @@ class WC_Subscriptions_Switcher {
 
 		// Process subscription switch changes on completed switch orders status
 		add_action( 'woocommerce_order_status_changed', __CLASS__ . '::process_subscription_switches', 10, 3 );
+
+		// Validate the changes a switch order is proposing to make before paying for a pending/failed switch order
+		add_action( 'wp', __CLASS__ . '::validate_switch_before_pay_action', 10 );
 	}
 
 	/**
@@ -1512,7 +1515,6 @@ class WC_Subscriptions_Switcher {
 			return;
 		}
 
-		$order           = wc_get_order( $order_id );
 		$order_completed = in_array( $order_new_status, array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id ), 'processing', 'completed' ) );
 
 		if ( $order_completed ) {
@@ -1520,78 +1522,7 @@ class WC_Subscriptions_Switcher {
 				// Start transaction if available
 				$wpdb->query( 'START TRANSACTION' );
 
-				// Get the switch meta
-				$switch_order_data = get_post_meta( $order_id, '_subscription_switch_data', true );
-
-				foreach( $switch_order_data as $subcription_id => $switch_data ) {
-
-					$subscription = wcs_get_subscription( $subcription_id );
-
-					// Add the new line items
-					if ( ! empty( $switch_data['add_order_items'] ) ) {
-
-						foreach ( $switch_data['add_order_items'] as $order_item_id => $item_totals ) {
-
-							$order_item    = wcs_get_order_item( $order_item_id, $order );
-							$product       = WC_Subscriptions::get_product( wcs_get_canonical_product_id( $order_item ) );
-							$line_tax_data = wc_get_order_item_meta( $order_item_id, '_line_tax_data', true );
-
-							$item_id = $subscription->add_product( $product, $order_item[ 'qty' ], array(
-								'variation' => ( method_exists( $product, 'get_variation_attributes' ) ) ? $product->get_variation_attributes() : array(),
-								'totals'    => $item_totals,
-							) );
-						}
-					}
-
-					if ( ! empty( $switch_data['billing_schedule'] ) ) {
-
-						// Update the billing schedule
-						foreach ( $switch_data['billing_schedule'] as $meta_key => $value ) {
-							update_post_meta( $subcription_id, $meta_key, $value );
-						}
-					}
-
-					// Update subscription dates
-					if ( ! empty( $switch_data['dates'] ) ) {
-
-						if ( ! empty( $switch_data['dates']['delete'] ) ) {
-							foreach( $switch_data['dates']['delete'] as $date ) {
-								$subscription->delete_date( $date );
-							}
-						}
-
-						if ( ! empty( $switch_data['dates']['update'] ) ) {
-							$subscription->update_dates( $switch_order_data[ $subscription->id ]['dates']['update'] );
-						}
-					}
-
-					if ( ! empty( $switch_data['remove_subscription_items'] ) ) {
-
-						// Remove the old line items
-						foreach ( $switch_data['remove_subscription_items'] as $index => $subscription_item_id ) {
-
-							$order_item_ids = array_keys( $switch_data['add_order_items'] );
-
-							$old_order_item = wcs_get_order_item( $subscription_item_id, $subscription );
-							$new_order_item = wcs_get_order_item( $order_item_ids[ $index ], $order );
-
-							$old_item_name  = wcs_get_order_item_name( $old_order_item, array( 'attributes' => true ) );
-							$new_item_name  = wcs_get_order_item_name( $new_order_item, array( 'attributes' => true ) );
-
-							wc_update_order_item( $subscription_item_id, array( 'order_item_type' => 'line_item_switched' ) );
-
-							// translators: 1$: old item, 2$: new item when switching
-							$subscription->add_order_note( sprintf( _x( 'Customer switched from: %1$s to %2$s.', 'used in order notes', 'woocommerce-subscriptions' ), $old_item_name, $new_item_name ) );
-
-							do_action( 'woocommerce_subscription_item_switched', $order, $subscription, $order_item_ids[ $index ], $subscription_item_id );
-						}
-					}
-
-					// Update the subscription address
-					self::maybe_update_subscription_address( $order, $subscription );
-
-					$subscription->calculate_totals();
-				}
+				self::complete_subscription_switches( $order_id );
 
 				update_post_meta( $order_id, '_completed_subscription_switch', 'true' );
 
@@ -1778,6 +1709,126 @@ class WC_Subscriptions_Switcher {
 
 		$product_id = wcs_get_canonical_product_id( $old_item );
 		WCS_Download_Handler::revoke_downloadable_file_permission( $product_id, $subscription->id, $subscription->customer_user );
+
+	}
+
+	/***
+	 * Completes subscription switches for switch order.
+	 *
+	 * Performs all the changes calculated and saved by @see WC_Subscriptions_Switcher::process_checkout(), updating subscription
+	 * line items, schedule, dates and totals to reflect the changes made in this switch order.
+	 *
+	 * @param int $order_id The post_id of a shop_order post/WC_Order object
+	 * @since 2.0.10
+	 */
+	public static function complete_subscription_switches( $order_id ) {
+
+		// Get the switch meta
+		$order             = wc_get_order( $order_id );
+		$switch_order_data = get_post_meta( $order_id, '_subscription_switch_data', true );
+
+		foreach( $switch_order_data as $subcription_id => $switch_data ) {
+
+			$subscription = wcs_get_subscription( $subcription_id );
+
+			// Add the new line items
+			if ( ! empty( $switch_data['add_order_items'] ) ) {
+
+				foreach ( $switch_data['add_order_items'] as $order_item_id => $item_totals ) {
+
+					$order_item    = wcs_get_order_item( $order_item_id, $order );
+					$product       = WC_Subscriptions::get_product( wcs_get_canonical_product_id( $order_item ) );
+					$line_tax_data = wc_get_order_item_meta( $order_item_id, '_line_tax_data', true );
+
+					$item_id = $subscription->add_product( $product, $order_item[ 'qty' ], array(
+						'variation' => ( method_exists( $product, 'get_variation_attributes' ) ) ? $product->get_variation_attributes() : array(),
+						'totals'    => $item_totals,
+					) );
+				}
+			}
+
+			if ( ! empty( $switch_data['billing_schedule'] ) ) {
+
+				// Update the billing schedule
+				foreach ( $switch_data['billing_schedule'] as $meta_key => $value ) {
+					update_post_meta( $subcription_id, $meta_key, $value );
+				}
+			}
+
+			// Update subscription dates
+			if ( ! empty( $switch_data['dates'] ) ) {
+
+				if ( ! empty( $switch_data['dates']['delete'] ) ) {
+					foreach( $switch_data['dates']['delete'] as $date ) {
+						$subscription->delete_date( $date );
+					}
+				}
+
+				if ( ! empty( $switch_data['dates']['update'] ) ) {
+					$subscription->update_dates( $switch_order_data[ $subscription->id ]['dates']['update'] );
+				}
+			}
+
+			if ( ! empty( $switch_data['remove_subscription_items'] ) ) {
+
+				// Remove the old line items
+				foreach ( $switch_data['remove_subscription_items'] as $index => $subscription_item_id ) {
+					$order_item_ids = array_keys( $switch_data['add_order_items'] );
+
+					$old_order_item = wcs_get_order_item( $subscription_item_id, $subscription );
+					$new_order_item = wcs_get_order_item( $order_item_ids[ $index ], $order );
+
+					if ( empty( $old_order_item ) ) {
+						throw new Exception('The original subscription item being switched cannot be found.');
+					} else {
+						$old_item_name  = wcs_get_order_item_name( $old_order_item, array( 'attributes' => true ) );
+						$new_item_name  = wcs_get_order_item_name( $new_order_item, array( 'attributes' => true ) );
+
+						wc_update_order_item( $subscription_item_id, array( 'order_item_type' => 'line_item_switched' ) );
+
+						// translators: 1$: old item, 2$: new item when switching
+						$subscription->add_order_note( sprintf( _x( 'Customer switched from: %1$s to %2$s.', 'used in order notes', 'woocommerce-subscriptions' ), $old_item_name, $new_item_name ) );
+
+						do_action( 'woocommerce_subscription_item_switched', $order, $subscription, $order_item_ids[ $index ], $subscription_item_id );
+					}
+				}
+			}
+
+			// Update the subscription address
+			self::maybe_update_subscription_address( $order, $subscription );
+
+			$subscription->calculate_totals();
+		}
+	}
+
+	/**
+	 * Validates a switch order before attempting to pay for it.
+	 * The pay_action is used when paying for pending or failed orders.
+	 *
+	 * @since 2.0.10
+	 */
+	public static function validate_switch_before_pay_action() {
+		global $wp, $wpdb;
+
+		if ( isset( $_POST['woocommerce_pay'] ) && isset( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'woocommerce-pay' ) ) {
+
+			$order_id   = absint( $wp->query_vars['order-pay'] );
+			$order      = wc_get_order( $order_id );
+
+			if ( wcs_order_contains_switch( $order ) ) {
+
+				$wpdb->query( 'START TRANSACTION' );
+
+				try {
+					self::complete_subscription_switches( $order_id );
+				} catch ( Exception $e ) {
+					wc_add_notice( 'The following error has occurred attempting to perform this switch:', 'error' );
+					wc_add_notice( '&#8226; ' . $e->getMessage(), 'error' );
+				}
+
+				$wpdb->query( 'ROLLBACK' );
+			}
+		}
 	}
 
 	/** Deprecated Methods **/
