@@ -1741,6 +1741,9 @@ class WC_Subscriptions_Switcher {
 			// Add the new line items
 			if ( ! empty( $switch_data['add_order_items'] ) ) {
 
+				$adding_order_item_ids          = array_keys( $switch_data['add_order_items'] );
+				$removing_subscription_item_ids = array_keys( $switch_data['remove_subscription_items'] );
+
 				foreach ( $switch_data['add_order_items'] as $order_item_id => $item_totals ) {
 
 					$order_item    = wcs_get_order_item( $order_item_id, $order );
@@ -1751,6 +1754,10 @@ class WC_Subscriptions_Switcher {
 						'variation' => ( method_exists( $product, 'get_variation_attributes' ) ) ? $product->get_variation_attributes() : array(),
 						'totals'    => $item_totals,
 					) );
+
+					$subscription_item_id = $removing_subscription_item_ids[ array_search( $order_item_id, $adding_order_item_ids ) ];
+
+					do_action( 'woocommerce_subscription_item_switched', $order, $subscription, $item_id, $subscription_item_id );
 				}
 			}
 
@@ -1796,8 +1803,6 @@ class WC_Subscriptions_Switcher {
 
 						// translators: 1$: old item, 2$: new item when switching
 						$subscription->add_order_note( sprintf( _x( 'Customer switched from: %1$s to %2$s.', 'used in order notes', 'woocommerce-subscriptions' ), $old_item_name, $new_item_name ) );
-
-						do_action( 'woocommerce_subscription_item_switched', $order, $subscription, $order_item_ids[ $index ], $subscription_item_id );
 					}
 				}
 			}
