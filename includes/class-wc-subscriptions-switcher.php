@@ -708,7 +708,9 @@ class WC_Subscriptions_Switcher {
 
 					// Remove the old item from the subscription but don't delete it completely by changing its line item type to "line_item_switched"
 					wc_update_order_item( $cart_item['subscription_switch']['item_id'], array( 'order_item_type' => 'line_item_switched' ) );
-					$switch_order_data[ $subscription->id ]['remove_subscription_items'][] = $cart_item['subscription_switch']['item_id'];
+
+					$new_item_name = wcs_get_cart_item_name( $cart_item, array( 'attributes' => true ) );
+					$switch_order_data[ $subscription->id ]['remove_subscription_items'][ $cart_item['subscription_switch']['item_id'] ] = $new_item_name;
 
 					// Change the shipping
 					self::update_shipping_methods( $subscription, $recurring_cart );
@@ -1773,17 +1775,14 @@ class WC_Subscriptions_Switcher {
 			if ( ! empty( $switch_data['remove_subscription_items'] ) ) {
 
 				// Remove the old line items
-				foreach ( $switch_data['remove_subscription_items'] as $index => $subscription_item_id ) {
-					$order_item_ids = array_keys( $switch_data['add_order_items'] );
+				foreach ( $switch_data['remove_subscription_items'] as $subscription_item_id => $new_item_name ) {
 
 					$old_order_item = wcs_get_order_item( $subscription_item_id, $subscription );
-					$new_order_item = wcs_get_order_item( $order_item_ids[ $index ], $order );
 
 					if ( empty( $old_order_item ) ) {
 						throw new Exception( 'The original subscription item being switched cannot be found.' );
 					} else {
 						$old_item_name  = wcs_get_order_item_name( $old_order_item, array( 'attributes' => true ) );
-						$new_item_name  = wcs_get_order_item_name( $new_order_item, array( 'attributes' => true ) );
 
 						wc_update_order_item( $subscription_item_id, array( 'order_item_type' => 'line_item_switched' ) );
 
