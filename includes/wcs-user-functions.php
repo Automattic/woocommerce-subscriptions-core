@@ -44,8 +44,8 @@ function wcs_maybe_make_user_inactive( $user_id ) {
 /**
  * Update a user's role to a special subscription's role
  *
- * @param int The ID of a user
- * @param string The special name assigned to the role by Subscriptions, one of 'default_subscriber_role', 'default_inactive_role' or 'default_cancelled_role'
+ * @param int $user_id The ID of a user
+ * @param string $role_new The special name assigned to the role by Subscriptions, one of 'default_subscriber_role', 'default_inactive_role' or 'default_cancelled_role'
  * @return WP_User The user with the new role.
  * @since 2.0
  */
@@ -63,6 +63,29 @@ function wcs_update_users_role( $user_id, $role_new ) {
 		return;
 	}
 
+	$roles = wcs_get_new_user_role_names( $role_new );
+
+	$role_new = $roles['new'];
+	$role_old = $roles['old'];
+
+	if ( ! empty( $role_old ) ) {
+		$user->remove_role( $role_old );
+	}
+
+	$user->add_role( $role_new );
+
+	do_action( 'woocommerce_subscriptions_updated_users_role', $role_new, $user, $role_old );
+	return $user;
+}
+
+/**
+ * Gets default new and old role names if the new role is 'default_subscriber_role'. Otherwise returns role_new and an
+ * empty string.
+ *
+ * @param $role_new string the new role of the user
+ * @return array with keys 'old' and 'new'.
+ */
+function wcs_get_new_user_role_names( $role_new ) {
 	$default_subscriber_role = get_option( WC_Subscriptions_Admin::$option_prefix . '_subscriber_role' );
 	$default_cancelled_role = get_option( WC_Subscriptions_Admin::$option_prefix . '_cancelled_role' );
 	$role_old = '';
@@ -75,14 +98,10 @@ function wcs_update_users_role( $user_id, $role_new ) {
 		$role_new = $default_cancelled_role;
 	}
 
-	if ( ! empty( $role_old ) ) {
-		$user->remove_role( $role_old );
-	}
-
-	$user->add_role( $role_new );
-
-	do_action( 'woocommerce_subscriptions_updated_users_role', $role_new, $user, $role_old );
-	return $user;
+	return array(
+		'new' => $role_new,
+		'old' => $role_old,
+	);
 }
 
 /**
