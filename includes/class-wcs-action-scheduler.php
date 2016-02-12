@@ -34,14 +34,14 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 			if ( ! empty( $action_hook ) ) {
 
 				$action_args    = array( 'subscription_id' => $subscription->id );
-				$timestamp      = strtotime( $datetime );
+				$timestamp      = wcs_date_to_time( $datetime );
 
 				if ( wc_next_scheduled_action( $action_hook, $action_args ) !== $timestamp ) {
 					wc_unschedule_action( $action_hook, $action_args );
 
 					// Only reschedule if it's in the future
 					if ( $timestamp > current_time( 'timestamp', true ) && 'active' == $subscription->get_status() ) {
-						wc_schedule_single_action( $datetime, $action_hook, $action_args );
+						wc_schedule_single_action( $timestamp, $action_hook, $action_args );
 					}
 				}
 			}
