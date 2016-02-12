@@ -36,6 +36,9 @@ class WCS_Admin_Reports {
 
 		// Add any necessary scripts
 		add_action( 'admin_enqueue_scripts', __CLASS__ . '::reports_scripts' );
+
+		// Track subscription cancellation dates
+		add_action( 'woocommerce_subscription_status_updated', __CLASS__ . '::track_cancellation_dates', 12, 3 );
 	}
 
 
@@ -109,6 +112,20 @@ class WCS_Admin_Reports {
 		}
 	}
 
+	/**
+	 * Add postmeta whenever a subscription is set to cancelled
+	 *
+	 * @since 2.1
+	 */
+	public static function track_cancellation_dates( $subscription, $new_status, $old_status ) {
+
+		if ( 'pending-cancel' == $new_status ) {
+			update_post_meta( $subscription->id, wcs_get_date_meta_key( 'cancelled' ), current_time( 'mysql', true ) );
+		} elseif ( 'cancelled' == $new_status ) {
+			add_post_meta( $subscription->id, wcs_get_date_meta_key( 'cancelled' ), current_time( 'mysql', true ), true );
+		}
+
+	}
 }
 
 new WCS_Admin_Reports();
