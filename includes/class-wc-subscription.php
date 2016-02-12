@@ -624,6 +624,7 @@ class WC_Subscription extends WC_Order {
 				case 'next_payment' :
 				case 'trial_end' :
 				case 'end' :
+				case 'cancelled' :
 					$this->schedule->{$date_type} = get_post_meta( $this->id, wcs_get_date_meta_key( $date_type ), true );
 					break;
 				case 'last_payment' :
@@ -684,6 +685,9 @@ class WC_Subscription extends WC_Order {
 				case 'end' :
 					$date_to_display = __( 'Not yet ended', 'woocommerce-subscriptions' );
 					break;
+				case 'cancelled' :
+						$date_to_display = __( 'Not cancelled', 'woocommerce-subscriptions' );
+						break;
 				case 'next_payment' :
 				case 'trial_end' :
 				default :
