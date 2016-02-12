@@ -150,11 +150,8 @@ class WC_Subscriptions_Switcher {
 			}
 
 			if ( $removed_item_count > 0 ) {
-				if ( 1 == $removed_item_count ) {
-					WC_Subscriptions::add_notice( __( 'Your cart contained an invalid subscription switch request. It has been removed.', 'woocommerce-subscriptions' ), 'error' );
-				} else {
-					WC_Subscriptions::add_notice( __( 'Your cart contained invalid subscription switch requests. They have been removed.', 'woocommerce-subscriptions' ), 'error' );
-				}
+				WC_Subscriptions::add_notice( _n( 'Your cart contained an invalid subscription switch request. It has been removed.', 'Your cart contained invalid subscription switch requests. They have been removed.', 	$removed_item_count, 'woocommerce-subscriptions' ), 'error' );
+
 				wp_redirect( WC()->cart->get_cart_url() );
 				exit();
 			}
@@ -686,7 +683,7 @@ class WC_Subscriptions_Switcher {
 					$old_item_name = wcs_get_order_item_name( $existing_item, array( 'attributes' => true ) );
 					$new_item_name = wcs_get_cart_item_name( $cart_item, array( 'attributes' => true ) );
 
-					// translators: 1$: old item, 2$: new item when switching
+					// translators: 1$: old item name, 2$: new item name when switching
 					$subscription->add_order_note( sprintf( _x( 'Customer switched from: %1$s to %2$s.', 'used in order notes', 'woocommerce-subscriptions' ), $old_item_name, $new_item_name ) );
 
 					// Change the shipping
