@@ -769,7 +769,7 @@ class WC_Subscriptions_Cart {
 		$trial_length = WC_Subscriptions_Product::get_trial_length( $product );
 
 		if ( $renewal_time > 0 ) {
-			$cart_key .= date( 'Y_m_d_', $renewal_time );
+			$cart_key .= gmdate( 'Y_m_d_', $renewal_time );
 		}
 
 		// First start with the billing interval and period
