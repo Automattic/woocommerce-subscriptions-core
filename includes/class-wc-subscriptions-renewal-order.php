@@ -120,8 +120,7 @@ class WC_Subscriptions_Renewal_Order {
 
 		if ( is_a( $renewal_order, 'WC_Order' ) && wcs_is_subscription( $subscription ) ) {
 
-			// translators: placeholder is order number, hash before order number
-			$order_number = sprintf( __( '#%s', 'woocommerce-subscriptions' ), $renewal_order->get_order_number() );
+			$order_number = sprintf( _x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), $renewal_order->get_order_number() );
 
 			// translators: placeholder is order ID
 			$subscription->add_order_note( sprintf( __( 'Order %s created to record renewal.', 'woocommerce-subscriptions' ), sprintf( '<a href="%s">%s</a> ', esc_url( wcs_get_edit_post_link( $renewal_order->id ) ), $order_number ) ) );
