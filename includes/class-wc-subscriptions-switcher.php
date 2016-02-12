@@ -726,7 +726,7 @@ class WC_Subscriptions_Switcher {
 			}
 
 			// Everything seems to be in order.
-			// Rollback the changes and store the required meta on the order so it can be handled on successful payment.
+			// Rollback the changes and store the required meta on the order so it can be processed on successful payment.
 			$wpdb->query( 'ROLLBACK' );
 
 			// Despite rolling back the DB queries, the cache can still contain subscription changes (eg _billing_period post meta), so make sure we delete the cache for all subscriptions we've altered.
