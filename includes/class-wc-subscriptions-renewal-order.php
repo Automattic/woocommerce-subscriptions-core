@@ -225,7 +225,7 @@ class WC_Subscriptions_Renewal_Order {
 			$subject  = apply_filters(
 				'woocommerce_subscriptions_email_subject_customer_procesing_renewal_order',
 				// translators: placeholder is blog name
-				sprintf( _x( '[%s] Subscription Renewal Order', 'used in processing renewal order email to customer', 'woocommerce-subscriptions' ), $blogname ),
+				sprintf( _x( '[%s] Subscription Renewal Order', 'used as email subject for renewal order notification email to customer', 'woocommerce-subscriptions' ), $blogname ),
 				$order
 			);
 		}
@@ -249,7 +249,7 @@ class WC_Subscriptions_Renewal_Order {
 			$subject  = apply_filters(
 				'woocommerce_subscriptions_email_subject_customer_completed_renewal_order',
 				// translators: placeholder is blog name
-				sprintf( _x( '[%s] Subscription Renewal Order', 'used in completed renewal order email to customer', 'woocommerce-subscriptions' ), $blogname ),
+				sprintf( _x( '[%s] Subscription Renewal Order', 'used as email subject for renewal order notification email to customer', 'woocommerce-subscriptions' ), $blogname ),
 				$order
 			);
 		}
