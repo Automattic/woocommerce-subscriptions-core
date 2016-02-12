@@ -709,7 +709,11 @@ class WC_Subscriptions_Switcher {
 					// Remove the old item from the subscription but don't delete it completely by changing its line item type to "line_item_switched"
 					wc_update_order_item( $cart_item['subscription_switch']['item_id'], array( 'order_item_type' => 'line_item_switched' ) );
 
+					// We dont want to include switch item meta in order item name
+					add_filter( 'woocommerce_subscriptions_hide_switch_itemmeta', '__return_true' );
 					$new_item_name = wcs_get_cart_item_name( $cart_item, array( 'attributes' => true ) );
+					remove_filter( 'woocommerce_subscriptions_hide_switch_itemmeta', '__return_true' );
+
 					$switch_order_data[ $subscription->id ]['remove_subscription_items'][ $cart_item['subscription_switch']['item_id'] ] = $new_item_name;
 
 					// Change the shipping
@@ -1577,7 +1581,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function hidden_order_itemmeta( $hidden_meta_keys ) {
 
-		if ( ! defined( 'WCS_DEBUG' ) || true !== WCS_DEBUG ) {
+		if ( apply_filters( 'woocommerce_subscriptions_hide_switch_itemmeta', ! defined( 'WCS_DEBUG' ) || true !== WCS_DEBUG ) ) {
 			$hidden_meta_keys = array_merge( $hidden_meta_keys, array(
 				'_switched_subscription_item_id',
 				'_switched_subscription_new_item_id',
@@ -1782,7 +1786,11 @@ class WC_Subscriptions_Switcher {
 					if ( empty( $old_order_item ) ) {
 						throw new Exception( 'The original subscription item being switched cannot be found.' );
 					} else {
+
+						// We dont want to include switch item meta in order item name
+						add_filter( 'woocommerce_subscriptions_hide_switch_itemmeta', '__return_true' );
 						$old_item_name  = wcs_get_order_item_name( $old_order_item, array( 'attributes' => true ) );
+						remove_filter( 'woocommerce_subscriptions_hide_switch_itemmeta', '__return_true' );
 
 						wc_update_order_item( $subscription_item_id, array( 'order_item_type' => 'line_item_switched' ) );
 
