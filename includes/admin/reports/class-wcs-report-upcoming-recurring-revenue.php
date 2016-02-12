@@ -344,7 +344,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 			break;
 			case 'year' :
 				$this->start_date    = strtotime( 'now', current_time( 'timestamp' ) );
-				$this->end_date      = strtotime( '+1 YEAR', current_time( 'timestamp' ) );
+				$this->end_date      = strtotime( 'last day', strtotime( '+1 YEAR', current_time( 'timestamp' ) ) );
 				$this->chart_groupby = 'month';
 			break;
 			case 'month' :
@@ -354,8 +354,8 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 			break;
 			case '7day' :
 				$this->start_date    = strtotime( 'now', current_time( 'timestamp' ) );
-				$this->end_date   = strtotime( '+7 days', current_time( 'timestamp' ) );
-				$this->chart_groupby         = 'day';
+				$this->end_date      = strtotime( '+7 days', current_time( 'timestamp' ) );
+				$this->chart_groupby = 'day';
 			break;
 		}
 
