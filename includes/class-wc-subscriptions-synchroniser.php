@@ -232,7 +232,7 @@ class WC_Subscriptions_Synchroniser {
 				'id'            => self::$post_meta_key_day,
 				'class'         => 'wc_input_subscription_payment_sync',
 				'label'         => self::$sync_field_label . ':',
-				'placeholder'   => __( 'Day', 'woocommerce-subscriptions' ),
+				'placeholder'   => _x( 'Day', 'input field placeholder for day field for annual subscriptions', 'woocommerce-subscriptions' ),
 				'value'         => $payment_day,
 				'type'          => 'number',
 				)
