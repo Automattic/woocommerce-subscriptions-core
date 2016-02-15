@@ -165,6 +165,7 @@ class WCS_Cart_Renewal {
 
 		// If a product linked to a subscription failed to be added to the cart prevent partially paying for the order by removing all cart items.
 		if ( ! $success && wcs_is_subscription( $subscription ) ) {
+			// translators: %s is subscription's number
 			wc_add_notice( sprintf( esc_html__( 'Subscription #%s has not been added to the cart.', 'woocommerce-subscriptions' ), $subscription->get_order_number() ) , 'error' );
 			WC()->cart->empty_cart( true );
 		}
@@ -469,7 +470,7 @@ class WCS_Cart_Renewal {
 
 		if ( isset( $cart_item[ $this->cart_item_key ]['subscription_id'] ) ) {
 			$subscription  = wcs_get_subscription( absint( $cart_item[ $this->cart_item_key ]['subscription_id'] ) );
-			$product_title = ( count( $subscription->get_items() ) > 1 ) ? esc_html__( 'All linked subscription items were', 'woocommerce-subscriptions' ) : $product_title;
+			$product_title = ( count( $subscription->get_items() ) > 1 ) ? esc_html_x( 'All linked subscription items were', 'Used in WooCommerce by removed item notification: "_All linked subscription items were_ removed. Undo?" Filter for item title.', 'woocommerce-subscriptions' ) : $product_title;
 		}
 
 		return $product_title;
