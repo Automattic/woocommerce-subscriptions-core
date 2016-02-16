@@ -257,7 +257,8 @@ class WC_API_Subscriptions extends WC_API_Orders {
 
 			if ( is_wp_error( $edited ) ) {
 				$data = $edited->get_error_data();
-				throw new WC_API_Exception( 'wcs_api_cannot_edit_subscription', sprintf( __( 'Edit subscription failed with error: %s', 'woocommerce-subscriptions' ), $edited->get_error_message() ), $data['status'] );
+				// translators: placeholder is error message
+				throw new WC_API_Exception( 'wcs_api_cannot_edit_subscription', sprintf( _x( 'Edit subscription failed with error: %s', 'API error message when editing the order failed', 'woocommerce-subscriptions' ), $edited->get_error_message() ), $data['status'] );
 			}
 
 			$this->update_schedule( $subscription, $data );
@@ -595,7 +596,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 
 		do_action( 'wcs_api_subscription_note_status', $subscription_id, $id, $this );
 
-		return array( 'message' => __( 'Permanently deleted subscription note', 'woocommerce-subscriptions' ) );
+		return array( 'message' => _x( 'Permanently deleted subscription note', 'API response confirming order note deleted from a subscription', 'woocommerce-subscriptions' ) );
 
 	}
 
