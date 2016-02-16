@@ -116,7 +116,7 @@ class WCS_PayPal_Reference_Transaction_API_Response extends WC_Gateway_Paypal_Re
 			}
 		}
 
-		return empty( $error_messages ) ? _x( 'N/A', 'used as an api error message if there are no actual error messages', 'woocommerce-subscriptions' ) : trim( implode( ', ', $error_messages ) );
+		return empty( $error_messages ) ? _x( 'N/A', 'no information about something', 'woocommerce-subscriptions' ) : trim( implode( ', ', $error_messages ) );
 	}
 
 	/**
