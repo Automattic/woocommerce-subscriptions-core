@@ -423,7 +423,7 @@ class WC_Subscriptions_Coupon {
 	 * @return array subtotal
 	 * @since 2.0.9
 	 */
-	public static function get_renewal_subtotal( $code ) {
+	private static function get_renewal_subtotal( $code ) {
 
 		$renewal_coupons = WC()->session->get( 'wcs_renewal_coupons' );
 
@@ -454,7 +454,7 @@ class WC_Subscriptions_Coupon {
 	 * @return boolean whether a product is a renewal order line item
 	 * @since 2.0.9
 	 */
-	public static function is_subsbcription_renewal_line_item( $product_id, $cart_item ) {
+	private static function is_subsbcription_renewal_line_item( $product_id, $cart_item ) {
 
 		$is_subscription_line_item = false;
 
