@@ -264,7 +264,7 @@ class WC_Subscriptions_Admin {
 			'id'          => '_subscription_limit',
 			'label'       => __( 'Limit Subscription', 'woocommerce-subscriptions' ),
 			// translators: placeholders are opening and closing link tags
-			'description' => sprintf( __( 'Only allow a customer to have one subscription to this product. %sLearn more.%s', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/store-manager-guide/#limit-subscription">', '</a>' ),
+			'description' => sprintf( __( 'Only allow a customer to have one subscription to this product. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/store-manager-guide/#limit-subscription">', '</a>' ),
 			'options'     => array(
 				'no'     => __( 'Do no limit', 'woocommerce-subscriptions' ),
 				'active' => __( 'Limit to one active subscription', 'woocommerce-subscriptions' ),
@@ -1108,8 +1108,8 @@ class WC_Subscriptions_Admin {
 			),
 
 			array(
-				// translators: placeholders are opening and closing link tags
-				'desc'          => sprintf( __( 'Find new gateways that %ssupport automatic subscription payments%s in the official %sWooCommerce Marketplace%s.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( 'http://docs.woothemes.com/document/subscriptions/payment-gateways/' ) . '">', '</a>', '<a href="' . esc_url( 'http://www.woothemes.com/product-category/woocommerce-extensions/' ) . '">', '</a>' ),
+				// translators: $1-$2: opening and closing tags. Link to documents->payment gateways, 3$-4$: opening and closing tags. Link to woothemes extensions shop page
+				'desc'          => sprintf( __( 'Find new gateways that %1$ssupport automatic subscription payments%2$s in the official %3$sWooCommerce Marketplace%4$s.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( 'http://docs.woothemes.com/document/subscriptions/payment-gateways/' ) . '">', '</a>', '<a href="' . esc_url( 'http://www.woothemes.com/product-category/woocommerce-extensions/' ) . '">', '</a>' ),
 				'id'            => self::$option_prefix . '_payment_gateways_additional',
 				'type'          => 'informational',
 			),
@@ -1143,7 +1143,12 @@ class WC_Subscriptions_Admin {
 		?>
 		<div id="message" class="updated woocommerce-message wc-connect woocommerce-subscriptions-activated">
 			<div class="squeezer">
-				<h4><?php printf( esc_html__( '%sWooCommerce Subscriptions Installed%s &#8211; %sYou\'re ready to start selling subscriptions!%s', 'woocommerce-subscriptions' ), '<strong>', '</strong>', '<em>', '</em>' ); ?></h4>
+				<h4>
+					<?php
+					// translators: $1-$2: opening and closing <strong> tags, $3-$4: opening and closing <em> tags
+					echo wp_kses( sprintf( __( '%1$sWooCommerce Subscriptions Installed%2$s &#8211; %3$sYou\'re ready to start selling subscriptions!%4$s', 'woocommerce-subscriptions' ), '<strong>', '</strong>', '<em>', '</em>' ), array( 'strong' => true, 'em' => true ) );
+					?>
+				</h4>
 
 				<p class="submit">
 					<a href="<?php echo esc_url( self::add_subscription_url() ); ?>" class="button button-primary"><?php esc_html_e( 'Add a Subscription Product', 'woocommerce-subscriptions' ); ?></a>
@@ -1359,7 +1364,7 @@ class WC_Subscriptions_Admin {
 		);
 
 		$debug_data['wcs_staging'] = array(
-			'name'    => __( 'Subscriptions Mode', 'woocommerce-subscriptions' ),
+			'name'    => _x( 'Subscriptions Mode', 'Live or Staging, Label on WooCommerce -> System Status page', 'woocommerce-subscriptions' ),
 			'note'    => '<strong>' . ( ( WC_Subscriptions::is_duplicate_site() ) ? _x( 'Staging', 'refers to staging site', 'woocommerce-subscriptions' ) :  _x( 'Live', 'refers to live site', 'woocommerce-subscriptions' ) ) . '</strong>',
 			'success' => ( WC_Subscriptions::is_duplicate_site() ) ? 0 : 1,
 		);
