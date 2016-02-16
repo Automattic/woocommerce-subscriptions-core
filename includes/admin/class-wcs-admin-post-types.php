@@ -225,7 +225,7 @@ class WCS_Admin_Post_Types {
 
 		foreach ( $subscription_ids as $subscription_id ) {
 			$subscription = wcs_get_subscription( $subscription_id );
-			$order_note   = __( 'Subscription status changed by bulk edit:', 'woocommerce-subscriptions' );
+			$order_note   = _x( 'Subscription status changed by bulk edit:', 'Used in order note. Reason why status changed.', 'woocommerce-subscriptions' );
 
 			try {
 
@@ -453,7 +453,7 @@ class WCS_Admin_Post_Types {
 					$username = trim( $the_subscription->billing_first_name . ' ' . $the_subscription->billing_last_name );
 				}
 				// translators: $1: is opening link, $2: is subscription order number, $3: is closing link tag, $4: is user's name
-				$column_content = sprintf( _x( '%1$s#%2$s%3$s for %4$s', 'Subscription number for X', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post.php?post=' . absint( $post->ID ) . '&action=edit' ) ) . '">', '<strong>' . esc_attr( $the_subscription->get_order_number() ) . '</strong>', '</a>', $username );
+				$column_content = sprintf( _x( '%1$s#%2$s%3$s for %4$s', 'Subscription title on admin table. (e.g.: #211 for John Doe)', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post.php?post=' . absint( $post->ID ) . '&action=edit' ) ) . '">', '<strong>' . esc_attr( $the_subscription->get_order_number() ) . '</strong>', '</a>', $username );
 
 				$column_content .= '</div>';
 
