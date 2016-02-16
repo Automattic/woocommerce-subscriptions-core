@@ -482,6 +482,27 @@ class WC_Subscriptions_Coupon {
 	/* Deprecated */
 
 	/**
+	 * Store how much discount each coupon grants.
+	 *
+	 * @since 2.0
+	 * @param WC_Cart $cart The WooCommerce cart object.
+	 * @param mixed $code
+	 * @param mixed $amount
+	 * @return WC_Cart $cart
+	 */
+	public static function increase_coupon_discount_amount( $cart, $code, $amount ) {
+		_deprecated_function( __METHOD__, '2.0.10' );
+
+		if ( empty( $cart->coupon_discount_amounts[ $code ] ) ) {
+			$cart->coupon_discount_amounts[ $code ] = 0;
+		}
+
+		$cart->coupon_discount_amounts[ $code ] += $amount;
+
+		return $cart;
+	}
+
+	/**
 	 * Determines if cart contains a recurring fee discount code
 	 *
 	 * Does not check if the code is valid, etc
