@@ -957,23 +957,23 @@ class WC_Subscriptions_Manager {
 
 		switch ( $status ) {
 			case 'active' :
-				$status_string = __( 'Active', 'woocommerce-subscriptions' );
+				$status_string = _x( 'Active', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
 			case 'cancelled' :
-				$status_string = __( 'Cancelled', 'woocommerce-subscriptions' );
+				$status_string = _x( 'Cancelled', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
 			case 'expired' :
-				$status_string = __( 'Expired', 'woocommerce-subscriptions' );
+				$status_string = _x( 'Expired', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
 			case 'pending' :
-				$status_string = __( 'Pending', 'woocommerce-subscriptions' );
+				$status_string = _x( 'Pending', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
 			case 'failed' :
-				$status_string = __( 'Failed', 'woocommerce-subscriptions' );
+				$status_string = _x( 'Failed', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
 			case 'on-hold' :
 			case 'suspend' : // Backward compatibility
-				$status_string = __( 'On-hold', 'woocommerce-subscriptions' );
+				$status_string = _x( 'On-hold', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
 			default :
 				$status_string = apply_filters( 'woocommerce_subscriptions_custom_status_string', ucfirst( $status ), $subscription_key, $user_id );
