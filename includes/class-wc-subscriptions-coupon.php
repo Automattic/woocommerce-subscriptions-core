@@ -33,7 +33,7 @@ class WC_Subscriptions_Coupon {
 		add_filter( 'woocommerce_coupon_discount_types', __CLASS__ . '::add_discount_types' );
 
 		// Handle discounts
-		add_filter( 'woocommerce_coupon_get_discount_amount', __CLASS__ . '::apply_subscription_discount', 10, 5 );
+		add_filter( 'woocommerce_coupon_get_discount_amount', __CLASS__ . '::get_discount_amount', 10, 5 );
 
 		// Validate subscription coupons
 		add_filter( 'woocommerce_coupon_is_valid', __CLASS__ . '::validate_subscription_coupon', 10, 2 );
@@ -64,11 +64,11 @@ class WC_Subscriptions_Coupon {
 	}
 
 	/**
-	 * Apply subscription discounts
+	 * Get the discount amount for Subscriptions coupon types
 	 *
-	 * @since 1.2
+	 * @since 2.0.10
 	 */
-	public static function apply_subscription_discount( $discount, $discounting_amount, $cart_item, $single, $coupon ) {
+	public static function get_discount_amount( $discount, $discounting_amount, $cart_item, $single, $coupon ) {
 
 		// Only deal with subscriptions coupon types
 		if ( ! in_array( $coupon->type, array( 'recurring_fee', 'recurring_percent', 'sign_up_fee', 'sign_up_fee_percent', 'renewal_fee', 'renewal_percent', 'renewal_cart' ) ) ) {
@@ -480,6 +480,131 @@ class WC_Subscriptions_Coupon {
 	}
 
 	/* Deprecated */
+
+	/**
+	 * Apply sign up fee or recurring fee discount
+	 *
+	 * @since 1.2
+	 */
+	public static function apply_subscription_discount( $original_price, $cart_item, $cart ) {
+		_deprecated_function( __METHOD__, '2.0.10', 'Have moved to filtering on "woocommerce_coupon_get_discount_amount" to return discount amount. See: '. __CLASS__ .'::get_discount_amount()' );
+
+		$product_id = ( $cart_item['data']->is_type( array( 'subscription_variation' ) ) ) ? $cart_item['data']->variation_id : $cart_item['data']->id;
+
+		if ( ! WC_Subscriptions_Product::is_subscription( $product_id ) ) {
+			return $original_price;
+		}
+
+		$price = $calculation_price = $original_price;
+
+		$calculation_type = WC_Subscriptions_Cart::get_calculation_type();
+
+		if ( ! empty( $cart->applied_coupons ) ) {
+
+			foreach ( $cart->applied_coupons as $code ) {
+
+				$coupon = new WC_Coupon( $code );
+
+				// Pre 2.5 is_valid_for_product() does not use wc_get_product_coupon_types()
+				if ( WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
+					$is_valid_for_product = true;
+				} else {
+					$is_valid_for_product = $coupon->is_valid_for_product( wc_get_product( $product_id ), $cart_item );
+				}
+
+				if ( $coupon->apply_before_tax() && $coupon->is_valid() && $is_valid_for_product ) {
+
+					$apply_recurring_coupon = $apply_recurring_percent_coupon = $apply_initial_coupon = $apply_initial_percent_coupon = false;
+
+					// Apply recurring fee discounts to recurring total calculations
+					if ( 'recurring_total' == $calculation_type ) {
+						$apply_recurring_coupon         = ( 'recurring_fee' == $coupon->type ) ? true : false;
+						$apply_recurring_percent_coupon = ( 'recurring_percent' == $coupon->type ) ? true : false;
+					}
+
+					if ( 'none' == $calculation_type ) {
+
+						// If all items have a free trial we don't need to apply recurring coupons to the initial total
+						if ( ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
+
+							if ( 'recurring_fee' == $coupon->type ) {
+								$apply_initial_coupon = true;
+							}
+
+							if ( 'recurring_percent' == $coupon->type ) {
+								$apply_initial_percent_coupon = true;
+							}
+						}
+
+						// Apply sign-up discounts to initial total
+						if ( ! empty( $cart_item['data']->subscription_sign_up_fee ) ) {
+
+							if ( 'sign_up_fee' == $coupon->type ) {
+								$apply_initial_coupon = true;
+							}
+
+							if ( 'sign_up_fee_percent' == $coupon->type ) {
+								$apply_initial_percent_coupon = true;
+							}
+
+							$calculation_price = $cart_item['data']->subscription_sign_up_fee;
+						}
+					}
+
+					if ( $apply_recurring_coupon || $apply_initial_coupon ) {
+
+						$discount_amount = ( $calculation_price < $coupon->amount ) ? $calculation_price : $coupon->amount;
+
+						// Recurring coupons only apply when there is no free trial (carts can have a mix of free trial and non free trial items)
+						if ( $apply_initial_coupon && 'recurring_fee' == $coupon->type && ! empty( $cart_item['data']->subscription_trial_length ) ) {
+							$discount_amount = 0;
+						}
+
+						$cart->discount_cart = $cart->discount_cart + ( $discount_amount * $cart_item['quantity'] );
+						$cart = self::increase_coupon_discount_amount( $cart, $coupon->code, $discount_amount * $cart_item['quantity'] );
+
+						$price = $price - $discount_amount;
+
+					} elseif ( $apply_recurring_percent_coupon ) {
+
+						$discount_amount = round( ( $calculation_price / 100 ) * $coupon->amount, WC()->cart->dp );
+
+						$cart->discount_cart = $cart->discount_cart + ( $discount_amount * $cart_item['quantity'] );
+						$cart = self::increase_coupon_discount_amount( $cart, $coupon->code, $discount_amount * $cart_item['quantity'] );
+
+						$price = $price - $discount_amount;
+
+					} elseif ( $apply_initial_percent_coupon ) {
+
+						// Recurring coupons only apply when there is no free trial (carts can have a mix of free trial and non free trial items)
+						if ( 'recurring_percent' == $coupon->type && empty( $cart_item['data']->subscription_trial_length ) ) {
+							$amount_to_discount = $cart_item['data']->subscription_price;
+						} else {
+							$amount_to_discount = 0;
+						}
+
+						// Sign up fee coupons only apply to sign up fees
+						if ( 'sign_up_fee_percent' == $coupon->type ) {
+							$amount_to_discount = $cart_item['data']->subscription_sign_up_fee;
+						}
+
+						$discount_amount = round( ( $amount_to_discount / 100 ) * $coupon->amount, WC()->cart->dp );
+
+						$cart->discount_cart = $cart->discount_cart + $discount_amount * $cart_item['quantity'];
+						$cart = self::increase_coupon_discount_amount( $cart, $coupon->code, $discount_amount * $cart_item['quantity'] );
+
+						$price = $price - $discount_amount;
+					}
+				}
+			}
+
+			if ( $price < 0 ) {
+				$price = 0;
+			}
+		}
+
+		return $price;
+	}
 
 	/**
 	 * Store how much discount each coupon grants.
