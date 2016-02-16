@@ -62,7 +62,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 		# GET /subscriptions/<subscription_id>/notes
 		$routes[ $this->base . '/(?P<subscription_id>\d+)/notes' ] = array(
 			array( array( $this, 'get_subscription_notes' ), WC_API_Server::READABLE ),
-			array( array( $this, 'create_subscription_note' ), WC_API_Server:: CREATABLE | WC_API_Server::ACCEPT_DATA ),
+			array( array( $this, 'create_subscription_note' ), WC_API_Server::CREATABLE | WC_API_Server::ACCEPT_DATA ),
 		);
 
 		# GET /subscriptions/<subscription_id>/notes/<id>
@@ -244,6 +244,10 @@ class WC_API_Subscriptions extends WC_API_Orders {
 				}
 			}
 
+			if ( ! empty( $data['order_id'] ) ) {
+				wp_update_post( array( 'ID' => $subscription_id, 'post_parent' => $data['order_id'] ) );
+			}
+
 			// set $data['order'] = $data['subscription'] so that edit_order can read in the request
 			$data['order'] = $data;
 			// edit subscription by calling WC_API_Orders::edit_order()
@@ -342,6 +346,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 	 */
 	protected function create_base_order( $args, $data ) {
 
+		$args['order_id']         = ( ! empty( $data['order_id'] ) ) ? $data['order_id'] : '';
 		$args['billing_interval'] = ( ! empty( $data['billing_interval'] ) ) ? $data['billing_interval'] : '';
 		$args['billing_period']   = ( ! empty( $data['billing_period'] ) ) ? $data['billing_period'] : '';
 
