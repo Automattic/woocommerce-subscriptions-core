@@ -62,7 +62,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 		# GET /subscriptions/<subscription_id>/notes
 		$routes[ $this->base . '/(?P<subscription_id>\d+)/notes' ] = array(
 			array( array( $this, 'get_subscription_notes' ), WC_API_Server::READABLE ),
-			array( array( $this, 'create_subscription_note' ), WC_API_Server:: CREATABLE | WC_API_Server::ACCEPT_DATA ),
+			array( array( $this, 'create_subscription_note' ), WC_API_Server::CREATABLE | WC_API_Server::ACCEPT_DATA ),
 		);
 
 		# GET /subscriptions/<subscription_id>/notes/<id>
