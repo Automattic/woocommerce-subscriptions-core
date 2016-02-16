@@ -118,8 +118,8 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function add_subscription_products_to_select( $product_types ) {
 
-		$product_types['subscription']          = __( 'Simple subscription', 'woocommerce-subscriptions' );
-		$product_types['variable-subscription'] = __( 'Variable subscription', 'woocommerce-subscriptions' );
+		$product_types['subscription']          = __( 'Simple Subscription', 'woocommerce-subscriptions' );
+		$product_types['variable-subscription'] = __( 'Variable Subscription', 'woocommerce-subscriptions' );
 
 		return $product_types;
 	}
