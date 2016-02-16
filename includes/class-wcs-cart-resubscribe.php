@@ -113,7 +113,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	 */
 	public function maybe_record_resubscribe( $new_subscription, $order, $recurring_cart ) {
 
-		$cart_item = wcs_cart_contains_resubscribe( $recurring_cart );
+		$cart_item = $this->cart_contains( $recurring_cart );
 
 		if ( false !== $cart_item ) {
 			update_post_meta( $order->id, '_subscription_resubscribe', $cart_item[ $this->cart_item_key ]['subscription_id'], true );
@@ -177,9 +177,9 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 		if ( false === $is_purchasable && false === WC_Subscriptions_Product::is_purchasable( $is_purchasable, $product ) ) {
 
 			// Validating when restoring cart from session
-			if ( false !== wcs_cart_contains_resubscribe() ) {
+			if ( false !== $this->cart_contains() ) {
 
-				$resubscribe_cart_item = wcs_cart_contains_resubscribe();
+				$resubscribe_cart_item = $this->cart_contains();
 				$subscription          = wcs_get_subscription( $resubscribe_cart_item['subscription_resubscribe']['subscription_id'] );
 
 				if ( $subscription->has_product( $product->id ) ) {
@@ -206,6 +206,18 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 		}
 
 		return $is_purchasable;
+	}
+
+	/**
+	 * Checks the cart to see if it contains a subscription resubscribe item.
+	 *
+	 * @see wcs_cart_contains_resubscribe()
+	 * @param WC_Cart $cart The cart object to search in.
+	 * @return bool | Array The cart item containing the renewal, else false.
+	 * @since  2.0.10
+	 */
+	protected function cart_contains( $cart = '' ) {
+		return wcs_cart_contains_resubscribe( $cart );
 	}
 }
 new WCS_Cart_Resubscribe();
