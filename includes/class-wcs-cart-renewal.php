@@ -263,7 +263,7 @@ class WCS_Cart_Renewal {
 	 */
 	public function set_renewal_discounts( $cart ) {
 
-		$cart_item = wcs_cart_contains_renewal();
+		$cart_item = $this->cart_contains();
 
 		if ( $cart_item ) {
 
@@ -283,7 +283,7 @@ class WCS_Cart_Renewal {
 	 */
 	public function get_discounted_price_for_renewal( $price, $cart_item, $cart ) {
 
-		$cart_item = wcs_cart_contains_renewal();
+		$cart_item = $this->cart_contains();
 
 		if ( $cart_item ) {
 			$original_order_id = $cart_item[ $this->cart_item_key ]['subscription_id'];
@@ -301,7 +301,7 @@ class WCS_Cart_Renewal {
 	 */
 	public function maybe_update_subscription_customer_data( $update_customer_data, $checkout_object ) {
 
-		$cart_renewal_item = wcs_cart_contains_renewal();
+		$cart_renewal_item = $this->cart_contains();
 
 		if ( false !== $cart_renewal_item ) {
 
@@ -343,7 +343,7 @@ class WCS_Cart_Renewal {
 		if ( false === $is_purchasable && false === WC_Subscriptions_Product::is_purchasable( $is_purchasable, $product ) ) {
 
 			// Adding to cart from the product page or paying for a renewal
-			if ( isset( $_GET[ $this->cart_item_key ] ) || isset( $_GET['subscription_renewal'] ) || wcs_cart_contains_renewal() ) {
+			if ( isset( $_GET[ $this->cart_item_key ] ) || isset( $_GET['subscription_renewal'] ) || $this->cart_contains() ) {
 
 				$is_purchasable = true;
 
@@ -500,6 +500,18 @@ class WCS_Cart_Renewal {
 				WC()->session->set( 'order_awaiting_payment', WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['renewal_order_id'] );
 			}
 		}
+	}
+
+	/**
+	 * Checks the cart to see if it contains a subscription renewal item.
+	 *
+	 * @see wcs_cart_contains_renewal()
+	 * @param WC_Cart $cart The cart object to search in.
+	 * @return bool | Array The cart item containing the renewal, else false.
+	 * @since  2.0.10
+	 */
+	public function cart_contains( $cart = '' ) {
+		return wcs_cart_contains_renewal();
 	}
 }
 new WCS_Cart_Renewal();
