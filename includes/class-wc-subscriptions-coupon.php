@@ -78,7 +78,7 @@ class WC_Subscriptions_Coupon {
 		$product_id = ( $cart_item['data']->is_type( array( 'subscription_variation' ) ) ) ? $cart_item['data']->variation_id : $cart_item['data']->id;
 
 		// If not a subscription product return the default discount
-		if ( ! wcs_cart_contains_renewal() && ! WC_Subscriptions_Product::is_subscription( $product_id ) ) {
+		if ( ! wcs_cart_contains_renewal() && ! WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 			return $discount;
 		}
 		// But if cart contains a renewal, we need to handle both subscription products and manually added non-susbscription products that could be part of a subscription
