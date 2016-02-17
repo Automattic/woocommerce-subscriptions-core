@@ -380,7 +380,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 			$period = strtolower( $data['billing_period'] );
 
 			if ( ! in_array( $period, array_keys( wcs_get_subscription_period_strings() ) ) ) {
-				throw new WC_API_Exception( 'wcs_api_invalid_subscription_meta', __( 'Invalid subscription billing period given.', 'woocommerce-subscriptions' ), 400 );
+				throw new WC_API_Exception( 'wcs_api_invalid_subscription_meta', __( 'Invalid Subscription billing period given.', 'woocommerce-subscriptions' ), 400 );
 			}
 
 			update_post_meta( $subscription->id, '_billing_period', $period );
