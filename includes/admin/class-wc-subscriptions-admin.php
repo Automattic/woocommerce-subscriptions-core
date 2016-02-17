@@ -1083,7 +1083,7 @@ class WC_Subscriptions_Admin {
 			),
 
 			array(
-				'name'          => __( 'Drip downloadable content', 'woocommerce-subscriptions' ),
+				'name'          => __( 'Drip Downloadable Content', 'woocommerce-subscriptions' ),
 				'desc'          => __( 'Enable dripping for downloadable content on subscription products.', 'woocommerce-subscriptions' ),
 				'id'            => self::$option_prefix . '_drip_downloadable_content_on_renewal',
 				'default'       => 'no',
