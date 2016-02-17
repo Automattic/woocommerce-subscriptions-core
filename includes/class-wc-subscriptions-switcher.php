@@ -1862,8 +1862,8 @@ class WC_Subscriptions_Switcher {
 
 		if ( isset( $_POST['woocommerce_pay'] ) && isset( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'woocommerce-pay' ) ) {
 
-			$order_id   = absint( $wp->query_vars['order-pay'] );
-			$order      = wc_get_order( $order_id );
+			$order_id = absint( $wp->query_vars['order-pay'] );
+			$order    = wc_get_order( $order_id );
 
 			if ( wcs_order_contains_switch( $order ) ) {
 
@@ -1872,8 +1872,8 @@ class WC_Subscriptions_Switcher {
 				try {
 					self::complete_subscription_switches( $order_id );
 				} catch ( Exception $e ) {
-					wc_add_notice( 'The following error has occurred attempting to perform this switch:', 'error' );
-					wc_add_notice( '&#8226; ' . $e->getMessage(), 'error' );
+					wc_add_notice( __( 'The following error has occurred attempting to perform this switch:', 'woocommerce-subscriptions' ), 'error' );
+					wc_add_notice( $e->getMessage(), 'error' );
 				}
 
 				$wpdb->query( 'ROLLBACK' );
