@@ -145,7 +145,7 @@ class WC_Subscriptions_Admin {
 			'class'       => 'wc_input_subscription_price',
 			// translators: placeholder is a currency symbol / code
 			'label'       => sprintf( __( 'Subscription Price (%s)', 'woocommerce-subscriptions' ), get_woocommerce_currency_symbol() ),
-			'placeholder' => _x( 'e.g. 5.90', 'example price', 'woocommerce-subscriptions' ),
+			'placeholder' => _x( 'e.g. 9.90', 'example price', 'woocommerce-subscriptions' ),
 			'type'        => 'text',
 			'custom_attributes' => array(
 					'step' => 'any',
