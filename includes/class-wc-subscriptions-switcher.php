@@ -1796,7 +1796,7 @@ class WC_Subscriptions_Switcher {
 					$old_order_item = wcs_get_order_item( $subscription_item_id, $subscription );
 
 					if ( empty( $old_order_item ) ) {
-						throw new Exception( 'The original subscription item being switched cannot be found.' );
+						throw new Exception( __( 'The original subscription item being switched cannot be found.', 'woocommerce-subscriptions' ) );
 					} else {
 
 						// We dont want to include switch item meta in order item name
@@ -1827,7 +1827,7 @@ class WC_Subscriptions_Switcher {
 					) );
 
 					if ( ! $item_id || empty( $shipping_line_item['method_id'] ) || empty( $shipping_line_item['cost'] ) || empty( $shipping_line_item['taxes'] ) ) {
-						throw new Exception( 'Failed to update the subscription shipping method.' );
+						throw new Exception( __( 'Failed to update the subscription shipping method.', 'woocommerce-subscriptions' ) );
 					}
 
 					// Add shipping order item meta
