@@ -58,7 +58,7 @@ class WCS_Meta_Box_Related_Orders {
 
 		// First, display all the subscriptions
 		foreach ( $subscriptions as $subscription ) {
-			$subscription->relationship = _x( 'Subscription', 'relation to order', 'woocommerce-subscriptions' );
+			$subscription->relationship = __( 'Subscription', 'woocommerce-subscriptions' );
 			$orders[] = $subscription;
 		}
 

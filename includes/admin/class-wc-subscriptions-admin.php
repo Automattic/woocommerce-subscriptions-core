@@ -143,7 +143,7 @@ class WC_Subscriptions_Admin {
 		woocommerce_wp_text_input( array(
 			'id'          => '_subscription_price',
 			'class'       => 'wc_input_subscription_price',
-			// translators: %s is a currency symbol / code
+			// translators: placeholder is a currency symbol / code
 			'label'       => sprintf( __( 'Subscription Price (%s)', 'woocommerce-subscriptions' ), get_woocommerce_currency_symbol() ),
 			'placeholder' => _x( 'e.g. 5.90', 'example price', 'woocommerce-subscriptions' ),
 			'type'        => 'text',
