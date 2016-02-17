@@ -164,7 +164,6 @@ class WC_Subscriptions_Synchroniser {
 				'desc'          => __( 'If a subscription is synchronised to a specific day of the week, month or year, charge a prorated amount for the subscription at the time of sign up.', 'woocommerce-subscriptions' ),
 				'id'            => self::$setting_id_proration,
 				'css'           => 'min-width:150px;',
-				'css'           => 'min-width:150px;',
 				'default'       => 'no',
 				'type'          => 'select',
 				'options'       => array(
