@@ -1826,7 +1826,7 @@ class WC_Subscriptions_Switcher {
 		_deprecated_function( __METHOD__, '2.0' );
 
 		if ( 'switched' === strtolower( $status_string ) ) {
-			$status_string = __( 'Switched', 'woocommerce-subscriptions' );
+			$status_string = _x( 'Switched', 'Subscription status', 'woocommerce-subscriptions' );
 		}
 
 		return $status_string;
