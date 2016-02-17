@@ -216,7 +216,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	 * @return bool | Array The cart item containing the renewal, else false.
 	 * @since  2.0.10
 	 */
-	public function cart_contains( $cart = '' ) {
+	protected function cart_contains( $cart = '' ) {
 		return wcs_cart_contains_resubscribe( $cart );
 	}
 }

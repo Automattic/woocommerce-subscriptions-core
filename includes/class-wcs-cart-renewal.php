@@ -506,11 +506,10 @@ class WCS_Cart_Renewal {
 	 * Checks the cart to see if it contains a subscription renewal item.
 	 *
 	 * @see wcs_cart_contains_renewal()
-	 * @param WC_Cart $cart The cart object to search in.
 	 * @return bool | Array The cart item containing the renewal, else false.
 	 * @since  2.0.10
 	 */
-	public function cart_contains( $cart = '' ) {
+	protected function cart_contains() {
 		return wcs_cart_contains_renewal();
 	}
 }
