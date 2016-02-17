@@ -1740,7 +1740,7 @@ class WC_Subscriptions_Manager {
 		if ( $args['include_buttons'] ) {
 			$touch_time .= '<p>';
 			$touch_time .= '<a href="#edit_timestamp" class="save-timestamp hide-if-no-js button">' . __( 'Change', 'woocommerce-subscriptions' ) . '</a>';
-			$touch_time .= '<a href="#edit_timestamp" class="cancel-timestamp hide-if-no-js">' . __( 'Cancel', 'woocommerce-subscriptions' ) . '</a>';
+			$touch_time .= '<a href="#edit_timestamp" class="cancel-timestamp hide-if-no-js">' . _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ) . '</a>';
 			$touch_time .= '</p>';
 		}
 
