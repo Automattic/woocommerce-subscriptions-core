@@ -134,7 +134,7 @@ class WCS_Admin_Reports {
 	 *
 	 * @since 2.1
 	 */
-	public static function conditional_reporting_includes( $subscription, $new_status, $old_status ) {
+	public static function conditional_reporting_includes() {
 
 		$screen = get_current_screen();
 
