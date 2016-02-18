@@ -29,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			echo woocommerce_wp_select( array(
 				'id'          => '_billing_period',
 				'class'       => 'billing_period',
-				'label'       => __( 'Billing Period:', 'woocommerce-subscriptions' ),
+				'label'       => __( 'Billing Period', 'woocommerce-subscriptions' ),
 				'value'       => empty( $the_subscription->billing_period ) ? 'month' : $the_subscription->billing_period,
 				'options'     => wcs_get_subscription_period_strings(),
 				)
