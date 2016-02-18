@@ -167,7 +167,7 @@ class WC_Subscriptions_Synchroniser {
 				'default'       => 'no',
 				'type'          => 'select',
 				'options'       => array(
-					'no'           => _x( 'Never', 'when to prorate first payment when synching', 'woocommerce-subscriptions' ),
+					'no'           => _x( 'Never', 'when to allow a setting', 'woocommerce-subscriptions' ),
 					'virtual'      => _x( 'For Virtual Subscription Products Only', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
 					'yes'          => _x( 'For All Subscription Products', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
 				),
