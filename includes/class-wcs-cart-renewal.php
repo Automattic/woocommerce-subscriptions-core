@@ -243,7 +243,7 @@ class WCS_Cart_Renewal {
 						}
 
 						// Store the coupon info for later
-						$this->store_coupons( $subscription->id, $coupon );
+						$this->store_coupon( $subscription->id, $coupon );
 
 						// Add the coupon to the cart - the actually coupon values / data are grabbed when needed later
 						if ( WC()->cart && ! WC()->cart->has_discount( $coupon_code ) ) {
@@ -266,7 +266,7 @@ class WCS_Cart_Renewal {
 				}
 
 				// Store the coupon info for later
-				$this->store_coupons( $subscription->id, $coupon );
+				$this->store_coupon( $subscription->id, $coupon );
 
 				// Add the coupon to the cart
 				if ( WC()->cart && ! WC()->cart->has_discount( 'discount_renewal' ) ) {
@@ -653,7 +653,7 @@ class WCS_Cart_Renewal {
 	 * @param  object $coupon coupon
 	 * @since 2.0.9
 	 */
-	protected function store_coupons( $subscription_id, $coupon ) {
+	protected function store_coupon( $subscription_id, $coupon ) {
 		if ( ! empty( $subscription_id ) && ! empty( $coupon ) ) {
 
 			$renewal_coupons = array();
