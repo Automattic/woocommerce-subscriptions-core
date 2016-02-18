@@ -47,6 +47,8 @@ function wcs_cart_totals_shipping_html() {
 			// Don't remove any subscriptions with a free trial from the shipping packages
 			foreach ( $packages as $i => $base_package ) {
 
+				$product_names = array();
+
 				$package = WC()->shipping->calculate_shipping_for_package( $base_package );
 
 				foreach ( $package['contents'] as $item_id => $values ) {
