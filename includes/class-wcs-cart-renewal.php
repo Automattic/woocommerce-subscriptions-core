@@ -525,7 +525,7 @@ class WCS_Cart_Renewal {
 	 */
 	public function maybe_add_subscription_fees( $cart ) {
 
-		if ( wcs_cart_contains_renewal() || wcs_cart_contains_resubscribe() ) {
+		if ( $this->cart_contains() ) {
 			$subscriptions = array();
 
 			foreach ( $cart->cart_contents as $cart_item ) {
