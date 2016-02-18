@@ -656,13 +656,7 @@ class WCS_Cart_Renewal {
 	protected function store_coupon( $subscription_id, $coupon ) {
 		if ( ! empty( $subscription_id ) && ! empty( $coupon ) ) {
 
-			$renewal_coupons = array();
-
-			$session_renewal_coupons = WC()->session->get( 'wcs_renewal_coupons' );
-
-			if ( ! empty( $session_renewal_coupons ) ) {
-				$renewal_coupons = WC()->session->get( 'wcs_renewal_coupons' );
-			}
+			$renewal_coupons = WC()->session->get( 'wcs_renewal_coupons', array() );
 
 			$renewal_coupons[ $coupon->code ] = $coupon;
 
