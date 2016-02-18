@@ -596,7 +596,7 @@ class WCS_Cart_Renewal {
 			return $data;
 		}
 
-		foreach ( $renewal_coupons as $subscription_id => $coupon ) {
+		foreach ( $renewal_coupons as $coupon ) {
 
 			// Tweak the coupon data for renewal coupons
 			if ( $code == $coupon->code ) {
@@ -664,7 +664,7 @@ class WCS_Cart_Renewal {
 				$renewal_coupons = WC()->session->get( 'wcs_renewal_coupons' );
 			}
 
-			$renewal_coupons[ $subscription_id ] = $coupon;
+			$renewal_coupons[ $coupon->code ] = $coupon;
 
 			WC()->session->set( 'wcs_renewal_coupons', $renewal_coupons );
 		}
@@ -681,7 +681,7 @@ class WCS_Cart_Renewal {
 
 		// Remove the coupons from the cart
 		if ( ! empty( $renewal_coupons ) ) {
-			foreach ( $renewal_coupons as $subscription_id => $coupon ) {
+			foreach ( $renewal_coupons as $coupon ) {
 				WC()->cart->remove_coupons( $coupon->code );
 			}
 		}
