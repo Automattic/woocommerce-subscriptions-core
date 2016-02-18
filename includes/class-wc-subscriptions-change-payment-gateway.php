@@ -190,7 +190,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 			} elseif ( empty( $subscription ) ) {
 
-				WC_Subscriptions::add_notice( __( 'Invalid subscription.', 'woocommerce-subscriptions' ), 'error' );
+				WC_Subscriptions::add_notice( __( 'Invalid Subscription.', 'woocommerce-subscriptions' ), 'error' );
 
 			} elseif ( ! current_user_can( 'edit_shop_subscription_payment_method', $subscription->id ) ) {
 

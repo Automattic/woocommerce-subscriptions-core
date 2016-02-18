@@ -271,7 +271,7 @@ function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 		if ( $subscription->can_be_updated_to( 'cancelled' ) && $subscription->get_time( 'next_payment' ) > 0 ) {
 			$actions['cancel'] = array(
 				'url'  => wcs_get_users_change_status_link( $subscription->id, 'cancelled' ),
-				'name' => __( 'Cancel', 'woocommerce-subscriptions' ),
+				'name' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
 			);
 		}
 	}
