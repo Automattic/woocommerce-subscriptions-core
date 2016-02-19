@@ -70,19 +70,98 @@ class WCS_Admin_Post_Types {
 			return $pieces;
 		}
 
-		// we need to name ID again due to name conflict if we don't
-		$pieces['fields'] .= ", {$wpdb->posts}.ID AS original_id, {$wpdb->posts}.post_parent AS original_parent, CASE (SELECT COUNT(*) FROM {$wpdb->postmeta} WHERE meta_key = '_subscription_renewal' AND meta_value = original_id)
-			WHEN 0 THEN CASE (SELECT COUNT(*) FROM {$wpdb->posts} WHERE ID = original_parent)
-				WHEN 0 THEN 0
-				ELSE (SELECT post_date_gmt FROM {$wpdb->posts} WHERE ID = original_parent)
-				END
-			ELSE (SELECT p.post_date_gmt FROM {$wpdb->postmeta} pm LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id WHERE pm.meta_key = '_subscription_renewal' AND meta_value = original_id ORDER BY p.post_date_gmt DESC LIMIT 1)
-			END
-			AS last_payment";
+		// Let's check whether we even have the privileges to do the things we want to do
+		if ( $this->is_db_user_privileged() ) {
+			$pieces = self::posts_clauses_high_performance( $pieces );
+		} else {
+			$pieces = self::posts_clauses_low_performance( $pieces );
+		}
 
 		$order = strtoupper( $query->query['order'] );
 
-		$pieces['orderby'] = "CAST(last_payment AS DATETIME) {$order}";
+		// fields and order are identical in both cases
+		$pieces['fields'] .= ', COALESCE(lp.last_payment, o.post_date_gmt, 0) as lp';
+		$pieces['orderby'] = "CAST(lp AS DATETIME) {$order}";
+
+		return $pieces;
+	}
+
+	/**
+	 * Check is database user is capable of doing high performance things, such as creating temporary tables,
+	 * indexing them, and then dropping them after.
+	 *
+	 * @return bool
+	 */
+	public function is_db_user_privileged() {
+		$permissions = $this->get_special_database_privileges();
+
+		return ( in_array( 'CREATE TEMPORARY TABLES', $permissions ) && in_array( 'INDEX', $permissions ) && in_array( 'DROP', $permissions ) );
+	}
+
+	/**
+	 * Return the privileges a database user has out of CREATE TEMPORARY TABLES, INDEX and DROP. This is so we can use
+	 * these discrete values on a debug page.
+	 *
+	 * @return array
+	 */
+	public function get_special_database_privileges() {
+		global $wpdb;
+
+		$permissions = $wpdb->get_col( "SELECT PRIVILEGE_TYPE FROM information_schema.user_privileges WHERE GRANTEE = CONCAT( '''', REPLACE( CURRENT_USER(), '@', '''@''' ), '''' ) AND PRIVILEGE_TYPE IN ('CREATE TEMPORARY TABLES', 'INDEX', 'DROP')" );
+
+		return $permissions;
+	}
+
+	/**
+	 * Modifies the query for a slightly faster, yet still pretty slow query in case the user does not have
+	 * the necessary privileges to run
+	 *
+	 * @param $pieces
+	 *
+	 * @return mixed
+	 */
+	private function posts_clauses_low_performance( $pieces ) {
+		global $wpdb;
+
+		$pieces['join'] .= "LEFT JOIN
+				(SELECT
+					MAX( p.post_date_gmt ) as last_payment,
+					pm.meta_value
+				FROM {$wpdb->postmeta} pm
+				LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+				WHERE pm.meta_key = '_subscription_renewal'
+				GROUP BY pm.meta_value) lp
+			ON {$wpdb->posts}.ID = lp.meta_value
+			LEFT JOIN {$wpdb->posts} o on {$wpdb->posts}.post_parent = o.ID";
+
+		return $pieces;
+	}
+
+	/**
+	 * Modifies the query in such a way that makes use of the CREATE TEMPORARY TABLE, DROP and INDEX
+	 * MySQL privileges.
+	 *
+	 * @param array $pieces
+	 *
+	 * @return array $pieces
+	 */
+	private function posts_clauses_high_performance( $pieces ) {
+		global $wpdb;
+
+		// in case multiple users sort at the same time
+		$session = wp_get_session_token();
+
+		$table_name = substr( "{$wpdb->prefix}tmp_{$session}_lastpayment", 0, 64 );
+
+		// Let's create a temporary table, drop the previous one, because otherwise this query is hella slow
+		$wpdb->query( "DROP TEMPORARY TABLE IF EXISTS {$table_name}" );
+
+		$wpdb->query( "CREATE TEMPORARY TABLE {$table_name} (id INT, INDEX USING BTREE (id), last_payment DATETIME) AS SELECT pm.meta_value as id, MAX( p.post_date_gmt ) as last_payment FROM {$wpdb->postmeta} pm LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id WHERE pm.meta_key = '_subscription_renewal' GROUP BY pm.meta_value" );
+		// Magic ends here
+
+		$pieces['join'] .= "LEFT JOIN {$table_name} lp
+			ON {$wpdb->posts}.ID = lp.id
+			LEFT JOIN {$wpdb->posts} o on {$wpdb->posts}.post_parent = o.ID";
 
 		return $pieces;
 	}
