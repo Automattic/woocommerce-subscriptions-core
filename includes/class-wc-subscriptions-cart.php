@@ -355,6 +355,11 @@ class WC_Subscriptions_Cart {
 
 		parse_str( $_POST['post_data'], $form_data );
 
+		// In case we have only free trials/sync'd products in the cart and shipping methods aren't being displayed
+		if ( ! isset( $_POST['shipping_method'] ) ) {
+			$_POST['shipping_method'] = array();
+		}
+
 		foreach ( $form_data['shipping_method'] as $key => $methods ) {
 			if ( ! is_numeric( $key ) && ! array_key_exists( $key, $_POST['shipping_method'] ) ) {
 				$_POST['shipping_method'][ $key ] = $methods;
@@ -453,6 +458,10 @@ class WC_Subscriptions_Cart {
 					if ( $trial_length > 0 ) {
 						unset( $packages[ $index ]['contents'][ $cart_item_key ] );
 					}
+				}
+
+				if ( empty( $packages[ $index ]['contents'] ) ) {
+					unset( $packages[ $index ] );
 				}
 			}
 		} elseif ( 'recurring_total' == self::$calculation_type ) {
