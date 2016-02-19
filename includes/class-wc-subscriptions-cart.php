@@ -50,9 +50,6 @@ class WC_Subscriptions_Cart {
 		// Remove any subscriptions with a free trial from the initial shipping packages
 		add_filter( 'woocommerce_cart_shipping_packages', __CLASS__ . '::set_cart_shipping_packages', -10, 1 );
 
-		// Don't display shipping prices if the initial order won't require shipping (i.e. all the products in the cart are subscriptions with a free trial or synchronised to a date in the future)
-		add_action( 'woocommerce_cart_shipping_method_full_label', __CLASS__ . '::get_cart_shipping_method_full_label', 10, 2 );
-
 		// Display Formatted Totals
 		add_filter( 'woocommerce_cart_product_subtotal', __CLASS__ . '::get_formatted_product_subtotal', 11, 4 );
 
@@ -528,21 +525,6 @@ class WC_Subscriptions_Cart {
 	/*
 	 * Helper functions for extracting the details of subscriptions in the cart
 	 */
-
-	/**
-	 * Don't display shipping prices if the initial order won't require shipping (i.e. all the products in the cart are subscriptions with a free trial or synchronised to a date in the future)
-	 *
-	 * @return string Label for a shipping method
-	 * @since 1.3
-	 */
-	public static function get_cart_shipping_method_full_label( $label, $method ) {
-
-		if ( ! self::charge_shipping_up_front() ) {
-			$label = $method->label;
-		}
-
-		return $label;
-	}
 
 	/**
 	 * Checks the cart to see if it contains a subscription product.
@@ -1852,6 +1834,22 @@ class WC_Subscriptions_Cart {
 		if ( 'recurring_total' != self::$calculation_type ) {
 			WC()->cart->coupon_discount_amounts[ $code ] += $amount;
 		}
+	}
+
+	/**
+	 * Don't display shipping prices if the initial order won't require shipping (i.e. all the products in the cart are subscriptions with a free trial or synchronised to a date in the future)
+	 *
+	 * @return string Label for a shipping method
+	 * @since 1.3
+	 */
+	public static function get_cart_shipping_method_full_label( $label, $method ) {
+		_deprecated_function( __METHOD__, '2.0.10' );
+
+		if ( ! self::charge_shipping_up_front() ) {
+			$label = $method->label;
+		}
+
+		return $label;
 	}
 
 	/**
