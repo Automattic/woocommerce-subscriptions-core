@@ -36,6 +36,8 @@ function wcs_cart_totals_shipping_html() {
 
 	$recurring_cart_count = count( WC()->cart->recurring_carts );
 
+	$show_package_name = true;
+
 	// Create new subscriptions for each subscription product in the cart (that is not a renewal)
 	foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
 
@@ -64,9 +66,9 @@ function wcs_cart_totals_shipping_html() {
 					// packages match, display shipping amounts only
 					?>
 					<tr class="shipping recurring-total">
-						<th><?php echo esc_html( wcs_cart_price_string( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ), $recurring_cart ) ); ?></th>
+						<th><?php echo esc_html( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ) ); ?></th>
 						<td>
-							<?php echo wp_kses_post( wcs_cart_totals_shipping_method( $shipping_method, $recurring_cart ) ); ?>
+							<?php echo wp_kses_post( wcs_cart_price_string( $shipping_method->cost, $recurring_cart ) ); ?>
 							<?php echo '<p class="woocommerce-shipping-contents"><small>' . esc_html( $package_details ) . '</small></p>'; ?>
 						</td>
 					</tr>
@@ -75,7 +77,11 @@ function wcs_cart_totals_shipping_html() {
 					// Display the options
 					$product_names = array();
 
-					$package_name = apply_filters( 'wcs_cart_shipping_package_name', apply_filters( 'woocommerce_shipping_package_name', wcs_cart_price_string( __( 'Shipping', 'woocommerce-subscriptions' ), $recurring_cart ), $i, $package ), $recurring_cart_count, $recurring_cart );
+					if ( $show_package_name ) {
+						$package_name = apply_filters( 'woocommerce_shipping_package_name', sprintf( _n( 'Shipping', 'Shipping %d', ( $i + 1 ), 'woocommerce' ), ( $i + 1 ) ), $i, $package );
+					} else {
+						$package_name = '';
+					}
 
 					wc_get_template( 'cart/cart-recurring-shipping.php', array(
 							'package'              => $package,
@@ -86,10 +92,12 @@ function wcs_cart_totals_shipping_html() {
 							'index'                => $i,
 							'chosen_method'        => $chosen_recurring_method,
 							'recurring_cart_key'   => $recurring_cart_key,
+							'recurring_cart'       => $recurring_cart,
 						),
 						'',
 						plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/'
 					);
+					$show_package_name = false;
 				}
 			}
 		}
@@ -103,21 +111,23 @@ function wcs_cart_totals_shipping_html() {
  */
 function wcs_cart_totals_shipping_method( $method, $cart ) {
 
+	$label = $method->get_label();
+
 	if ( $method->cost > 0 ) {
 
 		if ( WC()->cart->tax_display_cart == 'excl' ) {
-			$label = wcs_cart_price_string( $method->cost, $cart );
+			$label .= ': ' . wcs_cart_price_string( $method->cost, $cart );
 			if ( $method->get_shipping_tax() > 0 && $cart->prices_include_tax ) {
 				$label .= ' <small>' . WC()->countries->ex_tax_or_vat() . '</small>';
 			}
 		} else {
-			$label = wcs_cart_price_string( $method->cost + $method->get_shipping_tax(), $cart );
+			$label .= ': ' . wcs_cart_price_string( $method->cost + $method->get_shipping_tax(), $cart );
 			if ( $method->get_shipping_tax() > 0 && ! $cart->prices_include_tax ) {
 				$label .= ' <small>' . WC()->countries->inc_tax_or_vat() . '</small>';
 			}
 		}
 	} else {
-		$label = _x( 'Free', 'shipping method price', 'woocommerce-subscriptions' );
+		$label .= ': ' . _x( 'Free', 'shipping method price', 'woocommerce-subscriptions' );
 	}
 
 	return apply_filters( 'wcs_cart_totals_shipping_method', $label, $method, $cart );
