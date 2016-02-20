@@ -184,9 +184,15 @@ function wcs_get_users_subscriptions( $user_id = 0 ) {
  * @since 1.0
  */
 function wcs_get_users_change_status_link( $subscription_id, $status ) {
+	$subscription = wcs_get_subscription( $subscription_id );
+
+	$current_status = '';
+	if ( $subscription instanceof WC_Subscription ) {
+		$current_status = $subscription->get_status();
+	}
 
 	$action_link = add_query_arg( array( 'subscription_id' => $subscription_id, 'change_subscription_to' => $status ) );
-	$action_link = wp_nonce_url( $action_link, $subscription_id );
+	$action_link = wp_nonce_url( $action_link, $subscription_id . $current_status );
 
 	return apply_filters( 'wcs_users_change_status_link', $action_link, $subscription_id, $status );
 }
