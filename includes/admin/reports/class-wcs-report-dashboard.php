@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-class WCS_Report_Subscription_Dashboard {
+class WCS_Report_Dashboard {
 
 	/**
 	 * Hook in additional reporting to WooCommerce dashboard widget
@@ -36,53 +36,42 @@ class WCS_Report_Subscription_Dashboard {
 	 * @since 2.1
 	 */
 	public static function add_stats_to_dashboard() {
-
 		global $wpdb;
 
-		$transient_name = 'wcs_signup_count';
-		if ( false === ( $signup_count = get_transient( $transient_name ) ) ) {
-			$query = $wpdb->prepare(
-				"SELECT COUNT(DISTINCT wcsubs.ID) AS count
-					FROM {$wpdb->posts} AS wcsubs
-					INNER JOIN {$wpdb->posts} AS wcorder
-						ON wcsubs.post_parent = wcorder.ID
-					WHERE wcorder.post_type IN ( 'shop_order' )
-						AND wcsubs.post_type IN ( 'shop_subscription' )
-						AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
-						AND wcorder.post_date >= '%s'
-						AND wcorder.post_date < '%s'",
-				date( 'Y-m-01', current_time( 'timestamp' ) ),
-				date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
-			);
+		$query = $wpdb->prepare(
+			"SELECT COUNT(DISTINCT wcsubs.ID) AS count
+				FROM {$wpdb->posts} AS wcsubs
+				INNER JOIN {$wpdb->posts} AS wcorder
+					ON wcsubs.post_parent = wcorder.ID
+				WHERE wcorder.post_type IN ( 'shop_order' )
+					AND wcsubs.post_type IN ( 'shop_subscription' )
+					AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
+					AND wcorder.post_date >= '%s'
+					AND wcorder.post_date < '%s'",
+			date( 'Y-m-01', current_time( 'timestamp' ) ),
+			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
+		);
 
-			$signup_count = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_signup_query', $query ) );
+		$signup_count = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_signup_query', $query ) );
 
-			set_transient( $transient_name, $signup_count, DAY_IN_SECONDS * 30 );
-		}
+		$query = $wpdb->prepare(
+			"SELECT COUNT(DISTINCT wcorder.ID) AS count
+				FROM {$wpdb->posts} AS wcorder
+				INNER JOIN {$wpdb->postmeta} AS meta__subscription_renewal
+					ON (
+						wcorder.id = meta__subscription_renewal.post_id
+						AND
+						meta__subscription_renewal.meta_key = '_subscription_renewal'
+					)
+				WHERE wcorder.post_type IN ( 'shop_order' )
+					AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
+					AND wcorder.post_date >= '%s'
+					AND wcorder.post_date < '%s'",
+			date( 'Y-m-01', current_time( 'timestamp' ) ),
+			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
+		);
 
-		$transient_name = 'wcs_renewal_count';
-		if ( false === ( $renewal_count = get_transient( $transient_name ) ) ) {
-			$query = $wpdb->prepare(
-				"SELECT COUNT(DISTINCT wcorder.ID) AS count
-					FROM {$wpdb->posts} AS wcorder
-					INNER JOIN {$wpdb->postmeta} AS meta__subscription_renewal
-						ON (
-							wcorder.id = meta__subscription_renewal.post_id
-							AND
-							meta__subscription_renewal.meta_key = '_subscription_renewal'
-						)
-					WHERE wcorder.post_type IN ( 'shop_order' )
-						AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
-						AND wcorder.post_date >= '%s'
-						AND wcorder.post_date < '%s'",
-				date( 'Y-m-01', current_time( 'timestamp' ) ),
-				date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
-			);
-
-			$renewal_count = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_renewal_query', $query ) );
-
-			set_transient( $transient_name, $renewal_count, DAY_IN_SECONDS * 30 );
-		}
+		$renewal_count = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_renewal_query', $query ) );
 
 		?>
 		<li class="signup-count">
@@ -111,4 +100,4 @@ class WCS_Report_Subscription_Dashboard {
 	}
 }
 
-return new WCS_Report_Subscription_Dashboard();
+return new WCS_Report_Dashboard();
