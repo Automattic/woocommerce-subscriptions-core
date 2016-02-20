@@ -1566,7 +1566,13 @@ class WC_Subscriptions_Manager {
 
 		$subscription_id = wcs_get_subscription_id_from_key( $subscription_key );
 
-		return apply_filters( 'woocommerce_subscriptions_users_action_link', wcs_get_users_change_status_link( $subscription_id, $status ), $subscription_key, $status );
+		$current_status = '';
+		$subscription = wcs_get_subscription( $subscription_id );
+		if ( $subscription instanceof WC_Subscription ) {
+			$current_status = $subscription->get_status();
+		}
+
+		return apply_filters( 'woocommerce_subscriptions_users_action_link', wcs_get_users_change_status_link( $subscription_id, $status, $current_status ), $subscription_key, $status );
 	}
 
 	/**
