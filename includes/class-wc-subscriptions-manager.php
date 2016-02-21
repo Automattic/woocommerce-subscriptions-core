@@ -2319,7 +2319,7 @@ class WC_Subscriptions_Manager {
 			}
 		}
 
-		echo json_encode( $response );
+		echo wcs_json_encode( $response );
 
 		exit();
 	}
