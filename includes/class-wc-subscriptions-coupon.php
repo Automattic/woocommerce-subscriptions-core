@@ -433,15 +433,20 @@ class WC_Subscriptions_Coupon {
 
 		$subtotal = 0;
 
-		foreach ( $renewal_coupons as $subscription_id => $coupon ) {
+		foreach ( $renewal_coupons as $subscription_id => $coupon_array ) {
 
-			if ( $coupon->code == $code ) {
-				if ( $subscription = wcs_get_subscription( $subscription_id ) ) {
-					$subtotal = $subscription->get_subtotal();
+			foreach ( $coupon_array as $coupon ) {
+
+				if ( $coupon->code == $code ) {
+
+					if ( $subscription = wcs_get_subscription( $subscription_id ) ) {
+						$subtotal = $subscription->get_subtotal();
+					}
+					break;
 				}
-				break;
 			}
 		}
+
 		return $subtotal;
 	}
 

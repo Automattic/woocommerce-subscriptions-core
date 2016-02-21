@@ -596,28 +596,31 @@ class WCS_Cart_Renewal {
 			return $data;
 		}
 
-		foreach ( $renewal_coupons as $coupon ) {
+		foreach ( $renewal_coupons as $subscription_id => $coupon_array ) {
 
-			// Tweak the coupon data for renewal coupons
-			if ( $code == $coupon->code ) {
+			foreach ( $coupon_array as $coupon ) {
 
-				$data = array(
-					'discount_type'              => $coupon->type,
-					'coupon_amount'              => $coupon->amount,
-					'individual_use'             => ( $coupon->individual_use ) ? $coupon->individual_use : 'no',
-					'product_ids'                => ( $coupon->product_ids ) ? $coupon->product_ids : array(),
-					'exclude_product_ids'        => ( $coupon->exclude_product_ids ) ? $coupon->exclude_product_ids : array(),
-					'usage_limit'                => '',
-					'usage_count'                => '',
-					'expiry_date'                => '',
-					'free_shipping'              => ( $coupon->free_shipping ) ? $coupon->free_shipping : '',
-					'product_categories'         => ( $coupon->product_categories ) ? $coupon->product_categories : array(),
-					'exclude_product_categories' => ( $coupon->exclude_product_categories ) ? $coupon->exclude_product_categories : array(),
-					'exclude_sale_items'         => ( $coupon->exclude_sale_items ) ? $coupon->exclude_sale_items : 'no',
-					'minimum_amount'             => ( $coupon->minimum_amount ) ? $coupon->minimum_amount : '',
-					'maximum_amount'             => ( $coupon->maximum_amount ) ? $coupon->maximum_amount : '',
-					'customer_email'             => ( $coupon->customer_email ) ? $coupon->customer_email : array(),
-				);
+				// Tweak the coupon data for renewal coupons
+				if ( $code == $coupon->code ) {
+
+					$data = array(
+						'discount_type'              => $coupon->type,
+						'coupon_amount'              => $coupon->amount,
+						'individual_use'             => ( $coupon->individual_use ) ? $coupon->individual_use : 'no',
+						'product_ids'                => ( $coupon->product_ids ) ? $coupon->product_ids : array(),
+						'exclude_product_ids'        => ( $coupon->exclude_product_ids ) ? $coupon->exclude_product_ids : array(),
+						'usage_limit'                => '',
+						'usage_count'                => '',
+						'expiry_date'                => '',
+						'free_shipping'              => ( $coupon->free_shipping ) ? $coupon->free_shipping : '',
+						'product_categories'         => ( $coupon->product_categories ) ? $coupon->product_categories : array(),
+						'exclude_product_categories' => ( $coupon->exclude_product_categories ) ? $coupon->exclude_product_categories : array(),
+						'exclude_sale_items'         => ( $coupon->exclude_sale_items ) ? $coupon->exclude_sale_items : 'no',
+						'minimum_amount'             => ( $coupon->minimum_amount ) ? $coupon->minimum_amount : '',
+						'maximum_amount'             => ( $coupon->maximum_amount ) ? $coupon->maximum_amount : '',
+						'customer_email'             => ( $coupon->customer_email ) ? $coupon->customer_email : array(),
+					);
+				}
 			}
 		}
 		return $data;
@@ -658,7 +661,12 @@ class WCS_Cart_Renewal {
 
 			$renewal_coupons = WC()->session->get( 'wcs_renewal_coupons', array() );
 
-			$renewal_coupons[ $coupon->code ] = $coupon;
+			// Subscriptions may have multiple coupons, store coupons in array
+			if ( array_key_exists( $subscription_id, $renewal_coupons ) ) {
+				$renewal_coupons[ $subscription_id ][] = $coupon;
+			} else {
+				$renewal_coupons[ $subscription_id ] = array( $coupon );
+			}
 
 			WC()->session->set( 'wcs_renewal_coupons', $renewal_coupons );
 		}
@@ -675,8 +683,10 @@ class WCS_Cart_Renewal {
 
 		// Remove the coupons from the cart
 		if ( ! empty( $renewal_coupons ) ) {
-			foreach ( $renewal_coupons as $coupon ) {
-				WC()->cart->remove_coupons( $coupon->code );
+			foreach ( $renewal_coupons as $subscription_id => $coupon_array ) {
+				foreach ( $coupon_array as $coupon ) {
+					WC()->cart->remove_coupons( $coupon->code );
+				}
 			}
 		}
 
