@@ -222,7 +222,7 @@ class WCS_Cart_Renewal {
 							}
 
 							// Adjust coupon code to reflect that it is being applied to a renewal
-							$coupon_code = $coupon->code = $coupon->code . '_renew';
+							$coupon_code = $coupon->code;
 						}
 					} else {
 
@@ -231,7 +231,7 @@ class WCS_Cart_Renewal {
 						$coupon->amount = $coupon_item['item_meta']['discount_amount']['0'];
 
 						// Adjust coupon code to reflect that it is being applied to a renewal
-						$coupon_code = $coupon->code = $coupon->code . '_renew';
+						$coupon_code = $coupon->code;
 					}
 
 					// Now that we have a coupon we know we want to apply
