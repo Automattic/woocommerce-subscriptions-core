@@ -503,25 +503,7 @@ class WC_Subscription extends WC_Order {
 
 			$completed_payment_count = ( false !== $this->order && ( isset( $this->order->paid_date ) || $this->order->has_status( $this->get_paid_order_statuses() ) ) ) ? 1 : 0;
 
-			// not all gateways will call $order->payment_complete() so we need to find renewal orders with a paid status rather than just a _paid_date
-			$paid_status_renewal_orders = get_posts( array(
-				'posts_per_page' => -1,
-				'post_status'    => $this->get_paid_order_statuses(),
-				'post_type'      => 'shop_order',
-				'fields'         => 'ids',
-				'orderby'        => 'date',
-				'order'          => 'desc',
-				'meta_query'     => array(
-					array(
-						'key'     => '_subscription_renewal',
-						'compare' => '=',
-						'value'   => $this->id,
-						'type'    => 'numeric',
-					),
-				),
-			) );
-
-			// because some stores may be using custom order status plugins, we also can't rely on order status to find paid orders, so also check for a _paid_date
+			// Get all renewal orders - for large sites its more efficient to find the two different sets of renewal orders below using post__in than complicated meta queries
 			$renewal_orders = get_posts( array(
 				'posts_per_page'         => -1,
 				'post_status'            => 'any',
@@ -531,11 +513,23 @@ class WC_Subscription extends WC_Order {
 				'order'                  => 'desc',
 				'meta_key'               => '_subscription_renewal',
 				'meta_compare'           => '=',
+				'meta_type'              => 'numeric',
 				'meta_value'             => $this->id,
 				'update_post_term_cache' => false,
 			) );
 
-			// more efficient to find paid date renewal orders using post__in
+			// Not all gateways will call $order->payment_complete() so we need to find renewal orders with a paid status rather than just a _paid_date
+			$paid_status_renewal_orders = get_posts( array(
+				'posts_per_page' => -1,
+				'post_status'    => $this->get_paid_order_statuses(),
+				'post_type'      => 'shop_order',
+				'fields'         => 'ids',
+				'orderby'        => 'date',
+				'order'          => 'desc',
+				'post__in'       => $renewal_orders,
+			) );
+
+			// Some stores may be using custom order status plugins, we also can't rely on order status to find paid orders, so also check for a _paid_date
 			$paid_date_renewal_orders = get_posts( array(
 				'posts_per_page'         => -1,
 				'post_status'            => 'any',
