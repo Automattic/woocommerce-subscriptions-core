@@ -127,48 +127,48 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		*/
 		$query = $wpdb->prepare(
 			"SELECT searchdate.Date as date, COUNT( DISTINCT wcsubs.ID) as count
-  			FROM (
-          SELECT DATE_FORMAT(a.Date,'%%Y-%%m-%%d') as Date, 0 as cnt
-            FROM (
-              SELECT curdate() - INTERVAL (a.a + (10 * b.a) + (100 * c.a)) DAY as Date
-                FROM (
-                    SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2
-                    UNION ALL SELECT 3 UNION ALL SELECT 4
-                    UNION ALL SELECT 5 UNION ALL SELECT 6
-                    UNION ALL SELECT 7 UNION ALL SELECT 8
-                    UNION ALL SELECT 9
-              ) as a
-              CROSS JOIN (
-                   SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2
-                   UNION ALL SELECT 3 UNION ALL SELECT 4
-                   UNION ALL SELECT 5 UNION ALL SELECT 6
-                   UNION ALL SELECT 7 UNION ALL SELECT 8
-                   UNION ALL SELECT 9
-             ) as b
-              CROSS JOIN (
-                   SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2
-                   UNION ALL SELECT 3 UNION ALL SELECT 4
-                   UNION ALL SELECT 5 UNION ALL SELECT 6
-                   UNION ALL SELECT 7 UNION ALL SELECT 8
-                   UNION ALL SELECT 9
-              ) AS c
-            ) a
-            WHERE a.Date >= %s AND a.Date <= %s
-  			) searchdate
-			  LEFT JOIN	(
-  				wp_posts AS wcsubs
-  					JOIN wp_posts AS wcorder
-               ON wcsubs.post_parent = wcorder.ID
-              	AND wcorder.post_type IN ( 'shop_order' )
-              	AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
-  					LEFT JOIN wp_postmeta AS wcsmeta
-               ON wcsubs.ID = wcsmeta.post_id
-              	AND wcsmeta.meta_key = '_schedule_end'
-  			) ON DATE( wcsubs.post_date ) <= searchdate.Date
-        	AND wcsubs.post_type IN ( 'shop_subscription' )
-          AND ( DATE( wcsmeta.meta_value ) >= searchdate.Date
+				FROM (
+					SELECT DATE_FORMAT(a.Date,'%%Y-%%m-%%d') as Date, 0 as cnt
+					FROM (
+						SELECT curdate() - INTERVAL (a.a + (10 * b.a) + (100 * c.a)) DAY as Date
+						FROM (
+							SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2
+							UNION ALL SELECT 3 UNION ALL SELECT 4
+							UNION ALL SELECT 5 UNION ALL SELECT 6
+							UNION ALL SELECT 7 UNION ALL SELECT 8
+							UNION ALL SELECT 9
+						) as a
+						CROSS JOIN (
+							SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2
+							UNION ALL SELECT 3 UNION ALL SELECT 4
+							UNION ALL SELECT 5 UNION ALL SELECT 6
+							UNION ALL SELECT 7 UNION ALL SELECT 8
+							UNION ALL SELECT 9
+						) as b
+						CROSS JOIN (
+							SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2
+							UNION ALL SELECT 3 UNION ALL SELECT 4
+							UNION ALL SELECT 5 UNION ALL SELECT 6
+							UNION ALL SELECT 7 UNION ALL SELECT 8
+							UNION ALL SELECT 9
+						) AS c
+					) a
+					WHERE a.Date >= %s AND a.Date <= %s
+				) searchdate
+				LEFT JOIN	(
+					wp_posts AS wcsubs
+					JOIN wp_posts AS wcorder
+						ON wcsubs.post_parent = wcorder.ID
+							AND wcorder.post_type IN ( 'shop_order' )
+							AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
+					LEFT JOIN wp_postmeta AS wcsmeta
+						ON wcsubs.ID = wcsmeta.post_id
+							AND wcsmeta.meta_key = '_schedule_end'
+				) ON DATE( wcsubs.post_date ) <= searchdate.Date
+					AND wcsubs.post_type IN ( 'shop_subscription' )
+					AND ( DATE( wcsmeta.meta_value ) >= searchdate.Date
 						OR wcsmeta.meta_value = 0 )
-  			GROUP BY searchdate.Date
+				GROUP BY searchdate.Date
 				ORDER BY searchdate.Date ASC",
 			date( 'Y-m-d', $this->start_date ),
 			date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) )
