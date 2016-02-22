@@ -185,7 +185,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$this->report_data->total_signups  = absint( array_sum( wp_list_pluck( $this->report_data->signup_counts, 'count' ) ) );
 		$this->report_data->total_renewals = absint( array_sum( wp_list_pluck( $this->report_data->renewal_counts, 'count' ) ) );
 		$this->report_data->total_switches = absint( array_sum( wp_list_pluck( $this->report_data->switch_counts, 'count' ) ) );
-		$this->report_data->total_subs     = absint( end($this->report_data->subscriber_counts )->count );
+		$this->report_data->total_subs     = absint( end( $this->report_data->subscriber_counts )->count );
 
 	}
 
