@@ -189,7 +189,7 @@ class WCS_Cart_Renewal {
 	 * Check if a renewal order subscription has any coupons applied and if so add pseudo renewal coupon equivalents to ensure the discount is still applied
 	 *
 	 * @param object $subscription subscription
-	 * @since 2.0.9
+	 * @since 2.0.10
 	 */
 	public function maybe_setup_discounts( $subscription ) {
 
@@ -586,7 +586,7 @@ class WCS_Cart_Renewal {
 	 * @param array $data the coupon data
 	 * @param string $code the coupon code that data is being requested for
 	 * @return array the custom coupon data
-	 * @since 2.0.9
+	 * @since 2.0.10
 	 */
 	public function renewal_coupon_data( $data, $code ) {
 
@@ -631,7 +631,7 @@ class WCS_Cart_Renewal {
 	 *
 	 * @param  object $subscription subscription
 	 * @return array $product_ids an array of product ids on a subscription renewal order
-	 * @since 2.0.9
+	 * @since 2.0.10
 	 */
 	protected function get_products( $subscription ) {
 
@@ -654,7 +654,7 @@ class WCS_Cart_Renewal {
 	 *
 	 * @param  int $subscription_id subscription id
 	 * @param  object $coupon coupon
-	 * @since 2.0.9
+	 * @since 2.0.10
 	 */
 	protected function store_coupon( $subscription_id, $coupon ) {
 		if ( ! empty( $subscription_id ) && ! empty( $coupon ) ) {
@@ -675,7 +675,7 @@ class WCS_Cart_Renewal {
 	/**
 	 * Clear renewal coupons - protects against confusing customer facing notices if customers add one renewal order to the cart with a set of coupons and then decide to add another renewal order with a different set of coupons
 	 *
-	 * @since 2.0.9
+	 * @since 2.0.10
 	 */
 	public function clear_coupons() {
 
@@ -702,7 +702,7 @@ class WCS_Cart_Renewal {
 	 * @since 2.0
 	 */
 	public function set_renewal_discounts( $cart ) {
-		_deprecated_function( __METHOD__, '2.0.9', 'Applying original subscription discounts to renewals via cart are now handled within ' . __CLASS__ .'::maybe_setup_cart()' );
+		_deprecated_function( __METHOD__, '2.0.10', 'Applying original subscription discounts to renewals via cart are now handled within ' . __CLASS__ .'::maybe_setup_cart()' );
 	}
 
 	/**
@@ -713,7 +713,7 @@ class WCS_Cart_Renewal {
 	 * @since 2.0
 	 */
 	public function get_discounted_price_for_renewal( $price, $cart_item, $cart ) {
-		_deprecated_function( __METHOD__, '2.0.9', 'No longer required as of 1.3.5 as totals are calculated correctly internally.' );
+		_deprecated_function( __METHOD__, '2.0.10', 'No longer required as of 1.3.5 as totals are calculated correctly internally.' );
 	}
 }
 new WCS_Cart_Renewal();

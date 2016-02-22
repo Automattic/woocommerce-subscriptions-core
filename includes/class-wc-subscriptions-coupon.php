@@ -421,7 +421,7 @@ class WC_Subscriptions_Coupon {
 	 *
 	 * @param  string $code coupon code
 	 * @return array subtotal
-	 * @since 2.0.9
+	 * @since 2.0.10
 	 */
 	private static function get_renewal_subtotal( $code ) {
 
@@ -457,7 +457,7 @@ class WC_Subscriptions_Coupon {
 	 * @param  array  $cart_item
 	 * @param  WC_Cart  $cart The WooCommerce cart object.
 	 * @return boolean whether a product is a renewal order line item
-	 * @since 2.0.9
+	 * @since 2.0.10
 	 */
 	private static function is_subsbcription_renewal_line_item( $product_id, $cart_item ) {
 
