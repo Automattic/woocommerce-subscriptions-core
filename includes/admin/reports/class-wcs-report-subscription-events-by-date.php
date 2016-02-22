@@ -156,12 +156,12 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 					WHERE a.Date >= %s AND a.Date <= %s
 				) searchdate
 				LEFT JOIN	(
-					wp_posts AS wcsubs
-					JOIN wp_posts AS wcorder
+					{$wpdb->posts} AS wcsubs
+					JOIN {$wpdb->posts} AS wcorder
 						ON wcsubs.post_parent = wcorder.ID
 							AND wcorder.post_type IN ( 'shop_order' )
 							AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
-					LEFT JOIN wp_postmeta AS wcsmeta
+					LEFT JOIN {$wpdb->postmeta} AS wcsmeta
 						ON wcsubs.ID = wcsmeta.post_id
 							AND wcsmeta.meta_key = '_schedule_end'
 				) ON DATE( wcsubs.post_date ) <= searchdate.Date
@@ -341,7 +341,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 							label: "<?php echo esc_js( __( 'Subscriptions signups', 'woocommerce-subscriptions' ) ) ?>",
 							data: order_data.signup_counts,
 							color: '<?php echo esc_js( $this->chart_colours['signup_count'] ); ?>',
-							bars: { order: 1, fill: true, show: true, lineWidth: 0, barWidth: <?php echo esc_js( $this->barwidth ); ?> * 0.3, align: 'center' },
+							bars: { order: 1, fill: true, show: true, lineWidth: 0, barWidth: <?php echo esc_js( $this->barwidth ); ?> * 0.33, align: 'center' },
 							shadowSize: 0,
 							hoverable: false,
 						},
