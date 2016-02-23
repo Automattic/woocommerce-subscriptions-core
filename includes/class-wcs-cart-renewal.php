@@ -70,6 +70,9 @@ class WCS_Cart_Renewal {
 		add_filter( 'woocommerce_cart_item_removed_title', array( &$this, 'items_removed_title' ), 10, 2 );
 
 		add_action( 'woocommerce_cart_item_restored', array( &$this, 'maybe_restore_items' ), 10, 1 );
+
+		// Use original order price when resubscribing to products with addons (to ensure the adds on prices are included)
+		add_filter( 'woocommerce_product_addons_adjust_price', array( &$this, 'product_addons_adjust_price' ), 10, 2 );
 	}
 
 	/**
@@ -540,6 +543,22 @@ class WCS_Cart_Renewal {
 				}
 			}
 		}
+	}
+
+	/**
+	 * When restoring the cart from the session, if the cart item contains addons, as well as
+	 * a renewal or resubscribe, do not adjust the price because the original order's price will
+	 * be used, and this includes the addons amounts.
+	 *
+	 * @since 2.0
+	 */
+	public function product_addons_adjust_price( $adjust_price, $cart_item ) {
+
+		if ( true === $adjust_price && isset( $cart_item[ $this->cart_item_key ] ) ) {
+			$adjust_price = false;
+		}
+
+		return $adjust_price;
 	}
 }
 new WCS_Cart_Renewal();
