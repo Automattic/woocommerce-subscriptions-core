@@ -20,8 +20,8 @@ class WC_Subscription extends WC_Order {
 	/** @public string Order type */
 	public $order_type = 'shop_subscription';
 
-	/** @public int Stores get_completed_payment_count when used multiple times in payment_complete() */
-	public $cached_completed_payment_count = false;
+	/** @private int Stores get_completed_payment_count when used multiple times in payment_complete() */
+	private $cached_completed_payment_count = false;
 
 	/**
 	 * Initialize the subscription object.
