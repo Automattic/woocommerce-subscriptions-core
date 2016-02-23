@@ -42,7 +42,7 @@ function wcs_cart_totals_shipping_html() {
 	foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
 
 		// Create shipping packages for each subscription item
-		if ( WC_Subscriptions_Cart::cart_contains_subscriptions_needing_shipping() ) {
+		if ( WC_Subscriptions_Cart::cart_contains_subscriptions_needing_shipping() && 0 !== $recurring_cart->next_payment_date ) {
 
 			$packages = $recurring_cart->get_shipping_packages();
 
