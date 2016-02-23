@@ -517,6 +517,9 @@ class WCS_Cart_Renewal {
 			//remove the renewal order flag
 			unset( WC()->session->order_awaiting_payment );
 
+			//clear renewal coupons
+			$this->clear_coupons();
+
 			if ( $removed_item_count > 1 && 'woocommerce_before_cart_item_quantity_zero' == current_filter() ) {
 				wc_add_notice( esc_html__( 'All linked subscription items have been removed from the cart.', 'woocommerce-subscriptions' ), 'notice' );
 			}
