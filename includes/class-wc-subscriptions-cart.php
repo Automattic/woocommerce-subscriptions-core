@@ -381,11 +381,22 @@ class WC_Subscriptions_Cart {
 
 		$chosen_methods = WC()->session->get( 'chosen_shipping_methods' );
 
-		if ( 'none' !== self::$recurring_cart_key && isset( $chosen_methods[ self::$recurring_cart_key . '_' . $package_index ] ) ) {
-			$default_method = $chosen_methods[ self::$recurring_cart_key . '_' . $package_index ];
+		if ( 'none' !== self::$recurring_cart_key && isset( $chosen_methods[ self::get_recurring_shipping_package_key( self::$recurring_cart_key, $package_index ) ] ) ) {
+			$default_method = $chosen_methods[ self::get_recurring_shipping_package_key( self::$recurring_cart_key, $package_index ) ];
 		}
 
 		return $default_method;
+	}
+
+	/**
+	 * Create a shipping package index for a given shipping package on a recurring cart.
+	 *
+	 * @param string $recurring_cart_key a cart key of the form returned by @see self::get_recurring_cart_key()
+	 * @param int $package_index the index of a package
+	 * @since 2.0.10
+	 */
+	public static function get_recurring_shipping_package_key( $recurring_cart_key, $package_index ) {
+		return $recurring_cart_key . '_' . $package_index;
 	}
 
 	/**

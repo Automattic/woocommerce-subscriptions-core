@@ -220,8 +220,10 @@ class WC_Subscriptions_Checkout {
 
 			$package = WC()->shipping->calculate_shipping_for_package( $base_package );
 
+			$recurring_shipping_package_key = WC_Subscriptions_Cart::get_recurring_shipping_package_key( $cart->recurring_cart_key, $package_index );
+
 			$package_key = isset( WC()->checkout()->shipping_methods[ $package_index ] ) ? WC()->checkout()->shipping_methods[ $package_index ] : '';
-			$package_key = isset( WC()->checkout()->shipping_methods[ $cart->recurring_cart_key . '_' . $package_index ] ) ? WC()->checkout()->shipping_methods[ $cart->recurring_cart_key . '_' . $package_index ] : $package_key;
+			$package_key = isset( WC()->checkout()->shipping_methods[ $recurring_shipping_package_key ] ) ? WC()->checkout()->shipping_methods[ $recurring_shipping_package_key ] : $package_key;
 
 			if ( isset( $package['rates'][ $package_key ] ) ) {
 
