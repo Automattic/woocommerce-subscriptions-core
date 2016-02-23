@@ -131,6 +131,23 @@ class WCS_Admin_Meta_Boxes {
 			}
 
 			$actions['wcs_create_pending_renewal'] = esc_html__( 'Create pending renewal order', 'woocommerce-subscriptions' );
+
+		} else if ( wcs_order_contains_renewal( $theorder ) && $theorder->has_status( 'failed' ) && ! empty( $theorder->payment_method ) && $theorder->get_total() > 0 ) {
+
+			$subscriptions = wcs_get_subscriptions_for_renewal_order( $theorder );
+			$subscription  = array_shift( $subscriptions );
+
+			$supports_date_changes = $subscription->payment_method_supports( 'subscription_date_changes' );
+			$is_automatic          = ! $subscription->is_manual();
+
+			foreach ( $subscriptions as $subscription ) {
+				$supports_date_changes &= $subscription->payment_method_supports( 'subscription_date_changes' );
+				$is_automatic &= ! $subscription->is_manual();
+			}
+
+			if ( $supports_date_changes && $is_automatic ) {
+				$actions['wcs_retry_renewal_payment'] = esc_html__( 'Retry Renewal Payment', 'woocommerce-subscriptions' );
+			}
 		}
 
 		return $actions;
