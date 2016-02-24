@@ -222,14 +222,14 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 
 		$legend[] = array(
 			'title' => sprintf( __( '%s subscription cancellations', 'woocommerce-subscriptions' ), '<strong>' . $data->total_cancels . '</strong>' ),
-			'placeholder'      => __( 'All subscriptions which have been cancelled within this timeframe.', 'woocommerce-subscriptions' ),
+			'placeholder'      => __( 'All subscriptions a customer or store manager has cancelled within this timeframe.  The pre-paid term may not yet have ended so the customer may still have access.', 'woocommerce-subscriptions' ),
 			'color' => $this->chart_colours['cancel_count'],
 			'highlight_series' => 5,
 		);
 
 		$legend[] = array(
 			'title' => sprintf( __( '%s subscriptions ended', 'woocommerce-subscriptions' ), '<strong>' . $data->total_ended . '</strong>' ),
-			'placeholder'      => __( 'All subscriptions which have ended within this timeframe.', 'woocommerce-subscriptions' ),
+			'placeholder'      => __( 'All subscriptions which have either expired or reached the end of the prepaid term if it was cancelled.', 'woocommerce-subscriptions' ),
 			'color' => $this->chart_colours['ended_count'],
 			'highlight_series' => 5,
 		);
