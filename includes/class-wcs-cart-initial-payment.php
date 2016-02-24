@@ -39,11 +39,12 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 			$order_id     = ( isset( $wp->query_vars['order-pay'] ) ) ? $wp->query_vars['order-pay'] : absint( $_GET['order_id'] );
 			$order        = wc_get_order( $wp->query_vars['order-pay'] );
 
-			if ( $order->order_key == $order_key && $order->has_status( array( 'pending', 'failed' ) ) && ! wcs_order_contains_renewal( $order ) ) {
+			if ( $order->order_key == $order_key && $order->has_status( array( 'pending', 'failed' ) ) && ! wcs_order_contains_subscription( $order, array( 'renewal', 'resubscribe' ) ) ) {
 
 				$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) );
 
 				if ( get_current_user_id() !== $order->get_user_id() ) {
+
 					wc_add_notice( __( 'That doesn\'t appear to be your order.', 'woocommerce-subscriptions' ), 'error' );
 
 					wp_safe_redirect( get_permalink( wc_get_page_id( 'myaccount' ) ) );

@@ -515,7 +515,7 @@ class WCS_Upgrade_2_0 {
 		}
 
 		// Trash all the hooks in one go to save write requests
-		$wpdb->update( $wpdb->posts, array( 'post_status' => 'trash' ), array( 'post_type' => ActionScheduler_wpPostStore::POST_TYPE, 'post_content' => json_encode( $old_hook_args ) ), array( '%s', '%s' ) );
+		$wpdb->update( $wpdb->posts, array( 'post_status' => 'trash' ), array( 'post_type' => ActionScheduler_wpPostStore::POST_TYPE, 'post_content' => wcs_json_encode( $old_hook_args ) ), array( '%s', '%s' ) );
 
 		$dates_to_update['start'] = $new_subscription->post->post_date_gmt;
 
@@ -548,7 +548,7 @@ class WCS_Upgrade_2_0 {
 				$new_subscription->update_dates( $dates_to_update );
 			}
 
-			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: updated dates = %s', $new_subscription->id, str_replace( array( '{', '}', '"' ), '', json_encode( $dates_to_update ) ) ) );
+			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: updated dates = %s', $new_subscription->id, str_replace( array( '{', '}', '"' ), '', wcs_json_encode( $dates_to_update ) ) ) );
 
 		} catch ( Exception $e ) {
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: unable to update dates, exception "%s"', $new_subscription->id, $e->getMessage() ) );

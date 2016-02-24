@@ -343,14 +343,17 @@ class WC_Subscription extends WC_Order {
 					case 'completed' : // core WC order status mapped internally to avoid exceptions
 					case 'active' :
 						// Recalculate and set next payment date
-						$next_payment = $this->get_time( 'next_payment' );
+						$stored_next_payment = $this->get_time( 'next_payment' );
 
 						// Make sure the next payment date is more than 2 hours in the future
-						if ( $next_payment < ( gmdate( 'U' ) + 2 * HOUR_IN_SECONDS ) ) { // also accounts for a $next_payment of 0, meaning it's not set
+						if ( $stored_next_payment < ( gmdate( 'U' ) + 2 * HOUR_IN_SECONDS ) ) { // also accounts for a $stored_next_payment of 0, meaning it's not set
 
-							$next_payment = $this->calculate_date( 'next_payment' );
-							if ( $next_payment > 0 ) {
-								$this->update_dates( array( 'next_payment' => $next_payment ) );
+							$calculated_next_payment = $this->calculate_date( 'next_payment' );
+
+							if ( $calculated_next_payment > 0 ) {
+								$this->update_dates( array( 'next_payment' => $calculated_next_payment ) );
+							} elseif ( $stored_next_payment < gmdate( 'U' ) ) { // delete the stored date if it's in the past as we're not updating it (the calculated next payment date is 0 or none)
+								$this->delete_date( 'next_payment' );
 							}
 						}
 						// Trial end date and end/expiration date don't change at all - they should be set when the subscription is first created
@@ -373,7 +376,8 @@ class WC_Subscription extends WC_Order {
 					break;
 				}
 
-				$this->add_order_note( trim( $note . ' ' . sprintf( __( 'Status changed from %s to %s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ), 0, $manual );
+				// translators: $1 note why the status changes (if any), $2: old status, $3: new status
+				$this->add_order_note( trim( sprintf( __( '%1$s Status changed from %2$s to %3$s.', 'woocommerce-subscriptions' ), $note, wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ), 0, $manual );
 
 				// dynamic hooks for convenience
 				do_action( 'woocommerce_subscription_status_' . $new_status, $this );
@@ -1199,7 +1203,7 @@ class WC_Subscription extends WC_Order {
 	public function cancel_order( $note = '' ) {
 
 		// If the customer hasn't been through the pending cancellation period yet set the subscription to be pending cancellation
-		if ( $this->has_status( 'active' ) && $this->calculate_date( 'end_of_prepaid_term' ) > current_time( 'mysql', true ) ) {
+		if ( $this->has_status( 'active' ) && $this->calculate_date( 'end_of_prepaid_term' ) > current_time( 'mysql', true ) && apply_filters( 'woocommerce_subscription_use_pending_cancel', true ) ) {
 
 			$this->update_status( 'pending-cancel', $note );
 

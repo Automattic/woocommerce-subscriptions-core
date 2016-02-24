@@ -22,6 +22,14 @@ class WCS_Change_Payment_Method_Admin {
 		$payment_method        = ! empty( $subscription->payment_method ) ? $subscription->payment_method : '';
 		$valid_payment_methods = self::get_valid_payment_methods( $subscription );
 
+		if ( ! $subscription->is_manual() && ! isset( $valid_payment_methods[ $payment_method ] ) ) {
+			$subscription_payment_gateway = WC_Subscriptions_Payment_Gateways::get_payment_gateway( $payment_method );
+
+			if ( false != $subscription_payment_gateway ) {
+				$valid_payment_methods[ $payment_method ] = $subscription_payment_gateway->title;
+			}
+		}
+
 		echo '<p class="form-field form-field-wide">';
 
 		if ( count( $valid_payment_methods ) > 1 ) {
@@ -59,10 +67,10 @@ class WCS_Change_Payment_Method_Admin {
 
 					foreach ( $meta as $meta_key => $meta_data ) {
 
-						$field_id    = sprintf( '_payment_method_meta[%s][%s]', $meta_table , $meta_key );
-						$field_label = ( ! empty( $meta_data['label'] ) ) ? $meta_data['label'] : $meta_key ;
-						$field_value = ( ! empty( $meta_data['value'] ) ) ? $meta_data['value'] : null ;
-						$field_disabled = ( isset( $meta_data['disabled'] ) && true == $meta_data['disabled'] ) ? ' disabled="disabled"' : '';
+						$field_id       = sprintf( '_payment_method_meta[%s][%s]', $meta_table , $meta_key );
+						$field_label    = ( ! empty( $meta_data['label'] ) ) ? $meta_data['label'] : $meta_key ;
+						$field_value    = ( ! empty( $meta_data['value'] ) ) ? $meta_data['value'] : null ;
+						$field_disabled = ( isset( $meta_data['disabled'] ) && true == $meta_data['disabled'] ) ? ' readonly' : '';
 
 						echo '<p class="form-field form-field-wide">';
 						echo '<label for="' . esc_attr( $field_id ) . '">' . esc_html( $field_label ) . '</label>';

@@ -157,13 +157,13 @@ class WCS_Repair_2_0_2 {
 
 		if ( ! empty( $dates_to_update ) ) {
 
-			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: repairing dates = %s', $subscription->id, str_replace( array( '{', '}', '"' ), '', json_encode( $dates_to_update ) ) ) );
+			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: repairing dates = %s', $subscription->id, str_replace( array( '{', '}', '"' ), '', wcs_json_encode( $dates_to_update ) ) ) );
 
 			try {
 				$subscription->update_dates( $dates_to_update );
-				WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: repaired dates = %s', $subscription->id, str_replace( array( '{', '}', '"' ), '', json_encode( $dates_to_update ) ) ) );
+				WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: repaired dates = %s', $subscription->id, str_replace( array( '{', '}', '"' ), '', wcs_json_encode( $dates_to_update ) ) ) );
 			} catch ( Exception $e ) {
-				WCS_Upgrade_Logger::add( sprintf( '!! For subscription %d: unable to repair dates (%s), exception "%s"', $subscription->id, str_replace( array( '{', '}', '"' ), '', json_encode( $dates_to_update ) ), $e->getMessage() ) );
+				WCS_Upgrade_Logger::add( sprintf( '!! For subscription %d: unable to repair dates (%s), exception "%s"', $subscription->id, str_replace( array( '{', '}', '"' ), '', wcs_json_encode( $dates_to_update ) ), $e->getMessage() ) );
 			}
 
 			try {
@@ -261,7 +261,7 @@ class WCS_Repair_2_0_2 {
 				 AND post_title = 'scheduled_subscription_payment'
 				 ORDER BY post_date_gmt DESC",
 				ActionScheduler_wpPostStore::POST_TYPE,
-				json_encode( $old_hook_args )
+				wcs_json_encode( $old_hook_args )
 			) );
 
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: new next payment date = %s.', $subscription->id, var_export( $subscription->get_date( 'next_payment' ), true ) ) );

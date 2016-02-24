@@ -103,6 +103,7 @@ class WC_Subscriptions_Synchroniser {
 
 		// Maybe recalculate trial end for a synced subscription in case it includes 1 day trial used to mock cart totals.
 		add_filter( 'wcs_recurring_cart_trial_end_date', __CLASS__ . '::recalculate_trial_end_date', 15, 3 );
+		add_filter( 'wcs_recurring_cart_end_date', __CLASS__ . '::recalculate_end_date', 15, 3 );
 
 		add_filter( 'woocommerce_subscriptions_recurring_cart_key', __CLASS__ . '::add_to_recurring_cart_key', 10, 2 );
 	}
@@ -163,13 +164,12 @@ class WC_Subscriptions_Synchroniser {
 				'desc'          => __( 'If a subscription is synchronised to a specific day of the week, month or year, charge a prorated amount for the subscription at the time of sign up.', 'woocommerce-subscriptions' ),
 				'id'            => self::$setting_id_proration,
 				'css'           => 'min-width:150px;',
-				'css'           => 'min-width:150px;',
 				'default'       => 'no',
 				'type'          => 'select',
 				'options'       => array(
-					'no'           => _x( 'Never', 'when to prorate first payment when synching', 'woocommerce-subscriptions' ),
-					'virtual'      => _x( 'For Virtual Subscription Products Only', 'when to prorate first payment when synching', 'woocommerce-subscriptions' ),
-					'yes'          => _x( 'For All Subscription Products', 'when to prorate first payment when synching', 'woocommerce-subscriptions' ),
+					'no'           => _x( 'Never', 'when to allow a setting', 'woocommerce-subscriptions' ),
+					'virtual'      => _x( 'For Virtual Subscription Products Only', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
+					'yes'          => _x( 'For All Subscription Products', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
 				),
 				'desc_tip'      => true,
 			),
@@ -231,7 +231,7 @@ class WC_Subscriptions_Synchroniser {
 				'id'            => self::$post_meta_key_day,
 				'class'         => 'wc_input_subscription_payment_sync',
 				'label'         => self::$sync_field_label . ':',
-				'placeholder'   => __( 'Day', 'woocommerce-subscriptions' ),
+				'placeholder'   => _x( 'Day', 'input field placeholder for day field for annual subscriptions', 'woocommerce-subscriptions' ),
 				'value'         => $payment_day,
 				'type'          => 'number',
 				)
@@ -406,7 +406,7 @@ class WC_Subscriptions_Synchroniser {
 	public static function is_product_synced( $product ) {
 
 		if ( ! is_object( $product ) ) {
-			$product = get_product( $product );
+			$product = wc_get_product( $product );
 		}
 
 		if ( ! is_object( $product ) || ! self::is_syncing_enabled() || 'day' == $product->subscription_period || ! $product->is_type( array( 'subscription', 'variable-subscription', 'subscription_variation' ) ) ) {
@@ -672,7 +672,7 @@ class WC_Subscriptions_Synchroniser {
 				if ( $is_first_payment_today ) {
 					$payment_date_string = __( 'Today!', 'woocommerce-subscriptions' );
 				} else {
-					$payment_date_string = date_i18n( woocommerce_date_format(), $first_payment_timestamp + ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) );
+					$payment_date_string = date_i18n( wc_date_format(), $first_payment_timestamp + ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) );
 				}
 
 				if ( self::is_product_prorated( $product ) && ! $is_first_payment_today ) {
@@ -759,6 +759,22 @@ class WC_Subscriptions_Synchroniser {
 		}
 
 		return $trial_end_date;
+	}
+
+	/**
+	 * Maybe recalculate the end date for synced subscription products that contain the unnecessary
+	 * "one day trial" period.
+	 *
+	 * @since 2.0.9
+	 */
+	public static function recalculate_end_date( $end_date, $recurring_cart, $product ) {
+
+		if ( self::is_product_synced( $product ) ) {
+			$product_id  = ( isset( $product->variation_id ) ) ? $product->variation_id : $product->id;
+			$end_date = WC_Subscriptions_Product::get_expiration_date( $product_id );
+		}
+
+		return $end_date;
 	}
 
 	/**
@@ -872,6 +888,9 @@ class WC_Subscriptions_Synchroniser {
 			} else {
 				$price = $days_until_next_payment * ( $price / $days_in_cycle );
 			}
+
+			// Now round the amount to the number of decimals displayed for prices to avoid rounding errors in the total calculations (we don't want to use WC_DISCOUNT_ROUNDING_PRECISION here because it can still lead to rounding errors). For full details, see: https://github.com/Prospress/woocommerce-subscriptions/pull/1134#issuecomment-178395062
+			$price = round( $price, wc_get_price_decimals() );
 		}
 
 		return $price;
@@ -1068,7 +1087,7 @@ class WC_Subscriptions_Synchroniser {
 
 			$product_id = WC_Subscriptions_Cart::get_items_product_id( $cart_item );
 
-			if ( woocommerce_price( 0 ) == $subscription_details['initial_amount'] && 0 == $subscription_details['trial_length'] ) {
+			if ( wc_price( 0 ) == $subscription_details['initial_amount'] && 0 == $subscription_details['trial_length'] ) {
 				$subscription_details['initial_amount'] = '';
 			}
 		}

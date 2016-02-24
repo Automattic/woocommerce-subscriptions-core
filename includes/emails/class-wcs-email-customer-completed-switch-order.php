@@ -25,6 +25,7 @@ class WCS_Email_Completed_Switch_Order extends WC_Email_Customer_Completed_Order
 		$this->id             = 'customer_completed_switch_order';
 		$this->title          = __( 'Subscription Switch Complete', 'woocommerce-subscriptions' );
 		$this->description    = __( 'Subscription switch complete emails are sent to the customer when a subscription is switched successfully.', 'woocommerce-subscriptions' );
+		$this->customer_email = true;
 
 		$this->heading        = __( 'Your subscription change is complete', 'woocommerce-subscriptions' );
 		$this->subject        = __( 'Your {blogname} subscription change from {order_date} is complete', 'woocommerce-subscriptions' );
@@ -62,9 +63,9 @@ class WCS_Email_Completed_Switch_Order extends WC_Email_Customer_Completed_Order
 			$order_date_index = array_search( '{order_date}', $this->find );
 			if ( false === $order_date_index ) {
 				$this->find[] = '{order_date}';
-				$this->replace[] = date_i18n( woocommerce_date_format(), wcs_date_to_time( $this->object->order_date ) );
+				$this->replace[] = date_i18n( wc_date_format(), wcs_date_to_time( $this->object->order_date ) );
 			} else {
-				$this->replace[ $order_date_index ] = date_i18n( woocommerce_date_format(), wcs_date_to_time( $this->object->order_date ) );
+				$this->replace[ $order_date_index ] = date_i18n( wc_date_format(), wcs_date_to_time( $this->object->order_date ) );
 			}
 
 			$order_number_index = array_search( '{order_number}', $this->find );
