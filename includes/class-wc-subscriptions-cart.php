@@ -79,9 +79,6 @@ class WC_Subscriptions_Cart {
 
 		// Make sure we use our recurring shipping method for recurring shipping calculations not the default method
 		add_filter( 'woocommerce_shipping_chosen_method', array( __CLASS__, 'set_chosen_shipping_method' ), 10, 2 );
-
-		// When WooCommerce calculates rates for a recurring shipping package, only return the recurring shipping package rates
-		add_filter( 'woocommerce_package_rates', __CLASS__ . '::filter_package_rates', 10, 2 );
 	}
 
 	/**
@@ -400,46 +397,6 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function get_recurring_shipping_package_key( $recurring_cart_key, $package_index ) {
 		return $recurring_cart_key . '_' . $package_index;
-	}
-
-	/**
-	 * When WooCommerce calculates rates for a recurring shipping package, we want to return only the rates for
-	 * the chosen recurring shipping method to make sure WooCommerce updates the chosen method for the recurring
-	 * cart (and the 'woocommerce_shipping_chosen_method' filter is called, which we use to make sure the chosen
-	 * method is the recurring method, not the initial method).
-	 *
-	 * This function is hooked to 'woocommerce_package_rates' called by WC_Shipping->calculate_shipping_for_package()
-	 *
-	 * For more details, see:
-	 * - https://github.com/Prospress/woocommerce-subscriptions/pull/1187#issuecomment-186091152
-	 * - https://github.com/Prospress/woocommerce-subscriptions/pull/1187#issuecomment-187602311
-	 *
-	 * @param array $package_rates A set of shipping method objects in the form of WC_Shipping_Rate->id => WC_Shipping_Rate with the cost for that rate
-	 * @param array $package A shipping package of the form returned by WC_Cart->get_shipping_packages() which includes the package's contents, cost, customer, destination and alternative rates
-	 * @since 2.0.10
-	 */
-	public static function filter_package_rates( $package_rates, $package ) {
-
-		$chosen_methods = WC()->session->get( 'chosen_shipping_methods' );
-
-		if ( 'none' != self::$recurring_cart_key ) {
-
-			$recurring_cart_shipping_methods = array();
-			$recurring_package_count         = 0;
-
-			foreach ( $chosen_methods as $package_index => $chosen_method_name ) {
-				if ( self::get_recurring_shipping_package_key( self::$recurring_cart_key, $recurring_package_count ) == $package_index ) {
-					$recurring_cart_shipping_methods[ $chosen_method_name ] = $chosen_method_name;
-					$recurring_package_count++;
-				}
-			}
-
-			if ( 0 < count( $recurring_cart_shipping_methods ) ) {
-				$package_rates = array_intersect_key( $package_rates, $recurring_cart_shipping_methods );
-			}
-		}
-
-		return $package_rates;
 	}
 
 	/**
