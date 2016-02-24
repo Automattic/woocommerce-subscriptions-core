@@ -67,6 +67,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 	 */
 	public function set_express_checkout( $args ) {
 
+		// translators: placeholder is blogname
 		$default_description = sprintf( _x( 'Orders with %s', 'data sent to paypal', 'woocommerce-subscriptions' ), get_bloginfo( 'name' ) );
 
 		$defaults = array(
@@ -88,14 +89,6 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 		$this->set_method( 'SetExpressCheckout' );
 
 		$this->add_parameters( array(
-
-			'PAYMENTREQUEST_0_AMT'           => 0, // a zero amount is use so that no DoExpressCheckout action is required and instead CreateBillingAgreement is used to first create a billing agreement not attached to any order and then DoReferenceTransaction is used to charge both the initial order and renewal order amounts
-			'PAYMENTREQUEST_0_ITEMAMT'       => 0,
-			'PAYMENTREQUEST_0_SHIPPINGAMT'   => 0,
-			'PAYMENTREQUEST_0_TAXAMT'        => 0,
-			'PAYMENTREQUEST_0_CURRENCYCODE'  => $args['currency'],
-			'PAYMENTREQUEST_0_CUSTOM'        => $args['custom'],
-
 			'L_BILLINGTYPE0'                 => $args['billing_type'],
 			'L_BILLINGAGREEMENTDESCRIPTION0' => wcs_get_paypal_item_name( $args['billing_description'] ),
 			'L_BILLINGAGREEMENTCUSTOM0'      => $args['custom'],
@@ -108,8 +101,55 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 			'NOSHIPPING'                     => $args['no_shipping'],
 
 			'MAXAMT'                         => $args['maximum_amount'],
-			'PAYMENTREQUEST_0_PAYMENTACTION' => $args['payment_action'],
 		) );
+
+		// if we have an order, the request is to create a subscription/process a payment (not just check if the PayPal account supports Reference Transactions)
+		if ( isset( $args['order'] ) ) {
+
+			if ( 0 == $args['order']->get_total() ) {
+
+				$this->add_parameters( array(
+					'PAYMENTREQUEST_0_AMT'           => 0, // a zero amount is use so that no DoExpressCheckout action is required and instead CreateBillingAgreement is used to first create a billing agreement not attached to any order and then DoReferenceTransaction is used to charge both the initial order and renewal order amounts
+					'PAYMENTREQUEST_0_ITEMAMT'       => 0,
+					'PAYMENTREQUEST_0_SHIPPINGAMT'   => 0,
+					'PAYMENTREQUEST_0_TAXAMT'        => 0,
+					'PAYMENTREQUEST_0_CURRENCYCODE'  => $args['currency'],
+					'PAYMENTREQUEST_0_CUSTOM'        => $args['custom'],
+					'PAYMENTREQUEST_0_PAYMENTACTION' => $args['payment_action'],
+				) );
+
+			} else {
+
+				$this->add_payment_details_parameters( $args['order'], $args['payment_action'] );
+
+			}
+		}
+	}
+
+	/**
+	 * Set up the DoExpressCheckoutPayment request
+	 *
+	 * @link https://developer.paypal.com/docs/classic/express-checkout/integration-guide/ECGettingStarted/#id084RN060BPF
+	 * @link https://developer.paypal.com/webapps/developer/docs/classic/api/merchant/DoExpressCheckoutPayment_API_Operation_NVP/
+	 *
+	 * @since 2.0.9
+	 * @param string $token PayPal Express Checkout token returned by SetExpressCheckout operation
+	 * @param WC_Order $order order object
+	 * @param string $type
+	 */
+	public function do_express_checkout( $token, WC_Order $order, $args ) {
+
+		$this->set_method( 'DoExpressCheckoutPayment' );
+
+		// set base params
+		$this->add_parameters( array(
+			'TOKEN'            => $token,
+			'PAYERID'          => $args['payer_id'],
+			'BUTTONSOURCE'     => 'WooThemes_Cart',
+			'RETURNFMFDETAILS' => 1,
+		) );
+
+		$this->add_payment_details_parameters( $order, $args['payment_action'] );
 	}
 
 	/**
@@ -165,8 +205,8 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 			'payment_action'       => 'Sale',
 			'return_fraud_filters' => 1,
 			'notify_url'           => WC()->api_request_url( 'WC_Gateway_Paypal' ),
-			'invoice_number'       => wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number', 'woocommerce-subscriptions' ) ) ),
-			'custom'               => json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key ) ),
+			'invoice_number'       => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) ),
+			'custom'               => wcs_json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key ) ),
 		);
 
 		$args = wp_parse_args( $args, $defaults );
@@ -178,24 +218,38 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 			'REFERENCEID'      => $reference_id,
 			'BUTTONSOURCE'     => 'WooThemes_Cart',
 			'RETURNFMFDETAILS' => $args['return_fraud_filters'],
-			'AMT'              => $order->get_total(),
-			'CURRENCYCODE'     => $order->get_order_currency(),
-			'INVNUM'           => $args['invoice_number'],
-			'PAYMENTACTION'    => $args['payment_action'],
 			'NOTIFYURL'        => $args['notify_url'],
-			'CUSTOM'           => $args['custom'],
 		) );
 
-		$order_subtotal = $i = 0;
-		$order_items    = array();
+		$this->add_payment_details_parameters( $order, $args['payment_action'], true );
+	}
+
+	/**
+	 * Set up the payment details for a DoExpressCheckoutPayment or DoReferenceTransaction request
+	 *
+	 * @since 2.0.9
+	 * @param WC_Order $order order object
+	 * @param string $type the type of transaction for the payment
+	 * @param bool $use_deprecated_params whether to use deprecated PayPal NVP parameters (required for DoReferenceTransaction API calls)
+	 */
+	protected function add_payment_details_parameters( WC_Order $order, $type, $use_deprecated_params = false ) {
+
+		$calculated_total = 0;
+		$order_subtotal   = 0;
+		$item_count       = 0;
+		$order_items      = array();
 
 		// add line items
 		foreach ( $order->get_items() as $item ) {
 
+			$product = new WC_Product( $item['product_id'] );
+
 			$order_items[] = array(
-				'NAME'    => wcs_get_paypal_item_name( $item['name'] ),
-				'AMT'     => $order->get_item_subtotal( $item ),
+				'NAME'    => wcs_get_paypal_item_name( $product->get_title() ),
+				'DESC'    => $this->get_item_description( $item, $product ),
+				'AMT'     => $this->round( $order->get_item_subtotal( $item ) ),
 				'QTY'     => ( ! empty( $item['qty'] ) ) ? absint( $item['qty'] ) : 1,
+				'ITEMURL' => $product->get_permalink(),
 			);
 
 			$order_subtotal += $item['line_total'];
@@ -206,58 +260,121 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 
 			$order_items[] = array(
 				'NAME' => wcs_get_paypal_item_name( $fee['name'] ),
-				'AMT'  => $fee['line_total'],
+				'AMT'  => $this->round( $fee['line_total'] ),
 				'QTY'  => 1,
 			);
 
 			$order_subtotal += $fee['line_total'];
 		}
 
-		// WC 2.3+, no after-tax discounts
+		// add discounts
 		if ( $order->get_total_discount() > 0 ) {
 
 			$order_items[] = array(
-				'NAME' => __( 'Total Discount', 'woocommerce-subscriptions' ),
-				'QTY'  => 1,
-				'AMT'  => - $order->get_total_discount(),
+					'NAME' => __( 'Total Discount', 'woocommerce-subscriptions' ),
+					'QTY'  => 1,
+					'AMT'  => - $this->round( $order->get_total_discount() ),
 			);
 		}
 
-		if ( $order->prices_include_tax ) {
+		if ( $this->skip_line_items( $order ) ) {
+
+			$total_amount = $this->round( $order->get_total() );
+
+			// calculate the total as PayPal would
+			$calculated_total += $this->round( $order_subtotal + $order->get_cart_tax() ) + $this->round( $order->get_total_shipping() + $order->get_shipping_tax() );
+
+			// offset the discrepency between the WooCommerce cart total and PayPal's calculated total by adjusting the order subtotal
+			if ( $total_amount !== $calculated_total ) {
+				$order_subtotal = $order_subtotal - ( $calculated_total - $total_amount );
+			}
 
 			$item_names = array();
 
 			foreach ( $order_items as $item ) {
-				$item_names[] = sprintf( '%s x %s', $item['NAME'], $item['QTY'] );
+
+				$item_names[] = sprintf( '%1$s x %2$s', $item['NAME'], $item['QTY'] );
 			}
 
 			// add a single item for the entire order
 			$this->add_line_item_parameters( array(
+				// translators: placeholder is blogname
 				'NAME' => sprintf( __( '%s - Order', 'woocommerce-subscriptions' ), get_option( 'blogname' ) ),
 				'DESC' => wcs_get_paypal_item_name( implode( ', ', $item_names ) ),
-				'AMT'  => $order_subtotal + $order->get_cart_tax(),
+				'AMT'  => $this->round( $order_subtotal + $order->get_cart_tax() ),
 				'QTY'  => 1,
-			), 0 );
+			), 0, $use_deprecated_params );
 
-			// add order-level parameters - do not send the TAXAMT due to rounding errors
-			$this->add_payment_parameters( array(
-				'ITEMAMT'     => $order_subtotal + $order->get_cart_tax(),
-				'SHIPPINGAMT' => $order->get_total_shipping() + $order->get_shipping_tax(),
-			) );
-
+			// add order-level parameters
+			//  - Do not sent the TAXAMT due to rounding errors
+			if ( $use_deprecated_params ) {
+				$this->add_parameters( array(
+					'AMT'              => $total_amount,
+					'CURRENCYCODE'     => $order->get_order_currency(),
+					'ITEMAMT'          => $this->round( $order_subtotal + $order->get_cart_tax() ),
+					'SHIPPINGAMT'      => $this->round( $order->get_total_shipping() + $order->get_shipping_tax() ),
+					'INVNUM'           => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) ),
+					'PAYMENTACTION'    => $type,
+					'PAYMENTREQUESTID' => $order->id,
+					'CUSTOM'           => json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key ) ),
+				) );
+			} else {
+				$this->add_payment_parameters( array(
+					'AMT'              => $total_amount,
+					'CURRENCYCODE'     => $order->get_order_currency(),
+					'ITEMAMT'          => $this->round( $order_subtotal + $order->get_cart_tax() ),
+					'SHIPPINGAMT'      => $this->round( $order->get_total_shipping() + $order->get_shipping_tax() ),
+					'INVNUM'           => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) ),
+					'PAYMENTACTION'    => $type,
+					'PAYMENTREQUESTID' => $order->id,
+					'CUSTOM'           => json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key ) ),
+				) );
+			}
 		} else {
 
 			// add individual order items
 			foreach ( $order_items as $item ) {
-				$this->add_line_item_parameters( $item, $i++ );
+
+				$this->add_line_item_parameters( $item, $item_count++, $use_deprecated_params );
+				$calculated_total += $this->round( $item['AMT'] * $item['QTY'] );
 			}
 
+			// add shipping and tax to calculated total
+			$calculated_total += $this->round( $order->get_total_shipping() ) + $this->round( $order->get_total_tax() );
+
+			$total_amount = $this->round( $order->get_total() );
+
 			// add order-level parameters
-			$this->add_payment_parameters( array(
-				'ITEMAMT'     => $order_subtotal,
-				'SHIPPINGAMT' => $order->get_total_shipping(),
-				'TAXAMT'      => $order->get_total_tax(),
-			) );
+			if ( $use_deprecated_params ) {
+				$this->add_parameters( array(
+					'AMT'              => $total_amount,
+					'CURRENCYCODE'     => $order->get_order_currency(),
+					'ITEMAMT'          => $this->round( $order_subtotal ),
+					'SHIPPINGAMT'      => $this->round( $order->get_total_shipping() ),
+					'TAXAMT'           => $this->round( $order->get_total_tax() ),
+					'INVNUM'           => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) ),
+					'PAYMENTACTION'    => $type,
+					'PAYMENTREQUESTID' => $order->id,
+					'CUSTOM'           => json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key ) ),
+				) );
+			} else {
+				$this->add_payment_parameters( array(
+					'AMT'              => $total_amount,
+					'CURRENCYCODE'     => $order->get_order_currency(),
+					'ITEMAMT'          => $this->round( $order_subtotal ),
+					'SHIPPINGAMT'      => $this->round( $order->get_total_shipping() ),
+					'TAXAMT'           => $this->round( $order->get_total_tax() ),
+					'INVNUM'           => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) ),
+					'PAYMENTACTION'    => $type,
+					'PAYMENTREQUESTID' => $order->id,
+					'CUSTOM'           => json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key ) ),
+				) );
+			}
+
+			// offset the discrepency between the WooCommerce cart total and PayPal's calculated total by adjusting the cost of the first item
+			if ( $total_amount !== $calculated_total ) {
+				$this->parameters['L_PAYMENTREQUEST_0_AMT0'] = $this->parameters['L_PAYMENTREQUEST_0_AMT0'] - ( $calculated_total - $total_amount );
+			}
 		}
 	}
 
@@ -343,9 +460,13 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 	 * @param int $item_count current item count
 	 * @since 2.0
 	 */
-	private function add_line_item_parameters( array $params, $item_count ) {
+	private function add_line_item_parameters( array $params, $item_count, $use_deprecated_params = false ) {
 		foreach ( $params as $key => $value ) {
-			$this->add_parameter( "L_PAYMENTREQUEST_0_{$key}{$item_count}", $value );
+			if ( $use_deprecated_params ) {
+				$this->add_parameter( "L_{$key}{$item_count}", $value );
+			} else {
+				$this->add_parameter( "L_PAYMENTREQUEST_0_{$key}{$item_count}", $value );
+			}
 		}
 	}
 
@@ -495,5 +616,44 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 	 */
 	public function get_path() {
 		return '';
+	}
+
+
+	/**
+	 * PayPal cannot properly calculate order totals when prices include tax (due
+	 * to rounding issues), so line items are skipped and the order is sent as
+	 * a single item
+	 *
+	 * @since 2.0.9
+	 * @param WC_Order $order Optional. The WC_Order object. Default null.
+	 * @return bool true if line items should be skipped, false otherwise
+	 */
+	private function skip_line_items( $order = null ) {
+
+		if ( isset( $order->prices_include_tax ) ) {
+			$skip_line_items = $order->prices_include_tax;
+		} else {
+			$skip_line_items = ( 'yes' === get_option( 'woocommerce_calc_taxes' ) && 'yes' === get_option( 'woocommerce_prices_include_tax' ) );
+		}
+
+		/**
+		 * Filter whether line items should be skipped or not
+		 *
+		 * @since 3.3.0
+		 * @param bool $skip_line_items True if line items should be skipped, false otherwise
+		 * @param WC_Order/null $order The WC_Order object or null.
+		 */
+		return apply_filters( 'wcs_paypal_reference_transaction_skip_line_items', $skip_line_items, $order );
+	}
+
+	/**
+	 * Round a float
+	 *
+	 * @since 2.0.9
+	 * @param float $number
+	 * @param int $precision Optional. The number of decimal digits to round to.
+	 */
+	private function round( $number, $precision = 2 ) {
+		return round( (float) $number, $precision );
 	}
 }

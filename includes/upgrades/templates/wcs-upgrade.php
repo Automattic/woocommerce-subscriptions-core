@@ -35,7 +35,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php if ( 'false' == $script_data['really_old_version'] ) : ?>
 			<p><?php
 				// translators: 1$: number of subscriptions on site, 2$, lower estimate (minutes), 3$: upper estimate
-				printf( esc_html__( 'The full update process for the %1$s subscriptions on your site will take between %2$d and %3$d minutes.', 'woocommerce-subscriptions' ), esc_html( $subscription_count ), esc_html( round( $estimated_duration * 0.75 ) ), esc_html( round( $estimated_duration * 1.5 ) ) ); ?>
+				printf( esc_html__( 'The full update process for the %1$d subscriptions on your site will take between %2$d and %3$d minutes.', 'woocommerce-subscriptions' ), esc_html( $subscription_count ), esc_html( round( $estimated_duration * 0.75 ) ), esc_html( round( $estimated_duration * 1.5 ) ) ); ?>
 			</p>
 			<?php else : ?>
 			<p><?php esc_html_e( 'The update process may take a little while, so please be patient.', 'woocommerce-subscriptions' ); ?></p>
@@ -62,9 +62,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<p><?php esc_html_e( 'Your database has been updated successfully!', 'woocommerce-subscriptions' ); ?></p>
 			<p class="step"><a class="button" href="<?php echo esc_url( $about_page_url ); ?>"><?php esc_html_e( 'Continue', 'woocommerce-subscriptions' ); ?></a></p>
 			<p class="log-notice"><?php
-				// translators: placeholder is number of weeks
-				printf( esc_html__( 'To record the progress of the update a new log file was created. This file will be automatically deleted in %d weeks. If you would like to delete it sooner, you can find it here:', 'woocommerce-subscriptions' ), esc_html( WCS_Upgrade_Logger::$weeks_until_cleanup ) ); ?>
-				<code class="log-notice"><?php echo esc_html( wc_get_log_file_path( WCS_Upgrade_Logger::$handle ) ); ?></code>
+				// translators: $1: placeholder is number of weeks, 2$: path to the file
+				echo wp_kses( sprintf( __( 'To record the progress of the update a new log file was created. This file will be automatically deleted in %1$d weeks. If you would like to delete it sooner, you can find it here: %2$s', 'woocommerce-subscriptions' ), esc_html( WCS_Upgrade_Logger::$weeks_until_cleanup ), '<code class="log-notice">' . esc_html( wc_get_log_file_path( WCS_Upgrade_Logger::$handle ) ) . '</code>' ), array( 'code' => array( 'class' => true ) ) );
+				?>
 			</p>
 		</div>
 		<div id="update-error">

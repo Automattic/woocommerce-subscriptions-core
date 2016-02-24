@@ -121,24 +121,30 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			<div class="woocommerce">
 				<ul class="order_details">
 					<li class="order">
-						<?php esc_html_e( 'Subscription Number:', 'woocommerce-subscriptions' ); ?>
-						<strong><?php echo esc_html( $subscription->get_order_number() ); ?></strong>
+						<?php
+						// translators: placeholder is the subscription order number wrapped in <strong> tags
+						echo wp_kses( sprintf( esc_html__( 'Subscription Number: %s', 'woocommerce-subscriptions' ), '<strong>' . esc_html( $subscription->get_order_number() ) . '</strong>' ), array( 'strong' => true ) );
+						?>
 					</li>
 					<li class="date">
-						<?php esc_html_e( 'Next Payment Date:', 'woocommerce-subscriptions' ); ?>
-						<strong><?php echo esc_html( $subscription->get_date_to_display( 'next_payment' ) ); ?></strong>
+						<?php
+						// translators: placeholder is the subscription's next payment date (either human readable or normal date) wrapped in <strong> tags
+						echo wp_kses( sprintf( esc_html__( 'Next Payment Date: %s', 'woocommerce-subscriptions' ), '<strong>' . esc_html( $subscription->get_date_to_display( 'next_payment' ) ) . '</strong>' ), array( 'strong' => true ) );
+						?>
 					</li>
 					<li class="total">
-						<?php esc_html_e( 'Total:', 'woocommerce-subscriptions' ); ?>
-						<strong><?php echo wp_kses_post( $subscription->get_formatted_order_total() ); ?></strong>
+						<?php
+						// translators: placeholder is the formatted total to be paid for the subscription wrapped in <strong> tags
+						echo wp_kses_post( sprintf( esc_html__( 'Total: %s', 'woocommerce-subscriptions' ), '<strong>' . $subscription->get_formatted_order_total() . '</strong>' ) );
+						?>
 					</li>
 					<?php if ( $subscription->payment_method_title ) : ?>
-					<li class="method">
-						<?php esc_html_e( 'Payment Method:', 'woocommerce-subscriptions' ); ?>
-						<strong><?php
-							echo esc_html( $subscription->get_payment_method_to_display() );
-						?></strong>
-					</li>
+						<li class="method">
+							<?php
+							// translators: placeholder is the display name of the payment method
+							echo wp_kses( sprintf( esc_html__( 'Payment Method: %s', 'woocommerce-subscriptions' ), '<strong>' . esc_html( $subscription->get_payment_method_to_display() ) . '</strong>' ), array( 'strong' => true ) );
+							?>
+						</li>
 					<?php endif; ?>
 				</ul>
 
@@ -184,7 +190,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 			} elseif ( empty( $subscription ) ) {
 
-				WC_Subscriptions::add_notice( __( 'Invalid subscription.', 'woocommerce-subscriptions' ), 'error' );
+				WC_Subscriptions::add_notice( __( 'Invalid Subscription.', 'woocommerce-subscriptions' ), 'error' );
 
 			} elseif ( ! current_user_can( 'edit_shop_subscription_payment_method', $subscription->id ) ) {
 
@@ -250,7 +256,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 			$actions['change_payment_method'] = array(
 				'url'  => wp_nonce_url( add_query_arg( array( 'change_payment_method' => $subscription->id ), $subscription->get_checkout_payment_url() ), __FILE__ ),
-				'name' => __( 'Change Payment', 'woocommerce-subscriptions' ),
+				'name' => _x( 'Change Payment', 'label on button, imperative', 'woocommerce-subscriptions' ),
 			);
 
 		}
@@ -294,7 +300,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 				}
 
 				// Update payment method
-				$new_payment_method = woocommerce_clean( $_POST['payment_method'] );
+				$new_payment_method = wc_clean( $_POST['payment_method'] );
 
 				// Allow some payment gateways which can't process the payment immediately, like PayPal, to do it later after the payment/sign-up is confirmed
 				if ( apply_filters( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', true, $new_payment_method, $subscription ) ) {
@@ -420,7 +426,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	public static function get_return_url( $return_url ) {
 
 		if ( ! empty( $_POST['_wcsnonce'] ) && wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_change_payment_method' ) && isset( $_POST['woocommerce_change_payment'] ) ) {
-			$return_url = get_permalink( woocommerce_get_page_id( 'myaccount' ) );
+			$return_url = get_permalink( wc_get_page_id( 'myaccount' ) );
 		}
 
 		return $return_url;
@@ -441,7 +447,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		if ( ! $subscription->is_manual() ) {
 
 			if ( ! empty( $_POST['_wcsnonce'] ) && wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_change_payment_method' ) && isset( $_POST['payment_method'] ) ) {
-				$new_payment_method = woocommerce_clean( $_POST['payment_method'] );
+				$new_payment_method = wc_clean( $_POST['payment_method'] );
 			} else {
 				$new_payment_method = $renewal_order->payment_method;
 			}
@@ -492,7 +498,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	public static function change_payment_method_page_title( $title ) {
 
 		if ( is_main_query() && in_the_loop() && is_page() && is_checkout_pay_page() && self::$is_request_to_change_payment ) {
-			$title = __( 'Change Payment Method', 'woocommerce-subscriptions' );
+			$title = _x( 'Change Payment Method', 'the page title of the change payment method form', 'woocommerce-subscriptions' );
 		}
 
 		return $title;

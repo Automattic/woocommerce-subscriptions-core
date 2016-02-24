@@ -120,8 +120,7 @@ class WC_Subscriptions_Renewal_Order {
 
 		if ( is_a( $renewal_order, 'WC_Order' ) && wcs_is_subscription( $subscription ) ) {
 
-			// translators: placeholder is order number, hash before order number
-			$order_number = sprintf( __( '#%s', 'woocommerce-subscriptions' ), $renewal_order->get_order_number() );
+			$order_number = sprintf( _x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), $renewal_order->get_order_number() );
 
 			// translators: placeholder is order ID
 			$subscription->add_order_note( sprintf( __( 'Order %s created to record renewal.', 'woocommerce-subscriptions' ), sprintf( '<a href="%s">%s</a> ', esc_url( wcs_get_edit_post_link( $renewal_order->id ) ), $order_number ) ) );
@@ -226,7 +225,7 @@ class WC_Subscriptions_Renewal_Order {
 			$subject  = apply_filters(
 				'woocommerce_subscriptions_email_subject_customer_procesing_renewal_order',
 				// translators: placeholder is blog name
-				sprintf( _x( '[%s] Subscription Renewal Order', 'used in processing renewal order email to customer', 'woocommerce-subscriptions' ), $blogname ),
+				sprintf( _x( '[%s] Subscription Renewal Order', 'used as email subject for renewal order notification email to customer', 'woocommerce-subscriptions' ), $blogname ),
 				$order
 			);
 		}
@@ -250,7 +249,7 @@ class WC_Subscriptions_Renewal_Order {
 			$subject  = apply_filters(
 				'woocommerce_subscriptions_email_subject_customer_completed_renewal_order',
 				// translators: placeholder is blog name
-				sprintf( _x( '[%s] Subscription Renewal Order', 'used in completed renewal order email to customer', 'woocommerce-subscriptions' ), $blogname ),
+				sprintf( _x( '[%s] Subscription Renewal Order', 'used as email subject for renewal order notification email to customer', 'woocommerce-subscriptions' ), $blogname ),
 				$order
 			);
 		}

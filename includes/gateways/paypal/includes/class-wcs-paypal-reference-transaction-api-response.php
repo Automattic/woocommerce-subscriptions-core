@@ -102,9 +102,9 @@ class WCS_PayPal_Reference_Transaction_API_Response extends WC_Gateway_Paypal_Re
 			if ( $this->has_parameter( "L_SHORTMESSAGE{$index}" ) ) {
 
 				$error_message = sprintf( '%s: %s - %s',
-					$this->has_parameter( "L_SEVERITYCODE{$index}" ) ? $this->get_parameter( "L_SEVERITYCODE{$index}" ) : __( 'Error', 'woocommerce-subscriptions' ),
-					$this->has_parameter( "L_SHORTMESSAGE{$index}" ) ? $this->get_parameter( "L_SHORTMESSAGE{$index}" ) : __( 'Unknown', 'woocommerce-subscriptions' ),
-					$this->has_parameter( "L_LONGMESSAGE{$index}" ) ? $this->get_parameter( "L_LONGMESSAGE{$index}" ) : __( 'Unknown error', 'woocommerce-subscriptions' )
+					$this->has_parameter( "L_SEVERITYCODE{$index}" ) ? $this->get_parameter( "L_SEVERITYCODE{$index}" ) : _x( 'Error', 'used in api error message if there is no severity code from PayPal', 'woocommerce-subscriptions' ),
+					$this->get_parameter( "L_SHORTMESSAGE{$index}" ),
+					$this->has_parameter( "L_LONGMESSAGE{$index}" ) ? $this->get_parameter( "L_LONGMESSAGE{$index}" ) : _x( 'Unknown error', 'used in api error message if there is no long message', 'woocommerce-subscriptions' )
 				);
 
 				// append additional info if available
@@ -116,7 +116,7 @@ class WCS_PayPal_Reference_Transaction_API_Response extends WC_Gateway_Paypal_Re
 			}
 		}
 
-		return empty( $error_messages ) ? __( 'N/A', 'woocommerce-subscriptions' ) : trim( implode( ', ', $error_messages ) );
+		return empty( $error_messages ) ? _x( 'N/A', 'no information about something', 'woocommerce-subscriptions' ) : trim( implode( ', ', $error_messages ) );
 	}
 
 	/**

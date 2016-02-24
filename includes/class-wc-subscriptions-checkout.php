@@ -63,9 +63,11 @@ class WC_Subscriptions_Checkout {
 		$subscriptions = wcs_get_subscriptions_for_order( $order->id, array( 'order_type' => 'parent' ) );
 
 		if ( ! empty( $subscriptions ) ) {
+			remove_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 			foreach ( $subscriptions as $subscription ) {
 				wp_delete_post( $subscription->id );
 			}
+			add_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 		}
 
 		// Create new subscriptions for each group of subscription products in the cart (that is not a renewal)
@@ -159,6 +161,7 @@ class WC_Subscriptions_Checkout {
 				$item_id = $subscription->add_fee( $fee );
 
 				if ( ! $item_id ) {
+					// translators: placeholder is an internal error number
 					throw new Exception( sprintf( __( 'Error %d: Unable to create subscription. Please try again.', 'woocommerce-subscriptions' ), 403 ) );
 				}
 
@@ -171,13 +174,15 @@ class WC_Subscriptions_Checkout {
 			// Store tax rows
 			foreach ( array_keys( $cart->taxes + $cart->shipping_taxes ) as $tax_rate_id ) {
 				if ( $tax_rate_id && ! $subscription->add_tax( $tax_rate_id, $cart->get_tax_amount( $tax_rate_id ), $cart->get_shipping_tax_amount( $tax_rate_id ) ) && apply_filters( 'woocommerce_cart_remove_taxes_zero_rate_id', 'zero-rated' ) !== $tax_rate_id ) {
-					throw new Exception( sprintf( __( 'Error %d: Unable to subscription order. Please try again.', 'woocommerce-subscriptions' ), 405 ) );
+					// translators: placeholder is an internal error number
+					throw new Exception( sprintf( __( 'Error %d: Unable to add tax to subscription. Please try again.', 'woocommerce-subscriptions' ), 405 ) );
 				}
 			}
 
 			// Store coupons
 			foreach ( $cart->get_coupons() as $code => $coupon ) {
 				if ( ! $subscription->add_coupon( $code, $cart->get_coupon_discount_amount( $code ), $cart->get_coupon_discount_tax_amount( $code ) ) ) {
+					// translators: placeholder is an internal error number
 					throw new Exception( sprintf( __( 'Error %d: Unable to create order. Please try again.', 'woocommerce-subscriptions' ), 406 ) );
 				}
 			}
@@ -260,6 +265,7 @@ class WC_Subscriptions_Checkout {
 		);
 
 		if ( ! $item_id ) {
+			// translators: placeholder is an internal error number
 			throw new Exception( sprintf( __( 'Error %d: Unable to create subscription. Please try again.', 'woocommerce-subscriptions' ), 402 ) );
 		}
 

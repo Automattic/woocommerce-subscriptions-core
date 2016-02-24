@@ -23,6 +23,7 @@ class WCS_Email_Processing_Renewal_Order extends WC_Email_Customer_Processing_Or
 		$this->id             = 'customer_processing_renewal_order';
 		$this->title          = __( 'Processing Renewal order', 'woocommerce-subscriptions' );
 		$this->description    = __( 'This is an order notification sent to the customer after payment for a subscription renewal order is completed. It contains the renewal order details.', 'woocommerce-subscriptions' );
+		$this->customer_email = true;
 
 		$this->heading        = __( 'Thank you for your order', 'woocommerce-subscriptions' );
 		$this->subject        = __( 'Your {blogname} renewal order receipt from {order_date}', 'woocommerce-subscriptions' );
@@ -57,9 +58,9 @@ class WCS_Email_Processing_Renewal_Order extends WC_Email_Customer_Processing_Or
 			$order_date_index = array_search( '{order_date}', $this->find );
 			if ( false === $order_date_index ) {
 				$this->find[] = '{order_date}';
-				$this->replace[] = date_i18n( woocommerce_date_format(), wcs_date_to_time( $this->object->order_date ) );
+				$this->replace[] = date_i18n( wc_date_format(), wcs_date_to_time( $this->object->order_date ) );
 			} else {
-				$this->replace[ $order_date_index ] = date_i18n( woocommerce_date_format(), wcs_date_to_time( $this->object->order_date ) );
+				$this->replace[ $order_date_index ] = date_i18n( wc_date_format(), wcs_date_to_time( $this->object->order_date ) );
 			}
 
 			$order_number_index = array_search( '{order_number}', $this->find );
