@@ -43,6 +43,8 @@ class WCS_Admin_Meta_Boxes {
 		add_action( 'woocommerce_order_action_wcs_create_pending_renewal', __CLASS__ .  '::create_pending_renewal_action_request', 10, 1 );
 
 		add_filter( 'woocommerce_resend_order_emails_available', __CLASS__ . '::remove_order_email_actions', 0, 1 );
+
+		add_action( 'woocommerce_order_action_wcs_retry_renewal_payment', __CLASS__ .  '::process_retry_renewal_payment_action_request', 10, 1 );
 	}
 
 	/**
@@ -197,6 +199,21 @@ class WCS_Admin_Meta_Boxes {
 		}
 
 		return $email_actions;
+	}
+
+	/**
+	 * Process the action request to retry renewal payment for failed renewal orders.
+	 *
+	 * @param WC_Order $order
+	 * @since 2.0.10
+	 */
+	public static function process_retry_renewal_payment_action_request( $order ) {
+
+		if ( $order->has_status( 'failed' ) && ! empty( $order->payment_method ) && $order->get_total() > 0 ) {
+			// init payment gateways
+			WC_Payment_Gateways::instance();
+			do_action( 'woocommerce_scheduled_subscription_payment_' . $order->payment_method, $order->get_total(), $order );
+		}
 	}
 }
 
