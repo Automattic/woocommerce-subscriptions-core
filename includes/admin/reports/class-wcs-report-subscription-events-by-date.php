@@ -122,12 +122,66 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$query_results = (array) $wpdb->get_results( $query );
 		$this->report_data->signup_counts = $query_results;
 
+		/*
+		* Subscription cancellations
+		*/
+		$query = $wpdb->prepare(
+			"SELECT COUNT(DISTINCT wcsubs.ID) as count, wcsmeta_cancel.meta_value as cancel_date
+				FROM {$wpdb->posts} as wcsubs
+				JOIN {$wpdb->posts} AS wcorder
+					ON wcsubs.post_parent = wcorder.ID
+						AND wcorder.post_type IN ( 'shop_order' )
+						AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
+				JOIN {$wpdb->postmeta} AS wcsmeta_cancel
+					ON wcsubs.ID = wcsmeta_cancel.post_id
+						AND wcsmeta_cancel.meta_key = %s
+				WHERE
+						wcsmeta_cancel.meta_value BETWEEN %s AND %s
+				GROUP BY YEAR(wcsmeta_cancel.meta_value), MONTH(wcsmeta_cancel.meta_value), DAY(wcsmeta_cancel.meta_value)
+				ORDER BY wcsmeta_cancel.meta_value ASC",
+			wcs_get_date_meta_key( 'cancelled' ),
+			date( 'Y-m-d', $this->start_date ),
+			date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) )
+		);
+
+		// TODO cache this
+		$query_results = (array) $wpdb->get_results( $query );
+		$this->report_data->cancel_counts = $query_results;
+
+		/*
+		* Subscriptions ended
+		*/
+		$query = $wpdb->prepare(
+			"SELECT COUNT(DISTINCT wcsubs.ID) as count, wcsmeta_end.meta_value as end_date
+				FROM {$wpdb->posts} as wcsubs
+				JOIN {$wpdb->posts} AS wcorder
+					ON wcsubs.post_parent = wcorder.ID
+						AND wcorder.post_type IN ( 'shop_order' )
+						AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
+				JOIN {$wpdb->postmeta} AS wcsmeta_end
+					ON wcsubs.ID = wcsmeta_end.post_id
+						AND wcsmeta_end.meta_key = %s
+				WHERE
+						wcsmeta_end.meta_value BETWEEN %s AND %s
+				GROUP BY YEAR(wcsmeta_end.meta_value), MONTH(wcsmeta_end.meta_value), DAY(wcsmeta_end.meta_value)
+				ORDER BY wcsmeta_end.meta_value ASC",
+			wcs_get_date_meta_key( 'end' ),
+			date( 'Y-m-d', $this->start_date ),
+			date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) )
+		);
+
+		// TODO cache this
+		$query_results = (array) $wpdb->get_results( $query );
+		$this->report_data->ended_counts = $query_results;
+
 		// Total up the query data
 		$this->report_data->signup_totals  = absint( array_sum( wp_list_pluck( $this->report_data->signup_counts, 'signup_totals' ) ) );
 		$this->report_data->renewal_totals = absint( array_sum( wp_list_pluck( $this->report_data->renewal_counts, 'renewal_totals' ) ) );
 		$this->report_data->total_signups  = absint( array_sum( wp_list_pluck( $this->report_data->signup_counts, 'count' ) ) );
 		$this->report_data->total_renewals = absint( array_sum( wp_list_pluck( $this->report_data->renewal_counts, 'count' ) ) );
 		$this->report_data->total_switches = absint( array_sum( wp_list_pluck( $this->report_data->switch_counts, 'count' ) ) );
+		$this->report_data->total_cancels  = absint( array_sum( wp_list_pluck( $this->report_data->cancel_counts, 'count' ) ) );
+		$this->report_data->total_ended    = absint( array_sum( wp_list_pluck( $this->report_data->ended_counts, 'count' ) ) );
 
 	}
 
@@ -169,6 +223,18 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			'highlight_series' => 2,
 		);
 
+		$legend[] = array(
+			'title' => sprintf( __( '%s subscription cancellations', 'woocommerce-subscriptions' ), '<strong>' . $data->total_cancels . '</strong>' ),
+			'placeholder'      => __( 'All subscriptions which have been cancelled within this timeframe.', 'woocommerce-subscriptions' ),
+			'color' => $this->chart_colours['cancel_count'],
+		);
+
+		$legend[] = array(
+			'title' => sprintf( __( '%s subscriptions ended', 'woocommerce-subscriptions' ), '<strong>' . $data->total_ended . '</strong>' ),
+			'placeholder'      => __( 'All subscriptions which have ended within this timeframe.', 'woocommerce-subscriptions' ),
+			'color' => $this->chart_colours['ended_count'],
+		);
+
 		return $legend;
 	}
 
@@ -189,6 +255,8 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			'renewal_count'    => '#f29ec4',
 			'renewal_total'    => '#CC9900',
 			'signup_total'     => '#99CC00',
+			'cancel_count'	   => '#800000',
+			'ended_count'      => '#804000',
 		);
 
 		$current_range = ! empty( $_GET['range'] ) ? sanitize_text_field( $_GET['range'] ) : '7day';
