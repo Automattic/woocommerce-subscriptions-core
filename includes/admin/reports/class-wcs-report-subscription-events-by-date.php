@@ -155,15 +155,15 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 					) a
 					WHERE a.Date >= %s AND a.Date <= %s
 				) searchdate
-				LEFT JOIN	(
+				LEFT JOIN (
 					{$wpdb->posts} AS wcsubs
 					JOIN {$wpdb->posts} AS wcorder
 						ON wcsubs.post_parent = wcorder.ID
-							AND wcorder.post_type IN ( 'shop_order' )
-							AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
+							AND wcorder.post_type IN ( '" . implode( "','", wc_get_order_types( 'order-count' ) ) . "' )
+							AND wcorder.post_status IN ( 'wc-" . implode( "','wc-", apply_filters( 'woocommerce_reports_order_statuses', array( 'completed', 'processing', 'on-hold', 'refunded' ) ) ) . "' )
 					LEFT JOIN {$wpdb->postmeta} AS wcsmeta
 						ON wcsubs.ID = wcsmeta.post_id
-							AND wcsmeta.meta_key = '_schedule_end'
+							AND wcsmeta.meta_key = %s
 				) ON DATE( wcsubs.post_date ) <= searchdate.Date
 					AND wcsubs.post_type IN ( 'shop_subscription' )
 					AND ( DATE( wcsmeta.meta_value ) >= searchdate.Date
@@ -171,10 +171,10 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				GROUP BY searchdate.Date
 				ORDER BY searchdate.Date ASC",
 			date( 'Y-m-d', $this->start_date ),
-			date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) )
+			date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) ),
+			wcs_get_date_meta_key( 'end' )
 		);
 
-		// TODO cache this
 		$query_results = (array) $wpdb->get_results( $query );
 		$this->report_data->subscriber_counts = $query_results;
 
