@@ -29,9 +29,6 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 
 		// When a resubscribe order is created on checkout, record the resubscribe, attached after WC_Subscriptions_Checkout::process_checkout()
 		add_action( 'woocommerce_checkout_subscription_created', array( &$this, 'maybe_record_resubscribe' ), 10, 3 );
-
-		// Use original order price when resubscribing to products with addons (to ensure the adds on prices are included)
-		add_filter( 'woocommerce_product_addons_adjust_price', array( &$this, 'product_addons_adjust_price' ), 10, 2 );
 	}
 
 	/**
@@ -146,22 +143,6 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 		}
 
 		return $cart_item_session_data;
-	}
-
-	/**
-	 * When restoring the cart from the session, if the cart item contains addons, as well as
-	 * a resubscribe, do not adjust the price because the original order's price will
-	 * be used, and this includes the addons amounts.
-	 *
-	 * @since 2.0
-	 */
-	public function product_addons_adjust_price( $adjust_price, $cart_item ) {
-
-		if ( true === $adjust_price && isset( $cart_item[ $this->cart_item_key ] ) ) {
-			$adjust_price = false;
-		}
-
-		return $adjust_price;
 	}
 
 	/**
