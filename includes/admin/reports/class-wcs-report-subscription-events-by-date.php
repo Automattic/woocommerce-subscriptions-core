@@ -118,7 +118,6 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) )
 		);
 
-		// TODO cache this
 		$query_results = (array) $wpdb->get_results( $query );
 		$this->report_data->signup_counts = $query_results;
 
@@ -144,7 +143,6 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) )
 		);
 
-		// TODO cache this
 		$query_results = (array) $wpdb->get_results( $query );
 		$this->report_data->cancel_counts = $query_results;
 
@@ -170,7 +168,6 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) )
 		);
 
-		// TODO cache this
 		$query_results = (array) $wpdb->get_results( $query );
 		$this->report_data->ended_counts = $query_results;
 
