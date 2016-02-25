@@ -646,6 +646,17 @@ class WCS_Admin_Post_Types {
 					esc_attr( $_GET['s'] )
 				)
 			),
+			$wpdb->get_col(
+				$wpdb->prepare( "
+					SELECT posts.ID
+					FROM {$wpdb->posts} posts
+					INNER JOIN {$wpdb->users} users ON posts.post_author = users.ID
+					WHERE users.user_email LIKE '%%%s%%'
+					AND posts.post_type = 'shop_subscription'
+					",
+					esc_attr( $_GET['s'] )
+				)
+			),
 			array( $search_order_id )
 		) );
 
