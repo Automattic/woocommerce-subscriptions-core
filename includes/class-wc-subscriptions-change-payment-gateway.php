@@ -190,7 +190,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 			} elseif ( empty( $subscription ) ) {
 
-				WC_Subscriptions::add_notice( __( 'Invalid subscription.', 'woocommerce-subscriptions' ), 'error' );
+				WC_Subscriptions::add_notice( __( 'Invalid Subscription.', 'woocommerce-subscriptions' ), 'error' );
 
 			} elseif ( ! current_user_can( 'edit_shop_subscription_payment_method', $subscription->id ) ) {
 
@@ -256,7 +256,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 			$actions['change_payment_method'] = array(
 				'url'  => wp_nonce_url( add_query_arg( array( 'change_payment_method' => $subscription->id ), $subscription->get_checkout_payment_url() ), __FILE__ ),
-				'name' => __( 'Change Payment', 'woocommerce-subscriptions' ),
+				'name' => _x( 'Change Payment', 'label on button, imperative', 'woocommerce-subscriptions' ),
 			);
 
 		}

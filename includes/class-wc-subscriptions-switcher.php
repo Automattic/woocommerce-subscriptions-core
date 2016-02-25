@@ -150,11 +150,8 @@ class WC_Subscriptions_Switcher {
 			}
 
 			if ( $removed_item_count > 0 ) {
-				if ( 1 == $removed_item_count ) {
-					WC_Subscriptions::add_notice( __( 'Your cart contained an invalid subscription switch request. It has been removed.', 'woocommerce-subscriptions' ), 'error' );
-				} else {
-					WC_Subscriptions::add_notice( __( 'Your cart contained invalid subscription switch requests. They have been removed.', 'woocommerce-subscriptions' ), 'error' );
-				}
+				WC_Subscriptions::add_notice( _n( 'Your cart contained an invalid subscription switch request. It has been removed.', 'Your cart contained invalid subscription switch requests. They have been removed.', 	$removed_item_count, 'woocommerce-subscriptions' ), 'error' );
+
 				wp_redirect( WC()->cart->get_cart_url() );
 				exit();
 			}
@@ -306,7 +303,7 @@ class WC_Subscriptions_Switcher {
 				'default' => 'no',
 				'type'    => 'select',
 				'options' => array(
-					'no'               => _x( 'Never', 'when to allow switching', 'woocommerce-subscriptions' ),
+					'no'               => _x( 'Never', 'when to allow a setting', 'woocommerce-subscriptions' ),
 					'variable'         => _x( 'Between Subscription Variations', 'when to allow switching', 'woocommerce-subscriptions' ),
 					'grouped'          => _x( 'Between Grouped Subscriptions', 'when to allow switching', 'woocommerce-subscriptions' ),
 					'variable_grouped' => _x( 'Between Both Variations & Grouped Subscriptions', 'when to allow switching', 'woocommerce-subscriptions' ),
@@ -323,7 +320,7 @@ class WC_Subscriptions_Switcher {
 				'default' => 'no',
 				'type'    => 'select',
 				'options' => array(
-					'no'              => _x( 'Never', 'when to prorate recurring fee when switching', 'woocommerce-subscriptions' ),
+					'no'              => _x( 'Never', 'when to allow a setting', 'woocommerce-subscriptions' ),
 					'virtual-upgrade' => _x( 'For Upgrades of Virtual Subscription Products Only', 'when to prorate recurring fee when switching', 'woocommerce-subscriptions' ),
 					'yes-upgrade'     => _x( 'For Upgrades of All Subscription Products', 'when to prorate recurring fee when switching', 'woocommerce-subscriptions' ),
 					'virtual'         => _x( 'For Upgrades & Downgrades of Virtual Subscription Products Only', 'when to prorate recurring fee when switching', 'woocommerce-subscriptions' ),
@@ -357,9 +354,9 @@ class WC_Subscriptions_Switcher {
 				'default' => 'no',
 				'type'    => 'select',
 				'options' => array(
-					'no'                 => _x( 'Never', 'when to prorate subs length when switching', 'woocommerce-subscriptions' ),
-					'virtual'            => _x( 'For Virtual Subscription Products Only', 'when to prorate subs length when switching', 'woocommerce-subscriptions' ),
-					'yes'                => _x( 'For All Subscription Products', 'when to prorate subs length when switching', 'woocommerce-subscriptions' ),
+					'no'                 => _x( 'Never', 'when to allow a setting', 'woocommerce-subscriptions' ),
+					'virtual'            => _x( 'For Virtual Subscription Products Only', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
+					'yes'                => _x( 'For All Subscription Products', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
 				),
 				'desc_tip' => true,
 			),
@@ -686,7 +683,7 @@ class WC_Subscriptions_Switcher {
 					$old_item_name = wcs_get_order_item_name( $existing_item, array( 'attributes' => true ) );
 					$new_item_name = wcs_get_cart_item_name( $cart_item, array( 'attributes' => true ) );
 
-					// translators: 1$: old item, 2$: new item when switching
+					// translators: 1$: old item name, 2$: new item name when switching
 					$subscription->add_order_note( sprintf( _x( 'Customer switched from: %1$s to %2$s.', 'used in order notes', 'woocommerce-subscriptions' ), $old_item_name, $new_item_name ) );
 
 					// Change the shipping
@@ -1829,7 +1826,7 @@ class WC_Subscriptions_Switcher {
 		_deprecated_function( __METHOD__, '2.0' );
 
 		if ( 'switched' === strtolower( $status_string ) ) {
-			$status_string = __( 'Switched', 'woocommerce-subscriptions' );
+			$status_string = _x( 'Switched', 'Subscription status', 'woocommerce-subscriptions' );
 		}
 
 		return $status_string;

@@ -148,9 +148,9 @@ class WCS_Admin_Post_Types {
 
 		// Make it filterable in case extensions want to change this
 		$bulk_actions = apply_filters( 'woocommerce_subscription_bulk_actions', array(
-			'active'    => _x( 'Activate', 'action on bulk subscriptions', 'woocommerce-subscriptions' ),
-			'on-hold'   => _x( 'Put on-hold', 'action on bulk subscriptions', 'woocommerce-subscriptions' ),
-			'cancelled' => _x( 'Cancel', 'action on bulk subscriptions', 'woocommerce-subscriptions' ),
+			'active'    => _x( 'Activate', 'an action on a subscription', 'woocommerce-subscriptions' ),
+			'on-hold'   => _x( 'Put on-hold', 'an action on a subscription', 'woocommerce-subscriptions' ),
+			'cancelled' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
 		) );
 
 		// No need to display certain bulk actions if we know all the subscriptions on the page have that status already
@@ -225,7 +225,7 @@ class WCS_Admin_Post_Types {
 
 		foreach ( $subscription_ids as $subscription_id ) {
 			$subscription = wcs_get_subscription( $subscription_id );
-			$order_note   = __( 'Subscription status changed by bulk edit:', 'woocommerce-subscriptions' );
+			$order_note   = _x( 'Subscription status changed by bulk edit:', 'Used in order note. Reason why status changed.', 'woocommerce-subscriptions' );
 
 			try {
 
@@ -310,16 +310,16 @@ class WCS_Admin_Post_Types {
 
 		$columns = array(
 			'cb'                => '<input type="checkbox" />',
-			'status'            => _x( 'Status', 'list column title', 'woocommerce-subscriptions' ),
-			'order_title'       => _x( 'Subscription', 'list column title', 'woocommerce-subscriptions' ),
-			'order_items'       => _x( 'Items', 'list column title', 'woocommerce-subscriptions' ),
-			'recurring_total'   => _x( 'Total', 'list column title', 'woocommerce-subscriptions' ),
-			'start_date'        => _x( 'Start Date', 'list column title', 'woocommerce-subscriptions' ),
-			'trial_end_date'    => _x( 'Trial End', 'list column title', 'woocommerce-subscriptions' ),
-			'next_payment_date' => _x( 'Next Payment', 'list column title', 'woocommerce-subscriptions' ),
-			'last_payment_date' => _x( 'Last Payment', 'list column title', 'woocommerce-subscriptions' ),
-			'end_date'          => _x( 'End Date', 'list column title', 'woocommerce-subscriptions' ),
-			'orders'            => _x( 'Orders', 'list column title', 'woocommerce-subscriptions' ),
+			'status'            => __( 'Status', 'woocommerce-subscriptions' ),
+			'order_title'       => __( 'Subscription', 'woocommerce-subscriptions' ),
+			'order_items'       => __( 'Items', 'woocommerce-subscriptions' ),
+			'recurring_total'   => __( 'Total', 'woocommerce-subscriptions' ),
+			'start_date'        => __( 'Start Date', 'woocommerce-subscriptions' ),
+			'trial_end_date'    => __( 'Trial End', 'woocommerce-subscriptions' ),
+			'next_payment_date' => __( 'Next Payment', 'woocommerce-subscriptions' ),
+			'last_payment_date' => __( 'Last Payment', 'woocommerce-subscriptions' ),
+			'end_date'          => __( 'End Date', 'woocommerce-subscriptions' ),
+			'orders'            => _x( 'Orders', 'number of orders linked to a subscription', 'woocommerce-subscriptions' ),
 		);
 
 		return $columns;
@@ -363,7 +363,7 @@ class WCS_Admin_Post_Types {
 				$all_statuses = array(
 					'active'    => __( 'Reactivate', 'woocommerce-subscriptions' ),
 					'on-hold'   => __( 'Suspend', 'woocommerce-subscriptions' ),
-					'cancelled' => __( 'Cancel', 'woocommerce-subscriptions' ),
+					'cancelled' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
 					'trash'     => __( 'Trash', 'woocommerce-subscriptions' ),
 					'deleted'   => __( 'Delete Permanently', 'woocommerce-subscriptions' ),
 				);
@@ -421,11 +421,13 @@ class WCS_Admin_Post_Types {
 				}
 
 				if ( $the_subscription->billing_email ) {
-					$customer_tip .= '<br/><br/>' . __( 'Email:', 'woocommerce-subscriptions' ) . ' ' . esc_attr( $the_subscription->billing_email );
+					// translators: placeholder is customer's billing email
+					$customer_tip .= '<br/><br/>' . sprintf( __( 'Email: %s', 'woocommerce-subscriptions' ), esc_attr( $the_subscription->billing_email ) );
 				}
 
 				if ( $the_subscription->billing_phone ) {
-					$customer_tip .= '<br/><br/>' . __( 'Tel:', 'woocommerce-subscriptions' ) . ' ' . esc_html( $the_subscription->billing_phone );
+					// translators: placeholder is customer's billing phone number
+					$customer_tip .= '<br/><br/>' . sprintf( __( 'Tel: %s', 'woocommerce-subscriptions' ), esc_html( $the_subscription->billing_phone ) );
 				}
 
 				if ( ! empty( $customer_tip ) ) {
@@ -453,7 +455,7 @@ class WCS_Admin_Post_Types {
 					$username = trim( $the_subscription->billing_first_name . ' ' . $the_subscription->billing_last_name );
 				}
 				// translators: $1: is opening link, $2: is subscription order number, $3: is closing link tag, $4: is user's name
-				$column_content = sprintf( _x( '%1$s#%2$s%3$s for %4$s', 'Subscription number for X', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post.php?post=' . absint( $post->ID ) . '&action=edit' ) ) . '">', '<strong>' . esc_attr( $the_subscription->get_order_number() ) . '</strong>', '</a>', $username );
+				$column_content = sprintf( _x( '%1$s#%2$s%3$s for %4$s', 'Subscription title on admin table. (e.g.: #211 for John Doe)', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post.php?post=' . absint( $post->ID ) . '&action=edit' ) ) . '">', '<strong>' . esc_attr( $the_subscription->get_order_number() ) . '</strong>', '</a>', $username );
 
 				$column_content .= '</div>';
 
@@ -533,8 +535,8 @@ class WCS_Admin_Post_Types {
 			case 'recurring_total' :
 				$column_content .= esc_html( strip_tags( $the_subscription->get_formatted_order_total() ) );
 
-				// translators: placeholder is payment method used
-				$column_content .= '<small class="meta">' . esc_html( sprintf( _x( 'Via %s', 'used in admin list table on recurring total', 'woocommerce-subscriptions' ), $the_subscription->get_payment_method_to_display() ) ) . '</small>';
+				// translators: placeholder is the display name of a payment gateway a subscription was paid by
+				$column_content .= '<small class="meta">' . esc_html( sprintf( __( 'Via %s', 'woocommerce-subscriptions' ), $the_subscription->get_payment_method_to_display() ) ) . '</small>';
 				break;
 
 			case 'start_date':

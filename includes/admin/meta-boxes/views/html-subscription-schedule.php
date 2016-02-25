@@ -29,13 +29,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 			echo woocommerce_wp_select( array(
 				'id'          => '_billing_period',
 				'class'       => 'billing_period',
-				'label'       => __( 'Billing Period:', 'woocommerce-subscriptions' ),
+				'label'       => __( 'Billing Period', 'woocommerce-subscriptions' ),
 				'value'       => empty( $the_subscription->billing_period ) ? 'month' : $the_subscription->billing_period,
 				'options'     => wcs_get_subscription_period_strings(),
 				)
 			);
 			?>
-			<input type="hidden" name="wcs-lengths" id="wcs-lengths" data-subscription_lengths="<?php echo esc_attr( json_encode( wcs_get_subscription_ranges() ) ); ?>">
+			<input type="hidden" name="wcs-lengths" id="wcs-lengths" data-subscription_lengths="<?php echo esc_attr( wcs_json_encode( wcs_get_subscription_ranges() ) ); ?>">
 		</div>
 		<?php else : ?>
 		<strong><?php esc_html_e( 'Recurring:', 'woocommerce-subscriptions' ); ?></strong>

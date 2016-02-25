@@ -141,7 +141,7 @@ class WCS_PayPal {
 
 		if ( self::are_credentials_set() ) {
 
-			$accounts_with_reference_transactions_enabled = json_decode( get_option( 'wcs_paypal_rt_enabled_accounts' , json_encode( array() ) ) );
+			$accounts_with_reference_transactions_enabled = json_decode( get_option( 'wcs_paypal_rt_enabled_accounts' , wcs_json_encode( array() ) ) );
 
 			if ( in_array( $api_username, $accounts_with_reference_transactions_enabled ) ) {
 
@@ -151,7 +151,7 @@ class WCS_PayPal {
 
 				if ( self::get_api()->are_reference_transactions_enabled() ) {
 					$accounts_with_reference_transactions_enabled[] = $api_username;
-					update_option( 'wcs_paypal_rt_enabled_accounts', json_encode( $accounts_with_reference_transactions_enabled ) );
+					update_option( 'wcs_paypal_rt_enabled_accounts', wcs_json_encode( $accounts_with_reference_transactions_enabled ) );
 					$reference_transactions_enabled = true;
 				} else {
 					set_transient( $transient_key, $api_username, DAY_IN_SECONDS );
@@ -326,7 +326,7 @@ class WCS_PayPal {
 
 			$response = self::get_api()->do_reference_transaction( $paypal_profile_id, $order, array(
 				'amount'         => $amount,
-				'invoice_number' => self::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number', 'woocommerce-subscriptions' ) ) ),
+				'invoice_number' => self::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) ),
 			) );
 
 			self::process_subscription_payment_response( $order, $response );
@@ -538,7 +538,7 @@ class WCS_PayPal {
 	/** Method required by WCS_SV_API_Base, which normally requires an instance of SV_WC_Plugin **/
 
 	public function get_plugin_name() {
-		return __( 'WooCommerce Subscriptions PayPal', 'woocommerce-subscriptions' );
+		return _x( 'WooCommerce Subscriptions PayPal', 'used in User Agent data sent to PayPal to help identify where a payment came from', 'woocommerce-subscriptions' );
 	}
 
 	public function get_version() {

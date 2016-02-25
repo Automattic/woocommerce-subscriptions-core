@@ -371,7 +371,7 @@ class WC_Subscriptions_Upgrader {
 		WCS_Upgrade_Logger::add( sprintf( 'Completed upgrade step: %s', $_POST['upgrade_step'] ) );
 
 		header( 'Content-Type: application/json; charset=utf-8' );
-		echo json_encode( $results );
+		echo wcs_json_encode( $results );
 		exit();
 	}
 

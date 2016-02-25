@@ -60,7 +60,7 @@ class WCS_PayPal_Standard_Request {
 			$paypal_args['cmd'] = '_xclick-subscriptions';
 
 			// Store the subscription ID in the args sent to PayPal so we can access them later
-			$paypal_args['custom'] = json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key, 'subscription_id' => $subscription->id, 'subscription_key' => $subscription->order_key ) );
+			$paypal_args['custom'] = wcs_json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key, 'subscription_id' => $subscription->id, 'subscription_key' => $subscription->order_key ) );
 
 			foreach ( $subscription->get_items() as $item ) {
 				if ( $item['qty'] > 1 ) {
@@ -130,10 +130,10 @@ class WCS_PayPal_Standard_Request {
 				// Change the 'invoice' and the 'custom' values to be for the original order (if there is one)
 				if ( false === $subscription->order ) {
 					// No original order so we need to use the subscriptions values instead
-					$order_number = ltrim( $subscription->get_order_number(), _x( '#', 'hash before the order number', 'woocommerce-subscriptions' ) ) . '-subscription';
+					$order_number = ltrim( $subscription->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) . '-subscription';
 					$order_id_key = array( 'order_id' => $subscription->id, 'order_key' => $subscription->order_key );
 				} else {
-					$order_number = ltrim( $subscription->order->get_order_number(), _x( '#', 'hash before the order number', 'woocommerce-subscriptions' ) );
+					$order_number = ltrim( $subscription->order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) );
 					$order_id_key = array( 'order_id' => $subscription->order->id, 'order_key' => $subscription->order->order_key );
 				}
 
@@ -141,7 +141,7 @@ class WCS_PayPal_Standard_Request {
 
 				// Set the invoice details to the original order's invoice but also append a special string and this renewal orders ID so that we can match it up as a failed renewal order payment later
 				$paypal_args['invoice'] = WCS_PayPal::get_option( 'invoice_prefix' ) . $order_number . $suffix;
-				$paypal_args['custom']  = json_encode( array_merge( $order_id_key, array( 'subscription_id' => $subscription->id, 'subscription_key' => $subscription->order_key ) ) );
+				$paypal_args['custom']  = wcs_json_encode( array_merge( $order_id_key, array( 'subscription_id' => $subscription->id, 'subscription_key' => $subscription->order_key ) ) );
 
 			}
 

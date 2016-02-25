@@ -163,7 +163,7 @@ class WCS_Email_Customer_Renewal_Invoice extends WC_Email_Customer_Invoice {
 		$this->form_fields = array_merge(
 			array(
 				'enabled' => array(
-					'title'   => __( 'Enable/Disable', 'woocommerce-subscriptions' ),
+					'title'   => _x( 'Enable/Disable', 'an email notification', 'woocommerce-subscriptions' ),
 					'type'    => 'checkbox',
 					'label'   => __( 'Enable this email notification', 'woocommerce-subscriptions' ),
 					'default' => 'yes',

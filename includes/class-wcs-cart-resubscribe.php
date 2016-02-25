@@ -29,9 +29,6 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 
 		// When a resubscribe order is created on checkout, record the resubscribe, attached after WC_Subscriptions_Checkout::process_checkout()
 		add_action( 'woocommerce_checkout_subscription_created', array( &$this, 'maybe_record_resubscribe' ), 10, 3 );
-
-		// Use original order price when resubscribing to products with addons (to ensure the adds on prices are included)
-		add_filter( 'woocommerce_product_addons_adjust_price', array( &$this, 'product_addons_adjust_price' ), 10, 2 );
 	}
 
 	/**
@@ -113,7 +110,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	 */
 	public function maybe_record_resubscribe( $new_subscription, $order, $recurring_cart ) {
 
-		$cart_item = wcs_cart_contains_resubscribe( $recurring_cart );
+		$cart_item = $this->cart_contains( $recurring_cart );
 
 		if ( false !== $cart_item ) {
 			update_post_meta( $order->id, '_subscription_resubscribe', $cart_item[ $this->cart_item_key ]['subscription_id'], true );
@@ -149,22 +146,6 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	}
 
 	/**
-	 * When restoring the cart from the session, if the cart item contains addons, as well as
-	 * a resubscribe, do not adjust the price because the original order's price will
-	 * be used, and this includes the addons amounts.
-	 *
-	 * @since 2.0
-	 */
-	public function product_addons_adjust_price( $adjust_price, $cart_item ) {
-
-		if ( true === $adjust_price && isset( $cart_item[ $this->cart_item_key ] ) ) {
-			$adjust_price = false;
-		}
-
-		return $adjust_price;
-	}
-
-	/**
 	 * If a product is being marked as not purchasable because it is limited and the customer has a subscription,
 	 * but the current request is to resubscribe to the subscription, then mark it as purchasable.
 	 *
@@ -177,9 +158,9 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 		if ( false === $is_purchasable && false === WC_Subscriptions_Product::is_purchasable( $is_purchasable, $product ) ) {
 
 			// Validating when restoring cart from session
-			if ( false !== wcs_cart_contains_resubscribe() ) {
+			if ( false !== $this->cart_contains() ) {
 
-				$resubscribe_cart_item = wcs_cart_contains_resubscribe();
+				$resubscribe_cart_item = $this->cart_contains();
 				$subscription          = wcs_get_subscription( $resubscribe_cart_item['subscription_resubscribe']['subscription_id'] );
 
 				if ( $subscription->has_product( $product->id ) ) {
@@ -206,6 +187,18 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 		}
 
 		return $is_purchasable;
+	}
+
+	/**
+	 * Checks the cart to see if it contains a subscription resubscribe item.
+	 *
+	 * @see wcs_cart_contains_resubscribe()
+	 * @param WC_Cart $cart The cart object to search in.
+	 * @return bool | Array The cart item containing the renewal, else false.
+	 * @since  2.0.10
+	 */
+	protected function cart_contains( $cart = '' ) {
+		return wcs_cart_contains_resubscribe( $cart );
 	}
 }
 new WCS_Cart_Resubscribe();

@@ -67,6 +67,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 	 */
 	public function set_express_checkout( $args ) {
 
+		// translators: placeholder is blogname
 		$default_description = sprintf( _x( 'Orders with %s', 'data sent to paypal', 'woocommerce-subscriptions' ), get_bloginfo( 'name' ) );
 
 		$defaults = array(
@@ -204,8 +205,8 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 			'payment_action'       => 'Sale',
 			'return_fraud_filters' => 1,
 			'notify_url'           => WC()->api_request_url( 'WC_Gateway_Paypal' ),
-			'invoice_number'       => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number', 'woocommerce-subscriptions' ) ) ),
-			'custom'               => json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key ) ),
+			'invoice_number'       => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) ),
+			'custom'               => wcs_json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key ) ),
 		);
 
 		$args = wp_parse_args( $args, $defaults );
@@ -297,6 +298,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 
 			// add a single item for the entire order
 			$this->add_line_item_parameters( array(
+				// translators: placeholder is blogname
 				'NAME' => sprintf( __( '%s - Order', 'woocommerce-subscriptions' ), get_option( 'blogname' ) ),
 				'DESC' => wcs_get_paypal_item_name( implode( ', ', $item_names ) ),
 				'AMT'  => $this->round( $order_subtotal + $order->get_cart_tax() ),
@@ -311,7 +313,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 					'CURRENCYCODE'     => $order->get_order_currency(),
 					'ITEMAMT'          => $this->round( $order_subtotal + $order->get_cart_tax() ),
 					'SHIPPINGAMT'      => $this->round( $order->get_total_shipping() + $order->get_shipping_tax() ),
-					'INVNUM'           => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number', 'woocommerce-subscriptions' ) ) ),
+					'INVNUM'           => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) ),
 					'PAYMENTACTION'    => $type,
 					'PAYMENTREQUESTID' => $order->id,
 					'CUSTOM'           => json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key ) ),
@@ -322,7 +324,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 					'CURRENCYCODE'     => $order->get_order_currency(),
 					'ITEMAMT'          => $this->round( $order_subtotal + $order->get_cart_tax() ),
 					'SHIPPINGAMT'      => $this->round( $order->get_total_shipping() + $order->get_shipping_tax() ),
-					'INVNUM'           => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number', 'woocommerce-subscriptions' ) ) ),
+					'INVNUM'           => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) ),
 					'PAYMENTACTION'    => $type,
 					'PAYMENTREQUESTID' => $order->id,
 					'CUSTOM'           => json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key ) ),
@@ -350,7 +352,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 					'ITEMAMT'          => $this->round( $order_subtotal ),
 					'SHIPPINGAMT'      => $this->round( $order->get_total_shipping() ),
 					'TAXAMT'           => $this->round( $order->get_total_tax() ),
-					'INVNUM'           => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number', 'woocommerce-subscriptions' ) ) ),
+					'INVNUM'           => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) ),
 					'PAYMENTACTION'    => $type,
 					'PAYMENTREQUESTID' => $order->id,
 					'CUSTOM'           => json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key ) ),
@@ -362,7 +364,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 					'ITEMAMT'          => $this->round( $order_subtotal ),
 					'SHIPPINGAMT'      => $this->round( $order->get_total_shipping() ),
 					'TAXAMT'           => $this->round( $order->get_total_tax() ),
-					'INVNUM'           => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number', 'woocommerce-subscriptions' ) ) ),
+					'INVNUM'           => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) ),
 					'PAYMENTACTION'    => $type,
 					'PAYMENTREQUESTID' => $order->id,
 					'CUSTOM'           => json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key ) ),

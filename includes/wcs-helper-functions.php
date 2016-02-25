@@ -91,3 +91,18 @@ function wcs_str_to_ascii( $string ) {
 
 	return false === $ascii ? preg_replace( '/[^a-zA-Z0-9_\-]/', '', $string ) : $ascii;
 }
+
+/**
+ * wp_json_encode exists since WP 4.1, but because we can't be sure that stores will actually use at least 4.1, we need
+ * to have this wrapper.
+ *
+ * @param array $data Data to be encoded
+ *
+ * @return string
+ */
+function wcs_json_encode( $data ) {
+	if ( function_exists( 'wp_json_encode' ) ) {
+		return wp_json_encode( $data );
+	}
+	return json_encode( $data );
+}
