@@ -151,7 +151,7 @@ class WCS_Admin_Meta_Boxes {
 			$subscription_is_automatic          = ! $subscription->is_manual();
 
 			$order_payment_gateway          = wc_get_payment_gateway_by_order( $theorder );
-			$order_payment_gateway_supports = has_action( 'woocommerce_scheduled_subscription_payment_' . $order_payment_gateway->id );
+			$order_payment_gateway_supports = ( isset( $order_payment_gateway->id ) ) ? has_action( 'woocommerce_scheduled_subscription_payment_' . $order_payment_gateway->id ) : false;
 
 			foreach ( $subscriptions as $subscription ) {
 				$supports_date_changes &= $subscription->payment_method_supports( 'subscription_date_changes' );
