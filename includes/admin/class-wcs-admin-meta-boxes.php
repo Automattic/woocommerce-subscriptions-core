@@ -147,15 +147,18 @@ class WCS_Admin_Meta_Boxes {
 			$subscriptions = wcs_get_subscriptions_for_renewal_order( $theorder );
 			$subscription  = array_shift( $subscriptions );
 
-			$supports_date_changes = $subscription->payment_method_supports( 'subscription_date_changes' );
-			$is_automatic          = ! $subscription->is_manual();
+			$subscription_supports_date_changes = $subscription->payment_method_supports( 'subscription_date_changes' );
+			$subscription_is_automatic          = ! $subscription->is_manual();
+
+			$order_payment_gateway          = wc_get_payment_gateway_by_order( $theorder );
+			$order_payment_gateway_supports = has_action( 'woocommerce_scheduled_subscription_payment_' . $order_payment_gateway->id );
 
 			foreach ( $subscriptions as $subscription ) {
 				$supports_date_changes &= $subscription->payment_method_supports( 'subscription_date_changes' );
 				$is_automatic &= ! $subscription->is_manual();
 			}
 
-			if ( $supports_date_changes && $is_automatic ) {
+			if ( $order_payment_gateway_supports && $subscription_supports_date_changes && $subscription_is_automatic ) {
 				$actions['wcs_retry_renewal_payment'] = esc_html__( 'Retry Renewal Payment', 'woocommerce-subscriptions' );
 			}
 		}
@@ -220,6 +223,7 @@ class WCS_Admin_Meta_Boxes {
 		if ( $order->has_status( 'failed' ) && ! empty( $order->payment_method ) && $order->get_total() > 0 ) {
 			// init payment gateways
 			WC_Payment_Gateways::instance();
+
 			do_action( 'woocommerce_scheduled_subscription_payment_' . $order->payment_method, $order->get_total(), $order );
 		}
 	}
