@@ -185,6 +185,15 @@ function wcs_get_users_subscriptions( $user_id = 0 ) {
  * @since 1.0
  */
 function wcs_get_users_change_status_link( $subscription_id, $status, $current_status = '' ) {
+
+	if ( '' === $current_status ) {
+		$subscription = wcs_get_subscription( $subscription_id );
+
+		if ( $subscription instanceof WC_Subscription ) {
+			$current_status = $subscription->get_status();
+		}
+	}
+
 	$action_link = add_query_arg( array( 'subscription_id' => $subscription_id, 'change_subscription_to' => $status ) );
 	$action_link = wp_nonce_url( $action_link, $subscription_id . $current_status );
 
