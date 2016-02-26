@@ -648,11 +648,13 @@ class WCS_Admin_Post_Types {
 			),
 			$wpdb->get_col(
 				$wpdb->prepare( "
-					SELECT posts.ID
-					FROM {$wpdb->posts} posts
-					INNER JOIN {$wpdb->users} users ON posts.post_author = users.ID
-					WHERE users.user_email LIKE '%%%s%%'
-					AND posts.post_type = 'shop_subscription'
+					SELECT p1.ID
+					FROM {$wpdb->posts} p1
+					INNER JOIN {$wpdb->postmeta} p2 ON p1.ID = p2.post_id
+					INNER JOIN {$wpdb->users} u ON p2.meta_value = u.ID
+					WHERE u.user_email LIKE '%%%s%%'
+					AND p2.meta_key = '_customer_user'
+					AND p1.post_type = 'shop_subscription'
 					",
 					esc_attr( $_GET['s'] )
 				)
