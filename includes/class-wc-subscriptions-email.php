@@ -230,13 +230,12 @@ class WC_Subscriptions_Email {
 	}
 
 	/**
-	 * Generate an order items table using a WC compatible version of the function.
+	 * Show the order details table
 	 *
 	 * @param WC_Order $order
 	 * @param bool $sent_to_admin Whether the email is sent to admin - defaults to false
-	 * @param bool $plain_text Whether the email should send plain text templates - defaults to false
+	 * @param bool $plain_text Whether the email should use plain text templates - defaults to false
 	 * @param WC_Email $email
-	 * @return string email order items table html
 	 * @since 2.1
 	 */
 	public static function order_details( $order, $sent_to_admin = false, $plain_text = false, $email = '' ) {
