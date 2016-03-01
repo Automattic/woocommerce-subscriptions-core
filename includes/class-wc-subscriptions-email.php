@@ -244,6 +244,8 @@ class WC_Subscriptions_Email {
 			'show_download_links' => ( $sent_to_admin ) ? false : $order->is_download_permitted(),
 			'show_sku'            => $sent_to_admin,
 			'show_purchase_note'  => ( $sent_to_admin ) ? false : $order->is_paid(),
+			'show_image'          => '',
+			'image_size'          => '',
 			'plain_text'          => $plain_text,
 		);
 
