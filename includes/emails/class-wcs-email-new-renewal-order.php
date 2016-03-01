@@ -99,6 +99,9 @@ class WCS_Email_New_Renewal_Order extends WC_Email_New_Order {
 			array(
 				'order'         => $this->object,
 				'email_heading' => $this->get_heading(),
+				'sent_to_admin' => true,
+				'plain_text'    => false,
+				'email'         => $this,
 			),
 			'',
 			$this->template_base
@@ -119,6 +122,9 @@ class WCS_Email_New_Renewal_Order extends WC_Email_New_Order {
 			array(
 				'order'         => $this->object,
 				'email_heading' => $this->get_heading(),
+				'sent_to_admin' => true,
+				'plain_text'    => true,
+				'email'         => $this,
 			),
 			'',
 			$this->template_base
