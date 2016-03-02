@@ -122,6 +122,9 @@ class WCS_Email_Customer_Renewal_Invoice extends WC_Email_Customer_Invoice {
 			array(
 				'order'         => $this->object,
 				'email_heading' => $this->get_heading(),
+				'sent_to_admin' => false,
+				'plain_text'    => false,
+				'email'         => $this,
 			),
 			'',
 			$this->template_base
@@ -142,6 +145,9 @@ class WCS_Email_Customer_Renewal_Invoice extends WC_Email_Customer_Invoice {
 			array(
 				'order'         => $this->object,
 				'email_heading' => $this->get_heading(),
+				'sent_to_admin' => false,
+				'plain_text'    => true,
+				'email'         => $this,
 			),
 			'',
 			$this->template_base
