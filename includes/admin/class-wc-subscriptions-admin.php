@@ -930,6 +930,9 @@ class WC_Subscriptions_Admin {
 	 * @since 1.0
 	 */
 	public static function get_settings() {
+		if ( ! function_exists( 'get_editable_roles' ) ) {
+			require_once( ABSPATH . 'wp-admin/includes/user.php' );
+		}
 
 		$roles = get_editable_roles();
 
