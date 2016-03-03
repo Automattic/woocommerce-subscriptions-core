@@ -111,7 +111,7 @@ function wcs_cart_totals_shipping_html() {
  */
 function wcs_cart_totals_shipping_method( $method, $cart ) {
 
-	$label = $method->get_label();
+	$label = ( method_exists( $method, 'get_label' ) ) ? $method->get_label() : $method->label; // WC < 2.5 compatibility (WC_Shipping_Rate::get_label() was introduced with WC 2.5)
 
 	if ( $method->cost > 0 ) {
 
