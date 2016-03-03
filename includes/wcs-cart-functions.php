@@ -34,9 +34,8 @@ function wcs_cart_totals_shipping_html() {
 
 	$initial_packages = WC()->shipping->get_packages();
 
-	$recurring_cart_count = count( WC()->cart->recurring_carts );
-
-	$show_package_name = true;
+	$show_package_details = count( WC()->cart->recurring_carts ) > 1 ? true : false;
+	$show_package_name    = true;
 
 	// Create new subscriptions for each subscription product in the cart (that is not a renewal)
 	foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
@@ -53,10 +52,14 @@ function wcs_cart_totals_shipping_html() {
 
 				$package = WC()->shipping->calculate_shipping_for_package( $base_package );
 
-				foreach ( $package['contents'] as $item_id => $values ) {
-					$product_names[] = $values['data']->get_title() . ' &times;' . $values['quantity'];
+				if ( $show_package_details ) {
+					foreach ( $package['contents'] as $item_id => $values ) {
+						$product_names[] = $values['data']->get_title() . ' &times;' . $values['quantity'];
+					}
+					$package_details = implode( ', ', $product_names );
+				} else {
+					$package_details = '';
 				}
-				$package_details = implode( ', ', $product_names );
 
 				$chosen_initial_method   = isset( WC()->session->chosen_shipping_methods[ $i ] ) ? WC()->session->chosen_shipping_methods[ $i ] : '';
 				$chosen_recurring_method = isset( WC()->session->chosen_shipping_methods[ $recurring_cart_key . '_' . $i ] ) ? WC()->session->chosen_shipping_methods[ $recurring_cart_key . '_' . $i ] : $chosen_initial_method;
@@ -69,7 +72,9 @@ function wcs_cart_totals_shipping_html() {
 						<th><?php echo esc_html( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ) ); ?></th>
 						<td>
 							<?php echo wp_kses_post( wcs_cart_price_string( $shipping_method->cost, $recurring_cart ) ); ?>
-							<?php echo '<p class="woocommerce-shipping-contents"><small>' . esc_html( $package_details ) . '</small></p>'; ?>
+							<?php if ( ! empty( $show_package_details ) ) : ?>
+								<?php echo '<p class="woocommerce-shipping-contents"><small>' . esc_html( $package_details ) . '</small></p>'; ?>
+							<?php endif; ?>
 						</td>
 					</tr>
 					<?php
@@ -86,7 +91,7 @@ function wcs_cart_totals_shipping_html() {
 					wc_get_template( 'cart/cart-recurring-shipping.php', array(
 							'package'              => $package,
 							'available_methods'    => $package['rates'],
-							'show_package_details' => true,
+							'show_package_details' => $show_package_details,
 							'package_details'      => $package_details,
 							'package_name'         => $package_name,
 							'index'                => $i,
