@@ -474,12 +474,6 @@ class WC_Subscriptions_Cart {
 			}
 		} elseif ( 'recurring_total' == self::$calculation_type ) {
 			foreach ( $packages as $index => $package ) {
-
-				if ( 'none' != self::$recurring_cart_key ) {
-					$packages[ self::$recurring_cart_key . '_' . $index ] = $package;
-					unset( $packages[ $index ] );
-				}
-
 				foreach ( $package['contents'] as $cart_item_key => $cart_item ) {
 					if ( isset( $cart_item['data']->subscription_one_time_shipping ) && 'yes' == $cart_item['data']->subscription_one_time_shipping ) {
 						$packages[ $index ]['contents_cost'] -= $cart_item['line_total'];
