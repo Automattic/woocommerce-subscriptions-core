@@ -386,6 +386,8 @@ class WC_Subscriptions_Cart {
 
 		if ( 'none' !== self::$recurring_cart_key && isset( $chosen_methods[ self::get_recurring_shipping_package_key( self::$recurring_cart_key, $package_index ) ] ) ) {
 			$default_method = $chosen_methods[ self::get_recurring_shipping_package_key( self::$recurring_cart_key, $package_index ) ];
+		} elseif ( 'none' == self::$recurring_cart_key && isset( $chosen_methods[ $package_index ] ) && $default_method !== $chosen_methods[ $package_index ] && WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
+			$default_method = $chosen_methods[ $package_index ];
 		}
 
 		return $default_method;
