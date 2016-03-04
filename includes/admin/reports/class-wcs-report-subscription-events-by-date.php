@@ -236,6 +236,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$this->report_data->total_subs     = absint( end( $this->report_data->subscriber_counts )->count );
 		$this->report_data->total_cancels  = absint( array_sum( wp_list_pluck( $this->report_data->cancel_counts, 'count' ) ) );
 		$this->report_data->total_ended    = absint( array_sum( wp_list_pluck( $this->report_data->ended_counts, 'count' ) ) );
+		$this->report_data->start_subs     = isset( $this->report_data->subscriber_counts[0]->count ) ? absint( $this->report_data->subscriber_counts[0]->count ) : 0;
 
 	}
 
@@ -298,6 +299,21 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			'highlight_series' => 5,
 		);
 
+		$sub_change_count = ( $data->total_subs - $data->start_subs > 0 ) ? '+' . ( $data->total_subs - $data->start_subs ) : ( $data->total_subs - $data->start_subs );
+		if ( $data->start_subs === 0 ) {
+			$sub_change_percent = '&#x221e;%'; // infinite percentage increase if the starting subs is 0
+		} elseif ( $data->total_subs - $data->start_subs > 0 ) {
+			$sub_change_percent = '+' . number_format( ( ( ( $data->total_subs - $data->start_subs ) / $data->start_subs ) * 100 ), 2 ) . '%';
+		} else {
+			$sub_change_percent = number_format( ( ( ( $data->total_subs - $data->start_subs ) / $data->start_subs ) * 100 ), 2 ) . '%';
+		}
+		$legend[] = array(
+			'title' => sprintf( __( '%s subscriptions gained/lost', 'woocommerce-subscriptions' ), '<strong>' . $sub_change_count . ' <span style="font-size:65%;">(' . $sub_change_percent . ')</span></strong>' ),
+			'placeholder'      => __( 'Change in subscriptions between the start and end of the period.', 'woocommerce-subscriptions' ),
+			'color' => $this->chart_colours['subscriber_change'],
+			'highlight_series' => 5,
+		);
+
 		return $legend;
 	}
 
@@ -313,14 +329,15 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		);
 
 		$this->chart_colours = array(
-			'signup_count'     => '#5da5da',
-			'switch_count'     => '#439ad9',
-			'renewal_count'    => '#f29ec4',
-			'subscriber_count' => '#cc3300',
-			'renewal_total'    => '#CC9900',
-			'signup_total'     => '#99CC00',
-			'cancel_count'	   => '#800000',
-			'ended_count'      => '#804000',
+			'signup_count'      => '#5da5da',
+			'switch_count'      => '#439ad9',
+			'renewal_count'     => '#f29ec4',
+			'subscriber_count'  => '#cc3300',
+			'renewal_total'     => '#CC9900',
+			'signup_total'      => '#99CC00',
+			'cancel_count'	    => '#800000',
+			'ended_count'       => '#804000',
+			'subscriber_change' => '#808000',
 		);
 
 		$current_range = ! empty( $_GET['range'] ) ? sanitize_text_field( $_GET['range'] ) : '7day';
