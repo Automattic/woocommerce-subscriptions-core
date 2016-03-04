@@ -217,7 +217,7 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 			}
 		}
 
-		if ( empty( $resubscribe_orders ) && $subscription->get_completed_payment_count() > 0 && true === $all_line_items_exist && $subscription->has_status( array( 'cancelled', 'expired', 'trash' ) ) ) {
+		if ( empty( $resubscribe_orders ) && $subscription->get_completed_payment_count() > 0 && $subscription->get_total() > 0 && true === $all_line_items_exist && $subscription->has_status( array( 'cancelled', 'expired', 'trash' ) ) ) {
 			$can_user_resubscribe = true;
 		} else {
 			$can_user_resubscribe = false;
