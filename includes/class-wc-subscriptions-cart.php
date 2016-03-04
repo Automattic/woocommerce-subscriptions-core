@@ -430,7 +430,13 @@ class WC_Subscriptions_Cart {
 			$recurring_package_count         = 0;
 
 			foreach ( $chosen_methods as $package_index => $chosen_method_name ) {
-				if ( self::get_recurring_shipping_package_key( self::$recurring_cart_key, $recurring_package_count ) == $package_index ) {
+
+				$recurring_cart_package_key = self::get_recurring_shipping_package_key( self::$recurring_cart_key, $recurring_package_count );
+
+				if ( $recurring_cart_package_key == $package_index ) {
+					$recurring_cart_shipping_methods[ $chosen_method_name ] = $chosen_method_name;
+					$recurring_package_count++;
+				} elseif ( is_int( $package_index ) && ! array_key_exists( $recurring_cart_package_key, $chosen_methods ) ) { // the recurring packages are the same as the initial packages, use the initial package methods
 					$recurring_cart_shipping_methods[ $chosen_method_name ] = $chosen_method_name;
 					$recurring_package_count++;
 				}
