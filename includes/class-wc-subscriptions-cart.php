@@ -359,6 +359,9 @@ class WC_Subscriptions_Cart {
 		if ( ! isset( $_POST['shipping_method'] ) ) {
 			$_POST['shipping_method'] = array();
 		}
+		if ( ! isset( $form_data['shipping_method'] ) ) {
+			$form_data['shipping_method'] = array();
+		}
 
 		foreach ( $form_data['shipping_method'] as $key => $methods ) {
 			if ( ! is_numeric( $key ) && ! array_key_exists( $key, $_POST['shipping_method'] ) ) {
