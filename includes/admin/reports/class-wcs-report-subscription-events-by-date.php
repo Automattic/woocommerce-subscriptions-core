@@ -106,11 +106,11 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 					ON wcsubs.post_parent = wcorder.ID
 				LEFT JOIN {$wpdb->postmeta} AS wcometa
 					ON wcorder.ID = wcometa.post_id
-				WHERE  wcorder.post_type IN ( 'shop_order' )
+				WHERE  wcorder.post_type IN ( '" . implode( "','", wc_get_order_types( 'order-count' ) ) . "' )
 					AND wcsubs.post_type IN ( 'shop_subscription' )
-					AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
-					AND wcorder.post_date >= '%s'
-					AND wcorder.post_date < '%s'
+					AND wcorder.post_status IN ( 'wc-" . implode( "','wc-", apply_filters( 'woocommerce_reports_order_statuses', array( 'completed', 'processing', 'on-hold', 'refunded' ) ) ) . "' )
+					AND wcorder.post_date >= %s
+					AND wcorder.post_date < %s
 					AND wcometa.meta_key = '_order_total'
 				GROUP BY YEAR(wcsubs.post_date), MONTH(wcsubs.post_date), DAY(wcsubs.post_date)
 				ORDER BY post_date ASC",
