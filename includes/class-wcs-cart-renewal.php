@@ -600,6 +600,10 @@ class WCS_Cart_Renewal {
 	 */
 	public function renewal_coupon_data( $data, $code ) {
 
+		if ( ! is_object( WC()->session ) ) {
+			return $data;
+		}
+
 		$renewal_coupons = WC()->session->get( 'wcs_renewal_coupons' );
 
 		if ( empty( $renewal_coupons ) ) {

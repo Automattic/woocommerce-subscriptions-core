@@ -95,7 +95,7 @@ class WCS_User_Change_Status_Handler {
 			WC_Subscriptions::add_notice( __( 'That subscription does not exist. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), 'error' );
 			return false;
 
-		} elseif ( ! empty( $wpnonce ) && wp_verify_nonce( $wpnonce, $subscription->id ) === false ) {
+		} elseif ( ! empty( $wpnonce ) && wp_verify_nonce( $wpnonce, $subscription->id . $subscription->get_status() ) === false ) {
 			WC_Subscriptions::add_notice( __( 'Security error. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), 'error' );
 			return false;
 
