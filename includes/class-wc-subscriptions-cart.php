@@ -389,7 +389,9 @@ class WC_Subscriptions_Cart {
 
 		if ( 'none' !== self::$recurring_cart_key && isset( $chosen_methods[ self::get_recurring_shipping_package_key( self::$recurring_cart_key, $package_index ) ] ) ) {
 			$default_method = $chosen_methods[ self::get_recurring_shipping_package_key( self::$recurring_cart_key, $package_index ) ];
-		} elseif ( 'none' == self::$recurring_cart_key && isset( $chosen_methods[ $package_index ] ) && $default_method !== $chosen_methods[ $package_index ] && WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
+
+		// Set the chosen shipping method (if available) to workaround a bug with WC_Shipping::get_default_method() in WC < 2.6 which leads to the default shipping method always being used instead of a valid chosen shipping method
+		} elseif ( isset( $chosen_methods[ $package_index ] ) && $default_method !== $chosen_methods[ $package_index ] && WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
 			$default_method = $chosen_methods[ $package_index ];
 		}
 
