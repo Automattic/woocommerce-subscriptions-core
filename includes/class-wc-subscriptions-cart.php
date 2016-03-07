@@ -29,7 +29,7 @@ class WC_Subscriptions_Cart {
 	/**
 	 * An internal pointer to the current recurring cart calculation (if any)
 	 *
-	 * @since 2.0.10
+	 * @since 2.0.12
 	 */
 	private static $recurring_cart_key = 'none';
 
@@ -347,7 +347,7 @@ class WC_Subscriptions_Cart {
 	 * sends the shipping methods with a numerical index.
 	 *
 	 * @return null
-	 * @since 2.0.10
+	 * @since 2.0.12
 	 */
 	public static function add_shipping_method_post_data() {
 
@@ -381,7 +381,7 @@ class WC_Subscriptions_Cart {
 	 * @param string $default_method the default shipping method for the customer/store returned by WC_Shipping::get_default_method()
 	 * @param array $available_methods set of shipping rates for this calculation
 	 * @param int $package_index WC doesn't pass the package index to callbacks on the 'woocommerce_shipping_chosen_method' filter (yet) so we set a default value of 0 for it in the function params
-	 * @since 2.0.10
+	 * @since 2.0.12
 	 */
 	public static function set_chosen_shipping_method( $default_method, $available_methods, $package_index = 0 ) {
 
@@ -403,7 +403,7 @@ class WC_Subscriptions_Cart {
 	 *
 	 * @param string $recurring_cart_key a cart key of the form returned by @see self::get_recurring_cart_key()
 	 * @param int $package_index the index of a package
-	 * @since 2.0.10
+	 * @since 2.0.12
 	 */
 	public static function get_recurring_shipping_package_key( $recurring_cart_key, $package_index ) {
 		return $recurring_cart_key . '_' . $package_index;
@@ -423,7 +423,7 @@ class WC_Subscriptions_Cart {
 	 *
 	 * @param array $package_rates A set of shipping method objects in the form of WC_Shipping_Rate->id => WC_Shipping_Rate with the cost for that rate
 	 * @param array $package A shipping package of the form returned by WC_Cart->get_shipping_packages() which includes the package's contents, cost, customer, destination and alternative rates
-	 * @since 2.0.10
+	 * @since 2.0.12
 	 */
 	public static function filter_package_rates( $package_rates, $package ) {
 
@@ -1909,7 +1909,7 @@ class WC_Subscriptions_Cart {
 	 * @since 1.3
 	 */
 	public static function get_cart_shipping_method_full_label( $label, $method ) {
-		_deprecated_function( __METHOD__, '2.0.10' );
+		_deprecated_function( __METHOD__, '2.0.12' );
 
 		if ( ! self::charge_shipping_up_front() ) {
 			$label = $method->label;
