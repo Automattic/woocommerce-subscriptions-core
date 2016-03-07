@@ -410,10 +410,10 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
-	 * When WooCommerce calculates rates for a recurring shipping package, we want to return only the rates for
-	 * the chosen recurring shipping method to make sure WooCommerce updates the chosen method for the recurring
-	 * cart (and the 'woocommerce_shipping_chosen_method' filter is called, which we use to make sure the chosen
-	 * method is the recurring method, not the initial method).
+	 * When WooCommerce calculates rates for a recurring shipping package, we want to return both a different number
+	 * of rates, and a unique set of rates for the recurring shipping package to make sure WooCommerce updates the
+	 * chosen method for the recurring cart (and the 'woocommerce_shipping_chosen_method' filter is called, which
+	 * we use to make sure the chosen method is the recurring method, not the initial method).
 	 *
 	 * This function is hooked to 'woocommerce_package_rates' called by WC_Shipping->calculate_shipping_for_package()
 	 *
@@ -434,13 +434,7 @@ class WC_Subscriptions_Cart {
 			$recurring_package_count         = 0;
 
 			foreach ( $chosen_methods as $package_index => $chosen_method_name ) {
-
-				$recurring_cart_package_key = self::get_recurring_shipping_package_key( self::$recurring_cart_key, $recurring_package_count );
-
-				if ( $recurring_cart_package_key == $package_index ) {
-					$recurring_cart_shipping_methods[ $chosen_method_name ] = $chosen_method_name;
-					$recurring_package_count++;
-				} elseif ( is_int( $package_index ) && ! array_key_exists( $recurring_cart_package_key, $chosen_methods ) ) { // the recurring packages are the same as the initial packages, use the initial package methods
+				if ( self::get_recurring_shipping_package_key( self::$recurring_cart_key, $recurring_package_count ) == $package_index ) {
 					$recurring_cart_shipping_methods[ $chosen_method_name ] = $chosen_method_name;
 					$recurring_package_count++;
 				}
@@ -448,6 +442,11 @@ class WC_Subscriptions_Cart {
 
 			if ( 0 < count( $recurring_cart_shipping_methods ) ) {
 				$package_rates = array_intersect_key( $package_rates, $recurring_cart_shipping_methods );
+			}
+
+			// We need to make sure both the number of rates and the contents of each rate are different to ensure that we bypass WC's cache, so let's add our own unique key on the rate
+			foreach ( $package_rates as $method_name => $method ) {
+				$package_rates[ $method_name ]->recurring_cart_key = self::$recurring_cart_key;
 			}
 		}
 
@@ -538,6 +537,9 @@ class WC_Subscriptions_Cart {
 
 				if ( empty( $packages[ $index ]['contents'] ) ) {
 					unset( $packages[ $index ] );
+				} else {
+					// we need to make sure the package is different for recurring carts to bypass WC's cache
+					$packages[ $index ]['recurring_cart_key'] = self::$recurring_cart_key;
 				}
 			}
 		}
