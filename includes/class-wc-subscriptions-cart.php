@@ -640,7 +640,7 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
-	 * Gets the recalculate flag
+	 * Gets the cart calculation type flag
 	 *
 	 * @since 1.2
 	 */
@@ -649,7 +649,7 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
-	 * Gets the recalculate flag
+	 * Sets the cart calculation type flag
 	 *
 	 * @since 2.0
 	 */
