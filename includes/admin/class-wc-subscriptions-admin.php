@@ -109,6 +109,8 @@ class WC_Subscriptions_Admin {
 
 		// Do not display formatted order total on the Edit Order administration screen
 		add_filter( 'woocommerce_get_formatted_order_total', __CLASS__ . '::maybe_remove_formatted_order_total_filter', 0, 2 );
+
+		add_action( 'woocommerce_admin_field_payment_gateways', __CLASS__ . '::add_recurring_payment_gateway_information', 11 );
 	}
 
 	/**
@@ -960,25 +962,6 @@ class WC_Subscriptions_Admin {
 			$roles_options[ $role ] = translate_user_role( $details['name'] );
 		}
 
-		$available_gateways = array();
-
-		foreach ( WC()->payment_gateways->payment_gateways() as $gateway ) {
-			if ( $gateway->supports( 'subscriptions' ) ) {
-				$available_gateways[] = sprintf( '%s [<code>%s</code>]', $gateway->title, $gateway->id );
-			}
-		}
-
-		if ( count( $available_gateways ) == 0 ) {
-			// translators: $1-2: opening and closing tags of a link that takes to PayPal settings, $3-4: opening and closing tags of a link that takes to Woo marketplace / Stripe product page
-			$available_gateways_description = sprintf( __( 'No payment gateways capable of processing automatic subscription payments are enabled. Please enable the %1$sPayPal Standard%2$s gateway or get the %3$sfree Stripe extension%4$s if you want to process automatic payments.', 'woocommerce-subscriptions' ), '<strong><a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout&section=wc_gateway_paypal' ) . '">', '</a></strong>', '<strong><a href="https://www.woothemes.com/products/stripe/">', '</a></strong>' );
-		} elseif ( count( $available_gateways ) == 1 ) {
-			// translators: placeholder is name of a gateway
-			$available_gateways_description = sprintf( __( 'The %s gateway can process automatic subscription payments.', 'woocommerce-subscriptions' ), '<strong>' . $available_gateways[0] . '</strong>' );
-		} elseif ( count( $available_gateways ) > 1 ) {
-			// translators: %1$s - a comma separated list of gateway names (e.g. "stripe, paypal, worldpay"), %2$s - one name of gateway (e.g. "authorize.net")
-			$available_gateways_description = sprintf( __( 'The %1$s & %2$s gateways can process automatic subscription payments.', 'woocommerce-subscriptions' ), '<strong>' . implode( '</strong>, <strong>', array_slice( $available_gateways, 0, count( $available_gateways ) - 1 ) ) . '</strong>', '<strong>' . array_pop( $available_gateways ) . '</strong>' );
-		}
-
 		return apply_filters( 'woocommerce_subscription_settings', array(
 
 			array(
@@ -1115,28 +1098,6 @@ class WC_Subscriptions_Admin {
 			),
 
 			array( 'type' => 'sectionend', 'id' => self::$option_prefix . '_miscellaneous' ),
-
-			array(
-				'name'          => __( 'Payment Gateways', 'woocommerce-subscriptions' ),
-				'desc'          => $available_gateways_description,
-				'id'            => self::$option_prefix . '_payment_gateways_available',
-				'type'          => 'informational',
-			),
-
-			array(
-				// translators: placeholders are opening and closing link tags
-				'desc'          => sprintf( __( 'Other payment gateways can be used to process %smanual subscription renewal payments%s only.', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/renewal-process/">', '</a>' ),
-				'id'            => self::$option_prefix . '_payment_gateways_additional',
-				'type'          => 'informational',
-			),
-
-			array(
-				// translators: $1-$2: opening and closing tags. Link to documents->payment gateways, 3$-4$: opening and closing tags. Link to woothemes extensions shop page
-				'desc'          => sprintf( __( 'Find new gateways that %1$ssupport automatic subscription payments%2$s in the official %3$sWooCommerce Marketplace%4$s.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( 'http://docs.woothemes.com/document/subscriptions/payment-gateways/' ) . '">', '</a>', '<a href="' . esc_url( 'http://www.woothemes.com/product-category/woocommerce-extensions/' ) . '">', '</a>' ),
-				'id'            => self::$option_prefix . '_payment_gateways_additional',
-				'type'          => 'informational',
-			),
-
 		) );
 
 	}
@@ -1473,6 +1434,60 @@ class WC_Subscriptions_Admin {
 		}
 
 		return $formatted_total;
+	}
+
+	/**
+	 * Displays recurring payment gateway information after the Settings->Checkout->Payment Gateways table.
+	 * This includes links to find additional gateways, information about manual renewals
+	 * and a warning if no payment gateway which supports automatic recurring payments is enabled/setup correctly.
+	 *
+	 * @since 2.1
+	 */
+	public static function add_recurring_payment_gateway_information() {
+
+		$available_gateways = array();
+
+		foreach ( WC()->payment_gateways->get_available_payment_gateways() as $gateway ) {
+			if ( $gateway->supports( 'subscriptions' ) ) {
+				$available_gateways[] = $gateway->id;
+			}
+		}
+
+		$fields = array(
+			sprintf( __( 'Payment gateways which don\'t support automatic recurring payments can be used to process %smanual subscription renewal payments%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/renewal-process/">', '</a>' ),
+			sprintf( __( 'Find new gateways that %1$ssupport automatic subscription payments%2$s in the official %3$sWooCommerce Marketplace%4$s.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( 'http://docs.woothemes.com/document/subscriptions/payment-gateways/' ) . '">', '</a>', '<a href="' . esc_url( 'http://www.woothemes.com/product-category/woocommerce-extensions/' ) . '">', '</a>' ),
+		);
+
+		if ( count( $available_gateways ) == 0 ) {
+			// translators: $1-2: opening and closing tags of a link that takes to PayPal settings, $3-4: opening and closing tags of a link that takes to Woo marketplace / Stripe product page
+			array_unshift( $fields, sprintf( __( 'No payment gateways capable of processing automatic subscription payments are enabled. Please enable the %1$sPayPal Standard%2$s gateway or get the %3$sfree Stripe extension%4$s if you want to process automatic payments.', 'woocommerce-subscriptions' ), '<strong><a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout&section=wc_gateway_paypal' ) . '">', '</a></strong>', '<strong><a href="https://www.woothemes.com/products/stripe/">', '</a></strong>' ) );
+		}
+		?>
+		<th class="titledesc">Recurring Payments</th>
+		<td>
+			<table cellspacing="0">
+				<tbody>
+					<?php foreach ( $fields as $field ) : ?>
+					<tr>
+						<td style="padding:0.3em 0em;">
+							<?php echo wp_kses_post( $field ); ?>
+						</td>
+					</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+		</td>
+		<?php
+	}
+
+	/**
+	 * Deprecated due to new meta boxes required for WC 2.2.
+	 *
+	 * @deprecated 1.5.10
+	 */
+	public static function add_related_orders_meta_box() {
+		_deprecated_function( __METHOD__, '1.5.10', __CLASS__ . '::add_meta_boxes()' );
+		self::add_meta_boxes();
 	}
 
 	/**
