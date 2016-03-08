@@ -68,7 +68,7 @@ function wcs_cart_totals_shipping_html() {
 					$shipping_method = ( 1 === count( $package['rates'] ) ) ? current( $package['rates'] ) : $package['rates'][ $chosen_initial_method ];
 					// packages match, display shipping amounts only
 					?>
-					<tr class="shipping recurring-total">
+					<tr class="shipping recurring-total <?php echo esc_attr( $recurring_cart_key ); ?>">
 						<th><?php echo esc_html( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ) ); ?></th>
 						<td>
 							<?php echo wp_kses_post( wcs_cart_price_string( $shipping_method->cost, $recurring_cart ) ); ?>
