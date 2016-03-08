@@ -308,9 +308,9 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			$sub_change_percent = number_format( ( ( ( $data->total_subs - $data->start_subs ) / $data->start_subs ) * 100 ), 2 ) . '%';
 		}
 		$legend[] = array(
-			'title' => sprintf( __( '%s subscriptions gained/lost', 'woocommerce-subscriptions' ), '<strong>' . $sub_change_count . ' <span style="font-size:65%;">(' . $sub_change_percent . ')</span></strong>' ),
+			'title'            => sprintf( __( '%s subscriptions gained/lost', 'woocommerce-subscriptions' ), '<strong>' . $sub_change_count . ' <span style="font-size:65%;">(' . $sub_change_percent . ')</span></strong>' ),
 			'placeholder'      => __( 'Change in subscriptions between the start and end of the period.', 'woocommerce-subscriptions' ),
-			'color' => $this->chart_colours['subscriber_change'],
+			'color'            => $this->chart_colours['subscriber_change'],
 			'highlight_series' => 5,
 		);
 
