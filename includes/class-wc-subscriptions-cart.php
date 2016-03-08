@@ -427,7 +427,7 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function filter_package_rates( $package_rates, $package ) {
 
-		if ( 'none' != self::$recurring_cart_key ) {
+		if ( 'none' !== self::$recurring_cart_key ) {
 
 			$chosen_methods                  = WC()->session->get( 'chosen_shipping_methods' );
 			$recurring_cart_shipping_methods = array();
