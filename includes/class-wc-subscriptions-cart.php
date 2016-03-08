@@ -392,6 +392,32 @@ class WC_Subscriptions_Cart {
 		if ( 'none' !== self::$recurring_cart_key && isset( $chosen_methods[ $recurring_cart_package_key ] ) && isset( $available_methods[ $chosen_methods[ $recurring_cart_package_key ] ] ) ) {
 			$default_method = $chosen_methods[ $recurring_cart_package_key ];
 
+		// Our dummy rate ended up being set as the default method (probably because it has no priority) so we need to re-run some logic from WC_Shipping::get_default_method() to find the actual default method
+		} elseif ( 'wcs_dummy_rate' === $default_method && ! empty( $available_methods ) ) {
+
+			unset( $available_methods['wcs_dummy_rate'] );
+
+			// Order by priorities and costs
+			$selection_priority  = get_option( 'woocommerce_shipping_method_selection_priority', array() );
+			$prioritized_methods = array();
+
+			foreach ( $available_methods as $method_key => $method ) {
+				// Some IDs contain : if they have multiple rates so use $method->method_id
+				$priority  = isset( $selection_priority[ $method->method_id ] ) ? absint( $selection_priority[ $method->method_id ] ): 1;
+
+				if ( empty( $prioritized_methods[ $priority ] ) ) {
+					$prioritized_methods[ $priority ] = array();
+				}
+
+				$prioritized_methods[ $priority ][ $method_key ] = $method->cost;
+			}
+
+			ksort( $prioritized_methods );
+			$prioritized_methods = current( $prioritized_methods );
+			asort( $prioritized_methods );
+
+			$default_method = current( array_keys( $prioritized_methods ) );
+
 		// Set the chosen shipping method (if available) to workaround a bug with WC_Shipping::get_default_method() in WC < 2.6 which leads to the default shipping method always being used instead of a valid chosen shipping method
 		} elseif ( isset( $chosen_methods[ $package_index ] ) && $default_method !== $chosen_methods[ $package_index ] && WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
 			$default_method = $chosen_methods[ $package_index ];
@@ -443,7 +469,15 @@ class WC_Subscriptions_Cart {
 			}
 
 			if ( 0 < count( $recurring_cart_shipping_methods ) ) {
-				$package_rates = array_intersect_key( $package_rates, $recurring_cart_shipping_methods );
+
+				$unique_package_rates = array_intersect_key( $package_rates, $recurring_cart_shipping_methods );
+
+				// if we have no unique package rates, the cached chosen shipping method has been disabled or is no longer available, so instead of filtering the available rates to only that method, we need to add a new dummy method to make sure the available rates count is different, this is only necessary when there is only one available method because when there is more than one, the selection fields will be displayed and the customer can choose the method
+				if ( empty( $unique_package_rates ) && 1 == count( $package_rates ) ) {
+					$package_rates['wcs_dummy_rate'] = current( $package_rates );
+				} else {
+					$package_rates = $unique_package_rates;
+				}
 			}
 
 			// We need to make sure both the number of rates and the contents of each rate are different to ensure that we bypass WC's cache, so let's add our own unique key on the rate
