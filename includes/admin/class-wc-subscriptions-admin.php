@@ -1456,16 +1456,6 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Deprecated due to new meta boxes required for WC 2.2.
-	 *
-	 * @deprecated 1.5.10
-	 */
-	public static function add_related_orders_meta_box() {
-		_deprecated_function( __METHOD__, '1.5.10', __CLASS__ . '::add_meta_boxes()' );
-		self::add_meta_boxes();
-	}
-
-	/**
 	 * Outputs the contents of the "Renewal Orders" meta box.
 	 *
 	 * @param object $post Current post data.
@@ -1500,23 +1490,6 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function add_subscriptions_table_column_filter() {
 		_deprecated_function( __METHOD__, '2.0' );
-	}
-
-	/**
-	 * Removes anything that's not a digit or a dot from a string. Sadly it assumes that the decimal separator is a dot.
-	 * That however can be changed in WooCommerce settings, surfacing bugs such as 9,90 becoming 990, a hundred fold
-	 * increase. Use wc_format_decimal instead.
-	 *
-	 * Left in for backward compatibility reasons.
-	 *
-	 * @deprecated 1.5.24
-	 */
-	private static function clean_number( $number ) {
-		_deprecated_function( __METHOD__, '1.5.23', 'wc_format_decimal()' );
-
-		$number = preg_replace( '/[^0-9\.]/', '', $number );
-
-		return $number;
 	}
 
 	/**
