@@ -142,25 +142,8 @@ class WCS_Admin_Meta_Boxes {
 
 			$actions['wcs_create_pending_renewal'] = esc_html__( 'Create pending renewal order', 'woocommerce-subscriptions' );
 
-		} else if ( wcs_order_contains_renewal( $theorder ) && $theorder->has_status( 'failed' ) && ! empty( $theorder->payment_method ) && $theorder->get_total() > 0 ) {
-
-			$subscriptions = wcs_get_subscriptions_for_renewal_order( $theorder );
-			$subscription  = array_shift( $subscriptions );
-
-			$subscription_supports_date_changes = $subscription->payment_method_supports( 'subscription_date_changes' );
-			$subscription_is_automatic          = ! $subscription->is_manual();
-
-			$order_payment_gateway          = wc_get_payment_gateway_by_order( $theorder );
-			$order_payment_gateway_supports = ( isset( $order_payment_gateway->id ) ) ? has_action( 'woocommerce_scheduled_subscription_payment_' . $order_payment_gateway->id ) : false;
-
-			foreach ( $subscriptions as $subscription ) {
-				$supports_date_changes &= $subscription->payment_method_supports( 'subscription_date_changes' );
-				$is_automatic &= ! $subscription->is_manual();
-			}
-
-			if ( $order_payment_gateway_supports && $subscription_supports_date_changes && $subscription_is_automatic ) {
-				$actions['wcs_retry_renewal_payment'] = esc_html__( 'Retry Renewal Payment', 'woocommerce-subscriptions' );
-			}
+		} else if ( self::can_renewal_order_be_retried( $theorder ) ) {
+			$actions['wcs_retry_renewal_payment'] = esc_html__( 'Retry Renewal Payment', 'woocommerce-subscriptions' );
 		}
 
 		return $actions;
@@ -220,12 +203,47 @@ class WCS_Admin_Meta_Boxes {
 	 */
 	public static function process_retry_renewal_payment_action_request( $order ) {
 
-		if ( $order->has_status( 'failed' ) && ! empty( $order->payment_method ) && $order->get_total() > 0 ) {
+		if ( self::can_renewal_order_be_retried( $order ) ) {
 			// init payment gateways
-			WC_Payment_Gateways::instance();
+			WC()->payment_gateways();
 
 			do_action( 'woocommerce_scheduled_subscription_payment_' . $order->payment_method, $order->get_total(), $order );
 		}
+	}
+
+	/**
+	 * Determines if a renewal order payment can be retried. A renewal order payment can only be retried when:
+	 *  - Order is a renewal order
+	 *  - Order status is failed
+	 *  - Order payment method isn't empty
+	 *  - Order total > 0
+	 *  - Subscription/s aren't manual
+	 *  - Subscription payment method supports date changes
+	 *  - Order payment method has_action('woocommerce_scheduled_subscription_payment_..')
+	 *
+	 * @param WC_Order $order
+	 * @return bool
+	 * @since 2.1
+	 */
+	private static function can_renewal_order_be_retried( $order ) {
+
+		$can_be_retried = false;
+
+		if ( wcs_order_contains_renewal( $order ) && $order->has_status( 'failed' ) && ! empty( $order->payment_method ) && $order->get_total() > 0 ) {
+
+			$order_payment_gateway          = wc_get_payment_gateway_by_order( $order );
+			$order_payment_gateway_supports = ( isset( $order_payment_gateway->id ) ) ? has_action( 'woocommerce_scheduled_subscription_payment_' . $order_payment_gateway->id ) : false;
+
+			foreach ( wcs_get_subscriptions_for_renewal_order( $order ) as $subscription ) {
+				$supports_date_changes     = $subscription->payment_method_supports( 'subscription_date_changes' );
+				$is_automatic = ! $subscription->is_manual();
+				break;
+			}
+
+			$can_be_retried = $order_payment_gateway_supports && $supports_date_changes && $is_automatic;
+		}
+
+		return $can_be_retried;
 	}
 }
 
