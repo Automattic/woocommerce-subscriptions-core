@@ -47,7 +47,7 @@ class WC_Subscriptions_Synchroniser {
 		self::$sync_field_label      = __( 'Synchronise Renewals', 'woocommerce-subscriptions' );
 		self::$sync_description      = __( 'Align the payment date for all customers who purchase this subscription to a specific day of the week or month.', 'woocommerce-subscriptions' );
 		// translators: placeholder is a year (e.g. "2016")
-		self::$sync_description_year = sprintf( _x( 'Align the payment date for this subscription to a specific day of the year. If the date has already taken place this year, the first payment will be processed in %s. Set the day to 0 to disable payment syncing for this product.', 'used in subscription product edit screen', 'woocommerce-subscriptions' ), date( 'Y', strtotime( '+1 year' ) ) );
+		self::$sync_description_year = sprintf( _x( 'Align the payment date for this subscription to a specific day of the year. If the date has already taken place this year, the first payment will be processed in %s. Set the day to 0 to disable payment syncing for this product.', 'used in subscription product edit screen', 'woocommerce-subscriptions' ), gmdate( 'Y', wcs_date_to_time( '+1 year' ) ) );
 
 		// Add the settings to control whether syncing is enabled and how it will behave
 		add_filter( 'woocommerce_subscription_settings', __CLASS__ . '::add_settings' );
@@ -103,6 +103,7 @@ class WC_Subscriptions_Synchroniser {
 
 		// Maybe recalculate trial end for a synced subscription in case it includes 1 day trial used to mock cart totals.
 		add_filter( 'wcs_recurring_cart_trial_end_date', __CLASS__ . '::recalculate_trial_end_date', 15, 3 );
+		add_filter( 'wcs_recurring_cart_end_date', __CLASS__ . '::recalculate_end_date', 15, 3 );
 
 		add_filter( 'woocommerce_subscriptions_recurring_cart_key', __CLASS__ . '::add_to_recurring_cart_key', 10, 2 );
 	}
@@ -163,13 +164,12 @@ class WC_Subscriptions_Synchroniser {
 				'desc'          => __( 'If a subscription is synchronised to a specific day of the week, month or year, charge a prorated amount for the subscription at the time of sign up.', 'woocommerce-subscriptions' ),
 				'id'            => self::$setting_id_proration,
 				'css'           => 'min-width:150px;',
-				'css'           => 'min-width:150px;',
 				'default'       => 'no',
 				'type'          => 'select',
 				'options'       => array(
-					'no'           => _x( 'Never', 'when to prorate first payment when synching', 'woocommerce-subscriptions' ),
-					'virtual'      => _x( 'For Virtual Subscription Products Only', 'when to prorate first payment when synching', 'woocommerce-subscriptions' ),
-					'yes'          => _x( 'For All Subscription Products', 'when to prorate first payment when synching', 'woocommerce-subscriptions' ),
+					'no'           => _x( 'Never', 'when to allow a setting', 'woocommerce-subscriptions' ),
+					'virtual'      => _x( 'For Virtual Subscription Products Only', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
+					'yes'          => _x( 'For All Subscription Products', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
 				),
 				'desc_tip'      => true,
 			),
@@ -206,7 +206,7 @@ class WC_Subscriptions_Synchroniser {
 				$payment_month = $payment_day['month'];
 				$payment_day   = $payment_day['day'];
 			} else {
-				$payment_month = date( 'm' );
+				$payment_month = gmdate( 'm' );
 			}
 
 			echo '<div class="options_group subscription_pricing subscription_sync show_if_subscription">';
@@ -231,7 +231,7 @@ class WC_Subscriptions_Synchroniser {
 				'id'            => self::$post_meta_key_day,
 				'class'         => 'wc_input_subscription_payment_sync',
 				'label'         => self::$sync_field_label . ':',
-				'placeholder'   => __( 'Day', 'woocommerce-subscriptions' ),
+				'placeholder'   => _x( 'Day', 'input field placeholder for day field for annual subscriptions', 'woocommerce-subscriptions' ),
 				'value'         => $payment_day,
 				'type'          => 'number',
 				)
@@ -278,7 +278,7 @@ class WC_Subscriptions_Synchroniser {
 				$payment_month = $payment_day['month'];
 				$payment_day   = $payment_day['day'];
 			} else {
-				$payment_month = date( 'm' );
+				$payment_month = gmdate( 'm' );
 			}
 
 			if ( WC_Subscriptions::is_woocommerce_pre( '2.3' ) ) {
@@ -406,7 +406,7 @@ class WC_Subscriptions_Synchroniser {
 	public static function is_product_synced( $product ) {
 
 		if ( ! is_object( $product ) ) {
-			$product = get_product( $product );
+			$product = wc_get_product( $product );
 		}
 
 		if ( ! is_object( $product ) || ! self::is_syncing_enabled() || 'day' == $product->subscription_period || ! $product->is_type( array( 'subscription', 'variable-subscription', 'subscription_variation' ) ) ) {
@@ -496,14 +496,14 @@ class WC_Subscriptions_Synchroniser {
 			$from_date = WC_Subscriptions_Product::get_trial_expiration_date( $product, $from_date );
 		}
 
-		$from_timestamp = strtotime( $from_date ) + ( get_option( 'gmt_offset' ) * 3600 ); // Site time
+		$from_timestamp = wcs_date_to_time( $from_date ) + ( get_option( 'gmt_offset' ) * 3600 ); // Site time
 
 		$payment_day = self::get_products_payment_day( $product );
 
 		if ( 'week' == $period ) {
 
 			// strtotime() will figure out if the day is in the future or today (see: https://gist.github.com/thenbrent/9698083)
-			$first_payment_timestamp = strtotime( self::$weekdays[ $payment_day ], $from_timestamp );
+			$first_payment_timestamp = wcs_strtotime_dark_knight( self::$weekdays[ $payment_day ], $from_timestamp );
 
 		} elseif ( 'month' == $period ) {
 
@@ -515,7 +515,7 @@ class WC_Subscriptions_Synchroniser {
 
 			} elseif ( gmdate( 'j', $from_timestamp ) > $payment_day ) { // today is later than specified day in the from date, we need the next month
 
-				$month = date( 'F', wcs_add_months( $from_timestamp, 1 ) );
+				$month = gmdate( 'F', wcs_add_months( $from_timestamp, 1 ) );
 
 			} else { // specified day is either today or still to come in the month of the from date
 
@@ -523,7 +523,7 @@ class WC_Subscriptions_Synchroniser {
 
 			}
 
-			$first_payment_timestamp = strtotime( "{$payment_day} {$month}", $from_timestamp );
+			$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day} {$month}", $from_timestamp );
 
 		} elseif ( 'year' == $period ) {
 
@@ -567,7 +567,7 @@ class WC_Subscriptions_Synchroniser {
 					break;
 			}
 
-			$first_payment_timestamp = strtotime( "{$payment_day['day']} {$month}", $from_timestamp );
+			$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month}", $from_timestamp );
 		}
 
 		// Make sure the next payment is in the future and after the $from_date, as strtotime() will return the date this year for any day in the past when adding months or years (see: https://gist.github.com/thenbrent/9698083)
@@ -578,7 +578,7 @@ class WC_Subscriptions_Synchroniser {
 				$i = 1;
 				// Then make sure the date and time of the payment is in the future
 				while ( ( $first_payment_timestamp < gmdate( 'U' ) || $first_payment_timestamp < $from_timestamp ) && $i < 30 ) {
-					$first_payment_timestamp = strtotime( "+ 1 {$period}", $first_payment_timestamp );
+					$first_payment_timestamp = wcs_add_time( 1, $period, $first_payment_timestamp );
 					$i = $i + 1;
 				}
 			}
@@ -590,7 +590,7 @@ class WC_Subscriptions_Synchroniser {
 		// And convert it to the UTC equivalent of 3am on that day
 		$first_payment_timestamp -= ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
 
-		$first_payment = ( 'mysql' == $type && 0 != $first_payment_timestamp ) ? date( 'Y-m-d H:i:s', $first_payment_timestamp ) : $first_payment_timestamp;
+		$first_payment = ( 'mysql' == $type && 0 != $first_payment_timestamp ) ? gmdate( 'Y-m-d H:i:s', $first_payment_timestamp ) : $first_payment_timestamp;
 
 		return apply_filters( 'woocommerce_subscriptions_synced_first_payment_date', $first_payment, $product, $type, $from_date, $from_date_param );
 	}
@@ -672,7 +672,7 @@ class WC_Subscriptions_Synchroniser {
 				if ( $is_first_payment_today ) {
 					$payment_date_string = __( 'Today!', 'woocommerce-subscriptions' );
 				} else {
-					$payment_date_string = date_i18n( woocommerce_date_format(), $first_payment_timestamp + ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) );
+					$payment_date_string = date_i18n( wc_date_format(), $first_payment_timestamp + ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) );
 				}
 
 				if ( self::is_product_prorated( $product ) && ! $is_first_payment_today ) {
@@ -762,6 +762,22 @@ class WC_Subscriptions_Synchroniser {
 	}
 
 	/**
+	 * Maybe recalculate the end date for synced subscription products that contain the unnecessary
+	 * "one day trial" period.
+	 *
+	 * @since 2.0.9
+	 */
+	public static function recalculate_end_date( $end_date, $recurring_cart, $product ) {
+
+		if ( self::is_product_synced( $product ) ) {
+			$product_id  = ( isset( $product->variation_id ) ) ? $product->variation_id : $product->id;
+			$end_date = WC_Subscriptions_Product::get_expiration_date( $product_id );
+		}
+
+		return $end_date;
+	}
+
+	/**
 	 * Check if the cart includes a subscription that needs to be synced.
 	 *
 	 * @return bool Returns true if any item in the cart is a subscription sync request, otherwise, false.
@@ -814,7 +830,7 @@ class WC_Subscriptions_Synchroniser {
 		// Convert timestamp to site's time
 		$timestamp += get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
 
-		return ( gmdate( 'Y-m-d', current_time( 'timestamp' ) ) == date( 'Y-m-d', $timestamp ) ) ? true : false;
+		return ( gmdate( 'Y-m-d', current_time( 'timestamp' ) ) == gmdate( 'Y-m-d', $timestamp ) ) ? true : false;
 	}
 
 	/**
@@ -856,10 +872,10 @@ class WC_Subscriptions_Synchroniser {
 					$days_in_cycle = 7 * $product->subscription_period_interval;
 					break;
 				case 'month' :
-					$days_in_cycle = date( 't' ) * $product->subscription_period_interval;
+					$days_in_cycle = gmdate( 't' ) * $product->subscription_period_interval;
 					break;
 				case 'year' :
-					$days_in_cycle = ( 365 + date( 'L' ) ) * $product->subscription_period_interval;
+					$days_in_cycle = ( 365 + gmdate( 'L' ) ) * $product->subscription_period_interval;
 					break;
 			}
 
@@ -872,6 +888,9 @@ class WC_Subscriptions_Synchroniser {
 			} else {
 				$price = $days_until_next_payment * ( $price / $days_in_cycle );
 			}
+
+			// Now round the amount to the number of decimals displayed for prices to avoid rounding errors in the total calculations (we don't want to use WC_DISCOUNT_ROUNDING_PRECISION here because it can still lead to rounding errors). For full details, see: https://github.com/Prospress/woocommerce-subscriptions/pull/1134#issuecomment-178395062
+			$price = round( $price, wc_get_price_decimals() );
 		}
 
 		return $price;
@@ -1068,7 +1087,7 @@ class WC_Subscriptions_Synchroniser {
 
 			$product_id = WC_Subscriptions_Cart::get_items_product_id( $cart_item );
 
-			if ( woocommerce_price( 0 ) == $subscription_details['initial_amount'] && 0 == $subscription_details['trial_length'] ) {
+			if ( wc_price( 0 ) == $subscription_details['initial_amount'] && 0 == $subscription_details['trial_length'] ) {
 				$subscription_details['initial_amount'] = '';
 			}
 		}
@@ -1143,7 +1162,7 @@ class WC_Subscriptions_Synchroniser {
 				$first_payment_timestamp = self::calculate_first_payment_date( $product_id, 'timestamp', $order->order_date );
 
 				if ( 0 != $first_payment_timestamp ) {
-					$first_payment_date = ( 'mysql' == $type ) ? date( 'Y-m-d H:i:s', $first_payment_timestamp ) : $first_payment_timestamp;
+					$first_payment_date = ( 'mysql' == $type ) ? gmdate( 'Y-m-d H:i:s', $first_payment_timestamp ) : $first_payment_timestamp;
 				}
 			}
 		}
@@ -1166,7 +1185,7 @@ class WC_Subscriptions_Synchroniser {
 		$first_payment_date = self::get_first_payment_date( $payment_date, $order, $product_id, 'timestamp' );
 
 		if ( ! self::is_today( $first_payment_date ) ) {
-			$payment_date = ( 'timestamp' == $type ) ? $first_payment_date : date( 'Y-m-d H:i:s', $first_payment_date );
+			$payment_date = ( 'timestamp' == $type ) ? $first_payment_date : gmdate( 'Y-m-d H:i:s', $first_payment_date );
 		}
 
 		return $payment_date;

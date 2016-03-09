@@ -132,11 +132,11 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 	global $wpdb;
 
 	if ( ! is_a( $from_order, 'WC_Abstract_Order' ) || ! is_a( $to_order, 'WC_Abstract_Order' ) ) {
-		throw new InvalidArgumentException( __( 'Invalid data. Orders expected aren\'t orders.', 'woocommerce-subscriptions' ) );
+		throw new InvalidArgumentException( _x( 'Invalid data. Orders expected aren\'t orders.', 'In wcs_copy_order_meta error message. Refers to origin and target order objects.', 'woocommerce-subscriptions' ) );
 	}
 
 	if ( ! is_string( $type ) ) {
-		throw new InvalidArgumentException( __( 'Invalid data. Type of copy is not a string.', 'woocommerce-subscriptions' ) );
+		throw new InvalidArgumentException( _x( 'Invalid data. Type of copy is not a string.', 'Refers to the type of the copy being performed: "copy_order", "subscription", "renewal_order", "resubscribe_order"', 'woocommerce-subscriptions' ) );
 	}
 
 	if ( ! in_array( $type, array( 'subscription', 'renewal_order', 'resubscribe_order' ) ) ) {

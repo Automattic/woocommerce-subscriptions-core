@@ -26,10 +26,14 @@ function wcs_get_subscription_period_strings( $number = 1, $period = '' ) {
 
 	$translated_periods = apply_filters( 'woocommerce_subscription_periods',
 		array(
-			'day'   => sprintf( _n( 'day', '%s days', $number, 'woocommerce-subscriptions' ), $number ),
-			'week'  => sprintf( _n( 'week', '%s weeks', $number, 'woocommerce-subscriptions' ), $number ),
-			'month' => sprintf( _n( 'month', '%s months', $number, 'woocommerce-subscriptions' ), $number ),
-			'year'  => sprintf( _n( 'year', '%s years', $number, 'woocommerce-subscriptions' ), $number ),
+			// translators: placeholder is number of days. (e.g. "Bill this every day / 4 days")
+			'day'   => sprintf( _nx( 'day',   '%s days',   $number, 'Subscription billing period.', 'woocommerce-subscriptions' ), $number ),
+			// translators: placeholder is number of weeks. (e.g. "Bill this every week / 4 weeks")
+			'week'  => sprintf( _nx( 'week',  '%s weeks',  $number, 'Subscription billing period.', 'woocommerce-subscriptions' ), $number ),
+			// translators: placeholder is number of months. (e.g. "Bill this every month / 4 months")
+			'month' => sprintf( _nx( 'month', '%s months', $number, 'Subscription billing period.', 'woocommerce-subscriptions' ), $number ),
+			// translators: placeholder is number of years. (e.g. "Bill this every year / 4 years")
+			'year'  => sprintf( _nx( 'year',  '%s years',  $number, 'Subscription billing period.', 'woocommerce-subscriptions' ), $number ),
 		)
 	);
 
@@ -71,8 +75,6 @@ function wcs_get_subscription_trial_period_strings( $number = 1, $period = '' ) 
  */
 function wcs_get_subscription_ranges_tlc() {
 
-	$subscription_periods = wcs_get_subscription_period_strings();
-
 	foreach ( array( 'day', 'week', 'month', 'year' ) as $period ) {
 
 		$subscription_lengths = array(
@@ -81,19 +83,19 @@ function wcs_get_subscription_ranges_tlc() {
 
 		switch ( $period ) {
 			case 'day':
-				$subscription_lengths[] = __( '1 day', 'woocommerce-subscriptions' );
+				$subscription_lengths[] = _x( '1 day', 'Subscription lengths. e.g. "For 1 day..."', 'woocommerce-subscriptions' );
 				$subscription_range = range( 2, 90 );
 				break;
 			case 'week':
-				$subscription_lengths[] = __( '1 week', 'woocommerce-subscriptions' );
+				$subscription_lengths[] = _x( '1 week', 'Subscription lengths. e.g. "For 1 week..."', 'woocommerce-subscriptions' );
 				$subscription_range = range( 2, 52 );
 				break;
 			case 'month':
-				$subscription_lengths[] = __( '1 month', 'woocommerce-subscriptions' );
+				$subscription_lengths[] = _x( '1 month', 'Subscription lengths. e.g. "For 1 month..."', 'woocommerce-subscriptions' );
 				$subscription_range = range( 2, 24 );
 				break;
 			case 'year':
-				$subscription_lengths[] = __( '1 year', 'woocommerce-subscriptions' );
+				$subscription_lengths[] = _x( '1 year', 'Subscription lengths. e.g. "For 1 year..."', 'woocommerce-subscriptions' );
 				$subscription_range = range( 2, 5 );
 				break;
 		}
@@ -122,10 +124,7 @@ function wcs_get_subscription_ranges( $subscription_period = '' ) {
 		$subscription_period = '';
 	}
 
-	$subscription_ranges = tlc_transient( 'wcs-sub-ranges' )
-		->updates_with( 'wcs_get_subscription_ranges_tlc' )
-		->expires_in( 86400 )
-		->get();
+	$subscription_ranges = WC_Subscriptions::$cache->cache_and_get( 'wcs-sub-ranges', 'wcs_get_subscription_ranges_tlc', array(), 86400 );
 
 	$subscription_ranges = apply_filters( 'woocommerce_subscription_lengths', $subscription_ranges, $subscription_period );
 
@@ -148,7 +147,7 @@ function wcs_get_subscription_period_interval_strings( $interval = '' ) {
 
 	foreach ( range( 2, 6 ) as $i ) {
 		// translators: period interval, placeholder is ordinal (eg "$10 every _2nd/3rd/4th_", etc)
-		$intervals[ $i ] = sprintf( __( 'every %s', 'woocommerce-subscriptions' ), WC_Subscriptions::append_numeral_suffix( $i ) );
+		$intervals[ $i ] = sprintf( _x( 'every %s', 'period interval with ordinal number (e.g. "every 2nd"', 'woocommerce-subscriptions' ), WC_Subscriptions::append_numeral_suffix( $i ) );
 	}
 
 	$intervals = apply_filters( 'woocommerce_subscription_period_interval_strings', $intervals );
@@ -172,10 +171,10 @@ function wcs_get_available_time_periods( $form = 'singular' ) {
 
 	$translated_periods = apply_filters( 'woocommerce_subscription_available_time_periods',
 		array(
-			'day'   => _n( 'day', 'days', $number, 'woocommerce-subscriptions' ),
-			'week'  => _n( 'week', 'weeks', $number, 'woocommerce-subscriptions' ),
-			'month' => _n( 'month', 'months', $number, 'woocommerce-subscriptions' ),
-			'year'  => _n( 'year', 'years', $number, 'woocommerce-subscriptions' ),
+			'day'   => _nx( 'day',   'days',   $number, 'Used in the trial period dropdown. Number is in text field. 0, 2+ will need plural, 1 will need singular.', 'woocommerce-subscriptions' ),
+			'week'  => _nx( 'week',  'weeks',  $number, 'Used in the trial period dropdown. Number is in text field. 0, 2+ will need plural, 1 will need singular.', 'woocommerce-subscriptions' ),
+			'month' => _nx( 'month', 'months', $number, 'Used in the trial period dropdown. Number is in text field. 0, 2+ will need plural, 1 will need singular.', 'woocommerce-subscriptions' ),
+			'year'  => _nx( 'year',  'years',  $number, 'Used in the trial period dropdown. Number is in text field. 0, 2+ will need plural, 1 will need singular.', 'woocommerce-subscriptions' ),
 		)
 	);
 
@@ -213,10 +212,14 @@ function wcs_get_subscription_trial_lengths( $subscription_period = '' ) {
  */
 function wcs_add_time( $number_of_periods, $period, $from_timestamp ) {
 
-	if ( 'month' == $period ) {
-		$next_timestamp = wcs_add_months( $from_timestamp, $number_of_periods );
+	if ( $number_of_periods > 0 ) {
+		if ( 'month' == $period ) {
+			$next_timestamp = wcs_add_months( $from_timestamp, $number_of_periods );
+		} else {
+			$next_timestamp = wcs_strtotime_dark_knight( "+ {$number_of_periods} {$period}", $from_timestamp );
+		}
 	} else {
-		$next_timestamp = strtotime( "+ {$number_of_periods} {$period}", $from_timestamp );
+		$next_timestamp = $from_timestamp;
 	}
 
 	return $next_timestamp;
@@ -232,23 +235,23 @@ function wcs_add_time( $number_of_periods, $period, $from_timestamp ) {
  *
  * What humans usually want is for the date to continue on the last day of the month.
  *
- * @param int A Unix timestamp to add the months too.
- * @param int The number of months to add to the timestamp.
+ * @param int $from_timestamp A Unix timestamp to add the months too.
+ * @param int $months_to_add The number of months to add to the timestamp.
  * @since 2.0
  */
 function wcs_add_months( $from_timestamp, $months_to_add ) {
 
-	$first_day_of_month = date( 'Y-m', $from_timestamp ) . '-1';
-	$days_in_next_month = date( 't', strtotime( "+ {$months_to_add} month", strtotime( $first_day_of_month ) ) );
+	$first_day_of_month = gmdate( 'Y-m', $from_timestamp ) . '-1';
+	$days_in_next_month = gmdate( 't', wcs_strtotime_dark_knight( "+ {$months_to_add} month", wcs_date_to_time( $first_day_of_month ) ) );
 
 	// Payment is on the last day of the month OR number of days in next billing month is less than the the day of this month (i.e. current billing date is 30th January, next billing date can't be 30th February)
-	if ( date( 'd m Y', $from_timestamp ) === date( 't m Y', $from_timestamp ) || date( 'd', $from_timestamp ) > $days_in_next_month ) {
+	if ( gmdate( 'd m Y', $from_timestamp ) === gmdate( 't m Y', $from_timestamp ) || gmdate( 'd', $from_timestamp ) > $days_in_next_month ) {
 		for ( $i = 1; $i <= $months_to_add; $i++ ) {
-			$next_month = strtotime( '+ 3 days', $from_timestamp ); // Add 3 days to make sure we get to the next month, even when it's the 29th day of a month with 31 days
-			$next_timestamp = $from_timestamp = strtotime( date( 'Y-m-t H:i:s', $next_month ) ); // NB the "t" to get last day of next month
+			$next_month = wcs_add_time( 3, 'days', $from_timestamp ); // Add 3 days to make sure we get to the next month, even when it's the 29th day of a month with 31 days
+			$next_timestamp = $from_timestamp = wcs_date_to_time( gmdate( 'Y-m-t H:i:s', $next_month ) ); // NB the "t" to get last day of next month
 		}
 	} else { // Safe to just add a month
-		$next_timestamp = strtotime( "+ {$months_to_add} month", $from_timestamp );
+		$next_timestamp = wcs_strtotime_dark_knight( "+ {$months_to_add} month", $from_timestamp );
 	}
 
 	return $next_timestamp;
@@ -258,9 +261,10 @@ function wcs_add_months( $from_timestamp, $months_to_add ) {
  * Estimate how many days, weeks, months or years there are between now and a given
  * date in the future. Estimates the minimum total of periods.
  *
- * @param int A Unix timestamp at some time in the future.
- * @param string A unit of time, either day, week month or year.
- * @param string A rounding method, either ceil (default) or floor for anything else
+ * @param int $start_timestamp A Unix timestamp
+ * @param int $end_timestamp A Unix timestamp at some time in the future
+ * @param string $end_timestamp A unit of time, either day, week month or year.
+ * @param string $unit_of_time A rounding method, either ceil (default) or floor for anything else
  * @since 2.0
  */
 function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_of_time = 'month', $rounding_method = 'ceil' ) {
@@ -299,6 +303,8 @@ function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_o
 
 			case 'year' :
 				$denominator = YEAR_IN_SECONDS;
+				// we need to adjust this because YEAR_IN_SECONDS assumes a 365 day year. See notes on wcs_number_of_leap_days
+				$seconds_until_timestamp = $seconds_until_timestamp - wcs_number_of_leap_days( $start_timestamp, $end_timestamp ) * DAY_IN_SECONDS;
 				break;
 		}
 
@@ -308,6 +314,60 @@ function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_o
 	return $periods_until;
 }
 
+/**
+ * Utility function to find out how many leap days are there between two given dates. The reason we need this is because
+ * the constant YEAR_IN_SECONDS assumes a 365 year, which means some of the calculations are going to be off by a day.
+ * This has caused problems where if there's a leap year, wcs_estimate_periods_between would return 2 years instead of
+ * 1, making certain payments wildly inaccurate.
+ *
+ * @param int $start_timestamp A unix timestamp
+ * @param int $end_timestamp A unix timestamp
+ *
+ * @return int number of leap days between the start and end timstamps
+ */
+function wcs_number_of_leap_days( $start_timestamp, $end_timestamp ) {
+	if ( ! is_int( $start_timestamp ) || ! is_int( $end_timestamp ) ) {
+		throw new InvalidArgumentException( 'Start or end times are not integers' );
+	}
+	// save the date! ;)
+	$default_tz = date_default_timezone_get();
+	date_default_timezone_set( 'UTC' );
+
+	// Years to check
+	$years = range( date( 'Y', $start_timestamp ), date( 'Y', $end_timestamp ) );
+	$leap_years = array_filter( $years, 'wcs_is_leap_year' );
+	$total_feb_29s = 0;
+
+	if ( ! empty( $leap_years ) ) {
+		// Let's get the first feb 29 in the list
+		$first_feb_29 = mktime( 23, 59, 59, 2, 29, reset( $leap_years ) );
+		$last_feb_29 = mktime( 0, 0, 0, 2, 29, end( $leap_years ) );
+
+		$is_first_feb_covered = ( $first_feb_29 >= $start_timestamp ) ? 1: 0;
+		$is_last_feb_covered = ( $last_feb_29 <= $end_timestamp ) ? 1: 0;
+
+		if ( count( $leap_years ) > 1 ) {
+			// the feb 29s are in different years
+			$total_feb_29s = count( $leap_years ) - 2 + $is_first_feb_covered + $is_last_feb_covered;
+		} else {
+			$total_feb_29s = ( $first_feb_29 >= $start_timestamp && $last_feb_29 <= $end_timestamp ) ? 1: 0;
+		}
+	}
+	date_default_timezone_set( $default_tz );
+
+	return $total_feb_29s;
+}
+
+/**
+ * Filter function used in wcs_number_of_leap_days
+ *
+ * @param $year int A four digit year, eg 2017
+ *
+ * @return bool|string
+ */
+function wcs_is_leap_year( $year ) {
+	return date( 'L', mktime( 0, 0, 0, 1, 1, $year ) );
+}
 /**
  * Method to try to determine the period of subscriptions if data is missing. It tries the following, in order:
  *
@@ -331,13 +391,13 @@ function wcs_estimate_period_between( $last_date, $second_date, $interval = 1 ) 
 		$interval = 1;
 	}
 
-	$last_timestamp    = strtotime( $last_date );
-	$second_timestamp  = strtotime( $second_date );
+	$last_timestamp    = wcs_date_to_time( $last_date );
+	$second_timestamp  = wcs_date_to_time( $second_date );
 
 	$earlier_timestamp = min( $last_timestamp, $second_timestamp );
 	$later_timestamp   = max( $last_timestamp, $second_timestamp );
 
-	$days_in_month     = date( 't', $earlier_timestamp );
+	$days_in_month     = gmdate( 't', $earlier_timestamp );
 	$difference        = absint( $last_timestamp - $second_timestamp );
 	$period_in_seconds = round( $difference / $interval );
 	$possible_periods  = array();
@@ -530,14 +590,71 @@ function wcs_is_datetime_mysql_format( $time ) {
 	}
 
 	if ( function_exists( 'strptime' ) ) {
-		return ( false !== strptime( $time, '%Y-%m-%d %H:%M:%S' ) ) ? true : false;
+		$valid_time = $match = ( false !== strptime( $time, '%Y-%m-%d %H:%M:%S' ) ) ? true : false;
+	} else {
+		// parses for the pattern of YYYY-MM-DD HH:MM:SS, but won't check whether it's a valid timedate
+		$match = preg_match( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $time );
+
+		// parses time, returns false for invalid dates
+		$valid_time = wcs_date_to_time( $time );
 	}
 
-	// parses for the pattern of YYYY-MM-DD HH:MM:SS, but won't check whether it's a valid timedate
-	$match = preg_match( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $time );
+	// magic number -2209078800 is strtotime( '1900-01-00 00:00:00' ). Needed to achieve parity with strptime
+	return ( $match && false !== $valid_time && -2209078800 <= $valid_time ) ? true : false;
+}
 
-	// parses time, returns false for invalid dates
-	$valid_time = strtotime( $time );
+/**
+ * Convert a date string into a timestamp without ever adding or deducting time.
+ *
+ * strtotime() would be handy for this purpose, but alas, if other code running on the server
+ * is calling date_default_timezone_set() to change the timezone, strtotime() will assume the
+ * date is in that timezone unless the timezone is specific on the string (which it isn't for
+ * any MySQL formatted date) and attempt to convert it to UTC time by adding or deducting the
+ * GMT/UTC offset for that timezone, so for example, when 3rd party code has set the servers
+ * timezone using date_default_timezone_set( 'America/Los_Angeles' ) doing something like
+ * gmdate( "Y-m-d H:i:s", strtotime( gmdate( "Y-m-d H:i:s" ) ) ) will actually add 7 hours to
+ * the date even though it is a date in UTC timezone because the timezone wasn't specificed.
+ *
+ * This makes sure the date is never converted.
+ *
+ * @param string $date_string A date string formatted in MySQl or similar format that will map correctly when instantiating an instance of DateTime()
+ * @return int Unix timestamp representation of the timestamp passed in without any changes for timezones
+ */
+function wcs_date_to_time( $date_string ) {
 
-	return ( $match && $valid_time ) ? true : false;
+	if ( 0 == $date_string ) {
+		return 0;
+	}
+
+	$date_obj = new DateTime( $date_string, new DateTimeZone( 'UTC' ) );
+
+	return $date_obj->format( 'U' );
+}
+
+/**
+ * A wrapper for strtotime() designed to stand up against those who want to watch the WordPress burn.
+ *
+ * One day WordPress will require Harvey Dent (aka PHP 5.3) then we can use DateTime::add() instead,
+ * but for now, this ensures when using strtotime() to add time to a timestamp, there are no additional
+ * changes for server specific timezone additions or deductions.
+ *
+ * @param string $time_string A string representation of a date in any format that can be parsed by strtotime()
+ * @return int Unix timestamp representation of the timestamp passed in without any changes for timezones
+ */
+function wcs_strtotime_dark_knight( $time_string, $from_timestamp = null ) {
+
+	$original_timezone = date_default_timezone_get();
+
+	// this should be UTC anyway as WordPress sets it to that, but some plugins and l33t h4xors just want to watch the world burn and set it to something else
+	date_default_timezone_set( 'UTC' );
+
+	if ( null === $from_timestamp ) {
+		$next_timestamp = strtotime( $time_string );
+	} else {
+		$next_timestamp = strtotime( $time_string, $from_timestamp );
+	}
+
+	date_default_timezone_set( $original_timezone );
+
+	return $next_timestamp;
 }

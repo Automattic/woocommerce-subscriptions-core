@@ -121,7 +121,7 @@ function wcs_cart_totals_order_total_html( $cart ) {
 
 		if ( ! empty( $tax_string_array ) ) {
 			// translators: placeholder is price string, denotes tax included in cart/order total
-			$value .= '<small class="includes_tax">' . sprintf( __( '(Includes %s)', 'woocommerce-subscriptions' ), implode( ', ', $tax_string_array ) ) . '</small>';
+			$value .= '<small class="includes_tax">' . sprintf( _x( '(Includes %s)', 'includes tax', 'woocommerce-subscriptions' ), implode( ', ', $tax_string_array ) ) . '</small>';
 		}
 	}
 
@@ -187,7 +187,7 @@ function wcs_cart_pluck( $cart, $field, $default = 0 ) {
 function wcs_add_cart_first_renewal_payment_date( $order_total_html, $cart ) {
 
 	if ( 0 !== $cart->next_payment_date ) {
-		$first_renewal_date = date_i18n( woocommerce_date_format(), strtotime( get_date_from_gmt( $cart->next_payment_date ) ) );
+		$first_renewal_date = date_i18n( wc_date_format(), wcs_date_to_time( get_date_from_gmt( $cart->next_payment_date ) ) );
 		// translators: placeholder is a date
 		$order_total_html  .= '<div class="first-payment-date"><small>' . sprintf( __( 'First renewal: %s', 'woocommerce-subscriptions' ), $first_renewal_date ) .  '</small></div>';
 	}

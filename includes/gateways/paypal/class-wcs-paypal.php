@@ -88,6 +88,8 @@ class WCS_PayPal {
 		// Triggered by WCS_SV_API_Base::broadcast_request() whenever an API request is made
 		add_action( 'wc_paypal_api_request_performed', __CLASS__ . '::log_api_requests', 10, 2 );
 
+		add_filter( 'woocommerce_subscriptions_admin_meta_boxes_script_parameters', __CLASS__ . '::maybe_add_change_payment_method_warning' );
+
 		WCS_PayPal_Supports::init();
 		WCS_PayPal_Status_Manager::init();
 		WCS_PayPal_Standard_Switcher::init();
@@ -139,7 +141,7 @@ class WCS_PayPal {
 
 		if ( self::are_credentials_set() ) {
 
-			$accounts_with_reference_transactions_enabled = json_decode( get_option( 'wcs_paypal_rt_enabled_accounts' , json_encode( array() ) ) );
+			$accounts_with_reference_transactions_enabled = json_decode( get_option( 'wcs_paypal_rt_enabled_accounts' , wcs_json_encode( array() ) ) );
 
 			if ( in_array( $api_username, $accounts_with_reference_transactions_enabled ) ) {
 
@@ -149,7 +151,7 @@ class WCS_PayPal {
 
 				if ( self::get_api()->are_reference_transactions_enabled() ) {
 					$accounts_with_reference_transactions_enabled[] = $api_username;
-					update_option( 'wcs_paypal_rt_enabled_accounts', json_encode( $accounts_with_reference_transactions_enabled ) );
+					update_option( 'wcs_paypal_rt_enabled_accounts', wcs_json_encode( $accounts_with_reference_transactions_enabled ) );
 					$reference_transactions_enabled = true;
 				} else {
 					set_transient( $transient_key, $api_username, DAY_IN_SECONDS );
@@ -193,11 +195,19 @@ class WCS_PayPal {
 
 						$order = $express_checkout_details_response->get_order();
 
-						if ( false === $order ) {
+						if ( is_null( $order ) ) {
 							throw new Exception( __( 'Unable to find order for PayPal billing agreement.', 'woocommerce-subscriptions' ) );
 						}
 
-						$billing_agreement_response = self::get_api()->create_billing_agreement( $token );
+						// we need to process an initial payment
+						if ( $order->get_total() > 0 && ! wcs_is_subscription( $order ) ) {
+							$billing_agreement_response = self::get_api()->do_express_checkout( $token, $order, array(
+								'payment_action' => 'Sale',
+								'payer_id'       => $express_checkout_details_response->get_payer_id(),
+							) );
+						} else {
+							$billing_agreement_response = self::get_api()->create_billing_agreement( $token );
+						}
 
 						if ( $billing_agreement_response->has_api_error() ) {
 							throw new Exception( $billing_agreement_response->get_api_error_message(), $billing_agreement_response->get_api_error_code() );
@@ -218,8 +228,10 @@ class WCS_PayPal {
 
 						if ( ! wcs_is_subscription( $order ) ) {
 
-							if ( $order->needs_payment() ) {
-								self::process_subscription_payment( $order->get_total(), $order );
+							if ( 0 == $order->get_total() ) {
+								$order->payment_complete();
+							} else {
+								self::process_subscription_payment_response( $order, $billing_agreement_response );
 							}
 
 							$redirect_url = add_query_arg( 'utm_nooverride', '1', $order->get_checkout_order_received_url() );
@@ -314,44 +326,54 @@ class WCS_PayPal {
 
 			$response = self::get_api()->do_reference_transaction( $paypal_profile_id, $order, array(
 				'amount'         => $amount,
-				'invoice_number' => self::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number', 'woocommerce-subscriptions' ) ) ),
+				'invoice_number' => self::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) ),
 			) );
 
-			if ( $response->has_api_error() ) {
+			self::process_subscription_payment_response( $order, $response );
+		}
+	}
 
-				$error_message = $response->get_api_error_message();
+	/**
+	 * Process a payment based on a response
+	 *
+	 * @since 2.0.9
+	 */
+	public static function process_subscription_payment_response( $order, $response ) {
 
-				// Some PayPal error messages end with a fullstop, others do not, we prefer our punctuation consistent, so add one if we don't already have one.
-				if ( '.' !== substr( $error_message, -1 ) ) {
-					$error_message .= '.';
-				}
+		if ( $response->has_api_error() ) {
 
-				// translators: placeholders are PayPal API error code and PayPal API error message
-				$order->update_status( 'failed', sprintf( __( 'PayPal API error: (%d) %s', 'woocommerce-subscriptions' ), $response->get_api_error_code(), $error_message ) );
+			$error_message = $response->get_api_error_message();
 
-			} elseif ( $response->transaction_held() ) {
-
-				// translators: placeholder is PayPal transaction status message
-				$order_note   = sprintf( __( 'PayPal Transaction Held: %s', 'woocommerce-subscriptions' ), $response->get_status_message() );
-				$order_status = apply_filters( 'wcs_paypal_held_payment_order_status', 'on-hold', $order, $response );
-
-				// mark order as held
-				if ( ! $order->has_status( $order_status ) ) {
-					$order->update_status( $order_status, $order_note );
-				} else {
-					$order->add_order_note( $order_note );
-				}
-			} elseif ( ! $response->transaction_approved() ) {
-
-				// translators: placeholder is PayPal transaction status message
-				$order->update_status( 'failed', sprintf( __( 'PayPal payment declined: %s', 'woocommerce-subscriptions' ), $response->get_status_message() ) );
-
-			} elseif ( $response->transaction_approved() ) {
-
-				$order->add_order_note( sprintf( __( 'PayPal payment approved (ID: %s)', 'woocommerce-subscriptions' ), $response->get_transaction_id() ) );
-
-				$order->payment_complete( $response->get_transaction_id() );
+			// Some PayPal error messages end with a fullstop, others do not, we prefer our punctuation consistent, so add one if we don't already have one.
+			if ( '.' !== substr( $error_message, -1 ) ) {
+				$error_message .= '.';
 			}
+
+			// translators: placeholders are PayPal API error code and PayPal API error message
+			$order->update_status( 'failed', sprintf( __( 'PayPal API error: (%d) %s', 'woocommerce-subscriptions' ), $response->get_api_error_code(), $error_message ) );
+
+		} elseif ( $response->transaction_held() ) {
+
+			// translators: placeholder is PayPal transaction status message
+			$order_note   = sprintf( __( 'PayPal Transaction Held: %s', 'woocommerce-subscriptions' ), $response->get_status_message() );
+			$order_status = apply_filters( 'wcs_paypal_held_payment_order_status', 'on-hold', $order, $response );
+
+			// mark order as held
+			if ( ! $order->has_status( $order_status ) ) {
+				$order->update_status( $order_status, $order_note );
+			} else {
+				$order->add_order_note( $order_note );
+			}
+		} elseif ( ! $response->transaction_approved() ) {
+
+			// translators: placeholder is PayPal transaction status message
+			$order->update_status( 'failed', sprintf( __( 'PayPal payment declined: %s', 'woocommerce-subscriptions' ), $response->get_status_message() ) );
+
+		} elseif ( $response->transaction_approved() ) {
+
+			$order->add_order_note( sprintf( __( 'PayPal payment approved (ID: %s)', 'woocommerce-subscriptions' ), $response->get_transaction_id() ) );
+
+			$order->payment_complete( $response->get_transaction_id() );
 		}
 	}
 
@@ -381,6 +403,32 @@ class WCS_PayPal {
 		}
 
 		return $resubscribe_order;
+	}
+
+	/**
+	 * Maybe adds a warning message to subscription script parameters which is used in a Javascript dialog if the
+	 * payment method of the subscription is set to be changed. The warning message is only added if the subscriptions
+	 * payment gateway is PayPal Standard.
+	 *
+	 * @param array $script_parameters The script parameters used in subscription meta boxes.
+	 * @return array $script_parameters
+	 * @since 2.0
+	 */
+	public static function maybe_add_change_payment_method_warning( $script_parameters ) {
+		global $post;
+		$subscription = wcs_get_subscription( $post );
+
+		if ( 'paypal' === $subscription->payment_method ) {
+
+			$paypal_profile_id  = wcs_get_paypal_id( $subscription->id );
+			$is_paypal_standard = ! wcs_is_paypal_profile_a( $paypal_profile_id, 'billing_agreement' );
+
+			if ( $is_paypal_standard ) {
+				$script_parameters['change_payment_method_warning'] = __( "Are you sure you want to change the payment method from PayPal standard?\n\nThis will suspend the subscription at PayPal.", 'woocommerce-subscriptions' );
+			}
+		}
+
+		return $script_parameters;
 	}
 
 	/** Getters ******************************************************/
@@ -439,9 +487,10 @@ class WCS_PayPal {
 			'api',
 			'api-request',
 			'api-response',
-			'api-response-payment',
 			'api-response-checkout',
 			'api-response-billing-agreement',
+			'api-response-payment',
+			'api-response-recurring-payment',
 		);
 
 		foreach ( $classes as $class ) {
@@ -489,7 +538,7 @@ class WCS_PayPal {
 	/** Method required by WCS_SV_API_Base, which normally requires an instance of SV_WC_Plugin **/
 
 	public function get_plugin_name() {
-		return __( 'WooCommerce Subscriptions PayPal', 'woocommerce-subscriptions' );
+		return _x( 'WooCommerce Subscriptions PayPal', 'used in User Agent data sent to PayPal to help identify where a payment came from', 'woocommerce-subscriptions' );
 	}
 
 	public function get_version() {
@@ -499,4 +548,5 @@ class WCS_PayPal {
 	public function get_id() {
 		return 'paypal';
 	}
+
 }

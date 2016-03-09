@@ -28,6 +28,8 @@ class WCS_PayPal_Status_Manager extends WCS_PayPal {
 		add_action( 'woocommerce_subscription_expired_paypal', __CLASS__ . '::suspend_subscription' );
 		add_action( 'woocommerce_subscription_on-hold_paypal', __CLASS__ . '::suspend_subscription' );
 		add_action( 'woocommerce_subscription_activated_paypal', __CLASS__ . '::reactivate_subscription' );
+
+		add_filter( 'wcs_gateway_status_payment_changed', __CLASS__ . '::suspend_subscription_on_payment_changed', 10, 2 );
 	}
 
 	/**
@@ -97,6 +99,18 @@ class WCS_PayPal_Status_Manager extends WCS_PayPal {
 		}
 
 		return $status_updated;
+	}
+
+	/**
+	 * When changing the payment method on edit subscription screen from PayPal, only suspend the subscription rather
+	 * than cancelling it.
+	 *
+	 * @param string $status The subscription status sent to the current payment gateway before changing subscription payment method.
+	 * @return object $subscription
+	 * @since 2.0
+	 */
+	public static function suspend_subscription_on_payment_changed( $status, $subscription ) {
+		return ( 'paypal' == $subscription->payment_gateway->id ) ? 'on-hold' : $status;
 	}
 
 }

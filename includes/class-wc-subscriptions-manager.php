@@ -58,7 +58,7 @@ class WC_Subscriptions_Manager {
 
 		// make sure a subscription is cancelled before it is trashed/deleted
 		add_action( 'wp_trash_post', __CLASS__ . '::maybe_cancel_subscription', 10, 1 );
-		add_action( 'wp_delete_post', __CLASS__ . '::maybe_cancel_subscription', 10, 1 );
+		add_action( 'before_delete_post', __CLASS__ . '::maybe_cancel_subscription', 10, 1 );
 
 		// set correct status to restore after a subscription is trashed/deleted
 		add_action( 'trashed_post', __CLASS__ . '::fix_trash_meta_status' );
@@ -91,7 +91,7 @@ class WC_Subscriptions_Manager {
 		if ( 0 == $subscription->get_total() || $subscription->is_manual() || empty( $subscription->payment_method ) || ! $subscription->payment_method_supports( 'gateway_scheduled_payments' ) ) {
 
 			// Always put the subscription on hold in case something goes wrong while trying to process renewal
-			$subscription->update_status( 'on-hold', __( 'Subscription renewal payment due:', 'woocommerce-subscriptions' ) );
+			$subscription->update_status( 'on-hold', _x( 'Subscription renewal payment due:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
 
 			// Generate a renewal order for payment gateways to use to record the payment (and determine how much is due)
 			$renewal_order = wcs_create_renewal_order( $subscription );
@@ -261,7 +261,8 @@ class WC_Subscriptions_Manager {
 				try {
 					$subscription->update_status( 'active' );
 				} catch ( Exception $e ) {
-					$subscription->add_order_note( sprintf( __( 'Failed to activate subscription status for order #%s: %s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
+					// translators: $1: order number, $2: error message
+					$subscription->add_order_note( sprintf( __( 'Failed to activate subscription status for order #%1$s: %2$s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
 				}
 			}
 
@@ -277,7 +278,7 @@ class WC_Subscriptions_Manager {
 	 */
 	public static function put_subscription_on_hold_for_order( $order ) {
 
-		$subscriptions = wcs_get_subscriptions_for_order( $order );
+		$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) );
 
 		if ( ! empty( $subscriptions ) ) {
 
@@ -288,7 +289,8 @@ class WC_Subscriptions_Manager {
 						$subscription->update_status( 'on-hold' );
 					}
 				} catch ( Exception $e ) {
-					$subscription->add_order_note( sprintf( __( 'Failed to update subscription status after order #%s was put on-hold: %s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
+					// translators: $1: order number, $2: error message
+					$subscription->add_order_note( sprintf( __( 'Failed to update subscription status after order #%1$s was put on-hold: %2$s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
 				}
 			}
 
@@ -304,7 +306,7 @@ class WC_Subscriptions_Manager {
 	 */
 	public static function cancel_subscriptions_for_order( $order ) {
 
-		$subscriptions = wcs_get_subscriptions_for_order( $order );
+		$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) );
 
 		if ( ! empty( $subscriptions ) ) {
 
@@ -315,7 +317,8 @@ class WC_Subscriptions_Manager {
 						$subscription->cancel_order();
 					}
 				} catch ( Exception $e ) {
-					$subscription->add_order_note( sprintf( __( 'Failed to cancel subscription after order #%s was cancelled: %s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
+					// translators: $1: order number, $2: error message
+					$subscription->add_order_note( sprintf( __( 'Failed to cancel subscription after order #%1$s was cancelled: %2$s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
 				}
 			}
 
@@ -342,7 +345,8 @@ class WC_Subscriptions_Manager {
 						$subscription->update_status( 'expired' );
 					}
 				} catch ( Exception $e ) {
-					$subscription->add_order_note( sprintf( __( 'Failed to set subscription as expired for order #%s: %s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
+					// translators: $1: order number, $2: error message
+					$subscription->add_order_note( sprintf( __( 'Failed to set subscription as expired for order #%1$s: %2$s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
 				}
 			}
 
@@ -358,7 +362,7 @@ class WC_Subscriptions_Manager {
 	 */
 	public static function failed_subscription_sign_ups_for_order( $order ) {
 
-		$subscriptions = wcs_get_subscriptions_for_order( $order );
+		$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) );
 
 		if ( ! empty( $subscriptions ) ) {
 
@@ -377,7 +381,8 @@ class WC_Subscriptions_Manager {
 					$subscription->payment_failed();
 
 				} catch ( Exception $e ) {
-					$subscription->add_order_note( sprintf( __( 'Failed to process failed payment on subscription for order #%s: %s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
+					// translators: $1: order number, $2: error message
+					$subscription->add_order_note( sprintf( __( 'Failed to process failed payment on subscription for order #%1$s: %2$s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
 				}
 			}
 
@@ -416,7 +421,7 @@ class WC_Subscriptions_Manager {
 		$billing_interval = WC_Subscriptions_Product::get_interval( $product_id );
 
 		// Support passing timestamps
-		$args['start_date'] = is_numeric( $args['start_date'] ) ? date( 'Y-m-d H:i:s', $args['start_date'] ) : $args['start_date'];
+		$args['start_date'] = is_numeric( $args['start_date'] ) ? gmdate( 'Y-m-d H:i:s', $args['start_date'] ) : $args['start_date'];
 
 		$product = wc_get_product( $product_id );
 
@@ -476,7 +481,7 @@ class WC_Subscriptions_Manager {
 		// Adding a new subscription so set the expiry date/time from the order date
 		if ( ! empty( $args['expiry_date'] ) ) {
 			if ( is_numeric( $args['expiry_date'] ) ) {
-				$args['expiry_date'] = date( 'Y-m-d H:i:s', $args['expiry_date'] );
+				$args['expiry_date'] = gmdate( 'Y-m-d H:i:s', $args['expiry_date'] );
 			}
 
 			$expiration = $args['expiry_date'];
@@ -810,7 +815,7 @@ class WC_Subscriptions_Manager {
 		if ( ! empty( $subscriptions ) ) {
 
 			foreach ( $subscriptions as $subscription ) {
-				wp_trash_post( $subscription->id );
+				wp_delete_post( $subscription->id );
 			}
 		}
 	}
@@ -952,23 +957,23 @@ class WC_Subscriptions_Manager {
 
 		switch ( $status ) {
 			case 'active' :
-				$status_string = __( 'Active', 'woocommerce-subscriptions' );
+				$status_string = _x( 'Active', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
 			case 'cancelled' :
-				$status_string = __( 'Cancelled', 'woocommerce-subscriptions' );
+				$status_string = _x( 'Cancelled', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
 			case 'expired' :
-				$status_string = __( 'Expired', 'woocommerce-subscriptions' );
+				$status_string = _x( 'Expired', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
 			case 'pending' :
-				$status_string = __( 'Pending', 'woocommerce-subscriptions' );
+				$status_string = _x( 'Pending', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
 			case 'failed' :
-				$status_string = __( 'Failed', 'woocommerce-subscriptions' );
+				$status_string = _x( 'Failed', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
 			case 'on-hold' :
 			case 'suspend' : // Backward compatibility
-				$status_string = __( 'On-hold', 'woocommerce-subscriptions' );
+				$status_string = _x( 'On-hold', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
 			default :
 				$status_string = apply_filters( 'woocommerce_subscriptions_custom_status_string', ucfirst( $status ), $subscription_key, $user_id );
@@ -1153,7 +1158,7 @@ class WC_Subscriptions_Manager {
 	public static function set_expiration_date( $subscription_key, $user_id = '', $expiration_date = '' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_dates( array( "end" => $expiration_date ) )' );
 		if ( is_int( $expiration_date ) ) {
-			$expiration_date = date( 'Y-m-d H:i:s', $expiration_date );
+			$expiration_date = gmdate( 'Y-m-d H:i:s', $expiration_date );
 		}
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
 		return apply_filters( 'woocommerce_subscriptions_set_expiration_date', $subscription->update_dates( array( 'end' => $expiration_date ) ), $subscription->get_date( 'end' ), $subscription_key, $user_id );
@@ -1214,7 +1219,7 @@ class WC_Subscriptions_Manager {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_dates( array( "next_payment" => $next_payment ) )' );
 
 		if ( is_int( $next_payment ) ) {
-			$next_payment = date( 'Y-m-d H:i:s', $next_payment );
+			$next_payment = gmdate( 'Y-m-d H:i:s', $next_payment );
 		}
 
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
@@ -1266,7 +1271,7 @@ class WC_Subscriptions_Manager {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::calculate_date( "next_payment" )' );
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
 		$next_payment = $subscription->calculate_date( 'next_payment' );
-		return ( 'mysql' == $type ) ? $next_payment : strtotime( $next_payment );
+		return ( 'mysql' == $type ) ? $next_payment : wcs_date_to_time( $next_payment );
 	}
 
 	/**
@@ -1296,7 +1301,7 @@ class WC_Subscriptions_Manager {
 	public static function set_trial_expiration_date( $subscription_key, $user_id = '', $trial_expiration_date = '' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_dates( array( "trial_end" => $expiration_date ) )' );
 		if ( is_int( $trial_expiration_date ) ) {
-			$trial_expiration_date = date( 'Y-m-d H:i:s', $trial_expiration_date );
+			$trial_expiration_date = gmdate( 'Y-m-d H:i:s', $trial_expiration_date );
 		}
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
 		return apply_filters( 'woocommerce_subscriptions_set_trial_expiration_date', $subscription->update_dates( array( 'trial_end' => $trial_expiration_date ) ), $subscription->get_date( 'trial_end' ), $subscription_key, $user_id );
@@ -1315,7 +1320,7 @@ class WC_Subscriptions_Manager {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::calculate_date( "trial_end" )' );
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
 		$trial_end    = $subscription->calculate_date( 'trial_end' );
-		$trial_end    = ( 'mysql' == $type ) ? $trial_end : strtotime( $trial_end );
+		$trial_end    = ( 'mysql' == $type ) ? $trial_end : wcs_date_to_time( $trial_end );
 		return apply_filters( 'woocommerce_subscription_calculated_trial_expiration_date' , $trial_end, $subscription_key, $user_id );
 	}
 
@@ -1561,7 +1566,13 @@ class WC_Subscriptions_Manager {
 
 		$subscription_id = wcs_get_subscription_id_from_key( $subscription_key );
 
-		return apply_filters( 'woocommerce_subscriptions_users_action_link', wcs_get_users_change_status_link( $subscription_id, $status ), $subscription_key, $status );
+		$current_status = '';
+		$subscription = wcs_get_subscription( $subscription_id );
+		if ( $subscription instanceof WC_Subscription ) {
+			$current_status = $subscription->get_status();
+		}
+
+		return apply_filters( 'woocommerce_subscriptions_users_action_link', wcs_get_users_change_status_link( $subscription_id, $status, $current_status ), $subscription_key, $status );
 	}
 
 	/**
@@ -1577,14 +1588,14 @@ class WC_Subscriptions_Manager {
 	public static function update_next_payment_date( $new_payment_date, $subscription_key, $user_id = '', $timezone = 'server' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_dates( array( "next_payment" => $new_payment_date ) )' );
 
-		$new_payment_timestamp = ( is_numeric( $new_payment_date ) ) ? $new_payment_date : strtotime( $new_payment_date );
+		$new_payment_timestamp = ( is_numeric( $new_payment_date ) ) ? $new_payment_date : wcs_date_to_time( $new_payment_date );
 
 		// The date needs to be converted to GMT/UTC
 		if ( 'server' != $timezone ) {
 			$new_payment_timestamp = $new_payment_timestamp - ( get_option( 'gmt_offset' ) * 3600 );
 		}
 
-		$new_payment_date = date( 'Y-m-d H:i:s', $new_payment_timestamp );
+		$new_payment_date = gmdate( 'Y-m-d H:i:s', $new_payment_timestamp );
 
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
 
@@ -1735,36 +1746,36 @@ class WC_Subscriptions_Manager {
 		if ( $args['include_buttons'] ) {
 			$touch_time .= '<p>';
 			$touch_time .= '<a href="#edit_timestamp" class="save-timestamp hide-if-no-js button">' . __( 'Change', 'woocommerce-subscriptions' ) . '</a>';
-			$touch_time .= '<a href="#edit_timestamp" class="cancel-timestamp hide-if-no-js">' . __( 'Cancel', 'woocommerce-subscriptions' ) . '</a>';
+			$touch_time .= '<a href="#edit_timestamp" class="cancel-timestamp hide-if-no-js">' . _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ) . '</a>';
 			$touch_time .= '</p>';
 		}
 
 		$allowed_html = array(
-		    'select' => array(
-		        'id' => array(),
-		        'name' => array(),
-		        'tabindex' => array(),
-		    ),
-		    'option' => array(
-		        'value' => array(),
-		        'selected' => array(),
-		    ),
-		    'input' => array(
-		    	'type' => array(),
-		    	'id' => array(),
-		    	'name' => array(),
-		        'value' => array(),
-		        'size' => array(),
-		        'tabindex' => array(),
-		        'maxlength' => array(),
-		        'autocomplete' => array(),
-		    ),
-		    'p' => array(),
-		    'a' => array(
-		        'href' => array(),
-		        'title' => array(),
-		        'class' => array(),
-		    ),
+			'select' => array(
+				'id' => array(),
+				'name' => array(),
+				'tabindex' => array(),
+			),
+			'option' => array(
+				'value' => array(),
+				'selected' => array(),
+			),
+			'input' => array(
+				'type' => array(),
+				'id' => array(),
+				'name' => array(),
+				'value' => array(),
+				'size' => array(),
+				'tabindex' => array(),
+				'maxlength' => array(),
+				'autocomplete' => array(),
+			),
+			'p' => array(),
+			'a' => array(
+				'href' => array(),
+				'title' => array(),
+				'class' => array(),
+			),
 		);
 
 		if ( $args['echo'] ) {
@@ -1788,7 +1799,7 @@ class WC_Subscriptions_Manager {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_status()' );
 
 		try {
-			$subscription = wcs_get_subscription_from_key( $deprecated );
+			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
 			if ( $subscription->has_status( 'on-hold' ) ) {
 				return false;
@@ -1799,7 +1810,7 @@ class WC_Subscriptions_Manager {
 
 		// If the subscription is using manual payments, the gateway isn't active or it manages scheduled payments
 		if ( 0 == $subscription->get_total() || $subscription->is_manual() || empty( $subscription->payment_method ) || ! $subscription->payment_method_supports( 'gateway_scheduled_payments' ) ) {
-			$subscription->update_status( 'on-hold', __( 'Subscription renewal payment due:', 'woocommerce-subscriptions' ) );
+			$subscription->update_status( 'on-hold', _x( 'Subscription renewal payment due:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
 		}
 	}
 
@@ -1817,7 +1828,7 @@ class WC_Subscriptions_Manager {
 			$subscription = wcs_get_subscription( $subscription_id );
 
 			// Always put the subscription on hold in case something goes wrong while trying to process renewal
-			$subscription->update_status( 'on-hold', __( 'Subscription renewal payment due:', 'woocommerce-subscriptions' ) );
+			$subscription->update_status( 'on-hold', _x( 'Subscription renewal payment due:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
 
 			// Create a renewal order to record the failed payment which can then be used by the customer to reactivate the subscription
 			$renewal_order = wcs_create_renewal_order( $subscription );
@@ -1835,122 +1846,6 @@ class WC_Subscriptions_Manager {
 	}
 
 	/* Deprecated Functions */
-
-	/**
-	 * @deprecated 1.1
-	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @since 1.0
-	 */
-	public static function can_subscription_be_cancelled( $subscription_key, $user_id = '' ) {
-		_deprecated_function( __METHOD__, '1.1', __CLASS__ . '::can_subscription_be_changed_to( "cancelled", $subscription_key, $user_id )' );
-		$subscription_can_be_cancelled = self::can_subscription_be_changed_to( 'cancelled', $subscription_key, $user_id );
-
-		return apply_filters( 'woocommerce_subscription_can_be_cancelled', $subscription_can_be_cancelled, $subscription, $order );
-	}
-
-	/**
-	 * @deprecated 1.1
-	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @since 1.0
-	 */
-	public static function get_users_cancellation_link( $subscription_key ) {
-		_deprecated_function( __METHOD__, '1.1', __CLASS__ . '::get_users_cancellation_link( $subscription_key, "cancel" )' );
-		return apply_filters( 'woocommerce_subscriptions_users_cancellation_link', self::get_users_change_status_link( $subscription_key, 'cancel' ), $subscription_key );
-	}
-
-	/**
-	 * @deprecated 1.1
-	 * @since 1.0
-	 */
-	public static function maybe_cancel_users_subscription() {
-		_deprecated_function( __METHOD__, '1.1', __CLASS__ . '::maybe_change_users_subscription()' );
-		self::maybe_change_users_subscription();
-	}
-
-	/**
-	 * @deprecated 1.1
-	 * @param int $user_id The ID of the user who owns the subscriptions.
-	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @since 1.0
-	 */
-	public static function get_failed_payment_count( $user_id, $subscription_key ) {
-		_deprecated_function( __METHOD__, '1.1', __CLASS__ . '::get_subscriptions_failed_payment_count( $subscription_key, $user_id )' );
-		return self::get_subscriptions_failed_payment_count( $subscription_key, $user_id );
-	}
-
-	/**
-	 * Deprecated in favour of a more correctly named @see maybe_reschedule_subscription_payment()
-	 *
-	 * @deprecated 1.1.5
-	 * @since 1.0
-	 */
-	public static function reschedule_subscription_payment( $user_id, $subscription_key ) {
-		_deprecated_function( __METHOD__, '1.1.5', __CLASS__ . '::maybe_reschedule_subscription_payment( $user_id, $subscription_key )' );
-		self::maybe_reschedule_subscription_payment( $user_id, $subscription_key );
-	}
-
-
-	/**
-	 * Suspended a single subscription on a users account by placing it in the "suspended" status.
-	 *
-	 * Subscriptions version 1.2 replaced the "suspended" status with the "on-hold" status to match WooCommerce core.
-	 *
-	 * @param int $user_id The id of the user whose subscription should be suspended.
-	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @deprecated 1.2
-	 * @since 1.0
-	 */
-	public static function suspend_subscription( $user_id, $subscription_key ) {
-		_deprecated_function( __METHOD__, '1.2', __CLASS__ . '::put_subscription_on_hold( $user_id, $subscription_key )' );
-		self::put_subscription_on_hold( $user_id, $subscription_key );
-	}
-
-
-	/**
-	 * Suspended all the subscription products in an order.
-	 *
-	 * Subscriptions version 1.2 replaced the "suspended" status with the "on-hold" status to match WooCommerce core.
-	 *
-	 * @param WC_Order|int $order The order or ID of the order for which subscriptions should be marked as activated.
-	 * @deprecated 1.2
-	 * @since 1.0
-	 */
-	public static function suspend_subscriptions_for_order( $order ) {
-		_deprecated_function( __METHOD__, '1.2', __CLASS__ . '::put_subscription_on_hold_for_order( $order )' );
-		self::put_subscription_on_hold_for_order( $order );
-	}
-
-
-	/**
-	 * Gets a specific subscription for a user, as specified by $subscription_key
-	 *
-	 * Subscriptions version 1.4 moved subscription details out of user meta and into item meta, meaning it can be accessed
-	 * efficiently without a user ID.
-	 *
-	 * @param int $user_id (optional) The id of the user whose subscriptions you want. Defaults to the currently logged in user.
-	 * @param string $subscription_key A subscription key of the form created by @see self::subscription_key()
-	 * @deprecated 1.4
-	 * @since 1.0
-	 */
-	public static function get_users_subscription( $user_id = 0, $subscription_key ) {
-		_deprecated_function( __METHOD__, '1.4', __CLASS__ . '::get_subscription( $subscription_key )' );
-		return apply_filters( 'woocommerce_users_subscription', self::get_subscription( $subscription_key ), $user_id, $subscription_key );
-	}
-
-
-	/**
-	 * Removed a specific subscription for a user, as specified by $subscription_key, but as subscriptions are no longer stored
-	 * against a user and are instead stored against the order, this is no longer required (changing the user on the order effectively
-	 * performs the same thing without requiring the subscription to have any changes).
-	 *
-	 * @param int $user_id (optional) The id of the user whose subscriptions you want. Defaults to the currently logged in user.
-	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @deprecated 1.4
-	 * @since 1.0
-	 */
-	public static function remove_users_subscription( $user_id, $subscription_key ) {
-		_deprecated_function( __METHOD__, '1.4' );
-	}
 
 	/**
 	 * When a scheduled subscription payment hook is fired, automatically process the subscription payment
@@ -2286,7 +2181,7 @@ class WC_Subscriptions_Manager {
 
 		} else {
 
-			$new_payment_date      = sprintf( '%s-%s-%s %s', (int) $_POST['wcs_year'], zeroise( (int) $_POST['wcs_month'], 2 ), zeroise( (int) $_POST['wcs_day'], 2 ), date( 'H:i:s', current_time( 'timestamp' ) ) );
+			$new_payment_date      = sprintf( '%s-%s-%s %s', (int) $_POST['wcs_year'], zeroise( (int) $_POST['wcs_month'], 2 ), zeroise( (int) $_POST['wcs_day'], 2 ), gmdate( 'H:i:s', current_time( 'timestamp' ) ) );
 			$new_payment_timestamp = self::update_next_payment_date( $new_payment_date, $_POST['wcs_subscription_key'], self::get_user_id_from_subscription_key( $_POST['wcs_subscription_key'] ), 'user' );
 
 			if ( is_wp_error( $new_payment_timestamp ) ) {
@@ -2303,7 +2198,7 @@ class WC_Subscriptions_Manager {
 					// translators: placeholder is human time diff (e.g. "3 weeks")
 					$date_to_display = sprintf( __( 'In %s', 'woocommerce-subscriptions' ), human_time_diff( gmdate( 'U' ), $new_payment_timestamp ) );
 				} else {
-					$date_to_display = date_i18n( woocommerce_date_format(), $new_payment_timestamp_user_time );
+					$date_to_display = date_i18n( wc_date_format(), $new_payment_timestamp_user_time );
 				}
 
 				$response['status']        = 'success';
@@ -2314,7 +2209,7 @@ class WC_Subscriptions_Manager {
 			}
 		}
 
-		echo json_encode( $response );
+		echo wcs_json_encode( $response );
 
 		exit();
 	}

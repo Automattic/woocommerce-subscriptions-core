@@ -37,8 +37,6 @@ class WC_Subscriptions_Product {
 		add_filter( 'woocommerce_gform_total_price', __CLASS__ . '::get_gravity_form_prices', 10, 2 );
 		add_filter( 'woocommerce_gform_variation_total_price', __CLASS__ . '::get_gravity_form_prices', 10, 2 );
 
-		add_action( 'woocommerce_variable-subscription_add_to_cart', 'woocommerce_variable_add_to_cart' );
-
 		add_filter( 'woocommerce_product_class', __CLASS__ . '::set_subscription_variation_class', 10, 4 );
 
 		// Make sure a subscriptions price is included in subscription variations when required
@@ -165,7 +163,7 @@ class WC_Subscriptions_Product {
 
 				$contains_subscription = true;
 
-				$child_product = get_product( $child_product_id );
+				$child_product = wc_get_product( $child_product_id );
 
 				$child_price = $child_product->get_price();
 				$sign_up_fee = $child_product->get_sign_up_fee();
@@ -205,7 +203,7 @@ class WC_Subscriptions_Product {
 			$price .= $grouped_product->get_price_html_from_text();
 		}
 
-		$price .= woocommerce_price( $min_price );
+		$price .= wc_price( $min_price );
 
 		return $price;
 	}
@@ -300,7 +298,7 @@ class WC_Subscriptions_Product {
 			if ( isset( $include['price'] ) ) {
 				$price = $include['price'];
 			} else {
-				$price = woocommerce_price( $base_price );
+				$price = wc_price( $base_price );
 			}
 		}
 
@@ -313,7 +311,7 @@ class WC_Subscriptions_Product {
 		$trial_period        = self::get_trial_period( $product );
 
 		if ( is_numeric( $sign_up_fee ) ) {
-			$sign_up_fee = woocommerce_price( $sign_up_fee );
+			$sign_up_fee = wc_price( $sign_up_fee );
 		}
 
 		if ( $include['subscription_length'] ) {
@@ -337,25 +335,25 @@ class WC_Subscriptions_Product {
 					case 'week':
 						$payment_day_of_week = WC_Subscriptions_Synchroniser::get_weekday( $payment_day );
 						if ( 1 == $billing_interval ) {
-							// translators: 1$: <price> every, 2$: <day of the week> (e.g. "$5 every Wednesday")
+							// translators: 1$: recurring amount string, 2$: day of the week (e.g. "$10 every Wednesday")
 							$subscription_string = sprintf( __( '%1$s every %2$s', 'woocommerce-subscriptions' ), $price, $payment_day_of_week );
 						} else {
-							 // translators: 1$: <price> every ,2$: <period> on, 3$: <day> (e.g. "$5 every 2 weeks on Wednesday")
+							// translators: 1$: recurring amount string, 2$: period, 3$: day of the week (e.g. "$10 every 2nd week on Wednesday")
 							$subscription_string = sprintf( __( '%1$s every %2$s on %3$s', 'woocommerce-subscriptions' ), $price, wcs_get_subscription_period_strings( $billing_interval, $billing_period ), $payment_day_of_week );
 						}
 						break;
 					case 'month':
 						if ( 1 == $billing_interval ) {
 							if ( $payment_day > 27 ) {
-								// translators: placeholder is price
+								// translators: placeholder is recurring amount
 								$subscription_string = sprintf( __( '%s on the last day of each month', 'woocommerce-subscriptions' ), $price );
 							} else {
-								// translators: 1$: <price> on the, 2$: <date> of each month (e.g. "$5 every 4th of each month")
+								// translators: 1$: recurring amount, 2$: day of the month (e.g. "23rd") (e.g. "$5 every 23rd of each month")
 								$subscription_string = sprintf( __( '%1$s on the %2$s of each month', 'woocommerce-subscriptions' ), $price, WC_Subscriptions::append_numeral_suffix( $payment_day ) );
 							}
 						} else {
 							if ( $payment_day > 27 ) {
-								// translators: 1$: <price> on the last day of every, 2$: <interval> month (e.g. "$10 on the last day of every 3rd month")
+								// translators: 1$: recurring amount, 2$: interval (e.g. "3rd") (e.g. "$10 on the last day of every 3rd month")
 								$subscription_string = sprintf( __( '%1$s on the last day of every %2$s month', 'woocommerce-subscriptions' ), $price, WC_Subscriptions::append_numeral_suffix( $billing_interval ) );
 							} else {
 								// translators: 1$: <price> on the, 2$: <date> day of every, 3$: <interval> month (e.g. "$10 on the 23rd day of every 2nd month")
@@ -368,13 +366,13 @@ class WC_Subscriptions_Product {
 							// translators: 1$: <price> on, 2$: <date>, 3$: <month> each year (e.g. "$15 on March 15th each year")
 							$subscription_string = sprintf( __( '%1$s on %2$s %3$s each year', 'woocommerce-subscriptions' ), $price, $wp_locale->month[ $payment_day['month'] ], WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ) );
 						} else {
-							// translators: 1$: <price> on, 2$: <date>, 3$: <month> every, 4$: <interval> year (e.g. "$15 on March 15th every 3rd year")
+							// translators: 1$: recurring amount, 2$: month (e.g. "March"), 3$: day of the month (e.g. "23rd") (e.g. "$15 on March 15th every 3rd year")
 							$subscription_string = sprintf( __( '%1$s on %2$s %3$s every %4$s year', 'woocommerce-subscriptions' ), $price, $wp_locale->month[ $payment_day['month'] ], WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ), WC_Subscriptions::append_numeral_suffix( $billing_interval ) );
 						}
 						break;
 				}
 			} else {
-				// translators: 1$: <price> / 2$: <interval> (e.g. "$15 / month" or "$15 every 2nd month")
+				// translators: 1$: recurring amount, 2$: subscription period (e.g. "month" or "3 months") (e.g. "$15 / month" or "$15 every 2nd month")
 				$subscription_string = sprintf( _n( '%1$s / %2$s', ' %1$s every %2$s', $billing_interval, 'woocommerce-subscriptions' ), $price, wcs_get_subscription_period_strings( $billing_interval, $billing_period ) );
 			}
 		} elseif ( $include['subscription_price'] ) {
@@ -386,7 +384,7 @@ class WC_Subscriptions_Product {
 
 		// Add the length to the end
 		if ( $include_length ) {
-			// translators: 1$: subscription string (e.g. "$15 on March 15th every 3 years"), 2$: lenght (e.g. "for 6 years")
+			// translators: 1$: subscription string (e.g. "$10 up front then $5 on March 23rd every 3rd year"), 2$: length (e.g. "4 years")
 			$subscription_string = sprintf( __( '%1$s for %2$s', 'woocommerce-subscriptions' ), $subscription_string, $ranges[ $subscription_length ] );
 		}
 
@@ -577,7 +575,7 @@ class WC_Subscriptions_Product {
 		$first_renewal_timestamp = self::get_first_renewal_payment_time( $product_id, $from_date, $timezone );
 
 		if ( $first_renewal_timestamp > 0 ) {
-			$first_renewal_date = date( 'Y-m-d H:i:s', $first_renewal_timestamp );
+			$first_renewal_date = gmdate( 'Y-m-d H:i:s', $first_renewal_timestamp );
 		} else {
 			$first_renewal_date = 0;
 		}
@@ -616,18 +614,11 @@ class WC_Subscriptions_Product {
 			// If the subscription has a free trial period, the first renewal is the same as the expiration of the free trial
 			if ( $trial_length > 0 ) {
 
-				$first_renewal_timestamp = strtotime( self::get_trial_expiration_date( $product_id, $from_date ) );
+				$first_renewal_timestamp = wcs_date_to_time( self::get_trial_expiration_date( $product_id, $from_date ) );
 
 			} else {
 
-				$from_timestamp = strtotime( $from_date );
-				$billing_period = self::get_period( $product_id );
-
-				if ( 'month' == $billing_period ) {
-					$first_renewal_timestamp = wcs_add_months( $from_timestamp, $billing_interval );
-				} else {
-					$first_renewal_timestamp = strtotime( "+ $billing_interval {$billing_period}s", $from_timestamp );
-				}
+				$first_renewal_timestamp = wcs_add_time( $billing_interval, self::get_period( $product_id ), wcs_date_to_time( $from_date ) );
 
 				if ( 'site' == $timezone ) {
 					$first_renewal_timestamp += ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
@@ -654,15 +645,15 @@ class WC_Subscriptions_Product {
 
 		if ( $subscription_length > 0 ) {
 
-			$subscription_period = self::get_period( $product_id );
-			$trial_period        = self::get_trial_period( $product_id );
-			$trial_length        = self::get_trial_length( $product_id );
-
 			if ( empty( $from_date ) ) {
 				$from_date = gmdate( 'Y-m-d H:i:s' );
 			}
 
-			$expiration_date = date( 'Y-m-d H:i:s', strtotime( "+ $trial_length {$trial_period}s + $subscription_length {$subscription_period}s", strtotime( $from_date ) ) );
+			if ( self::get_trial_length( $product_id ) > 0 ) {
+				$from_date = self::get_trial_expiration_date( $product_id, $from_date );
+			}
+
+			$expiration_date = gmdate( 'Y-m-d H:i:s', wcs_add_time( $subscription_length, self::get_period( $product_id ), wcs_date_to_time( $from_date ) ) );
 
 		} else {
 
@@ -684,7 +675,6 @@ class WC_Subscriptions_Product {
 	 */
 	public static function get_trial_expiration_date( $product_id, $from_date = '' ) {
 
-		$trial_period = self::get_trial_period( $product_id );
 		$trial_length = self::get_trial_length( $product_id );
 
 		if ( $trial_length > 0 ) {
@@ -693,11 +683,8 @@ class WC_Subscriptions_Product {
 				$from_date = gmdate( 'Y-m-d H:i:s' );
 			}
 
-			if ( 'month' == $trial_period ) {
-				$trial_expiration_date = date( 'Y-m-d H:i:s', wcs_add_months( strtotime( $from_date ), $trial_length ) );
-			} else { // Safe to just add the billing periods
-				$trial_expiration_date = date( 'Y-m-d H:i:s', strtotime( "+ {$trial_length} {$trial_period}s", strtotime( $from_date ) ) );
-			}
+			$trial_expiration_date = gmdate( 'Y-m-d H:i:s', wcs_add_time( $trial_length, self::get_trial_period( $product_id ), wcs_date_to_time( $from_date ) ) );
+
 		} else {
 
 			$trial_expiration_date = 0;
@@ -761,7 +748,7 @@ class WC_Subscriptions_Product {
 
 			$user_id = $args[2];
 			$post_id = $args[2];
-			$product = get_product( $post_id );
+			$product = wc_get_product( $post_id );
 
 			if ( false !== $product && 'trash' == $product->post->post_status && $product->is_type( array( 'subscription', 'variable-subscription', 'subscription_variation' ) ) ) {
 
@@ -876,7 +863,7 @@ class WC_Subscriptions_Product {
 
 			if ( $variation_post && $variation_post->post_type == 'product_variation' ) {
 
-				$variation_product = get_product( $variation_id );
+				$variation_product = wc_get_product( $variation_id );
 
 				if ( $variation_product && $variation_product->is_type( 'subscription_variation' ) ) {
 
@@ -949,8 +936,16 @@ class WC_Subscriptions_Product {
 	 */
 	public static function bulk_edit_variations( $bulk_action, $data, $variable_product_id, $variation_ids ) {
 
-		if ( ! self::is_subscription( $variable_product_id ) ) {
-			return;
+		if ( WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
+			// Pre 2.5 we don't have the product type information available so we have to check if it is a subscription - downside here is this only works if the product has already been saved
+			if ( ! self::is_subscription( $variable_product_id ) ) {
+				return;
+			}
+		} else {
+			// Since 2.5 we have the product type information available so we don't have to wait for the product to be saved to check if it is a subscription
+			if ( empty( $_POST['security'] ) || ! wp_verify_nonce( $_POST['security'], 'bulk-edit-variations' ) || 'variable-subscription' !== $_POST['product_type'] ) {
+				return;
+			}
 		}
 
 		$meta_key = str_replace( 'variable', '', $bulk_action );
@@ -965,90 +960,6 @@ class WC_Subscriptions_Product {
 				update_post_meta( $variation_id, $meta_key, stripslashes( $data['value'] ) );
 			}
 		}
-	}
-
-	/**
-	 * Calculates a price (could be per period price or sign-up fee) for a subscription less tax
-	 * if the subscription is taxable and the prices in the store include tax.
-	 *
-	 * Based on the WC_Product::get_price_excluding_tax() function.
-	 *
-	 * @param float $price The price to adjust based on taxes
-	 * @param WC_Product $product The product the price belongs too (needed to determine tax class)
-	 * @since 1.0
-	 */
-	public static function calculate_tax_for_subscription( $price, $product, $deduct_base_taxes = false ) {
-		_deprecated_function( __METHOD__, '1.5.8', 'WC_Product::get_price_including_tax()' );
-
-		if ( $product->is_taxable() ) {
-
-			$tax = new WC_Tax();
-
-			$base_tax_rates = $tax->get_shop_base_rate( $product->tax_class );
-			$tax_rates      = $tax->get_rates( $product->get_tax_class() ); // This will get the base rate unless we're on the checkout page
-
-			if ( $deduct_base_taxes && get_option( 'woocommerce_prices_include_tax' ) == 'yes' ) {
-
-				$base_taxes = $tax->calc_tax( $price, $base_tax_rates, true );
-				$taxes      = $tax->calc_tax( $price - array_sum( $base_taxes ), $tax_rates, false );
-
-			} elseif ( get_option( 'woocommerce_prices_include_tax' ) == 'yes' ) {
-
-				$taxes = $tax->calc_tax( $price, $base_tax_rates, true );
-
-			} else {
-
-				$taxes = $tax->calc_tax( $price, $base_tax_rates, false );
-
-			}
-
-			$tax_amount = $tax->get_tax_total( $taxes );
-
-		} else {
-
-			$tax_amount = 0;
-
-		}
-
-		return $tax_amount;
-	}
-
-
-	/**
-	 * Deprecated in favour of native get_price_html() method on the Subscription Product classes (e.g. WC_Product_Subscription)
-	 *
-	 * Output subscription string as the price html
-	 *
-	 * @since 1.0
-	 * @deprecated 1.5.18
-	 */
-	public static function get_price_html( $price, $product ) {
-		_deprecated_function( __METHOD__, '1.5.18', __CLASS__ . '::get_price_string()' );
-
-		if ( self::is_subscription( $product ) ) {
-			$price = self::get_price_string( $product, array( 'price' => $price ) );
-		}
-
-		return $price;
-	}
-
-	/**
-	 * Deprecated in favour of native get_price_html() method on the Subscription Product classes (e.g. WC_Product_Subscription)
-	 *
-	 * Set the subscription string for products which have a $0 recurring fee, but a sign-up fee
-	 *
-	 * @since 1.3.4
-	 * @deprecated 1.5.18
-	 */
-	public static function get_free_price_html( $price, $product ) {
-		_deprecated_function( __METHOD__, '1.5.18', __CLASS__ . '::get_price_string()' );
-
-		// Check if it has a sign-up fee (we already know it has no recurring fee)
-		if ( self::is_subscription( $product ) && self::get_sign_up_fee( $product ) > 0 ) {
-			$price = self::get_price_string( $product, array( 'price' => $price ) );
-		}
-
-		return $price;
 	}
 }
 

@@ -33,6 +33,7 @@ class WCS_PayPal_Standard_Change_Payment_Method {
 		// Don't update payment methods immediately when changing to PayPal - wait for the IPN notification
 		add_filter( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', __CLASS__ . '::maybe_dont_update_payment_method', 10, 3 );
 
+		add_filter( 'wcs_gateway_change_payment_button_text', __CLASS__ . '::change_payment_button_text', 10 , 2 );
 	}
 
 	/**
@@ -42,7 +43,7 @@ class WCS_PayPal_Standard_Change_Payment_Method {
 	 * @since 2.0
 	 */
 	public static function maybe_remove_subscription_cancelled_callback( $subscription, $new_payment_method, $old_payment_method ) {
-		if ( 'paypal' == $new_payment_method && 'paypal' == $old_payment_method ) {
+		if ( 'paypal' == $new_payment_method && 'paypal' == $old_payment_method && ! WCS_PayPal::are_reference_transactions_enabled() ) {
 			remove_action( 'woocommerce_subscription_cancelled_paypal', 'WCS_PayPal_Status_Manager::cancel_subscription' );
 		}
 	}
@@ -54,7 +55,7 @@ class WCS_PayPal_Standard_Change_Payment_Method {
 	 * @since 2.0
 	 */
 	public static function maybe_reattach_subscription_cancelled_callback( $subscription, $new_payment_method, $old_payment_method ) {
-		if ( 'paypal' == $new_payment_method && 'paypal' == $old_payment_method ) {
+		if ( 'paypal' == $new_payment_method && 'paypal' == $old_payment_method && ! WCS_PayPal::are_reference_transactions_enabled() ) {
 			add_action( 'woocommerce_subscription_cancelled_paypal', 'WCS_PayPal_Status_Manager::cancel_subscription' );
 		}
 	}
@@ -73,6 +74,22 @@ class WCS_PayPal_Standard_Change_Payment_Method {
 		}
 
 		return $update;
+	}
+
+	/**
+	 * Change the "Change Payment Method" button for PayPal
+	 *
+	 * @param string $change_button_text
+	 * @param WC_Payment_Gateway $gateway
+	 * @since 2.0.8
+	 */
+	public static function change_payment_button_text( $change_button_text, $gateway ) {
+
+		if ( is_object( $gateway ) && isset( $gateway->id ) && 'paypal' == $gateway->id && ! empty( $gateway->order_button_text ) ) {
+			$change_button_text = $gateway->order_button_text;
+		}
+
+		return $change_button_text;
 	}
 
 }

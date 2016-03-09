@@ -164,9 +164,9 @@ class WCS_Upgrade_1_2 {
 
 					// Add line item meta
 					if ( $item_id ) {
-						woocommerce_update_order_item_meta( $item_id, 'compound', absint( isset( $order_taxes[ $index ]['compound'] ) ? $order_taxes[ $index ]['compound'] : 0 ) );
-						woocommerce_update_order_item_meta( $item_id, 'tax_amount', wc_format_decimal( $order_taxes[ $index ]['cart_tax'] ) );
-						woocommerce_update_order_item_meta( $item_id, 'shipping_tax_amount', wc_format_decimal( $order_taxes[ $index ]['shipping_tax'] ) );
+						wc_update_order_item_meta( $item_id, 'compound', absint( isset( $order_taxes[ $index ]['compound'] ) ? $order_taxes[ $index ]['compound'] : 0 ) );
+						wc_update_order_item_meta( $item_id, 'tax_amount', wc_format_decimal( $order_taxes[ $index ]['cart_tax'] ) );
+						wc_update_order_item_meta( $item_id, 'shipping_tax_amount', wc_format_decimal( $order_taxes[ $index ]['shipping_tax'] ) );
 					}
 				}
 			}
@@ -241,26 +241,26 @@ class WCS_Upgrade_1_2 {
 
 				} else { // Ignoring all advice, upgrading 4 months after version 1.2 was released, and doing it with WC 2.0 installed
 
-					woocommerce_add_order_item_meta( $index, '_subscription_period', $order_subscription_periods[ $product_id ] );
-					woocommerce_add_order_item_meta( $index, '_subscription_interval', $subscription_interval );
-					woocommerce_add_order_item_meta( $index, '_subscription_length', $subscription_length );
-					woocommerce_add_order_item_meta( $index, '_subscription_trial_length', $subscription_trial_length );
-					woocommerce_add_order_item_meta( $index, '_subscription_trial_period', $order_subscription_periods[ $product_id ] );
+					wc_add_order_item_meta( $index, '_subscription_period', $order_subscription_periods[ $product_id ] );
+					wc_add_order_item_meta( $index, '_subscription_interval', $subscription_interval );
+					wc_add_order_item_meta( $index, '_subscription_length', $subscription_length );
+					wc_add_order_item_meta( $index, '_subscription_trial_length', $subscription_trial_length );
+					wc_add_order_item_meta( $index, '_subscription_trial_period', $order_subscription_periods[ $product_id ] );
 
-					woocommerce_add_order_item_meta( $index, '_subscription_recurring_amount', $order_item['line_subtotal'] );
-					woocommerce_add_order_item_meta( $index, '_subscription_sign_up_fee', $subscription_sign_up_fee );
+					wc_add_order_item_meta( $index, '_subscription_recurring_amount', $order_item['line_subtotal'] );
+					wc_add_order_item_meta( $index, '_subscription_sign_up_fee', $subscription_sign_up_fee );
 
 					// Calculated recurring amounts for the item
-					woocommerce_add_order_item_meta( $index, '_recurring_line_total', $order_item['line_total'] );
-					woocommerce_add_order_item_meta( $index, '_recurring_line_tax', $order_item['line_tax'] );
-					woocommerce_add_order_item_meta( $index, '_recurring_line_subtotal', $order_item['line_subtotal'] );
-					woocommerce_add_order_item_meta( $index, '_recurring_line_subtotal_tax', $order_item['line_subtotal_tax'] );
+					wc_add_order_item_meta( $index, '_recurring_line_total', $order_item['line_total'] );
+					wc_add_order_item_meta( $index, '_recurring_line_tax', $order_item['line_tax'] );
+					wc_add_order_item_meta( $index, '_recurring_line_subtotal', $order_item['line_subtotal'] );
+					wc_add_order_item_meta( $index, '_recurring_line_subtotal_tax', $order_item['line_subtotal_tax'] );
 
 					if ( $sign_up_fee_total > 0 ) { // Order totals have changed
-						woocommerce_update_order_item_meta( $index, '_line_subtotal', woocommerce_format_decimal( $order_item['line_subtotal'] ) );
-						woocommerce_update_order_item_meta( $index, '_line_subtotal_tax', woocommerce_format_decimal( $order_item['line_subtotal_tax'] ) );
-						woocommerce_update_order_item_meta( $index, '_line_total', woocommerce_format_decimal( $order_item['line_total'] ) );
-						woocommerce_update_order_item_meta( $index, '_line_tax', woocommerce_format_decimal( $order_item['line_tax'] ) );
+						wc_update_order_item_meta( $index, '_line_subtotal', wc_format_decimalw( $order_item['line_subtotal'] ) );
+						wc_update_order_item_meta( $index, '_line_subtotal_tax', wc_format_decimal( $order_item['line_subtotal_tax'] ) );
+						wc_update_order_item_meta( $index, '_line_total', wc_format_decimal( $order_item['line_total'] ) );
+						wc_update_order_item_meta( $index, '_line_tax', wc_format_decimal( $order_item['line_tax'] ) );
 					}
 				}
 			}

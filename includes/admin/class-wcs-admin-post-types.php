@@ -70,19 +70,98 @@ class WCS_Admin_Post_Types {
 			return $pieces;
 		}
 
-		// we need to name ID again due to name conflict if we don't
-		$pieces['fields'] .= ", {$wpdb->posts}.ID AS original_id, {$wpdb->posts}.post_parent AS original_parent, CASE (SELECT COUNT(*) FROM {$wpdb->postmeta} WHERE meta_key = '_subscription_renewal' AND meta_value = original_id)
-			WHEN 0 THEN CASE (SELECT COUNT(*) FROM {$wpdb->posts} WHERE ID = original_parent)
-				WHEN 0 THEN 0
-				ELSE (SELECT post_date_gmt FROM {$wpdb->posts} WHERE ID = original_parent)
-				END
-			ELSE (SELECT p.post_date_gmt FROM {$wpdb->postmeta} pm LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id WHERE pm.meta_key = '_subscription_renewal' AND meta_value = original_id ORDER BY p.post_date_gmt DESC LIMIT 1)
-			END
-			AS last_payment";
+		// Let's check whether we even have the privileges to do the things we want to do
+		if ( $this->is_db_user_privileged() ) {
+			$pieces = self::posts_clauses_high_performance( $pieces );
+		} else {
+			$pieces = self::posts_clauses_low_performance( $pieces );
+		}
 
 		$order = strtoupper( $query->query['order'] );
 
-		$pieces['orderby'] = "CAST(last_payment AS DATETIME) {$order}";
+		// fields and order are identical in both cases
+		$pieces['fields'] .= ', COALESCE(lp.last_payment, o.post_date_gmt, 0) as lp';
+		$pieces['orderby'] = "CAST(lp AS DATETIME) {$order}";
+
+		return $pieces;
+	}
+
+	/**
+	 * Check is database user is capable of doing high performance things, such as creating temporary tables,
+	 * indexing them, and then dropping them after.
+	 *
+	 * @return bool
+	 */
+	public function is_db_user_privileged() {
+		$permissions = $this->get_special_database_privileges();
+
+		return ( in_array( 'CREATE TEMPORARY TABLES', $permissions ) && in_array( 'INDEX', $permissions ) && in_array( 'DROP', $permissions ) );
+	}
+
+	/**
+	 * Return the privileges a database user has out of CREATE TEMPORARY TABLES, INDEX and DROP. This is so we can use
+	 * these discrete values on a debug page.
+	 *
+	 * @return array
+	 */
+	public function get_special_database_privileges() {
+		global $wpdb;
+
+		$permissions = $wpdb->get_col( "SELECT PRIVILEGE_TYPE FROM information_schema.user_privileges WHERE GRANTEE = CONCAT( '''', REPLACE( CURRENT_USER(), '@', '''@''' ), '''' ) AND PRIVILEGE_TYPE IN ('CREATE TEMPORARY TABLES', 'INDEX', 'DROP')" );
+
+		return $permissions;
+	}
+
+	/**
+	 * Modifies the query for a slightly faster, yet still pretty slow query in case the user does not have
+	 * the necessary privileges to run
+	 *
+	 * @param $pieces
+	 *
+	 * @return mixed
+	 */
+	private function posts_clauses_low_performance( $pieces ) {
+		global $wpdb;
+
+		$pieces['join'] .= "LEFT JOIN
+				(SELECT
+					MAX( p.post_date_gmt ) as last_payment,
+					pm.meta_value
+				FROM {$wpdb->postmeta} pm
+				LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+				WHERE pm.meta_key = '_subscription_renewal'
+				GROUP BY pm.meta_value) lp
+			ON {$wpdb->posts}.ID = lp.meta_value
+			LEFT JOIN {$wpdb->posts} o on {$wpdb->posts}.post_parent = o.ID";
+
+		return $pieces;
+	}
+
+	/**
+	 * Modifies the query in such a way that makes use of the CREATE TEMPORARY TABLE, DROP and INDEX
+	 * MySQL privileges.
+	 *
+	 * @param array $pieces
+	 *
+	 * @return array $pieces
+	 */
+	private function posts_clauses_high_performance( $pieces ) {
+		global $wpdb;
+
+		// in case multiple users sort at the same time
+		$session = wp_get_session_token();
+
+		$table_name = substr( "{$wpdb->prefix}tmp_{$session}_lastpayment", 0, 64 );
+
+		// Let's create a temporary table, drop the previous one, because otherwise this query is hella slow
+		$wpdb->query( "DROP TEMPORARY TABLE IF EXISTS {$table_name}" );
+
+		$wpdb->query( "CREATE TEMPORARY TABLE {$table_name} (id INT, INDEX USING BTREE (id), last_payment DATETIME) AS SELECT pm.meta_value as id, MAX( p.post_date_gmt ) as last_payment FROM {$wpdb->postmeta} pm LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id WHERE pm.meta_key = '_subscription_renewal' GROUP BY pm.meta_value" );
+		// Magic ends here
+
+		$pieces['join'] .= "LEFT JOIN {$table_name} lp
+			ON {$wpdb->posts}.ID = lp.id
+			LEFT JOIN {$wpdb->posts} o on {$wpdb->posts}.post_parent = o.ID";
 
 		return $pieces;
 	}
@@ -148,9 +227,9 @@ class WCS_Admin_Post_Types {
 
 		// Make it filterable in case extensions want to change this
 		$bulk_actions = apply_filters( 'woocommerce_subscription_bulk_actions', array(
-			'active'    => _x( 'Activate', 'action on bulk subscriptions', 'woocommerce-subscriptions' ),
-			'on-hold'   => _x( 'Put on-hold', 'action on bulk subscriptions', 'woocommerce-subscriptions' ),
-			'cancelled' => _x( 'Cancel', 'action on bulk subscriptions', 'woocommerce-subscriptions' ),
+			'active'    => _x( 'Activate', 'an action on a subscription', 'woocommerce-subscriptions' ),
+			'on-hold'   => _x( 'Put on-hold', 'an action on a subscription', 'woocommerce-subscriptions' ),
+			'cancelled' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
 		) );
 
 		// No need to display certain bulk actions if we know all the subscriptions on the page have that status already
@@ -225,7 +304,7 @@ class WCS_Admin_Post_Types {
 
 		foreach ( $subscription_ids as $subscription_id ) {
 			$subscription = wcs_get_subscription( $subscription_id );
-			$order_note   = __( 'Subscription status changed by bulk edit:', 'woocommerce-subscriptions' );
+			$order_note   = _x( 'Subscription status changed by bulk edit:', 'Used in order note. Reason why status changed.', 'woocommerce-subscriptions' );
 
 			try {
 
@@ -310,16 +389,16 @@ class WCS_Admin_Post_Types {
 
 		$columns = array(
 			'cb'                => '<input type="checkbox" />',
-			'status'            => _x( 'Status', 'list column title', 'woocommerce-subscriptions' ),
-			'order_title'       => _x( 'Subscription', 'list column title', 'woocommerce-subscriptions' ),
-			'order_items'       => _x( 'Items', 'list column title', 'woocommerce-subscriptions' ),
-			'recurring_total'   => _x( 'Total', 'list column title', 'woocommerce-subscriptions' ),
-			'start_date'        => _x( 'Start Date', 'list column title', 'woocommerce-subscriptions' ),
-			'trial_end_date'    => _x( 'Trial End', 'list column title', 'woocommerce-subscriptions' ),
-			'next_payment_date' => _x( 'Next Payment', 'list column title', 'woocommerce-subscriptions' ),
-			'last_payment_date' => _x( 'Last Payment', 'list column title', 'woocommerce-subscriptions' ),
-			'end_date'          => _x( 'End Date', 'list column title', 'woocommerce-subscriptions' ),
-			'orders'            => _x( 'Orders', 'list column title', 'woocommerce-subscriptions' ),
+			'status'            => __( 'Status', 'woocommerce-subscriptions' ),
+			'order_title'       => __( 'Subscription', 'woocommerce-subscriptions' ),
+			'order_items'       => __( 'Items', 'woocommerce-subscriptions' ),
+			'recurring_total'   => __( 'Total', 'woocommerce-subscriptions' ),
+			'start_date'        => __( 'Start Date', 'woocommerce-subscriptions' ),
+			'trial_end_date'    => __( 'Trial End', 'woocommerce-subscriptions' ),
+			'next_payment_date' => __( 'Next Payment', 'woocommerce-subscriptions' ),
+			'last_payment_date' => __( 'Last Payment', 'woocommerce-subscriptions' ),
+			'end_date'          => __( 'End Date', 'woocommerce-subscriptions' ),
+			'orders'            => _x( 'Orders', 'number of orders linked to a subscription', 'woocommerce-subscriptions' ),
 		);
 
 		return $columns;
@@ -363,7 +442,7 @@ class WCS_Admin_Post_Types {
 				$all_statuses = array(
 					'active'    => __( 'Reactivate', 'woocommerce-subscriptions' ),
 					'on-hold'   => __( 'Suspend', 'woocommerce-subscriptions' ),
-					'cancelled' => __( 'Cancel', 'woocommerce-subscriptions' ),
+					'cancelled' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
 					'trash'     => __( 'Trash', 'woocommerce-subscriptions' ),
 					'deleted'   => __( 'Delete Permanently', 'woocommerce-subscriptions' ),
 				);
@@ -421,11 +500,13 @@ class WCS_Admin_Post_Types {
 				}
 
 				if ( $the_subscription->billing_email ) {
-					$customer_tip .= '<br/><br/>' . __( 'Email:', 'woocommerce-subscriptions' ) . ' ' . esc_attr( $the_subscription->billing_email );
+					// translators: placeholder is customer's billing email
+					$customer_tip .= '<br/><br/>' . sprintf( __( 'Email: %s', 'woocommerce-subscriptions' ), esc_attr( $the_subscription->billing_email ) );
 				}
 
 				if ( $the_subscription->billing_phone ) {
-					$customer_tip .= '<br/><br/>' . __( 'Tel:', 'woocommerce-subscriptions' ) . ' ' . esc_html( $the_subscription->billing_phone );
+					// translators: placeholder is customer's billing phone number
+					$customer_tip .= '<br/><br/>' . sprintf( __( 'Tel: %s', 'woocommerce-subscriptions' ), esc_html( $the_subscription->billing_phone ) );
 				}
 
 				if ( ! empty( $customer_tip ) ) {
@@ -452,8 +533,8 @@ class WCS_Admin_Post_Types {
 				} elseif ( $the_subscription->billing_first_name || $the_subscription->billing_last_name ) {
 					$username = trim( $the_subscription->billing_first_name . ' ' . $the_subscription->billing_last_name );
 				}
-
-				$column_content = sprintf( _x( '%s for %s', 'Subscription number for X', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post.php?post=' . absint( $post->ID ) . '&action=edit' ) ) . '"><strong>' . esc_attr( $the_subscription->get_order_number() ) . '</strong></a>', $username );
+				// translators: $1: is opening link, $2: is subscription order number, $3: is closing link tag, $4: is user's name
+				$column_content = sprintf( _x( '%1$s#%2$s%3$s for %4$s', 'Subscription title on admin table. (e.g.: #211 for John Doe)', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post.php?post=' . absint( $post->ID ) . '&action=edit' ) ) . '">', '<strong>' . esc_attr( $the_subscription->get_order_number() ) . '</strong>', '</a>', $username );
 
 				$column_content .= '</div>';
 
@@ -533,8 +614,8 @@ class WCS_Admin_Post_Types {
 			case 'recurring_total' :
 				$column_content .= esc_html( strip_tags( $the_subscription->get_formatted_order_total() ) );
 
-				// translators: placeholder is payment method used
-				$column_content .= '<small class="meta">' . esc_html( sprintf( _x( 'Via %s', 'used in admin list table on recurring total', 'woocommerce-subscriptions' ), $the_subscription->get_payment_method_to_display() ) ) . '</small>';
+				// translators: placeholder is the display name of a payment gateway a subscription was paid by
+				$column_content .= '<small class="meta">' . esc_html( sprintf( __( 'Via %s', 'woocommerce-subscriptions' ), $the_subscription->get_payment_method_to_display() ) ) . '</small>';
 				break;
 
 			case 'start_date':
@@ -734,6 +815,7 @@ class WCS_Admin_Post_Types {
 
 				$query_vars = array(
 					'post_type'   => 'shop_subscription',
+					'posts_per_page' => -1,
 					'post_status' => 'any',
 					'fields'      => 'ids',
 					'meta_query'  => array(
@@ -812,7 +894,7 @@ class WCS_Admin_Post_Types {
 			7 => __( 'Subscription saved.', 'woocommerce-subscriptions' ),
 			8 => __( 'Subscription submitted.', 'woocommerce-subscriptions' ),
 			// translators: php date string
-			9 => sprintf( __( 'Subscription scheduled for: %1$s.', 'woocommerce-subscriptions' ), '<strong>' . date_i18n( _x( 'M j, Y @ G:i', 'used in "Subscription scheduled for <date>"', 'woocommerce-subscriptions' ), strtotime( $post->post_date ) ) . '</strong>' ),
+			9 => sprintf( __( 'Subscription scheduled for: %1$s.', 'woocommerce-subscriptions' ), '<strong>' . date_i18n( _x( 'M j, Y @ G:i', 'used in "Subscription scheduled for <date>"', 'woocommerce-subscriptions' ), wcs_date_to_time( $post->post_date ) ) . '</strong>' ),
 			10 => __( 'Subscription draft updated.', 'woocommerce-subscriptions' ),
 		);
 

@@ -57,11 +57,11 @@ class WCS_Admin_Meta_Boxes {
 
 		remove_meta_box( 'woocommerce-order-data', 'shop_subscription', 'normal' );
 
-		add_meta_box( 'subscription_renewal_orders', _x( 'Related Orders', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', 'shop_subscription', 'normal', 'low' );
+		add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', 'shop_subscription', 'normal', 'low' );
 
 		// Only display the meta box if an order relates to a subscription
 		if ( 'shop_order' === get_post_type( $post_ID ) && wcs_order_contains_subscription( $post_ID, 'any' ) ) {
-			add_meta_box( 'subscription_renewal_orders', _x( 'Related Orders', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', 'shop_order', 'normal', 'low' );
+			add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', 'shop_order', 'normal', 'low' );
 		}
 	}
 
@@ -108,6 +108,7 @@ class WCS_Admin_Meta_Boxes {
 				'i18n_trial_end_next_notice'     => __( 'Please enter a date before the next payment.', 'woocommerce-subscriptions' ),
 				'i18n_end_date_notice'           => __( 'Please enter a date after the next payment.', 'woocommerce-subscriptions' ),
 				'process_renewal_action_warning' => __( "Are you sure you want to process a renewal?\n\nThis will charge the customer and email them the renewal order (if emails are enabled).", 'woocommerce-subscriptions' ),
+				'payment_method'                 => wcs_get_subscription( $post )->payment_method,
 				'search_customers_nonce'         => wp_create_nonce( 'search-customers' ),
 			) ) );
 		}
