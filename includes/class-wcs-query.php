@@ -16,6 +16,7 @@ class WCS_Query extends WC_Query {
 		if ( ! is_admin() ) {
 			add_filter( 'query_vars', array( $this, 'add_query_vars' ), 0 );
 			add_filter( 'woocommerce_get_breadcrumb', array( $this, 'add_breadcrumb' ), 10, 2 );
+			add_action( 'pre_get_posts', array( $this, 'pre_get_posts' ), 11 );
 		}
 
 		$this->init_query_vars();
@@ -27,7 +28,9 @@ class WCS_Query extends WC_Query {
 	 * @since 2.0
 	 */
 	public function init_query_vars() {
-		WC()->query->query_vars['view-subscription'] = get_option( 'woocommerce_myaccount_view_subscriptions_endpoint', 'view-subscription' );
+		$this->query_vars = array(
+			'view-subscription' => get_option( 'woocommerce_myaccount_view_subscriptions_endpoint', 'view-subscription' ),
+		);
 	}
 
 	/**
@@ -99,6 +102,32 @@ class WCS_Query extends WC_Query {
 		}
 
 		return apply_filters( 'wcs_query_is_query', $is_view_subscription_query, $query_var );
+	}
+
+	/**
+	 * Fix for endpoints on the homepage
+	 *
+	 * Based on WC_Query->pre_get_posts(), but only applies the fix for endpoints on the homepage from it
+	 * instead of duplicating all the code to handle the main product query.
+	 *
+	 * @param mixed $q query object
+	 */
+	public function pre_get_posts( $q ) {
+		// We only want to affect the main query
+		if ( ! $q->is_main_query() ) {
+			return;
+		}
+
+		if ( $q->is_home() && 'page' === get_option( 'show_on_front' ) && absint( get_option( 'page_on_front' ) ) !== absint( $q->get( 'page_id' ) ) ) {
+			$_query = wp_parse_args( $q->query );
+			if ( ! empty( $_query ) && array_intersect( array_keys( $_query ), array_keys( $this->query_vars ) ) ) {
+				$q->is_page     = true;
+				$q->is_home     = false;
+				$q->is_singular = true;
+				$q->set( 'page_id', (int) get_option( 'page_on_front' ) );
+				add_filter( 'redirect_canonical', '__return_false' );
+			}
+		}
 	}
 }
 new WCS_Query();
