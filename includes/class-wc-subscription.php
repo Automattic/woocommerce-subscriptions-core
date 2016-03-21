@@ -1278,14 +1278,9 @@ class WC_Subscription extends WC_Order {
 		// Make sure subscriber has default role
 		wcs_update_users_role( $this->get_user_id(), 'default_subscriber_role' );
 
-		// Free trial & no-signup fee, no payment received
+		// Add order note depending on initial payment
 		if ( 0 == $this->get_total_initial_payment() && 1 == $this->get_completed_payment_count() && false !== $this->order ) {
-
-			if ( $this->is_manual() ) {
-				$note = __( 'Free trial commenced for subscription.', 'woocommerce-subscriptions' );
-			} else {
-				$note = __( 'Recurring payment authorized.', 'woocommerce-subscriptions' );
-			}
+			$note = __( 'Sign-up complete.', 'woocommerce-subscriptions' );
 		} else {
 			$note = __( 'Payment received.', 'woocommerce-subscriptions' );
 		}

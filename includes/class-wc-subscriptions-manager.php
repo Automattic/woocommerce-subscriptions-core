@@ -1566,7 +1566,13 @@ class WC_Subscriptions_Manager {
 
 		$subscription_id = wcs_get_subscription_id_from_key( $subscription_key );
 
-		return apply_filters( 'woocommerce_subscriptions_users_action_link', wcs_get_users_change_status_link( $subscription_id, $status ), $subscription_key, $status );
+		$current_status = '';
+		$subscription = wcs_get_subscription( $subscription_id );
+		if ( $subscription instanceof WC_Subscription ) {
+			$current_status = $subscription->get_status();
+		}
+
+		return apply_filters( 'woocommerce_subscriptions_users_action_link', wcs_get_users_change_status_link( $subscription_id, $status, $current_status ), $subscription_key, $status );
 	}
 
 	/**
@@ -1840,122 +1846,6 @@ class WC_Subscriptions_Manager {
 	}
 
 	/* Deprecated Functions */
-
-	/**
-	 * @deprecated 1.1
-	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @since 1.0
-	 */
-	public static function can_subscription_be_cancelled( $subscription_key, $user_id = '' ) {
-		_deprecated_function( __METHOD__, '1.1', __CLASS__ . '::can_subscription_be_changed_to( "cancelled", $subscription_key, $user_id )' );
-		$subscription_can_be_cancelled = self::can_subscription_be_changed_to( 'cancelled', $subscription_key, $user_id );
-
-		return apply_filters( 'woocommerce_subscription_can_be_cancelled', $subscription_can_be_cancelled, $subscription, $order );
-	}
-
-	/**
-	 * @deprecated 1.1
-	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @since 1.0
-	 */
-	public static function get_users_cancellation_link( $subscription_key ) {
-		_deprecated_function( __METHOD__, '1.1', __CLASS__ . '::get_users_cancellation_link( $subscription_key, "cancel" )' );
-		return apply_filters( 'woocommerce_subscriptions_users_cancellation_link', self::get_users_change_status_link( $subscription_key, 'cancel' ), $subscription_key );
-	}
-
-	/**
-	 * @deprecated 1.1
-	 * @since 1.0
-	 */
-	public static function maybe_cancel_users_subscription() {
-		_deprecated_function( __METHOD__, '1.1', __CLASS__ . '::maybe_change_users_subscription()' );
-		self::maybe_change_users_subscription();
-	}
-
-	/**
-	 * @deprecated 1.1
-	 * @param int $user_id The ID of the user who owns the subscriptions.
-	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @since 1.0
-	 */
-	public static function get_failed_payment_count( $user_id, $subscription_key ) {
-		_deprecated_function( __METHOD__, '1.1', __CLASS__ . '::get_subscriptions_failed_payment_count( $subscription_key, $user_id )' );
-		return self::get_subscriptions_failed_payment_count( $subscription_key, $user_id );
-	}
-
-	/**
-	 * Deprecated in favour of a more correctly named @see maybe_reschedule_subscription_payment()
-	 *
-	 * @deprecated 1.1.5
-	 * @since 1.0
-	 */
-	public static function reschedule_subscription_payment( $user_id, $subscription_key ) {
-		_deprecated_function( __METHOD__, '1.1.5', __CLASS__ . '::maybe_reschedule_subscription_payment( $user_id, $subscription_key )' );
-		self::maybe_reschedule_subscription_payment( $user_id, $subscription_key );
-	}
-
-
-	/**
-	 * Suspended a single subscription on a users account by placing it in the "suspended" status.
-	 *
-	 * Subscriptions version 1.2 replaced the "suspended" status with the "on-hold" status to match WooCommerce core.
-	 *
-	 * @param int $user_id The id of the user whose subscription should be suspended.
-	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @deprecated 1.2
-	 * @since 1.0
-	 */
-	public static function suspend_subscription( $user_id, $subscription_key ) {
-		_deprecated_function( __METHOD__, '1.2', __CLASS__ . '::put_subscription_on_hold( $user_id, $subscription_key )' );
-		self::put_subscription_on_hold( $user_id, $subscription_key );
-	}
-
-
-	/**
-	 * Suspended all the subscription products in an order.
-	 *
-	 * Subscriptions version 1.2 replaced the "suspended" status with the "on-hold" status to match WooCommerce core.
-	 *
-	 * @param WC_Order|int $order The order or ID of the order for which subscriptions should be marked as activated.
-	 * @deprecated 1.2
-	 * @since 1.0
-	 */
-	public static function suspend_subscriptions_for_order( $order ) {
-		_deprecated_function( __METHOD__, '1.2', __CLASS__ . '::put_subscription_on_hold_for_order( $order )' );
-		self::put_subscription_on_hold_for_order( $order );
-	}
-
-
-	/**
-	 * Gets a specific subscription for a user, as specified by $subscription_key
-	 *
-	 * Subscriptions version 1.4 moved subscription details out of user meta and into item meta, meaning it can be accessed
-	 * efficiently without a user ID.
-	 *
-	 * @param int $user_id (optional) The id of the user whose subscriptions you want. Defaults to the currently logged in user.
-	 * @param string $subscription_key A subscription key of the form created by @see self::subscription_key()
-	 * @deprecated 1.4
-	 * @since 1.0
-	 */
-	public static function get_users_subscription( $user_id = 0, $subscription_key ) {
-		_deprecated_function( __METHOD__, '1.4', __CLASS__ . '::get_subscription( $subscription_key )' );
-		return apply_filters( 'woocommerce_users_subscription', self::get_subscription( $subscription_key ), $user_id, $subscription_key );
-	}
-
-
-	/**
-	 * Removed a specific subscription for a user, as specified by $subscription_key, but as subscriptions are no longer stored
-	 * against a user and are instead stored against the order, this is no longer required (changing the user on the order effectively
-	 * performs the same thing without requiring the subscription to have any changes).
-	 *
-	 * @param int $user_id (optional) The id of the user whose subscriptions you want. Defaults to the currently logged in user.
-	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @deprecated 1.4
-	 * @since 1.0
-	 */
-	public static function remove_users_subscription( $user_id, $subscription_key ) {
-		_deprecated_function( __METHOD__, '1.4' );
-	}
 
 	/**
 	 * When a scheduled subscription payment hook is fired, automatically process the subscription payment

@@ -724,7 +724,7 @@ class WC_Subscriptions_Admin {
 			delete_transient( WC_Subscriptions::$activation_transient );
 		}
 
-		if ( $is_woocommerce_screen || $is_activation_screen ) {
+		if ( $is_woocommerce_screen || $is_activation_screen || 'edit-product' == $screen->id ) {
 			wp_enqueue_style( 'woocommerce_admin_styles', WC()->plugin_url() . '/assets/css/admin.css', array(), WC_Subscriptions::$version );
 			wp_enqueue_style( 'woocommerce_subscriptions_admin', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/css/admin.css', array( 'woocommerce_admin_styles' ), WC_Subscriptions::$version );
 		}
@@ -930,6 +930,9 @@ class WC_Subscriptions_Admin {
 	 * @since 1.0
 	 */
 	public static function get_settings() {
+		if ( ! function_exists( 'get_editable_roles' ) ) {
+			require_once( ABSPATH . 'wp-admin/includes/user.php' );
+		}
 
 		$roles = get_editable_roles();
 
@@ -946,8 +949,8 @@ class WC_Subscriptions_Admin {
 		}
 
 		if ( count( $available_gateways ) == 0 ) {
-			// translators: placeholders are opening and closing tags of a link
-			$available_gateways_description = sprintf( __( 'No payment gateways capable of processing automatic subscription payments are enabled. Please enable the %sPayPal Standard%s gateway if you want to process automatic payments.', 'woocommerce-subscriptions' ), '<strong><a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout&section=wc_gateway_paypal' ) . '">', '</a></strong>' );
+			// translators: $1-2: opening and closing tags of a link that takes to PayPal settings, $3-4: opening and closing tags of a link that takes to Woo marketplace / Stripe product page
+			$available_gateways_description = sprintf( __( 'No payment gateways capable of processing automatic subscription payments are enabled. Please enable the %1$sPayPal Standard%2$s gateway or get the %3$sfree Stripe extension%4$s if you want to process automatic payments.', 'woocommerce-subscriptions' ), '<strong><a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout&section=wc_gateway_paypal' ) . '">', '</a></strong>', '<strong><a href="https://www.woothemes.com/products/stripe/">', '</a></strong>' );
 		} elseif ( count( $available_gateways ) == 1 ) {
 			// translators: placeholder is name of a gateway
 			$available_gateways_description = sprintf( __( 'The %s gateway can process automatic subscription payments.', 'woocommerce-subscriptions' ), '<strong>' . $available_gateways[0] . '</strong>' );
@@ -1453,16 +1456,6 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Deprecated due to new meta boxes required for WC 2.2.
-	 *
-	 * @deprecated 1.5.10
-	 */
-	public static function add_related_orders_meta_box() {
-		_deprecated_function( __METHOD__, '1.5.10', __CLASS__ . '::add_meta_boxes()' );
-		self::add_meta_boxes();
-	}
-
-	/**
 	 * Outputs the contents of the "Renewal Orders" meta box.
 	 *
 	 * @param object $post Current post data.
@@ -1497,23 +1490,6 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function add_subscriptions_table_column_filter() {
 		_deprecated_function( __METHOD__, '2.0' );
-	}
-
-	/**
-	 * Removes anything that's not a digit or a dot from a string. Sadly it assumes that the decimal separator is a dot.
-	 * That however can be changed in WooCommerce settings, surfacing bugs such as 9,90 becoming 990, a hundred fold
-	 * increase. Use wc_format_decimal instead.
-	 *
-	 * Left in for backward compatibility reasons.
-	 *
-	 * @deprecated 1.5.24
-	 */
-	private static function clean_number( $number ) {
-		_deprecated_function( __METHOD__, '1.5.23', 'wc_format_decimal()' );
-
-		$number = preg_replace( '/[^0-9\.]/', '', $number );
-
-		return $number;
 	}
 
 	/**
