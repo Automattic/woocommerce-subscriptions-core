@@ -199,7 +199,7 @@ class WCS_Admin_Meta_Boxes {
 	 * Process the action request to retry renewal payment for failed renewal orders.
 	 *
 	 * @param WC_Order $order
-	 * @since 2.0.10
+	 * @since 2.1
 	 */
 	public static function process_retry_renewal_payment_action_request( $order ) {
 
