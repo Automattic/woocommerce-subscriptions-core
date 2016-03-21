@@ -139,15 +139,7 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 		<div class="chart-container" style="float: left; padding-top: 50px; min-width: 0px;">
 			<div class="data-container" style="display: inline-block; margin-left: 30px; border: 1px solid #e5e5e5; background-color: #FFF; padding: 20px;">
 				<div class="chart-placeholder product_breakdown_chart pie-chart" style="height:200px; width: 200px; float: left;"></div>
-				<ul class="pie-chart-legend" style="float: left; margin-left: 30px;">
-					<?php
-					$i = 0;
-					foreach ( $products as $product ) {
-						echo '<li><span style="color: ' . wp_kses_post( $chart_colors[ $i ] ) . '">&#9679;</span> ' . esc_html( $product->product_name ) . '</li>';
-						$i++;
-					}
-					?>
-				</ul>
+				<div class="legend-container" style="margin-left: 10px; float: left;"></div>
 				<div style="clear:both;"></div>
 			</div>
 		</div>
@@ -187,7 +179,8 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 							append_tooltip: "<?php echo ' ' . esc_js( __( 'subscriptions', 'woocommerce-subscriptions' ) ); ?>",
 						},
 						legend: {
-							show: false
+							show: true,
+							container: jQuery('.legend-container'),
 						}
 					}
 				);
