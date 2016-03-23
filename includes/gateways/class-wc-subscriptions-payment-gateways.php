@@ -27,7 +27,7 @@ class WC_Subscriptions_Payment_Gateways {
 
 		add_filter( 'woocommerce_no_available_payment_methods_message', __CLASS__ . '::no_available_payment_methods_message' );
 
-		// Create a custom hook for gateways that need to manually charge recurring payments
+		// Trigger a hook for gateways to charge recurring payments
 		add_action( 'woocommerce_scheduled_subscription_payment', __CLASS__ . '::gateway_scheduled_subscription_payment', 10, 1 );
 
 		// Create a gateway specific hooks for subscription events
