@@ -225,12 +225,18 @@ class WC_Subscriptions_Checkout {
 
 			$recurring_shipping_package_key = WC_Subscriptions_Cart::get_recurring_shipping_package_key( $cart->recurring_cart_key, $package_index );
 
-			$package_key = isset( WC()->checkout()->shipping_methods[ $package_index ] ) ? WC()->checkout()->shipping_methods[ $package_index ] : '';
-			$package_key = isset( WC()->checkout()->shipping_methods[ $recurring_shipping_package_key ] ) ? WC()->checkout()->shipping_methods[ $recurring_shipping_package_key ] : $package_key;
+			$shipping_method_id = isset( WC()->checkout()->shipping_methods[ $package_index ] ) ? WC()->checkout()->shipping_methods[ $package_index ] : '';
 
-			if ( isset( $package['rates'][ $package_key ] ) ) {
+			if ( isset( WC()->checkout()->shipping_methods[ $recurring_shipping_package_key ] ) ) {
+				$shipping_method_id = WC()->checkout()->shipping_methods[ $recurring_shipping_package_key ];
+				$package_key        = $recurring_shipping_package_key;
+			} else {
+				$package_key        = $package_index;
+			}
 
-				$item_id = $subscription->add_shipping( $package['rates'][ $package_key ] );
+			if ( isset( $package['rates'][ $shipping_method_id ] ) ) {
+
+				$item_id = $subscription->add_shipping( $package['rates'][ $shipping_method_id ] );
 
 				if ( ! $item_id ) {
 					throw new Exception( __( 'Error: Unable to create subscription. Please try again.', 'woocommerce-subscriptions' ) );
