@@ -549,33 +549,35 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function set_cart_shipping_packages( $packages ) {
 
-		if ( 'none' == self::$calculation_type ) {
-			foreach ( $packages as $index => $package ) {
-				foreach ( $package['contents'] as $cart_item_key => $cart_item ) {
-					$trial_length = ( isset( $cart_item['data']->subscription_trial_length ) ) ? $cart_item['data']->subscription_trial_length : WC_Subscriptions_Product::get_trial_length( $cart_item['data'] );
-					if ( $trial_length > 0 ) {
-						unset( $packages[ $index ]['contents'][ $cart_item_key ] );
+		if ( self::cart_contains_subscription() ) {
+			if ( 'none' == self::$calculation_type ) {
+				foreach ( $packages as $index => $package ) {
+					foreach ( $package['contents'] as $cart_item_key => $cart_item ) {
+						$trial_length = ( isset( $cart_item['data']->subscription_trial_length ) ) ? $cart_item['data']->subscription_trial_length : WC_Subscriptions_Product::get_trial_length( $cart_item['data'] );
+						if ( $trial_length > 0 ) {
+							unset( $packages[ $index ]['contents'][ $cart_item_key ] );
+						}
+					}
+
+					if ( empty( $packages[ $index ]['contents'] ) ) {
+						unset( $packages[ $index ] );
 					}
 				}
-
-				if ( empty( $packages[ $index ]['contents'] ) ) {
-					unset( $packages[ $index ] );
-				}
-			}
-		} elseif ( 'recurring_total' == self::$calculation_type ) {
-			foreach ( $packages as $index => $package ) {
-				foreach ( $package['contents'] as $cart_item_key => $cart_item ) {
-					if ( isset( $cart_item['data']->subscription_one_time_shipping ) && 'yes' == $cart_item['data']->subscription_one_time_shipping ) {
-						$packages[ $index ]['contents_cost'] -= $cart_item['line_total'];
-						unset( $packages[ $index ]['contents'][ $cart_item_key ] );
+			} elseif ( 'recurring_total' == self::$calculation_type ) {
+				foreach ( $packages as $index => $package ) {
+					foreach ( $package['contents'] as $cart_item_key => $cart_item ) {
+						if ( isset( $cart_item['data']->subscription_one_time_shipping ) && 'yes' == $cart_item['data']->subscription_one_time_shipping ) {
+							$packages[ $index ]['contents_cost'] -= $cart_item['line_total'];
+							unset( $packages[ $index ]['contents'][ $cart_item_key ] );
+						}
 					}
-				}
 
-				if ( empty( $packages[ $index ]['contents'] ) ) {
-					unset( $packages[ $index ] );
-				} else {
-					// we need to make sure the package is different for recurring carts to bypass WC's cache
-					$packages[ $index ]['recurring_cart_key'] = self::$recurring_cart_key;
+					if ( empty( $packages[ $index ]['contents'] ) ) {
+						unset( $packages[ $index ] );
+					} else {
+						// we need to make sure the package is different for recurring carts to bypass WC's cache
+						$packages[ $index ]['recurring_cart_key'] = self::$recurring_cart_key;
+					}
 				}
 			}
 		}
