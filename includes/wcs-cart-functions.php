@@ -83,7 +83,7 @@ function wcs_cart_totals_shipping_html() {
 					$product_names = array();
 
 					if ( $show_package_name ) {
-						$package_name = apply_filters( 'woocommerce_shipping_package_name', sprintf( _n( 'Shipping', 'Shipping %d', ( $i + 1 ), 'woocommerce' ), ( $i + 1 ) ), $i, $package );
+						$package_name = apply_filters( 'woocommerce_shipping_package_name', sprintf( _n( 'Shipping', 'Shipping %d', ( $i + 1 ), 'woocommerce-subscriptions' ), ( $i + 1 ) ), $i, $package );
 					} else {
 						$package_name = '';
 					}
