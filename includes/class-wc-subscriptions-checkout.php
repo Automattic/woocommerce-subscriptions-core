@@ -70,6 +70,8 @@ class WC_Subscriptions_Checkout {
 			add_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 		}
 
+		WC_Subscriptions_Cart::set_global_recurring_shipping_packages();
+
 		// Create new subscriptions for each group of subscription products in the cart (that is not a renewal)
 		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
 

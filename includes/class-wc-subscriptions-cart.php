@@ -34,6 +34,13 @@ class WC_Subscriptions_Cart {
 	private static $recurring_cart_key = 'none';
 
 	/**
+	 * A cache of the calculated recurring shipping packages
+	 *
+	 * @since 2.0.13
+	 */
+	private static $recurring_shipping_packages = array();
+
+	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
 	 * @since 1.0
@@ -240,6 +247,8 @@ class WC_Subscriptions_Cart {
 			$recurring_carts[ $recurring_cart_key ]->removed_cart_contents = array();
 			$recurring_carts[ $recurring_cart_key ]->cart_session_data = array();
 
+			// Keep a record of the shipping packages so we can add them to the global packages later
+			self::$recurring_shipping_packages[ $recurring_cart_key ] = WC()->shipping->get_packages();
 		}
 
 		self::$calculation_type = self::$recurring_cart_key = 'none';
@@ -435,6 +444,21 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function get_recurring_shipping_package_key( $recurring_cart_key, $package_index ) {
 		return $recurring_cart_key . '_' . $package_index;
+	}
+
+	/**
+	 * Add the shipping packages stored in @see self::$recurring_shipping_packages to WooCommerce's global
+	 * set of packages in WC()->shipping->packages so that plugins attempting to get the details of recurring
+	 * packages can get them with WC()->shipping->get_packages() like any other packages.
+	 *
+	 * @since 2.0.13
+	 */
+	public static function set_global_recurring_shipping_packages() {
+		foreach ( self::$recurring_shipping_packages as $recurring_cart_key => $packages ) {
+			foreach ( $packages as $package_index => $package ) {
+				WC()->shipping->packages[ self::get_recurring_shipping_package_key( $recurring_cart_key, $package_index ) ] = $package;
+			}
+		}
 	}
 
 	/**
