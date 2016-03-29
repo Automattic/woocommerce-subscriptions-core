@@ -139,7 +139,7 @@ class WC_Subscriptions_Email {
 	 */
 	public static function maybe_reattach_woocommerce_email( $order_id ) {
 		if ( wcs_order_contains_renewal( $order_id ) || wcs_order_contains_switch( $order_id ) ) {
-			add_action( current_filter(), array( 'WC_Emails', 'send_transactional_email' ) );
+			add_action( current_filter(), array( 'WC_Emails', 'send_transactional_email' ), 10, 10 );
 		}
 	}
 
