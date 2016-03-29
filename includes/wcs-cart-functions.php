@@ -94,7 +94,7 @@ function wcs_cart_totals_shipping_html() {
 							'show_package_details' => $show_package_details,
 							'package_details'      => $package_details,
 							'package_name'         => $package_name,
-							'index'                => $i,
+							'index'                => sprintf( '%1$s_%2$d', $recurring_cart_key, $i ),
 							'chosen_method'        => $chosen_recurring_method,
 							'recurring_cart_key'   => $recurring_cart_key,
 							'recurring_cart'       => $recurring_cart,
