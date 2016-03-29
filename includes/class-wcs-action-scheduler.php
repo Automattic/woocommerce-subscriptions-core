@@ -12,17 +12,17 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 
 	/*@protected Array of $action_hook => $date_type values */
 	protected $action_hooks = array(
-		'woocommerce_scheduled_subscription_trial_end'  => 'trial_end',
-		'woocommerce_scheduled_subscription_payment'    => 'next_payment',
-		'woocommerce_scheduled_subscription_expiration' => 'end',
-
+		'woocommerce_scheduled_subscription_trial_end'     => 'trial_end',
+		'woocommerce_scheduled_subscription_payment'       => 'next_payment',
+		'woocommerce_scheduled_subscription_payment_retry' => 'payment_retry',
+		'woocommerce_scheduled_subscription_expiration'    => 'end',
 	);
 
 	/**
 	 * Maybe set a schedule action if the new date is in the future
 	 *
 	 * @param object $subscription An instance of a WC_Subscription object
-	 * @param string $date_type Can be 'start', 'trial_end', 'next_payment', 'last_payment', 'end', 'end_of_prepaid_term' or a custom date type
+	 * @param string $date_type Can be 'start', 'trial_end', 'next_payment', 'payment_retry', 'last_payment', 'end', 'end_of_prepaid_term' or a custom date type
 	 * @param string $datetime A MySQL formated date/time string in the GMT/UTC timezone.
 	 */
 	public function update_date( $subscription, $date_type, $datetime ) {
@@ -40,7 +40,7 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 					wc_unschedule_action( $action_hook, $action_args );
 
 					// Only reschedule if it's in the future
-					if ( $timestamp > current_time( 'timestamp', true ) && 'active' == $subscription->get_status() ) {
+					if ( $timestamp > current_time( 'timestamp', true ) && ( 'payment_retry' == $date_type || 'active' == $subscription->get_status() ) ) {
 						wc_schedule_single_action( $timestamp, $action_hook, $action_args );
 					}
 				}
@@ -133,6 +133,9 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 		switch ( $date_type ) {
 			case 'next_payment' :
 				$hook = 'woocommerce_scheduled_subscription_payment';
+				break;
+			case 'payment_retry' :
+				$hook = 'woocommerce_scheduled_subscription_payment_retry';
 				break;
 			case 'trial_end' :
 				$hook = 'woocommerce_scheduled_subscription_trial_end';

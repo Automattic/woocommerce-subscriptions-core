@@ -637,17 +637,11 @@ class WC_Subscription extends WC_Order {
 				case 'start' :
 					$this->schedule->{$date_type} = ( '0000-00-00 00:00:00' != $this->post->post_date_gmt ) ? $this->post->post_date_gmt : get_gmt_from_date( $this->post->post_date ); // why not always use post_date_gmt? Because when a post is first created via the Add Subscription screen, it has a post_date but not a post_date_gmt value yet
 					break;
-				case 'next_payment' :
-				case 'trial_end' :
-				case 'end' :
-				case 'cancelled' :
-					$this->schedule->{$date_type} = get_post_meta( $this->id, wcs_get_date_meta_key( $date_type ), true );
-					break;
 				case 'last_payment' :
 					$this->schedule->{$date_type} = $this->get_last_payment_date();
 					break;
 				default :
-					$this->schedule->{$date_type} = 0;
+					$this->schedule->{$date_type} = get_post_meta( $this->id, wcs_get_date_meta_key( $date_type ), true );
 					break;
 			}
 
@@ -836,11 +830,6 @@ class WC_Subscription extends WC_Order {
 			}
 
 			switch ( $date_type ) {
-				case 'next_payment' :
-				case 'trial_end' :
-				case 'end' :
-					$is_updated = update_post_meta( $this->id, wcs_get_date_meta_key( $date_type ), $datetime );
-					break;
 				case 'start' :
 					$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET post_date = %s, post_date_gmt = %s WHERE ID = %s", get_date_from_gmt( $datetime ), $datetime, $this->id ) ); // Don't use wp_update_post() to avoid infinite loops here
 					$is_updated = true;
@@ -848,6 +837,9 @@ class WC_Subscription extends WC_Order {
 				case 'last_payment' :
 					$this->update_last_payment_date( $datetime );
 					$is_updated = true;
+					break;
+				default :
+					$is_updated = update_post_meta( $this->id, wcs_get_date_meta_key( $date_type ), $datetime );
 					break;
 			}
 
