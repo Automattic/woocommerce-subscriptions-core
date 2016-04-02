@@ -997,6 +997,13 @@ class WC_Subscriptions_Cart {
 		return $is_valid;
 	}
 
+	/**
+	 * When calculating shipping for recurring carts, return a revised list of shipping methods that apply to this recurring cart.
+	 *
+	 * @param array $shipping_methods
+	 *
+	 * @since 2.0.13
+	 */
 	public static function filter_recurring_cart_chosen_shipping_method( $shipping_methods ) {
 
 		if ( 'recurring_total' == self::$calculation_type && 'none' !== self::$recurring_cart_key ) {
@@ -1017,7 +1024,7 @@ class WC_Subscriptions_Cart {
 				}
 			}
 
-			// pick which chosen methods apply to this recurring cart. Defualts to standard methods if there is no specific recurring cart shipping methods chosen.
+			// pick which chosen methods apply to this recurring cart. Defaults to standard methods if there is no specific recurring cart shipping methods chosen.
 			$applicable_chosen_shipping_methods = ( empty( $recurring_cart_shipping_methods ) ) ? $standard_package_methods : $recurring_cart_shipping_methods;
 
 			$shipping_methods = array_intersect( $applicable_chosen_shipping_methods, $shipping_methods );
