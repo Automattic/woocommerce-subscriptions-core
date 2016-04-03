@@ -1285,4 +1285,5 @@ class WC_Subscriptions_Synchroniser {
 	}
 
 }
-WC_Subscriptions_Synchroniser::init();
+add_action( 'init', 'WC_Subscriptions_Synchroniser::init' );
+

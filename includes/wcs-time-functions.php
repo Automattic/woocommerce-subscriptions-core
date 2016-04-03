@@ -124,7 +124,9 @@ function wcs_get_subscription_ranges( $subscription_period = '' ) {
 		$subscription_period = '';
 	}
 
-	$subscription_ranges = WC_Subscriptions::$cache->cache_and_get( 'wcs-sub-ranges', 'wcs_get_subscription_ranges_tlc', array(), 86400 );
+	$locale = get_locale();
+
+	$subscription_ranges = WC_Subscriptions::$cache->cache_and_get( 'wcs-sub-ranges-' . $locale, 'wcs_get_subscription_ranges_tlc', array(), 3 * HOUR_IN_SECONDS );
 
 	$subscription_ranges = apply_filters( 'woocommerce_subscription_lengths', $subscription_ranges, $subscription_period );
 
