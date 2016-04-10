@@ -1106,7 +1106,7 @@ class WC_Subscriptions_Switcher {
 
 				// If prices inc tax, ensure that the sign up fee paid amount includes the paid tax as well so that it is consistent with the sign up fee due amount
 				if ( 'yes' == $subscription->prices_include_tax || true === $subscription->prices_include_tax ) {
-					
+
 					// Find the matching item on the order
 					foreach ( $subscription->order->get_items() as $order_item ) {
 						if ( wcs_get_canonical_product_id( $existing_item ) == wcs_get_canonical_product_id( $order_item ) ) {
