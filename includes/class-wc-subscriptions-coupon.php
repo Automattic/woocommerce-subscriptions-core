@@ -104,7 +104,7 @@ class WC_Subscriptions_Coupon {
 			$apply_recurring_percent_coupon = ( 'recurring_percent' == $coupon->type ) ? true : false;
 		}
 
-		// Check if we're appling any initial discounts
+		// Check if we're applying any initial discounts
 		if ( 'none' == $calculation_type ) {
 
 			// If all items have a free trial we don't need to apply recurring coupons to the initial total
