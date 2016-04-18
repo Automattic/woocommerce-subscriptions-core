@@ -651,18 +651,21 @@ class WC_Subscriptions_Switcher {
 					if ( $is_single_item_subscription || ( false === $is_different_billing_schedule && false === $is_different_payment_date && false === $is_different_length ) ) {
 
 						// Add the new item
-						$item_id = WC_Subscriptions_Checkout::add_cart_item( $subscription, $cart_item, $cart_item_key );
+						$item_id   = WC_Subscriptions_Checkout::add_cart_item( $subscription, $cart_item, $cart_item_key );
+						$item_meta = wc_get_order_item_meta( $item_id, '' );
 
 						foreach ( $order_items as $item_id => $item ) {
 							if ( wcs_get_canonical_product_id( $item ) == wcs_get_canonical_product_id( $cart_item ) && ( empty( $switch_order_data[ $subscription->id ]['add_items'] ) || ! in_array( $item_id, $switch_order_data[ $subscription->id ]['add_items'] ) ) ) {
-
 								// We can't use the prorated order item price upon successful payment so store the cart price
 								$switch_order_data[ $subscription->id ]['add_order_items'][ $item_id ] = array(
-									'subtotal'     => $cart_item['line_subtotal'],
-									'subtotal_tax' => $cart_item['line_subtotal_tax'],
-									'total'        => $cart_item['line_total'],
-									'tax'          => $cart_item['line_tax'],
-									'tax_data'     => $cart_item['line_tax_data'],
+									'totals' => array(
+										'subtotal'     => $cart_item['line_subtotal'],
+										'subtotal_tax' => $cart_item['line_subtotal_tax'],
+										'total'        => $cart_item['line_total'],
+										'tax'          => $cart_item['line_tax'],
+										'tax_data'     => $cart_item['line_tax_data'],
+									),
+									'meta' => $item_meta,
 								);
 							}
 						}
@@ -1693,7 +1696,6 @@ class WC_Subscriptions_Switcher {
 			foreach ( $subscriptions as $subscription ) {
 				foreach ( $subscription->get_items() as $new_order_item ) {
 					if ( isset( $new_order_item['switched_subscription_item_id'] ) ) {
-
 						$product_id = wcs_get_canonical_product_id( $new_order_item );
 						// we need to check if the switch order contains the line item that has just been switched so that we don't call the hook on items that were previously switched in another order
 						foreach ( $order->get_items() as $order_item ) {
@@ -1748,11 +1750,10 @@ class WC_Subscriptions_Switcher {
 
 			// Add the new line items
 			if ( ! empty( $switch_data['add_order_items'] ) ) {
-
 				$adding_order_item_ids          = array_keys( $switch_data['add_order_items'] );
 				$removing_subscription_item_ids = array_keys( $switch_data['remove_subscription_items'] );
 
-				foreach ( $switch_data['add_order_items'] as $order_item_id => $item_totals ) {
+				foreach ( $switch_data['add_order_items'] as $order_item_id => $item_data ) {
 
 					$order_item    = wcs_get_order_item( $order_item_id, $order );
 					$product       = WC_Subscriptions::get_product( wcs_get_canonical_product_id( $order_item ) );
@@ -1760,8 +1761,12 @@ class WC_Subscriptions_Switcher {
 
 					$item_id = $subscription->add_product( $product, $order_item['qty'], array(
 						'variation' => ( method_exists( $product, 'get_variation_attributes' ) ) ? $product->get_variation_attributes() : array(),
-						'totals'    => $item_totals,
+						'totals'    => $item_data['totals'],
 					) );
+
+					foreach ( $item_data['meta'] as $key => $value ) {
+						wc_add_order_item_meta( $item_id, $key, reset( $value ) );
+					}
 
 					$subscription_item_id = $removing_subscription_item_ids[ array_search( $order_item_id, $adding_order_item_ids ) ];
 
