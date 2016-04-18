@@ -101,8 +101,8 @@ class WC_Subscriptions_Switcher {
 		// Display/indicate whether a cart switch item is a upgrade/downgrade/crossgrade
 		add_filter( 'woocommerce_cart_item_subtotal', __CLASS__ . '::add_cart_item_switch_direction', 10, 3 );
 
-		// Check if the new order was to record a switch request and maybe call a "switch completed" action.
-		add_action( 'subscriptions_created_for_order', __CLASS__ . '::maybe_add_switched_callback', 10, 1 );
+		// Check if the order was to record a switch request and maybe call a "switch completed" action.
+		add_action( 'woocommerce_subscriptions_switch_completed', __CLASS__ . '::maybe_add_switched_callback', 10, 1 );
 
 		// Revoke download permissions from old switch item
 		add_action( 'woocommerce_subscriptions_switched_item', __CLASS__ . '::remove_download_permissions_after_switch', 10, 3 );
@@ -1522,6 +1522,7 @@ class WC_Subscriptions_Switcher {
 		global $wpdb;
 
 		$switch_processed = get_post_meta( $order_id, '_completed_subscription_switch', true );
+		$order            = wc_get_order( $order_id );
 
 		if ( ! wcs_order_contains_switch( $order_id ) || 'true' == $switch_processed ) {
 			return;
@@ -1544,6 +1545,8 @@ class WC_Subscriptions_Switcher {
 				$wpdb->query( 'ROLLBACK' );
 				throw $e;
 			}
+
+			do_action( 'woocommerce_subscriptions_switch_completed', $order );
 		}
 	}
 
