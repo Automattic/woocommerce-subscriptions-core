@@ -1102,24 +1102,7 @@ class WC_Subscriptions_Switcher {
 
 				// Because product add-ons etc. don't apply to sign-up fees, it's safe to use the product's sign-up fee value rather than the cart item's
 				$sign_up_fee_due  = $product->subscription_sign_up_fee;
-				$sign_up_fee_paid = $subscription->get_items_sign_up_fee( $existing_item );
-
-				// If prices inc tax, ensure that the sign up fee paid amount includes the paid tax as well so that it is consistent with the sign up fee due amount
-				if ( 'yes' == $subscription->prices_include_tax || true === $subscription->prices_include_tax ) {
-
-					// Find the matching item on the order
-					foreach ( $subscription->order->get_items() as $order_item ) {
-						if ( wcs_get_canonical_product_id( $existing_item ) == wcs_get_canonical_product_id( $order_item ) ) {
-							$original_order_item = $order_item;
-							break;
-						}
-					}
-
-					// No matching order item, so this item wasn't purchased in the original order
-					if ( ! empty( $original_order_item ) ) {
-						$sign_up_fee_paid += $original_order_item['line_tax'];
-					}
-				}
+				$sign_up_fee_paid = $subscription->get_items_sign_up_fee( $existing_item, true );
 
 				// Make sure total prorated sign-up fee is prorated across total amount of sign-up fee so that customer doesn't get extra discounts
 				if ( $cart_item['quantity'] > $existing_item['qty'] ) {
