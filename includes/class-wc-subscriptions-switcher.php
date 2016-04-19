@@ -1102,7 +1102,7 @@ class WC_Subscriptions_Switcher {
 
 				// Because product add-ons etc. don't apply to sign-up fees, it's safe to use the product's sign-up fee value rather than the cart item's
 				$sign_up_fee_due  = $product->subscription_sign_up_fee;
-				$sign_up_fee_paid = $subscription->get_items_sign_up_fee( $existing_item, true );
+				$sign_up_fee_paid = $subscription->get_items_sign_up_fee( $existing_item, 'inclusive_of_tax' );
 
 				// Make sure total prorated sign-up fee is prorated across total amount of sign-up fee so that customer doesn't get extra discounts
 				if ( $cart_item['quantity'] > $existing_item['qty'] ) {
