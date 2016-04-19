@@ -909,15 +909,14 @@ class WC_Subscriptions_Product {
 
 		if ( ! isset( self::$is_purchasable_cache[ $product->id ] ) ) {
 
-			if ( self::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && is_user_logged_in() && ( ( 'active' == $product->limit_subscriptions && wcs_user_has_subscription( 0, $product->id, 'on-hold' ) ) || wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) && ! wcs_is_order_received_page() && ! wcs_is_paypal_api_page() ) {
+			self::$is_purchasable_cache[ $product->id ] = $is_purchasable;
 
-				$is_purchasable = false;
+			if ( self::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && ! wcs_is_order_received_page() && ! wcs_is_paypal_api_page() ) {
 
-				if ( self::order_awaiting_payment_for_product( $product->id ) ) {
-					$is_purchasable = true;
+				if ( ( ( 'active' == $product->limit_subscriptions && wcs_user_has_subscription( 0, $product->id, 'on-hold' ) ) || wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) && ! self::order_awaiting_payment_for_product( $product->id ) ) {
+					self::$is_purchasable_cache[ $product->id ] = false;
 				}
 			}
-			self::$is_purchasable_cache[ $product->id ] = $is_purchasable;
 		}
 
 		return self::$is_purchasable_cache[ $product->id ];
