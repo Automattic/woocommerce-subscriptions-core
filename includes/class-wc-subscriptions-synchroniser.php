@@ -813,7 +813,11 @@ class WC_Subscriptions_Synchroniser {
 
 		if ( self::is_product_synced( $product_id ) ) {
 			remove_filter( 'woocommerce_subscriptions_product_expiration_date', __CLASS__ . '::' . __FUNCTION__ ); // avoid infinite loop
-			$expiration_date = WC_Subscriptions_Product::get_expiration_date( $product_id, self::calculate_first_payment_date( $product_id, 'mysql' ) );
+			$first_payment_date = self::calculate_first_payment_date( $product_id, 'mysql' );
+
+			add_filter( 'woocommerce_subscriptions_product_trial_length', '__return_zero' );
+			$expiration_date = WC_Subscriptions_Product::get_expiration_date( $product_id, $first_payment_date );
+			remove_filter( 'woocommerce_subscriptions_product_trial_length', '__return_zero' );
 			add_filter( 'woocommerce_subscriptions_product_expiration_date', __CLASS__ . '::' . __FUNCTION__, 10, 3 );
 		}
 
