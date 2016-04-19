@@ -12,6 +12,9 @@
  */
 class WC_Subscriptions_Product {
 
+	/* cache the check on whether the session has an order awaiting payment for a given product */
+	protected static $order_awaiting_payment_for_product = array();
+
 	/* cache whether a given product is purchasable or not to save running lots of queries for the same product in the same request */
 	protected static $is_purchasable_cache = array();
 
@@ -910,31 +913,8 @@ class WC_Subscriptions_Product {
 
 				$is_purchasable = false;
 
-				if ( ! empty( WC()->session->order_awaiting_payment ) || isset( $_GET['pay_for_order'] ) ) {
-
-					$order_id = ! empty( WC()->session->order_awaiting_payment ) ? WC()->session->order_awaiting_payment : $wp->query_vars['order-pay'];
-					$order    = wc_get_order( absint( $order_id ) );
-
-					if ( is_object( $order ) && $order->has_status( array( 'pending', 'failed' ) ) ) {
-						foreach ( $order->get_items() as $item ) {
-							if ( $item['product_id'] == $product->id || $item['variation_id'] == $product->id ) {
-
-								$subscriptions = wcs_get_subscriptions( array(
-									'order_id'   => $order->id,
-									'product_id' => $product->id,
-								) );
-
-								if ( ! empty( $subscriptions ) ) {
-									$subscription = array_pop( $subscriptions );
-
-									if ( $subscription->has_status( array( 'pending', 'on-hold' ) ) ) {
-										$is_purchasable = true;
-									}
-								}
-								break;
-							}
-						}
-					}
+				if ( self::order_awaiting_payment_for_product( $product->id ) ) {
+					$is_purchasable = true;
 				}
 			}
 			self::$is_purchasable_cache[ $product->id ] = $is_purchasable;
@@ -978,6 +958,50 @@ class WC_Subscriptions_Product {
 				update_post_meta( $variation_id, $meta_key, stripslashes( $data['value'] ) );
 			}
 		}
+	}
+
+	/**
+	 * Check if the current session has an order awaiting payment for a subscription to a specific product line item.
+	 *
+	 * @return 2.0.13
+	 * @return bool
+	 **/
+	protected static function order_awaiting_payment_for_product( $product_id ) {
+		global $wp;
+
+		if ( ! isset( self::$order_awaiting_payment_for_product[ $product_id ] ) ) {
+
+			self::$order_awaiting_payment_for_product[ $product_id ] = false;
+
+			if ( ! empty( WC()->session->order_awaiting_payment ) || isset( $_GET['pay_for_order'] ) ) {
+
+				$order_id = ! empty( WC()->session->order_awaiting_payment ) ? WC()->session->order_awaiting_payment : $wp->query_vars['order-pay'];
+				$order    = wc_get_order( absint( $order_id ) );
+
+				if ( is_object( $order ) && $order->has_status( array( 'pending', 'failed' ) ) ) {
+					foreach ( $order->get_items() as $item ) {
+						if ( $item['product_id'] == $product->id || $item['variation_id'] == $product->id ) {
+
+							$subscriptions = wcs_get_subscriptions( array(
+								'order_id'   => $order->id,
+								'product_id' => $product->id,
+							) );
+
+							if ( ! empty( $subscriptions ) ) {
+								$subscription = array_pop( $subscriptions );
+
+								if ( $subscription->has_status( array( 'pending', 'on-hold' ) ) ) {
+									self::$order_awaiting_payment_for_product[ $product_id ] = true;
+								}
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		return self::$order_awaiting_payment_for_product[ $product_id ];
 	}
 
 	/**
