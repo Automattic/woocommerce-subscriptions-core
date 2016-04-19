@@ -906,7 +906,7 @@ class WC_Subscriptions_Product {
 
 		if ( ! isset( self::$is_purchasable_cache[ $product->id ] ) ) {
 
-			if ( self::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && is_user_logged_in() && ( ( 'active' == $product->limit_subscriptions && wcs_user_has_subscription( 0, $product->id, 'on-hold' ) ) || wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) && ! wcs_is_order_received_page() && false === strpos( $_SERVER['REQUEST_URI'], 'wc-api/wcs_paypal' ) ) {
+			if ( self::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && is_user_logged_in() && ( ( 'active' == $product->limit_subscriptions && wcs_user_has_subscription( 0, $product->id, 'on-hold' ) ) || wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) && ! wcs_is_order_received_page() && ! wcs_is_paypal_api_page() ) {
 
 				$is_purchasable = false;
 

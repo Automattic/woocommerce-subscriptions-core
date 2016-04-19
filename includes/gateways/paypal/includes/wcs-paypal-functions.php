@@ -152,3 +152,17 @@ function wcs_calculate_paypal_trial_periods_until( $future_timestamp ) {
 		'second_trial_period' => $second_trial_period,
 	);
 }
+
+/**
+ * Check if the $_SERVER global has PayPal WC-API endpoint URL slug in its 'REQUEST_URI' value
+ *
+ * In some cases, we need tdo be able to check if we're on the PayPal API page before $wp's query vars are setup,
+ * like from WC_Subscriptions_Product::is_purchasable() and WC_Product_Subscription_Variation::is_purchasable(),
+ * both of which are called within WC_Cart::get_cart_from_session(), which is run before query vars are setup.
+ *
+ * @return 2.0.13
+ * @return bool
+ **/
+function wcs_is_paypal_api_page() {
+	return ( false !== strpos( $_SERVER['REQUEST_URI'], 'wc-api/wcs_paypal' ) );
+}
