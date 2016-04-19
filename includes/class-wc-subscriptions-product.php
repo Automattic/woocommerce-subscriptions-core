@@ -12,6 +12,9 @@
  */
 class WC_Subscriptions_Product {
 
+	/* cache whether a given product is purchasable or not to save running lots of queries for the same product in the same request */
+	protected static $is_purchasable_cache = array();
+
 	protected static $subscription_meta_fields = array(
 		'_subscription_price',
 		'_subscription_sign_up_fee',
@@ -901,39 +904,43 @@ class WC_Subscriptions_Product {
 	public static function is_purchasable( $is_purchasable, $product ) {
 		global $wp;
 
-		if ( self::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && is_user_logged_in() && ( ( 'active' == $product->limit_subscriptions && wcs_user_has_subscription( 0, $product->id, 'on-hold' ) ) || wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) && false === strpos( $_SERVER['REQUEST_URI'], 'order-received' ) && false === strpos( $_SERVER['REQUEST_URI'], 'wc-api/wcs_paypal' ) ) { // we can't use is_order_received_page() becuase get_cart_from_session() is called before the query vars are setup
+		if ( ! isset( self::$is_purchasable_cache[ $product->id ] ) ) {
 
-			$is_purchasable = false;
+			if ( self::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && is_user_logged_in() && ( ( 'active' == $product->limit_subscriptions && wcs_user_has_subscription( 0, $product->id, 'on-hold' ) ) || wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) && false === strpos( $_SERVER['REQUEST_URI'], 'order-received' ) && false === strpos( $_SERVER['REQUEST_URI'], 'wc-api/wcs_paypal' ) ) { // we can't use is_order_received_page() becuase get_cart_from_session() is called before the query vars are setup
 
-			if ( ! empty( WC()->session->order_awaiting_payment ) || isset( $_GET['pay_for_order'] ) ) {
+				$is_purchasable = false;
 
-				$order_id = ! empty( WC()->session->order_awaiting_payment ) ? WC()->session->order_awaiting_payment : $wp->query_vars['order-pay'];
-				$order    = wc_get_order( absint( $order_id ) );
+				if ( ! empty( WC()->session->order_awaiting_payment ) || isset( $_GET['pay_for_order'] ) ) {
 
-				if ( is_object( $order ) && $order->has_status( array( 'pending', 'failed' ) ) ) {
-					foreach ( $order->get_items() as $item ) {
-						if ( $item['product_id'] == $product->id || $item['variation_id'] == $product->id ) {
+					$order_id = ! empty( WC()->session->order_awaiting_payment ) ? WC()->session->order_awaiting_payment : $wp->query_vars['order-pay'];
+					$order    = wc_get_order( absint( $order_id ) );
 
-							$subscriptions = wcs_get_subscriptions( array(
-								'order_id'   => $order->id,
-								'product_id' => $product->id,
-							) );
+					if ( is_object( $order ) && $order->has_status( array( 'pending', 'failed' ) ) ) {
+						foreach ( $order->get_items() as $item ) {
+							if ( $item['product_id'] == $product->id || $item['variation_id'] == $product->id ) {
 
-							if ( ! empty( $subscriptions ) ) {
-								$subscription = array_pop( $subscriptions );
+								$subscriptions = wcs_get_subscriptions( array(
+									'order_id'   => $order->id,
+									'product_id' => $product->id,
+								) );
 
-								if ( $subscription->has_status( array( 'pending', 'on-hold' ) ) ) {
-									$is_purchasable = true;
+								if ( ! empty( $subscriptions ) ) {
+									$subscription = array_pop( $subscriptions );
+
+									if ( $subscription->has_status( array( 'pending', 'on-hold' ) ) ) {
+										$is_purchasable = true;
+									}
 								}
+								break;
 							}
-							break;
 						}
 					}
 				}
 			}
+			self::$is_purchasable_cache[ $product->id ] = $is_purchasable;
 		}
 
-		return $is_purchasable;
+		return self::$is_purchasable_cache[ $product->id ];
 	}
 
 	/**
