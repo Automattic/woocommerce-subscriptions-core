@@ -10,6 +10,9 @@
  */
 class WC_Subscriptions_Switcher {
 
+	/* cache whether a given product is purchasable or not to save running lots of queries for the same product in the same request */
+	protected static $is_purchasable_cache = array();
+
 	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
@@ -1387,31 +1390,39 @@ class WC_Subscriptions_Switcher {
 	 * @return bool
 	 */
 	public static function is_purchasable( $is_purchasable, $product ) {
-		if ( false === $is_purchasable && wcs_is_product_switchable_type( $product ) && WC_Subscriptions_Product::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && is_user_logged_in() && wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) {
 
-			// Adding to cart from the product page
-			if ( isset( $_GET['switch-subscription'] ) ) {
+		$product_key = ! empty( $product->variation_id ) ? $product->variation_id : $product->id;
 
-				$is_purchasable = true;
+		if ( ! isset( self::$is_purchasable_cache[ $product_key ] ) ) {
 
-			// Validating when restring cart from session
-			} elseif ( self::cart_contains_switches() ) {
+			if ( false === $is_purchasable && wcs_is_product_switchable_type( $product ) && WC_Subscriptions_Product::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && is_user_logged_in() && wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) {
 
-				$is_purchasable = true;
+				// Adding to cart from the product page
+				if ( isset( $_GET['switch-subscription'] ) ) {
 
-			// Restoring cart from session, so need to check the cart in the session (self::cart_contains_subscription_switch() only checks the cart)
-			} elseif ( isset( WC()->session->cart ) ) {
+					$is_purchasable = true;
 
-				foreach ( WC()->session->cart as $cart_item_key => $cart_item ) {
-					if ( $product->id == $cart_item['product_id'] && isset( $cart_item['subscription_switch'] ) ) {
-						$is_purchasable = true;
-						break;
+				// Validating when restring cart from session
+				} elseif ( self::cart_contains_switches() ) {
+
+					$is_purchasable = true;
+
+				// Restoring cart from session, so need to check the cart in the session (self::cart_contains_subscription_switch() only checks the cart)
+				} elseif ( isset( WC()->session->cart ) ) {
+
+					foreach ( WC()->session->cart as $cart_item_key => $cart_item ) {
+						if ( $product->id == $cart_item['product_id'] && isset( $cart_item['subscription_switch'] ) ) {
+							$is_purchasable = true;
+							break;
+						}
 					}
 				}
 			}
+
+			self::$is_purchasable_cache[ $product_key ] = $is_purchasable;
 		}
 
-		return $is_purchasable;
+		return self::$is_purchasable_cache[ $product_key ];
 	}
 
 	/**
