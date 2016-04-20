@@ -787,7 +787,7 @@ class WC_Subscription extends WC_Order {
 		foreach ( $timestamps as $date_type => $datetime ) {
 			switch ( $date_type ) {
 				case 'end' :
-					if ( array_key_exists( 'last_payment', $timestamps ) && $datetime <= $timestamps['last_payment'] ) {
+					if ( array_key_exists( 'last_payment', $timestamps ) && $datetime < $timestamps['last_payment'] ) {
 						$messages[] = sprintf( __( 'The %s date must occur after the last payment date.', 'woocommerce-subscriptions' ), $date_type );
 					}
 
