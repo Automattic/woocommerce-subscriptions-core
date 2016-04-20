@@ -103,18 +103,19 @@ class WCS_PayPal_Standard_Request {
 			$subscription_interval  = $subscription->billing_interval;
 			$start_timestamp        = $subscription->get_time( 'start' );
 			$trial_end_timestamp    = $subscription->get_time( 'trial_end' );
-			$end_timestamp          = $subscription->get_time( 'end' );
 			$next_payment_timestamp = $subscription->get_time( 'next_payment' );
 
 			$is_synced_subscription = WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription->id );
 
-			if ( $trial_end_timestamp > 0 ) {
-				$subscription_length = wcs_estimate_periods_between( $trial_end_timestamp, $subscription->get_time( 'end' ), $subscription->billing_period );
-			} else if ( $is_synced_subscription ) {
-				$subscription_length = wcs_estimate_periods_between( $next_payment_timestamp, $subscription->get_time( 'end' ), $subscription->billing_period );
+			if ( $is_synced_subscription ) {
+				$length_from_timestamp = $next_payment_timestamp;
+			} elseif ( $trial_end_timestamp > 0 ) {
+				$length_from_timestamp = $trial_end_timestamp;
 			} else {
-				$subscription_length = wcs_estimate_periods_between( $start_timestamp, $subscription->get_time( 'end' ), $subscription->billing_period );
+				$length_from_timestamp = $start_timestamp;
 			}
+
+			$subscription_length = wcs_estimate_periods_between( $length_from_timestamp, $subscription->get_time( 'end' ), $subscription->billing_period );
 
 			$subscription_installments = $subscription_length / $subscription_interval;
 
