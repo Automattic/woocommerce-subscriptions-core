@@ -104,7 +104,7 @@ class WC_Subscriptions_Coupon {
 			$apply_recurring_percent_coupon = ( 'recurring_percent' == $coupon->type ) ? true : false;
 		}
 
-		// Check if we're apply any initial discounts
+		// Check if we're applying any initial discounts
 		if ( 'none' == $calculation_type ) {
 
 			// If all items have a free trial we don't need to apply recurring coupons to the initial total
@@ -119,7 +119,7 @@ class WC_Subscriptions_Coupon {
 				}
 			}
 
-			// Apply sign-up discounts to initial total
+			// Apply sign-up discounts
 			if ( ! empty( $cart_item['data']->subscription_sign_up_fee ) ) {
 
 				if ( 'sign_up_fee' == $coupon->type ) {
@@ -130,7 +130,12 @@ class WC_Subscriptions_Coupon {
 					$apply_initial_percent_coupon = true;
 				}
 
-				$discounting_amount = $cart_item['data']->subscription_sign_up_fee;
+				// Only Sign up fee coupons apply to sign up fees, adjust the discounting_amount accordingly
+				if ( in_array( $coupon->type, array( 'sign_up_fee', 'sign_up_fee_percent' ) ) ) {
+					$discounting_amount = $cart_item['data']->subscription_sign_up_fee;
+				} else {
+					$discounting_amount -= $cart_item['data']->subscription_sign_up_fee;
+				}
 			}
 
 			// Apply renewal discounts
@@ -165,11 +170,6 @@ class WC_Subscriptions_Coupon {
 			// Recurring coupons only apply when there is no free trial (carts can have a mix of free trial and non free trial items)
 			if ( 'recurring_percent' != $coupon->type && ! empty( $cart_item['data']->subscription_trial_length ) ) {
 				$discounting_amount = 0;
-			}
-
-			// Sign up fee coupons only apply to sign up fees
-			if ( 'sign_up_fee_percent' == $coupon->type ) {
-				$discounting_amount = $cart_item['data']->subscription_sign_up_fee;
 			}
 
 			$discount_amount = ( $discounting_amount / 100 ) * $coupon->amount;
