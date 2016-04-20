@@ -660,7 +660,11 @@ class WC_Subscriptions_Product {
 				$from_date = gmdate( 'Y-m-d H:i:s' );
 			}
 
-			$expiration_date = date( 'Y-m-d H:i:s', strtotime( "+ $trial_length {$trial_period}s + $subscription_length {$subscription_period}s", strtotime( $from_date ) ) );
+			if ( $trial_length > 0 ) {
+				$from_date = gmdate( 'Y-m-d H:i:s', wcs_add_time( $trial_length, $trial_period, strtotime( $from_date ) ) );
+			}
+
+			$expiration_date = date( 'Y-m-d H:i:s', wcs_add_time( $subscription_length, $subscription_period, strtotime( $from_date ) ) );
 
 		} else {
 
