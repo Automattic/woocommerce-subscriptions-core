@@ -787,7 +787,7 @@ class WC_Subscription extends WC_Order {
 		foreach ( $timestamps as $date_type => $datetime ) {
 			switch ( $date_type ) {
 				case 'end' :
-					if ( array_key_exists( 'last_payment', $timestamps ) && $datetime <= $timestamps['last_payment'] ) {
+					if ( array_key_exists( 'last_payment', $timestamps ) && $datetime < $timestamps['last_payment'] ) {
 						$messages[] = sprintf( __( 'The %s date must occur after the last payment date.', 'woocommerce-subscriptions' ), $date_type );
 					}
 
@@ -1645,10 +1645,11 @@ class WC_Subscription extends WC_Order {
 	 * with a 10 BTC sign-up fee was purchased, a total 30 BTC was paid as the sign-up fee but this function will return 10 BTC.
 	 *
 	 * @param array|int Either an order item (in the array format returned by self::get_items()) or the ID of an order item.
+	 * @param  string $tax Whether or not to adjust sign up fee if prices inc tax - ensures that the sign up fee paid amount includes the paid tax if inc
 	 * @return bool
 	 * @since 2.0
 	 */
-	public function get_items_sign_up_fee( $line_item ) {
+	public function get_items_sign_up_fee( $line_item, $tax = 'exclusive_of_tax' ) {
 
 		if ( ! is_array( $line_item ) ) {
 			$line_item = wcs_get_order_item( $line_item, $this );
@@ -1685,6 +1686,11 @@ class WC_Subscription extends WC_Order {
 
 				// Sign-up fee is any amount on top of recurring amount
 				$sign_up_fee = max( $original_order_item['line_total'] / $original_order_item['qty'] - $line_item['line_total'] / $line_item['qty'], 0 );
+			}
+
+			// If prices inc tax, ensure that the sign up fee amount includes the tax
+			if ( 'inclusive_of_tax' === $tax && ! empty( $original_order_item ) && ( 'yes' == $this->prices_include_tax || true === $this->prices_include_tax ) ) {
+				$sign_up_fee += $original_order_item['line_tax'];
 			}
 		}
 
