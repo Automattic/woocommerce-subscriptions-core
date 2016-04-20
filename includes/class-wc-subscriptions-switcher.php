@@ -1102,7 +1102,7 @@ class WC_Subscriptions_Switcher {
 
 				// Because product add-ons etc. don't apply to sign-up fees, it's safe to use the product's sign-up fee value rather than the cart item's
 				$sign_up_fee_due  = $product->subscription_sign_up_fee;
-				$sign_up_fee_paid = $subscription->get_items_sign_up_fee( $existing_item );
+				$sign_up_fee_paid = $subscription->get_items_sign_up_fee( $existing_item, 'inclusive_of_tax' );
 
 				// Make sure total prorated sign-up fee is prorated across total amount of sign-up fee so that customer doesn't get extra discounts
 				if ( $cart_item['quantity'] > $existing_item['qty'] ) {
@@ -1128,6 +1128,27 @@ class WC_Subscriptions_Switcher {
 
 			// Find the number of days between the two
 			$days_in_old_cycle = $days_until_next_payment + $days_since_last_payment;
+
+			// If the subscription contains a synced product and the next payment is actually the first payment, determine the days in the "old" cycle from the subscription object
+			if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription->id ) ) {
+
+				if ( WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product, 'timestamp', $subscription->get_date( 'start' ) ) == $next_payment_timestamp ) {
+					switch ( $subscription->billing_period ) {
+						case 'day' :
+							$days_in_old_cycle = $subscription->billing_interval;
+							break;
+						case 'week' :
+							$days_in_old_cycle = $subscription->billing_interval * 7;
+							break;
+						case 'month' :
+							$days_in_old_cycle = $subscription->billing_interval * 30.4375; // Average days per month over 4 year period
+							break;
+						case 'year' :
+							$days_in_old_cycle = $subscription->billing_interval * 365.25; // Average days per year over 4 year period
+							break;
+					}
+				}
+			}
 
 			// Find the actual recurring amount charged for the old subscription (we need to use the '_recurring_line_total' meta here rather than '_subscription_recurring_amount' because we want the recurring amount to include extra from extensions, like Product Add-ons etc.)
 			$old_recurring_total = $existing_item['line_total'];

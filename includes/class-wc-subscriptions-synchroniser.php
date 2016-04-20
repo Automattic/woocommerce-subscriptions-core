@@ -811,10 +811,12 @@ class WC_Subscriptions_Synchroniser {
 	 */
 	public static function recalculate_product_expiration_date( $expiration_date, $product_id, $from_date ) {
 
-		if ( self::is_product_synced( $product_id ) ) {
-			remove_filter( 'woocommerce_subscriptions_product_expiration_date', __CLASS__ . '::' . __FUNCTION__ ); // avoid infinite loop
-			$expiration_date = WC_Subscriptions_Product::get_expiration_date( $product_id, self::calculate_first_payment_date( $product_id, 'mysql' ) );
-			add_filter( 'woocommerce_subscriptions_product_expiration_date', __CLASS__ . '::' . __FUNCTION__, 10, 3 );
+		if ( self::is_product_synced( $product_id ) && ( $subscription_length = WC_Subscriptions_Product::get_length( $product_id ) ) > 0 ) {
+
+				$subscription_period = WC_Subscriptions_Product::get_period( $product_id );
+				$first_payment_date  = self::calculate_first_payment_date( $product_id, 'timestamp' );
+
+				$expiration_date = date( 'Y-m-d H:i:s', wcs_add_time( $subscription_length, $subscription_period, $first_payment_date ) );
 		}
 
 		return $expiration_date;
@@ -1285,4 +1287,5 @@ class WC_Subscriptions_Synchroniser {
 	}
 
 }
-WC_Subscriptions_Synchroniser::init();
+add_action( 'init', 'WC_Subscriptions_Synchroniser::init' );
+

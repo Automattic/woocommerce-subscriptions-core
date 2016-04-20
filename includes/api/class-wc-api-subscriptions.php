@@ -174,7 +174,13 @@ class WC_API_Subscriptions extends WC_API_Orders {
 			}
 
 			$data['order'] = $data;
+
+			remove_filter( 'woocommerce_api_order_response', array( WC()->api->WC_API_Customers, 'add_customer_data' ), 10 );
+
 			$subscription = $this->create_order( $data );
+
+			add_filter( 'woocommerce_api_order_response', array( WC()->api->WC_API_Customers, 'add_customer_data' ), 10, 2 );
+
 			unset( $data['order'] );
 
 			if ( is_wp_error( $subscription ) ) {
