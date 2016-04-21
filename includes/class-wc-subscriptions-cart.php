@@ -1000,6 +1000,9 @@ class WC_Subscriptions_Cart {
 	/**
 	 * When calculating shipping for recurring carts, return a revised list of shipping methods that apply to this recurring cart.
 	 *
+	 * When WooCommerce determines the taxable address for local pick up methods, we only want to return pick up shipping methods
+	 * chosen for the recurring cart being calculated instead of all methods.
+	 *
 	 * @param array $shipping_methods
 	 *
 	 * @since 2.0.13
