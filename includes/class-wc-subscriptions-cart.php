@@ -89,6 +89,10 @@ class WC_Subscriptions_Cart {
 
 		// When WooCommerce calculates rates for a recurring shipping package, only return the recurring shipping package rates
 		add_filter( 'woocommerce_package_rates', __CLASS__ . '::filter_package_rates', 10, 2 );
+
+		// When WooCommerce determines the taxable address only return pick up shipping methods chosen for the recurring cart being calculated.
+		add_filter( 'woocommerce_local_pickup_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 100 ,1 );
+		add_filter( 'wc_shipping_local_pickup_plus_chosen_shipping_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 10 ,1 );
 	}
 
 	/**
@@ -991,6 +995,45 @@ class WC_Subscriptions_Cart {
 		}
 
 		return $is_valid;
+	}
+
+	/**
+	 * When calculating shipping for recurring carts, return a revised list of shipping methods that apply to this recurring cart.
+	 *
+	 * When WooCommerce determines the taxable address for local pick up methods, we only want to return pick up shipping methods
+	 * chosen for the recurring cart being calculated instead of all methods.
+	 *
+	 * @param array $shipping_methods
+	 *
+	 * @since 2.0.13
+	 */
+	public static function filter_recurring_cart_chosen_shipping_method( $shipping_methods ) {
+
+		if ( 'recurring_total' == self::$calculation_type && 'none' !== self::$recurring_cart_key ) {
+
+			$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', array() );
+
+			$standard_package_methods        = array();
+			$recurring_cart_shipping_methods = array();
+
+			foreach ( $chosen_shipping_methods as $key => $method ) {
+
+				if ( is_numeric( $key ) ) {
+					$standard_package_methods[ $key ] = $method;
+
+				} else if ( strpos( $key, self::$recurring_cart_key ) !== false ) {
+
+					$recurring_cart_shipping_methods[ $key ] = $method;
+				}
+			}
+
+			// pick which chosen methods apply to this recurring cart. Defaults to standard methods if there is no specific recurring cart shipping methods chosen.
+			$applicable_chosen_shipping_methods = ( empty( $recurring_cart_shipping_methods ) ) ? $standard_package_methods : $recurring_cart_shipping_methods;
+
+			$shipping_methods = array_intersect( $applicable_chosen_shipping_methods, $shipping_methods );
+		}
+
+		return $shipping_methods;
 	}
 
 	/* Deprecated */
