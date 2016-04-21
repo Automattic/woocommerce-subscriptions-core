@@ -72,6 +72,11 @@ function wcs_cart_totals_shipping_html() {
 						<th><?php echo esc_html( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ) ); ?></th>
 						<td>
 							<?php echo wp_kses_post( wcs_cart_price_string( $shipping_method->cost, $recurring_cart ) ); ?>
+							<?php if ( 1 === count( $package['rates'] ) ) : ?>
+								<?php $index = sprintf( '%1$s_%2$d', $recurring_cart_key, $i ); ?>
+								<?php wcs_cart_print_shipping_input( $index, $shipping_method ); ?>
+								<?php do_action( 'woocommerce_after_shipping_rate', $shipping_method, $index ); ?>
+							<?php endif; ?>
 							<?php if ( ! empty( $show_package_details ) ) : ?>
 								<?php echo '<p class="woocommerce-shipping-contents"><small>' . esc_html( $package_details ) . '</small></p>'; ?>
 							<?php endif; ?>
