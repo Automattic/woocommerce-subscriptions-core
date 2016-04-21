@@ -433,34 +433,33 @@ class WC_Subscriptions_Order {
 
 						$dates = array( 'start' => current_time( 'mysql', true ) );
 
-						if ( 0 != $subscription->get_time( 'trial_end' ) ) {
-							$dates['trial_end'] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'trial_end' ) + $new_start_date_offset );
-						}
+						if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
 
-						if ( 0 != $subscription->get_time( 'next_payment' ) ) {
+							$trial_end    = $subscription->get_time( 'trial_end' );
+							$next_payment = $subscription->get_time( 'next_payment' );
 
-							if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
+							// if either there is a free trial date or a next payment date that falls before now, we need to recalculate all the sync'd dates
+							if ( ( $trial_end > 0 && $trial_end < $dates['start'] ) || ( $next_payment > 0 && $next_payment < $dates['start'] ) ) {
 
-								$prior_date = isset( $dates['trial_end'] ) ? $dates['trial_end'] : $dates['start'];
+								foreach ( $subscription->get_items() as $item ) {
+									$product_id = wcs_get_canonical_product_id( $item );
 
-								if ( $subscription->get_time( 'next_payment' ) < strtotime( $prior_date ) ) {
-
-									foreach ( $subscription->get_items() as $item ) {
-										$product_id = wcs_get_canonical_product_id( $item );
-
-										if ( WC_Subscriptions_Synchroniser::is_product_synced( $product_id ) ) {
-											$dates['next_payment'] = WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product_id );
-											break;
-										}
+									if ( WC_Subscriptions_Synchroniser::is_product_synced( $product_id ) ) {
+										$dates['trial_end']    = WC_Subscriptions_Product::get_trial_expiration_date( $product_id, $dates['start'] );
+										$dates['next_payment'] = WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product_id, 'mysql', $dates['start'] );
+										$dates['end']          = WC_Subscriptions_Product::get_expiration_date( $product_id, $dates['start'] );
+										break;
 									}
 								}
-							} else {
-								$dates['next_payment'] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'next_payment' ) + $new_start_date_offset );
 							}
-						}
 
-						if ( 0 != $subscription->get_time( 'end' ) ) {
-							$dates['end'] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'end' ) + $new_start_date_offset );
+						} else {
+							// No sync'ing to mess about with, just add the offset to the existing dates
+							foreach ( array( 'trial_end', 'next_payment', 'end' ) as $date_type ) {
+								if ( 0 != $subscription->get_time( $date_type ) ) {
+									$dates[ $date_type ] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( $date_type ) + $new_start_date_offset );
+								}
+							}
 						}
 
 						$subscription->update_dates( $dates );
