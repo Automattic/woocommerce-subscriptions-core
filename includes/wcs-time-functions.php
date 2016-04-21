@@ -600,3 +600,30 @@ function wcs_is_datetime_mysql_format( $time ) {
 	// magic number -2209078800 is strtotime( '1900-01-00 00:00:00' ). Needed to achieve parity with strptime
 	return ( $match && false !== $valid_time && -2209078800 <= $valid_time ) ? true : false;
 }
+
+/**
+ * Find the average number of days for a given billing period and interval.
+ *
+ * @param  string $period a billing period: day, week, month or year.
+ * @param  int $interval a billing interval
+ * @return int the number of days in that billing cycle
+ */
+function wcs_get_days_in_cycle( $period, $interval ) {
+
+	switch ( $period ) {
+		case 'day' :
+			$days_in_cycle = $interval;
+			break;
+		case 'week' :
+			$days_in_cycle = $interval * 7;
+			break;
+		case 'month' :
+			$days_in_cycle = $interval * 30.4375; // Average days per month over 4 year period
+			break;
+		case 'year' :
+			$days_in_cycle = $interval * 365.25; // Average days per year over 4 year period
+			break;
+	}
+
+	return apply_filters( 'wcs_get_days_in_cycle', $days_in_cycle, $period, $interval );
+}
