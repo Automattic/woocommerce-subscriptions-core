@@ -751,7 +751,7 @@ class WCS_Cart_Renewal {
 	 * @return WC_Order | The order object
 	 * @since  2.0.13
 	 */
-	public function get_order( $cart_item = '' ) {
+	protected function get_order( $cart_item = '' ) {
 		$order = false;
 
 		if ( empty( $cart_item ) ) {
