@@ -208,7 +208,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	 * @return WC_Subscription | The subscription object.
 	 * @since  2.0.13
 	 */
-	public function get_order_object( $cart_item = '' ) {
+	public function get_order( $cart_item = '' ) {
 		$subscription = false;
 
 		if ( empty( $cart_item ) ) {

@@ -731,7 +731,7 @@ class WCS_Cart_Renewal {
 	}
 
 	/**
-	 * Add order fee line items to the cart when a renewal order, initial order or resubscribe is in the cart.
+	 * Add order/subscription fee line items to the cart when a renewal order, initial order or resubscribe is in the cart.
 	 *
 	 * @param WC_Cart $cart
 	 * @since 2.0.10
@@ -740,10 +740,12 @@ class WCS_Cart_Renewal {
 
 		if ( $cart_item = $this->cart_contains() ) {
 
-			$order = $this->get_order_object();
+			$order = $this->get_order( $cart_item );
 
-			foreach ( $order->get_fees() as $fee ) {
-				$cart->add_fee( $fee['name'], $fee['line_total'], abs( $fee['line_subtotal_tax'] ) > 0, $fee['tax_class'] );
+			if ( $order instanceof WC_Order ) {
+				foreach ( $order->get_fees() as $fee ) {
+					$cart->add_fee( $fee['name'], $fee['line_total'], abs( $fee['line_tax'] ) > 0, $fee['tax_class'] );
+				}
 			}
 		}
 	}
@@ -771,7 +773,7 @@ class WCS_Cart_Renewal {
 	 * @return WC_Order | The order object
 	 * @since  2.0.13
 	 */
-	public function get_order_object( $cart_item = '' ) {
+	public function get_order( $cart_item = '' ) {
 		$order = false;
 
 		if ( empty( $cart_item ) ) {

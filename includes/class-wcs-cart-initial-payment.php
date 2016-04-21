@@ -95,7 +95,7 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 	 * @return WC_Order | The order object
 	 * @since  2.0.13
 	 */
-	public function get_order_object( $cart_item = '' ) {
+	public function get_order( $cart_item = '' ) {
 		$order = false;
 
 		if ( empty( $cart_item ) ) {
