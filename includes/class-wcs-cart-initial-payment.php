@@ -70,7 +70,7 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 	 * Checks the cart to see if it contains an initial payment item.
 	 *
 	 * @return bool | Array The cart item containing the initial payment, else false.
-	 * @since  2.0.10
+	 * @since  2.0.13
 	 */
 	protected function cart_contains() {
 
