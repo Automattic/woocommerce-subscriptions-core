@@ -452,7 +452,6 @@ class WC_Subscriptions_Order {
 									}
 								}
 							}
-
 						} else {
 							// No sync'ing to mess about with, just add the offset to the existing dates
 							foreach ( array( 'trial_end', 'next_payment', 'end' ) as $date_type ) {
