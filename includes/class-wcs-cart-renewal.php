@@ -708,38 +708,6 @@ class WCS_Cart_Renewal {
 		WC()->session->set( 'wcs_renewal_coupons', array() );
 	}
 
-	/* Deprecated */
-
-	/**
-	 * For subscription renewal via cart, use original order discount
-	 *
-	 * @since 2.0
-	 */
-	public function set_renewal_discounts( $cart ) {
-		_deprecated_function( __METHOD__, '2.0.10', 'Applying original subscription discounts to renewals via cart are now handled within ' . __CLASS__ .'::maybe_setup_cart()' );
-	}
-
-	/**
-	 * For subscription renewal via cart, previously adjust item price by original order discount
-	 *
-	 * No longer required as of 1.3.5 as totals are calculated correctly internally.
-	 *
-	 * @since 2.0
-	 */
-	public function get_discounted_price_for_renewal( $price, $cart_item, $cart ) {
-		_deprecated_function( __METHOD__, '2.0.10', 'No longer required as of 1.3.5 as totals are calculated correctly internally.' );
-	}
-
-	/**
-	 * Add subscription fee line items to the cart when a renewal order or resubscribe is in the cart.
-	 *
-	 * @param WC_Cart $cart
-	 * @since 2.0.10
-	 */
-	public function maybe_add_subscription_fees( $cart ) {
-		_deprecated_function( __METHOD__, '2.0.13', __CLASS__ .'::maybe_add_fees()' );
-	}
-
 	/**
 	 * Add order/subscription fee line items to the cart when a renewal order, initial order or resubscribe is in the cart.
 	 *
@@ -795,6 +763,38 @@ class WCS_Cart_Renewal {
 		}
 
 		return $order;
+	}
+
+	/* Deprecated */
+
+	/**
+	 * For subscription renewal via cart, use original order discount
+	 *
+	 * @since 2.0
+	 */
+	public function set_renewal_discounts( $cart ) {
+		_deprecated_function( __METHOD__, '2.0.10', 'Applying original subscription discounts to renewals via cart are now handled within ' . __CLASS__ .'::maybe_setup_cart()' );
+	}
+
+	/**
+	 * For subscription renewal via cart, previously adjust item price by original order discount
+	 *
+	 * No longer required as of 1.3.5 as totals are calculated correctly internally.
+	 *
+	 * @since 2.0
+	 */
+	public function get_discounted_price_for_renewal( $price, $cart_item, $cart ) {
+		_deprecated_function( __METHOD__, '2.0.10', 'No longer required as of 1.3.5 as totals are calculated correctly internally.' );
+	}
+
+	/**
+	 * Add subscription fee line items to the cart when a renewal order or resubscribe is in the cart.
+	 *
+	 * @param WC_Cart $cart
+	 * @since 2.0.10
+	 */
+	public function maybe_add_subscription_fees( $cart ) {
+		_deprecated_function( __METHOD__, '2.0.13', __CLASS__ .'::maybe_add_fees()' );
 	}
 }
 new WCS_Cart_Renewal();
