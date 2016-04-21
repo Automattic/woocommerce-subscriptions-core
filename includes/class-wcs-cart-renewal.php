@@ -51,7 +51,7 @@ class WCS_Cart_Renewal {
 		add_action( 'woocommerce_cart_loaded_from_session', array( &$this, 'cart_items_loaded_from_session' ), 10 );
 
 		// Make sure fees are added to the cart
-		add_action( 'woocommerce_cart_calculate_fees', array( &$this, 'maybe_add_order_fees' ), 10, 1 );
+		add_action( 'woocommerce_cart_calculate_fees', array( &$this, 'maybe_add_fees' ), 10, 1 );
 
 		// Allow renewal of limited subscriptions
 		add_filter( 'woocommerce_subscription_is_purchasable', array( &$this, 'is_purchasable' ), 12, 2 );
@@ -731,12 +731,22 @@ class WCS_Cart_Renewal {
 	}
 
 	/**
-	 * Add order/subscription fee line items to the cart when a renewal order, initial order or resubscribe is in the cart.
+	 * Add subscription fee line items to the cart when a renewal order or resubscribe is in the cart.
 	 *
 	 * @param WC_Cart $cart
 	 * @since 2.0.10
 	 */
-	public function maybe_add_order_fees( $cart ) {
+	public function maybe_add_subscription_fees( $cart ) {
+		_deprecated_function( __METHOD__, '2.0.13', __CLASS__ .'::maybe_add_fees()' );
+	}
+
+	/**
+	 * Add order/subscription fee line items to the cart when a renewal order, initial order or resubscribe is in the cart.
+	 *
+	 * @param WC_Cart $cart
+	 * @since 2.0.13
+	 */
+	public function maybe_add_fees( $cart ) {
 
 		if ( $cart_item = $this->cart_contains() ) {
 

@@ -1999,4 +1999,3 @@ class WC_Subscriptions_Cart {
 	}
 }
 WC_Subscriptions_Cart::init();
-
