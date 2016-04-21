@@ -428,39 +428,44 @@ class WC_Subscriptions_Order {
 
 					$new_start_date_offset = current_time( 'timestamp', true ) - $subscription->get_time( 'start' );
 
-					$dates = array( 'start' => current_time( 'mysql', true ) );
+					// if the payment has been processed more than an hour after the order was first created, let's update the dates on the subscription to account for that, because it may have even been processed days after it was first placed
+					if ( $new_start_date_offset > HOUR_IN_SECONDS ) {
 
-					if ( 0 != $subscription->get_time( 'trial_end' ) ) {
-						$dates['trial_end'] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'trial_end' ) + $new_start_date_offset );
-					}
+						$dates = array( 'start' => current_time( 'mysql', true ) );
 
-					if ( 0 != $subscription->get_time( 'next_payment' ) ) {
+						if ( 0 != $subscription->get_time( 'trial_end' ) ) {
+							$dates['trial_end'] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'trial_end' ) + $new_start_date_offset );
+						}
 
-						if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
+						if ( 0 != $subscription->get_time( 'next_payment' ) ) {
 
-							$prior_date = isset( $dates['trial_end'] ) ? $dates['trial_end'] : $dates['start'];
+							if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
 
-							if ( $subscription->get_time( 'next_payment' ) < strtotime( $prior_date ) ) {
+								$prior_date = isset( $dates['trial_end'] ) ? $dates['trial_end'] : $dates['start'];
 
-								foreach ( $subscription->get_items() as $item ) {
-									$product_id = wcs_get_canonical_product_id( $item );
+								if ( $subscription->get_time( 'next_payment' ) < strtotime( $prior_date ) ) {
 
-									if ( WC_Subscriptions_Synchroniser::is_product_synced( $product_id ) ) {
-										$dates['next_payment'] = WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product_id );
-										break;
+									foreach ( $subscription->get_items() as $item ) {
+										$product_id = wcs_get_canonical_product_id( $item );
+
+										if ( WC_Subscriptions_Synchroniser::is_product_synced( $product_id ) ) {
+											$dates['next_payment'] = WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product_id );
+											break;
+										}
 									}
 								}
+							} else {
+								$dates['next_payment'] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'next_payment' ) + $new_start_date_offset );
 							}
-						} else {
-							$dates['next_payment'] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'next_payment' ) + $new_start_date_offset );
 						}
+
+						if ( 0 != $subscription->get_time( 'end' ) ) {
+							$dates['end'] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'end' ) + $new_start_date_offset );
+						}
+
+						$subscription->update_dates( $dates );
 					}
 
-					if ( 0 != $subscription->get_time( 'end' ) ) {
-						$dates['end'] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'end' ) + $new_start_date_offset );
-					}
-
-					$subscription->update_dates( $dates );
 					$subscription->payment_complete();
 					$was_activated = true;
 
