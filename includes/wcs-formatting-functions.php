@@ -26,6 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *		'subscription_length': The total number of periods the subscription should continue for. Default 0, meaning continue indefinitely.
  *		'trial_length': The total number of periods the subscription trial period should continue for.  Default 0, meaning no trial period.
  *		'trial_period': The temporal period for the subscription's trial period. Should be one of {day|week|month|year} as used by @see wcs_get_subscription_period_strings()
+ *		'use_per_slash': Allow calling code to determine if they want the shorter price string using a slash for singular billing intervals, e.g. $5 / month, or the longer form, e.g. $5 every month, which is normally reserved for intervals > 1
  * @since 2.0
  * @return string The price string with translated and billing periods included
  */
@@ -51,6 +52,9 @@ function wcs_price_string( $subscription_details ) {
 
 			// Params for wc_price()
 			'display_excluding_tax_label' => false,
+
+			// Params for formatting customisation
+			'use_per_slash' => true,
 		)
 	);
 
@@ -176,7 +180,11 @@ function wcs_price_string( $subscription_details ) {
 		$subscription_string = sprintf( _n( '%1$s %2$s then %3$s / %4$s', '%1$s %2$s then %3$s every %4$s', $subscription_details['subscription_interval'], 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, $subscription_period_string );
 	} elseif ( ! empty( $subscription_details['recurring_amount'] ) || intval( $subscription_details['recurring_amount'] ) === 0 ) {
 		// translators: 1$: recurring amount, 2$: subscription period (e.g. "month" or "3 months") (e.g. "$15 / month" or "$15 every 2nd month")
-		$subscription_string = sprintf( _n( '%1$s / %2$s', ' %1$s every %2$s', $subscription_details['subscription_interval'], 'woocommerce-subscriptions' ), $recurring_amount_string, $subscription_period_string );
+		if ( true === $subscription_details['use_per_slash'] ) {
+			$subscription_string = sprintf( _n( '%1$s / %2$s', '%1$s every %2$s', $subscription_details['subscription_interval'], 'woocommerce-subscriptions' ), $recurring_amount_string, $subscription_period_string );
+		} else {
+			$subscription_string = sprintf( __( '%1$s every %2$s', 'woocommerce-subscriptions' ), $recurring_amount_string, $subscription_period_string );
+		}
 	} else {
 		$subscription_string = '';
 	}
