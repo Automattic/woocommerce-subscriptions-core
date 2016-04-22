@@ -342,7 +342,7 @@ class WC_Subscriptions_Admin {
 			return;
 		}
 
-		$subscription_price = wc_format_decimal( $_REQUEST['_subscription_price'] );
+		$subscription_price = isset( $_REQUEST['_subscription_price'] ) ? wc_format_decimal( $_REQUEST['_subscription_price'] ) : '';
 		$sale_price         = wc_format_decimal( $_REQUEST['_sale_price'] );
 
 		update_post_meta( $post_id, '_subscription_price', $subscription_price );
@@ -399,7 +399,9 @@ class WC_Subscriptions_Admin {
 		);
 
 		foreach ( $subscription_fields as $field_name ) {
-			update_post_meta( $post_id, $field_name, stripslashes( $_REQUEST[ $field_name ] ) );
+			if ( isset( $_REQUEST[ $field_name ] ) ) {
+				update_post_meta( $post_id, $field_name, stripslashes( $_REQUEST[ $field_name ] ) );
+			}
 		}
 
 	}
