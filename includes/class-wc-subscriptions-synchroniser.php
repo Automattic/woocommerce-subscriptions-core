@@ -78,14 +78,12 @@ class WC_Subscriptions_Synchroniser {
 		// Maybe mock a free trial on the product for calculating totals and displaying correct shipping costs
 		add_filter( 'woocommerce_before_calculate_totals', __CLASS__ . '::maybe_set_free_trial', 0, 1 );
 		add_action( 'woocommerce_subscription_cart_before_grouping', __CLASS__ . '::maybe_unset_free_trial' );
-		add_action( 'woocommerce_subscription_cart_after_grouping', __CLASS__ . '::maybe_set_free_trial' );
+		add_action( 'wcs_recurring_cart_end_date', __CLASS__ . '::maybe_set_free_trial', 10000 );
 		add_filter( 'woocommerce_subscriptions_calculated_total', __CLASS__ . '::maybe_unset_free_trial', 10000, 1 );
 		add_action( 'woocommerce_cart_totals_before_shipping', __CLASS__ . '::maybe_set_free_trial' );
 		add_action( 'woocommerce_cart_totals_after_shipping', __CLASS__ . '::maybe_unset_free_trial' );
 		add_action( 'woocommerce_review_order_before_shipping', __CLASS__ . '::maybe_set_free_trial' );
 		add_action( 'woocommerce_review_order_after_shipping', __CLASS__ . '::maybe_unset_free_trial' );
-		add_action( 'woocommerce_subscriptions_product_first_renewal_payment_time', __CLASS__ . '::maybe_set_free_trial', 11 );
-		add_action( 'woocommerce_subscriptions_product_first_renewal_payment_time', __CLASS__ . '::maybe_unset_free_trial', 9 );
 
 		// Set prorated initial amount when calculating initial total
 		add_filter( 'woocommerce_subscriptions_cart_get_price', __CLASS__ . '::set_prorated_price_for_calculation', 10, 2 );
