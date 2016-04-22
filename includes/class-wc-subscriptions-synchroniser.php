@@ -84,6 +84,8 @@ class WC_Subscriptions_Synchroniser {
 		add_action( 'woocommerce_cart_totals_after_shipping', __CLASS__ . '::maybe_unset_free_trial' );
 		add_action( 'woocommerce_review_order_before_shipping', __CLASS__ . '::maybe_set_free_trial' );
 		add_action( 'woocommerce_review_order_after_shipping', __CLASS__ . '::maybe_unset_free_trial' );
+		add_action( 'woocommerce_subscriptions_product_first_renewal_payment_time', __CLASS__ . '::maybe_set_free_trial', 11 );
+		add_action( 'woocommerce_subscriptions_product_first_renewal_payment_time', __CLASS__ . '::maybe_unset_free_trial', 9 );
 
 		// Set prorated initial amount when calculating initial total
 		add_filter( 'woocommerce_subscriptions_cart_get_price', __CLASS__ . '::set_prorated_price_for_calculation', 10, 2 );
