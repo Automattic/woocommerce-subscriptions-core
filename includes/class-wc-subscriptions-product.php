@@ -658,19 +658,15 @@ class WC_Subscriptions_Product {
 
 		if ( $subscription_length > 0 ) {
 
-			$subscription_period = self::get_period( $product_id );
-			$trial_period        = self::get_trial_period( $product_id );
-			$trial_length        = self::get_trial_length( $product_id );
-
 			if ( empty( $from_date ) ) {
 				$from_date = gmdate( 'Y-m-d H:i:s' );
 			}
 
-			if ( $trial_length > 0 ) {
-				$from_date = gmdate( 'Y-m-d H:i:s', wcs_add_time( $trial_length, $trial_period, strtotime( $from_date ) ) );
+			if ( self::get_trial_length( $product_id ) > 0 ) {
+				$from_date = self::get_trial_expiration_date( $product_id, $from_date );
 			}
 
-			$expiration_date = date( 'Y-m-d H:i:s', wcs_add_time( $subscription_length, $subscription_period, strtotime( $from_date ) ) );
+			$expiration_date = gmdate( 'Y-m-d H:i:s', wcs_add_time( $subscription_length, self::get_period( $product_id ), strtotime( $from_date ) ) );
 
 		} else {
 
