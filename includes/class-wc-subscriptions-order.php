@@ -439,7 +439,7 @@ class WC_Subscriptions_Order {
 							$next_payment = $subscription->get_time( 'next_payment' );
 
 							// if either there is a free trial date or a next payment date that falls before now, we need to recalculate all the sync'd dates
-							if ( ( $trial_end > 0 && $trial_end < $dates['start'] ) || ( $next_payment > 0 && $next_payment < $dates['start'] ) ) {
+							if ( ( $trial_end > 0 && $trial_end < strtotime( $dates['start'] ) ) || ( $next_payment > 0 && $next_payment < strtotime( $dates['start'] ) ) ) {
 
 								foreach ( $subscription->get_items() as $item ) {
 									$product_id = wcs_get_canonical_product_id( $item );
