@@ -428,39 +428,42 @@ class WC_Subscriptions_Order {
 
 					$new_start_date_offset = current_time( 'timestamp', true ) - $subscription->get_time( 'start' );
 
-					$dates = array( 'start' => current_time( 'mysql', true ) );
+					// if the payment has been processed more than an hour after the order was first created, let's update the dates on the subscription to account for that, because it may have even been processed days after it was first placed
+					if ( $new_start_date_offset > HOUR_IN_SECONDS ) {
 
-					if ( 0 != $subscription->get_time( 'trial_end' ) ) {
-						$dates['trial_end'] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'trial_end' ) + $new_start_date_offset );
-					}
-
-					if ( 0 != $subscription->get_time( 'next_payment' ) ) {
+						$dates = array( 'start' => current_time( 'mysql', true ) );
 
 						if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
 
-							$prior_date = isset( $dates['trial_end'] ) ? $dates['trial_end'] : $dates['start'];
+							$trial_end    = $subscription->get_time( 'trial_end' );
+							$next_payment = $subscription->get_time( 'next_payment' );
 
-							if ( $subscription->get_time( 'next_payment' ) < strtotime( $prior_date ) ) {
+							// if either there is a free trial date or a next payment date that falls before now, we need to recalculate all the sync'd dates
+							if ( ( $trial_end > 0 && $trial_end < strtotime( $dates['start'] ) ) || ( $next_payment > 0 && $next_payment < strtotime( $dates['start'] ) ) ) {
 
 								foreach ( $subscription->get_items() as $item ) {
 									$product_id = wcs_get_canonical_product_id( $item );
 
 									if ( WC_Subscriptions_Synchroniser::is_product_synced( $product_id ) ) {
-										$dates['next_payment'] = WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product_id );
+										$dates['trial_end']    = WC_Subscriptions_Product::get_trial_expiration_date( $product_id, $dates['start'] );
+										$dates['next_payment'] = WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product_id, 'mysql', $dates['start'] );
+										$dates['end']          = WC_Subscriptions_Product::get_expiration_date( $product_id, $dates['start'] );
 										break;
 									}
 								}
 							}
 						} else {
-							$dates['next_payment'] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'next_payment' ) + $new_start_date_offset );
+							// No sync'ing to mess about with, just add the offset to the existing dates
+							foreach ( array( 'trial_end', 'next_payment', 'end' ) as $date_type ) {
+								if ( 0 != $subscription->get_time( $date_type ) ) {
+									$dates[ $date_type ] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( $date_type ) + $new_start_date_offset );
+								}
+							}
 						}
+
+						$subscription->update_dates( $dates );
 					}
 
-					if ( 0 != $subscription->get_time( 'end' ) ) {
-						$dates['end'] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( 'end' ) + $new_start_date_offset );
-					}
-
-					$subscription->update_dates( $dates );
 					$subscription->payment_complete();
 					$was_activated = true;
 
