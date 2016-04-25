@@ -66,7 +66,8 @@ class WC_Subscriptions_Synchroniser {
 		add_action( 'woocommerce_process_product_meta_variable-subscription', __CLASS__ . '::process_product_meta_variable_subscription' ); // WC < 2.4
 		add_action( 'woocommerce_ajax_save_product_variations', __CLASS__ . '::process_product_meta_variable_subscription' );
 
-		// Make sure the expiration date is calculated from the synced start date
+		// Make sure the expiration dates are calculated from the synced start date
+		add_filter( 'woocommerce_subscriptions_product_trial_expiration_date', __CLASS__ . '::recalculate_product_trial_expiration_date', 10, 2 );
 		add_filter( 'woocommerce_subscriptions_product_expiration_date', __CLASS__ . '::recalculate_product_expiration_date', 10, 3 );
 
 		// Display a product's first payment date on the product's page to make sure it's obvious to the customer when payments will start
@@ -574,7 +575,7 @@ class WC_Subscriptions_Synchroniser {
 		if ( 'year' == $period || 'month' == $period ) {
 
 			// First make sure the day is in the past so that we don't end up jumping a month or year because of a few hours difference between now and the billing date
-			if ( gmdate( 'Ymd', $first_payment_timestamp ) < gmdate( 'Ymd' ) ) {
+			if ( gmdate( 'Ymd', $first_payment_timestamp ) < gmdate( 'Ymd', $from_timestamp ) || gmdate( 'Ymd', $first_payment_timestamp ) < gmdate( 'Ymd' ) ) {
 				$i = 1;
 				// Then make sure the date and time of the payment is in the future
 				while ( ( $first_payment_timestamp < gmdate( 'U' ) || $first_payment_timestamp < $from_timestamp ) && $i < 30 ) {
@@ -801,6 +802,43 @@ class WC_Subscriptions_Synchroniser {
 	}
 
 	/**
+	 * Maybe set the time of a product's trial expiration to be the same as the synced first payment date for products where the first
+	 * renewal payment date falls on the same day as the trial expiration date, but the trial expiration time is later in the day.
+	 *
+	 * When making sure the first payment is after the trial expiration in @see self::calculate_first_payment_date() we only check
+	 * whether the first payment day comes after the trial expiration day, because we don't want to pushing the first payment date
+	 * a month or year in the future because of a few hours difference between it and the trial expiration. However, this means we
+	 * could still end up with a trial end time after the first payment time, even though they are both on the same day because the
+	 * trial end time is normally calculated from the start time, which can be any time of day, but the first renewal time is always
+	 * set to be 3am in the site's timezone. For example, the first payment date might be calculate to be 3:00 on the 21st April 2017,
+	 * while the trial end date is on the same day at 3:01 (or any time after that on the same day). So we need to check both the time and day. We also don't want to make the first payment date/time skip a year because of a few hours difference. That means we need to either modify the trial end time to be 3:00am or make the first payment time occur at the same time as the trial end time. The former is pretty hard to change, but the later will sync'd payments will be at a different times if there is a free trial ending on the same day, which could be confusing. o_0
+	 *
+	 * Fixes #1328
+	 *
+	 * @param mixed $trial_expiration_date MySQL formatted date on which the subscription's trial will end, or 0 if it has no trial
+	 * @param mixed $product_id The product object or post ID of the subscription product
+	 * @return mixed MySQL formatted date on which the subscription's trial is set to end, or 0 if it has no trial
+	 * @since 2.0.13
+	 */
+	public static function recalculate_product_trial_expiration_date( $trial_expiration_date, $product_id ) {
+
+		if ( $trial_expiration_date > 0 && self::is_product_synced( $product_id ) ) {
+
+			$trial_expiration_timestamp = strtotime( $trial_expiration_date );
+			remove_filter( 'woocommerce_subscriptions_product_trial_expiration_date', __METHOD__ ); // avoid infinite loop
+			$first_payment_timestamp    = self::calculate_first_payment_date( $product_id, 'timestamp' );
+			add_filter( 'woocommerce_subscriptions_product_trial_expiration_date', __METHOD__, 10, 2 ); // avoid infinite loop
+
+			// First make sure the day is in the past so that we don't end up jumping a month or year because of a few hours difference between now and the billing date
+			if ( $trial_expiration_timestamp > $first_payment_timestamp && gmdate( 'Ymd', $first_payment_timestamp ) == gmdate( 'Ymd', $trial_expiration_timestamp ) ) {
+				$trial_expiration_date = date( 'Y-m-d H:i:s', $first_payment_timestamp );
+			}
+		}
+
+		return $trial_expiration_date;
+	}
+
+	/**
 	 * Make sure the expiration date is calculated from the synced start date for products where the start date
 	 * will be synced.
 	 *
@@ -811,10 +849,12 @@ class WC_Subscriptions_Synchroniser {
 	 */
 	public static function recalculate_product_expiration_date( $expiration_date, $product_id, $from_date ) {
 
-		if ( self::is_product_synced( $product_id ) ) {
-			remove_filter( 'woocommerce_subscriptions_product_expiration_date', __CLASS__ . '::' . __FUNCTION__ ); // avoid infinite loop
-			$expiration_date = WC_Subscriptions_Product::get_expiration_date( $product_id, self::calculate_first_payment_date( $product_id, 'mysql' ) );
-			add_filter( 'woocommerce_subscriptions_product_expiration_date', __CLASS__ . '::' . __FUNCTION__, 10, 3 );
+		if ( self::is_product_synced( $product_id ) && ( $subscription_length = WC_Subscriptions_Product::get_length( $product_id ) ) > 0 ) {
+
+				$subscription_period = WC_Subscriptions_Product::get_period( $product_id );
+				$first_payment_date  = self::calculate_first_payment_date( $product_id, 'timestamp' );
+
+				$expiration_date = date( 'Y-m-d H:i:s', wcs_add_time( $subscription_length, $subscription_period, $first_payment_date ) );
 		}
 
 		return $expiration_date;
@@ -1285,4 +1325,5 @@ class WC_Subscriptions_Synchroniser {
 	}
 
 }
-WC_Subscriptions_Synchroniser::init();
+add_action( 'init', 'WC_Subscriptions_Synchroniser::init' );
+
