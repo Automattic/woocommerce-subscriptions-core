@@ -200,5 +200,26 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	protected function cart_contains( $cart = '' ) {
 		return wcs_cart_contains_resubscribe( $cart );
 	}
+
+	/**
+	 * Get the subscription object used to construct the resubscribe cart.
+	 *
+	 * @param Array The resubscribe cart item.
+	 * @return WC_Subscription | The subscription object.
+	 * @since  2.0.13
+	 */
+	protected function get_order( $cart_item = '' ) {
+		$subscription = false;
+
+		if ( empty( $cart_item ) ) {
+			$cart_item = $this->cart_contains();
+		}
+
+		if ( false !== $cart_item && isset( $cart_item[ $this->cart_item_key ] ) ) {
+			$subscription = wcs_get_subscription( $cart_item[ $this->cart_item_key ]['subscription_id'] );
+		}
+
+		return $subscription;
+	}
 }
 new WCS_Cart_Resubscribe();
