@@ -62,6 +62,10 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 			case 'sub_count' :
 				return $user->sub_count;
 
+			case 'sub_average_price' :
+				$average_subscription_amount = ( 0 !== $user->sub_count ? wc_price( $user->product_total / $user->sub_count ) : '-' );
+				return $average_subscription_amount;
+
 		}
 
 		return '';
@@ -74,8 +78,9 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 	 */
 	public function get_columns() {
 		$columns = array(
-			'product_name'   => __( 'Subscription Product', 'woocommerce-subscriptions' ),
-			'sub_count'      => __( 'Current Subscriptions', 'woocommerce' ),
+			'product_name'      => __( 'Subscription Product', 'woocommerce-subscriptions' ),
+			'sub_count'         => __( 'Current Subscriptions', 'woocommerce-subscriptions' ),
+			'sub_average_price' => __( 'Average Recurring Amount', 'woocommerce-subscriptions' ),
 		);
 
 		return $columns;
@@ -92,7 +97,7 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 		$per_page              = apply_filters( 'woocommerce_admin_stock_report_products_per_page', 20 );
 
 		$product_query = apply_filters( 'wcs_reports_current_product_query',
-			"SELECT product.id as product_id,	product.post_title as product_name,	mo.product_type, COUNT(orders.order_id) as sub_count
+			"SELECT product.id as product_id,	product.post_title as product_name,	mo.product_type, COUNT(orders.order_id) as sub_count, SUM(orders.product_total) as product_total
 				FROM   {$wpdb->posts} AS product
 				LEFT JOIN (
 					SELECT tr.object_id AS id, t.slug AS product_type
@@ -105,11 +110,14 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 				) AS mo
 					ON product.id = mo.id
 				LEFT JOIN (
-					SELECT wcoitems.order_id, wcoimeta.meta_value as product_id, wcoimeta.order_item_id
+					SELECT wcoitems.order_id, wcoimeta.meta_value as product_id, wcoimeta.order_item_id, wcoimeta2.meta_value as product_total
 					FROM {$wpdb->prefix}woocommerce_order_items AS wcoitems
 					INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS wcoimeta
 						ON wcoimeta.order_item_id = wcoitems.order_item_id
+					INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS wcoimeta2
+						ON wcoimeta2.order_item_id = wcoitems.order_item_id
 					WHERE wcoimeta.meta_key = '_product_id'
+						AND wcoimeta2.meta_key = '_line_total'
 				) as orders
 					ON product.id = orders.product_id
 				LEFT JOIN  {$wpdb->posts} as subs
