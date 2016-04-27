@@ -280,20 +280,28 @@ class WCS_PayPal {
 	 */
 	public static function process_ipn_request( $transaction_details ) {
 
-		require_once( 'includes/class-wcs-paypal-standard-ipn-handler.php' );
-		require_once( 'includes/class-wcs-paypal-reference-transaction-ipn-handler.php' );
+		try {
+			require_once( 'includes/class-wcs-paypal-standard-ipn-handler.php' );
+			require_once( 'includes/class-wcs-paypal-reference-transaction-ipn-handler.php' );
+			require_once( 'includes/class-wcs-paypal-standard-ipn-failure-handler.php' );
 
-		if ( ! isset( $transaction_details['txn_type'] ) || ! in_array( $transaction_details['txn_type'], array_merge( self::get_ipn_handler( 'standard' )->get_transaction_types(), self::get_ipn_handler( 'reference' )->get_transaction_types() ) ) ) {
-			return;
-		}
+			WCS_PayPal_Standard_IPN_Failure_Handler::attach( $transaction_details );
 
-		WC_Gateway_Paypal::log( 'Subscription Transaction Type: ' . $transaction_details['txn_type'] );
-		WC_Gateway_Paypal::log( 'Subscription Transaction Details: ' . print_r( $transaction_details, true ) );
+			if ( ! isset( $transaction_details['txn_type'] ) || ! in_array( $transaction_details['txn_type'], array_merge( self::get_ipn_handler( 'standard' )->get_transaction_types(), self::get_ipn_handler( 'reference' )->get_transaction_types() ) ) ) {
+				return;
+			}
 
-		if ( in_array( $transaction_details['txn_type'], self::get_ipn_handler( 'standard' )->get_transaction_types() ) ) {
-			self::get_ipn_handler( 'standard' )->valid_response( $transaction_details );
-		} elseif ( in_array( $transaction_details['txn_type'], self::get_ipn_handler( 'reference' )->get_transaction_types() ) ) {
-			self::get_ipn_handler( 'reference' )->valid_response( $transaction_details );
+			WC_Gateway_Paypal::log( 'Subscription Transaction Type: ' . $transaction_details['txn_type'] );
+			WC_Gateway_Paypal::log( 'Subscription Transaction Details: ' . print_r( $transaction_details, true ) );
+
+			if ( in_array( $transaction_details['txn_type'], self::get_ipn_handler( 'standard' )->get_transaction_types() ) ) {
+				self::get_ipn_handler( 'standard' )->valid_response( $transaction_details );
+			} elseif ( in_array( $transaction_details['txn_type'], self::get_ipn_handler( 'reference' )->get_transaction_types() ) ) {
+				self::get_ipn_handler( 'reference' )->valid_response( $transaction_details );
+			}
+
+		} catch( Exception $e ) {
+			WCS_PayPal_Standard_IPN_Failure_Handler::log_unexpected_exception( $e );
 		}
 	}
 

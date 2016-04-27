@@ -29,8 +29,15 @@ class WCS_PayPal_Standard_IPN_Failure_Handler {
 	 */
 	public static function attach( $transaction_details ) {
 		self::$transaction_details = $transaction_details;
+		$transient_key             = 'wcs_paypal_ipn_error_occurred';
+		$api_username              = WCS_PayPal::get_option( 'api_username' );
 
 		WC_Gateway_Paypal::$log_enabled = true;
+
+		// try to enable debug logging if errors were previously found
+		if ( get_transient( $transient_key ) == $api_username && ! defined( 'WP_DEBUG' ) ) {
+			define( 'WP_DEBUG', true );
+		}
 
 		add_action( 'wcs_paypal_ipn_process_failure', __CLASS__ . '::log_ipn_errors', 10, 2 );
 		add_action( 'shutdown', __CLASS__ . '::catch_unexpected_shutdown' );
@@ -46,7 +53,7 @@ class WCS_PayPal_Standard_IPN_Failure_Handler {
 		remove_action( 'wcs_paypal_ipn_process_failure', __CLASS__ . '::log_ipn_errors' );
 		remove_action( 'shutdown', __CLASS__ . '::catch_unexpected_shutdown' );
 
-		if ( ! empty( $message ) ) {
+		if ( ! empty( $message ) && $message != self::$transaction_details ) {
 			WC_Gateway_Paypal::log( $message );
 		}
 
