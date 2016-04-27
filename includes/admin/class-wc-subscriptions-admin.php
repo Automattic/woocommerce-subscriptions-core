@@ -623,7 +623,7 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Set default values for subsbcription dropdown fields when bulk adding variations to fix issue #1342
+	 * Set default values for subscription dropdown fields when bulk adding variations to fix issue #1342
 	 *
 	 * @param int $variation_id ID the post_id of the variation being added
 	 * @return null
