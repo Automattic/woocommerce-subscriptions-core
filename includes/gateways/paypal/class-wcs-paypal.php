@@ -25,6 +25,7 @@ require_once( 'includes/class-wcs-paypal-standard-change-payment-method.php' );
 require_once( 'includes/admin/class-wcs-paypal-admin.php' );
 require_once( 'includes/admin/class-wcs-paypal-change-payment-method-admin.php' );
 require_once( 'includes/deprecated/class-wc-paypal-standard-subscriptions.php' );
+require_once( 'includes/class-wcs-paypal-standard-ipn-failure-handler.php' );
 
 class WCS_PayPal {
 
@@ -89,6 +90,10 @@ class WCS_PayPal {
 		add_action( 'wc_paypal_api_request_performed', __CLASS__ . '::log_api_requests', 10, 2 );
 
 		add_filter( 'woocommerce_subscriptions_admin_meta_boxes_script_parameters', __CLASS__ . '::maybe_add_change_payment_method_warning' );
+
+		// Run the IPN failure handler attach and detach functions before and after processing to catch and log any unexpected shutdowns
+		add_action( 'valid-paypal-standard-ipn-request', 'WCS_PayPal_Standard_IPN_Failure_Handler::attach', -1, 1 );
+		add_action( 'valid-paypal-standard-ipn-request', 'WCS_PayPal_Standard_IPN_Failure_Handler::detach', 1, 1 );
 
 		WCS_PayPal_Supports::init();
 		WCS_PayPal_Status_Manager::init();
@@ -283,9 +288,6 @@ class WCS_PayPal {
 		try {
 			require_once( 'includes/class-wcs-paypal-standard-ipn-handler.php' );
 			require_once( 'includes/class-wcs-paypal-reference-transaction-ipn-handler.php' );
-			require_once( 'includes/class-wcs-paypal-standard-ipn-failure-handler.php' );
-
-			WCS_PayPal_Standard_IPN_Failure_Handler::attach( $transaction_details );
 
 			if ( ! isset( $transaction_details['txn_type'] ) || ! in_array( $transaction_details['txn_type'], array_merge( self::get_ipn_handler( 'standard' )->get_transaction_types(), self::get_ipn_handler( 'reference' )->get_transaction_types() ) ) ) {
 				return;
