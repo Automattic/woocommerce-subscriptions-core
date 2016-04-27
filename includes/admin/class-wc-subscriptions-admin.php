@@ -625,14 +625,17 @@ class WC_Subscriptions_Admin {
 	/**
 	 * Set default values for subsbcription dropdown fields when bulk adding variations to fix issue #1342
 	 *
-	 * @param int $variation_id ID post_id of the variation
+	 * @param int $variation_id ID the post_id of the variation being added
 	 * @return null
 	 */
 	public static function set_variation_meta_defaults_on_bulk_add( $variation_id ) {
-		update_post_meta( $variation_id, '_subscription_period', 'month' );
-		update_post_meta( $variation_id, '_subscription_period_interval', '1' );
-		update_post_meta( $variation_id, '_subscription_length', '0' );
-		update_post_meta( $variation_id, '_subscription_trial_period', 'month' );
+
+		if ( ! empty( $variation_id ) ) {
+			update_post_meta( $variation_id, '_subscription_period', 'month' );
+			update_post_meta( $variation_id, '_subscription_period_interval', '1' );
+			update_post_meta( $variation_id, '_subscription_length', '0' );
+			update_post_meta( $variation_id, '_subscription_trial_period', 'month' );
+		}
 	}
 
 	/**
