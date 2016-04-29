@@ -62,6 +62,8 @@ class WC_Subscriptions_Order {
 
 		add_action( 'woocommerce_order_partially_refunded', __CLASS__ . '::maybe_cancel_subscription_on_partial_refund' );
 		add_action( 'woocommerce_order_fully_refunded', __CLASS__ . '::maybe_cancel_subscription_on_full_refund' );
+
+		add_filter( 'woocommerce_order_needs_shipping_address', __CLASS__ . '::maybe_display_shipping_address', 10, 3 );
 	}
 
 	/*
@@ -912,6 +914,43 @@ class WC_Subscriptions_Order {
 				self::maybe_cancel_subscription_on_full_refund( $order );
 			}
 		}
+	}
+
+	/**
+	 * If the order doesn't contain shipping methods because it contains synced or trial products,
+	 * this function will ensure the shipping address is still displayed in order emails and on the order received and view order pages.
+	 *
+	 * @param bool $needs_shipping
+	 * @param array $hidden_shipping_methods shipping method IDs which should hide shipping addresses (defaulted to array( 'local_pickup' ))
+	 * @param WC_Order $order
+	 *
+	 * @return bool $needs_shipping whether an order needs to display the shipping address
+	 *
+	 * @since 2.0.14
+	 */
+	public static function maybe_display_shipping_address( $needs_shipping, $hidden_shipping_methods, $order ) {
+
+		if ( ! $needs_shipping && wcs_order_contains_subscription( $order ) && empty( $order->get_shipping_methods() ) ) {
+
+			$subscriptions = wcs_get_subscriptions_for_order( $order );
+
+			foreach ( $subscriptions as $subscription ) {
+
+				if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
+					$needs_shipping = true;
+					break;
+				}
+
+				foreach ( $subscription->get_items() as $item ) {
+					if ( isset( $item['has_trial'] ) ) {
+						$needs_shipping = true;
+						break 2;
+					}
+				}
+			}
+		}
+
+		return $needs_shipping;
 	}
 
 	/* Deprecated Functions */
