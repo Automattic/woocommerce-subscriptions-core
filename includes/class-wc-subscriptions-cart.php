@@ -1050,9 +1050,21 @@ class WC_Subscriptions_Cart {
 
 		$shipping_methods     = WC()->checkout()->shipping_methods;
 		$added_invalid_notice = false;
+		$standard_packages    = WC()->shipping->get_packages();
 
 		foreach ( self::$recurring_shipping_packages as $recurring_cart_key => $packages ) {
 			foreach ( $packages as $package_index => $package ) {
+
+				// remove our unique flag from the available rates so we can compare rates
+				foreach ( $package['rates'] as $rate ) {
+					unset( $rate->recurring_cart_key );
+				}
+
+				if ( ( 1 === count( $package['rates'] ) ) || ( isset( $standard_packages[ $package_index ] ) && $package['rates'] == $standard_packages[ $package_index ]['rates'] ) ) {
+					// the recurring package rates match the initial package rates, there won't be a selected shipping method for this recurring cart package
+					// move on to the next package
+					continue;
+				}
 
 				$recurring_shipping_package_key = WC_Subscriptions_Cart::get_recurring_shipping_package_key( $recurring_cart_key, $package_index );
 
