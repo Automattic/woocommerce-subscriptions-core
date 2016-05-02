@@ -1081,6 +1081,29 @@ class WC_Subscriptions_Cart {
 		}
 	}
 
+	/**
+	 * Checks the cart to see if it contains a specific product.
+	 *
+	 * @param int The product ID or variation ID to look for.
+	 * @return bool Whether the product is in the cart.
+	 * @since 2.0.13
+	 */
+	public static function cart_contains_product( $product_id ) {
+
+		$cart_contains_product = false;
+
+		if ( ! empty( WC()->cart->cart_contents ) ) {
+			foreach ( WC()->cart->cart_contents as $cart_item ) {
+				if ( wcs_get_canonical_product_id( $cart_item ) == $product_id ) {
+					$cart_contains_product = true;
+					break;
+				}
+			}
+		}
+
+		return $cart_contains_product;
+	}
+
 	/* Deprecated */
 
 	/**
@@ -2087,4 +2110,3 @@ class WC_Subscriptions_Cart {
 	}
 }
 WC_Subscriptions_Cart::init();
-

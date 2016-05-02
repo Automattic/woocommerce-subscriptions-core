@@ -77,6 +77,8 @@ class WC_Subscriptions_Admin {
 		add_action( 'woocommerce_process_product_meta_variable-subscription', __CLASS__ . '::process_product_meta_variable_subscription' ); // WC < 2.4
 		add_action( 'woocommerce_ajax_save_product_variations', __CLASS__ . '::process_product_meta_variable_subscription' );
 
+		add_action( 'product_variation_linked', __CLASS__ . '::set_variation_meta_defaults_on_bulk_add' );
+
 		add_filter( 'woocommerce_settings_tabs_array', __CLASS__ . '::add_subscription_settings_tab', 50 );
 
 		add_action( 'woocommerce_settings_tabs_subscriptions', __CLASS__ . '::subscription_settings_page' );
@@ -618,6 +620,22 @@ class WC_Subscriptions_Admin {
 		$variable_subscription = wc_get_product( $post_id );
 		$variable_subscription->variable_product_sync();
 
+	}
+
+	/**
+	 * Set default values for subscription dropdown fields when bulk adding variations to fix issue #1342
+	 *
+	 * @param int $variation_id ID the post_id of the variation being added
+	 * @return null
+	 */
+	public static function set_variation_meta_defaults_on_bulk_add( $variation_id ) {
+
+		if ( ! empty( $variation_id ) ) {
+			update_post_meta( $variation_id, '_subscription_period', 'month' );
+			update_post_meta( $variation_id, '_subscription_period_interval', '1' );
+			update_post_meta( $variation_id, '_subscription_length', '0' );
+			update_post_meta( $variation_id, '_subscription_trial_period', 'month' );
+		}
 	}
 
 	/**

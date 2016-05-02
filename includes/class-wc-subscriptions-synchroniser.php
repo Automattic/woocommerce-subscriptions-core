@@ -80,6 +80,8 @@ class WC_Subscriptions_Synchroniser {
 		add_filter( 'woocommerce_before_calculate_totals', __CLASS__ . '::maybe_set_free_trial', 0, 1 );
 		add_action( 'woocommerce_subscription_cart_before_grouping', __CLASS__ . '::maybe_unset_free_trial' );
 		add_action( 'woocommerce_subscription_cart_after_grouping', __CLASS__ . '::maybe_set_free_trial' );
+		add_action( 'wcs_recurring_cart_start_date', __CLASS__ . '::maybe_unset_free_trial', 0, 1 );
+		add_action( 'wcs_recurring_cart_end_date', __CLASS__ . '::maybe_set_free_trial', 100, 1 );
 		add_filter( 'woocommerce_subscriptions_calculated_total', __CLASS__ . '::maybe_unset_free_trial', 10000, 1 );
 		add_action( 'woocommerce_cart_totals_before_shipping', __CLASS__ . '::maybe_set_free_trial' );
 		add_action( 'woocommerce_cart_totals_after_shipping', __CLASS__ . '::maybe_unset_free_trial' );
@@ -101,10 +103,6 @@ class WC_Subscriptions_Synchroniser {
 
 		// Autocomplete subscription orders when they only contain a synchronised subscription
 		add_filter( 'woocommerce_payment_complete_order_status', __CLASS__ . '::order_autocomplete', 10, 2 );
-
-		// Maybe recalculate trial end for a synced subscription in case it includes 1 day trial used to mock cart totals.
-		add_filter( 'wcs_recurring_cart_trial_end_date', __CLASS__ . '::recalculate_trial_end_date', 15, 3 );
-		add_filter( 'wcs_recurring_cart_end_date', __CLASS__ . '::recalculate_end_date', 15, 3 );
 
 		add_filter( 'woocommerce_subscriptions_recurring_cart_key', __CLASS__ . '::add_to_recurring_cart_key', 10, 2 );
 	}
@@ -742,40 +740,7 @@ class WC_Subscriptions_Synchroniser {
 				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length = WC_Subscriptions_Product::get_trial_length( wcs_get_canonical_product_id( $cart_item ) );
 			}
 		}
-
 		return $total;
-	}
-
-	/**
-	 * Maybe recalculate the trial end date for synced subscription products that contain the unnecessary
-	 * "one day trial" period.
-	 *
-	 * @since 2.0
-	 */
-	public static function recalculate_trial_end_date( $trial_end_date, $recurring_cart, $product ) {
-
-		if ( self::is_product_synced( $product ) ) {
-			$product_id  = ( isset( $product->variation_id ) ) ? $product->variation_id : $product->id;
-			$trial_end_date = WC_Subscriptions_Product::get_trial_expiration_date( $product_id );
-		}
-
-		return $trial_end_date;
-	}
-
-	/**
-	 * Maybe recalculate the end date for synced subscription products that contain the unnecessary
-	 * "one day trial" period.
-	 *
-	 * @since 2.0.9
-	 */
-	public static function recalculate_end_date( $end_date, $recurring_cart, $product ) {
-
-		if ( self::is_product_synced( $product ) ) {
-			$product_id  = ( isset( $product->variation_id ) ) ? $product->variation_id : $product->id;
-			$end_date = WC_Subscriptions_Product::get_expiration_date( $product_id );
-		}
-
-		return $end_date;
 	}
 
 	/**
@@ -1322,6 +1287,40 @@ class WC_Subscriptions_Synchroniser {
 		}
 
 		return $cart_contains_prorated_subscription;
+	}
+
+	/**
+	 * Maybe recalculate the trial end date for synced subscription products that contain the unnecessary
+	 * "one day trial" period.
+	 *
+	 * @since 2.0
+	 * @deprecated 2.0.14
+	 */
+	public static function recalculate_trial_end_date( $trial_end_date, $recurring_cart, $product ) {
+		_deprecated_function( __METHOD__, '2.0.14' );
+		if ( self::is_product_synced( $product ) ) {
+			$product_id  = ( isset( $product->variation_id ) ) ? $product->variation_id : $product->id;
+			$trial_end_date = WC_Subscriptions_Product::get_trial_expiration_date( $product_id );
+		}
+
+		return $trial_end_date;
+	}
+
+	/**
+	 * Maybe recalculate the end date for synced subscription products that contain the unnecessary
+	 * "one day trial" period.
+	 *
+	 * @since 2.0.9
+	 * @deprecated 2.0.14
+	 */
+	public static function recalculate_end_date( $end_date, $recurring_cart, $product ) {
+		_deprecated_function( __METHOD__, '2.0.14' );
+		if ( self::is_product_synced( $product ) ) {
+			$product_id  = ( isset( $product->variation_id ) ) ? $product->variation_id : $product->id;
+			$end_date = WC_Subscriptions_Product::get_expiration_date( $product_id );
+		}
+
+		return $end_date;
 	}
 
 }
