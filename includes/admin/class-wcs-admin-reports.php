@@ -75,6 +75,12 @@ class WCS_Admin_Reports {
 						'hide_title'  => true,
 						'callback'    => array( 'WC_Admin_Reports', 'get_report' ),
 					),
+					'subscription_by_customer' => array(
+						'title'       => __( 'Subscriptions by Customer', 'woocommerce-subscriptions' ),
+						'description' => '',
+						'hide_title'  => true,
+						'callback'    => array( 'WC_Admin_Reports', 'get_report' ),
+					),
 				),
 			);
 
@@ -92,7 +98,7 @@ class WCS_Admin_Reports {
 	 */
 	public static function initialize_reports_path( $report_path, $name, $class ) {
 
-		if ( 'WC_Report_subscription_events_by_date' == $class || 'WC_Report_upcoming_recurring_revenue' == $class ||  'WC_Report_subscription_by_product' == $class ) {
+		if ( 'WC_Report_subscription_events_by_date' == $class || 'WC_Report_upcoming_recurring_revenue' == $class || 'WC_Report_subscription_by_product' == $class ||  'WC_Report_subscription_by_customer' == $class ) {
 			$report_path = dirname( __FILE__ ) . '/reports/class-wcs-report-' . $name . '.php';
 		}
 
