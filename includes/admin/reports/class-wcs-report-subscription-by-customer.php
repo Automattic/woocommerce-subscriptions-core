@@ -42,10 +42,10 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 		echo '<div id="poststuff" class="woocommerce-reports-wide">';
 		echo '	<div id="postbox-container-1" class="postbox-container" style="width: 280px;"><div class="postbox" style="padding: 10px;">';
 		echo '	<h3>' . esc_html__( 'Customer Totals', 'woocommerce-subscriptions' ) . '</h3>';
-		echo '	<p><strong>' . esc_html__( 'Total Customers', 'woocommerce-subscriptions' ) . '</strong> : ' . esc_html( $this->totals->total_customers ) . '<br />';
+		echo '	<p><strong>' . esc_html__( 'Total Subscribers', 'woocommerce-subscriptions' ) . '</strong> : ' . esc_html( $this->totals->total_customers ) . '<br />';
 		echo '	<strong>' . esc_html__( 'Active Subscriptions', 'woocommerce-subscriptions' ) . '</strong> : ' . esc_html( $this->totals->active_subs ) . '<br />';
 		echo '	<strong>' . esc_html__( 'Total Subscriptions', 'woocommerce-subscriptions' ) . '</strong> : ' . esc_html( $this->totals->total_subs ) . '<br />';
-		echo '	<strong>' . esc_html__( 'Average CLV', 'woocommerce-subscriptions' ) . '</strong> : ' . wp_kses_post( wc_price( ( $this->totals->orig_total + $this->totals->renew_total ) / $this->totals->total_customers ) ) . '</p>';
+		echo '	<strong>' . esc_html__( 'Average Lifetime Value', 'woocommerce-subscriptions' ) . '</strong> : ' . wp_kses_post( wc_price( ( $this->totals->initial_total + $this->totals->renew_total ) / $this->totals->total_customers ) ) . '</p>';
 		echo '</div></div>';
 		$this->display();
 		echo '</div>';
@@ -75,7 +75,7 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 				return $user->total_subs;
 
 			case 'customer_lv' :
-				return wc_price( $user->orig_total + $user->renew_total );
+				return wc_price( $user->initial_total + $user->renew_total );
 
 		}
 
@@ -109,10 +109,10 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 		$per_page              = absint( apply_filters( 'wcs_reports_customers_per_page', 20 ) );
 		$offset                = absint( ( $current_page - 1 ) * $per_page );
 
-		$this->totals = $this->wcs_get_report_by_customer_totals();
+		$this->totals = $this->get_report_by_customer_totals();
 
 		$customer_query = apply_filters( 'wcs_reports_current_customer_query',
-			"SELECT wp_cust.meta_value as customer_id, COUNT(subs.ID) as total_subs, SUM(parent_total.meta_value) as orig_total, COALESCE( SUM(renewal_data.renewal_sum), 0) as renew_total,
+			"SELECT wp_cust.meta_value as customer_id, COUNT(subs.ID) as total_subs, SUM(parent_total.meta_value) as initial_total, COALESCE( SUM(renewal_data.renewal_sum), 0) as renew_total,
 					SUM(CASE
 							WHEN subs.post_status
 								IN  ( 'wc-" . implode( "','wc-", apply_filters( 'wcs_reports_active_statuses', array( 'active', 'pending-cancel' ) ) ) . "' ) THEN 1
@@ -129,7 +129,7 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 					ON parent_total.post_id = parent_order.ID
 					AND parent_total.meta_key = '_order_total'
 				LEFT JOIN (
-						SELECT renewal_order.meta_value as subscription_id, SUM(renewal_order.meta_value) as renewal_sum
+						SELECT renewal_order.meta_value as subscription_id, SUM(renewal_total.meta_value) as renewal_sum
 						FROM {$wpdb->posts} renewal_subs
 						INNER JOIN {$wpdb->postmeta} renewal_order
 						 	ON renewal_order.post_id = renewal_subs.ID
@@ -161,11 +161,11 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 	/**
 	* Gather totals for customers
 	*/
-	public function wcs_get_report_by_customer_totals() {
+	public function get_report_by_customer_totals() {
 		global $wpdb;
 
 		$total_query = apply_filters( 'wcs_reports_current_customer_total_query',
-			"SELECT COUNT( DISTINCT wp_cust.meta_value) as total_customers, COUNT(subs.ID) as total_subs, SUM(parent_total.meta_value) as orig_total, COALESCE( SUM(renewal_data.renewal_sum), 0) as renew_total,
+			"SELECT COUNT( DISTINCT wp_cust.meta_value) as total_customers, COUNT(subs.ID) as total_subs, SUM(parent_total.meta_value) as initial_total, COALESCE( SUM(renewal_data.renewal_sum), 0) as renew_total,
 					SUM(CASE
 							WHEN subs.post_status
 								IN  ( 'wc-" . implode( "','wc-", apply_filters( 'wcs_reports_active_statuses', array( 'active', 'pending-cancel' ) ) ) . "' ) THEN 1
@@ -182,7 +182,7 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 					ON parent_total.post_id = parent_order.ID
 					AND parent_total.meta_key = '_order_total'
 				LEFT JOIN (
-						SELECT renewal_order.meta_value as subscription_id, SUM(renewal_order.meta_value) as renewal_sum
+						SELECT renewal_order.meta_value as subscription_id, SUM(renewal_total.meta_value) as renewal_sum
 						FROM {$wpdb->posts} renewal_subs
 						INNER JOIN {$wpdb->postmeta} renewal_order
 							ON renewal_order.post_id = renewal_subs.ID
