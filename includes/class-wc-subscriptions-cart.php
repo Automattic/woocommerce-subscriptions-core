@@ -1060,7 +1060,7 @@ class WC_Subscriptions_Cart {
 					unset( $rate->recurring_cart_key );
 				}
 
-				if ( ( 1 === count( $package['rates'] ) ) || ( isset( $standard_packages[ $package_index ] ) && $package['rates'] == $standard_packages[ $package_index ]['rates'] ) ) {
+				if ( ( isset( $standard_packages[ $package_index ] ) && $package['rates'] == $standard_packages[ $package_index ]['rates'] ) && apply_filters( 'wcs_cart_totals_shipping_html_price_only', true, $package, WC()->cart->recurring_carts[ $recurring_cart_key ] ) ) {
 					// the recurring package rates match the initial package rates, there won't be a selected shipping method for this recurring cart package
 					// move on to the next package
 					continue;
