@@ -17,14 +17,17 @@ abstract class WCS_Scheduler {
 	protected $date_types_to_schedule;
 
 	public function __construct() {
-
-		$this->date_types_to_schedule = apply_filters( 'woocommerce_subscriptions_date_types_to_schedule', array_keys( wcs_get_subscription_date_types() ) );
+		add_action( 'init', array( $this, 'set_date_types_to_schedule' ) );
 
 		add_action( 'woocommerce_subscription_date_updated', array( &$this, 'update_date' ), 10, 3 );
 
 		add_action( 'woocommerce_subscription_date_deleted', array( &$this, 'delete_date' ), 10, 2 );
 
 		add_action( 'woocommerce_subscription_status_updated', array( &$this, 'update_status' ), 10, 3 );
+	}
+
+	public function set_date_types_to_schedule() {
+		$this->date_types_to_schedule = apply_filters( 'woocommerce_subscriptions_date_types_to_schedule', array_keys( wcs_get_subscription_date_types() ) );
 	}
 
 	/**
