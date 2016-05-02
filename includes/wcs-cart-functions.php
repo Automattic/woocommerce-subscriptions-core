@@ -120,6 +120,7 @@ function wcs_cart_totals_shipping_html() {
  *
  * @param  string $shipping_method_index
  * @param  object $shipping_method
+ * @param  string $chosen_method
  * @param  string $input_type
  * @return null
  */
