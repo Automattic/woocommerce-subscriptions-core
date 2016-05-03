@@ -929,8 +929,9 @@ class WC_Subscriptions_Order {
 	 * @since 2.0.14
 	 */
 	public static function maybe_display_shipping_address( $needs_shipping, $hidden_shipping_methods, $order ) {
+		$order_shipping_methods = $order->get_shipping_methods();
 
-		if ( ! $needs_shipping && wcs_order_contains_subscription( $order ) && empty( $order->get_shipping_methods() ) ) {
+		if ( ! $needs_shipping && wcs_order_contains_subscription( $order ) && empty( $order_shipping_methods ) ) {
 
 			$subscriptions = wcs_get_subscriptions_for_order( $order );
 
