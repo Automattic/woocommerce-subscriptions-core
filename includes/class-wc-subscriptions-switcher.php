@@ -1755,17 +1755,20 @@ class WC_Subscriptions_Switcher {
 
 				foreach ( $switch_data['add_order_items'] as $order_item_id => $item_data ) {
 
-					$order_item    = wcs_get_order_item( $order_item_id, $order );
-					$product       = WC_Subscriptions::get_product( wcs_get_canonical_product_id( $order_item ) );
-					$line_tax_data = wc_get_order_item_meta( $order_item_id, '_line_tax_data', true );
+					$order_item           = wcs_get_order_item( $order_item_id, $order );
+					$product              = WC_Subscriptions::get_product( wcs_get_canonical_product_id( $order_item ) );
+					$line_tax_data        = wc_get_order_item_meta( $order_item_id, '_line_tax_data', true );
+					$variation_attributes = ( method_exists( $product, 'get_variation_attributes' ) ) ? $product->get_variation_attributes() : array();
 
 					$item_id = $subscription->add_product( $product, $order_item['qty'], array(
-						'variation' => ( method_exists( $product, 'get_variation_attributes' ) ) ? $product->get_variation_attributes() : array(),
+						'variation' => $variation_attributes,
 						'totals'    => $item_data['totals'],
 					) );
 
 					foreach ( $item_data['meta'] as $key => $value ) {
-						wc_add_order_item_meta( $item_id, $key, reset( $value ) );
+						if ( ! array_key_exists( 'attribute_' . $key, $variation_attributes ) ) {
+							wc_add_order_item_meta( $item_id, $key, reset( $value ) );
+						}
 					}
 
 					$subscription_item_id = $removing_subscription_item_ids[ array_search( $order_item_id, $adding_order_item_ids ) ];
