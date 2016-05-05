@@ -168,7 +168,7 @@ class WC_Subscriptions_Coupon {
 		} elseif ( $apply_initial_percent_coupon ) {
 
 			// Recurring coupons only apply when there is no free trial (carts can have a mix of free trial and non free trial items)
-			if ( 'recurring_percent' != $coupon->type && ! empty( $cart_item['data']->subscription_trial_length ) ) {
+			if ( 'recurring_percent' == $coupon->type && ! empty( $cart_item['data']->subscription_trial_length ) ) {
 				$discounting_amount = 0;
 			}
 
