@@ -96,6 +96,15 @@ class WC_Subscriptions_Manager {
 			// Generate a renewal order for payment gateways to use to record the payment (and determine how much is due)
 			$renewal_order = wcs_create_renewal_order( $subscription );
 
+			if ( is_wp_error( $renewal_order ) ) {
+				// let's try this again
+				$renewal_order = wcs_create_renewal_order( $subscription );
+
+				if ( is_wp_error( $renewal_order ) ) {
+					throw new Exception( __( 'Error: Unable to create renewal order from scheduled payment. Please try again.', 'woocommerce-subscriptions' ) );
+				}
+			}
+
 			if ( 0 == $subscription->get_total() ) {
 
 				$renewal_order->payment_complete();
