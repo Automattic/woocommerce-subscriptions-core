@@ -71,7 +71,7 @@ function wcs_cart_totals_shipping_html() {
 					<tr class="shipping recurring-total <?php echo esc_attr( $recurring_cart_key ); ?>">
 						<th><?php echo esc_html( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ) ); ?></th>
 						<td>
-							<?php echo wp_kses_post( wcs_cart_price_string( $shipping_method->cost, $recurring_cart ) ); ?>
+							<?php echo wp_kses_post( wcs_cart_totals_shipping_method_price_label( $shipping_method, $recurring_cart ) ); ?>
 							<?php if ( 1 === count( $package['rates'] ) ) : ?>
 								<?php $index = sprintf( '%1$s_%2$d', $recurring_cart_key, $i ); ?>
 								<?php wcs_cart_print_shipping_input( $index, $shipping_method ); ?>
