@@ -43,6 +43,7 @@ class WC_Subscriptions_Email {
 		require_once( 'emails/class-wcs-email-customer-completed-switch-order.php' );
 		require_once( 'emails/class-wcs-email-customer-renewal-invoice.php' );
 		require_once( 'emails/class-wcs-email-cancelled-subscription.php' );
+		require_once( 'emails/class-wcs-email-expired-subscription.php' );
 
 		$email_classes['WCS_Email_New_Renewal_Order']        = new WCS_Email_New_Renewal_Order();
 		$email_classes['WCS_Email_New_Switch_Order']         = new WCS_Email_New_Switch_Order();
@@ -51,6 +52,7 @@ class WC_Subscriptions_Email {
 		$email_classes['WCS_Email_Completed_Switch_Order']   = new WCS_Email_Completed_Switch_Order();
 		$email_classes['WCS_Email_Customer_Renewal_Invoice'] = new WCS_Email_Customer_Renewal_Invoice();
 		$email_classes['WCS_Email_Cancelled_Subscription']   = new WCS_Email_Cancelled_Subscription();
+		$email_classes['WCS_Email_Expired_Subscription']     = new WCS_Email_Expired_Subscription();
 
 		return $email_classes;
 	}
@@ -68,6 +70,7 @@ class WC_Subscriptions_Email {
 		}
 
 		add_action( 'woocommerce_subscription_status_updated', __CLASS__ . '::send_cancelled_email', 10, 2 );
+		add_action( 'woocommerce_subscription_status_expired', __CLASS__ . '::send_expired_email', 10, 2 );
 
 		$order_email_actions = array(
 			'woocommerce_order_status_pending_to_processing',
@@ -100,6 +103,20 @@ class WC_Subscriptions_Email {
 
 		if ( $subscription->has_status( array( 'pending-cancel', 'cancelled' ) ) && 'true' !== get_post_meta( $subscription->id, '_cancelled_email_sent', true ) ) {
 			do_action( 'cancelled_subscription_notification', $subscription );
+		}
+	}
+
+	/**
+	 * Init the mailer and call for the expired email notification hook.
+	 *
+	 * @param $subscription WC Subscription
+	 * @since 2.1
+	 */
+	public static function send_expired_email( $subscription ) {
+		WC()->mailer();
+
+		if ( 'true' !== get_post_meta( $subscription->id, '_expired_email_sent', true ) ) {
+			do_action( 'expired_subscription_notification', $subscription );
 		}
 	}
 
