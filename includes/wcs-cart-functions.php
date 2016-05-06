@@ -139,7 +139,7 @@ function wcs_cart_print_shipping_input( $shipping_method_index, $shipping_method
 }
 
 /**
- * Display a recurring shipping methods price
+ * Display a recurring shipping methods price & name as a label
  *
  * @param  object $method
  * @return string
@@ -147,25 +147,39 @@ function wcs_cart_print_shipping_input( $shipping_method_index, $shipping_method
 function wcs_cart_totals_shipping_method( $method, $cart ) {
 
 	$label = ( method_exists( $method, 'get_label' ) ) ? $method->get_label() : $method->label; // WC < 2.5 compatibility (WC_Shipping_Rate::get_label() was introduced with WC 2.5)
+	$label .= ': ' . wcs_cart_totals_shipping_method_price_label( $method, $cart );
+
+	return apply_filters( 'wcs_cart_totals_shipping_method', $label, $method, $cart );
+}
+
+/**
+ * Display a recurring shipping methods price
+ *
+ * @param  object $method
+ * @return string
+ */
+function wcs_cart_totals_shipping_method_price_label( $method, $cart ) {
+
+	$price_label = '';
 
 	if ( $method->cost > 0 ) {
 
 		if ( WC()->cart->tax_display_cart == 'excl' ) {
-			$label .= ': ' . wcs_cart_price_string( $method->cost, $cart );
+			$price_label .= wcs_cart_price_string( $method->cost, $cart );
 			if ( $method->get_shipping_tax() > 0 && $cart->prices_include_tax ) {
-				$label .= ' <small>' . WC()->countries->ex_tax_or_vat() . '</small>';
+				$price_label .= ' <small>' . WC()->countries->ex_tax_or_vat() . '</small>';
 			}
 		} else {
-			$label .= ': ' . wcs_cart_price_string( $method->cost + $method->get_shipping_tax(), $cart );
+			$price_label .= wcs_cart_price_string( $method->cost + $method->get_shipping_tax(), $cart );
 			if ( $method->get_shipping_tax() > 0 && ! $cart->prices_include_tax ) {
-				$label .= ' <small>' . WC()->countries->inc_tax_or_vat() . '</small>';
+				$price_label .= ' <small>' . WC()->countries->inc_tax_or_vat() . '</small>';
 			}
 		}
 	} else {
-		$label .= ': ' . _x( 'Free', 'shipping method price', 'woocommerce-subscriptions' );
+		$price_label .= _x( 'Free', 'shipping method price', 'woocommerce-subscriptions' );
 	}
 
-	return apply_filters( 'wcs_cart_totals_shipping_method', $label, $method, $cart );
+	return $price_label;
 }
 
 /**
