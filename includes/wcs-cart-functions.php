@@ -72,6 +72,11 @@ function wcs_cart_totals_shipping_html() {
 						<th><?php echo esc_html( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ) ); ?></th>
 						<td>
 							<?php echo wp_kses_post( wcs_cart_price_string( $shipping_method->cost, $recurring_cart ) ); ?>
+							<?php if ( 1 === count( $package['rates'] ) ) : ?>
+								<?php $index = sprintf( '%1$s_%2$d', $recurring_cart_key, $i ); ?>
+								<?php wcs_cart_print_shipping_input( $index, $shipping_method ); ?>
+								<?php do_action( 'woocommerce_after_shipping_rate', $shipping_method, $index ); ?>
+							<?php endif; ?>
 							<?php if ( ! empty( $show_package_details ) ) : ?>
 								<?php echo '<p class="woocommerce-shipping-contents"><small>' . esc_html( $package_details ) . '</small></p>'; ?>
 							<?php endif; ?>
@@ -110,7 +115,32 @@ function wcs_cart_totals_shipping_html() {
 }
 
 /**
+ * Display a recurring shipping method's input element, either as a hidden element if there is only one shipping method,
+ * or a radio select box when there is more than one available method.
+ *
+ * @param  string $shipping_method_index
+ * @param  object $shipping_method
+ * @param  string $chosen_method
+ * @param  string $input_type
+ * @return null
+ */
+function wcs_cart_print_shipping_input( $shipping_method_index, $shipping_method, $chosen_method = '', $input_type = 'hidden' ) {
+
+	if ( 'radio' == $input_type ) {
+		$checked = checked( $shipping_method->id, $chosen_method, false );
+	} else {
+		// Make sure we only output safe input types
+		$input_type = 'hidden';
+		$checked    = '';
+	}
+
+	printf( '<input type="%1$s" name="shipping_method[%2$s]" data-index="%2$s" id="shipping_method_%2$s_%3$s" value="%4$s" class="shipping_method shipping_method_%2$s" %5$s />',
+	esc_attr( $input_type ), esc_attr( $shipping_method_index ), esc_attr( sanitize_title( $shipping_method->id ) ), esc_attr( $shipping_method->id ), esc_attr( $checked ) );
+}
+
+/**
  * Display a recurring shipping methods price
+ *
  * @param  object $method
  * @return string
  */
