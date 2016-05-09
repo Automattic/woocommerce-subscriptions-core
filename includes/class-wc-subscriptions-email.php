@@ -132,9 +132,7 @@ class WC_Subscriptions_Email {
 	public static function send_suspended_email( $subscription ) {
 		WC()->mailer();
 
-		if ( 'true' !== get_post_meta( $subscription->id, '_suspended_email_sent', true ) ) {
-			do_action( 'suspended_subscription_notification', $subscription );
-		}
+		do_action( 'suspended_subscription_notification', $subscription );
 	}
 
 	/**

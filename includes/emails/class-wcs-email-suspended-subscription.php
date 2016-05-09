@@ -64,7 +64,6 @@ class WCS_Email_Suspended_Subscription extends WC_Email {
 			return;
 		}
 
-		update_post_meta( $subscription->id, '_suspended_email_sent', 'true' );
 		$this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
 	}
 
