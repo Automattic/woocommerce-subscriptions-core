@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @class 	WCS_Email_Expired_Subscription
  * @version	2.1
  * @package	WooCommerce_Subscriptions/Classes/Emails
- * @author 	Brent Shepherd
+ * @author 	Prospress
  * @extends WC_Email
  */
 class WCS_Email_Expired_Subscription extends WC_Email {
@@ -56,15 +56,13 @@ class WCS_Email_Expired_Subscription extends WC_Email {
 		$this->object = $subscription;
 
 		if ( ! is_object( $subscription ) ) {
-			_deprecated_argument( __METHOD__, '2.0', 'The subscription key is deprecated. Use a subscription post ID' );
-			$subscription = wcs_get_subscription_from_key( $subscription );
+			throw new InvalidArgumentException( __( 'Subscription argument passed in is not an object.', 'woocommerce-subscriptions' ) );
 		}
 
 		if ( ! $this->is_enabled() || ! $this->get_recipient() ) {
 			return;
 		}
 
-		update_post_meta( $subscription->id, '_expired_email_sent', 'true' );
 		$this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
 	}
 

@@ -7,13 +7,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * An email sent to the admin when a subscription is expired.
  *
- * @class 	WCS_Email_Suspended_Subscription
+ * @class 	WCS_Email_On_Hold_Subscription
  * @version	2.1
  * @package	WooCommerce_Subscriptions/Classes/Emails
- * @author 	Brent Shepherd
+ * @author 	Prospress
  * @extends WC_Email
  */
-class WCS_Email_Suspended_Subscription extends WC_Email {
+class WCS_Email_On_Hold_Subscription extends WC_Email {
 
 	/**
 	 * Create an instance of the class.
@@ -31,11 +31,11 @@ class WCS_Email_Suspended_Subscription extends WC_Email {
 		// translators: placeholder is {blogname}, a variable that will be substituted when email is sent out
 		$this->subject     = sprintf( _x( '[%s] Subscription Suspended', 'default email subject for suspended emails sent to the admin', 'woocommerce-subscriptions' ), '{blogname}' );
 
-		$this->template_html  = 'emails/suspended-subscription.php';
-		$this->template_plain = 'emails/plain/suspended-subscription.php';
+		$this->template_html  = 'emails/on-hold-subscription.php';
+		$this->template_plain = 'emails/plain/on-hold-subscription.php';
 		$this->template_base  = plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/';
 
-		add_action( 'suspended_subscription_notification', array( $this, 'trigger' ) );
+		add_action( 'on-hold_subscription_notification', array( $this, 'trigger' ) );
 
 		parent::__construct();
 
@@ -56,8 +56,7 @@ class WCS_Email_Suspended_Subscription extends WC_Email {
 		$this->object = $subscription;
 
 		if ( ! is_object( $subscription ) ) {
-			_deprecated_argument( __METHOD__, '2.0', 'The subscription key is deprecated. Use a subscription post ID' );
-			$subscription = wcs_get_subscription_from_key( $subscription );
+			throw new InvalidArgumentException( __( 'Subscription argument passed in is not an object.', 'woocommerce-subscriptions' ) );
 		}
 
 		if ( ! $this->is_enabled() || ! $this->get_recipient() ) {
