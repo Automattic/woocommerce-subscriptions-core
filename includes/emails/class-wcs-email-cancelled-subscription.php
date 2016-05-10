@@ -8,9 +8,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * An email sent to the admin when a subscription is cancelled (either by a store manager, or the customer).
  *
  * @class 	WCS_Email_Cancelled_Subscription
- * @version	1.4
+ * @version	2.1
  * @package	WooCommerce_Subscriptions/Classes/Emails
- * @author 	Brent Shepherd
+ * @author 	Prospress
  * @extends WC_Email
  */
 class WCS_Email_Cancelled_Subscription extends WC_Email {
