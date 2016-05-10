@@ -917,8 +917,8 @@ class WC_Subscriptions_Order {
 	}
 
 	/**
-	 * If the order doesn't contain shipping methods because it contains synced or trial products,
-	 * this function will ensure the shipping address is still displayed in order emails and on the order received and view order pages.
+	 * If the order doesn't contain shipping methods because it contains synced or trial products but the related subscription(s) does have a shipping method.
+	 * This function will ensure the shipping address is still displayed in order emails and on the order received and view order pages.
 	 *
 	 * @param bool $needs_shipping
 	 * @param array $hidden_shipping_methods shipping method IDs which should hide shipping addresses (defaulted to array( 'local_pickup' ))
@@ -936,14 +936,9 @@ class WC_Subscriptions_Order {
 			$subscriptions = wcs_get_subscriptions_for_order( $order );
 
 			foreach ( $subscriptions as $subscription ) {
+				foreach ( $subscription->get_shipping_methods() as $shipping_method ) {
 
-				if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
-					$needs_shipping = true;
-					break;
-				}
-
-				foreach ( $subscription->get_items() as $item ) {
-					if ( isset( $item['has_trial'] ) ) {
+					if ( ! in_array( $shipping_method['method_id'], $hidden_shipping_methods ) ) {
 						$needs_shipping = true;
 						break 2;
 					}
