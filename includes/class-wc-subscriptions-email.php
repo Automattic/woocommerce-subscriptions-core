@@ -26,6 +26,7 @@ class WC_Subscriptions_Email {
 
 		add_filter( 'woocommerce_resend_order_emails_available', __CLASS__ . '::renewal_order_emails_available', -1 ); // run before other plugins so we don't remove their emails
 
+		add_action( 'woocommerce_subscriptions_email_order_details', __CLASS__ . '::order_details', 10, 4 );
 	}
 
 	/**
@@ -72,9 +73,9 @@ class WC_Subscriptions_Email {
 			'woocommerce_order_status_pending_to_processing',
 			'woocommerce_order_status_pending_to_completed',
 			'woocommerce_order_status_pending_to_on-hold',
-			'woocommerce_order_status_failed_to_processing_notification',
-			'woocommerce_order_status_failed_to_completed_notification',
-			'woocommerce_order_status_failed_to_on-hold_notification',
+			'woocommerce_order_status_failed_to_processing',
+			'woocommerce_order_status_failed_to_completed',
+			'woocommerce_order_status_failed_to_on-hold',
 			'woocommerce_order_status_completed',
 			'woocommerce_generated_manual_renewal_order',
 			'woocommerce_order_status_failed',
@@ -226,6 +227,44 @@ class WC_Subscriptions_Email {
 		}
 
 		return $items_table;
+	}
+
+	/**
+	 * Show the order details table
+	 *
+	 * @param WC_Order $order
+	 * @param bool $sent_to_admin Whether the email is sent to admin - defaults to false
+	 * @param bool $plain_text Whether the email should use plain text templates - defaults to false
+	 * @param WC_Email $email
+	 * @since 2.1
+	 */
+	public static function order_details( $order, $sent_to_admin = false, $plain_text = false, $email = '' ) {
+
+		$order_items_table_args = array(
+			'show_download_links' => ( $sent_to_admin ) ? false : $order->is_download_permitted(),
+			'show_sku'            => $sent_to_admin,
+			'show_purchase_note'  => ( $sent_to_admin ) ? false : $order->has_status( apply_filters( 'woocommerce_order_is_paid_statuses', array( 'processing', 'completed' ) ) ),
+			'show_image'          => '',
+			'image_size'          => '',
+			'plain_text'          => $plain_text,
+		);
+
+		$template_path = ( $plain_text ) ? 'emails/plain/email-order-details.php' : 'emails/email-order-details.php';
+		$order_type    = ( wcs_is_subscription( $order ) ) ? 'subscription' : 'order';
+
+		wc_get_template(
+			$template_path,
+			array(
+				'order'                  => $order,
+				'sent_to_admin'          => $sent_to_admin,
+				'plain_text'             => $plain_text,
+				'email'                  => $email,
+				'order_type'             => $order_type,
+				'order_items_table_args' => $order_items_table_args,
+			),
+			'',
+			plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/'
+		);
 	}
 
 	/**

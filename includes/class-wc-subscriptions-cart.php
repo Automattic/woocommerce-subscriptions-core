@@ -34,6 +34,13 @@ class WC_Subscriptions_Cart {
 	private static $recurring_cart_key = 'none';
 
 	/**
+	 * A cache of the calculated recurring shipping packages
+	 *
+	 * @since 2.0.13
+	 */
+	private static $recurring_shipping_packages = array();
+
+	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
 	 * @since 1.0
@@ -82,6 +89,10 @@ class WC_Subscriptions_Cart {
 
 		// When WooCommerce calculates rates for a recurring shipping package, only return the recurring shipping package rates
 		add_filter( 'woocommerce_package_rates', __CLASS__ . '::filter_package_rates', 10, 2 );
+
+		// When WooCommerce determines the taxable address only return pick up shipping methods chosen for the recurring cart being calculated.
+		add_filter( 'woocommerce_local_pickup_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 100 ,1 );
+		add_filter( 'wc_shipping_local_pickup_plus_chosen_shipping_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 10 ,1 );
 	}
 
 	/**
@@ -240,6 +251,8 @@ class WC_Subscriptions_Cart {
 			$recurring_carts[ $recurring_cart_key ]->removed_cart_contents = array();
 			$recurring_carts[ $recurring_cart_key ]->cart_session_data = array();
 
+			// Keep a record of the shipping packages so we can add them to the global packages later
+			self::$recurring_shipping_packages[ $recurring_cart_key ] = WC()->shipping->get_packages();
 		}
 
 		self::$calculation_type = self::$recurring_cart_key = 'none';
@@ -435,6 +448,21 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function get_recurring_shipping_package_key( $recurring_cart_key, $package_index ) {
 		return $recurring_cart_key . '_' . $package_index;
+	}
+
+	/**
+	 * Add the shipping packages stored in @see self::$recurring_shipping_packages to WooCommerce's global
+	 * set of packages in WC()->shipping->packages so that plugins attempting to get the details of recurring
+	 * packages can get them with WC()->shipping->get_packages() like any other packages.
+	 *
+	 * @since 2.0.13
+	 */
+	public static function set_global_recurring_shipping_packages() {
+		foreach ( self::$recurring_shipping_packages as $recurring_cart_key => $packages ) {
+			foreach ( $packages as $package_index => $package ) {
+				WC()->shipping->packages[ self::get_recurring_shipping_package_key( $recurring_cart_key, $package_index ) ] = $package;
+			}
+		}
 	}
 
 	/**
@@ -967,6 +995,68 @@ class WC_Subscriptions_Cart {
 		}
 
 		return $is_valid;
+	}
+
+	/**
+	 * When calculating shipping for recurring carts, return a revised list of shipping methods that apply to this recurring cart.
+	 *
+	 * When WooCommerce determines the taxable address for local pick up methods, we only want to return pick up shipping methods
+	 * chosen for the recurring cart being calculated instead of all methods.
+	 *
+	 * @param array $shipping_methods
+	 *
+	 * @since 2.0.13
+	 */
+	public static function filter_recurring_cart_chosen_shipping_method( $shipping_methods ) {
+
+		if ( 'recurring_total' == self::$calculation_type && 'none' !== self::$recurring_cart_key ) {
+
+			$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', array() );
+
+			$standard_package_methods        = array();
+			$recurring_cart_shipping_methods = array();
+
+			foreach ( $chosen_shipping_methods as $key => $method ) {
+
+				if ( is_numeric( $key ) ) {
+					$standard_package_methods[ $key ] = $method;
+
+				} else if ( strpos( $key, self::$recurring_cart_key ) !== false ) {
+
+					$recurring_cart_shipping_methods[ $key ] = $method;
+				}
+			}
+
+			// pick which chosen methods apply to this recurring cart. Defaults to standard methods if there is no specific recurring cart shipping methods chosen.
+			$applicable_chosen_shipping_methods = ( empty( $recurring_cart_shipping_methods ) ) ? $standard_package_methods : $recurring_cart_shipping_methods;
+
+			$shipping_methods = array_intersect( $applicable_chosen_shipping_methods, $shipping_methods );
+		}
+
+		return $shipping_methods;
+	}
+
+	/**
+	 * Checks the cart to see if it contains a specific product.
+	 *
+	 * @param int The product ID or variation ID to look for.
+	 * @return bool Whether the product is in the cart.
+	 * @since 2.0.13
+	 */
+	public static function cart_contains_product( $product_id ) {
+
+		$cart_contains_product = false;
+
+		if ( ! empty( WC()->cart->cart_contents ) ) {
+			foreach ( WC()->cart->cart_contents as $cart_item ) {
+				if ( wcs_get_canonical_product_id( $cart_item ) == $product_id ) {
+					$cart_contains_product = true;
+					break;
+				}
+			}
+		}
+
+		return $cart_contains_product;
 	}
 
 	/* Deprecated */

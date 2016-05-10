@@ -79,8 +79,11 @@ class WCS_Email_Cancelled_Subscription extends WC_Email {
 		wc_get_template(
 			$this->template_html,
 			array(
-				'subscription'      => $this->object,
-				'email_heading'     => $this->get_heading(),
+				'subscription'  => $this->object,
+				'email_heading' => $this->get_heading(),
+				'sent_to_admin' => true,
+				'plain_text'    => false,
+				'email'         => $this,
 			),
 			'',
 			$this->template_base
@@ -99,8 +102,11 @@ class WCS_Email_Cancelled_Subscription extends WC_Email {
 		wc_get_template(
 			$this->template_plain,
 			array(
-				'subscription'        => $this->object,
-				'email_heading'       => $this->get_heading(),
+				'subscription'  => $this->object,
+				'email_heading' => $this->get_heading(),
+				'sent_to_admin' => true,
+				'plain_text'    => true,
+				'email'         => $this,
 			),
 			'',
 			$this->template_base

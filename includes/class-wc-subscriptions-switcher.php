@@ -10,6 +10,9 @@
  */
 class WC_Subscriptions_Switcher {
 
+	/* cache whether a given product is purchasable or not to save running lots of queries for the same product in the same request */
+	protected static $is_purchasable_cache = array();
+
 	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
@@ -1102,7 +1105,7 @@ class WC_Subscriptions_Switcher {
 
 				// Because product add-ons etc. don't apply to sign-up fees, it's safe to use the product's sign-up fee value rather than the cart item's
 				$sign_up_fee_due  = $product->subscription_sign_up_fee;
-				$sign_up_fee_paid = $subscription->get_items_sign_up_fee( $existing_item );
+				$sign_up_fee_paid = $subscription->get_items_sign_up_fee( $existing_item, 'inclusive_of_tax' );
 
 				// Make sure total prorated sign-up fee is prorated across total amount of sign-up fee so that customer doesn't get extra discounts
 				if ( $cart_item['quantity'] > $existing_item['qty'] ) {
@@ -1126,8 +1129,13 @@ class WC_Subscriptions_Switcher {
 			$next_payment_timestamp  = $cart_item['subscription_switch']['next_payment_timestamp'];
 			$days_until_next_payment = ceil( ( $next_payment_timestamp - gmdate( 'U' ) ) / ( 60 * 60 * 24 ) );
 
-			// Find the number of days between the two
-			$days_in_old_cycle = $days_until_next_payment + $days_since_last_payment;
+			// If the subscription contains a synced product and the next payment is actually the first payment, determine the days in the "old" cycle from the subscription object
+			if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription->id ) && WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product, 'timestamp', $subscription->get_date( 'start' ) ) == $next_payment_timestamp ) {
+				$days_in_old_cycle = wcs_get_days_in_cycle( $subscription->billing_period, $subscription->billing_interval );
+			} else {
+				// Find the number of days between the two
+				$days_in_old_cycle = $days_until_next_payment + $days_since_last_payment;
+			}
 
 			// Find the actual recurring amount charged for the old subscription (we need to use the '_recurring_line_total' meta here rather than '_subscription_recurring_amount' because we want the recurring amount to include extra from extensions, like Product Add-ons etc.)
 			$old_recurring_total = $existing_item['line_total'];
@@ -1148,20 +1156,7 @@ class WC_Subscriptions_Switcher {
 			} else {
 
 				// We need to figure out the price per day for the new subscription based on its billing schedule
-				switch ( $item_data->subscription_period ) {
-					case 'day' :
-						$days_in_new_cycle = $item_data->subscription_period_interval;
-						break;
-					case 'week' :
-						$days_in_new_cycle = $item_data->subscription_period_interval * 7;
-						break;
-					case 'month' :
-						$days_in_new_cycle = $item_data->subscription_period_interval * 30.4375; // Average days per month over 4 year period
-						break;
-					case 'year' :
-						$days_in_new_cycle = $item_data->subscription_period_interval * 365.25; // Average days per year over 4 year period
-						break;
-				}
+				$days_in_new_cycle = wcs_get_days_in_cycle( $item_data->subscription_period, $item_data->subscription_period_interval );
 			}
 
 			// We need to use the cart items price to ensure we include extras added by extensions like Product Add-ons
@@ -1387,31 +1382,39 @@ class WC_Subscriptions_Switcher {
 	 * @return bool
 	 */
 	public static function is_purchasable( $is_purchasable, $product ) {
-		if ( false === $is_purchasable && wcs_is_product_switchable_type( $product ) && WC_Subscriptions_Product::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && is_user_logged_in() && wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) {
 
-			// Adding to cart from the product page
-			if ( isset( $_GET['switch-subscription'] ) ) {
+		$product_key = ! empty( $product->variation_id ) ? $product->variation_id : $product->id;
 
-				$is_purchasable = true;
+		if ( ! isset( self::$is_purchasable_cache[ $product_key ] ) ) {
 
-			// Validating when restring cart from session
-			} elseif ( self::cart_contains_switches() ) {
+			if ( false === $is_purchasable && wcs_is_product_switchable_type( $product ) && WC_Subscriptions_Product::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && is_user_logged_in() && wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) {
 
-				$is_purchasable = true;
+				// Adding to cart from the product page
+				if ( isset( $_GET['switch-subscription'] ) ) {
 
-			// Restoring cart from session, so need to check the cart in the session (self::cart_contains_subscription_switch() only checks the cart)
-			} elseif ( isset( WC()->session->cart ) ) {
+					$is_purchasable = true;
 
-				foreach ( WC()->session->cart as $cart_item_key => $cart_item ) {
-					if ( $product->id == $cart_item['product_id'] && isset( $cart_item['subscription_switch'] ) ) {
-						$is_purchasable = true;
-						break;
+				// Validating when restring cart from session
+				} elseif ( self::cart_contains_switches() ) {
+
+					$is_purchasable = true;
+
+				// Restoring cart from session, so need to check the cart in the session (self::cart_contains_subscription_switch() only checks the cart)
+				} elseif ( isset( WC()->session->cart ) ) {
+
+					foreach ( WC()->session->cart as $cart_item_key => $cart_item ) {
+						if ( $product->id == $cart_item['product_id'] && isset( $cart_item['subscription_switch'] ) ) {
+							$is_purchasable = true;
+							break;
+						}
 					}
 				}
 			}
+
+			self::$is_purchasable_cache[ $product_key ] = $is_purchasable;
 		}
 
-		return $is_purchasable;
+		return self::$is_purchasable_cache[ $product_key ];
 	}
 
 	/**
