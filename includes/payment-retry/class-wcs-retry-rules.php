@@ -15,7 +15,7 @@ class WCS_Retry_Rules {
 	protected $retry_rule_class;
 
 	/* the rules that control the retry schedule and behaviour of each retry */
-	protected $retry_rule_data = array();
+	protected $default_retry_rules = array();
 
 	/**
 	 * Set up the retry rules
@@ -26,7 +26,7 @@ class WCS_Retry_Rules {
 
 		$this->retry_rule_class = apply_filters( 'wcs_retry_rule_class', 'WCS_Retry_Rule' );
 
-		$this->retry_rule_data = apply_filters( 'woocommerce_subscriptions_retry_rules', array(
+		$this->default_retry_rules = apply_filters( 'wcs_default_retry_rules', array(
 			array(
 				'retry_after_interval'            => DAY_IN_SECONDS / 2, // how long to wait before retrying
 				'email_template_customer'         => '', // don't bother the customer yet
@@ -68,30 +68,36 @@ class WCS_Retry_Rules {
 	/**
 	 * Check if a retry rule exists for a certain stage of the retry process.
 	 *
+	 * @param int The retry queue position to check for a rule
+	 * @param int The ID of a WC_Order object to which the failed payment relates
+	 * @return bool
 	 * @since 2.1
 	 */
-	public function has_rule( $retry_number ) {
-		return ( isset( $this->retry_rule_data[ $retry_number ] ) ) ? true : false;;
+	public function has_rule( $retry_number, $order_id ) {
+		return ( null !== $this->get_rule( $retry_number, $order_id ) ) ? true : false;
 	}
 
 	/**
-	 * Get
+	 * Get an instance of a retry rule for a given order and stage of the retry queue (if any).
 	 *
+	 * @param int The retry queue position to check for a rule
+	 * @param int The ID of a WC_Order object to which the failed payment relates
+	 * @return null|WCS_Retry_Rule If a retry rule exists for this stage of the retry queue and order, WCS_Retry_Rule, otherwise null.
 	 * @since 2.1
 	 */
-	public function get_rule( $retry_number ) {
+	public function get_rule( $retry_number, $order_id ) {
 
-		if ( $this->has_rule( $retry_number ) ) {
-			$rule = new $this->retry_rule_class( $this->retry_rule_data[ $retry_number ] );
+		if ( isset( $this->default_retry_rules[ $retry_number ] ) ) {
+			$rule = new $this->retry_rule_class( $this->default_retry_rules[ $retry_number ] );
 		} else {
-			$rule = array();
+			$rule = null;
 		}
 
-		return $rule;
+		return apply_filters( 'wcs_get_retry_rule', $rule, $order_id );
 	}
 
 	/**
-	 * Get
+	 * Get the PHP class used ti instaniate a set of raw retry rule data.
 	 *
 	 * @since 2.1
 	 */

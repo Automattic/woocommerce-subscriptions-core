@@ -57,7 +57,7 @@ class WCS_Retry_Email {
 	public static function maybe_detach_email( $order_id ) {
 
 		// We only want to detach the email if there is a retry
-		if ( wcs_order_contains_renewal( $order_id ) && WCS_Retry_Manager::rules()->has_rule( WCS_Retry_Manager::store()->get_retry_count_for_order( $order_id ) ) ) {
+		if ( wcs_order_contains_renewal( $order_id ) && WCS_Retry_Manager::rules()->has_rule( WCS_Retry_Manager::store()->get_retry_count_for_order( $order_id ), $order_id ) ) {
 
 			// Remove email sent to customer email, which is sent by Subscriptions, which already removes the WooCommerce equivalent email
 			remove_action( 'woocommerce_order_status_failed', 'WC_Subscriptions_Email::send_renewal_order_email', 10 );
