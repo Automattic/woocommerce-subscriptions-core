@@ -143,9 +143,8 @@ class WC_Subscriptions_Cart {
 			// For original calculations, we need the items price to account for sign-up fees and/or free trial
 			if ( 'none' == self::$calculation_type ) {
 
-				// Use the cart value first, then fall back to the product value, as plugins may override the cart value (and even Subscriptions itself does with WC_Subscriptions_Synchroniser setting a free trial)
-				$sign_up_fee  = ( isset( $product->subscription_sign_up_fee ) ) ? $product->subscription_sign_up_fee : WC_Subscriptions_Product::get_sign_up_fee( $product );
-				$trial_length = ( isset( $product->subscription_trial_length ) ) ? $product->subscription_trial_length : WC_Subscriptions_Product::get_trial_length( $product );
+				$sign_up_fee  = WC_Subscriptions_Product::get_sign_up_fee( $product );
+				$trial_length = WC_Subscriptions_Product::get_trial_length( $product );
 
 				if ( $trial_length > 0 ) {
 					$price = $sign_up_fee;
