@@ -35,9 +35,14 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 
 				$action_args    = array( 'subscription_id' => $subscription->id );
 				$timestamp      = strtotime( $datetime );
+				$next_scheduled = wc_next_scheduled_action( $action_hook, $action_args );
 
-				if ( wc_next_scheduled_action( $action_hook, $action_args ) !== $timestamp ) {
-					wc_unschedule_action( $action_hook, $action_args );
+				if ( $next_scheduled !== $timestamp ) {
+
+					// Maybe clear the existing schedule for this hook
+					if ( false !== $next_scheduled ) {
+						wc_unschedule_action( $action_hook, $action_args );
+					}
 
 					// Only reschedule if it's in the future
 					if ( $timestamp > current_time( 'timestamp', true ) && 'active' == $subscription->get_status() ) {
