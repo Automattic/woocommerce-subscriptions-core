@@ -1023,7 +1023,7 @@ class WC_Subscriptions_Product {
 			$base_tax_rates = $tax->get_shop_base_rate( $product->tax_class );
 			$tax_rates      = $tax->get_rates( $product->get_tax_class() ); // This will get the base rate unless we're on the checkout page
 
-			if ( $deduct_base_taxes && get_option( 'woocommerce_prices_include_tax' ) == 'yes' ) {
+			if ( $deduct_base_taxes && wc_prices_include_tax() ) {
 
 				$base_taxes = $tax->calc_tax( $price, $base_tax_rates, true );
 				$taxes      = $tax->calc_tax( $price - array_sum( $base_taxes ), $tax_rates, false );

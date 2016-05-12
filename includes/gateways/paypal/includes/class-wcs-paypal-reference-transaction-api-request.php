@@ -633,7 +633,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 		if ( isset( $order->prices_include_tax ) ) {
 			$skip_line_items = $order->prices_include_tax;
 		} else {
-			$skip_line_items = ( 'yes' === get_option( 'woocommerce_calc_taxes' ) && 'yes' === get_option( 'woocommerce_prices_include_tax' ) );
+			$skip_line_items = wc_prices_include_tax();
 		}
 
 		/**
