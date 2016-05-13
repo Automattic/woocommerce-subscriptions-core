@@ -93,6 +93,9 @@ class WC_Subscriptions_Cart {
 		// When WooCommerce determines the taxable address only return pick up shipping methods chosen for the recurring cart being calculated.
 		add_filter( 'woocommerce_local_pickup_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 100 ,1 );
 		add_filter( 'wc_shipping_local_pickup_plus_chosen_shipping_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 10 ,1 );
+
+		// Validate chosen recurring shipping methods
+		add_action( 'woocommerce_after_checkout_validation', __CLASS__ . '::validate_recurring_shipping_methods' );
 	}
 
 	/**
@@ -1034,6 +1037,48 @@ class WC_Subscriptions_Cart {
 		}
 
 		return $shipping_methods;
+	}
+
+	/**
+	 * Validate the chosen recurring shipping methods for each recurring shipping package.
+	 * Ensures there is at least one chosen shipping method and that the chosen method is valid considering the available
+	 * package rates.
+	 *
+	 * @since 2.0.14
+	 */
+	public static function validate_recurring_shipping_methods() {
+
+		$shipping_methods     = WC()->checkout()->shipping_methods;
+		$added_invalid_notice = false;
+		$standard_packages    = WC()->shipping->get_packages();
+
+		foreach ( self::$recurring_shipping_packages as $recurring_cart_key => $packages ) {
+			foreach ( $packages as $package_index => $package ) {
+
+				// remove our unique flag from the available rates so we can compare rates
+				foreach ( $package['rates'] as $rate ) {
+					unset( $rate->recurring_cart_key );
+				}
+
+				if ( ( isset( $standard_packages[ $package_index ] ) && $package['rates'] == $standard_packages[ $package_index ]['rates'] ) && apply_filters( 'wcs_cart_totals_shipping_html_price_only', true, $package, WC()->cart->recurring_carts[ $recurring_cart_key ] ) ) {
+					// the recurring package rates match the initial package rates, there won't be a selected shipping method for this recurring cart package
+					// move on to the next package
+					continue;
+				}
+
+				$recurring_shipping_package_key = WC_Subscriptions_Cart::get_recurring_shipping_package_key( $recurring_cart_key, $package_index );
+
+				if ( ! isset( $package['rates'][ $shipping_methods[ $recurring_shipping_package_key ] ] ) ) {
+
+					if ( ! $added_invalid_notice ) {
+						wc_add_notice( __( 'Invalid recurring shipping method.', 'woocommerce-subscriptions' ), 'error' );
+						$added_invalid_notice = true;
+					}
+
+					WC()->checkout()->shipping_methods[ $recurring_shipping_package_key ] = '';
+				}
+			}
+		}
 	}
 
 	/**
