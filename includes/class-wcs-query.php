@@ -15,7 +15,7 @@ class WCS_Query extends WC_Query {
 
 		if ( ! is_admin() ) {
 			add_filter( 'query_vars', array( $this, 'add_query_vars' ), 0 );
-			add_filter( 'woocommerce_get_breadcrumb', array( $this, 'add_breadcrumb' ), 10, 2 );
+			add_filter( 'woocommerce_get_breadcrumb', array( $this, 'add_breadcrumb' ), 10 );
 			add_action( 'pre_get_posts', array( $this, 'pre_get_posts' ), 11 );
 		}
 
@@ -36,11 +36,10 @@ class WCS_Query extends WC_Query {
 	/**
 	 * Adds endpoint breadcrumb when viewing subscription
 	 *
-	 * @param  array         $crumbs     already assembled breadcrumb data
-	 * @param  WC_Breadcrumb $breadcrumb object responsible for assembling said data
-	 * @return array         $crumbs     if we're on a view-subscription page, then augmented breadcrumb data
+	 * @param  array $crumbs already assembled breadcrumb data
+	 * @return array $crumbs if we're on a view-subscription page, then augmented breadcrumb data
 	 */
-	public function add_breadcrumb( $crumbs, $breadcrumb ) {
+	public function add_breadcrumb( $crumbs ) {
 		global $wp;
 
 		if ( $this->is_query( 'view-subscription' ) ) {
