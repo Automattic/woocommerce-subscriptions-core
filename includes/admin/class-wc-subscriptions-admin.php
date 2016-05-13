@@ -1447,8 +1447,8 @@ class WC_Subscriptions_Admin {
 		$available_gateways_description = '';
 
 		if ( ! WC_Subscriptions_Payment_Gateways::one_gateway_supports( 'subscriptions' ) ) {
-			// translators: $1-2: opening and closing tags of a link that takes to PayPal settings, $3-4: opening and closing tags of a link that takes to Woo marketplace / Stripe product page
-			$available_gateways_description = sprintf( __( 'No payment gateways capable of processing automatic subscription payments are enabled. Please enable the %1$sPayPal Standard%2$s gateway or get the %3$sfree Stripe extension%4$s if you want to process automatic payments.', 'woocommerce-subscriptions' ), '<strong><a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout&section=wc_gateway_paypal' ) . '">', '</a></strong>', '<strong><a href="https://www.woothemes.com/products/stripe/">', '</a></strong>' );
+			// translators: $1-2: opening and closing tags of a link that takes to Woo marketplace / Stripe product page
+			$available_gateways_description = sprintf( __( 'No payment gateways capable of processing automatic subscription payments are enabled. If you would like to process automatic payments, we recommend the %1$sfree Stripe extension%2$s.', 'woocommerce-subscriptions' ), '<strong><a href="https://www.woothemes.com/products/stripe/">', '</a></strong>' );
 		}
 
 		$recurring_payment_settings = array(
