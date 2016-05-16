@@ -213,7 +213,7 @@ class WC_Subscriptions_Cart {
 		$recurring_carts = array();
 
 		// Back up the shipping method. Chances are WC is going to wipe the chosen_shipping_methods data
-		WC()->session->set( 'ost_shipping_methods', WC()->session->get( 'chosen_shipping_methods' ) );
+		WC()->session->set( 'wcs_shipping_methods', WC()->session->get( 'chosen_shipping_methods' ) );
 
 		// Now let's calculate the totals for each group of subscriptions
 		self::$calculation_type = 'recurring_total';
@@ -2104,7 +2104,7 @@ class WC_Subscriptions_Cart {
 	 * method to a key that's not going to get wiped by WC's method, and then later restore it.
 	 */
 	public static function maybe_restore_chosen_shipping_method() {
-		$onetime_shipping = WC()->session->get( 'ost_shipping_methods', false );
+		$onetime_shipping = WC()->session->get( 'wcs_shipping_methods', false );
 		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', array() );
 
 		if ( $onetime_shipping && empty( $chosen_shipping_methods ) ) {
