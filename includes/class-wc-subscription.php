@@ -1439,6 +1439,7 @@ class WC_Subscription extends WC_Order {
 	 * Gets the most recent order that relates to a subscription, including renewal orders and the initial order (if any).
 	 *
 	 * @param string $return_fields The columns to return, either 'all' or 'ids'
+	 * @param array $order_types Can include any combination of 'parent', 'renewal', 'switch' or 'any' which will return the latest renewal order of any type. Defaults to 'parent' and 'renewal'.
 	 * @since 2.0
 	 */
 	public function get_last_order( $return_fields = 'ids', $order_types = array( 'parent', 'renewal' ) ) {
