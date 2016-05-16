@@ -212,6 +212,9 @@ class WC_Subscriptions_Cart {
 
 		$recurring_carts = array();
 
+		// Back up the shipping method. Chances are WC is going to wipe the chosen_shipping_methods data
+		WC()->session->set( 'ost_shipping_methods', WC()->session->get( 'chosen_shipping_methods' ) );
+
 		// Now let's calculate the totals for each group of subscriptions
 		self::$calculation_type = 'recurring_total';
 
@@ -263,6 +266,9 @@ class WC_Subscriptions_Cart {
 		// We need to reset the packages and totals stored in WC()->shipping too
 		self::maybe_restore_shipping_methods();
 		WC()->cart->calculate_shipping();
+
+		// We no longer need our backup of shipping methods
+		unset( WC()->session->ost_shipping_methods );
 
 		// If there is no sign-up fee and a free trial, and no products being purchased with the subscription, we need to zero the fees for the first billing period
 		if ( 0 == self::get_cart_subscription_sign_up_fee() && self::all_cart_items_have_free_trial() ) {
@@ -330,8 +336,6 @@ class WC_Subscriptions_Cart {
 	public static function cart_needs_shipping( $needs_shipping ) {
 
 		if ( self::cart_contains_subscription() ) {
-			// Back up the shipping method. Chances are WC is going to wipe the chosen_shipping_methods data
-			WC()->session->set( 'ost_shipping_methods', WC()->session->get( 'chosen_shipping_methods' ) );
 			if ( 'none' == self::$calculation_type ) {
 				if ( true == $needs_shipping && ! self::charge_shipping_up_front() && ! self::cart_contains_subscriptions_needing_shipping() ) {
 					$needs_shipping = false;
@@ -2105,7 +2109,6 @@ class WC_Subscriptions_Cart {
 
 		if ( $onetime_shipping && empty( $chosen_shipping_methods ) ) {
 			WC()->session->set( 'chosen_shipping_methods', $onetime_shipping );
-			unset( WC()->session->ost_shipping_methods );
 		}
 	}
 }
