@@ -268,7 +268,7 @@ class WC_Subscriptions_Admin {
 			// translators: placeholders are opening and closing link tags
 			'description' => sprintf( __( 'Only allow a customer to have one subscription to this product. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/store-manager-guide/#limit-subscription">', '</a>' ),
 			'options'     => array(
-				'no'     => __( 'Do no limit', 'woocommerce-subscriptions' ),
+				'no'     => __( 'Do not limit', 'woocommerce-subscriptions' ),
 				'active' => __( 'Limit to one active subscription', 'woocommerce-subscriptions' ),
 				'any'    => __( 'Limit to one of any status', 'woocommerce-subscriptions' ),
 			),
