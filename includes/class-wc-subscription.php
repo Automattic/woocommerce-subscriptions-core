@@ -1246,7 +1246,7 @@ class WC_Subscription extends WC_Order {
 	public function payment_complete( $transaction_id = '' ) {
 
 		// Make sure the last order's status is updated
-		$last_order = $this->get_last_order( 'all' );
+		$last_order = $this->get_last_order( 'all', 'any' );
 
 		if ( false !== $last_order && $last_order->needs_payment() ) {
 			$last_order->payment_complete( $transaction_id );
@@ -1284,7 +1284,7 @@ class WC_Subscription extends WC_Order {
 	public function payment_failed( $new_status = 'on-hold' ) {
 
 		// Make sure the last order's status is set to failed
-		$last_order = $this->get_last_order( 'all' );
+		$last_order = $this->get_last_order( 'all', 'any' );
 
 		if ( false !== $last_order && false === $last_order->has_status( 'failed' ) ) {
 			remove_filter( 'woocommerce_order_status_changed', 'WC_Subscriptions_Renewal_Order::maybe_record_subscription_payment' );
@@ -1441,30 +1441,42 @@ class WC_Subscription extends WC_Order {
 	 * @param string $return_fields The columns to return, either 'all' or 'ids'
 	 * @since 2.0
 	 */
-	public function get_last_order( $return_fields = 'ids' ) {
+	public function get_last_order( $return_fields = 'ids', $order_types = array( 'parent', 'renewal' ) ) {
 
-		$return_fields = ( 'ids' == $return_fields ) ? $return_fields : 'all';
+		$return_fields  = ( 'ids' == $return_fields ) ? $return_fields : 'all';
+		$order_types    = ( 'any' == $order_types ) ? array( 'parent', 'renewal', 'switch' ) : $order_types;
+		$related_orders = array();
 
-		$last_order = false;
-
-		$renewal_post_ids = WC_Subscriptions::$cache->cache_and_get( 'wcs-related-orders-to-' . $this->id, array( $this, 'get_related_orders_query' ), array( $this->id ) );
-
-		// If there are no renewal orders, get the original order (if there is one)
-		if ( empty( $renewal_post_ids ) ) {
-
-			if ( false !== $this->order ) {
-				if ( 'all' == $return_fields ) {
-					$last_order = $this->order;
-				} else {
-					$last_order = $this->order->id;
-				}
+		foreach ( $order_types as $order_type ) {
+			switch ( $order_type ) {
+				case 'parent':
+					if ( false !== $this->order ) {
+						$related_orders[] = $this->order->id;
+					}
+					break;
+				case 'renewal':
+					$related_orders = array_merge( $related_orders, WC_Subscriptions::$cache->cache_and_get( 'wcs-related-orders-to-' . $this->id, array( $this, 'get_related_orders_query' ), array( $this->id ) ) );
+					break;
+				case 'switch':
+					$related_orders = array_merge( $related_orders, array_keys( wcs_get_switch_orders_for_subscription( $this->id ) ) );
+					break;
+				default:
+					break;
 			}
-		} else {
+		}
 
-			$last_order = array_shift( $renewal_post_ids );
+		if ( empty( $related_orders ) ) {
+			$last_order = false;
+		} else {
+			rsort( $related_orders );
+			$last_order = array_shift( $related_orders );
 
 			if ( 'all' == $return_fields ) {
-				$last_order = wc_get_order( $last_order );
+				if ( false !== $this->order && $last_order == $this->order->id ) {
+					$last_order = $this->order;
+				} else {
+					$last_order = wc_get_order( $last_order );
+				}
 			}
 		}
 
