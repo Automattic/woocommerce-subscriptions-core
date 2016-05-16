@@ -1469,8 +1469,7 @@ class WC_Subscription extends WC_Order {
 		if ( empty( $related_orders ) ) {
 			$last_order = false;
 		} else {
-			rsort( $related_orders );
-			$last_order = array_shift( $related_orders );
+			$last_order = max( $related_orders );
 
 			if ( 'all' == $return_fields ) {
 				if ( false !== $this->order && $last_order == $this->order->id ) {
