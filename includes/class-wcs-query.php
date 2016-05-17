@@ -47,7 +47,7 @@ class WCS_Query extends WC_Query {
 	public function add_breadcrumb( $crumbs ) {
 		global $wp;
 
-		foreach( $this->query_vars as $key => $query_var ) {
+		foreach ( $this->query_vars as $key => $query_var ) {
 			if ( $this->is_query( $query_var ) ) {
 				$crumbs[] = array( $this->get_endpoint_title( $key ) );
 			}
@@ -65,7 +65,7 @@ class WCS_Query extends WC_Query {
 		global $wp;
 
 		if ( in_the_loop() ) {
-			foreach( $this->query_vars as $key => $query_var ) {
+			foreach ( $this->query_vars as $key => $query_var ) {
 				if ( $this->is_query( $query_var ) && in_the_loop() ) {
 					$title = $this->get_endpoint_title( $key );
 				}
@@ -111,7 +111,7 @@ class WCS_Query extends WC_Query {
 		if ( array_key_exists( 'orders', $menu_items ) ) {
 			$menu_items = wcs_array_insert_after( 'orders', $menu_items, 'subscriptions', __( 'Subscriptions', 'woocommerce-subscriptions' ) );
 		} else {
-			$menu_items[ 'subscriptions' ] = __( 'Subscriptions', 'woocommerce-subscriptions' );
+			$menu_items['subscriptions'] = __( 'Subscriptions', 'woocommerce-subscriptions' );
 		}
 
 		return $menu_items;
