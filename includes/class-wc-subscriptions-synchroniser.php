@@ -280,11 +280,7 @@ class WC_Subscriptions_Synchroniser {
 				$payment_month = date( 'm' );
 			}
 
-			if ( WC_Subscriptions::is_woocommerce_pre( '2.3' ) ) {
-				include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/deprecated/html-variation-synchronisation.php' );
-			} else {
-				include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/html-variation-synchronisation.php' );
-			}
+			include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/html-variation-synchronisation.php' );
 		}
 	}
 
