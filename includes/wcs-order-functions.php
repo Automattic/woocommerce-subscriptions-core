@@ -241,7 +241,7 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 		// If we got here, the subscription was created without problems
 		$wpdb->query( 'COMMIT' );
 
-		return apply_filters( 'wcs_new_order_created', $new_order, $subscription );
+		return apply_filters( 'wcs_new_order_created', $new_order, $subscription, $type );
 
 	} catch ( Exception $e ) {
 		// There was an error adding the subscription
