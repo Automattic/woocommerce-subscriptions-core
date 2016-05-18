@@ -2104,11 +2104,11 @@ class WC_Subscriptions_Cart {
 	 * method to a key that's not going to get wiped by WC's method, and then later restore it.
 	 */
 	public static function maybe_restore_chosen_shipping_method() {
-		$onetime_shipping = WC()->session->get( 'wcs_shipping_methods', false );
-		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', array() );
+		$chosen_shipping_method_cache = WC()->session->get( 'wcs_shipping_methods', false );
+		$chosen_shipping_methods      = WC()->session->get( 'chosen_shipping_methods', array() );
 
-		if ( $onetime_shipping && empty( $chosen_shipping_methods ) ) {
-			WC()->session->set( 'chosen_shipping_methods', $onetime_shipping );
+		if ( false !== $chosen_shipping_method_cache && empty( $chosen_shipping_methods ) ) {
+			WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_method_cache );
 		}
 	}
 }
