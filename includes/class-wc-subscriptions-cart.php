@@ -268,7 +268,7 @@ class WC_Subscriptions_Cart {
 		WC()->cart->calculate_shipping();
 
 		// We no longer need our backup of shipping methods
-		unset( WC()->session->ost_shipping_methods );
+		unset( WC()->session->wcs_shipping_methods );
 
 		// If there is no sign-up fee and a free trial, and no products being purchased with the subscription, we need to zero the fees for the first billing period
 		if ( 0 == self::get_cart_subscription_sign_up_fee() && self::all_cart_items_have_free_trial() ) {
