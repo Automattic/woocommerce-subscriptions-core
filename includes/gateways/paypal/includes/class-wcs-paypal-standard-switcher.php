@@ -81,7 +81,7 @@ class WCS_PayPal_Standard_Switcher {
 
 		$cart_switch_items = WC_Subscriptions_Switcher::cart_contains_switches();
 
-		if ( false === $needs_payment && 0 == $cart->total && false !== $cart_switch_items && ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'woocommerce-process_checkout' ) && isset( $_POST['payment_method'] ) && 'paypal' == $_POST['payment_method'] && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+		if ( false === $needs_payment && 0 == $cart->total && false !== $cart_switch_items && ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'woocommerce-process_checkout' ) && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
 
 			foreach ( $cart_switch_items as $cart_switch_details ) {
 
