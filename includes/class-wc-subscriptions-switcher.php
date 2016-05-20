@@ -647,6 +647,19 @@ class WC_Subscriptions_Switcher {
 						$is_single_item_subscription = false;
 					}
 
+					$order_item_id = '';
+
+					foreach ( $order_items as $item_id => $item ) {
+						if ( wcs_get_canonical_product_id( $item ) == wcs_get_canonical_product_id( $cart_item ) && ( empty( $switch_order_data['switches'] ) || ! in_array( $item_id, array_keys( $switch_order_data['switches'] ) ) ) ) {
+							$order_item_id = $item_id;
+							$switch_order_data['switches'][ $item_id ] = array(
+								'subscription_id' => $subscription->id,
+								'subscription_item_id' => $cart_item['subscription_switch']['item_id'],
+							);
+							break;
+						}
+					}
+
 					// If the item is on the same schedule, we can just add it to the new subscription and remove the old item
 					if ( $is_single_item_subscription || ( false === $is_different_billing_schedule && false === $is_different_payment_date && false === $is_different_length ) ) {
 
@@ -654,21 +667,17 @@ class WC_Subscriptions_Switcher {
 						$item_id   = WC_Subscriptions_Checkout::add_cart_item( $subscription, $cart_item, $cart_item_key );
 						$item_meta = wc_get_order_item_meta( $item_id, '' );
 
-						foreach ( $order_items as $item_id => $item ) {
-							if ( wcs_get_canonical_product_id( $item ) == wcs_get_canonical_product_id( $cart_item ) && ( empty( $switch_order_data[ $subscription->id ]['add_items'] ) || ! in_array( $item_id, $switch_order_data[ $subscription->id ]['add_items'] ) ) ) {
-								// We can't use the prorated order item price upon successful payment so store the cart price
-								$switch_order_data[ $subscription->id ]['add_order_items'][ $item_id ] = array(
-									'totals' => array(
-										'subtotal'     => $cart_item['line_subtotal'],
-										'subtotal_tax' => $cart_item['line_subtotal_tax'],
-										'total'        => $cart_item['line_total'],
-										'tax'          => $cart_item['line_tax'],
-										'tax_data'     => $cart_item['line_tax_data'],
-									),
-									'meta' => $item_meta,
-								);
-							}
-						}
+						// We can't use the prorated order item price upon successful payment so store the cart price
+						$switch_order_data[ $subscription->id ]['add_order_items'][ $order_item_id ] = array(
+							'totals' => array(
+								'subtotal'     => $cart_item['line_subtotal'],
+								'subtotal_tax' => $cart_item['line_subtotal_tax'],
+								'total'        => $cart_item['line_total'],
+								'tax'          => $cart_item['line_tax'],
+								'tax_data'     => $cart_item['line_tax_data'],
+							),
+							'meta' => $item_meta,
+						);
 
 						// Remove the item from the cart so that WC_Subscriptions_Checkout doesn't add it to a subscription
 						if ( 1 == count( WC()->cart->recurring_carts[ $recurring_cart_key ]->get_cart() ) ) {
@@ -1747,6 +1756,10 @@ class WC_Subscriptions_Switcher {
 		foreach ( $switch_order_data as $subcription_id => $switch_data ) {
 
 			$subscription = wcs_get_subscription( $subcription_id );
+
+			if ( ! $subscription instanceof WC_Subscription ) {
+				continue;
+			}
 
 			// Add the new line items
 			if ( ! empty( $switch_data['add_order_items'] ) ) {
