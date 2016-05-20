@@ -255,9 +255,7 @@ class WC_Subscriptions_Cart {
 			$recurring_carts[ $recurring_cart_key ]->cart_session_data = array();
 
 			// Keep a record of the shipping packages so we can add them to the global packages later
-			if ( 0 != $recurring_cart->next_payment_date ) {
-				self::$recurring_shipping_packages[ $recurring_cart_key ] = WC()->shipping->get_packages();
-			}
+			self::$recurring_shipping_packages[ $recurring_cart_key ] = WC()->shipping->get_packages();
 		}
 
 		self::$calculation_type = self::$recurring_cart_key = 'none';
