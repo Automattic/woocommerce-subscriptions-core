@@ -1052,13 +1052,12 @@ class WC_Subscriptions_Cart {
 		$added_invalid_notice = false;
 		$standard_packages    = WC()->shipping->get_packages();
 
-		foreach ( self::$recurring_shipping_packages as $recurring_cart_key => $packages ) {
-			foreach ( $packages as $package_index => $package ) {
+		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
 
-				// remove our unique flag from the available rates so we can compare rates
-				foreach ( $package['rates'] as $rate ) {
-					unset( $rate->recurring_cart_key );
-				}
+			$packages = $recurring_cart->get_shipping_packages();
+
+			foreach ( $packages as $package_index => $base_package ) {
+				$package = WC()->shipping->calculate_shipping_for_package( $base_package );
 
 				if ( ( isset( $standard_packages[ $package_index ] ) && $package['rates'] == $standard_packages[ $package_index ]['rates'] ) && apply_filters( 'wcs_cart_totals_shipping_html_price_only', true, $package, WC()->cart->recurring_carts[ $recurring_cart_key ] ) ) {
 					// the recurring package rates match the initial package rates, there won't be a selected shipping method for this recurring cart package
