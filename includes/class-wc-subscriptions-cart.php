@@ -771,7 +771,7 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function cart_needs_payment( $needs_payment, $cart ) {
 
-		if ( false === $needs_payment && self::cart_contains_subscription() && $cart->total == 0 && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+		if ( false === $needs_payment && self::cart_contains_subscription() && $cart->total == 0 && false === WC_Subscriptions_Switcher::cart_contains_switches() && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
 
 			$recurring_total = 0;
 			$is_one_period   = true;
