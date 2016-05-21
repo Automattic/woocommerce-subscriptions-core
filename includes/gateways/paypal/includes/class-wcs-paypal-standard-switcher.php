@@ -30,7 +30,7 @@ class WCS_PayPal_Standard_Switcher {
 		add_filter( 'woocommerce_subscriptions_can_item_be_switched', __CLASS__ . '::can_item_be_switched', 10, 3 );
 
 		// Sometimes, even if the order total is $0, the cart still needs payment
-		add_filter( 'woocommerce_cart_needs_payment', __CLASS__ . '::cart_needs_payment' , 10, 2 );
+		add_filter( 'woocommerce_cart_needs_payment', __CLASS__ . '::cart_needs_payment' , 100, 2 );
 	}
 
 	/**
