@@ -4,9 +4,9 @@
  *
  *
  * @author   Prospress
- * @since    2.0
+ * @since    2.1
  */
-class WCS_Switching_Cart {
+class WCS_Cart_Switch {
 
 	/**
 	 * Initialise class hooks & filters when the file is loaded
@@ -15,13 +15,18 @@ class WCS_Switching_Cart {
 	 */
 	public static function init() {
 
-		// Set URL parameter for manual subscription renewals
+		// Set checkout payment URL parameter for subscription switch orders
 		add_filter( 'woocommerce_get_checkout_payment_url', __CLASS__ . '::get_checkout_payment_url', 10, 2 );
 
-		// Check if a user is requesting to create a renewal order for a subscription, needs to happen after $wp->query_vars are set
+		// Check if a user is requesting to pay for a switch order, needs to happen after $wp->query_vars are set
 		add_action( 'template_redirect', __CLASS__ . '::maybe_setup_cart' , 99 );
 	}
 
+	/**
+	 * Add flag to payment url for failed/ pending switch orders.
+	 *
+	 * @since 2.1
+	 */
 	public static function get_checkout_payment_url( $pay_url, $order ) {
 
 		if ( wcs_order_contains_switch( $order ) ) {
@@ -34,6 +39,13 @@ class WCS_Switching_Cart {
 		return $pay_url;
 	}
 
+	/**
+	 * Check if a payment is being made on a switch order from 'My Account'. If so,
+	 * reconstruct the cart with the order contents. If the order item is part of a switch, load the necessary data
+	 * into $_GET and $_POST to ensure the switch validation occurs and the switch cart item meta is correctly loaded.
+	 *
+	 * @since 2.1
+	 */
 	public static function maybe_setup_cart() {
 
 		global $wp;
@@ -98,4 +110,4 @@ class WCS_Switching_Cart {
 		}
 	}
 }
-WCS_Switching_Cart::init();
+WCS_Cart_Switch::init();
