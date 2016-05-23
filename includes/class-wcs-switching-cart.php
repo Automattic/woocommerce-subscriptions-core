@@ -56,9 +56,12 @@ class WCS_Switching_Cart {
 					unset( $_GET['item'] );
 
 					// check if this order item is for a switch
-					if ( isset( $switch_order_data['switches'] ) && in_array( $item_id, array_keys( $switch_order_data['switches'] ) ) ) {
-						$_GET['switch-subscription'] = $switch_order_data['switches'][ $item_id ]['subscription_id'];
-						$_GET['item']                = $switch_order_data['switches'][ $item_id ]['subscription_item_id'];
+					foreach ( $switch_order_data as $subscription_id => $switch_data ) {
+						if ( isset( $switch_data['switches'] ) && in_array( $item_id, array_keys( $switch_data['switches'] ) ) ) {
+							$_GET['switch-subscription'] = $subscription_id;
+							$_GET['item']                = $switch_data['switches'][ $item_id ]['subscription_item_id'];
+							break;
+						}
 					}
 
 					$order_item = wcs_get_order_item( $item_id, $order );
