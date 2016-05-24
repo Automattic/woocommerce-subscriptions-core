@@ -81,6 +81,10 @@ class WC_Subscriptions_Cart {
 
 		add_filter( 'woocommerce_cart_needs_shipping', __CLASS__ . '::cart_needs_shipping', 11, 1 );
 
+		// Remove recurring shipping methods stored in the session whenever a subscription product is removed from the cart
+		add_action( 'woocommerce_remove_cart_item', array( __CLASS__, 'maybe_reset_chosen_shipping_methods' ) );
+		add_action( 'woocommerce_before_cart_item_quantity_zero', array( __CLASS__, 'maybe_reset_chosen_shipping_methods' ) );
+
 		// Massage our shipping methods into the format used by WC core (we can't use normal form elements to do this as WC overrides them)
 		add_action( 'woocommerce_checkout_update_order_review', array( __CLASS__, 'add_shipping_method_post_data' ) );
 
@@ -352,6 +356,32 @@ class WC_Subscriptions_Cart {
 		}
 
 		return $needs_shipping;
+	}
+
+	/**
+	 * Remove all recurring shipping methods stored in the session (i.e. methods with a key that is a string)
+	 *
+	 * This is attached as a callback to hooks triggered whenever a product is removed from the cart.
+	 *
+	 * @param $cart_item_key string The key for a cart item about to be removed from the cart.
+	 * @return null
+	 * @since 2.0.15
+	 */
+	public static function maybe_reset_chosen_shipping_methods( $cart_item_key ) {
+
+		if ( isset( WC()->cart->cart_contents[ $cart_item_key ] ) && WC_Subscriptions_Product::is_subscription( WC()->cart->cart_contents[ $cart_item_key ]['data'] ) ) {
+
+			$chosen_methods = WC()->session->get( 'chosen_shipping_methods', array() );
+
+			// Remove all recurring methods
+			foreach ( $chosen_methods as $key => $methods ) {
+				if ( ! is_numeric( $key ) ) {
+					unset( $chosen_methods[ $key ] );
+				}
+			}
+
+			WC()->session->set( 'chosen_shipping_methods', $chosen_methods );
+		}
 	}
 
 	/**
