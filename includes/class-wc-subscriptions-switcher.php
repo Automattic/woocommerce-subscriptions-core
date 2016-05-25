@@ -109,9 +109,6 @@ class WC_Subscriptions_Switcher {
 
 		// Process subscription switch changes on completed switch orders status
 		add_action( 'woocommerce_order_status_changed', __CLASS__ . '::process_subscription_switches', 10, 3 );
-
-		// Validate the changes a switch order is proposing to make before paying for a pending/failed switch order
-		add_action( 'wp', __CLASS__ . '::validate_switch_before_pay_action', 10 );
 	}
 
 	/**
@@ -1856,36 +1853,6 @@ class WC_Subscriptions_Switcher {
 			self::maybe_update_subscription_address( $order, $subscription );
 
 			$subscription->calculate_totals();
-		}
-	}
-
-	/**
-	 * Validates a switch order before attempting to pay for it.
-	 * The pay_action is used when paying for pending or failed orders.
-	 *
-	 * @since 2.0.10
-	 */
-	public static function validate_switch_before_pay_action() {
-		global $wp, $wpdb;
-
-		if ( isset( $_POST['woocommerce_pay'] ) && isset( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'woocommerce-pay' ) ) {
-
-			$order_id = absint( $wp->query_vars['order-pay'] );
-			$order    = wc_get_order( $order_id );
-
-			if ( wcs_order_contains_switch( $order ) ) {
-
-				$wpdb->query( 'START TRANSACTION' );
-
-				try {
-					self::complete_subscription_switches( $order_id );
-				} catch ( Exception $e ) {
-					wc_add_notice( __( 'The following error has occurred attempting to perform this switch:', 'woocommerce-subscriptions' ), 'error' );
-					wc_add_notice( $e->getMessage(), 'error' );
-				}
-
-				$wpdb->query( 'ROLLBACK' );
-			}
 		}
 	}
 
