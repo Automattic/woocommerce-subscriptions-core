@@ -59,6 +59,9 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 
 					WC()->session->set( 'order_awaiting_payment', $order_id );
 
+					// Set cart hash for orders paid in WC >= 2.6
+					$this->set_cart_hash( $order_id );
+
 					wp_safe_redirect( WC()->cart->get_checkout_url() );
 					exit;
 				}

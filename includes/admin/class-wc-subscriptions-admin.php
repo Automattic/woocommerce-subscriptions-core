@@ -680,7 +680,10 @@ class WC_Subscriptions_Admin {
 			} else if ( 'shop_order' == $screen->id ) {
 				$dependencies[] = $woocommerce_admin_script_handle;
 				$dependencies[] = 'wc-admin-order-meta-boxes';
-				$dependencies[] = 'wc-admin-order-meta-boxes-modal';
+
+				if ( WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
+					$dependencies[] = 'wc-admin-order-meta-boxes-modal';
+				}
 
 				$script_params = array(
 					'bulkTrashWarning'  => __( 'Trashing this order will also trash the subscription purchased with the order.', 'woocommerce-subscriptions' ),
