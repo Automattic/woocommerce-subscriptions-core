@@ -1515,7 +1515,7 @@ class WC_Subscriptions_Switcher {
 	 * @param int $order_id The post_id of a shop_order post/WC_Order object
 	 * @param array $order_old_status The old order status
 	 * @param array $order_new_status The new order status
-	 * @since 2.0.10
+	 * @since 2.1
 	 */
 	public static function process_subscription_switches( $order_id, $order_old_status, $order_new_status ) {
 		global $wpdb;
@@ -1725,14 +1725,14 @@ class WC_Subscriptions_Switcher {
 
 	}
 
-	/***
+	/**
 	 * Completes subscription switches for switch order.
 	 *
 	 * Performs all the changes calculated and saved by @see WC_Subscriptions_Switcher::process_checkout(), updating subscription
 	 * line items, schedule, dates and totals to reflect the changes made in this switch order.
 	 *
 	 * @param int $order_id The post_id of a shop_order post/WC_Order object
-	 * @since 2.0.10
+	 * @since 2.1
 	 */
 	public static function complete_subscription_switches( $order_id ) {
 
