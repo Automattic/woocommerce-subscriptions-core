@@ -1768,7 +1768,7 @@ class WC_Subscriptions_Switcher {
 
 						foreach ( $switch_item_data['add_order_item_data']['meta'] as $key => $value ) {
 							if ( ! array_key_exists( 'attribute_' . $key, $variation_attributes ) ) {
-								wc_add_order_item_meta( $item_id, $key, reset( $value ) );
+								wc_add_order_item_meta( $item_id, $key, reset( $value ), true );
 							}
 						}
 
