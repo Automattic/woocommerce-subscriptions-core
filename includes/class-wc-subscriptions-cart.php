@@ -1053,6 +1053,10 @@ class WC_Subscriptions_Cart {
 
 		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
 
+			if ( false === $recurring_cart->needs_shipping() ) {
+				continue;
+			}
+
 			$packages = $recurring_cart->get_shipping_packages();
 
 			foreach ( $packages as $package_index => $base_package ) {
