@@ -34,6 +34,9 @@ class WCS_PayPal_Standard_Switcher {
 
 		// Update the new payment method if switching from PayPal Standard and not creating a new subscription
 		add_filter( 'woocommerce_payment_successful_result', __CLASS__ . '::maybe_set_payment_method' , 10, 2 );
+
+		// Save old PP standand id on switched orders so that PP recurring payments can be cancelled after successful switch
+		add_action( 'woocommerce_checkout_update_order_meta', __CLASS__ . '::save_old_paypal_meta', 15, 2 );
 	}
 
 	/**
@@ -131,5 +134,34 @@ class WCS_PayPal_Standard_Switcher {
 		}
 
 		return $payment_processing_result;
+	}
+
+	/**
+	 * Stores the old paypal standard subscription id on the switch order so that it can be used later to cancel the recurring payment.
+	 *
+	 * Strictly hooked on after WC_Subscriptions_Switcher::add_order_meta()
+	 *
+	 * @param int $order_id
+	 * @param array $posted
+	 * @since 2.0.15
+	 */
+	public static function save_old_paypal_meta( $order_id, $posted ) {
+
+		if ( wcs_order_contains_switch( $order_id ) ) {
+			$subscriptions = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'switch' ) );
+
+			foreach ( $subscriptions as $subscription ) {
+
+				if ( 'paypal' === $subscription->payment_method ) {
+
+					$paypal_id = wcs_get_paypal_id( $subscription->id );
+
+					if ( ! wcs_is_paypal_profile_a( $paypal_id, 'billing_agreement' ) ) {
+						update_post_meta( $order_id, '_old_payment_method', 'paypal_standard' );
+						update_post_meta( $order_id, '_old_paypal_subscription_id', $paypal_id );
+					}
+				}
+			}
+		}
 	}
 }
