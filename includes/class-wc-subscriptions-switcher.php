@@ -525,6 +525,9 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function add_order_meta( $order_id, $posted ) {
 
+		// delete all the existing subscription switch links before adding new ones
+		delete_post_meta( $order_id, '_subscription_switch' );
+
 		$switches = self::cart_contains_switches();
 
 		if ( false !== $switches ) {
