@@ -30,10 +30,14 @@ class WCS_Cart_Switch {
 	public static function get_checkout_payment_url( $pay_url, $order ) {
 
 		if ( wcs_order_contains_switch( $order ) ) {
-			$pay_url = add_query_arg( array(
-				'subscription_switch' => 'true',
-				'_wcsnonce' => wp_create_nonce( 'wcs_switch_request' ),
-			 ), $pay_url );
+			$switch_order_data = get_post_meta( $order->id, '_subscription_switch_data', true );
+
+			if ( ! empty( $switch_order_data ) ) {
+				$pay_url = add_query_arg( array(
+					'subscription_switch' => 'true',
+					'_wcsnonce' => wp_create_nonce( 'wcs_switch_request' ),
+				 ), $pay_url );
+			}
 		}
 
 		return $pay_url;
@@ -50,7 +54,7 @@ class WCS_Cart_Switch {
 
 		global $wp;
 
-		if ( isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) && isset( $wp->query_vars['order-pay'] ) ) {
+		if ( isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) && isset( $wp->query_vars['order-pay'] ) && isset( $_GET['subscription_switch'] ) ) {
 
 			// Pay for existing order
 			$order_key = $_GET['key'];
