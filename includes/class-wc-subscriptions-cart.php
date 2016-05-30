@@ -1169,7 +1169,7 @@ class WC_Subscriptions_Cart {
 		$rates = array();
 
 		if ( isset( self::$shipping_rates[ $key ] ) ) {
-			$rates = self::$shipping_rates[ $key ];
+			$rates = apply_filters( 'woocommerce_package_rates', self::$shipping_rates[ $key ], $package );
 		} else {
 			$rates = WC()->shipping->calculate_shipping_for_package( $package );
 			self::$shipping_rates[ $key ] = $rates;
