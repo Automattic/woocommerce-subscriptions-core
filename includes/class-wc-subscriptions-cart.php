@@ -41,6 +41,13 @@ class WC_Subscriptions_Cart {
 	private static $recurring_shipping_packages = array();
 
 	/**
+	 * A cache of the calculated recurring shipping rates
+	 *
+	 * @since 2.0.16
+	 */
+	 private static $shipping_rates = array();
+
+	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
 	 * @since 1.0
@@ -100,6 +107,8 @@ class WC_Subscriptions_Cart {
 
 		// Validate chosen recurring shipping methods
 		add_action( 'woocommerce_after_checkout_validation', __CLASS__ . '::validate_recurring_shipping_methods' );
+
+		add_filter( 'woocommerce_package_rates', __CLASS__ . '::cache_package_rates', 100, 2 );
 	}
 
 	/**
@@ -1100,7 +1109,7 @@ class WC_Subscriptions_Cart {
 			$packages = $recurring_cart->get_shipping_packages();
 
 			foreach ( $packages as $package_index => $base_package ) {
-				$package = WC()->shipping->calculate_shipping_for_package( $base_package );
+				$package = WC_Subscriptions_Cart::get_calculated_shipping_for_package( $base_package );
 
 				if ( ( isset( $standard_packages[ $package_index ] ) && $package['rates'] == $standard_packages[ $package_index ]['rates'] ) && apply_filters( 'wcs_cart_totals_shipping_html_price_only', true, $package, WC()->cart->recurring_carts[ $recurring_cart_key ] ) ) {
 					// the recurring package rates match the initial package rates, there won't be a selected shipping method for this recurring cart package
@@ -1144,6 +1153,29 @@ class WC_Subscriptions_Cart {
 		}
 
 		return $cart_contains_product;
+	}
+
+	public static function cache_package_rates( $rates, $package ) {
+
+		$key = md5( print_r( $package, true ) );
+		self::$shipping_rates[ $key ] = $rates;
+
+		return $rates;
+	}
+
+	public static function get_calculated_shipping_for_package( $package ) {
+
+		$key   = md5( print_r( $package, true ) );
+		$rates = array();
+
+		if ( isset( self::$shipping_rates[ $key ] ) ) {
+			$rates = self::$shipping_rates[ $key ];
+		} else {
+			$rates = WC()->shipping->calculate_shipping_for_package( $package );
+			self::$shipping_rates[ $key ] = $rates;
+		}
+
+		return $rates;
 	}
 
 	/* Deprecated */
