@@ -28,12 +28,15 @@ class WCS_API {
 	 * @return array
 	 */
 	public static function includes( $wc_api_classes ) {
-		// include the subscription api classes
-		require_once( 'api/class-wc-api-subscriptions.php' );
-		require_once( 'api/class-wc-api-subscriptions-customers.php' );
 
-		array_push( $wc_api_classes, 'WC_API_Subscriptions' );
-		array_push( $wc_api_classes, 'WC_API_Subscriptions_Customers' );
+		if ( defined( 'WC_API_REQUEST_VERSION' ) && 3 == WC_API_REQUEST_VERSION ) {
+
+			require_once( 'api/class-wc-api-subscriptions.php' );
+			require_once( 'api/class-wc-api-subscriptions-customers.php' );
+
+			array_push( $wc_api_classes, 'WC_API_Subscriptions' );
+			array_push( $wc_api_classes, 'WC_API_Subscriptions_Customers' );
+		}
 
 		return $wc_api_classes;
 	}
