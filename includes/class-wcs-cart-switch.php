@@ -6,20 +6,20 @@
  * @author   Prospress
  * @since    2.1
  */
-class WCS_Cart_Switch {
+class WCS_Cart_Switch extends WCS_Cart_Renewal{
 
 	/**
 	 * Initialise class hooks & filters when the file is loaded
 	 *
 	 * @since 2.1
 	 */
-	public static function init() {
+	public function __construct() {
 
 		// Set checkout payment URL parameter for subscription switch orders
-		add_filter( 'woocommerce_get_checkout_payment_url', __CLASS__ . '::get_checkout_payment_url', 10, 2 );
+		add_filter( 'woocommerce_get_checkout_payment_url', array( &$this, 'get_checkout_payment_url' ), 10, 2 );
 
 		// Check if a user is requesting to pay for a switch order, needs to happen after $wp->query_vars are set
-		add_action( 'template_redirect', __CLASS__ . '::maybe_setup_cart' , 99 );
+		add_action( 'template_redirect', array( &$this, 'maybe_setup_cart' ), 99 );
 	}
 
 	/**
@@ -27,7 +27,7 @@ class WCS_Cart_Switch {
 	 *
 	 * @since 2.1
 	 */
-	public static function get_checkout_payment_url( $pay_url, $order ) {
+	public function get_checkout_payment_url( $pay_url, $order ) {
 
 		if ( wcs_order_contains_switch( $order ) ) {
 			$switch_order_data = get_post_meta( $order->id, '_subscription_switch_data', true );
@@ -50,7 +50,7 @@ class WCS_Cart_Switch {
 	 *
 	 * @since 2.1
 	 */
-	public static function maybe_setup_cart() {
+	public function maybe_setup_cart() {
 
 		global $wp;
 
@@ -109,9 +109,11 @@ class WCS_Cart_Switch {
 			}
 
 			WC()->session->set( 'order_awaiting_payment', $order_id );
+			$this->set_cart_hash( $order_id );
+
 			wp_safe_redirect( WC()->cart->get_checkout_url() );
 			exit;
 		}
 	}
 }
-WCS_Cart_Switch::init();
+new WCS_Cart_Switch();
