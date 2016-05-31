@@ -1189,7 +1189,7 @@ class WC_Subscription extends WC_Order {
 	 *
 	 * This is protected because it should not be used directly by outside methods. If you need
 	 * to display the price of a subscription, use the @see $this->get_formatted_order_total(),
-	 * @see $this->get_subtotal_to_display() or @see $this->get_formatted_line_subtotal() method.If
+	 * @see $this->get_subtotal_to_display() or @see $this->get_formatted_line_subtotal() method.
 	 * If you want to customise which aspects of a price string are displayed for all subscriptions,
 	 * use the filter 'woocommerce_subscription_price_string_details'.
 	 *
@@ -1291,7 +1291,7 @@ class WC_Subscription extends WC_Order {
 
 		do_action( 'woocommerce_subscription_payment_complete', $this );
 
-		if ( $this->get_completed_payment_count() > 1 ) {
+		if ( false !== $last_order && wcs_order_contains_renewal( $last_order ) ) {
 			do_action( 'woocommerce_subscription_renewal_payment_complete', $this );
 		}
 	}
@@ -1324,7 +1324,7 @@ class WC_Subscription extends WC_Order {
 
 		do_action( 'woocommerce_subscription_payment_failed', $this, $new_status );
 
-		if ( $this->get_completed_payment_count() > 1 ) {
+		if ( false !== $last_order && wcs_order_contains_renewal( $last_order ) ) {
 			do_action( 'woocommerce_subscription_renewal_payment_failed', $this );
 		}
 	}

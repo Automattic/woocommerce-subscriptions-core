@@ -626,7 +626,7 @@ class WCS_Admin_Post_Types {
 				if ( 0 == $the_subscription->get_time( $column, 'gmt' ) ) {
 					$column_content .= '-';
 				} else {
-					$column_content .= sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( $the_subscription->get_time( $column, 'site' ) ), esc_html( $the_subscription->get_date_to_display( $column ) ) );
+					$column_content .= sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( date( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ) , $the_subscription->get_time( $column, 'site' ) ) ), esc_html( $the_subscription->get_date_to_display( $column ) ) );
 				}
 
 				$column_content = $column_content;

@@ -30,7 +30,10 @@ class WCS_PayPal_Standard_Switcher {
 		add_filter( 'woocommerce_subscriptions_can_item_be_switched', __CLASS__ . '::can_item_be_switched', 10, 3 );
 
 		// Sometimes, even if the order total is $0, the cart still needs payment
-		add_filter( 'woocommerce_cart_needs_payment', __CLASS__ . '::cart_needs_payment' , 10, 2 );
+		add_filter( 'woocommerce_cart_needs_payment', __CLASS__ . '::cart_needs_payment' , 100, 2 );
+
+		// Update the new payment method if switching from PayPal Standard and not creating a new subscription
+		add_filter( 'woocommerce_payment_successful_result', __CLASS__ . '::maybe_set_payment_method' , 10, 2 );
 	}
 
 	/**
@@ -81,7 +84,7 @@ class WCS_PayPal_Standard_Switcher {
 
 		$cart_switch_items = WC_Subscriptions_Switcher::cart_contains_switches();
 
-		if ( false === $needs_payment && 0 == $cart->total && false !== $cart_switch_items && ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'woocommerce-process_checkout' ) && isset( $_POST['payment_method'] ) && 'paypal' == $_POST['payment_method'] && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+		if ( false === $needs_payment && 0 == $cart->total && false !== $cart_switch_items && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
 
 			foreach ( $cart_switch_items as $cart_switch_details ) {
 
@@ -95,5 +98,38 @@ class WCS_PayPal_Standard_Switcher {
 		}
 
 		return $needs_payment;
+	}
+
+	/**
+	 * If switching a subscription using PayPal Standard as the payment method and the customer has entered
+	 * in a payment method other than PayPal (which would be using Reference Transactions), make sure to update
+	 * the payment method on the subscription (this is hooked to 'woocommerce_payment_successful_result' to make
+	 * sure it happens after the payment succeeds).
+	 *
+	 * @param array $payment_processing_result The result of the process payment gateway extension request.
+	 * @param int $order_id The ID of an order potentially recording a switch.
+	 * @return array
+	 */
+	public static function maybe_set_payment_method( $payment_processing_result, $order_id ) {
+
+		if ( wcs_order_contains_switch( $order_id ) ) {
+
+			$order = wc_get_order( $order_id );
+
+			foreach ( wcs_get_subscriptions_for_switch_order( $order_id ) as $subscription ) {
+
+				if ( 'paypal' === $subscription->payment_method && $subscription->payment_method !== $order->payment_method && false === wcs_is_paypal_profile_a( wcs_get_paypal_id( $subscription->id ), 'billing_agreement' ) ) {
+
+					// Set the new payment method on the subscription
+					$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
+
+					if ( isset( $available_gateways[ $order->payment_method ] ) ) {
+						$subscription->set_payment_method( $available_gateways[ $order->payment_method ] );
+					}
+				}
+			}
+		}
+
+		return $payment_processing_result;
 	}
 }

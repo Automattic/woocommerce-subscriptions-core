@@ -270,7 +270,7 @@ class WC_Subscriptions_Admin {
 			// translators: placeholders are opening and closing link tags
 			'description' => sprintf( __( 'Only allow a customer to have one subscription to this product. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/store-manager-guide/#limit-subscription">', '</a>' ),
 			'options'     => array(
-				'no'     => __( 'Do no limit', 'woocommerce-subscriptions' ),
+				'no'     => __( 'Do not limit', 'woocommerce-subscriptions' ),
 				'active' => __( 'Limit to one active subscription', 'woocommerce-subscriptions' ),
 				'any'    => __( 'Limit to one of any status', 'woocommerce-subscriptions' ),
 			),
@@ -302,11 +302,7 @@ class WC_Subscriptions_Admin {
 			$thepostid = $variation->post_parent;
 		}
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '2.3' ) ) {
-			include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/deprecated/html-variation-price.php' );
-		} else {
-			include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/html-variation-price.php' );
-		}
+		include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/html-variation-price.php' );
 
 		wp_nonce_field( 'wcs_subscription_variations', '_wcsnonce_save_variations', false );
 
@@ -686,7 +682,10 @@ class WC_Subscriptions_Admin {
 			} else if ( 'shop_order' == $screen->id ) {
 				$dependencies[] = $woocommerce_admin_script_handle;
 				$dependencies[] = 'wc-admin-order-meta-boxes';
-				$dependencies[] = 'wc-admin-order-meta-boxes-modal';
+
+				if ( WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
+					$dependencies[] = 'wc-admin-order-meta-boxes-modal';
+				}
 
 				$script_params = array(
 					'bulkTrashWarning'  => __( 'Trashing this order will also trash the subscription purchased with the order.', 'woocommerce-subscriptions' ),
@@ -704,7 +703,6 @@ class WC_Subscriptions_Admin {
 
 			$script_params['ajaxLoaderImage'] = WC()->plugin_url() . '/assets/images/ajax-loader.gif';
 			$script_params['ajaxUrl']         = admin_url( 'admin-ajax.php' );
-			$script_params['isWCPre23']       = var_export( WC_Subscriptions::is_woocommerce_pre( '2.3' ), true );
 			$script_params['isWCPre24']       = var_export( WC_Subscriptions::is_woocommerce_pre( '2.4' ), true );
 
 			wp_enqueue_script( 'woocommerce_subscriptions_admin', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/admin.js', $dependencies, filemtime( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/admin.js' ) );
