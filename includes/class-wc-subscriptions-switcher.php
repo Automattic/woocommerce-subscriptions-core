@@ -1549,6 +1549,20 @@ class WC_Subscriptions_Switcher {
 			}
 
 			do_action( 'woocommerce_subscriptions_switch_completed', $order );
+
+			// Cancel all remaining switch orders linked to the subscriptions switched in this order
+			$switched_subscriptions = wcs_get_subscriptions_for_switch_order( $order_id );
+
+			foreach ( $switched_subscriptions as $subscription_id => $subscription ) {
+				$switch_orders = wcs_get_switch_orders_for_subscription( $subscription_id );
+
+				foreach ( $switch_orders as $order_id => $switch_order ) {
+					// cancel switch orders which have valid statuses for payment
+					if ( in_array( $switch_order->get_status(), apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'failed' ), $switch_order ) ) ) {
+						$switch_order->cancel_order( sprintf( __( 'Switch order cancelled due to completing the related switch order #%s.', 'woocommerce-subscriptions' ), $order->get_order_number() ) );
+					}
+				}
+			}
 		}
 	}
 
