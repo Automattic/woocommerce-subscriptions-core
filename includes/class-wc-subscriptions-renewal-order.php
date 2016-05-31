@@ -29,6 +29,9 @@ class WC_Subscriptions_Renewal_Order {
 
 		// Prevent customers from cancelling renewal orders. Needs to be hooked before WC_Form_Handler::cancel_order() (20)
 		add_filter( 'wp_loaded', __CLASS__ . '::prevent_cancelling_renewal_orders', 19, 3 );
+
+		// Don't copy switch order item meta to renewal order items
+		add_filter( 'wcs_new_order_items', __CLASS__ . '::remove_switch_item_meta_keys', 10, 1 );
 	}
 
 	/* Helper functions */
@@ -151,6 +154,28 @@ class WC_Subscriptions_Renewal_Order {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Removes switch line item meta data so it isn't copied to renewal order line items
+	 *
+	 * @since 2.0.16
+	 * @param array $order_items
+	 * @return array $order_items
+	 */
+	public static function remove_switch_item_meta_keys( $order_items ) {
+
+		$switched_order_item_keys = array(
+			'_switched_subscription_sign_up_fee_prorated' => '',
+			'_switched_subscription_price_prorated' => '',
+			'_switched_subscription_item_id' => '',
+		);
+
+		foreach ( $order_items as $order_item_id => $item ) {
+			$order_items[ $order_item_id ]['item_meta'] = array_diff_key( $item['item_meta'], $switched_order_item_keys );
+		}
+
+		return $order_items;
 	}
 
 	/* Deprecated functions */
