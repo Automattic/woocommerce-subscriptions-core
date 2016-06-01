@@ -1540,7 +1540,7 @@ class WC_Subscriptions_Switcher {
 				// Start transaction if available
 				$wpdb->query( 'START TRANSACTION' );
 
-				self::complete_subscription_switches( $order_id );
+				self::complete_subscription_switches( $order );
 
 				update_post_meta( $order_id, '_completed_subscription_switch', 'true' );
 
@@ -1737,14 +1737,13 @@ class WC_Subscriptions_Switcher {
 	 * Performs all the changes calculated and saved by @see WC_Subscriptions_Switcher::process_checkout(), updating subscription
 	 * line items, schedule, dates and totals to reflect the changes made in this switch order.
 	 *
-	 * @param int $order_id The post_id of a shop_order post/WC_Order object
+	 * @param WC_Order $order
 	 * @since 2.1
 	 */
-	public static function complete_subscription_switches( $order_id ) {
+	public static function complete_subscription_switches( $order ) {
 
 		// Get the switch meta
-		$order             = wc_get_order( $order_id );
-		$switch_order_data = get_post_meta( $order_id, '_subscription_switch_data', true );
+		$switch_order_data = get_post_meta( $order->id, '_subscription_switch_data', true );
 
 		foreach ( $switch_order_data as $subcription_id => $switch_data ) {
 
