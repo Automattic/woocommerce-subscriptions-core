@@ -17,6 +17,7 @@ class WCS_API {
 	public static function init() {
 		add_filter( 'woocommerce_api_classes', __CLASS__ . '::includes' );
 
+		add_action( 'rest_api_init', __CLASS__ . '::register_routes', 15 );
 	}
 
 	/**
@@ -39,6 +40,23 @@ class WCS_API {
 		}
 
 		return $wc_api_classes;
+	}
+
+	/**
+	 * Load the new REST API subscription endpoints
+	 *
+	 * @since 2.1
+	 */
+	public static function register_routes() {
+		global $wp_version;
+
+		if ( version_compare( $wp_version, 4.4, '<' ) || WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
+			return;
+		}
+
+		require_once( 'api/class-wc-rest-subscriptions-controller.php' );
+		$controller = new WC_REST_Subscriptions_Controller();
+		$controller->register_routes();
 	}
 
 }
