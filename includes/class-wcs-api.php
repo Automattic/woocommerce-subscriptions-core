@@ -55,8 +55,12 @@ class WCS_API {
 		}
 
 		require_once( 'api/class-wc-rest-subscriptions-controller.php' );
-		$controller = new WC_REST_Subscriptions_Controller();
-		$controller->register_routes();
+		require_once( 'api/class-wc-rest-subscription-notes-controller.php' );
+
+		foreach ( array( 'WC_REST_Subscriptions_Controller', 'WC_REST_Subscription_Notes_Controller' ) as $api_class ) {
+			$controller = new $api_class();
+			$controller->register_routes();
+		}
 	}
 
 }
