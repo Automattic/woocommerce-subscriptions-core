@@ -956,6 +956,22 @@ class WC_Subscriptions_Product {
 			foreach ( $variation_ids as $variation_id ) {
 				update_post_meta( $variation_id, $meta_key, stripslashes( $data['value'] ) );
 			}
+		} else if ( in_array( $meta_key, array( '_regular_price_increase', '_regular_price_decrease' ) ) ) {
+			$operator = ( '_regular_price_increase' == $meta_key ) ? '+' : '-';
+			$value    = wc_clean( $data['value'] );
+
+			foreach ( $variation_ids as $variation_id ) {
+				 $subscription_price = get_post_meta( $variation_id, '_subscription_price', true );
+
+				if ( '%' === substr( $value, -1 ) ) {
+					$percent = wc_format_decimal( substr( $value, 0, -1 ) );
+					$subscription_price += ( ( $subscription_price / 100 ) * $percent ) * "{$operator}1";
+				} else {
+					$subscription_price += $value * "{$operator}1";
+				}
+
+				update_post_meta( $variation_id, '_subscription_price', $subscription_price );
+			}
 		}
 	}
 
