@@ -109,6 +109,9 @@ class WC_Subscriptions_Switcher {
 
 		// Process subscription switch changes on completed switch orders status
 		add_action( 'woocommerce_order_status_changed', __CLASS__ . '::process_subscription_switches', 10, 3 );
+
+		// Cancel remaining pending/failed switch orders linked to subscriptions which have been successfully switched.
+		add_action( 'woocommerce_subscriptions_switch_completed', __CLASS__ . '::cancel_pending_switch_orders_after_successful_switch', 10, 1 );
 	}
 
 	/**
@@ -1549,20 +1552,6 @@ class WC_Subscriptions_Switcher {
 			}
 
 			do_action( 'woocommerce_subscriptions_switch_completed', $order );
-
-			// Cancel all remaining switch orders linked to the subscriptions switched in this order
-			$switched_subscriptions = wcs_get_subscriptions_for_switch_order( $order_id );
-
-			foreach ( $switched_subscriptions as $subscription_id => $subscription ) {
-				$switch_orders = wcs_get_switch_orders_for_subscription( $subscription_id );
-
-				foreach ( $switch_orders as $order_id => $switch_order ) {
-					// cancel switch orders which have valid statuses for payment
-					if ( in_array( $switch_order->get_status(), apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'failed' ), $switch_order ) ) ) {
-						$switch_order->cancel_order( sprintf( __( 'Switch order cancelled due to completing the related switch order #%s.', 'woocommerce-subscriptions' ), $order->get_order_number() ) );
-					}
-				}
-			}
 		}
 	}
 
@@ -1870,6 +1859,30 @@ class WC_Subscriptions_Switcher {
 			self::maybe_update_subscription_address( $order, $subscription );
 
 			$subscription->calculate_totals();
+		}
+	}
+
+	/**
+	 * When a switch order is completed, cancel all the other remaining pending/failed switch orders linked to the switched subscription(s).
+	 * These switch orders could contain invalid switches now that a different switch order has been completed.
+	 *
+	 * @param WC_Order $order The switch order which has been completed.
+	 * @since 2.1
+	 */
+	public static function cancel_pending_switch_orders_after_successful_switch( $order ) {
+
+		// Get all the subscriptions switched in this order
+		$switched_subscriptions = wcs_get_subscriptions_for_switch_order( $order );
+
+		foreach ( $switched_subscriptions as $subscription_id => $subscription ) {
+			$switch_orders = wcs_get_switch_orders_for_subscription( $subscription_id );
+
+			foreach ( $switch_orders as $order_id => $switch_order ) {
+				// cancel switch orders which have valid statuses for payment
+				if ( in_array( $switch_order->get_status(), apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'failed' ), $switch_order ) ) ) {
+					$switch_order->cancel_order( sprintf( __( 'Switch order cancelled due to completing the related switch order #%s.', 'woocommerce-subscriptions' ), $order->get_order_number() ) );
+				}
+			}
 		}
 	}
 
