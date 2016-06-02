@@ -95,7 +95,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 		$id  = (int) $request['id'];
 
 		if ( empty( $id ) || ! wcs_is_subscription( $id ) ) {
-			return new WP_Error( "woocommerce_rest_invalid_shop_subscription_id", __( 'Invalid subscription id.', 'woocommerce-subscriptions' ), array( 'status' => 404 ) );
+			return new WP_Error( 'woocommerce_rest_invalid_shop_subscription_id', __( 'Invalid subscription id.', 'woocommerce-subscriptions' ), array( 'status' => 404 ) );
 		}
 
 		$this->post_type     = 'shop_order';
