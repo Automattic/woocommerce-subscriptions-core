@@ -145,4 +145,14 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 	public function get_statuses() {
 		return rest_ensure_response( wcs_get_subscription_statuses() );
 	}
+
+	/**
+	 * Overrides WC_REST_Orders_Controller::get_order_statuses() so that subscription statuses are
+	 * validated correctly in WC_REST_Orders_Controller::get_collection_params()
+	 *
+	 * @since 2.1
+	 */
+	protected function get_order_statuses() {
+		return array_keys( wcs_get_subscription_statuses() );
+	}
 }
