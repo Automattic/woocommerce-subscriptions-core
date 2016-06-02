@@ -369,7 +369,7 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function maybe_reset_chosen_shipping_methods( $cart_item_key ) {
 
-		if ( isset( WC()->cart->cart_contents[ $cart_item_key ] ) && WC_Subscriptions_Product::is_subscription( WC()->cart->cart_contents[ $cart_item_key ]['data'] ) ) {
+		if ( isset( WC()->cart->cart_contents[ $cart_item_key ] ) ) {
 
 			$chosen_methods = WC()->session->get( 'chosen_shipping_methods', array() );
 
