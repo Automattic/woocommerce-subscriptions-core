@@ -110,8 +110,16 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 				continue;
 			}
 
-			$data     = $this->prepare_item_for_response( $post, $request );
-			$orders[] = $this->prepare_response_for_collection( $data );
+			$response = $this->prepare_item_for_response( $post, $request );
+
+			foreach ( array( 'parent', 'renewal', 'switch', 'resubscribe' ) as $order_type ) {
+				if ( wcs_order_contains_subscription( $order_id, $order_type ) ) {
+					$response->data['order_type'] = $order_type . '_order';
+					break;
+				}
+			}
+
+			$orders[] = $this->prepare_response_for_collection( $response );
 		}
 
 		$response = rest_ensure_response( $orders );
