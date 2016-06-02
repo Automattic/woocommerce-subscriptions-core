@@ -56,6 +56,14 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 			),
 			'schema' => array( $this, 'get_public_item_schema' ),
 		) );
+
+		register_rest_route( $this->namespace, '/' . $this->rest_base . '/statuses', array(
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_statuses' ),
+			),
+			'schema' => array( $this, 'get_public_item_schema' ),
+		) );
 	}
 
 	/**
@@ -92,7 +100,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 	 * @return WP_Error|WP_REST_Response $response
 	 */
 	public function get_subscription_orders( $request ) {
-		$id  = (int) $request['id'];
+		$id = (int) $request['id'];
 
 		if ( empty( $id ) || ! wcs_is_subscription( $id ) ) {
 			return new WP_Error( 'woocommerce_rest_invalid_shop_subscription_id', __( 'Invalid subscription id.', 'woocommerce-subscriptions' ), array( 'status' => 404 ) );
@@ -127,5 +135,14 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 		$response->header( 'X-WP-TotalPages', 1 );
 
 		return apply_filters( 'wcs_rest_subscription_orders_response', $response, $request );
+	}
+
+	/**
+	 * Get subscription statuses
+	 *
+	 * @since 2.1
+	 */
+	public function get_statuses() {
+		return rest_ensure_response( wcs_get_subscription_statuses() );
 	}
 }
