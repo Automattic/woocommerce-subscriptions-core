@@ -39,6 +39,8 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 	 */
 	public function __construct() {
 		add_filter( 'woocommerce_rest_prepare_shop_subscription', array( $this, 'filter_get_subscription_response' ), 10, 3 );
+
+		add_filter( "woocommerce_rest_shop_subscription_query", array( $this, 'query_args' ), 10, 2 );
 	}
 
 	/**
