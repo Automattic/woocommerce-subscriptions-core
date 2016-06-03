@@ -127,7 +127,7 @@ class WCS_Retry_Manager {
 			$retry_id = self::store()->save( new WCS_Retry( array(
 				'status'   => 'pending',
 				'order_id' => $last_order->id,
-				'date_gmt' => date( 'Y-m-d H:i:s', gmdate( 'U' ) + $retry_rule->get_retry_interval() ),
+				'date_gmt' => gmdate( 'Y-m-d H:i:s', gmdate( 'U' ) + $retry_rule->get_retry_interval() ),
 				'rule_raw' => $retry_rule->get_raw_data(),
 			) ) );
 
@@ -142,7 +142,7 @@ class WCS_Retry_Manager {
 
 			if ( $retry_rule->get_retry_interval() > 0 ) {
 				// by calling this after changing the status, this will also schedule the 'woocommerce_scheduled_subscription_payment_retry' action
-				$subscription->update_dates( array( 'payment_retry' => date( 'Y-m-d H:i:s', gmdate( 'U' ) + $retry_rule->get_retry_interval( $retry_count ) ) ) );
+				$subscription->update_dates( array( 'payment_retry' => gmdate( 'Y-m-d H:i:s', gmdate( 'U' ) + $retry_rule->get_retry_interval( $retry_count ) ) ) );
 			}
 
 			// maybe send emails about the renewal payment failure
@@ -187,7 +187,7 @@ class WCS_Retry_Manager {
 				$valid_subscription_status = ( '' == $expected_subscription_status || $subscription->has_status( $expected_subscription_status ) ) ? true : false;
 
 				// if both statuses are still the same or there no special status was applied and the order still needs payment (i.e. there has been no manual intervention), trigger the payment hook
-				if ( $valid_order_status && $valid_order_status ) {
+				if ( $valid_order_status && $valid_subscription_status ) {
 
 					// Make sure the subscription is on hold in case something goes wrong while trying to process renewal and in case gateways expect the subscription to be on-hold, which is normally the case with a renewal payment
 					$subscription->update_status( 'on-hold', _x( 'Subscription renewal payment retry:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
