@@ -45,9 +45,9 @@ class WCS_Email_Payment_Retry extends WC_Email_Failed_Order {
 	 *
 	 * @param int $order_id
 	 */
-	public function trigger( $order, $retry ) {
+	public function trigger( $order ) {
 		$this->object                  = $order;
-		$this->retry                   = $retry;
+		$this->retry                   = WCS_Retry_Manager::store()->get_last_retry_for_order( $order->id );;
 		$this->find['order-date']      = '{order_date}';
 		$this->find['order-number']    = '{order_number}';
 		$this->find['retry-time']      = '{retry_time}';

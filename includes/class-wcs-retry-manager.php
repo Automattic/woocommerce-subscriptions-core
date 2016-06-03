@@ -150,7 +150,7 @@ class WCS_Retry_Manager {
 				if ( $retry_rule->has_email_template( $recipient ) ) {
 					$email_class = $retry_rule->get_email_template( $recipient );
 					$email = new $email_class();
-					$email->trigger( $last_order, self::store()->get_retry( $retry_id ) );
+					$email->trigger( $last_order );
 				}
 			}
 
