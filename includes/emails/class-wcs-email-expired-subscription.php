@@ -3,17 +3,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 /**
- * Cancelled Subscription Email
+ * Expired Subscription Email
  *
- * An email sent to the admin when a subscription is cancelled (either by a store manager, or the customer).
+ * An email sent to the admin when a subscription is expired.
  *
- * @class 	WCS_Email_Cancelled_Subscription
+ * @class 	WCS_Email_Expired_Subscription
  * @version	2.1
  * @package	WooCommerce_Subscriptions/Classes/Emails
  * @author 	Prospress
  * @extends WC_Email
  */
-class WCS_Email_Cancelled_Subscription extends WC_Email {
+class WCS_Email_Expired_Subscription extends WC_Email {
 
 	/**
 	 * Create an instance of the class.
@@ -23,19 +23,19 @@ class WCS_Email_Cancelled_Subscription extends WC_Email {
 	 */
 	function __construct() {
 
-		$this->id          = 'cancelled_subscription';
-		$this->title       = __( 'Cancelled Subscription', 'woocommerce-subscriptions' );
-		$this->description = __( 'Cancelled Subscription emails are sent when a customer\'s subscription is cancelled (either by a store manager, or the customer).', 'woocommerce-subscriptions' );
+		$this->id          = 'expired_subscription';
+		$this->title       = __( 'Expired Subscription', 'woocommerce-subscriptions' );
+		$this->description = __( 'Expired Subscription emails are sent when a customer\'s subscription expires.', 'woocommerce-subscriptions' );
 
-		$this->heading     = __( 'Subscription Cancelled', 'woocommerce-subscriptions' );
+		$this->heading     = __( 'Subscription Expired', 'woocommerce-subscriptions' );
 		// translators: placeholder is {blogname}, a variable that will be substituted when email is sent out
-		$this->subject     = sprintf( _x( '[%s] Subscription Cancelled', 'default email subject for cancelled emails sent to the admin', 'woocommerce-subscriptions' ), '{blogname}' );
+		$this->subject     = sprintf( _x( '[%s] Subscription Expired', 'default email subject for expired emails sent to the admin', 'woocommerce-subscriptions' ), '{blogname}' );
 
-		$this->template_html  = 'emails/cancelled-subscription.php';
-		$this->template_plain = 'emails/plain/cancelled-subscription.php';
+		$this->template_html  = 'emails/expired-subscription.php';
+		$this->template_plain = 'emails/plain/expired-subscription.php';
 		$this->template_base  = plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/';
 
-		add_action( 'cancelled_subscription_notification', array( $this, 'trigger' ) );
+		add_action( 'expired_subscription_notification', array( $this, 'trigger' ) );
 
 		parent::__construct();
 
@@ -56,15 +56,13 @@ class WCS_Email_Cancelled_Subscription extends WC_Email {
 		$this->object = $subscription;
 
 		if ( ! is_object( $subscription ) ) {
-			_deprecated_argument( __METHOD__, '2.0', 'The subscription key is deprecated. Use a subscription post ID' );
-			$subscription = wcs_get_subscription_from_key( $subscription );
+			throw new InvalidArgumentException( __( 'Subscription argument passed in is not an object.', 'woocommerce-subscriptions' ) );
 		}
 
 		if ( ! $this->is_enabled() || ! $this->get_recipient() ) {
 			return;
 		}
 
-		update_post_meta( $subscription->id, '_cancelled_email_sent', 'true' );
 		$this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
 	}
 

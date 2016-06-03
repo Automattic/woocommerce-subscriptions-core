@@ -10,15 +10,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 <tr>
-	<td style="border-top: 0;">
+	<td>
 		<a href="<?php echo esc_url( get_edit_post_link( $order->id ) ); ?>">
 			<?php echo sprintf( esc_html_x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), esc_html( $order->get_order_number() ) ); ?>
 		</a>
 	</td>
-	<td style="border-top: 0;">
+	<td>
 		<?php echo esc_html( $order->relationship ); ?>
 	</td>
-	<td style="border-top: 0;">
+	<td>
 		<?php
 		$timestamp_gmt = wcs_date_to_time( $order->post->post_date_gmt );
 		if ( $timestamp_gmt > 0 ) {
@@ -32,10 +32,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php echo esc_html( apply_filters( 'post_date_column_time', $date_to_display, $order->post ) ); ?>
 		</abbr>
 	</td>
-	<td style="border-top: 0;">
+	<td>
 		<?php echo esc_html( ucwords( $order->get_status() ) ); ?>
 	</td>
-	<td style="border-top: 0; text-align:right;">
+	<td>
 		<span class="amount"><?php echo wp_kses( $order->get_formatted_order_total(), array( 'small' => array(), 'span' => array( 'class' => array() ), 'del' => array(), 'ins' => array() ) ); ?></span>
 	</td>
 </tr>

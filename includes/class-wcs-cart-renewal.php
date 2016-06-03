@@ -119,6 +119,9 @@ class WCS_Cart_Renewal {
 				if ( WC()->cart->cart_contents_count != 0 ) {
 					// Store renewal order's ID in session so it can be re-used after payment
 					WC()->session->set( 'order_awaiting_payment', $order_id );
+
+					// Set cart hash for orders paid in WC >= 2.6
+					$this->set_cart_hash( $order_id );
 				}
 
 				wp_safe_redirect( WC()->cart->get_checkout_url() );
@@ -346,7 +349,7 @@ class WCS_Cart_Renewal {
 
 				$price = $item_to_renew['line_subtotal'];
 
-				if ( 'yes' === get_option( 'woocommerce_prices_include_tax' ) ) {
+				if ( wc_prices_include_tax() ) {
 					$base_tax_rates = WC_Tax::get_base_tax_rates( $_product->tax_class );
 					$base_taxes_on_item = WC_Tax::calc_tax( $price, $base_tax_rates, false, false );
 					$price += array_sum( $base_taxes_on_item );
@@ -763,6 +766,17 @@ class WCS_Cart_Renewal {
 		}
 
 		return $order;
+	}
+
+	/**
+	 * Before allowing payment on an order awaiting payment via checkout, WC >= 2.6 validates
+	 * order items haven't changed by checking for a cart hash on the order, so we need to set
+	 * that here. @see WC_Checkout::create_order()
+	 *
+	 * @since 2.0.14
+	 */
+	protected function set_cart_hash( $order_id ) {
+		update_post_meta( $order_id, '_cart_hash', md5( print_r( WC()->cart->get_cart_for_session(), true ) . WC()->cart->total ) );
 	}
 
 	/* Deprecated */

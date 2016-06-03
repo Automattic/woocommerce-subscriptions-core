@@ -155,22 +155,25 @@ function wcs_get_users_subscriptions( $user_id = 0 ) {
 		$user_id = get_current_user_id();
 	}
 
-	$post_ids = get_posts( array(
-		'posts_per_page' => -1,
-		'post_status'    => 'any',
-		'post_type'      => 'shop_subscription',
-		'orderby'        => 'date',
-		'order'          => 'desc',
-		'meta_key'       => '_customer_user',
-		'meta_value'     => $user_id,
-		'meta_compare'   => '=',
-		'fields'         => 'ids',
-	) );
+	$subscriptions = apply_filters( 'wcs_pre_get_users_subscriptions', array(), $user_id );
 
-	$subscriptions = array();
+	if ( empty( $subscriptions ) ) {
 
-	foreach ( $post_ids as $post_id ) {
-		$subscriptions[ $post_id ] = wcs_get_subscription( $post_id );
+		$post_ids = get_posts( array(
+			'posts_per_page' => -1,
+			'post_status'    => 'any',
+			'post_type'      => 'shop_subscription',
+			'orderby'        => 'date',
+			'order'          => 'desc',
+			'meta_key'       => '_customer_user',
+			'meta_value'     => $user_id,
+			'meta_compare'   => '=',
+			'fields'         => 'ids',
+		) );
+
+		foreach ( $post_ids as $post_id ) {
+			$subscriptions[ $post_id ] = wcs_get_subscription( $post_id );
+		}
 	}
 
 	return apply_filters( 'wcs_get_users_subscriptions', $subscriptions, $user_id );
