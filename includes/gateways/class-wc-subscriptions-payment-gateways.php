@@ -179,6 +179,10 @@ class WC_Subscriptions_Payment_Gateways {
 			$subscription = wcs_get_subscription( $subscription_id );
 		}
 
+		if ( false === $subscription ) {
+			throw new InvalidArgumentException( sprintf( __( 'Subscription doesn\'t exist in scheduled action: %d', 'woocommerce-subscriptions' ), $subscription_id ) );
+		}
+
 		if ( ! $subscription->is_manual() && $subscription->get_total() > 0 && ! empty( $subscription->payment_method ) ) {
 			do_action( 'woocommerce_scheduled_subscription_payment_' . $subscription->payment_method, $subscription->get_total(), $subscription->get_last_order( 'all' ) );
 		}
