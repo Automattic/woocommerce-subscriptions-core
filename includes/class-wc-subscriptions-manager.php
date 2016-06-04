@@ -137,6 +137,10 @@ class WC_Subscriptions_Manager {
 			$subscription = wcs_get_subscription( $subscription_id );
 		}
 
+		if ( false === $subscription ) {
+			throw new InvalidArgumentException( sprintf( __( 'Subscription doesn\'t exist in scheduled action: %d', 'woocommerce-subscriptions' ), $subscription_id ) );
+		}
+
 		$subscription->update_status( 'expired' );
 	}
 
