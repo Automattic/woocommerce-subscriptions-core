@@ -400,6 +400,10 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function add_shipping_method_post_data() {
 
+		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
+			return;
+		}
+
 		check_ajax_referer( 'update-order-review', 'security' );
 
 		parse_str( $_POST['post_data'], $form_data );
