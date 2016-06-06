@@ -162,4 +162,25 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 		}
 		return $subscription_statuses;
 	}
+
+	/**
+	 * Create WC_Subscription object.
+	 *
+	 * @since 2.1
+	 * @param array $args subscription args.
+	 * @return WC_Subscription
+	 */
+	protected function create_base_order( $args, $data ) {
+		$args['order_id']         = ( ! empty( $data['order_id'] ) ) ? $data['order_id'] : '';
+		$args['billing_interval'] = ( ! empty( $data['billing_interval'] ) ) ? $data['billing_interval'] : '';
+		$args['billing_period']   = ( ! empty( $data['billing_period'] ) ) ? $data['billing_period'] : '';
+
+		$subscription = wcs_create_subscription( $args );
+
+		if ( is_wp_error( $subscription ) ) {
+			throw new WC_REST_Exception( 'woocommerce_rest_cannot_create_subscription', sprintf( __( 'Cannot create subscription: %s.', 'woocommerce' ), implode( ', ', $subscription->get_error_messages() ) ), 400 );
+		}
+
+		return $subscription;
+	}
 }
