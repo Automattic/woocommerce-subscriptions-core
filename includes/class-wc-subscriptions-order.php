@@ -877,7 +877,7 @@ class WC_Subscriptions_Order {
 			$subscriptions = wcs_get_subscriptions_for_order( $order->id, array( 'order_type' => array( 'parent', 'renewal' ) ) );
 
 			foreach ( $subscriptions as $subscription ) {
-				$latest_order = $subscription->get_last_order( 'ids' );
+				$latest_order = $subscription->get_last_order();
 
 				if ( $order->id == $latest_order && $subscription->has_status( 'pending-cancel' ) && $subscription->can_be_updated_to( 'cancelled' ) ) {
 					// translators: $1: opening link tag, $2: order number, $3: closing link tag
