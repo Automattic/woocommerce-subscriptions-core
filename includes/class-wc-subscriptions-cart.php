@@ -883,16 +883,17 @@ class WC_Subscriptions_Cart {
 		// If we had one time shipping in the carts, we may have wiped the WC chosen shippings. Restore them.
 		self::maybe_restore_chosen_shipping_method();
 
-		// Now make sure the correct shipping method is set
-		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', array() );
-
 		if ( isset( $_POST['shipping_method'] ) && is_array( $_POST['shipping_method'] ) ) {
+
+			// Now make sure the correct shipping method is set
+			$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', array() );
+
 			foreach ( $_POST['shipping_method'] as $i => $value ) {
 				$chosen_shipping_methods[ $i ] = wc_clean( $value );
 			}
-		}
 
-		WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
+			WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
+		}
 	}
 
 	/**
