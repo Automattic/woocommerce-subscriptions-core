@@ -183,4 +183,37 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 
 		return $subscription;
 	}
+
+	/**
+	 * Update or set the subscription schedule with the request data
+	 *
+	 * @since 2.1
+	 * @param WC_Subscription $subscription
+	 * @param array $data
+	 */
+	public function update_schedule( $subscription, $data ) {
+		if ( isset( $data['billing_interval'] ) ) {
+			update_post_meta( $subscription->id, '_billing_interval', absint( $data['billing_interval'] ) );
+		}
+
+		if ( ! empty( $data['billing_period'] ) ) {
+			update_post_meta( $subscription->id, '_billing_period', $data['billing_period'] );
+		}
+
+		try {
+			$dates_to_update = array();
+
+			foreach ( array( 'start', 'trial_end', 'end', 'next_payment' ) as $date_type ) {
+				if ( isset( $data[ $date_type . '_date' ] ) ) {
+					$dates_to_update[ $date_type ] = $data[ $date_type . '_date' ];
+				}
+			}
+
+			if ( ! empty( $dates_to_update ) ) {
+				$subscription->update_dates( $dates_to_update );
+			}
+		} catch ( Exception $e ) {
+			throw new WC_REST_Exception( 'woocommerce_rest_cannot_update_subscription_dates', sprintf( __( 'Updating subscription dates errored with message: %s', 'woocommerce-subscriptions' ), $e->getMessage() ), 400 );
+		}
+	}
 }
