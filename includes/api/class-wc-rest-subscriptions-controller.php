@@ -155,6 +155,11 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 	 * @since 2.1
 	 */
 	protected function get_order_statuses() {
-		return array_keys( wcs_get_subscription_statuses() );
+		$subscription_statuses = array();
+
+		foreach ( array_keys( wcs_get_subscription_statuses() ) as $status ) {
+			$subscription_statuses[] = str_replace( 'wc-', '', $status );
+		}
+		return $subscription_statuses;
 	}
 }
