@@ -45,7 +45,6 @@ class WCS_Query extends WC_Query {
 	 * @return array $crumbs if we're on a view-subscription page, then augmented breadcrumb data
 	 */
 	public function add_breadcrumb( $crumbs ) {
-		global $wp;
 
 		foreach ( $this->query_vars as $key => $query_var ) {
 			if ( $this->is_query( $query_var ) ) {
@@ -62,11 +61,10 @@ class WCS_Query extends WC_Query {
 	 * @return string        changed title
 	 */
 	public function change_endpoint_title( $title ) {
-		global $wp;
 
 		if ( in_the_loop() ) {
 			foreach ( $this->query_vars as $key => $query_var ) {
-				if ( $this->is_query( $query_var ) && in_the_loop() ) {
+				if ( $this->is_query( $query_var ) ) {
 					$title = $this->get_endpoint_title( $key );
 				}
 			}
