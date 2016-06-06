@@ -216,4 +216,56 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 			throw new WC_REST_Exception( 'woocommerce_rest_cannot_update_subscription_dates', sprintf( __( 'Updating subscription dates errored with message: %s', 'woocommerce-subscriptions' ), $e->getMessage() ), 400 );
 		}
 	}
+
+	/**
+	 * Validate and update payment method on a subscription
+	 *
+	 * @since 2.1
+	 * @param WC_Subscription $subscription
+	 * @param array $data
+	 * @param bool $updating
+	 */
+	public function update_payment_method( $subscription, $data, $updating = false ) {
+		$payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
+		$payment_method   = ( ! empty( $data['method_id'] ) ) ? $data['method_id'] : 'manual';
+		$payment_gateway  = ( isset( $payment_gateways[ $data['method_id'] ] ) ) ? $payment_gateways[ $data['method_id'] ] : '';
+
+		try {
+			if ( $updating && ! array_key_exists( $payment_method, WCS_Change_Payment_Method_Admin::get_valid_payment_methods( $subscription ) ) ) {
+				throw new Exception( __( 'Gateway does not support admin changing the payment method on a Subscription.', 'woocommerce-subscriptions' ) );
+			}
+
+			$payment_method_meta = apply_filters( 'woocommerce_subscription_payment_meta', array(), $subscription );
+
+			if ( ! empty( $payment_gateway ) && isset( $payment_method_meta[ $payment_gateway->id ] ) ) {
+				$payment_method_meta = $payment_method_meta[ $payment_gateway->id ];
+
+				if ( ! empty( $payment_method_meta ) ) {
+
+					foreach ( $payment_method_meta as $meta_table => &$meta ) {
+						if ( ! is_array( $meta ) ) {
+							continue;
+						}
+
+						foreach ( $meta as $meta_key => &$meta_data ) {
+
+							if ( isset( $data[ $meta_table ][ $meta_key ] ) ) {
+								$meta_data['value'] = $data[ $meta_table ][ $meta_key ];
+							}
+						}
+					}
+				}
+			}
+
+			if ( empty( $subscription->payment_gateway ) ) {
+				$subscription->payment_gateway = $payment_gateway;
+			}
+
+			$subscription->set_payment_method( $payment_gateway, $payment_method_meta );
+
+		} catch ( Exception $e ) {
+			// translators: 1$: gateway id, 2$: error message
+			throw new WC_REST_Exception( 'woocommerce_rest_invalid_payment_data', sprintf( __( 'Subscription payment method could not be set to %1$s and has been set to manual with error message: %2$s', 'woocommerce-subscriptions' ), ( ! empty( $payment_gateway->id ) ) ? $payment_gateway->id : 'manual', $e->getMessage() ), 400 );
+		}
+	}
 }
