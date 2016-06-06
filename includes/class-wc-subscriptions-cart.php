@@ -267,6 +267,7 @@ class WC_Subscriptions_Cart {
 		self::$calculation_type = self::$recurring_cart_key = 'none';
 
 		// We need to reset the packages and totals stored in WC()->shipping too
+		WC()->shipping->reset_shipping();
 		self::maybe_restore_shipping_methods();
 		WC()->cart->calculate_shipping();
 
