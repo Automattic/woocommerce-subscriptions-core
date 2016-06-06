@@ -158,13 +158,6 @@ class WC_Subscription extends WC_Order {
 						'value'   => $this->id,
 						'type'    => 'numeric',
 					),
-					array(
-						'key'     => '_subscription_switch',
-						'compare' => '=',
-						'value'   => $this->id,
-						'type'    => 'numeric',
-					),
-					'relation' => 'OR',
 				),
 			) );
 
