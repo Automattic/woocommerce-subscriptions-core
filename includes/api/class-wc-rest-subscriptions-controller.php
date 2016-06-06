@@ -95,6 +95,41 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 	}
 
 	/**
+	 * Overrides WC_REST_Orders_Controller::create_order() to create a basic subscription and
+	 * adds extra subscription specific data
+	 *
+	 * @since 2.1
+	 * @param WP_REST_Request $request
+	 */
+	protected function create_order( $request ) {
+		$post_id = parent::create_order( $request );
+
+		if ( is_wp_error( $post_id ) ) {
+			return $post_id;
+		}
+
+		$subscription = wcs_get_subscription( $post_id );
+		wc_transaction_query( 'start' );
+
+		try {
+			if ( isset( $request['order_total'] ) ) {
+				update_post_meta( $post_id, '_order_total', wc_format_decimal( $request['order_total'], get_option( 'woocommerce_price_num_decimals' ) ) );
+			}
+
+			$this->update_schedule( $subscription, $request );
+			$this->update_payment_method( $subscription, $request['payment_details'] );
+
+			wc_transaction_query( 'commmit' );
+
+			return $post_id;
+		} catch ( Exception $e ) {
+			wc_transaction_query( 'rollback' );
+
+			return new WP_Error( $e->getErrorCode(), $e->getMessage(), array( 'status' => 400 ) );
+		}
+	}
+
+	/**
 	 * Get subscription orders
 	 *
 	 * @since 2.1
