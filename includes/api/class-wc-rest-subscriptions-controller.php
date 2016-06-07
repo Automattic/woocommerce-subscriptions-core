@@ -95,8 +95,9 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 	}
 
 	/**
-	 * Overrides WC_REST_Orders_Controller::create_order() to create a basic subscription and
-	 * adds extra subscription specific data
+	 * Sets the order_total value on the subscription after WC_REST_Orders_Controller::create_order
+	 * calls calculate_totals(). This allows store admins to create a recurring payment via the api
+	 * without needing to attach a product to the subscription.
 	 *
 	 * @since 2.1
 	 * @param WP_REST_Request $request
@@ -108,25 +109,11 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 			return $post_id;
 		}
 
-		$subscription = wcs_get_subscription( $post_id );
-		wc_transaction_query( 'start' );
-
-		try {
-			if ( isset( $request['order_total'] ) ) {
-				update_post_meta( $post_id, '_order_total', wc_format_decimal( $request['order_total'], get_option( 'woocommerce_price_num_decimals' ) ) );
-			}
-
-			$this->update_schedule( $subscription, $request );
-			$this->update_payment_method( $subscription, $request['payment_details'] );
-
-			wc_transaction_query( 'commmit' );
-
-			return $post_id;
-		} catch ( Exception $e ) {
-			wc_transaction_query( 'rollback' );
-
-			return new WP_Error( $e->getErrorCode(), $e->getMessage(), array( 'status' => 400 ) );
+		if ( isset( $request['order_total'] ) ) {
+			update_post_meta( $post_id, '_order_total', wc_format_decimal( $request['order_total'], get_option( 'woocommerce_price_num_decimals' ) ) );
 		}
+
+		return $post_id;
 	}
 
 	/**
@@ -216,6 +203,9 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 			throw new WC_REST_Exception( 'woocommerce_rest_cannot_create_subscription', sprintf( __( 'Cannot create subscription: %s.', 'woocommerce' ), implode( ', ', $subscription->get_error_messages() ) ), 400 );
 		}
 
+		$this->update_schedule( $subscription, $data );
+		$this->update_payment_method( $subscription, $data['payment_details'] );
+
 		return $subscription;
 	}
 
@@ -300,7 +290,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 
 		} catch ( Exception $e ) {
 			// translators: 1$: gateway id, 2$: error message
-			throw new WC_REST_Exception( 'woocommerce_rest_invalid_payment_data', sprintf( __( 'Subscription payment method could not be set to %1$s and has been set to manual with error message: %2$s', 'woocommerce-subscriptions' ), ( ! empty( $payment_gateway->id ) ) ? $payment_gateway->id : 'manual', $e->getMessage() ), 400 );
+			throw new WC_REST_Exception( 'woocommerce_rest_invalid_payment_data', sprintf( __( 'Subscription payment method could not be set to %1$s with error message: %2$s', 'woocommerce-subscriptions' ), $payment_method, $e->getMessage() ), 400 );
 		}
 	}
 }
