@@ -32,8 +32,8 @@ class WCS_API {
 
 		if ( defined( 'WC_API_REQUEST_VERSION' ) && 3 == WC_API_REQUEST_VERSION ) {
 
-			require_once( 'api/class-wc-api-subscriptions.php' );
-			require_once( 'api/class-wc-api-subscriptions-customers.php' );
+			require_once( 'api/legacy/class-wc-api-subscriptions.php' );
+			require_once( 'api/legacy/class-wc-api-subscriptions-customers.php' );
 
 			array_push( $wc_api_classes, 'WC_API_Subscriptions' );
 			array_push( $wc_api_classes, 'WC_API_Subscriptions_Customers' );
