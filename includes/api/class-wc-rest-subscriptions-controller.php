@@ -351,7 +351,27 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 						'context'     => array( 'edit' ),
 					)
 				)
-			)
+			),
+			'start_date' => array(
+				'description' => __( "The subscription's start date.", 'woocommerce-subscriptions' ),
+				'type'        => 'date-time',
+				'context'     => array( 'view', 'edit' ),
+			),
+			'trial_date' => array(
+				'description' => __( "The subscription's trial date", 'woocommerce-subscriptions' ),
+				'type'        => 'date-time',
+				'context'     => array( 'view', 'edit' ),
+			),
+			'next_payment_date' => array(
+				'description' => __( "The subscription's next payment date.", 'woocommerce-subscriptions' ),
+				'type'        => 'date-time',
+				'context'     => array( 'view', 'edit' ),
+			),
+			'end_date' => array(
+				'description' => __( "The subscription's end date.", 'woocommerce-subscriptions' ),
+				'type'        => 'date-time',
+				'context'     => array( 'view', 'edit' ),
+			),
 		);
 
 		$schema['properties'] += $subscriptions_schema;
