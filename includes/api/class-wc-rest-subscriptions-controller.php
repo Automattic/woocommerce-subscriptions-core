@@ -117,6 +117,32 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 	}
 
 	/**
+	 * Overrides WC_REST_Orders_Controller::update_order to update subscription specific meta
+	 * calls parent::update_order to update the rest.
+	 *
+	 * @since 2.1
+	 * @param WP_REST_Request $request
+	 * @param WP_POST $post
+	 */
+	protected function update_order( $request, $post ) {
+		$post_id = parent::update_order( $request, $post );
+		if ( is_wp_error( $post_id ) ) {
+			return $post_id;
+		}
+
+		$subscription = wcs_get_subscription( $post_id );
+
+		try {
+			$this->update_schedule( $subscription, $request );
+			$this->update_payment_method( $subscription, $request['payment_details'], true );
+
+			return $post_id;
+		} catch ( WC_REST_Exception $e ) {
+			return new WP_Error( $e->getErrorCode(), $e->getMessage(), array( 'status' => $e->getCode() ) );
+		}
+	}
+
+	/**
 	 * Get subscription orders
 	 *
 	 * @since 2.1
@@ -292,5 +318,43 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 			// translators: 1$: gateway id, 2$: error message
 			throw new WC_REST_Exception( 'woocommerce_rest_invalid_payment_data', sprintf( __( 'Subscription payment method could not be set to %1$s with error message: %2$s', 'woocommerce-subscriptions' ), $payment_method, $e->getMessage() ), 400 );
 		}
+	}
+
+	/**
+	 * Adds additional item schema information for subscription requests
+	 *
+	 * @since 2.1
+	 */
+	public function get_item_schema() {
+		$schema = parent::get_item_schema();
+
+		$subscriptions_schema = array(
+			'billing_interval' => array(
+				'description' => __( 'The number of billing periods between subscription renewals.', 'woocommerce-subscriptions' ),
+				'type'        => 'integer',
+				'context'     => array( 'view', 'edit' ),
+			),
+			'billing_period' => array(
+				'description' => __( 'Billing period for the subscription.', 'woocommerce-subscriptions' ),
+				'type'        => 'string',
+				'enum'        => array_keys( wcs_get_subscription_period_strings() ),
+				'context'     => array( 'view', 'edit' ),
+			),
+			'payment_details' => array(
+				'description' => __( 'Subscription payment details.', 'woocommerce-subscriptions' ),
+				'type'        => 'array',
+				'context'     => array( 'edit' ),
+				'properties'  => array(
+					'method_id' => array(
+						'description' => __( 'Payment gateway ID.', 'woocommerce-subscriptions' ),
+						'type'        => 'string',
+						'context'     => array( 'edit' ),
+					)
+				)
+			)
+		);
+
+		$schema['properties'] += $subscriptions_schema;
+		return $schema;
 	}
 }
