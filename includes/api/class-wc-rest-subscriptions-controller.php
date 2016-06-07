@@ -40,7 +40,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 	public function __construct() {
 		add_filter( 'woocommerce_rest_prepare_shop_subscription', array( $this, 'filter_get_subscription_response' ), 10, 3 );
 
-		add_filter( "woocommerce_rest_shop_subscription_query", array( $this, 'query_args' ), 10, 2 );
+		add_filter( 'woocommerce_rest_shop_subscription_query', array( $this, 'query_args' ), 10, 2 );
 	}
 
 	/**
@@ -83,7 +83,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 			$response->data['billing_period']   = $subscription->billing_period;
 			$response->data['billing_interval'] = $subscription->billing_interval;
 
-			$response->data['schedule'] = array (
+			$response->data['schedule'] = array(
 				'start_date'        => wc_rest_prepare_date_response( $subscription->get_date( 'start' ) ),
 				'trial_end_date'    => wc_rest_prepare_date_response( $subscription->get_date( 'trial_end' ) ),
 				'next_payment_date' => wc_rest_prepare_date_response( $subscription->get_date( 'next_payment' ) ),
@@ -349,8 +349,8 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 						'description' => __( 'Payment gateway ID.', 'woocommerce-subscriptions' ),
 						'type'        => 'string',
 						'context'     => array( 'edit' ),
-					)
-				)
+					),
+				),
 			),
 			'start_date' => array(
 				'description' => __( "The subscription's start date.", 'woocommerce-subscriptions' ),
