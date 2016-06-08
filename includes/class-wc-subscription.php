@@ -1504,7 +1504,7 @@ class WC_Subscription extends WC_Order {
 	 * @param WC_Payment_Gateway|empty $payment_method
 	 * @param array $payment_meta Associated array of the form: $database_table => array( value, )
 	 */
-	public function set_payment_method( $payment_gateway, $payment_meta = array() ) {
+	public function set_payment_method( $payment_gateway = '', $payment_meta = array() ) {
 
 		if ( ! empty( $payment_meta ) && isset( $payment_gateway->id ) ) {
 			$this->set_payment_method_meta( $payment_gateway->id, $payment_meta );
