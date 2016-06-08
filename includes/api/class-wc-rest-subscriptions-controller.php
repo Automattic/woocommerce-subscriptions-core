@@ -41,6 +41,8 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 		add_filter( 'woocommerce_rest_prepare_shop_subscription', array( $this, 'filter_get_subscription_response' ), 10, 3 );
 
 		add_filter( 'woocommerce_rest_shop_subscription_query', array( $this, 'query_args' ), 10, 2 );
+
+		add_filter( 'woocommerce_rest_pre_insert_shop_subscription', array( $this, 'prepare_subscription_args' ), 10, 2 );
 	}
 
 	/**
@@ -218,19 +220,15 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 	 * @param array $args subscription args.
 	 * @return WC_Subscription
 	 */
-	protected function create_base_order( $args, $data ) {
-		$args['order_id']         = ( ! empty( $data['order_id'] ) ) ? $data['order_id'] : '';
-		$args['billing_interval'] = ( ! empty( $data['billing_interval'] ) ) ? $data['billing_interval'] : '';
-		$args['billing_period']   = ( ! empty( $data['billing_period'] ) ) ? $data['billing_period'] : '';
-
+	protected function create_base_order( $args ) {
 		$subscription = wcs_create_subscription( $args );
 
 		if ( is_wp_error( $subscription ) ) {
 			throw new WC_REST_Exception( 'woocommerce_rest_cannot_create_subscription', sprintf( __( 'Cannot create subscription: %s.', 'woocommerce' ), implode( ', ', $subscription->get_error_messages() ) ), 400 );
 		}
 
-		$this->update_schedule( $subscription, $data );
-		$this->update_payment_method( $subscription, $data['payment_details'] );
+		$this->update_schedule( $subscription, $args );
+		$this->update_payment_method( $subscription, $args['payment_details'] );
 
 		return $subscription;
 	}
@@ -279,7 +277,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 	public function update_payment_method( $subscription, $data, $updating = false ) {
 		$payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
 		$payment_method   = ( ! empty( $data['method_id'] ) ) ? $data['method_id'] : 'manual';
-		$payment_gateway  = ( isset( $payment_gateways[ $data['method_id'] ] ) ) ? $payment_gateways[ $data['method_id'] ] : '';
+		$payment_gateway  = ( ! empty( $payment_gateways[ $payment_method ] ) ) ? $payment_gateways[ $payment_method ] : '';
 
 		try {
 			if ( $updating && ! array_key_exists( $payment_method, WCS_Change_Payment_Method_Admin::get_valid_payment_methods( $subscription ) ) ) {
@@ -376,5 +374,28 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 
 		$schema['properties'] += $subscriptions_schema;
 		return $schema;
+	}
+
+	/**
+	 * Prepare subscription data for create.
+	 *
+	 * @since 2.1
+	 * @param stdClass $data
+	 * @param WP_REST_Request $request Request object.
+	 * @return stdClass
+	 */
+	public function prepare_subscription_args( $data, $request ) {
+		$data->billing_interval = $request['billing_interval'];
+		$data->billing_period   = $request['billing_period'];
+
+		foreach ( array( 'start', 'trial_end', 'end', 'next_payment' ) as $date_type ) {
+			if ( ! empty( $request[ $date_type . '_date' ] ) ) {
+				$data->{$date_type . '_date'} = $request[ $date_type . '_date' ];
+			}
+		}
+
+		$data->payment_details = ! empty( $request['payment_details'] ) ? $request['payment_details'] : '';
+
+		return $data;
 	}
 }
