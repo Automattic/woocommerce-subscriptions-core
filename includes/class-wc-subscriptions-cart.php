@@ -267,6 +267,7 @@ class WC_Subscriptions_Cart {
 		self::$calculation_type = self::$recurring_cart_key = 'none';
 
 		// We need to reset the packages and totals stored in WC()->shipping too
+		WC()->shipping->reset_shipping();
 		self::maybe_restore_shipping_methods();
 		WC()->cart->calculate_shipping();
 
@@ -399,6 +400,10 @@ class WC_Subscriptions_Cart {
 	 * @since 2.0.12
 	 */
 	public static function add_shipping_method_post_data() {
+
+		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
+			return;
+		}
 
 		check_ajax_referer( 'update-order-review', 'security' );
 
@@ -883,16 +888,17 @@ class WC_Subscriptions_Cart {
 		// If we had one time shipping in the carts, we may have wiped the WC chosen shippings. Restore them.
 		self::maybe_restore_chosen_shipping_method();
 
-		// Now make sure the correct shipping method is set
-		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', array() );
-
 		if ( isset( $_POST['shipping_method'] ) && is_array( $_POST['shipping_method'] ) ) {
+
+			// Now make sure the correct shipping method is set
+			$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', array() );
+
 			foreach ( $_POST['shipping_method'] as $i => $value ) {
 				$chosen_shipping_methods[ $i ] = wc_clean( $value );
 			}
-		}
 
-		WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
+			WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
+		}
 	}
 
 	/**
