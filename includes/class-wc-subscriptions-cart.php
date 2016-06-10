@@ -1093,7 +1093,7 @@ class WC_Subscriptions_Cart {
 
 		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
 
-			if ( false === $recurring_cart->needs_shipping() ) {
+			if ( false === $recurring_cart->needs_shipping() || 0 == $recurring_cart->next_payment_date ) {
 				continue;
 			}
 
