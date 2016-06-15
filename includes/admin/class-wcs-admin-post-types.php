@@ -539,9 +539,13 @@ class WCS_Admin_Post_Types {
 				$column_content .= '<small class="meta">' . esc_html( sprintf( __( 'Via %s', 'woocommerce-subscriptions' ), $the_subscription->get_payment_method_to_display() ) ) . '</small>';
 				break;
 
+			case 'next_payment_date':
+				if ( $the_subscription->payment_method_supports( 'gateway_scheduled_payments' ) && 0 != $the_subscription->get_time( $column, 'gmt' ) ) {
+					$customer_tip = 'Exact payment time depends on the payment gateway. The time indicated is the maximum time until next payment.';
+					echo '<div class="tips" data-tip="' . esc_attr( $customer_tip ) . '">';
+				}
 			case 'start_date':
 			case 'trial_end_date':
-			case 'next_payment_date':
 			case 'last_payment_date':
 			case 'end_date':
 				if ( 0 == $the_subscription->get_time( $column, 'gmt' ) ) {
