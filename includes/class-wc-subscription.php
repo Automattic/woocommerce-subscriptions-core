@@ -1185,6 +1185,7 @@ class WC_Subscription extends WC_Order {
 			'recurring_amount'      => $amount,
 			'subscription_period'   => $this->billing_period,
 			'subscription_interval' => $this->billing_interval,
+			'subscription_length'   => wcs_estimate_periods_between( $this->get_time( 'start' ), $this->get_time( 'end' ), $this->billing_period ),
 			'display_ex_tax_label'  => $display_ex_tax_label,
 		);
 
