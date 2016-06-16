@@ -338,6 +338,8 @@ class WCS_Admin_Post_Types {
 
 		$column_content = '';
 
+		$customer_tip = '';
+
 		switch ( $column ) {
 			case 'status' :
 				// The status label
@@ -540,9 +542,8 @@ class WCS_Admin_Post_Types {
 				break;
 
 			case 'next_payment_date':
-				if ( $the_subscription->payment_method_supports( 'gateway_scheduled_payments' ) && 0 != $the_subscription->get_time( $column, 'gmt' ) ) {
-					$customer_tip = 'Exact payment time depends on the payment gateway. The time indicated is the maximum time until next payment.';
-					echo '<div class="tips" data-tip="' . esc_attr( $customer_tip ) . '">';
+				if ( $the_subscription->payment_method_supports( 'gateway_scheduled_payments' ) && 0 != $the_subscription->get_time( $column, 'gmt' ) && ! $the_subscription->is_manual() ) {
+					$customer_tip .= 'Exact payment time depends on the payment gateway.';
 				}
 			case 'start_date':
 			case 'trial_end_date':
@@ -554,8 +555,13 @@ class WCS_Admin_Post_Types {
 					$column_content .= sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( date( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ) , $the_subscription->get_time( $column, 'site' ) ) ), esc_html( $the_subscription->get_date_to_display( $column ) ) );
 				}
 
+				if ( ! empty( $customer_tip ) ) {
+					$column_content .= sprintf( '<div class="woocommerce-help-tip" data-tip="' . esc_attr( $customer_tip ) . '"></div>' );
+				}
+
 				$column_content = $column_content;
 				break;
+
 			case 'orders' :
 				$column_content .= $this->get_related_orders_link( $the_subscription );
 				break;
