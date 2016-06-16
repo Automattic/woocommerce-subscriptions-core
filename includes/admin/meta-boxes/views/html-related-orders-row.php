@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		if ( $timestamp_gmt > 0 ) {
 
 			// translators: php date format
-			$t_time    = get_the_time( _x( 'Y/m/d g:i:s A', 'post date', 'woocommerce-subscriptions' ), $post );
+			$t_time    = get_the_time( _x( 'Y/m/d g:i:s A', 'post date', 'woocommerce-subscriptions' ), $order->post );
 			$time_diff = $timestamp_gmt - current_time( 'timestamp', true );
 
 			if ( $time_diff > 0 && $time_diff < WEEK_IN_SECONDS ) {
