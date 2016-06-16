@@ -1185,9 +1185,30 @@ class WC_Subscription extends WC_Order {
 			'recurring_amount'      => $amount,
 			'subscription_period'   => $this->billing_period,
 			'subscription_interval' => $this->billing_interval,
-			'subscription_length'   => wcs_estimate_periods_between( $this->get_time( 'start' ), $this->get_time( 'end' ), $this->billing_period ),
 			'display_ex_tax_label'  => $display_ex_tax_label,
 		);
+
+		if ( 0 != ( $end_date = $this->get_time( 'end' ) ) ) {
+			$from_date = ( 0 != $this->get_time( 'trial_end' ) ) ? $this->get_time( 'trial_end' ) : $this->get_time( 'start' );
+
+			if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $this ) ) {
+				$renewal_orders = $this->get_related_orders( 'all' , 'renewal' );
+
+				// if we haven't got a renewal order yet, the effective start date is next payment date
+				if ( empty( $renewal_orders ) ) {
+					$from_date = $this->get_time( 'next_payment' );
+				} else {
+					$renewal_order = reset( $renewal_orders );
+					$from_date = $renewal_order->post->post_date_gmt;
+				}
+			}
+
+			$length = wcs_estimate_periods_between( $from_date, $end_date, $this->billing_period );
+
+			if ( $length == $this->billing_interval ) {
+				$subscription_details['subscription_length'] = $length;
+			}
+		}
 
 		return apply_filters( 'woocommerce_subscription_price_string_details', $subscription_details, $this );
 	}
