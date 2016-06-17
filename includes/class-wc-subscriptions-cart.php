@@ -216,7 +216,7 @@ class WC_Subscriptions_Cart {
 		$recurring_carts = array();
 
 		// Back up the shipping method. Chances are WC is going to wipe the chosen_shipping_methods data
-		WC()->session->set( 'wcs_shipping_methods', WC()->session->get( 'chosen_shipping_methods' ) );
+		WC()->session->set( 'wcs_shipping_methods', WC()->session->get( 'chosen_shipping_methods', array() ) );
 
 		// Now let's calculate the totals for each group of subscriptions
 		self::$calculation_type = 'recurring_total';
@@ -439,7 +439,7 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function set_chosen_shipping_method( $default_method, $available_methods, $package_index = 0 ) {
 
-		$chosen_methods = WC()->session->get( 'chosen_shipping_methods' );
+		$chosen_methods = WC()->session->get( 'chosen_shipping_methods', array() );
 
 		$recurring_cart_package_key = self::get_recurring_shipping_package_key( self::$recurring_cart_key, $package_index );
 
@@ -526,7 +526,7 @@ class WC_Subscriptions_Cart {
 
 		if ( 'none' !== self::$recurring_cart_key ) {
 
-			$chosen_methods                  = WC()->session->get( 'chosen_shipping_methods' );
+			$chosen_methods                  = WC()->session->get( 'chosen_shipping_methods', array() );
 			$recurring_cart_shipping_methods = array();
 			$recurring_package_count         = 0;
 
