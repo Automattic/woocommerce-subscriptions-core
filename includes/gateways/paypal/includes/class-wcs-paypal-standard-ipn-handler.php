@@ -270,6 +270,11 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 			case 'subscr_payment':
 
+				if ( 0.01 == $transaction_details['mc_gross'] && 1 == $subscription->get_completed_payment_count() ) {
+					WC_Gateway_Paypal::log( 'IPN ignored, treating IPN as secondary trial period.' );
+					exit;
+				}
+
 				if ( ! $is_first_payment && ! $is_renewal_sign_up_after_failure ) {
 
 					if ( $subscription->has_status( 'active' ) ) {
