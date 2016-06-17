@@ -105,7 +105,7 @@ class WC_Subscriptions_Synchroniser {
 		add_filter( 'woocommerce_payment_complete_order_status', __CLASS__ . '::order_autocomplete', 10, 2 );
 
 		// If it's an initial sync order and the total is zero, and nothing needs to be shipped, do not reduce stock
-		add_filter( 'woocommerce_order_item_quantity', __CLASS__ . '::do_not_reduce_stock_for_sync', 10, 3 );
+		add_filter( 'woocommerce_order_item_quantity', __CLASS__ . '::maybe_do_not_reduce_stock', 10, 3 );
 
 		add_filter( 'woocommerce_subscriptions_recurring_cart_key', __CLASS__ . '::add_to_recurring_cart_key', 10, 2 );
 	}
