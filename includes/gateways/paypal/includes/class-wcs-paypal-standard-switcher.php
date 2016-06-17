@@ -198,7 +198,7 @@ class WCS_PayPal_Standard_Switcher {
 						update_post_meta( $subscription->id, '_payment_method', 'paypal' );
 						update_post_meta( $subscription->id, '_paypal_subscription_id', $old_profile_id );
 
-						WCS_PayPal_Status_Manager::cancel_subscription( $subscription );
+						WCS_PayPal_Status_Manager::suspend_subscription( $subscription );
 
 						// restore payment meta to the new data
 						update_post_meta( $subscription->id, '_payment_method', $new_payment_method );
