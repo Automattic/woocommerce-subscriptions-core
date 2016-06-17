@@ -79,6 +79,16 @@ class WC_Subscriptions_Renewal_Order {
 		$order_completed      = in_array( $orders_new_status, array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id ), 'processing', 'completed' ) );
 		$order_needed_payment = in_array( $orders_old_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ) ) );
 
+		if ( $order_completed && 'failed' == $orders_old_status ) {
+			$update_post_data  = array(
+				'ID'            => $order_id,
+				'post_date'     => current_time( 'mysql', 0 ),
+				'post_date_gmt' => current_time( 'mysql', 1 ),
+			);
+
+			wp_update_post( $update_post_data );
+		}
+
 		foreach ( $subscriptions as $subscription ) {
 
 			// Do we need to activate a subscription?
