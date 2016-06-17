@@ -511,10 +511,10 @@ function wcs_discard_zero_intervals( $array ) {
 
 /**
  * Used in an array_filter, discards high deviation elements.
- * - for days it's 1/24th
- * - for week it's 1/7th
- * - for year it's 1/300th
- * - for month it's 1/($days_in_months-2)
+ * - for days it's 1/24th / one hour
+ * - for week it's 1/7th / one day
+ * - for year it's 10/365th / 10 / 365 = ten days
+ * - for month it's 4/$days_in_months / 4 days
  *
  * @param  array $array elements of the filtered array
  * @return bool        true if value is within deviation limit
@@ -522,16 +522,16 @@ function wcs_discard_zero_intervals( $array ) {
 function wcs_discard_high_deviations( $array ) {
 	switch ( $array['period'] ) {
 		case 'year':
-			return $array['fraction'] < ( 1 / 300 );
+			return $array['fraction'] < ( 10 / 365 );
 			break;
 		case 'month':
-			return $array['fraction'] < ( 1 / ( $array['days_in_month'] - 2 ) );
+			return $array['fraction'] < ( 4 / $array['days_in_month'] );
 			break;
 		case 'week':
 			return $array['fraction'] < ( 1 / 7 );
 			break;
 		case 'day':
-			return $array['fraction'] < ( 1 / 24 );
+			return $array['fraction'] < ( 2 / 24 );
 			break;
 		default:
 			return false;
@@ -556,7 +556,11 @@ function wcs_match_intervals( $array ) {
  */
 function wcs_sort_by_intervals( $a, $b ) {
 	if ( $a['intervals'] == $b['intervals'] ) {
-		return 0;
+		if ( $a['fraction'] == $b['fraction'] ) {
+			return 0;
+		}
+		return ( $a['fraction'] < $b['fraction'] ) ? -1 : 1;
+
 	}
 	return ( $a['intervals'] < $b['intervals'] ) ? -1 : 1;
 }
