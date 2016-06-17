@@ -970,9 +970,8 @@ class WC_Subscriptions_Synchroniser {
 		if ( wcs_order_contains_subscription( $order ) ) {
 			$product = wc_get_product( wcs_get_canonical_product_id( $item ) );
 			if ( 0 == $item['line_total'] && self::is_product_synced( $product ) && ! self::is_product_prorated( $item_id ) && ! self::is_today( self::calculate_first_payment_date( $product, 'timestamp' ) ) ) {
-				return 0;
+				$qty = 0;
 			}
-			return $qty;
 		}
 		return $qty;
 	}
