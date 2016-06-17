@@ -179,9 +179,8 @@ class WCS_PayPal_Standard_Switcher {
 	public static function maybe_cancel_paypal_after_switch( $order_id, $old_status, $new_status ) {
 
 		$order_completed    = in_array( $new_status, array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id ), 'processing', 'completed' ) ) && in_array( $old_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ) ) );
-		$old_payment_method = get_post_meta( $order_id, '_old_payment_method', true );
 
-		if ( $order_completed && wcs_order_contains_switch( $order_id ) && 'paypal_standard' == $old_payment_method ) {
+		if ( $order_completed && wcs_order_contains_switch( $order_id ) && 'paypal_standard' == get_post_meta( $order_id, '_old_payment_method', true ) ) {
 
 			$old_profile_id = get_post_meta( $order_id, '_old_paypal_subscription_id', true );
 
