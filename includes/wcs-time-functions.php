@@ -401,7 +401,7 @@ function wcs_estimate_period_between( $last_date, $second_date, $interval = 1 ) 
 	$possible_periods  = array();
 
 	// check for months
-	$full_months = wcs_find_full_months_between( $earlier_timestamp, $later_timestamp );
+	$full_months = wcs_find_full_months_between( $earlier_timestamp, $later_timestamp, $interval );
 
 	$possible_periods['month'] = array(
 		'intervals'         => floor( $full_months['months'] / $interval ),
@@ -473,27 +473,38 @@ function wcs_estimate_period_between( $last_date, $second_date, $interval = 1 ) 
  * @param  numeric $end_timestamp   unix timestamp of an end date
  * @return array                    with keys 'months' (integer) and 'remainder' (seconds, integer)
  */
-function wcs_find_full_months_between( $start_timestamp, $end_timestamp ) {
+function wcs_find_full_months_between( $start_timestamp, $end_timestamp, $interval ) {
 	$number_of_months = 0;
-	$remainder = null;
-	$previous_remainder = null;
+	$remainder = 0;
+	$previous_remainder = 0;
+	$months_in_period = 0;
+	$remainder_in_period = 0;
 
 	while ( 0 <= $remainder ) {
 		$previous_timestamp = $start_timestamp;
 		$start_timestamp = wcs_add_months( $start_timestamp, 1 );
 		$previous_remainder = $remainder;
 		$remainder = $end_timestamp - $start_timestamp;
+		$remainder_in_period += $start_timestamp - $previous_timestamp;
 
 		if ( $remainder >= 0 ) {
 			$number_of_months++;
-		} elseif ( null === $previous_remainder ) {
+			$months_in_period++;
+		} elseif ( 0 === $previous_remainder ) {
 			$previous_remainder = $end_timestamp - $previous_timestamp;
+		}
+
+		if ( $months_in_period >= $interval ) {
+			$months_in_period = 0;
+			$remainder_in_period = 0;
 		}
 	}
 
+	$remainder_in_period += $remainder;
+
 	$time_difference = array(
 		'months' => $number_of_months,
-		'remainder' => $previous_remainder,
+		'remainder' => $remainder_in_period,
 	);
 
 	return $time_difference;
@@ -511,10 +522,10 @@ function wcs_discard_zero_intervals( $array ) {
 
 /**
  * Used in an array_filter, discards high deviation elements.
- * - for days it's 1/24th / one hour
- * - for week it's 1/7th / one day
- * - for year it's 10/365th / 10 / 365 = ten days
- * - for month it's 4/$days_in_months / 4 days
+ * - 10 days for a year (10/365th)
+ * - 4 days for a month (4/(days_in_month))
+ * - 1 day for week (i.e. 1/7th)
+ * - 1 hour for days (i.e. 1/24th)
  *
  * @param  array $array elements of the filtered array
  * @return bool        true if value is within deviation limit
@@ -531,7 +542,7 @@ function wcs_discard_high_deviations( $array ) {
 			return $array['fraction'] < ( 1 / 7 );
 			break;
 		case 'day':
-			return $array['fraction'] < ( 2 / 24 );
+			return $array['fraction'] < ( 1 / 24 );
 			break;
 		default:
 			return false;
