@@ -404,7 +404,7 @@ function wcs_estimate_period_between( $last_date, $second_date, $interval = 1 ) 
 	$full_months = wcs_find_full_months_between( $earlier_timestamp, $later_timestamp );
 
 	$possible_periods['month'] = array(
-		'intervals'         => $full_months['months'],
+		'intervals'         => floor( $full_months['months'] / $interval ),
 		'remainder'         => $remainder = $full_months['remainder'],
 		'fraction'          => $remainder / ( 30 * DAY_IN_SECONDS ),
 		'period'            => 'month',
