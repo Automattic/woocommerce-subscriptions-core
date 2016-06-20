@@ -34,6 +34,12 @@ class WCS_PayPal_Standard_Switcher {
 
 		// Update the new payment method if switching from PayPal Standard and not creating a new subscription
 		add_filter( 'woocommerce_payment_successful_result', __CLASS__ . '::maybe_set_payment_method' , 10, 2 );
+
+		// Save old PP standand id on switched orders so that PP recurring payments can be cancelled after successful switch
+		add_action( 'woocommerce_checkout_update_order_meta', __CLASS__ . '::save_old_paypal_meta', 15, 2 );
+
+		// Try to cancel a paypal once the switch has been successfully completed
+		add_action( 'woocommerce_order_status_changed', __CLASS__ . '::maybe_cancel_paypal_after_switch', 10, 3 );
 	}
 
 	/**
@@ -131,5 +137,75 @@ class WCS_PayPal_Standard_Switcher {
 		}
 
 		return $payment_processing_result;
+	}
+
+	/**
+	 * Stores the old paypal standard subscription id on the switch order so that it can be used later to cancel the recurring payment.
+	 *
+	 * Strictly hooked on after WC_Subscriptions_Switcher::add_order_meta()
+	 *
+	 * @param int $order_id
+	 * @param array $posted
+	 * @since 2.0.15
+	 */
+	public static function save_old_paypal_meta( $order_id, $posted ) {
+
+		if ( wcs_order_contains_switch( $order_id ) ) {
+			$subscriptions = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'switch' ) );
+
+			foreach ( $subscriptions as $subscription ) {
+
+				if ( 'paypal' === $subscription->payment_method ) {
+
+					$paypal_id = wcs_get_paypal_id( $subscription->id );
+
+					if ( ! wcs_is_paypal_profile_a( $paypal_id, 'billing_agreement' ) ) {
+						update_post_meta( $order_id, '_old_payment_method', 'paypal_standard' );
+						update_post_meta( $order_id, '_old_paypal_subscription_id', $paypal_id );
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Cancel subscriptions with PayPal Standard after the order has been successfully switched.
+	 *
+	 * @param int $order_id
+	 * @param string $old_status
+	 * @param string $new_status
+	 * @since 2.0.15
+	 */
+	public static function maybe_cancel_paypal_after_switch( $order_id, $old_status, $new_status ) {
+
+		$order_completed    = in_array( $new_status, array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id ), 'processing', 'completed' ) ) && in_array( $old_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ) ) );
+
+		if ( $order_completed && wcs_order_contains_switch( $order_id ) && 'paypal_standard' == get_post_meta( $order_id, '_old_payment_method', true ) ) {
+
+			$old_profile_id = get_post_meta( $order_id, '_old_paypal_subscription_id', true );
+
+			if ( ! empty( $old_profile_id ) ) {
+
+				$subscriptions  = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'switch' ) );
+
+				foreach ( $subscriptions as $subscription ) {
+
+					if ( ! wcs_is_paypal_profile_a( $old_profile_id, 'billing_agreement' ) ) {
+
+						$new_payment_method = $subscription->payment_method;
+						$new_profile_id     = get_post_meta( $subscription->id, '_paypal_subscription_id', true ); // grab the current paypal subscription id in case it's a billing agreement
+
+						update_post_meta( $subscription->id, '_payment_method', 'paypal' );
+						update_post_meta( $subscription->id, '_paypal_subscription_id', $old_profile_id );
+
+						WCS_PayPal_Status_Manager::suspend_subscription( $subscription );
+
+						// restore payment meta to the new data
+						update_post_meta( $subscription->id, '_payment_method', $new_payment_method );
+						update_post_meta( $subscription->id, '_paypal_subscription_id', $new_profile_id );
+					}
+				}
+			}
+		}
 	}
 }
