@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		$timestamp_gmt = wcs_date_to_time( $order->post->post_date_gmt );
 		if ( $timestamp_gmt > 0 ) {
 			// translators: php date format
-			$t_time          = get_the_time( _x( 'Y/m/d g:i:s A', 'post date', 'woocommerce-subscriptions' ), $post );
+			$t_time          = get_the_time( _x( 'Y/m/d g:i:s A', 'post date', 'woocommerce-subscriptions' ), $order->post );
 			$date_to_display = wcs_get_human_time_diff( $timestamp_gmt );
 		} else {
 			$t_time = $date_to_display = __( 'Unpublished', 'woocommerce-subscriptions' );
