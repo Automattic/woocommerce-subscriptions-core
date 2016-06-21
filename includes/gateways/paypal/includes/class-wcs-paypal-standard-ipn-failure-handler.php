@@ -44,18 +44,14 @@ class WCS_PayPal_Standard_IPN_Failure_Handler {
 	}
 
 	/**
-	 * Close up loose ends and maybe log an error to paypal logs
+	 * Close up loose ends
 	 *
 	 * @since 2.0.6
-	 * @param $message
+	 * @param $transaction_details
 	 */
-	public static function detach( $message = '' ) {
+	public static function detach( $transaction_details ) {
 		remove_action( 'wcs_paypal_ipn_process_failure', __CLASS__ . '::log_ipn_errors' );
 		remove_action( 'shutdown', __CLASS__ . '::catch_unexpected_shutdown' );
-
-		if ( ! empty( $message ) && $message != self::$transaction_details ) {
-			WC_Gateway_Paypal::log( $message );
-		}
 
 		self::$transaction_details = null;
 	}
