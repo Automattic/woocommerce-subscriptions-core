@@ -219,10 +219,16 @@ class WCS_PayPal {
 							$redirect_url = add_query_arg( 'utm_nooverride', '1', $order->get_view_order_url() );
 						}
 
+						// Make sure PayPal is set as the payment method on the order and subscription
+						$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
+						$payment_method     = isset( $available_gateways[ self::instance()->get_id() ] ) ? $available_gateways[ self::instance()->get_id() ] : false;
+						$order->set_payment_method( $payment_method );
+
 						// Store the billing agreement ID on the order and subscriptions
 						wcs_set_paypal_id( $order, $billing_agreement_response->get_billing_agreement_id() );
 
 						foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'any' ) ) as $subscription ) {
+							$subscription->set_payment_method( $payment_method );
 							wcs_set_paypal_id( $subscription, $billing_agreement_response->get_billing_agreement_id() );
 						}
 

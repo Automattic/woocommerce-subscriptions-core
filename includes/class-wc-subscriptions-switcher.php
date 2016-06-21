@@ -106,6 +106,15 @@ class WC_Subscriptions_Switcher {
 
 		// Revoke download permissions from old switch item
 		add_action( 'woocommerce_subscriptions_switched_item', __CLASS__ . '::remove_download_permissions_after_switch', 10, 3 );
+
+		// Check if we need to force payment on this switch, just after calculating the prorated totals in @see self::calculate_prorated_totals()
+		add_filter( 'woocommerce_subscriptions_calculated_total', __CLASS__ . '::set_force_payment_flag_in_cart', 10, 1 );
+
+		// Require payment when switching from a $0 / period subscription to a non-zero subscription to process automatic payments
+		add_filter( 'woocommerce_cart_needs_payment', __CLASS__ . '::cart_needs_payment' , 50, 2 );
+
+		// Require payment when switching from a $0 / period subscription to a non-zero subscription to process automatic payments
+		add_filter( 'woocommerce_payment_successful_result', __CLASS__ . '::maybe_set_payment_method' , 10, 2 );
 	}
 
 	/**
@@ -1648,6 +1657,122 @@ class WC_Subscriptions_Switcher {
 
 		$product_id = wcs_get_canonical_product_id( $old_item );
 		WCS_Download_Handler::revoke_downloadable_file_permission( $product_id, $subscription->id, $subscription->customer_user );
+	}
+
+	/**
+	 * If we are switching a $0 / period subscription to a non-zero $ / period subscription, and the existing
+	 * subscription is using manual renewals but manual renewals are not forced on the site, we need to set a
+	 * flag to force WooCommerce to require payment so that we can switch the subscription to automatic renewals
+	 * because it was probably only set to manual because it was $0.
+	 *
+	 * We need to determine this here instead of on the 'woocommerce_cart_needs_payment' because when payment is being
+	 * processed, we will have changed the associated subscription data already, so we can't check that subscription's
+	 * values anymore. We determine it here, then ue the 'force_payment' flag on 'woocommerce_cart_needs_payment' to
+	 * require payment.
+	 *
+	 * @param int $total
+	 * @since 2.0.16
+	 */
+	public static function set_force_payment_flag_in_cart( $total ) {
+
+		if ( $total > 0 || 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) || false === self::cart_contains_switches() ) {
+			return $total;
+		}
+
+		$old_recurring_total = 0;
+		$new_recurring_total = 0;
+		$has_future_payments = false;
+
+		// Check that the new subscriptions are not for $0 recurring and there is a future payment required
+		foreach ( WC()->cart->recurring_carts as $cart ) {
+
+			$new_recurring_total += $cart->total;
+
+			if ( $cart->next_payment_date > 0 ) {
+				$has_future_payments = true;
+			}
+		}
+
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+
+			if ( ! isset( $cart_item['subscription_switch']['subscription_id'] ) ) {
+				continue;
+			}
+
+			$subscription = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
+
+			// Check that the existing subscriptions are for $0 recurring
+			$old_recurring_total = $subscription->get_total();
+
+			if ( 0 == $old_recurring_total && $new_recurring_total > 0 && true === $has_future_payments && $subscription->is_manual() ) {
+				WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['force_payment'] = true;
+			}
+		}
+
+		return $total;
+	}
+
+	/**
+	 * Require payment when switching from a $0 / period subscription to a non-zero subscription to process
+	 * automatic payments for future renewals, as indicated by the 'force_payment' flag on the switch, set in
+	 * @see self::set_force_payment_flag_in_cart().
+	 *
+	 * @param bool $needs_payment
+	 * @param object $cart
+	 * @since 2.0.16
+	 */
+	public static function cart_needs_payment( $needs_payment, $cart ) {
+
+		if ( false === $needs_payment && 0 == $cart->total && false !== ( $switch_items = self::cart_contains_switches() ) ) {
+
+			foreach ( $switch_items as $switch_item ) {
+				if ( isset( $switch_item['force_payment'] ) && true === $switch_item['force_payment'] ) {
+					$needs_payment = true;
+					break;
+				}
+			}
+		}
+
+		return $needs_payment;
+	}
+
+	/**
+	 * Once payment is processed on a switch from a $0 / period subscription to a non-zero $ / period subscription, if
+	 * payment was completed with a payment method which supports automatic payments, update the payment on the subscription
+	 * and the manual renewals flag so that future renewals are processed automatically.
+	 *
+	 * @param array $payment_processing_result
+	 * @param int $order_id
+	 * @since 2.0.16
+	 */
+	public static function maybe_set_payment_method( $payment_processing_result, $order_id ) {
+
+		// Only update the payment method the order contains a switch, and payment was processed (i.e. a paid date has been set) not just setup for processing, which is the case with PayPal Standard (which is handled by WCS_PayPal_Standard_Switcher)
+		if ( wcs_order_contains_switch( $order_id ) && false != get_post_meta( $order_id, '_paid_date', true ) ) {
+
+			$order = wc_get_order( $order_id );
+
+			foreach ( wcs_get_subscriptions_for_switch_order( $order_id ) as $subscription ) {
+
+				if ( false === $subscription->is_manual() ) {
+					continue;
+				}
+
+				if ( $subscription->payment_method !== $order->payment_method ) {
+
+					// Set the new payment method on the subscription
+					$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
+					$payment_method     = isset( $available_gateways[ $order->payment_method ] ) ? $available_gateways[ $order->payment_method ] : false;
+
+					if ( $payment_method && $payment_method->supports( 'subscriptions' ) ) {
+						$subscription->set_payment_method( $payment_method );
+						$subscription->update_manual( false );
+					}
+				}
+			}
+		}
+
+		return $payment_processing_result;
 	}
 
 	/** Deprecated Methods **/
