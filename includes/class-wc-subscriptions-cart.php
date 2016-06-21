@@ -287,10 +287,6 @@ class WC_Subscriptions_Cart {
 
 		$total = max( 0, round( WC()->cart->cart_contents_total + WC()->cart->tax_total + WC()->cart->shipping_tax_total + WC()->cart->shipping_total + WC()->cart->fee_total, WC()->cart->dp ) );
 
-		if ( isset( WC()->cart->discount_total ) && 0 !== WC()->cart->discount_total ) { // WC < 2.3, deduct deprecated after tax discount total
-			$total = max( 0, round( $total - WC()->cart->discount_total, WC()->cart->dp ) );
-		}
-
 		if ( ! self::charge_shipping_up_front() ) {
 			$total = max( 0, $total - WC()->cart->shipping_tax_total - WC()->cart->shipping_total );
 			WC()->cart->shipping_taxes = array();
