@@ -548,10 +548,15 @@ class WCS_Admin_Post_Types {
 					$column_content .= '-';
 				} else {
 					$column_content .= sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( date( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ) , $the_subscription->get_time( $column, 'site' ) ) ), esc_html( $the_subscription->get_date_to_display( $column ) ) );
+
+					if ( 'next_payment_date' == $column && $the_subscription->payment_method_supports( 'gateway_scheduled_payments' ) && ! $the_subscription->is_manual() && $the_subscription->has_status( 'active' ) ) {
+						$column_content .= '<div class="woocommerce-help-tip" data-tip="' . esc_attr__( 'This date should be treated as an estimate only. The payment gateway for this subscription controls when payments are processed.', 'woocommerce-subscriptions' ) . '"></div>';
+					}
 				}
 
 				$column_content = $column_content;
 				break;
+
 			case 'orders' :
 				$column_content .= $this->get_related_orders_link( $the_subscription );
 				break;
