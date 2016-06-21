@@ -224,7 +224,7 @@ class WC_Subscriptions_Synchroniser {
 
 			echo '</div>';
 
-			echo '<div class="subscription_sync_annual"' . esc_attr( $display_annual_select ) . '>';
+			echo '<div class="subscription_sync_annual" style="' . esc_attr( $display_annual_select ) . '">';
 
 			woocommerce_wp_text_input( array(
 				'id'            => self::$post_meta_key_day,
