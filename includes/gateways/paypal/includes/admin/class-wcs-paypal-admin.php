@@ -172,7 +172,7 @@ class WCS_PayPal_Admin {
 			if ( ! empty( $last_ipn_error ) && ( false == get_option( 'wcs_fatal_error_handling_ipn_ignored', false ) || isset( $_GET['wcs_reveal_your_ipn_secrets'] ) ) ) {
 				$notices[] = array(
 					'type' => 'error',
-					'text' => sprintf( esc_html__( '%sA fatal error has occurred when processing your one of your recent subscription payments with PayPal. Please %sopen a new ticket at WooThemes Support%s immediately to get this resolved.%sIn order to get the quickest possible response please attach a %sTemporary Admin Login%s and a copy of your PHP error logs to your support ticket.%sLast recorded error: %s', 'woocommerce-subscriptions' ),
+					'text' => sprintf( esc_html__( '%sA fatal error has occurred when processing a recent subscription payment with PayPal. Please %sopen a new ticket at WooThemes Support%s immediately to get this resolved.%sIn order to get the quickest possible response please attach a %sTemporary Admin Login%s and a copy of your PHP error logs to your support ticket.%sLast recorded error: %s', 'woocommerce-subscriptions' ),
 						'<p>',
 						'<a href="https://www.woothemes.com/my-account/create-a-ticket/" target="_blank">',
 						'</a>',
