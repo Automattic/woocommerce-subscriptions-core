@@ -37,6 +37,10 @@ class WCS_PayPal_Standard_IPN_Failure_Handler {
 		// try to enable debug logging if errors were previously found
 		if ( get_transient( $transient_key ) == $api_username && ! defined( 'WP_DEBUG' ) ) {
 			define( 'WP_DEBUG', true );
+
+			if ( ! defined( 'WP_DEBUG_DISPLAY' ) ) {
+				define( 'WP_DEBUG_DISPLAY', false );
+			}
 		}
 
 		add_action( 'wcs_paypal_ipn_process_failure', __CLASS__ . '::log_ipn_errors', 10, 2 );
