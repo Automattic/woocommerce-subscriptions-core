@@ -47,36 +47,38 @@ class WCS_User_Change_Status_Handler {
 	 */
 	public static function change_users_subscription( $subscription, $new_status ) {
 		$subscription = ( ! is_object( $subscription ) ) ? wcs_get_subscription( $subscription ) : $subscription;
+		$changed = false;
 
 		switch ( $new_status ) {
 			case 'active' :
-				if ( $subscription->needs_payment() ) {
-					WC_Subscriptions::add_notice( sprintf( __( 'You can not reactivate that subscription until paying to renew it. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), $new_status ), 'error' );
-				} else {
+				if ( ! $subscription->needs_payment() ) {
 					$subscription->update_status( $new_status );
-					$status_message = __( 'reactivated', 'woocommerce-subscriptions' );
+					$subscription->add_order_note( _x( 'Subscription reactivated by the subscriber from their account page.', 'order note left on subscription after user action', 'woocommerce-subscriptions' ) );
+					WC_Subscriptions::add_notice( _x( 'Your subscription has been reactivated.', 'Notice displayed to user confirming their action.', 'woocommerce-subscriptions' ), 'success' );
+					$changed = true;
+				} else {
+					WC_Subscriptions::add_notice( __( 'You can not reactivate that subscription until paying to renew it. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), 'error' );
 				}
 				break;
 			case 'on-hold' :
 				if ( wcs_can_user_put_subscription_on_hold( $subscription ) ) {
 					$subscription->update_status( $new_status );
-					$status_message = __( 'put on hold', 'woocommerce-subscriptions' );
+					$subscription->add_order_note( _x( 'Subscription put on hold by the subscriber from their account page.', 'order note left on subscription after user action', 'woocommerce-subscriptions' ) );
+					WC_Subscriptions::add_notice( _x( 'Your subscription has been put on hold.', 'Notice displayed to user confirming their action.', 'woocommerce-subscriptions' ), 'success' );
+					$changed = true;
 				} else {
 					WC_Subscriptions::add_notice( __( 'You can not suspend that subscription - the suspension limit has been reached. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), 'error' );
 				}
 				break;
 			case 'cancelled' :
 				$subscription->cancel_order();
-				$status_message = __( 'cancelled', 'woocommerce-subscriptions' );
+				$subscription->add_order_note( _x( 'Subscription cancelled by the subscriber from their account page.', 'order note left on subscription after user action', 'woocommerce-subscriptions' ) );
+				WC_Subscriptions::add_notice( _x( 'Your subscription has been cancelled.', 'Notice displayed to user confirming their action.', 'woocommerce-subscriptions' ), 'success' );
+				$changed = true;
 				break;
 		}
 
-		if ( isset( $status_message ) ) {
-			// translators: placeholder is status (e.g. "reactivated", "cancelled")
-			$subscription->add_order_note( sprintf( __( 'Subscription %s by the subscriber from their account page.', 'woocommerce-subscriptions' ), $status_message ) );
-			// translators: placeholder is status (e.g. "reactivated", "cancelled")
-			WC_Subscriptions::add_notice( sprintf( __( 'Your subscription has been %s.', 'woocommerce-subscriptions' ), $status_message ), 'success' );
-
+		if ( $changed ) {
 			do_action( 'woocommerce_customer_changed_subscription_to_' . $new_status, $subscription );
 		}
 	}
@@ -93,7 +95,7 @@ class WCS_User_Change_Status_Handler {
 			WC_Subscriptions::add_notice( __( 'That subscription does not exist. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), 'error' );
 			return false;
 
-		} elseif ( ! empty( $wpnonce ) && wp_verify_nonce( $wpnonce, $subscription->id ) === false ) {
+		} elseif ( ! empty( $wpnonce ) && wp_verify_nonce( $wpnonce, $subscription->id . $subscription->get_status() ) === false ) {
 			WC_Subscriptions::add_notice( __( 'Security error. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), 'error' );
 			return false;
 
@@ -102,7 +104,8 @@ class WCS_User_Change_Status_Handler {
 			return false;
 
 		} elseif ( ! $subscription->can_be_updated_to( $new_status ) ) {
-			WC_Subscriptions::add_notice( sprintf( __( 'That subscription can not be changed to %s. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), $new_status ), 'error' );
+			// translators: placeholder is subscription's new status, translated
+			WC_Subscriptions::add_notice( sprintf( __( 'That subscription can not be changed to %s. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $new_status ) ), 'error' );
 			return false;
 		}
 

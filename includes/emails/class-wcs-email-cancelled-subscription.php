@@ -8,9 +8,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * An email sent to the admin when a subscription is cancelled (either by a store manager, or the customer).
  *
  * @class 	WCS_Email_Cancelled_Subscription
- * @version	1.4
+ * @version	2.1
  * @package	WooCommerce_Subscriptions/Classes/Emails
- * @author 	Brent Shepherd
+ * @author 	Prospress
  * @extends WC_Email
  */
 class WCS_Email_Cancelled_Subscription extends WC_Email {
@@ -28,7 +28,8 @@ class WCS_Email_Cancelled_Subscription extends WC_Email {
 		$this->description = __( 'Cancelled Subscription emails are sent when a customer\'s subscription is cancelled (either by a store manager, or the customer).', 'woocommerce-subscriptions' );
 
 		$this->heading     = __( 'Subscription Cancelled', 'woocommerce-subscriptions' );
-		$this->subject     = __( '[{blogname}] Subscription Cancelled', 'woocommerce-subscriptions' );
+		// translators: placeholder is {blogname}, a variable that will be substituted when email is sent out
+		$this->subject     = sprintf( _x( '[%s] Subscription Cancelled', 'default email subject for cancelled emails sent to the admin', 'woocommerce-subscriptions' ), '{blogname}' );
 
 		$this->template_html  = 'emails/cancelled-subscription.php';
 		$this->template_plain = 'emails/plain/cancelled-subscription.php';
@@ -78,8 +79,11 @@ class WCS_Email_Cancelled_Subscription extends WC_Email {
 		wc_get_template(
 			$this->template_html,
 			array(
-				'subscription'      => $this->object,
-				'email_heading'     => $this->get_heading(),
+				'subscription'  => $this->object,
+				'email_heading' => $this->get_heading(),
+				'sent_to_admin' => true,
+				'plain_text'    => false,
+				'email'         => $this,
 			),
 			'',
 			$this->template_base
@@ -98,8 +102,11 @@ class WCS_Email_Cancelled_Subscription extends WC_Email {
 		wc_get_template(
 			$this->template_plain,
 			array(
-				'subscription'        => $this->object,
-				'email_heading'       => $this->get_heading(),
+				'subscription'  => $this->object,
+				'email_heading' => $this->get_heading(),
+				'sent_to_admin' => true,
+				'plain_text'    => true,
+				'email'         => $this,
 			),
 			'',
 			$this->template_base
@@ -137,14 +144,14 @@ class WCS_Email_Cancelled_Subscription extends WC_Email {
 				'default'       => '',
 			),
 			'heading' => array(
-				'title'         => __( 'Email Heading', 'woocommerce-subscriptions' ),
+				'title'         => _x( 'Email Heading', 'Name the setting that controls the main heading contained within the email notification', 'woocommerce-subscriptions' ),
 				'type'          => 'text',
 				'description'   => sprintf( __( 'This controls the main heading contained within the email notification. Leave blank to use the default heading: <code>%s</code>.', 'woocommerce-subscriptions' ), $this->heading ),
 				'placeholder'   => '',
 				'default'       => '',
 			),
 			'email_type' => array(
-				'title'         => __( 'Email type', 'woocommerce-subscriptions' ),
+				'title'         => _x( 'Email type', 'text, html or multipart', 'woocommerce-subscriptions' ),
 				'type'          => 'select',
 				'description'   => __( 'Choose which format of email to send.', 'woocommerce-subscriptions' ),
 				'default'       => 'html',

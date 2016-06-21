@@ -107,22 +107,22 @@ function wcs_get_switch_orders_for_subscription( $subscription_id ) {
 function wcs_is_product_switchable_type( $product ) {
 
 	if ( ! is_object( $product ) ) {
-		$product = get_product( $product );
+		$product = wc_get_product( $product );
 	}
 
 	$variation = null;
-
-	// back compat for parent products
-	if ( $product->is_type( 'subscription_variation' ) && ! empty( $product->parent ) ) {
-		$variation = $product;
-		$product = $product->parent;
-	}
 
 	if ( empty( $product ) ) {
 
 		$is_product_switchable = false;
 
 	} else {
+
+		// back compat for parent products
+		if ( $product->is_type( 'subscription_variation' ) && ! empty( $product->parent ) ) {
+			$variation = $product;
+			$product   = $product->parent;
+		}
 
 		$allow_switching = get_option( WC_Subscriptions_Admin::$option_prefix . '_allow_switching', 'no' );
 

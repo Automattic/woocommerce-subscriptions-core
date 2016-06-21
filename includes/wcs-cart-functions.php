@@ -26,30 +26,160 @@ function wcs_cart_totals_subtotal_html( $cart ) {
 }
 
 /**
- * Display a recurring shipping methods price
+ * Get recurring shipping methods.
+ *
+ * @access public
+ */
+function wcs_cart_totals_shipping_html() {
+
+	$initial_packages = WC()->shipping->get_packages();
+
+	$show_package_details = count( WC()->cart->recurring_carts ) > 1 ? true : false;
+	$show_package_name    = true;
+
+	// Create new subscriptions for each subscription product in the cart (that is not a renewal)
+	foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
+
+		// Create shipping packages for each subscription item
+		if ( WC_Subscriptions_Cart::cart_contains_subscriptions_needing_shipping() && 0 !== $recurring_cart->next_payment_date ) {
+
+			// This will get a package with the 'recurring_cart_key' set to 'none' (because WC_Subscriptions_Cart::display_recurring_totals() set WC_Subscriptions_Cart::$calculation_type to 'recurring_total', but WC_Subscriptions_Cart::$recurring_cart_key has not been set), which ensures that it's a unique package, which we need in order to get all the available packages, not just the package for the recurring cart calculation we completed previously where WC_Subscriptions_Cart::filter_package_rates() removed all unchosen rates and which WC then cached
+			$packages = $recurring_cart->get_shipping_packages();
+
+			foreach ( $packages as $i => $base_package ) {
+
+				$product_names = array();
+
+				$package = WC()->shipping->calculate_shipping_for_package( $base_package );
+
+				if ( $show_package_details ) {
+					foreach ( $package['contents'] as $item_id => $values ) {
+						$product_names[] = $values['data']->get_title() . ' &times;' . $values['quantity'];
+					}
+					$package_details = implode( ', ', $product_names );
+				} else {
+					$package_details = '';
+				}
+
+				$chosen_initial_method   = isset( WC()->session->chosen_shipping_methods[ $i ] ) ? WC()->session->chosen_shipping_methods[ $i ] : '';
+				$chosen_recurring_method = isset( WC()->session->chosen_shipping_methods[ $recurring_cart_key . '_' . $i ] ) ? WC()->session->chosen_shipping_methods[ $recurring_cart_key . '_' . $i ] : $chosen_initial_method;
+
+				if ( ( 1 === count( $package['rates'] ) ) || ( isset( $initial_packages[ $i ] ) && $package['rates'] == $initial_packages[ $i ]['rates'] && apply_filters( 'wcs_cart_totals_shipping_html_price_only', true, $package, $recurring_cart ) ) ) {
+					$shipping_method = ( 1 === count( $package['rates'] ) ) ? current( $package['rates'] ) : $package['rates'][ $chosen_initial_method ];
+					// packages match, display shipping amounts only
+					?>
+					<tr class="shipping recurring-total <?php echo esc_attr( $recurring_cart_key ); ?>">
+						<th><?php echo esc_html( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ) ); ?></th>
+						<td>
+							<?php echo wp_kses_post( wcs_cart_totals_shipping_method_price_label( $shipping_method, $recurring_cart ) ); ?>
+							<?php if ( 1 === count( $package['rates'] ) ) : ?>
+								<?php $index = sprintf( '%1$s_%2$d', $recurring_cart_key, $i ); ?>
+								<?php wcs_cart_print_shipping_input( $index, $shipping_method ); ?>
+								<?php do_action( 'woocommerce_after_shipping_rate', $shipping_method, $index ); ?>
+							<?php endif; ?>
+							<?php if ( ! empty( $show_package_details ) ) : ?>
+								<?php echo '<p class="woocommerce-shipping-contents"><small>' . esc_html( $package_details ) . '</small></p>'; ?>
+							<?php endif; ?>
+						</td>
+					</tr>
+					<?php
+				} else {
+					// Display the options
+					$product_names = array();
+
+					if ( $show_package_name ) {
+						$package_name = apply_filters( 'woocommerce_shipping_package_name', sprintf( _n( 'Shipping', 'Shipping %d', ( $i + 1 ), 'woocommerce-subscriptions' ), ( $i + 1 ) ), $i, $package );
+					} else {
+						$package_name = '';
+					}
+
+					wc_get_template( 'cart/cart-recurring-shipping.php', array(
+							'package'              => $package,
+							'available_methods'    => $package['rates'],
+							'show_package_details' => $show_package_details,
+							'package_details'      => $package_details,
+							'package_name'         => $package_name,
+							'index'                => sprintf( '%1$s_%2$d', $recurring_cart_key, $i ),
+							'chosen_method'        => $chosen_recurring_method,
+							'recurring_cart_key'   => $recurring_cart_key,
+							'recurring_cart'       => $recurring_cart,
+						),
+						'',
+						plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/'
+					);
+					$show_package_name = false;
+				}
+			}
+		}
+	}
+}
+
+/**
+ * Display a recurring shipping method's input element, either as a hidden element if there is only one shipping method,
+ * or a radio select box when there is more than one available method.
+ *
+ * @param  string $shipping_method_index
+ * @param  object $shipping_method
+ * @param  string $chosen_method
+ * @param  string $input_type
+ * @return null
+ */
+function wcs_cart_print_shipping_input( $shipping_method_index, $shipping_method, $chosen_method = '', $input_type = 'hidden' ) {
+
+	if ( 'radio' == $input_type ) {
+		$checked = checked( $shipping_method->id, $chosen_method, false );
+	} else {
+		// Make sure we only output safe input types
+		$input_type = 'hidden';
+		$checked    = '';
+	}
+
+	printf( '<input type="%1$s" name="shipping_method[%2$s]" data-index="%2$s" id="shipping_method_%2$s_%3$s" value="%4$s" class="shipping_method shipping_method_%2$s" %5$s />',
+	esc_attr( $input_type ), esc_attr( $shipping_method_index ), esc_attr( sanitize_title( $shipping_method->id ) ), esc_attr( $shipping_method->id ), esc_attr( $checked ) );
+}
+
+/**
+ * Display a recurring shipping methods price & name as a label
+ *
  * @param  object $method
  * @return string
  */
 function wcs_cart_totals_shipping_method( $method, $cart ) {
 
+	$label = ( method_exists( $method, 'get_label' ) ) ? $method->get_label() : $method->label; // WC < 2.5 compatibility (WC_Shipping_Rate::get_label() was introduced with WC 2.5)
+	$label .= ': ' . wcs_cart_totals_shipping_method_price_label( $method, $cart );
+
+	return apply_filters( 'wcs_cart_totals_shipping_method', $label, $method, $cart );
+}
+
+/**
+ * Display a recurring shipping methods price
+ *
+ * @param  object $method
+ * @return string
+ */
+function wcs_cart_totals_shipping_method_price_label( $method, $cart ) {
+
+	$price_label = '';
+
 	if ( $method->cost > 0 ) {
 
 		if ( WC()->cart->tax_display_cart == 'excl' ) {
-			$label = wcs_cart_price_string( $method->cost, $cart );
+			$price_label .= wcs_cart_price_string( $method->cost, $cart );
 			if ( $method->get_shipping_tax() > 0 && $cart->prices_include_tax ) {
-				$label .= ' <small>' . WC()->countries->ex_tax_or_vat() . '</small>';
+				$price_label .= ' <small>' . WC()->countries->ex_tax_or_vat() . '</small>';
 			}
 		} else {
-			$label = wcs_cart_price_string( $method->cost + $method->get_shipping_tax(), $cart );
+			$price_label .= wcs_cart_price_string( $method->cost + $method->get_shipping_tax(), $cart );
 			if ( $method->get_shipping_tax() > 0 && ! $cart->prices_include_tax ) {
-				$label .= ' <small>' . WC()->countries->inc_tax_or_vat() . '</small>';
+				$price_label .= ' <small>' . WC()->countries->inc_tax_or_vat() . '</small>';
 			}
 		}
 	} else {
-		$label = _x( 'Free', 'shipping method price', 'woocommerce-subscriptions' );
+		$price_label .= _x( 'Free', 'shipping method price', 'woocommerce-subscriptions' );
 	}
 
-	return apply_filters( 'wcs_cart_totals_shipping_method', $label, $method, $cart );
+	return $price_label;
 }
 
 /**
@@ -121,7 +251,7 @@ function wcs_cart_totals_order_total_html( $cart ) {
 
 		if ( ! empty( $tax_string_array ) ) {
 			// translators: placeholder is price string, denotes tax included in cart/order total
-			$value .= '<small class="includes_tax">' . sprintf( __( '(Includes %s)', 'woocommerce-subscriptions' ), implode( ', ', $tax_string_array ) ) . '</small>';
+			$value .= '<small class="includes_tax">' . sprintf( _x( '(Includes %s)', 'includes tax', 'woocommerce-subscriptions' ), implode( ', ', $tax_string_array ) ) . '</small>';
 		}
 	}
 
@@ -187,7 +317,7 @@ function wcs_cart_pluck( $cart, $field, $default = 0 ) {
 function wcs_add_cart_first_renewal_payment_date( $order_total_html, $cart ) {
 
 	if ( 0 !== $cart->next_payment_date ) {
-		$first_renewal_date = date_i18n( woocommerce_date_format(), strtotime( get_date_from_gmt( $cart->next_payment_date ) ) );
+		$first_renewal_date = date_i18n( wc_date_format(), wcs_date_to_time( get_date_from_gmt( $cart->next_payment_date ) ) );
 		// translators: placeholder is a date
 		$order_total_html  .= '<div class="first-payment-date"><small>' . sprintf( __( 'First renewal: %s', 'woocommerce-subscriptions' ), $first_renewal_date ) .  '</small></div>';
 	}

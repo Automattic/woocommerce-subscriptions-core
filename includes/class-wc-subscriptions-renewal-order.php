@@ -29,6 +29,9 @@ class WC_Subscriptions_Renewal_Order {
 
 		// Prevent customers from cancelling renewal orders. Needs to be hooked before WC_Form_Handler::cancel_order() (20)
 		add_filter( 'wp_loaded', __CLASS__ . '::prevent_cancelling_renewal_orders', 19, 3 );
+
+		// Don't copy switch order item meta to renewal order items
+		add_filter( 'wcs_new_order_items', __CLASS__ . '::remove_switch_item_meta_keys', 10, 1 );
 	}
 
 	/* Helper functions */
@@ -79,6 +82,16 @@ class WC_Subscriptions_Renewal_Order {
 		$order_completed      = in_array( $orders_new_status, array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id ), 'processing', 'completed' ) );
 		$order_needed_payment = in_array( $orders_old_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ) ) );
 
+		if ( $order_completed && $order_needed_payment ) {
+			$update_post_data  = array(
+				'ID'            => $order_id,
+				'post_date'     => current_time( 'mysql', 0 ),
+				'post_date_gmt' => current_time( 'mysql', 1 ),
+			);
+
+			wp_update_post( $update_post_data );
+		}
+
 		foreach ( $subscriptions as $subscription ) {
 
 			// Do we need to activate a subscription?
@@ -120,8 +133,7 @@ class WC_Subscriptions_Renewal_Order {
 
 		if ( is_a( $renewal_order, 'WC_Order' ) && wcs_is_subscription( $subscription ) ) {
 
-			// translators: placeholder is order number, hash before order number
-			$order_number = sprintf( __( '#%s', 'woocommerce-subscriptions' ), $renewal_order->get_order_number() );
+			$order_number = sprintf( _x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), $renewal_order->get_order_number() );
 
 			// translators: placeholder is order ID
 			$subscription->add_order_note( sprintf( __( 'Order %s created to record renewal.', 'woocommerce-subscriptions' ), sprintf( '<a href="%s">%s</a> ', esc_url( wcs_get_edit_post_link( $renewal_order->id ) ), $order_number ) ) );
@@ -154,109 +166,29 @@ class WC_Subscriptions_Renewal_Order {
 		}
 	}
 
+	/**
+	 * Removes switch line item meta data so it isn't copied to renewal order line items
+	 *
+	 * @since 2.0.16
+	 * @param array $order_items
+	 * @return array $order_items
+	 */
+	public static function remove_switch_item_meta_keys( $order_items ) {
+
+		$switched_order_item_keys = array(
+			'_switched_subscription_sign_up_fee_prorated' => '',
+			'_switched_subscription_price_prorated' => '',
+			'_switched_subscription_item_id' => '',
+		);
+
+		foreach ( $order_items as $order_item_id => $item ) {
+			$order_items[ $order_item_id ]['item_meta'] = array_diff_key( $item['item_meta'], $switched_order_item_keys );
+		}
+
+		return $order_items;
+	}
+
 	/* Deprecated functions */
-
-	/**
-	 * Hooks to the renewal order created action to determine if the order should be emailed to the customer.
-	 *
-	 * @param WC_Order|int $order The WC_Order object or ID of a WC_Order order.
-	 * @since 1.2
-	 * @deprecated 1.4
-	 */
-	public static function maybe_send_customer_renewal_order_email( $order ) {
-		_deprecated_function( __METHOD__, '1.4' );
-		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_email_renewal_order' ) ) {
-			self::send_customer_renewal_order_email( $order );
-		}
-	}
-
-	/**
-	 * Processing Order
-	 *
-	 * @param WC_Order|int $order The WC_Order object or ID of a WC_Order order.
-	 * @since 1.2
-	 * @deprecated 1.4
-	 */
-	public static function send_customer_renewal_order_email( $order ) {
-		_deprecated_function( __METHOD__, '1.4' );
-
-		if ( ! is_object( $order ) ) {
-			$order = new WC_Order( $order );
-		}
-
-		$mailer = WC()->mailer();
-		$mails  = $mailer->get_emails();
-
-		$mails['WCS_Email_Customer_Renewal_Invoice']->trigger( $order->id );
-	}
-
-	/**
-	 * Change the email subject of the new order email to specify the order is a subscription renewal order
-	 *
-	 * @param string $subject The default WooCommerce email subject
-	 * @param WC_Order $order The WC_Order object which the email relates to
-	 * @since 1.2
-	 * @deprecated 1.4
-	 */
-	public static function email_subject_new_renewal_order( $subject, $order ) {
-		_deprecated_function( __METHOD__, '1.4' );
-
-		if ( wcs_order_contains_renewal( $order ) ) {
-			$blogname = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
-			// translators: 1$: blog name, 2$: order number
-			$subject  = apply_filters( 'woocommerce_subscriptions_email_subject_new_renewal_order', sprintf( _x( '[%1$s] New Subscription Renewal Order (%2$s)', 'used in new renewal order email, deprecated', 'woocommerce-subscriptions' ), $blogname, $order->get_order_number() ), $order );
-		}
-
-		return $subject;
-	}
-
-	/**
-	 * Change the email subject of the processing order email to specify the order is a subscription renewal order
-	 *
-	 * @param string $subject The default WooCommerce email subject
-	 * @param WC_Order $order The WC_Order object which the email relates to
-	 * @since 1.2
-	 * @deprecated 1.4
-	 */
-	public static function email_subject_customer_procesing_renewal_order( $subject, $order ) {
-		_deprecated_function( __METHOD__, '1.4' );
-
-		if ( wcs_order_contains_renewal( $order ) ) {
-			$blogname = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
-			$subject  = apply_filters(
-				'woocommerce_subscriptions_email_subject_customer_procesing_renewal_order',
-				// translators: placeholder is blog name
-				sprintf( _x( '[%s] Subscription Renewal Order', 'used in processing renewal order email to customer', 'woocommerce-subscriptions' ), $blogname ),
-				$order
-			);
-		}
-
-		return $subject;
-	}
-
-	/**
-	 * Change the email subject of the completed order email to specify the order is a subscription renewal order
-	 *
-	 * @param string $subject The default WooCommerce email subject
-	 * @param WC_Order $order The WC_Order object which the email relates to
-	 * @since 1.2
-	 * @deprecated 1.4
-	 */
-	public static function email_subject_customer_completed_renewal_order( $subject, $order ) {
-		_deprecated_function( __METHOD__, '1.4' );
-
-		if ( wcs_order_contains_renewal( $order ) ) {
-			$blogname = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
-			$subject  = apply_filters(
-				'woocommerce_subscriptions_email_subject_customer_completed_renewal_order',
-				// translators: placeholder is blog name
-				sprintf( _x( '[%s] Subscription Renewal Order', 'used in completed renewal order email to customer', 'woocommerce-subscriptions' ), $blogname ),
-				$order
-			);
-		}
-
-		return $subject;
-	}
 
 	/**
 	 * Generate an order to record an automatic subscription payment.

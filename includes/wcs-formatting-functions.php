@@ -26,6 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *		'subscription_length': The total number of periods the subscription should continue for. Default 0, meaning continue indefinitely.
  *		'trial_length': The total number of periods the subscription trial period should continue for.  Default 0, meaning no trial period.
  *		'trial_period': The temporal period for the subscription's trial period. Should be one of {day|week|month|year} as used by @see wcs_get_subscription_period_strings()
+ *		'use_per_slash': Allow calling code to determine if they want the shorter price string using a slash for singular billing intervals, e.g. $5 / month, or the longer form, e.g. $5 every month, which is normally reserved for intervals > 1
  * @since 2.0
  * @return string The price string with translated and billing periods included
  */
@@ -51,6 +52,9 @@ function wcs_price_string( $subscription_details ) {
 
 			// Params for wc_price()
 			'display_excluding_tax_label' => false,
+
+			// Params for formatting customisation
+			'use_per_slash' => true,
 		)
 	);
 
@@ -103,7 +107,7 @@ function wcs_price_string( $subscription_details ) {
 						// translators: 1$: initial amount, 2$: initial description (e.g. "up front" ), 3$: recurring amount, 4$: interval (e.g. "2nd week"), 5$: day of the week (e.g. "Thursday"); (e.g. "$10 up front, then $20 every 2nd week on Wednesday")
 						$subscription_string = sprintf( __( '%1$s %2$s then %3$s every %4%s on %5$s', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, wcs_get_subscription_period_strings( $subscription_details['subscription_interval'], $subscription_details['subscription_period'] ), $payment_day_of_week );
 					} else {
-						// translators: 1$: recurring amount string, 2$: interval (e.g. "2nd week"), 3$: day of the week (e.g. "Thursday"); (e.g. "$10 every 2nd week on Wednesday")
+						// translators: 1$: recurring amount string, 2$: period, 3$: day of the week (e.g. "$10 every 2nd week on Wednesday")
 						$subscription_string = sprintf( __( '%1$s every %2$s on %3$s', 'woocommerce-subscriptions' ), $recurring_amount_string, wcs_get_subscription_period_strings( $subscription_details['subscription_interval'], $subscription_details['subscription_period'] ), $payment_day_of_week );
 					}
 				}
@@ -124,7 +128,7 @@ function wcs_price_string( $subscription_details ) {
 							// translators: placeholder is recurring amount
 							$subscription_string = sprintf( __( '%s on the last day of each month', 'woocommerce-subscriptions' ), $recurring_amount_string );
 						} else {
-							// translators: 1$: recurring amount, 2$: day of the month (e.g. "23rd")
+							// translators: 1$: recurring amount, 2$: day of the month (e.g. "23rd") (e.g. "$5 every 23rd of each month")
 							$subscription_string = sprintf( __( '%1$s on the %2$s of each month', 'woocommerce-subscriptions' ), $recurring_amount_string, WC_Subscriptions::append_numeral_suffix( $payment_day ) );
 						}
 					}
@@ -140,10 +144,10 @@ function wcs_price_string( $subscription_details ) {
 						}
 					} else {
 						if ( $payment_day > 27 ) {
-							// translators: 1$: recurring amount, 2$: interval (e.g. "3rd")
+							// translators: 1$: recurring amount, 2$: interval (e.g. "3rd") (e.g. "$10 on the last day of every 3rd month")
 							$subscription_string = sprintf( __( '%1$s on the last day of every %2$s month', 'woocommerce-subscriptions' ), $recurring_amount_string, WC_Subscriptions::append_numeral_suffix( $subscription_details['subscription_interval'] ) );
 						} else {
-							// translators: 1$: recurring amount, 2$: day in month (e.g. "23rd"), 3$: interval (e.g. "3rd")
+							// translators: 1$: recurring amount, 2$: day of the month (e.g. "23rd") (e.g. "$5 every 23rd of each month")
 							$subscription_string = sprintf( __( '%1$s on the %2$s day of every %3$s month', 'woocommerce-subscriptions' ), $recurring_amount_string, WC_Subscriptions::append_numeral_suffix( $payment_day ), WC_Subscriptions::append_numeral_suffix( $subscription_details['subscription_interval'] ) );
 						}
 					}
@@ -156,7 +160,7 @@ function wcs_price_string( $subscription_details ) {
 						// translators: 1$: initial amount, 2$: intial description (e.g. "up front"), 3$: recurring amount, 4$: month of year (e.g. "March"), 5$: day of the month (e.g. "23rd")
 						$subscription_string = sprintf( __( '%1$s %2$s then %3$s on %4$s %5$s each year', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, $wp_locale->month[ $payment_day['month'] ], WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ) );
 					} else {
-						// translators: 1$: recurring amount, 2$: month (e.g. "March"), 3$: day of the month (e.g. "23rd")
+						// translators: 1$: recurring amount, 2$: month (e.g. "March"), 3$: day of the month (e.g. "23rd") (e.g. "$15 on March 15th every 3rd year")
 						$subscription_string = sprintf( __( '%1$s on %2$s %3$s each year', 'woocommerce-subscriptions' ), $recurring_amount_string, $wp_locale->month[ $payment_day['month'] ], WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ) );
 					}
 				} else {
@@ -165,7 +169,7 @@ function wcs_price_string( $subscription_details ) {
 						// translators: 1$: initial amount, 2$: initial description (e.g. "up front"), 3$: recurring amount, 4$: month (e.g. "March"), 5$: day of the month (e.g. "23rd"), 6$: interval (e.g. "3rd")
 						$subscription_string = sprintf( __( '%1$s %2$s then %3$s on %4$s %5$s every %6$s year', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, $wp_locale->month[ $payment_day['month'] ], WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ), WC_Subscriptions::append_numeral_suffix( $subscription_details['subscription_interval'] ) );
 					} else {
-						// translators: 1$: recurring amount, 2$: month (e.g. "March"), 3$: day of month (e.g. "23rd"), 4$: interval (e.g. "3rd")
+						// translators: 1$: recurring amount, 2$: month (e.g. "March"), 3$: day of the month (e.g. "23rd") (e.g. "$15 on March 15th every 3rd year")
 						$subscription_string = sprintf( __( '%1$s on %2$s %3$s every %4$s year', 'woocommerce-subscriptions' ), $recurring_amount_string, $wp_locale->month[ $payment_day['month'] ], WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ), WC_Subscriptions::append_numeral_suffix( $subscription_details['subscription_interval'] ) );
 					}
 				}
@@ -175,8 +179,12 @@ function wcs_price_string( $subscription_details ) {
 		// translators: 1$: initial amount, 2$: initial description (e.g. "up front"), 3$: recurring amount, 4$: subscription period (e.g. "month" or "3 months")
 		$subscription_string = sprintf( _n( '%1$s %2$s then %3$s / %4$s', '%1$s %2$s then %3$s every %4$s', $subscription_details['subscription_interval'], 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, $subscription_period_string );
 	} elseif ( ! empty( $subscription_details['recurring_amount'] ) || intval( $subscription_details['recurring_amount'] ) === 0 ) {
-		// translators: 1$: recurring amount, 2$: subscription period (e.g. "month" or "3 months")
-		$subscription_string = sprintf( _n( '%1$s / %2$s', ' %1$s every %2$s', $subscription_details['subscription_interval'], 'woocommerce-subscriptions' ), $recurring_amount_string, $subscription_period_string );
+		// translators: 1$: recurring amount, 2$: subscription period (e.g. "month" or "3 months") (e.g. "$15 / month" or "$15 every 2nd month")
+		if ( true === $subscription_details['use_per_slash'] ) {
+			$subscription_string = sprintf( _n( '%1$s / %2$s', '%1$s every %2$s', $subscription_details['subscription_interval'], 'woocommerce-subscriptions' ), $recurring_amount_string, $subscription_period_string );
+		} else {
+			$subscription_string = sprintf( __( '%1$s every %2$s', 'woocommerce-subscriptions' ), $recurring_amount_string, $subscription_period_string );
+		}
 	} else {
 		$subscription_string = '';
 	}
@@ -197,9 +205,34 @@ function wcs_price_string( $subscription_details ) {
 		}
 	}
 
-	if ( $subscription_details['display_excluding_tax_label'] && get_option( 'woocommerce_calc_taxes' ) == 'yes' ) {
+	if ( $subscription_details['display_excluding_tax_label'] && wc_tax_enabled() ) {
 		$subscription_string .= ' <small>' . WC()->countries->ex_tax_or_vat() . '</small>';
 	}
 
 	return apply_filters( 'woocommerce_subscription_price_string', $subscription_string, $subscription_details );
+}
+
+/**
+ * Display a human friendly time diff for a given timestamp, e.g. "In 12 hours" or "12 hours ago".
+ *
+ * @param int $timestamp_gmt
+ * @return string A human friendly string to display for the timestamp's date
+ * @since 2.1
+ */
+function wcs_get_human_time_diff( $timestamp_gmt ) {
+
+	$time_diff = $timestamp_gmt - current_time( 'timestamp', true );
+
+	if ( $time_diff > 0 && $time_diff < WEEK_IN_SECONDS ) {
+		// translators: placeholder is human time diff (e.g. "3 weeks")
+		$date_to_display = sprintf( __( 'In %s', 'woocommerce-subscriptions' ), human_time_diff( current_time( 'timestamp', true ), $timestamp_gmt ) );
+	} elseif ( $time_diff < 0 && absint( $time_diff ) < WEEK_IN_SECONDS ) {
+		// translators: placeholder is human time diff (e.g. "3 weeks")
+		$date_to_display = sprintf( __( '%s ago', 'woocommerce-subscriptions' ), human_time_diff( current_time( 'timestamp', true ), $timestamp_gmt ) );
+	} else {
+		$timestamp_site  = wcs_date_to_time( get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $timestamp_gmt ) ) );
+		$date_to_display = date_i18n( wc_date_format(), $timestamp_site ) . ' ' . date_i18n( wc_time_format(), $timestamp_site );
+	}
+
+	return $date_to_display;
 }

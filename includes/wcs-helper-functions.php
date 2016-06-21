@@ -91,3 +91,48 @@ function wcs_str_to_ascii( $string ) {
 
 	return false === $ascii ? preg_replace( '/[^a-zA-Z0-9_\-]/', '', $string ) : $ascii;
 }
+
+/**
+ * wp_json_encode exists since WP 4.1, but because we can't be sure that stores will actually use at least 4.1, we need
+ * to have this wrapper.
+ *
+ * @param array $data Data to be encoded
+ *
+ * @return string
+ */
+function wcs_json_encode( $data ) {
+	if ( function_exists( 'wp_json_encode' ) ) {
+		return wp_json_encode( $data );
+	}
+	return json_encode( $data );
+}
+
+/**
+ * Inserts a new key/value after the key in the array.
+ *
+ * @param $needle The array key to insert the element after
+ * @param $haystack An array to insert the element into
+ * @param $new_key The key to insert
+ * @param $new_value An value to insert
+ * @return The new array if the $needle key exists, otherwise an unmodified $haystack
+ */
+function wcs_array_insert_after( $needle, $haystack, $new_key, $new_value) {
+
+	if ( array_key_exists( $needle, $haystack ) ) {
+
+		$new_array = array();
+
+		foreach ( $haystack as $key => $value ) {
+
+			$new_array[ $key ] = $value;
+
+			if ( $key === $needle ) {
+				$new_array[ $new_key ] = $new_value;
+			}
+		}
+
+		return $new_array;
+	}
+
+	return $haystack;
+}

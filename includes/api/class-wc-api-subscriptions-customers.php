@@ -21,6 +21,16 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_API_Subscriptions_Customers extends WC_API_Customers {
 
+	public function __construct( WC_API_Server $server ) {
+		parent::__construct( $server );
+
+		// remove the add customer data because WC_API_Customers already did that
+		remove_filter( 'woocommerce_api_order_response', array( $this, 'add_customer_data' ), 10 );
+
+		// remove the modify user query because WC_API_Customers already did that
+		remove_action( 'pre_user_query', array( $this, 'modify_user_query' ) );
+	}
+
 
 	/**
 	 * Register the routes for this class

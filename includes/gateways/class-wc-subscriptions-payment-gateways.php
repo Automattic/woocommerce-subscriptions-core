@@ -27,7 +27,7 @@ class WC_Subscriptions_Payment_Gateways {
 
 		add_filter( 'woocommerce_no_available_payment_methods_message', __CLASS__ . '::no_available_payment_methods_message' );
 
-		// Create a custom hook for gateways that need to manually charge recurring payments
+		// Trigger a hook for gateways to charge recurring payments
 		add_action( 'woocommerce_scheduled_subscription_payment', __CLASS__ . '::gateway_scheduled_subscription_payment', 10, 1 );
 
 		// Create a gateway specific hooks for subscription events
@@ -179,6 +179,10 @@ class WC_Subscriptions_Payment_Gateways {
 			$subscription = wcs_get_subscription( $subscription_id );
 		}
 
+		if ( false === $subscription ) {
+			throw new InvalidArgumentException( sprintf( __( 'Subscription doesn\'t exist in scheduled action: %d', 'woocommerce-subscriptions' ), $subscription_id ) );
+		}
+
 		if ( ! $subscription->is_manual() && $subscription->get_total() > 0 && ! empty( $subscription->payment_method ) ) {
 			do_action( 'woocommerce_scheduled_subscription_payment_' . $subscription->payment_method, $subscription->get_total(), $subscription->get_last_order( 'all' ) );
 		}
@@ -232,18 +236,6 @@ class WC_Subscriptions_Payment_Gateways {
 	public static function trigger_gateway_subscription_expired_hook( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', __CLASS__ . '::trigger_gateway_status_updated_hook()' );
 		self::trigger_gateway_status_updated_hook( wcs_get_subscription_from_key( $subscription_key ), 'expired' );
-	}
-
-	/**
-	 * Fired a gateway specific when a subscription was suspended. Suspended status was changed in 1.2 to match
-	 * WooCommerce with the "on-hold" status.
-	 *
-	 * @deprecated 1.2
-	 * @since 1.0
-	 */
-	public static function trigger_gateway_suspended_subscription_hook( $user_id, $subscription_key ) {
-		_deprecated_function( __METHOD__, '1.2', __CLASS__ . '::trigger_gateway_subscription_put_on_hold_hook( $subscription_key, $user_id )' );
-		self::trigger_gateway_subscription_put_on_hold_hook( $subscription_key, $user_id );
 	}
 }
 

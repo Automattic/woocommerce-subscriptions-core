@@ -63,10 +63,14 @@ class WC_Subscriptions_Checkout {
 		$subscriptions = wcs_get_subscriptions_for_order( $order->id, array( 'order_type' => 'parent' ) );
 
 		if ( ! empty( $subscriptions ) ) {
+			remove_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 			foreach ( $subscriptions as $subscription ) {
 				wp_delete_post( $subscription->id );
 			}
+			add_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 		}
+
+		WC_Subscriptions_Cart::set_global_recurring_shipping_packages();
 
 		// Create new subscriptions for each group of subscription products in the cart (that is not a renewal)
 		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
@@ -159,6 +163,7 @@ class WC_Subscriptions_Checkout {
 				$item_id = $subscription->add_fee( $fee );
 
 				if ( ! $item_id ) {
+					// translators: placeholder is an internal error number
 					throw new Exception( sprintf( __( 'Error %d: Unable to create subscription. Please try again.', 'woocommerce-subscriptions' ), 403 ) );
 				}
 
@@ -171,13 +176,15 @@ class WC_Subscriptions_Checkout {
 			// Store tax rows
 			foreach ( array_keys( $cart->taxes + $cart->shipping_taxes ) as $tax_rate_id ) {
 				if ( $tax_rate_id && ! $subscription->add_tax( $tax_rate_id, $cart->get_tax_amount( $tax_rate_id ), $cart->get_shipping_tax_amount( $tax_rate_id ) ) && apply_filters( 'woocommerce_cart_remove_taxes_zero_rate_id', 'zero-rated' ) !== $tax_rate_id ) {
-					throw new Exception( sprintf( __( 'Error %d: Unable to subscription order. Please try again.', 'woocommerce-subscriptions' ), 405 ) );
+					// translators: placeholder is an internal error number
+					throw new Exception( sprintf( __( 'Error %d: Unable to add tax to subscription. Please try again.', 'woocommerce-subscriptions' ), 405 ) );
 				}
 			}
 
 			// Store coupons
 			foreach ( $cart->get_coupons() as $code => $coupon ) {
 				if ( ! $subscription->add_coupon( $code, $cart->get_coupon_discount_amount( $code ), $cart->get_coupon_discount_tax_amount( $code ) ) ) {
+					// translators: placeholder is an internal error number
 					throw new Exception( sprintf( __( 'Error %d: Unable to create order. Please try again.', 'woocommerce-subscriptions' ), 406 ) );
 				}
 			}
@@ -214,24 +221,32 @@ class WC_Subscriptions_Checkout {
 		// We need to make sure we only get recurring shipping packages
 		WC_Subscriptions_Cart::set_calculation_type( 'recurring_total' );
 
-		foreach ( $cart->get_shipping_packages() as $base_package ) {
+		foreach ( $cart->get_shipping_packages() as $package_index => $base_package ) {
 
 			$package = WC()->shipping->calculate_shipping_for_package( $base_package );
 
-			foreach ( WC()->shipping->get_packages() as $package_key => $package_to_ignore ) {
+			$recurring_shipping_package_key = WC_Subscriptions_Cart::get_recurring_shipping_package_key( $cart->recurring_cart_key, $package_index );
 
-				if ( isset( $package['rates'][ WC()->checkout()->shipping_methods[ $package_key ] ] ) ) {
+			$shipping_method_id = isset( WC()->checkout()->shipping_methods[ $package_index ] ) ? WC()->checkout()->shipping_methods[ $package_index ] : '';
 
-					$item_id = $subscription->add_shipping( $package['rates'][ WC()->checkout()->shipping_methods[ $package_key ] ] );
+			if ( isset( WC()->checkout()->shipping_methods[ $recurring_shipping_package_key ] ) ) {
+				$shipping_method_id = WC()->checkout()->shipping_methods[ $recurring_shipping_package_key ];
+				$package_key        = $recurring_shipping_package_key;
+			} else {
+				$package_key        = $package_index;
+			}
 
-					if ( ! $item_id ) {
-						throw new Exception( __( 'Error: Unable to create subscription. Please try again.', 'woocommerce-subscriptions' ) );
-					}
+			if ( isset( $package['rates'][ $shipping_method_id ] ) ) {
 
-					// Allows plugins to add order item meta to shipping
-					do_action( 'woocommerce_add_shipping_order_item', $subscription->id, $item_id, $package_key );
-					do_action( 'woocommerce_subscriptions_add_recurring_shipping_order_item', $subscription->id, $item_id, $package_key );
+				$item_id = $subscription->add_shipping( $package['rates'][ $shipping_method_id ] );
+
+				if ( ! $item_id ) {
+					throw new Exception( __( 'Error: Unable to create subscription. Please try again.', 'woocommerce-subscriptions' ) );
 				}
+
+				// Allows plugins to add order item meta to shipping
+				do_action( 'woocommerce_add_shipping_order_item', $subscription->id, $item_id, $package_key );
+				do_action( 'woocommerce_subscriptions_add_recurring_shipping_order_item', $subscription->id, $item_id, $package_key );
 			}
 		}
 
@@ -260,6 +275,7 @@ class WC_Subscriptions_Checkout {
 		);
 
 		if ( ! $item_id ) {
+			// translators: placeholder is an internal error number
 			throw new Exception( sprintf( __( 'Error %d: Unable to create subscription. Please try again.', 'woocommerce-subscriptions' ), 402 ) );
 		}
 

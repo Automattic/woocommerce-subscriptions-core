@@ -44,8 +44,8 @@ function wcs_maybe_make_user_inactive( $user_id ) {
 /**
  * Update a user's role to a special subscription's role
  *
- * @param int The ID of a user
- * @param string The special name assigned to the role by Subscriptions, one of 'default_subscriber_role', 'default_inactive_role' or 'default_cancelled_role'
+ * @param int $user_id The ID of a user
+ * @param string $role_new The special name assigned to the role by Subscriptions, one of 'default_subscriber_role', 'default_inactive_role' or 'default_cancelled_role'
  * @return WP_User The user with the new role.
  * @since 2.0
  */
@@ -63,6 +63,29 @@ function wcs_update_users_role( $user_id, $role_new ) {
 		return;
 	}
 
+	$roles = wcs_get_new_user_role_names( $role_new );
+
+	$role_new = $roles['new'];
+	$role_old = $roles['old'];
+
+	if ( ! empty( $role_old ) ) {
+		$user->remove_role( $role_old );
+	}
+
+	$user->add_role( $role_new );
+
+	do_action( 'woocommerce_subscriptions_updated_users_role', $role_new, $user, $role_old );
+	return $user;
+}
+
+/**
+ * Gets default new and old role names if the new role is 'default_subscriber_role'. Otherwise returns role_new and an
+ * empty string.
+ *
+ * @param $role_new string the new role of the user
+ * @return array with keys 'old' and 'new'.
+ */
+function wcs_get_new_user_role_names( $role_new ) {
 	$default_subscriber_role = get_option( WC_Subscriptions_Admin::$option_prefix . '_subscriber_role' );
 	$default_cancelled_role = get_option( WC_Subscriptions_Admin::$option_prefix . '_cancelled_role' );
 	$role_old = '';
@@ -75,14 +98,10 @@ function wcs_update_users_role( $user_id, $role_new ) {
 		$role_new = $default_cancelled_role;
 	}
 
-	if ( ! empty( $role_old ) ) {
-		$user->remove_role( $role_old );
-	}
-
-	$user->add_role( $role_new );
-
-	do_action( 'woocommerce_subscriptions_updated_users_role', $role_new, $user, $role_old );
-	return $user;
+	return array(
+		'new' => $role_new,
+		'old' => $role_old,
+	);
 }
 
 /**
@@ -136,22 +155,25 @@ function wcs_get_users_subscriptions( $user_id = 0 ) {
 		$user_id = get_current_user_id();
 	}
 
-	$post_ids = get_posts( array(
-		'posts_per_page' => -1,
-		'post_status'    => 'any',
-		'post_type'      => 'shop_subscription',
-		'orderby'        => 'date',
-		'order'          => 'desc',
-		'meta_key'       => '_customer_user',
-		'meta_value'     => $user_id,
-		'meta_compare'   => '=',
-		'fields'         => 'ids',
-	) );
+	$subscriptions = apply_filters( 'wcs_pre_get_users_subscriptions', array(), $user_id );
 
-	$subscriptions = array();
+	if ( empty( $subscriptions ) ) {
 
-	foreach ( $post_ids as $post_id ) {
-		$subscriptions[ $post_id ] = wcs_get_subscription( $post_id );
+		$post_ids = get_posts( array(
+			'posts_per_page' => -1,
+			'post_status'    => 'any',
+			'post_type'      => 'shop_subscription',
+			'orderby'        => 'date',
+			'order'          => 'desc',
+			'meta_key'       => '_customer_user',
+			'meta_value'     => $user_id,
+			'meta_compare'   => '=',
+			'fields'         => 'ids',
+		) );
+
+		foreach ( $post_ids as $post_id ) {
+			$subscriptions[ $post_id ] = wcs_get_subscription( $post_id );
+		}
 	}
 
 	return apply_filters( 'wcs_get_users_subscriptions', $subscriptions, $user_id );
@@ -162,12 +184,21 @@ function wcs_get_users_subscriptions( $user_id = 0 ) {
  *
  * @param int $subscription_id A subscription's post ID
  * @param string $status A subscription's post ID
+ * @param string $current_status A subscription's current status
  * @since 1.0
  */
-function wcs_get_users_change_status_link( $subscription_id, $status ) {
+function wcs_get_users_change_status_link( $subscription_id, $status, $current_status = '' ) {
+
+	if ( '' === $current_status ) {
+		$subscription = wcs_get_subscription( $subscription_id );
+
+		if ( $subscription instanceof WC_Subscription ) {
+			$current_status = $subscription->get_status();
+		}
+	}
 
 	$action_link = add_query_arg( array( 'subscription_id' => $subscription_id, 'change_subscription_to' => $status ) );
-	$action_link = wp_nonce_url( $action_link, $subscription_id );
+	$action_link = wp_nonce_url( $action_link, $subscription_id . $current_status );
 
 	return apply_filters( 'wcs_users_change_status_link', $action_link, $subscription_id, $status );
 }
@@ -228,15 +259,16 @@ function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 	if ( user_can( $user_id, 'edit_shop_subscription_status', $subscription->id ) ) {
 
 		$admin_with_suspension_disallowed = ( current_user_can( 'manage_woocommerce' ) && '0' === get_option( WC_Subscriptions_Admin::$option_prefix . '_max_customer_suspensions', '0' ) ) ? true : false;
+		$current_status = $subscription->get_status();
 
 		if ( $subscription->can_be_updated_to( 'on-hold' ) && wcs_can_user_put_subscription_on_hold( $subscription, $user_id ) && ! $admin_with_suspension_disallowed ) {
 			$actions['suspend'] = array(
-				'url'  => wcs_get_users_change_status_link( $subscription->id, 'on-hold' ),
+				'url'  => wcs_get_users_change_status_link( $subscription->id, 'on-hold', $current_status ),
 				'name' => __( 'Suspend', 'woocommerce-subscriptions' ),
 			);
 		} elseif ( $subscription->can_be_updated_to( 'active' ) && ! $subscription->needs_payment() ) {
 			$actions['reactivate'] = array(
-				'url'  => wcs_get_users_change_status_link( $subscription->id, 'active' ),
+				'url'  => wcs_get_users_change_status_link( $subscription->id, 'active', $current_status ),
 				'name' => __( 'Reactivate', 'woocommerce-subscriptions' ),
 			);
 		}
@@ -251,8 +283,8 @@ function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 		// Show button for subscriptions which can be cancelled and which may actually require cancellation (i.e. has a future payment)
 		if ( $subscription->can_be_updated_to( 'cancelled' ) && $subscription->get_time( 'next_payment' ) > 0 ) {
 			$actions['cancel'] = array(
-				'url'  => wcs_get_users_change_status_link( $subscription->id, 'cancelled' ),
-				'name' => __( 'Cancel', 'woocommerce-subscriptions' ),
+				'url'  => wcs_get_users_change_status_link( $subscription->id, 'cancelled', $current_status ),
+				'name' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
 			);
 		}
 	}

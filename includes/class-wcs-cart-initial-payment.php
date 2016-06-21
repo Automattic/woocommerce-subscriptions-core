@@ -39,11 +39,12 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 			$order_id     = ( isset( $wp->query_vars['order-pay'] ) ) ? $wp->query_vars['order-pay'] : absint( $_GET['order_id'] );
 			$order        = wc_get_order( $wp->query_vars['order-pay'] );
 
-			if ( $order->order_key == $order_key && $order->has_status( array( 'pending', 'failed' ) ) && ! wcs_order_contains_renewal( $order ) ) {
+			if ( $order->order_key == $order_key && $order->has_status( array( 'pending', 'failed' ) ) && ! wcs_order_contains_subscription( $order, array( 'renewal', 'resubscribe' ) ) ) {
 
 				$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) );
 
 				if ( get_current_user_id() !== $order->get_user_id() ) {
+
 					wc_add_notice( __( 'That doesn\'t appear to be your order.', 'woocommerce-subscriptions' ), 'error' );
 
 					wp_safe_redirect( get_permalink( wc_get_page_id( 'myaccount' ) ) );
@@ -52,9 +53,14 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 				} elseif ( ! empty( $subscriptions ) ) {
 
 					// Setup cart with all the original order's line items
-					$this->setup_cart( $order, array() );
+					$this->setup_cart( $order, array(
+						'order_id' => $order_id,
+					) );
 
 					WC()->session->set( 'order_awaiting_payment', $order_id );
+
+					// Set cart hash for orders paid in WC >= 2.6
+					$this->set_cart_hash( $order_id );
 
 					wp_safe_redirect( WC()->cart->get_checkout_url() );
 					exit;
@@ -62,5 +68,49 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 			}
 		}
 	}
+
+	/**
+	 * Checks the cart to see if it contains an initial payment item.
+	 *
+	 * @return bool | Array The cart item containing the initial payment, else false.
+	 * @since  2.0.13
+	 */
+	protected function cart_contains() {
+
+		$contains_initial_payment = false;
+
+		if ( ! empty( WC()->cart->cart_contents ) ) {
+			foreach ( WC()->cart->cart_contents as $cart_item ) {
+				if ( isset( $cart_item[ $this->cart_item_key ] ) ) {
+					$contains_initial_payment = $cart_item;
+					break;
+				}
+			}
+		}
+
+		return apply_filters( 'wcs_cart_contains_initial_payment', $contains_initial_payment );
+	}
+
+	/**
+	 * Get the order object used to construct the initial payment cart.
+	 *
+	 * @param Array The initial payment cart item.
+	 * @return WC_Order | The order object
+	 * @since  2.0.13
+	 */
+	protected function get_order( $cart_item = '' ) {
+		$order = false;
+
+		if ( empty( $cart_item ) ) {
+			$cart_item = $this->cart_contains();
+		}
+
+		if ( false !== $cart_item && isset( $cart_item[ $this->cart_item_key ] ) ) {
+			$order = wc_get_order( $cart_item[ $this->cart_item_key ]['order_id'] );
+		}
+
+		return $order;
+	}
+
 }
 new WCS_Cart_Initial_Payment();

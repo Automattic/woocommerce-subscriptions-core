@@ -79,7 +79,8 @@ class WC_Subscriptions_Addresses {
 					$address_type = ( ! isset( $_GET['address'] ) ) ? esc_attr( $_GET['address'] ) . ' ' : '';
 				}
 
-				$label = sprintf( __( 'Update the %s address used for %sall%s of my active subscriptions', 'woocommerce-subscriptions' ), $address_type, '<strong>', '</strong>' );
+				// translators: $1: address type (Shipping Address / Billing Address), $2: opening <strong> tag, $3: closing </strong> tag
+				$label = sprintf( __( 'Update the %1$s used for %2$sall%3$s of my active subscriptions', 'woocommerce-subscriptions' ), wcs_get_address_type_to_display( $address_type ), '<strong>', '</strong>' );
 
 				woocommerce_form_field( 'update_all_subscriptions_addresses', array(
 					'type'  => 'checkbox',
@@ -114,7 +115,7 @@ class WC_Subscriptions_Addresses {
 
 		foreach ( $address_fields as $key => $field ) {
 			if ( isset( $_POST[ $key ] ) ) {
-				$address[ str_replace( $address_type . '_', '', $key ) ] = woocommerce_clean( $_POST[ $key ] );
+				$address[ str_replace( $address_type . '_', '', $key ) ] = wc_clean( $_POST[ $key ] );
 			}
 		}
 

@@ -157,13 +157,13 @@ class WCS_Repair_2_0_2 {
 
 		if ( ! empty( $dates_to_update ) ) {
 
-			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: repairing dates = %s', $subscription->id, str_replace( array( '{', '}', '"' ), '', json_encode( $dates_to_update ) ) ) );
+			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: repairing dates = %s', $subscription->id, str_replace( array( '{', '}', '"' ), '', wcs_json_encode( $dates_to_update ) ) ) );
 
 			try {
 				$subscription->update_dates( $dates_to_update );
-				WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: repaired dates = %s', $subscription->id, str_replace( array( '{', '}', '"' ), '', json_encode( $dates_to_update ) ) ) );
+				WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: repaired dates = %s', $subscription->id, str_replace( array( '{', '}', '"' ), '', wcs_json_encode( $dates_to_update ) ) ) );
 			} catch ( Exception $e ) {
-				WCS_Upgrade_Logger::add( sprintf( '!! For subscription %d: unable to repair dates (%s), exception "%s"', $subscription->id, str_replace( array( '{', '}', '"' ), '', json_encode( $dates_to_update ) ), $e->getMessage() ) );
+				WCS_Upgrade_Logger::add( sprintf( '!! For subscription %d: unable to repair dates (%s), exception "%s"', $subscription->id, str_replace( array( '{', '}', '"' ), '', wcs_json_encode( $dates_to_update ) ), $e->getMessage() ) );
 			}
 
 			try {
@@ -261,7 +261,7 @@ class WCS_Repair_2_0_2 {
 				 AND post_title = 'scheduled_subscription_payment'
 				 ORDER BY post_date_gmt DESC",
 				ActionScheduler_wpPostStore::POST_TYPE,
-				json_encode( $old_hook_args )
+				wcs_json_encode( $old_hook_args )
 			) );
 
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: new next payment date = %s.', $subscription->id, var_export( $subscription->get_date( 'next_payment' ), true ) ) );
@@ -269,7 +269,7 @@ class WCS_Repair_2_0_2 {
 
 			// if we have a date, make sure it's valid
 			if ( null !== $old_next_payment_date ) {
-				if ( strtotime( $old_next_payment_date ) <= gmdate( 'U' ) ) {
+				if ( wcs_date_to_time( $old_next_payment_date ) <= gmdate( 'U' ) ) {
 					$repair_date = $subscription->calculate_date( 'next_payment' );
 					if ( 0 == $repair_date ) {
 						$repair_date = false;
@@ -283,7 +283,7 @@ class WCS_Repair_2_0_2 {
 				// let's just double check we shouldn't have a date set by recalculating it
 				$calculated_next_payment_date = $subscription->calculate_date( 'next_payment' );
 
-				if ( 0 != $calculated_next_payment_date && strtotime( $calculated_next_payment_date ) > gmdate( 'U' ) ) {
+				if ( 0 != $calculated_next_payment_date && wcs_date_to_time( $calculated_next_payment_date ) > gmdate( 'U' ) ) {
 					$repair_date = $calculated_next_payment_date;
 				} else {
 					$repair_date = false;

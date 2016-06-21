@@ -10,15 +10,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 ?>
-<div class="woocommerce_order_items_wrapper">
-	<table class="woocommerce_order_items">
+<div class="woocommerce_subscriptions_related_orders">
+	<table>
 		<thead>
 			<tr>
 				<th><?php esc_html_e( 'Order Number', 'woocommerce-subscriptions' ); ?></th>
 				<th><?php esc_html_e( 'Relationship', 'woocommerce-subscriptions' ); ?></th>
 				<th><?php esc_html_e( 'Date', 'woocommerce-subscriptions' ); ?></th>
 				<th><?php esc_html_e( 'Status', 'woocommerce-subscriptions' ); ?></th>
-				<th style="text-align:right;"><?php esc_html_e( 'Total', 'woocommerce-subscriptions' ); ?></th>
+				<th><?php echo esc_html_x( 'Total', 'table heading', 'woocommerce-subscriptions' ); ?></th>
 			</tr>
 		</thead>
 		<tbody>

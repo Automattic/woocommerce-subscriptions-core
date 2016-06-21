@@ -154,10 +154,6 @@ class WC_Subscriptions_Upgrader {
 
 		// Migrate products, WP-Cron hooks and subscriptions to the latest architecture, via Ajax
 		if ( '0' != self::$active_version && version_compare( self::$active_version, '2.0', '<' ) ) {
-
-			// Make sure the new /my-account/view-subscription/{id} endpoints will work
-			flush_rewrite_rules();
-
 			// Delete old cron locks
 			$deleted_rows = $wpdb->query( "DELETE FROM {$wpdb->options} WHERE `option_name` LIKE 'wcs\_blocker\_%'" );
 
@@ -270,8 +266,8 @@ class WC_Subscriptions_Upgrader {
 				$upgraded_hook_count = WCS_Upgrade_1_5::upgrade_hooks( self::$upgrade_limit_hooks );
 				$results = array(
 					'upgraded_count' => $upgraded_hook_count,
-					// translators: placeholder is number of action scheduler hooks upgraded
-					'message'        => sprintf( __( 'Migrated %s subscription related hooks to the new scheduler (in {execution_time} seconds).', 'woocommerce-subscriptions' ), $upgraded_hook_count ),
+					// translators: 1$: number of action scheduler hooks upgraded, 2$: "{execution_time}", will be replaced on front end with actual time
+					'message'        => sprintf( __( 'Migrated %1$s subscription related hooks to the new scheduler (in %2$s seconds).', 'woocommerce-subscriptions' ), $upgraded_hook_count, '{execution_time}' ),
 				);
 				break;
 
@@ -286,10 +282,11 @@ class WC_Subscriptions_Upgrader {
 
 					$results = array(
 						'upgraded_count' => $upgraded_subscriptions,
-						// translators: placeholder is number of subscriptions upgraded
-						'message'        => sprintf( __( 'Migrated %s subscriptions to the new structure (in {execution_time} seconds).', 'woocommerce-subscriptions' ), $upgraded_subscriptions ),
+						// translators: 1$: number of subscriptions upgraded, 2$: "{execution_time}", will be replaced on front end with actual time it took
+						'message'        => sprintf( __( 'Migrated %1$s subscriptions to the new structure (in %2$s seconds).', 'woocommerce-subscriptions' ), $upgraded_subscriptions, '{execution_time}' ),
 						'status'         => 'success',
-						'time_message'   => __( 'Estimated time left (minutes:seconds): {time_left}', 'woocommerce-subscriptions' ),
+						// translators: placeholder is "{time_left}", will be replaced on front end with actual time
+						'time_message'   => sprintf( _x( 'Estimated time left (minutes:seconds): %s', 'Message that gets sent to front end.', 'woocommerce-subscriptions' ), '{time_left}' ),
 					);
 
 				} catch ( Exception $e ) {
@@ -317,21 +314,29 @@ class WC_Subscriptions_Upgrader {
 
 					$subscription_counts = WCS_Repair_2_0_2::maybe_repair_subscriptions( $subscription_ids_to_repair );
 
-					$repair_message = sprintf( __( 'Repaired %d subscriptions with incorrect dates, line tax data or missing customer notes.', 'woocommerce-subscriptions' ), $subscription_counts['repaired_count'] );
+					// translators: placeholder is the number of subscriptions repaired
+					$repair_incorrect = sprintf( _x( 'Repaired %d subscriptions with incorrect dates, line tax data or missing customer notes.', 'Repair message that gets sent to front end.', 'woocommerce-subscriptions' ), $subscription_counts['repaired_count'] );
+
+					$repair_not_needed = '';
 
 					if ( $subscription_counts['unrepaired_count'] > 0 ) {
-						$repair_message .= ' ' . sprintf( _n( '%d other subscription was checked and did not need any repairs.', '%d other subscriptions were checked and did not need any repairs.', $subscription_counts['unrepaired_count'], 'woocommerce-subscriptions' ), $subscription_counts['unrepaired_count'] );
+						// translators: placeholder is number of subscriptions that were checked and did not need repairs. There's a space at the beginning!
+						$repair_not_needed = sprintf( _nx( ' %d other subscription was checked and did not need any repairs.', '%d other subscriptions were checked and did not need any repairs.', $subscription_counts['unrepaired_count'], 'Repair message that gets sent to front end.', 'woocommerce-subscriptions' ), $subscription_counts['unrepaired_count'] );
 					}
 
-					$repair_message .= ' ' . __( '(in {execution_time} seconds)', 'woocommerce-subscriptions' );
+					// translators: placeholder is "{execution_time}", which will be replaced on front end with actual time
+					$repair_time = sprintf( _x( '(in %s seconds)', 'Repair message that gets sent to front end.', 'woocommerce-subscriptions' ), '{execution_time}' );
+
+					// translators: $1: "Repaired x subs with incorrect dates...", $2: "X others were checked and no repair needed", $3: "(in X seconds)". Ordering for RTL languages.
+					$repair_message = sprintf( _x( '%1$s%2$s %3$s', 'The assembled repair message that gets sent to front end.', 'woocommerce-subscriptions' ), $repair_incorrect, $repair_not_needed, $repair_time );
 
 					$results = array(
 						'repaired_count'   => $subscription_counts['repaired_count'],
 						'unrepaired_count' => $subscription_counts['unrepaired_count'],
-						// translators: placeholder is number of subscriptions upgraded
 						'message'          => $repair_message,
 						'status'           => 'success',
-						'time_message'     => __( 'Estimated time left (minutes:seconds): {time_left}', 'woocommerce-subscriptions' ),
+						// translators: placeholder is "{time_left}", will be replaced on front end with actual time
+						'time_message'     => sprintf( _x( 'Estimated time left (minutes:seconds): %s', 'Message that gets sent to front end.', 'woocommerce-subscriptions' ), '{time_left}' ),
 					);
 
 				} catch ( Exception $e ) {
@@ -342,7 +347,7 @@ class WC_Subscriptions_Upgrader {
 						'repaired_count'   => 0,
 						'unrepaired_count' => 0,
 						// translators: 1$: error message, 2$: opening link tag, 3$: closing link tag
-						'message'          => sprintf( __( 'Unable to repair subscriptions.<br/>Error: %1$s<br/>Please refresh the page and try again. If problem persists, %2$scontact support%3$s.', 'woocommerce-subscriptions' ), '<code>' . $e->getMessage(). '</code>', '<a href="' . esc_url( 'https://woothemes.com/my-account/create-a-ticket/' ) . '">', '</a>' ),
+						'message'          => sprintf( _x( 'Unable to repair subscriptions.<br/>Error: %1$s<br/>Please refresh the page and try again. If problem persists, %2$scontact support%3$s.', 'Error message that gets sent to front end when upgrading Subscriptions', 'woocommerce-subscriptions' ), '<code>' . $e->getMessage(). '</code>', '<a href="' . esc_url( 'https://woothemes.com/my-account/create-a-ticket/' ) . '">', '</a>' ),
 						'status'           => 'error',
 					);
 				}
@@ -366,7 +371,7 @@ class WC_Subscriptions_Upgrader {
 		WCS_Upgrade_Logger::add( sprintf( 'Completed upgrade step: %s', $_POST['upgrade_step'] ) );
 
 		header( 'Content-Type: application/json; charset=utf-8' );
-		echo json_encode( $results );
+		echo wcs_json_encode( $results );
 		exit();
 	}
 
