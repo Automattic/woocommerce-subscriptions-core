@@ -311,8 +311,7 @@ class WCS_PayPal {
 			} elseif ( in_array( $transaction_details['txn_type'], self::get_ipn_handler( 'reference' )->get_transaction_types() ) ) {
 				self::get_ipn_handler( 'reference' )->valid_response( $transaction_details );
 			}
-
-		} catch( Exception $e ) {
+		} catch ( Exception $e ) {
 			WCS_PayPal_Standard_IPN_Failure_Handler::log_unexpected_exception( $e );
 		}
 	}
