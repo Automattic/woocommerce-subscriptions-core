@@ -473,7 +473,7 @@ function wcs_estimate_period_between( $last_date, $second_date, $interval = 1 ) 
  * @param  numeric $end_timestamp   unix timestamp of an end date
  * @return array                    with keys 'months' (integer) and 'remainder' (seconds, integer)
  */
-function wcs_find_full_months_between( $start_timestamp, $end_timestamp, $interval ) {
+function wcs_find_full_months_between( $start_timestamp, $end_timestamp, $interval = 1 ) {
 	$number_of_months = 0;
 	$remainder = 0;
 	$previous_remainder = 0;
