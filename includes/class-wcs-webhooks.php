@@ -36,6 +36,8 @@ class WCS_Webhooks {
 
 		add_action( 'woocommerce_subscription_date_updated', __CLASS__ . '::add_subscription_updated_callback', 10, 1 );
 
+		add_action( 'woocommerce_subscriptions_switch_completed', __CLASS__ . '::add_subscription_switched_callback', 10, 1 );
+
 		add_filter( 'woocommerce_webhook_topics' , __CLASS__ . '::add_topics_admin_menu', 10, 1 );
 
 	}
@@ -67,7 +69,7 @@ class WCS_Webhooks {
 					'woocommerce_api_delete_subscription',
 				),
 				'subscription.switched' => array(
-					'woocommerce_subscriptions_switch_completed',
+					'wcs_webhook_subscription_switched',
 				)
 			), $webhook );
 		}
@@ -148,6 +150,17 @@ class WCS_Webhooks {
 	public static function add_subscription_updated_callback( $subscription ) {
 		do_action( 'wcs_webhook_subscription_updated', $subscription->id );
 	}
+
+	/**
+	 * Call a "subscription switched" action hook with a subscription id as the first parameter to be used for webhooks payloads.
+	 *
+	 * @since 2.1
+	 */
+	public static function add_subscription_switched_callback( $subscription ) {
+		do_action( 'wcs_webhook_subscription_switched', $subscription->id );
+	}
+
+
 
 }
 WCS_Webhooks::init();
