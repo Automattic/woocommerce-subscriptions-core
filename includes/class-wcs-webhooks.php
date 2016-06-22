@@ -83,6 +83,7 @@ class WCS_Webhooks {
 			'subscription.created' => __( ' Subscription Created', 'woocommerce-subscriptions' ),
 			'subscription.updated' => __( ' Subscription Updated', 'woocommerce-subscriptions' ),
 			'subscription.deleted' => __( ' Subscription Deleted', 'woocommerce-subscriptions' ),
+			'subscription.switched' => __( ' Subscription Switched', 'woocommerce-subscriptions' ),
 		);
 
 		return array_merge( $topics, $front_end_topics );
