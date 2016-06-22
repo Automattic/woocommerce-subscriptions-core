@@ -68,7 +68,7 @@ class WCS_PayPal_Standard_IPN_Failure_Handler {
 	public static function catch_unexpected_shutdown() {
 
 		if ( ! empty( self::$transaction_details ) && $error = error_get_last() ) {
-			if ( E_ERROR == $error['type'] ) {
+			if ( in_array( $error['type'], array( E_ERROR, E_PARSE, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR ) ) ) {
 				do_action( 'wcs_paypal_ipn_process_failure', self::$transaction_details, $error );
 			}
 		}
