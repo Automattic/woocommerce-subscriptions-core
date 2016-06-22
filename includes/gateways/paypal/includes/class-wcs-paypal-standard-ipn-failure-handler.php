@@ -91,7 +91,7 @@ class WCS_PayPal_Standard_IPN_Failure_Handler {
 
 		if ( ! empty( $error ) ) {
 			update_option( 'wcs_fatal_error_handling_ipn', $error['message'] );
-			self::log_to_failure( sprintf( 'Unexcepted shutdown when processing subscription IPN messages. PHP Fatal error %s in %s on line %s.', $error['message'], $error['file'], $error['line'] ) );
+			self::log_to_failure( sprintf( 'Error processing PayPal IPN message: %s in %s on line %s.', $error['message'], $error['file'], $error['line'] ) );
 
 			if ( ! empty( $error['trace'] ) ) {
 				self::log_to_failure( sprintf( 'Stack trace: %s', PHP_EOL . $error['trace'] ) );
