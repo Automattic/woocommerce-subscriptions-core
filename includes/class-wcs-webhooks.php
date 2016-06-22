@@ -70,7 +70,7 @@ class WCS_Webhooks {
 				),
 				'subscription.switched' => array(
 					'wcs_webhook_subscription_switched',
-				)
+				),
 			), $webhook );
 		}
 
@@ -159,6 +159,6 @@ class WCS_Webhooks {
 	public static function add_subscription_switched_callback( $subscription ) {
 		do_action( 'wcs_webhook_subscription_switched', $subscription->id );
 	}
-	
+
 }
 WCS_Webhooks::init();
