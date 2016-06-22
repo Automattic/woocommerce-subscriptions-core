@@ -66,6 +66,9 @@ class WCS_Webhooks {
 					'woocommerce_subscription_deleted',
 					'woocommerce_api_delete_subscription',
 				),
+				'subscription.switched' => array(
+					'woocommerce_subscriptions_switch_completed',
+				)
 			), $webhook );
 		}
 
