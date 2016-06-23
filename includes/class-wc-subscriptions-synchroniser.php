@@ -967,10 +967,19 @@ class WC_Subscriptions_Synchroniser {
 	 * @return int
 	 */
 	public static function maybe_do_not_reduce_stock( $qty, $order, $item ) {
-		if ( wcs_order_contains_subscription( $order, array( 'parent', 'resubscribe' ) ) ) {
-			$product = wc_get_product( wcs_get_canonical_product_id( $item ) );
-			if ( 0 == $item['line_total'] && self::is_product_synced( $product ) && ! self::is_product_prorated( $product ) && ! self::is_today( self::calculate_first_payment_date( $product, 'timestamp' ) ) ) {
-				$qty = 0;
+		if ( wcs_order_contains_subscription( $order, array( 'parent', 'resubscribe' ) ) && 0 == $item['line_total'] ) {
+			$subscriptions = wcs_get_subscriptions_for_order( $order );
+			$item_id = wcs_get_canonical_product_id( $item );
+
+			foreach ( $subscriptions as $subscription ) {
+				if ( self::subscription_contains_synced_product( $subscription ) && $subscription->has_product( $item_id ) ) {
+					foreach ( $subscription->get_items() as $_item ) {
+						$sub_item_id = wcs_get_canonical_product_id( $_item );
+						if ( $item_id == $sub_item_id && 0 < $_item['line_total'] ) {
+							$qty = 0;
+						}
+					}
+				}
 			}
 		}
 		return $qty;
