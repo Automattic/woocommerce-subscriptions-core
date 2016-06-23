@@ -32,6 +32,8 @@ class WCS_Webhooks {
 
 		add_filter( 'woocommerce_valid_webhook_resources', __CLASS__ . '::add_resource', 10, 1 );
 
+		add_filter( 'woocommerce_valid_webhook_events', __CLASS__ . '::add_event', 10, 1 );
+
 		add_action( 'woocommerce_checkout_subscription_created', __CLASS__ . '::add_subscription_created_callback', 10, 1 );
 
 		add_action( 'woocommerce_subscription_date_updated', __CLASS__ . '::add_subscription_updated_callback', 10, 1 );
@@ -145,7 +147,7 @@ class WCS_Webhooks {
 		return $events;
 	}
 
-/**
+	/**
 	 * Call a "subscription created" action hook with the first parameter being a subscription id so that it can be used
 	 * for webhooks.
 	 *
