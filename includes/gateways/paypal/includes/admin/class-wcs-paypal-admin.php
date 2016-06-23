@@ -166,6 +166,24 @@ class WCS_PayPal_Admin {
 					),
 				);
 			}
+
+			$last_ipn_error = get_option( 'wcs_fatal_error_handling_ipn', '' );
+
+			if ( ! empty( $last_ipn_error ) && ( false == get_option( 'wcs_fatal_error_handling_ipn_ignored', false ) || isset( $_GET['wcs_reveal_your_ipn_secrets'] ) ) ) {
+				$notices[] = array(
+					'type' => 'error',
+					'text' => sprintf( esc_html__( '%sA fatal error has occurred when processing a recent subscription payment with PayPal. Please %sopen a new ticket at WooThemes Support%s immediately to get this resolved.%sIn order to get the quickest possible response please attach a %sTemporary Admin Login%s and a copy of your PHP error logs to your support ticket.%sLast recorded error: %s', 'woocommerce-subscriptions' ),
+						'<p>',
+						'<a href="https://www.woothemes.com/my-account/create-a-ticket/" target="_blank">',
+						'</a>',
+						'<br>',
+						'<a href="https://support.woothemes.com/hc/en-us/articles/203104577-How-to-create-a-new-administrator-account-in-WordPress" target="_blank">',
+						'</a>',
+						'</p>',
+						'<code>' . esc_html( $last_ipn_error ) . '</code><div style="margin: 5px 0;"><a class="button" href="' . esc_url( wp_nonce_url( add_query_arg( 'wcs_ipn_error_notice', 'ignore' ), 'wcs_ipn_error_notice', '_wcsnonce' ) ) . '">' . esc_html__( 'Ignore this error (not recommended!)', 'woocommerce-subscriptions' ) . '</a> <a class="button button-primary" href="https://www.woothemes.com/my-account/create-a-ticket/">' . esc_html__( 'Open up a ticket now!', 'woocommerce-subscriptions' ) . '</a></div>'
+					),
+				);
+			}
 		}
 
 		if ( ! empty( $notices ) ) {
@@ -181,6 +199,10 @@ class WCS_PayPal_Admin {
 	protected static function maybe_disable_invalid_profile_notice() {
 		if ( isset( $_GET['wcs_disable_paypal_invalid_profile_id_notice'] ) ) {
 			update_option( 'wcs_paypal_invalid_profile_id', 'disabled' );
+		}
+
+		if ( isset( $_GET['wcs_ipn_error_notice'] ) ) {
+			update_option( 'wcs_fatal_error_handling_ipn_ignored', true );
 		}
 	}
 
