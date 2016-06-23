@@ -133,6 +133,19 @@ class WCS_Webhooks {
 	}
 
 	/**
+	 * Add webhook event for subscription switched.
+	 *
+	 * @param array $events
+	 * @since 2.1
+	 */
+	public static function add_event( $events ) {
+
+		$events[] = 'switched';
+
+		return $events;
+	}
+
+/**
 	 * Call a "subscription created" action hook with the first parameter being a subscription id so that it can be used
 	 * for webhooks.
 	 *
