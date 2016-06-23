@@ -268,7 +268,7 @@ class WC_Subscriptions_Synchroniser {
 			}
 
 			$display_week_month_select = ( ! in_array( $subscription_period, array( 'month', 'week' ) ) ) ? 'display: none;' : '';
-			$display_annual_select     = ( 'year' != $subscription_period ) ? ' style="display: none;"' : '';
+			$display_annual_select     = ( 'year' != $subscription_period ) ? 'display: none;' : '';
 
 			$payment_day = self::get_products_payment_day( $variation->ID );
 
