@@ -167,12 +167,15 @@ class WCS_Webhooks {
 	}
 
 	/**
-	 * Call a "subscription switched" action hook with a subscription id as the first parameter to be used for webhooks payloads.
+	 * For each switched subscription in an order, call a "subscription switched" action hook with a subscription id as the first parameter to be used for webhooks payloads.
 	 *
 	 * @since 2.1
 	 */
-	public static function add_subscription_switched_callback( $subscription ) {
-		do_action( 'wcs_webhook_subscription_switched', $subscription->id );
+	public static function add_subscription_switched_callback( $order ) {
+		$switched_subscriptions = wcs_get_subscriptions_for_switch_order( $order );
+		foreach ( $switched_subscriptions as $subscription_id => $subscription ) {
+			do_action( 'wcs_webhook_subscription_switched', $subscription_id );
+		}
 	}
 
 }
