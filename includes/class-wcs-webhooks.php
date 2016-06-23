@@ -173,7 +173,7 @@ class WCS_Webhooks {
 	 */
 	public static function add_subscription_switched_callback( $order ) {
 		$switched_subscriptions = wcs_get_subscriptions_for_switch_order( $order );
-		foreach ( $switched_subscriptions as $subscription_id => $subscription ) {
+		foreach ( array_keys( $switched_subscriptions ) as $subscription_id ) {
 			do_action( 'wcs_webhook_subscription_switched', $subscription_id );
 		}
 	}
