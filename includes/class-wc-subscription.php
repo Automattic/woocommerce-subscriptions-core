@@ -1188,25 +1188,14 @@ class WC_Subscription extends WC_Order {
 			'display_ex_tax_label'  => $display_ex_tax_label,
 		);
 
+		// determine if the subscription is 1 payment only
 		if ( 0 != ( $end_date = $this->get_time( 'end' ) ) ) {
-			$from_date = ( 0 != $this->get_time( 'trial_end' ) ) ? $this->get_time( 'trial_end' ) : $this->get_time( 'start' );
 
-			if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $this ) ) {
-				$renewal_orders = $this->get_related_orders( 'all' , 'renewal' );
+			// for sync'd and trial subscriptions the required payment count is 2 otherwise for standard subscriptions it's 1
+			$required_payment_count = ( 0 != $this->get_time( 'trial_end' ) || WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $this ) ) ? 2 : 1;
 
-				// if we haven't got a renewal order yet, the effective start date is next payment date
-				if ( empty( $renewal_orders ) ) {
-					$from_date = $this->get_time( 'next_payment' );
-				} else {
-					$renewal_order = reset( $renewal_orders );
-					$from_date = $renewal_order->post->post_date_gmt;
-				}
-			}
-
-			$length = wcs_estimate_periods_between( $from_date, $end_date, $this->billing_period );
-
-			if ( $length == $this->billing_interval ) {
-				$subscription_details['subscription_length'] = $length;
+			if ( 0 == ( $next_payment_date = $this->get_time( 'next_payment' ) ) && count( $this->get_related_orders() ) == $required_payment_count ) {
+				$subscription_details['subscription_length'] = $this->billing_interval;
 			}
 		}
 
