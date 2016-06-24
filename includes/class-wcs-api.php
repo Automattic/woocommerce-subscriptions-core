@@ -30,7 +30,7 @@ class WCS_API {
 	 */
 	public static function includes( $wc_api_classes ) {
 
-		if ( defined( 'WC_API_REQUEST_VERSION' ) && 3 == WC_API_REQUEST_VERSION ) {
+		if ( ! defined( 'WC_API_REQUEST_VERSION' ) || 3 == WC_API_REQUEST_VERSION ) {
 
 			require_once( 'api/legacy/class-wc-api-subscriptions.php' );
 			require_once( 'api/legacy/class-wc-api-subscriptions-customers.php' );
