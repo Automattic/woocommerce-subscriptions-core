@@ -119,7 +119,7 @@ class WCS_PayPal_Reference_Transaction_IPN_Handler extends WCS_PayPal_Standard_I
 
 			try {
 				if ( false !== $subscription && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) ) {
-					$subscription->update_status( 'cancelled', $note );
+					$subscription->cancel_order( $note );
 					WC_Gateway_Paypal::log( sprintf( 'Subscription %s Cancelled: %s', $subscription_id, $note ) );
 				}
 			} catch ( Exception $e ) {

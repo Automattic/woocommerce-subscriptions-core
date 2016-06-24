@@ -216,7 +216,7 @@ class WC_Subscriptions_Cart {
 		$recurring_carts = array();
 
 		// Back up the shipping method. Chances are WC is going to wipe the chosen_shipping_methods data
-		WC()->session->set( 'wcs_shipping_methods', WC()->session->get( 'chosen_shipping_methods' ) );
+		WC()->session->set( 'wcs_shipping_methods', WC()->session->get( 'chosen_shipping_methods', array() ) );
 
 		// Now let's calculate the totals for each group of subscriptions
 		self::$calculation_type = 'recurring_total';
@@ -286,10 +286,6 @@ class WC_Subscriptions_Cart {
 		WC()->cart->recurring_carts = $recurring_carts;
 
 		$total = max( 0, round( WC()->cart->cart_contents_total + WC()->cart->tax_total + WC()->cart->shipping_tax_total + WC()->cart->shipping_total + WC()->cart->fee_total, WC()->cart->dp ) );
-
-		if ( isset( WC()->cart->discount_total ) && 0 !== WC()->cart->discount_total ) { // WC < 2.3, deduct deprecated after tax discount total
-			$total = max( 0, round( $total - WC()->cart->discount_total, WC()->cart->dp ) );
-		}
 
 		if ( ! self::charge_shipping_up_front() ) {
 			$total = max( 0, $total - WC()->cart->shipping_tax_total - WC()->cart->shipping_total );
@@ -439,7 +435,7 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function set_chosen_shipping_method( $default_method, $available_methods, $package_index = 0 ) {
 
-		$chosen_methods = WC()->session->get( 'chosen_shipping_methods' );
+		$chosen_methods = WC()->session->get( 'chosen_shipping_methods', array() );
 
 		$recurring_cart_package_key = self::get_recurring_shipping_package_key( self::$recurring_cart_key, $package_index );
 
@@ -526,7 +522,7 @@ class WC_Subscriptions_Cart {
 
 		if ( 'none' !== self::$recurring_cart_key ) {
 
-			$chosen_methods                  = WC()->session->get( 'chosen_shipping_methods' );
+			$chosen_methods                  = WC()->session->get( 'chosen_shipping_methods', array() );
 			$recurring_cart_shipping_methods = array();
 			$recurring_package_count         = 0;
 
