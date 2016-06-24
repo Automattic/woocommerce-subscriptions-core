@@ -133,6 +133,11 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 
 		try {
 			$this->update_schedule( $subscription, $request );
+
+			if ( empty( $request['payment_details']['method_id'] ) && ! empty( $request['payment_method'] ) ) {
+				$request['payment_details']['method_id'] = $request['payment_method'];
+			}
+
 			$this->update_payment_method( $subscription, $request['payment_details'], true );
 
 			return $post_id;
@@ -225,6 +230,11 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 		}
 
 		$this->update_schedule( $subscription, $args );
+
+		if ( empty( $args['payment_details']['method_id'] ) && ! empty( $args['payment_method'] ) ) {
+			$args['payment_details']['method_id'] = $args['payment_method'];
+		}
+
 		$this->update_payment_method( $subscription, $args['payment_details'] );
 
 		return $subscription;
