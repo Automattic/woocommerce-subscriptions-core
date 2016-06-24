@@ -195,8 +195,8 @@ class WC_Subscriptions_Synchroniser {
 			}
 
 			// Determine whether to display the week/month sync fields or the annual sync fields
-			$display_week_month_select = ( ! in_array( $subscription_period, array( 'month', 'week' ) ) ) ? ' style="display: none;"' : '';
-			$display_annual_select     = ( 'year' != $subscription_period ) ? ' style="display: none;"' : '';
+			$display_week_month_select = ( ! in_array( $subscription_period, array( 'month', 'week' ) ) ) ? 'display: none;' : '';
+			$display_annual_select     = ( 'year' != $subscription_period ) ? 'display: none;' : '';
 
 			$payment_day = self::get_products_payment_day( $post->ID );
 
@@ -209,7 +209,7 @@ class WC_Subscriptions_Synchroniser {
 			}
 
 			echo '<div class="options_group subscription_pricing subscription_sync show_if_subscription">';
-			echo '<div class="subscription_sync_week_month"' . esc_attr( $display_week_month_select ) . '>';
+			echo '<div class="subscription_sync_week_month" style="' . esc_attr( $display_week_month_select ) . '">';
 
 			woocommerce_wp_select( array(
 				'id'          => self::$post_meta_key,
@@ -224,7 +224,7 @@ class WC_Subscriptions_Synchroniser {
 
 			echo '</div>';
 
-			echo '<div class="subscription_sync_annual"' . esc_attr( $display_annual_select ) . '>';
+			echo '<div class="subscription_sync_annual" style="' . esc_attr( $display_annual_select ) . '">';
 
 			woocommerce_wp_text_input( array(
 				'id'            => self::$post_meta_key_day,
@@ -267,8 +267,8 @@ class WC_Subscriptions_Synchroniser {
 				$subscription_period = 'month';
 			}
 
-			$display_week_month_select = ( ! in_array( $subscription_period, array( 'month', 'week' ) ) ) ? ' style="display: none;"' : '';
-			$display_annual_select     = ( 'year' != $subscription_period ) ? ' style="display: none;"' : '';
+			$display_week_month_select = ( ! in_array( $subscription_period, array( 'month', 'week' ) ) ) ? 'display: none;' : '';
+			$display_annual_select     = ( 'year' != $subscription_period ) ? 'display: none;' : '';
 
 			$payment_day = self::get_products_payment_day( $variation->ID );
 
