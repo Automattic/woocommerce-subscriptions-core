@@ -40,6 +40,9 @@ class WCS_PayPal_Standard_Switcher {
 
 		// Try to cancel a paypal once the switch has been successfully completed
 		add_action( 'woocommerce_subscriptions_switch_completed', __CLASS__ . '::maybe_cancel_paypal_after_switch', 10, 1 );
+
+		// Do not allow subscriptions to be switched using PayPal Standard as the payment method
+		add_filter( 'woocommerce_available_payment_gateways', __CLASS__ . '::get_available_payment_gateways', 12, 1 );
 	}
 
 	/**
@@ -208,5 +211,23 @@ class WCS_PayPal_Standard_Switcher {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Do not allow subscriptions to be switched using PayPal Standard as the payment method
+	 *
+	 * @since 2.0.16
+	 */
+	public static function get_available_payment_gateways( $available_gateways ) {
+
+		if ( WC_Subscriptions_Switcher::cart_contains_switches() || ( isset( $_GET['order_id'] ) && wcs_order_contains_switch( $_GET['order_id'] ) ) ) {
+			foreach ( $available_gateways as $gateway_id => $gateway ) {
+				if ( 'paypal' == $gateway_id && false == WCS_PayPal::are_reference_transactions_enabled() ) {
+					unset( $available_gateways[ $gateway_id ] );
+				}
+			}
+		}
+
+		return $available_gateways;
 	}
 }
