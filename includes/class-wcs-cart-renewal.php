@@ -350,7 +350,7 @@ class WCS_Cart_Renewal {
 				$price = $item_to_renew['line_subtotal'];
 
 				if ( wc_prices_include_tax() ) {
-					$base_tax_rates = WC_Tax::get_base_tax_rates( $_product->tax_class );
+					$base_tax_rates = WC_Tax::get_rates( $_product->tax_class );
 					$base_taxes_on_item = WC_Tax::calc_tax( $price, $base_tax_rates, false, false );
 					$price += array_sum( $base_taxes_on_item );
 				}
