@@ -1191,10 +1191,17 @@ class WC_Subscription extends WC_Order {
 		// determine if the subscription is 1 payment only
 		if ( 0 != ( $end_date = $this->get_time( 'end' ) ) ) {
 
-			// for sync'd and trial subscriptions the required payment count is 2 otherwise for standard subscriptions it's 1
-			$required_payment_count = ( 0 != $this->get_time( 'trial_end' ) || WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $this ) ) ? 2 : 1;
+			$is_trial = 0 != $this->get_time( 'trial_end' );
+			$is_syncd = WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $this );
 
-			if ( 0 == ( $next_payment_date = $this->get_time( 'next_payment' ) ) && count( $this->get_related_orders() ) == $required_payment_count ) {
+			// for sync'd and trial subscriptions the required payment count is 2 otherwise for standard subscriptions it's 1
+			$required_payment_count = $is_trial || $is_syncd ? 2 : 1;
+			$next_payment_date      = $this->get_time( 'next_payment' );
+
+			$standard_length_one      = 0 == $next_payment_date && count( $this->get_related_orders() ) == $required_payment_count;
+			$sync_or_trial_length_one = ( $is_trial || $is_syncd ) && wcs_estimate_periods_between( $next_payment_date, $end_date, $this->billing_period ) == $this->billing_interval;
+
+			if ( $standard_length_one || $sync_or_trial_length_one ) {
 				$subscription_details['subscription_length'] = $this->billing_interval;
 			}
 		}
