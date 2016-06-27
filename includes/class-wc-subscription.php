@@ -1203,6 +1203,7 @@ class WC_Subscription extends WC_Order {
 
 			if ( $standard_length_one || $sync_or_trial_length_one ) {
 				$subscription_details['subscription_length'] = $this->billing_interval;
+				$subscription_details['display_length']      = false;
 			}
 		}
 
