@@ -207,6 +207,11 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 		// Make sure all line items still exist
 		$all_line_items_exist = true;
 
+		// Check if product is limited
+		$is_product_limited = false;
+
+		$product_id = 0;
+
 		foreach ( $subscription->get_items() as $line_item ) {
 
 			$product = ( ! empty( $line_item['variation_id'] ) ) ? wc_get_product( $line_item['variation_id'] ) : wc_get_product( $line_item['product_id'] );
