@@ -208,9 +208,10 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 		$all_line_items_exist = true;
 
 		// Check if product is limited
-		$is_product_limited = false;
+		$has_active_limited_product = false;
 
-		$product_id = 0;
+		$limited_product_id = array();
+		$product_iterator = 0;
 
 		foreach ( $subscription->get_items() as $line_item ) {
 
@@ -222,16 +223,26 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 			}
 
 			if ( 'active' == $product->limit_subscriptions ){
-				$is_product_limited = true;
-				$product_id = $product->id;
+				$has_active_limited_product = true;
+				$limited_product_id[$product_iterator] = $product->id;
+				$product_iterator++;
 			}
 
 		}
 
-		// Check other subscriptions for limited product
+		// Check other subscriptions for active limited product
 		$has_active_limited_subscription = false;
-		if ( $is_product_limited === true ) {
-			$has_active_limited_subscription = wcs_user_has_subscription( $user_id, $product_id, 'active' );
+
+		if ( $has_active_limited_product ) {
+
+			foreach ( $limited_product_id as $single_product ) {
+
+				$has_active_limited_subscription = wcs_user_has_subscription( $user_id, $single_product, 'active' );
+
+				if ( true === $has_active_limited_subscription ) {
+					break;
+				}
+			}
 		}
 
 		if ( empty( $resubscribe_orders ) && $subscription->get_completed_payment_count() > 0 && $subscription->get_total() > 0 && true === $all_line_items_exist && $subscription->has_status( array( 'cancelled', 'expired', 'trash' ) ) && false === $has_active_limited_subscription ) {
