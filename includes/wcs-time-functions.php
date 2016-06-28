@@ -405,8 +405,8 @@ function wcs_estimate_period_between( $last_date, $second_date, $interval = 1 ) 
 
 	$possible_periods['month'] = array(
 		'intervals'         => floor( $full_months['months'] / $interval ),
-		'remainder'         => $remainder = $full_months['remainder'],
-		'fraction'          => $remainder / ( 30 * DAY_IN_SECONDS ),
+		'remainder'         => $full_months['remainder'],
+		'fraction'          => $full_months['remainder'] / ( 30 * DAY_IN_SECONDS ),
 		'period'            => 'month',
 		'days_in_month'     => $days_in_month,
 		'original_interval' => $interval,
@@ -416,8 +416,8 @@ function wcs_estimate_period_between( $last_date, $second_date, $interval = 1 ) 
 	foreach ( array( 'year' => YEAR_IN_SECONDS, 'week' => WEEK_IN_SECONDS, 'day' => DAY_IN_SECONDS ) as $time => $seconds ) {
 		$possible_periods[ $time ] = array(
 			'intervals'         => floor( $period_in_seconds / $seconds ),
-			'remainder'         => $remainder = $period_in_seconds % $seconds,
-			'fraction'          => $remainder / $seconds,
+			'remainder'         => $period_in_seconds % $seconds,
+			'fraction'          => ($period_in_seconds % $seconds) / $seconds,
 			'period'            => $time,
 			'days_in_month'     => $days_in_month,
 			'original_interval' => $interval,
