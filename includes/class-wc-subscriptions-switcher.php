@@ -1228,8 +1228,8 @@ class WC_Subscriptions_Switcher {
 
 						// Keep a record of the two separate amounts so we store these and calculate future switch amounts correctly
 						WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_sign_up_fee_prorated = WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_sign_up_fee;
-						WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_price_prorated       = round( $extra_to_pay, 2 );
-						WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_sign_up_fee         += round( $extra_to_pay, 2 );
+						WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_price_prorated       = round( $extra_to_pay, wc_get_price_decimals() );
+						WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_sign_up_fee         += round( $extra_to_pay, wc_get_price_decimals() );
 
 					}
 
