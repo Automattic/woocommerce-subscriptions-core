@@ -225,6 +225,13 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 				$is_product_limited = true;
 				$product_id = $product->id;
 			}
+
+		}
+
+		// Check other subscriptions for limited product
+		$has_active_limited_subscription = false;
+		if ( $is_product_limited === true ) {
+			$has_active_limited_subscription = wcs_user_has_subscription( $user_id, $product_id, 'active' );
 		}
 
 		if ( empty( $resubscribe_orders ) && $subscription->get_completed_payment_count() > 0 && $subscription->get_total() > 0 && true === $all_line_items_exist && $subscription->has_status( array( 'cancelled', 'expired', 'trash' ) ) ) {
