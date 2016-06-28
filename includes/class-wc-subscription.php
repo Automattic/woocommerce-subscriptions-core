@@ -1198,7 +1198,10 @@ class WC_Subscription extends WC_Order {
 			$next_payment_date        = $this->get_time( 'next_payment' );
 			$subscription_order_count = count( $this->get_related_orders() );
 
-			$standard_length_one      = 0 == $next_payment_date && $subscription_order_count == $required_payment_count;
+			// when the subscription has no future payment and the number of completed payments matches the total number of payments required for the subscription, we know the subscription is for one payment.
+			$standard_length_one = 0 == $next_payment_date && $subscription_order_count == $required_payment_count;
+
+			// when a subscription has a trial or is synced, prior to the first payment, we can't rely on their being no future payment to determine if it is one payment only. Therefore we need to calculate the number of billing periods between the next payment and end date to obtain the length.
 			$sync_or_trial_length_one = $has_trial_or_is_syncd && $subscription_order_count < $required_payment_count && wcs_estimate_periods_between( $next_payment_date, $end_date, $this->billing_period ) == $this->billing_interval;
 
 			if ( $standard_length_one || $sync_or_trial_length_one ) {
