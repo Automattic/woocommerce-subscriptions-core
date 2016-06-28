@@ -222,12 +222,11 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 				break;
 			}
 
-			if ( 'active' == $product->limit_subscriptions ){
+			if ( 'active' == $product->limit_subscriptions ) {
 				$has_active_limited_product = true;
-				$limited_product_id[$product_iterator] = $product->id;
+				$limited_product_id[ $product_iterator ] = $product->id;
 				$product_iterator++;
 			}
-
 		}
 
 		// Check other subscriptions for active limited product
