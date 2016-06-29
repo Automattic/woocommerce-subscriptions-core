@@ -301,7 +301,16 @@ class WC_Subscription extends WC_Order {
 
 		if ( $new_status !== $old_status || ! in_array( $old_status_key, array_keys( wcs_get_subscription_statuses() ) ) ) {
 
-			// Only update is possible
+			// check whether we're adding a new subscription manually without a customer
+			if ( $this->saving_without_customer() ) {
+				$message = sprintf( __( 'Unable to change subscription status to "%s". There is no customer assigned to the subscription', 'woocommerce-subscriptions' ), $new_status );
+
+				$this->add_order_note( $message );
+
+				throw new Exception( $message );
+			}
+
+			// Only update if possible
 			if ( ! $this->can_be_updated_to( $new_status ) ) {
 
 				$message = sprintf( __( 'Unable to change subscription status to "%s".', 'woocommerce-subscriptions' ), $new_status );
@@ -402,6 +411,31 @@ class WC_Subscription extends WC_Order {
 				throw $e;
 			}
 		}
+	}
+
+	/**
+	 * Utility function: only used when subscription has status pending, and we're on the admin page.
+	 *
+	 * When you click "Add New Subscription", the status is already going to be pending to begin with. This will prevent
+	 * changing the status to anything else besides pending if no customer is specified, or the customer specified is
+	 * not a valid WP_User.
+	 *
+	 * @return bool whether we're attempting to save without a customer
+	 */
+	private function saving_without_customer() {
+		if ( ! $this->has_status( array( 'pending' ) ) || ! is_admin() ) {
+			return false;
+		}
+		$no_customer = false;
+
+		$customer_user = ( isset( $_POST['customer_user'] ) ) ? sanitize_text_field( $_POST['customer_user'] ) : ''; // csrf in core wp save post function
+		$user = new WP_User( $customer_user );
+
+		if ( 0 === $user->ID ) {
+			$no_customer = true;
+		}
+
+		return $no_customer;
 	}
 
 	/**
