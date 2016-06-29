@@ -1072,7 +1072,9 @@ class WC_Subscription extends WC_Order {
 			return '';
 		}
 
-		if ( 'excl' == $tax_display ) {
+		if ( $this->is_one_payment() ) {
+			$subtotal = parent::get_formatted_line_subtotal( $item, $tax_display );
+		} else if ( 'excl' == $tax_display ) {
 			$display_ex_tax_label = $this->prices_include_tax ? 1 : 0;
 			$subtotal = wcs_price_string( $this->get_price_string_details( $this->get_line_subtotal( $item ) ), $display_ex_tax_label );
 		} else {
@@ -1090,7 +1092,7 @@ class WC_Subscription extends WC_Order {
 	 * @return string
 	 */
 	public function get_formatted_order_total( $tax_display = '', $display_refunded = true ) {
-		if ( $this->get_total() > 0 && ! empty( $this->billing_period ) ) {
+		if ( $this->get_total() > 0 && ! empty( $this->billing_period ) && ! $this->is_one_payment() ) {
 			$formatted_order_total = wcs_price_string( $this->get_price_string_details( $this->get_total() ) );
 		} else {
 			$formatted_order_total = parent::get_formatted_order_total();
