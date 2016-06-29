@@ -466,7 +466,6 @@ class WC_Subscriptions_Order {
 						$subscription->update_dates( $dates );
 					}
 
-					update_post_meta( $order_id, '_paid_date', current_time( 'mysql', true ) );
 					$subscription->payment_complete();
 					$was_activated = true;
 
