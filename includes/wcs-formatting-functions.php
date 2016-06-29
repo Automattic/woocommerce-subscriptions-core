@@ -27,7 +27,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  *		'trial_length': The total number of periods the subscription trial period should continue for.  Default 0, meaning no trial period.
  *		'trial_period': The temporal period for the subscription's trial period. Should be one of {day|week|month|year} as used by @see wcs_get_subscription_period_strings()
  *		'use_per_slash': Allow calling code to determine if they want the shorter price string using a slash for singular billing intervals, e.g. $5 / month, or the longer form, e.g. $5 every month, which is normally reserved for intervals > 1
- *		'display_length': Allow calling code to specify whether to display the subscription length. Default "$10 / month for 1 month" (true) v "$10 / month" (false). A 'subscription_length' arg > 0 must also be included in order for a length to be displayed.
  * @since 2.0
  * @return string The price string with translated and billing periods included
  */
@@ -55,8 +54,7 @@ function wcs_price_string( $subscription_details ) {
 			'display_excluding_tax_label' => false,
 
 			// Params for formatting customisation
-			'use_per_slash'  => true,
-			'display_length' => true,
+			'use_per_slash' => true,
 		)
 	);
 
@@ -191,7 +189,7 @@ function wcs_price_string( $subscription_details ) {
 		$subscription_string = '';
 	}
 
-	if ( $subscription_details['display_length'] && $subscription_details['subscription_length'] > 0 ) {
+	if ( $subscription_details['subscription_length'] > 0 ) {
 		// translators: 1$: subscription string (e.g. "$10 up front then $5 on March 23rd every 3rd year"), 2$: length (e.g. "4 years")
 		$subscription_string = sprintf( __( '%1$s for %2$s', 'woocommerce-subscriptions' ), $subscription_string, $subscription_ranges[ $subscription_details['subscription_period'] ][ $subscription_details['subscription_length'] ] );
 	}
