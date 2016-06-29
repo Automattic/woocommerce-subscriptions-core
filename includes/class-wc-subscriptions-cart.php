@@ -41,9 +41,9 @@ class WC_Subscriptions_Cart {
 	private static $recurring_shipping_packages = array();
 
 	/**
-	 * A cache of the calculated recurring shipping rates
+	 * A cache of the calculated shipping package rates
 	 *
-	 * @since 2.0.16
+	 * @since 2.0.17
 	 */
 	 private static $shipping_rates = array();
 
@@ -108,7 +108,8 @@ class WC_Subscriptions_Cart {
 		// Validate chosen recurring shipping methods
 		add_action( 'woocommerce_after_checkout_validation', __CLASS__ . '::validate_recurring_shipping_methods' );
 
-		add_filter( 'woocommerce_package_rates', __CLASS__ . '::cache_package_rates', 100, 2 );
+		// Cache package rates. Hook in early to ensure we get a full set of rates.
+		add_filter( 'woocommerce_package_rates', __CLASS__ . '::cache_package_rates', 1, 2 );
 	}
 
 	/**
@@ -1155,27 +1156,50 @@ class WC_Subscriptions_Cart {
 		return $cart_contains_product;
 	}
 
+	/**
+	 * Cache the package rates calculated by @see WC_Shipping::calculate_shipping_for_package() to avoid multiple calls of calculate_shipping_for_package() per request.
+	 *
+	 * @param array $rates A set of WC_Shipping_Rate objects.
+	 * @param array $package A shipping package in the form returned by @see WC_Cart->get_shipping_packages()
+	 * @since 2.0.17
+	 */
 	public static function cache_package_rates( $rates, $package ) {
-
-		$key = md5( print_r( $package, true ) );
-		self::$shipping_rates[ $key ] = $rates;
+		self::$shipping_rates[ self::get_package_shipping_rates_cache_key( $package ) ] = $rates;
 
 		return $rates;
 	}
 
+	/**
+	 * Calculates the shipping rates for a package.
+	 *
+	 * This function will check cached rates based on a hash of the package contents to avoid re-calculation per page load.
+	 * If there are no rates stored in the cache for this package, it will fall back to @see WC_Shipping::calculate_shipping_for_package()
+	 *
+	 * @param array $package A shipping package in the form returned by @see WC_Cart->get_shipping_packages()
+	 * @return array $package
+	 * @since 2.0.17
+	 */
 	public static function get_calculated_shipping_for_package( $package ) {
-
-		$key   = md5( print_r( $package, true ) );
-		$rates = array();
+		$key = self::get_package_shipping_rates_cache_key( $package );
 
 		if ( isset( self::$shipping_rates[ $key ] ) ) {
-			$rates = apply_filters( 'woocommerce_package_rates', self::$shipping_rates[ $key ], $package );
+			$package['rates'] = apply_filters( 'woocommerce_package_rates', self::$shipping_rates[ $key ], $package );
 		} else {
-			$rates = WC()->shipping->calculate_shipping_for_package( $package );
-			self::$shipping_rates[ $key ] = $rates;
+			$package = WC()->shipping->calculate_shipping_for_package( $package );
 		}
 
-		return $rates;
+		return $package;
+	}
+
+	/**
+	 * Generate a unqiue package key for a given shipping package to be used for caching package rates.
+	 *
+	 * @param array $package A shipping package in the form returned by WC_Cart->get_shipping_packages().
+	 * @return string key hash
+	 * @since 2.0.17
+	 */
+	public static function get_package_shipping_rates_cache_key( $package ) {
+		return md5( implode( array_keys( $package['contents'] ) ) );
 	}
 
 	/* Deprecated */
