@@ -1188,28 +1188,6 @@ class WC_Subscription extends WC_Order {
 			'display_ex_tax_label'  => $display_ex_tax_label,
 		);
 
-		// determine if the subscription is 1 payment only
-		if ( 0 != ( $end_date = $this->get_time( 'end' ) ) ) {
-
-			$has_trial_or_is_syncd = 0 != $this->get_time( 'trial_end' ) || WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $this );
-
-			// for sync'd and trial subscriptions the required payment count is 2 otherwise for standard subscriptions it's 1
-			$required_payment_count   = $has_trial_or_is_syncd ? 2 : 1;
-			$next_payment_date        = $this->get_time( 'next_payment' );
-			$subscription_order_count = count( $this->get_related_orders() );
-
-			// when the subscription has no future payment and the number of completed payments matches the total number of payments required for the subscription, we know the subscription is for one payment.
-			$is_one_payment_subscription = 0 == $next_payment_date && $subscription_order_count == $required_payment_count;
-
-			// when a subscription has a trial or is synced, prior to the first payment, we can't rely on their being no future payment to determine if it is one payment only. Therefore we need to calculate the number of billing periods between the next payment and end date to obtain the length.
-			$is_syncd_or_trial_one_payment_subscription = $has_trial_or_is_syncd && $subscription_order_count < $required_payment_count && wcs_estimate_periods_between( $next_payment_date, $end_date, $this->billing_period ) == $this->billing_interval;
-
-			if ( $is_one_payment_subscription || $is_syncd_or_trial_one_payment_subscription ) {
-				$subscription_details['subscription_length'] = $this->billing_interval;
-				$subscription_details['display_length']      = false;
-			}
-		}
-
 		return apply_filters( 'woocommerce_subscription_price_string_details', $subscription_details, $this );
 	}
 
@@ -1750,5 +1728,36 @@ class WC_Subscription extends WC_Order {
 		}
 
 		return apply_filters( 'woocommerce_get_item_downloads', $files, $item, $this );
+	}
+
+	/**
+	 *  Determine if the subscription is for one payment only.
+	 *
+	 * @return bool whether the subscription is for only one payment
+	 * @since 2.0.17
+	 */
+	public function is_one_payment() {
+
+		$is_one_payment = false;
+
+		if ( 0 != ( $end_date = $this->get_time( 'end' ) ) ) {
+
+			$has_trial_or_is_syncd = 0 != $this->get_time( 'trial_end' ) || WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $this );
+
+			// for sync'd and trial subscriptions the required payment count is 2 otherwise for standard subscriptions it's 1
+			$required_payment_count   = $has_trial_or_is_syncd ? 2 : 1;
+			$next_payment_date        = $this->get_time( 'next_payment' );
+			$subscription_order_count = count( $this->get_related_orders() );
+
+			// when the subscription has no future payment and the number of completed payments matches the total number of payments required for the subscription, we know the subscription is for one payment.
+			$is_one_payment_subscription = 0 == $next_payment_date && $subscription_order_count == $required_payment_count;
+
+			// when a subscription has a trial or is synced, prior to the first payment, we can't rely on their being no future payment to determine if it is one payment only. Therefore we need to calculate the number of billing periods between the next payment and end date to obtain the length.
+			$is_syncd_or_trial_one_payment_subscription = $has_trial_or_is_syncd && $subscription_order_count < $required_payment_count && wcs_estimate_periods_between( $next_payment_date, $end_date, $this->billing_period ) == $this->billing_interval;
+
+			$is_one_payment = $is_one_payment_subscription || $is_syncd_or_trial_one_payment_subscription;
+		}
+
+		return apply_filters( 'woocommerce_subscription_is_one_payment', $is_one_payment, $this );
 	}
 }
