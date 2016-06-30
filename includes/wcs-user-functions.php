@@ -124,7 +124,7 @@ function wcs_user_has_subscription( $user_id = 0, $product_id = '', $status = 'a
 
 	if ( empty( $product_id ) ) { // Any subscription
 
-		if ( ! empty( $status ) && in_array( 'any', $status ) ) { // We need to check for a specific status
+		if ( ! empty( $status ) && ! in_array( 'any', $status ) ) { // We need to check for a specific status
 			foreach ( $subscriptions as $subscription ) {
 				if ( $subscription->has_status( $status ) ) {
 					$has_subscription = true;
