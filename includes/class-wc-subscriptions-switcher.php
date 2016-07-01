@@ -119,7 +119,7 @@ class WC_Subscriptions_Switcher {
 		add_filter( 'woocommerce_cart_needs_payment', __CLASS__ . '::cart_needs_payment' , 50, 2 );
 
 		// Require payment when switching from a $0 / period subscription to a non-zero subscription to process automatic payments
-		add_filter( 'woocommerce_subscriptions_switch_completed', __CLASS__ . '::maybe_set_payment_method' , 10, 1 );
+		add_filter( 'woocommerce_payment_successful_result', __CLASS__ . '::maybe_set_payment_method' , 10, 2 );
 	}
 
 	/**
@@ -1975,34 +1975,38 @@ class WC_Subscriptions_Switcher {
 	 * payment was completed with a payment method which supports automatic payments, update the payment on the subscription
 	 * and the manual renewals flag so that future renewals are processed automatically.
 	 *
-	 * @param WC_Order $order
+	 * @param array $payment_processing_result
+	 * @param int $order_id
 	 * @since 2.0.16
 	 */
-	public static function maybe_set_payment_method( $order, $deprecated = null ) {
+	public static function maybe_set_payment_method( $payment_processing_result, $order_id ) {
 
-		if ( null != $deprecated ) {
-			_deprecated_argument( __METHOD__, '2.1', 'Second parameter has been deprecated' );
-			$order = wc_get_order( $deprecated );
-		}
+		// Only update the payment method the order contains a switch, and payment was processed (i.e. a paid date has been set) not just setup for processing, which is the case with PayPal Standard (which is handled by WCS_PayPal_Standard_Switcher)
+		if ( wcs_order_contains_switch( $order_id ) && false != get_post_meta( $order_id, '_paid_date', true ) ) {
 
-		foreach ( wcs_get_subscriptions_for_switch_order( $order->id ) as $subscription ) {
+			$order = wc_get_order( $order_id );
 
-			if ( false === $subscription->is_manual() ) {
-				continue;
-			}
+			foreach ( wcs_get_subscriptions_for_switch_order( $order_id ) as $subscription ) {
 
-			if ( $subscription->payment_method !== $order->payment_method ) {
+				if ( false === $subscription->is_manual() ) {
+					continue;
+				}
 
-				// Set the new payment method on the subscription
-				$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
-				$payment_method     = isset( $available_gateways[ $order->payment_method ] ) ? $available_gateways[ $order->payment_method ] : false;
+				if ( $subscription->payment_method !== $order->payment_method ) {
 
-				if ( $payment_method && $payment_method->supports( 'subscriptions' ) ) {
-					$subscription->set_payment_method( $payment_method );
-					$subscription->update_manual( false );
+					// Set the new payment method on the subscription
+					$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
+					$payment_method     = isset( $available_gateways[ $order->payment_method ] ) ? $available_gateways[ $order->payment_method ] : false;
+
+					if ( $payment_method && $payment_method->supports( 'subscriptions' ) ) {
+						$subscription->set_payment_method( $payment_method );
+						$subscription->update_manual( false );
+					}
 				}
 			}
 		}
+
+		return $payment_processing_result;
 	}
 
 	/** Deprecated Methods **/
