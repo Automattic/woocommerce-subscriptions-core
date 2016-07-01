@@ -417,7 +417,7 @@ class WC_Subscriptions_Order {
 	 */
 	public static function maybe_record_subscription_payment( $order_id, $old_order_status, $new_order_status ) {
 
-		if ( wcs_order_contains_subscription( $order_id ) ) {
+		if ( wcs_order_contains_subscription( $order_id, 'parent' ) ) {
 
 			$subscriptions   = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'parent' ) );
 			$was_activated   = false;
