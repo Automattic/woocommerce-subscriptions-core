@@ -207,6 +207,9 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 		// Make sure all line items still exist
 		$all_line_items_exist = true;
 
+		// Check if product in subscription is limited
+		$has_active_limited_subscription = false;
+
 		foreach ( $subscription->get_items() as $line_item ) {
 
 			$product = ( ! empty( $line_item['variation_id'] ) ) ? wc_get_product( $line_item['variation_id'] ) : wc_get_product( $line_item['product_id'] );
@@ -215,9 +218,14 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 				$all_line_items_exist = false;
 				break;
 			}
+
+			if ( 'active' == $product->limit_subscriptions && ( wcs_user_has_subscription( $user_id, $product->id, 'on-hold' ) || wcs_user_has_subscription( $user_id, $product->id, 'active' ) ) ) {
+				$has_active_limited_subscription = true;
+				break;
+			}
 		}
 
-		if ( empty( $resubscribe_orders ) && $subscription->get_completed_payment_count() > 0 && $subscription->get_total() > 0 && true === $all_line_items_exist && $subscription->has_status( array( 'cancelled', 'expired', 'trash' ) ) ) {
+		if ( empty( $resubscribe_orders ) && $subscription->get_completed_payment_count() > 0 && $subscription->get_total() > 0 && true === $all_line_items_exist && $subscription->has_status( array( 'cancelled', 'expired', 'trash' ) ) && false === $has_active_limited_subscription ) {
 			$can_user_resubscribe = true;
 		} else {
 			$can_user_resubscribe = false;
