@@ -106,7 +106,7 @@ class WCS_Cart_Renewal {
 					do_action( 'wcs_before_renewal_setup_cart_subscription', $subscription, $order );
 
 					// Add the existing subscription items to the cart
-					$this->setup_cart( $subscription, array(
+					$this->setup_cart( $order, array(
 						'subscription_id'  => $subscription->id,
 						'renewal_order_id' => $order_id,
 					) );
@@ -177,9 +177,7 @@ class WCS_Cart_Renewal {
 				}
 			}
 
-			if ( wcs_is_subscription( $subscription ) ) {
-				$cart_item_data['subscription_line_item_id'] = $item_id;
-			}
+			$cart_item_data['line_item_id'] = $item_id;
 
 			$cart_item_key = WC()->cart->add_to_cart( $product_id, $quantity, $variation_id, $variations, apply_filters( 'woocommerce_order_again_cart_item_data', array( $this->cart_item_key => $cart_item_data ), $line_item, $subscription ) );
 			$success       = $success && (bool) $cart_item_key;
@@ -340,12 +338,12 @@ class WCS_Cart_Renewal {
 
 			$_product = $cart_item_session_data['data'];
 
-			// Need to get the original subscription price, not the current price
-			$subscription       = wcs_get_subscription( $cart_item[ $this->cart_item_key ]['subscription_id'] );
+			// Need to get the original subscription or order price, not the current price
+			$subscription = $this->get_order( $cart_item );
 
 			if ( $subscription ) {
 				$subscription_items = $subscription->get_items();
-				$item_to_renew      = $subscription_items[ $cart_item_session_data[ $this->cart_item_key ]['subscription_line_item_id'] ];
+				$item_to_renew      = $subscription_items[ $cart_item_session_data[ $this->cart_item_key ]['line_item_id'] ];
 
 				$price = $item_to_renew['line_subtotal'];
 
@@ -559,7 +557,7 @@ class WCS_Cart_Renewal {
 	public function items_removed_title( $product_title, $cart_item ) {
 
 		if ( isset( $cart_item[ $this->cart_item_key ]['subscription_id'] ) ) {
-			$subscription  = wcs_get_subscription( absint( $cart_item[ $this->cart_item_key ]['subscription_id'] ) );
+			$subscription  = $this->get_order( $cart_item );
 			$product_title = ( count( $subscription->get_items() ) > 1 ) ? esc_html_x( 'All linked subscription items were', 'Used in WooCommerce by removed item notification: "_All linked subscription items were_ removed. Undo?" Filter for item title.', 'woocommerce-subscriptions' ) : $product_title;
 		}
 
