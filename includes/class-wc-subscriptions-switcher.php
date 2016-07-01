@@ -1886,7 +1886,7 @@ class WC_Subscriptions_Switcher {
 
 			foreach ( $switch_orders as $order_id => $switch_order ) {
 				// cancel switch orders which have valid statuses for payment
-				if ( in_array( $switch_order->get_status(), apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'failed' ), $switch_order ) ) ) {
+				if ( in_array( $switch_order->get_status(), apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'failed', 'on-hold' ), $switch_order ) ) ) {
 					$switch_order->cancel_order( sprintf( __( 'Switch order cancelled due to completing the related switch order #%s.', 'woocommerce-subscriptions' ), $order->get_order_number() ) );
 				}
 			}
