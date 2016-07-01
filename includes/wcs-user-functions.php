@@ -114,15 +114,19 @@ function wcs_get_new_user_role_names( $role_new ) {
  */
 function wcs_user_has_subscription( $user_id = 0, $product_id = '', $status = 'any' ) {
 
+	if ( ! is_array( $status ) ) {
+		$status = array( $status );
+	}
+
 	$subscriptions = wcs_get_users_subscriptions( $user_id );
 
 	$has_subscription = false;
 
 	if ( empty( $product_id ) ) { // Any subscription
 
-		if ( ! empty( $status ) && 'any' != $status ) { // We need to check for a specific status
+		if ( ! empty( $status ) && ! in_array( 'any', $status ) ) { // We need to check for a specific status
 			foreach ( $subscriptions as $subscription ) {
-				if ( $subscription->get_status() == $status ) {
+				if ( $subscription->has_status( $status ) ) {
 					$has_subscription = true;
 					break;
 				}
@@ -133,7 +137,7 @@ function wcs_user_has_subscription( $user_id = 0, $product_id = '', $status = 'a
 	} else {
 
 		foreach ( $subscriptions as $subscription ) {
-			if ( $subscription->has_product( $product_id ) && ( empty( $status ) || 'any' == $status || $subscription->get_status() == $status ) ) {
+			if ( $subscription->has_product( $product_id ) && ( empty( $status ) || in_array( 'any', $status ) || $subscription->has_status( $status ) ) ) {
 				$has_subscription = true;
 				break;
 			}
