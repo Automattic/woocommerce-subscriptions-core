@@ -1758,6 +1758,12 @@ class WC_Subscription extends WC_Order {
 			$is_syncd_or_trial_one_payment_subscription = $has_trial_or_is_syncd && $subscription_order_count < $required_payment_count && wcs_estimate_periods_between( $next_payment_time, $end_time, $this->billing_period ) == $this->billing_interval;
 
 			$is_one_payment = $is_one_payment_subscription || $is_syncd_or_trial_one_payment_subscription;
+
+			if ( ! $is_one_payment && false == $this->order ) {
+
+				$from_time      = $has_trial_or_is_syncd ? $next_payment_time : $this->get_time( 'start' );
+				$is_one_payment = wcs_estimate_periods_between( $from_time, $end_time, $this->billing_period, 'floor' ) == $this->billing_interval;
+			}
 		}
 
 		return apply_filters( 'woocommerce_subscription_is_one_payment', $is_one_payment, $this );
