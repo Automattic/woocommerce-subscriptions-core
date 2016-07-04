@@ -165,6 +165,8 @@ function wcs_get_subscriptions_for_resubscribe_order( $order ) {
  * 3. its parent order must not have already been superseded by a new order (to prevent
  *    displaying "Resubscribe" links on subscriptions that have already been renewed)
  * 4. the products to which the subscription relates must not have been deleted
+ * 5. have a recurring amount greater than $0, to avoid allowing resubscribes to subscriptions
+ *    where the entire cost is charged in a sign-up fee
  *
  * @param  int | WC_Subscription $subscription Post ID of a 'shop_subscription' post, or instance of a WC_Subscription object
  * @param  int The ID of a user
