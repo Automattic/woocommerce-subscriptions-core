@@ -189,6 +189,14 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 
 		$can_user_resubscribe = false;
 
+	} elseif ( ! $subscription->has_status( array( 'cancelled', 'expired', 'trash' ) ) ) {
+
+		$can_user_resubscribe = false;
+
+	} elseif ( $subscription->get_total() <= 0 ) {
+
+		$can_user_resubscribe = false;
+
 	} else {
 
 		$resubscribe_orders = get_posts( array(
@@ -225,7 +233,7 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 			}
 		}
 
-		if ( empty( $resubscribe_orders ) && $subscription->get_completed_payment_count() > 0 && $subscription->get_total() > 0 && true === $all_line_items_exist && $subscription->has_status( array( 'cancelled', 'expired', 'trash' ) ) && false === $has_active_limited_subscription ) {
+		if ( empty( $resubscribe_orders ) && $subscription->get_completed_payment_count() > 0 && true === $all_line_items_exist && false === $has_active_limited_subscription ) {
 			$can_user_resubscribe = true;
 		} else {
 			$can_user_resubscribe = false;
