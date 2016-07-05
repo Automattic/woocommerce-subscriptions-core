@@ -1352,7 +1352,7 @@ class WC_Subscriptions_Admin {
 
 		if ( empty( $subscriptions ) ) {
 			return '<ul class="user-subscriptions no-user-subscriptions">
-						<li>' . _e( 'No subscriptions found.', 'woocommerce-subscriptions' ) . '</li>
+						<li>' . __( 'No subscriptions found.', 'woocommerce-subscriptions' ) . '</li>
 					</ul>';
 		}
 
