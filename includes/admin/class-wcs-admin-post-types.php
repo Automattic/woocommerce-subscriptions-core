@@ -51,6 +51,8 @@ class WCS_Admin_Post_Types {
 
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_product' ) );
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_payment_method' ) );
+
+		add_action( 'list_table_primary_column', array( $this, 'list_table_primary_column' ), 10, 2 );
 	}
 
 
@@ -880,6 +882,22 @@ class WCS_Admin_Post_Types {
 			echo '<option value="' . esc_attr( $gateway_id ) . '"' . ( $selected_gateway_id == $gateway_id  ? 'selected' : '' ) . '>' . esc_html( $gateway->title ) . '</option>';
 		}?>
 		</select> <?php
+	}
+
+	/*
+	 * Sets post table primary column subscriptions.
+	 *
+	 * @param string $default
+	 * @param string $screen_id
+	 * @return string
+	 */
+	public function list_table_primary_column( $default, $screen_id ) {
+
+		if ( 'edit-shop_subscription' == $screen_id ) {
+			$default = 'order_title';
+		}
+
+		return $default;
 	}
 }
 
