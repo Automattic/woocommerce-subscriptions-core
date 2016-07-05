@@ -1360,7 +1360,7 @@ class WC_Subscriptions_Admin {
 
 		foreach ( $subscriptions as $subscription ) {
 			if ( 'all' == $attributes['status'] || $subscription->has_status( $attributes['status'] ) ) {
-				$shortcode_translate = sprintf( _x( 'Subscription %s', 'in [subscriptions] shortcode', 'woocommerce-subscriptions'), $subscription->get_order_number() );
+				$shortcode_translate = sprintf( _x( 'Subscription %s', 'in [subscriptions] shortcode', 'woocommerce-subscriptions' ), $subscription->get_order_number() );
 				// translators: $1: url for order, $2: order number
 				$list .= sprintf( '<li><a href="%1$s">%2$s</a></li>', $subscription->get_view_order_url(), $shortcode_translate );
 			}
