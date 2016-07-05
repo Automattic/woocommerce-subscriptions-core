@@ -461,6 +461,8 @@ class WCS_Admin_Post_Types {
 
 				$column_content .= '</div>';
 
+				$column_content .= '<button type="button" class="toggle-row"><span class="screen-reader-text">' . __( 'Show more details', 'woocommerce-subscriptions' ) . '</span></button>';
+
 				break;
 			case 'order_items' :
 				// Display either the item name or item count with a collapsed list of items
