@@ -1360,7 +1360,7 @@ class WC_Subscriptions_Admin {
 
 		foreach ( $subscriptions as $subscription ) {
 			if ( 'all' == $attributes['status'] || $subscription->has_status( $attributes['status'] ) ) {
-				$list .= sprintf( '<li><a href="%s">', $subscription->get_view_order_url() ) . sprintf( __( 'Subscription %s', 'woocommerce-subscriptions' ), $subscription->get_order_number() ) . '</a></li>';
+				$list .= sprintf( '<li><a href="%s">%s</a></li>', $subscription->get_view_order_url(), sprintf( __( 'Subscription %s', 'woocommerce-subscriptions' ), $subscription->get_order_number() ) );
 			}
 		}
 		$list .= '</ul>';
