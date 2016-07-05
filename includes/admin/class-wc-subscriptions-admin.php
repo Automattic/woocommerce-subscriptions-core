@@ -1352,7 +1352,7 @@ class WC_Subscriptions_Admin {
 
 		if ( empty( $subscriptions ) ) {
 			return '<ul class="user-subscriptions no-user-subscriptions">
-						<li>No subscriptions found.</li>
+						<li>' . _e( 'No subscriptions found.', 'woocommerce-subscriptions' ) . '</li>
 					</ul>';
 		}
 
@@ -1360,7 +1360,7 @@ class WC_Subscriptions_Admin {
 
 		foreach ( $subscriptions as $subscription ) {
 			if ( 'all' == $attributes['status'] || $subscription->has_status( $attributes['status'] ) ) {
-				$list .= sprintf( '<li><a href="%s">Subscription %s</a></li>', $subscription->get_view_order_url(), $subscription->get_order_number() );
+				$list .= '<li><a href="' . sprintf( '%s', $subscription->get_view_order_url() ) . '">' . _e( 'Subscription', 'woocommerce-subscriptions' ) . sprintf( ' %s', $subscription->get_order_number() ) . '</a></li>';
 			}
 		}
 		$list .= '</ul>';
