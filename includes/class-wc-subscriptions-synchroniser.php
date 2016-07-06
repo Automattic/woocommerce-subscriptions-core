@@ -104,6 +104,9 @@ class WC_Subscriptions_Synchroniser {
 		// Autocomplete subscription orders when they only contain a synchronised subscription
 		add_filter( 'woocommerce_payment_complete_order_status', __CLASS__ . '::order_autocomplete', 10, 2 );
 
+		// If it's an initial sync order and the total is zero, and nothing needs to be shipped, do not reduce stock
+		add_filter( 'woocommerce_order_item_quantity', __CLASS__ . '::maybe_do_not_reduce_stock', 10, 3 );
+
 		add_filter( 'woocommerce_subscriptions_recurring_cart_key', __CLASS__ . '::add_to_recurring_cart_key', 10, 2 );
 	}
 
@@ -951,6 +954,34 @@ class WC_Subscriptions_Synchroniser {
 		}
 
 		return $new_order_status;
+	}
+
+	/**
+	 * Override quantities used to lower stock levels by when using synced subscriptions. If it's a synced product
+	 * that does not have proration enabled and the payment date is not today, do not lower stock levels.
+	 *
+	 * @param integer $qty the original quantity that would be taken out of the stock level
+	 * @param array $order order data
+	 * @param array $item item data for each item in the order
+	 *
+	 * @return int
+	 */
+	public static function maybe_do_not_reduce_stock( $qty, $order, $order_item ) {
+		if ( wcs_order_contains_subscription( $order, array( 'parent', 'resubscribe' ) ) && 0 == $order_item['line_total'] ) {
+			$subscriptions = wcs_get_subscriptions_for_order( $order );
+			$product_id    = wcs_get_canonical_product_id( $order_item );
+
+			foreach ( $subscriptions as $subscription ) {
+				if ( self::subscription_contains_synced_product( $subscription ) && $subscription->has_product( $product_id ) ) {
+					foreach ( $subscription->get_items() as $subscription_item ) {
+						if ( wcs_get_canonical_product_id( $subscription_item ) == $product_id && 0 < $subscription_item['line_total'] ) {
+							$qty = 0;
+						}
+					}
+				}
+			}
+		}
+		return $qty;
 	}
 
 	/**
