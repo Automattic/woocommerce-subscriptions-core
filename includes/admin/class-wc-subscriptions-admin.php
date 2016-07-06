@@ -77,7 +77,7 @@ class WC_Subscriptions_Admin {
 		add_action( 'woocommerce_process_product_meta_variable-subscription', __CLASS__ . '::process_product_meta_variable_subscription' ); // WC < 2.4
 		add_action( 'woocommerce_ajax_save_product_variations', __CLASS__ . '::process_product_meta_variable_subscription' );
 
-		add_action( 'woocommerce_subscription_pre_update_status', __CLASS__ . '::saving_without_customer', 10, 2 );
+		add_action( 'woocommerce_subscription_pre_update_status', __CLASS__ . '::saving_without_customer', 10, 3 );
 
 		add_action( 'product_variation_linked', __CLASS__ . '::set_variation_meta_defaults_on_bulk_add' );
 
