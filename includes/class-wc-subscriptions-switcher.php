@@ -110,8 +110,6 @@ class WC_Subscriptions_Switcher {
 		// Process subscription switch changes on completed switch orders status
 		add_action( 'woocommerce_order_status_changed', __CLASS__ . '::process_subscription_switches', 10, 3 );
 
-		// Cancel remaining pending/failed switch orders linked to subscriptions which have been successfully switched.
-		add_action( 'woocommerce_subscriptions_switch_completed', __CLASS__ . '::cancel_pending_switch_orders_after_successful_switch', 10, 1 );
 		// Check if we need to force payment on this switch, just after calculating the prorated totals in @see self::calculate_prorated_totals()
 		add_filter( 'woocommerce_subscriptions_calculated_total', __CLASS__ . '::set_force_payment_flag_in_cart', 10, 1 );
 
@@ -742,8 +740,18 @@ class WC_Subscriptions_Switcher {
 			// Rollback the changes and store the required meta on the order so it can be processed on successful payment.
 			$wpdb->query( 'ROLLBACK' );
 
-			// Despite rolling back the DB queries, the cache can still contain subscription changes (eg _billing_period post meta), so make sure we delete the cache for all subscriptions we've altered.
 			foreach ( $switch_order_data as $subscription_id => $switch_data ) {
+
+				// Cancel all the switch orders linked to the switched subscription(s) which haven't been completed yet - excluding this one.
+				$switch_orders = wcs_get_switch_orders_for_subscription( $subscription_id );
+
+				foreach ( $switch_orders as $order_id => $switch_order ) {
+					if ( $order->id !== $order_id && in_array( $switch_order->get_status(), apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'failed', 'on-hold' ), $switch_order ) ) ) {
+						$switch_order->update_status( 'cancelled', sprintf( __( 'Switch order cancelled due to a new switch order being created #%s.', 'woocommerce-subscriptions' ), $order->get_order_number() ) );
+					}
+				}
+
+				// Despite rolling back the DB queries, the cache can still contain subscription changes (eg _billing_period post meta), so make sure we delete the cache for all subscriptions we've altered.
 				wp_cache_delete( $subscription_id, 'post_meta' );
 			}
 
@@ -1866,30 +1874,6 @@ class WC_Subscriptions_Switcher {
 			self::maybe_update_subscription_address( $order, $subscription );
 
 			$subscription->calculate_totals();
-		}
-	}
-
-	/**
-	 * When a switch order is completed, cancel all the other remaining pending/failed switch orders linked to the switched subscription(s).
-	 * These switch orders could contain invalid switches now that a different switch order has been completed.
-	 *
-	 * @param WC_Order $order The switch order which has been completed.
-	 * @since 2.1
-	 */
-	public static function cancel_pending_switch_orders_after_successful_switch( $order ) {
-
-		// Get all the subscriptions switched in this order
-		$switched_subscriptions = wcs_get_subscriptions_for_switch_order( $order );
-
-		foreach ( $switched_subscriptions as $subscription_id => $subscription ) {
-			$switch_orders = wcs_get_switch_orders_for_subscription( $subscription_id );
-
-			foreach ( $switch_orders as $order_id => $switch_order ) {
-				// cancel switch orders which have valid statuses for payment
-				if ( in_array( $switch_order->get_status(), apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'failed', 'on-hold' ), $switch_order ) ) ) {
-					$switch_order->cancel_order( sprintf( __( 'Switch order cancelled due to completing the related switch order #%s.', 'woocommerce-subscriptions' ), $order->get_order_number() ) );
-				}
-			}
 		}
 	}
 
