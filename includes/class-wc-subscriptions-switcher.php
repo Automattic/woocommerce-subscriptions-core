@@ -115,6 +115,9 @@ class WC_Subscriptions_Switcher {
 
 		// Require payment when switching from a $0 / period subscription to a non-zero subscription to process automatic payments
 		add_filter( 'woocommerce_payment_successful_result', __CLASS__ . '::maybe_set_payment_method' , 10, 2 );
+
+		// Do not reduce product stock when the order item is simply to record a switch
+		add_filter( 'woocommerce_order_item_quantity', __CLASS__ . '::maybe_do_not_reduce_stock', 10, 3 );
 	}
 
 	/**
@@ -1773,6 +1776,25 @@ class WC_Subscriptions_Switcher {
 		}
 
 		return $payment_processing_result;
+	}
+
+	/**
+	 * Override the order item quantity used to reduce stock levels when the order item is to record a switch and where no
+	 * prorated amount is being charged.
+	 *
+	 * @param int $quantity the original order item quantity used to reduce stock
+	 * @param WC_Order $order
+	 * @param array $order_item
+	 *
+	 * @return int
+	 */
+	public static function maybe_do_not_reduce_stock( $quantity, $order, $order_item ) {
+
+		if ( isset( $order_item['switched_subscription_price_prorated'] ) && 0 == $order_item['line_total'] ) {
+			$quantity = 0;
+		}
+
+		return $quantity;
 	}
 
 	/** Deprecated Methods **/
