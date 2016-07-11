@@ -887,7 +887,7 @@ class WCS_Admin_Post_Types {
 		</select> <?php
 	}
 
-	/*
+	/**
 	 * Sets post table primary column subscriptions.
 	 *
 	 * @param string $default
