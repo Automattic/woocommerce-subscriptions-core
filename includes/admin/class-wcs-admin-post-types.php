@@ -53,6 +53,7 @@ class WCS_Admin_Post_Types {
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_payment_method' ) );
 
 		add_action( 'list_table_primary_column', array( $this, 'list_table_primary_column' ), 10, 2 );
+		add_filter( 'post_row_actions', array( $this, 'shop_subscription_row_actions' ), 10, 2 );
 	}
 
 
@@ -900,6 +901,23 @@ class WCS_Admin_Post_Types {
 		}
 
 		return $default;
+	}
+
+	/**
+	 * Don't display default Post actions on Subscription post types (we display our own set of
+	 * actions when rendering the column content).
+	 *
+	 * @param array $actions
+	 * @param object $post
+	 * @return array
+	 */
+	public function shop_subscription_row_actions( $actions, $post ) {
+
+		if ( 'shop_subscription' == $post->post_type ) {
+			$actions = array();
+		}
+
+		return $actions;
 	}
 }
 
