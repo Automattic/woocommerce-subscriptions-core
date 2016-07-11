@@ -98,6 +98,9 @@ class WC_Subscriptions_Cart {
 		// Make sure we use our recurring shipping method for recurring shipping calculations not the default method
 		add_filter( 'woocommerce_shipping_chosen_method', array( __CLASS__, 'set_chosen_shipping_method' ), 10, 2 );
 
+		// Cache package rates. Hook in early to ensure we get a full set of rates.
+		add_filter( 'woocommerce_package_rates', __CLASS__ . '::cache_package_rates', 1, 2 );
+
 		// When WooCommerce calculates rates for a recurring shipping package, only return the recurring shipping package rates
 		add_filter( 'woocommerce_package_rates', __CLASS__ . '::filter_package_rates', 10, 2 );
 
@@ -107,9 +110,6 @@ class WC_Subscriptions_Cart {
 
 		// Validate chosen recurring shipping methods
 		add_action( 'woocommerce_after_checkout_validation', __CLASS__ . '::validate_recurring_shipping_methods' );
-
-		// Cache package rates. Hook in early to ensure we get a full set of rates.
-		add_filter( 'woocommerce_package_rates', __CLASS__ . '::cache_package_rates', 1, 2 );
 	}
 
 	/**
