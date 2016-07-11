@@ -1198,7 +1198,7 @@ class WC_Subscriptions_Cart {
 	 * @return string key hash
 	 * @since 2.0.17
 	 */
-	public static function get_package_shipping_rates_cache_key( $package ) {
+	private static function get_package_shipping_rates_cache_key( $package ) {
 		return md5( implode( array_keys( $package['contents'] ) ) );
 	}
 
