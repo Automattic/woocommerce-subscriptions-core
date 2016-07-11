@@ -719,7 +719,7 @@ class WC_Subscriptions_Synchroniser {
 	public static function maybe_set_free_trial( $total = '' ) {
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-			if ( self::is_product_synced( $cart_item['data'] ) && ! self::is_product_prorated( $cart_item['data'] ) && ! self::is_today( self::calculate_first_payment_date( $cart_item['data'], 'timestamp' ) ) ) {
+			if ( ! empty( $cart_item['subscription_switch'] ) || ( self::is_product_synced( $cart_item['data'] ) && ! self::is_product_prorated( $cart_item['data'] ) && ! self::is_today( self::calculate_first_payment_date( $cart_item['data'], 'timestamp' ) ) ) ) {
 				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length = ( WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length > 1 ) ? WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length : 1;
 			}
 		}
@@ -735,7 +735,7 @@ class WC_Subscriptions_Synchroniser {
 	public static function maybe_unset_free_trial( $total = '' ) {
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-			if ( self::is_product_synced( $cart_item['data'] ) ) {
+			if ( ! empty( $cart_item['subscription_switch'] ) || self::is_product_synced( $cart_item['data'] ) ) {
 				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length = WC_Subscriptions_Product::get_trial_length( wcs_get_canonical_product_id( $cart_item ) );
 			}
 		}
