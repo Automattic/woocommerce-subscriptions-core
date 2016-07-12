@@ -468,7 +468,7 @@ class WCS_Admin_Post_Types {
 						$column_content .= '&ndash;';
 						break;
 					case 1 :
-						foreach ( $the_subscription->get_items() as $item ) {
+						foreach ( $subscription_items as $item ) {
 							$_product       = apply_filters( 'woocommerce_order_item_product', $the_subscription->get_product_from_item( $item ), $item );
 							$item_meta      = wcs_get_order_item_meta( $item, $_product );
 							$item_meta_html = $item_meta->display( true, true );
