@@ -43,7 +43,7 @@ class WC_Subscriptions_Cart {
 	/**
 	 * A cache of the calculated shipping package rates
 	 *
-	 * @since 2.0.17
+	 * @since 2.0.18
 	 */
 	 private static $shipping_rates = array();
 
@@ -1161,7 +1161,8 @@ class WC_Subscriptions_Cart {
 	 *
 	 * @param array $rates A set of WC_Shipping_Rate objects.
 	 * @param array $package A shipping package in the form returned by @see WC_Cart->get_shipping_packages()
-	 * @since 2.0.17
+	 * @return array $rates An unaltered set of WC_Shipping_Rate objects passed to the function
+	 * @since 2.0.18
 	 */
 	public static function cache_package_rates( $rates, $package ) {
 		self::$shipping_rates[ self::get_package_shipping_rates_cache_key( $package ) ] = $rates;
@@ -1177,7 +1178,7 @@ class WC_Subscriptions_Cart {
 	 *
 	 * @param array $package A shipping package in the form returned by @see WC_Cart->get_shipping_packages()
 	 * @return array $package
-	 * @since 2.0.17
+	 * @since 2.0.18
 	 */
 	public static function get_calculated_shipping_for_package( $package ) {
 		$key = self::get_package_shipping_rates_cache_key( $package );
@@ -1196,7 +1197,7 @@ class WC_Subscriptions_Cart {
 	 *
 	 * @param array $package A shipping package in the form returned by WC_Cart->get_shipping_packages().
 	 * @return string key hash
-	 * @since 2.0.17
+	 * @since 2.0.18
 	 */
 	private static function get_package_shipping_rates_cache_key( $package ) {
 		return md5( implode( array_keys( $package['contents'] ) ) );
