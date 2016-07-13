@@ -50,7 +50,7 @@ function wcs_cart_totals_shipping_html() {
 
 				$product_names = array();
 
-				$package = WC()->shipping->calculate_shipping_for_package( $base_package );
+				$package = WC_Subscriptions_Cart::get_calculated_shipping_for_package( $base_package );
 				$index   = sprintf( '%1$s_%2$d', $recurring_cart_key, $i );
 
 				if ( $show_package_details ) {
