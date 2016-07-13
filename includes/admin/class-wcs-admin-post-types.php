@@ -330,7 +330,7 @@ class WCS_Admin_Post_Types {
 	 * @param  string $column
 	 */
 	public function render_shop_subscription_columns( $column ) {
-		global $post, $the_subscription;
+		global $post, $the_subscription, $wp_list_table;
 
 		if ( empty( $the_subscription ) || $the_subscription->id != $post->ID ) {
 			$the_subscription = wcs_get_subscription( $post->ID );
@@ -343,8 +343,6 @@ class WCS_Admin_Post_Types {
 				// The status label
 				$column_content = sprintf( '<mark class="%s tips" data-tip="%s">%s</mark>', sanitize_title( $the_subscription->get_status() ), wcs_get_subscription_status_name( $the_subscription->get_status() ), wcs_get_subscription_status_name( $the_subscription->get_status() ) );
 
-				// Inline actions
-				$wp_list_table    = _get_list_table( 'WP_Posts_List_Table' );
 				$post_type_object = get_post_type_object( $post->post_type );
 
 				$actions = array();
@@ -468,7 +466,7 @@ class WCS_Admin_Post_Types {
 						$column_content .= '&ndash;';
 						break;
 					case 1 :
-						foreach ( $the_subscription->get_items() as $item ) {
+						foreach ( $subscription_items as $item ) {
 							$_product       = apply_filters( 'woocommerce_order_item_product', $the_subscription->get_product_from_item( $item ), $item );
 							$item_meta      = wcs_get_order_item_meta( $item, $_product );
 							$item_meta_html = $item_meta->display( true, true );
