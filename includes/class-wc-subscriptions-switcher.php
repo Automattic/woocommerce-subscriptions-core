@@ -118,6 +118,9 @@ class WC_Subscriptions_Switcher {
 
 		// Require payment when switching from a $0 / period subscription to a non-zero subscription to process automatic payments
 		add_filter( 'woocommerce_subscriptions_switch_completed', __CLASS__ . '::maybe_set_payment_method_after_switch' , 10, 1 );
+
+		// Do not reduce product stock when the order item is simply to record a switch
+		add_filter( 'woocommerce_order_item_quantity', __CLASS__ . '::maybe_do_not_reduce_stock', 10, 3 );
 	}
 
 	/**
@@ -429,15 +432,21 @@ class WC_Subscriptions_Switcher {
 		}
 
 		$product = wc_get_product( $item['product_id'] );
+		$additional_query_args = array();
 
 		// Grouped product
 		if ( 0 !== $product->post->post_parent ) {
 			$switch_url = get_permalink( $product->post->post_parent );
 		} else {
 			$switch_url = get_permalink( $product->id );
+
+			if ( ! empty( $_GET ) && is_product() ) {
+				$product_variations    = $product->get_variation_attributes();
+				$additional_query_args = array_intersect_key( $_GET, $product_variations );
+			}
 		}
 
-		$switch_url = self::add_switch_query_args( $subscription->id, $item_id, $switch_url );
+		$switch_url = self::add_switch_query_args( $subscription->id, $item_id, $switch_url, $additional_query_args );
 
 		return apply_filters( 'woocommerce_subscriptions_switch_url', $switch_url, $item_id, $item, $subscription );
 	}
@@ -448,12 +457,14 @@ class WC_Subscriptions_Switcher {
 	 * @param int $subscription_id A subscription's post ID
 	 * @param int $item_id The order item ID of a subscription line item
 	 * @param string $permalink The permalink of the product
+	 * @param array $additional_query_args (optional) Additional query args to add to the switch URL
 	 * @since 2.0
 	 */
-	protected static function add_switch_query_args( $subscription_id, $item_id, $permalink ) {
+	protected static function add_switch_query_args( $subscription_id, $item_id, $permalink, $additional_query_args = array() ) {
 
 		// manually add a nonce because we can't use wp_nonce_url() (it would escape the URL)
-		$permalink = add_query_arg( array( 'switch-subscription' => absint( $subscription_id ), 'item' => absint( $item_id ), '_wcsnonce' => wp_create_nonce( 'wcs_switch_request' ) ), $permalink );
+		$query_args = array_merge( $additional_query_args, array( 'switch-subscription' => absint( $subscription_id ), 'item' => absint( $item_id ), '_wcsnonce' => wp_create_nonce( 'wcs_switch_request' ) ) );
+		$permalink  = add_query_arg( $query_args, $permalink );
 
 		return apply_filters( 'woocommerce_subscriptions_add_switch_query_args', $permalink, $subscription_id, $item_id );
 	}
@@ -2008,6 +2019,27 @@ class WC_Subscriptions_Switcher {
 
 		return $payment_processing_result;
 	}
+
+	/**
+	 * Override the order item quantity used to reduce stock levels when the order item is to record a switch and where no
+	 * prorated amount is being charged.
+	 *
+	 * @param int $quantity the original order item quantity used to reduce stock
+	 * @param WC_Order $order
+	 * @param array $order_item
+	 *
+	 * @return int
+	 */
+	public static function maybe_do_not_reduce_stock( $quantity, $order, $order_item ) {
+
+		if ( isset( $order_item['switched_subscription_price_prorated'] ) && 0 == $order_item['line_total'] ) {
+			$quantity = 0;
+		}
+
+		return $quantity;
+	}
+
+	/** Deprecated Methods **/
 
 	/**
 	 * Don't allow switched subscriptions to be cancelled.
