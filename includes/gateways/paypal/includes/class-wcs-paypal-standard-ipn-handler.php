@@ -160,9 +160,6 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			}
 		}
 
-		WC_Gateway_Paypal::log( 'Subscription transaction details: ' . print_r( $transaction_details, true ) );
-		WC_Gateway_Paypal::log( 'Subscription Transaction Type: ' . $transaction_details['txn_type'] );
-
 		$is_renewal_sign_up_after_failure = false;
 
 		// If the invoice ID doesn't match the default invoice ID and contains the string '-wcsfrp-', the IPN is for a subscription payment to fix up a failed payment
