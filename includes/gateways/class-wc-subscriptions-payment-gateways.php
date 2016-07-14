@@ -184,7 +184,10 @@ class WC_Subscriptions_Payment_Gateways {
 		}
 
 		if ( ! $subscription->is_manual() && $subscription->get_total() > 0 && ! empty( $subscription->payment_method ) ) {
-			do_action( 'woocommerce_scheduled_subscription_payment_' . $subscription->payment_method, $subscription->get_total(), $subscription->get_last_order( 'all' ) );
+			$last_renewal_order = $subscription->get_last_order( 'all', 'renewal' );
+			if ( ! empty( $last_renewal_order ) && $last_renewal_order->get_total() > 0 ) {
+				do_action( 'woocommerce_scheduled_subscription_payment_' . $subscription->payment_method, $last_renewal_order->get_total(), $last_renewal_order );
+			}
 		}
 	}
 
