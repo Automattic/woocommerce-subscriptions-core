@@ -44,7 +44,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</div>
 
 	<?php foreach ( wcs_get_subscription_date_types() as $date_key => $date_label ) : ?>
-		<?php if ( 'last_payment' === $date_key ) : ?>
+		<?php $display_date_type = ( 'last_payment' === $date_key ) ? false : true; ?>
+		<?php if ( false === apply_filters( 'wcs_admin_display_date_type', $display_date_type, $date_key, $the_subscription ) ) : ?>
 			<?php continue; ?>
 		<?php endif;?>
 	<div id="subscription-<?php echo esc_attr( $date_key ); ?>-date" class="date-fields">
