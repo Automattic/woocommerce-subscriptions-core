@@ -85,7 +85,7 @@ class WCS_Retry_Manager {
 	 */
 	public static function add_retry_date_type( $subscription_date_types ) {
 
-		$subscription_date_types['payment_retry'] = _x( 'Renewal Payment Retry', 'table heading', 'woocommerce-subscriptions' );
+		$subscription_date_types = wcs_array_insert_after( 'next_payment', $subscription_date_types, 'payment_retry', _x( 'Renewal Payment Retry', 'table heading', 'woocommerce-subscriptions' ) );
 
 		return $subscription_date_types;
 	}
