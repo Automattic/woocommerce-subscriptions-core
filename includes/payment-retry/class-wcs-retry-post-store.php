@@ -110,6 +110,35 @@ class WCS_Retry_Post_Store extends WCS_Retry_Store {
 	}
 
 	/**
+	 *
+	 */
+	public function get_retries( $args ) {
+
+		$args = wp_parse_args( $args, array(
+			'status'     => 'any',
+			'date_query' => array(),
+		) );
+
+		$retry_post_ids = get_posts( array(
+			'posts_per_page' => -1,
+			'post_type'      => self::$post_type,
+			'post_status'    => $args['status'],
+			'date_query'     => $args['date_query'],
+			'fields'         => 'ids',
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+		) );
+
+		$retries = array();
+
+		foreach ( $retry_post_ids as $retry_post_id ) {
+			$retries[ $retry_post_id ] = $this->get_retry( $retry_post_id );
+		}
+
+		return $retries;
+	}
+
+	/**
 	 * Get the IDs of all retries from the database for a given order
 	 *
 	 * @param int $order_id

@@ -580,10 +580,6 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 								}
 							],
 							stack: true,
-							bars:{ // show the bars with a width of .4
-								show: true,
-								barWidth: .4
-							},
 						}
 					);
 
