@@ -18,7 +18,6 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 	 * Constructor.
 	 */
 	public function __construct() {
-
 		parent::__construct( array(
 			'singular'  => __( 'Customer', 'woocommerce-subscriptions' ),
 			'plural'    => __( 'Customers', 'woocommerce-subscriptions' ),
@@ -168,14 +167,14 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 			$this->items[ $index ]->renewal_switch_total = ( isset( $customer_renewal_switch_totals[ $item->customer_id ] ) ) ? $customer_renewal_switch_totals[ $item->customer_id ]->renewal_switch_total : 0;
 		}
 
-		 /**
-			* Pagination.
-			*/
-		 $this->set_pagination_args( array(
+		/**
+		 * Pagination.
+		 */
+		$this->set_pagination_args( array(
 			 'total_items' => $this->totals->total_customers,
 			 'per_page'    => $per_page,
 			 'total_pages' => ceil( $this->totals->total_customers / $per_page ),
-		 ) );
+		) );
 
 	}
 

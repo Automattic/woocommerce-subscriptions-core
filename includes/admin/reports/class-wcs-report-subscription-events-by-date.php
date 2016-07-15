@@ -11,7 +11,9 @@
  * @since		2.1
  */
 class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
+
 	public $chart_colours = array();
+
 	private $report_data;
 
 	/**
@@ -19,9 +21,11 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 	 * @return array
 	 */
 	public function get_report_data() {
+
 		if ( empty( $this->report_data ) ) {
 			$this->get_data();
 		}
+
 		return $this->report_data;
 	}
 
@@ -339,6 +343,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		);
 
 		$subscription_change_count = ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start > 0 ) ? '+' . ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start ) : ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start );
+
 		if ( $data->total_subscriptions_at_period_start === 0 ) {
 			$subscription_change_percent = '&#x221e;%'; // infinite percentage increase if the starting subs is 0
 		} elseif ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start > 0 ) {
@@ -367,6 +372,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 	 * Output the report
 	 */
 	public function output_report() {
+
 		$ranges = array(
 			'year'         => __( 'Year', 'woocommerce-subscriptions' ),
 			'last_month'   => __( 'Last Month', 'woocommerce-subscriptions' ),
@@ -575,6 +581,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 							],
 							stack: true,
 							bars:{ // show the bars with a width of .4
+								show: true,
 								barWidth: .4
 							},
 						}

@@ -13,6 +13,7 @@
 class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 
 	public $chart_colours = array();
+
 	public $order_ids_recurring_totals = null;
 
 	/**
@@ -214,12 +215,12 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 		$renewal_counts      = $this->prepare_chart_data( $this->order_ids_recurring_totals, 'scheduled_date', 'total_renewals', $this->chart_interval, $this->start_date, $this->chart_groupby );
 
 		$chart_data = array(
-			'renewal_amounts'      => array_values( $renewal_amounts ),
-			'renewal_counts'       => array_values( $renewal_counts ),
+			'renewal_amounts' => array_values( $renewal_amounts ),
+			'renewal_counts'  => array_values( $renewal_counts ),
 		);
 
 		?>
-		<div class="chart-container" id="woocommerce_subscriptions_coming_rev_chart">
+		<div id="woocommerce_subscriptions_upcoming_recurring_revenue_chart" class="chart-container">
 			<div class="chart-placeholder main"></div>
 		</div>
 		<script type="text/javascript">
@@ -315,8 +316,8 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 									}
 								}
 							],
-				 		}
-				 	);
+						}
+					);
 
 					jQuery('.chart-placeholder').resize();
 				}
@@ -389,18 +390,18 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 		// Group by
 		switch ( $this->chart_groupby ) {
 			case 'day' :
-				$this->group_by_query       = 'YEAR(ms.meta_value), MONTH(ms.meta_value), DAY(ms.meta_value)';
-				$this->chart_interval       = ceil( max( 0, ( $this->end_date - $this->start_date ) / ( 60 * 60 * 24 ) ) );
-				$this->barwidth             = 60 * 60 * 24 * 1000;
+				$this->group_by_query = 'YEAR(ms.meta_value), MONTH(ms.meta_value), DAY(ms.meta_value)';
+				$this->chart_interval = ceil( max( 0, ( $this->end_date - $this->start_date ) / ( 60 * 60 * 24 ) ) );
+				$this->barwidth       = 60 * 60 * 24 * 1000;
 			break;
 			case 'month' :
-				$this->group_by_query       = 'YEAR(ms.meta_value), MONTH(ms.meta_value)';
+				$this->group_by_query = 'YEAR(ms.meta_value), MONTH(ms.meta_value)';
 				$this->chart_interval = 0;
 				$min_date             = $this->start_date;
-				while ( ( $min_date   = wcs_add_months( $min_date, '1' ) ) <= $this->end_date ) {
+				while ( ( $min_date = wcs_add_months( $min_date, '1' ) ) <= $this->end_date ) {
 					$this->chart_interval ++;
 				}
-				$this->barwidth             = 60 * 60 * 24 * 7 * 4 * 1000;
+				$this->barwidth = 60 * 60 * 24 * 7 * 4 * 1000;
 			break;
 		}
 	}

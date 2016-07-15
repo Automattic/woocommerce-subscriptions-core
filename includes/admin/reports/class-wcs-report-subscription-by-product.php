@@ -16,7 +16,6 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 	 * Constructor.
 	 */
 	public function __construct() {
-
 		parent::__construct( array(
 			'singular'  => __( 'Product', 'woocommerce-subscriptions' ),
 			'plural'    => __( 'Products', 'woocommerce-subscriptions' ),
@@ -41,7 +40,6 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 		$this->display();
 		echo '</div>';
 		$this->product_breakdown_chart();
-
 	}
 
 	/**
@@ -77,6 +75,7 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 	 * @return array
 	 */
 	public function get_columns() {
+
 		$columns = array(
 			'product_name'               => __( 'Subscription Product', 'woocommerce-subscriptions' ),
 			'subscription_count'         => __( 'Current Subscriptions', 'woocommerce-subscriptions' ),
