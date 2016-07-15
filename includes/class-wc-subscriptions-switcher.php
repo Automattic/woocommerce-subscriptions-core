@@ -1273,11 +1273,6 @@ class WC_Subscriptions_Switcher {
 				}
 			}
 
-			// Finally, if we need to make sure the initial total doesn't include any recurring amount, we can by spoofing a free trial
-			if ( 0 != WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] ) {
-				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length = 1;
-			}
-
 			if ( 'yes' == $apportion_length || ( 'virtual' == $apportion_length && $is_virtual_product ) ) {
 
 				$base_length        = WC_Subscriptions_Product::get_length( $product_id );
