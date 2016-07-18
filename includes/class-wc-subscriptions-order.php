@@ -40,8 +40,8 @@ class WC_Subscriptions_Order {
 		add_action( 'woocommerce_admin_order_data_after_order_details', __CLASS__ . '::contains_subscription_hidden_field', 10, 1 );
 
 		// Add column that indicates whether an order is parent or renewal for a subscription
-		add_filter( 'manage_edit-shop_order_columns', __CLASS__ . '::add_contains_subscription_column');
-		add_action( 'manage_shop_order_posts_custom_column', __CLASS__ . '::add_contains_subscription_column_content', 10, 1);
+		add_filter( 'manage_edit-shop_order_columns', __CLASS__ . '::add_contains_subscription_column' );
+		add_action( 'manage_shop_order_posts_custom_column', __CLASS__ . '::add_contains_subscription_column_content', 10, 1 );
 
 		// Record initial payment against the subscription & set start date based on that payment
 		add_action( 'woocommerce_order_status_changed', __CLASS__ . '::maybe_record_subscription_payment', 9, 3 );
@@ -417,10 +417,10 @@ class WC_Subscriptions_Order {
 
 		$new_columns = array();
 		foreach ( $columns as $column => $title ) {
-			if ( $column == 'customer_message' ) {
+			if ( 'customer_message' == $column ) {
 				$new_columns['subscription_affiliation'] = '<span class="subscription_head tips" data-tip="' . esc_attr__( 'Subscription Affiliation', 'woocommerce-subscriptions' ) . '">' . esc_attr__( 'Subscription Affiliation', 'woocommerce-subscriptions' ) . '</span>';
 			}
-			$new_columns[$column] = $title;
+			$new_columns[ $column ] = $title;
 		}
 		return $new_columns;
 	}
@@ -435,7 +435,7 @@ class WC_Subscriptions_Order {
 	public static function add_contains_subscription_column_content( $column ) {
 		global $post;
 
-		if ( $column == 'subscription_affiliation' ) {
+		if ( 'subscription_affiliation' == $column ) {
 			if ( wcs_order_contains_subscription( $post->ID, array( 'renewal', 'resubscribe' ) ) ) {
 				echo '<span class="subscription_renewal_order tips" data-tip="' . esc_attr__( 'Renewal Order', 'woocommerce-subscriptions' ) . '"></span>';
 			} elseif ( wcs_order_contains_subscription( $post->ID, 'parent' ) ) {
