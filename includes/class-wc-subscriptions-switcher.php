@@ -118,6 +118,18 @@ class WC_Subscriptions_Switcher {
 
 		// Do not reduce product stock when the order item is simply to record a switch
 		add_filter( 'woocommerce_order_item_quantity', __CLASS__ . '::maybe_do_not_reduce_stock', 10, 3 );
+
+		// Mock a free trial on the cart item to make sure the switch total doesn't include any recurring amount
+		add_filter( 'woocommerce_before_calculate_totals', __CLASS__ . '::maybe_set_free_trial', 100, 1 );
+		add_action( 'woocommerce_subscription_cart_before_grouping', __CLASS__ . '::maybe_unset_free_trial' );
+		add_action( 'woocommerce_subscription_cart_after_grouping', __CLASS__ . '::maybe_set_free_trial' );
+		add_action( 'wcs_recurring_cart_start_date', __CLASS__ . '::maybe_unset_free_trial', 0, 1 );
+		add_action( 'wcs_recurring_cart_end_date', __CLASS__ . '::maybe_set_free_trial', 100, 1 );
+		add_filter( 'woocommerce_subscriptions_calculated_total', __CLASS__ . '::maybe_unset_free_trial', 10000, 1 );
+		add_action( 'woocommerce_cart_totals_before_shipping', __CLASS__ . '::maybe_set_free_trial' );
+		add_action( 'woocommerce_cart_totals_after_shipping', __CLASS__ . '::maybe_unset_free_trial' );
+		add_action( 'woocommerce_review_order_before_shipping', __CLASS__ . '::maybe_set_free_trial' );
+		add_action( 'woocommerce_review_order_after_shipping', __CLASS__ . '::maybe_unset_free_trial' );
 	}
 
 	/**
@@ -1272,11 +1284,6 @@ class WC_Subscriptions_Switcher {
 				}
 			}
 
-			// Finally, if we need to make sure the initial total doesn't include any recurring amount, we can by spoofing a free trial
-			if ( 0 != WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] ) {
-				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length = 1;
-			}
-
 			if ( 'yes' == $apportion_length || ( 'virtual' == $apportion_length && $is_virtual_product ) ) {
 
 				$base_length        = WC_Subscriptions_Product::get_length( $product_id );
@@ -1803,6 +1810,37 @@ class WC_Subscriptions_Switcher {
 		}
 
 		return $quantity;
+	}
+
+	/**
+	 * Make sure switch cart item price doesn't include any recurring amount by setting a free trial.
+	 *
+	 * @since 2.0.18
+	 */
+	public static function maybe_set_free_trial( $total = '' ) {
+
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			if ( isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) && 0 != $cart_item['subscription_switch']['first_payment_timestamp'] ) {
+				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length = 1;
+			}
+		}
+
+		return $total;
+	}
+
+	/**
+	 * Remove mock free trials from switch cart items.
+	 *
+	 * @since 2.0.18
+	 */
+	public static function maybe_unset_free_trial( $total = '' ) {
+
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			if ( isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) && 0 != $cart_item['subscription_switch']['first_payment_timestamp'] ) {
+				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length = 0;
+			}
+		}
+		return $total;
 	}
 
 	/** Deprecated Methods **/
