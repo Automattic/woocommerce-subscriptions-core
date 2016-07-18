@@ -36,7 +36,12 @@ class WC_Subscriptions_Order {
 		add_action( 'woocommerce_thankyou', __CLASS__ . '::subscription_thank_you' );
 
 		add_action( 'manage_shop_order_posts_custom_column', __CLASS__ . '::add_contains_subscription_hidden_field', 10, 1 );
+
 		add_action( 'woocommerce_admin_order_data_after_order_details', __CLASS__ . '::contains_subscription_hidden_field', 10, 1 );
+
+		// Add column that indicates whether an order is parent or renewal for a subscription
+		add_filter( 'manage_edit-shop_order_columns', __CLASS__ . '::add_contains_subscription_column');
+		add_action( 'manage_shop_order_posts_custom_column', __CLASS__ . '::add_contains_subscription_column_content', 10, 1);
 
 		// Record initial payment against the subscription & set start date based on that payment
 		add_action( 'woocommerce_order_status_changed', __CLASS__ . '::maybe_record_subscription_payment', 9, 3 );
@@ -399,6 +404,46 @@ class WC_Subscriptions_Order {
 		$has_subscription = wcs_order_contains_subscription( $order_id, 'parent' ) ? 'true' : 'false';
 
 		echo '<input type="hidden" name="contains_subscription" value="' . esc_attr( $has_subscription ) . '">';
+	}
+
+	/**
+	* Add a column to the WooCommerce -> Orders admin screen to indicate whether an order is a
+	* parent of a subscription, a renewal order for a subscription, or a regular order.
+	*
+	* @param array $columns The current list of columns
+	* @since 2.1
+	*/
+	public static function add_contains_subscription_column( $columns ) {
+
+		$new_columns = array();
+		foreach ( $columns as $column => $title ) {
+			if ( $column == 'customer_message' ) {
+				$new_columns['subscription_affiliation'] = '<span class="subscription_head tips" data-tip="' . esc_attr__( 'Subscription Affiliation', 'woocommerce-subscriptions' ) . '">' . esc_attr__( 'Subscription Affiliation', 'woocommerce-subscriptions' ) . '</span>';
+			}
+			$new_columns[$column] = $title;
+		}
+		return $new_columns;
+	}
+
+	/**
+	* Add a column to the WooCommerce -> Orders admin screen to indicate whether an order is a
+	* parent of a subscription, a renewal order for a subscription, or a regular order.
+	*
+	* @param string $column The string of the current column
+	* @since 2.1
+	*/
+	public static function add_contains_subscription_column_content( $column ) {
+		global $post;
+
+		if ( $column == 'subscription_affiliation' ) {
+			if ( wcs_order_contains_subscription( $post->ID, array( 'renewal', 'resubscribe' ) ) ) {
+				echo '<span class="subscription_renewal_order tips" data-tip="Renewal Order"></span>';
+			} elseif ( wcs_order_contains_subscription( $post->ID, 'parent' ) ) {
+				echo '<span class="subscription_parent_order tips" data-tip="Parent Order"></span>';
+			} else {
+				echo '<span class="normal_order">&ndash;</span>';
+			}
+		}
 	}
 
 	/**
