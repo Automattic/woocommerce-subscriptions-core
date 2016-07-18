@@ -437,9 +437,9 @@ class WC_Subscriptions_Order {
 
 		if ( $column == 'subscription_affiliation' ) {
 			if ( wcs_order_contains_subscription( $post->ID, array( 'renewal', 'resubscribe' ) ) ) {
-				echo '<span class="subscription_renewal_order tips" data-tip="Renewal Order"></span>';
+				echo '<span class="subscription_renewal_order tips" data-tip="' . esc_attr__( 'Renewal Order', 'woocommerce-subscriptions' ) . '"></span>';
 			} elseif ( wcs_order_contains_subscription( $post->ID, 'parent' ) ) {
-				echo '<span class="subscription_parent_order tips" data-tip="Parent Order"></span>';
+				echo '<span class="subscription_parent_order tips" data-tip="' . esc_attr__( 'Parent Order', 'woocommerce-subscriptions' ) . '"></span>';
 			} else {
 				echo '<span class="normal_order">&ndash;</span>';
 			}
