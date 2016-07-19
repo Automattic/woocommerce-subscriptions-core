@@ -36,7 +36,12 @@ class WC_Subscriptions_Order {
 		add_action( 'woocommerce_thankyou', __CLASS__ . '::subscription_thank_you' );
 
 		add_action( 'manage_shop_order_posts_custom_column', __CLASS__ . '::add_contains_subscription_hidden_field', 10, 1 );
+
 		add_action( 'woocommerce_admin_order_data_after_order_details', __CLASS__ . '::contains_subscription_hidden_field', 10, 1 );
+
+		// Add column that indicates whether an order is parent or renewal for a subscription
+		add_filter( 'manage_edit-shop_order_columns', __CLASS__ . '::add_contains_subscription_column' );
+		add_action( 'manage_shop_order_posts_custom_column', __CLASS__ . '::add_contains_subscription_column_content', 10, 1 );
 
 		// Record initial payment against the subscription & set start date based on that payment
 		add_action( 'woocommerce_order_status_changed', __CLASS__ . '::maybe_record_subscription_payment', 9, 3 );
@@ -399,6 +404,46 @@ class WC_Subscriptions_Order {
 		$has_subscription = wcs_order_contains_subscription( $order_id, 'parent' ) ? 'true' : 'false';
 
 		echo '<input type="hidden" name="contains_subscription" value="' . esc_attr( $has_subscription ) . '">';
+	}
+
+	/**
+	* Add a column to the WooCommerce -> Orders admin screen to indicate whether an order is a
+	* parent of a subscription, a renewal order for a subscription, or a regular order.
+	*
+	* @param array $columns The current list of columns
+	* @since 2.1
+	*/
+	public static function add_contains_subscription_column( $columns ) {
+
+		$column_header = '<span class="subscription_head tips" data-tip="' . esc_attr__( 'Subscription Relationship', 'woocommerce-subscriptions' ) . '">' . esc_attr__( 'Subscription Relationship', 'woocommerce-subscriptions' ) . '</span>';
+
+		$new_columns = wcs_array_insert_after( 'shipping_address', $columns, 'subscription_relationship', $column_header );
+
+		return $new_columns;
+	}
+
+	/**
+	* Add column content to the WooCommerce -> Orders admin screen to indicate whether an
+	* order is a parent of a subscription, a renewal order for a subscription, or a
+	* regular order.
+	*
+	* @param string $column The string of the current column
+	* @since 2.1
+	*/
+	public static function add_contains_subscription_column_content( $column ) {
+		global $post;
+
+		if ( 'subscription_relationship' == $column ) {
+			if ( wcs_order_contains_subscription( $post->ID, 'renewal' ) ) {
+				echo '<span class="subscription_renewal_order tips" data-tip="' . esc_attr__( 'Renewal Order', 'woocommerce-subscriptions' ) . '"></span>';
+			} elseif ( wcs_order_contains_subscription( $post->ID, 'resubscribe' ) ) {
+				echo '<span class="subscription_resubscribe_order tips" data-tip="' . esc_attr__( 'Resubscribe Order', 'woocommerce-subscriptions' ) . '"></span>';
+			} elseif ( wcs_order_contains_subscription( $post->ID, 'parent' ) ) {
+				echo '<span class="subscription_parent_order tips" data-tip="' . esc_attr__( 'Parent Order', 'woocommerce-subscriptions' ) . '"></span>';
+			} else {
+				echo '<span class="normal_order">&ndash;</span>';
+			}
+		}
 	}
 
 	/**
