@@ -182,6 +182,8 @@ class WC_Subscriptions_Admin {
 			'class'       => 'wc_input_subscription_length',
 			'label'       => __( 'Subscription Length', 'woocommerce-subscriptions' ),
 			'options'     => wcs_get_subscription_ranges( $subscription_period ),
+			'desc_tip'    => true,
+			'description' => __( 'This length will be in addition to any free trial or amount of time provided before a synchronised first renewal date.', 'woocommerce-subscriptions' ),
 			)
 		);
 
