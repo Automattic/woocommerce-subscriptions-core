@@ -78,7 +78,7 @@ function wcs_get_subscription_ranges_tlc() {
 	foreach ( array( 'day', 'week', 'month', 'year' ) as $period ) {
 
 		$subscription_lengths = array(
-			_x( 'all time', 'Subscription length (eg "$10 per month for _all time_")', 'woocommerce-subscriptions' ),
+			_x( 'Never expire', 'Subscription length', 'woocommerce-subscriptions' ),
 		);
 
 		switch ( $period ) {

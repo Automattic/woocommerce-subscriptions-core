@@ -183,7 +183,7 @@ class WC_Subscriptions_Admin {
 			'label'       => __( 'Subscription Length', 'woocommerce-subscriptions' ),
 			'options'     => wcs_get_subscription_ranges( $subscription_period ),
 			'desc_tip'    => true,
-			'description' => __( 'This length will be in addition to any free trial or amount of time provided before a synchronised first renewal date.', 'woocommerce-subscriptions' ),
+			'description' => __( 'Automatically expire the subscription after this length of time. This length is in addition to any free trial or amount of time provided before a synchronised first renewal date.', 'woocommerce-subscriptions' ),
 			)
 		);
 
