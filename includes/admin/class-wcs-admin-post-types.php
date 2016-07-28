@@ -374,6 +374,8 @@ class WCS_Admin_Post_Types {
 					echo '<div class="error"><p>' . esc_html( $message ) . '</p></div>';
 				}
 
+				$_SERVER['REQUEST_URI'] = remove_query_arg( array( 'error_count', 'marked_active' ), $_SERVER['REQUEST_URI'] );
+
 				break;
 			}
 		}
