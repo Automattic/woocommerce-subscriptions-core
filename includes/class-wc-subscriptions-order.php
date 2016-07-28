@@ -50,7 +50,7 @@ class WC_Subscriptions_Order {
 		// Add dropdown to admin orders screen to filter on order type
 		add_action( 'restrict_manage_posts', __CLASS__ . '::restrict_manage_subscriptions', 50 );
 
-		// Add filer to queries on admin orders screen to filter on order type
+		// Add filter to queries on admin orders screen to filter on order type. To avoid WC overriding our query args, we need to hook on after them on 10.
 		add_filter( 'request', __CLASS__ . '::orders_by_type_query', 11 );
 
 		// Don't display migrated order item meta on the Edit Order screen
