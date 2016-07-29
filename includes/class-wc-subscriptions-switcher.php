@@ -248,8 +248,10 @@ class WC_Subscriptions_Switcher {
 										}
 									}
 
-									wp_redirect( add_query_arg( 'auto-switch', 'true', self::get_switch_url( $item_id, $item, $subscription ) ) );
-									exit;
+									if ( self::can_item_be_switched_by_user( $item, $subscription ) ) {
+										wp_redirect( add_query_arg( 'auto-switch', 'true', self::get_switch_url( $item_id, $item, $subscription ) ) );
+										exit;
+									}
 								}
 							} else {
 
