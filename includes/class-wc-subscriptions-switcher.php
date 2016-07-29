@@ -215,7 +215,7 @@ class WC_Subscriptions_Switcher {
 						}
 
 						// If the product is limited
-						if ( 'any' == $limitation || $subscription->has_status( $limitation ) || ( 'active' == $limitation && $subscription->has_status( 'on-hold' ) ) ) {
+						if ( 'any' == $limitation || $subscription->has_status( $limitation ) ) {
 
 							$subscribed_notice = __( 'You have already subscribed to this product and it is limited to one per customer. You can not purchase the product again.', 'woocommerce-subscriptions' );
 
