@@ -172,7 +172,6 @@ class WC_Subscriptions_Admin {
 			'class'       => 'wc_input_subscription_period',
 			'label'       => __( 'Billing Period', 'woocommerce-subscriptions' ),
 			'value'       => $subscription_period,
-			'description' => _x( 'for', 'for in "Every month _for_ 12 months"', 'woocommerce-subscriptions' ),
 			'options'     => wcs_get_subscription_period_strings(),
 			)
 		);
@@ -183,6 +182,8 @@ class WC_Subscriptions_Admin {
 			'class'       => 'wc_input_subscription_length',
 			'label'       => __( 'Subscription Length', 'woocommerce-subscriptions' ),
 			'options'     => wcs_get_subscription_ranges( $subscription_period ),
+			'desc_tip'    => true,
+			'description' => __( 'Automatically expire the subscription after this length of time. This length is in addition to any free trial or amount of time provided before a synchronised first renewal date.', 'woocommerce-subscriptions' ),
 			)
 		);
 
