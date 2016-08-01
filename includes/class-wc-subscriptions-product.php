@@ -984,11 +984,11 @@ class WC_Subscriptions_Product {
 
 				if ( is_object( $order ) && $order->has_status( array( 'pending', 'failed' ) ) ) {
 					foreach ( $order->get_items() as $item ) {
-						if ( $item['product_id'] == $product->id || $item['variation_id'] == $product->id ) {
+						if ( $item['product_id'] == $product_id || $item['variation_id'] == $product_id ) {
 
 							$subscriptions = wcs_get_subscriptions( array(
 								'order_id'   => $order->id,
-								'product_id' => $product->id,
+								'product_id' => $product_id,
 							) );
 
 							if ( ! empty( $subscriptions ) ) {
