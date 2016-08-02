@@ -77,7 +77,7 @@ class WC_Subscriptions_Admin {
 		add_action( 'woocommerce_process_product_meta_variable-subscription', __CLASS__ . '::process_product_meta_variable_subscription' ); // WC < 2.4
 		add_action( 'woocommerce_ajax_save_product_variations', __CLASS__ . '::process_product_meta_variable_subscription' );
 
-		add_action( 'woocommerce_subscription_pre_update_status', __CLASS__ . '::saving_without_customer', 10, 3 );
+		add_action( 'woocommerce_subscription_pre_update_status', __CLASS__ . '::check_customer_is_set', 10, 3 );
 
 		add_action( 'product_variation_linked', __CLASS__ . '::set_variation_meta_defaults_on_bulk_add' );
 
@@ -623,7 +623,7 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Utility function: only used when subscription has status pending, and we're on the admin page.
+	 * Make sure when saving a subscription via the admin to activate it, it has a valid customer set on it.
 	 *
 	 * When you click "Add New Subscription", the status is already going to be pending to begin with. This will prevent
 	 * changing the status to anything else besides pending if no customer is specified, or the customer specified is
@@ -631,27 +631,23 @@ class WC_Subscriptions_Admin {
 	 *
 	 * Hooked into `woocommerce_subscription_pre_update_status`
 	 *
-	 * @param string            $old_status     previous status of the subscription in update_status
-	 * @param string            $new_status     new status of the subscription in update_status
-	 * @param WC_Subscription   $subscription   subscription being saved
+	 * @param string $old_status Previous status of the subscription in update_status
+	 * @param string $new_status New status of the subscription in update_status
+	 * @param WC_Subscription $subscription The subscription being saved
 	 *
-	 * @return bool                             early bail if the code is not relevant
-	 * @throws Exception                        in case there was no user found / there's no customer attached to it
+	 * @return null
+	 * @throws Exception in case there was no user found / there's no customer attached to it
 	 */
-	public static function saving_without_customer( $old_status, $new_status, $subscription ) {
-		if ( ! is_admin() || 'active' !== $new_status ) {
-			return false;
-		}
+	public static function check_customer_is_set( $old_status, $new_status, $subscription ) {
 
-		$customer_user = ( isset( $_POST['customer_user'] ) ) ? sanitize_text_field( $_POST['customer_user'] ) : ''; // csrf in core wp save post function
-		$user = new WP_User( $customer_user );
+		if ( is_admin() && 'active' == $new_status ) {
 
-		if ( 0 === $user->ID ) {
-			$message = sprintf( __( 'Unable to change subscription status to "%s". There is no customer assigned to the subscription', 'woocommerce-subscriptions' ), $new_status );
+			$customer_user = ( isset( $_POST['customer_user'] ) ) ? sanitize_text_field( $_POST['customer_user'] ) : ''; // csrf in core wp save post function
+			$user          = new WP_User( $customer_user );
 
-			$subscription->add_order_note( $message );
-
-			throw new Exception( $message );
+			if ( 0 === $user->ID ) {
+				throw new Exception( sprintf( __( 'Unable to change subscription status to "%s". Please assign a customer to the subscription to activate it.', 'woocommerce-subscriptions' ), $new_status ) );
+			}
 		}
 	}
 
