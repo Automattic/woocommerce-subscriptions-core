@@ -933,7 +933,9 @@ class WC_Subscriptions_Product {
 	 */
 	public static function bulk_edit_variations( $bulk_action, $data, $variable_product_id, $variation_ids ) {
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
+		if ( ! isset( $data['value'] ) ) {
+			return;
+		} else if ( WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
 			// Pre 2.5 we don't have the product type information available so we have to check if it is a subscription - downside here is this only works if the product has already been saved
 			if ( ! self::is_subscription( $variable_product_id ) ) {
 				return;
