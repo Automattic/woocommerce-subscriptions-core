@@ -935,7 +935,7 @@ class WC_Subscriptions_Product {
 
 		if ( ! isset( $data['value'] ) ) {
 			return;
-		} else if ( WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
+		} elseif ( WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
 			// Pre 2.5 we don't have the product type information available so we have to check if it is a subscription - downside here is this only works if the product has already been saved
 			if ( ! self::is_subscription( $variable_product_id ) ) {
 				return;
@@ -958,7 +958,7 @@ class WC_Subscriptions_Product {
 			foreach ( $variation_ids as $variation_id ) {
 				update_post_meta( $variation_id, $meta_key, stripslashes( $data['value'] ) );
 			}
-		} else if ( in_array( $meta_key, array( '_regular_price_increase', '_regular_price_decrease' ) ) ) {
+		} elseif ( in_array( $meta_key, array( '_regular_price_increase', '_regular_price_decrease' ) ) ) {
 			$operator = ( '_regular_price_increase' == $meta_key ) ? '+' : '-';
 			$value    = wc_clean( $data['value'] );
 
