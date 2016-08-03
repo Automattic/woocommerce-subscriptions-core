@@ -167,6 +167,11 @@ class WC_Subscriptions_Upgrader {
 			self::ajax_upgrade_handler();
 		}
 
+		// Delete cached subscription length ranges to force an update with 2.1
+		if ( '0' == self::$active_version || version_compare( self::$active_version, '2.1', '<' ) ) {
+			WC_Subscriptions::$cache->delete_cached( tlc_transient( 'wcs-sub-ranges-' . get_locale() )->key );
+		}
+
 		self::upgrade_complete();
 	}
 
