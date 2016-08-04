@@ -10,9 +10,6 @@
  */
 class WC_Subscriptions_Switcher {
 
-	/* cache whether a given product is purchasable or not to save running lots of queries for the same product in the same request */
-	protected static $is_purchasable_cache = array();
-
 	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
@@ -62,10 +59,6 @@ class WC_Subscriptions_Switcher {
 
 		// Don't display free trials when switching a subscription, because no free trials are provided
 		add_filter( 'woocommerce_subscriptions_product_price_string_inclusions', __CLASS__ . '::customise_product_string_inclusions', 12, 2 );
-
-		// Allow switching between variations on a limited subscription
-		add_filter( 'woocommerce_subscription_is_purchasable', __CLASS__ . '::is_purchasable', 12, 2 );
-		add_filter( 'woocommerce_subscription_variation_is_purchasable', __CLASS__ . '::is_purchasable', 12, 2 );
 
 		// Autocomplete subscription switch orders
 		add_action( 'woocommerce_payment_complete_order_status', __CLASS__ . '::subscription_switch_autocomplete', 10, 2 );
@@ -186,7 +179,7 @@ class WC_Subscriptions_Switcher {
 			}
 		} elseif ( is_product() && $product = wc_get_product( $post ) ) { // Automatically initiate the switch process for limited variable subscriptions
 
-			if ( wcs_is_product_switchable_type( $product ) && 'no' != $product->limit_subscriptions ) {
+			if ( wcs_is_product_switchable_type( $product ) && 'no' != wcs_get_product_limitation( $product ) ) {
 
 				// Check if the user has an active subscription for this product, and if so, initiate the switch process
 				$subscriptions = wcs_get_users_subscriptions();
@@ -212,9 +205,9 @@ class WC_Subscriptions_Switcher {
 						// For grouped products, we need to check the child products limitations, not the grouped product's (which will have no limitation)
 						if ( $subscription_product_id ) {
 							$child_product = wc_get_product( $subscription_product_id );
-							$limitation    = $child_product->limit_subscriptions;
+							$limitation    = wcs_get_product_limitation( $child_product );
 						} else {
-							$limitation    = $product->limit_subscriptions;
+							$limitation    = wcs_get_product_limitation( $product );
 						}
 
 						// If the product is limited
@@ -1411,41 +1404,11 @@ class WC_Subscriptions_Switcher {
 	 *
 	 * @since 1.4.4
 	 * @return bool
+	 * @deprecated 2.1
 	 */
 	public static function is_purchasable( $is_purchasable, $product ) {
-
-		$product_key = ! empty( $product->variation_id ) ? $product->variation_id : $product->id;
-
-		if ( ! isset( self::$is_purchasable_cache[ $product_key ] ) ) {
-
-			if ( false === $is_purchasable && wcs_is_product_switchable_type( $product ) && WC_Subscriptions_Product::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && is_user_logged_in() && wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) {
-
-				// Adding to cart from the product page
-				if ( isset( $_GET['switch-subscription'] ) ) {
-
-					$is_purchasable = true;
-
-				// Validating when restring cart from session
-				} elseif ( self::cart_contains_switches() ) {
-
-					$is_purchasable = true;
-
-				// Restoring cart from session, so need to check the cart in the session (self::cart_contains_subscription_switch() only checks the cart)
-				} elseif ( isset( WC()->session->cart ) ) {
-
-					foreach ( WC()->session->cart as $cart_item_key => $cart_item ) {
-						if ( $product->id == $cart_item['product_id'] && isset( $cart_item['subscription_switch'] ) ) {
-							$is_purchasable = true;
-							break;
-						}
-					}
-				}
-			}
-
-			self::$is_purchasable_cache[ $product_key ] = $is_purchasable;
-		}
-
-		return self::$is_purchasable_cache[ $product_key ];
+		_deprecated_function( __METHOD__, '2.1', 'WCS_Limiter::is_purchasable_switch' );
+		return WCS_Limiter::is_purchasable_switch( $is_purchasable, $product );
 	}
 
 	/**

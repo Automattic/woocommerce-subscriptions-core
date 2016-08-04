@@ -15,9 +15,6 @@ class WC_Subscriptions_Product {
 	/* cache the check on whether the session has an order awaiting payment for a given product */
 	protected static $order_awaiting_payment_for_product = array();
 
-	/* cache whether a given product is purchasable or not to save running lots of queries for the same product in the same request */
-	protected static $is_purchasable_cache = array();
-
 	protected static $subscription_meta_fields = array(
 		'_subscription_price',
 		'_subscription_sign_up_fee',
@@ -894,21 +891,8 @@ class WC_Subscriptions_Product {
 	 * @return bool
 	 */
 	public static function is_purchasable( $is_purchasable, $product ) {
-		global $wp;
-
-		if ( ! isset( self::$is_purchasable_cache[ $product->id ] ) ) {
-
-			self::$is_purchasable_cache[ $product->id ] = $is_purchasable;
-
-			if ( self::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && ! wcs_is_order_received_page() && ! wcs_is_paypal_api_page() ) {
-
-				if ( ( ( 'active' == $product->limit_subscriptions && wcs_user_has_subscription( 0, $product->id, 'on-hold' ) ) || wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) && ! self::order_awaiting_payment_for_product( $product->id ) ) {
-					self::$is_purchasable_cache[ $product->id ] = false;
-				}
-			}
-		}
-
-		return self::$is_purchasable_cache[ $product->id ];
+		_deprecated_function( __METHOD__, '2.1', 'WCS_Limiter::is_purchasable_product' );
+		return WCS_Limiter::is_purchasable_product( $is_purchasable, $product );
 	}
 
 	/**
@@ -971,6 +955,8 @@ class WC_Subscriptions_Product {
 	 * @return bool
 	 **/
 	protected static function order_awaiting_payment_for_product( $product_id ) {
+		_deprecated_function( __METHOD__, '2.1', 'WCS_Limiter::order_awaiting_payment_for_product' );
+
 		global $wp;
 
 		if ( ! isset( self::$order_awaiting_payment_for_product[ $product_id ] ) ) {

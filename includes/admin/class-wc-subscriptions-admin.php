@@ -57,9 +57,6 @@ class WC_Subscriptions_Admin {
 		// Add subscription shipping options on edit product page
 		add_action( 'woocommerce_product_options_shipping', __CLASS__ . '::subscription_shipping_fields' );
 
-		// Add advanced subscription options on edit product page
-		add_action( 'woocommerce_product_options_reviews', __CLASS__ . '::subscription_advanced_fields' );
-
 		// And also on the variations section
 		add_action( 'woocommerce_product_after_variable_attributes', __CLASS__ . '::variable_subscription_pricing_fields', 10, 3 );
 
@@ -257,30 +254,11 @@ class WC_Subscriptions_Admin {
 
 	/**
 	 * Output advanced subscription options on the "Edit Product" admin screen
-	 *
+	 * @deprecated 2.1
 	 * @since 1.3.5
 	 */
 	public static function subscription_advanced_fields() {
-		global $post;
-
-		echo '</div>';
-		echo '<div class="options_group limit_subscription show_if_subscription show_if_variable-subscription">';
-
-		// Only one Subscription per customer
-		woocommerce_wp_select( array(
-			'id'          => '_subscription_limit',
-			'label'       => __( 'Limit Subscription', 'woocommerce-subscriptions' ),
-			// translators: placeholders are opening and closing link tags
-			'description' => sprintf( __( 'Only allow a customer to have one subscription to this product. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/store-manager-guide/#limit-subscription">', '</a>' ),
-			'options'     => array(
-				'no'     => __( 'Do not limit', 'woocommerce-subscriptions' ),
-				'active' => __( 'Limit to one active subscription', 'woocommerce-subscriptions' ),
-				'any'    => __( 'Limit to one of any status', 'woocommerce-subscriptions' ),
-			),
-		) );
-
-		do_action( 'woocommerce_subscriptions_product_options_advanced' );
-
+		_deprecated_function( __METHOD__, '2.1', 'WCS_Limiter::admin_edit_product_fields()' );
 	}
 
 	/**

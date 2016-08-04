@@ -53,10 +53,6 @@ class WCS_Cart_Renewal {
 		// Make sure fees are added to the cart
 		add_action( 'woocommerce_cart_calculate_fees', array( &$this, 'maybe_add_fees' ), 10, 1 );
 
-		// Allow renewal of limited subscriptions
-		add_filter( 'woocommerce_subscription_is_purchasable', array( &$this, 'is_purchasable' ), 12, 2 );
-		add_filter( 'woocommerce_subscription_variation_is_purchasable', array( &$this, 'is_purchasable' ), 12, 2 );
-
 		// Check if a user is requesting to create a renewal order for a subscription, needs to happen after $wp->query_vars are set
 		add_action( 'template_redirect', array( &$this, 'maybe_setup_cart' ), 100 );
 
@@ -419,28 +415,9 @@ class WCS_Cart_Renewal {
 	 * @return bool
 	 */
 	public function is_purchasable( $is_purchasable, $product ) {
+		_deprecated_function( __METHOD__, '2.1', 'WCS_Limiter::is_purchasable_renewal' );
+		return WCS_Limiter::is_purchasable_renewal( $is_purchasable, $product );
 
-		// If the product is being set as not-purchasable by Subscriptions (due to limiting)
-		if ( false === $is_purchasable && false === WC_Subscriptions_Product::is_purchasable( $is_purchasable, $product ) ) {
-
-			// Adding to cart from the product page or paying for a renewal
-			if ( isset( $_GET[ $this->cart_item_key ] ) || isset( $_GET['subscription_renewal'] ) || $this->cart_contains() ) {
-
-				$is_purchasable = true;
-
-			} else if ( WC()->session->cart ) {
-
-				foreach ( WC()->session->cart as $cart_item_key => $cart_item ) {
-
-					if ( $product->id == $cart_item['product_id'] && isset( $cart_item['subscription_renewal'] ) ) {
-						$is_purchasable = true;
-						break;
-					}
-				}
-			}
-		}
-
-		return $is_purchasable;
 	}
 
 	/**
