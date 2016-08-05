@@ -215,11 +215,10 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 				var order_data = jQuery.parseJSON( '<?php echo json_encode( $chart_data ); ?>' );
 				var drawGraph = function( highlight ) {
 					var series = [
-
 						{
 							label: "<?php echo esc_js( __( 'Renewals count', 'woocommerce' ) ) ?>",
 							data: order_data.renewal_counts,
-							yaxis: 2,
+							yaxis: 1,
 							color: '<?php echo esc_js( $this->chart_colours['renewals_count'] ); ?>',
 							points: { show: true, radius: 5, lineWidth: 3, fillColor: '#fff', fill: true },
 							lines: { show: true, lineWidth: 4, fill: false },
