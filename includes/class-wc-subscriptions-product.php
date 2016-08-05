@@ -66,6 +66,12 @@ class WC_Subscriptions_Product {
 
 		// Handle bulk edits to subscription data in WC 2.4
 		add_action( 'woocommerce_bulk_edit_variations', __CLASS__ . '::bulk_edit_variations', 10, 4 );
+
+		// check product variations for sync'd or trial
+		add_action( 'wp_ajax_wcs_product_has_trial_or_is_synced', __CLASS__ . '::check_product_variations_for_syncd_or_trial' );
+
+		// maybe update the One Time Shipping product setting when users edit variations using bulk actions and the variation level save
+		add_action( 'wp_ajax_wcs_update_one_time_shipping', __CLASS__ . '::maybe_update_one_time_shipping_on_variation_edits' );
 	}
 
 	/**
@@ -1019,6 +1025,70 @@ class WC_Subscriptions_Product {
 		}
 
 		return self::$order_awaiting_payment_for_product[ $product_id ];
+	}
+
+	/**
+	 * Processes an AJAX request to check if a product has a variation which is either sync'd or has a trial.
+	 * Once at least one variation with a trial or sync date is found, this will terminate and return true, otherwise false.
+	 *
+	 * @since 2.0.18
+	 */
+	public static function check_product_variations_for_syncd_or_trial() {
+
+		check_admin_referer( 'one_time_shipping', 'nonce' );
+
+		$product                = wc_get_product( $_POST['product_id'] );
+		$is_synced_or_has_trial = false;
+
+		if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
+
+			foreach ( $product->get_children() as $variation_id ) {
+
+				if ( isset( $_POST['variations_checked'] ) && in_array( $variation_id, $_POST['variations_checked'] ) ) {
+					continue;
+				}
+
+				$variable_product = wc_get_product( $variation_id );
+
+				if ( $variable_product->subscription_trial_length > 0 ) {
+					$is_synced_or_has_trial = true;
+					break;
+				}
+
+				if ( WC_Subscriptions_Synchroniser::is_syncing_enabled() && ( ( ! is_array( $variable_product->subscription_payment_sync_date ) && $variable_product->subscription_payment_sync_date > 0 ) || ( is_array( $variable_product->subscription_payment_sync_date ) && $variable_product->subscription_payment_sync_date['day'] > 0 ) ) ) {
+					$is_synced_or_has_trial = true;
+					break;
+				}
+			}
+		}
+
+		wp_send_json( array( 'is_synced_or_has_trial' => $is_synced_or_has_trial ) );
+	}
+
+	/**
+	 * Processes an AJAX request to update a product's One Time Shipping setting after a bulk variation edit has been made.
+	 * After bulk edits (variation level saving as well as variation bulk actions), variation data has been updated in the
+	 * database and therefore doesn't require the product global settings to be updated by the user for the changes to take effect.
+	 * This function, triggered after saving variations or triggering the trial length bulk action, ensures one time shipping settings
+	 * are updated after determining if one time shipping is still available to the product.
+	 *
+	 * @since 2.0.18
+	 */
+	public static function maybe_update_one_time_shipping_on_variation_edits() {
+
+		check_admin_referer( 'one_time_shipping', 'nonce' );
+
+		$one_time_shipping_enabled      = $_POST['one_time_shipping_enabled'];
+		$one_time_shipping_selected     = $_POST['one_time_shipping_selected'];
+		$subscription_one_time_shipping = 'no';
+
+		if ( 'false' !== $one_time_shipping_enabled && 'true' === $one_time_shipping_selected ) {
+			$subscription_one_time_shipping = 'yes';
+		}
+
+		update_post_meta( $_POST['product_id'], '_subscription_one_time_shipping', $subscription_one_time_shipping );
+
+		wp_send_json( array( 'one_time_shipping' => $subscription_one_time_shipping ) );
 	}
 
 	/**

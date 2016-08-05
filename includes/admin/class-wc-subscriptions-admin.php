@@ -244,7 +244,7 @@ class WC_Subscriptions_Admin {
 		woocommerce_wp_checkbox( array(
 			'id'          => '_subscription_one_time_shipping',
 			'label'       => __( 'One Time Shipping', 'woocommerce-subscriptions' ),
-			'description' => __( 'Shipping for subscription products is normally charged on the initial order and all renewal orders. Enable this to only charge shipping once on the initial order. Note: for shipping to be charged on the initial order, the subscription must not have a free trial.', 'woocommerce-subscriptions' ),
+			'description' => __( 'Shipping for subscription products is normally charged on the initial order and all renewal orders. Enable this to only charge shipping once on the initial order. Note: for this setting to be enabled the subscription must not have a free trial or a synced renewal date.', 'woocommerce-subscriptions' ),
 			'desc_tip'    => true,
 		) );
 
@@ -695,14 +695,15 @@ class WC_Subscriptions_Admin {
 				$dependencies[] = 'wc-admin-variation-meta-boxes';
 
 				$script_params = array(
-					'productType'              => WC_Subscriptions::$name,
-					'trialPeriodSingular'      => wcs_get_available_time_periods(),
-					'trialPeriodPlurals'       => wcs_get_available_time_periods( 'plural' ),
-					'subscriptionLengths'      => wcs_get_subscription_ranges(),
-					'trialTooLongMessages'     => self::get_trial_period_validation_message( 'separate' ),
-					'bulkEditPeriodMessage'    => __( 'Enter the new period, either day, week, month or year:', 'woocommerce-subscriptions' ),
-					'bulkEditLengthMessage'    => __( 'Enter a new length (e.g. 5):', 'woocommerce-subscriptions' ),
-					'bulkEditIntervalhMessage' => __( 'Enter a new interval as a single number (e.g. to charge every 2nd month, enter 2):', 'woocommerce-subscriptions' ),
+					'productType'               => WC_Subscriptions::$name,
+					'trialPeriodSingular'       => wcs_get_available_time_periods(),
+					'trialPeriodPlurals'        => wcs_get_available_time_periods( 'plural' ),
+					'subscriptionLengths'       => wcs_get_subscription_ranges(),
+					'trialTooLongMessages'      => self::get_trial_period_validation_message( 'separate' ),
+					'bulkEditPeriodMessage'     => __( 'Enter the new period, either day, week, month or year:', 'woocommerce-subscriptions' ),
+					'bulkEditLengthMessage'     => __( 'Enter a new length (e.g. 5):', 'woocommerce-subscriptions' ),
+					'bulkEditIntervalhMessage'  => __( 'Enter a new interval as a single number (e.g. to charge every 2nd month, enter 2):', 'woocommerce-subscriptions' ),
+					'oneTimeShippingCheckNonce' => wp_create_nonce( 'one_time_shipping' ),
 				);
 			} else if ( 'edit-shop_order' == $screen->id ) {
 				$script_params = array(
