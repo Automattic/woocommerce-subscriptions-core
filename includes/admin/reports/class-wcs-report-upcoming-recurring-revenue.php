@@ -36,27 +36,27 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 						SUM(mo.meta_value) as recurring_total,
 						COUNT(mo.meta_value) as total_renewals,
 						group_concat(p.ID) as subscription_ids,
-		        group_concat(mi.meta_value) as billing_intervals,
-		        group_concat(mp.meta_value) as billing_periods,
-		        group_concat(me.meta_value) as scheduled_ends,
+				group_concat(mi.meta_value) as billing_intervals,
+				group_concat(mp.meta_value) as billing_periods,
+				group_concat(me.meta_value) as scheduled_ends,
 						group_concat(mo.meta_value) as subscription_totals
 						FROM {$wpdb->prefix}posts p
 						LEFT JOIN {$wpdb->prefix}postmeta ms
-			        ON p.ID = ms.post_id
+					ON p.ID = ms.post_id
 						LEFT JOIN {$wpdb->prefix}postmeta mo
-			        ON p.ID = mo.post_id
+					ON p.ID = mo.post_id
 						LEFT JOIN {$wpdb->prefix}postmeta mi
-			        ON p.ID = mi.post_id
-		        LEFT JOIN {$wpdb->prefix}postmeta mp
-			        ON p.ID = mp.post_id
-		        LEFT JOIN {$wpdb->prefix}postmeta me
-			        ON p.ID = me.post_id
+					ON p.ID = mi.post_id
+				LEFT JOIN {$wpdb->prefix}postmeta mp
+					ON p.ID = mp.post_id
+				LEFT JOIN {$wpdb->prefix}postmeta me
+					ON p.ID = me.post_id
 						WHERE mo.meta_key = '_order_total'
 							AND ms.meta_key = '_schedule_next_payment'
 							AND ms.meta_value BETWEEN '%s' AND '%s'
 							AND mi.meta_key = '_billing_interval'
-			      	AND mp.meta_key = '_billing_period'
-			      	AND me.meta_key = '_schedule_end '
+					AND mp.meta_key = '_billing_period'
+					AND me.meta_key = '_schedule_end '
 						GROUP BY {$this->group_by_query}
 						ORDER BY ms.meta_value ASC",
 			'%Y-%m-%d',
@@ -257,42 +257,46 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 							legend: {
 								show: false
 							},
-						    grid: {
-						        color: '#aaa',
-						        borderColor: 'transparent',
-						        borderWidth: 0,
-						        hoverable: true
-						    },
-						    xaxes: [ {
-						    	color: '#aaa',
-						    	position: "bottom",
-						    	tickColor: 'transparent',
+							grid: {
+								color: '#aaa',
+								borderColor: 'transparent',
+								borderWidth: 0,
+								hoverable: true
+							},
+							xaxes: [ {
+								color: '#aaa',
+								position: "bottom",
+								tickColor: 'transparent',
 								mode: "time",
 								timeformat: "<?php echo esc_js( ( $this->chart_groupby == 'day' ? '%d %b' : '%b' ) ); ?>",
 								monthNames: <?php echo json_encode( array_values( $wp_locale->month_abbrev ) ) ?>,
 								tickLength: 1,
 								minTickSize: [1, "<?php echo esc_js( $this->chart_groupby ); ?>"],
 								font: {
-						    		color: "#aaa"
-						    	}
+									color: "#aaa"
+								}
 							} ],
-						    yaxes: [
-						    	{
-						    		min: 0,
-						    		minTickSize: 1,
-						    		tickDecimals: 0,
-						    		color: '#d4d9dc',
-						    		font: { color: "#aaa" }
-						    	},
-						    	{
-						    		position: "right",
-						    		min: 0,
-						    		tickDecimals: 2,
-						    		alignTicksWithAxis: 1,
-						    		color: 'transparent',
-						    		font: { color: "#aaa" }
-						    	}
-						    ],
+							yaxes: [
+								{
+									min: 0,
+									minTickSize: 1,
+									tickDecimals: 0,
+									color: '#d4d9dc',
+									font: {
+										color: "#aaa"
+									}
+								},
+								{
+									position: "right",
+									min: 0,
+									tickDecimals: 2,
+									alignTicksWithAxis: 1,
+									color: 'transparent',
+									font: {
+										color: "#aaa"
+									}
+								}
+							],
 				 		}
 				 	);
 
@@ -332,7 +336,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 				$interval = 0;
 				$min_date = $this->start_date;
 				while ( ( $min_date = wcs_add_months( $min_date, '1' ) ) <= $this->end_date ) {
-				    $interval ++;
+					$interval ++;
 				}
 
 				// 3 months max for day view
