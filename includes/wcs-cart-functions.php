@@ -66,11 +66,23 @@ function wcs_cart_totals_shipping_html() {
 				$chosen_recurring_method = isset( WC()->session->chosen_shipping_methods[ $recurring_cart_key . '_' . $i ] ) ? WC()->session->chosen_shipping_methods[ $recurring_cart_key . '_' . $i ] : $chosen_initial_method;
 
 				if ( ( 1 === count( $package['rates'] ) ) || ( isset( $initial_packages[ $i ] ) && $package['rates'] == $initial_packages[ $i ]['rates'] && apply_filters( 'wcs_cart_totals_shipping_html_price_only', true, $package, $recurring_cart ) ) ) {
-					$shipping_method = ( 1 === count( $package['rates'] ) ) ? current( $package['rates'] ) : $package['rates'][ $chosen_initial_method ];
+					if ( 1 === count( $package['rates'] ) ) {
+						$shipping_method = current( $package['rates'] );
+					} elseif ( isset( $package['rates'][ $chosen_initial_method ] ) ) {
+						$shipping_method = $package['rates'][ $chosen_initial_method ];
+					} else {
+						$shipping_method = '';
+					}
+
 					// packages match, display shipping amounts only
 					?>
 					<tr class="shipping recurring-total <?php echo esc_attr( $recurring_cart_key ); ?>">
-						<th><?php echo esc_html( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ) ); ?></th>
+						<th><?php if (! empty( $shipping_method ) ) : ?>
+								<?php echo esc_html( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ) ); ?>
+							<?php else : ?>
+								<?php echo esc_html( __( 'Shipping', 'woocommerce-subscriptions' ) ); ?>
+							<?php endif ?>
+						</th>
 						<td>
 							<?php echo wp_kses_post( wcs_cart_totals_shipping_method_price_label( $shipping_method, $recurring_cart ) ); ?>
 							<?php if ( 1 === count( $package['rates'] ) ) : ?>
@@ -162,6 +174,11 @@ function wcs_cart_totals_shipping_method( $method, $cart ) {
 function wcs_cart_totals_shipping_method_price_label( $method, $cart ) {
 
 	$price_label = '';
+
+	if ( empty( $method ) ) {
+		$price_label .= _x( 'No Shipping Method', 'shipping method price', 'woocommerce-subscriptions' );
+		return $price_label;
+	}
 
 	if ( $method->cost > 0 ) {
 
