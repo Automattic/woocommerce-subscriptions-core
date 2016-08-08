@@ -764,8 +764,8 @@ class WC_Subscriptions_Switcher {
 				// Cancel all the switch orders linked to the switched subscription(s) which haven't been completed yet - excluding this one.
 				$switch_orders = wcs_get_switch_orders_for_subscription( $subscription_id );
 
-				foreach ( $switch_orders as $order_id => $switch_order ) {
-					if ( $order->id !== $order_id && in_array( $switch_order->get_status(), apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'failed', 'on-hold' ), $switch_order ) ) ) {
+				foreach ( $switch_orders as $switch_order_id => $switch_order ) {
+					if ( $order->id !== $switch_order_id && in_array( $switch_order->get_status(), apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'failed', 'on-hold' ), $switch_order ) ) ) {
 						$switch_order->update_status( 'cancelled', sprintf( __( 'Switch order cancelled due to a new switch order being created #%s.', 'woocommerce-subscriptions' ), $order->get_order_number() ) );
 					}
 				}
