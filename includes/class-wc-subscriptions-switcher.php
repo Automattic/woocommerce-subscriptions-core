@@ -1745,6 +1745,11 @@ class WC_Subscriptions_Switcher {
 		// Get the switch meta
 		$switch_order_data = get_post_meta( $order->id, '_subscription_switch_data', true );
 
+		// if we don't have an switch data, there is nothing to do here. Switch orders created prior to v2.1 won't have any data to process.
+		if ( empty( $switch_order_data ) || ! is_array( $switch_order_data ) ) {
+			return;
+		}
+
 		foreach ( $switch_order_data as $subcription_id => $switch_data ) {
 
 			$subscription = wcs_get_subscription( $subcription_id );
