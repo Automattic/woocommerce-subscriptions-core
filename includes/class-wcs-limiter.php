@@ -29,6 +29,8 @@ class WCS_Limiter {
 
 		add_filter( 'woocommerce_subscriptions_recurring_cart_key', __CLASS__ . '::get_recurring_cart_key', 10, 2 );
 
+		add_filter( 'wcs_recurring_cart_next_payment_date', __CLASS__ . '::recurring_cart_next_payment_date', 100, 2 );
+
 	}
 
 	/**
@@ -253,6 +255,24 @@ class WCS_Limiter {
 			}
 		}
 		return $cart_key;
+	}
+
+	public static function recurring_cart_next_payment_date( $first_renewal_date, $cart ) {
+
+		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
+
+			if ( 'no' !== wcs_get_product_limitation( $cart_item['data'] ) && wcs_user_has_subscription( 0, $cart_item['product_id'] ) ) {
+				$subscriptions = wcs_get_users_subscriptions();
+
+				foreach( $subscriptions as $subscription ) {
+					if ( $subscription->has_product( $cart_item['product_id'] ) && $subscription->has_status( 'pending-cancel' ) ) {
+						$first_renewal_date = ( '1' != $cart_item['data']->subscription_length ) ? $subscription->get_date( 'end' ) : 0;
+						break;
+					}
+				}
+			}
+		}
+		return $first_renewal_date;
 	}
 
 }
