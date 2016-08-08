@@ -1097,6 +1097,10 @@ class WC_Subscriptions_Cart {
 		$added_invalid_notice = false;
 		$standard_packages    = WC()->shipping->get_packages();
 
+		// temporarily store the current calculation type so we can restore it later
+		$calculation_type       = self::$calculation_type;
+		self::$calculation_type = 'recurring_total';
+
 		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
 
 			if ( false === $recurring_cart->needs_shipping() || 0 == $recurring_cart->next_payment_date ) {
@@ -1127,6 +1131,8 @@ class WC_Subscriptions_Cart {
 				}
 			}
 		}
+
+		self::$calculation_type = $calculation_type;
 	}
 
 	/**
