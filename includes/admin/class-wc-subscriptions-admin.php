@@ -57,9 +57,6 @@ class WC_Subscriptions_Admin {
 		// Add subscription shipping options on edit product page
 		add_action( 'woocommerce_product_options_shipping', __CLASS__ . '::subscription_shipping_fields' );
 
-		// Add advanced subscription options on edit product page
-		add_action( 'woocommerce_product_options_reviews', __CLASS__ . '::subscription_advanced_fields' );
-
 		// And also on the variations section
 		add_action( 'woocommerce_product_after_variable_attributes', __CLASS__ . '::variable_subscription_pricing_fields', 10, 3 );
 
@@ -76,6 +73,8 @@ class WC_Subscriptions_Admin {
 		// Save variable subscription meta
 		add_action( 'woocommerce_process_product_meta_variable-subscription', __CLASS__ . '::process_product_meta_variable_subscription' ); // WC < 2.4
 		add_action( 'woocommerce_ajax_save_product_variations', __CLASS__ . '::process_product_meta_variable_subscription' );
+
+		add_action( 'woocommerce_subscription_pre_update_status', __CLASS__ . '::check_customer_is_set', 10, 3 );
 
 		add_action( 'product_variation_linked', __CLASS__ . '::set_variation_meta_defaults_on_bulk_add' );
 
@@ -172,7 +171,6 @@ class WC_Subscriptions_Admin {
 			'class'       => 'wc_input_subscription_period',
 			'label'       => __( 'Billing Period', 'woocommerce-subscriptions' ),
 			'value'       => $subscription_period,
-			'description' => _x( 'for', 'for in "Every month _for_ 12 months"', 'woocommerce-subscriptions' ),
 			'options'     => wcs_get_subscription_period_strings(),
 			)
 		);
@@ -183,6 +181,8 @@ class WC_Subscriptions_Admin {
 			'class'       => 'wc_input_subscription_length',
 			'label'       => __( 'Subscription Length', 'woocommerce-subscriptions' ),
 			'options'     => wcs_get_subscription_ranges( $subscription_period ),
+			'desc_tip'    => true,
+			'description' => __( 'Automatically expire the subscription after this length of time. This length is in addition to any free trial or amount of time provided before a synchronised first renewal date.', 'woocommerce-subscriptions' ),
 			)
 		);
 
@@ -244,7 +244,7 @@ class WC_Subscriptions_Admin {
 		woocommerce_wp_checkbox( array(
 			'id'          => '_subscription_one_time_shipping',
 			'label'       => __( 'One Time Shipping', 'woocommerce-subscriptions' ),
-			'description' => __( 'Shipping for subscription products is normally charged on the initial order and all renewal orders. Enable this to only charge shipping once on the initial order. Note: for shipping to be charged on the initial order, the subscription must not have a free trial.', 'woocommerce-subscriptions' ),
+			'description' => __( 'Shipping for subscription products is normally charged on the initial order and all renewal orders. Enable this to only charge shipping once on the initial order. Note: for this setting to be enabled the subscription must not have a free trial or a synced renewal date.', 'woocommerce-subscriptions' ),
 			'desc_tip'    => true,
 		) );
 
@@ -254,30 +254,11 @@ class WC_Subscriptions_Admin {
 
 	/**
 	 * Output advanced subscription options on the "Edit Product" admin screen
-	 *
+	 * @deprecated 2.1
 	 * @since 1.3.5
 	 */
 	public static function subscription_advanced_fields() {
-		global $post;
-
-		echo '</div>';
-		echo '<div class="options_group limit_subscription show_if_subscription show_if_variable-subscription">';
-
-		// Only one Subscription per customer
-		woocommerce_wp_select( array(
-			'id'          => '_subscription_limit',
-			'label'       => __( 'Limit Subscription', 'woocommerce-subscriptions' ),
-			// translators: placeholders are opening and closing link tags
-			'description' => sprintf( __( 'Only allow a customer to have one subscription to this product. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/store-manager-guide/#limit-subscription">', '</a>' ),
-			'options'     => array(
-				'no'     => __( 'Do not limit', 'woocommerce-subscriptions' ),
-				'active' => __( 'Limit to one active subscription', 'woocommerce-subscriptions' ),
-				'any'    => __( 'Limit to one of any status', 'woocommerce-subscriptions' ),
-			),
-		) );
-
-		do_action( 'woocommerce_subscriptions_product_options_advanced' );
-
+		_deprecated_function( __METHOD__, '2.1', 'WCS_Limiter::admin_edit_product_fields()' );
 	}
 
 	/**
@@ -623,6 +604,35 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
+	 * Make sure when saving a subscription via the admin to activate it, it has a valid customer set on it.
+	 *
+	 * When you click "Add New Subscription", the status is already going to be pending to begin with. This will prevent
+	 * changing the status to anything else besides pending if no customer is specified, or the customer specified is
+	 * not a valid WP_User.
+	 *
+	 * Hooked into `woocommerce_subscription_pre_update_status`
+	 *
+	 * @param string $old_status Previous status of the subscription in update_status
+	 * @param string $new_status New status of the subscription in update_status
+	 * @param WC_Subscription $subscription The subscription being saved
+	 *
+	 * @return null
+	 * @throws Exception in case there was no user found / there's no customer attached to it
+	 */
+	public static function check_customer_is_set( $old_status, $new_status, $subscription ) {
+
+		if ( is_admin() && 'active' == $new_status ) {
+
+			$customer_user = ( isset( $_POST['customer_user'] ) ) ? sanitize_text_field( $_POST['customer_user'] ) : ''; // csrf in core wp save post function
+			$user          = new WP_User( $customer_user );
+
+			if ( 0 === $user->ID ) {
+				throw new Exception( sprintf( __( 'Unable to change subscription status to "%s". Please assign a customer to the subscription to activate it.', 'woocommerce-subscriptions' ), $new_status ) );
+			}
+		}
+	}
+
+	/**
 	 * Set default values for subscription dropdown fields when bulk adding variations to fix issue #1342
 	 *
 	 * @param int $variation_id ID the post_id of the variation being added
@@ -666,14 +676,15 @@ class WC_Subscriptions_Admin {
 				$dependencies[] = 'wc-admin-variation-meta-boxes';
 
 				$script_params = array(
-					'productType'              => WC_Subscriptions::$name,
-					'trialPeriodSingular'      => wcs_get_available_time_periods(),
-					'trialPeriodPlurals'       => wcs_get_available_time_periods( 'plural' ),
-					'subscriptionLengths'      => wcs_get_subscription_ranges(),
-					'trialTooLongMessages'     => self::get_trial_period_validation_message( 'separate' ),
-					'bulkEditPeriodMessage'    => __( 'Enter the new period, either day, week, month or year:', 'woocommerce-subscriptions' ),
-					'bulkEditLengthMessage'    => __( 'Enter a new length (e.g. 5):', 'woocommerce-subscriptions' ),
-					'bulkEditIntervalhMessage' => __( 'Enter a new interval as a single number (e.g. to charge every 2nd month, enter 2):', 'woocommerce-subscriptions' ),
+					'productType'               => WC_Subscriptions::$name,
+					'trialPeriodSingular'       => wcs_get_available_time_periods(),
+					'trialPeriodPlurals'        => wcs_get_available_time_periods( 'plural' ),
+					'subscriptionLengths'       => wcs_get_subscription_ranges(),
+					'trialTooLongMessages'      => self::get_trial_period_validation_message( 'separate' ),
+					'bulkEditPeriodMessage'     => __( 'Enter the new period, either day, week, month or year:', 'woocommerce-subscriptions' ),
+					'bulkEditLengthMessage'     => __( 'Enter a new length (e.g. 5):', 'woocommerce-subscriptions' ),
+					'bulkEditIntervalhMessage'  => __( 'Enter a new interval as a single number (e.g. to charge every 2nd month, enter 2):', 'woocommerce-subscriptions' ),
+					'oneTimeShippingCheckNonce' => wp_create_nonce( 'one_time_shipping' ),
 				);
 			} else if ( 'edit-shop_order' == $screen->id ) {
 				$script_params = array(
@@ -1313,7 +1324,7 @@ class WC_Subscriptions_Admin {
 
 		if ( empty( $subscriptions ) ) {
 			return '<ul class="user-subscriptions no-user-subscriptions">
-						<li>No subscriptions found.</li>
+						<li>' . esc_html_x( 'No subscriptions found.', 'in [subscriptions] shortcode', 'woocommerce-subscriptions' ) . '</li>
 					</ul>';
 		}
 
@@ -1321,7 +1332,9 @@ class WC_Subscriptions_Admin {
 
 		foreach ( $subscriptions as $subscription ) {
 			if ( 'all' == $attributes['status'] || $subscription->has_status( $attributes['status'] ) ) {
-				$list .= sprintf( '<li><a href="%s">Subscription %s</a></li>', $subscription->get_view_order_url(), $subscription->get_order_number() );
+				// translators: order number
+				$shortcode_translate = sprintf( esc_html_x( 'Subscription %s', 'in [subscriptions] shortcode', 'woocommerce-subscriptions' ), $subscription->get_order_number() );
+				$list .= sprintf( '<li><a href="%s">%s</a></li>', $subscription->get_view_order_url(), $shortcode_translate );
 			}
 		}
 		$list .= '</ul>';

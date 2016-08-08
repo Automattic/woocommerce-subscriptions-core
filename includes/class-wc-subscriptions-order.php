@@ -36,7 +36,12 @@ class WC_Subscriptions_Order {
 		add_action( 'woocommerce_thankyou', __CLASS__ . '::subscription_thank_you' );
 
 		add_action( 'manage_shop_order_posts_custom_column', __CLASS__ . '::add_contains_subscription_hidden_field', 10, 1 );
+
 		add_action( 'woocommerce_admin_order_data_after_order_details', __CLASS__ . '::contains_subscription_hidden_field', 10, 1 );
+
+		// Add column that indicates whether an order is parent or renewal for a subscription
+		add_filter( 'manage_edit-shop_order_columns', __CLASS__ . '::add_contains_subscription_column' );
+		add_action( 'manage_shop_order_posts_custom_column', __CLASS__ . '::add_contains_subscription_column_content', 10, 1 );
 
 		// Record initial payment against the subscription & set start date based on that payment
 		add_action( 'woocommerce_order_status_changed', __CLASS__ . '::maybe_record_subscription_payment', 9, 3 );
@@ -50,8 +55,8 @@ class WC_Subscriptions_Order {
 		// Add dropdown to admin orders screen to filter on order type
 		add_action( 'restrict_manage_posts', __CLASS__ . '::restrict_manage_subscriptions', 50 );
 
-		// Add filer to queries on admin orders screen to filter on order type
-		add_filter( 'request', __CLASS__ . '::orders_by_type_query' );
+		// Add filter to queries on admin orders screen to filter on order type. To avoid WC overriding our query args, we need to hook on after them on 10.
+		add_filter( 'request', __CLASS__ . '::orders_by_type_query', 11 );
 
 		// Don't display migrated order item meta on the Edit Order screen
 		add_filter( 'woocommerce_hidden_order_itemmeta', __CLASS__ . '::hide_order_itemmeta' );
@@ -402,6 +407,46 @@ class WC_Subscriptions_Order {
 	}
 
 	/**
+	* Add a column to the WooCommerce -> Orders admin screen to indicate whether an order is a
+	* parent of a subscription, a renewal order for a subscription, or a regular order.
+	*
+	* @param array $columns The current list of columns
+	* @since 2.1
+	*/
+	public static function add_contains_subscription_column( $columns ) {
+
+		$column_header = '<span class="subscription_head tips" data-tip="' . esc_attr__( 'Subscription Relationship', 'woocommerce-subscriptions' ) . '">' . esc_attr__( 'Subscription Relationship', 'woocommerce-subscriptions' ) . '</span>';
+
+		$new_columns = wcs_array_insert_after( 'shipping_address', $columns, 'subscription_relationship', $column_header );
+
+		return $new_columns;
+	}
+
+	/**
+	* Add column content to the WooCommerce -> Orders admin screen to indicate whether an
+	* order is a parent of a subscription, a renewal order for a subscription, or a
+	* regular order.
+	*
+	* @param string $column The string of the current column
+	* @since 2.1
+	*/
+	public static function add_contains_subscription_column_content( $column ) {
+		global $post;
+
+		if ( 'subscription_relationship' == $column ) {
+			if ( wcs_order_contains_subscription( $post->ID, 'renewal' ) ) {
+				echo '<span class="subscription_renewal_order tips" data-tip="' . esc_attr__( 'Renewal Order', 'woocommerce-subscriptions' ) . '"></span>';
+			} elseif ( wcs_order_contains_subscription( $post->ID, 'resubscribe' ) ) {
+				echo '<span class="subscription_resubscribe_order tips" data-tip="' . esc_attr__( 'Resubscribe Order', 'woocommerce-subscriptions' ) . '"></span>';
+			} elseif ( wcs_order_contains_subscription( $post->ID, 'parent' ) ) {
+				echo '<span class="subscription_parent_order tips" data-tip="' . esc_attr__( 'Parent Order', 'woocommerce-subscriptions' ) . '"></span>';
+			} else {
+				echo '<span class="normal_order">&ndash;</span>';
+			}
+		}
+	}
+
+	/**
 	 * Records the initial payment against a subscription.
 	 *
 	 * This function is called when an orders status is changed to completed or processing
@@ -673,26 +718,16 @@ class WC_Subscriptions_Order {
 		if ( 'shop_order' == $typenow && isset( $_GET['shop_order_subtype'] ) ) {
 
 			if ( 'Original' == $_GET['shop_order_subtype'] ) {
-				$key = 'post__not_in';
+				$compare_operator = 'NOT EXISTS';
 			} elseif ( 'Renewal' == $_GET['shop_order_subtype'] ) {
-				$key = 'post__in';
+				$compare_operator = 'EXISTS';
 			}
 
-			if ( ! empty( $key ) ) {
-				$vars[ $key ] = get_posts( array(
-					'posts_per_page' => -1,
-					'post_type'      => 'shop_order',
-					'post_status'    => 'any',
-					'fields'         => 'ids',
-					'orderby'        => 'date',
-					'order'          => 'DESC',
-					'meta_query'     => array(
-						array(
-							'key'     => '_subscription_renewal',
-							'compare' => 'EXISTS',
-						),
-					),
-				) );
+			if ( ! empty( $compare_operator ) ) {
+				$vars['meta_query'][] = array(
+					'key'     => '_subscription_renewal',
+					'compare' => $compare_operator,
+				);
 			}
 		}
 

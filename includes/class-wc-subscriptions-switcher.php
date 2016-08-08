@@ -10,9 +10,6 @@
  */
 class WC_Subscriptions_Switcher {
 
-	/* cache whether a given product is purchasable or not to save running lots of queries for the same product in the same request */
-	protected static $is_purchasable_cache = array();
-
 	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
@@ -62,10 +59,6 @@ class WC_Subscriptions_Switcher {
 
 		// Don't display free trials when switching a subscription, because no free trials are provided
 		add_filter( 'woocommerce_subscriptions_product_price_string_inclusions', __CLASS__ . '::customise_product_string_inclusions', 12, 2 );
-
-		// Allow switching between variations on a limited subscription
-		add_filter( 'woocommerce_subscription_is_purchasable', __CLASS__ . '::is_purchasable', 12, 2 );
-		add_filter( 'woocommerce_subscription_variation_is_purchasable', __CLASS__ . '::is_purchasable', 12, 2 );
 
 		// Autocomplete subscription switch orders
 		add_action( 'woocommerce_payment_complete_order_status', __CLASS__ . '::subscription_switch_autocomplete', 10, 2 );
@@ -121,6 +114,18 @@ class WC_Subscriptions_Switcher {
 
 		// Do not reduce product stock when the order item is simply to record a switch
 		add_filter( 'woocommerce_order_item_quantity', __CLASS__ . '::maybe_do_not_reduce_stock', 10, 3 );
+
+		// Mock a free trial on the cart item to make sure the switch total doesn't include any recurring amount
+		add_filter( 'woocommerce_before_calculate_totals', __CLASS__ . '::maybe_set_free_trial', 100, 1 );
+		add_action( 'woocommerce_subscription_cart_before_grouping', __CLASS__ . '::maybe_unset_free_trial' );
+		add_action( 'woocommerce_subscription_cart_after_grouping', __CLASS__ . '::maybe_set_free_trial' );
+		add_action( 'wcs_recurring_cart_start_date', __CLASS__ . '::maybe_unset_free_trial', 0, 1 );
+		add_action( 'wcs_recurring_cart_end_date', __CLASS__ . '::maybe_set_free_trial', 100, 1 );
+		add_filter( 'woocommerce_subscriptions_calculated_total', __CLASS__ . '::maybe_unset_free_trial', 10000, 1 );
+		add_action( 'woocommerce_cart_totals_before_shipping', __CLASS__ . '::maybe_set_free_trial' );
+		add_action( 'woocommerce_cart_totals_after_shipping', __CLASS__ . '::maybe_unset_free_trial' );
+		add_action( 'woocommerce_review_order_before_shipping', __CLASS__ . '::maybe_set_free_trial' );
+		add_action( 'woocommerce_review_order_after_shipping', __CLASS__ . '::maybe_unset_free_trial' );
 	}
 
 	/**
@@ -161,8 +166,9 @@ class WC_Subscriptions_Switcher {
 			foreach ( $switch_items as $cart_item_key => $switch_item ) {
 
 				$subscription = wcs_get_subscription( $switch_item['subscription_id'] );
+				$line_item    = wcs_get_order_item( $switch_item['item_id'], $subscription );
 
-				if ( ! is_object( $subscription ) || ! current_user_can( 'switch_shop_subscription', $subscription->id ) || ! wcs_is_product_switchable_type( WC()->cart->cart_contents[ $cart_item_key ]['data'] ) ) {
+				if ( ! is_object( $subscription ) || empty( $line_item ) || ! self::can_item_be_switched_by_user( $line_item, $subscription ) ) {
 					WC()->cart->remove_cart_item( $cart_item_key );
 					$removed_item_count++;
 				}
@@ -176,7 +182,7 @@ class WC_Subscriptions_Switcher {
 			}
 		} elseif ( is_product() && $product = wc_get_product( $post ) ) { // Automatically initiate the switch process for limited variable subscriptions
 
-			if ( wcs_is_product_switchable_type( $product ) && 'no' != $product->limit_subscriptions ) {
+			if ( wcs_is_product_switchable_type( $product ) && 'no' != wcs_get_product_limitation( $product ) ) {
 
 				// Check if the user has an active subscription for this product, and if so, initiate the switch process
 				$subscriptions = wcs_get_users_subscriptions();
@@ -202,13 +208,13 @@ class WC_Subscriptions_Switcher {
 						// For grouped products, we need to check the child products limitations, not the grouped product's (which will have no limitation)
 						if ( $subscription_product_id ) {
 							$child_product = wc_get_product( $subscription_product_id );
-							$limitation    = $child_product->limit_subscriptions;
+							$limitation    = wcs_get_product_limitation( $child_product );
 						} else {
-							$limitation    = $product->limit_subscriptions;
+							$limitation    = wcs_get_product_limitation( $product );
 						}
 
 						// If the product is limited
-						if ( 'any' == $limitation || $subscription->has_status( $limitation ) || ( 'active' == $limitation && $subscription->has_status( 'on-hold' ) ) ) {
+						if ( 'any' == $limitation || $subscription->has_status( $limitation ) ) {
 
 							$subscribed_notice = __( 'You have already subscribed to this product and it is limited to one per customer. You can not purchase the product again.', 'woocommerce-subscriptions' );
 
@@ -241,8 +247,10 @@ class WC_Subscriptions_Switcher {
 										}
 									}
 
-									wp_redirect( add_query_arg( 'auto-switch', 'true', self::get_switch_url( $item_id, $item, $subscription ) ) );
-									exit;
+									if ( self::can_item_be_switched_by_user( $item, $subscription ) ) {
+										wp_redirect( add_query_arg( 'auto-switch', 'true', self::get_switch_url( $item_id, $item, $subscription ) ) );
+										exit;
+									}
 								}
 							} else {
 
@@ -1317,11 +1325,6 @@ class WC_Subscriptions_Switcher {
 				}
 			}
 
-			// Finally, if we need to make sure the initial total doesn't include any recurring amount, we can by spoofing a free trial
-			if ( 0 != WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] ) {
-				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length = 1;
-			}
-
 			if ( 'yes' == $apportion_length || ( 'virtual' == $apportion_length && $is_virtual_product ) ) {
 
 				$base_length        = WC_Subscriptions_Product::get_length( $product_id );
@@ -1446,41 +1449,11 @@ class WC_Subscriptions_Switcher {
 	 *
 	 * @since 1.4.4
 	 * @return bool
+	 * @deprecated 2.1
 	 */
 	public static function is_purchasable( $is_purchasable, $product ) {
-
-		$product_key = ! empty( $product->variation_id ) ? $product->variation_id : $product->id;
-
-		if ( ! isset( self::$is_purchasable_cache[ $product_key ] ) ) {
-
-			if ( false === $is_purchasable && wcs_is_product_switchable_type( $product ) && WC_Subscriptions_Product::is_subscription( $product->id ) && 'no' != $product->limit_subscriptions && is_user_logged_in() && wcs_user_has_subscription( 0, $product->id, $product->limit_subscriptions ) ) {
-
-				// Adding to cart from the product page
-				if ( isset( $_GET['switch-subscription'] ) ) {
-
-					$is_purchasable = true;
-
-				// Validating when restring cart from session
-				} elseif ( self::cart_contains_switches() ) {
-
-					$is_purchasable = true;
-
-				// Restoring cart from session, so need to check the cart in the session (self::cart_contains_subscription_switch() only checks the cart)
-				} elseif ( isset( WC()->session->cart ) ) {
-
-					foreach ( WC()->session->cart as $cart_item_key => $cart_item ) {
-						if ( $product->id == $cart_item['product_id'] && isset( $cart_item['subscription_switch'] ) ) {
-							$is_purchasable = true;
-							break;
-						}
-					}
-				}
-			}
-
-			self::$is_purchasable_cache[ $product_key ] = $is_purchasable;
-		}
-
-		return self::$is_purchasable_cache[ $product_key ];
+		_deprecated_function( __METHOD__, '2.1', 'WCS_Limiter::is_purchasable_switch' );
+		return WCS_Limiter::is_purchasable_switch( $is_purchasable, $product );
 	}
 
 	/**
@@ -2037,6 +2010,37 @@ class WC_Subscriptions_Switcher {
 		}
 
 		return $quantity;
+	}
+
+	/**
+	 * Make sure switch cart item price doesn't include any recurring amount by setting a free trial.
+	 *
+	 * @since 2.0.18
+	 */
+	public static function maybe_set_free_trial( $total = '' ) {
+
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			if ( isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) && 0 != $cart_item['subscription_switch']['first_payment_timestamp'] ) {
+				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length = 1;
+			}
+		}
+
+		return $total;
+	}
+
+	/**
+	 * Remove mock free trials from switch cart items.
+	 *
+	 * @since 2.0.18
+	 */
+	public static function maybe_unset_free_trial( $total = '' ) {
+
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			if ( isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) && 0 != $cart_item['subscription_switch']['first_payment_timestamp'] ) {
+				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length = 0;
+			}
+		}
+		return $total;
 	}
 
 	/** Deprecated Methods **/

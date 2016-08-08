@@ -25,6 +25,8 @@ class WCS_Retry_Admin {
 
 		if ( WCS_Retry_Manager::is_retry_enabled() ) {
 			add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ), 50 );
+
+			add_filter( 'wcs_admin_display_date_type', array( $this, 'maybe_hide_date_type' ), 10, 3 );
 		}
 	}
 
@@ -40,6 +42,27 @@ class WCS_Retry_Admin {
 		if ( 'shop_order' === get_post_type( $post_ID ) && wcs_order_contains_renewal( $post_ID ) && WCS_Retry_Manager::store()->get_retry_count_for_order( $post_ID ) > 0 ) {
 			add_meta_box( 'renewal_payment_retries', __( 'Automatic Failed Payment Retries', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Payment_Retries::output', 'shop_order', 'normal', 'low' );
 		}
+	}
+
+	/**
+	 * Only display the retry payment date on the Edit Subscription screen if the subscription has a pending retry
+	 * and when that is the case, do not display the next payment date (because it will still be set to the original
+	 * payment date, in the past).
+	 *
+	 * @param bool $show_date_type
+	 * @param string $date_key
+	 * @param WC_Subscription $the_subscription
+	 * @return bool
+	 */
+	public function maybe_hide_date_type( $show_date_type, $date_key, $the_subscription ) {
+
+		if ( 'payment_retry' === $date_key && 0 == $the_subscription->get_time( 'payment_retry' ) ) {
+			$show_date_type = false;
+		} elseif ( 'next_payment' === $date_key && $the_subscription->get_time( 'payment_retry' ) > 0 ) {
+			$show_date_type = false;
+		}
+
+		return $show_date_type;
 	}
 
 	/**
