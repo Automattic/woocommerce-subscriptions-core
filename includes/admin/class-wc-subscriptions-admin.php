@@ -639,8 +639,9 @@ class WC_Subscriptions_Admin {
 	 * @throws Exception in case there was no user found / there's no customer attached to it
 	 */
 	public static function check_customer_is_set( $old_status, $new_status, $subscription ) {
+		global $post;
 
-		if ( is_admin() && 'active' == $new_status ) {
+		if ( is_admin() && 'active' == $new_status && ! empty( $post ) && 'shop_subscription' === $post->post_type ) {
 
 			$customer_user = ( isset( $_POST['customer_user'] ) ) ? sanitize_text_field( $_POST['customer_user'] ) : ''; // csrf in core wp save post function
 			$user          = new WP_User( $customer_user );
