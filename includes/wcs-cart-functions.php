@@ -77,7 +77,7 @@ function wcs_cart_totals_shipping_html() {
 					// packages match, display shipping amounts only
 					?>
 					<tr class="shipping recurring-total <?php echo esc_attr( $recurring_cart_key ); ?>">
-						<th><?php if (! empty( $shipping_method ) ) : ?>
+						<th><?php if ( ! empty( $shipping_method ) ) : ?>
 								<?php echo esc_html( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ) ); ?>
 							<?php else : ?>
 								<?php echo esc_html( __( 'Shipping', 'woocommerce-subscriptions' ) ); ?>
