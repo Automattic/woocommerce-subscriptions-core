@@ -29,6 +29,11 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 
 		// When a resubscribe order is created on checkout, record the resubscribe, attached after WC_Subscriptions_Checkout::process_checkout()
 		add_action( 'woocommerce_checkout_subscription_created', array( &$this, 'maybe_record_resubscribe' ), 10, 3 );
+
+		add_filter( 'woocommerce_subscriptions_recurring_cart_key', array( &$this, 'get_recurring_cart_key' ), 10, 2 );
+
+		add_filter( 'wcs_recurring_cart_next_payment_date', array( &$this, 'recurring_cart_next_payment_date' ), 100, 2 );
+
 	}
 
 	/**
@@ -190,5 +195,28 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 
 		return $subscription;
 	}
+
+	public function get_recurring_cart_key( $cart_key, $cart_item ) {
+		$subscription = $this->get_order( $cart_item );
+		if ( false !== $subscription && $subscription->has_status( 'pending-cancel' ) ) {
+			remove_filter( 'woocommerce_subscriptions_recurring_cart_key', array( &$this, 'get_recurring_cart_key' ), 10, 2 );
+			$cart_key = WC_Subscriptions_Cart::get_recurring_cart_key( $cart_item, $subscription->get_time( 'end' ) );
+			add_filter( 'woocommerce_subscriptions_recurring_cart_key', array( &$this, 'get_recurring_cart_key' ), 10, 2 );
+		}
+
+		return $cart_key;
+	}
+
+	public function recurring_cart_next_payment_date( $first_renewal_date, $cart ) {
+		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
+			$subscription = $this->get_order( $cart_item );
+			if ( false !== $subscription && $subscription->has_status( 'pending-cancel' ) ) {
+				$first_renewal_date = ( '1' != $cart_item['data']->subscription_length ) ? $subscription->get_date( 'end' ) : 0;
+				break;
+			}
+		}
+		return $first_renewal_date;
+	}
+
 }
 new WCS_Cart_Resubscribe();
