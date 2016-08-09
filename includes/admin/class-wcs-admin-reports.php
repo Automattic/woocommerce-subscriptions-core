@@ -121,7 +121,18 @@ class WCS_Admin_Reports {
 
 		// Reports Subscriptions Pages
 		if ( in_array( $screen->id, apply_filters( 'woocommerce_reports_screen_ids', array( $wc_screen_id . '_page_wc-reports', 'dashboard' ) ) ) && isset( $_GET['tab'] ) && 'subscriptions' == $_GET['tab'] ) {
-			wp_enqueue_script( 'wcs-reports', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/reports.js', array( 'jquery', 'jquery-ui-datepicker', 'wc-reports' ), WC_Subscriptions::$version );
+
+			wp_enqueue_script( 'wcs-reports', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/reports.js', array( 'jquery', 'jquery-ui-datepicker', 'wc-reports', 'accounting' ), WC_Subscriptions::$version );
+
+			// Add currency localisation params for axis label
+			wp_localize_script( 'wcs-reports', 'wcs_reports', array(
+				'currency_format_num_decimals'  => wc_get_price_decimals(),
+				'currency_format_symbol'        => get_woocommerce_currency_symbol(),
+				'currency_format_decimal_sep'   => esc_js( wc_get_price_decimal_separator() ),
+				'currency_format_thousand_sep'  => esc_js( wc_get_price_thousand_separator() ),
+				'currency_format'               => esc_js( str_replace( array( '%1$s', '%2$s' ), array( '%s', '%v' ), get_woocommerce_price_format() ) ), // For accounting JS
+			) );
+
 			wp_enqueue_script( 'flot-order', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/jquery.flot.orderBars' . $suffix . '.js', array( 'jquery', 'flot' ), WC_Subscriptions::$version );
 		}
 	}

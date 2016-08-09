@@ -518,6 +518,10 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 									position: "right",
 									min: 0,
 									tickDecimals: 2,
+									tickFormatter: function (tick) {
+										// Localise and format axis labels
+										return jQuery.wcs_format_money(tick,0);
+									},
 									alignTicksWithAxis: 1,
 									color: 'transparent',
 									font: { color: "#aaa" }
