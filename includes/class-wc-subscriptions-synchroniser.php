@@ -1326,7 +1326,7 @@ class WC_Subscriptions_Synchroniser {
 	public static function recalculate_trial_end_date( $trial_end_date, $recurring_cart, $product ) {
 		_deprecated_function( __METHOD__, '2.0.14' );
 		if ( self::is_product_synced( $product ) ) {
-			$product_id  = ( isset( $product->variation_id ) ) ? $product->variation_id : $product->id;
+			$product_id  = wcs_get_canonical_product_id( $product );
 			$trial_end_date = WC_Subscriptions_Product::get_trial_expiration_date( $product_id );
 		}
 
@@ -1343,7 +1343,7 @@ class WC_Subscriptions_Synchroniser {
 	public static function recalculate_end_date( $end_date, $recurring_cart, $product ) {
 		_deprecated_function( __METHOD__, '2.0.14' );
 		if ( self::is_product_synced( $product ) ) {
-			$product_id  = ( isset( $product->variation_id ) ) ? $product->variation_id : $product->id;
+			$product_id  = wcs_get_canonical_product_id( $product );
 			$end_date = WC_Subscriptions_Product::get_expiration_date( $product_id );
 		}
 
