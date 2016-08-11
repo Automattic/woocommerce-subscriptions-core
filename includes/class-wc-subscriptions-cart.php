@@ -104,6 +104,9 @@ class WC_Subscriptions_Cart {
 		// When WooCommerce calculates rates for a recurring shipping package, only return the recurring shipping package rates
 		add_filter( 'woocommerce_package_rates', __CLASS__ . '::filter_package_rates', 10, 2 );
 
+		// When WooCommerce calculates rates for a recurring shipping package, make sure there is a different set of rates
+		add_filter( 'woocommerce_shipping_packages', __CLASS__ . '::reset_shipping_method_counts', 1000, 1 );
+
 		// When WooCommerce determines the taxable address only return pick up shipping methods chosen for the recurring cart being calculated.
 		add_filter( 'woocommerce_local_pickup_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 100 ,1 );
 		add_filter( 'wc_shipping_local_pickup_plus_chosen_shipping_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 10 ,1 );
@@ -432,6 +435,33 @@ class WC_Subscriptions_Cart {
 				$_POST['shipping_method'][ $key ] = $methods;
 			}
 		}
+	}
+
+	/**
+	 * When WooCommerce calculates rates for a recurring shipping package, we need to make sure there is a
+	 * different number of rates to make sure WooCommerce updates the chosen method for the recurring cart
+	 * and the 'woocommerce_shipping_chosen_method' filter is called, which we use to make sure the chosen
+	 * method is the recurring method, not the initial method.
+	 *
+	 * This function is hooked to 'woocommerce_shipping_packages' called by WC_Shipping->calculate_shipping()
+	 * which is why it accepts and returns the $packages array. It is also attached with a very high priority
+	 * to avoid conflicts with any 3rd party plugins that may use the method count session value (only a couple
+	 * of other hooks, including 'woocommerce_shipping_chosen_method' and 'woocommerce_shipping_method_chosen'
+	 * are triggered between when this callback runs on 'woocommerce_shipping_packages' and when the session
+	 * value is set again by WC_Shipping->calculate_shipping()).
+	 *
+	 * For more details, see: https://github.com/Prospress/woocommerce-subscriptions/pull/1187#issuecomment-186091152
+	 *
+	 * @param array $packages An array of shipping package of the form returned by WC_Cart->get_shipping_packages() which includes the package's contents, cost, customer, destination and alternative rates
+	 * @since 2.0.19
+	 */
+	public static function reset_shipping_method_counts( $packages ) {
+
+		if ( 'none' !== self::$recurring_cart_key ) {
+			WC()->session->set( 'shipping_method_counts', array() );
+		}
+
+		return $packages;
 	}
 
 	/**
