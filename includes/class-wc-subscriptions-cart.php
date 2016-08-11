@@ -982,7 +982,7 @@ class WC_Subscriptions_Cart {
 		$cart_key = '';
 
 		$product      = $cart_item['data'];
-		$product_id   = ! empty( $product->variation_id ) ? $product->variation_id : $product->id;
+		$product_id   = wcs_get_canonical_product_id( $product );
 		$renewal_time = ! empty( $renewal_time ) ? $renewal_time : WC_Subscriptions_Product::get_first_renewal_payment_time( $product_id );
 		$interval     = WC_Subscriptions_Product::get_interval( $product );
 		$period       = WC_Subscriptions_Product::get_period( $product );
@@ -1097,6 +1097,10 @@ class WC_Subscriptions_Cart {
 		$added_invalid_notice = false;
 		$standard_packages    = WC()->shipping->get_packages();
 
+		// temporarily store the current calculation type so we can restore it later
+		$calculation_type       = self::$calculation_type;
+		self::$calculation_type = 'recurring_total';
+
 		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
 
 			if ( false === $recurring_cart->needs_shipping() || 0 == $recurring_cart->next_payment_date ) {
@@ -1127,6 +1131,8 @@ class WC_Subscriptions_Cart {
 				}
 			}
 		}
+
+		self::$calculation_type = $calculation_type;
 	}
 
 	/**
