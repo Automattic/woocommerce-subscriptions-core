@@ -34,6 +34,17 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 
 		add_filter( 'wcs_recurring_cart_next_payment_date', array( &$this, 'recurring_cart_next_payment_date' ), 100, 2 );
 
+		// Mock a free trial on the cart item to make sure the resubscribe total doesn't include any recurring amount when honoring prepaid term
+		add_filter( 'woocommerce_before_calculate_totals', array( &$this, 'maybe_set_free_trial' ), 100, 1 );
+		add_action( 'woocommerce_subscription_cart_before_grouping', array( &$this, 'maybe_unset_free_trial' ) );
+		add_action( 'woocommerce_subscription_cart_after_grouping', array( &$this, 'maybe_set_free_trial' ) );
+		add_action( 'wcs_recurring_cart_start_date', array( &$this, 'maybe_unset_free_trial' ), 0, 1 );
+		add_action( 'wcs_recurring_cart_end_date', array( &$this, 'maybe_set_free_trial' ), 100, 1 );
+		add_filter( 'woocommerce_subscriptions_calculated_total', array( &$this, 'maybe_unset_free_trial' ), 10000, 1 );
+		add_action( 'woocommerce_cart_totals_before_shipping', array( &$this, 'maybe_set_free_trial' ) );
+		add_action( 'woocommerce_cart_totals_after_shipping', array( &$this, 'maybe_unset_free_trial' ) );
+		add_action( 'woocommerce_review_order_before_shipping', array( &$this, 'maybe_set_free_trial' ) );
+		add_action( 'woocommerce_review_order_after_shipping', array( &$this, 'maybe_unset_free_trial' ) );
 	}
 
 	/**
@@ -216,6 +227,33 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 			}
 		}
 		return $first_renewal_date;
+	}
+
+	public function maybe_set_free_trial( $total = '' ) {
+
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			$subscription = $this->get_order( $cart_item );
+			if ( false !== $subscription && $subscription->has_status( 'pending-cancel' ) ) {
+				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length = 1;
+				break;
+			}
+		}
+
+		return $total;
+	}
+
+
+	public function maybe_unset_free_trial( $total = '' ) {
+
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			$subscription = $this->get_order( $cart_item );
+			if ( false !== $subscription && $subscription->has_status( 'pending-cancel' ) ) {
+				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length = 0;
+				break;
+			}
+		}
+
+		return $total;
 	}
 
 }
