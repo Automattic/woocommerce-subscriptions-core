@@ -20,7 +20,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 	 * @return array
 	 */
 	public function get_chart_legend() {
-		global $wp_locale, $wpdb;
+		global $wpdb;
 
 		$this->calculate_future_range( $this->get_current_range() );
 
@@ -135,7 +135,6 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 	 * Output the report
 	 */
 	public function output_report() {
-		global $woocommerce, $wpdb, $wp_locale;
 
 		$ranges = array(
 			'year'  => __( 'Next Year', 'woocommerce-subscriptions' ),
@@ -181,7 +180,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 	 * @return string
 	 */
 	public function get_main_chart() {
-		global $wp_locale, $wpdb;
+		global $wp_locale;
 
 		// Prepare data for report
 		$renewal_amounts     = $this->prepare_chart_data( $this->order_ids_recurring_totals, 'scheduled_date', 'recurring_total', $this->chart_interval, $this->start_date, $this->chart_groupby );
