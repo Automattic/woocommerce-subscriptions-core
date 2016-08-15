@@ -20,45 +20,10 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 	 * @return array
 	 */
 	public function get_chart_legend() {
-		global $wpdb;
 
 		$this->calculate_future_range( $this->get_current_range() );
 
-		$base_query = $wpdb->prepare(
-			"SELECT
-						DATE_FORMAT(ms.meta_value, '%s') as scheduled_date,
-						SUM(mo.meta_value) as recurring_total,
-						COUNT(mo.meta_value) as total_renewals,
-						group_concat(p.ID) as subscription_ids,
-				group_concat(mi.meta_value) as billing_intervals,
-				group_concat(mp.meta_value) as billing_periods,
-				group_concat(me.meta_value) as scheduled_ends,
-						group_concat(mo.meta_value) as subscription_totals
-						FROM {$wpdb->prefix}posts p
-						LEFT JOIN {$wpdb->prefix}postmeta ms
-					ON p.ID = ms.post_id
-						LEFT JOIN {$wpdb->prefix}postmeta mo
-					ON p.ID = mo.post_id
-						LEFT JOIN {$wpdb->prefix}postmeta mi
-					ON p.ID = mi.post_id
-				LEFT JOIN {$wpdb->prefix}postmeta mp
-					ON p.ID = mp.post_id
-				LEFT JOIN {$wpdb->prefix}postmeta me
-					ON p.ID = me.post_id
-						WHERE mo.meta_key = '_order_total'
-							AND ms.meta_key = '_schedule_next_payment'
-							AND ms.meta_value BETWEEN '%s' AND '%s'
-							AND mi.meta_key = '_billing_interval'
-					AND mp.meta_key = '_billing_period'
-					AND me.meta_key = '_schedule_end '
-						GROUP BY {$this->group_by_query}
-						ORDER BY ms.meta_value ASC",
-			'%Y-%m-%d',
-			date( 'Y-m-d H:i:s' ),
-			date( 'Y-m-d H:i:s', $this->end_date )
-		);
-
-		$this->order_ids_recurring_totals = $wpdb->get_results( $base_query, OBJECT_K );
+		$this->order_ids_recurring_totals = $this->get_data();
 
 		$total_renewal_revenue = 0;
 		$total_renewal_count = 0;
@@ -129,6 +94,67 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 		);
 
 		return $legend;
+	}
+
+	/**
+	 * Get report data.
+	 * @return stdClass
+	 */
+	public function get_data( $args = array() ) {
+		global $wpdb;
+
+		$default_args = array(
+			'no_cache'  => false,
+		);
+
+		$args = apply_filters( 'wcs_reports_upcoming_recurring_revenue_args', $args );
+		$args = wp_parse_args( $args, $default_args );
+
+		// Query based on whole days, not minutes/hours so that we can cache the query for at least 24 hours
+		$base_query = $wpdb->prepare(
+			"SELECT
+				DATE_FORMAT(ms.meta_value, '%s') as scheduled_date,
+				SUM(mo.meta_value) as recurring_total,
+				COUNT(mo.meta_value) as total_renewals,
+				group_concat(p.ID) as subscription_ids,
+				group_concat(mi.meta_value) as billing_intervals,
+				group_concat(mp.meta_value) as billing_periods,
+				group_concat(me.meta_value) as scheduled_ends,
+				group_concat(mo.meta_value) as subscription_totals
+					FROM {$wpdb->prefix}posts p
+				LEFT JOIN {$wpdb->prefix}postmeta ms
+					ON p.ID = ms.post_id
+				LEFT JOIN {$wpdb->prefix}postmeta mo
+					ON p.ID = mo.post_id
+				LEFT JOIN {$wpdb->prefix}postmeta mi
+					ON p.ID = mi.post_id
+				LEFT JOIN {$wpdb->prefix}postmeta mp
+					ON p.ID = mp.post_id
+				LEFT JOIN {$wpdb->prefix}postmeta me
+					ON p.ID = me.post_id
+			WHERE mo.meta_key = '_order_total'
+				AND ms.meta_key = '_schedule_next_payment'
+				AND ms.meta_value BETWEEN '%s' AND '%s'
+				AND mi.meta_key = '_billing_interval'
+				AND mp.meta_key = '_billing_period'
+				AND me.meta_key = '_schedule_end '
+			GROUP BY {$this->group_by_query}
+			ORDER BY ms.meta_value ASC",
+			'%Y-%m-%d',
+			date( 'Y-m-d', $this->start_date ),
+			date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) )
+		);
+
+		$cached_results = get_transient( strtolower( get_class( $this ) ) );
+		$query_hash     = md5( $base_query );
+
+		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
+			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
+			$cached_results[ $query_hash ] = apply_filters( 'wcs_reports_upcoming_recurring_revenue_data', $wpdb->get_results( $base_query, OBJECT_K ), $args );
+			set_transient( strtolower( get_class( $this ) ), $cached_results, DAY_IN_SECONDS );
+		}
+
+		return $cached_results[ $query_hash ];
 	}
 
 	/**
