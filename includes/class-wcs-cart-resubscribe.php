@@ -263,7 +263,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 			$order_completed      = in_array( $new_order_status, array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id ), 'processing', 'completed' ) );
 			$order_needed_payment = in_array( $old_order_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ) ) );
 
-			foreach( wcs_get_subscriptions_for_resubscribe_order( $order_id ) as $subscription ) {
+			foreach ( wcs_get_subscriptions_for_resubscribe_order( $order_id ) as $subscription ) {
 				if ( $subscription->has_status( 'pending-cancel' ) ) {
 					$subscription->cancel_order();
 				}
