@@ -22,13 +22,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 	public function get_chart_legend() {
 		global $wp_locale, $wpdb;
 
-		$current_range = ! empty( $_GET['range'] ) ? $_GET['range'] : '7day';
-
-		if ( ! in_array( $current_range, array( 'custom', 'year', 'month', '7day' ) ) ) {
-			$current_range = '7day';
-		}
-
-		$this->calculate_future_range( $current_range );
+		$this->calculate_future_range( $this->get_current_range() );
 
 		$base_query = $wpdb->prepare(
 			"SELECT
@@ -155,11 +149,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 			'renewals_average' => '#d4d9dc',
 		);
 
-		$current_range = ! empty( $_GET['range'] ) ? sanitize_text_field( $_GET['range'] ) : '7day';
-
-		if ( ! in_array( $current_range, array( 'custom', 'year', 'month', '7day' ) ) ) {
-			$current_range = '7day';
-		}
+		$current_range = $this->get_current_range();
 
 		$this->calculate_current_range( $current_range );
 
@@ -171,11 +161,10 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 	 * Output an export link
 	 */
 	public function get_export_button() {
-		$current_range = ! empty( $_GET['range'] ) ? sanitize_text_field( $_GET['range'] ) : '7day';
 		?>
 		<a
 			href="#"
-			download="report-<?php echo esc_attr( $current_range ); ?>-<?php echo esc_attr( date_i18n( 'Y-m-d', current_time( 'timestamp' ) ) ); ?>.csv"
+			download="report-<?php echo esc_attr( $this->get_current_range() ); ?>-<?php echo esc_attr( date_i18n( 'Y-m-d', current_time( 'timestamp' ) ) ); ?>.csv"
 			class="export_csv"
 			data-export="chart"
 			data-xaxes="<?php esc_attr_e( 'Date', 'woocommerce-subscriptions' ); ?>"
@@ -383,5 +372,18 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 				$this->barwidth             = 60 * 60 * 24 * 7 * 4 * 1000;
 			break;
 		}
+	}
+
+	/**
+	 * Helper function to get the report's current range
+	 */
+	protected function get_current_range() {
+		$current_range = ! empty( $_GET['range'] ) ? sanitize_text_field( $_GET['range'] ) : '7day';
+
+		if ( ! in_array( $current_range, array( 'custom', 'year', 'month', '7day' ) ) ) {
+			$current_range = '7day';
+		}
+
+		return $current_range;
 	}
 }
