@@ -209,6 +209,11 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 		return $subscription;
 	}
 
+	/**
+	 * Make sure that a resubscribe item's cart key is based on the end of the pre-paid term if the user already has a subscription that is pending-cancel, not the date calculated for the product.
+	 *
+	 * @since 2.1
+	 */
 	public function get_recurring_cart_key( $cart_key, $cart_item ) {
 		$subscription = $this->get_order( $cart_item );
 		if ( false !== $subscription && $subscription->has_status( 'pending-cancel' ) ) {
@@ -220,6 +225,12 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 		return $cart_key;
 	}
 
+	/**
+	 * Make sure when displaying the next payment date for a subscription, the date takes into
+	 * account the end of the pre-paid term if the user is resubscribing to a subscription that is pending-cancel.
+	 *
+	 * @since 2.1
+	 */
 	public function recurring_cart_next_payment_date( $first_renewal_date, $cart ) {
 		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
 			$subscription = $this->get_order( $cart_item );
@@ -231,6 +242,11 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 		return $first_renewal_date;
 	}
 
+	/**
+	 * Make sure resubscribe cart item price doesn't include any recurring amount by setting a free trial.
+	 *
+	 * @since 2.1
+	 */
 	public function maybe_set_free_trial( $total = '' ) {
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
@@ -244,7 +260,11 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 		return $total;
 	}
 
-
+	/**
+	 * Remove mock free trials from resubscribe cart items.
+	 *
+	 * @since 2.1
+	 */
 	public function maybe_unset_free_trial( $total = '' ) {
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
@@ -258,6 +278,11 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 		return $total;
 	}
 
+	/**
+	 * When the user resubscribes to a subscription that is pending-cancel, cancel the existing subscription.
+	 *
+	 * @since 2.1
+	 */
 	public function maybe_cancel_existing_subscription( $order_id, $old_order_status, $new_order_status ) {
 		if ( wcs_order_contains_subscription( $order_id ) && wcs_order_contains_resubscribe( $order_id ) ) {
 			$order_completed      = in_array( $new_order_status, array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id ), 'processing', 'completed' ) );
