@@ -20,7 +20,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 	 */
 	public function get_report_data() {
 		if ( empty( $this->report_data ) ) {
-			$this->query_report_data();
+			$this->get_data();
 		}
 		return $this->report_data;
 	}
@@ -28,9 +28,15 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 	/**
 	 * Get all data needed for this report and store in the class
 	 */
-	private function query_report_data() {
-
+	public function get_data( $args = array() ) {
 		global $wpdb;
+
+		$default_args = array(
+			'no_cache' => false,
+		);
+
+		$args = apply_filters( 'wcs_reports_subscription_events_args', $args );
+		$args = wp_parse_args( $args, $default_args );
 
 		$this->report_data = new stdClass;
 
@@ -65,6 +71,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				'query_type'          => 'get_results',
 				'filter_range'        => true,
 				'order_types'         => wc_get_order_types( 'order-count' ),
+				'nocache'             => $args['no_cache'],
 			)
 		);
 
@@ -93,8 +100,11 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				'query_type'          => 'get_results',
 				'filter_range'        => true,
 				'order_types'         => wc_get_order_types( 'order-count' ),
+				'nocache'             => $args['no_cache'],
 			)
 		);
+
+		$cached_results = get_transient( strtolower( get_class( $this ) ) );
 
 		/*
 		* New subscription orders
@@ -118,8 +128,15 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) )
 		);
 
-		$query_results = (array) $wpdb->get_results( $query );
-		$this->report_data->signup_data = $query_results;
+		$query_hash = md5( $query );
+
+		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
+			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
+			$cached_results[ $query_hash ] = apply_filters( 'wcs_reports_subscription_events_sign_up_data', (array) $wpdb->get_results( $query ), $args );
+			set_transient( strtolower( get_class( $this ) ), $cached_results, DAY_IN_SECONDS );
+		}
+
+		$this->report_data->signup_data = $cached_results[ $query_hash ];
 
 		/*
 		 * Subscribers by date
@@ -174,8 +191,15 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			wcs_get_date_meta_key( 'end' )
 		);
 
-		$query_results = (array) $wpdb->get_results( $query );
-		$this->report_data->subscriber_counts = $query_results;
+		$query_hash = md5( $query );
+
+		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
+			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
+			$cached_results[ $query_hash ] = apply_filters( 'wcs_reports_subscription_events_subscriber_count_data', (array) $wpdb->get_results( $query ), $args );
+			set_transient( strtolower( get_class( $this ) ), $cached_results, DAY_IN_SECONDS );
+		}
+
+		$this->report_data->subscriber_counts = $cached_results[ $query_hash ];
 
 		/*
 		 * Subscription cancellations
@@ -199,8 +223,15 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) )
 		);
 
-		$query_results = (array) $wpdb->get_results( $query );
-		$this->report_data->cancel_counts = $query_results;
+		$query_hash = md5( $query );
+
+		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
+			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
+			$cached_results[ $query_hash ] = apply_filters( 'wcs_reports_subscription_events_cancel_count_data', (array) $wpdb->get_results( $query ), $args );
+			set_transient( strtolower( get_class( $this ) ), $cached_results, DAY_IN_SECONDS );
+		}
+
+		$this->report_data->cancel_counts = $cached_results[ $query_hash ];
 
 		/*
 		 * Subscriptions ended
@@ -224,8 +255,15 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) )
 		);
 
-		$query_results = (array) $wpdb->get_results( $query );
-		$this->report_data->ended_counts = $query_results;
+		$query_hash = md5( $query );
+
+		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
+			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
+			$cached_results[ $query_hash ] = apply_filters( 'wcs_reports_subscription_events_ended_count_data', (array) $wpdb->get_results( $query ), $args );
+			set_transient( strtolower( get_class( $this ) ), $cached_results, DAY_IN_SECONDS );
+		}
+
+		$this->report_data->ended_counts = $cached_results[ $query_hash ];
 
 		// Total up the query data
 		$this->report_data->signup_orders_total_amount          = absint( array_sum( wp_list_pluck( $this->report_data->signup_data, 'signup_totals' ) ) );
@@ -307,8 +345,15 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		} else {
 			$subscription_change_percent = number_format( ( ( ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start ) / $data->total_subscriptions_at_period_start ) * 100 ), 2 ) . '%';
 		}
+
+		if ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start > 0 ) {
+			$legend_title = __( '%s net subscription gain', 'woocommerce-subscriptions' );
+		} else {
+			$legend_title = __( '%s net subscription loss', 'woocommerce-subscriptions' );
+		}
+
 		$legend[] = array(
-			'title'            => sprintf( __( '%s subscriptions gained/lost', 'woocommerce-subscriptions' ), '<strong>' . $subscription_change_count . ' <span style="font-size:65%;">(' . $subscription_change_percent . ')</span></strong>' ),
+			'title'            => sprintf( $legend_title, '<strong>' . $subscription_change_count . ' <span style="font-size:65%;">(' . $subscription_change_percent . ')</span></strong>' ),
 			'placeholder'      => __( 'Change in subscriptions between the start and end of the period.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['subscriber_change'],
 			'highlight_series' => 5,
