@@ -93,8 +93,6 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 		global $wpdb;
 
 		$this->_column_headers = array( $this->get_columns(), array(), $this->get_sortable_columns() );
-		$current_page          = absint( $this->get_pagenum() );
-		$per_page              = apply_filters( 'woocommerce_admin_stock_report_products_per_page', 20 );
 
 		$product_query = apply_filters( 'wcs_reports_current_product_query',
 			"SELECT product.id as product_id,	product.post_title as product_name,	mo.product_type, COUNT(orders.order_id) as subscription_count, SUM(orders.product_total) as product_total
