@@ -299,16 +299,16 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			'highlight_series' => 5,
 		);
 
-		$sub_change_count = ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start > 0 ) ? '+' . ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start ) : ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start );
+		$subscription_change_count = ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start > 0 ) ? '+' . ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start ) : ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start );
 		if ( $data->total_subscriptions_at_period_start === 0 ) {
-			$sub_change_percent = '&#x221e;%'; // infinite percentage increase if the starting subs is 0
+			$subscription_change_percent = '&#x221e;%'; // infinite percentage increase if the starting subs is 0
 		} elseif ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start > 0 ) {
-			$sub_change_percent = '+' . number_format( ( ( ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start ) / $data->total_subscriptions_at_period_start ) * 100 ), 2 ) . '%';
+			$subscription_change_percent = '+' . number_format( ( ( ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start ) / $data->total_subscriptions_at_period_start ) * 100 ), 2 ) . '%';
 		} else {
-			$sub_change_percent = number_format( ( ( ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start ) / $data->total_subscriptions_at_period_start ) * 100 ), 2 ) . '%';
+			$subscription_change_percent = number_format( ( ( ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start ) / $data->total_subscriptions_at_period_start ) * 100 ), 2 ) . '%';
 		}
 		$legend[] = array(
-			'title'            => sprintf( __( '%s subscriptions gained/lost', 'woocommerce-subscriptions' ), '<strong>' . $sub_change_count . ' <span style="font-size:65%;">(' . $sub_change_percent . ')</span></strong>' ),
+			'title'            => sprintf( __( '%s subscriptions gained/lost', 'woocommerce-subscriptions' ), '<strong>' . $subscription_change_count . ' <span style="font-size:65%;">(' . $subscription_change_percent . ')</span></strong>' ),
 			'placeholder'      => __( 'Change in subscriptions between the start and end of the period.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['subscriber_change'],
 			'highlight_series' => 5,
