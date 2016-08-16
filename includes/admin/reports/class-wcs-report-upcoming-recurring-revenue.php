@@ -21,8 +21,6 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 	 */
 	public function get_chart_legend() {
 
-		$this->calculate_future_range( $this->get_current_range() );
-
 		$this->order_ids_recurring_totals = $this->get_data();
 
 		$total_renewal_revenue = 0;
@@ -340,7 +338,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 	 *
 	 * @param  string $current_range
 	 */
-	public function calculate_future_range( $current_range ) {
+	public function calculate_current_range( $current_range ) {
 		switch ( $current_range ) {
 			case 'custom' :
 				$this->start_date = strtotime( sanitize_text_field( $_GET['start_date'] ) );
