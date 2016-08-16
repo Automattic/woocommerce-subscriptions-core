@@ -32,7 +32,8 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		global $wpdb;
 
 		$default_args = array(
-			'no_cache' => false,
+			'no_cache'     => false,
+			'order_status' => apply_filters( 'woocommerce_reports_order_statuses', array( 'completed', 'processing', 'on-hold' ) ),
 		);
 
 		$args = apply_filters( 'wcs_reports_subscription_events_args', $args );
@@ -118,7 +119,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 					ON wcorder.ID = wcometa.post_id
 				WHERE  wcorder.post_type IN ( '" . implode( "','", wc_get_order_types( 'order-count' ) ) . "' )
 					AND wcsubs.post_type IN ( 'shop_subscription' )
-					AND wcorder.post_status IN ( 'wc-" . implode( "','wc-", apply_filters( 'woocommerce_reports_order_statuses', array( 'completed', 'processing', 'on-hold', 'refunded' ) ) ) . "' )
+					AND wcorder.post_status IN ( 'wc-" . implode( "','wc-", $args['order_status'] ) . "' )
 					AND wcorder.post_date >= %s
 					AND wcorder.post_date < %s
 					AND wcometa.meta_key = '_order_total'
@@ -176,7 +177,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 					JOIN {$wpdb->posts} AS wcorder
 						ON wcsubs.post_parent = wcorder.ID
 							AND wcorder.post_type IN ( '" . implode( "','", wc_get_order_types( 'order-count' ) ) . "' )
-							AND wcorder.post_status IN ( 'wc-" . implode( "','wc-", apply_filters( 'woocommerce_reports_order_statuses', array( 'completed', 'processing', 'on-hold', 'refunded' ) ) ) . "' )
+							AND wcorder.post_status IN ( 'wc-" . implode( "','wc-", $args['order_status'] ) . "' )
 					LEFT JOIN {$wpdb->postmeta} AS wcsmeta
 						ON wcsubs.ID = wcsmeta.post_id
 							AND wcsmeta.meta_key = %s
@@ -210,7 +211,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				JOIN {$wpdb->posts} AS wcorder
 					ON wcsubs.post_parent = wcorder.ID
 						AND wcorder.post_type IN ( '" . implode( "','", wc_get_order_types( 'order-count' ) ) . "' )
-						AND wcorder.post_status IN ( 'wc-" . implode( "','wc-", apply_filters( 'woocommerce_reports_order_statuses', array( 'completed', 'processing', 'on-hold', 'refunded' ) ) ) . "' )
+						AND wcorder.post_status IN ( 'wc-" . implode( "','wc-", $args['order_status'] ) . "' )
 				JOIN {$wpdb->postmeta} AS wcsmeta_cancel
 					ON wcsubs.ID = wcsmeta_cancel.post_id
 						AND wcsmeta_cancel.meta_key = %s
@@ -242,7 +243,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				JOIN {$wpdb->posts} AS wcorder
 					ON wcsubs.post_parent = wcorder.ID
 						AND wcorder.post_type IN ( 'shop_order' )
-						AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
+						AND wcorder.post_status IN ( 'wc-" . implode( "','wc-", $args['order_status'] ) . "' )
 				JOIN {$wpdb->postmeta} AS wcsmeta_end
 					ON wcsubs.ID = wcsmeta_end.post_id
 						AND wcsmeta_end.meta_key = %s
