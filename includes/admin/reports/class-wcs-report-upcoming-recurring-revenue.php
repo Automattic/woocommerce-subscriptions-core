@@ -163,9 +163,10 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 	public function output_report() {
 
 		$ranges = array(
-			'year'  => __( 'Next Year', 'woocommerce-subscriptions' ),
-			'month' => __( 'Next Month', 'woocommerce-subscriptions' ),
-			'7day'  => __( 'Next 7 Days', 'woocommerce-subscriptions' ),
+			'year'       => __( 'Next 12 Months', 'woocommerce-subscriptions' ),
+			'month'      => __( 'Next 30 Days', 'woocommerce-subscriptions' ),
+			'last_month' => __( 'Next Month', 'woocommerce-subscriptions' ), // misnomer to match historical reports keys, handy for caching
+			'7day'       => __( 'Next 7 Days', 'woocommerce-subscriptions' ),
 		);
 
 		$this->chart_colours = array(
@@ -368,6 +369,11 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 				$this->end_date      = strtotime( 'last day', strtotime( '+1 YEAR', current_time( 'timestamp' ) ) );
 				$this->chart_groupby = 'month';
 			break;
+			case 'last_month' : // misnomer to match historical reports keys, handy for caching
+				$this->start_date     = strtotime( date( 'Y-m-01', wcs_add_months( current_time( 'timestamp' ), '1' ) ) );
+				$this->end_date       = strtotime( date( 'Y-m-t', $this->start_date ) );
+				$this->chart_groupby  = 'day';
+			break;
 			case 'month' :
 				$this->start_date    = strtotime( 'now', current_time( 'timestamp' ) );
 				$this->end_date      = wcs_add_months( current_time( 'timestamp' ), '1' );
@@ -405,7 +411,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 	protected function get_current_range() {
 		$current_range = ! empty( $_GET['range'] ) ? sanitize_text_field( $_GET['range'] ) : '7day';
 
-		if ( ! in_array( $current_range, array( 'custom', 'year', 'month', '7day' ) ) ) {
+		if ( ! in_array( $current_range, array( 'custom', 'year', 'month', 'last_month', '7day' ) ) ) {
 			$current_range = '7day';
 		}
 
