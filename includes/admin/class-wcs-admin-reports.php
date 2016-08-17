@@ -41,7 +41,7 @@ class WCS_Admin_Reports {
 		add_action( 'woocommerce_subscription_status_updated', __CLASS__ . '::track_cancellation_dates', 12, 3 );
 
 		// Add any actions we need based on the screen
-		add_action( 'current_screen',__CLASS__ . '::conditional_reporting_includes' );
+		add_action( 'current_screen', __CLASS__ . '::conditional_reporting_includes' );
 
 	}
 
@@ -98,7 +98,7 @@ class WCS_Admin_Reports {
 	 */
 	public static function initialize_reports_path( $report_path, $name, $class ) {
 
-		if ( 'WC_Report_subscription_events_by_date' == $class || 'WC_Report_upcoming_recurring_revenue' == $class || 'WC_Report_subscription_by_product' == $class ||  'WC_Report_subscription_by_customer' == $class ) {
+		if ( in_array( strtolower( $class ), array( 'wc_report_subscription_events_by_date', 'wc_report_upcoming_recurring_revenue', 'wc_report_subscription_by_product', 'wc_report_subscription_by_customer' ) ) ) {
 			$report_path = dirname( __FILE__ ) . '/reports/class-wcs-report-' . $name . '.php';
 		}
 

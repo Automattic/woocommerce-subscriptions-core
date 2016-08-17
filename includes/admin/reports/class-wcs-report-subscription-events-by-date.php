@@ -214,9 +214,8 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 						AND wcorder.post_status IN ( 'wc-" . implode( "','wc-", $args['order_status'] ) . "' )
 				JOIN {$wpdb->postmeta} AS wcsmeta_cancel
 					ON wcsubs.ID = wcsmeta_cancel.post_id
-						AND wcsmeta_cancel.meta_key = %s
-				WHERE
-						wcsmeta_cancel.meta_value BETWEEN %s AND %s
+					AND wcsmeta_cancel.meta_key = %s
+				WHERE wcsmeta_cancel.meta_value BETWEEN %s AND %s
 				GROUP BY YEAR(wcsmeta_cancel.meta_value), MONTH(wcsmeta_cancel.meta_value), DAY(wcsmeta_cancel.meta_value)
 				ORDER BY wcsmeta_cancel.meta_value ASC",
 			wcs_get_date_meta_key( 'cancelled' ),
