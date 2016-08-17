@@ -130,7 +130,9 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 					ON p.ID = mp.post_id
 				LEFT JOIN {$wpdb->prefix}postmeta me
 					ON p.ID = me.post_id
-			WHERE mo.meta_key = '_order_total'
+			WHERE p.post_type = 'shop_subscription'
+				AND p.post_status = 'wc-active'
+				AND mo.meta_key = '_order_total'
 				AND ms.meta_key = '_schedule_next_payment'
 				AND ms.meta_value BETWEEN '%s' AND '%s'
 				AND mi.meta_key = '_billing_interval'
