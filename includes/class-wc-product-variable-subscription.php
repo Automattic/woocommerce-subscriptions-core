@@ -219,7 +219,7 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 						$longest_trial_length = $child_free_trial_length;
 					}
 
-					// If the current cheapest variation is also free then the shortest trial period is the most expensive
+					// If the current cheapest variation is also free, then the shortest trial period is the most expensive
 					if ( 0 == $lowest_price || '' === $lowest_price ) {
 
 						if ( '' === $shortest_trial_period ) {
