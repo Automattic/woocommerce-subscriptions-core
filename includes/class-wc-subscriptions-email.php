@@ -159,7 +159,6 @@ class WC_Subscriptions_Email {
 				'new_renewal_order',
 				'customer_processing_renewal_order',
 				'customer_completed_renewal_order',
-				'customer_renewal_invoice',
 			);
 		}
 
