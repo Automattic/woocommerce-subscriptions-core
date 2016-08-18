@@ -35,6 +35,9 @@ class WCS_Email_Customer_Renewal_Invoice extends WC_Email_Customer_Invoice {
 		$this->subject        = __( 'Invoice for renewal order {order_number} from {order_date}', 'woocommerce-subscriptions' );
 		$this->heading        = __( 'Invoice for renewal order {order_number}', 'woocommerce-subscriptions' );
 
+		$this->subject_paid = null;
+		$this->heading_paid = null;
+
 		// Triggers for this email
 		add_action( 'woocommerce_generated_manual_renewal_order_renewal_notification', array( $this, 'trigger' ) );
 		add_action( 'woocommerce_order_status_failed_renewal_notification', array( $this, 'trigger' ) );
