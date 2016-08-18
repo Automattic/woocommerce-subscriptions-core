@@ -414,6 +414,38 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 	}
 
 	/**
+	 * Get the min or max variation (active) price.
+	 *
+	 * This is a copy of WooCommerce < 2.4's get_variation_price() method, because 2.4.0 introduced a new
+	 * transient caching system which assumes asort() on prices yields correct results for min/max prices
+	 * (which it does for prices alone, but that's not the full story for subscription prices). Unfortunately,
+	 * the new caching system is also hard to hook into so we'll just use the old system instead as the
+	 * @see self::variable_product_sync() uses the old method also.
+	 *
+	 * @param  string $min_or_max - min or max
+	 * @param  boolean  $display Whether the value is going to be displayed
+	 * @return string
+	 */
+	public function get_variation_price( $min_or_max = 'min', $display = false ) {
+		$variation_id = get_post_meta( $this->id, '_' . $min_or_max . '_price_variation_id', true );
+
+		if ( $display ) {
+			$variation = $this->get_child( $variation_id );
+
+			if ( $variation ) {
+				$tax_display_mode = get_option( 'woocommerce_tax_display_shop' );
+				$price            = $tax_display_mode == 'incl' ? $variation->get_price_including_tax() : $variation->get_price_excluding_tax();
+			} else {
+				$price = '';
+			}
+		} else {
+			$price = get_post_meta( $variation_id, '_price', true );
+		}
+
+		return apply_filters( 'woocommerce_get_variation_price', $price, $this, $min_or_max, $display );
+	}
+
+	/**
 	 * Returns the price in html format.
 	 *
 	 * @access public
