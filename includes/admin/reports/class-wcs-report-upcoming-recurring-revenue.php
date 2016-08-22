@@ -178,11 +178,11 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 			download="report-<?php echo esc_attr( $current_range ); ?>-<?php echo esc_attr( date_i18n( 'Y-m-d', current_time( 'timestamp' ) ) ); ?>.csv"
 			class="export_csv"
 			data-export="chart"
-			data-xaxes="<?php esc_attr_e( 'Date', 'woocommerce' ); ?>"
+			data-xaxes="<?php esc_attr_e( 'Date', 'woocommerce-subscriptions' ); ?>"
 			data-exclude_series="2"
 			data-groupby="<?php echo esc_attr( $this->chart_groupby ); ?>"
 		>
-			<?php esc_html_e( 'Export CSV', 'woocommerce' ); ?>
+			<?php esc_html_e( 'Export CSV', 'woocommerce-subscriptions' ); ?>
 		</a>
 		<?php
 	}
@@ -216,7 +216,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 				var drawGraph = function( highlight ) {
 					var series = [
 						{
-							label: "<?php echo esc_js( __( 'Renewals count', 'woocommerce' ) ) ?>",
+							label: "<?php echo esc_js( __( 'Renewals count', 'woocommerce-subscriptions' ) ) ?>",
 							data: order_data.renewal_counts,
 							yaxis: 1,
 							color: '<?php echo esc_js( $this->chart_colours['renewals_count'] ); ?>',
@@ -225,7 +225,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 							shadowSize: 0
 						},
 						{
-							label: "<?php echo esc_js( __( 'Renewals amount', 'woocommerce' ) ) ?>",
+							label: "<?php echo esc_js( __( 'Renewals amount', 'woocommerce-subscriptions' ) ) ?>",
 							data: order_data.renewal_amounts,
 							yaxis: 2,
 							color: '<?php echo esc_js( $this->chart_colours['renewals_amount'] ); ?>',
