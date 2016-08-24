@@ -158,17 +158,4 @@ class WCS_Retry_Post_Store extends WCS_Retry_Store {
 
 		return $retry_post_ids;
 	}
-
-	/**
-	 * Get the number of retries stored in the database for a given order
-	 *
-	 * @param int $order_id
-	 * @return int
-	 */
-	public function get_retry_count_for_order( $order_id ) {
-
-		$retry_post_ids = self::get_retry_ids_for_order( $order_id );
-
-		return count( $retry_post_ids );
-	}
 }
