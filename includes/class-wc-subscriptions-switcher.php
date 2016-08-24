@@ -1079,7 +1079,13 @@ class WC_Subscriptions_Switcher {
 						$sign_up_proportion = 1;
 					}
 
-					$sign_up_fee += round( $order_item['line_total'] * $sign_up_proportion, 2 );
+					$order_total = $order_item['line_total'];
+
+					if ( 'yes' == $order->prices_include_tax || true === $order->prices_include_tax ) {
+						$order_total += $order_item['line_tax'];
+					}
+
+					$sign_up_fee += round( $order_total * $sign_up_proportion, 2 );
 				}
 			}
 		}
