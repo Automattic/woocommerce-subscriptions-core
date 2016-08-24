@@ -58,7 +58,7 @@ class WCS_Retry_Manager {
 	 * @since 2.1
 	 */
 	public static function is_retry_enabled() {
-		return ( 'yes' == get_option( self::$setting_id, 'no' ) ) ? true : false;
+		return apply_filters( 'wcs_is_retry_enabled', ( 'yes' == get_option( self::$setting_id, 'no' ) ) ? true : false );
 	}
 
 	/**
