@@ -153,6 +153,16 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 				$child_price       = ( '' === $child_price ) ? 0 : $child_price;
 				$child_sign_up_fee = ( '' === $child_sign_up_fee ) ? 0 : $child_sign_up_fee;
 
+				// Take taxes into a account to avoid displaying a variation with a lower price pre-tax, but higher price post-tax, in the case of variations having different tax classes (see: https://github.com/Prospress/woocommerce-subscriptions/pull/1602#issuecomment-241330131)
+				if ( $variation = $this->get_child( $child ) ) {
+					if ( $child_price > 0 ) {
+						$child_price = ( 'incl' == get_option( 'woocommerce_tax_display_shop' ) ) ? $variation->get_price_including_tax( 1, $child_price ) : $variation->get_price_excluding_tax( 1, $child_price );
+					}
+					if ( $child_sign_up_fee > 0 ) {
+						$child_sign_up_fee = ( 'incl' == get_option( 'woocommerce_tax_display_shop' ) ) ? $variation->get_sign_up_fee_including_tax( 1, $child_sign_up_fee ) : $variation->get_sign_up_fee_excluding_tax( 1, $child_sign_up_fee );
+					}
+				}
+
 				$has_free_trial = ( '' !== $child_free_trial_length && $child_free_trial_length > 0 ) ? true : false;
 
 				// Determine some recurring price flags
