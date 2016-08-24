@@ -47,6 +47,8 @@ class WCS_Retry_Manager {
 			add_action( 'woocommerce_subscription_renewal_payment_failed', __CLASS__ . '::maybe_apply_retry_rule', 10 );
 
 			add_action( 'woocommerce_scheduled_subscription_payment_retry', __CLASS__ . '::maybe_retry_payment' );
+
+			add_action( 'woocommerce_subscriptions_after_apply_retry_rule', __CLASS__ . '::send_retry_email', 0, 2 );
 		}
 	}
 
@@ -148,16 +150,30 @@ class WCS_Retry_Manager {
 				$subscription->update_dates( array( 'payment_retry' => gmdate( 'Y-m-d H:i:s', gmdate( 'U' ) + $retry_rule->get_retry_interval( $retry_count ) ) ) );
 			}
 
-			// maybe send emails about the renewal payment failure
-			foreach ( array( 'customer', 'admin' ) as $recipient ) {
-				if ( $retry_rule->has_email_template( $recipient ) ) {
-					$email_class = $retry_rule->get_email_template( $recipient );
+			do_action( 'woocommerce_subscriptions_after_apply_retry_rule', $retry_rule, $last_order, $subscription );
+		}
+	}
+
+	/**
+	 * When a retry rule has been applied, send relevant emails.
+	 *
+	 * Attached to 'woocommerce_subscriptions_after_apply_retry_rule' with a low priority.
+	 *
+	 * @param WCS_Retry_Rule The retry rule applied.
+	 * @param WC_Order The order to which the retry rule was applied.
+	 * @since 2.1
+	 */
+	public static function send_retry_email( $retry_rule, $last_order ) {
+
+		// maybe send emails about the renewal payment failure
+		foreach ( array( 'customer', 'admin' ) as $recipient ) {
+			if ( $retry_rule->has_email_template( $recipient ) ) {
+				$email_class = $retry_rule->get_email_template( $recipient );
+				if ( class_exists( $email_class ) ) {
 					$email = new $email_class();
 					$email->trigger( $last_order );
 				}
 			}
-
-			do_action( 'woocommerce_subscriptions_after_apply_retry_rule', $retry_rule, $last_order, $subscription );
 		}
 	}
 
