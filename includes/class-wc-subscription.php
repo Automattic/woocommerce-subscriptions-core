@@ -1706,7 +1706,8 @@ class WC_Subscription extends WC_Order {
 
 			// If prices inc tax, ensure that the sign up fee amount includes the tax
 			if ( 'inclusive_of_tax' === $tax && ! empty( $original_order_item ) && ( 'yes' == $this->prices_include_tax || true === $this->prices_include_tax ) ) {
-				$sign_up_fee += $original_order_item['line_tax'];
+				$proportion   = $sign_up_fee / ( $original_order_item['line_total'] / $original_order_item['qty'] );
+				$sign_up_fee += round( $original_order_item['line_tax'] * $proportion, 2 );
 			}
 		}
 
