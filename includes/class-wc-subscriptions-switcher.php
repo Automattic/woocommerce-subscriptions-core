@@ -1054,10 +1054,11 @@ class WC_Subscriptions_Switcher {
 
 		// First add any sign-up fees for previously switched items
 		$switched_line_items = $subscription->get_items( 'line_item_switched' );
+		$tax                 = ( 'yes' == $subscription->prices_include_tax || true === $subscription->prices_include_tax ) ? 'inclusive_of_tax' : '';
 
 		foreach ( $switched_line_items as $switched_line_item_id => $switched_line_item ) {
 			if ( $line_item['switched_subscription_item_id'] == $switched_line_item_id ) {
-				$sign_up_fee += $subscription->get_items_sign_up_fee( $switched_line_item ); // Recursion: get the sign up fee for this item's old item and the sign up fee for that item's old item and the sign up fee for that item's old item and the sign up fee for that item's old item ...
+				$sign_up_fee += $subscription->get_items_sign_up_fee( $switched_line_item, $tax ); // Recursion: get the sign up fee for this item's old item and the sign up fee for that item's old item and the sign up fee for that item's old item and the sign up fee for that item's old item ...
 				break; // Each item can only be switched once
 			}
 		}
