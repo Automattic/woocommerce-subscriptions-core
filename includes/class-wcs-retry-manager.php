@@ -27,6 +27,7 @@ class WCS_Retry_Manager {
 	/**
 	 * Attach callbacks and set the retry rules
 	 *
+	 * @codeCoverageIgnore
 	 * @since 2.1
 	 */
 	public static function init() {
@@ -64,6 +65,7 @@ class WCS_Retry_Manager {
 	/**
 	 * Load all the retry classes if the retry system is enabled
 	 *
+	 * @codeCoverageIgnore
 	 * @since 2.1
 	 */
 	protected static function load_classes() {
