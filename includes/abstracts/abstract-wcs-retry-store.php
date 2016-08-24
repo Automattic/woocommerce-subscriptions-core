@@ -104,17 +104,4 @@ abstract class WCS_Retry_Store {
 
 		return count( $retry_post_ids );
 	}
-
-	/**
-	 * Get the object for interacting with the database
-	 *
-	 * @return WCS_Retry_Post_Store
-	 */
-	public static function instance() {
-		if ( empty( self::$store ) ) {
-			$class = apply_filters( 'wcs_retry_store_class', 'WCS_Retry_Post_Store' );
-			self::$store = new $class();
-		}
-		return self::$store;
-	}
 }

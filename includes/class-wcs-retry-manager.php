@@ -15,6 +15,9 @@ class WCS_Retry_Manager {
 	/* the rules that control the retry schedule and behaviour of each retry */
 	protected static $retry_rules = array();
 
+	/* an instance of the class responsible for storing retry data */
+	protected static $store;
+
 	/* the setting ID for enabling/disabling the automatic retry system */
 	protected static $setting_id;
 
@@ -240,7 +243,20 @@ class WCS_Retry_Manager {
 	 * @since 2.1
 	 */
 	public static function store() {
-		return WCS_Retry_Store::instance();
+		if ( empty( self::$store ) ) {
+			$class = self::get_store_class();
+			self::$store = new $class();
+		}
+		return self::$store;
+	}
+
+	/**
+	 * Get the class used for instantiating retry storage via self::store()
+	 *
+	 * @since 2.1
+	 */
+	protected static function get_store_class() {
+		return apply_filters( 'wcs_retry_store_class', 'WCS_Retry_Post_Store' );
 	}
 
 	/**
