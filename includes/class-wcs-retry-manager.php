@@ -266,10 +266,19 @@ class WCS_Retry_Manager {
 	 */
 	public static function rules() {
 		if ( empty( self::$retry_rules ) ) {
-			$class = apply_filters( 'wcs_retry_rules_class', 'WCS_Retry_Rules' );
+			$class = self::get_rules_class();
 			self::$retry_rules = new $class();
 		}
 		return self::$retry_rules;
+	}
+
+	/**
+	 * Get the class used for instantiating retry rules via self::rules()
+	 *
+	 * @since 2.1
+	 */
+	protected static function get_rules_class() {
+		return apply_filters( 'wcs_retry_rules_class', 'WCS_Retry_Rules' );
 	}
 }
 WCS_Retry_Manager::init();
