@@ -162,14 +162,17 @@ class WCS_Retry_Manager {
 	 * When a retry hook is triggered, check if the rules for that retry are still valid
 	 * and if so, retry the payment.
 	 *
-	 * @param WC_Subscription The subscription on which the payment failed
+	 * @param WC_Subscription|int The subscription on which the payment failed
 	 * @since 2.1
 	 */
-	public static function maybe_retry_payment( $subscription_id ) {
+	public static function maybe_retry_payment( $subscription ) {
 
-		$subscription = wcs_get_subscription( $subscription_id );
-		$last_order   = $subscription->get_last_order( 'all' );
-		$last_retry   = self::store()->get_last_retry_for_order( $last_order->id );
+		if ( ! is_object( $subscription ) ) {
+			$subscription = wcs_get_subscription( $subscription );
+		}
+
+		$last_order = $subscription->get_last_order( 'all' );
+		$last_retry = self::store()->get_last_retry_for_order( $last_order->id );
 
 		// we only need to retry the payment if we have applied a retry rule for the order and it still needs payment
 		if ( null !== $last_retry && 'pending' === $last_retry->get_status() ) {
@@ -192,7 +195,7 @@ class WCS_Retry_Manager {
 					// Make sure the subscription is on hold in case something goes wrong while trying to process renewal and in case gateways expect the subscription to be on-hold, which is normally the case with a renewal payment
 					$subscription->update_status( 'on-hold', _x( 'Subscription renewal payment retry:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
 
-					WC_Subscriptions_Payment_Gateways::gateway_scheduled_subscription_payment( $subscription_id );
+					WC_Subscriptions_Payment_Gateways::gateway_scheduled_subscription_payment( $subscription );
 
 					// Now that we've attempted to process the payment, refresh the order
 					$last_order = wc_get_order( $last_order->id );

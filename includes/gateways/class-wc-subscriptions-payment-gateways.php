@@ -175,8 +175,11 @@ class WC_Subscriptions_Payment_Gateways {
 		if ( null != $deprecated ) {
 			_deprecated_argument( __METHOD__, '2.0', 'Second parameter is deprecated' );
 			$subscription = wcs_get_subscription_from_key( $deprecated );
-		} else {
+		} elseif ( ! is_object( $subscription_id ) ) {
 			$subscription = wcs_get_subscription( $subscription_id );
+		} else {
+			// Support receiving a full subscription object for unit testing
+			$subscription = $subscription_id;
 		}
 
 		if ( false === $subscription ) {
