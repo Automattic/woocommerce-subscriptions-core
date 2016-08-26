@@ -1054,7 +1054,7 @@ class WC_Subscriptions_Switcher {
 
 		// First add any sign-up fees for previously switched items
 		$switched_line_items        = $subscription->get_items( 'line_item_switched' );
-		$tax_inclusive_or_exclusive = ( 'yes' == $subscription->prices_include_tax || true === $subscription->prices_include_tax ) ? 'inclusive_of_tax' : '';
+		$tax_inclusive_or_exclusive = ( 'yes' == $subscription->prices_include_tax ) ? 'inclusive_of_tax' : 'exclusive_of_tax';
 
 		foreach ( $switched_line_items as $switched_line_item_id => $switched_line_item ) {
 			if ( $line_item['switched_subscription_item_id'] == $switched_line_item_id ) {
@@ -1081,7 +1081,7 @@ class WC_Subscriptions_Switcher {
 
 					$order_total = $order_item['line_total'];
 
-					if ( 'yes' == $order->prices_include_tax || true === $order->prices_include_tax ) {
+					if ( 'yes' == $order->prices_include_tax ) {
 						$order_total += $order_item['line_tax'];
 					}
 
