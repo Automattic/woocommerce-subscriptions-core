@@ -20,8 +20,7 @@ class WCS_Retry_Post_Store extends WCS_Retry_Store {
 	 */
 	public function init() {
 		register_post_type( self::$post_type, array(
-			'label'        => __( 'Scheduled Actions', 'woocommerce-subscriptions' ),
-			'description'  => __( 'Scheduled actions are hooks triggered on a cetain date and time.', 'woocommerce-subscriptions' ),
+			'description'  => __( 'Payment retry posts store details about the automatic retry of failed renewal payments.', 'woocommerce-subscriptions' ),
 			'public'       => false,
 			'map_meta_cap' => true,
 			'hierarchical' => false,
