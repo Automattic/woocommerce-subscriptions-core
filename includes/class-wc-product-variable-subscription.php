@@ -440,11 +440,8 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 		$variation_id = get_post_meta( $this->id, '_' . $min_or_max . '_price_variation_id', true );
 
 		if ( $display ) {
-			$variation = $this->get_child( $variation_id );
-
-			if ( $variation ) {
-				$tax_display_mode = get_option( 'woocommerce_tax_display_shop' );
-				$price            = $tax_display_mode == 'incl' ? $variation->get_price_including_tax() : $variation->get_price_excluding_tax();
+			if ( $variation = $this->get_child( $variation_id ) ) {
+				$price = ( 'incl' == get_option( 'woocommerce_tax_display_shop' ) ) ? $variation->get_price_including_tax() : $variation->get_price_excluding_tax();
 			} else {
 				$price = '';
 			}
