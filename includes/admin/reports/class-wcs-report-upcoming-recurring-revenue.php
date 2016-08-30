@@ -36,27 +36,27 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 						SUM(mo.meta_value) as recurring_total,
 						COUNT(mo.meta_value) as total_renewals,
 						group_concat(p.ID) as subscription_ids,
-		        group_concat(mi.meta_value) as billing_intervals,
-		        group_concat(mp.meta_value) as billing_periods,
-		        group_concat(me.meta_value) as scheduled_ends,
+				group_concat(mi.meta_value) as billing_intervals,
+				group_concat(mp.meta_value) as billing_periods,
+				group_concat(me.meta_value) as scheduled_ends,
 						group_concat(mo.meta_value) as subscription_totals
 						FROM {$wpdb->prefix}posts p
 						LEFT JOIN {$wpdb->prefix}postmeta ms
-			        ON p.ID = ms.post_id
+					ON p.ID = ms.post_id
 						LEFT JOIN {$wpdb->prefix}postmeta mo
-			        ON p.ID = mo.post_id
+					ON p.ID = mo.post_id
 						LEFT JOIN {$wpdb->prefix}postmeta mi
-			        ON p.ID = mi.post_id
-		        LEFT JOIN {$wpdb->prefix}postmeta mp
-			        ON p.ID = mp.post_id
-		        LEFT JOIN {$wpdb->prefix}postmeta me
-			        ON p.ID = me.post_id
+					ON p.ID = mi.post_id
+				LEFT JOIN {$wpdb->prefix}postmeta mp
+					ON p.ID = mp.post_id
+				LEFT JOIN {$wpdb->prefix}postmeta me
+					ON p.ID = me.post_id
 						WHERE mo.meta_key = '_order_total'
 							AND ms.meta_key = '_schedule_next_payment'
 							AND ms.meta_value BETWEEN '%s' AND '%s'
 							AND mi.meta_key = '_billing_interval'
-			      	AND mp.meta_key = '_billing_period'
-			      	AND me.meta_key = '_schedule_end '
+					AND mp.meta_key = '_billing_period'
+					AND me.meta_key = '_schedule_end '
 						GROUP BY {$this->group_by_query}
 						ORDER BY ms.meta_value ASC",
 			'%Y-%m-%d',
@@ -93,7 +93,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 					$next_payment_timestamp = wcs_add_time( $billing_intervals[ $key ], $billing_periods[ $key ], $next_payment_timestamp );
 
 					// If there are more renewals add them to the existing object or create a new one
-					if ( $next_payment_timestamp <= $this->end_date && ( 0 == $scheduled_ends[ $key ] || $next_payment_timestamp < strtotime( $scheduled_ends[ $key ] ) ) ) {
+					if ( $next_payment_timestamp <= $this->end_date && isset( $scheduled_ends[ $key ] ) && ( 0 == $scheduled_ends[ $key ] || $next_payment_timestamp < strtotime( $scheduled_ends[ $key ] ) ) ) {
 						$update_key = date( 'Y-m-d', $next_payment_timestamp );
 
 						if ( $next_payment_timestamp >= $this->start_date ) {
@@ -110,7 +110,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 							$total_renewal_count   += 1;
 						}
 					}
-				} while ( $next_payment_timestamp <= $this->end_date && ( 0 == $scheduled_ends[ $key ] || $next_payment_timestamp < strtotime( $scheduled_ends[ $key ] ) ) );
+				} while ( $next_payment_timestamp <= $this->end_date && isset( $scheduled_ends[ $key ] ) && ( 0 == $scheduled_ends[ $key ] || $next_payment_timestamp < strtotime( $scheduled_ends[ $key ] ) ) );
 			}
 		}
 
@@ -178,11 +178,11 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 			download="report-<?php echo esc_attr( $current_range ); ?>-<?php echo esc_attr( date_i18n( 'Y-m-d', current_time( 'timestamp' ) ) ); ?>.csv"
 			class="export_csv"
 			data-export="chart"
-			data-xaxes="<?php esc_attr_e( 'Date', 'woocommerce' ); ?>"
+			data-xaxes="<?php esc_attr_e( 'Date', 'woocommerce-subscriptions' ); ?>"
 			data-exclude_series="2"
 			data-groupby="<?php echo esc_attr( $this->chart_groupby ); ?>"
 		>
-			<?php esc_html_e( 'Export CSV', 'woocommerce' ); ?>
+			<?php esc_html_e( 'Export CSV', 'woocommerce-subscriptions' ); ?>
 		</a>
 		<?php
 	}
@@ -215,18 +215,17 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 				var order_data = jQuery.parseJSON( '<?php echo json_encode( $chart_data ); ?>' );
 				var drawGraph = function( highlight ) {
 					var series = [
-
 						{
-							label: "<?php echo esc_js( __( 'Renewals count', 'woocommerce' ) ) ?>",
+							label: "<?php echo esc_js( __( 'Renewals count', 'woocommerce-subscriptions' ) ) ?>",
 							data: order_data.renewal_counts,
-							yaxis: 2,
+							yaxis: 1,
 							color: '<?php echo esc_js( $this->chart_colours['renewals_count'] ); ?>',
 							points: { show: true, radius: 5, lineWidth: 3, fillColor: '#fff', fill: true },
 							lines: { show: true, lineWidth: 4, fill: false },
 							shadowSize: 0
 						},
 						{
-							label: "<?php echo esc_js( __( 'Renewals amount', 'woocommerce' ) ) ?>",
+							label: "<?php echo esc_js( __( 'Renewals amount', 'woocommerce-subscriptions' ) ) ?>",
 							data: order_data.renewal_amounts,
 							yaxis: 2,
 							color: '<?php echo esc_js( $this->chart_colours['renewals_amount'] ); ?>',
@@ -257,42 +256,50 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 							legend: {
 								show: false
 							},
-						    grid: {
-						        color: '#aaa',
-						        borderColor: 'transparent',
-						        borderWidth: 0,
-						        hoverable: true
-						    },
-						    xaxes: [ {
-						    	color: '#aaa',
-						    	position: "bottom",
-						    	tickColor: 'transparent',
+							grid: {
+								color: '#aaa',
+								borderColor: 'transparent',
+								borderWidth: 0,
+								hoverable: true
+							},
+							xaxes: [ {
+								color: '#aaa',
+								position: "bottom",
+								tickColor: 'transparent',
 								mode: "time",
 								timeformat: "<?php echo esc_js( ( $this->chart_groupby == 'day' ? '%d %b' : '%b' ) ); ?>",
 								monthNames: <?php echo json_encode( array_values( $wp_locale->month_abbrev ) ) ?>,
 								tickLength: 1,
 								minTickSize: [1, "<?php echo esc_js( $this->chart_groupby ); ?>"],
 								font: {
-						    		color: "#aaa"
-						    	}
+									color: "#aaa"
+								}
 							} ],
-						    yaxes: [
-						    	{
-						    		min: 0,
-						    		minTickSize: 1,
-						    		tickDecimals: 0,
-						    		color: '#d4d9dc',
-						    		font: { color: "#aaa" }
-						    	},
-						    	{
-						    		position: "right",
-						    		min: 0,
-						    		tickDecimals: 2,
-						    		alignTicksWithAxis: 1,
-						    		color: 'transparent',
-						    		font: { color: "#aaa" }
-						    	}
-						    ],
+							yaxes: [
+								{
+									min: 0,
+									minTickSize: 1,
+									tickDecimals: 0,
+									color: '#d4d9dc',
+									font: {
+										color: "#aaa"
+									}
+								},
+								{
+									position: "right",
+									min: 0,
+									tickDecimals: 2,
+									tickFormatter: function (tick) {
+										// Localise and format axis labels
+										return jQuery.wcs_format_money(tick,0);
+									},
+									alignTicksWithAxis: 1,
+									color: 'transparent',
+									font: {
+										color: "#aaa"
+									}
+								}
+							],
 				 		}
 				 	);
 
@@ -332,7 +339,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 				$interval = 0;
 				$min_date = $this->start_date;
 				while ( ( $min_date = wcs_add_months( $min_date, '1' ) ) <= $this->end_date ) {
-				    $interval ++;
+					$interval ++;
 				}
 
 				// 3 months max for day view
