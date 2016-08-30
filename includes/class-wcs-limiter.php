@@ -124,7 +124,7 @@ class WCS_Limiter {
 	 * @return bool
 	 */
 	public static function is_purchasable_switch( $is_purchasable, $product ) {
-		$product_key = ( ! empty( $product->variation_id ) ) ? $product->variation_id : $product->id;
+		$product_key = wcs_get_canonical_product_id( $product );
 
 		if ( ! isset( self::$is_purchasable_cache[ $product_key ] ) ) {
 			self::$is_purchasable_cache[ $product_key ] = array();
