@@ -691,8 +691,8 @@ class WC_Subscription extends WC_Order {
 					$date_to_display = __( 'Not yet ended', 'woocommerce-subscriptions' );
 					break;
 				case 'cancelled' :
-						$date_to_display = __( 'Not cancelled', 'woocommerce-subscriptions' );
-						break;
+					$date_to_display = __( 'Not cancelled', 'woocommerce-subscriptions' );
+					break;
 				case 'next_payment' :
 				case 'trial_end' :
 				default :
