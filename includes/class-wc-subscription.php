@@ -328,14 +328,17 @@ class WC_Subscription extends WC_Order {
 
 						$end_date = $this->calculate_date( 'end_of_prepaid_term' );
 
-						// If there is no future payment and no expiration date set, the customer has no prepaid term (this shouldn't be possible as only active subscriptions can be set to pending cancellation and an active subscription always has either an end date or next payment)
-						if ( 0 == $end_date ) {
-							$end_date = current_time( 'mysql', true );
+						// If there is no future payment and no expiration date set, or the end date is before now, the customer has no prepaid term (this shouldn't be possible as only active subscriptions can be set to pending cancellation and an active subscription always has either an end date or next payment), so set the end date and cancellation date to now
+						if ( 0 == $end_date || wcs_date_to_time( $end_date ) < current_time( 'timestamp', true ) ) {
+							$cancelled_date = $end_date = current_time( 'mysql', true );
+						} else {
+							// the cancellation date is now, and the end date is the end of prepaid term date
+							$cancelled_date = current_time( 'mysql', true );
 						}
 
 						$this->delete_date( 'trial_end' );
 						$this->delete_date( 'next_payment' );
-						$this->update_dates( array( 'end' => $end_date ) );
+						$this->update_dates( array( 'cancelled' => $cancelled_date, 'end' => $end_date ) );
 					break;
 
 					case 'completed' : // core WC order status mapped internally to avoid exceptions
@@ -369,7 +372,17 @@ class WC_Subscription extends WC_Order {
 					case 'expired' :
 						$this->delete_date( 'trial_end' );
 						$this->delete_date( 'next_payment' );
-						$this->update_dates( array( 'end' => current_time( 'mysql', true ) ) );
+
+						$dates_to_update = array(
+							'end' => current_time( 'mysql', true ),
+						);
+
+						// Also set the cancelled date to now if it wasn't set previously (when the status was changed to pending-cancellation)
+						if ( 'cancelled' === $new_status && 0 == $this->get_date( 'cancelled' ) ) {
+							$dates_to_update['cancelled'] = $dates_to_update['end'];
+						}
+
+						$this->update_dates( $dates_to_update );
 						wcs_maybe_make_user_inactive( $this->customer_user );
 					break;
 				}
@@ -792,6 +805,11 @@ class WC_Subscription extends WC_Order {
 		foreach ( $timestamps as $date_type => $datetime ) {
 			switch ( $date_type ) {
 				case 'end' :
+					if ( array_key_exists( 'cancelled', $timestamps ) && $datetime < $timestamps['cancelled'] ) {
+						$messages[] = sprintf( __( 'The %s date must occur after the cancellation date.', 'woocommerce-subscriptions' ), $date_type );
+					}
+
+				case 'cancelled' :
 					if ( array_key_exists( 'last_payment', $timestamps ) && $datetime < $timestamps['last_payment'] ) {
 						$messages[] = sprintf( __( 'The %s date must occur after the last payment date.', 'woocommerce-subscriptions' ), $date_type );
 					}
