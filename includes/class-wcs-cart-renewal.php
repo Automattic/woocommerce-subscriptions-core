@@ -142,6 +142,7 @@ class WCS_Cart_Renewal {
 			$quantity     = (int) $line_item['qty'];
 			$variation_id = (int) $line_item['variation_id'];
 			$variations   = array();
+			$item_data    = array();
 
 			foreach ( $line_item['item_meta'] as $meta_name => $meta_value ) {
 				if ( taxonomy_is_product_attribute( $meta_name ) ) {
@@ -175,7 +176,13 @@ class WCS_Cart_Renewal {
 
 			$cart_item_data['line_item_id'] = $item_id;
 
-			$cart_item_key = WC()->cart->add_to_cart( $product_id, $quantity, $variation_id, $variations, apply_filters( 'woocommerce_order_again_cart_item_data', array( $this->cart_item_key => $cart_item_data ), $line_item, $subscription ) );
+			$item_data = apply_filters( 'woocommerce_order_again_cart_item_data', array( $this->cart_item_key => $cart_item_data ), $line_item, $subscription );
+
+			if ( ! apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $quantity, $variation_id, $variations, $item_data ) ) {
+				continue;
+			}
+
+			$cart_item_key = WC()->cart->add_to_cart( $product_id, $quantity, $variation_id, $variations, $item_data );
 			$success       = $success && (bool) $cart_item_key;
 		}
 
