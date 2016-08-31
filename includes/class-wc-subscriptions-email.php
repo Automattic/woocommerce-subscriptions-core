@@ -161,7 +161,7 @@ class WC_Subscriptions_Email {
 				'customer_completed_renewal_order',
 			);
 
-			if ( $theorder->has_status( apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ) ) ) ) {
+			if ( $theorder->needs_payment() ) {
 				array_push( $available_emails, 'customer_renewal_invoice' );
 			}
 		}
