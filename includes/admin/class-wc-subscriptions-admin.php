@@ -140,6 +140,10 @@ class WC_Subscriptions_Admin {
 		$chosen_trial_length = WC_Subscriptions_Product::get_trial_length( $post->ID );
 		$chosen_trial_period = WC_Subscriptions_Product::get_trial_period( $post->ID );
 
+		$price_tooltip = __( 'Choose the subscription price, billing interval and period.', 'woocommerce-subscriptions' );
+		// translators: placeholder is trial period validation message if passed an invalid value (e.g. "Trial period can not exceed 4 weeks")
+		$trial_tooltip = sprintf( _x( 'An optional period of time to wait before charging the first recurring payment. Any sign up fee will still be charged at the outset of the subscription. %s', 'Trial period field tooltip on Edit Product administration screen', 'woocommerce-subscriptions' ), self::get_trial_period_validation_message() );
+
 		// Set month as the default billing period
 		if ( ! $chosen_period = get_post_meta( $post->ID, '_subscription_period', true ) ) {
 		 	$chosen_period = 'month';
@@ -165,7 +169,7 @@ class WC_Subscriptions_Admin {
 				<?php } ?>
 				</select>
 			</span>
-			<img class="help_tip" data-tip="<?php esc_attr_e( 'Choose the subscription price, billing interval and period.', 'woocommerce-subscriptions' ); ?>" src="<?php echo esc_url( WC()->plugin_url() ); ?>/assets/images/help.png" height="16" width="16" />
+			<?php echo wcs_help_tip( $price_tooltip ); ?>
 		</p><?php
 
 		// Subscription Length
@@ -207,8 +211,7 @@ class WC_Subscriptions_Admin {
 					<?php } ?>
 				</select>
 			</span>
-			<?php // translators: placeholder is trial period validation message if passed an invalid value (e.g. "Trial period can not exceed 4 weeks") ?>
-			<img class="help_tip" data-tip="<?php printf( esc_attr_x( 'An optional period of time to wait before charging the first recurring payment. Any sign up fee will still be charged at the outset of the subscription. %s', 'Trial period field tooltip on Edit Product administration screen', 'woocommerce-subscriptions' ), esc_html( self::get_trial_period_validation_message() ) ); ?>" src="<?php echo esc_url( WC()->plugin_url() ); ?>/assets/images/help.png" height="16" width="16" />
+			<?php echo wcs_help_tip( $trial_tooltip ); ?>
 		</p><?php
 
 		do_action( 'woocommerce_subscriptions_product_options_pricing' );
