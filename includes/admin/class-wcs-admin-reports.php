@@ -37,9 +37,6 @@ class WCS_Admin_Reports {
 		// Add any necessary scripts
 		add_action( 'admin_enqueue_scripts', __CLASS__ . '::reports_scripts' );
 
-		// Track subscription cancellation dates
-		add_action( 'woocommerce_subscription_status_updated', __CLASS__ . '::track_cancellation_dates', 12, 3 );
-
 		// Add any actions we need based on the screen
 		add_action( 'current_screen', __CLASS__ . '::conditional_reporting_includes' );
 
@@ -65,6 +62,12 @@ class WCS_Admin_Reports {
 					),
 					'upcoming_recurring_revenue' => array(
 						'title'       => __( 'Upcoming Recurring Revenue', 'woocommerce-subscriptions' ),
+						'description' => '',
+						'hide_title'  => true,
+						'callback'    => array( 'WC_Admin_Reports', 'get_report' ),
+					),
+					'retention_rate' => array(
+						'title'       => __( 'Retention Rate', 'woocommerce-subscriptions' ),
 						'description' => '',
 						'hide_title'  => true,
 						'callback'    => array( 'WC_Admin_Reports', 'get_report' ),
@@ -98,7 +101,7 @@ class WCS_Admin_Reports {
 	 */
 	public static function initialize_reports_path( $report_path, $name, $class ) {
 
-		if ( in_array( strtolower( $class ), array( 'wc_report_subscription_events_by_date', 'wc_report_upcoming_recurring_revenue', 'wc_report_subscription_by_product', 'wc_report_subscription_by_customer' ) ) ) {
+		if ( in_array( strtolower( $class ), array( 'wc_report_subscription_events_by_date', 'wc_report_upcoming_recurring_revenue', 'wc_report_retention_rate', 'wc_report_subscription_by_product', 'wc_report_subscription_by_customer' ) ) ) {
 			$report_path = dirname( __FILE__ ) . '/reports/class-wcs-report-' . $name . '.php';
 		}
 
@@ -134,22 +137,8 @@ class WCS_Admin_Reports {
 			) );
 
 			wp_enqueue_script( 'flot-order', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/jquery.flot.orderBars' . $suffix . '.js', array( 'jquery', 'flot' ), WC_Subscriptions::$version );
+			wp_enqueue_script( 'flot-axis-labels', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/jquery.flot.axislabels' . $suffix . '.js', array( 'jquery', 'flot' ), WC_Subscriptions::$version );
 		}
-	}
-
-	/**
-	 * Add postmeta whenever a subscription is set to cancelled
-	 *
-	 * @since 2.1
-	 */
-	public static function track_cancellation_dates( $subscription, $new_status, $old_status ) {
-
-		if ( 'pending-cancel' == $new_status ) {
-			update_post_meta( $subscription->id, wcs_get_date_meta_key( 'cancelled' ), current_time( 'mysql', true ) );
-		} elseif ( 'cancelled' == $new_status ) {
-			add_post_meta( $subscription->id, wcs_get_date_meta_key( 'cancelled' ), current_time( 'mysql', true ), true );
-		}
-
 	}
 
 	/**
