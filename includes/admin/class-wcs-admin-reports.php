@@ -38,7 +38,7 @@ class WCS_Admin_Reports {
 		add_action( 'admin_enqueue_scripts', __CLASS__ . '::reports_scripts' );
 
 		// Add any actions we need based on the screen
-		add_action( 'current_screen',__CLASS__ . '::conditional_reporting_includes' );
+		add_action( 'current_screen', __CLASS__ . '::conditional_reporting_includes' );
 
 	}
 
@@ -62,6 +62,12 @@ class WCS_Admin_Reports {
 					),
 					'upcoming_recurring_revenue' => array(
 						'title'       => __( 'Upcoming Recurring Revenue', 'woocommerce-subscriptions' ),
+						'description' => '',
+						'hide_title'  => true,
+						'callback'    => array( 'WC_Admin_Reports', 'get_report' ),
+					),
+					'retention_rate' => array(
+						'title'       => __( 'Retention Rate', 'woocommerce-subscriptions' ),
 						'description' => '',
 						'hide_title'  => true,
 						'callback'    => array( 'WC_Admin_Reports', 'get_report' ),
@@ -95,7 +101,7 @@ class WCS_Admin_Reports {
 	 */
 	public static function initialize_reports_path( $report_path, $name, $class ) {
 
-		if ( 'WC_Report_subscription_events_by_date' == $class || 'WC_Report_upcoming_recurring_revenue' == $class || 'WC_Report_subscription_by_product' == $class ||  'WC_Report_subscription_by_customer' == $class ) {
+		if ( in_array( strtolower( $class ), array( 'wc_report_subscription_events_by_date', 'wc_report_upcoming_recurring_revenue', 'wc_report_retention_rate', 'wc_report_subscription_by_product', 'wc_report_subscription_by_customer' ) ) ) {
 			$report_path = dirname( __FILE__ ) . '/reports/class-wcs-report-' . $name . '.php';
 		}
 
@@ -131,6 +137,7 @@ class WCS_Admin_Reports {
 			) );
 
 			wp_enqueue_script( 'flot-order', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/jquery.flot.orderBars' . $suffix . '.js', array( 'jquery', 'flot' ), WC_Subscriptions::$version );
+			wp_enqueue_script( 'flot-axis-labels', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/jquery.flot.axislabels' . $suffix . '.js', array( 'jquery', 'flot' ), WC_Subscriptions::$version );
 		}
 	}
 

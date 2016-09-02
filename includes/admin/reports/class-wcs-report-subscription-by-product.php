@@ -59,11 +59,11 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 			case 'product_name' :
 				return edit_post_link( $user->product_name, null, null, $user->product_id );
 
-			case 'sub_count' :
-				return $user->sub_count;
+			case 'subscription_count' :
+				return $user->subscription_count;
 
-			case 'sub_average_price' :
-				$average_subscription_amount = ( 0 !== $user->sub_count ? wc_price( $user->product_total / $user->sub_count ) : '-' );
+			case 'subscription_average_price' :
+				$average_subscription_amount = ( 0 !== $user->subscription_count ? wc_price( $user->product_total / $user->subscription_count ) : '-' );
 				return $average_subscription_amount;
 
 		}
@@ -78,9 +78,9 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 	 */
 	public function get_columns() {
 		$columns = array(
-			'product_name'      => __( 'Subscription Product', 'woocommerce-subscriptions' ),
-			'sub_count'         => __( 'Current Subscriptions', 'woocommerce-subscriptions' ),
-			'sub_average_price' => __( 'Average Recurring Amount', 'woocommerce-subscriptions' ),
+			'product_name'               => __( 'Subscription Product', 'woocommerce-subscriptions' ),
+			'subscription_count'         => __( 'Current Subscriptions', 'woocommerce-subscriptions' ),
+			'subscription_average_price' => __( 'Average Recurring Amount', 'woocommerce-subscriptions' ),
 		);
 
 		return $columns;
@@ -90,25 +90,39 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 	 * Prepare subscription list items.
 	 */
 	public function prepare_items() {
+		$this->_column_headers = array( $this->get_columns(), array(), $this->get_sortable_columns() );
+		$this->items           = self::get_data();
+	}
+
+	/**
+	 * Get subscription product data, either from the cache or the database.
+	 */
+	public static function get_data( $args = array() ) {
 		global $wpdb;
 
-		$this->_column_headers = array( $this->get_columns(), array(), $this->get_sortable_columns() );
-		$current_page          = absint( $this->get_pagenum() );
-		$per_page              = apply_filters( 'woocommerce_admin_stock_report_products_per_page', 20 );
+		$default_args = array(
+			'no_cache' => false,
+		);
 
-		$product_query = apply_filters( 'wcs_reports_current_product_query',
-			"SELECT product.id as product_id,	product.post_title as product_name,	mo.product_type, COUNT(orders.order_id) as sub_count, SUM(orders.product_total) as product_total
-				FROM   {$wpdb->posts} AS product
+		$args = apply_filters( 'wcs_reports_product_args', $args );
+		$args = wp_parse_args( $args, $default_args );
+
+		$query = apply_filters( 'wcs_reports_product_query',
+			"SELECT product.id as product_id,
+					product.post_title as product_name,
+					mo.product_type,
+					COUNT(orders.order_id) as subscription_count,
+					SUM(orders.product_total) as product_total
+				FROM {$wpdb->posts} AS product
 				LEFT JOIN (
-					SELECT tr.object_id AS id, t.slug AS product_type
+					SELECT tr.object_id AS product_id, t.slug AS product_type
 					FROM {$wpdb->prefix}term_relationships AS tr
 					INNER JOIN {$wpdb->prefix}term_taxonomy AS x
-						ON ( x.taxonomy = 'product_type'
-							AND x.term_taxonomy_id = tr.term_taxonomy_id )
+						ON ( x.taxonomy = 'product_type' AND x.term_taxonomy_id = tr.term_taxonomy_id )
 					INNER JOIN {$wpdb->prefix}terms AS t
 						ON t.term_id = x.term_id
 				) AS mo
-					ON product.id = mo.id
+					ON product.id = mo.product_id
 				LEFT JOIN (
 					SELECT wcoitems.order_id, wcoimeta.meta_value as product_id, wcoimeta.order_item_id, wcoimeta2.meta_value as product_total
 					FROM {$wpdb->prefix}woocommerce_order_items AS wcoitems
@@ -120,17 +134,25 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 						AND wcoimeta2.meta_key = '_line_total'
 				) as orders
 					ON product.id = orders.product_id
-				LEFT JOIN  {$wpdb->posts} as subs
+				LEFT JOIN {$wpdb->posts} as subs
 					ON subs.ID = orders.order_id
 				WHERE  product.post_status = 'publish'
 					 AND product.post_type = 'product'
 					 AND subs.post_type = 'shop_subscription'
 					 AND subs.post_status in ( 'wc-" . implode( "','wc-", apply_filters( 'wcs_reports_active_statuses', array( 'active', 'pending-cancel' ) ) ) . "' )
-		 GROUP BY product.id
-		 ORDER BY COUNT(orders.order_id) DESC" );
+				GROUP BY product.id
+				ORDER BY COUNT(orders.order_id) DESC" );
 
-		 $this->items = $wpdb->get_results( $product_query );
+		$cached_results = get_transient( strtolower( __CLASS__ ) );
+		$query_hash     = md5( $query );
 
+		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
+			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
+			$cached_results[ $query_hash ] = apply_filters( 'wcs_reports_product_data', $wpdb->get_results( $query ), $args );
+			set_transient( strtolower( __CLASS__ ), $cached_results, WEEK_IN_SECONDS );
+		}
+
+		return $cached_results[ $query_hash ];
 	}
 
 	/**
@@ -162,7 +184,7 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 						?>
 						{
 							label: '<?php echo esc_js( $product->product_name ); ?>',
-							data:  '<?php echo esc_js( $product->sub_count ); ?>',
+							data:  '<?php echo esc_js( $product->subscription_count ); ?>',
 							color: '<?php echo esc_js( $chart_colors[ $i ] ); ?>'
 						},
 						<?php
