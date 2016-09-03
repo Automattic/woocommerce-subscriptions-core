@@ -181,13 +181,14 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				LEFT JOIN (
 					{$wpdb->posts} AS wcsubs
 					LEFT JOIN {$wpdb->postmeta} AS wcsmeta
-						ON wcsubs.ID = wcsmeta.post_id
-							AND wcsmeta.meta_key = %s
+						ON wcsubs.ID = wcsmeta.post_id AND wcsmeta.meta_key = %s
 				) ON DATE( wcsubs.post_date ) <= searchdate.Date
 					AND wcsubs.post_type IN ( 'shop_subscription' )
 					AND wcsubs.post_status NOT IN( 'wc-pending', 'trash' )
-					AND ( DATE( wcsmeta.meta_value ) >= searchdate.Date
-						OR wcsmeta.meta_value = 0 )
+					AND (
+						DATE( wcsmeta.meta_value ) >= searchdate.Date
+						OR wcsmeta.meta_value = 0
+					)
 				GROUP BY searchdate.Date
 				ORDER BY searchdate.Date ASC",
 			$query_end_date,
@@ -294,51 +295,56 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			'title'            => sprintf( __( '%s signup revenue in this period', 'woocommerce-subscriptions' ), '<strong>' . wc_price( $data->signup_orders_total_amount ) . '</strong>' ),
 			'placeholder'      => __( 'The sum of all orders containing signups including other items, fees, tax and shipping.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['signup_total'],
-			'highlight_series' => 4,
+			'highlight_series' => 6,
 		);
+
 		$legend[] = array(
 			'title'            => sprintf( __( '%s renewal revenue in this period', 'woocommerce-subscriptions' ), '<strong>' . wc_price( $data->renewal_orders_total_amount ) . '</strong>' ),
 			'placeholder'      => __( 'The sum of all renewal orders including tax and shipping.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['renewal_total'],
-			'highlight_series' => 3,
-		);
-		$legend[] = array(
-			'title' => sprintf( __( '%s subscription signups', 'woocommerce-subscriptions' ), '<strong>' . $this->report_data->signup_orders_total_count . '</strong>' ),
-			'color' => $this->chart_colours['signup_count'],
-			'highlight_series' => 1,
+			'highlight_series' => 7,
 		);
 
 		$legend[] = array(
-			'title' => sprintf( __( '%s switched subscriptions', 'woocommerce-subscriptions' ), '<strong>' . $data->switch_orders_total_count . '</strong>' ),
-			'color' => $this->chart_colours['switch_count'],
-			'highlight_series' => 0,
-		);
-
-		$legend[] = array(
-			'title' => sprintf( __( '%s subscription renewals', 'woocommerce-subscriptions' ), '<strong>' . $data->renewal_orders_total_count . '</strong>' ),
-			'color' => $this->chart_colours['renewal_count'],
+			'title'            => sprintf( __( '%s subscription renewals', 'woocommerce-subscriptions' ), '<strong>' . $data->renewal_orders_total_count . '</strong>' ),
+			'placeholder'      => __( 'The number of renewal orders processed during this period.', 'woocommerce-subscriptions' ),
+			'color'            => $this->chart_colours['renewal_count'],
 			'highlight_series' => 2,
 		);
 
 		$legend[] = array(
-			'title'            => sprintf( __( '%s current subscriptions', 'woocommerce-subscriptions' ), '<strong>' . $data->total_subscriptions_at_period_end . '</strong>' ),
-			'placeholder'      => __( 'The number of subscriptions at the end of the period which have not ended.', 'woocommerce-subscriptions' ),
-			'color'            => $this->chart_colours['subscriber_count'],
-			'highlight_series' => 5,
+			'title'            => sprintf( __( '%s subscription signups', 'woocommerce-subscriptions' ), '<strong>' . $this->report_data->signup_orders_total_count . '</strong>' ),
+			'placeholder'      => __( 'The number of new subscriptions created during this period by customers placing an order.', 'woocommerce-subscriptions' ),
+			'color'            => $this->chart_colours['signup_count'],
+			'highlight_series' => 1,
+		);
+
+		$legend[] = array(
+			'title'            => sprintf( __( '%s switched subscriptions', 'woocommerce-subscriptions' ), '<strong>' . $data->switch_orders_total_count . '</strong>' ),
+			'placeholder'      => __( 'The number of subscriptions upgraded, downgraded or cross-graded during this period.', 'woocommerce-subscriptions' ),
+			'color'            => $this->chart_colours['switch_count'],
+			'highlight_series' => 0,
 		);
 
 		$legend[] = array(
 			'title'            => sprintf( __( '%s subscription cancellations', 'woocommerce-subscriptions' ), '<strong>' . $data->total_subscriptions_cancelled . '</strong>' ),
-			'placeholder'      => __( 'All subscriptions a customer or store manager has cancelled within this timeframe.  The pre-paid term may not yet have ended so the customer may still have access.', 'woocommerce-subscriptions' ),
+			'placeholder'      => __( 'The number of subscriptions cancelled by the customer or store manager during this period.  The pre-paid term may not yet have ended during this period.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['cancel_count'],
 			'highlight_series' => 5,
 		);
 
 		$legend[] = array(
 			'title'            => sprintf( __( '%s subscriptions ended', 'woocommerce-subscriptions' ), '<strong>' . $data->total_subscriptions_ended . '</strong>' ),
-			'placeholder'      => __( 'All subscriptions which have either expired or reached the end of the prepaid term if it was cancelled.', 'woocommerce-subscriptions' ),
+			'placeholder'      => __( 'The number of subscriptions which have either expired or reached the end of the prepaid term if it was previously cancelled.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['ended_count'],
-			'highlight_series' => 5,
+			'highlight_series' => 4,
+		);
+
+		$legend[] = array(
+			'title'            => sprintf( __( '%s current subscriptions', 'woocommerce-subscriptions' ), '<strong>' . $data->total_subscriptions_at_period_end . '</strong>' ),
+			'placeholder'      => __( 'The number of subscriptions during this period with an end date in the future and a status other than pending.', 'woocommerce-subscriptions' ),
+			'color'            => $this->chart_colours['subscriber_count'],
+			'highlight_series' => 3,
 		);
 
 		$subscription_change_count = ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start > 0 ) ? '+' . ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start ) : ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start );
@@ -361,7 +367,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			'title'            => sprintf( $legend_title, '<strong>' . $subscription_change_count . ' <span style="font-size:65%;">(' . $subscription_change_percent . ')</span></strong>' ),
 			'placeholder'      => __( 'Change in subscriptions between the start and end of the period.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['subscriber_change'],
-			'highlight_series' => 5,
+			'highlight_series' => 3,
 		);
 
 		return $legend;
@@ -380,15 +386,15 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		);
 
 		$this->chart_colours = array(
-			'signup_count'      => '#5da5da',
-			'switch_count'      => '#439ad9',
-			'renewal_count'     => '#f29ec4',
-			'subscriber_count'  => '#cc3300',
-			'renewal_total'     => '#CC9900',
-			'signup_total'      => '#99CC00',
-			'cancel_count'	    => '#800000',
-			'ended_count'       => '#804000',
-			'subscriber_change' => '#808000',
+			'signup_total'      => '#439ad9',
+			'renewal_total'     => '#b1d4ea',
+			'signup_count'      => '#5cc488',
+			'renewal_count'     => '#b9e6cc',
+			'switch_count'      => '#f1c40f',
+			'cancel_count'	    => '#e74c3c',
+			'ended_count'       => '#f8ccc7',
+			'subscriber_count'  => '#ecf0f1',
+			'subscriber_change' => '#ecf0f1',
 		);
 
 		$current_range = ! empty( $_GET['range'] ) ? sanitize_text_field( $_GET['range'] ) : '7day';
@@ -471,7 +477,15 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 							label: "<?php echo esc_js( __( 'Switched subscriptions', 'woocommerce-subscriptions' ) ) ?>",
 							data: order_data.switch_orders_count,
 							color: '<?php echo esc_js( $this->chart_colours['switch_count'] ); ?>',
-							bars: { fillColor: '<?php echo esc_js( $this->chart_colours['switch_count'] ); ?>', order: 1, fill: true, show: true, lineWidth: 0, barWidth: <?php echo esc_js( $this->barwidth ); ?> * 0.33, align: 'center' },
+							bars: {
+								fillColor: '<?php echo esc_js( $this->chart_colours['switch_count'] ); ?>',
+								order: 0,
+								fill: true,
+								show: true,
+								lineWidth: 0,
+								barWidth: <?php echo esc_js( $this->barwidth ); ?> * 0.25,
+								align: 'center'
+							},
 							shadowSize: 0,
 							hoverable: false,
 						},
@@ -479,7 +493,15 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 							label: "<?php echo esc_js( __( 'Subscriptions signups', 'woocommerce-subscriptions' ) ) ?>",
 							data: order_data.signup_orders_count,
 							color: '<?php echo esc_js( $this->chart_colours['signup_count'] ); ?>',
-							bars: { order: 1, fill: true, show: true, lineWidth: 0, barWidth: <?php echo esc_js( $this->barwidth ); ?> * 0.33, align: 'center' },
+							bars: {
+								fillColor: '<?php echo esc_js( $this->chart_colours['signup_count'] ); ?>',
+								order: 1,
+								fill: true,
+								show: true,
+								lineWidth: 0,
+								barWidth: <?php echo esc_js( $this->barwidth ); ?> * 0.25,
+								align: 'center'
+							},
 							shadowSize: 0,
 							hoverable: false,
 						},
@@ -487,19 +509,33 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 							label: "<?php echo esc_js( __( 'Number of renewals', 'woocommerce-subscriptions' ) ) ?>",
 							data: order_data.renewal_orders_count,
 							color: '<?php echo esc_js( $this->chart_colours['renewal_count'] ); ?>',
-							bars: { fillColor: '<?php echo esc_js( $this->chart_colours['renewal_count'] ); ?>', order: 2, fill: true, show: true, lineWidth: 0, barWidth: <?php echo esc_js( $this->barwidth ); ?> * 0.33, align: 'center' },
+							bars: {
+								fillColor: '<?php echo esc_js( $this->chart_colours['renewal_count'] ); ?>',
+								order: 2,
+								fill: true,
+								show: true,
+								lineWidth: 0,
+								barWidth: <?php echo esc_js( $this->barwidth ); ?> * 0.25,
+								align: 'center'
+							},
 							shadowSize: 0,
 							hoverable: false,
 						},
 						{
-							label: "<?php echo esc_js( __( 'Renewal Totals', 'woocommerce-subscriptions' ) ) ?>",
-							data: order_data.renewal_orders_amount,
-							yaxis: 2,
-							color: '<?php echo esc_js( $this->chart_colours['renewal_total'] ); ?>',
-							points: { show: true, radius: 5, lineWidth: 2, fillColor: '#fff', fill: true },
-							lines: { show: true, lineWidth: 2, fill: false },
+							label: "<?php echo esc_js( __( 'Subscriptions', 'woocommerce-subscriptions' ) ) ?>",
+							data: order_data.subscriber_count,
+							color: '<?php echo esc_js( $this->chart_colours['subscriber_count'] ); ?>',
+							bars: {
+								fillColor: '<?php echo esc_js( $this->chart_colours['subscriber_count'] ); ?>',
+								order: 3,
+								fill: true,
+								show: true,
+								lineWidth: 0,
+								barWidth: <?php echo esc_js( $this->barwidth ); ?> * 0.25,
+								align: 'center'
+							},
 							shadowSize: 0,
-							<?php echo wp_kses_post( $this->get_currency_tooltip() ); ?>
+							hoverable: false,
 						},
 						{
 							label: "<?php echo esc_js( __( 'Subscriptions Ended', 'woocommerce-subscriptions' ) ) ?>",
@@ -538,18 +574,40 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 							data: order_data.signup_orders_amount,
 							yaxis: 2,
 							color: '<?php echo esc_js( $this->chart_colours['signup_total'] ); ?>',
-							points: { show: true, radius: 5, lineWidth: 2, fillColor: '#fff', fill: true },
-							lines: { show: true, lineWidth: 2, fill: false },
+							points: {
+								show: true,
+								radius: 5,
+								lineWidth: 5,
+								fillColor: '#fff',
+								fill: true
+							},
+							lines: {
+								show: true,
+								lineWidth: 4,
+								fill: false
+							},
 							shadowSize: 0,
 							<?php echo wp_kses_post( $this->get_currency_tooltip() ); ?>
 						},
 						{
-							label: "<?php echo esc_js( __( 'Subscriptions', 'woocommerce-subscriptions' ) ) ?>",
-							data: order_data.subscriber_count,
-							color: '<?php echo esc_js( $this->chart_colours['subscriber_count'] ); ?>',
-							bars: { fillColor: '<?php echo esc_js( $this->chart_colours['subscriber_count'] ); ?>', order: 3, fill: true, show: true, lineWidth: 0, barWidth: <?php echo esc_js( $this->barwidth ); ?> * 0.33, align: 'center' },
+							label: "<?php echo esc_js( __( 'Renewal Totals', 'woocommerce-subscriptions' ) ) ?>",
+							data: order_data.renewal_orders_amount,
+							yaxis: 2,
+							color: '<?php echo esc_js( $this->chart_colours['renewal_total'] ); ?>',
+							points: {
+								show: true,
+								radius: 5,
+								lineWidth: 4,
+								fillColor: '#fff',
+								fill: true
+							},
+							lines: {
+								show: true,
+								lineWidth: 5,
+								fill: false
+							},
 							shadowSize: 0,
-							hoverable: false,
+							<?php echo wp_kses_post( $this->get_currency_tooltip() ); ?>
 						},
 					];
 
