@@ -153,7 +153,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				FROM (
 					SELECT DATE_FORMAT(a.Date,'%%Y-%%m-%%d') as Date, 0 as cnt
 					FROM (
-						SELECT curdate() - INTERVAL (a.a + (10 * b.a) + (100 * c.a)) DAY as Date
+						SELECT DATE(%s) - INTERVAL(a.a + (10 * b.a) + (100 * c.a)) DAY as Date
 						FROM (
 							SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2
 							UNION ALL SELECT 3 UNION ALL SELECT 4
@@ -194,6 +194,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 						OR wcsmeta.meta_value = 0 )
 				GROUP BY searchdate.Date
 				ORDER BY searchdate.Date ASC",
+			$query_end_date,
 			date( 'Y-m-d', $this->start_date ),
 			$query_end_date,
 			wcs_get_date_meta_key( 'end' )
