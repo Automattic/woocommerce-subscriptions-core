@@ -43,6 +43,8 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$args = apply_filters( 'wcs_reports_subscription_events_args', $args );
 		$args = wp_parse_args( $args, $default_args );
 
+		$query_end_date = date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) );
+
 		$this->report_data = new stdClass;
 
 		$this->report_data->renewal_data = (array) $this->get_order_report_data(
@@ -130,7 +132,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				GROUP BY YEAR(wcsubs.post_date), MONTH(wcsubs.post_date), DAY(wcsubs.post_date)
 				ORDER BY post_date ASC",
 			date( 'Y-m-d', $this->start_date ),
-			date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) )
+			$query_end_date
 		);
 
 		$query_hash = md5( $query );
@@ -193,7 +195,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				GROUP BY searchdate.Date
 				ORDER BY searchdate.Date ASC",
 			date( 'Y-m-d', $this->start_date ),
-			date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) ),
+			$query_end_date,
 			wcs_get_date_meta_key( 'end' )
 		);
 
@@ -225,7 +227,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				ORDER BY wcsmeta_cancel.meta_value ASC",
 			wcs_get_date_meta_key( 'cancelled' ),
 			date( 'Y-m-d', $this->start_date ),
-			date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) )
+			$query_end_date
 		);
 
 		$query_hash = md5( $query );
@@ -257,7 +259,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				ORDER BY wcsmeta_end.meta_value ASC",
 			wcs_get_date_meta_key( 'end' ),
 			date( 'Y-m-d', $this->start_date ),
-			date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) )
+			$query_end_date
 		);
 
 		$query_hash = md5( $query );
