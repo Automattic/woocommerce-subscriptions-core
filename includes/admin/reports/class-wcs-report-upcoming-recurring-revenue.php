@@ -89,7 +89,6 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 		$legend[] = array(
 			'title' => sprintf( __( '%s average renewal amount', 'woocommerce-subscriptions' ), '<strong>' . wc_price( $this->average_sales ) . '</strong>' ),
 			'color' => $this->chart_colours['renewals_average'],
-			'highlight_series' => 2,
 		);
 
 		return $legend;
