@@ -437,7 +437,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$signup_orders_count      = $this->prepare_chart_data( $this->report_data->signup_data, 'post_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
 		$renewal_orders_count     = $this->prepare_chart_data( $this->report_data->renewal_data, 'post_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
 		$switch_orders_count      = $this->prepare_chart_data( $this->report_data->switch_counts, 'post_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
-		$subscriber_count         = $this->prepare_chart_data( $this->report_data->subscriber_counts, 'date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
+		$subscriber_count         = $this->prepare_chart_data_daily_average( $this->report_data->subscriber_counts, 'date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
 
 		// Encode in json format
 		$chart_data = array(
@@ -611,5 +611,65 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		} else {
 			return wc_format_decimal( $amount, wc_get_price_decimals() );
 		}
+	}
+
+	/**
+	 * Put data with post_date's into an array of times averaged by day
+	 *
+	 * If the data is grouped by day already, we can just call @see $this->prepare_chart_data() otherwise,
+	 * we need to figure out how many days in each period and average the aggregate over that count.
+	 *
+	 * @param  array $data array of your data
+	 * @param  string $date_key key for the 'date' field. e.g. 'post_date'
+	 * @param  string $data_key key for the data you are charting
+	 * @param  int $interval
+	 * @param  string $start_date
+	 * @param  string $group_by
+	 * @return array
+	 */
+	private function prepare_chart_data_daily_average( $data, $date_key, $data_key, $interval, $start_date, $group_by ) {
+
+		$prepared_data = array();
+
+		if ( 'day' == $group_by ) {
+
+			$prepared_data = $this->prepare_chart_data( $data, $date_key, $data_key, $interval, $start_date, $group_by );
+
+		} else {
+
+			// Ensure all days (or months) have values first in this range
+			for ( $i = 0; $i <= $interval; $i ++ ) {
+
+				$time = strtotime( date( 'Ym', strtotime( "+{$i} MONTH", $start_date ) ) . '01' ) . '000';
+
+				if ( ! isset( $prepared_data[ $time ] ) ) {
+					$prepared_data[ $time ] = array( esc_js( $time ), 0, 'count' => 0 );
+				}
+			}
+
+			foreach ( $data as $days_data ) {
+
+				$time = strtotime( date( 'Ym', strtotime( $days_data->$date_key ) ) . '01' ) . '000';
+
+				if ( ! isset( $prepared_data[ $time ] ) ) {
+					continue;
+				}
+
+				if ( $data_key ) {
+					$prepared_data[ $time ][1] += $days_data->$data_key;
+				} else {
+					$prepared_data[ $time ][1] ++;
+				}
+
+				$prepared_data[ $time ]['count']++;
+			}
+
+			foreach ( $prepared_data as $time => $aggregated_data ) {
+				$prepared_data[ $time ][1] = round( $prepared_data[ $time ][1] / $aggregated_data['count'] );
+				unset( $prepared_data[ $time ]['count'] );
+			}
+		}
+
+		return $prepared_data;
 	}
 }
