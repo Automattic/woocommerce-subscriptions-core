@@ -180,10 +180,6 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				) searchdate
 				LEFT JOIN (
 					{$wpdb->posts} AS wcsubs
-					JOIN {$wpdb->posts} AS wcorder
-						ON wcsubs.post_parent = wcorder.ID
-							AND wcorder.post_type IN ( '" . implode( "','", wc_get_order_types( 'order-count' ) ) . "' )
-							AND wcorder.post_status IN ( 'wc-" . implode( "','wc-", $args['order_status'] ) . "' )
 					LEFT JOIN {$wpdb->postmeta} AS wcsmeta
 						ON wcsubs.ID = wcsmeta.post_id
 							AND wcsmeta.meta_key = %s
