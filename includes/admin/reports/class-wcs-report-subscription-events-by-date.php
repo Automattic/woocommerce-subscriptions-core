@@ -438,6 +438,8 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$renewal_orders_count     = $this->prepare_chart_data( $this->report_data->renewal_data, 'post_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
 		$switch_orders_count      = $this->prepare_chart_data( $this->report_data->switch_counts, 'post_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
 		$subscriber_count         = $this->prepare_chart_data_daily_average( $this->report_data->subscriber_counts, 'date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
+		$cancel_count             = $this->prepare_chart_data( $this->report_data->cancel_counts, 'cancel_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
+		$ended_count              = $this->prepare_chart_data( $this->report_data->ended_counts, 'end_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
 
 		// Encode in json format
 		$chart_data = array(
@@ -447,6 +449,8 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			'renewal_orders_count'  => array_values( $renewal_orders_count ),
 			'switch_orders_count'   => array_values( $switch_orders_count ),
 			'subscriber_count'      => array_values( $subscriber_count ),
+			'cancel_count'          => array_values( $cancel_count ),
+			'ended_count'           => array_values( $ended_count ),
 		);
 
 		$timeformat = ( $this->chart_groupby == 'day' ? '%d %b' : '%b' );
@@ -496,6 +500,38 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 							lines: { show: true, lineWidth: 2, fill: false },
 							shadowSize: 0,
 							<?php echo wp_kses_post( $this->get_currency_tooltip() ); ?>
+						},
+						{
+							label: "<?php echo esc_js( __( 'Subscriptions Ended', 'woocommerce-subscriptions' ) ) ?>",
+							data: order_data.ended_count,
+							color: '<?php echo esc_js( $this->chart_colours['ended_count'] ); ?>',
+							bars: {
+								fillColor: '<?php echo esc_js( $this->chart_colours['ended_count'] ); ?>',
+								order: 3,
+								fill: true,
+								show: true,
+								lineWidth: 0,
+								barWidth: <?php echo esc_js( $this->barwidth ); ?> * 0.25,
+								align: 'center'
+							},
+							shadowSize: 0,
+							hoverable: false,
+						},
+						{
+							label: "<?php echo esc_js( __( 'Cancellations', 'woocommerce-subscriptions' ) ) ?>",
+							data: order_data.cancel_count,
+							color: '<?php echo esc_js( $this->chart_colours['cancel_count'] ); ?>',
+							bars: {
+								fillColor: '<?php echo esc_js( $this->chart_colours['cancel_count'] ); ?>',
+								order: 3,
+								fill: true,
+								show: true,
+								lineWidth: 0,
+								barWidth: <?php echo esc_js( $this->barwidth ); ?> * 0.25,
+								align: 'center'
+							},
+							shadowSize: 0,
+							hoverable: false,
 						},
 						{
 							label: "<?php echo esc_js( __( 'Signup Totals', 'woocommerce-subscriptions' ) ) ?>",
