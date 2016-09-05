@@ -10,8 +10,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 ?>
-<div class="woocommerce_order_items_wrapper">
-	<table class="woocommerce_order_items">
+<div class="woocommerce_subscriptions_related_orders">
+	<table>
 		<thead>
 			<tr>
 				<th><?php esc_html_e( 'Retry Date', 'woocommerce-subscriptions' ); ?></th>
@@ -37,7 +37,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php foreach ( $retries as $retry ) : ?>
 				<?php $rule = $retry->get_rule(); ?>
 			<tr>
-				<td style="border-top: 0;">
+				<td>
 					<?php
 					if ( $retry->get_time() > 0 ) {
 						// translators: php date format
@@ -50,16 +50,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<?php echo esc_html( apply_filters( 'post_date_column_time', $date_to_display, $retry->get_id() ) ); ?>
 					</abbr>
 				</td>
-				<td style="border-top: 0;">
+				<td>
 					<?php echo esc_html( ucwords( $retry->get_status() ) ); ?>
 				</td>
-				<td style="border-top: 0;">
+				<td>
 					<?php echo esc_html( ucwords( $rule->get_status_to_apply( 'order' ) ) ); ?>
 				</td>
-				<td style="border-top: 0;">
+				<td>
 					<?php echo esc_html( ucwords( $rule->get_status_to_apply( 'subscription' ) ) ); ?>
 				</td>
-				<td style="border-top: 0;">
+				<td>
 					<?php $email_class = $rule->get_email_template(); ?>
 					<?php if ( ! empty( $email_class ) && class_exists( $email_class ) ) : ?>
 						<?php $email = new $email_class(); ?>

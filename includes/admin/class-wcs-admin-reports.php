@@ -52,40 +52,49 @@ class WCS_Admin_Reports {
 	public static function initialize_reports( $reports ) {
 
 		$reports['subscriptions'] = array(
-				'title'  => __( 'Subscriptions', 'woocommerce-subscriptions' ),
-				'reports' => array(
-					'subscription_events_by_date' => array(
-						'title'       => __( 'Subscription Events by Date', 'woocommerce-subscriptions' ),
-						'description' => '',
-						'hide_title'  => true,
-						'callback'    => array( 'WC_Admin_Reports', 'get_report' ),
-					),
-					'upcoming_recurring_revenue' => array(
-						'title'       => __( 'Upcoming Recurring Revenue', 'woocommerce-subscriptions' ),
-						'description' => '',
-						'hide_title'  => true,
-						'callback'    => array( 'WC_Admin_Reports', 'get_report' ),
-					),
-					'retention_rate' => array(
-						'title'       => __( 'Retention Rate', 'woocommerce-subscriptions' ),
-						'description' => '',
-						'hide_title'  => true,
-						'callback'    => array( 'WC_Admin_Reports', 'get_report' ),
-					),
-					'subscription_by_product' => array(
-						'title'       => __( 'Subscriptions by Product', 'woocommerce-subscriptions' ),
-						'description' => '',
-						'hide_title'  => true,
-						'callback'    => array( 'WC_Admin_Reports', 'get_report' ),
-					),
-					'subscription_by_customer' => array(
-						'title'       => __( 'Subscriptions by Customer', 'woocommerce-subscriptions' ),
-						'description' => '',
-						'hide_title'  => true,
-						'callback'    => array( 'WC_Admin_Reports', 'get_report' ),
-					),
+			'title'  => __( 'Subscriptions', 'woocommerce-subscriptions' ),
+			'reports' => array(
+				'subscription_events_by_date' => array(
+					'title'       => __( 'Subscription Events by Date', 'woocommerce-subscriptions' ),
+					'description' => '',
+					'hide_title'  => true,
+					'callback'    => array( 'WC_Admin_Reports', 'get_report' ),
 				),
+				'upcoming_recurring_revenue' => array(
+					'title'       => __( 'Upcoming Recurring Revenue', 'woocommerce-subscriptions' ),
+					'description' => '',
+					'hide_title'  => true,
+					'callback'    => array( 'WC_Admin_Reports', 'get_report' ),
+				),
+				'retention_rate' => array(
+					'title'       => __( 'Retention Rate', 'woocommerce-subscriptions' ),
+					'description' => '',
+					'hide_title'  => true,
+					'callback'    => array( 'WC_Admin_Reports', 'get_report' ),
+				),
+				'subscription_by_product' => array(
+					'title'       => __( 'Subscriptions by Product', 'woocommerce-subscriptions' ),
+					'description' => '',
+					'hide_title'  => true,
+					'callback'    => array( 'WC_Admin_Reports', 'get_report' ),
+				),
+				'subscription_by_customer' => array(
+					'title'       => __( 'Subscriptions by Customer', 'woocommerce-subscriptions' ),
+					'description' => '',
+					'hide_title'  => true,
+					'callback'    => array( 'WC_Admin_Reports', 'get_report' ),
+				),
+			),
+		);
+
+		if ( WCS_Retry_Manager::is_retry_enabled() ) {
+			$reports['subscriptions']['reports']['subscription_payment_retry'] = array(
+				'title'       => __( 'Failed Payment Retries', 'woocommerce-subscriptions' ),
+				'description' => '',
+				'hide_title'  => true,
+				'callback'    => array( 'WC_Admin_Reports', 'get_report' ),
 			);
+		}
 
 		return $reports;
 	}
@@ -101,7 +110,7 @@ class WCS_Admin_Reports {
 	 */
 	public static function initialize_reports_path( $report_path, $name, $class ) {
 
-		if ( in_array( strtolower( $class ), array( 'wc_report_subscription_events_by_date', 'wc_report_upcoming_recurring_revenue', 'wc_report_retention_rate', 'wc_report_subscription_by_product', 'wc_report_subscription_by_customer' ) ) ) {
+		if ( in_array( strtolower( $class ), array( 'wc_report_subscription_events_by_date', 'wc_report_upcoming_recurring_revenue', 'wc_report_retention_rate', 'wc_report_subscription_by_product', 'wc_report_subscription_by_customer', 'wc_report_subscription_payment_retry' ) ) ) {
 			$report_path = dirname( __FILE__ ) . '/reports/class-wcs-report-' . $name . '.php';
 		}
 
