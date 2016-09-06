@@ -497,7 +497,7 @@ class WC_Subscriptions_Cart {
 			$default_method = $chosen_methods[ $recurring_cart_package_key ];
 
 		// Set the chosen shipping method (if available) to workaround WC_Shipping::get_default_method() setting the default shipping method whenever method count changes
-		} elseif ( isset( $chosen_methods[ $package_index ] ) && $default_method !== $chosen_methods[ $package_index ] ) {
+		} elseif ( isset( $chosen_methods[ $package_index ] ) && $default_method !== $chosen_methods[ $package_index ] && isset( $available_methods[ $chosen_methods[ $package_index ] ] ) ) {
 			$default_method = $chosen_methods[ $package_index ];
 		}
 
