@@ -50,7 +50,7 @@ class WC_Subscriptions_Cart {
 	 /**
 	 * A cache of the current recurring cart being calculated
 	 *
-	 * @since 2.0.19
+	 * @since 2.0.20
 	 */
 	 private static $recurring_cart = null;
 
@@ -1179,7 +1179,7 @@ class WC_Subscriptions_Cart {
 	 * @param array $package
 	 * @return bool $is_available a revised version of is_available based off the recurring cart object
 	 *
-	 * @since 2.0.19
+	 * @since 2.0.20
 	 */
 	public static function maybe_recalculate_shipping_method_availability( $is_available, $package ) {
 
