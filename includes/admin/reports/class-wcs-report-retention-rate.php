@@ -87,7 +87,7 @@ class WC_Report_Retention_Rate extends WC_Admin_Report {
 					ON posts.ID = end_date.post_id
 					AND end_date.meta_key = %s
 			 WHERE posts.post_type = 'shop_subscription'
-				AND posts.post_status <> 'wc-pending'
+				AND posts.post_status NOT IN( 'wc-pending', 'trash' )
 			 GROUP BY periods_active
 			 ORDER BY periods_active ASC",
 			$days_in_interval_period,
