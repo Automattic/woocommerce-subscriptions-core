@@ -1161,14 +1161,14 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
-	 * Generate a unqiue package key for a given shipping package to be used for caching package rates.
+	 * Generate a unique package key for a given shipping package to be used for caching package rates.
 	 *
 	 * @param array $package A shipping package in the form returned by WC_Cart->get_shipping_packages().
 	 * @return string key hash
 	 * @since 2.0.18
 	 */
 	private static function get_package_shipping_rates_cache_key( $package ) {
-		return md5( implode( array_keys( $package['contents'] ) ) );
+		return md5( json_encode( array( array_keys( $package['contents'] ), $package['contents_cost'], $package['applied_coupons'] ) ) );
 	}
 
 	/**
