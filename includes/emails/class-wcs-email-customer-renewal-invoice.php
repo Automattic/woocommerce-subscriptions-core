@@ -167,12 +167,12 @@ class WCS_Email_Customer_Renewal_Invoice extends WC_Email_Customer_Invoice {
 
 		parent::init_form_fields();
 
-		if ( isset( $this->form_fields['subject_paid'] ) ) {
-			unset( $this->form_fields['subject_paid'] );
-		}
-
 		if ( isset( $this->form_fields['heading_paid'] ) ) {
 			unset( $this->form_fields['heading_paid'] );
+		}
+
+		if ( isset( $this->form_fields['subject_paid'] ) ) {
+			unset( $this->form_fields['subject_paid'] );
 		}
 
 		$this->form_fields = array_merge(
