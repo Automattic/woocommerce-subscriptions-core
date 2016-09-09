@@ -13,6 +13,7 @@
 class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 
 	public $chart_colours = array();
+
 	public $order_ids_recurring_totals = null;
 
 	/**
@@ -20,51 +21,8 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 	 * @return array
 	 */
 	public function get_chart_legend() {
-		global $wp_locale, $wpdb;
 
-		$current_range = ! empty( $_GET['range'] ) ? $_GET['range'] : '7day';
-
-		if ( ! in_array( $current_range, array( 'custom', 'year', 'month', '7day' ) ) ) {
-			$current_range = '7day';
-		}
-
-		$this->calculate_future_range( $current_range );
-
-		$base_query = $wpdb->prepare(
-			"SELECT
-						DATE_FORMAT(ms.meta_value, '%s') as scheduled_date,
-						SUM(mo.meta_value) as recurring_total,
-						COUNT(mo.meta_value) as total_renewals,
-						group_concat(p.ID) as subscription_ids,
-		        group_concat(mi.meta_value) as billing_intervals,
-		        group_concat(mp.meta_value) as billing_periods,
-		        group_concat(me.meta_value) as scheduled_ends,
-						group_concat(mo.meta_value) as subscription_totals
-						FROM {$wpdb->prefix}posts p
-						LEFT JOIN {$wpdb->prefix}postmeta ms
-			        ON p.ID = ms.post_id
-						LEFT JOIN {$wpdb->prefix}postmeta mo
-			        ON p.ID = mo.post_id
-						LEFT JOIN {$wpdb->prefix}postmeta mi
-			        ON p.ID = mi.post_id
-		        LEFT JOIN {$wpdb->prefix}postmeta mp
-			        ON p.ID = mp.post_id
-		        LEFT JOIN {$wpdb->prefix}postmeta me
-			        ON p.ID = me.post_id
-						WHERE mo.meta_key = '_order_total'
-							AND ms.meta_key = '_schedule_next_payment'
-							AND ms.meta_value BETWEEN '%s' AND '%s'
-							AND mi.meta_key = '_billing_interval'
-			      	AND mp.meta_key = '_billing_period'
-			      	AND me.meta_key = '_schedule_end '
-						GROUP BY {$this->group_by_query}
-						ORDER BY ms.meta_value ASC",
-			'%Y-%m-%d',
-			date( 'Y-m-d H:i:s' ),
-			date( 'Y-m-d H:i:s', $this->end_date )
-		);
-
-		$this->order_ids_recurring_totals = $wpdb->get_results( $base_query, OBJECT_K );
+		$this->order_ids_recurring_totals = $this->get_data();
 
 		$total_renewal_revenue = 0;
 		$total_renewal_count = 0;
@@ -93,7 +51,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 					$next_payment_timestamp = wcs_add_time( $billing_intervals[ $key ], $billing_periods[ $key ], $next_payment_timestamp );
 
 					// If there are more renewals add them to the existing object or create a new one
-					if ( $next_payment_timestamp <= $this->end_date && ( 0 == $scheduled_ends[ $key ] || $next_payment_timestamp < strtotime( $scheduled_ends[ $key ] ) ) ) {
+					if ( $next_payment_timestamp <= $this->end_date && isset( $scheduled_ends[ $key ] ) && ( 0 == $scheduled_ends[ $key ] || $next_payment_timestamp < strtotime( $scheduled_ends[ $key ] ) ) ) {
 						$update_key = date( 'Y-m-d', $next_payment_timestamp );
 
 						if ( $next_payment_timestamp >= $this->start_date ) {
@@ -110,7 +68,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 							$total_renewal_count   += 1;
 						}
 					}
-				} while ( $next_payment_timestamp <= $this->end_date && ( 0 == $scheduled_ends[ $key ] || $next_payment_timestamp < strtotime( $scheduled_ends[ $key ] ) ) );
+				} while ( $next_payment_timestamp <= $this->end_date && isset( $scheduled_ends[ $key ] ) && ( 0 == $scheduled_ends[ $key ] || $next_payment_timestamp < strtotime( $scheduled_ends[ $key ] ) ) );
 			}
 		}
 
@@ -131,22 +89,84 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 		$legend[] = array(
 			'title' => sprintf( __( '%s average renewal amount', 'woocommerce-subscriptions' ), '<strong>' . wc_price( $this->average_sales ) . '</strong>' ),
 			'color' => $this->chart_colours['renewals_average'],
-			'highlight_series' => 2,
 		);
 
 		return $legend;
 	}
 
 	/**
+	 * Get report data.
+	 * @return stdClass
+	 */
+	public function get_data( $args = array() ) {
+		global $wpdb;
+
+		$default_args = array(
+			'no_cache'  => false,
+		);
+
+		$args = apply_filters( 'wcs_reports_upcoming_recurring_revenue_args', $args );
+		$args = wp_parse_args( $args, $default_args );
+
+		// Query based on whole days, not minutes/hours so that we can cache the query for at least 24 hours
+		$base_query = $wpdb->prepare(
+			"SELECT
+				DATE_FORMAT(ms.meta_value, '%s') as scheduled_date,
+				SUM(mo.meta_value) as recurring_total,
+				COUNT(mo.meta_value) as total_renewals,
+				group_concat(p.ID) as subscription_ids,
+				group_concat(mi.meta_value) as billing_intervals,
+				group_concat(mp.meta_value) as billing_periods,
+				group_concat(me.meta_value) as scheduled_ends,
+				group_concat(mo.meta_value) as subscription_totals
+					FROM {$wpdb->prefix}posts p
+				LEFT JOIN {$wpdb->prefix}postmeta ms
+					ON p.ID = ms.post_id
+				LEFT JOIN {$wpdb->prefix}postmeta mo
+					ON p.ID = mo.post_id
+				LEFT JOIN {$wpdb->prefix}postmeta mi
+					ON p.ID = mi.post_id
+				LEFT JOIN {$wpdb->prefix}postmeta mp
+					ON p.ID = mp.post_id
+				LEFT JOIN {$wpdb->prefix}postmeta me
+					ON p.ID = me.post_id
+			WHERE p.post_type = 'shop_subscription'
+				AND p.post_status = 'wc-active'
+				AND mo.meta_key = '_order_total'
+				AND ms.meta_key = '_schedule_next_payment'
+				AND ms.meta_value BETWEEN '%s' AND '%s'
+				AND mi.meta_key = '_billing_interval'
+				AND mp.meta_key = '_billing_period'
+				AND me.meta_key = '_schedule_end '
+			GROUP BY {$this->group_by_query}
+			ORDER BY ms.meta_value ASC",
+			'%Y-%m-%d',
+			date( 'Y-m-d', $this->start_date ),
+			date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) )
+		);
+
+		$cached_results = get_transient( strtolower( get_class( $this ) ) );
+		$query_hash     = md5( $base_query );
+
+		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
+			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
+			$cached_results[ $query_hash ] = apply_filters( 'wcs_reports_upcoming_recurring_revenue_data', $wpdb->get_results( $base_query, OBJECT_K ), $args );
+			set_transient( strtolower( get_class( $this ) ), $cached_results, DAY_IN_SECONDS );
+		}
+
+		return $cached_results[ $query_hash ];
+	}
+
+	/**
 	 * Output the report
 	 */
 	public function output_report() {
-		global $woocommerce, $wpdb, $wp_locale;
 
 		$ranges = array(
-			'year'  => __( 'Next Year', 'woocommerce-subscriptions' ),
-			'month' => __( 'Next Month', 'woocommerce-subscriptions' ),
-			'7day'  => __( 'Next 7 Days', 'woocommerce-subscriptions' ),
+			'year'       => __( 'Next 12 Months', 'woocommerce-subscriptions' ),
+			'month'      => __( 'Next 30 Days', 'woocommerce-subscriptions' ),
+			'last_month' => __( 'Next Month', 'woocommerce-subscriptions' ), // misnomer to match historical reports keys, handy for caching
+			'7day'       => __( 'Next 7 Days', 'woocommerce-subscriptions' ),
 		);
 
 		$this->chart_colours = array(
@@ -155,11 +175,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 			'renewals_average' => '#d4d9dc',
 		);
 
-		$current_range = ! empty( $_GET['range'] ) ? sanitize_text_field( $_GET['range'] ) : '7day';
-
-		if ( ! in_array( $current_range, array( 'custom', 'year', 'month', '7day' ) ) ) {
-			$current_range = '7day';
-		}
+		$current_range = $this->get_current_range();
 
 		$this->calculate_current_range( $current_range );
 
@@ -171,18 +187,17 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 	 * Output an export link
 	 */
 	public function get_export_button() {
-		$current_range = ! empty( $_GET['range'] ) ? sanitize_text_field( $_GET['range'] ) : '7day';
 		?>
 		<a
 			href="#"
-			download="report-<?php echo esc_attr( $current_range ); ?>-<?php echo esc_attr( date_i18n( 'Y-m-d', current_time( 'timestamp' ) ) ); ?>.csv"
+			download="report-<?php echo esc_attr( $this->get_current_range() ); ?>-<?php echo esc_attr( date_i18n( 'Y-m-d', current_time( 'timestamp' ) ) ); ?>.csv"
 			class="export_csv"
 			data-export="chart"
-			data-xaxes="<?php esc_attr_e( 'Date', 'woocommerce' ); ?>"
+			data-xaxes="<?php esc_attr_e( 'Date', 'woocommerce-subscriptions' ); ?>"
 			data-exclude_series="2"
 			data-groupby="<?php echo esc_attr( $this->chart_groupby ); ?>"
 		>
-			<?php esc_html_e( 'Export CSV', 'woocommerce' ); ?>
+			<?php esc_html_e( 'Export CSV', 'woocommerce-subscriptions' ); ?>
 		</a>
 		<?php
 	}
@@ -192,19 +207,19 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 	 * @return string
 	 */
 	public function get_main_chart() {
-		global $wp_locale, $wpdb;
+		global $wp_locale;
 
 		// Prepare data for report
 		$renewal_amounts     = $this->prepare_chart_data( $this->order_ids_recurring_totals, 'scheduled_date', 'recurring_total', $this->chart_interval, $this->start_date, $this->chart_groupby );
 		$renewal_counts      = $this->prepare_chart_data( $this->order_ids_recurring_totals, 'scheduled_date', 'total_renewals', $this->chart_interval, $this->start_date, $this->chart_groupby );
 
 		$chart_data = array(
-			'renewal_amounts'      => array_values( $renewal_amounts ),
-			'renewal_counts'       => array_values( $renewal_counts ),
+			'renewal_amounts' => array_values( $renewal_amounts ),
+			'renewal_counts'  => array_values( $renewal_counts ),
 		);
 
 		?>
-		<div class="chart-container" id="woocommerce_subscriptions_coming_rev_chart">
+		<div id="woocommerce_subscriptions_upcoming_recurring_revenue_chart" class="chart-container">
 			<div class="chart-placeholder main"></div>
 		</div>
 		<script type="text/javascript">
@@ -215,18 +230,17 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 				var order_data = jQuery.parseJSON( '<?php echo json_encode( $chart_data ); ?>' );
 				var drawGraph = function( highlight ) {
 					var series = [
-
 						{
-							label: "<?php echo esc_js( __( 'Renewals count', 'woocommerce' ) ) ?>",
+							label: "<?php echo esc_js( __( 'Renewals count', 'woocommerce-subscriptions' ) ) ?>",
 							data: order_data.renewal_counts,
-							yaxis: 2,
+							yaxis: 1,
 							color: '<?php echo esc_js( $this->chart_colours['renewals_count'] ); ?>',
 							points: { show: true, radius: 5, lineWidth: 3, fillColor: '#fff', fill: true },
 							lines: { show: true, lineWidth: 4, fill: false },
 							shadowSize: 0
 						},
 						{
-							label: "<?php echo esc_js( __( 'Renewals amount', 'woocommerce' ) ) ?>",
+							label: "<?php echo esc_js( __( 'Renewals amount', 'woocommerce-subscriptions' ) ) ?>",
 							data: order_data.renewal_amounts,
 							yaxis: 2,
 							color: '<?php echo esc_js( $this->chart_colours['renewals_amount'] ); ?>',
@@ -257,44 +271,52 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 							legend: {
 								show: false
 							},
-						    grid: {
-						        color: '#aaa',
-						        borderColor: 'transparent',
-						        borderWidth: 0,
-						        hoverable: true
-						    },
-						    xaxes: [ {
-						    	color: '#aaa',
-						    	position: "bottom",
-						    	tickColor: 'transparent',
+							grid: {
+								color: '#aaa',
+								borderColor: 'transparent',
+								borderWidth: 0,
+								hoverable: true
+							},
+							xaxes: [ {
+								color: '#aaa',
+								position: "bottom",
+								tickColor: 'transparent',
 								mode: "time",
 								timeformat: "<?php echo esc_js( ( $this->chart_groupby == 'day' ? '%d %b' : '%b' ) ); ?>",
 								monthNames: <?php echo json_encode( array_values( $wp_locale->month_abbrev ) ) ?>,
 								tickLength: 1,
 								minTickSize: [1, "<?php echo esc_js( $this->chart_groupby ); ?>"],
 								font: {
-						    		color: "#aaa"
-						    	}
+									color: "#aaa"
+								}
 							} ],
-						    yaxes: [
-						    	{
-						    		min: 0,
-						    		minTickSize: 1,
-						    		tickDecimals: 0,
-						    		color: '#d4d9dc',
-						    		font: { color: "#aaa" }
-						    	},
-						    	{
-						    		position: "right",
-						    		min: 0,
-						    		tickDecimals: 2,
-						    		alignTicksWithAxis: 1,
-						    		color: 'transparent',
-						    		font: { color: "#aaa" }
-						    	}
-						    ],
-				 		}
-				 	);
+							yaxes: [
+								{
+									min: 0,
+									minTickSize: 1,
+									tickDecimals: 0,
+									color: '#d4d9dc',
+									font: {
+										color: "#aaa"
+									}
+								},
+								{
+									position: "right",
+									min: 0,
+									tickDecimals: 2,
+									tickFormatter: function (tick) {
+										// Localise and format axis labels
+										return jQuery.wcs_format_money(tick,0);
+									},
+									alignTicksWithAxis: 1,
+									color: 'transparent',
+									font: {
+										color: "#aaa"
+									}
+								}
+							],
+						}
+					);
 
 					jQuery('.chart-placeholder').resize();
 				}
@@ -319,7 +341,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 	 *
 	 * @param  string $current_range
 	 */
-	public function calculate_future_range( $current_range ) {
+	public function calculate_current_range( $current_range ) {
 		switch ( $current_range ) {
 			case 'custom' :
 				$this->start_date = strtotime( sanitize_text_field( $_GET['start_date'] ) );
@@ -332,7 +354,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 				$interval = 0;
 				$min_date = $this->start_date;
 				while ( ( $min_date = wcs_add_months( $min_date, '1' ) ) <= $this->end_date ) {
-				    $interval ++;
+					$interval ++;
 				}
 
 				// 3 months max for day view
@@ -346,6 +368,11 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 				$this->start_date    = strtotime( 'now', current_time( 'timestamp' ) );
 				$this->end_date      = strtotime( 'last day', strtotime( '+1 YEAR', current_time( 'timestamp' ) ) );
 				$this->chart_groupby = 'month';
+			break;
+			case 'last_month' : // misnomer to match historical reports keys, handy for caching
+				$this->start_date     = strtotime( date( 'Y-m-01', wcs_add_months( current_time( 'timestamp' ), '1' ) ) );
+				$this->end_date       = strtotime( date( 'Y-m-t', $this->start_date ) );
+				$this->chart_groupby  = 'day';
 			break;
 			case 'month' :
 				$this->start_date    = strtotime( 'now', current_time( 'timestamp' ) );
@@ -362,19 +389,32 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 		// Group by
 		switch ( $this->chart_groupby ) {
 			case 'day' :
-				$this->group_by_query       = 'YEAR(ms.meta_value), MONTH(ms.meta_value), DAY(ms.meta_value)';
-				$this->chart_interval       = ceil( max( 0, ( $this->end_date - $this->start_date ) / ( 60 * 60 * 24 ) ) );
-				$this->barwidth             = 60 * 60 * 24 * 1000;
+				$this->group_by_query = 'YEAR(ms.meta_value), MONTH(ms.meta_value), DAY(ms.meta_value)';
+				$this->chart_interval = ceil( max( 0, ( $this->end_date - $this->start_date ) / ( 60 * 60 * 24 ) ) );
+				$this->barwidth       = 60 * 60 * 24 * 1000;
 			break;
 			case 'month' :
-				$this->group_by_query       = 'YEAR(ms.meta_value), MONTH(ms.meta_value)';
+				$this->group_by_query = 'YEAR(ms.meta_value), MONTH(ms.meta_value)';
 				$this->chart_interval = 0;
 				$min_date             = $this->start_date;
-				while ( ( $min_date   = wcs_add_months( $min_date, '1' ) ) <= $this->end_date ) {
+				while ( ( $min_date = wcs_add_months( $min_date, '1' ) ) <= $this->end_date ) {
 					$this->chart_interval ++;
 				}
-				$this->barwidth             = 60 * 60 * 24 * 7 * 4 * 1000;
+				$this->barwidth = 60 * 60 * 24 * 7 * 4 * 1000;
 			break;
 		}
+	}
+
+	/**
+	 * Helper function to get the report's current range
+	 */
+	protected function get_current_range() {
+		$current_range = ! empty( $_GET['range'] ) ? sanitize_text_field( $_GET['range'] ) : '7day';
+
+		if ( ! in_array( $current_range, array( 'custom', 'year', 'month', 'last_month', '7day' ) ) ) {
+			$current_range = '7day';
+		}
+
+		return $current_range;
 	}
 }

@@ -236,6 +236,37 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 					wc_add_order_item_meta( $recurring_item_id, $meta_key, maybe_unserialize( $meta_value ) );
 				}
 			}
+
+			// If the line item we're adding is a product line item and that product still exists, trigger the 'woocommerce_order_add_product' hook
+			if ( 'line_item' == $item['type'] && isset( $item['product_id'] ) ) {
+
+				$product_id = wcs_get_canonical_product_id( $item );
+				$product    = wc_get_product( $product_id );
+
+				if ( false !== $product ) {
+
+					$args = array(
+						'totals' => array(
+							'subtotal'     => $item['line_subtotal'],
+							'total'        => $item['line_total'],
+							'subtotal_tax' => $item['line_subtotal_tax'],
+							'tax'          => $item['line_tax'],
+							'tax_data'     => maybe_unserialize( $item['line_tax_data'] ),
+						),
+					);
+
+					// If we have a variation, get the attribute meta data from teh item to pass to callbacks
+					if ( ! empty( $item['variation_id'] ) && ! empty( $product->variation_data ) ) {
+						foreach ( $product->variation_data as $attribute => $variation ) {
+							if ( isset( $item[ str_replace( 'attribute_', '', $attribute ) ] ) ) {
+								$args['variation'][ $attribute ] = $item[ str_replace( 'attribute_', '', $attribute ) ];
+							}
+						}
+					}
+
+					do_action( 'woocommerce_order_add_product', $new_order->id, $recurring_item_id, $product, $item['qty'], $args );
+				}
+			}
 		}
 
 		// If we got here, the subscription was created without problems
