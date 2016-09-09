@@ -85,6 +85,9 @@ class WC_Subscriptions_Upgrader {
 
 		// While the upgrade is in progress, we need to block PayPal IPN messages to avoid renewals failing to process
 		add_action( 'woocommerce_api_wc_gateway_paypal', __CLASS__ . '::maybe_block_paypal_ipn', 0 );
+
+		// Sometimes redirect to the Welcome/About page after an upgrade
+		add_action( 'woocommerce_subscriptions_upgraded', __CLASS__ . '::maybe_redirect_after_upgrade_complete', 100, 2 );
 	}
 
 	/**
@@ -167,9 +170,15 @@ class WC_Subscriptions_Upgrader {
 			self::ajax_upgrade_handler();
 		}
 
-		// Delete cached subscription length ranges to force an update with 2.1
-		if ( '0' == self::$active_version || version_compare( self::$active_version, '2.1', '<' ) ) {
+		if ( '0' != self::$active_version && version_compare( self::$active_version, '2.1.0', '<' ) ) {
+
+			// Delete cached subscription length ranges to force an update with 2.1
 			WC_Subscriptions::$cache->delete_cached( tlc_transient( 'wcs-sub-ranges-' . get_locale() )->key );
+
+			WCS_Upgrade_Logger::add( 'v2.1: Deleted cached subscription ranges.' );
+
+			include_once( 'class-wcs-upgrade-2-1.php' );
+			WCS_Upgrade_2_1::set_cancelled_dates();
 		}
 
 		self::upgrade_complete();
@@ -188,7 +197,19 @@ class WC_Subscriptions_Upgrader {
 
 		delete_option( 'wc_subscriptions_is_upgrading' );
 
-		do_action( 'woocommerce_subscriptions_upgraded', WC_Subscriptions::$version );
+		do_action( 'woocommerce_subscriptions_upgraded', WC_Subscriptions::$version, self::$active_version );
+	}
+
+	/**
+	 * Redirect to the Subscriptions major version Welcome/About page for major version updates
+	 *
+	 * @since 2.1
+	 */
+	public static function maybe_redirect_after_upgrade_complete( $current_version, $previously_active_version ) {
+		if ( version_compare( $previously_active_version, '2.1.0', '<' ) && version_compare( $current_version, '2.1.0', '>=' ) ) {
+			wp_safe_redirect( self::$about_page_url );
+			exit();
+		}
 	}
 
 	/**
@@ -556,7 +577,7 @@ class WC_Subscriptions_Upgrader {
 	 * @since 1.4
 	 */
 	public static function updated_welcome_page() {
-		$about_page = add_dashboard_page( __( 'Welcome to WooCommerce Subscriptions 2.0', 'woocommerce-subscriptions' ), __( 'About WooCommerce Subscriptions', 'woocommerce-subscriptions' ), 'manage_options', 'wcs-about', __CLASS__ . '::about_screen' );
+		$about_page = add_dashboard_page( sprintf( __( 'Welcome to WooCommerce Subscriptions v%s', 'woocommerce-subscriptions' ), WC_Subscriptions::$version ), __( 'About WooCommerce Subscriptions', 'woocommerce-subscriptions' ), 'manage_options', 'wcs-about', __CLASS__ . '::about_screen' );
 		add_action( 'admin_print_styles-'. $about_page, __CLASS__ . '::admin_css' );
 		add_action( 'admin_head',  __CLASS__ . '::admin_head' );
 	}
