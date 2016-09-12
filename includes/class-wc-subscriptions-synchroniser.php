@@ -243,7 +243,7 @@ class WC_Subscriptions_Synchroniser {
 
 					</select>
 				</span>
-				<img class="help_tip" data-tip="<?php echo esc_attr( self::$sync_description_year ); ?>" src="<?php echo esc_url( WC()->plugin_url() ); ?>/assets/images/help.png" height="16" width="16" />
+				<?php echo wcs_help_tip( self::$sync_description_year ); ?>
 			</p><?php
 
 			echo '</div>';
