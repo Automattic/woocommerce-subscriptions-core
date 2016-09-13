@@ -157,7 +157,7 @@ function wcs_get_users_subscriptions( $user_id = 0 ) {
 
 	$subscriptions = apply_filters( 'wcs_pre_get_users_subscriptions', array(), $user_id );
 
-	if ( empty( $subscriptions ) ) {
+	if ( empty( $subscriptions ) && 0 !== $user_id && ! empty( $user_id ) ) {
 
 		$post_ids = get_posts( array(
 			'posts_per_page' => -1,
