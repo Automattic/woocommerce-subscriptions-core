@@ -4,7 +4,7 @@
  *
  * Handles requests to the /subscription endpoint.
  *
- * @author   Prospres, Inc.
+ * @author   Prospress
  * @since    2.1
  */
 
@@ -13,10 +13,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * REST API Orders controller class.
+ * REST API Subscriptions controller class.
  *
- * @package WooCommerce/API
- * @extends WC_REST_Posts_Controller
+ * @package WooCommerce_Subscriptions/API
+ * @extends WC_REST_Orders_Controller
  */
 class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 
@@ -35,7 +35,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 	protected $post_type = 'shop_subscription';
 
 	/**
-	 * Initialize orders actions and filters
+	 * Initialize subscription actions and filters
 	 */
 	public function __construct() {
 		add_filter( 'woocommerce_rest_prepare_shop_subscription', array( $this, 'filter_get_subscription_response' ), 10, 3 );
@@ -46,7 +46,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 	}
 
 	/**
-	 * Register the routes for orders.
+	 * Register the routes for subscriptions.
 	 */
 	public function register_routes() {
 		parent::register_routes();
@@ -76,6 +76,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 	 * @since 2.1
 	 * @param WP_REST_Response $response
 	 * @param WP_POST $post
+	 * @param WP_REST_Request $request
 	 */
 	public function filter_get_subscription_response( $response, $post, $request ) {
 

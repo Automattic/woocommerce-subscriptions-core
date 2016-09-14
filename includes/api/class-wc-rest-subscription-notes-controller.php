@@ -4,7 +4,7 @@
  *
  * Handles requests to the /subscription/<id>/notes endpoint.
  *
- * @author   Prospres, Inc.
+ * @author   Prospress
  * @since    2.1
  */
 
@@ -14,6 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * REST API Subscription Notes controller class.
  *
+ * @package WooCommerce_Subscriptions/API
+ * @extends WC_REST_Order_Notes_Controller
  */
 class WC_REST_Subscription_Notes_Controller extends WC_REST_Order_Notes_Controller {
 
