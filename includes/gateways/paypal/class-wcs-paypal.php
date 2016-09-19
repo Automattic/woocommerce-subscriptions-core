@@ -464,7 +464,7 @@ class WCS_PayPal {
 
 				echo '<div class="address">';
 				echo '<p class="paypal_subscription_info"><strong>';
-				echo __( 'PayPal Subscription ID:', 'woocommerce-subscriptions' );
+				echo esc_html(__( 'PayPal Subscription ID:', 'woocommerce-subscriptions' ));
 				echo '</strong>';
 				if ( ! empty( $url ) ) {
 					echo '<a href="' . esc_url( $url ) . '" target="_blank">' . esc_html( $paypal_subscription_id ) . '</a>';
