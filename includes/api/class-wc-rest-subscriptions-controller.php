@@ -403,6 +403,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 		}
 
 		$data->payment_details = ! empty( $request['payment_details'] ) ? $request['payment_details'] : '';
+		$data->payment_method  = ! empty( $request['payment_method'] ) ? $request['payment_method'] : '';
 
 		return $data;
 	}
