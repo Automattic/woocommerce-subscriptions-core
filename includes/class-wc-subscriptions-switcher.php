@@ -936,6 +936,14 @@ class WC_Subscriptions_Switcher {
 				}
 
 				if ( $product_id == $item['product_id'] && ( empty( $variation_id ) || ( $variation_id == $item['variation_id'] && true == $identical_attributes ) ) && $quantity == $item['qty'] ) {
+					$is_identical_product = true;
+				} else {
+					$is_identical_product = false;
+				}
+
+				$is_identical_product = apply_filters( 'woocommerce_subscriptions_switch_is_identical_product', $is_identical_product, $product_id, $quantity, $variation_id, $subscription, $item );
+
+				if ( $is_identical_product ) {
 					throw new Exception( __( 'You can not switch to the same subscription.', 'woocommerce-subscriptions' ) );
 				}
 
