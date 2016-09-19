@@ -49,14 +49,6 @@ abstract class WCS_Retry_Store {
 	abstract protected function get_retry_ids_for_order( $order_id );
 
 	/**
-	 * Get the number of retries stored in the database for a given order
-	 *
-	 * @param int $order_id
-	 * @return int
-	 */
-	abstract public function get_retry_count_for_order( $order_id );
-
-	/**
 	 * Setup the class, if required
 	 *
 	 * @return null
@@ -101,15 +93,15 @@ abstract class WCS_Retry_Store {
 	}
 
 	/**
-	 * Get the object for interacting with the database
+	 * Get the number of retries stored in the database for a given order
 	 *
-	 * @return WCS_Retry_Post_Store
+	 * @param int $order_id
+	 * @return int
 	 */
-	public static function instance() {
-		if ( empty( self::$store ) ) {
-			$class = apply_filters( 'wcs_retry_store_class', 'WCS_Retry_Post_Store' );
-			self::$store = new $class();
-		}
-		return self::$store;
+	public function get_retry_count_for_order( $order_id ) {
+
+		$retry_post_ids = $this->get_retry_ids_for_order( $order_id );
+
+		return count( $retry_post_ids );
 	}
 }

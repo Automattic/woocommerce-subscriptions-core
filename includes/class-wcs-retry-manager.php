@@ -15,6 +15,9 @@ class WCS_Retry_Manager {
 	/* the rules that control the retry schedule and behaviour of each retry */
 	protected static $retry_rules = array();
 
+	/* an instance of the class responsible for storing retry data */
+	protected static $store;
+
 	/* the setting ID for enabling/disabling the automatic retry system */
 	protected static $setting_id;
 
@@ -24,6 +27,7 @@ class WCS_Retry_Manager {
 	/**
 	 * Attach callbacks and set the retry rules
 	 *
+	 * @codeCoverageIgnore
 	 * @since 2.1
 	 */
 	public static function init() {
@@ -44,6 +48,8 @@ class WCS_Retry_Manager {
 			add_action( 'woocommerce_subscription_renewal_payment_failed', __CLASS__ . '::maybe_apply_retry_rule', 10 );
 
 			add_action( 'woocommerce_scheduled_subscription_payment_retry', __CLASS__ . '::maybe_retry_payment' );
+
+			add_action( 'woocommerce_subscriptions_after_apply_retry_rule', __CLASS__ . '::send_retry_email', 0, 2 );
 		}
 	}
 
@@ -53,12 +59,13 @@ class WCS_Retry_Manager {
 	 * @since 2.1
 	 */
 	public static function is_retry_enabled() {
-		return ( 'yes' == get_option( self::$setting_id, 'no' ) ) ? true : false;
+		return apply_filters( 'wcs_is_retry_enabled', ( 'yes' == get_option( self::$setting_id, 'no' ) ) ? true : false );
 	}
 
 	/**
 	 * Load all the retry classes if the retry system is enabled
 	 *
+	 * @codeCoverageIgnore
 	 * @since 2.1
 	 */
 	protected static function load_classes() {
@@ -145,16 +152,30 @@ class WCS_Retry_Manager {
 				$subscription->update_dates( array( 'payment_retry' => gmdate( 'Y-m-d H:i:s', gmdate( 'U' ) + $retry_rule->get_retry_interval( $retry_count ) ) ) );
 			}
 
-			// maybe send emails about the renewal payment failure
-			foreach ( array( 'customer', 'admin' ) as $recipient ) {
-				if ( $retry_rule->has_email_template( $recipient ) ) {
-					$email_class = $retry_rule->get_email_template( $recipient );
+			do_action( 'woocommerce_subscriptions_after_apply_retry_rule', $retry_rule, $last_order, $subscription );
+		}
+	}
+
+	/**
+	 * When a retry rule has been applied, send relevant emails.
+	 *
+	 * Attached to 'woocommerce_subscriptions_after_apply_retry_rule' with a low priority.
+	 *
+	 * @param WCS_Retry_Rule The retry rule applied.
+	 * @param WC_Order The order to which the retry rule was applied.
+	 * @since 2.1
+	 */
+	public static function send_retry_email( $retry_rule, $last_order ) {
+
+		// maybe send emails about the renewal payment failure
+		foreach ( array( 'customer', 'admin' ) as $recipient ) {
+			if ( $retry_rule->has_email_template( $recipient ) ) {
+				$email_class = $retry_rule->get_email_template( $recipient );
+				if ( class_exists( $email_class ) ) {
 					$email = new $email_class();
 					$email->trigger( $last_order );
 				}
 			}
-
-			do_action( 'woocommerce_subscriptions_after_apply_retry_rule', $retry_rule, $last_order, $subscription );
 		}
 	}
 
@@ -162,14 +183,17 @@ class WCS_Retry_Manager {
 	 * When a retry hook is triggered, check if the rules for that retry are still valid
 	 * and if so, retry the payment.
 	 *
-	 * @param WC_Subscription The subscription on which the payment failed
+	 * @param WC_Subscription|int The subscription on which the payment failed
 	 * @since 2.1
 	 */
-	public static function maybe_retry_payment( $subscription_id ) {
+	public static function maybe_retry_payment( $subscription ) {
 
-		$subscription = wcs_get_subscription( $subscription_id );
-		$last_order   = $subscription->get_last_order( 'all' );
-		$last_retry   = self::store()->get_last_retry_for_order( $last_order->id );
+		if ( ! is_object( $subscription ) ) {
+			$subscription = wcs_get_subscription( $subscription );
+		}
+
+		$last_order = $subscription->get_last_order( 'all' );
+		$last_retry = self::store()->get_last_retry_for_order( $last_order->id );
 
 		// we only need to retry the payment if we have applied a retry rule for the order and it still needs payment
 		if ( null !== $last_retry && 'pending' === $last_retry->get_status() ) {
@@ -192,7 +216,7 @@ class WCS_Retry_Manager {
 					// Make sure the subscription is on hold in case something goes wrong while trying to process renewal and in case gateways expect the subscription to be on-hold, which is normally the case with a renewal payment
 					$subscription->update_status( 'on-hold', _x( 'Subscription renewal payment retry:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
 
-					WC_Subscriptions_Payment_Gateways::gateway_scheduled_subscription_payment( $subscription_id );
+					WC_Subscriptions_Payment_Gateways::gateway_scheduled_subscription_payment( $subscription );
 
 					// Now that we've attempted to process the payment, refresh the order
 					$last_order = wc_get_order( $last_order->id );
@@ -237,7 +261,20 @@ class WCS_Retry_Manager {
 	 * @since 2.1
 	 */
 	public static function store() {
-		return WCS_Retry_Store::instance();
+		if ( empty( self::$store ) ) {
+			$class = self::get_store_class();
+			self::$store = new $class();
+		}
+		return self::$store;
+	}
+
+	/**
+	 * Get the class used for instantiating retry storage via self::store()
+	 *
+	 * @since 2.1
+	 */
+	protected static function get_store_class() {
+		return apply_filters( 'wcs_retry_store_class', 'WCS_Retry_Post_Store' );
 	}
 
 	/**
@@ -247,10 +284,19 @@ class WCS_Retry_Manager {
 	 */
 	public static function rules() {
 		if ( empty( self::$retry_rules ) ) {
-			$class = apply_filters( 'wcs_retry_rules_class', 'WCS_Retry_Rules' );
+			$class = self::get_rules_class();
 			self::$retry_rules = new $class();
 		}
 		return self::$retry_rules;
+	}
+
+	/**
+	 * Get the class used for instantiating retry rules via self::rules()
+	 *
+	 * @since 2.1
+	 */
+	protected static function get_rules_class() {
+		return apply_filters( 'wcs_retry_rules_class', 'WCS_Retry_Rules' );
 	}
 }
 WCS_Retry_Manager::init();
