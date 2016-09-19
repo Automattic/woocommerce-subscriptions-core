@@ -125,14 +125,14 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 	 * @param WP_POST $post
 	 */
 	protected function update_order( $request, $post ) {
-		$post_id = parent::update_order( $request, $post );
-		if ( is_wp_error( $post_id ) ) {
-			return $post_id;
-		}
-
-		$subscription = wcs_get_subscription( $post_id );
-
 		try {
+			$post_id = parent::update_order( $request, $post );
+
+			if ( is_wp_error( $post_id ) ) {
+				return $post_id;
+			}
+
+			$subscription = wcs_get_subscription( $post_id );
 			$this->update_schedule( $subscription, $request );
 
 			if ( empty( $request['payment_details']['method_id'] ) && ! empty( $request['payment_method'] ) ) {
@@ -144,6 +144,8 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 			return $post_id;
 		} catch ( WC_REST_Exception $e ) {
 			return new WP_Error( $e->getErrorCode(), $e->getMessage(), array( 'status' => $e->getCode() ) );
+		} catch ( Exception $e ) {
+			return new WP_Error( 'woocommerce_rest_cannot_update_subscription', $e->getMessage(), array( 'status' => 400 ) );
 		}
 	}
 
