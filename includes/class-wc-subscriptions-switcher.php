@@ -642,6 +642,11 @@ class WC_Subscriptions_Switcher {
 						$is_different_billing_schedule = false;
 					}
 
+					// If we haven't calculated a first payment date, fall back to the recurring cart's next payment date
+					if ( 0 == $cart_item['subscription_switch']['first_payment_timestamp'] ) {
+						$cart_item['subscription_switch']['first_payment_timestamp'] = strtotime( $recurring_cart->next_payment_date );
+					}
+
 					if ( 0 !== $cart_item['subscription_switch']['first_payment_timestamp'] && $next_payment_timestamp !== $cart_item['subscription_switch']['first_payment_timestamp'] ) {
 						$is_different_payment_date = true;
 					} elseif ( 0 !== $cart_item['subscription_switch']['first_payment_timestamp'] && 0 == $subscription->get_time( 'next_payment' ) ) { // if the subscription doesn't have a next payment but the switched item does
