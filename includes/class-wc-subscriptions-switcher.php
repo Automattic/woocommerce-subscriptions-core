@@ -1208,11 +1208,12 @@ class WC_Subscriptions_Switcher {
 
 						// Find out how many days at the new price per day the customer would receive for the total amount already paid
 						// (e.g. if the customer paid $10 / month previously, and was switching to a $5 / week subscription, she has pre-paid 14 days at the new price)
-						$pre_paid_days = 0;
-						do {
+						$pre_paid_days = $new_total_paid = 0;
+
+						while ( $new_total_paid < $old_recurring_total ) {
 							$pre_paid_days++;
 							$new_total_paid = $pre_paid_days * $new_price_per_day;
-						} while ( $new_total_paid < $old_recurring_total );
+						}
 
 						// If the total amount the customer has paid entitles her to more days at the new price than she has received, there is no gap payment, just shorten the pre-paid term the appropriate number of days
 						if ( $days_since_last_payment < $pre_paid_days ) {
