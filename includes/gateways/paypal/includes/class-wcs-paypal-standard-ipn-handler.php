@@ -258,8 +258,8 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 				} else {
 
-					$this->add_order_note( 
-						__( 'IPN subscription sign up completed.', 'woocommerce-subscriptions' ), 
+					$this->add_order_note(
+						__( 'IPN subscription sign up completed.', 'woocommerce-subscriptions' ),
 					$subscription, $transaction_details );
 
 				}
@@ -300,7 +300,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 					$this->save_paypal_meta_data( $subscription, $transaction_details );
 
 					// Subscription Payment completed
-					$this->add_order_note( 
+					$this->add_order_note(
 						__( 'IPN subscription payment completed.', 'woocommerce-subscriptions' ),
 					$subscription, $transaction_details );
 
@@ -341,7 +341,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 									self::cancel_subscription( $subscription, $profile_id );
 								}
 
-								$this->add_order_note( 
+								$this->add_order_note(
 									__( 'IPN subscription failing payment method changed.', 'woocommerce-subscriptions' ),
 								$subscription, $transaction_details );
 							}
@@ -668,7 +668,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Add an note for the given order or subscription
 	 *
@@ -682,5 +682,5 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 		if ( ! empty( $note ) ) {
 			$order->add_order_note( $note );
 		}
-	}	
+	}
 }
