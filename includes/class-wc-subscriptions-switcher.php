@@ -93,7 +93,7 @@ class WC_Subscriptions_Switcher {
 		add_filter( 'woocommerce_email_order_items_table', __CLASS__ . '::add_print_switch_link' );
 
 		// Make sure sign-up fees paid on switch orders are accounted for in an items sign-up fee
-		add_filter( 'woocommerce_subscription_items_sign_up_fee', __CLASS__ . '::subscription_items_sign_up_fee', 10, 3 );
+		add_filter( 'woocommerce_subscription_items_sign_up_fee', __CLASS__ . '::subscription_items_sign_up_fee', 10, 4 );
 
 		// Make sure switch orders are included in related orders returned for a subscription
 		add_filter( 'woocommerce_subscription_related_orders', __CLASS__ . '::add_related_orders', 10, 4 );
@@ -1042,10 +1042,11 @@ class WC_Subscriptions_Switcher {
 	 * Make sure the sign-up fee on a subscription line item takes into account sign-up fees paid for switching.
 	 *
 	 * @param WC_Subscription $subscription
+	 * @param string $tax_inclusive_or_exclusive Defaults to the value tax setting stored on the subscription.
 	 * @return array $cart_item Details of an item in WC_Cart for a switch
 	 * @since 2.0
 	 */
-	public static function subscription_items_sign_up_fee( $sign_up_fee, $line_item, $subscription ) {
+	public static function subscription_items_sign_up_fee( $sign_up_fee, $line_item, $subscription, $tax_inclusive_or_exclusive = '' ) {
 
 		// This item has never been switched, no need to add anything
 		if ( ! isset( $line_item['switched_subscription_item_id'] ) ) {

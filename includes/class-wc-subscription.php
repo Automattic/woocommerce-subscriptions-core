@@ -1711,7 +1711,7 @@ class WC_Subscription extends WC_Order {
 			}
 		}
 
-		return apply_filters( 'woocommerce_subscription_items_sign_up_fee', $sign_up_fee, $line_item, $this );
+		return apply_filters( 'woocommerce_subscription_items_sign_up_fee', $sign_up_fee, $line_item, $this, $tax_inclusive_or_exclusive );
 	}
 
 	/**
