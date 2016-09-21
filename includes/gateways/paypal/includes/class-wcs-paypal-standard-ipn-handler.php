@@ -252,14 +252,15 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 						self::cancel_subscription( $subscription, get_post_meta( $subscription->id, '_old_paypal_subscriber_id', true ) );
 					}
 
-					$subscription->add_order_note( apply_filters( 'wcs_paypal_ipn_note',
+					$this->add_order_note(
 						_x( 'IPN subscription payment method changed to PayPal.', 'when it is a payment change, and there is a subscr_signup message, this will be a confirmation message that PayPal accepted it being the new payment method', 'woocommerce-subscriptions' ),
-					$subscription, $transaction_details ) );
+					$subscription, $transaction_details );
 
 				} else {
 
-					$subscription->add_order_note( apply_filters( 'wcs_paypal_ipn_note',
-					__( 'IPN subscription sign up completed.', 'woocommerce-subscriptions' ), $subscription, $transaction_details ) );
+					$this->add_order_note( 
+						__( 'IPN subscription sign up completed.', 'woocommerce-subscriptions' ), 
+					$subscription, $transaction_details );
 
 				}
 
@@ -299,9 +300,9 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 					$this->save_paypal_meta_data( $subscription, $transaction_details );
 
 					// Subscription Payment completed
-					$subscription->add_order_note( apply_filters( 'wcs_paypal_ipn_note',
+					$this->add_order_note( 
 						__( 'IPN subscription payment completed.', 'woocommerce-subscriptions' ),
-					$subscription, $transaction_details ) );
+					$subscription, $transaction_details );
 
 					WC_Gateway_Paypal::log( 'IPN subscription payment completed for subscription ' . $subscription->id );
 
@@ -340,9 +341,9 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 									self::cancel_subscription( $subscription, $profile_id );
 								}
 
-								$subscription->add_order_note( apply_filters( 'wcs_paypal_ipn_note',
+								$this->add_order_note( 
 									__( 'IPN subscription failing payment method changed.', 'woocommerce-subscriptions' ),
-								$subscription, $transaction_details ) );
+								$subscription, $transaction_details );
 							}
 						}
 
@@ -380,9 +381,9 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 							WC_Gateway_Paypal::log( sprintf( 'IPN subscription payment exception calling $renewal_order->payment_complete() for subscription %d: %s.', $subscription->id, $e->getMessage() ) );
 						}
 
-						$renewal_order->add_order_note( apply_filters( 'wcs_paypal_ipn_note',
+						$this->add_order_note(
 							__( 'IPN subscription payment completed.', 'woocommerce-subscriptions' ),
-						$subscription, $transaction_details ) );
+						$renewal_order, $transaction_details );
 
 						add_action( 'woocommerce_subscription_activated_paypal', 'WCS_PayPal_Status_Manager::reactivate_subscription' );
 
@@ -392,18 +393,18 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 					// Subscription Payment completed
 					// translators: placeholder is payment status (e.g. "completed")
-					$subscription->add_order_note( apply_filters( 'wcs_paypal_ipn_note',
+					$this->add_order_note(
 						sprintf( _x( 'IPN subscription payment %s.', 'used in order note', 'woocommerce-subscriptions' ), $transaction_details['payment_status'] ),
-					$subscription, $transaction_details ) );
+					$subscription, $transaction_details );
 
 					if ( ! $is_first_payment ) {
 
 						update_post_meta( $renewal_order->id, '_transaction_id', $transaction_details['txn_id'] );
 
 						// translators: placeholder is payment status (e.g. "completed")
-						$renewal_order->add_order_note( apply_filters( 'wcs_paypal_ipn_note',
+						$this->add_order_note(
 							sprintf( _x( 'IPN subscription payment %s.', 'used in order note', 'woocommerce-subscriptions' ), $transaction_details['payment_status'] ),
-						$renewal_order, $transaction_details ) );
+						$renewal_order, $transaction_details );
 
 						$subscription->payment_failed();
 					}
@@ -474,13 +475,13 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 					// Set PayPal as the payment method
 					$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
 					$renewal_order->set_payment_method( $available_gateways['paypal'] );
-					$renewal_order->add_order_note( apply_filters( 'wcs_paypal_ipn_note', $ipn_failure_note, $renewal_order, $transaction_details ) );
+					$this->add_order_note( $ipn_failure_note, $renewal_order, $transaction_details );
 				}
 
 				WC_Gateway_Paypal::log( 'IPN subscription payment failure for subscription ' . $subscription->id );
 
 				// Subscription Payment completed
-				$subscription->add_order_note( apply_filters( 'wcs_paypal_ipn_note', $ipn_failure_note, $subscription, $transaction_details ) );
+				$this->add_order_note( $ipn_failure_note, $subscription, $transaction_details );
 
 				try {
 					$subscription->payment_failed();
@@ -667,4 +668,19 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			return false;
 		}
 	}
+	
+	/**
+	 * Add an note for the given order or subscription
+	 *
+	 * @param string $note The text note
+	 * @param WC_Order $order An order object
+	 * @param array $transaction_details The transaction details, as provided by PayPal
+	 * @since 2.1
+	 */
+	protected function add_order_note( $note, $order, $transaction_details ) {
+		$note = apply_filters( 'wcs_paypal_ipn_note', $note, $order, $transaction_details );
+		if ( ! empty( $note ) ) {
+			$order->add_order_note( $note );
+		}
+	}	
 }
