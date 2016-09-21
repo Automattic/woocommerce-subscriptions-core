@@ -216,10 +216,6 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$query = $wpdb->prepare(
 			"SELECT COUNT(DISTINCT wcsubs.ID) as count, wcsmeta_cancel.meta_value as cancel_date
 				FROM {$wpdb->posts} as wcsubs
-				JOIN {$wpdb->posts} AS wcorder
-					ON wcsubs.post_parent = wcorder.ID
-						AND wcorder.post_type IN ( '" . implode( "','", wc_get_order_types( 'order-count' ) ) . "' )
-						AND wcorder.post_status IN ( 'wc-" . implode( "','wc-", $args['order_status'] ) . "' )
 				JOIN {$wpdb->postmeta} AS wcsmeta_cancel
 					ON wcsubs.ID = wcsmeta_cancel.post_id
 					AND wcsmeta_cancel.meta_key = %s
@@ -247,10 +243,6 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$query = $wpdb->prepare(
 			"SELECT COUNT(DISTINCT wcsubs.ID) as count, wcsmeta_end.meta_value as end_date
 				FROM {$wpdb->posts} as wcsubs
-				JOIN {$wpdb->posts} AS wcorder
-					ON wcsubs.post_parent = wcorder.ID
-						AND wcorder.post_type IN ( 'shop_order' )
-						AND wcorder.post_status IN ( 'wc-" . implode( "','wc-", $args['order_status'] ) . "' )
 				JOIN {$wpdb->postmeta} AS wcsmeta_end
 					ON wcsubs.ID = wcsmeta_end.post_id
 						AND wcsmeta_end.meta_key = %s
