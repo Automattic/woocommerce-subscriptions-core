@@ -153,13 +153,13 @@ class WC_Report_Retention_Rate extends WC_Admin_Report {
 
 		switch ( $this->report_data->interval_period ) {
 			case 'day':
-				$x_axes_label = _x( 'Number of days after sign-up', 'Y axis label on retention rate graph"', 'woocommerce-subscriptions' );
+				$x_axes_label = _x( 'Number of days after sign-up', 'X axis label on retention rate graph', 'woocommerce-subscriptions' );
 				break;
 			case 'week':
-				$x_axes_label = _x( 'Number of weeks after sign-up', 'Y axis label on retention rate graph"', 'woocommerce-subscriptions' );
+				$x_axes_label = _x( 'Number of weeks after sign-up', 'X axis label on retention rate graph', 'woocommerce-subscriptions' );
 				break;
 			case 'month':
-				$x_axes_label = _x( 'Number of months after sign-up', 'Y axis label on retention rate graph"', 'woocommerce-subscriptions' );
+				$x_axes_label = _x( 'Number of months after sign-up', 'X axis label on retention rate graph', 'woocommerce-subscriptions' );
 				break;
 		}
 
