@@ -353,13 +353,13 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 
 		if ( $data->total_subscriptions_at_period_start === 0 ) {
 			$subscription_change_percent = '&#x221e;%'; // infinite percentage increase if the starting subs is 0
-		} elseif ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start > 0 ) {
+		} elseif ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start >= 0 ) {
 			$subscription_change_percent = '+' . number_format( ( ( ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start ) / $data->total_subscriptions_at_period_start ) * 100 ), 2 ) . '%';
 		} else {
 			$subscription_change_percent = number_format( ( ( ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start ) / $data->total_subscriptions_at_period_start ) * 100 ), 2 ) . '%';
 		}
 
-		if ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start > 0 ) {
+		if ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start >= 0 ) {
 			$legend_title = __( '%s net subscription gain', 'woocommerce-subscriptions' );
 		} else {
 			$legend_title = __( '%s net subscription loss', 'woocommerce-subscriptions' );
