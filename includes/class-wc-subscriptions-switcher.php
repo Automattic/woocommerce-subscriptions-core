@@ -1085,7 +1085,7 @@ class WC_Subscriptions_Switcher {
 
 					$order_total = $order_item['line_total'];
 
-					if ( 'yes' == $order->prices_include_tax ) {
+					if ( 'inclusive_of_tax' == $tax_inclusive_or_exclusive && 'yes' == $order->prices_include_tax ) {
 						$order_total += $order_item['line_tax'];
 					}
 
