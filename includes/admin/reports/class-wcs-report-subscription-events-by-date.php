@@ -761,7 +761,11 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			}
 
 			foreach ( $prepared_data as $time => $aggregated_data ) {
-				$prepared_data[ $time ][1] = round( $prepared_data[ $time ][1] / $aggregated_data['count'] );
+				if ( 0 === $aggregated_data['count'] ) {
+					$prepared_data[ $time ][1] = 0;
+				} else {
+					$prepared_data[ $time ][1] = round( $prepared_data[ $time ][1] / $aggregated_data['count'] );
+				}
 				unset( $prepared_data[ $time ]['count'] );
 			}
 		}
