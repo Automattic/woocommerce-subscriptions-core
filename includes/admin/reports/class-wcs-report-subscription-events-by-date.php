@@ -190,6 +190,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 					AND (
 						DATE( wcsmeta.meta_value ) >= searchdate.Date
 						OR wcsmeta.meta_value = 0
+						OR wcsmeta.meta_value IS NULL
 					)
 				GROUP BY searchdate.Date
 				ORDER BY searchdate.Date ASC",
