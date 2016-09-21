@@ -1055,7 +1055,10 @@ class WC_Subscriptions_Switcher {
 
 		// First add any sign-up fees for previously switched items
 		$switched_line_items        = $subscription->get_items( 'line_item_switched' );
-		$tax_inclusive_or_exclusive = ( 'yes' == $subscription->prices_include_tax ) ? 'inclusive_of_tax' : 'exclusive_of_tax';
+		// Default tax inclusive or exclusive to the value set on the subscription. This is for backwards compatibility
+		if ( empty( $tax_inclusive_or_exclusive ) ) {
+			$tax_inclusive_or_exclusive = ( 'yes' == $subscription->prices_include_tax ) ? 'inclusive_of_tax' : 'exclusive_of_tax';
+		}
 
 		foreach ( $switched_line_items as $switched_line_item_id => $switched_line_item ) {
 			if ( $line_item['switched_subscription_item_id'] == $switched_line_item_id ) {
