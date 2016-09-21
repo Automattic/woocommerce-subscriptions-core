@@ -52,7 +52,7 @@ class WC_Subscriptions_Cart {
 	 *
 	 * @since 2.0.20
 	 */
-	 private static $recurring_cart = null;
+	 private static $cached_recurring_cart = null;
 
 	/**
 	 * Bootstraps the class and hooks required actions & filters.
@@ -267,7 +267,7 @@ class WC_Subscriptions_Cart {
 			$recurring_cart->end_date           = apply_filters( 'wcs_recurring_cart_end_date', WC_Subscriptions_Product::get_expiration_date( $product, $recurring_cart->start_date ), $recurring_cart, $product );
 
 			// Before calculating recurring cart totals, store this recurring cart object
-			self::$recurring_cart = $recurring_cart;
+			self::$cached_recurring_cart = $recurring_cart;
 
 			// No fees recur (yet)
 			$recurring_cart->fees = array();
@@ -1183,9 +1183,11 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function maybe_recalculate_shipping_method_availability( $is_available, $package ) {
 
-		if ( isset( $package['recurring_cart_key'] ) && isset( self::$recurring_cart ) && $package['recurring_cart_key'] == self::$recurring_cart->recurring_cart_key ) {
-			$cart      = WC()->cart;
-			WC()->cart = self::$recurring_cart;
+		if ( isset( $package['recurring_cart_key'] ) && isset( self::$cached_recurring_cart ) && $package['recurring_cart_key'] == self::$cached_recurring_cart->recurring_cart_key ) {
+
+			// Take a copy of the WC global cart object so we can temporarily set it to base shipping method availability on the cached recurring cart
+			$global_cart = WC()->cart;
+			WC()->cart   = self::$cached_recurring_cart;
 
 			foreach ( WC()->shipping->get_shipping_methods() as $shipping_method ) {
 				if ( $shipping_method->id == 'free_shipping' ) {
@@ -1196,7 +1198,7 @@ class WC_Subscriptions_Cart {
 				}
 			}
 
-			WC()->cart = $cart;
+			WC()->cart = $global_cart;
 		}
 
 		return $is_available;
