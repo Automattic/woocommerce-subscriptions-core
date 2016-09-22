@@ -78,7 +78,7 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 
 		$columns = array(
 			'product_name'               => __( 'Subscription Product', 'woocommerce-subscriptions' ),
-			'subscription_count'         => __( 'Current Subscriptions', 'woocommerce-subscriptions' ),
+			'subscription_count'         => __( 'Active Subscriptions', 'woocommerce-subscriptions' ),
 			'subscription_average_price' => __( 'Average Recurring Amount', 'woocommerce-subscriptions' ),
 		);
 
