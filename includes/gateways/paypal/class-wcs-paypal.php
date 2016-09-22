@@ -159,7 +159,7 @@ class WCS_PayPal {
 					update_option( 'wcs_paypal_rt_enabled_accounts', wcs_json_encode( $accounts_with_reference_transactions_enabled ) );
 					$reference_transactions_enabled = true;
 				} else {
-					set_transient( $transient_key, $api_username, DAY_IN_SECONDS );
+					set_transient( $transient_key, $api_username, WEEK_IN_SECONDS );
 				}
 			}
 		}
