@@ -135,7 +135,8 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 						ON wcoimeta.order_item_id = wcoitems.order_item_id
 					INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS wcoimeta2
 						ON wcoimeta2.order_item_id = wcoitems.order_item_id
-					WHERE wcoimeta.meta_key = '_product_id'
+					WHERE wcoitems.order_item_type = 'line_item'
+						AND wcoimeta.meta_key = '_product_id'
 						AND wcoimeta2.meta_key = '_line_total'
 				) as subscription_line_items
 					ON product.id = subscription_line_items.product_id
