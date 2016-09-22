@@ -82,7 +82,7 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 
 		$columns = array(
 			'product_name'            => __( 'Subscription Product', 'woocommerce-subscriptions' ),
-			'subscription_count'      => sprintf( __( 'Active Subscriptions %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The number of subscriptions that include this product as a line item and have a status of active or pending-cancellation.', 'woocommerce-subscriptions' ) ) ),
+			'subscription_count'      => sprintf( __( 'Subscription Count %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The number of subscriptions that include this product as a line item and have a status other than pending or trashed.', 'woocommerce-subscriptions' ) ) ),
 			'average_recurring_total' => sprintf( __( 'Average Recurring Line Total %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The average line total for this product on each subscription.', 'woocommerce-subscriptions' ) ) ),
 			'average_lifetime_value'  => sprintf( __( 'Average Lifetime Value %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The average line total on all orders for this product line item.', 'woocommerce-subscriptions' ) ) ),
 		);
@@ -145,10 +145,9 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 				WHERE  product.post_status = 'publish'
 					 AND product.post_type = 'product'
 					 AND subscriptions.post_type = 'shop_subscription'
-					 AND subscriptions.post_status in ( 'wc-" . implode( "','wc-", apply_filters( 'wcs_reports_active_statuses', array( 'active', 'pending-cancel' ) ) ) . "' )
+					 AND subscriptions.post_status NOT IN( 'wc-pending', 'trash' )
 				GROUP BY product.id
 				ORDER BY COUNT(subscription_line_items.subscription_id) DESC" );
-
 
 		$cached_results = get_transient( strtolower( __CLASS__ ) );
 		$query_hash     = md5( $query );
