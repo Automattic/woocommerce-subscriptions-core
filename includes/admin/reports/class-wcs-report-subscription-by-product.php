@@ -82,9 +82,9 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 
 		$columns = array(
 			'product_name'            => __( 'Subscription Product', 'woocommerce-subscriptions' ),
-			'subscription_count'      => __( 'Active Subscriptions', 'woocommerce-subscriptions' ),
-			'average_recurring_total' => __( 'Average Recurring Line Total', 'woocommerce-subscriptions' ),
-			'average_lifetime_value'  => __( 'Average Lifetime Value', 'woocommerce-subscriptions' ),
+			'subscription_count'      => sprintf( __( 'Active Subscriptions %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The number of subscriptions that include this product as a line item and have a status of active or pending-cancellation.', 'woocommerce-subscriptions' ) ) ),
+			'average_recurring_total' => sprintf( __( 'Average Recurring Line Total %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The average line total for this product on each subscription.', 'woocommerce-subscriptions' ) ) ),
+			'average_lifetime_value'  => sprintf( __( 'Average Lifetime Value %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The average line total on all orders for this product line item.', 'woocommerce-subscriptions' ) ) ),
 		);
 
 		return $columns;
