@@ -45,23 +45,23 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 	/**
 	 * Get column value.
 	 *
-	 * @param WP_User $user
+	 * @param object $report_item
 	 * @param string $column_name
 	 * @return string
 	 */
-	public function column_default( $user, $column_name ) {
+	public function column_default( $report_item, $column_name ) {
 		global $wpdb;
 
 		switch ( $column_name ) {
 
 			case 'product_name' :
-				return edit_post_link( $user->product_name, null, null, $user->product_id );
+				return edit_post_link( $report_item->product_name, null, null, $report_item->product_id );
 
 			case 'subscription_count' :
-				return $user->subscription_count;
+				return $report_item->subscription_count;
 
 			case 'subscription_average_price' :
-				$average_subscription_amount = ( 0 !== $user->subscription_count ? wc_price( $user->product_total / $user->subscription_count ) : '-' );
+				$average_subscription_amount = ( 0 !== $report_item->subscription_count ? wc_price( $report_item->product_total / $report_item->subscription_count ) : '-' );
 				return $average_subscription_amount;
 
 		}
