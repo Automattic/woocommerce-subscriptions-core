@@ -90,9 +90,6 @@ class WCS_PayPal {
 
 		add_filter( 'woocommerce_subscriptions_admin_meta_boxes_script_parameters', __CLASS__ . '::maybe_add_change_payment_method_warning' );
 
-		// Add the PayPal subscription information to the billing information
-		add_action( 'woocommerce_admin_order_data_after_billing_address', __CLASS__ . '::profile_link', 10 );
-
 		WCS_PayPal_Supports::init();
 		WCS_PayPal_Status_Manager::init();
 		WCS_PayPal_Standard_Switcher::init();
@@ -438,43 +435,6 @@ class WCS_PayPal {
 		}
 
 		return $script_parameters;
-	}
-
-	/**
-	 * Prints link to the PayPal's profile related to the provided subscription
-	 *
-	 * @param WC_Subscription $subscription
-	 */
-	public static function profile_link( $subscription ) {
-		if ( wcs_is_subscription( $subscription ) && 'paypal' == $subscription->payment_method ) {
-
-			$paypal_subscription_id = wcs_get_paypal_id( $subscription );
-
-			if ( ! empty( $paypal_subscription_id ) ) {
-
-				$url = '';
-
-				if ( false === wcs_is_paypal_profile_a( $paypal_profile_id, 'billing_agreement' ) ) {
-					// Standard subscription
-					$url = 'https://www.paypal.com/?cmd=_profile-recurring-payments&encrypted_profile_id=' . $paypal_subscription_id;
-				} else if ( wcs_is_paypal_profile_a( $paypal_profile_id, 'billing_agreement' ) ) {
-					// Reference Transaction subscription
-					$url = 'https://www.paypal.com/?cmd=_profile-merchant-pull&encrypted_profile_id=' . $paypal_subscription_id . '&mp_id=' . $paypal_subscription_id . '&return_to=merchant&flag_flow=merchant';
-				}
-
-				echo '<div class="address">';
-				echo '<p class="paypal_subscription_info"><strong>';
-				echo esc_html( __( 'PayPal Subscription ID:', 'woocommerce-subscriptions' ) );
-				echo '</strong>';
-				if ( ! empty( $url ) ) {
-					echo '<a href="' . esc_url( $url ) . '" target="_blank">' . esc_html( $paypal_subscription_id ) . '</a>';
-				} else {
-					echo  esc_html( $paypal_subscription_id );
-				}
-				echo '</p></div>';
-			}
-		}
-
 	}
 
 	/** Getters ******************************************************/
