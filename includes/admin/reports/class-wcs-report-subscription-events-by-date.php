@@ -2,7 +2,7 @@
 /**
  * Subscriptions Admin Report - Subscription Events by Date
  *
- * Creates the subscription admin reports area.
+ * Display important historical data for subscription revenue and events, like switches and cancellations.
  *
  * @package		WooCommerce Subscriptions
  * @subpackage	WC_Subscriptions_Admin_Reports
