@@ -58,7 +58,7 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 				return edit_post_link( $report_item->product_name, null, null, $report_item->product_id );
 
 			case 'subscription_count' :
-				return $report_item->subscription_count;
+				return sprintf( '<a href="%s%d">%d</a>', admin_url( 'edit.php?post_type=shop_subscription&_wcs_product=' ), $report_item->product_id, $report_item->subscription_count );
 
 			case 'average_recurring_total' :
 				$average_subscription_amount = ( 0 !== $report_item->subscription_count ? wc_price( $report_item->recurring_total / $report_item->subscription_count ) : '-' );
