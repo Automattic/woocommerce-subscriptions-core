@@ -26,7 +26,7 @@ class WCS_Retry_Admin {
 		if ( WCS_Retry_Manager::is_retry_enabled() ) {
 			add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ), 50 );
 
-			add_filter( 'wcs_admin_display_date_type', array( $this, 'maybe_hide_date_type' ), 10, 3 );
+			add_filter( 'wcs_display_date_type', array( $this, 'maybe_hide_date_type' ), 10, 3 );
 		}
 	}
 
