@@ -322,7 +322,7 @@ class WC_Subscriptions_Upgrader {
 					$results = array(
 						'upgraded_count' => 0,
 						// translators: 1$: error message, 2$: opening link tag, 3$: closing link tag
-						'message'        => sprintf( __( 'Unable to upgrade subscriptions.<br/>Error: %1$s<br/>Please refresh the page and try again. If problem persists, %2$scontact support%3$s.', 'woocommerce-subscriptions' ), '<code>' . $e->getMessage(). '</code>', '<a href="' . esc_url( 'https://woothemes.com/my-account/create-a-ticket/' ) . '">', '</a>' ),
+						'message'        => sprintf( __( 'Unable to upgrade subscriptions.<br/>Error: %1$s<br/>Please refresh the page and try again. If problem persists, %2$scontact support%3$s.', 'woocommerce-subscriptions' ), '<code>' . $e->getMessage(). '</code>', '<a href="' . esc_url( 'https://woocommerce.com/my-account/create-a-ticket/' ) . '">', '</a>' ),
 						'status'         => 'error',
 					);
 				}
@@ -373,7 +373,7 @@ class WC_Subscriptions_Upgrader {
 						'repaired_count'   => 0,
 						'unrepaired_count' => 0,
 						// translators: 1$: error message, 2$: opening link tag, 3$: closing link tag
-						'message'          => sprintf( _x( 'Unable to repair subscriptions.<br/>Error: %1$s<br/>Please refresh the page and try again. If problem persists, %2$scontact support%3$s.', 'Error message that gets sent to front end when upgrading Subscriptions', 'woocommerce-subscriptions' ), '<code>' . $e->getMessage(). '</code>', '<a href="' . esc_url( 'https://woothemes.com/my-account/create-a-ticket/' ) . '">', '</a>' ),
+						'message'          => sprintf( _x( 'Unable to repair subscriptions.<br/>Error: %1$s<br/>Please refresh the page and try again. If problem persists, %2$scontact support%3$s.', 'Error message that gets sent to front end when upgrading Subscriptions', 'woocommerce-subscriptions' ), '<code>' . $e->getMessage(). '</code>', '<a href="' . esc_url( 'https://woocommerce.com/my-account/create-a-ticket/' ) . '">', '</a>' ),
 						'status'           => 'error',
 					);
 				}
