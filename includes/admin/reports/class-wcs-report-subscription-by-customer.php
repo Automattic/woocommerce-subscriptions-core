@@ -89,9 +89,10 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 	public function get_columns() {
 		$columns = array(
 			'customer_name'             => __( 'Customer', 'woocommerce-subscriptions' ),
-			'active_subscription_count' => __( 'Active Subscriptions', 'woocommerce-subscriptions' ),
-			'total_subscription_count'  => __( 'Total Subscriptions', 'woocommerce-subscriptions' ),
-			'customer_lifetime_value'   => __( 'Lifetime Value from Subscriptions', 'woocommerce-subscriptions' ),
+			'active_subscription_count' => sprintf( __( 'Active Subscriptions %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The number of subscriptions this customer has with a status of active or pending cancellation.', 'woocommerce-subscriptions' ) ) ),
+			'total_subscription_count'  => sprintf( __( 'Total Subscriptions %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The number of subscriptions this customer has with a status other than pending or trashed.', 'woocommerce-subscriptions' ) ) ),
+			'customer_lifetime_value'   => sprintf( __( 'Lifetime Value from Subscriptions %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The total  of subscriptions that include this product as a line item and have a status other than pending or trashed.', 'woocommerce-subscriptions' ) ) ),
+			'customer_lifetime_value'   => sprintf( __( 'Lifetime Value from Subscriptions %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The total of this customer\'s sign-up, switch and renewal orders.', 'woocommerce-subscriptions' ) ) ),
 		);
 
 		return $columns;
