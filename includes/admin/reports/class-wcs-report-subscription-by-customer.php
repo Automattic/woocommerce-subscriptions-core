@@ -71,7 +71,7 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 				return $user->active_subscriptions;
 
 			case 'total_subscription_count' :
-				return $user->total_subscriptions;
+				return sprintf( '<a href="%s%d">%d</a>', admin_url( 'edit.php?post_type=shop_subscription&_customer_user=' ), $user->customer_id, $user->total_subscriptions );
 
 			case 'customer_lifetime_value' :
 				return wc_price( $user->initial_total + $user->renewal_switch_total );
