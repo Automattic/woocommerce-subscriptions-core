@@ -130,7 +130,7 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 					ON parent_total.post_id = parent_order.ID
 					AND parent_total.meta_key = '_order_total'
 				WHERE subscription_posts.post_type = 'shop_subscription'
-				AND subscription_posts.post_status <> 'wc-pending'
+					AND subscription_posts.post_status NOT IN ('wc-pending', 'trash')
 				GROUP BY customer_ids.meta_value
 				ORDER BY customer_id DESC
 				LIMIT {$offset}, {$per_page}" );
@@ -212,7 +212,8 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 					ON parent_total.post_id = parent_order.ID
 					AND parent_total.meta_key = '_order_total'
 				WHERE subscription_posts.post_type = 'shop_subscription'
-				AND subscription_posts.post_status <> 'wc-pending'");
+				AND subscription_posts.post_status NOT IN ('wc-pending', 'trash')
+		");
 
 		$cached_results = get_transient( strtolower( __CLASS__ ) );
 		$query_hash     = md5( $total_query );
@@ -232,7 +233,7 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 				INNER JOIN {$wpdb->posts} subscription_posts
 					ON renewal_order_ids.meta_value = subscription_posts.ID
 					AND subscription_posts.post_type = 'shop_subscription'
-					AND subscription_posts.post_status <> 'wc-pending'
+					AND subscription_posts.post_status NOT IN ('wc-pending', 'trash')
 				INNER JOIN {$wpdb->posts} renewal_order_posts
 					ON renewal_order_ids.post_id = renewal_order_posts.ID
 					AND renewal_order_posts.post_status IN ( 'wc-" . implode( "','wc-", $args['order_status'] ) . "' )
