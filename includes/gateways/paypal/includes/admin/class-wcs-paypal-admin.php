@@ -151,7 +151,7 @@ class WCS_PayPal_Admin {
 					'text'  => sprintf( esc_html__( 'There is a problem with PayPal. Your API credentials may be incorrect. Please update your %1$sAPI credentials%2$s. %3$sLearn more%4$s.', 'woocommerce-subscriptions' ),
 						'<a href="' . esc_url( $payment_gateway_tab_url ) . '">',
 						'</a>',
-						'<a href="https://support.woothemes.com/hc/en-us/articles/202882473#paypal-credentials" target="_blank">',
+						'<a href="https://docs.woocommerce.com/document/subscriptions-canceled-suspended-paypal/#section-2" target="_blank">',
 						'</a>'
 					),
 				);
@@ -162,7 +162,7 @@ class WCS_PayPal_Admin {
 					'type' => 'error',
 					// translators: placeholders are opening and closing link tags. 1$-2$: docs on woothemes, 3$-4$: dismiss link
 					'text'  => sprintf( esc_html__( 'There is a problem with PayPal. Your PayPal account is issuing out-of-date subscription IDs. %1$sLearn more%2$s. %3$sDismiss%4$s.', 'woocommerce-subscriptions' ),
-						'<a href="https://support.woothemes.com/hc/en-us/articles/202882473#old-paypal-account" target="_blank">',
+						'<a href="https://docs.woocommerce.com/document/subscriptions-canceled-suspended-paypal/#section-3" target="_blank">',
 						'</a>',
 						'<a href="' . esc_url( add_query_arg( 'wcs_disable_paypal_invalid_profile_id_notice', 'true' ) ) . '">',
 						'</a>'
@@ -180,7 +180,7 @@ class WCS_PayPal_Admin {
 						'<a href="https://www.woocommerce.com/my-account/create-a-ticket/" target="_blank">',
 						'</a>',
 						'<br>',
-						'<a href="https://support.woothemes.com/hc/en-us/articles/203104577-How-to-create-a-new-administrator-account-in-WordPress" target="_blank">',
+						'<a href="https://docs.woocommerce.com/document/create-new-admin-account-wordpress/" target="_blank">',
 						'</a>',
 						'</p>',
 						'<code>' . esc_html( $last_ipn_error ) . '</code><div style="margin: 5px 0;"><a class="button" href="' . esc_url( wp_nonce_url( add_query_arg( 'wcs_ipn_error_notice', 'ignore' ), 'wcs_ipn_error_notice', '_wcsnonce' ) ) . '">' . esc_html__( 'Ignore this error (not recommended!)', 'woocommerce-subscriptions' ) . '</a> <a class="button button-primary" href="https://www.woocommerce.com/my-account/create-a-ticket/">' . esc_html__( 'Open up a ticket now!', 'woocommerce-subscriptions' ) . '</a></div>'
