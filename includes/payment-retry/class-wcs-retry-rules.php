@@ -93,7 +93,7 @@ class WCS_Retry_Rules {
 			$rule = null;
 		}
 
-		return apply_filters( 'wcs_get_retry_rule', $rule, $order_id );
+		return apply_filters( 'wcs_get_retry_rule', $rule, $retry_number, $order_id );
 	}
 
 	/**
