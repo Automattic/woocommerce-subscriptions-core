@@ -690,6 +690,7 @@ class WC_Subscriptions_Order {
 				'renewal'     => _x( 'Renewal', 'An order type', 'woocommerce-subscriptions' ),
 				'resubscribe' => _x( 'Resubscribe', 'An order type', 'woocommerce-subscriptions' ),
 				'switch'      => _x( 'Switch (Upgrade/Downgrade)', 'An order type', 'woocommerce-subscriptions' ),
+				'regular'     => _x( 'Non-subscription', 'An order type', 'woocommerce-subscriptions' ),
 			);
 
 			foreach ( $order_types as $order_type_key => $order_type_description ) {
@@ -719,7 +720,7 @@ class WC_Subscriptions_Order {
 
 		if ( 'shop_order' == $typenow && ! empty( $_GET['shop_order_subtype'] ) ) {
 
-			if ( 'original' == $_GET['shop_order_subtype'] ) {
+			if ( 'original' == $_GET['shop_order_subtype'] || 'regular' == $_GET['shop_order_subtype'] ) {
 
 				$vars['meta_query']['relation'] = 'AND';
 
@@ -755,6 +756,11 @@ class WC_Subscriptions_Order {
 					'key'     => $meta_key,
 					'compare' => 'EXISTS',
 				);
+			}
+
+			// Also exclude parent orders from non-subscription query
+			if ( 'regular' == $_GET['shop_order_subtype'] ) {
+				$vars['post__not_in'] = wcs_get_subscription_orders();
 			}
 		}
 
