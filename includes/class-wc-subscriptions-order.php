@@ -686,6 +686,7 @@ class WC_Subscriptions_Order {
 			<?php
 			$order_types = array(
 				'original' => _x( 'Original', 'An order type', 'woocommerce-subscriptions' ),
+				'parent'   => _x( 'Parent', 'An order type', 'woocommerce-subscriptions' ),
 				'renewal'  => _x( 'Renewal', 'An order type', 'woocommerce-subscriptions' ),
 				'switch'   => _x( 'Switch (Upgrade/Downgrade)', 'An order type', 'woocommerce-subscriptions' ),
 			);
@@ -713,7 +714,7 @@ class WC_Subscriptions_Order {
 	 * @since 1.5
 	 */
 	public static function orders_by_type_query( $vars ) {
-		global $typenow;
+		global $typenow, $wpdb;
 
 		if ( 'shop_order' == $typenow && ! empty( $_GET['shop_order_subtype'] ) ) {
 
@@ -730,6 +731,10 @@ class WC_Subscriptions_Order {
 					'key'     => '_subscription_switch',
 					'compare' => 'NOT EXISTS',
 				);
+
+			} elseif ( 'parent' == $_GET['shop_order_subtype'] ) {
+
+				$vars['post__in'] = wcs_get_subscription_orders();
 
 			} else {
 
