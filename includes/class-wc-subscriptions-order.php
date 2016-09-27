@@ -686,10 +686,10 @@ class WC_Subscriptions_Order {
 			<?php
 			$order_types = array(
 				'original'    => _x( 'Original', 'An order type', 'woocommerce-subscriptions' ),
-				'parent'      => _x( 'Parent', 'An order type', 'woocommerce-subscriptions' ),
-				'renewal'     => _x( 'Renewal', 'An order type', 'woocommerce-subscriptions' ),
-				'resubscribe' => _x( 'Resubscribe', 'An order type', 'woocommerce-subscriptions' ),
-				'switch'      => _x( 'Switch (Upgrade/Downgrade)', 'An order type', 'woocommerce-subscriptions' ),
+				'parent'      => _x( 'Subscription Parent', 'An order type', 'woocommerce-subscriptions' ),
+				'renewal'     => _x( 'Subscription Renewal', 'An order type', 'woocommerce-subscriptions' ),
+				'resubscribe' => _x( 'Subscription Resubscribe', 'An order type', 'woocommerce-subscriptions' ),
+				'switch'      => _x( 'Subscription Switch', 'An order type', 'woocommerce-subscriptions' ),
 				'regular'     => _x( 'Non-subscription', 'An order type', 'woocommerce-subscriptions' ),
 			);
 
