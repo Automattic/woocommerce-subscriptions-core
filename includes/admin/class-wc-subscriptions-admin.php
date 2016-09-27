@@ -1048,7 +1048,7 @@ class WC_Subscriptions_Admin {
 				'default'         => 'no',
 				'type'            => 'checkbox',
 				// translators: placeholders are opening and closing link tags
-				'desc_tip'        => sprintf( __( 'With manual renewals, a customer\'s subscription is put on-hold until they login and pay to renew it. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/store-manager-guide/#accept-manual-renewals">', '</a>' ),
+				'desc_tip'        => sprintf( __( 'With manual renewals, a customer\'s subscription is put on-hold until they login and pay to renew it. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/store-manager-guide/#accept-manual-renewals">', '</a>' ),
 				'checkboxgroup'   => 'start',
 				'show_if_checked' => 'option',
 			),
@@ -1059,7 +1059,7 @@ class WC_Subscriptions_Admin {
 				'default'         => 'no',
 				'type'            => 'checkbox',
 				// translators: placeholders are opening and closing link tags
-				'desc_tip'        => sprintf( __( 'If you never want a customer to be automatically charged for a subscription renewal payment, you can turn off automatic payments completely. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/store-manager-guide/#turn-off-automatic-payments">', '</a>' ),
+				'desc_tip'        => sprintf( __( 'If you never want a customer to be automatically charged for a subscription renewal payment, you can turn off automatic payments completely. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/store-manager-guide/#turn-off-automatic-payments">', '</a>' ),
 				'checkboxgroup'   => 'end',
 				'show_if_checked' => 'yes',
 			),
@@ -1142,7 +1142,7 @@ class WC_Subscriptions_Admin {
 				<p class="submit">
 					<a href="<?php echo esc_url( self::add_subscription_url() ); ?>" class="button button-primary"><?php esc_html_e( 'Add a Subscription Product', 'woocommerce-subscriptions' ); ?></a>
 					<a href="<?php echo esc_url( self::settings_tab_url() ); ?>" class="docs button button-primary"><?php esc_html_e( 'Settings', 'woocommerce-subscriptions' ); ?></a>
-					<a href="https://twitter.com/share" class="twitter-share-button" data-url="http://www.woothemes.com/products/woocommerce-subscriptions/" data-text="Woot! I can sell subscriptions with #WooCommerce" data-via="WooThemes" data-size="large">Tweet</a>
+					<a href="https://twitter.com/share" class="twitter-share-button" data-url="http://www.woocommerce.com/products/woocommerce-subscriptions/" data-text="Woot! I can sell subscriptions with #WooCommerce" data-via="WooThemes" data-size="large">Tweet</a>
 					<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
 				</p>
 			</div>
@@ -1455,7 +1455,7 @@ class WC_Subscriptions_Admin {
 
 		if ( ! WC_Subscriptions_Payment_Gateways::one_gateway_supports( 'subscriptions' ) ) {
 			// translators: $1-2: opening and closing tags of a link that takes to Woo marketplace / Stripe product page
-			$available_gateways_description = sprintf( __( 'No payment gateways capable of processing automatic subscription payments are enabled. If you would like to process automatic payments, we recommend the %1$sfree Stripe extension%2$s.', 'woocommerce-subscriptions' ), '<strong><a href="https://www.woothemes.com/products/stripe/">', '</a></strong>' );
+			$available_gateways_description = sprintf( __( 'No payment gateways capable of processing automatic subscription payments are enabled. If you would like to process automatic payments, we recommend the %1$sfree Stripe extension%2$s.', 'woocommerce-subscriptions' ), '<strong><a href="https://www.woocommerce.com/products/stripe/">', '</a></strong>' );
 		}
 
 		$recurring_payment_settings = array(
@@ -1468,14 +1468,14 @@ class WC_Subscriptions_Admin {
 
 			array(
 				// translators: placeholders are opening and closing link tags
-				'desc' => sprintf( __( 'Payment gateways which don\'t support automatic recurring payments can be used to process %smanual subscription renewal payments%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/renewal-process/">', '</a>' ),
+				'desc' => sprintf( __( 'Payment gateways which don\'t support automatic recurring payments can be used to process %smanual subscription renewal payments%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/renewal-process/">', '</a>' ),
 				'id'   => WC_Subscriptions_Admin::$option_prefix . '_payment_gateways_additional',
 				'type' => 'informational',
 			),
 
 			array(
 				// translators: $1-$2: opening and closing tags. Link to documents->payment gateways, 3$-4$: opening and closing tags. Link to woothemes extensions shop page
-				'desc' => sprintf( __( 'Find new gateways that %1$ssupport automatic subscription payments%2$s in the official %3$sWooCommerce Marketplace%4$s.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( 'http://docs.woothemes.com/document/subscriptions/payment-gateways/' ) . '">', '</a>', '<a href="' . esc_url( 'http://www.woothemes.com/product-category/woocommerce-extensions/' ) . '">', '</a>' ),
+				'desc' => sprintf( __( 'Find new gateways that %1$ssupport automatic subscription payments%2$s in the official %3$sWooCommerce Marketplace%4$s.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( 'http://docs.woocommerce.com/document/subscriptions/payment-gateways/' ) . '">', '</a>', '<a href="' . esc_url( 'http://www.woocommerce.com/product-category/woocommerce-extensions/' ) . '">', '</a>' ),
 				'id'   => WC_Subscriptions_Admin::$option_prefix . '_payment_gateways_additional',
 				'type' => 'informational',
 			),
