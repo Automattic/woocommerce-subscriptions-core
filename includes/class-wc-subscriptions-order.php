@@ -685,10 +685,11 @@ class WC_Subscriptions_Order {
 			<option value=""><?php esc_html_e( 'All orders types', 'woocommerce-subscriptions' ); ?></option>
 			<?php
 			$order_types = array(
-				'original' => _x( 'Original', 'An order type', 'woocommerce-subscriptions' ),
-				'parent'   => _x( 'Parent', 'An order type', 'woocommerce-subscriptions' ),
-				'renewal'  => _x( 'Renewal', 'An order type', 'woocommerce-subscriptions' ),
-				'switch'   => _x( 'Switch (Upgrade/Downgrade)', 'An order type', 'woocommerce-subscriptions' ),
+				'original'    => _x( 'Original', 'An order type', 'woocommerce-subscriptions' ),
+				'parent'      => _x( 'Parent', 'An order type', 'woocommerce-subscriptions' ),
+				'renewal'     => _x( 'Renewal', 'An order type', 'woocommerce-subscriptions' ),
+				'resubscribe' => _x( 'Resubscribe', 'An order type', 'woocommerce-subscriptions' ),
+				'switch'      => _x( 'Switch (Upgrade/Downgrade)', 'An order type', 'woocommerce-subscriptions' ),
 			);
 
 			foreach ( $order_types as $order_type_key => $order_type_description ) {
@@ -738,8 +739,20 @@ class WC_Subscriptions_Order {
 
 			} else {
 
+				switch ( $_GET['shop_order_subtype'] ) {
+					case 'renewal' :
+						$meta_key = '_subscription_renewal';
+						break;
+					case 'resubscribe' :
+						$meta_key = '_subscription_resubscribe';
+						break;
+					case 'switch' :
+						$meta_key = '_subscription_switch';
+						break;
+				}
+
 				$vars['meta_query'][] = array(
-					'key'     => ( 'renewal' == $_GET['shop_order_subtype'] ) ? '_subscription_renewal' : '_subscription_switch',
+					'key'     => $meta_key,
 					'compare' => 'EXISTS',
 				);
 			}
