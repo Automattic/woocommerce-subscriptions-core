@@ -687,6 +687,7 @@ class WC_Subscriptions_Order {
 			$order_types = array(
 				'original' => _x( 'Original', 'An order type', 'woocommerce-subscriptions' ),
 				'renewal'  => _x( 'Renewal', 'An order type', 'woocommerce-subscriptions' ),
+				'switch'   => _x( 'Switch (Upgrade/Downgrade)', 'An order type', 'woocommerce-subscriptions' ),
 			);
 
 			foreach ( $order_types as $order_type_key => $order_type_description ) {
@@ -714,18 +715,27 @@ class WC_Subscriptions_Order {
 	public static function orders_by_type_query( $vars ) {
 		global $typenow;
 
-		if ( 'shop_order' == $typenow && isset( $_GET['shop_order_subtype'] ) ) {
+		if ( 'shop_order' == $typenow && ! empty( $_GET['shop_order_subtype'] ) ) {
 
 			if ( 'original' == $_GET['shop_order_subtype'] ) {
-				$compare_operator = 'NOT EXISTS';
-			} elseif ( 'renewal' == $_GET['shop_order_subtype'] ) {
-				$compare_operator = 'EXISTS';
-			}
 
-			if ( ! empty( $compare_operator ) ) {
+				$vars['meta_query']['relation'] = 'AND';
+
 				$vars['meta_query'][] = array(
 					'key'     => '_subscription_renewal',
-					'compare' => $compare_operator,
+					'compare' => 'NOT EXISTS',
+				);
+
+				$vars['meta_query'][] = array(
+					'key'     => '_subscription_switch',
+					'compare' => 'NOT EXISTS',
+				);
+
+			} else {
+
+				$vars['meta_query'][] = array(
+					'key'     => ( 'renewal' == $_GET['shop_order_subtype'] ) ? '_subscription_renewal' : '_subscription_switch',
+					'compare' => 'EXISTS',
 				);
 			}
 		}
