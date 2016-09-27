@@ -149,22 +149,23 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 				customer_ids.meta_value as customer_id,
 				COALESCE( SUM(renewal_switch_totals.meta_value), 0) as renewal_switch_total,
 				COUNT(DISTINCT renewal_order_posts.ID) as renewal_switch_count
-				FROM {$wpdb->posts} renewal_order_posts
-				INNER JOIN {$wpdb->postmeta} renewal_meta_subscription_ids
-					ON renewal_meta_subscription_ids.post_id = renewal_order_posts.ID
-					AND (
-						renewal_meta_subscription_ids.meta_key = '_subscription_renewal'
-						OR renewal_meta_subscription_ids.meta_key = '_subscription_switch'
-					)
+				FROM {$wpdb->postmeta} renewal_order_ids
+				INNER JOIN {$wpdb->posts} subscription_posts
+					ON renewal_order_ids.meta_value = subscription_posts.ID
+					AND subscription_posts.post_type = 'shop_subscription'
+					AND subscription_posts.post_status NOT IN ('wc-pending', 'trash')
 				INNER JOIN {$wpdb->postmeta} customer_ids
-					ON customer_ids.post_id = renewal_order_posts.ID
+					ON renewal_order_ids.meta_value = customer_ids.post_id
 					AND customer_ids.meta_key = '_customer_user'
 					AND customer_ids.meta_value IN ('" . implode( "','", wp_list_pluck( $this->items, 'customer_id' ) ) . "' )
+				INNER JOIN {$wpdb->posts} renewal_order_posts
+					ON renewal_order_ids.post_id = renewal_order_posts.ID
+					AND renewal_order_posts.post_status IN ( 'wc-" . implode( "','wc-", apply_filters( 'woocommerce_reports_paid_order_statuses', array( 'completed', 'processing' ) ) ) . "' )
 				LEFT JOIN {$wpdb->postmeta} renewal_switch_totals
-					ON renewal_switch_totals.post_id = renewal_order_posts.ID
+					ON renewal_switch_totals.post_id = renewal_order_ids.post_id
 					AND renewal_switch_totals.meta_key = '_order_total'
-			WHERE renewal_order_posts.post_type = 'shop_order'
-				AND renewal_order_posts.post_status IN ( 'wc-" . implode( "','wc-", apply_filters( 'woocommerce_reports_paid_order_statuses', array( 'completed', 'processing' ) ) ) . "' )
+			WHERE renewal_order_ids.meta_key = '_subscription_renewal'
+				OR renewal_order_ids.meta_key = '_subscription_switch'
 			GROUP BY customer_id
 			ORDER BY customer_id"
 		);
