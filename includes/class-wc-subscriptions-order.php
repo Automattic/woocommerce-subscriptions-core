@@ -676,33 +676,27 @@ class WC_Subscriptions_Order {
 	 * @since version 1.5
 	 */
 	public static function restrict_manage_subscriptions() {
-		global $typenow, $wp_query;
+		global $typenow;
 
 		if ( 'shop_order' != $typenow ) {
 			return;
 		}?>
 		<select name='shop_order_subtype' id='dropdown_shop_order_subtype'>
-			<option value=""><?php esc_html_e( 'Show all types', 'woocommerce-subscriptions' ); ?></option>
+			<option value=""><?php esc_html_e( 'All orders types', 'woocommerce-subscriptions' ); ?></option>
 			<?php
-			$terms = array( 'Original', 'Renewal' );
+			$order_types = array(
+				'original' => _x( 'Original', 'An order type', 'woocommerce-subscriptions' ),
+				'renewal'  => _x( 'Renewal', 'An order type', 'woocommerce-subscriptions' ),
+			);
 
-			foreach ( $terms as $term ) {
-				echo '<option value="' . esc_attr( $term ) . '"';
+			foreach ( $order_types as $order_type_key => $order_type_description ) {
+				echo '<option value="' . esc_attr( $order_type_key ) . '"';
 
 				if ( isset( $_GET['shop_order_subtype'] ) && $_GET['shop_order_subtype'] ) {
-					selected( $term, $_GET['shop_order_subtype'] );
+					selected( $order_type_key, $_GET['shop_order_subtype'] );
 				}
 
-				switch ( $term ) {
-					case 'Original':
-						$term_text = _x( 'Original', 'An order type', 'woocommerce-subscriptions' );
-						break;
-					case 'Renewal':
-						$term_text = _x( 'Renewal', 'An order type', 'woocommerce-subscriptions' );
-						break;
-				}
-
-				echo '>' . esc_html( $term_text ) . '</option>';
+				echo '>' . esc_html( $order_type_description ) . '</option>';
 			}
 			?>
 			</select>
@@ -718,13 +712,13 @@ class WC_Subscriptions_Order {
 	 * @since 1.5
 	 */
 	public static function orders_by_type_query( $vars ) {
-		global $typenow, $wp_query;
+		global $typenow;
 
 		if ( 'shop_order' == $typenow && isset( $_GET['shop_order_subtype'] ) ) {
 
-			if ( 'Original' == $_GET['shop_order_subtype'] ) {
+			if ( 'original' == $_GET['shop_order_subtype'] ) {
 				$compare_operator = 'NOT EXISTS';
-			} elseif ( 'Renewal' == $_GET['shop_order_subtype'] ) {
+			} elseif ( 'renewal' == $_GET['shop_order_subtype'] ) {
 				$compare_operator = 'EXISTS';
 			}
 
