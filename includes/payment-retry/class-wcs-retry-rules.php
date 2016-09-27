@@ -87,13 +87,18 @@ class WCS_Retry_Rules {
 	 */
 	public function get_rule( $retry_number, $order_id ) {
 
+		$rule = null;
+
 		if ( isset( $this->default_retry_rules[ $retry_number ] ) ) {
-			$rule = new $this->retry_rule_class( $this->default_retry_rules[ $retry_number ] );
-		} else {
-			$rule = null;
+
+			$rule_array = apply_filters( 'wcs_get_retry_rule_raw', $this->default_retry_rules[ $retry_number ], $retry_number, $order_id );
+
+			if ( ! empty( $rule_array ) ) {
+				$rule = new $this->retry_rule_class( $rule_array );
+			}
 		}
 
-		return apply_filters( 'wcs_get_retry_rule', $rule, $order_id );
+		return apply_filters( 'wcs_get_retry_rule', $rule, $retry_number, $order_id );
 	}
 
 	/**
