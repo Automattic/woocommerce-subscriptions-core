@@ -33,8 +33,8 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 
 	<p class="woocommerce-actions">
 		<a href="<?php echo esc_url( $settings_page ); ?>" class="button button-primary"><?php esc_html_e( 'Settings', 'woocommerce-subscriptions' ); ?></a>
-		<a class="docs button button-primary" href="<?php echo esc_url( apply_filters( 'woocommerce_docs_url', 'http://docs.woothemes.com/documentation/subscriptions/', 'woocommerce-subscriptions' ) ); ?>"><?php echo esc_html_x( 'Docs', 'short for documents', 'woocommerce-subscriptions' ); ?></a>
-		<a href="https://twitter.com/share" class="twitter-share-button" data-url="http://www.woothemes.com/products/woocommerce-subscriptions/" data-text="I just upgraded to WooCommerce Subscriptions v2.0, woot!" data-via="WooThemes" data-size="large" data-hashtags="WooCommerce">Tweet</a>
+		<a class="docs button button-primary" href="<?php echo esc_url( apply_filters( 'woocommerce_docs_url', 'http://docs.woocommerce.com/documentation/subscriptions/', 'woocommerce-subscriptions' ) ); ?>"><?php echo esc_html_x( 'Docs', 'short for documents', 'woocommerce-subscriptions' ); ?></a>
+		<a href="https://twitter.com/share" class="twitter-share-button" data-url="http://www.woocommerce.com/products/woocommerce-subscriptions/" data-text="I just upgraded to WooCommerce Subscriptions v2.0, woot!" data-via="WooThemes" data-size="large" data-hashtags="WooCommerce">Tweet</a>
 <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
 	</p>
 
@@ -53,7 +53,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 				<p><?php esc_html_e( 'Customers can now purchase different subscription products in one transaction. The products can bill on any schedule and have any combination of sign-up fees and/or free trials.', 'woocommerce-subscriptions' ); ?></p>
 				<p><?php
 					// translators: placeholders are opening and closing link tags
-					printf( esc_html__( 'Learn more about the new %smultiple subscriptions%s feature.', 'woocommerce-subscriptions' ), '<a href="' .  esc_url( 'http://docs.woothemes.com/document/subscriptions/multiple-subscriptions/' ) . '">', '</a>' ); ?>
+					printf( esc_html__( 'Learn more about the new %smultiple subscriptions%s feature.', 'woocommerce-subscriptions' ), '<a href="' .  esc_url( 'http://docs.woocommerce.com/document/subscriptions/multiple-subscriptions/' ) . '">', '</a>' ); ?>
 				</p>
 			</div>
 		</div>
@@ -73,7 +73,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 				</p>
 				<p><?php
 					// translators: placeholers are link tags: 1$-2$ new subscription page, 3$-4$: docs on woothemes
-					printf( esc_html__( '%1$sAdd a subscription%2$s now or %3$slearn more%4$s about the new interface.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post-new.php?post_type=shop_subscription' ) ) . '">', '</a>', '<a href="' . esc_url( 'http://docs.woothemes.com/document/subscriptions/version-2/#section-3' ) . '">', '</a>' ); ?>
+					printf( esc_html__( '%1$sAdd a subscription%2$s now or %3$slearn more%4$s about the new interface.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post-new.php?post_type=shop_subscription' ) ) . '">', '</a>', '<a href="' . esc_url( 'http://docs.woocommerce.com/document/subscriptions/version-2/#section-3' ) . '">', '</a>' ); ?>
 				</p>
 			</div>
 		</div>
@@ -94,7 +94,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 				<p>
 					<?php
 					// translators: placeholders are opening and closing link tags
-					printf( esc_html__( 'Learn more about the new %sView Subscription page%s.', 'woocommerce-subscriptions' ), '<a href="' .  esc_url( 'http://docs.woothemes.com/document/subscriptions/version-2/#section-5' ) . '">', '</a>' ); ?>
+					printf( esc_html__( 'Learn more about the new %sView Subscription page%s.', 'woocommerce-subscriptions' ), '<a href="' .  esc_url( 'http://docs.woocommerce.com/document/subscriptions/version-2/#section-5' ) . '">', '</a>' ); ?>
 				</p>
 			</div>
 		</div>
@@ -112,7 +112,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 				</p>
 				<p><?php
 					// translators: placeholders are for opening and closing link (<a>) tags
-					printf( esc_html__( '%sLearn more &raquo;%s', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/version-2/#section-4">', '</a>' ); ?>
+					printf( esc_html__( '%sLearn more &raquo;%s', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/version-2/#section-4">', '</a>' ); ?>
 				</p>
 			</div>
 
@@ -125,7 +125,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 				</p>
 				<p><?php
 					// translators: placeholders are for opening and closing link (<a>) tags
-					printf( esc_html__( '%sLearn more &raquo;%s', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/version-2/#change-payment-method-admin">', '</a>' ); ?>
+					printf( esc_html__( '%sLearn more &raquo;%s', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/version-2/#change-payment-method-admin">', '</a>' ); ?>
 				</p>
 			</div>
 
@@ -138,7 +138,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 				</p>
 				<p><?php
 					// translators: placeholders are for opening and closing link (<a>) tags
-					printf( esc_html__( '%sLearn more &raquo;%s', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/version-2/#change-billing-schedule">', '</a>' ); ?>
+					printf( esc_html__( '%sLearn more &raquo;%s', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/version-2/#change-billing-schedule">', '</a>' ); ?>
 				</p>
 			</div>
 
@@ -148,7 +148,7 @@ $settings_page = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 	<div class="changelog">
 		<div class="feature-section">
 			<h2><?php esc_html_e( 'And much more...', 'woocommerce-subscriptions' ); ?></h2>
-			<p><?php printf( esc_html( 'Learn about all the great new features in the guide to %sWhat\'s new in Subscriptions version 2%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woothemes.com/document/subscriptions/version-2/">', '</a>' ); ?></p>
+			<p><?php printf( esc_html( 'Learn about all the great new features in the guide to %sWhat\'s new in Subscriptions version 2%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/version-2/">', '</a>' ); ?></p>
 		</div>
 	</div>
 
