@@ -77,11 +77,12 @@ class WCS_Retry_Admin {
 
 		$spliced_array = array_splice( $settings, key( $misc_section_end ), 0, array(
 			array(
-				'name'     => __( 'Enable Automatic Retry', 'woocommerce-subscriptions' ),
-				'desc'     => __( 'Enable automatic retry of failed recurring payments.', 'woocommerce-subscriptions' ),
+				'name'     => __( 'Retry Failed Payments', 'woocommerce-subscriptions' ),
+				'desc'     => __( 'Enable automatic retry of failed recurring payments', 'woocommerce-subscriptions' ),
 				'id'       => $this->setting_id,
 				'default'  => 'no',
 				'type'     => 'checkbox',
+				'desc_tip' => sprintf( __( 'Attempt to recover recurring revenue that would otherwise be lost due to payment methods being declined only temporarily. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="https://docs.woocommerce.com/document/subscriptions/failed-payment-retry/">', '</a>' ),
 			),
 		) );
 
