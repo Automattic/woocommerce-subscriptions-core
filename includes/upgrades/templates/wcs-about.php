@@ -174,7 +174,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<h3><?php esc_html_e( 'WP REST API Endpoints', 'woocommerce-subscriptions' ); ?></h3>
 				<p><?php
 					// translators: $1: opening <a> tag linking to WC API docs, $2: closing <a> tag, $3: opening <a> tag linking to WP API docs, $4: closing <a> tag
-					printf( esc_html__( 'WooCommerce 2.6 added support for %1$sREST API%2$s endpoints built on WordPress core\'s %3$sREST API%4$s infrastructure.', 'woocommerce-subscriptions' ), '<a href="http://woothemes.github.io/woocommerce-rest-api-docs/">', '</a>', '<a href="http://v2.wp-api.org/">', '</a>' ); ?>
+					printf( esc_html__( 'WooCommerce 2.6 added support for %1$sREST API%2$s endpoints built on WordPress core\'s %3$sREST API%4$s infrastructure.', 'woocommerce-subscriptions' ), '<a href="http://woocommerce.github.io/woocommerce-rest-api-docs/">', '</a>', '<a href="http://v2.wp-api.org/">', '</a>' ); ?>
 				</p>
 				<p><?php esc_html_e( 'Subscriptions 2.1 adds support for subscription data to this infrastructure.', 'woocommerce-subscriptions' ); ?></p>
 				<p><?php esc_html_e( 'Your applications can now create, read, update or delete subscriptions via RESTful API endpoints with the same design as the latest version of WooCommerce\'s REST API endpoints.', 'woocommerce-subscriptions' ); ?></p>
