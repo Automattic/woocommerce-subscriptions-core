@@ -44,7 +44,8 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 		echo '	<p><strong>' . esc_html__( 'Total Subscribers', 'woocommerce-subscriptions' ) . '</strong> : ' . esc_html( $this->totals->total_customers ) . '<br />';
 		echo '	<strong>' . esc_html__( 'Active Subscriptions', 'woocommerce-subscriptions' ) . '</strong> : ' . esc_html( $this->totals->active_subscriptions ) . '<br />';
 		echo '	<strong>' . esc_html__( 'Total Subscriptions', 'woocommerce-subscriptions' ) . '</strong> : ' . esc_html( $this->totals->total_subscriptions ) . '<br />';
-		echo '	<strong>' . esc_html__( 'Average Lifetime Value', 'woocommerce-subscriptions' ) . '</strong> : ' . wp_kses_post( wc_price( ( $this->totals->initial_total + $this->totals->renewal_switch_total ) / $this->totals->total_customers ) ) . '</p>';
+		echo '	<strong>' . esc_html__( 'Total Subscription Orders', 'woocommerce-subscriptions' ) . '</strong> : ' . esc_html( $this->totals->initial_order_count + $this->totals->renewal_switch_count ) . '<br />';
+		echo '	<strong>' . esc_html__( 'Average Lifetime Value', 'woocommerce-subscriptions' ) . '</strong> : ' . wp_kses_post( wc_price( ( $this->totals->initial_order_total + $this->totals->renewal_switch_total ) / $this->totals->total_customers ) ) . '</p>';
 		echo '</div></div>';
 		$this->display();
 		echo '</div>';
@@ -71,10 +72,13 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 				return $user->active_subscriptions;
 
 			case 'total_subscription_count' :
-				return $user->total_subscriptions;
+				return sprintf( '<a href="%s%d">%d</a>', admin_url( 'edit.php?post_type=shop_subscription&_customer_user=' ), $user->customer_id, $user->total_subscriptions );
+
+			case 'total_subscription_order_count' :
+				return sprintf( '<a href="%s%d">%d</a>', admin_url( 'edit.php?post_type=shop_order&_customer_user=' ), $user->customer_id, $user->initial_order_count + $user->renewal_switch_count );
 
 			case 'customer_lifetime_value' :
-				return wc_price( $user->initial_total + $user->renewal_switch_total );
+				return wc_price( $user->initial_order_total + $user->renewal_switch_total );
 
 		}
 
@@ -88,10 +92,11 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 	 */
 	public function get_columns() {
 		$columns = array(
-			'customer_name'             => __( 'Customer', 'woocommerce-subscriptions' ),
-			'active_subscription_count' => __( 'Active Subscriptions', 'woocommerce-subscriptions' ),
-			'total_subscription_count'  => __( 'Total Subscriptions', 'woocommerce-subscriptions' ),
-			'customer_lifetime_value'   => __( 'Lifetime Value from Subscriptions', 'woocommerce-subscriptions' ),
+			'customer_name'                  => __( 'Customer', 'woocommerce-subscriptions' ),
+			'active_subscription_count'      => sprintf( __( 'Active Subscriptions %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The number of subscriptions this customer has with a status of active or pending cancellation.', 'woocommerce-subscriptions' ) ) ),
+			'total_subscription_count'       => sprintf( __( 'Total Subscriptions %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The number of subscriptions this customer has with a status other than pending or trashed.', 'woocommerce-subscriptions' ) ) ),
+			'total_subscription_order_count' => sprintf( __( 'Total Subscription Orders %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The number of sign-up, switch and renewal orders this customer has placed with your store with a paid status (i.e. processing or complete).', 'woocommerce-subscriptions' ) ) ),
+			'customer_lifetime_value'        => sprintf( __( 'Lifetime Value from Subscriptions %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The total value of this customer\'s sign-up, switch and renewal orders.', 'woocommerce-subscriptions' ) ) ),
 		);
 
 		return $columns;
@@ -113,7 +118,8 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 		$customer_query = apply_filters( 'wcs_reports_current_customer_query',
 			"SELECT customer_ids.meta_value as customer_id,
 					COUNT(subscription_posts.ID) as total_subscriptions,
-					COALESCE( SUM(parent_total.meta_value), 0) as initial_total,
+					COALESCE( SUM(parent_total.meta_value), 0) as initial_order_total,
+					COUNT(DISTINCT parent_order.ID) as initial_order_count,
 					SUM(CASE
 							WHEN subscription_posts.post_status
 								IN  ( 'wc-" . implode( "','wc-", apply_filters( 'wcs_reports_active_statuses', array( 'active', 'pending-cancel' ) ) ) . "' ) THEN 1
@@ -130,7 +136,7 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 					ON parent_total.post_id = parent_order.ID
 					AND parent_total.meta_key = '_order_total'
 				WHERE subscription_posts.post_type = 'shop_subscription'
-				AND subscription_posts.post_status <> 'wc-pending'
+					AND subscription_posts.post_status NOT IN ('wc-pending', 'trash')
 				GROUP BY customer_ids.meta_value
 				ORDER BY customer_id DESC
 				LIMIT {$offset}, {$per_page}" );
@@ -141,30 +147,38 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 		$customer_renewal_switch_total_query = apply_filters( 'wcs_reports_current_customer_renewal_switch_total_query',
 			"SELECT
 				customer_ids.meta_value as customer_id,
-				COALESCE( SUM(renewal_switch_totals.meta_value), 0) as renewal_switch_total
-				FROM {$wpdb->posts} renewal_order_posts
-				INNER JOIN {$wpdb->postmeta} renewal_meta_subscription_ids
-					ON renewal_meta_subscription_ids.post_id = renewal_order_posts.ID
-					AND (
-						renewal_meta_subscription_ids.meta_key = '_subscription_renewal'
-						OR renewal_meta_subscription_ids.meta_key = '_subscription_switch'
-					)
+				COALESCE( SUM(renewal_switch_totals.meta_value), 0) as renewal_switch_total,
+				COUNT(DISTINCT renewal_order_posts.ID) as renewal_switch_count
+				FROM {$wpdb->postmeta} renewal_order_ids
+				INNER JOIN {$wpdb->posts} subscription_posts
+					ON renewal_order_ids.meta_value = subscription_posts.ID
+					AND subscription_posts.post_type = 'shop_subscription'
+					AND subscription_posts.post_status NOT IN ('wc-pending', 'trash')
 				INNER JOIN {$wpdb->postmeta} customer_ids
-					ON customer_ids.post_id = renewal_order_posts.ID
+					ON renewal_order_ids.meta_value = customer_ids.post_id
 					AND customer_ids.meta_key = '_customer_user'
 					AND customer_ids.meta_value IN ('" . implode( "','", wp_list_pluck( $this->items, 'customer_id' ) ) . "' )
+				INNER JOIN {$wpdb->posts} renewal_order_posts
+					ON renewal_order_ids.post_id = renewal_order_posts.ID
+					AND renewal_order_posts.post_status IN ( 'wc-" . implode( "','wc-", apply_filters( 'woocommerce_reports_paid_order_statuses', array( 'completed', 'processing' ) ) ) . "' )
 				LEFT JOIN {$wpdb->postmeta} renewal_switch_totals
-					ON renewal_switch_totals.post_id = renewal_order_posts.ID
+					ON renewal_switch_totals.post_id = renewal_order_ids.post_id
 					AND renewal_switch_totals.meta_key = '_order_total'
-			WHERE renewal_order_posts.post_type = 'shop_order'
-				AND renewal_order_posts.post_status IN ( 'wc-" . implode( "','wc-", apply_filters( 'woocommerce_reports_paid_order_statuses', array( 'completed', 'processing' ) ) ) . "' )
-				GROUP BY customer_ids.meta_value"
+			WHERE renewal_order_ids.meta_key = '_subscription_renewal'
+				OR renewal_order_ids.meta_key = '_subscription_switch'
+			GROUP BY customer_id
+			ORDER BY customer_id"
 		);
 
 		$customer_renewal_switch_totals = $wpdb->get_results( $customer_renewal_switch_total_query, OBJECT_K );
 
 		foreach ( $this->items as $index => $item ) {
-			$this->items[ $index ]->renewal_switch_total = ( isset( $customer_renewal_switch_totals[ $item->customer_id ] ) ) ? $customer_renewal_switch_totals[ $item->customer_id ]->renewal_switch_total : 0;
+			if ( isset( $customer_renewal_switch_totals[ $item->customer_id ] ) ) {
+				$this->items[ $index ]->renewal_switch_total = $customer_renewal_switch_totals[ $item->customer_id ]->renewal_switch_total;
+				$this->items[ $index ]->renewal_switch_count = $customer_renewal_switch_totals[ $item->customer_id ]->renewal_switch_count;
+			} else {
+				$this->items[ $index ]->renewal_switch_total = $this->items[ $index ]->renewal_switch_count = 0;
+			}
 		}
 
 		/**
@@ -195,7 +209,9 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 		$total_query = apply_filters( 'wcs_reports_customer_total_query',
 			"SELECT COUNT( DISTINCT customer_ids.meta_value) as total_customers,
 					COUNT(subscription_posts.ID) as total_subscriptions,
-					COALESCE( SUM(parent_total.meta_value), 0) as initial_total ,
+					COALESCE( SUM(parent_total.meta_value), 0) as initial_order_total,
+					COALESCE( SUM(parent_total.meta_value), 0) as initial_order_total,
+					COUNT(DISTINCT parent_order.ID) as initial_order_count,
 					SUM(CASE
 							WHEN subscription_posts.post_status
 								IN  ( 'wc-" . implode( "','wc-", apply_filters( 'wcs_reports_active_statuses', array( 'active', 'pending-cancel' ) ) ) . "' ) THEN 1
@@ -212,7 +228,8 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 					ON parent_total.post_id = parent_order.ID
 					AND parent_total.meta_key = '_order_total'
 				WHERE subscription_posts.post_type = 'shop_subscription'
-				AND subscription_posts.post_status <> 'wc-pending'");
+				AND subscription_posts.post_status NOT IN ('wc-pending', 'trash')
+		");
 
 		$cached_results = get_transient( strtolower( __CLASS__ ) );
 		$query_hash     = md5( $total_query );
@@ -227,12 +244,13 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 		$customer_totals = $cached_results[ $query_hash ];
 
 		$renewal_switch_total_query = apply_filters( 'wcs_reports_customer_total_renewal_switch_query',
-			"SELECT COALESCE( SUM(renewal_switch_totals.meta_value), 0) as renewal_switch_total
+			"SELECT COALESCE( SUM(renewal_switch_totals.meta_value), 0) as renewal_switch_total,
+				COUNT(DISTINCT renewal_order_posts.ID) as renewal_switch_count
 				FROM {$wpdb->postmeta} renewal_order_ids
 				INNER JOIN {$wpdb->posts} subscription_posts
 					ON renewal_order_ids.meta_value = subscription_posts.ID
 					AND subscription_posts.post_type = 'shop_subscription'
-					AND subscription_posts.post_status <> 'wc-pending'
+					AND subscription_posts.post_status NOT IN ('wc-pending', 'trash')
 				INNER JOIN {$wpdb->posts} renewal_order_posts
 					ON renewal_order_ids.post_id = renewal_order_posts.ID
 					AND renewal_order_posts.post_status IN ( 'wc-" . implode( "','wc-", $args['order_status'] ) . "' )
@@ -248,11 +266,12 @@ class WC_Report_Subscription_By_Customer extends WP_List_Table {
 		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
 			// Enable big selects for reports
 			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
-			$cached_results[ $query_hash ] = apply_filters( 'wcs_reports_customer_total_renewal_switch_data', $wpdb->get_var( $renewal_switch_total_query ) );
+			$cached_results[ $query_hash ] = apply_filters( 'wcs_reports_customer_total_renewal_switch_data', $wpdb->get_row( $renewal_switch_total_query ) );
 			set_transient( strtolower( __CLASS__ ), $cached_results, WEEK_IN_SECONDS );
 		}
 
-		$customer_totals->renewal_switch_total = $cached_results[ $query_hash ];
+		$customer_totals->renewal_switch_total = $cached_results[ $query_hash ]->renewal_switch_total;
+		$customer_totals->renewal_switch_count = $cached_results[ $query_hash ]->renewal_switch_count;
 
 		return $customer_totals;
 	}

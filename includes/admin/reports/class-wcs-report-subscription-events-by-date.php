@@ -2,7 +2,7 @@
 /**
  * Subscriptions Admin Report - Subscription Events by Date
  *
- * Creates the subscription admin reports area.
+ * Display important historical data for subscription revenue and events, like switches and cancellations.
  *
  * @package		WooCommerce Subscriptions
  * @subpackage	WC_Subscriptions_Admin_Reports
@@ -74,6 +74,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 						),
 				),
 				'group_by'            => $this->group_by_query,
+				'order_status'        => $args['order_status'],
 				'order_by'            => 'post_date ASC',
 				'query_type'          => 'get_results',
 				'filter_range'        => true,
@@ -103,6 +104,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 					),
 				),
 				'group_by'            => $this->group_by_query,
+				'order_status'        => $args['order_status'],
 				'order_by'            => 'post_date ASC',
 				'query_type'          => 'get_results',
 				'filter_range'        => true,
@@ -188,6 +190,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 					AND (
 						DATE( wcsmeta.meta_value ) >= searchdate.Date
 						OR wcsmeta.meta_value = 0
+						OR wcsmeta.meta_value IS NULL
 					)
 				GROUP BY searchdate.Date
 				ORDER BY searchdate.Date ASC",
@@ -213,10 +216,6 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$query = $wpdb->prepare(
 			"SELECT COUNT(DISTINCT wcsubs.ID) as count, wcsmeta_cancel.meta_value as cancel_date
 				FROM {$wpdb->posts} as wcsubs
-				JOIN {$wpdb->posts} AS wcorder
-					ON wcsubs.post_parent = wcorder.ID
-						AND wcorder.post_type IN ( '" . implode( "','", wc_get_order_types( 'order-count' ) ) . "' )
-						AND wcorder.post_status IN ( 'wc-" . implode( "','wc-", $args['order_status'] ) . "' )
 				JOIN {$wpdb->postmeta} AS wcsmeta_cancel
 					ON wcsubs.ID = wcsmeta_cancel.post_id
 					AND wcsmeta_cancel.meta_key = %s
@@ -244,10 +243,6 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$query = $wpdb->prepare(
 			"SELECT COUNT(DISTINCT wcsubs.ID) as count, wcsmeta_end.meta_value as end_date
 				FROM {$wpdb->posts} as wcsubs
-				JOIN {$wpdb->posts} AS wcorder
-					ON wcsubs.post_parent = wcorder.ID
-						AND wcorder.post_type IN ( 'shop_order' )
-						AND wcorder.post_status IN ( 'wc-" . implode( "','wc-", $args['order_status'] ) . "' )
 				JOIN {$wpdb->postmeta} AS wcsmeta_end
 					ON wcsubs.ID = wcsmeta_end.post_id
 						AND wcsmeta_end.meta_key = %s
@@ -320,7 +315,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		);
 
 		$legend[] = array(
-			'title'            => sprintf( __( '%s switched subscriptions', 'woocommerce-subscriptions' ), '<strong>' . $data->switch_orders_total_count . '</strong>' ),
+			'title'            => sprintf( __( '%s subscription switches', 'woocommerce-subscriptions' ), '<strong>' . $data->switch_orders_total_count . '</strong>' ),
 			'placeholder'      => __( 'The number of subscriptions upgraded, downgraded or cross-graded during this period.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['switch_count'],
 			'highlight_series' => 0,
@@ -351,13 +346,13 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 
 		if ( $data->total_subscriptions_at_period_start === 0 ) {
 			$subscription_change_percent = '&#x221e;%'; // infinite percentage increase if the starting subs is 0
-		} elseif ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start > 0 ) {
+		} elseif ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start >= 0 ) {
 			$subscription_change_percent = '+' . number_format( ( ( ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start ) / $data->total_subscriptions_at_period_start ) * 100 ), 2 ) . '%';
 		} else {
 			$subscription_change_percent = number_format( ( ( ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start ) / $data->total_subscriptions_at_period_start ) * 100 ), 2 ) . '%';
 		}
 
-		if ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start > 0 ) {
+		if ( $data->total_subscriptions_at_period_end - $data->total_subscriptions_at_period_start >= 0 ) {
 			$legend_title = __( '%s net subscription gain', 'woocommerce-subscriptions' );
 		} else {
 			$legend_title = __( '%s net subscription loss', 'woocommerce-subscriptions' );
@@ -759,7 +754,11 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			}
 
 			foreach ( $prepared_data as $time => $aggregated_data ) {
-				$prepared_data[ $time ][1] = round( $prepared_data[ $time ][1] / $aggregated_data['count'] );
+				if ( 0 === $aggregated_data['count'] ) {
+					$prepared_data[ $time ][1] = 0;
+				} else {
+					$prepared_data[ $time ][1] = round( $prepared_data[ $time ][1] / $aggregated_data['count'] );
+				}
 				unset( $prepared_data[ $time ]['count'] );
 			}
 		}

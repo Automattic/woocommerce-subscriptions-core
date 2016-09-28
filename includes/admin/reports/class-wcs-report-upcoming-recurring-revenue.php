@@ -2,7 +2,8 @@
 /**
  * Subscriptions Admin Report - Upcoming Recurring Revenue
  *
- * Creates the subscription admin reports area.
+ * Display the renewal order count and revenue that will be processed for all currently active subscriptions
+ * for a given period of time in the future.
  *
  * @package		WooCommerce Subscriptions
  * @subpackage	WC_Subscriptions_Admin_Reports

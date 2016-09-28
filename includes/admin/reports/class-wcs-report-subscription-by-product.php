@@ -45,23 +45,27 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 	/**
 	 * Get column value.
 	 *
-	 * @param WP_User $user
+	 * @param object $report_item
 	 * @param string $column_name
 	 * @return string
 	 */
-	public function column_default( $user, $column_name ) {
+	public function column_default( $report_item, $column_name ) {
 		global $wpdb;
 
 		switch ( $column_name ) {
 
 			case 'product_name' :
-				return edit_post_link( $user->product_name, null, null, $user->product_id );
+				return edit_post_link( $report_item->product_name, null, null, $report_item->product_id );
 
 			case 'subscription_count' :
-				return $user->subscription_count;
+				return sprintf( '<a href="%s%d">%d</a>', admin_url( 'edit.php?post_type=shop_subscription&_wcs_product=' ), $report_item->product_id, $report_item->subscription_count );
 
-			case 'subscription_average_price' :
-				$average_subscription_amount = ( 0 !== $user->subscription_count ? wc_price( $user->product_total / $user->subscription_count ) : '-' );
+			case 'average_recurring_total' :
+				$average_subscription_amount = ( 0 !== $report_item->subscription_count ? wc_price( $report_item->recurring_total / $report_item->subscription_count ) : '-' );
+				return $average_subscription_amount;
+
+			case 'average_lifetime_value' :
+				$average_subscription_amount = ( 0 !== $report_item->subscription_count ? wc_price( $report_item->product_total / $report_item->subscription_count ) : '-' );
 				return $average_subscription_amount;
 
 		}
@@ -77,9 +81,10 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 	public function get_columns() {
 
 		$columns = array(
-			'product_name'               => __( 'Subscription Product', 'woocommerce-subscriptions' ),
-			'subscription_count'         => __( 'Current Subscriptions', 'woocommerce-subscriptions' ),
-			'subscription_average_price' => __( 'Average Recurring Amount', 'woocommerce-subscriptions' ),
+			'product_name'            => __( 'Subscription Product', 'woocommerce-subscriptions' ),
+			'subscription_count'      => sprintf( __( 'Subscription Count %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The number of subscriptions that include this product as a line item and have a status other than pending or trashed.', 'woocommerce-subscriptions' ) ) ),
+			'average_recurring_total' => sprintf( __( 'Average Recurring Line Total %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The average line total for this product on each subscription.', 'woocommerce-subscriptions' ) ) ),
+			'average_lifetime_value'  => sprintf( __( 'Average Lifetime Value %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The average line total on all orders for this product line item.', 'woocommerce-subscriptions' ) ) ),
 		);
 
 		return $columns;
@@ -100,7 +105,8 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 		global $wpdb;
 
 		$default_args = array(
-			'no_cache' => false,
+			'no_cache'     => false,
+			'order_status' => apply_filters( 'woocommerce_reports_paid_order_statuses', array( 'completed', 'processing' ) ),
 		);
 
 		$args = apply_filters( 'wcs_reports_product_args', $args );
@@ -110,8 +116,8 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 			"SELECT product.id as product_id,
 					product.post_title as product_name,
 					mo.product_type,
-					COUNT(orders.order_id) as subscription_count,
-					SUM(orders.product_total) as product_total
+					COUNT(subscription_line_items.subscription_id) as subscription_count,
+					SUM(subscription_line_items.product_total) as recurring_total
 				FROM {$wpdb->posts} AS product
 				LEFT JOIN (
 					SELECT tr.object_id AS product_id, t.slug AS product_type
@@ -123,35 +129,67 @@ class WC_Report_Subscription_By_Product extends WP_List_Table {
 				) AS mo
 					ON product.id = mo.product_id
 				LEFT JOIN (
-					SELECT wcoitems.order_id, wcoimeta.meta_value as product_id, wcoimeta.order_item_id, wcoimeta2.meta_value as product_total
+					SELECT wcoitems.order_id as subscription_id, wcoimeta.meta_value as product_id, wcoimeta.order_item_id, wcoimeta2.meta_value as product_total
 					FROM {$wpdb->prefix}woocommerce_order_items AS wcoitems
 					INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS wcoimeta
 						ON wcoimeta.order_item_id = wcoitems.order_item_id
 					INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS wcoimeta2
 						ON wcoimeta2.order_item_id = wcoitems.order_item_id
-					WHERE wcoimeta.meta_key = '_product_id'
+					WHERE wcoitems.order_item_type = 'line_item'
+						AND wcoimeta.meta_key = '_product_id'
 						AND wcoimeta2.meta_key = '_line_total'
-				) as orders
-					ON product.id = orders.product_id
-				LEFT JOIN {$wpdb->posts} as subs
-					ON subs.ID = orders.order_id
+				) as subscription_line_items
+					ON product.id = subscription_line_items.product_id
+				LEFT JOIN {$wpdb->posts} as subscriptions
+					ON subscriptions.ID = subscription_line_items.subscription_id
 				WHERE  product.post_status = 'publish'
 					 AND product.post_type = 'product'
-					 AND subs.post_type = 'shop_subscription'
-					 AND subs.post_status in ( 'wc-" . implode( "','wc-", apply_filters( 'wcs_reports_active_statuses', array( 'active', 'pending-cancel' ) ) ) . "' )
+					 AND subscriptions.post_type = 'shop_subscription'
+					 AND subscriptions.post_status NOT IN( 'wc-pending', 'trash' )
 				GROUP BY product.id
-				ORDER BY COUNT(orders.order_id) DESC" );
+				ORDER BY COUNT(subscription_line_items.subscription_id) DESC" );
 
 		$cached_results = get_transient( strtolower( __CLASS__ ) );
 		$query_hash     = md5( $query );
 
 		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
 			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
-			$cached_results[ $query_hash ] = apply_filters( 'wcs_reports_product_data', $wpdb->get_results( $query ), $args );
+			$cached_results[ $query_hash ] = apply_filters( 'wcs_reports_product_data', $wpdb->get_results( $query, OBJECT_K ), $args );
 			set_transient( strtolower( __CLASS__ ), $cached_results, WEEK_IN_SECONDS );
 		}
 
-		return $cached_results[ $query_hash ];
+		$report_data = $cached_results[ $query_hash ];
+
+		// Now let's get the total revenue for each product so we can provide an average lifetime value for that product
+		$query = apply_filters( 'wcs_reports_product_lifetime_value_query',
+			"SELECT wcoimeta.meta_value as product_id, SUM(wcoimeta2.meta_value) as product_total
+				FROM {$wpdb->prefix}woocommerce_order_items AS wcoitems
+				INNER JOIN {$wpdb->posts} AS wcorders
+					ON wcoitems.order_id = wcorders.ID
+					AND wcorders.post_type = 'shop_order'
+					AND wcorders.post_status IN ( 'wc-" . implode( "','wc-", $args['order_status'] ) . "' )
+				INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS wcoimeta
+					ON wcoimeta.order_item_id = wcoitems.order_item_id
+				INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS wcoimeta2
+					ON wcoimeta2.order_item_id = wcoitems.order_item_id
+				WHERE wcoimeta.meta_key = '_product_id'
+					AND wcoimeta2.meta_key = '_line_total'
+				GROUP BY product_id" );
+
+		$query_hash = md5( $query );
+
+		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
+			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
+			$cached_results[ $query_hash ] = apply_filters( 'wcs_reports_product_lifetime_value_data', $wpdb->get_results( $query, OBJECT_K ), $args );
+			set_transient( strtolower( __CLASS__ ), $cached_results, WEEK_IN_SECONDS );
+		}
+
+		// Add the product total to each item
+		foreach ( array_keys( $report_data ) as $product_id ) {
+			$report_data[ $product_id ]->product_total = isset( $cached_results[ $query_hash ][ $product_id ] ) ? $cached_results[ $query_hash ][ $product_id ]->product_total : 0;
+		}
+
+		return $report_data;
 	}
 
 	/**
