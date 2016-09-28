@@ -362,12 +362,17 @@ class WC_Subscriptions_Order {
 
 		if ( wcs_order_contains_subscription( $order_id, 'any' ) ) {
 
-			$subscription_count = count( wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'any' ) ) );
+			$subscription_count           = count( wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'any' ) ) );
+			$thank_you_message            = '<p>' . _n( 'Your subscription will be activated when payment clears.', 'Your subscriptions will be activated when payment clears.', $subscription_count, 'woocommerce-subscriptions' ) . '</p>';
+			$my_account_subscriptions_url = get_permalink( wc_get_page_id( 'myaccount' ) );
 
-			$thank_you_message = '<p>' . _n( 'Your subscription will be activated when payment clears.', 'Your subscriptions will be activated when payment clears.', $subscription_count, 'woocommerce-subscriptions' ) . '</p>';
+			// Post WC 2.6 link directly to the My Account subscriptions endpoint
+			if ( ! WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
+				$my_account_subscriptions_url = wc_get_endpoint_url( 'subscriptions', '', wc_get_page_permalink( 'myaccount' ) );
+			}
 
 			// translators: placeholders are opening and closing link tags
-			$thank_you_message .= '<p>' . sprintf( _n( 'View the status of your subscription in %syour account%s.', 'View the status of your subscriptions in %syour account%s.', $subscription_count, 'woocommerce-subscriptions' ), '<a href="' . get_permalink( wc_get_page_id( 'myaccount' ) ) . '">', '</a>' ) . '</p>';
+			$thank_you_message .= '<p>' . sprintf( _n( 'View the status of your subscription in %syour account%s.', 'View the status of your subscriptions in %syour account%s.', $subscription_count, 'woocommerce-subscriptions' ), '<a href="' . $my_account_subscriptions_url . '">', '</a>' ) . '</p>';
 			echo wp_kses( apply_filters( 'woocommerce_subscriptions_thank_you_message', $thank_you_message, $order_id ), array( 'a' => array( 'href' => array(), 'title' => array() ), 'p' => array(), 'em' => array(), 'strong' => array() ) );
 		}
 
