@@ -229,7 +229,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 		$subscription = wcs_create_subscription( $args );
 
 		if ( is_wp_error( $subscription ) ) {
-			throw new WC_REST_Exception( 'woocommerce_rest_cannot_create_subscription', sprintf( __( 'Cannot create subscription: %s.', 'woocommerce' ), implode( ', ', $subscription->get_error_messages() ) ), 400 );
+			throw new WC_REST_Exception( 'woocommerce_rest_cannot_create_subscription', sprintf( __( 'Cannot create subscription: %s.', 'woocommerce-subscriptions' ), implode( ', ', $subscription->get_error_messages() ) ), 400 );
 		}
 
 		$this->update_schedule( $subscription, $args );
