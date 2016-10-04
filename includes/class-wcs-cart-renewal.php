@@ -100,6 +100,14 @@ class WCS_Cart_Renewal {
 
 			if ( $order->order_key == $order_key && $order->has_status( array( 'pending', 'failed' ) ) && wcs_order_contains_renewal( $order ) ) {
 
+				if ( get_current_user_id() !== $order->get_user_id() ) {
+
+					wc_add_notice( __( 'That doesn\'t appear to be your order.', 'woocommerce-subscriptions' ), 'error' );
+
+					wp_safe_redirect( get_permalink( wc_get_page_id( 'myaccount' ) ) );
+					exit;
+				}
+
 				$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
 
 				do_action( 'wcs_before_renewal_setup_cart_subscriptions', $subscriptions, $order );
