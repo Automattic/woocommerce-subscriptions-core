@@ -453,13 +453,6 @@ function wcs_get_subscription_orders( $return_fields = 'ids', $order_type = 'par
 			);
 		}
 
-		if ( $any_order_type || in_array( 'resubscribe', $order_type ) ) {
-			$meta_query[] = array(
-				'key'     => '_subscription_resubscribe',
-				'compare' => 'EXISTS',
-			);
-		}
-
 		if ( $any_order_type || in_array( 'switch', $order_type ) ) {
 			$meta_query[] = array(
 				'key'     => '_subscription_switch',
@@ -467,15 +460,25 @@ function wcs_get_subscription_orders( $return_fields = 'ids', $order_type = 'par
 			);
 		}
 
-		$order_ids = array_merge( $order_ids, get_posts( array(
-			'posts_per_page' => -1,
-			'post_type'      => 'shop_order',
-			'post_status'    => 'any',
-			'fields'         => 'ids',
-			'orderby'        => 'ID',
-			'order'          => 'DESC',
-			'meta_query'     => $meta_query,
-		) ) );
+		// $any_order_type handled by 'parent' query above as all resubscribe orders are all parent orders
+		if ( in_array( 'resubscribe', $order_type ) && ! in_array( 'parent', $order_type ) ) {
+			$meta_query[] = array(
+				'key'     => '_subscription_resubscribe',
+				'compare' => 'EXISTS',
+			);
+		}
+
+		if ( count( $meta_query ) > 1 ) {
+			$order_ids = array_merge( $order_ids, get_posts( array(
+				'posts_per_page' => -1,
+				'post_type'      => 'shop_order',
+				'post_status'    => 'any',
+				'fields'         => 'ids',
+				'orderby'        => 'ID',
+				'order'          => 'DESC',
+				'meta_query'     => $meta_query,
+			) ) );
+		}
 	}
 
 	if ( 'all' == $return_fields ) {
