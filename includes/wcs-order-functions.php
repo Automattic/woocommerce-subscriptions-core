@@ -410,6 +410,91 @@ function wcs_order_contains_subscription( $order, $order_type = array( 'parent',
 }
 
 /**
+ * Get all the orders that relate to a subscription in some form (rather than only the orders associated with
+ * a specific subscription).
+ *
+ * @param string $return_fields The columns to return, either 'all' or 'ids'
+ * @param array|string $order_type Can include 'any', 'parent', 'renewal', 'resubscribe' and/or 'switch'. Defaults to 'parent'.
+ * @return array The orders that relate to a subscription, if any. Will contain either as just IDs or WC_Order objects depending on $return_fields value.
+ * @since 2.1
+ */
+function wcs_get_subscription_orders( $return_fields = 'ids', $order_type = 'parent' ) {
+	global $wpdb;
+
+	// Accept either an array or string (to make it more convenient for singular types, like 'parent' or 'any')
+	if ( ! is_array( $order_type ) ) {
+		$order_type = array( $order_type );
+	}
+
+	$any_order_type = in_array( 'any', $order_type ) ? true : false;
+	$return_fields  = ( 'ids' == $return_fields ) ? $return_fields : 'all';
+
+	$orders    = array();
+	$order_ids = array();
+
+	if ( $any_order_type || in_array( 'parent', $order_type ) ) {
+		$order_ids = array_merge( $order_ids, $wpdb->get_col(
+			"SELECT DISTINCT post_parent FROM {$wpdb->posts}
+			 WHERE post_type = 'shop_subscription'
+			 AND post_parent <> 0"
+		) );
+	}
+
+	if ( $any_order_type || in_array( 'renewal', $order_type ) || in_array( 'resubscribe', $order_type ) || in_array( 'switch', $order_type ) ) {
+
+		$meta_query = array(
+			'relation' => 'OR',
+		);
+
+		if ( $any_order_type || in_array( 'renewal', $order_type ) ) {
+			$meta_query[] = array(
+				'key'     => '_subscription_renewal',
+				'compare' => 'EXISTS',
+			);
+		}
+
+		if ( $any_order_type || in_array( 'switch', $order_type ) ) {
+			$meta_query[] = array(
+				'key'     => '_subscription_switch',
+				'compare' => 'EXISTS',
+			);
+		}
+
+		// $any_order_type handled by 'parent' query above as all resubscribe orders are all parent orders
+		if ( in_array( 'resubscribe', $order_type ) && ! in_array( 'parent', $order_type ) ) {
+			$meta_query[] = array(
+				'key'     => '_subscription_resubscribe',
+				'compare' => 'EXISTS',
+			);
+		}
+
+		if ( count( $meta_query ) > 1 ) {
+			$order_ids = array_merge( $order_ids, get_posts( array(
+				'posts_per_page' => -1,
+				'post_type'      => 'shop_order',
+				'post_status'    => 'any',
+				'fields'         => 'ids',
+				'orderby'        => 'ID',
+				'order'          => 'DESC',
+				'meta_query'     => $meta_query,
+			) ) );
+		}
+	}
+
+	if ( 'all' == $return_fields ) {
+		foreach ( $order_ids as $order_id ) {
+			$orders[ $order_id ] = wc_get_order( $order_id );
+		}
+	} else {
+		foreach ( $order_ids as $order_id ) {
+			$orders[ $order_id ] = $order_id;
+		}
+	}
+
+	return apply_filters( 'wcs_get_subscription_orders', $orders, $return_fields, $order_type );
+}
+
+/**
  * A wrapper for getting a specific item from a subscription.
  *
  * WooCommerce has a wc_add_order_item() function, wc_update_order_item() function and wc_delete_order_item() function,

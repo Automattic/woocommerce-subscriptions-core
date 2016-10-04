@@ -676,33 +676,31 @@ class WC_Subscriptions_Order {
 	 * @since version 1.5
 	 */
 	public static function restrict_manage_subscriptions() {
-		global $typenow, $wp_query;
+		global $typenow;
 
 		if ( 'shop_order' != $typenow ) {
 			return;
 		}?>
 		<select name='shop_order_subtype' id='dropdown_shop_order_subtype'>
-			<option value=""><?php esc_html_e( 'Show all types', 'woocommerce-subscriptions' ); ?></option>
+			<option value=""><?php esc_html_e( 'All orders types', 'woocommerce-subscriptions' ); ?></option>
 			<?php
-			$terms = array( 'Original', 'Renewal' );
+			$order_types = array(
+				'original'    => _x( 'Original', 'An order type', 'woocommerce-subscriptions' ),
+				'parent'      => _x( 'Subscription Parent', 'An order type', 'woocommerce-subscriptions' ),
+				'renewal'     => _x( 'Subscription Renewal', 'An order type', 'woocommerce-subscriptions' ),
+				'resubscribe' => _x( 'Subscription Resubscribe', 'An order type', 'woocommerce-subscriptions' ),
+				'switch'      => _x( 'Subscription Switch', 'An order type', 'woocommerce-subscriptions' ),
+				'regular'     => _x( 'Non-subscription', 'An order type', 'woocommerce-subscriptions' ),
+			);
 
-			foreach ( $terms as $term ) {
-				echo '<option value="' . esc_attr( $term ) . '"';
+			foreach ( $order_types as $order_type_key => $order_type_description ) {
+				echo '<option value="' . esc_attr( $order_type_key ) . '"';
 
 				if ( isset( $_GET['shop_order_subtype'] ) && $_GET['shop_order_subtype'] ) {
-					selected( $term, $_GET['shop_order_subtype'] );
+					selected( $order_type_key, $_GET['shop_order_subtype'] );
 				}
 
-				switch ( $term ) {
-					case 'Original':
-						$term_text = _x( 'Original', 'An order type', 'woocommerce-subscriptions' );
-						break;
-					case 'Renewal':
-						$term_text = _x( 'Renewal', 'An order type', 'woocommerce-subscriptions' );
-						break;
-				}
-
-				echo '>' . esc_html( $term_text ) . '</option>';
+				echo '>' . esc_html( $order_type_description ) . '</option>';
 			}
 			?>
 			</select>
@@ -718,21 +716,51 @@ class WC_Subscriptions_Order {
 	 * @since 1.5
 	 */
 	public static function orders_by_type_query( $vars ) {
-		global $typenow, $wp_query;
+		global $typenow, $wpdb;
 
-		if ( 'shop_order' == $typenow && isset( $_GET['shop_order_subtype'] ) ) {
+		if ( 'shop_order' == $typenow && ! empty( $_GET['shop_order_subtype'] ) ) {
 
-			if ( 'Original' == $_GET['shop_order_subtype'] ) {
-				$compare_operator = 'NOT EXISTS';
-			} elseif ( 'Renewal' == $_GET['shop_order_subtype'] ) {
-				$compare_operator = 'EXISTS';
-			}
+			if ( 'original' == $_GET['shop_order_subtype'] || 'regular' == $_GET['shop_order_subtype'] ) {
 
-			if ( ! empty( $compare_operator ) ) {
+				$vars['meta_query']['relation'] = 'AND';
+
 				$vars['meta_query'][] = array(
 					'key'     => '_subscription_renewal',
-					'compare' => $compare_operator,
+					'compare' => 'NOT EXISTS',
 				);
+
+				$vars['meta_query'][] = array(
+					'key'     => '_subscription_switch',
+					'compare' => 'NOT EXISTS',
+				);
+
+			} elseif ( 'parent' == $_GET['shop_order_subtype'] ) {
+
+				$vars['post__in'] = wcs_get_subscription_orders();
+
+			} else {
+
+				switch ( $_GET['shop_order_subtype'] ) {
+					case 'renewal' :
+						$meta_key = '_subscription_renewal';
+						break;
+					case 'resubscribe' :
+						$meta_key = '_subscription_resubscribe';
+						break;
+					case 'switch' :
+						$meta_key = '_subscription_switch';
+						break;
+				}
+
+				$vars['meta_query'][] = array(
+					'key'     => $meta_key,
+					'compare' => 'EXISTS',
+				);
+			}
+
+			// Also exclude parent orders from non-subscription query
+			if ( 'regular' == $_GET['shop_order_subtype'] ) {
+				$vars['post__not_in'] = wcs_get_subscription_orders();
 			}
 		}
 
