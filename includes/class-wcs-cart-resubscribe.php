@@ -90,9 +90,15 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 				$subscriptions = wcs_get_subscriptions_for_resubscribe_order( $order );
 
 				foreach ( $subscriptions as $subscription ) {
-					$this->setup_cart( $subscription, array(
-						'subscription_id' => $subscription->id,
-					) );
+					if ( current_user_can( 'subscribe_again', $subscription->id ) ) {
+						$this->setup_cart( $subscription, array(
+							'subscription_id' => $subscription->id,
+						) );
+					} else {
+						wc_add_notice( __( 'That doesn\'t appear to be one of your subscriptions.', 'woocommerce-subscriptions' ), 'error' );
+						wp_safe_redirect( get_permalink( wc_get_page_id( 'myaccount' ) ) );
+						exit;
+					}
 				}
 
 				$redirect_to = WC()->cart->get_checkout_url();
