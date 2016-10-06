@@ -41,7 +41,17 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 
 			if ( $order->order_key == $order_key && $order->has_status( array( 'pending', 'failed' ) ) && wcs_order_contains_subscription( $order, 'parent' ) && ! wcs_order_contains_subscription( $order, 'resubscribe' ) ) {
 
-				if ( get_current_user_id() !== $order->get_user_id() ) {
+				if ( ! is_user_logged_in() ) {
+
+					$redirect = add_query_arg( array(
+						'wcs_redirect'    => 'pay_for_order',
+						'wcs_redirect_id' => $order_id,
+					), get_permalink( wc_get_page_id( 'myaccount' ) ) );
+
+					wp_safe_redirect( $redirect );
+					exit;
+
+				} elseif ( get_current_user_id() !== $order->get_user_id() ) {
 
 					wc_add_notice( __( 'That doesn\'t appear to be your order.', 'woocommerce-subscriptions' ), 'error' );
 

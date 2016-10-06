@@ -85,6 +85,17 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 
 			if ( $order->order_key == $order_key && $order->has_status( array( 'pending', 'failed' ) ) && wcs_order_contains_resubscribe( $order ) ) {
 
+				if ( ! is_user_logged_in() ) {
+
+					$redirect = add_query_arg( array(
+						'wcs_redirect'    => 'pay_for_order',
+						'wcs_redirect_id' => $order_id,
+					), get_permalink( wc_get_page_id( 'myaccount' ) ) );
+
+					wp_safe_redirect( $redirect );
+					exit;
+				}
+
 				wc_add_notice( __( 'Complete checkout to resubscribe.', 'woocommerce-subscriptions' ), 'success' );
 
 				$subscriptions = wcs_get_subscriptions_for_resubscribe_order( $order );
