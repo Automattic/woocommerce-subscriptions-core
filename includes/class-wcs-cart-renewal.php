@@ -144,6 +144,7 @@ class WCS_Cart_Renewal {
 				if ( WC()->cart->cart_contents_count != 0 ) {
 					// Store renewal order's ID in session so it can be re-used after payment
 					WC()->session->set( 'order_awaiting_payment', $order_id );
+					wc_add_notice( __( 'Complete checkout to renew your subscription.', 'woocommerce-subscriptions' ), 'success' );
 				}
 
 				wp_safe_redirect( WC()->cart->get_checkout_url() );
