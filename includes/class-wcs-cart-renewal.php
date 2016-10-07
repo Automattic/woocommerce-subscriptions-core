@@ -793,7 +793,7 @@ class WCS_Cart_Renewal {
 	 * @return Mixed | The unchanged order param
 	 * @since  2.1.0
 	 */
-	public static function set_renewal_order_cart_hash( $order ) {
+	public function set_renewal_order_cart_hash( $order ) {
 
 		if ( $item = wcs_cart_contains_renewal() ) {
 			$this->set_cart_hash( $item[ $this->cart_item_key ]['renewal_order_id'] );
