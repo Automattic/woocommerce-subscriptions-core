@@ -77,6 +77,9 @@ class WCS_Cart_Renewal {
 
 		// Use original order price when resubscribing to products with addons (to ensure the adds on prices are included)
 		add_filter( 'woocommerce_product_addons_adjust_price', array( &$this, 'product_addons_adjust_price' ), 10, 2 );
+
+		// When loading checkout address details, use the renewal order address details for renewals
+		add_filter( 'woocommerce_checkout_get_value', array( &$this, 'checkout_get_value' ), 10, 2 );
 	}
 
 	/**
@@ -398,6 +401,34 @@ class WCS_Cart_Renewal {
 		}
 
 		return $cart_item_session_data;
+	}
+
+	/**
+	 * Returns address details from the renewal order if the checkout is for a renewal.
+	 *
+	 * @param string $value Default checkout field value.
+	 * @param string $key The checkout form field name/key
+	 * @return string $value Checkout field value.
+	 */
+	public function checkout_get_value( $value, $key ) {
+
+		// Only hook in after WC()->checkout() has been initialised
+		if ( did_action( 'woocommerce_checkout_init' ) > 0 ) {
+
+			$address_fields = array_merge( WC()->checkout()->checkout_fields['billing'], WC()->checkout()->checkout_fields['shipping'] );
+
+			if ( array_key_exists( $key, $address_fields ) && false !== ( $item = $this->cart_contains() ) ) {
+
+				// Get the most specific order object, which will be the renewal order for renewals, initial order for initial payments, or a subscription for switches/resubscribes
+				$order = $this->get_order( $item );
+
+				if ( isset( $order->$key ) ) {
+					$value = $order->$key;
+				}
+			}
+		}
+
+		return $value;
 	}
 
 	/**
