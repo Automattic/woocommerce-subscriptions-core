@@ -27,6 +27,9 @@ class WCS_Retry_Admin {
 			add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ), 50 );
 
 			add_filter( 'wcs_display_date_type', array( $this, 'maybe_hide_date_type' ), 10, 3 );
+
+			// Display the number of retries in the Orders list table
+			add_action( 'manage_shop_order_posts_custom_column', __CLASS__ . '::add_column_content', 20, 2 );
 		}
 	}
 
@@ -63,6 +66,20 @@ class WCS_Retry_Admin {
 		}
 
 		return $show_date_type;
+	}
+
+	/**
+	 * Dispay the number of retries on a renewal order in the Orders list table.
+	 *
+	 * @param string $column The string of the current column
+	 * @param int $post_id The ID of the order
+	 * @since 2.1
+	 */
+	public static function add_column_content( $column, $post_id ) {
+
+		if ( 'subscription_relationship' == $column && wcs_order_contains_subscription( $post_id, 'renewal' ) && ( $retry_count = WCS_Retry_Manager::store()->get_retry_count_for_order( $post_id ) ) > 0 ) {
+			echo '<br /><span class="payment_retry tips" data-tip="' . esc_attr( sprintf( __( '%d Failed Payment Retries', 'woocommerce-subscriptions' ), $retry_count ) ) . '"></span>';
+		}
 	}
 
 	/**
