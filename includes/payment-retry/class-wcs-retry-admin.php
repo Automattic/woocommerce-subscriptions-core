@@ -77,8 +77,44 @@ class WCS_Retry_Admin {
 	 */
 	public static function add_column_content( $column, $post_id ) {
 
-		if ( 'subscription_relationship' == $column && wcs_order_contains_subscription( $post_id, 'renewal' ) && ( $retry_count = WCS_Retry_Manager::store()->get_retry_count_for_order( $post_id ) ) > 0 ) {
-			echo '<br /><span class="payment_retry tips" data-tip="' . esc_attr( sprintf( __( '%d Failed Payment Retries', 'woocommerce-subscriptions' ), $retry_count ) ) . '"></span>';
+		if ( 'subscription_relationship' == $column && wcs_order_contains_renewal( $post_id ) ) {
+
+			$retries = WCS_Retry_Manager::store()->get_retries_for_order( $post_id );
+
+			if ( ! empty( $retries ) ) {
+
+				$retry_counts = array();
+				$tool_tip     = '';
+
+				foreach ( $retries as $retry ) {
+					$retry_counts[ $retry->get_status() ] = isset( $retry_counts[ $retry->get_status() ] ) ? ++$retry_counts[ $retry->get_status() ] : 1;
+				}
+
+				foreach ( $retry_counts as $retry_status => $retry_count ) {
+
+					switch ( $retry_status ) {
+						case 'pending' :
+							$tool_tip .= sprintf( _n( '%d Pending Payment Retry', '%d Pending Payment Retries', $retry_count, 'woocommerce-subscriptions' ), $retry_count );
+							break;
+						case 'processing' :
+							$tool_tip .= sprintf( _n( '%d Processing Payment Retry', '%d Processing Payment Retries', $retry_count, 'woocommerce-subscriptions' ), $retry_count );
+							break;
+						case 'failed' :
+							$tool_tip .= sprintf( _n( '%d Failed Payment Retry', '%d Failed Payment Retries', $retry_count, 'woocommerce-subscriptions' ), $retry_count );
+							break;
+						case 'complete' :
+							$tool_tip .= sprintf( _n( '%d Successful Payment Retry', '%d Successful Payment Retries', $retry_count, 'woocommerce-subscriptions' ), $retry_count );
+							break;
+						case 'cancelled' :
+							$tool_tip .= sprintf( _n( '%d Cancelled Payment Retry', '%d Cancelled Payment Retries', $retry_count, 'woocommerce-subscriptions' ), $retry_count );
+							break;
+					}
+
+					$tool_tip .= '<br />';
+				}
+
+				echo '<br /><span class="payment_retry tips" data-tip="' . esc_attr( $tool_tip ) . '"></span>';
+			}
 		}
 	}
 
