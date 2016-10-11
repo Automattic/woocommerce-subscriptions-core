@@ -128,8 +128,8 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 	/**
 	 * Get the hook to use in the action scheduler for the date type
 	 *
-	 * @param string $date_type Can be 'start', 'trial_end', 'next_payment', 'last_payment', 'expiration', 'end_of_prepaid_term' or a custom date type
 	 * @param object $subscription An instance of WC_Subscription to get the hook for
+	 * @param string $date_type Can be 'start', 'trial_end', 'next_payment', 'last_payment', 'expiration', 'end_of_prepaid_term' or a custom date type
 	 */
 	protected function get_scheduled_action_hook( $subscription, $date_type ) {
 
