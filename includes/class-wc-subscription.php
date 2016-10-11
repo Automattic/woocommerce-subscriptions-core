@@ -1475,7 +1475,7 @@ class WC_Subscription extends WC_Order {
 	public function get_last_order( $return_fields = 'ids', $order_types = array( 'parent', 'renewal' ) ) {
 
 		$return_fields  = ( 'ids' == $return_fields ) ? $return_fields : 'all';
-		$order_types    = ( 'any' == $order_types ) ? array( 'parent', 'renewal', 'switch' ) : $order_types;
+		$order_types    = ( 'any' == $order_types ) ? array( 'parent', 'renewal', 'switch' ) : (array) $order_types;
 		$related_orders = array();
 
 		foreach ( $order_types as $order_type ) {
