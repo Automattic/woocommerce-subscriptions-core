@@ -120,10 +120,15 @@ class WCS_Retry_Manager {
 			return;
 		}
 
-		$last_order  = $subscription->get_last_order( 'all' );
+		$last_order = $subscription->get_last_order( 'all', 'renewal' );
+
+		if ( false === $last_order ) {
+			return;
+		}
+
 		$retry_count = self::store()->get_retry_count_for_order( $last_order->id );
 
-		if ( wcs_order_contains_renewal( $last_order ) && self::rules()->has_rule( $retry_count, $last_order->id ) ) {
+		if ( self::rules()->has_rule( $retry_count, $last_order->id ) ) {
 
 			$retry_rule = self::rules()->get_rule( $retry_count, $last_order->id );
 
@@ -167,7 +172,12 @@ class WCS_Retry_Manager {
 			$subscription = wcs_get_subscription( $subscription );
 		}
 
-		$last_order = $subscription->get_last_order( 'all' );
+		$last_order = $subscription->get_last_order( 'all', 'renewal' );
+
+		if ( false === $last_order ) {
+			return;
+		}
+
 		$last_retry = self::store()->get_last_retry_for_order( $last_order->id );
 
 		// we only need to retry the payment if we have applied a retry rule for the order and it still needs payment
