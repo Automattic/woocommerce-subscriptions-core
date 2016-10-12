@@ -45,7 +45,7 @@ class WCS_Retry_Manager {
 
 			add_action( 'woocommerce_subscription_status_updated', __CLASS__ . '::delete_retry_payment_date', 0, 3 );
 
-			add_action( 'woocommerce_subscription_renewal_payment_failed', __CLASS__ . '::maybe_apply_retry_rule', 10 );
+			add_action( 'woocommerce_subscription_renewal_payment_failed', __CLASS__ . '::maybe_apply_retry_rule', 10, 2 );
 
 			add_action( 'woocommerce_scheduled_subscription_payment_retry', __CLASS__ . '::maybe_retry_payment' );
 		}
@@ -112,17 +112,12 @@ class WCS_Retry_Manager {
 	 * When a payment fails, apply a retry rule, if one exists that applies to this failure.
 	 *
 	 * @param WC_Subscription The subscription on which the payment failed
+	 * @param WC_Order The order on which the payment failed (will be the most recent order on the subscription specified with the subscription param)
 	 * @since 2.1
 	 */
-	public static function maybe_apply_retry_rule( $subscription ) {
+	public static function maybe_apply_retry_rule( $subscription, $last_order ) {
 
 		if ( $subscription->is_manual() || $subscription->payment_method_supports( 'gateway_scheduled_payments' ) ) {
-			return;
-		}
-
-		$last_order = $subscription->get_last_order( 'all', 'renewal' );
-
-		if ( false === $last_order ) {
 			return;
 		}
 
