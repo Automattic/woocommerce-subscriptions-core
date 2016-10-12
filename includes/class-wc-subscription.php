@@ -1302,7 +1302,7 @@ class WC_Subscription extends WC_Order {
 		do_action( 'woocommerce_subscription_payment_complete', $this );
 
 		if ( false !== $last_order && wcs_order_contains_renewal( $last_order ) ) {
-			do_action( 'woocommerce_subscription_renewal_payment_complete', $this );
+			do_action( 'woocommerce_subscription_renewal_payment_complete', $this, $last_order );
 		}
 	}
 
@@ -1335,7 +1335,7 @@ class WC_Subscription extends WC_Order {
 		do_action( 'woocommerce_subscription_payment_failed', $this, $new_status );
 
 		if ( false !== $last_order && wcs_order_contains_renewal( $last_order ) ) {
-			do_action( 'woocommerce_subscription_renewal_payment_failed', $this );
+			do_action( 'woocommerce_subscription_renewal_payment_failed', $this, $last_order );
 		}
 	}
 
