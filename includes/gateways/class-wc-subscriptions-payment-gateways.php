@@ -165,6 +165,17 @@ class WC_Subscriptions_Payment_Gateways {
 	}
 
 	/**
+	 * Fire a gateway specific hook for when a subscription renewal payment is due.
+	 *
+	 * @since 2.1.0
+	 */
+	public static function trigger_gateway_renewal_payment_hook( $renewal_order ) {
+		if ( ! empty( $renewal_order ) && $renewal_order->get_total() > 0 && ! empty( $renewal_order->payment_method ) ) {
+			do_action( 'woocommerce_scheduled_subscription_payment_' . $renewal_order->payment_method, $renewal_order->get_total(), $renewal_order );
+		}
+	}
+
+	/**
 	 * Fire a gateway specific hook for when a subscription payment is due.
 	 *
 	 * @since 1.0
@@ -186,11 +197,8 @@ class WC_Subscriptions_Payment_Gateways {
 			throw new InvalidArgumentException( sprintf( __( 'Subscription doesn\'t exist in scheduled action: %d', 'woocommerce-subscriptions' ), $subscription_id ) );
 		}
 
-		if ( ! $subscription->is_manual() && $subscription->get_total() > 0 && ! empty( $subscription->payment_method ) ) {
-			$last_renewal_order = $subscription->get_last_order( 'all', array( 'renewal' ) );
-			if ( ! empty( $last_renewal_order ) && $last_renewal_order->get_total() > 0 ) {
-				do_action( 'woocommerce_scheduled_subscription_payment_' . $subscription->payment_method, $last_renewal_order->get_total(), $last_renewal_order );
-			}
+		if ( ! $subscription->is_manual() ) {
+			self::trigger_gateway_renewal_payment_hook( $subscription->get_last_order( 'all', 'renewal' ) );
 		}
 	}
 
