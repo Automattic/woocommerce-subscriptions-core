@@ -562,10 +562,10 @@ class WCS_Admin_Post_Types {
 							if ( wc_product_sku_enabled() && $_product && $_product->get_sku() ) {
 								$item_name .= $_product->get_sku() . ' - ';
 							}
-							$item_name .= $item['name'];
 
-							$item_name = apply_filters( 'woocommerce_order_item_name', $item_name, $item );
-							$item_name = esc_html( $item_name );
+							$item_name .= apply_filters( 'woocommerce_order_item_name', $item['name'], $item );
+							$item_name  = esc_html( $item_name );
+
 							if ( $item_quantity > 1 ) {
 								$item_name = sprintf( '%s &times; %s', absint( $item_quantity ), $item_name );
 							}
@@ -597,10 +597,19 @@ class WCS_Admin_Post_Types {
 								<td class="qty"><?php echo absint( $item['qty'] ); ?></td>
 								<td class="name">
 									<?php
+									$item_name = '';
 									if ( wc_product_sku_enabled() && $_product && $_product->get_sku() ) {
-										echo esc_html( $_product->get_sku() ) . ' - ';
+										$item_name .= $_product->get_sku() . ' - ';
 									}
-									echo esc_html( apply_filters( 'woocommerce_order_item_name', $item['name'], $item ) );
+
+									$item_name .= apply_filters( 'woocommerce_order_item_name', $item['name'], $item );
+									$item_name  = esc_html( $item_name );
+
+									if ( $_product ) {
+										$item_name = sprintf( '<a href="%s">%s</a>', get_edit_post_link( $_product->id ), $item_name );
+									}
+
+									echo wp_kses( $item_name, array( 'a' => array( 'href' => array() ) ) );
 									if ( $item_meta_html ) {
 										echo wcs_help_tip( $item_meta_html );
 									} ?>
