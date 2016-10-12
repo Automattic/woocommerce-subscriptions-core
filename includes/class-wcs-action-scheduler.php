@@ -165,6 +165,16 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 	 * @param object $subscription An instance of WC_Subscription to get the hook for
 	 */
 	protected function get_action_args( $date_type, $subscription ) {
-		return apply_filters( 'woocommerce_subscriptions_scheduled_action_args', array( 'subscription_id' => $subscription->id ), $date_type, $subscription );
+
+		if ( 'payment_retry' == $date_type ) {
+
+			$last_order_id = $subscription->get_last_order( 'ids', 'renewal' );
+			$action_args   = array( 'order_id' => $last_order_id );
+
+		} else {
+			$action_args = array( 'subscription_id' => $subscription->id );
+		}
+
+		return apply_filters( 'woocommerce_subscriptions_scheduled_action_args', $action_args, $date_type, $subscription );
 	}
 }
