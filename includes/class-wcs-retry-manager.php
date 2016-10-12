@@ -117,7 +117,7 @@ class WCS_Retry_Manager {
 	 */
 	public static function maybe_apply_retry_rule( $subscription, $last_order ) {
 
-		if ( $subscription->is_manual() || $subscription->payment_method_supports( 'gateway_scheduled_payments' ) ) {
+		if ( $subscription->is_manual() || ! $subscription->payment_method_supports( 'subscription_date_changes' ) ) {
 			return;
 		}
 
