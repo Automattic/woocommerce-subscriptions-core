@@ -104,6 +104,14 @@ class WCS_Retry_Manager {
 	 */
 	public static function delete_retry_payment_date( $subscription, $new_status, $old_status ) {
 		if ( in_array( $new_status, array( 'active', 'pending-cancel', 'cancelled', 'switched', 'expired' ) ) ) {
+
+			$last_order = $subscription->get_last_order( 'all' );
+			$last_retry = ( $last_order ) ? self::store()->get_last_retry_for_order( $last_order->id ) : null;
+
+			if ( null !== $last_retry && 'cancelled' !== $last_retry->get_status() ) {
+				self::update_retry_status( $last_retry, 'cancelled', $last_retry->get_date_gmt() );
+			}
+
 			$subscription->delete_date( 'payment_retry' );
 		}
 	}
