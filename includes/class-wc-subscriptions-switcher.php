@@ -919,6 +919,11 @@ class WC_Subscriptions_Switcher {
 			$item_id      = absint( $_GET['item'] );
 			$item         = wcs_get_order_item( $item_id, $subscription );
 
+			// Prevent switching to non-subscription product
+			if ( ! WC_Subscriptions_Product::is_subscription( $product_id ) ) {
+				throw new Exception( __( 'You can only switch to a subscription product.', 'woocommerce-subscriptions' ) );
+			}
+
 			// Check if the chosen variation's attributes are different to the existing subscription's attributes (to support switching between a "catch all" variation)
 			if ( empty( $item ) ) {
 
