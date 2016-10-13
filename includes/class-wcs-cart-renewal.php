@@ -40,6 +40,9 @@ class WCS_Cart_Renewal {
 
 		// When a failed/pending renewal order is paid for via checkout, ensure a new order isn't created due to mismatched cart hashes
 		add_filter( 'woocommerce_create_order', array( &$this, 'set_renewal_order_cart_hash' ), 10, 1 );
+
+		// When a user is prevented from paying for a failed/pending renewal order because they aren't logged in, redirect them back after login
+		add_filter( 'woocommerce_login_redirect', array( &$this, 'maybe_redirect_after_login' ), 10 , 1 );
 	}
 
 	/**
@@ -100,6 +103,25 @@ class WCS_Cart_Renewal {
 
 			if ( $order->order_key == $order_key && $order->has_status( array( 'pending', 'failed' ) ) && wcs_order_contains_renewal( $order ) ) {
 
+				// If a user isn't logged in, allow them to login first and then redirect back
+				if ( ! is_user_logged_in() ) {
+
+					$redirect = add_query_arg( array(
+						'wcs_redirect'    => 'pay_for_order',
+						'wcs_redirect_id' => $order_id,
+					), get_permalink( wc_get_page_id( 'myaccount' ) ) );
+
+					wp_safe_redirect( $redirect );
+					exit;
+
+				} elseif ( get_current_user_id() !== $order->get_user_id() ) {
+
+					wc_add_notice( __( 'That doesn\'t appear to be your order.', 'woocommerce-subscriptions' ), 'error' );
+
+					wp_safe_redirect( get_permalink( wc_get_page_id( 'myaccount' ) ) );
+					exit;
+				}
+
 				$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
 
 				do_action( 'wcs_before_renewal_setup_cart_subscriptions', $subscriptions, $order );
@@ -122,6 +144,7 @@ class WCS_Cart_Renewal {
 				if ( WC()->cart->cart_contents_count != 0 ) {
 					// Store renewal order's ID in session so it can be re-used after payment
 					WC()->session->set( 'order_awaiting_payment', $order_id );
+					wc_add_notice( __( 'Complete checkout to renew your subscription.', 'woocommerce-subscriptions' ), 'success' );
 				}
 
 				wp_safe_redirect( WC()->cart->get_checkout_url() );
@@ -800,6 +823,25 @@ class WCS_Cart_Renewal {
 		}
 
 		return $order;
+	}
+
+	/**
+	 * Redirect back to pay for an order after successfully logging in.
+	 *
+	 * @param string | redirect URL after successful login
+	 * @return string
+	 * @since  2.1.0
+	 */
+	function maybe_redirect_after_login( $redirect ) {
+		if ( isset( $_GET['wcs_redirect'], $_GET['wcs_redirect_id'] ) && 'pay_for_order' == $_GET['wcs_redirect'] ) {
+			$order = wc_get_order( $_GET['wcs_redirect_id'] );
+
+			if ( $order ) {
+				$redirect = $order->get_checkout_payment_url();
+			}
+		}
+
+		return $redirect;
 	}
 
 	/* Deprecated */
