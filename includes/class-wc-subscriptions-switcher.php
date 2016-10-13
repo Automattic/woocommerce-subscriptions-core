@@ -183,80 +183,71 @@ class WC_Subscriptions_Switcher {
 			}
 		} elseif ( is_product() && $product = wc_get_product( $post ) ) { // Automatically initiate the switch process for limited variable subscriptions
 
-			if ( wcs_is_product_switchable_type( $product ) && 'no' != $product->limit_subscriptions ) {
+			$limited_switchable_products = array();
 
-				// Check if the user has an active subscription for this product, and if so, initiate the switch process
-				$subscriptions = wcs_get_users_subscriptions();
+			if ( $product->is_type( 'grouped' ) ) { // If we're on a grouped product's page, we need to check if this grouped product has children which are limited and may need to be switched
 
 				$child_ids = $product->get_children();
 
-				foreach ( $subscriptions as $subscription ) {
+				foreach ( $child_ids as $child_id ) {
+					$product = wc_get_product( $child_id );
 
-					// If we're on a grouped product's page, we need to check if the subscription has a child of this grouped product that needs to be switched
-					$subscription_product_id = false;
-
-					if ( $product->is_type( 'grouped' ) ) {
-						foreach ( $child_ids as $child_id ) {
-							if ( $subscription->has_product( $child_id ) ) {
-								$subscription_product_id = $child_id;
-								break;
-							}
-						}
+					if ( 'no' != $product->limit_subscriptions && wcs_is_product_switchable_type( $product ) ) {
+						$limited_switchable_products[] = $product;
 					}
+				}
+			} elseif ( 'no' != $product->limit_subscriptions && wcs_is_product_switchable_type( $product ) ) {
+				// If we're on a limited variation or single product within a group which is switchable
+				// we only need to look for if the customer is subscribed to this product
+				$limited_switchable_products[] = $product;
+			}
 
-					if ( $subscription->has_product( $product->id ) || $subscription_product_id ) {
+			// If we have limited switchable products, check if the customer is already subscribed and needs to be switched
+			if ( ! empty( $limited_switchable_products ) ) {
 
-						// For grouped products, we need to check the child products limitations, not the grouped product's (which will have no limitation)
-						if ( $subscription_product_id ) {
-							$child_product = wc_get_product( $subscription_product_id );
-							$limitation    = $child_product->limit_subscriptions;
-						} else {
-							$limitation    = $product->limit_subscriptions;
+				$subscriptions = wcs_get_users_subscriptions();
+
+				foreach ( $subscriptions as $subscription ) {
+					foreach ( $limited_switchable_products as $product ) {
+
+						if ( ! $subscription->has_product( $product->id ) ) {
+							continue;
 						}
 
-						// If the product is limited
+						$limitation = $product->limit_subscriptions;
+
 						if ( 'any' == $limitation || $subscription->has_status( $limitation ) ) {
 
 							$subscribed_notice = __( 'You have already subscribed to this product and it is limited to one per customer. You can not purchase the product again.', 'woocommerce-subscriptions' );
 
-							// If switching is enabled for this product type, initiate the auto-switch process
-							if ( wcs_is_product_switchable_type( $product ) ) {
+							// Don't initiate auto-switching when the subscription requires payment
+							if ( $subscription->needs_payment() ) {
 
-								// Don't initiate auto-switching when the subscription requires payment
-								if ( $subscription->needs_payment() ) {
+								$last_order = $subscription->get_last_order( 'all' );
 
-									$last_order = $subscription->get_last_order( 'all' );
-
-									if ( $last_order->needs_payment() ) {
-										// translators: 1$: is the "You have already subscribed to this product" notice, 2$-4$: opening/closing link tags, 3$: an order number
-										$subscribed_notice = sprintf( __( '%1$s Complete payment on %2$sOrder %3$s%4$s to be able to change your subscription.', 'woocommerce-subscriptions' ), $subscribed_notice, sprintf( '<a href="%s">', $last_order->get_checkout_payment_url() ), $last_order->get_order_number(), '</a>' );
-									}
-
-									WC_Subscriptions::add_notice( $subscribed_notice, 'notice' );
-									break;
-
-								} else {
-
-									$product_id = ( $subscription_product_id ) ? $subscription_product_id : $product->id;
-
-									// Get the matching item
-									foreach ( $subscription->get_items() as $line_item_id => $line_item ) {
-										if ( $line_item['product_id'] == $product_id || $line_item['variation_id'] == $product_id ) {
-											$item_id = $line_item_id;
-											$item    = $line_item;
-											break;
-										}
-									}
-
-									if ( self::can_item_be_switched_by_user( $item, $subscription ) ) {
-										wp_redirect( add_query_arg( 'auto-switch', 'true', self::get_switch_url( $item_id, $item, $subscription ) ) );
-										exit;
-									}
+								if ( $last_order->needs_payment() ) {
+									// translators: 1$: is the "You have already subscribed to this product" notice, 2$-4$: opening/closing link tags, 3$: an order number
+									$subscribed_notice = sprintf( __( '%1$s Complete payment on %2$sOrder %3$s%4$s to be able to change your subscription.', 'woocommerce-subscriptions' ), $subscribed_notice, sprintf( '<a href="%s">', $last_order->get_checkout_payment_url() ), $last_order->get_order_number(), '</a>' );
 								}
-							} else {
 
 								WC_Subscriptions::add_notice( $subscribed_notice, 'notice' );
 								break;
+
+							} else {
+
+								// Get the matching item
+								foreach ( $subscription->get_items() as $line_item_id => $line_item ) {
+									if ( $line_item['product_id'] == $product->id || $line_item['variation_id'] == $product->id ) {
+										$item_id = $line_item_id;
+										$item    = $line_item;
+										break;
+									}
+								}
+
+								if ( self::can_item_be_switched_by_user( $item, $subscription ) ) {
+									wp_redirect( add_query_arg( 'auto-switch', 'true', self::get_switch_url( $item_id, $item, $subscription ) ) );
+									exit;
+								}
 							}
 						}
 					}
