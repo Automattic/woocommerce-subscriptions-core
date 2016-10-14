@@ -562,26 +562,25 @@ class WCS_Admin_Post_Types {
 							if ( wc_product_sku_enabled() && $_product && $_product->get_sku() ) {
 								$item_name .= $_product->get_sku() . ' - ';
 							}
-							$item_name .= $item['name'];
 
-							$item_name = apply_filters( 'woocommerce_order_item_name', $item_name, $item );
-							$item_name = esc_html( $item_name );
+							$item_name .= apply_filters( 'woocommerce_order_item_name', $item['name'], $item );
+							$item_name  = esc_html( $item_name );
+
 							if ( $item_quantity > 1 ) {
 								$item_name = sprintf( '%s &times; %s', absint( $item_quantity ), $item_name );
 							}
 							if ( $_product ) {
 								$item_name = sprintf( '<a href="%s">%s</a>', get_edit_post_link( $_product->id ), $item_name );
 							}
-							ob_start();
-							?>
-							<div class="order-item">
-								<?php echo wp_kses( $item_name, array( 'a' => array( 'href' => array() ) ) ); ?>
-								<?php if ( $item_meta_html ) : ?>
-								<a class="tips" href="#" data-tip="<?php echo esc_attr( $item_meta_html ); ?>">[?]</a>
-								<?php endif; ?>
-							</div>
-							<?php
-							$column_content .= ob_get_clean();
+
+							$column_content .= '<div class="order-item">';
+							$column_content .= wp_kses( $item_name, array( 'a' => array( 'href' => array() ) ) );
+
+							if ( $item_meta_html ) {
+								$column_content .= wcs_help_tip( $item_meta_html );
+							}
+
+							$column_content .= '</div>';
 						}
 						break;
 					default :
@@ -598,13 +597,22 @@ class WCS_Admin_Post_Types {
 								<td class="qty"><?php echo absint( $item['qty'] ); ?></td>
 								<td class="name">
 									<?php
+									$item_name = '';
 									if ( wc_product_sku_enabled() && $_product && $_product->get_sku() ) {
-										echo esc_html( $_product->get_sku() ) . ' - ';
+										$item_name .= $_product->get_sku() . ' - ';
 									}
-									echo esc_html( apply_filters( 'woocommerce_order_item_name', $item['name'], $item ) );
-									if ( $item_meta_html ) { ?>
-										<a class="tips" href="#" data-tip="<?php echo esc_attr( $item_meta_html ); ?>">[?]</a>
-									<?php } ?>
+
+									$item_name .= apply_filters( 'woocommerce_order_item_name', $item['name'], $item );
+									$item_name  = esc_html( $item_name );
+
+									if ( $_product ) {
+										$item_name = sprintf( '<a href="%s">%s</a>', get_edit_post_link( $_product->id ), $item_name );
+									}
+
+									echo wp_kses( $item_name, array( 'a' => array( 'href' => array() ) ) );
+									if ( $item_meta_html ) {
+										echo wcs_help_tip( $item_meta_html );
+									} ?>
 								</td>
 							</tr>
 							<?php
@@ -646,7 +654,8 @@ class WCS_Admin_Post_Types {
 				break;
 		}
 
-		echo wp_kses( apply_filters( 'woocommerce_subscription_list_table_column_content', $column_content, $the_subscription, $column ), array( 'a' => array( 'class' => array(), 'href' => array(), 'data-tip' => array(), 'title' => array() ), 'time' => array( 'class' => array(), 'title' => array() ), 'mark' => array( 'class' => array(), 'data-tip' => array() ), 'small' => array( 'class' => array() ), 'table' => array( 'class' => array(), 'cellspacing' => array(), 'cellpadding' => array() ), 'tr' => array( 'class' => array() ), 'td' => array( 'class' => array() ), 'div' => array( 'class' => array(), 'data-tip' => array() ), 'br' => array(), 'strong' => array(), 'span' => array( 'class' => array() ), 'p' => array( 'class' => array() ), 'button' => array( 'type' => array(), 'class' => array() ) ) );
+		echo wp_kses( apply_filters( 'woocommerce_subscription_list_table_column_content', $column_content, $the_subscription, $column ), array( 'a' => array( 'class' => array(), 'href' => array(), 'data-tip' => array(), 'title' => array() ), 'time' => array( 'class' => array(), 'title' => array() ), 'mark' => array( 'class' => array(), 'data-tip' => array() ), 'small' => array( 'class' => array() ), 'table' => array( 'class' => array(), 'cellspacing' => array(), 'cellpadding' => array() ), 'tr' => array( 'class' => array() ), 'td' => array( 'class' => array() ), 'div' => array( 'class' => array(), 'data-tip' => array() ), 'br' => array(), 'strong' => array(), 'span' => array( 'class' => array(), 'data-tip' => array() ), 'p' => array( 'class' => array() ), 'button' => array( 'type' => array(), 'class' => array() ) ) );
+
 	}
 
 	/**
