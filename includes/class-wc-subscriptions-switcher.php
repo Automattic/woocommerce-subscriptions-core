@@ -191,11 +191,11 @@ class WC_Subscriptions_Switcher {
 				foreach ( $child_ids as $child_id ) {
 					$product = wc_get_product( $child_id );
 
-					if ( 'no' != $product->limit_subscriptions && wcs_is_product_switchable_type( $product ) ) {
+					if ( 'no' != wcs_get_product_limitation( $product ) && wcs_is_product_switchable_type( $product ) ) {
 						$limited_switchable_products[] = $product;
 					}
 				}
-			} elseif ( 'no' != $product->limit_subscriptions && wcs_is_product_switchable_type( $product ) ) {
+			} elseif ( 'no' != wcs_get_product_limitation( $product ) && wcs_is_product_switchable_type( $product ) ) {
 				// If we're on a limited variation or single product within a group which is switchable
 				// we only need to look for if the customer is subscribed to this product
 				$limited_switchable_products[] = $product;
@@ -213,7 +213,7 @@ class WC_Subscriptions_Switcher {
 							continue;
 						}
 
-						$limitation = $product->limit_subscriptions;
+						$limitation = wcs_get_product_limitation( $product );
 
 						if ( 'any' == $limitation || $subscription->has_status( $limitation ) ) {
 
