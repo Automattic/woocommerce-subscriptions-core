@@ -534,14 +534,7 @@ function wcs_get_order_item( $item_id, $order ) {
  * @since 2.0
  */
 function wcs_get_order_item_meta( $item, $product = null ) {
-
-	if ( WC_Subscriptions::is_woocommerce_pre( '2.4' ) ) {
-		$item_meta = new WC_Order_Item_Meta( $item['item_meta'], $product );
-	} else {
-		$item_meta = new WC_Order_Item_Meta( $item, $product );
-	}
-
-	return $item_meta;
+	return new WC_Order_Item_Meta( $item, $product );
 }
 
 /**

@@ -71,7 +71,7 @@ class WC_Subscriptions_Admin {
 		add_action( 'save_post', __CLASS__ . '::save_variable_subscription_meta', 11 );
 
 		// Save variable subscription meta
-		add_action( 'woocommerce_process_product_meta_variable-subscription', __CLASS__ . '::process_product_meta_variable_subscription' ); // WC < 2.4
+		add_action( 'woocommerce_process_product_meta_variable-subscription', __CLASS__ . '::process_product_meta_variable_subscription' );
 		add_action( 'woocommerce_ajax_save_product_variations', __CLASS__ . '::process_product_meta_variable_subscription' );
 
 		add_action( 'woocommerce_subscription_pre_update_status', __CLASS__ . '::check_customer_is_set', 10, 3 );
@@ -529,11 +529,6 @@ class WC_Subscriptions_Admin {
 
 		// Make sure WooCommerce calculates correct prices
 		$_POST['variable_regular_price'] = isset( $_POST['variable_subscription_price'] ) ? $_POST['variable_subscription_price'] : 0;
-
-		// Run WooCommerce core saving routine for WC < 2.4
-		if ( ! is_ajax() ) {
-			WC_Meta_Box_Product_Data::save_variations( $post_id, get_post( $post_id ) );
-		}
 
 		if ( ! isset( $_REQUEST['variable_post_id'] ) ) {
 			return;
