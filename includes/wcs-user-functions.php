@@ -345,8 +345,21 @@ function wcs_user_has_capability( $allcaps, $caps, $args ) {
 					$allcaps['subscribe_again'] = true;
 				}
 			break;
+			case 'pay_for_order' :
+				$user_id = $args[1];
+				$order   = wc_get_order( $args[2] );
+
+				if ( $order && wcs_order_contains_subscription( $order, 'any' ) ) {
+
+					if ( $user_id === $order->get_user_id() ) {
+						$allcaps['pay_for_order'] = true;
+					} else {
+						unset( $allcaps['pay_for_order'] );
+					}
+				}
+			break;
 		}
 	}
 	return $allcaps;
 }
-add_filter( 'user_has_cap', 'wcs_user_has_capability', 10, 3 );
+add_filter( 'user_has_cap', 'wcs_user_has_capability', 15, 3 );

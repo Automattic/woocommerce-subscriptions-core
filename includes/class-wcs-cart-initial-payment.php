@@ -51,7 +51,7 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 					wp_safe_redirect( $redirect );
 					exit;
 
-				} elseif ( get_current_user_id() !== $order->get_user_id() ) {
+				} elseif ( ! current_user_can( 'pay_for_order', $order_id ) ) {
 
 					wc_add_notice( __( 'That doesn\'t appear to be your order.', 'woocommerce-subscriptions' ), 'error' );
 
