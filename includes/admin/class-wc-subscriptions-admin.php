@@ -121,8 +121,8 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function add_subscription_products_to_select( $product_types ) {
 
-		$product_types['subscription']          = __( 'Simple Subscription', 'woocommerce-subscriptions' );
-		$product_types['variable-subscription'] = __( 'Variable Subscription', 'woocommerce-subscriptions' );
+		$product_types['subscription']          = __( 'Simple subscription', 'woocommerce-subscriptions' );
+		$product_types['variable-subscription'] = __( 'Variable subscription', 'woocommerce-subscriptions' );
 
 		return $product_types;
 	}
@@ -153,16 +153,16 @@ class WC_Subscriptions_Admin {
 
 		// Subscription Price, Interval and Period
 		?><p class="form-field _subscription_price_fields _subscription_price_field">
-			<label for="_subscription_price"><?php printf( esc_html__( 'Subscription Price (%s)', 'woocommerce-subscriptions' ), esc_html( get_woocommerce_currency_symbol() ) ); ?></label>
+			<label for="_subscription_price"><?php printf( esc_html__( 'Subscription price (%s)', 'woocommerce-subscriptions' ), esc_html( get_woocommerce_currency_symbol() ) ); ?></label>
 			<span class="wrap">
 				<input type="text" id="_subscription_price" name="_subscription_price" class="wc_input_subscription_price" placeholder="<?php echo esc_attr_x( 'e.g. 5.90', 'example price', 'woocommerce-subscriptions' ); ?>" step="any" min="0" value="<?php echo esc_attr( $chosen_price ); ?>" />
-				<label for="_subscription_period_interval" class="wcs_hidden_label"><?php esc_html_e( 'Subscription Interval', 'woocommerce-subscriptions' ); ?></label>
+				<label for="_subscription_period_interval" class="wcs_hidden_label"><?php esc_html_e( 'Subscription interval', 'woocommerce-subscriptions' ); ?></label>
 				<select id="_subscription_period_interval" name="_subscription_period_interval" class="wc_input_subscription_period_interval">
 				<?php foreach ( wcs_get_subscription_period_interval_strings() as $value => $label ) { ?>
 					<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $value, $chosen_interval, true ) ?>><?php echo esc_html( $label ); ?></option>
 				<?php } ?>
 				</select>
-				<label for="_subscription_period" class="wcs_hidden_label"><?php esc_html_e( 'Subscription Period', 'woocommerce-subscriptions' ); ?></label>
+				<label for="_subscription_period" class="wcs_hidden_label"><?php esc_html_e( 'Subscription period', 'woocommerce-subscriptions' ); ?></label>
 				<select id="_subscription_period" name="_subscription_period" class="wc_input_subscription_period last" >
 				<?php foreach ( wcs_get_subscription_period_strings() as $value => $label ) { ?>
 					<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $value, $chosen_period, true ) ?>><?php echo esc_html( $label ); ?></option>
@@ -176,7 +176,7 @@ class WC_Subscriptions_Admin {
 		woocommerce_wp_select( array(
 			'id'          => '_subscription_length',
 			'class'       => 'wc_input_subscription_length select short',
-			'label'       => __( 'Subscription Length', 'woocommerce-subscriptions' ),
+			'label'       => __( 'Subscription length', 'woocommerce-subscriptions' ),
 			'options'     => wcs_get_subscription_ranges( $chosen_period ),
 			'desc_tip'    => true,
 			'description' => __( 'Automatically expire the subscription after this length of time. This length is in addition to any free trial or amount of time provided before a synchronised first renewal date.', 'woocommerce-subscriptions' ),
@@ -188,7 +188,7 @@ class WC_Subscriptions_Admin {
 			'id'          => '_subscription_sign_up_fee',
 			'class'       => 'wc_input_subscription_intial_price short',
 			// translators: %s is a currency symbol / code
-			'label'       => sprintf( __( 'Sign-up Fee (%s)', 'woocommerce-subscriptions' ), get_woocommerce_currency_symbol() ),
+			'label'       => sprintf( __( 'Sign-up fee (%s)', 'woocommerce-subscriptions' ), get_woocommerce_currency_symbol() ),
 			'placeholder' => _x( 'e.g. 9.90', 'example price', 'woocommerce-subscriptions' ),
 			'description' => __( 'Optionally include an amount to be charged at the outset of the subscription. The sign-up fee will be charged immediately, even if the product has a free trial or the payment dates are synced.', 'woocommerce-subscriptions' ),
 			'desc_tip'    => true,
@@ -201,7 +201,7 @@ class WC_Subscriptions_Admin {
 
 		// Trial Length
 		?><p class="form-field _subscription_trial_length_field">
-			<label for="_subscription_trial_length"><?php esc_html_e( 'Free Trial', 'woocommerce-subscriptions' ); ?></label>
+			<label for="_subscription_trial_length"><?php esc_html_e( 'Free trial', 'woocommerce-subscriptions' ); ?></label>
 			<span class="wrap">
 				<input type="text" id="_subscription_trial_length" name="_subscription_trial_length" class="wc_input_subscription_trial_length" value="<?php echo esc_attr( $chosen_trial_length ); ?>" />
 				<label for="_subscription_trial_period" class="wcs_hidden_label"><?php esc_html_e( 'Subscription Trial Period', 'woocommerce-subscriptions' ); ?></label>
@@ -236,7 +236,7 @@ class WC_Subscriptions_Admin {
 		// Only one Subscription per customer
 		woocommerce_wp_checkbox( array(
 			'id'          => '_subscription_one_time_shipping',
-			'label'       => __( 'One Time Shipping', 'woocommerce-subscriptions' ),
+			'label'       => __( 'One time shipping', 'woocommerce-subscriptions' ),
 			'description' => __( 'Shipping for subscription products is normally charged on the initial order and all renewal orders. Enable this to only charge shipping once on the initial order. Note: for this setting to be enabled the subscription must not have a free trial or a synced renewal date.', 'woocommerce-subscriptions' ),
 			'desc_tip'    => true,
 		) );
@@ -292,13 +292,13 @@ class WC_Subscriptions_Admin {
 		global $post;
 
 		if ( WC_Subscriptions_Product::is_subscription( $post->ID ) ) : ?>
-			<optgroup label="<?php esc_attr_e( 'Subscription Pricing', 'woocommerce-subscriptions' ); ?>">
-				<option value="variable_subscription_sign_up_fee"><?php esc_html_e( 'Subscription Sign-up Fee', 'woocommerce-subscriptions' ); ?></option>
-				<option value="variable_subscription_period_interval"><?php esc_html_e( 'Subscription Billing Interval', 'woocommerce-subscriptions' ); ?></option>
-				<option value="variable_subscription_period"><?php esc_html_e( 'Subscription Period', 'woocommerce-subscriptions' ); ?></option>
-				<option value="variable_subscription_length"><?php esc_html_e( 'Subscription Length', 'woocommerce-subscriptions' ); ?></option>
-				<option value="variable_subscription_trial_length"><?php esc_html_e( 'Free Trial Length', 'woocommerce-subscriptions' ); ?></option>
-				<option value="variable_subscription_trial_period"><?php esc_html_e( 'Free Trial Period', 'woocommerce-subscriptions' ); ?></option>
+			<optgroup label="<?php esc_attr_e( 'Subscription pricing', 'woocommerce-subscriptions' ); ?>">
+				<option value="variable_subscription_sign_up_fee"><?php esc_html_e( 'Subscription sign-up fee', 'woocommerce-subscriptions' ); ?></option>
+				<option value="variable_subscription_period_interval"><?php esc_html_e( 'Subscription billing interval', 'woocommerce-subscriptions' ); ?></option>
+				<option value="variable_subscription_period"><?php esc_html_e( 'Subscription period', 'woocommerce-subscriptions' ); ?></option>
+				<option value="variable_subscription_length"><?php esc_html_e( 'Subscription length', 'woocommerce-subscriptions' ); ?></option>
+				<option value="variable_subscription_trial_length"><?php esc_html_e( 'Free trial length', 'woocommerce-subscriptions' ); ?></option>
+				<option value="variable_subscription_trial_period"><?php esc_html_e( 'Free trial period', 'woocommerce-subscriptions' ); ?></option>
 			</optgroup>
 		<?php endif;
 	}
@@ -767,7 +767,7 @@ class WC_Subscriptions_Admin {
 			// Move Active Subscriber before Orders for aesthetics
 			$last_column = array_slice( $columns, -1, 1, true );
 			array_pop( $columns );
-			$columns['woocommerce_active_subscriber'] = __( 'Active Subscriber?', 'woocommerce-subscriptions' );
+			$columns['woocommerce_active_subscriber'] = __( 'Active subscriber?', 'woocommerce-subscriptions' );
 			$columns += $last_column;
 		}
 

@@ -77,7 +77,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 						</p>
 
 						<p class="form-field form-field-wide">
-							<label for="order_status"><?php esc_html_e( 'Subscription Status:', 'woocommerce-subscriptions' ); ?></label>
+							<label for="order_status"><?php esc_html_e( 'Subscription status:', 'woocommerce-subscriptions' ); ?></label>
 							<select id="order_status" name="order_status">
 								<?php
 								$statuses = wcs_get_subscription_statuses();

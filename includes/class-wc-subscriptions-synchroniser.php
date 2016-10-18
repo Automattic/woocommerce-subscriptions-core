@@ -44,7 +44,7 @@ class WC_Subscriptions_Synchroniser {
 		self::$setting_id           = WC_Subscriptions_Admin::$option_prefix . '_sync_payments';
 		self::$setting_id_proration = WC_Subscriptions_Admin::$option_prefix . '_prorate_synced_payments';
 
-		self::$sync_field_label      = __( 'Synchronise Renewals', 'woocommerce-subscriptions' );
+		self::$sync_field_label      = __( 'Synchronise renewals', 'woocommerce-subscriptions' );
 		self::$sync_description      = __( 'Align the payment date for all customers who purchase this subscription to a specific day of the week or month.', 'woocommerce-subscriptions' );
 		// translators: placeholder is a year (e.g. "2016")
 		self::$sync_description_year = sprintf( _x( 'Align the payment date for this subscription to a specific day of the year. If the date has already taken place this year, the first payment will be processed in %s. Set the day to 0 to disable payment syncing for this product.', 'used in subscription product edit screen', 'woocommerce-subscriptions' ), gmdate( 'Y', wcs_date_to_time( '+1 year' ) ) );
