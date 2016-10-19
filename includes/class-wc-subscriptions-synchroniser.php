@@ -44,7 +44,7 @@ class WC_Subscriptions_Synchroniser {
 		self::$setting_id           = WC_Subscriptions_Admin::$option_prefix . '_sync_payments';
 		self::$setting_id_proration = WC_Subscriptions_Admin::$option_prefix . '_prorate_synced_payments';
 
-		self::$sync_field_label      = __( 'Synchronise Renewals', 'woocommerce-subscriptions' );
+		self::$sync_field_label      = __( 'Synchronise renewals', 'woocommerce-subscriptions' );
 		self::$sync_description      = __( 'Align the payment date for all customers who purchase this subscription to a specific day of the week or month.', 'woocommerce-subscriptions' );
 		// translators: placeholder is a year (e.g. "2016")
 		self::$sync_description_year = sprintf( _x( 'Align the payment date for this subscription to a specific day of the year. If the date has already taken place this year, the first payment will be processed in %s. Set the day to 0 to disable payment syncing for this product.', 'used in subscription product edit screen', 'woocommerce-subscriptions' ), gmdate( 'Y', wcs_date_to_time( '+1 year' ) ) );
@@ -217,7 +217,7 @@ class WC_Subscriptions_Synchroniser {
 			woocommerce_wp_select( array(
 				'id'          => self::$post_meta_key,
 				'class'       => 'wc_input_subscription_payment_sync select short',
-				'label'       => self::$sync_field_label . ':',
+				'label'       => self::$sync_field_label,
 				'options'     => self::get_billing_period_ranges( $subscription_period ),
 				'description' => self::$sync_description,
 				'desc_tip'    => true,
@@ -230,7 +230,7 @@ class WC_Subscriptions_Synchroniser {
 			echo '<div class="subscription_sync_annual" style="' . esc_attr( $display_annual_select ) . '">';
 
 			?><p class="form-field _subscription_payment_sync_date_day_field">
-				<label for="_subscription_payment_sync_date_day"><?php echo esc_html( self::$sync_field_label . ':' ); ?></label>
+				<label for="_subscription_payment_sync_date_day"><?php echo esc_html( self::$sync_field_label ); ?></label>
 				<span class="wrap">
 					<input type="number" id="<?php echo esc_attr( self::$post_meta_key_day ); ?>" name="<?php echo esc_attr( self::$post_meta_key_day ); ?>" class="wc_input_subscription_payment_sync" value="<?php echo esc_attr( $payment_day ); ?>" placeholder="<?php echo esc_attr_x( 'Day', 'input field placeholder for day field for annual subscriptions', 'woocommerce-subscriptions' ); ?>"  />
 
