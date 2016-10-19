@@ -526,35 +526,38 @@ class WC_Subscription extends WC_Order {
 				'update_post_term_cache' => false,
 			) );
 
-			// Not all gateways will call $order->payment_complete() so we need to find renewal orders with a paid status rather than just a _paid_date
-			$paid_status_renewal_orders = get_posts( array(
-				'posts_per_page' => -1,
-				'post_status'    => $this->get_paid_order_statuses(),
-				'post_type'      => 'shop_order',
-				'fields'         => 'ids',
-				'orderby'        => 'date',
-				'order'          => 'desc',
-				'post__in'       => $renewal_orders,
-			) );
+			if ( ! empty( $renewal_orders ) ) {
 
-			// Some stores may be using custom order status plugins, we also can't rely on order status to find paid orders, so also check for a _paid_date
-			$paid_date_renewal_orders = get_posts( array(
-				'posts_per_page'         => -1,
-				'post_status'            => 'any',
-				'post_type'              => 'shop_order',
-				'fields'                 => 'ids',
-				'orderby'                => 'date',
-				'order'                  => 'desc',
-				'post__in'               => $renewal_orders,
-				'meta_key'               => '_paid_date',
-				'meta_compare'           => 'EXISTS',
-				'update_post_term_cache' => false,
-			) );
+				// Not all gateways will call $order->payment_complete() so we need to find renewal orders with a paid status rather than just a _paid_date
+				$paid_status_renewal_orders = get_posts( array(
+					'posts_per_page' => -1,
+					'post_status'    => $this->get_paid_order_statuses(),
+					'post_type'      => 'shop_order',
+					'fields'         => 'ids',
+					'orderby'        => 'date',
+					'order'          => 'desc',
+					'post__in'       => $renewal_orders,
+				) );
 
-			$paid_renewal_orders = array_unique( array_merge( $paid_date_renewal_orders, $paid_status_renewal_orders ) );
+				// Some stores may be using custom order status plugins, we also can't rely on order status to find paid orders, so also check for a _paid_date
+				$paid_date_renewal_orders = get_posts( array(
+					'posts_per_page'         => -1,
+					'post_status'            => 'any',
+					'post_type'              => 'shop_order',
+					'fields'                 => 'ids',
+					'orderby'                => 'date',
+					'order'                  => 'desc',
+					'post__in'               => $renewal_orders,
+					'meta_key'               => '_paid_date',
+					'meta_compare'           => 'EXISTS',
+					'update_post_term_cache' => false,
+				) );
 
-			if ( ! empty( $paid_renewal_orders ) ) {
-				$completed_payment_count += count( $paid_renewal_orders );
+				$paid_renewal_orders = array_unique( array_merge( $paid_date_renewal_orders, $paid_status_renewal_orders ) );
+
+				if ( ! empty( $paid_renewal_orders ) ) {
+					$completed_payment_count += count( $paid_renewal_orders );
+				}
 			}
 		} else {
 			$completed_payment_count = $this->cached_completed_payment_count;
