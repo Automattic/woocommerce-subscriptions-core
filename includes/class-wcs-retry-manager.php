@@ -108,8 +108,16 @@ class WCS_Retry_Manager {
 			$last_order = $subscription->get_last_order( 'all' );
 			$last_retry = ( $last_order ) ? self::store()->get_last_retry_for_order( $last_order->id ) : null;
 
-			if ( null !== $last_retry && 'cancelled' !== $last_retry->get_status() ) {
-				self::update_retry_status( $last_retry, 'cancelled', $last_retry->get_date_gmt() );
+			if ( null !== $last_retry && 'cancelled' !== $last_retry->get_status() && null !== ( $last_retry_rule = $last_retry->get_rule() ) ) {
+
+				$retry_subscription_status = $last_retry_rule->get_status_to_apply( 'subscription' );
+				$applying_retry_rule       = did_action( 'woocommerce_subscriptions_before_apply_retry_rule' ) !== did_action( 'woocommerce_subscriptions_after_apply_retry_rule' );
+				$retrying_payment          = did_action( 'woocommerce_subscriptions_before_payment_retry' ) !== did_action( 'woocommerce_subscriptions_after_payment_retry' );
+
+				// If the new status isn't the expected retry subscription status and we aren't in the process of applying a retry rule or retrying payment, cancel the retry
+				if ( $new_status != $retry_subscription_status && ! $applying_retry_rule && ! $retrying_payment ) {
+					self::update_retry_status( $last_retry, 'cancelled', $last_retry->get_date_gmt() );
+				}
 			}
 
 			$subscription->delete_date( 'payment_retry' );
