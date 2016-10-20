@@ -474,7 +474,7 @@ class WC_Subscriptions_Switcher {
 	 * For an item to be switchable, switching must be enabled, and the item must be for a variable subscription or
 	 * part of a grouped product (at the time the check is made, not at the time the subscription was purchased)
 	 *
-	 * The subscription must also be active or on-hold and use manual renewals or use a payment method which supports cancellation.
+	 * The subscription must also be active and use manual renewals or use a payment method which supports cancellation.
 	 *
 	 * @param array $item An order item on the subscription
 	 * @param WC_Subscription $subscription An instance of WC_Subscription
