@@ -81,7 +81,7 @@ class WCS_Cart_Renewal {
 		// When loading checkout address details, use the renewal order address details for renewals
 		add_filter( 'woocommerce_checkout_get_value', array( &$this, 'checkout_get_value' ), 10, 2 );
 
-		// If the shipping address on a renewal order differs to the customer's default, check the "Ship to different address" automatically to make sure the renewal order's fields are used by default
+		// If the shipping address on a renewal order differs to the order's billing address, check the "Ship to different address" automatically to make sure the renewal order's fields are used by default
 		add_filter( 'woocommerce_ship_to_different_address_checked', array( &$this, 'maybe_check_ship_to_different_address' ), 100, 1 );
 	}
 
@@ -436,8 +436,8 @@ class WCS_Cart_Renewal {
 
 	/**
 	 * If the cart contains a renewal order that needs to ship to an address that is different
-	 * to the customer's default shipping address, tell the checkout to toggle the ship to a
-	 * different address checkbox and make sure the shipping fields are displayed by default.
+	 * to the order's billing address, tell the checkout to toggle the ship to a different address
+	 * checkbox and make sure the shipping fields are displayed by default.
 	 *
 	 * @param bool $ship_to_different_address Whether the order will ship to a different address
 	 * @return bool $ship_to_different_address
@@ -459,33 +459,9 @@ class WCS_Cart_Renewal {
 				unset( $renewal_billing_address['phone'] );
 			}
 
-			// If the order's addresses are the same, we don't need to display the shipping fields
+			// If the order's addresses are different, we need to display the shipping fields otherwise the billing address will override it
 			if ( $renewal_shipping_address != $renewal_billing_address ) {
-
-				// Get the customer's default address
-				$checkout_default_address = array();
-
-				$address_fields = WC()->checkout()->checkout_fields['shipping'];
-
-				if ( is_user_logged_in() && is_array( $address_fields ) ) {
-
-					$current_user = wp_get_current_user();
-
-					foreach ( array_keys( $address_fields ) as $address_field ) {
-
-						$address_key = str_replace( 'shipping_', '', $address_field );
-
-						if ( $meta = get_user_meta( $current_user->ID, $address_field, true ) ) {
-							$checkout_default_address[ $address_key ] = $meta;
-						} else {
-							$checkout_default_address[ $address_key ] = '';
-						}
-					}
-				}
-
-				if ( $checkout_default_address != $renewal_shipping_address ) {
-					$ship_to_different_address = 1;
-				}
+				$ship_to_different_address = 1;
 			}
 		}
 
