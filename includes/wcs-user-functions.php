@@ -235,7 +235,7 @@ function wcs_can_user_put_subscription_on_hold( $subscription, $user = '' ) {
 		if ( $user->ID == $subscription->get_user_id() ) {
 
 			// Make sure subscription suspension count hasn't been reached
-			$suspension_count    = $subscription->suspension_count;
+			$suspension_count    = intval( $subscription->suspension_count );
 			$allowed_suspensions = get_option( WC_Subscriptions_Admin::$option_prefix . '_max_customer_suspensions', 0 );
 
 			if ( 'unlimited' === $allowed_suspensions || $allowed_suspensions > $suspension_count ) { // 0 not > anything so prevents a customer ever being able to suspend
