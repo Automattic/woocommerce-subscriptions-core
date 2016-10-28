@@ -33,7 +33,7 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 
 			if ( ! empty( $action_hook ) ) {
 
-				$action_args    = array( 'subscription_id' => $subscription->id );
+				$action_args    = $this->get_action_args( $date_type, $subscription );
 				$timestamp      = wcs_date_to_time( $datetime );
 				$next_scheduled = wc_next_scheduled_action( $action_hook, $action_args );
 
@@ -72,13 +72,12 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 	 */
 	public function update_status( $subscription, $new_status, $old_status ) {
 
-		$action_args = array( 'subscription_id' => $subscription->id );
-
 		switch ( $new_status ) {
 			case 'active' :
 
 				foreach ( $this->action_hooks as $action_hook => $date_type ) {
 
+					$action_args    = $this->get_action_args( $date_type, $subscription );
 					$next_scheduled = wc_next_scheduled_action( $action_hook, $action_args );
 					$event_time     = $subscription->get_time( $date_type );
 
@@ -98,9 +97,10 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 
 				// Now that we have the current times, clear the scheduled hooks
 				foreach ( $this->action_hooks as $action_hook => $date_type ) {
-					wc_unschedule_action( $action_hook, $action_args );
+					wc_unschedule_action( $action_hook, $this->get_action_args( $date_type, $subscription ) );
 				}
 
+				$action_args    = $this->get_action_args( 'end', $subscription );
 				$next_scheduled = wc_next_scheduled_action( 'woocommerce_scheduled_subscription_end_of_prepaid_term', $action_args );
 
 				if ( false !== $next_scheduled && $next_scheduled != $end_time ) {
@@ -118,9 +118,9 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 			case 'expired' :
 			case 'trash' :
 				foreach ( $this->action_hooks as $action_hook => $date_type ) {
-					wc_unschedule_action( $action_hook, $action_args );
+					wc_unschedule_action( $action_hook, $this->get_action_args( $date_type, $subscription ) );
 				}
-				wc_unschedule_action( 'woocommerce_scheduled_subscription_end_of_prepaid_term', $action_args );
+				wc_unschedule_action( 'woocommerce_scheduled_subscription_end_of_prepaid_term', $this->get_action_args( 'end', $subscription ) );
 				break;
 		}
 	}
@@ -128,8 +128,8 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 	/**
 	 * Get the hook to use in the action scheduler for the date type
 	 *
-	 * @param string $date_type Can be 'start', 'trial_end', 'next_payment', 'last_payment', 'expiration', 'end_of_prepaid_term' or a custom date type
 	 * @param object $subscription An instance of WC_Subscription to get the hook for
+	 * @param string $date_type Can be 'start', 'trial_end', 'next_payment', 'last_payment', 'expiration', 'end_of_prepaid_term' or a custom date type
 	 */
 	protected function get_scheduled_action_hook( $subscription, $date_type ) {
 
@@ -156,5 +156,25 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 		}
 
 		return apply_filters( 'woocommerce_subscriptions_scheduled_action_hook', $hook, $date_type );
+	}
+
+	/**
+	 * Get the args to set on the scheduled action.
+	 *
+	 * @param string $date_type Can be 'start', 'trial_end', 'next_payment', 'last_payment', 'expiration', 'end_of_prepaid_term' or a custom date type
+	 * @param object $subscription An instance of WC_Subscription to get the hook for
+	 */
+	protected function get_action_args( $date_type, $subscription ) {
+
+		if ( 'payment_retry' == $date_type ) {
+
+			$last_order_id = $subscription->get_last_order( 'ids', 'renewal' );
+			$action_args   = array( 'order_id' => $last_order_id );
+
+		} else {
+			$action_args = array( 'subscription_id' => $subscription->id );
+		}
+
+		return apply_filters( 'woocommerce_subscriptions_scheduled_action_args', $action_args, $date_type, $subscription );
 	}
 }
