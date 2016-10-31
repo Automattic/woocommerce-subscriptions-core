@@ -702,3 +702,59 @@ function wcs_get_days_in_cycle( $period, $interval ) {
 
 	return apply_filters( 'wcs_get_days_in_cycle', $days_in_cycle, $period, $interval );
 }
+
+/**
+ * Get an instance of the site's timezone.
+ *
+ * @return DateTimeZone Timezone object for the timezone the site is using.
+ */
+function wcs_get_sites_timezone() {
+
+	if ( class_exists( 'ActionScheduler_TimezoneHelper' ) ) {
+
+		// Use Action Scheduler's version when possible as it caches the data
+		$local_timezone = ActionScheduler_TimezoneHelper::get_local_timezone();
+
+	} else {
+
+		$tzstring = get_option( 'timezone_string' );
+
+		if ( empty( $tzstring ) ) {
+
+			$gmt_offset = get_option( 'gmt_offset' );
+
+			if ( 0 == $gmt_offset ) {
+
+				$tzstring = 'UTC';
+
+			} else {
+
+				$gmt_offset *= HOUR_IN_SECONDS;
+				$tzstring    = timezone_name_from_abbr( '', $gmt_offset );
+
+				if ( false === $tzstring ) {
+
+					$is_dst = date( 'I' );
+
+					foreach ( timezone_abbreviations_list() as $abbr ) {
+
+						foreach ( $abbr as $city ) {
+							if ( $city['dst'] == $is_dst && $city['offset'] == $gmt_offset ) {
+								$tzstring = $city['timezone_id'];
+								break 2;
+							}
+						}
+					}
+				}
+
+				if ( false === $tzstring ) {
+					$tzstring = 'UTC';
+				}
+			}
+		}
+
+		$local_timezone = new DateTimeZone( $tzstring );
+	}
+
+	return $local_timezone;
+}
