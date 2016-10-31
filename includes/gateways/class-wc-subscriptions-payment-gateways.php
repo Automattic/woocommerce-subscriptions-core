@@ -21,7 +21,7 @@ class WC_Subscriptions_Payment_Gateways {
 	 */
 	public static function init() {
 
-		add_action( 'init', __CLASS__ . '::init_paypal', 10 );
+		add_action( 'init', __CLASS__ . '::init_paypal', 5 ); // run before default priority 10 in case the site is using ALTERNATE_WP_CRON to avoid https://core.trac.wordpress.org/ticket/24160
 
 		add_filter( 'woocommerce_available_payment_gateways', __CLASS__ . '::get_available_payment_gateways' );
 
