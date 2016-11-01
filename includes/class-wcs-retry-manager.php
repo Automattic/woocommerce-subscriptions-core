@@ -45,7 +45,7 @@ class WCS_Retry_Manager {
 
 			add_action( 'woocommerce_subscription_status_updated', __CLASS__ . '::delete_retry_payment_date', 0, 3 );
 
-			add_action( 'woocommerce_subscription_renewal_payment_failed', __CLASS__ . '::maybe_apply_retry_rule', 10 );
+			add_action( 'woocommerce_subscription_renewal_payment_failed', __CLASS__ . '::maybe_apply_retry_rule', 10, 2 );
 
 			add_action( 'woocommerce_scheduled_subscription_payment_retry', __CLASS__ . '::maybe_retry_payment' );
 		}
@@ -112,18 +112,18 @@ class WCS_Retry_Manager {
 	 * When a payment fails, apply a retry rule, if one exists that applies to this failure.
 	 *
 	 * @param WC_Subscription The subscription on which the payment failed
+	 * @param WC_Order The order on which the payment failed (will be the most recent order on the subscription specified with the subscription param)
 	 * @since 2.1
 	 */
-	public static function maybe_apply_retry_rule( $subscription ) {
+	public static function maybe_apply_retry_rule( $subscription, $last_order ) {
 
-		if ( $subscription->is_manual() || $subscription->payment_method_supports( 'gateway_scheduled_payments' ) ) {
+		if ( $subscription->is_manual() || ! $subscription->payment_method_supports( 'subscription_date_changes' ) ) {
 			return;
 		}
 
-		$last_order  = $subscription->get_last_order( 'all' );
 		$retry_count = self::store()->get_retry_count_for_order( $last_order->id );
 
-		if ( wcs_order_contains_renewal( $last_order ) && self::rules()->has_rule( $retry_count, $last_order->id ) ) {
+		if ( self::rules()->has_rule( $retry_count, $last_order->id ) ) {
 
 			$retry_rule = self::rules()->get_rule( $retry_count, $last_order->id );
 
@@ -158,40 +158,61 @@ class WCS_Retry_Manager {
 	 * When a retry hook is triggered, check if the rules for that retry are still valid
 	 * and if so, retry the payment.
 	 *
-	 * @param WC_Subscription|int The subscription on which the payment failed
+	 * @param WC_Order|int The order on which the payment failed
 	 * @since 2.1
 	 */
-	public static function maybe_retry_payment( $subscription ) {
+	public static function maybe_retry_payment( $last_order ) {
 
-		if ( ! is_object( $subscription ) ) {
-			$subscription = wcs_get_subscription( $subscription );
+		if ( ! is_object( $last_order ) ) {
+			$last_order = wc_get_order( $last_order );
 		}
 
-		$last_order = $subscription->get_last_order( 'all' );
-		$last_retry = self::store()->get_last_retry_for_order( $last_order->id );
+		if ( false === $last_order ) {
+			return;
+		}
+
+		$subscriptions = wcs_get_subscriptions_for_renewal_order( $last_order );
+		$last_retry    = self::store()->get_last_retry_for_order( $last_order->id );
 
 		// we only need to retry the payment if we have applied a retry rule for the order and it still needs payment
 		if ( null !== $last_retry && 'pending' === $last_retry->get_status() ) {
 
-			do_action( 'woocommerce_subscriptions_before_payment_retry', $last_retry, $last_order, $subscription );
+			do_action( 'woocommerce_subscriptions_before_payment_retry', $last_retry, $last_order );
 
 			if ( $last_order->needs_payment() ) {
 
 				self::update_retry_status( $last_retry, 'processing', $last_retry->get_date_gmt() );
 
-				$expected_order_status        = $last_retry->get_rule()->get_status_to_apply( 'order' );
+				$expected_order_status = $last_retry->get_rule()->get_status_to_apply( 'order' );
+				$valid_order_status    = ( '' == $expected_order_status || $last_order->has_status( $expected_order_status ) ) ? true : false;
+
 				$expected_subscription_status = $last_retry->get_rule()->get_status_to_apply( 'subscription' );
 
-				$valid_order_status        = ( '' == $expected_order_status || $last_order->has_status( $expected_order_status ) ) ? true : false;
-				$valid_subscription_status = ( '' == $expected_subscription_status || $subscription->has_status( $expected_subscription_status ) ) ? true : false;
+				if ( '' == $expected_subscription_status ) {
+
+					$valid_subscription_status = true;
+
+				} else {
+
+					$valid_subscription_status = true;
+
+					foreach ( $subscriptions as $subscription ) {
+						if ( ! $subscription->has_status( $expected_subscription_status ) ) {
+							$valid_subscription_status = false;
+							break;
+						}
+					}
+				}
 
 				// if both statuses are still the same or there no special status was applied and the order still needs payment (i.e. there has been no manual intervention), trigger the payment hook
 				if ( $valid_order_status && $valid_subscription_status ) {
 
 					// Make sure the subscription is on hold in case something goes wrong while trying to process renewal and in case gateways expect the subscription to be on-hold, which is normally the case with a renewal payment
-					$subscription->update_status( 'on-hold', _x( 'Subscription renewal payment retry:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
+					foreach ( $subscriptions as $subscription ) {
+						$subscription->update_status( 'on-hold', _x( 'Subscription renewal payment retry:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
+					}
 
-					WC_Subscriptions_Payment_Gateways::gateway_scheduled_subscription_payment( $subscription );
+					WC_Subscriptions_Payment_Gateways::trigger_gateway_renewal_payment_hook( $last_order );
 
 					// Now that we've attempted to process the payment, refresh the order
 					$last_order = wc_get_order( $last_order->id );
@@ -211,7 +232,7 @@ class WCS_Retry_Manager {
 				self::update_retry_status( $last_retry, 'cancelled', $last_retry->get_date_gmt() );
 			}
 
-			do_action( 'woocommerce_subscriptions_after_payment_retry', $last_retry, $last_order, $subscription );
+			do_action( 'woocommerce_subscriptions_after_payment_retry', $last_retry, $last_order );
 		}
 	}
 
