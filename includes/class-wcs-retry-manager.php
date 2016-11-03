@@ -117,10 +117,11 @@ class WCS_Retry_Manager {
 
 				// If the new status isn't the expected retry subscription status and we aren't in the process of applying a retry rule or retrying payment, cancel the retry
 				if ( $new_status != $retry_subscription_status && ! $applying_retry_rule && ! $retrying_payment ) {
-					self::update_retry_status( $last_retry, 'cancelled', $last_retry->get_date_gmt() );
-				}
 
-				$subscription->delete_date( 'payment_retry' );
+					self::update_retry_status( $last_retry, 'cancelled', $last_retry->get_date_gmt() );
+
+					$subscription->delete_date( 'payment_retry' );
+				}
 			}
 		}
 	}
