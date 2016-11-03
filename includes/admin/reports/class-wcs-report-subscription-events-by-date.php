@@ -142,7 +142,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
 			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
 			$cached_results[ $query_hash ] = apply_filters( 'wcs_reports_subscription_events_sign_up_data', (array) $wpdb->get_results( $query ), $args );
-			set_transient( strtolower( get_class( $this ) ), $cached_results, DAY_IN_SECONDS );
+			set_transient( strtolower( get_class( $this ) ), $cached_results, WEEK_IN_SECONDS );
 		}
 
 		$this->report_data->signup_data = $cached_results[ $query_hash ];
@@ -205,7 +205,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
 			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
 			$cached_results[ $query_hash ] = apply_filters( 'wcs_reports_subscription_events_subscriber_count_data', (array) $wpdb->get_results( $query ), $args );
-			set_transient( strtolower( get_class( $this ) ), $cached_results, DAY_IN_SECONDS );
+			set_transient( strtolower( get_class( $this ) ), $cached_results, WEEK_IN_SECONDS );
 		}
 
 		$this->report_data->subscriber_counts = $cached_results[ $query_hash ];
@@ -232,7 +232,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
 			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
 			$cached_results[ $query_hash ] = apply_filters( 'wcs_reports_subscription_events_cancel_count_data', (array) $wpdb->get_results( $query ), $args );
-			set_transient( strtolower( get_class( $this ) ), $cached_results, DAY_IN_SECONDS );
+			set_transient( strtolower( get_class( $this ) ), $cached_results, WEEK_IN_SECONDS );
 		}
 
 		$this->report_data->cancel_counts = $cached_results[ $query_hash ];
@@ -260,7 +260,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
 			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
 			$cached_results[ $query_hash ] = apply_filters( 'wcs_reports_subscription_events_ended_count_data', (array) $wpdb->get_results( $query ), $args );
-			set_transient( strtolower( get_class( $this ) ), $cached_results, DAY_IN_SECONDS );
+			set_transient( strtolower( get_class( $this ) ), $cached_results, WEEK_IN_SECONDS );
 		}
 
 		$this->report_data->ended_counts = $cached_results[ $query_hash ];

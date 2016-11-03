@@ -152,7 +152,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
 			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
 			$cached_results[ $query_hash ] = apply_filters( 'wcs_reports_upcoming_recurring_revenue_data', $wpdb->get_results( $base_query, OBJECT_K ), $args );
-			set_transient( strtolower( get_class( $this ) ), $cached_results, DAY_IN_SECONDS );
+			set_transient( strtolower( get_class( $this ) ), $cached_results, WEEK_IN_SECONDS );
 		}
 
 		return $cached_results[ $query_hash ];
