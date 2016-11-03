@@ -43,7 +43,7 @@ class WCS_Retry_Manager {
 
 			add_filter( 'woocommerce_subscription_dates', __CLASS__ . '::add_retry_date_type' );
 
-			add_action( 'woocommerce_subscription_status_updated', __CLASS__ . '::delete_retry_payment_date', 0, 3 );
+			add_action( 'woocommerce_subscription_status_updated', __CLASS__ . '::maybe_cancel_retry', 0, 3 );
 
 			add_action( 'woocommerce_subscription_renewal_payment_failed', __CLASS__ . '::maybe_apply_retry_rule', 10, 2 );
 
@@ -96,13 +96,13 @@ class WCS_Retry_Manager {
 	}
 
 	/**
-	 * When a subscription's status is updated, if it's being changed to active or an inactive status, delete the retry date
+	 * When a subscription's status is updated, if it's being changed to active or an inactive status, cancel the retry.
 	 *
 	 * @param object $subscription An instance of a WC_Subscription object
 	 * @param string $new_status A valid subscription status
 	 * @param string $old_status A valid subscription status
 	 */
-	public static function delete_retry_payment_date( $subscription, $new_status, $old_status ) {
+	public static function maybe_cancel_retry( $subscription, $new_status, $old_status ) {
 
 		if ( $subscription->get_date( 'payment_retry' ) > 0 ) {
 
