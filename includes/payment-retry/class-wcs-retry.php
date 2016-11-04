@@ -70,6 +70,27 @@ class WCS_Retry {
 	}
 
 	/**
+	 * Update the status of a retry and set the date to reflect that
+	 *
+	 * @since 2.1
+	 */
+	public function update_status( $new_status ) {
+
+		WCS_Retry_Manager::store()->save( new WCS_Retry( array(
+			'id'       => $this->get_id(),
+			'order_id' => $this->get_order_id(),
+			'date_gmt' => $this->get_date_gmt(),
+			'status'   => $new_status,
+			'rule_raw' => $this->get_rule()->get_raw_data(),
+		) ) );
+
+		$old_status   = $this->status;
+		$this->status = $new_status;
+
+		do_action( 'woocommerce_subscriptions_retry_status_updated', $this, $new_status, $old_status );
+	}
+
+	/**
 	 * Get the date in the site's timezone when this retry was recorded
 	 *
 	 * @return string
