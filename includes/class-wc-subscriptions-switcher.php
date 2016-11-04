@@ -645,6 +645,11 @@ class WC_Subscriptions_Switcher {
 						$is_different_billing_schedule = false;
 					}
 
+					// If we haven't calculated a first payment date, fall back to the recurring cart's next payment date
+					if ( 0 == $cart_item['subscription_switch']['first_payment_timestamp'] ) {
+						$cart_item['subscription_switch']['first_payment_timestamp'] = strtotime( $recurring_cart->next_payment_date );
+					}
+
 					if ( 0 !== $cart_item['subscription_switch']['first_payment_timestamp'] && $next_payment_timestamp !== $cart_item['subscription_switch']['first_payment_timestamp'] ) {
 						$is_different_payment_date = true;
 					} elseif ( 0 !== $cart_item['subscription_switch']['first_payment_timestamp'] && 0 == $subscription->get_time( 'next_payment' ) ) { // if the subscription doesn't have a next payment but the switched item does
@@ -1273,11 +1278,12 @@ class WC_Subscriptions_Switcher {
 
 						// Find out how many days at the new price per day the customer would receive for the total amount already paid
 						// (e.g. if the customer paid $10 / month previously, and was switching to a $5 / week subscription, she has pre-paid 14 days at the new price)
-						$pre_paid_days = 0;
-						do {
+						$pre_paid_days = $new_total_paid = 0;
+
+						while ( $new_total_paid < $old_recurring_total ) {
 							$pre_paid_days++;
 							$new_total_paid = $pre_paid_days * $new_price_per_day;
-						} while ( $new_total_paid < $old_recurring_total );
+						}
 
 						// If the total amount the customer has paid entitles her to more days at the new price than she has received, there is no gap payment, just shorten the pre-paid term the appropriate number of days
 						if ( $days_since_last_payment < $pre_paid_days ) {
@@ -1366,7 +1372,7 @@ class WC_Subscriptions_Switcher {
 	public static function recurring_cart_next_payment_date( $first_renewal_date, $cart ) {
 
 		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
-			if ( isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) ) {
+			if ( isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) && 0 != $cart_item['subscription_switch']['first_payment_timestamp'] ) {
 				$first_renewal_date = ( '1' != $cart_item['data']->subscription_length ) ? gmdate( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] ) : 0;
 			}
 		}
