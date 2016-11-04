@@ -267,6 +267,8 @@ class WCS_Retry_Manager {
 			'status'   => $new_status,
 			'rule_raw' => $retry->get_rule()->get_raw_data(),
 		) ) );
+
+		do_action( 'woocommerce_subscriptions_retry_status_updated', $retry, $new_status, $last_retry->get_status(), $new_date );
 	}
 
 	/**
