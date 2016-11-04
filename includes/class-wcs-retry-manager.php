@@ -45,6 +45,8 @@ class WCS_Retry_Manager {
 
 			add_action( 'woocommerce_subscription_status_updated', __CLASS__ . '::maybe_cancel_retry', 0, 3 );
 
+			add_action( 'woocommerce_subscriptions_retry_status_updated', __CLASS__ . '::maybe_delete_payment_retry_date', 0, 2 );
+
 			add_action( 'woocommerce_subscription_renewal_payment_failed', __CLASS__ . '::maybe_apply_retry_rule', 10, 2 );
 
 			add_action( 'woocommerce_scheduled_subscription_payment_retry', __CLASS__ . '::maybe_retry_payment' );
@@ -117,11 +119,22 @@ class WCS_Retry_Manager {
 
 				// If the new status isn't the expected retry subscription status and we aren't in the process of applying a retry rule or retrying payment, cancel the retry
 				if ( $new_status != $retry_subscription_status && ! $applying_retry_rule && ! $retrying_payment ) {
-
 					self::update_retry_status( $last_retry, 'cancelled', $last_retry->get_date_gmt() );
-
-					$subscription->delete_date( 'payment_retry' );
 				}
+			}
+		}
+	}
+
+	/**
+	 * When a retry's status is updated, if it's no longer pending, delete the retry date on the subscriptions related to the order
+	 *
+	 * @param object $retry An instance of a WCS_Retry object
+	 * @param string $new_status A valid retry status
+	 */
+	public static function maybe_delete_payment_retry_date( $retry, $new_status ) {
+		if ( 'pending' != $new_status ) {
+			foreach ( wcs_get_subscriptions_for_renewal_order( $retry->get_order_id() ) as $subscription ) {
+				$subscription->delete_date( 'payment_retry' );
 			}
 		}
 	}
