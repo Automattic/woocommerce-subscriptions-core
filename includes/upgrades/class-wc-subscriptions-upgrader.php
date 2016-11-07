@@ -179,6 +179,9 @@ class WC_Subscriptions_Upgrader {
 
 			include_once( 'class-wcs-upgrade-2-1.php' );
 			WCS_Upgrade_2_1::set_cancelled_dates();
+
+			// Schedule report cache updates in the hopes that the data is ready and waiting for the store owner the first time they visit the reports pages
+			do_action( 'woocommerce_subscriptions_reports_schedule_cache_updates' );
 		}
 
 		self::upgrade_complete();

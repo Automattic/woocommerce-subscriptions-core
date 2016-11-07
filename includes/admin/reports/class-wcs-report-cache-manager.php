@@ -24,6 +24,12 @@ class WCS_Report_Cache_Manager {
 	 *
 	 */
 	private $update_events_and_classes = array(
+		'woocommerce_subscriptions_reports_schedule_cache_updates' => array( // a custom hook that can be called to schedule a full cache update, used by WC_Subscriptions_Upgrader
+			0 => 'WC_Report_Subscription_Events_By_Date',
+			1 => 'WC_Report_Upcoming_Recurring_Revenue',
+			3 => 'WC_Report_Subscription_By_Product',
+			4 => 'WC_Report_Subscription_By_Customer',
+		),
 		'woocommerce_subscription_payment_complete' => array( // this hook takes care of renewal, switch and initial payments
 			0 => 'WC_Report_Subscription_Events_By_Date',
 			4 => 'WC_Report_Subscription_By_Customer',
