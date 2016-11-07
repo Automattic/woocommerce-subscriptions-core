@@ -20,7 +20,9 @@ class WCS_Report_Cache_Manager {
 	 * Array of event => report classes to determine which reports need to be updated on certain events.
 	 *
 	 * The index for each report's class is specified as its used later to determine when to schedule the report and we want
-	 * it to be consistently at the same time, regardless of the hook which triggered the cache update.
+	 * it to be consistently at the same time, regardless of the hook which triggered the cache update. The indexes are based
+	 * on the order of the reports in the menu on the WooCommerce > Reports > Subscriptions screen, which is why the indexes
+	 * are not sequential (because not all reports need caching).
 	 *
 	 */
 	private $update_events_and_classes = array(
