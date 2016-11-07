@@ -132,7 +132,7 @@ class WCS_Retry_Manager {
 	 * @param string $new_status A valid retry status
 	 */
 	public static function maybe_delete_payment_retry_date( $retry, $new_status ) {
-		if ( 'pending' != $new_status ) {
+		if ( ! in_array( $new_status, array( 'pending', 'processing' ) ) ) {
 			foreach ( wcs_get_subscriptions_for_renewal_order( $retry->get_order_id() ) as $subscription ) {
 				$subscription->delete_date( 'payment_retry' );
 			}
