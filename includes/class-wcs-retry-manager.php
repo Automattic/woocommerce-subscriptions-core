@@ -133,10 +133,16 @@ class WCS_Retry_Manager {
 	 */
 	public static function maybe_delete_payment_retry_date( $retry, $new_status ) {
 		if ( ! in_array( $new_status, array( 'pending', 'processing' ) ) ) {
-			foreach ( wcs_get_subscriptions_for_renewal_order( $retry->get_order_id() ) as $subscription ) {
-				$subscription->delete_date( 'payment_retry' );
+
+			$last_retry = self::store()->get_last_retry_for_order( $retry->get_order_id() );
+
+			if ( $retry->get_id() === $last_retry->get_id() ) {
+				foreach ( wcs_get_subscriptions_for_renewal_order( $retry->get_order_id() ) as $subscription ) {
+					$subscription->delete_date( 'payment_retry' );
+				}
 			}
 		}
+
 	}
 
 	/**
