@@ -109,7 +109,8 @@ class WCS_PayPal_Status_Manager extends WCS_PayPal {
 					// And set a flag to display notice
 					update_option( 'wcs_paypal_credentials_error', 'yes' );
 
-					$subscription->add_order_note( sprintf( __( 'Unable to "%s" subscription with PayPal. API credentials are incorrect.', 'woocommerce-subscriptions' ), $new_status ) );
+					// This message will be added as an order note on by WC_Subscription::update_status()
+					throw new Exception( sprintf( __( 'PayPal API error - credentials are incorrect.', 'woocommerce-subscriptions' ), $new_status ) );
 				}
 			}
 		} else {
