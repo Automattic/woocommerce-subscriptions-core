@@ -171,6 +171,10 @@ class WC_Subscriptions_Payment_Gateways {
 	 */
 	public static function trigger_gateway_renewal_payment_hook( $renewal_order ) {
 		if ( ! empty( $renewal_order ) && $renewal_order->get_total() > 0 && ! empty( $renewal_order->payment_method ) ) {
+
+			// Make sure gateways are setup
+			WC()->payment_gateways();
+
 			do_action( 'woocommerce_scheduled_subscription_payment_' . $renewal_order->payment_method, $renewal_order->get_total(), $renewal_order );
 		}
 	}
