@@ -652,10 +652,13 @@ class WC_Subscriptions_Cart {
 				)
 			);
 
-			if ( false !== strpos( $product_subtotal, WC()->countries->inc_tax_or_vat() ) ) {
+			$inc_tax_or_vat_string = WC()->countries->inc_tax_or_vat();
+			$ex_tax_or_vat_string  = WC()->countries->ex_tax_or_vat();
+
+			if ( ! empty( $inc_tax_or_vat_string ) && false !== strpos( $product_subtotal, $inc_tax_or_vat_string ) ) {
 				$product_subtotal = str_replace( WC()->countries->inc_tax_or_vat(), '', $product_subtotal ) . ' <small class="tax_label">' . WC()->countries->inc_tax_or_vat() . '</small>';
 			}
-			if ( false !== strpos( $product_subtotal, WC()->countries->ex_tax_or_vat() ) ) {
+			if ( ! empty( $ex_tax_or_vat_string ) && false !== strpos( $product_subtotal, $ex_tax_or_vat_string ) ) {
 				$product_subtotal = str_replace( WC()->countries->ex_tax_or_vat(), '', $product_subtotal ) . ' <small class="tax_label">' .  WC()->countries->ex_tax_or_vat() . '</small>';
 			}
 
