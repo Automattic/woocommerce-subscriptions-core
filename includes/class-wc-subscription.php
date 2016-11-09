@@ -406,7 +406,7 @@ class WC_Subscription extends WC_Order {
 				wp_update_post( array( 'ID' => $this->id, 'post_status' => $old_status_key ) );
 				$this->post_status = $old_status_key;
 
-				$this->add_order_note( sprintf( __( 'Unable to change subscription status to "%s".', 'woocommerce-subscriptions' ), $new_status ) );
+				$this->add_order_note( sprintf( __( 'Unable to change subscription status to "%s". Exception: %s', 'woocommerce-subscriptions' ), $new_status, $e->getMessage() ) );
 
 				do_action( 'woocommerce_subscription_unable_to_update_status', $this, $new_status, $old_status );
 
