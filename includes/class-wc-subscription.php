@@ -387,9 +387,6 @@ class WC_Subscription extends WC_Order {
 					break;
 				}
 
-				// translators: $1 note why the status changes (if any), $2: old status, $3: new status
-				$this->add_order_note( trim( sprintf( __( '%1$s Status changed from %2$s to %3$s.', 'woocommerce-subscriptions' ), $note, wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ), 0, $manual );
-
 				// dynamic hooks for convenience
 				do_action( 'woocommerce_subscription_status_' . $new_status, $this );
 				do_action( 'woocommerce_subscription_status_' . $old_status . '_to_' . $new_status, $this );
@@ -400,13 +397,16 @@ class WC_Subscription extends WC_Order {
 				// Trigger a hook with params matching WooCommerce's 'woocommerce_order_status_changed' hook so functions attached to it can be attached easily to subscription status changes
 				do_action( 'woocommerce_subscription_status_changed', $this->id, $old_status, $new_status );
 
+				// translators: $1 note why the status changes (if any), $2: old status, $3: new status
+				$this->add_order_note( trim( sprintf( __( '%1$s Status changed from %2$s to %3$s.', 'woocommerce-subscriptions' ), $note, wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ), 0, $manual );
+
 			} catch ( Exception $e ) {
 
 				// Make sure the old status is restored
 				wp_update_post( array( 'ID' => $this->id, 'post_status' => $old_status_key ) );
 				$this->post_status = $old_status_key;
 
-				$this->add_order_note( sprintf( __( 'Unable to change subscription status to "%s".', 'woocommerce-subscriptions' ), $new_status ) );
+				$this->add_order_note( sprintf( __( 'Unable to change subscription status to "%s". Exception: %s', 'woocommerce-subscriptions' ), $new_status, $e->getMessage() ) );
 
 				do_action( 'woocommerce_subscription_unable_to_update_status', $this, $new_status, $old_status );
 
