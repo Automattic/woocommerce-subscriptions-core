@@ -98,7 +98,7 @@ class WCS_Retry_Manager {
 	}
 
 	/**
-	 * When a subscription's status is updated, if it's being changed to active or an inactive status, cancel the retry.
+	 * When a subscription's status is updated, if the new status isn't the expected retry subscription status, cancel the retry.
 	 *
 	 * @param object $subscription An instance of a WC_Subscription object
 	 * @param string $new_status A valid subscription status
@@ -126,7 +126,8 @@ class WCS_Retry_Manager {
 	}
 
 	/**
-	 * When a retry's status is updated, if it's no longer pending, delete the retry date on the subscriptions related to the order
+	 * When a retry's status is updated, if it's no longer pending or processing and it's the most recent retry,
+	 * delete the retry date on the subscriptions related to the order
 	 *
 	 * @param object $retry An instance of a WCS_Retry object
 	 * @param string $new_status A valid retry status

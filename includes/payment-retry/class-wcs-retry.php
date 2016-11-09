@@ -70,7 +70,7 @@ class WCS_Retry {
 	}
 
 	/**
-	 * Update the status of a retry and set the date to reflect that
+	 * Update the status of a retry
 	 *
 	 * @since 2.1
 	 */
