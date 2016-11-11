@@ -403,16 +403,18 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 							} else {
 								$has_failed = true;
 							}
+						}
 
 						update_post_meta( $renewal_order->id, '_transaction_id', $transaction_details['txn_id'] );
 
 						// translators: placeholder is payment status (e.g. "completed")
 						$this->add_order_note( sprintf( _x( 'IPN subscription payment %s.', 'used in order note', 'woocommerce-subscriptions' ), $transaction_details['payment_status'] ), $renewal_order, $transaction_details );
-						
+
 						if ( $has_failed ) {
 							$subscription->payment_failed();
 						}
 					}
+
 					if ( $has_failed ) {
 						WC_Gateway_Paypal::log( 'IPN subscription payment failed for subscription ' . $subscription->id );
 					}
