@@ -105,7 +105,7 @@ class WC_Subscriptions_Manager {
 				}
 			}
 
-			if ( 0 == $subscription->get_total() ) {
+			if ( 0 == $renewal_order->get_total() ) {
 
 				$renewal_order->payment_complete();
 
