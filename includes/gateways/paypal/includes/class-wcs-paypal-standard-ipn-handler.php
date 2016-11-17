@@ -689,4 +689,26 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			$order->add_order_note( $note );
 		}
 	}
+
+	/**
+	* Get an order associated with a subscription that has a specified transaction id.
+	*
+	* @param WC_Subscription object $subscription
+	* @param int $transaction_id Id from transaction details as provided by PayPal
+	* @return array If orders with that transaction id, order ids, otherwise empty
+	* @since 2.1
+	*/
+	protected function get_orders_by_transaction_id( $subscription, $transaction_id ) {
+
+		$orders = $subscription->get_related_orders( 'ids' );
+		$order_ids = array();
+
+		foreach ( $orders as $order_id ) {
+			if ( get_post_meta( $order_id, '_transaction_id', true ) == $transaction_id ) {
+				$order_ids[] = $order_id;
+			}
+		}
+
+		return $order_ids;
+	}
 }
