@@ -284,7 +284,10 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 					}
 
 					// Generate a renewal order to record the payment (and determine how much is due)
-					$renewal_order = wcs_create_renewal_order( $subscription );
+					$renewal_order = get_renewal_order_by_transaction_id( $subscription, $transaction_details['txn_id'] );
+					if ( is_null( $renewal_order ) ) {
+						$renewal_order = wcs_create_renewal_order( $subscription );
+					}
 
 					// Set PayPal as the payment method (we can't use $renewal_order->set_payment_method() here as it requires an object we don't have)
 					$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
@@ -381,42 +384,25 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 					}
 				} elseif ( in_array( strtolower( $transaction_details['payment_status'] ), array( 'pending', 'failed' ) ) ) {
 
-					$has_failed = false;
-
 					// Subscription Payment completed
 					// translators: placeholder is payment status (e.g. "completed")
 					$this->add_order_note( sprintf( _x( 'IPN subscription payment %s.', 'used in order note', 'woocommerce-subscriptions' ), $transaction_details['payment_status'] ), $subscription, $transaction_details );
 
 					if ( ! $is_first_payment ) {
 
-						$orders = $subscription->get_related_orders( 'ids', 'renewal' );
-						foreach ( $orders as $order_id ) {
-
-							$has_transaction_id = ( get_post_meta( $order_id, '_transaction_id', true ) == $transaction_details['txn_id'] ) ? true : false;
-
-							if ( true == $has_transaction_id && 'pending' == get_post_meta( $order_id, '_status', true ) ) {
-								$renewal_order = wc_get_order( $order_id );
-								break;
-							} elseif ( true == $has_transaction_id && 'pending' != get_post_meta( $order_id, '_status', true ) ) {
-								exit;
-							} else {
-								$has_failed = true;
-							}
-						}
-
 						update_post_meta( $renewal_order->id, '_transaction_id', $transaction_details['txn_id'] );
 
 						// translators: placeholder is payment status (e.g. "completed")
 						$this->add_order_note( sprintf( _x( 'IPN subscription payment %s.', 'used in order note', 'woocommerce-subscriptions' ), $transaction_details['payment_status'] ), $renewal_order, $transaction_details );
 
-						if ( true == $has_failed ) {
+						if ( 'failed' == strtolower( $transaction_details['payment_status'] ) ) {
 							$subscription->payment_failed();
+						} else {
+							$renewal_order->update_status( 'on-hold' );
 						}
 					}
 
-					if ( true == $has_failed ) {
-						WC_Gateway_Paypal::log( 'IPN subscription payment failed for subscription ' . $subscription->id );
-					}
+					WC_Gateway_Paypal::log( sprintf( 'IPN subscription payment %s for subscription %d ', $transaction_details['payment_status'], $subscription->id ) );
 				} else {
 
 					WC_Gateway_Paypal::log( 'IPN subscription payment notification received for subscription ' . $subscription->id  . ' with status ' . $transaction_details['payment_status'] );
@@ -691,24 +677,24 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 	}
 
 	/**
-	* Get an order associated with a subscription that has a specified transaction id.
+	* Get a renewal order associated with a subscription that has a specified transaction id.
 	*
 	* @param WC_Subscription object $subscription
 	* @param int $transaction_id Id from transaction details as provided by PayPal
-	* @return array If orders with that transaction id, order ids, otherwise empty
+	* @return int|null If order with that transaction id, order id, otherwise null
 	* @since 2.1
 	*/
-	protected function get_orders_by_transaction_id( $subscription, $transaction_id ) {
+	protected function get_renewal_order_by_transaction_id( $subscription, $transaction_id ) {
 
-		$orders = $subscription->get_related_orders( 'ids' );
-		$order_ids = array();
+		$orders = $subscription->get_related_orders( 'ids', 'renewal' );
+		$order_id = null;
 
-		foreach ( $orders as $order_id ) {
-			if ( get_post_meta( $order_id, '_transaction_id', true ) == $transaction_id ) {
-				$order_ids[] = $order_id;
+		foreach ( $orders as $order ) {
+			if ( get_post_meta( $order, '_transaction_id', true ) == $transaction_id ) {
+				$order_id = $order;
 			}
 		}
 
-		return $order_ids;
+		return $order_id;
 	}
 }
