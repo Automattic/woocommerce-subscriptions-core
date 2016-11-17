@@ -379,7 +379,6 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 						wcs_set_paypal_id( $renewal_order, $transaction_details['subscr_id'] );
 					}
-
 				} elseif ( in_array( strtolower( $transaction_details['payment_status'] ), array( 'pending', 'failed' ) ) ) {
 
 					$has_failed = false;
@@ -390,15 +389,15 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 					if ( ! $is_first_payment ) {
 
-						$orders = $subscription->get_related_orders( 'all', 'renewal' );
-						foreach ( $orders as $order_id => $order ) {
+						$orders = $subscription->get_related_orders( 'ids', 'renewal' );
+						foreach ( $orders as $order_id ) {
 
-							$has_transaction_id = ($transaction_details['txn_id'] == get_post_meta( $order_id, '_transaction_id', true ) ) ? true : false;
+							$has_transaction_id = ( get_post_meta( $order_id, '_transaction_id', true ) == $transaction_details['txn_id'] ) ? true : false;
 
-							if ( $has_transaction_id && 'pending' == get_post_meta( $order_id, '_status', true ) ) {
-								$renewal_order = $order;
+							if ( true == $has_transaction_id && 'pending' == get_post_meta( $order_id, '_status', true ) ) {
+								$renewal_order = wc_get_order( $order_id );
 								break;
-							} elseif ( $has_transaction_id ) {
+							} elseif ( true == $has_transaction_id && 'pending' != get_post_meta( $order_id, '_status', true ) ) {
 								exit;
 							} else {
 								$has_failed = true;
@@ -410,15 +409,14 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 						// translators: placeholder is payment status (e.g. "completed")
 						$this->add_order_note( sprintf( _x( 'IPN subscription payment %s.', 'used in order note', 'woocommerce-subscriptions' ), $transaction_details['payment_status'] ), $renewal_order, $transaction_details );
 
-						if ( $has_failed ) {
+						if ( true == $has_failed ) {
 							$subscription->payment_failed();
 						}
 					}
 
-					if ( $has_failed ) {
+					if ( true == $has_failed ) {
 						WC_Gateway_Paypal::log( 'IPN subscription payment failed for subscription ' . $subscription->id );
 					}
-
 				} else {
 
 					WC_Gateway_Paypal::log( 'IPN subscription payment notification received for subscription ' . $subscription->id  . ' with status ' . $transaction_details['payment_status'] );
