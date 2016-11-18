@@ -681,20 +681,21 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 	*
 	* @param WC_Subscription object $subscription
 	* @param int $transaction_id Id from transaction details as provided by PayPal
-	* @return int|null If order with that transaction id, order id, otherwise null
+	* @return WC_Order|null If order with that transaction id, WC_Order object, otherwise null
 	* @since 2.1
 	*/
 	protected function get_renewal_order_by_transaction_id( $subscription, $transaction_id ) {
 
-		$orders = $subscription->get_related_orders( 'ids', 'renewal' );
-		$order_id = null;
+		$orders = $subscription->get_related_orders( 'all', 'renewal' );
+		$renewal_order = null;
 
-		foreach ( $orders as $order ) {
-			if ( get_post_meta( $order, '_transaction_id', true ) == $transaction_id ) {
-				$order_id = $order;
+		foreach ( $orders as $order_id => $order ) {
+			if ( get_post_meta( $order_id, '_transaction_id', true ) == $transaction_id ) {
+				$renewal_order = $order;
+				break;
 			}
 		}
 
-		return $order_id;
+		return $renewal_order;
 	}
 }
