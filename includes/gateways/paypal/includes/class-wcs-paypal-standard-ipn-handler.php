@@ -284,7 +284,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 					}
 
 					// Generate a renewal order to record the payment (and determine how much is due)
-					$renewal_order = get_renewal_order_by_transaction_id( $subscription, $transaction_details['txn_id'] );
+					$renewal_order = $this->get_renewal_order_by_transaction_id( $subscription, $transaction_details['txn_id'] );
 					if ( is_null( $renewal_order ) ) {
 						$renewal_order = wcs_create_renewal_order( $subscription );
 					}
