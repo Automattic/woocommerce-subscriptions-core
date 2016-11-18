@@ -91,13 +91,12 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 				break;
 			case 'pending-cancel' :
 
-				$end_time     = $subscription->get_time( 'end' ); // This will have been set to the correct date already
-
 				// Now that we have the current times, clear the scheduled hooks
 				foreach ( $this->action_hooks as $action_hook => $date_type ) {
 					$this->unschedule_actions( $action_hook, $this->get_action_args( $date_type, $subscription ) );
 				}
 
+				$end_time       = $subscription->get_time( 'end' ); // This will have been set to the correct date already
 				$action_args    = $this->get_action_args( 'end', $subscription );
 				$next_scheduled = wc_next_scheduled_action( 'woocommerce_scheduled_subscription_end_of_prepaid_term', $action_args );
 
@@ -161,6 +160,7 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 	 *
 	 * @param string $date_type Can be 'start', 'trial_end', 'next_payment', 'last_payment', 'expiration', 'end_of_prepaid_term' or a custom date type
 	 * @param object $subscription An instance of WC_Subscription to get the hook for
+	 * @return array Array of name => value pairs stored against the scheduled action.
 	 */
 	protected function get_action_args( $date_type, $subscription ) {
 
