@@ -645,7 +645,7 @@ function wcs_date_to_time( $date_string ) {
 
 	$date_obj = new DateTime( $date_string, new DateTimeZone( 'UTC' ) );
 
-	return $date_obj->format( 'U' );
+	return intval( $date_obj->format( 'U' ) );
 }
 
 /**
