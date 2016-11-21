@@ -54,10 +54,9 @@ class WC_Subscriptions_Admin {
 		// Add subscription pricing fields on edit product page
 		add_action( 'woocommerce_product_options_general_product_data', __CLASS__ . '::subscription_pricing_fields' );
 
-		// Add listener to clear our own transients when WooCommerce -> Clear Transients is 
+		// Add listener to clear our own transients when WooCommerce -> Clear Transients is
 		// triggered from the admin panel
 		add_action( 'woocommerce_page_wc-status', __CLASS__ . '::clear_subscriptions_transients' );
-
 
 		// Add subscription shipping options on edit product page
 		add_action( 'woocommerce_product_options_shipping', __CLASS__ . '::subscription_shipping_fields' );
