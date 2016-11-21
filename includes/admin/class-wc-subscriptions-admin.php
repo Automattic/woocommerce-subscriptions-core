@@ -118,9 +118,9 @@ class WC_Subscriptions_Admin {
 
 	/**
 	 * Clear all transients data we have when the WooCommerce::Tools::Clear Transients action is
-	 * triggerd.
+	 * triggered.
 	 *
-	 * @since 2.1
+	 * @since 2.1.1
 	 *
 	 * @return null
 	 */
