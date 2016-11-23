@@ -43,6 +43,9 @@ class WCS_Retry_Manager {
 
 			add_filter( 'woocommerce_subscription_dates', __CLASS__ . '::add_retry_date_type' );
 
+			add_action( 'delete_post', __CLASS__ . '::maybe_cancel_retry_for_order' );
+			add_action( 'wp_trash_post', __CLASS__ . '::maybe_cancel_retry_for_order' );
+
 			add_action( 'woocommerce_subscription_status_updated', __CLASS__ . '::maybe_cancel_retry', 0, 3 );
 
 			add_action( 'woocommerce_subscriptions_retry_status_updated', __CLASS__ . '::maybe_delete_payment_retry_date', 0, 2 );
@@ -121,6 +124,28 @@ class WCS_Retry_Manager {
 				if ( $new_status != $retry_subscription_status && ! $applying_retry_rule && ! $retrying_payment ) {
 					$last_retry->update_status( 'cancelled' );
 				}
+			}
+		}
+	}
+
+	/**
+	 * When a (renewal) order is trashed or deleted, make sure its retries are also trashed/deleted.
+	 *
+	 * @param int $post_id
+	 */
+	public static function maybe_cancel_retry_for_order( $post_id ) {
+
+		if ( 'shop_order' == get_post_type( $post_id ) ) {
+
+			$last_retry = self::store()->get_last_retry_for_order( $post_id );
+
+			// Make sure the last retry is cancelled first so that it is unscheduled via self::maybe_delete_payment_retry_date()
+			if ( null !== $last_retry && 'cancelled' !== $last_retry->get_status() ) {
+				$last_retry->update_status( 'cancelled' );
+			}
+
+			foreach ( self::store()->get_retry_ids_for_order( $post_id ) as $retry_id ) {
+				wp_trash_post( $retry_id );
 			}
 		}
 	}
