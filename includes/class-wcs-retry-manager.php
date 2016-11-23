@@ -35,7 +35,7 @@ class WCS_Retry_Manager {
 		self::$setting_id = WC_Subscriptions_Admin::$option_prefix . '_enable_retry';
 		self::$admin      = new WCS_Retry_Admin( self::$setting_id );
 
-		if ( self::is_retry_enabled() ) {
+		if ( self::is_retry_enabled()) {
 
 			self::load_classes();
 
@@ -304,6 +304,15 @@ class WCS_Retry_Manager {
 	public static function rules() {
 		if ( empty( self::$retry_rules ) ) {
 			$class = self::get_rules_class();
+			if ( ! class_exists( $class ) ) {
+				// Force the initialization of the class same way
+				// as if retry-payment is enabled, useful to check 
+				// if the current order can be manually retried
+				add_filter('wcs_is_retry_enabled', function() {
+					return true;
+				});
+				self::init();
+			}
 			self::$retry_rules = new $class();
 		}
 		return self::$retry_rules;

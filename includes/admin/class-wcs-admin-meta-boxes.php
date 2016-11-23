@@ -228,8 +228,10 @@ class WCS_Admin_Meta_Boxes {
 	private static function can_renewal_order_be_retried( $order ) {
 
 		$can_be_retried = false;
+		$retry_manager = WCS_Retry_Manager::rules();
+		$status = $retry_manager->get_rule( 0, $order->postID )->get_status_to_apply();
 
-		if ( wcs_order_contains_renewal( $order ) && $order->has_status( array( 'pending', 'failed' ) ) && ! empty( $order->payment_method ) && $order->get_total() > 0 ) {
+		if ( wcs_order_contains_renewal( $order ) && $order->has_status( $status ) &&  ! empty( $order->payment_method ) && $order->get_total() > 0 ) {
 
 			$order_payment_gateway          = wc_get_payment_gateway_by_order( $order );
 			$order_payment_gateway_supports = ( isset( $order_payment_gateway->id ) ) ? has_action( 'woocommerce_scheduled_subscription_payment_' . $order_payment_gateway->id ) : false;
