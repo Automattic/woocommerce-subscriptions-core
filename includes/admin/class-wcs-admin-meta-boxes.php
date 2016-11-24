@@ -233,7 +233,7 @@ class WCS_Admin_Meta_Boxes {
 
 		$status = apply_filters( 'woocommerce_subscription_last_retry_status', 'failed', $order );
 
-		if ( $order->has_status( $status ) &&  ! empty( $order->payment_method ) && $order->get_total() > 0 ) {
+		if ( $order->has_status( $status ) && ! empty( $order->payment_method ) && $order->get_total() > 0 ) {
 			$order_payment_gateway          = wc_get_payment_gateway_by_order( $order );
 			$order_payment_gateway_supports = ( isset( $order_payment_gateway->id ) ) ? has_action( 'woocommerce_scheduled_subscription_payment_' . $order_payment_gateway->id ) : false;
 

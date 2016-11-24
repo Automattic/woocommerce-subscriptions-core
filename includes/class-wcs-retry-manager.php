@@ -34,7 +34,7 @@ class WCS_Retry_Manager {
 
 		self::$setting_id = WC_Subscriptions_Admin::$option_prefix . '_enable_retry';
 		self::$admin      = new WCS_Retry_Admin( self::$setting_id );
-		
+
 		if ( self::is_retry_enabled() ) {
 
 			self::load_classes();
