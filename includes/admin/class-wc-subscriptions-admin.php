@@ -1101,7 +1101,7 @@ class WC_Subscriptions_Admin {
 				'default'         => 'no',
 				'type'            => 'checkbox',
 				// translators: placeholders are opening and closing link tags
-				'desc_tip'        => sprintf( __( 'If you never want a customer to be automatically charged for a subscription renewal payment, you can turn off automatic payments completely. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/store-manager-guide/#turn-off-automatic-payments">', '</a>' ),
+				'desc_tip'        => sprintf( __( 'If you don\'t want new subscription purchases to automatically charge renewal payments, you can turn off automatic payments. Existing automatic subscriptions will continue to charge customers automatically. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/store-manager-guide/#turn-off-automatic-payments">', '</a>' ),
 				'checkboxgroup'   => 'end',
 				'show_if_checked' => 'yes',
 			),
