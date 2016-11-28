@@ -392,13 +392,14 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 						update_post_meta( $renewal_order->id, '_transaction_id', $transaction_details['txn_id'] );
 
-						// translators: placeholder is payment status (e.g. "completed")
-						$this->add_order_note( sprintf( _x( 'IPN subscription payment %s.', 'used in order note', 'woocommerce-subscriptions' ), $transaction_details['payment_status'] ), $renewal_order, $transaction_details );
-
 						if ( 'failed' == strtolower( $transaction_details['payment_status'] ) ) {
 							$subscription->payment_failed();
+							// translators: placeholder is payment status (e.g. "completed")
+							$this->add_order_note( sprintf( _x( 'IPN subscription payment %s.', 'used in order note', 'woocommerce-subscriptions' ), $transaction_details['payment_status'] ), $renewal_order, $transaction_details );
 						} else {
 							$renewal_order->update_status( 'on-hold' );
+							// translators: placeholder is payment status (e.g. "completed")
+							$this->add_order_note( sprintf( _x( 'IPN subscription payment %s for reason: %s.', 'used in order note', 'woocommerce-subscriptions' ), $transaction_details['payment_status'], $transaction_details['pending_reason'] ), $renewal_order, $transaction_details );
 						}
 					}
 
