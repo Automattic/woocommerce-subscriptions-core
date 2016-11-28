@@ -689,8 +689,8 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 		$orders = $subscription->get_related_orders( 'all', 'renewal' );
 		$renewal_order = null;
 
-		foreach ( $orders as $order_id => $order ) {
-			if ( get_post_meta( $order_id, '_transaction_id', true ) == $transaction_id ) {
+		foreach ( $orders as $order ) {
+			if ( $order->get_transaction_id() == $transaction_id ) {
 				$renewal_order = $order;
 				break;
 			}
