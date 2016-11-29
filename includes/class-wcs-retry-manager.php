@@ -41,7 +41,9 @@ class WCS_Retry_Manager {
 
 			add_filter( 'init', array( self::store(), 'init' ) );
 
-			add_filter( 'woocommerce_subscription_last_retry_status', __CLASS__ . '::last_retry_status' );
+			add_filter( 'woocommerce_order_needs_payment', __CLASS__ . '::check_if_needs_payment', 10, 2 );
+
+			add_filter( 'woocommerce_subscription_needs_payment', __CLASS__ . '::check_if_needs_payment' );
 
 			add_filter( 'woocommerce_subscription_dates', __CLASS__ . '::add_retry_date_type' );
 
@@ -56,15 +58,23 @@ class WCS_Retry_Manager {
 	}
 
 	/**
-	 * Returns the status of the last payment retry.
+	 * Check if the current order or subscription needs payment
 	 *
+	 * @param Boolean  $needs_payment
 	 * @param WC_Order $order
 	 * @return string
 	 * @since 2.2.1
 	 */
-	public static function last_retry_status( $order ) {
-		$last_retry  = self::store()->get_last_retry_for_order( $order );
-		return $last_retry ? $last_retry->get_rule()->get_status_to_apply( 'order' ) : 'pending';
+	public static function check_if_needs_payment( $needs_payment, $order ) {
+		// If the system believe the current order does not need a payment
+		// then we check if that is acurrate.
+		if ( ! $needs_payment) {
+			$last_retry  = self::store()->get_last_retry_for_order( $order );
+			$last_status = $last_retry ? $last_retry->get_rule()->get_status_to_apply( 'order' ) : 'pending';
+			$needs_payment = $order->has_status( $last_status );
+		}
+
+		return $needs_payment;
 	}
 
 	/**
