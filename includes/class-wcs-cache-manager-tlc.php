@@ -54,7 +54,6 @@ class WCS_Cache_Manager_TLC extends WCS_Cache_Manager {
 		if (count(wc_get_scheduled_actions(compact('hook', 'status'))) === 0) {
 			wc_schedule_recurring_action(time(), WEEK_IN_SECONDS, $hook);
 		}
-		self::Cleanup_logs();
 	}
 
 	/**
