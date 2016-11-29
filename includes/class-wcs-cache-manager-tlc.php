@@ -14,6 +14,9 @@ class WCS_Cache_Manager_TLC extends WCS_Cache_Manager {
 
 	public $logger = null;
 
+	// TODO: I should be a configuration rather than hardcode
+	public static $cleanup_threshold = 1024 * 1024 * 100;
+
 	public function __construct() {
 		_deprecated_function( __METHOD__, '2.1.2' );
 		add_action( 'woocommerce_loaded', array( $this, 'load_logger' ) );
@@ -25,6 +28,33 @@ class WCS_Cache_Manager_TLC extends WCS_Cache_Manager {
 		add_action( 'updated_post_meta', array( $this, 'purge_from_metadata' ), 9999, 4 ); // tied to _subscription_renewal
 		add_action( 'deleted_post_meta', array( $this, 'purge_from_metadata' ), 9999, 4 ); // tied to _subscription_renewal
 		add_action( 'added_post_meta', array( $this, 'purge_from_metadata' ), 9999, 4 ); // tied to _subscription_renewal
+
+		add_action( 'init', array( $this, 'initialize_cron_check_size' ) );
+	}
+
+	/**
+	 * If the log is bigger than a threshold it will be
+	 * truncated to 0 bytes.
+	 */
+	public static function cleanup_logs() {
+		$file = wc_get_log_file_path('wcs-cache');
+		if (filesize($file) >= self::$cleanup_threshold) {
+			fclose(fopen($file, 'w'));
+		}
+	}
+
+	/**
+	 * Creates a weekly crontab (if it doesn't exists) that 
+	 * will truncate the log file if it goes bigger than a 
+	 * threshold
+	 */
+	public function initialize_cron_check_size() {
+		$hook = __CLASS__ . '::cleanup_logs';
+		$status = ActionScheduler_Store::STATUS_PENDING;
+		if (count(wc_get_scheduled_actions(compact('hook', 'status'))) === 0) {
+			wc_schedule_recurring_action(time(), WEEK_IN_SECONDS, $hook);
+		}
+		self::Cleanup_logs();
 	}
 
 	/**
