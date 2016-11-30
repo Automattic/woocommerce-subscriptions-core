@@ -15,7 +15,7 @@ class WCS_Cache_Manager_TLC extends WCS_Cache_Manager {
 	public $logger = null;
 
 	// TODO: I should be a configuration rather than hardcode
-	public static $cleanup_threshold = 1024 * 1024 * 100;
+	public static $cleanup_threshold = 104857600; // 100 MB
 
 	public function __construct() {
 		_deprecated_function( __METHOD__, '2.1.2' );
