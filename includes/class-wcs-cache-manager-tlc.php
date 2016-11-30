@@ -78,7 +78,7 @@ class WCS_Cache_Manager_TLC extends WCS_Cache_Manager {
 	public function initialize_cron_check_size() {
 		$hook = 'wcs_cleanup_big_logs';
 		if ( ! wp_next_scheduled( $hook ) ) {
-			wp_schedule_event( time(), 'daily', $hook);
+			wp_schedule_event( time(), 'daily', $hook );
 		}
 
 		add_action( $hook, __CLASS__ . '::cleanup_logs' );
