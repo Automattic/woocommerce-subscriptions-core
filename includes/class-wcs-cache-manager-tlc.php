@@ -53,7 +53,7 @@ class WCS_Cache_Manager_TLC extends WCS_Cache_Manager {
 			fseek( $fp, -1 * $size, SEEK_END );
 			$data = '';
 			while ( ! feof( $fp ) ) {
-				$data .= fread($fp, $size);
+				$data .= fread( $fp, $size );
 			}
 			fclose( $fp );
 
@@ -65,7 +65,7 @@ class WCS_Cache_Manager_TLC extends WCS_Cache_Manager {
 			$lines[] = '---- log file automatically truncated ' . gmdate( 'Y-m-d H:i:s' ) . ' ---';
 
 			$fp = fopen( $file, 'w' );
-			fwrite( $fp, implode("\n", $lines ) );
+			fwrite( $fp, implode( "\n", $lines ) );
 			fclose( $fp );
 		}
 	}
@@ -81,7 +81,7 @@ class WCS_Cache_Manager_TLC extends WCS_Cache_Manager {
 			wp_schedule_event( time(), 'daily', $hook);
 		}
 
-		add_action($hook, __CLASS__ . '::cleanup_logs');
+		add_action( $hook, __CLASS__ . '::cleanup_logs' );
 	}
 
 	/**
