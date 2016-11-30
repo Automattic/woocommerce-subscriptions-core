@@ -69,7 +69,8 @@ class WCS_Retry_Manager {
 		if ( $order ) {
 			$last_retry  = self::store()->get_last_retry_for_order( $order );
 			if ( $last_retry ) {
-				$statuses[] = array_unique( $last_retry->get_rule()->get_status_to_apply( 'order' ) );
+				$statuses[] = $last_retry->get_rule()->get_status_to_apply( 'order' );
+				$statuses   = array_unique( $statuses);
 			}
 		}
 
