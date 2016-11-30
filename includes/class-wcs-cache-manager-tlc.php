@@ -41,43 +41,43 @@ class WCS_Cache_Manager_TLC extends WCS_Cache_Manager {
 		if ( is_callable( 'wc_get_log_file_path' ) ) {
 			$file = wc_get_log_file_path( $handle );
 		} else {
-			$file = WC()->plugin_path() . '/logs/' .  $handle . '-' . sanitize_file_name( wp_hash( $handle )) . '.txt';
+			$file = WC()->plugin_path() . '/logs/' .  $handle . '-' . sanitize_file_name( wp_hash( $handle ) ) . '.txt';
 		}
 
-		if ( filesize($file) >= self::$cleanup_threshold) {
+		if ( filesize( $file ) >= self::$cleanup_threshold ) {
 			$size = 64 * 1024;
 			// read the last $size bytes of the logs (it's useful to keep
 			// some log data), from this chunk of data we only care
 			// about the latest 1000 entries
-			$fp = fopen($file, 'r');
-			fseek($fp, -1 * $size, SEEK_END);
-			$data = "";
-			while (!feof($fp)) {
+			$fp = fopen( $file, 'r' );
+			fseek( $fp, -1 * $size, SEEK_END );
+			$data = '';
+			while ( ! feof( $fp ) ) {
 				$data .= fread($fp, $size);
 			}
-			fclose($fp);
+			fclose( $fp );
 
 			// Remove first line (which is probably incomplete)
 			// and also any empty line
-			$lines = explode("\n", $data);
-			$lines = array_filter(array_slice($lines, 1));
-			$lines = array_filter(array_slice($lines, -1000));
+			$lines = explode( "\n", $data );
+			$lines = array_filter( array_slice( $lines, 1 ) );
+			$lines = array_filter( array_slice( $lines, -1000 ) );
 			$lines[] = '---- log file automatically truncated ' . gmdate( 'Y-m-d H:i:s' ) . ' ---';
 
-			$fp = fopen($file, 'w');
-			fwrite($fp, implode("\n", $lines));
-			fclose($fp);
+			$fp = fopen( $file, 'w' );
+			fwrite( $fp, implode("\n", $lines ) );
+			fclose( $fp );
 		}
 	}
 
 	/**
-	 * Creates a weekly crontab (if it doesn't exists) that 
-	 * will truncate the log file if it goes bigger than a 
+	 * Creates a weekly crontab (if it doesn't exists) that
+	 * will truncate the log file if it goes bigger than a
 	 * threshold
 	 */
 	public function initialize_cron_check_size() {
 		$hook = 'wcs_cleanup_big_logs';
-		if ( ! wp_next_scheduled( $hook )) {
+		if ( ! wp_next_scheduled( $hook ) ) {
 			wp_schedule_event( time(), 'daily', $hook);
 		}
 
