@@ -1060,7 +1060,7 @@ class WC_Subscriptions_Synchroniser {
 	public static function add_to_recurring_cart_key( $cart_key, $cart_item ) {
 		$product = $cart_item['data'];
 
-		if ( self::is_product_synced( $product ) ) {
+		if ( false === strpos( $cart_key, '_synced' ) && self::is_product_synced( $product ) ) {
 			$cart_key .= '_synced';
 		}
 
