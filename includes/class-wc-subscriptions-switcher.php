@@ -739,9 +739,6 @@ class WC_Subscriptions_Switcher {
 					// Change the shipping
 					self::update_shipping_methods( $subscription, $recurring_cart );
 					$switch_order_data[ $subscription->id ]['shipping_methods'] = $subscription->get_shipping_methods();
-
-					// Finally, change the addresses but only if they've changed
-					self::maybe_update_subscription_address( $order, $subscription );
 				}
 			}
 
