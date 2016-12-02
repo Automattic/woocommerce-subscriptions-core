@@ -713,9 +713,6 @@ class WC_Subscriptions_Switcher {
 					if ( $is_single_item_subscription ) {
 
 						if ( $is_different_billing_schedule ) {
-							update_post_meta( $subscription->id, '_billing_period', $cart_item['data']->subscription_period );
-							update_post_meta( $subscription->id, '_billing_interval', absint( $cart_item['data']->subscription_period_interval ) );
-
 							$switch_order_data[ $subscription->id ]['billing_schedule']['_billing_period']   = $cart_item['data']->subscription_period;
 							$switch_order_data[ $subscription->id ]['billing_schedule']['_billing_interval'] = absint( $cart_item['data']->subscription_period_interval );
 						}
