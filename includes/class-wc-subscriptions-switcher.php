@@ -720,8 +720,8 @@ class WC_Subscriptions_Switcher {
 						$updated_dates = array();
 
 						if ( '1' == $cart_item['data']->subscription_length || ( 0 != $recurring_cart->end_date && gmdate( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] ) >= $recurring_cart->end_date ) ) {
-							$subscription->delete_date( 'next_payment' );
-							$switch_order_data[ $subscription->id ]['dates']['delete'][] = 'next_payment';
+							// Delete the next payment date.
+							$updated_dates['next_payment'] = 0;
 						} else if ( $is_different_payment_date ) {
 							$updated_dates['next_payment'] = gmdate( 'Y-m-d H:i:s', $cart_item['subscription_switch']['first_payment_timestamp'] );
 						}
@@ -731,7 +731,7 @@ class WC_Subscriptions_Switcher {
 						}
 
 						if ( ! empty( $updated_dates ) ) {
-							$subscription->update_dates( $updated_dates );
+							$subscription->validate_date_updates( $updated_dates );
 							$switch_order_data[ $subscription->id ]['dates']['update'] = $updated_dates;
 						}
 					}
