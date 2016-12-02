@@ -736,9 +736,6 @@ class WC_Subscriptions_Switcher {
 						}
 					}
 
-					// Remove the old item from the subscription but don't delete it completely by changing its line item type to "line_item_switched"
-					wc_update_order_item( $cart_item['subscription_switch']['item_id'], array( 'order_item_type' => 'line_item_switched' ) );
-
 					// Change the shipping
 					self::update_shipping_methods( $subscription, $recurring_cart );
 					$switch_order_data[ $subscription->id ]['shipping_methods'] = $subscription->get_shipping_methods();
