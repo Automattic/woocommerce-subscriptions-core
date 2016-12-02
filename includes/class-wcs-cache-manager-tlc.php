@@ -14,9 +14,6 @@ class WCS_Cache_Manager_TLC extends WCS_Cache_Manager {
 
 	public $logger = null;
 
-	// TODO: I should be a configuration rather than hardcode
-	public static $cleanup_threshold = 104857600; // 100 MB
-
 	public function __construct() {
 		_deprecated_function( __METHOD__, '2.1.2' );
 		add_action( 'woocommerce_loaded', array( $this, 'load_logger' ) );
@@ -29,7 +26,7 @@ class WCS_Cache_Manager_TLC extends WCS_Cache_Manager {
 		add_action( 'deleted_post_meta', array( $this, 'purge_from_metadata' ), 9999, 4 ); // tied to _subscription_renewal
 		add_action( 'added_post_meta', array( $this, 'purge_from_metadata' ), 9999, 4 ); // tied to _subscription_renewal
 
-		add_action( 'init', array( $this, 'initialize_cron_check_size' ) );
+		add_action( 'admin_init', array( $this, 'initialize_cron_check_size' ) );
 	}
 
 	/**
@@ -37,31 +34,25 @@ class WCS_Cache_Manager_TLC extends WCS_Cache_Manager {
 	 * truncated to 0 bytes.
 	 */
 	public static function cleanup_logs() {
-		$handle = 'wcs-cache';
-		if ( is_callable( 'wc_get_log_file_path' ) ) {
-			$file = wc_get_log_file_path( $handle );
-		} else {
-			$file = WC()->plugin_path() . '/logs/' .  $handle . '-' . sanitize_file_name( wp_hash( $handle ) ) . '.txt';
-		}
+		$file = wc_get_log_file_path( 'wcs-cache' );
+		$max_cache_size = apply_filters( 'wcs_max_log_size', 100 * 1024 * 1024 );
 
-		if ( filesize( $file ) >= self::$cleanup_threshold ) {
-			$size = 64 * 1024;
-			// read the last $size bytes of the logs (it's useful to keep
-			// some log data), from this chunk of data we only care
-			// about the latest 1000 entries
+		if ( filesize( $file ) >= $max_cache_size ) {
+			$size_to_keep = apply_filters( 'wcs_log_size_to_keep', 64 * 1024 );
+			$lines_to_keep = apply_filters( 'wcs_log_lines_to_keep', 1000 );
+
 			$fp = fopen( $file, 'r' );
-			fseek( $fp, -1 * $size, SEEK_END );
+			fseek( $fp, -1 * $size_to_keep, SEEK_END );
 			$data = '';
 			while ( ! feof( $fp ) ) {
-				$data .= fread( $fp, $size );
+				$data .= fread( $fp, $size_to_keep );
 			}
 			fclose( $fp );
 
-			// Remove first line (which is probably incomplete)
-			// and also any empty line
+			// Remove first line (which is probably incomplete) and also any empty line
 			$lines = explode( "\n", $data );
 			$lines = array_filter( array_slice( $lines, 1 ) );
-			$lines = array_filter( array_slice( $lines, -1000 ) );
+			$lines = array_slice( $lines, -1000 );
 			$lines[] = '---- log file automatically truncated ' . gmdate( 'Y-m-d H:i:s' ) . ' ---';
 
 			$fp = fopen( $file, 'w' );
