@@ -55,9 +55,7 @@ class WCS_Cache_Manager_TLC extends WCS_Cache_Manager {
 			$lines = array_slice( $lines, -1000 );
 			$lines[] = '---- log file automatically truncated ' . gmdate( 'Y-m-d H:i:s' ) . ' ---';
 
-			$fp = fopen( $file, 'w' );
-			fwrite( $fp, implode( "\n", $lines ) );
-			fclose( $fp );
+			file_put_contents( $file, implode( "\n", $lines ), LOCK_EX );
 		}
 	}
 
