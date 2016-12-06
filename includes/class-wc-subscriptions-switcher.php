@@ -573,6 +573,15 @@ class WC_Subscriptions_Switcher {
 					}
 				}
 			}
+
+			// Store the order line item id so it can be retrieved when we're processing the switch on checkout
+			foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
+
+				// If this cart item belongs to this recurring cart
+				if ( in_array( $cart_item_key, array_keys( $recurring_cart->cart_contents ) ) ) {
+					WC()->cart->recurring_carts[ $recurring_cart_key ]->cart_contents[ $cart_item_key ]['subscription_switch']['order_line_item_id'] = $order_item_id;
+				}
+			}
 		}
 	}
 
@@ -671,7 +680,7 @@ class WC_Subscriptions_Switcher {
 
 					$switched_item_data = array(
 						'remove_line_item' => $cart_item['subscription_switch']['item_id'],
-						'new_item_name'      => wcs_get_cart_item_name( $cart_item, array( 'attributes' => true ) ),
+						'order_item_id'    => $cart_item['subscription_switch']['order_line_item_id'],
 					);
 
 					// If the item is on the same schedule, we can just add it to the new subscription and remove the old item
@@ -1785,14 +1794,17 @@ class WC_Subscriptions_Switcher {
 
 						// remove the existing subscription item
 						$old_subscription_item = wcs_get_order_item( $switched_item_data['remove_line_item'], $subscription );
+						$switch_order_item     = wcs_get_order_item( $switched_item_data['order_item_id'], $order );
 
 						if ( empty( $old_subscription_item ) ) {
 							throw new Exception( __( 'The original subscription item being switched cannot be found.', 'woocommerce-subscriptions' ) );
+						} elseif ( empty( $switch_order_item ) ) {
+							throw new Exception( __( 'The item on the switch order cannot be found.', 'woocommerce-subscriptions' ) );
 						} else {
 							// We don't want to include switch item meta in order item name
 							add_filter( 'woocommerce_subscriptions_hide_switch_itemmeta', '__return_true' );
 							$old_item_name = wcs_get_order_item_name( $old_subscription_item, array( 'attributes' => true ) );
-							$new_item_name = $switched_item_data['new_item_name'];
+							$new_item_name = wcs_get_order_item_name( $switch_order_item, array( 'attributes' => true ) );
 							remove_filter( 'woocommerce_subscriptions_hide_switch_itemmeta', '__return_true' );
 
 							wc_update_order_item( $switched_item_data['remove_line_item'], array( 'order_item_type' => 'line_item_switched' ) );
