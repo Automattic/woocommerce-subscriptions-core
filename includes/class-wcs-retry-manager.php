@@ -64,14 +64,12 @@ class WCS_Retry_Manager {
 	 * @return array
 	 * @since 2.2.1
 	 */
-	public static function check_order_statuses_for_payment( $statuses, $order = null ) {
+	public static function check_order_statuses_for_payment( $statuses, $order ) {
 
-		if ( $order ) {
-			$last_retry  = self::store()->get_last_retry_for_order( $order );
-			if ( $last_retry ) {
-				$statuses[] = $last_retry->get_rule()->get_status_to_apply( 'order' );
-				$statuses   = array_unique( $statuses );
-			}
+		$last_retry  = self::store()->get_last_retry_for_order( $order );
+		if ( $last_retry ) {
+			$statuses[] = $last_retry->get_rule()->get_status_to_apply( 'order' );
+			$statuses   = array_unique( $statuses );
 		}
 
 		return $statuses;
