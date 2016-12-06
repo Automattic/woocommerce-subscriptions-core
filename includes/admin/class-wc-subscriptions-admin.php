@@ -137,10 +137,10 @@ class WC_Subscriptions_Admin {
 				'wc_report_subscription_events_by_date',
 			);
 
-			// Load all transients with the prefix tlc_
+			// Get all related order and subscription ranges transients
 			$results = $wpdb->get_col( "SELECT DISTINCT `option_name`
 				FROM `$wpdb->options`
-				WHERE `option_name` LIKE '%transient_tlc_%'" );
+				WHERE `option_name` LIKE '%wcs-related-orders-to-%' OR `option_name` LIKE '%wcs-sub-ranges-%'" );
 
 			foreach ( $results as $column ) {
 				$name = explode( 'transient_', $column, 2 );
