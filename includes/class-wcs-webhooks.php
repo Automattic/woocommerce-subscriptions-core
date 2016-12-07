@@ -26,7 +26,7 @@ class WCS_Webhooks {
 	 */
 	public static function init() {
 
-		add_filter( 'woocommerce_webhook_topic_hooks', __CLASS__ . '::add_topics', 10, 2 );
+		add_filter( 'woocommerce_webhook_topic_hooks', __CLASS__ . '::add_topics', 20, 2 );
 
 		add_filter( 'woocommerce_webhook_payload', __CLASS__ . '::create_payload', 10, 4 );
 
@@ -42,6 +42,19 @@ class WCS_Webhooks {
 
 		add_filter( 'woocommerce_webhook_topics' , __CLASS__ . '::add_topics_admin_menu', 10, 1 );
 
+		add_action( 'woocommerce_scheduled_subscription_payment', __CLASS__ . '::add_subscription_create_order_callback', 10, 1);
+
+	}
+
+	/**
+	 *	Trigger `order.create` everytime a payment is processed.
+	 *
+	 *	@param int $subscription_id	Subscription id
+	 */
+	public static function add_subscription_create_order_callback( $subscription_id ) {
+
+		$order_id = wcs_get_subscription( $id )->order->id;
+		do_action('woocommerce_trigger_order_create', $order_id);
 	}
 
 	/**
@@ -51,6 +64,10 @@ class WCS_Webhooks {
 	 * @since 2.0
 	 */
 	public static function add_topics( $topic_hooks, $webhook ) {
+
+		if ( 'order' == $webhook->get_resource() ) {
+			$topic_hooks['order.created'][] = 'woocommerce_trigger_order_create';
+		}
 
 		if ( 'subscription' == $webhook->get_resource() ) {
 			$topic_hooks = apply_filters( 'woocommerce_subscriptions_webhook_topics', array(
