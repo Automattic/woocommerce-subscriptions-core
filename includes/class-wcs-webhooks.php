@@ -42,7 +42,7 @@ class WCS_Webhooks {
 
 		add_filter( 'woocommerce_webhook_topics' , __CLASS__ . '::add_topics_admin_menu', 10, 1 );
 
-		add_action( 'woocommerce_scheduled_subscription_payment', __CLASS__ . '::add_subscription_create_order_callback', 10, 1);
+		add_action( 'woocommerce_scheduled_subscription_payment', __CLASS__ . '::add_subscription_create_order_callback', 10, 1 );
 
 	}
 
@@ -54,7 +54,7 @@ class WCS_Webhooks {
 	public static function add_subscription_create_order_callback( $subscription_id ) {
 
 		$order_id = wcs_get_subscription( $id )->order->id;
-		do_action('woocommerce_trigger_order_create', $order_id);
+		do_action( 'woocommerce_trigger_order_create', $order_id );
 	}
 
 	/**
@@ -65,32 +65,33 @@ class WCS_Webhooks {
 	 */
 	public static function add_topics( $topic_hooks, $webhook ) {
 
-		if ( 'order' == $webhook->get_resource() ) {
-			$topic_hooks['order.created'][] = 'woocommerce_trigger_order_create';
-		}
-
-		if ( 'subscription' == $webhook->get_resource() ) {
-			$topic_hooks = apply_filters( 'woocommerce_subscriptions_webhook_topics', array(
-				'subscription.created' => array(
-					'wcs_api_subscription_created',
-					'wcs_webhook_subscription_created',
-					'woocommerce_process_shop_subscription_meta',
-				),
-				'subscription.updated' => array(
-					'wc_api_subscription_updated',
-					'woocommerce_subscription_status_changed',
-					'wcs_webhook_subscription_updated',
-					'woocommerce_process_shop_subscription_meta',
-				),
-				'subscription.deleted' => array(
-					'woocommerce_subscription_trashed',
-					'woocommerce_subscription_deleted',
-					'woocommerce_api_delete_subscription',
-				),
-				'subscription.switched' => array(
-					'wcs_webhook_subscription_switched',
-				),
-			), $webhook );
+		switch ( $webhook->get_resource() ) {
+			case 'order':
+				$topic_hooks['order.created'][] = 'woocommerce_trigger_order_create';
+				break;
+			case 'subscription':
+				$topic_hooks = apply_filters( 'woocommerce_subscriptions_webhook_topics', array(
+					'subscription.created' => array(
+						'wcs_api_subscription_created',
+						'wcs_webhook_subscription_created',
+						'woocommerce_process_shop_subscription_meta',
+					),
+					'subscription.updated' => array(
+						'wc_api_subscription_updated',
+						'woocommerce_subscription_status_changed',
+						'wcs_webhook_subscription_updated',
+						'woocommerce_process_shop_subscription_meta',
+					),
+					'subscription.deleted' => array(
+						'woocommerce_subscription_trashed',
+						'woocommerce_subscription_deleted',
+						'woocommerce_api_delete_subscription',
+					),
+					'subscription.switched' => array(
+						'wcs_webhook_subscription_switched',
+					),
+				), $webhook );
+				break;
 		}
 
 		return $topic_hooks;
