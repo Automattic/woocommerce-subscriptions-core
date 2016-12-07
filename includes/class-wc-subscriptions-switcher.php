@@ -678,10 +678,7 @@ class WC_Subscriptions_Switcher {
 						$is_single_item_subscription = false;
 					}
 
-					$switched_item_data = array(
-						'remove_line_item' => $cart_item['subscription_switch']['item_id'],
-						'order_item_id'    => $cart_item['subscription_switch']['order_line_item_id'],
-					);
+					$switched_item_data = array( 'remove_line_item' => $cart_item['subscription_switch']['item_id'] );
 
 					// If the item is on the same schedule, we can just add it to the new subscription and remove the old item
 					if ( $is_single_item_subscription || ( false === $is_different_billing_schedule && false === $is_different_payment_date && false === $is_different_length ) ) {
@@ -701,7 +698,7 @@ class WC_Subscriptions_Switcher {
 						}
 					}
 
-					$switch_order_data[ $subscription->id ]['switches'][] = $switched_item_data;
+					$switch_order_data[ $subscription->id ]['switches'][ $cart_item['subscription_switch']['order_line_item_id'] ] = $switched_item_data;
 
 					// If the old subscription has just one item, we can safely update its billing schedule
 					if ( $is_single_item_subscription ) {
@@ -1783,7 +1780,7 @@ class WC_Subscriptions_Switcher {
 				if ( ! array_key_exists( 'remove_line_item', reset( $switch_data['switches'] ) ) ) {
 					self::switch_line_items_pre_2_1_2( $switch_data['switches'], $order, $subscription );
 				} else {
-					foreach ( $switch_data['switches'] as $switched_item_data ) {
+					foreach ( $switch_data['switches'] as $order_item_id => $switched_item_data ) {
 
 						// If we are adding a line item to an existing subscription
 						if ( isset( $switched_item_data['add_line_item'] ) ) {
@@ -1794,7 +1791,7 @@ class WC_Subscriptions_Switcher {
 
 						// remove the existing subscription item
 						$old_subscription_item = wcs_get_order_item( $switched_item_data['remove_line_item'], $subscription );
-						$switch_order_item     = wcs_get_order_item( $switched_item_data['order_item_id'], $order );
+						$switch_order_item     = wcs_get_order_item( $order_item_id, $order );
 
 						if ( empty( $old_subscription_item ) ) {
 							throw new Exception( __( 'The original subscription item being switched cannot be found.', 'woocommerce-subscriptions' ) );
