@@ -134,4 +134,45 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 
 		delete_transient( $key );
 	}
+
+	/* Deprecated Functions */
+
+	/**
+	 * Wrapper function to clear cache that relates to related orders
+	 *
+	 * @param null $subscription_id
+	 */
+	public function wcs_clear_related_order_cache( $subscription_id = null ) {
+		_deprecated_function( __METHOD__, '2.1.2', __CLASS__ . '::clear_related_order_cache( $subscription_id )' );
+		$this->clear_related_order_cache( $subscription_id );
+	}
+
+	/**
+	 * Clearing for orders / subscriptions with sanitizing bits
+	 *
+	 * @param $post_id integer the ID of an order / subscription
+	 */
+	public function purge_subscription_cache_on_update( $post_id ) {
+		_deprecated_function( __METHOD__, '2.1.2', __CLASS__ . '::clear_related_order_cache( $subscription_id )' );
+
+		$post_type = get_post_type( $post_id );
+
+		if ( 'shop_subscription' === $post_type ) {
+
+			$this->clear_related_order_cache( $post_id );
+
+		} elseif ( 'shop_order' === $post_type ) {
+
+			$subscriptions = wcs_get_subscriptions_for_order( $post_id, array( 'order_type' => 'any' ) );
+
+			if ( empty( $subscriptions ) ) {
+				$this->log( 'No subscriptions for this ID: ' . $post_id );
+			} else {
+				foreach ( $subscriptions as $subscription ) {
+					$this->log( 'Got subscription, calling clear_related_order_cache for ' . $subscription->id );
+					$this->clear_related_order_cache( $subscription );
+				}
+			}
+		}
+	}
 }
