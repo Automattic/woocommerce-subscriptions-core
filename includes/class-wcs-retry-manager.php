@@ -41,6 +41,8 @@ class WCS_Retry_Manager {
 
 			add_filter( 'init', array( self::store(), 'init' ) );
 
+			add_filter( 'woocommerce_valid_order_statuses_for_payment', __CLASS__ . '::check_order_statuses_for_payment', 10, 2 );
+
 			add_filter( 'woocommerce_subscription_dates', __CLASS__ . '::add_retry_date_type' );
 
 			add_action( 'woocommerce_subscription_status_updated', __CLASS__ . '::maybe_cancel_retry', 0, 3 );
@@ -51,6 +53,26 @@ class WCS_Retry_Manager {
 
 			add_action( 'woocommerce_scheduled_subscription_payment_retry', __CLASS__ . '::maybe_retry_payment' );
 		}
+	}
+
+	/**
+	 * Adds any extra status that may be needed for a given order to check if it may
+	 * need payment
+	 *
+	 * @param Array    $statuses
+	 * @param WC_Order $order
+	 * @return array
+	 * @since 2.2.1
+	 */
+	public static function check_order_statuses_for_payment( $statuses, $order ) {
+
+		$last_retry  = self::store()->get_last_retry_for_order( $order );
+		if ( $last_retry ) {
+			$statuses[] = $last_retry->get_rule()->get_status_to_apply( 'order' );
+			$statuses   = array_unique( $statuses );
+		}
+
+		return $statuses;
 	}
 
 	/**
