@@ -59,7 +59,7 @@ class WC_API_Subscriptions_Customers extends WC_API_Customers {
 	 * @param $id int
 	 * @param $fields array
 	 */
-	public function get_customer_subscriptions( $id, $fields = null ) {
+	public function get_customer_subscriptions( $id, $fields = null, $filter = array() ) {
 		global $wpdb;
 
 		// check the customer id given is a valid customer in the store. We're able to leech off WC-API for this.
@@ -80,11 +80,8 @@ class WC_API_Subscriptions_Customers extends WC_API_Customers {
 						ORDER BY posts.post_date_gmt DESC
 					", $id ) );
 
-		$subscriptions = array();
-
-		foreach ( $subscription_ids as $subscription_id ) {
-			$subscriptions[] = WC()->api->WC_API_Subscriptions->get_subscription( $subscription_id, $fields );
-		}
+		$filter['customer_id'] = $id;
+		$subscriptions = WC()->api->WC_API_Subscriptions->get_subscriptions( $fields, $filter, null, -1 );
 
 		return array( 'customer_subscriptions' => apply_filters( 'wc_subscriptions_api_customer_subscriptions', $subscriptions, $id, $fields, $subscription_ids, $this->server ) );
 	}
