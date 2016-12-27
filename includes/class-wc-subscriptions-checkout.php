@@ -318,7 +318,7 @@ class WC_Subscriptions_Checkout {
 	 */
 	public static function make_checkout_registration_possible( $checkout = '' ) {
 
-		if ( WC_Subscriptions_Cart::cart_contains_subscription() && ! is_user_logged_in() ) {
+		if ( WC_Subscriptions_Cart::cart_contains_subscription() && ! is_user_logged_in() && get_option('users_can_register') ) {
 
 			// Make sure users can sign up
 			if ( false === $checkout->enable_signup ) {
