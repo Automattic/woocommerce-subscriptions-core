@@ -336,8 +336,8 @@ class WC_Subscriptions_Checkout {
 				}
 			}
 		}
-		
-		if ( ! get_option('users_can_register') && true === $checkout->enable_signup ) {
+
+		if ( ! get_option( 'users_can_register' ) && true === $checkout->enable_signup ) {
 			self::$signup_option_changed = true;
 			$checkout->enable_signup = false;
 		}
@@ -378,7 +378,7 @@ class WC_Subscriptions_Checkout {
 
 		if ( self::$signup_option_changed ) {
 			// It was changed before, let's revert the change (whatever it is now)
-			$checkout->enable_signup =  ! $checkout->enable_signup;
+			$checkout->enable_signup = ! $checkout->enable_signup;
 		}
 
 		if ( self::$guest_checkout_option_changed ) {
