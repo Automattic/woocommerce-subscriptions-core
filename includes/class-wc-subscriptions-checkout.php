@@ -318,7 +318,7 @@ class WC_Subscriptions_Checkout {
 	 */
 	public static function make_checkout_registration_possible( $checkout = '' ) {
 
-		if ( WC_Subscriptions_Cart::cart_contains_subscription() && ! is_user_logged_in() && get_option('users_can_register') ) {
+		if ( WC_Subscriptions_Cart::cart_contains_subscription() && ! is_user_logged_in() ) {
 
 			// Make sure users can sign up
 			if ( false === $checkout->enable_signup ) {
@@ -335,6 +335,11 @@ class WC_Subscriptions_Checkout {
 					$checkout->must_create_account = true;
 				}
 			}
+		}
+		
+		if ( ! get_option('users_can_register') && true === $checkout->enable_signup ) {
+			self::$signup_option_changed = true;
+			$checkout->enable_signup = false;
 		}
 
 	}
@@ -372,7 +377,8 @@ class WC_Subscriptions_Checkout {
 	public static function restore_checkout_registration_settings( $checkout = '' ) {
 
 		if ( self::$signup_option_changed ) {
-			$checkout->enable_signup = false;
+			// It was changed before, let's revert the change (whatever it is now)
+			$checkout->enable_signup =  ! $checkout->enable_signup;
 		}
 
 		if ( self::$guest_checkout_option_changed ) {
