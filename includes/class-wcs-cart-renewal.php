@@ -913,7 +913,7 @@ class WCS_Cart_Renewal {
 	 */
 	public function update_line_item_cart_data( $item_id, $cart_item_data, $cart_item_key ) {
 
-		if ( $this->cart_contains() ) {
+		if ( isset( $cart_item_data[ $this->cart_item_key ] ) ) {
 			// Update the line_item_id to the new corresponding item_id
 			WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['line_item_id'] = $item_id;
 		}
