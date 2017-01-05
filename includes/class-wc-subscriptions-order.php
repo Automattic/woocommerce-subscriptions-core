@@ -71,7 +71,7 @@ class WC_Subscriptions_Order {
 		add_filter( 'woocommerce_order_needs_shipping_address', __CLASS__ . '::maybe_display_shipping_address', 10, 3 );
 
 		// Autocomplete subscription orders when they only contain a synchronised subscription or a resubscribe
-		add_filter( 'woocommerce_payment_complete_order_status', __CLASS__ . '::maybe_autocomplete_resubscribe_and_synchronised_orders', 10, 2 );
+		add_filter( 'woocommerce_payment_complete_order_status', __CLASS__ . '::maybe_autocomplete_order', 10, 2 );
 	}
 
 	/*
@@ -1031,7 +1031,7 @@ class WC_Subscriptions_Order {
 	 *
 	 * @since 2.1.3
 	 */
-	public static function maybe_autocomplete_resubscribe_and_synchronised_orders( $new_order_status, $order_id ) {
+	public static function maybe_autocomplete_order( $new_order_status, $order_id ) {
 		$order = wc_get_order( $order_id );
 
 		if ( 'processing' == $new_order_status && $order->get_total() == 0 && wcs_order_contains_subscription( $order ) ) {
