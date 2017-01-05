@@ -1042,28 +1042,8 @@ class WC_Subscriptions_Synchroniser {
 	 * @since 1.5.17
 	 */
 	public static function order_autocomplete( $new_order_status, $order_id ) {
-		_deprecated_function( __METHOD__, '2.1.3', 'WC_Subscriptions_Order::maybe_autocomplete_resubscribe_and_syncronised_orders' );
-		$order = wc_get_order( $order_id );
-
-		if ( 'processing' == $new_order_status && $order->get_total() == 0 && wcs_order_contains_subscription( $order ) ) {
-
-			$subscriptions   = wcs_get_subscriptions_for_order( $order_id );
-			$all_synced      = true;
-
-			foreach ( $subscriptions as $subscription_id => $subscription ) {
-
-				if ( ! self::subscription_contains_synced_product( $subscription_id ) ) {
-					$all_synced = false;
-					break;
-				}
-			}
-
-			if ( $all_synced ) {
-				$new_order_status = 'completed';
-			}
-		}
-
-		return $new_order_status;
+		_deprecated_function( __METHOD__, '2.1.3', 'WC_Subscriptions_Order::maybe_autocomplete_order' );
+		return WC_Subscriptions_Order::maybe_autocomplete_order( $new_order_status, $order_id );
 	}
 
 	/**

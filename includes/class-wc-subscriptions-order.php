@@ -1038,6 +1038,19 @@ class WC_Subscriptions_Order {
 
 			if ( wcs_order_contains_resubscribe( $order ) ) {
 				$new_order_status = 'completed';
+			} elseif ( wcs_order_contains_switch( $order ) ) {
+				$all_switched = true;
+
+				foreach ( $order->get_items() as $item ) {
+					if ( ! isset( $item['switched_subscription_price_prorated'] ) ) {
+						$all_switched = false;
+						break;
+					}
+				}
+
+				if ( $all_switched || 1 == count( $order->get_items() ) ) {
+					$new_order_status = 'completed';
+				}
 			} else {
 				$subscriptions = wcs_get_subscriptions_for_order( $order_id );
 				$all_synced    = true;
