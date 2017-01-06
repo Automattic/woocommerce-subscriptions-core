@@ -31,7 +31,7 @@ class WCS_Email_New_Switch_Order extends WC_Email_New_Order {
 
 		// Triggers for this email
 		add_action( 'woocommerce_order_status_pending_to_processing_switch_notification', array( $this, 'trigger' ) );
-		add_action( 'woocommerce_order_status_pending_to_completed_switch_notification', array( $this, 'trigger' ) );
+		add_action( 'woocommerce_subscriptions_switch_completed', array($this, 'trigger' ), 100 );
 		add_action( 'woocommerce_order_status_pending_to_on-hold_switch_notification', array( $this, 'trigger' ) );
 		add_action( 'woocommerce_order_status_failed_to_processing_switch_notification', array( $this, 'trigger' ) );
 		add_action( 'woocommerce_order_status_failed_to_completed_switch_notification', array( $this, 'trigger' ) );

@@ -84,13 +84,14 @@ class WC_Subscriptions_Email {
 			'woocommerce_order_status_failed_to_on-hold',
 			'woocommerce_order_status_completed',
 			'woocommerce_generated_manual_renewal_order',
+			'woocommerce_subscriptions_switch_completed',
 			'woocommerce_order_status_failed',
 		);
 
 		foreach ( $order_email_actions as $action ) {
 			add_action( $action, __CLASS__ . '::maybe_remove_woocommerce_email', 9 );
 			add_action( $action, __CLASS__ . '::send_renewal_order_email', 10 );
-			add_action( $action, __CLASS__ . '::send_switch_order_email', 10 );
+			add_action( $action, __CLASS__ . '::send_switch_order_email', 100 );
 			add_action( $action, __CLASS__ . '::maybe_reattach_woocommerce_email', 11 );
 		}
 	}
