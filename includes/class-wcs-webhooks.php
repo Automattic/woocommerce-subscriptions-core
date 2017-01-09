@@ -42,18 +42,18 @@ class WCS_Webhooks {
 
 		add_filter( 'woocommerce_webhook_topics' , __CLASS__ . '::add_topics_admin_menu', 10, 1 );
 
-		add_filter( 'wcs_new_order_created', __CLASS__ . '::add_subscription_create_order_callback', 10, 1 );
+		add_filter( 'wcs_new_order_created', __CLASS__ . '::add_subscription_created_order_callback', 10, 1 );
 
 	}
 
 	/**
-	 *	Trigger `order.create` everytime a payment is processed.
+	 *	Trigger `order.create` every time an order is created by Subscriptions.
 	 *
-	 *	@param int $subscription_id	Subscription id
+	 *	@param WC_Order $order	WC_Order Object
 	 */
-	public static function add_subscription_create_order_callback( $order ) {
+	public static function add_subscription_created_order_callback( $order ) {
 
-		do_action( 'woocommerce_trigger_order_create', $order->id );
+		do_action( 'wcs_webhook_order_created', $order->id );
 
 		return $order;
 	}
@@ -68,7 +68,7 @@ class WCS_Webhooks {
 
 		switch ( $webhook->get_resource() ) {
 			case 'order':
-				$topic_hooks['order.created'][] = 'woocommerce_trigger_order_create';
+				$topic_hooks['order.created'][] = 'wcs_webhook_order_created';
 				break;
 
 			case 'subscription':
