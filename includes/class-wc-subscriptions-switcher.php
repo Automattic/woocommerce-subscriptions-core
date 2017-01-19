@@ -60,9 +60,6 @@ class WC_Subscriptions_Switcher {
 		// Don't display free trials when switching a subscription, because no free trials are provided
 		add_filter( 'woocommerce_subscriptions_product_price_string_inclusions', __CLASS__ . '::customise_product_string_inclusions', 12, 2 );
 
-		// Autocomplete subscription switch orders
-		add_action( 'woocommerce_payment_complete_order_status', __CLASS__ . '::subscription_switch_autocomplete', 10, 2 );
-
 		// Don't carry switch meta data to renewal orders
 		add_filter( 'wcs_renewal_order_meta_query', __CLASS__ . '::remove_renewal_order_meta_query', 10 );
 
@@ -1473,36 +1470,6 @@ class WC_Subscriptions_Switcher {
 	}
 
 	/**
-	 * Automatically set a switch order's status to complete (even if the items require shipping because
-	 * the order is simply a record of the switch and not indicative of an item needing to be shipped)
-	 *
-	 * @since 1.5
-	 */
-	public static function subscription_switch_autocomplete( $new_order_status, $order_id ) {
-
-		if ( 'processing' == $new_order_status && wcs_order_contains_switch( $order_id ) ) {
-			$order        = wc_get_order( $order_id );
-			$all_switched = true;
-
-			if ( 0 == $order->get_total() ) {
-
-				foreach ( $order->get_items() as $item ) {
-					if ( ! isset( $item['switched_subscription_price_prorated'] ) ) {
-						$all_switched = false;
-						break;
-					}
-				}
-
-				if ( $all_switched || 1 == count( $order->get_items() ) ) {
-					$new_order_status = 'completed';
-				}
-			}
-		}
-
-		return $new_order_status;
-	}
-
-	/**
 	 * Do not carry over switch related meta data to renewal orders.
 	 *
 	 * @since 1.5.4
@@ -1966,6 +1933,17 @@ class WC_Subscriptions_Switcher {
 	}
 
 	/** Deprecated Methods **/
+
+	/**
+	 * Automatically set a switch order's status to complete (even if the items require shipping because
+	 * the order is simply a record of the switch and not indicative of an item needing to be shipped)
+	 *
+	 * @since 1.5
+	 */
+	public static function subscription_switch_autocomplete( $new_order_status, $order_id ) {
+		_deprecated_function( __METHOD__, '2.1.3', 'WC_Subscriptions_Order::maybe_autocomplete_order' );
+		return WC_Subscriptions_Order::maybe_autocomplete_order( $new_order_status, $order_id );
+	}
 
 	/**
 	 * Once payment is processed on a switch from a $0 / period subscription to a non-zero $ / period subscription, if
