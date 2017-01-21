@@ -88,11 +88,39 @@ class WC_Subscriptions_Email {
 			'woocommerce_order_status_failed',
 		);
 
+		// Override woocommerce_order_status_completed emails, we should prevent WC from sending it if there is a Subscription Switch
+		add_filter( 'woocommerce_email_actions', __CLASS__ . '::override_wc_emails' );
+		add_action( 'woocommerce_order_status_completed', __CLASS__ . '::send_email_if_not_switch_email', 10, 10 );
+
 		foreach ( $order_email_actions as $action ) {
 			add_action( $action, __CLASS__ . '::maybe_remove_woocommerce_email', 9 );
 			add_action( $action, __CLASS__ . '::send_renewal_order_email', 10 );
-			add_action( $action, __CLASS__ . '::send_switch_order_email', 100 );
+			add_action( $action, __CLASS__ . '::send_switch_order_email', 10 );
 			add_action( $action, __CLASS__ . '::maybe_reattach_woocommerce_email', 11 );
+		}
+	}
+
+	/**
+	 * Remove 'woocommerce_order_status_completed' email default handler
+	 * and let `self::send_email_if_not_switch_email()` decide whether to send or not the email
+	 *
+	 * @param array $emails
+	 */
+	public static function override_wc_emails( $emails ) {
+		$id = array_search( $emails, 'woocommerce_order_status_completed' );
+		unset( $emails[ $id ] );
+		return array_values( $emails );
+	}
+
+	/**
+	 * Send the default WC email handler if the order does not contain a subscription switch
+	 *
+	 * @param int $order_id	Order ID
+	 */
+	public static function send_email_if_not_switch_email( $order_id ) {
+		$args = func_get_args();
+		if ( ! wcs_order_contains_switch( $order_id ) ) {
+			do_action_ref_array( current_filter() . '_notification', $args );
 		}
 	}
 
