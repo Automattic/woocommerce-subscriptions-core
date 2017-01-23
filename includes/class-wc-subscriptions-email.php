@@ -107,7 +107,7 @@ class WC_Subscriptions_Email {
 	 * @param array $emails
 	 */
 	public static function override_wc_emails( $emails ) {
-		$id = array_search( $emails, 'woocommerce_order_status_completed' );
+		$id = array_search( 'woocommerce_order_status_completed', $emails );
 		unset( $emails[ $id ] );
 		return array_values( $emails );
 	}
