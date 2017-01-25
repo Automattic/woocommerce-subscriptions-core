@@ -132,8 +132,8 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 				exit;
 			}
 
-			// Set a transient to block IPNs with this transaction ID for the next 5 minutes
-			set_transient( $ipn_lock_transient_name, 'in-progress', apply_filters( 'woocommerce_subscriptions_paypal_ipn_request_lock_time', 5 * MINUTE_IN_SECONDS ) );
+			// Set a transient to block IPNs with this transaction ID for the next 4 days (An IPN message may be present in PayPal up to 4 days after the original was sent)
+			set_transient( $ipn_lock_transient_name, 'in-progress', apply_filters( 'woocommerce_subscriptions_paypal_ipn_request_lock_time', 4 * DAY_IN_SECONDS ) );
 
 		}
 
