@@ -1195,13 +1195,17 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function payment_complete( $transaction_id = '' ) {
 
+		if ( WC_Subscriptions_Change_Payment_Gateway::$is_request_to_change_payment ) {
+			return;
+		}
+
 		// Clear the cached completed payment count
 		$this->cached_completed_payment_count = false;
 
 		// Make sure the last order's status is updated
 		$last_order = $this->get_last_order( 'all', 'any' );
 
-		if ( false !== $last_order && $last_order->needs_payment() && ! WC_Subscriptions_Change_Payment_Gateway::$is_request_to_change_payment ) {
+		if ( false !== $last_order && $last_order->needs_payment() ) {
 			$last_order->payment_complete( $transaction_id );
 		}
 
