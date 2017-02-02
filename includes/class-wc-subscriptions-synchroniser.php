@@ -487,79 +487,9 @@ class WC_Subscriptions_Synchroniser {
 			$from_date = WC_Subscriptions_Product::get_trial_expiration_date( $product, $from_date );
 		}
 
-		$from_timestamp = wcs_date_to_time( $from_date ) + ( get_option( 'gmt_offset' ) * 3600 ); // Site time
-
-		$payment_day = self::get_products_payment_day( $product );
-
-		if ( 'week' == $period ) {
-
-			// strtotime() will figure out if the day is in the future or today (see: https://gist.github.com/thenbrent/9698083)
-			$first_payment_timestamp = wcs_strtotime_dark_knight( self::$weekdays[ $payment_day ], $from_timestamp );
-
-		} elseif ( 'month' == $period ) {
-
-			// strtotime() needs to know the month, so we need to determine if the specified day has occured this month yet or if we want the last day of the month (see: https://gist.github.com/thenbrent/9698083)
-			if ( $payment_day > 27 ) { // we actually want the last day of the month
-
-				$payment_day = gmdate( 't', $from_timestamp );
-				$month       = gmdate( 'F', $from_timestamp );
-
-			} elseif ( gmdate( 'j', $from_timestamp ) > $payment_day ) { // today is later than specified day in the from date, we need the next month
-
-				$month = gmdate( 'F', wcs_add_months( $from_timestamp, 1 ) );
-
-			} else { // specified day is either today or still to come in the month of the from date
-
-				$month = gmdate( 'F', $from_timestamp );
-
-			}
-
-			$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day} {$month}", $from_timestamp );
-
-		} elseif ( 'year' == $period ) {
-
-			// We can't use $wp_locale here because it is translated
-			switch ( $payment_day['month'] ) {
-				case 1 :
-					$month = 'January';
-					break;
-				case 2 :
-					$month = 'February';
-					break;
-				case 3 :
-					$month = 'March';
-					break;
-				case 4 :
-					$month = 'April';
-					break;
-				case 5 :
-					$month = 'May';
-					break;
-				case 6 :
-					$month = 'June';
-					break;
-				case 7 :
-					$month = 'July';
-					break;
-				case 8 :
-					$month = 'August';
-					break;
-				case 9 :
-					$month = 'September';
-					break;
-				case 10 :
-					$month = 'October';
-					break;
-				case 11 :
-					$month = 'November';
-					break;
-				case 12 :
-					$month = 'December';
-					break;
-			}
-
-			$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month}", $from_timestamp );
-		}
+		$from_timestamp          = wcs_date_to_time( $from_date ) + ( get_option( 'gmt_offset' ) * 3600 ); // Site time
+		$payment_day             = self::get_products_payment_day( $product );
+		$first_payment_timestamp = wcs_get_next_occuring_day( $period, $payment_day, $from_timestamp );
 
 		// Make sure the next payment is in the future and after the $from_date, as strtotime() will return the date this year for any day in the past when adding months or years (see: https://gist.github.com/thenbrent/9698083)
 		if ( 'year' == $period || 'month' == $period ) {
