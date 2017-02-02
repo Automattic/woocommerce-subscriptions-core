@@ -401,6 +401,12 @@ class WC_Subscription extends WC_Order {
 				$this->add_order_note( trim( sprintf( __( '%1$s Status changed from %2$s to %3$s.', 'woocommerce-subscriptions' ), $note, wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ), 0, $manual );
 
 			} catch ( Exception $e ) {
+				// Log any exceptions to a WC logger
+				$log        = new WC_Logger();
+				$log_entry  = print_r( $e, true );
+				$log_entry .= 'Exception Trace: ' . print_r( $e->getTraceAsString(), true );
+
+				$log->add( 'wcs-update-status-failures', $log_entry );
 
 				// Make sure the old status is restored
 				wp_update_post( array( 'ID' => $this->id, 'post_status' => $old_status_key ) );
