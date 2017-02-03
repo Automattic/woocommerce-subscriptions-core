@@ -950,7 +950,7 @@ class WC_Subscription extends WC_Order {
 			}
 		}
 
-		// If the next payment is still in the past calculate a new next payment date
+		// If the next payment is still in the past, calculate a new next payment date
 		if ( $next_payment_timestamp < current_time( 'timestamp', true ) ) {
 
 			if ( 'day' == $billing_period ) {
@@ -978,6 +978,7 @@ class WC_Subscription extends WC_Order {
 						break;
 				}
 
+				// Get the next occurring day/date which matches the old billing cycle
 				$next_payment_timestamp = wcs_get_next_occuring_day( $billing_period, $day_data, current_time( 'timestamp', true ) );
 
 				// Set the timestamp's time of day to match the old renewal time
