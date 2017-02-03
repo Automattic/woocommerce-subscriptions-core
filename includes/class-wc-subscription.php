@@ -982,8 +982,9 @@ class WC_Subscription extends WC_Order {
 				$next_payment_timestamp = wcs_get_next_occuring_day( $billing_period, $day_data, current_time( 'timestamp', true ) );
 
 				// Set the timestamp's time of day to match the old renewal time
-				$next_payment_date      = new DateTime( '@' . $next_payment_timestamp, new DateTimeZone( 'UTC' ) );
-				$next_payment_date      = $next_payment_date->setTime( gmdate( 'G', $from_timestamp ) , gmdate( 'i', $from_timestamp ), gmdate( 's', $from_timestamp ) );
+				$next_payment_date = new DateTime( '@' . $next_payment_timestamp, new DateTimeZone( 'UTC' ) );
+				$next_payment_date->setTime( gmdate( 'G', $from_timestamp ) , gmdate( 'i', $from_timestamp ), gmdate( 's', $from_timestamp ) );
+
 				$next_payment_timestamp = $next_payment_date->format( 'U' );
 			}
 
