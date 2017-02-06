@@ -919,8 +919,6 @@ class WC_Subscription extends WC_Order {
 		$trial_end_time    = $this->get_time( 'trial_end' );
 		$last_payment_time = $this->get_time( 'last_payment' );
 		$end_time          = $this->get_time( 'end' );
-		$billing_period    = $this->billing_period;
-		$billing_interval  = $this->billing_interval;
 
 		// If the subscription has a free trial period, and we're still in the free trial period, the next payment is due at the end of the free trial
 		if ( $trial_end_time > current_time( 'timestamp', true ) ) {
@@ -940,57 +938,13 @@ class WC_Subscription extends WC_Order {
 				$from_timestamp = $start_time;
 			}
 
-			$next_payment_timestamp = wcs_add_time( $billing_interval, $billing_period, $from_timestamp );
+			$next_payment_timestamp = wcs_add_time( $this->billing_interval, $this->billing_period, $from_timestamp );
 
 			// Make sure the next payment is more than 2 hours in the future, this ensures changes to the site's timezone because of daylight savings will never cause a 2nd renewal payment to be processed on the same day
 			$i = 1;
 			while ( $next_payment_timestamp < ( current_time( 'timestamp', true ) + 2 * HOUR_IN_SECONDS ) && $i < 30 ) {
-				$next_payment_timestamp = wcs_add_time( $billing_interval, $billing_period, $next_payment_timestamp );
+				$next_payment_timestamp = wcs_add_time( $this->billing_interval, $this->billing_period, $next_payment_timestamp );
 				$i += 1;
-			}
-		}
-
-		// If the next payment is still in the past, calculate a new next payment date
-		if ( $next_payment_timestamp < current_time( 'timestamp', true ) ) {
-
-			if ( 'day' == $billing_period ) {
-				// Next payment is the next occurring time.
-				$next_payment_date      = new DateTime( gmdate( 'H:i:s', $next_payment_timestamp ), new DateTimeZone( 'UTC' ) );
-				$next_payment_timestamp = $next_payment_date->format( 'U' );
-			} else {
-				$day_data = '';
-
-				switch ( $billing_period ) {
-					case 'week':
-						// Get the day of the week
-						$day_data = gmdate( 'l', $next_payment_timestamp );
-						break;
-					case 'month':
-						// Get the date of the month
-						$day_data = gmdate( 'j', $next_payment_timestamp );
-						break;
-					case 'year':
-						// Get the date and month
-						$day_data = array(
-							'day'   => gmdate( 'j', $next_payment_timestamp ),
-							'month' => gmdate( 'n', $next_payment_timestamp ),
-						);
-						break;
-				}
-
-				// Get the next occurring day/date which matches the old billing cycle
-				$next_payment_timestamp = wcs_get_next_occuring_day( $billing_period, $day_data, current_time( 'timestamp', true ) );
-
-				// Set the timestamp's time of day to match the old renewal time
-				$next_payment_date = new DateTime( '@' . $next_payment_timestamp, new DateTimeZone( 'UTC' ) );
-				$next_payment_date->setTime( gmdate( 'G', $from_timestamp ) , gmdate( 'i', $from_timestamp ), gmdate( 's', $from_timestamp ) );
-
-				$next_payment_timestamp = $next_payment_date->format( 'U' );
-			}
-
-			// If we've managed to calculate a next payment still in the past add 1 more billing period
-			if ( $next_payment_timestamp < current_time( 'timestamp', true ) ) {
-				$next_payment_timestamp = wcs_add_time( $billing_interval, $billing_period, $next_payment_timestamp );
 			}
 		}
 
