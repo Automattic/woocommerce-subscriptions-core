@@ -1201,6 +1201,10 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function payment_complete( $transaction_id = '' ) {
 
+		if ( WC_Subscriptions_Change_Payment_Gateway::$is_request_to_change_payment ) {
+			return;
+		}
+
 		// Clear the cached completed payment count
 		$this->cached_completed_payment_count = false;
 
