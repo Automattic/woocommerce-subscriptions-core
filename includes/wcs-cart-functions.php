@@ -49,6 +49,7 @@ function wcs_cart_totals_shipping_html() {
 			foreach ( $packages as $i => $base_package ) {
 
 				$product_names = array();
+				$base_package['recurring_cart_key'] = $recurring_cart_key;
 
 				$package = WC_Subscriptions_Cart::get_calculated_shipping_for_package( $base_package );
 				$index   = sprintf( '%1$s_%2$d', $recurring_cart_key, $i );
