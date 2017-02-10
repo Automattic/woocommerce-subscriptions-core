@@ -49,6 +49,8 @@ class WCS_Cart_Renewal {
 
 		// Once we have finished updating the renewal order on checkout, update the session cart so the cart changes are honoured.
 		add_action( 'woocommerce_checkout_order_processed', array( &$this, 'update_session_cart_after_updating_renewal_order' ), 10 );
+
+		add_filter( 'wc_dynamic_pricing_apply_cart_item_adjustment', array( &$this, 'prevent_compounding_dynamic_discounts' ), 10, 2 );
 	}
 
 	/**
@@ -932,6 +934,24 @@ class WCS_Cart_Renewal {
 			// Update the cart stored in the session with the new data
 			WC()->session->cart = WC()->cart->get_cart_for_session();
 		}
+	}
+
+	/**
+	* Prevent compounding dynamic discounts on cart items.
+	* Dynamic discounts are copied from the subscription to the renewal order and so don't need to be applied again in the cart.
+	*
+	* @param bool Whether to apply the dynamic discount
+	* @param string The cart item key of the cart item the dynamic discount is being applied to.
+	* @return bool
+	* @since  2.1.4
+	*/
+	function prevent_compounding_dynamic_discounts( $adjust_price, $cart_item_key ) {
+
+		if ( $adjust_price && isset( WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ] ) ) {
+			$adjust_price = false;
+		}
+
+		return $adjust_price;
 	}
 
 	/* Deprecated */
