@@ -42,8 +42,6 @@ class WC_API_Subscriptions_Customers extends WC_API_Customers {
 	 * @return array
 	 */
 	public function register_routes( $routes ) {
-		$routes = parent::register_routes( $routes );
-
 		# GET /customers/<id>/subscriptions
 		$routes[ $this->base . '/(?P<id>\d+)/subscriptions' ] = array(
 			array( array( $this, 'get_customer_subscriptions' ), WC_API_SERVER::READABLE ),
