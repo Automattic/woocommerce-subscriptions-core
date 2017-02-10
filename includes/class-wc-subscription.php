@@ -1838,4 +1838,24 @@ class WC_Subscription extends WC_Order {
 
 		return array_merge( $dates, $delete_date_types );
 	}
+
+	/**
+	 * Add a product line item to the subscription.
+	 *
+	 * @since 2.1.4
+	 * @param WC_Product product
+	 * @param int line item quantity.
+	 * @param array args
+	 * @return int|bool Item ID or false.
+	 */
+	public function add_product( $product, $qty = 1, $args = array() ) {
+		$item_id = parent::add_product( $product, $qty, $args );
+
+		// Remove backordered meta if it has been added
+		if ( $item_id && $product->backorders_require_notification() && $product->is_on_backorder( $qty ) ) {
+			wc_delete_order_item_meta( $item_id, apply_filters( 'woocommerce_backordered_item_meta_name', __( 'Backordered', 'woocommerce-subscriptions' ) ) );
+		}
+
+		return $item_id;
+	}
 }
