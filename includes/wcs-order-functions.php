@@ -264,6 +264,11 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 						}
 					}
 
+					// Backorders
+					if ( $product->backorders_require_notification() && $product->is_on_backorder( $item['qty'] ) ) {
+						wc_add_order_item_meta( $recurring_item_id, apply_filters( 'woocommerce_backordered_item_meta_name', __( 'Backordered', 'woocommerce-subscriptions' ) ), $item['qty'] - max( 0, $product->get_total_stock() ) );
+					}
+
 					do_action( 'woocommerce_order_add_product', $new_order->id, $recurring_item_id, $product, $item['qty'], $args );
 				}
 			}
