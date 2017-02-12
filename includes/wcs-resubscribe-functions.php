@@ -229,7 +229,7 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 				break;
 			}
 
-			if ( 'active' == wcs_get_product_limitation( $product ) && ( wcs_user_has_subscription( $user_id, $product->id, 'on-hold' ) || wcs_user_has_subscription( $user_id, $product->id, 'active' ) ) ) {
+			if ( 'active' == wcs_get_product_limitation( $product ) && ( wcs_user_has_subscription( $user_id, $product->get_id(), 'on-hold' ) || wcs_user_has_subscription( $user_id, $product->get_id(), 'active' ) ) ) {
 				$has_active_limited_subscription = true;
 				break;
 			}

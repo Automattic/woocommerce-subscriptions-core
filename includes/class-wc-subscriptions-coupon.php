@@ -75,14 +75,12 @@ class WC_Subscriptions_Coupon {
 			return $discount;
 		}
 
-		$product_id = ( $cart_item['data']->is_type( array( 'subscription_variation' ) ) ) ? $cart_item['data']->variation_id : $cart_item['data']->id;
-
 		// If not a subscription product return the default discount
 		if ( ! wcs_cart_contains_renewal() && ! WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 			return $discount;
 		}
 		// But if cart contains a renewal, we need to handle both subscription products and manually added non-susbscription products that could be part of a subscription
-		if ( wcs_cart_contains_renewal() && ! self::is_subsbcription_renewal_line_item( $product_id, $cart_item ) ) {
+		if ( wcs_cart_contains_renewal() && ! self::is_subsbcription_renewal_line_item( $cart_item['data'], $cart_item ) ) {
 			return $discount;
 		}
 
@@ -464,10 +462,7 @@ class WC_Subscriptions_Coupon {
 		$is_subscription_line_item = false;
 
 		if ( is_object( $product_id ) ) {
-			$product    = $product_id;
-			$product_id = $product->id;
-		} elseif ( is_numeric( $product_id ) ) {
-			$product = wc_get_product( $product_id );
+			$product_id = $product_id->get_id();
 		}
 
 		if ( ! empty( $cart_item['subscription_renewal'] ) ) {
@@ -494,9 +489,7 @@ class WC_Subscriptions_Coupon {
 	public static function apply_subscription_discount( $original_price, $cart_item, $cart ) {
 		_deprecated_function( __METHOD__, '2.0.10', 'Have moved to filtering on "woocommerce_coupon_get_discount_amount" to return discount amount. See: '. __CLASS__ .'::get_discount_amount()' );
 
-		$product_id = ( $cart_item['data']->is_type( array( 'subscription_variation' ) ) ) ? $cart_item['data']->variation_id : $cart_item['data']->id;
-
-		if ( ! WC_Subscriptions_Product::is_subscription( $product_id ) ) {
+		if ( ! WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 			return $original_price;
 		}
 
@@ -514,7 +507,7 @@ class WC_Subscriptions_Coupon {
 				if ( WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
 					$is_valid_for_product = true;
 				} else {
-					$is_valid_for_product = $coupon->is_valid_for_product( wc_get_product( $product_id ), $cart_item );
+					$is_valid_for_product = $coupon->is_valid_for_product( $cart_item['data'], $cart_item );
 				}
 
 				if ( $coupon->apply_before_tax() && $coupon->is_valid() && $is_valid_for_product ) {

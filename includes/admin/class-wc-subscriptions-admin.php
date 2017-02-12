@@ -490,8 +490,8 @@ class WC_Subscriptions_Admin {
 
 			if ( isset( $new_price ) && $new_price != $old_regular_price ) {
 				$price_changed = true;
-				update_post_meta( $product->id, '_regular_price', $new_price );
-				update_post_meta( $product->id, '_subscription_price', $new_price );
+				update_post_meta( $product->get_id(), '_regular_price', $new_price );
+				update_post_meta( $product->get_id(), '_subscription_price', $new_price );
 				$product->regular_price = $new_price;
 			}
 		}
@@ -533,24 +533,24 @@ class WC_Subscriptions_Admin {
 
 			if ( isset( $new_price ) && $new_price != $old_sale_price ) {
 				$price_changed = true;
-				update_post_meta( $product->id, '_sale_price', $new_price );
+				update_post_meta( $product->get_id(), '_sale_price', $new_price );
 				$product->sale_price = $new_price;
 			}
 		}
 
 		if ( $price_changed ) {
-			update_post_meta( $product->id, '_sale_price_dates_from', '' );
-			update_post_meta( $product->id, '_sale_price_dates_to', '' );
+			update_post_meta( $product->get_id(), '_sale_price_dates_from', '' );
+			update_post_meta( $product->get_id(), '_sale_price_dates_to', '' );
 
 			if ( $product->regular_price < $product->sale_price ) {
 				$product->sale_price = '';
-				update_post_meta( $product->id, '_sale_price', '' );
+				update_post_meta( $product->get_id(), '_sale_price', '' );
 			}
 
 			if ( $product->sale_price ) {
-				update_post_meta( $product->id, '_price', $product->sale_price );
+				update_post_meta( $product->get_id(), '_price', $product->sale_price );
 			} else {
-				update_post_meta( $product->id, '_price', $product->regular_price );
+				update_post_meta( $product->get_id(), '_price', $product->regular_price );
 			}
 		}
 	}

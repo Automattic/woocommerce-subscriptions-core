@@ -98,7 +98,7 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal{
 
 					foreach ( $order_item['item_meta'] as $meta_key => $meta_value ) {
 
-						if ( taxonomy_is_product_attribute( $meta_key ) || meta_is_product_attribute( $meta_key, $meta_value[0], $product->id ) ) {
+						if ( taxonomy_is_product_attribute( $meta_key ) || meta_is_product_attribute( $meta_key, $meta_value[0], $product->get_id() ) ) {
 							$variations[ $meta_key ] = $meta_value[0];
 							$_POST[ 'attribute_' . $meta_key ] = $meta_value[0];
 						} else if ( array_key_exists( $meta_key, $order_product_data ) ) {
@@ -106,10 +106,10 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal{
 						}
 					}
 
-					$passed_validation = apply_filters( 'woocommerce_add_to_cart_validation', true, $product->id, $order_product_data['_qty'], $order_product_data['_variation_id'] );
+					$passed_validation = apply_filters( 'woocommerce_add_to_cart_validation', true, $product->get_id(), $order_product_data['_qty'], $order_product_data['_variation_id'] );
 
 					if ( $passed_validation ) {
-						$cart_item_key = WC()->cart->add_to_cart( $product->id, $order_product_data['_qty'], $order_product_data['_variation_id'], $variations, array() );
+						$cart_item_key = WC()->cart->add_to_cart( $product->get_id(), $order_product_data['_qty'], $order_product_data['_variation_id'], $variations, array() );
 					}
 				}
 			}

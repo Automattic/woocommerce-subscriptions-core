@@ -107,10 +107,10 @@ class WC_Subscriptions_Product {
 
 		$is_subscription = false;
 
-		if ( is_object( $product_id ) ) {
+		if ( is_object( $product_id ) && is_a( $product_id, 'WC_Product' ) ) {
 			$product    = $product_id;
-			$product_id = $product->id;
-		} elseif ( is_numeric( $product_id ) ) {
+			$product_id = $product->get_id();
+		} else {
 			$product = wc_get_product( $product_id );
 		}
 
@@ -213,8 +213,8 @@ class WC_Subscriptions_Product {
 	public static function get_price_string( $product, $include = array() ) {
 		global $wp_locale;
 
-		if ( ! is_object( $product ) ) {
-			$product = WC_Subscriptions::get_product( $product );
+		if ( ! is_object( $product ) || ! is_a( $product, 'WC_Product' ) ) {
+			$product = wc_get_product( $product );
 		}
 
 		if ( ! self::is_subscription( $product ) ) {

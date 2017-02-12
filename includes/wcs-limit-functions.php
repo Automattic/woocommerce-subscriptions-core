@@ -43,5 +43,5 @@ function wcs_is_product_limited_for_user( $product, $user_id = 0 ) {
 		$product = wc_get_product( $product );
 	}
 
-	return ( ( 'active' == wcs_get_product_limitation( $product ) && wcs_user_has_subscription( $user_id, $product->id, 'on-hold' ) ) || ( 'no' !== wcs_get_product_limitation( $product ) && wcs_user_has_subscription( $user_id, $product->id, wcs_get_product_limitation( $product ) ) ) ) ? true : false;
+	return ( ( 'active' == wcs_get_product_limitation( $product ) && wcs_user_has_subscription( $user_id, $product->get_id(), 'on-hold' ) ) || ( 'no' !== wcs_get_product_limitation( $product ) && wcs_user_has_subscription( $user_id, $product->get_id(), wcs_get_product_limitation( $product ) ) ) ) ? true : false;
 }

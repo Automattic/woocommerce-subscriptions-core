@@ -654,7 +654,7 @@ class WC_Subscriptions_Synchroniser {
 		$first_payment_date = '';
 
 		if ( self::is_product_synced( $product ) ) {
-			$first_payment_timestamp = self::calculate_first_payment_date( $product->id, 'timestamp' );
+			$first_payment_timestamp = self::calculate_first_payment_date( $product->get_id(), 'timestamp' );
 
 			if ( 0 != $first_payment_timestamp ) {
 

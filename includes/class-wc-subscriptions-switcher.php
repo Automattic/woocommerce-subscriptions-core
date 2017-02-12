@@ -206,7 +206,7 @@ class WC_Subscriptions_Switcher {
 				foreach ( $subscriptions as $subscription ) {
 					foreach ( $limited_switchable_products as $product ) {
 
-						if ( ! $subscription->has_product( $product->id ) ) {
+						if ( ! $subscription->has_product( $product->get_id() ) ) {
 							continue;
 						}
 
@@ -233,7 +233,7 @@ class WC_Subscriptions_Switcher {
 
 								// Get the matching item
 								foreach ( $subscription->get_items() as $line_item_id => $line_item ) {
-									if ( $line_item['product_id'] == $product->id || $line_item['variation_id'] == $product->id ) {
+									if ( $line_item['product_id'] == $product->get_id() || $line_item['variation_id'] == $product->get_id() ) {
 										$item_id = $line_item_id;
 										$item    = $line_item;
 										break;
@@ -434,7 +434,7 @@ class WC_Subscriptions_Switcher {
 		if ( 0 !== $product->post->post_parent ) {
 			$switch_url = get_permalink( $product->post->post_parent );
 		} else {
-			$switch_url = get_permalink( $product->id );
+			$switch_url = get_permalink( $product->get_id() );
 
 			if ( ! empty( $_GET ) && is_product() ) {
 				$product_variations    = $product->get_variation_attributes();
@@ -908,7 +908,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function cart_contains_switch_for_product( $product ) {
 
-		$product_id         = ( is_object( $product ) ) ? $product->id : $product;
+		$product_id         = ( is_object( $product ) ) ? $product->get_id() : $product;
 		$switch_items       = self::cart_contains_switches();
 		$switch_product_ids = array();
 
@@ -923,7 +923,7 @@ class WC_Subscriptions_Switcher {
 				if ( 0 !== $product->post->post_parent ) {
 					$switch_product_ids = array_unique( array_merge( $switch_product_ids, wc_get_product( $product->post->post_parent )->get_children() ) );
 				} else {
-					$switch_product_ids[] = $switch_product->id;
+					$switch_product_ids[] = $switch_product->get_id();
 				}
 			}
 		}
