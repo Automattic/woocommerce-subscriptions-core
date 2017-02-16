@@ -115,6 +115,8 @@ class WC_Subscriptions_Coupon {
 			return $discount;
 		}
 
+		$is_switch  = ! empty( $cart_item['subscription_switch'] );
+
 		// Set our starting discount amount to 0
 		$discount_amount = 0;
 
@@ -137,7 +139,7 @@ class WC_Subscriptions_Coupon {
 		if ( 'none' == $calculation_type ) {
 
 			// If all items have a free trial we don't need to apply recurring coupons to the initial total
-			if ( ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
+			if ( ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() || $is_switch ) {
 
 				if ( 'recurring_fee' == $coupon_type ) {
 					$apply_initial_coupon = true;
@@ -187,7 +189,8 @@ class WC_Subscriptions_Coupon {
 				$discounting_amount = 0;
 			}
 
-			$discount_amount = min( wcs_get_coupon_property( $coupon, 'coupon_amount' ), $discounting_amount );
+			$coupon_amount   = wcs_get_coupon_property( $coupon, 'coupon_amount' );
+			$discount_amount = $is_switch ? $coupon_amount : min( $coupon_amount, $discounting_amount );
 			$discount_amount = $single ? $discount_amount : $discount_amount * $cart_item_qty;
 
 		} elseif ( $apply_recurring_percent_coupon ) {
