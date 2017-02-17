@@ -72,23 +72,6 @@ class WC_Subscriptions_Product {
 	}
 
 	/**
-	 * Returns the sign up fee (including tax) by filtering the products price used in
-	 * @see WC_Product::get_price_including_tax( $qty )
-	 *
-	 * @return string
-	 */
-	public static function get_sign_up_fee_including_tax( $product, $qty = 1 ) {
-
-		add_filter( 'woocommerce_get_price', __CLASS__ . '::get_sign_up_fee_filter', 100, 2 );
-
-		$sign_up_fee_including_tax = $product->get_price_including_tax( $qty );
-
-		remove_filter( 'woocommerce_get_price', __CLASS__ . '::get_sign_up_fee_filter', 100, 2 );
-
-		return $sign_up_fee_including_tax;
-	}
-
-	/**
 	 * Returns the raw sign up fee value (ignoring tax) by filtering the products price.
 	 *
 	 * @return string
@@ -96,23 +79,6 @@ class WC_Subscriptions_Product {
 	public static function get_sign_up_fee_filter( $price, $product ) {
 
 		return self::get_sign_up_fee( $product );
-	}
-
-	/**
-	 * Returns the sign up fee (excluding tax) by filtering the products price used in
-	 * @see WC_Product::get_price_excluding_tax( $qty )
-	 *
-	 * @return string
-	 */
-	public static function get_sign_up_fee_excluding_tax( $product, $qty = 1 ) {
-
-		add_filter( 'woocommerce_get_price', __CLASS__ . '::get_sign_up_fee_filter', 100, 2 );
-
-		$sign_up_fee_excluding_tax = $product->get_price_excluding_tax( $qty );
-
-		remove_filter( 'woocommerce_get_price', __CLASS__ . '::get_sign_up_fee_filter', 100, 2 );
-
-		return $sign_up_fee_excluding_tax;
 	}
 
 	/**
@@ -284,22 +250,22 @@ class WC_Subscriptions_Product {
 				if ( isset( $include['price'] ) ) {
 					$price = $include['price'];
 				} else {
-					$price = $product->get_price_excluding_tax( 1, $include['price'] );
+					$price = wcs_get_price_excluding_tax( $product, array( 'price' => $include['price'] ) );
 				}
 
 				if ( true === $include['sign_up_fee'] ) {
-					$sign_up_fee = self::get_sign_up_fee_excluding_tax( $product );
+					$sign_up_fee = wcs_get_price_excluding_tax( $product, array( 'price' => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) );
 				}
 			} else { // Add Tax
 
 				if ( isset( $include['price'] ) ) {
 					$price = $include['price'];
 				} else {
-					$price = $product->get_price_including_tax();
+					$price = wcs_get_price_including_tax( $product );
 				}
 
 				if ( true === $include['sign_up_fee'] ) {
-					$sign_up_fee = self::get_sign_up_fee_including_tax( $product );
+					$sign_up_fee = wcs_get_price_including_tax( $product, array( 'price' => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) );
 				}
 			}
 		} else {
@@ -1008,6 +974,10 @@ class WC_Subscriptions_Product {
 		wp_send_json( array( 'one_time_shipping' => $subscription_one_time_shipping ) );
 	}
 
+	/************************
+	 * Deprecated Functions *
+	 ************************/
+
 	/**
 	 * If a product is being marked as not purchasable because it is limited and the customer has a subscription,
 	 * but the current request is to resubscribe to the subscription, then mark it as purchasable.
@@ -1064,6 +1034,28 @@ class WC_Subscriptions_Product {
 		}
 
 		return self::$order_awaiting_payment_for_product[ $product_id ];
+	}
+
+	/**
+	 * Returns the sign up fee (including tax) by filtering the products price used in
+	 * @see WC_Product::get_price_including_tax( $qty )
+	 *
+	 * @return string
+	 */
+	public static function get_sign_up_fee_including_tax( $product, $qty = 1 ) {
+		wcs_deprecated_function( __METHOD__, '2.1.4', 'wcs_get_price_including_tax( $product, array( "qty" => $qty, "price" => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) )' );
+		return wcs_get_price_including_tax( $product, array( 'qty' => $qty, 'price' => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) );
+	}
+
+	/**
+	 * Returns the sign up fee (excluding tax) by filtering the products price used in
+	 * @see WC_Product::get_price_excluding_tax( $qty )
+	 *
+	 * @return string
+	 */
+	public static function get_sign_up_fee_excluding_tax( $product, $qty = 1 ) {
+		wcs_deprecated_function( __METHOD__, '2.1.4', 'wcs_get_price_excluding_tax( $product, array( "qty" => $qty, "price" => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) )' );
+		return wcs_get_price_excluding_tax( $product, array( 'qty' => $qty, 'price' => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) );
 	}
 }
 
