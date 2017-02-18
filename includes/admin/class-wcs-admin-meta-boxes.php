@@ -230,6 +230,7 @@ class WCS_Admin_Meta_Boxes {
 		$can_be_retried = false;
 
 		if ( wcs_order_contains_renewal( $order ) && $order->needs_payment() && ! empty( $order->payment_method ) ) {
+			$supports_date_changes          = false;
 			$order_payment_gateway          = wc_get_payment_gateway_by_order( $order );
 			$order_payment_gateway_supports = ( isset( $order_payment_gateway->id ) ) ? has_action( 'woocommerce_scheduled_subscription_payment_' . $order_payment_gateway->id ) : false;
 
