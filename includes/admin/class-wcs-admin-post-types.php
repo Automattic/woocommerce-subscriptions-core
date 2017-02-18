@@ -941,8 +941,6 @@ class WCS_Admin_Post_Types {
 	 * @return string 						the link string
 	 */
 	public function get_related_orders_link( $the_subscription ) {
-		$order_id = isset( $the_subscription->order->id ) ? $the_subscription->order->id : 0;
-
 		return sprintf(
 			'<a href="%s">%s</a>',
 			admin_url( 'edit.php?post_status=all&post_type=shop_order&_subscription_related_orders=' . absint( $the_subscription->id ) ),
