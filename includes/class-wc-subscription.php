@@ -86,6 +86,12 @@ class WC_Subscription extends WC_Order {
 
 			$this->set_parent_id( wcs_get_objects_property( $value, 'id' ) );
 			$this->order = $value;
+
+		} elseif ( 'payment_gateway' == $key ) {
+
+			wcs_deprecated_function( 'WC_Subscription::$payment_gateway', '2.1.4', 'WC_Subscription::set_payment_method( $payment_gateway )' );
+
+			$this->set_payment_method( $value );
 		}
 	}
 
@@ -115,6 +121,8 @@ class WC_Subscription extends WC_Order {
 			}
 
 			$value = $this->payment_gateway;
+
+			wc_doing_it_wrong( $key, 'Subscription properties should not be accessed directly as WooCommerce 2.7 no longer supports direct property access. Use wc_get_payment_gateway_by_order( $subscription ) instead.', '2.1.4' );
 
 		} else {
 
@@ -197,7 +205,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function payment_method_supports( $payment_gateway_feature ) {
 
-		if ( $this->is_manual() || ( ! empty( $this->payment_gateway ) && $this->payment_gateway->supports( $payment_gateway_feature ) ) ) {
+		if ( $this->is_manual() || ( false !== ( $payment_gateway = wc_get_payment_gateway_by_order( $this ) ) && $payment_gateway->supports( $payment_gateway_feature ) ) ) {
 			$payment_gateway_supports = true;
 		} else {
 			$payment_gateway_supports = false;
@@ -435,7 +443,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function is_manual() {
 
-		if ( WC_Subscriptions::is_duplicate_site() || empty( $this->payment_gateway ) || ( isset( $this->requires_manual_renewal ) && 'true' == $this->requires_manual_renewal ) ) {
+		if ( WC_Subscriptions::is_duplicate_site() || false === wc_get_payment_gateway_by_order( $this ) || ( isset( $this->requires_manual_renewal ) && 'true' == $this->requires_manual_renewal ) ) {
 			$is_manual = true;
 		} else {
 			$is_manual = false;
@@ -1527,9 +1535,9 @@ class WC_Subscription extends WC_Order {
 			$payment_method_to_display = __( 'Manual Renewal', 'woocommerce-subscriptions' );
 
 		// Use the current title of the payment gateway when available
-		} elseif ( false !== $this->payment_gateway ) {
+		} elseif ( false !== ( $payment_gateway = wc_get_payment_gateway_by_order( $this ) ) ) {
 
-			$payment_method_to_display = $this->payment_gateway->get_title();
+			$payment_method_to_display = $payment_gateway->get_title();
 
 		// Fallback to the title of the payment method when the subscripion was created
 		} else {
@@ -1576,8 +1584,6 @@ class WC_Subscription extends WC_Order {
 			update_post_meta( $this->get_id(), '_payment_method', $payment_gateway->id );
 			update_post_meta( $this->get_id(), '_payment_method_title', $payment_gateway->get_title() );
 		}
-
-		$this->payment_gateway = wc_get_payment_gateway_by_order( $this );
 	}
 
 	/**

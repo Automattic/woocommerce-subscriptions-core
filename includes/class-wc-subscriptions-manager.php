@@ -116,7 +116,7 @@ class WC_Subscriptions_Manager {
 				if ( $subscription->is_manual() ) {
 					do_action( 'woocommerce_generated_manual_renewal_order', $renewal_order->id );
 				} else {
-					$renewal_order->set_payment_method( $subscription->payment_gateway );
+					$renewal_order->set_payment_method( wc_get_payment_gateway_by_order( $subscription ) ); // We need to pass the payment gateway instance to be compatible with WC < 2.7, only WC 2.7+ supports passing the string name
 				}
 			}
 		}
