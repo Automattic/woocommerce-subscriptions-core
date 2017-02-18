@@ -171,8 +171,8 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 			if ( $subscription ) {
 				// Make sure the original subscription terms perisist
 				$_product                               = $cart_item_session_data['data'];
-				$_product->subscription_period          = $subscription->billing_period;
-				$_product->subscription_period_interval = $subscription->billing_interval;
+				$_product->subscription_period          = $subscription->get_billing_period();
+				$_product->subscription_period_interval = $subscription->get_billing_interval();
 
 				// And don't give another free trial period
 				$_product->subscription_trial_length = 0;

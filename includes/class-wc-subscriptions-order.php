@@ -1613,13 +1613,13 @@ class WC_Subscriptions_Order {
 
 			// Find the billing period discount for all recurring items
 			if ( empty( $product_id ) ) {
-				$billing_period = $subscription->billing_period;
+				$billing_period = $subscription->get_billing_period();
 				break;
 			} else {
 				// We want the billing period for a specific item (so we need to find if this subscription contains that item)
 				foreach ( $subscription->get_items() as $line_item ) {
 					if ( wcs_get_canonical_product_id( $line_item ) == $product_id ) {
-						$billing_period = $subscription->billing_period;
+						$billing_period = $subscription->get_billing_period();
 						break 2;
 					}
 				}
@@ -1648,13 +1648,13 @@ class WC_Subscriptions_Order {
 
 			// Find the billing interval for all recurring items
 			if ( empty( $product_id ) ) {
-				$billing_interval = $subscription->billing_interval;
+				$billing_interval = $subscription->get_billing_interval();
 				break;
 			} else {
 				// We want the billing interval for a specific item (so we need to find if this subscription contains that item)
 				foreach ( $subscription->get_items() as $line_item ) {
 					if ( wcs_get_canonical_product_id( $line_item ) == $product_id ) {
-						$billing_interval = $subscription->billing_interval;
+						$billing_interval = $subscription->get_billing_interval();
 						break 2;
 					}
 				}

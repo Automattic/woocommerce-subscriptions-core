@@ -626,6 +626,24 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
+	 * Get internal type.
+	 *
+	 * @return string
+	 */
+	public function get_billing_period( $context = 'view' ) {
+		return $this->get_prop( 'billing_period', $context );
+	}
+
+	/**
+	 * Get internal type.
+	 *
+	 * @return string
+	 */
+	public function get_billing_interval( $context = 'view' ) {
+		return $this->get_prop( 'billing_interval', $context );
+	}
+
+	/**
 	 * Update the internal tally of suspensions on this subscription since the last payment.
 	 *
 	 * @return int The count of suspensions
@@ -635,6 +653,26 @@ class WC_Subscription extends WC_Order {
 		$this->suspension_count = $new_count;
 		update_post_meta( $this->get_id(), '_suspension_count', $this->suspension_count );
 		return $this->suspension_count;
+	}
+
+	/*** Setters *****************************************************/
+
+	/**
+	 * Get internal type.
+	 *
+	 * @return string
+	 */
+	public function set_billing_period( $value ) {
+		$this->set_prop( 'billing_period', $value );
+	}
+
+	/**
+	 * Get internal type.
+	 *
+	 * @return string
+	 */
+	public function set_billing_interval( $value ) {
+		$this->set_prop( 'billing_interval', absint( $value ) );
 	}
 
 	/*** Date methods *****************************************************/
@@ -945,12 +983,12 @@ class WC_Subscription extends WC_Order {
 				$from_timestamp = $start_time;
 			}
 
-			$next_payment_timestamp = wcs_add_time( $this->billing_interval, $this->billing_period, $from_timestamp );
+			$next_payment_timestamp = wcs_add_time( $this->get_billing_interval(), $this->get_billing_period(), $from_timestamp );
 
 			// Make sure the next payment is more than 2 hours in the future, this ensures changes to the site's timezone because of daylight savings will never cause a 2nd renewal payment to be processed on the same day
 			$i = 1;
 			while ( $next_payment_timestamp < ( current_time( 'timestamp', true ) + 2 * HOUR_IN_SECONDS ) && $i < 3000 ) {
-				$next_payment_timestamp = wcs_add_time( $this->billing_interval, $this->billing_period, $next_payment_timestamp );
+				$next_payment_timestamp = wcs_add_time( $this->get_billing_interval(), $this->get_billing_period(), $next_payment_timestamp );
 				$i += 1;
 			}
 		}
@@ -1047,7 +1085,7 @@ class WC_Subscription extends WC_Order {
 	 * @return string
 	 */
 	public function get_formatted_order_total( $tax_display = '', $display_refunded = true ) {
-		if ( $this->get_total() > 0 && ! empty( $this->billing_period ) && ! $this->is_one_payment() ) {
+		if ( $this->get_total() > 0 && '' !== $this->get_billing_period() && ! $this->is_one_payment() ) {
 			$formatted_order_total = wcs_price_string( $this->get_price_string_details( $this->get_total() ) );
 		} else {
 			$formatted_order_total = parent::get_formatted_order_total();
@@ -1140,8 +1178,8 @@ class WC_Subscription extends WC_Order {
 		$subscription_details = array(
 			'currency'              => $this->get_currency(),
 			'recurring_amount'      => $amount,
-			'subscription_period'   => $this->billing_period,
-			'subscription_interval' => $this->billing_interval,
+			'subscription_period'   => $this->get_billing_period(),
+			'subscription_interval' => $this->get_billing_interval(),
 			'display_ex_tax_label'  => $display_ex_tax_label,
 		);
 
@@ -1723,7 +1761,7 @@ class WC_Subscription extends WC_Order {
 				}
 			}
 
-			$next_payment_timestamp = wcs_add_time( $this->billing_interval, $this->billing_period, $from_timestamp );
+			$next_payment_timestamp = wcs_add_time( $this->get_billing_interval(), $this->get_billing_period(), $from_timestamp );
 
 			if ( ( $next_payment_timestamp + DAY_IN_SECONDS - 1 ) > $end_time ) {
 				$is_one_payment = true;

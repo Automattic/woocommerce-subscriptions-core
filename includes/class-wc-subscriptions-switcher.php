@@ -643,7 +643,7 @@ class WC_Subscriptions_Switcher {
 						$next_payment_timestamp = $subscription->get_time( 'end' );
 					}
 
-					if ( $cart_item['data']->subscription_period != $subscription->billing_period || $cart_item['data']->subscription_period_interval != $subscription->billing_interval ) {
+					if ( $cart_item['data']->subscription_period != $subscription->get_billing_period() || $cart_item['data']->subscription_period_interval != $subscription->get_billing_interval() ) {
 						$is_different_billing_schedule = true;
 					} else {
 						$is_different_billing_schedule = false;
@@ -1217,7 +1217,7 @@ class WC_Subscriptions_Switcher {
 
 			// If the subscription contains a synced product and the next payment is actually the first payment, determine the days in the "old" cycle from the subscription object
 			if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription->get_id() ) && WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product, 'timestamp', $subscription->get_date( 'start' ) ) == $next_payment_timestamp ) {
-				$days_in_old_cycle = wcs_get_days_in_cycle( $subscription->billing_period, $subscription->billing_interval );
+				$days_in_old_cycle = wcs_get_days_in_cycle( $subscription->get_billing_period(), $subscription->get_billing_interval() );
 			} else {
 				// Find the number of days between the two
 				$days_in_old_cycle = $days_until_next_payment + $days_since_last_payment;
@@ -1235,7 +1235,7 @@ class WC_Subscriptions_Switcher {
 
 			// Find the price per day for the new subscription's recurring total
 			// If the subscription uses the same billing interval & cycle as the old subscription,
-			if ( $item_data->subscription_period == $subscription->billing_period && $item_data->subscription_period_interval == $subscription->billing_interval ) {
+			if ( $item_data->subscription_period == $subscription->get_billing_period() && $item_data->subscription_period_interval == $subscription->get_billing_interval() ) {
 
 				$days_in_new_cycle = $days_in_old_cycle; // Use $days_in_old_cycle to make sure they're consistent
 

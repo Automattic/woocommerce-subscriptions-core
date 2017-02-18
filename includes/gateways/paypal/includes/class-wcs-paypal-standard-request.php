@@ -74,7 +74,7 @@ class WCS_PayPal_Standard_Request {
 			$paypal_args['item_name'] = wcs_get_paypal_item_name( sprintf( _x( 'Subscription %1$s (Order %2$s) - %3$s', 'item name sent to paypal', 'woocommerce-subscriptions' ), $subscription->get_order_number(), $order->get_order_number(), implode( ', ', $item_names ) ) );
 
 			$unconverted_periods = array(
-				'billing_period' => $subscription->billing_period,
+				'billing_period' => $subscription->get_billing_period(),
 				'trial_period'   => $subscription->trial_period,
 			);
 
@@ -100,7 +100,7 @@ class WCS_PayPal_Standard_Request {
 			}
 
 			$price_per_period       = $subscription->get_total();
-			$subscription_interval  = $subscription->billing_interval;
+			$subscription_interval  = $subscription->get_billing_interval();
 			$start_timestamp        = $subscription->get_time( 'start' );
 			$trial_end_timestamp    = $subscription->get_time( 'trial_end' );
 			$next_payment_timestamp = $subscription->get_time( 'next_payment' );
@@ -115,7 +115,7 @@ class WCS_PayPal_Standard_Request {
 				$length_from_timestamp = $start_timestamp;
 			}
 
-			$subscription_length = wcs_estimate_periods_between( $length_from_timestamp, $subscription->get_time( 'end' ), $subscription->billing_period );
+			$subscription_length = wcs_estimate_periods_between( $length_from_timestamp, $subscription->get_time( 'end' ), $subscription->get_billing_period() );
 
 			$subscription_installments = $subscription_length / $subscription_interval;
 
