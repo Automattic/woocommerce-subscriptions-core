@@ -35,7 +35,7 @@ class WCS_PayPal_Standard_Request {
 
 			$subscriptions = array( wcs_get_subscription( $order->id ) );
 			$subscription  = array_pop( $subscriptions );
-			$order         = $subscription->order;
+			$order         = $subscription->get_parent();
 
 			// We need the subscription's total
 			remove_filter( 'woocommerce_order_amount_total', 'WC_Subscriptions_Change_Payment_Gateway::maybe_zero_total', 11, 2 );
@@ -132,16 +132,14 @@ class WCS_PayPal_Standard_Request {
 				}
 
 				// Change the 'invoice' and the 'custom' values to be for the original order (if there is one)
-				if ( false === $subscription->order ) {
+				if ( false === $subscription->get_parent() ) {
 					// No original order so we need to use the subscriptions values instead
 					$order_number = ltrim( $subscription->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) . '-subscription';
 					$order_id_key = array( 'order_id' => $subscription->get_id(), 'order_key' => $subscription->get_order_key() );
 				} else {
-					$order_number = ltrim( $subscription->order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) );
-					$order_id_key = array( 'order_id' => $subscription->order->id, 'order_key' => $subscription->order->order_key );
+					$order_number = ltrim( $subscription->get_parent()->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) );
+					$order_id_key = array( 'order_id' => $subscription->get_parent()->id, 'order_key' => $subscription->get_parent()->order_key );
 				}
-
-				$order_details = ( false !== $subscription->order ) ? $subscription->order : $subscription;
 
 				// Set the invoice details to the original order's invoice but also append a special string and this renewal orders ID so that we can match it up as a failed renewal order payment later
 				$paypal_args['invoice'] = WCS_PayPal::get_option( 'invoice_prefix' ) . $order_number . $suffix;

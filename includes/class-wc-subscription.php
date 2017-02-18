@@ -15,7 +15,7 @@
 class WC_Subscription extends WC_Order {
 
 	/** @public WC_Order Stores order data for the order in which the subscription was purchased (if any) */
-	public $order = false;
+	protected $order = null;
 
 	/** @public string Order type */
 	public $order_type = 'shop_subscription';
@@ -72,6 +72,24 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
+	 * Set deprecated properties via new methods.
+	 *
+	 * @param mixed $key
+	 * @param mixed $value
+	 * @return mixed
+	 */
+	public function __set( $key, $value ) {
+
+		if ( 'order' == $key ) {
+
+			wcs_deprecated_function( 'WC_Subscription::$order', '2.1.4', 'WC_Subscription::set_parent_id( $order_id )' );
+
+			$this->set_parent_id( wcs_get_objects_property( $value, 'id' ) );
+			$this->order = $value;
+		}
+	}
+
+	/**
 	 * __get function.
 	 *
 	 * @param mixed $key
@@ -82,6 +100,12 @@ class WC_Subscription extends WC_Order {
 		if ( in_array( $key, array( 'start_date', 'trial_end_date', 'next_payment_date', 'end_date', 'last_payment_date' ) ) ) {
 
 			$value = $this->get_date( $key );
+
+		} elseif ( 'order' == $key ) {
+
+			$value    = $this->get_parent();
+
+			wc_doing_it_wrong( $key, 'Subscription properties should not be accessed directly as WooCommerce 2.7 no longer supports direct property access. Use WC_Subscription::get_parent() instead.', '2.1.4' );
 
 		} elseif ( 'payment_gateway' == $key ) {
 
@@ -102,24 +126,6 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Set or change the WC_Order ID which records the subscription's initial purchase.
-	 *
-	 * @param int $post_id
-	 */
-	public function update_parent( $order_id ) {
-
-		// Update the parent in the database
-		wp_update_post(  array(
-			'ID'          => $this->id,
-			'post_parent' => $order_id,
-		) );
-
-		// And update the parent in memory
-		$this->post->post_parent = $order_id;
-		$this->order = wc_get_order( $order_id );
-	}
-
-	/**
 	 * Checks if the subscription has an unpaid order or renewal order (and therefore, needs payment).
 	 *
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
@@ -137,7 +143,7 @@ class WC_Subscription extends WC_Order {
 			$needs_payment = true;
 
 		// Now make sure the parent order doesn't need payment
-		} elseif ( false !== $this->get_parent() && ( $this->order->needs_payment() || $this->order->has_status( 'on-hold' ) ) ) {
+		} elseif ( false != $this->get_parent() && ( $this->get_parent()->needs_payment() || $this->get_parent()->has_status( 'on-hold' ) ) ) {
 
 			$needs_payment = true;
 
@@ -514,9 +520,9 @@ class WC_Subscription extends WC_Order {
 	public function get_completed_payment_count() {
 
 		// If not cached, calculate the completed payment count otherwise return the cached version
-		if (  false === $this->cached_completed_payment_count ) {
+		if ( false === $this->cached_completed_payment_count ) {
 
-			$completed_payment_count = ( false !== $this->order && ( isset( $this->order->paid_date ) || $this->order->has_status( $this->get_paid_order_statuses() ) ) ) ? 1 : 0;
+			$completed_payment_count = ( false != $this->get_parent() && ( 0 !== wcs_get_objects_property( $this->get_parent(), 'date_paid' ) || $this->get_parent()->has_status( $this->get_paid_order_statuses() ) ) ) ? 1 : 0;
 
 			// Get all renewal orders - for large sites its more efficient to find the two different sets of renewal orders below using post__in than complicated meta queries
 			$renewal_orders = get_posts( array(
@@ -585,7 +591,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_failed_payment_count() {
 
-		$failed_payment_count = ( false !== $this->order && $this->order->has_status( 'wc-failed' ) ) ? 1 : 0;
+		$failed_payment_count = ( false != $this->get_parent() && $this->get_parent()->has_status( 'wc-failed' ) ) ? 1 : 0;
 
 		$failed_renewal_orders = get_posts( array(
 			'posts_per_page' => -1,
@@ -621,7 +627,7 @@ class WC_Subscription extends WC_Order {
 	 * @since 2.0
 	 */
 	public function get_total_initial_payment() {
-		$initial_total = ( false !== $this->order ) ? $this->order->get_total() : 0;
+		$initial_total = ( false != $this->get_parent() ) ? $this->get_parent()->get_total() : 0;
 		return apply_filters( 'woocommerce_subscription_total_initial_payment', $initial_total, $this );
 	}
 
@@ -673,6 +679,18 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function set_billing_interval( $value ) {
 		$this->set_prop( 'billing_interval', absint( $value ) );
+	}
+
+	/**
+	 * Set parent order ID. We don't use WC_Abstract_Order::set_parent_id() because we want to allow false
+	 * parent IDs, like 0.
+	 *
+	 * @since 2.1.4
+	 * @param int $value
+	 */
+	public function set_parent_id( $value ) {
+		$this->set_prop( 'parent_id', absint( $value ) );
+		$this->order = null;
 	}
 
 	/*** Date methods *****************************************************/
@@ -1261,7 +1279,7 @@ class WC_Subscription extends WC_Order {
 		wcs_update_users_role( $this->get_user_id(), 'default_subscriber_role' );
 
 		// Add order note depending on initial payment
-		if ( 0 == $this->get_total_initial_payment() && 1 == $this->get_completed_payment_count() && false !== $this->order ) {
+		if ( 0 == $this->get_total_initial_payment() && 1 == $this->get_completed_payment_count() && false != $this->get_parent() ) {
 			$note = __( 'Sign-up complete.', 'woocommerce-subscriptions' );
 		} else {
 			$note = __( 'Payment received.', 'woocommerce-subscriptions' );
@@ -1371,6 +1389,18 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
+	 * Get parent order object.
+	 *
+	 * @return int
+	 */
+	public function get_parent() {
+		if ( null === $this->order ) {
+			$this->order = wc_get_order( $this->get_parent_id() ); // wc_get_order() will return boolean false for invalid parent order IDs
+		}
+		return $this->order;
+	}
+
+	/**
 	 * Extracting the query from get_related_orders and get_last_order so it can be moved in a cached
 	 * value.
 	 *
@@ -1419,7 +1449,7 @@ class WC_Subscription extends WC_Order {
 			}
 
 			if ( false != $this->get_parent_id() && 'renewal' !== $order_type ) {
-				$related_orders[ $this->get_parent_id() ] = $this->order;
+				$related_orders[ $this->get_parent_id() ] = $this->get_parent();
 			}
 		} else {
 
@@ -1475,7 +1505,7 @@ class WC_Subscription extends WC_Order {
 
 			if ( 'all' == $return_fields ) {
 				if ( false != $this->get_parent_id() && $last_order == $this->get_parent_id() ) {
-					$last_order = $this->order;
+					$last_order = $this->get_parent();
 				} else {
 					$last_order = wc_get_order( $last_order );
 				}
@@ -1670,7 +1700,7 @@ class WC_Subscription extends WC_Order {
 		}
 
 		// If there was no original order, nothing was paid up-front which means no sign-up fee
-		if ( empty( $this->order ) ) {
+		if ( false == $this->get_parent() ) {
 
 			$sign_up_fee = 0;
 
@@ -1679,7 +1709,7 @@ class WC_Subscription extends WC_Order {
 			$original_order_item = '';
 
 			// Find the matching item on the order
-			foreach ( $this->order->get_items() as $order_item ) {
+			foreach ( $this->get_parent()->get_items() as $order_item ) {
 				if ( wcs_get_canonical_product_id( $line_item ) == wcs_get_canonical_product_id( $order_item ) ) {
 					$original_order_item = $order_item;
 					break;
@@ -1896,5 +1926,28 @@ class WC_Subscription extends WC_Order {
 		}
 
 		return $item_id;
+	}
+
+
+	/************************
+	 * Deprecated Functions *
+	 ************************/
+
+	/**
+	 * Set or change the WC_Order ID which records the subscription's initial purchase.
+	 *
+	 * @param int|WC_Order $order
+	 */
+	public function update_parent( $order ) {
+		wcs_deprecated_function( __METHOD__, '2.1.4', __CLASS__ . '::set_parent_id(), because WooCommerce 2.7+ now uses that' );
+
+		if ( ! is_object( $order ) ) {
+			$order = wc_get_order( $order );
+		}
+
+		$this->set_parent_id( wcs_get_objects_property( $order, 'id' ) );
+
+		// And update the parent in memory
+		$this->order = $order;
 	}
 }

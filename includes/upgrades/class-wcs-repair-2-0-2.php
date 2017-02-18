@@ -106,7 +106,7 @@ class WCS_Repair_2_0_2 {
 		$subscription_line_item    = array_shift( $subscription_line_items );
 
 		// Get old order item's meta
-		foreach ( $subscription->order->get_items() as $line_item_id => $line_item ) {
+		foreach ( $subscription->get_parent()->get_items() as $line_item_id => $line_item ) {
 			if ( wcs_get_canonical_product_id( $line_item ) == wcs_get_canonical_product_id( $subscription_line_item ) ) {
 				$matching_line_item_id = $line_item_id;
 				$matching_line_item    = $line_item;
@@ -175,11 +175,11 @@ class WCS_Repair_2_0_2 {
 			$repaired_subscription = true;
 		}
 
-		if ( ! empty( $subscription->order->customer_note ) && empty( $subscription->get_customer_note() ) ) {
+		if ( '' !== wcs_get_objects_property( $subscription->get_parent(), 'customer_note' ) && '' == $subscription->get_customer_note() ) {
 
 			$post_data = array(
 				'ID'           => $subscription->get_id(),
-				'post_excerpt' => $subscription->order->customer_note,
+				'post_excerpt' => wcs_get_objects_property( $subscription->get_parent(), 'customer_note' ),
 			);
 
 			$updated_post_id = wp_update_post( $post_data, true );

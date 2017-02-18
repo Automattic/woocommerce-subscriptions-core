@@ -232,12 +232,12 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 				// Store PayPal Details on Subscription and Order
 				$this->save_paypal_meta_data( $subscription, $transaction_details );
-				$this->save_paypal_meta_data( $subscription->order, $transaction_details );
+				$this->save_paypal_meta_data( $subscription->get_parent(), $transaction_details );
 
 				// When there is a free trial & no initial payment amount, we need to mark the order as paid and activate the subscription
-				if ( ! $is_payment_change && ! $is_renewal_sign_up_after_failure && 0 == $subscription->order->get_total() ) {
+				if ( ! $is_payment_change && ! $is_renewal_sign_up_after_failure && 0 == $subscription->get_parent()->get_total() ) {
 					// Safe to assume the subscription has an order here because otherwise we wouldn't get a 'subscr_signup' IPN
-					$subscription->order->payment_complete(); // No 'txn_id' value for 'subscr_signup' IPN messages
+					$subscription->get_parent()->payment_complete(); // No 'txn_id' value for 'subscr_signup' IPN messages
 					update_post_meta( $subscription->get_id(), '_paypal_first_ipn_ignored_for_pdt', 'true' );
 				}
 
@@ -306,10 +306,10 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 					// First payment on order, process payment & activate subscription
 					if ( $is_first_payment ) {
 
-						$subscription->order->payment_complete( $transaction_details['txn_id'] );
+						$subscription->get_parent()->payment_complete( $transaction_details['txn_id'] );
 
 						// Store PayPal Details on Order
-						$this->save_paypal_meta_data( $subscription->order, $transaction_details );
+						$this->save_paypal_meta_data( $subscription->get_parent(), $transaction_details );
 
 						// IPN got here first or PDT will never arrive. Normally PDT would have arrived, so the first IPN would not be the first payment. In case the the first payment is an IPN, we need to make sure to not ignore the second one
 						update_post_meta( $subscription->get_id(), '_paypal_first_ipn_ignored_for_pdt', 'true' );

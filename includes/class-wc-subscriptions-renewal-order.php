@@ -290,7 +290,7 @@ class WC_Subscriptions_Renewal_Order {
 		if ( null === $subscription->get_parent_id() ) { // There is no original order
 			$parent_order = null;
 		} else {
-			$parent_order = $subscription->order;
+			$parent_order = $subscription->get_parent();
 		}
 
 		return apply_filters( 'woocommerce_subscriptions_parent_order', $parent_order, $renewal_order );

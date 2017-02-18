@@ -26,7 +26,7 @@ class WCS_Meta_Box_Related_Orders {
 
 		if ( wcs_is_subscription( $post->ID ) ) {
 			$subscription = wcs_get_subscription( $post->ID );
-			$order = ( null === $subscription->get_parent_id() ) ? $subscription : $subscription->order;
+			$order = ( null === $subscription->get_parent_id() ) ? $subscription : $subscription->get_parent();
 		} else {
 			$order = wc_get_order( $post->ID );
 		}
@@ -95,8 +95,9 @@ class WCS_Meta_Box_Related_Orders {
 		if ( 1 == count( $subscriptions ) ) {
 			foreach ( $subscriptions as $subscription ) {
 				if ( $subscription->get_parent_id() ) {
-					$subscription->order->relationship = _x( 'Parent Order', 'relation to order', 'woocommerce-subscriptions' );
-					$orders[] = $subscription->order;
+					$order = $subscription->get_parent();
+					$order->relationship = _x( 'Parent Order', 'relation to order', 'woocommerce-subscriptions' );
+					$orders[] = $order;
 				}
 			}
 		}

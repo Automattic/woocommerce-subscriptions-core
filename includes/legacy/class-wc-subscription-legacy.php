@@ -56,7 +56,7 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	 * @return int
 	 */
 	public function get_parent_id() {
-		return $this->order->id;
+		return $this->post->post_parent;
 	}
 
 	/**
@@ -342,6 +342,25 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	}
 
 	/*** Setters *****************************************************/
+
+	/**
+	 * Set parent order ID. We don't use WC_Abstract_Order::set_parent_id() because we want to allow false
+	 * parent IDs, like 0.
+	 *
+	 * @since 2.1.4
+	 * @param int $value
+	 */
+	public function set_parent_id( $value ) {
+		// Update the parent in the database
+		wp_update_post(  array(
+			'ID'          => $this->id,
+			'post_parent' => $value,
+		) );
+
+		// And update the parent in memory
+		$this->post->post_parent = $value;
+		$this->order = null;
+	}
 
 	/**
 	 * Helper function to make sure when WC_Subscription calls set_prop() that property is

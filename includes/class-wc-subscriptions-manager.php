@@ -2091,7 +2091,7 @@ class WC_Subscriptions_Manager {
 
 		// Log failure on order
 		// translators: placeholder is subscription ID
-		$subscription->order->add_order_note( sprintf( __( 'Failed sign-up for subscription %s.', 'woocommerce-subscriptions' ), $subscription->get_id() ) );
+		$subscription->get_parent()->add_order_note( sprintf( __( 'Failed sign-up for subscription %s.', 'woocommerce-subscriptions' ), $subscription->get_id() ) );
 
 		do_action( 'subscription_sign_up_failed', $user_id, $subscription_key );
 	}
