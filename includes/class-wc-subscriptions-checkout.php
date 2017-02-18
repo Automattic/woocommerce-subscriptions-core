@@ -65,7 +65,7 @@ class WC_Subscriptions_Checkout {
 		if ( ! empty( $subscriptions ) ) {
 			remove_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 			foreach ( $subscriptions as $subscription ) {
-				wp_delete_post( $subscription->id );
+				wp_delete_post( $subscription->get_id() );
 			}
 			add_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 		}
@@ -135,7 +135,7 @@ class WC_Subscriptions_Checkout {
 
 			// Store trial period for PayPal
 			if ( wcs_cart_pluck( $cart, 'subscription_trial_length' ) > 0 ) {
-				update_post_meta( $subscription->id, '_trial_period', wcs_cart_pluck( $cart, 'subscription_trial_period' ) );
+				update_post_meta( $subscription->get_id(), '_trial_period', wcs_cart_pluck( $cart, 'subscription_trial_period' ) );
 			}
 
 			// Set the payment method on the subscription
@@ -190,11 +190,11 @@ class WC_Subscriptions_Checkout {
 			}
 
 			// Set the recurring totals on the subscription
-			$subscription->set_total( $cart->shipping_total, 'shipping' );
-			$subscription->set_total( $cart->get_cart_discount_total(), 'cart_discount' );
-			$subscription->set_total( $cart->get_cart_discount_tax_total(), 'cart_discount_tax' );
-			$subscription->set_total( $cart->tax_total, 'tax' );
-			$subscription->set_total( $cart->shipping_tax_total, 'shipping_tax' );
+			$subscription->set_shipping_total( $cart->shipping_total );
+			$subscription->set_discount_total( $cart->get_cart_discount_total() );
+			$subscription->set_discount_tax( $cart->get_cart_discount_tax_total() );
+			$subscription->set_cart_tax( $cart->tax_total );
+			$subscription->set_shipping_tax( $cart->shipping_tax_total );
 			$subscription->set_total( $cart->total );
 
 			// If we got here, the subscription was created without problems

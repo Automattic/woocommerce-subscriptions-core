@@ -287,7 +287,7 @@ class WC_Subscriptions_Renewal_Order {
 		$subscriptions = wcs_get_subscriptions_for_renewal_order( $renewal_order );
 		$subscription  = array_pop( $subscriptions );
 
-		if ( false === $subscription->order ) { // There is no original order
+		if ( null === $subscription->get_parent_id() ) { // There is no original order
 			$parent_order = null;
 		} else {
 			$parent_order = $subscription->order;
@@ -316,7 +316,7 @@ class WC_Subscriptions_Renewal_Order {
 			$renewal_order_count = count( $all_orders );
 
 			// Don't include the initial order (if any)
-			if ( false !== $subscription->order ) {
+			if ( $subscription->get_parent_id() ) {
 				$renewal_order_count -= 1;
 			}
 		} else {

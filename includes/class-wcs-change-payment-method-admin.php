@@ -19,7 +19,7 @@ class WCS_Change_Payment_Method_Admin {
 	 */
 	public static function display_fields( $subscription ) {
 
-		$payment_method        = ! empty( $subscription->payment_method ) ? $subscription->payment_method : '';
+		$payment_method        = $subscription->get_payment_method();
 		$valid_payment_methods = self::get_valid_payment_methods( $subscription );
 
 		if ( ! $subscription->is_manual() && ! isset( $valid_payment_methods[ $payment_method ] ) ) {
@@ -158,7 +158,7 @@ class WCS_Change_Payment_Method_Admin {
 
 		foreach ( $available_gateways as $gateway_id => $gateway ) {
 
-			if ( $gateway->supports( 'subscription_payment_method_change_admin' ) && 'no' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) || ( ! $subscription->is_manual() && $gateway_id == $subscription->payment_method ) ) {
+			if ( $gateway->supports( 'subscription_payment_method_change_admin' ) && 'no' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) || ( ! $subscription->is_manual() && $gateway_id == $subscription->get_payment_method() ) ) {
 				$valid_gateways[ $gateway_id ] = $gateway->get_title();
 
 			}

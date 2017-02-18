@@ -55,7 +55,7 @@ function wcs_create_resubscribe_order( $subscription ) {
 	}
 
 	// Keep a record of the original subscription's ID on the new order
-	update_post_meta( $resubscribe_order->id, '_subscription_resubscribe', $subscription->id, true );
+	update_post_meta( $resubscribe_order->id, '_subscription_resubscribe', $subscription->get_id(), true );
 
 	do_action( 'wcs_resubscribe_order_created', $resubscribe_order, $subscription );
 
@@ -71,7 +71,7 @@ function wcs_create_resubscribe_order( $subscription ) {
  */
 function wcs_get_users_resubscribe_link( $subscription ) {
 
-	$subscription_id  = ( is_object( $subscription ) ) ? $subscription->id : $subscription;
+	$subscription_id  = ( is_object( $subscription ) ) ? $subscription->get_id() : $subscription;
 
 	$resubscribe_link = add_query_arg( array( 'resubscribe' => $subscription_id ), get_permalink( wc_get_page_id( 'myaccount' ) ) );
 	$resubscribe_link = wp_nonce_url( $resubscribe_link, $subscription_id );
@@ -187,7 +187,7 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 
 		$can_user_resubscribe = false;
 
-	} elseif ( ! user_can( $user_id, 'subscribe_again', $subscription->id ) ) {
+	} elseif ( ! user_can( $user_id, 'subscribe_again', $subscription->get_id() ) ) {
 
 		$can_user_resubscribe = false;
 
@@ -206,7 +206,7 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 				array(
 					'key'     => '_subscription_resubscribe',
 					'compare' => '=',
-					'value'   => $subscription->id,
+					'value'   => $subscription->get_id(),
 					'type'    => 'numeric',
 				),
 			),

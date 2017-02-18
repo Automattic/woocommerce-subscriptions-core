@@ -37,7 +37,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 function wcs_get_old_subscription_key( WC_Subscription $subscription ) {
 
 	// Get an ID to use as the order ID
-	$order_id = isset( $subscription->order->id ) ? $subscription->order->id : $subscription->id;
+	$order_id = ( null === $subscription->get_parent_id() ) ? $subscription->get_id() : $subscription->get_parent_id();
 
 	// Get an ID to use as the product ID
 	$subscription_items = $subscription->get_items();
@@ -143,7 +143,7 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 				array(
 					'key'     => '_subscription_renewal',
 					'compare' => '=',
-					'value'   => $subscription->id,
+					'value'   => $subscription->get_id(),
 					'type'    => 'numeric',
 				),
 			),
@@ -160,7 +160,7 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 	if ( ! empty( $item ) ) {
 
 		$deprecated_subscription_object = array(
-			'order_id'           => $subscription->order->id,
+			'order_id'           => $subscription->get_parent_id(),
 			'product_id'         => isset( $item['product_id'] ) ? $item['product_id'] : 0,
 			'variation_id'       => isset( $item['variation_id'] ) ? $item['variation_id'] : 0,
 			'status'             => $subscription->get_status(),
@@ -177,7 +177,7 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 			'trial_expiry_date'  => $subscription->get_date( 'trial_end' ),
 
 			// Payment & status change history
-			'failed_payments'    => $subscription->failed_payment_count,
+			'failed_payments'    => $subscription->get_failed_payment_count(),
 			'completed_payments' => $completed_payments,
 			'suspension_count'   => $subscription->suspension_count,
 			'last_payment_date'  => $subscription->get_date( 'last_payment' ),

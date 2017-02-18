@@ -110,7 +110,7 @@ class WCS_Admin_Meta_Boxes {
 				'i18n_trial_end_next_notice'     => __( 'Please enter a date before the next payment.', 'woocommerce-subscriptions' ),
 				'i18n_end_date_notice'           => __( 'Please enter a date after the next payment.', 'woocommerce-subscriptions' ),
 				'process_renewal_action_warning' => __( "Are you sure you want to process a renewal?\n\nThis will charge the customer and email them the renewal order (if emails are enabled).", 'woocommerce-subscriptions' ),
-				'payment_method'                 => wcs_get_subscription( $post )->payment_method,
+				'payment_method'                 => wcs_get_subscription( $post )->get_payment_method(),
 				'search_customers_nonce'         => wp_create_nonce( 'search-customers' ),
 			) ) );
 		} else if ( 'shop_order' == $screen->id ) {
@@ -156,7 +156,7 @@ class WCS_Admin_Meta_Boxes {
 	 * @since 2.0
 	 */
 	public static function process_renewal_action_request( $subscription ) {
-		do_action( 'woocommerce_scheduled_subscription_payment', $subscription->id );
+		do_action( 'woocommerce_scheduled_subscription_payment', $subscription->get_id() );
 		$subscription->add_order_note( __( 'Process renewal order action requested by admin.', 'woocommerce-subscriptions' ), false, true );
 	}
 

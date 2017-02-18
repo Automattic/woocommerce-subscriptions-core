@@ -25,7 +25,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 	public static function output( $post ) {
 		global $the_subscription;
 
-		if ( ! is_object( $the_subscription ) || $the_subscription->id !== $post->ID ) {
+		if ( ! is_object( $the_subscription ) || $the_subscription->get_id() !== $post->ID ) {
 			$the_subscription = wc_get_order( $post->ID );
 		}
 
@@ -52,11 +52,11 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 						<p class="form-field form-field-wide wc-customer-user">
 							<label for="customer_user"><?php esc_html_e( 'Customer:', 'woocommerce-subscriptions' ) ?> <?php
-							if ( ! empty( $subscription->customer_user ) ) {
+							if ( $subscription->get_user_id() ) {
 								$args = array(
 									'post_status' => 'all',
 									'post_type'      => 'shop_subscription',
-									'_customer_user' => absint( $subscription->customer_user ),
+									'_customer_user' => absint( $subscription->get_user_id() ),
 								);
 								printf( '<a href="%s">%s &rarr;</a>',
 									esc_url( add_query_arg( $args, admin_url( 'edit.php' ) ) ),
@@ -67,8 +67,8 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							<?php
 							$user_string = '';
 							$user_id     = '';
-							if ( ! empty( $subscription->customer_user ) && ( false !== get_userdata( $subscription->customer_user ) ) ) {
-								$user_id     = absint( $subscription->customer_user );
+							if ( $subscription->get_user_id() && ( false !== get_userdata( $subscription->get_user_id() ) ) ) {
+								$user_id     = absint( $subscription->get_user_id() );
 								$user        = get_user_by( 'id', $user_id );
 								$user_string = esc_html( $user->display_name ) . ' (#' . absint( $user->ID ) . ' &ndash; ' . esc_html( $user->user_email );
 							}
@@ -112,18 +112,18 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 								continue;
 							}
 
-							$field_name = 'billing_' . $key;
+							$function_name = 'get_billing_' . $key;
 
-							if ( $subscription->$field_name ) {
-								echo '<p><strong>' . esc_html( $field['label'] ) . ':</strong> ' . wp_kses_post( make_clickable( esc_html( $subscription->$field_name ) ) ) . '</p>';
+							if ( $subscription->$function_name() ) {
+								echo '<p><strong>' . esc_html( $field['label'] ) . ':</strong> ' . wp_kses_post( make_clickable( esc_html( $subscription->$function_name() ) ) ) . '</p>';
 							}
 						}
 
-						echo '<p' . ( ! empty( $subscription->payment_method ) ? ' class="' . esc_attr( $subscription->payment_method ) . '"' : '' ) . '><strong>' . esc_html__( 'Payment Method', 'woocommerce-subscriptions' ) . ':</strong>' . wp_kses_post( nl2br( $subscription->get_payment_method_to_display() ) );
+						echo '<p' . ( ( '' != $subscription->get_payment_method() ) ? ' class="' . esc_attr( $subscription->get_payment_method() ) . '"' : '' ) . '><strong>' . esc_html__( 'Payment Method', 'woocommerce-subscriptions' ) . ':</strong>' . wp_kses_post( nl2br( $subscription->get_payment_method_to_display() ) );
 
 						// Display help tip
-						if ( ! empty( $subscription->payment_method ) && ! $subscription->is_manual() ) {
-							echo wcs_help_tip( sprintf( _x( 'Gateway ID: [%s]', 'The gateway ID displayed on the Edit Subscriptions screen when editing payment method.', 'woocommerce-subscriptions' ), $subscription->payment_gateway->id ) );
+						if ( '' != $subscription->get_payment_method()  && ! $subscription->is_manual() ) {
+							echo wcs_help_tip( sprintf( _x( 'Gateway ID: [%s]', 'The gateway ID displayed on the Edit Subscriptions screen when editing payment method.', 'woocommerce-subscriptions' ), $subscription->get_payment_method() ) );
 						}
 
 						echo '</p>';

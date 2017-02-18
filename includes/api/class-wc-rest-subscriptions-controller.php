@@ -252,11 +252,11 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 	 */
 	public function update_schedule( $subscription, $data ) {
 		if ( isset( $data['billing_interval'] ) ) {
-			update_post_meta( $subscription->id, '_billing_interval', absint( $data['billing_interval'] ) );
+			update_post_meta( $subscription->get_id(), '_billing_interval', absint( $data['billing_interval'] ) );
 		}
 
 		if ( ! empty( $data['billing_period'] ) ) {
-			update_post_meta( $subscription->id, '_billing_period', $data['billing_period'] );
+			update_post_meta( $subscription->get_id(), '_billing_period', $data['billing_period'] );
 		}
 
 		try {
@@ -316,8 +316,8 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 				}
 			}
 
-			if ( empty( $subscription->payment_gateway ) ) {
-				$subscription->payment_gateway = $payment_gateway;
+			if ( '' == $subscription->get_payment_method() ) {
+				$subscription->set_payment_method( $payment_gateway );
 			}
 
 			$subscription->set_payment_method( $payment_gateway, $payment_method_meta );

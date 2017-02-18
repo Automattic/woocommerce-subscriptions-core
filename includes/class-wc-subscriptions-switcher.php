@@ -403,7 +403,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function print_switch_link( $item_id, $item, $subscription ) {
 
-		if ( 'shop_subscription' !== $subscription->order_type || ! self::can_item_be_switched_by_user( $item, $subscription ) ) {
+		if ( 'shop_subscription' !== $subscription->get_type() || ! self::can_item_be_switched_by_user( $item, $subscription ) ) {
 			return;
 		}
 
@@ -442,7 +442,7 @@ class WC_Subscriptions_Switcher {
 			}
 		}
 
-		$switch_url = self::add_switch_query_args( $subscription->id, $item_id, $switch_url, $additional_query_args );
+		$switch_url = self::add_switch_query_args( $subscription->get_id(), $item_id, $switch_url, $additional_query_args );
 
 		return apply_filters( 'woocommerce_subscriptions_switch_url', $switch_url, $item_id, $item, $subscription );
 	}
@@ -524,7 +524,7 @@ class WC_Subscriptions_Switcher {
 
 		$item_can_be_switched = false;
 
-		if ( user_can( $user_id, 'switch_shop_subscription', $subscription->id ) && self::can_item_be_switched( $item, $subscription ) ) {
+		if ( user_can( $user_id, 'switch_shop_subscription', $subscription->get_id() ) && self::can_item_be_switched( $item, $subscription ) ) {
 			$item_can_be_switched = true;
 		}
 
@@ -701,8 +701,8 @@ class WC_Subscriptions_Switcher {
 					if ( $is_single_item_subscription ) {
 
 						if ( $is_different_billing_schedule ) {
-							$switch_order_data[ $subscription->id ]['billing_schedule']['_billing_period']   = $cart_item['data']->subscription_period;
-							$switch_order_data[ $subscription->id ]['billing_schedule']['_billing_interval'] = absint( $cart_item['data']->subscription_period_interval );
+							$switch_order_data[ $subscription->get_id() ]['billing_schedule']['_billing_period']   = $cart_item['data']->subscription_period;
+							$switch_order_data[ $subscription->get_id() ]['billing_schedule']['_billing_interval'] = absint( $cart_item['data']->subscription_period_interval );
 						}
 
 						$updated_dates = array();
@@ -720,7 +720,7 @@ class WC_Subscriptions_Switcher {
 
 						if ( ! empty( $updated_dates ) ) {
 							$subscription->validate_date_updates( $updated_dates );
-							$switch_order_data[ $subscription->id ]['dates']['update'] = $updated_dates;
+							$switch_order_data[ $subscription->get_id() ]['dates']['update'] = $updated_dates;
 						}
 					}
 
@@ -745,7 +745,7 @@ class WC_Subscriptions_Switcher {
 
 					$subscription->set_total( $subscription_shipping_total, 'shipping' );
 
-					$switch_order_data[ $subscription->id ]['shipping_line_items'] = $new_shipping_line_items;
+					$switch_order_data[ $subscription->get_id() ]['shipping_line_items'] = $new_shipping_line_items;
 				}
 			}
 
@@ -786,12 +786,12 @@ class WC_Subscriptions_Switcher {
 		}
 
 		// Then zero the order_shipping total so we have a clean slate to add to
-		$subscription->order_shipping = 0;
+		$subscription->set_total_shipping( 0 );
 
 		WC_Subscriptions_Checkout::add_shipping( $subscription, $recurring_cart );
 
 		// Now update subscription object order_shipping to reflect updated values so it doesn't stay 0
-		$subscription->order_shipping = get_post_meta( $subscription->id, '_order_shipping', true );
+		$subscription->order_shipping = get_post_meta( $subscription->get_id(), '_order_shipping', true );
 	}
 
 	/**
@@ -1031,7 +1031,7 @@ class WC_Subscriptions_Switcher {
 			$subscription = wcs_get_subscription( $_GET['switch-subscription'] );
 
 			// Requesting a switch for someone elses subscription
-			if ( ! current_user_can( 'switch_shop_subscription', $subscription->id ) ) {
+			if ( ! current_user_can( 'switch_shop_subscription', $subscription->get_id() ) ) {
 				WC_Subscriptions::add_notice( __( 'You can not switch this subscription. It appears you do not own the subscription.', 'woocommerce-subscriptions' ), 'error' );
 				WC()->cart->empty_cart( true );
 				wp_redirect( get_permalink( $subscription['product_id'] ) );
@@ -1057,7 +1057,7 @@ class WC_Subscriptions_Switcher {
 			}
 
 			$cart_item_data['subscription_switch'] = array(
-				'subscription_id'         => $subscription->id,
+				'subscription_id'         => $subscription->get_id(),
 				'item_id'                 => absint( $_GET['item'] ),
 				'next_payment_timestamp'  => $next_payment_timestamp,
 				'upgraded_or_downgraded'  => '',
@@ -1107,7 +1107,7 @@ class WC_Subscriptions_Switcher {
 
 		// Default tax inclusive or exclusive to the value set on the subscription. This is for backwards compatibility
 		if ( empty( $tax_inclusive_or_exclusive ) ) {
-			$tax_inclusive_or_exclusive = ( 'yes' == $subscription->prices_include_tax ) ? 'inclusive_of_tax' : 'exclusive_of_tax';
+			$tax_inclusive_or_exclusive = ( $subscription->get_prices_include_tax() ) ? 'inclusive_of_tax' : 'exclusive_of_tax';
 		}
 
 		foreach ( $switched_line_items as $switched_line_item_id => $switched_line_item ) {
@@ -1118,7 +1118,7 @@ class WC_Subscriptions_Switcher {
 		}
 
 		// Now add any sign-up fees paid in switch orders
-		foreach ( wcs_get_switch_orders_for_subscription( $subscription->id ) as $order ) {
+		foreach ( wcs_get_switch_orders_for_subscription( $subscription->get_id() ) as $order ) {
 			foreach ( $order->get_items() as $order_item_id => $order_item ) {
 				if ( wcs_get_canonical_product_id( $line_item ) == wcs_get_canonical_product_id( $order_item ) ) {
 
@@ -1216,7 +1216,7 @@ class WC_Subscriptions_Switcher {
 			$days_until_next_payment = ceil( ( $next_payment_timestamp - gmdate( 'U' ) ) / ( 60 * 60 * 24 ) );
 
 			// If the subscription contains a synced product and the next payment is actually the first payment, determine the days in the "old" cycle from the subscription object
-			if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription->id ) && WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product, 'timestamp', $subscription->get_date( 'start' ) ) == $next_payment_timestamp ) {
+			if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription->get_id() ) && WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product, 'timestamp', $subscription->get_date( 'start' ) ) == $next_payment_timestamp ) {
 				$days_in_old_cycle = wcs_get_days_in_cycle( $subscription->billing_period, $subscription->billing_interval );
 			} else {
 				// Find the number of days between the two
@@ -1226,7 +1226,7 @@ class WC_Subscriptions_Switcher {
 			// Find the actual recurring amount charged for the old subscription (we need to use the '_recurring_line_total' meta here rather than '_subscription_recurring_amount' because we want the recurring amount to include extra from extensions, like Product Add-ons etc.)
 			$old_recurring_total = $existing_item['line_total'];
 
-			if ( 'yes' == $subscription->prices_include_tax || true === $subscription->prices_include_tax ) { // WC_Abstract_Order::$prices_include_tax can be set to true in __construct() or to 'yes' in populate()
+			if ( $subscription->get_prices_include_tax() ) {
 				$old_recurring_total += $existing_item['line_tax'];
 			}
 
@@ -1618,7 +1618,7 @@ class WC_Subscriptions_Switcher {
 
 		if ( in_array( $order_type, array( 'all', 'switch' ) ) ) {
 
-			$switch_orders = wcs_get_switch_orders_for_subscription( $subscription->id );
+			$switch_orders = wcs_get_switch_orders_for_subscription( $subscription->get_id() );
 
 			if ( 'all' == $return_fields ) {
 				$related_orders += $switch_orders;
@@ -1710,7 +1710,7 @@ class WC_Subscriptions_Switcher {
 		}
 
 		$product_id = wcs_get_canonical_product_id( $old_item );
-		WCS_Download_Handler::revoke_downloadable_file_permission( $product_id, $subscription->id, $subscription->customer_user );
+		WCS_Download_Handler::revoke_downloadable_file_permission( $product_id, $subscription->get_id(), $subscription->get_user_id() );
 
 	}
 
@@ -1798,7 +1798,7 @@ class WC_Subscriptions_Switcher {
 				}
 
 				if ( ! empty( $switch_data['dates']['update'] ) ) {
-					$subscription->update_dates( $switch_order_data[ $subscription->id ]['dates']['update'] );
+					$subscription->update_dates( $switch_order_data[ $subscription->get_id() ]['dates']['update'] );
 				}
 			}
 
@@ -1918,7 +1918,7 @@ class WC_Subscriptions_Switcher {
 				continue;
 			}
 
-			if ( $subscription->payment_method !== $order->payment_method ) {
+			if ( $subscription->get_payment_method() !== $order->payment_method ) {
 
 				// Set the new payment method on the subscription
 				$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
@@ -2089,7 +2089,7 @@ class WC_Subscriptions_Switcher {
 
 		// Add the new shipping line item
 		foreach ( $shipping_methods as $shipping_line_item ) {
-			$item_id = wc_add_order_item( $subscription->id, array(
+			$item_id = wc_add_order_item( $subscription->get_id(), array(
 				'order_item_name' => $shipping_line_item['name'],
 				'order_item_type' => 'shipping',
 			) );
@@ -2270,9 +2270,9 @@ class WC_Subscriptions_Switcher {
 
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-		if ( $subscription->has_status( 'active' ) && ! empty( $subscription->order ) && wcs_order_contains_switch( $subscription->order->id ) && 1 >= $subscription->get_completed_payment_count() ) {
+		if ( $subscription->has_status( 'active' ) && $subscription->get_parent_id() && wcs_order_contains_switch( $subscription->get_parent_id() ) && 1 >= $subscription->get_completed_payment_count() ) {
 
-			$first_payment_timestamp = get_post_meta( $subscription->order->id, '_switched_subscription_first_payment_timestamp', true );
+			$first_payment_timestamp = get_post_meta( $subscription->get_parent_id(), '_switched_subscription_first_payment_timestamp', true );
 
 			if ( 0 != $first_payment_timestamp ) {
 				$next_payment_date = ( 'mysql' == $type ) ? gmdate( 'Y-m-d H:i:s', $first_payment_timestamp ) : $first_payment_timestamp;

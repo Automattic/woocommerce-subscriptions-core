@@ -842,7 +842,7 @@ class WC_Subscriptions_Synchroniser {
 	 */
 	public static function get_synced_sign_up_fee( $sign_up_fee, $subscription, $product_id ) {
 
-		if ( wcs_is_subscription( $subscription ) && self::subscription_contains_synced_product( $subscription ) && count( wcs_get_line_items_with_a_trial( $subscription->id ) ) < 0 ) {
+		if ( wcs_is_subscription( $subscription ) && self::subscription_contains_synced_product( $subscription ) && count( wcs_get_line_items_with_a_trial( $subscription->get_id() ) ) < 0 ) {
 			$sign_up_fee = max( $subscription->get_total_initial_payment() - $subscription->get_total(), 0 );
 		}
 
@@ -963,7 +963,7 @@ class WC_Subscriptions_Synchroniser {
 				$product_id = wcs_get_canonical_product_id( $item );
 
 				if ( self::is_product_synced( $product_id ) ) {
-					update_post_meta( $subscription->id, '_contains_synced_subscription', 'true' );
+					update_post_meta( $subscription->get_id(), '_contains_synced_subscription', 'true' );
 					break;
 				}
 			}
@@ -1012,7 +1012,7 @@ class WC_Subscriptions_Synchroniser {
 	public static function subscription_contains_synced_product( $subscription_id ) {
 
 		if ( is_object( $subscription_id ) ) {
-			$subscription_id = $subscription_id->id;
+			$subscription_id = $subscription_id->get_id();
 		}
 
 		return ( 'true' == get_post_meta( $subscription_id, '_contains_synced_subscription', true ) ) ? true : false;

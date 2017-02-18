@@ -137,7 +137,7 @@ class WC_Subscription extends WC_Order {
 			$needs_payment = true;
 
 		// Now make sure the parent order doesn't need payment
-		} elseif ( false !== $this->order && ( $this->order->needs_payment() || $this->order->has_status( 'on-hold' ) ) ) {
+		} elseif ( false !== $this->get_parent() && ( $this->order->needs_payment() || $this->order->has_status( 'on-hold' ) ) ) {
 
 			$needs_payment = true;
 
@@ -155,7 +155,7 @@ class WC_Subscription extends WC_Order {
 					array(
 						'key'     => '_subscription_renewal',
 						'compare' => '=',
-						'value'   => $this->id,
+						'value'   => $this->get_id(),
 						'type'    => 'numeric',
 					),
 				),
@@ -285,7 +285,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function update_status( $new_status, $note = '', $manual = false ) {
 
-		if ( ! $this->id ) {
+		if ( ! $this->get_id() ) {
 			return;
 		}
 
@@ -315,7 +315,7 @@ class WC_Subscription extends WC_Order {
 
 			try {
 
-				wp_update_post( array( 'ID' => $this->id, 'post_status' => $new_status_key ) );
+				wp_update_post( array( 'ID' => $this->get_id(), 'post_status' => $new_status_key ) );
 				$this->post_status = $new_status_key;
 
 				switch ( $new_status ) {
@@ -358,14 +358,14 @@ class WC_Subscription extends WC_Order {
 							}
 						}
 						// Trial end date and end/expiration date don't change at all - they should be set when the subscription is first created
-						wcs_make_user_active( $this->customer_user );
+						wcs_make_user_active( $this->get_user_id() );
 					break;
 
 					case 'failed' : // core WC order status mapped internally to avoid exceptions
 					case 'on-hold' :
 						// Record date of suspension - 'post_modified' column?
 						$this->update_suspension_count( $this->suspension_count + 1 );
-						wcs_maybe_make_user_inactive( $this->customer_user );
+						wcs_maybe_make_user_inactive( $this->get_user_id() );
 					break;
 					case 'cancelled' :
 					case 'switched' :
@@ -383,7 +383,7 @@ class WC_Subscription extends WC_Order {
 						}
 
 						$this->update_dates( $dates_to_update );
-						wcs_maybe_make_user_inactive( $this->customer_user );
+						wcs_maybe_make_user_inactive( $this->get_user_id() );
 					break;
 				}
 
@@ -395,7 +395,7 @@ class WC_Subscription extends WC_Order {
 				do_action( 'woocommerce_subscription_status_updated', $this, $new_status, $old_status );
 
 				// Trigger a hook with params matching WooCommerce's 'woocommerce_order_status_changed' hook so functions attached to it can be attached easily to subscription status changes
-				do_action( 'woocommerce_subscription_status_changed', $this->id, $old_status, $new_status );
+				do_action( 'woocommerce_subscription_status_changed', $this->get_id(), $old_status, $new_status );
 
 				// translators: $1 note why the status changes (if any), $2: old status, $3: new status
 				$this->add_order_note( trim( sprintf( __( '%1$s Status changed from %2$s to %3$s.', 'woocommerce-subscriptions' ), $note, wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ), 0, $manual );
@@ -409,7 +409,7 @@ class WC_Subscription extends WC_Order {
 				$log->add( 'wcs-update-status-failures', $log_entry );
 
 				// Make sure the old status is restored
-				wp_update_post( array( 'ID' => $this->id, 'post_status' => $old_status_key ) );
+				wp_update_post( array( 'ID' => $this->get_id(), 'post_status' => $old_status_key ) );
 				$this->post_status = $old_status_key;
 
 				$this->add_order_note( sprintf( __( 'Unable to change subscription status to "%s". Exception: %s', 'woocommerce-subscriptions' ), $new_status, $e->getMessage() ) );
@@ -448,10 +448,10 @@ class WC_Subscription extends WC_Order {
 
 		if ( true === $is_manual || 'true' === $is_manual ) {
 			$this->requires_manual_renewal = 'true';
-			update_post_meta( $this->id, '_requires_manual_renewal', 'true' );
+			update_post_meta( $this->get_id(), '_requires_manual_renewal', 'true' );
 		} else {
 			$this->requires_manual_renewal = 'false';
-			update_post_meta( $this->id, '_requires_manual_renewal', 'false' );
+			update_post_meta( $this->get_id(), '_requires_manual_renewal', 'false' );
 		}
 
 		return $is_manual;
@@ -465,7 +465,8 @@ class WC_Subscription extends WC_Order {
 	 * @return string Status
 	 */
 	public function get_status() {
-		if ( in_array( get_post_status( $this->id ), array( 'draft', 'auto-draft' ) ) ) {
+
+		if ( in_array( get_post_status( $this->get_id() ), array( 'draft', 'auto-draft' ) ) ) {
 			$this->post_status = 'wc-pending';
 			$status = apply_filters( 'woocommerce_order_get_status', 'pending', $this );
 		} else {
@@ -491,7 +492,7 @@ class WC_Subscription extends WC_Order {
 			'wc-completed',
 		);
 
-		$custom_status = apply_filters( 'woocommerce_payment_complete_order_status', 'completed', $this->id );
+		$custom_status = apply_filters( 'woocommerce_payment_complete_order_status', 'completed', $this->get_id() );
 
 		if ( '' !== $custom_status && ! in_array( $custom_status, $paid_statuses ) && ! in_array( 'wc-' . $custom_status, $paid_statuses ) ) {
 			$paid_statuses[] = $custom_status;
@@ -528,7 +529,7 @@ class WC_Subscription extends WC_Order {
 				'meta_key'               => '_subscription_renewal',
 				'meta_compare'           => '=',
 				'meta_type'              => 'numeric',
-				'meta_value'             => $this->id,
+				'meta_value'             => $this->get_id(),
 				'update_post_term_cache' => false,
 			) );
 
@@ -597,7 +598,7 @@ class WC_Subscription extends WC_Order {
 				array(
 					'key'     => '_subscription_renewal',
 					'compare' => '=',
-					'value'   => $this->id,
+					'value'   => $this->get_id(),
 					'type'    => 'numeric',
 				),
 			),
@@ -632,7 +633,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function update_suspension_count( $new_count ) {
 		$this->suspension_count = $new_count;
-		update_post_meta( $this->id, '_suspension_count', $this->suspension_count );
+		update_post_meta( $this->get_id(), '_suspension_count', $this->suspension_count );
 		return $this->suspension_count;
 	}
 
@@ -658,7 +659,7 @@ class WC_Subscription extends WC_Order {
 					$this->schedule->{$date_type} = $this->get_last_payment_date();
 					break;
 				default :
-					$this->schedule->{$date_type} = get_post_meta( $this->id, wcs_get_date_meta_key( $date_type ), true );
+					$this->schedule->{$date_type} = get_post_meta( $this->get_id(), wcs_get_date_meta_key( $date_type ), true );
 					break;
 			}
 
@@ -776,7 +777,7 @@ class WC_Subscription extends WC_Order {
 
 			switch ( $date_type ) {
 				case 'start' :
-					$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET post_date = %s, post_date_gmt = %s WHERE ID = %s", get_date_from_gmt( $datetime ), $datetime, $this->id ) ); // Don't use wp_update_post() to avoid infinite loops here
+					$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET post_date = %s, post_date_gmt = %s WHERE ID = %s", get_date_from_gmt( $datetime ), $datetime, $this->get_id() ) ); // Don't use wp_update_post() to avoid infinite loops here
 					$is_updated = true;
 					break;
 				case 'last_payment' :
@@ -784,7 +785,7 @@ class WC_Subscription extends WC_Order {
 					$is_updated = true;
 					break;
 				default :
-					$is_updated = update_post_meta( $this->id, wcs_get_date_meta_key( $date_type ), $datetime );
+					$is_updated = update_post_meta( $this->get_id(), wcs_get_date_meta_key( $date_type ), $datetime );
 					break;
 			}
 
@@ -819,7 +820,7 @@ class WC_Subscription extends WC_Order {
 		}
 
 		$this->schedule->{$date_type} = 0;
-		update_post_meta( $this->id, wcs_get_date_meta_key( $date_type ), $this->schedule->{$date_type} );
+		update_post_meta( $this->get_id(), wcs_get_date_meta_key( $date_type ), $this->schedule->{$date_type} );
 		do_action( 'woocommerce_subscription_date_deleted', $this, $date_type );
 	}
 
@@ -1083,9 +1084,9 @@ class WC_Subscription extends WC_Order {
 				}
 			}
 
-			$subtotal = wc_price( $subtotal, array( 'currency' => $this->get_order_currency() ) );
+			$subtotal = wc_price( $subtotal, array( 'currency' => $this->get_currency() ) );
 
-			if ( 'excl' == $tax_display && $this->prices_include_tax ) {
+			if ( 'excl' == $tax_display && $this->get_prices_include_tax() ) {
 				$subtotal .= ' <small>' . WC()->countries->ex_tax_or_vat() . '</small>';
 			}
 		} else {
@@ -1117,7 +1118,7 @@ class WC_Subscription extends WC_Order {
 			// Remove discounts
 			$subtotal = $subtotal - $this->get_cart_discount();
 
-			$subtotal = wc_price( $subtotal, array( 'currency' => $this->get_order_currency() ) );
+			$subtotal = wc_price( $subtotal, array( 'currency' => $this->get_currency() ) );
 		}
 
 		return apply_filters( 'woocommerce_order_subtotal_to_display', $subtotal, $compound, $this );
@@ -1137,7 +1138,7 @@ class WC_Subscription extends WC_Order {
 	protected function get_price_string_details( $amount = 0, $display_ex_tax_label = false ) {
 
 		$subscription_details = array(
-			'currency'              => $this->get_order_currency(),
+			'currency'              => $this->get_currency(),
 			'recurring_amount'      => $amount,
 			'subscription_period'   => $this->billing_period,
 			'subscription_interval' => $this->billing_interval,
@@ -1371,7 +1372,7 @@ class WC_Subscription extends WC_Order {
 
 		$related_orders = array();
 
-		$related_post_ids = WC_Subscriptions::$cache->cache_and_get( 'wcs-related-orders-to-' . $this->id, array( $this, 'get_related_orders_query' ), array( $this->id ) );
+		$related_post_ids = WC_Subscriptions::$cache->cache_and_get( 'wcs-related-orders-to-' . $this->get_id(), array( $this, 'get_related_orders_query' ), array( $this->get_id() ) );
 
 		if ( 'all' == $return_fields ) {
 
@@ -1379,14 +1380,14 @@ class WC_Subscription extends WC_Order {
 				$related_orders[ $post_id ] = wc_get_order( $post_id );
 			}
 
-			if ( false !== $this->order && 'renewal' !== $order_type ) {
-				$related_orders[ $this->order->id ] = $this->order;
+			if ( false != $this->get_parent_id() && 'renewal' !== $order_type ) {
+				$related_orders[ $this->get_parent_id() ] = $this->order;
 			}
 		} else {
 
 			// Return IDs only
-			if ( isset( $this->order->id ) && 'renewal' !== $order_type ) {
-				$related_orders[ $this->order->id ] = $this->order->id;
+			if ( false != $this->get_parent_id() && 'renewal' !== $order_type ) {
+				$related_orders[ $this->get_parent_id() ] = $this->get_parent_id();
 			}
 
 			foreach ( $related_post_ids as $post_id ) {
@@ -1414,15 +1415,15 @@ class WC_Subscription extends WC_Order {
 		foreach ( $order_types as $order_type ) {
 			switch ( $order_type ) {
 				case 'parent':
-					if ( false !== $this->order ) {
-						$related_orders[] = $this->order->id;
+					if ( false != $this->get_parent_id() ) {
+						$related_orders[] = $this->get_parent_id();
 					}
 					break;
 				case 'renewal':
-					$related_orders = array_merge( $related_orders, WC_Subscriptions::$cache->cache_and_get( 'wcs-related-orders-to-' . $this->id, array( $this, 'get_related_orders_query' ), array( $this->id ) ) );
+					$related_orders = array_merge( $related_orders, WC_Subscriptions::$cache->cache_and_get( 'wcs-related-orders-to-' . $this->get_id(), array( $this, 'get_related_orders_query' ), array( $this->get_id() ) ) );
 					break;
 				case 'switch':
-					$related_orders = array_merge( $related_orders, array_keys( wcs_get_switch_orders_for_subscription( $this->id ) ) );
+					$related_orders = array_merge( $related_orders, array_keys( wcs_get_switch_orders_for_subscription( $this->get_id() ) ) );
 					break;
 				default:
 					break;
@@ -1435,7 +1436,7 @@ class WC_Subscription extends WC_Order {
 			$last_order = max( $related_orders );
 
 			if ( 'all' == $return_fields ) {
-				if ( false !== $this->order && $last_order == $this->order->id ) {
+				if ( false != $this->get_parent_id() && $last_order == $this->get_parent_id() ) {
 					$last_order = $this->order;
 				} else {
 					$last_order = wc_get_order( $last_order );
@@ -1465,7 +1466,7 @@ class WC_Subscription extends WC_Order {
 		// Fallback to the title of the payment method when the subscripion was created
 		} else {
 
-			$payment_method_to_display = $this->payment_method_title;
+			$payment_method_to_display = $this->get_payment_method_title();
 
 		}
 
@@ -1488,10 +1489,10 @@ class WC_Subscription extends WC_Order {
 		if ( empty( $payment_gateway ) || ! isset( $payment_gateway->id ) ) {
 
 			$this->update_manual( true );
-			update_post_meta( $this->id, '_payment_method', '' );
-			update_post_meta( $this->id, '_payment_method_title', '' );
+			update_post_meta( $this->get_id(), '_payment_method', '' );
+			update_post_meta( $this->get_id(), '_payment_method_title', '' );
 
-		} elseif ( $this->payment_method !== $payment_gateway->id ) {
+		} elseif ( $this->get_payment_method() !== $payment_gateway->id ) {
 
 			// Set subscription to manual when the payment method doesn't support automatic payments
 			$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
@@ -1504,8 +1505,8 @@ class WC_Subscription extends WC_Order {
 				$this->update_manual( false );
 			}
 
-			update_post_meta( $this->id, '_payment_method', $payment_gateway->id );
-			update_post_meta( $this->id, '_payment_method_title', $payment_gateway->get_title() );
+			update_post_meta( $this->get_id(), '_payment_method', $payment_gateway->id );
+			update_post_meta( $this->get_id(), '_payment_method_title', $payment_gateway->get_title() );
 		}
 
 		$this->payment_gateway = wc_get_payment_gateway_by_order( $this );
@@ -1533,11 +1534,11 @@ class WC_Subscription extends WC_Order {
 					switch ( $meta_table ) {
 						case 'user_meta':
 						case 'usermeta':
-							update_user_meta( $this->customer_user, $meta_key, $meta_data['value'] );
+							update_user_meta( $this->get_user_id(), $meta_key, $meta_data['value'] );
 							break;
 						case 'post_meta':
 						case 'postmeta':
-							update_post_meta( $this->id, $meta_key, $meta_data['value'] );
+							update_post_meta( $this->get_id(), $meta_key, $meta_data['value'] );
 							break;
 						case 'options':
 							update_option( $meta_key, $meta_data['value'] );
@@ -1557,9 +1558,9 @@ class WC_Subscription extends WC_Order {
 	 * @since 2.0
 	 */
 	public function get_view_order_url() {
-		$view_subscription_url = wc_get_endpoint_url( 'view-subscription', $this->id, wc_get_page_permalink( 'myaccount' ) );
+		$view_subscription_url = wc_get_endpoint_url( 'view-subscription', $this->get_id(), wc_get_page_permalink( 'myaccount' ) );
 
-		return apply_filters( 'wcs_get_view_subscription_url', $view_subscription_url, $this->id );
+		return apply_filters( 'wcs_get_view_subscription_url', $view_subscription_url, $this->get_id() );
 	}
 
 	/**
@@ -1664,7 +1665,7 @@ class WC_Subscription extends WC_Order {
 			}
 
 			// If prices inc tax, ensure that the sign up fee amount includes the tax
-			if ( 'inclusive_of_tax' === $tax_inclusive_or_exclusive && ! empty( $original_order_item ) && 'yes' == $this->prices_include_tax ) {
+			if ( 'inclusive_of_tax' === $tax_inclusive_or_exclusive && ! empty( $original_order_item ) && $this->get_prices_include_tax() ) {
 				$proportion   = $sign_up_fee / ( $original_order_item['line_total'] / $original_order_item['qty'] );
 				$sign_up_fee += round( $original_order_item['line_tax'] * $proportion, 2 );
 			}

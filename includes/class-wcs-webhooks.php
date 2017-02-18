@@ -154,7 +154,7 @@ class WCS_Webhooks {
 	 * @since 2.0
 	 */
 	public static function add_subscription_created_callback( $subscription ) {
-		do_action( 'wcs_webhook_subscription_created', $subscription->id );
+		do_action( 'wcs_webhook_subscription_created', $subscription->get_id() );
 	}
 
 	/**
@@ -163,7 +163,7 @@ class WCS_Webhooks {
 	 * @since 2.0
 	 */
 	public static function add_subscription_updated_callback( $subscription ) {
-		do_action( 'wcs_webhook_subscription_updated', $subscription->id );
+		do_action( 'wcs_webhook_subscription_updated', $subscription->get_id() );
 	}
 
 	/**

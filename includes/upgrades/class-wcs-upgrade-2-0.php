@@ -90,7 +90,7 @@ class WCS_Upgrade_2_0 {
 
 				if ( ! is_wp_error( $new_subscription ) ) {
 
-					WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: post created', $new_subscription->id ) );
+					WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: post created', $new_subscription->get_id() ) );
 
 					// Set the order to be manual
 					if ( isset( $original_order->wcs_requires_manual_renewal ) && 'true' == $original_order->wcs_requires_manual_renewal ) {
@@ -107,29 +107,29 @@ class WCS_Upgrade_2_0 {
 					self::migrate_dates( $new_subscription, $old_subscription );
 
 					// Set some meta from order meta
-					self::migrate_post_meta( $new_subscription->id, $original_order );
+					self::migrate_post_meta( $new_subscription->get_id(), $original_order );
 
 					// Copy over order notes which are now logged on the subscription
-					self::migrate_order_notes( $new_subscription->id, $original_order->id );
+					self::migrate_order_notes( $new_subscription->get_id(), $original_order->id );
 
 					// Migrate recurring tax, shipping and coupon line items to be plain line items on the subscription
-					self::migrate_order_items( $new_subscription->id, $original_order->id );
+					self::migrate_order_items( $new_subscription->get_id(), $original_order->id );
 
 					// Update renewal orders to link via post meta key instead of post_parent column
-					self::migrate_renewal_orders( $new_subscription->id, $original_order->id );
+					self::migrate_renewal_orders( $new_subscription->get_id(), $original_order->id );
 
 					// Make sure the resubscribe meta data is migrated to use the new subscription ID + meta key
-					self::migrate_resubscribe_orders( $new_subscription->id, $original_order->id );
+					self::migrate_resubscribe_orders( $new_subscription->get_id(), $original_order->id );
 
 					// If the order for this subscription contains a switch, make sure the switch meta data is migrated to use the new subscription ID + meta key
 					self::migrate_switch_meta( $new_subscription, $original_order, $subscription_item_id );
 
 					// If the subscription was in the trash, now that we've set on the meta on it, we need to trash it
 					if ( 'trash' == $old_subscription['status'] ) {
-						wp_trash_post( $new_subscription->id );
+						wp_trash_post( $new_subscription->get_id() );
 					}
 
-					WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: upgrade complete', $new_subscription->id ) );
+					WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: upgrade complete', $new_subscription->get_id() ) );
 
 				} else {
 
@@ -251,12 +251,12 @@ class WCS_Upgrade_2_0 {
 	private static function add_product( $new_subscription, $order_item_id, $order_item ) {
 		global $wpdb;
 
-		$item_id = wc_add_order_item( $new_subscription->id, array(
+		$item_id = wc_add_order_item( $new_subscription->get_id(), array(
 			'order_item_name' => $order_item['name'],
 			'order_item_type' => 'line_item',
 		) );
 
-		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: new line item ID %d added', $new_subscription->id, $item_id ) );
+		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: new line item ID %d added', $new_subscription->get_id(), $item_id ) );
 
 		$order_item = WCS_Repair_2_0::maybe_repair_order_item( $order_item );
 
@@ -312,12 +312,12 @@ class WCS_Upgrade_2_0 {
 			}
 		}
 
-		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: for item %d added %s', $new_subscription->id, $item_id, implode( ', ', $meta_keys_to_copy ) ) );
+		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: for item %d added %s', $new_subscription->get_id(), $item_id, implode( ', ', $meta_keys_to_copy ) ) );
 
 		// Now that we've copied over the old data, prefix some the subscription meta keys with _wcs_migrated to deprecate it without deleting it (yet)
 		$rows_affected = self::deprecate_item_meta( $order_item_id );
 
-		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: %s rows of line item meta deprecated', $new_subscription->id, $rows_affected ) );
+		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: %s rows of line item meta deprecated', $new_subscription->get_id(), $rows_affected ) );
 
 		return $item_id;
 	}
@@ -436,8 +436,8 @@ class WCS_Upgrade_2_0 {
 		$rows_affected = $wpdb->update(
 			$wpdb->prefix . 'woocommerce_downloadable_product_permissions',
 			array(
-				'order_id'  => $subscription->id,
-				'order_key' => $subscription->order_key,
+				'order_id'  => $subscription->get_id(),
+				'order_key' => $subscription->get_order_key(),
 			),
 			array(
 				'order_id'   => $order->id,
@@ -449,7 +449,7 @@ class WCS_Upgrade_2_0 {
 			array( '%d', '%s', '%d', '%d' )
 		);
 
-		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: migrated %d download permissions for product %d', $subscription->id, $rows_affected, $product_id ) );
+		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: migrated %d download permissions for product %d', $subscription->get_id(), $rows_affected, $product_id ) );
 	}
 
 	/**
@@ -506,7 +506,7 @@ class WCS_Upgrade_2_0 {
 				if ( $next_scheduled > 0 ) {
 
 					if ( 'end_of_prepaid_term' == $new_key ) {
-						wc_schedule_single_action( $next_scheduled, 'woocommerce_scheduled_subscription_end_of_prepaid_term', array( 'subscription_id' => $new_subscription->id ) );
+						wc_schedule_single_action( $next_scheduled, 'woocommerce_scheduled_subscription_end_of_prepaid_term', array( 'subscription_id' => $new_subscription->get_id() ) );
 					} else {
 						$dates_to_update[ $new_key ] = gmdate( 'Y-m-d H:i:s', $next_scheduled );
 					}
@@ -548,10 +548,10 @@ class WCS_Upgrade_2_0 {
 				$new_subscription->update_dates( $dates_to_update );
 			}
 
-			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: updated dates = %s', $new_subscription->id, str_replace( array( '{', '}', '"' ), '', wcs_json_encode( $dates_to_update ) ) ) );
+			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: updated dates = %s', $new_subscription->get_id(), str_replace( array( '{', '}', '"' ), '', wcs_json_encode( $dates_to_update ) ) ) );
 
 		} catch ( Exception $e ) {
-			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: unable to update dates, exception "%s"', $new_subscription->id, $e->getMessage() ) );
+			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: unable to update dates, exception "%s"', $new_subscription->get_id(), $e->getMessage() ) );
 		}
 	}
 
@@ -817,8 +817,8 @@ class WCS_Upgrade_2_0 {
 
 			// Because self::get_subscriptions() orders by order ID, it's safe to use wcs_get_subscriptions_for_order() here because the subscription in the new format will have been created for the original order (because its ID will be < the resubscribe order's ID)
 			foreach ( wcs_get_subscriptions_for_order( $original_order_id ) as $old_subscription ) {
-				update_post_meta( $resubscribe_order_id, '_subscription_resubscribe', $old_subscription->id, true );
-				update_post_meta( $new_subscription_id, '_subscription_resubscribe', $old_subscription->id, true );
+				update_post_meta( $resubscribe_order_id, '_subscription_resubscribe', $old_subscription->get_id(), true );
+				update_post_meta( $new_subscription_id, '_subscription_resubscribe', $old_subscription->get_id(), true );
 			}
 
 			$wpdb->query( $wpdb->prepare(
@@ -891,7 +891,7 @@ class WCS_Upgrade_2_0 {
 
 			if ( wcs_is_subscription( $old_subscription ) ) {
 				// Link the old subscription's ID to the switch order using the new switch meta key
-				update_post_meta( $switch_order->id, '_subscription_switch', $old_subscription->id );
+				update_post_meta( $switch_order->id, '_subscription_switch', $old_subscription->get_id() );
 
 				// Now store the new/old item IDs for record keeping
 				foreach ( $old_subscription->get_items() as $item_id => $item ) {
@@ -899,7 +899,7 @@ class WCS_Upgrade_2_0 {
 					wc_add_order_item_meta( $subscription_item_id, '_switched_subscription_item_id', $item_id, true );
 				}
 
-				WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: migrated switch data for subscription %d purchased in order %d', $new_subscription->id, $old_subscription->id, $previous_order_id ) );
+				WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: migrated switch data for subscription %d purchased in order %d', $new_subscription->get_id(), $old_subscription->get_id(), $previous_order_id ) );
 			}
 		}
 	}

@@ -26,7 +26,7 @@ class WCS_Meta_Box_Related_Orders {
 
 		if ( wcs_is_subscription( $post->ID ) ) {
 			$subscription = wcs_get_subscription( $post->ID );
-			$order = ( false == $subscription->order ) ? $subscription : $subscription->order;
+			$order = ( null === $subscription->get_parent_id() ) ? $subscription : $subscription->order;
 		} else {
 			$order = wc_get_order( $post->ID );
 		}
@@ -94,7 +94,7 @@ class WCS_Meta_Box_Related_Orders {
 		// Now, if we're on a single subscription or renewal order's page, display the parent orders
 		if ( 1 == count( $subscriptions ) ) {
 			foreach ( $subscriptions as $subscription ) {
-				if ( false !== $subscription->order ) {
+				if ( $subscription->get_parent_id() ) {
 					$subscription->order->relationship = _x( 'Parent Order', 'relation to order', 'woocommerce-subscriptions' );
 					$orders[] = $subscription->order;
 				}

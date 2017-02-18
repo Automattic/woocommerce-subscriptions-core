@@ -208,7 +208,7 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 
 		$new_order = wc_create_order( array(
 			'customer_id'   => $subscription->get_user_id(),
-			'customer_note' => $subscription->customer_note,
+			'customer_note' => $subscription->get_customer_note(),
 		) );
 
 		$new_order->post->post_title = wcs_get_new_order_title( $type );

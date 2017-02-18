@@ -433,9 +433,9 @@ class WCS_PayPal {
 		global $post;
 		$subscription = wcs_get_subscription( $post );
 
-		if ( 'paypal' === $subscription->payment_method ) {
+		if ( 'paypal' === $subscription->get_payment_method() ) {
 
-			$paypal_profile_id  = wcs_get_paypal_id( $subscription->id );
+			$paypal_profile_id  = wcs_get_paypal_id( $subscription->get_id() );
 			$is_paypal_standard = ! wcs_is_paypal_profile_a( $paypal_profile_id, 'billing_agreement' );
 
 			if ( $is_paypal_standard ) {

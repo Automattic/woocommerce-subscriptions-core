@@ -161,7 +161,7 @@ class WC_Subscriptions_Payment_Gateways {
 				break;
 		}
 
-		do_action( $hook_prefix . $subscription->payment_method, $subscription );
+		do_action( $hook_prefix . $subscription->get_payment_method(), $subscription );
 	}
 
 	/**

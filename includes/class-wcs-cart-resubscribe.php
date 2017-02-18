@@ -65,7 +65,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 			$subscription = wcs_get_subscription( $_GET['resubscribe'] );
 			$redirect_to  = get_permalink( wc_get_page_id( 'myaccount' ) );
 
-			if ( wp_verify_nonce( $_GET['_wpnonce'], $subscription->id ) === false ) {
+			if ( wp_verify_nonce( $_GET['_wpnonce'], $subscription->get_id() ) === false ) {
 
 				wc_add_notice( __( 'There was an error with your request to resubscribe. Please try again.', 'woocommerce-subscriptions' ), 'error' );
 
@@ -73,7 +73,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 
 				wc_add_notice( __( 'That subscription does not exist. Has it been deleted?', 'woocommerce-subscriptions' ), 'error' );
 
-			} elseif ( ! current_user_can( 'subscribe_again', $subscription->id ) ) {
+			} elseif ( ! current_user_can( 'subscribe_again', $subscription->get_id() ) ) {
 
 				wc_add_notice( __( 'That doesn\'t appear to be one of your subscriptions.', 'woocommerce-subscriptions' ), 'error' );
 
@@ -84,7 +84,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 			} else {
 
 				$this->setup_cart( $subscription, array(
-					'subscription_id' => $subscription->id,
+					'subscription_id' => $subscription->get_id(),
 				) );
 
 				if ( WC()->cart->get_cart_contents_count() != 0 ) {
@@ -121,9 +121,9 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 				$subscriptions = wcs_get_subscriptions_for_resubscribe_order( $order );
 
 				foreach ( $subscriptions as $subscription ) {
-					if ( current_user_can( 'subscribe_again', $subscription->id ) ) {
+					if ( current_user_can( 'subscribe_again', $subscription->get_id() ) ) {
 						$this->setup_cart( $subscription, array(
-							'subscription_id' => $subscription->id,
+							'subscription_id' => $subscription->get_id(),
 						) );
 					} else {
 						wc_add_notice( __( 'That doesn\'t appear to be one of your subscriptions.', 'woocommerce-subscriptions' ), 'error' );
@@ -151,7 +151,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 
 		if ( false !== $cart_item ) {
 			update_post_meta( $order->id, '_subscription_resubscribe', $cart_item[ $this->cart_item_key ]['subscription_id'], true );
-			update_post_meta( $new_subscription->id, '_subscription_resubscribe', $cart_item[ $this->cart_item_key ]['subscription_id'], true );
+			$new_subscription->update_meta_data( 'subscription_resubscribe', $cart_item[ $this->cart_item_key ]['subscription_id'] );
 		}
 	}
 
