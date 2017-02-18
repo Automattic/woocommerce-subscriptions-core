@@ -755,7 +755,7 @@ class WC_Subscriptions_Switcher {
 				$switch_orders = wcs_get_switch_orders_for_subscription( $subscription_id );
 
 				foreach ( $switch_orders as $switch_order_id => $switch_order ) {
-					if ( $order->id !== $switch_order_id && in_array( $switch_order->get_status(), apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'failed', 'on-hold' ), $switch_order ) ) ) {
+					if ( wcs_get_objects_property( $order, 'id' ) !== $switch_order_id && in_array( $switch_order->get_status(), apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'failed', 'on-hold' ), $switch_order ) ) ) {
 						$switch_order->update_status( 'cancelled', sprintf( __( 'Switch order cancelled due to a new switch order being created #%s.', 'woocommerce-subscriptions' ), $order->get_order_number() ) );
 					}
 				}
@@ -843,23 +843,25 @@ class WC_Subscriptions_Switcher {
 			$orders = wcs_get_switch_orders_for_subscription( $post->ID );
 
 			foreach ( $orders as $order ) {
-				$orders[ $order->id ]->relationship = __( 'Switch Order', 'woocommerce-subscriptions' );
+				$orders[ wcs_get_objects_property( $order, 'id' ) ]->relationship = __( 'Switch Order', 'woocommerce-subscriptions' );
 			}
 
 			// Select the subscriptions which had item/s switched to this subscription by its parent order
 			if ( ! empty( $post->post_parent ) ) {
-				$switched_ids = get_post_meta( $post->post_parent, '_subscription_switch' );
+				$switched_ids = wcs_get_objects_property( wc_get_order( $post->post_parent ), 'subscription_switch', 'multiple' );
 			}
 
 		// On the Edit Order screen, show any subscriptions with items switched by this order
 		} else {
-			$switched_ids = get_post_meta( $post->ID, '_subscription_switch', false );
+			$switched_ids = wcs_get_objects_property( wc_get_order( $post->ID ), 'subscription_switch', 'multiple' );
 		}
 
-		foreach ( $switched_ids as $subscription_id ) {
-			$subscription               = wcs_get_subscription( $subscription_id );
-			$subscription->relationship = __( 'Switched Subscription', 'woocommerce-subscriptions' );
-			$orders[ $subscription_id ] = $subscription;
+		if ( is_array( $switched_ids ) ) {
+			foreach ( $switched_ids as $subscription_id ) {
+				$subscription               = wcs_get_subscription( $subscription_id );
+				$subscription->relationship = __( 'Switched Subscription', 'woocommerce-subscriptions' );
+				$orders[ $subscription_id ] = $subscription;
+			}
 		}
 
 		foreach ( $orders as $order ) {
@@ -1135,7 +1137,7 @@ class WC_Subscriptions_Switcher {
 
 					$order_total = $order_item['line_total'];
 
-					if ( 'inclusive_of_tax' == $tax_inclusive_or_exclusive && 'yes' == $order->prices_include_tax ) {
+					if ( 'inclusive_of_tax' == $tax_inclusive_or_exclusive && wcs_get_objects_property( $order, 'prices_include_tax' ) ) {
 						$order_total += $order_item['line_tax'];
 					}
 
@@ -1509,10 +1511,10 @@ class WC_Subscriptions_Switcher {
 	public static function process_subscription_switches( $order_id, $order_old_status, $order_new_status ) {
 		global $wpdb;
 
-		$switch_processed = get_post_meta( $order_id, '_completed_subscription_switch', true );
 		$order            = wc_get_order( $order_id );
+		$switch_processed = wcs_get_objects_property( $order, 'completed_subscription_switch' );
 
-		if ( ! wcs_order_contains_switch( $order_id ) || 'true' == $switch_processed ) {
+		if ( ! wcs_order_contains_switch( $order ) || 'true' == $switch_processed ) {
 			return;
 		}
 
@@ -1726,7 +1728,7 @@ class WC_Subscriptions_Switcher {
 	public static function complete_subscription_switches( $order ) {
 
 		// Get the switch meta
-		$switch_order_data = get_post_meta( $order->id, '_subscription_switch_data', true );
+		$switch_order_data = wcs_get_objects_property( $order, 'subscription_switch_data' );
 
 		// if we don't have an switch data, there is nothing to do here. Switch orders created prior to v2.1 won't have any data to process.
 		if ( empty( $switch_order_data ) || ! is_array( $switch_order_data ) ) {
@@ -1912,17 +1914,18 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function maybe_set_payment_method_after_switch( $order ) {
 
-		foreach ( wcs_get_subscriptions_for_switch_order( $order->id ) as $subscription ) {
+		foreach ( wcs_get_subscriptions_for_switch_order( $order ) as $subscription ) {
 
 			if ( false === $subscription->is_manual() ) {
 				continue;
 			}
 
-			if ( $subscription->get_payment_method() !== $order->payment_method ) {
+			if ( $subscription->get_payment_method() !== wcs_get_objects_property( $order, 'payment_method' ) ) {
 
 				// Set the new payment method on the subscription
-				$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
-				$payment_method     = isset( $available_gateways[ $order->payment_method ] ) ? $available_gateways[ $order->payment_method ] : false;
+				$available_gateways   = WC()->payment_gateways->get_available_payment_gateways();
+				$order_payment_method = wcs_get_objects_property( $order, 'payment_method' );
+				$payment_method       = '' != $order_payment_method && isset( $available_gateways[ $order_payment_method ] ) ? $available_gateways[ $order_payment_method ] : false;
 
 				if ( $payment_method && $payment_method->supports( 'subscriptions' ) ) {
 					$subscription->set_payment_method( $payment_method );
@@ -2253,7 +2256,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function calculate_first_payment_date( $next_payment_date, $order, $product_id, $type ) {
 		_deprecated_function( __METHOD__, '2.0' );
-		return self::get_first_payment_date( $next_payment_date, WC_Subscriptions_Manager::get_subscription_key( $order->id, $product_id ), $order->user_id, $type );
+		return self::get_first_payment_date( $next_payment_date, WC_Subscriptions_Manager::get_subscription_key( wcs_get_objects_property( $order, 'id' ), $product_id ), $order->get_user_id(), $type );
 	}
 
 	/**

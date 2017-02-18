@@ -50,7 +50,7 @@ class WCS_Download_Handler {
 	 */
 	public static function maybe_revoke_immediate_access( $grant_access, $download_id, $product_id, $order ) {
 
-		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_drip_downloadable_content_on_renewal', 'no' ) && ( wcs_is_subscription( $order->id ) || wcs_order_contains_subscription( $order, 'any' ) ) ) {
+		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_drip_downloadable_content_on_renewal', 'no' ) && ( wcs_is_subscription( wcs_get_objects_property( $order, 'id' ) ) || wcs_order_contains_subscription( $order, 'any' ) ) ) {
 			$grant_access = false;
 		}
 		return $grant_access;

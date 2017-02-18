@@ -30,7 +30,7 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal{
 	public function get_checkout_payment_url( $pay_url, $order ) {
 
 		if ( wcs_order_contains_switch( $order ) ) {
-			$switch_order_data = get_post_meta( $order->id, '_subscription_switch_data', true );
+			$switch_order_data = wcs_get_objects_property( $order, 'subscription_switch_data' );
 
 			if ( ! empty( $switch_order_data ) ) {
 				$pay_url = add_query_arg( array(
@@ -61,10 +61,10 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal{
 			$order_id  = ( isset( $wp->query_vars['order-pay'] ) ) ? $wp->query_vars['order-pay'] : absint( $_GET['order_id'] );
 			$order     = wc_get_order( $wp->query_vars['order-pay'] );
 
-			if ( $order->order_key == $order_key && $order->has_status( array( 'pending', 'failed' ) ) && wcs_order_contains_switch( $order ) ) {
+			if ( wcs_get_objects_property( $order, 'order_key' ) == $order_key && $order->has_status( array( 'pending', 'failed' ) ) && wcs_order_contains_switch( $order ) ) {
 				WC()->cart->empty_cart( true );
 
-				$switch_order_data = get_post_meta( $order_id, '_subscription_switch_data', true );
+				$switch_order_data = wcs_get_objects_property( $order, 'subscription_switch_data' );
 
 				foreach ( $order->get_items() as $item_id => $line_item ) {
 

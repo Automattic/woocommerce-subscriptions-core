@@ -330,7 +330,7 @@ class WCS_PayPal {
 	public static function process_subscription_payment( $amount, $order ) {
 
 		// If the subscription is using reference transactions, we can process the payment ourselves
-		$paypal_profile_id = wcs_get_paypal_id( $order->id );
+		$paypal_profile_id = wcs_get_paypal_id( wcs_get_objects_property( $order, 'id' ) );
 
 		if ( wcs_is_paypal_profile_a( $paypal_profile_id, 'billing_agreement' ) ) {
 
@@ -414,7 +414,7 @@ class WCS_PayPal {
 		);
 
 		foreach ( $post_meta_keys as $post_meta_key ) {
-			delete_post_meta( $resubscribe_order->id, $post_meta_key );
+			delete_post_meta( wcs_get_objects_property( $resubscribe_order, 'id' ), $post_meta_key );
 		}
 
 		return $resubscribe_order;

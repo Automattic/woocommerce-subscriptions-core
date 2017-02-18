@@ -168,10 +168,10 @@ class WCS_Filter_Deprecator extends WCS_Hook_Deprecator {
 
 				// Old arg spec: $order_items, $original_order_id, $renewal_order_id, $product_id, $new_order_role
 				if ( 'woocommerce_subscriptions_renewal_order_items' == $old_hook ) {
-					$return_value = apply_filters( $old_hook, $return_value, $original_id, $renewal_order->id, self::get_product_id( $subscription ), $order_role );
+					$return_value = apply_filters( $old_hook, $return_value, $original_id, wcs_get_objects_property( $renewal_order, 'id' ), self::get_product_id( $subscription ), $order_role );
 				} else {
 					// Old arg spec: $order_meta_query, $original_order_id, $renewal_order_id, $new_order_role
-					$return_value = apply_filters( $old_hook, $return_value, $original_id, $renewal_order->id, $order_role );
+					$return_value = apply_filters( $old_hook, $return_value, $original_id, wcs_get_objects_property( $renewal_order, 'id' ), $order_role );
 				}
 
 				break;
@@ -202,7 +202,7 @@ class WCS_Filter_Deprecator extends WCS_Hook_Deprecator {
 				$renewal_order_id = apply_filters( $old_hook, $return_value->id, self::get_order( $subscription ), self::get_product_id( $subscription ), $order_role );
 
 				// Only change the return value if a new filter was returned by the hook
-				if ( $renewal_order_id !== $renewal_order->id ) {
+				if ( wcs_get_objects_property( $renewal_order, 'id' ) !== $renewal_order_id ) {
 					$return_value = wc_get_order( $renewal_order_id );
 				}
 				break;

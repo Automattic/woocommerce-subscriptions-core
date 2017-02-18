@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 function wcs_get_paypal_id( $order_id ) {
 
 	if ( is_object( $order_id ) ) {
-		$order_id = $order_id->id;
+		$order_id = wcs_get_objects_property( $order_id, 'id' );
 	}
 
 	return get_post_meta( $order_id, '_paypal_subscription_id', true );
@@ -48,7 +48,7 @@ function wcs_set_paypal_id( $order, $paypal_subscription_id ) {
 		}
 	}
 
-	return update_post_meta( $order->id, '_paypal_subscription_id', $paypal_subscription_id );
+	return update_post_meta( wcs_get_objects_property( $order, 'id' ), '_paypal_subscription_id', $paypal_subscription_id );
 }
 
 /**

@@ -206,7 +206,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 			'return_fraud_filters' => 1,
 			'notify_url'           => WC()->api_request_url( 'WC_Gateway_Paypal' ),
 			'invoice_number'       => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) ),
-			'custom'               => wcs_json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key ) ),
+			'custom'               => wcs_json_encode( array( 'order_id' => wcs_get_objects_property( $order, 'id' ), 'order_key' => wcs_get_objects_property( $order, 'order_key' ) ) ),
 		);
 
 		$args = wp_parse_args( $args, $defaults );
@@ -310,24 +310,24 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 			if ( $use_deprecated_params ) {
 				$this->add_parameters( array(
 					'AMT'              => $total_amount,
-					'CURRENCYCODE'     => $order->get_order_currency(),
+					'CURRENCYCODE'     => wcs_get_objects_property( $order, 'currency' ),
 					'ITEMAMT'          => $this->round( $order_subtotal + $order->get_cart_tax() ),
 					'SHIPPINGAMT'      => $this->round( $order->get_total_shipping() + $order->get_shipping_tax() ),
 					'INVNUM'           => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) ),
 					'PAYMENTACTION'    => $type,
-					'PAYMENTREQUESTID' => $order->id,
-					'CUSTOM'           => json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key ) ),
+					'PAYMENTREQUESTID' => wcs_get_objects_property( $order, 'id' ),
+					'CUSTOM'           => json_encode( array( 'order_id' => wcs_get_objects_property( $order, 'id' ), 'order_key' => wcs_get_objects_property( $order, 'order_key' ) ) ),
 				) );
 			} else {
 				$this->add_payment_parameters( array(
 					'AMT'              => $total_amount,
-					'CURRENCYCODE'     => $order->get_order_currency(),
+					'CURRENCYCODE'     => wcs_get_objects_property( $order, 'currency' ),
 					'ITEMAMT'          => $this->round( $order_subtotal + $order->get_cart_tax() ),
 					'SHIPPINGAMT'      => $this->round( $order->get_total_shipping() + $order->get_shipping_tax() ),
 					'INVNUM'           => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) ),
 					'PAYMENTACTION'    => $type,
-					'PAYMENTREQUESTID' => $order->id,
-					'CUSTOM'           => json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key ) ),
+					'PAYMENTREQUESTID' => wcs_get_objects_property( $order, 'id' ),
+					'CUSTOM'           => json_encode( array( 'order_id' => wcs_get_objects_property( $order, 'id' ), 'order_key' => wcs_get_objects_property( $order, 'order_key' ) ) ),
 				) );
 			}
 		} else {
@@ -348,26 +348,26 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 			if ( $use_deprecated_params ) {
 				$this->add_parameters( array(
 					'AMT'              => $total_amount,
-					'CURRENCYCODE'     => $order->get_order_currency(),
+					'CURRENCYCODE'     => wcs_get_objects_property( $order, 'currency' ),
 					'ITEMAMT'          => $this->round( $order_subtotal ),
 					'SHIPPINGAMT'      => $this->round( $order->get_total_shipping() ),
 					'TAXAMT'           => $this->round( $order->get_total_tax() ),
 					'INVNUM'           => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) ),
 					'PAYMENTACTION'    => $type,
-					'PAYMENTREQUESTID' => $order->id,
-					'CUSTOM'           => json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key ) ),
+					'PAYMENTREQUESTID' => wcs_get_objects_property( $order, 'id' ),
+					'CUSTOM'           => json_encode( array( 'order_id' => wcs_get_objects_property( $order, 'id' ), 'order_key' => wcs_get_objects_property( $order, 'order_key' ) ) ),
 				) );
 			} else {
 				$this->add_payment_parameters( array(
 					'AMT'              => $total_amount,
-					'CURRENCYCODE'     => $order->get_order_currency(),
+					'CURRENCYCODE'     => wcs_get_objects_property( $order, 'currency' ),
 					'ITEMAMT'          => $this->round( $order_subtotal ),
 					'SHIPPINGAMT'      => $this->round( $order->get_total_shipping() ),
 					'TAXAMT'           => $this->round( $order->get_total_tax() ),
 					'INVNUM'           => WCS_PayPal::get_option( 'invoice_prefix' ) . wcs_str_to_ascii( ltrim( $order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) ),
 					'PAYMENTACTION'    => $type,
-					'PAYMENTREQUESTID' => $order->id,
-					'CUSTOM'           => json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key ) ),
+					'PAYMENTREQUESTID' => wcs_get_objects_property( $order, 'id' ),
+					'CUSTOM'           => json_encode( array( 'order_id' => wcs_get_objects_property( $order, 'id' ), 'order_key' => wcs_get_objects_property( $order, 'order_key' ) ) ),
 				) );
 			}
 
@@ -630,11 +630,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 	 */
 	private function skip_line_items( $order = null ) {
 
-		if ( isset( $order->prices_include_tax ) ) {
-			$skip_line_items = $order->prices_include_tax;
-		} else {
-			$skip_line_items = wc_prices_include_tax();
-		}
+		$skip_line_items = wcs_get_objects_property( $order, 'prices_include_tax' );
 
 		/**
 		 * Filter whether line items should be skipped or not

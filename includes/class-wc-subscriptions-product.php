@@ -725,9 +725,9 @@ class WC_Subscriptions_Product {
 			$post_id = $args[2];
 			$product = wc_get_product( $post_id );
 
-			if ( false !== $product && 'trash' == $product->post->post_status && $product->is_type( array( 'subscription', 'variable-subscription', 'subscription_variation' ) ) ) {
+			if ( false !== $product && 'trash' == wcs_get_objects_property( $product, 'post_status' ) && $product->is_type( array( 'subscription', 'variable-subscription', 'subscription_variation' ) ) ) {
 
-				$product_id = ( $product->is_type( 'subscription_variation' ) ) ? $product->post->ID : $post_id;
+				$product_id = ( $product->is_type( 'subscription_variation' ) ) ? wcs_get_objects_property( $product, 'parent_id' ) : $post_id;
 
 				$subscription_count = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$wpdb->prefix}woocommerce_order_itemmeta` WHERE `meta_key` = '_product_id' AND `meta_value` = %d", $product_id ) );
 
@@ -1015,7 +1015,7 @@ class WC_Subscriptions_Product {
 						if ( $item['product_id'] == $product_id || $item['variation_id'] == $product_id ) {
 
 							$subscriptions = wcs_get_subscriptions( array(
-								'order_id'   => $order->id,
+								'order_id'   => wcs_get_objects_property( $order, 'id' ),
 								'product_id' => $product_id,
 							) );
 

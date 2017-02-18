@@ -60,7 +60,7 @@ class WC_Subscriptions_Checkout {
 		$subscriptions = array();
 
 		// First clear out any subscriptions created for a failed payment to give us a clean slate for creating new subscriptions
-		$subscriptions = wcs_get_subscriptions_for_order( $order->id, array( 'order_type' => 'parent' ) );
+		$subscriptions = wcs_get_subscriptions_for_order( wcs_get_objects_property( $order, 'id' ), array( 'order_type' => 'parent' ) );
 
 		if ( ! empty( $subscriptions ) ) {
 			remove_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
@@ -108,16 +108,15 @@ class WC_Subscriptions_Checkout {
 			$variation_id = wcs_cart_pluck( $cart, 'variation_id' );
 			$product_id   = empty( $variation_id ) ? wcs_cart_pluck( $cart, 'product_id' ) : $variation_id;
 
-			// We need to use the $order->order_date value because the post_date_gmt isn't always set
-			$order_date_gmt = get_gmt_from_date( $order->order_date );
+			$order_date_gmt = wcs_get_objects_property( $order, 'date' );
 
 			$subscription = wcs_create_subscription( array(
 				'start_date'       => $cart->start_date,
-				'order_id'         => $order->id,
+				'order_id'         => wcs_get_objects_property( $order, 'id' ),
 				'customer_id'      => $order->get_user_id(),
 				'billing_period'   => wcs_cart_pluck( $cart, 'subscription_period' ),
 				'billing_interval' => wcs_cart_pluck( $cart, 'subscription_period_interval' ),
-				'customer_note'    => $order->customer_note,
+				'customer_note'    => wcs_get_objects_property( $order, 'customer_note' ),
 			) );
 
 			if ( is_wp_error( $subscription ) ) {
@@ -139,15 +138,16 @@ class WC_Subscriptions_Checkout {
 			}
 
 			// Set the payment method on the subscription
-			$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
+			$available_gateways   = WC()->payment_gateways->get_available_payment_gateways();
+			$order_payment_method = wcs_get_objects_property( $order, 'payment_method' );
 
-			if ( $cart->needs_payment() && isset( $available_gateways[ $order->payment_method ] ) ) {
-				$subscription->set_payment_method( $available_gateways[ $order->payment_method ] );
+			if ( $cart->needs_payment() && isset( $available_gateways[ $order_payment_method ] ) ) {
+				$subscription->set_payment_method( $available_gateways[ $order_payment_method ] );
 			}
 
 			if ( ! $cart->needs_payment() || 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
 				$subscription->set_requires_manual_renewal( true );
-			} elseif ( ! isset( $available_gateways[ $order->payment_method ] ) || ! $available_gateways[ $order->payment_method ]->supports( 'subscriptions' ) ) {
+			} elseif ( ! isset( $available_gateways[ $order_payment_method ] ) || ! $available_gateways[ $order_payment_method ]->supports( 'subscriptions' ) ) {
 				$subscription->set_requires_manual_renewal( true );
 			}
 

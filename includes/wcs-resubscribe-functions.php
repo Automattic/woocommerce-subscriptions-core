@@ -26,7 +26,7 @@ function wcs_order_contains_resubscribe( $order ) {
 		$order = new WC_Order( $order );
 	}
 
-	if ( '' !== get_post_meta( $order->id, '_subscription_resubscribe', true ) ) {
+	if ( '' !== wcs_get_objects_property( $order, 'subscription_resubscribe' ) ) {
 		$is_resubscribe_order = true;
 	} else {
 		$is_resubscribe_order = false;
@@ -143,7 +143,7 @@ function wcs_get_subscriptions_for_resubscribe_order( $order ) {
 	}
 
 	$subscriptions    = array();
-	$subscription_ids = get_post_meta( $order->id, '_subscription_resubscribe', false );
+	$subscription_ids = wcs_get_objects_property( $order, 'subscription_resubscribe', 'multiple' );
 
 	foreach ( $subscription_ids as $subscription_id ) {
 		if ( wcs_is_subscription( $subscription_id ) ) {

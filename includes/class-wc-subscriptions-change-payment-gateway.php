@@ -449,7 +449,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			if ( ! empty( $_POST['_wcsnonce'] ) && wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_change_payment_method' ) && isset( $_POST['payment_method'] ) ) {
 				$new_payment_method = wc_clean( $_POST['payment_method'] );
 			} else {
-				$new_payment_method = $renewal_order->payment_method;
+				$new_payment_method = wcs_get_objects_property( $renewal_order, 'payment_method' );
 			}
 
 			self::update_payment_method( $subscription, $new_payment_method );

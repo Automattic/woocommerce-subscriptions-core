@@ -51,7 +51,7 @@ class WCS_Email_Customer_Payment_Retry extends WCS_Email_Customer_Renewal_Invoic
 	 */
 	function trigger( $order ) {
 
-		$this->retry = WCS_Retry_Manager::store()->get_last_retry_for_order( $order->id );
+		$this->retry = WCS_Retry_Manager::store()->get_last_retry_for_order( wcs_get_objects_property( $order, 'id' ) );
 
 		$retry_time_index = array_search( '{retry_time}', $this->find );
 		if ( false === $retry_time_index ) {

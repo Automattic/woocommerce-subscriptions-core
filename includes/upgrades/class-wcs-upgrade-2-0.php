@@ -82,10 +82,10 @@ class WCS_Upgrade_2_0 {
 					'order_id'         => $old_subscription['order_id'],
 					'customer_id'      => $old_subscription['user_id'],
 					'start_date'       => $old_subscription['start_date'],
-					'customer_note'    => ( ! empty( $original_order->customer_note ) ) ? $original_order->customer_note : '',
+					'customer_note'    => ( '' !== wcs_get_objects_property( $original_order, 'customer_note' ) ) ? wcs_get_objects_property( $original_order, 'customer_note' ) : '',
 					'billing_period'   => $old_subscription['period'],
 					'billing_interval' => $old_subscription['interval'],
-					'order_version'    => ( ! empty( $original_order->order_version ) ) ? $original_order->order_version : '', // Subscriptions will default to WC_Version if $original_order->order_version is not set, but we want the version set at the time of the order
+					'order_version'    => ( '' !== wcs_get_objects_property( $original_order, 'version' ) ) ? wcs_get_objects_property( $original_order, 'version' ) : '',  // Subscriptions will default to WC_Version if order's version is not set, but we want the version set at the time of the order
 				) );
 
 				if ( ! is_wp_error( $new_subscription ) ) {
@@ -110,16 +110,16 @@ class WCS_Upgrade_2_0 {
 					self::migrate_post_meta( $new_subscription->get_id(), $original_order );
 
 					// Copy over order notes which are now logged on the subscription
-					self::migrate_order_notes( $new_subscription->get_id(), $original_order->id );
+					self::migrate_order_notes( $new_subscription->get_id(), wcs_get_objects_property( $original_order, 'id' ) );
 
 					// Migrate recurring tax, shipping and coupon line items to be plain line items on the subscription
-					self::migrate_order_items( $new_subscription->get_id(), $original_order->id );
+					self::migrate_order_items( $new_subscription->get_id(), wcs_get_objects_property( $original_order, 'id' ) );
 
 					// Update renewal orders to link via post meta key instead of post_parent column
-					self::migrate_renewal_orders( $new_subscription->get_id(), $original_order->id );
+					self::migrate_renewal_orders( $new_subscription->get_id(), wcs_get_objects_property( $original_order, 'id' ) );
 
 					// Make sure the resubscribe meta data is migrated to use the new subscription ID + meta key
-					self::migrate_resubscribe_orders( $new_subscription->get_id(), $original_order->id );
+					self::migrate_resubscribe_orders( $new_subscription->get_id(), wcs_get_objects_property( $original_order, 'id' ) );
 
 					// If the order for this subscription contains a switch, make sure the switch meta data is migrated to use the new subscription ID + meta key
 					self::migrate_switch_meta( $new_subscription, $original_order, $subscription_item_id );
@@ -440,8 +440,8 @@ class WCS_Upgrade_2_0 {
 				'order_key' => $subscription->get_order_key(),
 			),
 			array(
-				'order_id'   => $order->id,
-				'order_key'  => $order->order_key,
+				'order_id'   => wcs_get_objects_property( $order, 'id' ),
+				'order_key'  => wcs_get_objects_property( $order, 'order_key' ),
 				'product_id' => $product_id,
 				'user_id'    => absint( $subscription->get_user_id() ),
 			),
@@ -585,11 +585,11 @@ class WCS_Upgrade_2_0 {
 			'_paypal_subscription_id'       => 'PayPal Subscriber ID',
 		);
 
-		$order_meta = get_post_meta( $order->id );
+		$order_meta = get_post_meta( wcs_get_objects_property( $order, 'id' ) );
 
 		foreach ( $post_meta_with_new_key as $subscription_meta_key => $order_meta_key ) {
 
-			$order_meta_value = get_post_meta( $order->id, $order_meta_key, true );
+			$order_meta_value = get_post_meta( wcs_get_objects_property( $order, 'id' ), $order_meta_key, true );
 
 			if ( isset( $order_meta[ $order_meta_key ] ) && '' !== $order_meta[ $order_meta_key ] ) {
 				update_post_meta( $subscription_id, $subscription_meta_key, $order_meta_value );
@@ -647,7 +647,7 @@ class WCS_Upgrade_2_0 {
 		}
 
 		// Now that we've copied over the old data, deprecate it
-		$rows_affected = self::deprecate_post_meta( $order->id );
+		$rows_affected = self::deprecate_post_meta( wcs_get_objects_property( $order, 'id' ) );
 
 		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: %d rows of post meta deprecated', $subscription_id, $rows_affected ) );
 	}
@@ -777,7 +777,7 @@ class WCS_Upgrade_2_0 {
 
 		// Set the post meta
 		foreach ( $renewal_order_ids as $renewal_order_id ) {
-			update_post_meta( $renewal_order_id, '_subscription_renewal', $subscription_id );
+			wcs_set_objects_property( wc_get_order( $renewal_order_id ), 'subscription_renewal', $subscription_id );
 		}
 
 		WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: migrated data for renewal orders %s', $subscription_id, implode( ', ', $renewal_order_ids ) ) );
@@ -851,14 +851,14 @@ class WCS_Upgrade_2_0 {
 		global $wpdb;
 
 		// If the order doesn't contain a switch, we don't need to do anything
-		if ( '' == get_post_meta( $switch_order->id, '_switched_subscription_key', true ) ) {
+		if ( '' == get_post_meta( wcs_get_objects_property( $switch_order, 'id' ), '_switched_subscription_key', true ) ) {
 			return;
 		}
 
 		$wpdb->query( $wpdb->prepare(
 			"UPDATE {$wpdb->postmeta} SET `meta_key` = concat( '_wcs_migrated', `meta_key` )
 			WHERE `post_id` = %d AND `meta_key` IN ('_switched_subscription_first_payment_timestamp','_switched_subscription_key')",
-			$switch_order->id
+			wcs_get_objects_property( $switch_order, 'id' )
 		) );
 
 		// Select the orders which had the items which were switched by this order
@@ -870,7 +870,7 @@ class WCS_Upgrade_2_0 {
 			'meta_query' => array(
 				array(
 					'key'   => '_switched_subscription_new_order',
-					'value' => $switch_order->id,
+					'value' => wcs_get_objects_property( $switch_order, 'id' ),
 				),
 			),
 		) );

@@ -171,7 +171,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			$renewal_order = wc_get_order( substr( $transaction_details['invoice'], strrpos( $transaction_details['invoice'], '-' ) + 1 ) );
 
 			// check if the failed signup has been previously recorded
-			if ( $renewal_order->id != get_post_meta( $subscription->get_id(), '_paypal_failed_sign_up_recorded', true ) ) {
+			if ( wcs_get_objects_property( $renewal_order, 'id' ) != get_post_meta( $subscription->get_id(), '_paypal_failed_sign_up_recorded', true ) ) {
 				$is_renewal_sign_up_after_failure = true;
 			}
 		}
@@ -326,7 +326,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 						if ( true === $is_renewal_sign_up_after_failure && is_object( $renewal_order ) ) {
 
-							update_post_meta( $subscription->get_id(), '_paypal_failed_sign_up_recorded', $renewal_order->id );
+							update_post_meta( $subscription->get_id(), '_paypal_failed_sign_up_recorded', wcs_get_objects_property( $renewal_order, 'id' ) );
 
 							// We need to cancel the old subscription now that the method has been changed successfully
 							if ( 'paypal' == get_post_meta( $subscription->get_id(), '_old_payment_method', true ) ) {
@@ -390,7 +390,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 					if ( ! $is_first_payment ) {
 
-						update_post_meta( $renewal_order->id, '_transaction_id', $transaction_details['txn_id'] );
+						update_post_meta( wcs_get_objects_property( $renewal_order, 'id' ), '_transaction_id', $transaction_details['txn_id'] );
 
 						if ( 'failed' == strtolower( $transaction_details['payment_status'] ) ) {
 							$subscription->payment_failed();

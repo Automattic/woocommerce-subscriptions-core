@@ -216,7 +216,7 @@ class WCS_Limiter {
 						if ( $item['product_id'] == $product_id || $item['variation_id'] == $product_id ) {
 
 							$subscriptions = wcs_get_subscriptions( array(
-								'order_id'   => $order->id,
+								'order_id'   => wcs_get_objects_property( $order, 'id' ),
 								'product_id' => $product_id,
 							) );
 

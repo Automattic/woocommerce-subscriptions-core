@@ -153,7 +153,7 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 		) );
 
 		foreach ( $paid_renewal_order_ids as $paid_renewal_order_id ) {
-			$completed_payments[] = get_post_field( 'post_date_gmt', $paid_renewal_order_id );
+			$completed_payments[] = wcs_get_objects_property( wc_get_order( $paid_renewal_order_id ), 'date_created' );
 		}
 	}
 

@@ -114,7 +114,7 @@ class WC_Subscriptions_Manager {
 			} else {
 
 				if ( $subscription->is_manual() ) {
-					do_action( 'woocommerce_generated_manual_renewal_order', $renewal_order->id );
+					do_action( 'woocommerce_generated_manual_renewal_order', wcs_get_objects_property( $renewal_order, 'id' ) );
 				} else {
 					$renewal_order->set_payment_method( wc_get_payment_gateway_by_order( $subscription ) ); // We need to pass the payment gateway instance to be compatible with WC < 2.7, only WC 2.7+ supports passing the string name
 				}
@@ -426,7 +426,7 @@ class WC_Subscriptions_Manager {
 		}
 
 		$args = wp_parse_args( $args, array(
-			'start_date'  => get_gmt_from_date( $order->order_date ),
+			'start_date'  => wcs_get_objects_property( $order, 'date' ),
 			'expiry_date' => '',
 		) );
 
@@ -439,7 +439,7 @@ class WC_Subscriptions_Manager {
 		$product = wc_get_product( $product_id );
 
 		// Check if there is already a subscription for this product and order
-		$subscriptions = wcs_get_subscriptions( array( 'order_id' => $order->id, 'product_id' => $product_id ) );
+		$subscriptions = wcs_get_subscriptions( array( 'order_id' => wcs_get_objects_property( $order, 'id' ), 'product_id' => $product_id ) );
 
 		if ( ! empty( $subscriptions ) ) {
 
@@ -456,11 +456,11 @@ class WC_Subscriptions_Manager {
 
 			$subscription = wcs_create_subscription( array(
 				'start_date'       => get_date_from_gmt( $args['start_date'] ),
-				'order_id'         => $order->id,
+				'order_id'         => wcs_get_objects_property( $order, 'id' ),
 				'customer_id'      => $order->get_user_id(),
 				'billing_period'   => $billing_period,
 				'billing_interval' => $billing_interval,
-				'customer_note'    => $order->customer_note,
+				'customer_note'    => wcs_get_objects_property( $order, 'customer_note' ),
 			) );
 
 			if ( is_wp_error( $subscription ) ) {
@@ -488,8 +488,13 @@ class WC_Subscriptions_Manager {
 		}
 
 		// Make sure some of the meta is copied form the order rather than the store's defaults
-		update_post_meta( $subscription->get_id(), '_order_currency', $order->order_currency );
-		update_post_meta( $subscription->get_id(), '_prices_include_tax', $order->prices_include_tax );
+		if ( wcs_get_objects_property( $order, 'prices_include_tax' ) ) {
+			$prices_include_tax = 'yes';
+		} else {
+			$prices_include_tax = 'no';
+		}
+		update_post_meta( $subscription->get_id(), '_order_currency', wcs_get_objects_property( $order, 'currency' ) );
+		update_post_meta( $subscription->get_id(), '_prices_include_tax', $prices_include_tax );
 
 		// Adding a new subscription so set the expiry date/time from the order date
 		if ( ! empty( $args['expiry_date'] ) ) {
@@ -562,7 +567,7 @@ class WC_Subscriptions_Manager {
 			_deprecated_argument( __METHOD__, '1.2', 'The "suspend" status value is deprecated. Use "on-hold"' );
 		}
 
-		foreach ( wcs_get_subscriptions_for_order( $order->id, array( 'order_type' => 'parent' ) ) as $subscription_id => $subscription ) {
+		foreach ( wcs_get_subscriptions_for_order( wcs_get_objects_property( $order, 'id' ), array( 'order_type' => 'parent' ) ) as $subscription_id => $subscription ) {
 
 			switch ( $status ) {
 				case 'cancelled' :

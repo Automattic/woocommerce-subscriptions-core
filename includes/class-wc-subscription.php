@@ -792,7 +792,7 @@ class WC_Subscription extends WC_Order {
 		} else {
 			switch ( $date_type ) {
 				case 'start' :
-					$date = ( '0000-00-00 00:00:00' != $this->post->post_date_gmt ) ? $this->post->post_date_gmt : get_gmt_from_date( $this->post->post_date ); // why not always use post_date_gmt? Because when a post is first created via the Add Subscription screen, it has a post_date but not a post_date_gmt value yet
+					$date = wcs_get_objects_property( $this, 'date_created' );
 					break;
 				case 'last_payment' :
 					$date = $this->get_last_payment_date();
@@ -1140,7 +1140,7 @@ class WC_Subscription extends WC_Order {
 			return 0;
 		}
 
-		return $last_order->post->post_date_gmt;
+		return wcs_get_objects_property( $last_order, 'date_paid' );
 	}
 
 	/**

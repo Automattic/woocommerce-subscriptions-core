@@ -33,7 +33,7 @@ class WCS_PayPal_Standard_Request {
 		// Payment method changes act on the subscription not the original order
 		if ( $is_payment_change ) {
 
-			$subscriptions = array( wcs_get_subscription( $order->id ) );
+			$subscriptions = array( wcs_get_subscription( wcs_get_objects_property( $order, 'id' ) ) );
 			$subscription  = array_pop( $subscriptions );
 			$order         = $subscription->get_parent();
 
@@ -43,7 +43,7 @@ class WCS_PayPal_Standard_Request {
 		} else {
 
 			// Otherwise the order is the $order
-			if ( $cart_item = wcs_cart_contains_failed_renewal_order_payment() || false !== WC_Subscriptions_Renewal_Order::get_failed_order_replaced_by( $order->id ) ) {
+			if ( $cart_item = wcs_cart_contains_failed_renewal_order_payment() || false !== WC_Subscriptions_Renewal_Order::get_failed_order_replaced_by( wcs_get_objects_property( $order, 'id' ) ) ) {
 				$subscriptions                 = wcs_get_subscriptions_for_renewal_order( $order );
 				$order_contains_failed_renewal = true;
 			} else {
@@ -60,7 +60,7 @@ class WCS_PayPal_Standard_Request {
 			$paypal_args['cmd'] = '_xclick-subscriptions';
 
 			// Store the subscription ID in the args sent to PayPal so we can access them later
-			$paypal_args['custom'] = wcs_json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key, 'subscription_id' => $subscription->get_id(), 'subscription_key' => $subscription->get_order_key() ) );
+			$paypal_args['custom'] = wcs_json_encode( array( 'order_id' => wcs_get_objects_property( $order, 'id' ), 'order_key' => wcs_get_objects_property( $order, 'order_key' ), 'subscription_id' => $subscription->get_id(), 'subscription_key' => $subscription->get_order_key() ) );
 
 			foreach ( $subscription->get_items() as $item ) {
 				if ( $item['qty'] > 1 ) {
@@ -128,7 +128,7 @@ class WCS_PayPal_Standard_Request {
 					$suffix = '-wcscpm-' . wp_create_nonce();
 				} else {
 					// Failed renewal order, append a descriptor and renewal order's ID
-					$suffix = '-wcsfrp-' . $order->id;
+					$suffix = '-wcsfrp-' . wcs_get_objects_property( $order, 'id' );
 				}
 
 				// Change the 'invoice' and the 'custom' values to be for the original order (if there is one)
@@ -138,7 +138,7 @@ class WCS_PayPal_Standard_Request {
 					$order_id_key = array( 'order_id' => $subscription->get_id(), 'order_key' => $subscription->get_order_key() );
 				} else {
 					$order_number = ltrim( $subscription->get_parent()->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) );
-					$order_id_key = array( 'order_id' => $subscription->get_parent()->id, 'order_key' => $subscription->get_parent()->order_key );
+					$order_id_key = array( 'order_id' => wcs_get_objects_property( $subscription->get_parent(), 'id' ), 'order_key' => wcs_get_objects_property( $subscription->get_parent(), 'order_key' ) );
 				}
 
 				// Set the invoice details to the original order's invoice but also append a special string and this renewal orders ID so that we can match it up as a failed renewal order payment later

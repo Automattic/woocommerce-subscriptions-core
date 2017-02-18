@@ -127,13 +127,15 @@ class WCS_PayPal_Standard_Switcher {
 
 			foreach ( wcs_get_subscriptions_for_switch_order( $order_id ) as $subscription ) {
 
-				if ( 'paypal' === $subscription->get_payment_method() && $subscription->get_payment_method() !== $order->payment_method && false === wcs_is_paypal_profile_a( wcs_get_paypal_id( $subscription->get_id() ), 'billing_agreement' ) ) {
+				$order_payment_method = wcs_get_objects_property( $order, 'payment_method' );
+
+				if ( 'paypal' === $subscription->get_payment_method() && $subscription->get_payment_method() !== $order_payment_method && false === wcs_is_paypal_profile_a( wcs_get_paypal_id( $subscription->get_id() ), 'billing_agreement' ) ) {
 
 					// Set the new payment method on the subscription
 					$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
 
-					if ( isset( $available_gateways[ $order->payment_method ] ) ) {
-						$subscription->set_payment_method( $available_gateways[ $order->payment_method ] );
+					if ( isset( $available_gateways[ $order_payment_method ] ) ) {
+						$subscription->set_payment_method( $available_gateways[ $order_payment_method ] );
 					}
 				}
 			}
@@ -179,13 +181,13 @@ class WCS_PayPal_Standard_Switcher {
 	 */
 	public static function cancel_paypal_standard_after_switch( $order ) {
 
-		if ( 'paypal_standard' == get_post_meta( $order->id, '_old_payment_method', true ) ) {
+		if ( 'paypal_standard' == get_post_meta( wcs_get_objects_property( $order, 'id' ), '_old_payment_method', true ) ) {
 
-			$old_profile_id = get_post_meta( $order->id, '_old_paypal_subscription_id', true );
+			$old_profile_id = get_post_meta( wcs_get_objects_property( $order, 'id' ), '_old_paypal_subscription_id', true );
 
 			if ( ! empty( $old_profile_id ) ) {
 
-				$subscriptions = wcs_get_subscriptions_for_order( $order->id, array( 'order_type' => 'switch' ) );
+				$subscriptions = wcs_get_subscriptions_for_order( wcs_get_objects_property( $order, 'id' ), array( 'order_type' => 'switch' ) );
 
 				foreach ( $subscriptions as $subscription ) {
 

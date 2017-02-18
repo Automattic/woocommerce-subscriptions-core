@@ -30,7 +30,7 @@ function wcs_order_contains_switch( $order ) {
 
 	} else {
 
-		$subscription_ids = get_post_meta( $order->id, '_subscription_switch', false );
+		$subscription_ids = wcs_get_objects_property( $order, 'subscription_switch', 'multiple' );
 
 		if ( ! empty( $subscription_ids ) ) {
 			$is_switch_order = true;
@@ -49,14 +49,14 @@ function wcs_order_contains_switch( $order ) {
  * @return array Subscription details in post_id => WC_Subscription form.
  * @since  2.0
  */
-function wcs_get_subscriptions_for_switch_order( $order_id ) {
+function wcs_get_subscriptions_for_switch_order( $order ) {
 
-	if ( is_object( $order_id ) ) {
-		$order_id = $order_id->id;
+	if ( ! is_object( $order ) ) {
+		$order = wc_get_order( $order );
 	}
 
 	$subscriptions    = array();
-	$subscription_ids = get_post_meta( $order_id, '_subscription_switch', false );
+	$subscription_ids = wcs_get_objects_property( $order, 'subscription_switch', 'multiple' );
 
 	foreach ( $subscription_ids as $subscription_id ) {
 		$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );

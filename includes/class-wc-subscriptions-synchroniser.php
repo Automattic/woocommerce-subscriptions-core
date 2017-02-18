@@ -1158,12 +1158,12 @@ class WC_Subscriptions_Synchroniser {
 
 		$subscription = wcs_get_subscription_from_key( $order . '_' . $product_id );
 
-		if ( self::order_contains_synced_subscription( $order->id ) && 1 >= $subscription->get_completed_payment_count() ) {
+		if ( self::order_contains_synced_subscription( wcs_get_objects_property( $order, 'id' ) ) && 1 >= $subscription->get_completed_payment_count() ) {
 
 			// Don't prematurely set the first payment date when manually adding a subscription from the admin
 			if ( ! is_admin() || 'active' == $subscription->get_status() ) {
 
-				$first_payment_timestamp = self::calculate_first_payment_date( $product_id, 'timestamp', $order->order_date );
+				$first_payment_timestamp = self::calculate_first_payment_date( $product_id, 'timestamp', wcs_get_objects_property( $order, 'date' ) );
 
 				if ( 0 != $first_payment_timestamp ) {
 					$first_payment_date = ( 'mysql' == $type ) ? gmdate( 'Y-m-d H:i:s', $first_payment_timestamp ) : $first_payment_timestamp;
@@ -1209,7 +1209,7 @@ class WC_Subscriptions_Synchroniser {
 		_deprecated_function( __METHOD__, '2.0', __CLASS__ . '::subscription_contains_synced_product()' );
 
 		if ( is_object( $order_id ) ) {
-			$order_id = $order_id->id;
+			$order_id = wcs_get_objects_property( $order_id, 'id' );
 		}
 
 		return ( 'true' == get_post_meta( $order_id, '_order_contains_synced_subscription', true ) ) ? true : false;
@@ -1261,7 +1261,7 @@ class WC_Subscriptions_Synchroniser {
 	public static function get_sign_up_fee( $sign_up_fee, $order, $product_id, $non_subscription_total ) {
 		_deprecated_function( __METHOD__, '2.0', __CLASS__ . '::get_synced_sign_up_fee' );
 
-		if ( 'shop_order' == get_post_type( $order ) && self::order_contains_synced_subscription( $order->id ) && WC_Subscriptions_Order::get_subscription_trial_length( $order ) < 1 ) {
+		if ( 'shop_order' == get_post_type( $order ) && self::order_contains_synced_subscription( wcs_get_objects_property( $order, 'id' ) ) && WC_Subscriptions_Order::get_subscription_trial_length( $order ) < 1 ) {
 			$sign_up_fee = max( WC_Subscriptions_Order::get_total_initial_payment( $order ) - $non_subscription_total, 0 );
 		}
 

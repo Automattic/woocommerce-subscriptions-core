@@ -49,7 +49,7 @@ function wcs_order_contains_renewal( $order ) {
 		$order = wc_get_order( $order );
 	}
 
-	if ( 'simple' == $order->order_type && isset( $order->subscription_renewal ) && $order->subscription_renewal > 0 ) { // It's a parent order or original order
+	if ( 'simple' == $order->order_type && '' !== wcs_get_objects_property( $order, 'subscription_renewal' ) ) {
 		$is_renewal = true;
 	} else {
 		$is_renewal = false;
@@ -119,7 +119,7 @@ function wcs_get_subscriptions_for_renewal_order( $order ) {
 
 	// Only use the order if we actually found a valid order object
 	if ( is_object( $order ) ) {
-		$subscription_ids = get_post_meta( $order->id, '_subscription_renewal', false );
+		$subscription_ids = wcs_get_objects_property( $order, 'subscription_renewal', 'multiple' );
 
 		foreach ( $subscription_ids as $subscription_id ) {
 			if ( wcs_is_subscription( $subscription_id ) ) {

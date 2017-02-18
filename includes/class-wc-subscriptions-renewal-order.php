@@ -138,7 +138,7 @@ class WC_Subscriptions_Renewal_Order {
 			$order_number = sprintf( _x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), $renewal_order->get_order_number() );
 
 			// translators: placeholder is order ID
-			$subscription->add_order_note( sprintf( __( 'Order %s created to record renewal.', 'woocommerce-subscriptions' ), sprintf( '<a href="%s">%s</a> ', esc_url( wcs_get_edit_post_link( $renewal_order->id ) ), $order_number ) ) );
+			$subscription->add_order_note( sprintf( __( 'Order %s created to record renewal.', 'woocommerce-subscriptions' ), sprintf( '<a href="%s">%s</a> ', esc_url( wcs_get_edit_post_link( wcs_get_objects_property( $renewal_order, 'id' ) ) ), $order_number ) ) );
 		}
 
 		return $renewal_order;
@@ -210,7 +210,7 @@ class WC_Subscriptions_Renewal_Order {
 		$subscription  = wcs_get_subscription_from_key( $subscription_key );
 		$renewal_order = wcs_create_renewal_order( $subscription );
 		$renewal_order->payment_complete();
-		return $renewal_order->id;
+		return wcs_get_objects_property( $renewal_order, 'id' );
 	}
 
 	/**
@@ -228,7 +228,7 @@ class WC_Subscriptions_Renewal_Order {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_create_renewal_order( WC_Subscription $subscription )' );
 		$renewal_order = wcs_create_renewal_order( wcs_get_subscription_from_key( $subscription_key ) );
 		$renewal_order->update_status( 'failed' );
-		return $renewal_order->id;
+		return wcs_get_objects_property( $renewal_order, 'id' );
 	}
 
 	/**
@@ -264,7 +264,7 @@ class WC_Subscriptions_Renewal_Order {
 
 		$parent_order = self::get_parent_order( $renewal_order );
 
-		return ( null === $parent_order ) ? null : $parent_order->id;
+		return ( null === $parent_order ) ? null : wcs_get_objects_property( $parent_order, 'id' );
 	}
 
 	/**
@@ -426,7 +426,7 @@ class WC_Subscriptions_Renewal_Order {
 			$new_order = wcs_create_renewal_order( $subscription );
 		}
 
-		return $new_order->id;
+		return wcs_get_objects_property( $new_order, 'id' );
 	}
 
 	/**

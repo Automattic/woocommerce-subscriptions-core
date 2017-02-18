@@ -185,7 +185,7 @@ class WC_Subscriptions_Email {
 	public static function renewal_order_emails_available( $available_emails ) {
 		global $theorder;
 
-		if ( wcs_order_contains_renewal( $theorder->id ) ) {
+		if ( wcs_order_contains_renewal( wcs_get_objects_property( $theorder, 'id' ) ) ) {
 			$available_emails = array(
 				'new_renewal_order',
 				'customer_processing_renewal_order',
