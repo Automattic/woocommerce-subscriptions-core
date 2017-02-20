@@ -246,7 +246,7 @@ class WC_Subscriptions_Renewal_Order {
 	 */
 	public static function maybe_generate_manual_renewal_order( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', __CLASS__ . '::maybe_create_manual_renewal_order( WC_Subscription $subscription )' );
-		self::maybe_create_manual_renewal_order( wcs_get_subscription_from_key( $subscription_key ) )->id;
+		self::maybe_create_manual_renewal_order( wcs_get_subscription_from_key( $subscription_key ) );
 	}
 
 	/**
