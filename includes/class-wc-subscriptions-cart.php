@@ -120,6 +120,8 @@ class WC_Subscriptions_Cart {
 
 		// WooCommerce determines if free shipping is available using the WC->cart total and coupons, we need to recalculate its availability when obtaining shipping methods for a recurring cart
 		add_filter( 'woocommerce_shipping_free_shipping_is_available', __CLASS__ . '::maybe_recalculate_shipping_method_availability', 10, 2 );
+
+		add_filter( 'woocommerce_add_to_cart_handler', __CLASS__ . '::add_to_cart_handler', 10, 2 );
 	}
 
 	/**
@@ -151,6 +153,28 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function remove_calculation_price_filter() {
 		remove_filter( 'woocommerce_get_price', __CLASS__ . '::set_subscription_prices_for_calculation', 100, 2 );
+	}
+
+	/**
+	 * Use WC core add-to-cart handlers for subscription products.
+	 *
+	 * @param string $handler The name of the handler to use when adding product to the cart
+	 * @param WC_Product $product
+	 */
+	public static function add_to_cart_handler( $handler, $product ) {
+
+		if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
+			switch ( $handler ) {
+				case 'variable-subscription' :
+					$handler = 'variable';
+					break;
+				case 'subscription' :
+					$handler = 'simple';
+					break;
+			}
+		}
+
+		return $handler;
 	}
 
 	/**
