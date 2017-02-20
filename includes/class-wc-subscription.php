@@ -92,6 +92,12 @@ class WC_Subscription extends WC_Order {
 			wcs_deprecated_function( 'WC_Subscription::$payment_gateway', '2.1.4', 'WC_Subscription::set_payment_method( $payment_gateway )' );
 
 			$this->set_payment_method( $value );
+
+		} elseif ( 'suspension_count' == $key ) {
+
+			wcs_deprecated_function( 'WC_Subscription::$suspension_count', '2.1.4', 'WC_Subscription::set_suspension_count( $suspension_count )' );
+
+			$this->set_suspension_count( $value );
 		}
 	}
 
@@ -123,6 +129,12 @@ class WC_Subscription extends WC_Order {
 			$value = $this->payment_gateway;
 
 			wc_doing_it_wrong( $key, 'Subscription properties should not be accessed directly as WooCommerce 2.7 no longer supports direct property access. Use wc_get_payment_gateway_by_order( $subscription ) instead.', '2.1.4' );
+
+		} elseif ( 'suspension_count' == $key ) {
+
+			$value = $this->get_suspension_count();
+
+			wc_doing_it_wrong( $key, 'Subscription properties should not be accessed directly as WooCommerce 2.7 no longer supports direct property access. Use WC_Subscription::get_suspension_count() instead.', '2.1.4' );
 
 		} else {
 
@@ -378,7 +390,7 @@ class WC_Subscription extends WC_Order {
 					case 'failed' : // core WC order status mapped internally to avoid exceptions
 					case 'on-hold' :
 						// Record date of suspension - 'post_modified' column?
-						$this->update_suspension_count( $this->suspension_count + 1 );
+						$this->set_suspension_count( $this->get_suspension_count() + 1 );
 						wcs_maybe_make_user_inactive( $this->get_user_id() );
 					break;
 					case 'cancelled' :
@@ -658,15 +670,12 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Update the internal tally of suspensions on this subscription since the last payment.
+	 * Get internal type.
 	 *
-	 * @return int The count of suspensions
-	 * @since 2.0
+	 * @return string
 	 */
-	public function update_suspension_count( $new_count ) {
-		$this->suspension_count = $new_count;
-		update_post_meta( $this->get_id(), '_suspension_count', $this->suspension_count );
-		return $this->suspension_count;
+	public function get_suspension_count( $context = 'view' ) {
+		return $this->get_prop( 'suspension_count', $context );
 	}
 
 	/*** Setters *****************************************************/
@@ -687,6 +696,15 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function set_billing_interval( $value ) {
 		$this->set_prop( 'billing_interval', absint( $value ) );
+	}
+
+	/**
+	 * Get internal type.
+	 *
+	 * @return string
+	 */
+	public function set_suspension_count( $value ) {
+		$this->set_prop( 'suspension_count', absint( $value ) );
 	}
 
 	/**
@@ -1281,7 +1299,7 @@ class WC_Subscription extends WC_Order {
 		}
 
 		// Reset suspension count
-		$this->update_suspension_count( 0 );
+		$this->set_suspension_count( 0 );
 
 		// Make sure subscriber has default role
 		wcs_update_users_role( $this->get_user_id(), 'default_subscriber_role' );
@@ -1955,5 +1973,17 @@ class WC_Subscription extends WC_Order {
 
 		// And update the parent in memory
 		$this->order = $order;
+	}
+
+	/**
+	 * Update the internal tally of suspensions on this subscription since the last payment.
+	 *
+	 * @return int The count of suspensions
+	 * @since 2.0
+	 */
+	public function update_suspension_count( $new_count ) {
+		wcs_deprecated_function( __METHOD__, '2.1.4', __CLASS__ . '::set_suspension_count(), because WooCommerce 2.7+ now uses setters' );
+		$this->set_suspension_count( $new_count );
+		return $this->get_suspension_count();
 	}
 }

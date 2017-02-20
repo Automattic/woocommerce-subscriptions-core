@@ -669,7 +669,7 @@ class WC_Subscriptions_Manager {
 						_deprecated_argument( __METHOD__, '2.0', 'The "completed_payments" meta value is deprecated. Create a renewal order with completed payment instead.' );
 						break;
 					case 'suspension_count' :
-						$subscription->update_suspension_count( $subscription->suspension_count + 1 );
+						$subscription->set_suspension_count( $subscription->get_suspension_count() + 1 );
 						break;
 				}
 			}

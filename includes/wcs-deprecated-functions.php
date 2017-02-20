@@ -182,7 +182,7 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 			// Payment & status change history
 			'failed_payments'    => $subscription->get_failed_payment_count(),
 			'completed_payments' => $completed_payments,
-			'suspension_count'   => $subscription->suspension_count,
+			'suspension_count'   => $subscription->get_suspension_count(),
 			'last_payment_date'  => $subscription->get_date( 'last_payment' ),
 		);
 
