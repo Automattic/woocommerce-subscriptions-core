@@ -453,9 +453,9 @@ class WC_Subscriptions_Coupon {
 	/**
 	 * Check if a product is a renewal order line item (rather than a "susbscription") - to pick up non-subsbcription products added a subscription manually
 	 *
-	 * @param  int	$product_id
-	 * @param  array  $cart_item
-	 * @param  WC_Cart  $cart The WooCommerce cart object.
+	 * @param int|WC_Product $product_id
+	 * @param array $cart_item
+	 * @param WC_Cart $cart The WooCommerce cart object.
 	 * @return boolean whether a product is a renewal order line item
 	 * @since 2.0.10
 	 */
@@ -473,7 +473,7 @@ class WC_Subscriptions_Coupon {
 		if ( ! empty( $cart_item['subscription_renewal'] ) ) {
 			if ( $subscription = wcs_get_subscription( $cart_item['subscription_renewal']['subscription_id'] ) ) {
 				foreach ( $subscription->get_items() as $item ) {
-					$item_product_id = ( $item['variation_id'] ) ? $item['variation_id'] : $item['product_id'];
+					$item_product_id = wcs_get_canonical_product_id( $item );
 					if ( ! empty( $item_product_id ) && $item_product_id == $product_id ) {
 						$is_subscription_line_item = true;
 					}
