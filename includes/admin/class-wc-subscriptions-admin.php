@@ -625,9 +625,12 @@ class WC_Subscriptions_Admin {
 		}
 
 		// Now that all the variation's meta is saved, sync the min variation price
-		$variable_subscription = wc_get_product( $post_id );
-		$variable_subscription->variable_product_sync();
-
+		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+			$variable_subscription = wc_get_product( $post_id );
+			$variable_subscription->variable_product_sync();
+		} else {
+			WC_Product_Variable::sync( $post_id );
+		}
 	}
 
 	/**

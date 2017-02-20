@@ -45,6 +45,9 @@ class WC_Subscriptions_Product {
 		// Make sure a subscriptions price is included in subscription variations when required
 		add_filter( 'woocommerce_available_variation', __CLASS__ . '::maybe_set_variations_price_html', 10, 3 );
 
+		// Sync variable product min/max prices with WC 2.7
+		add_action( 'woocommerce_variable_product_sync_data', __CLASS__ . '::variable_subscription_product_sync', 10 );
+
 		// Prevent users from deleting subscription products - it causes too many problems with WooCommerce and other plugins
 		add_filter( 'user_has_cap', __CLASS__ . '::user_can_not_delete_subscription', 10, 3 );
 
@@ -956,6 +959,50 @@ class WC_Subscriptions_Product {
 		}
 
 		return $meta_value;
+	}
+
+	/**
+	 * sync variable product min/max prices with WC 2.7
+	 *
+	 * @param WC_Product_Variable $product
+	 * @since 2.0.18
+	 */
+	public static function variable_subscription_product_sync( $product ) {
+
+		if ( self::is_subscription( $product ) ) {
+
+			$child_variation_ids = $product->get_visible_children();
+
+			if ( $child_variation_ids ) {
+
+				$min_max_data = wcs_get_min_max_variation_data( $product, $child_variation_ids );
+
+				$product->add_meta_data( '_min_price_variation_id', $min_max_data['min']['variation_id'], true );
+				$product->add_meta_data( '_max_price_variation_id', $min_max_data['max']['variation_id'], true );
+
+				$product->add_meta_data( '_min_variation_price', $min_max_data['min']['price'], true );
+				$product->add_meta_data( '_max_variation_price', $min_max_data['max']['price'], true );
+				$product->add_meta_data( '_min_variation_regular_price', $min_max_data['min']['regular_price'], true );
+				$product->add_meta_data( '_max_variation_regular_price', $min_max_data['max']['regular_price'], true );
+				$product->add_meta_data( '_min_variation_sale_price', $min_max_data['min']['sale_price'], true );
+				$product->add_meta_data( '_max_variation_sale_price', $min_max_data['max']['sale_price'], true );
+
+				$product->add_meta_data( '_min_variation_period', $min_max_data['min']['period'], true );
+				$product->add_meta_data( '_max_variation_period', $min_max_data['max']['period'], true );
+				$product->add_meta_data( '_min_variation_period_interval', $min_max_data['min']['interval'], true );
+				$product->add_meta_data( '_max_variation_period_interval', $min_max_data['max']['interval'], true );
+
+				$product->add_meta_data( '_subscription_price', $min_max_data['min']['price'], true );
+				$product->add_meta_data( '_subscription_period', $min_max_data['min']['period'], true );
+				$product->add_meta_data( '_subscription_period_interval', $min_max_data['min']['interval'], true );
+				$product->add_meta_data( '_subscription_sign_up_fee', $min_max_data['subscription']['signup-fee'], true );
+				$product->add_meta_data( '_subscription_trial_period', $min_max_data['subscription']['trial_period'], true );
+				$product->add_meta_data( '_subscription_trial_length', $min_max_data['subscription']['trial_length'], true );
+				$product->add_meta_data( '_subscription_length', $min_max_data['subscription']['length'], true );
+			}
+		}
+
+		return $product;
 	}
 
 	/************************
