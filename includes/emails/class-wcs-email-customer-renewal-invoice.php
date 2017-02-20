@@ -56,7 +56,7 @@ class WCS_Email_Customer_Renewal_Invoice extends WC_Email_Customer_Invoice {
 	 * @access public
 	 * @return void
 	 */
-	function trigger( $order ) {
+	function trigger( $order_id, $order = null ) {
 
 		if ( ! is_object( $order ) ) {
 			$order = new WC_Order( absint( $order ) );

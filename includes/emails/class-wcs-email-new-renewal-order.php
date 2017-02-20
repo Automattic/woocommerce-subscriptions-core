@@ -57,7 +57,7 @@ class WCS_Email_New_Renewal_Order extends WC_Email_New_Order {
 	 * @access public
 	 * @return void
 	 */
-	function trigger( $order_id ) {
+	function trigger( $order_id, $order = null ) {
 
 		if ( $order_id ) {
 			$this->object = new WC_Order( $order_id );
