@@ -387,18 +387,43 @@ class WC_Subscriptions_Product {
 	 * @since 1.0
 	 */
 	public static function get_price( $product ) {
+		return apply_filters( 'woocommerce_subscriptions_product_price', self::get_meta_data( $product, 'subscription_price', 0 ), $product );
+	}
 
-		if ( ! is_object( $product ) ) {
-			$product = WC_Subscriptions::get_product( $product );
-		}
+	/**
+	 * Returns the sale price per period for a product if it is a subscription.
+	 *
+	 * @param mixed $product A WC_Product object or product ID
+	 * @return float
+	 * @since 2.1.4
+	 */
+	public static function get_regular_price( $product, $context = 'view' ) {
 
-		if ( ! self::is_subscription( $product ) || ( ! isset( $product->subscription_price ) && empty( $product->product_custom_fields['_subscription_price'][0] ) ) ) {
-			$subscription_price = '';
+		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+			$regular_price = $product->regular_price;
 		} else {
-			$subscription_price = isset( $product->subscription_price ) ? $product->subscription_price : $product->product_custom_fields['_subscription_price'][0];
+			$regular_price = $product->get_regular_price( $context );
 		}
 
-		return apply_filters( 'woocommerce_subscriptions_product_price', $subscription_price, $product );
+		return apply_filters( 'woocommerce_subscriptions_product_regular_price', $regular_price, $product );
+	}
+
+	/**
+	 * Returns the regular price per period for a product if it is a subscription.
+	 *
+	 * @param mixed $product A WC_Product object or product ID
+	 * @return float
+	 * @since 2.1.4
+	 */
+	public static function get_sale_price( $product, $context = 'view' ) {
+
+		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+			$sale_price = $product->sale_price;
+		} else {
+			$sale_price = $product->get_sale_price( $context );
+		}
+
+		return apply_filters( 'woocommerce_subscriptions_product_sale_price', $sale_price, $product );
 	}
 
 	/**
@@ -409,18 +434,7 @@ class WC_Subscriptions_Product {
 	 * @since 1.0
 	 */
 	public static function get_period( $product ) {
-
-		if ( ! is_object( $product ) ) {
-			$product = WC_Subscriptions::get_product( $product );
-		}
-
-		if ( ! self::is_subscription( $product ) || ( ! isset( $product->subscription_period ) && empty( $product->product_custom_fields['_subscription_period'][0] ) ) ) {
-			$subscription_period = '';
-		} else {
-			$subscription_period = isset( $product->subscription_period ) ? $product->subscription_period : $product->product_custom_fields['_subscription_period'][0];
-		}
-
-		return apply_filters( 'woocommerce_subscriptions_product_period', $subscription_period, $product );
+		return apply_filters( 'woocommerce_subscriptions_product_period', self::get_meta_data( $product, 'subscription_period', '' ), $product );
 	}
 
 	/**
@@ -431,18 +445,7 @@ class WC_Subscriptions_Product {
 	 * @since 1.0
 	 */
 	public static function get_interval( $product ) {
-
-		if ( ! is_object( $product ) ) {
-			$product = WC_Subscriptions::get_product( $product );
-		}
-
-		if ( ! self::is_subscription( $product ) || ( ! isset( $product->subscription_period_interval ) && empty( $product->product_custom_fields['_subscription_period_interval'][0] ) ) ) {
-			$subscription_period_interval = 1;
-		} else {
-			$subscription_period_interval = isset( $product->subscription_period_interval ) ? $product->subscription_period_interval : $product->product_custom_fields['_subscription_period_interval'][0];
-		}
-
-		return apply_filters( 'woocommerce_subscriptions_product_period_interval', $subscription_period_interval, $product );
+		return apply_filters( 'woocommerce_subscriptions_product_period_interval', self::get_meta_data( $product, 'subscription_period_interval', 0 ), $product );
 	}
 
 	/**
@@ -453,18 +456,7 @@ class WC_Subscriptions_Product {
 	 * @since 1.0
 	 */
 	public static function get_length( $product ) {
-
-		if ( ! is_object( $product ) ) {
-			$product = WC_Subscriptions::get_product( $product );
-		}
-
-		if ( ! self::is_subscription( $product ) || ( ! isset( $product->subscription_length ) && empty( $product->product_custom_fields['_subscription_length'][0] ) ) ) {
-			$subscription_length = 0;
-		} else {
-			$subscription_length = isset( $product->subscription_length ) ? $product->subscription_length : $product->product_custom_fields['_subscription_length'][0];
-		}
-
-		return apply_filters( 'woocommerce_subscriptions_product_length', $subscription_length, $product );
+		return apply_filters( 'woocommerce_subscriptions_product_length', self::get_meta_data( $product, 'subscription_length', 0 ), $product );
 	}
 
 	/**
@@ -475,18 +467,7 @@ class WC_Subscriptions_Product {
 	 * @since 1.0
 	 */
 	public static function get_trial_length( $product ) {
-
-		if ( ! is_object( $product ) ) {
-			$product = WC_Subscriptions::get_product( $product );
-		}
-
-		if ( ! self::is_subscription( $product ) || ( ! isset( $product->subscription_trial_length ) && empty( $product->product_custom_fields['_subscription_trial_length'][0] ) ) ) {
-			$subscription_trial_length = 0;
-		} else {
-			$subscription_trial_length = isset( $product->subscription_trial_length ) ? $product->subscription_trial_length : $product->product_custom_fields['_subscription_trial_length'][0];
-		}
-
-		return apply_filters( 'woocommerce_subscriptions_product_trial_length', $subscription_trial_length, $product );
+		return apply_filters( 'woocommerce_subscriptions_product_trial_length', self::get_meta_data( $product, 'subscription_trial_length', 0 ), $product );
 	}
 
 	/**
@@ -497,20 +478,7 @@ class WC_Subscriptions_Product {
 	 * @since 1.2
 	 */
 	public static function get_trial_period( $product ) {
-
-		if ( ! is_object( $product ) ) {
-			$product = WC_Subscriptions::get_product( $product );
-		}
-
-		if ( ! self::is_subscription( $product ) ) {
-			$subscription_trial_period = '';
-		} elseif ( ! isset( $product->subscription_trial_period ) && empty( $product->product_custom_fields['_subscription_trial_period'][0] ) ) { // Backward compatibility
-			$subscription_trial_period = self::get_period( $product );
-		} else {
-			$subscription_trial_period = isset( $product->subscription_trial_period ) ? $product->subscription_trial_period : $product->product_custom_fields['_subscription_trial_period'][0];
-		}
-
-		return apply_filters( 'woocommerce_subscriptions_product_trial_period', $subscription_trial_period, $product );
+		return apply_filters( 'woocommerce_subscriptions_product_trial_period', self::get_meta_data( $product, 'subscription_trial_period', '' ), $product );
 	}
 
 	/**
@@ -521,18 +489,7 @@ class WC_Subscriptions_Product {
 	 * @since 1.0
 	 */
 	public static function get_sign_up_fee( $product ) {
-
-		if ( ! is_object( $product ) ) {
-			$product = WC_Subscriptions::get_product( $product );
-		}
-
-		if ( ! self::is_subscription( $product ) || ( ! isset( $product->subscription_sign_up_fee ) && empty( $product->product_custom_fields['_subscription_sign_up_fee'][0] ) ) ) {
-			$subscription_sign_up_fee = 0;
-		} else {
-			$subscription_sign_up_fee = isset( $product->subscription_sign_up_fee ) ? $product->subscription_sign_up_fee : $product->product_custom_fields['_subscription_sign_up_fee'][0];
-		}
-
-		return apply_filters( 'woocommerce_subscriptions_product_sign_up_fee', $subscription_sign_up_fee, $product );
+		return apply_filters( 'woocommerce_subscriptions_product_sign_up_fee', self::get_meta_data( $product, 'subscription_sign_up_fee', 0 ), $product );
 	}
 
 	/**
@@ -931,9 +888,9 @@ class WC_Subscriptions_Product {
 					continue;
 				}
 
-				$variable_product = wc_get_product( $variation_id );
+				$variation_product = wc_get_product( $variation_id );
 
-				if ( $variable_product->subscription_trial_length > 0 ) {
+				if ( WC_Subscriptions_Product::get_trial_length( $variation_product ) ) {
 					$is_synced_or_has_trial = true;
 					break;
 				}
@@ -972,6 +929,33 @@ class WC_Subscriptions_Product {
 		update_post_meta( $_POST['product_id'], '_subscription_one_time_shipping', $subscription_one_time_shipping );
 
 		wp_send_json( array( 'one_time_shipping' => $subscription_one_time_shipping ) );
+	}
+
+	/**
+	 * Get a piece of subscription related meta data for a product in a version compatible way.
+	 *
+	 * @param mixed $product A WC_Product object or product ID
+	 * @param string $meta_key The string key for the meta data
+	 * @return float The value of the sign-up fee, or 0 if the product is not a subscription or the subscription has no sign-up fee
+	 * @since 2.1.4
+	 */
+	public static function get_meta_data( $product, $meta_key, $default_value ) {
+
+		if ( ! is_object( $product ) || ! is_a( $product, 'WC_Product' ) ) {
+			$product = wc_get_product( $product );
+		}
+
+		$meta_value = $default_value;
+
+		if ( self::is_subscription( $product ) ) {
+			if ( is_callable( array( $product, 'get_meta' ) ) ) { // WC 2.7+
+				$meta_value = $product->get_meta( '_' . $meta_key, true );
+			} elseif ( isset( $product->{$meta_key} ) ) { // WC < 2.7
+				$meta_value = $product->{$meta_key};
+			}
+		}
+
+		return $meta_value;
 	}
 
 	/************************

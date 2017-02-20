@@ -542,8 +542,7 @@ class WC_Subscriptions_Cart {
 				$all_items_have_free_trial = false;
 				break;
 			} else {
-				$trial_length = ( isset( $cart_item['data']->subscription_trial_length ) ) ? $cart_item['data']->subscription_trial_length : WC_Subscriptions_Product::get_trial_length( $cart_item['data'] );
-				if ( 0 == $trial_length ) {
+				if ( 0 == WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) ) {
 					$all_items_have_free_trial = false;
 					break;
 				}
@@ -590,8 +589,7 @@ class WC_Subscriptions_Cart {
 			if ( 'none' == self::$calculation_type ) {
 				foreach ( $packages as $index => $package ) {
 					foreach ( $package['contents'] as $cart_item_key => $cart_item ) {
-						$trial_length = ( isset( $cart_item['data']->subscription_trial_length ) ) ? $cart_item['data']->subscription_trial_length : WC_Subscriptions_Product::get_trial_length( $cart_item['data'] );
-						if ( $trial_length > 0 ) {
+						if ( WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) > 0 ) {
 							unset( $packages[ $index ]['contents'][ $cart_item_key ] );
 						}
 					}
@@ -603,7 +601,7 @@ class WC_Subscriptions_Cart {
 			} elseif ( 'recurring_total' == self::$calculation_type ) {
 				foreach ( $packages as $index => $package ) {
 					foreach ( $package['contents'] as $cart_item_key => $cart_item ) {
-						if ( isset( $cart_item['data']->subscription_one_time_shipping ) && 'yes' == $cart_item['data']->subscription_one_time_shipping ) {
+						if ( WC_Subscriptions_Product::is_one_time_shipping( $cart_item['data'] ) ) {
 							$packages[ $index ]['contents_cost'] -= $cart_item['line_total'];
 							unset( $packages[ $index ]['contents'][ $cart_item_key ] );
 						}
@@ -701,10 +699,7 @@ class WC_Subscriptions_Cart {
 
 		if ( self::cart_contains_subscription() ) {
 			foreach ( WC()->cart->cart_contents as $cart_item ) {
-				if ( isset( $cart_item['data']->subscription_trial_length ) && $cart_item['data']->subscription_trial_length > 0 ) {
-					$cart_contains_free_trial = true;
-					break;
-				} elseif ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) && WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) > 0 ) {
+				if ( WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) > 0 ) {
 					$cart_contains_free_trial = true;
 					break;
 				}
@@ -758,11 +753,7 @@ class WC_Subscriptions_Cart {
 					continue;
 				}
 
-				if ( isset( $cart_item['data']->subscription_sign_up_fee ) ) {
-					$sign_up_fee += $cart_item['data']->subscription_sign_up_fee;
-				} elseif ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
-					$sign_up_fee += WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] );
-				}
+				$sign_up_fee += WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] );
 			}
 		}
 
@@ -1411,10 +1402,7 @@ class WC_Subscriptions_Cart {
 
 		if ( self::cart_contains_subscription() ) {
 			foreach ( WC()->cart->cart_contents as $cart_item ) {
-				if ( isset( $cart_item['data']->subscription_period ) ) {
-					$period = $cart_item['data']->subscription_period;
-					break;
-				} elseif ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
+				if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 					$period = WC_Subscriptions_Product::get_period( $cart_item['data'] );
 					break;
 				}
@@ -1460,10 +1448,7 @@ class WC_Subscriptions_Cart {
 
 		if ( self::cart_contains_subscription() ) {
 			foreach ( WC()->cart->cart_contents as $cart_item ) {
-				if ( isset( $cart_item['data']->subscription_length ) ) {
-					$length = $cart_item['data']->subscription_length;
-					break;
-				} elseif ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
+				if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 					$length = WC_Subscriptions_Product::get_length( $cart_item['data'] );
 					break;
 				}
@@ -1488,10 +1473,7 @@ class WC_Subscriptions_Cart {
 
 		if ( self::cart_contains_subscription() ) {
 			foreach ( WC()->cart->cart_contents as $cart_item ) {
-				if ( isset( $cart_item['data']->subscription_trial_length ) ) {
-					$trial_length = $cart_item['data']->subscription_trial_length;
-					break;
-				} elseif ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
+				if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 					$trial_length = WC_Subscriptions_Product::get_trial_length( $cart_item['data'] );
 					break;
 				}
@@ -1517,10 +1499,7 @@ class WC_Subscriptions_Cart {
 		// Get the original trial period
 		if ( self::cart_contains_subscription() ) {
 			foreach ( WC()->cart->cart_contents as $cart_item ) {
-				if ( isset( $cart_item['data']->subscription_trial_period ) ) {
-					$trial_period = $cart_item['data']->subscription_trial_period;
-					break;
-				} elseif ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
+				if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 					$trial_period = WC_Subscriptions_Product::get_trial_period( $cart_item['data'] );
 					break;
 				}

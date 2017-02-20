@@ -254,7 +254,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
 			$subscription = $this->get_order( $cart_item );
 			if ( false !== $subscription && $subscription->has_status( 'pending-cancel' ) ) {
-				$first_renewal_date = ( '1' != $cart_item['data']->subscription_length ) ? $subscription->get_date( 'end' ) : 0;
+				$first_renewal_date = ( '1' != WC_Subscriptions_Product::get_length( $cart_item['data'] ) ) ? $subscription->get_date( 'end' ) : 0;
 				break;
 			}
 		}

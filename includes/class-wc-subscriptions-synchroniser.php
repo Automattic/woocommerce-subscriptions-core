@@ -259,14 +259,11 @@ class WC_Subscriptions_Synchroniser {
 		if ( self::is_syncing_enabled() ) {
 
 			// Set month as the default billing period
-			if ( ! $subscription_period = get_post_meta( $variation->ID, '_subscription_period', true ) ) {
-				$subscription_period = 'month';
-			}
-
+			$subscription_period       = WC_Subscriptions_Product::get_period( $variation );
 			$display_week_month_select = ( ! in_array( $subscription_period, array( 'month', 'week' ) ) ) ? 'display: none;' : '';
 			$display_annual_select     = ( 'year' != $subscription_period ) ? 'display: none;' : '';
 
-			$payment_day = self::get_products_payment_day( $variation->ID );
+			$payment_day = self::get_products_payment_day( $variation );
 
 			// An annual sync date is already set in the form: array( 'day' => 'nn', 'month' => 'nn' ), create a MySQL string from those values (year and time are irrelvent as they are ignored)
 			if ( is_array( $payment_day ) ) {
@@ -400,7 +397,7 @@ class WC_Subscriptions_Synchroniser {
 			$product = wc_get_product( $product );
 		}
 
-		if ( ! is_object( $product ) || ! self::is_syncing_enabled() || 'day' == $product->subscription_period || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
+		if ( ! is_object( $product ) || ! self::is_syncing_enabled() || 'day' == WC_Subscriptions_Product::get_period( $product ) || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
 			return false;
 		}
 
@@ -441,12 +438,8 @@ class WC_Subscriptions_Synchroniser {
 
 		if ( ! self::is_syncing_enabled() ) {
 			$payment_date = 0;
-		} elseif ( ! is_object( $product ) ) {
-			$payment_date = get_post_meta( $product, self::$post_meta_key, true );
-		} elseif ( isset( $product->subscription_payment_sync_date ) ) {
-			$payment_date = $product->subscription_payment_sync_date;
 		} else {
-			$payment_date = 0;
+			$payment_date = WC_Subscriptions_Product::get_meta_data( $product, 'subscription_payment_sync_date', 0 );
 		}
 
 		return apply_filters( 'woocommerce_subscriptions_product_sync_date', $payment_date, $product );
@@ -713,7 +706,8 @@ class WC_Subscriptions_Synchroniser {
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 			if ( self::is_product_synced( $cart_item['data'] ) && ! self::is_product_prorated( $cart_item['data'] ) && ! self::is_today( self::calculate_first_payment_date( $cart_item['data'], 'timestamp' ) ) ) {
-				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length = ( WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length > 1 ) ? WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length : 1;
+				$current_trial_length = WC_Subscriptions_Product::get_trial_length( WC()->cart->cart_contents[ $cart_item_key ]['data'] );
+				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length = ( $current_trial_length > 1 ) ? $current_trial_length : 1;
 			}
 		}
 
@@ -748,7 +742,7 @@ class WC_Subscriptions_Synchroniser {
 		if ( self::is_syncing_enabled() && ! empty( $cart ) && ! wcs_cart_contains_renewal() ) {
 
 			foreach ( $cart->cart_contents as $cart_item_key => $cart_item ) {
-				if ( ( ! is_array( $cart_item['data']->subscription_payment_sync_date ) && $cart_item['data']->subscription_payment_sync_date > 0 ) || ( is_array( $cart_item['data']->subscription_payment_sync_date ) && $cart_item['data']->subscription_payment_sync_date['day'] > 0 ) ) {
+				if ( self::is_product_synced( $cart_item['data'] ) ) {
 					$contains_synced = $cart_item;
 					break;
 				}
@@ -864,15 +858,15 @@ class WC_Subscriptions_Synchroniser {
 				return $price;
 			}
 
-			switch ( $product->subscription_period ) {
+			switch ( WC_Subscriptions_Product::get_period( $product ) ) {
 				case 'week' :
-					$days_in_cycle = 7 * $product->subscription_period_interval;
+					$days_in_cycle = 7 * WC_Subscriptions_Product::get_interval( $product );
 					break;
 				case 'month' :
-					$days_in_cycle = gmdate( 't' ) * $product->subscription_period_interval;
+					$days_in_cycle = gmdate( 't' ) * WC_Subscriptions_Product::get_interval( $product );
 					break;
 				case 'year' :
-					$days_in_cycle = ( 365 + gmdate( 'L' ) ) * $product->subscription_period_interval;
+					$days_in_cycle = ( 365 + gmdate( 'L' ) ) * WC_Subscriptions_Product::get_interval( $product );
 					break;
 			}
 
@@ -1059,7 +1053,7 @@ class WC_Subscriptions_Synchroniser {
 
 		$cart_item = self::cart_contains_synced_subscription();
 
-		if ( false !== $cart_item && isset( $cart_item['data']->subscription_period ) && ( 'year' != $cart_item['data']->subscription_period || $cart_item['data']->subscription_trial_length > 0 ) ) {
+		if ( false !== $cart_item && '' !== WC_Subscriptions_Product::get_period( $cart_item['data'] ) && ( 'year' != WC_Subscriptions_Product::get_period( $cart_item['data'] ) || WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) > 0 ) ) {
 
 			$first_payment_date = self::get_products_first_payment_date( $cart_item['data'] );
 

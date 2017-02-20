@@ -304,11 +304,6 @@ class WC_Subscriptions_Admin {
 	public static function variable_subscription_pricing_fields( $loop, $variation_data, $variation ) {
 		global $thepostid;
 
-		// Set month as the default billing period
-		if ( ! $subscription_period = get_post_meta( $variation->ID, '_subscription_period', true ) ) {
-			$subscription_period = 'month';
-		}
-
 		// When called via Ajax
 		if ( ! function_exists( 'woocommerce_wp_text_input' ) ) {
 			require_once( WC()->plugin_path() . '/admin/post-types/writepanels/writepanels-init.php' );
@@ -317,6 +312,8 @@ class WC_Subscriptions_Admin {
 		if ( ! isset( $thepostid ) ) {
 			$thepostid = $variation->post_parent;
 		}
+
+		$variation_product = wc_get_product( $variation );
 
 		include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/html-variation-price.php' );
 

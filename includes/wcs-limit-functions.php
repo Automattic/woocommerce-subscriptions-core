@@ -19,17 +19,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return string containing the limit type
  */
 function wcs_get_product_limitation( $product ) {
-	if ( ! is_object( $product ) ) {
+
+	if ( ! is_object( $product ) || ! is_a( $product, 'WC_Product' ) ) {
 		$product = wc_get_product( $product );
 	}
 
-	if ( ! isset( $product->product_custom_fields['_subscription_limit'][0] ) ) {
-		return 'no';
-	} elseif ( 'yes' == $product->product_custom_fields['_subscription_limit'][0] ) { // backward compatibility
-		return 'any';
-	} else {
-		return $product->product_custom_fields['_subscription_limit'][0];
-	}
+	return apply_filters( 'woocommerce_subscriptions_product_limitation', WC_Subscriptions_Product::get_meta_data( $product, 'subscription_limit', 0 ), $product );
 }
 
 /**
