@@ -747,6 +747,17 @@ class WC_Subscriptions_Product {
 	}
 
 	/**
+	 * Check whether a product has one-time shipping only.
+	 *
+	 * @param mixed $product A WC_Product object or product ID
+	 * @return bool True if the product requires only one time shipping, false otherwise.
+	 * @since 1.0
+	 */
+	public static function needs_one_time_shipping( $product ) {
+		return apply_filters( 'woocommerce_subscriptions_product_needs_one_time_shipping', 'yes' === self::get_meta_data( $product, 'subscription_one_time_shipping', 'no' ), $product );
+	}
+
+	/**
 	 * Hooked to the @see 'wp_scheduled_delete' WP-Cron scheduled task to rename the '_wp_trash_meta_time' meta value
 	 * as '_wc_trash_meta_time'. This is the flag used by WordPress to determine which posts should be automatically
 	 * purged from the trash. We want to make sure Subscriptions products are not automatically purged (but still want

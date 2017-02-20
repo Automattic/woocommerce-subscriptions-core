@@ -568,7 +568,7 @@ class WC_Subscriptions_Cart {
 		if ( self::cart_contains_subscription() ) {
 			foreach ( WC()->cart->cart_contents as $cart_item_key => $values ) {
 				$_product = $values['data'];
-				if ( WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && 'yes' !== $_product->subscription_one_time_shipping ) {
+				if ( WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && false === WC_Subscriptions_Product::needs_one_time_shipping( $_product ) ) {
 					$cart_contains_subscriptions_needing_shipping = true;
 				}
 			}
@@ -601,7 +601,7 @@ class WC_Subscriptions_Cart {
 			} elseif ( 'recurring_total' == self::$calculation_type ) {
 				foreach ( $packages as $index => $package ) {
 					foreach ( $package['contents'] as $cart_item_key => $cart_item ) {
-						if ( WC_Subscriptions_Product::is_one_time_shipping( $cart_item['data'] ) ) {
+						if ( WC_Subscriptions_Product::needs_one_time_shipping( $cart_item['data'] ) ) {
 							$packages[ $index ]['contents_cost'] -= $cart_item['line_total'];
 							unset( $packages[ $index ]['contents'][ $cart_item_key ] );
 						}

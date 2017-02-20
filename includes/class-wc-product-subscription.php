@@ -89,6 +89,9 @@ class WC_Product_Subscription extends WC_Product_Simple {
 		if ( 'limit_subscriptions' === $key ) {
 			_deprecated_argument( 'WC_Product_Subscription->limit_subscriptions', '2.1', 'Use wcs_get_product_limitation directly' );
 			return wcs_get_product_limitation( $this );
+		} elseif ( 'subscription_one_time_shipping' === $key ) {
+			_deprecated_argument( __CLASS__ . '::$subscription_one_time_shipping', '2.1.4', 'Use WC_Subscriptions_Product::needs_one_time_shipping( $this )' );
+			return WC_Subscriptions_Product::needs_one_time_shipping( $this );
 		} else {
 			return parent::__get( $key );
 		}
