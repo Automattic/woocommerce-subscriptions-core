@@ -659,22 +659,6 @@ class WC_Subscriptions_Order {
 	}
 
 	/**
-	 * Wrapper around @see WC_Order::get_order_currency() for versions of WooCommerce prior to 2.1.
-	 *
-	 * @since version 1.4.9
-	 */
-	public static function get_order_currency( $order ) {
-
-		if ( method_exists( $order, 'get_order_currency' ) ) {
-			$order_currency = $order->get_order_currency();
-		} else {
-			$order_currency = get_woocommerce_currency();
-		}
-
-		return $order_currency;
-	}
-
-	/**
 	 * Add admin dropdown for order types to Woocommerce -> Orders screen
 	 *
 	 * @since version 1.5
@@ -2029,6 +2013,17 @@ class WC_Subscriptions_Order {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Wrapper around @see WC_Order::get_order_currency() for versions of WooCommerce prior to 2.1.
+	 *
+	 * @since version 1.4.9
+	 * @deprecated 2.1.4
+	 */
+	public static function get_order_currency( $order ) {
+		_deprecated_function( __METHOD__, '2.1.4', 'wcs_get_objects_property( $order, "currency" ) or $order->get_currency()' );
+		return wcs_get_objects_property( $order, 'currency' );
 	}
 }
 WC_Subscriptions_Order::init();
