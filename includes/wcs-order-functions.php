@@ -269,7 +269,10 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 						wc_add_order_item_meta( $recurring_item_id, apply_filters( 'woocommerce_backordered_item_meta_name', __( 'Backordered', 'woocommerce-subscriptions' ) ), $item['qty'] - max( 0, $product->get_total_stock() ) );
 					}
 
-					do_action( 'woocommerce_order_add_product', wcs_get_objects_property( $new_order, 'id' ), $recurring_item_id, $product, $item['qty'], $args );
+					if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+						// WC 2.7+ will also trigger the 'woocommerce_order_add_product when 'woocommerce_new_order_item', which is triggered in wc_add_order_item_meta()
+						do_action( 'woocommerce_order_add_product', wcs_get_objects_property( $new_order, 'id' ), $recurring_item_id, $product, $item['qty'], $args );
+					}
 				}
 			}
 		}
