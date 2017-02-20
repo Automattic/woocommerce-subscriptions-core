@@ -24,7 +24,7 @@ function wcs_order_contains_switch( $order ) {
 		$order = wc_get_order( $order );
 	}
 
-	if ( 'simple' != $order->order_type || isset( $order->subscription_renewal ) ) { // It's a parent order or renewal order
+	if ( ! wcs_is_order( $order ) || wcs_order_contains_renewal( $order ) ) {
 
 		$is_switch_order = false;
 

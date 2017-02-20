@@ -403,7 +403,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function print_switch_link( $item_id, $item, $subscription ) {
 
-		if ( 'shop_subscription' !== $subscription->get_type() || ! self::can_item_be_switched_by_user( $item, $subscription ) ) {
+		if ( wcs_is_order( $subscription ) || 'shop_subscription' !== $subscription->get_type() || ! self::can_item_be_switched_by_user( $item, $subscription ) ) {
 			return;
 		}
 

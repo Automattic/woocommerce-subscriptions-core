@@ -278,3 +278,23 @@ function wcs_delete_objects_property( &$object, $key, $save = 'save', $meta_id =
 	}
 }
 
+/**
+ * Check whether an order is a standard order (i.e. not a refund or subscription) in version compatible way.
+ *
+ * WC 2.7 has the $order->get_type() API which returns 'shop_order', while WC < 2.7 provided the $order->order_type
+ * property which returned 'simple', so we need to check for both.
+ *
+ * @param WC_Order $order
+ * @since  2.1.4
+ * @return bool
+ */
+function wcs_is_order( $order ) {
+
+	if ( method_exists( $order, 'get_type' ) ) {
+		$is_order = ( 'shop_order' === $order->get_type() );
+	} else {
+		$is_order = ( 'simple' === $order->order_type );
+	}
+
+	return $is_order;
+}

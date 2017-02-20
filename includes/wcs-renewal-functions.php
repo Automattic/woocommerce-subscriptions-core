@@ -49,7 +49,7 @@ function wcs_order_contains_renewal( $order ) {
 		$order = wc_get_order( $order );
 	}
 
-	if ( 'simple' == $order->order_type && '' !== wcs_get_objects_property( $order, 'subscription_renewal' ) ) {
+	if ( wcs_is_order( $order ) && '' !== wcs_get_objects_property( $order, 'subscription_renewal' ) ) {
 		$is_renewal = true;
 	} else {
 		$is_renewal = false;
