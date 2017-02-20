@@ -75,7 +75,7 @@ class WC_Subscriptions_Checkout {
 		// Create new subscriptions for each group of subscription products in the cart (that is not a renewal)
 		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
 
-			$subscription = self::create_subscription( $order, $recurring_cart ); // Exceptions are caught by WooCommerce
+			$subscription = self::create_subscription( $order, $recurring_cart, $posted_data ); // Exceptions are caught by WooCommerce
 
 			if ( is_wp_error( $subscription ) ) {
 				throw new Exception( $subscription->get_error_message() );
@@ -97,7 +97,7 @@ class WC_Subscriptions_Checkout {
 	 * @param WC_Cart $cart
 	 * @since 2.0
 	 */
-	public static function create_subscription( $order, $cart ) {
+	public static function create_subscription( $order, $cart, $posted_data ) {
 		global $wpdb;
 
 		try {
@@ -154,38 +154,54 @@ class WC_Subscriptions_Checkout {
 			wcs_copy_order_meta( $order, $subscription, 'subscription' );
 
 			// Store the line items
-			foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
-				$item_id = self::add_cart_item( $subscription, $cart_item, $cart_item_key );
+			if ( is_callable( array( WC()->checkout, 'create_order_line_items' ) ) ) {
+				WC()->checkout->create_order_line_items( $subscription, $cart );
+			} else {
+				foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
+					$item_id = self::add_cart_item( $subscription, $cart_item, $cart_item_key );
+				}
 			}
 
 			// Store fees (although no fees recur by default, extensions may add them)
-			foreach ( $cart->get_fees() as $fee_key => $fee ) {
-				$item_id = $subscription->add_fee( $fee );
+			if ( is_callable( array( WC()->checkout, 'create_order_fee_lines' ) ) ) {
+				WC()->checkout->create_order_fee_lines( $subscription, $cart );
+			} else {
+				foreach ( $cart->get_fees() as $fee_key => $fee ) {
+					$item_id = $subscription->add_fee( $fee );
 
-				if ( ! $item_id ) {
-					// translators: placeholder is an internal error number
-					throw new Exception( sprintf( __( 'Error %d: Unable to create subscription. Please try again.', 'woocommerce-subscriptions' ), 403 ) );
+					if ( ! $item_id ) {
+						// translators: placeholder is an internal error number
+						throw new Exception( sprintf( __( 'Error %d: Unable to create subscription. Please try again.', 'woocommerce-subscriptions' ), 403 ) );
+					}
+
+					// Allow plugins to add order item meta to fees
+					do_action( 'woocommerce_add_order_fee_meta', $subscription->get_id(), $item_id, $fee, $fee_key );
 				}
-
-				// Allow plugins to add order item meta to fees
-				do_action( 'woocommerce_add_order_fee_meta', $order->id, $item_id, $fee, $fee_key );
 			}
 
 			self::add_shipping( $subscription, $cart );
 
 			// Store tax rows
-			foreach ( array_keys( $cart->taxes + $cart->shipping_taxes ) as $tax_rate_id ) {
-				if ( $tax_rate_id && ! $subscription->add_tax( $tax_rate_id, $cart->get_tax_amount( $tax_rate_id ), $cart->get_shipping_tax_amount( $tax_rate_id ) ) && apply_filters( 'woocommerce_cart_remove_taxes_zero_rate_id', 'zero-rated' ) !== $tax_rate_id ) {
-					// translators: placeholder is an internal error number
-					throw new Exception( sprintf( __( 'Error %d: Unable to add tax to subscription. Please try again.', 'woocommerce-subscriptions' ), 405 ) );
+			if ( is_callable( array( WC()->checkout, 'create_order_tax_lines' ) ) ) {
+				WC()->checkout->create_order_tax_lines( $subscription, $cart );
+			} else {
+				foreach ( array_keys( $cart->taxes + $cart->shipping_taxes ) as $tax_rate_id ) {
+					if ( $tax_rate_id && ! $subscription->add_tax( $tax_rate_id, $cart->get_tax_amount( $tax_rate_id ), $cart->get_shipping_tax_amount( $tax_rate_id ) ) && apply_filters( 'woocommerce_cart_remove_taxes_zero_rate_id', 'zero-rated' ) !== $tax_rate_id ) {
+						// translators: placeholder is an internal error number
+						throw new Exception( sprintf( __( 'Error %d: Unable to add tax to subscription. Please try again.', 'woocommerce-subscriptions' ), 405 ) );
+					}
 				}
 			}
 
 			// Store coupons
-			foreach ( $cart->get_coupons() as $code => $coupon ) {
-				if ( ! $subscription->add_coupon( $code, $cart->get_coupon_discount_amount( $code ), $cart->get_coupon_discount_tax_amount( $code ) ) ) {
-					// translators: placeholder is an internal error number
-					throw new Exception( sprintf( __( 'Error %d: Unable to create order. Please try again.', 'woocommerce-subscriptions' ), 406 ) );
+			if ( is_callable( array( WC()->checkout, 'create_order_coupon_lines' ) ) ) {
+				WC()->checkout->create_order_coupon_lines( $subscription, $cart );
+			} else {
+				foreach ( $cart->get_coupons() as $code => $coupon ) {
+					if ( ! $subscription->add_coupon( $code, $cart->get_coupon_discount_amount( $code ), $cart->get_coupon_discount_tax_amount( $code ) ) ) {
+						// translators: placeholder is an internal error number
+						throw new Exception( sprintf( __( 'Error %d: Unable to create order. Please try again.', 'woocommerce-subscriptions' ), 406 ) );
+					}
 				}
 			}
 
@@ -196,6 +212,12 @@ class WC_Subscriptions_Checkout {
 			$subscription->set_cart_tax( $cart->tax_total );
 			$subscription->set_shipping_tax( $cart->shipping_tax_total );
 			$subscription->set_total( $cart->total );
+
+			// Hook to adjust subscriptions before saving with WC 2.7+ (matches WC 2.7's new 'woocommerce_checkout_create_order' hook)
+			do_action( 'woocommerce_checkout_create_subscription', $subscription, $posted_data );
+
+			// Save the subscription if using WC 2.7 & CRUD
+			$subscription->save();
 
 			// If we got here, the subscription was created without problems
 			$wpdb->query( 'COMMIT' );
@@ -238,15 +260,39 @@ class WC_Subscriptions_Checkout {
 
 			if ( isset( $package['rates'][ $shipping_method_id ] ) ) {
 
-				$item_id = $subscription->add_shipping( $package['rates'][ $shipping_method_id ] );
+				if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
 
-				if ( ! $item_id ) {
-					throw new Exception( __( 'Error: Unable to create subscription. Please try again.', 'woocommerce-subscriptions' ) );
+					$item_id = $subscription->add_shipping( $package['rates'][ $shipping_method_id ] );
+
+					// Allows plugins to add order item meta to shipping
+					do_action( 'woocommerce_add_shipping_order_item', $subscription->get_id(), $item_id, $package_key );
+					do_action( 'woocommerce_subscriptions_add_recurring_shipping_order_item', $subscription->get_id(), $item_id, $package_key );
+
+				} else { // WC 2.7+
+
+					$shipping_rate            = $package['rates'][ $shipping_method_id ];
+					$item                     = new WC_Order_Item_Shipping();
+					$item->legacy_package_key = $package_key; // @deprecated For legacy actions.
+					$item->set_props( array(
+						'method_title' => $shipping_rate->label,
+						'method_id'    => $shipping_rate->id,
+						'total'        => wc_format_decimal( $shipping_rate->cost ),
+						'taxes'        => $shipping_rate->taxes,
+						'order_id'     => $subscription->get_id(),
+					) );
+
+					foreach ( $shipping_rate->get_meta_data() as $key => $value ) {
+						$item->add_meta_data( $key, $value, true );
+					}
+
+					$subscription->add_item( $item );
+
+					$item->save(); // We need the item ID for old hooks, this can be removed once support for WC < 2.7 is dropped
+					wc_do_deprecated_action( 'woocommerce_subscriptions_add_recurring_shipping_order_item', array( $subscription->get_id(), $item->get_id(), $package_key ), '2.1.4', 'CRUD and woocommerce_checkout_create_subscription_shipping_item action instead' );
+
+					do_action( 'woocommerce_checkout_create_order_shipping_item', $item, $package_key, $package ); // WC 2.7+ will also trigger the deprecated 'woocommerce_add_shipping_order_item' hook
+					do_action( 'woocommerce_checkout_create_subscription_shipping_item', $item, $package_key, $package );
 				}
-
-				// Allows plugins to add order item meta to shipping
-				do_action( 'woocommerce_add_shipping_order_item', $subscription->id, $item_id, $package_key );
-				do_action( 'woocommerce_subscriptions_add_recurring_shipping_order_item', $subscription->id, $item_id, $package_key );
 			}
 		}
 
@@ -259,6 +305,10 @@ class WC_Subscriptions_Checkout {
 	 * @since 2.0
 	 */
 	public static function add_cart_item( $subscription, $cart_item, $cart_item_key ) {
+		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+			_deprecated_function( __METHOD__, '2.1.4', 'WC_Checkout::create_order_line_items( $subscription, $cart )' );
+		}
+
 		$item_id = $subscription->add_product(
 			$cart_item['data'],
 			$cart_item['quantity'],
@@ -286,9 +336,11 @@ class WC_Subscriptions_Checkout {
 		}
 
 		// Allow plugins to add order item meta
-		do_action( 'woocommerce_add_order_item_meta', $item_id, $cart_item, $cart_item_key );
-
-		do_action( 'woocommerce_add_subscription_item_meta', $item_id, $cart_item, $cart_item_key );
+		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+			do_action( 'woocommerce_add_subscription_item_meta', $item_id, $cart_item, $cart_item_key );
+		} else {
+			wc_do_deprecated_action( 'woocommerce_add_subscription_item_meta', array( $item_id, $cart_item, $cart_item_key ), '2.7', 'CRUD and woocommerce_checkout_create_order_line_item action instead' );
+		}
 
 		return $item_id;
 	}
