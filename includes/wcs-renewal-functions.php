@@ -32,7 +32,7 @@ function wcs_create_renewal_order( $subscription ) {
 		return new WP_Error( 'renewal-order-error', $renewal_order->get_error_message() );
 	}
 
-	update_post_meta( $renewal_order->id, '_subscription_renewal', $subscription->get_id() );
+	wcs_set_objects_property( $renewal_order, 'subscription_renewal', $subscription->get_id(), 'save' );
 
 	return apply_filters( 'wcs_renewal_order_created', $renewal_order, $subscription );
 }

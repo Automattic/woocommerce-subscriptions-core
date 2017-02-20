@@ -48,7 +48,7 @@ function wcs_set_paypal_id( $order, $paypal_subscription_id ) {
 		}
 	}
 
-	return update_post_meta( wcs_get_objects_property( $order, 'id' ), '_paypal_subscription_id', $paypal_subscription_id );
+	wcs_set_objects_property( $order, 'paypal_subscription_id', $paypal_subscription_id );
 }
 
 /**

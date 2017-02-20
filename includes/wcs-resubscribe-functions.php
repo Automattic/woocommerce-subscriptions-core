@@ -55,7 +55,7 @@ function wcs_create_resubscribe_order( $subscription ) {
 	}
 
 	// Keep a record of the original subscription's ID on the new order
-	update_post_meta( $resubscribe_order->id, '_subscription_resubscribe', $subscription->get_id(), true );
+	wcs_set_objects_property( $resubscribe_order, 'subscription_resubscribe', $subscription->get_id(), true );
 
 	do_action( 'wcs_resubscribe_order_created', $resubscribe_order, $subscription );
 

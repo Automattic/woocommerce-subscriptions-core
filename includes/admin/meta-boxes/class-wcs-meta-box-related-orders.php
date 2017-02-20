@@ -58,7 +58,7 @@ class WCS_Meta_Box_Related_Orders {
 
 		// First, display all the subscriptions
 		foreach ( $subscriptions as $subscription ) {
-			$subscription->relationship = __( 'Subscription', 'woocommerce-subscriptions' );
+			wcs_set_objects_property( $subscription, 'relationship', __( 'Subscription', 'woocommerce-subscriptions' ), 'set_prop_only' );
 			$orders[] = $subscription;
 		}
 
@@ -79,7 +79,7 @@ class WCS_Meta_Box_Related_Orders {
 
 			foreach ( $resubscribed_subscriptions as $subscription ) {
 				$subscription = wcs_get_subscription( $subscription );
-				$subscription->relationship = _x( 'Resubscribed Subscription', 'relation to order', 'woocommerce-subscriptions' );
+				wcs_set_objects_property( $subscription, 'relationship', _x( 'Resubscribed Subscription', 'relation to order', 'woocommerce-subscriptions' ), 'set_prop_only' );
 				$orders[] = $subscription;
 			}
 		} else if ( wcs_order_contains_subscription( $post->ID, array( 'resubscribe' ) ) ) {
@@ -87,7 +87,7 @@ class WCS_Meta_Box_Related_Orders {
 		}
 
 		foreach ( $initial_subscriptions as $subscription ) {
-			$subscription->relationship = _x( 'Initial Subscription', 'relation to order', 'woocommerce-subscriptions' );
+			wcs_set_objects_property( $subscription, 'relationship', _x( 'Initial Subscription', 'relation to order', 'woocommerce-subscriptions' ), 'set_prop_only' );
 			$orders[] = $subscription;
 		}
 
@@ -96,7 +96,7 @@ class WCS_Meta_Box_Related_Orders {
 			foreach ( $subscriptions as $subscription ) {
 				if ( $subscription->get_parent_id() ) {
 					$order = $subscription->get_parent();
-					$order->relationship = _x( 'Parent Order', 'relation to order', 'woocommerce-subscriptions' );
+					wcs_set_objects_property( $order, 'relationship', _x( 'Parent Order', 'relation to order', 'woocommerce-subscriptions' ), 'set_prop_only' );
 					$orders[] = $order;
 				}
 			}
@@ -106,7 +106,7 @@ class WCS_Meta_Box_Related_Orders {
 		foreach ( $subscriptions as $subscription ) {
 
 			foreach ( $subscription->get_related_orders( 'all', 'renewal' ) as $order ) {
-				$order->relationship = _x( 'Renewal Order', 'relation to order', 'woocommerce-subscriptions' );
+				wcs_set_objects_property( $order, 'relationship', _x( 'Renewal Order', 'relation to order', 'woocommerce-subscriptions' ), 'set_prop_only' );
 				$orders[] = $order;
 			}
 		}

@@ -390,7 +390,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 					if ( ! $is_first_payment ) {
 
-						update_post_meta( wcs_get_objects_property( $renewal_order, 'id' ), '_transaction_id', $transaction_details['txn_id'] );
+						wcs_set_objects_property( $renewal_order, 'transaction_id', $transaction_details['txn_id'] );
 
 						if ( 'failed' == strtolower( $transaction_details['payment_status'] ) ) {
 							$subscription->payment_failed();

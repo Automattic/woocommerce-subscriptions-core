@@ -761,7 +761,7 @@ class WC_Subscriptions_Switcher {
 				}
 			}
 
-			update_post_meta( $order_id, '_subscription_switch_data', $switch_order_data );
+			wcs_set_objects_property( $order, 'subscription_switch_data', $switch_order_data );
 
 		} catch ( Exception $e ) {
 			// There was an error updating the subscription, roll back and delete pending order for switch
@@ -842,8 +842,8 @@ class WC_Subscriptions_Switcher {
 			// Select the orders which switched item/s from this subscription
 			$orders = wcs_get_switch_orders_for_subscription( $post->ID );
 
-			foreach ( $orders as $order ) {
-				$orders[ wcs_get_objects_property( $order, 'id' ) ]->relationship = __( 'Switch Order', 'woocommerce-subscriptions' );
+			foreach ( $orders as $order_id => $order ) {
+				wcs_set_objects_property( $order, 'relationship', __( 'Switch Order', 'woocommerce-subscriptions' ), 'set_prop_only' );
 			}
 
 			// Select the subscriptions which had item/s switched to this subscription by its parent order
@@ -858,8 +858,8 @@ class WC_Subscriptions_Switcher {
 
 		if ( is_array( $switched_ids ) ) {
 			foreach ( $switched_ids as $subscription_id ) {
-				$subscription               = wcs_get_subscription( $subscription_id );
-				$subscription->relationship = __( 'Switched Subscription', 'woocommerce-subscriptions' );
+				$subscription = wcs_get_subscription( $subscription_id );
+				wcs_set_objects_property( $subscription, 'relationship', __( 'Switched Subscription', 'woocommerce-subscriptions' ), 'set_prop_only' );
 				$orders[ $subscription_id ] = $subscription;
 			}
 		}
@@ -1527,7 +1527,7 @@ class WC_Subscriptions_Switcher {
 
 				self::complete_subscription_switches( $order );
 
-				update_post_meta( $order_id, '_completed_subscription_switch', 'true' );
+				wcs_set_objects_property( $order, 'completed_subscription_switch', 'true' );
 
 				$wpdb->query( 'COMMIT' );
 

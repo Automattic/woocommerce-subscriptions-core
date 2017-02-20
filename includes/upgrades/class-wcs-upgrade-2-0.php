@@ -891,7 +891,7 @@ class WCS_Upgrade_2_0 {
 
 			if ( wcs_is_subscription( $old_subscription ) ) {
 				// Link the old subscription's ID to the switch order using the new switch meta key
-				update_post_meta( $switch_order->id, '_subscription_switch', $old_subscription->get_id() );
+				wcs_set_objects_property( $switch_order, 'subscription_switch', $old_subscription->get_id() );
 
 				// Now store the new/old item IDs for record keeping
 				foreach ( $old_subscription->get_items() as $item_id => $item ) {
