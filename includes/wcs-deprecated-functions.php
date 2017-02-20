@@ -17,6 +17,56 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Wrapper for wc_doing_it_wrong.
+ *
+ * @since  2.7.0
+ * @param  string $function
+ * @param  string $version
+ * @param  string $replacement
+ */
+function wcs_doing_it_wrong( $function, $message, $version ) {
+
+	if ( function_exists( 'wc_doing_it_wrong' ) ) {
+		wc_doing_it_wrong( $function, $message, $version );
+	} else {
+		// Reimplment wc_doing_it_wrong() when WC 2.7 is not active
+		if ( is_ajax() ) {
+			do_action( 'doing_it_wrong_run', $function, $message, $version );
+			error_log( "{$function} was called incorrectly. {$message}. This message was added in version {$version}." );
+		} else {
+			_doing_it_wrong( $function, $message, $version );
+		}
+	}
+}
+
+
+/**
+ * Wrapper for wcs_deprecated_function to improve handling of ajax requests, even when
+ * WooCommerce 2.7's wcs_deprecated_function method is not available.
+ *
+ * @since  2.1.4
+ * @param  string $function
+ * @param  string $version
+ * @param  string $replacement
+ */
+function wcs_deprecated_function( $function, $version, $replacement = null ) {
+
+	if ( function_exists( 'wc_deprecated_function' ) ) {
+		wc_deprecated_function( $function, $version, $replacement );
+	} else {
+		// Reimplment wcs_deprecated_function() when WC 2.7 is not active
+		if ( is_ajax() ) {
+			do_action( 'deprecated_function_run', $function, $replacement, $version );
+			$log_string  = "The {$function} function is deprecated since version {$version}.";
+			$log_string .= $replacement ? " Replace with {$replacement}." : '';
+			error_log( $log_string );
+		} else {
+			_deprecated_function( $function, $version, $replacement );
+		}
+	}
+}
+
+/**
  * Get the string key for a subscription used in Subscriptions prior to 2.0.
  *
  * Previously, a subscription key was made up of the ID of the order used to purchase the subscription, and
