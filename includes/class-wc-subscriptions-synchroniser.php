@@ -1154,7 +1154,6 @@ class WC_Subscriptions_Synchroniser {
 	 * @deprecated 2.0
 	 */
 	public static function get_first_payment_date( $first_payment_date, $order, $product_id, $type ) {
-
 		_deprecated_function( __METHOD__, '2.0' );
 
 		$subscription = wcs_get_subscription_from_key( $order . '_' . $product_id );
