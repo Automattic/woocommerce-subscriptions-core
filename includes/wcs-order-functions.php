@@ -660,3 +660,35 @@ function wcs_get_line_item_name( $line_item ) {
 
 	return apply_filters( 'wcs_line_item_name', $line_item_name, $line_item );
 }
+
+/**
+ * Display item meta data in a version compatible way.
+ *
+ * @since  2.1.4
+ * @param  WC_Item $item
+ * @param  WC_Order $order
+ * @return void
+ */
+function wcs_display_item_meta( $item, $order ) {
+	if ( function_exists( 'wc_display_item_meta' ) ) { // WC 2.7+
+		wc_display_item_meta( $item );
+	} else {
+		$order->display_item_meta( $item );
+	}
+}
+
+/**
+ * Display item download links in a version compatible way.
+ *
+ * @since  2.1.4
+ * @param  WC_Item $item
+ * @param  WC_Order $order
+ * @return void
+ */
+function wcs_display_item_downloads( $item, $order ) {
+	if ( function_exists( 'wc_display_item_downloads' ) ) { // WC 2.7+
+		wc_display_item_downloads( $item );
+	} else {
+		$order->display_item_downloads( $item );
+	}
+}
