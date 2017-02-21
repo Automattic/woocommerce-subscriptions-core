@@ -611,9 +611,14 @@ class WCS_Cart_Renewal {
 
 			$order_id = absint( WC()->session->order_awaiting_payment );
 
+			// Guard against infinite loops in WC 2.7+ where default order staus is set in WC_Abstract_Order::__construct()
+			remove_filter( 'woocommerce_default_order_status', array( &$this, __FUNCTION__ ), 10 );
+
 			if ( $order_id > 0 && ( $order = wc_get_order( $order_id ) ) && wcs_order_contains_renewal( $order ) && $order->has_status( 'failed' ) ) {
 				$order_status = 'failed';
 			}
+
+			add_filter( 'woocommerce_default_order_status', array( &$this, __FUNCTION__ ) );
 		}
 
 		return $order_status;
