@@ -484,27 +484,32 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 	 */
 	private function get_item_description( $item, $product ) {
 
-		if ( empty( $item['item_meta'] ) ) {
-
+		if ( ! empty( WC()->cart ) && empty( $item['item_meta'] ) ) {
 			// cart item
 			$item_desc = WC()->cart->get_item_data( $item, true );
 
 			$item_desc = str_replace( "\n", ', ', rtrim( $item_desc ) );
 
 		} else {
-
 			// order item
-			$item_meta = new WC_Order_Item_Meta( $item );
 
-			$item_meta = $item_meta->get_formatted();
+			$item_desc = array();
 
-			if ( ! empty( $item_meta ) ) {
+			if ( is_callable( array( $item, 'get_formatted_meta_data' ) ) ) { // WC 2.7+
 
-				$item_desc = array();
+				foreach ( $item->get_formatted_meta_data() as $meta ) {
+					$item_desc[] = sprintf( '%s: %s', $meta->display_key, $meta->display_value );
+				}
+			} else { // WC < 2.7
 
-				foreach ( $item_meta as $meta ) {
+				$item_meta = new WC_Order_Item_Meta( $item );
+
+				foreach ( $item_meta->get_formatted() as $meta ) {
 					$item_desc[] = sprintf( '%s: %s', $meta['label'], $meta['value'] );
 				}
+			}
+
+			if ( ! empty( $item_desc ) ) {
 
 				$item_desc = implode( ', ', $item_desc );
 
