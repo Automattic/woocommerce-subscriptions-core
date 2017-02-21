@@ -972,7 +972,7 @@ class WC_Subscriptions_Product {
 					break;
 				}
 
-				if ( WC_Subscriptions_Synchroniser::is_syncing_enabled() && ( ( ! is_array( $variable_product->subscription_payment_sync_date ) && $variable_product->subscription_payment_sync_date > 0 ) || ( is_array( $variable_product->subscription_payment_sync_date ) && $variable_product->subscription_payment_sync_date['day'] > 0 ) ) ) {
+				if ( WC_Subscriptions_Synchroniser::is_product_synced( $variation_product ) ) {
 					$is_synced_or_has_trial = true;
 					break;
 				}
