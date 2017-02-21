@@ -607,7 +607,7 @@ class WCS_Cart_Renewal {
 	 */
 	public function maybe_preserve_order_status( $order_status ) {
 
-		if ( null !== WC()->session ) {
+		if ( null !== WC()->session && 'failed' !== $order_status ) {
 
 			$order_id = absint( WC()->session->order_awaiting_payment );
 
