@@ -51,7 +51,7 @@ class WCS_Admin_Meta_Boxes {
 	 * Add WC Meta boxes
 	 */
 	public function add_meta_boxes() {
-		global $current_screen, $post_ID;
+		global $post_ID;
 
 		add_meta_box( 'woocommerce-subscription-data', _x( 'Subscription Data', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Subscription_Data::output', 'shop_subscription', 'normal', 'high' );
 
