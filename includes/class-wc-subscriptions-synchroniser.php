@@ -781,7 +781,7 @@ class WC_Subscriptions_Synchroniser {
 
 		if ( $trial_expiration_date > 0 && self::is_product_synced( $product_id ) ) {
 
-			$trial_expiration_timestamp = strtotime( $trial_expiration_date );
+			$trial_expiration_timestamp = wcs_date_to_time( $trial_expiration_date );
 			remove_filter( 'woocommerce_subscriptions_product_trial_expiration_date', __METHOD__ ); // avoid infinite loop
 			$first_payment_timestamp    = self::calculate_first_payment_date( $product_id, 'timestamp' );
 			add_filter( 'woocommerce_subscriptions_product_trial_expiration_date', __METHOD__, 10, 2 ); // avoid infinite loop
