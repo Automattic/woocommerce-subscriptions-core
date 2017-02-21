@@ -26,6 +26,9 @@ class WCS_Cart_Renewal {
 
 		$this->setup_hooks();
 
+		// Attach hooks which depend on WooCommerce constants
+		add_action( 'woocommerce_loaded', array( &$this, 'attach_dependant_hooks' ), 10 );
+
 		// Set URL parameter for manual subscription renewals
 		add_filter( 'woocommerce_get_checkout_payment_url', array( &$this, 'get_checkout_payment_url' ), 10, 2 );
 
@@ -44,13 +47,30 @@ class WCS_Cart_Renewal {
 		// When a user is prevented from paying for a failed/pending renewal order because they aren't logged in, redirect them back after login
 		add_filter( 'woocommerce_login_redirect', array( &$this, 'maybe_redirect_after_login' ), 10 , 1 );
 
-		// When a renewal order's line items are being updated, update the line item IDs stored in cart data.
-		add_action( 'woocommerce_add_order_item_meta', array( &$this, 'update_line_item_cart_data' ), 10, 3 );
-
 		// Once we have finished updating the renewal order on checkout, update the session cart so the cart changes are honoured.
 		add_action( 'woocommerce_checkout_order_processed', array( &$this, 'update_session_cart_after_updating_renewal_order' ), 10 );
 
 		add_filter( 'wc_dynamic_pricing_apply_cart_item_adjustment', array( &$this, 'prevent_compounding_dynamic_discounts' ), 10, 2 );
+	}
+
+	/**
+	 * Attach WooCommerce version dependenant hooks
+	 *
+	 * @since 2.1.4
+	 */
+	public function attach_dependant_hooks() {
+
+		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+
+			// When a renewal order's line items are being updated, update the line item IDs stored in cart data.
+			add_action( 'woocommerce_add_order_item_meta', array( &$this, 'update_line_item_cart_data' ), 10, 3 );
+
+		} else {
+
+			// For order items created as part of a switch, keep a record of the prorated amounts
+			add_action( 'woocommerce_checkout_create_order_line_item', array( &$this, 'update_order_item_data_in_cart' ), 10, 3 );
+
+		}
 	}
 
 	/**
@@ -916,20 +936,23 @@ class WCS_Cart_Renewal {
 	 * After updating renewal order line items, update the values stored in cart item data
 	 * which would now reference old line item IDs.
 	 *
-	 * @since 2.1.3
+	 * Used when WC 2.7 or newer is active. When prior versions are active,
+	 * @see WCS_Cart_Renewal->update_line_item_cart_data()
+	 *
+	 * @since 2.1.4
 	 */
-	public function update_line_item_cart_data( $item_id, $cart_item_data, $cart_item_key ) {
+	public function update_order_item_data_in_cart( $order_item, $cart_item_key, $cart_item ) {
 
 		if ( isset( $cart_item_data[ $this->cart_item_key ] ) ) {
-			// Update the line_item_id to the new corresponding item_id
-			WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['line_item_id'] = $item_id;
+			WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['line_item_id'] = $order_item->get_id();
 		}
 	}
 
 	/**
 	 * Force an update to the session cart after updating renewal order line items.
-	 * This is required so that changes made by @see WCS_Cart_Renewal->update_line_item_cart_data()
-	 * are also reflected in the session cart.
+	 *
+	 * This is required so that changes made by @see WCS_Cart_Renewal->update_order_item_data_in_cart() (or
+	 * @see WCS_Cart_Renewal->update_line_item_cart_data() for WC < 2.7), are also reflected in the session cart.
 	 *
 	 * @since 2.1.3
 	 */
@@ -989,6 +1012,24 @@ class WCS_Cart_Renewal {
 	 */
 	public function maybe_add_subscription_fees( $cart ) {
 		_deprecated_function( __METHOD__, '2.0.13', __CLASS__ .'::maybe_add_fees()' );
+	}
+
+	/**
+	 * After updating renewal order line items, update the values stored in cart item data
+	 * which would now reference old line item IDs.
+	 *
+	 * @since 2.1.3
+	 */
+	public function update_line_item_cart_data( $item_id, $cart_item_data, $cart_item_key ) {
+
+		if ( false === WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+			_deprecated_function( __METHOD__, '2.1.4 and WooCommerce 2.7.0', __CLASS__ . '::update_order_item_data_in_cart( $order_item, $cart_item_key, $cart_item )' );
+		}
+
+		if ( isset( $cart_item_data[ $this->cart_item_key ] ) ) {
+			// Update the line_item_id to the new corresponding item_id
+			WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['line_item_id'] = $item_id;
+		}
 	}
 }
 new WCS_Cart_Renewal();
