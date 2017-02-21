@@ -445,7 +445,7 @@ class WCS_Cart_Renewal {
 	public function checkout_get_value( $value, $key ) {
 
 		// Only hook in after WC()->checkout() has been initialised
-		if ( did_action( 'woocommerce_checkout_init' ) > 0 ) {
+		if ( $this->cart_contains() && did_action( 'woocommerce_checkout_init' ) > 0 ) {
 
 			// Guard against the fake WC_Checkout singleton, see https://github.com/woocommerce/woocommerce-subscriptions/issues/427#issuecomment-260763250
 			remove_filter( 'woocommerce_checkout_get_value', array( &$this, 'checkout_get_value' ), 10, 2 );
