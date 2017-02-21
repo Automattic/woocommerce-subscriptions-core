@@ -449,7 +449,7 @@ class WC_Subscriptions_Synchroniser {
 			$payment_date = 0;
 		}
 
-		return $payment_date;
+		return apply_filters( 'woocommerce_subscriptions_product_sync_date', $payment_date, $product );
 	}
 
 	/**
