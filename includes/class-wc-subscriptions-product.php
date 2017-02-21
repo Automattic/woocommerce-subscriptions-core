@@ -661,7 +661,7 @@ class WC_Subscriptions_Product {
 	 */
 	public static function maybe_set_variations_price_html( $variation_details, $variable_product, $variation ) {
 
-		if ( 'variable-subscription' == $variable_product->product_type && empty( $variation_details['price_html'] ) ) {
+		if ( $variable_product->is_type( 'variable-subscription' ) && empty( $variation_details['price_html'] ) ) {
 			$variation_details['price_html'] = '<span class="price">' . $variation->get_price_html() . '</span>';
 		}
 

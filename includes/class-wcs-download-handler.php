@@ -79,7 +79,7 @@ class WCS_Download_Handler {
 					$_product = $subscription->get_product_from_item( $item );
 
 					if ( $_product && $_product->exists() && $_product->is_downloadable() ) {
-						$downloads  = $_product->get_files();
+						$downloads  = wcs_get_objects_property( $_product, 'downloads' );
 						$product_id = wcs_get_canonical_product_id( $item );
 
 						foreach ( array_keys( $downloads ) as $download_id ) {
@@ -207,7 +207,7 @@ class WCS_Download_Handler {
 
 		$product_id            = ( $variation_id ) ? $variation_id : $product_id;
 		$product               = wc_get_product( $product_id );
-		$existing_download_ids = array_keys( (array) $product->get_files() );
+		$existing_download_ids = array_keys( (array) wcs_get_objects_property( $product, 'downloads' ) );
 		$downloadable_ids      = array_keys( (array) $downloadable_files );
 		$new_download_ids      = array_filter( array_diff( $downloadable_ids, $existing_download_ids ) );
 

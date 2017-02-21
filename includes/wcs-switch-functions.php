@@ -119,9 +119,11 @@ function wcs_is_product_switchable_type( $product ) {
 	} else {
 
 		// back compat for parent products
-		if ( $product->is_type( 'subscription_variation' ) && ! empty( $product->parent ) ) {
+		$parent_id = wcs_get_objects_property( $product, 'parent_id' );
+
+		if ( $product->is_type( 'subscription_variation' ) && ! empty( $parent_id ) ) {
 			$variation = $product;
-			$product   = $product->parent;
+			$product   = wc_get_product( $parent_id );;
 		}
 
 		$allow_switching = get_option( WC_Subscriptions_Admin::$option_prefix . '_allow_switching', 'no' );
@@ -131,10 +133,10 @@ function wcs_is_product_switchable_type( $product ) {
 				$is_product_switchable = ( $product->is_type( array( 'variable-subscription', 'subscription_variation' ) ) ) ? true : false;
 				break;
 			case 'grouped' :
-				$is_product_switchable = ( 0 !== $product->post->post_parent ) ? true : false;
+				$is_product_switchable = ( ! empty( $parent_id ) ) ? true : false;
 				break;
 			case 'variable_grouped' :
-				$is_product_switchable = ( $product->is_type( array( 'variable-subscription', 'subscription_variation' ) ) || 0 !== $product->post->post_parent ) ? true : false;
+				$is_product_switchable = ( $product->is_type( array( 'variable-subscription', 'subscription_variation' ) ) || ! empty( $parent_id ) ) ? true : false;
 				break;
 			case 'no' :
 			default:

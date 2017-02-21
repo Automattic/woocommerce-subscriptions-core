@@ -390,9 +390,9 @@ class WCS_Cart_Renewal {
 				if ( wc_prices_include_tax() ) {
 
 					if ( apply_filters( 'woocommerce_adjust_non_base_location_prices', true ) ) {
-						$base_tax_rates = WC_Tax::get_base_tax_rates( $_product->tax_class );
+						$base_tax_rates = WC_Tax::get_base_tax_rates( wcs_get_objects_property( $_product, 'tax_class' ) );
 					} else {
-						$base_tax_rates = WC_Tax::get_rates( $_product->tax_class );
+						$base_tax_rates = WC_Tax::get_rates( wcs_get_objects_property( $_product, 'tax_class' ) );
 					}
 
 					$base_taxes_on_item = WC_Tax::calc_tax( $price, $base_tax_rates, false, false );

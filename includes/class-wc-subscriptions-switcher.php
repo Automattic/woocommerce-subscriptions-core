@@ -431,8 +431,8 @@ class WC_Subscriptions_Switcher {
 		$additional_query_args = array();
 
 		// Grouped product
-		if ( 0 !== $product->post->post_parent ) {
-			$switch_url = get_permalink( $product->post->post_parent );
+		if ( wcs_get_objects_property( $product, 'parent_id' ) ) {
+			$switch_url = get_permalink( wcs_get_objects_property( $product, 'parent_id' ) );
 		} else {
 			$switch_url = get_permalink( $product->get_id() );
 
@@ -922,8 +922,8 @@ class WC_Subscriptions_Switcher {
 				$switch_product = wc_get_product( wcs_get_order_items_product_id( $switch_item_details['item_id'] ) );
 
 				// If the switch is for a grouped product, we need to check the other products grouped with this one
-				if ( 0 !== $product->post->post_parent ) {
-					$switch_product_ids = array_unique( array_merge( $switch_product_ids, wc_get_product( $product->post->post_parent )->get_children() ) );
+				if ( wcs_get_objects_property( $product, 'parent_id' ) ) {
+					$switch_product_ids = array_unique( array_merge( $switch_product_ids, wc_get_product( wcs_get_objects_property( $product, 'parent_id' ) )->get_children() ) );
 				} else {
 					$switch_product_ids[] = $switch_product->get_id();
 				}
@@ -1045,7 +1045,7 @@ class WC_Subscriptions_Switcher {
 			// Else it's a valid switch
 			$product = wc_get_product( $item['product_id'] );
 
-			$child_products = ( 0 !== $product->post->post_parent ) ? wc_get_product( $product->post->post_parent )->get_children() : array();
+			$child_products = ( wcs_get_objects_property( $product, 'parent_id' ) ) ? wc_get_product( wcs_get_objects_property( $product, 'parent_id' ) )->get_children() : array();
 
 			if ( $product_id != $item['product_id'] && ! in_array( $item['product_id'], $child_products ) ) {
 				return $cart_item_data;
@@ -1553,7 +1553,7 @@ class WC_Subscriptions_Switcher {
 		$switch_setting  = get_option( WC_Subscriptions_Admin::$option_prefix . '_allow_switching', 'no' );
 
 		// does the current switch setting allow switching for variable or variable_grouped
-		if ( 'variable_grouped' == $switch_setting || ( $product->is_type( array( 'variable-subscription', 'subscription_variation' ) ) && 'variable' == $switch_setting ) || ( 'grouped' == $switch_setting && ( $product->is_type( 'grouped' ) || 0 !== $product->post->post_parent ) ) ) {
+		if ( 'variable_grouped' == $switch_setting || ( $product->is_type( array( 'variable-subscription', 'subscription_variation' ) ) && 'variable' == $switch_setting ) || ( 'grouped' == $switch_setting && ( $product->is_type( 'grouped' ) || wcs_get_objects_property( $product, 'parent_id' ) ) ) ) {
 			$allow_switching = true;
 		}
 

@@ -92,7 +92,7 @@ class WCS_Remove_Item {
 
 						if ( $_product && $_product->exists() && $_product->is_downloadable() ) {
 
-							$downloads = $_product->get_files();
+							$downloads = wcs_get_objects_property( $_product, 'downloads' );
 
 							foreach ( array_keys( $downloads ) as $download_id ) {
 								wc_downloadable_file_permission( $download_id, $product_id, $subscription, $line_item['qty'] );

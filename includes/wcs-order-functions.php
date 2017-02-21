@@ -256,8 +256,8 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 					);
 
 					// If we have a variation, get the attribute meta data from teh item to pass to callbacks
-					if ( ! empty( $item['variation_id'] ) && ! empty( $product->variation_data ) ) {
-						foreach ( $product->variation_data as $attribute => $variation ) {
+					if ( ! empty( $item['variation_id'] ) && null !== ( $variation_data = wcs_get_objects_property( $product, 'variation_data' ) ) ) {
+						foreach ( $variation_data as $attribute => $variation ) {
 							if ( isset( $item[ str_replace( 'attribute_', '', $attribute ) ] ) ) {
 								$args['variation'][ $attribute ] = $item[ str_replace( 'attribute_', '', $attribute ) ];
 							}
