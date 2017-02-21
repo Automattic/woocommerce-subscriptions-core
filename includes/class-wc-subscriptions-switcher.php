@@ -17,6 +17,9 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function init() {
 
+		// Attach hooks which depend on WooCommerce constants
+		add_action( 'woocommerce_loaded', __CLASS__ . '::attach_dependant_hooks' );
+
 		// Check if the current request is for switching a subscription and if so, start he switching process
 		add_filter( 'template_redirect', __CLASS__ . '::subscription_switch_handler', 100 );
 
@@ -35,12 +38,6 @@ class WC_Subscriptions_Switcher {
 
 		// When creating an order, add meta if it's for switching a subscription
 		add_action( 'woocommerce_checkout_update_order_meta', __CLASS__ . '::add_order_meta', 10, 2 );
-
-		// For order items created as part of a switch, keep a record of the prorated amounts
-		add_action( 'woocommerce_add_order_item_meta', __CLASS__ . '::add_order_item_meta', 10, 3 );
-
-		// For subscription items created as part of a switch, keep a record of the relationship between the items
-		add_action( 'woocommerce_add_subscription_item_meta', __CLASS__ . '::set_subscription_item_meta', 50, 3 );
 
 		// Add a renewal orders section to the Related Orders meta box
 		add_action( 'woocommerce_subscriptions_related_orders_meta_box_rows', __CLASS__ . '::switch_order_meta_box_rows', 10 );
@@ -123,6 +120,31 @@ class WC_Subscriptions_Switcher {
 		add_action( 'woocommerce_cart_totals_after_shipping', __CLASS__ . '::maybe_unset_free_trial' );
 		add_action( 'woocommerce_review_order_before_shipping', __CLASS__ . '::maybe_set_free_trial' );
 		add_action( 'woocommerce_review_order_after_shipping', __CLASS__ . '::maybe_unset_free_trial' );
+	}
+
+	/**
+	 * Attach WooCommerce version dependenant hooks
+	 *
+	 * @since 2.1.4
+	 */
+	public static function attach_dependant_hooks() {
+
+		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+
+			// For order items created as part of a switch, keep a record of the prorated amounts
+			add_action( 'woocommerce_add_order_item_meta', __CLASS__ . '::add_order_item_meta', 10, 3 );
+
+			// For subscription items created as part of a switch, keep a record of the relationship between the items
+			add_action( 'woocommerce_add_subscription_item_meta', __CLASS__ . '::set_subscription_item_meta', 50, 3 );
+
+		} else {
+
+			// For order items created as part of a switch, keep a record of the prorated amounts
+			add_action( 'woocommerce_checkout_create_order_line_item', __CLASS__ . '::add_line_item_meta', 10, 4 );
+
+			// After order meta is saved, get the order line item ID for the switch so we can update it later
+			add_action( 'woocommerce_checkout_update_order_meta', __CLASS__ . '::set_switch_order_item_id', 10, 2 );
+		}
 	}
 
 	/**
@@ -541,14 +563,17 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function add_order_meta( $order_id, $posted ) {
 
+		$order = wc_get_order( $order_id );
+
 		// delete all the existing subscription switch links before adding new ones
-		delete_post_meta( $order_id, '_subscription_switch' );
+		wcs_delete_objects_property( $order, 'subscription_switch' );
 
 		$switches = self::cart_contains_switches();
 
 		if ( false !== $switches ) {
+
 			foreach ( $switches as $switch_details ) {
-				add_post_meta( $order_id, '_subscription_switch', $switch_details['subscription_id'] );
+				wcs_set_objects_property( $order, 'subscription_switch', $switch_details['subscription_id'] );
 			}
 		}
 	}
@@ -557,9 +582,16 @@ class WC_Subscriptions_Switcher {
 	 * To prorate sign-up fee and recurring amounts correctly when the customer switches a subscription multiple times, keep a record of the
 	 * amount for each on the order item.
 	 *
+	 * @param int $order_item_id The ID of a WC_Order_Item object.
+	 * @param array $cart_item The cart item's data.
+	 * @param string $cart_item_key The hash used to identify the item in the cart
 	 * @since 2.0
 	 */
 	public static function add_order_item_meta( $order_item_id, $cart_item, $cart_item_key ) {
+
+		if ( false === WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+			_deprecated_function( __METHOD__, '2.1.4 and WooCommerce 2.7.0', __CLASS__ . '::add_order_line_item_meta( $order_item, $cart_item_key, $cart_item )' );
+		}
 
 		if ( isset( $cart_item['subscription_switch'] ) ) {
 			if ( $switches = self::cart_contains_switches() ) {
@@ -583,12 +615,60 @@ class WC_Subscriptions_Switcher {
 	}
 
 	/**
+	 * Store switch related data on the line item on the subscription and switch order.
+	 *
+	 * For subscriptions: items on a new billing schedule are left to be added as new subscriptions, but we also want
+	 * to keep a record of them being a switch, so we do that here.
+	 *
+	 * For orders: to prorate sign-up fee and recurring amounts correctly when the customer switches a subscription
+	 * multiple times, keep a record of the amount for each on the order item.
+	 *
+	 * Attached to WC 2.7+ hooks and uses WC 2.7 methods.
+	 *
+	 * @param WC_Order_Item_Product $order_item
+	 * @param string $cart_item_key The hash used to identify the item in the cart
+	 * @param array $cart_item The cart item's data.
+	 * @param WC_Order $order The order or subscription object to which the line item relates
+	 * @since 2.1.4
+	 */
+	public static function add_line_item_meta( $order_item, $cart_item_key, $cart_item, $order ) {
+		if ( isset( $cart_item['subscription_switch'] ) ) {
+			if ( $switches = self::cart_contains_switches() ) {
+				foreach ( $switches as $switch_item_key => $switch_details ) {
+					if ( $cart_item_key == $switch_item_key ) {
+
+						// Store the cart item key on the line item so that we can link it later on to the order line item ID
+						$order_item->add_meta_data( '_switched_cart_item_key', $cart_item_key );
+
+						if ( wcs_is_subscription( $order ) ) {
+							$order_item->add_meta_data( '_switched_subscription_item_id', $switch_details['item_id'] );
+						} else {
+							$sign_up_fee_prorated = WC()->cart->cart_contents[ $cart_item_key ]['data']->get_meta( 'subscription_sign_up_fee_prorated', true );
+							$price_prorated       = WC()->cart->cart_contents[ $cart_item_key ]['data']->get_meta( 'subscription_price_prorated', true );
+
+							$order_item->add_meta_data( '_switched_subscription_sign_up_fee_prorated', empty( $sign_up_fee_prorated ) ? 0 : $sign_up_fee_prorated );
+							$order_item->add_meta_data( '_switched_subscription_price_prorated', empty( $sign_up_fee_prorated ) ? 0 : $sign_up_fee_prorated );
+						}
+					}
+				}
+			}
+		}
+	}
+
+	/**
 	 * Subscription items on a new billing schedule are left to be added as new subscriptions, but we also
 	 * want to keep a record of them being a switch, so we do that here.
 	 *
+	 * @param int $order_item_id The ID of a WC_Order_Item object.
+	 * @param array $cart_item The cart item's data.
+	 * @param string $cart_item_key The hash used to identify the item in the cart
 	 * @since 2.0
 	 */
 	public static function set_subscription_item_meta( $item_id, $cart_item, $cart_item_key ) {
+
+		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+			_deprecated_function( __METHOD__, '2.1.4', __CLASS__ . '::add_subscription_line_item_meta( $order_item, $cart_item_key, $cart_item )' );
+		}
 
 		if ( isset( $cart_item['subscription_switch'] ) ) {
 			if ( $switches = self::cart_contains_switches() ) {
@@ -596,6 +676,34 @@ class WC_Subscriptions_Switcher {
 					if ( $cart_item_key == $switch_item_key ) {
 						wc_add_order_item_meta( $item_id, '_switched_subscription_item_id', $switch_details['item_id'], true );
 						wc_add_order_item_meta( $switch_details['item_id'], '_switched_subscription_new_item_id', $item_id, true );
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Store the order line item id so it can be retrieved when we're processing the switch on checkout
+	 *
+	 * @param int $order_id
+	 * @param array $checkout_posted_data
+	 * @since 2.1.4
+	 */
+	public static function set_switch_order_item_id( $order_id, $posted_checkout_data ) {
+
+		$order = wc_get_order( $order_id );
+
+		foreach ( $order->get_items( 'line_item' ) as $order_item_id => $order_item ) {
+
+			$cart_item_key = $order_item->get_meta( '_switched_cart_item_key' );
+
+			if ( ! empty( $cart_item_key ) ) {
+				foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
+
+					// If this cart item belongs to this recurring cart
+					if ( in_array( $cart_item_key, array_keys( $recurring_cart->cart_contents ) ) && isset( WC()->cart->recurring_carts[ $recurring_cart_key ]->cart_contents[ $cart_item_key ]['subscription_switch'] ) ) {
+						WC()->cart->recurring_carts[ $recurring_cart_key ]->cart_contents[ $cart_item_key ]['subscription_switch']['order_line_item_id'] = $order_item_id;
+						wc_add_order_item_meta( WC()->cart->recurring_carts[ $recurring_cart_key ]->cart_contents[ $cart_item_key ]['subscription_switch']['item_id'], '_switched_subscription_new_item_id', $order_item_id, true );
 					}
 				}
 			}
