@@ -20,6 +20,11 @@ class WC_Product_Subscription_Variation extends WC_Product_Variation {
 	var $product_type;
 
 	/**
+	 * A way to access the old array property.
+	 */
+	protected $subscription_variation_level_meta_data;
+
+	/**
 	 * Create a simple subscription product object.
 	 *
 	 * @access public
@@ -33,18 +38,25 @@ class WC_Product_Subscription_Variation extends WC_Product_Variation {
 
 		$this->product_type = 'subscription_variation';
 
-		$this->subscription_variation_level_meta_data = array(
-			'subscription_price'             => 0,
-			'subscription_period'            => '',
-			'subscription_period_interval'   => 'day',
-			'subscription_length'            => 0,
-			'subscription_trial_length'      => 0,
-			'subscription_trial_period'      => 'day',
-			'subscription_sign_up_fee'       => 0,
-			'subscription_payment_sync_date' => 0,
-		);
+		$this->subscription_variation_level_meta_data = new WCS_Array_Property_Post_Meta_Black_Magic( $this->get_id() );
+	}
 
-		$this->variation_level_meta_data = array_merge( $this->variation_level_meta_data, $this->subscription_variation_level_meta_data );
+	/**
+	 * Magic __get method for backwards compatibility. Map legacy vars to WC_Subscriptions_Product getters.
+	 *
+	 * @param  string $key Key name.
+	 * @return mixed
+	 */
+	public function __get( $key ) {
+
+		if ( 'subscription_variation_level_meta_data' === $key ) {
+
+			_deprecated_argument( __CLASS__ . '::$' . $key, '2.1.4', 'Product properties should not be accessed directly with WooCommerce 2.7+. Use the getter in WC_Subscriptions_Product instead.' );
+
+			$value = $this->subscription_variation_level_meta_data; // Behold, the horror that is the magic of WCS_Array_Property_Post_Meta_Black_Magic
+		}
+
+		return $value;
 	}
 
 	/**
