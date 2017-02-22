@@ -58,7 +58,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function __isset( $key ) {
 
-		if ( in_array( $key, array( 'start_date', 'trial_end_date', 'next_payment_date', 'end_date', 'last_payment_date', 'order', 'payment_gateway' ) ) ) {
+		if ( in_array( $key, array( 'start_date', 'trial_end_date', 'next_payment_date', 'end_date', 'last_payment_date', 'order', 'payment_gateway', 'requires_manual_renewal' ) ) ) {
 
 			$is_set = true;
 
@@ -87,6 +87,12 @@ class WC_Subscription extends WC_Order {
 			$this->set_parent_id( wcs_get_objects_property( $value, 'id' ) );
 			$this->order = $value;
 
+		} elseif ( 'requires_manual_renewal' == $key ) {
+
+			wcs_deprecated_function( 'WC_Subscription::$requires_manual_renewal', '2.1.4', 'WC_Subscription::set_requires_manual_renewal( $manual )' );
+
+			$this->set_requires_manual_renewal( $value );
+
 		} elseif ( 'payment_gateway' == $key ) {
 
 			wcs_deprecated_function( 'WC_Subscription::$payment_gateway', '2.1.4', 'WC_Subscription::set_payment_method( $payment_gateway )' );
@@ -113,29 +119,34 @@ class WC_Subscription extends WC_Order {
 
 			$value = $this->get_date( $key );
 
-		} elseif ( 'order' == $key ) {
+		} elseif ( in_array( $key, array( 'order', 'payment_gateway', 'requires_manual_renewal' ) ) {
 
-			$value    = $this->get_parent();
+			switch ( $key ) {
 
-			wc_doing_it_wrong( $key, 'Subscription properties should not be accessed directly as WooCommerce 2.7 no longer supports direct property access. Use WC_Subscription::get_parent() instead.', '2.1.4' );
+				case 'order' :
+					$function = 'WC_Subscription::get_parent()';
+					$value    = $this->get_parent();
+					break;
 
-		} elseif ( 'payment_gateway' == $key ) {
+				case 'requires_manual_renewal' :
+					$function = 'WC_Subscription::get_requires_manual_renewal()';
+					$value    = $this->get_requires_manual_renewal();
+					break;
 
-			// Only set the payment gateway once and only when we first need it
-			if ( ! property_exists( $this, 'payment_gateway' ) || empty( $this->payment_gateway ) ) {
-				$this->payment_gateway = wc_get_payment_gateway_by_order( $this );
+				case 'payment_gateway' :
+					$function = 'wc_get_payment_gateway_by_order( $subscription )';
+					$value    = wc_get_payment_gateway_by_order( $this );
+					break;
+
+				case 'suspension_count' :
+					$function = 'WC_Subscription::get_suspension_count()';
+					$value    = $this->get_suspension_count();
+					break;
 			}
 
-			$value = $this->payment_gateway;
-
-			wc_doing_it_wrong( $key, 'Subscription properties should not be accessed directly as WooCommerce 2.7 no longer supports direct property access. Use wc_get_payment_gateway_by_order( $subscription ) instead.', '2.1.4' );
-
-		} elseif ( 'suspension_count' == $key ) {
-
-			$value = $this->get_suspension_count();
-
-			wc_doing_it_wrong( $key, 'Subscription properties should not be accessed directly as WooCommerce 2.7 no longer supports direct property access. Use WC_Subscription::get_suspension_count() instead.', '2.1.4' );
-
+			if ( ! WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+				wcs_doing_it_wrong( $key, sprintf( 'Subscription properties should not be accessed directly as WooCommerce 2.7 no longer supports direct property access. Use %s instead.', $function ), '2.1.4' );
+			}
 		} else {
 
 			$value = parent::__get( $key );
@@ -450,12 +461,16 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Checks if the subscription requires manual renewal payments.
 	 *
+	 * This differs to the @see self::get_requires_manual_renewal() method in that it also conditions outside
+	 * of the 'requires_manual_renewal' property which would force a subscription to require manual renewal
+	 * payments, like an inactive payment gateway or a site in staging mode.
+	 *
 	 * @access public
 	 * @return bool
 	 */
 	public function is_manual() {
 
-		if ( WC_Subscriptions::is_duplicate_site() || false === wc_get_payment_gateway_by_order( $this ) || ( isset( $this->requires_manual_renewal ) && 'true' == $this->requires_manual_renewal ) ) {
+		if ( WC_Subscriptions::is_duplicate_site() || false === wc_get_payment_gateway_by_order( $this ) || 'true' == $this->get_requires_manual_renewal() ) {
 			$is_manual = true;
 		} else {
 			$is_manual = false;
@@ -678,6 +693,17 @@ class WC_Subscription extends WC_Order {
 		return $this->get_prop( 'suspension_count', $context );
 	}
 
+	/**
+	 * Checks if the subscription requires manual renewal payments.
+	 *
+	 * @access public
+	 * @return bool
+	 */
+	public function get_requires_manual_renewal( $context = 'view' ) {
+		return $this->get_prop( 'requires_manual_renewal', $context );
+	}
+
+
 	/*** Setters *****************************************************/
 
 	/**
@@ -717,6 +743,15 @@ class WC_Subscription extends WC_Order {
 	public function set_parent_id( $value ) {
 		$this->set_prop( 'parent_id', absint( $value ) );
 		$this->order = null;
+	}
+
+	/**
+	 * Set the manual renewal flag on the subscription.
+	 *
+	 * @return string
+	 */
+	public function set_requires_manual_renewal( $value ) {
+		$this->set_prop( 'requires_manual_renewal', $value );
 	}
 
 	/*** Date methods *****************************************************/
