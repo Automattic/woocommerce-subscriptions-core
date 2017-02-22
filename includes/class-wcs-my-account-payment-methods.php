@@ -242,7 +242,7 @@ class WCS_My_Account_Payment_Methods {
 	 */
 	public static function get_token_label( $token ) {
 
-		if ( method_exists( $token, 'get_last4' ) && ! empty( $token->get_last4() ) ) {
+		if ( method_exists( $token, 'get_last4' ) && $token->get_last4() ) {
 			$label = sprintf( __( '%s ending in %s', 'woocommerce-subscriptions' ), esc_html( wc_get_credit_card_type_label( $token->get_card_type() ) ), esc_html( $token->get_last4() ) );
 		} else {
 			$label = esc_html( wc_get_credit_card_type_label( $token->get_card_type() ) );
