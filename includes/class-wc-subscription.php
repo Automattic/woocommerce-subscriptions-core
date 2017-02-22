@@ -1843,27 +1843,6 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Get the downloadable files for an item in this subscription if the subscription is active
-	 *
-	 * @param  array $item
-	 * @return array
-	 */
-	public function get_item_downloads( $item ) {
-		global $wpdb;
-
-		$files = array();
-
-		// WC Emails are sent before the subscription status is updated to active etc. so we need a way to ensure download links are added to the emails before being sent
-		$sending_email = ( did_action( 'woocommerce_email_before_order_table' ) > did_action( 'woocommerce_email_after_order_table' ) ) ? true : false;
-
-		if ( $this->has_status( apply_filters( 'woocommerce_subscription_item_download_statuses', array( 'active', 'pending-cancel' ) ) ) || $sending_email ) {
-			$files = parent::get_item_downloads( $item );
-		}
-
-		return apply_filters( 'woocommerce_get_item_downloads', $files, $item, $this );
-	}
-
-	/**
 	 *  Determine if the subscription is for one payment only.
 	 *
 	 * @return bool whether the subscription is for only one payment
@@ -1899,6 +1878,30 @@ class WC_Subscription extends WC_Order {
 		}
 
 		return apply_filters( 'woocommerce_subscription_is_one_payment', $is_one_payment, $this );
+	}
+
+	/**
+	 * Get the downloadable files for an item in this subscription if the subscription is active
+	 *
+	 * @param  array $item
+	 * @return array
+	 */
+	public function get_item_downloads( $item ) {
+
+		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+			wcs_deprecated_function( __METHOD__, '2.1.4', 'WC_Order_Item_Product::get_item_downloads(), because WooCommerce 2.7+ now uses that' );
+		}
+
+		$files = array();
+
+		// WC Emails are sent before the subscription status is updated to active etc. so we need a way to ensure download links are added to the emails before being sent
+		$sending_email = ( did_action( 'woocommerce_email_before_order_table' ) > did_action( 'woocommerce_email_after_order_table' ) ) ? true : false;
+
+		if ( $this->has_status( apply_filters( 'woocommerce_subscription_item_download_statuses', array( 'active', 'pending-cancel' ) ) ) || $sending_email ) {
+			$files = parent::get_item_downloads( $item );
+		}
+
+		return apply_filters( 'woocommerce_get_item_downloads', $files, $item, $this );
 	}
 
 	/**
