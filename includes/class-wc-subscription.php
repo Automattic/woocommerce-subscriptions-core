@@ -1440,10 +1440,7 @@ class WC_Subscription extends WC_Order {
 	 * @return array
 	 */
 	public function get_refunds() {
-		if ( ! is_array( $this->refunds ) ) {
-			$this->refunds = array();
-		}
-		return $this->refunds;
+		return array();
 	}
 
 	/**
