@@ -30,6 +30,7 @@ class WCS_My_Account_Payment_Methods {
 	 * @param  array data about the token including a list of actions which can be triggered by the customer from their my account page
 	 * @param  WC_Payment_Token payment token object
 	 * @return array payment token data
+	 * @since  2.1.4
 	 */
 	public static function flag_subscription_payment_token_deletions( $payment_token_data, $payment_token ) {
 
@@ -54,7 +55,8 @@ class WCS_My_Account_Payment_Methods {
 	/**
 	 * Before deleting a subscription payment token, display a warning with possible options.
 	 *
-	 * @param  bool Whether the customer has saved payment tokens or not
+	 * @param bool Whether the customer has saved payment tokens or not
+	 * @since 2.1.4
 	 */
 	public static function display_delete_token_warning( $has_methods ) {
 
@@ -146,6 +148,7 @@ class WCS_My_Account_Payment_Methods {
 	 *
 	 * @param int The deleted token id
 	 * @param WC_Payment_Token The deleted token object
+	 * @since 2.1.4
 	 */
 	public static function maybe_update_subscriptions_payment_meta( $deleted_token_id, $deleted_token ) {
 
@@ -192,11 +195,12 @@ class WCS_My_Account_Payment_Methods {
 	}
 
 	/**
-	 * Get subscriptions by a WC_Payment_Token. All automatic subscriptions matching the token's payment method,
-	 * customer id and token value stored anywhere in post meta will be returned.
+	 * Get subscriptions by a WC_Payment_Token. All automatic subscriptions with the token's payment method,
+	 * customer id and token value stored in post meta will be returned.
 	 *
 	 * @param  WC_Payment_Token payment token object
 	 * @return array subscription posts
+	 * @since  2.1.4
 	 */
 	public static function get_subscriptions_by_token( $payment_token ) {
 
@@ -234,6 +238,7 @@ class WCS_My_Account_Payment_Methods {
 	 *
 	 * @param  WC_Payment_Token payment token object
 	 * @return string WC_Payment_Token label
+	 * @since  2.1.4
 	 */
 	public static function get_token_label( $token ) {
 
