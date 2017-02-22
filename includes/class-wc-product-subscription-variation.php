@@ -17,8 +17,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WC_Product_Subscription_Variation extends WC_Product_Variation {
 
-	var $product_type;
-
 	/**
 	 * A way to access the old array property.
 	 */
@@ -30,13 +28,9 @@ class WC_Product_Subscription_Variation extends WC_Product_Variation {
 	 * @access public
 	 * @param mixed $product
 	 */
-	public function __construct( $product, $args = array() ) {
+	public function __construct( $product = 0 ) {
 
-		parent::__construct( $product, $args = array() );
-
-		$this->parent_product_type = $this->product_type;
-
-		$this->product_type = 'subscription_variation';
+		parent::__construct( $product );
 
 		$this->subscription_variation_level_meta_data = new WCS_Array_Property_Post_Meta_Black_Magic( $this->get_id() );
 	}
@@ -54,9 +48,26 @@ class WC_Product_Subscription_Variation extends WC_Product_Variation {
 			_deprecated_argument( __CLASS__ . '::$' . $key, '2.1.4', 'Product properties should not be accessed directly with WooCommerce 2.7+. Use the getter in WC_Subscriptions_Product instead.' );
 
 			$value = $this->subscription_variation_level_meta_data; // Behold, the horror that is the magic of WCS_Array_Property_Post_Meta_Black_Magic
+		} else {
+
+			$value = wcs_product_deprecated_property_handler( $key, $this );
+
+			// No matching property found in wcs_product_deprecated_property_handler()
+			if ( is_null( $value ) ) {
+				$value = parent::__get( $key );
+			}
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Get internal type.
+	 *
+	 * @return string
+	 */
+	public function get_type() {
+		return 'subscription_variation';
 	}
 
 	/**
@@ -103,16 +114,56 @@ class WC_Product_Subscription_Variation extends WC_Product_Variation {
 	}
 
 	/**
+	 * Checks if the variable product this variation belongs to is purchasable.
+	 *
+	 * @access public
+	 * @return bool
+	 */
+	public function is_purchasable() {
+		$purchasable = WCS_Limiter::is_purchasable( wc_get_product( $this->get_parent_id() )->is_purchasable(), $this );
+		return apply_filters( 'woocommerce_subscription_variation_is_purchasable', $purchasable, $this );
+	}
+
+	/**
+	 * Checks the product type to see if it is either this product's type or the parent's
+	 * product type.
+	 *
+	 * @access public
+	 * @param mixed $type Array or string of types
+	 * @return bool
+	 */
+	public function is_type( $type ) {
+		if ( 'variation' == $type || ( is_array( $type ) && in_array( 'variation', $type ) ) ) {
+			return true;
+		} else {
+			return parent::is_type( $type );
+		}
+	}
+
+	/* Deprecated Functions */
+
+	/**
+	 * Return the sign-up fee for this product
+	 *
+	 * @return string
+	 */
+	public function get_sign_up_fee() {
+		wcs_deprecated_function( __METHOD__, '2.1.4', 'WC_Subscriptions_Product::get_sign_up_fee( $this )' );
+		return WC_Subscriptions_Product::get_sign_up_fee( $this );
+	}
+
+	/**
 	 * Returns the sign up fee (including tax) by filtering the products price used in
 	 * @see WC_Product::get_price_including_tax( $qty )
 	 *
 	 * @return string
 	 */
 	public function get_sign_up_fee_including_tax( $qty = 1, $price = '' ) {
+		wcs_deprecated_function( __METHOD__, '2.1.4', 'wcs_get_price_including_tax( $product, array( "qty" => $qty, "price" => $price ) )' );
 
 		add_filter( 'woocommerce_get_price', array( &$this, 'get_sign_up_fee' ), 100, 0 );
 
-		$sign_up_fee_including_tax = parent::get_price_including_tax( $qty, $price );
+		$sign_up_fee_including_tax = parent::get_price_including_tax( $qty );
 
 		remove_filter( 'woocommerce_get_price', array( &$this, 'get_sign_up_fee' ), 100, 0 );
 
@@ -126,54 +177,14 @@ class WC_Product_Subscription_Variation extends WC_Product_Variation {
 	 * @return string
 	 */
 	public function get_sign_up_fee_excluding_tax( $qty = 1, $price = '' ) {
+		wcs_deprecated_function( __METHOD__, '2.1.4', 'wcs_get_price_excluding_tax( $product, array( "qty" => $qty, "price" => $price ) )' );
 
 		add_filter( 'woocommerce_get_price', array( &$this, 'get_sign_up_fee' ), 100, 0 );
 
-		$sign_up_fee_excluding_tax = parent::get_price_excluding_tax( $qty, $price );
+		$sign_up_fee_excluding_tax = parent::get_price_excluding_tax( $qty );
 
 		remove_filter( 'woocommerce_get_price', array( &$this, 'get_sign_up_fee' ), 100, 0 );
 
 		return $sign_up_fee_excluding_tax;
-	}
-
-	/**
-	 * Return the sign-up fee for this product
-	 *
-	 * @return string
-	 */
-	public function get_sign_up_fee() {
-		return WC_Subscriptions_Product::get_sign_up_fee( $this );
-	}
-
-
-	/**
-	 * Checks if the variable product this variation belongs to is purchasable.
-	 *
-	 * @access public
-	 * @return bool
-	 */
-	function is_purchasable() {
-
-		$purchasable = WCS_Limiter::is_purchasable( $this->parent->is_purchasable(), $this );
-
-		return apply_filters( 'woocommerce_subscription_variation_is_purchasable', $purchasable, $this );
-	}
-
-	/**
-	 * Checks the product type to see if it is either this product's type or the parent's
-	 * product type.
-	 *
-	 * @access public
-	 * @param mixed $type Array or string of types
-	 * @return bool
-	 */
-	public function is_type( $type ) {
-		if ( $this->product_type == $type || ( is_array( $type ) && in_array( $this->product_type, $type ) ) ) {
-			return true;
-		} elseif ( $this->parent_product_type == $type || ( is_array( $type ) && in_array( $this->parent_product_type, $type ) ) ) {
-			return true;
-		} else {
-			return false;
-		}
 	}
 }
