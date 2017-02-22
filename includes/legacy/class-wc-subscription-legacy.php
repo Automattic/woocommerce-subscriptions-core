@@ -13,6 +13,8 @@
 
 class WC_Subscription_Legacy extends WC_Subscription {
 
+	protected $schedule;
+
 	/**
 	 * Initialize the subscription object.
 	 *
@@ -376,6 +378,31 @@ class WC_Subscription_Legacy extends WC_Subscription {
 
 		$this->$prop = $value;
 		update_post_meta( $this->get_id(), '_' . $prop, $value );
+	}
+
+	/**
+	 * Get the stored date for a specific schedule.
+	 *
+	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'
+	 */
+	protected function get_date_prop( $date_type ) {
+		if ( ! isset( $this->schedule->{$date_type} ) ) {
+			$this->schedule->{$date_type} = $this->get_prop( sprintf( 'schedule_%s', $date_type ) );
+		}
+		return $this->schedule->{$date_type};
+	}
+
+	/*** Setters *****************************************************/
+
+	/**
+	 * Set the stored date for a specific schedule.
+	 *
+	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'
+	 * @param string $value MySQL date/time string in GMT/UTC timezone.
+	 */
+	protected function set_date_prop( $date_type, $value ) {
+		parent::set_date_prop( $date_type, $value ); // calls WC_Subscription_Legacy::set_prop() which calls update_post_meta() with the meta key 'schedule_{$date_type}'
+		$this->schedule->{$date_type} = $value;
 	}
 
 	/**

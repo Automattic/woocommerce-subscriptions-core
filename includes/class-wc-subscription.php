@@ -80,30 +80,40 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function __set( $key, $value ) {
 
-		if ( 'order' == $key ) {
+		if ( in_array( $key, array( 'start_date', 'trial_end_date', 'next_payment_date', 'end_date', 'last_payment_date', 'order', 'payment_gateway', 'requires_manual_renewal' ) ) ) {
 
-			wcs_deprecated_function( 'WC_Subscription::$order', '2.1.4', 'WC_Subscription::set_parent_id( $order_id )' );
+			switch ( $key ) {
 
-			$this->set_parent_id( wcs_get_objects_property( $value, 'id' ) );
-			$this->order = $value;
+				case 'order' :
+					$function = 'WC_Subscription::set_parent_id( $order_id )';
+					$this->set_parent_id( wcs_get_objects_property( $value, 'id' ) );
+					$this->order = $value;
+					break;
 
-		} elseif ( 'requires_manual_renewal' == $key ) {
+				case 'requires_manual_renewal' :
+					$function = 'WC_Subscription::set_requires_manual_renewal()';
+					$this->set_requires_manual_renewal( $value );
+					break;
 
-			wcs_deprecated_function( 'WC_Subscription::$requires_manual_renewal', '2.1.4', 'WC_Subscription::set_requires_manual_renewal( $manual )' );
+				case 'payment_gateway' :
+					$function = 'WC_Subscription::set_payment_method()';
+					$this->set_payment_method( $value );
+					break;
 
-			$this->set_requires_manual_renewal( $value );
+				case 'suspension_count' :
+					$function = 'WC_Subscription::set_suspension_count()';
+					$this->set_suspension_count( $value );
+					break;
 
-		} elseif ( 'payment_gateway' == $key ) {
+				default :
+					$function = 'WC_Subscription::update_dates()';
+					$this->update_dates( array( $key => $value ) );
+					break;
+			}
 
-			wcs_deprecated_function( 'WC_Subscription::$payment_gateway', '2.1.4', 'WC_Subscription::set_payment_method( $payment_gateway )' );
-
-			$this->set_payment_method( $value );
-
-		} elseif ( 'suspension_count' == $key ) {
-
-			wcs_deprecated_function( 'WC_Subscription::$suspension_count', '2.1.4', 'WC_Subscription::set_suspension_count( $suspension_count )' );
-
-			$this->set_suspension_count( $value );
+			if ( ! WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+				wcs_doing_it_wrong( $key, sprintf( 'Subscription properties should not be set directly as WooCommerce 2.7 no longer supports direct property access. Use %s instead.', $function ), '2.1.4' );
+			}
 		}
 	}
 
@@ -115,11 +125,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function __get( $key ) {
 
-		if ( in_array( $key, array( 'start_date', 'trial_end_date', 'next_payment_date', 'end_date', 'last_payment_date' ) ) ) {
-
-			$value = $this->get_date( $key );
-
-		} elseif ( in_array( $key, array( 'order', 'payment_gateway', 'requires_manual_renewal' ) ) {
+		if ( in_array( $key, array( 'start_date', 'trial_end_date', 'next_payment_date', 'end_date', 'last_payment_date', 'order', 'payment_gateway', 'requires_manual_renewal' ) ) ) {
 
 			switch ( $key ) {
 
@@ -141,6 +147,11 @@ class WC_Subscription extends WC_Order {
 				case 'suspension_count' :
 					$function = 'WC_Subscription::get_suspension_count()';
 					$value    = $this->get_suspension_count();
+					break;
+
+				default :
+					$function = 'WC_Subscription::get_date( ' . $key . ' )';
+					$value    = $this->get_date( $key );
 					break;
 			}
 
@@ -764,36 +775,60 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_date( $date_type, $timezone = 'gmt' ) {
 
+		// Accept date types with a 'schedule_' prefix, like 'schedule_next_payment' because that's the key used for props
+		$date_type = str_replace( 'schedule_', '', $date_type );
+
 		// Accept dates with a '_date' suffix, like 'next_payment_date' or 'start_date'
 		$date_type = str_replace( '_date', '', $date_type );
 
-		if ( ! empty( $date_type ) && ! isset( $this->schedule->{$date_type} ) ) {
+		if ( empty( $date_type ) ) {
+			$date = 0;
+		} else {
 			switch ( $date_type ) {
 				case 'start' :
-					$this->schedule->{$date_type} = ( '0000-00-00 00:00:00' != $this->post->post_date_gmt ) ? $this->post->post_date_gmt : get_gmt_from_date( $this->post->post_date ); // why not always use post_date_gmt? Because when a post is first created via the Add Subscription screen, it has a post_date but not a post_date_gmt value yet
+					$date = ( '0000-00-00 00:00:00' != $this->post->post_date_gmt ) ? $this->post->post_date_gmt : get_gmt_from_date( $this->post->post_date ); // why not always use post_date_gmt? Because when a post is first created via the Add Subscription screen, it has a post_date but not a post_date_gmt value yet
 					break;
 				case 'last_payment' :
-					$this->schedule->{$date_type} = $this->get_last_payment_date();
+					$date = $this->get_last_payment_date();
 					break;
 				default :
-					$this->schedule->{$date_type} = get_post_meta( $this->get_id(), wcs_get_date_meta_key( $date_type ), true );
+					$date = $this->get_date_prop( $date_type );
 					break;
 			}
 
-			if ( empty( $this->schedule->{$date_type} ) || false === $this->schedule->{$date_type} ) {
-				$this->schedule->{$date_type} = 0;
+			if ( empty( $date ) ) {
+				$date = 0;
 			}
 		}
 
-		if ( empty( $date_type ) ) {
-			$date = 0;
-		} elseif ( 0 != $this->schedule->{$date_type} && 'gmt' != strtolower( $timezone ) ) {
-			$date = get_date_from_gmt( $this->schedule->{$date_type} );
-		} else {
-			$date = $this->schedule->{$date_type};
+		if ( 0 != $date && 'gmt' != strtolower( $timezone ) ) {
+			$date = get_date_from_gmt( $date );
 		}
 
 		return apply_filters( 'woocommerce_subscription_get_' . $date_type . '_date', $date, $this, $timezone );
+	}
+
+	/**
+	 * Get the stored date.
+	 *
+	 * Only used for WC 2.7 compatibilty so that WC_Subscription_Legacy can override.
+	 *
+	 * @param string $date_type 'trial_end', 'next_payment', 'last_payment', 'cancelled', 'payment_retry' or 'end'
+	 */
+	protected function get_date_prop( $date_type ) {
+		return $this->get_prop( sprintf( 'schedule_%s', $date_type ) );
+	}
+
+	/**
+	 * Set the stored date.
+	 *
+	 * Only used for WC 2.7 compatibilty so that WC_Subscription_Legacy can override.
+	 *
+	 * @param string $date_type 'trial_end', 'next_payment', 'last_payment', 'cancelled', 'payment_retry' or 'end'
+	 * @param string $value MySQL date/time string in GMT/UTC timezone.
+	 */
+	protected function set_date_prop( $date_type, $value ) {
+		$this->set_prop( sprintf( 'schedule_%s', $date_type ), $value );
 	}
 
 	/**
@@ -902,12 +937,12 @@ class WC_Subscription extends WC_Order {
 					$is_updated = true;
 					break;
 				default :
-					$is_updated = update_post_meta( $this->get_id(), wcs_get_date_meta_key( $date_type ), $datetime );
+					$this->set_date_prop( $date_type, $datetime );
+					$is_updated = true;
 					break;
 			}
 
 			if ( $is_updated ) {
-				$this->schedule->{$date_type} = $datetime;
 				do_action( 'woocommerce_subscription_date_updated', $this, $date_type, $datetime );
 			}
 		}
@@ -936,8 +971,8 @@ class WC_Subscription extends WC_Order {
 			throw new Exception( $message );
 		}
 
-		$this->schedule->{$date_type} = 0;
-		update_post_meta( $this->get_id(), wcs_get_date_meta_key( $date_type ), $this->schedule->{$date_type} );
+		$this->set_date_prop( $date_type, 0 );
+
 		do_action( 'woocommerce_subscription_date_deleted', $this, $date_type );
 	}
 
