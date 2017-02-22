@@ -298,3 +298,79 @@ function wcs_is_order( $order ) {
 
 	return $is_order;
 }
+
+/**
+ * Find and return the value for a deprecated property property.
+ *
+ * Product properties should not be accessed directly with WooCommerce 2.7+, because of that, a lot of properties
+ * have been depreacted/removed in the subscription product type classes. This function centralises the handling
+ * of deriving depreacted properties. This saves duplicating the __get() method in WC_Product_Subscription,
+ * WC_Product_Variable_Subscription and WC_Product_Subscription_Variation.
+ *
+ * @param string $property
+ * @param WC_Product $product
+ * @since  2.1.4
+ * @return mixed
+ */
+function wcs_product_deprecated_property_handler( $property, $product ) {
+
+	$message_prefix = 'Product properties should not be accessed directly with WooCommerce 2.7+.';
+	$function_name  = 'get_' . str_replace( 'subscription_', '', str_replace( 'subscription_period_', '', $property ) );
+	$class_name     = get_class( $product );
+	$value          = null;
+
+	if ( in_array( $property, array( 'product_type', 'parent_product_type', 'limit_subscriptions', 'subscription_limit', 'subscription_payment_sync_date', 'subscription_one_time_shipping' ) ) || ( is_callable( array( 'WC_Subscriptions_Product', $function_name ) ) && false !== strpos( $property, 'subscription' ) ) ) {
+
+		switch ( $property ) {
+			case 'product_type':
+				$value       = $product->get_type();
+				$alternative = $class_name . '::get_type()';
+				break;
+
+			case 'parent_product_type':
+				if ( $product->is_type( 'subscription_variation' ) ) {
+					$value       = 'variation';
+					$alternative = 'WC_Product_Variation::get_type()';
+				} else {
+					$value       = 'variable';
+					$alternative = 'WC_Product_Variable::get_type()';
+				}
+				break;
+
+			case 'limit_subscriptions':
+			case 'subscription_limit':
+				$value       = wcs_get_product_limitation( $product );
+				$alternative = 'wcs_get_product_limitation( $product )';
+				break;
+
+			case 'subscription_one_time_shipping':
+				$value       = WC_Subscriptions_Product::needs_one_time_shipping( $product );
+				$alternative = 'WC_Subscriptions_Product::needs_one_time_shipping( $product )';
+				break;
+
+			case 'subscription_payment_sync_date':
+				$value       = WC_Subscriptions_Synchroniser::get_products_payment_day( $product );
+				$alternative = 'WC_Subscriptions_Synchroniser::get_products_payment_day( $product )';
+				break;
+
+			case 'max_variation_period':
+			case 'max_variation_period_interval':
+				$meta_key = '_' . $property;
+				if ( '' === $product->get_meta( $meta_key ) ) {
+					WC_Product_Variable::sync( $product->get_id() );
+				}
+				$value       = $product->get_meta( $meta_key );
+				$alternative = $class_name . '::get_meta( ' . $meta_key . ' ) or wcs_get_min_max_variation_data( $product )';
+				break;
+
+			default:
+				$value       = call_user_func( array( 'WC_Subscriptions_Product', $function_name ), $product );
+				$alternative = sprintf( 'WC_Subscriptions_Product::%s( $product )', $function_name );
+				break;
+		}
+
+		_deprecated_argument( $class_name . '::$' . $property, '2.1.4', sprintf( '%s Use %s', $message_prefix, $alternative ) );
+	}
+
+	return $value;
+}
