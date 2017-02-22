@@ -498,29 +498,10 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function is_manual() {
 
-		if ( WC_Subscriptions::is_duplicate_site() || false === wc_get_payment_gateway_by_order( $this ) || 'true' == $this->get_requires_manual_renewal() ) {
+		if ( WC_Subscriptions::is_duplicate_site() || false === wc_get_payment_gateway_by_order( $this ) || 'true' == $this->get_requires_manual_renewal() || true === $this->get_requires_manual_renewal() ) {
 			$is_manual = true;
 		} else {
 			$is_manual = false;
-		}
-
-		return $is_manual;
-	}
-
-	/**
-	 * Checks if the subscription requires manual renewal payments.
-	 *
-	 * @access public
-	 * @return bool
-	 */
-	public function update_manual( $is_manual = true ) {
-
-		if ( true === $is_manual || 'true' === $is_manual ) {
-			$this->requires_manual_renewal = 'true';
-			update_post_meta( $this->get_id(), '_requires_manual_renewal', 'true' );
-		} else {
-			$this->requires_manual_renewal = 'false';
-			update_post_meta( $this->get_id(), '_requires_manual_renewal', 'false' );
 		}
 
 		return $is_manual;
@@ -779,6 +760,14 @@ class WC_Subscription extends WC_Order {
 	 * @return string
 	 */
 	public function set_requires_manual_renewal( $value ) {
+
+		// Support boolean strings for backward compatibility with $this->update_manual()
+		if ( 'true' === $value ) {
+			$value = true;
+		} elseif ( 'false' === $value ) {
+			$value = false;
+		}
+
 		$this->set_prop( 'requires_manual_renewal', $value );
 	}
 
@@ -1669,7 +1658,7 @@ class WC_Subscription extends WC_Order {
 
 		if ( empty( $payment_gateway ) || ! isset( $payment_gateway->id ) ) {
 
-			$this->update_manual( true );
+			$this->set_requires_manual_renewal( true );
 			update_post_meta( $this->get_id(), '_payment_method', '' );
 			update_post_meta( $this->get_id(), '_payment_method_title', '' );
 
@@ -1679,11 +1668,11 @@ class WC_Subscription extends WC_Order {
 			$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
 
 			if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
-				$this->update_manual( true );
+				$this->set_requires_manual_renewal( true );
 			} elseif ( ! isset( $available_gateways[ $payment_gateway->id ] ) || ! $available_gateways[ $payment_gateway->id ]->supports( 'subscriptions' ) ) {
-				$this->update_manual( true );
+				$this->set_requires_manual_renewal( true );
 			} else {
-				$this->update_manual( false );
+				$this->set_requires_manual_renewal( false );
 			}
 
 			update_post_meta( $this->get_id(), '_payment_method', $payment_gateway->id );
@@ -2072,5 +2061,17 @@ class WC_Subscription extends WC_Order {
 		wcs_deprecated_function( __METHOD__, '2.1.4', __CLASS__ . '::set_suspension_count(), because WooCommerce 2.7+ now uses setters' );
 		$this->set_suspension_count( $new_count );
 		return $this->get_suspension_count();
+	}
+
+	/**
+	 * Checks if the subscription requires manual renewal payments.
+	 *
+	 * @access public
+	 * @return bool
+	 */
+	public function update_manual( $is_manual = true ) {
+		wcs_deprecated_function( __METHOD__, '2.1.4', __CLASS__ . '::set_requires_manual_renewal( $is_manual ), because WooCommerce 2.7+ now uses setters' );
+		$this->set_requires_manual_renewal( $is_manual );
+		return $this->get_requires_manual_renewal();
 	}
 }

@@ -94,7 +94,7 @@ class WCS_Upgrade_2_0 {
 
 					// Set the order to be manual
 					if ( isset( $original_order->wcs_requires_manual_renewal ) && 'true' == $original_order->wcs_requires_manual_renewal ) {
-						$new_subscription->update_manual( true );
+						$new_subscription->set_requires_manual_renewal( true );
 					}
 
 					// Add the line item from the order

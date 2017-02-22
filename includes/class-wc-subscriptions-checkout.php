@@ -146,9 +146,9 @@ class WC_Subscriptions_Checkout {
 			}
 
 			if ( ! $cart->needs_payment() || 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
-				$subscription->update_manual( 'true' );
+				$subscription->set_requires_manual_renewal( true );
 			} elseif ( ! isset( $available_gateways[ $order->payment_method ] ) || ! $available_gateways[ $order->payment_method ]->supports( 'subscriptions' ) ) {
-				$subscription->update_manual( 'true' );
+				$subscription->set_requires_manual_renewal( true );
 			}
 
 			wcs_copy_order_meta( $order, $subscription, 'subscription' );
