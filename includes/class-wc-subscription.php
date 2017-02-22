@@ -1380,11 +1380,11 @@ class WC_Subscription extends WC_Order {
 	protected function get_price_string_details( $amount = 0, $display_ex_tax_label = false ) {
 
 		$subscription_details = array(
-			'currency'              => $this->get_currency(),
-			'recurring_amount'      => $amount,
-			'subscription_period'   => $this->get_billing_period(),
-			'subscription_interval' => $this->get_billing_interval(),
-			'display_ex_tax_label'  => $display_ex_tax_label,
+			'currency'                    => $this->get_currency(),
+			'recurring_amount'            => $amount,
+			'subscription_period'         => $this->get_billing_period(),
+			'subscription_interval'       => $this->get_billing_interval(),
+			'display_excluding_tax_label' => $display_ex_tax_label,
 		);
 
 		return apply_filters( 'woocommerce_subscription_price_string_details', $subscription_details, $this );
