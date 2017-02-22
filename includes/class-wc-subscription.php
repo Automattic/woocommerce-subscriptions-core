@@ -24,6 +24,46 @@ class WC_Subscription extends WC_Order {
 	private $cached_completed_payment_count = false;
 
 	/**
+	 * Which data store to load. WC 2.7+ property.
+	 *
+	 * @var string
+	 */
+	protected $data_store_name = 'subscription';
+
+	/**
+	 * This is the name of this object type. WC 2.7+ property.
+	 *
+	 * @var string
+	 */
+	protected $object_type = 'subscription';
+
+	/**
+	 * Extra data for this object. Name value pairs (name + default value). Used to add additional information to parent.
+	 *
+	 * WC 2.7+ property.
+	 *
+	 * @var array
+	 */
+	protected $extra_data = array(
+
+		// Extra data with getters/setters
+		'billing_period'          => '',
+		'billing_interval'        => 1,
+		'suspension_count'        => 0,
+		'requires_manual_renewal' => 'true',
+		'cancelled_email_sent'    => false,
+
+		// Extra data that requires manual getting/setting because we don't define getters/setters for it
+		'schedule_trial_end'      => '',
+		'schedule_next_payment'   => '',
+		'schedule_cancelled'      => '',
+		'schedule_end'            => '',
+		'schedule_payment_retry'  => '',
+
+		'switch_data'             => array(),
+	);
+
+	/**
 	 * List of properties deprecated for direct access due to WC 2.7+ & CRUD.
 	 *
 	 * @var array
@@ -50,21 +90,15 @@ class WC_Subscription extends WC_Order {
 		parent::__construct( $subscription );
 
 		$this->order_type = 'shop_subscription';
-
-		$this->schedule = new stdClass();
 	}
 
 	/**
-	 * Populates a subscription from the loaded post data.
+	 * Get internal type.
 	 *
-	 * @param mixed $result
+	 * @return string
 	 */
-	public function populate( $result ) {
-		parent::populate( $result );
-
-		if ( $this->post->post_parent > 0 ) {
-			$this->order = wc_get_order( $this->post->post_parent );
-		}
+	public function get_type() {
+		return 'shop_subscription';
 	}
 
 	/**
@@ -514,7 +548,7 @@ class WC_Subscription extends WC_Order {
 	 * @since 2.0
 	 * @return string Status
 	 */
-	public function get_status() {
+	public function get_status( $context = 'view' ) {
 
 		if ( in_array( get_post_status( $this->get_id() ), array( 'draft', 'auto-draft' ) ) ) {
 			$this->post_status = 'wc-pending';
@@ -524,6 +558,16 @@ class WC_Subscription extends WC_Order {
 		}
 
 		return $status;
+	}
+
+	/**
+	 * Get valid order status keys
+	 *
+	 * @since 2.1.4
+	 * @return array details of change
+	 */
+	public function get_valid_statuses() {
+		return array_keys( wcs_get_subscription_statuses() );
 	}
 
 	/**
@@ -712,6 +756,23 @@ class WC_Subscription extends WC_Order {
 		return $this->get_prop( 'requires_manual_renewal', $context );
 	}
 
+	/**
+	 * Get internal type.
+	 *
+	 * @return string
+	 */
+	public function get_switch_data( $context = 'view' ) {
+		return $this->get_prop( 'switch_data', $context );
+	}
+
+	/**
+	 * Get internal type.
+	 *
+	 * @return string
+	 */
+	public function get_cancelled_email_sent( $context = 'view' ) {
+		return $this->get_prop( 'cancelled_email_sent', $context );
+	}
 
 	/*** Setters *****************************************************/
 
@@ -769,6 +830,24 @@ class WC_Subscription extends WC_Order {
 		}
 
 		$this->set_prop( 'requires_manual_renewal', $value );
+	}
+
+	/**
+	 * Set the switch data on the subscription.
+	 *
+	 * @return string
+	 */
+	public function set_switch_data( $value ) {
+		$this->set_prop( 'switch_data', $value );
+	}
+
+	/**
+	 * Set the flag about whether the cancelled email has been sent or not.
+	 *
+	 * @return string
+	 */
+	public function set_cancelled_email_sent( $value ) {
+		$this->set_prop( 'cancelled_email_sent', $value );
 	}
 
 	/*** Date methods *****************************************************/
@@ -1178,7 +1257,7 @@ class WC_Subscription extends WC_Order {
 	public function get_formatted_line_subtotal( $item, $tax_display = '' ) {
 
 		if ( ! $tax_display ) {
-			$tax_display = $this->tax_display_cart;
+			$tax_display = get_option( 'woocommerce_tax_display_cart' );
 		}
 
 		if ( ! isset( $item['line_subtotal'] ) || ! isset( $item['line_subtotal_tax'] ) ) {
@@ -1186,12 +1265,17 @@ class WC_Subscription extends WC_Order {
 		}
 
 		if ( $this->is_one_payment() ) {
+
 			$subtotal = parent::get_formatted_line_subtotal( $item, $tax_display );
-		} else if ( 'excl' == $tax_display ) {
-			$display_ex_tax_label = $this->prices_include_tax ? 1 : 0;
-			$subtotal = wcs_price_string( $this->get_price_string_details( $this->get_line_subtotal( $item ) ), $display_ex_tax_label );
+
 		} else {
-			$subtotal = wcs_price_string( $this->get_price_string_details( $this->get_line_subtotal( $item, true ) ) );
+
+			if ( 'excl' == $tax_display ) {
+				$line_subtotal = $this->get_line_subtotal( $item );
+			} else {
+				$line_subtotal = $this->get_line_subtotal( $item, true );
+			}
+			$subtotal = wcs_price_string( $this->get_price_string_details( $line_subtotal ) );
 		}
 
 		return apply_filters( 'woocommerce_order_formatted_line_subtotal', $subtotal, $item, $this );
@@ -1223,7 +1307,7 @@ class WC_Subscription extends WC_Order {
 	public function get_subtotal_to_display( $compound = false, $tax_display = '' ) {
 
 		if ( ! $tax_display ) {
-			$tax_display = $this->tax_display_cart;
+			$tax_display = get_option( 'woocommerce_tax_display_cart' );
 		}
 
 		$subtotal = 0;
