@@ -93,20 +93,17 @@ class WCS_My_Account_Payment_Methods {
 					'text' => esc_html_x( 'Delete token', 'user option when deleting a payment token from their my account page', 'woocommerce-subscriptions' ),
 				);
 
-				if ( $token->is_default() ) {
+				// If the customer has a default token and we're not deleting it, offer to switch to that
+				if ( $has_default_token && ! $token->is_default() ) {
 
-					// get the only other token object (alternative)
-					$alternative_tokens           = array_diff_assoc( $customer_tokens, array( $token->get_id() => $token ) );
-					$new_token                    = reset( $alternative_tokens );
-					$actions['delete_and_update'] = array(
-						'text' => esc_html_x( 'Delete and update subscriptions payment method', 'user option when deleting a payment token from their my account page', 'woocommerce-subscriptions' ),
-					);
+					$new_token = $default_token;
+					$actions['delete_and_update']['text'] = esc_html_x( 'Delete and update subscriptions to use default', 'user option when deleting a payment token from their my account page', 'woocommerce-subscriptions' );
 				} else {
 
-					$new_token                    = $default_token;
-					$actions['delete_and_update'] = array(
-						'text' => esc_html_x( 'Delete and update subscriptions to use default', 'user option when deleting a payment token from their my account page', 'woocommerce-subscriptions' ),
-					);
+					// Get the only other token object (alternative)
+					$alternative_tokens           = array_diff_assoc( $customer_tokens, array( $token->get_id() => $token ) );
+					$new_token                    = reset( $alternative_tokens );
+					$actions['delete_and_update']['text'] = esc_html_x( 'Delete and update subscriptions to use alternative', 'user option when deleting a payment token from their my account page', 'woocommerce-subscriptions' );
 				}
 
 				$actions['delete_and_update']['url']   = add_query_arg( 'delete_and_update_subscription_token', $new_token->get_id(), $_GET['delete_url'] );
@@ -189,7 +186,7 @@ class WCS_My_Account_Payment_Methods {
 				update_post_meta( $subscription->id, $token_meta_key, $token_value );
 				$subscription->add_order_note( sprintf( _x( 'Payment method meta updated after customer deleted a token from their My Account page. Payment meta changed from %1$s to %2$s', 'used in subscription note', 'woocommerce-subscriptions' ), $deleted_token->get_token(), $token_value ) );
 
-				// TODO add do action
+				do_action( 'woocommerce_subscription_token_changed', $subscription, $new_token, $deleted_token );
 			}
 		}
 	}
@@ -229,7 +226,7 @@ class WCS_My_Account_Payment_Methods {
 			'posts_per_page' => -1,
 		) );
 
-		return $user_subscriptions;
+		return apply_filters( 'woocommerce_subscriptions_by_payment_token', $user_subscriptions, $payment_token );
 	}
 
 	/**
