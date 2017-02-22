@@ -163,10 +163,8 @@ class WCS_My_Account_Payment_Methods {
 				return;
 			}
 
-			$subscriptions    = self::get_subscriptions_by_token( $deleted_token );
-			$token_gateway_id = $new_token->get_gateway_id();
-			$token_value      = $new_token->get_token();
-			$token_meta_key   = '';
+			$subscriptions  = self::get_subscriptions_by_token( $deleted_token );
+			$token_meta_key = '';
 
 			foreach ( $subscriptions as $subscription ) {
 				$subscription = wcs_get_subscription( $subscription );
@@ -186,10 +184,12 @@ class WCS_My_Account_Payment_Methods {
 					}
 				}
 
-				update_post_meta( $subscription->id, $token_meta_key, $token_value );
-				$subscription->add_order_note( sprintf( _x( 'Payment method meta updated after customer deleted a token from their My Account page. Payment meta changed from %1$s to %2$s', 'used in subscription note', 'woocommerce-subscriptions' ), $deleted_token->get_token(), $token_value ) );
+				$updated = update_post_meta( $subscription->id, $token_meta_key, $new_token->get_token(), $deleted_token->get_token() );
 
-				do_action( 'woocommerce_subscription_token_changed', $subscription, $new_token, $deleted_token );
+				if ( $updated ) {
+					$subscription->add_order_note( sprintf( _x( 'Payment method meta updated after customer deleted a token from their My Account page. Payment meta changed from %1$s to %2$s', 'used in subscription note', 'woocommerce-subscriptions' ), $deleted_token->get_token(), $new_token->get_token() ) );
+					do_action( 'woocommerce_subscription_token_changed', $subscription, $new_token, $deleted_token );
+				}
 			}
 		}
 	}
@@ -242,8 +242,8 @@ class WCS_My_Account_Payment_Methods {
 	 */
 	public static function get_token_label( $token ) {
 
-		if ( method_exists( $token, 'get_last4' ) && ! empty( $last_four_digits = $token->get_last4() ) ) {
-			$label = sprintf( __( '%s ending in %s', 'woocommerce-subscriptions' ), esc_html( wc_get_credit_card_type_label( $token->get_card_type() ) ), esc_html( $last_four_digits ) );
+		if ( method_exists( $token, 'get_last4' ) && ! empty( $token->get_last4() ) ) {
+			$label = sprintf( __( '%s ending in %s', 'woocommerce-subscriptions' ), esc_html( wc_get_credit_card_type_label( $token->get_card_type() ) ), esc_html( $token->get_last4() ) );
 		} else {
 			$label = esc_html( wc_get_credit_card_type_label( $token->get_card_type() ) );
 		}
