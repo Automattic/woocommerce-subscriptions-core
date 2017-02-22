@@ -24,6 +24,23 @@ class WC_Subscription extends WC_Order {
 	private $cached_completed_payment_count = false;
 
 	/**
+	 * List of properties deprecated for direct access due to WC 2.7+ & CRUD.
+	 *
+	 * @var array
+	 */
+	private $deprecated_properties = array(
+		'start_date',
+		'trial_end_date',
+		'next_payment_date',
+		'end_date',
+		'last_payment_date',
+		'order',
+		'payment_gateway',
+		'requires_manual_renewal',
+		'suspension_count',
+	);
+
+	/**
 	 * Initialize the subscription object.
 	 *
 	 * @param int|WC_Subscription $order
@@ -58,7 +75,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function __isset( $key ) {
 
-		if ( in_array( $key, array( 'start_date', 'trial_end_date', 'next_payment_date', 'end_date', 'last_payment_date', 'order', 'payment_gateway', 'requires_manual_renewal' ) ) ) {
+		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.7' ) && in_array( $key, $this->deprecated_properties ) ) {
 
 			$is_set = true;
 
@@ -80,7 +97,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function __set( $key, $value ) {
 
-		if ( in_array( $key, array( 'start_date', 'trial_end_date', 'next_payment_date', 'end_date', 'last_payment_date', 'order', 'payment_gateway', 'requires_manual_renewal' ) ) ) {
+		if ( in_array( $key, $this->deprecated_properties ) ) {
 
 			switch ( $key ) {
 
@@ -125,7 +142,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function __get( $key ) {
 
-		if ( in_array( $key, array( 'start_date', 'trial_end_date', 'next_payment_date', 'end_date', 'last_payment_date', 'order', 'payment_gateway', 'requires_manual_renewal' ) ) ) {
+		if ( in_array( $key, $this->deprecated_properties ) ) {
 
 			switch ( $key ) {
 
