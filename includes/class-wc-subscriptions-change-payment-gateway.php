@@ -28,6 +28,9 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		// Maybe allow for a recurring payment method to be changed
 		add_action( 'plugins_loaded', __CLASS__ . '::set_change_payment_method_flag' );
 
+		// Attach hooks which depend on WooCommerce constants
+		add_action( 'woocommerce_loaded', __CLASS__ . '::attach_dependant_hooks' );
+
 		// Keep a record of any messages or errors that should be displayed
 		add_action( 'before_woocommerce_pay', __CLASS__ . '::store_pay_shortcode_mesages', 100 );
 
@@ -46,7 +49,6 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		// If we're changing the payment method, we want to make sure a number of totals return $0 (to prevent payments being processed now)
 		add_filter( 'woocommerce_subscriptions_total_initial_payment', __CLASS__ . '::maybe_zero_total', 11, 2 );
 		add_filter( 'woocommerce_subscriptions_sign_up_fee', __CLASS__ . '::maybe_zero_total', 11, 2 );
-		add_filter( 'woocommerce_order_amount_total', __CLASS__ . '::maybe_zero_total', 11, 2 );
 
 		// Redirect to My Account page after changing payment method
 		add_filter( 'woocommerce_get_return_url', __CLASS__ . '::get_return_url', 11 );
@@ -62,6 +64,26 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 		// Maybe filter subscriptions_needs_payment to return false when processing change-payment-gateway requests
 		add_filter( 'woocommerce_subscription_needs_payment', __CLASS__ . '::maybe_override_needs_payment', 10, 1 );
+	}
+
+	/**
+	 * Attach WooCommerce version dependenant hooks
+	 *
+	 * @since 2.1.4
+	 */
+	public static function attach_dependant_hooks() {
+
+		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+
+			// If we're changing the payment method, we want to make sure a number of totals return $0 (to prevent payments being processed now)
+			add_filter( 'woocommerce_order_amount_total', __CLASS__ . '::maybe_zero_total', 11, 2 );
+
+		} else {
+
+			// If we're changing the payment method, we want to make sure a number of totals return $0 (to prevent payments being processed now)
+			add_filter( 'woocommerce_order_get_total', __CLASS__ . '::maybe_zero_total', 11, 2 );
+
+		}
 	}
 
 	/**
