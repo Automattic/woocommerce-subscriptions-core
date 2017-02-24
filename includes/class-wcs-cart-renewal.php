@@ -399,12 +399,13 @@ class WCS_Cart_Renewal {
 					$price += array_sum( $base_taxes_on_item );
 				}
 
-				$_product->price = $price / $item_to_renew['qty'];
+				$_product->set_price( $price / $item_to_renew['qty'] );
 
 				// Don't carry over any sign up fee
-				$_product->subscription_sign_up_fee = 0;
+				wcs_set_objects_property( $_product, 'subscription_sign_up_fee', 0, 'set_prop_only' );
 
-				$_product->post->post_title = apply_filters( 'woocommerce_subscriptions_renewal_product_title', $_product->get_title(), $_product );
+				// Allow plugins to add additional strings to the product name for renewals
+				wcs_set_objects_property( $_product, 'name', apply_filters( 'woocommerce_subscriptions_renewal_product_title', $_product->get_title(), $_product ), 'set_prop_only' );
 
 				// Make sure the same quantity is renewed
 				$cart_item_session_data['quantity'] = $item_to_renew['qty'];

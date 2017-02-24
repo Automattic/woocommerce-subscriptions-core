@@ -565,8 +565,8 @@ class WC_Subscriptions_Switcher {
 			if ( $switches = self::cart_contains_switches() ) {
 				foreach ( $switches as $switch_item_key => $switch_details ) {
 					if ( $cart_item_key == $switch_item_key ) {
-						wc_add_order_item_meta( $order_item_id, '_switched_subscription_sign_up_fee_prorated', ( isset( WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_sign_up_fee_prorated ) ? WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_sign_up_fee_prorated : 0 ), true );
-						wc_add_order_item_meta( $order_item_id, '_switched_subscription_price_prorated', ( isset( WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_price_prorated ) ? WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_price_prorated : 0 ), true );
+						wc_add_order_item_meta( $order_item_id, '_switched_subscription_sign_up_fee_prorated', wcs_get_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee_prorated', 'single', 0 ), true );
+						wc_add_order_item_meta( $order_item_id, '_switched_subscription_price_prorated', wcs_get_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_price_prorated', 'single', 0 ), true );
 					}
 				}
 			}
@@ -1200,12 +1200,12 @@ class WC_Subscriptions_Switcher {
 					$sign_up_fee_paid = ( $sign_up_fee_paid * $existing_item['qty'] ) / $cart_item['quantity'];
 				}
 
-				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_sign_up_fee = max( $sign_up_fee_due - $sign_up_fee_paid, 0 );
-				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_sign_up_fee_prorated = WC_Subscriptions_Product::get_sign_up_fee( WC()->cart->cart_contents[ $cart_item_key ]['data'] );
+				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee', max( $sign_up_fee_due - $sign_up_fee_paid, 0 ), 'set_prop_only' );
+				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee_prorated', WC_Subscriptions_Product::get_sign_up_fee( WC()->cart->cart_contents[ $cart_item_key ]['data'] ) );
 
 			} elseif ( 'no' == $apportion_sign_up_fee ) { // $0 the initial sign-up fee
 
-				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_sign_up_fee = 0;
+				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee', 0, 'set_prop_only' );
 
 			}
 
@@ -1306,10 +1306,9 @@ class WC_Subscriptions_Switcher {
 						$extra_to_pay = $extra_to_pay / $cart_item['quantity'];
 
 						// Keep a record of the two separate amounts so we store these and calculate future switch amounts correctly
-						WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_sign_up_fee_prorated = WC_Subscriptions_Product::get_sign_up_fee( WC()->cart->cart_contents[ $cart_item_key ]['data'] );
-						WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_price_prorated       = round( $extra_to_pay, wc_get_price_decimals() );
-						WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_sign_up_fee         += round( $extra_to_pay, wc_get_price_decimals() );
-
+						wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee_prorated', WC_Subscriptions_Product::get_sign_up_fee( WC()->cart->cart_contents[ $cart_item_key ]['data'] ), 'set_prop_only' );
+						wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_price_prorated', round( $extra_to_pay, wc_get_price_decimals() ), 'set_prop_only' );
+						wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee', round( $extra_to_pay, wc_get_price_decimals() ), 'set_prop_only' );
 					}
 
 				// If the customer is downgrading, set the next payment date and maybe extend it if downgrades are prorated
@@ -1351,7 +1350,7 @@ class WC_Subscriptions_Switcher {
 					$length_remaining = $base_length;
 				}
 
-				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_length = $length_remaining;
+				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_length', $length_remaining, 'set_prop_only' );
 			}
 		}
 	}
@@ -1394,13 +1393,13 @@ class WC_Subscriptions_Switcher {
 					// if the subscription is more than 1 (and not 0) and we have a next payment date (prorated or not) we want to calculate the new end date from that
 					} elseif ( 0 !== $next_payment_time && WC_Subscriptions_Product::get_length( $cart_item['data'] ) > 1 ) {
 						// remove trial period on the switched subscription when calculating the new end date
-						$trial_length = $cart_item['data']->subscription_trial_length;
-						$cart_item['data']->subscription_trial_length = 0;
+						$trial_length = wcs_get_objects_property( $cart_item['data'], 'subscription_trial_length' );
+						wcs_set_objects_property( $cart_item['data'], 'subscription_trial_length', 0, 'set_prop_only' );
 
 						$end_date = WC_Subscriptions_Product::get_expiration_date( $cart_item['data'], gmdate( 'Y-m-d H:i:s', $next_payment_time ) );
 
 						// add back the trial length if it has been spoofed
-						$cart_item['data']->subscription_trial_length = $trial_length;
+						wcs_set_objects_property( $cart_item['data'], 'subscription_trial_length', $trial_length, 'set_prop_only' );
 
 					// elseif fallback to using the end date set on the cart item
 					} elseif ( ! empty( $end_timestamp ) ) {
@@ -1999,7 +1998,7 @@ class WC_Subscriptions_Switcher {
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 			if ( isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) && 0 != $cart_item['subscription_switch']['first_payment_timestamp'] ) {
-				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length = 1;
+				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_trial_length', 1, 'set_prop_only' );
 			}
 		}
 
@@ -2015,7 +2014,7 @@ class WC_Subscriptions_Switcher {
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 			if ( isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) && 0 != $cart_item['subscription_switch']['first_payment_timestamp'] ) {
-				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length = 0;
+				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_trial_length', 0, 'set_prop_only' );
 			}
 		}
 		return $total;

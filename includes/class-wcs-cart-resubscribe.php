@@ -170,12 +170,12 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 			$subscription = wcs_get_subscription( $cart_item[ $this->cart_item_key ]['subscription_id'] );
 			if ( $subscription ) {
 				// Make sure the original subscription terms perisist
-				$_product                               = $cart_item_session_data['data'];
-				$_product->subscription_period          = $subscription->get_billing_period();
-				$_product->subscription_period_interval = $subscription->get_billing_interval();
+				$_product = $cart_item_session_data['data'];
+				wcs_set_objects_property( $_product, 'subscription_period', $subscription->get_billing_period(), 'set_prop_only' );
+				wcs_set_objects_property( $_product, 'subscription_period_interval', $subscription->get_billing_interval(), 'set_prop_only' );
 
 				// And don't give another free trial period
-				$_product->subscription_trial_length = 0;
+				wcs_set_objects_property( $_product, 'subscription_trial_length', 0, 'set_prop_only' );
 			}
 		}
 
@@ -271,7 +271,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 			$subscription = $this->get_order( $cart_item );
 			if ( false !== $subscription && $subscription->has_status( 'pending-cancel' ) ) {
-				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length = 1;
+				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_trial_length', 1, 'set_prop_only' );
 				break;
 			}
 		}
@@ -289,7 +289,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 			$subscription = $this->get_order( $cart_item );
 			if ( false !== $subscription && $subscription->has_status( 'pending-cancel' ) ) {
-				WC()->cart->cart_contents[ $cart_item_key ]['data']->subscription_trial_length = 0;
+				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_trial_length', 0, 'set_prop_only' );
 				break;
 			}
 		}
