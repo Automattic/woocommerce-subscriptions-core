@@ -1032,6 +1032,8 @@ class WC_Subscriptions_Switcher {
 				// If the switch is for a grouped product, we need to check the other products grouped with this one
 				if ( wcs_get_objects_property( $product, 'parent_id' ) ) {
 					$switch_product_ids = array_unique( array_merge( $switch_product_ids, wc_get_product( wcs_get_objects_property( $product, 'parent_id' ) )->get_children() ) );
+				} elseif ( $switch_product->is_type( 'subscription_variation' ) ) {
+					$switch_product_ids[] = $switch_product->get_parent_id();
 				} else {
 					$switch_product_ids[] = $switch_product->get_id();
 				}

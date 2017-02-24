@@ -75,10 +75,11 @@ class WCS_Limiter {
 				}
 				break;
 			case 'subscription_variation' :
-				if ( 'no' != wcs_get_product_limitation( wcs_get_objects_property( $product, 'parent_id' ) ) && ! empty( WC()->cart->cart_contents ) && ! wcs_is_order_received_page() && ! wcs_is_paypal_api_page() ) {
+				$variable_product = wc_get_product( $product->get_parent_id() );
+				if ( 'no' != wcs_get_product_limitation( $variable_product ) && ! empty( WC()->cart->cart_contents ) && ! wcs_is_order_received_page() && ! wcs_is_paypal_api_page() ) {
 					foreach ( WC()->cart->cart_contents as $cart_item ) {
 						// If the variable product is limited, it can't be purchased if its the same variation
-						if ( wcs_get_objects_property( $product, 'parent_id' ) == wcs_get_objects_property( $cart_item['data'], 'parent_id' ) && $product->get_id() != $cart_item['data']->get_id() ) {
+						if ( $product->get_parent_id() == wcs_get_objects_property( $cart_item['data'], 'parent_id' ) && $product->get_id() != $cart_item['data']->get_id() ) {
 							$purchasable = false;
 							break;
 						}

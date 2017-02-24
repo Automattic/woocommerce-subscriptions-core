@@ -88,9 +88,8 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 			$value = wcs_get_objects_property( $object, 'post' )->post_status;
 			break;
 
-		case 'parent' :
 		case 'parent_id' :
-			if ( method_exists( $object, 'get_parent_id' ) ) { // WC 2.7+
+			if ( method_exists( $object, 'get_parent_id' ) ) { // WC 2.7+ or an instance of WC_Product_Subscription_Variation_Legacy with WC < 2.7
 				$value = $object->get_parent_id();
 			} else { // WC 2.1-2.6
 				$value = $object->get_parent();

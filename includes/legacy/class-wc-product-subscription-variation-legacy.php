@@ -108,4 +108,20 @@ class WC_Product_Subscription_Variation_Legacy extends WC_Product_Subscription_V
 
 		return $value;
 	}
+
+	/**
+	 * Provide a WC 2.7 method for variations.
+	 *
+	 * WC < 2.7 products have a get_parent() method, but this is not equivalent to the get_parent_id() method
+	 * introduced in WC 2.7, because it derives the parent from $this->post->post_parent, but for variations,
+	 * $this->post refers to the parent variable object's post, so $this->post->post_parent will be 0 under
+	 * normal circumstances. Becuase of that, we can rely on wcs_get_objects_property( $this, 'parent_id' )
+	 * and define this get_parent_id() method for variations even when WC 2.7 is not active.
+	 *
+	 * @param string $key
+	 * @return mixed
+	 */
+	public function get_parent_id() {
+		return $this->id; // When WC < 2.7 is active, the ID property is the parent variable product's ID
+	}
 }

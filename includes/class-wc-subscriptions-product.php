@@ -687,7 +687,7 @@ class WC_Subscriptions_Product {
 
 			if ( false !== $product && 'trash' == wcs_get_objects_property( $product, 'post_status' ) && $product->is_type( array( 'subscription', 'variable-subscription', 'subscription_variation' ) ) ) {
 
-				$product_id = ( $product->is_type( 'subscription_variation' ) ) ? wcs_get_objects_property( $product, 'parent_id' ) : $post_id;
+				$product_id = ( $product->is_type( 'subscription_variation' ) ) ? $product->get_parent_id() : $post_id;
 
 				$subscription_count = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$wpdb->prefix}woocommerce_order_itemmeta` WHERE `meta_key` = '_product_id' AND `meta_value` = %d", $product_id ) );
 
