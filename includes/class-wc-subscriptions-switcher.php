@@ -1912,6 +1912,11 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function maybe_set_payment_method_after_switch( $order ) {
 
+		// Only set manual subscriptions to automatic if automatic payments are enabled
+		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+			return;
+		}
+
 		foreach ( wcs_get_subscriptions_for_switch_order( $order->id ) as $subscription ) {
 
 			if ( false === $subscription->is_manual() ) {
