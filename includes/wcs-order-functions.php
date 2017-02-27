@@ -211,8 +211,6 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 			'customer_note' => $subscription->get_customer_note(),
 		) );
 
-		$new_order->post->post_title = wcs_get_new_order_title( $type );
-
 		wcs_copy_order_meta( $subscription, $new_order, $type );
 
 		// Copy over line items and allow extensions to add/remove items or item meta
@@ -297,6 +295,8 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
  * @return string       new title for a post
  */
 function wcs_get_new_order_title( $type ) {
+	wcs_deprecated_function( __FUNCTION__, '2.1.4' );
+
 	$type = wcs_validate_new_order_type( $type );
 
 	$order_date = strftime( _x( '%b %d, %Y @ %I:%M %p', 'Used in subscription post title. "Subscription renewal order - <this>"', 'woocommerce-subscriptions' ) );
