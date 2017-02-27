@@ -50,6 +50,10 @@ function wcs_help_tip( $tip, $allow_html = false ) {
  * We don't want to force the use of a custom legacy class for orders, similar to WC_Subscription_Legacy, because 3rd party
  * code may expect the object type to be WC_Order with strict type checks.
  *
+ * A note on dates: in WC 2.7+, dates are returned a timestamps in the site's timezone :upside_down_face:. In WC < 2.7, they were
+ * returned as MySQL strings in the site's timezone. We return them from here as MySQL strings in UTC timezone because that's how
+ * dates are used in Subscriptions in almost all cases, for sanity's sake.
+ *
  * @param WC_Order|WC_Product|WC_Subscription $object The object whose property we want to access.
  * @param string $property The property name.
  * @param string $single Whether to return just the first piece of meta data with the given property key, or all meta data.
@@ -134,33 +138,17 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 		case 'order_date' :
 		case 'date' :
 			if ( method_exists( $object, 'get_date_created' ) ) { // WC 2.7+
-
-				$value = date( 'Y-m-d H:i:s', $object->get_date_created() );
-
+				$value = date( 'Y-m-d H:i:s', $object->get_date_created() ); // This is in site time as a timestamp :sob:
 			} else { // WC 2.1-2.6
-
-				if ( '0000-00-00 00:00:00' == $object->post->post_date_gmt ) {
-					$value = get_gmt_from_date( $object->post->post_date );
-				} else {
-					$value = $object->post->post_date_gmt;
-				}
+				$value = $object->post->post_date; // Because $object->get_date_created() is in site time, we also need to use site time here :sob::sob::sob:
 			}
 			break;
 
 		case 'date_paid' :
 			if ( method_exists( $object, 'get_date_paid' ) ) { // WC 2.7+
-
-				$value = date( 'Y-m-d H:i:s', $object->get_date_paid() );
-
-			} else { // WC 2.1-2.6
-
-				if ( isset( $object->paid_date ) ) {
-					$value = get_gmt_from_date( $object->paid_date );
-				} elseif ( '0000-00-00 00:00:00' == $object->post->post_date_gmt ) {
-					$value = get_gmt_from_date( $object->post->post_date );
-				} else {
-					$value = $object->post->post_date_gmt;
-				}
+				$value = date( 'Y-m-d H:i:s', $object->get_date_paid() ); // This is in site time as a timestamp :sob:
+			} elseif ( isset( $object->paid_date ) ) { // WC 2.1-2.6
+				$value = $object->paid_date;
 			}
 			break;
 

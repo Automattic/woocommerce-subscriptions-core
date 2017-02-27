@@ -84,14 +84,21 @@ class WC_Subscriptions_Renewal_Order {
 		$order_needed_payment = in_array( $orders_old_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ), $order ) );
 
 		if ( $order_completed && $order_needed_payment ) {
-			$update_post_data  = array(
-				'ID'            => $order_id,
-				'post_date'     => current_time( 'mysql', 0 ),
-				'post_date_gmt' => current_time( 'mysql', 1 ),
-			);
 
-			wp_update_post( $update_post_data );
-			update_post_meta( $order_id, '_paid_date', current_time( 'mysql', true ) );
+			if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+				$update_post_data  = array(
+					'ID'            => $order_id,
+					'post_date'     => current_time( 'mysql', 0 ),
+					'post_date_gmt' => current_time( 'mysql', 1 ),
+				);
+
+				wp_update_post( $update_post_data );
+				update_post_meta( $order_id, '_paid_date', current_time( 'mysql', true ) );
+			} else {
+				// In WC 2.7, only the paid date prop represents the paid date, the post date isn't used anymore, also the paid date is stored and referenced as a timestamp in site timezone, not a MySQL string
+				$order->set_date_paid( current_time( 'timestamp', 0 ) );
+				$order->save();
+			}
 		}
 
 		foreach ( $subscriptions as $subscription ) {

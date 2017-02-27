@@ -1219,7 +1219,14 @@ class WC_Subscription extends WC_Order {
 			return 0;
 		}
 
-		return wcs_get_objects_property( $last_order, 'date_paid' );
+		$payment_date = wcs_get_objects_property( $last_order, 'date_paid' );
+
+		// The paid date was not always set on an order in WC < 2.7, but in those cases, the post date was updated to reflect the payment date so the date_created property is suitable
+		if ( is_null( $payment_date ) ) {
+			$payment_date = wcs_get_objects_property( $last_order, 'date_created' );
+		}
+
+		return $payment_date;
 	}
 
 	/**
@@ -1233,13 +1240,22 @@ class WC_Subscription extends WC_Order {
 			return false;
 		}
 
-		$updated_post_data = array(
-			'ID' => $last_order,
-			'post_date' => get_date_from_gmt( $datetime ),
-			'post_date_gmt' => $datetime,
-		);
+		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+			$updated_post_data = array(
+				'ID'            => $last_order,
+				'post_date'     => get_date_from_gmt( $datetime ),
+				'post_date_gmt' => $datetime,
+			);
 
-		wp_update_post( $updated_post_data );
+			wp_update_post( $updated_post_data );
+			update_post_meta( $last_order, '_paid_date', $datetime );
+		} else {
+			$last_order = wc_get_order( $last_order );
+
+			// In WC 2.7, only the paid date prop represents the paid date, the post date isn't used anymore, also the paid date is stored and referenced as a timestamp in site timezone, not a MySQL string
+			$last_order->set_date_paid( wcs_date_to_time( get_date_from_gmt( $datetime ) ) );
+			$last_order->save();
+		}
 
 		return $datetime;
 	}

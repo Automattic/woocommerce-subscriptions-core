@@ -1789,8 +1789,8 @@ class WC_Subscriptions_Order {
 
 		if ( $subscription = self::get_matching_subscription( $order, $product_id ) ) {
 			$last_payment_date = $subscription->get_date( 'last_payment' );
-		} else {
-			$last_payment_date = wcs_get_objects_property( $order, 'date_paid' );
+		} elseif ( null === ( $last_payment_date = wcs_get_objects_property( $order, 'date_paid' ) ) ) { // Try to get the '_paid_date' post meta, otherwise fallback to the post_date_gmt column - wcs_get_objects_property() always returns dates in UTC/GMT.
+			$last_payment_date = wcs_get_objects_property( $order, 'date' );
 		}
 
 		return $last_payment_date;
