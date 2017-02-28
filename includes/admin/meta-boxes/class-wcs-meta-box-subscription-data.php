@@ -72,8 +72,15 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 								$user        = get_user_by( 'id', $user_id );
 								$user_string = esc_html( $user->display_name ) . ' (#' . absint( $user->ID ) . ' &ndash; ' . esc_html( $user->user_email );
 							}
+							WCS_Select2::render( array(
+								'class' => 'wc-customer-search',
+								'name' => 'customer_user',
+								'id' => 'customer_user',
+								'placeholder' => 'Search for a customer&hellip;',
+								'selected' => $user_string,
+								'value' => $user_id,
+							) );
 							?>
-							<input type="hidden" class="wc-customer-search" id="customer_user" name="customer_user" data-placeholder="<?php esc_attr_e( 'Search for a customer&hellip;', 'woocommerce-subscriptions' ); ?>" data-selected="<?php echo esc_attr( $user_string ); ?>" value="<?php echo esc_attr( $user_id ); ?>" />
 						</p>
 
 						<p class="form-field form-field-wide">
