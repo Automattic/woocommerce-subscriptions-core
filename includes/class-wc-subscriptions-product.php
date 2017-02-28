@@ -103,25 +103,20 @@ class WC_Subscriptions_Product {
 	 * Checks a given product to determine if it is a subscription.
 	 * When the received arg is a product object, make sure it is passed into the filter intact in order to retain any properties added on the fly.
 	 *
-	 * @param int|WC_Product $product_id Either a product object or product's post ID.
+	 * @param int|WC_Product $product Either a product object or product's post ID.
 	 * @since 1.0
 	 */
-	public static function is_subscription( $product_id ) {
+	public static function is_subscription( $product ) {
 
 		$is_subscription = false;
 
-		if ( is_object( $product_id ) && is_a( $product_id, 'WC_Product' ) ) {
-			$product    = $product_id;
-			$product_id = $product->get_id();
-		} else {
-			$product = wc_get_product( $product_id );
-		}
+		$product = self::maybe_get_product_instance( $product );
 
 		if ( is_object( $product ) && $product->is_type( array( 'subscription', 'subscription_variation', 'variable-subscription' ) ) ) {
 			$is_subscription = true;
 		}
 
-		return apply_filters( 'woocommerce_is_subscription', $is_subscription, $product_id, $product );
+		return apply_filters( 'woocommerce_is_subscription', $is_subscription, $product->get_id(), $product );
 	}
 
 	/**
@@ -216,9 +211,7 @@ class WC_Subscriptions_Product {
 	public static function get_price_string( $product, $include = array() ) {
 		global $wp_locale;
 
-		if ( ! is_object( $product ) || ! is_a( $product, 'WC_Product' ) ) {
-			$product = wc_get_product( $product );
-		}
+		$product = self::maybe_get_product_instance( $product );
 
 		if ( ! self::is_subscription( $product ) ) {
 			return;
@@ -390,7 +383,7 @@ class WC_Subscriptions_Product {
 	 * @since 1.0
 	 */
 	public static function get_price( $product ) {
-		return apply_filters( 'woocommerce_subscriptions_product_price', self::get_meta_data( $product, 'subscription_price', 0 ), $product );
+		return apply_filters( 'woocommerce_subscriptions_product_price', self::get_meta_data( $product, 'subscription_price', 0 ), self::maybe_get_product_instance( $product ) );
 	}
 
 	/**
@@ -437,7 +430,7 @@ class WC_Subscriptions_Product {
 	 * @since 1.0
 	 */
 	public static function get_period( $product ) {
-		return apply_filters( 'woocommerce_subscriptions_product_period', self::get_meta_data( $product, 'subscription_period', '' ), $product );
+		return apply_filters( 'woocommerce_subscriptions_product_period', self::get_meta_data( $product, 'subscription_period', '' ), self::maybe_get_product_instance( $product ) );
 	}
 
 	/**
@@ -448,7 +441,7 @@ class WC_Subscriptions_Product {
 	 * @since 1.0
 	 */
 	public static function get_interval( $product ) {
-		return apply_filters( 'woocommerce_subscriptions_product_period_interval', self::get_meta_data( $product, 'subscription_period_interval', 0 ), $product );
+		return apply_filters( 'woocommerce_subscriptions_product_period_interval', self::get_meta_data( $product, 'subscription_period_interval', 0 ), self::maybe_get_product_instance( $product ) );
 	}
 
 	/**
@@ -459,7 +452,7 @@ class WC_Subscriptions_Product {
 	 * @since 1.0
 	 */
 	public static function get_length( $product ) {
-		return apply_filters( 'woocommerce_subscriptions_product_length', self::get_meta_data( $product, 'subscription_length', 0 ), $product );
+		return apply_filters( 'woocommerce_subscriptions_product_length', self::get_meta_data( $product, 'subscription_length', 0 ), self::maybe_get_product_instance( $product ) );
 	}
 
 	/**
@@ -470,7 +463,7 @@ class WC_Subscriptions_Product {
 	 * @since 1.0
 	 */
 	public static function get_trial_length( $product ) {
-		return apply_filters( 'woocommerce_subscriptions_product_trial_length', self::get_meta_data( $product, 'subscription_trial_length', 0 ), $product );
+		return apply_filters( 'woocommerce_subscriptions_product_trial_length', self::get_meta_data( $product, 'subscription_trial_length', 0 ), self::maybe_get_product_instance( $product ) );
 	}
 
 	/**
@@ -481,7 +474,7 @@ class WC_Subscriptions_Product {
 	 * @since 1.2
 	 */
 	public static function get_trial_period( $product ) {
-		return apply_filters( 'woocommerce_subscriptions_product_trial_period', self::get_meta_data( $product, 'subscription_trial_period', '' ), $product );
+		return apply_filters( 'woocommerce_subscriptions_product_trial_period', self::get_meta_data( $product, 'subscription_trial_period', '' ), self::maybe_get_product_instance( $product ) );
 	}
 
 	/**
@@ -492,7 +485,7 @@ class WC_Subscriptions_Product {
 	 * @since 1.0
 	 */
 	public static function get_sign_up_fee( $product ) {
-		return apply_filters( 'woocommerce_subscriptions_product_sign_up_fee', self::get_meta_data( $product, 'subscription_sign_up_fee', 0 ), $product );
+		return apply_filters( 'woocommerce_subscriptions_product_sign_up_fee', self::get_meta_data( $product, 'subscription_sign_up_fee', 0 ), self::maybe_get_product_instance( $product ) );
 	}
 
 	/**
@@ -754,7 +747,7 @@ class WC_Subscriptions_Product {
 	 * @since 1.0
 	 */
 	public static function needs_one_time_shipping( $product ) {
-		return apply_filters( 'woocommerce_subscriptions_product_needs_one_time_shipping', 'yes' === self::get_meta_data( $product, 'subscription_one_time_shipping', 'no' ), $product );
+		return apply_filters( 'woocommerce_subscriptions_product_needs_one_time_shipping', 'yes' === self::get_meta_data( $product, 'subscription_one_time_shipping', 'no' ), self::maybe_get_product_instance( $product ) );
 	}
 
 	/**
@@ -946,6 +939,22 @@ class WC_Subscriptions_Product {
 	}
 
 	/**
+	 * Wrapper to check whether we have a product ID or product and if we have the former, return the later.
+	 *
+	 * @param mixed $product A WC_Product object or product ID
+	 * @return WC_Product
+	 * @since 2.1.4
+	 */
+	private static function maybe_get_product_instance( $product ) {
+
+		if ( ! is_object( $product ) || ! is_a( $product, 'WC_Product' ) ) {
+			$product = wc_get_product( $product );
+		}
+
+		return $product;
+	}
+
+	/**
 	 * Get a piece of subscription related meta data for a product in a version compatible way.
 	 *
 	 * @param mixed $product A WC_Product object or product ID
@@ -955,9 +964,7 @@ class WC_Subscriptions_Product {
 	 */
 	public static function get_meta_data( $product, $meta_key, $default_value ) {
 
-		if ( ! is_object( $product ) || ! is_a( $product, 'WC_Product' ) ) {
-			$product = wc_get_product( $product );
-		}
+		$product = self::maybe_get_product_instance( $product );
 
 		$meta_value = $default_value;
 
