@@ -142,7 +142,11 @@ class WC_Subscriptions_Cart {
 		}
 
 		// Set which price should be used for calculation
-		add_filter( 'woocommerce_get_price', __CLASS__ . '::set_subscription_prices_for_calculation', 100, 2 );
+		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+			add_filter( 'woocommerce_get_price', __CLASS__ . '::set_subscription_prices_for_calculation', 100, 2 );
+		} else {
+			add_filter( 'woocommerce_product_get_price', __CLASS__ . '::set_subscription_prices_for_calculation', 100, 2 );
+		}
 	}
 
 	/**
@@ -152,7 +156,11 @@ class WC_Subscriptions_Cart {
 	 * @since 1.2
 	 */
 	public static function remove_calculation_price_filter() {
-		remove_filter( 'woocommerce_get_price', __CLASS__ . '::set_subscription_prices_for_calculation', 100, 2 );
+		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+			remove_filter( 'woocommerce_get_price', __CLASS__ . '::set_subscription_prices_for_calculation', 100 );
+		} else {
+			remove_filter( 'woocommerce_product_get_price', __CLASS__ . '::set_subscription_prices_for_calculation', 100 );
+		}
 	}
 
 	/**
@@ -655,15 +663,17 @@ class WC_Subscriptions_Cart {
 
 		if ( WC_Subscriptions_Product::is_subscription( $product ) && ! wcs_cart_contains_renewal() ) {
 
+			$product_price_filter = WC_Subscriptions::is_woocommerce_pre( '2.7' ) ? 'woocommerce_get_price' : 'woocommerce_product_get_price';
+
 			// Avoid infinite loop
 			remove_filter( 'woocommerce_cart_product_subtotal', __CLASS__ . '::get_formatted_product_subtotal', 11, 4 );
 
-			add_filter( 'woocommerce_get_price', 'WC_Subscriptions_Product::get_sign_up_fee_filter', 100, 2 );
+			add_filter( $product_price_filter, 'WC_Subscriptions_Product::get_sign_up_fee_filter', 100, 2 );
 
 			// And get the appropriate sign up fee string
 			$sign_up_fee_string = $cart->get_product_subtotal( $product, $quantity );
 
-			remove_filter( 'woocommerce_get_price',  'WC_Subscriptions_Product::get_sign_up_fee_filter', 100, 2 );
+			remove_filter( $product_price_filter,  'WC_Subscriptions_Product::get_sign_up_fee_filter', 100, 2 );
 
 			add_filter( 'woocommerce_cart_product_subtotal', __CLASS__ . '::get_formatted_product_subtotal', 11, 4 );
 
