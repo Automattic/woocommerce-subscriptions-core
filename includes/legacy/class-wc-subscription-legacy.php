@@ -346,6 +346,15 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	/*** Setters *****************************************************/
 
 	/**
+	 * Returns the unique ID for this object.
+	 *
+	 * @return int
+	 */
+	public function set_id( $id ) {
+		$this->id = absint( $id );
+	}
+
+	/**
 	 * Set parent order ID. We don't use WC_Abstract_Order::set_parent_id() because we want to allow false
 	 * parent IDs, like 0.
 	 *
