@@ -42,6 +42,14 @@ class WC_Subscriptions_Admin {
 	private static $found_related_orders = false;
 
 	/**
+	 * Is meta boxes saved once?
+	 *
+	 * @var boolean
+	 * @since 2.1.4
+	 */
+	private static $saved_product_meta = false;
+
+	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
 	 * @since 1.0
@@ -351,7 +359,7 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function save_subscription_meta( $post_id ) {
 
-		if ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) || ! isset( $_POST['product-type'] ) || ! in_array( $_POST['product-type'], apply_filters( 'woocommerce_subscription_product_types', array( WC_Subscriptions::$name ) ) ) ) {
+		if ( self::$saved_product_meta || ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) || ! isset( $_POST['product-type'] ) || ! in_array( $_POST['product-type'], apply_filters( 'woocommerce_subscription_product_types', array( WC_Subscriptions::$name ) ) ) ) ) {
 			return;
 		}
 
@@ -417,6 +425,8 @@ class WC_Subscriptions_Admin {
 			}
 		}
 
+		// To prevent running this function on multiple save_post triggered events per update. Similar to WC_Admin_Meta_Boxes:$saved_meta_boxes implementation.
+		self::$saved_product_meta = true;
 	}
 
 	/**
@@ -428,7 +438,7 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function save_variable_subscription_meta( $post_id ) {
 
-		if ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) || ! isset( $_POST['product-type'] ) || ! in_array( $_POST['product-type'], apply_filters( 'woocommerce_subscription_variable_product_types', array( 'variable-subscription' ) ) ) ) {
+		if ( self::$saved_product_meta || ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) || ! isset( $_POST['product-type'] ) || ! in_array( $_POST['product-type'], apply_filters( 'woocommerce_subscription_variable_product_types', array( 'variable-subscription' ) ) ) ) ) {
 			return;
 		}
 
@@ -438,6 +448,8 @@ class WC_Subscriptions_Admin {
 
 		update_post_meta( $post_id, '_subscription_one_time_shipping', stripslashes( isset( $_REQUEST['_subscription_one_time_shipping'] ) ? 'yes' : 'no' ) );
 
+		// To prevent running this function on multiple save_post triggered events per update. Similar to WC_Admin_Meta_Boxes:$saved_meta_boxes implementation.
+		self::$saved_product_meta = true;
 	}
 
 	/**
