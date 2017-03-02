@@ -751,7 +751,7 @@ class WC_Subscriptions_Switcher {
 						$next_payment_timestamp = $subscription->get_time( 'end' );
 					}
 
-					if ( WC_Subscriptions_Product::get_period( $cart_item['data'] ) != $subscription->get_billing_period() || WC_Subscriptions_Product::get_period_interval( $cart_item['data'] ) != $subscription->get_billing_interval() ) {
+					if ( WC_Subscriptions_Product::get_period( $cart_item['data'] ) != $subscription->get_billing_period() || WC_Subscriptions_Product::get_interval( $cart_item['data'] ) != $subscription->get_billing_interval() ) {
 						$is_different_billing_schedule = true;
 					} else {
 						$is_different_billing_schedule = false;
@@ -810,7 +810,7 @@ class WC_Subscriptions_Switcher {
 
 						if ( $is_different_billing_schedule ) {
 							$switch_order_data[ $subscription->get_id() ]['billing_schedule']['_billing_period']   = WC_Subscriptions_Product::get_period( $cart_item['data'] );
-							$switch_order_data[ $subscription->get_id() ]['billing_schedule']['_billing_interval'] = absint( WC_Subscriptions_Product::get_period_interval( $cart_item['data'] ) );
+							$switch_order_data[ $subscription->get_id() ]['billing_schedule']['_billing_interval'] = absint( WC_Subscriptions_Product::get_interval( $cart_item['data'] ) );
 						}
 
 						$updated_dates = array();
