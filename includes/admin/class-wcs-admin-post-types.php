@@ -416,7 +416,7 @@ class WCS_Admin_Post_Types {
 	public function render_shop_subscription_columns( $column ) {
 		global $post, $the_subscription, $wp_list_table;
 
-		if ( empty( $the_subscription ) || $the_subscription->id != $post->ID ) {
+		if ( empty( $the_subscription ) || $the_subscription->get_id() != $post->ID ) {
 			$the_subscription = wcs_get_subscription( $post->ID );
 		}
 
@@ -433,7 +433,7 @@ class WCS_Admin_Post_Types {
 
 				$action_url = add_query_arg(
 					array(
-						'post'     => $the_subscription->id,
+						'post'     => $the_subscription->get_id(),
 						'_wpnonce' => wp_create_nonce( 'bulk-posts' ),
 					)
 				);
@@ -502,14 +502,14 @@ class WCS_Admin_Post_Types {
 					$customer_tip .= _x( 'Billing:', 'meaning billing address', 'woocommerce-subscriptions' ) . ' ' . esc_html( $address );
 				}
 
-				if ( $the_subscription->billing_email ) {
+				if ( $the_subscription->get_billing_email() ) {
 					// translators: placeholder is customer's billing email
-					$customer_tip .= '<br/><br/>' . sprintf( __( 'Email: %s', 'woocommerce-subscriptions' ), esc_attr( $the_subscription->billing_email ) );
+					$customer_tip .= '<br/><br/>' . sprintf( __( 'Email: %s', 'woocommerce-subscriptions' ), esc_attr( $the_subscription->get_billing_email() ) );
 				}
 
-				if ( $the_subscription->billing_phone ) {
+				if ( $the_subscription->get_billing_phone() ) {
 					// translators: placeholder is customer's billing phone number
-					$customer_tip .= '<br/><br/>' . sprintf( __( 'Tel: %s', 'woocommerce-subscriptions' ), esc_html( $the_subscription->billing_phone ) );
+					$customer_tip .= '<br/><br/>' . sprintf( __( 'Tel: %s', 'woocommerce-subscriptions' ), esc_html( $the_subscription->get_billing_phone() ) );
 				}
 
 				if ( ! empty( $customer_tip ) ) {
@@ -523,8 +523,8 @@ class WCS_Admin_Post_Types {
 
 					$username  = '<a href="user-edit.php?user_id=' . absint( $user_info->ID ) . '">';
 
-					if ( $the_subscription->billing_first_name || $the_subscription->billing_last_name ) {
-						$username .= esc_html( ucfirst( $the_subscription->billing_first_name ) . ' ' . ucfirst( $the_subscription->billing_last_name ) );
+					if ( $the_subscription->get_billing_first_name() || $the_subscription->get_billing_last_name() ) {
+						$username .= esc_html( ucfirst( $the_subscription->get_billing_first_name() ) . ' ' . ucfirst( $the_subscription->get_billing_last_name() ) );
 					} elseif ( $user_info->first_name || $user_info->last_name ) {
 						$username .= esc_html( ucfirst( $user_info->first_name ) . ' ' . ucfirst( $user_info->last_name ) );
 					} else {
@@ -533,8 +533,8 @@ class WCS_Admin_Post_Types {
 
 					$username .= '</a>';
 
-				} elseif ( $the_subscription->billing_first_name || $the_subscription->billing_last_name ) {
-					$username = trim( $the_subscription->billing_first_name . ' ' . $the_subscription->billing_last_name );
+				} elseif ( $the_subscription->get_billing_first_name() || $the_subscription->get_billing_last_name() ) {
+					$username = trim( $the_subscription->get_billing_first_name() . ' ' . $the_subscription->get_billing_last_name() );
 				}
 				// translators: $1: is opening link, $2: is subscription order number, $3: is closing link tag, $4: is user's name
 				$column_content = sprintf( _x( '%1$s#%2$s%3$s for %4$s', 'Subscription title on admin table. (e.g.: #211 for John Doe)', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post.php?post=' . absint( $post->ID ) . '&action=edit' ) ) . '">', '<strong>' . esc_attr( $the_subscription->get_order_number() ) . '</strong>', '</a>', $username );
@@ -570,7 +570,7 @@ class WCS_Admin_Post_Types {
 								$item_name = sprintf( '%s &times; %s', absint( $item_quantity ), $item_name );
 							}
 							if ( $_product ) {
-								$item_name = sprintf( '<a href="%s">%s</a>', get_edit_post_link( $_product->id ), $item_name );
+								$item_name = sprintf( '<a href="%s">%s</a>', get_edit_post_link( $_product->get_id() ), $item_name );
 							}
 
 							$column_content .= '<div class="order-item">';
@@ -606,7 +606,7 @@ class WCS_Admin_Post_Types {
 									$item_name  = esc_html( $item_name );
 
 									if ( $_product ) {
-										$item_name = sprintf( '<a href="%s">%s</a>', get_edit_post_link( $_product->id ), $item_name );
+										$item_name = sprintf( '<a href="%s">%s</a>', get_edit_post_link( $_product->get_id() ), $item_name );
 									}
 
 									echo wp_kses( $item_name, array( 'a' => array( 'href' => array() ) ) );
@@ -941,11 +941,9 @@ class WCS_Admin_Post_Types {
 	 * @return string 						the link string
 	 */
 	public function get_related_orders_link( $the_subscription ) {
-		$order_id = isset( $the_subscription->order->id ) ? $the_subscription->order->id : 0;
-
 		return sprintf(
 			'<a href="%s">%s</a>',
-			admin_url( 'edit.php?post_status=all&post_type=shop_order&_subscription_related_orders=' . absint( $the_subscription->id ) ),
+			admin_url( 'edit.php?post_status=all&post_type=shop_order&_subscription_related_orders=' . absint( $the_subscription->get_id() ) ),
 			count( $the_subscription->get_related_orders() )
 		);
 	}

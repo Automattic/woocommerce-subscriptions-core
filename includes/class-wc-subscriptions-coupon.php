@@ -75,14 +75,12 @@ class WC_Subscriptions_Coupon {
 			return $discount;
 		}
 
-		$product_id = ( $cart_item['data']->is_type( array( 'subscription_variation' ) ) ) ? $cart_item['data']->variation_id : $cart_item['data']->id;
-
 		// If not a subscription product return the default discount
 		if ( ! wcs_cart_contains_renewal() && ! WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 			return $discount;
 		}
 		// But if cart contains a renewal, we need to handle both subscription products and manually added non-susbscription products that could be part of a subscription
-		if ( wcs_cart_contains_renewal() && ! self::is_subsbcription_renewal_line_item( $product_id, $cart_item ) ) {
+		if ( wcs_cart_contains_renewal() && ! self::is_subsbcription_renewal_line_item( $cart_item['data'], $cart_item ) ) {
 			return $discount;
 		}
 
@@ -120,7 +118,7 @@ class WC_Subscriptions_Coupon {
 			}
 
 			// Apply sign-up discounts
-			if ( ! empty( $cart_item['data']->subscription_sign_up_fee ) ) {
+			if ( WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] ) > 0 ) {
 
 				if ( 'sign_up_fee' == $coupon->type ) {
 					$apply_initial_coupon = true;
@@ -132,9 +130,9 @@ class WC_Subscriptions_Coupon {
 
 				// Only Sign up fee coupons apply to sign up fees, adjust the discounting_amount accordingly
 				if ( in_array( $coupon->type, array( 'sign_up_fee', 'sign_up_fee_percent' ) ) ) {
-					$discounting_amount = $cart_item['data']->subscription_sign_up_fee;
+					$discounting_amount = WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] );
 				} else {
-					$discounting_amount -= $cart_item['data']->subscription_sign_up_fee;
+					$discounting_amount -= WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] );
 				}
 			}
 
@@ -154,7 +152,7 @@ class WC_Subscriptions_Coupon {
 		if ( $apply_recurring_coupon || $apply_initial_coupon ) {
 
 			// Recurring coupons only apply when there is no free trial (carts can have a mix of free trial and non free trial items)
-			if ( $apply_initial_coupon && 'recurring_fee' == $coupon->type && ! empty( $cart_item['data']->subscription_trial_length ) ) {
+			if ( $apply_initial_coupon && 'recurring_fee' == $coupon->type && WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) > 0 ) {
 				$discounting_amount = 0;
 			}
 
@@ -168,7 +166,7 @@ class WC_Subscriptions_Coupon {
 		} elseif ( $apply_initial_percent_coupon ) {
 
 			// Recurring coupons only apply when there is no free trial (carts can have a mix of free trial and non free trial items)
-			if ( 'recurring_percent' == $coupon->type && ! empty( $cart_item['data']->subscription_trial_length ) ) {
+			if ( 'recurring_percent' == $coupon->type && WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) > 0 ) {
 				$discounting_amount = 0;
 			}
 
@@ -453,9 +451,9 @@ class WC_Subscriptions_Coupon {
 	/**
 	 * Check if a product is a renewal order line item (rather than a "susbscription") - to pick up non-subsbcription products added a subscription manually
 	 *
-	 * @param  int	$product_id
-	 * @param  array  $cart_item
-	 * @param  WC_Cart  $cart The WooCommerce cart object.
+	 * @param int|WC_Product $product_id
+	 * @param array $cart_item
+	 * @param WC_Cart $cart The WooCommerce cart object.
 	 * @return boolean whether a product is a renewal order line item
 	 * @since 2.0.10
 	 */
@@ -464,16 +462,13 @@ class WC_Subscriptions_Coupon {
 		$is_subscription_line_item = false;
 
 		if ( is_object( $product_id ) ) {
-			$product    = $product_id;
-			$product_id = $product->id;
-		} elseif ( is_numeric( $product_id ) ) {
-			$product = wc_get_product( $product_id );
+			$product_id = $product_id->get_id();
 		}
 
 		if ( ! empty( $cart_item['subscription_renewal'] ) ) {
 			if ( $subscription = wcs_get_subscription( $cart_item['subscription_renewal']['subscription_id'] ) ) {
 				foreach ( $subscription->get_items() as $item ) {
-					$item_product_id = ( $item['variation_id'] ) ? $item['variation_id'] : $item['product_id'];
+					$item_product_id = wcs_get_canonical_product_id( $item );
 					if ( ! empty( $item_product_id ) && $item_product_id == $product_id ) {
 						$is_subscription_line_item = true;
 					}
@@ -494,9 +489,7 @@ class WC_Subscriptions_Coupon {
 	public static function apply_subscription_discount( $original_price, $cart_item, $cart ) {
 		_deprecated_function( __METHOD__, '2.0.10', 'Have moved to filtering on "woocommerce_coupon_get_discount_amount" to return discount amount. See: '. __CLASS__ .'::get_discount_amount()' );
 
-		$product_id = ( $cart_item['data']->is_type( array( 'subscription_variation' ) ) ) ? $cart_item['data']->variation_id : $cart_item['data']->id;
-
-		if ( ! WC_Subscriptions_Product::is_subscription( $product_id ) ) {
+		if ( ! WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 			return $original_price;
 		}
 
@@ -514,7 +507,7 @@ class WC_Subscriptions_Coupon {
 				if ( WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
 					$is_valid_for_product = true;
 				} else {
-					$is_valid_for_product = $coupon->is_valid_for_product( wc_get_product( $product_id ), $cart_item );
+					$is_valid_for_product = $coupon->is_valid_for_product( $cart_item['data'], $cart_item );
 				}
 
 				if ( $coupon->apply_before_tax() && $coupon->is_valid() && $is_valid_for_product ) {
@@ -542,7 +535,7 @@ class WC_Subscriptions_Coupon {
 						}
 
 						// Apply sign-up discounts to initial total
-						if ( ! empty( $cart_item['data']->subscription_sign_up_fee ) ) {
+						if ( WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] ) > 0 ) {
 
 							if ( 'sign_up_fee' == $coupon->type ) {
 								$apply_initial_coupon = true;
@@ -552,7 +545,7 @@ class WC_Subscriptions_Coupon {
 								$apply_initial_percent_coupon = true;
 							}
 
-							$calculation_price = $cart_item['data']->subscription_sign_up_fee;
+							$calculation_price = WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] );
 						}
 					}
 
@@ -561,7 +554,7 @@ class WC_Subscriptions_Coupon {
 						$discount_amount = ( $calculation_price < $coupon->amount ) ? $calculation_price : $coupon->amount;
 
 						// Recurring coupons only apply when there is no free trial (carts can have a mix of free trial and non free trial items)
-						if ( $apply_initial_coupon && 'recurring_fee' == $coupon->type && ! empty( $cart_item['data']->subscription_trial_length ) ) {
+						if ( $apply_initial_coupon && 'recurring_fee' == $coupon->type && WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) > 0 ) {
 							$discount_amount = 0;
 						}
 
@@ -582,15 +575,15 @@ class WC_Subscriptions_Coupon {
 					} elseif ( $apply_initial_percent_coupon ) {
 
 						// Recurring coupons only apply when there is no free trial (carts can have a mix of free trial and non free trial items)
-						if ( 'recurring_percent' == $coupon->type && empty( $cart_item['data']->subscription_trial_length ) ) {
-							$amount_to_discount = $cart_item['data']->subscription_price;
+						if ( 'recurring_percent' == $coupon->type && 0 == WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) ) {
+							$amount_to_discount = WC_Subscriptions_Product::get_price( $cart_item['data'] );
 						} else {
 							$amount_to_discount = 0;
 						}
 
 						// Sign up fee coupons only apply to sign up fees
 						if ( 'sign_up_fee_percent' == $coupon->type ) {
-							$amount_to_discount = $cart_item['data']->subscription_sign_up_fee;
+							$amount_to_discount = WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] );
 						}
 
 						$discount_amount = round( ( $amount_to_discount / 100 ) * $coupon->amount, WC()->cart->dp );

@@ -83,8 +83,8 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 		if ( ! empty( $post->post_type ) && ! empty( $post->ID ) && 'shop_subscription' == $post->post_type ) {
 			$subscription = wcs_get_subscription( $post->ID );
 
-			$response->data['billing_period']    = $subscription->billing_period;
-			$response->data['billing_interval']  = $subscription->billing_interval;
+			$response->data['billing_period']    = $subscription->get_billing_period();
+			$response->data['billing_interval']  = $subscription->get_billing_interval();
 			$response->data['start_date']        = wc_rest_prepare_date_response( $subscription->get_date( 'start' ) );
 			$response->data['trial_end_date']    = wc_rest_prepare_date_response( $subscription->get_date( 'trial_end' ) );
 			$response->data['next_payment_date'] = wc_rest_prepare_date_response( $subscription->get_date( 'next_payment' ) );
@@ -252,11 +252,11 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 	 */
 	public function update_schedule( $subscription, $data ) {
 		if ( isset( $data['billing_interval'] ) ) {
-			update_post_meta( $subscription->id, '_billing_interval', absint( $data['billing_interval'] ) );
+			update_post_meta( $subscription->get_id(), '_billing_interval', absint( $data['billing_interval'] ) );
 		}
 
 		if ( ! empty( $data['billing_period'] ) ) {
-			update_post_meta( $subscription->id, '_billing_period', $data['billing_period'] );
+			update_post_meta( $subscription->get_id(), '_billing_period', $data['billing_period'] );
 		}
 
 		try {
@@ -316,8 +316,8 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 				}
 			}
 
-			if ( empty( $subscription->payment_gateway ) ) {
-				$subscription->payment_gateway = $payment_gateway;
+			if ( '' == $subscription->get_payment_method() ) {
+				$subscription->set_payment_method( $payment_gateway );
 			}
 
 			$subscription->set_payment_method( $payment_gateway, $payment_method_meta );

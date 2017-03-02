@@ -170,7 +170,7 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 			$action_args   = array( 'order_id' => $last_order_id );
 
 		} else {
-			$action_args = array( 'subscription_id' => $subscription->id );
+			$action_args = array( 'subscription_id' => $subscription->get_id() );
 		}
 
 		return apply_filters( 'woocommerce_subscriptions_scheduled_action_args', $action_args, $date_type, $subscription );

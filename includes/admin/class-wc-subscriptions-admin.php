@@ -304,11 +304,6 @@ class WC_Subscriptions_Admin {
 	public static function variable_subscription_pricing_fields( $loop, $variation_data, $variation ) {
 		global $thepostid;
 
-		// Set month as the default billing period
-		if ( ! $subscription_period = get_post_meta( $variation->ID, '_subscription_period', true ) ) {
-			$subscription_period = 'month';
-		}
-
 		// When called via Ajax
 		if ( ! function_exists( 'woocommerce_wp_text_input' ) ) {
 			require_once( WC()->plugin_path() . '/admin/post-types/writepanels/writepanels-init.php' );
@@ -317,6 +312,8 @@ class WC_Subscriptions_Admin {
 		if ( ! isset( $thepostid ) ) {
 			$thepostid = $variation->post_parent;
 		}
+
+		$variation_product = wc_get_product( $variation );
 
 		include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/html-variation-price.php' );
 
@@ -490,8 +487,8 @@ class WC_Subscriptions_Admin {
 
 			if ( isset( $new_price ) && $new_price != $old_regular_price ) {
 				$price_changed = true;
-				update_post_meta( $product->id, '_regular_price', $new_price );
-				update_post_meta( $product->id, '_subscription_price', $new_price );
+				update_post_meta( $product->get_id(), '_regular_price', $new_price );
+				update_post_meta( $product->get_id(), '_subscription_price', $new_price );
 				$product->regular_price = $new_price;
 			}
 		}
@@ -533,24 +530,24 @@ class WC_Subscriptions_Admin {
 
 			if ( isset( $new_price ) && $new_price != $old_sale_price ) {
 				$price_changed = true;
-				update_post_meta( $product->id, '_sale_price', $new_price );
+				update_post_meta( $product->get_id(), '_sale_price', $new_price );
 				$product->sale_price = $new_price;
 			}
 		}
 
 		if ( $price_changed ) {
-			update_post_meta( $product->id, '_sale_price_dates_from', '' );
-			update_post_meta( $product->id, '_sale_price_dates_to', '' );
+			update_post_meta( $product->get_id(), '_sale_price_dates_from', '' );
+			update_post_meta( $product->get_id(), '_sale_price_dates_to', '' );
 
 			if ( $product->regular_price < $product->sale_price ) {
 				$product->sale_price = '';
-				update_post_meta( $product->id, '_sale_price', '' );
+				update_post_meta( $product->get_id(), '_sale_price', '' );
 			}
 
 			if ( $product->sale_price ) {
-				update_post_meta( $product->id, '_price', $product->sale_price );
+				update_post_meta( $product->get_id(), '_price', $product->sale_price );
 			} else {
-				update_post_meta( $product->id, '_price', $product->regular_price );
+				update_post_meta( $product->get_id(), '_price', $product->regular_price );
 			}
 		}
 	}
@@ -628,9 +625,12 @@ class WC_Subscriptions_Admin {
 		}
 
 		// Now that all the variation's meta is saved, sync the min variation price
-		$variable_subscription = wc_get_product( $post_id );
-		$variable_subscription->variable_product_sync();
-
+		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+			$variable_subscription = wc_get_product( $post_id );
+			$variable_subscription->variable_product_sync();
+		} else {
+			WC_Product_Variable::sync( $post_id );
+		}
 	}
 
 	/**

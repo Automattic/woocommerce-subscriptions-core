@@ -26,6 +26,9 @@ class WCS_Cart_Renewal {
 
 		$this->setup_hooks();
 
+		// Attach hooks which depend on WooCommerce constants
+		add_action( 'woocommerce_loaded', array( &$this, 'attach_dependant_hooks' ), 10 );
+
 		// Set URL parameter for manual subscription renewals
 		add_filter( 'woocommerce_get_checkout_payment_url', array( &$this, 'get_checkout_payment_url' ), 10, 2 );
 
@@ -44,13 +47,30 @@ class WCS_Cart_Renewal {
 		// When a user is prevented from paying for a failed/pending renewal order because they aren't logged in, redirect them back after login
 		add_filter( 'woocommerce_login_redirect', array( &$this, 'maybe_redirect_after_login' ), 10 , 1 );
 
-		// When a renewal order's line items are being updated, update the line item IDs stored in cart data.
-		add_action( 'woocommerce_add_order_item_meta', array( &$this, 'update_line_item_cart_data' ), 10, 3 );
-
 		// Once we have finished updating the renewal order on checkout, update the session cart so the cart changes are honoured.
 		add_action( 'woocommerce_checkout_order_processed', array( &$this, 'update_session_cart_after_updating_renewal_order' ), 10 );
 
 		add_filter( 'wc_dynamic_pricing_apply_cart_item_adjustment', array( &$this, 'prevent_compounding_dynamic_discounts' ), 10, 2 );
+	}
+
+	/**
+	 * Attach WooCommerce version dependenant hooks
+	 *
+	 * @since 2.1.4
+	 */
+	public function attach_dependant_hooks() {
+
+		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+
+			// When a renewal order's line items are being updated, update the line item IDs stored in cart data.
+			add_action( 'woocommerce_add_order_item_meta', array( &$this, 'update_line_item_cart_data' ), 10, 3 );
+
+		} else {
+
+			// For order items created as part of a switch, keep a record of the prorated amounts
+			add_action( 'woocommerce_checkout_create_order_line_item', array( &$this, 'update_order_item_data_in_cart' ), 10, 3 );
+
+		}
 	}
 
 	/**
@@ -111,7 +131,7 @@ class WCS_Cart_Renewal {
 			$order_id  = ( isset( $wp->query_vars['order-pay'] ) ) ? $wp->query_vars['order-pay'] : absint( $_GET['order_id'] );
 			$order     = wc_get_order( $wp->query_vars['order-pay'] );
 
-			if ( $order->order_key == $order_key && $order->has_status( array( 'pending', 'failed' ) ) && wcs_order_contains_renewal( $order ) ) {
+			if ( wcs_get_objects_property( $order, 'order_key' ) == $order_key && $order->has_status( array( 'pending', 'failed' ) ) && wcs_order_contains_renewal( $order ) ) {
 
 				// If a user isn't logged in, allow them to login first and then redirect back
 				if ( ! is_user_logged_in() ) {
@@ -142,7 +162,7 @@ class WCS_Cart_Renewal {
 
 					// Add the existing subscription items to the cart
 					$this->setup_cart( $order, array(
-						'subscription_id'  => $subscription->id,
+						'subscription_id'  => $subscription->get_id(),
 						'renewal_order_id' => $order_id,
 					) );
 
@@ -291,7 +311,7 @@ class WCS_Cart_Renewal {
 						}
 
 						// Store the coupon info for later
-						$this->store_coupon( $subscription->id, $coupon );
+						$this->store_coupon( $subscription->get_id(), $coupon );
 
 						// Add the coupon to the cart - the actually coupon values / data are grabbed when needed later
 						if ( WC()->cart && ! WC()->cart->has_discount( $coupon_code ) ) {
@@ -314,7 +334,7 @@ class WCS_Cart_Renewal {
 				}
 
 				// Store the coupon info for later
-				$this->store_coupon( $subscription->id, $coupon );
+				$this->store_coupon( $subscription->get_id(), $coupon );
 
 				// Add the coupon to the cart
 				if ( WC()->cart && ! WC()->cart->has_discount( 'discount_renewal' ) ) {
@@ -390,21 +410,22 @@ class WCS_Cart_Renewal {
 				if ( wc_prices_include_tax() ) {
 
 					if ( apply_filters( 'woocommerce_adjust_non_base_location_prices', true ) ) {
-						$base_tax_rates = WC_Tax::get_base_tax_rates( $_product->tax_class );
+						$base_tax_rates = WC_Tax::get_base_tax_rates( wcs_get_objects_property( $_product, 'tax_class' ) );
 					} else {
-						$base_tax_rates = WC_Tax::get_rates( $_product->tax_class );
+						$base_tax_rates = WC_Tax::get_rates( wcs_get_objects_property( $_product, 'tax_class' ) );
 					}
 
 					$base_taxes_on_item = WC_Tax::calc_tax( $price, $base_tax_rates, false, false );
 					$price += array_sum( $base_taxes_on_item );
 				}
 
-				$_product->price = $price / $item_to_renew['qty'];
+				$_product->set_price( $price / $item_to_renew['qty'] );
 
 				// Don't carry over any sign up fee
-				$_product->subscription_sign_up_fee = 0;
+				wcs_set_objects_property( $_product, 'subscription_sign_up_fee', 0, 'set_prop_only' );
 
-				$_product->post->post_title = apply_filters( 'woocommerce_subscriptions_renewal_product_title', $_product->get_title(), $_product );
+				// Allow plugins to add additional strings to the product name for renewals
+				wcs_set_objects_property( $_product, 'name', apply_filters( 'woocommerce_subscriptions_renewal_product_title', $_product->get_title(), $_product ), 'set_prop_only' );
 
 				// Make sure the same quantity is renewed
 				$cart_item_session_data['quantity'] = $item_to_renew['qty'];
@@ -424,12 +445,16 @@ class WCS_Cart_Renewal {
 	public function checkout_get_value( $value, $key ) {
 
 		// Only hook in after WC()->checkout() has been initialised
-		if ( did_action( 'woocommerce_checkout_init' ) > 0 ) {
+		if ( $this->cart_contains() && did_action( 'woocommerce_checkout_init' ) > 0 ) {
 
 			// Guard against the fake WC_Checkout singleton, see https://github.com/woocommerce/woocommerce-subscriptions/issues/427#issuecomment-260763250
 			remove_filter( 'woocommerce_checkout_get_value', array( &$this, 'checkout_get_value' ), 10, 2 );
 
-			$address_fields = array_merge( WC()->checkout()->checkout_fields['billing'], WC()->checkout()->checkout_fields['shipping'] );
+			if ( is_callable( array( WC()->checkout(), 'get_checkout_fields' ) ) ) { // WC 2.7+
+				$address_fields = array_merge( WC()->checkout()->get_checkout_fields( 'billing' ), WC()->checkout()->get_checkout_fields( 'shipping' ) );
+			} else {
+				$address_fields = array_merge( WC()->checkout()->checkout_fields['billing'], WC()->checkout()->checkout_fields['shipping'] );
+			}
 
 			add_filter( 'woocommerce_checkout_get_value', array( &$this, 'checkout_get_value' ), 10, 2 );
 
@@ -582,13 +607,18 @@ class WCS_Cart_Renewal {
 	 */
 	public function maybe_preserve_order_status( $order_status ) {
 
-		if ( null !== WC()->session ) {
+		if ( null !== WC()->session && 'failed' !== $order_status ) {
 
 			$order_id = absint( WC()->session->order_awaiting_payment );
+
+			// Guard against infinite loops in WC 2.7+ where default order staus is set in WC_Abstract_Order::__construct()
+			remove_filter( 'woocommerce_default_order_status', array( &$this, __FUNCTION__ ), 10 );
 
 			if ( $order_id > 0 && ( $order = wc_get_order( $order_id ) ) && wcs_order_contains_renewal( $order ) && $order->has_status( 'failed' ) ) {
 				$order_status = 'failed';
 			}
+
+			add_filter( 'woocommerce_default_order_status', array( &$this, __FUNCTION__ ) );
 		}
 
 		return $order_status;
@@ -911,20 +941,23 @@ class WCS_Cart_Renewal {
 	 * After updating renewal order line items, update the values stored in cart item data
 	 * which would now reference old line item IDs.
 	 *
-	 * @since 2.1.3
+	 * Used when WC 2.7 or newer is active. When prior versions are active,
+	 * @see WCS_Cart_Renewal->update_line_item_cart_data()
+	 *
+	 * @since 2.1.4
 	 */
-	public function update_line_item_cart_data( $item_id, $cart_item_data, $cart_item_key ) {
+	public function update_order_item_data_in_cart( $order_item, $cart_item_key, $cart_item ) {
 
 		if ( isset( $cart_item_data[ $this->cart_item_key ] ) ) {
-			// Update the line_item_id to the new corresponding item_id
-			WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['line_item_id'] = $item_id;
+			WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['line_item_id'] = $order_item->get_id();
 		}
 	}
 
 	/**
 	 * Force an update to the session cart after updating renewal order line items.
-	 * This is required so that changes made by @see WCS_Cart_Renewal->update_line_item_cart_data()
-	 * are also reflected in the session cart.
+	 *
+	 * This is required so that changes made by @see WCS_Cart_Renewal->update_order_item_data_in_cart() (or
+	 * @see WCS_Cart_Renewal->update_line_item_cart_data() for WC < 2.7), are also reflected in the session cart.
 	 *
 	 * @since 2.1.3
 	 */
@@ -984,6 +1017,24 @@ class WCS_Cart_Renewal {
 	 */
 	public function maybe_add_subscription_fees( $cart ) {
 		_deprecated_function( __METHOD__, '2.0.13', __CLASS__ .'::maybe_add_fees()' );
+	}
+
+	/**
+	 * After updating renewal order line items, update the values stored in cart item data
+	 * which would now reference old line item IDs.
+	 *
+	 * @since 2.1.3
+	 */
+	public function update_line_item_cart_data( $item_id, $cart_item_data, $cart_item_key ) {
+
+		if ( false === WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+			_deprecated_function( __METHOD__, '2.1.4 and WooCommerce 2.7.0', __CLASS__ . '::update_order_item_data_in_cart( $order_item, $cart_item_key, $cart_item )' );
+		}
+
+		if ( isset( $cart_item_data[ $this->cart_item_key ] ) ) {
+			// Update the line_item_id to the new corresponding item_id
+			WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['line_item_id'] = $item_id;
+		}
 	}
 }
 new WCS_Cart_Renewal();

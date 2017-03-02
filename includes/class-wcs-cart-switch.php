@@ -30,7 +30,7 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal{
 	public function get_checkout_payment_url( $pay_url, $order ) {
 
 		if ( wcs_order_contains_switch( $order ) ) {
-			$switch_order_data = get_post_meta( $order->id, '_subscription_switch_data', true );
+			$switch_order_data = wcs_get_objects_property( $order, 'subscription_switch_data' );
 
 			if ( ! empty( $switch_order_data ) ) {
 				$pay_url = add_query_arg( array(
@@ -61,10 +61,10 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal{
 			$order_id  = ( isset( $wp->query_vars['order-pay'] ) ) ? $wp->query_vars['order-pay'] : absint( $_GET['order_id'] );
 			$order     = wc_get_order( $wp->query_vars['order-pay'] );
 
-			if ( $order->order_key == $order_key && $order->has_status( array( 'pending', 'failed' ) ) && wcs_order_contains_switch( $order ) ) {
+			if ( wcs_get_objects_property( $order, 'order_key' ) == $order_key && $order->has_status( array( 'pending', 'failed' ) ) && wcs_order_contains_switch( $order ) ) {
 				WC()->cart->empty_cart( true );
 
-				$switch_order_data = get_post_meta( $order_id, '_subscription_switch_data', true );
+				$switch_order_data = wcs_get_objects_property( $order, 'subscription_switch_data' );
 
 				foreach ( $order->get_items() as $item_id => $line_item ) {
 
@@ -98,7 +98,7 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal{
 
 					foreach ( $order_item['item_meta'] as $meta_key => $meta_value ) {
 
-						if ( taxonomy_is_product_attribute( $meta_key ) || meta_is_product_attribute( $meta_key, $meta_value[0], $product->id ) ) {
+						if ( taxonomy_is_product_attribute( $meta_key ) || meta_is_product_attribute( $meta_key, $meta_value[0], $product->get_id() ) ) {
 							$variations[ $meta_key ] = $meta_value[0];
 							$_POST[ 'attribute_' . $meta_key ] = $meta_value[0];
 						} else if ( array_key_exists( $meta_key, $order_product_data ) ) {
@@ -106,10 +106,10 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal{
 						}
 					}
 
-					$passed_validation = apply_filters( 'woocommerce_add_to_cart_validation', true, $product->id, $order_product_data['_qty'], $order_product_data['_variation_id'] );
+					$passed_validation = apply_filters( 'woocommerce_add_to_cart_validation', true, $product->get_id(), $order_product_data['_qty'], $order_product_data['_variation_id'] );
 
 					if ( $passed_validation ) {
-						$cart_item_key = WC()->cart->add_to_cart( $product->id, $order_product_data['_qty'], $order_product_data['_variation_id'], $variations, array() );
+						$cart_item_key = WC()->cart->add_to_cart( $product->get_id(), $order_product_data['_qty'], $order_product_data['_variation_id'], $variations, array() );
 					}
 				}
 			}

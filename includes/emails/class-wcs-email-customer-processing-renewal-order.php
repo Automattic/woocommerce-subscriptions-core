@@ -49,18 +49,18 @@ class WCS_Email_Processing_Renewal_Order extends WC_Email_Customer_Processing_Or
 	 * @access public
 	 * @return void
 	 */
-	function trigger( $order_id ) {
+	function trigger( $order_id, $order = null ) {
 
 		if ( $order_id ) {
 			$this->object    = new WC_Order( $order_id );
-			$this->recipient = $this->object->billing_email;
+			$this->recipient = wcs_get_objects_property( $this->object, 'billing_email' );
 
 			$order_date_index = array_search( '{order_date}', $this->find );
 			if ( false === $order_date_index ) {
 				$this->find[] = '{order_date}';
-				$this->replace[] = date_i18n( wc_date_format(), wcs_date_to_time( $this->object->order_date ) );
+				$this->replace[] = date_i18n( wc_date_format(), wcs_date_to_time( get_date_from_gmt( wcs_get_objects_property( $this->object, 'date' ) ) ) );
 			} else {
-				$this->replace[ $order_date_index ] = date_i18n( wc_date_format(), wcs_date_to_time( $this->object->order_date ) );
+				$this->replace[ $order_date_index ] = date_i18n( wc_date_format(), wcs_date_to_time( get_date_from_gmt( wcs_get_objects_property( $this->object, 'date' ) ) ) );
 			}
 
 			$order_number_index = array_search( '{order_number}', $this->find );

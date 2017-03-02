@@ -17,6 +17,56 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Wrapper for wc_doing_it_wrong.
+ *
+ * @since  2.7.0
+ * @param  string $function
+ * @param  string $version
+ * @param  string $replacement
+ */
+function wcs_doing_it_wrong( $function, $message, $version ) {
+
+	if ( function_exists( 'wc_doing_it_wrong' ) ) {
+		wc_doing_it_wrong( $function, $message, $version );
+	} else {
+		// Reimplment wc_doing_it_wrong() when WC 2.7 is not active
+		if ( is_ajax() ) {
+			do_action( 'doing_it_wrong_run', $function, $message, $version );
+			error_log( "{$function} was called incorrectly. {$message}. This message was added in version {$version}." );
+		} else {
+			_doing_it_wrong( $function, $message, $version );
+		}
+	}
+}
+
+
+/**
+ * Wrapper for wcs_deprecated_function to improve handling of ajax requests, even when
+ * WooCommerce 2.7's wcs_deprecated_function method is not available.
+ *
+ * @since  2.1.4
+ * @param  string $function
+ * @param  string $version
+ * @param  string $replacement
+ */
+function wcs_deprecated_function( $function, $version, $replacement = null ) {
+
+	if ( function_exists( 'wc_deprecated_function' ) ) {
+		wc_deprecated_function( $function, $version, $replacement );
+	} else {
+		// Reimplment wcs_deprecated_function() when WC 2.7 is not active
+		if ( is_ajax() ) {
+			do_action( 'deprecated_function_run', $function, $replacement, $version );
+			$log_string  = "The {$function} function is deprecated since version {$version}.";
+			$log_string .= $replacement ? " Replace with {$replacement}." : '';
+			error_log( $log_string );
+		} else {
+			_deprecated_function( $function, $version, $replacement );
+		}
+	}
+}
+
+/**
  * Get the string key for a subscription used in Subscriptions prior to 2.0.
  *
  * Previously, a subscription key was made up of the ID of the order used to purchase the subscription, and
@@ -37,7 +87,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 function wcs_get_old_subscription_key( WC_Subscription $subscription ) {
 
 	// Get an ID to use as the order ID
-	$order_id = isset( $subscription->order->id ) ? $subscription->order->id : $subscription->id;
+	$order_id = ( null === $subscription->get_parent_id() ) ? $subscription->get_id() : $subscription->get_parent_id();
 
 	// Get an ID to use as the product ID
 	$subscription_items = $subscription->get_items();
@@ -128,8 +178,17 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 	$completed_payments = array();
 
 	if ( $subscription->get_completed_payment_count() ) {
-		if ( ! empty( $subscription->order ) && $subscription->order->has_status( $subscription->get_paid_order_statuses() ) ) {
-			$completed_payments[] = $subscription->order->post->post_date_gmt;
+
+		$order = $subscription->get_parent();
+
+		if ( ! empty( $order ) && ( null !== wcs_get_objects_property( $order, 'date_paid' ) || $order->has_status( $subscription->get_paid_order_statuses() ) ) ) {
+			$parent_order_payment_date = wcs_get_objects_property( $order, 'date_paid' );
+
+			if ( is_null( $parent_order_payment ) ) {
+				$parent_order_payment_date = wcs_get_objects_property( $order, 'date_created' );
+			}
+
+			$completed_payments[] = $parent_order_payment_date;
 		}
 
 		$paid_renewal_order_ids = get_posts( array(
@@ -143,14 +202,14 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 				array(
 					'key'     => '_subscription_renewal',
 					'compare' => '=',
-					'value'   => $subscription->id,
+					'value'   => $subscription->get_id(),
 					'type'    => 'numeric',
 				),
 			),
 		) );
 
 		foreach ( $paid_renewal_order_ids as $paid_renewal_order_id ) {
-			$completed_payments[] = get_post_field( 'post_date_gmt', $paid_renewal_order_id );
+			$completed_payments[] = wcs_get_objects_property( wc_get_order( $paid_renewal_order_id ), 'date_created' );
 		}
 	}
 
@@ -160,15 +219,15 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 	if ( ! empty( $item ) ) {
 
 		$deprecated_subscription_object = array(
-			'order_id'           => $subscription->order->id,
+			'order_id'           => $subscription->get_parent_id(),
 			'product_id'         => isset( $item['product_id'] ) ? $item['product_id'] : 0,
 			'variation_id'       => isset( $item['variation_id'] ) ? $item['variation_id'] : 0,
 			'status'             => $subscription->get_status(),
 
 			// Subscription billing details
-			'period'             => $subscription->billing_period,
-			'interval'           => $subscription->billing_interval,
-			'length'             => wcs_estimate_periods_between( ( 0 == $subscription->get_time( 'trial_end' ) ) ? $subscription->get_time( 'start' ) : $subscription->get_time( 'trial_end' ), $subscription->get_time( 'end' ) + 120, $subscription->billing_period, 'floor' ) / $subscription->billing_interval, // Since subscriptions no longer have a length, we need to calculate the length given the start and end dates and the period.
+			'period'             => $subscription->get_billing_period(),
+			'interval'           => $subscription->get_billing_interval(),
+			'length'             => wcs_estimate_periods_between( ( 0 == $subscription->get_time( 'trial_end' ) ) ? $subscription->get_time( 'start' ) : $subscription->get_time( 'trial_end' ), $subscription->get_time( 'end' ) + 120, $subscription->get_billing_period(), 'floor' ) / $subscription->get_billing_interval(), // Since subscriptions no longer have a length, we need to calculate the length given the start and end dates and the period.
 
 			// Subscription dates
 			'start_date'         => $subscription->get_date( 'start' ),
@@ -177,9 +236,9 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 			'trial_expiry_date'  => $subscription->get_date( 'trial_end' ),
 
 			// Payment & status change history
-			'failed_payments'    => $subscription->failed_payment_count,
+			'failed_payments'    => $subscription->get_failed_payment_count(),
 			'completed_payments' => $completed_payments,
-			'suspension_count'   => $subscription->suspension_count,
+			'suspension_count'   => $subscription->get_suspension_count(),
 			'last_payment_date'  => $subscription->get_date( 'last_payment' ),
 		);
 
