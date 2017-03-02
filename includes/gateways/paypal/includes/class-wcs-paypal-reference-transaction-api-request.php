@@ -484,7 +484,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 	 */
 	private function get_item_description( $item, $product ) {
 
-		if ( ! empty( WC()->cart ) && empty( $item['item_meta'] ) ) {
+		if ( ! empty( WC()->cart ) && is_array( $item ) && empty( $item['item_meta'] ) ) {
 			// cart item
 			$item_desc = WC()->cart->get_item_data( $item, true );
 
