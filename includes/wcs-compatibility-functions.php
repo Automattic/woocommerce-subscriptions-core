@@ -168,6 +168,13 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 						$value = $object->get_meta( $prefixed_key, true );
 					} else {
 						$value = $object->get_meta( $prefixed_key, false );
+
+						// WC_Data::get_meta() returns an array of stdClass objects with id, key & value properties when meta is available, or en empty string when it's not :upside_down_face:, we want to normalise our return value to always return an array of valus
+						if ( ! empty( $value ) ) {
+							$value = wp_list_pluck( $value, 'value' );
+						} else {
+							$value = array();
+						}
 					}
 				} elseif ( isset( $object->$property ) ) { // WC < 2.7
 					$value = $object->$property;
