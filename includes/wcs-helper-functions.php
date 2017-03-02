@@ -158,3 +158,15 @@ function wcs_get_rounding_precision() {
 
 	return $precision;
 }
+
+/**
+ * Add a prefix to a string if it doesn't already have it
+ *
+ * @param string
+ * @param string
+ * @since 2.1.4
+ * @return string
+ */
+function wcs_maybe_prefix_key( $key, $prefix = '_' ) {
+	return ( substr( $key, 0, strlen( $prefix ) ) != $prefix ) ? $prefix . $key : $key;
+}
