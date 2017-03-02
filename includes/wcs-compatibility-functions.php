@@ -158,10 +158,8 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 
 			$function_name = 'get_' . $property;
 
-			if ( method_exists( $object, $function_name ) ) {
+			if ( is_callable( array( $object, $function_name ) ) ) {
 				$value = $object->$function_name();
-			} elseif ( isset( $object->$property ) ) {
-				$value = $object->$property;
 			} else {
 
 				// If we don't have a method for this specific property, but we are using WC 2.7, it may be set as meta data on the object so check if we can use that
@@ -171,6 +169,8 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 					} else {
 						$value = $object->get_meta( $prefixed_key, false );
 					}
+				} elseif ( isset( $object->$property ) ) { // WC < 2.7
+					$value = $object->$property;
 				} elseif ( metadata_exists( 'post', wcs_get_objects_property( $object, 'id' ), $prefixed_key ) ) {
 					// If we couldn't find a property or function, fallback to using post meta as that's what many __get() methods in WC < 2.7 did
 					if ( 'single' === $single ) {
