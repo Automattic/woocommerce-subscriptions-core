@@ -269,7 +269,7 @@ class WC_Subscription extends WC_Order {
 
 			if ( ! empty( $last_order_id ) ) {
 
-				$order = new WC_Order( $last_order_id[0] );
+				$order = wc_get_order( $last_order_id[0] );
 
 				if ( $order->needs_payment() || $order->has_status( array( 'on-hold', 'failed', 'cancelled' ) ) ) {
 					$needs_payment = true;
