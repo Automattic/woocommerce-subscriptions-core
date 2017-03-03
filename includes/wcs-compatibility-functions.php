@@ -63,6 +63,8 @@ function wcs_help_tip( $tip, $allow_html = false ) {
  */
 function wcs_get_objects_property( $object, $property, $single = 'single', $default = null ) {
 
+	$prefixed_key = wcs_maybe_prefix_key( $property );
+
 	$value = $default;
 
 	switch ( $property ) {
@@ -156,26 +158,33 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 
 			$function_name = 'get_' . $property;
 
-			if ( method_exists( $object, $function_name ) ) {
+			if ( is_callable( array( $object, $function_name ) ) ) {
 				$value = $object->$function_name();
-			} elseif ( isset( $object->$property ) ) {
-				$value = $object->$property;
 			} else {
 
 				// If we don't have a method for this specific property, but we are using WC 2.7, it may be set as meta data on the object so check if we can use that
 				if ( method_exists( $object, 'get_meta' ) ) {
 					if ( 'single' === $single ) {
-						$value = $object->get_meta( $property, true );
+						$value = $object->get_meta( $prefixed_key, true );
 					} else {
-						$value = $object->get_meta( $property, false );
+						$value = $object->get_meta( $prefixed_key, false );
+
+						// WC_Data::get_meta() returns an array of stdClass objects with id, key & value properties when meta is available, or en empty string when it's not :upside_down_face:, we want to normalise our return value to always return an array of valus
+						if ( ! empty( $value ) ) {
+							$value = wp_list_pluck( $value, 'value' );
+						} else {
+							$value = array();
+						}
 					}
-				} elseif ( metadata_exists( 'post', wcs_get_objects_property( $object, 'id' ), '_' . $property ) ) {
+				} elseif ( isset( $object->$property ) ) { // WC < 2.7
+					$value = $object->$property;
+				} elseif ( metadata_exists( 'post', wcs_get_objects_property( $object, 'id' ), $prefixed_key ) ) {
 					// If we couldn't find a property or function, fallback to using post meta as that's what many __get() methods in WC < 2.7 did
 					if ( 'single' === $single ) {
-						$value = get_post_meta( wcs_get_objects_property( $object, 'id' ), '_' . $property, true );
+						$value = get_post_meta( wcs_get_objects_property( $object, 'id' ), $prefixed_key, true );
 					} else {
 						// Get all the meta values
-						$value = get_post_meta( wcs_get_objects_property( $object, 'id' ), '_' . $property, false );
+						$value = get_post_meta( wcs_get_objects_property( $object, 'id' ), $prefixed_key, false );
 					}
 				}
 			}
@@ -197,7 +206,9 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
  * @since  2.1.4
  * @return mixed
  */
-function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta_id = '', $prefix = '_' ) {
+function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta_id = '' ) {
+
+	$prefixed_key = wcs_maybe_prefix_key( $key );
 
 	if ( 'name' === $key ) { // the replacement for post_title added in 2.7
 
@@ -207,7 +218,7 @@ function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta
 			$object->post->post_title = $value;
 		}
 	} elseif ( method_exists( $object, 'update_meta_data' ) ) { // WC 2.7+
-		$object->update_meta_data( $key, $value, $meta_id );
+		$object->update_meta_data( $prefixed_key, $value, $meta_id );
 	} else {
 		$object->$key = $value;
 	}
@@ -220,14 +231,10 @@ function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta
 			wp_update_post( array( 'ID' => wcs_get_objects_property( $object, 'id' ), 'post_title' => $value ) );
 		} else {
 
-			if ( false !== $prefix ) {
-				$key = ( substr( $key, 0, strlen( $prefix ) ) != $prefix ) ? $prefix . $key : $key;
-			}
-
 			if ( ! empty( $meta_id ) ) {
-				update_metadata_by_mid( 'post', $meta_id, $value, $key );
+				update_metadata_by_mid( 'post', $meta_id, $value, $prefixed_key );
 			} else {
-				update_post_meta( wcs_get_objects_property( $object, 'id' ), $key, $value );
+				update_post_meta( wcs_get_objects_property( $object, 'id' ), $prefixed_key, $value );
 			}
 		}
 	}
@@ -245,10 +252,12 @@ function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta
  */
 function wcs_delete_objects_property( &$object, $key, $save = 'save', $meta_id = '' ) {
 
+	$prefixed_key = wcs_maybe_prefix_key( $key );
+
 	if ( ! empty( $meta_id ) && method_exists( $object, 'delete_meta_data_by_mid' ) ) {
 		$object->delete_meta_data_by_mid( $meta_id );
 	} elseif ( method_exists( $object, 'delete_meta_data' ) ) {
-		$object->delete_meta_data( $key );
+		$object->delete_meta_data( $prefixed_key );
 	} elseif ( isset( $object->$key ) ) {
 		unset( $object->$key );
 	}
@@ -260,7 +269,7 @@ function wcs_delete_objects_property( &$object, $key, $save = 'save', $meta_id =
 		} elseif ( ! empty( $meta_id ) ) {
 			delete_metadata_by_mid( 'post', $meta_id );
 		} else {
-			delete_post_meta( wcs_get_objects_property( $object, 'id' ), '_' . $key );
+			delete_post_meta( wcs_get_objects_property( $object, 'id' ), $prefixed_key );
 		}
 	}
 }
