@@ -334,6 +334,18 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	}
 
 	/**
+	 * Get date_created.
+	 *
+	 * Used by parent::get_date()
+	 *
+	 * @param string $timestamp Timestamp
+	 * @throws WC_Data_Exception
+	 */
+	public function get_date_created( $context = 'view' ) {
+		return wcs_date_to_time( $this->post->post_date ); // WC 2.7 uses timestamps in site timezone :sob:
+	}
+
+	/**
 	 * Check if a given line item on the subscription had a sign-up fee, and if so, return the value of the sign-up fee.
 	 *
 	 * The single quantity sign-up fee will be returned instead of the total sign-up fee paid. For example, if 3 x a product
@@ -400,9 +412,17 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	 * it's new getters that the property is both retreived from the legacy class
 	 * property and done so from post meta.
 	 *
-	 * @return string
+	 * For inherited dates props, like date_created, date_modified, date_paid,
+	 * date_completed, we want to use our own get_date() function rather simply
+	 * getting the stored value. Otherwise, we either get the prop set in memory
+	 * or post meta if it's not set yet, because __get() in WC < 2.7 would fallback
+	 * to post meta.
+	 *
+	 * @param string
+	 * @param string
+	 * @return mixed
 	 */
-	protected function get_prop( $prop ) {
+	protected function get_prop( $prop, $context = 'view' ) {
 
 		if ( 'switch_data' == $prop ) {
 			$prop = 'subscription_switch_data';
@@ -424,6 +444,18 @@ class WC_Subscription_Legacy extends WC_Subscription {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Get the stored date for a specific schedule.
+	 *
+	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'
+	 */
+	protected function get_date_prop( $date_type ) {
+		if ( ! isset( $this->schedule->{$date_type} ) ) {
+			$this->schedule->{$date_type} = $this->get_prop( sprintf( 'schedule_%s', $date_type ) );
+		}
+		return $this->schedule->{$date_type};
 	}
 
 	/*** Setters *****************************************************/
@@ -509,20 +541,6 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	}
 
 	/**
-	 * Get the stored date for a specific schedule.
-	 *
-	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'
-	 */
-	protected function get_date_prop( $date_type ) {
-		if ( ! isset( $this->schedule->{$date_type} ) ) {
-			$this->schedule->{$date_type} = $this->get_prop( sprintf( 'schedule_%s', $date_type ) );
-		}
-		return $this->schedule->{$date_type};
-	}
-
-	/*** Setters *****************************************************/
-
-	/**
 	 * Set the stored date for a specific schedule.
 	 *
 	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'
@@ -531,6 +549,50 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	protected function set_date_prop( $date_type, $value ) {
 		parent::set_date_prop( $date_type, $value ); // calls WC_Subscription_Legacy::set_prop() which calls update_post_meta() with the meta key 'schedule_{$date_type}'
 		$this->schedule->{$date_type} = $value;
+	}
+
+	/**
+	 *
+	 * @param string $datetime A MySQL formatted date/time string in GMT/UTC timezone.
+	 */
+	protected function update_last_payment_date( $datetime ) {
+		$last_order = $this->get_last_order();
+
+		if ( ! $last_order ) {
+			return false;
+		}
+
+		$updated_post_data = array(
+			'ID'            => $last_order,
+			'post_date'     => get_date_from_gmt( $datetime ),
+			'post_date_gmt' => $datetime,
+		);
+
+		wp_update_post( $updated_post_data );
+		update_post_meta( $last_order, '_paid_date', $datetime );
+
+		return $datetime;
+	}
+
+	/**
+	 * Set date_created.
+	 *
+	 * Used by parent::update_dates()
+	 *
+	 * @param string $timestamp Timestamp
+	 * @throws WC_Data_Exception
+	 */
+	public function set_date_created( $timestamp ) {
+		global $wpdb;
+
+		// WC 2.7 uses timestamps in site timezone :sob:
+		$datetime = gmdate( 'Y-m-d H:i:s', $timestamp );
+
+		// Don't use wp_update_post() to avoid infinite loops here
+		$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET post_date = %s, post_date_gmt = %s WHERE ID = %s", $datetime, get_gmt_from_date( $datetime ), $this->get_id() ) );
+
+		$this->post->post_date     = $datetime;
+		$this->post->post_date_gmt = get_gmt_from_date( $datetime );
 	}
 
 	/**

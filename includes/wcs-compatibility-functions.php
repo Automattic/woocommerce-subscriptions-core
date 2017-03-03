@@ -140,7 +140,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 		case 'order_date' :
 		case 'date' :
 			if ( method_exists( $object, 'get_date_created' ) ) { // WC 2.7+
-				$value = date( 'Y-m-d H:i:s', $object->get_date_created() ); // This is in site time as a timestamp :sob:
+				$value = get_gmt_from_date( date( 'Y-m-d H:i:s', $object->get_date_created() ) ); // This is in site time as a timestamp :sob:
 			} else { // WC 2.1-2.6
 				$value = $object->post->post_date; // Because $object->get_date_created() is in site time, we also need to use site time here :sob::sob::sob:
 			}
@@ -148,7 +148,9 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 
 		case 'date_paid' :
 			if ( method_exists( $object, 'get_date_paid' ) ) { // WC 2.7+
-				$value = date( 'Y-m-d H:i:s', $object->get_date_paid() ); // This is in site time as a timestamp :sob:
+				if ( false != $object->get_date_paid() ) {
+					$value = get_gmt_from_date( date( 'Y-m-d H:i:s', $object->get_date_paid() ) ); // This is in site time as a timestamp :sob:
+				}
 			} elseif ( isset( $object->paid_date ) ) { // WC 2.1-2.6
 				$value = $object->paid_date;
 			}
@@ -259,6 +261,8 @@ function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta
 	if ( 'save' === $save ) {
 		if ( is_callable( array( $object, 'save' ) ) ) { // WC 2.7+
 			$object->save();
+		} elseif ( 'date_created' == $key ) { // WC < 2.7+
+			wp_update_post( array( 'ID' => wcs_get_objects_property( $object, 'id' ), 'post_date' => get_date_from_gmt( $value ), 'post_date_gmt' => $value ) );
 		} elseif ( 'name' === $key ) { // the replacement for post_title added in 2.7, need to update post_title not post meta
 			wp_update_post( array( 'ID' => wcs_get_objects_property( $object, 'id' ), 'post_title' => $value ) );
 		} else {

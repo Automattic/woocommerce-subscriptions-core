@@ -907,7 +907,7 @@ class WC_Subscription extends WC_Order {
 		} else {
 			switch ( $date_type ) {
 				case 'start' :
-					$date = wcs_get_objects_property( $this, 'date_created' );
+					$date = get_gmt_from_date( gmdate( 'Y-m-d H:i:s', $this->get_date_created() ) ); // WC 2.7+ uses timestamps in site's timezone :sob:
 					break;
 				case 'last_payment' :
 					$date = $this->get_last_payment_date();
@@ -950,6 +950,61 @@ class WC_Subscription extends WC_Order {
 	 */
 	protected function set_date_prop( $date_type, $value ) {
 		$this->set_prop( sprintf( 'schedule_%s', $date_type ), $value );
+	}
+
+	/**
+	 * Get date_paid.
+	 *
+	 * A subscription's paid date is actually determined by the last order, not a prop.
+	 *
+	 * @param  string $context
+	 * @return int
+	 */
+	public function get_date_paid( $context = 'view' ) {
+		return $this->get_time( 'last_payment', 'site' );
+	}
+
+	/**
+	 * Set date_paid.
+	 *
+	 * A subscription's paid date is actually determined by the last order, not a prop.
+	 *
+	 * @param string $timestamp
+	 * @throws WC_Data_Exception
+	 */
+	public function set_date_paid( $timestamp ) {
+		// WC 2.7 uses timestamps in site timezone, WC < 2.7 used date time strings :sob:, we want date time strings in UTC timezone
+		$this->update_dates( array( 'last_payment' => get_gmt_from_date( is_numeric( $timestamp ) ? gmdate( 'Y-m-d H:i:s', $timestamp ) : $timestamp ) ) );
+	}
+
+	/**
+	 * Get date_completed.
+	 *
+	 * A subscription's completed date is actually determined by the last order, not a prop.
+	 *
+	 * @param string $context
+	 * @return int
+	 */
+	public function get_date_completed( $context = 'view' ) {
+		$last_order = $this->get_last_order( 'all' );
+		return ( $last_order ) ? $last_order->get_date_completed( $context ) : '';
+	}
+
+	/**
+	 * Set date_completed.
+	 *
+	 * A subscription's completed date is actually determined by the last order, not a prop.
+	 *
+	 * @param string $timestamp
+	 * @throws WC_Data_Exception
+	 */
+	public function set_date_completed( $timestamp ) {
+
+		$last_order = $this->get_last_order( 'all' );
+
+		if ( $last_order ) {
+			$last_order->set_date_completed( $timestamp );
+		}
 	}
 
 	/**
@@ -1023,7 +1078,7 @@ class WC_Subscription extends WC_Order {
 	 * Because dates are interdependent on each other, this function will take an array of dates, make sure that all
 	 * dates are in the right order in the right format, that there is at least something to update.
 	 *
-	 * @param array $dates array containing dates with keys: 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'. Values are time
+	 * @param array $dates array containing dates with keys: 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'. Values are timestamps or MySQL formatted date/time strings. Dates should always be in UTC timezone.
 	 * @param string $timezone The timezone of the $datetime param. Default 'gmt'.
 	 */
 	public function update_dates( $dates, $timezone = 'gmt' ) {
@@ -1050,7 +1105,7 @@ class WC_Subscription extends WC_Order {
 
 			switch ( $date_type ) {
 				case 'start' :
-					$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET post_date = %s, post_date_gmt = %s WHERE ID = %s", get_date_from_gmt( $datetime ), $datetime, $this->get_id() ) ); // Don't use wp_update_post() to avoid infinite loops here
+					$this->set_date_created( wcs_date_to_time( get_date_from_gmt( $datetime ) ) );
 					$is_updated = true;
 					break;
 				case 'last_payment' :
@@ -1276,18 +1331,9 @@ class WC_Subscription extends WC_Order {
 			return false;
 		}
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
-			$updated_post_data = array(
-				'ID'            => $last_order,
-				'post_date'     => get_date_from_gmt( $datetime ),
-				'post_date_gmt' => $datetime,
-			);
+		$last_order = wc_get_order( $last_order );
 
-			wp_update_post( $updated_post_data );
-			update_post_meta( $last_order, '_paid_date', $datetime );
-		} else {
-			$last_order = wc_get_order( $last_order );
-
+		if ( is_object( $last_order ) ) {
 			// In WC 2.7, only the paid date prop represents the paid date, the post date isn't used anymore, also the paid date is stored and referenced as a timestamp in site timezone, not a MySQL string
 			$last_order->set_date_paid( wcs_date_to_time( get_date_from_gmt( $datetime ) ) );
 			$last_order->save();
