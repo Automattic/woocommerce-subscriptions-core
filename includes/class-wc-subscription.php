@@ -1751,36 +1751,47 @@ class WC_Subscription extends WC_Order {
 	 * Save new payment method for a subscription
 	 *
 	 * @since 2.0
-	 * @param WC_Payment_Gateway|empty $payment_method
+	 * @param WC_Payment_Gateway|string $payment_method
 	 * @param array $payment_meta Associated array of the form: $database_table => array( value, )
 	 */
-	public function set_payment_method( $payment_gateway = '', $payment_meta = array() ) {
+	public function set_payment_method( $payment_method = '', $payment_meta = array() ) {
 
-		if ( ! empty( $payment_meta ) && isset( $payment_gateway->id ) ) {
-			$this->set_payment_method_meta( $payment_gateway->id, $payment_meta );
-		}
-
-		if ( empty( $payment_gateway ) || ! isset( $payment_gateway->id ) ) {
+		if ( empty( $payment_method ) ) {
 
 			$this->set_requires_manual_renewal( true );
-			update_post_meta( $this->get_id(), '_payment_method', '' );
-			update_post_meta( $this->get_id(), '_payment_method_title', '' );
+			$this->set_prop( 'payment_method', '' );
+			$this->set_prop( 'payment_method_title', '' );
 
-		} elseif ( $this->get_payment_method() !== $payment_gateway->id ) {
+		} else {
 
-			// Set subscription to manual when the payment method doesn't support automatic payments
-			$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
+			// Set the payment gateway ID depending on whether we have a WC_Payment_Gateway or string key
+			$payment_method_id = is_a( $payment_method, 'WC_Payment_Gateway' ) ? $payment_method->id : $payment_method;
 
-			if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
-				$this->set_requires_manual_renewal( true );
-			} elseif ( ! isset( $available_gateways[ $payment_gateway->id ] ) || ! $available_gateways[ $payment_gateway->id ]->supports( 'subscriptions' ) ) {
-				$this->set_requires_manual_renewal( true );
-			} else {
-				$this->set_requires_manual_renewal( false );
+			if ( ! empty( $payment_meta ) ) {
+				$this->set_payment_method_meta( $payment_method_id, $payment_meta );
 			}
 
-			update_post_meta( $this->get_id(), '_payment_method', $payment_gateway->id );
-			update_post_meta( $this->get_id(), '_payment_method_title', $payment_gateway->get_title() );
+			if ( $this->get_payment_method() !== $payment_method_id ) {
+
+				// Set the payment gateway ID depending on whether we have a string or WC_Payment_Gateway or string key
+				if ( is_a( $payment_method, 'WC_Payment_Gateway' ) ) {
+					$payment_gateway  = $payment_method;
+				} else {
+					$payment_gateways = WC()->payment_gateways->payment_gateways();
+					$payment_gateway  = isset( $available_gateways[ $payment_method_id ] ) ? $available_gateways[ $payment_method_id ] : null;
+				}
+
+				if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+					$this->set_requires_manual_renewal( true );
+				} elseif ( is_null( $payment_gateway ) || false == $payment_gateway->supports( 'subscriptions' ) ) {
+					$this->set_requires_manual_renewal( true );
+				} else {
+					$this->set_requires_manual_renewal( false );
+				}
+
+				$this->set_prop( 'payment_method', $payment_method_id );
+				$this->set_prop( 'payment_method_title', is_null( $payment_gateway ) ? '' : $payment_gateway->get_title() );
+			}
 		}
 	}
 
