@@ -421,8 +421,7 @@ class WC_Subscription extends WC_Order {
 
 			try {
 
-				wp_update_post( array( 'ID' => $this->get_id(), 'post_status' => $new_status_key ) );
-				$this->post_status = $new_status_key;
+				$this->set_status( $new_status, $note, $manual );
 
 				switch ( $new_status ) {
 
@@ -518,8 +517,7 @@ class WC_Subscription extends WC_Order {
 				$log->add( 'wcs-update-status-failures', $log_entry );
 
 				// Make sure the old status is restored
-				wp_update_post( array( 'ID' => $this->get_id(), 'post_status' => $old_status_key ) );
-				$this->post_status = $old_status_key;
+				$this->set_status( $old_status_key, $note, $manual );
 
 				$this->add_order_note( sprintf( __( 'Unable to change subscription status to "%s". Exception: %s', 'woocommerce-subscriptions' ), $new_status, $e->getMessage() ) );
 

@@ -438,6 +438,25 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	}
 
 	/**
+	 * Set order status.
+	 *
+	 * @param string $new_status Status to change the order to. No internal wc- prefix is required.
+	 * @return array details of change
+	 */
+	public function set_status( $new_status, $note = '', $manual_update = false ) {
+
+		$old_status = $this->get_status();
+
+		wp_update_post( array( 'ID' => $this->get_id(), 'post_status' => 'wc-' . $new_status ) );
+		$this->post_status = $this->post->post_status = 'wc-' . $new_status;
+
+		return array(
+			'from' => $old_status,
+			'to'   => $new_status,
+		);
+	}
+
+	/**
 	 * Helper function to make sure when WC_Subscription calls set_prop() that property is
 	 * both set in the legacy class property and saved in post meta immediately.
 	 *
