@@ -506,6 +506,9 @@ class WC_Subscription extends WC_Order {
 				// translators: $1 note why the status changes (if any), $2: old status, $3: new status
 				$this->add_order_note( trim( sprintf( __( '%1$s Status changed from %2$s to %3$s.', 'woocommerce-subscriptions' ), $note, wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ), 0, $manual );
 
+				// Make sure status is saved when WC 2.7+ is active, similar to WC_Order::update_status() with WC 2.7+ - set_status() can be used to avoid saving.
+				$this->save();
+
 			} catch ( Exception $e ) {
 				// Log any exceptions to a WC logger
 				$log        = new WC_Logger();
@@ -519,6 +522,9 @@ class WC_Subscription extends WC_Order {
 				$this->post_status = $old_status_key;
 
 				$this->add_order_note( sprintf( __( 'Unable to change subscription status to "%s". Exception: %s', 'woocommerce-subscriptions' ), $new_status, $e->getMessage() ) );
+
+				// Make sure status is saved when WC 2.7+ is active, similar to WC_Order::update_status() with WC 2.7+ - set_status() can be used to avoid saving.
+				$this->save();
 
 				do_action( 'woocommerce_subscription_unable_to_update_status', $this, $new_status, $old_status );
 
