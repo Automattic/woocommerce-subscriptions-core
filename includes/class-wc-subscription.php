@@ -38,6 +38,13 @@ class WC_Subscription extends WC_Order {
 	protected $object_type = 'subscription';
 
 	/**
+	 * Stores the $this->is_editable() returned value in memory
+	 *
+	 * @var bool
+	 */
+	private $editable;
+
+	/**
 	 * Extra data for this object. Name value pairs (name + default value). Used to add additional information to parent.
 	 *
 	 * WC 2.7+ property.
