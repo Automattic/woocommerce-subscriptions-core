@@ -128,6 +128,11 @@ class WCS_Remove_Item {
 				}
 			}
 
+			/**
+			 * In WooCommerce 2.7 the subscription object and its items override the database with their current content,
+			 * so we lost the changes we just did with `wc_update_order_item`. Re-reading the object fixes this problem.
+			 */
+			$subscription = wcs_get_subscription( $subscription->get_id() );
 			$subscription->calculate_totals();
 			wp_safe_redirect( $subscription->get_view_order_url() );
 			exit;
