@@ -1778,7 +1778,7 @@ class WC_Subscription extends WC_Order {
 					$payment_gateway  = $payment_method;
 				} else {
 					$payment_gateways = WC()->payment_gateways->payment_gateways();
-					$payment_gateway  = isset( $available_gateways[ $payment_method_id ] ) ? $available_gateways[ $payment_method_id ] : null;
+					$payment_gateway  = isset( $payment_gateways[ $payment_method_id ] ) ? $payment_gateways[ $payment_method_id ] : null;
 				}
 
 				if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
