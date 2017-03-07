@@ -789,9 +789,48 @@ class WC_Subscriptions_Switcher {
 					if ( $is_single_item_subscription || ( false === $is_different_billing_schedule && false === $is_different_payment_date && false === $is_different_length ) ) {
 
 						// Add the new item
-						$item_id = WC_Subscriptions_Checkout::add_cart_item( $subscription, $cart_item, $cart_item_key );
-						wc_update_order_item( $item_id, array( 'order_item_type' => 'line_item_pending_switch' ) );
+						if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+							$item_id = WC_Subscriptions_Checkout::add_cart_item( $subscription, $cart_item, $cart_item_key );
+						} else {
+							$item = new WC_Order_Item_Pending_Switch;
+							$item->legacy_values        = $cart_item['data']; // @deprecated For legacy actions.
+							$item->legacy_cart_item_key = $cart_item_key; // @deprecated For legacy actions.
+							$item->set_props( array(
+								'quantity'     => $cart_item['quantity'],
+								'variation'    => $cart_item['variation'],
+								'subtotal'     => $cart_item['line_subtotal'],
+								'total'        => $cart_item['line_total'],
+								'subtotal_tax' => $cart_item['line_subtotal_tax'],
+								'total_tax'    => $cart_item['line_tax'],
+								'taxes'        => $cart_item['line_tax_data'],
+							) );
 
+							if ( ! empty( $cart_item['data'] ) ) {
+								$product = $cart_item['data'];
+								$item->set_props( array(
+									'name'         => $product->get_name(),
+									'tax_class'    => $product->get_tax_class(),
+									'product_id'   => $product->is_type( 'variation' ) ? $product->get_parent_id() : $product->get_id(),
+									'variation_id' => $product->is_type( 'variation' ) ? $product->get_id() : 0,
+								) );
+							}
+
+							$item->set_backorder_meta();
+
+							if ( WC_Subscriptions_Product::get_trial_length( wcs_get_canonical_product_id( $cart_item ) ) > 0 ) {
+								$item->add_meta_data( '_has_trial', 'true' );
+							}
+
+							do_action( 'woocommerce_checkout_create_order_line_item', $item, $cart_item_key, $cart_item, $subscription );
+
+							$subscription->add_item( $item );
+
+							// The subscription is not saved automatically, we need to call 'save' becaused we added an item
+							$subscription->save();
+							$item_id = $item->get_id();
+						}
+
+						wc_update_order_item( $item_id, array( 'order_item_type' => 'line_item_pending_sw' ) );
 						$switched_item_data['add_line_item'] = $item_id;
 
 						// Remove the item from the cart so that WC_Subscriptions_Checkout doesn't add it to a subscription
@@ -1863,7 +1902,6 @@ class WC_Subscriptions_Switcher {
 						// If we are adding a line item to an existing subscription
 						if ( isset( $switched_item_data['add_line_item'] ) ) {
 							wc_update_order_item( $switched_item_data['add_line_item'], array( 'order_item_type' => 'line_item' ) );
-
 							do_action( 'woocommerce_subscription_item_switched', $order, $subscription, $switched_item_data['add_line_item'], $switched_item_data['remove_line_item'] );
 						}
 
@@ -1883,6 +1921,9 @@ class WC_Subscriptions_Switcher {
 							remove_filter( 'woocommerce_subscriptions_hide_switch_itemmeta', '__return_true' );
 
 							wc_update_order_item( $switched_item_data['remove_line_item'], array( 'order_item_type' => 'line_item_switched' ) );
+
+							// We must re-read the subscription object because we modified an item.
+							$subscription = wcs_get_subscription( $subscription_id );
 
 							// translators: 1$: old item, 2$: new item when switching
 							$subscription->add_order_note( sprintf( _x( 'Customer switched from: %1$s to %2$s.', 'used in order notes', 'woocommerce-subscriptions' ), $old_item_name, $new_item_name ) );
