@@ -1016,7 +1016,11 @@ class WC_Subscriptions_Order {
 	 * @since 2.1.3
 	 */
 	public static function maybe_autocomplete_order( $new_order_status, $order_id ) {
+
+		// Guard against infinite loops in WC 2.7+ where woocommerce_payment_complete_order_status is called while instantiating WC_Order objects
+		remove_filter( 'woocommerce_payment_complete_order_status', __METHOD__, 10 );
 		$order = wc_get_order( $order_id );
+		add_filter( 'woocommerce_payment_complete_order_status', __METHOD__, 10, 2 );
 
 		if ( 'processing' == $new_order_status && $order->get_total() == 0 && wcs_order_contains_subscription( $order ) ) {
 
