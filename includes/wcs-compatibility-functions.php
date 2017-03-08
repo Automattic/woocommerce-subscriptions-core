@@ -210,22 +210,50 @@ function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta
 
 	$prefixed_key = wcs_maybe_prefix_key( $key );
 
-	if ( 'name' === $key ) { // the replacement for post_title added in 2.7
+	// WC will automatically set/update these keys when a shipping/billing address attribute changes so we can ignore these keys
+	if ( in_array( $prefixed_key, array( '_shipping_address_index', '_billing_address_index' ) ) ) {
+		return;
+	}
 
-		if ( method_exists( $object, 'set_name' ) ) { // WC 2.7+
-			$object->set_name( $value );
-		} else {
-			$object->post->post_title = $value;
-		}
-	} elseif ( method_exists( $object, 'update_meta_data' ) ) { // WC 2.7+
+	// Special cases where properties with setters which don't map nicely to their function names
+	$meta_setters_map = array(
+		'_cart_discount'     => 'set_discount_total',
+		'_cart_discount_tax' => 'set_discount_tax',
+		'_customer_user'     => 'set_customer_id',
+		'_order_tax'         => 'set_cart_tax',
+		'_order_shipping'    => 'set_shipping_total',
+	);
+
+	// If we have a 2.7 object with a predefined setter function, use it
+	if ( isset( $meta_setters_map[ $prefixed_key ] ) && is_callable( array( $object, $meta_setters_map[ $prefixed_key ] ) ) ) {
+		$function = $meta_setters_map[ $prefixed_key ];
+		$object->$function( $value );
+
+	// If we have a 2.7 object, use the setter if available.
+	} elseif ( is_callable( array( $object, 'set' . $prefixed_key ) ) ) {
+		$object->{ "set$prefixed_key" }( $value );
+
+	// If there is a setter without the order prefix (eg set_order_total -> set_total)
+	} elseif ( is_callable( array( $object, 'set' . str_replace( '_order', '', $prefixed_key ) ) ) ) {
+		$function_name = 'set' . str_replace( '_order', '', $prefixed_key );
+		$object->$function_name( $value );
+
+	// If there is no setter, treat as meta within the 2.7.x object.
+	} elseif ( is_callable( array( $object, 'update_meta_data' ) ) ) {
 		$object->update_meta_data( $prefixed_key, $value, $meta_id );
+
+	// 2.6.x handling for name which is not meta.
+	} elseif ( 'name' === $key ) {
+		$object->post->post_title = $value;
+
+	// 2.6.x handling for everything else.
 	} else {
 		$object->$key = $value;
 	}
 
 	// Save the data
 	if ( 'save' === $save ) {
-		if ( method_exists( $object, 'save' ) ) { // WC 2.7+
+		if ( is_callable( array( $object, 'save' ) ) ) { // WC 2.7+
 			$object->save();
 		} elseif ( 'name' === $key ) { // the replacement for post_title added in 2.7, need to update post_title not post meta
 			wp_update_post( array( 'ID' => wcs_get_objects_property( $object, 'id' ), 'post_title' => $value ) );
