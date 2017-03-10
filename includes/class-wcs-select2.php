@@ -1,8 +1,11 @@
 <?php
-
 /**
- * Simple class to generate the needed HTML/JS for Select2 regardless.
- * It works Select2 V3 and V4.
+ * Simple class to generate the HTML for a Select2 element in a WC version compatible way.
+ *
+ * @since    2.2
+ * @category Class
+ * @author   Prospress
+ * @package  WooCommerce Subscriptions
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -10,107 +13,111 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class WCS_Select2 {
-	protected $default_attrs = array(
-		'type' => 'hidden',
+
+	protected $default_attributes = array(
+		'type'        => 'hidden',
 		'placeholder' => '',
-		'class' => '',
+		'class'       => '',
 	);
 
-	public static $added_script = false;
-
-	protected $attrs = array();
+	protected $attributes = array();
 
 	/**
-	 * Render a select2 HTML out of an array with the properties. It doesn't return
-	 * the object but it rather prints it out.
+	 * Constructor.
 	 *
-	 * @param Array $attrs		Select2 attributes
-	 *
-	 * @return null
+	 * @param array $attributes The attributes that make up the Select2 element
+	 * @since 2.2
 	 */
-	public static function render( Array $attrs ) {
-		$obj = new self( $attrs );
-		$obj->do_print();
+	public function __construct( array $attributes ) {
+		$this->attributes = array_merge( $this->default_attributes, $attributes );
 	}
 
 	/**
-	 * Prints any javascript related to Select2
+	 * Render a select2 element given an array of attributes.
+	 *
+	 * @param array $attributes Select2 attributes
+	 * @since 2.2
 	 */
-	public static function print_select2_javascript() {
-		?>
-		<script type="text/javascript">
-			jQuery(function() {
-				jQuery(".select2-container").attr("style", "");
-			});
-		</script><?php
-	}
-
-	public function __construct( Array $attributes ) {
-		$this->attrs = array_merge( $this->default_attrs, $attributes );
-		if ( ! self::$added_script ) {
-			add_action( 'wp_footer', __CLASS__ . '::print_select2_javascript' );
-			add_action( 'admin_footer', __CLASS__ . '::print_select2_javascript' );
-			self::$added_script = true;
-		}
+	public static function render( array $attributes ) {
+		$select2 = new self( $attributes );
+		$select2->print_html();
 	}
 
 	/**
-	 * Get the property name, it return class, name, id or data-$something;
+	 * Get a property name.
 	 *
-	 * @param string $name	Property name
-	 *
-	 * @return string
+	 * @param string $property
+	 * @return string class, name, id or data-$property;
+	 * @since 2.2
 	 */
-	protected function get_property_name( $name ) {
-		return in_array( $name, array( 'class', 'name', 'id' ) )
-			? $name : 'data-' . $name;
+	protected function get_property_name( $property ) {
+		$data_properties = WC_Subscriptions::is_woocommerce_pre( '2.7' ) ? array( 'placeholder', 'selected', 'allow_clear' ) : array( 'placeholder', 'allow_clear' );
+		return in_array( $property, $data_properties ) ? 'data-' . $property : $property;
 	}
 
 	/**
 	 * Returns a list of properties/values (HTML) from an array. All the values
-	 * are escaped and safe.
+	 * are escaped.
 	 *
-	 * @param $attrs	List of HTML attributes
-	 *
-	 * @return String
+	 * @param $attributes List of HTML attributes with values
+	 * @return string
+	 * @since 2.2
 	 */
-	protected function attrs_to_html( Array $attrs ) {
+	protected function attributes_to_html( array $attributes ) {
+
 		$html = array();
-		foreach ( $attrs as $name => $value ) {
+
+		foreach ( $attributes as $property => $value ) {
 			if ( ! is_scalar( $value ) ) {
 				$value = wcs_json_encode( $value );
 			}
-			$html[] = $this->get_property_name( $name ) . '=' . var_export( esc_attr( $value, 'woocommerce-subscriptions' ), true );
+
+			$html[] = $this->get_property_name( $property ) . '="' . esc_attr( $value, 'woocommerce-subscriptions' ) . '"';
 		}
+
 		return implode( ' ', $html );
 	}
 
 	/**
-	 * Prints the HTML to show the Select2 input. We wrap it in a function to
-	 * avoid a silly warning, it's not a XSS.
+	 * Prints the HTML to show the Select2 field.
+	 *
+	 * @since 2.2
 	 */
-	public function do_print() {
-		echo $this->get_html(); // WPCS: XSS OK.
+	public function print_html() {
+		$allowed_attributes = array_map( array( $this, 'get_property_name' ), array_keys( $this->attributes ) );
+		$allowed_attributes = array_fill_keys( $allowed_attributes, array() );
+
+		echo wp_kses( $this->get_html(), array( 'input' => $allowed_attributes, 'select' => $allowed_attributes, 'option' => $allowed_attributes ) );
 	}
 
 	/**
-	 * Returns the HTML needed to show the Select2 input
+	 * Returns the HTML needed to show the Select2 field
 	 *
-	 * @return String
+	 * @return string
+	 * @since 2.2
 	 */
 	public function get_html() {
-		$str = "\n<!--select2 -->\n";
-		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
-			$str .= '<input ';
-			$str .= $this->attrs_to_html( $this->attrs );
-			$str .= '/>';
-		} else {
-			$str .= '<select ';
-			$str .= $this->attrs_to_html( $this->attrs );
-			$str .= '></select>';
-		}
-		$str .= "\n<!--/select2 -->\n";
+		$html = "\n<!--select2 -->\n";
 
-		return $str;
+		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+			$html .= '<input ';
+			$html .= $this->attributes_to_html( $this->attributes );
+			$html .= '/>';
+		} else {
+			$attributes             = $this->attributes;
+			$selected_value         = isset( $attributes['selected'] ) ? $attributes['selected'] : '';
+			$attributes['selected'] = 'selected';
+
+			$option_attributes = array_intersect_key( $attributes, array_flip( array( 'value', 'selected' ) ) );
+			$select_attributes = array_diff_key( $attributes, $option_attributes );
+
+			$html .= '<select ' . $this->attributes_to_html( $select_attributes ) . '>';
+			$html .= '<option ' . $this->attributes_to_html( $option_attributes ) . '>' . $selected_value . '</option>';
+			$html .= '</select>';
+		}
+
+		$html .= "\n<!--/select2 -->\n";
+
+		return $html;
 	}
 }
