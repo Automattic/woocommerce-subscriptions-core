@@ -57,7 +57,7 @@ function wcs_help_tip( $tip, $allow_html = false ) {
  * @param WC_Order|WC_Product|WC_Subscription $object The object whose property we want to access.
  * @param string $property The property name.
  * @param string $single Whether to return just the first piece of meta data with the given property key, or all meta data.
- * @param mixed $default The value to return if no value value is found.
+ * @param mixed $default (optional) The value to return if no value is found - defaults to single -> null, multiple -> array()
  * @since  2.1.4
  * @return mixed
  */
@@ -65,7 +65,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 
 	$prefixed_key = wcs_maybe_prefix_key( $property );
 
-	$value = $default;
+	$value = ! is_null( $default ) ? $default : ( ( 'single' == $single ) ? null : array() );
 
 	switch ( $property ) {
 
