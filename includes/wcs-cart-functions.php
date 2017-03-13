@@ -304,15 +304,10 @@ function wcs_cart_pluck( $cart, $field, $default = 0 ) {
 	} else {
 		foreach ( $cart->get_cart() as $cart_item ) {
 
-			// WC 2.7+ compatibilty, use method not property
-			$function_name = 'get_' . str_replace( 'subscription_', '', str_replace( 'subscription_period_', '', $field ) );
-
 			if ( isset( $cart_item[ $field ] ) ) {
 				$value = $cart_item[ $field ];
-			} elseif ( is_callable( array( 'WC_Subscriptions_Product', $function_name ) ) ) {
-				$value = call_user_func( array( 'WC_Subscriptions_Product', $function_name ), $cart_item['data'] );
-			} elseif ( $cart_item['data']->$field ) {
-				$value = $cart_item['data']->$field;
+			} else {
+				$value = WC_Subscriptions_Product::get_meta_data( $cart_item['data'], $field, $default );
 			}
 		}
 	}
