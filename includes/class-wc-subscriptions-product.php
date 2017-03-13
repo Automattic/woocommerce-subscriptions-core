@@ -969,8 +969,15 @@ class WC_Subscriptions_Product {
 		$meta_value = $default_value;
 
 		if ( self::is_subscription( $product ) ) {
+
 			if ( is_callable( array( $product, 'get_meta' ) ) ) { // WC 2.7+
-				$meta_value = $product->get_meta( '_' . $meta_key, true );
+
+				$prefixed_key = wcs_maybe_prefix_key( $meta_key );
+
+				// Only set the meta value when the object has a meta value to workaround ambiguous default return values
+				if ( $product->has_meta( $prefixed_key ) ) {
+					$meta_value = $product->get_meta( $prefixed_key, true );
+				}
 			} elseif ( isset( $product->{$meta_key} ) ) { // WC < 2.7
 				$meta_value = $product->{$meta_key};
 			}
