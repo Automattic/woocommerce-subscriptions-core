@@ -201,7 +201,7 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 		if ( ! empty( $order ) && ( null !== wcs_get_objects_property( $order, 'date_paid' ) || $order->has_status( $subscription->get_paid_order_statuses() ) ) ) {
 			$parent_order_payment_date = wcs_get_objects_property( $order, 'date_paid' );
 
-			if ( is_null( $parent_order_payment ) ) {
+			if ( is_null( $parent_order_payment_date ) ) {
 				$parent_order_payment_date = wcs_get_objects_property( $order, 'date_created' );
 			}
 
