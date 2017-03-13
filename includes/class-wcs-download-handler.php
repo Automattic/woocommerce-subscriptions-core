@@ -87,7 +87,7 @@ class WCS_Download_Handler {
 							if ( ! $wpdb->get_var( $wpdb->prepare( "SELECT download_id FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions WHERE `order_id` = %d AND `product_id` = %d AND `download_id` = '%s'", $subscription->get_id(), $product_id, $download_id ) ) ) {
 								wc_downloadable_file_permission( $download_id, $product_id, $subscription, $item['qty'] );
 							}
-							self::revoke_downloadable_file_permission( $product_id, $order_id, $order->user_id );
+							self::revoke_downloadable_file_permission( $product_id, $order_id, $order->get_user_id() );
 						}
 					}
 				}
