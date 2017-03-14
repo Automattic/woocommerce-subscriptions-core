@@ -34,7 +34,7 @@ function wcs_doing_it_wrong( $function, $message, $version ) {
 			do_action( 'doing_it_wrong_run', $function, $message, $version );
 			error_log( "{$function} was called incorrectly. {$message}. This message was added in version {$version}." );
 		} else {
-			_doing_it_wrong( $function, $message, $version );
+			_doing_it_wrong( esc_attr( $function ), esc_attr( $message ), esc_attr( $version ) );
 		}
 	}
 }
@@ -61,7 +61,7 @@ function wcs_deprecated_function( $function, $version, $replacement = null ) {
 			$log_string .= $replacement ? " Replace with {$replacement}." : '';
 			error_log( $log_string );
 		} else {
-			_deprecated_function( $function, $version, $replacement );
+			_deprecated_function( esc_attr( $function ), esc_attr( $version ), esc_attr( $replacement ) );
 		}
 	}
 }
