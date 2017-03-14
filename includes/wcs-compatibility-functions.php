@@ -164,7 +164,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 
 				// If we don't have a method for this specific property, but we are using WC 2.7, it may be set as meta data on the object so check if we can use that
 				if ( method_exists( $object, 'get_meta' ) ) {
-					if ( $object->has_meta( $prefixed_key ) ) {
+					if ( $object->meta_exists( $prefixed_key ) ) {
 						if ( 'single' === $single ) {
 							$value = $object->get_meta( $prefixed_key, true );
 						} else {

@@ -975,7 +975,7 @@ class WC_Subscriptions_Product {
 				$prefixed_key = wcs_maybe_prefix_key( $meta_key );
 
 				// Only set the meta value when the object has a meta value to workaround ambiguous default return values
-				if ( $product->has_meta( $prefixed_key ) ) {
+				if ( $product->meta_exists( $prefixed_key ) ) {
 					$meta_value = $product->get_meta( $prefixed_key, true );
 				}
 			} elseif ( isset( $product->{$meta_key} ) ) { // WC < 2.7
