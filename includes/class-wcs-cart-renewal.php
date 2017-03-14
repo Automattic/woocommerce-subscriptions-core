@@ -463,8 +463,8 @@ class WCS_Cart_Renewal {
 				// Get the most specific order object, which will be the renewal order for renewals, initial order for initial payments, or a subscription for switches/resubscribes
 				$order = $this->get_order( $item );
 
-				if ( isset( $order->$key ) ) {
-					$value = $order->$key;
+				if ( ( $order_value = wcs_get_objects_property( $order, $key ) ) ) {
+					$value = $order_value;
 				}
 			}
 		}
