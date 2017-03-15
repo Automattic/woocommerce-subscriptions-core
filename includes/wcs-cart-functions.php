@@ -221,7 +221,7 @@ function wcs_cart_totals_coupon_html( $coupon, $cart ) {
 
 	$value[] = apply_filters( 'woocommerce_coupon_discount_amount_html', $discount_html, $coupon );
 
-	if ( $coupon->enable_free_shipping() ) {
+	if ( wcs_get_coupon_property( $coupon, 'enable_free_shipping' ) ) {
 		$value[] = __( 'Free shipping coupon', 'woocommerce-subscriptions' );
 	}
 

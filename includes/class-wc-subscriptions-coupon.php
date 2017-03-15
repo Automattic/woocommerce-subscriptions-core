@@ -309,16 +309,16 @@ class WC_Subscriptions_Coupon {
 		$this_item_is_discounted = false;
 
 		// Specific products get the discount
-		if ( sizeof( $coupon->product_ids ) > 0 ) {
+		if ( sizeof( $coupon_product_ids = wcs_get_coupon_property( $coupon, 'product_ids' ) ) > 0 ) {
 
-			if ( in_array( wcs_get_canonical_product_id( $cart_item ), $coupon->product_ids ) || in_array( $cart_item['data']->get_parent(), $coupon->product_ids ) ) {
+			if ( in_array( wcs_get_canonical_product_id( $cart_item ), $coupon_product_ids ) || in_array( $cart_item['data']->get_parent(), $coupon_product_ids ) ) {
 				$this_item_is_discounted = true;
 			}
 
 		// Category discounts
-		} elseif ( sizeof( $coupon->product_categories ) > 0 ) {
+		} elseif ( sizeof( $coupon_product_categories = wcs_get_coupon_property( $coupon, 'product_categories' ) ) > 0 ) {
 
-			if ( sizeof( array_intersect( $product_cats, $coupon->product_categories ) ) > 0 ) {
+			if ( sizeof( array_intersect( $product_cats, $coupon_product_categories ) ) > 0 ) {
 				$this_item_is_discounted = true;
 			}
 		} else {
@@ -329,15 +329,15 @@ class WC_Subscriptions_Coupon {
 		}
 
 		// Specific product ID's excluded from the discount
-		if ( sizeof( $coupon->exclude_product_ids ) > 0 ) {
-			if ( in_array( wcs_get_canonical_product_id( $cart_item ), $coupon->exclude_product_ids ) || in_array( $cart_item['data']->get_parent(), $coupon->exclude_product_ids ) ) {
+		if ( sizeof( $coupon_excluded_product_ids = wcs_get_coupon_property( $coupon, 'exclude_product_ids' ) ) > 0 ) {
+			if ( in_array( wcs_get_canonical_product_id( $cart_item ), $coupon_excluded_product_ids ) || in_array( $cart_item['data']->get_parent(), $coupon_excluded_product_ids ) ) {
 				$this_item_is_discounted = false;
 			}
 		}
 
 		// Specific categories excluded from the discount
-		if ( sizeof( $coupon->exclude_product_categories ) > 0 ) {
-			if ( sizeof( array_intersect( $product_cats, $coupon->exclude_product_categories ) ) > 0 ) {
+		if ( sizeof( $coupon_excluded_product_categories = wcs_get_coupon_property( $coupon, 'exclude_product_categories' ) ) > 0 ) {
+			if ( sizeof( array_intersect( $product_cats, $coupon_excluded_product_categories ) ) > 0 ) {
 				$this_item_is_discounted = false;
 			}
 		}

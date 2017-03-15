@@ -277,7 +277,7 @@ class WCS_Cart_Renewal {
 					$coupon_code = '';
 
 					// If the coupon still exists we can use the existing/available coupon properties
-					if ( true === $coupon->exists ) {
+					if ( true === wcs_get_coupon_property( $coupon, 'exists' ) ) {
 
 						// But we only want to handle recurring coupons that have been applied to the subscription
 						if ( in_array( $coupon_type, array( 'recurring_percent', 'recurring_fee' ) ) ) {
