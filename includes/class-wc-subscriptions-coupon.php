@@ -158,12 +158,12 @@ class WC_Subscriptions_Coupon {
 				$discounting_amount = 0;
 			}
 
-			$discount_amount = min( $coupon->coupon_amount, $discounting_amount );
+			$discount_amount = min( wcs_get_coupon_property( $coupon, 'amount' ), $discounting_amount );
 			$discount_amount = $single ? $discount_amount : $discount_amount * $cart_item_qty;
 
 		} elseif ( $apply_recurring_percent_coupon ) {
 
-			$discount_amount = ( $discounting_amount / 100 ) * $coupon->amount;
+			$discount_amount = ( $discounting_amount / 100 ) * wcs_get_coupon_property( $coupon, 'amount' );
 
 		} elseif ( $apply_initial_percent_coupon ) {
 
@@ -172,7 +172,7 @@ class WC_Subscriptions_Coupon {
 				$discounting_amount = 0;
 			}
 
-			$discount_amount = ( $discounting_amount / 100 ) * $coupon->amount;
+			$discount_amount = ( $discounting_amount / 100 ) * wcs_get_coupon_property( $coupon, 'amount' );
 
 		} elseif ( $apply_renewal_cart_coupon ) {
 
@@ -184,7 +184,7 @@ class WC_Subscriptions_Coupon {
 			 */
 			$discount_percent = ( $discounting_amount * $cart_item['quantity'] ) / self::get_renewal_subtotal( $coupon->code );
 
-			$discount_amount = ( $coupon->amount * $discount_percent ) / $cart_item_qty;
+			$discount_amount = ( wcs_get_coupon_property( $coupon, 'amount' ) * $discount_percent ) / $cart_item_qty;
 		}
 
 		// Round - consistent with WC approach
@@ -508,6 +508,7 @@ class WC_Subscriptions_Coupon {
 
 				$coupon        = new WC_Coupon( $coupon_code );
 				$coupon_type   = wcs_get_coupon_property( $coupon, 'type' );
+				$coupon_amount = wcs_get_coupon_property( $coupon, 'amount' );
 
 				// Pre 2.5 is_valid_for_product() does not use wc_get_product_coupon_types()
 				if ( WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
@@ -557,7 +558,7 @@ class WC_Subscriptions_Coupon {
 
 					if ( $apply_recurring_coupon || $apply_initial_coupon ) {
 
-						$discount_amount = ( $calculation_price < $coupon->amount ) ? $calculation_price : $coupon->amount;
+						$discount_amount = ( $calculation_price < $coupon_amount ) ? $calculation_price : $coupon_amount;
 
 						// Recurring coupons only apply when there is no free trial (carts can have a mix of free trial and non free trial items)
 						if ( $apply_initial_coupon && 'recurring_fee' == $coupon_type && WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) > 0 ) {
@@ -571,10 +572,10 @@ class WC_Subscriptions_Coupon {
 
 					} elseif ( $apply_recurring_percent_coupon ) {
 
-						$discount_amount = round( ( $calculation_price / 100 ) * $coupon->amount, WC()->cart->dp );
+						$discount_amount = round( ( $calculation_price / 100 ) * $coupon_amount, WC()->cart->dp );
 
 						$cart->discount_cart = $cart->discount_cart + ( $discount_amount * $cart_item['quantity'] );
-						$cart = self::increase_coupon_discount_amount( $cart, $coupon->code, $discount_amount * $cart_item['quantity'] );
+						$cart = self::increase_coupon_discount_amount( $cart, $coupon_code, $discount_amount * $cart_item['quantity'] );
 
 						$price = $price - $discount_amount;
 
@@ -592,7 +593,7 @@ class WC_Subscriptions_Coupon {
 							$amount_to_discount = WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] );
 						}
 
-						$discount_amount = round( ( $amount_to_discount / 100 ) * $coupon->amount, WC()->cart->dp );
+						$discount_amount = round( ( $amount_to_discount / 100 ) * $coupon_amount, WC()->cart->dp );
 
 						$cart->discount_cart = $cart->discount_cart + $discount_amount * $cart_item['quantity'];
 						$cart = self::increase_coupon_discount_amount( $cart, $coupon_code, $discount_amount * $cart_item['quantity'] );
