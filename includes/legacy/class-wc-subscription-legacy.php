@@ -337,10 +337,12 @@ class WC_Subscription_Legacy extends WC_Subscription {
 		}
 
 		if ( ! isset( $this->$prop ) || empty( $this->$prop ) ) {
-			$this->$prop = get_post_meta( $this->get_id(), '_' . $prop, true );
+			$value = get_post_meta( $this->get_id(), '_' . $prop, true );
+		} else {
+			$value = $this->$prop;
 		}
 
-		return $this->$prop;
+		return $value;
 	}
 
 	/*** Setters *****************************************************/
