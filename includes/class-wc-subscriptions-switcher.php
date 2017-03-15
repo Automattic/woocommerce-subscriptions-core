@@ -881,6 +881,12 @@ class WC_Subscriptions_Switcher {
 
 					WC_Subscriptions_Checkout::add_shipping( $subscription, $recurring_cart );
 
+					if ( ! WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+						// We must save the subscription, we need the Shipping method saved
+						// otherwise the ID is bogus (new:1) and we need it.
+						$subscription->save();
+					}
+
 					// Set all new shipping methods to shipping_pending_switch line items
 					foreach ( $subscription->get_shipping_methods() as $shipping_line_item_id => $shipping_meta ) {
 
@@ -1938,6 +1944,9 @@ class WC_Subscriptions_Switcher {
 				foreach ( $switch_data['billing_schedule'] as $meta_key => $value ) {
 					update_post_meta( $subscription_id, $meta_key, $value );
 				}
+
+				// We must re-read the subscription object because we modified an item.
+				$subscription = wcs_get_subscription( $subscription_id );
 			}
 
 			// Update subscription dates
@@ -1968,6 +1977,9 @@ class WC_Subscriptions_Switcher {
 				foreach ( $switch_data['shipping_line_items'] as $shipping_line_item_id ) {
 					wc_update_order_item( $shipping_line_item_id, array( 'order_item_type' => 'shipping' ) );
 				}
+
+				// We must re-read the subscription object because we modified an item.
+				$subscription = wcs_get_subscription( $subscription_id );
 			}
 
 			// Update the subscription address
