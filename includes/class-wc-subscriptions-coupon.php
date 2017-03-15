@@ -43,6 +43,11 @@ class WC_Subscriptions_Coupon {
 
 		// Add our recurring product coupon types to the list of coupon types that apply to individual products
 		add_filter( 'woocommerce_product_coupon_types', __CLASS__ . '::filter_product_coupon_types', 10, 1 );
+
+		if ( ! is_admin() ) {
+			// WC 3.0 only sets a coupon type if it is a pre-defined supported type, so we need to temporarily add our pseudo types. We don't want to add these on admin pages.
+			add_filter( 'woocommerce_coupon_discount_types', __CLASS__ . '::add_pseudo_coupon_types' );
+		}
 	}
 
 	/**
@@ -482,6 +487,24 @@ class WC_Subscriptions_Coupon {
 		}
 
 		return apply_filters( 'woocommerce_is_subscription_renewal_line_item', $is_subscription_line_item, $product_id, $cart_item );
+	}
+
+	/**
+	 * Add our pseudo renewal coupon types to the list of supported types.
+	 *
+	 * @param array $coupon_types
+	 * @return array supported coupon types
+	 * @since 2.2
+	 */
+	public static function add_pseudo_coupon_types( $coupon_types ) {
+		return array_merge(
+			$coupon_types,
+			array(
+				'renewal_percent' => __( 'Renewal % discount', 'woocommerce-subscriptions' ),
+				'renewal_fee'     => __( 'Renewal product discount', 'woocommerce-subscriptions' ),
+				'renewal_cart'    => __( 'Renewal cart discount', 'woocommerce-subscriptions' ),
+			)
+		);
 	}
 
 	/* Deprecated */

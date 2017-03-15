@@ -263,7 +263,6 @@ class WCS_Cart_Renewal {
 
 		if ( wcs_is_subscription( $subscription ) ) {
 
-			$used_coupons = $subscription->get_used_coupons();
 
 			// Add any used coupon discounts to the cart (as best we can) using our pseudo renewal coupons
 			if ( ! empty( $used_coupons ) ) {
