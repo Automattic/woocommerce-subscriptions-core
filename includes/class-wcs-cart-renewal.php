@@ -263,6 +263,8 @@ class WCS_Cart_Renewal {
 
 		if ( wcs_is_subscription( $subscription ) ) {
 
+			$used_coupons          = $subscription->get_used_coupons();
+			$subscription_discount = wcs_get_objects_property( $subscription, 'cart_discount' );
 
 			// Add any used coupon discounts to the cart (as best we can) using our pseudo renewal coupons
 			if ( ! empty( $used_coupons ) ) {
@@ -319,7 +321,7 @@ class WCS_Cart_Renewal {
 					}
 				}
 			// If there are no coupons but there is still a discount (i.e. it might have been manually added), we need to account for that as well
-			} elseif ( ! empty( $subscription->cart_discount ) ) {
+			} elseif ( ! empty( $subscription_discount ) ) {
 
 				$coupon = new WC_Coupon( 'discount_renewal' );
 

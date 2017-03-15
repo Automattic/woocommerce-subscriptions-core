@@ -154,6 +154,14 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 			}
 			break;
 
+		case 'cart_discount' :
+			if ( method_exists( $object, 'get_total_discount' ) ) { // WC 3.0+
+				$value = $object->get_total_discount();
+			} else { // WC 2.1-2.6
+				$value = $object->cart_discount;
+			}
+			break;
+
 		default :
 
 			$function_name = 'get_' . $property;
