@@ -213,7 +213,7 @@ function wcs_cart_totals_coupon_html( $coupon, $cart ) {
 
 	$value  = array();
 
-	if ( $amount = $cart->get_coupon_discount_amount( $coupon->code, $cart->display_cart_ex_tax ) ) {
+	if ( $amount = $cart->get_coupon_discount_amount( wcs_get_coupon_property( $coupon, 'code' ), $cart->display_cart_ex_tax ) ) {
 		$discount_html = '-' . wc_price( $amount );
 	} else {
 		$discount_html = '';

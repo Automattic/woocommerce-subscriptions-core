@@ -290,7 +290,7 @@ class WCS_Cart_Renewal {
 							}
 
 							// Adjust coupon code to reflect that it is being applied to a renewal
-							$coupon_code = $coupon->code;
+							$coupon_code = wcs_get_coupon_property( $coupon, 'code' );
 						}
 					} else {
 
@@ -299,7 +299,7 @@ class WCS_Cart_Renewal {
 						$coupon->amount = $coupon_item['item_meta']['discount_amount']['0'];
 
 						// Adjust coupon code to reflect that it is being applied to a renewal
-						$coupon_code = $coupon->code;
+						$coupon_code = wcs_get_coupon_property( $coupon, 'code' );
 					}
 
 					// Now that we have a coupon we know we want to apply
@@ -824,7 +824,7 @@ class WCS_Cart_Renewal {
 		if ( ! empty( $renewal_coupons ) ) {
 			foreach ( $renewal_coupons as $subscription_id => $coupons ) {
 				foreach ( $coupons as $coupon ) {
-					WC()->cart->remove_coupons( $coupon->code );
+					WC()->cart->remove_coupons( wcs_get_coupon_property( $coupon, 'code' ) );
 				}
 			}
 		}

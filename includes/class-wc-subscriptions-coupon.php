@@ -182,7 +182,7 @@ class WC_Subscriptions_Coupon {
 			 *
 			 * BUT... we also need the subtotal to exclude non renewal products, so user the renewal subtotal
 			 */
-			$discount_percent = ( $discounting_amount * $cart_item['quantity'] ) / self::get_renewal_subtotal( $coupon->code );
+			$discount_percent = ( $discounting_amount * $cart_item['quantity'] ) / self::get_renewal_subtotal( wcs_get_coupon_property( $coupon, 'code' ) );
 
 			$discount_amount = ( wcs_get_coupon_property( $coupon, 'amount' ) * $discount_percent ) / $cart_item_qty;
 		}
@@ -265,7 +265,7 @@ class WC_Subscriptions_Coupon {
 			// prevent subscription renewal coupons from being applied to non renewal payments
 			if ( ! wcs_cart_contains_renewal() && in_array( $coupon_type, array( 'renewal_fee', 'renewal_percent', 'renewal_cart' ) ) ) {
 				// translators: 1$: coupon code that is being removed
-				self::$coupon_error = sprintf( __( 'Sorry, the "%1$s" coupon is only valid for renewals.', 'woocommerce-subscriptions' ), $coupon->code );
+				self::$coupon_error = sprintf( __( 'Sorry, the "%1$s" coupon is only valid for renewals.', 'woocommerce-subscriptions' ), wcs_get_coupon_property( $coupon, 'code' ) );
 			}
 
 			// prevent sign up fee coupons from being applied to subscriptions without a sign up fee
@@ -440,7 +440,7 @@ class WC_Subscriptions_Coupon {
 
 			foreach ( $coupons as $coupon ) {
 
-				if ( $coupon->code == $code ) {
+				if ( wcs_get_coupon_property( $coupon, 'code' ) == $code ) {
 
 					if ( $subscription = wcs_get_subscription( $subscription_id ) ) {
 						$subtotal = $subscription->get_subtotal();
