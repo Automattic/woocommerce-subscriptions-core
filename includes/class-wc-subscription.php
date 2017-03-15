@@ -194,7 +194,7 @@ class WC_Subscription extends WC_Order {
 
 				case 'requires_manual_renewal' :
 					$function = 'WC_Subscription::get_requires_manual_renewal()';
-					$value    = $this->get_requires_manual_renewal();
+					$value    = $this->get_requires_manual_renewal() ? 'true' : 'false'; // We now use booleans for getter return values, so we need to convert it when being accessed via the old property approach to the string value returned
 					break;
 
 				case 'payment_gateway' :
@@ -545,7 +545,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function is_manual() {
 
-		if ( WC_Subscriptions::is_duplicate_site() || 'true' == $this->get_requires_manual_renewal() || true === $this->get_requires_manual_renewal() || false === wc_get_payment_gateway_by_order( $this ) ) {
+		if ( WC_Subscriptions::is_duplicate_site() || true === $this->get_requires_manual_renewal() || false === wc_get_payment_gateway_by_order( $this ) ) {
 			$is_manual = true;
 		} else {
 			$is_manual = false;
@@ -831,15 +831,20 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Set the manual renewal flag on the subscription.
 	 *
-	 * @return string
+	 * The manual renewal flag is stored in database as string 'true' or 'false' when set, and empty string when not set
+	 * (which means it doesn't require manual renewal), but we want to consistently use it via get/set as a boolean,
+	 * for sanity's sake.
+	 *
+	 * @param bool $value
 	 */
 	public function set_requires_manual_renewal( $value ) {
 
-		// Support boolean strings for backward compatibility with $this->update_manual()
-		if ( 'true' === $value ) {
-			$value = true;
-		} elseif ( 'false' === $value ) {
-			$value = false;
+		if ( ! is_bool( $value ) ) {
+			if ( 'false' === $value || '' === $value ) {
+				$value = false;
+			} else { // default to require manual renewal for all other values, which may often includes string 'true' or some invalid value
+				$value = true;
+			}
 		}
 
 		$this->set_prop( 'requires_manual_renewal', $value );
