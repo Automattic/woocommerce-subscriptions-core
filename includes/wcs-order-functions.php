@@ -236,15 +236,9 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 					}
 				}
 			} else {
-				$item_meta  = $item->get_meta_data();
 				$order_item = $new_order->get_item( $order_item_id );
 
-				foreach ( $item_meta as $meta_data ) {
-					wc_add_order_item_meta( $order_item_id, $meta_data->key, maybe_unserialize( $meta_data->value ) );
-				}
-
-				// If we have a WC 2.7+ order item object, the item_meta array doesn't contain the default meta (_product_id, _tax_class etc) so we need to manually add it here
-				wcs_copy_order_item_meta( $item, $order_item );
+				wcs_copy_order_item( $item, $order_item );
 				$order_item->save();
 			}
 
@@ -707,20 +701,22 @@ function wcs_display_item_downloads( $item, $order ) {
 }
 
 /**
- * Copy the standard line item data from one line item to another.
- *
- * Copies meta which is accessible via getters and setter
+ * Copy the order item data and meta data from one item to another.
  *
  * @since  2.2
  * @param  WC_Order_Item The order item to copy data from
  * @param  WC_Order_Item The order item to copy data to
  * @return void
  */
-function wcs_copy_order_item_meta( $from_item, &$to_item ) {
+function wcs_copy_order_item( $from_item, &$to_item ) {
 
 	if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
 		wcs_doing_it_wrong( __FUNCTION__, 'This function uses data structures introduced in WC 2.7. To copy line item meta use $from_item[\'item_meta\'] and wc_add_order_item_meta().', '2.2' );
 		return;
+	}
+
+	foreach ( $from_item->get_meta_data() as $meta_data ) {
+		$to_item->update_meta_data( $meta_data->key, $meta_data->value );
 	}
 
 	switch ( $from_item->get_type() ) {
