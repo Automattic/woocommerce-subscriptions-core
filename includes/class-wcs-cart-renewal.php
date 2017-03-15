@@ -742,28 +742,59 @@ class WCS_Cart_Renewal {
 			foreach ( $coupons as $coupon ) {
 
 				// Tweak the coupon data for renewal coupons
-				if ( $code == $coupon->code ) {
+				if ( wcs_get_coupon_property( $coupon, 'code' ) == $code ) {
 
 					$data = array(
-						'discount_type'              => $coupon->type,
-						'coupon_amount'              => $coupon->amount,
-						'individual_use'             => ( $coupon->individual_use ) ? $coupon->individual_use : 'no',
-						'product_ids'                => ( $coupon->product_ids ) ? $coupon->product_ids : array(),
-						'exclude_product_ids'        => ( $coupon->exclude_product_ids ) ? $coupon->exclude_product_ids : array(),
-						'usage_limit'                => '',
-						'usage_count'                => '',
-						'expiry_date'                => '',
-						'free_shipping'              => ( $coupon->free_shipping ) ? $coupon->free_shipping : '',
-						'product_categories'         => ( $coupon->product_categories ) ? $coupon->product_categories : array(),
-						'exclude_product_categories' => ( $coupon->exclude_product_categories ) ? $coupon->exclude_product_categories : array(),
-						'exclude_sale_items'         => ( $coupon->exclude_sale_items ) ? $coupon->exclude_sale_items : 'no',
-						'minimum_amount'             => ( $coupon->minimum_amount ) ? $coupon->minimum_amount : '',
-						'maximum_amount'             => ( $coupon->maximum_amount ) ? $coupon->maximum_amount : '',
-						'customer_email'             => ( $coupon->customer_email ) ? $coupon->customer_email : array(),
+						'id'                          => true,
+						'discount_type'               => wcs_get_coupon_property( $coupon, 'type' ),
+						'amount'                      => wcs_get_coupon_property( $coupon, 'amount' ),
+						'individual_use'              => ( $individual_use = wcs_get_coupon_property( $coupon, 'individual_use' ) ) ? $individual_use : false,
+						'product_ids'                 => ( $product_ids = wcs_get_coupon_property( $coupon, 'product_ids' ) ) ? $product_ids : array(),
+						'excluded_product_ids'        => ( $excluded_product_ids = wcs_get_coupon_property( $coupon, 'exclude_product_ids' ) ) ? $excluded_product_ids : array(),
+						'usage_limit'                 => '',
+						'usage_count'                 => '',
+						'date_expires'                => '',
+						'free_shipping'               => ( $free_shipping = wcs_get_coupon_property( $coupon, 'free_shipping' ) ) ? $free_shipping : false,
+						'product_categories'          => ( $product_categories = wcs_get_coupon_property( $coupon, 'product_categories' ) ) ? $product_categories : array(),
+						'excluded_product_categories' => ( $excluded_product_categories = wcs_get_coupon_property( $coupon, 'exclude_product_categories' ) ) ? $excluded_product_categories : array(),
+						'exclude_sale_items'          => ( $exclude_sale_items = wcs_get_coupon_property( $coupon, 'exclude_sale_items' ) ) ? $exclude_sale_items : false,
+						'minimum_amount'              => ( $minimum_amount = wcs_get_coupon_property( $coupon, 'minimum_amount' ) ) ? $minimum_amount : '',
+						'maximum_amount'              => ( $maximum_amount = wcs_get_coupon_property( $coupon, 'maximum_amount' ) ) ? $maximum_amount : '',
+						'customer_email'              => ( $customer_email = wcs_get_coupon_property( $coupon, 'customer_email' ) ) ? $customer_email : array(),
 					);
+
+					if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+
+						// Pre 3.0 we don't need to pass the id.
+						unset( $data['id'] );
+
+						// Some keys have changed between WC 2.6.x and WC 3.0. This array holds those changes in a 2.6 => 3.0 format.
+						$property_changes = array(
+							'coupon_amount'              => 'amount',
+							'exclude_product_ids'        => 'excluded_product_ids',
+							'expiry_date'                => 'date_expires',
+							'exclude_product_categories' => 'excluded_product_categories',
+							'customer_email'             => 'email_restrictions',
+						);
+
+						foreach ( $data as $key => $value ) {
+
+							// Switch the 3.0 key out for the 2.6 equivalent
+							if ( in_array( $key, $property_changes ) ) {
+								$data[ array_search( $key, $property_changes ) ] = $value;
+								unset( $data[ $key ] );
+							}
+
+							// Some coupon properties have changed from accepting 'no' and 'yes' to true and false args. We need to change them into the correct format
+							if ( is_bool( $value ) && in_array( $key, array( 'individual_use', 'free_shipping', 'exclude_sale_items' ) ) ) {
+								$data[ $key ] = ( true == $value ) ? 'yes' : 'no';
+							}
+						}
+					}
 				}
 			}
 		}
+
 		return $data;
 	}
 
