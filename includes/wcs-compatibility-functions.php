@@ -176,7 +176,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 							$value = array();
 						}
 					}
-				} elseif ( isset( $object->$property ) ) { // WC < 2.7
+				} elseif ( 'single' === $single && isset( $object->$property ) ) { // WC < 2.7
 					$value = $object->$property;
 				} elseif ( metadata_exists( 'post', wcs_get_objects_property( $object, 'id' ), $prefixed_key ) ) {
 					// If we couldn't find a property or function, fallback to using post meta as that's what many __get() methods in WC < 2.7 did
