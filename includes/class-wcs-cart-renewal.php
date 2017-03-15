@@ -295,8 +295,8 @@ class WCS_Cart_Renewal {
 					} else {
 
 						// If the coupon doesn't exist we can only really apply the discount amount we know about - so we'll apply a cart style pseudo coupon and then set the amount
-						$coupon->type = 'renewal_cart';
-						$coupon->amount = $coupon_item['item_meta']['discount_amount']['0'];
+						wcs_set_coupon_property( $coupon, 'type', 'renewal_cart' );
+						wcs_set_coupon_property( $coupon, 'amount', $coupon_item['item_meta']['discount_amount']['0'] );
 
 						// Adjust coupon code to reflect that it is being applied to a renewal
 						$coupon_code = wcs_get_coupon_property( $coupon, 'code' );
@@ -307,7 +307,7 @@ class WCS_Cart_Renewal {
 
 						// Set renewal order products as the product ids on the coupon
 						if ( ! WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
-							$coupon->product_ids = $this->get_products( $subscription );
+							wcs_set_coupon_property( $coupon, 'product_ids', $this->get_products( $subscription ) );
 						}
 
 						// Store the coupon info for later
@@ -325,12 +325,13 @@ class WCS_Cart_Renewal {
 				$coupon = new WC_Coupon( 'discount_renewal' );
 
 				// Apply our cart style pseudo coupon and the set the amount
-				$coupon->type = 'renewal_cart';
-				$coupon->amount = $subscription->cart_discount;
+				wcs_set_coupon_property( $coupon, 'type', 'renewal_cart' );
+
+				wcs_set_coupon_property( $coupon, 'amount', $subscription_discount );
 
 				// Set renewal order products as the product ids on the coupon
 				if ( ! WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
-					$coupon->product_ids = $this->get_products( $subscription );
+					wcs_set_coupon_property( $coupon, 'product_ids', $this->get_products( $subscription ) );
 				}
 
 				// Store the coupon info for later
