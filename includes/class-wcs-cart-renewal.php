@@ -272,21 +272,21 @@ class WCS_Cart_Renewal {
 
 				foreach ( $coupon_items as $coupon_item ) {
 
-					$coupon = new WC_Coupon( $coupon_item['name'] );
-
+					$coupon      = new WC_Coupon( $coupon_item['name'] );
+					$coupon_type = wcs_get_coupon_property( $coupon, 'type' );
 					$coupon_code = '';
 
 					// If the coupon still exists we can use the existing/available coupon properties
 					if ( true === $coupon->exists ) {
 
 						// But we only want to handle recurring coupons that have been applied to the subscription
-						if ( in_array( $coupon->type, array( 'recurring_percent', 'recurring_fee' ) ) ) {
+						if ( in_array( $coupon_type, array( 'recurring_percent', 'recurring_fee' ) ) ) {
 
 							// Set the coupon type to be a renewal equivalent for correct validation and calculations
-							if ( 'recurring_percent' == $coupon->type ) {
-								$coupon->type = 'renewal_percent';
-							} elseif ( 'recurring_fee' == $coupon->type ) {
-								$coupon->type = 'renewal_fee';
+							if ( 'recurring_percent' == $coupon_type ) {
+								wcs_set_coupon_property( $coupon, 'type', 'renewal_percent' );
+							} elseif ( 'recurring_fee' == $coupon_type ) {
+								wcs_set_coupon_property( $coupon, 'type', 'renewal_fee' );
 							}
 
 							// Adjust coupon code to reflect that it is being applied to a renewal
