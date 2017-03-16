@@ -189,9 +189,15 @@ class WCS_Admin_Post_Types {
 			$product_string = wc_get_product( $product_id )->get_formatted_name();
 		}
 
-		?>
-		<input type="hidden" class="wc-product-search" name="_wcs_product" data-placeholder="<?php esc_attr_e( 'Search for a product&hellip;', 'woocommerce-subscriptions' ); ?>" data-action="woocommerce_json_search_products_and_variations" data-selected="<?php echo esc_attr( strip_tags( $product_string ) ); ?>" value="<?php echo esc_attr( $product_id ); ?>" data-allow_clear="true" />
-		<?php
+		WCS_Select2::render( array(
+			'class'       => 'wc-product-search',
+			'name'        => '_wcs_product',
+			'placeholder' => esc_attr__( 'Search for a product&hellip;', 'woocommerce-subscriptions' ),
+			'action'      => 'woocommerce_json_search_products_and_variations',
+			'selected'    => strip_tags( $product_string ),
+			'value'       => $product_id,
+			'allow_clear' => 'true',
+		) );
 	}
 
 	/**

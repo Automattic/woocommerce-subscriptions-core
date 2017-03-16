@@ -580,7 +580,7 @@ class WC_Subscriptions_Manager {
 					break;
 				case 'failed' :
 					_deprecated_argument( __METHOD__, '2.0', 'The "failed" status value is deprecated.' );
-					self::failed_subscription_signup( $order->user_id, $subscription_id );
+					self::failed_subscription_signup( $order->get_user_id(), $subscription_id );
 					break;
 				case 'pending' :
 					_deprecated_argument( __METHOD__, '2.0', 'The "pending" status value is deprecated.' );
@@ -1542,7 +1542,7 @@ class WC_Subscriptions_Manager {
 			$order = new WC_Order( $order );
 		}
 
-		update_user_meta( $order->user_id, 'paying_customer', 1 );
+		update_user_meta( $order->get_user_id(), 'paying_customer', 1 );
 	}
 
 	/**
@@ -1562,8 +1562,8 @@ class WC_Subscriptions_Manager {
 			$order = new WC_Order( $order );
 		}
 
-		if ( $order->user_id > 0 ) {
-			update_user_meta( $order->user_id, 'paying_customer', 0 );
+		if ( $order->get_user_id() > 0 ) {
+			update_user_meta( $order->get_user_id(), 'paying_customer', 0 );
 		}
 	}
 

@@ -76,8 +76,8 @@ class WCS_PayPal_Change_Payment_Method_Admin {
 	public static function validate_payment_meta( $payment_meta, $subscription ) {
 		if ( empty( $payment_meta['post_meta']['_paypal_subscription_id']['value'] ) ) {
 			throw new Exception( 'A valid PayPal Billing Agreement ID value is required.' );
-		} elseif ( $subscription->paypal_subscription_id !== $payment_meta['post_meta']['_paypal_subscription_id']['value'] && 0 !== strpos( $payment_meta['post_meta']['_paypal_subscription_id']['value'], 'B-' ) ) {
-			throw new Exception( 'Invalid Billing Agreemend ID. A valid PayPal Billing Agreement ID must begin with "B-".' );
+		} elseif ( 0 !== strpos( $payment_meta['post_meta']['_paypal_subscription_id']['value'], 'B-' ) && wcs_get_paypal_id( $subscription ) !== $payment_meta['post_meta']['_paypal_subscription_id']['value'] ) {
+			throw new Exception( 'Invalid Billing Agreement ID. A valid PayPal Billing Agreement ID must begin with "B-".' );
 		}
 	}
 

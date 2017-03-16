@@ -26,7 +26,7 @@ function wcs_order_contains_resubscribe( $order ) {
 		$order = new WC_Order( $order );
 	}
 
-	if ( '' !== wcs_get_objects_property( $order, 'subscription_resubscribe' ) ) {
+	if ( wcs_get_objects_property( $order, 'subscription_resubscribe' ) ) {
 		$is_resubscribe_order = true;
 	} else {
 		$is_resubscribe_order = false;
