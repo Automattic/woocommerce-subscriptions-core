@@ -85,6 +85,7 @@ class WCS_Remove_Item {
 						WC()->session->set( 'removed_subscription_items', $removed_item );
 
 						// restore download permissions for this item
+						$subscription = wcs_get_subscription( $subscription->get_id() );
 						$line_items = $subscription->get_items();
 						$line_item  = $line_items[ $item_id ];
 						$_product   = $subscription->get_product_from_item( $line_item );
