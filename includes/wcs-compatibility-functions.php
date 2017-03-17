@@ -164,16 +164,12 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 
 				// If we don't have a method for this specific property, but we are using WC 2.7, it may be set as meta data on the object so check if we can use that
 				if ( method_exists( $object, 'get_meta' ) ) {
-					if ( 'single' === $single ) {
-						$value = $object->get_meta( $prefixed_key, true );
-					} else {
-						$value = $object->get_meta( $prefixed_key, false );
-
-						// WC_Data::get_meta() returns an array of stdClass objects with id, key & value properties when meta is available, or en empty string when it's not :upside_down_face:, we want to normalise our return value to always return an array of valus
-						if ( ! empty( $value ) ) {
-							$value = wp_list_pluck( $value, 'value' );
+					if ( $object->meta_exists( $prefixed_key ) ) {
+						if ( 'single' === $single ) {
+							$value = $object->get_meta( $prefixed_key, true );
 						} else {
-							$value = array();
+							// WC_Data::get_meta() returns an array of stdClass objects with id, key & value properties when meta is available
+							$value = wp_list_pluck( $object->get_meta( $prefixed_key, false ), 'value' );
 						}
 					}
 				} elseif ( 'single' === $single && isset( $object->$property ) ) { // WC < 2.7
