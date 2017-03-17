@@ -294,7 +294,7 @@ class WC_Subscriptions_Renewal_Order {
 		$subscriptions = wcs_get_subscriptions_for_renewal_order( $renewal_order );
 		$subscription  = array_pop( $subscriptions );
 
-		if ( null === $subscription->get_parent_id() ) { // There is no original order
+		if ( false == $subscription->get_parent_id() ) { // There is no original order
 			$parent_order = null;
 		} else {
 			$parent_order = $subscription->get_parent();

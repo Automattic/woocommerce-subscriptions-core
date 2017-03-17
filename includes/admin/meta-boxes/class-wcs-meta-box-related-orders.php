@@ -26,7 +26,7 @@ class WCS_Meta_Box_Related_Orders {
 
 		if ( wcs_is_subscription( $post->ID ) ) {
 			$subscription = wcs_get_subscription( $post->ID );
-			$order = ( null === $subscription->get_parent_id() ) ? $subscription : $subscription->get_parent();
+			$order = ( false == $subscription->get_parent_id() ) ? $subscription : $subscription->get_parent();
 		} else {
 			$order = wc_get_order( $post->ID );
 		}

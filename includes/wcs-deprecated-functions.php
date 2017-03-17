@@ -87,7 +87,7 @@ function wcs_deprecated_function( $function, $version, $replacement = null ) {
 function wcs_get_old_subscription_key( WC_Subscription $subscription ) {
 
 	// Get an ID to use as the order ID
-	$order_id = ( null === $subscription->get_parent_id() ) ? $subscription->get_id() : $subscription->get_parent_id();
+	$order_id = ( false == $subscription->get_parent_id() ) ? $subscription->get_id() : $subscription->get_parent_id();
 
 	// Get an ID to use as the product ID
 	$subscription_items = $subscription->get_items();
