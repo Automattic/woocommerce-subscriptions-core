@@ -1916,7 +1916,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_items_sign_up_fee( $line_item, $tax_inclusive_or_exclusive = 'exclusive_of_tax' ) {
 
-		if ( ! is_array( $line_item ) ) {
+		if ( ! is_object( $line_item ) ) {
 			$line_item = wcs_get_order_item( $line_item, $this );
 		}
 
@@ -1942,21 +1942,20 @@ class WC_Subscription extends WC_Order {
 
 				$sign_up_fee = 0;
 
-			} elseif ( isset( $line_item['item_meta']['_has_trial'] ) ) {
-
-				// Sign up was was total amount paid for this item on original order
-				$sign_up_fee = $original_order_item['line_total'] / $original_order_item['qty'];
-
+			} elseif ( 'true' === $line_item->get_meta( '_has_trial' ) ) {
+				// Sign up is amount paid for this item on original order, we can safely use 2.7 getters here because we know from the above condition 2.7 is active
+				$sign_up_fee = $original_order_item->get_total( 'edit' ) / $original_order_item->get_quantity( 'edit' );
 			} else {
-
 				// Sign-up fee is any amount on top of recurring amount
-				$sign_up_fee = max( $original_order_item['line_total'] / $original_order_item['qty'] - $line_item['line_total'] / $line_item['qty'], 0 );
+				$order_line_total        = $original_order_item->get_total( 'edit' ) / $original_order_item->get_quantity( 'edit' );
+				$subscription_line_total = $line_item->get_total( 'edit' ) / $line_item->get_quantity( 'edit' );
+				$sign_up_fee = max( $order_line_total - $subscription_line_total, 0 );
 			}
 
 			// If prices inc tax, ensure that the sign up fee amount includes the tax
 			if ( 'inclusive_of_tax' === $tax_inclusive_or_exclusive && ! empty( $original_order_item ) && $this->get_prices_include_tax() ) {
-				$proportion   = $sign_up_fee / ( $original_order_item['line_total'] / $original_order_item['qty'] );
-				$sign_up_fee += round( $original_order_item['line_tax'] * $proportion, 2 );
+				$proportion   = $sign_up_fee / ( $original_order_item->get_total( 'edit' ) / $original_order_item->get_quantity( 'edit' ) );
+				$sign_up_fee += round( $original_order_item->get_total_tax( 'edit' ) * $proportion, 2 );
 			}
 		}
 
