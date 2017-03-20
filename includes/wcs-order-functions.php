@@ -270,7 +270,10 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 					}
 
 					// Backorders
-					if ( $product->backorders_require_notification() && $product->is_on_backorder( $item['qty'] ) ) {
+					if ( isset( $order_item ) && is_callable( array( $order_item, 'set_backorder_meta' ) ) ) { // WC 3.0
+						$order_item->set_backorder_meta();
+						$order_item->save();
+					} elseif ( $product->backorders_require_notification() && $product->is_on_backorder( $item['qty'] ) ) { // WC 2.6
 						wc_add_order_item_meta( $order_item_id, apply_filters( 'woocommerce_backordered_item_meta_name', __( 'Backordered', 'woocommerce-subscriptions' ) ), $item['qty'] - max( 0, $product->get_total_stock() ) );
 					}
 
