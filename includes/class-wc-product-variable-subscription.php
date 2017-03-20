@@ -37,11 +37,15 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 	 */
 	public function __get( $key ) {
 
-		$value = wcs_product_deprecated_property_handler( $key, $this );
-
-		// No matching property found in wcs_product_deprecated_property_handler()
-		if ( is_null( $value ) ) {
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 			$value = parent::__get( $key );
+		} else {
+			$value = wcs_product_deprecated_property_handler( $key, $this );
+
+			// No matching property found in wcs_product_deprecated_property_handler()
+			if ( is_null( $value ) ) {
+				$value = parent::__get( $key );
+			}
 		}
 
 		return $value;
