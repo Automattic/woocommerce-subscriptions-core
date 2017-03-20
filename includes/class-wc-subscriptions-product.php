@@ -970,7 +970,7 @@ class WC_Subscriptions_Product {
 
 		if ( self::is_subscription( $product ) ) {
 
-			if ( is_callable( array( $product, 'get_meta' ) ) ) { // WC 2.7+
+			if ( is_callable( array( $product, 'meta_exists' ) ) ) { // WC 2.7+
 
 				$prefixed_key = wcs_maybe_prefix_key( $meta_key );
 
