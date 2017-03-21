@@ -110,7 +110,7 @@ function wcs_get_variation_prices( $variation, $variable_product ) {
 function wcs_get_min_max_variation_data( $variable_product, $child_variation_ids = array() ) {
 
 	if ( empty( $child_variation_ids ) ) {
-		$child_variation_ids = $variable_product->get_children( true );
+		$child_variation_ids = is_callable( array( $variable_product, 'get_visible_children' ) ) ? $variable_product->get_visible_children() : $variable_product->get_children( true );
 	}
 
 	$variations_data = array();
