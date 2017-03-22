@@ -159,7 +159,12 @@ class WCS_Admin_Post_Types {
 		// Let's create a temporary table, drop the previous one, because otherwise this query is hella slow
 		$wpdb->query( "DROP TEMPORARY TABLE IF EXISTS {$table_name}" );
 
-		$wpdb->query( "CREATE TEMPORARY TABLE {$table_name} (id INT, INDEX USING BTREE (id), last_payment DATETIME) AS SELECT pm.meta_value as id, MAX( p.post_date_gmt ) as last_payment FROM {$wpdb->postmeta} pm LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id WHERE pm.meta_key = '_subscription_renewal' GROUP BY pm.meta_value" );
+		$wpdb->query(
+			"CREATE TEMPORARY TABLE {$table_name} (id INT, INDEX USING BTREE (id), last_payment DATETIME) AS
+			 SELECT pm.meta_value as id, MAX( p.post_date_gmt ) as last_payment FROM {$wpdb->postmeta} pm
+			 LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+			 WHERE pm.meta_key = '_subscription_renewal'
+			 GROUP BY pm.meta_value" );
 		// Magic ends here
 
 		$pieces['join'] .= "LEFT JOIN {$table_name} lp
@@ -407,7 +412,7 @@ class WCS_Admin_Post_Types {
 			'start_date'        => __( 'Start Date', 'woocommerce-subscriptions' ),
 			'trial_end_date'    => __( 'Trial End', 'woocommerce-subscriptions' ),
 			'next_payment_date' => __( 'Next Payment', 'woocommerce-subscriptions' ),
-			'last_payment_date' => __( 'Last Payment', 'woocommerce-subscriptions' ),
+			'last_payment_date' => __( 'Last Order Date', 'woocommerce-subscriptions' ), // Keep deprecated 'last_payment_date' key for backward compatibility
 			'end_date'          => __( 'End Date', 'woocommerce-subscriptions' ),
 			'orders'            => _x( 'Orders', 'number of orders linked to a subscription', 'woocommerce-subscriptions' ),
 		);

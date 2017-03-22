@@ -198,14 +198,12 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 
 		$order = $subscription->get_parent();
 
-		if ( ! empty( $order ) && ( null !== wcs_get_objects_property( $order, 'date_paid' ) || $order->has_status( $subscription->get_paid_order_statuses() ) ) ) {
-			$parent_order_payment_date = wcs_get_objects_property( $order, 'date_paid' );
+		if ( ! empty( $order ) ) {
+			$parent_order_created_date = wcs_get_objects_property( $order, 'date_created' );
 
-			if ( is_null( $parent_order_payment_date ) ) {
-				$parent_order_payment_date = wcs_get_objects_property( $order, 'date_created' );
+			if ( ! is_null( $parent_order_created_date ) ) {
+				$completed_payments[] = wcs_get_datetime_utc_string( $parent_order_created_date );
 			}
-
-			$completed_payments[] = $parent_order_payment_date;
 		}
 
 		$paid_renewal_order_ids = get_posts( array(
@@ -259,7 +257,7 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 			'failed_payments'    => $subscription->get_failed_payment_count(),
 			'completed_payments' => $completed_payments,
 			'suspension_count'   => $subscription->get_suspension_count(),
-			'last_payment_date'  => $subscription->get_date( 'last_payment' ),
+			'last_payment_date'  => $subscription->get_date( 'last_order_date_created' ),
 		);
 
 	} else {

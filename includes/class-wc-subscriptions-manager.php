@@ -1258,7 +1258,7 @@ class WC_Subscriptions_Manager {
 	public static function get_last_payment_date( $subscription_key, $user_id = '', $type = 'mysql' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_date( "last_payment" )' );
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
-		$last_payment_date = ( 'mysql' == $type ) ? $subscription->get_date( 'last_payment' ) : $subscription->get_time( 'last_payment' );
+		$last_payment_date = ( 'mysql' == $type ) ? $subscription->get_date( 'last_order_date_created' ) : $subscription->get_time( 'last_order_date_created' );
 		return apply_filters( 'woocommerce_subscription_last_payment_date', $last_payment_date, $subscription_key, $user_id, $type );
 	}
 

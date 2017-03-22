@@ -482,7 +482,7 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	/**
 	 * Get the stored date for a specific schedule.
 	 *
-	 * @param string $date_type 'date_created', 'trial_end', 'next_payment', 'last_payment' or 'end'
+	 * @param string $date_type 'date_created', 'trial_end', 'next_payment', 'last_order_date_created' or 'end'
 	 */
 	protected function get_date_prop( $date_type ) {
 
@@ -594,26 +594,51 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	}
 
 	/**
+	 * Set a certain date type for the last order on the subscription.
 	 *
-	 * @param string $datetime A MySQL formatted date/time string in GMT/UTC timezone.
+	 * @since 2.1.4.
+	 * @param string $date_type
+	 * @param string|integer|object
+	 * @return WC_DateTime|NULL object if the date is set or null if there is no date.
 	 */
-	protected function update_last_payment_date( $datetime ) {
-		$last_order = $this->get_last_order();
+	protected function set_last_order_date( $date_type, $date = null ) {
 
-		if ( ! $last_order ) {
-			return false;
+		$last_order = $this->get_last_order( 'all' );
+
+		if ( $last_order ) {
+
+			$datetime = wcs_get_datetime_from( $date );
+
+			switch ( $date_type ) {
+				case 'date_paid' :
+					update_post_meta( $last_order->id, '_paid_date', ! is_null( $date ) ? $datetime->date( 'Y-m-d H:i:s' ) : '' );
+					// Preemptively set the UTC timestamp for WC 3.0+ also to avoid incorrect values when the site's timezone is changed between now and upgrading to WC 3.0
+					update_post_meta( $last_order->id, '_date_paid', ! is_null( $date ) ? $datetime->getTimestamp() : '' );
+				break;
+
+				case 'date_completed' :
+					update_post_meta( $last_order->id, '_completed_date', ! is_null( $date ) ? $datetime->date( 'Y-m-d H:i:s' ) : '' );
+					// Preemptively set the UTC timestamp for WC 3.0+ also to avoid incorrect values when the site's timezone is changed between now and upgrading to WC 3.0
+					update_post_meta( $last_order->id, '_date_completed', ! is_null( $date ) ? $datetime->getTimestamp() : '' );
+				break;
+
+				case 'date_modified' :
+					wp_update_post( array(
+						'ID'                => $last_order->id,
+						'post_modified'     => $datetime->date( 'Y-m-d H:i:s' ),
+						'post_modified_gmt' => wcs_get_datetime_utc_string( $datetime ),
+					) );
+				break;
+
+				case 'date_created' :
+					wp_update_post( array(
+						'ID'            => $last_order->id,
+						'post_date'     => $datetime->date( 'Y-m-d H:i:s' ),
+						'post_date_gmt' => wcs_get_datetime_utc_string( $datetime ),
+					) );
+				break;
+			}
 		}
-
-		$updated_post_data = array(
-			'ID'            => $last_order,
-			'post_date'     => get_date_from_gmt( $datetime ),
-			'post_date_gmt' => $datetime,
-		);
-
-		wp_update_post( $updated_post_data );
-		update_post_meta( $last_order, '_paid_date', $datetime );
-
-		return $datetime;
 	}
 
 	/**

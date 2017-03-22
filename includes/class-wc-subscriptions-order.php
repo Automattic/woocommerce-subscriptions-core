@@ -1792,7 +1792,7 @@ class WC_Subscriptions_Order {
 		}
 
 		if ( $subscription = self::get_matching_subscription( $order, $product_id ) ) {
-			$last_payment_date = $subscription->get_date( 'last_payment' );
+			$last_payment_date = $subscription->get_date( 'last_order_date_created' );
 		} elseif ( null !== ( $last_payment_date = wcs_get_objects_property( $order, 'date_paid' ) ) ) {
 			$last_payment_date = $last_payment_date->date( 'Y-m-d H:i:s' );
 		} else {

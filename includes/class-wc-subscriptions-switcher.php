@@ -509,7 +509,7 @@ class WC_Subscriptions_Switcher {
 			$is_product_switchable = false;
 		}
 
-		if ( $subscription->has_status( 'active' ) && 0 !== $subscription->get_date( 'last_payment' ) ) {
+		if ( $subscription->has_status( 'active' ) && 0 !== $subscription->get_date( 'last_order_date_created' ) ) {
 			$is_subscription_switchable = true;
 		} else {
 			$is_subscription_switchable = false;
@@ -1296,7 +1296,7 @@ class WC_Subscriptions_Switcher {
 
 			// Set when the first payment and end date for the new subscription should occur
 			WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $cart_item['subscription_switch']['next_payment_timestamp'];
-			WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['end_timestamp'] = $end_timestamp = wcs_date_to_time( WC_Subscriptions_Product::get_expiration_date( $product_id, $subscription->get_date( 'last_payment' ) ) );
+			WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['end_timestamp'] = $end_timestamp = wcs_date_to_time( WC_Subscriptions_Product::get_expiration_date( $product_id, $subscription->get_date( 'last_order_date_created' ) ) );
 
 			// Add any extra sign up fees required to switch to the new subscription
 			if ( 'yes' == $apportion_sign_up_fee ) {
@@ -1320,8 +1320,8 @@ class WC_Subscriptions_Switcher {
 			}
 
 			// Get the current subscription's last payment date
-			$last_payment_timestamp  = $subscription->get_time( 'last_payment' );
-			$days_since_last_payment = floor( ( gmdate( 'U' ) - $last_payment_timestamp ) / ( 60 * 60 * 24 ) );
+			$last_order_time_created = $subscription->get_time( 'last_order_date_created' );
+			$days_since_last_payment = floor( ( gmdate( 'U' ) - $last_order_time_created ) / ( 60 * 60 * 24 ) );
 
 			// Get the current subscription's next payment date
 			$next_payment_timestamp  = $cart_item['subscription_switch']['next_payment_timestamp'];
@@ -1391,7 +1391,7 @@ class WC_Subscriptions_Switcher {
 						// If the total amount the customer has paid entitles her to more days at the new price than she has received, there is no gap payment, just shorten the pre-paid term the appropriate number of days
 						if ( $days_since_last_payment < $pre_paid_days ) {
 
-							WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $last_payment_timestamp + ( $pre_paid_days * 60 * 60 * 24 );
+							WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $last_order_time_created + ( $pre_paid_days * 60 * 60 * 24 );
 
 						// If the total amount the customer has paid entitles her to the same or less days at the new price then start the new subscription from today
 						} else {
