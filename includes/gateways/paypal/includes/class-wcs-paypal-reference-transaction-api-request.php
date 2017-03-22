@@ -525,7 +525,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 	 * @since 2.0
 	 */
 	public function to_string() {
-		return http_build_query( $this->get_parameters() );
+		return http_build_query( $this->get_parameters(), '', '&' );
 	}
 
 	/**
