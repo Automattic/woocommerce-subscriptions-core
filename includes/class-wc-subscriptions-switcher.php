@@ -1928,40 +1928,14 @@ class WC_Subscriptions_Switcher {
 
 							wc_update_order_item( $switched_item_data['remove_line_item'], array( 'order_item_type' => 'line_item_switched' ) );
 
-							// We must re-read the subscription object because we modified an item.
-							$subscription = wcs_get_subscription( $subscription_id );
 
-							// translators: 1$: old item, 2$: new item when switching
-							$subscription->add_order_note( sprintf( _x( 'Customer switched from: %1$s to %2$s.', 'used in order notes', 'woocommerce-subscriptions' ), $old_item_name, $new_item_name ) );
+							$add_note = sprintf( _x( 'Customer switched from: %1$s to %2$s.', 'used in order notes', 'woocommerce-subscriptions' ), $old_item_name, $new_item_name );
 						}
 					}
 				}
 			}
 
-			if ( ! empty( $switch_data['billing_schedule'] ) ) {
 
-				// Update the billing schedule
-				foreach ( $switch_data['billing_schedule'] as $meta_key => $value ) {
-					update_post_meta( $subscription_id, $meta_key, $value );
-				}
-
-				// We must re-read the subscription object because we modified an item.
-				$subscription = wcs_get_subscription( $subscription_id );
-			}
-
-			// Update subscription dates
-			if ( ! empty( $switch_data['dates'] ) ) {
-
-				if ( ! empty( $switch_data['dates']['delete'] ) ) {
-					foreach ( $switch_data['dates']['delete'] as $date ) {
-						$subscription->delete_date( $date );
-					}
-				}
-
-				if ( ! empty( $switch_data['dates']['update'] ) ) {
-					$subscription->update_dates( $switch_order_data[ $subscription->get_id() ]['dates']['update'] );
-				}
-			}
 
 			// If the shipping data is in the old format
 			if ( ! empty( $switch_data['shipping_methods'] ) ) {
@@ -1978,8 +1952,36 @@ class WC_Subscriptions_Switcher {
 					wc_update_order_item( $shipping_line_item_id, array( 'order_item_type' => 'shipping' ) );
 				}
 
-				// We must re-read the subscription object because we modified an item.
-				$subscription = wcs_get_subscription( $subscription_id );
+			}
+
+			// We must re-read the subscription object because we modified the order_item_type of some items
+			$subscription = wcs_get_subscription( $subscription_id );
+
+			if ( ! empty( $add_note ) ) {
+				// translators: 1$: old item, 2$: new item when switching
+				$subscription->add_order_note( $add_note );
+			}
+
+			if ( ! empty( $switch_data['billing_schedule'] ) ) {
+
+				// Update the billing schedule
+				foreach ( $switch_data['billing_schedule'] as $meta_key => $value ) {
+					wcs_set_objects_property( $subscription, $meta_key, $value );
+				}
+			}
+
+			// Update subscription dates
+			if ( ! empty( $switch_data['dates'] ) ) {
+
+				if ( ! empty( $switch_data['dates']['delete'] ) ) {
+					foreach ( $switch_data['dates']['delete'] as $date ) {
+						$subscription->delete_date( $date );
+					}
+				}
+
+				if ( ! empty( $switch_data['dates']['update'] ) ) {
+					$subscription->update_dates( $switch_order_data[ $subscription->get_id() ]['dates']['update'] );
+				}
 			}
 
 			// Update the subscription address
