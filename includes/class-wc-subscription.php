@@ -1064,10 +1064,7 @@ class WC_Subscription extends WC_Order {
 	public function get_time( $date_type, $timezone = 'gmt' ) {
 
 		$datetime = $this->get_date( $date_type, $timezone );
-
-		if ( 0 !== $datetime ) {
-			$datetime = wcs_date_to_time( $datetime );
-		}
+		$datetime = wcs_date_to_time( $datetime );
 
 		return $datetime;
 	}
