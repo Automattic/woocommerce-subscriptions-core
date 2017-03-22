@@ -652,10 +652,9 @@ class WC_Subscriptions_Admin {
 	public static function check_customer_is_set( $old_status, $new_status, $subscription ) {
 		global $post;
 
-		if ( is_admin() && 'active' == $new_status && ! empty( $post ) && 'shop_subscription' === $post->post_type ) {
+		if ( is_admin() && 'active' == $new_status && isset( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) && isset( $_POST['customer_user'] ) && ! empty( $post ) && 'shop_subscription' === $post->post_type ) {
 
-			$customer_user = ( isset( $_POST['customer_user'] ) ) ? sanitize_text_field( $_POST['customer_user'] ) : ''; // csrf in core wp save post function
-			$user          = new WP_User( $customer_user );
+			$user = new WP_User( absint( $_POST['customer_user'] ) );
 
 			if ( 0 === $user->ID ) {
 				throw new Exception( sprintf( __( 'Unable to change subscription status to "%s". Please assign a customer to the subscription to activate it.', 'woocommerce-subscriptions' ), $new_status ) );
