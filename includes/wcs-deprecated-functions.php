@@ -67,6 +67,30 @@ function wcs_deprecated_function( $function, $version, $replacement = null ) {
 }
 
 /**
+ * Wrapper for wc_deprecated_argument to improve handling of ajax requests, even when
+ * WooCommerce 2.7's wc_deprecated_argument method is not available.
+ *
+ * @since  2.1.4
+ * @param  string $argument
+ * @param  string $version
+ * @param  string $message
+ */
+function wcs_deprecated_argument( $argument, $version, $message = null ) {
+
+	if ( function_exists( 'wc_deprecated_argument' ) ) {
+		wc_deprecated_argument( $argument, $version, $message );
+	} else {
+		// Reimplement wc_deprecated_argument() when WC 2.7 is not active
+		if ( is_ajax() ) {
+			do_action( 'deprecated_argument_run', $argument, $message, $version );
+			error_log( "The {$argument} argument is deprecated since version {$version}. {$message}" );
+		} else {
+			_deprecated_argument( esc_attr( $argument ), esc_attr( $version ), esc_attr( $message ) );
+		}
+	}
+}
+
+/**
  * Get the string key for a subscription used in Subscriptions prior to 2.0.
  *
  * Previously, a subscription key was made up of the ID of the order used to purchase the subscription, and
