@@ -75,17 +75,17 @@ function wcs_deprecated_function( $function, $version, $replacement = null ) {
  * @param  string $version
  * @param  string $message
  */
-function wcs_deprecated_argument( $argument, $version, $message = null ) {
+function wcs_deprecated_argument( $function, $version, $message = null ) {
 
 	if ( function_exists( 'wc_deprecated_argument' ) ) {
-		wc_deprecated_argument( $argument, $version, $message );
+		wc_deprecated_argument( $function, $version, $message );
 	} else {
 		// Reimplement wc_deprecated_argument() when WC 2.7 is not active
 		if ( is_ajax() ) {
-			do_action( 'deprecated_argument_run', $argument, $message, $version );
-			error_log( "The {$argument} argument is deprecated since version {$version}. {$message}" );
+			do_action( 'deprecated_argument_run', $function, $message, $version );
+			error_log( "{$function} was called with an argument that is deprecated since version {$version}. {$message}" );
 		} else {
-			_deprecated_argument( esc_attr( $argument ), esc_attr( $version ), esc_attr( $message ) );
+			_deprecated_argument( esc_attr( $function ), esc_attr( $version ), esc_attr( $message ) );
 		}
 	}
 }
