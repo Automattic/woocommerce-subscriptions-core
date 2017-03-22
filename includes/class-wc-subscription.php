@@ -945,8 +945,8 @@ class WC_Subscription extends WC_Order {
 	 *
 	 * Only used for WC 2.7 compatibilty so that WC_Subscription_Legacy can override.
 	 *
-	 * @param string $date_type 'trial_end', 'next_payment', 'last_payment', 'cancelled', 'payment_retry' or 'end'
-	 * @param string $value MySQL date/time string in GMT/UTC timezone.
+	 * @param string $date_type 'trial_end', 'next_payment', 'cancelled', 'payment_retry' or 'end'
+	 * @param string|integer $value Value of the prop.
 	 */
 	protected function set_date_prop( $date_type, $value ) {
 		$this->set_prop( sprintf( 'schedule_%s', $date_type ), $value );
