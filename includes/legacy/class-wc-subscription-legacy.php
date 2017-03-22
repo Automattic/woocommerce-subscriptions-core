@@ -400,6 +400,15 @@ class WC_Subscription_Legacy extends WC_Subscription {
 
 		if ( ! isset( $this->$prop ) || empty( $this->$prop ) ) {
 			$value = get_post_meta( $this->get_id(), '_' . $prop, true );
+
+			// The requires manual renewal prop uses boolean values but is stored as a string
+			if ( 'requires_manual_renewal' === $prop ) {
+				if ( 'false' === $value || '' === $value ) {
+					$value = false;
+				} else {
+					$value = true;
+				}
+			}
 		} else {
 			$value = $this->$prop;
 		}
@@ -450,6 +459,16 @@ class WC_Subscription_Legacy extends WC_Subscription {
 		}
 
 		$this->$prop = $value;
+
+		// The requires manual renewal prop uses boolean values but it stored as a string
+		if ( 'requires_manual_renewal' === $prop ) {
+			if ( false === $value || '' === $value ) {
+				$value = 'false';
+			} else {
+				$value = 'true';
+			}
+		}
+
 		update_post_meta( $this->get_id(), '_' . $prop, $value );
 	}
 
