@@ -1091,15 +1091,15 @@ class WC_Subscription extends WC_Order {
 
 		foreach ( $dates as $date_type => $datetime ) {
 
+			if ( $datetime == $this->get_date( $date_type ) ) {
+				continue;
+			}
+
 			// Delete dates with a 0 date time
 			if ( 0 == $datetime ) {
 				if ( 'last_payment' != $date_type && 'start' != $date_type ) {
 					$this->delete_date( $date_type );
 				}
-				continue;
-			}
-
-			if ( $datetime == $this->get_date( $date_type ) ) {
 				continue;
 			}
 
