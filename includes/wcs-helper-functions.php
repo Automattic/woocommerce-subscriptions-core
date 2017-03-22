@@ -181,7 +181,7 @@ function wcs_get_calling_function_name() {
 
 	$backtrace         = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 3 );
 	$calling_function  = isset( $backtrace[2]['class'] ) ? $backtrace[2]['class'] : '';
-	$calling_function .= isset( $backtrace[2]['type'] ) ? $backtrace[2]['type'] : '';
+	$calling_function .= isset( $backtrace[2]['type'] ) ? ( ( '->' == $backtrace[2]['type'] ) ? '::' : $backtrace[2]['type'] ) : ''; // Ternary abuses
 	$calling_function .= isset( $backtrace[2]['function'] ) ? $backtrace[2]['function'] : '';
 
 	return $calling_function;
