@@ -398,7 +398,7 @@ class WC_Subscription_Legacy extends WC_Subscription {
 			$prop = 'subscription_switch_data';
 		}
 
-		if ( ! isset( $this->$prop ) || empty( $this->$prop ) ) {
+		if ( ! isset( $this->$prop ) || empty( $this->$prop ) || 'requires_manual_renewal' === $prop ) {
 			$value = get_post_meta( $this->get_id(), '_' . $prop, true );
 
 			// The requires manual renewal prop uses boolean values but is stored as a string
