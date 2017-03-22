@@ -150,7 +150,9 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 		 AND `meta_key` NOT LIKE '_schedule_%%'
 		 AND `meta_key` NOT IN (
 			 '_paid_date',
+			 '_date_paid',
 			 '_completed_date',
+			 '_date_completed',
 			 '_order_key',
 			 '_edit_lock',
 			 '_wc_points_earned',

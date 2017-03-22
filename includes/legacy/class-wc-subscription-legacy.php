@@ -338,11 +338,44 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	 *
 	 * Used by parent::get_date()
 	 *
-	 * @param string $timestamp Timestamp
 	 * @throws WC_Data_Exception
+	 * @return DateTime|NULL object if the date is set or null if there is no date.
 	 */
 	public function get_date_created( $context = 'view' ) {
-		return wcs_date_to_time( $this->post->post_date ); // WC 2.7 uses timestamps in site timezone :sob:
+
+		if ( '0000-00-00 00:00:00' != $this->post->post_date_gmt ) {
+			$datetime = new WC_DateTime( $this->post->post_date_gmt, new DateTimeZone( 'UTC' ) );
+			$datetime->setTimezone( new DateTimeZone( wc_timezone_string() ) );
+		} else {
+			$datetime = new WC_DateTime( $this->post->post_date, new DateTimeZone( wc_timezone_string() ) );
+		}
+
+		// Cache it in $this->schedule for backward compatibility
+		if ( ! isset( $this->schedule->start ) ) {
+			$this->schedule->start = wcs_get_datetime_utc_string( $datetime );
+		}
+
+		return $datetime;
+	}
+
+	/**
+	 * Get date_modified.
+	 *
+	 * Used by parent::get_date()
+	 *
+	 * @throws WC_Data_Exception
+	 * @return DateTime|NULL object if the date is set or null if there is no date.
+	 */
+	public function get_date_modified( $context = 'view' ) {
+
+		if ( '0000-00-00 00:00:00' != $this->post->post_modified_gmt ) {
+			$datetime = new WC_DateTime( $this->post->post_modified_gmt, new DateTimeZone( 'UTC' ) );
+			$datetime->setTimezone( new DateTimeZone( wc_timezone_string() ) );
+		} else {
+			$datetime = new WC_DateTime( $this->post->post_modified, new DateTimeZone( wc_timezone_string() ) );
+		}
+
+		return $datetime;
 	}
 
 	/**
@@ -449,13 +482,22 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	/**
 	 * Get the stored date for a specific schedule.
 	 *
-	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'
+	 * @param string $date_type 'date_created', 'trial_end', 'next_payment', 'last_payment' or 'end'
 	 */
 	protected function get_date_prop( $date_type ) {
+
+		$datetime = parent::get_date_prop( $date_type );
+
+		// Cache the string equalivent of it in $this->schedule for backward compatibility
 		if ( ! isset( $this->schedule->{$date_type} ) ) {
-			$this->schedule->{$date_type} = $this->get_prop( sprintf( 'schedule_%s', $date_type ) );
+			if ( ! is_object( $datetime ) ) {
+				$this->schedule->{$date_type} = 0;
+			} else {
+				$this->schedule->{$date_type} = wcs_get_datetime_utc_string( $datetime );
+			}
 		}
-		return $this->schedule->{$date_type};
+
+		return $datetime;
 	}
 
 	/*** Setters *****************************************************/
@@ -543,12 +585,12 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	/**
 	 * Set the stored date for a specific schedule.
 	 *
-	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'
-	 * @param string $value MySQL date/time string in GMT/UTC timezone.
+	 * @param string $date_type 'trial_end', 'next_payment', 'cancelled', 'payment_retry' or 'end'
+	 * @param int $value UTC timestamp
 	 */
 	protected function set_date_prop( $date_type, $value ) {
-		parent::set_date_prop( $date_type, $value ); // calls WC_Subscription_Legacy::set_prop() which calls update_post_meta() with the meta key 'schedule_{$date_type}'
-		$this->schedule->{$date_type} = $value;
+		$this->set_prop( $this->get_date_prop_key( $date_type ), wcs_get_datetime_from( $value ) );
+		$this->schedule->{$date_type} = gmdate( 'Y:m:d H:i:s', $value );
 	}
 
 	/**
@@ -579,20 +621,22 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	 *
 	 * Used by parent::update_dates()
 	 *
-	 * @param string $timestamp Timestamp
+	 * @param  string|integer|null $date UTC timestamp, or ISO 8601 DateTime. If the DateTime string has no timezone or offset, WordPress site timezone will be assumed. Null if their is no date.
 	 * @throws WC_Data_Exception
 	 */
-	public function set_date_created( $timestamp ) {
+	public function set_date_created( $date = null ) {
 		global $wpdb;
 
-		// WC 2.7 uses timestamps in site timezone :sob:
-		$datetime = gmdate( 'Y-m-d H:i:s', $timestamp );
+		if ( ! is_null( $date ) ) {
 
-		// Don't use wp_update_post() to avoid infinite loops here
-		$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET post_date = %s, post_date_gmt = %s WHERE ID = %s", $datetime, get_gmt_from_date( $datetime ), $this->get_id() ) );
+			$datetime_string = wcs_get_datetime_utc_string( wcs_get_datetime_from( $date ) );
 
-		$this->post->post_date     = $datetime;
-		$this->post->post_date_gmt = get_gmt_from_date( $datetime );
+			// Don't use wp_update_post() to avoid infinite loops here
+			$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET post_date = %s, post_date_gmt = %s WHERE ID = %d", get_date_from_gmt( $datetime_string ), $datetime_string, $this->get_id() ) );
+
+			$this->post->post_date     = get_date_from_gmt( $datetime_string );
+			$this->post->post_date_gmt = $datetime_string;
+		}
 	}
 
 	/**

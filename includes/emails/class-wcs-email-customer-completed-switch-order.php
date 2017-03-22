@@ -63,9 +63,9 @@ class WCS_Email_Completed_Switch_Order extends WC_Email_Customer_Completed_Order
 			$order_date_index = array_search( '{order_date}', $this->find );
 			if ( false === $order_date_index ) {
 				$this->find[] = '{order_date}';
-				$this->replace[] = date_i18n( wc_date_format(), wcs_date_to_time( get_date_from_gmt( wcs_get_objects_property( $this->object, 'date' ) ) ) );
+				$this->replace[] = wcs_format_datetime( wcs_get_objects_property( $this->object, 'date_created' ) );
 			} else {
-				$this->replace[ $order_date_index ] = date_i18n( wc_date_format(), wcs_date_to_time( get_date_from_gmt( wcs_get_objects_property( $this->object, 'date' ) ) ) );
+				$this->replace[ $order_date_index ] = wcs_format_datetime( wcs_get_objects_property( $this->object, 'date_created' ) );
 			}
 
 			$order_number_index = array_search( '{order_number}', $this->find );
