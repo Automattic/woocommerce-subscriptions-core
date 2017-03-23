@@ -58,9 +58,6 @@ class WCS_PayPal_Standard_Request {
 			// It's a subscription
 			$paypal_args['cmd'] = '_xclick-subscriptions';
 
-			// Store the subscription ID in the args sent to PayPal so we can access them later
-			$paypal_args['custom'] = wcs_json_encode( array( 'order_id' => wcs_get_objects_property( $order, 'id' ), 'order_key' => wcs_get_objects_property( $order, 'order_key' ), 'subscription_id' => $subscription->get_id(), 'subscription_key' => $subscription->get_order_key() ) );
-
 			foreach ( $subscription->get_items() as $item ) {
 				if ( $item['qty'] > 1 ) {
 					$item_names[] = $item['qty'] . ' x ' . wcs_get_paypal_item_name( $item['name'] );
@@ -69,8 +66,14 @@ class WCS_PayPal_Standard_Request {
 				}
 			}
 
-			// translators: 1$: subscription ID, 2$: order ID, 3$: names of items, comma separated
-			$paypal_args['item_name'] = wcs_get_paypal_item_name( sprintf( _x( 'Subscription %1$s (Order %2$s) - %3$s', 'item name sent to paypal', 'woocommerce-subscriptions' ), $subscription->get_order_number(), $order->get_order_number(), implode( ', ', $item_names ) ) );
+			// Subscription imported or manually added via admin so doesn't have a parent order
+			if ( empty( $order ) ) {
+				// translators: 1$: subscription ID, 2$: names of items, comma separated
+				$paypal_args['item_name'] = wcs_get_paypal_item_name( sprintf( _x( 'Subscription %1$s - %2$s', 'item name sent to paypal', 'woocommerce-subscriptions' ), $subscription->get_order_number(), implode( ', ', $item_names ) ) );
+			} else {
+				// translators: 1$: subscription ID, 2$: order ID, 3$: names of items, comma separated
+				$paypal_args['item_name'] = wcs_get_paypal_item_name( sprintf( _x( 'Subscription %1$s (Order %2$s) - %3$s', 'item name sent to paypal', 'woocommerce-subscriptions' ), $subscription->get_order_number(), $order->get_order_number(), implode( ', ', $item_names ) ) );
+			}
 
 			$unconverted_periods = array(
 				'billing_period' => $subscription->get_billing_period(),
@@ -146,6 +149,10 @@ class WCS_PayPal_Standard_Request {
 				$paypal_args['invoice'] = WCS_PayPal::get_option( 'invoice_prefix' ) . $order_number . $suffix;
 				$paypal_args['custom']  = wcs_json_encode( array_merge( $order_id_key, array( 'subscription_id' => $subscription->get_id(), 'subscription_key' => $subscription->get_order_key() ) ) );
 
+			} else {
+
+				// Store the subscription ID in the args sent to PayPal so we can access them later
+				$paypal_args['custom'] = wcs_json_encode( array( 'order_id' => wcs_get_objects_property( $order, 'id' ), 'order_key' => wcs_get_objects_property( $order, 'order_key' ), 'subscription_id' => $subscription->get_id(), 'subscription_key' => $subscription->get_order_key() ) );
 			}
 
 			if ( $order_contains_failed_renewal ) {
