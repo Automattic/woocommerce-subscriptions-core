@@ -131,14 +131,16 @@ class WCS_PayPal_Standard_Request {
 					$suffix = '-wcsfrp-' . wcs_get_objects_property( $order, 'id' );
 				}
 
+				$parent_order = $subscription->get_parent();
+
 				// Change the 'invoice' and the 'custom' values to be for the original order (if there is one)
-				if ( false === $subscription->get_parent() ) {
+				if ( false === $parent_order ) {
 					// No original order so we need to use the subscriptions values instead
 					$order_number = ltrim( $subscription->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) ) . '-subscription';
 					$order_id_key = array( 'order_id' => $subscription->get_id(), 'order_key' => $subscription->get_order_key() );
 				} else {
-					$order_number = ltrim( $subscription->get_parent()->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) );
-					$order_id_key = array( 'order_id' => wcs_get_objects_property( $subscription->get_parent(), 'id' ), 'order_key' => wcs_get_objects_property( $subscription->get_parent(), 'order_key' ) );
+					$order_number = ltrim( $parent_order->get_order_number(), _x( '#', 'hash before the order number. Used as a character to remove from the actual order number', 'woocommerce-subscriptions' ) );
+					$order_id_key = array( 'order_id' => wcs_get_objects_property( $parent_order, 'id' ), 'order_key' => wcs_get_objects_property( $parent_order, 'order_key' ) );
 				}
 
 				// Set the invoice details to the original order's invoice but also append a special string and this renewal orders ID so that we can match it up as a failed renewal order payment later

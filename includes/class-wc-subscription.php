@@ -243,7 +243,7 @@ class WC_Subscription extends WC_Order {
 			$needs_payment = true;
 
 		// Now make sure the parent order doesn't need payment
-		} elseif ( false != $this->get_parent() && ( $this->get_parent()->needs_payment() || $this->get_parent()->has_status( 'on-hold' ) ) ) {
+		} elseif ( ( $parent_order = $this->get_parent() ) && ( $parent_order->needs_payment() || $parent_order->has_status( 'on-hold' ) ) ) {
 
 			$needs_payment = true;
 
@@ -623,7 +623,7 @@ class WC_Subscription extends WC_Order {
 		// If not cached, calculate the completed payment count otherwise return the cached version
 		if ( false === $this->cached_completed_payment_count ) {
 
-			$completed_payment_count = ( false != $this->get_parent() && ( 0 !== wcs_get_objects_property( $this->get_parent(), 'date_paid' ) || $this->get_parent()->has_status( $this->get_paid_order_statuses() ) ) ) ? 1 : 0;
+			$completed_payment_count = ( ( $parent_order = $this->get_parent() ) && ( 0 !== wcs_get_objects_property( $parent_order, 'date_paid' ) || $parent_order->has_status( $this->get_paid_order_statuses() ) ) ) ? 1 : 0;
 
 			// Get all renewal orders - for large sites its more efficient to find the two different sets of renewal orders below using post__in than complicated meta queries
 			$renewal_orders = get_posts( array(
@@ -692,7 +692,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_failed_payment_count() {
 
-		$failed_payment_count = ( false != $this->get_parent() && $this->get_parent()->has_status( 'wc-failed' ) ) ? 1 : 0;
+		$failed_payment_count = ( ( $parent_order = $subscription->get_parent() ) && $parent_order->has_status( 'wc-failed' ) ) ? 1 : 0;
 
 		$failed_renewal_orders = get_posts( array(
 			'posts_per_page' => -1,
@@ -728,7 +728,7 @@ class WC_Subscription extends WC_Order {
 	 * @since 2.0
 	 */
 	public function get_total_initial_payment() {
-		$initial_total = ( false != $this->get_parent() ) ? $this->get_parent()->get_total() : 0;
+		$initial_total = ( $parent_order = $this->get_parent() ) ? $parent_order->get_total() : 0;
 		return apply_filters( 'woocommerce_subscription_total_initial_payment', $initial_total, $this );
 	}
 
@@ -1917,8 +1917,10 @@ class WC_Subscription extends WC_Order {
 			$line_item = wcs_get_order_item( $line_item, $this );
 		}
 
+		$parent_order = $this->get_parent();
+
 		// If there was no original order, nothing was paid up-front which means no sign-up fee
-		if ( false == $this->get_parent() ) {
+		if ( false == $parent_order ) {
 
 			$sign_up_fee = 0;
 
@@ -1927,7 +1929,7 @@ class WC_Subscription extends WC_Order {
 			$original_order_item = '';
 
 			// Find the matching item on the order
-			foreach ( $this->get_parent()->get_items() as $order_item ) {
+			foreach ( $parent_order->get_items() as $order_item ) {
 				if ( wcs_get_canonical_product_id( $line_item ) == wcs_get_canonical_product_id( $order_item ) ) {
 					$original_order_item = $order_item;
 					break;
