@@ -40,6 +40,9 @@ class WC_Subscriptions_Checkout {
 
 		// Force registration during checkout process
 		add_action( 'woocommerce_before_checkout_process', __CLASS__ . '::force_registration_during_checkout', 10 );
+
+		// When a line item is added to a subscription on checkout, ensure the backorder data added by WC is removed
+		add_action( 'woocommerce_checkout_create_order_line_item', __CLASS__ . '::remove_backorder_meta_from_subscription_line_item', 10, 4 );
 	}
 
 	/**
@@ -295,6 +298,22 @@ class WC_Subscriptions_Checkout {
 		}
 
 		WC_Subscriptions_Cart::set_calculation_type( 'none' );
+	}
+
+	/**
+	 * Remove the Backordered meta data from subscription line items added on the checkout.
+	 *
+	 * @param WC_Order_Item_Product $order_item
+	 * @param string $cart_item_key The hash used to identify the item in the cart
+	 * @param array $cart_item The cart item's data.
+	 * @param WC_Order|WC_Subscription $subscription The order or subscription object to which the line item relates
+	 * @since 2.2
+	 */
+	public static function remove_backorder_meta_from_subscription_line_item( $item, $cart_item_key, $cart_item, $subscription ) {
+
+		if ( wcs_is_subscription( $subscription ) ) {
+			$item->delete_meta_data( apply_filters( 'woocommerce_backordered_item_meta_name', __( 'Backordered', 'woocommerce-subscriptions' ) ) );
+		}
 	}
 
 	/**

@@ -931,7 +931,8 @@ class WCS_Cart_Renewal {
 	 * @since 2.0.14
 	 */
 	protected function set_cart_hash( $order_id ) {
-		update_post_meta( $order_id, '_cart_hash', md5( json_encode( wc_clean( WC()->cart->get_cart_for_session() ) ) . WC()->cart->total ) );
+		$order = wc_get_order( $order_id );
+		wcs_set_objects_property( $order, 'cart_hash', md5( json_encode( wc_clean( WC()->cart->get_cart_for_session() ) ) . WC()->cart->total ) );
 	}
 
 	/**

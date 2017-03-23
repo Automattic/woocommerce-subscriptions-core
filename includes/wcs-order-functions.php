@@ -223,16 +223,23 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 			$item_name = apply_filters( 'wcs_' . $type . '_item_name', $item_name, $item, $subscription );
 
 			// Create order line item on the renewal order
-			$recurring_item_id = wc_add_order_item( wcs_get_objects_property( $new_order, 'id' ), array(
+			$order_item_id = wc_add_order_item( wcs_get_objects_property( $new_order, 'id' ), array(
 				'order_item_name' => $item_name,
 				'order_item_type' => $item['type'],
 			) );
 
 			// Remove recurring line items and set item totals based on recurring line totals
-			foreach ( $item['item_meta'] as $meta_key => $meta_values ) {
-				foreach ( $meta_values as $meta_value ) {
-					wc_add_order_item_meta( $recurring_item_id, $meta_key, maybe_unserialize( $meta_value ) );
+			if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+				foreach ( $item['item_meta'] as $meta_key => $meta_values ) {
+					foreach ( $meta_values as $meta_value ) {
+						wc_add_order_item_meta( $order_item_id, $meta_key, maybe_unserialize( $meta_value ) );
+					}
 				}
+			} else {
+				$order_item = $new_order->get_item( $order_item_id );
+
+				wcs_copy_order_item( $item, $order_item );
+				$order_item->save();
 			}
 
 			// If the line item we're adding is a product line item and that product still exists, trigger the 'woocommerce_order_add_product' hook
@@ -263,13 +270,16 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 					}
 
 					// Backorders
-					if ( $product->backorders_require_notification() && $product->is_on_backorder( $item['qty'] ) ) {
-						wc_add_order_item_meta( $recurring_item_id, apply_filters( 'woocommerce_backordered_item_meta_name', __( 'Backordered', 'woocommerce-subscriptions' ) ), $item['qty'] - max( 0, $product->get_total_stock() ) );
+					if ( isset( $order_item ) && is_callable( array( $order_item, 'set_backorder_meta' ) ) ) { // WC 3.0
+						$order_item->set_backorder_meta();
+						$order_item->save();
+					} elseif ( $product->backorders_require_notification() && $product->is_on_backorder( $item['qty'] ) ) { // WC 2.6
+						wc_add_order_item_meta( $order_item_id, apply_filters( 'woocommerce_backordered_item_meta_name', __( 'Backordered', 'woocommerce-subscriptions' ) ), $item['qty'] - max( 0, $product->get_total_stock() ) );
 					}
 
 					if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
 						// WC 2.7+ will also trigger the 'woocommerce_order_add_product when 'woocommerce_new_order_item', which is triggered in wc_add_order_item_meta()
-						do_action( 'woocommerce_order_add_product', wcs_get_objects_property( $new_order, 'id' ), $recurring_item_id, $product, $item['qty'], $args );
+						do_action( 'woocommerce_order_add_product', wcs_get_objects_property( $new_order, 'id' ), $order_item_id, $product, $item['qty'], $args );
 					}
 				}
 			}
@@ -690,5 +700,69 @@ function wcs_display_item_downloads( $item, $order ) {
 		wc_display_item_downloads( $item );
 	} else {
 		$order->display_item_downloads( $item );
+	}
+}
+
+/**
+ * Copy the order item data and meta data from one item to another.
+ *
+ * @since  2.2
+ * @param  WC_Order_Item The order item to copy data from
+ * @param  WC_Order_Item The order item to copy data to
+ * @return void
+ */
+function wcs_copy_order_item( $from_item, &$to_item ) {
+
+	if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+		wcs_doing_it_wrong( __FUNCTION__, 'This function uses data structures introduced in WC 2.7. To copy line item meta use $from_item[\'item_meta\'] and wc_add_order_item_meta().', '2.2' );
+		return;
+	}
+
+	foreach ( $from_item->get_meta_data() as $meta_data ) {
+		$to_item->update_meta_data( $meta_data->key, $meta_data->value );
+	}
+
+	switch ( $from_item->get_type() ) {
+		case 'line_item':
+			$to_item->set_props( array(
+				'product_id'   => $from_item->get_product_id(),
+				'variation_id' => $from_item->get_variation_id(),
+				'quantity'     => $from_item->get_quantity(),
+				'tax_class'    => $from_item->get_tax_class(),
+				'subtotal'     => $from_item->get_subtotal(),
+				'total'        => $from_item->get_total(),
+				'taxes'        => $from_item->get_taxes(),
+			) );
+			break;
+		case 'shipping':
+			$to_item->set_props( array(
+				'method_id' => $from_item->get_method_id(),
+				'total'     => $from_item->get_total(),
+				'taxes'     => $from_item->get_taxes(),
+			) );
+			break;
+		case 'tax':
+			$to_item->set_props( array(
+				'rate_id'            => $from_item->get_rate_id(),
+				'label'              => $from_item->get_label(),
+				'compound'           => $from_item->get_compound(),
+				'tax_total'          => $from_item->get_tax_total(),
+				'shipping_tax_total' => $from_item->get_shipping_tax_total(),
+			) );
+			break;
+		case 'fee':
+			$to_item->set_props( array(
+				'tax_class'  => $from_item->get_tax_class(),
+				'tax_status' => $from_item->get_tax_status(),
+				'total'      => $from_item->get_total(),
+				'taxes'      => $from_item->get_taxes(),
+			) );
+			break;
+		case 'coupon':
+			$to_item->set_props( array(
+				'discount'     => $from_item->discount(),
+				'discount_tax' => $from_item->discount_tax(),
+			) );
+			break;
 	}
 }
