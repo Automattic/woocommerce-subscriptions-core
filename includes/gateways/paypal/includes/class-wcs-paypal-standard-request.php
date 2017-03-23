@@ -33,9 +33,8 @@ class WCS_PayPal_Standard_Request {
 		// Payment method changes act on the subscription not the original order
 		if ( $is_payment_change ) {
 
-			$subscriptions = array( wcs_get_subscription( wcs_get_objects_property( $order, 'id' ) ) );
-			$subscription  = array_pop( $subscriptions );
-			$order         = $subscription->get_parent();
+			$subscription = wcs_get_subscription( wcs_get_objects_property( $order, 'id' ) );
+			$order        = $subscription->get_parent();
 
 			// We need the subscription's total
 			remove_filter( 'woocommerce_order_amount_total', 'WC_Subscriptions_Change_Payment_Gateway::maybe_zero_total', 11, 2 );
