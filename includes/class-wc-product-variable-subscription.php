@@ -117,12 +117,17 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 	}
 
 	/**
-	 * Sort an associativate array of $variation_id => $price pairs in order of min and max prices.
+	 * Sort an associative array of $variation_id => $price pairs in order of min and max prices.
 	 *
-	 * @param array $prices Associativate array of $variation_id => $price pairs
+	 * @param array $prices Associative array of $variation_id => $price pairs
 	 * @return array
 	 */
 	protected function sort_variation_prices( $prices ) {
+
+		// If we don't have any prices, there's nothing to sort.
+		if ( empty( $prices ) ) {
+			return $prices;
+		}
 
 		$prices_hash = md5( json_encode( $prices ) );
 
