@@ -276,7 +276,7 @@ class WC_API_Subscriptions extends WC_API_Orders {
 
 			return $this->get_subscription( $subscription_id );
 
-		} catch ( WC_API_Excpetion $e ) {
+		} catch ( WC_API_Exception $e ) {
 			return new WP_Error( $e->getErrorCode(), $e->getMessage(), array( 'status' => $e->getCode() ) );
 
 		} catch ( Exception $e ) {

@@ -108,8 +108,6 @@ class WC_Subscriptions_Checkout {
 			$variation_id = wcs_cart_pluck( $cart, 'variation_id' );
 			$product_id   = empty( $variation_id ) ? wcs_cart_pluck( $cart, 'product_id' ) : $variation_id;
 
-			$order_date_gmt = wcs_get_objects_property( $order, 'date' );
-
 			$subscription = wcs_create_subscription( array(
 				'start_date'       => $cart->start_date,
 				'order_id'         => wcs_get_objects_property( $order, 'id' ),
