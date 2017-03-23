@@ -830,7 +830,7 @@ class WC_Subscriptions_Switcher {
 							$item_id = $item->get_id();
 						}
 
-						wc_update_order_item( $item_id, array( 'order_item_type' => 'line_item_pending_sw' ) );
+						wc_update_order_item( $item_id, array( 'order_item_type' => 'line_item_pending_switch' ) );
 						$switched_item_data['add_line_item'] = $item_id;
 
 						// Remove the item from the cart so that WC_Subscriptions_Checkout doesn't add it to a subscription
