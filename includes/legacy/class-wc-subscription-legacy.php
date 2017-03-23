@@ -340,8 +340,10 @@ class WC_Subscription_Legacy extends WC_Subscription {
 			$line_item = wcs_get_order_item( $line_item, $this );
 		}
 
+		$parent_order = $this->get_parent();
+
 		// If there was no original order, nothing was paid up-front which means no sign-up fee
-		if ( false == $this->get_parent() ) {
+		if ( false == $parent_order ) {
 
 			$sign_up_fee = 0;
 
@@ -350,7 +352,7 @@ class WC_Subscription_Legacy extends WC_Subscription {
 			$original_order_item = '';
 
 			// Find the matching item on the order
-			foreach ( $this->get_parent()->get_items() as $order_item ) {
+			foreach ( $parent_order->get_items() as $order_item ) {
 				if ( wcs_get_canonical_product_id( $line_item ) == wcs_get_canonical_product_id( $order_item ) ) {
 					$original_order_item = $order_item;
 					break;
