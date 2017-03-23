@@ -1606,10 +1606,7 @@ class WC_Subscription extends WC_Order {
 	 * @return int
 	 */
 	public function get_parent() {
-		if ( null === $this->order ) {
-			$this->order = wc_get_order( $this->get_parent_id() ); // wc_get_order() will return boolean false for invalid parent order IDs
-		}
-		return $this->order;
+		return wc_get_order( $this->get_parent_id() );
 	}
 
 	/**
