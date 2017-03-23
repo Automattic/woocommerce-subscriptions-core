@@ -136,6 +136,14 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 			}
 			break;
 
+		case 'order_shipping':
+			if ( method_exists( $object, 'get_total_shipping' ) ) {
+				$value = $object->get_total_shipping();
+			} else {
+				$value = $object->order_shipping;
+			}
+			break;
+
 		case 'date_created' :
 		case 'order_date' :
 		case 'date' :
