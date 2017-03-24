@@ -399,7 +399,8 @@ class WC_API_Subscriptions extends WC_API_Orders {
 		foreach ( array( 'start', 'trial_end', 'end', 'next_payment' ) as $date_type ) {
 
 			if ( isset( $data[ $date_type . '_date' ] ) ) {
-				$dates_to_update[ $date_type ] = $data[ $date_type . '_date' ];
+				$date_type_key = ( 'start' === $date_type ) ? 'date_created' : $date_type;
+				$dates_to_update[ $date_type_key ] = $data[ $date_type . '_date' ];
 			}
 		}
 

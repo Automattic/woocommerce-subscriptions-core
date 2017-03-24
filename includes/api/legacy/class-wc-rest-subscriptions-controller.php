@@ -262,9 +262,10 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 		try {
 			$dates_to_update = array();
 
-			foreach ( array( 'date_created', 'trial_end', 'end', 'next_payment' ) as $date_type ) {
+			foreach ( array( 'start', 'trial_end', 'end', 'next_payment' ) as $date_type ) {
 				if ( isset( $data[ $date_type . '_date' ] ) ) {
-					$dates_to_update[ $date_type ] = $data[ $date_type . '_date' ];
+					$date_type_key = ( 'start' === $date_type ) ? 'date_created' : $date_type;
+					$dates_to_update[ $date_type_key ] = $data[ $date_type . '_date' ];
 				}
 			}
 
@@ -398,9 +399,10 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 		$data->billing_interval = $request['billing_interval'];
 		$data->billing_period   = $request['billing_period'];
 
-		foreach ( array( 'date_created', 'trial_end', 'end', 'next_payment' ) as $date_type ) {
+		foreach ( array( 'start', 'trial_end', 'end', 'next_payment' ) as $date_type ) {
 			if ( ! empty( $request[ $date_type . '_date' ] ) ) {
-				$data->{$date_type . '_date'} = $request[ $date_type . '_date' ];
+				$date_type_key = ( 'start' === $date_type ) ? 'date_created' : $date_type . '_date';
+				$data->{$date_type_key} = $request[ $date_type . '_date' ];
 			}
 		}
 
