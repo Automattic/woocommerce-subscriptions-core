@@ -397,7 +397,7 @@ function wcs_product_deprecated_property_handler( $property, $product ) {
 				break;
 		}
 
-		_deprecated_argument( $class_name . '::$' . $property, '2.1.4', sprintf( '%s Use %s', $message_prefix, $alternative ) );
+		wcs_deprecated_argument( $class_name . '::$' . $property, '2.1.4', sprintf( '%s Use %s', $message_prefix, $alternative ) );
 	}
 
 	return $value;

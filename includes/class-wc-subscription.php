@@ -269,7 +269,7 @@ class WC_Subscription extends WC_Order {
 
 			if ( ! empty( $last_order_id ) ) {
 
-				$order = new WC_Order( $last_order_id[0] );
+				$order = wc_get_order( $last_order_id[0] );
 
 				if ( $order->needs_payment() || $order->has_status( array( 'on-hold', 'failed', 'cancelled' ) ) ) {
 					$needs_payment = true;
@@ -545,7 +545,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function is_manual() {
 
-		if ( WC_Subscriptions::is_duplicate_site() || false === wc_get_payment_gateway_by_order( $this ) || 'true' == $this->get_requires_manual_renewal() || true === $this->get_requires_manual_renewal() ) {
+		if ( WC_Subscriptions::is_duplicate_site() || 'true' == $this->get_requires_manual_renewal() || true === $this->get_requires_manual_renewal() || false === wc_get_payment_gateway_by_order( $this ) ) {
 			$is_manual = true;
 		} else {
 			$is_manual = false;

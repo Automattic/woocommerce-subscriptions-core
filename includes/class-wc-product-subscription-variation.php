@@ -45,7 +45,7 @@ class WC_Product_Subscription_Variation extends WC_Product_Variation {
 
 		if ( 'subscription_variation_level_meta_data' === $key ) {
 
-			_deprecated_argument( __CLASS__ . '::$' . $key, '2.1.4', 'Product properties should not be accessed directly with WooCommerce 2.7+. Use the getter in WC_Subscriptions_Product instead.' );
+			wcs_deprecated_argument( __CLASS__ . '::$' . $key, '2.1.4', 'Product properties should not be accessed directly with WooCommerce 2.7+. Use the getter in WC_Subscriptions_Product instead.' );
 
 			$value = $this->subscription_variation_level_meta_data; // Behold, the horror that is the magic of WCS_Array_Property_Post_Meta_Black_Magic
 		} else {
