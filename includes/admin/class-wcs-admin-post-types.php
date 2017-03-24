@@ -647,10 +647,13 @@ class WCS_Admin_Post_Types {
 			case 'next_payment_date':
 			case 'last_payment_date':
 			case 'end_date':
-				if ( 0 == $the_subscription->get_time( $column, 'gmt' ) ) {
+				$date_type_map = array( 'start_date' => 'date_created', 'last_payment_date' => 'last_order_date_created' );
+				$date_type     = array_key_exists( $column, $date_type_map ) ? $date_type_map[ $column ] : $column;
+
+				if ( 0 == $the_subscription->get_time( $date_type, 'gmt' ) ) {
 					$column_content .= '-';
 				} else {
-					$column_content .= sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( date( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ) , $the_subscription->get_time( $column, 'site' ) ) ), esc_html( $the_subscription->get_date_to_display( $column ) ) );
+					$column_content .= sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( date( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ) , $the_subscription->get_time( $date_type, 'site' ) ) ), esc_html( $the_subscription->get_date_to_display( $date_type ) ) );
 
 					if ( 'next_payment_date' == $column && $the_subscription->payment_method_supports( 'gateway_scheduled_payments' ) && ! $the_subscription->is_manual() && $the_subscription->has_status( 'active' ) ) {
 						$column_content .= '<div class="woocommerce-help-tip" data-tip="' . esc_attr__( 'This date should be treated as an estimate only. The payment gateway for this subscription controls when payments are processed.', 'woocommerce-subscriptions' ) . '"></div>';
