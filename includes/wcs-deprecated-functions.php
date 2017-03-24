@@ -67,8 +67,7 @@ function wcs_deprecated_function( $function, $version, $replacement = null ) {
 }
 
 /**
- * Wrapper for wc_deprecated_argument to improve handling of ajax requests, even when
- * WooCommerce 2.7's wc_deprecated_argument method is not available.
+ * Reimplement similar logic to wc_deprecated_argument() without the first parameter confusion.
  *
  * @since  2.1.4
  * @param  string $argument
@@ -76,17 +75,11 @@ function wcs_deprecated_function( $function, $version, $replacement = null ) {
  * @param  string $message
  */
 function wcs_deprecated_argument( $function, $version, $message = null ) {
-
-	if ( function_exists( 'wc_deprecated_argument' ) ) {
-		wc_deprecated_argument( $function, $version, $message );
+	if ( is_ajax() ) {
+		do_action( 'deprecated_argument_run', $function, $message, $version );
+		error_log( "{$function} was called with an argument that is deprecated since version {$version}. {$message}" );
 	} else {
-		// Reimplement wc_deprecated_argument() when WC 2.7 is not active
-		if ( is_ajax() ) {
-			do_action( 'deprecated_argument_run', $function, $message, $version );
-			error_log( "{$function} was called with an argument that is deprecated since version {$version}. {$message}" );
-		} else {
-			_deprecated_argument( esc_attr( $function ), esc_attr( $version ), esc_attr( $message ) );
-		}
+		_deprecated_argument( esc_attr( $function ), esc_attr( $version ), esc_attr( $message ) );
 	}
 }
 
