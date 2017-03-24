@@ -421,8 +421,7 @@ class WC_Subscription extends WC_Order {
 
 			try {
 
-				wp_update_post( array( 'ID' => $this->get_id(), 'post_status' => $new_status_key ) );
-				$this->post_status = $new_status_key;
+				$this->set_status( $new_status, $note, $manual );
 
 				switch ( $new_status ) {
 
@@ -493,19 +492,6 @@ class WC_Subscription extends WC_Order {
 					break;
 				}
 
-				// dynamic hooks for convenience
-				do_action( 'woocommerce_subscription_status_' . $new_status, $this );
-				do_action( 'woocommerce_subscription_status_' . $old_status . '_to_' . $new_status, $this );
-
-				// Trigger a hook with params we want
-				do_action( 'woocommerce_subscription_status_updated', $this, $new_status, $old_status );
-
-				// Trigger a hook with params matching WooCommerce's 'woocommerce_order_status_changed' hook so functions attached to it can be attached easily to subscription status changes
-				do_action( 'woocommerce_subscription_status_changed', $this->get_id(), $old_status, $new_status );
-
-				// translators: $1 note why the status changes (if any), $2: old status, $3: new status
-				$this->add_order_note( trim( sprintf( __( '%1$s Status changed from %2$s to %3$s.', 'woocommerce-subscriptions' ), $note, wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ), 0, $manual );
-
 				// Make sure status is saved when WC 2.7+ is active, similar to WC_Order::update_status() with WC 2.7+ - set_status() can be used to avoid saving.
 				$this->save();
 
@@ -518,8 +504,7 @@ class WC_Subscription extends WC_Order {
 				$log->add( 'wcs-update-status-failures', $log_entry );
 
 				// Make sure the old status is restored
-				wp_update_post( array( 'ID' => $this->get_id(), 'post_status' => $old_status_key ) );
-				$this->post_status = $old_status_key;
+				$this->set_status( $old_status_key, $note, $manual );
 
 				$this->add_order_note( sprintf( __( 'Unable to change subscription status to "%s". Exception: %s', 'woocommerce-subscriptions' ), $new_status, $e->getMessage() ) );
 
@@ -530,6 +515,39 @@ class WC_Subscription extends WC_Order {
 
 				throw $e;
 			}
+		}
+	}
+
+	/**
+	 * Handle the status transition.
+	 */
+	protected function status_transition() {
+
+		if ( $this->status_transition ) {
+			do_action( 'woocommerce_subscription_status_' . $this->status_transition['to'], $this );
+
+			if ( ! empty( $this->status_transition['from'] ) ) {
+				/* translators: 1: old subscription status 2: new subscription status */
+				$transition_note = sprintf( __( 'Status changed from %1$s to %2$s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $this->status_transition['from'] ), wcs_get_subscription_status_name( $this->status_transition['to'] ) );
+
+				do_action( 'woocommerce_subscription_status_' . $this->status_transition['from'] . '_to_' . $this->status_transition['to'], $this );
+
+				// Trigger a hook with params we want
+				do_action( 'woocommerce_subscription_status_updated', $this, $this->status_transition['to'], $this->status_transition['from'] );
+
+				// Trigger a hook with params matching WooCommerce's 'woocommerce_order_status_changed' hook so functions attached to it can be attached easily to subscription status changes
+				do_action( 'woocommerce_subscription_status_changed', $this->get_id(), $this->status_transition['from'], $this->status_transition['to'], $this );
+
+			} else {
+				/* translators: %s: new order status */
+				$transition_note = sprintf( __( 'Status set to %s.', 'woocommerce' ), wcs_get_subscription_status_name( $this->status_transition['to'] ) );
+			}
+
+			// Note the transition occured
+			$this->add_order_note( trim( $this->status_transition['note'] . ' ' . $transition_note ), 0, $this->status_transition['manual'] );
+
+			// This has ran, so reset status transition variable
+			$this->status_transition = false;
 		}
 	}
 
