@@ -15,6 +15,8 @@ class WC_Subscription_Legacy extends WC_Subscription {
 
 	protected $schedule;
 
+	protected $status_transition = false;
+
 	/**
 	 * Initialize the subscription object.
 	 *
@@ -450,6 +452,13 @@ class WC_Subscription_Legacy extends WC_Subscription {
 		wp_update_post( array( 'ID' => $this->get_id(), 'post_status' => 'wc-' . $new_status ) );
 		$this->post_status = $this->post->post_status = 'wc-' . $new_status;
 
+		$this->status_transition = array(
+			'from'   => $old_status,
+			'to'     => $new_status,
+			'note'   => $note,
+			'manual' => (bool) $manual_update,
+		);
+
 		return array(
 			'from' => $old_status,
 			'to'   => $new_status,
@@ -553,6 +562,7 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	 * @return int order ID
 	 */
 	public function save() {
+		$this->status_transition();
 		return $this->get_id();
 	}
 
