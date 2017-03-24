@@ -1807,12 +1807,15 @@ class WC_Subscription extends WC_Order {
 					$payment_gateway  = isset( $payment_gateways[ $payment_method_id ] ) ? $payment_gateways[ $payment_method_id ] : null;
 				}
 
-				if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
-					$this->set_requires_manual_renewal( true );
-				} elseif ( is_null( $payment_gateway ) || false == $payment_gateway->supports( 'subscriptions' ) ) {
-					$this->set_requires_manual_renewal( true );
-				} else {
-					$this->set_requires_manual_renewal( false );
+				// We shouldn't set the requires manual renewal prop while the object is being read. That prop should be set by reading it from the DB not based on settings or the payment gateway
+				if ( $this->object_read ) {
+					if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+						$this->set_requires_manual_renewal( true );
+					} elseif ( is_null( $payment_gateway ) || false == $payment_gateway->supports( 'subscriptions' ) ) {
+						$this->set_requires_manual_renewal( true );
+					} else {
+						$this->set_requires_manual_renewal( false );
+					}
 				}
 
 				$this->set_prop( 'payment_method', $payment_method_id );
