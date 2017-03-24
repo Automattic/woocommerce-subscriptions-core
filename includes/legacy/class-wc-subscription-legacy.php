@@ -16,6 +16,14 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	protected $schedule;
 
 	/**
+	 * Whether the object has been read. Pre WC 3.0 subscription objects are always read by default.
+	 * Provides an accessible variable equivalent to WC_Data::$object_read pre WC 3.0.
+	 *
+	 * @protected boolean
+	 */
+	protected $object_read = true;
+
+	/**
 	 * Initialize the subscription object.
 	 *
 	 * @param int|WC_Subscription $order
