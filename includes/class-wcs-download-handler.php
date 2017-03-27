@@ -147,9 +147,9 @@ class WCS_Download_Handler {
 		foreach ( $subscriptions as $subscription ) {
 			foreach ( $subscription->get_items() as $subscription_item ) {
 				if ( wcs_get_canonical_product_id( $subscription_item ) === $product_id ) {
-					if ( is_callable( array( $subscription_item, 'get_item_downloads' ) ) ) { // WC 2.7+
+					if ( is_callable( array( $subscription_item, 'get_item_downloads' ) ) ) { // WC 3.0+
 						$files = $subscription_item->get_item_downloads( $subscription_item );
-					} else { // WC < 2.7
+					} else { // WC < 3.0
 						$files = $subscription->get_item_downloads( $subscription_item );
 					}
 				}

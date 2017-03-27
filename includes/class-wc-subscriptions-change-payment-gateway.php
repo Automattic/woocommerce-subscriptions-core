@@ -67,13 +67,13 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	}
 
 	/**
-	 * Attach WooCommerce version dependenant hooks
+	 * Attach WooCommerce version dependent hooks
 	 *
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 */
 	public static function attach_dependant_hooks() {
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 
 			// If we're changing the payment method, we want to make sure a number of totals return $0 (to prevent payments being processed now)
 			add_filter( 'woocommerce_order_amount_total', __CLASS__ . '::maybe_zero_total', 11, 2 );

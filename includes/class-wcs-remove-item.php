@@ -130,7 +130,7 @@ class WCS_Remove_Item {
 			}
 
 			/**
-			 * In WooCommerce 2.7 the subscription object and its items override the database with their current content,
+			 * In WooCommerce 3.0 the subscription object and its items override the database with their current content,
 			 * so we lost the changes we just did with `wc_update_order_item`. Re-reading the object fixes this problem.
 			 */
 			$subscription = wcs_get_subscription( $subscription->get_id() );

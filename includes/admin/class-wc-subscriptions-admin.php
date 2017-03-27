@@ -45,7 +45,7 @@ class WC_Subscriptions_Admin {
 	 * Is meta boxes saved once?
 	 *
 	 * @var boolean
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 */
 	private static $saved_product_meta = false;
 
@@ -637,7 +637,7 @@ class WC_Subscriptions_Admin {
 		}
 
 		// Now that all the variation's meta is saved, sync the min variation price
-		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 			$variable_subscription = wc_get_product( $post_id );
 			$variable_subscription->variable_product_sync();
 		} else {

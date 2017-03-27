@@ -54,7 +54,7 @@ class WCS_API {
 			return;
 		}
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 			require_once( 'api/legacy/class-wc-rest-subscriptions-controller.php' );
 			require_once( 'api/legacy/class-wc-rest-subscription-notes-controller.php' );
 		} else {

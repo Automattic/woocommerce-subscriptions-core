@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Wrapper for wc_doing_it_wrong.
  *
- * @since  2.7.0
+ * @since  2.2.0
  * @param  string $function
  * @param  string $version
  * @param  string $replacement
@@ -29,7 +29,7 @@ function wcs_doing_it_wrong( $function, $message, $version ) {
 	if ( function_exists( 'wc_doing_it_wrong' ) ) {
 		wc_doing_it_wrong( $function, $message, $version );
 	} else {
-		// Reimplment wc_doing_it_wrong() when WC 2.7 is not active
+		// Reimplment wc_doing_it_wrong() when WC 3.0 is not active
 		if ( is_ajax() ) {
 			do_action( 'doing_it_wrong_run', $function, $message, $version );
 			error_log( "{$function} was called incorrectly. {$message}. This message was added in version {$version}." );
@@ -42,9 +42,9 @@ function wcs_doing_it_wrong( $function, $message, $version ) {
 
 /**
  * Wrapper for wcs_deprecated_function to improve handling of ajax requests, even when
- * WooCommerce 2.7's wcs_deprecated_function method is not available.
+ * WooCommerce 3.0's wcs_deprecated_function method is not available.
  *
- * @since  2.1.4
+ * @since  2.2.0
  * @param  string $function
  * @param  string $version
  * @param  string $replacement
@@ -54,7 +54,7 @@ function wcs_deprecated_function( $function, $version, $replacement = null ) {
 	if ( function_exists( 'wc_deprecated_function' ) ) {
 		wc_deprecated_function( $function, $version, $replacement );
 	} else {
-		// Reimplment wcs_deprecated_function() when WC 2.7 is not active
+		// Reimplment wcs_deprecated_function() when WC 3.0 is not active
 		if ( is_ajax() ) {
 			do_action( 'deprecated_function_run', $function, $replacement, $version );
 			$log_string  = "The {$function} function is deprecated since version {$version}.";
@@ -69,7 +69,7 @@ function wcs_deprecated_function( $function, $version, $replacement = null ) {
 /**
  * Reimplement similar logic to wc_deprecated_argument() without the first parameter confusion.
  *
- * @since  2.1.4
+ * @since  2.2.0
  * @param  string $argument
  * @param  string $version
  * @param  string $message

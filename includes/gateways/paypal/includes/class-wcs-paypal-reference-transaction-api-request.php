@@ -495,12 +495,12 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 
 			$item_desc = array();
 
-			if ( is_callable( array( $item, 'get_formatted_meta_data' ) ) ) { // WC 2.7+
+			if ( is_callable( array( $item, 'get_formatted_meta_data' ) ) ) { // WC 3.0+
 
 				foreach ( $item->get_formatted_meta_data() as $meta ) {
 					$item_desc[] = sprintf( '%s: %s', $meta->display_key, $meta->display_value );
 				}
-			} else { // WC < 2.7
+			} else { // WC < 3.0
 
 				$item_meta = new WC_Order_Item_Meta( $item );
 

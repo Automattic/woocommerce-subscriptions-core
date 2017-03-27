@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-// WC 2.7+ compatibility
+// WC 3.0+ compatibility
 $order_post = wcs_get_objects_property( $order, 'post' );
 
 ?>

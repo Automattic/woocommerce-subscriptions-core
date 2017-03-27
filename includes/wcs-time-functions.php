@@ -831,7 +831,7 @@ function wcs_format_datetime( $date, $format = '' ) {
 
 	if ( function_exists( 'wc_date_format' ) ) { // WC 3.0+
 		$formatted_datetime = wc_date_format( $date, $format );
-	} else { // WC < 2.7
+	} else { // WC < 3.0
 
 		if ( ! $format ) {
 			$format = wc_date_format();
