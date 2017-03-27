@@ -24,7 +24,7 @@ $order_post = wcs_get_objects_property( $order, 'post' );
 	</td>
 	<td>
 		<?php
-		$timestamp_gmt = wcs_date_to_time( wcs_get_objects_property( $order, 'date_created' ) );
+		$timestamp_gmt = wcs_get_objects_property( $order, 'date_created' )->getTimestamp();
 		if ( $timestamp_gmt > 0 ) {
 			// translators: php date format
 			$t_time          = get_the_time( _x( 'Y/m/d g:i:s A', 'post date', 'woocommerce-subscriptions' ), $order_post );
