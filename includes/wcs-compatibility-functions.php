@@ -136,21 +136,34 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 			}
 			break;
 
+		// Always return a PHP DateTime object in site timezone (or null), the same thing the WC_Order::get_date_created() method returns in WC 3.0+ to make it easier to migrate away from WC < 3.0
 		case 'date_created' :
 		case 'order_date' :
 		case 'date' :
 			if ( method_exists( $object, 'get_date_created' ) ) { // WC 2.7+
-				$value = date( 'Y-m-d H:i:s', $object->get_date_created() ); // This is in site time as a timestamp :sob:
-			} else { // WC 2.1-2.6
-				$value = $object->post->post_date; // Because $object->get_date_created() is in site time, we also need to use site time here :sob::sob::sob:
+				$value = $object->get_date_created();
+			} else {
+				// Base the value off tht GMT value when possible and then set the DateTime's timezone based on the current site's timezone to avoid incorrect values when the timezone has changed
+				if ( '0000-00-00 00:00:00' != $object->post->post_date_gmt ) {
+					$value = new WC_DateTime( $object->post->post_date_gmt, new DateTimeZone( 'UTC' ) );
+					$value->setTimezone( new DateTimeZone( wc_timezone_string() ) );
+				} else {
+					$value = new WC_DateTime( $object->post->post_date, new DateTimeZone( wc_timezone_string() ) );
+				}
 			}
 			break;
 
+		// Always return a PHP DateTime object in site timezone (or null), the same thing the getter returns in WC 3.0+ to make it easier to migrate away from WC < 3.0
 		case 'date_paid' :
 			if ( method_exists( $object, 'get_date_paid' ) ) { // WC 2.7+
-				$value = date( 'Y-m-d H:i:s', $object->get_date_paid() ); // This is in site time as a timestamp :sob:
-			} elseif ( isset( $object->paid_date ) ) { // WC 2.1-2.6
-				$value = $object->paid_date;
+				$value = $object->get_date_paid();
+			} else {
+				if ( ! empty( $object->paid_date ) ) {
+					// Because the paid_date post meta value was set in the site timezone at the time it was set, this won't always be correct, but is the best we can do with WC < 3.0
+					$value = new WC_DateTime( $object->paid_date, new DateTimeZone( wc_timezone_string() ) );
+				} else {
+					$value = null;
+				}
 			}
 			break;
 
@@ -259,6 +272,8 @@ function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta
 	if ( 'save' === $save ) {
 		if ( is_callable( array( $object, 'save' ) ) ) { // WC 2.7+
 			$object->save();
+		} elseif ( 'date_created' == $key ) { // WC < 2.7+
+			wp_update_post( array( 'ID' => wcs_get_objects_property( $object, 'id' ), 'post_date' => get_date_from_gmt( $value ), 'post_date_gmt' => $value ) );
 		} elseif ( 'name' === $key ) { // the replacement for post_title added in 2.7, need to update post_title not post meta
 			wp_update_post( array( 'ID' => wcs_get_objects_property( $object, 'id' ), 'post_title' => $value ) );
 		} else {

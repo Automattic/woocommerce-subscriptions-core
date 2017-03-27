@@ -1158,7 +1158,7 @@ class WC_Subscriptions_Synchroniser {
 			// Don't prematurely set the first payment date when manually adding a subscription from the admin
 			if ( ! is_admin() || 'active' == $subscription->get_status() ) {
 
-				$first_payment_timestamp = self::calculate_first_payment_date( $product_id, 'timestamp', wcs_get_objects_property( $order, 'date' ) );
+				$first_payment_timestamp = self::calculate_first_payment_date( $product_id, 'timestamp', wcs_get_datetime_utc_string( wcs_get_objects_property( $order, 'date_created' ) ) );
 
 				if ( 0 != $first_payment_timestamp ) {
 					$first_payment_date = ( 'mysql' == $type ) ? gmdate( 'Y-m-d H:i:s', $first_payment_timestamp ) : $first_payment_timestamp;

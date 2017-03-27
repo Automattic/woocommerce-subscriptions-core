@@ -426,7 +426,7 @@ class WC_Subscriptions_Manager {
 		}
 
 		$args = wp_parse_args( $args, array(
-			'start_date'  => wcs_get_objects_property( $order, 'date' ),
+			'start_date'  => wcs_get_datetime_utc_string( wcs_get_objects_property( $order, 'date_created' ) ), // get_date_created() can return null, but if it does, we have an error anyway
 			'expiry_date' => '',
 		) );
 
@@ -659,7 +659,7 @@ class WC_Subscriptions_Manager {
 			foreach ( $new_subscription_details as $meta_key => $meta_value ) {
 				switch ( $meta_key ) {
 					case 'start_date' :
-						$subscription->update_dates( array( 'start' => $meta_value ) );
+						$subscription->update_dates( array( 'date_created' => $meta_value ) );
 						break;
 					case 'trial_expiry_date' :
 						$subscription->update_dates( array( 'trial_end' => $meta_value ) );
@@ -1258,7 +1258,7 @@ class WC_Subscriptions_Manager {
 	public static function get_last_payment_date( $subscription_key, $user_id = '', $type = 'mysql' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_date( "last_payment" )' );
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
-		$last_payment_date = ( 'mysql' == $type ) ? $subscription->get_date( 'last_payment' ) : $subscription->get_time( 'last_payment' );
+		$last_payment_date = ( 'mysql' == $type ) ? $subscription->get_date( 'last_order_date_created' ) : $subscription->get_time( 'last_order_date_created' );
 		return apply_filters( 'woocommerce_subscription_last_payment_date', $last_payment_date, $subscription_key, $user_id, $type );
 	}
 

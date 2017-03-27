@@ -132,7 +132,7 @@ class WCS_Filter_Deprecator extends WCS_Hook_Deprecator {
 			// Old arg spec: $next_payment_date, $order, $product_id, $type, $from_date, $from_date_arg
 			case 'woocommerce_subscriptions_calculated_next_payment_date' :
 				$subscription = $new_callback_args[1];
-				$last_payment = $subscription->get_date( 'last_payment' );
+				$last_payment = $subscription->get_date( 'last_order_date_created' );
 				$return_value = apply_filters( $old_hook, $return_value, self::get_order( $subscription ), self::get_product_id( $subscription ), 'mysql', $last_payment, $last_payment );
 				break;
 

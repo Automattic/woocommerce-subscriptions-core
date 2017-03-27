@@ -198,14 +198,12 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 
 		$order = $subscription->get_parent();
 
-		if ( ! empty( $order ) && ( null !== wcs_get_objects_property( $order, 'date_paid' ) || $order->has_status( $subscription->get_paid_order_statuses() ) ) ) {
-			$parent_order_payment_date = wcs_get_objects_property( $order, 'date_paid' );
+		if ( ! empty( $order ) ) {
+			$parent_order_created_date = wcs_get_objects_property( $order, 'date_created' );
 
-			if ( is_null( $parent_order_payment_date ) ) {
-				$parent_order_payment_date = wcs_get_objects_property( $order, 'date_created' );
+			if ( ! is_null( $parent_order_created_date ) ) {
+				$completed_payments[] = wcs_get_datetime_utc_string( $parent_order_created_date );
 			}
-
-			$completed_payments[] = $parent_order_payment_date;
 		}
 
 		$paid_renewal_order_ids = get_posts( array(
@@ -226,7 +224,10 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 		) );
 
 		foreach ( $paid_renewal_order_ids as $paid_renewal_order_id ) {
-			$completed_payments[] = wcs_get_objects_property( wc_get_order( $paid_renewal_order_id ), 'date_created' );
+			$date_created = wcs_get_objects_property( wc_get_order( $paid_renewal_order_id ), 'date_created' );
+			if ( ! is_null( $date_created ) ) {
+				$completed_payments[] = wcs_get_datetime_utc_string( $date_created );
+			}
 		}
 	}
 
@@ -244,10 +245,10 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 			// Subscription billing details
 			'period'             => $subscription->get_billing_period(),
 			'interval'           => $subscription->get_billing_interval(),
-			'length'             => wcs_estimate_periods_between( ( 0 == $subscription->get_time( 'trial_end' ) ) ? $subscription->get_time( 'start' ) : $subscription->get_time( 'trial_end' ), $subscription->get_time( 'end' ) + 120, $subscription->get_billing_period(), 'floor' ) / $subscription->get_billing_interval(), // Since subscriptions no longer have a length, we need to calculate the length given the start and end dates and the period.
+			'length'             => wcs_estimate_periods_between( ( 0 == $subscription->get_time( 'trial_end' ) ) ? $subscription->get_time( 'date_created' ) : $subscription->get_time( 'trial_end' ), $subscription->get_time( 'end' ) + 120, $subscription->get_billing_period(), 'floor' ) / $subscription->get_billing_interval(), // Since subscriptions no longer have a length, we need to calculate the length given the start and end dates and the period.
 
 			// Subscription dates
-			'start_date'         => $subscription->get_date( 'start' ),
+			'start_date'         => $subscription->get_date( 'date_created' ),
 			'expiry_date'        => $subscription->get_date( 'end' ),
 			'end_date'           => $subscription->has_status( wcs_get_subscription_ended_statuses() ) ? $subscription->get_date( 'end' ) : 0,
 			'trial_expiry_date'  => $subscription->get_date( 'trial_end' ),
@@ -256,7 +257,7 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 			'failed_payments'    => $subscription->get_failed_payment_count(),
 			'completed_payments' => $completed_payments,
 			'suspension_count'   => $subscription->get_suspension_count(),
-			'last_payment_date'  => $subscription->get_date( 'last_payment' ),
+			'last_payment_date'  => $subscription->get_date( 'last_order_date_created' ),
 		);
 
 	} else {

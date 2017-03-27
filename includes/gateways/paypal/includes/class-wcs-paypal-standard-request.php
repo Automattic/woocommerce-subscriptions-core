@@ -101,7 +101,7 @@ class WCS_PayPal_Standard_Request {
 
 			$price_per_period       = $subscription->get_total();
 			$subscription_interval  = $subscription->get_billing_interval();
-			$start_timestamp        = $subscription->get_time( 'start' );
+			$start_timestamp        = $subscription->get_time( 'date_created' );
 			$trial_end_timestamp    = $subscription->get_time( 'trial_end' );
 			$next_payment_timestamp = $subscription->get_time( 'next_payment' );
 
