@@ -139,7 +139,7 @@ class WC_Subscriptions_Product {
 				$child_product = wc_get_product( $child_product_id );
 
 				$child_price = $child_product->get_price();
-				$sign_up_fee = $child_product->get_sign_up_fee();
+				$sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( $child_product );
 				$has_trial   = ( self::get_trial_length( $child_product ) > 0 ) ? true : false;
 
 				// Make sure we have the *real* price (i.e. total initial payment)
