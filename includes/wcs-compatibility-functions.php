@@ -145,7 +145,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 			break;
 
 		// Always return a PHP DateTime object in site timezone (or null), the same thing the WC_Order::get_date_created() method returns in WC 3.0+ to make it easier to migrate away from WC < 3.0
-		tcase 'date_created' :
+		case 'date_created' :
 		case 'order_date' :
 		case 'date' :
 			if ( method_exists( $object, 'get_date_created' ) ) { // WC 2.7+

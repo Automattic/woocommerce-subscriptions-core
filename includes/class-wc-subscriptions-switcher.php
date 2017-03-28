@@ -1954,9 +1954,6 @@ class WC_Subscriptions_Switcher {
 
 			}
 
-			// We must re-read the subscription object because we modified the order_item_type of some items
-			$subscription = wcs_get_subscription( $subscription_id );
-
 			if ( ! empty( $add_note ) ) {
 				// translators: 1$: old item, 2$: new item when switching
 				$subscription->add_order_note( $add_note );
