@@ -2299,6 +2299,7 @@ class WC_Subscription extends WC_Order {
 					'last_order_date_created',
 					'last_order_date_paid',
 					'last_order_date_completed',
+					'payment_retry',
 				)
 			), $this );
 		}
