@@ -191,7 +191,13 @@ class WC_Subscriptions_Renewal_Order {
 		);
 
 		foreach ( $order_items as $order_item_id => $item ) {
-			$order_items[ $order_item_id ]['item_meta'] = array_diff_key( $item['item_meta'], $switched_order_item_keys );
+			if ( is_callable( array( $item, 'delete_meta_data' ) ) ) { // WC 3.0+
+				foreach( $switched_order_item_keys as $switch_meta_key => $value ) {
+					$item->delete_meta_data( $switch_meta_key );
+				}
+			} else { // WC 2.6
+				$order_items[ $order_item_id ]['item_meta'] = array_diff_key( $item['item_meta'], $switched_order_item_keys );
+			}
 		}
 
 		return $order_items;
@@ -294,7 +300,7 @@ class WC_Subscriptions_Renewal_Order {
 		$subscriptions = wcs_get_subscriptions_for_renewal_order( $renewal_order );
 		$subscription  = array_pop( $subscriptions );
 
-		if ( null === $subscription->get_parent_id() ) { // There is no original order
+		if ( false == $subscription->get_parent_id() ) { // There is no original order
 			$parent_order = null;
 		} else {
 			$parent_order = $subscription->get_parent();

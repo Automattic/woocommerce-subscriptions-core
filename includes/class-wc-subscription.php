@@ -61,14 +61,17 @@ class WC_Subscription extends WC_Order {
 		'cancelled_email_sent'    => false,
 
 		// Extra data that requires manual getting/setting because we don't define getters/setters for it
-		'schedule_trial_end'      => '',
-		'schedule_next_payment'   => '',
-		'schedule_cancelled'      => '',
-		'schedule_end'            => '',
-		'schedule_payment_retry'  => '',
+		'schedule_trial_end'      => null,
+		'schedule_next_payment'   => null,
+		'schedule_cancelled'      => null,
+		'schedule_end'            => null,
+		'schedule_payment_retry'  => null,
 
 		'switch_data'             => array(),
 	);
+
+	/** @private array The set of valid date types that can be set on the subscription */
+	protected $valid_date_types = array();
 
 	/**
 	 * List of properties deprecated for direct access due to WC 2.7+ & CRUD.
@@ -194,7 +197,7 @@ class WC_Subscription extends WC_Order {
 
 				case 'requires_manual_renewal' :
 					$function = 'WC_Subscription::get_requires_manual_renewal()';
-					$value    = $this->get_requires_manual_renewal();
+					$value    = $this->get_requires_manual_renewal() ? 'true' : 'false'; // We now use booleans for getter return values, so we need to convert it when being accessed via the old property approach to the string value returned
 					break;
 
 				case 'payment_gateway' :
@@ -243,7 +246,7 @@ class WC_Subscription extends WC_Order {
 			$needs_payment = true;
 
 		// Now make sure the parent order doesn't need payment
-		} elseif ( false != $this->get_parent() && ( $this->get_parent()->needs_payment() || $this->get_parent()->has_status( 'on-hold' ) ) ) {
+		} elseif ( ( $parent_order = $this->get_parent() ) && ( $parent_order->needs_payment() || $parent_order->has_status( 'on-hold' ) ) ) {
 
 			$needs_payment = true;
 
@@ -269,7 +272,7 @@ class WC_Subscription extends WC_Order {
 
 			if ( ! empty( $last_order_id ) ) {
 
-				$order = new WC_Order( $last_order_id[0] );
+				$order = wc_get_order( $last_order_id[0] );
 
 				if ( $order->needs_payment() || $order->has_status( array( 'on-hold', 'failed', 'cancelled' ) ) ) {
 					$needs_payment = true;
@@ -421,8 +424,7 @@ class WC_Subscription extends WC_Order {
 
 			try {
 
-				wp_update_post( array( 'ID' => $this->get_id(), 'post_status' => $new_status_key ) );
-				$this->post_status = $new_status_key;
+				$this->set_status( $new_status, $note, $manual );
 
 				switch ( $new_status ) {
 
@@ -493,18 +495,8 @@ class WC_Subscription extends WC_Order {
 					break;
 				}
 
-				// dynamic hooks for convenience
-				do_action( 'woocommerce_subscription_status_' . $new_status, $this );
-				do_action( 'woocommerce_subscription_status_' . $old_status . '_to_' . $new_status, $this );
-
-				// Trigger a hook with params we want
-				do_action( 'woocommerce_subscription_status_updated', $this, $new_status, $old_status );
-
-				// Trigger a hook with params matching WooCommerce's 'woocommerce_order_status_changed' hook so functions attached to it can be attached easily to subscription status changes
-				do_action( 'woocommerce_subscription_status_changed', $this->get_id(), $old_status, $new_status );
-
-				// translators: $1 note why the status changes (if any), $2: old status, $3: new status
-				$this->add_order_note( trim( sprintf( __( '%1$s Status changed from %2$s to %3$s.', 'woocommerce-subscriptions' ), $note, wcs_get_subscription_status_name( $old_status ), wcs_get_subscription_status_name( $new_status ) ) ), 0, $manual );
+				// Make sure status is saved when WC 2.7+ is active, similar to WC_Order::update_status() with WC 2.7+ - set_status() can be used to avoid saving.
+				$this->save();
 
 			} catch ( Exception $e ) {
 				// Log any exceptions to a WC logger
@@ -515,15 +507,50 @@ class WC_Subscription extends WC_Order {
 				$log->add( 'wcs-update-status-failures', $log_entry );
 
 				// Make sure the old status is restored
-				wp_update_post( array( 'ID' => $this->get_id(), 'post_status' => $old_status_key ) );
-				$this->post_status = $old_status_key;
+				$this->set_status( $old_status_key, $note, $manual );
 
 				$this->add_order_note( sprintf( __( 'Unable to change subscription status to "%s". Exception: %s', 'woocommerce-subscriptions' ), $new_status, $e->getMessage() ) );
+
+				// Make sure status is saved when WC 2.7+ is active, similar to WC_Order::update_status() with WC 2.7+ - set_status() can be used to avoid saving.
+				$this->save();
 
 				do_action( 'woocommerce_subscription_unable_to_update_status', $this, $new_status, $old_status );
 
 				throw $e;
 			}
+		}
+	}
+
+	/**
+	 * Handle the status transition.
+	 */
+	protected function status_transition() {
+
+		if ( $this->status_transition ) {
+			do_action( 'woocommerce_subscription_status_' . $this->status_transition['to'], $this );
+
+			if ( ! empty( $this->status_transition['from'] ) ) {
+				/* translators: 1: old subscription status 2: new subscription status */
+				$transition_note = sprintf( __( 'Status changed from %1$s to %2$s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $this->status_transition['from'] ), wcs_get_subscription_status_name( $this->status_transition['to'] ) );
+
+				do_action( 'woocommerce_subscription_status_' . $this->status_transition['from'] . '_to_' . $this->status_transition['to'], $this );
+
+				// Trigger a hook with params we want
+				do_action( 'woocommerce_subscription_status_updated', $this, $this->status_transition['to'], $this->status_transition['from'] );
+
+				// Trigger a hook with params matching WooCommerce's 'woocommerce_order_status_changed' hook so functions attached to it can be attached easily to subscription status changes
+				do_action( 'woocommerce_subscription_status_changed', $this->get_id(), $this->status_transition['from'], $this->status_transition['to'], $this );
+
+			} else {
+				/* translators: %s: new order status */
+				$transition_note = sprintf( __( 'Status set to %s.', 'woocommerce' ), wcs_get_subscription_status_name( $this->status_transition['to'] ) );
+			}
+
+			// Note the transition occured
+			$this->add_order_note( trim( $this->status_transition['note'] . ' ' . $transition_note ), 0, $this->status_transition['manual'] );
+
+			// This has ran, so reset status transition variable
+			$this->status_transition = false;
 		}
 	}
 
@@ -539,7 +566,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function is_manual() {
 
-		if ( WC_Subscriptions::is_duplicate_site() || false === wc_get_payment_gateway_by_order( $this ) || 'true' == $this->get_requires_manual_renewal() || true === $this->get_requires_manual_renewal() ) {
+		if ( WC_Subscriptions::is_duplicate_site() || true === $this->get_requires_manual_renewal() || false === wc_get_payment_gateway_by_order( $this ) ) {
 			$is_manual = true;
 		} else {
 			$is_manual = false;
@@ -617,7 +644,7 @@ class WC_Subscription extends WC_Order {
 		// If not cached, calculate the completed payment count otherwise return the cached version
 		if ( false === $this->cached_completed_payment_count ) {
 
-			$completed_payment_count = ( false != $this->get_parent() && ( 0 !== wcs_get_objects_property( $this->get_parent(), 'date_paid' ) || $this->get_parent()->has_status( $this->get_paid_order_statuses() ) ) ) ? 1 : 0;
+			$completed_payment_count = ( ( $parent_order = $this->get_parent() ) && ( 0 !== wcs_get_objects_property( $parent_order, 'date_paid' ) || $parent_order->has_status( $this->get_paid_order_statuses() ) ) ) ? 1 : 0;
 
 			// Get all renewal orders - for large sites its more efficient to find the two different sets of renewal orders below using post__in than complicated meta queries
 			$renewal_orders = get_posts( array(
@@ -686,7 +713,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_failed_payment_count() {
 
-		$failed_payment_count = ( false != $this->get_parent() && $this->get_parent()->has_status( 'wc-failed' ) ) ? 1 : 0;
+		$failed_payment_count = ( ( $parent_order = $subscription->get_parent() ) && $parent_order->has_status( 'wc-failed' ) ) ? 1 : 0;
 
 		$failed_renewal_orders = get_posts( array(
 			'posts_per_page' => -1,
@@ -722,7 +749,7 @@ class WC_Subscription extends WC_Order {
 	 * @since 2.0
 	 */
 	public function get_total_initial_payment() {
-		$initial_total = ( false != $this->get_parent() ) ? $this->get_parent()->get_total() : 0;
+		$initial_total = ( $parent_order = $this->get_parent() ) ? $parent_order->get_total() : 0;
 		return apply_filters( 'woocommerce_subscription_total_initial_payment', $initial_total, $this );
 	}
 
@@ -825,15 +852,20 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Set the manual renewal flag on the subscription.
 	 *
-	 * @return string
+	 * The manual renewal flag is stored in database as string 'true' or 'false' when set, and empty string when not set
+	 * (which means it doesn't require manual renewal), but we want to consistently use it via get/set as a boolean,
+	 * for sanity's sake.
+	 *
+	 * @param bool $value
 	 */
 	public function set_requires_manual_renewal( $value ) {
 
-		// Support boolean strings for backward compatibility with $this->update_manual()
-		if ( 'true' === $value ) {
-			$value = true;
-		} elseif ( 'false' === $value ) {
-			$value = false;
+		if ( ! is_bool( $value ) ) {
+			if ( 'false' === $value || '' === $value ) {
+				$value = false;
+			} else { // default to require manual renewal for all other values, which may often includes string 'true' or some invalid value
+				$value = true;
+			}
 		}
 
 		$this->set_prop( 'requires_manual_renewal', $value );
@@ -862,39 +894,56 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Get the MySQL formatted date for a specific piece of the subscriptions schedule
 	 *
-	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'
+	 * @param string $date_type 'date_created', 'trial_end', 'next_payment', 'last_order_date_created' or 'end'
 	 * @param string $timezone The timezone of the $datetime param, either 'gmt' or 'site'. Default 'gmt'.
 	 */
 	public function get_date( $date_type, $timezone = 'gmt' ) {
 
-		// Accept date types with a 'schedule_' prefix, like 'schedule_next_payment' because that's the key used for props
-		$date_type = str_replace( 'schedule_', '', $date_type );
-
-		// Accept dates with a '_date' suffix, like 'next_payment_date' or 'start_date'
-		$date_type = str_replace( '_date', '', $date_type );
+		$date_type = wcs_normalise_date_type_key( $date_type );
 
 		if ( empty( $date_type ) ) {
 			$date = 0;
 		} else {
 			switch ( $date_type ) {
-				case 'start' :
-					$date = wcs_get_objects_property( $this, 'date_created' );
+				case 'date_created' :
+					$date = $this->get_date_created();
 					break;
-				case 'last_payment' :
-					$date = $this->get_last_payment_date();
+				case 'date_modified' :
+					$date = $this->get_date_modified();
+					break;
+				case 'date_paid' :
+					$date = $this->get_date_paid();
+					break;
+				case 'date_completed' :
+					$date = $this->get_date_completed();
+					break;
+				case 'last_order_date_created' :
+					$date = $this->get_related_orders_date( 'date_created', 'last' );
+					break;
+				case 'last_order_date_paid' :
+					$date = $this->get_related_orders_date( 'date_paid', 'last' );
+					break;
+				case 'last_order_date_completed' :
+					$date = $this->get_related_orders_date( 'date_completed', 'last' );
 					break;
 				default :
 					$date = $this->get_date_prop( $date_type );
 					break;
 			}
 
-			if ( empty( $date ) ) {
+			if ( is_null( $date ) ) {
 				$date = 0;
 			}
 		}
 
-		if ( 0 != $date && 'gmt' != strtolower( $timezone ) ) {
-			$date = get_date_from_gmt( $date );
+		if ( is_a( $date, 'DateTime' ) ) {
+
+			// WC's return values use site timezone by default
+			if ( 'gmt' === strtolower( $timezone ) ) {
+				$date->setTimezone( new DateTimeZone( 'UTC' ) );
+			}
+
+			$date = $date->format( 'Y-m-d H:i:s' );
 		}
 
 		return apply_filters( 'woocommerce_subscription_get_' . $date_type . '_date', $date, $this, $timezone );
@@ -903,34 +952,143 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Get the stored date.
 	 *
-	 * Only used for WC 2.7 compatibilty so that WC_Subscription_Legacy can override.
+	 * Used for WC 3.0 compatibilty and for WC_Subscription_Legacy to override.
 	 *
-	 * @param string $date_type 'trial_end', 'next_payment', 'last_payment', 'cancelled', 'payment_retry' or 'end'
+	 * @param string $date_type 'trial_end', 'next_payment', 'last_order_date_created', 'cancelled', 'payment_retry' or 'end'
+	 * @return WC_DateTime|NULL object if the date is set or null if there is no date.
 	 */
 	protected function get_date_prop( $date_type ) {
-		return $this->get_prop( sprintf( 'schedule_%s', $date_type ) );
+		return $this->get_prop( $this->get_date_prop_key( $date_type ) );
 	}
 
 	/**
 	 * Set the stored date.
 	 *
-	 * Only used for WC 2.7 compatibilty so that WC_Subscription_Legacy can override.
+	 * Used for WC 3.0 compatibilty and for WC_Subscription_Legacy to override.
 	 *
-	 * @param string $date_type 'trial_end', 'next_payment', 'last_payment', 'cancelled', 'payment_retry' or 'end'
-	 * @param string $value MySQL date/time string in GMT/UTC timezone.
+	 * @param string $date_type 'trial_end', 'next_payment', 'cancelled', 'payment_retry' or 'end'
+	 * @param string|integer|null $date UTC timestamp, or ISO 8601 DateTime. If the DateTime string has no timezone or offset, WordPress site timezone will be assumed. Null if their is no date.
 	 */
 	protected function set_date_prop( $date_type, $value ) {
-		$this->set_prop( sprintf( 'schedule_%s', $date_type ), $value );
+		parent::set_date_prop( $this->get_date_prop_key( $date_type ), $value );
+	}
+
+	/**
+	 * Get the key used to refer to the date type in the set of props
+	 *
+	 * @param string $date_type 'trial_end', 'next_payment', 'last_order_date_created', 'cancelled', 'payment_retry' or 'end'
+	 * @return string The key used to refer to the date in props
+	 */
+	protected function get_date_prop_key( $date_type ) {
+		$prefixed_date_type = wcs_maybe_prefix_key( $date_type, 'schedule_' );
+		return array_key_exists( $prefixed_date_type, $this->extra_data ) ? $prefixed_date_type : $date_type;
+	}
+
+	/**
+	 * Get date_paid prop of most recent related order that has been paid.
+	 *
+	 * A subscription's paid date is actually determined by the most recent related order,
+	 * with a paid date set, not a prop on the subscription itself.
+	 *
+	 * @param  string $context
+	 * @return WC_DateTime|NULL object if the date is set or null if there is no date.
+	 */
+	public function get_date_paid( $context = 'view' ) {
+		return $this->get_related_orders_date( 'date_paid' );
+	}
+
+	/**
+	 * Set date_paid.
+	 *
+	 * A subscription's paid date is actually determined by the last order, not a prop on WC_Subscription.
+	 *
+	 * @param  string|integer|null $date UTC timestamp, or ISO 8601 DateTime. If the DateTime string has no timezone or offset, WordPress site timezone will be assumed. Null if their is no date.
+	 * @throws WC_Data_Exception
+	 */
+	public function set_date_paid( $date = null ) {
+		$this->set_last_order_date( 'date_paid', $date );
+	}
+
+	/**
+	 * Get date_completed.
+	 *
+	 * A subscription's completed date is actually determined by the last order, not a prop.
+	 *
+	 * @param string $context
+	 * @return WC_DateTime|NULL object if the date is set or null if there is no date.
+	 */
+	public function get_date_completed( $context = 'view' ) {
+		return $this->get_related_orders_date( 'date_completed' );
+	}
+
+	/**
+	 * Set date_completed.
+	 *
+	 * A subscription's completed date is actually determined by the last order, not a prop.
+	 *
+	 * @param  string|integer|null $date UTC timestamp, or ISO 8601 DateTime. If the DateTime string has no timezone or offset, WordPress site timezone will be assumed. Null if their is no date.
+	 * @throws WC_Data_Exception
+	 */
+	public function set_date_completed( $date = null ) {
+		$this->set_last_order_date( 'date_completed', $date );
+	}
+
+	/**
+	 * Get a certain date type for the most recent order on the subscription with that date type,
+	 * or the last order, if the order type is specified as 'last'.
+	 *
+	 * @since 2.2.0
+	 * @param string $date_type Any valid WC 3.0 date property, including 'date_paid', 'date_completed', 'date_created', or 'date_modified'
+	 * @param string $order_type The type of orders to return, can be 'last', 'parent', 'switch', 'renewal' or 'all'. Default 'all'. Use 'last' to only check the last order.
+	 * @return WC_DateTime|NULL object if the date is set or null if there is no date.
+	 */
+	protected function get_related_orders_date( $date_type, $order_type = 'all' ) {
+
+		$date = null;
+
+		if ( 'last' === $order_type ) {
+			$last_order = $this->get_last_order( 'all' );
+			$date       = ( ! $last_order ) ? null : wcs_get_objects_property( $last_order, $date_type );
+		} else {
+			// Loop over orders until we find a valid date of this type or run out of related orders
+			foreach ( $this->get_related_orders( 'ids', $order_type ) as $related_order_id ) {
+				$related_order = wc_get_order( $related_order_id );
+				$date          = ( ! $related_order ) ? null : wcs_get_objects_property( $related_order, $date_type );
+				if ( is_a( $date, 'WC_Datetime' ) ) {
+					break;
+				}
+			}
+		}
+
+		return $date;
+	}
+
+	/**
+	 * Set a certain date type for the last order on the subscription.
+	 *
+	 * @since 2.1.4.
+	 * @param string $date_type One of 'date_paid', 'date_completed', 'date_modified', or 'date_created'.
+	 * @return WC_DateTime|NULL object if the date is set or null if there is no date.
+	 */
+	protected function set_last_order_date( $date_type, $date = null ) {
+
+		$setter     = 'set_' . $date_type;
+		$last_order = $this->get_last_order( 'all' );
+
+		if ( $last_order && is_callable( array( $last_order, $setter ) ) ) {
+			$last_order->{$setter}( $date );
+			$last_order->save();
+		}
 	}
 
 	/**
 	 * Returns a string representation of a subscription date in the site's time (i.e. not GMT/UTC timezone).
 	 *
-	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment', 'end' or 'end_of_prepaid_term'
+	 * @param string $date_type 'date_created', 'trial_end', 'next_payment', 'last_order_date_created', 'end' or 'end_of_prepaid_term'
 	 */
 	public function get_date_to_display( $date_type = 'next_payment' ) {
 
-		$date_type = str_replace( '_date', '', $date_type );
+		$date_type = wcs_normalise_date_type_key( $date_type );
 
 		$timestamp_gmt = $this->get_time( $date_type, 'gmt' );
 
@@ -974,16 +1132,13 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Get the timestamp for a specific piece of the subscriptions schedule
 	 *
-	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment', 'end' or 'end_of_prepaid_term'
+	 * @param string $date_type 'date_created', 'trial_end', 'next_payment', 'last_order_date_created', 'end' or 'end_of_prepaid_term'
 	 * @param string $timezone The timezone of the $datetime param. Default 'gmt'.
 	 */
 	public function get_time( $date_type, $timezone = 'gmt' ) {
 
 		$datetime = $this->get_date( $date_type, $timezone );
-
-		if ( 0 !== $datetime ) {
-			$datetime = wcs_date_to_time( $datetime );
-		}
+		$datetime = wcs_date_to_time( $datetime );
 
 		return $datetime;
 	}
@@ -994,7 +1149,7 @@ class WC_Subscription extends WC_Order {
 	 * Because dates are interdependent on each other, this function will take an array of dates, make sure that all
 	 * dates are in the right order in the right format, that there is at least something to update.
 	 *
-	 * @param array $dates array containing dates with keys: 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'. Values are time
+	 * @param array $dates array containing dates with keys: 'date_created', 'trial_end', 'next_payment', 'last_order_date_created' or 'end'. Values are MySQL formatted date/time strings in UTC timezone.
 	 * @param string $timezone The timezone of the $datetime param. Default 'gmt'.
 	 */
 	public function update_dates( $dates, $timezone = 'gmt' ) {
@@ -1007,29 +1162,52 @@ class WC_Subscription extends WC_Order {
 
 		foreach ( $dates as $date_type => $datetime ) {
 
+			if ( $datetime == $this->get_date( $date_type ) ) {
+				continue;
+			}
+
 			// Delete dates with a 0 date time
 			if ( 0 == $datetime ) {
-				if ( 'last_payment' != $date_type && 'start' != $date_type ) {
+				if ( ! in_array( $date_type, array( 'date_created', 'last_order_date_created', 'last_order_date_modified' ) ) ) {
 					$this->delete_date( $date_type );
 				}
 				continue;
 			}
 
-			if ( $datetime == $this->get_date( $date_type ) ) {
-				continue;
-			}
+			// WC_Data::set_date_prop() uses site timezone for MySQL date/time strings, but we have a string in UTC, so convert it to a timestamp, which WC_Data will treat as being in UTC. Or if we don't have a date, set it to null so WC_Data deletes it.
+			$utc_timestamp = ( 0 === $datetime ) ? null : wcs_date_to_time( $datetime );
 
 			switch ( $date_type ) {
-				case 'start' :
-					$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET post_date = %s, post_date_gmt = %s WHERE ID = %s", get_date_from_gmt( $datetime ), $datetime, $this->get_id() ) ); // Don't use wp_update_post() to avoid infinite loops here
+				case 'date_created' :
+					$this->set_date_created( $utc_timestamp );
 					$is_updated = true;
 					break;
-				case 'last_payment' :
-					$this->update_last_payment_date( $datetime );
+				case 'date_modified' :
+					$this->set_date_modified( $utc_timestamp );
+					$is_updated = true;
+					break;
+				case 'date_paid' :
+					$this->set_date_paid( $utc_timestamp );
+					$is_updated = true;
+					break;
+				case 'date_completed' :
+					$this->set_date_completed( $utc_timestamp );
+					$is_updated = true;
+					break;
+				case 'last_order_date_created' :
+					$this->set_last_order_date( 'date_created', $utc_timestamp );
+					$is_updated = true;
+					break;
+				case 'last_order_date_paid' :
+					$this->set_last_order_date( 'date_paid', $utc_timestamp );
+					$is_updated = true;
+					break;
+				case 'last_order_date_completed' :
+					$this->set_last_order_date( 'date_completed', $utc_timestamp );
 					$is_updated = true;
 					break;
 				default :
-					$this->set_date_prop( $date_type, $datetime );
+					$this->set_date_prop( $date_type, $utc_timestamp );
 					$is_updated = true;
 					break;
 			}
@@ -1043,23 +1221,27 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Remove a date from a subscription.
 	 *
-	 * @param string $date_type 'trial_end', 'next_payment' or 'end'. The 'start' and 'last_payment' date types will throw an exception.
+	 * @param string $date_type 'trial_end', 'next_payment' or 'end'. The 'date_created' and 'last_order_date_created' date types will throw an exception.
 	 */
 	public function delete_date( $date_type ) {
 
-		// Accept dates with a '_date' suffix, like 'next_payment_date' or 'start_date'
-		$date_type = str_replace( '_date', '', $date_type );
+		$date_type = wcs_normalise_date_type_key( $date_type );
 
 		// Make sure some dates are before next payment date
-		if ( in_array( $date_type, array( 'start', 'last_payment' ) ) ) {
-			switch ( $date_type ) {
-				case 'start' :
-					$message = __( 'The start date of a subscription can not be deleted, only updated.', 'woocommerce-subscriptions' );
-				break;
-				case 'last_payment' :
-					$message = __( 'The last payment date of a subscription can not be deleted. You must delete the order.', 'woocommerce-subscriptions' );
-				break;
-			}
+		switch ( $date_type ) {
+			case 'date_created' :
+				$message = __( 'The start date of a subscription can not be deleted, only updated.', 'woocommerce-subscriptions' );
+			break;
+			case 'last_order_date_created' :
+			case 'last_order_date_modified' :
+				$message = sprintf( __( 'The %s date of a subscription can not be deleted. You must delete the order.', 'woocommerce-subscriptions' ), $date_type );
+			break;
+			default :
+				$message = '';
+			break;
+		}
+
+		if ( ! empty( $message ) ) {
 			throw new Exception( $message );
 		}
 
@@ -1071,12 +1253,12 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Check if a given date type can be updated for this subscription.
 	 *
-	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'
+	 * @param string $date_type 'date_created', 'trial_end', 'next_payment', 'last_order_date_created' or 'end'
 	 */
 	public function can_date_be_updated( $date_type ) {
 
 		switch ( $date_type ) {
-			case 'start' :
+			case 'date_created' :
 				if ( $this->has_status( array( 'auto-draft', 'pending' ) ) ) {
 					$can_date_be_updated = true;
 				} else {
@@ -1099,7 +1281,7 @@ class WC_Subscription extends WC_Order {
 					$can_date_be_updated = false;
 				}
 				break;
-			case 'last_payment' :
+			case 'last_order_date_created' :
 				$can_date_be_updated = true;
 				break;
 			default :
@@ -1165,10 +1347,10 @@ class WC_Subscription extends WC_Order {
 		$next_payment_date = 0;
 
 		// If the subscription is not active, there is no next payment date
-		$start_time        = $this->get_time( 'start' );
+		$start_time        = $this->get_time( 'date_created' );
 		$next_payment_time = $this->get_time( 'next_payment' );
 		$trial_end_time    = $this->get_time( 'trial_end' );
-		$last_payment_time = $this->get_time( 'last_payment' );
+		$last_payment_time = $this->get_time( 'last_order_date_created' );
 		$end_time          = $this->get_time( 'end' );
 
 		// If the subscription has a free trial period, and we're still in the free trial period, the next payment is due at the end of the free trial
@@ -1210,63 +1392,6 @@ class WC_Subscription extends WC_Order {
 
 		return $next_payment_date;
 	}
-
-	/**
-	 * Get the last payment date for a subscription, in GMT/UTC.
-	 *
-	 * The last payment date is based on the original order used to purchase the subscription or
-	 * it's last paid renewal order, which ever is more recent.
-	 *
-	 * @since 2.0
-	 */
-	protected function get_last_payment_date() {
-		$last_order = $this->get_last_order( 'all' );
-
-		if ( ! $last_order ) {
-			return 0;
-		}
-
-		$payment_date = wcs_get_objects_property( $last_order, 'date_paid' );
-
-		// The paid date was not always set on an order in WC < 2.7, but in those cases, the post date was updated to reflect the payment date so the date_created property is suitable
-		if ( is_null( $payment_date ) ) {
-			$payment_date = wcs_get_objects_property( $last_order, 'date_created' );
-		}
-
-		return $payment_date;
-	}
-
-	/**
-	 *
-	 * @param string $datetime A MySQL formatted date/time string in GMT/UTC timezone.
-	 */
-	protected function update_last_payment_date( $datetime ) {
-		$last_order = $this->get_last_order();
-
-		if ( ! $last_order ) {
-			return false;
-		}
-
-		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
-			$updated_post_data = array(
-				'ID'            => $last_order,
-				'post_date'     => get_date_from_gmt( $datetime ),
-				'post_date_gmt' => $datetime,
-			);
-
-			wp_update_post( $updated_post_data );
-			update_post_meta( $last_order, '_paid_date', $datetime );
-		} else {
-			$last_order = wc_get_order( $last_order );
-
-			// In WC 2.7, only the paid date prop represents the paid date, the post date isn't used anymore, also the paid date is stored and referenced as a timestamp in site timezone, not a MySQL string
-			$last_order->set_date_paid( wcs_date_to_time( get_date_from_gmt( $datetime ) ) );
-			$last_order->save();
-		}
-
-		return $datetime;
-	}
-
 
 	/** Formatted Totals Methods *******************************************************/
 
@@ -1600,10 +1725,7 @@ class WC_Subscription extends WC_Order {
 	 * @return int
 	 */
 	public function get_parent() {
-		if ( null === $this->order ) {
-			$this->order = wc_get_order( $this->get_parent_id() ); // wc_get_order() will return boolean false for invalid parent order IDs
-		}
-		return $this->order;
+		return wc_get_order( $this->get_parent_id() );
 	}
 
 	/**
@@ -1781,12 +1903,15 @@ class WC_Subscription extends WC_Order {
 					$payment_gateway  = isset( $payment_gateways[ $payment_method_id ] ) ? $payment_gateways[ $payment_method_id ] : null;
 				}
 
-				if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
-					$this->set_requires_manual_renewal( true );
-				} elseif ( is_null( $payment_gateway ) || false == $payment_gateway->supports( 'subscriptions' ) ) {
-					$this->set_requires_manual_renewal( true );
-				} else {
-					$this->set_requires_manual_renewal( false );
+				// We shouldn't set the requires manual renewal prop while the object is being read. That prop should be set by reading it from the DB not based on settings or the payment gateway
+				if ( $this->object_read ) {
+					if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+						$this->set_requires_manual_renewal( true );
+					} elseif ( is_null( $payment_gateway ) || false == $payment_gateway->supports( 'subscriptions' ) ) {
+						$this->set_requires_manual_renewal( true );
+					} else {
+						$this->set_requires_manual_renewal( false );
+					}
 				}
 
 				$this->set_prop( 'payment_method', $payment_method_id );
@@ -1910,12 +2035,14 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_items_sign_up_fee( $line_item, $tax_inclusive_or_exclusive = 'exclusive_of_tax' ) {
 
-		if ( ! is_array( $line_item ) ) {
+		if ( ! is_object( $line_item ) ) {
 			$line_item = wcs_get_order_item( $line_item, $this );
 		}
 
+		$parent_order = $this->get_parent();
+
 		// If there was no original order, nothing was paid up-front which means no sign-up fee
-		if ( false == $this->get_parent() ) {
+		if ( false == $parent_order ) {
 
 			$sign_up_fee = 0;
 
@@ -1924,7 +2051,7 @@ class WC_Subscription extends WC_Order {
 			$original_order_item = '';
 
 			// Find the matching item on the order
-			foreach ( $this->get_parent()->get_items() as $order_item ) {
+			foreach ( $parent_order->get_items() as $order_item ) {
 				if ( wcs_get_canonical_product_id( $line_item ) == wcs_get_canonical_product_id( $order_item ) ) {
 					$original_order_item = $order_item;
 					break;
@@ -1936,21 +2063,20 @@ class WC_Subscription extends WC_Order {
 
 				$sign_up_fee = 0;
 
-			} elseif ( isset( $line_item['item_meta']['_has_trial'] ) ) {
-
-				// Sign up was was total amount paid for this item on original order
-				$sign_up_fee = $original_order_item['line_total'] / $original_order_item['qty'];
-
+			} elseif ( 'true' === $line_item->get_meta( '_has_trial' ) ) {
+				// Sign up is amount paid for this item on original order, we can safely use 2.7 getters here because we know from the above condition 2.7 is active
+				$sign_up_fee = $original_order_item->get_total( 'edit' ) / $original_order_item->get_quantity( 'edit' );
 			} else {
-
 				// Sign-up fee is any amount on top of recurring amount
-				$sign_up_fee = max( $original_order_item['line_total'] / $original_order_item['qty'] - $line_item['line_total'] / $line_item['qty'], 0 );
+				$order_line_total        = $original_order_item->get_total( 'edit' ) / $original_order_item->get_quantity( 'edit' );
+				$subscription_line_total = $line_item->get_total( 'edit' ) / $line_item->get_quantity( 'edit' );
+				$sign_up_fee = max( $order_line_total - $subscription_line_total, 0 );
 			}
 
 			// If prices inc tax, ensure that the sign up fee amount includes the tax
 			if ( 'inclusive_of_tax' === $tax_inclusive_or_exclusive && ! empty( $original_order_item ) && $this->get_prices_include_tax() ) {
-				$proportion   = $sign_up_fee / ( $original_order_item['line_total'] / $original_order_item['qty'] );
-				$sign_up_fee += round( $original_order_item['line_tax'] * $proportion, 2 );
+				$proportion   = $sign_up_fee / ( $original_order_item->get_total( 'edit' ) / $original_order_item->get_quantity( 'edit' ) );
+				$sign_up_fee += round( $original_order_item->get_total_tax( 'edit' ) * $proportion, 2 );
 			}
 		}
 
@@ -1969,7 +2095,7 @@ class WC_Subscription extends WC_Order {
 
 		if ( 0 != ( $end_time = $this->get_time( 'end' ) ) ) {
 
-			$from_timestamp = $this->get_time( 'start' );
+			$from_timestamp = $this->get_time( 'date_created' );
 
 			if ( 0 != $this->get_time( 'trial_end' ) || WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $this ) ) {
 
@@ -1980,7 +2106,7 @@ class WC_Subscription extends WC_Order {
 					$from_timestamp = $next_payment_timestamp;
 
 				// when we have a sync'd subscription after its 1st payment, we need to base the calculations for the next payment on the last payment timestamp.
-				} else if ( ! ( $subscription_order_count > 2 ) && 0 != ( $last_payment_timestamp = $this->get_time( 'last_payment' ) ) ) {
+				} else if ( ! ( $subscription_order_count > 2 ) && 0 != ( $last_payment_timestamp = $this->get_time( 'last_order_date_created' ) ) ) {
 					$from_timestamp = $last_payment_timestamp;
 				}
 			}
@@ -2023,7 +2149,7 @@ class WC_Subscription extends WC_Order {
 	 * Validates subscription date updates ensuring the proposed date changes are in the correct format and are compatible with
 	 * the current subscription dates. Also returns the dates in the gmt timezone - ready for setting/deleting.
 	 *
-	 * @param array $dates array containing dates with keys: 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'. Values are time
+	 * @param array $dates array containing dates with keys: 'date_created', 'trial_end', 'next_payment', 'last_order_date_created' or 'end'. Values are MySQL formatted date/time strings in UTC timezone.
 	 * @param string $timezone The timezone of the $datetime param. Default 'gmt'.
 	 * @return array $dates array of dates in gmt timezone.
 	 */
@@ -2037,19 +2163,25 @@ class WC_Subscription extends WC_Order {
 			throw new InvalidArgumentException( __( 'Invalid data. First parameter was empty when passed to update_dates().', 'woocommerce-subscriptions' ) );
 		}
 
-		$subscription_date_keys = array_keys( wcs_get_subscription_date_types() );
-		$passed_date_keys       = str_replace( '_date', '', array_keys( $dates ) );
-		$extra_keys             = array_diff( $passed_date_keys, $subscription_date_keys );
+		$passed_date_keys = array_map( 'wcs_normalise_date_type_key', array_keys( $dates ) );
+		$extra_keys       = array_diff( $passed_date_keys, $this->get_valid_date_types() );
 
 		if ( ! empty( $extra_keys ) ) {
 			throw new InvalidArgumentException( __( 'Invalid data. First parameter has a date that is not in the registered date types.', 'woocommerce-subscriptions' ) );
 		}
 
+		// Use the normalised keys for the array
+		$dates = array_combine( $passed_date_keys, array_values( $dates ) );
+
 		$timestamps = $delete_date_types = array();
-		$dates      = array_combine( $passed_date_keys, array_values( $dates ) );
 
 		// Get a full set of subscription dates made up of passed and current dates
-		foreach ( $subscription_date_keys as $date_type ) {
+		foreach ( $this->get_valid_date_types() as $date_type ) {
+
+			// While 'start' & 'last_payment' are valid date types, they are deprecated and we use 'date_created' & 'last_order_date_created' to refer to them now instead
+			if ( in_array( $date_type, array( 'last_payment', 'start' ) ) ) {
+				continue;
+			}
 
 			// Honour passed values first
 			if ( isset( $dates[ $date_type ] ) ) {
@@ -2079,7 +2211,7 @@ class WC_Subscription extends WC_Order {
 
 			if ( 0 == $timestamps[ $date_type ] ) {
 				// Last payment is not in the UI, and it should NOT be deleted as that would mess with scheduling
-				if ( 'last_payment' != $date_type && 'start' != $date_type ) {
+				if ( 'last_order_date_created' != $date_type && 'date_created' != $date_type ) {
 					// We need to separate the dates which need deleting, so they don't interfere in the remaining validation
 					$delete_date_types[ $date_type ] = 0;
 				}
@@ -2090,33 +2222,33 @@ class WC_Subscription extends WC_Order {
 		$messages = array();
 
 		// And then iterate over them checking the relationships between them.
-		foreach ( $timestamps as $date_type => $datetime ) {
+		foreach ( $timestamps as $date_type => $timestamp ) {
 			switch ( $date_type ) {
 				case 'end' :
-					if ( array_key_exists( 'cancelled', $timestamps ) && $datetime < $timestamps['cancelled'] ) {
+					if ( array_key_exists( 'cancelled', $timestamps ) && $timestamp < $timestamps['cancelled'] ) {
 						$messages[] = sprintf( __( 'The %s date must occur after the cancellation date.', 'woocommerce-subscriptions' ), $date_type );
 					}
 
 				case 'cancelled' :
-					if ( array_key_exists( 'last_payment', $timestamps ) && $datetime < $timestamps['last_payment'] ) {
+					if ( array_key_exists( 'last_order_date_created', $timestamps ) && $timestamp < $timestamps['last_order_date_created'] ) {
 						$messages[] = sprintf( __( 'The %s date must occur after the last payment date.', 'woocommerce-subscriptions' ), $date_type );
 					}
 
-					if ( array_key_exists( 'next_payment', $timestamps ) && $datetime <= $timestamps['next_payment'] ) {
+					if ( array_key_exists( 'next_payment', $timestamps ) && $timestamp <= $timestamps['next_payment'] ) {
 						$messages[] = sprintf( __( 'The %s date must occur after the next payment date.', 'woocommerce-subscriptions' ), $date_type );
 					}
 				case 'next_payment' :
 					// Guarantees that end is strictly after trial_end, because if next_payment and end can't be at same time
-					if ( array_key_exists( 'trial_end', $timestamps ) && $datetime < $timestamps['trial_end'] ) {
+					if ( array_key_exists( 'trial_end', $timestamps ) && $timestamp < $timestamps['trial_end'] ) {
 						$messages[] = sprintf( __( 'The %s date must occur after the trial end date.', 'woocommerce-subscriptions' ), $date_type );
 					}
 				case 'trial_end' :
-					if ( $datetime <= $timestamps['start'] ) {
+					if ( $timestamp <= $timestamps['date_created'] ) {
 						$messages[] = sprintf( __( 'The %s date must occur after the start date.', 'woocommerce-subscriptions' ), $date_type );
 					}
 			}
 
-			$dates[ $date_type ] = gmdate( 'Y-m-d H:i:s', $datetime );
+			$dates[ $date_type ] = gmdate( 'Y-m-d H:i:s', $timestamp );
 		}
 
 		if ( ! empty( $messages ) ) {
@@ -2146,6 +2278,33 @@ class WC_Subscription extends WC_Order {
 		return $item_id;
 	}
 
+	/**
+	 * Get the set of date types that can be set/get from this subscription.
+	 *
+	 * The allowed dates includes both subscription date dates, and date types for related orders, like 'last_order_date_created'.
+	 *
+	 * @since 2.2.0
+	 * @return array
+	 */
+	protected function get_valid_date_types() {
+
+		if ( empty( $this->valid_date_types ) ) {
+			$this->valid_date_types = apply_filters( 'woocommerce_subscription_valid_date_types', array_merge(
+				array_keys( wcs_get_subscription_date_types() ),
+				array(
+					'date_created',
+					'date_modified',
+					'date_paid',
+					'date_completed',
+					'last_order_date_created',
+					'last_order_date_paid',
+					'last_order_date_completed',
+				)
+			), $this );
+		}
+
+		return $this->valid_date_types;
+	}
 
 	/************************
 	 * Deprecated Functions *
@@ -2192,4 +2351,50 @@ class WC_Subscription extends WC_Order {
 		$this->set_requires_manual_renewal( $is_manual );
 		return $this->get_requires_manual_renewal();
 	}
+
+	/**
+	 * Get the "last payment date" for a subscription, in GMT/UTC.
+	 *
+	 * The "last payment date" is based on the original order used to purchase the subscription or
+	 * it's last renewal order, which ever is more recent.
+	 *
+	 * The "last payment date" is in quotation marks because this function didn't and still doesn't
+	 * accurately return the last payment date. Instead, it returned and still returns the date of the
+	 * last order, regardless of its paid status. This is partly why this function has been deprecated
+	 * in favour of self::get_date_paid() (or self::get_related_orders_date( 'date_created', 'last' ).
+	 *
+	 * For backward compatibility we have to use the date created here, see: https://github.com/Prospress/woocommerce-subscriptions/issues/1943
+	 *
+	 * @deprecated 2.2.0
+	 * @since 2.0
+	 */
+	protected function get_last_payment_date() {
+		wcs_deprecated_function( __METHOD__, '2.2.0', __CLASS__ . '::get_date( "last_order_date_created" )' );
+		return $this->get_date( 'last_order_date_created' );
+	}
+
+	/**
+	 * Updated both the _paid_date and post date GMT with the WooCommerce < 3.0 date storage structures.
+	 *
+	 * @deprecated 2.2.0
+	 * @param string $datetime A MySQL formatted date/time string in GMT/UTC timezone.
+	 */
+	protected function update_last_payment_date( $datetime ) {
+		wcs_deprecated_function( __METHOD__, '2.2.0', __CLASS__ . '::set_date_paid( $datetime ) or WC_Order::set_date_created( $datetime ) on the last order, because WooCommerce 3.0 now uses those setters' );
+
+		$last_order = $this->get_last_order();
+
+		if ( ! $last_order ) {
+			return false;
+		}
+
+		// Pass a timestamp to the WC 3.0 setters becasue WC expects MySQL date strings to be in site's timezone, but we have a date string in UTC timezone
+		$timestamp = ( $datetime > 0 ) ? wcs_date_to_time( $datetime ) : 0;
+
+		$this->set_last_order_date( 'date_paid', $timestamp );
+		$this->set_last_order_date( 'date_created', $timestamp );
+
+		return $datetime;
+	}
+
 }

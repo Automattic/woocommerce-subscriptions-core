@@ -84,14 +84,24 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		// Set all order meta data, as well as data defined by WC_Subscription::$extra_keys which has corresponding setter methods
 		parent::read_order_data( $subscription, $post_object );
 
-		$props_to_set = array();
+		$props_to_set = $dates_to_set = array();
 
 		foreach ( $this->subscription_meta_keys_to_props as $meta_key => $prop_key ) {
-			if ( in_array( $meta_key, $this->subscription_internal_meta_keys ) ) {
-				$props_to_set[ $prop_key ] = get_post_meta( $subscription->get_id(), $meta_key, true );
+			if ( 0 === strpos( $prop_key, 'schedule' ) || in_array( $meta_key, $this->subscription_internal_meta_keys )  ) {
+
+				$meta_value = get_post_meta( $subscription->get_id(), $meta_key, true );
+
+				// Dates are set via update_dates() to make sure relationships between dates are validated
+				if ( 0 === strpos( $prop_key, 'schedule' ) ) {
+					$date_type = str_replace( 'schedule_', '', $prop_key );
+					$dates_to_set[ $date_type ] = ( false == $meta_value ) ? 0 : $meta_value;
+				} else {
+					$props_to_set[ $prop_key ] = $meta_value;
+				}
 			}
 		}
 
+		$subscription->update_dates( $dates_to_set );
 		$subscription->set_props( $props_to_set );
 	}
 
@@ -117,6 +127,12 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 
 		foreach ( $this->get_props_to_update( $subscription, $this->subscription_meta_keys_to_props ) as $meta_key => $prop ) {
 			$meta_value = ( 'schedule_' == substr( $prop, 0, 9 ) ) ? $subscription->get_date( $prop ) : $subscription->{"get_$prop"}( 'edit' );
+
+			// Store as a string of the boolean for backward compatibility (yep, it's gross)
+			if ( 'requires_manual_renewal' === $prop ) {
+				$meta_value = $meta_value ? 'true' : 'false';
+			}
+
 			update_post_meta( $subscription->get_id(), $meta_key, $meta_value );
 			$updated_props[] = $prop;
 		}

@@ -15,6 +15,16 @@ class WC_Subscription_Legacy extends WC_Subscription {
 
 	protected $schedule;
 
+	protected $status_transition = false;
+
+	/**
+	 * Whether the object has been read. Pre WC 3.0 subscription objects are always read by default.
+	 * Provides an accessible variable equivalent to WC_Data::$object_read pre WC 3.0.
+	 *
+	 * @protected boolean
+	 */
+	protected $object_read = true;
+
 	/**
 	 * Initialize the subscription object.
 	 *
@@ -324,26 +334,182 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	}
 
 	/**
+	 * Get date_created.
+	 *
+	 * Used by parent::get_date()
+	 *
+	 * @throws WC_Data_Exception
+	 * @return DateTime|NULL object if the date is set or null if there is no date.
+	 */
+	public function get_date_created( $context = 'view' ) {
+
+		if ( '0000-00-00 00:00:00' != $this->post->post_date_gmt ) {
+			$datetime = new WC_DateTime( $this->post->post_date_gmt, new DateTimeZone( 'UTC' ) );
+			$datetime->setTimezone( new DateTimeZone( wc_timezone_string() ) );
+		} else {
+			$datetime = new WC_DateTime( $this->post->post_date, new DateTimeZone( wc_timezone_string() ) );
+		}
+
+		// Cache it in $this->schedule for backward compatibility
+		if ( ! isset( $this->schedule->start ) ) {
+			$this->schedule->start = wcs_get_datetime_utc_string( $datetime );
+		}
+
+		return $datetime;
+	}
+
+	/**
+	 * Get date_modified.
+	 *
+	 * Used by parent::get_date()
+	 *
+	 * @throws WC_Data_Exception
+	 * @return DateTime|NULL object if the date is set or null if there is no date.
+	 */
+	public function get_date_modified( $context = 'view' ) {
+
+		if ( '0000-00-00 00:00:00' != $this->post->post_modified_gmt ) {
+			$datetime = new WC_DateTime( $this->post->post_modified_gmt, new DateTimeZone( 'UTC' ) );
+			$datetime->setTimezone( new DateTimeZone( wc_timezone_string() ) );
+		} else {
+			$datetime = new WC_DateTime( $this->post->post_modified, new DateTimeZone( wc_timezone_string() ) );
+		}
+
+		return $datetime;
+	}
+
+	/**
+	 * Check if a given line item on the subscription had a sign-up fee, and if so, return the value of the sign-up fee.
+	 *
+	 * The single quantity sign-up fee will be returned instead of the total sign-up fee paid. For example, if 3 x a product
+	 * with a 10 BTC sign-up fee was purchased, a total 30 BTC was paid as the sign-up fee but this function will return 10 BTC.
+	 *
+	 * @param array|int Either an order item (in the array format returned by self::get_items()) or the ID of an order item.
+	 * @param  string $tax_inclusive_or_exclusive Whether or not to adjust sign up fee if prices inc tax - ensures that the sign up fee paid amount includes the paid tax if inc
+	 * @return bool
+	 * @since 2.0
+	 */
+	public function get_items_sign_up_fee( $line_item, $tax_inclusive_or_exclusive = 'exclusive_of_tax' ) {
+
+		if ( ! is_array( $line_item ) ) {
+			$line_item = wcs_get_order_item( $line_item, $this );
+		}
+
+		$parent_order = $this->get_parent();
+
+		// If there was no original order, nothing was paid up-front which means no sign-up fee
+		if ( false == $parent_order ) {
+
+			$sign_up_fee = 0;
+
+		} else {
+
+			$original_order_item = '';
+
+			// Find the matching item on the order
+			foreach ( $parent_order->get_items() as $order_item ) {
+				if ( wcs_get_canonical_product_id( $line_item ) == wcs_get_canonical_product_id( $order_item ) ) {
+					$original_order_item = $order_item;
+					break;
+				}
+			}
+
+			// No matching order item, so this item wasn't purchased in the original order
+			if ( empty( $original_order_item ) ) {
+
+				$sign_up_fee = 0;
+
+			} elseif ( isset( $line_item['item_meta']['_has_trial'] ) ) {
+
+				// Sign up is total amount paid for this item on original order when item has a free trial
+				$sign_up_fee = $original_order_item['line_total'] / $original_order_item['qty'];
+
+			} else {
+
+				// Sign-up fee is any amount on top of recurring amount
+				$sign_up_fee = max( $original_order_item['line_total'] / $original_order_item['qty'] - $line_item['line_total'] / $line_item['qty'], 0 );
+			}
+
+			// If prices inc tax, ensure that the sign up fee amount includes the tax
+			if ( 'inclusive_of_tax' === $tax_inclusive_or_exclusive && ! empty( $original_order_item ) && $this->get_prices_include_tax() ) {
+				$proportion   = $sign_up_fee / ( $original_order_item['line_total'] / $original_order_item['qty'] );
+				$sign_up_fee += round( $original_order_item['line_tax'] * $proportion, 2 );
+			}
+		}
+
+		return apply_filters( 'woocommerce_subscription_items_sign_up_fee', $sign_up_fee, $line_item, $this, $tax_inclusive_or_exclusive );
+	}
+
+	/**
 	 * Helper function to make sure when WC_Subscription calls get_prop() from
 	 * it's new getters that the property is both retreived from the legacy class
 	 * property and done so from post meta.
 	 *
-	 * @return string
+	 * For inherited dates props, like date_created, date_modified, date_paid,
+	 * date_completed, we want to use our own get_date() function rather simply
+	 * getting the stored value. Otherwise, we either get the prop set in memory
+	 * or post meta if it's not set yet, because __get() in WC < 2.7 would fallback
+	 * to post meta.
+	 *
+	 * @param string
+	 * @param string
+	 * @return mixed
 	 */
-	protected function get_prop( $prop ) {
+	protected function get_prop( $prop, $context = 'view' ) {
 
 		if ( 'switch_data' == $prop ) {
 			$prop = 'subscription_switch_data';
 		}
 
-		if ( ! isset( $this->$prop ) || empty( $this->$prop ) ) {
-			$this->$prop = get_post_meta( $this->get_id(), '_' . $prop, true );
+		// The requires manual renewal prop uses boolean values but is stored as a string so needs special handling, it also needs to be handled before the checks on $this->$prop to avoid triggering __isset() & __get() magic methods for $this->requires_manual_renewal
+		if ( 'requires_manual_renewal' === $prop ) {
+			$value = get_post_meta( $this->get_id(), '_' . $prop, true );
+
+			if ( 'false' === $value || '' === $value ) {
+				$value = false;
+			} else {
+				$value = true;
+			}
+		} elseif ( ! isset( $this->$prop ) || empty( $this->$prop ) ) {
+			$value = get_post_meta( $this->get_id(), '_' . $prop, true );
+		} else {
+			$value = $this->$prop;
 		}
 
-		return $this->$prop;
+		return $value;
+	}
+
+	/**
+	 * Get the stored date for a specific schedule.
+	 *
+	 * @param string $date_type 'date_created', 'trial_end', 'next_payment', 'last_order_date_created' or 'end'
+	 */
+	protected function get_date_prop( $date_type ) {
+
+		$datetime = parent::get_date_prop( $date_type );
+
+		// Cache the string equalivent of it in $this->schedule for backward compatibility
+		if ( ! isset( $this->schedule->{$date_type} ) ) {
+			if ( ! is_object( $datetime ) ) {
+				$this->schedule->{$date_type} = 0;
+			} else {
+				$this->schedule->{$date_type} = wcs_get_datetime_utc_string( $datetime );
+			}
+		}
+
+		return $datetime;
 	}
 
 	/*** Setters *****************************************************/
+
+	/**
+	 * Returns the unique ID for this object.
+	 *
+	 * @return int
+	 */
+	public function set_id( $id ) {
+		$this->id = absint( $id );
+	}
 
 	/**
 	 * Set parent order ID. We don't use WC_Abstract_Order::set_parent_id() because we want to allow false
@@ -365,6 +531,32 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	}
 
 	/**
+	 * Set order status.
+	 *
+	 * @param string $new_status Status to change the order to. No internal wc- prefix is required.
+	 * @return array details of change
+	 */
+	public function set_status( $new_status, $note = '', $manual_update = false ) {
+
+		$old_status = $this->get_status();
+
+		wp_update_post( array( 'ID' => $this->get_id(), 'post_status' => 'wc-' . $new_status ) );
+		$this->post_status = $this->post->post_status = 'wc-' . $new_status;
+
+		$this->status_transition = array(
+			'from'   => $old_status,
+			'to'     => $new_status,
+			'note'   => $note,
+			'manual' => (bool) $manual_update,
+		);
+
+		return array(
+			'from' => $old_status,
+			'to'   => $new_status,
+		);
+	}
+
+	/**
 	 * Helper function to make sure when WC_Subscription calls set_prop() that property is
 	 * both set in the legacy class property and saved in post meta immediately.
 	 *
@@ -377,32 +569,99 @@ class WC_Subscription_Legacy extends WC_Subscription {
 		}
 
 		$this->$prop = $value;
+
+		// The requires manual renewal prop uses boolean values but it stored as a string
+		if ( 'requires_manual_renewal' === $prop ) {
+			if ( false === $value || '' === $value ) {
+				$value = 'false';
+			} else {
+				$value = 'true';
+			}
+		}
+
 		update_post_meta( $this->get_id(), '_' . $prop, $value );
 	}
 
 	/**
-	 * Get the stored date for a specific schedule.
-	 *
-	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'
-	 */
-	protected function get_date_prop( $date_type ) {
-		if ( ! isset( $this->schedule->{$date_type} ) ) {
-			$this->schedule->{$date_type} = $this->get_prop( sprintf( 'schedule_%s', $date_type ) );
-		}
-		return $this->schedule->{$date_type};
-	}
-
-	/*** Setters *****************************************************/
-
-	/**
 	 * Set the stored date for a specific schedule.
 	 *
-	 * @param string $date_type 'start', 'trial_end', 'next_payment', 'last_payment' or 'end'
-	 * @param string $value MySQL date/time string in GMT/UTC timezone.
+	 * @param string $date_type 'trial_end', 'next_payment', 'cancelled', 'payment_retry' or 'end'
+	 * @param int $value UTC timestamp
 	 */
 	protected function set_date_prop( $date_type, $value ) {
-		parent::set_date_prop( $date_type, $value ); // calls WC_Subscription_Legacy::set_prop() which calls update_post_meta() with the meta key 'schedule_{$date_type}'
-		$this->schedule->{$date_type} = $value;
+		$this->set_prop( $this->get_date_prop_key( $date_type ), wcs_get_datetime_from( $value ) );
+		$this->schedule->{$date_type} = gmdate( 'Y:m:d H:i:s', $value );
+	}
+
+	/**
+	 * Set a certain date type for the last order on the subscription.
+	 *
+	 * @since 2.1.4.
+	 * @param string $date_type
+	 * @param string|integer|object
+	 * @return WC_DateTime|NULL object if the date is set or null if there is no date.
+	 */
+	protected function set_last_order_date( $date_type, $date = null ) {
+
+		$last_order = $this->get_last_order( 'all' );
+
+		if ( $last_order ) {
+
+			$datetime = wcs_get_datetime_from( $date );
+
+			switch ( $date_type ) {
+				case 'date_paid' :
+					update_post_meta( $last_order->id, '_paid_date', ! is_null( $date ) ? $datetime->date( 'Y-m-d H:i:s' ) : '' );
+					// Preemptively set the UTC timestamp for WC 3.0+ also to avoid incorrect values when the site's timezone is changed between now and upgrading to WC 3.0
+					update_post_meta( $last_order->id, '_date_paid', ! is_null( $date ) ? $datetime->getTimestamp() : '' );
+				break;
+
+				case 'date_completed' :
+					update_post_meta( $last_order->id, '_completed_date', ! is_null( $date ) ? $datetime->date( 'Y-m-d H:i:s' ) : '' );
+					// Preemptively set the UTC timestamp for WC 3.0+ also to avoid incorrect values when the site's timezone is changed between now and upgrading to WC 3.0
+					update_post_meta( $last_order->id, '_date_completed', ! is_null( $date ) ? $datetime->getTimestamp() : '' );
+				break;
+
+				case 'date_modified' :
+					wp_update_post( array(
+						'ID'                => $last_order->id,
+						'post_modified'     => $datetime->date( 'Y-m-d H:i:s' ),
+						'post_modified_gmt' => wcs_get_datetime_utc_string( $datetime ),
+					) );
+				break;
+
+				case 'date_created' :
+					wp_update_post( array(
+						'ID'            => $last_order->id,
+						'post_date'     => $datetime->date( 'Y-m-d H:i:s' ),
+						'post_date_gmt' => wcs_get_datetime_utc_string( $datetime ),
+					) );
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Set date_created.
+	 *
+	 * Used by parent::update_dates()
+	 *
+	 * @param  string|integer|null $date UTC timestamp, or ISO 8601 DateTime. If the DateTime string has no timezone or offset, WordPress site timezone will be assumed. Null if their is no date.
+	 * @throws WC_Data_Exception
+	 */
+	public function set_date_created( $date = null ) {
+		global $wpdb;
+
+		if ( ! is_null( $date ) ) {
+
+			$datetime_string = wcs_get_datetime_utc_string( wcs_get_datetime_from( $date ) );
+
+			// Don't use wp_update_post() to avoid infinite loops here
+			$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET post_date = %s, post_date_gmt = %s WHERE ID = %d", get_date_from_gmt( $datetime_string ), $datetime_string, $this->get_id() ) );
+
+			$this->post->post_date     = get_date_from_gmt( $datetime_string );
+			$this->post->post_date_gmt = $datetime_string;
+		}
 	}
 
 	/**
@@ -461,6 +720,7 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	 * @return int order ID
 	 */
 	public function save() {
+		$this->status_transition();
 		return $this->get_id();
 	}
 

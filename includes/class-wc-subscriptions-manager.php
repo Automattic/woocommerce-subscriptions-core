@@ -426,7 +426,7 @@ class WC_Subscriptions_Manager {
 		}
 
 		$args = wp_parse_args( $args, array(
-			'start_date'  => wcs_get_objects_property( $order, 'date' ),
+			'start_date'  => wcs_get_datetime_utc_string( wcs_get_objects_property( $order, 'date_created' ) ), // get_date_created() can return null, but if it does, we have an error anyway
 			'expiry_date' => '',
 		) );
 
@@ -580,7 +580,7 @@ class WC_Subscriptions_Manager {
 					break;
 				case 'failed' :
 					_deprecated_argument( __METHOD__, '2.0', 'The "failed" status value is deprecated.' );
-					self::failed_subscription_signup( $order->user_id, $subscription_id );
+					self::failed_subscription_signup( $order->get_user_id(), $subscription_id );
 					break;
 				case 'pending' :
 					_deprecated_argument( __METHOD__, '2.0', 'The "pending" status value is deprecated.' );
@@ -659,7 +659,7 @@ class WC_Subscriptions_Manager {
 			foreach ( $new_subscription_details as $meta_key => $meta_value ) {
 				switch ( $meta_key ) {
 					case 'start_date' :
-						$subscription->update_dates( array( 'start' => $meta_value ) );
+						$subscription->update_dates( array( 'date_created' => $meta_value ) );
 						break;
 					case 'trial_expiry_date' :
 						$subscription->update_dates( array( 'trial_end' => $meta_value ) );
@@ -1258,7 +1258,7 @@ class WC_Subscriptions_Manager {
 	public static function get_last_payment_date( $subscription_key, $user_id = '', $type = 'mysql' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_date( "last_payment" )' );
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
-		$last_payment_date = ( 'mysql' == $type ) ? $subscription->get_date( 'last_payment' ) : $subscription->get_time( 'last_payment' );
+		$last_payment_date = ( 'mysql' == $type ) ? $subscription->get_date( 'last_order_date_created' ) : $subscription->get_time( 'last_order_date_created' );
 		return apply_filters( 'woocommerce_subscription_last_payment_date', $last_payment_date, $subscription_key, $user_id, $type );
 	}
 
@@ -1542,7 +1542,7 @@ class WC_Subscriptions_Manager {
 			$order = new WC_Order( $order );
 		}
 
-		update_user_meta( $order->user_id, 'paying_customer', 1 );
+		update_user_meta( $order->get_user_id(), 'paying_customer', 1 );
 	}
 
 	/**
@@ -1562,8 +1562,8 @@ class WC_Subscriptions_Manager {
 			$order = new WC_Order( $order );
 		}
 
-		if ( $order->user_id > 0 ) {
-			update_user_meta( $order->user_id, 'paying_customer', 0 );
+		if ( $order->get_user_id() > 0 ) {
+			update_user_meta( $order->get_user_id(), 'paying_customer', 0 );
 		}
 	}
 

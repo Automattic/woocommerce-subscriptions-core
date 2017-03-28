@@ -482,12 +482,12 @@ class WC_Subscriptions_Order {
 				// Do we need to activate a subscription?
 				if ( $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( 'active' ) ) {
 
-					$new_start_date_offset = current_time( 'timestamp', true ) - $subscription->get_time( 'start' );
+					$new_start_date_offset = current_time( 'timestamp', true ) - $subscription->get_time( 'date_created' );
 
 					// if the payment has been processed more than an hour after the order was first created, let's update the dates on the subscription to account for that, because it may have even been processed days after it was first placed
 					if ( $new_start_date_offset > HOUR_IN_SECONDS ) {
 
-						$dates = array( 'start' => current_time( 'mysql', true ) );
+						$dates = array( 'date_created' => current_time( 'mysql', true ) );
 
 						if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
 
@@ -495,15 +495,15 @@ class WC_Subscriptions_Order {
 							$next_payment = $subscription->get_time( 'next_payment' );
 
 							// if either there is a free trial date or a next payment date that falls before now, we need to recalculate all the sync'd dates
-							if ( ( $trial_end > 0 && $trial_end < wcs_date_to_time( $dates['start'] ) ) || ( $next_payment > 0 && $next_payment < wcs_date_to_time( $dates['start'] ) ) ) {
+							if ( ( $trial_end > 0 && $trial_end < wcs_date_to_time( $dates['date_created'] ) ) || ( $next_payment > 0 && $next_payment < wcs_date_to_time( $dates['date_created'] ) ) ) {
 
 								foreach ( $subscription->get_items() as $item ) {
 									$product_id = wcs_get_canonical_product_id( $item );
 
 									if ( WC_Subscriptions_Synchroniser::is_product_synced( $product_id ) ) {
-										$dates['trial_end']    = WC_Subscriptions_Product::get_trial_expiration_date( $product_id, $dates['start'] );
-										$dates['next_payment'] = WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product_id, 'mysql', $dates['start'] );
-										$dates['end']          = WC_Subscriptions_Product::get_expiration_date( $product_id, $dates['start'] );
+										$dates['trial_end']    = WC_Subscriptions_Product::get_trial_expiration_date( $product_id, $dates['date_created'] );
+										$dates['next_payment'] = WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product_id, 'mysql', $dates['date_created'] );
+										$dates['end']          = WC_Subscriptions_Product::get_expiration_date( $product_id, $dates['date_created'] );
 										break;
 									}
 								}
@@ -624,7 +624,7 @@ class WC_Subscriptions_Order {
 	 */
 	public static function order_needs_payment( $needs_payment, $order, $valid_order_statuses ) {
 
-		if ( wcs_order_contains_subscription( $order ) && in_array( $order->get_status(), $valid_order_statuses ) && 0 == $order->get_total() && false === $needs_payment && self::get_recurring_total( $order ) > 0 && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+		if ( false === $needs_payment && 0 == $order->get_total() && in_array( $order->get_status(), $valid_order_statuses ) && wcs_order_contains_subscription( $order ) && self::get_recurring_total( $order ) > 0 && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
 			$needs_payment = true;
 		}
 
@@ -1792,9 +1792,11 @@ class WC_Subscriptions_Order {
 		}
 
 		if ( $subscription = self::get_matching_subscription( $order, $product_id ) ) {
-			$last_payment_date = $subscription->get_date( 'last_payment' );
-		} elseif ( null === ( $last_payment_date = wcs_get_objects_property( $order, 'date_paid' ) ) ) { // Try to get the '_paid_date' post meta, otherwise fallback to the post_date_gmt column - wcs_get_objects_property() always returns dates in UTC/GMT.
-			$last_payment_date = wcs_get_objects_property( $order, 'date' );
+			$last_payment_date = $subscription->get_date( 'last_order_date_created' );
+		} elseif ( null !== ( $last_payment_date = wcs_get_objects_property( $order, 'date_paid' ) ) ) {
+			$last_payment_date = $last_payment_date->date( 'Y-m-d H:i:s' );
+		} else {
+			$last_payment_date = wcs_get_datetime_utc_string( wcs_get_objects_property( $order, 'date_created' ) ); // get_date_created() can return null, but if it does, we have an error anyway
 		}
 
 		return $last_payment_date;
@@ -2012,7 +2014,7 @@ class WC_Subscriptions_Order {
 
 				// No payments have been recorded yet
 				if ( 0 == $subscription->get_completed_payment_count() ) {
-					$subscription->update_dates( array( 'start' => current_time( 'mysql', true ) ) );
+					$subscription->update_dates( array( 'date_created' => current_time( 'mysql', true ) ) );
 					$subscription->payment_complete();
 				}
 			}

@@ -517,7 +517,7 @@ class WCS_Upgrade_2_0 {
 		// Trash all the hooks in one go to save write requests
 		$wpdb->update( $wpdb->posts, array( 'post_status' => 'trash' ), array( 'post_type' => ActionScheduler_wpPostStore::POST_TYPE, 'post_content' => wcs_json_encode( $old_hook_args ) ), array( '%s', '%s' ) );
 
-		$dates_to_update['start'] = $new_subscription->post->post_date_gmt;
+		$dates_to_update['date_created'] = $new_subscription->post->post_date_gmt;
 
 		// v2.0 enforces new rules for dates when they are being set, so we need to massage the old data to conform to these new rules
 		foreach ( $dates_to_update as $date_type => $date ) {
@@ -536,7 +536,7 @@ class WCS_Upgrade_2_0 {
 						$dates_to_update[ $date_type ] = $date;
 					}
 				case 'trial_end' :
-					if ( array_key_exists( 'start', $dates_to_update ) && $date <= $dates_to_update['start'] ) {
+					if ( array_key_exists( 'date_created', $dates_to_update ) && $date <= $dates_to_update['date_created'] ) {
 						$dates_to_update[ $date_type ] = $date;
 					}
 			}

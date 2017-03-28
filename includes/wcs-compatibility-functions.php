@@ -144,21 +144,42 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 			}
 			break;
 
-		case 'date_created' :
+		// Always return a PHP DateTime object in site timezone (or null), the same thing the WC_Order::get_date_created() method returns in WC 3.0+ to make it easier to migrate away from WC < 3.0
+		tcase 'date_created' :
 		case 'order_date' :
 		case 'date' :
 			if ( method_exists( $object, 'get_date_created' ) ) { // WC 2.7+
-				$value = date( 'Y-m-d H:i:s', $object->get_date_created() ); // This is in site time as a timestamp :sob:
-			} else { // WC 2.1-2.6
-				$value = $object->post->post_date; // Because $object->get_date_created() is in site time, we also need to use site time here :sob::sob::sob:
+				$value = $object->get_date_created();
+			} else {
+				// Base the value off tht GMT value when possible and then set the DateTime's timezone based on the current site's timezone to avoid incorrect values when the timezone has changed
+				if ( '0000-00-00 00:00:00' != $object->post->post_date_gmt ) {
+					$value = new WC_DateTime( $object->post->post_date_gmt, new DateTimeZone( 'UTC' ) );
+					$value->setTimezone( new DateTimeZone( wc_timezone_string() ) );
+				} else {
+					$value = new WC_DateTime( $object->post->post_date, new DateTimeZone( wc_timezone_string() ) );
+				}
 			}
 			break;
 
+		// Always return a PHP DateTime object in site timezone (or null), the same thing the getter returns in WC 3.0+ to make it easier to migrate away from WC < 3.0
 		case 'date_paid' :
 			if ( method_exists( $object, 'get_date_paid' ) ) { // WC 2.7+
-				$value = date( 'Y-m-d H:i:s', $object->get_date_paid() ); // This is in site time as a timestamp :sob:
-			} elseif ( isset( $object->paid_date ) ) { // WC 2.1-2.6
-				$value = $object->paid_date;
+				$value = $object->get_date_paid();
+			} else {
+				if ( ! empty( $object->paid_date ) ) {
+					// Because the paid_date post meta value was set in the site timezone at the time it was set, this won't always be correct, but is the best we can do with WC < 3.0
+					$value = new WC_DateTime( $object->paid_date, new DateTimeZone( wc_timezone_string() ) );
+				} else {
+					$value = null;
+				}
+			}
+			break;
+
+		case 'cart_discount' :
+			if ( method_exists( $object, 'get_total_discount' ) ) { // WC 3.0+
+				$value = $object->get_total_discount();
+			} else { // WC 2.1-2.6
+				$value = $object->cart_discount;
 			}
 			break;
 
@@ -172,19 +193,15 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 
 				// If we don't have a method for this specific property, but we are using WC 2.7, it may be set as meta data on the object so check if we can use that
 				if ( method_exists( $object, 'get_meta' ) ) {
-					if ( 'single' === $single ) {
-						$value = $object->get_meta( $prefixed_key, true );
-					} else {
-						$value = $object->get_meta( $prefixed_key, false );
-
-						// WC_Data::get_meta() returns an array of stdClass objects with id, key & value properties when meta is available, or en empty string when it's not :upside_down_face:, we want to normalise our return value to always return an array of valus
-						if ( ! empty( $value ) ) {
-							$value = wp_list_pluck( $value, 'value' );
+					if ( $object->meta_exists( $prefixed_key ) ) {
+						if ( 'single' === $single ) {
+							$value = $object->get_meta( $prefixed_key, true );
 						} else {
-							$value = array();
+							// WC_Data::get_meta() returns an array of stdClass objects with id, key & value properties when meta is available
+							$value = wp_list_pluck( $object->get_meta( $prefixed_key, false ), 'value' );
 						}
 					}
-				} elseif ( isset( $object->$property ) ) { // WC < 2.7
+				} elseif ( 'single' === $single && isset( $object->$property ) ) { // WC < 2.7
 					$value = $object->$property;
 				} elseif ( metadata_exists( 'post', wcs_get_objects_property( $object, 'id' ), $prefixed_key ) ) {
 					// If we couldn't find a property or function, fallback to using post meta as that's what many __get() methods in WC < 2.7 did
@@ -218,23 +235,53 @@ function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta
 
 	$prefixed_key = wcs_maybe_prefix_key( $key );
 
-	if ( 'name' === $key ) { // the replacement for post_title added in 2.7
+	// WC will automatically set/update these keys when a shipping/billing address attribute changes so we can ignore these keys
+	if ( in_array( $prefixed_key, array( '_shipping_address_index', '_billing_address_index' ) ) ) {
+		return;
+	}
 
-		if ( method_exists( $object, 'set_name' ) ) { // WC 2.7+
-			$object->set_name( $value );
-		} else {
-			$object->post->post_title = $value;
-		}
-	} elseif ( method_exists( $object, 'update_meta_data' ) ) { // WC 2.7+
+	// Special cases where properties with setters which don't map nicely to their function names
+	$meta_setters_map = array(
+		'_cart_discount'     => 'set_discount_total',
+		'_cart_discount_tax' => 'set_discount_tax',
+		'_customer_user'     => 'set_customer_id',
+		'_order_tax'         => 'set_cart_tax',
+		'_order_shipping'    => 'set_shipping_total',
+	);
+
+	// If we have a 2.7 object with a predefined setter function, use it
+	if ( isset( $meta_setters_map[ $prefixed_key ] ) && is_callable( array( $object, $meta_setters_map[ $prefixed_key ] ) ) ) {
+		$function = $meta_setters_map[ $prefixed_key ];
+		$object->$function( $value );
+
+	// If we have a 2.7 object, use the setter if available.
+	} elseif ( is_callable( array( $object, 'set' . $prefixed_key ) ) ) {
+		$object->{ "set$prefixed_key" }( $value );
+
+	// If there is a setter without the order prefix (eg set_order_total -> set_total)
+	} elseif ( is_callable( array( $object, 'set' . str_replace( '_order', '', $prefixed_key ) ) ) ) {
+		$function_name = 'set' . str_replace( '_order', '', $prefixed_key );
+		$object->$function_name( $value );
+
+	// If there is no setter, treat as meta within the 2.7.x object.
+	} elseif ( is_callable( array( $object, 'update_meta_data' ) ) ) {
 		$object->update_meta_data( $prefixed_key, $value, $meta_id );
+
+	// 2.6.x handling for name which is not meta.
+	} elseif ( 'name' === $key ) {
+		$object->post->post_title = $value;
+
+	// 2.6.x handling for everything else.
 	} else {
 		$object->$key = $value;
 	}
 
 	// Save the data
 	if ( 'save' === $save ) {
-		if ( method_exists( $object, 'save' ) ) { // WC 2.7+
+		if ( is_callable( array( $object, 'save' ) ) ) { // WC 2.7+
 			$object->save();
+		} elseif ( 'date_created' == $key ) { // WC < 2.7+
+			wp_update_post( array( 'ID' => wcs_get_objects_property( $object, 'id' ), 'post_date' => get_date_from_gmt( $value ), 'post_date_gmt' => $value ) );
 		} elseif ( 'name' === $key ) { // the replacement for post_title added in 2.7, need to update post_title not post meta
 			wp_update_post( array( 'ID' => wcs_get_objects_property( $object, 'id' ), 'post_title' => $value ) );
 		} else {
@@ -373,8 +420,98 @@ function wcs_product_deprecated_property_handler( $property, $product ) {
 				break;
 		}
 
-		_deprecated_argument( $class_name . '::$' . $property, '2.1.4', sprintf( '%s Use %s', $message_prefix, $alternative ) );
+		wcs_deprecated_argument( $class_name . '::$' . $property, '2.1.4', sprintf( '%s Use %s', $message_prefix, $alternative ) );
 	}
 
 	return $value;
+}
+
+/**
+ * Access a coupon's property in a way that is compatible with CRUD and non-CRUD APIs for different versions of WooCommerce.
+ *
+ * Similar to @see wcs_get_objects_property
+ *
+ * @param WC_Coupon $coupon The coupon whose property we want to access.
+ * @param string $property The property name.
+ * @since  2.2
+ * @return mixed
+ */
+function wcs_get_coupon_property( $coupon, $property ) {
+
+	$value = '';
+
+	if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		$value = $coupon->$property;
+	} else {
+		// Some coupon properties don't map nicely to their corresponding getter function. This array contains those exceptions.
+		$property_to_getter_map = array(
+			'type'                       => 'get_discount_type',
+			'exclude_product_ids'        => 'get_excluded_product_ids',
+			'expiry_date'                => 'get_date_expires',
+			'exclude_product_categories' => 'get_excluded_product_categories',
+			'customer_email'             => 'get_email_restrictions',
+			'enable_free_shipping'       => 'get_free_shipping',
+		);
+
+		switch ( true ) {
+			case 'exists' == $property:
+				$value = ( $coupon->get_id() > 0 ) ? true : false;
+				break;
+			case isset( $property_to_getter_map[ $property ] ) && is_callable( array( $coupon, $property_to_getter_map[ $property ] ) ):
+				$function = $property_to_getter_map[ $property ];
+				$value    = $coupon->$function();
+				break;
+			case is_callable( array( $coupon, 'get_' . $property ) ):
+				$value = $coupon->{ "get_$property" }();
+				break;
+		}
+	}
+
+	return $value;
+}
+
+/**
+ * Set a coupon's property in a way that is compatible with CRUD and non-CRUD APIs for different versions of WooCommerce.
+ *
+ * Similar to @see wcs_set_objects_property
+ *
+ * @param WC_Coupon $coupon The coupon whose property we want to set.
+ * @param string $property The property name.
+ * @param mixed $value The data to set as the value
+ * @since  2.2
+ */
+function wcs_set_coupon_property( &$coupon, $property, $value ) {
+
+	if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		$coupon->$property = $value;
+	} else {
+		// Some coupon properties don't map nicely to their corresponding setter function. This array contains those exceptions.
+		$property_to_setter_map = array(
+			'type'                       => 'set_discount_type',
+			'exclude_product_ids'        => 'set_excluded_product_ids',
+			'expiry_date'                => 'set_date_expires',
+			'exclude_product_categories' => 'set_excluded_product_categories',
+			'customer_email'             => 'set_email_restrictions',
+			'enable_free_shipping'       => 'set_free_shipping',
+		);
+
+		switch ( true ) {
+			case 'individual_use' == $property:
+				// set_individual_use expects a boolean, the individual_use property use to be either 'yes' or 'no' so we need to accept both types
+				if ( ! is_bool( $value ) ) {
+					$value = ( 'yes' === $value ) ? true : false;
+				}
+
+				$coupon->set_individual_use( $value );
+				break;
+			case isset( $property_to_setter_map[ $property ] ) && is_callable( array( $coupon, $property_to_setter_map[ $property ] ) ):
+				$function = $property_to_setter_map[ $property ];
+				$coupon->$function( $value );
+
+				break;
+			case is_callable( array( $coupon, 'set_' . $property ) ):
+				$coupon->{ "set_$property" }( $value );
+				break;
+		}
+	}
 }

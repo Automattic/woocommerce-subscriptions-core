@@ -39,7 +39,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 			#post-body-content, #titlediv, #major-publishing-actions, #minor-publishing-actions, #visibility, #submitdiv { display:none }
 		</style>
 		<div class="panel-wrap woocommerce">
-			<input name="post_title" type="hidden" value="<?php echo empty( $post->post_title ) ? esc_attr( get_post_type_object( $subscription->post->post_type )->labels->singular_name ) : esc_attr( $post->post_title ); ?>" />
+			<input name="post_title" type="hidden" value="<?php echo empty( $post->post_title ) ? esc_attr( get_post_type_object( $post->post_type )->labels->singular_name ) : esc_attr( $post->post_title ); ?>" />
 			<input name="post_status" type="hidden" value="<?php echo esc_attr( 'wc-' . $subscription->get_status() ); ?>" />
 			<div id="order_data" class="panel">
 
@@ -70,10 +70,17 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							if ( $subscription->get_user_id() && ( false !== get_userdata( $subscription->get_user_id() ) ) ) {
 								$user_id     = absint( $subscription->get_user_id() );
 								$user        = get_user_by( 'id', $user_id );
-								$user_string = esc_html( $user->display_name ) . ' (#' . absint( $user->ID ) . ' &ndash; ' . esc_html( $user->user_email );
+								$user_string = esc_html( $user->display_name ) . ' (#' . absint( $user->ID ) . ' &ndash; ' . esc_html( $user->user_email ) . ')';
 							}
+							WCS_Select2::render( array(
+								'class'       => 'wc-customer-search',
+								'name'        => 'customer_user',
+								'id'          => 'customer_user',
+								'placeholder' => esc_attr__( 'Search for a customer&hellip;', 'woocommerce-subscriptions' ),
+								'selected'    => $user_string,
+								'value'       => $user_id,
+							) );
 							?>
-							<input type="hidden" class="wc-customer-search" id="customer_user" name="customer_user" data-placeholder="<?php esc_attr_e( 'Search for a customer&hellip;', 'woocommerce-subscriptions' ); ?>" data-selected="<?php echo esc_attr( $user_string ); ?>" value="<?php echo esc_attr( $user_id ); ?>" />
 						</p>
 
 						<p class="form-field form-field-wide">

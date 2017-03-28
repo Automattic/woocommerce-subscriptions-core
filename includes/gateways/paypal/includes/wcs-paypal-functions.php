@@ -20,13 +20,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param int The ID of a WC_Order or WC_Subscription object
  * @since 2.0
  */
-function wcs_get_paypal_id( $order_id ) {
+function wcs_get_paypal_id( $order ) {
 
-	if ( is_object( $order_id ) ) {
-		$order_id = wcs_get_objects_property( $order_id, 'id' );
+	if ( ! is_object( $order ) ) {
+		$order = wc_get_order( $order );
 	}
 
-	return get_post_meta( $order_id, '_paypal_subscription_id', true );
+	return wcs_get_objects_property( $order, '_paypal_subscription_id' );
 }
 
 /**

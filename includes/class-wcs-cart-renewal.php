@@ -263,7 +263,8 @@ class WCS_Cart_Renewal {
 
 		if ( wcs_is_subscription( $subscription ) ) {
 
-			$used_coupons = $subscription->get_used_coupons();
+			$used_coupons          = $subscription->get_used_coupons();
+			$subscription_discount = wcs_get_objects_property( $subscription, 'cart_discount' );
 
 			// Add any used coupon discounts to the cart (as best we can) using our pseudo renewal coupons
 			if ( ! empty( $used_coupons ) ) {
@@ -272,34 +273,34 @@ class WCS_Cart_Renewal {
 
 				foreach ( $coupon_items as $coupon_item ) {
 
-					$coupon = new WC_Coupon( $coupon_item['name'] );
-
+					$coupon      = new WC_Coupon( $coupon_item['name'] );
+					$coupon_type = wcs_get_coupon_property( $coupon, 'type' );
 					$coupon_code = '';
 
 					// If the coupon still exists we can use the existing/available coupon properties
-					if ( true === $coupon->exists ) {
+					if ( true === wcs_get_coupon_property( $coupon, 'exists' ) ) {
 
 						// But we only want to handle recurring coupons that have been applied to the subscription
-						if ( in_array( $coupon->type, array( 'recurring_percent', 'recurring_fee' ) ) ) {
+						if ( in_array( $coupon_type, array( 'recurring_percent', 'recurring_fee' ) ) ) {
 
 							// Set the coupon type to be a renewal equivalent for correct validation and calculations
-							if ( 'recurring_percent' == $coupon->type ) {
-								$coupon->type = 'renewal_percent';
-							} elseif ( 'recurring_fee' == $coupon->type ) {
-								$coupon->type = 'renewal_fee';
+							if ( 'recurring_percent' == $coupon_type ) {
+								wcs_set_coupon_property( $coupon, 'type', 'renewal_percent' );
+							} elseif ( 'recurring_fee' == $coupon_type ) {
+								wcs_set_coupon_property( $coupon, 'type', 'renewal_fee' );
 							}
 
 							// Adjust coupon code to reflect that it is being applied to a renewal
-							$coupon_code = $coupon->code;
+							$coupon_code = wcs_get_coupon_property( $coupon, 'code' );
 						}
 					} else {
 
 						// If the coupon doesn't exist we can only really apply the discount amount we know about - so we'll apply a cart style pseudo coupon and then set the amount
-						$coupon->type = 'renewal_cart';
-						$coupon->amount = $coupon_item['item_meta']['discount_amount']['0'];
+						wcs_set_coupon_property( $coupon, 'type', 'renewal_cart' );
+						wcs_set_coupon_property( $coupon, 'amount', $coupon_item['item_meta']['discount_amount']['0'] );
 
 						// Adjust coupon code to reflect that it is being applied to a renewal
-						$coupon_code = $coupon->code;
+						$coupon_code = wcs_get_coupon_property( $coupon, 'code' );
 					}
 
 					// Now that we have a coupon we know we want to apply
@@ -307,7 +308,7 @@ class WCS_Cart_Renewal {
 
 						// Set renewal order products as the product ids on the coupon
 						if ( ! WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
-							$coupon->product_ids = $this->get_products( $subscription );
+							wcs_set_coupon_property( $coupon, 'product_ids', $this->get_products( $subscription ) );
 						}
 
 						// Store the coupon info for later
@@ -320,17 +321,18 @@ class WCS_Cart_Renewal {
 					}
 				}
 			// If there are no coupons but there is still a discount (i.e. it might have been manually added), we need to account for that as well
-			} elseif ( ! empty( $subscription->cart_discount ) ) {
+			} elseif ( ! empty( $subscription_discount ) ) {
 
 				$coupon = new WC_Coupon( 'discount_renewal' );
 
 				// Apply our cart style pseudo coupon and the set the amount
-				$coupon->type = 'renewal_cart';
-				$coupon->amount = $subscription->cart_discount;
+				wcs_set_coupon_property( $coupon, 'type', 'renewal_cart' );
+
+				wcs_set_coupon_property( $coupon, 'amount', $subscription_discount );
 
 				// Set renewal order products as the product ids on the coupon
 				if ( ! WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
-					$coupon->product_ids = $this->get_products( $subscription );
+					wcs_set_coupon_property( $coupon, 'product_ids', $this->get_products( $subscription ) );
 				}
 
 				// Store the coupon info for later
@@ -463,8 +465,8 @@ class WCS_Cart_Renewal {
 				// Get the most specific order object, which will be the renewal order for renewals, initial order for initial payments, or a subscription for switches/resubscribes
 				$order = $this->get_order( $item );
 
-				if ( isset( $order->$key ) ) {
-					$value = $order->$key;
+				if ( ( $order_value = wcs_get_objects_property( $order, $key ) ) ) {
+					$value = $order_value;
 				}
 			}
 		}
@@ -740,28 +742,59 @@ class WCS_Cart_Renewal {
 			foreach ( $coupons as $coupon ) {
 
 				// Tweak the coupon data for renewal coupons
-				if ( $code == $coupon->code ) {
+				if ( wcs_get_coupon_property( $coupon, 'code' ) == $code ) {
 
 					$data = array(
-						'discount_type'              => $coupon->type,
-						'coupon_amount'              => $coupon->amount,
-						'individual_use'             => ( $coupon->individual_use ) ? $coupon->individual_use : 'no',
-						'product_ids'                => ( $coupon->product_ids ) ? $coupon->product_ids : array(),
-						'exclude_product_ids'        => ( $coupon->exclude_product_ids ) ? $coupon->exclude_product_ids : array(),
-						'usage_limit'                => '',
-						'usage_count'                => '',
-						'expiry_date'                => '',
-						'free_shipping'              => ( $coupon->free_shipping ) ? $coupon->free_shipping : '',
-						'product_categories'         => ( $coupon->product_categories ) ? $coupon->product_categories : array(),
-						'exclude_product_categories' => ( $coupon->exclude_product_categories ) ? $coupon->exclude_product_categories : array(),
-						'exclude_sale_items'         => ( $coupon->exclude_sale_items ) ? $coupon->exclude_sale_items : 'no',
-						'minimum_amount'             => ( $coupon->minimum_amount ) ? $coupon->minimum_amount : '',
-						'maximum_amount'             => ( $coupon->maximum_amount ) ? $coupon->maximum_amount : '',
-						'customer_email'             => ( $coupon->customer_email ) ? $coupon->customer_email : array(),
+						'id'                          => true,
+						'discount_type'               => wcs_get_coupon_property( $coupon, 'type' ),
+						'amount'                      => wcs_get_coupon_property( $coupon, 'amount' ),
+						'individual_use'              => ( $individual_use = wcs_get_coupon_property( $coupon, 'individual_use' ) ) ? $individual_use : false,
+						'product_ids'                 => ( $product_ids = wcs_get_coupon_property( $coupon, 'product_ids' ) ) ? $product_ids : array(),
+						'excluded_product_ids'        => ( $excluded_product_ids = wcs_get_coupon_property( $coupon, 'exclude_product_ids' ) ) ? $excluded_product_ids : array(),
+						'usage_limit'                 => '',
+						'usage_count'                 => '',
+						'date_expires'                => '',
+						'free_shipping'               => ( $free_shipping = wcs_get_coupon_property( $coupon, 'free_shipping' ) ) ? $free_shipping : false,
+						'product_categories'          => ( $product_categories = wcs_get_coupon_property( $coupon, 'product_categories' ) ) ? $product_categories : array(),
+						'excluded_product_categories' => ( $excluded_product_categories = wcs_get_coupon_property( $coupon, 'exclude_product_categories' ) ) ? $excluded_product_categories : array(),
+						'exclude_sale_items'          => ( $exclude_sale_items = wcs_get_coupon_property( $coupon, 'exclude_sale_items' ) ) ? $exclude_sale_items : false,
+						'minimum_amount'              => ( $minimum_amount = wcs_get_coupon_property( $coupon, 'minimum_amount' ) ) ? $minimum_amount : '',
+						'maximum_amount'              => ( $maximum_amount = wcs_get_coupon_property( $coupon, 'maximum_amount' ) ) ? $maximum_amount : '',
+						'customer_email'              => ( $customer_email = wcs_get_coupon_property( $coupon, 'customer_email' ) ) ? $customer_email : array(),
 					);
+
+					if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+
+						// Pre 3.0 we don't need to pass the id.
+						unset( $data['id'] );
+
+						// Some keys have changed between WC 2.6.x and WC 3.0. This array holds those changes in a 2.6 => 3.0 format.
+						$property_changes = array(
+							'coupon_amount'              => 'amount',
+							'exclude_product_ids'        => 'excluded_product_ids',
+							'expiry_date'                => 'date_expires',
+							'exclude_product_categories' => 'excluded_product_categories',
+							'customer_email'             => 'email_restrictions',
+						);
+
+						foreach ( $data as $key => $value ) {
+
+							// Switch the 3.0 key out for the 2.6 equivalent
+							if ( in_array( $key, $property_changes ) ) {
+								$data[ array_search( $key, $property_changes ) ] = $value;
+								unset( $data[ $key ] );
+							}
+
+							// Some coupon properties have changed from accepting 'no' and 'yes' to true and false args. We need to change them into the correct format
+							if ( is_bool( $value ) && in_array( $key, array( 'individual_use', 'free_shipping', 'exclude_sale_items' ) ) ) {
+								$data[ $key ] = ( true == $value ) ? 'yes' : 'no';
+							}
+						}
+					}
 				}
 			}
 		}
+
 		return $data;
 	}
 
@@ -824,7 +857,7 @@ class WCS_Cart_Renewal {
 		if ( ! empty( $renewal_coupons ) ) {
 			foreach ( $renewal_coupons as $subscription_id => $coupons ) {
 				foreach ( $coupons as $coupon ) {
-					WC()->cart->remove_coupons( $coupon->code );
+					WC()->cart->remove_coupons( wcs_get_coupon_property( $coupon, 'code' ) );
 				}
 			}
 		}
@@ -898,7 +931,8 @@ class WCS_Cart_Renewal {
 	 * @since 2.0.14
 	 */
 	protected function set_cart_hash( $order_id ) {
-		update_post_meta( $order_id, '_cart_hash', md5( json_encode( wc_clean( WC()->cart->get_cart_for_session() ) ) . WC()->cart->total ) );
+		$order = wc_get_order( $order_id );
+		wcs_set_objects_property( $order, 'cart_hash', md5( json_encode( wc_clean( WC()->cart->get_cart_for_session() ) ) . WC()->cart->total ) );
 	}
 
 	/**
