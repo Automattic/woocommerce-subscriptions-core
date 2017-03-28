@@ -47,7 +47,7 @@ class WCS_Upgrade_Logger {
 	 */
 	public static function clear() {
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 
 			if ( empty( self::$log ) ) {
 				self::$log = new WC_Logger();

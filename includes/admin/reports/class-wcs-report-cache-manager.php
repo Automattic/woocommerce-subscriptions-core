@@ -78,7 +78,7 @@ class WCS_Report_Cache_Manager {
 	public function __construct() {
 
 		// Use the old hooks
-		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 
 			$hooks = array(
 				'woocommerce_order_add_product'  => 'woocommerce_new_order_item',

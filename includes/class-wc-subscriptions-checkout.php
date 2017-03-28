@@ -214,10 +214,10 @@ class WC_Subscriptions_Checkout {
 			$subscription->set_shipping_tax( $cart->shipping_tax_total );
 			$subscription->set_total( $cart->total );
 
-			// Hook to adjust subscriptions before saving with WC 2.7+ (matches WC 2.7's new 'woocommerce_checkout_create_order' hook)
+			// Hook to adjust subscriptions before saving with WC 3.0+ (matches WC 3.0's new 'woocommerce_checkout_create_order' hook)
 			do_action( 'woocommerce_checkout_create_subscription', $subscription, $posted_data );
 
-			// Save the subscription if using WC 2.7 & CRUD
+			// Save the subscription if using WC 3.0 & CRUD
 			$subscription->save();
 
 			// If we got here, the subscription was created without problems
@@ -261,7 +261,7 @@ class WC_Subscriptions_Checkout {
 
 			if ( isset( $package['rates'][ $shipping_method_id ] ) ) {
 
-				if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+				if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 
 					$item_id = $subscription->add_shipping( $package['rates'][ $shipping_method_id ] );
 
@@ -269,7 +269,7 @@ class WC_Subscriptions_Checkout {
 					do_action( 'woocommerce_add_shipping_order_item', $subscription->get_id(), $item_id, $package_key );
 					do_action( 'woocommerce_subscriptions_add_recurring_shipping_order_item', $subscription->get_id(), $item_id, $package_key );
 
-				} else { // WC 2.7+
+				} else { // WC 3.0+
 
 					$shipping_rate            = $package['rates'][ $shipping_method_id ];
 					$item                     = new WC_Order_Item_Shipping();
@@ -288,10 +288,10 @@ class WC_Subscriptions_Checkout {
 
 					$subscription->add_item( $item );
 
-					$item->save(); // We need the item ID for old hooks, this can be removed once support for WC < 2.7 is dropped
-					wc_do_deprecated_action( 'woocommerce_subscriptions_add_recurring_shipping_order_item', array( $subscription->get_id(), $item->get_id(), $package_key ), '2.1.4', 'CRUD and woocommerce_checkout_create_subscription_shipping_item action instead' );
+					$item->save(); // We need the item ID for old hooks, this can be removed once support for WC < 3.0 is dropped
+					wc_do_deprecated_action( 'woocommerce_subscriptions_add_recurring_shipping_order_item', array( $subscription->get_id(), $item->get_id(), $package_key ), '2.2.0', 'CRUD and woocommerce_checkout_create_subscription_shipping_item action instead' );
 
-					do_action( 'woocommerce_checkout_create_order_shipping_item', $item, $package_key, $package ); // WC 2.7+ will also trigger the deprecated 'woocommerce_add_shipping_order_item' hook
+					do_action( 'woocommerce_checkout_create_order_shipping_item', $item, $package_key, $package ); // WC 3.0+ will also trigger the deprecated 'woocommerce_add_shipping_order_item' hook
 					do_action( 'woocommerce_checkout_create_subscription_shipping_item', $item, $package_key, $package );
 				}
 			}
@@ -307,7 +307,7 @@ class WC_Subscriptions_Checkout {
 	 * @param string $cart_item_key The hash used to identify the item in the cart
 	 * @param array $cart_item The cart item's data.
 	 * @param WC_Order|WC_Subscription $subscription The order or subscription object to which the line item relates
-	 * @since 2.2
+	 * @since 2.2.0
 	 */
 	public static function remove_backorder_meta_from_subscription_line_item( $item, $cart_item_key, $cart_item, $subscription ) {
 
@@ -322,8 +322,8 @@ class WC_Subscriptions_Checkout {
 	 * @since 2.0
 	 */
 	public static function add_cart_item( $subscription, $cart_item, $cart_item_key ) {
-		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
-			_deprecated_function( __METHOD__, '2.1.4', 'WC_Checkout::create_order_line_items( $subscription, $cart )' );
+		if ( ! WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+			_deprecated_function( __METHOD__, '2.2.0', 'WC_Checkout::create_order_line_items( $subscription, $cart )' );
 		}
 
 		$item_id = $subscription->add_product(
@@ -353,10 +353,10 @@ class WC_Subscriptions_Checkout {
 		}
 
 		// Allow plugins to add order item meta
-		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 			do_action( 'woocommerce_add_subscription_item_meta', $item_id, $cart_item, $cart_item_key );
 		} else {
-			wc_do_deprecated_action( 'woocommerce_add_subscription_item_meta', array( $item_id, $cart_item, $cart_item_key ), '2.7', 'CRUD and woocommerce_checkout_create_order_line_item action instead' );
+			wc_do_deprecated_action( 'woocommerce_add_subscription_item_meta', array( $item_id, $cart_item, $cart_item_key ), '3.0', 'CRUD and woocommerce_checkout_create_order_line_item action instead' );
 		}
 
 		return $item_id;

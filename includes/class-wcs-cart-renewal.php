@@ -54,13 +54,13 @@ class WCS_Cart_Renewal {
 	}
 
 	/**
-	 * Attach WooCommerce version dependenant hooks
+	 * Attach WooCommerce version dependent hooks
 	 *
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 */
 	public function attach_dependant_hooks() {
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 
 			// When a renewal order's line items are being updated, update the line item IDs stored in cart data.
 			add_action( 'woocommerce_add_order_item_meta', array( &$this, 'update_line_item_cart_data' ), 10, 3 );
@@ -452,7 +452,7 @@ class WCS_Cart_Renewal {
 			// Guard against the fake WC_Checkout singleton, see https://github.com/woocommerce/woocommerce-subscriptions/issues/427#issuecomment-260763250
 			remove_filter( 'woocommerce_checkout_get_value', array( &$this, 'checkout_get_value' ), 10, 2 );
 
-			if ( is_callable( array( WC()->checkout(), 'get_checkout_fields' ) ) ) { // WC 2.7+
+			if ( is_callable( array( WC()->checkout(), 'get_checkout_fields' ) ) ) { // WC 3.0+
 				$address_fields = array_merge( WC()->checkout()->get_checkout_fields( 'billing' ), WC()->checkout()->get_checkout_fields( 'shipping' ) );
 			} else {
 				$address_fields = array_merge( WC()->checkout()->checkout_fields['billing'], WC()->checkout()->checkout_fields['shipping'] );
@@ -613,7 +613,7 @@ class WCS_Cart_Renewal {
 
 			$order_id = absint( WC()->session->order_awaiting_payment );
 
-			// Guard against infinite loops in WC 2.7+ where default order staus is set in WC_Abstract_Order::__construct()
+			// Guard against infinite loops in WC 3.0+ where default order staus is set in WC_Abstract_Order::__construct()
 			remove_filter( 'woocommerce_default_order_status', array( &$this, __FUNCTION__ ), 10 );
 
 			if ( $order_id > 0 && ( $order = wc_get_order( $order_id ) ) && wcs_order_contains_renewal( $order ) && $order->has_status( 'failed' ) ) {
@@ -975,10 +975,10 @@ class WCS_Cart_Renewal {
 	 * After updating renewal order line items, update the values stored in cart item data
 	 * which would now reference old line item IDs.
 	 *
-	 * Used when WC 2.7 or newer is active. When prior versions are active,
+	 * Used when WC 3.0 or newer is active. When prior versions are active,
 	 * @see WCS_Cart_Renewal->update_line_item_cart_data()
 	 *
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 */
 	public function update_order_item_data_in_cart( $order_item, $cart_item_key, $cart_item ) {
 
@@ -991,7 +991,7 @@ class WCS_Cart_Renewal {
 	 * Force an update to the session cart after updating renewal order line items.
 	 *
 	 * This is required so that changes made by @see WCS_Cart_Renewal->update_order_item_data_in_cart() (or
-	 * @see WCS_Cart_Renewal->update_line_item_cart_data() for WC < 2.7), are also reflected in the session cart.
+	 * @see WCS_Cart_Renewal->update_line_item_cart_data() for WC < 3.0), are also reflected in the session cart.
 	 *
 	 * @since 2.1.3
 	 */
@@ -1061,8 +1061,8 @@ class WCS_Cart_Renewal {
 	 */
 	public function update_line_item_cart_data( $item_id, $cart_item_data, $cart_item_key ) {
 
-		if ( false === WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
-			_deprecated_function( __METHOD__, '2.1.4 and WooCommerce 2.7.0', __CLASS__ . '::update_order_item_data_in_cart( $order_item, $cart_item_key, $cart_item )' );
+		if ( false === WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+			_deprecated_function( __METHOD__, '2.2.0 and WooCommerce 3.0', __CLASS__ . '::update_order_item_data_in_cart( $order_item, $cart_item_key, $cart_item )' );
 		}
 
 		if ( isset( $cart_item_data[ $this->cart_item_key ] ) ) {

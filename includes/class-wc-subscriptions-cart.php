@@ -142,7 +142,7 @@ class WC_Subscriptions_Cart {
 		}
 
 		// Set which price should be used for calculation
-		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 			add_filter( 'woocommerce_get_price', __CLASS__ . '::set_subscription_prices_for_calculation', 100, 2 );
 		} else {
 			add_filter( 'woocommerce_product_get_price', __CLASS__ . '::set_subscription_prices_for_calculation', 100, 2 );
@@ -156,7 +156,7 @@ class WC_Subscriptions_Cart {
 	 * @since 1.2
 	 */
 	public static function remove_calculation_price_filter() {
-		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 			remove_filter( 'woocommerce_get_price', __CLASS__ . '::set_subscription_prices_for_calculation', 100 );
 		} else {
 			remove_filter( 'woocommerce_product_get_price', __CLASS__ . '::set_subscription_prices_for_calculation', 100 );
@@ -663,7 +663,7 @@ class WC_Subscriptions_Cart {
 
 		if ( WC_Subscriptions_Product::is_subscription( $product ) && ! wcs_cart_contains_renewal() ) {
 
-			$product_price_filter = WC_Subscriptions::is_woocommerce_pre( '2.7' ) ? 'woocommerce_get_price' : 'woocommerce_product_get_price';
+			$product_price_filter = WC_Subscriptions::is_woocommerce_pre( '3.0' ) ? 'woocommerce_get_price' : 'woocommerce_product_get_price';
 
 			// Avoid infinite loop
 			remove_filter( 'woocommerce_cart_product_subtotal', __CLASS__ . '::get_formatted_product_subtotal', 11, 4 );

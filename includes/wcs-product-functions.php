@@ -7,13 +7,13 @@
  * @author 		Prospress
  * @category 	Core
  * @package 	WooCommerce Subscriptions/Functions
- * @version     2.1.4
+ * @version     2.2.0
  */
 
 /**
  * For a given product, and optionally price/qty, work out the sign-up with tax included, based on store settings.
  *
- * @since  2.1.4
+ * @since  2.2.0
  * @param  WC_Product $product
  * @param  array $args
  * @return float
@@ -25,9 +25,9 @@ function wcs_get_price_including_tax( $product, $args = array() ) {
 		'price' => $product->get_price(),
 	) );
 
-	if ( function_exists( 'wc_get_price_including_tax' ) ) { // WC 2.7+
+	if ( function_exists( 'wc_get_price_including_tax' ) ) { // WC 3.0+
 		$price = wc_get_price_including_tax( $product, $args );
-	} else { // WC < 2.7
+	} else { // WC < 3.0
 		$price = $product->get_price_including_tax( $args['qty'], $args['price'] );
 	}
 
@@ -37,7 +37,7 @@ function wcs_get_price_including_tax( $product, $args = array() ) {
 /**
  * For a given product, and optionally price/qty, work out the sign-up fee with tax excluded, based on store settings.
  *
- * @since  2.1.4
+ * @since  2.2.0
  * @param  WC_Product $product
  * @param  array $args
  * @return float
@@ -49,9 +49,9 @@ function wcs_get_price_excluding_tax( $product, $args = array() ) {
 		'price' => $product->get_price(),
 	) );
 
-	if ( function_exists( 'wc_get_price_excluding_tax' ) ) { // WC 2.7+
+	if ( function_exists( 'wc_get_price_excluding_tax' ) ) { // WC 3.0+
 		$price = wc_get_price_excluding_tax( $product, $args );
-	} else { // WC < 2.7
+	} else { // WC < 3.0
 		$price = $product->get_price_excluding_tax( $args['qty'], $args['price'] );
 	}
 
@@ -61,14 +61,14 @@ function wcs_get_price_excluding_tax( $product, $args = array() ) {
 /**
  * Returns a 'from' prefix if you want to show where prices start at.
  *
- * @since  2.1.4
+ * @since  2.2.0
  * @return string
  */
 function wcs_get_price_html_from_text( $product = '' ) {
 
-	if ( function_exists( 'wc_get_price_html_from_text' ) ) { // WC 2.7+
+	if ( function_exists( 'wc_get_price_html_from_text' ) ) { // WC 3.0+
 		$price_html_from_text = wc_get_price_html_from_text();
-	} else { // WC < 2.7
+	} else { // WC < 3.0
 		$price_html_from_text = $product->get_price_html_from_text();
 	}
 
@@ -78,11 +78,11 @@ function wcs_get_price_html_from_text( $product = '' ) {
 /**
  * Get an array of the prices, used to help determine min/max values.
  *
- * @since 2.1.4
+ * @since 2.2.0
  */
 function wcs_get_variation_prices( $variation, $variable_product ) {
 
-	if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+	if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 		$regular_price = $variation->regular_price;
 		$sale_price    = $variation->sale_price;
 	} else {
@@ -105,7 +105,7 @@ function wcs_get_variation_prices( $variation, $variable_product ) {
  *
  * @param array $child_variation_ids the IDs of product variation children ids
  * @return array() Array containing the min and max variation prices and billing data
- * @since 2.1.4
+ * @since 2.2.0
  */
 function wcs_get_min_max_variation_data( $variable_product, $child_variation_ids = array() ) {
 
@@ -156,7 +156,7 @@ function wcs_get_min_max_variation_data( $variable_product, $child_variation_ids
  *
  * @param array $child_variation_ids the IDs of product variation children ids
  * @return array
- * @since 2.1.4
+ * @since 2.2.0
  */
 function wcs_calculate_min_max_variations( $variations_data ) {
 

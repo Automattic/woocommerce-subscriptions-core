@@ -2,9 +2,9 @@
 /**
  * There is "magic" in PHP, and then there is this.
  *
- * Story time: once upon a time, in a land not too far away, WooCommerce 2.7 deprecated accessing
+ * Story time: once upon a time, in a land not too far away, WooCommerce 3.0 deprecated accessing
  * all properties on objects. A conventicle of wizards known as __get(), __set() and __isset() came
- * together to make sure that properties on Subscritpions products could still be used, despite not being
+ * together to make sure that properties on Subscriptions products could still be used, despite not being
  * accessible. However, a dark cloud hung over properties which were arrays. None of the conventicle
  * new of magic powerful enough to deal with such a problem. Enter Cesar, who summoned the dark arts
  * to call upon the ArrayAccess incantation.
@@ -15,7 +15,7 @@
  *
  * @package		WooCommerce Subscriptions
  * @category	Class
- * @since		2.1.4
+ * @since		2.2.0
  *
  */
 if ( ! defined( 'ABSPATH' ) ) {
@@ -30,7 +30,7 @@ class WCS_Array_Property_Post_Meta_Black_Magic implements ArrayAccess {
 	protected $product_id;
 
 	/**
-	 * Create a simple subscription product object.
+	 * Constructor
 	 *
 	 * @access public
 	 * @param mixed $product
@@ -39,14 +39,29 @@ class WCS_Array_Property_Post_Meta_Black_Magic implements ArrayAccess {
 		$this->product_id = $product_id;
 	}
 
+	/**
+	 * offsetGet
+	 * @param string $key
+	 * @return mixed
+	 */
 	public function offsetGet( $key ) {
 		return get_post_meta( $this->product_id, $this->maybe_prefix_meta_key( $key ) );
 	}
 
+	/**
+	 * offsetSet
+	 * @param string $key
+	 * @param mixed $value
+	 */
 	public function offsetSet( $key, $value ) {
 		update_post_meta( $this->product_id, $this->maybe_prefix_meta_key( $key ), $value );
 	}
 
+	/**
+	 * offsetExists
+	 * @param string $key
+	 * @return bool
+	 */
 	public function offsetExists( $key ) {
 		return metadata_exists( 'post', $this->product_id, $this->maybe_prefix_meta_key( $key ) );
 	}
