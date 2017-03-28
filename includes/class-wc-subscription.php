@@ -2343,7 +2343,7 @@ class WC_Subscription extends WC_Order {
 	 * @since 2.0
 	 */
 	public function update_suspension_count( $new_count ) {
-		wcs_deprecated_function( __METHOD__, '2.2.2', __CLASS__ . '::set_suspension_count(), because WooCommerce 3.0+ now uses setters' );
+		wcs_deprecated_function( __METHOD__, '2.2.0', __CLASS__ . '::set_suspension_count(), because WooCommerce 3.0+ now uses setters' );
 		$this->set_suspension_count( $new_count );
 		return $this->get_suspension_count();
 	}
