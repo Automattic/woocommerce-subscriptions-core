@@ -75,7 +75,7 @@ class WCS_PayPal_Standard_Request {
 
 			$unconverted_periods = array(
 				'billing_period' => $subscription->get_billing_period(),
-				'trial_period'   => $subscription->trial_period,
+				'trial_period'   => $subscription->get_trial_period(),
 			);
 
 			$converted_periods = array();
@@ -182,7 +182,7 @@ class WCS_PayPal_Standard_Request {
 				}
 			} else {
 
-				$subscription_trial_length = wcs_estimate_periods_between( $start_timestamp, $trial_end_timestamp, $subscription->trial_period );
+				$subscription_trial_length = wcs_estimate_periods_between( $start_timestamp, $trial_end_timestamp, $subscription->get_trial_period() );
 
 			}
 
