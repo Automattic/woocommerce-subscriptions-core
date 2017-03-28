@@ -544,7 +544,7 @@ class WC_Subscription extends WC_Order {
 
 			} else {
 				/* translators: %s: new order status */
-				$transition_note = sprintf( __( 'Status set to %s.', 'woocommerce' ), wcs_get_subscription_status_name( $this->status_transition['to'] ) );
+				$transition_note = sprintf( __( 'Status set to %s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $this->status_transition['to'] ) );
 			}
 
 			// Note the transition occured
