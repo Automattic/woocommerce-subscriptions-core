@@ -59,6 +59,7 @@ class WC_Subscription extends WC_Order {
 		'suspension_count'        => 0,
 		'requires_manual_renewal' => 'true',
 		'cancelled_email_sent'    => false,
+		'trial_period'            => '',
 
 		// Extra data that requires manual getting/setting because we don't define getters/setters for it
 		'schedule_trial_end'      => null,
@@ -774,6 +775,16 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
+	 * Get trial period.
+	 *
+	 * @return string
+	 * @since 2.2.0
+	 */
+	public function get_trial_period( $context = 'view' ) {
+		return $this->get_prop( 'trial_period', $context );
+	}
+
+	/**
 	 * Get suspension count.
 	 *
 	 * @return string
@@ -833,6 +844,16 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function set_billing_interval( $value ) {
 		$this->set_prop( 'billing_interval', absint( $value ) );
+	}
+
+	/**
+	 * Set trial period.
+	 *
+	 * @param string $value
+	 * @since 2.2.0
+	 */
+	public function set_trial_period( $value ) {
+		$this->set_prop( 'trial_period', $value );
 	}
 
 	/**

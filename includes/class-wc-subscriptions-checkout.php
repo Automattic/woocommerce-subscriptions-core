@@ -135,7 +135,7 @@ class WC_Subscriptions_Checkout {
 
 			// Store trial period for PayPal
 			if ( wcs_cart_pluck( $cart, 'subscription_trial_length' ) > 0 ) {
-				update_post_meta( $subscription->get_id(), '_trial_period', wcs_cart_pluck( $cart, 'subscription_trial_period' ) );
+				$subscription->set_trial_period( wcs_cart_pluck( $cart, 'subscription_trial_period' ) );
 			}
 
 			// Set the payment method on the subscription
