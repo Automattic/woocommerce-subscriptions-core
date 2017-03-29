@@ -153,28 +153,39 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 	 * @param WP_REST_Request $request
 	 * @param WP_POST $post
 	 */
-	protected function update_order( $request, $post ) {
+	protected function update_order( $request ) {
 		try {
-			$post_id = parent::update_order( $request, $post );
+			$subscription = $this->prepare_item_for_database( $request );
 
-			if ( is_wp_error( $post_id ) ) {
-				return $post_id;
+			// If any line items have changed, recalculate subscription totals.
+			if ( isset( $request['line_items'] ) || isset( $request['shipping_lines'] ) || isset( $request['fee_lines'] ) || isset( $request['coupon_lines'] ) ) {
+				$subscription->calculate_totals();
 			}
 
-			$subscription = wcs_get_subscription( $post_id );
-			$this->update_schedule( $subscription, $request );
-
-			if ( empty( $request['payment_details']['method_id'] ) && ! empty( $request['payment_method'] ) ) {
-				$request['payment_details']['method_id'] = $request['payment_method'];
+			// allow the order total to be overriden (i.e. if you want to have a subscription with no order items but a flat $10.00 recurring payment )
+			if ( isset( $request['order_total'] ) ) {
+				$subscription->set_total( wc_format_decimal( $request['order_total'], get_option( 'woocommerce_price_num_decimals' ) ) );
 			}
 
-			$this->update_payment_method( $subscription, $request['payment_details'], true );
+			$subscription->save();
 
-			return $post_id;
+			// Update the post meta on the subscription after it's saved, this is to avoid compat. issue with the filters in WC_Subscriptions::set_payment_method_meta() expecting the $subscription to have an ID (therefore it needs to be called after the WC_Subscription has been saved)
+			$payment_data = ( ! empty( $request['payment_details'] ) ) ? $request['payment_details'] : array();
+			if ( empty( $payment_data['payment_details']['method_id'] ) && ! empty( $request['payment_method'] ) ) {
+				$payment_data['method_id'] = $request['payment_method'];
+			}
+			$this->update_payment_method( $subscription, $payment_data, true );
+
+			// Handle set paid.
+			if ( $subscription->needs_payment() && true === $request['set_paid'] ) {
+				$subscription->payment_complete();
+			}
+
+			return $subscription->get_id();
+		} catch ( WC_Data_Exception $e ) {
+			return new WP_Error( $e->getErrorCode(), $e->getMessage(), $e->getErrorData() );
 		} catch ( WC_REST_Exception $e ) {
 			return new WP_Error( $e->getErrorCode(), $e->getMessage(), array( 'status' => $e->getCode() ) );
-		} catch ( Exception $e ) {
-			return new WP_Error( 'woocommerce_rest_cannot_update_subscription', $e->getMessage(), array( 'status' => 400 ) );
 		}
 	}
 
