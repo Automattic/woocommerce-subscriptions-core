@@ -318,10 +318,6 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 				}
 			}
 
-			if ( '' == $subscription->get_payment_method() ) {
-				$subscription->set_payment_method( $payment_gateway );
-			}
-
 			$subscription->set_payment_method( $payment_gateway, $payment_method_meta );
 
 		} catch ( Exception $e ) {

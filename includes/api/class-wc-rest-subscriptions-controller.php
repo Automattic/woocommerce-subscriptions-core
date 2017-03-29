@@ -122,15 +122,13 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 
 			$subscription->save();
 
-			$this->save_payment_method_meta( $subscription, $request );
-
 			// Store the post meta on the subscription after it's saved, this is to avoid compat. issue with the filters in WC_Subscriptions::set_payment_method_meta() expecting the $subscription to have an ID (therefore it needs to be called after the WC_Subscription has been saved)
-			if ( ! empty( $request['payment_details'] ) && ! empty( $request['payment_method'] ) ) {
-				$payment_data              = $request['payment_details'];
+			$payment_data = ( ! empty( $request['payment_details'] ) ) ? $request['payment_details'] : array();
+			if ( empty( $payment_data['payment_details']['method_id'] ) && ! empty( $request['payment_method'] ) ) {
 				$payment_data['method_id'] = $request['payment_method'];
-
-				$this->update_payment_method( $subscription, $payment_data );
 			}
+
+			$this->update_payment_method( $subscription, $payment_data );
 
 			// Handle set paid.
 			if ( true === $request['set_paid'] ) {
@@ -174,6 +172,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 			if ( empty( $payment_data['payment_details']['method_id'] ) && ! empty( $request['payment_method'] ) ) {
 				$payment_data['method_id'] = $request['payment_method'];
 			}
+
 			$this->update_payment_method( $subscription, $payment_data, true );
 
 			// Handle set paid.
@@ -267,7 +266,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 	 * @param bool $updating
 	 */
 	public function update_payment_method( $subscription, $data, $updating = false ) {
-		$payment_method = ( ! empty( $data['method_id'] ) ) ? $data['method_id'] : 'manual';
+		$payment_method = ( ! empty( $data['method_id'] ) ) ? $data['method_id'] : '';
 
 		try {
 			if ( $updating && ! array_key_exists( $payment_method, WCS_Change_Payment_Method_Admin::get_valid_payment_methods( $subscription ) ) ) {
