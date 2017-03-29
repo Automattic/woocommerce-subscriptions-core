@@ -272,6 +272,82 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 	}
 
 	/**
+	 * Prepare a single subscription for create.
+	 *
+	 * @param  WP_REST_Request $request Request object.
+	 * @return WP_Error|WC_Subscription $data Object.
+	 */
+	protected function prepare_item_for_database( $request ) {
+		$id           = isset( $request['id'] ) ? absint( $request['id'] ) : 0;
+		$subscription = new WC_Subscription( $id );
+		$schema       = $this->get_item_schema();
+		$data_keys    = array_keys( array_filter( $schema['properties'], array( $this, 'filter_writable_props' ) ) );
+
+		$dates_to_update = array();
+
+		// Handle all writable props
+		foreach ( $data_keys as $key ) {
+			$value = $request[ $key ];
+
+			if ( ! is_null( $value ) ) {
+				switch ( $key ) {
+					case 'billing' :
+					case 'shipping' :
+						$this->update_address( $subscription, $value, $key );
+						break;
+					case 'line_items' :
+					case 'shipping_lines' :
+					case 'fee_lines' :
+					case 'coupon_lines' :
+						if ( is_array( $value ) ) {
+							foreach ( $value as $item ) {
+								if ( is_array( $item ) ) {
+									if ( $this->item_is_null( $item ) || ( isset( $item['quantity'] ) && 0 === $item['quantity'] ) ) {
+										$subscription->remove_item( $item['id'] );
+									} else {
+										$this->set_item( $subscription, $key, $item );
+									}
+								}
+							}
+						}
+						break;
+					case 'start_date' :
+					case 'trial_end_date' :
+					case 'next_payment_date' :
+					case 'end_date' :
+						$date_type_key = ( 'start_date' === $key ) ? 'date_created' : $key;
+						$dates_to_update[ $date_type_key ] = $value;
+						break;
+					default :
+						if ( is_callable( array( $subscription, "set_{$key}" ) ) ) {
+							$subscription->{"set_{$key}"}( $value );
+						}
+						break;
+				}
+			}
+		}
+
+		try {
+			if ( ! empty( $dates_to_update ) ) {
+				$subscription->update_dates( $dates_to_update );
+			}
+		} catch ( Exception $e ) {
+			throw new WC_REST_Exception( 'woocommerce_rest_cannot_update_subscription_dates', sprintf( __( 'Updating subscription dates errored with message: %s', 'woocommerce-subscriptions' ), $e->getMessage() ), 400 );
+		}
+
+		/**
+		 * Filter the data for the insert.
+		 *
+		 * The dynamic portion of the hook name, $this->post_type, refers to post_type of the post being
+		 * prepared for the response.
+		 *
+		 * @param WC_Subscription    $subscription   The subscription object.
+		 * @param WP_REST_Request    $request        Request object.
+		 */
+		return apply_filters( "woocommerce_rest_pre_insert_{$this->post_type}", $subscription, $request );
+	}
+
+	/**
 	 * Adds additional item schema information for subscription requests
 	 *
 	 * @since 2.1
