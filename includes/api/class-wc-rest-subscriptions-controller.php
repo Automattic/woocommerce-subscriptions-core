@@ -446,6 +446,9 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 	/**
 	 * Prepare subscription data for create.
 	 *
+	 * Now that we override WC_REST_Orders_V1_Controller::prepare_item_for_database() function,
+	 * we no longer need to prepare these args
+	 *
 	 * @since 2.1
 	 * @param stdClass $data
 	 * @param WP_REST_Request $request Request object.
@@ -469,41 +472,11 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 		$data->payment_method  = ! empty( $request['payment_method'] ) ? $request['payment_method'] : '';
 
 		return $data;
-
 	}
 
 	/**
-	 * Create WC_Subscription object.
+	 * Update or set the subscription schedule with the request data.
 	 *
-	 * As of WooCommerce v3.0.0, they don't use create_base_order and therefore this function has no use.
-	 *
-	 * @since 2.1
-	 * @param array $args subscription args.
-	 * @return WC_Subscription
-	 * @deprecated 2.2
-	 */
-	protected function create_base_order( $args ) {
-		wcs_deprecated_function( __METHOD__, '2.2' );
-
-		$subscription = wcs_create_subscription( $args );
-
-		if ( is_wp_error( $subscription ) ) {
-			throw new WC_REST_Exception( 'woocommerce_rest_cannot_create_subscription', sprintf( __( 'Cannot create subscription: %s.', 'woocommerce-subscriptions' ), implode( ', ', $subscription->get_error_messages() ) ), 400 );
-		}
-
-		$this->update_schedule( $subscription, $args );
-
-		if ( empty( $args['payment_details']['method_id'] ) && ! empty( $args['payment_method'] ) ) {
-			$args['payment_details']['method_id'] = $args['payment_method'];
-		}
-
-		$this->update_payment_method( $subscription, $args['payment_details'] );
-
-		return $subscription;
-	}
-
-	/**
-	 * Update or set the subscription schedule with the request data
 	 *
 	 * @since 2.1
 	 * @param WC_Subscription $subscription
@@ -511,7 +484,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 	 * @deprecated 2.2
 	 */
 	public function update_schedule( $subscription, $data ) {
-		wcs_deprecated_function( __METHOD__, '2.2' );
+		wcs_deprecated_function( __METHOD__, '2.2', 'WC_REST_Subscriptions_Controller::prepare_item_for_database() now prepares the billing interval/period and dates' );
 
 		if ( isset( $data['billing_interval'] ) ) {
 			$subscription->set_billing_interval( absint( $data['billing_interval'] ) );
