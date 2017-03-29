@@ -42,6 +42,14 @@ class WC_Subscriptions_Admin {
 	private static $found_related_orders = false;
 
 	/**
+	 * Is meta boxes saved once?
+	 *
+	 * @var boolean
+	 * @since 2.2.0
+	 */
+	private static $saved_product_meta = false;
+
+	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
 	 * @since 1.0
@@ -304,11 +312,6 @@ class WC_Subscriptions_Admin {
 	public static function variable_subscription_pricing_fields( $loop, $variation_data, $variation ) {
 		global $thepostid;
 
-		// Set month as the default billing period
-		if ( ! $subscription_period = get_post_meta( $variation->ID, '_subscription_period', true ) ) {
-			$subscription_period = 'month';
-		}
-
 		// When called via Ajax
 		if ( ! function_exists( 'woocommerce_wp_text_input' ) ) {
 			require_once( WC()->plugin_path() . '/admin/post-types/writepanels/writepanels-init.php' );
@@ -317,6 +320,8 @@ class WC_Subscriptions_Admin {
 		if ( ! isset( $thepostid ) ) {
 			$thepostid = $variation->post_parent;
 		}
+
+		$variation_product = wc_get_product( $variation );
 
 		include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/html-variation-price.php' );
 
@@ -354,7 +359,7 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function save_subscription_meta( $post_id ) {
 
-		if ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) || ! isset( $_POST['product-type'] ) || ! in_array( $_POST['product-type'], apply_filters( 'woocommerce_subscription_product_types', array( WC_Subscriptions::$name ) ) ) ) {
+		if ( self::$saved_product_meta || ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) || ! isset( $_POST['product-type'] ) || ! in_array( $_POST['product-type'], apply_filters( 'woocommerce_subscription_product_types', array( WC_Subscriptions::$name ) ) ) ) ) {
 			return;
 		}
 
@@ -420,6 +425,8 @@ class WC_Subscriptions_Admin {
 			}
 		}
 
+		// To prevent running this function on multiple save_post triggered events per update. Similar to WC_Admin_Meta_Boxes:$saved_meta_boxes implementation.
+		self::$saved_product_meta = true;
 	}
 
 	/**
@@ -431,7 +438,7 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function save_variable_subscription_meta( $post_id ) {
 
-		if ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) || ! isset( $_POST['product-type'] ) || ! in_array( $_POST['product-type'], apply_filters( 'woocommerce_subscription_variable_product_types', array( 'variable-subscription' ) ) ) ) {
+		if ( self::$saved_product_meta || ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) || ! isset( $_POST['product-type'] ) || ! in_array( $_POST['product-type'], apply_filters( 'woocommerce_subscription_variable_product_types', array( 'variable-subscription' ) ) ) ) ) {
 			return;
 		}
 
@@ -441,6 +448,8 @@ class WC_Subscriptions_Admin {
 
 		update_post_meta( $post_id, '_subscription_one_time_shipping', stripslashes( isset( $_REQUEST['_subscription_one_time_shipping'] ) ? 'yes' : 'no' ) );
 
+		// To prevent running this function on multiple save_post triggered events per update. Similar to WC_Admin_Meta_Boxes:$saved_meta_boxes implementation.
+		self::$saved_product_meta = true;
 	}
 
 	/**
@@ -490,8 +499,8 @@ class WC_Subscriptions_Admin {
 
 			if ( isset( $new_price ) && $new_price != $old_regular_price ) {
 				$price_changed = true;
-				update_post_meta( $product->id, '_regular_price', $new_price );
-				update_post_meta( $product->id, '_subscription_price', $new_price );
+				update_post_meta( $product->get_id(), '_regular_price', $new_price );
+				update_post_meta( $product->get_id(), '_subscription_price', $new_price );
 				$product->regular_price = $new_price;
 			}
 		}
@@ -533,24 +542,24 @@ class WC_Subscriptions_Admin {
 
 			if ( isset( $new_price ) && $new_price != $old_sale_price ) {
 				$price_changed = true;
-				update_post_meta( $product->id, '_sale_price', $new_price );
+				update_post_meta( $product->get_id(), '_sale_price', $new_price );
 				$product->sale_price = $new_price;
 			}
 		}
 
 		if ( $price_changed ) {
-			update_post_meta( $product->id, '_sale_price_dates_from', '' );
-			update_post_meta( $product->id, '_sale_price_dates_to', '' );
+			update_post_meta( $product->get_id(), '_sale_price_dates_from', '' );
+			update_post_meta( $product->get_id(), '_sale_price_dates_to', '' );
 
 			if ( $product->regular_price < $product->sale_price ) {
 				$product->sale_price = '';
-				update_post_meta( $product->id, '_sale_price', '' );
+				update_post_meta( $product->get_id(), '_sale_price', '' );
 			}
 
 			if ( $product->sale_price ) {
-				update_post_meta( $product->id, '_price', $product->sale_price );
+				update_post_meta( $product->get_id(), '_price', $product->sale_price );
 			} else {
-				update_post_meta( $product->id, '_price', $product->regular_price );
+				update_post_meta( $product->get_id(), '_price', $product->regular_price );
 			}
 		}
 	}
@@ -628,9 +637,12 @@ class WC_Subscriptions_Admin {
 		}
 
 		// Now that all the variation's meta is saved, sync the min variation price
-		$variable_subscription = wc_get_product( $post_id );
-		$variable_subscription->variable_product_sync();
-
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+			$variable_subscription = wc_get_product( $post_id );
+			$variable_subscription->variable_product_sync();
+		} else {
+			WC_Product_Variable::sync( $post_id );
+		}
 	}
 
 	/**

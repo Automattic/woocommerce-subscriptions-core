@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @package WooCommerce_Subscriptions/API
  * @extends WC_REST_Orders_Controller
  */
-class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
+class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 
 	/**
 	 * Route base.
@@ -83,9 +83,9 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 		if ( ! empty( $post->post_type ) && ! empty( $post->ID ) && 'shop_subscription' == $post->post_type ) {
 			$subscription = wcs_get_subscription( $post->ID );
 
-			$response->data['billing_period']    = $subscription->billing_period;
-			$response->data['billing_interval']  = $subscription->billing_interval;
-			$response->data['start_date']        = wc_rest_prepare_date_response( $subscription->get_date( 'start' ) );
+			$response->data['billing_period']    = $subscription->get_billing_period();
+			$response->data['billing_interval']  = $subscription->get_billing_interval();
+			$response->data['start_date']        = wc_rest_prepare_date_response( $subscription->get_date( 'date_created' ) );
 			$response->data['trial_end_date']    = wc_rest_prepare_date_response( $subscription->get_date( 'trial_end' ) );
 			$response->data['next_payment_date'] = wc_rest_prepare_date_response( $subscription->get_date( 'next_payment' ) );
 			$response->data['end_date']          = wc_rest_prepare_date_response( $subscription->get_date( 'end_date' ) );
@@ -252,11 +252,11 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 	 */
 	public function update_schedule( $subscription, $data ) {
 		if ( isset( $data['billing_interval'] ) ) {
-			update_post_meta( $subscription->id, '_billing_interval', absint( $data['billing_interval'] ) );
+			update_post_meta( $subscription->get_id(), '_billing_interval', absint( $data['billing_interval'] ) );
 		}
 
 		if ( ! empty( $data['billing_period'] ) ) {
-			update_post_meta( $subscription->id, '_billing_period', $data['billing_period'] );
+			update_post_meta( $subscription->get_id(), '_billing_period', $data['billing_period'] );
 		}
 
 		try {
@@ -264,7 +264,8 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 
 			foreach ( array( 'start', 'trial_end', 'end', 'next_payment' ) as $date_type ) {
 				if ( isset( $data[ $date_type . '_date' ] ) ) {
-					$dates_to_update[ $date_type ] = $data[ $date_type . '_date' ];
+					$date_type_key = ( 'start' === $date_type ) ? 'date_created' : $date_type;
+					$dates_to_update[ $date_type_key ] = $data[ $date_type . '_date' ];
 				}
 			}
 
@@ -316,8 +317,8 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 				}
 			}
 
-			if ( empty( $subscription->payment_gateway ) ) {
-				$subscription->payment_gateway = $payment_gateway;
+			if ( '' == $subscription->get_payment_method() ) {
+				$subscription->set_payment_method( $payment_gateway );
 			}
 
 			$subscription->set_payment_method( $payment_gateway, $payment_method_meta );
@@ -400,7 +401,8 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 
 		foreach ( array( 'start', 'trial_end', 'end', 'next_payment' ) as $date_type ) {
 			if ( ! empty( $request[ $date_type . '_date' ] ) ) {
-				$data->{$date_type . '_date'} = $request[ $date_type . '_date' ];
+				$date_type_key = ( 'start' === $date_type ) ? 'date_created' : $date_type . '_date';
+				$data->{$date_type_key} = $request[ $date_type . '_date' ];
 			}
 		}
 

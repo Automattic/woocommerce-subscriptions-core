@@ -68,7 +68,7 @@ class WCS_Retry_Email {
 				$email_class = $retry_rule->get_email_template( $recipient );
 				if ( class_exists( $email_class ) ) {
 					$email = new $email_class();
-					$email->trigger( $last_order );
+					$email->trigger( wcs_get_objects_property( $last_order, 'id' ), $last_order );
 				}
 			}
 		}

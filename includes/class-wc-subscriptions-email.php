@@ -104,7 +104,7 @@ class WC_Subscriptions_Email {
 	public static function send_cancelled_email( $subscription ) {
 		WC()->mailer();
 
-		if ( $subscription->has_status( array( 'pending-cancel', 'cancelled' ) ) && 'true' !== get_post_meta( $subscription->id, '_cancelled_email_sent', true ) ) {
+		if ( $subscription->has_status( array( 'pending-cancel', 'cancelled' ) ) && 'true' !== get_post_meta( $subscription->get_id(), '_cancelled_email_sent', true ) ) {
 			do_action( 'cancelled_subscription_notification', $subscription );
 		}
 	}
@@ -185,7 +185,7 @@ class WC_Subscriptions_Email {
 	public static function renewal_order_emails_available( $available_emails ) {
 		global $theorder;
 
-		if ( wcs_order_contains_renewal( $theorder->id ) ) {
+		if ( wcs_order_contains_renewal( wcs_get_objects_property( $theorder, 'id' ) ) ) {
 			$available_emails = array(
 				'new_renewal_order',
 				'customer_processing_renewal_order',
@@ -252,7 +252,11 @@ class WC_Subscriptions_Email {
 				add_filter( 'woocommerce_order_is_download_permitted', $show_download_links_callback );
 				add_filter( 'woocommerce_order_is_paid', $show_purchase_note_callback );
 
-				$items_table = $order->email_order_items_table( $args );
+				if ( function_exists( 'wc_get_email_order_items' ) ) { // WC 3.0+
+					$items_table = wc_get_email_order_items( $order );
+				} else {
+					$items_table = $order->email_order_items_table( $args );
+				}
 
 				remove_filter( 'woocommerce_order_is_download_permitted', $show_download_links_callback );
 				remove_filter( 'woocommerce_order_is_paid', $show_purchase_note_callback );

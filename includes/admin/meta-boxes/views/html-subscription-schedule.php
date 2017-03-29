@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				'id'          => '_billing_interval',
 				'class'       => 'billing_interval',
 				'label'       => __( 'Recurring:', 'woocommerce-subscriptions' ),
-				'value'       => empty( $the_subscription->billing_interval ) ? 1 : $the_subscription->billing_interval,
+				'value'       => $the_subscription->get_billing_interval(),
 				'options'     => wcs_get_subscription_period_interval_strings(),
 				)
 			);
@@ -30,7 +30,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				'id'          => '_billing_period',
 				'class'       => 'billing_period',
 				'label'       => __( 'Billing Period', 'woocommerce-subscriptions' ),
-				'value'       => empty( $the_subscription->billing_period ) ? 'month' : $the_subscription->billing_period,
+				'value'       => $the_subscription->get_billing_period(),
 				'options'     => wcs_get_subscription_period_strings(),
 				)
 			);
@@ -39,7 +39,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</div>
 		<?php else : ?>
 		<strong><?php esc_html_e( 'Recurring:', 'woocommerce-subscriptions' ); ?></strong>
-		<?php printf( '%s %s', esc_html( wcs_get_subscription_period_interval_strings( $the_subscription->billing_interval ) ), esc_html( wcs_get_subscription_period_strings( 1, $the_subscription->billing_period ) ) ); ?>
+		<?php printf( '%s %s', esc_html( wcs_get_subscription_period_interval_strings( $the_subscription->get_billing_interval() ) ), esc_html( wcs_get_subscription_period_strings( 1, $the_subscription->get_billing_period() ) ) ); ?>
 	<?php endif; ?>
 	</div>
 
