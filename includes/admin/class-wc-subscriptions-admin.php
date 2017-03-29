@@ -322,6 +322,11 @@ class WC_Subscriptions_Admin {
 		}
 
 		$variation_product = wc_get_product( $variation );
+		$billing_period    = WC_Subscriptions_Product::get_period( $variation_product );
+
+		if ( empty( $billing_period ) ) {
+			$billing_period = 'month';
+		}
 
 		include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/html-variation-price.php' );
 
