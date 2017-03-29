@@ -321,6 +321,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 			$subscription->set_payment_method( $payment_gateway, $payment_method_meta );
 
 		} catch ( Exception $e ) {
+			$subscription->set_payment_method();
 			// translators: 1$: gateway id, 2$: error message
 			throw new WC_REST_Exception( 'woocommerce_rest_invalid_payment_data', sprintf( __( 'Subscription payment method could not be set to %1$s with error message: %2$s', 'woocommerce-subscriptions' ), $payment_method, $e->getMessage() ), 400 );
 		}
