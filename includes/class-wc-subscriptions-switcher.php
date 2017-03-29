@@ -815,8 +815,6 @@ class WC_Subscriptions_Switcher {
 								) );
 							}
 
-							$item->set_backorder_meta();
-
 							if ( WC_Subscriptions_Product::get_trial_length( wcs_get_canonical_product_id( $cart_item ) ) > 0 ) {
 								$item->add_meta_data( '_has_trial', 'true' );
 							}
