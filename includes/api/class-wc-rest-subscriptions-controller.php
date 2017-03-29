@@ -104,17 +104,45 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 	 * @param WP_REST_Request $request
 	 */
 	protected function create_order( $request ) {
-		$post_id = parent::create_order( $request );
+		try {
+			if ( ! is_null( $request['customer_id'] ) && 0 !== $request['customer_id'] && false === get_user_by( 'id', $request['customer_id'] ) ) {
+				throw new WC_REST_Exception( 'woocommerce_rest_invalid_customer_id',__( 'Customer ID is invalid.', 'woocommerce-subscriptions' ), 400 );
+			}
 
-		if ( is_wp_error( $post_id ) ) {
-			return $post_id;
+			// prepare all subscription data from the request
+			$subscription = $this->prepare_item_for_database( $request );
+			$subscription->set_created_via( 'rest-api' );
+			$subscription->set_prices_include_tax( 'yes' === get_option( 'woocommerce_prices_include_tax' ) );
+			$subscription->calculate_totals();
+
+			// allow the order total to be overriden (i.e. if you want to have a subscription with no order items but a flat $10.00 recurring payment )
+			if ( isset( $request['order_total'] ) ) {
+				$subscription->set_total( wc_format_decimal( $request['order_total'], get_option( 'woocommerce_price_num_decimals' ) ) );
+			}
+
+			$subscription->save();
+
+			$this->save_payment_method_meta( $subscription, $request );
+
+			// Store the post meta on the subscription after it's saved, this is to avoid compat. issue with the filters in WC_Subscriptions::set_payment_method_meta() expecting the $subscription to have an ID (therefore it needs to be called after the WC_Subscription has been saved)
+			if ( ! empty( $request['payment_details'] ) && ! empty( $request['payment_method'] ) ) {
+				$payment_data              = $request['payment_details'];
+				$payment_data['method_id'] = $request['payment_method'];
+
+				$this->update_payment_method( $subscription, $payment_data );
+			}
+
+			// Handle set paid.
+			if ( true === $request['set_paid'] ) {
+				$subscription->payment_complete( $request['transaction_id'] );
+			}
+
+			return $subscription->get_id();
+		} catch ( WC_Data_Exception $e ) {
+			return new WP_Error( $e->getErrorCode(), $e->getMessage(), $e->getErrorData() );
+		} catch ( WC_REST_Exception $e ) {
+			return new WP_Error( $e->getErrorCode(), $e->getMessage(), array( 'status' => $e->getCode() ) );
 		}
-
-		if ( isset( $request['order_total'] ) ) {
-			update_post_meta( $post_id, '_order_total', wc_format_decimal( $request['order_total'], get_option( 'woocommerce_price_num_decimals' ) ) );
-		}
-
-		return $post_id;
 	}
 
 	/**
