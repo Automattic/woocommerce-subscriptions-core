@@ -391,7 +391,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 			),
 			'payment_details' => array(
 				'description' => __( 'Subscription payment details.', 'woocommerce-subscriptions' ),
-				'type'        => 'array',
+				'type'        => 'object',
 				'context'     => array( 'edit' ),
 				'properties'  => array(
 					'method_id' => array(
@@ -406,7 +406,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 				'type'        => 'date-time',
 				'context'     => array( 'view', 'edit' ),
 			),
-			'trial_date' => array(
+			'trial_end_date' => array(
 				'description' => __( "The subscription's trial date", 'woocommerce-subscriptions' ),
 				'type'        => 'date-time',
 				'context'     => array( 'view', 'edit' ),
