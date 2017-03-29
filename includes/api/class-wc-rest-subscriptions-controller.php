@@ -109,6 +109,11 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 				throw new WC_REST_Exception( 'woocommerce_rest_invalid_customer_id',__( 'Customer ID is invalid.', 'woocommerce-subscriptions' ), 400 );
 			}
 
+			// If the start date is not set in the request, set its default to now
+			if ( ! isset( $request['start_date'] ) ) {
+				$request['start_date'] = gmdate( 'Y-m-d H:i:s' );
+			}
+
 			// prepare all subscription data from the request
 			$subscription = $this->prepare_item_for_database( $request );
 			$subscription->set_created_via( 'rest-api' );
