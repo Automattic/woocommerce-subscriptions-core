@@ -497,7 +497,7 @@ class WC_Subscription_Legacy extends WC_Subscription {
 			}
 		}
 
-		return $datetime;
+		return wcs_get_datetime_from( $datetime );
 	}
 
 	/*** Setters *****************************************************/
