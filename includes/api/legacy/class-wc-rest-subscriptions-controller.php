@@ -135,11 +135,12 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 			$subscription = wcs_get_subscription( $post_id );
 			$this->update_schedule( $subscription, $request );
 
-			if ( empty( $request['payment_details']['method_id'] ) && ! empty( $request['payment_method'] ) ) {
-				$request['payment_details']['method_id'] = $request['payment_method'];
+			$payment_data = ( ! empty( $request['payment_details'] ) ) ? $request['payment_details'] : array();
+			if ( empty( $payment_data['payment_details']['method_id'] ) && ! empty( $request['payment_method'] ) ) {
+				$payment_data['method_id'] = $request['payment_method'];
 			}
 
-			$this->update_payment_method( $subscription, $request['payment_details'], true );
+			$this->update_payment_method( $subscription, $payment_data, true );
 
 			return $post_id;
 		} catch ( WC_REST_Exception $e ) {
@@ -351,7 +352,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 			),
 			'payment_details' => array(
 				'description' => __( 'Subscription payment details.', 'woocommerce-subscriptions' ),
-				'type'        => 'array',
+				'type'        => 'object',
 				'context'     => array( 'edit' ),
 				'properties'  => array(
 					'method_id' => array(
