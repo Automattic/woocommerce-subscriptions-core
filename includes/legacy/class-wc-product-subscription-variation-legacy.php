@@ -73,40 +73,14 @@ class WC_Product_Subscription_Variation_Legacy extends WC_Product_Subscription_V
 	/**
 	 * Get method returns variation meta data if set, otherwise in most cases the data from the parent.
 	 *
+	 * We need to use the WC_Product_Variation's __get() method, not the one in WC_Product_Subscription_Variation,
+	 * which handles deprecation notices.
+	 *
 	 * @param string $key
 	 * @return mixed
 	 */
 	public function __get( $key ) {
-		if ( in_array( $key, array_keys( $this->variation_level_meta_data ) ) ) {
-
-			$value = get_post_meta( $this->variation_id, '_' . $key, true );
-
-			if ( '' === $value ) {
-				$value = $this->variation_level_meta_data[ $key ];
-			}
-		} elseif ( in_array( $key, array_keys( $this->variation_inherited_meta_data ) ) ) {
-
-			$value = metadata_exists( 'post', $this->variation_id, '_' . $key ) ? get_post_meta( $this->variation_id, '_' . $key, true ) : get_post_meta( $this->id, '_' . $key, true );
-
-			// Handle meta data keys which can be empty at variation level to cause inheritance
-			if ( '' === $value && in_array( $key, array( 'sku', 'weight', 'length', 'width', 'height' ) ) ) {
-				$value = get_post_meta( $this->id, '_' . $key, true );
-			}
-
-			if ( '' === $value ) {
-				$value = $this->variation_inherited_meta_data[ $key ];
-			}
-		} elseif ( 'variation_data' === $key ) {
-			return $this->variation_data = wc_get_product_variation_attributes( $this->variation_id );
-
-		} elseif ( 'variation_has_stock' === $key ) {
-			return $this->managing_stock();
-
-		} else {
-			$value = metadata_exists( 'post', $this->variation_id, '_' . $key ) ? get_post_meta( $this->variation_id, '_' . $key, true ) : parent::__get( $key );
-		}
-
-		return $value;
+		return WC_Product_Variation::__get( $key );
 	}
 
 	/**
