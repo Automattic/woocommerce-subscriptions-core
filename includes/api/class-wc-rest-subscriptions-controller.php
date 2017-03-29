@@ -256,9 +256,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 	 * @param bool $updating
 	 */
 	public function update_payment_method( $subscription, $data, $updating = false ) {
-		$payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
-		$payment_method   = ( ! empty( $data['method_id'] ) ) ? $data['method_id'] : 'manual';
-		$payment_gateway  = ( ! empty( $payment_gateways[ $payment_method ] ) ) ? $payment_gateways[ $payment_method ] : '';
+		$payment_method = ( ! empty( $data['method_id'] ) ) ? $data['method_id'] : 'manual';
 
 		try {
 			if ( $updating && ! array_key_exists( $payment_method, WCS_Change_Payment_Method_Admin::get_valid_payment_methods( $subscription ) ) ) {
@@ -267,8 +265,8 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 
 			$payment_method_meta = apply_filters( 'woocommerce_subscription_payment_meta', array(), $subscription );
 
-			if ( ! empty( $payment_gateway ) && isset( $payment_method_meta[ $payment_gateway->id ] ) ) {
-				$payment_method_meta = $payment_method_meta[ $payment_gateway->id ];
+			if ( isset( $payment_method_meta[ $payment_method ] ) ) {
+				$payment_method_meta = $payment_method_meta[ $payment_method ];
 
 				if ( ! empty( $payment_method_meta ) ) {
 
@@ -287,11 +285,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 				}
 			}
 
-			if ( '' == $subscription->get_payment_method() ) {
-				$subscription->set_payment_method( $payment_gateway );
-			}
-
-			$subscription->set_payment_method( $payment_gateway, $payment_method_meta );
+			$subscription->set_payment_method( $payment_method, $payment_method_meta );
 
 		} catch ( Exception $e ) {
 			// translators: 1$: gateway id, 2$: error message
