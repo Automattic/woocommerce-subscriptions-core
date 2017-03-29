@@ -792,7 +792,7 @@ function wcs_get_datetime_from( $variable_date_type ) {
 		if ( empty( $variable_date_type ) ) {
 			$datetime = null;
 		} elseif ( is_a( $variable_date_type, 'WC_DateTime' ) ) {
-			$datetime = $value;
+			$datetime = $variable_date_type;
 		} elseif ( is_numeric( $variable_date_type ) ) {
 			$datetime = new WC_DateTime( "@{$variable_date_type}", new DateTimeZone( 'UTC' ) );
 			$datetime->setTimezone( new DateTimeZone( wc_timezone_string() ) );

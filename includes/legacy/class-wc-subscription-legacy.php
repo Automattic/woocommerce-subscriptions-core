@@ -497,7 +497,7 @@ class WC_Subscription_Legacy extends WC_Subscription {
 			}
 		}
 
-		return $datetime;
+		return wcs_get_datetime_from( $datetime );
 	}
 
 	/*** Setters *****************************************************/
@@ -590,8 +590,11 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	 * @param int $value UTC timestamp
 	 */
 	protected function set_date_prop( $date_type, $value ) {
-		$this->set_prop( $this->get_date_prop_key( $date_type ), wcs_get_datetime_from( $value ) );
-		$this->schedule->{$date_type} = gmdate( 'Y:m:d H:i:s', $value );
+		$datetime = wcs_get_datetime_from( $value );
+		$date     = ! is_null( $datetime ) ? wcs_get_datetime_utc_string( $datetime ) : 0;
+
+		$this->set_prop( $this->get_date_prop_key( $date_type ), $date );
+		$this->schedule->{$date_type} = $date;
 	}
 
 	/**
