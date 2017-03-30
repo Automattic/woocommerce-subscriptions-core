@@ -546,8 +546,8 @@ class WC_Subscriptions_Admin {
 		}
 
 		if ( $price_changed ) {
-			wcs_set_objects_property( $product, 'date_on_sale_from', '' );
-			wcs_set_objects_property( $product, 'date_on_sale_to', '' );
+			wcs_set_objects_property( $product, 'sale_price_dates_from', '' );
+			wcs_set_objects_property( $product, 'sale_price_dates_to', '' );
 
 			if ( $product->get_regular_price() < $product->get_sale_price() ) {
 				wcs_set_objects_property( $product, 'sale_price', '' );
