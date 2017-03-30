@@ -129,7 +129,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function attach_dependant_hooks() {
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 
 			// For order items created as part of a switch, keep a record of the prorated amounts
 			add_action( 'woocommerce_add_order_item_meta', __CLASS__ . '::add_order_item_meta', 10, 3 );
@@ -589,8 +589,8 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function add_order_item_meta( $order_item_id, $cart_item, $cart_item_key ) {
 
-		if ( false === WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
-			_deprecated_function( __METHOD__, '2.1.4 and WooCommerce 2.7.0', __CLASS__ . '::add_order_line_item_meta( $order_item, $cart_item_key, $cart_item )' );
+		if ( false === WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+			_deprecated_function( __METHOD__, '2.1.4 and WooCommerce 3.0.0', __CLASS__ . '::add_order_line_item_meta( $order_item, $cart_item_key, $cart_item )' );
 		}
 
 		if ( isset( $cart_item['subscription_switch'] ) ) {
@@ -623,7 +623,7 @@ class WC_Subscriptions_Switcher {
 	 * For orders: to prorate sign-up fee and recurring amounts correctly when the customer switches a subscription
 	 * multiple times, keep a record of the amount for each on the order item.
 	 *
-	 * Attached to WC 2.7+ hooks and uses WC 2.7 methods.
+	 * Attached to WC 3.0+ hooks and uses WC 3.0 methods.
 	 *
 	 * @param WC_Order_Item_Product $order_item
 	 * @param string $cart_item_key The hash used to identify the item in the cart
@@ -666,7 +666,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function set_subscription_item_meta( $item_id, $cart_item, $cart_item_key ) {
 
-		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+		if ( ! WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 			_deprecated_function( __METHOD__, '2.1.4', __CLASS__ . '::add_subscription_line_item_meta( $order_item, $cart_item_key, $cart_item )' );
 		}
 
@@ -789,7 +789,7 @@ class WC_Subscriptions_Switcher {
 					if ( $is_single_item_subscription || ( false === $is_different_billing_schedule && false === $is_different_payment_date && false === $is_different_length ) ) {
 
 						// Add the new item
-						if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+						if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 							$item_id = WC_Subscriptions_Checkout::add_cart_item( $subscription, $cart_item, $cart_item_key );
 						} else {
 							$item = new WC_Order_Item_Pending_Switch;
@@ -879,7 +879,7 @@ class WC_Subscriptions_Switcher {
 
 					WC_Subscriptions_Checkout::add_shipping( $subscription, $recurring_cart );
 
-					if ( ! WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+					if ( ! WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 						// We must save the subscription, we need the Shipping method saved
 						// otherwise the ID is bogus (new:1) and we need it.
 						$subscription->save();
