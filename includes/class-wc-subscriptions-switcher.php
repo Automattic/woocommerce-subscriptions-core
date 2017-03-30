@@ -1960,8 +1960,12 @@ class WC_Subscriptions_Switcher {
 			if ( ! empty( $switch_data['billing_schedule'] ) ) {
 
 				// Update the billing schedule
-				foreach ( $switch_data['billing_schedule'] as $meta_key => $value ) {
-					wcs_set_objects_property( $subscription, $meta_key, $value );
+				if ( ! empty( $switch_data['billing_schedule']['_billing_period'] ) ) {
+					$subscription->set_billing_period( $switch_data['billing_schedule']['_billing_period'] );
+				}
+
+				if ( ! empty( $switch_data['billing_schedule']['_billing_interval'] ) ) {
+					$subscription->set_billing_interval( $switch_data['billing_schedule']['_billing_interval'] );
 				}
 			}
 
@@ -1982,7 +1986,10 @@ class WC_Subscriptions_Switcher {
 			// Update the subscription address
 			self::maybe_update_subscription_address( $order, $subscription );
 
-			$subscription->calculate_totals();
+			// Save every change
+			$subscription->save();
+
+			wcs_get_subscription( $subscription->get_id() )->calculate_totals();
 		}
 	}
 
