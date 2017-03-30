@@ -1101,12 +1101,15 @@ class WC_Subscription extends WC_Order {
 	 */
 	protected function set_last_order_date( $date_type, $date = null ) {
 
-		$setter     = 'set_' . $date_type;
-		$last_order = $this->get_last_order( 'all' );
+		if ( $this->object_read ) {
 
-		if ( $last_order && is_callable( array( $last_order, $setter ) ) ) {
-			$last_order->{$setter}( $date );
-			$last_order->save();
+			$setter     = 'set_' . $date_type;
+			$last_order = $this->get_last_order( 'all' );
+
+			if ( $last_order && is_callable( array( $last_order, $setter ) ) ) {
+				$last_order->{$setter}( $date );
+				$last_order->save();
+			}
 		}
 	}
 
