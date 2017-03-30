@@ -2283,7 +2283,8 @@ class WC_Subscription extends WC_Order {
 			$dates[ $date_type ] = gmdate( 'Y-m-d H:i:s', $timestamp );
 		}
 
-		if ( ! empty( $messages ) ) {
+		// Don't validate dates while the subscription is being read, only dates set outside of instantiation require the strict validation rules to apply
+		if ( $this->object_read && ! empty( $messages ) ) {
 			throw new Exception( join( ' ', $messages ) );
 		}
 
