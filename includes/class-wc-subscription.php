@@ -929,7 +929,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_date( $date_type, $timezone = 'gmt' ) {
 
-		$date_type = wcs_normalise_date_type_key( $date_type );
+		$date_type = wcs_normalise_date_type_key( $date_type, true );
 
 		if ( empty( $date_type ) ) {
 			$date = 0;
@@ -1120,7 +1120,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_date_to_display( $date_type = 'next_payment' ) {
 
-		$date_type = wcs_normalise_date_type_key( $date_type );
+		$date_type = wcs_normalise_date_type_key( $date_type, true );
 
 		$timestamp_gmt = $this->get_time( $date_type, 'gmt' );
 
@@ -1257,7 +1257,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function delete_date( $date_type ) {
 
-		$date_type = wcs_normalise_date_type_key( $date_type );
+		$date_type = wcs_normalise_date_type_key( $date_type, true );
 
 		// Make sure some dates are before next payment date
 		switch ( $date_type ) {
