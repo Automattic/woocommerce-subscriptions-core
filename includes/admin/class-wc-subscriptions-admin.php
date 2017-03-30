@@ -467,13 +467,8 @@ class WC_Subscriptions_Admin {
 
 		$price_changed = false;
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-			$old_regular_price = $product->regular_price;
-			$old_sale_price    = $product->sale_price;
-		} else {
-			$old_regular_price = wcs_get_objects_property( $product, 'regular_price' );
-			$old_sale_price    = wcs_get_objects_property( $product, 'sale_price' );
-		}
+		$old_regular_price = $product->get_regular_price();
+		$old_sale_price    = $product->get_sale_price();
 
 		if ( ! empty( $_REQUEST['change_regular_price'] ) ) {
 
@@ -504,14 +499,8 @@ class WC_Subscriptions_Admin {
 
 			if ( isset( $new_price ) && $new_price != $old_regular_price ) {
 				$price_changed = true;
-				if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-					update_post_meta( $product->get_id(), '_regular_price', $new_price );
-					update_post_meta( $product->get_id(), '_subscription_price', $new_price );
-					$product->regular_price = $new_price;
-				} else {
-					wcs_set_objects_property( $product, 'regular_price', $new_price );
-					wcs_set_objects_property( $product, 'subscription_price', $new_price );
-				}
+				wcs_set_objects_property( $product, 'regular_price', $new_price );
+				wcs_set_objects_property( $product, 'subscription_price', $new_price );
 			}
 		}
 
@@ -541,59 +530,33 @@ class WC_Subscriptions_Admin {
 					}
 				break;
 				case 4 :
-					if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-						$regular_price = $product->regular_price;
-					} else {
-						$regular_price = wcs_get_objects_property( $product, 'regular_price' );
-					}
 					if ( strstr( $sale_price, '%' ) ) {
 						$percent = str_replace( '%', '', $sale_price ) / 100;
-						$new_price = $regular_price - ( $regular_price * $percent );
+						$new_price = $product->get_regular_price() - ( $product->get_regular_price() * $percent );
 					} else {
-						$new_price = $regular_price - $sale_price;
+						$new_price = $product->get_regular_price() - $sale_price;
 					}
 				break;
 			}
 
 			if ( isset( $new_price ) && $new_price != $old_sale_price ) {
 				$price_changed = true;
-				if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-					update_post_meta( $product->get_id(), '_sale_price', $new_price );
-					$product->sale_price = $new_price;
-				} else {
-					wcs_set_objects_property( $product, 'sale_price', $new_price );
-				}
+				wcs_set_objects_property( $product, 'sale_price', $new_price );
 			}
 		}
 
 		if ( $price_changed ) {
-			if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-				update_post_meta( $product->get_id(), '_sale_price_dates_from', '' );
-				update_post_meta( $product->get_id(), '_sale_price_dates_to', '' );
+			wcs_set_objects_property( $product, 'date_on_sale_from', '' );
+			wcs_set_objects_property( $product, 'date_on_sale_to', '' );
 
-				if ( $product->regular_price < $product->sale_price ) {
-					$product->sale_price = '';
-					update_post_meta( $product->get_id(), '_sale_price', '' );
-				}
+			if ( $product->get_regular_price() < $product->get_sale_price() ) {
+				wcs_set_objects_property( $product, 'sale_price', '' );
+			}
 
-				if ( $product->sale_price ) {
-					update_post_meta( $product->get_id(), '_price', $product->sale_price );
-				} else {
-					update_post_meta( $product->get_id(), '_price', $product->regular_price );
-				}
+			if ( $product->get_sale_price() ) {
+				wcs_set_objects_property( $product, 'price', $product->get_sale_price() );
 			} else {
-				wcs_set_objects_property( $product, 'date_on_sale_from', '' );
-				wcs_set_objects_property( $product, 'date_on_sale_to', '' );
-
-				if ( wcs_get_objects_property( $product, 'regular_price' ) < wcs_get_objects_property( $product, 'sale_price' ) ) {
-					wcs_set_objects_property( $product, 'sale_price', '' );
-				}
-
-				if ( wcs_get_objects_property( $product, 'sale_price' ) ) {
-					wcs_set_objects_property( $product, 'price', wcs_get_objects_property( $product, 'sale_price' ) );
-				} else {
-					wcs_set_objects_property( $product, 'price', wcs_get_objects_property( $product, 'regular_price' ) );
-				}
+				wcs_set_objects_property( $product, 'price', $product->get_regular_price() );
 			}
 		}
 	}
