@@ -237,15 +237,22 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 				if ( $subscription->get_order_key() == $_GET['key'] ) {
 
+					$subscription_billing_country  = $subscription->get_billing_country();
+					$subscription_billing_state    = $subscription->get_billing_state();
+					$subscription_billing_postcode = $subscription->get_billing_postcode();
+
 					// Set customer location to order location
-					if ( $subscription->billing_country ) {
-						WC()->customer->set_country( $subscription->billing_country );
+					if ( $subscription_billing_country ) {
+						$setter = is_callable( array( WC()->customer, 'set_billing_country' ) ) ? 'set_billing_country' : 'set_country';
+						WC()->customer->$setter( $subscription_billing_country );
 					}
-					if ( $subscription->billing_state ) {
-						WC()->customer->set_state( $subscription->billing_state );
+					if ( $subscription_billing_state ) {
+						$setter = is_callable( array( WC()->customer, 'set_billing_state' ) ) ? 'set_billing_state' : 'set_state';
+						WC()->customer->$setter( $subscription_billing_state );
 					}
-					if ( $subscription->billing_postcode ) {
-						WC()->customer->set_postcode( $subscription->billing_postcode );
+					if ( $subscription_billing_postcode ) {
+						$setter = is_callable( array( WC()->customer, 'set_billing_postcode' ) ) ? 'set_billing_postcode' : 'set_postcode';
+						WC()->customer->$setter( $subscription_billing_postcode );
 					}
 
 					wc_get_template( 'checkout/form-change-payment-method.php', array( 'subscription' => $subscription ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
@@ -307,18 +314,27 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 			if ( $subscription->get_order_key() == $_GET['key'] ) {
 
+				$subscription_billing_country  = $subscription->get_billing_country();
+				$subscription_billing_state    = $subscription->get_billing_state();
+				$subscription_billing_postcode = $subscription->get_billing_postcode();
+				$subscription_billing_city     = $subscription->get_billing_postcode();
+
 				// Set customer location to order location
-				if ( $subscription->billing_country ) {
-					WC()->customer->set_country( $subscription->billing_country );
+				if ( $subscription_billing_country ) {
+					$setter = is_callable( array( WC()->customer, 'set_billing_country' ) ) ? 'set_billing_country' : 'set_country';
+					WC()->customer->$setter( $subscription_billing_country );
 				}
-				if ( $subscription->billing_state ) {
-					WC()->customer->set_state( $subscription->billing_state );
+				if ( $subscription_billing_state ) {
+					$setter = is_callable( array( WC()->customer, 'set_billing_state' ) ) ? 'set_billing_state' : 'set_state';
+					WC()->customer->$setter( $subscription_billing_state );
 				}
-				if ( $subscription->billing_postcode ) {
-					WC()->customer->set_postcode( $subscription->billing_postcode );
+				if ( $subscription_billing_postcode ) {
+					$setter = is_callable( array( WC()->customer, 'set_billing_postcode' ) ) ? 'set_billing_postcode' : 'set_postcode';
+					WC()->customer->$setter( $subscription_billing_postcode );
 				}
-				if ( $subscription->billing_city ) {
-					WC()->customer->set_city( $subscription->billing_city );
+				if ( $subscription_billing_city ) {
+					$setter = is_callable( array( WC()->customer, 'set_billing_city' ) ) ? 'set_billing_city' : 'set_city';
+					WC()->customer->$setter( $subscription_billing_city );
 				}
 
 				// Update payment method
