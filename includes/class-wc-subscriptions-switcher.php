@@ -875,7 +875,7 @@ class WC_Subscriptions_Switcher {
 					$new_shipping_line_items     = array();
 
 					// Keep a record of the subscription shipping total. Adding shipping methods will cause a new shipping total to be set, we'll need to set it back after.
-					$subscription_shipping_total = wcs_get_objects_property( $subscription, 'order_shipping'  );
+					$subscription_shipping_total = $subscription->get_total_shipping();
 
 					WC_Subscriptions_Checkout::add_shipping( $subscription, $recurring_cart );
 
