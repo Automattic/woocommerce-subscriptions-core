@@ -234,11 +234,13 @@ function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta
 
 	// Special cases where properties with setters which don't map nicely to their function names
 	$meta_setters_map = array(
-		'_cart_discount'     => 'set_discount_total',
-		'_cart_discount_tax' => 'set_discount_tax',
-		'_customer_user'     => 'set_customer_id',
-		'_order_tax'         => 'set_cart_tax',
-		'_order_shipping'    => 'set_shipping_total',
+		'_cart_discount'         => 'set_discount_total',
+		'_cart_discount_tax'     => 'set_discount_tax',
+		'_customer_user'         => 'set_customer_id',
+		'_order_tax'             => 'set_cart_tax',
+		'_order_shipping'        => 'set_shipping_total',
+		'_sale_price_dates_from' => 'set_date_on_sale_from',
+		'_sale_price_dates_to'   => 'set_date_on_sale_to',
 	);
 
 	// If we have a 3.0 object with a predefined setter function, use it
