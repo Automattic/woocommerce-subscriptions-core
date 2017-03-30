@@ -259,7 +259,12 @@ class WC_Subscriptions_Synchroniser {
 		if ( self::is_syncing_enabled() ) {
 
 			// Set month as the default billing period
-			$subscription_period       = WC_Subscriptions_Product::get_period( $variation );
+			$subscription_period = WC_Subscriptions_Product::get_period( $variation );
+
+			if ( empty( $subscription_period ) ) {
+				$subscription_period = 'month';
+			}
+
 			$display_week_month_select = ( ! in_array( $subscription_period, array( 'month', 'week' ) ) ) ? 'display: none;' : '';
 			$display_annual_select     = ( 'year' != $subscription_period ) ? 'display: none;' : '';
 
