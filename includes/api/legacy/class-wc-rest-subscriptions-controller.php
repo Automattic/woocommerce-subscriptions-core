@@ -135,11 +135,17 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 			$subscription = wcs_get_subscription( $post_id );
 			$this->update_schedule( $subscription, $request );
 
-			if ( empty( $request['payment_details']['method_id'] ) && ! empty( $request['payment_method'] ) ) {
-				$request['payment_details']['method_id'] = $request['payment_method'];
+			$payment_data = ( ! empty( $request['payment_details'] ) ) ? $request['payment_details'] : array();
+			if ( empty( $payment_data['method_id'] ) && isset( $request['payment_method'] ) ) {
+				$payment_data['method_id'] = $request['payment_method'];
+
+			} elseif ( ! empty( $subscription->get_payment_method() ) ) {
+				$payment_data['method_id'] = $subscription->get_payment_method();
 			}
 
-			$this->update_payment_method( $subscription, $request['payment_details'], true );
+			if ( isset( $payment_data['method_id'] ) ) {
+				$this->update_payment_method( $subscription, $payment_data, true );
+			}
 
 			return $post_id;
 		} catch ( WC_REST_Exception $e ) {
@@ -317,13 +323,10 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 				}
 			}
 
-			if ( '' == $subscription->get_payment_method() ) {
-				$subscription->set_payment_method( $payment_gateway );
-			}
-
 			$subscription->set_payment_method( $payment_gateway, $payment_method_meta );
 
 		} catch ( Exception $e ) {
+			$subscription->set_payment_method();
 			// translators: 1$: gateway id, 2$: error message
 			throw new WC_REST_Exception( 'woocommerce_rest_invalid_payment_data', sprintf( __( 'Subscription payment method could not be set to %1$s with error message: %2$s', 'woocommerce-subscriptions' ), $payment_method, $e->getMessage() ), 400 );
 		}
@@ -351,7 +354,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 			),
 			'payment_details' => array(
 				'description' => __( 'Subscription payment details.', 'woocommerce-subscriptions' ),
-				'type'        => 'array',
+				'type'        => 'object',
 				'context'     => array( 'edit' ),
 				'properties'  => array(
 					'method_id' => array(
