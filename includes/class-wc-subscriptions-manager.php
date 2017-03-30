@@ -117,6 +117,10 @@ class WC_Subscriptions_Manager {
 					do_action( 'woocommerce_generated_manual_renewal_order', wcs_get_objects_property( $renewal_order, 'id' ) );
 				} else {
 					$renewal_order->set_payment_method( wc_get_payment_gateway_by_order( $subscription ) ); // We need to pass the payment gateway instance to be compatible with WC < 3.0, only WC 3.0+ supports passing the string name
+
+					if ( is_callable( array( $renewal_order, 'save' ) ) ) { // WC 3.0+ We need to save the payment method.
+						$renewal_order->save();
+					}
 				}
 			}
 		}
