@@ -791,6 +791,7 @@ class WC_Subscriptions_Switcher {
 						// Add the new item
 						if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 							$item_id = WC_Subscriptions_Checkout::add_cart_item( $subscription, $cart_item, $cart_item_key );
+							wc_update_order_item( $item_id, array( 'order_item_type' => 'line_item_pending_switch' ) );
 						} else {
 							$item = new WC_Order_Item_Pending_Switch;
 							$item->legacy_values        = $cart_item['data']; // @deprecated For legacy actions.
@@ -828,7 +829,6 @@ class WC_Subscriptions_Switcher {
 							$item_id = $item->get_id();
 						}
 
-						wc_update_order_item( $item_id, array( 'order_item_type' => 'line_item_pending_switch' ) );
 						$switched_item_data['add_line_item'] = $item_id;
 
 						// Remove the item from the cart so that WC_Subscriptions_Checkout doesn't add it to a subscription
