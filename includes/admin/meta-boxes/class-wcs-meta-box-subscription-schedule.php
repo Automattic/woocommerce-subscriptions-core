@@ -77,6 +77,8 @@ class WCS_Meta_Box_Schedule {
 			} catch ( Exception $e ) {
 				wcs_add_admin_notice( $e->getMessage(), 'error' );
 			}
+
+			$subscription->save();
 		}
 	}
 }
