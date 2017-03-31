@@ -894,7 +894,11 @@ class WC_Subscriptions_Switcher {
 						}
 					}
 
-					$subscription->set_total( $subscription_shipping_total, 'shipping' );
+					if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+						$subscription->set_total( $subscription_shipping_total, 'shipping' );
+					} else {
+						$subscription->set_shipping_total( $subscription_shipping_total );
+					}
 
 					$switch_order_data[ $subscription->get_id() ]['shipping_line_items'] = $new_shipping_line_items;
 				}
