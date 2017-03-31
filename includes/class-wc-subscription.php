@@ -24,14 +24,14 @@ class WC_Subscription extends WC_Order {
 	private $cached_completed_payment_count = false;
 
 	/**
-	 * Which data store to load. WC 2.7+ property.
+	 * Which data store to load. WC 3.0+ property.
 	 *
 	 * @var string
 	 */
 	protected $data_store_name = 'subscription';
 
 	/**
-	 * This is the name of this object type. WC 2.7+ property.
+	 * This is the name of this object type. WC 3.0+ property.
 	 *
 	 * @var string
 	 */
@@ -47,7 +47,7 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Extra data for this object. Name value pairs (name + default value). Used to add additional information to parent.
 	 *
-	 * WC 2.7+ property.
+	 * WC 3.0+ property.
 	 *
 	 * @var array
 	 */
@@ -59,6 +59,7 @@ class WC_Subscription extends WC_Order {
 		'suspension_count'        => 0,
 		'requires_manual_renewal' => 'true',
 		'cancelled_email_sent'    => false,
+		'trial_period'            => '',
 
 		// Extra data that requires manual getting/setting because we don't define getters/setters for it
 		'schedule_trial_end'      => null,
@@ -74,7 +75,7 @@ class WC_Subscription extends WC_Order {
 	protected $valid_date_types = array();
 
 	/**
-	 * List of properties deprecated for direct access due to WC 2.7+ & CRUD.
+	 * List of properties deprecated for direct access due to WC 3.0+ & CRUD.
 	 *
 	 * @var array
 	 */
@@ -119,7 +120,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function __isset( $key ) {
 
-		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.7' ) && in_array( $key, $this->deprecated_properties ) ) {
+		if ( ! WC_Subscriptions::is_woocommerce_pre( '3.0' ) && in_array( $key, $this->deprecated_properties ) ) {
 
 			$is_set = true;
 
@@ -172,8 +173,8 @@ class WC_Subscription extends WC_Order {
 					break;
 			}
 
-			if ( ! WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
-				wcs_doing_it_wrong( $key, sprintf( 'Subscription properties should not be set directly as WooCommerce 2.7 no longer supports direct property access. Use %s instead.', $function ), '2.1.4' );
+			if ( ! WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+				wcs_doing_it_wrong( $key, sprintf( 'Subscription properties should not be set directly as WooCommerce 3.0 no longer supports direct property access. Use %s instead.', $function ), '2.2.0' );
 			}
 		}
 	}
@@ -216,8 +217,8 @@ class WC_Subscription extends WC_Order {
 					break;
 			}
 
-			if ( ! WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
-				wcs_doing_it_wrong( $key, sprintf( 'Subscription properties should not be accessed directly as WooCommerce 2.7 no longer supports direct property access. Use %s instead.', $function ), '2.1.4' );
+			if ( ! WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+				wcs_doing_it_wrong( $key, sprintf( 'Subscription properties should not be accessed directly as WooCommerce 3.0 no longer supports direct property access. Use %s instead.', $function ), '2.2.0' );
 			}
 		} else {
 
@@ -495,7 +496,7 @@ class WC_Subscription extends WC_Order {
 					break;
 				}
 
-				// Make sure status is saved when WC 2.7+ is active, similar to WC_Order::update_status() with WC 2.7+ - set_status() can be used to avoid saving.
+				// Make sure status is saved when WC 3.0+ is active, similar to WC_Order::update_status() with WC 3.0+ - set_status() can be used to avoid saving.
 				$this->save();
 
 			} catch ( Exception $e ) {
@@ -511,7 +512,7 @@ class WC_Subscription extends WC_Order {
 
 				$this->add_order_note( sprintf( __( 'Unable to change subscription status to "%s". Exception: %s', 'woocommerce-subscriptions' ), $new_status, $e->getMessage() ) );
 
-				// Make sure status is saved when WC 2.7+ is active, similar to WC_Order::update_status() with WC 2.7+ - set_status() can be used to avoid saving.
+				// Make sure status is saved when WC 3.0+ is active, similar to WC_Order::update_status() with WC 3.0+ - set_status() can be used to avoid saving.
 				$this->save();
 
 				do_action( 'woocommerce_subscription_unable_to_update_status', $this, $new_status, $old_status );
@@ -543,7 +544,7 @@ class WC_Subscription extends WC_Order {
 
 			} else {
 				/* translators: %s: new order status */
-				$transition_note = sprintf( __( 'Status set to %s.', 'woocommerce' ), wcs_get_subscription_status_name( $this->status_transition['to'] ) );
+				$transition_note = sprintf( __( 'Status set to %s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $this->status_transition['to'] ) );
 			}
 
 			// Note the transition occured
@@ -597,7 +598,7 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Get valid order status keys
 	 *
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 * @return array details of change
 	 */
 	public function get_valid_statuses() {
@@ -754,27 +755,40 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Get internal type.
+	 * Get billing period.
 	 *
 	 * @return string
+	 * @since 2.2.0
 	 */
 	public function get_billing_period( $context = 'view' ) {
 		return $this->get_prop( 'billing_period', $context );
 	}
 
 	/**
-	 * Get internal type.
+	 * Get billing interval.
 	 *
 	 * @return string
+	 * @since 2.2.0
 	 */
 	public function get_billing_interval( $context = 'view' ) {
 		return $this->get_prop( 'billing_interval', $context );
 	}
 
 	/**
-	 * Get internal type.
+	 * Get trial period.
 	 *
 	 * @return string
+	 * @since 2.2.0
+	 */
+	public function get_trial_period( $context = 'view' ) {
+		return $this->get_prop( 'trial_period', $context );
+	}
+
+	/**
+	 * Get suspension count.
+	 *
+	 * @return string
+	 * @since 2.2.0
 	 */
 	public function get_suspension_count( $context = 'view' ) {
 		return $this->get_prop( 'suspension_count', $context );
@@ -785,14 +799,16 @@ class WC_Subscription extends WC_Order {
 	 *
 	 * @access public
 	 * @return bool
+	 * @since 2.2.0
 	 */
 	public function get_requires_manual_renewal( $context = 'view' ) {
 		return $this->get_prop( 'requires_manual_renewal', $context );
 	}
 
 	/**
-	 * Get internal type.
+	 * Get the switch data.
 	 *
+	 * @since 2.2.0
 	 * @return string
 	 */
 	public function get_switch_data( $context = 'view' ) {
@@ -800,7 +816,7 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Get internal type.
+	 * Get the flag about whether the cancelled email has been sent or not.
 	 *
 	 * @return string
 	 */
@@ -811,27 +827,40 @@ class WC_Subscription extends WC_Order {
 	/*** Setters *****************************************************/
 
 	/**
-	 * Get internal type.
+	 * Set billing period.
 	 *
-	 * @return string
+	 * @since 2.2.0
+	 * @param string $value
 	 */
 	public function set_billing_period( $value ) {
 		$this->set_prop( 'billing_period', $value );
 	}
 
 	/**
-	 * Get internal type.
+	 * Set billing interval.
 	 *
-	 * @return string
+	 * @since 2.2.0
+	 * @param int $value
 	 */
 	public function set_billing_interval( $value ) {
 		$this->set_prop( 'billing_interval', absint( $value ) );
 	}
 
 	/**
-	 * Get internal type.
+	 * Set trial period.
 	 *
-	 * @return string
+	 * @param string $value
+	 * @since 2.2.0
+	 */
+	public function set_trial_period( $value ) {
+		$this->set_prop( 'trial_period', $value );
+	}
+
+	/**
+	 * Set suspension count.
+	 *
+	 * @since 2.2.0
+	 * @param int $value
 	 */
 	public function set_suspension_count( $value ) {
 		$this->set_prop( 'suspension_count', absint( $value ) );
@@ -841,7 +870,7 @@ class WC_Subscription extends WC_Order {
 	 * Set parent order ID. We don't use WC_Abstract_Order::set_parent_id() because we want to allow false
 	 * parent IDs, like 0.
 	 *
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 * @param int $value
 	 */
 	public function set_parent_id( $value ) {
@@ -856,6 +885,7 @@ class WC_Subscription extends WC_Order {
 	 * (which means it doesn't require manual renewal), but we want to consistently use it via get/set as a boolean,
 	 * for sanity's sake.
 	 *
+	 * @since 2.2.0
 	 * @param bool $value
 	 */
 	public function set_requires_manual_renewal( $value ) {
@@ -874,7 +904,7 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Set the switch data on the subscription.
 	 *
-	 * @return string
+	 * @since 2.2.0
 	 */
 	public function set_switch_data( $value ) {
 		$this->set_prop( 'switch_data', $value );
@@ -883,7 +913,7 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Set the flag about whether the cancelled email has been sent or not.
 	 *
-	 * @return string
+	 * @since 2.2.0
 	 */
 	public function set_cancelled_email_sent( $value ) {
 		$this->set_prop( 'cancelled_email_sent', $value );
@@ -899,7 +929,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_date( $date_type, $timezone = 'gmt' ) {
 
-		$date_type = wcs_normalise_date_type_key( $date_type );
+		$date_type = wcs_normalise_date_type_key( $date_type, true );
 
 		if ( empty( $date_type ) ) {
 			$date = 0;
@@ -952,7 +982,7 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Get the stored date.
 	 *
-	 * Used for WC 3.0 compatibilty and for WC_Subscription_Legacy to override.
+	 * Used for WC 3.0 compatibility and for WC_Subscription_Legacy to override.
 	 *
 	 * @param string $date_type 'trial_end', 'next_payment', 'last_order_date_created', 'cancelled', 'payment_retry' or 'end'
 	 * @return WC_DateTime|NULL object if the date is set or null if there is no date.
@@ -964,7 +994,7 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Set the stored date.
 	 *
-	 * Used for WC 3.0 compatibilty and for WC_Subscription_Legacy to override.
+	 * Used for WC 3.0 compatibility and for WC_Subscription_Legacy to override.
 	 *
 	 * @param string $date_type 'trial_end', 'next_payment', 'cancelled', 'payment_retry' or 'end'
 	 * @param string|integer|null $date UTC timestamp, or ISO 8601 DateTime. If the DateTime string has no timezone or offset, WordPress site timezone will be assumed. Null if their is no date.
@@ -1066,18 +1096,20 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Set a certain date type for the last order on the subscription.
 	 *
-	 * @since 2.1.4.
+	 * @since 2.2.0
 	 * @param string $date_type One of 'date_paid', 'date_completed', 'date_modified', or 'date_created'.
-	 * @return WC_DateTime|NULL object if the date is set or null if there is no date.
 	 */
 	protected function set_last_order_date( $date_type, $date = null ) {
 
-		$setter     = 'set_' . $date_type;
-		$last_order = $this->get_last_order( 'all' );
+		if ( $this->object_read ) {
 
-		if ( $last_order && is_callable( array( $last_order, $setter ) ) ) {
-			$last_order->{$setter}( $date );
-			$last_order->save();
+			$setter     = 'set_' . $date_type;
+			$last_order = $this->get_last_order( 'all' );
+
+			if ( $last_order && is_callable( array( $last_order, $setter ) ) ) {
+				$last_order->{$setter}( $date );
+				$last_order->save();
+			}
 		}
 	}
 
@@ -1088,7 +1120,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_date_to_display( $date_type = 'next_payment' ) {
 
-		$date_type = wcs_normalise_date_type_key( $date_type );
+		$date_type = wcs_normalise_date_type_key( $date_type, true );
 
 		$timestamp_gmt = $this->get_time( $date_type, 'gmt' );
 
@@ -1225,7 +1257,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function delete_date( $date_type ) {
 
-		$date_type = wcs_normalise_date_type_key( $date_type );
+		$date_type = wcs_normalise_date_type_key( $date_type, true );
 
 		// Make sure some dates are before next payment date
 		switch ( $date_type ) {
@@ -2064,7 +2096,7 @@ class WC_Subscription extends WC_Order {
 				$sign_up_fee = 0;
 
 			} elseif ( 'true' === $line_item->get_meta( '_has_trial' ) ) {
-				// Sign up is amount paid for this item on original order, we can safely use 2.7 getters here because we know from the above condition 2.7 is active
+				// Sign up is amount paid for this item on original order, we can safely use 3.0 getters here because we know from the above condition 3.0 is active
 				$sign_up_fee = $original_order_item->get_total( 'edit' ) / $original_order_item->get_quantity( 'edit' );
 			} else {
 				// Sign-up fee is any amount on top of recurring amount
@@ -2129,8 +2161,8 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_item_downloads( $item ) {
 
-		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
-			wcs_deprecated_function( __METHOD__, '2.1.4', 'WC_Order_Item_Product::get_item_downloads(), because WooCommerce 2.7+ now uses that' );
+		if ( ! WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+			wcs_deprecated_function( __METHOD__, '2.2.0', 'WC_Order_Item_Product::get_item_downloads(), because WooCommerce 3.0+ now uses that' );
 		}
 
 		$files = array();
@@ -2251,7 +2283,8 @@ class WC_Subscription extends WC_Order {
 			$dates[ $date_type ] = gmdate( 'Y-m-d H:i:s', $timestamp );
 		}
 
-		if ( ! empty( $messages ) ) {
+		// Don't validate dates while the subscription is being read, only dates set outside of instantiation require the strict validation rules to apply
+		if ( $this->object_read && ! empty( $messages ) ) {
 			throw new Exception( join( ' ', $messages ) );
 		}
 
@@ -2299,6 +2332,7 @@ class WC_Subscription extends WC_Order {
 					'last_order_date_created',
 					'last_order_date_paid',
 					'last_order_date_completed',
+					'payment_retry',
 				)
 			), $this );
 		}
@@ -2316,7 +2350,7 @@ class WC_Subscription extends WC_Order {
 	 * @param int|WC_Order $order
 	 */
 	public function update_parent( $order ) {
-		wcs_deprecated_function( __METHOD__, '2.1.4', __CLASS__ . '::set_parent_id(), because WooCommerce 2.7+ now uses that' );
+		wcs_deprecated_function( __METHOD__, '2.2.0', __CLASS__ . '::set_parent_id(), because WooCommerce 3.0+ now uses that' );
 
 		if ( ! is_object( $order ) ) {
 			$order = wc_get_order( $order );
@@ -2335,7 +2369,7 @@ class WC_Subscription extends WC_Order {
 	 * @since 2.0
 	 */
 	public function update_suspension_count( $new_count ) {
-		wcs_deprecated_function( __METHOD__, '2.1.4', __CLASS__ . '::set_suspension_count(), because WooCommerce 2.7+ now uses setters' );
+		wcs_deprecated_function( __METHOD__, '2.2.0', __CLASS__ . '::set_suspension_count(), because WooCommerce 3.0+ now uses setters' );
 		$this->set_suspension_count( $new_count );
 		return $this->get_suspension_count();
 	}
@@ -2347,7 +2381,7 @@ class WC_Subscription extends WC_Order {
 	 * @return bool
 	 */
 	public function update_manual( $is_manual = true ) {
-		wcs_deprecated_function( __METHOD__, '2.1.4', __CLASS__ . '::set_requires_manual_renewal( $is_manual ), because WooCommerce 2.7+ now uses setters' );
+		wcs_deprecated_function( __METHOD__, '2.2.0', __CLASS__ . '::set_requires_manual_renewal( $is_manual ), because WooCommerce 3.0+ now uses setters' );
 		$this->set_requires_manual_renewal( $is_manual );
 		return $this->get_requires_manual_renewal();
 	}

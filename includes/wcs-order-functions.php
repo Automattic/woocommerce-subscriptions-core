@@ -231,7 +231,7 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 			) );
 
 			// Remove recurring line items and set item totals based on recurring line totals
-			if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+			if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 				foreach ( $item['item_meta'] as $meta_key => $meta_values ) {
 					foreach ( $meta_values as $meta_value ) {
 						wc_add_order_item_meta( $order_item_id, $meta_key, maybe_unserialize( $meta_value ) );
@@ -279,8 +279,8 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 						wc_add_order_item_meta( $order_item_id, apply_filters( 'woocommerce_backordered_item_meta_name', __( 'Backordered', 'woocommerce-subscriptions' ) ), $item['qty'] - max( 0, $product->get_total_stock() ) );
 					}
 
-					if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
-						// WC 2.7+ will also trigger the 'woocommerce_order_add_product when 'woocommerce_new_order_item', which is triggered in wc_add_order_item_meta()
+					if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+						// WC 3.0+ will also trigger the 'woocommerce_order_add_product when 'woocommerce_new_order_item', which is triggered in wc_add_order_item_meta()
 						do_action( 'woocommerce_order_add_product', wcs_get_objects_property( $new_order, 'id' ), $order_item_id, $product, $item['qty'], $args );
 					}
 				}
@@ -307,7 +307,7 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
  * @return string       new title for a post
  */
 function wcs_get_new_order_title( $type ) {
-	wcs_deprecated_function( __FUNCTION__, '2.1.4' );
+	wcs_deprecated_function( __FUNCTION__, '2.2.0' );
 
 	$type = wcs_validate_new_order_type( $type );
 
@@ -676,13 +676,13 @@ function wcs_get_line_item_name( $line_item ) {
 /**
  * Display item meta data in a version compatible way.
  *
- * @since  2.1.4
+ * @since  2.2.0
  * @param  WC_Item $item
  * @param  WC_Order $order
  * @return void
  */
 function wcs_display_item_meta( $item, $order ) {
-	if ( function_exists( 'wc_display_item_meta' ) ) { // WC 2.7+
+	if ( function_exists( 'wc_display_item_meta' ) ) { // WC 3.0+
 		wc_display_item_meta( $item );
 	} else {
 		$order->display_item_meta( $item );
@@ -692,13 +692,13 @@ function wcs_display_item_meta( $item, $order ) {
 /**
  * Display item download links in a version compatible way.
  *
- * @since  2.1.4
+ * @since  2.2.0
  * @param  WC_Item $item
  * @param  WC_Order $order
  * @return void
  */
 function wcs_display_item_downloads( $item, $order ) {
-	if ( function_exists( 'wc_display_item_downloads' ) ) { // WC 2.7+
+	if ( function_exists( 'wc_display_item_downloads' ) ) { // WC 3.0+
 		wc_display_item_downloads( $item );
 	} else {
 		$order->display_item_downloads( $item );
@@ -708,15 +708,15 @@ function wcs_display_item_downloads( $item, $order ) {
 /**
  * Copy the order item data and meta data from one item to another.
  *
- * @since  2.2
+ * @since  2.2.0
  * @param  WC_Order_Item The order item to copy data from
  * @param  WC_Order_Item The order item to copy data to
  * @return void
  */
 function wcs_copy_order_item( $from_item, &$to_item ) {
 
-	if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
-		wcs_doing_it_wrong( __FUNCTION__, 'This function uses data structures introduced in WC 2.7. To copy line item meta use $from_item[\'item_meta\'] and wc_add_order_item_meta().', '2.2' );
+	if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		wcs_doing_it_wrong( __FUNCTION__, 'This function uses data structures introduced in WC 3.0. To copy line item meta use $from_item[\'item_meta\'] and wc_add_order_item_meta().', '2.2' );
 		return;
 	}
 

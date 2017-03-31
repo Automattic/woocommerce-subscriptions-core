@@ -2,12 +2,12 @@
 /**
  * Variable Subscription Product Legacy Class
  *
- * Extends WC_Product_Variable_Subscription to provide compatibility methods when running WooCommerce < 2.7.
+ * Extends WC_Product_Variable_Subscription to provide compatibility methods when running WooCommerce < 3.0.
  *
  * @class 		WC_Product_Variable_Subscription_Legacy
  * @package		WooCommerce Subscriptions
  * @category	Class
- * @since		2.1.4
+ * @since		2.2.0
  *
  */
 if ( ! defined( 'ABSPATH' ) ) {
@@ -122,7 +122,7 @@ class WC_Product_Variable_Subscription_Legacy extends WC_Product_Variable_Subscr
 	 * @see WC_Product_Variable::get_variation_prices()
 	 * @param  bool $include_taxes Should taxes be included in the prices.
 	 * @return array() Array of RAW prices, regular prices, and sale prices with keys set to variation ID.
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 */
 	public function get_variation_prices( $display = false ) {
 
@@ -176,7 +176,7 @@ class WC_Product_Variable_Subscription_Legacy extends WC_Product_Variable_Subscr
 	 * Create unique cache key based on the tax location (affects displayed/cached prices), product version and active price filters.
 	 * DEVELOPERS should filter this hash if offering conditonal pricing to keep it unique.
 	 *
-	 * @since  2.1.4
+	 * @since  2.2.0
 	 * @param  WC_Product
 	 * @param  bool $display Are prices for display? If so, taxes will be calculated.
 	 * @return string
@@ -342,7 +342,7 @@ class WC_Product_Variable_Subscription_Legacy extends WC_Product_Variable_Subscr
 	}
 
 	/**
-	 * Provide the WC_Data::get_meta() function when WC < 2.7 is active.
+	 * Provide the WC_Data::get_meta() function when WC < 3.0 is active.
 	 *
 	 * @param string $meta_key
 	 * @param bool $single
@@ -371,7 +371,7 @@ class WC_Product_Variable_Subscription_Legacy extends WC_Product_Variable_Subscr
 	/**
 	 * Get default attributes.
 	 *
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 * @param  string $context
 	 * @return array
 	 */

@@ -45,7 +45,7 @@ class WC_Product_Subscription_Variation extends WC_Product_Variation {
 
 		if ( 'subscription_variation_level_meta_data' === $key ) {
 
-			wcs_deprecated_argument( __CLASS__ . '::$' . $key, '2.1.4', 'Product properties should not be accessed directly with WooCommerce 2.7+. Use the getter in WC_Subscriptions_Product instead.' );
+			wcs_deprecated_argument( __CLASS__ . '::$' . $key, '2.2.0', 'Product properties should not be accessed directly with WooCommerce 3.0+. Use the getter in WC_Subscriptions_Product instead.' );
 
 			$value = $this->subscription_variation_level_meta_data; // Behold, the horror that is the magic of WCS_Array_Property_Post_Meta_Black_Magic
 		} else {
@@ -148,7 +148,7 @@ class WC_Product_Subscription_Variation extends WC_Product_Variation {
 	 * @return string
 	 */
 	public function get_sign_up_fee() {
-		wcs_deprecated_function( __METHOD__, '2.1.4', 'WC_Subscriptions_Product::get_sign_up_fee( $this )' );
+		wcs_deprecated_function( __METHOD__, '2.2.0', 'WC_Subscriptions_Product::get_sign_up_fee( $this )' );
 		return WC_Subscriptions_Product::get_sign_up_fee( $this );
 	}
 
@@ -159,7 +159,7 @@ class WC_Product_Subscription_Variation extends WC_Product_Variation {
 	 * @return string
 	 */
 	public function get_sign_up_fee_including_tax( $qty = 1, $price = '' ) {
-		wcs_deprecated_function( __METHOD__, '2.1.4', 'wcs_get_price_including_tax( $product, array( "qty" => $qty, "price" => $price ) )' );
+		wcs_deprecated_function( __METHOD__, '2.2.0', 'wcs_get_price_including_tax( $product, array( "qty" => $qty, "price" => $price ) )' );
 
 		add_filter( 'woocommerce_get_price', array( &$this, 'get_sign_up_fee' ), 100, 0 );
 
@@ -177,7 +177,7 @@ class WC_Product_Subscription_Variation extends WC_Product_Variation {
 	 * @return string
 	 */
 	public function get_sign_up_fee_excluding_tax( $qty = 1, $price = '' ) {
-		wcs_deprecated_function( __METHOD__, '2.1.4', 'wcs_get_price_excluding_tax( $product, array( "qty" => $qty, "price" => $price ) )' );
+		wcs_deprecated_function( __METHOD__, '2.2.0', 'wcs_get_price_excluding_tax( $product, array( "qty" => $qty, "price" => $price ) )' );
 
 		add_filter( 'woocommerce_get_price', array( &$this, 'get_sign_up_fee' ), 100, 0 );
 

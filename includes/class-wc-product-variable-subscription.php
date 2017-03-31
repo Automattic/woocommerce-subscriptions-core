@@ -172,7 +172,7 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 	 * @return string
 	 */
 	public function get_sign_up_fee() {
-		wcs_deprecated_function( __METHOD__, '2.1.4', 'WC_Subscriptions_Product::get_sign_up_fee( $this )' );
+		wcs_deprecated_function( __METHOD__, '2.2.0', 'WC_Subscriptions_Product::get_sign_up_fee( $this )' );
 		return WC_Subscriptions_Product::get_sign_up_fee( $this );
 	}
 
@@ -183,7 +183,7 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 	 * @return string
 	 */
 	public function get_sign_up_fee_including_tax( $qty = 1 ) {
-		wcs_deprecated_function( __METHOD__, '2.1.4', 'wcs_get_price_including_tax( $product, array( "qty" => $qty, "price" => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) )' );
+		wcs_deprecated_function( __METHOD__, '2.2.0', 'wcs_get_price_including_tax( $product, array( "qty" => $qty, "price" => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) )' );
 		return wcs_get_price_including_tax( $this, array( 'qty' => $qty, 'price' => WC_Subscriptions_Product::get_sign_up_fee( $this ) ) );
 	}
 
@@ -194,7 +194,7 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 	 * @return string
 	 */
 	public function get_sign_up_fee_excluding_tax( $qty = 1 ) {
-		wcs_deprecated_function( __METHOD__, '2.1.4', 'wcs_get_price_excluding_tax( $product, array( "qty" => $qty, "price" => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) )' );
+		wcs_deprecated_function( __METHOD__, '2.2.0', 'wcs_get_price_excluding_tax( $product, array( "qty" => $qty, "price" => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) )' );
 		return wcs_get_price_excluding_tax( $this, array( 'qty' => $qty, 'price' => WC_Subscriptions_Product::get_sign_up_fee( $this ) ) );
 	}
 
@@ -203,7 +203,7 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 	 * @param string $product_type A string representation of a product type
 	 */
 	public function add_to_cart_handler( $handler, $product ) {
-		wcs_deprecated_function( __METHOD__, '2.1.4', 'WC_Subscriptions_Cart::add_to_cart_handler( $handler, $product )' );
+		wcs_deprecated_function( __METHOD__, '2.2.0', 'WC_Subscriptions_Cart::add_to_cart_handler( $handler, $product )' );
 		return WC_Subscriptions_Cart::add_to_cart_handler( $handler, $product );
 	}
 
@@ -214,7 +214,7 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 	 * @return void
 	 */
 	public function variable_product_sync( $product_id = '' ) {
-		wcs_deprecated_function( __METHOD__, '2.1.4', 'WC_Subscriptions_Product::variable_subscription_product_sync( $this )' );
+		wcs_deprecated_function( __METHOD__, '2.2,0', 'WC_Subscriptions_Product::variable_subscription_product_sync( $this )' );
 
 		if ( empty( $product_id ) ) {
 			$product_id = $this->get_id();

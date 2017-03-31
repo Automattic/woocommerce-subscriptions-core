@@ -792,7 +792,7 @@ function wcs_get_datetime_from( $variable_date_type ) {
 		if ( empty( $variable_date_type ) ) {
 			$datetime = null;
 		} elseif ( is_a( $variable_date_type, 'WC_DateTime' ) ) {
-			$datetime = $value;
+			$datetime = $variable_date_type;
 		} elseif ( is_numeric( $variable_date_type ) ) {
 			$datetime = new WC_DateTime( "@{$variable_date_type}", new DateTimeZone( 'UTC' ) );
 			$datetime->setTimezone( new DateTimeZone( wc_timezone_string() ) );
@@ -829,10 +829,9 @@ function wcs_get_datetime_utc_string( $datetime ) {
  */
 function wcs_format_datetime( $date, $format = '' ) {
 
-	if ( function_exists( 'wc_date_format' ) ) { // WC 3.0+
-		$formatted_datetime = wc_date_format( $date, $format );
-	} else { // WC < 2.7
-
+	if ( function_exists( 'wc_format_datetime' ) ) { // WC 3.0+
+		$formatted_datetime = wc_format_datetime( $date, $format );
+	} else { // WC < 3.0
 		if ( ! $format ) {
 			$format = wc_date_format();
 		}

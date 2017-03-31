@@ -45,7 +45,7 @@ class WC_Subscriptions_Admin {
 	 * Is meta boxes saved once?
 	 *
 	 * @var boolean
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 */
 	private static $saved_product_meta = false;
 
@@ -322,6 +322,11 @@ class WC_Subscriptions_Admin {
 		}
 
 		$variation_product = wc_get_product( $variation );
+		$billing_period    = WC_Subscriptions_Product::get_period( $variation_product );
+
+		if ( empty( $billing_period ) ) {
+			$billing_period = 'month';
+		}
 
 		include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/html-variation-price.php' );
 
@@ -467,8 +472,8 @@ class WC_Subscriptions_Admin {
 
 		$price_changed = false;
 
-		$old_regular_price = $product->regular_price;
-		$old_sale_price    = $product->sale_price;
+		$old_regular_price = $product->get_regular_price();
+		$old_sale_price    = $product->get_sale_price();
 
 		if ( ! empty( $_REQUEST['change_regular_price'] ) ) {
 
@@ -499,9 +504,8 @@ class WC_Subscriptions_Admin {
 
 			if ( isset( $new_price ) && $new_price != $old_regular_price ) {
 				$price_changed = true;
-				update_post_meta( $product->get_id(), '_regular_price', $new_price );
-				update_post_meta( $product->get_id(), '_subscription_price', $new_price );
-				$product->regular_price = $new_price;
+				wcs_set_objects_property( $product, 'regular_price', $new_price );
+				wcs_set_objects_property( $product, 'subscription_price', $new_price );
 			}
 		}
 
@@ -533,33 +537,31 @@ class WC_Subscriptions_Admin {
 				case 4 :
 					if ( strstr( $sale_price, '%' ) ) {
 						$percent = str_replace( '%', '', $sale_price ) / 100;
-						$new_price = $product->regular_price - ( $product->regular_price * $percent );
+						$new_price = $product->get_regular_price() - ( $product->get_regular_price() * $percent );
 					} else {
-						$new_price = $product->regular_price - $sale_price;
+						$new_price = $product->get_regular_price() - $sale_price;
 					}
 				break;
 			}
 
 			if ( isset( $new_price ) && $new_price != $old_sale_price ) {
 				$price_changed = true;
-				update_post_meta( $product->get_id(), '_sale_price', $new_price );
-				$product->sale_price = $new_price;
+				wcs_set_objects_property( $product, 'sale_price', $new_price );
 			}
 		}
 
 		if ( $price_changed ) {
-			update_post_meta( $product->get_id(), '_sale_price_dates_from', '' );
-			update_post_meta( $product->get_id(), '_sale_price_dates_to', '' );
+			wcs_set_objects_property( $product, 'sale_price_dates_from', '' );
+			wcs_set_objects_property( $product, 'sale_price_dates_to', '' );
 
-			if ( $product->regular_price < $product->sale_price ) {
-				$product->sale_price = '';
-				update_post_meta( $product->get_id(), '_sale_price', '' );
+			if ( $product->get_regular_price() < $product->get_sale_price() ) {
+				wcs_set_objects_property( $product, 'sale_price', '' );
 			}
 
-			if ( $product->sale_price ) {
-				update_post_meta( $product->get_id(), '_price', $product->sale_price );
+			if ( $product->get_sale_price() ) {
+				wcs_set_objects_property( $product, 'price', $product->get_sale_price() );
 			} else {
-				update_post_meta( $product->get_id(), '_price', $product->regular_price );
+				wcs_set_objects_property( $product, 'price', $product->get_regular_price() );
 			}
 		}
 	}
@@ -637,7 +639,7 @@ class WC_Subscriptions_Admin {
 		}
 
 		// Now that all the variation's meta is saved, sync the min variation price
-		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 			$variable_subscription = wc_get_product( $post_id );
 			$variable_subscription->variable_product_sync();
 		} else {

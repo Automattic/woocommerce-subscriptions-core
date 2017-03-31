@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Extends WC_Order_Data_Store_CPT to make sure subscription related meta data is read/updated.
  *
- * @version  2.1.4
+ * @version  2.2.0
  * @category Class
  * @author   Prospress
  */
@@ -21,7 +21,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * the $internal_meta_keys property from WC_Order_Data_Store_CPT because we want its value
 	 * too, so instead we create our own and merge it into $internal_meta_keys in __construct.
 	 *
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 * @var array
 	 */
 	protected $subscription_internal_meta_keys = array(
@@ -38,7 +38,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 *
 	 * Used to read/update props on the subscription.
 	 *
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 * @var array
 	 */
 	protected $subscription_meta_keys_to_props = array(
@@ -47,6 +47,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		'_suspension_count'         => 'suspension_count',
 		'_cancelled_email_sent'     => 'cancelled_email_sent',
 		'_requires_manual_renewal'  => 'requires_manual_renewal',
+		'_trial_period'             => 'trial_period',
 
 		'_schedule_trial_end'       => 'schedule_trial_end',
 		'_schedule_next_payment'    => 'schedule_next_payment',
@@ -57,6 +58,9 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		'_subscription_switch_data' => 'switch_data',
 	);
 
+	/**
+	 * Constructor.
+	 */
 	public function __construct() {
 		// Exclude the subscription related meta data we set and manage manually from the objects "meta" data
 		$this->internal_meta_keys = array_merge( $this->internal_meta_keys, $this->subscription_internal_meta_keys );
@@ -66,6 +70,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * Create a new subscription in the database.
 	 *
 	 * @param WC_Subscription $subscription
+	 * @since 2.2.0
 	 */
 	public function create( &$subscription ) {
 		parent::create( $subscription );
@@ -77,7 +82,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 *
 	 * @param WC_Subscription $subscription
 	 * @param object $post_object
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 */
 	protected function read_order_data( &$subscription, $post_object ) {
 
@@ -109,6 +114,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * Update subscription in the database.
 	 *
 	 * @param WC_Subscription $subscription
+	 * @since 2.2.0
 	 */
 	public function update( &$subscription ) {
 		parent::update( $subscription );
@@ -119,7 +125,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * Update post meta for a subscription based on it's settings in the WC_Subscription class.
 	 *
 	 * @param WC_Subscription $subscription
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 */
 	protected function update_post_meta( &$subscription ) {
 
@@ -147,6 +153,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 *
 	 * @param WC_Subscription $subscription
 	 * @return string
+	 * @since 2.2.0
 	 */
 	public function get_total_refunded( $subscription ) {
 
@@ -164,6 +171,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 *
 	 * @param WC_Subscription $subscription
 	 * @return float
+	 * @since 2.2.0
 	 */
 	public function get_total_tax_refunded( $subscription ) {
 
@@ -181,6 +189,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 *
 	 * @param WC_Subscription $subscription
 	 * @return float
+	 * @since 2.2.0
 	 */
 	public function get_total_shipping_refunded( $subscription ) {
 
@@ -198,6 +207,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 *
 	 * @param  string $type
 	 * @return int
+	 * @since 2.2.0
 	 */
 	public function get_order_count( $status ) {
 		global $wpdb;
@@ -210,6 +220,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * @see    wc_get_orders()
 	 * @param  array $args
 	 * @return array of orders
+	 * @since 2.2.0
 	 */
 	public function get_orders( $args = array() ) {
 

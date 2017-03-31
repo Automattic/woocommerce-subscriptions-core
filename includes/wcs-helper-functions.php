@@ -164,7 +164,7 @@ function wcs_get_rounding_precision() {
  *
  * @param string
  * @param string
- * @since 2.1.4
+ * @since 2.2.0
  * @return string
  */
 function wcs_maybe_prefix_key( $key, $prefix = '_' ) {

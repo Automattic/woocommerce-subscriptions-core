@@ -45,7 +45,7 @@ class WC_Subscriptions_Product {
 		// Make sure a subscriptions price is included in subscription variations when required
 		add_filter( 'woocommerce_available_variation', __CLASS__ . '::maybe_set_variations_price_html', 10, 3 );
 
-		// Sync variable product min/max prices with WC 2.7
+		// Sync variable product min/max prices with WC 3.0
 		add_action( 'woocommerce_variable_product_sync_data', __CLASS__ . '::variable_subscription_product_sync', 10 );
 
 		// Prevent users from deleting subscription products - it causes too many problems with WooCommerce and other plugins
@@ -391,11 +391,11 @@ class WC_Subscriptions_Product {
 	 *
 	 * @param mixed $product A WC_Product object or product ID
 	 * @return float
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 */
 	public static function get_regular_price( $product, $context = 'view' ) {
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 			$regular_price = $product->regular_price;
 		} else {
 			$regular_price = $product->get_regular_price( $context );
@@ -409,11 +409,11 @@ class WC_Subscriptions_Product {
 	 *
 	 * @param mixed $product A WC_Product object or product ID
 	 * @return float
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 */
 	public static function get_sale_price( $product, $context = 'view' ) {
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 			$sale_price = $product->sale_price;
 		} else {
 			$sale_price = $product->get_sale_price( $context );
@@ -744,7 +744,7 @@ class WC_Subscriptions_Product {
 	 *
 	 * @param mixed $product A WC_Product object or product ID
 	 * @return bool True if the product requires only one time shipping, false otherwise.
-	 * @since 1.0
+	 * @since 2.2.0
 	 */
 	public static function needs_one_time_shipping( $product ) {
 		return apply_filters( 'woocommerce_subscriptions_product_needs_one_time_shipping', 'yes' === self::get_meta_data( $product, 'subscription_one_time_shipping', 'no' ), self::maybe_get_product_instance( $product ) );
@@ -943,7 +943,7 @@ class WC_Subscriptions_Product {
 	 *
 	 * @param mixed $product A WC_Product object or product ID
 	 * @return WC_Product
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 */
 	private static function maybe_get_product_instance( $product ) {
 
@@ -960,7 +960,7 @@ class WC_Subscriptions_Product {
 	 * @param mixed $product A WC_Product object or product ID
 	 * @param string $meta_key The string key for the meta data
 	 * @return float The value of the sign-up fee, or 0 if the product is not a subscription or the subscription has no sign-up fee
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 */
 	public static function get_meta_data( $product, $meta_key, $default_value ) {
 
@@ -970,7 +970,7 @@ class WC_Subscriptions_Product {
 
 		if ( self::is_subscription( $product ) ) {
 
-			if ( is_callable( array( $product, 'meta_exists' ) ) ) { // WC 2.7+
+			if ( is_callable( array( $product, 'meta_exists' ) ) ) { // WC 3.0
 
 				$prefixed_key = wcs_maybe_prefix_key( $meta_key );
 
@@ -978,7 +978,7 @@ class WC_Subscriptions_Product {
 				if ( $product->meta_exists( $prefixed_key ) ) {
 					$meta_value = $product->get_meta( $prefixed_key, true );
 				}
-			} elseif ( isset( $product->{$meta_key} ) ) { // WC < 2.7
+			} elseif ( isset( $product->{$meta_key} ) ) { // WC < 3.0
 				$meta_value = $product->{$meta_key};
 			}
 		}
@@ -987,10 +987,10 @@ class WC_Subscriptions_Product {
 	}
 
 	/**
-	 * sync variable product min/max prices with WC 2.7
+	 * sync variable product min/max prices with WC 3.0
 	 *
 	 * @param WC_Product_Variable $product
-	 * @since 2.0.18
+	 * @since 2.2.0
 	 */
 	public static function variable_subscription_product_sync( $product ) {
 
@@ -1099,7 +1099,7 @@ class WC_Subscriptions_Product {
 	 * @return string
 	 */
 	public static function get_sign_up_fee_including_tax( $product, $qty = 1 ) {
-		wcs_deprecated_function( __METHOD__, '2.1.4', 'wcs_get_price_including_tax( $product, array( "qty" => $qty, "price" => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) )' );
+		wcs_deprecated_function( __METHOD__, '2.2.0', 'wcs_get_price_including_tax( $product, array( "qty" => $qty, "price" => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) )' );
 		return wcs_get_price_including_tax( $product, array( 'qty' => $qty, 'price' => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) );
 	}
 
@@ -1110,7 +1110,7 @@ class WC_Subscriptions_Product {
 	 * @return string
 	 */
 	public static function get_sign_up_fee_excluding_tax( $product, $qty = 1 ) {
-		wcs_deprecated_function( __METHOD__, '2.1.4', 'wcs_get_price_excluding_tax( $product, array( "qty" => $qty, "price" => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) )' );
+		wcs_deprecated_function( __METHOD__, '2.2.0', 'wcs_get_price_excluding_tax( $product, array( "qty" => $qty, "price" => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) )' );
 		return wcs_get_price_excluding_tax( $product, array( 'qty' => $qty, 'price' => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) );
 	}
 }

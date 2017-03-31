@@ -50,7 +50,7 @@ function wcs_help_tip( $tip, $allow_html = false ) {
  * We don't want to force the use of a custom legacy class for orders, similar to WC_Subscription_Legacy, because 3rd party
  * code may expect the object type to be WC_Order with strict type checks.
  *
- * A note on dates: in WC 2.7+, dates are returned a timestamps in the site's timezone :upside_down_face:. In WC < 2.7, they were
+ * A note on dates: in WC 3.0+, dates are returned a timestamps in the site's timezone :upside_down_face:. In WC < 3.0, they were
  * returned as MySQL strings in the site's timezone. We return them from here as MySQL strings in UTC timezone because that's how
  * dates are used in Subscriptions in almost all cases, for sanity's sake.
  *
@@ -58,7 +58,7 @@ function wcs_help_tip( $tip, $allow_html = false ) {
  * @param string $property The property name.
  * @param string $single Whether to return just the first piece of meta data with the given property key, or all meta data.
  * @param mixed $default (optional) The value to return if no value is found - defaults to single -> null, multiple -> array()
- * @since  2.1.4
+ * @since  2.2.0
  * @return mixed
  */
 function wcs_get_objects_property( $object, $property, $single = 'single', $default = null ) {
@@ -69,18 +69,18 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 
 	switch ( $property ) {
 
-		case 'name' : // the replacement for post_title added in 2.7
-			if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+		case 'name' : // the replacement for post_title added in 3.0
+			if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 				$value = $object->post->post_title;
-			} else { // WC 2.7+
+			} else { // WC 3.0+
 				$value = $object->get_name();
 			}
 			break;
 
 		case 'post' :
-			if ( WC_Subscriptions::is_woocommerce_pre( '2.7' ) ) {
+			if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 				$value = $object->post;
-			} else { // WC 2.7+
+			} else { // WC 3.0+
 				// In order to keep backwards compatibility it's required to use the parent data for variations.
 				if ( method_exists( $object, 'is_type' ) && $object->is_type( 'variation' ) ) {
 					$value = get_post( $object->get_parent_id() );
@@ -95,7 +95,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 			break;
 
 		case 'parent_id' :
-			if ( method_exists( $object, 'get_parent_id' ) ) { // WC 2.7+ or an instance of WC_Product_Subscription_Variation_Legacy with WC < 2.7
+			if ( method_exists( $object, 'get_parent_id' ) ) { // WC 3.0+ or an instance of WC_Product_Subscription_Variation_Legacy with WC < 3.0
 				$value = $object->get_parent_id();
 			} else { // WC 2.1-2.6
 				$value = $object->get_parent();
@@ -103,7 +103,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 			break;
 
 		case 'variation_data' :
-			if ( function_exists( 'wc_get_product_variation_attributes' ) ) { // WC 2.7+
+			if ( function_exists( 'wc_get_product_variation_attributes' ) ) { // WC 3.0+
 				$value = wc_get_product_variation_attributes( $object->get_id() );
 			} else {
 				$value = $object->$property;
@@ -111,7 +111,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 			break;
 
 		case 'downloads' :
-			if ( method_exists( $object, 'get_downloads' ) ) { // WC 2.7+
+			if ( method_exists( $object, 'get_downloads' ) ) { // WC 3.0+
 				$value = $object->get_downloads();
 			} else {
 				$value = $object->get_files();
@@ -120,7 +120,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 
 		case 'order_version' :
 		case 'version' :
-			if ( method_exists( $object, 'get_version' ) ) { // WC 2.7+
+			if ( method_exists( $object, 'get_version' ) ) { // WC 3.0+
 				$value = $object->get_version();
 			} else { // WC 2.1-2.6
 				$value = $object->order_version;
@@ -129,7 +129,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 
 		case 'order_currency' :
 		case 'currency' :
-			if ( method_exists( $object, 'get_currency' ) ) { // WC 2.7+
+			if ( method_exists( $object, 'get_currency' ) ) { // WC 3.0+
 				$value = $object->get_currency();
 			} else { // WC 2.1-2.6
 				$value = $object->get_order_currency();
@@ -140,7 +140,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 		case 'date_created' :
 		case 'order_date' :
 		case 'date' :
-			if ( method_exists( $object, 'get_date_created' ) ) { // WC 2.7+
+			if ( method_exists( $object, 'get_date_created' ) ) { // WC 3.0+
 				$value = $object->get_date_created();
 			} else {
 				// Base the value off tht GMT value when possible and then set the DateTime's timezone based on the current site's timezone to avoid incorrect values when the timezone has changed
@@ -155,7 +155,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 
 		// Always return a PHP DateTime object in site timezone (or null), the same thing the getter returns in WC 3.0+ to make it easier to migrate away from WC < 3.0
 		case 'date_paid' :
-			if ( method_exists( $object, 'get_date_paid' ) ) { // WC 2.7+
+			if ( method_exists( $object, 'get_date_paid' ) ) { // WC 3.0+
 				$value = $object->get_date_paid();
 			} else {
 				if ( ! empty( $object->paid_date ) ) {
@@ -183,7 +183,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 				$value = $object->$function_name();
 			} else {
 
-				// If we don't have a method for this specific property, but we are using WC 2.7, it may be set as meta data on the object so check if we can use that
+				// If we don't have a method for this specific property, but we are using WC 3.0, it may be set as meta data on the object so check if we can use that
 				if ( method_exists( $object, 'get_meta' ) ) {
 					if ( $object->meta_exists( $prefixed_key ) ) {
 						if ( 'single' === $single ) {
@@ -193,10 +193,10 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 							$value = wp_list_pluck( $object->get_meta( $prefixed_key, false ), 'value' );
 						}
 					}
-				} elseif ( 'single' === $single && isset( $object->$property ) ) { // WC < 2.7
+				} elseif ( 'single' === $single && isset( $object->$property ) ) { // WC < 3.0
 					$value = $object->$property;
 				} elseif ( metadata_exists( 'post', wcs_get_objects_property( $object, 'id' ), $prefixed_key ) ) {
-					// If we couldn't find a property or function, fallback to using post meta as that's what many __get() methods in WC < 2.7 did
+					// If we couldn't find a property or function, fallback to using post meta as that's what many __get() methods in WC < 3.0 did
 					if ( 'single' === $single ) {
 						$value = get_post_meta( wcs_get_objects_property( $object, 'id' ), $prefixed_key, true );
 					} else {
@@ -220,7 +220,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
  * @param string $save Whether to write the data to the database or not. Use 'save' to write to the database, anything else to only update it in memory.
  * @param int $meta_id The meta ID of exiting meta data if you wish to overwrite an existing piece of meta.
  * @param bool|string $prefix An optional prefix to add to the $key. Default '_'. Set to boolean false to have no prefix added.
- * @since  2.1.4
+ * @since  2.2.0
  * @return mixed
  */
 function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta_id = '' ) {
@@ -234,19 +234,21 @@ function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta
 
 	// Special cases where properties with setters which don't map nicely to their function names
 	$meta_setters_map = array(
-		'_cart_discount'     => 'set_discount_total',
-		'_cart_discount_tax' => 'set_discount_tax',
-		'_customer_user'     => 'set_customer_id',
-		'_order_tax'         => 'set_cart_tax',
-		'_order_shipping'    => 'set_shipping_total',
+		'_cart_discount'         => 'set_discount_total',
+		'_cart_discount_tax'     => 'set_discount_tax',
+		'_customer_user'         => 'set_customer_id',
+		'_order_tax'             => 'set_cart_tax',
+		'_order_shipping'        => 'set_shipping_total',
+		'_sale_price_dates_from' => 'set_date_on_sale_from',
+		'_sale_price_dates_to'   => 'set_date_on_sale_to',
 	);
 
-	// If we have a 2.7 object with a predefined setter function, use it
+	// If we have a 3.0 object with a predefined setter function, use it
 	if ( isset( $meta_setters_map[ $prefixed_key ] ) && is_callable( array( $object, $meta_setters_map[ $prefixed_key ] ) ) ) {
 		$function = $meta_setters_map[ $prefixed_key ];
 		$object->$function( $value );
 
-	// If we have a 2.7 object, use the setter if available.
+	// If we have a 3.0 object, use the setter if available.
 	} elseif ( is_callable( array( $object, 'set' . $prefixed_key ) ) ) {
 		$object->{ "set$prefixed_key" }( $value );
 
@@ -255,7 +257,7 @@ function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta
 		$function_name = 'set' . str_replace( '_order', '', $prefixed_key );
 		$object->$function_name( $value );
 
-	// If there is no setter, treat as meta within the 2.7.x object.
+	// If there is no setter, treat as meta within the 3.0.x object.
 	} elseif ( is_callable( array( $object, 'update_meta_data' ) ) ) {
 		$object->update_meta_data( $prefixed_key, $value, $meta_id );
 
@@ -270,11 +272,11 @@ function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta
 
 	// Save the data
 	if ( 'save' === $save ) {
-		if ( is_callable( array( $object, 'save' ) ) ) { // WC 2.7+
+		if ( is_callable( array( $object, 'save' ) ) ) { // WC 3.0+
 			$object->save();
-		} elseif ( 'date_created' == $key ) { // WC < 2.7+
+		} elseif ( 'date_created' == $key ) { // WC < 3.0+
 			wp_update_post( array( 'ID' => wcs_get_objects_property( $object, 'id' ), 'post_date' => get_date_from_gmt( $value ), 'post_date_gmt' => $value ) );
-		} elseif ( 'name' === $key ) { // the replacement for post_title added in 2.7, need to update post_title not post meta
+		} elseif ( 'name' === $key ) { // the replacement for post_title added in 3.0, need to update post_title not post meta
 			wp_update_post( array( 'ID' => wcs_get_objects_property( $object, 'id' ), 'post_title' => $value ) );
 		} else {
 
@@ -294,7 +296,7 @@ function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta
  * @param string $key The meta key name without '_' prefix
  * @param mixed $value The data to set as the value of the meta
  * @param string $save Whether to save the data or not, 'save' to save the data, otherwise it won't be saved.
- * @since  2.1.4
+ * @since  2.2.0
  * @return mixed
  */
 function wcs_delete_objects_property( &$object, $key, $save = 'save', $meta_id = '' ) {
@@ -311,7 +313,7 @@ function wcs_delete_objects_property( &$object, $key, $save = 'save', $meta_id =
 
 	// Save the data
 	if ( 'save' === $save ) {
-		if ( method_exists( $object, 'save' ) ) { // WC 2.7+
+		if ( method_exists( $object, 'save' ) ) { // WC 3.0+
 			$object->save();
 		} elseif ( ! empty( $meta_id ) ) {
 			delete_metadata_by_mid( 'post', $meta_id );
@@ -324,11 +326,11 @@ function wcs_delete_objects_property( &$object, $key, $save = 'save', $meta_id =
 /**
  * Check whether an order is a standard order (i.e. not a refund or subscription) in version compatible way.
  *
- * WC 2.7 has the $order->get_type() API which returns 'shop_order', while WC < 2.7 provided the $order->order_type
+ * WC 3.0 has the $order->get_type() API which returns 'shop_order', while WC < 3.0 provided the $order->order_type
  * property which returned 'simple', so we need to check for both.
  *
  * @param WC_Order $order
- * @since  2.1.4
+ * @since  2.2.0
  * @return bool
  */
 function wcs_is_order( $order ) {
@@ -345,19 +347,19 @@ function wcs_is_order( $order ) {
 /**
  * Find and return the value for a deprecated property property.
  *
- * Product properties should not be accessed directly with WooCommerce 2.7+, because of that, a lot of properties
- * have been depreacted/removed in the subscription product type classes. This function centralises the handling
- * of deriving depreacted properties. This saves duplicating the __get() method in WC_Product_Subscription,
+ * Product properties should not be accessed directly with WooCommerce 3.0+, because of that, a lot of properties
+ * have been deprecated/removed in the subscription product type classes. This function centralises the handling
+ * of deriving deprecated properties. This saves duplicating the __get() method in WC_Product_Subscription,
  * WC_Product_Variable_Subscription and WC_Product_Subscription_Variation.
  *
  * @param string $property
  * @param WC_Product $product
- * @since  2.1.4
+ * @since  2.2.0
  * @return mixed
  */
 function wcs_product_deprecated_property_handler( $property, $product ) {
 
-	$message_prefix = 'Product properties should not be accessed directly with WooCommerce 2.7+.';
+	$message_prefix = 'Product properties should not be accessed directly with WooCommerce 3.0+.';
 	$function_name  = 'get_' . str_replace( 'subscription_', '', str_replace( 'subscription_period_', '', $property ) );
 	$class_name     = get_class( $product );
 	$value          = null;
@@ -412,7 +414,7 @@ function wcs_product_deprecated_property_handler( $property, $product ) {
 				break;
 		}
 
-		wcs_deprecated_argument( $class_name . '::$' . $property, '2.1.4', sprintf( '%s Use %s', $message_prefix, $alternative ) );
+		wcs_deprecated_argument( $class_name . '::$' . $property, '2.2.0', sprintf( '%s Use %s', $message_prefix, $alternative ) );
 	}
 
 	return $value;

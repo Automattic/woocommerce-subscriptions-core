@@ -1017,7 +1017,7 @@ class WC_Subscriptions_Order {
 	 */
 	public static function maybe_autocomplete_order( $new_order_status, $order_id ) {
 
-		// Guard against infinite loops in WC 2.7+ where woocommerce_payment_complete_order_status is called while instantiating WC_Order objects
+		// Guard against infinite loops in WC 3.0+ where woocommerce_payment_complete_order_status is called while instantiating WC_Order objects
 		remove_filter( 'woocommerce_payment_complete_order_status', __METHOD__, 10 );
 		$order = wc_get_order( $order_id );
 		add_filter( 'woocommerce_payment_complete_order_status', __METHOD__, 10, 2 );
@@ -2025,10 +2025,10 @@ class WC_Subscriptions_Order {
 	 * Wrapper around @see WC_Order::get_order_currency() for versions of WooCommerce prior to 2.1.
 	 *
 	 * @since version 1.4.9
-	 * @deprecated 2.1.4
+	 * @deprecated 2.2.0
 	 */
 	public static function get_order_currency( $order ) {
-		_deprecated_function( __METHOD__, '2.1.4', 'wcs_get_objects_property( $order, "currency" ) or $order->get_currency()' );
+		_deprecated_function( __METHOD__, '2.2.0', 'wcs_get_objects_property( $order, "currency" ) or $order->get_currency()' );
 		return wcs_get_objects_property( $order, 'currency' );
 	}
 }

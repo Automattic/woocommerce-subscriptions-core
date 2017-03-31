@@ -123,9 +123,9 @@ class WC_Subscriptions_Switcher {
 	}
 
 	/**
-	 * Attach WooCommerce version dependenant hooks
+	 * Attach WooCommerce version dependent hooks
 	 *
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 */
 	public static function attach_dependant_hooks() {
 
@@ -629,7 +629,7 @@ class WC_Subscriptions_Switcher {
 	 * @param string $cart_item_key The hash used to identify the item in the cart
 	 * @param array $cart_item The cart item's data.
 	 * @param WC_Order $order The order or subscription object to which the line item relates
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 */
 	public static function add_line_item_meta( $order_item, $cart_item_key, $cart_item, $order ) {
 		if ( isset( $cart_item['subscription_switch'] ) ) {
@@ -667,7 +667,7 @@ class WC_Subscriptions_Switcher {
 	public static function set_subscription_item_meta( $item_id, $cart_item, $cart_item_key ) {
 
 		if ( ! WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-			_deprecated_function( __METHOD__, '2.1.4', __CLASS__ . '::add_subscription_line_item_meta( $order_item, $cart_item_key, $cart_item )' );
+			_deprecated_function( __METHOD__, '2.2.0', __CLASS__ . '::add_subscription_line_item_meta( $order_item, $cart_item_key, $cart_item )' );
 		}
 
 		if ( isset( $cart_item['subscription_switch'] ) ) {
@@ -687,7 +687,7 @@ class WC_Subscriptions_Switcher {
 	 *
 	 * @param int $order_id
 	 * @param array $checkout_posted_data
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 */
 	public static function set_switch_order_item_id( $order_id, $posted_checkout_data ) {
 

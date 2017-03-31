@@ -2,7 +2,7 @@
 /**
  * Subscription Legacy Object
  *
- * Extends WC_Subscription to provide WC 2.7 methods when running WooCommerce < 2.7.
+ * Extends WC_Subscription to provide WC 3.0 methods when running WooCommerce < 3.0.
  *
  * @class    WC_Subscription_Legacy
  * @version  2.1
@@ -64,7 +64,7 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	/**
 	 * Get parent order ID.
 	 *
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 * @return int
 	 */
 	public function get_parent_id() {
@@ -325,7 +325,7 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	/**
 	 * Get order key.
 	 *
-	 * @since  2.7.0
+	 * @since  2.2.0
 	 * @param  string $context
 	 * @return string
 	 */
@@ -448,7 +448,7 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	 * For inherited dates props, like date_created, date_modified, date_paid,
 	 * date_completed, we want to use our own get_date() function rather simply
 	 * getting the stored value. Otherwise, we either get the prop set in memory
-	 * or post meta if it's not set yet, because __get() in WC < 2.7 would fallback
+	 * or post meta if it's not set yet, because __get() in WC < 3.0 would fallback
 	 * to post meta.
 	 *
 	 * @param string
@@ -497,15 +497,15 @@ class WC_Subscription_Legacy extends WC_Subscription {
 			}
 		}
 
-		return $datetime;
+		return wcs_get_datetime_from( $datetime );
 	}
 
 	/*** Setters *****************************************************/
 
 	/**
-	 * Returns the unique ID for this object.
+	 * Set the unique ID for this object.
 	 *
-	 * @return int
+	 * @param int
 	 */
 	public function set_id( $id ) {
 		$this->id = absint( $id );
@@ -515,7 +515,7 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	 * Set parent order ID. We don't use WC_Abstract_Order::set_parent_id() because we want to allow false
 	 * parent IDs, like 0.
 	 *
-	 * @since 2.1.4
+	 * @since 2.2.0
 	 * @param int $value
 	 */
 	public function set_parent_id( $value ) {
@@ -531,7 +531,7 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	}
 
 	/**
-	 * Set order status.
+	 * Set subscription status.
 	 *
 	 * @param string $new_status Status to change the order to. No internal wc- prefix is required.
 	 * @return array details of change
@@ -560,7 +560,8 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	 * Helper function to make sure when WC_Subscription calls set_prop() that property is
 	 * both set in the legacy class property and saved in post meta immediately.
 	 *
-	 * @return string
+	 * @param string $prop
+	 * @param mixed $value
 	 */
 	protected function set_prop( $prop, $value ) {
 
@@ -589,14 +590,17 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	 * @param int $value UTC timestamp
 	 */
 	protected function set_date_prop( $date_type, $value ) {
-		$this->set_prop( $this->get_date_prop_key( $date_type ), wcs_get_datetime_from( $value ) );
-		$this->schedule->{$date_type} = gmdate( 'Y:m:d H:i:s', $value );
+		$datetime = wcs_get_datetime_from( $value );
+		$date     = ! is_null( $datetime ) ? wcs_get_datetime_utc_string( $datetime ) : 0;
+
+		$this->set_prop( $this->get_date_prop_key( $date_type ), $date );
+		$this->schedule->{$date_type} = $date;
 	}
 
 	/**
 	 * Set a certain date type for the last order on the subscription.
 	 *
-	 * @since 2.1.4.
+	 * @since 2.2.0
 	 * @param string $date_type
 	 * @param string|integer|object
 	 * @return WC_DateTime|NULL object if the date is set or null if there is no date.
@@ -727,7 +731,7 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	/**
 	 * Update meta data by key or ID, if provided.
 	 *
-	 * @since  2.1.4
+	 * @since  2.2.0
 	 * @param  string $key
 	 * @param  string $value
 	 * @param  int $meta_id
