@@ -146,6 +146,7 @@ class WC_Subscriptions_Cart {
 			add_filter( 'woocommerce_get_price', __CLASS__ . '::set_subscription_prices_for_calculation', 100, 2 );
 		} else {
 			add_filter( 'woocommerce_product_get_price', __CLASS__ . '::set_subscription_prices_for_calculation', 100, 2 );
+			add_filter( 'woocommerce_product_variation_get_price', __CLASS__ . '::set_subscription_prices_for_calculation', 100, 2 );
 		}
 	}
 
@@ -160,6 +161,7 @@ class WC_Subscriptions_Cart {
 			remove_filter( 'woocommerce_get_price', __CLASS__ . '::set_subscription_prices_for_calculation', 100 );
 		} else {
 			remove_filter( 'woocommerce_product_get_price', __CLASS__ . '::set_subscription_prices_for_calculation', 100 );
+			remove_filter( 'woocommerce_product_variation_get_price', __CLASS__ . '::set_subscription_prices_for_calculation', 100 );
 		}
 	}
 
@@ -663,7 +665,12 @@ class WC_Subscriptions_Cart {
 
 		if ( WC_Subscriptions_Product::is_subscription( $product ) && ! wcs_cart_contains_renewal() ) {
 
-			$product_price_filter = WC_Subscriptions::is_woocommerce_pre( '3.0' ) ? 'woocommerce_get_price' : 'woocommerce_product_get_price';
+
+			if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+				$product_price_filter = 'woocommerce_get_price';
+			} else {
+				$product_price_filter = is_a( $product, 'WC_Product_Variation' ) ? 'woocommerce_product_variation_get_price' : 'woocommerce_product_get_price';
+			}
 
 			// Avoid infinite loop
 			remove_filter( 'woocommerce_cart_product_subtotal', __CLASS__ . '::get_formatted_product_subtotal', 11, 4 );
