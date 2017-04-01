@@ -250,6 +250,12 @@ function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta
 
 	// If we have a 3.0 object, use the setter if available.
 	} elseif ( is_callable( array( $object, 'set' . $prefixed_key ) ) ) {
+
+		// Prices include tax is stored as a boolean in props but saved in the database as a string yes/no, so we need to normalise it here to make sure if we have a string (which can be passed to it by things like wcs_copy_order_meta()) that it's converted to a boolean before being set
+		if ( '_prices_include_tax' === $prefixed_key && ! is_bool( $value ) ) {
+			$value = 'yes' === $value ? true : false;
+		}
+
 		$object->{ "set$prefixed_key" }( $value );
 
 	// If there is a setter without the order prefix (eg set_order_total -> set_total)
