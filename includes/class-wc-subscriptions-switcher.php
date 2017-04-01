@@ -1348,6 +1348,11 @@ class WC_Subscriptions_Switcher {
 			// Add any extra sign up fees required to switch to the new subscription
 			if ( 'yes' == $apportion_sign_up_fee ) {
 
+				// With WC 3.0, make sure we get a fresh copy of the product's meta to avoid prorating an already prorated sign-up fee
+				if ( is_callable( array( $product, 'read_meta_data' ) ) ) {
+					$product->read_meta_data( true );
+				}
+
 				// Because product add-ons etc. don't apply to sign-up fees, it's safe to use the product's sign-up fee value rather than the cart item's
 				$sign_up_fee_due  = WC_Subscriptions_Product::get_sign_up_fee( $product );
 				$sign_up_fee_paid = $subscription->get_items_sign_up_fee( $existing_item, 'inclusive_of_tax' );
@@ -1358,7 +1363,7 @@ class WC_Subscriptions_Switcher {
 				}
 
 				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee', max( $sign_up_fee_due - $sign_up_fee_paid, 0 ), 'set_prop_only' );
-				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee_prorated', WC_Subscriptions_Product::get_sign_up_fee( WC()->cart->cart_contents[ $cart_item_key ]['data'] ) );
+				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee_prorated', WC_Subscriptions_Product::get_sign_up_fee( WC()->cart->cart_contents[ $cart_item_key ]['data'] ), 'set_prop_only' );
 
 			} elseif ( 'no' == $apportion_sign_up_fee ) { // $0 the initial sign-up fee
 
@@ -1463,9 +1468,10 @@ class WC_Subscriptions_Switcher {
 						$extra_to_pay = $extra_to_pay / $cart_item['quantity'];
 
 						// Keep a record of the two separate amounts so we store these and calculate future switch amounts correctly
-						wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee_prorated', WC_Subscriptions_Product::get_sign_up_fee( WC()->cart->cart_contents[ $cart_item_key ]['data'] ), 'set_prop_only' );
+						$existing_sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( WC()->cart->cart_contents[ $cart_item_key ]['data'] );
+						wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee_prorated', $existing_sign_up_fee, 'set_prop_only' );
 						wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_price_prorated', round( $extra_to_pay, wc_get_price_decimals() ), 'set_prop_only' );
-						wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee', round( $extra_to_pay, wc_get_price_decimals() ), 'set_prop_only' );
+						wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee', round( $existing_sign_up_fee + $extra_to_pay, wc_get_price_decimals() ), 'set_prop_only' );
 					}
 
 				// If the customer is downgrading, set the next payment date and maybe extend it if downgrades are prorated
