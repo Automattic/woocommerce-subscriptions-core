@@ -681,7 +681,6 @@ class WCS_Admin_Post_Types {
 	public function shop_subscription_sortable_columns( $columns ) {
 
 		$sortable_columns = array(
-			'status'            => 'post_status',
 			'order_title'       => 'ID',
 			'recurring_total'   => 'order_total',
 			'start_date'        => 'date',
