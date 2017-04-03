@@ -590,7 +590,7 @@ class WC_Subscriptions_Switcher {
 	public static function add_order_item_meta( $order_item_id, $cart_item, $cart_item_key ) {
 
 		if ( false === WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-			_deprecated_function( __METHOD__, '2.2.0 and WooCommerce 3.0', __CLASS__ . '::add_order_line_item_meta( $order_item, $cart_item_key, $cart_item )' );
+			_deprecated_function( __METHOD__, '2.2.0 and WooCommerce 3.0.0', __CLASS__ . '::add_order_line_item_meta( $order_item, $cart_item_key, $cart_item )' );
 		}
 
 		if ( isset( $cart_item['subscription_switch'] ) ) {
@@ -789,8 +789,45 @@ class WC_Subscriptions_Switcher {
 					if ( $is_single_item_subscription || ( false === $is_different_billing_schedule && false === $is_different_payment_date && false === $is_different_length ) ) {
 
 						// Add the new item
-						$item_id = WC_Subscriptions_Checkout::add_cart_item( $subscription, $cart_item, $cart_item_key );
-						wc_update_order_item( $item_id, array( 'order_item_type' => 'line_item_pending_switch' ) );
+						if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+							$item_id = WC_Subscriptions_Checkout::add_cart_item( $subscription, $cart_item, $cart_item_key );
+							wc_update_order_item( $item_id, array( 'order_item_type' => 'line_item_pending_switch' ) );
+						} else {
+							$item = new WC_Order_Item_Pending_Switch;
+							$item->legacy_values        = $cart_item['data']; // @deprecated For legacy actions.
+							$item->legacy_cart_item_key = $cart_item_key; // @deprecated For legacy actions.
+							$item->set_props( array(
+								'quantity'     => $cart_item['quantity'],
+								'variation'    => $cart_item['variation'],
+								'subtotal'     => $cart_item['line_subtotal'],
+								'total'        => $cart_item['line_total'],
+								'subtotal_tax' => $cart_item['line_subtotal_tax'],
+								'total_tax'    => $cart_item['line_tax'],
+								'taxes'        => $cart_item['line_tax_data'],
+							) );
+
+							if ( ! empty( $cart_item['data'] ) ) {
+								$product = $cart_item['data'];
+								$item->set_props( array(
+									'name'         => $product->get_name(),
+									'tax_class'    => $product->get_tax_class(),
+									'product_id'   => $product->is_type( 'variation' ) ? $product->get_parent_id() : $product->get_id(),
+									'variation_id' => $product->is_type( 'variation' ) ? $product->get_id() : 0,
+								) );
+							}
+
+							if ( WC_Subscriptions_Product::get_trial_length( wcs_get_canonical_product_id( $cart_item ) ) > 0 ) {
+								$item->add_meta_data( '_has_trial', 'true' );
+							}
+
+							do_action( 'woocommerce_checkout_create_order_line_item', $item, $cart_item_key, $cart_item, $subscription );
+
+							$subscription->add_item( $item );
+
+							// The subscription is not saved automatically, we need to call 'save' becaused we added an item
+							$subscription->save();
+							$item_id = $item->get_id();
+						}
 
 						$switched_item_data['add_line_item'] = $item_id;
 
@@ -838,9 +875,15 @@ class WC_Subscriptions_Switcher {
 					$new_shipping_line_items     = array();
 
 					// Keep a record of the subscription shipping total. Adding shipping methods will cause a new shipping total to be set, we'll need to set it back after.
-					$subscription_shipping_total = $subscription->order_shipping;
+					$subscription_shipping_total = $subscription->get_total_shipping();
 
 					WC_Subscriptions_Checkout::add_shipping( $subscription, $recurring_cart );
+
+					if ( ! WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+						// We must save the subscription, we need the Shipping method saved
+						// otherwise the ID is bogus (new:1) and we need it.
+						$subscription->save();
+					}
 
 					// Set all new shipping methods to shipping_pending_switch line items
 					foreach ( $subscription->get_shipping_methods() as $shipping_line_item_id => $shipping_meta ) {
@@ -851,7 +894,11 @@ class WC_Subscriptions_Switcher {
 						}
 					}
 
-					$subscription->set_total( $subscription_shipping_total, 'shipping' );
+					if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+						$subscription->set_total( $subscription_shipping_total, 'shipping' );
+					} else {
+						$subscription->set_shipping_total( $subscription_shipping_total );
+					}
 
 					$switch_order_data[ $subscription->get_id() ]['shipping_line_items'] = $new_shipping_line_items;
 				}
@@ -1301,6 +1348,11 @@ class WC_Subscriptions_Switcher {
 			// Add any extra sign up fees required to switch to the new subscription
 			if ( 'yes' == $apportion_sign_up_fee ) {
 
+				// With WC 3.0, make sure we get a fresh copy of the product's meta to avoid prorating an already prorated sign-up fee
+				if ( is_callable( array( $product, 'read_meta_data' ) ) ) {
+					$product->read_meta_data( true );
+				}
+
 				// Because product add-ons etc. don't apply to sign-up fees, it's safe to use the product's sign-up fee value rather than the cart item's
 				$sign_up_fee_due  = WC_Subscriptions_Product::get_sign_up_fee( $product );
 				$sign_up_fee_paid = $subscription->get_items_sign_up_fee( $existing_item, 'inclusive_of_tax' );
@@ -1311,7 +1363,7 @@ class WC_Subscriptions_Switcher {
 				}
 
 				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee', max( $sign_up_fee_due - $sign_up_fee_paid, 0 ), 'set_prop_only' );
-				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee_prorated', WC_Subscriptions_Product::get_sign_up_fee( WC()->cart->cart_contents[ $cart_item_key ]['data'] ) );
+				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee_prorated', WC_Subscriptions_Product::get_sign_up_fee( WC()->cart->cart_contents[ $cart_item_key ]['data'] ), 'set_prop_only' );
 
 			} elseif ( 'no' == $apportion_sign_up_fee ) { // $0 the initial sign-up fee
 
@@ -1416,9 +1468,10 @@ class WC_Subscriptions_Switcher {
 						$extra_to_pay = $extra_to_pay / $cart_item['quantity'];
 
 						// Keep a record of the two separate amounts so we store these and calculate future switch amounts correctly
-						wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee_prorated', WC_Subscriptions_Product::get_sign_up_fee( WC()->cart->cart_contents[ $cart_item_key ]['data'] ), 'set_prop_only' );
+						$existing_sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( WC()->cart->cart_contents[ $cart_item_key ]['data'] );
+						wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee_prorated', $existing_sign_up_fee, 'set_prop_only' );
 						wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_price_prorated', round( $extra_to_pay, wc_get_price_decimals() ), 'set_prop_only' );
-						wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee', round( $extra_to_pay, wc_get_price_decimals() ), 'set_prop_only' );
+						wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee', round( $existing_sign_up_fee + $extra_to_pay, wc_get_price_decimals() ), 'set_prop_only' );
 					}
 
 				// If the customer is downgrading, set the next payment date and maybe extend it if downgrades are prorated
@@ -1863,7 +1916,6 @@ class WC_Subscriptions_Switcher {
 						// If we are adding a line item to an existing subscription
 						if ( isset( $switched_item_data['add_line_item'] ) ) {
 							wc_update_order_item( $switched_item_data['add_line_item'], array( 'order_item_type' => 'line_item' ) );
-
 							do_action( 'woocommerce_subscription_item_switched', $order, $subscription, $switched_item_data['add_line_item'], $switched_item_data['remove_line_item'] );
 						}
 
@@ -1885,17 +1937,25 @@ class WC_Subscriptions_Switcher {
 							wc_update_order_item( $switched_item_data['remove_line_item'], array( 'order_item_type' => 'line_item_switched' ) );
 
 							// translators: 1$: old item, 2$: new item when switching
-							$subscription->add_order_note( sprintf( _x( 'Customer switched from: %1$s to %2$s.', 'used in order notes', 'woocommerce-subscriptions' ), $old_item_name, $new_item_name ) );
+							$add_note = sprintf( _x( 'Customer switched from: %1$s to %2$s.', 'used in order notes', 'woocommerce-subscriptions' ), $old_item_name, $new_item_name );
 						}
 					}
 				}
 			}
 
+			if ( ! empty( $add_note ) ) {
+				$subscription->add_order_note( $add_note );
+			}
+
 			if ( ! empty( $switch_data['billing_schedule'] ) ) {
 
 				// Update the billing schedule
-				foreach ( $switch_data['billing_schedule'] as $meta_key => $value ) {
-					update_post_meta( $subscription_id, $meta_key, $value );
+				if ( ! empty( $switch_data['billing_schedule']['_billing_period'] ) ) {
+					$subscription->set_billing_period( $switch_data['billing_schedule']['_billing_period'] );
+				}
+
+				if ( ! empty( $switch_data['billing_schedule']['_billing_interval'] ) ) {
+					$subscription->set_billing_interval( $switch_data['billing_schedule']['_billing_interval'] );
 				}
 			}
 
@@ -1932,7 +1992,11 @@ class WC_Subscriptions_Switcher {
 			// Update the subscription address
 			self::maybe_update_subscription_address( $order, $subscription );
 
-			$subscription->calculate_totals();
+			// Save every change
+			$subscription->save();
+
+			// We just changed above the type of some items related to this subscription, so we need to reload it to get the newest items
+			wcs_get_subscription( $subscription->get_id() )->calculate_totals();
 		}
 	}
 

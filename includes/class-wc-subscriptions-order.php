@@ -238,7 +238,7 @@ class WC_Subscriptions_Order {
 
 		$item['name']      = $item['order_item_name'];
 		$item['type']      = $item['order_item_type'];
-		$item['item_meta'] = $order->get_item_meta( $item['order_item_id'] );
+		$item['item_meta'] = wc_get_order_item_meta( $item['order_item_id'], '' );
 
 		// Put meta into item array
 		if ( is_array( $item['item_meta'] ) ) {
