@@ -967,6 +967,8 @@ class WC_Subscription extends WC_Order {
 		}
 
 		if ( is_a( $date, 'DateTime' ) ) {
+			// Don't change the original date object's timezone as this may affect the prop stored on the subscription
+			$date = clone $date;
 
 			// WC's return values use site timezone by default
 			if ( 'gmt' === strtolower( $timezone ) ) {
