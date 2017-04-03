@@ -2217,6 +2217,11 @@ class WC_Subscription extends WC_Order {
 				continue;
 			}
 
+			// We don't want to validate dates for relates orders when instantiating the subscription
+			if ( false === $this->object_read && ( 0 === strpos( $date_type, 'last_order_date_' ) || in_array( $date_type, array( 'date_paid', 'date_completed' ) ) ) ) {
+				continue;
+			}
+
 			// Honour passed values first
 			if ( isset( $dates[ $date_type ] ) ) {
 				$datetime = $dates[ $date_type ];
