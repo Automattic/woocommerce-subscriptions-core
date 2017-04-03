@@ -306,10 +306,10 @@ class WC_Product_Variable_Subscription_Legacy extends WC_Product_Variable_Subscr
 
 				if ( 'incl' == $tax_display_mode ) {
 					$sale_price    = wcs_get_price_including_tax( $variation, $sale_price_args );
-					$regular_price = wcs_get_price_including_tax( $variation, $reg_price_args );
+					$regular_price = wcs_get_price_including_tax( $variation, $regular_price_args );
 				} else {
 					$sale_price    = wcs_get_price_excluding_tax( $variation, $sale_price_args );
-					$regular_price = wcs_get_price_excluding_tax( $variation, $reg_price_args );
+					$regular_price = wcs_get_price_excluding_tax( $variation, $regular_price_args );
 				}
 
 				$price .= $this->get_price_html_from_to( $regular_price, $sale_price );
