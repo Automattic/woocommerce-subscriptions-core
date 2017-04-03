@@ -581,7 +581,7 @@ class WCS_Admin_Post_Types {
 								$item_name = sprintf( '%s &times; %s', absint( $item_quantity ), $item_name );
 							}
 							if ( $_product ) {
-								$item_name = sprintf( '<a href="%s">%s</a>', get_edit_post_link( $_product->get_id() ), $item_name );
+								$item_name = sprintf( '<a href="%s">%s</a>', get_edit_post_link( ( $_product->is_type( 'variation' ) ) ? wcs_get_objects_property( $_product, 'parent_id' ) : $_product->get_id() ), $item_name );
 							}
 
 							$column_content .= '<div class="order-item">';
@@ -681,7 +681,6 @@ class WCS_Admin_Post_Types {
 	public function shop_subscription_sortable_columns( $columns ) {
 
 		$sortable_columns = array(
-			'status'            => 'post_status',
 			'order_title'       => 'ID',
 			'recurring_total'   => 'order_total',
 			'start_date'        => 'date',

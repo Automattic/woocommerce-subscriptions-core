@@ -173,7 +173,7 @@ class WC_Subscriptions_Product {
 		}
 
 		if ( sizeof( $child_prices ) > 1 ) {
-			$price .= $grouped_product->get_price_html_from_text();
+			$price .= wcs_get_price_html_from_text( $grouped_product );
 		}
 
 		$price .= wc_price( $min_price );

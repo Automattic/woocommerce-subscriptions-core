@@ -508,7 +508,7 @@ class WC_Subscription extends WC_Order {
 				$log->add( 'wcs-update-status-failures', $log_entry );
 
 				// Make sure the old status is restored
-				$this->set_status( $old_status_key, $note, $manual );
+				$this->set_status( $old_status, $note, $manual );
 
 				$this->add_order_note( sprintf( __( 'Unable to change subscription status to "%s". Exception: %s', 'woocommerce-subscriptions' ), $new_status, $e->getMessage() ) );
 
@@ -967,6 +967,8 @@ class WC_Subscription extends WC_Order {
 		}
 
 		if ( is_a( $date, 'DateTime' ) ) {
+			// Don't change the original date object's timezone as this may affect the prop stored on the subscription
+			$date = clone $date;
 
 			// WC's return values use site timezone by default
 			if ( 'gmt' === strtolower( $timezone ) ) {
@@ -2212,6 +2214,11 @@ class WC_Subscription extends WC_Order {
 
 			// While 'start' & 'last_payment' are valid date types, they are deprecated and we use 'date_created' & 'last_order_date_created' to refer to them now instead
 			if ( in_array( $date_type, array( 'last_payment', 'start' ) ) ) {
+				continue;
+			}
+
+			// We don't want to validate dates for relates orders when instantiating the subscription
+			if ( false === $this->object_read && ( 0 === strpos( $date_type, 'last_order_date_' ) || in_array( $date_type, array( 'date_paid', 'date_completed' ) ) ) ) {
 				continue;
 			}
 
