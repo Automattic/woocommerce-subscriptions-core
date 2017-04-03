@@ -544,12 +544,14 @@ class WC_Subscription_Legacy extends WC_Subscription {
 		wp_update_post( array( 'ID' => $this->get_id(), 'post_status' => wcs_maybe_prefix_key( $new_status, 'wc-' ) ) );
 		$this->post_status = $this->post->post_status = wcs_maybe_prefix_key( $new_status, 'wc-' );
 
-		$this->status_transition = array(
-			'from'   => $old_status,
-			'to'     => $new_status,
-			'note'   => $note,
-			'manual' => (bool) $manual_update,
-		);
+		if ( $old_status !== $new_status ) {
+			$this->status_transition = array(
+				'from'   => ! empty( $this->status_transition['from'] ) ? $this->status_transition['from'] : $old_status,
+				'to'     => $new_status,
+				'note'   => $note,
+				'manual' => (bool) $manual_update,
+			);
+		}
 
 		return array(
 			'from' => $old_status,
