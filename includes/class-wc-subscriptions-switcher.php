@@ -1996,7 +1996,6 @@ class WC_Subscriptions_Switcher {
 			$subscription->save();
 
 			// We just changed above the type of some items related to this subscription, so we need to reload it to get the newest items
-			// TODO: think about a `$subscription->reload_items()` method to solve this problem in a more efficient way
 			wcs_get_subscription( $subscription->get_id() )->calculate_totals();
 		}
 	}
