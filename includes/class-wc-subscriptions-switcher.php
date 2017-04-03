@@ -590,7 +590,7 @@ class WC_Subscriptions_Switcher {
 	public static function add_order_item_meta( $order_item_id, $cart_item, $cart_item_key ) {
 
 		if ( false === WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-			_deprecated_function( __METHOD__, '2.1.4 and WooCommerce 3.0.0', __CLASS__ . '::add_order_line_item_meta( $order_item, $cart_item_key, $cart_item )' );
+			_deprecated_function( __METHOD__, '2.2.0 and WooCommerce 3.0.0', __CLASS__ . '::add_order_line_item_meta( $order_item, $cart_item_key, $cart_item )' );
 		}
 
 		if ( isset( $cart_item['subscription_switch'] ) ) {
@@ -1999,6 +1999,8 @@ class WC_Subscriptions_Switcher {
 			// Save every change
 			$subscription->save();
 
+			// We just changed above the type of some items related to this subscription, so we need to reload it to get the newest items
+			// TODO: think about a `$subscription->reload_items()` method to solve this problem in a more efficient way
 			wcs_get_subscription( $subscription->get_id() )->calculate_totals();
 		}
 	}
