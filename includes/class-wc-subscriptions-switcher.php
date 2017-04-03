@@ -1936,34 +1936,14 @@ class WC_Subscriptions_Switcher {
 
 							wc_update_order_item( $switched_item_data['remove_line_item'], array( 'order_item_type' => 'line_item_switched' ) );
 
-
+							// translators: 1$: old item, 2$: new item when switching
 							$add_note = sprintf( _x( 'Customer switched from: %1$s to %2$s.', 'used in order notes', 'woocommerce-subscriptions' ), $old_item_name, $new_item_name );
 						}
 					}
 				}
 			}
 
-
-
-			// If the shipping data is in the old format
-			if ( ! empty( $switch_data['shipping_methods'] ) ) {
-				self::switch_shipping_line_items_pre_2_1_2( $subscription, $switch_data['shipping_methods'] );
-			} else if ( ! empty( $switch_data['shipping_line_items'] ) && is_array( $switch_data['shipping_line_items'] ) ) {
-
-				// Archive the old subscription shipping methods
-				foreach ( $subscription->get_shipping_methods() as $shipping_line_item_id => $item ) {
-					wc_update_order_item( $shipping_line_item_id, array( 'order_item_type' => 'shipping_switched' ) );
-				}
-
-				// Flip the switched shipping line items "on"
-				foreach ( $switch_data['shipping_line_items'] as $shipping_line_item_id ) {
-					wc_update_order_item( $shipping_line_item_id, array( 'order_item_type' => 'shipping' ) );
-				}
-
-			}
-
 			if ( ! empty( $add_note ) ) {
-				// translators: 1$: old item, 2$: new item when switching
 				$subscription->add_order_note( $add_note );
 			}
 
@@ -1990,6 +1970,22 @@ class WC_Subscriptions_Switcher {
 
 				if ( ! empty( $switch_data['dates']['update'] ) ) {
 					$subscription->update_dates( $switch_order_data[ $subscription->get_id() ]['dates']['update'] );
+				}
+			}
+
+			// If the shipping data is in the old format
+			if ( ! empty( $switch_data['shipping_methods'] ) ) {
+				self::switch_shipping_line_items_pre_2_1_2( $subscription, $switch_data['shipping_methods'] );
+			} else if ( ! empty( $switch_data['shipping_line_items'] ) && is_array( $switch_data['shipping_line_items'] ) ) {
+
+				// Archive the old subscription shipping methods
+				foreach ( $subscription->get_shipping_methods() as $shipping_line_item_id => $item ) {
+					wc_update_order_item( $shipping_line_item_id, array( 'order_item_type' => 'shipping_switched' ) );
+				}
+
+				// Flip the switched shipping line items "on"
+				foreach ( $switch_data['shipping_line_items'] as $shipping_line_item_id ) {
+					wc_update_order_item( $shipping_line_item_id, array( 'order_item_type' => 'shipping' ) );
 				}
 			}
 
