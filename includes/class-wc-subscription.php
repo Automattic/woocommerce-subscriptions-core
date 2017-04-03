@@ -510,6 +510,9 @@ class WC_Subscription extends WC_Order {
 				// Make sure the old status is restored
 				$this->set_status( $old_status, $note, $manual );
 
+				// There is no status transition
+				$this->status_transition = false;
+
 				$this->add_order_note( sprintf( __( 'Unable to change subscription status to "%s". Exception: %s', 'woocommerce-subscriptions' ), $new_status, $e->getMessage() ) );
 
 				// Make sure status is saved when WC 3.0+ is active, similar to WC_Order::update_status() with WC 3.0+ - set_status() can be used to avoid saving.
