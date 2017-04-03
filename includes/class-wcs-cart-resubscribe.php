@@ -152,6 +152,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 		if ( false !== $cart_item ) {
 			wcs_set_objects_property( $order, 'subscription_resubscribe', $cart_item[ $this->cart_item_key ]['subscription_id'] );
 			$new_subscription->update_meta_data( '_subscription_resubscribe', $cart_item[ $this->cart_item_key ]['subscription_id'] );
+			$new_subscription->save();
 		}
 	}
 
