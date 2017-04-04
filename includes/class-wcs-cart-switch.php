@@ -90,8 +90,8 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal{
 					$product    = WC_Subscriptions::get_product( wcs_get_canonical_product_id( $order_item ) );
 
 					$order_product_data = array(
-						'_qty'          => 0,
-						'_variation_id' => '',
+						'_qty'          => (int) $line_item['qty'],
+						'_variation_id' => (int) $line_item['variation_id'],
 					);
 
 					$variations = array();
@@ -101,8 +101,6 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal{
 						if ( taxonomy_is_product_attribute( $meta_key ) || meta_is_product_attribute( $meta_key, $meta_value[0], $product->get_id() ) ) {
 							$variations[ $meta_key ] = $meta_value[0];
 							$_POST[ 'attribute_' . $meta_key ] = $meta_value[0];
-						} else if ( array_key_exists( $meta_key, $order_product_data ) ) {
-							$order_product_data[ $meta_key ] = (int) $meta_value[0];
 						}
 					}
 
