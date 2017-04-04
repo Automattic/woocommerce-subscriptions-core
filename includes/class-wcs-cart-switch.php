@@ -2,11 +2,10 @@
 /**
  * Subscriptions switching cart
  *
- *
  * @author   Prospress
  * @since    2.1
  */
-class WCS_Cart_Switch extends WCS_Cart_Renewal{
+class WCS_Cart_Switch extends WCS_Cart_Renewal {
 
 	/**
 	 * Initialise class hooks & filters when the file is loaded
@@ -51,7 +50,6 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal{
 	 * @since 2.1
 	 */
 	public function maybe_setup_cart() {
-
 		global $wp;
 
 		if ( isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) && isset( $wp->query_vars['order-pay'] ) && isset( $_GET['subscription_switch'] ) ) {
