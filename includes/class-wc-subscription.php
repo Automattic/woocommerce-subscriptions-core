@@ -1983,7 +1983,7 @@ class WC_Subscription extends WC_Order {
 							break;
 						case 'post_meta':
 						case 'postmeta':
-							update_post_meta( $this->get_id(), $meta_key, $meta_data['value'] );
+							$this->update_meta_data( $meta_key, $meta_data['value'] );
 							break;
 						case 'options':
 							update_option( $meta_key, $meta_data['value'] );
