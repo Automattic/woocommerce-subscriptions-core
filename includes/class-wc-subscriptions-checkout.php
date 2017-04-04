@@ -278,7 +278,7 @@ class WC_Subscriptions_Checkout {
 						'method_title' => $shipping_rate->label,
 						'method_id'    => $shipping_rate->id,
 						'total'        => wc_format_decimal( $shipping_rate->cost ),
-						'taxes'        => $shipping_rate->taxes,
+						'taxes'        => array( 'total' => $shipping_rate->taxes ),
 						'order_id'     => $subscription->get_id(),
 					) );
 
