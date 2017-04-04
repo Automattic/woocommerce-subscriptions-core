@@ -88,28 +88,28 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal{
 
 					$order_item = wcs_get_order_item( $item_id, $order );
 					$product    = WC_Subscriptions::get_product( wcs_get_canonical_product_id( $order_item ) );
+					$product_id = $product->is_type( 'variation' ) ? $product->get_parent_id() : $product->get_id();
 
 					$order_product_data = array(
-						'_qty'          => 0,
-						'_variation_id' => '',
+						'_qty'          => (int) $line_item['qty'],
+						'_variation_id' => (int) $line_item['variation_id'],
 					);
 
 					$variations = array();
 
 					foreach ( $order_item['item_meta'] as $meta_key => $meta_value ) {
+						$meta_value = is_array( $meta_value ) ? $meta_value[0] : $meta_value; // In WC 3.0 the meta values are no longer arrays
 
-						if ( taxonomy_is_product_attribute( $meta_key ) || meta_is_product_attribute( $meta_key, $meta_value[0], $product->get_id() ) ) {
-							$variations[ $meta_key ] = $meta_value[0];
-							$_POST[ 'attribute_' . $meta_key ] = $meta_value[0];
-						} else if ( array_key_exists( $meta_key, $order_product_data ) ) {
-							$order_product_data[ $meta_key ] = (int) $meta_value[0];
+						if ( taxonomy_is_product_attribute( $meta_key ) || meta_is_product_attribute( $meta_key, $meta_value, $product_id ) ) {
+							$variations[ $meta_key ] = $meta_value;
+							$_POST[ 'attribute_' . $meta_key ] = $meta_value;
 						}
 					}
 
-					$passed_validation = apply_filters( 'woocommerce_add_to_cart_validation', true, $product->get_id(), $order_product_data['_qty'], $order_product_data['_variation_id'] );
+					$passed_validation = apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $order_product_data['_qty'], $order_product_data['_variation_id'] );
 
 					if ( $passed_validation ) {
-						$cart_item_key = WC()->cart->add_to_cart( $product->get_id(), $order_product_data['_qty'], $order_product_data['_variation_id'], $variations, array() );
+						$cart_item_key = WC()->cart->add_to_cart( $product_id, $order_product_data['_qty'], $order_product_data['_variation_id'], $variations, array() );
 					}
 				}
 			}
