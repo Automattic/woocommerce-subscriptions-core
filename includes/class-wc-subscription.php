@@ -1251,6 +1251,7 @@ class WC_Subscription extends WC_Order {
 
 			if ( $is_updated && true === $this->object_read ) {
 				do_action( 'woocommerce_subscription_date_updated', $this, $date_type, $datetime );
+				$this->save();
 			}
 		}
 	}
@@ -1284,7 +1285,10 @@ class WC_Subscription extends WC_Order {
 
 		$this->set_date_prop( $date_type, 0 );
 
-		do_action( 'woocommerce_subscription_date_deleted', $this, $date_type );
+		if ( true === $this->object_read ) {
+			do_action( 'woocommerce_subscription_date_deleted', $this, $date_type );
+			$this->save();
+		}
 	}
 
 	/**
