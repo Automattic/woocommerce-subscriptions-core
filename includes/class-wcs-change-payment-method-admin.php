@@ -137,6 +137,7 @@ class WCS_Change_Payment_Method_Admin {
 		}
 
 		$subscription->set_payment_method( $payment_gateway, $payment_method_meta );
+		$subscription->save();
 	}
 
 	/**
