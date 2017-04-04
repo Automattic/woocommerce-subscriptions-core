@@ -648,7 +648,7 @@ class WC_Subscription extends WC_Order {
 		// If not cached, calculate the completed payment count otherwise return the cached version
 		if ( false === $this->cached_completed_payment_count ) {
 
-			$completed_payment_count = ( ( $parent_order = $this->get_parent() ) && ( 0 !== wcs_get_objects_property( $parent_order, 'date_paid' ) || $parent_order->has_status( $this->get_paid_order_statuses() ) ) ) ? 1 : 0;
+			$completed_payment_count = ( ( $parent_order = $this->get_parent() ) && ( null !== wcs_get_objects_property( $parent_order, 'date_paid' ) || $parent_order->has_status( $this->get_paid_order_statuses() ) ) ) ? 1 : 0;
 
 			// Get all renewal orders - for large sites its more efficient to find the two different sets of renewal orders below using post__in than complicated meta queries
 			$renewal_orders = get_posts( array(
