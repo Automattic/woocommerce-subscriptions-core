@@ -1249,7 +1249,7 @@ class WC_Subscription extends WC_Order {
 					break;
 			}
 
-			if ( $is_updated ) {
+			if ( $is_updated && true === $this->object_read ) {
 				do_action( 'woocommerce_subscription_date_updated', $this, $date_type, $datetime );
 			}
 		}
