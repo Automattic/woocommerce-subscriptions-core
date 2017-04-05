@@ -114,6 +114,8 @@ class WC_Subscriptions_Admin {
 
 		add_filter( 'woocommerce_debug_posting', __CLASS__ . '::add_system_status_items' );
 
+		add_filter( 'woocommerce_system_status_report', __CLASS__ . '::render_system_status_items' );
+
 		add_filter( 'woocommerce_payment_gateways_setting_columns', __CLASS__ . '::payment_gateways_rewewal_column' );
 
 		add_action( 'woocommerce_payment_gateways_setting_column_renewals', __CLASS__ . '::payment_gateways_rewewal_support' );
@@ -1386,6 +1388,14 @@ class WC_Subscriptions_Admin {
 		$list .= '</ul>';
 
 		return $list;
+	}
+
+	/**
+	 * Renders the Subscription information in the WC status page
+	 */
+	public static function render_system_status_items() {
+		$settings = self::add_system_status_items( array() );
+		require __DIR__ . '/../../templates/admin/status.php';
 	}
 
 	/**
