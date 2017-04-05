@@ -112,11 +112,7 @@ class WC_Subscriptions_Admin {
 
 		add_filter( 'set-screen-option', __CLASS__ . '::set_manage_subscriptions_screen_option', 10, 3 );
 
-		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.3.6' ) ) {
-			add_filter( 'woocommerce_system_status_report', __CLASS__ . '::render_system_status_items' );
-		} else {
-			add_filter( 'woocommerce_debug_posting', __CLASS__ . '::add_system_status_items' );
-		}
+		add_filter( 'woocommerce_system_status_report', __CLASS__ . '::render_system_status_items' );
 
 		add_filter( 'woocommerce_payment_gateways_setting_columns', __CLASS__ . '::payment_gateways_rewewal_column' );
 
@@ -1423,7 +1419,7 @@ class WC_Subscriptions_Admin {
 	 * @return array
 	 */
 	public static function add_system_status_items( $debug_data ) {
-		_deprecated_function( __METHOD__, '2.2.1', __CLASS__ . '::render_system_status_items()' );
+		_deprecated_function( __METHOD__, '2.2.2', __CLASS__ . '::render_system_status_items()' );
 
 		$is_wcs_debug = defined( 'WCS_DEBUG' ) ? WCS_DEBUG : false;
 
@@ -1647,4 +1643,4 @@ class WC_Subscriptions_Admin {
 	}
 }
 
-add_action( 'init', 'WC_Subscriptions_Admin::init' );
+WC_Subscriptions_Admin::init();
