@@ -2,11 +2,13 @@
 /**
  * Subscriptions switching cart
  *
- *
  * @author   Prospress
  * @since    2.1
  */
-class WCS_Cart_Switch extends WCS_Cart_Renewal{
+class WCS_Cart_Switch extends WCS_Cart_Renewal {
+
+	/* The flag used to indicate if a cart item is a renewal */
+	public $cart_item_key = 'subscription_switch';
 
 	/**
 	 * Initialise class hooks & filters when the file is loaded
@@ -14,6 +16,9 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal{
 	 * @since 2.1
 	 */
 	public function __construct() {
+
+		// Attach hooks which depend on WooCommerce constants
+		add_action( 'woocommerce_loaded', array( &$this, 'attach_dependant_hooks' ), 10 );
 
 		// Set checkout payment URL parameter for subscription switch orders
 		add_filter( 'woocommerce_get_checkout_payment_url', array( &$this, 'get_checkout_payment_url' ), 10, 2 );
@@ -51,7 +56,6 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal{
 	 * @since 2.1
 	 */
 	public function maybe_setup_cart() {
-
 		global $wp;
 
 		if ( isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) && isset( $wp->query_vars['order-pay'] ) && isset( $_GET['subscription_switch'] ) ) {
@@ -119,6 +123,27 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal{
 
 			wp_safe_redirect( WC()->cart->get_checkout_url() );
 			exit;
+		}
+	}
+
+	/**
+	 * Store the order line item id so it can be retrieved when we're processing the switch on checkout.
+	 *
+	 * @param string $cart_item_key
+	 * @param int $order_item_id
+	 * @since 2.2.1
+	 */
+	protected function set_cart_item_order_item_id( $cart_item_key, $order_item_id ) {
+
+		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
+
+			// If this cart item belongs to this recurring cart
+			if ( in_array( $cart_item_key, array_keys( $recurring_cart->cart_contents ) ) && isset( WC()->cart->recurring_carts[ $recurring_cart_key ]->cart_contents[ $cart_item_key ][ $this->cart_item_key ] ) ) {
+
+				WC()->cart->recurring_carts[ $recurring_cart_key ]->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['order_line_item_id'] = $order_item_id;
+
+				wc_add_order_item_meta( WC()->cart->recurring_carts[ $recurring_cart_key ]->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['item_id'], '_switched_subscription_new_item_id', $order_item_id, true );
+			}
 		}
 	}
 }

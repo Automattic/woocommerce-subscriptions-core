@@ -67,9 +67,14 @@ class WCS_Cart_Renewal {
 
 		} else {
 
-			// For order items created as part of a switch, keep a record of the prorated amounts
-			add_action( 'woocommerce_checkout_create_order_line_item', array( &$this, 'update_order_item_data_in_cart' ), 10, 3 );
+			// For order items created as part of a renewal, keep a record of the cart item key so that we can match it later once the order item has been saved and has an ID
+			add_action( 'woocommerce_checkout_create_order_line_item', array( &$this, 'add_line_item_meta' ), 10, 3 );
 
+			// After order meta is saved, get the order line item ID for the renewal so we can update it later
+			add_action( 'woocommerce_checkout_update_order_meta', array( &$this, 'set_order_item_id' ), 10, 2 );
+
+			// Don't display cart item key meta stored above on the Edit Order screen
+			add_action( 'woocommerce_hidden_order_itemmeta', array( &$this, 'hidden_order_itemmeta' ), 10 );
 		}
 	}
 
@@ -972,26 +977,11 @@ class WCS_Cart_Renewal {
 	}
 
 	/**
-	 * After updating renewal order line items, update the values stored in cart item data
-	 * which would now reference old line item IDs.
-	 *
-	 * Used when WC 3.0 or newer is active. When prior versions are active,
-	 * @see WCS_Cart_Renewal->update_line_item_cart_data()
-	 *
-	 * @since 2.2.0
-	 */
-	public function update_order_item_data_in_cart( $order_item, $cart_item_key, $cart_item ) {
-
-		if ( isset( $cart_item_data[ $this->cart_item_key ] ) ) {
-			WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['line_item_id'] = $order_item->get_id();
-		}
-	}
-
-	/**
 	 * Force an update to the session cart after updating renewal order line items.
 	 *
-	 * This is required so that changes made by @see WCS_Cart_Renewal->update_order_item_data_in_cart() (or
-	 * @see WCS_Cart_Renewal->update_line_item_cart_data() for WC < 3.0), are also reflected in the session cart.
+	 * This is required so that changes made by @see WCS_Cart_Renewal->add_line_item_meta() (or @see
+	 * WCS_Cart_Renewal->update_line_item_cart_data() for WC < 3.0), are also reflected
+	 * in the session cart.
 	 *
 	 * @since 2.1.3
 	 */
@@ -1019,6 +1009,76 @@ class WCS_Cart_Renewal {
 		}
 
 		return $adjust_price;
+	}
+
+	/**
+	 * For order items created as part of a renewal, keep a record of the cart item key so that we can match it
+	 * later in @see this->set_order_item_id() once the order item has been saved and has an ID.
+	 *
+	 * Attached to WC 3.0+ hooks and uses WC 3.0 methods.
+	 *
+	 * @param WC_Order_Item_Product $order_item
+	 * @param string $cart_item_key The hash used to identify the item in the cart
+	 * @param array $cart_item The cart item's data.
+	 * @since 2.2.0
+	 */
+	public function add_line_item_meta( $order_item, $cart_item_key, $cart_item ) {
+		if ( isset( $cart_item[ $this->cart_item_key ] ) ) {
+			// Store the cart item key on the line item so that we can link it later on to the order line item ID
+			$order_item->add_meta_data( '_cart_item_key_' . $this->cart_item_key, $cart_item_key );
+		}
+	}
+
+	/**
+	 * After order meta is saved, get the order line item ID for this renewal and keep a record of it in
+	 * the cart so we can update it later.
+	 *
+	 * @param int $order_id
+	 * @param array $checkout_posted_data
+	 * @since 2.2.1
+	 */
+	public function set_order_item_id( $order_id, $posted_checkout_data ) {
+
+		$order = wc_get_order( $order_id );
+
+		foreach ( $order->get_items( 'line_item' ) as $order_item_id => $order_item ) {
+
+			$cart_item_key = $order_item->get_meta( '_cart_item_key_' . $this->cart_item_key );
+
+			if ( ! empty( $cart_item_key ) ) {
+				// Update the line_item_id to the new corresponding item_id
+				$this->set_cart_item_order_item_id( $cart_item_key, $order_item_id );
+			}
+		}
+	}
+
+	/**
+	 * After updating renewal order line items, update the values stored in cart item data
+	 * which would now reference old line item IDs.
+	 *
+	 * Used when WC 3.0 or newer is active. When prior versions are active,
+	 * @see WCS_Cart_Renewal->update_line_item_cart_data()
+	 *
+	 * @param string $cart_item_key
+	 * @param int $order_item_id
+	 * @since 2.2.1
+	 */
+	protected function set_cart_item_order_item_id( $cart_item_key, $order_item_id ) {
+		WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['line_item_id'] = $order_item_id;
+	}
+
+	/**
+	 * Do not display cart item key order item meta keys unless Subscriptions is in debug mode.
+	 *
+	 * @since 2.2.1
+	 */
+	public static function hidden_order_itemmeta( $hidden_meta_keys ) {
+
+		if ( apply_filters( 'woocommerce_subscriptions_hide_itemmeta', ! defined( 'WCS_DEBUG' ) || true !== WCS_DEBUG ) ) {
+			$hidden_meta_keys[] = '_cart_item_key_' . $this->cart_item_key;
+		}
+
+		return $hidden_meta_keys;
 	}
 
 	/* Deprecated */
@@ -1062,13 +1122,28 @@ class WCS_Cart_Renewal {
 	public function update_line_item_cart_data( $item_id, $cart_item_data, $cart_item_key ) {
 
 		if ( false === WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-			_deprecated_function( __METHOD__, '2.2.0 and WooCommerce 3.0', __CLASS__ . '::update_order_item_data_in_cart( $order_item, $cart_item_key, $cart_item )' );
+			_deprecated_function( __METHOD__, '2.2.0 and WooCommerce 3.0', __CLASS__ . '::add_line_item_meta( $order_item, $cart_item_key, $cart_item )' );
 		}
 
 		if ( isset( $cart_item_data[ $this->cart_item_key ] ) ) {
 			// Update the line_item_id to the new corresponding item_id
 			WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['line_item_id'] = $item_id;
 		}
+	}
+
+	/**
+	 * After updating renewal order line items, update the values stored in cart item data
+	 * which would now reference old line item IDs.
+	 *
+	 * Used when WC 3.0 or newer is active. When prior versions are active,
+	 * @see WCS_Cart_Renewal->update_line_item_cart_data()
+	 *
+	 * @deprecated 2.2.1
+	 * @since 2.2.0
+	 */
+	public function update_order_item_data_in_cart( $order_item, $cart_item_key, $cart_item ) {
+		_deprecated_function( __METHOD__, '2.2.1', __CLASS__ . '::add_line_item_meta( $order_item, $cart_item_key, $cart_item )' );
+		$this->add_line_item_meta( $order_item, $cart_item_key, $cart_item );
 	}
 }
 new WCS_Cart_Renewal();

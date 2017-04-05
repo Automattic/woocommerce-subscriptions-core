@@ -141,9 +141,6 @@ class WC_Subscriptions_Switcher {
 
 			// For order items created as part of a switch, keep a record of the prorated amounts
 			add_action( 'woocommerce_checkout_create_order_line_item', __CLASS__ . '::add_line_item_meta', 10, 4 );
-
-			// After order meta is saved, get the order line item ID for the switch so we can update it later
-			add_action( 'woocommerce_checkout_update_order_meta', __CLASS__ . '::set_switch_order_item_id', 10, 2 );
 		}
 	}
 
@@ -637,9 +634,6 @@ class WC_Subscriptions_Switcher {
 				foreach ( $switches as $switch_item_key => $switch_details ) {
 					if ( $cart_item_key == $switch_item_key ) {
 
-						// Store the cart item key on the line item so that we can link it later on to the order line item ID
-						$order_item->add_meta_data( '_switched_cart_item_key', $cart_item_key );
-
 						if ( wcs_is_subscription( $order ) ) {
 							$order_item->add_meta_data( '_switched_subscription_item_id', $switch_details['item_id'] );
 						} else {
@@ -676,34 +670,6 @@ class WC_Subscriptions_Switcher {
 					if ( $cart_item_key == $switch_item_key ) {
 						wc_add_order_item_meta( $item_id, '_switched_subscription_item_id', $switch_details['item_id'], true );
 						wc_add_order_item_meta( $switch_details['item_id'], '_switched_subscription_new_item_id', $item_id, true );
-					}
-				}
-			}
-		}
-	}
-
-	/**
-	 * Store the order line item id so it can be retrieved when we're processing the switch on checkout
-	 *
-	 * @param int $order_id
-	 * @param array $checkout_posted_data
-	 * @since 2.2.0
-	 */
-	public static function set_switch_order_item_id( $order_id, $posted_checkout_data ) {
-
-		$order = wc_get_order( $order_id );
-
-		foreach ( $order->get_items( 'line_item' ) as $order_item_id => $order_item ) {
-
-			$cart_item_key = $order_item->get_meta( '_switched_cart_item_key' );
-
-			if ( ! empty( $cart_item_key ) ) {
-				foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
-
-					// If this cart item belongs to this recurring cart
-					if ( in_array( $cart_item_key, array_keys( $recurring_cart->cart_contents ) ) && isset( WC()->cart->recurring_carts[ $recurring_cart_key ]->cart_contents[ $cart_item_key ]['subscription_switch'] ) ) {
-						WC()->cart->recurring_carts[ $recurring_cart_key ]->cart_contents[ $cart_item_key ]['subscription_switch']['order_line_item_id'] = $order_item_id;
-						wc_add_order_item_meta( WC()->cart->recurring_carts[ $recurring_cart_key ]->cart_contents[ $cart_item_key ]['subscription_switch']['item_id'], '_switched_subscription_new_item_id', $order_item_id, true );
 					}
 				}
 			}
@@ -2523,6 +2489,35 @@ class WC_Subscriptions_Switcher {
 	public static function order_contains_subscription_switch( $order_id ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_order_contains_switch( $order_id )' );
 		return wcs_order_contains_switch( $order_id );
+	}
+
+	/**
+	 * Store the order line item id so it can be retrieved when we're processing the switch on checkout
+	 *
+	 * @param int $order_id
+	 * @param array $checkout_posted_data
+	 * @since 2.2.0
+	 */
+	public static function set_switch_order_item_id( $order_id, $posted_checkout_data ) {
+		_deprecated_function( __METHOD__, '2.2.1', 'WCS_Cart_Switch::set_cart_item_order_item_id()' );
+
+		$order = wc_get_order( $order_id );
+
+		foreach ( $order->get_items( 'line_item' ) as $order_item_id => $order_item ) {
+
+			$cart_item_key = $order_item->get_meta( '_switched_cart_item_key' );
+
+			if ( ! empty( $cart_item_key ) ) {
+				foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
+
+					// If this cart item belongs to this recurring cart
+					if ( in_array( $cart_item_key, array_keys( $recurring_cart->cart_contents ) ) && isset( WC()->cart->recurring_carts[ $recurring_cart_key ]->cart_contents[ $cart_item_key ]['subscription_switch'] ) ) {
+						WC()->cart->recurring_carts[ $recurring_cart_key ]->cart_contents[ $cart_item_key ]['subscription_switch']['order_line_item_id'] = $order_item_id;
+						wc_add_order_item_meta( WC()->cart->recurring_carts[ $recurring_cart_key ]->cart_contents[ $cart_item_key ]['subscription_switch']['item_id'], '_switched_subscription_new_item_id', $order_item_id, true );
+					}
+				}
+			}
+		}
 	}
 }
 WC_Subscriptions_Switcher::init();
