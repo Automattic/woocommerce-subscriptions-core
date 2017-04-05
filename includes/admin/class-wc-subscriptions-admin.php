@@ -112,7 +112,7 @@ class WC_Subscriptions_Admin {
 
 		add_filter( 'set-screen-option', __CLASS__ . '::set_manage_subscriptions_screen_option', 10, 3 );
 
-		add_filter( 'woocommerce_debug_posting', __CLASS__ . '::add_system_status_items' );
+		add_filter( 'woocommerce_system_status_report', __CLASS__ . '::render_system_status_items' );
 
 		add_filter( 'woocommerce_payment_gateways_setting_columns', __CLASS__ . '::payment_gateways_rewewal_column' );
 
@@ -1389,12 +1389,37 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
+	 * Renders the Subscription information in the WC status page
+	 */
+	public static function render_system_status_items() {
+		$debug_data   = array();
+		$is_wcs_debug = defined( 'WCS_DEBUG' ) ? WCS_DEBUG : false;
+
+		$debug_data['wcs_debug'] = array(
+			'name'    => _x( 'WCS_DEBUG', 'label that indicates whether debugging is turned on for the plugin', 'woocommerce-subscriptions' ),
+			'note'    => ( $is_wcs_debug ) ? __( 'Yes', 'woocommerce-subscriptions' ) :  __( 'No', 'woocommerce-subscriptions' ),
+			'success' => $is_wcs_debug ? 0 : 1,
+		);
+
+		$debug_data['wcs_staging'] = array(
+			'name'    => _x( 'Subscriptions Mode', 'Live or Staging, Label on WooCommerce -> System Status page', 'woocommerce-subscriptions' ),
+			'note'    => '<strong>' . ( ( WC_Subscriptions::is_duplicate_site() ) ? _x( 'Staging', 'refers to staging site', 'woocommerce-subscriptions' ) :  _x( 'Live', 'refers to live site', 'woocommerce-subscriptions' ) ) . '</strong>',
+			'success' => ( WC_Subscriptions::is_duplicate_site() ) ? 0 : 1,
+		);
+
+		$debug_data = apply_filters( 'wcs_system_status', $debug_data );
+
+		include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/status.php' );
+	}
+
+	/**
 	 * Adds Subscriptions specific details to the WooCommerce System Status report.
 	 *
 	 * @param array $attributes Shortcode attributes.
 	 * @return array
 	 */
 	public static function add_system_status_items( $debug_data ) {
+		_deprecated_function( __METHOD__, '2.2.2', __CLASS__ . '::render_system_status_items()' );
 
 		$is_wcs_debug = defined( 'WCS_DEBUG' ) ? WCS_DEBUG : false;
 
