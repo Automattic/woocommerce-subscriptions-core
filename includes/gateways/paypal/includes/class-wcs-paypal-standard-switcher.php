@@ -136,6 +136,7 @@ class WCS_PayPal_Standard_Switcher {
 
 					if ( isset( $available_gateways[ $order_payment_method ] ) ) {
 						$subscription->set_payment_method( $available_gateways[ $order_payment_method ] );
+						$subscription->save();
 					}
 				}
 			}

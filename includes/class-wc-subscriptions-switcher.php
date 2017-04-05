@@ -2074,6 +2074,7 @@ class WC_Subscriptions_Switcher {
 				if ( $payment_method && $payment_method->supports( 'subscriptions' ) ) {
 					$subscription->set_payment_method( $payment_method );
 					$subscription->set_requires_manual_renewal( false );
+					$subscription->save();
 				}
 			}
 		}

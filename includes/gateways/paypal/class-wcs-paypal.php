@@ -234,7 +234,7 @@ class WCS_PayPal {
 
 						foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'any' ) ) as $subscription ) {
 							$subscription->set_payment_method( $payment_method );
-							wcs_set_paypal_id( $subscription, $billing_agreement_response->get_billing_agreement_id() );
+							wcs_set_paypal_id( $subscription, $billing_agreement_response->get_billing_agreement_id() ); // Also saves the subscription
 						}
 
 						if ( ! wcs_is_subscription( $order ) ) {

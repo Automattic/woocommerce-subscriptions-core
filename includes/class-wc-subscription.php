@@ -1662,7 +1662,7 @@ class WC_Subscription extends WC_Order {
 
 		$this->add_order_note( $note );
 
-		$this->update_status( 'active' );
+		$this->update_status( 'active' ); // also saves the subscription
 
 		do_action( 'woocommerce_subscription_payment_complete', $this );
 
