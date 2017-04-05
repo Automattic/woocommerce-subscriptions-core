@@ -58,11 +58,11 @@ class WCS_Email_Customer_Renewal_Invoice extends WC_Email_Customer_Invoice {
 	 */
 	function trigger( $order_id, $order = null ) {
 
-		if ( ! is_object( $order ) ) {
-			$order = new WC_Order( absint( $order ) );
+		if ( $order_id && ! is_a( $order, 'WC_Order' ) ) {
+			$order = wc_get_order( $order_id );
 		}
 
-		if ( $order ) {
+		if ( is_a( $order, 'WC_Order' ) ) {
 			$this->object    = $order;
 			$this->recipient = wcs_get_objects_property( $this->object, 'billing_email' );
 
