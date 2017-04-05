@@ -641,7 +641,7 @@ class WC_Subscriptions_Switcher {
 							$price_prorated       = WC()->cart->cart_contents[ $cart_item_key ]['data']->get_meta( 'subscription_price_prorated', true );
 
 							$order_item->add_meta_data( '_switched_subscription_sign_up_fee_prorated', empty( $sign_up_fee_prorated ) ? 0 : $sign_up_fee_prorated );
-							$order_item->add_meta_data( '_switched_subscription_price_prorated', empty( $sign_up_fee_prorated ) ? 0 : $sign_up_fee_prorated );
+							$order_item->add_meta_data( '_switched_subscription_price_prorated', empty( $price_prorated ) ? 0 : $price_prorated );
 						}
 					}
 				}
