@@ -1072,7 +1072,7 @@ class WCS_Cart_Renewal {
 	 *
 	 * @since 2.2.1
 	 */
-	public static function hidden_order_itemmeta( $hidden_meta_keys ) {
+	public function hidden_order_itemmeta( $hidden_meta_keys ) {
 
 		if ( apply_filters( 'woocommerce_subscriptions_hide_itemmeta', ! defined( 'WCS_DEBUG' ) || true !== WCS_DEBUG ) ) {
 			$hidden_meta_keys[] = '_cart_item_key_' . $this->cart_item_key;
