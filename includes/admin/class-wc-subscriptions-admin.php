@@ -112,7 +112,6 @@ class WC_Subscriptions_Admin {
 
 		add_filter( 'set-screen-option', __CLASS__ . '::set_manage_subscriptions_screen_option', 10, 3 );
 
-
 		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.3.6' ) ) {
 			add_filter( 'woocommerce_system_status_report', __CLASS__ . '::render_system_status_items' );
 		} else {
