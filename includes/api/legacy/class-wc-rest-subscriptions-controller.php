@@ -136,11 +136,13 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 			$this->update_schedule( $subscription, $request );
 
 			$payment_data = ( ! empty( $request['payment_details'] ) ) ? $request['payment_details'] : array();
+			$existing_payment_method_id = $subscription->get_payment_method();
+
 			if ( empty( $payment_data['method_id'] ) && isset( $request['payment_method'] ) ) {
 				$payment_data['method_id'] = $request['payment_method'];
 
-			} elseif ( ! empty( $subscription->get_payment_method() ) ) {
-				$payment_data['method_id'] = $subscription->get_payment_method();
+			} elseif ( ! empty( $existing_payment_method_id ) ) {
+				$payment_data['method_id'] = $existing_payment_method_id;
 			}
 
 			if ( isset( $payment_data['method_id'] ) ) {
