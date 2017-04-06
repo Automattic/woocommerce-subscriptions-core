@@ -940,6 +940,7 @@ class WC_Subscription extends WC_Order {
 			switch ( $date_type ) {
 				case 'date_created' :
 					$date = $this->get_date_created();
+					$date = is_null( $date ) ? wcs_get_datetime_from( get_the_date( 'Y-m-d H:i:s', $this->get_id() ) ) : $date; // When a post is first created via the Add Subscription screen, it has a post_date but not a date_created value yet
 					break;
 				case 'date_modified' :
 					$date = $this->get_date_modified();
