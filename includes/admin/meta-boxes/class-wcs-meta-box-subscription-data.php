@@ -260,12 +260,22 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 		if ( self::$billing_fields ) {
 			foreach ( self::$billing_fields as $key => $field ) {
+
+				if ( ! isset( $_POST[ '_billing_' . $key ] ) ) {
+					continue;
+				}
+
 				update_post_meta( $post_id, '_billing_' . $key, wc_clean( $_POST[ '_billing_' . $key ] ) );
 			}
 		}
 
 		if ( self::$shipping_fields ) {
 			foreach ( self::$shipping_fields as $key => $field ) {
+
+				if ( ! isset( $_POST[ '_shipping_' . $key ] ) ) {
+					continue;
+				}
+
 				update_post_meta( $post_id, '_shipping_' . $key, wc_clean( $_POST[ '_shipping_' . $key ] ) );
 			}
 		}
