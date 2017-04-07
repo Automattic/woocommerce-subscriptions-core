@@ -96,7 +96,12 @@ class WC_Subscriptions_Synchroniser {
 
 		// When adding an item to a subscription, check if it is for a synced product to make sure the sync meta is set on the subscription. We can't attach to just the 'woocommerce_new_order_item' here because the '_product_id' and '_variation_id' meta are not set before it fires
 		add_action( 'woocommerce_ajax_add_order_item_meta', __CLASS__ . '::ajax_maybe_add_meta_for_item', 10, 2 );
-		add_action( 'woocommerce_order_add_product', __CLASS__ . '::maybe_add_meta_for_new_product', 10, 3 );
+
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+			add_action( 'woocommerce_order_add_product', __CLASS__ . '::maybe_add_meta_for_new_product', 10, 3 );
+		} else {
+			add_action( 'woocommerce_new_order_item', __CLASS__ . '::maybe_add_meta_for_new_line_item', 10, 3 );
+		}
 
 		// Make sure the sign-up fee for a synchronised subscription is correct
 		add_filter( 'woocommerce_subscriptions_sign_up_fee', __CLASS__ . '::get_synced_sign_up_fee', 1, 3 );
@@ -1031,6 +1036,23 @@ class WC_Subscriptions_Synchroniser {
 		}
 
 		return $cart_key;
+	}
+
+	/**
+	 * When adding a product line item to an order/subscription via the WC_Abstract_Order::add_product() method, check if we should be setting
+	 * the sync meta on the subscription.
+	 *
+	 * Attached to WC 3.0+ hooks and uses WC 3.0 methods.
+	 *
+	 * @param int The new line item id
+	 * @param WC_Order_Item
+	 * @param int The post ID of a WC_Subscription
+	 * @since 2.2.3
+	 */
+	public static function maybe_add_meta_for_new_line_item( $item_id, $item, $subscription_id ) {
+		if ( is_callable( array( $item, 'get_product_id' ) ) && self::is_product_synced( $item->get_product_id() ) ) {
+			self::maybe_add_subscription_meta( $subscription_id );
+		}
 	}
 
 	/* Deprecated Functions */
