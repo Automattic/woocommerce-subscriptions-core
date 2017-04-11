@@ -672,7 +672,7 @@ class WC_Subscriptions_Order {
 		<select name='shop_order_subtype' id='dropdown_shop_order_subtype'>
 			<option value=""><?php esc_html_e( 'All orders types', 'woocommerce-subscriptions' ); ?></option>
 			<?php
-			$order_types = array(
+			$order_types = apply_filters( 'woocommerce_subscriptions_order_type_dropdown', array(
 				'original'    => _x( 'Original', 'An order type', 'woocommerce-subscriptions' ),
 				'parent'      => _x( 'Subscription Parent', 'An order type', 'woocommerce-subscriptions' ),
 				'renewal'     => _x( 'Subscription Renewal', 'An order type', 'woocommerce-subscriptions' ),
