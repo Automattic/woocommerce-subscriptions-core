@@ -453,7 +453,13 @@ class WC_Subscriptions_Product {
 	 * @since 1.0
 	 */
 	public static function get_length( $product ) {
-		return apply_filters( 'woocommerce_subscriptions_product_length', self::get_meta_data( $product, 'subscription_length', 0 ), self::maybe_get_product_instance( $product ) );
+		$subscription_length = self::get_meta_data( $product, 'subscription_length', 0 );
+
+		if ( empty( $subscription_length ) ) {
+			$subscription_length = 0;
+		}
+
+		return apply_filters( 'woocommerce_subscriptions_product_length', $subscription_length, self::maybe_get_product_instance( $product ) );
 	}
 
 	/**
@@ -464,7 +470,13 @@ class WC_Subscriptions_Product {
 	 * @since 1.0
 	 */
 	public static function get_trial_length( $product ) {
-		return apply_filters( 'woocommerce_subscriptions_product_trial_length', self::get_meta_data( $product, 'subscription_trial_length', 0 ), self::maybe_get_product_instance( $product ) );
+		$subscription_trial_length = self::get_meta_data( $product, 'subscription_trial_length', 0 );
+
+		if ( empty( $subscription_trial_length ) ) {
+			$subscription_trial_length = 0;
+		}
+
+		return apply_filters( 'woocommerce_subscriptions_product_trial_length', $subscription_trial_length, self::maybe_get_product_instance( $product ) );
 	}
 
 	/**
