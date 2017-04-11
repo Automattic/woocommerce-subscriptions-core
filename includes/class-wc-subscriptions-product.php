@@ -486,7 +486,13 @@ class WC_Subscriptions_Product {
 	 * @since 1.0
 	 */
 	public static function get_sign_up_fee( $product ) {
-		return apply_filters( 'woocommerce_subscriptions_product_sign_up_fee', self::get_meta_data( $product, 'subscription_sign_up_fee', 0 ), self::maybe_get_product_instance( $product ) );
+		$subscription_sign_up_fee = self::get_meta_data( $product, 'subscription_sign_up_fee', 0 );
+
+		if ( empty( $subscription_sign_up_fee ) ) {
+			$subscription_sign_up_fee = 0;
+		}
+
+		return apply_filters( 'woocommerce_subscriptions_product_sign_up_fee', $subscription_sign_up_fee, self::maybe_get_product_instance( $product ) );
 	}
 
 	/**
