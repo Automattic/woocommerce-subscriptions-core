@@ -1031,6 +1031,34 @@ class WC_Subscriptions_Product {
 		return $product;
 	}
 
+	/**
+	 * Get an array of parent IDs from a potential child product, used to determine if a product belongs to a group.
+	 *
+	 * @param WC_Product The product object to get parents from.
+	 * @return array Parent IDs
+	 * @since 2.2.4
+	 */
+	public static function get_parent_ids( $product ) {
+		global $wpdb;
+		$parent_product_ids = array();
+
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+			$parent_product_ids[] = $product->get_parent();
+		} else {
+			$query = $wpdb->prepare(
+				"SELECT post_id
+				FROM {$wpdb->prefix}postmeta
+				WHERE meta_key = '_children' AND meta_value LIKE '%%i:%d;%%'",
+				$product->get_id()
+			);
+
+			$results            = $wpdb->get_results( $query );
+			$parent_product_ids = wp_list_pluck( $results, 'post_id' );
+		}
+
+		return $parent_product_ids;
+	}
+
 	/************************
 	 * Deprecated Functions *
 	 ************************/
