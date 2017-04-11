@@ -679,7 +679,7 @@ class WC_Subscriptions_Order {
 				'resubscribe' => _x( 'Subscription Resubscribe', 'An order type', 'woocommerce-subscriptions' ),
 				'switch'      => _x( 'Subscription Switch', 'An order type', 'woocommerce-subscriptions' ),
 				'regular'     => _x( 'Non-subscription', 'An order type', 'woocommerce-subscriptions' ),
-			);
+			) );
 
 			foreach ( $order_types as $order_type_key => $order_type_description ) {
 				echo '<option value="' . esc_attr( $order_type_key ) . '"';
