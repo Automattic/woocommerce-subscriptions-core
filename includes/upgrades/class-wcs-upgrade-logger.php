@@ -68,7 +68,7 @@ class WCS_Upgrade_Logger {
 	 */
 	public static function schedule_cleanup() {
 		$time_to_cleanup = gmdate( 'U' ) + self::$weeks_until_cleanup * WEEK_IN_SECONDS;
-		self::add( sprintf( 'Upgrade complete. Scheduling log cleanup for %s GMT/UTC', gmdate( 'Y-m-d H:i:s', $time_to_cleanup ) ) );
+		self::add( sprintf( '%s upgrade complete. Scheduling log cleanup for %s GMT/UTC', WC_Subscriptions::$version, gmdate( 'Y-m-d H:i:s', $time_to_cleanup ) ) );
 		wc_schedule_single_action( $time_to_cleanup, 'woocommerce_subscriptions_clear_upgrade_log' );
 	}
 }
