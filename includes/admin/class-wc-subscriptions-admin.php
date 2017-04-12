@@ -205,7 +205,7 @@ class WC_Subscriptions_Admin {
 		?><p class="form-field _subscription_price_fields _subscription_price_field">
 			<label for="_subscription_price"><?php printf( esc_html__( 'Subscription price (%s)', 'woocommerce-subscriptions' ), esc_html( get_woocommerce_currency_symbol() ) ); ?></label>
 			<span class="wrap">
-				<input type="text" id="_subscription_price" name="_subscription_price" class="wc_input_subscription_price" placeholder="<?php echo esc_attr_x( 'e.g. 5.90', 'example price', 'woocommerce-subscriptions' ); ?>" step="any" min="0" value="<?php echo esc_attr( $chosen_price ); ?>" />
+				<input type="text" id="_subscription_price" name="_subscription_price" class="wc_input_price wc_input_subscription_price" placeholder="<?php echo esc_attr_x( 'e.g. 5.90', 'example price', 'woocommerce-subscriptions' ); ?>" step="any" min="0" value="<?php echo esc_attr( $chosen_price ); ?>" />
 				<label for="_subscription_period_interval" class="wcs_hidden_label"><?php esc_html_e( 'Subscription interval', 'woocommerce-subscriptions' ); ?></label>
 				<select id="_subscription_period_interval" name="_subscription_period_interval" class="wc_input_subscription_period_interval">
 				<?php foreach ( wcs_get_subscription_period_interval_strings() as $value => $label ) { ?>
@@ -236,7 +236,7 @@ class WC_Subscriptions_Admin {
 		// Sign-up Fee
 		woocommerce_wp_text_input( array(
 			'id'          => '_subscription_sign_up_fee',
-			'class'       => 'wc_input_subscription_intial_price short',
+			'class'       => 'wc_input_subscription_intial_price wc_input_price  short',
 			// translators: %s is a currency symbol / code
 			'label'       => sprintf( __( 'Sign-up fee (%s)', 'woocommerce-subscriptions' ), get_woocommerce_currency_symbol() ),
 			'placeholder' => _x( 'e.g. 9.90', 'example price', 'woocommerce-subscriptions' ),
