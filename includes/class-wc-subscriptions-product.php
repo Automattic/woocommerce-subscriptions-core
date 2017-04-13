@@ -438,11 +438,11 @@ class WC_Subscriptions_Product {
 	 * Returns the subscription interval for a product, if it's a subscription.
 	 *
 	 * @param mixed $product A WC_Product object or product ID
-	 * @return string A string representation of the period, either Day, Week, Month or Year, or an empty string if product is not a subscription.
+	 * @return int An integer representing the subscription interval, or 1 if the product is not a subscription or there is no interval
 	 * @since 1.0
 	 */
 	public static function get_interval( $product ) {
-		return apply_filters( 'woocommerce_subscriptions_product_period_interval', self::get_meta_data( $product, 'subscription_period_interval', 0 ), self::maybe_get_product_instance( $product ) );
+		return apply_filters( 'woocommerce_subscriptions_product_period_interval', self::get_meta_data( $product, 'subscription_period_interval', 1, 'use_default_value' ), self::maybe_get_product_instance( $product ) );
 	}
 
 	/**
@@ -453,7 +453,7 @@ class WC_Subscriptions_Product {
 	 * @since 1.0
 	 */
 	public static function get_length( $product ) {
-		return apply_filters( 'woocommerce_subscriptions_product_length', self::get_meta_data( $product, 'subscription_length', 0 ), self::maybe_get_product_instance( $product ) );
+		return apply_filters( 'woocommerce_subscriptions_product_length', self::get_meta_data( $product, 'subscription_length', 0, 'use_default_value' ), self::maybe_get_product_instance( $product ) );
 	}
 
 	/**
@@ -464,7 +464,7 @@ class WC_Subscriptions_Product {
 	 * @since 1.0
 	 */
 	public static function get_trial_length( $product ) {
-		return apply_filters( 'woocommerce_subscriptions_product_trial_length', self::get_meta_data( $product, 'subscription_trial_length', 0 ), self::maybe_get_product_instance( $product ) );
+		return apply_filters( 'woocommerce_subscriptions_product_trial_length', self::get_meta_data( $product, 'subscription_trial_length', 0, 'use_default_value' ), self::maybe_get_product_instance( $product ) );
 	}
 
 	/**
@@ -486,7 +486,7 @@ class WC_Subscriptions_Product {
 	 * @since 1.0
 	 */
 	public static function get_sign_up_fee( $product ) {
-		return apply_filters( 'woocommerce_subscriptions_product_sign_up_fee', self::get_meta_data( $product, 'subscription_sign_up_fee', 0 ), self::maybe_get_product_instance( $product ) );
+		return apply_filters( 'woocommerce_subscriptions_product_sign_up_fee', self::get_meta_data( $product, 'subscription_sign_up_fee', 0, 'use_default_value' ), self::maybe_get_product_instance( $product ) );
 	}
 
 	/**
