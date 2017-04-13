@@ -108,15 +108,20 @@ class WC_Subscriptions_Product {
 	 */
 	public static function is_subscription( $product ) {
 
-		$is_subscription = false;
+		$is_subscription = $product_id = false;
 
 		$product = self::maybe_get_product_instance( $product );
 
-		if ( is_object( $product ) && $product->is_type( array( 'subscription', 'subscription_variation', 'variable-subscription' ) ) ) {
-			$is_subscription = true;
+		if ( is_object( $product ) ) {
+
+			$product_id = $product->get_id();
+
+			if ( $product->is_type( array( 'subscription', 'subscription_variation', 'variable-subscription' ) ) ) {
+				$is_subscription = true;
+			}
 		}
 
-		return apply_filters( 'woocommerce_is_subscription', $is_subscription, $product->get_id(), $product );
+		return apply_filters( 'woocommerce_is_subscription', $is_subscription, $product_id, $product );
 	}
 
 	/**
