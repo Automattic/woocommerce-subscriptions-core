@@ -438,17 +438,11 @@ class WC_Subscriptions_Product {
 	 * Returns the subscription interval for a product, if it's a subscription.
 	 *
 	 * @param mixed $product A WC_Product object or product ID
-	 * @return int An integer representing the subscription interval, or 1 if the product is not a subscription or there is no interval
+	 * @return string A string representation of the period, either Day, Week, Month or Year, or an empty string if product is not a subscription.
 	 * @since 1.0
 	 */
 	public static function get_interval( $product ) {
-		$subscription_period_interval = self::get_meta_data( $product, 'subscription_period_interval', 1 );
-
-		if ( empty( $subscription_period_interval ) ) {
-			$subscription_period_interval = 1;
-		}
-
-		return apply_filters( 'woocommerce_subscriptions_product_period_interval', $subscription_period_interval, self::maybe_get_product_instance( $product ) );
+		return apply_filters( 'woocommerce_subscriptions_product_period_interval', self::get_meta_data( $product, 'subscription_period_interval', 0 ), self::maybe_get_product_instance( $product ) );
 	}
 
 	/**
