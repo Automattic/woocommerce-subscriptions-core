@@ -59,7 +59,12 @@ function wcs_get_subscriptions_for_switch_order( $order ) {
 	$subscription_ids = wcs_get_objects_property( $order, 'subscription_switch', 'multiple' );
 
 	foreach ( $subscription_ids as $subscription_id ) {
-		$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
+
+		$subscription = wcs_get_subscription( $subscription_id );
+
+		if ( $subscription ) {
+			$subscriptions[ $subscription_id ] = $subscription;
+		}
 	}
 
 	return $subscriptions;
