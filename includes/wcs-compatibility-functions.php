@@ -307,6 +307,7 @@ function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta
 function wcs_get_objects_meta_id_by_key( &$object, $key ) {
 	
 	$object_meta = array();
+	$meta_id = '';
 
 	$prefixed_key = wcs_maybe_prefix_key( $key );
 
