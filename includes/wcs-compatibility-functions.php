@@ -311,7 +311,7 @@ function wcs_get_objects_meta_id_by_key( &$object, $key ) {
 
 	$prefixed_key = wcs_maybe_prefix_key( $key );
 
-	if ( is_callable( array($object, 'get_meta_data' ) ) ) {
+	if ( is_callable( array( $object, 'get_meta_data' ) ) ) {
 		$object_meta = $object->get_meta_data();
 	}
 
