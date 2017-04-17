@@ -176,6 +176,10 @@ class WC_Subscription extends WC_Order {
 			if ( ! WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 				wcs_doing_it_wrong( $key, sprintf( 'Subscription properties should not be set directly as WooCommerce 3.0 no longer supports direct property access. Use %s instead.', $function ), '2.2.0' );
 			}
+
+		} else {
+
+			$this->$key = $value;
 		}
 	}
 
