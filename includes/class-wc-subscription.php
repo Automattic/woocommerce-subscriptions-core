@@ -1937,16 +1937,17 @@ class WC_Subscription extends WC_Order {
 
 			if ( $this->get_payment_method() !== $payment_method_id ) {
 
-				// Set the payment gateway ID depending on whether we have a string or WC_Payment_Gateway or string key
-				if ( is_a( $payment_method, 'WC_Payment_Gateway' ) ) {
-					$payment_gateway  = $payment_method;
-				} else {
-					$payment_gateways = WC()->payment_gateways->payment_gateways();
-					$payment_gateway  = isset( $payment_gateways[ $payment_method_id ] ) ? $payment_gateways[ $payment_method_id ] : null;
-				}
-
-				// We shouldn't set the requires manual renewal prop while the object is being read. That prop should be set by reading it from the DB not based on settings or the payment gateway
+				// We shouldn't set the requires manual renewal prop or try to get the payment gateway while the object is being read. That prop should be set by reading it from the DB not based on settings or the payment gateway
 				if ( $this->object_read ) {
+
+					// Set the payment gateway ID depending on whether we have a string or WC_Payment_Gateway or string key
+					if ( is_a( $payment_method, 'WC_Payment_Gateway' ) ) {
+						$payment_gateway  = $payment_method;
+					} else {
+						$payment_gateways = WC()->payment_gateways->payment_gateways();
+						$payment_gateway  = isset( $payment_gateways[ $payment_method_id ] ) ? $payment_gateways[ $payment_method_id ] : null;
+					}
+
 					if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
 						$this->set_requires_manual_renewal( true );
 					} elseif ( is_null( $payment_gateway ) || false == $payment_gateway->supports( 'subscriptions' ) ) {
@@ -1954,10 +1955,11 @@ class WC_Subscription extends WC_Order {
 					} else {
 						$this->set_requires_manual_renewal( false );
 					}
+
+					$this->set_prop( 'payment_method_title', is_null( $payment_gateway ) ? '' : $payment_gateway->get_title() );
 				}
 
 				$this->set_prop( 'payment_method', $payment_method_id );
-				$this->set_prop( 'payment_method_title', is_null( $payment_gateway ) ? '' : $payment_gateway->get_title() );
 			}
 		}
 	}
