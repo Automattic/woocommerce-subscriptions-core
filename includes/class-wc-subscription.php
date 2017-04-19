@@ -1396,7 +1396,7 @@ class WC_Subscription extends WC_Order {
 		$start_time        = $this->get_time( 'date_created' );
 		$next_payment_time = $this->get_time( 'next_payment' );
 		$trial_end_time    = $this->get_time( 'trial_end' );
-		$last_payment_time = $this->get_time( 'last_order_date_created' );
+		$last_payment_time = max( $this->get_time( 'last_order_date_created' ), $this->get_time( 'last_order_date_paid' ) );
 		$end_time          = $this->get_time( 'end' );
 
 		// If the subscription has a free trial period, and we're still in the free trial period, the next payment is due at the end of the free trial
