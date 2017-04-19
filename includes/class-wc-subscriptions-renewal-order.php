@@ -93,7 +93,7 @@ class WC_Subscriptions_Renewal_Order {
 				);
 
 				wp_update_post( $update_post_data );
-				update_post_meta( $order_id, '_paid_date', current_time( 'mysql', true ) );
+				update_post_meta( $order_id, '_paid_date', current_time( 'mysql' ) );
 			} else {
 				// In WC 3.0, only the paid date prop represents the paid date, the post date isn't used anymore, also the paid date is stored and referenced as a MySQL date string in site timezone and a GMT timestamp
 				$order->set_date_paid( current_time( 'timestamp', 1 ) );
