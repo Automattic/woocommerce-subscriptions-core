@@ -1552,7 +1552,7 @@ class WC_Subscription extends WC_Order {
 			}
 
 			// Remove discounts
-			$subtotal = $subtotal - $this->get_cart_discount();
+			$subtotal = $subtotal - $this->get_total_discount();
 
 			$subtotal = wc_price( $subtotal, array( 'currency' => $this->get_currency() ) );
 		}
