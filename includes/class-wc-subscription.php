@@ -1254,8 +1254,8 @@ class WC_Subscription extends WC_Order {
 			}
 
 			if ( $is_updated && true === $this->object_read ) {
+				$this->save_dates();
 				do_action( 'woocommerce_subscription_date_updated', $this, $date_type, $datetime );
-				$this->save();
 			}
 		}
 	}
@@ -1290,8 +1290,8 @@ class WC_Subscription extends WC_Order {
 		$this->set_date_prop( $date_type, 0 );
 
 		if ( true === $this->object_read ) {
+			$this->save_dates();
 			do_action( 'woocommerce_subscription_date_deleted', $this, $date_type );
-			$this->save();
 		}
 	}
 
@@ -1436,6 +1436,24 @@ class WC_Subscription extends WC_Order {
 		}
 
 		return $next_payment_date;
+	}
+
+	/**
+	 * Complete a partial save, saving subscription date changes to the database.
+	 *
+	 * Sometimes it's necessary to only save changes to date properties, for example, when you
+	 * don't want status transitions to be triggered by a full object @see $this->save().
+	 *
+	 * @since 2.2.6
+	 */
+	public function save_dates() {
+		if ( $this->data_store && $this->get_id() ) {
+			$saved_dates = $this->data_store->save_dates( $this );
+
+			// Apply the saved date changes
+			$this->data    = array_replace_recursive( $this->data, $saved_dates );
+			$this->changes = array_diff_key( $this->changes, $saved_dates );
+		}
 	}
 
 	/** Formatted Totals Methods *******************************************************/
