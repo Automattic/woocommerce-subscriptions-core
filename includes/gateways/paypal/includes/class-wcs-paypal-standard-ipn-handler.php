@@ -103,7 +103,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			exit;
 		}
 
-		if ( isset( $transaction_details['ipn_track_id'] ) ) {
+		if ( isset( $transaction_details['ipn_track_id'] ) &&  isset( $transaction_details['txn_id'] ) && isset( $transaction_details['txn_type'] ) ) {
 
 			// Make sure the IPN request has not already been handled
 			$handled_ipn_requests = get_post_meta( $subscription->get_id(), '_paypal_ipn_tracking_ids', true );
@@ -112,8 +112,8 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 				$handled_ipn_requests = array();
 			}
 
-			// The 'ipn_track_id' is not a unique ID and is shared between different transaction types, so create a unique ID by prepending the transaction type
-			$ipn_id = $transaction_details['txn_type'] . '_' . $transaction_details['ipn_track_id'];
+			// The 'ipn_track_id' is not a unique ID and is shared between different transaction types, so create a unique ID by prepending the transaction type and id
+			$ipn_id = $transaction_details['txn_type'] . '_' . $transaction_details['txn_id'] . '_' . $transaction_details['ipn_track_id'];
 
 			if ( in_array( $ipn_id, $handled_ipn_requests ) ) {
 				WC_Gateway_Paypal::log( 'Subscription IPN Error: IPN ' . $ipn_id . ' message has already been correctly handled.' );
@@ -121,7 +121,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			}
 
 			// Make sure we're not in the process of handling this IPN request on a server under extreme load and therefore, taking more than a minute to process it (which is the amount of time PayPal allows before resending the IPN request)
-			$ipn_lock_transient_name = 'wcs_pp_' . $ipn_id; // transient names need to be less than 45 characters and the $ipn_id will be around 30 characters, e.g. subscr_payment_5ab4c38e1f39d
+			$ipn_lock_transient_name = 'wcs_pp_' . md5( $ipn_id ); // transient names need to be less than 45 characters and the $ipn_id will be long, e.g. subscr_payment_34292625HU746553V_5ab4c38e1f39d, so md5
 
 			if ( 'in-progress' == get_transient( $ipn_lock_transient_name ) && 'recurring_payment_suspended_due_to_max_failed_payment' !== $transaction_details['txn_type'] ) {
 
@@ -491,7 +491,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 		}
 
 		// Store the transaction IDs to avoid handling requests duplicated by PayPal
-		if ( isset( $transaction_details['ipn_track_id'] ) ) {
+		if ( isset( $transaction_details['txn_id'] ) && isset( $transaction_details['txn_type'] ) && isset( $transaction_details['ipn_track_id'] ) ) {
 			$handled_ipn_requests[] = $ipn_id;
 			update_post_meta( $subscription->get_id(), '_paypal_ipn_tracking_ids', $handled_ipn_requests );
 		}
