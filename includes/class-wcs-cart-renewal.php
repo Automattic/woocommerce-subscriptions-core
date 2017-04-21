@@ -189,32 +189,32 @@ class WCS_Cart_Renewal {
 	}
 
 	/**
-	 * Set up cart item meta data for a to complete a subscription renewal via the cart.
+	 * Set up cart item meta data to complete a subscription renewal via the cart.
 	 *
-	 * @since 2.0
+	 * @since 2.2.4
 	 */
 	protected function setup_cart( $subscription, $cart_item_data ) {
 
 		WC()->cart->empty_cart( true );
 		$success = true;
 
-		foreach ( $subscription->get_items() as $item_id => $line_item ) {
+		foreach ( $subscription->get_items() as $item ) {
 			// Load all product info including variation data
-			$product_id   = (int) apply_filters( 'woocommerce_add_to_cart_product_id', $line_item['product_id'] );
-			$quantity     = (int) $line_item['qty'];
-			$variation_id = (int) $line_item['variation_id'];
+			$product_id   = (int) apply_filters( 'woocommerce_add_to_cart_product_id', $item->get_product_id() );
+			$quantity     = $item->get_quantity();
+			$variation_id = $item->get_variation_id();
 			$variations   = array();
-			$item_data    = array();
+			$item_data = array();
 
-			foreach ( $line_item['item_meta'] as $meta_name => $meta_value ) {
-				if ( taxonomy_is_product_attribute( $meta_name ) ) {
-					$variations[ $meta_name ] = $meta_value[0];
-				} elseif ( meta_is_product_attribute( $meta_name, $meta_value[0], $product_id ) ) {
-					$variations[ $meta_name ] = $meta_value[0];
+			foreach ( $item->get_meta_data() as $meta ) {
+				if ( taxonomy_is_product_attribute( $meta->key ) ) {
+					$variations[ $meta->key ] = $meta->value;
+				} elseif ( meta_is_product_attribute( $meta->key, $meta->value, $product_id ) ) {
+					$variations[ $meta->key ] = $meta->value;
 				}
 			}
 
-			$product = wc_get_product( $line_item['product_id'] );
+			$product = wc_get_product( $item->get_product_id() );
 
 			// The notice displayed when a subscription product has been deleted and the custoemr attempts to manually renew or make a renewal payment for a failed recurring payment for that product/subscription
 			// translators: placeholder is an item name
@@ -223,22 +223,22 @@ class WCS_Cart_Renewal {
 			// Display error message for deleted products
 			if ( false === $product ) {
 
-				wc_add_notice( sprintf( $product_deleted_error_message, $line_item['name'] ), 'error' );
+				wc_add_notice( sprintf( $product_deleted_error_message, $item->get_name() ), 'error' );
 
 			// Make sure we don't actually need the variation ID (if the product was a variation, it will have a variation ID; however, if the product has changed from a simple subscription to a variable subscription, there will be no variation_id)
-			} elseif ( $product->is_type( array( 'variable-subscription' ) ) && ! empty( $line_item['variation_id'] ) ) {
+			} elseif ( $product->is_type( array( 'variable-subscription' ) ) && ! empty( $item->get_variation_id() ) ) {
 
 				$variation = wc_get_product( $variation_id );
 
 				// Display error message for deleted product variations
 				if ( false === $variation ) {
-					wc_add_notice( sprintf( $product_deleted_error_message, $line_item['name'] ), 'error' );
+					wc_add_notice( sprintf( $product_deleted_error_message, $item->get_name() ), 'error' );
 				}
 			}
 
-			$cart_item_data['line_item_id'] = $item_id;
+			$cart_item_data['line_item_id'] = $item->get_id();
 
-			$item_data = apply_filters( 'woocommerce_order_again_cart_item_data', array( $this->cart_item_key => $cart_item_data ), $line_item, $subscription );
+			$item_data = apply_filters( 'woocommerce_order_again_cart_item_data', array( $this->cart_item_key => $cart_item_data ), $item, $subscription );
 
 			if ( ! apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $quantity, $variation_id, $variations, $item_data ) ) {
 				continue;
