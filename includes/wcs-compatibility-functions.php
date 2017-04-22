@@ -265,7 +265,6 @@ function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta
 
 	// If there is no setter, treat as meta within the 3.0.x object.
 	} elseif ( is_callable( array( $object, 'update_meta_data' ) ) ) {
-		$meta_id = empty( $meta_id ) ? wcs_get_objects_meta_id_by_key( $object, $prefixed_key ) : $meta_id;
 		$object->update_meta_data( $prefixed_key, $value, $meta_id );
 
 	// 2.6.x handling for name which is not meta.
@@ -294,33 +293,6 @@ function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta
 			}
 		}
 	}
-}
-
-/**
-* Gets an object's meta id based on key.
-*
-* @param WC_Order|WC_Product|WC_Subscription $object The object whose meta data we want to access.
-* @param string $key The meta key whose id we want to get
-* @return mixed meta id if object's meta exists and can be accessed
-* @since 2.2.5
-*/
-function wcs_get_objects_meta_id_by_key( &$object, $key ) {
-	
-	$object_meta = array();
-	$meta_id = '';
-
-	$prefixed_key = wcs_maybe_prefix_key( $key );
-
-	if ( is_callable( array( $object, 'get_meta_data' ) ) ) {
-		$object_meta = $object->get_meta_data();
-	}
-
-	if ( ! empty( $object_meta ) ) {
-		$array_keys = array_keys( wp_list_pluck( $object_meta, 'key' ), $prefixed_key );
-		$meta_id = property_exists( $object_meta[ current( $array_keys ) ], 'id' ) ? $object_meta[ current( $array_keys ) ]->id : '';
-	}
-
-	return $meta_id;
 }
 
 /**
