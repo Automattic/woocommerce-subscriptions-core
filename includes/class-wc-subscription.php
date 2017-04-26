@@ -850,7 +850,7 @@ class WC_Subscription extends WC_Order {
 	 * @param int $value
 	 */
 	public function set_billing_interval( $value ) {
-		$this->set_prop( 'billing_interval', absint( $value ) );
+		$this->set_prop( 'billing_interval', (string) absint( $value ) );
 	}
 
 	/**
