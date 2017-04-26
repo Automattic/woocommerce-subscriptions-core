@@ -192,7 +192,7 @@ class WC_Subscriptions_Renewal_Order {
 
 		foreach ( $order_items as $order_item_id => $item ) {
 			if ( is_callable( array( $item, 'delete_meta_data' ) ) ) { // WC 3.0+
-				foreach( $switched_order_item_keys as $switch_meta_key => $value ) {
+				foreach ( $switched_order_item_keys as $switch_meta_key => $value ) {
 					$item->delete_meta_data( $switch_meta_key );
 				}
 			} else { // WC 2.6
