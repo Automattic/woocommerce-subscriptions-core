@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 function wcs_order_contains_resubscribe( $order ) {
 
 	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
-		$order = new WC_Order( $order );
+		$order = wc_get_order( $order );
 	}
 
 	if ( wcs_get_objects_property( $order, 'subscription_resubscribe' ) ) {

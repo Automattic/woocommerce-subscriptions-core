@@ -406,7 +406,7 @@ function wcs_order_contains_subscription( $order, $order_type = array( 'parent',
 	}
 
 	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
-		$order = new WC_Order( $order );
+		$order = wc_get_order( $order );
 	}
 
 	$contains_subscription = false;
