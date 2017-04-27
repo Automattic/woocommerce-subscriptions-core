@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function wcs_order_contains_switch( $order ) {
 
-	if ( ! is_object( $order ) ) {
+	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
 		$order = wc_get_order( $order );
 	}
 
@@ -51,7 +51,7 @@ function wcs_order_contains_switch( $order ) {
  */
 function wcs_get_subscriptions_for_switch_order( $order ) {
 
-	if ( ! is_object( $order ) ) {
+	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
 		$order = wc_get_order( $order );
 	}
 
