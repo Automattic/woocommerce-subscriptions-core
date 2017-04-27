@@ -121,7 +121,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 							$function_name = 'get_billing_' . $key;
 
-							if ( $subscription->$function_name() ) {
+							if ( is_callable( array( $subscription, $function_name ) ) && $subscription->$function_name() ) {
 								echo '<p><strong>' . esc_html( $field['label'] ) . ':</strong> ' . wp_kses_post( make_clickable( esc_html( $subscription->$function_name() ) ) ) . '</p>';
 							}
 						}
