@@ -65,7 +65,7 @@ class WCS_Upgrade_Logger {
 	 * Schedule a hook to automatically clear the log after 8 weeks
 	 */
 	public static function schedule_cleanup() {
-		self::add( sprintf( '%s upgrade complete.', WC_Subscriptions::$version );
+		self::add( sprintf( '%s upgrade complete.', WC_Subscriptions::$version ) );
 	}
 }
 WCS_Upgrade_Logger::init();
