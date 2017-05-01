@@ -747,4 +747,14 @@ class WC_Subscription_Legacy extends WC_Subscription {
 			update_post_meta( $this->get_id(), $key, $value );
 		}
 	}
+
+	/**
+	 * Save subscription date changes to the database.
+	 * Nothing to do here as all date properties are saved when calling @see $this->set_prop().
+	 *
+	 * @since 2.2.6
+	 */
+	public function save_dates() {
+		// Nothing to do here.
+	}
 }
