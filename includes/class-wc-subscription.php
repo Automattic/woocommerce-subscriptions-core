@@ -347,7 +347,7 @@ class WC_Subscription extends WC_Order {
 						$stored_next_payment = $this->get_time( 'next_payment' );
 
 						// Make sure the next payment date is more than 2 hours in the future by default
-						if ( $stored_next_payment < ( gmdate( 'U' ) + apply_filters( 'woocommerce_subscription_next_payment_recalculate_threshold', 2 * HOUR_IN_SECONDS, $stored_next_payment, $old_status, $this ) ) ) { // also accounts for a $stored_next_payment of 0, meaning it's not set
+						if ( $stored_next_payment < ( gmdate( 'U' ) + apply_filters( 'woocommerce_subscription_activation_next_payment_date_threshold', 2 * HOUR_IN_SECONDS, $stored_next_payment, $old_status, $this ) ) ) { // also accounts for a $stored_next_payment of 0, meaning it's not set
 
 							$calculated_next_payment = $this->calculate_date( 'next_payment' );
 
@@ -357,9 +357,8 @@ class WC_Subscription extends WC_Order {
 								$this->delete_date( 'next_payment' );
 							}
 						} else {
-							// in case plugins want to run some code when the subscription was reactivated, but the next
-							// payment date was not recalculated.
-							do_action( 'woocommerce_subscription_next_payment_not_recalculated', $stored_next_payment, $old_status, $this );
+							// In case plugins want to run some code when the subscription was reactivated, but the next payment date was not recalculated.
+							do_action( 'woocommerce_subscription_activation_next_payment_not_recalculated', $stored_next_payment, $old_status, $this );
 						}
 						// Trial end date and end/expiration date don't change at all - they should be set when the subscription is first created
 						wcs_make_user_active( $this->customer_user );
