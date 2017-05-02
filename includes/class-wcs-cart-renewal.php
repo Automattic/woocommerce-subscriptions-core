@@ -454,7 +454,8 @@ class WCS_Cart_Renewal {
 				wcs_set_objects_property( $_product, 'subscription_sign_up_fee', 0, 'set_prop_only' );
 
 				// Allow plugins to add additional strings to the product name for renewals
-				wcs_set_objects_property( $_product, 'name', apply_filters( 'woocommerce_subscriptions_renewal_product_title', $_product->get_title(), $_product ), 'set_prop_only' );
+				$line_item_name = is_callable( $item_to_renew, 'get_name' ) ? $item_to_renew->get_name() : $item_to_renew['name'];
+				wcs_set_objects_property( $_product, 'name', apply_filters( 'woocommerce_subscriptions_renewal_product_title', $line_item_name, $_product ), 'set_prop_only' );
 
 				// Make sure the same quantity is renewed
 				$cart_item_session_data['quantity'] = $item_to_renew['qty'];
