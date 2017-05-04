@@ -41,7 +41,12 @@ class WCS_Retry_Manager {
 
 			add_filter( 'init', array( self::store(), 'init' ) );
 
+			add_filter( 'woocommerce_valid_order_statuses_for_payment', __CLASS__ . '::check_order_statuses_for_payment', 10, 2 );
+
 			add_filter( 'woocommerce_subscription_dates', __CLASS__ . '::add_retry_date_type' );
+
+			add_action( 'delete_post', __CLASS__ . '::maybe_cancel_retry_for_order' );
+			add_action( 'wp_trash_post', __CLASS__ . '::maybe_cancel_retry_for_order' );
 
 			add_action( 'woocommerce_subscription_status_updated', __CLASS__ . '::maybe_cancel_retry', 0, 3 );
 
@@ -51,6 +56,26 @@ class WCS_Retry_Manager {
 
 			add_action( 'woocommerce_scheduled_subscription_payment_retry', __CLASS__ . '::maybe_retry_payment' );
 		}
+	}
+
+	/**
+	 * Adds any extra status that may be needed for a given order to check if it may
+	 * need payment
+	 *
+	 * @param Array    $statuses
+	 * @param WC_Order $order
+	 * @return array
+	 * @since 2.2.1
+	 */
+	public static function check_order_statuses_for_payment( $statuses, $order ) {
+
+		$last_retry  = self::store()->get_last_retry_for_order( $order );
+		if ( $last_retry ) {
+			$statuses[] = $last_retry->get_rule()->get_status_to_apply( 'order' );
+			$statuses   = array_unique( $statuses );
+		}
+
+		return $statuses;
 	}
 
 	/**
@@ -109,7 +134,7 @@ class WCS_Retry_Manager {
 		if ( $subscription->get_date( 'payment_retry' ) > 0 ) {
 
 			$last_order = $subscription->get_last_order( 'all' );
-			$last_retry = ( $last_order ) ? self::store()->get_last_retry_for_order( $last_order->id ) : null;
+			$last_retry = ( $last_order ) ? self::store()->get_last_retry_for_order( wcs_get_objects_property( $last_order, 'id' ) ) : null;
 
 			if ( null !== $last_retry && 'cancelled' !== $last_retry->get_status() && null !== ( $last_retry_rule = $last_retry->get_rule() ) ) {
 
@@ -121,6 +146,28 @@ class WCS_Retry_Manager {
 				if ( $new_status != $retry_subscription_status && ! $applying_retry_rule && ! $retrying_payment ) {
 					$last_retry->update_status( 'cancelled' );
 				}
+			}
+		}
+	}
+
+	/**
+	 * When a (renewal) order is trashed or deleted, make sure its retries are also trashed/deleted.
+	 *
+	 * @param int $post_id
+	 */
+	public static function maybe_cancel_retry_for_order( $post_id ) {
+
+		if ( 'shop_order' == get_post_type( $post_id ) ) {
+
+			$last_retry = self::store()->get_last_retry_for_order( $post_id );
+
+			// Make sure the last retry is cancelled first so that it is unscheduled via self::maybe_delete_payment_retry_date()
+			if ( null !== $last_retry && 'cancelled' !== $last_retry->get_status() ) {
+				$last_retry->update_status( 'cancelled' );
+			}
+
+			foreach ( self::store()->get_retry_ids_for_order( $post_id ) as $retry_id ) {
+				wp_trash_post( $retry_id );
 			}
 		}
 	}
@@ -159,17 +206,17 @@ class WCS_Retry_Manager {
 			return;
 		}
 
-		$retry_count = self::store()->get_retry_count_for_order( $last_order->id );
+		$retry_count = self::store()->get_retry_count_for_order( wcs_get_objects_property( $last_order, 'id' ) );
 
-		if ( self::rules()->has_rule( $retry_count, $last_order->id ) ) {
+		if ( self::rules()->has_rule( $retry_count, wcs_get_objects_property( $last_order, 'id' ) ) ) {
 
-			$retry_rule = self::rules()->get_rule( $retry_count, $last_order->id );
+			$retry_rule = self::rules()->get_rule( $retry_count, wcs_get_objects_property( $last_order, 'id' ) );
 
 			do_action( 'woocommerce_subscriptions_before_apply_retry_rule', $retry_rule, $last_order, $subscription );
 
 			$retry_id = self::store()->save( new WCS_Retry( array(
 				'status'   => 'pending',
-				'order_id' => $last_order->id,
+				'order_id' => wcs_get_objects_property( $last_order, 'id' ),
 				'date_gmt' => gmdate( 'Y-m-d H:i:s', gmdate( 'U' ) + $retry_rule->get_retry_interval() ),
 				'rule_raw' => $retry_rule->get_raw_data(),
 			) ) );
@@ -210,7 +257,7 @@ class WCS_Retry_Manager {
 		}
 
 		$subscriptions = wcs_get_subscriptions_for_renewal_order( $last_order );
-		$last_retry    = self::store()->get_last_retry_for_order( $last_order->id );
+		$last_retry    = self::store()->get_last_retry_for_order( wcs_get_objects_property( $last_order, 'id' ) );
 
 		// we only need to retry the payment if we have applied a retry rule for the order and it still needs payment
 		if ( null !== $last_retry && 'pending' === $last_retry->get_status() ) {
@@ -245,6 +292,8 @@ class WCS_Retry_Manager {
 				// if both statuses are still the same or there no special status was applied and the order still needs payment (i.e. there has been no manual intervention), trigger the payment hook
 				if ( $valid_order_status && $valid_subscription_status ) {
 
+					$last_order->update_status( 'pending', _x( 'Subscription renewal payment retry:', 'used in order note as reason for why order status changed', 'woocommerce-subscriptions' ), true );
+
 					// Make sure the subscription is on hold in case something goes wrong while trying to process renewal and in case gateways expect the subscription to be on-hold, which is normally the case with a renewal payment
 					foreach ( $subscriptions as $subscription ) {
 						$subscription->update_status( 'on-hold', _x( 'Subscription renewal payment retry:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
@@ -253,7 +302,7 @@ class WCS_Retry_Manager {
 					WC_Subscriptions_Payment_Gateways::trigger_gateway_renewal_payment_hook( $last_order );
 
 					// Now that we've attempted to process the payment, refresh the order
-					$last_order = wc_get_order( $last_order->id );
+					$last_order = wc_get_order( wcs_get_objects_property( $last_order, 'id' ) );
 
 					// if the order still needs payment, payment failed
 					if ( $last_order->needs_payment() ) {

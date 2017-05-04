@@ -70,10 +70,9 @@ function wcs_get_subscription_trial_period_strings( $number = 1, $period = '' ) 
  * M – for months; allowable range is 1 to 24
  * Y – for years; allowable range is 1 to 5
  *
- * @param string (optional) One of day, week, month or year. If empty, all subscription ranges are returned.
- * @since 2.0
+ * @since 2.1.2
  */
-function wcs_get_subscription_ranges_tlc() {
+function wcs_get_non_cached_subscription_ranges() {
 
 	foreach ( array( 'day', 'week', 'month', 'year' ) as $period ) {
 
@@ -126,7 +125,7 @@ function wcs_get_subscription_ranges( $subscription_period = '' ) {
 
 	$locale = get_locale();
 
-	$subscription_ranges = WC_Subscriptions::$cache->cache_and_get( 'wcs-sub-ranges-' . $locale, 'wcs_get_subscription_ranges_tlc', array(), 3 * HOUR_IN_SECONDS );
+	$subscription_ranges = WC_Subscriptions::$cache->cache_and_get( 'wcs-sub-ranges-' . $locale, 'wcs_get_non_cached_subscription_ranges', array(), 3 * HOUR_IN_SECONDS );
 
 	$subscription_ranges = apply_filters( 'woocommerce_subscription_lengths', $subscription_ranges, $subscription_period );
 
@@ -328,7 +327,7 @@ function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_o
  * @return int number of leap days between the start and end timstamps
  */
 function wcs_number_of_leap_days( $start_timestamp, $end_timestamp ) {
-	if ( ! is_int( $start_timestamp ) || ! is_int( $end_timestamp ) ) {
+	if ( ! is_numeric( $start_timestamp ) || ! is_numeric( $end_timestamp ) ) {
 		throw new InvalidArgumentException( 'Start or end times are not integers' );
 	}
 	// save the date! ;)
@@ -645,7 +644,7 @@ function wcs_date_to_time( $date_string ) {
 
 	$date_obj = new DateTime( $date_string, new DateTimeZone( 'UTC' ) );
 
-	return $date_obj->format( 'U' );
+	return intval( $date_obj->format( 'U' ) );
 }
 
 /**
@@ -757,4 +756,91 @@ function wcs_get_sites_timezone() {
 	}
 
 	return $local_timezone;
+}
+
+/* Deprecated Functions */
+
+/**
+ * Returns an array of subscription lengths.
+ *
+ * PayPal Standard Allowable Ranges
+ * D – for days; allowable range is 1 to 90
+ * W – for weeks; allowable range is 1 to 52
+ * M – for months; allowable range is 1 to 24
+ * Y – for years; allowable range is 1 to 5
+ *
+ * @param string (optional) One of day, week, month or year. If empty, all subscription ranges are returned.
+ * @since 2.0
+ */
+function wcs_get_subscription_ranges_tlc() {
+	_deprecated_function( __FUNCTION__, '2.1.2', 'wcs_get_non_cached_subscription_ranges' );
+
+	return wcs_get_non_cached_subscription_ranges();
+}
+
+/**
+ * Take a date in the form of a timestamp, MySQL date/time string or DateTime object (or perhaps
+ * a WC_Datetime object when WC > 3.0 is active) and create a WC_DateTime object.
+ *
+ * @since  2.2.0
+ * @param  string|integer|null $date UTC timestamp, or ISO 8601 DateTime. If the DateTime string has no timezone or offset, WordPress site timezone will be assumed. Null if their is no date.
+ * @return null|WC_DateTime in site's timezone
+ */
+function wcs_get_datetime_from( $variable_date_type ) {
+
+	try {
+		if ( empty( $variable_date_type ) ) {
+			$datetime = null;
+		} elseif ( is_a( $variable_date_type, 'WC_DateTime' ) ) {
+			$datetime = $variable_date_type;
+		} elseif ( is_numeric( $variable_date_type ) ) {
+			$datetime = new WC_DateTime( "@{$variable_date_type}", new DateTimeZone( 'UTC' ) );
+			$datetime->setTimezone( new DateTimeZone( wc_timezone_string() ) );
+		} else {
+			$datetime = new WC_DateTime( $variable_date_type, new DateTimeZone( wc_timezone_string() ) );
+		}
+	} catch ( Exception $e ) {
+		$datetime = null;
+	}
+
+	return $datetime;
+}
+
+/**
+ * Get a MySQL date/time string in UTC timezone from a WC_Datetime object.
+ *
+ * @since  2.2.0
+ * @param WC_DateTime
+ * @return string MySQL date/time string representation of the DateTime object in UTC timezone
+ */
+function wcs_get_datetime_utc_string( $datetime ) {
+	$date = clone $datetime; // Don't change the original date object's timezone
+	$date->setTimezone( new DateTimeZone( 'UTC' ) );
+	return $date->format( 'Y-m-d H:i:s' );
+}
+
+/**
+ * Format a date for output, a wrapper for wcs_format_datetime() introduced with WC 3.0.
+ *
+ * @since  2.2.0
+ * @param  WC_DateTime $date
+ * @param  string $format Defaults to the wc_date_format function if not set.
+ * @return string
+ */
+function wcs_format_datetime( $date, $format = '' ) {
+
+	if ( function_exists( 'wc_format_datetime' ) ) { // WC 3.0+
+		$formatted_datetime = wc_format_datetime( $date, $format );
+	} else { // WC < 3.0
+		if ( ! $format ) {
+			$format = wc_date_format();
+		}
+		if ( ! is_a( $date, 'WC_DateTime' ) ) {
+			return '';
+		}
+
+		$formatted_datetime = $date->date_i18n( $format );
+	}
+
+	return $formatted_datetime;
 }

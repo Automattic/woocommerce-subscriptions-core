@@ -49,6 +49,7 @@ function wcs_cart_totals_shipping_html() {
 			foreach ( $packages as $i => $base_package ) {
 
 				$product_names = array();
+				$base_package['recurring_cart_key'] = $recurring_cart_key;
 
 				$package = WC_Subscriptions_Cart::get_calculated_shipping_for_package( $base_package );
 				$index   = sprintf( '%1$s_%2$d', $recurring_cart_key, $i );
@@ -73,7 +74,7 @@ function wcs_cart_totals_shipping_html() {
 					?>
 					<tr class="shipping recurring-total <?php echo esc_attr( $recurring_cart_key ); ?>">
 						<th><?php echo esc_html( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ) ); ?></th>
-						<td>
+						<td data-title="<?php echo esc_attr( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ) ); ?>">
 							<?php echo wp_kses_post( wcs_cart_totals_shipping_method_price_label( $shipping_method, $recurring_cart ) ); ?>
 							<?php if ( 1 === count( $package['rates'] ) ) : ?>
 								<?php wcs_cart_print_shipping_input( $index, $shipping_method ); ?>
@@ -212,7 +213,7 @@ function wcs_cart_totals_coupon_html( $coupon, $cart ) {
 
 	$value  = array();
 
-	if ( $amount = $cart->get_coupon_discount_amount( $coupon->code, $cart->display_cart_ex_tax ) ) {
+	if ( $amount = $cart->get_coupon_discount_amount( wcs_get_coupon_property( $coupon, 'code' ), $cart->display_cart_ex_tax ) ) {
 		$discount_html = '-' . wc_price( $amount );
 	} else {
 		$discount_html = '';
@@ -220,7 +221,7 @@ function wcs_cart_totals_coupon_html( $coupon, $cart ) {
 
 	$value[] = apply_filters( 'woocommerce_coupon_discount_amount_html', $discount_html, $coupon );
 
-	if ( $coupon->enable_free_shipping() ) {
+	if ( wcs_get_coupon_property( $coupon, 'enable_free_shipping' ) ) {
 		$value[] = __( 'Free shipping coupon', 'woocommerce-subscriptions' );
 	}
 
@@ -302,10 +303,11 @@ function wcs_cart_pluck( $cart, $field, $default = 0 ) {
 		$value = $cart->$field;
 	} else {
 		foreach ( $cart->get_cart() as $cart_item ) {
+
 			if ( isset( $cart_item[ $field ] ) ) {
 				$value = $cart_item[ $field ];
-			} elseif ( $cart_item['data']->$field ) {
-				$value = $cart_item['data']->$field;
+			} else {
+				$value = WC_Subscriptions_Product::get_meta_data( $cart_item['data'], $field, $default );
 			}
 		}
 	}

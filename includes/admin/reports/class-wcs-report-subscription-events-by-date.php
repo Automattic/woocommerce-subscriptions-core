@@ -180,20 +180,30 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		* New subscription orders
 		*/
 		$query = $wpdb->prepare(
-			"SELECT COUNT(DISTINCT wcsubs.ID) AS count, wcsubs.post_date as post_date, wcometa.meta_value as signup_totals
-				FROM {$wpdb->posts} AS wcsubs
-				INNER JOIN {$wpdb->posts} AS wcorder
-					ON wcsubs.post_parent = wcorder.ID
-				LEFT JOIN {$wpdb->postmeta} AS wcometa
-					ON wcorder.ID = wcometa.post_id
-				WHERE  wcorder.post_type IN ( '" . implode( "','", wc_get_order_types( 'order-count' ) ) . "' )
-					AND wcsubs.post_type IN ( 'shop_subscription' )
-					AND wcorder.post_status IN ( 'wc-" . implode( "','wc-", $args['order_status'] ) . "' )
-					AND wcorder.post_date >= %s
-					AND wcorder.post_date < %s
-					AND wcometa.meta_key = '_order_total'
-				GROUP BY YEAR(wcsubs.post_date), MONTH(wcsubs.post_date), DAY(wcsubs.post_date)
-				ORDER BY post_date ASC",
+			"SELECT SUM(subscriptions.count) as count,
+				order_posts.post_date as post_date,
+				SUM(order_total_post_meta.meta_value) as signup_totals
+			FROM {$wpdb->posts} AS order_posts
+			INNER JOIN (
+				SELECT COUNT(DISTINCT(subscription_posts.ID)) as count,
+					subscription_posts.post_parent as order_id
+					FROM {$wpdb->posts} as subscription_posts
+				WHERE subscription_posts.post_type = 'shop_subscription'
+					AND subscription_posts.post_date >= %s
+					AND subscription_posts.post_date < %s
+				GROUP BY order_id
+			) AS subscriptions ON subscriptions.order_id = order_posts.ID
+			LEFT JOIN {$wpdb->postmeta} AS order_total_post_meta
+				ON order_posts.ID = order_total_post_meta.post_id
+			WHERE  order_posts.post_type IN ( '" . implode( "','", wc_get_order_types( 'order-count' ) ) . "' )
+				AND order_posts.post_status IN ( 'wc-" . implode( "','wc-", $args['order_status'] ) . "' )
+				AND order_posts.post_date >= %s
+				AND order_posts.post_date < %s
+				AND order_total_post_meta.meta_key = '_order_total'
+			GROUP BY YEAR(order_posts.post_date), MONTH(order_posts.post_date), DAY(order_posts.post_date)
+			ORDER BY post_date ASC",
+			date( 'Y-m-d', $this->start_date ),
+			$query_end_date,
 			date( 'Y-m-d', $this->start_date ),
 			$query_end_date
 		);
@@ -352,7 +362,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 
 		$legend[] = array(
 			'title'            => sprintf( __( '%s signup revenue in this period', 'woocommerce-subscriptions' ), '<strong>' . wc_price( $data->signup_orders_total_amount ) . '</strong>' ),
-			'placeholder'      => __( 'The sum of all orders containing signups including other items, fees, tax and shipping.', 'woocommerce-subscriptions' ),
+			'placeholder'      => __( 'The sum of all subscription parent orders, including other items, fees, tax and shipping.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['signup_total'],
 			'highlight_series' => 8,
 		);
@@ -380,7 +390,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 
 		$legend[] = array(
 			'title'            => sprintf( __( '%s subscription signups', 'woocommerce-subscriptions' ), '<strong>' . $this->report_data->signup_orders_total_count . '</strong>' ),
-			'placeholder'      => __( 'The number of new subscriptions created during this period by customers placing an order.', 'woocommerce-subscriptions' ),
+			'placeholder'      => __( 'The number of subscription parent orders created during this period. This represents the new subscriptions created by customers placing an order via checkout.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['signup_count'],
 			'highlight_series' => 2,
 		);

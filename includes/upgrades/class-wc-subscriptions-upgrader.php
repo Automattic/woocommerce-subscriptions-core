@@ -173,7 +173,7 @@ class WC_Subscriptions_Upgrader {
 		if ( '0' != self::$active_version && version_compare( self::$active_version, '2.1.0', '<' ) ) {
 
 			// Delete cached subscription length ranges to force an update with 2.1
-			WC_Subscriptions::$cache->delete_cached( tlc_transient( 'wcs-sub-ranges-' . get_locale() )->key );
+			WC_Subscriptions::$cache->delete_cached( 'wcs-sub-ranges-' . get_locale() );
 
 			WCS_Upgrade_Logger::add( 'v2.1: Deleted cached subscription ranges.' );
 
@@ -209,7 +209,7 @@ class WC_Subscriptions_Upgrader {
 	 * @since 2.1
 	 */
 	public static function maybe_redirect_after_upgrade_complete( $current_version, $previously_active_version ) {
-		if ( version_compare( $previously_active_version, '2.1.0', '<' ) && version_compare( $current_version, '2.1.0', '>=' ) ) {
+		if ( version_compare( $previously_active_version, '2.1.0', '<' ) && version_compare( $current_version, '2.1.0', '>=' ) && version_compare( $current_version, '2.2.0', '<' ) ) {
 			wp_safe_redirect( self::$about_page_url );
 			exit();
 		}
