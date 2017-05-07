@@ -443,9 +443,9 @@ class WC_Subscriptions_Coupon {
 
 		foreach ( $renewal_coupons as $subscription_id => $coupons ) {
 
-			foreach ( $coupons as $coupon ) {
+			foreach ( $coupons as $coupon_code => $coupon_properties ) {
 
-				if ( wcs_get_coupon_property( $coupon, 'code' ) == $code ) {
+				if ( $coupon_code == $code ) {
 
 					if ( $subscription = wcs_get_subscription( $subscription_id ) ) {
 						$subtotal = $subscription->get_subtotal();
