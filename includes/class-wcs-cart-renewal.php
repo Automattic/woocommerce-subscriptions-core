@@ -312,9 +312,9 @@ class WCS_Cart_Renewal {
 
 							// Set the coupon type to be a renewal equivalent for correct validation and calculations
 							if ( 'recurring_percent' == $coupon_type ) {
-								wcs_set_coupon_property( $coupon, 'type', 'renewal_percent' );
+								wcs_set_coupon_property( $coupon, 'discount_type', 'renewal_percent' );
 							} elseif ( 'recurring_fee' == $coupon_type ) {
-								wcs_set_coupon_property( $coupon, 'type', 'renewal_fee' );
+								wcs_set_coupon_property( $coupon, 'discount_type', 'renewal_fee' );
 							}
 
 							// Adjust coupon code to reflect that it is being applied to a renewal
@@ -323,7 +323,7 @@ class WCS_Cart_Renewal {
 					} else {
 
 						// If the coupon doesn't exist we can only really apply the discount amount we know about - so we'll apply a cart style pseudo coupon and then set the amount
-						wcs_set_coupon_property( $coupon, 'type', 'renewal_cart' );
+						wcs_set_coupon_property( $coupon, 'discount_type', 'renewal_cart' );
 						wcs_set_coupon_property( $coupon, 'amount', $coupon_item['item_meta']['discount_amount']['0'] );
 
 						// Adjust coupon code to reflect that it is being applied to a renewal
@@ -353,7 +353,7 @@ class WCS_Cart_Renewal {
 				$coupon = new WC_Coupon( 'discount_renewal' );
 
 				// Apply our cart style pseudo coupon and the set the amount
-				wcs_set_coupon_property( $coupon, 'type', 'renewal_cart' );
+				wcs_set_coupon_property( $coupon, 'discount_type', 'renewal_cart' );
 
 				wcs_set_coupon_property( $coupon, 'amount', $subscription_discount );
 
