@@ -301,7 +301,7 @@ class WCS_Cart_Renewal {
 				foreach ( $coupon_items as $coupon_item ) {
 
 					$coupon      = new WC_Coupon( $coupon_item['name'] );
-					$coupon_type = wcs_get_coupon_property( $coupon, 'type' );
+					$coupon_type = wcs_get_coupon_property( $coupon, 'discount_type' );
 					$coupon_code = '';
 
 					// If the coupon still exists we can use the existing/available coupon properties
