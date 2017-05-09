@@ -47,13 +47,13 @@ class WCS_Webhooks {
 	}
 
 	/**
-	 *	Trigger `order.create` every time an order is created by Subscriptions.
+	 * Trigger `order.create` every time an order is created by Subscriptions.
 	 *
-	 *	@param WC_Order $order	WC_Order Object
+	 * @param WC_Order $order	WC_Order Object
 	 */
 	public static function add_subscription_created_order_callback( $order ) {
 
-		do_action( 'wcs_webhook_order_created', $order->id );
+		do_action( 'wcs_webhook_order_created', wcs_get_objects_property( $order, 'id' ) );
 
 		return $order;
 	}
