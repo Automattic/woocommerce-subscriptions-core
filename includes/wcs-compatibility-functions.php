@@ -451,6 +451,7 @@ function wcs_get_coupon_property( $coupon, $property ) {
 			'exclude_product_categories' => 'get_excluded_product_categories',
 			'customer_email'             => 'get_email_restrictions',
 			'enable_free_shipping'       => 'get_free_shipping',
+			'coupon_amount'              => 'get_amount',
 		);
 
 		switch ( true ) {
@@ -493,6 +494,7 @@ function wcs_set_coupon_property( &$coupon, $property, $value ) {
 			'exclude_product_categories' => 'set_excluded_product_categories',
 			'customer_email'             => 'set_email_restrictions',
 			'enable_free_shipping'       => 'set_free_shipping',
+			'coupon_amount'              => 'set_amount',
 		);
 
 		switch ( true ) {
