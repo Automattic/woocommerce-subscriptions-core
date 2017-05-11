@@ -753,7 +753,7 @@ class WC_Subscriptions_Product {
 	 * @since 2.2.0
 	 */
 	public static function needs_one_time_shipping( $product ) {
-		if ( $product instanceof WC_Product_Subscription_Variation) {
+		if ( $product instanceof WC_Product_Subscription_Variation ) {
 			$product = $product->get_parent_id();
 		}
 		return apply_filters( 'woocommerce_subscriptions_product_needs_one_time_shipping', 'yes' === self::get_meta_data( $product, 'subscription_one_time_shipping', 'no' ), self::maybe_get_product_instance( $product ) );
