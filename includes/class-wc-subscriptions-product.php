@@ -753,7 +753,11 @@ class WC_Subscriptions_Product {
 	 * @since 2.2.0
 	 */
 	public static function needs_one_time_shipping( $product ) {
-		return apply_filters( 'woocommerce_subscriptions_product_needs_one_time_shipping', 'yes' === self::get_meta_data( $product, 'subscription_one_time_shipping', 'no' ), self::maybe_get_product_instance( $product ) );
+		$product = self::maybe_get_product_instance( $product );
+		if ( $product && $product->is_type( 'variation' ) && is_callable( array( $product, 'get_parent_id' ) ) ) {
+			$product = self::maybe_get_product_instance( $product->get_parent_id() );
+		}
+		return apply_filters( 'woocommerce_subscriptions_product_needs_one_time_shipping', 'yes' === self::get_meta_data( $product, 'subscription_one_time_shipping', 'no' ), $product );
 	}
 
 	/**
