@@ -1525,19 +1525,22 @@ class WC_Subscriptions_Admin {
 	*/
 	public static function change_order_item_editable_text( $translated_text, $text, $domain ) {
 
-		$screen = get_current_screen();
+		if ( is_admin() && function_exists( 'get_current_screen' ) ) {
 
-		if ( is_admin() && 'shop_subscription' == $screen->id ) {
+			$screen = get_current_screen();
 
-			switch ( $text ) {
+			if ( 'shop_subscription' == $screen->id ) {
 
-				case 'This order is no longer editable.':
-					$translated_text = __( 'Subscription items can no longer be edited.', 'woocommerce-subscriptions' );
-					break;
+				switch ( $text ) {
 
-				case 'To edit this order change the status back to "Pending"':
-					$translated_text = __( 'This subscription is no longer editable because the payment gateway does not allow modification of recurring amounts.', 'woocommerce-subscriptions' );
-					break;
+					case 'This order is no longer editable.':
+						$translated_text = __( 'Subscription items can no longer be edited.', 'woocommerce-subscriptions' );
+						break;
+
+					case 'To edit this order change the status back to "Pending"':
+						$translated_text = __( 'This subscription is no longer editable because the payment gateway does not allow modification of recurring amounts.', 'woocommerce-subscriptions' );
+						break;
+				}
 			}
 		}
 		return $translated_text;
