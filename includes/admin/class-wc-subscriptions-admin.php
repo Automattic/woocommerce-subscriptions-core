@@ -122,6 +122,9 @@ class WC_Subscriptions_Admin {
 		add_filter( 'woocommerce_get_formatted_order_total', __CLASS__ . '::maybe_remove_formatted_order_total_filter', 0, 2 );
 
 		add_action( 'woocommerce_payment_gateways_settings', __CLASS__ . '::add_recurring_payment_gateway_information', 10 , 1 );
+
+		// Change text for when order items cannot be edited
+		add_filter( 'gettext', __CLASS__ . '::change_order_item_editable_text', 10, 3 );
 	}
 
 	/**
@@ -1512,6 +1515,29 @@ class WC_Subscriptions_Admin {
 		}
 
 		return $formatted_total;
+	}
+
+	/**
+	* When subscription items not editable (such as due to the payment gateway not supporting modifications),
+	* change the text to explain why
+	*
+	* @since 2.2.7
+	*/
+	public static function change_order_item_editable_text( $translated_text, $text, $domain ) {
+
+		if ( is_admin() ) {
+			switch( $text ) {
+
+				case 'This order is no longer editable.':
+					$translated_text = __( 'Subscription items can no longer be edited.', 'woocommerce-subscriptions' );
+					break;
+
+				case 'To edit this order change the status back to "Pending"':
+					$translated_text = __( 'This subscription is no longer editable because the payment gateway does not allow modification of recurring amounts.', 'woocommerce-subscriptions' );
+					break;
+			}
+		}
+		return $translated_text;
 	}
 
 	/**
