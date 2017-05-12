@@ -1525,8 +1525,11 @@ class WC_Subscriptions_Admin {
 	*/
 	public static function change_order_item_editable_text( $translated_text, $text, $domain ) {
 
-		if ( is_admin() ) {
-			switch( $text ) {
+		$screen = get_current_screen();
+
+		if ( is_admin() && 'shop_subscription' == $screen->id ) {
+
+			switch ( $text ) {
 
 				case 'This order is no longer editable.':
 					$translated_text = __( 'Subscription items can no longer be edited.', 'woocommerce-subscriptions' );
