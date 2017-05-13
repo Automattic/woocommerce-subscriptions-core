@@ -1529,7 +1529,7 @@ class WC_Subscriptions_Admin {
 
 			$screen = get_current_screen();
 
-			if ( 'shop_subscription' == $screen->id ) {
+			if ( is_object( $screen ) && 'shop_subscription' == $screen->id ) {
 
 				switch ( $text ) {
 
