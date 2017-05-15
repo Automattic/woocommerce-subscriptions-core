@@ -301,7 +301,7 @@ class WCS_Cart_Renewal {
 				foreach ( $coupon_items as $coupon_item ) {
 
 					$coupon      = new WC_Coupon( $coupon_item['name'] );
-					$coupon_type = wcs_get_coupon_property( $coupon, 'type' );
+					$coupon_type = wcs_get_coupon_property( $coupon, 'discount_type' );
 					$coupon_code = '';
 
 					// If the coupon still exists we can use the existing/available coupon properties
@@ -312,9 +312,9 @@ class WCS_Cart_Renewal {
 
 							// Set the coupon type to be a renewal equivalent for correct validation and calculations
 							if ( 'recurring_percent' == $coupon_type ) {
-								wcs_set_coupon_property( $coupon, 'type', 'renewal_percent' );
+								wcs_set_coupon_property( $coupon, 'discount_type', 'renewal_percent' );
 							} elseif ( 'recurring_fee' == $coupon_type ) {
-								wcs_set_coupon_property( $coupon, 'type', 'renewal_fee' );
+								wcs_set_coupon_property( $coupon, 'discount_type', 'renewal_fee' );
 							}
 
 							// Adjust coupon code to reflect that it is being applied to a renewal
@@ -323,8 +323,8 @@ class WCS_Cart_Renewal {
 					} else {
 
 						// If the coupon doesn't exist we can only really apply the discount amount we know about - so we'll apply a cart style pseudo coupon and then set the amount
-						wcs_set_coupon_property( $coupon, 'type', 'renewal_cart' );
-						wcs_set_coupon_property( $coupon, 'amount', $coupon_item['item_meta']['discount_amount']['0'] );
+						wcs_set_coupon_property( $coupon, 'discount_type', 'renewal_cart' );
+						wcs_set_coupon_property( $coupon, 'coupon_amount', $coupon_item['item_meta']['discount_amount']['0'] );
 
 						// Adjust coupon code to reflect that it is being applied to a renewal
 						$coupon_code = wcs_get_coupon_property( $coupon, 'code' );
@@ -353,9 +353,9 @@ class WCS_Cart_Renewal {
 				$coupon = new WC_Coupon( 'discount_renewal' );
 
 				// Apply our cart style pseudo coupon and the set the amount
-				wcs_set_coupon_property( $coupon, 'type', 'renewal_cart' );
+				wcs_set_coupon_property( $coupon, 'discount_type', 'renewal_cart' );
 
-				wcs_set_coupon_property( $coupon, 'amount', $subscription_discount );
+				wcs_set_coupon_property( $coupon, 'coupon_amount', $subscription_discount );
 
 				// Set renewal order products as the product ids on the coupon
 				if ( ! WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
@@ -767,58 +767,22 @@ class WCS_Cart_Renewal {
 
 		foreach ( $renewal_coupons as $subscription_id => $coupons ) {
 
-			foreach ( $coupons as $coupon ) {
+			foreach ( $coupons as $coupon_code => $coupon_properties ) {
 
 				// Tweak the coupon data for renewal coupons
-				if ( wcs_get_coupon_property( $coupon, 'code' ) == $code ) {
+				if ( $coupon_code == $code ) {
+					$expiry_date_property = WC_Subscriptions::is_woocommerce_pre( '3.0' ) ? 'expiry_date' : 'date_expires';
 
-					$data = array(
-						'id'                          => true,
-						'discount_type'               => wcs_get_coupon_property( $coupon, 'type' ),
-						'amount'                      => wcs_get_coupon_property( $coupon, 'amount' ),
-						'individual_use'              => ( $individual_use = wcs_get_coupon_property( $coupon, 'individual_use' ) ) ? $individual_use : false,
-						'product_ids'                 => ( $product_ids = wcs_get_coupon_property( $coupon, 'product_ids' ) ) ? $product_ids : array(),
-						'excluded_product_ids'        => ( $excluded_product_ids = wcs_get_coupon_property( $coupon, 'exclude_product_ids' ) ) ? $excluded_product_ids : array(),
-						'usage_limit'                 => '',
-						'usage_count'                 => '',
-						'date_expires'                => '',
-						'free_shipping'               => ( $free_shipping = wcs_get_coupon_property( $coupon, 'free_shipping' ) ) ? $free_shipping : false,
-						'product_categories'          => ( $product_categories = wcs_get_coupon_property( $coupon, 'product_categories' ) ) ? $product_categories : array(),
-						'excluded_product_categories' => ( $excluded_product_categories = wcs_get_coupon_property( $coupon, 'exclude_product_categories' ) ) ? $excluded_product_categories : array(),
-						'exclude_sale_items'          => ( $exclude_sale_items = wcs_get_coupon_property( $coupon, 'exclude_sale_items' ) ) ? $exclude_sale_items : false,
-						'minimum_amount'              => ( $minimum_amount = wcs_get_coupon_property( $coupon, 'minimum_amount' ) ) ? $minimum_amount : '',
-						'maximum_amount'              => ( $maximum_amount = wcs_get_coupon_property( $coupon, 'maximum_amount' ) ) ? $maximum_amount : '',
-						'customer_email'              => ( $customer_email = wcs_get_coupon_property( $coupon, 'customer_email' ) ) ? $customer_email : array(),
+					// Some coupon properties are overridden specifically for renewals
+					$renewal_coupon_overrides = array(
+						'id'                  => true,
+						'usage_limit'         => '',
+						'usage_count'         => '',
+						$expiry_date_property => '',
 					);
 
-					if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-
-						// Pre 3.0 we don't need to pass the id.
-						unset( $data['id'] );
-
-						// Some keys have changed between WC 2.6.x and WC 3.0. This array holds those changes in a 2.6 => 3.0 format.
-						$property_changes = array(
-							'coupon_amount'              => 'amount',
-							'exclude_product_ids'        => 'excluded_product_ids',
-							'expiry_date'                => 'date_expires',
-							'exclude_product_categories' => 'excluded_product_categories',
-							'customer_email'             => 'email_restrictions',
-						);
-
-						foreach ( $data as $key => $value ) {
-
-							// Switch the 3.0 key out for the 2.6 equivalent
-							if ( in_array( $key, $property_changes ) ) {
-								$data[ array_search( $key, $property_changes ) ] = $value;
-								unset( $data[ $key ] );
-							}
-
-							// Some coupon properties have changed from accepting 'no' and 'yes' to true and false args. We need to change them into the correct format
-							if ( is_bool( $value ) && in_array( $key, array( 'individual_use', 'free_shipping', 'exclude_sale_items' ) ) ) {
-								$data[ $key ] = ( true == $value ) ? 'yes' : 'no';
-							}
-						}
-					}
+					$data = array_merge( $coupon_properties, $renewal_coupon_overrides );
+					break 2;
 				}
 			}
 		}
@@ -858,14 +822,54 @@ class WCS_Cart_Renewal {
 	 */
 	protected function store_coupon( $subscription_id, $coupon ) {
 		if ( ! empty( $subscription_id ) && ! empty( $coupon ) ) {
+			$renewal_coupons   = WC()->session->get( 'wcs_renewal_coupons', array() );
+			$use_bools         = WC_Subscriptions::is_woocommerce_pre( '3.0' ); // Some coupon properties have changed from accepting 'no' and 'yes' to true and false args.
+			$coupon_properties = array();
+			$property_defaults = array(
+				'discount_type'               => '',
+				'amount'                      => 0,
+				'individual_use'              => ( $use_bools ) ? false : 'no',
+				'product_ids'                 => array(),
+				'excluded_product_ids'        => array(),
+				'free_shipping'               => ( $use_bools ) ? false : 'no',
+				'product_categories'          => array(),
+				'excluded_product_categories' => array(),
+				'exclude_sale_items'          => ( $use_bools ) ? false : 'no',
+				'minimum_amount'              => '',
+				'maximum_amount'              => '',
+				'email_restrictions'          => array(),
+			);
 
-			$renewal_coupons = WC()->session->get( 'wcs_renewal_coupons', array() );
+			foreach ( $property_defaults as $property => $value ) {
+				$getter = 'get_' . $property;
 
-			// Subscriptions may have multiple coupons, store coupons in array
+				if ( is_callable( array( $coupon, $getter ) ) ) {
+					$value = $coupon->$getter();
+				} else { // WC < 3.0
+					// Map the property to its version compatible name ( 3.0+ => WC < 3.0 )
+					$getter_to_property_map = array(
+						'amount'                      => 'coupon_amount',
+						'excluded_product_ids'        => 'exclude_product_ids',
+						'date_expires'                => 'expiry_date',
+						'excluded_product_categories' => 'exclude_product_categories',
+						'email_restrictions'          => 'customer_email',
+					);
+
+					$property = array_key_exists( $property, $getter_to_property_map ) ? $getter_to_property_map[ $property ] : $property;
+
+					if ( property_exists( $coupon, $property ) ) {
+						$value = $coupon->$property;
+					}
+				}
+
+				$coupon_properties[ $property ] = $value;
+			}
+
+			// Subscriptions may have multiple coupons, store coupons in an array
 			if ( array_key_exists( $subscription_id, $renewal_coupons ) ) {
-				$renewal_coupons[ $subscription_id ][] = $coupon;
+				$renewal_coupons[ $subscription_id ][ wcs_get_coupon_property( $coupon, 'code' ) ] = $coupon_properties;
 			} else {
-				$renewal_coupons[ $subscription_id ] = array( $coupon );
+				$renewal_coupons[ $subscription_id ] = array( wcs_get_coupon_property( $coupon, 'code' ) => $coupon_properties );
 			}
 
 			WC()->session->set( 'wcs_renewal_coupons', $renewal_coupons );
@@ -884,8 +888,8 @@ class WCS_Cart_Renewal {
 		// Remove the coupons from the cart
 		if ( ! empty( $renewal_coupons ) ) {
 			foreach ( $renewal_coupons as $subscription_id => $coupons ) {
-				foreach ( $coupons as $coupon ) {
-					WC()->cart->remove_coupons( wcs_get_coupon_property( $coupon, 'code' ) );
+				foreach ( $coupons as $coupon_code => $coupon_properties ) {
+					WC()->cart->remove_coupons( $coupon_code );
 				}
 			}
 		}
