@@ -1524,15 +1524,12 @@ class WC_Subscriptions_Admin {
 	*
 	* @since 2.2.7
 	*/
-	public static function maybe_attach_gettext_callback( $order_id ) {
+	public static function maybe_attach_gettext_callback() {
 
-		if ( is_admin() && function_exists( 'get_current_screen' ) ) {
-			$screen = get_current_screen();
-			$order = wc_get_order( $order_id );
+		$screen = get_current_screen();
 
-			if ( is_object( $screen ) && 'shop_subscription' == $screen->id && ! $order->is_editable() ) {
-				add_filter( 'gettext', 'WC_Subscriptions_Admin::change_order_item_editable_text', 10, 3 );
-			}
+		if ( is_object( $screen ) && 'shop_subscription' == $screen->id ) {
+			add_filter( 'gettext', __CLASS__ . '::change_order_item_editable_text', 10, 3 );
 		}
 	}
 
@@ -1541,14 +1538,12 @@ class WC_Subscriptions_Admin {
 	*
 	* @since 2.2.7
 	*/
-	public static function maybe_unattach_gettext_callback( $order ) {
+	public static function maybe_unattach_gettext_callback() {
 
-		if ( is_admin() && function_exists( 'get_current_screen' ) ) {
-			$screen = get_current_screen();
+		$screen = get_current_screen();
 
-			if ( is_object( $screen ) && 'shop_subscription' == $screen->id && ! $order->is_editable() ) {
-				remove_filter( 'gettext', 'WC_Subscriptions_Admin::change_order_item_editable_text', 10, 3 );
-			}
+		if ( is_object( $screen ) && 'shop_subscription' == $screen->id ) {
+			remove_filter( 'gettext', __CLASS__ . '::change_order_item_editable_text', 10, 3 );
 		}
 	}
 
