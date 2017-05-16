@@ -124,7 +124,9 @@ class WC_Subscriptions_Admin {
 		add_action( 'woocommerce_payment_gateways_settings', __CLASS__ . '::add_recurring_payment_gateway_information', 10 , 1 );
 
 		// Change text for when order items cannot be edited
-		add_filter( 'gettext', __CLASS__ . '::change_order_item_editable_text', 10, 3 );
+		add_action( 'woocommerce_admin_order_totals_after_refunded', __CLASS__ . '::maybe_attach_gettext_callback', 10, 1 );
+		// Unhook gettext callback to prevent extra call impact
+		add_action( 'woocommerce_order_item_add_action_buttons', __CLASS__ . '::maybe_unattach_gettext_callback', 10, 1 );
 	}
 
 	/**
@@ -1518,6 +1520,40 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
+	* Only attach the gettext callback when on admin shop subscription screen
+	*
+	* @since 2.2.7
+	*/
+	public static function maybe_attach_gettext_callback( $order_id ) {
+
+		if ( is_admin() && function_exists( 'get_current_screen' ) ) {
+			$screen = get_current_screen();
+			$order = wc_get_order( $order_id );
+
+			if ( is_object( $screen ) && 'shop_subscription' == $screen->id && ! $order->is_editable() ) {
+				add_filter( 'gettext', 'WC_Subscriptions_Admin::change_order_item_editable_text', 10, 3 );
+			}
+		}
+	}
+
+	/**
+	* Only unattach the gettext callback when it was attached
+	*
+	* @since 2.2.7
+	*/
+	public static function maybe_unattach_gettext_callback( $order ) {
+
+		if ( is_admin() && function_exists( 'get_current_screen' ) ) {
+			$screen = get_current_screen();
+
+			if ( is_object( $screen ) && 'shop_subscription' == $screen->id && ! $order->is_editable() ) {
+				remove_filter( 'gettext', 'WC_Subscriptions_Admin::change_order_item_editable_text', 10, 3 );
+			}
+		}
+	}
+
+
+	/**
 	* When subscription items not editable (such as due to the payment gateway not supporting modifications),
 	* change the text to explain why
 	*
@@ -1525,24 +1561,17 @@ class WC_Subscriptions_Admin {
 	*/
 	public static function change_order_item_editable_text( $translated_text, $text, $domain ) {
 
-		if ( is_admin() && function_exists( 'get_current_screen' ) ) {
+		switch ( $text ) {
 
-			$screen = get_current_screen();
+			case 'This order is no longer editable.':
+				$translated_text = __( 'Subscription items can no longer be edited.', 'woocommerce-subscriptions' );
+				break;
 
-			if ( is_object( $screen ) && 'shop_subscription' == $screen->id ) {
-
-				switch ( $text ) {
-
-					case 'This order is no longer editable.':
-						$translated_text = __( 'Subscription items can no longer be edited.', 'woocommerce-subscriptions' );
-						break;
-
-					case 'To edit this order change the status back to "Pending"':
-						$translated_text = __( 'This subscription is no longer editable because the payment gateway does not allow modification of recurring amounts.', 'woocommerce-subscriptions' );
-						break;
-				}
-			}
+			case 'To edit this order change the status back to "Pending"':
+				$translated_text = __( 'This subscription is no longer editable because the payment gateway does not allow modification of recurring amounts.', 'woocommerce-subscriptions' );
+				break;
 		}
+
 		return $translated_text;
 	}
 
