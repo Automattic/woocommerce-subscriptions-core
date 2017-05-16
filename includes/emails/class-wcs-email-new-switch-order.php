@@ -30,12 +30,7 @@ class WCS_Email_New_Switch_Order extends WC_Email_New_Order {
 		$this->template_base  = plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/';
 
 		// Triggers for this email
-		add_action( 'woocommerce_order_status_pending_to_processing_switch_notification', array( $this, 'trigger' ) );
-		add_action( 'woocommerce_order_status_pending_to_completed_switch_notification', array( $this, 'trigger' ) );
-		add_action( 'woocommerce_order_status_pending_to_on-hold_switch_notification', array( $this, 'trigger' ) );
-		add_action( 'woocommerce_order_status_failed_to_processing_switch_notification', array( $this, 'trigger' ) );
-		add_action( 'woocommerce_order_status_failed_to_completed_switch_notification', array( $this, 'trigger' ) );
-		add_action( 'woocommerce_order_status_failed_to_on-hold_switch_notification', array( $this, 'trigger' ) );
+		add_action( 'woocommerce_subscriptions_switch_completed_switch_notification', array( $this, 'trigger' ) );
 
 		// We want all the parent's methods, with none of its properties, so call its parent's constructor, rather than my parent constructor
 		WC_Email::__construct();
@@ -57,23 +52,23 @@ class WCS_Email_New_Switch_Order extends WC_Email_New_Order {
 	 * @access public
 	 * @return void
 	 */
-	function trigger( $order_id ) {
+	function trigger( $order_id, $order = null ) {
 
 		if ( $order_id ) {
 			$this->object = new WC_Order( $order_id );
 
 			$order_date_index = array_search( '{order_date}', $this->find );
 			if ( false === $order_date_index ) {
-				$this->find[] = '{order_date}';
-				$this->replace[] = date_i18n( wc_date_format(), wcs_date_to_time( $this->object->order_date ) );
+				$this->find['order_date']    = '{order_date}';
+				$this->replace['order_date'] = wcs_format_datetime( wcs_get_objects_property( $this->object, 'date_created' ) );
 			} else {
-				$this->replace[ $order_date_index ] = date_i18n( wc_date_format(), wcs_date_to_time( $this->object->order_date ) );
+				$this->replace[ $order_date_index ] = wcs_format_datetime( wcs_get_objects_property( $this->object, 'date_created' ) );
 			}
 
 			$order_number_index = array_search( '{order_number}', $this->find );
 			if ( false === $order_number_index ) {
-				$this->find[] = '{order_number}';
-				$this->replace[] = $this->object->get_order_number();
+				$this->find['order_number']    = '{order_number}';
+				$this->replace['order_number'] = $this->object->get_order_number();
 			} else {
 				$this->replace[ $order_number_index ] = $this->object->get_order_number();
 			}

@@ -42,6 +42,14 @@ class WC_Subscriptions_Admin {
 	private static $found_related_orders = false;
 
 	/**
+	 * Is meta boxes saved once?
+	 *
+	 * @var boolean
+	 * @since 2.2.0
+	 */
+	private static $saved_product_meta = false;
+
+	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
 	 * @since 1.0
@@ -75,8 +83,8 @@ class WC_Subscriptions_Admin {
 		add_action( 'save_post', __CLASS__ . '::save_variable_subscription_meta', 11 );
 
 		// Save variable subscription meta
-		add_action( 'woocommerce_process_product_meta_variable-subscription', __CLASS__ . '::process_product_meta_variable_subscription' ); // WC < 2.4
-		add_action( 'woocommerce_ajax_save_product_variations', __CLASS__ . '::process_product_meta_variable_subscription' );
+		add_action( 'woocommerce_process_product_meta_variable-subscription', __CLASS__ . '::process_product_meta_variable_subscription' );
+		add_action( 'woocommerce_save_product_variation',  __CLASS__ . '::save_product_variation', 20, 2 );
 
 		add_action( 'woocommerce_subscription_pre_update_status', __CLASS__ . '::check_customer_is_set', 10, 3 );
 
@@ -104,7 +112,7 @@ class WC_Subscriptions_Admin {
 
 		add_filter( 'set-screen-option', __CLASS__ . '::set_manage_subscriptions_screen_option', 10, 3 );
 
-		add_filter( 'woocommerce_debug_posting', __CLASS__ . '::add_system_status_items' );
+		add_filter( 'woocommerce_system_status_report', __CLASS__ . '::render_system_status_items' );
 
 		add_filter( 'woocommerce_payment_gateways_setting_columns', __CLASS__ . '::payment_gateways_rewewal_column' );
 
@@ -197,7 +205,7 @@ class WC_Subscriptions_Admin {
 		?><p class="form-field _subscription_price_fields _subscription_price_field">
 			<label for="_subscription_price"><?php printf( esc_html__( 'Subscription price (%s)', 'woocommerce-subscriptions' ), esc_html( get_woocommerce_currency_symbol() ) ); ?></label>
 			<span class="wrap">
-				<input type="text" id="_subscription_price" name="_subscription_price" class="wc_input_subscription_price" placeholder="<?php echo esc_attr_x( 'e.g. 5.90', 'example price', 'woocommerce-subscriptions' ); ?>" step="any" min="0" value="<?php echo esc_attr( $chosen_price ); ?>" />
+				<input type="text" id="_subscription_price" name="_subscription_price" class="wc_input_price wc_input_subscription_price" placeholder="<?php echo esc_attr_x( 'e.g. 5.90', 'example price', 'woocommerce-subscriptions' ); ?>" step="any" min="0" value="<?php echo esc_attr( $chosen_price ); ?>" />
 				<label for="_subscription_period_interval" class="wcs_hidden_label"><?php esc_html_e( 'Subscription interval', 'woocommerce-subscriptions' ); ?></label>
 				<select id="_subscription_period_interval" name="_subscription_period_interval" class="wc_input_subscription_period_interval">
 				<?php foreach ( wcs_get_subscription_period_interval_strings() as $value => $label ) { ?>
@@ -228,7 +236,7 @@ class WC_Subscriptions_Admin {
 		// Sign-up Fee
 		woocommerce_wp_text_input( array(
 			'id'          => '_subscription_sign_up_fee',
-			'class'       => 'wc_input_subscription_intial_price short',
+			'class'       => 'wc_input_subscription_intial_price wc_input_price  short',
 			// translators: %s is a currency symbol / code
 			'label'       => sprintf( __( 'Sign-up fee (%s)', 'woocommerce-subscriptions' ), get_woocommerce_currency_symbol() ),
 			'placeholder' => _x( 'e.g. 9.90', 'example price', 'woocommerce-subscriptions' ),
@@ -304,11 +312,6 @@ class WC_Subscriptions_Admin {
 	public static function variable_subscription_pricing_fields( $loop, $variation_data, $variation ) {
 		global $thepostid;
 
-		// Set month as the default billing period
-		if ( ! $subscription_period = get_post_meta( $variation->ID, '_subscription_period', true ) ) {
-			$subscription_period = 'month';
-		}
-
 		// When called via Ajax
 		if ( ! function_exists( 'woocommerce_wp_text_input' ) ) {
 			require_once( WC()->plugin_path() . '/admin/post-types/writepanels/writepanels-init.php' );
@@ -316,6 +319,13 @@ class WC_Subscriptions_Admin {
 
 		if ( ! isset( $thepostid ) ) {
 			$thepostid = $variation->post_parent;
+		}
+
+		$variation_product = wc_get_product( $variation );
+		$billing_period    = WC_Subscriptions_Product::get_period( $variation_product );
+
+		if ( empty( $billing_period ) ) {
+			$billing_period = 'month';
 		}
 
 		include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/html-variation-price.php' );
@@ -354,7 +364,7 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function save_subscription_meta( $post_id ) {
 
-		if ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) || ! isset( $_POST['product-type'] ) || ! in_array( $_POST['product-type'], apply_filters( 'woocommerce_subscription_product_types', array( WC_Subscriptions::$name ) ) ) ) {
+		if ( self::$saved_product_meta || ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) || ! isset( $_POST['product-type'] ) || ! in_array( $_POST['product-type'], apply_filters( 'woocommerce_subscription_product_types', array( WC_Subscriptions::$name ) ) ) ) ) {
 			return;
 		}
 
@@ -420,6 +430,8 @@ class WC_Subscriptions_Admin {
 			}
 		}
 
+		// To prevent running this function on multiple save_post triggered events per update. Similar to WC_Admin_Meta_Boxes:$saved_meta_boxes implementation.
+		self::$saved_product_meta = true;
 	}
 
 	/**
@@ -431,7 +443,7 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function save_variable_subscription_meta( $post_id ) {
 
-		if ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) || ! isset( $_POST['product-type'] ) || ! in_array( $_POST['product-type'], apply_filters( 'woocommerce_subscription_variable_product_types', array( 'variable-subscription' ) ) ) ) {
+		if ( self::$saved_product_meta || ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) || ! isset( $_POST['product-type'] ) || ! in_array( $_POST['product-type'], apply_filters( 'woocommerce_subscription_variable_product_types', array( 'variable-subscription' ) ) ) ) ) {
 			return;
 		}
 
@@ -441,6 +453,8 @@ class WC_Subscriptions_Admin {
 
 		update_post_meta( $post_id, '_subscription_one_time_shipping', stripslashes( isset( $_REQUEST['_subscription_one_time_shipping'] ) ? 'yes' : 'no' ) );
 
+		// To prevent running this function on multiple save_post triggered events per update. Similar to WC_Admin_Meta_Boxes:$saved_meta_boxes implementation.
+		self::$saved_product_meta = true;
 	}
 
 	/**
@@ -458,8 +472,8 @@ class WC_Subscriptions_Admin {
 
 		$price_changed = false;
 
-		$old_regular_price = $product->regular_price;
-		$old_sale_price    = $product->sale_price;
+		$old_regular_price = $product->get_regular_price();
+		$old_sale_price    = $product->get_sale_price();
 
 		if ( ! empty( $_REQUEST['change_regular_price'] ) ) {
 
@@ -490,9 +504,8 @@ class WC_Subscriptions_Admin {
 
 			if ( isset( $new_price ) && $new_price != $old_regular_price ) {
 				$price_changed = true;
-				update_post_meta( $product->id, '_regular_price', $new_price );
-				update_post_meta( $product->id, '_subscription_price', $new_price );
-				$product->regular_price = $new_price;
+				wcs_set_objects_property( $product, 'regular_price', $new_price );
+				wcs_set_objects_property( $product, 'subscription_price', $new_price );
 			}
 		}
 
@@ -524,33 +537,31 @@ class WC_Subscriptions_Admin {
 				case 4 :
 					if ( strstr( $sale_price, '%' ) ) {
 						$percent = str_replace( '%', '', $sale_price ) / 100;
-						$new_price = $product->regular_price - ( $product->regular_price * $percent );
+						$new_price = $product->get_regular_price() - ( $product->get_regular_price() * $percent );
 					} else {
-						$new_price = $product->regular_price - $sale_price;
+						$new_price = $product->get_regular_price() - $sale_price;
 					}
 				break;
 			}
 
 			if ( isset( $new_price ) && $new_price != $old_sale_price ) {
 				$price_changed = true;
-				update_post_meta( $product->id, '_sale_price', $new_price );
-				$product->sale_price = $new_price;
+				wcs_set_objects_property( $product, 'sale_price', $new_price );
 			}
 		}
 
 		if ( $price_changed ) {
-			update_post_meta( $product->id, '_sale_price_dates_from', '' );
-			update_post_meta( $product->id, '_sale_price_dates_to', '' );
+			wcs_set_objects_property( $product, 'sale_price_dates_from', '' );
+			wcs_set_objects_property( $product, 'sale_price_dates_to', '' );
 
-			if ( $product->regular_price < $product->sale_price ) {
-				$product->sale_price = '';
-				update_post_meta( $product->id, '_sale_price', '' );
+			if ( $product->get_regular_price() < $product->get_sale_price() ) {
+				wcs_set_objects_property( $product, 'sale_price', '' );
 			}
 
-			if ( $product->sale_price ) {
-				update_post_meta( $product->id, '_price', $product->sale_price );
+			if ( $product->get_sale_price() ) {
+				wcs_set_objects_property( $product, 'price', $product->get_sale_price() );
 			} else {
-				update_post_meta( $product->id, '_price', $product->regular_price );
+				wcs_set_objects_property( $product, 'price', $product->get_regular_price() );
 			}
 		}
 	}
@@ -565,77 +576,71 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function process_product_meta_variable_subscription( $post_id ) {
 
-		if ( ! WC_Subscriptions_Product::is_subscription( $post_id ) || empty( $_POST['_wcsnonce_save_variations'] ) || ! wp_verify_nonce( $_POST['_wcsnonce_save_variations'], 'wcs_subscription_variations' ) ) {
+		if ( ! WC_Subscriptions_Product::is_subscription( $post_id ) || empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) ) {
 			return;
 		}
 
 		// Make sure WooCommerce calculates correct prices
 		$_POST['variable_regular_price'] = isset( $_POST['variable_subscription_price'] ) ? $_POST['variable_subscription_price'] : 0;
 
-		// Run WooCommerce core saving routine for WC < 2.4
-		if ( ! is_ajax() ) {
-			WC_Meta_Box_Product_Data::save_variations( $post_id, get_post( $post_id ) );
+		// Sync the min variation price
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+			$variable_subscription = wc_get_product( $post_id );
+			$variable_subscription->variable_product_sync();
+		} else {
+			WC_Product_Variable::sync( $post_id );
 		}
+	}
 
-		if ( ! isset( $_REQUEST['variable_post_id'] ) ) {
+	/**
+	 * Save meta info for subscription variations
+	 *
+	 * @param int $variation_id
+	 * @param int $i
+	 * return void
+	 * @since 2.0
+	 */
+	public static function save_product_variation( $variation_id, $index ) {
+
+		if ( ! WC_Subscriptions_Product::is_subscription( $variation_id ) || empty( $_POST['_wcsnonce_save_variations'] ) || ! wp_verify_nonce( $_POST['_wcsnonce_save_variations'], 'wcs_subscription_variations' ) ) {
 			return;
 		}
 
-		$variable_post_ids = $_POST['variable_post_id'];
-
-		$max_loop = max( array_keys( $variable_post_ids ) );
-
-		// Save each variations details
-		for ( $i = 0; $i <= $max_loop; $i ++ ) {
-
-			if ( ! isset( $variable_post_ids[ $i ] ) ) {
-				continue;
-			}
-
-			$variation_id = absint( $variable_post_ids[ $i ] );
-
-			if ( isset( $_POST['variable_subscription_price'] ) && is_array( $_POST['variable_subscription_price'] ) ) {
-				$subscription_price = wc_format_decimal( $_POST['variable_subscription_price'][ $i ] );
-				update_post_meta( $variation_id, '_subscription_price', $subscription_price );
-				update_post_meta( $variation_id, '_regular_price', $subscription_price );
-			}
-
-			// Make sure trial period is within allowable range
-			$subscription_ranges = wcs_get_subscription_ranges();
-
-			$max_trial_length = count( $subscription_ranges[ $_POST['variable_subscription_trial_period'][ $i ] ] ) - 1;
-
-			$_POST['variable_subscription_trial_length'][ $i ] = absint( $_POST['variable_subscription_trial_length'][ $i ] );
-
-			if ( $_POST['variable_subscription_trial_length'][ $i ] > $max_trial_length ) {
-				$_POST['variable_subscription_trial_length'][ $i ] = $max_trial_length;
-			}
-
-			// Work around a WPML bug which means 'variable_subscription_trial_period' is not set when using "Edit Product" as the product translation interface
-			if ( $_POST['variable_subscription_trial_length'][ $i ] < 0 ) {
-				$_POST['variable_subscription_trial_length'][ $i ] = 0;
-			}
-
-			$subscription_fields = array(
-				'_subscription_sign_up_fee',
-				'_subscription_period',
-				'_subscription_period_interval',
-				'_subscription_length',
-				'_subscription_trial_period',
-				'_subscription_trial_length',
-			);
-
-			foreach ( $subscription_fields as $field_name ) {
-				if ( isset( $_POST[ 'variable' . $field_name ][ $i ] ) ) {
-					update_post_meta( $variation_id, $field_name, wc_clean( $_POST[ 'variable' . $field_name ][ $i ] ) );
-				}
-			}
+		if ( isset( $_POST['variable_subscription_price'][ $index ] ) ) {
+			$subscription_price = wc_format_decimal( $_POST['variable_subscription_price'][ $index ] );
+			update_post_meta( $variation_id, '_subscription_price', $subscription_price );
+			update_post_meta( $variation_id, '_regular_price', $subscription_price );
 		}
 
-		// Now that all the variation's meta is saved, sync the min variation price
-		$variable_subscription = wc_get_product( $post_id );
-		$variable_subscription->variable_product_sync();
+		// Make sure trial period is within allowable range
+		$subscription_ranges = wcs_get_subscription_ranges();
+		$max_trial_length    = count( $subscription_ranges[ $_POST['variable_subscription_trial_period'][ $index ] ] ) - 1;
 
+		$_POST['variable_subscription_trial_length'][ $index ] = absint( $_POST['variable_subscription_trial_length'][ $index ] );
+
+		if ( $_POST['variable_subscription_trial_length'][ $index ] > $max_trial_length ) {
+			$_POST['variable_subscription_trial_length'][ $index ] = $max_trial_length;
+		}
+
+		// Work around a WPML bug which means 'variable_subscription_trial_period' is not set when using "Edit Product" as the product translation interface
+		if ( $_POST['variable_subscription_trial_length'][ $index ] < 0 ) {
+			$_POST['variable_subscription_trial_length'][ $index ] = 0;
+		}
+
+		$subscription_fields = array(
+			'_subscription_sign_up_fee',
+			'_subscription_period',
+			'_subscription_period_interval',
+			'_subscription_length',
+			'_subscription_trial_period',
+			'_subscription_trial_length',
+		);
+
+		foreach ( $subscription_fields as $field_name ) {
+			if ( isset( $_POST[ 'variable' . $field_name ][ $index ] ) ) {
+				update_post_meta( $variation_id, $field_name, wc_clean( $_POST[ 'variable' . $field_name ][ $index ] ) );
+			}
+		}
 	}
 
 	/**
@@ -657,10 +662,9 @@ class WC_Subscriptions_Admin {
 	public static function check_customer_is_set( $old_status, $new_status, $subscription ) {
 		global $post;
 
-		if ( is_admin() && 'active' == $new_status && ! empty( $post ) && 'shop_subscription' === $post->post_type ) {
+		if ( is_admin() && 'active' == $new_status && isset( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) && isset( $_POST['customer_user'] ) && ! empty( $post ) && 'shop_subscription' === $post->post_type ) {
 
-			$customer_user = ( isset( $_POST['customer_user'] ) ) ? sanitize_text_field( $_POST['customer_user'] ) : ''; // csrf in core wp save post function
-			$user          = new WP_User( $customer_user );
+			$user = new WP_User( absint( $_POST['customer_user'] ) );
 
 			if ( 0 === $user->ID ) {
 				throw new Exception( sprintf( __( 'Unable to change subscription status to "%s". Please assign a customer to the subscription to activate it.', 'woocommerce-subscriptions' ), $new_status ) );
@@ -1123,7 +1127,7 @@ class WC_Subscriptions_Admin {
 				'default'       => 0,
 				'type'          => 'select',
 				'options'       => apply_filters( 'woocommerce_subscriptions_max_customer_suspension_range', array_merge( range( 0, 12 ), array( 'unlimited' => 'Unlimited' ) ) ),
-				'desc_tip'      => __( 'Set a maximum number of times a customer can suspend their account for each billing period. For example, for a value of 3 and a subscription billed yearly, if the customer has suspended their account 3 times, they will not be presented with the option to suspend their account until the next year. Store managers will always be able able to suspend an active subscription. Set this to 0 to turn off the customer suspension feature completely.', 'woocommerce-subscriptions' ),
+				'desc_tip'      => __( 'Set a maximum number of times a customer can suspend their account for each billing period. For example, for a value of 3 and a subscription billed yearly, if the customer has suspended their account 3 times, they will not be presented with the option to suspend their account until the next year. Store managers will always be able to suspend an active subscription. Set this to 0 to turn off the customer suspension feature completely.', 'woocommerce-subscriptions' ),
 			),
 
 			array(
@@ -1381,12 +1385,37 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
+	 * Renders the Subscription information in the WC status page
+	 */
+	public static function render_system_status_items() {
+		$debug_data   = array();
+		$is_wcs_debug = defined( 'WCS_DEBUG' ) ? WCS_DEBUG : false;
+
+		$debug_data['wcs_debug'] = array(
+			'name'    => _x( 'WCS_DEBUG', 'label that indicates whether debugging is turned on for the plugin', 'woocommerce-subscriptions' ),
+			'note'    => ( $is_wcs_debug ) ? __( 'Yes', 'woocommerce-subscriptions' ) :  __( 'No', 'woocommerce-subscriptions' ),
+			'success' => $is_wcs_debug ? 0 : 1,
+		);
+
+		$debug_data['wcs_staging'] = array(
+			'name'    => _x( 'Subscriptions Mode', 'Live or Staging, Label on WooCommerce -> System Status page', 'woocommerce-subscriptions' ),
+			'note'    => '<strong>' . ( ( WC_Subscriptions::is_duplicate_site() ) ? _x( 'Staging', 'refers to staging site', 'woocommerce-subscriptions' ) :  _x( 'Live', 'refers to live site', 'woocommerce-subscriptions' ) ) . '</strong>',
+			'success' => ( WC_Subscriptions::is_duplicate_site() ) ? 0 : 1,
+		);
+
+		$debug_data = apply_filters( 'wcs_system_status', $debug_data );
+
+		include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/status.php' );
+	}
+
+	/**
 	 * Adds Subscriptions specific details to the WooCommerce System Status report.
 	 *
 	 * @param array $attributes Shortcode attributes.
 	 * @return array
 	 */
 	public static function add_system_status_items( $debug_data ) {
+		_deprecated_function( __METHOD__, '2.2.2', __CLASS__ . '::render_system_status_items()' );
 
 		$is_wcs_debug = defined( 'WCS_DEBUG' ) ? WCS_DEBUG : false;
 
