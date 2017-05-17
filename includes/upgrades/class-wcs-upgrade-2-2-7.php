@@ -53,7 +53,7 @@ class WCS_Upgrade_2_2_7 {
 				$end_time = $subscription->get_time( 'end' );
 
 				if ( 0 == $end_time ) {
-					WCS_Upgrade_Logger::add( sprintf( 'Subscription %d doesn\'t have an end date - skipping', $subscription_id ) );
+					self::log( sprintf( 'Subscription %d doesn\'t have an end date - skipping', $subscription_id ) );
 					update_post_meta( $subscription_id, '_wcs_2_2_7_repaired', 'false' );
 					continue;
 				}
@@ -61,7 +61,7 @@ class WCS_Upgrade_2_2_7 {
 				// End date is in the past, this was likely because the end of prepaid term hook wasn't scheduled - cancel the subscription now
 				if ( gmdate( 'U' ) > $end_time ) {
 
-					WCS_Upgrade_Logger::add( sprintf( 'Subscription %d end date is in the past - cancelling now', $subscription_id ) );
+					self::log( sprintf( 'Subscription %d end date is in the past - cancelling now', $subscription_id ) );
 
 					$subscription->update_status( 'cancelled', __( 'Subscription end date in the past', 'woocommerce-subscriptions' ) );
 				} else {
@@ -70,10 +70,10 @@ class WCS_Upgrade_2_2_7 {
 
 					// If there isn't a scheduled end of prepaid term, schedule one now.
 					if ( false == $scheduled_action ) {
-						WCS_Upgrade_Logger::add( sprintf( 'Subscription %d missing scheduled end of prepaid term action - scheduled new action (end timestamp: %d)', $subscription_id, $end_time ) );
+						self::log( sprintf( 'Subscription %d missing scheduled end of prepaid term action - scheduled new action (end timestamp: %d)', $subscription_id, $end_time ) );
 						wc_schedule_single_action( $end_time, $end_of_prepaid_term_hook, $action_args );
 					} else {
-						WCS_Upgrade_Logger::add( sprintf( 'Subscription %d has a scheduled end of prepaid term action - there\'s nothing to do here', $subscription_id ) );
+						self::log( sprintf( 'Subscription %d has a scheduled end of prepaid term action - there\'s nothing to do here', $subscription_id ) );
 					}
 				}
 
@@ -81,7 +81,7 @@ class WCS_Upgrade_2_2_7 {
 				update_post_meta( $subscription_id, '_wcs_2_2_7_repaired', 'true' );
 
 			} catch ( Exception $e ) {
-				WCS_Upgrade_Logger::add( sprintf( '--- Exception caught repairing subscription %d - exception message: %s ---', $subscription_id, $e->getMessage() ) );
+				self::log( sprintf( '--- Exception caught repairing subscription %d - exception message: %s ---', $subscription_id, $e->getMessage() ) );
 				update_post_meta( $subscription_id, '_wcs_2_2_7_repaired', 'false' );
 			}
 		}
@@ -93,7 +93,7 @@ class WCS_Upgrade_2_2_7 {
 		if ( count( $subscriptions_to_repair ) == self::$batch_size ) {
 			self::schedule_end_of_prepaid_term_repair();
 		} else {
-			WCS_Upgrade_Logger::add( '2.2.7 repair missing end of prepaid terms complete' );
+			self::log( '2.2.7 repair missing end of prepaid terms complete' );
 		}
 	}
 
@@ -118,5 +118,15 @@ class WCS_Upgrade_2_2_7 {
 		) );
 
 		return $subscriptions_to_repair;
+	}
+
+	/**
+	 * Add a message to the wcs-upgrade-end-of-prepaid-term-repair log
+	 *
+	 * @param string The message to be logged
+	 * @since 2.2.7
+	 */
+	protected static function log( $message ) {
+		WCS_Upgrade_Logger::add( $message, 'wcs-upgrade-end-of-prepaid-term-repair' );
 	}
 }
