@@ -41,10 +41,16 @@ class WCS_Upgrade_2_2_7 {
 
 		// Unhook emails to prevent a bunch of Cancelled Subscription emails being sent to Admin
 		remove_action( 'woocommerce_subscription_status_updated', 'WC_Subscriptions_Email::send_cancelled_email', 10 );
+
 		foreach ( $subscriptions_to_repair as $subscription_id ) {
 			try {
 				$subscription = wcs_get_subscription( $subscription_id );
-				$end_time     = $subscription->get_time( 'end' );
+
+				if ( false === $subscription ) {
+					throw new Exception( 'Failed to instantiate subscription object' );
+				}
+
+				$end_time = $subscription->get_time( 'end' );
 
 				if ( 0 == $end_time ) {
 					WCS_Upgrade_Logger::add( sprintf( 'Subscription %d doesn\'t have an end date - skipping', $subscription_id ) );
