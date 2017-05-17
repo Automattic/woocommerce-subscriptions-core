@@ -169,22 +169,27 @@ class WCS_My_Account_Payment_Methods {
 			foreach ( $subscriptions as $subscription ) {
 				$subscription = wcs_get_subscription( $subscription );
 
+				if ( empty( $subscription ) ) {
+					continue;
+				}
+
 				// Attempt to find the token meta key if we haven't already found it.
 				if ( empty( $token_meta_key ) ) {
-
 					$payment_method_meta = apply_filters( 'woocommerce_subscription_payment_meta', array(), $subscription );
+
 					if ( is_array( $payment_method_meta ) && isset( $payment_method_meta[ $deleted_token->get_gateway_id() ] ) && is_array( $payment_method_meta[ $deleted_token->get_gateway_id() ] ) ) {
 						foreach ( $payment_method_meta[ $deleted_token->get_gateway_id() ] as $meta_table => $meta ) {
 							foreach ( $meta as $meta_key => $meta_data ) {
-								if ( $deleted_token->get_token() == $meta_data['value'] ) {
+								if ( $deleted_token->get_token() === $meta_data['value'] ) {
 									$token_meta_key = $meta_key;
+									break 2;
 								}
 							}
 						}
 					}
 				}
 
-				$updated = update_post_meta( $subscription->id, $token_meta_key, $new_token->get_token(), $deleted_token->get_token() );
+				$updated = update_post_meta( $subscription->get_id(), $token_meta_key, $new_token->get_token(), $deleted_token->get_token() );
 
 				if ( $updated ) {
 					$subscription->add_order_note( sprintf( _x( 'Payment method meta updated after customer deleted a token from their My Account page. Payment meta changed from %1$s to %2$s', 'used in subscription note', 'woocommerce-subscriptions' ), $deleted_token->get_token(), $new_token->get_token() ) );
