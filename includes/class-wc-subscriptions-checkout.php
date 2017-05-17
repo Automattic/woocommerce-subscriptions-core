@@ -11,8 +11,6 @@
  */
 class WC_Subscriptions_Checkout {
 
-	private static $signup_option_changed = false;
-
 	private static $guest_checkout_option_changed = false;
 
 	/**
@@ -389,28 +387,14 @@ class WC_Subscriptions_Checkout {
 
 		if ( WC_Subscriptions_Cart::cart_contains_subscription() && ! is_user_logged_in() ) {
 
-			// Make sure users can sign up
-			if ( false === $checkout->enable_signup ) {
-				$checkout->enable_signup = true;
-				self::$signup_option_changed = true;
-			}
-
 			// Make sure users are required to register an account
 			if ( true === $checkout->enable_guest_checkout ) {
 				$checkout->enable_guest_checkout = false;
 				self::$guest_checkout_option_changed = true;
 
-				if ( ! is_user_logged_in() ) {
-					$checkout->must_create_account = true;
-				}
+				$checkout->must_create_account = true;
 			}
 		}
-
-		if ( ! get_option( 'users_can_register' ) && true === $checkout->enable_signup ) {
-			self::$signup_option_changed = true;
-			$checkout->enable_signup = false;
-		}
-
 	}
 
 	/**
