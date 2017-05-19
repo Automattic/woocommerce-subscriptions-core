@@ -118,7 +118,7 @@ class WCS_PayPal_Reference_Transaction_IPN_Handler extends WCS_PayPal_Standard_I
 			$subscription = wcs_get_subscription( $subscription_id );
 
 			// Only cancel valid subscriptions using PayPal as the payment method that have not yet been ended
-			if ( false == $subscription || $subscription->is_manual() || 'paypal' != $subscription->get_payment_method() || $subscription->has_status( wcs_get_subscription_ended_statuses() ) {
+			if ( false == $subscription || $subscription->is_manual() || 'paypal' != $subscription->get_payment_method() || $subscription->has_status( wcs_get_subscription_ended_statuses() ) ) {
 				continue;
 			}
 
