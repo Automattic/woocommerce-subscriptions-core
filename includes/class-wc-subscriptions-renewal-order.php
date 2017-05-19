@@ -118,7 +118,6 @@ class WC_Subscriptions_Renewal_Order {
 				if ( 'failed' === $orders_old_status ) {
 					do_action( 'woocommerce_subscriptions_paid_for_failed_renewal_order', wc_get_order( $order_id ), $subscription );
 				}
-
 			} elseif ( 'failed' == $orders_new_status ) {
 				$subscription->payment_failed();
 			}
