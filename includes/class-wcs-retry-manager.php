@@ -55,6 +55,8 @@ class WCS_Retry_Manager {
 			add_action( 'woocommerce_subscription_renewal_payment_failed', __CLASS__ . '::maybe_apply_retry_rule', 10, 2 );
 
 			add_action( 'woocommerce_scheduled_subscription_payment_retry', __CLASS__ . '::maybe_retry_payment' );
+
+			add_action( 'woocommerce_subscriptions_paid_for_pending_retry', __CLASS__ . '::maybe_change_failing_payment_method', 10, 2 );
 		}
 	}
 
@@ -320,6 +322,18 @@ class WCS_Retry_Manager {
 			}
 
 			do_action( 'woocommerce_subscriptions_after_payment_retry', $last_retry, $last_order );
+		}
+	}
+
+	/**
+	*
+	*/
+	public static function maybe_change_failing_payment_method( $order_id, $subscription ) {
+
+		$last_retry = self::store()->get_last_retry_for_order( $order_id );
+
+		if ( null !== $last_retry && 'pending' === $last_retry->get_status() ) {
+			do_action( 'woocommerce_subscriptions_paid_for_failed_renewal_order', wc_get_order( $order_id ), $subscription );
 		}
 	}
 
