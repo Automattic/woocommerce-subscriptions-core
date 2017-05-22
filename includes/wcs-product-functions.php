@@ -411,6 +411,8 @@ function wcs_calculate_min_max_variations( $variations_data ) {
 		$subscription_details_identical = false;
 	} elseif ( sizeof( array_unique( $variations_data_lengths_list ) ) > 1 ) {
 		$subscription_details_identical = false;
+	} else {
+		$subscription_details_identical = true;
 	}
 
 	return array(
