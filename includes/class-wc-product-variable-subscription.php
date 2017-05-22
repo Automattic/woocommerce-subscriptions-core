@@ -86,7 +86,7 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 		$tax_display_mode = get_option( 'woocommerce_tax_display_shop' );
 
 		// Are the subscription details of all variations identical?
-		$child_variation_ids = array_keys( $prices );
+		$child_variation_ids = array_keys( $prices['price'] );
 		$variation_hash      = md5( json_encode( $child_variation_ids ) );
 
 		if ( empty( $this->min_max_variation_data[ $variation_hash ] ) ) {
