@@ -172,7 +172,11 @@ function wcs_get_users_subscriptions( $user_id = 0 ) {
 		) );
 
 		foreach ( $post_ids as $post_id ) {
-			$subscriptions[ $post_id ] = wcs_get_subscription( $post_id );
+			$subscription = wcs_get_subscription( $post_id );
+
+			if ( $subscription ) {
+				$subscriptions[ $post_id ] = $subscription;
+			}
 		}
 	}
 
