@@ -52,12 +52,6 @@ class WCS_Upgrade_2_2_7 {
 
 				$end_time = $subscription->get_time( 'end' );
 
-				if ( 0 == $end_time ) {
-					self::log( sprintf( 'Subscription %d doesn\'t have an end date - skipping', $subscription_id ) );
-					update_post_meta( $subscription_id, '_wcs_2_2_7_repaired', 'false' );
-					continue;
-				}
-
 				// End date is in the past, this was likely because the end of prepaid term hook wasn't scheduled - cancel the subscription now
 				if ( gmdate( 'U' ) > $end_time ) {
 
