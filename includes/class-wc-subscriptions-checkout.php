@@ -429,11 +429,6 @@ class WC_Subscriptions_Checkout {
 	 */
 	public static function restore_checkout_registration_settings( $checkout = '' ) {
 
-		if ( self::$signup_option_changed ) {
-			// It was changed before, let's revert the change (whatever it is now)
-			$checkout->enable_signup = ! $checkout->enable_signup;
-		}
-
 		if ( self::$guest_checkout_option_changed ) {
 			$checkout->enable_guest_checkout = true;
 			if ( ! is_user_logged_in() ) { // Also changed must_create_account
