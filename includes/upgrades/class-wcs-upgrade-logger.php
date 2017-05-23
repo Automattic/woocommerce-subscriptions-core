@@ -33,11 +33,13 @@ class WCS_Upgrade_Logger {
 	 *
 	 * @param string $message
 	 */
-	public static function add( $message ) {
+	public static function add( $message, $handle = '' ) {
+		$handle = ( '' === $handle ) ? self::$handle : $handle;
+
 		if ( empty( self::$log ) ) {
 			self::$log = new WC_Logger(); // can't use __get() no a static property unfortunately
 		}
-		self::$log->add( self::$handle, $message );
+		self::$log->add( $handle, $message );
 	}
 
 	/**
