@@ -56,7 +56,7 @@ class WCS_Retry_Manager {
 
 			add_action( 'woocommerce_scheduled_subscription_payment_retry', __CLASS__ . '::maybe_retry_payment' );
 
-			add_action( 'woocommerce_subscriptions_paid_for_pending_retry', __CLASS__ . '::maybe_change_failing_payment_method', 10, 2 );
+			add_action( 'woocommerce_subscriptions_paid_for_pending_retry', __CLASS__ . '::maybe_change_failing_payment_method', 10, 3 );
 		}
 	}
 
@@ -326,13 +326,15 @@ class WCS_Retry_Manager {
 	}
 
 	/**
+	* Calls hook to set renewal order as paid when it had previously failed if the order has a retry
 	*
+	* @since 2.2.7
 	*/
-	public static function maybe_change_failing_payment_method( $order_id, $subscription ) {
+	public static function maybe_change_failing_payment_method( $order_id, $order_status, $subscription ) {
 
 		$last_retry = self::store()->get_last_retry_for_order( $order_id );
 
-		if ( null !== $last_retry && 'pending' === $last_retry->get_status() ) {
+		if ( null !== $last_retry && $order_status === $last_retry->get_rule()->get_status_to_apply( 'order' ) ) {
 			do_action( 'woocommerce_subscriptions_paid_for_failed_renewal_order', wc_get_order( $order_id ), $subscription );
 		}
 	}

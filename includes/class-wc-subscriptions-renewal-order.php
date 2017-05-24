@@ -106,8 +106,9 @@ class WC_Subscriptions_Renewal_Order {
 			// Do we need to activate a subscription?
 			if ( $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( 'active' ) ) {
 
-				if ( 'pending' === $orders_old_status ) {
-					do_action( 'woocommerce_subscriptions_paid_for_pending_retry', $order_id, $subscription );
+				// Included here because calling payment_complete sets the retry status to 'cancelled'
+				if ( 'failed' !== $orders_old_status ) {
+					do_action( 'woocommerce_subscriptions_paid_for_pending_retry', $order_id, $orders_old_status, $subscription );
 				}
 
 				if ( $order_needed_payment ) {
