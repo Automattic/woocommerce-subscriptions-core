@@ -35,9 +35,6 @@ class WCS_Cart_Renewal {
 		// Remove order action buttons from the My Account page
 		add_filter( 'woocommerce_my_account_my_orders_actions', array( &$this, 'filter_my_account_my_orders_actions' ), 10, 2 );
 
-		// Update customer's address on the subscription if it is changed during renewal
-		add_filter( 'woocommerce_checkout_update_customer_data', array( &$this, 'maybe_update_subscription_customer_data' ), 10, 2 );
-
 		// When a failed renewal order is paid for via checkout, make sure WC_Checkout::create_order() preserves its "failed" status until it is paid
 		add_filter( 'woocommerce_default_order_status', array( &$this, 'maybe_preserve_order_status' ) );
 
@@ -65,6 +62,8 @@ class WCS_Cart_Renewal {
 			// When a renewal order's line items are being updated, update the line item IDs stored in cart data.
 			add_action( 'woocommerce_add_order_item_meta', array( &$this, 'update_line_item_cart_data' ), 10, 3 );
 
+			add_filter( 'woocommerce_checkout_update_customer_data', array( &$this, 'maybe_update_subscription_customer_data' ), 10, 2 );
+
 		} else {
 
 			// For order items created as part of a renewal, keep a record of the cart item key so that we can match it later once the order item has been saved and has an ID
@@ -75,6 +74,9 @@ class WCS_Cart_Renewal {
 
 			// Don't display cart item key meta stored above on the Edit Order screen
 			add_action( 'woocommerce_hidden_order_itemmeta', array( &$this, 'hidden_order_itemmeta' ), 10 );
+
+			// Update customer's address on the subscription if it is changed during renewal
+			add_filter( 'woocommerce_checkout_update_user_meta', array( &$this, 'maybe_update_subscription_address_data' ), 10, 2 );
 		}
 	}
 
@@ -1106,6 +1108,39 @@ class WCS_Cart_Renewal {
 		}
 
 		return $hidden_meta_keys;
+	}
+
+	/**
+	 * When completing checkout for a subscription renewal, update the subscription's address to match
+	 * the shipping/billing address entered on checkout.
+	 *
+	 * @param int $customer_id
+	 * @param array $checkout_data the posted checkout data
+	 * @since 2.2.7
+	 */
+	public function maybe_update_subscription_address_data( $customer_id, $checkout_data ) {
+		$cart_renewal_item = $this->cart_contains();
+
+		if ( false !== $cart_renewal_item ) {
+			$subscription    = wcs_get_subscription( $cart_renewal_item[ $this->cart_item_key ]['subscription_id'] );
+			$billing_address = $shipping_address = array();
+
+			foreach ( array( 'billing', 'shipping' ) as $address_type ) {
+				$checkout_fields = WC()->checkout()->get_checkout_fields( $address_type );
+
+				if ( is_array( $checkout_fields ) ) {
+					foreach ( array_keys( $checkout_fields ) as $field ) {
+						if ( isset( $checkout_data[ $field ] ) ) {
+							$field_name = str_replace( $address_type. '_', '', $field );
+							${$address_type . '_address'}[ $field_name ] = $checkout_data[ $field ];
+						}
+					}
+				}
+			}
+
+			$subscription->set_address( $billing_address, 'billing' );
+			$subscription->set_address( $shipping_address, 'shipping' );
+		}
 	}
 
 	/* Deprecated */
