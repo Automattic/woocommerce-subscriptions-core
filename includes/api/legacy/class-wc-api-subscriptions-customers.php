@@ -73,6 +73,10 @@ class WC_API_Subscriptions_Customers extends WC_API_Customers {
 
 		if ( ! empty( $subscriptions['subscriptions'] ) && is_array( $subscriptions['subscriptions'] ) ) {
 			foreach ( $subscriptions['subscriptions'] as $subscription ) {
+				if ( isset( $subscription['billing_schedule']['interval'] ) ) { // make sure the interval is not a string to fully support backwards compat.
+					$subscription['billing_schedule']['interval'] = intval( $subscription['billing_schedule']['interval'] );
+				}
+
 				$customer_subscriptions[] = array( 'subscription' => $subscription );
 				$subscription_ids[]       = $subscription['id'];
 			}
