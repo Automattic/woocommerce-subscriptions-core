@@ -33,7 +33,7 @@ function wcs_get_price_including_tax( $product, $args = array() ) {
 		$filter = 'woocommerce_get_price';
 	}
 
-	return apply_filters( $filter, $price , $product );
+	return apply_filters( $filter, (float) $price , $product );
 }
 
 /**
@@ -59,7 +59,7 @@ function wcs_get_price_excluding_tax( $product, $args = array() ) {
 		$filter = 'woocommerce_get_price';
 	}
 
-	return apply_filters( $filter, $price , $product );
+	return apply_filters( $filter, (float) $price , $product );
 }
 
 /**
