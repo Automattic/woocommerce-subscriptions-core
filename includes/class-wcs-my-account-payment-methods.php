@@ -5,14 +5,17 @@
  * @package  WooCommerce Subscriptions
  * @category Class
  * @author   Prospress
- * @since    2.1.4
+ * @since    2.2.7
  */
 class WCS_My_Account_Payment_Methods {
+
+	/* A cache of a customer's payment tokens to avoid running multiple queries in the same request */
+	protected static $customer_tokens = array();
 
 	/**
 	 * Initialize filters and hooks for class.
 	 *
-	 * @since 2.1.4
+	 * @since 2.2.7
 	 */
 	public static function init() {
 
@@ -29,22 +32,24 @@ class WCS_My_Account_Payment_Methods {
 	 * @param  array data about the token including a list of actions which can be triggered by the customer from their my account page
 	 * @param  WC_Payment_Token payment token object
 	 * @return array payment token data
-	 * @since  2.1.4
+	 * @since  2.2.7
 	 */
 	public static function flag_subscription_payment_token_deletions( $payment_token_data, $payment_token ) {
 
 		if ( $payment_token instanceof WC_Payment_Token && isset( $payment_token_data['actions']['delete']['url'] ) ) {
 
-			$user_subscriptions = self::get_subscriptions_by_token( $payment_token );
+			if ( 0 < count( self::get_subscriptions_by_token( $payment_token ) ) ) {
+				if ( self::customer_has_alternative_token( $payment_token ) ) {
+					$delete_subscription_token_args = array(
+						'delete_subscription_token' => $payment_token->get_id(),
+						'wcs_nonce'                 => wp_create_nonce( 'delete_subscription_token_' . $payment_token->get_id() ),
+					);
 
-			if ( 0 < count( $user_subscriptions ) ) {
-				$delete_subscription_token_args = array(
-					'delete_subscription_token' => $payment_token->get_id(),
-					'wcs_nonce'                 => wp_create_nonce( 'delete_subscription_token_' . $payment_token->get_id() ),
-					'delete_url'                => $payment_token_data['actions']['delete']['url'],
-				);
-
-				$payment_token_data['actions']['delete']['url'] = add_query_arg( $delete_subscription_token_args, wc_get_account_endpoint_url( 'payment-methods' ) );
+					$payment_token_data['actions']['delete']['url'] = add_query_arg( $delete_subscription_token_args, $payment_token_data['actions']['delete']['url'] );
+				} else {
+					// Cannot delete a token used for active subscriptions where there is no alternative
+					unset( $payment_token_data['actions']['delete'] );
+				}
 			}
 		}
 
@@ -58,7 +63,7 @@ class WCS_My_Account_Payment_Methods {
 	 *
 	 * @param int The deleted token id
 	 * @param WC_Payment_Token The deleted token object
-	 * @since 2.1.4
+	 * @since 2.2.7
 	 */
 	public static function maybe_update_subscriptions_payment_meta( $deleted_token_id, $deleted_token ) {
 
@@ -115,7 +120,7 @@ class WCS_My_Account_Payment_Methods {
 	 *
 	 * @param  WC_Payment_Token payment token object
 	 * @return array subscription posts
-	 * @since  2.1.4
+	 * @since  2.2.7
 	 */
 	public static function get_subscriptions_by_token( $payment_token ) {
 
@@ -140,7 +145,7 @@ class WCS_My_Account_Payment_Methods {
 
 		$user_subscriptions = get_posts( array(
 			'post_type'      => 'shop_subscription',
-			'post_status'    => 'any',
+			'post_status'    => array( 'wc-pending', 'wc-active', 'wc-on-hold' ),
 			'meta_query'     => $meta_query,
 			'posts_per_page' => -1,
 		) );
@@ -153,7 +158,7 @@ class WCS_My_Account_Payment_Methods {
 	 *
 	 * @param  WC_Payment_Token payment token object
 	 * @return string WC_Payment_Token label
-	 * @since  2.1.4
+	 * @since  2.2.7
 	 */
 	public static function get_token_label( $token ) {
 
@@ -164,6 +169,60 @@ class WCS_My_Account_Payment_Methods {
 		}
 
 		return $label;
+	}
+
+	/**
+	 * Get a list of customer payment tokens. Caches results to avoid multiple database queries per request
+	 *
+	 * @param  string (optional) Gateway ID for getting tokens for a specific gateway.
+	 * @param  int (optional) The customer id - defaults to the current user.
+	 * @return array of WC_Payment_Token objects
+	 * @since  2.2.7
+	 */
+	public static function get_customer_tokens( $gateway_id = '', $customer_id = '' ) {
+		if ( '' === $customer_id ) {
+			$customer_id = get_current_user_id();
+		}
+
+		if ( ! isset( self::$customer_tokens[ $customer_id ][ $gateway_id ] ) ) {
+			self::$customer_tokens[ $customer_id ][ $gateway_id ] = WC_Payment_Tokens::get_customer_tokens( $customer_id, $gateway_id );
+		}
+
+		return self::$customer_tokens[ $customer_id ][ $gateway_id ];
+	}
+
+	/**
+	 * Get the customer's alternative token.
+	 *
+	 * @param  WC_Payment_Token the token to find an alternative for
+	 * @return WC_Payment_Token the customer's alternative token
+	 * @since  2.2.7
+	 */
+	public static function get_customers_alternative_token( $token ) {
+		$payment_tokens         = self::get_customer_tokens( $token->get_gateway_id(), $token->get_user_id() );
+		$alternative_token      = null;
+		$has_single_alternative = count( $payment_tokens ) === 2; // if there are 2 tokens in total there is only 1 other alternative
+
+		foreach ( $payment_tokens as $payment_token ) {
+			// if there is a default token which is different we can use it as an alternative.
+			if ( $payment_token->get_id() !== $token->get_id() && ( $payment_token->is_default() || $has_single_alternative ) ) {
+				$alternative_token = $payment_token;
+				break;
+			}
+		}
+
+		return $alternative_token;
+	}
+
+	/**
+	 * Determine if the customer has an alternative token.
+	 *
+	 * @param  WC_Payment_Token payment token object
+	 * @return bool
+	 * @since  2.2.7
+	 */
+	public static function customer_has_alternative_token( $token ) {
+		return self::get_customers_alternative_token( $token ) !== null;
 	}
 }
 WCS_My_Account_Payment_Methods::init();
