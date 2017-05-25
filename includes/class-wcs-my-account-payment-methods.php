@@ -19,7 +19,6 @@ class WCS_My_Account_Payment_Methods {
 		// Only hook class functions if the payment token object exists
 		if ( class_exists( 'WC_Payment_Token' ) ) {
 			add_filter( 'woocommerce_payment_methods_list_item', __CLASS__ . '::flag_subscription_payment_token_deletions', 10, 2 );
-			add_action( 'woocommerce_before_account_payment_methods', __CLASS__ . '::display_delete_token_warning', 10, 1 );
 			add_action( 'woocommerce_payment_token_deleted', __CLASS__ . '::maybe_update_subscriptions_payment_meta', 10, 2 );
 		}
 	}
@@ -50,95 +49,6 @@ class WCS_My_Account_Payment_Methods {
 		}
 
 		return $payment_token_data;
-	}
-
-	/**
-	 * Before deleting a subscription payment token, display a warning with possible options.
-	 *
-	 * @param bool Whether the customer has saved payment tokens or not
-	 * @since 2.1.4
-	 */
-	public static function display_delete_token_warning( $has_methods ) {
-
-		if ( $has_methods && isset( $_GET['delete_subscription_token'] ) && ! empty( $_GET['wcs_nonce'] ) && wp_verify_nonce( $_GET['wcs_nonce'], 'delete_subscription_token_' . $_GET['delete_subscription_token'] ) ) {
-
-			$token_id = $_GET['delete_subscription_token'];
-			$token    = WC_Payment_Tokens::get( $token_id );
-
-			if ( empty( $token ) ) {
-				$notice = esc_html__( 'We couldn\'t find the payment method token you are trying to delete. Please try again.', 'woocommerce-subscriptions' );
-				wc_print_notice( $notice, 'error' );
-				return;
-			}
-
-			$notice                 = esc_html__( 'This payment method is used for automatic subscription payments, deleting it may mean future subscription renewals will require manual payments.', 'woocommerce-subscriptions' );
-			$actions                = array();
-			$customer_tokens        = WC_Payment_Tokens::get_customer_tokens( $token->get_user_id(), $token->get_gateway_id() ); // Payment token objects only store 1 value, however, payment gateways will typically have 2 - the customer id and token. Because of this, we can only switch between the same gateway.
-			$has_single_alternative = count( $customer_tokens ) == 2;
-			$has_default_token      = false;
-			$default_token          = null;
-
-			foreach ( $customer_tokens as $payment_token ) {
-				if ( $payment_token->is_default() ) {
-					$has_default_token = true;
-					$default_token     = $payment_token;
-					break;
-				}
-			}
-
-			// If the customer has a single alternative or a default payment method we can offer to set it to.
-			if ( $has_single_alternative || ( $has_default_token && ! $token->is_default() ) ) {
-
-				$notice .= esc_html__( ' How would you like to proceed?', 'woocommerce-subscriptions' );
-				$actions['delete'] = array(
-					'url'  => $_GET['delete_url'],
-					'text' => esc_html_x( 'Delete token', 'user option when deleting a payment token from their my account page', 'woocommerce-subscriptions' ),
-				);
-
-				// If the customer has a default token and we're not deleting it, offer to switch to that
-				if ( $has_default_token && ! $token->is_default() ) {
-
-					$new_token = $default_token;
-					$actions['delete_and_update']['text'] = esc_html_x( 'Delete and update subscriptions to use default', 'user option when deleting a payment token from their my account page', 'woocommerce-subscriptions' );
-				} else {
-
-					// Get the only other token object (alternative)
-					$alternative_tokens           = array_diff_assoc( $customer_tokens, array( $token->get_id() => $token ) );
-					$new_token                    = reset( $alternative_tokens );
-					$actions['delete_and_update']['text'] = esc_html_x( 'Delete and update subscriptions to use alternative', 'user option when deleting a payment token from their my account page', 'woocommerce-subscriptions' );
-				}
-
-				$actions['delete_and_update']['url']   = add_query_arg( 'delete_and_update_subscription_token', $new_token->get_id(), $_GET['delete_url'] );
-				$actions['delete_and_update']['text'] .= ' <small>(' . self::get_token_label( $new_token ) . ')</small>';
-			} else {
-
-				$notice .= esc_html__( ' Do you wish to delete the payment method?', 'woocommerce-subscriptions' );
-				$actions = array(
-					'yes' => array(
-						'url' => $_GET['delete_url'],
-						'text' => esc_html_x( 'Yes', 'user option when deleting a payment token from their my account page', 'woocommerce-subscriptions' ),
-					),
-					'no'  => array(
-						'url' => wc_get_account_endpoint_url( 'payment-methods' ),
-						'text' => esc_html_x( 'No', 'user option when deleting a payment token from their my account page', 'woocommerce-subscriptions' ),
-					),
-				);
-			}
-
-			$notice .= '</br>';
-			$counter = count( $actions );
-
-			foreach ( $actions as $action ) {
-				$notice .= sprintf( '<a href="' . $action['url'] . '">%s</a>', $action['text'] );
-
-				// is not the last action
-				if ( 0 != --$counter ) {
-					$notice .= ' | ';
-				}
-			}
-
-			wc_print_notice( $notice, 'notice' );
-		}
 	}
 
 	/**
