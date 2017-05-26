@@ -83,8 +83,14 @@ class WCS_My_Account_Payment_Methods {
 			$notice_displayed = false;
 
 			if ( ! empty( $subscriptions ) ) {
-				wc_add_notice( sprintf( esc_html__( 'The deleted payment method was used for automatic subscription payments. To avoid failed renewal payments in future the subscriptions using this payment method have been updated to use %s.', 'woocommerce-subscriptions' ), self::get_token_label( $new_token ) ), 'notice' );
+				// translators: $1: the token/credit card label, 2$-3$: opening and closing strong and link tags
+				$notice = sprintf( esc_html__( 'The deleted payment method was used for automatic subscription payments. To avoid failed renewal payments in future the subscriptions using this payment method have been updated to use your %1$s. To change the payment method of individual subscriptions go to your %2$sMy Account > Subscriptions%3$s page.', 'woocommerce-subscriptions' ),
+					self::get_token_label( $new_token ),
+					'<a href="' . esc_url( wc_get_account_endpoint_url( get_option( 'woocommerce_myaccount_subscriptions_endpoint', 'subscriptions' ) ) ) . '"><strong>',
+					'</strong></a>'
+				);
 
+				wc_add_notice( $notice , 'notice' );
 				foreach ( $subscriptions as $subscription ) {
 					$subscription = wcs_get_subscription( $subscription );
 
