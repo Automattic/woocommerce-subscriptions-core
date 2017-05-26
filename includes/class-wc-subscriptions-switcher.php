@@ -979,7 +979,7 @@ class WC_Subscriptions_Switcher {
 		}
 
 		if ( is_array( $switched_subscriptions ) ) {
-			foreach ( $switched_subscriptions as $subscription ) {
+			foreach ( $switched_subscriptions as $subscription_id => $subscription ) {
 				wcs_set_objects_property( $subscription, 'relationship', __( 'Switched Subscription', 'woocommerce-subscriptions' ), 'set_prop_only' );
 				$orders[ $subscription_id ] = $subscription;
 			}
