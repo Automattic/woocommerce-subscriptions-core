@@ -574,7 +574,7 @@ class WCS_Admin_Post_Types {
 								$item_name .= $_product->get_sku() . ' - ';
 							}
 
-							$item_name .= apply_filters( 'woocommerce_order_item_name', $item['name'], $item );
+							$item_name .= apply_filters( 'woocommerce_order_item_name', $item['name'], $item, false );
 							$item_name  = esc_html( $item_name );
 
 							if ( $item_quantity > 1 ) {
@@ -613,7 +613,7 @@ class WCS_Admin_Post_Types {
 										$item_name .= $_product->get_sku() . ' - ';
 									}
 
-									$item_name .= apply_filters( 'woocommerce_order_item_name', $item['name'], $item );
+									$item_name .= apply_filters( 'woocommerce_order_item_name', $item['name'], $item, false );
 									$item_name  = esc_html( $item_name );
 
 									if ( $_product ) {
