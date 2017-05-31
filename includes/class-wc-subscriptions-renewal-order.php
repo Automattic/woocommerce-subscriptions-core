@@ -107,16 +107,15 @@ class WC_Subscriptions_Renewal_Order {
 			if ( $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( 'active' ) ) {
 
 				// Included here because calling payment_complete sets the retry status to 'cancelled'
-				if ( 'failed' !== $orders_old_status ) {
-					do_action( 'woocommerce_subscriptions_paid_for_pending_retry', $order_id, $orders_old_status, $subscription );
-				}
+				$is_failed_renewal_order = ( 'failed' === $orders_old_status ) ? true : false;
+				$needs_payment_method_change = apply_filters( 'woocommerce_subscriptions_compare_order_retry_status', $order_id, $orders_old_status );
 
 				if ( $order_needed_payment ) {
 					$subscription->payment_complete();
 					$was_activated = true;
 				}
 
-				if ( 'failed' === $orders_old_status ) {
+				if ( $is_failed_renewal_order || $needs_payment_method_change ) {
 					do_action( 'woocommerce_subscriptions_paid_for_failed_renewal_order', wc_get_order( $order_id ), $subscription );
 				}
 			} elseif ( 'failed' == $orders_new_status ) {
