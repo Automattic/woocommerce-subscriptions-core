@@ -56,7 +56,7 @@ class WCS_Retry_Manager {
 
 			add_action( 'woocommerce_scheduled_subscription_payment_retry', __CLASS__ . '::maybe_retry_payment' );
 
-			add_filter( 'woocommerce_subscriptions_compare_order_retry_status', __CLASS__ . '::compare_order_and_retry_statuses', 10, 2 );
+			add_filter( 'woocommerce_subscriptions_is_failed_renewal_order', __CLASS__ . '::compare_order_and_retry_statuses', 10, 2 );
 		}
 	}
 
