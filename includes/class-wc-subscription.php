@@ -1790,7 +1790,7 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Get parent order object.
 	 *
-	 * @return int
+	 * @return WC_Order
 	 */
 	public function get_parent() {
 		return wc_get_order( $this->get_parent_id() );
