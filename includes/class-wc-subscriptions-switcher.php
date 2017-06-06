@@ -1385,7 +1385,7 @@ class WC_Subscriptions_Switcher {
 			}
 
 			// We need to use the cart items price to ensure we include extras added by extensions like Product Add-ons
-			$new_price_per_day = ( WC_Subscriptions_Product::get_price( $item_data ) * $cart_item['quantity'] ) / $days_in_new_cycle;
+			$new_price_per_day = ( $item_data->get_price() * $cart_item['quantity'] ) / $days_in_new_cycle;
 
 			if ( $old_price_per_day < $new_price_per_day ) {
 
