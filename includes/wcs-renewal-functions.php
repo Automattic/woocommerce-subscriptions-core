@@ -94,8 +94,10 @@ function wcs_cart_contains_failed_renewal_order_payment() {
 	$cart_item        = wcs_cart_contains_renewal();
 
 	if ( false !== $cart_item && isset( $cart_item['subscription_renewal']['renewal_order_id'] ) ) {
-		$renewal_order = wc_get_order( $cart_item['subscription_renewal']['renewal_order_id'] );
-		if ( $renewal_order->has_status( 'failed' ) ) {
+		$renewal_order           = wc_get_order( $cart_item['subscription_renewal']['renewal_order_id'] );
+		$is_failed_renewal_order = apply_filters( 'woocommerce_subscriptions_is_failed_renewal_order', $renewal_order->has_status( 'failed' ), $cart_item['subscription_renewal']['renewal_order_id'], $renewal_order->get_status() );
+
+		if ( $is_failed_renewal_order ) {
 			$contains_renewal = $cart_item;
 		}
 	}
