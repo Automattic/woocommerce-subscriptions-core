@@ -914,6 +914,16 @@ class WCS_Cart_Renewal {
 		if ( $cart_item = $this->cart_contains() ) {
 
 			$order = $this->get_order( $cart_item );
+			
+			/**
+			 * Allow other plugins to remove/add fees of an existing order prior to building the cart without changing the saved order values
+			 * (e.g. payment gateway based fees can remove fees and later can add new fees depending on the actual selected payment gateway)
+			 * 
+			 * @param WC_Order $order		is renderd by reference - change meta data of this object
+			 * @param WC_Cart $cart
+			 * @since 2.2.8
+			 */
+		   do_action( 'woocommerce_adjust_order_fees_for_setup_cart_for_' . $this->cart_item_key, $order, $cart );
 
 			if ( $order instanceof WC_Order ) {
 				foreach ( $order->get_fees() as $fee ) {
