@@ -2047,7 +2047,14 @@ class WC_Subscription extends WC_Order {
 	 * @return bool
 	 */
 	public function is_download_permitted() {
-		return apply_filters( 'woocommerce_order_is_download_permitted', ( $this->has_status( 'active' ) || $this->has_status( 'pending-cancel' ) ), $this );
+		$sending_email = did_action( 'woocommerce_email_before_order_table' ) > did_action( 'woocommerce_email_after_order_table' );
+		$parent_order  = $this->get_parent();
+		$is_download_permitted = $this->has_status( 'active' ) || $this->has_status( 'pending-cancel' );
+		if ( $sending_email && $parent_order && ! $is_download_permitted ) {
+			$is_download_permitted = $parent_order->is_download_permitted();
+		}
+
+		return apply_filters( 'woocommerce_order_is_download_permitted', $is_download_permitted, $this );
 	}
 
 	/**
