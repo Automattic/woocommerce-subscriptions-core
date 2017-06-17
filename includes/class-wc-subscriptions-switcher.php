@@ -954,9 +954,9 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function switch_order_meta_box_rows( $post ) {
 
-		$subscriptions = array();
-		$switched_ids  = array();
-		$orders        = array();
+		$subscriptions          = array();
+		$switched_subscriptions = array();
+		$orders                 = array();
 
 		// On the subscription page, just show related orders
 		if ( wcs_is_subscription( $post->ID ) ) {
