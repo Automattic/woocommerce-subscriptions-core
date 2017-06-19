@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * passed to it.
  *
  * @param  int | WC_Subscription $subscription Post ID of a 'shop_subscription' post, or instance of a WC_Subscription object
- * @return WC_Subscription
+ * @return WC_Order | WP_Error
  * @since  2.0
  */
 function wcs_create_renewal_order( $subscription ) {
