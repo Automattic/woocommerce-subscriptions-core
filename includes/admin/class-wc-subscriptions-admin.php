@@ -369,7 +369,7 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function save_subscription_meta( $post_id ) {
 
-		if ( false === self::is_subscription_product_save_request( apply_filters( 'woocommerce_subscription_product_types', array( WC_Subscriptions::$name ) ) ) ) {
+		if ( false === self::is_subscription_product_save_request( $post_id, apply_filters( 'woocommerce_subscription_product_types', array( WC_Subscriptions::$name ) ) ) ) {
 			return;
 		}
 
@@ -448,7 +448,7 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function save_variable_subscription_meta( $post_id ) {
 
-		if ( false === self::is_subscription_product_save_request( apply_filters( 'woocommerce_subscription_variable_product_types', array( 'variable-subscription' ) ) ) ) {
+		if ( false === self::is_subscription_product_save_request( $post_id, apply_filters( 'woocommerce_subscription_variable_product_types', array( 'variable-subscription' ) ) ) ) {
 			return;
 		}
 
@@ -1637,7 +1637,7 @@ class WC_Subscriptions_Admin {
 	 * @param array Array of product types.
 	 * @since 2.2.9
 	 */
-	private static function is_subscription_product_save_request( $product_types ) {
+	private static function is_subscription_product_save_request( $post_id, $product_types ) {
 
 		if ( self::$saved_product_meta ) {
 			$is_subscription_product_save_request = false;
@@ -1645,11 +1645,13 @@ class WC_Subscriptions_Admin {
 			$is_subscription_product_save_request = false;
 		} elseif ( ! isset( $_POST['product-type'] ) || ! in_array( $_POST['product-type'], $product_types ) ) {
 			$is_subscription_product_save_request = false;
+		} elseif ( empty( $_POST['post_ID'] ) || $_POST['post_ID'] != $post_id ) {
+			$is_subscription_product_save_request = false;
 		} else {
 			$is_subscription_product_save_request = true;
 		}
 
-		return apply_filters( 'wcs_admin_is_subscription_product_save_request', $is_subscription_product_save_request, $product_types );
+		return apply_filters( 'wcs_admin_is_subscription_product_save_request', $is_subscription_product_save_request, $post_id, $product_types );
 	}
 
 	/**
