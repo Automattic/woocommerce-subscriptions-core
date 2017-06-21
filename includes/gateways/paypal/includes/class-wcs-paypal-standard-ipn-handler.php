@@ -401,8 +401,11 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			// Admins can suspend subscription at PayPal triggering this IPN
 			case 'recurring_payment_suspended':
 
+				// When a subscriber suspends a PayPal Standard subscription, PayPal will notify WooCommerce by sending an IPN that uses an Express Checkout Recurring Payment payload, instead of an IPN payload for a PayPal Standard Subscription. This means the payload uses the 'recurring_payment_id' key for the subscription ID, not the 'subscr_id' key.
+				$ipn_profile_id = ( isset( $transaction_details['subscr_id'] ) ) ? $transaction_details['subscr_id'] : $transaction_details['recurring_payment_id'];
+
 				// Make sure subscription hasn't been linked to a new payment method
-				if ( wcs_get_paypal_id( $subscription ) != $transaction_details['subscr_id'] ) {
+				if ( wcs_get_paypal_id( $subscription ) != $ipn_profile_id ) {
 
 					WC_Gateway_Paypal::log( sprintf( 'IPN "recurring_payment_suspended" ignored for subscription %d - PayPal profile ID has changed', $subscription->id ) );
 
