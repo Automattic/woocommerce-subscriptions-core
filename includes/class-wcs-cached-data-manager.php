@@ -144,10 +144,10 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 	 */
 	public static function cleanup_logs() {
 		$file = wc_get_log_file_path( 'wcs-cache' );
-		$max_cache_size = apply_filters( 'wcs_max_log_size', 100 * 1024 * 1024 );
+		$max_cache_size = apply_filters( 'wcs_max_log_size', 50 * 1024 * 1024 );
 
 		if ( filesize( $file ) >= $max_cache_size ) {
-			$size_to_keep = apply_filters( 'wcs_log_size_to_keep', 64 * 1024 );
+			$size_to_keep = apply_filters( 'wcs_log_size_to_keep', 25 * 1024 );
 			$lines_to_keep = apply_filters( 'wcs_log_lines_to_keep', 1000 );
 
 			$fp = fopen( $file, 'r' );
