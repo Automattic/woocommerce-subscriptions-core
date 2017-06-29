@@ -70,7 +70,7 @@ class WCS_Upgrade_2_2_9 {
 
 			// Flag this subscription as repaired so we don't pull it into a following batch
 			$repaired_subscriptions[] = $subscription_id;
-			update_option( self::$repaired_subscriptions_option, $repaired_subscriptions );
+			update_option( self::$repaired_subscriptions_option, $repaired_subscriptions, 'no' );
 		}
 
 		// If we've processed a full batch, schedule the next batch to be repaired
