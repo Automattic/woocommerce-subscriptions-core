@@ -101,7 +101,7 @@ class WCS_Upgrade_2_2_9 {
 					'compare' => 'NOT EXISTS',
 				),
 				array(
-					'key'     => '_order_version', // Only subscriptions created after 3.0.0 are affected and need to be repaired
+					'key'     => '_order_version', // Try to narrow the focus to subscriptions created after 3.0.0 as they are the only ones affected and needing repair (tough all subscriptions instantiated after 3.0 will also have their _order_version updated)
 					'value'   => '3.0.0',
 					'compare' => '>=',
 				),
