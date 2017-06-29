@@ -169,12 +169,14 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 	}
 
 	/**
-	 * Creates a weekly crontab (if it doesn't exists) that
-	 * will truncate the log file if it goes bigger than a
-	 * threshold
+	 * Check once each week if the log file has exceeded the limits.
+	 *
+	 * @since 2.2.9
 	 */
 	public function initialize_cron_check_size() {
+
 		$hook = 'wcs_cleanup_big_logs';
+
 		if ( ! wp_next_scheduled( $hook ) ) {
 			wp_schedule_event( time(), 'weekly', $hook );
 		}
