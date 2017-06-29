@@ -195,7 +195,7 @@ class WC_Subscriptions_Upgrader {
 		}
 
 		// Repair missing _contains_synced_subscription post meta
-		if ( version_compare( WC()->version, '3.0', '>=' ) && version_compare( self::$active_version, '2.2.0', '>=' ) && version_compare( self::$active_version, '2.2.9', '<' ) ) {
+		if ( version_compare( get_option( 'woocommerce_db_version' ), '3.0', '>=' ) && version_compare( self::$active_version, '2.2.0', '>=' ) && version_compare( self::$active_version, '2.2.9', '<' ) ) {
 			include_once( 'class-wcs-upgrade-2-2-9.php' );
 			WCS_Upgrade_2_2_9::schedule_repair();
 		}
