@@ -24,6 +24,7 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 		add_action( 'added_post_meta', array( $this, 'purge_from_metadata' ), 9999, 4 ); // tied to '_subscription_renewal', '_subscription_resubscribe' & '_subscription_switch' keys
 
 		add_action( 'admin_init', array( $this, 'initialize_cron_check_size' ) ); // setup cron task to truncate big logs.
+		add_filter( 'cron_schedules', array( $this, 'add_weekly_cron_schedule' ) ); // create a weekly cron schedule
 	}
 
 	/**
@@ -175,10 +176,28 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 	public function initialize_cron_check_size() {
 		$hook = 'wcs_cleanup_big_logs';
 		if ( ! wp_next_scheduled( $hook ) ) {
-			wp_schedule_event( time(), 'daily', $hook );
+			wp_schedule_event( time(), 'weekly', $hook );
 		}
 
 		add_action( $hook, __CLASS__ . '::cleanup_logs' );
+	}
+
+	/**
+	 * Add a weekly schedule for clearing up the cache
+	 *
+	 * @param $scheduled array
+	 * @since 2.2.9
+	 */
+	function add_weekly_cron_schedule( $schedules ) {
+
+		if ( ! isset( $schedules['weekly'] ) ) {
+			$schedules['weekly'] = array(
+				'interval' => WEEK_IN_SECONDS,
+				'display'  => __( 'Weekly', 'woocommerce-subscriptions' ),
+			);
+		}
+
+		return $schedules;
 	}
 
 	/* Deprecated Functions */
