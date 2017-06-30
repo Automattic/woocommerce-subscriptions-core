@@ -109,7 +109,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 			if ( 0 == $args['order']->get_total() ) {
 
 				$this->add_parameters( array(
-					'PAYMENTREQUEST_0_AMT'           => 0, // a zero amount is use so that no DoExpressCheckout action is required and instead CreateBillingAgreement is used to first create a billing agreement not attached to any order and then DoReferenceTransaction is used to charge both the initial order and renewal order amounts
+					'PAYMENTREQUEST_0_AMT'           => 0, // a zero amount is used so that no DoExpressCheckout action is required and instead CreateBillingAgreement is used to first create a billing agreement not attached to any order and then DoReferenceTransaction is used to charge both the initial order and renewal order amounts
 					'PAYMENTREQUEST_0_ITEMAMT'       => 0,
 					'PAYMENTREQUEST_0_SHIPPINGAMT'   => 0,
 					'PAYMENTREQUEST_0_TAXAMT'        => 0,
@@ -292,7 +292,6 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 			$item_names = array();
 
 			foreach ( $order_items as $item ) {
-
 				$item_names[] = sprintf( '%1$s x %2$s', $item['NAME'], $item['QTY'] );
 			}
 
@@ -306,7 +305,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 			), 0, $use_deprecated_params );
 
 			// add order-level parameters
-			//  - Do not sent the TAXAMT due to rounding errors
+			//  - Do not send the TAXAMT due to rounding errors
 			if ( $use_deprecated_params ) {
 				$this->add_parameters( array(
 					'AMT'              => $total_amount,
@@ -334,7 +333,6 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 
 			// add individual order items
 			foreach ( $order_items as $item ) {
-
 				$this->add_line_item_parameters( $item, $item_count++, $use_deprecated_params );
 				$calculated_total += $this->round( $item['AMT'] * $item['QTY'] );
 			}
