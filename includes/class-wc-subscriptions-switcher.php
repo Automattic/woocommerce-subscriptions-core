@@ -1386,7 +1386,7 @@ class WC_Subscriptions_Switcher {
 
 			// We need to use the cart items price to ensure we include extras added by extensions like Product Add-ons, but we don't want the sign-up fee accounted for in the price, so make sure WC_Subscriptions_Cart::set_subscription_prices_for_calculation() isn't adding that.
 			remove_filter( 'woocommerce_product_get_price', 'WC_Subscriptions_Cart::set_subscription_prices_for_calculation', 100 );
-			$new_price_per_day = ( $item_data->get_price() * $cart_item['quantity'] ) / $days_in_new_cycle;
+			$new_price_per_day = ( WC_Subscriptions_Product::get_price( $item_data ) * $cart_item['quantity'] ) / $days_in_new_cycle;
 			add_filter( 'woocommerce_product_get_price', 'WC_Subscriptions_Cart::set_subscription_prices_for_calculation', 100, 2 );
 
 			if ( $old_price_per_day < $new_price_per_day ) {
