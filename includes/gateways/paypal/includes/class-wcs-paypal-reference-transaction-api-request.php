@@ -369,9 +369,16 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 				) );
 			}
 
-			// offset the discrepency between the WooCommerce cart total and PayPal's calculated total by adjusting the cost of the first item
+			// offset any discrepency between the WooCommerce cart total and PayPal's calculated total by adjusting the cost of the first item
 			if ( $total_amount !== $calculated_total ) {
-				$this->parameters['L_PAYMENTREQUEST_0_AMT0'] = $this->parameters['L_PAYMENTREQUEST_0_AMT0'] - ( $calculated_total - $total_amount );
+
+				if ( $use_deprecated_params ) {
+					$amount_parameter = 'AMT';
+				} else {
+					$amount_parameter = 'L_PAYMENTREQUEST_0_AMT0';
+				}
+
+				$this->parameters[ $amount_parameter ] -= $this->round( $calculated_total - $total_amount );
 			}
 		}
 	}
