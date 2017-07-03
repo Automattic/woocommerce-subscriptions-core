@@ -480,7 +480,6 @@ class WC_Subscription extends WC_Order {
 					case 'on-hold' :
 						// Record date of suspension - 'post_modified' column?
 						$this->set_suspension_count( $this->get_suspension_count() + 1 );
-						wcs_maybe_make_user_inactive( $this->get_user_id() );
 					break;
 					case 'cancelled' :
 					case 'switched' :
@@ -498,7 +497,6 @@ class WC_Subscription extends WC_Order {
 						}
 
 						$this->update_dates( $dates_to_update );
-						wcs_maybe_make_user_inactive( $this->get_user_id() );
 					break;
 				}
 
