@@ -393,8 +393,8 @@ class WC_Subscriptions_Product {
 		$product = self::maybe_get_product_instance( $product );
 
 		$subscription_price = self::get_meta_data( $product, 'subscription_price', 0 );
-		$sale_price         = $product->get_sale_price();
-		$active_price       = ( $subscription_price ) ? $subscription_price : $product->get_regular_price();
+		$sale_price         = self::get_sale_price( $product );
+		$active_price       = ( $subscription_price ) ? $subscription_price : self::get_regular_price( $product );
 
 		if ( $product->is_on_sale() && $subscription_price > $sale_price ) {
 			$active_price = $sale_price;
