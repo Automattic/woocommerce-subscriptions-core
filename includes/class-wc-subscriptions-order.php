@@ -793,7 +793,7 @@ class WC_Subscriptions_Order {
 	*/
 	public static function maybe_remove_pay_action( $actions, $order ) {
 
-		if ( wcs_order_contains_subscription( $order, array( 'any' ) ) ) {
+		if ( isset( $actions['pay'] ) && wcs_order_contains_subscription( $order, array( 'any' ) ) ) {
 			$subscriptions = wcs_get_subscriptions_for_order( wcs_get_objects_property( $order, 'id' ), array( 'order_type' => 'any' ) );
 
 			foreach ( $subscriptions as $subscription ) {
