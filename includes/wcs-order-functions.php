@@ -554,6 +554,7 @@ function wcs_get_order_item( $item_id, $order ) {
  * @since 2.0
  */
 function wcs_get_order_item_meta( $item, $product = null ) {
+	wcs_deprecated_function( __FUNCTION__, '3.1 of WooCommerce and 2.2.9 of Subscriptions', 'WC_Order_Item_Product->get_formatted_meta_data() or wc_display_item_meta()' );
 	return new WC_Order_Item_Meta( $item, $product );
 }
 
