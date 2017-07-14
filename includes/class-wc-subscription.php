@@ -1762,7 +1762,7 @@ class WC_Subscription extends WC_Order {
 	 * Get the related orders for a subscription, including renewal orders and the initial order (if any)
 	 *
 	 * @param string $return_fields The columns to return, either 'all' or 'ids'
-	 * @param array|string $order_types Can include 'any', 'parent', 'renewal', 'resubscribe' and/or 'switch'. Defaults to array( 'parent', 'renewal' ).
+	 * @param array|string $order_types Can include 'any', 'parent', 'renewal', 'resubscribe' and/or 'switch'. Custom types possible via the 'woocommerce_subscription_related_orders' filter. Defaults to array( 'parent', 'renewal' ).
 	 * @since 2.0
 	 * @return array
 	 */
@@ -1843,13 +1843,8 @@ class WC_Subscription extends WC_Order {
 						$related_orders[] = $this->get_parent_id();
 					}
 					break;
-				case 'renewal':
-					$related_orders = array_merge( $related_orders, $this->get_related_order_ids( 'renewal' ) );
-					break;
-				case 'switch':
-					$related_orders = array_merge( $related_orders, $this->get_related_order_ids( 'switch' ) );
-					break;
 				default:
+					$related_orders = array_merge( $related_orders, $this->get_related_order_ids( $order_type ) );
 					break;
 			}
 		}
