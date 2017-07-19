@@ -994,7 +994,7 @@ class WCS_Admin_Post_Types {
 	 */
 	protected static function get_item_meta_html( $item, $_product ) {
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 			$item_meta      = wcs_get_order_item_meta( $item, $_product );
 			$item_meta_html = $item_meta->display( true, true );
 		} else {
