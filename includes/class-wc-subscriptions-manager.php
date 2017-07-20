@@ -71,27 +71,35 @@ class WC_Subscriptions_Manager {
 	/**
 	 * Sets up renewal for subscriptions managed by Subscriptions.
 	 *
-	 * This function is hooked early on the scheduled subscription payment hook and will:
-	 * - place the subscription on-hold
-	 * - create a renewal order, with the pending status if it requires payment, or processing/complete
-	 *   if the recurring total is $0.
+	 * This function is hooked early on the scheduled subscription payment hook.
 	 *
 	 * @param int $subscription_id The ID of a 'shop_subscription' post
 	 * @since 2.0
 	 */
 	public static function prepare_renewal( $subscription_id ) {
 
+		$order_note = _x( 'Subscription renewal payment due:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' );
+
+		self::process_renewal( $subscription_id, 'active', $order_note );
+	}
+
+	/**
+	 * Process renewal for a subscription.
+	 *
+	 * @param int $subscription_id The ID of a 'shop_subscription' post
+	 * @param string $required_status The subscription status required to process a renewal order
+	 * @param string $order_note Reason for subscription status change
+	 * @since 2.2.12
+	 */
+	public static function process_renewal( $subscription_id, $required_status, $order_note ) {
+
 		$subscription = wcs_get_subscription( $subscription_id );
 
-		if ( empty( $subscription ) || ! $subscription->has_status( 'active' ) ) {
-			return false;
-		}
-
 		// If the subscription is using manual payments, the gateway isn't active or it manages scheduled payments
-		if ( 0 == $subscription->get_total() || $subscription->is_manual() || '' == $subscription->get_payment_method() || ! $subscription->payment_method_supports( 'gateway_scheduled_payments' ) ) {
+		if ( ! empty( $subscription ) && $subscription->has_status( $required_status ) && ( 0 == $subscription->get_total() || $subscription->is_manual() || '' == $subscription->get_payment_method() || ! $subscription->payment_method_supports( 'gateway_scheduled_payments' ) ) ) {
 
 			// Always put the subscription on hold in case something goes wrong while trying to process renewal
-			$subscription->update_status( 'on-hold', _x( 'Subscription renewal payment due:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
+			$subscription->update_status( 'on-hold', $order_note );
 
 			// Generate a renewal order for payment gateways to use to record the payment (and determine how much is due)
 			$renewal_order = wcs_create_renewal_order( $subscription );
@@ -101,7 +109,7 @@ class WC_Subscriptions_Manager {
 				$renewal_order = wcs_create_renewal_order( $subscription );
 
 				if ( is_wp_error( $renewal_order ) ) {
-					throw new Exception( __( 'Error: Unable to create renewal order from scheduled payment. Please try again.', 'woocommerce-subscriptions' ) );
+					throw new Exception( sprintf( __( 'Error: Unable to create renewal order with note "%s"', 'woocommerce-subscriptions' ), $order_note ) );
 				}
 			}
 
@@ -123,7 +131,11 @@ class WC_Subscriptions_Manager {
 					}
 				}
 			}
+		} else {
+			$renewal_order = false;
 		}
+
+		return $renewal_order;
 	}
 
 	/**
