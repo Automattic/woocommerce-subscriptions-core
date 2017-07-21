@@ -610,12 +610,7 @@ class WC_Subscriptions_Admin {
 		if ( ! WC_Subscriptions_Product::is_subscription( $variation_id ) || empty( $_POST['_wcsnonce_save_variations'] ) || ! wp_verify_nonce( $_POST['_wcsnonce_save_variations'], 'wcs_subscription_variations' ) ) {
 			return;
 		}
-		
-		if ( isset( $_POST['variable_subscription_sign_up_fee'][ $index ] ) ) { 
-			$subscription_sign_up_fee = wc_format_decimal( $_POST['variable_subscription_sign_up_fee'][ $index ] );
-			update_post_meta( $variation_id, '_subscription_sign_up_fee', $subscription_sign_up_fee );
-		}
-		
+
 		if ( isset( $_POST['variable_subscription_price'][ $index ] ) ) {
 			$subscription_price = wc_format_decimal( $_POST['variable_subscription_price'][ $index ] );
 			update_post_meta( $variation_id, '_subscription_price', $subscription_price );
@@ -638,7 +633,7 @@ class WC_Subscriptions_Admin {
 		}
 
 		$subscription_fields = array(
-			//'_subscription_sign_up_fee',
+			'_subscription_sign_up_fee',
 			'_subscription_period',
 			'_subscription_period_interval',
 			'_subscription_length',
