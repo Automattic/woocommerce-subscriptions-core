@@ -43,16 +43,19 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 
 			// Loop through each returned subscription ID and check if there are any more renewals in this period.
 			foreach ( $subscription_ids as $key => $subscription_id ) {
-
+				
 				$next_payment_timestamp = strtotime( $r->scheduled_date );
-
+			
 				// Keep calculating all the new payments until we hit the end date of the search
 				do {
 
 					$next_payment_timestamp = wcs_add_time( $billing_intervals[ $key ], $billing_periods[ $key ], $next_payment_timestamp );
-
+					
+					//Remove the time part of the end date
+					$scheduled_ends[ $key ] = date( 'Y-m-d', strtotime( $scheduled_ends[ $key ] ) );
+					
 					// If there are more renewals add them to the existing object or create a new one
-					if ( $next_payment_timestamp <= $this->end_date && isset( $scheduled_ends[ $key ] ) && ( 0 == $scheduled_ends[ $key ] || $next_payment_timestamp < strtotime( $scheduled_ends[ $key ] ) ) ) {
+					if ( $next_payment_timestamp < $this->end_date && isset( $scheduled_ends[ $key ] ) && ( 0 == $scheduled_ends[ $key ] || $next_payment_timestamp < strtotime( $scheduled_ends[ $key ] ) ) ) {
 						$update_key = date( 'Y-m-d', $next_payment_timestamp );
 
 						if ( $next_payment_timestamp >= $this->start_date ) {
@@ -69,7 +72,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 							$total_renewal_count   += 1;
 						}
 					}
-				} while ( $next_payment_timestamp <= $this->end_date && isset( $scheduled_ends[ $key ] ) && ( 0 == $scheduled_ends[ $key ] || $next_payment_timestamp < strtotime( $scheduled_ends[ $key ] ) ) );
+				} while ( $next_payment_timestamp < $this->end_date && isset( $scheduled_ends[ $key ] ) && ( 0 == $scheduled_ends[ $key ] || $next_payment_timestamp < strtotime( $scheduled_ends[ $key ] ) ) );
 			}
 		}
 
@@ -145,6 +148,7 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 			date( 'Y-m-d', $this->start_date ),
 			date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) )
 		);
+
 
 		$cached_results = get_transient( strtolower( get_class( $this ) ) );
 		$query_hash     = md5( $base_query );
