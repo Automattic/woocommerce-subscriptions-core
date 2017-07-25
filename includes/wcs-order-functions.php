@@ -139,7 +139,7 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 		throw new InvalidArgumentException( _x( 'Invalid data. Type of copy is not a string.', 'Refers to the type of the copy being performed: "copy_order", "subscription", "renewal_order", "resubscribe_order"', 'woocommerce-subscriptions' ) );
 	}
 
-	if ( ! in_array( $type, array( 'subscription', 'renewal_order', 'resubscribe_order' ) ) ) {
+	if ( ! in_array( $type, array( 'subscription', 'parent', 'renewal_order', 'resubscribe_order' ) ) ) {
 		$type = 'copy_order';
 	}
 
@@ -164,6 +164,10 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 			 '_subscription_switch',
 			 '_payment_method',
 			 '_payment_method_title'
+			 '_suspension_count',
+			 '_requires_manual_renewal',
+			 '_cancelled_email_sent',
+			 '_trial_period',
 		 )",
 		wcs_get_objects_property( $from_order, 'id' )
 	);
@@ -338,10 +342,9 @@ function wcs_get_new_order_title( $type ) {
 function wcs_validate_new_order_type( $type ) {
 	if ( ! is_string( $type ) ) {
 		return new WP_Error( 'order_from_subscription_type_type', sprintf( __( '$type passed to the function was not a string.', 'woocommerce-subscriptions' ), $type ) );
-
 	}
 
-	if ( ! in_array( $type, apply_filters( 'wcs_new_order_types', array( 'renewal_order', 'resubscribe_order' ) ) ) ) {
+	if ( ! in_array( $type, apply_filters( 'wcs_new_order_types', array( 'renewal_order', 'resubscribe_order', 'parent' ) ) ) ) {
 		return new WP_Error( 'order_from_subscription_type', sprintf( __( '"%s" is not a valid new order type.', 'woocommerce-subscriptions' ), $type ) );
 	}
 
