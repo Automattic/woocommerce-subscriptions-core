@@ -562,7 +562,7 @@ class WC_Subscriptions_Product {
 				$first_renewal_timestamp = wcs_date_to_time( self::get_trial_expiration_date( $product_id, $from_date ) );
 
 			} else {
-				
+
 				$first_renewal_timestamp = wcs_add_time( $billing_interval, self::get_period( $product_id ), wcs_date_to_time( $from_date ) );
 
 				if ( 'site' == $timezone ) {
@@ -1168,3 +1168,4 @@ class WC_Subscriptions_Product {
 }
 
 WC_Subscriptions_Product::init();
+
