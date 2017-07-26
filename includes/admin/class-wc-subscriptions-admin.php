@@ -638,7 +638,6 @@ class WC_Subscriptions_Admin {
 		}
 
 		$subscription_fields = array(
-			//'_subscription_sign_up_fee',
 			'_subscription_period',
 			'_subscription_period_interval',
 			'_subscription_length',
