@@ -150,8 +150,8 @@ class WC_Subscriptions_Coupon {
 				}
 			}
 
-			// Apply sign-up discounts
-			if ( WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] ) > 0 ) {
+			// Apply sign-up discounts. Exclude switch cart items because their initial amount is entirely sign-up fees but should be treated as initial amounts
+			if ( ! $is_switch && WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] ) > 0 ) {
 
 				if ( 'sign_up_fee' == $coupon_type ) {
 					$apply_initial_coupon = true;
@@ -185,12 +185,11 @@ class WC_Subscriptions_Coupon {
 		if ( $apply_recurring_coupon || $apply_initial_coupon ) {
 
 			// Recurring coupons only apply when there is no free trial (carts can have a mix of free trial and non free trial items)
-			if ( $apply_initial_coupon && 'recurring_fee' == $coupon_type && WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) > 0 ) {
+			if ( $apply_initial_coupon && 'recurring_fee' == $coupon_type && ! $is_switch && WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) > 0 ) {
 				$discounting_amount = 0;
 			}
 
-			$coupon_amount   = wcs_get_coupon_property( $coupon, 'coupon_amount' );
-			$discount_amount = $is_switch ? $coupon_amount : min( $coupon_amount, $discounting_amount );
+			$discount_amount = min( wcs_get_coupon_property( $coupon, 'coupon_amount' ), $discounting_amount );
 			$discount_amount = $single ? $discount_amount : $discount_amount * $cart_item_qty;
 
 		} elseif ( $apply_recurring_percent_coupon ) {
@@ -200,7 +199,7 @@ class WC_Subscriptions_Coupon {
 		} elseif ( $apply_initial_percent_coupon ) {
 
 			// Recurring coupons only apply when there is no free trial (carts can have a mix of free trial and non free trial items)
-			if ( 'recurring_percent' == $coupon_type && WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) > 0 ) {
+			if ( 'recurring_percent' == $coupon_type && ! $is_switch && WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) > 0 ) {
 				$discounting_amount = 0;
 			}
 
