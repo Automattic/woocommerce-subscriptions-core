@@ -139,7 +139,7 @@ class WC_Subscriptions_Coupon {
 		if ( 'none' == $calculation_type ) {
 
 			// If all items have a free trial we don't need to apply recurring coupons to the initial total
-			if ( ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() || $is_switch ) {
+			if ( $is_switch || ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
 
 				if ( 'recurring_fee' == $coupon_type ) {
 					$apply_initial_coupon = true;
