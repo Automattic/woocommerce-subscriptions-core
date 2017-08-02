@@ -46,13 +46,14 @@ class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 
 				$next_payment_timestamp = strtotime( $r->scheduled_date );
 
+				//Remove the time part of the end date, if there is one
+				if ( '0' !== $scheduled_ends[ $key ]  ) {
+					$scheduled_ends[ $key ] = date( 'Y-m-d',floor( strtotime( $scheduled_ends[ $key ] ) / 86400 ) * 86400 );
+				}
 				// Keep calculating all the new payments until we hit the end date of the search
 				do {
 
 					$next_payment_timestamp = wcs_add_time( $billing_intervals[ $key ], $billing_periods[ $key ], $next_payment_timestamp );
-
-					//Remove the time part of the end date
-					$scheduled_ends[ $key ] = date( 'Y-m-d', strtotime( $scheduled_ends[ $key ] ) );
 
 					// If there are more renewals add them to the existing object or create a new one
 					if ( $next_payment_timestamp < $this->end_date && isset( $scheduled_ends[ $key ] ) && ( 0 == $scheduled_ends[ $key ] || $next_payment_timestamp < strtotime( $scheduled_ends[ $key ] ) ) ) {
