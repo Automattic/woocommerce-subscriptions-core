@@ -368,18 +368,6 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 					'CUSTOM'           => json_encode( array( 'order_id' => wcs_get_objects_property( $order, 'id' ), 'order_key' => wcs_get_objects_property( $order, 'order_key' ) ) ),
 				) );
 			}
-
-			// offset any discrepency between the WooCommerce cart total and PayPal's calculated total by adjusting the cost of the first item
-			if ( $total_amount !== $calculated_total ) {
-
-				if ( $use_deprecated_params ) {
-					$amount_parameter = 'AMT';
-				} else {
-					$amount_parameter = 'L_PAYMENTREQUEST_0_AMT0';
-				}
-
-				$this->parameters[ $amount_parameter ] -= $this->round( $calculated_total - $total_amount );
-			}
 		}
 	}
 
