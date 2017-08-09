@@ -334,11 +334,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 			// add individual order items
 			foreach ( $order_items as $item ) {
 				$this->add_line_item_parameters( $item, $item_count++, $use_deprecated_params );
-				$calculated_total += $this->round( $item['AMT'] * $item['QTY'] );
 			}
-
-			// add shipping and tax to calculated total
-			$calculated_total += $this->round( $order->get_total_shipping() ) + $this->round( $order->get_total_tax() );
 
 			$total_amount = $this->round( $order->get_total() );
 
