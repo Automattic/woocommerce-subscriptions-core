@@ -102,7 +102,11 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 					</div>
 					<div class="order_data_column">
-						<h4><?php esc_html_e( 'Billing Details', 'woocommerce-subscriptions' ); ?> <a class="edit_address" href="#"><a href="#" class="tips load_customer_billing" data-tip="Load billing address" style="display:none;">Load billing address</a></a></h4>
+						<h3>
+							<?php esc_html_e( 'Billing Details', 'woocommerce-subscriptions' ); ?>
+							<a href="#" class="edit_address"><?php esc_html_e( 'Edit', 'woocommerce-subscriptions' ); ?></a>
+							<a href="#" class="tips load_customer_billing" data-tip="<?php esc_attr_e( 'Load billing address', 'woocommerce-subscriptions' ); ?>" style="display:none;"><?php esc_html_e( 'Load billing address', 'woocommerce-subscriptions' ); ?></a>
+						</h3>
 						<?php
 						// Display values
 						echo '<div class="address">';
@@ -148,18 +152,19 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							if ( ! isset( $field['type'] ) ) {
 								$field['type'] = 'text';
 							}
-
+							if ( ! isset( $field['id'] ) ) {
+								$field['id'] = '_billing_' . $key;
+							}
 							switch ( $field['type'] ) {
 								case 'select' :
-									// allow for setting a default value programaticaly, and draw the selectbox
-									woocommerce_wp_select( array( 'id' => '_billing_' . $key, 'label' => $field['label'], 'options' => $field['options'], 'value' => isset( $field['value'] ) ? $field['value'] : null ) );
-									break;
+									woocommerce_wp_select( $field );
+								break;
 								default :
-									// allow for setting a default value programaticaly, and draw the textbox
-									woocommerce_wp_text_input( array( 'id' => '_billing_' . $key, 'label' => $field['label'], 'value' => isset( $field['value'] ) ? $field['value'] : null ) );
-									break;
+									woocommerce_wp_text_input( $field );
+								break;
 							}
 						}
+
 						WCS_Change_Payment_Method_Admin::display_fields( $subscription );
 
 						echo '</div>';
@@ -169,12 +174,12 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 					</div>
 					<div class="order_data_column">
 
-						<h4><?php esc_html_e( 'Shipping Details', 'woocommerce-subscriptions' ); ?>
-							<a class="edit_address" href="#">
-								<a href="#" class="tips billing-same-as-shipping" data-tip="Copy from billing" style="display:none;">Copy from billing</a>
-								<a href="#" class="tips load_customer_shipping" data-tip="Load shipping address" style="display:none;">Load shipping address</a>
-							</a>
-						</h4>
+						<h3>
+							<?php esc_html_e( 'Shipping Details', 'woocommerce-subscriptions' ); ?>
+							<a href="#" class="edit_address"><?php esc_html_e( 'Edit', 'woocommerce-subscriptions' ); ?></a>
+							<a href="#" class="tips billing-same-as-shipping" data-tip="<?php esc_attr_e( 'Copy from billing', 'woocommerce-subscriptions' ); ?>" style="display:none;"><?php esc_html_e( 'Copy from billing', 'woocommerce-subscriptions' ); ?></a>
+							<a href="#" class="tips load_customer_shipping" data-tip="<?php esc_attr_e( 'Load shipping address', 'woocommerce-subscriptions' ); ?>" style="display:none;"><?php esc_html_e( 'Load shipping address', 'woocommerce-subscriptions' ); ?></a>
+						</h3>
 						<?php
 						// Display values
 						echo '<div class="address">';
@@ -185,7 +190,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							echo '<p class="none_set"><strong>' . esc_html__( 'Address', 'woocommerce-subscriptions' ) . ':</strong> ' . esc_html__( 'No shipping address set.', 'woocommerce-subscriptions' ) . '</p>';
 						}
 
-						if ( self::$shipping_fields ) {
+						if ( ! empty( self::$shipping_fields ) ) {
 							foreach ( self::$shipping_fields as $key => $field ) {
 								if ( isset( $field['show'] ) && false === $field['show'] ) {
 									continue;
@@ -204,7 +209,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 						}
 
 						if ( apply_filters( 'woocommerce_enable_order_notes_field', 'yes' == get_option( 'woocommerce_enable_order_comments', 'yes' ) ) && $post->post_excerpt ) {
-							echo '<p><strong>' . esc_html__( 'Customer Note:', 'woocommerce-subscriptions' ) . '</strong> ' . wp_kses_post( nl2br( $post->post_excerpt ) ) . '</p>';
+							echo '<p><strong>' . esc_html__( 'Customer Provided Note', 'woocommerce-subscriptions' ) . ':</strong> ' . wp_kses_post( nl2br( $post->post_excerpt ) ) . '</p>';
 						}
 
 						echo '</div>';
@@ -212,28 +217,32 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 						// Display form
 						echo '<div class="edit_address">';
 
-						if ( self::$shipping_fields ) {
+						if ( ! empty( self::$shipping_fields ) ) {
 							foreach ( self::$shipping_fields as $key => $field ) {
 								if ( ! isset( $field['type'] ) ) {
 									$field['type'] = 'text';
 								}
+								if ( ! isset( $field['id'] ) ) {
+									$field['id'] = '_shipping_' . $key;
+								}
 
 								switch ( $field['type'] ) {
 									case 'select' :
-										woocommerce_wp_select( array( 'id' => '_shipping_' . $key, 'label' => $field['label'], 'options' => $field['options'] ) );
-										break;
+										woocommerce_wp_select( $field );
+									break;
 									default :
-										woocommerce_wp_text_input( array( 'id' => '_shipping_' . $key, 'label' => $field['label'] ) );
-										break;
+										woocommerce_wp_text_input( $field );
+									break;
 								}
 							}
 						}
 
 						if ( apply_filters( 'woocommerce_enable_order_notes_field', 'yes' == get_option( 'woocommerce_enable_order_comments', 'yes' ) ) ) {
 							?>
-							<p class="form-field form-field-wide"><label for="excerpt"><?php esc_html_e( 'Customer Note:', 'woocommerce-subscriptions' ) ?></label>
-								<textarea rows="1" cols="40" name="excerpt" tabindex="6" id="excerpt" placeholder="<?php esc_attr_e( 'Customer\'s notes about the order', 'woocommerce-subscriptions' ); ?>"><?php echo wp_kses_post( $post->post_excerpt ); ?></textarea></p>
-								<?php
+							<p class="form-field form-field-wide"><label for="excerpt"><?php esc_html_e( 'Customer Provided Note', 'woocommerce-subscriptions' ) ?>:</label>
+								<textarea rows="1" cols="40" name="excerpt" tabindex="6" id="excerpt" placeholder="<?php esc_attr_e( 'Customer\'s notes about the order', 'woocommerce-subscriptions' ); ?>"><?php echo wp_kses_post( $post->post_excerpt ); ?></textarea>
+							</p>
+							<?php
 						}
 
 						echo '</div>';
