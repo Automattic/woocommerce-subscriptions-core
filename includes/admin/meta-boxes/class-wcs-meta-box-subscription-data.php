@@ -97,8 +97,25 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 								?>
 							</select>
 						</p>
-
-						<?php do_action( 'woocommerce_admin_order_data_after_order_details', $subscription ); ?>
+						<?php if ( $subscription->get_parent_id() ) { ?>
+							<div class="form-field"><h2>
+							<?php echo sprintf( esc_html__( 'Order #%1$s', 'woocommerce-subscriptions' ), esc_html( $subscription->get_parent_id() ) ); ?>
+							</h2> </div>
+						<?php } else {
+						?>
+						<div class="form-field link-order">
+							<label for="parent-order-id"><?php esc_html_e( 'Link to existing order:', 'woocommerce-subscriptions' ); ?> </label>
+							<select id="parent-order-id" name="parent-order-id">
+								<?php
+								$orders = wc_get_orders( array( 'posts_per_page' => '-1' ) );
+								echo '<option value="">Select an order</option>	';
+								foreach ( $orders as $order ) {
+									echo '<option value="' . esc_attr( $order->get_order_number() ) . '">' . esc_html( $order->get_order_number() ) . '</option>';
+								} ?>
+							</select>
+						</div>
+						<?php }
+						do_action( 'woocommerce_admin_order_data_after_order_details', $subscription ); ?>
 
 					</div>
 					<div class="order_data_column">
@@ -297,6 +314,12 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 			}
 
 			wcs_set_objects_property( $subscription, $prefixed_key, wc_clean( $_POST[ $prefixed_key ] ) );
+		}
+
+		// Save the linked parent order id
+		if ( isset( $_POST['parent-order-id'] ) ) {
+			$subscription->set_parent_id( wc_clean( $_POST['parent-order-id'] ) );
+			$subscription->save();
 		}
 
 		try {

@@ -113,6 +113,7 @@ class WCS_Admin_Meta_Boxes {
 				'process_renewal_action_warning' => __( "Are you sure you want to process a renewal?\n\nThis will charge the customer and email them the renewal order (if emails are enabled).", 'woocommerce-subscriptions' ),
 				'payment_method'                 => wcs_get_subscription( $post )->get_payment_method(),
 				'search_customers_nonce'         => wp_create_nonce( 'search-customers' ),
+				'get_customer_orders_nonce'      => wp_create_nonce( 'get-customer-orders' ),
 			) ) );
 		} else if ( 'shop_order' == $screen->id ) {
 
