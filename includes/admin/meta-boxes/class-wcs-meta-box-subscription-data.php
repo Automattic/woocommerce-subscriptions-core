@@ -279,28 +279,25 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 		// Update meta
 		update_post_meta( $post_id, '_customer_user', absint( $_POST['customer_user'] ) );
 
-		if ( self::$billing_fields ) {
-			foreach ( self::$billing_fields as $key => $field ) {
-
-				if ( ! isset( $_POST[ '_billing_' . $key ] ) ) {
-					continue;
-				}
-
-				update_post_meta( $post_id, '_billing_' . $key, wc_clean( $_POST[ '_billing_' . $key ] ) );
+		// Handle the billing fields.
+		foreach ( (array) self::$billing_fields as $key => $field ) {
+			$prefixed_key = "_billing_{$key}";
+			if ( ! isset( $_POST[ $prefixed_key ] ) ) {
+				continue;
 			}
+
+			wcs_set_objects_property( $subscription, $prefixed_key, wc_clean( $_POST[ $prefixed_key ] ) );
 		}
 
-		if ( self::$shipping_fields ) {
-			foreach ( self::$shipping_fields as $key => $field ) {
-
-				if ( ! isset( $_POST[ '_shipping_' . $key ] ) ) {
-					continue;
-				}
-
-				update_post_meta( $post_id, '_shipping_' . $key, wc_clean( $_POST[ '_shipping_' . $key ] ) );
+		// Handle the shipping fields.
+		foreach ( (array) self::$shipping_fields as $key => $field ) {
+			$prefixed_key = "_shipping_{$key}";
+			if ( ! isset( $_POST[ $prefixed_key ] ) ) {
+				continue;
 			}
-		}
 
+			wcs_set_objects_property( $subscription, $prefixed_key, wc_clean( $_POST[ $prefixed_key ] ) );
+		}
 
 		try {
 			WCS_Change_Payment_Method_Admin::save_meta( $subscription );
@@ -317,5 +314,4 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 		do_action( 'woocommerce_process_shop_subscription_meta', $post_id, $post );
 	}
-
 }
