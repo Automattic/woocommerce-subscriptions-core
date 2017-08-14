@@ -270,6 +270,9 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 		self::init_address_fields();
 
+		// Get subscription object.
+		$subscription = wcs_get_subscription( $post_id );
+
 		// Add key
 		add_post_meta( $post_id, '_order_key', uniqid( 'order_' ), true );
 
@@ -298,7 +301,6 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 			}
 		}
 
-		$subscription = wcs_get_subscription( $post_id );
 
 		try {
 			WCS_Change_Payment_Method_Admin::save_meta( $subscription );
