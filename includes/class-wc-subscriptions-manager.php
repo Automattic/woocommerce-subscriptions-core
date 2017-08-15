@@ -80,7 +80,12 @@ class WC_Subscriptions_Manager {
 
 		$order_note = _x( 'Subscription renewal payment due:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' );
 
-		self::process_renewal( $subscription_id, 'active', $order_note );
+		$renewal_order = self::process_renewal( $subscription_id, 'active', $order_note );
+
+		// Backward compatibility with Subscriptions < 2.2.12 where we returned false for an unknown reason
+		if ( false === $renewal_order ) {
+			return $renewal_order;
+		}
 	}
 
 	/**
