@@ -1168,4 +1168,3 @@ class WC_Subscriptions_Product {
 }
 
 WC_Subscriptions_Product::init();
-
