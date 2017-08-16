@@ -94,8 +94,9 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 		}
 
 		if ( empty( $subscription ) ) {
-			WC_Gateway_Paypal::log( 'Subscription IPN Error: Could not find matching Subscription.' );
-			exit;
+			$message = 'Subscription IPN Error: Could not find matching Subscription.'; // We dont' want this to be translated, we need it in English for support
+			WC_Gateway_Paypal::log( $message );
+			throw new Exception( $message );
 		}
 
 		if ( $subscription->get_order_key() != $subscription_key ) {
@@ -574,12 +575,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 					}
 				}
 			} else { // WC < 2.3.11, we could have a variety of payloads, but something has gone wrong if we got to here as we should only be here on new purchases where the '_paypal_subscription_id' is not already set, so throw an exception
-
-				$message = __( 'Invalid PayPal IPN Payload: unable to find matching subscription.', 'woocommerce-subscriptions' );
-
-				WC_Gateway_Paypal::log( $message );
-
-				throw new Exception( $message );
+				WC_Gateway_Paypal::log( __( 'Invalid PayPal IPN Payload: unable to find matching subscription.', 'woocommerce-subscriptions' ) );
 			}
 		}
 
