@@ -93,6 +93,18 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			return;
 		}
 
+		// If the IPN is for a cancellation after a failed payment on a PayPal Standard subscription created with Subscriptions < 2.0, the subscription won't be found, but that doesn't mean we should throw an exception, we should  just ignore it
+		if ( empty( $subscription ) && in_array( $transaction_details['txn_type'], array( 'subscr_cancel', 'subscr_eot' ) ) ) {
+
+			// Check if the reason the subscription can't be found is because it has since been changed to a new PayPal Subscription and this IPN is for the cancellation after a renewal sign-up
+			$subscription_id_and_key = self::get_order_id_and_key( $transaction_details, 'shop_subscription', '_old_paypal_subscriber_id' );
+
+			if ( ! empty( $subscription_id_and_key['order_id'] ) ) {
+				WC_Gateway_Paypal::log( 'IPN subscription cancellation request ignored - new PayPal Profile ID linked to this subscription, for subscription ' . $subscription_id_and_key['order_id'] );
+				return;
+			}
+		}
+
 		if ( empty( $subscription ) ) {
 			$message = 'Subscription IPN Error: Could not find matching Subscription.'; // We dont' want this to be translated, we need it in English for support
 			WC_Gateway_Paypal::log( $message );
@@ -518,7 +530,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 	 *
 	 * @since 2.0
 	 */
-	public static function get_order_id_and_key( $args, $order_type = 'shop_order' ) {
+	public static function get_order_id_and_key( $args, $order_type = 'shop_order', $meta_key = '_paypal_subscription_id' ) {
 
 		$order_id = $order_key = '';
 
@@ -537,7 +549,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 				'numberposts'      => 1,
 				'orderby'          => 'ID',
 				'order'            => 'ASC',
-				'meta_key'         => '_paypal_subscription_id',
+				'meta_key'         => $meta_key,
 				'meta_value'       => $subscription_id,
 				'post_type'        => $order_type,
 				'post_status'      => 'any',
