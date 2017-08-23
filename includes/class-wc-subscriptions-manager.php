@@ -50,6 +50,9 @@ class WC_Subscriptions_Manager {
 		// Order is trashed, trash subscription
 		add_action( 'wp_trash_post', __CLASS__ . '::maybe_trash_subscription', 10 );
 
+		// When order is deleted, delete the subscription.
+		add_action( 'before_delete_post', array( __CLASS__, 'maybe_delete_subscription' ) );
+
 		// When a user is being deleted from the site, via standard WordPress functions, make sure their subscriptions are cancelled
 		add_action( 'delete_user', __CLASS__ . '::trash_users_subscriptions' );
 
@@ -786,6 +789,27 @@ class WC_Subscriptions_Manager {
 			foreach ( wcs_get_subscriptions_for_order( $post_id, array( 'order_type' => 'parent' ) ) as $subscription ) {
 				wp_trash_post( $subscription->get_id() );
 			}
+		}
+	}
+
+	/**
+	 * Delete related subscriptions when an order is deleted.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param int $post_id The post ID being deleted.
+	 */
+	public static function maybe_delete_subscription( $post_id ) {
+		if ( 'shop_order' !== get_post_type( $post_id ) ) {
+			return;
+		}
+
+		/** @var WC_Subscription[] $subscriptions */
+		$subscriptions = wcs_get_subscriptions_for_order( $post_id, array(
+			'subscription_status' => array( 'any', 'trash' ),
+		) );
+		foreach ( $subscriptions as $subscription ) {
+			wp_delete_post( $subscription->get_id() );
 		}
 	}
 
