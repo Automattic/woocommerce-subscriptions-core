@@ -771,8 +771,9 @@ class WC_Subscriptions_Manager {
 	}
 
 	/**
-	 * Clear all subscriptions attached to an order when it's deleted. Also make sure
-	 * all related scheduled actions are cancelled when deleting a susbcription.
+	 * Trash all subscriptions attached to an order when it's trashed.
+	 *
+	 * Also make sure all related scheduled actions are cancelled when deleting a subscription.
 	 *
 	 * @param int $post_id The post ID of the WC Subscription or WC Order being trashed
 	 * @since 1.0
