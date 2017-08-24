@@ -131,7 +131,6 @@ class WCS_Report_Cache_Manager {
 	 * @see $this->set_reports_to_update().
 	 *
 	 * @since 2.1
-	 * @return null
 	 */
 	public function schedule_cache_updates() {
 
