@@ -101,6 +101,9 @@ class WCS_Report_Cache_Manager {
 
 		// Notify store owners that report data can be out-of-date
 		add_action( 'admin_notices', array( $this, 'admin_notices' ), 0 );
+
+		// Add system status information.
+		add_filter( 'wcs_system_status', array( $this, 'add_system_status_info' ) );
 	}
 
 	/**
@@ -313,6 +316,37 @@ class WCS_Report_Cache_Manager {
 				update_option( 'woocommerce_subscriptions_cache_updates_enabled', 'no' );
 			}
 		}
+	}
+
+	/**
+	 * Add system status information to include failure count and cache update status.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param array $data Existing status data.
+	 *
+	 * @return array Filtered status data.
+	 */
+	public function add_system_status_info( $data ) {
+		$cache_enabled = 'yes' === get_option( 'woocommerce_subscriptions_cache_updates_enabled', 'yes' );
+		$failures      = get_option( 'woocommerce_subscriptions_cache_updates_failures', 0 );
+		$new_data      = array(
+			'wcs_report_cache_enabled'  => array(
+				'name'    => _x( 'Report Cache Enabled', 'Whether the Report Cache has been enabled', 'woocommerce-subscriptions' ),
+				'note'    => $cache_enabled ? __( 'Yes', 'woocomerce-subscriptions' ) : __( 'No', 'woocommerce-subscriptions' ),
+				'success' => $cache_enabled,
+			),
+			'wcs_cache_update_failures' => array(
+				'name'    => __( 'Cache Update Failures', 'woocommerce-subscriptions' ),
+				/* translators: %d refers to the number of times we have detected cache update failures */
+				'note'    => sprintf( _n( '%d failures', '%d failure', $failures, 'woocommerce-subscriptions' ), $failures ),
+				'success' => $failures === 0,
+			),
+		);
+
+		$data = array_merge( $data, $new_data );
+
+		return $data;
 	}
 }
 
