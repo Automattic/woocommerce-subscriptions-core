@@ -337,7 +337,7 @@ class WCS_Report_Cache_Manager {
 		$new_data      = array(
 			'wcs_report_cache_enabled'  => array(
 				'name'    => _x( 'Report Cache Enabled', 'Whether the Report Cache has been enabled', 'woocommerce-subscriptions' ),
-				'note'    => $cache_enabled ? __( 'Yes', 'woocomerce-subscriptions' ) : __( 'No', 'woocommerce-subscriptions' ),
+				'note'    => $cache_enabled ? __( 'Yes', 'woocommerce-subscriptions' ) : __( 'No', 'woocommerce-subscriptions' ),
 				'success' => $cache_enabled,
 			),
 			'wcs_cache_update_failures' => array(
