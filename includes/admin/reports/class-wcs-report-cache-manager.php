@@ -189,9 +189,10 @@ class WCS_Report_Cache_Manager {
 		/**
 		 * Filter whether Report Cache Updates are enabled.
 		 *
-		 * @param bool $enabled Whether report updates are enabled.
+		 * @param bool   $enabled      Whether report updates are enabled.
+		 * @param string $report_class The report class to use.
 		 */
-		if ( ! apply_filters( 'wcs_report_cache_updates_enabled', 'yes' === get_option( 'woocommerce_subscriptions_cache_updates_enabled', 'yes' ) ) ) {
+		if ( ! apply_filters( 'wcs_report_cache_updates_enabled', 'yes' === get_option( 'woocommerce_subscriptions_cache_updates_enabled', 'yes' ), $report_class ) ) {
 			return;
 		}
 
