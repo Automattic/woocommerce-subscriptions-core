@@ -332,7 +332,7 @@ class WCS_Report_Cache_Manager {
 	 * @return array Filtered status data.
 	 */
 	public function add_system_status_info( $data ) {
-		$cache_enabled = 'yes' === get_option( 'woocommerce_subscriptions_cache_updates_enabled', 'yes' );
+		$cache_enabled = ( 'yes' === get_option( 'woocommerce_subscriptions_cache_updates_enabled', 'yes' ) );
 		$failures      = get_option( 'woocommerce_subscriptions_cache_updates_failures', 0 );
 		$new_data      = array(
 			'wcs_report_cache_enabled'  => array(
