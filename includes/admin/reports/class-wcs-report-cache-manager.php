@@ -73,7 +73,6 @@ class WCS_Report_Cache_Manager {
 	 * Attach callbacks to manage cache updates
 	 *
 	 * @since 2.1
-	 * @return null
 	 */
 	public function __construct() {
 
