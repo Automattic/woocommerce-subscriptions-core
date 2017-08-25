@@ -311,6 +311,11 @@ class WCS_Report_Cache_Manager {
 			$failures++;
 			update_option( 'woocommerce_subscriptions_cache_updates_failures', $failures );
 
+			/**
+			 * Filter the allowed number of detected failures before we turn off cache updates.
+			 *
+			 * @param int $threshold The failure count threshold.
+			 */
 			if ( $failures > apply_filters( 'woocommerce_subscriptions_cache_updates_failures_threshold', 2 ) ) {
 				update_option( 'woocommerce_subscriptions_cache_updates_enabled', 'no' );
 			}
