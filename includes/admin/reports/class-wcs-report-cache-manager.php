@@ -309,7 +309,7 @@ class WCS_Report_Cache_Manager {
 		if ( $error['type'] & ( E_ERROR | E_PARSE | E_COMPILE_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR ) ) {
 			$failures = get_option( 'woocommerce_subscriptions_cache_updates_failures', 0 );
 			$failures++;
-			update_option( 'woocommerce_subscriptions_cache_updates_failures', $failures );
+			update_option( 'woocommerce_subscriptions_cache_updates_failures', $failures, false );
 
 			/**
 			 * Filter the allowed number of detected failures before we turn off cache updates.
@@ -317,7 +317,7 @@ class WCS_Report_Cache_Manager {
 			 * @param int $threshold The failure count threshold.
 			 */
 			if ( $failures > apply_filters( 'woocommerce_subscriptions_cache_updates_failures_threshold', 2 ) ) {
-				update_option( 'woocommerce_subscriptions_cache_updates_enabled', 'no' );
+				update_option( 'woocommerce_subscriptions_cache_updates_enabled', 'no', false );
 			}
 		}
 	}
