@@ -1342,8 +1342,8 @@ class WCS_Cart_Renewal {
 	 * @since  2.1.0
 	 */
 	public function set_renewal_order_cart_hash( $order ) {
-		_deprecated_function( __METHOD__, '2.2.1', __CLASS__ . '::add_line_item_meta( $order_item, $cart_item_key, $cart_item )' );
-		$this->udpate_cart_hash( $order );
+		_deprecated_function( __METHOD__, '2.3', __CLASS__ . '::update_cart_hash( $order )' );
+		$this->update_cart_hash( $order );
 		return $order;
 	}
 }

@@ -97,22 +97,26 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 								?>
 							</select>
 						</p>
-						<?php if ( $subscription->get_parent_id() ) { ?>
-							<div class="form-field"><h2>
-							<?php echo sprintf( esc_html__( 'Order #%1$s', 'woocommerce-subscriptions' ), esc_html( $subscription->get_parent_id() ) ); ?>
-							</h2> </div>
+						<?php if ( $subscription->get_parent() ) { ?>
+							<div class="form-field">
+						<?php echo sprintf( esc_html__( 'Parent Order #%1$s', 'woocommerce-subscriptions' ), esc_html( $subscription->get_parent()->get_order_number() ) ); ?>
+							</div>
 						<?php } else {
 						?>
 						<div class="form-field link-order">
 							<label for="parent-order-id"><?php esc_html_e( 'Link to existing order:', 'woocommerce-subscriptions' ); ?> </label>
-							<select id="parent-order-id" name="parent-order-id">
-								<?php
-								$orders = wc_get_orders( array( 'posts_per_page' => '-1' ) );
-								echo '<option value="">Select an order</option>	';
-								foreach ( $orders as $order ) {
-									echo '<option value="' . esc_attr( $order->get_order_number() ) . '">' . esc_html( $order->get_order_number() ) . '</option>';
-								} ?>
-							</select>
+							<?php
+							$order_id     = '';
+							$order_string = '';
+							WCS_Select2::render( array(
+								'class'       => 'wc-enhanced-select',
+								'name'        => 'parent-order-id',
+								'id'          => 'parent-order-id',
+								'placeholder' => esc_attr__( 'Select an order&hellip;', 'woocommerce-subscriptions' ),
+								'selected'    => $order_string,
+								'value'       => $order_id,
+							) );
+							?>
 						</div>
 						<?php }
 						do_action( 'woocommerce_admin_order_data_after_order_details', $subscription ); ?>

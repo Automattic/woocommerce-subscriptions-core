@@ -147,7 +147,6 @@ class WCS_Admin_Meta_Boxes {
 			} else {
 				$actions['wcs_create_pending_parent'] = esc_html__( 'Create pending parent order', 'woocommerce-subscriptions' );
 			}
-
 		} else if ( self::can_renewal_order_be_retried( $theorder ) ) {
 			$actions['wcs_retry_renewal_payment'] = esc_html__( 'Retry Renewal Payment', 'woocommerce-subscriptions' );
 		}
@@ -194,7 +193,7 @@ class WCS_Admin_Meta_Boxes {
 	 * Handles the action request to create a pending parent order.
 	 *
 	 * @param array $subscription
-	 * @since 2.0
+	 * @since 2.3
 	 */
 	public static function create_pending_parent_action_request( $subscription ) {
 
@@ -203,8 +202,6 @@ class WCS_Admin_Meta_Boxes {
 		}
 
 		$parent_order = wcs_create_order_from_subscription( $subscription, 'parent' );
-
-		error_log( '$parent_order = ' . print_r( $parent_order, true ) );
 
 		$subscription->set_parent_id( wcs_get_objects_property( $parent_order, 'id' ) );
 		$subscription->save();
