@@ -1364,12 +1364,13 @@ class WC_Subscriptions_Admin {
 	 * @return string
 	 */
 	public static function do_subscriptions_shortcode( $attributes ) {
-		$attributes = wp_parse_args(
-			$attributes,
+		$attributes = shortcode_atts(
 			array(
 				'user_id' => 0,
 				'status'  => 'active',
-			)
+			),
+			$attributes,
+			'subscriptions'
 		);
 
 		$subscriptions = wcs_get_users_subscriptions( $attributes['user_id'] );
