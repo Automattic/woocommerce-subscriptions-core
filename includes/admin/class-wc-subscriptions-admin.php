@@ -1375,24 +1375,19 @@ class WC_Subscriptions_Admin {
 
 		$subscriptions = wcs_get_users_subscriptions( $attributes['user_id'] );
 
-		if ( empty( $subscriptions ) ) {
-			return '<ul class="user-subscriptions no-user-subscriptions">
-						<li>' . esc_html_x( 'No subscriptions found.', 'in [subscriptions] shortcode', 'woocommerce-subscriptions' ) . '</li>
-					</ul>';
-		}
+		// Load the subscription template, and return its content using Output Buffering.
+		ob_start();
+		wc_get_template(
+			'myaccount/my-subscriptions.php',
+			array(
+				'subscriptions' => $subscriptions,
+				'user_id'       => $attributes['user_id'],
+			),
+			'',
+			plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/'
+		);
 
-		$list = '<ul class="user-subscriptions">';
-
-		foreach ( $subscriptions as $subscription ) {
-			if ( 'all' == $attributes['status'] || $subscription->has_status( $attributes['status'] ) ) {
-				// translators: order number
-				$shortcode_translate = sprintf( esc_html_x( 'Subscription %s', 'in [subscriptions] shortcode', 'woocommerce-subscriptions' ), $subscription->get_order_number() );
-				$list .= sprintf( '<li><a href="%s">%s</a></li>', $subscription->get_view_order_url(), $shortcode_translate );
-			}
-		}
-		$list .= '</ul>';
-
-		return $list;
+		return ob_get_clean();
 	}
 
 	/**
