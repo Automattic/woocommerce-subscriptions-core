@@ -164,18 +164,19 @@ class WC_Subscriptions_Synchroniser {
 			),
 
 			array(
-				'name'          => __( 'Prorate First Payment', 'woocommerce-subscriptions' ),
-				'desc'          => __( 'If a subscription is synchronised to a specific day of the week, month or year, charge a prorated amount for the subscription at the time of sign up.', 'woocommerce-subscriptions' ),
-				'id'            => self::$setting_id_proration,
-				'css'           => 'min-width:150px;',
-				'default'       => 'no',
-				'type'          => 'select',
-				'options'       => array(
-					'no'           => _x( 'Never', 'when to allow a setting', 'woocommerce-subscriptions' ),
-					'virtual'      => _x( 'For Virtual Subscription Products Only', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
-					'yes'          => _x( 'For All Subscription Products', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
+				'name'     => __( 'Prorate First Payment', 'woocommerce-subscriptions' ),
+				'desc'     => __( 'If a subscription is synchronised to a specific day of the week, month or year, charge a prorated amount for the subscription at the time of sign up.', 'woocommerce-subscriptions' ),
+				'id'       => self::$setting_id_proration,
+				'css'      => 'min-width:150px;',
+				'default'  => 'no',
+				'type'     => 'select',
+				'options'  => array(
+					'no'        => _x( 'No: do not charge any recurring amount', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
+					'recurring' => _x( 'No: charge the full recurring amount at sign-up', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
+					'virtual'   => _x( 'For Virtual Subscription Products Only', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
+					'yes'       => _x( 'For All Subscription Products', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
 				),
-				'desc_tip'      => true,
+				'desc_tip' => true,
 			),
 
 			array( 'type' => 'sectionend', 'id' => self::$setting_id . '_title' ),
