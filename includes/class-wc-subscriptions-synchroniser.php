@@ -137,7 +137,8 @@ class WC_Subscriptions_Synchroniser {
 	 */
 	public static function add_settings( $settings ) {
 
-		// Get the index of the index of the
+		// Get the index of the setting.
+		$index = 0;
 		foreach ( $settings as $i => $setting ) {
 			if ( 'title' == $setting['type'] && 'woocommerce_subscriptions_miscellaneous' == $setting['id'] ) {
 				$index = $i;
