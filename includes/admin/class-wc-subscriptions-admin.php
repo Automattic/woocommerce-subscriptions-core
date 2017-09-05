@@ -1375,6 +1375,16 @@ class WC_Subscriptions_Admin {
 
 		$subscriptions = wcs_get_users_subscriptions( $attributes['user_id'] );
 
+		// Limit subscriptions to the appropriate status if it's not "any" or "all".
+		if ( 'all' !== $attributes['status'] && 'any' !== $attributes['status'] ) {
+			/** @var WC_Subscription $subscription */
+			foreach ( $subscriptions as $index => $subscription ) {
+				if ( ! $subscription->has_status( $attributes['status'] ) ) {
+					unset( $subscriptions[ $index ] );
+				}
+			}
+		}
+
 		// Load the subscription template, and return its content using Output Buffering.
 		ob_start();
 		wc_get_template(
