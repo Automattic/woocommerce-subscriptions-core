@@ -97,27 +97,28 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 								?>
 							</select>
 						</p>
-						<?php if ( $subscription->get_parent() ) { ?>
-							<div class="form-field">
-						<?php echo sprintf( esc_html__( 'Parent Order #%1$s', 'woocommerce-subscriptions' ), esc_html( $subscription->get_parent()->get_order_number() ) ); ?>
-							</div>
+						<?php
+						$parent_order = $subscription->get_parent();
+						if ( $parent_order ) { ?>
+						<p class="form-field form-field-wide">
+						<?php echo esc_html__( 'Parent order: ', 'woocommerce-subscriptions' ) ?>
+						<a href="<?php echo esc_url( get_edit_post_link( $subscription->get_parent_id() ) ); ?>">
+						<?php echo sprintf( esc_html__( '#%1$s', 'woocommerce-subscriptions' ), esc_html( $parent_order->get_order_number() ) ); ?>
+						</a>
+						</p>
 						<?php } else {
 						?>
-						<div class="form-field link-order">
-							<label for="parent-order-id"><?php esc_html_e( 'Link to existing order:', 'woocommerce-subscriptions' ); ?> </label>
+						<p class="form-field form-field-wide link-order">
+							<label for="parent-order-id"><?php esc_html_e( 'Parent order:', 'woocommerce-subscriptions' ); ?> </label>
 							<?php
-							$order_id     = '';
-							$order_string = '';
 							WCS_Select2::render( array(
 								'class'       => 'wc-enhanced-select',
 								'name'        => 'parent-order-id',
 								'id'          => 'parent-order-id',
 								'placeholder' => esc_attr__( 'Select an order&hellip;', 'woocommerce-subscriptions' ),
-								'selected'    => $order_string,
-								'value'       => $order_id,
 							) );
 							?>
-						</div>
+						</p>
 						<?php }
 						do_action( 'woocommerce_admin_order_data_after_order_details', $subscription ); ?>
 
@@ -321,8 +322,9 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 		}
 
 		// Save the linked parent order id
-		if ( isset( $_POST['parent-order-id'] ) ) {
+		if ( ! empty( $_POST['parent-order-id'] ) ) {
 			$subscription->set_parent_id( wc_clean( $_POST['parent-order-id'] ) );
+			$subscription->add_order_note( sprintf( _x( 'Subscription linked to parent order %s via admin.', 'subscription note after linking to a parent order', 'woocommerce-subscriptions' ), sprintf( '<a href="%1$s">#%2$s</a> ', esc_url( wcs_get_edit_post_link( $subscription->get_parent_id() ) ), $subscription->get_parent()->get_order_number() ) ), false, true );
 			$subscription->save();
 		}
 

@@ -163,11 +163,11 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 			 '_subscription_renewal',
 			 '_subscription_switch',
 			 '_payment_method',
-			 '_payment_method_title'
+			 '_payment_method_title',
 			 '_suspension_count',
 			 '_requires_manual_renewal',
 			 '_cancelled_email_sent',
-			 '_trial_period',
+			 '_trial_period'
 		 )",
 		wcs_get_objects_property( $from_order, 'id' )
 	);
