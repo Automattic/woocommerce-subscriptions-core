@@ -217,13 +217,14 @@ class WCS_Download_Handler {
 
 		if ( ! empty( $new_download_ids ) ) {
 
-			$existing_permissions = $wpdb->get_results( $wpdb->prepare( "SELECT order_id, download_id from {$wpdb->prefix}woocommerce_downloadable_product_permissions WHERE product_id = %d GROUP BY order_id", $product_id ) );
+			$existing_permissions = $wpdb->get_results( $wpdb->prepare( "SELECT order_id, download_id from {$wpdb->prefix}woocommerce_downloadable_product_permissions WHERE product_id = %d", $product_id ) );
 			$subscriptions        = wcs_get_subscriptions_for_product( $product_id );
 
 			$order_ids = array();
 			$subscription_download_ids = array();
 
-			foreach( $existing_permissions as $permission_data ) {
+			foreach ( $existing_permissions as $permission_data ) {
+
 				$order_ids[] = $permission_data->order_id;
 				$subscription_download_ids[] = $permission_data->download_id;
 			}
