@@ -501,6 +501,18 @@ class WC_Subscriptions_Order {
 			$order_completed = in_array( $new_order_status, array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id, $order ), 'processing', 'completed' ) ) && in_array( $old_order_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ), $order ) );
 
 			foreach ( $subscriptions as $subscription ) {
+				if ( $order_completed && $subscription->has_status( 'cancelled' ) ) {
+
+					// Set end date to 0 to force calculation of next payment date. This next payment date will be set as end date.
+					$subscription->update_dates( array( 'end' => 0 ) );
+					$end_date = $subscription->calculate_date( 'next_payment' );
+
+					$subscription->add_order_note( __( "Due to payment completion, changing subscription's status from Cancelled to Pending Cancellation", 'woocommerce-subscriptions' ), false, true );
+
+					$subscription->update_status( 'pending-cancel' );
+
+					$subscription->update_dates( array( 'end' => $end_date ) );
+				}
 
 				// Do we need to activate a subscription?
 				if ( $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( 'active' ) ) {

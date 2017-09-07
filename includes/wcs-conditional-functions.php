@@ -27,3 +27,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 function wcs_is_order_received_page() {
 	return ( false !== strpos( $_SERVER['REQUEST_URI'], 'order-received' ) );
 }
+
+/**
+ * Enable subscription to be moved from cancelled to pending cancellation due to convoluted payment capture conditions
+ *
+ * @access public
+ * @return boolean
+ */
+function wcs_check_convoluted_conditions( $can_be_updated, $subscription ) {
+	$order = wc_get_order( $subscription->get_parent_id() );
+	if ( $order ) {
+		$order_completed = in_array( $order->get_status(), array( 'completed', 'active' ) ) ? true : false;
+
+		if ( $order_completed && $subscription->has_status( 'cancelled' ) ) {
+			$can_be_updated = true;
+		}
+	}
+
+	return $can_be_updated;
+}
+add_filter( 'woocommerce_can_subscription_be_updated_to_pending-cancel', 'wcs_check_convoluted_conditions', 25, 2 );
