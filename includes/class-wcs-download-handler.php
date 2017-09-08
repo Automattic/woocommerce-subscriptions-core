@@ -220,13 +220,17 @@ class WCS_Download_Handler {
 			$existing_permissions = $wpdb->get_results( $wpdb->prepare( "SELECT order_id, download_id from {$wpdb->prefix}woocommerce_downloadable_product_permissions WHERE product_id = %d", $product_id ) );
 			$subscriptions        = wcs_get_subscriptions_for_product( $product_id );
 
+			// Arrange download id permissions by order id
 			$order_ids = array();
-			$subscription_download_ids = array();
+			$permissions_by_order_id = array();
 
 			foreach ( $existing_permissions as $permission_data ) {
 
-				$order_ids[] = $permission_data->order_id;
-				$subscription_download_ids[] = $permission_data->download_id;
+				if ( ! in_array( $permission_data->order_id, $order_ids ) ) {
+					$order_ids[] = $permission_data->order_id;
+					$permissions_by_order_id[ $permission_data->order_id ] = array();
+				}
+				$permissions_by_order_id[ $permission_data->order_id ][] = $permission_data->download_id;
 			}
 
 			foreach ( $subscriptions as $subscription_id ) {
@@ -236,7 +240,10 @@ class WCS_Download_Handler {
 					$subscription = wcs_get_subscription( $subscription_id );
 
 					foreach ( $new_download_ids as $download_id ) {
-						if ( $subscription && ! in_array( $download_id, $subscription_download_ids ) && apply_filters( 'woocommerce_process_product_file_download_paths_grant_access_to_new_file', true, $download_id, $product_id, $subscription ) ) {
+
+						$has_permission = isset( $permissions_by_order_id[ $subscription_id ] ) && in_array( $download_id,  $permissions_by_order_id[ $subscription_id ] );
+
+						if ( $subscription && ! $has_permission && apply_filters( 'woocommerce_process_product_file_download_paths_grant_access_to_new_file', true, $download_id, $product_id, $subscription ) ) {
 							wc_downloadable_file_permission( $download_id, $product_id, $subscription );
 						}
 					}
