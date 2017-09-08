@@ -1789,10 +1789,17 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Get parent order object.
 	 *
-	 * @return WC_Order
+	 * @return mixed WC_Order|bool
 	 */
 	public function get_parent() {
-		return wc_get_order( $this->get_parent_id() );
+		$parent_id = $this->get_parent_id();
+		$order     = false;
+
+		if ( $parent_id > 0 ) {
+			$order = wc_get_order( $parent_id );
+		}
+
+		return $order;
 	}
 
 	/**

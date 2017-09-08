@@ -1576,6 +1576,11 @@ class WC_Subscriptions_Switcher {
 			add_filter( 'woocommerce_subscriptions_recurring_cart_key', __METHOD__, 10, 2 );
 		}
 
+		// Append switch data to the recurring cart key so switch items are separated from other subscriptions in the cart. Switch items are processed through the checkout separately so should have separate recurring carts.
+		if ( isset( $cart_item['subscription_switch']['subscription_id'] ) ) {
+			$cart_key .= '_switch_' . $cart_item['subscription_switch']['subscription_id'];
+		}
+
 		return $cart_key;
 	}
 
