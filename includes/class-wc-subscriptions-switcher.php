@@ -761,7 +761,7 @@ class WC_Subscriptions_Switcher {
 							wc_update_order_item( $item_id, array( 'order_item_type' => 'line_item_pending_switch' ) );
 						} else {
 							$item = new WC_Order_Item_Pending_Switch;
-							$item->legacy_values        = $cart_item['data']; // @deprecated For legacy actions.
+							$item->legacy_values        = $cart_item; // @deprecated For legacy actions.
 							$item->legacy_cart_item_key = $cart_item_key; // @deprecated For legacy actions.
 							$item->set_props( array(
 								'quantity'     => $cart_item['quantity'],
