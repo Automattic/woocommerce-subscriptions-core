@@ -225,9 +225,6 @@ class WCS_Download_Handler {
 
 			foreach ( $existing_permissions as $permission_data ) {
 
-				if ( ! array_key_exists( $permission_data->order_id, $permissions_by_order_id ) ) {
-					$permissions_by_order_id[ $permission_data->order_id ] = array();
-				}
 				$permissions_by_order_id[ $permission_data->order_id ][] = $permission_data->download_id;
 			}
 
