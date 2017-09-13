@@ -105,6 +105,18 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			}
 		}
 
+		// If the IPN is for a suspension after a switch on a PayPal Standard subscription created with Subscriptions < 2.0, the subscription won't be found, but that doesn't mean we should throw an exception, we should just ignore it
+		if ( empty( $subscription ) && 'recurring_payment_suspended' === $transaction_details['txn_type'] ) {
+
+			// Check if the reason the subscription can't be found is because it has since been changed after a successful subscription switch
+			$subscription_id_and_key = self::get_order_id_and_key( $transaction_details, 'shop_subscription', '_switched_paypal_subscription_id' );
+
+			if ( ! empty( $subscription_id_and_key['order_id'] ) ) {
+				WC_Gateway_Paypal::log( 'IPN subscription suspension request ignored - subscription payment gateway changed via switch' . $subscription_id_and_key['order_id'] );
+				return;
+			}
+		}
+
 		if ( empty( $subscription ) ) {
 			$message = 'Subscription IPN Error: Could not find matching Subscription.'; // We dont' want this to be translated, we need it in English for support
 			WC_Gateway_Paypal::log( $message );
