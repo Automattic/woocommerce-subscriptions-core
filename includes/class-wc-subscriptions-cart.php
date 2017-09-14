@@ -400,9 +400,11 @@ class WC_Subscriptions_Cart {
 					$needs_shipping = false;
 				}
 			} elseif ( 'recurring_total' == self::$calculation_type ) {
-				if ( true == $needs_shipping && ! self::cart_contains_subscriptions_needing_shipping() ) {
+				$cart = ( isset( self::$cached_recurring_cart ) ) ? self::$cached_recurring_cart : WC()->cart;
+
+				if ( true == $needs_shipping && ! self::cart_contains_subscriptions_needing_shipping( $cart ) ) {
 					$needs_shipping = false;
-				} elseif ( false == $needs_shipping && self::cart_contains_subscriptions_needing_shipping() ) {
+				} elseif ( false == $needs_shipping && self::cart_contains_subscriptions_needing_shipping( $cart ) ) {
 					$needs_shipping = true;
 				}
 			}
@@ -591,16 +593,20 @@ class WC_Subscriptions_Cart {
 	 *
 	 * @since 1.5.4
 	 */
-	public static function cart_contains_subscriptions_needing_shipping() {
+	public static function cart_contains_subscriptions_needing_shipping( $cart = null ) {
 
 		if ( 'no' === get_option( 'woocommerce_calc_shipping' ) ) {
 			return false;
 		}
 
+		if ( null === $cart ) {
+			$cart = WC()->cart;
+		}
+
 		$cart_contains_subscriptions_needing_shipping = false;
 
 		if ( self::cart_contains_subscription() ) {
-			foreach ( WC()->cart->cart_contents as $cart_item_key => $values ) {
+			foreach ( $cart->cart_contents as $cart_item_key => $values ) {
 				$_product = $values['data'];
 				if ( WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && false === WC_Subscriptions_Product::needs_one_time_shipping( $_product ) ) {
 					$cart_contains_subscriptions_needing_shipping = true;
