@@ -758,7 +758,7 @@ class WC_Subscriptions_Switcher {
 						// Add the new item
 						if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 							$item_id = WC_Subscriptions_Checkout::add_cart_item( $subscription, $cart_item, $cart_item_key );
-							wc_update_order_item( $item_id, array( 'order_item_type' => 'line_item_pending_switch' ) );
+							wcs_update_order_item_type( $item_id, 'line_item_pending_switch', $subscription->get_id() );
 						} else {
 							$item = new WC_Order_Item_Pending_Switch;
 							$item->legacy_values        = $cart_item; // @deprecated For legacy actions.
@@ -856,7 +856,7 @@ class WC_Subscriptions_Switcher {
 					foreach ( $subscription->get_shipping_methods() as $shipping_line_item_id => $shipping_meta ) {
 
 						if ( ! in_array( $shipping_line_item_id, $current_shipping_line_items ) ) {
-							wc_update_order_item( $shipping_line_item_id, array( 'order_item_type' => 'shipping_pending_switch' ) );
+							wcs_update_order_item_type( $shipping_line_item_id, 'shipping_pending_switch', $subscription->get_id() );
 							$new_shipping_line_items[] = $shipping_line_item_id;
 						}
 					}
@@ -904,7 +904,7 @@ class WC_Subscriptions_Switcher {
 
 		// First, archive all the shipping methods
 		foreach ( $subscription->get_shipping_methods() as $shipping_method_id => $shipping_method ) {
-			wc_update_order_item( $shipping_method_id, array( 'order_item_type' => 'shipping_switched' ) );
+			wcs_update_order_item_type( $shipping_method_id, 'shipping_switched', $subscription->get_id() );
 		}
 
 		// Then zero the order_shipping total so we have a clean slate to add to
@@ -1907,7 +1907,7 @@ class WC_Subscriptions_Switcher {
 
 						// If we are adding a line item to an existing subscription
 						if ( isset( $switched_item_data['add_line_item'] ) ) {
-							wc_update_order_item( $switched_item_data['add_line_item'], array( 'order_item_type' => 'line_item' ) );
+							wcs_update_order_item_type( $switched_item_data['add_line_item'], 'line_item', $subscription->get_id() );
 							do_action( 'woocommerce_subscription_item_switched', $order, $subscription, $switched_item_data['add_line_item'], $switched_item_data['remove_line_item'] );
 						}
 
@@ -1926,7 +1926,7 @@ class WC_Subscriptions_Switcher {
 							$new_item_name = wcs_get_order_item_name( $switch_order_item, array( 'attributes' => true ) );
 							remove_filter( 'woocommerce_subscriptions_hide_switch_itemmeta', '__return_true' );
 
-							wc_update_order_item( $switched_item_data['remove_line_item'], array( 'order_item_type' => 'line_item_switched' ) );
+							wcs_update_order_item_type( $switched_item_data['remove_line_item'], 'line_item_switched', $subscription->get_id() );
 
 							// translators: 1$: old item, 2$: new item when switching
 							$add_note = sprintf( _x( 'Customer switched from: %1$s to %2$s.', 'used in order notes', 'woocommerce-subscriptions' ), $old_item_name, $new_item_name );
@@ -1972,12 +1972,12 @@ class WC_Subscriptions_Switcher {
 
 				// Archive the old subscription shipping methods
 				foreach ( $subscription->get_shipping_methods() as $shipping_line_item_id => $item ) {
-					wc_update_order_item( $shipping_line_item_id, array( 'order_item_type' => 'shipping_switched' ) );
+					wcs_update_order_item_type( $shipping_line_item_id, 'shipping_switched', $subscription->get_id() );
 				}
 
 				// Flip the switched shipping line items "on"
 				foreach ( $switch_data['shipping_line_items'] as $shipping_line_item_id ) {
-					wc_update_order_item( $shipping_line_item_id, array( 'order_item_type' => 'shipping' ) );
+					wcs_update_order_item_type( $shipping_line_item_id, 'shipping', $subscription->get_id() );
 				}
 			}
 
@@ -2239,7 +2239,7 @@ class WC_Subscriptions_Switcher {
 				$old_subscription_item_name  = wcs_get_order_item_name( $old_order_item, array( 'attributes' => true ) );
 				remove_filter( 'woocommerce_subscriptions_hide_switch_itemmeta', '__return_true' );
 
-				wc_update_order_item( $switch_item_data['subscription_item_id'], array( 'order_item_type' => 'line_item_switched' ) );
+				wcs_update_order_item_type( $switch_item_data['subscription_item_id'], 'line_item_switched', $subscription->get_id() );
 
 				// translators: 1$: old item, 2$: new item when switching
 				$subscription->add_order_note( sprintf( _x( 'Customer switched from: %1$s to %2$s.', 'used in order notes', 'woocommerce-subscriptions' ), $old_subscription_item_name, $new_order_item_name ) );
@@ -2258,7 +2258,7 @@ class WC_Subscriptions_Switcher {
 	protected static function switch_shipping_line_items_pre_2_1_2( $subscription, $shipping_methods ) {
 		// Archive the old subscription shipping methods
 		foreach ( $subscription->get_shipping_methods() as $shipping_line_item_id => $item ) {
-			wc_update_order_item( $shipping_line_item_id, array( 'order_item_type' => 'shipping_switched' ) );
+			wcs_update_order_item_type( $shipping_line_item_id, 'shipping_switched', $subscription->get_id() );
 		}
 
 		// Add the new shipping line item
