@@ -433,6 +433,23 @@ class WC_Subscriptions_Synchroniser {
 	}
 
 	/**
+	 * Determine whether the
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return bool
+	 */
+	public static function is_payment_upfront( $product ) {
+		if ( 0 !== WC_Subscriptions_Product::get_trial_length( $product ) ) {
+			return false;
+		}
+
+		return 'recurring' === get_option( self::$setting_id_proration, 'no' ) && self::is_product_synced( $product );
+	}
+
+	/**
 	 * Get the day of the week, month or year on which a subscription's payments should be
 	 * synchronised to.
 	 *
