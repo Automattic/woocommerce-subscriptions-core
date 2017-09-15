@@ -110,6 +110,34 @@ class WC_Subscriptions_Synchroniser {
 		add_filter( 'woocommerce_order_item_quantity', __CLASS__ . '::maybe_do_not_reduce_stock', 10, 3 );
 
 		add_filter( 'woocommerce_subscriptions_recurring_cart_key', __CLASS__ . '::add_to_recurring_cart_key', 10, 2 );
+
+		// Add defaults for our options.
+		add_filter( 'default_option_' . self::$setting_id, array( __CLASS__, 'option_default' ), 10, 3 );
+		add_filter( 'default_option_' . self::$setting_id_proration, array( __CLASS__, 'option_default' ), 10, 3 );
+	}
+
+	/**
+	 * Set default value of 'no' for our options.
+	 *
+	 * This only sets the default
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param mixed  $default        The default value for the option.
+	 * @param string $option         The option name.
+	 * @param bool   $passed_default Whether get_option() was passed a default value.
+	 *
+	 * @return mixed The default option value.
+	 */
+	public static function option_default( $default, $option, $passed_default = null ) {
+		// Null for $passed_default might mean an older version of WordPress. Fall back to checking $default.
+		if ( null === $passed_default && false === $default ) {
+			$default = 'no';
+		} elseif ( false === $passed_default ) {
+			$default = 'no';
+		}
+
+		return $default;
 	}
 
 	/**
@@ -118,7 +146,7 @@ class WC_Subscriptions_Synchroniser {
 	 * @since 1.5
 	 */
 	public static function is_syncing_enabled() {
-		return ( 'yes' == get_option( self::$setting_id, 'no' ) ) ? true : false;
+		return ( 'yes' == get_option( self::$setting_id ) ) ? true : false;
 	}
 
 	/**
@@ -127,7 +155,7 @@ class WC_Subscriptions_Synchroniser {
 	 * @since 1.5
 	 */
 	public static function is_sync_proration_enabled() {
-		return ( 'no' != get_option( self::$setting_id_proration, 'no' ) ) ? true : false;
+		return ( 'no' != get_option( self::$setting_id_proration ) ) ? true : false;
 	}
 
 	/**
@@ -421,9 +449,9 @@ class WC_Subscriptions_Synchroniser {
 
 		if ( false === self::is_sync_proration_enabled() || false === self::is_product_synced( $product ) ) {
 			$is_product_prorated = false;
-		} elseif ( 'yes' == get_option( self::$setting_id_proration, 'no' ) && 0 == WC_Subscriptions_Product::get_trial_length( $product ) ) {
+		} elseif ( 'yes' == get_option( self::$setting_id_proration ) && 0 == WC_Subscriptions_Product::get_trial_length( $product ) ) {
 			$is_product_prorated = true;
-		} elseif ( 'virtual' == get_option( self::$setting_id_proration, 'no' ) && $product->is_virtual() && 0 == WC_Subscriptions_Product::get_trial_length( $product ) ) {
+		} elseif ( 'virtual' == get_option( self::$setting_id_proration ) && $product->is_virtual() && 0 == WC_Subscriptions_Product::get_trial_length( $product ) ) {
 			$is_product_prorated = true;
 		} else {
 			$is_product_prorated = false;
@@ -433,7 +461,7 @@ class WC_Subscriptions_Synchroniser {
 	}
 
 	/**
-	 * Determine whether the
+	 * Determine whether the payment is an up
 	 *
 	 * @author Jeremy Pry
 	 *
@@ -446,7 +474,7 @@ class WC_Subscriptions_Synchroniser {
 			return false;
 		}
 
-		return 'recurring' === get_option( self::$setting_id_proration, 'no' ) && self::is_product_synced( $product );
+		return 'recurring' === get_option( self::$setting_id_proration ) && self::is_product_synced( $product );
 	}
 
 	/**
