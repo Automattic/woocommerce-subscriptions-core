@@ -461,7 +461,7 @@ class WC_Subscriptions_Synchroniser {
 	}
 
 	/**
-	 * Determine whether the payment is an up
+	 * Determine whether the payment for a subscription should be the full price upfront.
 	 *
 	 * @author Jeremy Pry
 	 *
