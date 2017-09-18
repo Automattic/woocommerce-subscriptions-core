@@ -193,7 +193,7 @@ class WC_Subscriptions_Synchroniser {
 			),
 
 			array(
-				'name'     => __( 'Prorate First Payment', 'woocommerce-subscriptions' ),
+				'name'     => __( 'Prorate First Renewal', 'woocommerce-subscriptions' ),
 				'desc'     => __( 'If a subscription is synchronised to a specific day of the week, month or year, charge a prorated amount for the subscription at the time of sign up.', 'woocommerce-subscriptions' ),
 				'id'       => self::$setting_id_proration,
 				'css'      => 'min-width:150px;',
