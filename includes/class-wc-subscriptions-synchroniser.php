@@ -474,7 +474,7 @@ class WC_Subscriptions_Synchroniser {
 			return false;
 		}
 
-		return 'recurring' === get_option( self::$setting_id_proration ) && self::is_product_synced( $product );
+		return self::is_product_synced( $product ) && 'recurring' === get_option( self::$setting_id_proration );
 	}
 
 	/**
