@@ -115,7 +115,7 @@ class WCS_Meta_Box_Related_Orders {
 			if ( wcs_get_objects_property( $order, 'id' ) == $post->ID ) {
 				continue;
 			}
-			include( 'views/html-related-orders-row.php' );
+			include( dirname( __FILE__ ) . '/views/html-related-orders-row.php' );
 		}
 	}
 }
