@@ -33,7 +33,7 @@ class WCS_Meta_Box_Related_Orders {
 
 		add_action( 'woocommerce_subscriptions_related_orders_meta_box_rows', __CLASS__ . '::output_rows', 10 );
 
-		include_once( 'views/html-related-orders-table.php' );
+		include_once( dirname( __FILE__ ) . '/views/html-related-orders-table.php' );
 
 		do_action( 'woocommerce_subscriptions_related_orders_meta_box', $order, $post );
 	}
