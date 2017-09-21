@@ -50,6 +50,9 @@ class WC_Subscriptions_Coupon {
 		}
 
 		add_filter( 'woocommerce_cart_totals_coupon_label', __CLASS__ . '::get_pseudo_coupon_label', 10, 2 );
+
+		// Add custom coupon fields.
+		add_action( 'woocommerce_coupon_options', array( __CLASS__, 'add_coupon_fields' ), 10, 2 );
 	}
 
 	/**
@@ -794,6 +797,26 @@ class WC_Subscriptions_Coupon {
 	 */
 	public static function apply_subscription_discount_after_tax( $coupon, $cart_item, $price ) {
 		_deprecated_function( __METHOD__, '2.0', 'WooCommerce 2.3 removed after tax discounts. Use ' . __CLASS__ .'::apply_subscription_discount( $original_price, $cart_item, $cart )' );
+	}
+
+	/**
+	 * Add custom fields to the coupon data form.
+	 *
+	 * @see WC_Meta_Box_Coupon_Data::output()
+	 * @author Jeremy Pry
+	 *
+	 * @param int       $id     The coupon ID.
+	 * @param WC_Coupon $coupon The coupon object.
+	 */
+	public static function add_coupon_fields( $id, $coupon ) {
+		woocommerce_wp_text_input( array(
+			'id'          => 'wcs_number_renewals',
+			'label'       => __( 'Number of renewals', 'woocommerce-subscriptions' ),
+			'placeholder' => __( 'Unlimited renewals', 'woocommerce-subscriptions' ),
+			'description' => __( 'Number of times the coupon will be applied to renewals', 'woocommerce-subscriptions' ),
+			'desc_tip'    => true,
+			'data_type'   => 'decimal',
+		) );
 	}
 }
 
