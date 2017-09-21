@@ -111,17 +111,11 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 						<p class="form-field form-field-wide">
 							<label for="parent-order-id"><?php esc_html_e( 'Parent order:', 'woocommerce-subscriptions' ); ?> </label>
 							<?php
-							$orders = wc_get_orders( array( 'customer' => '', 'post_type' => 'shop_order', 'posts_per_page' => '-1' ) );
-							$customer_orders = array();
-							foreach ( $orders as $order ) {
-								$customer_orders[ wcs_get_objects_property( $order, 'id' ) ] = $order->get_order_number();
-							}
 							WCS_Select2::render( array(
 								'class'       => 'wc-enhanced-select',
 								'name'        => 'parent-order-id',
 								'id'          => 'parent-order-id',
 								'placeholder' => esc_attr__( 'Select an order&hellip;', 'woocommerce-subscriptions' ),
-								'options'     => $customer_orders,
 							) );
 							?>
 						</p>
