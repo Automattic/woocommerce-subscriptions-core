@@ -53,6 +53,7 @@ class WC_Subscriptions_Coupon {
 
 		// Add custom coupon fields.
 		add_action( 'woocommerce_coupon_options', array( __CLASS__, 'add_coupon_fields' ), 10, 2 );
+		add_action( 'woocommerce_coupon_options_save', array( __CLASS__, 'save_coupon_fields' ), 10, 2 );
 	}
 
 	/**
@@ -817,6 +818,22 @@ class WC_Subscriptions_Coupon {
 			'desc_tip'    => true,
 			'data_type'   => 'decimal',
 		) );
+	}
+
+	/**
+	 * Save our custom coupon fields.
+	 *
+	 * @see WC_Meta_Box_Coupon_Data::save()
+	 * @author Jeremy Pry
+	 *
+	 * @param int $post_id
+	 * @param WC_Coupon $coupon
+	 */
+	public static function save_coupon_fields( $post_id, $coupon ) {
+		$coupon->set_props( array(
+			'wcs_number_renewals' => absint( $_POST['wcs_number_renewals'] ),
+		) );
+		$coupon->save();
 	}
 }
 
