@@ -434,55 +434,6 @@ class WC_Subscriptions_Coupon {
 	}
 
 	/**
-	 * Checks a given product / coupon combination to determine if the subscription should be discounted
-	 *
-	 * @since 1.2
-	 */
-	private static function is_subscription_discountable( $cart_item, $coupon ) {
-
-		$product_cats = wp_get_post_terms( $cart_item['product_id'], 'product_cat', array( 'fields' => 'ids' ) );
-
-		$this_item_is_discounted = false;
-
-		// Specific products get the discount
-		if ( sizeof( $coupon_product_ids = wcs_get_coupon_property( $coupon, 'product_ids' ) ) > 0 ) {
-
-			if ( in_array( wcs_get_canonical_product_id( $cart_item ), $coupon_product_ids ) || in_array( $cart_item['data']->get_parent(), $coupon_product_ids ) ) {
-				$this_item_is_discounted = true;
-			}
-
-		// Category discounts
-		} elseif ( sizeof( $coupon_product_categories = wcs_get_coupon_property( $coupon, 'product_categories' ) ) > 0 ) {
-
-			if ( sizeof( array_intersect( $product_cats, $coupon_product_categories ) ) > 0 ) {
-				$this_item_is_discounted = true;
-			}
-		} else {
-
-			// No product ids - all items discounted
-			$this_item_is_discounted = true;
-
-		}
-
-		// Specific product ID's excluded from the discount
-		if ( sizeof( $coupon_excluded_product_ids = wcs_get_coupon_property( $coupon, 'exclude_product_ids' ) ) > 0 ) {
-			if ( in_array( wcs_get_canonical_product_id( $cart_item ), $coupon_excluded_product_ids ) || in_array( $cart_item['data']->get_parent(), $coupon_excluded_product_ids ) ) {
-				$this_item_is_discounted = false;
-			}
-		}
-
-		// Specific categories excluded from the discount
-		if ( sizeof( $coupon_excluded_product_categories = wcs_get_coupon_property( $coupon, 'exclude_product_categories' ) ) > 0 ) {
-			if ( sizeof( array_intersect( $product_cats, $coupon_excluded_product_categories ) ) > 0 ) {
-				$this_item_is_discounted = false;
-			}
-		}
-
-		// Apply filter
-		return apply_filters( 'woocommerce_item_is_discounted', $this_item_is_discounted, $cart_item, $before_tax = false );
-	}
-
-	/**
 	 * Sets which coupons should be applied for this calculation.
 	 *
 	 * This function is hooked to "woocommerce_before_calculate_totals" so that WC will calculate a subscription
