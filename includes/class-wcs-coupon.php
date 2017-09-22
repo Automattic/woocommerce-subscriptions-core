@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Subscription Coupons.
- * 
+ *
  * Extends the WC_Coupon class with Subscription-specific coupon functionality.
  *
  * @category Class
@@ -67,7 +67,7 @@ class WCS_Coupon extends WC_Coupon {
 	 *
 	 * @author Jeremy Pry
 	 *
-	 * @param int $value
+	 * @param int $value The number of renewals to set.
 	 */
 	public function set_wcs_number_renewals( $value ) {
 		$this->set_prop( 'wcs_number_renewals', absint( $value ) );
@@ -78,7 +78,7 @@ class WCS_Coupon extends WC_Coupon {
 	 *
 	 * @author Jeremy Pry
 	 *
-	 * @param string $context
+	 * @param string $context The context to retrieve.
 	 *
 	 * @return int
 	 */
