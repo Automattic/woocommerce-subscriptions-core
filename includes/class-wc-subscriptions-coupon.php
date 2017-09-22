@@ -801,6 +801,34 @@ class WC_Subscriptions_Coupon {
 	}
 
 	/**
+	 * Determine whether the cart contains a recurring coupon with set number of renewals.
+	 *
+	 * @author Jeremy Pry
+	 * @return bool
+	 */
+	public static function cart_contains_limited_recurring_coupon() {
+		$has_coupon           = false;
+		$applied_coupons      = isset( wc()->cart->applied_coupons ) ? wc()->cart->applied_coupons : array();
+		$subscription_coupons = array(
+			'recurring_fee'     => 1,
+			'recurring_percent' => 1,
+		);
+
+		foreach ( $applied_coupons as $code ) {
+			$coupon      = new WCS_Coupon( $code );
+			$coupon_type = wcs_get_coupon_property( $coupon, 'discount_type' );
+			$limited     = (bool) wcs_get_coupon_property( $coupon, 'wcs_number_renewals' );
+
+			if ( isset( $subscription_coupons[ $coupon_type ] ) && $limited ) {
+				$has_coupon = true;
+				break;
+			}
+		}
+
+		return $has_coupon;
+	}
+
+	/**
 	 * Add custom fields to the coupon data form.
 	 *
 	 * @see    WC_Meta_Box_Coupon_Data::output()
