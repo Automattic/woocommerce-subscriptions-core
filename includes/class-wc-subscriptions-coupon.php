@@ -54,6 +54,9 @@ class WC_Subscriptions_Coupon {
 		// Add custom coupon fields.
 		add_action( 'woocommerce_coupon_options', array( __CLASS__, 'add_coupon_fields' ), 10 );
 		add_action( 'woocommerce_coupon_options_save', array( __CLASS__, 'save_coupon_fields' ), 10 );
+
+		// Filter the available payment gateways.
+		add_filter( 'woocommerce_available_payment_gateways', array( __CLASS__, 'gateways_subscription_amount_changes' ), 20 );
 	}
 
 	/**
@@ -826,6 +829,30 @@ class WC_Subscriptions_Coupon {
 		}
 
 		return $has_coupon;
+	}
+
+	/**
+	 * Filter the available gateways when there is a recurring coupon.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param array $gateways The available payment gateways.
+	 *
+	 * @return array The filtered payment gateways.
+	 */
+	public static function gateways_subscription_amount_changes( $gateways ) {
+		if ( ! self::cart_contains_limited_recurring_coupon() ) {
+			return $gateways;
+		}
+
+		/** @var WC_Payment_Gateway $gateway */
+		foreach ( $gateways as $index => $gateway ) {
+			if ( ! $gateway->supports( 'subscription_amount_changes' ) ) {
+				unset( $gateways[ $index ] );
+			}
+		}
+
+		return $gateways;
 	}
 
 	/**
