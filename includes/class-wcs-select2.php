@@ -51,7 +51,7 @@ class WCS_Select2 {
 	 * @since 2.2
 	 */
 	protected function get_property_name( $property ) {
-		$data_properties = WC_Subscriptions::is_woocommerce_pre( '3.0' ) ? array( 'placeholder', 'selected', 'allow_clear' ) : array( 'placeholder', 'allow_clear' );
+		$data_properties = WC_Subscriptions::is_woocommerce_pre( '3.0' ) ? array( 'placeholder', 'selected', '`allow-clear' ) : array( 'placeholder', 'allow-clear' );
 		return in_array( $property, $data_properties ) ? 'data-' . $property : $property;
 	}
 
@@ -87,7 +87,9 @@ class WCS_Select2 {
 		$allowed_attributes = array_map( array( $this, 'get_property_name' ), array_keys( $this->attributes ) );
 		$allowed_attributes = array_fill_keys( $allowed_attributes, array() );
 
-		echo wp_kses( $this->get_html(), array( 'input' => $allowed_attributes, 'select' => $allowed_attributes, 'option' => $allowed_attributes ) );
+		$str = wp_kses( $this->get_html(), array( 'input' => $allowed_attributes, 'select' => $allowed_attributes, 'option' => $allowed_attributes ) );
+		$str = str_replace( 'allow-clear', 'allow_clear', $str );
+		echo balanceTags( $str );
 	}
 
 	/**

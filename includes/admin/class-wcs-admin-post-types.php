@@ -201,7 +201,7 @@ class WCS_Admin_Post_Types {
 			'action'      => 'woocommerce_json_search_products_and_variations',
 			'selected'    => strip_tags( $product_string ),
 			'value'       => $product_id,
-			'allow_clear' => 'true',
+			'allow-clear' => 'true',
 		) );
 	}
 
