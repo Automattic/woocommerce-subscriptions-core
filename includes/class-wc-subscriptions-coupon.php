@@ -830,11 +830,13 @@ class WC_Subscriptions_Coupon {
 	 * @param int $post_id
 	 */
 	public static function save_coupon_fields( $post_id ) {
+		// @codingStandardsIgnoreStart
 		$coupon = new WCS_Coupon( $post_id );
 		$coupon->set_props( array(
 			'wcs_number_renewals' => wc_clean( $_POST['wcs_number_renewals'] ),
 		) );
 		$coupon->save();
+		// @codingStandardsIgnoreEnd
 	}
 }
 
