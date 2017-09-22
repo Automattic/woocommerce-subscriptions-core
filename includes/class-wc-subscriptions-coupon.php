@@ -52,8 +52,8 @@ class WC_Subscriptions_Coupon {
 		add_filter( 'woocommerce_cart_totals_coupon_label', __CLASS__ . '::get_pseudo_coupon_label', 10, 2 );
 
 		// Add custom coupon fields.
-		add_action( 'woocommerce_coupon_options', array( __CLASS__, 'add_coupon_fields' ), 10, 2 );
-		add_action( 'woocommerce_coupon_options_save', array( __CLASS__, 'save_coupon_fields' ), 10, 2 );
+		add_action( 'woocommerce_coupon_options', array( __CLASS__, 'add_coupon_fields' ), 10 );
+		add_action( 'woocommerce_coupon_options_save', array( __CLASS__, 'save_coupon_fields' ), 10 );
 	}
 
 	/**
@@ -803,13 +803,13 @@ class WC_Subscriptions_Coupon {
 	/**
 	 * Add custom fields to the coupon data form.
 	 *
-	 * @see WC_Meta_Box_Coupon_Data::output()
+	 * @see    WC_Meta_Box_Coupon_Data::output()
 	 * @author Jeremy Pry
 	 *
-	 * @param int       $id     The coupon ID.
-	 * @param WC_Coupon $coupon The coupon object.
+	 * @param int $id The coupon ID.
 	 */
-	public static function add_coupon_fields( $id, $coupon ) {
+	public static function add_coupon_fields( $id ) {
+		$coupon = new WCS_Coupon( $id );
 		woocommerce_wp_text_input( array(
 			'id'          => 'wcs_number_renewals',
 			'label'       => __( 'Number of renewals', 'woocommerce-subscriptions' ),
@@ -817,21 +817,22 @@ class WC_Subscriptions_Coupon {
 			'description' => __( 'Number of times the coupon will be applied to renewals', 'woocommerce-subscriptions' ),
 			'desc_tip'    => true,
 			'data_type'   => 'decimal',
+			'value'       => $coupon->get_wcs_number_renewals() ?: '',
 		) );
 	}
 
 	/**
 	 * Save our custom coupon fields.
 	 *
-	 * @see WC_Meta_Box_Coupon_Data::save()
+	 * @see    WC_Meta_Box_Coupon_Data::save()
 	 * @author Jeremy Pry
 	 *
 	 * @param int $post_id
-	 * @param WC_Coupon $coupon
 	 */
-	public static function save_coupon_fields( $post_id, $coupon ) {
+	public static function save_coupon_fields( $post_id ) {
+		$coupon = new WCS_Coupon( $post_id );
 		$coupon->set_props( array(
-			'wcs_number_renewals' => absint( $_POST['wcs_number_renewals'] ),
+			'wcs_number_renewals' => wc_clean( $_POST['wcs_number_renewals'] ),
 		) );
 		$coupon->save();
 	}
