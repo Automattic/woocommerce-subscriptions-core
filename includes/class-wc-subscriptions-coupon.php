@@ -830,13 +830,16 @@ class WC_Subscriptions_Coupon {
 	 * @param int $post_id
 	 */
 	public static function save_coupon_fields( $post_id ) {
-		// @codingStandardsIgnoreStart
+		// Check the nonce (again).
+		if ( empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) {
+			return;
+		}
+
 		$coupon = new WCS_Coupon( $post_id );
 		$coupon->set_props( array(
 			'wcs_number_renewals' => wc_clean( $_POST['wcs_number_renewals'] ),
 		) );
 		$coupon->save();
-		// @codingStandardsIgnoreEnd
 	}
 }
 
