@@ -841,7 +841,8 @@ class WC_Subscriptions_Coupon {
 	 * @return array The filtered payment gateways.
 	 */
 	public static function gateways_subscription_amount_changes( $gateways ) {
-		if ( ! self::cart_contains_limited_recurring_coupon() ) {
+		// Return early for empty gateway array, or when there isn't a coupon.
+		if ( empty( $gateways ) || ! self::cart_contains_limited_recurring_coupon() ) {
 			return $gateways;
 		}
 
@@ -852,7 +853,25 @@ class WC_Subscriptions_Coupon {
 			}
 		}
 
+		// If there are no gateways now, it's because of the coupon. Filter the 'no available payment methods' message.
+		if ( empty( $gateways ) ) {
+			add_filter( 'woocommerce_no_available_payment_methods_message', array( __CLASS__, 'no_available_payment_methods_message' ), 20 );
+		}
+
 		return $gateways;
+	}
+
+	/**
+	 * Filter the message for when no payment gateways are available.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param string $message The current message indicating there are no payment methods available..
+	 *
+	 * @return string The filtered message indicating there are no payment methods available.
+	 */
+	public static function no_available_payment_methods_message( $message ) {
+		return __( 'Sorry, it seems there are no available payment methods which support the recurring coupon you are using. Please contact us if you require assistance or wish to make alternate arrangements.', 'woocommerce-subscriptions' );
 	}
 
 	/**
