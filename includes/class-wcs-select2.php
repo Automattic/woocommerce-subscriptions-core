@@ -51,7 +51,7 @@ class WCS_Select2 {
 	 * @since 2.2
 	 */
 	protected function get_property_name( $property ) {
-		$data_properties = WC_Subscriptions::is_woocommerce_pre( '3.0' ) ? array( 'placeholder', 'selected', '`allow-clear' ) : array( 'placeholder', 'allow-clear' );
+		$data_properties = WC_Subscriptions::is_woocommerce_pre( '3.0' ) ? array( 'placeholder', 'selected', 'allow_clear' ) : array( 'placeholder', 'allow_clear' );
 		return in_array( $property, $data_properties ) ? 'data-' . $property : $property;
 	}
 
@@ -84,42 +84,54 @@ class WCS_Select2 {
 	 * @since 2.2
 	 */
 	public function print_html() {
-		$allowed_attributes = array_map( array( $this, 'get_property_name' ), array_keys( $this->attributes ) );
-		$allowed_attributes = array_fill_keys( $allowed_attributes, array() );
-
-		$str = wp_kses( $this->get_html(), array( 'input' => $allowed_attributes, 'select' => $allowed_attributes, 'option' => $allowed_attributes ) );
-		$str = str_replace( 'allow-clear', 'allow_clear', $str );
-		echo balanceTags( $str );
-	}
-
-	/**
-	 * Returns the HTML needed to show the Select2 field
-	 *
-	 * @return string
-	 * @since 2.2
-	 */
-	public function get_html() {
-		$html = "\n<!--select2 -->\n";
-
+		?>
+		<!--select2 -->
+		<?php
 		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-			$html .= '<input ';
-			$html .= $this->attributes_to_html( $this->attributes );
-			$html .= '/>';
+			?>
+			<input
+			<?php
+			foreach ( $this->attributes as $property => $value ) {
+				if ( ! is_scalar( $value ) ) {
+					$value = wcs_json_encode( $value );
+				}
+				echo esc_html( $this->get_property_name( $property ) ) . '="' . esc_attr( $value, 'woocommerce-subscriptions' ) . '" ';
+			}
+			?>
+			/>
+		<?php
 		} else {
 			$attributes             = $this->attributes;
 			$selected_value         = isset( $attributes['selected'] ) ? $attributes['selected'] : '';
 			$attributes['selected'] = 'selected';
-
 			$option_attributes = array_intersect_key( $attributes, array_flip( array( 'value', 'selected' ) ) );
 			$select_attributes = array_diff_key( $attributes, $option_attributes );
-
-			$html .= '<select ' . $this->attributes_to_html( $select_attributes ) . '>';
-			$html .= '<option ' . $this->attributes_to_html( $option_attributes ) . '>' . $selected_value . '</option>';
-			$html .= '</select>';
+			?>
+			<select
+			<?php
+			foreach ( $select_attributes as $property => $value ) {
+				if ( ! is_scalar( $value ) ) {
+					$value = wcs_json_encode( $value );
+				}
+				echo esc_html( $this->get_property_name( $property ) ) . '="' . esc_attr( $value, 'woocommerce-subscriptions' ) . '" ';
+			}
+			?>
+			> <option
+			<?php
+			foreach ( $option_attributes as $property => $value ) {
+				if ( ! is_scalar( $value ) ) {
+					$value = wcs_json_encode( $value );
+				}
+				echo esc_html( $this->get_property_name( $property ) ) . '="' . esc_attr( $value, 'woocommerce-subscriptions' ) . '" ';
+			}
+			?>
+			>
+			<?php echo esc_attr( $selected_value ); ?>
+			</option> </select>
+			<?php
 		}
-
-		$html .= "\n<!--/select2 -->\n";
-
-		return $html;
+		?>
+		<!--/select2 -->
+		<?php
 	}
 }
