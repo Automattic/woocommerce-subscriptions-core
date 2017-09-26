@@ -273,6 +273,12 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 		// Get subscription object.
 		$subscription = wcs_get_subscription( $post_id );
 
+		// Ensure there is an order key.
+		if ( ! $subscription->get_order_key() ) {
+			$key = 'wc_' . apply_filters( 'woocommerce_generate_order_key', uniqid( 'order_' ) );
+			wcs_set_objects_property( $subscription, 'order_key', $key );
+		}
+
 		// Update meta
 		update_post_meta( $post_id, '_customer_user', absint( $_POST['customer_user'] ) );
 
