@@ -323,6 +323,12 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 		// Save the linked parent order id
 		if ( ! empty( $_POST['parent-order-id'] ) ) {
+			// if the parent order to be set is a renewal order
+			if ( wcs_order_contains_renewal( $_POST['parent-order-id'] ) ) {
+				// remove renewal meta
+				$parent = wc_get_order( $_POST['parent-order-id'] );
+				wcs_delete_objects_property( $parent, 'subscription_renewal' );
+			}
 			$subscription->set_parent_id( wc_clean( $_POST['parent-order-id'] ) );
 			$subscription->add_order_note( sprintf( _x( 'Subscription linked to parent order %s via admin.', 'subscription note after linking to a parent order', 'woocommerce-subscriptions' ), sprintf( '<a href="%1$s">#%2$s</a> ', esc_url( wcs_get_edit_post_link( $subscription->get_parent_id() ) ), $subscription->get_parent()->get_order_number() ) ), false, true );
 			$subscription->save();
