@@ -2487,19 +2487,4 @@ class WC_Subscription extends WC_Order {
 
 		return $datetime;
 	}
-
-	/**
-	 * Ensure that we're properly setting an order key if the provided key is empty.
-	 *
-	 * @author Jeremy Pry
-	 *
-	 * @param string $value
-	 */
-	public function set_order_key( $value ) {
-		if ( empty( $value ) ) {
-			$value = 'wc_' . apply_filters( 'woocommerce_generate_order_key', uniqid( 'order_' ) );
-		}
-
-		parent::set_order_key( $value );
-	}
 }
