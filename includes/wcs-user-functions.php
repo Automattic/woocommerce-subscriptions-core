@@ -123,10 +123,12 @@ function wcs_get_new_user_role_names( $role_new ) {
 /**
  * Check if a user has a subscription, optionally to a specific product and/or with a certain status.
  *
- * @param int (optional) The ID of a user in the store. If left empty, the current user's ID will be used.
- * @param int (optional) The ID of a product in the store. If left empty, the function will see if the user has any subscription.
- * @param mixed (optional) A valid subscription status string or array. If left empty, the function will see if the user has a subscription of any status.
+ * @param int $user_id (optional) The ID of a user in the store. If left empty, the current user's ID will be used.
+ * @param int $product_id (optional) The ID of a product in the store. If left empty, the function will see if the user has any subscription.
+ * @param mixed $status (optional) A valid subscription status string or array. If left empty, the function will see if the user has a subscription of any status.
  * @since 2.0
+ *
+ * @return bool
  */
 function wcs_user_has_subscription( $user_id = 0, $product_id = '', $status = 'any' ) {
 
@@ -164,6 +166,8 @@ function wcs_user_has_subscription( $user_id = 0, $product_id = '', $status = 'a
  *
  * @param int $user_id (optional) The id of the user whose subscriptions you want. Defaults to the currently logged in user.
  * @since 2.0
+ *
+ * @return WC_Subscription[]
  */
 function wcs_get_users_subscriptions( $user_id = 0 ) {
 
@@ -320,7 +324,7 @@ function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
  * @param array $allcaps
  * @param array $caps
  * @param array $args
- * @return bool
+ * @return array
  */
 function wcs_user_has_capability( $allcaps, $caps, $args ) {
 	if ( isset( $caps[0] ) ) {
