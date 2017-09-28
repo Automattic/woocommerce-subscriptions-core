@@ -120,6 +120,10 @@ class WC_Subscriptions_Switcher {
 		add_action( 'woocommerce_cart_totals_after_shipping', __CLASS__ . '::maybe_unset_free_trial' );
 		add_action( 'woocommerce_review_order_before_shipping', __CLASS__ . '::maybe_set_free_trial' );
 		add_action( 'woocommerce_review_order_after_shipping', __CLASS__ . '::maybe_unset_free_trial' );
+
+		// Grant download permissions after the switch is complete.
+		add_action( 'woocommerce_grant_product_download_permissions', __CLASS__ . '::delay_granting_download_permissions', 9, 1 );
+		add_action( 'woocommerce_subscriptions_switch_completed', __CLASS__ . '::grant_download_permissions', 9, 1 );
 	}
 
 	/**
@@ -2104,6 +2108,31 @@ class WC_Subscriptions_Switcher {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Delay granting download permissions to the subscription until the switch is processed.
+	 *
+	 * @param int $order_id The order the download permissions are being granted for.
+	 * @since 2.2.13
+	 */
+	public static function delay_granting_download_permissions( $order_id ) {
+		if ( wcs_order_contains_switch( $order_id ) ) {
+			remove_action( 'woocommerce_grant_product_download_permissions', 'WCS_Download_Handler::save_downloadable_product_permissions' );
+		}
+	}
+
+	/**
+	 * Grant the download permissions to the subscription after the switch is processed.
+	 *
+	 * @param WC_Order The switch order.
+	 * @since 2.2.13
+	 */
+	public static function grant_download_permissions( $order ) {
+		WCS_Download_Handler::save_downloadable_product_permissions( wcs_get_objects_property( $order, 'id' ) );
+
+		// reattach the hook detached in @see self::delay_granting_download_permissions()
+		add_action( 'woocommerce_grant_product_download_permissions', 'WCS_Download_Handler::save_downloadable_product_permissions' );
 	}
 
 	/** Deprecated Methods **/
