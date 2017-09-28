@@ -2487,5 +2487,4 @@ class WC_Subscription extends WC_Order {
 
 		return $datetime;
 	}
-
 }
