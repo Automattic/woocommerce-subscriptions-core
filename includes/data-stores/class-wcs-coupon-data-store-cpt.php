@@ -48,7 +48,7 @@ class WCS_Coupon_Data_Store_CPT extends WC_Coupon_Data_Store_CPT implements WC_C
 	 * @param WC_Data $coupon
 	 */
 	public function read( &$coupon ) {
-		// We have to let the parent method go first, ore else our data will be reset.
+		// We have to let the parent method go first, or else our data will be reset.
 		parent::read( $coupon );
 
 		$coupon->set_object_read( false );
@@ -73,7 +73,7 @@ class WCS_Coupon_Data_Store_CPT extends WC_Coupon_Data_Store_CPT implements WC_C
 	}
 
 	/**
-	 *
+	 * Update the post meta for the coupon.
 	 *
 	 * @author Jeremy Pry
 	 *
