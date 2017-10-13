@@ -57,6 +57,9 @@ class WC_Subscriptions_Coupon {
 
 		// Filter the available payment gateways.
 		add_filter( 'woocommerce_available_payment_gateways', array( __CLASS__, 'gateways_subscription_amount_changes' ), 20 );
+
+		// Check coupons when a subscription is renewed.
+		add_action( 'woocommerce_subscription_renewal_payment_complete', array( __CLASS__, 'check_coupon_usages' ), 10, 2 );
 	}
 
 	/**
@@ -927,6 +930,36 @@ class WC_Subscriptions_Coupon {
 			'wcs_number_renewals' => wc_clean( $_POST['wcs_number_renewals'] ),
 		) );
 		$coupon->save();
+	}
+
+	/**
+	 * Determine how many subscriptions the coupon has been applied to.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param WC_Subscription $subscription The current subscription.
+	 * @param WC_Order        $last_order   The previous order.
+	 */
+	public static function check_coupon_usages( $subscription, $last_order ) {
+		// If there aren't any coupons, there's nothing to do.
+		$coupons = $subscription->get_used_coupons();
+		if ( empty( $coupons ) ) {
+			return;
+		}
+
+		$limited_coupons = array();
+		foreach ( $coupons as $coupon ) {
+			if ( self::coupon_is_limited( $coupon ) ) {
+				$limited_coupons[] = $coupon;
+			}
+		}
+
+		// Don't continue if we don't have any limited use coupons.
+		if ( empty( $limited_coupons ) ) {
+			return;
+		}
+
+
 	}
 }
 
