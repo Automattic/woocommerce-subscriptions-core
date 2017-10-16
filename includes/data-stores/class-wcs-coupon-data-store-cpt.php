@@ -52,9 +52,11 @@ class WCS_Coupon_Data_Store_CPT extends WC_Coupon_Data_Store_CPT implements WC_C
 		parent::read( $coupon );
 
 		$coupon->set_object_read( false );
-		$coupon->set_props( array(
-			'wcs_number_renewals' => get_post_meta( $coupon->get_id(), '_wcs_number_renewals', true ),
-		) );
+		$props = array();
+		foreach ( $this->wcs_meta_keys_to_props as $meta_key => $prop ) {
+			$props[ $prop ] = get_post_meta( $coupon->get_id(), $meta_key, true );
+		}
+		$coupon->set_props( $props );
 		$coupon->set_object_read( true );
 	}
 
