@@ -66,7 +66,7 @@ class WC_Subscriptions_Coupon {
 
 		// Filter the available payment gateways.
 		add_filter( 'woocommerce_available_payment_gateways', array( __CLASS__, 'gateways_subscription_amount_changes' ), 20 );
-		add_action( 'woocommerce_before_template_part', array( __CLASS__, 'change_payment_method_template'), 10, 4 );
+		add_action( 'woocommerce_before_template_part', array( __CLASS__, 'change_payment_method_template' ), 10, 4 );
 		add_action( 'woocommerce_after_template_part', array( __CLASS__, 'change_payment_method_template' ), 10, 4 );
 
 		// Check coupons when a subscription is renewed.
