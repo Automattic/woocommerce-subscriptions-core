@@ -66,7 +66,7 @@ class WC_Subscriptions_Coupon {
 
 		// Filter the available payment gateways.
 		add_filter( 'woocommerce_available_payment_gateways', array( __CLASS__, 'gateways_subscription_amount_changes' ), 20 );
-		add_action( 'woocommerce_before_template_part', array( __CLASS__, 'change_payment_method_template') , 10, 4 );
+		add_action( 'woocommerce_before_template_part', array( __CLASS__, 'change_payment_method_template'), 10, 4 );
 		add_action( 'woocommerce_after_template_part', array( __CLASS__, 'change_payment_method_template' ), 10, 4 );
 
 		// Check coupons when a subscription is renewed.
@@ -910,12 +910,12 @@ class WC_Subscriptions_Coupon {
 	 */
 	public static function gateways_subscription_amount_changes( $gateways ) {
 		// If there are already no gateways, bail early.
-		if ( empty( $gateways)) {
+		if ( empty( $gateways ) ) {
 			return $gateways;
 		}
 
 		// If the cart doesn't have a limited coupon, and we haven't stored a subscription, bail early.
-		if ( ! self::cart_contains_limited_recurring_coupon() && null === self::$subscription) {
+		if ( ! self::cart_contains_limited_recurring_coupon() && null === self::$subscription ) {
 			return $gateways;
 		}
 
