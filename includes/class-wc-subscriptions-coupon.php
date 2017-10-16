@@ -904,22 +904,28 @@ class WC_Subscriptions_Coupon {
 	 *
 	 * @author Jeremy Pry
 	 *
-	 * @param array $gateways The available payment gateways.
+	 * @param WC_Payment_Gateway[] $gateways The available payment gateways.
 	 *
 	 * @return array The filtered payment gateways.
 	 */
 	public static function gateways_subscription_amount_changes( $gateways ) {
-		// Return early for empty gateway array, or when there isn't a coupon.
-		if ( empty( $gateways ) || ! self::cart_contains_limited_recurring_coupon() ) {
+		// If there are already no gateways, bail early.
+		if ( empty( $gateways)) {
 			return $gateways;
 		}
 
-		/** @var WC_Payment_Gateway $gateway */
-		foreach ( $gateways as $index => $gateway ) {
-			if ( ! $gateway->supports( 'subscription_amount_changes' ) ) {
-				unset( $gateways[ $index ] );
-			}
+		// If the cart doesn't have a limited coupon, and we haven't stored a subscription, bail early.
+		if ( ! self::cart_contains_limited_recurring_coupon() && null === self::$subscription) {
+			return $gateways;
 		}
+
+		// If we stored a subscription and it doesn't have a limited coupon, bail early.
+		if ( self::$subscription instanceof WC_Subscription && ! self::subscription_has_limited_recurring_coupon( self::$subscription ) ) {
+			return $gateways;
+		}
+
+		// If we got this far, we should limit the gateways as needed.
+		$gateways = self::limit_gateways_subscription_amount_changes( $gateways );
 
 		// If there are no gateways now, it's because of the coupon. Filter the 'no available payment methods' message.
 		if ( empty( $gateways ) ) {
