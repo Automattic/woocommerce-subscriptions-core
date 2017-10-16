@@ -881,6 +881,25 @@ class WC_Subscriptions_Coupon {
 	}
 
 	/**
+	 * Limit payment gateways to those that support changing subscription amounts.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param WC_Payment_Gateway[] $gateways The current available gateways.
+	 *
+	 * @return WC_Payment_Gateway[],
+	 */
+	private static function limit_gateways_subscription_amount_changes( $gateways ) {
+		foreach ( $gateways as $index => $gateway ) {
+			if ( ! $gateway->supports( 'subscription_amount_changes' ) ) {
+				unset( $gateways[ $index ] );
+			}
+		}
+
+		return $gateways;
+	}
+
+	/**
 	 * Filter the available gateways when there is a recurring coupon.
 	 *
 	 * @author Jeremy Pry
