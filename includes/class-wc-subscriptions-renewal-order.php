@@ -32,6 +32,9 @@ class WC_Subscriptions_Renewal_Order {
 
 		// Don't copy switch order item meta to renewal order items
 		add_filter( 'wcs_new_order_items', array( __CLASS__, 'remove_switch_item_meta_keys' ), 10, 1 );
+
+		// Make sure coupon items are copied to the order.
+		add_filter( 'wcs_renewal_order_items', array( __CLASS__, 'subscription_coupon_line_items' ), 10, 3 );
 	}
 
 	/* Helper functions */
@@ -213,6 +216,25 @@ class WC_Subscriptions_Renewal_Order {
 		}
 
 		return $order_items;
+	}
+
+	/**
+	 * Add coupons from the original order to the renewal order.
+	 *
+	 * This facilitates tracking the use of coupons across renewals.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param array           $items        Items to add to the new order.
+	 * @param WC_Order        $new_order    The new order object.
+	 * @param WC_Subscription $subscription The subscription object.
+	 *
+	 * @return array
+	 */
+	public static function subscription_coupon_line_items( $items, $new_order, $subscription ) {
+		$items = array_merge( $items, $subscription->get_items( 'coupon' ) );
+
+		return $items;
 	}
 
 	/* Deprecated functions */
