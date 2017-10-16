@@ -947,19 +947,53 @@ class WC_Subscriptions_Coupon {
 			return;
 		}
 
+		// Set up the coupons we're looking for, and an initial count.
 		$limited_coupons = array();
 		foreach ( $coupons as $coupon ) {
 			if ( self::coupon_is_limited( $coupon ) ) {
-				$limited_coupons[] = $coupon;
+				$limited_coupons[ $coupon ] = 0;
 			}
 		}
 
-		// Don't continue if we don't have any limited use coupons.
+		// Don't continue if we have no limited use coupons.
 		if ( empty( $limited_coupons ) ) {
 			return;
 		}
 
+		// Get all renewal orders, and count the number of uses for each coupon.
+		$related = $subscription->get_related_orders( 'renewal' );
+		/** @var WC_Order $order */
+		foreach ( $related as $id => $order ) {
+			if ( 'completed' !== $order->get_status() ) {
+				unset( $related[ $id ] );
+			}
 
+			// Check for limited coupons, and add them to the count.
+			$used_coupons = $order->get_used_coupons();
+			foreach ( $used_coupons as $used_coupon ) {
+				if ( isset( $limited_coupons[ $used_coupon ] ) ) {
+					$limited_coupons[ $used_coupon ] ++;
+				}
+			}
+		}
+
+		// Check each coupon to see if it needs to be removed.
+		foreach ( $limited_coupons as $coupon => $count ) {
+			$wcs_coupon = new WCS_Coupon( $coupon );
+			if ( $wcs_coupon->get_wcs_number_renewals() <= $count ) {
+				$subscription->remove_coupon( $coupon );
+				$subscription->add_order_note( sprintf(
+					_n(
+						'Limited use coupon "%1$s" removed from subscription. It has been used %2$d time.',
+						'Limited use coupon "%1$s" removed from subscription. It has been used %2$d times.',
+						$count,
+						'woocommerce-subscriptions'
+					),
+					$coupon,
+					number_format_i18n( $count )
+				) );
+			}
+		}
 	}
 }
 
