@@ -59,7 +59,7 @@ class WC_Subscriptions_Coupon {
 		add_filter( 'woocommerce_available_payment_gateways', array( __CLASS__, 'gateways_subscription_amount_changes' ), 20 );
 
 		// Check coupons when a subscription is renewed.
-		add_action( 'woocommerce_subscription_renewal_payment_complete', array( __CLASS__, 'check_coupon_usages' ), 10, 2 );
+		add_action( 'woocommerce_subscription_renewal_payment_complete', array( __CLASS__, 'check_coupon_usages' ) );
 	}
 
 	/**
@@ -938,9 +938,8 @@ class WC_Subscriptions_Coupon {
 	 * @author Jeremy Pry
 	 *
 	 * @param WC_Subscription $subscription The current subscription.
-	 * @param WC_Order        $last_order   The previous order.
 	 */
-	public static function check_coupon_usages( $subscription, $last_order ) {
+	public static function check_coupon_usages( $subscription ) {
 		// If there aren't any coupons, there's nothing to do.
 		$coupons = $subscription->get_used_coupons();
 		if ( empty( $coupons ) ) {
