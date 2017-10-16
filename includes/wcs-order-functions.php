@@ -740,9 +740,8 @@ function wcs_display_item_downloads( $item, $order ) {
  * Copy the order item data and meta data from one item to another.
  *
  * @since  2.2.0
- * @param  WC_Order_Item The order item to copy data from
- * @param  WC_Order_Item The order item to copy data to
- * @return void
+ * @param  WC_Order_Item $from_item The order item to copy data from
+ * @param  WC_Order_Item $to_item The order item to copy data to
  */
 function wcs_copy_order_item( $from_item, &$to_item ) {
 
@@ -757,6 +756,7 @@ function wcs_copy_order_item( $from_item, &$to_item ) {
 
 	switch ( $from_item->get_type() ) {
 		case 'line_item':
+			/** @var WC_Order_Item_Product $from_item */
 			$to_item->set_props( array(
 				'product_id'   => $from_item->get_product_id(),
 				'variation_id' => $from_item->get_variation_id(),
@@ -768,6 +768,7 @@ function wcs_copy_order_item( $from_item, &$to_item ) {
 			) );
 			break;
 		case 'shipping':
+			/** @var WC_Order_Item_Shipping $from_item */
 			$to_item->set_props( array(
 				'method_id' => $from_item->get_method_id(),
 				'total'     => $from_item->get_total(),
@@ -775,6 +776,7 @@ function wcs_copy_order_item( $from_item, &$to_item ) {
 			) );
 			break;
 		case 'tax':
+			/** @var WC_Order_Item_Tax $from_item */
 			$to_item->set_props( array(
 				'rate_id'            => $from_item->get_rate_id(),
 				'label'              => $from_item->get_label(),
@@ -784,6 +786,7 @@ function wcs_copy_order_item( $from_item, &$to_item ) {
 			) );
 			break;
 		case 'fee':
+			/** @var WC_Order_Item_Fee $from_item */
 			$to_item->set_props( array(
 				'tax_class'  => $from_item->get_tax_class(),
 				'tax_status' => $from_item->get_tax_status(),
@@ -792,6 +795,7 @@ function wcs_copy_order_item( $from_item, &$to_item ) {
 			) );
 			break;
 		case 'coupon':
+			/** @var WC_Order_Item_Coupon $from_item */
 			$to_item->set_props( array(
 				'discount'     => $from_item->get_discount(),
 				'discount_tax' => $from_item->get_discount_tax(),
