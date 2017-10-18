@@ -224,7 +224,7 @@ function wcs_get_cached_users_subscriptions( $user_id = 0 )  {
 		array( $user_id )
 	);
 
-	return apply_filters( 'wcs_get_cached_users_subscriptions', $subscriptions );
+	return apply_filters( 'wcs_get_cached_users_subscriptions', $subscriptions, $user_id );
 }
 
 /**
