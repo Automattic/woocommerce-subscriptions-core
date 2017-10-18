@@ -204,6 +204,30 @@ function wcs_get_users_subscriptions( $user_id = 0 ) {
 }
 
 /**
+ * Get subscriptions for a user using caching.
+ *
+ * @author Jeremy Pry
+ *
+ * @param int $user_id The ID of the user whose subscriptions you want.
+ *
+ * @return array
+ */
+function wcs_get_cached_users_subscriptions( $user_id = 0 )  {
+	$user_id = absint( $user_id );
+	if ( 0 === $user_id || empty( $user_id ) ) {
+		$user_id = get_current_user_id();
+	}
+
+	$subscriptions = WC_Subscriptions::$cache->cache_and_get(
+		"wcs_user_subscriptions_{$user_id}",
+		'wcs_get_users_subscriptions',
+		array( $user_id )
+	);
+
+	return apply_filters( 'wcs_get_cached_users_subscriptions', $subscriptions );
+}
+
+/**
  * Return a link for subscribers to change the status of their subscription, as specified with $status parameter
  *
  * @param int $subscription_id A subscription's post ID
