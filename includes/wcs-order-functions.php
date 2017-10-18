@@ -211,6 +211,7 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 		$new_order = wc_create_order( array(
 			'customer_id'   => $subscription->get_user_id(),
 			'customer_note' => $subscription->get_customer_note(),
+			'created_via'   => 'subscription',
 		) );
 
 		wcs_copy_order_meta( $subscription, $new_order, $type );
