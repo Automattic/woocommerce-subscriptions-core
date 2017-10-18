@@ -25,6 +25,9 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 
 		add_action( 'admin_init', array( $this, 'initialize_cron_check_size' ) ); // setup cron task to truncate big logs.
 		add_filter( 'cron_schedules', array( $this, 'add_weekly_cron_schedule' ) ); // create a weekly cron schedule
+
+		// Add actions to handle cache purge for users.
+		add_action( 'save_post', array( $this, 'purge_delete' ), 9999, 2 );
 	}
 
 	/**
@@ -71,20 +74,30 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 	/**
 	 * Clearing cache when a post is deleted
 	 *
-	 * @param $post_id integer the ID of a post
+	 * @param int     $post_id The ID of a post
+	 * @param WP_Post $post    The post object (on certain hooks).
 	 */
-	public function purge_delete( $post_id ) {
-		if ( 'shop_order' === get_post_type( $post_id ) ) {
+	public function purge_delete( $post_id, $post = null ) {
+		$post_type = get_post_type( $post_id );
+		if ( 'shop_order' === $post_type ) {
 			foreach ( wcs_get_subscriptions_for_order( $post_id, array( 'order_type' => 'any' ) ) as $subscription ) {
 				$this->log( 'Calling purge delete on ' . current_filter() . ' for ' . $subscription->get_id() );
 				$this->clear_related_order_cache( $subscription );
 			}
 		}
 
-		// Purge wcs_do_subscriptions_exist cache, but only on the before_delete_post hook.
-		if ( 'shop_subscription' === get_post_type( $post_id ) && doing_action( 'before_delete_post' ) ) {
-			$this->log( "Subscription {$post_id} deleted. Purging subscription cache." );
-			$this->delete_cached( 'wcs_do_subscriptions_exist' );
+		if ( 'shop_subscription' === $post_type ) {
+			// Purge wcs_do_subscriptions_exist cache, but only on the before_delete_post hook.
+			if ( doing_action( 'before_delete_post' ) ) {
+				$this->log( "Subscription {$post_id} deleted. Purging subscription cache." );
+				$this->delete_cached( 'wcs_do_subscriptions_exist' );
+			}
+
+			// Purge cache for a specific user on the save_post hook.
+			if ( doing_action( 'save_post' ) ) {
+				$this->log( "Clearing cache for user ID {$post->post_author} on save_post hook." );
+				$this->delete_cached( "wcs_user_subscriptions_{$post->post_author}" );
+			}
 		}
 	}
 
