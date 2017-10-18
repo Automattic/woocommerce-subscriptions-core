@@ -229,7 +229,7 @@ function wcs_get_users_subscription_ids( $user_id ) {
  *
  * @return array
  */
-function wcs_get_cached_users_subscriptions( $user_id = 0 )  {
+function wcs_get_cached_users_subscriptions( $user_id = 0 ) {
 	$user_id = absint( $user_id );
 	if ( 0 === $user_id ) {
 		$user_id = get_current_user_id();
