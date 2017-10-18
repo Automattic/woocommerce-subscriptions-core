@@ -243,15 +243,28 @@ function wcs_get_users_subscription_ids( $user_id ) {
  */
 function wcs_get_cached_users_subscriptions( $user_id = 0 )  {
 	$user_id = absint( $user_id );
-	if ( 0 === $user_id || empty( $user_id ) ) {
+	if ( 0 === $user_id ) {
 		$user_id = get_current_user_id();
 	}
 
-	$subscriptions = WC_Subscriptions::$cache->cache_and_get(
+	// If the user ID is still zero, bail early.
+	if ( 0 === $user_id ) {
+		return apply_filters( 'wcs_get_cached_users_subscriptions', array(), $user_id );
+	}
+
+	$subscription_ids = WC_Subscriptions::$cache->cache_and_get(
 		"wcs_user_subscriptions_{$user_id}",
-		'wcs_get_users_subscriptions',
+		'wcs_get_users_subscription_ids',
 		array( $user_id )
 	);
+
+	$subscriptions = array();
+	foreach ( $subscription_ids as $id ) {
+		$subscription = wcs_get_subscription( $id );
+		if ( $subscription ) {
+			$subscriptions[ $id ] = $subscription;
+		}
+	}
 
 	return apply_filters( 'wcs_get_cached_users_subscriptions', $subscriptions, $user_id );
 }
