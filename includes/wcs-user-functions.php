@@ -170,7 +170,6 @@ function wcs_user_has_subscription( $user_id = 0, $product_id = '', $status = 'a
  * @return WC_Subscription[]
  */
 function wcs_get_users_subscriptions( $user_id = 0 ) {
-
 	if ( 0 === $user_id || empty( $user_id ) ) {
 		$user_id = get_current_user_id();
 	}
@@ -178,18 +177,7 @@ function wcs_get_users_subscriptions( $user_id = 0 ) {
 	$subscriptions = apply_filters( 'wcs_pre_get_users_subscriptions', array(), $user_id );
 
 	if ( empty( $subscriptions ) && 0 !== $user_id && ! empty( $user_id ) ) {
-
-		$post_ids = get_posts( array(
-			'posts_per_page' => -1,
-			'post_status'    => 'any',
-			'post_type'      => 'shop_subscription',
-			'orderby'        => 'date',
-			'order'          => 'desc',
-			'meta_key'       => '_customer_user',
-			'meta_value'     => $user_id,
-			'meta_compare'   => '=',
-			'fields'         => 'ids',
-		) );
+		$post_ids = wcs_get_cached_users_subscriptions( $user_id );
 
 		foreach ( $post_ids as $post_id ) {
 			$subscription = wcs_get_subscription( $post_id );
