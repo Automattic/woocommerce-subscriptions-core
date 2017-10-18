@@ -204,6 +204,35 @@ function wcs_get_users_subscriptions( $user_id = 0 ) {
 }
 
 /**
+ * Get subscription IDs for the given user.
+ *
+ * @author Jeremy Pry
+ *
+ * @param int $user_id The ID of the user whose subscriptions you want.
+ *
+ * @return array Array of Subscription IDs.
+ */
+function wcs_get_users_subscription_ids( $user_id ) {
+	$query = new WP_Query();
+
+	return $query->query( array(
+		'posts_per_page'      => 1000,
+		'post_status'         => 'any',
+		'orderby'             => 'date',
+		'order'               => 'desc',
+		'fields'              => 'ids',
+		'no_found_rows'       => true,
+		'ignore_sticky_posts' => true,
+		'meta_query'          => array(
+			array(
+				'key'   => '_customer_user',
+				'value' => $user_id,
+			),
+		),
+	) );
+}
+
+/**
  * Get subscriptions for a user using caching.
  *
  * @author Jeremy Pry
