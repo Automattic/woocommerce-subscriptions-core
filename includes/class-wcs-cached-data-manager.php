@@ -146,13 +146,15 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 	 * Delete cached data with key
 	 *
 	 * @param string $key Key that needs deleting
+	 *
+	 * @return bool
 	 */
 	public function delete_cached( $key ) {
 		if ( ! is_string( $key ) || empty( $key ) ) {
-			return;
+			return false;
 		}
 
-		delete_transient( $key );
+		return delete_transient( $key );
 	}
 
 	/**
