@@ -334,7 +334,7 @@ function wcs_get_new_order_title( $type ) {
  * if not actually string.
  *
  * @param  string $type type of new order
- * @return string|WP_Error the same type thing if no problems are found, or WP_Error.m,s
+ * @return string|WP_Error the same type thing if no problems are found, or WP_Error.
  */
 function wcs_validate_new_order_type( $type ) {
 	if ( ! is_string( $type ) ) {
