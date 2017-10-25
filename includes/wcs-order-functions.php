@@ -153,6 +153,8 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 			 '_date_paid',
 			 '_completed_date',
 			 '_date_completed',
+			 '_edit_last',
+			 '_subscription_switch_data',
 			 '_order_key',
 			 '_edit_lock',
 			 '_wc_points_earned',
