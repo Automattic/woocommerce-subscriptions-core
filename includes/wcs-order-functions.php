@@ -179,8 +179,15 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 	$meta       = $wpdb->get_results( $meta_query, 'ARRAY_A' );
 	$meta       = apply_filters( 'wcs_' . $type . '_meta', $meta, $to_order, $from_order );
 
+	// Pre WC 3.0 we need to save each meta individually, post 3.0 we can save the object once
+	$save = WC_Subscriptions::is_woocommerce_pre( '3.0' ) ? 'save' : 'set_prop_only';
+
 	foreach ( $meta as $meta_item ) {
-		wcs_set_objects_property( $to_order, $meta_item['meta_key'], maybe_unserialize( $meta_item['meta_value'] ), 'save', '', 'omit_key_prefix' );
+		wcs_set_objects_property( $to_order, $meta_item['meta_key'], maybe_unserialize( $meta_item['meta_value'] ), $save, '', 'omit_key_prefix' );
+	}
+
+	if ( is_callable( array( $to_order, 'save' ) ) ) {
+		$to_order->save();
 	}
 }
 
