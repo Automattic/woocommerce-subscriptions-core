@@ -218,7 +218,7 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 		wcs_copy_order_meta( $subscription, $new_order, $type );
 
 		// Copy over line items and allow extensions to add/remove items or item meta
-		$items = apply_filters( 'wcs_new_order_items', $subscription->get_items( array( 'line_item', 'fee', 'shipping', 'tax' ) ), $new_order, $subscription );
+		$items = apply_filters( 'wcs_new_order_items', $subscription->get_items( array( 'line_item', 'fee', 'shipping', 'tax', 'coupon' ) ), $new_order, $subscription );
 		$items = apply_filters( 'wcs_' . $type . '_items', $items, $new_order, $subscription );
 
 		foreach ( $items as $item_index => $item ) {
