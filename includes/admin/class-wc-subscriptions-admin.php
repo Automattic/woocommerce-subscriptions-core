@@ -936,11 +936,6 @@ class WC_Subscriptions_Admin {
 	public static function get_subscriptions_list_table() {
 
 		if ( ! isset( self::$subscriptions_list_table ) ) {
-
-			if ( ! class_exists( 'WC_Subscriptions_List_Table' ) ) {
-				require_once( 'class-wc-subscriptions-list-table.php' );
-			}
-
 			self::$subscriptions_list_table = new WC_Subscriptions_List_Table();
 		}
 

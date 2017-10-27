@@ -297,9 +297,6 @@ class WCS_PayPal {
 	public static function process_ipn_request( $transaction_details ) {
 
 		try {
-			require_once( 'includes/class-wcs-paypal-standard-ipn-handler.php' );
-			require_once( 'includes/class-wcs-paypal-reference-transaction-ipn-handler.php' );
-
 			if ( ! isset( $transaction_details['txn_type'] ) || ! in_array( $transaction_details['txn_type'], array_merge( self::get_ipn_handler( 'standard' )->get_transaction_types(), self::get_ipn_handler( 'reference' )->get_transaction_types() ) ) ) {
 				return;
 			}
@@ -457,7 +454,6 @@ class WCS_PayPal {
 		if ( 'reference' === $ipn_type ) {
 
 			if ( ! isset( self::$ipn_handlers['reference'] ) ) {
-				require_once( 'includes/class-wcs-paypal-reference-transaction-ipn-handler.php' );
 				self::$ipn_handlers['reference'] = new WCS_Paypal_Reference_Transaction_IPN_Handler( $use_sandbox, self::get_option( 'receiver_email' ) );
 			}
 
@@ -466,7 +462,6 @@ class WCS_PayPal {
 		} else {
 
 			if ( ! isset( self::$ipn_handlers['standard'] ) ) {
-				require_once( 'includes/class-wcs-paypal-standard-ipn-handler.php' );
 				self::$ipn_handlers['standard'] = new WCS_Paypal_Standard_IPN_Handler( $use_sandbox, self::get_option( 'receiver_email' ) );
 			}
 
@@ -491,20 +486,6 @@ class WCS_PayPal {
 
 		if ( ! class_exists( 'WC_Gateway_Paypal_Response' ) ) {
 			require_once( WC()->plugin_path() . '/includes/gateways/paypal/includes/class-wc-gateway-paypal-response.php' );
-		}
-
-		$classes = array(
-			'api',
-			'api-request',
-			'api-response',
-			'api-response-checkout',
-			'api-response-billing-agreement',
-			'api-response-payment',
-			'api-response-recurring-payment',
-		);
-
-		foreach ( $classes as $class ) {
-			require_once( "includes/class-wcs-paypal-reference-transaction-{$class}.php" );
 		}
 
 		$environment = ( 'yes' === self::get_option( 'testmode' ) ) ? 'sandbox' : 'production';

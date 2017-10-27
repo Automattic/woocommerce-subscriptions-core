@@ -355,5 +355,3 @@ class WCS_Report_Cache_Manager {
 		return $data;
 	}
 }
-
-return new WCS_Report_Cache_Manager();

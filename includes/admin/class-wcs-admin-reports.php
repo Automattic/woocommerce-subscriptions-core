@@ -157,11 +157,9 @@ class WCS_Admin_Reports {
 
 		switch ( $screen->id ) {
 			case 'dashboard' :
-				include_once( 'reports/class-wcs-report-dashboard.php' );
-			break;
+				new WCS_Report_Dashboard();
+				break;
 		}
 
 	}
 }
-
-new WCS_Admin_Reports();

@@ -191,10 +191,7 @@ class WC_Subscriptions_Upgrader {
 
 			// Delete cached subscription length ranges to force an update with 2.1
 			WC_Subscriptions::$cache->delete_cached( 'wcs-sub-ranges-' . get_locale() );
-
 			WCS_Upgrade_Logger::add( 'v2.1: Deleted cached subscription ranges.' );
-
-			include_once( 'class-wcs-upgrade-2-1.php' );
 			WCS_Upgrade_2_1::set_cancelled_dates();
 
 			// Schedule report cache updates in the hopes that the data is ready and waiting for the store owner the first time they visit the reports pages
@@ -203,13 +200,11 @@ class WC_Subscriptions_Upgrader {
 
 		// Repair missing end_of_prepaid_term scheduled actions
 		if ( version_compare( self::$active_version, '2.2.0', '>=' ) && version_compare( self::$active_version, '2.2.7', '<' ) ) {
-			include_once( 'class-wcs-upgrade-2-2-7.php' );
 			WCS_Upgrade_2_2_7::schedule_end_of_prepaid_term_repair();
 		}
 
 		// Repair missing _contains_synced_subscription post meta
 		if ( version_compare( get_option( 'woocommerce_db_version' ), '3.0', '>=' ) && version_compare( self::$active_version, '2.2.0', '>=' ) && version_compare( self::$active_version, '2.2.9', '<' ) ) {
-			include_once( 'class-wcs-upgrade-2-2-9.php' );
 			WCS_Upgrade_2_2_9::schedule_repair();
 		}
 
@@ -325,9 +320,6 @@ class WC_Subscriptions_Upgrader {
 				break;
 
 			case 'products':
-
-				require_once( 'class-wcs-upgrade-1-5.php' );
-
 				$upgraded_product_count = WCS_Upgrade_1_5::upgrade_products();
 				$results = array(
 					// translators: placeholder is number of upgraded subscriptions
@@ -336,9 +328,6 @@ class WC_Subscriptions_Upgrader {
 				break;
 
 			case 'hooks':
-
-				require_once( 'class-wcs-upgrade-1-5.php' );
-
 				$upgraded_hook_count = WCS_Upgrade_1_5::upgrade_hooks( self::$upgrade_limit_hooks );
 				$results = array(
 					'upgraded_count' => $upgraded_hook_count,
@@ -348,10 +337,6 @@ class WC_Subscriptions_Upgrader {
 				break;
 
 			case 'subscriptions':
-
-				require_once( 'class-wcs-repair-2-0.php' );
-				require_once( 'class-wcs-upgrade-2-0.php' );
-
 				try {
 
 					$upgraded_subscriptions = WCS_Upgrade_2_0::upgrade_subscriptions( self::$upgrade_limit_subscriptions );
@@ -380,10 +365,6 @@ class WC_Subscriptions_Upgrader {
 				break;
 
 			case 'subscription_dates_repair':
-
-				require_once( 'class-wcs-upgrade-2-0.php' );
-				require_once( 'class-wcs-repair-2-0-2.php' );
-
 				$subscription_ids_to_repair = WCS_Repair_2_0_2::get_subscriptions_to_repair( self::$upgrade_limit_subscriptions );
 
 				try {
@@ -459,7 +440,6 @@ class WC_Subscriptions_Upgrader {
 	private static function upgrade_really_old_versions() {
 
 		if ( '0' != self::$active_version && version_compare( self::$active_version, '1.2', '<' ) ) {
-			include_once( 'class-wcs-upgrade-1-2.php' );
 			self::generate_renewal_orders();
 			update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '1.2' );
 			$upgraded_versions = '1.2, ';
@@ -467,14 +447,12 @@ class WC_Subscriptions_Upgrader {
 
 		// Add Variable Subscription product type term
 		if ( '0' != self::$active_version && version_compare( self::$active_version, '1.3', '<' ) ) {
-			include_once( 'class-wcs-upgrade-1-3.php' );
 			update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '1.3' );
 			$upgraded_versions .= '1.3 & ';
 		}
 
 		// Moving subscription meta out of user meta and into item meta
 		if ( '0' != self::$active_version && version_compare( self::$active_version, '1.4', '<' ) ) {
-			include_once( 'class-wcs-upgrade-1-4.php' );
 			update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '1.4' );
 			$upgraded_versions .= '1.4.';
 		}
@@ -783,7 +761,6 @@ class WC_Subscriptions_Upgrader {
 	 * @since 2.2.7
 	 */
 	public static function repair_end_of_prepaid_term_actions() {
-		include_once( 'class-wcs-upgrade-2-2-7.php' );
 		WCS_Upgrade_2_2_7::repair_pending_cancelled_subscriptions();
 	}
 
@@ -793,7 +770,6 @@ class WC_Subscriptions_Upgrader {
 	 * @since 2.2.9
 	 */
 	public static function repair_subscription_contains_sync_meta() {
-		include_once( 'class-wcs-upgrade-2-2-9.php' );
 		WCS_Upgrade_2_2_9::repair_subscriptions_containing_synced_variations();
 	}
 

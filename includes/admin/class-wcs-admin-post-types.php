@@ -1124,5 +1124,3 @@ class WCS_Admin_Post_Types {
 		<?php
 	}
 }
-
-new WCS_Admin_Post_Types();
