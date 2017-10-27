@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 } // Exit if accessed directly
 
 if ( class_exists( 'WCS_Admin_Post_Types' ) ) {
-	return new WCS_Admin_Post_Types();
+	return;
 }
 
 /**
