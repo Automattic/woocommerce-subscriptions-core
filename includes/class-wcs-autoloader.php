@@ -149,6 +149,8 @@ class WCS_Autoloader {
 			} else {
 				$path .= '/includes';
 			}
+		} elseif ( false !== strpos( $class, 'retry' ) && 'wcs_retry_manager' !== $class ) {
+			$path .= '/payment-retry';
 		} elseif ( $is_admin && 'wcs_change_payment_method_admin' !== $class ) {
 			$path .= '/admin';
 		} elseif ( false !== strpos( $class, 'meta_box' ) ) {
@@ -169,8 +171,6 @@ class WCS_Autoloader {
 			$path .= '/gateways';
 		} elseif ( false !== strpos( $class, 'legacy' ) || 'wcs_array_property_post_meta_black_magic' === $class ) {
 			$path .= '/legacy';
-		} elseif ( false !== strpos( $class, 'retry' ) && 'wcs_retry_manager' !== $class ) {
-			$path .= '/payment-retry';
 		} elseif ( false !== strpos( $class, 'upgrade' ) || false !== strpos( $class, 'repair' ) ) {
 			$path .= '/upgrades';
 		}
