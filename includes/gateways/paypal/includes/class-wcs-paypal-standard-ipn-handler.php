@@ -119,7 +119,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 				}
 			}
 
-			if ( ! empty( $transaction_details['custom'] ) && ! self::is_woocommerce_payload( $transaction_details['custom'] ) ) {
+			if ( empty( $transaction_details['custom'] ) || ! $this->is_woocommerce_payload( $transaction_details['custom'] ) ) {
 				WC_Gateway_Paypal::log( 'IPN request ignored - payload is not in a WooCommerce recognizable format' );
 				return;
 			}
@@ -557,7 +557,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 	 *
 	 * @return bool
 	 */
-	public function is_woocommerce_payload( $payload ) {
+	protected function is_woocommerce_payload( $payload ) {
 		return is_numeric( $payload ) ||
 			(bool) preg_match( '/(wc_)?order_[a-f0-9]{5,20}/', $payload );
 	}
