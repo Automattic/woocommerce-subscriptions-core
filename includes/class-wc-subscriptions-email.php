@@ -363,5 +363,3 @@ class WC_Subscriptions_Email {
 		_deprecated_function( __FUNCTION__, '2.0' );
 	}
 }
-
-WC_Subscriptions_Email::init();

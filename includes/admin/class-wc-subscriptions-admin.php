@@ -1798,5 +1798,3 @@ class WC_Subscriptions_Admin {
 		_deprecated_function( __METHOD__, '2.0' );
 	}
 }
-
-WC_Subscriptions_Admin::init();

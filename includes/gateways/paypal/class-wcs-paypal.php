@@ -16,17 +16,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-require_once( 'includes/wcs-paypal-functions.php' );
-require_once( 'includes/class-wcs-paypal-supports.php' );
-require_once( 'includes/class-wcs-paypal-status-manager.php' );
-require_once( 'includes/class-wcs-paypal-standard-switcher.php' );
-require_once( 'includes/class-wcs-paypal-standard-request.php' );
-require_once( 'includes/class-wcs-paypal-standard-change-payment-method.php' );
-require_once( 'includes/admin/class-wcs-paypal-admin.php' );
-require_once( 'includes/admin/class-wcs-paypal-change-payment-method-admin.php' );
-require_once( 'includes/deprecated/class-wc-paypal-standard-subscriptions.php' );
-require_once( 'includes/class-wcs-paypal-standard-ipn-failure-handler.php' );
-
 class WCS_PayPal {
 
 	/** @var WCS_PayPal_Express_API for communicating with PayPal */

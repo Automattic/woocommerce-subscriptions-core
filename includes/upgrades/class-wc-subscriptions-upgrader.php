@@ -908,4 +908,3 @@ class WC_Subscriptions_Upgrader {
 		return WCS_Upgrade_1_4::is_user_upgraded( $user_id );
 	}
 }
-add_action( 'after_setup_theme', 'WC_Subscriptions_Upgrader::init', 11 );

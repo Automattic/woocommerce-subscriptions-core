@@ -2695,4 +2695,3 @@ class WC_Subscriptions_Switcher {
 		return $related_orders;
 	}
 }
-WC_Subscriptions_Switcher::init();

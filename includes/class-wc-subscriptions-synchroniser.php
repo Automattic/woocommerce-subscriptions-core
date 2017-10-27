@@ -1515,5 +1515,3 @@ class WC_Subscriptions_Synchroniser {
 	}
 
 }
-add_action( 'init', 'WC_Subscriptions_Synchroniser::init' );
-
