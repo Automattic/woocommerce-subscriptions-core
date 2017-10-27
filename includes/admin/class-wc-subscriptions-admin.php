@@ -1737,7 +1737,7 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function related_orders_meta_box( $post ) {
 		_deprecated_function( __METHOD__, '2.0', 'WCS_Meta_Box_Related_Orders::output()' );
-		WCS_Meta_Box_Related_Orders::output();
+		WCS_Meta_Box_Related_Orders::output( $post );
 	}
 
 	/**
