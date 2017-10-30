@@ -149,7 +149,7 @@ class WCS_Autoloader {
 			} else {
 				$path .= '/includes';
 			}
-		} elseif ( false !== strpos( $class, 'retry' ) && 'wcs_retry_manager' !== $class ) {
+		} elseif ( 0 === strpos( $class, 'wcs_retry' ) && 'wcs_retry_manager' !== $class ) {
 			$path .= '/payment-retry';
 		} elseif ( $is_admin && 'wcs_change_payment_method_admin' !== $class ) {
 			$path .= '/admin';
