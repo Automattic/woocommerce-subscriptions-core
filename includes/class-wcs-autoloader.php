@@ -20,6 +20,13 @@ class WCS_Autoloader {
 	protected $base_path = '';
 
 	/**
+	 * Whether to use the legacy API classes.
+	 *
+	 * @var bool
+	 */
+	protected $legacy_api = false;
+
+	/**
 	 * WCS_Autoloader constructor.
 	 *
 	 * @param string $base_path
@@ -158,7 +165,7 @@ class WCS_Autoloader {
 		} elseif ( false !== strpos( $class, 'report' ) ) {
 			$path .= '/admin/reports';
 		} elseif ( false !== strpos( $class, 'rest' ) ) {
-			$path .= WC_Subscriptions::is_woocommerce_pre( '3.0' ) ? '/api/legacy' : '/api';
+			$path .= $this->legacy_api ? '/api/legacy' : '/api';
 		} elseif ( false !== strpos( $class, 'api' ) && 'wcs_api' !== $class ) {
 			$path .= '/api/legacy';
 		} elseif ( false !== strpos( $class, 'data_store' ) ) {
@@ -176,5 +183,20 @@ class WCS_Autoloader {
 		}
 
 		return trailingslashit( $path );
+	}
+
+	/**
+	 * Set whether the legacy API should be used.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param bool $use_legacy_api Whether to use the legacy API classes.
+	 *
+	 * @return $this
+	 */
+	public function use_legacy_api( $use_legacy_api ) {
+		$this->legacy_api = (bool) $use_legacy_api;
+
+		return $this;
 	}
 }
