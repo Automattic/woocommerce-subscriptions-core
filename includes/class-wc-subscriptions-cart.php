@@ -304,7 +304,12 @@ class WC_Subscriptions_Cart {
 			self::$cached_recurring_cart = $recurring_cart;
 
 			// No fees recur (yet)
-			$recurring_cart->fees = array();
+			if ( is_callable( array( $recurring_cart, 'fees_api' ) ) ) { // WC 3.2 +
+				$recurring_cart->fees_api()->remove_all_fees();
+			} else {
+				$recurring_cart->fees = array();
+			}
+
 			$recurring_cart->fee_total = 0;
 			WC()->shipping->reset_shipping();
 			self::maybe_restore_shipping_methods();
@@ -333,9 +338,21 @@ class WC_Subscriptions_Cart {
 
 		// If there is no sign-up fee and a free trial, and no products being purchased with the subscription, we need to zero the fees for the first billing period
 		if ( 0 == self::get_cart_subscription_sign_up_fee() && self::all_cart_items_have_free_trial() ) {
-			foreach ( WC()->cart->get_fees() as $fee_index => $fee ) {
-				WC()->cart->fees[ $fee_index ]->amount = 0;
-				WC()->cart->fees[ $fee_index ]->tax = 0;
+			$cart_fees = WC()->cart->get_fees();
+
+			if ( WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
+				foreach ( $cart_fees as $fee_index => $fee ) {
+					WC()->cart->fees[ $fee_index ]->amount = 0;
+					WC()->cart->fees[ $fee_index ]->tax = 0;
+				}
+			} else {
+				foreach ( $cart_fees as $fee ) {
+					$fee->amount = 0;
+					$fee->tax    = 0;
+					$fee->total  = 0;
+				}
+
+				WC()->cart->fees_api()->set_fees( $cart_fees );
 			}
 			WC()->cart->fee_total = 0;
 		}
@@ -400,9 +417,11 @@ class WC_Subscriptions_Cart {
 					$needs_shipping = false;
 				}
 			} elseif ( 'recurring_total' == self::$calculation_type ) {
-				if ( true == $needs_shipping && ! self::cart_contains_subscriptions_needing_shipping() ) {
+				$cart = ( isset( self::$cached_recurring_cart ) ) ? self::$cached_recurring_cart : WC()->cart;
+
+				if ( true == $needs_shipping && ! self::cart_contains_subscriptions_needing_shipping( $cart ) ) {
 					$needs_shipping = false;
-				} elseif ( false == $needs_shipping && self::cart_contains_subscriptions_needing_shipping() ) {
+				} elseif ( false == $needs_shipping && self::cart_contains_subscriptions_needing_shipping( $cart ) ) {
 					$needs_shipping = true;
 				}
 			}
@@ -591,16 +610,20 @@ class WC_Subscriptions_Cart {
 	 *
 	 * @since 1.5.4
 	 */
-	public static function cart_contains_subscriptions_needing_shipping() {
+	public static function cart_contains_subscriptions_needing_shipping( $cart = null ) {
 
 		if ( 'no' === get_option( 'woocommerce_calc_shipping' ) ) {
 			return false;
 		}
 
+		if ( null === $cart ) {
+			$cart = WC()->cart;
+		}
+
 		$cart_contains_subscriptions_needing_shipping = false;
 
 		if ( self::cart_contains_subscription() ) {
-			foreach ( WC()->cart->cart_contents as $cart_item_key => $values ) {
+			foreach ( $cart->cart_contents as $cart_item_key => $values ) {
 				$_product = $values['data'];
 				if ( WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && false === WC_Subscriptions_Product::needs_one_time_shipping( $_product ) ) {
 					$cart_contains_subscriptions_needing_shipping = true;

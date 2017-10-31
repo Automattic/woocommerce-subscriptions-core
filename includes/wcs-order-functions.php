@@ -153,6 +153,8 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 			 '_date_paid',
 			 '_completed_date',
 			 '_date_completed',
+			 '_edit_last',
+			 '_subscription_switch_data',
 			 '_order_key',
 			 '_edit_lock',
 			 '_wc_points_earned',
@@ -177,8 +179,15 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 	$meta       = $wpdb->get_results( $meta_query, 'ARRAY_A' );
 	$meta       = apply_filters( 'wcs_' . $type . '_meta', $meta, $to_order, $from_order );
 
+	// Pre WC 3.0 we need to save each meta individually, post 3.0 we can save the object once
+	$save = WC_Subscriptions::is_woocommerce_pre( '3.0' ) ? 'save' : 'set_prop_only';
+
 	foreach ( $meta as $meta_item ) {
-		wcs_set_objects_property( $to_order, $meta_item['meta_key'], maybe_unserialize( $meta_item['meta_value'] ), 'save', '', 'omit_key_prefix' );
+		wcs_set_objects_property( $to_order, $meta_item['meta_key'], maybe_unserialize( $meta_item['meta_value'] ), $save, '', 'omit_key_prefix' );
+	}
+
+	if ( is_callable( array( $to_order, 'save' ) ) ) {
+		$to_order->save();
 	}
 }
 
@@ -216,7 +225,7 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 		wcs_copy_order_meta( $subscription, $new_order, $type );
 
 		// Copy over line items and allow extensions to add/remove items or item meta
-		$items = apply_filters( 'wcs_new_order_items', $subscription->get_items( array( 'line_item', 'fee', 'shipping', 'tax' ) ), $new_order, $subscription );
+		$items = apply_filters( 'wcs_new_order_items', $subscription->get_items( array( 'line_item', 'fee', 'shipping', 'tax', 'coupon' ) ), $new_order, $subscription );
 		$items = apply_filters( 'wcs_' . $type . '_items', $items, $new_order, $subscription );
 
 		foreach ( $items as $item_index => $item ) {
@@ -394,7 +403,7 @@ function wcs_get_order_address( $order, $address_type = 'shipping' ) {
  * Checks an order to see if it contains a subscription.
  *
  * @param mixed $order A WC_Order object or the ID of the order which the subscription was purchased in.
- * @param array|string $order_type Can include 'parent', 'renewal', 'resubscribe' and/or 'switch'. Defaults to 'parent'.
+ * @param array|string $order_type Can include 'parent', 'renewal', 'resubscribe' and/or 'switch'. Defaults to 'parent', 'resubscribe' and 'switch' orders.
  * @return bool True if the order contains a subscription that belongs to any of the given order types, otherwise false.
  * @since 2.0
  */
@@ -544,6 +553,24 @@ function wcs_get_order_item( $item_id, $order ) {
 	}
 
 	return $item;
+}
+
+/**
+ * A wrapper for wc_update_order_item() which consistently deletes the cached item after update, unlike WC.
+ *
+ * @param int $item_id The ID of an order item
+ * @param string $new_type The new type to set as the 'order_item_type' value on the order item.
+ * @param int $order_or_subscription_id The order or subscription ID the line item belongs to - optional. Deletes the order item cache if provided.
+ * @since 2.2.12
+ */
+function wcs_update_order_item_type( $item_id, $new_type, $order_or_subscription_id = 0 ) {
+	wc_update_order_item( $item_id, array( 'order_item_type' => $new_type ) );
+	wp_cache_delete( 'item-' . $item_id, 'order-items' );
+
+	// When possible, also clear the order items' cache for the object to which this item relates (double cache :sob:)
+	if ( ! empty( $order_or_subscription_id ) ) {
+		wp_cache_delete( 'order-items-' . $order_or_subscription_id, 'orders' );
+	}
 }
 
 /**

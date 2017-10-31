@@ -273,30 +273,33 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 		// Get subscription object.
 		$subscription = wcs_get_subscription( $post_id );
 
-		// Add key
-		add_post_meta( $post_id, '_order_key', uniqid( 'order_' ), true );
+		// Ensure there is an order key.
+		if ( ! $subscription->get_order_key() ) {
+			$key = 'wc_' . apply_filters( 'woocommerce_generate_order_key', uniqid( 'order_' ) );
+			wcs_set_objects_property( $subscription, 'order_key', $key );
+		}
 
 		// Update meta
 		update_post_meta( $post_id, '_customer_user', absint( $_POST['customer_user'] ) );
 
 		// Handle the billing fields.
 		foreach ( self::$billing_fields as $key => $field ) {
-			$prefixed_key = "_billing_{$key}";
-			if ( ! isset( $_POST[ $prefixed_key ] ) ) {
+			$field['id'] = isset( $field['id'] ) ? $field['id'] : "_billing_{$key}";
+			if ( ! isset( $_POST[ $field['id'] ] ) ) {
 				continue;
 			}
 
-			wcs_set_objects_property( $subscription, $prefixed_key, wc_clean( $_POST[ $prefixed_key ] ) );
+			wcs_set_objects_property( $subscription, $field['id'], wc_clean( $_POST[ $field['id'] ] ) );
 		}
 
 		// Handle the shipping fields.
 		foreach ( self::$shipping_fields as $key => $field ) {
-			$prefixed_key = "_shipping_{$key}";
-			if ( ! isset( $_POST[ $prefixed_key ] ) ) {
+			$field['id'] = isset( $field['id'] ) ? $field['id'] : "_shipping_{$key}";
+			if ( ! isset( $_POST[ $field['id'] ] ) ) {
 				continue;
 			}
 
-			wcs_set_objects_property( $subscription, $prefixed_key, wc_clean( $_POST[ $prefixed_key ] ) );
+			wcs_set_objects_property( $subscription, $field['id'], wc_clean( $_POST[ $field['id'] ] ) );
 		}
 
 		try {
