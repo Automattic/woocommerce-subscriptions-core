@@ -79,8 +79,13 @@ class WCS_Autoloader {
 			return false;
 		}
 
-		// There's one class without WCS or Subscriptions in its name.
-		if ( 'wc_order_item_pending_switch' === $class ) {
+		// There are some legacy classes without WCS or Subscription in the name.
+		static $legacy = array(
+			'wc_order_item_pending_switch'         => 1,
+			'wc_report_retention_rate'             => 1,
+			'wc_report_upcoming_recurring_revenue' => 1,
+		);
+		if ( isset( $legacy[ $class ] ) ) {
 			return true;
 		}
 
