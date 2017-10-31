@@ -142,7 +142,7 @@ class WCS_Autoloader {
 	 */
 	protected function get_relative_class_path( $class ) {
 		$path     = '/includes';
-		$is_admin = false !== strpos( $class, 'admin' );
+		$is_admin = ( false !== strpos( $class, 'admin' ) );
 
 		if ( $this->is_class_abstract( $class ) ) {
 			if ( 'wcs_sv_api_base' === $class ) {
