@@ -132,8 +132,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 					}
 				}
 
-				$redirect_to = wc_get_checkout_url();
-				wp_safe_redirect( $redirect_to );
+				wp_safe_redirect( wc_get_checkout_url() );
 				exit;
 			}
 		}
