@@ -1419,6 +1419,14 @@ class WC_Subscriptions_Admin {
 			'success' => ( WC_Subscriptions::is_duplicate_site() ) ? 0 : 1,
 		);
 
+		$theme_overrides               = self::get_theme_overrides();
+		$debug_data['theme_overrides'] = array(
+			'name'      => _x( 'Theme Overrides', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'mark'      => '',
+			'mark_icon' => $theme_overrides['has_outdated_templates'] ? 'warning' : 'yes',
+			'data'      => $theme_overrides,
+		);
+
 		$debug_data = apply_filters( 'wcs_system_status', $debug_data );
 
 		include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/status.php' );
