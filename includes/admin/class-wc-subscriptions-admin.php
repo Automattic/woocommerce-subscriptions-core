@@ -1666,6 +1666,57 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
+	 * Determine which of our files have been overridden by the theme.
+	 *
+	 * @author Jeremy Pry
+	 * @return array Theme override data.
+	 */
+	public static function get_theme_overrides() {
+		$wcs_template_dir = dirname( WC_Subscriptions::$plugin_file ) . '/templates/';
+		$wc_template_path = trailingslashit( wc()->template_path() );
+		$theme_root       = trailingslashit( get_theme_root() );
+		$overridden       = array();
+		$outdated         = false;
+		$templates        = WC_Admin_Status::scan_template_files( $wcs_template_dir );
+
+		foreach ( $templates as $file ) {
+			$theme_file = $is_outdated = false;
+			$locations  = array(
+				get_stylesheet_directory() . "/{$file}",
+				get_stylesheet_directory() . "/{$wc_template_path}{$file}",
+				get_template_directory() . "/{$file}",
+				get_template_directory() . "/{$wc_template_path}{$file}",
+			);
+
+			foreach ( $locations as $location ) {
+				if ( is_readable( $location ) ) {
+					$theme_file = $location;
+					break;
+				}
+			}
+
+			if ( ! empty( $theme_file ) ) {
+				$core_version  = WC_Admin_Status::get_file_version( $wcs_template_dir . $file );
+				$theme_version = WC_Admin_Status::get_file_version( $theme_file );
+				if ( $core_version && ( empty( $theme_version ) || version_compare( $theme_version, $core_version, '<' ) ) ) {
+					$outdated = $is_outdated = true;
+				}
+				$overridden[] = array(
+					'file'         => str_replace( $theme_root, '', $theme_file ),
+					'version'      => $theme_version,
+					'core_version' => $core_version,
+					'is_outdated'  => $is_outdated,
+				);
+			}
+		}
+
+		return array(
+			'has_outdated_templates' => $outdated,
+			'overridden_templates'   => $overridden,
+		);
+	}
+
+	/**
 	 * Outputs the contents of the "Renewal Orders" meta box.
 	 *
 	 * @param object $post Current post data.
