@@ -1421,7 +1421,7 @@ class WC_Subscriptions_Admin {
 
 		$theme_overrides               = self::get_theme_overrides();
 		$debug_data['theme_overrides'] = array(
-			'name'      => _x( 'Theme Overrides', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'name'      => _x( 'Subscriptions Template Theme Overrides', 'label for the system status page', 'woocommerce-subscriptions' ),
 			'mark'      => '',
 			'mark_icon' => $theme_overrides['has_outdated_templates'] ? 'warning' : 'yes',
 			'data'      => $theme_overrides,
