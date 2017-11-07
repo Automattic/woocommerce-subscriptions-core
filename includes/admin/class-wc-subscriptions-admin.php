@@ -1419,8 +1419,8 @@ class WC_Subscriptions_Admin {
 			'success' => ( WC_Subscriptions::is_duplicate_site() ) ? 0 : 1,
 		);
 
-		$theme_overrides               = self::get_theme_overrides();
-		$debug_data['theme_overrides'] = array(
+		$theme_overrides = self::get_theme_overrides();
+		$debug_data['wcs_theme_overrides'] = array(
 			'name'      => _x( 'Subscriptions Template Theme Overrides', 'label for the system status page', 'woocommerce-subscriptions' ),
 			'mark'      => '',
 			'mark_icon' => $theme_overrides['has_outdated_templates'] ? 'warning' : 'yes',
