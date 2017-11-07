@@ -95,8 +95,10 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 
 			// Purge cache for a specific user on the save_post hook.
 			if ( doing_action( 'save_post' ) ) {
-				$this->log( "Clearing cache for user ID {$post->post_author} on save_post hook." );
-				$this->delete_cached( "wcs_user_subscriptions_{$post->post_author}" );
+				$subscription         = wcs_get_subscription( $post_id );
+				$subscription_user_id = $subscription->get_user_id();
+				$this->log( "Clearing cache for user ID {$subscription_user_id} on save_post hook." );
+				$this->delete_cached( "wcs_user_subscriptions_{$subscription_user_id}" );
 			}
 		}
 	}
