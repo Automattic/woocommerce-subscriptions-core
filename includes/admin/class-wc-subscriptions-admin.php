@@ -1679,7 +1679,7 @@ class WC_Subscriptions_Admin {
 	 * @author Jeremy Pry
 	 * @return array Theme override data.
 	 */
-	public static function get_theme_overrides() {
+	private static function get_theme_overrides() {
 		$wcs_template_dir = dirname( WC_Subscriptions::$plugin_file ) . '/templates/';
 		$wc_template_path = trailingslashit( wc()->template_path() );
 		$theme_root       = trailingslashit( get_theme_root() );
