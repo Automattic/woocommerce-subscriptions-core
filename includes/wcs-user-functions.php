@@ -177,7 +177,7 @@ function wcs_get_users_subscriptions( $user_id = 0 ) {
 	$subscriptions = apply_filters( 'wcs_pre_get_users_subscriptions', array(), $user_id );
 
 	if ( empty( $subscriptions ) && 0 !== $user_id && ! empty( $user_id ) ) {
-		$post_ids = wcs_get_cached_users_subscriptions( $user_id );
+		$post_ids = wcs_get_cached_user_subscription_ids( $user_id );
 
 		foreach ( $post_ids as $post_id ) {
 			$subscription = wcs_get_subscription( $post_id );
@@ -222,15 +222,15 @@ function wcs_get_users_subscription_ids( $user_id ) {
 }
 
 /**
- * Get subscriptions for a user using caching.
+ * Get subscription IDs for a user using caching.
  *
  * @author Jeremy Pry
  *
  * @param int $user_id The ID of the user whose subscriptions you want.
  *
- * @return array
+ * @return array Array of subscription IDs.
  */
-function wcs_get_cached_users_subscriptions( $user_id = 0 ) {
+function wcs_get_cached_user_subscription_ids( $user_id = 0 ) {
 	$user_id = absint( $user_id );
 	if ( 0 === $user_id ) {
 		$user_id = get_current_user_id();
