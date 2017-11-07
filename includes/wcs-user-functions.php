@@ -238,7 +238,7 @@ function wcs_get_cached_user_subscription_ids( $user_id = 0 ) {
 
 	// If the user ID is still zero, bail early.
 	if ( 0 === $user_id ) {
-		return apply_filters( 'wcs_get_cached_users_subscriptions', array(), $user_id );
+		return apply_filters( 'wcs_get_cached_users_subscription_ids', array(), $user_id );
 	}
 
 	$subscription_ids = WC_Subscriptions::$cache->cache_and_get(
@@ -247,15 +247,7 @@ function wcs_get_cached_user_subscription_ids( $user_id = 0 ) {
 		array( $user_id )
 	);
 
-	$subscriptions = array();
-	foreach ( $subscription_ids as $id ) {
-		$subscription = wcs_get_subscription( $id );
-		if ( $subscription ) {
-			$subscriptions[ $id ] = $subscription;
-		}
-	}
-
-	return apply_filters( 'wcs_get_cached_users_subscriptions', $subscriptions, $user_id );
+	return apply_filters( 'wcs_get_cached_users_subscription_ids', $subscription_ids, $user_id );
 }
 
 /**
