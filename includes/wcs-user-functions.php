@@ -205,7 +205,7 @@ function wcs_get_users_subscription_ids( $user_id ) {
 
 	return $query->query( array(
 		'post_type'           => 'shop_subscription',
-		'posts_per_page'      => 1000,
+		'posts_per_page'      => -1,
 		'post_status'         => 'any',
 		'orderby'             => 'date',
 		'order'               => 'desc',
