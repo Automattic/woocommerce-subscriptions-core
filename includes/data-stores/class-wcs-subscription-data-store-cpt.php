@@ -309,4 +309,65 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 
 		return $saved_dates;
 	}
+
+	/**
+	* Search subscription data for a term and returns subscription ids
+	*
+	* @param string $term Term to search
+	* @return array of subscription ids
+	* @since 2.3.0
+	*/
+	public function search_subscriptions( $term ) {
+		global $wpdb;
+
+		$subscription_ids = array();
+
+		$search_fields = array_map( 'wc_clean', apply_filters( 'woocommerce_shop_subscription_search_fields', array(
+			'_order_key',
+			'_billing_address_index',
+			'_shipping_address_index',
+			'_billing_email',
+		) ) );
+
+		if ( is_numeric( $term ) ) {
+			$subscription_ids[] = absint( $term );
+		}
+
+		if ( ! empty( $search_fields ) ) {
+
+			$subscription_ids = array_unique( array_merge(
+				$wpdb->get_col(
+					$wpdb->prepare( "
+						SELECT DISTINCT p1.post_id
+						FROM {$wpdb->postmeta} p1
+						WHERE p1.meta_value LIKE '%%%s%%'", $wpdb->esc_like( wc_clean( $term ) ) ) . " AND p1.meta_key IN ('" . implode( "','", array_map( 'esc_sql', $search_fields ) ) . "')"
+				),
+				$wpdb->get_col(
+					$wpdb->prepare( "
+						SELECT order_id
+						FROM {$wpdb->prefix}woocommerce_order_items as order_items
+						WHERE order_item_name LIKE '%%%s%%'
+						",
+						$wpdb->esc_like( wc_clean( $term ) )
+					)
+				),
+				$wpdb->get_col(
+					$wpdb->prepare( "
+						SELECT p1.ID
+						FROM {$wpdb->posts} p1
+						INNER JOIN {$wpdb->postmeta} p2 ON p1.ID = p2.post_id
+						INNER JOIN {$wpdb->users} u ON p2.meta_value = u.ID
+						WHERE u.user_email LIKE '%%%s%%'
+						AND p2.meta_key = '_customer_user'
+						AND p1.post_type = 'shop_subscription'
+						",
+						esc_attr( $term )
+					)
+				),
+				$subscription_ids
+			) );
+		}
+
+		return apply_filters( 'woocommerce_shop_subscription_search_results', $subscription_ids, $term, $search_fields );
+	}
 }
