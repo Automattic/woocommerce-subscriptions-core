@@ -36,6 +36,9 @@ class WCS_PayPal_Admin {
 
 		// Add the PayPal subscription information to the billing information
 		add_action( 'woocommerce_admin_order_data_after_billing_address', __CLASS__ . '::profile_link' );
+
+		// Before WC updates the PayPal settings remove credentials error flag
+		add_action( 'load-woocommerce_page_wc-settings', __CLASS__ . '::maybe_update_credentials_error_flag', 9 );
 	}
 
 	/**
@@ -86,8 +89,6 @@ class WCS_PayPal_Admin {
 	public static function maybe_show_admin_notices() {
 
 		self::maybe_disable_invalid_profile_notice();
-
-		self::maybe_update_credentials_error_flag();
 
 		if ( ! in_array( get_woocommerce_currency(), apply_filters( 'woocommerce_paypal_supported_currencies', array( 'AUD', 'BRL', 'CAD', 'MXN', 'NZD', 'HKD', 'SGD', 'USD', 'EUR', 'JPY', 'TRY', 'NOK', 'CZK', 'DKK', 'HUF', 'ILS', 'MYR', 'PHP', 'PLN', 'SEK', 'CHF', 'TWD', 'THB', 'GBP', 'RMB' ) ) ) ) {
 			$valid_for_use = false;
@@ -217,7 +218,7 @@ class WCS_PayPal_Admin {
 	 *
 	 * @since 2.0
 	 */
-	protected static function maybe_update_credentials_error_flag() {
+	public static function maybe_update_credentials_error_flag() {
 
 		// Check if the API credentials are being saved - we can't do this on the 'woocommerce_update_options_payment_gateways_paypal' hook because it is triggered after 'admin_notices'
 		if ( ! empty( $_REQUEST['_wpnonce'] ) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'woocommerce-settings' ) && isset( $_POST['woocommerce_paypal_api_username'] ) || isset( $_POST['woocommerce_paypal_api_password'] ) || isset( $_POST['woocommerce_paypal_api_signature'] ) ) {
