@@ -175,7 +175,7 @@ function wcs_cart_totals_shipping_method_price_label( $method, $cart ) {
 
 	$price_label = '';
 
-	if ( floatval( $method->cost ) != 0 ) {
+	if ( $method->cost != 0 ) {
 
 		if ( WC()->cart->tax_display_cart == 'excl' ) {
 			$price_label .= wcs_cart_price_string( $method->cost, $cart );
