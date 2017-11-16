@@ -197,7 +197,7 @@ class WC_Subscriptions_Switcher {
 			if ( $removed_item_count > 0 ) {
 				WC_Subscriptions::add_notice( _n( 'Your cart contained an invalid subscription switch request. It has been removed.', 'Your cart contained invalid subscription switch requests. They have been removed.', 	$removed_item_count, 'woocommerce-subscriptions' ), 'error' );
 
-				wp_redirect( WC()->cart->get_cart_url() );
+				wp_redirect( wc_get_cart_url() );
 				exit();
 			}
 		} elseif ( is_product() && $product = wc_get_product( $post ) ) { // Automatically initiate the switch process for limited variable subscriptions

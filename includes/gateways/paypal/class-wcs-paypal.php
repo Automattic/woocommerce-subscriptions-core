@@ -253,14 +253,14 @@ class WCS_PayPal {
 
 					} else {
 
-						wp_safe_redirect( WC()->cart->get_cart_url() );
+						wp_safe_redirect( wc_get_cart_url() );
 
 					}
 				} catch ( Exception $e ) {
 
 					wc_add_notice( __( 'An error occurred, please try again or try an alternate form of payment.', 'woocommerce-subscriptions' ), 'error' );
 
-					wp_redirect( WC()->cart->get_cart_url() );
+					wp_redirect( wc_get_cart_url() );
 				}
 
 				exit;
