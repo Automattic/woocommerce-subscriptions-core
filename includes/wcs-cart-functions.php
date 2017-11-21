@@ -282,7 +282,7 @@ function wcs_cart_totals_order_total_html( $cart ) {
  * Return a formatted price string for a given cart object
  *
  * @access public
- * @return void
+ * @return string
  */
 function wcs_cart_price_string( $recurring_amount, $cart ) {
 
