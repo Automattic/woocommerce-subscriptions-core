@@ -197,7 +197,7 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
  *
  * @param  WC_Subscription|int $subscription Subscription we're basing the order off of
  * @param  string $type        Type of new order. Default values are 'renewal_order'|'resubscribe_order'
- * @return WC_Order            New order
+ * @return WC_Order|WP_Error New order or error object.
  */
 function wcs_create_order_from_subscription( $subscription, $type ) {
 
@@ -220,6 +220,7 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 		$new_order = wc_create_order( array(
 			'customer_id'   => $subscription->get_user_id(),
 			'customer_note' => $subscription->get_customer_note(),
+			'created_via'   => 'subscription',
 		) );
 
 		wcs_copy_order_meta( $subscription, $new_order, $type );
@@ -342,7 +343,7 @@ function wcs_get_new_order_title( $type ) {
  * if not actually string.
  *
  * @param  string $type type of new order
- * @return string       the same type thing if no problems are found
+ * @return string|WP_Error the same type thing if no problems are found, or WP_Error.
  */
 function wcs_validate_new_order_type( $type ) {
 	if ( ! is_string( $type ) ) {
