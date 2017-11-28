@@ -123,7 +123,7 @@ function wcs_get_subscription_ranges( $subscription_period = '' ) {
 		$subscription_period = '';
 	}
 
-	$locale = get_locale();
+	$locale = function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
 
 	$subscription_ranges = WC_Subscriptions::$cache->cache_and_get( 'wcs-sub-ranges-' . $locale, 'wcs_get_non_cached_subscription_ranges', array(), 3 * HOUR_IN_SECONDS );
 

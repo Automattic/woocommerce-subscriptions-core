@@ -197,7 +197,7 @@ class WC_Subscriptions_Switcher {
 			if ( $removed_item_count > 0 ) {
 				WC_Subscriptions::add_notice( _n( 'Your cart contained an invalid subscription switch request. It has been removed.', 'Your cart contained invalid subscription switch requests. They have been removed.', 	$removed_item_count, 'woocommerce-subscriptions' ), 'error' );
 
-				wp_redirect( WC()->cart->get_cart_url() );
+				wp_redirect( wc_get_cart_url() );
 				exit();
 			}
 		} elseif ( is_product() && $product = wc_get_product( $post ) ) { // Automatically initiate the switch process for limited variable subscriptions
@@ -1443,6 +1443,12 @@ class WC_Subscriptions_Switcher {
 
 						}
 					} else {
+
+						// If we've already calculated the prorated price recalculate the amounts but reset the values so we don't double the amounts
+						if ( 0 < wcs_get_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_price_prorated', 'single', 0 ) ) {
+							$prorated_signup_fee = wcs_get_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee_prorated', 'single' );
+							wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee', $prorated_signup_fee, 'set_prop_only' );
+						}
 
 						$extra_to_pay = $days_until_next_payment * ( $new_price_per_day - $old_price_per_day );
 
