@@ -793,8 +793,8 @@ function wcs_copy_order_item( $from_item, &$to_item ) {
 			break;
 		case 'coupon':
 			$to_item->set_props( array(
-				'discount'     => $from_item->discount(),
-				'discount_tax' => $from_item->discount_tax(),
+				'discount'     => $from_item->get_discount(),
+				'discount_tax' => $from_item->get_discount_tax(),
 			) );
 			break;
 	}
