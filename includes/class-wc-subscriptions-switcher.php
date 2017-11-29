@@ -2047,7 +2047,16 @@ class WC_Subscriptions_Switcher {
 			// Check that the existing subscriptions are for $0 recurring
 			$old_recurring_total = $subscription->get_total();
 
-			if ( 0 == $old_recurring_total && $new_recurring_total > 0 && true === $has_future_payments && $subscription->is_manual() ) {
+			// Check for $0 / period to a non-zero $ / period and manual subscription
+			$switch_from_zero_manual_subscription = ( 0 == $old_recurring_total && $subscription->is_manual() );
+
+			// Check for manual renewals accepted, in case of automatic subscription switch with no proration
+			$accept_manual_renewals = ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals', 'no' ) );
+
+			// Check if old subscription is automatic
+			$old_subscription_automatic = ! $subscription->is_manual();
+
+			if ( ( $switch_from_zero_manual_subscription || ! $accept_manual_renewals || ( $accept_manual_renewals && $old_subscription_automatic ) ) && $new_recurring_total > 0 && true === $has_future_payments ) {
 				WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['force_payment'] = true;
 			}
 		}
