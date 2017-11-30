@@ -176,7 +176,7 @@ class WC_Subscriptions_Switcher {
 					$switch_message = __( 'Choose a new subscription.', 'woocommerce-subscriptions' );
 				}
 
-				WC_Subscriptions::add_notice( $switch_message, 'notice' );
+				wc_add_notice( $switch_message, 'notice' );
 
 			}
 		} elseif ( ( is_cart() || is_checkout() ) && ! is_order_received_page() && false !== ( $switch_items = self::cart_contains_switches() ) ) {
@@ -195,7 +195,7 @@ class WC_Subscriptions_Switcher {
 			}
 
 			if ( $removed_item_count > 0 ) {
-				WC_Subscriptions::add_notice( _n( 'Your cart contained an invalid subscription switch request. It has been removed.', 'Your cart contained invalid subscription switch requests. They have been removed.', 	$removed_item_count, 'woocommerce-subscriptions' ), 'error' );
+				wc_add_notice( _n( 'Your cart contained an invalid subscription switch request. It has been removed.', 'Your cart contained invalid subscription switch requests. They have been removed.', 	$removed_item_count, 'woocommerce-subscriptions' ), 'error' );
 
 				wp_redirect( wc_get_cart_url() );
 				exit();
@@ -249,7 +249,7 @@ class WC_Subscriptions_Switcher {
 									$subscribed_notice = sprintf( __( '%1$s Complete payment on %2$sOrder %3$s%4$s to be able to change your subscription.', 'woocommerce-subscriptions' ), $subscribed_notice, sprintf( '<a href="%s">', $last_order->get_checkout_payment_url() ), $last_order->get_order_number(), '</a>' );
 								}
 
-								WC_Subscriptions::add_notice( $subscribed_notice, 'notice' );
+								wc_add_notice( $subscribed_notice, 'notice' );
 								break;
 
 							} else {
@@ -1017,7 +1017,7 @@ class WC_Subscriptions_Switcher {
 						$subscription_switches[ $cart_item_key ] = $cart_item['subscription_switch'];
 					} else {
 						WC()->cart->remove_cart_item( $cart_item_key );
-						WC_Subscriptions::add_notice( __( 'Your cart contained an invalid subscription switch request. It has been removed.', 'woocommerce-subscriptions' ), 'error' );
+						wc_add_notice( __( 'Your cart contained an invalid subscription switch request. It has been removed.', 'woocommerce-subscriptions' ), 'error' );
 					}
 				}
 			}
@@ -1164,7 +1164,7 @@ class WC_Subscriptions_Switcher {
 
 			// Requesting a switch for someone elses subscription
 			if ( ! current_user_can( 'switch_shop_subscription', $subscription->get_id() ) ) {
-				WC_Subscriptions::add_notice( __( 'You can not switch this subscription. It appears you do not own the subscription.', 'woocommerce-subscriptions' ), 'error' );
+				wc_add_notice( __( 'You can not switch this subscription. It appears you do not own the subscription.', 'woocommerce-subscriptions' ), 'error' );
 				WC()->cart->empty_cart( true );
 				wp_redirect( get_permalink( $subscription['product_id'] ) );
 				exit();
@@ -1205,7 +1205,7 @@ class WC_Subscriptions_Switcher {
 
 		} catch ( Exception $e ) {
 
-			WC_Subscriptions::add_notice( __( 'There was an error locating the switch details.', 'woocommerce-subscriptions' ), 'error' );
+			wc_add_notice( __( 'There was an error locating the switch details.', 'woocommerce-subscriptions' ), 'error' );
 			WC()->cart->empty_cart( true );
 			wp_redirect( get_permalink( wc_get_page_id( 'cart' ) ) );
 			exit();

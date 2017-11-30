@@ -185,7 +185,6 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			return;
 
 		} else {
-
 			ob_clean();
 
 			do_action( 'before_woocommerce_pay' );
@@ -194,13 +193,13 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 			if ( ! empty( self::$woocommerce_errors ) ) {
 				foreach ( self::$woocommerce_errors as $error ) {
-					WC_Subscriptions::add_notice( $error, 'error' );
+					wc_add_notice( $error, 'error' );
 				}
 			}
 
 			if ( ! empty( self::$woocommerce_messages ) ) {
 				foreach ( self::$woocommerce_messages as $message ) {
-					WC_Subscriptions::add_notice( $message, 'success' );
+					wc_add_notice( $message, 'success' );
 				}
 			}
 
@@ -208,19 +207,19 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 			if ( wp_verify_nonce( $_GET['_wpnonce'] ) === false ) {
 
-				WC_Subscriptions::add_notice( __( 'There was an error with your request. Please try again.', 'woocommerce-subscriptions' ), 'error' );
+				wc_add_notice( __( 'There was an error with your request. Please try again.', 'woocommerce-subscriptions' ), 'error' );
 
 			} elseif ( empty( $subscription ) ) {
 
-				WC_Subscriptions::add_notice( __( 'Invalid Subscription.', 'woocommerce-subscriptions' ), 'error' );
+				wc_add_notice( __( 'Invalid Subscription.', 'woocommerce-subscriptions' ), 'error' );
 
 			} elseif ( ! current_user_can( 'edit_shop_subscription_payment_method', $subscription->get_id() ) ) {
 
-				WC_Subscriptions::add_notice( __( 'That doesn\'t appear to be one of your subscriptions.', 'woocommerce-subscriptions' ), 'error' );
+				wc_add_notice( __( 'That doesn\'t appear to be one of your subscriptions.', 'woocommerce-subscriptions' ), 'error' );
 
 			} elseif ( ! $subscription->can_be_updated_to( 'new-payment-method' ) ) {
 
-				WC_Subscriptions::add_notice( __( 'The payment method can not be changed for that subscription.', 'woocommerce-subscriptions' ), 'error' );
+				wc_add_notice( __( 'The payment method can not be changed for that subscription.', 'woocommerce-subscriptions' ), 'error' );
 
 			} else {
 
@@ -232,7 +231,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 				}
 
 				// translators: placeholder is either empty or "Next payment is due..."
-				WC_Subscriptions::add_notice( sprintf( __( 'Choose a new payment method.%s', 'woocommerce-subscriptions' ), $next_payment_string ), 'notice' );
+				wc_add_notice( sprintf( __( 'Choose a new payment method.%s', 'woocommerce-subscriptions' ), $next_payment_string ), 'notice' );
 				WC_Subscriptions::print_notices();
 
 				if ( $subscription->get_order_key() == $_GET['key'] ) {
@@ -261,7 +260,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 				} else {
 
-					WC_Subscriptions::add_notice( __( 'Invalid order.', 'woocommerce-subscriptions' ), 'error' );
+					wc_add_notice( __( 'Invalid order.', 'woocommerce-subscriptions' ), 'error' );
 
 				}
 			}
@@ -363,7 +362,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 					// Redirect to success/confirmation/payment page
 					if ( 'success' == $result['result'] ) {
-						WC_Subscriptions::add_notice( __( 'Payment method updated.', 'woocommerce-subscriptions' ), 'success' );
+						wc_add_notice( __( 'Payment method updated.', 'woocommerce-subscriptions' ), 'success' );
 						wp_redirect( $result['redirect'] );
 						exit;
 					}
@@ -516,7 +515,6 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 * @since 1.4
 	 */
 	public static function can_subscription_be_updated_to_new_payment_method( $subscription_can_be_changed, $subscription ) {
-
 		if ( WC_Subscriptions_Payment_Gateways::one_gateway_supports( 'subscription_payment_method_change_customer' ) && $subscription->get_time( 'next_payment' ) > 0 && ! $subscription->is_manual() && $subscription->payment_method_supports( 'subscription_cancellation' ) && $subscription->has_status( 'active' ) ) {
 			$subscription_can_be_changed = true;
 		} else {
