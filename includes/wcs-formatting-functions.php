@@ -236,3 +236,24 @@ function wcs_get_human_time_diff( $timestamp_gmt ) {
 
 	return $date_to_display;
 }
+
+/**
+ * Works around the  wp_kses() limitation of not accepting attribute namess with underscores
+ *
+ * @since 2.3
+ */
+function wp_kses_allow_underscores( $content, $allowed_html ) {
+
+		/* Replace the underscore _ with a double hyphen -- in the attribute names */
+       foreach( $allowed_html as $tag => &$attributes ) {
+               $attribute_names = array_keys( $attributes );
+               $attribute_values = array_values( $attributes );
+               $attributes = array_combine( preg_replace( '/_/', '--', $attribute_names ), $attribute_values );
+       }
+
+	   /* Replace  the underscore _ with a double hyphen -- in the content as well. 
+	      The assumption is that such an attribute name would be followed by a = */
+       $content = preg_replace( '/\b([-A-Za-z]+)_([-A-Za-z]+)=/', '$1--$2=', $content );
+       $content = wp_kses( $content, $allowed_html ); // Now pass through wp_kses the attribute name with --
+       return preg_replace( '/\b([-A-Za-z]+)--([-A-Za-z]+)=/', '$1_$2=', $content ); // Replace the _ back 
+}
