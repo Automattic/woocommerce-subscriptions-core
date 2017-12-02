@@ -232,7 +232,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 				// translators: placeholder is either empty or "Next payment is due..."
 				wc_add_notice( sprintf( __( 'Choose a new payment method.%s', 'woocommerce-subscriptions' ), $next_payment_string ), 'notice' );
-				WC_Subscriptions::print_notices();
+				wc_print_notices();
 
 				if ( $subscription->get_order_key() == $_GET['key'] ) {
 
@@ -267,7 +267,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		}
 
 		if ( false === $valid_request ) {
-			WC_Subscriptions::print_notices();
+			wc_print_notices();
 		}
 	}
 
