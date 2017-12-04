@@ -185,6 +185,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			return;
 
 		} else {
+
 			ob_clean();
 
 			do_action( 'before_woocommerce_pay' );
@@ -515,6 +516,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 * @since 1.4
 	 */
 	public static function can_subscription_be_updated_to_new_payment_method( $subscription_can_be_changed, $subscription ) {
+
 		if ( WC_Subscriptions_Payment_Gateways::one_gateway_supports( 'subscription_payment_method_change_customer' ) && $subscription->get_time( 'next_payment' ) > 0 && ! $subscription->is_manual() && $subscription->payment_method_supports( 'subscription_cancellation' ) && $subscription->has_status( 'active' ) ) {
 			$subscription_can_be_changed = true;
 		} else {
