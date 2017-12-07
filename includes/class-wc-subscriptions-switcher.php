@@ -2243,7 +2243,6 @@ class WC_Subscriptions_Switcher {
 	 * @param WC_Order $order the switch order
 	 * @param WC_Subscription $subscription the subscription being switched
 	 * @since 2.1.2
-	 * TODO Remove this function in 2.1.n - compatibility code for 2.1 - 2.1.2
 	 */
 	protected static function switch_line_items_pre_2_1_2( $switches, $order, $subscription ) {
 
@@ -2297,7 +2296,6 @@ class WC_Subscriptions_Switcher {
 	 * @param WC_Subscription $subscription the subscription being switched
 	 * @param array $shipping_methods an array of shipping line items and meta
 	 * @since 2.1.2
-	 * TODO Remove this function in 2.1.n - compatibility code for 2.1 - 2.1.2
 	 */
 	protected static function switch_shipping_line_items_pre_2_1_2( $subscription, $shipping_methods ) {
 		// Archive the old subscription shipping methods
