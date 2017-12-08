@@ -76,7 +76,7 @@ class WCS_Upgrade_2_2_14 {
 	 * @since 2.2.14
 	 * @return array A list of subscription ids which may need to be repaired.
 	 */
-	public static function get_subscriptions_to_repair() {
+	private static function get_subscriptions_to_repair() {
 		$subscriptions_to_repair = get_posts( array(
 			'post_type'      => 'shop_subscription',
 			'posts_per_page' => self::$batch_size,
