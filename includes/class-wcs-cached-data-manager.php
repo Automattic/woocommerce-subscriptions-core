@@ -109,13 +109,37 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 	 * @param $meta_value mixed the ID of the subscription that relates to the order
 	 */
 	public function purge_from_metadata( $meta_id, $object_id, $meta_key, $meta_value ) {
-		if ( ! in_array( $meta_key, array( '_subscription_renewal', '_subscription_resubscribe', '_subscription_switch' ) ) || 'shop_order' !== get_post_type( $object_id ) ) {
+		static $combined_keys = null;
+		static $order_keys = array(
+			'_subscription_renewal'     => 1,
+			'_subscription_resubscribe' => 1,
+			'_subscription_switch'      => 1,
+		);
+		static $subscription_keys = array(
+			'_customer_user' => 1,
+		);
+
+		if ( null === $combined_keys ) {
+			$combined_keys = array_merge( $order_keys, $subscription_keys );
+		}
+
+		// Ensure we're handling a meta key we actually care about.
+		if ( ! isset( $combined_keys[ $meta_key ] ) ) {
 			return;
 		}
 
-		$this->log( 'Calling purge from ' . current_filter() . ' on object ' . $object_id . ' and meta value ' . $meta_value . ' due to ' . $meta_key . ' meta key.' );
-
-		$this->clear_related_order_cache( $meta_value );
+		if ( 'shop_order' === get_post_type( $object_id ) && isset( $order_keys[ $meta_key ] ) ) {
+			$this->log( sprintf(
+				'Calling purge from %1$s on object %2$s and meta value %3$s due to %4$s meta key.',
+				current_filter(),
+				$object_id,
+				$meta_value,
+				$meta_key
+			) );
+			$this->clear_related_order_cache( $meta_value );
+		} elseif ( 'shop_subscription' === get_post_type( $object_id ) && isset( $subscription_keys[ $meta_key ] ) ) {
+			$this->purge_cache_for_user( $object_id );
+		}
 	}
 
 	/**
