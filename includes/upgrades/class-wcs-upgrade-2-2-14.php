@@ -80,7 +80,7 @@ class WCS_Upgrade_2_2_14 {
 		$subscriptions_to_repair = get_posts( array(
 			'post_type'      => 'shop_subscription',
 			'posts_per_page' => self::$batch_size,
-			'post_status'    => wcs_get_subscription_status_name( 'active' ),
+			'post_status'    => wcs_sanitize_subscription_status_key( 'active' ),
 			'fields'         => 'ids',
 			'meta_query'     => array(
 				array(
