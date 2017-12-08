@@ -95,10 +95,7 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 
 			// Purge cache for a specific user on the save_post hook.
 			if ( doing_action( 'save_post' ) ) {
-				$subscription         = wcs_get_subscription( $post_id );
-				$subscription_user_id = $subscription->get_user_id();
-				$this->log( "Clearing cache for user ID {$subscription_user_id} on save_post hook." );
-				$this->delete_cached( "wcs_user_subscriptions_{$subscription_user_id}" );
+				$this->purge_cache_for_user( $post_id );
 			}
 		}
 	}
@@ -221,6 +218,24 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 		}
 
 		return $schedules;
+	}
+
+	/**
+	 * Purge the cache for the subscription's user.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param int $subscription_id The subscription to purge.
+	 */
+	protected function purge_cache_for_user( $subscription_id ) {
+		$subscription         = wcs_get_subscription( $subscription_id );
+		$subscription_user_id = $subscription->get_user_id();
+		$this->log( sprintf(
+			'Clearing cache for user ID %1$s on %2$s hook.',
+			$subscription_user_id,
+			current_action()
+		) );
+		$this->delete_cached( "wcs_user_subscriptions_{$subscription_user_id}" );
 	}
 
 	/* Deprecated Functions */
