@@ -11,7 +11,7 @@
  * @author   Prospress
  * @category Admin
  * @package  WooCommerce Subscriptions/Admin/Upgrades
- * @version  2.2.14
+ * @version  2.3.0
  */
 
 // Exit if accessed directly.
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class WCS_Upgrade_2_2_14 {
+class WCS_Upgrade_2_3_0 {
 
 	private static $action_hook = 'wcs_repair_subscriptions_suspended_paypal_not_woocommerce';
 	private static $batch_size  = 30;
@@ -27,7 +27,7 @@ class WCS_Upgrade_2_2_14 {
 	/**
 	 * Schedule an WP-Cron event to run in 5 minutes.
 	 *
-	 * @since 2.2.14
+	 * @since 2.3.0
 	 */
 	public static function schedule_repair() {
 		wc_schedule_single_action( gmdate( 'U' ) + ( MINUTE_IN_SECONDS * 5 ), self::$action_hook );
@@ -38,7 +38,7 @@ class WCS_Upgrade_2_2_14 {
 	 *
 	 * Fix any subscriptions that were suspended in PayPal, but were not suspended in WooCommerce.
 	 *
-	 * @since 2.2.9
+	 * @since 2.3.0
 	 */
 	public static function repair_subscriptions_paypal_suspended() {
 		$subscriptions_to_repair = self::get_subscriptions_to_repair();
@@ -73,7 +73,7 @@ class WCS_Upgrade_2_2_14 {
 	/**
 	 * Get a batch of subscriptions to repair.
 	 *
-	 * @since 2.2.14
+	 * @since 2.3.0
 	 * @return array A list of subscription ids which may need to be repaired.
 	 */
 	private static function get_subscriptions_to_repair() {
@@ -109,7 +109,7 @@ class WCS_Upgrade_2_2_14 {
 	 *
 	 * @param string The message to be logged
 	 *
-	 * @since 2.2.14
+	 * @since 2.3.0
 	 */
 	protected static function log( $message ) {
 		WCS_Upgrade_Logger::add( $message, 'wcs-upgrade-subscriptions-paypal-suspended' );
