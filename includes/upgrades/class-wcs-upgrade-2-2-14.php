@@ -85,7 +85,7 @@ class WCS_Upgrade_2_2_14 {
 			'meta_query'     => array(
 				array(
 					'key'     => '_schedule_next_payment',
-					'value'   => date( 'Y-m-d H:i:s', strtotime( '-1 day' ) ),
+					'value'   => date( 'Y-m-d H:i:s', wcs_strtotime_dark_knight( '-3 days' ) ),
 					'compare' => '<=',
 					'type'    => 'DATETIME',
 				),
