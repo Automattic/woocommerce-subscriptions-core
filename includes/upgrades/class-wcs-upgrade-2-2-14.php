@@ -52,7 +52,7 @@ class WCS_Upgrade_2_2_14 {
 
 				$subscription->set_status(
 					'on-hold',
-					esc_html__(
+					__(
 						'Subscription suspended due to Database repair script. This subscription was suspended via PayPal.',
 						'woocommerce-subscriptions'
 					)
