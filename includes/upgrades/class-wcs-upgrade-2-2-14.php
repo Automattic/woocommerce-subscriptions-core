@@ -21,8 +21,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WCS_Upgrade_2_2_14 {
 
-	private static $cron_hook  = 'wcs_repair_subscriptions_suspended_paypal_not_woocommerce';
-	private static $batch_size = 30;
+	private static $action_hook = 'wcs_repair_subscriptions_suspended_paypal_not_woocommerce';
+	private static $batch_size  = 30;
 
 	/**
 	 * Schedule an WP-Cron event to run in 5 minutes.
@@ -30,7 +30,7 @@ class WCS_Upgrade_2_2_14 {
 	 * @since 2.2.14
 	 */
 	public static function schedule_repair() {
-		wp_schedule_single_event( gmdate( 'U' ) + ( MINUTE_IN_SECONDS * 5 ), self::$cron_hook );
+		wc_schedule_single_action( gmdate( 'U' ) + ( MINUTE_IN_SECONDS * 5 ), self::$action_hook );
 	}
 
 	/**
