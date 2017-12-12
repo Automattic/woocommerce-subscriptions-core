@@ -983,7 +983,7 @@ class WC_Subscriptions_Coupon {
 		$coupon = new WCS_Coupon( $id );
 		woocommerce_wp_text_input( array(
 			'id'          => 'wcs_number_renewals',
-			'label'       => __( 'Limited use', 'woocommerce-subscriptions' ),
+			'label'       => __( 'Active for X Renewals', 'woocommerce-subscriptions' ),
 			'placeholder' => __( 'Unlimited renewals', 'woocommerce-subscriptions' ),
 			'description' => __( 'Coupon will be limited to the given number of renewals. It will then be automatically removed from the subscription.', 'woocommerce-subscriptions' ),
 			'desc_tip'    => true,
