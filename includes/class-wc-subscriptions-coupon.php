@@ -854,8 +854,9 @@ class WC_Subscriptions_Coupon {
 			return;
 		}
 
-		// Get all renewal orders, and count the number of uses for each coupon.
-		$related = $subscription->get_related_orders( 'renewal' );
+		// Get all related orders, and count the number of uses for each coupon.
+		$related = $subscription->get_related_orders( 'all' );
+
 		/** @var WC_Order $order */
 		foreach ( $related as $id => $order ) {
 			if ( 'completed' !== $order->get_status() ) {
