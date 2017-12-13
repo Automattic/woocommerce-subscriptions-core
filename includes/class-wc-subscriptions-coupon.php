@@ -860,7 +860,7 @@ class WC_Subscriptions_Coupon {
 		/** @var WC_Order $order */
 		foreach ( $related as $id => $order ) {
 			if ( 'completed' !== $order->get_status() ) {
-				unset( $related[ $id ] );
+				continue;
 			}
 
 			// Check for limited coupons, and add them to the count.
