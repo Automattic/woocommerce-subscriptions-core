@@ -702,7 +702,7 @@ class WC_Subscriptions_Coupon {
 	 */
 	private static function limit_gateways_subscription_amount_changes( $gateways ) {
 		foreach ( $gateways as $index => $gateway ) {
-			if ( ! $gateway->supports( 'subscription_amount_changes' ) ) {
+			if ( $gateway->supports( 'subscriptions' ) && ! $gateway->supports( 'subscription_amount_changes' ) ) {
 				unset( $gateways[ $index ] );
 			}
 		}
