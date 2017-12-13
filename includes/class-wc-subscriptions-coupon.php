@@ -867,7 +867,7 @@ class WC_Subscriptions_Coupon {
 			$used_coupons = array_unique( $order->get_used_coupons() );
 			foreach ( $used_coupons as $used_coupon ) {
 				if ( isset( $limited_coupons[ $used_coupon ] ) ) {
-					$limited_coupons[ $used_coupon ] ++;
+					$limited_coupons[ $used_coupon ]++;
 				}
 			}
 		}
