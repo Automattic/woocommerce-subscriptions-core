@@ -71,6 +71,9 @@ class WC_Subscriptions_Coupon {
 
 		// Check coupons when a subscription is renewed.
 		add_action( 'woocommerce_subscription_renewal_payment_complete', array( __CLASS__, 'check_coupon_usages' ) );
+
+		// Add info to the Coupons list table.
+		add_action( 'manage_shop_coupon_posts_custom_column', array( __CLASS__, 'add_limit_to_list_table' ), 20, 2);
 	}
 
 	/**
@@ -899,6 +902,36 @@ class WC_Subscriptions_Coupon {
 					number_format_i18n( $count )
 				) );
 			}
+		}
+	}
+
+	/**
+	 * Add our limited coupon data to the Coupon list table.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param string $column_name The name of the current column in the table.
+	 * @param int    $post_id     The coupon post ID.
+	 */
+	public static function add_limit_to_list_table( $column_name, $post_id ) {
+		if ( 'usage' !== $column_name ) {
+			return;
+		}
+
+		$limit = self::get_coupon_limit( wc_get_coupon_code_by_id( $post_id ) );
+		if ( false === $limit ) {
+			return;
+		}
+
+		echo '<br>';
+		if ( $limit ) {
+			echo esc_html( sprintf(
+				/* translators: %d refers to the number of renewals the coupon can be used for. */
+				_n( 'Active for %d renewal', 'Active for %d renewals', $limit, 'woocommerce-subscriptions' ),
+				number_format_i18n( $limit )
+			) );
+		} else {
+			esc_html_e( 'Active for unlimited renewals', 'woocommerce-subscriptions' );
 		}
 	}
 
