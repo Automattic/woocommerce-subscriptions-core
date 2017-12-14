@@ -679,6 +679,20 @@ class WC_Subscriptions_Coupon {
 	 * @return bool
 	 */
 	public static function coupon_is_limited( $code ) {
+		return (bool) self::get_coupon_limit( $code );
+	}
+
+	/**
+	 * Get the number of renewals for a limited coupon.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param string $code The coupon code.
+	 *
+	 * @return false|int False for non-recurring coupons, or the limit number for recurring coupons.
+	 *                   A value of 0 is for unlimited usage.
+	 */
+	public static function get_coupon_limit( $code ) {
 		static $subscription_coupons = array(
 			'recurring_fee'     => 1,
 			'recurring_percent' => 1,
@@ -686,9 +700,9 @@ class WC_Subscriptions_Coupon {
 
 		$coupon      = new WCS_Coupon( $code );
 		$coupon_type = wcs_get_coupon_property( $coupon, 'discount_type' );
-		$limited     = (bool) wcs_get_coupon_property( $coupon, 'wcs_number_renewals' );
+		$limited     = wcs_get_coupon_property( $coupon, 'wcs_number_renewals' );
 
-		return isset( $subscription_coupons[ $coupon_type ] ) && $limited;
+		return isset( $subscription_coupons[ $coupon_type ] ) ? intval( $limited ) : false;
 	}
 
 	/**
