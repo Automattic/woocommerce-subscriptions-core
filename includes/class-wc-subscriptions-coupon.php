@@ -740,10 +740,7 @@ class WC_Subscriptions_Coupon {
 
 		// If there are no gateways now, it's because of the coupon. Filter the 'no available payment methods' message.
 		if ( empty( $gateways ) ) {
-			add_filter( 'woocommerce_no_available_payment_methods_message', array(
-				__CLASS__,
-				'no_available_payment_methods_message'
-			), 20 );
+			add_filter( 'woocommerce_no_available_payment_methods_message', array( __CLASS__, 'no_available_payment_methods_message' ), 20 );
 		}
 
 		return $gateways;
