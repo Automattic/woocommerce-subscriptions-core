@@ -864,7 +864,7 @@ class WC_Subscriptions_Coupon {
 			}
 
 			// Check for limited coupons, and add them to the count.
-			$used_coupons = array_unique( $order->get_used_coupons() );
+			$used_coupons = $order->get_used_coupons();
 			foreach ( $used_coupons as $used_coupon ) {
 				if ( isset( $limited_coupons[ $used_coupon ] ) ) {
 					$limited_coupons[ $used_coupon ]++;
