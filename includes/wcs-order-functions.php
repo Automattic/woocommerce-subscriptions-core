@@ -227,12 +227,12 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 
 		// Copy over line items and allow extensions to add/remove items or item meta
 		$items = apply_filters( 'wcs_new_order_items', $subscription->get_items( array( 'line_item', 'fee', 'shipping', 'tax', 'coupon' ) ), $new_order, $subscription );
-		$items = apply_filters( 'wcs_' . $type . '_items', $items, $new_order, $subscription );
+		$items = apply_filters( "wcs_{$type}_items", $items, $new_order, $subscription );
 
 		foreach ( $items as $item_index => $item ) {
 
 			$item_name = apply_filters( 'wcs_new_order_item_name', $item['name'], $item, $subscription );
-			$item_name = apply_filters( 'wcs_' . $type . '_item_name', $item_name, $item, $subscription );
+			$item_name = apply_filters( "wcs_{$type}_item_name", $item_name, $item, $subscription );
 
 			// Create order line item on the renewal order
 			$order_item_id = wc_add_order_item( wcs_get_objects_property( $new_order, 'id' ), array(
