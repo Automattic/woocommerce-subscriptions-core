@@ -73,7 +73,7 @@ class WC_Subscriptions_Coupon {
 		add_action( 'woocommerce_subscription_renewal_payment_complete', array( __CLASS__, 'check_coupon_usages' ) );
 
 		// Add info to the Coupons list table.
-		add_action( 'manage_shop_coupon_posts_custom_column', array( __CLASS__, 'add_limit_to_list_table' ), 20, 2);
+		add_action( 'manage_shop_coupon_posts_custom_column', array( __CLASS__, 'add_limit_to_list_table' ), 20, 2 );
 	}
 
 	/**
