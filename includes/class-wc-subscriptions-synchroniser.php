@@ -200,8 +200,8 @@ class WC_Subscriptions_Synchroniser {
 				'default'  => 'no',
 				'type'     => 'select',
 				'options'  => array(
-					'no'        => _x( 'No: do not charge any recurring amount', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
-					'recurring' => _x( 'No: charge the full recurring amount at sign-up', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
+					'no'        => _x( 'Never (do not charge any recurring amount)', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
+					'recurring' => _x( 'Never (charge the full recurring amount at sign-up)', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
 					'virtual'   => _x( 'For Virtual Subscription Products Only', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
 					'yes'       => _x( 'For All Subscription Products', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
 				),
