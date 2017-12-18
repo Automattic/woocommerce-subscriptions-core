@@ -41,6 +41,7 @@ class WCS_Admin_Meta_Boxes {
 
 		add_action( 'woocommerce_order_action_wcs_process_renewal', __CLASS__ .  '::process_renewal_action_request', 10, 1 );
 		add_action( 'woocommerce_order_action_wcs_create_pending_renewal', __CLASS__ .  '::create_pending_renewal_action_request', 10, 1 );
+		add_action( 'woocommerce_order_action_wcs_create_pending_parent', __CLASS__ .  '::create_pending_parent_action_request', 10, 1 );
 
 		add_filter( 'woocommerce_resend_order_emails_available', __CLASS__ . '::remove_order_email_actions', 0, 1 );
 
@@ -112,6 +113,7 @@ class WCS_Admin_Meta_Boxes {
 				'process_renewal_action_warning' => __( "Are you sure you want to process a renewal?\n\nThis will charge the customer and email them the renewal order (if emails are enabled).", 'woocommerce-subscriptions' ),
 				'payment_method'                 => wcs_get_subscription( $post )->get_payment_method(),
 				'search_customers_nonce'         => wp_create_nonce( 'search-customers' ),
+				'get_customer_orders_nonce'      => wp_create_nonce( 'get-customer-orders' ),
 			) ) );
 		} else if ( 'shop_order' == $screen->id ) {
 
@@ -140,8 +142,11 @@ class WCS_Admin_Meta_Boxes {
 				$actions['wcs_process_renewal'] = esc_html__( 'Process renewal', 'woocommerce-subscriptions' );
 			}
 
-			$actions['wcs_create_pending_renewal'] = esc_html__( 'Create pending renewal order', 'woocommerce-subscriptions' );
-
+			if ( count( $theorder->get_related_orders() ) > 0 ) {
+				$actions['wcs_create_pending_renewal'] = esc_html__( 'Create pending renewal order', 'woocommerce-subscriptions' );
+			} else {
+				$actions['wcs_create_pending_parent'] = esc_html__( 'Create pending parent order', 'woocommerce-subscriptions' );
+			}
 		} else if ( self::can_renewal_order_be_retried( $theorder ) ) {
 			$actions['wcs_retry_renewal_payment'] = esc_html__( 'Retry Renewal Payment', 'woocommerce-subscriptions' );
 		}
@@ -173,10 +178,44 @@ class WCS_Admin_Meta_Boxes {
 		$renewal_order = wcs_create_renewal_order( $subscription );
 
 		if ( ! $subscription->is_manual() ) {
+
 			$renewal_order->set_payment_method( wc_get_payment_gateway_by_order( $subscription ) ); // We need to pass the payment gateway instance to be compatible with WC < 3.0, only WC 3.0+ supports passing the string name
+
+			if ( is_callable( array( $renewal_order, 'save' ) ) ) { // WC 3.0+
+				$renewal_order->save();
+			}
 		}
 
 		$subscription->add_order_note( __( 'Create pending renewal order requested by admin action.', 'woocommerce-subscriptions' ), false, true );
+	}
+
+	/**
+	 * Handles the action request to create a pending parent order.
+	 *
+	 * @param array $subscription
+	 * @since 2.3
+	 */
+	public static function create_pending_parent_action_request( $subscription ) {
+
+		if ( ! $subscription->has_status( array( 'pending', 'on-hold' ) ) ) {
+			$subscription->update_status( 'on-hold' );
+		}
+
+		$parent_order = wcs_create_order_from_subscription( $subscription, 'parent' );
+
+		$subscription->set_parent_id( wcs_get_objects_property( $parent_order, 'id' ) );
+		$subscription->save();
+
+		if ( ! $subscription->is_manual() ) {
+
+			$parent_order->set_payment_method( wc_get_payment_gateway_by_order( $subscription ) ); // We need to pass the payment gateway instance to be compatible with WC < 3.0, only WC 3.0+ supports passing the string name
+
+			if ( is_callable( array( $parent_order, 'save' ) ) ) { // WC 3.0+
+				$parent_order->save();
+			}
+		}
+
+		$subscription->add_order_note( __( 'Create pending parent order requested by admin action.', 'woocommerce-subscriptions' ), false, true );
 	}
 
 	/**
