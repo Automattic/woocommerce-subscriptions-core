@@ -12,6 +12,7 @@ class WC_Subscriptions_Synchroniser {
 
 	public static $setting_id;
 	public static $setting_id_proration;
+	public static $setting_id_days_no_fee;
 
 	public static $post_meta_key       = '_subscription_payment_sync_date';
 	public static $post_meta_key_day   = '_subscription_payment_sync_date_day';
@@ -40,9 +41,9 @@ class WC_Subscriptions_Synchroniser {
 	 * @since 1.5
 	 */
 	public static function init() {
-
-		self::$setting_id           = WC_Subscriptions_Admin::$option_prefix . '_sync_payments';
-		self::$setting_id_proration = WC_Subscriptions_Admin::$option_prefix . '_prorate_synced_payments';
+		self::$setting_id             = WC_Subscriptions_Admin::$option_prefix . '_sync_payments';
+		self::$setting_id_proration   = WC_Subscriptions_Admin::$option_prefix . '_prorate_synced_payments';
+		self::$setting_id_days_no_fee = WC_Subscriptions_Admin::$option_prefix . '_days_no_fee';
 
 		self::$sync_field_label      = __( 'Synchronise renewals', 'woocommerce-subscriptions' );
 		self::$sync_description      = __( 'Align the payment date for all customers who purchase this subscription to a specific day of the week or month.', 'woocommerce-subscriptions' );
@@ -205,6 +206,15 @@ class WC_Subscriptions_Synchroniser {
 					'virtual'   => _x( 'For Virtual Subscription Products Only', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
 					'yes'       => _x( 'For All Subscription Products', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
 				),
+				'desc_tip' => true,
+			),
+
+			array(
+				'name'     => __( 'Days without fee', 'woocommerce-subscriptions' ),
+				'desc'     => __( 'Subscriptions created within this many days prior to the Renewal Day will not be charged at sign-up. Set to zero for all new Subscriptions to be charged the full recurring amount.', 'woocommerce-subscriptions' ),
+				'id'       => self::$setting_id_days_no_fee,
+				'default'  => 0,
+				'type'     => 'number',
 				'desc_tip' => true,
 			),
 
