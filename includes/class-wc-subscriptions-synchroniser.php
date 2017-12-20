@@ -116,6 +116,9 @@ class WC_Subscriptions_Synchroniser {
 		add_filter( 'default_option_' . self::$setting_id, array( __CLASS__, 'option_default' ), 10, 3 );
 		add_filter( 'default_option_' . self::$setting_id_proration, array( __CLASS__, 'option_default' ), 10, 3 );
 		add_filter( 'default_option_' . self::$setting_id_days_no_fee, array( __CLASS__, 'option_default' ), 10, 3 );
+
+		// Sanitize options when saving.
+		add_filter( 'woocommerce_admin_settings_sanitize_option_' . self::$setting_id_days_no_fee, array( __CLASS__, 'sanitize_option' ), 10, 2 );
 	}
 
 	/**
@@ -149,6 +152,26 @@ class WC_Subscriptions_Synchroniser {
 		}
 
 		return $default;
+	}
+
+	/**
+	 * Sanitize our options when they are saved in the admin area.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param mixed $value  The value being saved.
+	 * @param array $option The option data array.
+	 *
+	 * @return mixed The sanitized option value.
+	 */
+	public static function sanitize_option( $value, $option ) {
+		switch ( $option['id'] ) {
+			case self::$setting_id_days_no_fee:
+				$value = absint( $value );
+				break;
+		}
+
+		return $value;
 	}
 
 	/**
@@ -221,7 +244,7 @@ class WC_Subscriptions_Synchroniser {
 
 			array(
 				'name'     => __( 'Days without fee', 'woocommerce-subscriptions' ),
-				'desc'     => __( 'Subscriptions created within this many days prior to the Renewal Day will not be charged at sign-up. Set to zero for all new Subscriptions to be charged the full recurring amount.', 'woocommerce-subscriptions' ),
+				'desc'     => __( 'Subscriptions created within this many days prior to the Renewal Day will not be charged at sign-up. Set to zero for all new Subscriptions to be charged the full recurring amount. Must be a positive number.', 'woocommerce-subscriptions' ),
 				'id'       => self::$setting_id_days_no_fee,
 				'default'  => 0,
 				'type'     => 'number',
