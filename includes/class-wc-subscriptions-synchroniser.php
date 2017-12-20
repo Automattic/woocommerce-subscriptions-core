@@ -115,6 +115,7 @@ class WC_Subscriptions_Synchroniser {
 		// Add defaults for our options.
 		add_filter( 'default_option_' . self::$setting_id, array( __CLASS__, 'option_default' ), 10, 3 );
 		add_filter( 'default_option_' . self::$setting_id_proration, array( __CLASS__, 'option_default' ), 10, 3 );
+		add_filter( 'default_option_' . self::$setting_id_days_no_fee, array( __CLASS__, 'option_default' ), 10, 3 );
 	}
 
 	/**
@@ -131,11 +132,20 @@ class WC_Subscriptions_Synchroniser {
 	 * @return mixed The default option value.
 	 */
 	public static function option_default( $default, $option, $passed_default = null ) {
-		// Null for $passed_default might mean an older version of WordPress. Fall back to checking $default.
-		if ( null === $passed_default && false === $default ) {
-			$default = 'no';
-		} elseif ( false === $passed_default ) {
-			$default = 'no';
+		switch ( $option ) {
+			case self::$setting_id:
+			case self::$setting_id_proration:
+				// Null for $passed_default might mean an older version of WordPress. Fall back to checking $default.
+				if ( null === $passed_default && false === $default ) {
+					$default = 'no';
+				} elseif ( false === $passed_default || null === $default ) {
+					$default = 'no';
+				}
+				break;
+
+			case self::$setting_id_days_no_fee:
+				$default = $default ? $default : 0;
+				break;
 		}
 
 		return $default;
