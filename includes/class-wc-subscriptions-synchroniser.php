@@ -513,11 +513,43 @@ class WC_Subscriptions_Synchroniser {
 	 * @return bool
 	 */
 	public static function is_payment_upfront( $product ) {
-		if ( 0 !== WC_Subscriptions_Product::get_trial_length( $product ) ) {
-			return false;
+		static $results = array();
+		if ( array_key_exists( $product->get_id(), $results ) ) {
+			return $results[ $product->get_id() ];
 		}
 
-		return self::is_product_synced( $product ) && 'recurring' === get_option( self::$setting_id_proration );
+		$is_upfront = null;
+		if (
+			0 !== WC_Subscriptions_Product::get_trial_length( $product ) ||
+			! self::is_product_synced( $product ) ||
+			'recurring' !== get_option( self::$setting_id_proration )
+		) {
+			$is_upfront = false;
+		}
+
+		// Maybe account for number of days without a fee.
+		if ( null === $is_upfront ) {
+			$no_fee_days = get_option( self::$setting_id_days_no_fee );
+
+			if ( $no_fee_days > 0 ) {
+				$payment_date = self::calculate_first_payment_date( $product, 'timestamp' );
+				$buffer_date  = wcs_strtotime_dark_knight( "+{$no_fee_days} days" );
+				$is_upfront   = $buffer_date >= $payment_date;
+			} else {
+				$is_upfront = true;
+			}
+		}
+
+		/**
+		 * Filter whether payment is upfront for a given product.
+		 *
+		 * @param bool       $is_upfront  Whether the product needs to be paid upfront.
+		 * @param WC_Product $product     The current product.
+		 * @param int        $no_fee_days The number of days before a product purchase where no fee is required.
+		 */
+		$results[ $product->get_id() ] = apply_filters( 'woocommerce_subscriptions_payment_upfront', $is_upfront, $product, $no_fee_days );
+
+		return $results[ $product->get_id() ];
 	}
 
 	/**
