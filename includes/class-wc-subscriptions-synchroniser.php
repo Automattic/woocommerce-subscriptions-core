@@ -525,11 +525,11 @@ class WC_Subscriptions_Synchroniser {
 	 */
 	public static function is_payment_upfront( $product ) {
 		static $results = array();
+		$is_upfront = null;
 		if ( array_key_exists( $product->get_id(), $results ) ) {
 			return $results[ $product->get_id() ];
 		}
 
-		$is_upfront = null;
 		// Normal cases where we aren't concerned with an upfront payment.
 		if (
 			0 !== WC_Subscriptions_Product::get_trial_length( $product ) ||
@@ -545,8 +545,8 @@ class WC_Subscriptions_Synchroniser {
 
 			if ( $no_fee_days > 0 ) {
 				$payment_date = self::calculate_first_payment_date( $product, 'timestamp' );
-				$buffer_date  = wcs_strtotime_dark_knight( "+{$no_fee_days} days" );
-				$is_upfront   = $buffer_date >= $payment_date;
+				$buffer_date  = $payment_date - ( $no_fee_days * DAY_IN_SECONDS );
+				$is_upfront   = wcs_strtotime_dark_knight( 'now' ) < $buffer_date;
 			} else {
 				$is_upfront = true;
 			}
@@ -555,11 +555,10 @@ class WC_Subscriptions_Synchroniser {
 		/**
 		 * Filter whether payment is upfront for a given product.
 		 *
-		 * @param bool       $is_upfront  Whether the product needs to be paid upfront.
-		 * @param WC_Product $product     The current product.
-		 * @param int        $no_fee_days The number of days before a product purchase where no fee is required.
+		 * @param bool       $is_upfront Whether the product needs to be paid upfront.
+		 * @param WC_Product $product    The current product.
 		 */
-		$results[ $product->get_id() ] = apply_filters( 'woocommerce_subscriptions_payment_upfront', $is_upfront, $product, $no_fee_days );
+		$results[ $product->get_id() ] = apply_filters( 'woocommerce_subscriptions_payment_upfront', $is_upfront, $product );
 
 		return $results[ $product->get_id() ];
 	}
