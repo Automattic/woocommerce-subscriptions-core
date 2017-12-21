@@ -992,6 +992,11 @@ class WC_Subscriptions_Synchroniser {
 	 * Removes the "set_subscription_prices_for_calculation" filter from the WC Product's woocommerce_get_price hook once
 	 *
 	 * @since 1.5.10
+	 *
+	 * @param int        $price   The current price.
+	 * @param WC_Product $product The product object.
+	 *
+	 * @return int
 	 */
 	public static function set_prorated_price_for_calculation( $price, $product ) {
 
