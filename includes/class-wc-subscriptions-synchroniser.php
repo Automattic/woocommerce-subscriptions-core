@@ -524,7 +524,7 @@ class WC_Subscriptions_Synchroniser {
 	 *
 	 * @param WC_Product $product The product to check.
 	 *
-	 * @return bool Whether an upfront payment is required for the product.m,s
+	 * @return bool Whether an upfront payment is required for the product.
 	 */
 	public static function is_payment_upfront( $product ) {
 		static $results = array();
