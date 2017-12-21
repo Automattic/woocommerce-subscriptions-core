@@ -119,6 +119,9 @@ class WC_Subscriptions_Synchroniser {
 
 		// Sanitize options when saving.
 		add_filter( 'woocommerce_admin_settings_sanitize_option_' . self::$setting_id_days_no_fee, array( __CLASS__, 'sanitize_option' ), 10, 2 );
+
+		// Ensure options are the proper type.
+		add_filter( 'option_' . self::$setting_id_days_no_fee, 'intval' );
 	}
 
 	/**
