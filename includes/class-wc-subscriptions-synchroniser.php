@@ -506,11 +506,22 @@ class WC_Subscriptions_Synchroniser {
 	/**
 	 * Determine whether the payment for a subscription should be the full price upfront.
 	 *
+	 * This method is particularly concerned with synchronized subscriptions. It will only return
+	 * true when the following conditions are met:
+	 *
+	 * - There is no free trial
+	 * - The subscription is synchronized
+	 * - The store owner has determined that new subscribers need to pay for their subscription upfront.
+	 *
+	 * Additionally, if the store owner sets a number of days prior to the synchronization day that do not
+	 * require an upfront payment, this method will check to see whether the current date falls within that
+	 * period for the given product.
+	 *
 	 * @author Jeremy Pry
 	 *
-	 * @param WC_Product $product
+	 * @param WC_Product $product The product to check.
 	 *
-	 * @return bool
+	 * @return bool Whether an upfront payment is required for the product.m,s
 	 */
 	public static function is_payment_upfront( $product ) {
 		static $results = array();
@@ -519,6 +530,7 @@ class WC_Subscriptions_Synchroniser {
 		}
 
 		$is_upfront = null;
+		// Normal cases where we aren't concerned with an upfront payment.
 		if (
 			0 !== WC_Subscriptions_Product::get_trial_length( $product ) ||
 			! self::is_product_synced( $product ) ||
