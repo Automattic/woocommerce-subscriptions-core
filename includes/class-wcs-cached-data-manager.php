@@ -95,7 +95,7 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 
 			// Purge cache for a specific user on the save_post hook.
 			if ( doing_action( 'save_post' ) ) {
-				$this->purge_cache_for_user( $post_id );
+				$this->purge_subscription_user_cache( $post_id );
 			}
 		}
 	}
@@ -138,7 +138,7 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 			) );
 			$this->clear_related_order_cache( $meta_value );
 		} elseif ( 'shop_subscription' === get_post_type( $object_id ) && isset( $subscription_keys[ $meta_key ] ) ) {
-			$this->purge_cache_for_user( $object_id );
+			$this->purge_subscription_user_cache( $object_id );
 		}
 	}
 
@@ -251,7 +251,7 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 	 *
 	 * @param int $subscription_id The subscription to purge.
 	 */
-	protected function purge_cache_for_user( $subscription_id ) {
+	protected function purge_subscription_user_cache( $subscription_id ) {
 		$subscription         = wcs_get_subscription( $subscription_id );
 		$subscription_user_id = $subscription->get_user_id();
 		$this->log( sprintf(
