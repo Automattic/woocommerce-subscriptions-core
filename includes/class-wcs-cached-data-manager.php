@@ -19,6 +19,7 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 		add_action( 'trashed_post', array( $this, 'purge_delete' ), 9999 ); // trashed posts aren't included in 'any' queries
 		add_action( 'untrashed_post', array( $this, 'purge_delete' ), 9999 ); // however untrashed posts are
 		add_action( 'before_delete_post', array( $this, 'purge_delete' ), 9999 ); // if forced delete is enabled
+		add_action( 'update_post_meta', array( $this, 'purge_from_metadata' ), 9999, 4 );
 		add_action( 'updated_post_meta', array( $this, 'purge_from_metadata' ), 9999, 4 ); // tied to '_subscription_renewal', '_subscription_resubscribe' & '_subscription_switch' keys
 		add_action( 'deleted_post_meta', array( $this, 'purge_from_metadata' ), 9999, 4 ); // tied to '_subscription_renewal', '_subscription_resubscribe' & '_subscription_switch' keys
 		add_action( 'added_post_meta', array( $this, 'purge_from_metadata' ), 9999, 4 ); // tied to '_subscription_renewal', '_subscription_resubscribe' & '_subscription_switch' keys
