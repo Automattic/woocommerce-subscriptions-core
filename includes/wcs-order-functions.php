@@ -611,7 +611,7 @@ function wcs_get_order_item_name( $order_item, $include = array() ) {
 
 		foreach ( $order_item['item_meta'] as $meta_key => $meta_value ) {
 
-			$meta_value = $meta_value[0];
+			$meta_value = WC_Subscriptions::is_woocommerce_pre( 3.0 ) ? $meta_value[0] : $meta_value;
 
 			// Skip hidden core fields
 			if ( in_array( $meta_key, apply_filters( 'woocommerce_hidden_order_itemmeta', array(
@@ -628,8 +628,8 @@ function wcs_get_order_item_name( $order_item, $include = array() ) {
 				continue;
 			}
 
-			// Skip serialised meta
-			if ( is_serialized( $meta_value ) ) {
+			// Skip serialised or array meta values
+			if ( is_serialized( $meta_value ) || is_array( $meta_value ) ) {
 				continue;
 			}
 
@@ -664,7 +664,7 @@ function wcs_get_line_item_name( $line_item ) {
 
 	foreach ( $line_item['item_meta'] as $meta_key => $meta_value ) {
 
-		$meta_value = $meta_value[0];
+		$meta_value = WC_Subscriptions::is_woocommerce_pre( 3.0 ) ? $meta_value[0] : $meta_value;
 
 		// Skip hidden core fields
 		if ( in_array( $meta_key, apply_filters( 'woocommerce_hidden_order_itemmeta', array(
@@ -681,8 +681,8 @@ function wcs_get_line_item_name( $line_item ) {
 			continue;
 		}
 
-		// Skip serialised meta
-		if ( is_serialized( $meta_value ) ) {
+		// Skip serialised or array meta values
+		if ( is_serialized( $meta_value ) || is_array( $meta_value ) ) {
 			continue;
 		}
 

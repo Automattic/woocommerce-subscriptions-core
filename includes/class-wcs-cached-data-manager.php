@@ -40,7 +40,7 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 	 * @param string $message Message to log
 	 */
 	public function log( $message ) {
-		if ( defined( 'WCS_DEBUG' ) && WCS_DEBUG ) {
+		if ( is_object( $this->logger ) && defined( 'WCS_DEBUG' ) && WCS_DEBUG ) {
 			$this->logger->add( 'wcs-cache', $message );
 		}
 	}
