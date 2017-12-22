@@ -639,7 +639,7 @@ class WC_Subscriptions_Coupon {
 	 */
 	public static function cart_contains_limited_recurring_coupon() {
 		$has_coupon      = false;
-		$applied_coupons = isset( wc()->cart->applied_coupons ) ? wc()->cart->applied_coupons : array();
+		$applied_coupons = isset( WC()->cart->applied_coupons ) ? WC()->cart->applied_coupons : array();
 		foreach ( $applied_coupons as $code ) {
 			if ( self::coupon_is_limited( $code ) ) {
 				$has_coupon = true;
