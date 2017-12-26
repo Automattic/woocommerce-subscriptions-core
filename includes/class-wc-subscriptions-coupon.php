@@ -816,7 +816,6 @@ class WC_Subscriptions_Coupon {
 	 */
 	public static function add_coupon_fields( $id ) {
 		$coupon = new WC_Coupon( $id );
-		$renewals = $coupon->get_meta( self::$coupons_renewals );
 		woocommerce_wp_text_input( array(
 			'id'          => 'wcs_number_renewals',
 			'label'       => __( 'Active for X Renewals', 'woocommerce-subscriptions' ),
