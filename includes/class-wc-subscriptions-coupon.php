@@ -12,6 +12,13 @@
  */
 class WC_Subscriptions_Coupon {
 
+	/**
+	 * The meta key used for the number of renewals.
+	 *
+	 * @var string
+	 */
+	protected static $coupons_renewals = '_wcs_number_renewals';
+
 	/** @var string error message for invalid subscription coupons */
 	public static $coupon_error;
 
@@ -701,9 +708,9 @@ class WC_Subscriptions_Coupon {
 			'recurring_percent' => 1,
 		);
 
-		$coupon      = new WCS_Coupon( $code );
+		$coupon      = new WC_Coupon( $code );
 		$coupon_type = wcs_get_coupon_property( $coupon, 'discount_type' );
-		$limited     = wcs_get_coupon_property( $coupon, 'wcs_number_renewals' );
+		$limited     = $coupon->get_meta( self::$coupons_renewals );
 
 		return isset( $subscription_coupons[ $coupon_type ] ) ? intval( $limited ) : false;
 	}
@@ -808,7 +815,8 @@ class WC_Subscriptions_Coupon {
 	 * @param int $id The coupon ID.
 	 */
 	public static function add_coupon_fields( $id ) {
-		$coupon = new WCS_Coupon( $id );
+		$coupon = new WC_Coupon( $id );
+		$renewals = $coupon->get_meta( self::$coupons_renewals );
 		woocommerce_wp_text_input( array(
 			'id'          => 'wcs_number_renewals',
 			'label'       => __( 'Active for X Renewals', 'woocommerce-subscriptions' ),
@@ -816,7 +824,7 @@ class WC_Subscriptions_Coupon {
 			'description' => __( 'Coupon will be limited to the given number of renewals. It will then be automatically removed from the subscription.', 'woocommerce-subscriptions' ),
 			'desc_tip'    => true,
 			'data_type'   => 'decimal',
-			'value'       => $coupon->get_wcs_number_renewals() ?: '',
+			'value'       => $coupon->get_meta( self::$coupons_renewals ),
 		) );
 	}
 
@@ -834,10 +842,8 @@ class WC_Subscriptions_Coupon {
 			return;
 		}
 
-		$coupon = new WCS_Coupon( $post_id );
-		$coupon->set_props( array(
-			'wcs_number_renewals' => wc_clean( $_POST['wcs_number_renewals'] ),
-		) );
+		$coupon = new WC_Coupon( $post_id );
+		$coupon->add_meta_data( self::$coupons_renewals, wc_clean( $_POST['wcs_number_renewals'] ), true );
 		$coupon->save();
 	}
 
@@ -888,8 +894,8 @@ class WC_Subscriptions_Coupon {
 
 		// Check each coupon to see if it needs to be removed.
 		foreach ( $limited_coupons as $coupon => $count ) {
-			$wcs_coupon = new WCS_Coupon( $coupon );
-			if ( $wcs_coupon->get_wcs_number_renewals() <= $count ) {
+			$coupon_object = new WC_Coupon( $coupon );
+			if ( $coupon_object->get_meta( self::$coupons_renewals ) <= $count ) {
 				$subscription->remove_coupon( $coupon );
 				$subscription->add_order_note( sprintf(
 					_n(
