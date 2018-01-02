@@ -1142,11 +1142,11 @@ class WC_Subscriptions_Admin {
 
 			array(
 				'name'          => __( 'Mixed Checkout', 'woocommerce-subscriptions' ),
-				'desc'          => __( 'Allow subscriptions and products to be purchased simultaneously.', 'woocommerce-subscriptions' ),
+				'desc'          => __( 'Allow multiple subscriptions and products to be purchased simultaneously.', 'woocommerce-subscriptions' ),
 				'id'            => self::$option_prefix . '_multiple_purchase',
 				'default'       => 'no',
 				'type'          => 'checkbox',
-				'desc_tip'      => __( 'Allow subscriptions and products to be purchased in a single transaction.', 'woocommerce-subscriptions' ),
+				'desc_tip'      => __( 'Allow a subscription product to be purchased with other products and subscriptions in the same transaction.', 'woocommerce-subscriptions' ),
 			),
 
 			array(
