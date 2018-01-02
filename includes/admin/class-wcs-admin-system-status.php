@@ -52,7 +52,7 @@ class WCS_Admin_System_Status {
 			'name'      => _x( 'Subscription Statuses', 'label for the system status page', 'woocommerce-subscriptions' ),
 			'mark'      => '',
 			'mark_icon' => '',
-			'note'      => self::get_subscriptions_statuses(),
+			'data'      => self::get_subscriptions_statuses(),
 		);
 
 		// Check for a connected WooCommerce account and active Subscriptions product key
@@ -176,7 +176,7 @@ class WCS_Admin_System_Status {
 		$subscriptions_by_status_output = '';
 
 		foreach ( $subscriptions_by_status as $result ) {
-			$subscriptions_by_status_output .= $result['post_status'] . ': ' . $result['COUNT(ID)'] . ' </br>';
+			$subscriptions_by_status_output[] = $result['post_status'] . ': ' . $result['COUNT(ID)'];
 		}
 
 		return $subscriptions_by_status_output;
