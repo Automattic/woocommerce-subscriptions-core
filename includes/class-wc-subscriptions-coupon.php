@@ -878,9 +878,11 @@ class WC_Subscriptions_Coupon {
 
 		/** @var WC_Order $order */
 		foreach ( $related as $id => $order ) {
-			if ( 'completed' !== $order->get_status() ) {
+			if ( $order->needs_payment() ) {
 				continue;
 			}
+
+			// todo: handle refunded orders in some way.
 
 			// Check for limited coupons, and add them to the count.
 			$used_coupons = $order->get_used_coupons();
