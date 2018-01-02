@@ -30,6 +30,8 @@ class WCS_Retry_Admin {
 
 			// Display the number of retries in the Orders list table
 			add_action( 'manage_shop_order_posts_custom_column', __CLASS__ . '::add_column_content', 20, 2 );
+
+			add_filter( 'wcs_system_status', array( $this, 'add_system_status_content' ) );
 		}
 	}
 
@@ -140,5 +142,24 @@ class WCS_Retry_Admin {
 		) );
 
 		return $settings;
+	}
+
+	/**
+	 * Add system status information about custom retry rules.
+	 *
+	 * @param array $data
+	 * @return array
+	 */
+	public static function add_system_status_content( $data ) {
+		$has_custom_retry_rules = has_action( 'wcs_default_retry_rules' );
+
+		$data['wcs_retry_rules_overrides'] = array(
+			'name'      => _x( 'Custom Retry Rules', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'mark_icon' => $has_custom_retry_rules ? 'warning' : 'yes',
+			'note'      => $has_custom_retry_rules ? 'Yes' : 'No',
+			'success'   => ! $has_custom_retry_rules,
+		);
+
+		return $data;
 	}
 }
