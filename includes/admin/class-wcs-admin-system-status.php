@@ -89,7 +89,9 @@ class WCS_Admin_System_Status {
 			}
 		}
 
-		$debug_data = apply_filters( 'wcs_system_status', $debug_data );
+		$debug_data      = apply_filters( 'wcs_system_status', $debug_data );
+		$section_title   = __( 'Subscriptions', 'woocommerce-subscriptions' );
+		$section_tooltip = __( 'This section shows any information about Subscriptions.', 'woocommerce-subscriptions' );
 
 		include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/status.php' );
 	}
