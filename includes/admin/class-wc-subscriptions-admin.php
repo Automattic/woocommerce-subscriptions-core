@@ -112,8 +112,6 @@ class WC_Subscriptions_Admin {
 
 		add_filter( 'set-screen-option', __CLASS__ . '::set_manage_subscriptions_screen_option', 10, 3 );
 
-		add_filter( 'woocommerce_system_status_report', __CLASS__ . '::render_system_status_items' );
-
 		add_filter( 'woocommerce_payment_gateways_setting_columns', __CLASS__ . '::payment_gateways_rewewal_column' );
 
 		add_action( 'woocommerce_payment_gateways_setting_column_renewals', __CLASS__ . '::payment_gateways_rewewal_support' );
@@ -1401,38 +1399,6 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Renders the Subscription information in the WC status page
-	 */
-	public static function render_system_status_items() {
-		$debug_data   = array();
-		$is_wcs_debug = defined( 'WCS_DEBUG' ) ? WCS_DEBUG : false;
-
-		$debug_data['wcs_debug'] = array(
-			'name'    => _x( 'WCS_DEBUG', 'label that indicates whether debugging is turned on for the plugin', 'woocommerce-subscriptions' ),
-			'note'    => ( $is_wcs_debug ) ? __( 'Yes', 'woocommerce-subscriptions' ) :  __( 'No', 'woocommerce-subscriptions' ),
-			'success' => $is_wcs_debug ? 0 : 1,
-		);
-
-		$debug_data['wcs_staging'] = array(
-			'name'    => _x( 'Subscriptions Mode', 'Live or Staging, Label on WooCommerce -> System Status page', 'woocommerce-subscriptions' ),
-			'note'    => '<strong>' . ( ( WC_Subscriptions::is_duplicate_site() ) ? _x( 'Staging', 'refers to staging site', 'woocommerce-subscriptions' ) :  _x( 'Live', 'refers to live site', 'woocommerce-subscriptions' ) ) . '</strong>',
-			'success' => ( WC_Subscriptions::is_duplicate_site() ) ? 0 : 1,
-		);
-
-		$theme_overrides = self::get_theme_overrides();
-		$debug_data['wcs_theme_overrides'] = array(
-			'name'      => _x( 'Subscriptions Template Theme Overrides', 'label for the system status page', 'woocommerce-subscriptions' ),
-			'mark'      => '',
-			'mark_icon' => $theme_overrides['has_outdated_templates'] ? 'warning' : 'yes',
-			'data'      => $theme_overrides,
-		);
-
-		$debug_data = apply_filters( 'wcs_system_status', $debug_data );
-
-		include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/status.php' );
-	}
-
-	/**
 	 * Adds Subscriptions specific details to the WooCommerce System Status report.
 	 *
 	 * @param array $attributes Shortcode attributes.
@@ -1674,54 +1640,11 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Determine which of our files have been overridden by the theme.
-	 *
-	 * @author Jeremy Pry
-	 * @return array Theme override data.
+	 * Renders the Subscription information in the WC status page
 	 */
-	private static function get_theme_overrides() {
-		$wcs_template_dir = dirname( WC_Subscriptions::$plugin_file ) . '/templates/';
-		$wc_template_path = trailingslashit( wc()->template_path() );
-		$theme_root       = trailingslashit( get_theme_root() );
-		$overridden       = array();
-		$outdated         = false;
-		$templates        = WC_Admin_Status::scan_template_files( $wcs_template_dir );
-
-		foreach ( $templates as $file ) {
-			$theme_file = $is_outdated = false;
-			$locations  = array(
-				get_stylesheet_directory() . "/{$file}",
-				get_stylesheet_directory() . "/{$wc_template_path}{$file}",
-				get_template_directory() . "/{$file}",
-				get_template_directory() . "/{$wc_template_path}{$file}",
-			);
-
-			foreach ( $locations as $location ) {
-				if ( is_readable( $location ) ) {
-					$theme_file = $location;
-					break;
-				}
-			}
-
-			if ( ! empty( $theme_file ) ) {
-				$core_version  = WC_Admin_Status::get_file_version( $wcs_template_dir . $file );
-				$theme_version = WC_Admin_Status::get_file_version( $theme_file );
-				if ( $core_version && ( empty( $theme_version ) || version_compare( $theme_version, $core_version, '<' ) ) ) {
-					$outdated = $is_outdated = true;
-				}
-				$overridden[] = array(
-					'file'         => str_replace( $theme_root, '', $theme_file ),
-					'version'      => $theme_version,
-					'core_version' => $core_version,
-					'is_outdated'  => $is_outdated,
-				);
-			}
-		}
-
-		return array(
-			'has_outdated_templates' => $outdated,
-			'overridden_templates'   => $overridden,
-		);
+	public static function render_system_status_items() {
+		_deprecated_function( __METHOD__, '2.3', 'WCS_Admin_System_Status::render_system_status_items()' );
+		WCS_Admin_System_Status::render_system_status_items();
 	}
 
 	/**
