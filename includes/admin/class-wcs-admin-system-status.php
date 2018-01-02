@@ -50,6 +50,13 @@ class WCS_Admin_System_Status {
 			'data'      => $theme_overrides,
 		);
 
+		$debug_data['wcs_subscriptions_by_status'] = array(
+			'name'      => _x( 'Subscription Statuses', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'mark'      => '',
+			'mark_icon' => '',
+			'note'      => self::get_subscriptions_statuses(),
+		);
+
 		$debug_data = apply_filters( 'wcs_system_status', $debug_data );
 
 		include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/status.php' );
@@ -104,6 +111,30 @@ class WCS_Admin_System_Status {
 			'has_outdated_templates' => $outdated,
 			'overridden_templates'   => $overridden,
 		);
+	}
+
+	/**
+	 * Get a breakdown of Subscriptions per status.
+	 *
+	 * @return string
+	 */
+	private static function get_subscriptions_statuses() {
+		global $wpdb;
+
+		$subscriptions_by_status = $wpdb->get_results( "
+			SELECT COUNT(ID), post_status
+			FROM $wpdb->posts
+			WHERE post_type = 'shop_subscription'
+			GROUP BY post_status
+			ORDER BY COUNT(ID) DESC", ARRAY_A );
+
+		$subscriptions_by_status_output = '';
+
+		foreach ( $subscriptions_by_status as $result ) {
+			$subscriptions_by_status_output .= $result['post_status'] . ': ' . $result['COUNT(ID)'] . ' </br>';
+		}
+
+		return $subscriptions_by_status_output;
 	}
 }
 WCS_Admin_System_Status::init();
