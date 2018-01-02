@@ -57,6 +57,38 @@ class WCS_Admin_System_Status {
 			'note'      => self::get_subscriptions_statuses(),
 		);
 
+		// Check for a connected WooCommerce account and active Subscriptions product key
+		if ( class_exists( 'WC_Helper' ) ) {
+			$woocommerce_account_auth      = WC_Helper_Options::get( 'auth' );
+			$woocommerce_account_connected = ! empty( $woocommerce_account_auth );
+
+			$debug_data['wcs_woocommerce_account_connected'] = array(
+				'name'      => _x( 'WooCommerce Account Connected', 'label for the system status page', 'woocommerce-subscriptions' ),
+				'mark_icon' => $woocommerce_account_connected ? 'yes' : 'warning',
+				'note'      => $woocommerce_account_connected ? 'Yes' : 'No',
+				'success'   => $woocommerce_account_connected,
+			);
+
+			if ( $woocommerce_account_connected ) {
+				$woocommerce_account_subscriptions = WC_Helper::get_subscriptions();
+				$site_id                           = absint( $woocommerce_account_auth['site_id'] );
+
+				foreach ( $woocommerce_account_subscriptions as $subscription ) {
+					if ( isset( $subscription['product_id'] ) && 27147 === $subscription['product_id'] ) {
+						$active = in_array( $site_id, $subscription['connections'] );
+
+						$debug_data['wcs_active_product_key'] = array(
+							'name'      => _x( 'Active Product Key', 'label for the system status page', 'woocommerce-subscriptions' ),
+							'mark_icon' => $active ? 'yes' : 'no',
+							'note'      => $active ? 'Yes' : 'No',
+							'success'   => $active,
+						);
+						break;
+					}
+				}
+			}
+		}
+
 		$debug_data = apply_filters( 'wcs_system_status', $debug_data );
 
 		include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/status.php' );
