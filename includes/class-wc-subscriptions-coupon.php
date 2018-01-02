@@ -77,7 +77,7 @@ class WC_Subscriptions_Coupon {
 		add_action( 'woocommerce_after_template_part', array( __CLASS__, 'change_payment_method_template' ), 10, 4 );
 
 		// Check coupons when a subscription is renewed.
-		add_action( 'woocommerce_subscription_renewal_payment_complete', array( __CLASS__, 'check_coupon_usages' ) );
+		add_action( 'woocommerce_subscription_payment_complete', array( __CLASS__, 'check_coupon_usages' ) );
 
 		// Add info to the Coupons list table.
 		add_action( 'manage_shop_coupon_posts_custom_column', array( __CLASS__, 'add_limit_to_list_table' ), 20, 2 );
