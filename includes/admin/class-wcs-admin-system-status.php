@@ -45,8 +45,6 @@ class WCS_Admin_System_Status {
 		$theme_overrides = self::get_theme_overrides();
 		$debug_data['wcs_theme_overrides'] = array(
 			'name'      => _x( 'Subscriptions Template Theme Overrides', 'label for the system status page', 'woocommerce-subscriptions' ),
-			'mark'      => '',
-			'mark_icon' => $theme_overrides['has_outdated_templates'] ? 'warning' : 'yes',
 			'data'      => $theme_overrides,
 		);
 
@@ -129,22 +127,35 @@ class WCS_Admin_System_Status {
 			if ( ! empty( $theme_file ) ) {
 				$core_version  = WC_Admin_Status::get_file_version( $wcs_template_dir . $file );
 				$theme_version = WC_Admin_Status::get_file_version( $theme_file );
+
+				$overridden_template_output = sprintf( '<code>%s</code>', esc_html( str_replace( $theme_root, '', $theme_file ) ) );
+
 				if ( $core_version && ( empty( $theme_version ) || version_compare( $theme_version, $core_version, '<' ) ) ) {
-					$outdated = $is_outdated = true;
+					$outdated = true;
+					$overridden_template_output .= sprintf(
+						/* translators: %1$s is the file version, %2$s is the core version */
+						esc_html__( 'version %1$s is out of date. The core version is %2$s', 'woocommerce-subscriptions' ),
+						'<strong style="color:red">' . esc_html( $theme_version ) . '</strong>',
+						'<strong>' . esc_html( $core_version ) . '</strong>'
+					);
 				}
-				$overridden[] = array(
-					'file'         => str_replace( $theme_root, '', $theme_file ),
-					'version'      => $theme_version,
-					'core_version' => $core_version,
-					'is_outdated'  => $is_outdated,
-				);
+
+				$overridden[] = $overridden_template_output;
 			}
 		}
 
-		return array(
-			'has_outdated_templates' => $outdated,
-			'overridden_templates'   => $overridden,
-		);
+		if ( $outdated ) {
+			ob_start(); ?>
+			<br />
+			<mark class="error"><span class="dashicons dashicons-warning"></span></mark>
+			<a href="https://docs.woocommerce.com/document/fix-outdated-templates-woocommerce/" target="_blank">
+				<?php esc_html_e( 'Learn how to update', 'woocommerce-subscriptions' ) ?>
+			</a>
+			<?php
+			$overridden['has_outdated_templates'] = ob_get_clean();
+		}
+
+		return $overridden;
 	}
 
 	/**
