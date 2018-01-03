@@ -791,6 +791,8 @@ class WC_Subscriptions_Coupon {
 		} elseif ( doing_action( 'woocommerce_after_template_part' ) ) {
 			self::$subscription = null;
 		}
+
+
 	}
 
 	/**
@@ -880,6 +882,12 @@ class WC_Subscriptions_Coupon {
 		foreach ( $related as $id => $order ) {
 			if ( $order->needs_payment() ) {
 				continue;
+			}
+
+			$refunds = $order->get_refunds();
+			/** @var WC_Order_Refund $refund */
+			foreach ($refunds as $refund) {
+				$details = $refund->get_refund();
 			}
 
 			// todo: handle refunded orders in some way.
