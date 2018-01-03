@@ -92,6 +92,13 @@ class WCS_Admin_System_Status {
 		$section_tooltip = __( 'This section shows any information about Subscriptions.', 'woocommerce-subscriptions' );
 
 		include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/status.php' );
+
+		// Payment Gateways
+		$debug_data      = self::get_subscriptions_payment_gateway_data();
+		$section_title   = __( 'Payment Gateways', 'woocommerce-subscriptions' );
+		$section_tooltip = __( 'This section shows information about Payment methods.', 'woocommerce-subscriptions' );
+
+		include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/status.php' );
 	}
 
 	/**
@@ -180,6 +187,51 @@ class WCS_Admin_System_Status {
 		}
 
 		return $subscriptions_by_status_output;
+	}
+
+	/**
+	 * Get a breakdown of Subscriptions per status per payment gateway.
+	 *
+	 * @return array
+	 */
+	private static function get_subscriptions_payment_gateway_data() {
+		global $wpdb;
+
+		$gateways = WC()->payment_gateways->get_available_payment_gateways();
+		$results  = $wpdb->get_results( "
+			SELECT COUNT(subscriptions.ID) as count, post_meta.meta_value as payment_method, subscriptions.post_status
+			FROM $wpdb->posts as subscriptions RIGHT JOIN $wpdb->postmeta as post_meta ON post_meta.post_id = subscriptions.ID
+			WHERE subscriptions.post_type = 'shop_subscription' && post_meta.meta_key = '_payment_method'
+			GROUP BY post_meta.meta_value, subscriptions.post_status", ARRAY_A );
+
+		$subscriptions_payment_gateway_data = array();
+
+		foreach ( $results as $result ) {
+			$payment_method      = $result['payment_method'];
+			$subscription_status = $result['post_status'];
+
+			if ( isset( $gateways[ $payment_method ] ) ) {
+				$payment_method_name = $gateways[ $payment_method ]->method_title;
+				$supports            = $gateways[ $payment_method ]->supports;
+			} else {
+				$payment_method      = 'other';
+				$payment_method_name = 'Other';
+				$supports            = array( 'unknown' );
+			}
+
+			$key = 'wcs_payment_method_' . $payment_method;
+
+			if ( ! isset( $subscriptions_payment_gateway_data[ $key ] ) ) {
+				$subscriptions_payment_gateway_data[ $key ] = array(
+					'name' => $payment_method_name,
+					'data' => array( 'supports: ' . implode( ', ', $supports ) ),
+				);
+			}
+
+			$subscriptions_payment_gateway_data[ $key ]['data'][] = $subscription_status . ': ' . $result['count'];
+		}
+
+		return $subscriptions_payment_gateway_data;
 	}
 }
 WCS_Admin_System_Status::init();
