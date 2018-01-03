@@ -174,7 +174,7 @@ class WCS_Admin_System_Status {
 		global $wpdb;
 
 		$subscriptions_by_status = $wpdb->get_results( "
-			SELECT COUNT(ID), post_status
+			SELECT COUNT(ID) as count, post_status
 			FROM $wpdb->posts
 			WHERE post_type = 'shop_subscription'
 			GROUP BY post_status
@@ -183,7 +183,7 @@ class WCS_Admin_System_Status {
 		$subscriptions_by_status_output = '';
 
 		foreach ( $subscriptions_by_status as $result ) {
-			$subscriptions_by_status_output[] = $result['post_status'] . ': ' . $result['COUNT(ID)'];
+			$subscriptions_by_status_output[] = $result['post_status'] . ': ' . $result['count'];
 		}
 
 		return $subscriptions_by_status_output;
