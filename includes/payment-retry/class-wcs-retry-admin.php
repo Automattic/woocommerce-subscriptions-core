@@ -151,13 +151,37 @@ class WCS_Retry_Admin {
 	 * @return array
 	 */
 	public static function add_system_status_content( $data ) {
-		$has_custom_retry_rules = has_action( 'wcs_default_retry_rules' );
+		$has_custom_retry_rules      = has_action( 'wcs_default_retry_rules' );
+		$has_custom_retry_rule_class = has_action( 'wcs_retry_rule_class' );
+		$has_custom_raw_retry_rule   = has_action( 'wcs_get_retry_rule_raw' );
+		$has_custom_retry_rule       = has_action( 'wcs_get_retry_rule' );
 
-		$data['wcs_retry_rules_overrides'] = array(
+		$data['wcs_retry_rules_overridden'] = array(
 			'name'      => _x( 'Custom Retry Rules', 'label for the system status page', 'woocommerce-subscriptions' ),
 			'mark_icon' => $has_custom_retry_rules ? 'warning' : 'yes',
 			'note'      => $has_custom_retry_rules ? 'Yes' : 'No',
 			'success'   => ! $has_custom_retry_rules,
+		);
+
+		$data['wcs_retry_rule_class_overridden'] = array(
+			'name'      => _x( 'Custom Retry Rule Class', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'mark_icon' => $has_custom_retry_rule_class ? 'warning' : 'yes',
+			'note'      => $has_custom_retry_rule_class ? 'Yes' : 'No',
+			'success'   => ! $has_custom_retry_rule_class,
+		);
+
+		$data['wcs_raw_retry_rule_overridden'] = array(
+			'name'      => _x( 'Custom Raw Retry Rule', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'mark_icon' => $has_custom_raw_retry_rule ? 'warning' : 'yes',
+			'note'      => $has_custom_raw_retry_rule ? 'Yes' : 'No',
+			'success'   => ! $has_custom_raw_retry_rule,
+		);
+
+		$data['wcs_retry_rule_overridden'] = array(
+			'name'      => _x( 'Custom Retry Rule', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'mark_icon' => $has_custom_retry_rule ? 'warning' : 'yes',
+			'note'      => $has_custom_retry_rule ? 'Yes' : 'No',
+			'success'   => ! $has_custom_retry_rule,
 		);
 
 		return $data;
