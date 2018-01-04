@@ -171,19 +171,14 @@ class WCS_Admin_System_Status {
 	 * @return string
 	 */
 	private static function get_subscriptions_statuses() {
-		global $wpdb;
 
-		$subscriptions_by_status = $wpdb->get_results( "
-			SELECT COUNT(ID) as count, post_status
-			FROM $wpdb->posts
-			WHERE post_type = 'shop_subscription'
-			GROUP BY post_status
-			ORDER BY COUNT(ID) DESC", ARRAY_A );
-
+		$subscriptions_by_status        = (array) wp_count_posts( 'shop_subscription' );
 		$subscriptions_by_status_output = '';
 
-		foreach ( $subscriptions_by_status as $result ) {
-			$subscriptions_by_status_output[] = $result['post_status'] . ': ' . $result['count'];
+		foreach ( $subscriptions_by_status as $status => $count ) {
+			if ( ! empty( $count ) ) {
+				$subscriptions_by_status_output[] = $status . ': ' . $count;
+			}
 		}
 
 		return $subscriptions_by_status_output;
