@@ -98,10 +98,20 @@ class WCS_Admin_System_Status {
 	private static function set_theme_overrides( &$debug_data ) {
 		$theme_overrides = self::get_theme_overrides();
 
-		$debug_data['wcs_theme_overrides'] = array(
-			'name'      => _x( 'Subscriptions Template Theme Overrides', 'label for the system status page', 'woocommerce-subscriptions' ),
-			'data'      => $theme_overrides,
-		);
+		if ( ! empty( $theme_overrides['overrides'] ) ) {
+			$debug_data['wcs_theme_overrides'] = array(
+				'name'      => _x( 'Subscriptions Template Theme Overrides', 'label for the system status page', 'woocommerce-subscriptions' ),
+				'data'      => $theme_overrides['overrides'],
+			);
+
+			// Include a note on how to update if the templates are out of date.
+			if ( ! empty( $theme_overrides['has_outdated_templates'] ) && true === $theme_overrides['has_outdated_templates'] ) {
+				$debug_data['wcs_theme_overrides'] += array(
+					'mark_icon' => 'warning',
+					'note'      => sprintf( __( '%sLearn how to update%s', 'woocommerce-subscriptions' ), '<a href="https://docs.woocommerce.com/document/fix-outdated-templates-woocommerce/" target="_blank">', '</a>' ),
+				);
+			}
+		}
 	}
 
 	/**
@@ -150,20 +160,11 @@ class WCS_Admin_System_Status {
 					);
 				}
 
-				$overridden[] = $overridden_template_output;
+				$overridden['overrides'][] = $overridden_template_output;
 			}
 		}
 
-		if ( $outdated ) {
-			ob_start(); ?>
-			<br />
-			<mark class="error"><span class="dashicons dashicons-warning"></span></mark>
-			<a href="https://docs.woocommerce.com/document/fix-outdated-templates-woocommerce/" target="_blank">
-				<?php esc_html_e( 'Learn how to update', 'woocommerce-subscriptions' ) ?>
-			</a>
-			<?php
-			$overridden['has_outdated_templates'] = ob_get_clean();
-		}
+		$overridden['has_outdated_templates'] = $outdated;
 
 		return $overridden;
 	}
