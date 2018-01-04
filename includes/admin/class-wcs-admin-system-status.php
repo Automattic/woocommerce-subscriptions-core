@@ -76,6 +76,7 @@ class WCS_Admin_System_Status {
 
 		$debug_data['wcs_debug'] = array(
 			'name'    => _x( 'WCS_DEBUG', 'label that indicates whether debugging is turned on for the plugin', 'woocommerce-subscriptions' ),
+			'label'   => 'WCS_DEBUG',
 			'note'    => ( $is_wcs_debug ) ? __( 'Yes', 'woocommerce-subscriptions' ) :  __( 'No', 'woocommerce-subscriptions' ),
 			'success' => $is_wcs_debug ? 0 : 1,
 		);
@@ -87,6 +88,7 @@ class WCS_Admin_System_Status {
 	private static function set_staging_mode( &$debug_data ) {
 		$debug_data['wcs_staging'] = array(
 			'name'    => _x( 'Subscriptions Mode', 'Live or Staging, Label on WooCommerce -> System Status page', 'woocommerce-subscriptions' ),
+			'label'   => 'Subscriptions Mode',
 			'note'    => '<strong>' . ( ( WC_Subscriptions::is_duplicate_site() ) ? _x( 'Staging', 'refers to staging site', 'woocommerce-subscriptions' ) :  _x( 'Live', 'refers to live site', 'woocommerce-subscriptions' ) ) . '</strong>',
 			'success' => ( WC_Subscriptions::is_duplicate_site() ) ? 0 : 1,
 		);
@@ -101,6 +103,7 @@ class WCS_Admin_System_Status {
 		if ( ! empty( $theme_overrides['overrides'] ) ) {
 			$debug_data['wcs_theme_overrides'] = array(
 				'name'      => _x( 'Subscriptions Template Theme Overrides', 'label for the system status page', 'woocommerce-subscriptions' ),
+				'label'     => 'Subscriptions Template Theme Overrides',
 				'data'      => $theme_overrides['overrides'],
 			);
 
@@ -185,6 +188,7 @@ class WCS_Admin_System_Status {
 
 		$debug_data['wcs_subscriptions_by_status'] = array(
 			'name'      => _x( 'Subscription Statuses', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'label'     => 'Subscription Statuses',
 			'mark'      => '',
 			'mark_icon' => '',
 			'data'      => $subscriptions_by_status_output,
@@ -202,6 +206,7 @@ class WCS_Admin_System_Status {
 
 			$debug_data['wcs_woocommerce_account_connected'] = array(
 				'name'      => _x( 'WooCommerce Account Connected', 'label for the system status page', 'woocommerce-subscriptions' ),
+				'label'     => 'WooCommerce Account Connected',
 				'mark_icon' => $woocommerce_account_connected ? 'yes' : 'warning',
 				'note'      => $woocommerce_account_connected ? 'Yes' : 'No',
 				'success'   => $woocommerce_account_connected,
@@ -217,6 +222,7 @@ class WCS_Admin_System_Status {
 
 						$debug_data['wcs_active_product_key'] = array(
 							'name'      => _x( 'Active Product Key', 'label for the system status page', 'woocommerce-subscriptions' ),
+							'label'     => 'Active Product Key',
 							'mark_icon' => $active ? 'yes' : 'no',
 							'note'      => $active ? 'Yes' : 'No',
 							'success'   => $active,
@@ -258,8 +264,9 @@ class WCS_Admin_System_Status {
 
 			if ( ! isset( $debug_data[ $key ] ) ) {
 				$debug_data[ $key ] = array(
-					'name' => $payment_method_name,
-					'data' => array(),
+					'name'  => $payment_method_name,
+					'label' => $payment_method_name,
+					'data'  => array(),
 				);
 			}
 
@@ -275,8 +282,9 @@ class WCS_Admin_System_Status {
 
 		foreach ( $gateways as $gateway_id => $gateway ) {
 			$debug_data[ 'wcs_' . $gateway_id . '_feature_support' ] = array(
-				'name' => $gateway->method_title,
-				'data' => $gateway->supports,
+				'name'  => $gateway->method_title,
+				'label' => $gateway->method_title,
+				'data'  => $gateway->supports,
 			);
 
 			if ( 'paypal' === $gateway_id ) {
@@ -284,6 +292,7 @@ class WCS_Admin_System_Status {
 
 				$debug_data['wcs_paypal_reference_transactions'] = array(
 					'name'      => _x( 'PayPal Reference Transactions Enabled', 'label for the system status page', 'woocommerce-subscriptions' ),
+					'label'     => 'PayPal Reference Transactions Enabled',
 					'mark_icon' => $are_reference_transactions_enabled ? 'yes' : 'warning',
 					'note'      => $are_reference_transactions_enabled ? 'Yes' : 'No',
 					'success'   => $are_reference_transactions_enabled,
