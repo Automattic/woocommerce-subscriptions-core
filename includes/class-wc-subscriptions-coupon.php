@@ -739,7 +739,7 @@ class WC_Subscriptions_Coupon {
 		}
 
 		// If the cart doesn't have a limited coupon, and we haven't stored a subscription, bail early.
-		if ( ! self::cart_contains_limited_recurring_coupon() && null === self::$subscription ) {
+		if ( ! self::cart_contains_limited_recurring_coupon() ) {
 			return $gateways;
 		}
 
