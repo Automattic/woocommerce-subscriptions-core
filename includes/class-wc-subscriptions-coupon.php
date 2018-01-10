@@ -880,23 +880,35 @@ class WC_Subscriptions_Coupon {
 
 		/** @var WC_Order $order */
 		foreach ( $related as $id => $order ) {
+			// Unpaid orders don't count as usages.
 			if ( $order->needs_payment() ) {
 				continue;
 			}
 
-			$refunds = $order->get_refunds();
-			/** @var WC_Order_Refund $refund */
-			foreach ($refunds as $refund) {
-				$details = $refund->get_refund();
+			/*
+			 * If the order has been refunded, treat coupon as unused. We'll consider the order to be
+			 * refunded when there is a non-null refund amount, and the order total equals the refund amount.
+			 *
+			 * The use of == instead of === is deliberate, to account for differences in amount formatting.
+			 */
+			$refunded = $order->get_total_refunded();
+			$total    = $order->get_total();
+			if ( null !== $refunded && $total == $refunded ) {
+				continue;
 			}
 
-			// todo: handle refunded orders in some way.
+			// If there was nothing discounted, then consider the coupon unused.
+			if ( ! $order->get_discount_total() ) {
+				continue;
+			}
 
-			// Check for limited coupons, and add them to the count.
-			$used_coupons = $order->get_used_coupons();
+			// Check for limited coupons, and add them to the count if the provide a discount.
+			$used_coupons = $order->get_items( 'coupon' );
+
+			/** @var WC_Order_Item_Coupon $used_coupon */
 			foreach ( $used_coupons as $used_coupon ) {
-				if ( isset( $limited_coupons[ $used_coupon ] ) ) {
-					$limited_coupons[ $used_coupon ]++;
+				if ( isset( $limited_coupons[ $used_coupon->get_code() ] ) && $used_coupon->get_discount() ) {
+					$limited_coupons[ $used_coupon->get_code() ]++;
 				}
 			}
 		}
