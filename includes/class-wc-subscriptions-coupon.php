@@ -658,17 +658,17 @@ class WC_Subscriptions_Coupon {
 	}
 
 	/**
-	 * Determine if a given subscription has a limited use coupon.
+	 * Determine if a given order has a limited use coupon.
 	 *
 	 * @author Jeremy Pry
 	 *
-	 * @param WC_Subscription $subscription
+	 * @param WC_Order|WC_Subscription $order
 	 *
 	 * @return bool
 	 */
-	public static function subscription_has_limited_recurring_coupon( $subscription ) {
+	public static function order_has_limited_recurring_coupon( $order ) {
 		$has_coupon = false;
-		$coupons    = $subscription->get_used_coupons();
+		$coupons    = $order->get_used_coupons();
 		foreach ( $coupons as $coupon ) {
 			if ( self::coupon_is_limited( $coupon ) ) {
 				$has_coupon = true;
