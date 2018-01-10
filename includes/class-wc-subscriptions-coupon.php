@@ -822,7 +822,7 @@ class WC_Subscriptions_Coupon {
 			'id'          => 'wcs_number_renewals',
 			'label'       => __( 'Active for X Renewals', 'woocommerce-subscriptions' ),
 			'placeholder' => __( 'Unlimited renewals', 'woocommerce-subscriptions' ),
-			'description' => __( 'Coupon will be limited to the given number of renewals. It will then be automatically removed from the subscription.', 'woocommerce-subscriptions' ),
+			'description' => __( 'Coupon will be limited to the given number of renewals. It will then be automatically removed from the subscription. "Renewals" also includes the initial subscription payment.', 'woocommerce-subscriptions' ),
 			'desc_tip'    => true,
 			'data_type'   => 'decimal',
 			'value'       => $coupon->get_meta( self::$coupons_renewals ),
