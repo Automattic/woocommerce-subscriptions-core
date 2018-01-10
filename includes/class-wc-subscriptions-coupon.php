@@ -30,15 +30,6 @@ class WC_Subscriptions_Coupon {
 	private static $removed_coupons = array();
 
 	/**
-	 * The current subscription object.
-	 *
-	 * Used when filtering gateways for the change payment method template.
-	 *
-	 * @var WC_Subscription
-	 */
-	private static $subscription = null;
-
-	/**
 	 * Set up the class, including it's hooks & filters, when the file is loaded.
 	 *
 	 * @since 1.2
@@ -73,8 +64,6 @@ class WC_Subscriptions_Coupon {
 
 		// Filter the available payment gateways.
 		add_filter( 'woocommerce_available_payment_gateways', array( __CLASS__, 'gateways_subscription_amount_changes' ), 20 );
-		add_action( 'woocommerce_before_template_part', array( __CLASS__, 'change_payment_method_template' ), 10, 4 );
-		add_action( 'woocommerce_after_template_part', array( __CLASS__, 'change_payment_method_template' ), 10, 4 );
 
 		// Check coupons when a subscription is renewed.
 		add_action( 'woocommerce_subscription_payment_complete', array( __CLASS__, 'check_coupon_usages' ) );
@@ -754,11 +743,6 @@ class WC_Subscriptions_Coupon {
 			return $gateways;
 		}
 
-		// If we stored a subscription and it doesn't have a limited coupon, bail early.
-		if ( self::$subscription instanceof WC_Subscription && ! self::subscription_has_limited_recurring_coupon( self::$subscription ) ) {
-			return $gateways;
-		}
-
 		// If we got this far, we should limit the gateways as needed.
 		$gateways = self::limit_gateways_subscription_amount_changes( $gateways );
 
@@ -768,31 +752,6 @@ class WC_Subscriptions_Coupon {
 		}
 
 		return $gateways;
-	}
-
-	/**
-	 * Store the subscription when loading the "change payment method" template.
-	 *
-	 * @author Jeremy Pry
-	 *
-	 * @param string $name    The name of the template to load.
-	 * @param string $path    The path of the template to look in.
-	 * @param string $located The full path of the located template.
-	 * @param array  $args    The array of arguments passed to the locate template function.
-	 */
-	public static function change_payment_method_template( $name, $path, $located, $args ) {
-		if ( 'checkout/form-change-payment-method.php' !== $name || ! isset( $args['subscription'] ) ) {
-			return;
-		}
-
-		// Either store the subscription, or remove it.
-		if ( doing_action( 'woocommerce_before_template_part' ) ) {
-			self::$subscription = $args['subscription'];
-		} elseif ( doing_action( 'woocommerce_after_template_part' ) ) {
-			self::$subscription = null;
-		}
-
-
 	}
 
 	/**
