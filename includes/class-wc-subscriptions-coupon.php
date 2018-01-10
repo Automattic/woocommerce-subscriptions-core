@@ -738,8 +738,16 @@ class WC_Subscriptions_Coupon {
 			return $gateways;
 		}
 
-		// If the cart doesn't have a limited coupon, and we haven't stored a subscription, bail early.
-		if ( ! self::cart_contains_limited_recurring_coupon() ) {
+		// See if this is a request to change payment for an existing subscription.
+		$change_payment     = isset( $_GET['change_payment_method'] ) ? wc_clean( $_GET['change_payment_method'] ) : 0;
+		$has_limited_coupon = false;
+		if ( $change_payment && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'] ) ) {
+			$subscription       = wcs_get_subscription( $change_payment );
+			$has_limited_coupon = self::order_has_limited_recurring_coupon( $subscription );
+		}
+
+		// If the cart doesn't have a limited coupon, and a change payment doesn't have a limited coupon, bail early.
+		if ( ! self::cart_contains_limited_recurring_coupon() && ! $has_limited_coupon ) {
 			return $gateways;
 		}
 
