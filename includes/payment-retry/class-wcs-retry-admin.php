@@ -158,6 +158,7 @@ class WCS_Retry_Admin {
 
 		$data['wcs_retry_rules_overridden'] = array(
 			'name'      => _x( 'Custom Retry Rules', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'label'     => 'Custom Retry Rules',
 			'mark_icon' => $has_custom_retry_rules ? 'warning' : 'yes',
 			'note'      => $has_custom_retry_rules ? 'Yes' : 'No',
 			'success'   => ! $has_custom_retry_rules,
@@ -165,6 +166,7 @@ class WCS_Retry_Admin {
 
 		$data['wcs_retry_rule_class_overridden'] = array(
 			'name'      => _x( 'Custom Retry Rule Class', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'label'     => 'Custom Retry Rule Class',
 			'mark_icon' => $has_custom_retry_rule_class ? 'warning' : 'yes',
 			'note'      => $has_custom_retry_rule_class ? 'Yes' : 'No',
 			'success'   => ! $has_custom_retry_rule_class,
@@ -172,6 +174,7 @@ class WCS_Retry_Admin {
 
 		$data['wcs_raw_retry_rule_overridden'] = array(
 			'name'      => _x( 'Custom Raw Retry Rule', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'label'     => 'Custom Raw Retry Rule',
 			'mark_icon' => $has_custom_raw_retry_rule ? 'warning' : 'yes',
 			'note'      => $has_custom_raw_retry_rule ? 'Yes' : 'No',
 			'success'   => ! $has_custom_raw_retry_rule,
@@ -179,6 +182,7 @@ class WCS_Retry_Admin {
 
 		$data['wcs_retry_rule_overridden'] = array(
 			'name'      => _x( 'Custom Retry Rule', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'label'     => 'Custom Retry Rule',
 			'mark_icon' => $has_custom_retry_rule ? 'warning' : 'yes',
 			'note'      => $has_custom_retry_rule ? 'Yes' : 'No',
 			'success'   => ! $has_custom_retry_rule,
