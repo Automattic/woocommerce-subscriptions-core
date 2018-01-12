@@ -35,13 +35,9 @@ class WCS_Admin_System_Status {
 		$debug_data = array();
 
 		self::set_debug_mode( $debug_data );
-
 		self::set_staging_mode( $debug_data );
-
 		self::set_theme_overrides( $debug_data );
-
 		self::set_subscription_statuses( $debug_data );
-
 		self::set_woocommerce_account_data( $debug_data );
 
 		$debug_data      = apply_filters( 'wcs_system_status', $debug_data );
@@ -257,10 +253,10 @@ class WCS_Admin_System_Status {
 			$subscription_status = $result['post_status'];
 
 			if ( isset( $gateways[ $payment_method ] ) ) {
-				$payment_method_name = $gateways[ $payment_method ]->method_title;
+				$payment_method_name = $payment_method_label = $gateways[ $payment_method ]->method_title;
 			} else {
-				$payment_method      = 'other';
-				$payment_method_name = 'Other';
+				$payment_method_label = $payment_method = 'other';
+				$payment_method_name  = _x( 'Other', 'label for the system status page', 'woocommerce-subscriptions' );
 			}
 
 			$key = 'wcs_payment_method_subscriptions_by' . $payment_method;
@@ -268,7 +264,7 @@ class WCS_Admin_System_Status {
 			if ( ! isset( $debug_data[ $key ] ) ) {
 				$debug_data[ $key ] = array(
 					'name'  => $payment_method_name,
-					'label' => $payment_method_name,
+					'label' => $payment_method_label,
 					'data'  => array(),
 				);
 			}
