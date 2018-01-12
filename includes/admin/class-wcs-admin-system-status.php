@@ -12,6 +12,9 @@
  */
 class WCS_Admin_System_Status {
 
+	/**
+	 * @var int Subscriptions' WooCommerce Marketplace product ID
+	 */
 	const WCS_PRODUCT_ID = 27147;
 
 	/**
