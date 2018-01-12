@@ -308,4 +308,3 @@ class WCS_Admin_System_Status {
 		}
 	}
 }
-WCS_Admin_System_Status::init();
