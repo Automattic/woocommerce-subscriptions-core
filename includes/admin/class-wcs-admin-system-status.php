@@ -32,39 +32,47 @@ class WCS_Admin_System_Status {
 	 * @since 2.3.0
 	 */
 	public static function render_system_status_items() {
-		$debug_data = array();
 
-		self::set_debug_mode( $debug_data );
-		self::set_staging_mode( $debug_data );
-		self::set_theme_overrides( $debug_data );
-		self::set_subscription_statuses( $debug_data );
-		self::set_woocommerce_account_data( $debug_data );
+		$subscriptions_data = $subscriptions_by_payment_gateway_data = $payment_gateway_data = array();
 
-		$debug_data      = apply_filters( 'wcs_system_status', $debug_data );
-		$section_title   = __( 'Subscriptions', 'woocommerce-subscriptions' );
-		$section_tooltip = __( 'This section shows any information about Subscriptions.', 'woocommerce-subscriptions' );
-
-		include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/status.php' );
+		self::set_debug_mode( $subscriptions_data );
+		self::set_staging_mode( $subscriptions_data );
+		self::set_theme_overrides( $subscriptions_data );
+		self::set_subscription_statuses( $subscriptions_data );
+		self::set_woocommerce_account_data( $subscriptions_data );
 
 		// Subscriptions by Payment Gateway
-		$debug_data = array();
-
-		self::set_subscriptions_by_payment_gateway( $debug_data );
-
-		$section_title   = __( 'Subscriptions by Payment Gateway', 'woocommerce-subscriptions' );
-		$section_tooltip = __( 'This section shows information about Subscription payment methods.', 'woocommerce-subscriptions' );
-
-		include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/status.php' );
+		self::set_subscriptions_by_payment_gateway( $subscriptions_by_payment_gateway );
 
 		// Payment gateway features
-		$debug_data = array();
+		self::set_subscriptions_payment_gateway_support( $payment_gateway_data );
 
-		self::set_subscriptions_payment_gateway_support( $debug_data );
+		$system_status_sections = array(
+			array(
+				'title'   => __( 'Subscriptions', 'woocommerce-subscriptions' ),
+				'tooltip' => __( 'This section shows any information about Subscriptions.', 'woocommerce-subscriptions' ),
+				'data'    => apply_filters( 'wcs_system_status', $subscriptions_data ),
+			),
+			),
+			array(
+				'title'   => __( 'Subscriptions by Payment Gateway', 'woocommerce-subscriptions' ),
+				'tooltip' => __( 'This section shows information about Subscription payment methods.', 'woocommerce-subscriptions' ),
+				'data'    => $subscriptions_by_payment_gateway,
+			),
+			array(
+				'title'   => __( 'Payment Gateway Support', 'woocommerce-subscriptions' ),
+				'tooltip' => __( 'This section shows information about payment gateway feature support.', 'woocommerce-subscriptions' ),
+				'data'    => $payment_gateway_data,
+			),
+		);
 
-		$section_title   = __( 'Payment Gateway Support', 'woocommerce-subscriptions' );
-		$section_tooltip = __( 'This section shows information about payment gateway feature support.', 'woocommerce-subscriptions' );
+		foreach ( $system_status_sections as $section ) {
+			$section_title   = $section['title'];
+			$section_tooltip = $section['tooltip'];
+			$debug_data      = $section['data'];
 
-		include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/status.php' );
+			include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/status.php' );
+		}
 	}
 
 	/**
