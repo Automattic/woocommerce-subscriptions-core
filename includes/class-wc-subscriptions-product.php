@@ -67,6 +67,9 @@ class WC_Subscriptions_Product {
 		// Handle bulk edits to subscription data in WC 2.4
 		add_action( 'woocommerce_bulk_edit_variations', __CLASS__ . '::bulk_edit_variations', 10, 4 );
 
+		// Adds a field flagging whether the variation is safe to be removed or not.
+		add_action( 'woocommerce_product_after_variable_attributes', array( __CLASS__, 'add_variation_removal_flag' ), 10, 3 );
+
 		// check product variations for sync'd or trial
 		add_action( 'wp_ajax_wcs_product_has_trial_or_is_synced', __CLASS__ . '::check_product_variations_for_syncd_or_trial' );
 
@@ -892,6 +895,24 @@ class WC_Subscriptions_Product {
 
 				update_post_meta( $variation_id, '_subscription_price', $subscription_price );
 			}
+		}
+	}
+
+	/**
+	 * @since 2.2.17
+	 */
+	public static function add_variation_removal_flag( $loop, $variation_data, $variation ) {
+		global $wpdb;
+
+		$variation_id = $variation->ID;
+		$subscription_count = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$wpdb->prefix}woocommerce_order_itemmeta` WHERE `meta_key` = '_variation_id' AND `meta_value` = %d", $variation_id ) );
+		$can_remove = ( 0 == $subscription_count );
+
+		printf( '<input type="hidden" class="wcs-can-remove-variation" value="%d" />', intval( $can_remove ) );
+
+		if ( ! $can_remove ) {
+			$msg = __( 'This variation can not be removed because it is associated with active subscriptions. To remove this variation, please cancel and delete the subscriptions for it.', 'woocommerce-subscriptions' );
+			printf( '<a href="#" class="tips delete wcs-can-not-remove-variation-msg" data-tip="%s"></a>', wc_sanitize_tooltip( $msg ) ); // XSS ok.
 		}
 	}
 
