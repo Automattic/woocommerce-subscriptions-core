@@ -239,7 +239,7 @@ function wcs_cart_totals_coupon_html( $coupon, $cart ) {
 	$value = implode( ', ', array_filter( $value ) );
 
 	// Apply filters.
-	$html = apply_filters( 'wcs_cart_totals_coupon_html', wcs_cart_price_string( $value, $cart ), $coupon, $cart );
+	$html = apply_filters( 'wcs_cart_totals_coupon_html', $value, $coupon, $cart );
 	$html = apply_filters( 'woocommerce_cart_totals_coupon_html', $html, $coupon, $discount_html );
 
 	echo wp_kses( $html, array_replace_recursive( wp_kses_allowed_html( 'post' ), array( 'a' => array( 'data-coupon' => true ) ) ) );
