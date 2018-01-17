@@ -902,11 +902,8 @@ class WC_Subscriptions_Product {
 	 * @since 2.2.17
 	 */
 	public static function add_variation_removal_flag( $loop, $variation_data, $variation ) {
-		global $wpdb;
-
-		$variation_id = $variation->ID;
-		$subscription_count = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$wpdb->prefix}woocommerce_order_itemmeta` WHERE `meta_key` = '_variation_id' AND `meta_value` = %d", $variation_id ) );
-		$can_remove = ( 0 == $subscription_count );
+		$related_subscriptions = wcs_get_subscriptions_for_product( $variation->ID );
+		$can_remove            = empty( $related_subscriptions );
 
 		printf( '<input type="hidden" class="wcs-can-remove-variation" value="%d" />', intval( $can_remove ) );
 
