@@ -238,9 +238,12 @@ function wcs_get_human_time_diff( $timestamp_gmt ) {
 }
 
 /**
- * Works around the  wp_kses() limitation of not accepting attribute namess with underscores
+ * Works around the wp_kses() limitation of not accepting attribute names with underscores.
  *
- * @since 2.3
+ * @param string $content Content to filter through kses.
+ * @param array $allowed_html List of allowed HTML elements.
+ * @return string Filtered string of HTML.
+ * @since 2.2.17
  */
 function wp_kses_allow_underscores( $content, $allowed_html ) {
 
