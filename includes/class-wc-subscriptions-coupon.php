@@ -58,6 +58,23 @@ class WC_Subscriptions_Coupon {
 
 		add_filter( 'woocommerce_cart_totals_coupon_label', __CLASS__ . '::get_pseudo_coupon_label', 10, 2 );
 
+		// Hook recurring coupon functionality.
+		add_action( 'plugins_loaded', array( __CLASS__, 'maybe_add_recurring_coupon_hooks' ) );
+	}
+
+	/**
+	 * Maybe add Recurring Coupon functionality.
+	 *
+	 * WC 3.2 added many API enhancements, especially around coupons. It would be very challenging to implement
+	 * this functionality in older versions of WC, so we require 3.2+ to enable this.
+	 *
+	 * @author Jeremy Pry
+	 */
+	public static function maybe_add_recurring_coupon_hooks() {
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.2')) {
+			return;
+		}
+
 		// Add custom coupon fields.
 		add_action( 'woocommerce_coupon_options', array( __CLASS__, 'add_coupon_fields' ), 10 );
 		add_action( 'woocommerce_coupon_options_save', array( __CLASS__, 'save_coupon_fields' ), 10 );
@@ -658,8 +675,8 @@ class WC_Subscriptions_Coupon {
 	public static function order_has_limited_recurring_coupon( $order ) {
 		$has_coupon = false;
 		$coupons    = $order->get_used_coupons();
-		foreach ( $coupons as $coupon ) {
-			if ( self::coupon_is_limited( $coupon ) ) {
+		foreach ( $coupons as $code ) {
+			if ( self::coupon_is_limited( $code ) ) {
 				$has_coupon = true;
 				break;
 			}
