@@ -33,7 +33,7 @@ class WCS_Admin_System_Status {
 	 */
 	public static function render_system_status_items() {
 
-		$subscriptions_data = $subscriptions_by_payment_gateway_data = $payment_gateway_data = array();
+		$store_data = $subscriptions_data = $subscriptions_by_payment_gateway_data = $payment_gateway_data = array();
 
 		self::set_debug_mode( $subscriptions_data );
 		self::set_staging_mode( $subscriptions_data );
@@ -47,12 +47,19 @@ class WCS_Admin_System_Status {
 		// Payment gateway features
 		self::set_subscriptions_payment_gateway_support( $payment_gateway_data );
 
+		// Store settings
+		self::set_store_location( $store_data );
+
 		$system_status_sections = array(
 			array(
 				'title'   => __( 'Subscriptions', 'woocommerce-subscriptions' ),
 				'tooltip' => __( 'This section shows any information about Subscriptions.', 'woocommerce-subscriptions' ),
 				'data'    => apply_filters( 'wcs_system_status', $subscriptions_data ),
 			),
+			array(
+				'title'   => __( 'Store Setup', 'woocommerce-subscriptions' ),
+				'tooltip' => __( 'This section shows general information about the store.', 'woocommerce-subscriptions' ),
+				'data'    => $store_data,
 			),
 			array(
 				'title'   => __( 'Subscriptions by Payment Gateway', 'woocommerce-subscriptions' ),
@@ -306,5 +313,31 @@ class WCS_Admin_System_Status {
 				);
 			}
 		}
+	}
+
+	/**
+	 * Add the store's country and state information.
+	 */
+	private static function set_store_location( &$debug_data ) {
+		$store_base_location   = wc_get_base_location();
+		$countries             = WC()->countries->get_countries();
+		$states                = WC()->countries->get_states( $store_base_location['country'] );
+		$store_location_string = '';
+
+		if ( isset( $countries[ $store_base_location['country'] ] ) ) {
+			$store_location_string = $countries[ $store_base_location['country'] ];
+
+			if ( ! empty( $states[ $store_base_location['state'] ] ) ) {
+				$store_location_string .= ' &mdash; ' . $states[ $store_base_location['state'] ];
+			}
+		}
+
+		$debug_data['wcs_store_location'] = array(
+			'name'      => _x( 'Country / State', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'label'     => 'Country / State',
+			'note'      => $store_location_string,
+			'mark'      => '',
+			'mark_icon' => '',
+		);
 	}
 }
