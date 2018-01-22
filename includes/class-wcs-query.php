@@ -15,16 +15,19 @@ class WCS_Query extends WC_Query {
 
 		if ( ! is_admin() ) {
 			add_filter( 'query_vars', array( $this, 'add_query_vars' ), 0 );
+			add_action( 'parse_request', array( $this, 'parse_request' ), 0 );
 			add_filter( 'woocommerce_get_breadcrumb', array( $this, 'add_breadcrumb' ), 10 );
 			add_action( 'pre_get_posts', array( $this, 'pre_get_posts' ), 11 );
 
 			// Inserting your new tab/page into the My Account page.
 			add_filter( 'woocommerce_account_menu_items', array( $this, 'add_menu_items' ) );
+			add_filter( 'woocommerce_get_endpoint_url', array( $this, 'get_endpoint_url' ), 10, 4 );
 			add_filter( 'woocommerce_get_endpoint_url', array( $this, 'maybe_redirect_to_only_subscription' ), 10, 2 );
 			add_action( 'woocommerce_account_subscriptions_endpoint', array( $this, 'endpoint_content' ) );
 		}
 
 		$this->init_query_vars();
+		add_filter( 'woocommerce_account_settings', array( $this, 'add_endpoint_account_settings' ) );
 	}
 
 	/**
@@ -34,7 +37,7 @@ class WCS_Query extends WC_Query {
 	 */
 	public function init_query_vars() {
 		$this->query_vars = array(
-			'view-subscription' => get_option( 'woocommerce_myaccount_view_subscriptions_endpoint', 'view-subscription' ),
+			'view-subscription' => $this->get_deprecated_option( 'woocommerce_myaccount_view_subscriptions_endpoint', 'woocommerce_myaccount_view-subscription_endpoint', '2.2.17' ),
 		);
 		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
 			$this->query_vars['subscriptions'] = get_option( 'woocommerce_myaccount_subscriptions_endpoint', 'subscriptions' );
@@ -197,5 +200,83 @@ class WCS_Query extends WC_Query {
 			}
 		}
 	}
+
+	/**
+	 * Get the option value for a deprecated option name and set the current option name to the current value
+	 *
+	 * @param  string $deprecated  Deprecated option name
+	 * @param  string $current     Current option name
+	 * @param  string $version     Option name changed since
+	 * @return mixed Value set for the option
+	 *
+	 * @since 2.2.17
+	 */
+	private function get_deprecated_option( $deprecated, $current, $version ) {
+		$value = get_option( $deprecated, null );
+
+		if ( isset( $value ) ) {
+			wcs_doing_it_wrong( $deprecated, sprintf( '%1$s option is deprecated. Use %2$s option instead.', $deprecated, $current ), $version );
+
+			// Update the current option name with the value that was set in the deprecated option name
+			update_option( $current, $value );
+			// Now that things are upto date, do away with the deprecated option name
+			delete_option( $deprecated );
+		}
+		return get_option( $current, null );
+	}
+
+	/**
+	 * Add UI option for changing Subscription endpoints in WC settings
+	 *
+	 * @param mixed $account_settings
+	 * @return mixed $account_settings
+	 */
+	public function add_endpoint_account_settings( $settings ) {
+		// Include the endpoints after View Order (13)
+		array_splice( $settings, 13, 0, array(
+				array(
+					'title'    => __( 'Subscriptions', 'woocommerce-subscriptions' ),
+					'desc'     => __( 'Endpoint for the My Account &rarr; Subscriptions page', 'woocommerce-subscriptions' ),
+					'id'       => 'woocommerce_myaccount_subscriptions_endpoint',
+					'type'     => 'text',
+					'default'  => 'subscriptions',
+					'desc_tip' => true,
+				),
+
+				array(
+					'title'    => __( 'View Subscription', 'woocommerce-subscriptions' ),
+					'desc'     => __( 'Endpoint for the My Account &rarr; View Subscription page', 'woocommerce-subscriptions' ),
+					'id'       => 'woocommerce_myaccount_view-subscription_endpoint',
+					'type'     => 'text',
+					'default'  => 'view-subscription',
+					'desc_tip' => true,
+				),
+		) );
+
+		return $settings;
+	}
+
+	/**
+	 *	Get endpoint URL.
+	 *
+	 * Gets the URL for an endpoint, which varies depending on permalink settings.
+	 *
+	 * @param  string $endpoint
+	 * @param  string $value
+	 * @param  string $permalink
+	 *
+	 * @return string $url
+	 */
+
+	public function get_endpoint_url( $url, $endpoint, $value = '', $permalink = '') {
+
+		if ( ! empty( $this->query_vars[ $endpoint ] ) ) {
+			remove_filter( 'woocommerce_get_endpoint_url', array( $this, 'get_endpoint_url' ) );
+			$url = wc_get_endpoint_url( $this->query_vars[ $endpoint ], $value, $permalink );
+			add_filter( 'woocommerce_get_endpoint_url', array( $this, 'get_endpoint_url' ), 10, 4 );
+		}
+		return $url;
+	}
+
 }
 new WCS_Query();
