@@ -899,6 +899,16 @@ class WC_Subscriptions_Product {
 	}
 
 	/**
+	 *
+	 * Hooked to `woocommerce_product_after_variable_attributes`.
+	 * This function adds a hidden field to the backend's HTML output of product variations indicating whether the
+	 * variation is being used in subscriptions or not.
+	 * This is used by some admin JS code to prevent removal of certain variations and also display a tooltip message to the
+	 * admin.
+	 *
+	 * @param int     $loop            Position of the variation inside the variations loop.
+	 * @param array   $variation_data  Array of variation data.
+	 * @param WP_Post $variation       The variation's WP post.
 	 * @since 2.2.17
 	 */
 	public static function add_variation_removal_flag( $loop, $variation_data, $variation ) {
