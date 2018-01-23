@@ -804,9 +804,9 @@ class WC_Subscriptions_Coupon {
 		$coupon = new WC_Coupon( $id );
 		woocommerce_wp_text_input( array(
 			'id'          => 'wcs_number_renewals',
-			'label'       => __( 'Active for X Renewals', 'woocommerce-subscriptions' ),
-			'placeholder' => __( 'Unlimited renewals', 'woocommerce-subscriptions' ),
-			'description' => __( 'Coupon will be limited to the given number of renewals. It will then be automatically removed from the subscription. "Renewals" also includes the initial subscription payment.', 'woocommerce-subscriptions' ),
+			'label'       => __( 'Active for x payments', 'woocommerce-subscriptions' ),
+			'placeholder' => __( 'Unlimited payments', 'woocommerce-subscriptions' ),
+			'description' => __( 'Coupon will be limited to the given number of payments. It will then be automatically removed from the subscription. "Payments" also includes the initial subscription payment.', 'woocommerce-subscriptions' ),
 			'desc_tip'    => true,
 			'data_type'   => 'decimal',
 			'value'       => $coupon->get_meta( self::$coupons_renewals ),
@@ -938,11 +938,11 @@ class WC_Subscriptions_Coupon {
 		if ( $limit ) {
 			echo esc_html( sprintf(
 				/* translators: %d refers to the number of renewals the coupon can be used for. */
-				_n( 'Active for %d renewal', 'Active for %d renewals', $limit, 'woocommerce-subscriptions' ),
+				_n( 'Active for %d payment', 'Active for %d payments', $limit, 'woocommerce-subscriptions' ),
 				number_format_i18n( $limit )
 			) );
 		} else {
-			esc_html_e( 'Active for unlimited renewals', 'woocommerce-subscriptions' );
+			esc_html_e( 'Active for unlimited payments', 'woocommerce-subscriptions' );
 		}
 	}
 
