@@ -37,7 +37,7 @@ class WCS_Query extends WC_Query {
 	 */
 	public function init_query_vars() {
 		$this->query_vars = array(
-			'view-subscription' => $this->get_deprecated_option( 'woocommerce_myaccount_view_subscriptions_endpoint', 'woocommerce_myaccount_view-subscription_endpoint', '2.2.17' ),
+			'view-subscription' => $this->get_view_subscription_endpoint(),
 		);
 		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
 			$this->query_vars['subscriptions'] = get_option( 'woocommerce_myaccount_subscriptions_endpoint', 'subscriptions' );
@@ -202,27 +202,23 @@ class WCS_Query extends WC_Query {
 	}
 
 	/**
-	 * Get the option value for a deprecated option name and set the current option name to the current value
+	 * Reset the woocommerce_myaccount_view_subscriptions_endpoint option name to woocommerce_myaccount_view_subscription_endpoint
 	 *
-	 * @param  string $deprecated  Deprecated option name
-	 * @param  string $current     Current option name
-	 * @param  string $version     Option name changed since
 	 * @return mixed Value set for the option
-	 *
 	 * @since 2.2.17
 	 */
-	private function get_deprecated_option( $deprecated, $current, $version ) {
-		$value = get_option( $deprecated, null );
+	private function get_view_subscription_endpoint() {
+		$value = get_option( 'woocommerce_myaccount_view_subscriptions_endpoint', null );
 
 		if ( isset( $value ) ) {
-			wcs_doing_it_wrong( $deprecated, sprintf( '%1$s option is deprecated. Use %2$s option instead.', $deprecated, $current ), $version );
+			wcs_doing_it_wrong( 'woocommerce_myaccount_view_subscriptions_endpoint', sprintf( '%1$s option is deprecated. Use %2$s option instead.', 'woocommerce_myaccount_view_subscriptions_endpoint', 'woocommerce_myaccount_view_subscription_endpoint' ), '2.2.17' );
 
 			// Update the current option name with the value that was set in the deprecated option name
-			update_option( $current, $value );
+			update_option( 'woocommerce_myaccount_view_subscription_endpoint', $value );
 			// Now that things are upto date, do away with the deprecated option name
-			delete_option( $deprecated );
+			delete_option( 'woocommerce_myaccount_view_subscriptions_endpoint' );
 		}
-		return get_option( $current, null );
+		return get_option( 'woocommerce_myaccount_view_subscription_endpoint', null );
 	}
 
 	/**
@@ -232,28 +228,45 @@ class WCS_Query extends WC_Query {
 	 * @return mixed $account_settings
 	 */
 	public function add_endpoint_account_settings( $settings ) {
-		// Include the endpoints after View Order (13)
-		array_splice( $settings, 13, 0, array(
-				array(
+		$new_settings = array();
+		$order_endpoint_found = false;
+
+		// Loop over and look for View Order Endpoint and include Subscriptions endpoint options after that.
+		foreach ( $settings as $key => $value ) {
+
+			if ( 'woocommerce_myaccount_view_order_endpoint' === $value['id'] ) {
+				$order_endpoint_found = true;
+				$new_settings[ $key ] = $value;
+
+				$key++;
+				$new_settings[ $key ] = array(
 					'title'    => __( 'Subscriptions', 'woocommerce-subscriptions' ),
 					'desc'     => __( 'Endpoint for the My Account &rarr; Subscriptions page', 'woocommerce-subscriptions' ),
 					'id'       => 'woocommerce_myaccount_subscriptions_endpoint',
 					'type'     => 'text',
 					'default'  => 'subscriptions',
 					'desc_tip' => true,
-				),
+				);
 
-				array(
-					'title'    => __( 'View Subscription', 'woocommerce-subscriptions' ),
+				$key++;
+				$new_settings[ $key ] = array(
+					'title'    => __( 'View subscription', 'woocommerce-subscriptions' ),
 					'desc'     => __( 'Endpoint for the My Account &rarr; View Subscription page', 'woocommerce-subscriptions' ),
-					'id'       => 'woocommerce_myaccount_view-subscription_endpoint',
+					'id'       => 'woocommerce_myaccount_view_subscription_endpoint',
 					'type'     => 'text',
 					'default'  => 'view-subscription',
 					'desc_tip' => true,
-				),
-		) );
+				);
+				continue;
+			}
 
-		return $settings;
+			if ( $order_endpoint_found ) {
+				$new_settings[ $key + 2 ] = $value;
+			} else {
+				$new_settings[ $key ] = $value;
+			}
+		}
+		return $new_settings;
 	}
 
 	/**
