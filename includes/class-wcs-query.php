@@ -230,41 +230,39 @@ class WCS_Query extends WC_Query {
 	public function add_endpoint_account_settings( $settings ) {
 		$new_settings = array();
 		$order_endpoint_found = false;
+		$subscriptions_endpoint_setting = array(
+			'title'    => __( 'Subscriptions', 'woocommerce-subscriptions' ),
+			'desc'     => __( 'Endpoint for the My Account &rarr; Subscriptions page', 'woocommerce-subscriptions' ),
+			'id'       => 'woocommerce_myaccount_subscriptions_endpoint',
+			'type'     => 'text',
+			'default'  => 'subscriptions',
+			'desc_tip' => true,
+		);
+
+		$view_subscription_endpoint_setting = array(
+			'title'    => __( 'View subscription', 'woocommerce-subscriptions' ),
+			'desc'     => __( 'Endpoint for the My Account &rarr; View Subscription page', 'woocommerce-subscriptions' ),
+			'id'       => 'woocommerce_myaccount_view_subscription_endpoint',
+			'type'     => 'text',
+			'default'  => 'view-subscription',
+			'desc_tip' => true,
+		);
 
 		// Loop over and look for View Order Endpoint and include Subscriptions endpoint options after that.
-		foreach ( $settings as $key => $value ) {
+		foreach ( $settings as $value ) {
 
 			if ( 'woocommerce_myaccount_view_order_endpoint' === $value['id'] ) {
 				$order_endpoint_found = true;
-				$new_settings[ $key ] = $value;
-
-				$key++;
-				$new_settings[ $key ] = array(
-					'title'    => __( 'Subscriptions', 'woocommerce-subscriptions' ),
-					'desc'     => __( 'Endpoint for the My Account &rarr; Subscriptions page', 'woocommerce-subscriptions' ),
-					'id'       => 'woocommerce_myaccount_subscriptions_endpoint',
-					'type'     => 'text',
-					'default'  => 'subscriptions',
-					'desc_tip' => true,
-				);
-
-				$key++;
-				$new_settings[ $key ] = array(
-					'title'    => __( 'View subscription', 'woocommerce-subscriptions' ),
-					'desc'     => __( 'Endpoint for the My Account &rarr; View Subscription page', 'woocommerce-subscriptions' ),
-					'id'       => 'woocommerce_myaccount_view_subscription_endpoint',
-					'type'     => 'text',
-					'default'  => 'view-subscription',
-					'desc_tip' => true,
-				);
+				$new_settings[] = $value;
+				$new_settings[] = $subscriptions_endpoint_setting;
+				$new_settings[] = $view_subscription_endpoint_setting;
 				continue;
+			} elseif ( ! $order_endpoint_found && 'sectionend' === $value['type']  && 'account_endpoint_options' === $value['id'] ) {
+				// If we got to the end of the settings and didn't add our endpoints, add them to the end.
+				$new_settings[] = $subscriptions_endpoint_setting;
+				$new_settings[] = $view_subscription_endpoint_setting;
 			}
-
-			if ( $order_endpoint_found ) {
-				$new_settings[ $key + 2 ] = $value;
-			} else {
-				$new_settings[ $key ] = $value;
-			}
+			$new_settings[] = $value;
 		}
 		return $new_settings;
 	}
