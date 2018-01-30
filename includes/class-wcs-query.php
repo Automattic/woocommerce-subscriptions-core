@@ -205,7 +205,7 @@ class WCS_Query extends WC_Query {
 	 * Reset the woocommerce_myaccount_view_subscriptions_endpoint option name to woocommerce_myaccount_view_subscription_endpoint
 	 *
 	 * @return mixed Value set for the option
-	 * @since 2.2.17
+	 * @since 2.2.18
 	 */
 	private function get_view_subscription_endpoint() {
 		$value = get_option( 'woocommerce_myaccount_view_subscriptions_endpoint', null );
@@ -288,6 +288,5 @@ class WCS_Query extends WC_Query {
 		}
 		return $url;
 	}
-
 }
 new WCS_Query();
