@@ -34,7 +34,8 @@ function wcs_get_subscription_period_strings( $number = 1, $period = '' ) {
 			'month' => sprintf( _nx( 'month', '%s months', $number, 'Subscription billing period.', 'woocommerce-subscriptions' ), $number ),
 			// translators: placeholder is number of years. (e.g. "Bill this every year / 4 years")
 			'year'  => sprintf( _nx( 'year',  '%s years',  $number, 'Subscription billing period.', 'woocommerce-subscriptions' ), $number ),
-		)
+		),
+		$number
 	);
 
 	return ( ! empty( $period ) ) ? $translated_periods[ $period ] : $translated_periods;
@@ -55,7 +56,8 @@ function wcs_get_subscription_trial_period_strings( $number = 1, $period = '' ) 
 			'week'  => sprintf( _n( '%s week', 'a %s-week', $number, 'woocommerce-subscriptions' ), $number ),
 			'month' => sprintf( _n( '%s month', 'a %s-month', $number, 'woocommerce-subscriptions' ), $number ),
 			'year'  => sprintf( _n( '%s year', 'a %s-year', $number, 'woocommerce-subscriptions' ), $number ),
-		)
+		),
+		$number
 	);
 
 	return ( ! empty( $period ) ) ? $translated_periods[ $period ] : $translated_periods;

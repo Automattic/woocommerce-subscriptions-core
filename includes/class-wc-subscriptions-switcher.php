@@ -1682,7 +1682,7 @@ class WC_Subscriptions_Switcher {
 			return;
 		}
 
-		$order_completed = in_array( $order_new_status, array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id ), 'processing', 'completed' ) );
+		$order_completed = in_array( $order_new_status, array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id, $order ), 'processing', 'completed' ) );
 
 		if ( $order_completed ) {
 			try {
