@@ -214,38 +214,42 @@ class WCS_Admin_System_Status {
 	 */
 	private static function set_woocommerce_account_data( &$debug_data ) {
 
-		if ( class_exists( 'WC_Helper' ) ) {
-			$woocommerce_account_auth      = WC_Helper_Options::get( 'auth' );
-			$woocommerce_account_connected = ! empty( $woocommerce_account_auth );
+		if ( ! class_exists( 'WC_Helper' ) ) {
+			return;
+		}
 
-			$debug_data['wcs_woocommerce_account_connected'] = array(
-				'name'      => _x( 'WooCommerce Account Connected', 'label for the system status page', 'woocommerce-subscriptions' ),
-				'label'     => 'WooCommerce Account Connected',
-				'mark_icon' => $woocommerce_account_connected ? 'yes' : 'warning',
-				'note'      => $woocommerce_account_connected ? 'Yes' : 'No',
-				'success'   => $woocommerce_account_connected,
-			);
+		$woocommerce_account_auth      = WC_Helper_Options::get( 'auth' );
+		$woocommerce_account_connected = ! empty( $woocommerce_account_auth );
 
-			if ( $woocommerce_account_connected ) {
-				$woocommerce_account_subscriptions = WC_Helper::get_subscriptions();
-				$site_id                           = absint( $woocommerce_account_auth['site_id'] );
+		$debug_data['wcs_woocommerce_account_connected'] = array(
+			'name'      => _x( 'WooCommerce Account Connected', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'label'     => 'WooCommerce Account Connected',
+			'note'      => $woocommerce_account_connected ? 'Yes' : 'No',
+			'success'   => $woocommerce_account_connected,
+		);
 
-				foreach ( $woocommerce_account_subscriptions as $subscription ) {
-					if ( isset( $subscription['product_id'] ) && self::WCS_PRODUCT_ID === $subscription['product_id'] ) {
-						$active = in_array( $site_id, $subscription['connections'] );
+		if ( ! $woocommerce_account_connected ) {
+			return;
+		}
 
-						$debug_data['wcs_active_product_key'] = array(
-							'name'      => _x( 'Active Product Key', 'label for the system status page', 'woocommerce-subscriptions' ),
-							'label'     => 'Active Product Key',
-							'mark_icon' => $active ? 'yes' : 'no',
-							'note'      => $active ? 'Yes' : 'No',
-							'success'   => $active,
-						);
-						break;
-					}
-				}
+		// Check for an active WooCommerce Subscriptions product key
+		$woocommerce_account_subscriptions = WC_Helper::get_subscriptions();
+		$site_id                           = absint( $woocommerce_account_auth['site_id'] );
+		$has_active_product_key            = false;
+
+		foreach ( $woocommerce_account_subscriptions as $subscription ) {
+			if ( isset( $subscription['product_id'] ) && self::WCS_PRODUCT_ID === $subscription['product_id'] ) {
+				$has_active_product_key = in_array( $site_id, $subscription['connections'] );
+				break;
 			}
 		}
+
+		$debug_data['wcs_active_product_key'] = array(
+			'name'      => _x( 'Active Product Key', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'label'     => 'Active Product Key',
+			'note'      => $has_active_product_key ? 'Yes' : 'No',
+			'success'   => $has_active_product_key,
+		);
 	}
 
 	/**
