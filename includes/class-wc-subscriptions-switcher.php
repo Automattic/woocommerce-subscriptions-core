@@ -124,9 +124,6 @@ class WC_Subscriptions_Switcher {
 		// Grant download permissions after the switch is complete.
 		add_action( 'woocommerce_grant_product_download_permissions', __CLASS__ . '::delay_granting_download_permissions', 9, 1 );
 		add_action( 'woocommerce_subscriptions_switch_completed', __CLASS__ . '::grant_download_permissions', 9, 1 );
-
-		// Add switching to form URL for WC 3.3+.
-		add_filter( 'post_type_link', array( __CLASS__, 'add_switch_link' ), 10, 4 );
 	}
 
 	/**
@@ -299,23 +296,39 @@ class WC_Subscriptions_Switcher {
 	/**
 	 * Slightly more awkward implementation for WooCommerce versions that do not have the woocommerce_grouped_product_list_link filter.
 	 *
-	 * @param string $permalink The permalink of the product belonging to the group
-	 * @param object $post a WP_Post object
+	 * @param string  $permalink The permalink of the product belonging to the group
+	 * @param WP_Post $post      The WP_Post object
+	 *
 	 * @return string modified string with the query arg present
 	 */
 	public static function add_switch_query_arg_post_link( $permalink, $post ) {
-
 		if ( ! isset( $_GET['switch-subscription'] ) || ! is_main_query() || ! is_product() || 'product' !== $post->post_type ) {
 			return $permalink;
 		}
 
 		$product = wc_get_product( $post );
+		$type    = wcs_get_objects_property( $product, 'type' );
 
-		if ( ! $product->is_type( 'subscription' ) ) {
-			return $permalink;
+		switch ( $type ) {
+			case 'variable-subscription':
+			case 'subscription':
+				return self::add_switch_query_args( $_GET['switch-subscription'], $_GET['item'], $permalink );
+
+			case 'grouped':
+				// Check to see if the group contains a subscription.
+				$children = $product->get_children();
+				foreach ( $children as $child ) {
+					$child_product = wc_get_product( $child );
+					if ( 'subscription' === wcs_get_objects_property( $child_product, 'type' ) ) {
+						return self::add_switch_query_args( $_GET['switch-subscription'], $_GET['item'], $permalink );
+					}
+				}
+
+				// break omitted intentionally to fall through to default.
+
+			default:
+				return $permalink;
 		}
-
-		return self::add_switch_query_args( $_GET['switch-subscription'], $_GET['item'], $permalink );
 	}
 
 	/**
@@ -417,52 +430,6 @@ class WC_Subscriptions_Switcher {
 		) );
 
 		return $settings;
-	}
-
-	/**
-	 * Filter the permalink for a product to add the switching query parameters.
-	 *
-	 * @author Jeremy Pry
-	 *
-	 * @param string  $post_link The post's permalink.
-	 * @param WP_Post $post      The post object for the product.
-	 * @param bool    $leavename Whether to keep the post name.
-	 * @param bool    $sample    Whether it is a sample permalink.
-	 *
-	 * @return string The filtered post permalink.
-	 */
-	public static function add_switch_link( $post_link, $post, $leavename, $sample ) {
-		// This filter runs on all CPTs, so if it's not a product, move along.
-		if ( 'product' !== $post->post_type ) {
-			return $post_link;
-		}
-
-		// If it's a sample permalink, then bail.
-		if ( $sample ) {
-			return $post_link;
-		}
-
-		// If we're not in the midst of switching, then bail.
-		if ( ! isset( $_GET['switch-subscription'] ) ) {
-			return $post_link;
-		}
-
-		// Verify the nonce.
-		if ( ! isset( $_GET['_wcsnonce'] ) || ! wp_verify_nonce( $_GET['_wcsnonce'], 'wcs_switch_request' ) ) {
-			return $post_link;
-		}
-
-		// Attempt to validate the subscription and item.
-		$subscription = wcs_get_subscription( absint( $_GET['switch-subscription'] ) );
-		$item_id      = absint( $_GET['item'] );
-		$item_object  = $subscription->get_item( $item_id );
-
-		// Add the permalink data back to the URL.
-		if ( $subscription && false !== $item_object ) {
-			$post_link = self::add_switch_query_args( $subscription->get_id(), $item_id, $post_link );
-		}
-
-		return $post_link;
 	}
 
 	/**
