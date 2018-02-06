@@ -97,6 +97,11 @@ class WCS_Query extends WC_Query {
 				break;
 			case 'subscriptions':
 				$title = __( 'Subscriptions', 'woocommerce-subscriptions' );
+				if ( ! empty( $wp->query_vars['subscriptions'] ) ) {
+					$title = sprintf( __( 'Subscriptions (page %d)', 'woocommerce-subscriptions' ), intval( $wp->query_vars['subscriptions'] ) );
+				} else {
+					$title = __( 'Subscriptions', 'woocommerce-subscriptions' );
+				}
 				break;
 			default:
 				$title = '';
@@ -153,8 +158,11 @@ class WCS_Query extends WC_Query {
 	/**
 	 * Endpoint HTML content.
 	 */
-	public function endpoint_content() {
-		wc_get_template( 'myaccount/subscriptions.php', array(), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+	public function endpoint_content( $current_page ) {
+
+		$current_page    = empty( $current_page ) ? 1 : absint( $current_page );
+
+		wc_get_template( 'myaccount/subscriptions.php', array( 'current_page' => absint( $current_page ) ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
 	}
 
 	/**
