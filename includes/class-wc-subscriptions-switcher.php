@@ -124,6 +124,9 @@ class WC_Subscriptions_Switcher {
 		// Grant download permissions after the switch is complete.
 		add_action( 'woocommerce_grant_product_download_permissions', __CLASS__ . '::delay_granting_download_permissions', 9, 1 );
 		add_action( 'woocommerce_subscriptions_switch_completed', __CLASS__ . '::grant_download_permissions', 9, 1 );
+
+		// Add switching to form URL for WC 3.3+.
+		add_filter( 'post_type_link', array( __CLASS__, 'add_switch_link' ), 10, 4 );
 	}
 
 	/**
@@ -414,6 +417,52 @@ class WC_Subscriptions_Switcher {
 		) );
 
 		return $settings;
+	}
+
+	/**
+	 * Filter the permalink for a product to add the switching query parameters.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param string  $post_link The post's permalink.
+	 * @param WP_Post $post      The post object for the product.
+	 * @param bool    $leavename Whether to keep the post name.
+	 * @param bool    $sample    Whether it is a sample permalink.
+	 *
+	 * @return string The filtered post permalink.
+	 */
+	public static function add_switch_link( $post_link, $post, $leavename, $sample ) {
+		// This filter runs on all CPTs, so if it's not a product, move along.
+		if ( 'product' !== $post->post_type ) {
+			return $post_link;
+		}
+
+		// If it's a sample permalink, then bail.
+		if ( $sample ) {
+			return $post_link;
+		}
+
+		// If we're not in the midst of switching, then bail.
+		if ( ! isset( $_GET['switch-subscription'] ) ) {
+			return $post_link;
+		}
+
+		// Verify the nonce.
+		if ( ! isset( $_GET['_wcsnonce'] ) || ! wp_verify_nonce( $_GET['_wcsnonce'], 'wcs_switch_request' ) ) {
+			return $post_link;
+		}
+
+		// Attempt to validate the subscription and item.
+		$subscription = wcs_get_subscription( absint( $_GET['switch-subscription'] ) );
+		$item_id      = absint( $_GET['item'] );
+		$item_object  = $subscription->get_item( $item_id );
+
+		// Add the permalink data back to the URL.
+		if ( $subscription && false !== $item_object ) {
+			$post_link = self::add_switch_query_args( $subscription->get_id(), $item_id, $post_link );
+		}
+
+		return $post_link;
 	}
 
 	/**
