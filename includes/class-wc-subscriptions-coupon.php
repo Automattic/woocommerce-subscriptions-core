@@ -17,7 +17,7 @@ class WC_Subscriptions_Coupon {
 	 *
 	 * @var string
 	 */
-	protected static $coupons_renewals = '_wcs_number_renewals';
+	protected static $coupons_renewals = '_wcs_number_payments';
 
 	/** @var string error message for invalid subscription coupons */
 	public static $coupon_error;
@@ -803,7 +803,7 @@ class WC_Subscriptions_Coupon {
 	public static function add_coupon_fields( $id ) {
 		$coupon = new WC_Coupon( $id );
 		woocommerce_wp_text_input( array(
-			'id'          => 'wcs_number_renewals',
+			'id'          => 'wcs_number_payments',
 			'label'       => __( 'Active for x payments', 'woocommerce-subscriptions' ),
 			'placeholder' => __( 'Unlimited payments', 'woocommerce-subscriptions' ),
 			'description' => __( 'Coupon will be limited to the given number of payments. It will then be automatically removed from the subscription. "Payments" also includes the initial subscription payment.', 'woocommerce-subscriptions' ),
@@ -828,7 +828,7 @@ class WC_Subscriptions_Coupon {
 		}
 
 		$coupon = new WC_Coupon( $post_id );
-		$coupon->add_meta_data( self::$coupons_renewals, wc_clean( $_POST['wcs_number_renewals'] ), true );
+		$coupon->add_meta_data( self::$coupons_renewals, wc_clean( $_POST['wcs_number_payments'] ), true );
 		$coupon->save();
 	}
 
