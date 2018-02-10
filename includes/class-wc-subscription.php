@@ -1691,13 +1691,7 @@ class WC_Subscription extends WC_Order {
 		wcs_update_users_role( $this->get_user_id(), 'default_subscriber_role' );
 
 		// Add order note depending on initial payment
-		if ( 0 == $this->get_total_initial_payment() && 1 == $this->get_completed_payment_count() && false != $this->get_parent() ) {
-			$note = __( 'Sign-up complete.', 'woocommerce-subscriptions' );
-		} else {
-			$note = __( 'Payment received.', 'woocommerce-subscriptions' );
-		}
-
-		$this->add_order_note( $note );
+		$this->add_order_note( __( 'Payment status marked complete.', 'woocommerce-subscriptions' ) );
 
 		$this->update_status( 'active' ); // also saves the subscription
 
