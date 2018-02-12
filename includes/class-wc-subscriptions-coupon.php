@@ -477,8 +477,14 @@ class WC_Subscriptions_Coupon {
 	 * product's total based on the total of it's price per period and sign up fee (if any).
 	 *
 	 * @since 1.3.5
+	 *
+	 * @param WC_Cart $cart
 	 */
 	public static function remove_coupons( $cart ) {
+		static $coupon_types = array(
+			'recurring_fee'     => 1,
+			'recurring_percent' => 1,
+		);
 
 		$calculation_type = WC_Subscriptions_Cart::get_calculation_type();
 
@@ -488,42 +494,36 @@ class WC_Subscriptions_Coupon {
 		}
 
 		$applied_coupons = $cart->get_applied_coupons();
+		if ( empty( $applied_coupons ) ) {
+			return;
+		}
 
 		// If we're calculating a sign-up fee or recurring fee only amount, remove irrelevant coupons
-		if ( ! empty( $applied_coupons ) ) {
+		foreach ( $applied_coupons as $coupon_code ) {
 
-			// Keep track of which coupons, if any, need to be reapplied immediately
-			$coupons_to_reapply = array();
+			$coupon      = new WC_Coupon( $coupon_code );
+			$coupon_type = wcs_get_coupon_property( $coupon, 'discount_type' );
+			if ( ! isset( $coupon_types[ $coupon_type ] ) ) {
+				$cart->remove_coupon( $coupon_code );
+				continue;
+			}
 
-			foreach ( $applied_coupons as $coupon_code ) {
-
-				$coupon      = new WC_Coupon( $coupon_code );
-				$coupon_type = wcs_get_coupon_property( $coupon, 'discount_type' );
-
-				if ( in_array( $coupon_type, array( 'recurring_fee', 'recurring_percent' ) ) ) {  // always apply coupons to their specific calculation case
-					if ( 'recurring_total' == $calculation_type ) {
-						$coupons_to_reapply[] = $coupon_code;
-					} elseif ( 'none' == $calculation_type && ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) { // sometimes apply recurring coupons to initial total
-						$coupons_to_reapply[] = $coupon_code;
-					} else {
-						self::$removed_coupons[] = $coupon_code;
-					}
-				} elseif ( ( 'none' == $calculation_type ) && ! in_array( $coupon_type, array( 'recurring_fee', 'recurring_percent' ) ) ) { // apply all coupons to the first payment
-					$coupons_to_reapply[] = $coupon_code;
-				} else {
-					self::$removed_coupons[] = $coupon_code;
+			if ( 'recurring_total' === $calculation_type ) {
+				// Special handling for a single payment coupon.
+				$payments = self::get_coupon_limit( $coupon_code );
+				if ( 1 === $payments ) {
+					$cart->remove_coupon( $coupon_code );
+					$cart->apply_coupon( 'virtual' );
 				}
+
+				continue;
 			}
 
-			// Now remove all coupons (WC only provides a function to remove all coupons)
-			$cart->remove_coupons();
-
-			// And re-apply those which relate to this calculation
-			$cart->applied_coupons = $coupons_to_reapply;
-
-			if ( isset( $cart->coupons ) ) { // WC 2.3+
-				$cart->coupons = $cart->get_coupons();
+			if ( ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
+				continue;
 			}
+
+			$cart->remove_coupon( $coupon_code );
 		}
 	}
 
