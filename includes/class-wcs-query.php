@@ -218,7 +218,8 @@ class WCS_Query extends WC_Query {
 			// Now that things are upto date, do away with the deprecated option name
 			delete_option( 'woocommerce_myaccount_view_subscriptions_endpoint' );
 		}
-		return get_option( 'woocommerce_myaccount_view_subscription_endpoint', null );
+
+		return get_option( 'woocommerce_myaccount_view_subscription_endpoint', 'view-subscription' );
 	}
 
 	/**
