@@ -713,12 +713,45 @@ class WC_Subscriptions_Coupon {
 			'recurring_fee'     => 1,
 			'recurring_percent' => 1,
 		);
+		static $virtual_coupons = array(
+			'renewal_cart'    => 1,
+			'renewal_fee'     => 1,
+			'renewal_percent' => 1,
+		);
 
+		// Retrieve the coupon data.
 		$coupon      = new WC_Coupon( $code );
-		$coupon_type = wcs_get_coupon_property( $coupon, 'discount_type' );
-		$limited     = $coupon->get_meta( self::$coupons_renewals );
+		$coupon_type = $coupon->get_discount_type();
+
+		// If we have a virtual coupon, attempt to get the original coupon.
+		if ( isset( $virtual_coupons[ $coupon_type ] ) ) {
+			$coupon      = self::map_virtual_coupon( $coupon );
+			$coupon_type = $coupon->get_discount_type();
+		}
+
+		$limited = $coupon->get_meta( self::$coupons_renewals );
 
 		return isset( $subscription_coupons[ $coupon_type ] ) ? intval( $limited ) : false;
+	}
+
+	/**
+	 * Get a normal coupon from one of our virtual coupons.
+	 *
+	 * This is necessary when manually processing a renewal to ensure that we are correctly
+	 * identifying limited payment coupons.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param WC_Coupon $coupon The virtual coupon.
+	 *
+	 * @return WC_Coupon The original coupon.
+	 */
+	private static function map_virtual_coupon( $coupon ) {
+		add_filter( 'woocommerce_get_shop_coupon_data', '__return_false', 100 );
+		$coupon = new WC_Coupon( $coupon->get_code() );
+		remove_filter( 'woocommerce_get_shop_coupon_data', '__return_false', 100 );
+
+		return $coupon;
 	}
 
 	/**
