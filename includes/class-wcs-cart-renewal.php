@@ -326,7 +326,9 @@ class WCS_Cart_Renewal {
 	/**
 	 * Check if a renewal order subscription has any coupons applied and if so add pseudo renewal coupon equivalents to ensure the discount is still applied
 	 *
-	 * @param object $subscription subscription
+	 * @param WC_Subscription $subscription subscription
+	 * @param WC_Order $order
+	 *
 	 * @since 2.0.10
 	 */
 	public function maybe_setup_discounts( $subscription, $order = null ) {
