@@ -37,6 +37,9 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 
 		// Handle early renewal orders that are cancelled.
 		add_action( 'woocommerce_order_status_cancelled', array( $this, 'maybe_reactivate_subscription' ), 100, 2 );
+
+		// Add a subscription note to record early renewal order.
+		add_action( 'woocommerce_checkout_update_order_meta', array( $this, 'add_note_to_record_early_renewal' ) );
 	}
 
 	/**
@@ -134,7 +137,7 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 		update_post_meta( $order_id, '_subscription_renewal_early', $subscription->get_id() );
 
 		// Put the subscription on hold until payment is complete.
-		$subscription->update_status( 'on-hold' );
+		$subscription->update_status( 'on-hold', _x( 'Customer requested to renew early:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
 	}
 
 	/**
@@ -161,7 +164,7 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 		$order->update_meta_data( '_subscription_renewal_early', $subscription->get_id() );
 
 		// Put the subscription on hold until payment is complete.
-		$subscription->update_status( 'on-hold' );
+		$subscription->update_status( 'on-hold', _x( 'Customer requested to renew early:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
 	}
 
 	/**
@@ -267,5 +270,28 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 		}
 
 		return $subscription;
+	}
+
+	/**
+	 * Add a note to the subscription to record the creation of the early renewal order.
+	 *
+	 * @param int $order_id The order ID created on checkout.
+	 * @since 2.3.0
+	 */
+	public function add_note_to_record_early_renewal( $order_id ) {
+
+		$cart_item = $this->cart_contains();
+
+		if ( ! $cart_item ) {
+			return;
+		}
+
+		$order        = wc_get_order( $order_id );
+		$subscription = wcs_get_subscription( $cart_item[ $this->cart_item_key ]['subscription_id'] );
+
+		if ( wcs_is_order( $order ) && wcs_is_subscription( $subscription ) ) {
+			$order_number = sprintf( _x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), $order->get_order_number() );
+			$subscription->add_order_note( sprintf( __( 'Order %s created to record early renewal.', 'woocommerce-subscriptions' ), sprintf( '<a href="%s">%s</a> ', esc_url( wcs_get_edit_post_link( $order_id ) ), $order_number ) ) );
+		}
 	}
 }
