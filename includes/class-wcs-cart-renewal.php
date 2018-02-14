@@ -1043,8 +1043,8 @@ class WCS_Cart_Renewal {
 				$order_id = '';
 			}
 
-			if ( wcs_get_objects_property( $order, 'id' ) == $order_id ) {
-				$this->set_cart_hash( $item[ $this->cart_item_key ]['renewal_order_id'] );
+			if ( $order_id ) {
+				$this->set_cart_hash( $order_id );
 			}
 		}
 
