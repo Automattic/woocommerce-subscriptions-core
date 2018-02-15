@@ -113,8 +113,6 @@ class WC_Subscriptions_Synchroniser {
 		add_filter( 'woocommerce_subscriptions_recurring_cart_key', __CLASS__ . '::add_to_recurring_cart_key', 10, 2 );
 
 		// Add defaults for our options.
-		add_filter( 'default_option_' . self::$setting_id, array( __CLASS__, 'option_default' ), 10, 3 );
-		add_filter( 'default_option_' . self::$setting_id_proration, array( __CLASS__, 'option_default' ), 10, 3 );
 		add_filter( 'default_option_' . self::$setting_id_days_no_fee, array( __CLASS__, 'option_default' ), 10, 3 );
 
 		// Sanitize options when saving.
@@ -139,18 +137,8 @@ class WC_Subscriptions_Synchroniser {
 	 */
 	public static function option_default( $default, $option, $passed_default = null ) {
 		switch ( $option ) {
-			case self::$setting_id:
-			case self::$setting_id_proration:
-				// Null for $passed_default might mean an older version of WordPress. Fall back to checking $default.
-				if ( null === $passed_default && false === $default ) {
-					$default = 'no';
-				} elseif ( false === $passed_default || null === $default ) {
-					$default = 'no';
-				}
-				break;
-
 			case self::$setting_id_days_no_fee:
-				$default = $default ? $default : 0;
+				$default = $passed_default ? $default : 0;
 				break;
 		}
 
@@ -183,16 +171,16 @@ class WC_Subscriptions_Synchroniser {
 	 * @since 1.5
 	 */
 	public static function is_syncing_enabled() {
-		return ( 'yes' == get_option( self::$setting_id ) ) ? true : false;
+		return 'yes' === get_option( self::$setting_id, 'no' );
 	}
 
 	/**
-	 * Check if payment syncing is enabled on the store.
+	 * Check if payments can be prorated on the store.
 	 *
 	 * @since 1.5
 	 */
 	public static function is_sync_proration_enabled() {
-		return ( 'no' != get_option( self::$setting_id_proration ) ) ? true : false;
+		return 'no' !== get_option( self::$setting_id_proration, 'no' );
 	}
 
 	/**
@@ -490,14 +478,17 @@ class WC_Subscriptions_Synchroniser {
 	 * at the time of sign-up but prorated to the sync day.
 	 *
 	 * @since 1.5.10
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return bool
 	 */
 	public static function is_product_prorated( $product ) {
-
 		if ( false === self::is_sync_proration_enabled() || false === self::is_product_synced( $product ) ) {
 			$is_product_prorated = false;
-		} elseif ( 'yes' == get_option( self::$setting_id_proration ) && 0 == WC_Subscriptions_Product::get_trial_length( $product ) ) {
+		} elseif ( 'yes' == get_option( self::$setting_id_proration, 'no' ) && 0 == WC_Subscriptions_Product::get_trial_length( $product ) ) {
 			$is_product_prorated = true;
-		} elseif ( 'virtual' == get_option( self::$setting_id_proration ) && $product->is_virtual() && 0 == WC_Subscriptions_Product::get_trial_length( $product ) ) {
+		} elseif ( 'virtual' == get_option( self::$setting_id_proration, 'no' ) && $product->is_virtual() && 0 == WC_Subscriptions_Product::get_trial_length( $product ) ) {
 			$is_product_prorated = true;
 		} else {
 			$is_product_prorated = false;
@@ -537,7 +528,7 @@ class WC_Subscriptions_Synchroniser {
 		if (
 			0 !== WC_Subscriptions_Product::get_trial_length( $product ) ||
 			! self::is_product_synced( $product ) ||
-			'recurring' !== get_option( self::$setting_id_proration )
+			'recurring' !== get_option( self::$setting_id_proration, 'no' )
 		) {
 			$is_upfront = false;
 		}
