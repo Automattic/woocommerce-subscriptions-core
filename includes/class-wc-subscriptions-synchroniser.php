@@ -234,12 +234,12 @@ class WC_Subscriptions_Synchroniser {
 			),
 
 			array(
-				'name'     => __( 'Days without fee', 'woocommerce-subscriptions' ),
-				'desc'     => __( 'Subscriptions created within this many days prior to the Renewal Day will not be charged at sign-up. Set to zero for all new Subscriptions to be charged the full recurring amount. Must be a positive number.', 'woocommerce-subscriptions' ),
+				'name'     => __( 'Sign-up grace period', 'woocommerce-subscriptions' ),
+				'desc'     => _x( 'days prior to Renewal Day', "there's a number immediately in front of this text", 'woocommerce-subscriptions' ),
 				'id'       => self::$setting_id_days_no_fee,
 				'default'  => 0,
 				'type'     => 'number',
-				'desc_tip' => true,
+				'desc_tip' => __( 'Subscriptions created within this many days prior to the Renewal Day will not be charged at sign-up. Set to zero for all new Subscriptions to be charged the full recurring amount. Must be a positive number.', 'woocommerce-subscriptions' ),
 			),
 
 			array( 'type' => 'sectionend', 'id' => self::$setting_id . '_title' ),
