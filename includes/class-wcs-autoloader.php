@@ -167,6 +167,8 @@ class WCS_Autoloader {
 			$path .= '/admin';
 		} elseif ( false !== strpos( $class, 'meta_box' ) ) {
 			$path .= '/admin/meta-boxes';
+		} elseif ( false !== strpos( $class, 'wc-report' ) ) {
+			$path .= '/admin/reports/deprecated';
 		} elseif ( false !== strpos( $class, 'report' ) ) {
 			$path .= '/admin/reports';
 		} elseif ( false !== strpos( $class, 'rest' ) ) {
