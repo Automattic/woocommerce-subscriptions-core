@@ -1651,7 +1651,7 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * When payment is completed, either for the original purchase or a renewal payment, this function processes it.
+	 * Process payment on the subscription, which mainly means processing it for the last order on the subscription.
 	 *
 	 * @param $transaction_id string Optional transaction id to store in post meta
 	 */
@@ -1661,7 +1661,7 @@ class WC_Subscription extends WC_Order {
 			return;
 		}
 
-		// Clear the cached completed payment count
+		// Clear the cached completed payment count, kept here for backward compat even though it's also reset in $this->process_payment_complete()
 		$this->cached_completed_payment_count = false;
 
 		// Make sure the last order's status is updated
@@ -1670,6 +1670,19 @@ class WC_Subscription extends WC_Order {
 		if ( false !== $last_order && $last_order->needs_payment() ) {
 			$last_order->payment_complete( $transaction_id );
 		}
+
+		$this->process_payment_complete( $last_order );
+	}
+
+	/**
+	 * When payment is completed for a related order, reset any renewal related counters and reactive the subscription.
+	 *
+	 * @param WC_Order $order
+	 */
+	public function payment_complete_for_order( $last_order ) {
+
+		// Clear the cached completed payment count
+		$this->cached_completed_payment_count = false;
 
 		// Reset suspension count
 		$this->set_suspension_count( 0 );
