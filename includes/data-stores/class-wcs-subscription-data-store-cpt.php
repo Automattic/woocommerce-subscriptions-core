@@ -315,4 +315,34 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 
 		return $saved_dates;
 	}
+
+	/**
+	 * Get the props to update, and remove order meta data that isn't used on a subscription.
+	 *
+	 * Important for performance, because it avoids calling getters/setters on props that don't need
+	 * to be get/set, which in the case for get_date_paid(), or get_date_completed(), can be quite
+	 * resource intensive as it requires doing a related orders query. Also just avoids filling up the
+	 * post meta table more than is needed.
+	 *
+	 * @param  WC_Data $object              The WP_Data object (WC_Coupon for coupons, etc).
+	 * @param  array   $meta_key_to_props   A mapping of meta keys => prop names.
+	 * @param  string  $meta_type           The internal WP meta type (post, user, etc).
+	 * @return array                        A mapping of meta keys => prop names, filtered by ones that should be updated.
+	 */
+	protected function get_props_to_update( $object, $meta_key_to_props, $meta_type = 'post' ) {
+		$props_to_update = parent::get_props_to_update( $object, $meta_key_to_props, $meta_type );
+
+		$props_to_ignore = array(
+			'_transaction_id' => 'transaction_id',
+			'_date_completed' => 'date_completed',
+			'_date_paid'      => 'date_paid',
+			'_cart_hash'      => 'cart_hash',
+		);
+
+		foreach ( $props_to_ignore as $meta_key => $prop ) {
+			unset( $props_to_update[ $meta_key ] );
+		}
+
+		return $props_to_update;
+	}
 }
