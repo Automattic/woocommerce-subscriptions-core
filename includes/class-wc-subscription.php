@@ -2411,6 +2411,30 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/************************
+	 * WC_Order overrides
+	 *
+	 * Make some WC_Order methods do nothing.
+	 ************************/
+
+	/**
+	 * Avoid running the expensive get_date_paid() query on related orders.
+	 *
+	 * @since 2.2.19
+	 */
+	public function maybe_set_date_paid() {
+		return null;
+	}
+
+	/**
+	 * Avoid running the expensive get_date_completed() query on related orders.
+	 *
+	 * @since 2.2.19
+	 */
+	protected function maybe_set_date_completed() {
+		return null;
+	}
+
+	/************************
 	 * Deprecated Functions *
 	 ************************/
 
