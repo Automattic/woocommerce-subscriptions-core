@@ -138,7 +138,7 @@ class WCS_Query extends WC_Query {
 	 * @return string
 	 */
 	public function maybe_redirect_to_only_subscription( $url, $endpoint ) {
-		if ( 'subscriptions' == $endpoint ) {
+		if ( 'subscriptions' == $endpoint && is_account_page() ) {
 			$subscriptions = wcs_get_users_subscriptions();
 
 			if ( 1 == count( $subscriptions ) ) {
