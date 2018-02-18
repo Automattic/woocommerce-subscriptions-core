@@ -209,7 +209,7 @@ class WC_Subscriptions_Cart {
 				$sign_up_fee  = WC_Subscriptions_Product::get_sign_up_fee( $product );
 
 				// Extra check to make sure that the sign up fee is numeric before using it
-				$sign_up_fee = is_numeric($sign_up_fee) ? (float)$sign_up_fee : 0;
+				$sign_up_fee = is_numeric( $sign_up_fee ) ? (float) $sign_up_fee : 0;
 
 				$trial_length = WC_Subscriptions_Product::get_trial_length( $product );
 
@@ -827,7 +827,7 @@ class WC_Subscriptions_Cart {
 
 				$cart_item_sign_up_fee  = WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] );
 				// Extra check to make sure that the sign up fee is numeric before using it
-				$cart_item_sign_up_fee = is_numeric($cart_item_sign_up_fee) ? (float)$cart_item_sign_up_fee : 0;
+				$cart_item_sign_up_fee = is_numeric( $cart_item_sign_up_fee ) ? (float) $cart_item_sign_up_fee : 0;
 
 				$sign_up_fee += $cart_item_sign_up_fee;
 			}
