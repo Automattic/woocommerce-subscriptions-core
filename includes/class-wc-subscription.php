@@ -1671,7 +1671,7 @@ class WC_Subscription extends WC_Order {
 			$last_order->payment_complete( $transaction_id );
 		}
 
-		$this->process_payment_complete( $last_order );
+		$this->payment_complete_for_order( $last_order );
 	}
 
 	/**
