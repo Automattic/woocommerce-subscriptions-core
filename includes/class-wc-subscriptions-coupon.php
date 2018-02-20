@@ -489,10 +489,12 @@ class WC_Subscriptions_Coupon {
 		$calculation_type = WC_Subscriptions_Cart::get_calculation_type();
 
 		// Only hook when totals are being calculated completely (on cart & checkout pages)
-		if ( 'none' == $calculation_type || ! WC_Subscriptions_Cart::cart_contains_subscription() || ( ! is_checkout() && ! is_cart() && ! defined( 'WOOCOMMERCE_CHECKOUT' ) && ! defined( 'WOOCOMMERCE_CART' ) ) ) {
+		if ( 'none' === $calculation_type || ! WC_Subscriptions_Cart::cart_contains_subscription() || ( ! is_checkout() && ! is_cart() && ! defined( 'WOOCOMMERCE_CHECKOUT' ) && ! defined( 'WOOCOMMERCE_CART' ) ) ) {
 			return;
 		}
 
+
+		$discount_totals = $cart->get_coupon_discount_totals();
 		$applied_coupons = $cart->get_applied_coupons();
 		if ( empty( $applied_coupons ) ) {
 			return;
@@ -500,7 +502,6 @@ class WC_Subscriptions_Coupon {
 
 		// If we're calculating a sign-up fee or recurring fee only amount, remove irrelevant coupons
 		foreach ( $applied_coupons as $coupon_code ) {
-
 			$coupon      = new WC_Coupon( $coupon_code );
 			$coupon_type = wcs_get_coupon_property( $coupon, 'discount_type' );
 			if ( ! isset( $coupon_types[ $coupon_type ] ) ) {
@@ -510,8 +511,9 @@ class WC_Subscriptions_Coupon {
 
 			if ( 'recurring_total' === $calculation_type ) {
 				// Special handling for a single payment coupon.
-				$payments = self::get_coupon_limit( $coupon_code );
-				if ( 1 === $payments ) {
+				$payments    = self::get_coupon_limit( $coupon_code );
+				$coupon_used = isset( $discount_totals[ $coupon_code ] ) && $discount_totals[ $coupon_code ] > 0;
+				if ( 1 === $payments && $coupon_used ) {
 					$cart->remove_coupon( $coupon_code );
 				}
 
