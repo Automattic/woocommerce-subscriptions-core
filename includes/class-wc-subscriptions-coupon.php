@@ -513,7 +513,6 @@ class WC_Subscriptions_Coupon {
 				$payments = self::get_coupon_limit( $coupon_code );
 				if ( 1 === $payments ) {
 					$cart->remove_coupon( $coupon_code );
-					$cart->apply_coupon( 'virtual' );
 				}
 
 				continue;
