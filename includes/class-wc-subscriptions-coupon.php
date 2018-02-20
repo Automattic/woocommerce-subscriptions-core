@@ -30,6 +30,27 @@ class WC_Subscriptions_Coupon {
 	private static $removed_coupons = array();
 
 	/**
+	 * Subscription coupon types.
+	 *
+	 * @var array
+	 */
+	private static $recurring_coupons = array(
+		'recurring_fee'     => 1,
+		'recurring_percent' => 1,
+	);
+
+	/**
+	 * Virtual renewal coupon types.
+	 *
+	 * @var array
+	 */
+	private static $renewal_coupons = array(
+		'renewal_cart'    => 1,
+		'renewal_fee'     => 1,
+		'renewal_percent' => 1,
+	);
+
+	/**
 	 * Set up the class, including it's hooks & filters, when the file is loaded.
 	 *
 	 * @since 1.2
@@ -710,29 +731,20 @@ class WC_Subscriptions_Coupon {
 	 *                   A value of 0 is for unlimited usage.
 	 */
 	public static function get_coupon_limit( $code ) {
-		static $subscription_coupons = array(
-			'recurring_fee'     => 1,
-			'recurring_percent' => 1,
-		);
-		static $virtual_coupons = array(
-			'renewal_cart'    => 1,
-			'renewal_fee'     => 1,
-			'renewal_percent' => 1,
-		);
 
 		// Retrieve the coupon data.
 		$coupon      = new WC_Coupon( $code );
 		$coupon_type = $coupon->get_discount_type();
 
 		// If we have a virtual coupon, attempt to get the original coupon.
-		if ( isset( $virtual_coupons[ $coupon_type ] ) ) {
+		if ( isset( self::$renewal_coupons[ $coupon_type ] ) ) {
 			$coupon      = self::map_virtual_coupon( $coupon );
 			$coupon_type = $coupon->get_discount_type();
 		}
 
 		$limited = $coupon->get_meta( self::$coupons_renewals );
 
-		return isset( $subscription_coupons[ $coupon_type ] ) ? intval( $limited ) : false;
+		return isset( self::$recurring_coupons[ $coupon_type ] ) ? intval( $limited ) : false;
 	}
 
 	/**
