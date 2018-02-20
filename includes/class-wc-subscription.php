@@ -2149,11 +2149,12 @@ class WC_Subscription extends WC_Order {
 
 			} elseif ( 'true' === $line_item->get_meta( '_has_trial' ) ) {
 				// Sign up is amount paid for this item on original order, we can safely use 3.0 getters here because we know from the above condition 3.0 is active
-				$sign_up_fee = $original_order_item->get_total( 'edit' ) / $original_order_item->get_quantity( 'edit' );
+				$sign_up_fee = ( (float) $original_order_item->get_total( 'edit' ) ) / $original_order_item->get_quantity( 'edit' );
 			} else {
 				// Sign-up fee is any amount on top of recurring amount
-				$order_line_total        = $original_order_item->get_total( 'edit' ) / $original_order_item->get_quantity( 'edit' );
-				$subscription_line_total = $line_item->get_total( 'edit' ) / $line_item->get_quantity( 'edit' );
+				$order_line_total        = ( (float) $original_order_item->get_total( 'edit' ) ) / $original_order_item->get_quantity( 'edit' );
+				$subscription_line_total = ( (float) $line_item->get_total( 'edit' ) ) / $line_item->get_quantity( 'edit' );
+
 				$sign_up_fee = max( $order_line_total - $subscription_line_total, 0 );
 			}
 
