@@ -40,6 +40,9 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 
 		// Add a subscription note to record early renewal order.
 		add_action( 'woocommerce_checkout_update_order_meta', array( $this, 'add_note_to_record_early_renewal' ) );
+
+		// After the renewal order is created on checkout, set the renewal order cart item data now that we have an order. Must be hooked on before WCS_Cart_Renewal->set_order_item_id(), in order for the line item ID set by that function to be correct.
+		add_action( 'woocommerce_checkout_update_order_meta', array( $this, 'set_cart_item_renewal_order_data' ), 5 );
 	}
 
 	/**
@@ -292,6 +295,29 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 		if ( wcs_is_order( $order ) && wcs_is_subscription( $subscription ) ) {
 			$order_number = sprintf( _x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), $order->get_order_number() );
 			$subscription->add_order_note( sprintf( __( 'Order %s created to record early renewal.', 'woocommerce-subscriptions' ), sprintf( '<a href="%s">%s</a> ', esc_url( wcs_get_edit_post_link( $order_id ) ), $order_number ) ) );
+		}
+	}
+
+	/**
+	 * Set the renewal order ID in early renewal order cart items.
+	 *
+	 * Hooked onto the 'woocommerce_checkout_update_order_meta' hook after the renewal order has been
+	 * created on checkout. Required so the line item ID set by @see WCS_Cart_Renewal->set_order_item_id()
+	 * matches the order.
+	 *
+	 * @param int $order_id The WC Order ID created on checkout.
+	 * @since 2.3.0
+	 */
+	public function set_cart_item_renewal_order_data( $order_id ) {
+
+		if ( ! wcs_cart_contains_early_renewal() ) {
+			return;
+		}
+
+		foreach ( WC()->cart->cart_contents as $key => &$cart_item ) {
+			if ( isset( $cart_item[ $this->cart_item_key ] ) && ! empty( $cart_item[ $this->cart_item_key ]['subscription_renewal_early'] ) ) {
+				$cart_item[ $this->cart_item_key ]['renewal_order_id'] = $order_id;
+			}
 		}
 	}
 }
