@@ -514,8 +514,7 @@ class WC_Subscriptions_Coupon {
 			return;
 		}
 
-
-		$discount_totals = $cart->get_coupon_discount_totals();
+		$has_discount    = $cart->get_total_discount() > 0;
 		$applied_coupons = $cart->get_applied_coupons();
 		if ( empty( $applied_coupons ) ) {
 			return;
@@ -532,9 +531,8 @@ class WC_Subscriptions_Coupon {
 
 			if ( 'recurring_total' === $calculation_type ) {
 				// Special handling for a single payment coupon.
-				$payments    = self::get_coupon_limit( $coupon_code );
-				$coupon_used = isset( $discount_totals[ $coupon_code ] ) && $discount_totals[ $coupon_code ] > 0;
-				if ( 1 === $payments && $coupon_used ) {
+				$payments = self::get_coupon_limit( $coupon_code );
+				if ( 1 === $payments && $has_discount ) {
 					$cart->remove_coupon( $coupon_code );
 				}
 
@@ -721,6 +719,33 @@ class WC_Subscriptions_Coupon {
 	}
 
 	/**
+	 * A backwards-compatible way to check whether a given coupon is limited.
+	 *
+	 * This is meant to work properly with versions of WC prior to 3.2, back to 2.6.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param string $code The coupon code.
+	 *
+	 * @return bool
+	 */
+	protected static function compat_coupon_is_limited( $code ) {
+		$coupon = new WC_Coupon( $code );
+		$type   = $coupon->discount_type;
+
+		if ( isset( self::$renewal_coupons[ $type ] ) ) {
+			$coupon = self::map_virtual_coupon( $code );
+			$type   = $coupon->discount_type;
+		}
+
+		if ( ! isset( self::$recurring_coupons[ $type ] ) ) {
+			return false;
+		}
+
+		return intval( get_post_meta( $coupon->id, self::$coupons_renewals, true ) );
+	}
+
+	/**
 	 * Get the number of renewals for a limited coupon.
 	 *
 	 * @author Jeremy Pry
@@ -731,6 +756,9 @@ class WC_Subscriptions_Coupon {
 	 *                   A value of 0 is for unlimited usage.
 	 */
 	public static function get_coupon_limit( $code ) {
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
+			return self::compat_coupon_is_limited( $code );
+		}
 
 		// Retrieve the coupon data.
 		$coupon      = new WC_Coupon( $code );
@@ -755,13 +783,13 @@ class WC_Subscriptions_Coupon {
 	 *
 	 * @author Jeremy Pry
 	 *
-	 * @param WC_Coupon $coupon The virtual coupon.
+	 * @param string $code The virtual coupon code.
 	 *
 	 * @return WC_Coupon The original coupon.
 	 */
-	private static function map_virtual_coupon( $coupon ) {
+	private static function map_virtual_coupon( $code ) {
 		add_filter( 'woocommerce_get_shop_coupon_data', '__return_false', 100 );
-		$coupon = new WC_Coupon( $coupon->get_code() );
+		$coupon = new WC_Coupon( $code );
 		remove_filter( 'woocommerce_get_shop_coupon_data', '__return_false', 100 );
 
 		return $coupon;
