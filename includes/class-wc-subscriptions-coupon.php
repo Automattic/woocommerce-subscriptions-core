@@ -502,11 +502,6 @@ class WC_Subscriptions_Coupon {
 	 * @param WC_Cart $cart
 	 */
 	public static function remove_coupons( $cart ) {
-		static $coupon_types = array(
-			'recurring_fee'     => 1,
-			'recurring_percent' => 1,
-		);
-
 		$calculation_type = WC_Subscriptions_Cart::get_calculation_type();
 
 		// Only hook when totals are being calculated completely (on cart & checkout pages)
@@ -524,7 +519,7 @@ class WC_Subscriptions_Coupon {
 		foreach ( $applied_coupons as $coupon_code ) {
 			$coupon      = new WC_Coupon( $coupon_code );
 			$coupon_type = wcs_get_coupon_property( $coupon, 'discount_type' );
-			if ( ! isset( $coupon_types[ $coupon_type ] ) ) {
+			if ( ! isset( self::$recurring_coupons[ $coupon_type ] ) ) {
 				$cart->remove_coupon( $coupon_code );
 				continue;
 			}
