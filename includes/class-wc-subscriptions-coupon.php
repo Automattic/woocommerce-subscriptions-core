@@ -513,7 +513,6 @@ class WC_Subscriptions_Coupon {
 			return;
 		}
 
-		$has_discount    = $cart->get_total_discount() > 0;
 		$applied_coupons = $cart->get_applied_coupons();
 		if ( empty( $applied_coupons ) ) {
 			return;
@@ -530,8 +529,7 @@ class WC_Subscriptions_Coupon {
 
 			if ( 'recurring_total' === $calculation_type ) {
 				// Special handling for a single payment coupon.
-				$payments = self::get_coupon_limit( $coupon_code );
-				if ( 1 === $payments && $has_discount ) {
+				if ( 1 === self::get_coupon_limit( $coupon_code ) && 0 < $cart->get_coupon_discount_amount( $coupon_code ) ) {
 					$cart->remove_coupon( $coupon_code );
 				}
 
