@@ -101,6 +101,9 @@ class WC_Subscriptions_Upgrader {
 		// When WC is updated from a version prior to 3.0 to a version after 3.0, add subscription address indexes. Must be hooked on before WC runs its updates, which occur on priority 5.
 		add_action( 'init', array( __CLASS__, 'maybe_add_subscription_address_indexes' ), 2 );
 
+		// Hooks into WC's wc_update_350_order_customer_id upgrade routine.
+		add_action( 'init', array( __CLASS__, 'maybe_update_subscription_post_author' ), 2 );
+
 		add_action( 'admin_notices', array( __CLASS__, 'maybe_add_downgrade_notice' ) );
 		add_action( 'admin_notices', array( __CLASS__, 'maybe_display_external_object_cache_warning' ) );
 
@@ -818,6 +821,27 @@ class WC_Subscriptions_Upgrader {
 	}
 
 	/**
+	 * Handles the WC 3.5.0 upgrade routine that moves customer IDs from post metadata to the 'post_author' column.
+	 *
+	 * @since 2.4.0
+	 */
+	public static function maybe_update_subscription_post_author() {
+		$woocommerce_active_version = WC()->version;
+		$woocommerce_db_version     = get_option( 'woocommerce_db_version' );
+
+		if ( version_compare( $woocommerce_active_version, '3.5.0', '<' ) ) {
+			return;
+		}
+
+		// If WC hasn't run the update routine yet we can hook into theirs to update subscriptions, otherwise we'll need to schedule our own update.
+		if ( version_compare( $woocommerce_db_version, '3.5.0', '<' ) ) {
+			self::$background_updaters['2.4']['subscription_post_author']->hook_into_wc_350_update();
+		} else if ( version_compare( self::$active_version, '2.4.0', '<' ) ) {
+			self::$background_updaters['2.4']['subscription_post_author']->schedule_repair();
+		}
+	}
+
+	/**
 	 * Load and initialise the background updaters.
 	 *
 	 * @since 2.3.0
@@ -826,8 +850,8 @@ class WC_Subscriptions_Upgrader {
 		$logger = new WC_logger();
 		self::$background_updaters['2.3']['suspended_paypal_repair'] = new WCS_Repair_Suspended_PayPal_Subscriptions( $logger );
 		self::$background_updaters['2.3']['address_indexes_repair']  = new WCS_Repair_Subscription_Address_Indexes( $logger );
-
 		self::$background_updaters['2.4']['start_date_metadata'] = new WCS_Repair_Start_Date_Metadata( $logger );
+		self::$background_updaters['2.4']['subscription_post_author']  = new WCS_Update_Subscription_Post_Author( $logger );
 
 		// Init the updaters
 		foreach ( self::$background_updaters as $version => $updaters ) {

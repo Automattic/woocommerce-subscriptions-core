@@ -136,6 +136,12 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 			}
 		}
 
+		// On WC 3.5.0 the ID of the user that placed the order was moved from the post meta _customer_user to the post_author field in the wp_posts table.
+		// If the update routine didn't manage to cover subscriptions, we need to use the value stored as post meta until our own update finishes.
+		if ( version_compare( get_option( 'woocommerce_db_version' ), '3.5.0', '>=' ) && 1 == $post_object->post_author && get_option( 'wcs_subscription_post_author_update_is_scheduled', false ) ) {
+			$props_to_set['customer_id'] = get_post_meta( $subscription->get_id(), '_customer_user', true );
+		}
+
 		$subscription->update_dates( $dates_to_set );
 		$subscription->set_props( $props_to_set );
 	}
