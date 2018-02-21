@@ -26,6 +26,7 @@ class WC_Subscriptions_Coupon {
 	 * Stores the coupons not applied to a given calculation (so they can be applied later)
 	 *
 	 * @since 1.3.5
+	 * @deprecated
 	 */
 	private static $removed_coupons = array();
 
