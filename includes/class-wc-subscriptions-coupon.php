@@ -714,33 +714,6 @@ class WC_Subscriptions_Coupon {
 	}
 
 	/**
-	 * A backwards-compatible way to check whether a given coupon is limited.
-	 *
-	 * This is meant to work properly with versions of WC prior to 3.2, back to 2.6.
-	 *
-	 * @author Jeremy Pry
-	 *
-	 * @param string $code The coupon code.
-	 *
-	 * @return bool
-	 */
-	protected static function compat_coupon_is_limited( $code ) {
-		$coupon = new WC_Coupon( $code );
-		$type   = $coupon->discount_type;
-
-		if ( isset( self::$renewal_coupons[ $type ] ) ) {
-			$coupon = self::map_virtual_coupon( $code );
-			$type   = $coupon->discount_type;
-		}
-
-		if ( ! isset( self::$recurring_coupons[ $type ] ) ) {
-			return false;
-		}
-
-		return intval( get_post_meta( $coupon->id, self::$coupons_renewals, true ) );
-	}
-
-	/**
 	 * Get the number of renewals for a limited coupon.
 	 *
 	 * @author Jeremy Pry
@@ -752,7 +725,7 @@ class WC_Subscriptions_Coupon {
 	 */
 	public static function get_coupon_limit( $code ) {
 		if ( WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
-			return self::compat_coupon_is_limited( $code );
+			return false;
 		}
 
 		// Retrieve the coupon data.
