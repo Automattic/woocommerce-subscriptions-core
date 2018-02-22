@@ -92,9 +92,10 @@ class WCS_Admin_Meta_Boxes {
 		global $post;
 
 		// Get admin screen id
-		$screen = get_current_screen();
+		$screen    = get_current_screen();
+		$screen_id = isset( $screen->id ) ? $screen->id : '';
 
-		if ( 'shop_subscription' == $screen->id ) {
+		if ( 'shop_subscription' == $screen_id ) {
 
 			wp_register_script( 'jstz', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/jstz.min.js' );
 
@@ -115,13 +116,23 @@ class WCS_Admin_Meta_Boxes {
 				'search_customers_nonce'         => wp_create_nonce( 'search-customers' ),
 				'get_customer_orders_nonce'      => wp_create_nonce( 'get-customer-orders' ),
 			) ) );
-		} else if ( 'shop_order' == $screen->id ) {
+		} else if ( 'shop_order' == $screen_id ) {
 
 			wp_enqueue_script( 'wcs-admin-meta-boxes-order', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/wcs-meta-boxes-order.js' );
 
 			wp_localize_script( 'wcs-admin-meta-boxes-order', 'wcs_admin_order_meta_boxes', array(
 				'retry_renewal_payment_action_warning' => __( "Are you sure you want to retry payment for this renewal order?\n\nThis will attempt to charge the customer and send renewal order emails (if emails are enabled).", 'woocommerce-subscriptions' ),
 				)
+			);
+		}
+
+		// Enqueue the metabox script for coupons.
+		if ( ! WC_Subscriptions::is_woocommerce_pre( '3.2' ) && in_array( $screen_id, array( 'shop_coupon', 'edit-shop_coupon' ) ) ) {
+			wp_enqueue_script(
+				'wcs-admin-coupon-meta-boxes',
+				plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/meta-boxes-coupon.js',
+				array( 'jquery', 'wc-admin-meta-boxes' ),
+				WC_Subscriptions::$version
 			);
 		}
 	}

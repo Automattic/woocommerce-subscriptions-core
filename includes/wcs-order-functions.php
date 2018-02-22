@@ -231,12 +231,12 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 
 		// Copy over line items and allow extensions to add/remove items or item meta
 		$items = apply_filters( 'wcs_new_order_items', $subscription->get_items( array( 'line_item', 'fee', 'shipping', 'tax', 'coupon' ) ), $new_order, $subscription );
-		$items = apply_filters( 'wcs_' . $type . '_items', $items, $new_order, $subscription );
+		$items = apply_filters( "wcs_{$type}_items", $items, $new_order, $subscription );
 
 		foreach ( $items as $item_index => $item ) {
 
 			$item_name = apply_filters( 'wcs_new_order_item_name', $item['name'], $item, $subscription );
-			$item_name = apply_filters( 'wcs_' . $type . '_item_name', $item_name, $item, $subscription );
+			$item_name = apply_filters( "wcs_{$type}_item_name", $item_name, $item, $subscription );
 
 			// Create order line item on the renewal order
 			$order_item_id = wc_add_order_item( wcs_get_objects_property( $new_order, 'id' ), array(
@@ -743,9 +743,8 @@ function wcs_display_item_downloads( $item, $order ) {
  * Copy the order item data and meta data from one item to another.
  *
  * @since  2.2.0
- * @param  WC_Order_Item The order item to copy data from
- * @param  WC_Order_Item The order item to copy data to
- * @return void
+ * @param  WC_Order_Item $from_item The order item to copy data from
+ * @param  WC_Order_Item $to_item The order item to copy data to
  */
 function wcs_copy_order_item( $from_item, &$to_item ) {
 
@@ -760,6 +759,7 @@ function wcs_copy_order_item( $from_item, &$to_item ) {
 
 	switch ( $from_item->get_type() ) {
 		case 'line_item':
+			/** @var WC_Order_Item_Product $from_item */
 			$to_item->set_props( array(
 				'product_id'   => $from_item->get_product_id(),
 				'variation_id' => $from_item->get_variation_id(),
@@ -771,6 +771,7 @@ function wcs_copy_order_item( $from_item, &$to_item ) {
 			) );
 			break;
 		case 'shipping':
+			/** @var WC_Order_Item_Shipping $from_item */
 			$to_item->set_props( array(
 				'method_id' => $from_item->get_method_id(),
 				'total'     => $from_item->get_total(),
@@ -778,6 +779,7 @@ function wcs_copy_order_item( $from_item, &$to_item ) {
 			) );
 			break;
 		case 'tax':
+			/** @var WC_Order_Item_Tax $from_item */
 			$to_item->set_props( array(
 				'rate_id'            => $from_item->get_rate_id(),
 				'label'              => $from_item->get_label(),
@@ -787,6 +789,7 @@ function wcs_copy_order_item( $from_item, &$to_item ) {
 			) );
 			break;
 		case 'fee':
+			/** @var WC_Order_Item_Fee $from_item */
 			$to_item->set_props( array(
 				'tax_class'  => $from_item->get_tax_class(),
 				'tax_status' => $from_item->get_tax_status(),
@@ -795,6 +798,7 @@ function wcs_copy_order_item( $from_item, &$to_item ) {
 			) );
 			break;
 		case 'coupon':
+			/** @var WC_Order_Item_Coupon $from_item */
 			$to_item->set_props( array(
 				'discount'     => $from_item->get_discount(),
 				'discount_tax' => $from_item->get_discount_tax(),
