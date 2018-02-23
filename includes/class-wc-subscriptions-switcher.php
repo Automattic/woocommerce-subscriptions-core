@@ -733,11 +733,6 @@ class WC_Subscriptions_Switcher {
 					$subscription  = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
 					$existing_item = wcs_get_order_item( $cart_item['subscription_switch']['item_id'], $subscription );
 
-					// If there are no more payments due on the subscription, because we're in the last billing period, we need to use the subscription's expiration date, not next payment date
-					if ( 0 == ( $next_payment_timestamp = $subscription->get_time( 'next_payment' ) ) ) {
-						$next_payment_timestamp = $subscription->get_time( 'end' );
-					}
-
 					if ( WC_Subscriptions_Product::get_period( $cart_item['data'] ) != $subscription->get_billing_period() || WC_Subscriptions_Product::get_interval( $cart_item['data'] ) != $subscription->get_billing_interval() ) {
 						$is_different_billing_schedule = true;
 					} else {
@@ -749,14 +744,7 @@ class WC_Subscriptions_Switcher {
 						$cart_item['subscription_switch']['first_payment_timestamp'] = wcs_date_to_time( $recurring_cart->next_payment_date );
 					}
 
-					if ( 0 !== $cart_item['subscription_switch']['first_payment_timestamp'] && $next_payment_timestamp !== $cart_item['subscription_switch']['first_payment_timestamp'] ) {
-						$is_different_payment_date = true;
-					} elseif ( 0 !== $cart_item['subscription_switch']['first_payment_timestamp'] && 0 == $subscription->get_time( 'next_payment' ) ) { // if the subscription doesn't have a next payment but the switched item does
-						$is_different_payment_date = true;
-					} else {
-						$is_different_payment_date = false;
-					}
-
+					$is_different_payment_date     = self::has_different_payment_date( $cart_item, $subscription );
 					$is_different_length           = self::has_different_length( $recurring_cart, $subscription );
 					$is_single_item_subscription   = self::is_single_item_subscription( $subscription );
 
@@ -2332,6 +2320,34 @@ class WC_Subscriptions_Switcher {
 				wc_add_order_item_meta( $item_id, $key, $value );
 			}
 		}
+	}
+
+	/**
+	 * Check if a cart item contains a different payment timestamp to the subscription being switched.
+	 *
+	 * Used to determine if a new subscription should be created as the result of a switch request.
+	 * @see self::cart_contains_subscription_creating_switch() and self::process_checkout().
+	 *
+	 * @param array $cart_item
+	 * @param WC_Subscription $subscription
+	 * @since 2.2.19
+	 */
+	protected static function has_different_payment_date( $cart_item, $subscription ) {
+
+		// If there are no more payments due on the subscription, because we're in the last billing period, we need to use the subscription's expiration date, not next payment date
+		if ( 0 === ( $next_payment_timestamp = $subscription->get_time( 'next_payment' ) ) ) {
+			$next_payment_timestamp = $subscription->get_time( 'end' );
+		}
+
+		if ( 0 !== $cart_item['subscription_switch']['first_payment_timestamp'] && $next_payment_timestamp !== $cart_item['subscription_switch']['first_payment_timestamp'] ) {
+			$is_different_payment_date = true;
+		} elseif ( 0 !== $cart_item['subscription_switch']['first_payment_timestamp'] && 0 === $subscription->get_time( 'next_payment' ) ) { // if the subscription doesn't have a next payment but the switched item does
+			$is_different_payment_date = true;
+		} else {
+			$is_different_payment_date = false;
+		}
+
+		return $is_different_payment_date;
 	}
 
 	/**
