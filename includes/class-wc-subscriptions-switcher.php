@@ -2033,16 +2033,15 @@ class WC_Subscriptions_Switcher {
 
 			$subscription = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
 
+			$is_manual_subscription = $subscription->is_manual();
+
 			// Check for $0 / period to a non-zero $ / period and manual subscription
-			$switch_from_zero_manual_subscription = ( 0 == $subscription->get_total() && $subscription->is_manual() );
+			$switch_from_zero_manual_subscription = $is_manual_subscription && 0 == $subscription->get_total();
 
-			// Check for manual renewals accepted, in case of automatic subscription switch with no proration
-			$accept_manual_renewals = ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals', 'no' ) );
+			// Force payment gateway selection for new subscriptions if the old subscription was automatic or manual renewals aren't accepted
+			$force_automatic_payments = ! $is_manual_subscription || 'no' === get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals', 'no' );
 
-			// Check if old subscription is automatic
-			$old_subscription_automatic = ! $subscription->is_manual();
-
-			if ( ( $switch_from_zero_manual_subscription || ! $accept_manual_renewals || ( $accept_manual_renewals && $old_subscription_automatic ) ) && $new_recurring_total > 0 && true === $has_future_payments ) {
+			if ( $new_recurring_total > 0 && true === $has_future_payments && ( $switch_from_zero_manual_subscription || ( $force_automatic_payments && self::cart_contains_subscription_creating_switch() ) ) ) {
 				WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['force_payment'] = true;
 			}
 		}
