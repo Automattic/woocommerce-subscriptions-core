@@ -2392,6 +2392,46 @@ class WC_Subscriptions_Switcher {
 		return 1 === count( $subscription->get_items() );
 	}
 
+	/**
+	 * Check if the cart contains a subscription switch which will result in a new subscription being created.
+	 *
+	 * New subscriptions will be created when:
+	 *  - The current subscription has more than 1 line item @see self::is_single_item_subscription() and
+	 *  - the recurring cart has a different length @see self::has_different_length() or
+	 *  - the switched cart item has a different payment date @see self::has_different_payment_date() or
+	 *  - the switched cart item has a different billing schedule @see self::has_different_billing_schedule()
+	 *
+	 * @return bool
+	 * @since 2.2.19
+	 */
+	public static function cart_contains_subscription_creating_switch() {
+		$cart_contains_subscription_creating_switch = false;
+
+		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
+
+			foreach ( $recurring_cart->get_cart() as $cart_item_key => $cart_item ) {
+
+				if ( ! isset( $cart_item['subscription_switch']['subscription_id'] ) ) {
+					continue;
+				}
+
+				$subscription = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
+
+				if (
+					! self::is_single_item_subscription( $subscription ) && (
+					self::has_different_length( $recurring_cart, $subscription ) ||
+					self::has_different_payment_date( $cart_item, $subscription ) ||
+					self::has_different_billing_schedule( $cart_item, $subscription ) )
+				) {
+					$cart_contains_subscription_creating_switch = true;
+					break 2;
+				}
+			}
+		}
+
+		return $cart_contains_subscription_creating_switch;
+	}
+
 	/** Deprecated Methods **/
 
 	/**
