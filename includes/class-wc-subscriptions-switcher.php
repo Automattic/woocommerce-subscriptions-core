@@ -763,12 +763,7 @@ class WC_Subscriptions_Switcher {
 						$is_different_length = false;
 					}
 
-					// WC_Abstract_Order::get_item_count() uses quantities, not just line item rows
-					if ( 1 == count( $subscription->get_items() ) ) {
-						$is_single_item_subscription = true;
-					} else {
-						$is_single_item_subscription = false;
-					}
+					$is_single_item_subscription   = self::is_single_item_subscription( $subscription );
 
 					$switched_item_data = array( 'remove_line_item' => $cart_item['subscription_switch']['item_id'] );
 
@@ -2342,6 +2337,21 @@ class WC_Subscriptions_Switcher {
 				wc_add_order_item_meta( $item_id, $key, $value );
 			}
 		}
+	}
+
+	/**
+	 * Checks if a subscription has a single line item.
+	 *
+	 * Used to determine if a new subscription should be created as the result of a switch request.
+	 * @see self::cart_contains_subscription_creating_switch() and self::process_checkout().
+	 *
+	 * @param WC_Subscription $subscription
+	 * @return bool
+	 * @since 2.2.19
+	 */
+	protected static function is_single_item_subscription( $subscription ) {
+		// WC_Abstract_Order::get_item_count() uses quantities, not just line item rows
+		return 1 === count( $subscription->get_items() );
 	}
 
 	/** Deprecated Methods **/
