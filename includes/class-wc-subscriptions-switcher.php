@@ -733,17 +733,12 @@ class WC_Subscriptions_Switcher {
 					$subscription  = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
 					$existing_item = wcs_get_order_item( $cart_item['subscription_switch']['item_id'], $subscription );
 
-					if ( WC_Subscriptions_Product::get_period( $cart_item['data'] ) != $subscription->get_billing_period() || WC_Subscriptions_Product::get_interval( $cart_item['data'] ) != $subscription->get_billing_interval() ) {
-						$is_different_billing_schedule = true;
-					} else {
-						$is_different_billing_schedule = false;
-					}
-
 					// If we haven't calculated a first payment date, fall back to the recurring cart's next payment date
 					if ( 0 == $cart_item['subscription_switch']['first_payment_timestamp'] ) {
 						$cart_item['subscription_switch']['first_payment_timestamp'] = wcs_date_to_time( $recurring_cart->next_payment_date );
 					}
 
+					$is_different_billing_schedule = self::has_different_billing_schedule( $cart_item, $subscription );
 					$is_different_payment_date     = self::has_different_payment_date( $cart_item, $subscription );
 					$is_different_length           = self::has_different_length( $recurring_cart, $subscription );
 					$is_single_item_subscription   = self::is_single_item_subscription( $subscription );
@@ -2320,6 +2315,20 @@ class WC_Subscriptions_Switcher {
 				wc_add_order_item_meta( $item_id, $key, $value );
 			}
 		}
+	}
+
+	/**
+	 * Check if a cart item has a different billing schedule (period and interval) to the subscription being switched.
+	 *
+	 * Used to determine if a new subscription should be created as the result of a switch request.
+	 * @see self::cart_contains_subscription_creating_switch() and self::process_checkout().
+	 *
+	 * @param array $cart_item
+	 * @param WC_Subscription $subscription
+	 * @since 2.2.19
+	 */
+	protected static function has_different_billing_schedule( $cart_item, $subscription ) {
+		return WC_Subscriptions_Product::get_period( $cart_item['data'] ) != $subscription->get_billing_period() || WC_Subscriptions_Product::get_interval( $cart_item['data'] ) != $subscription->get_billing_interval();
 	}
 
 	/**
