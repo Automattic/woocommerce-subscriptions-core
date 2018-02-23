@@ -757,12 +757,7 @@ class WC_Subscriptions_Switcher {
 						$is_different_payment_date = false;
 					}
 
-					if ( gmdate( 'Y-m-d', wcs_date_to_time( $recurring_cart->end_date ) ) !== gmdate( 'Y-m-d', $subscription->get_time( 'end' ) ) ) {
-						$is_different_length = true;
-					} else {
-						$is_different_length = false;
-					}
-
+					$is_different_length           = self::has_different_length( $recurring_cart, $subscription );
 					$is_single_item_subscription   = self::is_single_item_subscription( $subscription );
 
 					$switched_item_data = array( 'remove_line_item' => $cart_item['subscription_switch']['item_id'] );
@@ -2337,6 +2332,24 @@ class WC_Subscriptions_Switcher {
 				wc_add_order_item_meta( $item_id, $key, $value );
 			}
 		}
+	}
+
+	/**
+	 * Determine if a recurring cart has a different length (end date) to a subscription.
+	 *
+	 * Used to determine if a new subscription should be created as the result of a switch request.
+	 * @see self::cart_contains_subscription_creating_switch() and self::process_checkout().
+	 *
+	 * @param WC_Cart $recurring_cart
+	 * @param WC_Subscription $subscription
+	 * @return bool
+	 * @since 2.2.19
+	 */
+	protected static function has_different_length( $recurring_cart, $subscription ) {
+		$recurring_cart_end_date = gmdate( 'Y-m-d', wcs_date_to_time( $recurring_cart->end_date ) );
+		$subscription_end_date   = gmdate( 'Y-m-d', $subscription->get_time( 'end' ) );
+
+		return $recurring_cart_end_date !== $subscription_end_date;
 	}
 
 	/**
