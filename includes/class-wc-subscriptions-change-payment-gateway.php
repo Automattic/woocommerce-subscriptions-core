@@ -137,6 +137,12 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			$subscription_key = isset( $_GET['key'] ) ? wc_clean( $_GET['key'] ) : '';
 			$subscription     = wcs_get_subscription( absint( $wp->query_vars['order-pay'] ) );
 
+			// Allow payment methods for which we still haven't changed the payment method
+			// to set temporarily the payment method (without saving it into the subscription)
+			if ( isset( $_GET['payment_method'] ) {
+				$subscription->set_payment_method( wc_clean( $_GET['payment_method'] ) );
+			}
+
 			if ( $subscription->get_id() == absint( $wp->query_vars['order-pay'] ) && $subscription->get_order_key() == $subscription_key ) {
 
 				?>
