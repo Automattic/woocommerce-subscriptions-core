@@ -2033,11 +2033,8 @@ class WC_Subscriptions_Switcher {
 
 			$subscription = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
 
-			// Check that the existing subscriptions are for $0 recurring
-			$old_recurring_total = $subscription->get_total();
-
 			// Check for $0 / period to a non-zero $ / period and manual subscription
-			$switch_from_zero_manual_subscription = ( 0 == $old_recurring_total && $subscription->is_manual() );
+			$switch_from_zero_manual_subscription = ( 0 == $subscription->get_total() && $subscription->is_manual() );
 
 			// Check for manual renewals accepted, in case of automatic subscription switch with no proration
 			$accept_manual_renewals = ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals', 'no' ) );
