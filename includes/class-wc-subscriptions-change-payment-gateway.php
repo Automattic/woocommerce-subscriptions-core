@@ -139,8 +139,12 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 			// Allow payment methods for which we still haven't changed the payment method
 			// to set temporarily the payment method (without saving it into the subscription)
-			if ( isset( $_GET['payment_method'] ) {
-				$subscription->set_payment_method( wc_clean( $_GET['payment_method'] ) );
+			if ( isset( $_GET['new_payment_method'] ) ) {
+				$new_payment_method = wc_clean( $_GET['new_payment_method'] );
+				$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
+				if ( isset( $available_gateways[ $new_payment_method ] ) ) {
+					$subscription->set_payment_method( $new_payment_method );
+				}
 			}
 
 			if ( $subscription->get_id() == absint( $wp->query_vars['order-pay'] ) && $subscription->get_order_key() == $subscription_key ) {
@@ -433,7 +437,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 */
 	public static function get_available_payment_gateways( $available_gateways ) {
 
-		if ( isset( $_GET['change_payment_method'] ) || wcs_cart_contains_failed_renewal_order_payment() ) {
+		if ( isset( $_GET['change_payment_method'] ) || isset( $_GET['new_payment_method'] ) || wcs_cart_contains_failed_renewal_order_payment() ) {
 			foreach ( $available_gateways as $gateway_id => $gateway ) {
 				if ( true !== $gateway->supports( 'subscription_payment_method_change_customer' ) ) {
 					unset( $available_gateways[ $gateway_id ] );
