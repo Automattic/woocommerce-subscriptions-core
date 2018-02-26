@@ -255,7 +255,7 @@ class WC_Subscriptions_Product {
 				if ( isset( $include['price'] ) ) {
 					$price = $include['price'];
 				} else {
-					$price = wcs_get_price_excluding_tax( $product, array( 'price' => $include['price'] ) );
+					$price = wcs_get_price_excluding_tax( $product );
 				}
 
 				if ( true === $include['sign_up_fee'] ) {
