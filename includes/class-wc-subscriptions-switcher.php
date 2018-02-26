@@ -1403,16 +1403,8 @@ class WC_Subscriptions_Switcher {
 			$old_price_per_day = $old_recurring_total / $days_in_old_cycle;
 
 			// Find the price per day for the new subscription's recurring total
-			// If the subscription uses the same billing interval & cycle as the old subscription,
-			if ( WC_Subscriptions_Product::get_period( $item_data ) == $subscription->get_billing_period() && WC_Subscriptions_Product::get_interval( $item_data ) == $subscription->get_billing_interval() ) {
-
-				$days_in_new_cycle = $days_in_old_cycle; // Use $days_in_old_cycle to make sure they're consistent
-
-			} else {
-
-				// We need to figure out the price per day for the new subscription based on its billing schedule
-				$days_in_new_cycle = wcs_get_days_in_cycle( WC_Subscriptions_Product::get_period( $item_data ), WC_Subscriptions_Product::get_interval( $item_data ) );
-			}
+			// We need to figure out the price per day for the new subscription based on its billing schedule
+			$days_in_new_cycle = wcs_get_days_in_cycle( WC_Subscriptions_Product::get_period( $item_data ), WC_Subscriptions_Product::get_interval( $item_data ) );
 
 			// We need to use the cart items price to ensure we include extras added by extensions like Product Add-ons, but we don't want the sign-up fee accounted for in the price, so make sure WC_Subscriptions_Cart::set_subscription_prices_for_calculation() isn't adding that.
 			remove_filter( 'woocommerce_product_get_price', 'WC_Subscriptions_Cart::set_subscription_prices_for_calculation', 100 );
