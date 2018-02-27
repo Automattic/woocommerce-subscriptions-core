@@ -57,6 +57,7 @@ class WCS_Upgrade_2_3_0 {
 						'woocommerce-subscriptions'
 					)
 				);
+				self::log( sprintf( 'Subscription ID %d suspended from 2.3.0 PayPal database repair script.', $subscription_id ) );
 			} catch ( Exception $e ) {
 				self::log( sprintf( '--- Exception caught repairing subscription %d - exception message: %s ---', $subscription_id, $e->getMessage() ) );
 			}
