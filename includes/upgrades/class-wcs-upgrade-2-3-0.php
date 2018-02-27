@@ -50,7 +50,7 @@ class WCS_Upgrade_2_3_0 {
 					throw new Exception( 'Failed to instantiate subscription object' );
 				}
 
-				$subscription->set_status(
+				$subscription->update_status(
 					'on-hold',
 					__(
 						'Subscription suspended due to Database repair script. This subscription was suspended via PayPal.',
