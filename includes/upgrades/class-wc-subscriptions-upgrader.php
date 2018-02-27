@@ -204,7 +204,7 @@ class WC_Subscriptions_Upgrader {
 		}
 
 		// Repair subscriptions suspended via PayPal.
-		if ( version_compare( self::$active_version, '2.1.4', '>=' ) && version_compare( self::$active_version, '2.2.14', '<' ) ) {
+		if ( version_compare( self::$active_version, '2.1.4', '>=' ) && version_compare( self::$active_version, '2.3.0', '<' ) ) {
 			include_once( dirname( __FILE__ ) . '/class-wcs-upgrade-2-3-0.php' );
 			WCS_Upgrade_2_3_0::schedule_repair();
 		}
