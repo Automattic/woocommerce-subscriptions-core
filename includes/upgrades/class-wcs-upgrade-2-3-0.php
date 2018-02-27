@@ -53,7 +53,7 @@ class WCS_Upgrade_2_3_0 {
 				$subscription->update_status(
 					'on-hold',
 					__(
-						'Subscription suspended due to Database repair script. This subscription was suspended via PayPal.',
+						'Subscription suspended by Database repair script. This subscription was suspended via PayPal.',
 						'woocommerce-subscriptions'
 					)
 				);
@@ -67,7 +67,7 @@ class WCS_Upgrade_2_3_0 {
 		if ( count( $subscriptions_to_repair ) === self::$batch_size ) {
 			self::schedule_repair();
 		} else {
-			self::log( '2.3.0 repair suspended PayPal subscriptions complete' );
+			self::log( '2.3.0 Repair Suspended PayPal Subscriptions complete' );
 		}
 	}
 
