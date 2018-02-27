@@ -30,7 +30,9 @@ class WCS_Upgrade_2_3_0 {
 	 * @since 2.3.0
 	 */
 	public static function schedule_repair() {
-		wc_schedule_single_action( gmdate( 'U' ) + ( MINUTE_IN_SECONDS * 5 ), self::$action_hook );
+		if ( false === wc_next_scheduled_action( self::$action_hook ) ) {
+			wc_schedule_single_action( gmdate( 'U' ) + ( MINUTE_IN_SECONDS * 5 ), self::$action_hook );
+		}
 	}
 
 	/**
