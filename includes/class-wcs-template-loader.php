@@ -11,6 +11,10 @@ class WCS_Template_Loader {
 		add_filter( 'wc_get_template', __CLASS__ . '::add_view_subscription_template', 10, 5 );
 
 		add_action( 'woocommerce_account_view-subscription_endpoint', __CLASS__ . '::get_view_subscription_template' );
+
+		add_action( 'woocommerce_subscription_details_table', __CLASS__ . '::get_subscription_details_template' );
+
+		add_action( 'woocommerce_subscription_totals_table', __CLASS__ . '::get_subscription_totals_template' );
 	}
 
 	/**
@@ -40,6 +44,24 @@ class WCS_Template_Loader {
 	 */
 	public static function get_view_subscription_template() {
 		wc_get_template( 'myaccount/view-subscription.php', array(), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+	}
+
+	/**
+	* Get the subscription details template, which is part of the view subscription page.
+	*
+	* @param WC_Subscription $subscription Subscription object
+	*/
+	public static function get_subscription_details_template( $subscription ) {
+		wc_get_template( 'myaccount/subscription-details.php', array( 'subscription' => $subscription ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+	}
+
+	/**
+	* Get the subscription totals template, which is part of the view subscription page.
+	*
+	* @param WC_Subscription $subscription Subscription object
+	*/
+	public static function get_subscription_totals_template( $subscription ) {
+		wc_get_template( 'myaccount/subscription-totals.php', array( 'subscription' => $subscription ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
 	}
 }
 WCS_Template_Loader::init();
