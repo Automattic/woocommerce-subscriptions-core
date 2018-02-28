@@ -8,13 +8,10 @@
 class WCS_Template_Loader {
 
 	public static function init() {
-		add_filter( 'wc_get_template', __CLASS__ . '::add_view_subscription_template', 10, 5 );
-
-		add_action( 'woocommerce_account_view-subscription_endpoint', __CLASS__ . '::get_view_subscription_template' );
-
-		add_action( 'woocommerce_subscription_details_table', __CLASS__ . '::get_subscription_details_template' );
-
-		add_action( 'woocommerce_subscription_totals_table', __CLASS__ . '::get_subscription_totals_template' );
+		add_filter( 'wc_get_template', array( __CLASS__, 'add_view_subscription_template' ), 10, 5 );
+		add_action( 'woocommerce_account_view-subscription_endpoint', array( __CLASS__, 'get_view_subscription_template' ) );
+		add_action( 'woocommerce_subscription_details_table', array( __CLASS__, 'get_subscription_details_template' ) );
+		add_action( 'woocommerce_subscription_totals_table', array( __CLASS__, 'get_subscription_totals_template' ) );
 	}
 
 	/**
