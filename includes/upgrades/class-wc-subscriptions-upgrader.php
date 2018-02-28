@@ -92,6 +92,9 @@ class WC_Subscriptions_Upgrader {
 		add_action( 'wcs_repair_end_of_prepaid_term_actions', __CLASS__ . '::repair_end_of_prepaid_term_actions' );
 
 		add_action( 'wcs_repair_subscriptions_containing_synced_variations', __CLASS__ . '::repair_subscription_contains_sync_meta' );
+
+		// Repair script for issue #2202.
+		add_action( 'wcs_repair_subscriptions_suspended_paypal_not_woocommerce', array( __CLASS__, 'repair_paypal_suspended' ) );
 	}
 
 	/**
@@ -198,6 +201,12 @@ class WC_Subscriptions_Upgrader {
 		if ( version_compare( get_option( 'woocommerce_db_version' ), '3.0', '>=' ) && version_compare( self::$active_version, '2.2.0', '>=' ) && version_compare( self::$active_version, '2.2.9', '<' ) ) {
 			include_once( 'class-wcs-upgrade-2-2-9.php' );
 			WCS_Upgrade_2_2_9::schedule_repair();
+		}
+
+		// Repair subscriptions suspended via PayPal.
+		if ( version_compare( self::$active_version, '2.1.4', '>=' ) && version_compare( self::$active_version, '2.3.0', '<' ) ) {
+			include_once( dirname( __FILE__ ) . '/class-wcs-upgrade-2-3-0.php' );
+			WCS_Upgrade_2_3_0::schedule_repair();
 		}
 
 		self::upgrade_complete();
@@ -764,6 +773,18 @@ class WC_Subscriptions_Upgrader {
 	public static function repair_subscription_contains_sync_meta() {
 		include_once( 'class-wcs-upgrade-2-2-9.php' );
 		WCS_Upgrade_2_2_9::repair_subscriptions_containing_synced_variations();
+	}
+
+	/**
+	 * Repair subscriptions that were suspended in PayPal but not in WooCommerce.
+	 *
+	 * For background, see #2202.
+	 *
+	 * @author Jeremy Pry
+	 */
+	public static function repair_paypal_suspended() {
+		include_once( dirname( __FILE__ ) . '/class-wcs-upgrade-2-3-0.php' );
+		WCS_Upgrade_2_3_0::repair_subscriptions_paypal_suspended();
 	}
 
 	/**
