@@ -1400,7 +1400,7 @@ class WC_Subscriptions_Switcher {
 			}
 
 			// Find the $price per day for the old subscription's recurring total
-			$old_price_per_day = $old_recurring_total / $days_in_old_cycle;
+			$old_price_per_day = $days_in_old_cycle > 0 ? $old_recurring_total / $days_in_old_cycle : $old_recurring_total;
 
 			// Find the price per day for the new subscription's recurring total
 			// We need to figure out the price per day for the new subscription based on its billing schedule
