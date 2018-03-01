@@ -721,7 +721,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_failed_payment_count() {
 
-		$failed_payment_count = ( ( $parent_order = $this->get_parent() ) && $parent_order->has_status( 'wc-failed' ) ) ? 1 : 0;
+		$failed_payment_count = ( ( $parent_order = $this->get_parent() ) && $parent_order->has_status( 'failed' ) ) ? 1 : 0;
 
 		$failed_renewal_orders = get_posts( array(
 			'posts_per_page' => -1,
