@@ -44,19 +44,21 @@ class WCS_Template_Loader {
 	}
 
 	/**
-	* Get the subscription details template, which is part of the view subscription page.
-	*
-	* @param WC_Subscription $subscription Subscription object
-	*/
+	 * Get the subscription details template, which is part of the view subscription page.
+	 *
+	 * @param WC_Subscription $subscription Subscription object
+	 * @since 2.2.19
+	 */
 	public static function get_subscription_details_template( $subscription ) {
 		wc_get_template( 'myaccount/subscription-details.php', array( 'subscription' => $subscription ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
 	}
 
 	/**
-	* Get the subscription totals template, which is part of the view subscription page.
-	*
-	* @param WC_Subscription $subscription Subscription object
-	*/
+	 * Get the subscription totals template, which is part of the view subscription page.
+	 *
+	 * @param WC_Subscription $subscription Subscription object
+	 * @since 2.2.19
+	 */
 	public static function get_subscription_totals_template( $subscription ) {
 		wc_get_template( 'myaccount/subscription-totals.php', array( 'subscription' => $subscription ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
 	}
