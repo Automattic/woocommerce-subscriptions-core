@@ -201,13 +201,18 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 
 		if ( ! empty( $dates_to_update ) ) {
 
-			$subscription->update_dates( $dates_to_update );
-
-			// Add a note to the subscription.
 			$order_number = sprintf( _x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), $order->get_order_number() );
 			$order_link   = sprintf( '<a href="%s">%s</a>', esc_url( wcs_get_edit_post_link( $order->get_id() ) ), $order_number );
 
-			$subscription->add_order_note( sprintf( __( 'Customer successfully renewed early in order %s.', 'woocommerce-subscriptions' ), $order_link ) );
+			try {
+				$subscription->update_dates( $dates_to_update );
+
+				// translators: placeholder contains a link to the order's edit screen.
+				$subscription->add_order_note( sprintf( __( 'Customer successfully renewed early with order %s.', 'woocommerce-subscriptions' ), $order_link ) );
+			} catch ( Exception $e ) {
+				// translators: placeholder contains a link to the order's edit screen.
+				$subscription->add_order_note( sprintf( __( 'Failed to update subscription dates after customer renewed early with order %s.', 'woocommerce-subscriptions' ), $order_link ) );
+			}
 		}
 	}
 
