@@ -62,7 +62,7 @@ function wcs_can_user_renew_early( $subscription, $user_id = 0 ) {
 		$all_line_items_exist = true;
 
 		foreach ( $subscription->get_items() as $line_item ) {
-			$product = ( ! empty( $line_item['variation_id'] ) ) ? wc_get_product( $line_item['variation_id'] ) : wc_get_product( $line_item['product_id'] );
+			$product = wc_get_product( wcs_get_canonical_product_id( $line_item ) );
 
 			if ( false === $product ) {
 				$all_line_items_exist = false;
@@ -70,11 +70,7 @@ function wcs_can_user_renew_early( $subscription, $user_id = 0 ) {
 			}
 		}
 
-		if ( true === $all_line_items_exist ) {
-			$can_renew_early = true;
-		} else {
-			$can_renew_early = false;
-		}
+		$can_renew_early = $all_line_items_exist;
 	}
 
 	return apply_filters( 'wcs_can_user_renew_early', $can_renew_early, $subscription, $user_id );
@@ -93,15 +89,10 @@ function wcs_order_contains_early_renewal( $order ) {
 		$order = wc_get_order( $order );
 	}
 
-	$subscription_id = absint( wcs_get_objects_property( $order, 'subscription_renewal_early' ) );
+	$subscription_id  = absint( wcs_get_objects_property( $order, 'subscription_renewal_early' ) );
+	$is_early_renewal = wcs_is_order( $order ) && $subscription_id > 0;
 
-	if ( wcs_is_order( $order ) && $subscription_id > 0 ) {
-		$is_renewal = true;
-	} else {
-		$is_renewal = false;
-	}
-
-	return apply_filters( 'woocommerce_subscriptions_is_early_renewal_order', $is_renewal, $order );
+	return apply_filters( 'woocommerce_subscriptions_is_early_renewal_order', $is_early_renewal, $order );
 }
 
 /**
