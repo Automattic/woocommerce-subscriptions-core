@@ -58,7 +58,7 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 		if ( wcs_can_user_renew_early( $subscription ) && $subscription->payment_method_supports( 'subscription_date_changes' ) && $subscription->has_status( 'active' ) ) {
 
 			$actions['subscription_renewal_early'] = array(
-				'url'  => wcs_get_early_renewal_link( $subscription ),
+				'url'  => wcs_get_early_renewal_url( $subscription ),
 				'name' => __( 'Renew Now', 'woocommerce-subscriptions' ),
 			);
 		}
@@ -72,14 +72,14 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 	public function maybe_setup_cart() {
 		global $wp;
 
-		if ( ! isset( $_GET['subscription_renewal_early'], $_GET['_wpnonce'] ) ) {
+		if ( ! isset( $_GET['subscription_renewal_early'], $_GET['wcs_nonce'] ) ) {
 			return;
 		}
 
 		$subscription = wcs_get_subscription( absint( $_GET['subscription_renewal_early'] ) );
 		$redirect_to  = get_permalink( wc_get_page_id( 'myaccount' ) );
 
-		if ( false === wp_verify_nonce( $_GET['_wpnonce'], $subscription->get_id() ) ) {
+		if ( false === wp_verify_nonce( $_GET['wcs_nonce'], 'wcs-renew-' . $subscription->get_id() ) ) {
 
 			wc_add_notice( __( 'There was an error with your request to renew. Please try again.', 'woocommerce-subscriptions' ), 'error' );
 

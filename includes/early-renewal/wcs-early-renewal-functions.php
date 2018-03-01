@@ -105,15 +105,27 @@ function wcs_order_contains_early_renewal( $order ) {
 }
 
 /**
- * Returns a URL for early renewal of a subscription
- * @param  int|WC_Subscription $subscription Post ID of a 'shop_subscription' post, or instance of a WC_Subscription object
- * @return string
+ * Returns a URL for early renewal of a subscription.
+ *
+ * @param  int|WC_Subscription $subscription WC_Subscription ID, or instance of a WC_Subscription object.
+ * @return string The early renewal URL.
  * @since  2.3.0
  */
-function wcs_get_early_renewal_link( $subscription ) {
-	$subscription_id = is_object( $subscription ) ? $subscription->get_id() : absint( $subscription );
-	$link = add_query_arg( array( 'subscription_renewal_early' => $subscription_id, 'subscription_renewal' => 'true' ), get_permalink( wc_get_page_id( 'myaccount' ) ) );
-	$link = wp_nonce_url( $link, $subscription_id );
+function wcs_get_early_renewal_url( $subscription ) {
+	$subscription_id = is_a( $subscription, 'WC_Subscription' ) ? $subscription->get_id() : absint( $subscription );
 
-	return apply_filters( 'wcs_get_early_renewal_link', $link, $subscription_id );
+	$url = add_query_arg( array(
+		'subscription_renewal_early' => $subscription_id,
+		'subscription_renewal'       => 'true',
+		'wcs_nonce'                  => wp_create_nonce( 'wcs-renew-' . $subscription_id ),
+	), get_permalink( wc_get_page_id( 'myaccount' ) ) );
+
+	/**
+	 * Allow third-parties to filter the early renewal URL.
+	 *
+	 * @since 2.3.0
+	 * @param string $url The early renewal URL.
+	 * @param int    $subscription_id The ID of the subscription to renew to.
+	 */
+	return apply_filters( 'woocommerce_subscriptions_get_early_renewal_url', $url, $subscription_id );
 }
