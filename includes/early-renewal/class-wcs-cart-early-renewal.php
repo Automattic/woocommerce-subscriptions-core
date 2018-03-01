@@ -20,7 +20,7 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 	public function __construct() {
 
 		// Add the renew now button to the view subscription page.
-		add_filter( 'wcs_view_subscription_actions', array( $this, 'add_renew_now_button' ), 10, 2 );
+		add_filter( 'wcs_view_subscription_actions', array( $this, 'add_renew_now_action' ), 10, 2 );
 
 		// Check if a user is requesting to create an early renewal order for a subscription.
 		add_action( 'template_redirect', array( $this, 'maybe_setup_cart' ), 100 );
@@ -53,7 +53,7 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 	 * @since 2.3.0
 	 * @return array $actions The subscription actions with the "Renew Now" action added if it's permitted.
 	 */
-	public function add_renew_now_button( $actions, $subscription ) {
+	public function add_renew_now_action( $actions, $subscription ) {
 
 		if ( wcs_can_user_renew_early( $subscription ) && $subscription->payment_method_supports( 'subscription_date_changes' ) && $subscription->has_status( 'active' ) ) {
 
