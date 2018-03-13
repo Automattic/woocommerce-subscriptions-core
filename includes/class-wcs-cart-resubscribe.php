@@ -265,6 +265,8 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	 * Make sure resubscribe cart item price doesn't include any recurring amount by setting a free trial.
 	 *
 	 * @since 2.1
+	 * @param mixed $total This parameter is unused. Its sole purpose is for returning an unchanged variable while setting the mock trial when hooked onto filters. Optional.
+	 * @return mixed $total The unchanged $total parameter.
 	 */
 	public function maybe_set_free_trial( $total = '' ) {
 		$subscription = $this->get_order();
@@ -284,6 +286,8 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	 * Remove mock free trials from resubscribe cart items.
 	 *
 	 * @since 2.1
+	 * @param mixed $total This parameter is unused. Its sole purpose is for returning an unchanged variable while unsetting the mock trial when hooked onto filters. Optional.
+	 * @return mixed $total The unchanged $total parameter.
 	 */
 	public function maybe_unset_free_trial( $total = '' ) {
 		$subscription = $this->get_order();
