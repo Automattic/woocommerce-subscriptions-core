@@ -267,11 +267,13 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	 * @since 2.1
 	 */
 	public function maybe_set_free_trial( $total = '' ) {
+		$subscription = $this->get_order();
 
-		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-			$subscription = $this->get_order( $cart_item );
-			if ( false !== $subscription && $subscription->has_status( 'pending-cancel' ) ) {
-				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_trial_length', 1, 'set_prop_only' );
+		if ( false !== $subscription && $subscription->has_status( 'pending-cancel' ) ) {
+			foreach ( WC()->cart->cart_contents as &$cart_item ) {
+				if ( isset( $cart_item[ $this->cart_item_key ] ) ) {
+					wcs_set_objects_property( $cart_item['data'], 'subscription_trial_length', 1, 'set_prop_only' );
+				}
 			}
 		}
 
@@ -284,11 +286,13 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	 * @since 2.1
 	 */
 	public function maybe_unset_free_trial( $total = '' ) {
+		$subscription = $this->get_order();
 
-		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-			$subscription = $this->get_order( $cart_item );
-			if ( false !== $subscription && $subscription->has_status( 'pending-cancel' ) ) {
-				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_trial_length', 0, 'set_prop_only' );
+		if ( false !== $subscription && $subscription->has_status( 'pending-cancel' ) ) {
+			foreach ( WC()->cart->cart_contents as &$cart_item ) {
+				if ( isset( $cart_item[ $this->cart_item_key ] ) ) {
+					wcs_set_objects_property( $cart_item['data'], 'subscription_trial_length', 0, 'set_prop_only' );
+				}
 			}
 		}
 
