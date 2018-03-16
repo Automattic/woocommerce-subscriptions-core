@@ -287,19 +287,17 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		 * Subscription cancellations
 		 */
 		$query = $wpdb->prepare(
-			"SELECT COUNT( DISTINCT wcsubs.ID ) as count, CONVERT_TZ( wcsmeta_cancel.meta_value, 'GMT', %s ) as cancel_date
+			"SELECT COUNT( DISTINCT wcsubs.ID ) as count, CONVERT_TZ( wcsmeta_cancel.meta_value, 'GMT', '{$site_timezone}' ) as cancel_date
 				FROM {$wpdb->posts} as wcsubs
 				JOIN {$wpdb->postmeta} AS wcsmeta_cancel
 					ON wcsubs.ID = wcsmeta_cancel.post_id
 					AND wcsmeta_cancel.meta_key = %s
-				WHERE wcsmeta_cancel.meta_value BETWEEN %s AND %s
-				GROUP BY YEAR( CONVERT_TZ( wcsmeta_cancel.meta_value, 'GMT', %s ) ), MONTH( CONVERT_TZ( wcsmeta_cancel.meta_value, 'GMT', %s ) ), DAY( CONVERT_TZ( wcsmeta_cancel.meta_value, 'GMT', %s ) )
+				WHERE CONVERT_TZ( wcsmeta_cancel.meta_value, 'GMT', '{$site_timezone}' ) BETWEEN %s AND %s
+				GROUP BY YEAR( CONVERT_TZ( wcsmeta_cancel.meta_value, 'GMT', '{$site_timezone}' ) ), MONTH( CONVERT_TZ( wcsmeta_cancel.meta_value, 'GMT', '{$site_timezone}' ) ), DAY( CONVERT_TZ( wcsmeta_cancel.meta_value, 'GMT', '{$site_timezone}' ) )
 				ORDER BY wcsmeta_cancel.meta_value ASC",
-			$site_timezone,
 			wcs_get_date_meta_key( 'cancelled' ),
-			get_gmt_from_date( date( 'Y-m-d', $this->start_date ) ),
-			get_gmt_from_date( $query_end_date ),
-			$site_timezone, $site_timezone, $site_timezone
+			date( 'Y-m-d', $this->start_date ),
+			$query_end_date
 		);
 
 		$query_hash = md5( $query );
@@ -316,20 +314,18 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		 * Subscriptions ended
 		 */
 		$query = $wpdb->prepare(
-			"SELECT COUNT( DISTINCT wcsubs.ID ) as count, CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', %s ) as end_date
+			"SELECT COUNT( DISTINCT wcsubs.ID ) as count, CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', '{$site_timezone}' ) as end_date
 				FROM {$wpdb->posts} as wcsubs
 				JOIN {$wpdb->postmeta} AS wcsmeta_end
 					ON wcsubs.ID = wcsmeta_end.post_id
 						AND wcsmeta_end.meta_key = %s
 				WHERE
-						wcsmeta_end.meta_value BETWEEN %s AND %s
-				GROUP BY YEAR( CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', %s ) ), MONTH( CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', %s ) ), DAY( CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', %s ) )
+						CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', '{$site_timezone}' ) BETWEEN %s AND %s
+				GROUP BY YEAR( CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', '{$site_timezone}' ) ), MONTH( CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', '{$site_timezone}' ) ), DAY( CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', '{$site_timezone}' ) )
 				ORDER BY wcsmeta_end.meta_value ASC",
-			$site_timezone,
 			wcs_get_date_meta_key( 'end' ),
-			get_gmt_from_date( date( 'Y-m-d', $this->start_date ) ),
-			get_gmt_from_date( $query_end_date ),
-			$site_timezone, $site_timezone, $site_timezone
+			date( 'Y-m-d', $this->start_date ),
+			$query_end_date
 		);
 
 		$query_hash = md5( $query );
