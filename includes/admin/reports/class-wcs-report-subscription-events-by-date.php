@@ -44,6 +44,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$args = wp_parse_args( $args, $default_args );
 
 		$query_end_date = date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) );
+		$site_timezone = get_option('timezone_string');
 
 		$this->report_data = new stdClass;
 
@@ -312,18 +313,20 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		 * Subscriptions ended
 		 */
 		$query = $wpdb->prepare(
-			"SELECT COUNT(DISTINCT wcsubs.ID) as count, wcsmeta_end.meta_value as end_date
+			"SELECT COUNT( DISTINCT wcsubs.ID ) as count, CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', %s ) as end_date
 				FROM {$wpdb->posts} as wcsubs
 				JOIN {$wpdb->postmeta} AS wcsmeta_end
 					ON wcsubs.ID = wcsmeta_end.post_id
 						AND wcsmeta_end.meta_key = %s
 				WHERE
 						wcsmeta_end.meta_value BETWEEN %s AND %s
-				GROUP BY YEAR(wcsmeta_end.meta_value), MONTH(wcsmeta_end.meta_value), DAY(wcsmeta_end.meta_value)
+				GROUP BY YEAR( CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', %s ) ), MONTH( CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', %s ) ), DAY( CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', %s ) )
 				ORDER BY wcsmeta_end.meta_value ASC",
+			$site_timezone, 
 			wcs_get_date_meta_key( 'end' ),
-			date( 'Y-m-d', $this->start_date ),
-			$query_end_date
+			get_gmt_from_date( date( 'Y-m-d', $this->start_date ) ),
+			get_gmt_from_date( $query_end_date ),
+			$site_timezone, $site_timezone, $site_timezone
 		);
 
 		$query_hash = md5( $query );
