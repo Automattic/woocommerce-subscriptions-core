@@ -44,7 +44,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$args = wp_parse_args( $args, $default_args );
 
 		$query_end_date = date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) );
-		$site_timezone = get_option('timezone_string');
+		$site_timezone = get_option( 'timezone_string' );
 
 		$this->report_data = new stdClass;
 
@@ -256,11 +256,11 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 					{$wpdb->posts} AS wcsubs
 					LEFT JOIN {$wpdb->postmeta} AS wcsmeta
 						ON wcsubs.ID = wcsmeta.post_id AND wcsmeta.meta_key = %s
-				) ON DATE( wcsubs.post_date ) <= searchdate.Date
+				) ON DATE( wcsubs.post_date ) < searchdate.Date
 					AND wcsubs.post_type IN ( 'shop_subscription' )
-					AND wcsubs.post_status NOT IN( 'wc-pending', 'trash', 'auto-draft' )
+					AND wcsubs.post_status NOT IN( 'trash', 'auto-draft' )
 					AND (
-						DATE( wcsmeta.meta_value ) >= searchdate.Date
+						DATE( CONVERT_TZ( wcsmeta.meta_value , 'GMT', %s ) ) >= searchdate.Date
 						OR wcsmeta.meta_value = 0
 						OR wcsmeta.meta_value IS NULL
 					)
@@ -269,7 +269,8 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			$query_end_date,
 			date( 'Y-m-d', $this->start_date ),
 			$query_end_date,
-			wcs_get_date_meta_key( 'end' )
+			wcs_get_date_meta_key( 'end' ),
+			$site_timezone
 		);
 
 		$query_hash = md5( $query );
@@ -324,7 +325,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 						wcsmeta_end.meta_value BETWEEN %s AND %s
 				GROUP BY YEAR( CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', %s ) ), MONTH( CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', %s ) ), DAY( CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', %s ) )
 				ORDER BY wcsmeta_end.meta_value ASC",
-			$site_timezone, 
+			$site_timezone,
 			wcs_get_date_meta_key( 'end' ),
 			get_gmt_from_date( date( 'Y-m-d', $this->start_date ) ),
 			get_gmt_from_date( $query_end_date ),
