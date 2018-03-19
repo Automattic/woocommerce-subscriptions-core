@@ -19,7 +19,7 @@ class WCS_Failed_Scheduled_Action_Manager {
 	 *
 	 * @var array
 	 */
-	protected static $tracked_scheduled_actions = array(
+	protected $tracked_scheduled_actions = array(
 		'woocommerce_scheduled_subscription_trial_end'           => 1,
 		'woocommerce_scheduled_subscription_payment'             => 1,
 		'woocommerce_scheduled_subscription_payment_retry'       => 1,
@@ -32,9 +32,9 @@ class WCS_Failed_Scheduled_Action_Manager {
 	 *
 	 * @since 2.2.19
 	 */
-	public static function init() {
-		add_action( 'action_scheduler_failed_action', array( __CLASS__, 'log_action_scheduler_failure' ), 10, 2 );
-		add_action( 'admin_notices', array( __CLASS__, 'maybe_show_admin_notice' ) );
+	public function __construct() {
+		add_action( 'action_scheduler_failed_action', array( $this, 'log_action_scheduler_failure' ), 10, 2 );
+		add_action( 'admin_notices', array( $this, 'maybe_show_admin_notice' ) );
 	}
 
 	/**
@@ -43,7 +43,7 @@ class WCS_Failed_Scheduled_Action_Manager {
 	 * @param string $message the message to be written to the log.
 	 * @since 2.2.19
 	 */
-	protected static function log( $message ) {
+	protected function log( $message ) {
 		static $logger = null;
 
 		if ( null === $logger ) {
@@ -60,17 +60,17 @@ class WCS_Failed_Scheduled_Action_Manager {
 	 * @param int $timeout the number of seconds an action can run for before timing out.
 	 * @since 2.2.19
 	 */
-	public static function log_action_scheduler_failure( $action_id, $timeout ) {
-		$action = self::get_action( $action_id );
+	public function log_action_scheduler_failure( $action_id, $timeout ) {
+		$action = $this->get_action( $action_id );
 
-		if ( ! isset( self::$tracked_scheduled_actions[ $action->get_hook() ] ) ) {
+		if ( ! isset( $this->tracked_scheduled_actions[ $action->get_hook() ] ) ) {
 			return;
 		}
 
-		$subscription_action = self::get_action_hook_label( $action->get_hook() );
+		$subscription_action = $this->get_action_hook_label( $action->get_hook() );
 
-		self::log( sprintf( 'scheduled action %s (%s) failed to finish processing after %s seconds', $action_id, $subscription_action , $timeout ) );
-		self::log( sprintf( 'action args: %s', self::get_action_args_string( $action->get_args() ) ) );
+		$this->log( sprintf( 'scheduled action %s (%s) failed to finish processing after %s seconds', $action_id, $subscription_action , $timeout ) );
+		$this->log( sprintf( 'action args: %s', $this->get_action_args_string( $action->get_args() ) ) );
 
 		// Store information about the scheduled action for displaying an admin notice
 		$failed_scheduled_actions = get_option( WC_Subscriptions_Admin::$option_prefix . '_failed_scheduled_actions', array() );
@@ -88,8 +88,8 @@ class WCS_Failed_Scheduled_Action_Manager {
 	 *
 	 * @since 2.2.19
 	 */
-	public static function maybe_show_admin_notice() {
-		self::maybe_disable_admin_notice();
+	public function maybe_show_admin_notice() {
+		$this->maybe_disable_admin_notice();
 		$failed_scheduled_actions = get_option( WC_Subscriptions_Admin::$option_prefix . '_failed_scheduled_actions', array() );
 
 		if ( empty( $failed_scheduled_actions ) ) {
@@ -135,7 +135,7 @@ class WCS_Failed_Scheduled_Action_Manager {
 	 *
 	 * @since 2.2.19
 	 */
-	protected static function maybe_disable_admin_notice() {
+	protected function maybe_disable_admin_notice() {
 		if ( isset( $_GET['_wcsnonce'] ) && wp_verify_nonce( $_GET['_wcsnonce'], 'wcs_scheduled_action_timeout_error_notice' ) && isset( $_GET['wcs_scheduled_action_timeout_error_notice'] ) ) {
 			delete_option( WC_Subscriptions_Admin::$option_prefix . '_failed_scheduled_actions' );
 		}
@@ -148,7 +148,7 @@ class WCS_Failed_Scheduled_Action_Manager {
 	 * @return string
 	 * @since 2.2.19
 	 */
-	protected static function get_action_hook_label( $hook ) {
+	protected function get_action_hook_label( $hook ) {
 		return str_replace( array( 'woocommerce_scheduled_', '_' ), array( '', ' ' ), $hook );
 	}
 
@@ -159,7 +159,7 @@ class WCS_Failed_Scheduled_Action_Manager {
 	 * @return string
 	 * @since 2.2.19
 	 */
-	protected static function get_action_args_string( $args ) {
+	protected function get_action_args_string( $args ) {
 		$args_string = $separator = '';
 
 		foreach ( $args as $key => $value ) {
@@ -179,7 +179,7 @@ class WCS_Failed_Scheduled_Action_Manager {
 	 * @return ActionScheduler_Action
 	 * @since 2.2.19
 	 */
-	protected static function get_action( $action_id ) {
+	protected function get_action( $action_id ) {
 		$store = ActionScheduler_Store::instance();
 		return $store->fetch_action( $action_id );
 	}
