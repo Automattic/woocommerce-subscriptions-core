@@ -98,7 +98,7 @@ class WCS_Failed_Scheduled_Action_Manager {
 
 		$affected_subscription_events = $separator = '';
 
-		foreach ( $failed_scheduled_actions as $action_id => $action ) {
+		foreach ( array_slice( $failed_scheduled_actions, -10, 10 ) as $action ) {
 
 			if ( isset( $action['args']['subscription_id'] ) ) {
 				$subject = '<a href="' . get_edit_post_link( $action['args']['subscription_id'] ) . '">#' . $action['args']['subscription_id'] . '</a>';
