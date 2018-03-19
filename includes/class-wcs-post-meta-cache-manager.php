@@ -20,6 +20,9 @@ class WCS_Post_Meta_Cache_Manager {
 
 	/**
 	 * Constructor
+	 *
+	 * @param string The post type this cache manage acts on.
+	 * @param array The post meta keys this cache manager should act on.
 	 */
 	public function __construct( $post_type, $meta_keys ) {
 		$this->post_type = $post_type;
@@ -102,7 +105,7 @@ class WCS_Post_Meta_Cache_Manager {
 	 * When post meta is updated from a previous value, check if this class instance cares about
 	 * updating its cache to reflect the change.
 	 *
-	 * @param mixed $check Whether to update the meta or not. By default, this is null, meaning it will be update. Callbacks may override it to prevent that.
+	 * @param mixed $check Whether to update the meta or not. By default, this is null, meaning it will be updated. Callbacks may override it to prevent that.
 	 * @param int $post_id The post the meta is being changed on.
 	 * @param string $meta_key The post meta key being changed.
 	 * @param mixed $meta_value The new value being saved in the database.
@@ -111,7 +114,7 @@ class WCS_Post_Meta_Cache_Manager {
 	 */
 	public function meta_updated_with_previous( $check, $post_id, $meta_key, $meta_value, $prev_value ) {
 
-		// If the meta data isn't actually being changed, we don't need to do anything
+		// If the meta data isn't actually being changed, we don't need to do anything. The use of == instead of === is deliberate to account for typecasting that can happen in WC's CRUD classes (e.g. ints cast as strings or bools as ints)
 		if ( $check || $prev_value == $meta_value ) {
 			return $check;
 		}
@@ -142,10 +145,10 @@ class WCS_Post_Meta_Cache_Manager {
 	 * This method handles that case.
 	 *
 	 * @param mixed $check Whether to delete the meta or not. By default, this is null, meaning it will be deleted. Callbacks may override it to prevent that.
-	 * @param int $meta_id The ID of the post meta row in the database.
 	 * @param int $post_id The post the meta is being changed on.
 	 * @param string $meta_key The post meta key being changed.
 	 * @param mixed $meta_value The value being deleted from the database.
+	 * @param bool $delete_all Whether meta data is being deleted on all posts, not a specific post.
 	 * @return mixed $check This method is attached to the "update_{$meta_type}_metadata" filter, which is used as a pre-check on whether to update meta data, so it needs to return the $check value passed in.
 	 */
 	public function meta_deleted_all( $check, $post_id, $meta_key, $meta_value, $delete_all ) {

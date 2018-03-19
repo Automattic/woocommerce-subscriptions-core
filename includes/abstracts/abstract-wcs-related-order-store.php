@@ -45,7 +45,7 @@ abstract class WCS_Related_Order_Store {
 			if ( ! did_action( 'plugins_loaded' ) ) {
 				wcs_doing_it_wrong( __METHOD__, 'This method was called before the "plugins_loaded" hook. It applies a filter to the related order data store instantiated. For that to work, it should first be called after all plugins are loaded.', '2.3.0' );
 			}
-			$class = self::get_class();
+			$class = apply_filters( 'wcs_related_order_store_class', 'WCS_Related_Order_Store_Cached_CPT' );
 			self::$instance = new $class();
 			self::$instance->init();
 		}
