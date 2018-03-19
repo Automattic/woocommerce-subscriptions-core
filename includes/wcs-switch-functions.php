@@ -56,7 +56,7 @@ function wcs_get_subscriptions_for_switch_order( $order ) {
 	}
 
 	$subscriptions    = array();
-	$subscription_ids = wcs_get_objects_property( $order, 'subscription_switch', 'multiple' );
+	$subscription_ids = WCS_Related_Order_Store::instance()->get_related_subscription_ids( $order, 'switch' );
 
 	foreach ( $subscription_ids as $subscription_id ) {
 

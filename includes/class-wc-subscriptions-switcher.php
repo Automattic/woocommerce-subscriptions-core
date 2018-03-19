@@ -584,14 +584,14 @@ class WC_Subscriptions_Switcher {
 		$order = wc_get_order( $order_id );
 
 		// delete all the existing subscription switch links before adding new ones
-		wcs_delete_objects_property( $order, 'subscription_switch' );
+		WCS_Related_Order_Store::instance()->delete_relations( $order, 'switch' );
 
 		$switches = self::cart_contains_switches();
 
 		if ( false !== $switches ) {
 
 			foreach ( $switches as $switch_details ) {
-				wcs_set_objects_property( $order, 'subscription_switch', $switch_details['subscription_id'] );
+				WCS_Related_Order_Store::instance()->add_relation( $order, wcs_get_subscription( $switch_details['subscription_id'] ), 'switch' );
 			}
 		}
 	}
