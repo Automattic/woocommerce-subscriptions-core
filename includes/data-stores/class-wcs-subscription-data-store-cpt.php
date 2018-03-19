@@ -78,6 +78,29 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	}
 
 	/**
+	 * Returns an array of meta for an object.
+	 *
+	 * Ignore meta data that we don't want accessible on the object via meta APIs.
+	 *
+	 * @since  2.3.0
+	 * @param  WC_Data $object
+	 * @return array
+	 */
+	public function read_meta( &$object ) {
+		$meta_data = parent::read_meta( $object );
+
+		$props_to_ignore = $this->get_props_to_ignore();
+
+		foreach ( $meta_data as $index => $meta_object ) {
+			if ( array_key_exists( $meta_object->meta_key, $props_to_ignore ) ) {
+				unset( $meta_data[ $index ] );
+			}
+		}
+
+		return $meta_data;
+	}
+
+	/**
 	 * Read subscription data.
 	 *
 	 * @param WC_Subscription $subscription
@@ -331,6 +354,22 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 */
 	protected function get_props_to_update( $object, $meta_key_to_props, $meta_type = 'post' ) {
 		$props_to_update = parent::get_props_to_update( $object, $meta_key_to_props, $meta_type );
+		$props_to_ignore = $this->get_props_to_ignore();
+
+		foreach ( $props_to_ignore as $meta_key => $prop ) {
+			unset( $props_to_update[ $meta_key ] );
+		}
+
+		return $props_to_update;
+	}
+
+	/**
+	 * Get the props set on a subscription which we don't want used on a subscription, which may be
+	 * inherited order meta data, or other values using the post meta data store but not as props.
+	 *
+	 * @return array A mapping of meta keys => prop names
+	 */
+	protected function get_props_to_ignore() {
 
 		$props_to_ignore = array(
 			'_transaction_id' => 'transaction_id',
@@ -339,10 +378,6 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 			'_cart_hash'      => 'cart_hash',
 		);
 
-		foreach ( $props_to_ignore as $meta_key => $prop ) {
-			unset( $props_to_update[ $meta_key ] );
-		}
-
-		return $props_to_update;
+		return apply_filters( 'wcs_subscription_data_store_props_to_ignore', $props_to_ignore, $this );
 	}
 }
