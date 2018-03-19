@@ -223,7 +223,7 @@ class WCS_Upgrade_2_0 {
 			}
 
 			$meta_key = str_replace( '_subscription', '', $raw_subscription->meta_key );
-			$meta_key = substr( $meta_key, 0, 1 ) == '_' ? substr( $meta_key, 1 ) : $meta_key;
+			$meta_key = wcs_maybe_unprefix_key( $meta_key );
 
 			if ( 'product_id' === $meta_key ) {
 				$subscriptions[ $raw_subscription->order_item_id ]['subscription_key'] = $subscriptions[ $raw_subscription->order_item_id ]['order_id'] . '_' . $raw_subscription->meta_value;
