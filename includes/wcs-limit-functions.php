@@ -69,5 +69,5 @@ function wcs_is_product_limited_for_user( $product, $user_id = 0 ) {
 		}
 	}
 
-	return $is_limited_for_user;
+	return apply_filters( 'woocommerce_subscriptions_product_limited_for_user', $is_limited_for_user, $product, $user_id );
 }
