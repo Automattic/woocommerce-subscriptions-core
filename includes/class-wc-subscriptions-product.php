@@ -359,7 +359,9 @@ class WC_Subscriptions_Product {
 			$subscription_string = $price;
 		} elseif ( $include['subscription_period'] ) {
 			// translators: billing period (e.g. "every week")
-			$subscription_string = sprintf( __( 'every %s', 'woocommerce-subscriptions' ), wcs_get_subscription_period_strings( $billing_interval, $billing_period ) );
+			$subscription_string = '<span class="subscription-details">' . sprintf( __( 'every %s', 'woocommerce-subscriptions' ), wcs_get_subscription_period_strings( $billing_interval, $billing_period ) );
+		} else {
+			$subscription_string = '<span class="subscription-details">';
 		}
 
 		// Add the length to the end
