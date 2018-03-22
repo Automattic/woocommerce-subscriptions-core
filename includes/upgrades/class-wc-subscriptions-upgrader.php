@@ -213,6 +213,12 @@ class WC_Subscriptions_Upgrader {
 			WCS_Upgrade_2_3_0::schedule_repair();
 		}
 
+		// If the store is running WC 3.0, repair subscriptions with missing address indexes.
+		if ( '0' !== self::$active_version && version_compare( self::$active_version, '2.3.0', '<' ) && version_compare( WC()->version, '3.0', '>=' ) ) {
+			include_once( dirname( __FILE__ ) . '/class-wcs-repair-subscription-address-indexes.php' );
+			WCS_Repair_Subscription_Address_Indexes::schedule_repair();
+		}
+
 		self::upgrade_complete();
 	}
 
