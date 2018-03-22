@@ -97,6 +97,8 @@ class WC_Subscriptions_Upgrader {
 		add_action( 'wcs_repair_subscriptions_suspended_paypal_not_woocommerce', array( __CLASS__, 'repair_paypal_suspended' ) );
 
 		add_action( 'wcs_add_missing_subscription_address_indexes', array( __CLASS__, 'repair_subscriptions_without_address_indexes' ) );
+		// When WC is updated from a version prior to 3.0 to a version after 3.0, add subscription address indexes. Must be hooked on before WC runs its updates on priority 5.
+		add_action( 'init', array( __CLASS__, 'maybe_add_subscription_address_indexes' ), 2 );
 	}
 
 	/**
@@ -797,6 +799,21 @@ class WC_Subscriptions_Upgrader {
 	public static function repair_subscriptions_without_address_indexes() {
 		include_once( dirname( __FILE__ ) . '/class-wcs-repair-subscription-address-indexes.php' );
 		WCS_Repair_Subscription_Address_Indexes::repair_subscriptions_without_address_indexes();
+	}
+
+	/**
+	 * When updating WC to a version after 3.0 from a version prior to 3.0, schedule the repair script to add address indexes.
+	 *
+	 * @since 2.3.0
+	 */
+	public static function maybe_add_subscription_address_indexes() {
+		$woocommerce_active_version   = WC()->version;
+		$woocommerce_database_version = get_option( 'woocommerce_version' );
+
+		if ( $woocommerce_active_version !== $woocommerce_database_version && version_compare( $woocommerce_active_version, '3.0', '>=' ) && version_compare( $woocommerce_database_version, '3.0', '<' ) ) {
+			include_once( dirname( __FILE__ ) . '/class-wcs-repair-subscription-address-indexes.php' );
+			WCS_Repair_Subscription_Address_Indexes::schedule_repair();
+		}
 	}
 
 	/**
