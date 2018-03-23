@@ -97,7 +97,8 @@ class WC_Subscriptions_Upgrader {
 		add_action( 'wcs_repair_subscriptions_suspended_paypal_not_woocommerce', array( __CLASS__, 'repair_paypal_suspended' ) );
 
 		add_action( 'wcs_add_missing_subscription_address_indexes', array( __CLASS__, 'repair_subscriptions_without_address_indexes' ) );
-		// When WC is updated from a version prior to 3.0 to a version after 3.0, add subscription address indexes. Must be hooked on before WC runs its updates on priority 5.
+
+		// When WC is updated from a version prior to 3.0 to a version after 3.0, add subscription address indexes. Must be hooked on before WC runs its updates, which occur on priority 5.
 		add_action( 'init', array( __CLASS__, 'maybe_add_subscription_address_indexes' ), 2 );
 	}
 
