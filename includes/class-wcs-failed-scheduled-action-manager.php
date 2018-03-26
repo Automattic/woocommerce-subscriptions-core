@@ -28,11 +28,28 @@ class WCS_Failed_Scheduled_Action_Manager {
 	);
 
 	/**
-	 * Attach callbacks
+	 * WC Logger instance for logging messages.
+	 *
+	 * @var WC_Logger
+	 */
+	protected $logger;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param WC_Logger $logger The WC Logger instance.
+	 * @since 2.2.19
+	 */
+	public function __construct( WC_Logger $logger ) {
+		$this->logger = $logger;
+	}
+
+	/**
+	 * Attach callbacks.
 	 *
 	 * @since 2.2.19
 	 */
-	public function __construct() {
+	public function init() {
 		add_action( 'action_scheduler_failed_action', array( $this, 'log_action_scheduler_failure' ), 10, 2 );
 		add_action( 'admin_notices', array( $this, 'maybe_show_admin_notice' ) );
 	}
@@ -44,13 +61,7 @@ class WCS_Failed_Scheduled_Action_Manager {
 	 * @since 2.2.19
 	 */
 	protected function log( $message ) {
-		static $logger = null;
-
-		if ( null === $logger ) {
-			$logger = new WC_Logger();
-		}
-
-		$logger->add( 'failed-scheduled-actions', $message );
+		$this->logger->add( 'failed-scheduled-actions', $message );
 	}
 
 	/**
