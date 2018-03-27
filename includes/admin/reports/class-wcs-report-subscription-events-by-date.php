@@ -46,6 +46,13 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$query_end_date = date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) );
 		$site_timezone = get_option( 'timezone_string' );
 
+		// If the site's timezone is set as UTC+ or UTC- string
+		if ( ! $site_timezone ) {
+			$offset  = get_option( 'gmt_offset' );
+			//Convert from Decimal format(eg. 11.5) to a suitable format(eg. +11:30) for  CONVERT_TZ() of SQL query.
+			$site_timezone = $offset ? sprintf( 'UTC%+02d:%02d', (int) $offset, ( $offset - floor( $offset ) ) * 60 ) : 'UTC';
+		}
+
 		$this->report_data = new stdClass;
 
 		$this->report_data->new_subscriptions = (array) $this->get_order_report_data(
