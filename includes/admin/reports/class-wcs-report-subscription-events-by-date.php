@@ -292,8 +292,8 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				JOIN {$wpdb->postmeta} AS wcsmeta_cancel
 					ON wcsubs.ID = wcsmeta_cancel.post_id
 					AND wcsmeta_cancel.meta_key = %s
-				WHERE CONVERT_TZ( wcsmeta_cancel.meta_value, 'GMT', '{$site_timezone}' ) BETWEEN %s AND %s
-				GROUP BY YEAR( CONVERT_TZ( wcsmeta_cancel.meta_value, 'GMT', '{$site_timezone}' ) ), MONTH( CONVERT_TZ( wcsmeta_cancel.meta_value, 'GMT', '{$site_timezone}' ) ), DAY( CONVERT_TZ( wcsmeta_cancel.meta_value, 'GMT', '{$site_timezone}' ) )
+				GROUP BY YEAR( cancel_date ), MONTH( cancel_date ), DAY( cancel_date )
+				HAVING cancel_date BETWEEN %s AND %s
 				ORDER BY wcsmeta_cancel.meta_value ASC",
 			wcs_get_date_meta_key( 'cancelled' ),
 			date( 'Y-m-d', $this->start_date ),
@@ -319,9 +319,8 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				JOIN {$wpdb->postmeta} AS wcsmeta_end
 					ON wcsubs.ID = wcsmeta_end.post_id
 						AND wcsmeta_end.meta_key = %s
-				WHERE
-						CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', '{$site_timezone}' ) BETWEEN %s AND %s
-				GROUP BY YEAR( CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', '{$site_timezone}' ) ), MONTH( CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', '{$site_timezone}' ) ), DAY( CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', '{$site_timezone}' ) )
+				GROUP BY YEAR( end_date ), MONTH( end_date ), DAY( end_date )
+				HAVING end_date BETWEEN %s AND %s
 				ORDER BY wcsmeta_end.meta_value ASC",
 			wcs_get_date_meta_key( 'end' ),
 			date( 'Y-m-d', $this->start_date ),
