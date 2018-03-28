@@ -44,14 +44,10 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$args = wp_parse_args( $args, $default_args );
 
 		$query_end_date = date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) );
-		$site_timezone = get_option( 'timezone_string' );
+		$offset  = get_option( 'gmt_offset' );
 
-		// If the site's timezone is set as UTC+ or UTC- string
-		if ( ! $site_timezone ) {
-			$offset  = get_option( 'gmt_offset' );
-			//Convert from Decimal format(eg. 11.5) to a suitable format(eg. +11:30) for  CONVERT_TZ() of SQL query.
-			$site_timezone = $offset ? sprintf( 'UTC%+02d:%02d', (int) $offset, ( $offset - floor( $offset ) ) * 60 ) : 'UTC';
-		}
+		//Convert from Decimal format(eg. 11.5) to a suitable format(eg. +11:30) for  CONVERT_TZ() of SQL query.
+		$site_timezone = sprintf( '%+02d:%02d', (int) $offset, ( $offset - floor( $offset ) ) * 60 );
 
 		$this->report_data = new stdClass;
 
@@ -267,7 +263,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 					AND wcsubs.post_type IN ( 'shop_subscription' )
 					AND wcsubs.post_status NOT IN( 'trash', 'auto-draft' )
 					AND (
-						DATE( CONVERT_TZ( wcsmeta.meta_value , 'GMT', %s ) ) >= searchdate.Date
+						DATE( CONVERT_TZ( wcsmeta.meta_value , '+00:00', %s ) ) >= searchdate.Date
 						OR wcsmeta.meta_value = 0
 						OR wcsmeta.meta_value IS NULL
 					)
@@ -294,7 +290,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		 * Subscription cancellations
 		 */
 		$query = $wpdb->prepare(
-			"SELECT COUNT( DISTINCT wcsubs.ID ) as count, CONVERT_TZ( wcsmeta_cancel.meta_value, 'GMT', '{$site_timezone}' ) as cancel_date
+			"SELECT COUNT( DISTINCT wcsubs.ID ) as count, CONVERT_TZ( wcsmeta_cancel.meta_value, '+00:00', '{$site_timezone}' ) as cancel_date
 				FROM {$wpdb->posts} as wcsubs
 				JOIN {$wpdb->postmeta} AS wcsmeta_cancel
 					ON wcsubs.ID = wcsmeta_cancel.post_id
@@ -321,7 +317,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		 * Subscriptions ended
 		 */
 		$query = $wpdb->prepare(
-			"SELECT COUNT( DISTINCT wcsubs.ID ) as count, CONVERT_TZ( wcsmeta_end.meta_value, 'GMT', '{$site_timezone}' ) as end_date
+			"SELECT COUNT( DISTINCT wcsubs.ID ) as count, CONVERT_TZ( wcsmeta_end.meta_value, '+00:00', '{$site_timezone}' ) as end_date
 				FROM {$wpdb->posts} as wcsubs
 				JOIN {$wpdb->postmeta} AS wcsmeta_end
 					ON wcsubs.ID = wcsmeta_end.post_id
