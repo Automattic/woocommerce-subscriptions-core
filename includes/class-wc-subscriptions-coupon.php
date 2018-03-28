@@ -50,6 +50,40 @@ class WC_Subscriptions_Coupon {
 		}
 
 		add_filter( 'woocommerce_cart_totals_coupon_label', __CLASS__ . '::get_pseudo_coupon_label', 10, 2 );
+		add_action( 'woocommerce_before_cart_totals', __CLASS__ . '::move_recurring_coupons_from_main_cart_to_recurring_carts', 10 );
+		add_action( 'woocommerce_review_order_before_cart_contents', __CLASS__ . '::move_recurring_coupons_from_main_cart_to_recurring_carts', 10 );
+		add_action( 'woocommerce_before_checkout_process', __CLASS__ . '::move_recurring_coupons_from_main_cart_to_recurring_carts', 10 );
+	}
+
+	/**
+	 * Move recurring type coupons from the main cart to the recurring cart when there is a free trial.
+	 *
+	 * @since 2.3
+	 */
+	public static function move_recurring_coupons_from_main_cart_to_recurring_carts() {
+
+		error_log("INGE00");
+		if( ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
+			return;
+		}
+
+		$applied_coupons = WC()->cart->get_applied_coupons();
+
+		foreach($applied_coupons as $applied_coupon_code)	{
+			$coupon = new WC_Coupon( $applied_coupon_code);
+			if( in_array( $coupon->get_discount_type(), array('recurring_fee', 'recurring_percent') ) ) {
+				$position     = array_search( $applied_coupon_code, WC()->cart->applied_coupons, true );
+
+				if ( false !== $position ) {
+					unset( WC()->cart->applied_coupons[ $position ] );
+					foreach( WC()->cart->recurring_carts as $recurring_cart ) {
+						//if( ! in_array( $applied_coupon_code, $recurring_cart->applied_coupons ) ) {
+							$recurring_cart->applied_coupons[] = $applied_coupon_code;
+						//}
+					}
+				}
+			}
+		}
 	}
 
 	/**
