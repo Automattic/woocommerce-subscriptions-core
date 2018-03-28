@@ -66,8 +66,10 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 			'post_type'      => 'shop_order',
 			'post_status'    => 'any',
 			'fields'         => 'ids',
-			'orderby'        => 'date',
-			'order'          => 'DESC',
+			'orderby'        => array(
+				'date' => 'DESC',
+				'ID'   => 'DESC',
+			),
 			'meta_query'     => array(
 				array(
 					'key'     => $this->get_meta_key( $relation_type ),
