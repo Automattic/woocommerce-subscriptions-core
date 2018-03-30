@@ -147,7 +147,14 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT {
 	 */
 	protected function add_related_order_id_to_cache( $order_id, $subscription_id, $relation_type ) {
 
-		$related_order_ids = $this->get_related_order_ids( wcs_get_subscription( $subscription_id ), $relation_type );
+		$subscription = wcs_get_subscription( $subscription_id );
+
+		// If we can't get a valid subscription, we can't update its cache
+		if ( false === $subscription ) {
+			return;
+		}
+
+		$related_order_ids = $this->get_related_order_ids( $subscription, $relation_type );
 
 		if ( ! in_array( $order_id, $related_order_ids ) ) {
 			// Add the new order to the beginning of the array to preserve sort order from newest to oldest
@@ -165,7 +172,14 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT {
 	 */
 	protected function delete_related_order_id_from_cache( $order_id, $subscription_id, $relation_type ) {
 
-		$related_order_ids = $this->get_related_order_ids( wcs_get_subscription( $subscription_id ), $relation_type );
+		$subscription = wcs_get_subscription( $subscription_id );
+
+		// If we can't get a valid subscription, we can't udpate its cache
+		if ( false === $subscription ) {
+			return;
+		}
+
+		$related_order_ids = $this->get_related_order_ids( $subscription, $relation_type );
 
 		if ( ( $index = array_search( $order_id, $related_order_ids ) ) !== false ) {
 			unset( $related_order_ids[ $index ] );
