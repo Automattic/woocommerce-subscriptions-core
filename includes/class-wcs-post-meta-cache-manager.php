@@ -109,7 +109,7 @@ class WCS_Post_Meta_Cache_Manager {
 	 * @param int $post_id The post the meta is being changed on.
 	 * @param string $meta_key The post meta key being changed.
 	 * @param mixed $meta_value The new value being saved in the database.
-	 * @param mixed $prev_value The previous value stored in the database. Optional.
+	 * @param mixed $prev_value The previous value stored in the database.
 	 * @return mixed $check This method is attached to the "update_{$meta_type}_metadata" filter, which is used as a pre-check on whether to update meta data, so it needs to return the $check value passed in.
 	 */
 	public function meta_updated_with_previous( $check, $post_id, $meta_key, $meta_value, $prev_value ) {
@@ -134,7 +134,7 @@ class WCS_Post_Meta_Cache_Manager {
 	 * @param mixed $meta_value The value being deleted from the database.
 	 */
 	public function meta_updated( $meta_id, $post_id, $meta_key, $meta_value ) {
-		$this->meta_updated_with_previous( null, $post_id, $meta_key, $meta_value, get_post_meta( $post_id, $meta_key, true ) );
+		$this->meta_updated_with_previous( null, $post_id, $meta_key, $meta_value, '' );
 	}
 
 	/**
