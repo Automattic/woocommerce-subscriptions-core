@@ -174,6 +174,8 @@ class WC_Subscriptions_Coupon {
 			return $discount;
 		}
 
+		$is_switch  = ! empty( $cart_item['subscription_switch'] );
+
 		// Set our starting discount amount to 0
 		$discount_amount = 0;
 
@@ -196,7 +198,7 @@ class WC_Subscriptions_Coupon {
 		if ( 'none' == $calculation_type ) {
 
 			// If all items have a free trial we don't need to apply recurring coupons to the initial total
-			if ( ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
+			if ( $is_switch || ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
 
 				if ( 'recurring_fee' == $coupon_type ) {
 					$apply_initial_coupon = true;
@@ -207,8 +209,8 @@ class WC_Subscriptions_Coupon {
 				}
 			}
 
-			// Apply sign-up discounts
-			if ( WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] ) > 0 ) {
+			// Apply sign-up discounts. Exclude switch cart items because their initial amount is entirely sign-up fees but should be treated as initial amounts
+			if ( ! $is_switch && WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] ) > 0 ) {
 
 				if ( 'sign_up_fee' == $coupon_type ) {
 					$apply_initial_coupon = true;
@@ -242,7 +244,7 @@ class WC_Subscriptions_Coupon {
 		if ( $apply_recurring_coupon || $apply_initial_coupon ) {
 
 			// Recurring coupons only apply when there is no free trial (carts can have a mix of free trial and non free trial items)
-			if ( $apply_initial_coupon && 'recurring_fee' == $coupon_type && WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) > 0 ) {
+			if ( $apply_initial_coupon && 'recurring_fee' == $coupon_type && ! $is_switch && WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) > 0 ) {
 				$discounting_amount = 0;
 			}
 
@@ -256,7 +258,7 @@ class WC_Subscriptions_Coupon {
 		} elseif ( $apply_initial_percent_coupon ) {
 
 			// Recurring coupons only apply when there is no free trial (carts can have a mix of free trial and non free trial items)
-			if ( 'recurring_percent' == $coupon_type && WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) > 0 ) {
+			if ( 'recurring_percent' == $coupon_type && ! $is_switch && WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) > 0 ) {
 				$discounting_amount = 0;
 			}
 
