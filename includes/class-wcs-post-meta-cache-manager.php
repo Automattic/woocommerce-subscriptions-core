@@ -26,7 +26,9 @@ class WCS_Post_Meta_Cache_Manager {
 	 */
 	public function __construct( $post_type, $meta_keys ) {
 		$this->post_type = $post_type;
-		$this->meta_keys = $meta_keys;
+
+		// We store the meta keys as the array keys to take advantage of the better query performance of isset() vs. in_array()
+		$this->meta_keys = array_flip( $meta_keys );
 	}
 
 	/**
@@ -66,7 +68,7 @@ class WCS_Post_Meta_Cache_Manager {
 	protected function is_change_to_ignore( $post_id, $meta_key = '' ) {
 		if ( ! is_null( $post_id ) && $this->post_type !== $this->get_post_type( $post_id ) ) {
 			return true;
-		} elseif ( empty( $meta_key ) || ! in_array( $meta_key, $this->meta_keys ) ) {
+		} elseif ( empty( $meta_key ) || ! isset( $this->meta_keys[ $meta_key ] ) ) {
 			return true;
 		} else {
 			return false;
@@ -196,7 +198,7 @@ class WCS_Post_Meta_Cache_Manager {
 			throw new InvalidArgumentException( sprintf( __( 'Invalid update type: %s. Post update types supported are "add" or "delete". Updates are done on post meta directly.', 'woocommerce-subscriptions' ), $update_type ) );
 		}
 
-		foreach ( $this->meta_keys as $meta_key ) {
+		foreach ( $this->meta_keys as $meta_key => $value ) {
 			$meta_value = ( 'add' === $update_type ) ? get_post_meta( $post_id, $meta_key, true ) : '';
 			$this->maybe_trigger_update_cache_hook( $update_type, $post_id, $meta_key, $meta_value );
 		}
