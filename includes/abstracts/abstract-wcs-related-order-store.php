@@ -28,10 +28,23 @@ abstract class WCS_Related_Order_Store {
 	 *
 	 * @var array
 	 */
-	private $relation_types = array(
+	private static $relation_types = array(
 		'renewal',
 		'switch',
 		'resubscribe',
+	);
+
+	/**
+	 * An array using @see self::$relation_types as keys for more performant checks by @see $this->check_relation_type().
+	 *
+	 * Set when instantiated.
+	 *
+	 * @var array
+	 */
+	private static $relation_type_keys = array(
+		'renewal'     => true,
+		'switch'      => true,
+		'resubscribe' => true,
 	);
 
 	/**
@@ -45,6 +58,7 @@ abstract class WCS_Related_Order_Store {
 			if ( ! did_action( 'plugins_loaded' ) ) {
 				wcs_doing_it_wrong( __METHOD__, 'This method was called before the "plugins_loaded" hook. It applies a filter to the related order data store instantiated. For that to work, it should first be called after all plugins are loaded.', '2.3.0' );
 			}
+
 			$class = apply_filters( 'wcs_related_order_store_class', 'WCS_Related_Order_Store_Cached_CPT' );
 			self::$instance = new $class();
 			self::$instance->init();
@@ -109,7 +123,7 @@ abstract class WCS_Related_Order_Store {
 	 * @return array The possible relationships between a subscription and orders. Includes 'renewal', 'switch' or 'resubscribe' by default.
 	 */
 	protected function get_relation_types() {
-		return $this->relation_types;
+		return self::$relation_types;
 	}
 
 	/**
@@ -120,7 +134,7 @@ abstract class WCS_Related_Order_Store {
 	 * @throws InvalidArgumentException If the given order relation is not a known type.
 	 */
 	protected function check_relation_type( $relation_type ) {
-		if ( ! in_array( $relation_type, $this->get_relation_types() ) ) {
+		if ( ! isset( self::$relation_type_keys[ $relation_type ] ) ) {
 			throw new InvalidArgumentException( sprintf( __( 'Invalid relation type: %s. Order relationship type must be one of: %s.', 'woocommerce-subscriptions' ), $relation_type, implode( ', ', $this->get_relation_types() ) ) );
 		}
 	}
