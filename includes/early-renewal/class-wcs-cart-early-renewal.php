@@ -235,7 +235,7 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 		if ( wcs_order_contains_early_renewal( $order ) ) {
 
 			// Get the subscription and make sure we have one.
-			$subscription = wcs_get_subscription( $order->subscription_renewal_early );
+			$subscription = wcs_get_subscription( wcs_get_objects_property( $order, 'subscription_renewal_early' ) );
 
 			if ( ! $subscription || ! $subscription->has_status( 'on-hold' ) ) {
 				return;
