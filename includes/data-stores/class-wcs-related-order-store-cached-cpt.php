@@ -69,6 +69,11 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT {
 
 			$eraser_tool = new WCS_Debug_Tool_Related_Order_Cache_Eraser( self::instance() );
 			$eraser_tool->init();
+
+			require_once( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'includes/admin/debug-tools/class-wcs-debug-tool-related-order-cache-generator.php' );
+
+			$generator_tool = new WCS_Debug_Tool_Related_Order_Cache_Generator( self::instance() );
+			$generator_tool->init();
 		}
 	}
 
@@ -362,6 +367,41 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT {
 		if ( $relation_type ) {
 			$this->delete_caches_for_all_subscriptions( array( $relation_type ) );
 		}
+	}
+
+	/**
+	 * Get the IDs of subscriptions without related order cache set.
+	 *
+	 * @param array $relation_types The relations to check, or an empty array to check for any relation type (default).
+	 * @param int $batch_size The number of subscriptions to return. Use -1 to return all subscriptions.
+	 * @return array
+	 */
+	public function get_subscription_ids_without_cache( $relation_types = array(), $batch_size = 10 ) {
+
+		if ( empty( $relation_types ) ) {
+			$relation_types = $this->get_relation_types();
+		}
+
+		$meta_query = array();
+
+		foreach ( $relation_types as $relation_type ) {
+			$meta_query[] = array(
+				'key'     => $this->get_cache_meta_key( $relation_type ),
+				'compare' => 'NOT EXISTS',
+			);
+		}
+
+		if ( count( $meta_query ) > 1 ) {
+			$meta_query['relation'] = 'OR';
+		}
+
+		return get_posts( array(
+			'post_type'      => 'shop_subscription',
+			'posts_per_page' => $batch_size,
+			'post_status'    => 'any',
+			'fields'         => 'ids',
+			'meta_query'     => $meta_query,
+		) );
 	}
 
 	/**
