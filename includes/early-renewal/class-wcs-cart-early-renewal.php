@@ -43,6 +43,10 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 
 		// After the renewal order is created on checkout, set the renewal order cart item data now that we have an order. Must be hooked on before WCS_Cart_Renewal->set_order_item_id(), in order for the line item ID set by that function to be correct.
 		add_action( 'woocommerce_checkout_update_order_meta', array( $this, 'set_cart_item_renewal_order_data' ), 5 );
+
+		// Allow customers to cancel early renewal orders from their my account page.
+		add_filter( 'woocommerce_my_account_my_orders_actions', array( $this, 'add_cancel_order_action' ), 15, 2 );
+		add_action( 'wp_loaded', array( $this, 'allow_early_renewal_order_cancellation' ), 10, 3 );
 	}
 
 	/**
@@ -322,6 +326,48 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 		foreach ( WC()->cart->cart_contents as $key => &$cart_item ) {
 			if ( isset( $cart_item[ $this->cart_item_key ] ) && ! empty( $cart_item[ $this->cart_item_key ]['subscription_renewal_early'] ) ) {
 				$cart_item[ $this->cart_item_key ]['renewal_order_id'] = $order_id;
+			}
+		}
+	}
+
+	/**
+	 * Ensure customers can cancel early renewal orders.
+	 *
+	 * Renewal orders are usually not cancellable because @see WCS_Cart_Renewal::filter_my_account_my_orders_actions() prevents it.
+	 * In the case of early renewals, the customer has opted for early renewal and so should be able to cancel it in order to reactivate their subscription.
+	 *
+	 * @param array $actions A list of actions customers can make on an order from their My Account page
+	 * @param WC_Order $order The order the list of actions relate to.
+	 * @return array $actions
+	 * @since 2.3.0
+	 */
+	public static function add_cancel_order_action( $actions, $order ) {
+
+		if ( ! isset( $actions['cancel'] ) && wcs_order_contains_early_renewal( $order ) && in_array( $order->get_status(), apply_filters( 'woocommerce_valid_order_statuses_for_cancel', array( 'pending', 'failed' ), $order ) ) ) {
+			$actions['cancel'] = array(
+				'url'  => $order->get_cancel_order_url( wc_get_page_permalink( 'myaccount' ) ),
+				'name' => __( 'Cancel', 'woocommerce-subscriptions' ),
+			);
+		}
+
+		return $actions;
+	}
+
+	/**
+	 * Allow customers to cancel early renewal orders from their account page.
+	 *
+	 * Renewal orders are usually not cancellable because @see WC_Subscriptions_Renewal_Order::prevent_cancelling_renewal_orders() prevents the request from being processed.
+	 * In the case of early renewals, the customer has opted for early renewal and so should be able to cancel it in order to reactivate their subscription.
+	 *
+	 * @since 2.3.0
+	 */
+	public static function allow_early_renewal_order_cancellation() {
+		if ( isset( $_GET['cancel_order'] ) && isset( $_GET['order_id'] ) && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'woocommerce-cancel_order' ) ) {
+			$order_id = absint( $_GET['order_id'] );
+			$order    = wc_get_order( $order_id );
+
+			if ( wcs_order_contains_early_renewal( $order ) ) {
+				remove_action( 'wp_loaded', 'WC_Subscriptions_Renewal_Order::prevent_cancelling_renewal_orders', 19 );
 			}
 		}
 	}
