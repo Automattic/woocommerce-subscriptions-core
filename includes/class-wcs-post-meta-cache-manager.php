@@ -66,7 +66,7 @@ class WCS_Post_Meta_Cache_Manager {
 	 * @return bool False if the change should not be ignored, true otherwise.
 	 */
 	protected function is_change_to_ignore( $post_id, $meta_key = '' ) {
-		if ( ! is_null( $post_id ) && $this->post_type !== $this->get_post_type( $post_id ) ) {
+		if ( ! is_null( $post_id ) && false === $this->is_managed_post_type( $post_id ) ) {
 			return true;
 		} elseif ( empty( $meta_key ) || ! isset( $this->meta_keys[ $meta_key ] ) ) {
 			return true;
@@ -243,13 +243,12 @@ class WCS_Post_Meta_Cache_Manager {
 	}
 
 	/**
-	 * Abstract call to get_post_type() so that it can be mocked for unit tests.
+	 * Abstract the check against get_post_type() so that it can be mocked for unit tests.
 	 *
 	 * @param int $post_id Post ID or post object.
-	 * @return string|false Post type on success, false on failure.
+	 * @return bool Whether the post type for the given post ID is the post type this instance manages.
 	 */
-	protected function get_post_type( $post_id ) {
-		$post_type = get_post_type( $post_id );
-		return $post_type;
+	protected function is_managed_post_type( $post_id ) {
+		return $this->post_type === get_post_type( $post_id );
 	}
 }
