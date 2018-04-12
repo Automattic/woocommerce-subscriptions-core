@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Add a debug tool to the WooCommerce > System Status > Tools page for generating related order cache.
  */
-class WCS_Debug_Tool_Related_Order_Cache_Generator extends Abstract_WCS_Debug_Tool_Background_Updater {
+class WCS_Debug_Tool_Related_Order_Cache_Generator extends WCS_Debug_Tool_Background_Updater {
 
 	/**
 	 * @var WCS_Related_Order_Store $data_Store The store used for deleting the related order cache.

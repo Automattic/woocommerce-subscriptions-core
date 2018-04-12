@@ -17,14 +17,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 } // Exit if accessed directly
 
 /**
- * Abstract_WCS_Debug_Tool Class
+ * WCS_Debug_Tool Class
  *
  * Add a debug tool to the WooCommerce > System Status > Tools page.
  *
  * Extends Abstract_WCS_AS_Background_Updater to provide debug tools with APIs
  * for updating data, like caches, in the background.
  */
-abstract class Abstract_WCS_Debug_Tool {
+abstract class WCS_Debug_Tool {
 
 	/**
 	 * @var string $tool_key The key used to add the tool to the

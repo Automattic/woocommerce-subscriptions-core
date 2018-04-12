@@ -17,11 +17,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 } // Exit if accessed directly
 
 /**
- * Abstract_WCS_Debug_Tool_Background_Updater Class
+ * WCS_Debug_Tool_Background_Updater Class
  *
  * Provide APIs for a debug tool to update data in the background using Action Scheduler.
  */
-abstract class Abstract_WCS_Debug_Tool_Background_Updater extends Abstract_WCS_Debug_Tool {
+abstract class WCS_Debug_Tool_Background_Updater extends WCS_Debug_Tool {
 
 	/**
 	 * @var int Amount of second to give each batch.
