@@ -23,9 +23,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WCS_Debug_Tool_Related_Order_Cache_Generator extends WCS_Debug_Tool_Background_Updater {
 
 	/**
-	 * @var WCS_Related_Order_Store $data_Store The store used for deleting the related order cache.
+	 * @var mixed $data_Store The store used for deleting the related order cache.
 	 */
-	private $data_store;
+	protected $data_store;
 
 	/**
 	 * Constructor
@@ -40,7 +40,7 @@ class WCS_Debug_Tool_Related_Order_Cache_Generator extends WCS_Debug_Tool_Backgr
 			'name'     => __( 'Generate Related Order Cache', 'woocommerce-subscriptions' ),
 			'button'   => __( 'Generate related order caches', 'woocommerce-subscriptions' ),
 			'desc'     => __( 'This will generate the persistent cache of all renewal, switch, resubscribe and other order types for all subscriptions in your store. The caches will be generated overtime in the background (via Action Scheduler).', 'woocommerce-subscriptions' ),
-			'callback' => array( $this, 'generate_related_order_caches' ),
+			'callback' => array( $this, 'generate_caches' ),
 		);
 	}
 
@@ -58,7 +58,7 @@ class WCS_Debug_Tool_Related_Order_Cache_Generator extends WCS_Debug_Tool_Backgr
 	 * Schedule the @see $this->scheduled_hook action to start generating related order cache generation in
 	 * @see $this->time_limit seconds (60 seconds by default).
 	 */
-	public function generate_related_order_caches() {
+	public function generate_caches() {
 		$this->schedule_background_update();
 	}
 

@@ -25,7 +25,7 @@ class WCS_Debug_Tool_Related_Order_Cache_Eraser extends WCS_Debug_Tool {
 	/**
 	 * @var WCS_Related_Order_Store $data_Store The store used for deleting the related order cache.
 	 */
-	private $data_store;
+	protected $data_store;
 
 	/**
 	 * Constructor
@@ -39,7 +39,7 @@ class WCS_Debug_Tool_Related_Order_Cache_Eraser extends WCS_Debug_Tool {
 			'name'     => __( 'Delete Related Order Cache', 'woocommerce-subscriptions' ),
 			'button'   => __( 'Delete related order caches', 'woocommerce-subscriptions' ),
 			'desc'     => __( 'This will clear the persistent cache of all renewal, switch, resubscribe and other order types for all subscriptions in your store. Expect slower performance of checkout, renewal and other subscription related functions after taking this action. The caches will be regenerated overtime as related order queries are run.', 'woocommerce-subscriptions' ),
-			'callback' => array( $this, 'delete_related_order_caches' ),
+			'callback' => array( $this, 'delete_caches' ),
 		);
 	}
 
@@ -55,9 +55,9 @@ class WCS_Debug_Tool_Related_Order_Cache_Eraser extends WCS_Debug_Tool {
 	/**
 	 * Clear all of the store's related order caches.
 	 */
-	public function delete_related_order_caches() {
+	public function delete_caches() {
 		if ( $this->can_data_store_delete_caches() ) {
-			$this->data_store->delete_caches_for_all_subscriptions();
+			$this->data_store->delete_all_caches();
 		}
 	}
 
@@ -65,6 +65,6 @@ class WCS_Debug_Tool_Related_Order_Cache_Eraser extends WCS_Debug_Tool {
 	 * Check if the store can clear related order caches.
 	 */
 	protected function can_data_store_delete_caches() {
-		return ( is_callable( array( $this->data_store, 'delete_caches_for_all_subscriptions' ) ) );
+		return ( is_callable( array( $this->data_store, 'delete_all_caches' ) ) );
 	}
 }

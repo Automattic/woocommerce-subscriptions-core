@@ -251,7 +251,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT {
 	 *
 	 * @param array $relation_types The relations to clear, or an empty array to clear all relations (default).
 	 */
-	public function delete_caches_for_all_subscriptions( $relation_types = array() ) {
+	public function delete_all_caches( $relation_types = array() ) {
 
 		if ( empty( $relation_types ) ) {
 			$relation_types = $this->get_relation_types();
@@ -357,7 +357,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT {
 		$relation_type = $this->get_relation_type_for_meta_key( $post_meta_key );
 
 		if ( $relation_type ) {
-			$this->delete_caches_for_all_subscriptions( array( $relation_type ) );
+			$this->delete_all_caches( array( $relation_type ) );
 		}
 	}
 
