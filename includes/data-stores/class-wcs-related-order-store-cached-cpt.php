@@ -66,18 +66,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT {
 		// When copying meta from a subscription to a renewal order, don't copy cache related order meta keys.
 		add_filter( 'wcs_renewal_order_meta', array( $this, 'remove_related_order_cache_keys' ), 10, 1 );
 
-		// Add debug tools for managing the caches
-		if ( is_admin() || defined( 'WP_CLI' ) ) {
-			require_once( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'includes/admin/debug-tools/class-wcs-debug-tool-related-order-cache-eraser.php' );
-
-			$eraser_tool = new WCS_Debug_Tool_Related_Order_Cache_Eraser( self::instance() );
-			$eraser_tool->init();
-
-			require_once( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'includes/admin/debug-tools/class-wcs-debug-tool-related-order-cache-generator.php' );
-
-			$generator_tool = new WCS_Debug_Tool_Related_Order_Cache_Generator( self::instance() );
-			$generator_tool->init();
-		}
+		WCS_Debug_Tool_Factory::cache_management_tools( self::instance() , 'related-order' );
 	}
 
 	/* Public methods required by WCS_Related_Order_Store */
