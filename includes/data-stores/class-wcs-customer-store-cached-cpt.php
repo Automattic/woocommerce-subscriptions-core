@@ -1,0 +1,227 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Customer data store for subscriptions stored in Custom Post Types, with caching.
+ *
+ * Adds a persistent caching layer on top of WCS_Customer_Store_CPT for more
+ * performant queries to find a user's subscriptions.
+ *
+ * @version  2.3.0
+ * @category Class
+ * @author   Prospress
+ */
+class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT {
+
+	/**
+	 * Keep cache up-to-date with changes to our meta data via WordPress post meta APIs
+	 * by using a post meta cache manager.
+	 *
+	 * @var WCS_Post_Meta_Cache_Manager
+	 */
+	protected $post_meta_cache_manager;
+
+	/**
+	 * Meta key used to store all of a customer's subscription IDs in their user meta.
+	 *
+	 * @var string
+	 */
+	private $cache_meta_key = '_wcs_subscription_ids_cache';
+
+	/**
+	 * Constructor
+	 */
+	public function __construct() {
+		$this->post_meta_cache_manager = new WCS_Post_Meta_Cache_Manager( 'shop_subscription', array( $this->get_meta_key() ) );
+	}
+
+	/**
+	 * Attach callbacks to keep user subscription caches up-to-date and provide debug tools for managing the cache.
+	 */
+	protected function init() {
+
+		$this->post_meta_cache_manager->init();
+
+		// When a user is first added, make sure the subscription cache is empty because it can not have any data yet, and we want to avoid running the query needlessly
+		add_filter( 'user_register', array( $this, 'set_empty_cache' ) );
+
+		// When the post for a subscription is change, make sure the corresponding cache is updated
+		add_action( 'wcs_update_post_meta_caches', array( $this, 'maybe_update_for_post_meta_change' ), 10, 5 );
+		add_action( 'wcs_delete_all_post_meta_caches', array( $this, 'maybe_delete_all_for_post_meta_change' ), 10, 1 );
+
+		WCS_Debug_Tool_Factory::cache_management_tools( self::instance() , 'customer' );
+	}
+
+	/* Public methods required by WCS_Customer_Store */
+
+	/**
+	 * Get the IDs for a given user's subscriptions by querying post meta.
+	 *
+	 * @param int $user_id The id of the user whose subscriptions you want.
+	 * @return array
+	 */
+	public function get_users_subscription_ids( $user_id ) {
+
+		$subscription_ids = $this->get_users_subscription_ids_from_cache( $user_id );
+
+		// get post meta returns an empty string when no matching row is found for the given key, meaning it's not set yet
+		if ( '' === $subscription_ids ) {
+			$subscription_ids = parent::get_users_subscription_ids( $user_id );
+			$this->update_subscription_id_cache( $user_id, $subscription_ids );
+		}
+
+		return $subscription_ids;
+	}
+
+	/* Internal methods for managing the cache */
+
+	/**
+	 * Find subscriptions for a given user from the cache.
+	 *
+	 * Applies the 'wcs_get_cached_users_subscription_ids' filter for backward compatibility with
+	 * the now deprecated wcs_get_cached_user_subscription_ids() method.
+	 *
+	 * @param int $user_id The id of the user whose subscriptions you want.
+	 * @return string|array An array of subscriptions in the cache, or an empty string when no matching row is found for the given key, meaning it's cache is not set yet or has been deleted
+	 */
+	protected function get_users_subscription_ids_from_cache( $user_id ) {
+		$subscription_ids = get_user_meta( $user_id, $this->cache_meta_key, true );
+		return apply_filters( 'wcs_get_cached_users_subscription_ids', $subscription_ids, $user_id );
+	}
+
+	/**
+	 * Add a subscription ID to the cached subscriptions for a given user.
+	 *
+	 * @param int $user_id The user the subscription belongs to.
+	 * @param int $subscription_id A subscription to link the user in the cache.
+	 */
+	protected function add_subscription_id_to_cache( $user_id, $subscription_id ) {
+
+		$subscription_ids = $this->get_users_subscription_ids( $user_id );
+
+		if ( ! in_array( $subscription_id, $subscription_ids ) ) {
+			$subscription_ids[] = $subscription_id;
+			$this->update_subscription_id_cache( $subscription_id, $subscription_ids );
+		}
+	}
+
+	/**
+	 * Delete a subscription ID from the cached IDs for a given user.
+	 *
+	 * @param int $user_id The user the subscription belongs to.
+	 * @param int $subscription_id A subscription to link the user in the cache.
+	 */
+	protected function delete_subscription_id_from_cache( $user_id, $subscription_id ) {
+
+		$subscription_ids = $this->get_users_subscription_ids( $user_id );
+
+		if ( ( $index = array_search( $subscription_id, $subscription_ids ) ) !== false ) {
+			unset( $subscription_ids[ $index ] );
+			$this->update_subscription_id_cache( $user_id, $subscription_ids );
+		}
+	}
+
+	/**
+	 * Helper function for setting subscription cache.
+	 *
+	 * @param int $user_id The id of the user who the subscriptions belongs to.
+	 * @param array $subscription_ids Set of subscriptions to link with the given user.
+	 * @return bool|int Returns meta ID if the key didn't exist; true on successful update; false on failure or if $subscription_ids is the same as the existing meta value in the database.
+	 */
+	protected function update_subscription_id_cache( $user_id, array $subscription_ids ) {
+		return update_user_meta( $user_id, $this->cache_meta_key, $subscription_ids );
+	}
+
+	/* Public methods used to bulk edit cache */
+
+	/**
+	 * Clear all caches for all subscriptions against all users.
+	 */
+	public function delete_all_caches() {
+		delete_metadata( 'user', null, $this->cache_meta_key, null, true );
+	}
+
+	/* Public methods used as callbacks on hooks for managing cache */
+
+	/**
+	 * Set empty subscription cache on a user.
+	 *
+	 * Newly registered users can't have subscriptions yet, so we set that cache to empty whenever a new user is added
+	 * by attaching this to the 'user_register' hook.
+	 *
+	 * @param int $user_id The id of the user just created
+	 */
+	public function set_empty_cache( $user_id ) {
+		$this->update_subscription_id_cache( $user_id, array() );
+	}
+
+	/* Public methods attached to WCS_Post_Meta_Cache_Manager hooks for managing the cache */
+
+	/**
+	 * If there is a change to a subscription's post meta key, update the user meta cache.
+	 *
+	 * @param string $update_type The type of update to check. Can be 'add', 'update' or 'delete'.
+	 * @param int $subscription_id The subscription's post ID where the customer is being changed.
+	 * @param string $meta_key The post meta key being changed.
+	 * @param mixed $user_id The meta value, which will be subscriber's user ID when $meta_key is '_customer_user'.
+	 * @param mixed $old_user_id The previous value stored in the database for the subscription's '_customer_user'. Optional.
+	 */
+	public function maybe_update_for_post_meta_change( $update_type, $subscription_id, $meta_key, $user_id, $old_user_id = '' ) {
+
+		if ( $this->get_meta_key() !== $meta_key ) {
+			return;
+		}
+
+		switch ( $update_type ) {
+			case 'add' :
+				$this->add_subscription_id_to_cache( $user_id, $subscription_id );
+				break;
+			case 'delete' :
+				// If we don't have a specific user ID, the post is being deleted as WCS_Post_Meta_Cache_Manager doesn't pass the associated meta value for that event, so find the corresponding user ID from post meta directly
+				if ( empty( $user_id ) ) {
+					$user_id = get_post_meta( $subscription_id, $this->get_meta_key(), true );
+				}
+				$this->delete_subscription_id_from_cache( $user_id, $subscription_id );
+				break;
+			case 'update' :
+				if ( ! empty( $old_user_id ) ) {
+					$this->delete_subscription_id_from_cache( $old_user_id, $subscription_id );
+				}
+
+				$this->add_subscription_id_to_cache( $user_id, $subscription_id );
+				break;
+		}
+	}
+
+	/**
+	 * Remove all caches for a given meta key if all entries for that meta key are being deleted.
+	 *
+	 * This is very unlikely to ever happen, because it would be equivalent to deleting the linked
+	 * customer on all orders and subscriptions. But it is handled here anyway in case of things
+	 * like removing WooCommerce entirely.
+	 *
+	 * @param string $meta_key The post meta key being changed.
+	 */
+	public function maybe_delete_all_for_post_meta_change( $meta_key ) {
+		if ( $this->get_meta_key() === $meta_key ) {
+			$this->delete_all_caches();
+		}
+	}
+
+	/**
+	 * Get the IDs of users without a cache set.
+	 *
+	 * @param int $number The number of users to return. Use -1 to return all users.
+	 * @return array
+	 */
+	public function get_user_ids_without_cache( $number = 10 ) {
+		return get_users( array(
+			'fields'       => 'ids',
+			'number'       => $number,
+			'meta_key'     => $this->cache_meta_key,
+			'meta_compare' => 'NOT EXISTS',
+		) );
+	}
+}
