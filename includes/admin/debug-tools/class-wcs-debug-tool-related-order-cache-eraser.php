@@ -1,9 +1,8 @@
 <?php
 /**
- * Subscriptions Debug Tools
+ * WCS_Debug_Tool_Related_Order_Cache_Eraser Class
  *
- * Add tools for debugging and managing Subscriptions to the
- * WooCommerce > System Status > Tools administration screen.
+ * Add debug tools to the WooCommerce > System Status > Tools page for deleting related order cache.
  *
  * @author   Prospress
  * @category Admin

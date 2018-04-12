@@ -1,9 +1,8 @@
 <?php
 /**
- * Subscriptions Debug Tools
+ * WCS_Debug_Tool_Related_Order_Cache_Generator Class
  *
- * Add tools for debugging and managing Subscriptions to the
- * WooCommerce > System Status > Tools administration screen.
+ * Add a debug tool to the WooCommerce > System Status > Tools page for generating related order cache.
  *
  * @author   Prospress
  * @category Admin
@@ -38,10 +37,10 @@ class WCS_Debug_Tool_Related_Order_Cache_Generator extends WCS_Debug_Tool_Backgr
 		$this->data_store     = $related_order_store;
 		$this->tool_key       = 'generate_related_order_caches';
 		$this->tool_data      = array(
-			'name'		=> __( 'Generate Related Order Cache', 'woocommerce-subscriptions' ),
-			'button'	=> __( 'Generate related order caches', 'woocommerce-subscriptions' ),
-			'desc'		=> __( 'This will generate the persistent cache of all renewal, switch, resubscribe and other order types for all subscriptions in your store. The caches will be generated overtime using Action Scheduler. The Action Scheduler queue can also be run via WP CLI to regenerate the cache more quickly.', 'woocommerce-subscriptions' ),
-			'callback'	=> array( $this, 'generate_related_order_caches' ),
+			'name'     => __( 'Generate Related Order Cache', 'woocommerce-subscriptions' ),
+			'button'   => __( 'Generate related order caches', 'woocommerce-subscriptions' ),
+			'desc'     => __( 'This will generate the persistent cache of all renewal, switch, resubscribe and other order types for all subscriptions in your store. The caches will be generated overtime in the background (via Action Scheduler).', 'woocommerce-subscriptions' ),
+			'callback' => array( $this, 'generate_related_order_caches' ),
 		);
 	}
 

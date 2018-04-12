@@ -1,6 +1,6 @@
 <?php
 /**
- * Subscriptions Debug Tools
+ * Debug Tool with methods to update data in the background
  *
  * Add tools for debugging and managing Subscriptions to the
  * WooCommerce > System Status > Tools administration screen.

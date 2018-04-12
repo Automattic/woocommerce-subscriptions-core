@@ -1,6 +1,6 @@
 <?php
 /**
- * Subscriptions Debug Tools
+ * Subscriptions Debug Tool
  *
  * Add tools for debugging and managing Subscriptions to the
  * WooCommerce > System Status > Tools administration screen.
@@ -20,9 +20,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * WCS_Debug_Tool Class
  *
  * Add a debug tool to the WooCommerce > System Status > Tools page.
- *
- * Extends Abstract_WCS_AS_Background_Updater to provide debug tools with APIs
- * for updating data, like caches, in the background.
  */
 abstract class WCS_Debug_Tool {
 
