@@ -1409,10 +1409,7 @@ class WC_Subscriptions_Switcher {
 
 						// Find out how many days at the new price per day the customer would receive for the total amount already paid
 						// (e.g. if the customer paid $10 / month previously, and was switching to a $5 / week subscription, she has pre-paid 14 days at the new price)
-						$pre_paid_days = 0;
-						if ( 0 != $old_price_per_day ) {
-							$pre_paid_days = ceil( $old_recurring_total / $new_price_per_day );
-						}
+						$pre_paid_days = self::calculate_pre_paid_days( $old_recurring_total, $new_price_per_day );
 
 						// If the total amount the customer has paid entitles her to more days at the new price than she has received, there is no gap payment, just shorten the pre-paid term the appropriate number of days
 						if ( $days_since_last_payment < $pre_paid_days ) {
@@ -1458,15 +1455,12 @@ class WC_Subscriptions_Switcher {
 				} elseif ( $old_price_per_day > $new_price_per_day && $new_price_per_day > 0 ) {
 
 					$old_total_paid = $old_price_per_day * $days_until_next_payment;
-					$new_total_paid = $new_price_per_day;
 
 					// if downgrades are apportioned, extend the next payment date for n more days
 					if ( in_array( $apportion_recurring_price, array( 'virtual', 'yes' ) ) ) {
 
 						// Find how many more days at the new lower price it takes to exceed the amount already paid
-						for ( $days_to_add = 0; $new_total_paid <= $old_total_paid; $days_to_add++ ) {
-							$new_total_paid = $days_to_add * $new_price_per_day;
-						}
+						$days_to_add = self::calculate_pre_paid_days( $old_total_paid, $new_price_per_day );
 
 						$days_to_add -= $days_until_next_payment;
 					} else {
@@ -1496,6 +1490,21 @@ class WC_Subscriptions_Switcher {
 				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_length', $length_remaining, 'set_prop_only' );
 			}
 		}
+	}
+
+	/**
+	* Calculate the number of days that have already been paid
+	*
+	* @param int $old_total_paid The amount paid previously, such as the old recurring total
+	* @param int $new_price_per_day The amount per day price for the new subscription
+	* @return int $pre_paid_days The number of days paid for already
+	*/
+	public static function calculate_pre_paid_days( $old_total_paid, $new_price_per_day ) {
+		$pre_paid_days = 0;
+		if ( $new_price_per_day != 0 ) {
+			$pre_paid_days = ceil( $old_total_paid / $new_price_per_day );
+		}
+		return $pre_paid_days;
 	}
 
 	/**
