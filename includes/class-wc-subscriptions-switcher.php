@@ -82,9 +82,6 @@ class WC_Subscriptions_Switcher {
 		// Make sure sign-up fees paid on switch orders are accounted for in an items sign-up fee
 		add_filter( 'woocommerce_subscription_items_sign_up_fee', __CLASS__ . '::subscription_items_sign_up_fee', 10, 4 );
 
-		// Make sure switch orders are included in related orders returned for a subscription
-		add_filter( 'woocommerce_subscription_related_orders', __CLASS__ . '::add_related_orders', 10, 4 );
-
 		// Display/indicate whether a cart switch item is a upgrade/downgrade/crossgrade
 		add_filter( 'woocommerce_cart_item_subtotal', __CLASS__ . '::add_cart_item_switch_direction', 10, 3 );
 
