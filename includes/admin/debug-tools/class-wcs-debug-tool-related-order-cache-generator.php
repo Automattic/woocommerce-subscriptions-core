@@ -81,7 +81,7 @@ class WCS_Debug_Tool_Related_Order_Cache_Generator extends Abstract_WCS_Debug_To
 	protected function update_item( $subscription_id ) {
 		$subscription = wcs_get_subscription( $subscription_id );
 		if ( $subscription ) {
-			$subscription->get_related_orders( 'ids', 'all' );
+			$subscription->get_related_orders( 'ids', 'any' );
 		}
 	}
 
