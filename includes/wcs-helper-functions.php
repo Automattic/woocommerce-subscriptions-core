@@ -172,6 +172,18 @@ function wcs_maybe_prefix_key( $key, $prefix = '_' ) {
 }
 
 /**
+ * Remove a prefix from a string if has it
+ *
+ * @param string $key
+ * @param string $prefix
+ * @since 2.2.0
+ * @return string
+ */
+function wcs_maybe_unprefix_key( $key, $prefix = '_' ) {
+	return ( substr( $key, 0, strlen( $prefix ) ) === $prefix ) ? substr( $key, strlen( $prefix ) ) : $key;
+}
+
+/**
  * Find the name of the function which called the function which called this function.
  *
  * @since 2.2.0

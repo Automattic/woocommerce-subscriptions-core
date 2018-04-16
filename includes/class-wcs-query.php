@@ -117,7 +117,7 @@ class WCS_Query extends WC_Query {
 	 * @return array
 	 */
 	public function add_menu_items( $menu_items ) {
-		if ( 1 == count( wcs_get_users_subscriptions() ) ) {
+		if ( 1 == count( wcs_get_users_subscriptions() ) && apply_filters( 'wcs_my_account_redirect_to_single_subscription', true ) ) {
 			$label = __( 'My Subscription', 'woocommerce-subscriptions' );
 		} else {
 			$label = __( 'Subscriptions', 'woocommerce-subscriptions' );
@@ -145,7 +145,7 @@ class WCS_Query extends WC_Query {
 		if ( 'subscriptions' == $endpoint && is_account_page() ) {
 			$subscriptions = wcs_get_users_subscriptions();
 
-			if ( 1 == count( $subscriptions ) ) {
+			if ( 1 == count( $subscriptions ) && apply_filters( 'wcs_my_account_redirect_to_single_subscription', true ) ) {
 				$subscription = reset( $subscriptions );
 				$url = $subscription->get_view_order_url();
 			}
