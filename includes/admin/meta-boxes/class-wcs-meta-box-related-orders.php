@@ -71,13 +71,7 @@ class WCS_Meta_Box_Related_Orders {
 
 			$initial_subscriptions = wcs_get_subscriptions_for_resubscribe_order( $this_subscription );
 
-			$resubscribed_subscriptions = get_posts( array(
-				'meta_key'       => '_subscription_resubscribe',
-				'meta_value'     => $post->ID,
-				'post_type'      => 'shop_subscription',
-				'post_status'    => 'any',
-				'posts_per_page' => -1,
-			) );
+			$resubscribed_subscriptions = WCS_Related_Order_Store::instance()->get_related_subscription_ids( $this_subscription, 'resubscribe' );
 
 			foreach ( $resubscribed_subscriptions as $subscription ) {
 				$subscription = wcs_get_subscription( $subscription );

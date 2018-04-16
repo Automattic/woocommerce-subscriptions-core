@@ -26,7 +26,9 @@ function wcs_order_contains_resubscribe( $order ) {
 		$order = wc_get_order( $order );
 	}
 
-	if ( wcs_get_objects_property( $order, 'subscription_resubscribe' ) ) {
+	$related_subscriptions = wcs_get_subscriptions_for_resubscribe_order( $order );
+
+	if ( wcs_is_order( $order ) && ! empty( $related_subscriptions ) ) {
 		$is_resubscribe_order = true;
 	} else {
 		$is_resubscribe_order = false;
@@ -54,8 +56,7 @@ function wcs_create_resubscribe_order( $subscription ) {
 		return new WP_Error( 'resubscribe-order-error', $resubscribe_order->get_error_message() );
 	}
 
-	// Keep a record of the original subscription's ID on the new order
-	wcs_set_objects_property( $resubscribe_order, 'subscription_resubscribe', $subscription->get_id(), true );
+	WCS_Related_Order_Store::instance()->add_relation( $resubscribe_order, $subscription, 'resubscribe' );
 
 	do_action( 'wcs_resubscribe_order_created', $resubscribe_order, $subscription );
 
@@ -143,7 +144,7 @@ function wcs_get_subscriptions_for_resubscribe_order( $order ) {
 	}
 
 	$subscriptions    = array();
-	$subscription_ids = wcs_get_objects_property( $order, 'subscription_resubscribe', 'multiple' );
+	$subscription_ids = WCS_Related_Order_Store::instance()->get_related_subscription_ids( $order, 'resubscribe' );
 
 	foreach ( $subscription_ids as $subscription_id ) {
 		if ( wcs_is_subscription( $subscription_id ) ) {
@@ -201,18 +202,7 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 
 	} else {
 
-		$resubscribe_orders = get_posts( array(
-			'meta_query'  => array(
-				array(
-					'key'     => '_subscription_resubscribe',
-					'compare' => '=',
-					'value'   => $subscription->get_id(),
-					'type'    => 'numeric',
-				),
-			),
-			'post_type'   => 'shop_order',
-			'post_status' => 'any',
-		) );
+		$resubscribe_order_ids = $subscription->get_related_orders( 'ids', 'resubscribe' );
 
 		// Make sure all line items still exist
 		$all_line_items_exist = true;
@@ -235,7 +225,7 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 			}
 		}
 
-		if ( empty( $resubscribe_orders ) && $subscription->get_completed_payment_count() > 0 && true === $all_line_items_exist && false === $has_active_limited_subscription ) {
+		if ( empty( $resubscribe_order_ids ) && $subscription->get_completed_payment_count() > 0 && true === $all_line_items_exist && false === $has_active_limited_subscription ) {
 			$can_user_resubscribe = true;
 		} else {
 			$can_user_resubscribe = false;

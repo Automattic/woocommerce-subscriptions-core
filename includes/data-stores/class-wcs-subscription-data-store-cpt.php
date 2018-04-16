@@ -78,6 +78,29 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	}
 
 	/**
+	 * Returns an array of meta for an object.
+	 *
+	 * Ignore meta data that we don't want accessible on the object via meta APIs.
+	 *
+	 * @since  2.3.0
+	 * @param  WC_Data $object
+	 * @return array
+	 */
+	public function read_meta( &$object ) {
+		$meta_data = parent::read_meta( $object );
+
+		$props_to_ignore = $this->get_props_to_ignore();
+
+		foreach ( $meta_data as $index => $meta_object ) {
+			if ( array_key_exists( $meta_object->meta_key, $props_to_ignore ) ) {
+				unset( $meta_data[ $index ] );
+			}
+		}
+
+		return $meta_data;
+	}
+
+	/**
 	 * Read subscription data.
 	 *
 	 * @param WC_Subscription $subscription
@@ -267,36 +290,6 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	}
 
 	/**
-	 * Get the props to update, and remove order meta data that isn't used on a subscription.
-	 *
-	 * Important for performance, because it avoids calling getters/setters on props that don't need
-	 * to be get/set, which in the case for get_date_paid(), or get_date_completed(), can be quite
-	 * resource intensive as it requires doing a related orders query. Also just avoids filling up the
-	 * post meta table more than is needed.
-	 *
-	 * @param  WC_Data $object              The WP_Data object (WC_Coupon for coupons, etc).
-	 * @param  array   $meta_key_to_props   A mapping of meta keys => prop names.
-	 * @param  string  $meta_type           The internal WP meta type (post, user, etc).
-	 * @return array                        A mapping of meta keys => prop names, filtered by ones that should be updated.
-	 */
-	protected function get_props_to_update( $object, $meta_key_to_props, $meta_type = 'post' ) {
-		$props_to_update = parent::get_props_to_update( $object, $meta_key_to_props, $meta_type );
-
-		$props_to_ignore = array(
-			'_transaction_id' => 'transaction_id',
-			'_date_completed' => 'date_completed',
-			'_date_paid'      => 'date_paid',
-			'_cart_hash'      => 'cart_hash',
-		);
-
-		foreach ( $props_to_ignore as $meta_key => $prop ) {
-			unset( $props_to_update[ $meta_key ] );
-		}
-
-		return $props_to_update;
-	}
-
-	/**
 	 * Update subscription dates in the database.
 	 *
 	 * @param WC_Subscription $subscription
@@ -347,12 +340,54 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	}
 
 	/**
-	* Search subscription data for a term and returns subscription ids
-	*
-	* @param string $term Term to search
-	* @return array of subscription ids
-	* @since 2.3.0
-	*/
+	 * Get the props to update, and remove order meta data that isn't used on a subscription.
+	 *
+	 * Important for performance, because it avoids calling getters/setters on props that don't need
+	 * to be get/set, which in the case for get_date_paid(), or get_date_completed(), can be quite
+	 * resource intensive as it requires doing a related orders query. Also just avoids filling up the
+	 * post meta table more than is needed.
+	 *
+	 * @param  WC_Data $object              The WP_Data object (WC_Coupon for coupons, etc).
+	 * @param  array   $meta_key_to_props   A mapping of meta keys => prop names.
+	 * @param  string  $meta_type           The internal WP meta type (post, user, etc).
+	 * @return array                        A mapping of meta keys => prop names, filtered by ones that should be updated.
+	 */
+	protected function get_props_to_update( $object, $meta_key_to_props, $meta_type = 'post' ) {
+		$props_to_update = parent::get_props_to_update( $object, $meta_key_to_props, $meta_type );
+		$props_to_ignore = $this->get_props_to_ignore();
+
+		foreach ( $props_to_ignore as $meta_key => $prop ) {
+			unset( $props_to_update[ $meta_key ] );
+		}
+
+		return $props_to_update;
+	}
+
+	/**
+	 * Get the props set on a subscription which we don't want used on a subscription, which may be
+	 * inherited order meta data, or other values using the post meta data store but not as props.
+	 *
+	 * @return array A mapping of meta keys => prop names
+	 */
+	protected function get_props_to_ignore() {
+
+		$props_to_ignore = array(
+			'_transaction_id' => 'transaction_id',
+			'_date_completed' => 'date_completed',
+			'_date_paid'      => 'date_paid',
+			'_cart_hash'      => 'cart_hash',
+		);
+
+		return apply_filters( 'wcs_subscription_data_store_props_to_ignore', $props_to_ignore, $this );
+	}
+
+	/**
+	 * Search subscription data for a term and returns subscription ids
+	 *
+	 * @param string $term Term to search
+	 * @return array of subscription ids
+	 * @since 2.3.0
+	 */
 	public function search_subscriptions( $term ) {
 		global $wpdb;
 

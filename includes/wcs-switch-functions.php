@@ -56,7 +56,7 @@ function wcs_get_subscriptions_for_switch_order( $order ) {
 	}
 
 	$subscriptions    = array();
-	$subscription_ids = wcs_get_objects_property( $order, 'subscription_switch', 'multiple' );
+	$subscription_ids = WCS_Related_Order_Store::instance()->get_related_subscription_ids( $order, 'switch' );
 
 	foreach ( $subscription_ids as $subscription_id ) {
 
@@ -78,28 +78,8 @@ function wcs_get_subscriptions_for_switch_order( $order ) {
  * @since  2.0
  */
 function wcs_get_switch_orders_for_subscription( $subscription_id ) {
-
-	$orders = array();
-
-	// Select the orders which switched item/s from this subscription
-	$order_ids = get_posts( array(
-		'post_type'      => 'shop_order',
-		'post_status'    => 'any',
-		'fields'         => 'ids',
-		'posts_per_page' => -1,
-		'meta_query' => array(
-			array(
-				'key'   => '_subscription_switch',
-				'value' => $subscription_id,
-			),
-		),
-	) );
-
-	foreach ( $order_ids as $order_id ) {
-		$orders[ $order_id ] = wc_get_order( $order_id );
-	}
-
-	return $orders;
+	$subscription = wcs_get_subscription( $subscription_id );
+	return $subscription->get_related_orders( 'all', 'switch' );
 }
 
 /**
