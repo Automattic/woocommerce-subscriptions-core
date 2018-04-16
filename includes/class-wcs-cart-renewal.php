@@ -48,6 +48,9 @@ class WCS_Cart_Renewal {
 		add_action( 'woocommerce_checkout_order_processed', array( &$this, 'update_session_cart_after_updating_renewal_order' ), 10 );
 
 		add_filter( 'wc_dynamic_pricing_apply_cart_item_adjustment', array( &$this, 'prevent_compounding_dynamic_discounts' ), 10, 2 );
+
+		// Remove non-recurring fees from renewal carts. Hooked in late (priority 1000), to ensure we handle all fees added by third-parties.
+		add_action( 'woocommerce_cart_calculate_fees', array( $this, 'remove_non_recurring_fees' ), 1000 );
 	}
 
 	/**
@@ -1253,6 +1256,37 @@ class WCS_Cart_Renewal {
 		if ( ! empty( $cart_item_data[ $this->cart_item_key ]['custom_line_item_meta'] ) ) {
 			foreach ( $cart_item_data[ $this->cart_item_key ]['custom_line_item_meta'] as $meta_key => $value ) {
 				$item->add_meta_data( $meta_key, $value );
+			}
+		}
+	}
+
+	/**
+	 * Remove any fees applied to the renewal cart which aren't recurring.
+	 *
+	 * @param WC_Cart $cart A WooCommerce cart object.
+	 */
+	public function remove_non_recurring_fees( $cart ) {
+
+		if ( ! $this->cart_contains() ) {
+			return;
+		}
+
+		$cart_fees = $cart->get_fees();
+
+		// WC doesn't have a method for removing fees individually so we clear them and re-add them where applicable.
+		if ( is_callable( array( $cart, 'fees_api' ) ) ) { // WC 3.2 +
+			$cart->fees_api()->remove_all_fees();
+		} else {
+			$cart->fees = array();
+		}
+
+		foreach ( $cart_fees as $fee ) {
+			if ( true === apply_filters( 'woocommerce_subscriptions_is_recurring_fee', false, $fee, $cart ) ) {
+				if ( is_callable( array( $cart, 'fees_api' ) ) ) { // WC 3.2 +
+					$cart->fees_api()->add_fee( $fee );
+				} else {
+					$cart->add_fee( $fee->name, $fee->amount, $fee->taxable, $fee->tax_class );
+				}
 			}
 		}
 	}
