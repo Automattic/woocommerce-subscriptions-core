@@ -84,7 +84,7 @@ abstract class Abstract_WCS_Debug_Tool_Background_Updater extends Abstract_WCS_D
 	 * batch as soon as one batch has execeeded the time limit rather than having to run Action Scheduler via WP CLI
 	 * again later).
 	 */
-	protected function run_update() {
+	public function run_update() {
 
 		$start_time = gmdate( 'U' );
 
