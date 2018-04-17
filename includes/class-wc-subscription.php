@@ -1789,6 +1789,8 @@ class WC_Subscription extends WC_Order {
 			$related_orders += apply_filters( 'woocommerce_subscription_related_orders', $related_orders_for_order_type, $this, $return_fields, $order_type );
 		}
 
+		arsort( $related_orders );
+
 		return $related_orders;
 	}
 
