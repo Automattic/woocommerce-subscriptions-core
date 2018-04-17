@@ -50,40 +50,23 @@ class WCS_Repair_Suspended_PayPal_Subscriptions extends WCS_Background_Updater {
 	}
 
 	/**
-	 * Repair a batch of subscriptions.
+	 * Repair a subscription that was suspended in PayPal, but not suspended in WooCommerce.
 	 *
-	 * Fix any subscriptions that were suspended in PayPal, but were not suspended in WooCommerce.
-	 *
-	 * @since 2.3.0
+	 * @param int $subscription_id The ID of a shop_subscription/WC_Subscription object.
 	 */
-	public static function repair_subscriptions_paypal_suspended() {
-		$subscriptions_to_repair = self::get_subscriptions_to_repair();
+	protected function update_item( $subscription_id ) {
+		try {
+			$subscription = wcs_get_subscription( $subscription_id );
 
-		foreach ( $subscriptions_to_repair as $subscription_id ) {
-			try {
-				$subscription = wcs_get_subscription( $subscription_id );
-				if ( false === $subscription ) {
-					throw new Exception( 'Failed to instantiate subscription object' );
-				}
-
-				$subscription->update_status(
-					'on-hold',
-					__(
-						'Subscription suspended by Database repair script. This subscription was suspended via PayPal.',
-						'woocommerce-subscriptions'
-					)
-				);
-				self::log( sprintf( 'Subscription ID %d suspended from 2.3.0 PayPal database repair script.', $subscription_id ) );
-			} catch ( Exception $e ) {
-				self::log( sprintf( '--- Exception caught repairing subscription %d - exception message: %s ---', $subscription_id, $e->getMessage() ) );
+			if ( ! $subscription ) {
+				throw new Exception( 'Failed to instantiate subscription object' );
 			}
-		}
 
-		// If we've processed a full batch, schedule the next batch to be repaired.
-		if ( count( $subscriptions_to_repair ) === self::$batch_size ) {
-			self::schedule_repair();
-		} else {
-			self::log( '2.3.0 Repair Suspended PayPal Subscriptions complete' );
+			$subscription->update_status( 'on-hold', __( 'Subscription suspended by Database repair script. This subscription was suspended via PayPal.', 'woocommerce-subscriptions' ) );
+
+			$this->log( sprintf( 'Subscription ID %d suspended from 2.3.0 PayPal database repair script.', $subscription_id ) );
+		} catch ( Exception $e ) {
+			$this->log( sprintf( '--- Exception caught repairing subscription %d - exception message: %s ---', $subscription_id, $e->getMessage() ) );
 		}
 	}
 
