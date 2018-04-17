@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			echo woocommerce_wp_select( array(
 				'id'          => '_billing_interval',
 				'class'       => 'billing_interval',
-				'label'       => __( 'Recurring:', 'woocommerce-subscriptions' ),
+				'label'       => __( 'Payment:', 'woocommerce-subscriptions' ),
 				'value'       => $the_subscription->get_billing_interval(),
 				'options'     => wcs_get_subscription_period_interval_strings(),
 				)
