@@ -88,15 +88,15 @@ class WCS_Repair_Suspended_PayPal_Subscriptions extends WCS_Background_Updater {
 	}
 
 	/**
-	 * Get a batch of subscriptions to repair.
+	 * Get a list of subscriptions to repair.
 	 *
 	 * @since 2.3.0
 	 * @return array A list of subscription ids which may need to be repaired.
 	 */
-	private static function get_subscriptions_to_repair() {
-		$subscriptions_to_repair = get_posts( array(
+	protected function get_items_to_update() {
+		return get_posts( array(
+			'posts_per_page' => 20,
 			'post_type'      => 'shop_subscription',
-			'posts_per_page' => self::$batch_size,
 			'post_status'    => wcs_sanitize_subscription_status_key( 'active' ),
 			'fields'         => 'ids',
 			'meta_query'     => array(
@@ -117,8 +117,6 @@ class WCS_Repair_Suspended_PayPal_Subscriptions extends WCS_Background_Updater {
 				),
 			),
 		) );
-
-		return $subscriptions_to_repair;
 	}
 
 	/**
