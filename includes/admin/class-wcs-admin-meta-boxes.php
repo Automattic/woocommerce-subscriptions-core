@@ -55,7 +55,7 @@ class WCS_Admin_Meta_Boxes {
 
 		add_meta_box( 'woocommerce-subscription-data', _x( 'Subscription Data', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Subscription_Data::output', 'shop_subscription', 'normal', 'high' );
 
-		add_meta_box( 'woocommerce-subscription-schedule', _x( 'Billing Schedule', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Schedule::output', 'shop_subscription', 'side', 'default' );
+		add_meta_box( 'woocommerce-subscription-schedule', _x( 'Schedule', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Schedule::output', 'shop_subscription', 'side', 'default' );
 
 		remove_meta_box( 'woocommerce-order-data', 'shop_subscription', 'normal' );
 
