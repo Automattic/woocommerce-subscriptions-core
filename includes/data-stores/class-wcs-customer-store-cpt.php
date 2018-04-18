@@ -48,8 +48,10 @@ class WCS_Customer_Store_CPT extends WCS_Customer_Store {
 			'post_type'           => 'shop_subscription',
 			'posts_per_page'      => -1,
 			'post_status'         => 'any',
-			'orderby'             => 'date',
-			'order'               => 'desc',
+			'orderby'             => array(
+				'date' => 'DESC',
+				'ID'   => 'DESC',
+			),
 			'fields'              => 'ids',
 			'no_found_rows'       => true,
 			'ignore_sticky_posts' => true,
