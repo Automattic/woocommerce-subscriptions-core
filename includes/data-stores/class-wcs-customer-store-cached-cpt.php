@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @category Class
  * @author   Prospress
  */
-class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT {
+class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WCS_Cache_Updater {
 
 	/**
 	 * Keep cache up-to-date with changes to our meta data via WordPress post meta APIs
@@ -139,7 +139,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT {
 	/**
 	 * Clear all caches for all subscriptions against all users.
 	 */
-	public function delete_all_caches() {
+	public function delete_caches_for_all_users() {
 		delete_metadata( 'user', null, $this->cache_meta_key, null, true );
 	}
 
@@ -206,7 +206,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT {
 	 */
 	public function maybe_delete_all_for_post_meta_change( $meta_key ) {
 		if ( $this->get_meta_key() === $meta_key ) {
-			$this->delete_all_caches();
+			$this->delete_caches_for_all_users();
 		}
 	}
 
@@ -216,7 +216,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT {
 	 * @param int $number The number of users to return. Use -1 to return all users.
 	 * @return array
 	 */
-	public function get_user_ids_without_cache( $number = 10 ) {
+	protected function get_user_ids_without_cache( $number = 10 ) {
 		return get_users( array(
 			'fields'       => 'ids',
 			'number'       => $number,
@@ -224,4 +224,31 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT {
 			'meta_compare' => 'NOT EXISTS',
 		) );
 	}
-}
+
+	/** Methods to implement WCS_Cache_Updater - wrap more accurately named methods for the sake of clarity */
+
+	/**
+	 * Get the items to be updated, if any.
+	 *
+	 * @return array An array of items to update, or empty array if there are no items to update.
+	 */
+	public function get_items_to_update() {
+		return $this->get_user_ids_without_cache();
+	}
+
+	/**
+	 * Run the update for a single item.
+	 *
+	 * @param mixed $item The item to update.
+	 */
+	public function update_items_cache( $user_id ) {
+		// Getting the subscription IDs also sets the cache when it's not already set
+		$this->get_users_subscription_ids( $user_id );
+	}
+
+	/**
+	 * Clear all caches.
+	 */
+	public function delete_all_caches() {
+		$this->delete_caches_for_all_users();
+	}}
