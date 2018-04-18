@@ -23,44 +23,84 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class WCS_Debug_Tool_Factory {
 
-	/**
-	 * Register cache eraser and generator tools for a specific cache type.
-	 *
-	 * @param mixed $data_store An instance of the data store which this tool relates. Passed to the constructor on the tool.
-	 * @param stirng $cache_name A string representing the cache name, used for loading the debug tool file and instantiating the class. Use lowercase and dashes for spaces, e.g. a Related Order cache would use 'related-order' value.
-	 * @param array $cache_tool_types The type of cache tools. If empty, an 'eraser' and 'generator' tool will be created.
-	 */
-	public static function cache_management_tools( $data_store, $cache_name, $cache_tool_types = array() ) {
+	public static function add_cache_tool( $tool_type, $tool_name, $tool_desc, WCS_Cache_Updater $data_store ) {
 
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! defined( 'WP_CLI' ) ) {
 			return;
 		}
 
-		if ( empty( $cache_tool_types ) ) {
-			$cache_tool_types = array(
-				'eraser',
-				'generator',
-			);
+		self::load_cache_tool_file( $tool_type );
+		$tool_class_name = self::get_cache_tool_class_name( $tool_type );
+		$tool_key        = self::get_tool_key( $tool_name );
+		if ( 'generator' === $tool_type ) {
+			$cache_updater = new WCS_Debug_Tool_Cache_Background_Updater( $tool_key, $data_store );
+			$tool = new $tool_class_name( $tool_key, $tool_name, $tool_desc, $data_store, $cache_updater );
+		} else {
+			$tool = new $tool_class_name( $tool_key, $tool_name, $tool_desc, $data_store );
+		}
+		$tool->init();
+	}
+
+	/**
+	 * Get the string used to identify the tool.
+	 *
+	 * @param string The name of the cache tool being created
+	 * @return string The key used to identify the tool - sanitized name with wcs_ prefix.
+	 */
+	protected static function get_tool_key( $tool_name ) {
+		return sprintf( 'wcs_%s', str_replace( ' ', '_', strtolower( $tool_name ) ) );
+	}
+
+	/**
+	 * Get a cache tool's class name by passing in the cache name and type.
+	 *
+	 * For example, get_cache_tool_class_name( 'related-order', 'generator' ) will return WCS_Debug_Tool_Related_Order_Cache_Generator.
+	 *
+	 * To make sure the class's file is loaded, call @see self::load_cache_tool_class() first.
+	 *
+	 * @param array $cache_tool_type The type of cache tool. Known tools are 'eraser' and 'generator'.
+	 * @return string The cache tool's class name.
+	 */
+	protected static function get_cache_tool_class_name( $cache_tool_type ) {
+		$tool_class_name = sprintf( 'WCS_Debug_Tool_Cache_%s', ucfirst( $cache_tool_type ) );
+
+		if ( ! class_exists( $tool_class_name ) ) {
+			throw new InvalidArgumentException( sprintf( '%s() requires a path to load %s. Class does not exist after loading %s.', __METHOD__, $class_name, $file_path ) );
 		}
 
-		foreach ( $cache_tool_types as $cache_tool_type ) {
-			$file_path = sprintf( 'includes/admin/debug-tools/class-wcs-debug-tool-%s-cache-%s.php', $cache_name, $cache_tool_type );
-			$file_path = plugin_dir_path( WC_Subscriptions::$plugin_file ) . $file_path;
+		return $tool_class_name;
+	}
 
-			if ( ! file_exists( $file_path ) ) {
-				throw new InvalidArgumentException( sprintf( '%s() requires a cache name linked to a valid debug tool. File does not exist: %s', __METHOD__, $rel_file_path ) );
-			}
+	/**
+	 * Load a cache tool file in the default file path.
+	 *
+	 * For example, load_cache_tool( 'related-order', 'generator' ) will load the file includes/admin/debug-tools/class-wcs-debug-tool-related-order-cache-generator.php
+	 *
+	 * @param array $cache_tool_type The type of cache tool. Known tools are 'eraser' and 'generator'.
+	 */
+	protected static function load_cache_tool_file( $cache_tool_type ) {
+		$file_path = sprintf( 'includes/admin/debug-tools/class-wcs-debug-tool-cache-%s.php', $cache_tool_type );
+		$file_path = plugin_dir_path( WC_Subscriptions::$plugin_file ) . $file_path;
 
-			require_once( $file_path );
+		if ( ! file_exists( $file_path ) ) {
+			throw new InvalidArgumentException( sprintf( '%s() requires a cache name linked to a valid debug tool. File does not exist: %s', __METHOD__, $rel_file_path ) );
+		}
 
-			$tool_class_name = sprintf( 'WCS_Debug_Tool_%s_Cache_%s', str_replace( '-', '_', ucwords( $cache_name, '-' ) ), ucwords( $cache_tool_type ) );
+		self::load_required_classes( $cache_tool_type );
+		require_once( $file_path );
+	}
 
-			if ( ! class_exists( $tool_class_name ) ) {
-				throw new InvalidArgumentException( sprintf( '%s() requires a path to load %s. Class does not exist after loading %s.', __METHOD__, $class_name, $file_path ) );
-			}
+	/**
+	 * Load classes that debug tools extend.
+	 *
+	 * @param array $cache_tool_type The type of cache tool. Known tools are 'eraser' and 'generator'.
+	 */
+	protected static function load_required_classes( $cache_tool_type ) {
 
-			$tool = new $tool_class_name( $data_store );
-			$tool->init();
+		require_once( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'includes/abstracts/abstract-wcs-debug-tool-cache-updater.php' );
+
+		if ( 'generator' === $cache_tool_type ) {
+			require_once( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'includes/admin/debug-tools/class-wcs-debug-tool-cache-background-updater.php' );
 		}
 	}
 }

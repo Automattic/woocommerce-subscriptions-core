@@ -51,7 +51,8 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 		add_action( 'wcs_update_post_meta_caches', array( $this, 'maybe_update_for_post_meta_change' ), 10, 5 );
 		add_action( 'wcs_delete_all_post_meta_caches', array( $this, 'maybe_delete_all_for_post_meta_change' ), 10, 1 );
 
-		WCS_Debug_Tool_Factory::cache_management_tools( self::instance() , 'customer' );
+		WCS_Debug_Tool_Factory::add_cache_tool( 'generator', __( 'Generate Customer Subscription Cache', 'woocommerce-subscriptions' ), __( 'This will generate the persistent cache of all renewal, switch, resubscribe and other order types for all subscriptions in your store. The caches will be generated overtime in the background (via Action Scheduler).', 'woocommerce-subscriptions' ), self::instance() );
+		WCS_Debug_Tool_Factory::add_cache_tool( 'eraser', __( 'Delete Customer Subscription Cache', 'woocommerce-subscriptions' ), __( 'This will clear the persistent cache of all of subscriptions stored against users in your store. Expect slower performance of checkout, renewal and other subscription related functions after taking this action. The caches will be regenerated overtime as queries to find a given user\'s subscriptions are run.', 'woocommerce-subscriptions' ), self::instance() );
 	}
 
 	/* Public methods required by WCS_Customer_Store */
