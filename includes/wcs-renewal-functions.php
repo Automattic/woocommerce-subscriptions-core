@@ -109,7 +109,7 @@ function wcs_cart_contains_failed_renewal_order_payment() {
 }
 
 /**
- * Get the subscription to which a renewal order relates.
+ * Get the subscription/s to which a resubscribe order relates.
  *
  * @param WC_Order|int $order The WC_Order object or ID of a WC_Order order.
  * @since 2.0
