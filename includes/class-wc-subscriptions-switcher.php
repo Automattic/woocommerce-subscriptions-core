@@ -1762,32 +1762,6 @@ class WC_Subscriptions_Switcher {
 	}
 
 	/**
-	 * Filter the WC_Subscription::get_related_orders() method to include switch orders.
-	 *
-	 * @since 2.0
-	 */
-	public static function add_related_orders( $related_orders, $subscription, $return_fields, $order_type ) {
-
-		if ( in_array( $order_type, array( 'all', 'switch' ) ) ) {
-
-			$switch_orders = wcs_get_switch_orders_for_subscription( $subscription->get_id() );
-
-			if ( 'all' == $return_fields ) {
-				$related_orders += $switch_orders;
-			} else {
-				foreach ( $switch_orders as $order_id => $order ) {
-					$related_orders[ $order_id ] = $order_id;
-				}
-			}
-
-			// This will change the ordering to be by ID instead of the default of date
-			krsort( $related_orders );
-		}
-
-		return $related_orders;
-	}
-
-	/**
 	 * Add the cart item upgrade/downgrade/crossgrade direction for display
 	 *
 	 * @since 2.0
@@ -2684,6 +2658,40 @@ class WC_Subscriptions_Switcher {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Filter the WC_Subscription::get_related_orders() method to include switch orders.
+	 *
+	 * @since 2.0
+	 * @deprecated
+	 *
+	 * @param array           $related_orders
+	 * @param WC_Subscription $subscription
+	 * @param string          $return_fields
+	 * @param string          $order_type
+	 *
+	 * @return array
+	 */
+	public static function add_related_orders( $related_orders, $subscription, $return_fields, $order_type ) {
+		wcs_deprecated_function( __METHOD__, '2.3.0', 'wcs_get_switch_orders_for_subscription()' );
+		if ( in_array( $order_type, array( 'all', 'switch' ) ) ) {
+
+			$switch_orders = wcs_get_switch_orders_for_subscription( $subscription->get_id() );
+
+			if ( 'all' == $return_fields ) {
+				$related_orders += $switch_orders;
+			} else {
+				foreach ( $switch_orders as $order_id => $order ) {
+					$related_orders[ $order_id ] = $order_id;
+				}
+			}
+
+			// This will change the ordering to be by ID instead of the default of date
+			krsort( $related_orders );
+		}
+
+		return $related_orders;
 	}
 }
 WC_Subscriptions_Switcher::init();
