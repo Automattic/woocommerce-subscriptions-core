@@ -51,23 +51,24 @@ class WC_Subscriptions_Coupon {
 
 		add_filter( 'woocommerce_cart_totals_coupon_label', __CLASS__ . '::get_pseudo_coupon_label', 10, 2 );
 
-		add_filter( 'woocommerce_cart_totals_coupon_html', __CLASS__ . '::mark_recurring_coupon_in_main_cart_for_removal', 10 );
+		add_filter( 'woocommerce_cart_totals_coupon_html', __CLASS__ . '::mark_recurring_coupon_in_initial_cart_for_hiding', 10, 3 );
 	}
 
 	/**
-	* Mark recurring coupon to be removed from main cart totals
+	* When all items in the cart have free trial, a recurring coupon should not be applied to the main cart.
+	* Mark such recurring coupons with a dummy span with class wcs-hidden-coupon so that it can be hidden.
 	*
 	* @since 2.3
 	*/
-	public static function mark_recurring_coupon_in_main_cart_for_removal( $content ) {
-		if ( WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
-			// add a class wcs-hide-coupon to the <a> tag containing the woocommerce-remove-coupon class
-			// this is an indication for the row to be eventually removed from the Cart Totals
-			if ( preg_match( '/^(\s*<a.*woocommerce-remove-coupon)(.*\/a>\s*)$/' , $content, $matches ) ) {
-				$content = $matches[1] . ' wcs-hide-coupon' . $matches[2];
-			}
+	public static function mark_recurring_coupon_in_initial_cart_for_hiding( $coupon_html, $coupon, $discount_amount_html ) {
+
+		$displaying_initial_cart_totals = did_action( 'woocommerce_before_cart_totals' ) > did_action( 'woocommerce_cart_totals_before_order_total' );
+
+		if ( $displaying_initial_cart_totals && WC_Subscriptions_Cart::all_cart_items_have_free_trial() &&  in_array( $coupon->get_discount_type(), array( 'recurring_fee', 'recurring_percent' ) ) ) {
+			$coupon_html .= '<span class="wcs-hidden-coupon" type="hidden"></span>';
 		}
-		return $content;
+
+		return $coupon_html;
 	}
 
 	/**
