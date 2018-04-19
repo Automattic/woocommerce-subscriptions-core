@@ -2399,8 +2399,6 @@ class WC_Subscriptions_Switcher {
 		return $cart_contains_subscription_creating_switch;
 	}
 
-	/** Deprecated Methods **/
-
 	/**
 	 * Don't allow switched subscriptions to be cancelled.
 	 *
