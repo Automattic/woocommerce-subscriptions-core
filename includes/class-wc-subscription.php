@@ -1771,19 +1771,17 @@ class WC_Subscription extends WC_Order {
 		$return_fields = ( 'ids' == $return_fields ) ? $return_fields : 'all';
 
 		if ( 'all' === $order_types ) {
-			wcs_deprecated_argument( __METHOD__, '2.3.0', sprintf( __( 'The "all" value for $order_type parameter is deprecated. It was a misnomer, as it did not return switch and resubscribe orders. It was also inconsistent with order type values accepted by wcs_get_subscription_orders(). Use array( "parent", "renewal" ) to maintain previous behaviour, or "any" to receive all order types, including switch and resubscribe.', 'woocommerce-subscriptions' ), __CLASS__ ) );
-			$order_types = array( 'parent', 'renewal' );
+			wcs_deprecated_argument( __METHOD__, '2.3.0', sprintf( __( 'The "all" value for $order_type parameter is deprecated. It was a misnomer, as it did not return resubscribe orders. It was also inconsistent with order type values accepted by wcs_get_subscription_orders(). Use array( "parent", "renewal", "switch" ) to maintain previous behaviour, or "any" to receive all order types, including switch and resubscribe.', 'woocommerce-subscriptions' ), __CLASS__ ) );
+			$order_types = array( 'parent', 'renewal', 'switch' );
 		} elseif ( ! is_array( $order_types ) ) {
 			// Accept either an array or string (to make it more convenient for singular types, like 'parent' or 'any')
 			$order_types = array( $order_types );
 		}
 
 		$related_orders = array();
-
 		foreach ( $order_types as $order_type ) {
 
 			$related_orders_for_order_type = array();
-
 			foreach ( $this->get_related_order_ids( $order_type ) as $order_id ) {
 				$related_orders_for_order_type[ $order_id ] = ( 'all' == $return_fields ) ? wc_get_order( $order_id ) : $order_id;
 			}
@@ -1791,7 +1789,7 @@ class WC_Subscription extends WC_Order {
 			$related_orders += apply_filters( 'woocommerce_subscription_related_orders', $related_orders_for_order_type, $this, $return_fields, $order_type );
 		}
 
-		rsort( $related_orders );
+		arsort( $related_orders );
 
 		return $related_orders;
 	}
