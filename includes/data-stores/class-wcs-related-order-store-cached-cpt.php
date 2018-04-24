@@ -63,6 +63,9 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT {
 		add_action( 'wcs_update_post_meta_caches', array( $this, 'maybe_update_for_post_meta_change' ), 10, 5 );
 		add_action( 'wcs_delete_all_post_meta_caches', array( $this, 'maybe_delete_all_for_post_meta_change' ), 10, 1 );
 
+		// When copying meta from a subscription to a renewal order, don't copy cache related order meta keys.
+		add_filter( 'wcs_renewal_order_meta', array( $this, 'remove_related_order_cache_keys' ), 10, 1 );
+
 		// Add debug tools for managing the caches
 		if ( is_admin() || defined( 'WP_CLI' ) ) {
 			require_once( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'includes/admin/debug-tools/class-wcs-debug-tool-related-order-cache-eraser.php' );
@@ -412,5 +415,24 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT {
 	 */
 	private function get_relation_type_for_meta_key( $meta_key ) {
 		return isset( $this->relation_keys[ $meta_key ] ) ? $this->relation_keys[ $meta_key ] : false;
+	}
+
+	/**
+	 * Remove related order cache meta data from order meta copied from subscriptions to renewal orders.
+	 *
+	 * @param  array $meta An order's meta data.
+	 * @return array Filtered order meta data to be copied.
+	 */
+	public function remove_related_order_cache_keys( $meta ) {
+
+		$cache_meta_keys = array_map( array( $this, 'get_cache_meta_key' ), $this->get_relation_types() );
+
+		foreach ( $meta as $index => $meta_data ) {
+			if ( ! empty( $meta_data['meta_key'] ) && in_array( $meta_data['meta_key'], $cache_meta_keys ) ) {
+				unset( $meta[ $index ] );
+			}
+		}
+
+		return $meta;
 	}
 }
