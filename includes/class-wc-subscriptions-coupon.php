@@ -50,6 +50,33 @@ class WC_Subscriptions_Coupon {
 		}
 
 		add_filter( 'woocommerce_cart_totals_coupon_label', __CLASS__ . '::get_pseudo_coupon_label', 10, 2 );
+
+		add_filter( 'woocommerce_cart_totals_coupon_html', __CLASS__ . '::mark_recurring_coupon_in_initial_cart_for_hiding', 10, 3 );
+	}
+
+	/**
+	* When all items in the cart have free trial, a recurring coupon should not be applied to the main cart.
+	* Mark such recurring coupons with a dummy span with class wcs-hidden-coupon so that it can be hidden.
+	*
+	* @param string $coupon_html Html string of the recurring coupon's cell in the Cart totals table
+	* @param WC_coupon $coupon WC_Coupon object of the recurring coupon
+	* @return string $coupon_html Modified html string of the coupon containing the marking
+	* @since 2.3
+	*/
+	public static function mark_recurring_coupon_in_initial_cart_for_hiding( $coupon_html, $coupon ) {
+		$displaying_initial_cart_totals = false;
+
+		if ( is_cart() ) {
+			$displaying_initial_cart_totals = did_action( 'woocommerce_before_cart_totals' ) > did_action( 'woocommerce_cart_totals_before_order_total' );
+		} elseif ( is_checkout() ) {
+			$displaying_initial_cart_totals = did_action( 'woocommerce_review_order_after_cart_contents' ) > did_action( 'woocommerce_review_order_before_order_total' );
+		}
+
+		if ( $displaying_initial_cart_totals && WC_Subscriptions_Cart::all_cart_items_have_free_trial() &&  in_array( wcs_get_coupon_property( $coupon, 'discount_type' ), array( 'recurring_fee', 'recurring_percent' ) ) ) {
+			$coupon_html .= '<span class="wcs-hidden-coupon" type="hidden"></span>';
+		}
+
+		return $coupon_html;
 	}
 
 	/**
