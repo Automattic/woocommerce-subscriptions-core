@@ -1045,7 +1045,7 @@ class WC_Subscriptions_Order {
 		$order = wc_get_order( $order_id );
 		add_filter( 'woocommerce_payment_complete_order_status', __METHOD__, 10, 2 );
 
-		if ( 'processing' == $new_order_status && $order->get_total() == 0 && wcs_order_contains_subscription( $order ) ) {
+		if ( 'processing' == $new_order_status && $order->get_subtotal() == 0 && wcs_order_contains_subscription( $order ) ) {
 
 			if ( wcs_order_contains_resubscribe( $order ) ) {
 				$new_order_status = 'completed';
