@@ -344,8 +344,20 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 	public static function add_cancel_order_action( $actions, $order ) {
 
 		if ( ! isset( $actions['cancel'] ) && wcs_order_contains_early_renewal( $order ) && in_array( $order->get_status(), apply_filters( 'woocommerce_valid_order_statuses_for_cancel', array( 'pending', 'failed' ), $order ) ) ) {
+			$redirect = wc_get_page_permalink( 'myaccount' );
+
+			// Redirect the customer back to the view subscription page if that is where they cancel the order from.
+			if ( wcs_is_view_subscription_page() ) {
+				global $wp;
+				$subscription = wcs_get_subscription( $wp->query_vars['view-subscription'] );
+
+				if ( wcs_is_subscription( $subscription ) ) {
+					$redirect = $subscription->get_view_order_url();
+				}
+			}
+
 			$actions['cancel'] = array(
-				'url'  => $order->get_cancel_order_url( wc_get_page_permalink( 'myaccount' ) ),
+				'url'  => $order->get_cancel_order_url( $redirect ),
 				'name' => __( 'Cancel', 'woocommerce-subscriptions' ),
 			);
 		}
