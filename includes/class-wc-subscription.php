@@ -98,6 +98,12 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function __construct( $subscription ) {
 
+		$extra_data = apply_filters( 'woocommerce_subscriptions_extra_subscription_data', array( 'schedule_next_shipping' => null ), $this );
+
+		if ( ! empty( $extra_data ) && is_array( $extra_data ) ) {
+			$this->extra_data += $extra_data;
+		}
+
 		parent::__construct( $subscription );
 
 		$this->order_type = 'shop_subscription';

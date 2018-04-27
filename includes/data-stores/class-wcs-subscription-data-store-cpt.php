@@ -31,6 +31,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		'_schedule_end',
 		'_schedule_payment_retry',
 		'_subscription_switch_data',
+		'_schedule_next_shipping',
 	);
 
 	/**
@@ -54,6 +55,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		'_schedule_cancelled'       => 'schedule_cancelled',
 		'_schedule_end'             => 'schedule_end',
 		'_schedule_payment_retry'   => 'schedule_payment_retry',
+		'_schedule_next_shipping'   => 'schedule_next_shipping',
 
 		'_subscription_switch_data' => 'switch_data',
 	);
@@ -305,6 +307,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 			'_schedule_cancelled',
 			'_schedule_end',
 			'_schedule_payment_retry',
+			'_schedule_next_shipping',
 		);
 
 		$date_meta_keys_to_props = array_intersect_key( $this->subscription_meta_keys_to_props, array_flip( $date_meta_keys ) );
