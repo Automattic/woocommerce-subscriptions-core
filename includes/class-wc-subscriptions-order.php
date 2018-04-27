@@ -740,12 +740,19 @@ class WC_Subscriptions_Order {
 					case 'switch' :
 						$meta_key = '_subscription_switch';
 						break;
+					default:
+						$meta_key = '';
+						break;
 				}
 
-				$vars['meta_query'][] = array(
-					'key'     => $meta_key,
-					'compare' => 'EXISTS',
-				);
+				$meta_key = apply_filters( 'woocommerce_subscriptions_admin_order_type_filter_meta_key', $meta_key, $_GET['shop_order_subtype'] );
+
+				if ( ! empty( $meta_key ) ) {
+					$vars['meta_query'][] = array(
+						'key'     => $meta_key,
+						'compare' => 'EXISTS',
+					);
+				}
 			}
 
 			// Also exclude parent orders from non-subscription query
