@@ -155,6 +155,9 @@ class WCS_Admin_Notice {
 			case 'html':
 				echo wp_kses_post( $this->content );
 				break;
+			case 'template':
+				wc_get_template( $this->content['template_name'], $this->content['args'], '', $this->content['template_path'] );
+				break;
 		}
 	}
 
@@ -221,6 +224,23 @@ class WCS_Admin_Notice {
 	public function set_html_content( $html ) {
 		$this->content_type = 'html';
 		$this->content      = $html;
+	}
+
+	/**
+	 * Set the notice's content to a string containing HTML elements.
+	 *
+	 * @since 2.3.0
+	 * @param string $template_name Template name.
+	 * @param string $template_path Template path.
+	 * @param array  $args          Arguments. (default: array).
+	 */
+	public function set_content_template( $template_name, $template_path, $args = array() ) {
+		$this->content_type = 'template';
+		$this->content      = array(
+			'template_name' => $template_name,
+			'template_path' => $template_path,
+			'args'          => $args,
+		);
 	}
 
 	/**
