@@ -19,18 +19,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * WCS_Debug_Tool_Cache_Updater Class
  *
- * Add a debug tool to the WooCommerce > System Status > Tools page for generating related order cache.
+ * Shared methods for tool on the WooCommerce > System Status > Tools page that need to
+ * update a cached data store's cache.
  */
 abstract class WCS_Debug_Tool_Cache_Updater extends WCS_Debug_Tool {
 
 	/**
-	 * @var mixed $data_Store The store used for updating the related order cache.
+	 * @var mixed $data_Store The store used for updating the cache.
 	 */
 	protected $data_store;
 
 	/**
-	 * Attach callbacks and hooks, if the store supports getting uncached items, which is required to generate cache
-	 * and also acts as a proxy to determine if the related order store is using caching
+	 * Attach callbacks and hooks, if the class's data store is using caching.
 	 */
 	public function init() {
 		if ( $this->is_data_store_cached() ) {
@@ -39,7 +39,7 @@ abstract class WCS_Debug_Tool_Cache_Updater extends WCS_Debug_Tool {
 	}
 
 	/**
-	 * Check if the store can get the uncached items, required to generate the cache.
+	 * Check if the store is a cache updater, and has methods required to erase or generate cache.
 	 */
 	protected function is_data_store_cached() {
 		return is_a( $this->data_store, 'WCS_Cache_Updater' );

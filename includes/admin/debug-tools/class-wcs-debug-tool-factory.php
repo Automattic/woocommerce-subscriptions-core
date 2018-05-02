@@ -23,6 +23,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class WCS_Debug_Tool_Factory {
 
+	/**
+	 * Add a debug tool for manually managing a data store's cache.
+	 *
+	 * @param string $tool_type A known type of cache tool. Known types are 'eraser' or 'generator'.
+	 * @param string $tool_name The section name given to the tool on the admin screen.
+	 * @param string $tool_desc The long description for the tool on the admin screen.
+	 * @param WCS_Cache_Updater $data_store
+	 */
 	public static function add_cache_tool( $tool_type, $tool_name, $tool_desc, WCS_Cache_Updater $data_store ) {
 
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! defined( 'WP_CLI' ) ) {

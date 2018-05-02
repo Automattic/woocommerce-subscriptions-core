@@ -51,7 +51,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 		add_action( 'wcs_update_post_meta_caches', array( $this, 'maybe_update_for_post_meta_change' ), 10, 5 );
 		add_action( 'wcs_delete_all_post_meta_caches', array( $this, 'maybe_delete_all_for_post_meta_change' ), 10, 1 );
 
-		WCS_Debug_Tool_Factory::add_cache_tool( 'generator', __( 'Generate Customer Subscription Cache', 'woocommerce-subscriptions' ), __( 'This will generate the persistent cache of all renewal, switch, resubscribe and other order types for all subscriptions in your store. The caches will be generated overtime in the background (via Action Scheduler).', 'woocommerce-subscriptions' ), self::instance() );
+		WCS_Debug_Tool_Factory::add_cache_tool( 'generator', __( 'Generate Customer Subscription Cache', 'woocommerce-subscriptions' ), __( 'This will generate the persistent cache for linking users with subscriptions. The caches will be generated overtime in the background (via Action Scheduler).', 'woocommerce-subscriptions' ), self::instance() );
 		WCS_Debug_Tool_Factory::add_cache_tool( 'eraser', __( 'Delete Customer Subscription Cache', 'woocommerce-subscriptions' ), __( 'This will clear the persistent cache of all of subscriptions stored against users in your store. Expect slower performance of checkout, renewal and other subscription related functions after taking this action. The caches will be regenerated overtime as queries to find a given user\'s subscriptions are run.', 'woocommerce-subscriptions' ), self::instance() );
 	}
 
@@ -67,7 +67,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 
 		$subscription_ids = $this->get_users_subscription_ids_from_cache( $user_id );
 
-		// get post meta returns an empty string when no matching row is found for the given key, meaning it's not set yet
+		// get user meta returns an empty string when no matching row is found for the given key, meaning it's not set yet
 		if ( '' === $subscription_ids ) {
 			$subscription_ids = parent::get_users_subscription_ids( $user_id );
 			$this->update_subscription_id_cache( $user_id, $subscription_ids );

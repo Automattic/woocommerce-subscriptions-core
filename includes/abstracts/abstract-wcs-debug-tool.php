@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 abstract class WCS_Debug_Tool {
 
 	/**
-	 * @var string $tool_key The key used to add the tool to the
+	 * @var string $tool_key The key used to add the tool to the array of available tools.
 	 */
 	protected $tool_key;
 
