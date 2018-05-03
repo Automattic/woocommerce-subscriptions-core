@@ -19,7 +19,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	 * Keep cache up-to-date with changes to our meta data via WordPress post meta APIs
 	 * by using a post meta cache manager.
 	 *
-	 * @var WCS_Post_Meta_Cache_Manager
+	 * @var WCS_Post_Meta_Cache_Manager_Many_To_One
 	 */
 	protected $post_meta_cache_manager;
 
@@ -34,7 +34,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	 * Constructor
 	 */
 	public function __construct() {
-		$this->post_meta_cache_manager = new WCS_Post_Meta_Cache_Manager( 'shop_subscription', array( $this->get_meta_key() ) );
+		$this->post_meta_cache_manager = new WCS_Post_Meta_Cache_Manager_Many_To_One( 'shop_subscription', array( $this->get_meta_key() ) );
 	}
 
 	/**
@@ -158,7 +158,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 		$this->update_subscription_id_cache( $user_id, array() );
 	}
 
-	/* Public methods attached to WCS_Post_Meta_Cache_Manager hooks for managing the cache */
+	/* Public methods attached to WCS_Post_Meta_Cache_Manager_Many_To_One hooks for managing the cache */
 
 	/**
 	 * If there is a change to a subscription's post meta key, update the user meta cache.
@@ -180,7 +180,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 				$this->add_subscription_id_to_cache( $user_id, $subscription_id );
 				break;
 			case 'delete' :
-				// If we don't have a specific user ID, the post is being deleted as WCS_Post_Meta_Cache_Manager doesn't pass the associated meta value for that event, so find the corresponding user ID from post meta directly
+				// If we don't have a specific user ID, the post is being deleted as WCS_Post_Meta_Cache_Manager_Many_To_One doesn't pass the associated meta value for that event, so find the corresponding user ID from post meta directly
 				if ( empty( $user_id ) ) {
 					$user_id = get_post_meta( $subscription_id, $this->get_meta_key(), true );
 				}
