@@ -735,6 +735,7 @@ class WC_Subscriptions_Admin {
 					'bulkEditPeriodMessage'     => __( 'Enter the new period, either day, week, month or year:', 'woocommerce-subscriptions' ),
 					'bulkEditLengthMessage'     => __( 'Enter a new length (e.g. 5):', 'woocommerce-subscriptions' ),
 					'bulkEditIntervalhMessage'  => __( 'Enter a new interval as a single number (e.g. to charge every 2nd month, enter 2):', 'woocommerce-subscriptions' ),
+					'bulkDeleteOptionLabel'     => __( 'Delete all variations without a subscription' ),
 					'oneTimeShippingCheckNonce' => wp_create_nonce( 'one_time_shipping' ),
 				);
 			} else if ( 'edit-shop_order' == $screen->id ) {

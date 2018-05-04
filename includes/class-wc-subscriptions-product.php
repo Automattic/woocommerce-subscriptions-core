@@ -855,6 +855,22 @@ class WC_Subscriptions_Product {
 	 * @since 1.5.29
 	 */
 	public static function bulk_edit_variations( $bulk_action, $data, $variable_product_id, $variation_ids ) {
+		if ( 'delete_all_no_sub' === $bulk_action && isset( $data['allowed'] ) && 'true' == $data['allowed'] ) {
+			$deleted = 0;
+
+			foreach ( $variation_ids as $variation_id ) {
+				$variation = wc_get_product( $variation_id );
+				$subs      = wcs_get_subscriptions_for_product( $variation_id );
+
+				if ( empty( $subs ) ) {
+					$variation->delete( true );
+					$deleted++;
+				}
+			}
+
+			echo intval( $deleted );
+			return;
+		}
 
 		if ( ! isset( $data['value'] ) ) {
 			return;
