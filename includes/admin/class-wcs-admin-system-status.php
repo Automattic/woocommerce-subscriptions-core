@@ -192,7 +192,7 @@ class WCS_Admin_System_Status {
 	private static function set_subscription_statuses( &$debug_data ) {
 
 		$subscriptions_by_status        = (array) wp_count_posts( 'shop_subscription' );
-		$subscriptions_by_status_output = '';
+		$subscriptions_by_status_output = array();
 
 		foreach ( $subscriptions_by_status as $status => $count ) {
 			if ( ! empty( $count ) ) {
