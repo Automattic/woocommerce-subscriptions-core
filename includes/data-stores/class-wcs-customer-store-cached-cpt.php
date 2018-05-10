@@ -88,7 +88,10 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	 * @return string|array An array of subscriptions in the cache, or an empty string when no matching row is found for the given key, meaning it's cache is not set yet or has been deleted
 	 */
 	protected function get_users_subscription_ids_from_cache( $user_id ) {
-		$subscription_ids = get_user_meta( $user_id, $this->cache_meta_key, true );
+
+		// Empty user IDs, like 0 or '', are never cached
+		$subscription_ids = empty( $user_id ) ? array() : get_user_meta( $user_id, $this->cache_meta_key, true );
+
 		return apply_filters( 'wcs_get_cached_users_subscription_ids', $subscription_ids, $user_id );
 	}
 
@@ -132,6 +135,12 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	 * @return bool|int Returns meta ID if the key didn't exist; true on successful update; false on failure or if $subscription_ids is the same as the existing meta value in the database.
 	 */
 	protected function update_subscription_id_cache( $user_id, array $subscription_ids ) {
+
+		// Never cache empty user IDs, like 0 or ''
+		if ( empty( $user_id ) ) {
+			return false;
+		}
+
 		return update_user_meta( $user_id, $this->cache_meta_key, $subscription_ids );
 	}
 
