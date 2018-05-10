@@ -121,6 +121,9 @@ class WC_Product_Subscription_Variation extends WC_Product_Variation {
 	 */
 	public function is_purchasable() {
 		$purchasable = WCS_Limiter::is_purchasable( wc_get_product( $this->get_parent_id() )->is_purchasable(), $this );
+		//When the parent product is not purchasable and mixed checkout is disabled, the variation in the cart can be replaced
+		// with another variation, making it purchasable
+		$purchasable = ( 'no' === get_option( WC_Subscriptions_Admin::$option_prefix . '_multiple_purchase', 'no' ) ) ? true : $purchasable;
 		return apply_filters( 'woocommerce_subscription_variation_is_purchasable', $purchasable, $this );
 	}
 
