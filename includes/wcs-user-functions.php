@@ -177,13 +177,13 @@ function wcs_get_users_subscriptions( $user_id = 0 ) {
 	$subscriptions = apply_filters( 'wcs_pre_get_users_subscriptions', array(), $user_id );
 
 	if ( empty( $subscriptions ) && 0 !== $user_id && ! empty( $user_id ) ) {
-		$post_ids = wcs_get_cached_user_subscription_ids( $user_id );
+		$subscription_ids = WCS_Customer_Store::instance()->get_users_subscription_ids( $user_id );
 
-		foreach ( $post_ids as $post_id ) {
-			$subscription = wcs_get_subscription( $post_id );
+		foreach ( $subscription_ids as $subscription_id ) {
+			$subscription = wcs_get_subscription( $subscription_id );
 
 			if ( $subscription ) {
-				$subscriptions[ $post_id ] = $subscription;
+				$subscriptions[ $subscription_id ] = $subscription;
 			}
 		}
 	}
@@ -201,24 +201,8 @@ function wcs_get_users_subscriptions( $user_id = 0 ) {
  * @return array Array of Subscription IDs.
  */
 function wcs_get_users_subscription_ids( $user_id ) {
-	$query = new WP_Query();
-
-	return $query->query( array(
-		'post_type'           => 'shop_subscription',
-		'posts_per_page'      => -1,
-		'post_status'         => 'any',
-		'orderby'             => 'date',
-		'order'               => 'desc',
-		'fields'              => 'ids',
-		'no_found_rows'       => true,
-		'ignore_sticky_posts' => true,
-		'meta_query'          => array(
-			array(
-				'key'   => '_customer_user',
-				'value' => $user_id,
-			),
-		),
-	) );
+	wcs_deprecated_function( __FUNCTION__, '2.3.0', 'WCS_Customer_Store::instance()->get_users_subscription_ids()' );
+	return WCS_Customer_Store::instance()->get_users_subscription_ids( $user_id );
 }
 
 /**
@@ -231,23 +215,15 @@ function wcs_get_users_subscription_ids( $user_id ) {
  * @return array Array of subscription IDs.
  */
 function wcs_get_cached_user_subscription_ids( $user_id = 0 ) {
+	wcs_deprecated_function( __FUNCTION__, '2.3.0', 'WCS_Customer_Store::instance()->get_users_subscription_ids()' );
+
 	$user_id = absint( $user_id );
+
 	if ( 0 === $user_id ) {
 		$user_id = get_current_user_id();
 	}
 
-	// If the user ID is still zero, bail early.
-	if ( 0 === $user_id ) {
-		return apply_filters( 'wcs_get_cached_users_subscription_ids', array(), $user_id );
-	}
-
-	$subscription_ids = WC_Subscriptions::$cache->cache_and_get(
-		"wcs_user_subscriptions_{$user_id}",
-		'wcs_get_users_subscription_ids',
-		array( $user_id )
-	);
-
-	return apply_filters( 'wcs_get_cached_users_subscription_ids', $subscription_ids, $user_id );
+	return WCS_Customer_Store::instance()->get_users_subscription_ids( $user_id );
 }
 
 /**

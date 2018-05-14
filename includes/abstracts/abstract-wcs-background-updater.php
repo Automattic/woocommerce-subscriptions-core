@@ -1,6 +1,6 @@
 <?php
 /**
- * Subscriptions Debug Tools
+ * Debug Tool with methods to update data in the background
  *
  * Add tools for debugging and managing Subscriptions to the
  * WooCommerce > System Status > Tools administration screen.
@@ -17,35 +17,37 @@ if ( ! defined( 'ABSPATH' ) ) {
 } // Exit if accessed directly
 
 /**
- * Abstract_WCS_Debug_Tool_Background_Updater Class
+ * WCS_Background_Updater Class
  *
  * Provide APIs for a debug tool to update data in the background using Action Scheduler.
  */
-abstract class Abstract_WCS_Debug_Tool_Background_Updater extends Abstract_WCS_Debug_Tool {
+abstract class WCS_Background_Updater {
 
 	/**
-	 * @var int Amount of second to give each batch.
+	 * @var int The amount of time, in seconds, to give the background process to run the update.
 	 */
-	protected $time_limit = 60;
+	protected $time_limit;
 
 	/**
 	 * @var string The hook used to schedule background updates.
 	 */
-	protected $scheduled_hook = null;
+	protected $scheduled_hook;
 
 	/**
-	 * Attach callbacks to hooks and validate required properties are assigned values.
+	 * Attach callbacks to hooks
 	 */
 	public function init() {
-
-		parent::init();
 
 		// Make sure child classes have defined a scheduled hook, otherwise we can't do background updates.
 		if ( is_null( $this->scheduled_hook ) ) {
 			throw new RuntimeException( __CLASS__ . ' must assign a hook to $this->scheduled_hook' );
 		}
 
-		// Allow for each class's time limit to be customised by 3rd party code
+		if ( is_null( $this->time_limit ) ) {
+			$this->time_limit = 60;
+		}
+
+		// Allow for each class's time limit to be customised by 3rd party code, as well as all tools' time limits
 		$this->time_limit = apply_filters( 'wcs_debug_tools_time_limit', $this->time_limit, $this );
 
 		// Action scheduled in Action Scheduler for updating data in the background
