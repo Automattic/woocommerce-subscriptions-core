@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @category Class
  * @author   Prospress
  */
-class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT {
+class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT implements WCS_Cache_Updater {
 
 	/**
 	 * Keep cache up-to-date with changes to our meta data via WordPress post meta APIs
@@ -66,18 +66,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT {
 		// When copying meta from a subscription to a renewal order, don't copy cache related order meta keys.
 		add_filter( 'wcs_renewal_order_meta', array( $this, 'remove_related_order_cache_keys' ), 10, 1 );
 
-		// Add debug tools for managing the caches
-		if ( is_admin() || defined( 'WP_CLI' ) ) {
-			require_once( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'includes/admin/debug-tools/class-wcs-debug-tool-related-order-cache-eraser.php' );
-
-			$eraser_tool = new WCS_Debug_Tool_Related_Order_Cache_Eraser( self::instance() );
-			$eraser_tool->init();
-
-			require_once( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'includes/admin/debug-tools/class-wcs-debug-tool-related-order-cache-generator.php' );
-
-			$generator_tool = new WCS_Debug_Tool_Related_Order_Cache_Generator( self::instance() );
-			$generator_tool->init();
-		}
+		WCS_Debug_Tool_Factory::add_cache_tool( 'generator', __( 'Generate Related Order Cache', 'woocommerce-subscriptions' ), __( 'This will generate the persistent cache of all renewal, switch, resubscribe and other order types for all subscriptions in your store. The caches will be generated overtime in the background (via Action Scheduler).', 'woocommerce-subscriptions' ), self::instance() );
+		WCS_Debug_Tool_Factory::add_cache_tool( 'eraser', __( 'Delete Related Order Cache', 'woocommerce-subscriptions' ), __( 'This will clear the persistent cache of all renewal, switch, resubscribe and other order types for all subscriptions in your store. Expect slower performance of checkout, renewal and other subscription related functions after taking this action. The caches will be regenerated overtime as related order queries are run.', 'woocommerce-subscriptions' ), self::instance() );
 	}
 
 	/* Public methods required by WCS_Related_Order_Store */
@@ -379,7 +369,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT {
 	 * @param int $batch_size The number of subscriptions to return. Use -1 to return all subscriptions.
 	 * @return array
 	 */
-	public function get_subscription_ids_without_cache( $relation_types = array(), $batch_size = 10 ) {
+	protected function get_subscription_ids_without_cache( $relation_types = array(), $batch_size = 10 ) {
 
 		if ( empty( $relation_types ) ) {
 			$relation_types = $this->get_relation_types();
@@ -434,5 +424,38 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT {
 		}
 
 		return $meta;
+	}
+
+	/** Methods to implement WCS_Cache_Updater - wrap more accurately named methods for the sake of clarity */
+
+	/**
+	 * Get the items to be updated, if any.
+	 *
+	 * @return array An array of items to update, or empty array if there are no items to update.
+	 */
+	public function get_items_to_update() {
+		return $this->get_subscription_ids_without_cache();
+	}
+
+	/**
+	 * Run the update for a single item.
+	 *
+	 * @param mixed $item The item to update.
+	 */
+	public function update_items_cache( $subscription_id ) {
+		$subscription = wcs_get_subscription( $subscription_id );
+		if ( $subscription ) {
+			foreach ( $this->get_relation_types() as $relation_type ) {
+				// Getting the related IDs also sets the cache when it's not already set
+				$this->get_related_order_ids( $subscription, $relation_type );
+			}
+		}
+	}
+
+	/**
+	 * Clear all caches.
+	 */
+	public function delete_all_caches() {
+		$this->delete_caches_for_all_subscriptions();
 	}
 }

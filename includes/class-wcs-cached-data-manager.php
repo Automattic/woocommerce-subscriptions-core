@@ -16,20 +16,8 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 	public function __construct() {
 		add_action( 'woocommerce_loaded', array( $this, 'load_logger' ) );
 
-		// Add filters for update / delete / trash post to purge cache
-		add_action( 'trashed_post', array( $this, 'purge_delete' ), 9999 ); // trashed posts aren't included in 'any' queries
-		add_action( 'untrashed_post', array( $this, 'purge_delete' ), 9999 ); // however untrashed posts are
-		add_action( 'before_delete_post', array( $this, 'purge_delete' ), 9999 ); // if forced delete is enabled
-		add_action( 'update_post_meta', array( $this, 'purge_from_metadata' ), 9999, 4 );
-		add_action( 'updated_post_meta', array( $this, 'purge_from_metadata' ), 9999, 4 );
-		add_action( 'deleted_post_meta', array( $this, 'purge_from_metadata' ), 9999, 4 );
-		add_action( 'added_post_meta', array( $this, 'purge_from_metadata' ), 9999, 4 );
-
 		add_action( 'admin_init', array( $this, 'initialize_cron_check_size' ) ); // setup cron task to truncate big logs.
 		add_filter( 'cron_schedules', array( $this, 'add_weekly_cron_schedule' ) ); // create a weekly cron schedule
-
-		// Add actions to handle cache purge for users.
-		add_action( 'save_post', array( $this, 'purge_delete' ), 9999, 2 );
 	}
 
 	/**
@@ -80,10 +68,11 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 	 * @param WP_Post $post    The post object (on certain hooks).
 	 */
 	public function purge_delete( $post_id, $post = null ) {
+		wcs_deprecated_function( __METHOD__, '2.3.0' );
+
 		$post_type = get_post_type( $post_id );
 
-		// When called manually for an order (i.e. not via the known hooks), trigger a deprecated notice and purge the cache to maintain backward compatibility
-		if ( 'shop_order' === $post_type && ! in_array( current_filter(), array( 'trashed_post', 'untrashed_post', 'before_delete_post', 'save_post' ) ) ) {
+		if ( 'shop_order' === $post_type ) {
 			wcs_deprecated_argument( __METHOD__, '2.3.0', sprintf( __( 'Related order caching is now handled by %1$s.', 'woocommerce-subscriptions' ), 'WCS_Related_Order_Store' ) );
 			if ( is_callable( array( WCS_Related_Order_Store::instance(), 'delete_related_order_id_from_caches' ) ) ) {
 				WCS_Related_Order_Store::instance()->delete_related_order_id_from_caches( $post_id );
@@ -91,6 +80,8 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 		}
 
 		if ( 'shop_subscription' === $post_type ) {
+			wcs_deprecated_argument( __METHOD__, '2.3.0', sprintf( __( 'Customer subscription caching is now handled by %1$s.', 'woocommerce-subscriptions' ), 'WCS_Customer_Store_Cached_CPT' ) );
+
 			// Purge wcs_do_subscriptions_exist cache, but only on the before_delete_post hook.
 			if ( doing_action( 'before_delete_post' ) ) {
 				$this->log( "Subscription {$post_id} deleted. Purging subscription cache." );
@@ -113,6 +104,7 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 	 * @param $meta_value mixed the ID of the subscription that relates to the order
 	 */
 	public function purge_from_metadata( $meta_id, $object_id, $meta_key, $meta_value ) {
+		wcs_deprecated_argument( __METHOD__, '2.3.0', sprintf( __( 'Customer subscription caching is now handled by %1$s and %2$s.', 'woocommerce-subscriptions' ), 'WCS_Customer_Store_Cached_CPT', 'WCS_Post_Meta_Cache_Manager' ) );
 
 		// Ensure we're handling a meta key we actually care about.
 		if ( '_customer_user' !== $meta_key || 'shop_subscription' !== get_post_type( $object_id ) ) {
@@ -161,6 +153,8 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 	 * @return bool
 	 */
 	public function delete_cached( $key ) {
+		wcs_deprecated_argument( __METHOD__, '2.3.0' );
+
 		if ( ! is_string( $key ) || empty( $key ) ) {
 			return false;
 		}
@@ -240,6 +234,8 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 	 * @param int $subscription_id The subscription to purge.
 	 */
 	protected function purge_subscription_user_cache( $subscription_id ) {
+		wcs_deprecated_argument( __METHOD__, '2.3.0', sprintf( __( 'Customer subscription caching is now handled by %1$s and %2$s.', 'woocommerce-subscriptions' ), 'WCS_Customer_Store_Cached_CPT', 'WCS_Post_Meta_Cache_Manager' ) );
+
 		$subscription         = wcs_get_subscription( $subscription_id );
 		$subscription_user_id = $subscription->get_user_id();
 		$this->log( sprintf(
