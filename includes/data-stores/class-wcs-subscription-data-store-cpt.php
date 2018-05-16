@@ -238,7 +238,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		// We only want IDs from the parent method
 		$parent_args['return'] = 'ids';
 
-		$subscriptions = parent::get_orders( $parent_args );
+		$subscriptions = wc_get_orders( $parent_args );
 
 		if ( $args['paginate'] ) {
 
