@@ -39,6 +39,8 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 		add_action( 'load-edit.php', array( __CLASS__, 'process_bulk_action' ) );
 		add_action( 'woocommerce_remove_subscription_personal_data', array( 'WCS_Privacy_Erasers', 'remove_subscription_personal_data' ) );
 		add_action( 'admin_notices', array( __CLASS__, 'bulk_admin_notices' ) );
+
+		add_filter( 'woocommerce_account_settings', array( __CLASS__, 'add_caveat_to_order_data_retention_settings' ) );
 	}
 
 	/**
@@ -116,5 +118,27 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 		$changed = isset( $_REQUEST['changed'] ) ? absint( $_REQUEST['changed'] ) : 0;
 		$message = sprintf( _n( 'Removed personal data from %d subscription.', 'Removed personal data from %d subscriptions.', $changed, 'woocommerce-subscriptions' ), number_format_i18n( $changed ) );
 		echo '<div class="updated"><p>' . esc_html( $message ) . '</p></div>';
+	}
+
+	/**
+	 * Add a note to WC Personal Data Retention settings explaining that subscription orders aren't affected.
+	 *
+	 * @since 2.2.20
+	 * @param array $settings WooCommerce Account and Privacy settings.
+	 * @return array Account and Privacy settings.
+	 */
+	public static function add_caveat_to_order_data_retention_settings( $settings ) {
+		if ( ! is_array( $settings ) ) {
+			return $settings;
+		}
+
+		foreach ( $settings as &$setting ) {
+			if ( isset( $setting['id'] ) && 'personal_data_retention' === $setting['id'] ) {
+				// translators: placeholders are opening and closing tags.
+				$setting['desc'] .= '<br>' . sprintf( __( '%sNote:%s Orders which are related to subscriptions will not be included in the orders affected by these settings.', 'woocommerce-subscriptions' ), '<b>', '</b>' );
+			}
+		}
+
+		return $settings;
 	}
 }
