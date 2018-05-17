@@ -859,8 +859,15 @@ class WC_Subscriptions_Product {
 			$deleted = 0;
 
 			foreach ( $variation_ids as $variation_id ) {
-				$variation = wc_get_product( $variation_id );
-				$subs      = wcs_get_subscriptions_for_product( $variation_id );
+				$variation     = wc_get_product( $variation_id );
+				$subscriptions = wcs_get_subscriptions_for_product( $variation_id );
+
+				if ( empty( $subscriptions ) ) {
+					if ( is_callable( array( $variation, 'delete' ) ) ) {
+						$variation->delete( true );
+					} else {
+						wp_delete_post( $variation_id );
+					}
 
 					$deleted++;
 				}
