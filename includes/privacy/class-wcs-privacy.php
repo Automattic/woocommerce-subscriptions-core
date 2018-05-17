@@ -41,6 +41,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 		add_action( 'admin_notices', array( __CLASS__, 'bulk_admin_notices' ) );
 
 		add_filter( 'woocommerce_account_settings', array( __CLASS__, 'add_caveat_to_order_data_retention_settings' ) );
+		add_filter( 'woocommerce_account_settings', array( __CLASS__, 'add_subscription_data_retention_settings' ) );
 	}
 
 	/**
@@ -140,5 +141,43 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 		}
 
 		return $settings;
+	}
+
+	/**
+	 * Add admin setting to turn subscription data removal when processing erasure requests on or off.
+	 *
+	 * @since 2.2.20
+	 * @param array $settings WooCommerce Account and Privacy settings.
+	 * @return array Account and Privacy settings.
+	 */
+	public static function add_subscription_data_retention_settings( $settings ) {
+		if ( ! is_array( $settings ) ) {
+			return $settings;
+		}
+
+		$new_settings = array();
+
+		foreach ( $settings as $setting ) {
+			// Insert our subscription erasure request setting after the equivalent setting for orders.
+			if ( isset( $setting['id'] ) && 'woocommerce_erasure_request_removes_order_data' === $setting['id'] ) {
+				$new_settings[] = $setting;
+				$new_settings[] = array(
+					'desc'          => __( 'Remove personal data from subscriptions', 'woocommerce-subscriptions' ),
+					/* Translators: placeholders are opening and closing link tags linking to the erasure request screen. */
+					'desc_tip'      => sprintf( __( 'When handling an %saccount erasure request%s, should personal data within subscriptions be retained or removed?', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'tools.php?page=remove_personal_data' ) ) . '">' , '</a>' ),
+					'id'            => 'woocommerce_erasure_request_removes_subscription_data',
+					'type'          => 'checkbox',
+					'default'       => 'no',
+					'checkboxgroup' => '',
+					'autoload'      => false,
+				);
+
+				continue;
+			}
+
+			$new_settings[] = $setting;
+		}
+
+		return $new_settings;
 	}
 }
