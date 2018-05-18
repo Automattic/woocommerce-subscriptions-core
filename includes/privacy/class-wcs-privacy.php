@@ -155,29 +155,17 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 			return $settings;
 		}
 
-		$new_settings = array();
+		WC_Subscriptions_Admin::insert_setting_after( $settings, 'woocommerce_erasure_request_removes_order_data', array(
+			'desc'          => __( 'Remove personal data from subscriptions', 'woocommerce-subscriptions' ),
+			/* Translators: placeholders are opening and closing link tags linking to the erasure request screen. */
+			'desc_tip'      => sprintf( __( 'When handling an %saccount erasure request%s, should personal data within subscriptions be retained or removed?', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'tools.php?page=remove_personal_data' ) ) . '">' , '</a>' ),
+			'id'            => 'woocommerce_erasure_request_removes_subscription_data',
+			'type'          => 'checkbox',
+			'default'       => 'no',
+			'checkboxgroup' => '',
+			'autoload'      => false,
+		) );
 
-		foreach ( $settings as $setting ) {
-			// Insert our subscription erasure request setting after the equivalent setting for orders.
-			if ( isset( $setting['id'] ) && 'woocommerce_erasure_request_removes_order_data' === $setting['id'] ) {
-				$new_settings[] = $setting;
-				$new_settings[] = array(
-					'desc'          => __( 'Remove personal data from subscriptions', 'woocommerce-subscriptions' ),
-					/* Translators: placeholders are opening and closing link tags linking to the erasure request screen. */
-					'desc_tip'      => sprintf( __( 'When handling an %saccount erasure request%s, should personal data within subscriptions be retained or removed?', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'tools.php?page=remove_personal_data' ) ) . '">' , '</a>' ),
-					'id'            => 'woocommerce_erasure_request_removes_subscription_data',
-					'type'          => 'checkbox',
-					'default'       => 'no',
-					'checkboxgroup' => '',
-					'autoload'      => false,
-				);
-
-				continue;
-			}
-
-			$new_settings[] = $setting;
-		}
-
-		return $new_settings;
+		return $settings;
 	}
 }
