@@ -42,6 +42,12 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 
 		add_filter( 'woocommerce_account_settings', array( __CLASS__, 'add_caveat_to_order_data_retention_settings' ) );
 		add_filter( 'woocommerce_account_settings', array( __CLASS__, 'add_subscription_data_retention_settings' ) );
+
+		// Attach callbacks to prevent subscription related orders being trashed or anonymized
+		add_filter( 'woocommerce_trash_pending_orders_query_args', array( __CLASS__, 'remove_subscription_orders_from_anonymization_query' ), 10, 2 );
+		add_filter( 'woocommerce_trash_failed_orders_query_args', array( __CLASS__, 'remove_subscription_orders_from_anonymization_query' ), 10, 2 );
+		add_filter( 'woocommerce_trash_cancelled_orders_query_args', array( __CLASS__, 'remove_subscription_orders_from_anonymization_query' ), 10, 2 );
+		add_filter( 'woocommerce_anonymize_completed_orders_query_args', array( __CLASS__, 'remove_subscription_orders_from_anonymization_query' ), 10, 2 );
 	}
 
 	/**
@@ -167,5 +173,25 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 		) );
 
 		return $settings;
+	}
+
+	/**
+	 * Remove subscription related order types from the order anonymization query.
+	 *
+	 * @since 2.2.20
+	 * @param  array $query_args @see wc_get_orders() args.
+	 * @return array The args used to get orders to anonymize.
+	 */
+	public static function remove_subscription_orders_from_anonymization_query( $query_args ) {
+		if ( ! is_array( $query_args ) ) {
+			return $query_args;
+		}
+
+		$query_args['subscription_parent']      = false;
+		$query_args['subscription_renewal']     = false;
+		$query_args['subscription_switch']      = false;
+		$query_args['subscription_resubscribe'] = false;
+
+		return $query_args;
 	}
 }
