@@ -51,7 +51,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 	 * @param array $bulk_actions Subscription bulk actions.
 	 */
 	public static function add_remove_personal_data_bulk_action( $bulk_actions ) {
-		$bulk_actions['remove_personal_data'] = __( 'Remove personal data', 'woocommerce-subscriptons' );
+		$bulk_actions['remove_personal_data'] = __( 'Cancel and remove personal data', 'woocommerce-subscriptons' );
 		return $bulk_actions;
 	}
 
