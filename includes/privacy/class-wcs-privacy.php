@@ -172,6 +172,19 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 			'autoload'      => false,
 		) );
 
+		WC_Subscriptions_Admin::insert_setting_after( $settings, 'woocommerce_anonymize_completed_orders', array(
+			'title'       => __( 'Retain ended subscriptions', 'woocommerce-subscriptions' ),
+			'desc_tip'    => __( 'Retain ended subscriptions and their related orders for a specified duration before anonymizing the personal data within them.', 'woocommerce-subscriptions' ),
+			'id'          => 'woocommerce_anonymize_ended_subscriptions',
+			'type'        => 'relative_date_selector',
+			'placeholder' => __( 'N/A', 'woocommerce-subscriptions' ),
+			'default'     => array(
+				'number' => '',
+				'unit'   => 'months',
+			),
+			'autoload'    => false,
+		) );
+
 		return $settings;
 	}
 
