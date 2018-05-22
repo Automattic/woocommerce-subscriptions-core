@@ -64,72 +64,72 @@ class WCS_Privacy_Exporters {
 		);
 	}
 
-	 /**
- 	 * Get personal data (key/value pairs) for an subscription object.
- 	 *
- 	 * @since 2.2.20
- 	 * @param WC_Subscription $subscription Subscription object.
- 	 * @return array
- 	 */
- 	protected static function get_subscription_personal_data( $subscription ) {
- 		$personal_data   = array();
- 		$props_to_export = apply_filters( 'woocommerce_privacy_export_subscription_personal_data_props', array(
- 			'order_number'               => __( 'Subscription Number', 'woocommerce-subscriptions' ),
- 			'date_created'               => __( 'Created Date', 'woocommerce-subscriptions' ),
- 			'total'                      => __( 'Recurring Total', 'woocommerce-subscriptions' ),
- 			'items'                      => __( 'Subscription Items', 'woocommerce-subscriptions' ),
- 			'customer_ip_address'        => __( 'IP Address', 'woocommerce-subscriptions' ),
- 			'customer_user_agent'        => __( 'Browser User Agent', 'woocommerce-subscriptions' ),
- 			'formatted_billing_address'  => __( 'Billing Address', 'woocommerce-subscriptions' ),
- 			'formatted_shipping_address' => __( 'Shipping Address', 'woocommerce-subscriptions' ),
- 			'billing_phone'              => __( 'Phone Number', 'woocommerce-subscriptions' ),
- 			'billing_email'              => __( 'Email Address', 'woocommerce-subscriptions' ),
- 		), $subscription );
+	/**
+	 * Get personal data (key/value pairs) for an subscription object.
+	 *
+	 * @since 2.2.20
+	 * @param WC_Subscription $subscription Subscription object.
+	 * @return array
+	 */
+	protected static function get_subscription_personal_data( $subscription ) {
+		$personal_data   = array();
+		$props_to_export = apply_filters( 'woocommerce_privacy_export_subscription_personal_data_props', array(
+			'order_number'               => __( 'Subscription Number', 'woocommerce-subscriptions' ),
+			'date_created'               => __( 'Created Date', 'woocommerce-subscriptions' ),
+			'total'                      => __( 'Recurring Total', 'woocommerce-subscriptions' ),
+			'items'                      => __( 'Subscription Items', 'woocommerce-subscriptions' ),
+			'customer_ip_address'        => __( 'IP Address', 'woocommerce-subscriptions' ),
+			'customer_user_agent'        => __( 'Browser User Agent', 'woocommerce-subscriptions' ),
+			'formatted_billing_address'  => __( 'Billing Address', 'woocommerce-subscriptions' ),
+			'formatted_shipping_address' => __( 'Shipping Address', 'woocommerce-subscriptions' ),
+			'billing_phone'              => __( 'Phone Number', 'woocommerce-subscriptions' ),
+			'billing_email'              => __( 'Email Address', 'woocommerce-subscriptions' ),
+		), $subscription );
 
- 		foreach ( $props_to_export as $prop => $name ) {
- 			$value = '';
+		foreach ( $props_to_export as $prop => $name ) {
+			$value = '';
 
- 			switch ( $prop ) {
- 				case 'items':
- 					$item_names = array();
- 					foreach ( $subscription->get_items() as $item ) {
- 						$item_names[] = $item->get_name() . ' x ' . $item->get_quantity();
- 					}
- 					$value = implode( ', ', $item_names );
- 					break;
- 				case 'date_created':
- 					$value = wc_format_datetime( $subscription->get_date_created(), get_option( 'date_format' ) . ', ' . get_option( 'time_format' ) );
- 					break;
- 				case 'formatted_billing_address':
- 				case 'formatted_shipping_address':
- 					$value = preg_replace( '#<br\s*/?>#i', ', ', $subscription->{"get_$prop"}() );
- 					break;
- 				default:
- 					if ( is_callable( array( $subscription, 'get_' . $prop ) ) ) {
- 						$value = $subscription->{"get_$prop"}();
- 					}
- 					break;
- 			}
+			switch ( $prop ) {
+				case 'items':
+					$item_names = array();
+					foreach ( $subscription->get_items() as $item ) {
+						$item_names[] = $item->get_name() . ' x ' . $item->get_quantity();
+					}
+					$value = implode( ', ', $item_names );
+					break;
+				case 'date_created':
+					$value = wc_format_datetime( $subscription->get_date_created(), get_option( 'date_format' ) . ', ' . get_option( 'time_format' ) );
+					break;
+				case 'formatted_billing_address':
+				case 'formatted_shipping_address':
+					$value = preg_replace( '#<br\s*/?>#i', ', ', $subscription->{"get_$prop"}() );
+					break;
+				default:
+					if ( is_callable( array( $subscription, 'get_' . $prop ) ) ) {
+						$value = $subscription->{"get_$prop"}();
+					}
+					break;
+			}
 
- 			$value = apply_filters( 'woocommerce_privacy_export_subscription_personal_data_prop', $value, $prop, $subscription );
+			$value = apply_filters( 'woocommerce_privacy_export_subscription_personal_data_prop', $value, $prop, $subscription );
 
- 			if ( $value ) {
- 				$personal_data[] = array(
- 					'name'  => $name,
- 					'value' => $value,
- 				);
- 			}
- 		}
+			if ( $value ) {
+				$personal_data[] = array(
+					'name'  => $name,
+					'value' => $value,
+				);
+			}
+		}
 
- 		/**
- 		 * Allow extensions to register their own personal data for this subscription for the export.
- 		 *
- 		 * @since 2.2.20
- 		 * @param array    $personal_data Array of name value pairs to expose in the export.
- 		 * @param WC_Subscription $subscription A subscription object.
- 		 */
- 		$personal_data = apply_filters( 'woocommerce_privacy_export_subscription_personal_data', $personal_data, $subscription );
+		/**
+		 * Allow extensions to register their own personal data for this subscription for the export.
+		 *
+		 * @since 2.2.20
+		 * @param array    $personal_data Array of name value pairs to expose in the export.
+		 * @param WC_Subscription $subscription A subscription object.
+		 */
+		$personal_data = apply_filters( 'woocommerce_privacy_export_subscription_personal_data', $personal_data, $subscription );
 
- 		return $personal_data;
- 	}
+		return $personal_data;
+	}
 }
