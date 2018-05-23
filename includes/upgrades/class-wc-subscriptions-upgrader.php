@@ -833,7 +833,7 @@ class WC_Subscriptions_Upgrader {
 	 * @since 2.3.0
 	 */
 	public static function initialise_background_updaters() {
-		include_once( dirname( __FILE__ ) . '/class-wcs-upgrade-2-3-0.php' );
+		include_once( dirname( __FILE__ ) . '/class-wcs-repair-suspended-paypal-subscriptions.php' );
 
 		self::$background_updaters['2.3']['suspended_paypal_repair'] = new WCS_Repair_Suspended_PayPal_Subscriptions( new WC_logger() );
 
