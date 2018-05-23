@@ -51,6 +51,23 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 	}
 
 	/**
+	 * Add privacy policy content for the privacy policy page.
+	 *
+	 * @since 2.2.20
+	 */
+	public function get_privacy_message() {
+		return
+		'<p>' . __( 'By using WooCommerce Subscriptions, you may be storing personal data and depending on which third-party payment processors you’re using to take subscription payments, you may be sharing personal data with external sources.', 'woocommerce-subscriptions' ) . '</p>' .
+		// translators: placeholders are opening and closing link tags, linking to additional privacy policy documentation.
+		'<h3>' . __( 'What we collect and store', 'woocommerce-subscriptions' ) . '</h3>' .
+		'<p>' . __( 'For the purposes of processing recurring subscription payments, we store the customer\'s name, billing address, shipping address, email address, phone number and credit card/payment details.', 'woocommerce-subscriptions' ) . '</p>' .
+		'<h3>' . __( 'What we share with others', 'woocommerce-subscriptions' ) . '</h3>' .
+		'<p>' . __( 'What personal information your store shares with external sources depends on which third-party payment processor plugins you are using to collect subscription payments. We recommend that you consult with their privacy policies to inform this section of your privacy policy.' )  . '</p>' .
+		// translators: placeholders are opening and closing link tags, linking to additional privacy policy documentation.
+		'<p>' . sprintf( __( 'If you are using PayPal Standard or PayPal Reference transactions please see the %sPayPal Privacy Policy%s for more details.', 'woocommerce-subscriptions' ), '<a src="https://www.paypal.com/us/webapps/mpp/ua/privacy-full">', '</a>' )  . '</p>';
+	}
+
+	/**
 	 * Add the option to remove personal data from subscription via a bulk action.
 	 *
 	 * @since 2.2.20
