@@ -48,7 +48,7 @@ class WCS_Privacy_Exporters {
 			foreach ( $subscriptions as $subscription ) {
 				$data_to_export[] = array(
 					'group_id'    => 'woocommerce_subscriptions',
-					'group_label' => __( 'Subscriptions', 'woocommerce' ),
+					'group_label' => __( 'Subscriptions', 'woocommerce-subscriptions' ),
 					'item_id'     => 'subscription-' . $subscription->get_id(),
 					'data'        => self::get_subscription_personal_data( $subscription ),
 				);
