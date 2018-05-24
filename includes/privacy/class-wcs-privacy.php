@@ -64,7 +64,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 		'<h3>' . __( 'What we share with others', 'woocommerce-subscriptions' ) . '</h3>' .
 		'<p>' . __( 'What personal information your store shares with external sources depends on which third-party payment processor plugins you are using to collect subscription payments. We recommend that you consult with their privacy policies to inform this section of your privacy policy.' )  . '</p>' .
 		// translators: placeholders are opening and closing link tags, linking to additional privacy policy documentation.
-		'<p>' . sprintf( __( 'If you are using PayPal Standard or PayPal Reference transactions please see the %sPayPal Privacy Policy%s for more details.', 'woocommerce-subscriptions' ), '<a src="https://www.paypal.com/us/webapps/mpp/ua/privacy-full">', '</a>' )  . '</p>';
+		'<p>' . sprintf( __( 'If you are using PayPal Standard or PayPal Reference transactions please see the %sPayPal Privacy Policy%s for more details.', 'woocommerce-subscriptions' ), '<a href="https://www.paypal.com/us/webapps/mpp/ua/privacy-full">', '</a>' )  . '</p>';
 	}
 
 	/**
