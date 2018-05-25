@@ -23,19 +23,11 @@ class WCS_Privacy_Erasers {
 	 * @since 2.2.20
 	 * @param string $email_address The user email address.
 	 * @param int    $page  Page.
-	 * @return array An array of personal data in name value pairs.
+	 * @return array An array of response data to return to the WP eraser.
 	 */
 	public static function subscription_data_eraser( $email_address, $page ) {
-		$page            = (int) $page;
-		$user            = get_user_by( 'email', $email_address ); // Check if user has an ID in the DB to load stored personal data.
-		$erasure_enabled = wc_string_to_bool( get_option( 'woocommerce_erasure_request_removes_subscription_data', 'no' ) );
-		$response        = array(
-			'items_removed'  => false,
-			'items_retained' => false,
-			'messages'       => array(),
-			'done'           => true,
-		);
-
+		$page              = (int) $page;
+		$user              = get_user_by( 'email', $email_address ); // Check if user has an ID in the DB to load stored personal data.
 		$subscription_args = array(
 			'limit'    => 10,
 			'page'     => $page,
@@ -48,6 +40,26 @@ class WCS_Privacy_Erasers {
 
 		// Use the data store get_orders() function as it supports getting subscriptions from billing email or customer ID - wcs_get_subscriptions() doesn't.
 		$subscriptions = WC_Data_Store::load( 'subscription' )->get_orders( $subscription_args );
+
+		return self::erase_subscription_data_and_generate_response( $subscriptions );
+	}
+
+	/**
+	 * Erase personal data from an array of subscriptions and generate an eraser response.
+	 *
+	 * @since 2.2.20
+	 * @param  array $subscriptions An array of WC_Subscription objects.
+	 * @param  int   $limit The number of subscriptions erased in each batch. Optional. Default is 10.
+	 * @return array An array of response data to return to the WP eraser.
+	 */
+	public static function erase_subscription_data_and_generate_response( $subscriptions, $limit = 10 ) {
+		$erasure_enabled = wc_string_to_bool( get_option( 'woocommerce_erasure_request_removes_subscription_data', 'no' ) );
+		$response        = array(
+			'items_removed'  => false,
+			'items_retained' => false,
+			'messages'       => array(),
+			'done'           => true,
+		);
 
 		if ( 0 < count( $subscriptions ) ) {
 			foreach ( $subscriptions as $subscription ) {
@@ -63,9 +75,8 @@ class WCS_Privacy_Erasers {
 					$response['items_retained'] = true;
 				}
 			}
-			$response['done'] = 10 > count( $subscriptions );
-		} else {
-			$response['done'] = true;
+
+			$response['done'] = $limit > count( $subscriptions );
 		}
 
 		return $response;
