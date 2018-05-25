@@ -14,11 +14,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WCS_Privacy extends WC_Abstract_Privacy {
 
+	/**
+	 * Background updater to process personal data removal from subscriptions and related orders.
+	 *
+	 * @var WCS_Privacy_Background_Updater
+	 */
+	protected static $background_process;
 
 	/**
 	 * WCS_Privacy constructor.
 	 */
 	public function __construct() {
+		if ( ! self::$background_process ) {
+			self::$background_process = new WCS_Privacy_Background_Updater();
+		}
+
 		parent::__construct( __( 'WooCommerce Subscriptions', 'woocommerce-subscriptions' ) );
 
 		// include our exporters and erasers.
@@ -34,6 +44,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 	 */
 	public function init() {
 		parent::init();
+		self::$background_process->init();
 
 		add_filter( 'woocommerce_subscription_bulk_actions', array( __CLASS__, 'add_remove_personal_data_bulk_action' ) );
 		add_action( 'load-edit.php', array( __CLASS__, 'process_bulk_action' ) );
@@ -48,6 +59,17 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 		add_filter( 'woocommerce_trash_failed_orders_query_args', array( __CLASS__, 'remove_subscription_orders_from_anonymization_query' ), 10, 2 );
 		add_filter( 'woocommerce_trash_cancelled_orders_query_args', array( __CLASS__, 'remove_subscription_orders_from_anonymization_query' ), 10, 2 );
 		add_filter( 'woocommerce_anonymize_completed_orders_query_args', array( __CLASS__, 'remove_subscription_orders_from_anonymization_query' ), 10, 2 );
+
+		add_action( 'woocommerce_cleanup_personal_data', array( $this, 'queue_cleanup_personal_data' ) );
+	}
+
+	/**
+	 * Spawn events for subscription cleanup.
+	 *
+	 * @since 2.2.20
+	 */
+	public function queue_cleanup_personal_data() {
+		self::$background_process->schedule_ended_subscription_anonymization();
 	}
 
 	/**
@@ -187,6 +209,19 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 			'default'       => 'no',
 			'checkboxgroup' => '',
 			'autoload'      => false,
+		) );
+
+		WC_Subscriptions_Admin::insert_setting_after( $settings, 'woocommerce_anonymize_completed_orders', array(
+			'title'       => __( 'Retain ended subscriptions', 'woocommerce-subscriptions' ),
+			'desc_tip'    => __( 'Retain ended subscriptions and their related orders for a specified duration before anonymizing the personal data within them.', 'woocommerce-subscriptions' ),
+			'id'          => 'woocommerce_anonymize_ended_subscriptions',
+			'type'        => 'relative_date_selector',
+			'placeholder' => __( 'N/A', 'woocommerce-subscriptions' ),
+			'default'     => array(
+				'number' => '',
+				'unit'   => 'months',
+			),
+			'autoload'    => false,
 		) );
 
 		return $settings;
