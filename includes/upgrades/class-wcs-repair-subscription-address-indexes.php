@@ -16,56 +16,59 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class WCS_Repair_Subscription_Address_Indexes {
-
-	private static $action_hook = 'wcs_add_missing_subscription_address_indexes';
-	private static $batch_size  = 30;
+class WCS_Repair_Subscription_Address_Indexes extends WCS_Background_Updater {
 
 	/**
-	 * Schedule the repair function to run in 5 minutes.
+	 * WC_Logger instance for logging messages to.
 	 *
+	 * @var WC_Logger
+	 */
+	protected $logger;
+
+	/**
+	 * Constructor
+	 *
+	 * @param WC_Logger $logger The WC_Logger instance.
 	 * @since 2.3.0
 	 */
-	public static function schedule_repair() {
-		if ( false === wc_next_scheduled_action( self::$action_hook ) ) {
-			wc_schedule_single_action( gmdate( 'U' ) + ( MINUTE_IN_SECONDS * 5 ), self::$action_hook );
-		}
+	public function __construct( WC_Logger $logger ) {
+		$this->scheduled_hook = 'wcs_add_missing_subscription_address_indexes';
+		$this->logger         = $logger;
 	}
 
 	/**
-	 * Repair a batch of subscriptions with missing address indexes.
+	 * Schedule the @see $this->scheduled_hook action to start updating subscriptions in
+	 * @see $this->time_limit seconds (60 seconds by default).
 	 *
 	 * @since 2.3.0
 	 */
-	public static function repair_subscriptions_without_address_indexes() {
-		$subscriptions_to_repair = self::get_subscriptions_to_repair();
+	public function schedule_repair() {
+		$this->schedule_background_update();
+	}
 
-		foreach ( $subscriptions_to_repair as $subscription_id ) {
-			try {
-				$subscription = wcs_get_subscription( $subscription_id );
+	/**
+	 * Update a subscription, setting its address indexes.
+	 *
+	 * @since 2.3.0
+	 */
+	protected function update_item( $subscription_id ) {
+		try {
+			$subscription = wcs_get_subscription( $subscription_id );
 
-				if ( false === $subscription ) {
-					throw new Exception( 'Failed to instantiate subscription object' );
-				}
-
-				update_post_meta( $subscription_id, '_billing_address_index', implode( ' ', $subscription->get_address( 'billing' ) ) );
-
-				// If the subscription has a shipping address set (requires shipping), set the shipping address index.
-				if ( $subscription->get_shipping_address_1() || $subscription->get_shipping_address_2() ) {
-					update_post_meta( $subscription_id, '_shipping_address_index', implode( ' ', $subscription->get_address( 'shipping' ) ) );
-				}
-
-				self::log( sprintf( 'Subscription ID %d address index(es) added.', $subscription_id ) );
-			} catch ( Exception $e ) {
-				self::log( sprintf( '--- Exception caught repairing subscription %d - exception message: %s ---', $subscription_id, $e->getMessage() ) );
+			if ( false === $subscription ) {
+				throw new Exception( 'Failed to instantiate subscription object' );
 			}
-		}
 
-		// If we've processed a full batch, schedule the next batch to be repaired.
-		if ( count( $subscriptions_to_repair ) === self::$batch_size ) {
-			self::schedule_repair();
-		} else {
-			self::log( 'Add address indexes for subscriptions complete' );
+			update_post_meta( $subscription_id, '_billing_address_index', implode( ' ', $subscription->get_address( 'billing' ) ) );
+
+			// If the subscription has a shipping address set (requires shipping), set the shipping address index.
+			if ( $subscription->get_shipping_address_1() || $subscription->get_shipping_address_2() ) {
+				update_post_meta( $subscription_id, '_shipping_address_index', implode( ' ', $subscription->get_address( 'shipping' ) ) );
+			}
+
+			$this->log( sprintf( 'Subscription ID %d address index(es) added.', $subscription_id ) );
+		} catch ( Exception $e ) {
+			$this->log( sprintf( '--- Exception caught repairing subscription %d - exception message: %s ---', $subscription_id, $e->getMessage() ) );
 		}
 	}
 
@@ -75,10 +78,10 @@ class WCS_Repair_Subscription_Address_Indexes {
 	 * @since 2.3.0
 	 * @return array A list of subscription ids which need address indexes.
 	 */
-	private static function get_subscriptions_to_repair() {
-		$subscriptions_to_repair = get_posts( array(
+	protected function get_items_to_update() {
+		return get_posts( array(
 			'post_type'      => 'shop_subscription',
-			'posts_per_page' => self::$batch_size,
+			'posts_per_page' => 20,
 			'post_status'    => 'any',
 			'fields'         => 'ids',
 			'meta_query'     => array(
@@ -88,8 +91,6 @@ class WCS_Repair_Subscription_Address_Indexes {
 				),
 			),
 		) );
-
-		return $subscriptions_to_repair;
 	}
 
 	/**
@@ -98,7 +99,7 @@ class WCS_Repair_Subscription_Address_Indexes {
 	 * @since 2.3.0
 	 * @param string The message to be logged
 	 */
-	protected static function log( $message ) {
-		WCS_Upgrade_Logger::add( $message, 'wcs-add-subscription-address-indexes' );
+	protected function log( $message ) {
+		$this->logger->add( 'wcs-add-subscription-address-indexes', $message );
 	}
 }
