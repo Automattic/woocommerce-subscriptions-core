@@ -70,7 +70,7 @@ function wcs_cart_totals_shipping_html() {
 				} elseif ( in_array( $chosen_initial_method, $package['rates'] ) ) {
 					$chosen_recurring_method = $chosen_initial_method;
 				} else {
-					$chosen_recurring_method = current( $package['rates'] )->id;
+					$chosen_recurring_method = empty( $package['rates'] ) ? '' : current( $package['rates'] )->id;
 				}
 
 				$shipping_selection_displayed = false;
