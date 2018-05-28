@@ -59,12 +59,8 @@ class WCS_Repair_Subscription_Address_Indexes extends WCS_Background_Updater {
 				throw new Exception( 'Failed to instantiate subscription object' );
 			}
 
-			update_post_meta( $subscription_id, '_billing_address_index', implode( ' ', $subscription->get_address( 'billing' ) ) );
-
-			// If the subscription has a shipping address set (requires shipping), set the shipping address index.
-			if ( $subscription->get_shipping_address_1() || $subscription->get_shipping_address_2() ) {
-				update_post_meta( $subscription_id, '_shipping_address_index', implode( ' ', $subscription->get_address( 'shipping' ) ) );
-			}
+			// Saving the subscription sets the address indexes if they don't exist.
+			$subscription->save();
 
 			$this->log( sprintf( 'Subscription ID %d address index(es) added.', $subscription_id ) );
 		} catch ( Exception $e ) {
