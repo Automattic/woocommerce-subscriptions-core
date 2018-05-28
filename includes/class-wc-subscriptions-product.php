@@ -1120,6 +1120,30 @@ class WC_Subscriptions_Product {
 		return $parent_product_ids;
 	}
 
+	/**
+	 * Get a product's list of parent IDs which are a grouped type.
+	 *
+	 * Unlike @see WC_Subscriptions_Product::get_parent_ids(), this function will return parent products which still exist and are a grouped product.
+	 *
+	 * @param WC_Product The product object to get parents from.
+	 * @return array The product's grouped parent IDs.
+	 * @since 2.3.0
+	 */
+	public static function get_grouped_parent_product_ids( $product ) {
+		$parent_product_ids = self::get_parent_ids( $product );
+
+		// Verify that the parent products exist and are indeed grouped products
+		foreach ( $parent_product_ids as $index => $product_id ) {
+			$parent_product = wc_get_product( $product_id );
+
+			if ( ! is_a( $parent_product, 'WC_Product' ) || ! $parent_product->is_type( 'grouped' ) || 'trash' === wcs_get_objects_property( $parent_product, 'post_status' ) ) {
+				unset( $parent_product_ids[ $index ] );
+			}
+		}
+
+		return $parent_product_ids;
+	}
+
 	/************************
 	 * Deprecated Functions *
 	 ************************/
