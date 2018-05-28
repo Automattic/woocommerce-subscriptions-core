@@ -31,6 +31,11 @@ class WC_Subscriptions_Upgrader {
 	public static $updated_to_wc_2_0;
 
 	/**
+	 * @var array An array of WCS_Background_Updater objects used to run upgrade scripts in the background.
+	 */
+	protected static $background_updaters = array();
+
+	/**
 	 * Hooks upgrade function to init.
 	 *
 	 * @since 1.2
@@ -102,6 +107,8 @@ class WC_Subscriptions_Upgrader {
 		add_action( 'init', array( __CLASS__, 'maybe_add_subscription_address_indexes' ), 2 );
 
 		add_action( 'admin_notices', array( __CLASS__, 'maybe_add_downgrade_notice' ) );
+
+		add_action( 'init', array( __CLASS__, 'initialise_background_updaters' ), 0 );
 	}
 
 	/**
@@ -212,8 +219,7 @@ class WC_Subscriptions_Upgrader {
 
 		// Repair subscriptions suspended via PayPal.
 		if ( version_compare( self::$active_version, '2.1.4', '>=' ) && version_compare( self::$active_version, '2.3.0', '<' ) ) {
-			include_once( dirname( __FILE__ ) . '/class-wcs-upgrade-2-3-0.php' );
-			WCS_Upgrade_2_3_0::schedule_repair();
+			self::$background_updaters['2.3']['suspended_paypal_repair']->schedule_repair();
 		}
 
 		// If the store is running WC 3.0, repair subscriptions with missing address indexes.
@@ -845,6 +851,24 @@ class WC_Subscriptions_Upgrader {
 		if ( $woocommerce_active_version !== $woocommerce_database_version && version_compare( $woocommerce_active_version, '3.0', '>=' ) && version_compare( $woocommerce_database_version, '3.0', '<' ) ) {
 			include_once( dirname( __FILE__ ) . '/class-wcs-repair-subscription-address-indexes.php' );
 			WCS_Repair_Subscription_Address_Indexes::schedule_repair();
+		}
+	}
+
+	/**
+	 * Load and initialise the background updaters.
+	 *
+	 * @since 2.3.0
+	 */
+	public static function initialise_background_updaters() {
+		include_once( dirname( __FILE__ ) . '/class-wcs-upgrade-2-3-0.php' );
+
+		self::$background_updaters['2.3']['suspended_paypal_repair'] = new WCS_Repair_Suspended_PayPal_Subscriptions( new WC_logger() );
+
+		// Init the updaters
+		foreach ( self::$background_updaters as $version => $updaters ) {
+			foreach ( $updaters as $updater ) {
+				$updater->init();
+			}
 		}
 	}
 
