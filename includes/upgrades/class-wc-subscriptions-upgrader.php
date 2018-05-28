@@ -219,8 +219,7 @@ class WC_Subscriptions_Upgrader {
 
 		// If the store is running WC 3.0, repair subscriptions with missing address indexes.
 		if ( '0' !== self::$active_version && version_compare( self::$active_version, '2.3.0', '<' ) && version_compare( WC()->version, '3.0', '>=' ) ) {
-			include_once( dirname( __FILE__ ) . '/class-wcs-repair-subscription-address-indexes.php' );
-			WCS_Repair_Subscription_Address_Indexes::schedule_repair();
+			self::$background_updaters['2.3']['address_indexes_repair']->schedule_repair();
 		}
 
 		self::upgrade_complete();
@@ -822,8 +821,7 @@ class WC_Subscriptions_Upgrader {
 		$woocommerce_database_version = get_option( 'woocommerce_version' );
 
 		if ( $woocommerce_active_version !== $woocommerce_database_version && version_compare( $woocommerce_active_version, '3.0', '>=' ) && version_compare( $woocommerce_database_version, '3.0', '<' ) ) {
-			include_once( dirname( __FILE__ ) . '/class-wcs-repair-subscription-address-indexes.php' );
-			WCS_Repair_Subscription_Address_Indexes::schedule_repair();
+			self::$background_updaters['2.3']['address_indexes_repair']->schedule_repair();
 		}
 	}
 
@@ -833,9 +831,13 @@ class WC_Subscriptions_Upgrader {
 	 * @since 2.3.0
 	 */
 	public static function initialise_background_updaters() {
-		include_once( dirname( __FILE__ ) . '/class-wcs-repair-suspended-paypal-subscriptions.php' );
+		$logger = new WC_logger();
 
-		self::$background_updaters['2.3']['suspended_paypal_repair'] = new WCS_Repair_Suspended_PayPal_Subscriptions( new WC_logger() );
+		include_once( dirname( __FILE__ ) . '/class-wcs-repair-suspended-paypal-subscriptions.php' );
+		include_once( dirname( __FILE__ ) . '/class-wcs-repair-subscription-address-indexes.php' );
+
+		self::$background_updaters['2.3']['suspended_paypal_repair'] = new WCS_Repair_Suspended_PayPal_Subscriptions( $logger );
+		self::$background_updaters['2.3']['address_indexes_repair']  = new WCS_Repair_Subscription_Address_Indexes( $logger );
 
 		// Init the updaters
 		foreach ( self::$background_updaters as $version => $updaters ) {
