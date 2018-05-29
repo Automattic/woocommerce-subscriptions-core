@@ -963,7 +963,31 @@ class WC_Subscriptions_Admin {
 			unset( $_POST[ self::$option_prefix . '_turn_off_automatic_payments' ] );
 		}
 
-		woocommerce_update_options( self::get_settings() );
+		$settings         = self::get_settings();
+		$defaults_to_find = array(
+			self::$option_prefix . '_add_to_cart_button_text' => '',
+			self::$option_prefix . '_order_button_text'       => '',
+		);
+
+		foreach ( $settings as $setting ) {
+			if ( ! isset( $setting['id'], $setting['default'], $defaults_to_find[ $setting['id'] ], $_POST[ $setting['id'] ] ) ) {
+				continue;
+			}
+
+			// Set the setting to its default if no value has been submitted.
+			if ( '' === wc_clean( $_POST[ $setting['id'] ] ) ) {
+				$_POST[ $setting['id'] ] = $setting['default'];
+			}
+
+			unset( $defaults_to_find[ $setting['id'] ] );
+
+			// If all defaults have been found, exit.
+			if ( ! count( $defaults_to_find ) ) {
+				break;
+			}
+		}
+
+		woocommerce_update_options( $settings );
 	}
 
 	/**
