@@ -263,7 +263,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 
 		$subscriptions = wc_get_orders( $parent_args );
 
-		if ( $args['paginate'] ) {
+		if ( isset( $args['paginate'] ) && $args['paginate'] ) {
 
 			if ( 'objects' === $args['return'] ) {
 				$return = array_map( 'wcs_get_subscription', $subscriptions->orders );
