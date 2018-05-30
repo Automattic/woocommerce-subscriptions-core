@@ -32,6 +32,7 @@ class WCS_Privacy_Erasers {
 			'limit'    => 10,
 			'page'     => $page,
 			'customer' => array( $email_address ),
+			'status'   => 'any',
 		);
 
 		if ( $user instanceof WP_User ) {

@@ -179,9 +179,10 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 		}
 
 		foreach ( $settings as &$setting ) {
-			if ( isset( $setting['id'] ) && 'personal_data_retention' === $setting['id'] ) {
+			if ( isset( $setting['id'], $setting['type'] ) && 'personal_data_retention' === $setting['id'] && 'title' === $setting['type'] ) {
 				// translators: placeholders are opening and closing tags.
-				$setting['desc'] .= '<br>' . sprintf( __( '%sNote:%s Orders which are related to subscriptions will not be included in the orders affected by these settings.', 'woocommerce-subscriptions' ), '<b>', '</b>' );
+				$note            = sprintf( __( '%sNote:%s Orders which are related to subscriptions will not be included in the orders affected by these settings.', 'woocommerce-subscriptions' ), '<b>', '</b>' );
+				$setting['desc'] = isset( $setting['desc'] ) ? $setting['desc'] . '<br>' . $note : $note;
 			}
 		}
 
