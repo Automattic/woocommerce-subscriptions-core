@@ -423,7 +423,8 @@ class WC_Subscription_Legacy extends WC_Subscription {
 
 				// Sign up is total amount paid for this item on original order when item has a free trial
 				$sign_up_fee = $original_order_item['line_total'] / $original_order_item['qty'];
-
+			} elseif ( isset( $original_order_item['item_meta']['_synced_sign_up_fee'] ) ) {
+				$sign_up_fee = $original_order_item['item_meta']['_synced_sign_up_fee'] / $original_order_item['qty'];
 			} else {
 
 				// Sign-up fee is any amount on top of recurring amount
