@@ -1088,6 +1088,10 @@ class WC_Subscriptions_Product {
 
 				$min_max_data = wcs_get_min_max_variation_data( $product, $child_variation_ids );
 
+				if ( is_callable( array( $product, 'set_min_and_max_variation_data' ) ) ) {
+					$product->set_min_and_max_variation_data( $min_max_data, $child_variation_ids );
+				}
+
 				$product->add_meta_data( '_min_price_variation_id', $min_max_data['min']['variation_id'], true );
 				$product->add_meta_data( '_max_price_variation_id', $min_max_data['max']['variation_id'], true );
 
