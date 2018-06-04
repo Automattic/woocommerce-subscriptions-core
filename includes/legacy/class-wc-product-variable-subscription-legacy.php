@@ -403,4 +403,37 @@ class WC_Product_Variable_Subscription_Legacy extends WC_Product_Variable_Subscr
 		update_post_meta( $this->id, '_min_max_variation_data', $min_and_max_data, true );
 		update_post_meta( $this->id, '_min_max_variation_ids_hash', md5( json_encode( $variation_ids ) ), true );
 	}
+
+	/**
+	 * Get the min and max variation data.
+	 *
+	 * This is a wrapper for @see wcs_get_min_max_variation_data() but to avoid calling
+	 * that resource intensive function multiple times per request, check the value
+	 * stored in meta or cached in memory before calling that function.
+	 *
+	 * @param  array $variation_ids An array of variation IDs.
+	 * @return array The variable product's min and max variation data.
+	 * @since 2.3.0
+	 */
+	public function get_min_and_max_variation_data( $variation_ids ) {
+		// Sort the variation IDs so the hash isn't different for the same array of IDs
+		sort( $variation_ids );
+		$variation_ids_hash = md5( json_encode( $variation_ids ) );
+
+		// If this variable product has no min and max variation data, set it.
+		if ( ! metadata_exists( 'post', $this->id, '_min_max_variation_ids_hash' ) ) {
+			$this->set_min_and_max_variation_data();
+		}
+
+		if ( $variation_ids_hash === $this->get_meta( '_min_max_variation_ids_hash', true ) ) {
+			$min_and_max_variation_data = $this->get_meta( '_min_max_variation_data', true );
+		} elseif ( ! empty( $this->min_max_variation_data[ $variation_ids_hash ] ) ) {
+			$min_and_max_variation_data = $this->min_max_variation_data[ $variation_ids_hash ];
+		} else {
+			$min_and_max_variation_data = wcs_get_min_max_variation_data( $this, $variation_ids );
+			$this->min_max_variation_data[ $variation_ids_hash ] = $min_and_max_variation_data;
+		}
+
+		return $min_and_max_variation_data;
+	}
 }
