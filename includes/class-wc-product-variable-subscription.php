@@ -141,15 +141,10 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 
 		if ( empty( $this->sorted_variation_prices[ $prices_hash ] ) ) {
 
-			$child_variation_ids = array_keys( $prices );
-			$variation_hash      = md5( json_encode( $child_variation_ids ) );
+			$min_max_variation_data = $this->get_min_and_max_variation_data( array_keys( $prices ) );
 
-			if ( empty( $this->min_max_variation_data[ $variation_hash ] ) ) {
-				$this->min_max_variation_data[ $variation_hash ] = wcs_get_min_max_variation_data( $this, $child_variation_ids );
-			}
-
-			$min_variation_id = $this->min_max_variation_data[ $variation_hash ]['min']['variation_id'];
-			$max_variation_id = $this->min_max_variation_data[ $variation_hash ]['max']['variation_id'];
+			$min_variation_id = $min_max_variation_data['min']['variation_id'];
+			$max_variation_id = $min_max_variation_data['max']['variation_id'];
 
 			// Reorder the variable price arrays to reflect the min and max values so that WooCommerce will find them in the correct order
 			$min_price = $prices[ $min_variation_id ];
@@ -292,15 +287,11 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 	 */
 	protected function get_price_prefix( $prices ) {
 
+		$child_variation_ids    = array_keys( $prices['price'] );
+		$min_max_variation_data = $this->get_min_and_max_variation_data( $child_variation_ids );
+
 		// Are the subscription details of all variations identical?
-		$child_variation_ids = array_keys( $prices['price'] );
-		$variation_hash      = md5( json_encode( $child_variation_ids ) );
-
-		if ( empty( $this->min_max_variation_data[ $variation_hash ] ) ) {
-			$this->min_max_variation_data[ $variation_hash ] = wcs_get_min_max_variation_data( $this, $child_variation_ids );
-		}
-
-		if ( $this->min_max_variation_data[ $variation_hash ]['identical'] ) {
+		if ( $min_max_variation_data['identical'] ) {
 			$prefix = '';
 		} else {
 			$prefix = wcs_get_price_html_from_text( $this );

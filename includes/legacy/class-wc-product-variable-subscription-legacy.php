@@ -133,7 +133,7 @@ class WC_Product_Variable_Subscription_Legacy extends WC_Product_Variable_Subscr
 		$children = array_keys( $this->prices_array[ $price_hash ]['price'] );
 		sort( $children );
 
-		$min_max_data = wcs_get_min_max_variation_data( $this, $children );
+		$min_max_data = $this->get_min_and_max_variation_data( $children );
 
 		$min_variation_id = $min_max_data['min']['variation_id'];
 		$max_variation_id = $min_max_data['max']['variation_id'];
