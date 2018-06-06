@@ -22,6 +22,20 @@ class WCS_Upgrade_Notice_Manager {
 	protected static $version = '2.3.0';
 
 	/**
+	 * The number of times the notice will be displayed before being dismissed automatically.
+	 *
+	 * @var int
+	 */
+	protected static $display_count = 2;
+
+	/**
+	 * The option name which stores information about the admin notice.
+	 *
+	 * @var string
+	 */
+	protected static $option_name = 'wcs_display_upgrade_notice';
+
+	/**
 	 * Attach callbacks.
 	 *
 	 * @since 2.3.0
@@ -40,7 +54,10 @@ class WCS_Upgrade_Notice_Manager {
 	 */
 	public static function maybe_record_upgrade( $current_version, $previously_active_version ) {
 		if ( version_compare( $previously_active_version, self::$version, '<' ) && version_compare( $current_version, self::$version, '>=' ) ) {
-			update_option( 'wcs_display_upgrade_notice', self::$version );
+			update_option( self::$option_name, array(
+				'version'       => self::$version,
+				'display_count' => 0,
+			) );
 		}
 	}
 
@@ -52,11 +69,11 @@ class WCS_Upgrade_Notice_Manager {
 	public static function maybe_show_admin_notice() {
 
 		if ( isset( $_GET['_wcsnonce'] ) && wp_verify_nonce( $_GET['_wcsnonce'], 'dismiss_upgrade_notice' ) && ! empty( $_GET['dismiss_upgrade_notice'] ) && self::$version === $_GET['dismiss_upgrade_notice'] ) {
-			delete_option( 'wcs_display_upgrade_notice' );
+			delete_option( self::$option_name );
 			return;
 		}
 
-		if ( get_option( 'wcs_display_upgrade_notice' ) !== self::$version ) {
+		if ( ! self::display_notice() ) {
 			return;
 		}
 
@@ -97,5 +114,44 @@ class WCS_Upgrade_Notice_Manager {
 		) );
 
 		$notice->display();
+		self::increment_display_count();
+	}
+
+	/**
+	 * Determine if this admin notice should be displayed.
+	 *
+	 * @return bool Whether this admin notice should be displayed.
+	 * @since 2.3.0
+	 */
+	protected static function display_notice() {
+		$option         = get_option( self::$option_name );
+		$display_notice = false;
+
+		if ( isset( $option['version'] ) ) {
+			$display_notice = $option['version'] === self::$version;
+		}
+
+		return $display_notice;
+	}
+
+	/**
+	 * Increment the notice display counter signalling the notice has been displayed.
+	 *
+	 * The option triggering this notice will be deleted if the display count has been reached.
+	 *
+	 * @since 2.3.0
+	 */
+	protected static function increment_display_count() {
+		$option = get_option( self::$option_name );
+		$count  = isset( $option['display_count'] ) ? (int) $option['display_count'] : 0;
+		$count++;
+
+		// If we've reached the display count, delete the option so the notice isn't displayed again.
+		if ( $count >= self::$display_count ) {
+			delete_option( self::$option_name );
+		} else {
+			$option['display_count'] = $count;
+			update_option( self::$option_name, $option );
+		}
 	}
 }
