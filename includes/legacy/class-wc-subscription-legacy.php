@@ -433,7 +433,7 @@ class WC_Subscription_Legacy extends WC_Subscription {
 
 			if ( ! empty( $original_order_item ) && ! empty( $sign_up_fee ) ) {
 				$sign_up_fee_proportion = $sign_up_fee / ( $original_order_item['line_total'] / $original_order_item['qty'] );
-				$sign_up_fee_tax        = round( $original_order_item['line_tax'] * $sign_up_fee_proportion, 2 );
+				$sign_up_fee_tax        = wc_round_tax_total( $original_order_item['line_tax'] * $sign_up_fee_proportion );
 
 				// If prices don't inc tax, ensure that the sign up fee amount includes the tax.
 				if ( 'inclusive_of_tax' === $tax_inclusive_or_exclusive && ! $this->get_prices_include_tax() ) {
