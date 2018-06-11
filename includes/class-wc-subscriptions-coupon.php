@@ -766,7 +766,7 @@ class WC_Subscriptions_Coupon {
 
 		// If we have a virtual coupon, attempt to get the original coupon.
 		if ( isset( self::$renewal_coupons[ $coupon_type ] ) ) {
-			$coupon      = self::map_virtual_coupon( $coupon );
+			$coupon      = self::map_virtual_coupon( $code );
 			$coupon_type = $coupon->get_discount_type();
 		}
 
