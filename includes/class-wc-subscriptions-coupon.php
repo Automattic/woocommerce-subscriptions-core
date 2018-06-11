@@ -972,10 +972,9 @@ class WC_Subscriptions_Coupon {
 		}
 
 		// Check each coupon to see if it needs to be removed.
-		foreach ( $limited_coupons as $coupon => $count ) {
-			$coupon_object = new WC_Coupon( $coupon );
-			if ( $coupon_object->get_meta( self::$coupons_renewals ) <= $count ) {
-				$subscription->remove_coupon( $coupon );
+		foreach ( $limited_coupons as $code => $count ) {
+			if ( self::get_coupon_limit( $code ) <= $count ) {
+				$subscription->remove_coupon( $code );
 				$subscription->add_order_note( sprintf(
 					_n(
 						'Limited use coupon "%1$s" removed from subscription. It has been used %2$d time.',
@@ -983,7 +982,7 @@ class WC_Subscriptions_Coupon {
 						$count,
 						'woocommerce-subscriptions'
 					),
-					$coupon,
+					$code,
 					number_format_i18n( $count )
 				) );
 			}
