@@ -977,6 +977,7 @@ class WC_Subscriptions_Coupon {
 				$subscription->remove_coupon( $code );
 				$subscription->add_order_note( sprintf(
 					_n(
+						/* translators: %1$s is the coupon code, %2$d is the number of payment usages */
 						'Limited use coupon "%1$s" removed from subscription. It has been used %2$d time.',
 						'Limited use coupon "%1$s" removed from subscription. It has been used %2$d times.',
 						$count,
@@ -1010,7 +1011,7 @@ class WC_Subscriptions_Coupon {
 		echo '<br>';
 		if ( $limit ) {
 			echo esc_html( sprintf(
-				/* translators: %d refers to the number of renewals the coupon can be used for. */
+				/* translators: %d refers to the number of payments the coupon can be used for. */
 				_n( 'Active for %d payment', 'Active for %d payments', $limit, 'woocommerce-subscriptions' ),
 				number_format_i18n( $limit )
 			) );
