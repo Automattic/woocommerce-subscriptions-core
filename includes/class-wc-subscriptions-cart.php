@@ -1159,9 +1159,14 @@ class WC_Subscriptions_Cart {
 						$added_invalid_notice = true;
 					}
 
-					WC()->checkout()->shipping_methods[ $recurring_shipping_package_key ] = '';
+					$shipping_methods[ $recurring_shipping_package_key ] = '';
 				}
 			}
+		}
+
+		// If there was an invalid recurring shipping method found, we need to apply the changes to WC()->checkout()->shipping_methods.
+		if ( $added_invalid_notice ) {
+			WC()->checkout()->shipping_methods = $shipping_methods;
 		}
 
 		self::$calculation_type   = $calculation_type;
