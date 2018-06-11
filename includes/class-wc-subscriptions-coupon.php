@@ -922,9 +922,9 @@ class WC_Subscriptions_Coupon {
 
 		// Set up the coupons we're looking for, and an initial count.
 		$limited_coupons = array();
-		foreach ( $coupons as $coupon ) {
-			if ( self::coupon_is_limited( $coupon ) ) {
-				$limited_coupons[ $coupon ] = 0;
+		foreach ( $coupons as $code ) {
+			if ( self::coupon_is_limited( $code ) ) {
+				$limited_coupons[ $code ] = 0;
 			}
 		}
 
