@@ -104,11 +104,9 @@ function wcs_is_product_switchable_type( $product ) {
 	} else {
 
 		// back compat for parent products
-		$parent_id = wcs_get_objects_property( $product, 'parent_id' );
-
-		if ( $product->is_type( 'subscription_variation' ) && ! empty( $parent_id ) ) {
+		if ( $product->is_type( 'subscription_variation' ) && $product->get_parent_id() ) {
 			$variation = $product;
-			$product   = wc_get_product( $parent_id );;
+			$product   = wc_get_product( $product->get_parent_id() );
 		}
 
 		$allow_switching = get_option( WC_Subscriptions_Admin::$option_prefix . '_allow_switching', 'no' );
