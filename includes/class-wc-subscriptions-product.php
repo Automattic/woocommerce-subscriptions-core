@@ -1119,7 +1119,7 @@ class WC_Subscriptions_Product {
 		global $wpdb;
 		$parent_product_ids = array();
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) && $product->get_parent() ) {
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) && isset( $product->post->post_parent ) ) {
 			$parent_product_ids[] = $product->get_parent();
 		} else {
 			$parent_product_ids = $wpdb->get_col( $wpdb->prepare(
