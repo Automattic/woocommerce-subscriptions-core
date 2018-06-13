@@ -88,8 +88,6 @@ abstract class WCS_Background_Updater {
 	 */
 	public function run_update() {
 
-		$start_time = gmdate( 'U' );
-
 		$this->schedule_background_update();
 
 		do {
@@ -100,7 +98,7 @@ abstract class WCS_Background_Updater {
 
 				$this->update_item( $item );
 
-				$time_elapsed = ( gmdate( 'U' ) - $start_time );
+				$time_elapsed = ( gmdate( 'U' ) - WCS_INIT_TIMESTAMP );
 
 				if ( $time_elapsed >= $this->time_limit ) {
 					break 2;
