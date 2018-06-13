@@ -94,7 +94,7 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Initialize the subscription object.
 	 *
-	 * @param int|WC_Subscription $order
+	 * @param int|WC_Subscription $subscription
 	 */
 	public function __construct( $subscription ) {
 
@@ -2034,8 +2034,7 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * The total sign-up fee for the subscription if any.
 	 *
-	 * @param array|int Either an order item (in the array format returned by self::get_items()) or the ID of an order item.
-	 * @return bool
+	 * @return int
 	 * @since 2.0
 	 */
 	public function get_sign_up_fee() {

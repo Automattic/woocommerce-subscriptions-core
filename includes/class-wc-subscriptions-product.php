@@ -310,44 +310,52 @@ class WC_Subscriptions_Product {
 			if ( $include_length && $subscription_length == $billing_interval ) {
 				$subscription_string = $price; // Only for one billing period so show "$5 for 3 months" instead of "$5 every 3 months for 3 months"
 			} elseif ( WC_Subscriptions_Synchroniser::is_product_synced( $product ) && in_array( $billing_period, array( 'week', 'month', 'year' ) ) ) {
+				$subscription_string = '';
+
+				// Include string for upfront payment.
+				if ( WC_Subscriptions_Synchroniser::is_payment_upfront( $product ) ) {
+					/* translators: %1$s refers to the price. This string is meant to prefix another string below, e.g. "$5 now, and $5 on March 15th each year" */
+					$subscription_string = sprintf( __( '%1$s now, and ', 'woocommerce-subscriptions' ), $price );
+				}
+
 				$payment_day = WC_Subscriptions_Synchroniser::get_products_payment_day( $product );
 				switch ( $billing_period ) {
 					case 'week':
 						$payment_day_of_week = WC_Subscriptions_Synchroniser::get_weekday( $payment_day );
 						if ( 1 == $billing_interval ) {
 							// translators: 1$: recurring amount string, 2$: day of the week (e.g. "$10 every Wednesday")
-							$subscription_string = sprintf( __( '%1$s every %2$s', 'woocommerce-subscriptions' ), $price, $payment_day_of_week );
+							$subscription_string .= sprintf( __( '%1$s every %2$s', 'woocommerce-subscriptions' ), $price, $payment_day_of_week );
 						} else {
 							// translators: 1$: recurring amount string, 2$: period, 3$: day of the week (e.g. "$10 every 2nd week on Wednesday")
-							$subscription_string = sprintf( __( '%1$s every %2$s on %3$s', 'woocommerce-subscriptions' ), $price, wcs_get_subscription_period_strings( $billing_interval, $billing_period ), $payment_day_of_week );
+							$subscription_string .= sprintf( __( '%1$s every %2$s on %3$s', 'woocommerce-subscriptions' ), $price, wcs_get_subscription_period_strings( $billing_interval, $billing_period ), $payment_day_of_week );
 						}
 						break;
 					case 'month':
 						if ( 1 == $billing_interval ) {
 							if ( $payment_day > 27 ) {
 								// translators: placeholder is recurring amount
-								$subscription_string = sprintf( __( '%s on the last day of each month', 'woocommerce-subscriptions' ), $price );
+								$subscription_string .= sprintf( __( '%s on the last day of each month', 'woocommerce-subscriptions' ), $price );
 							} else {
 								// translators: 1$: recurring amount, 2$: day of the month (e.g. "23rd") (e.g. "$5 every 23rd of each month")
-								$subscription_string = sprintf( __( '%1$s on the %2$s of each month', 'woocommerce-subscriptions' ), $price, WC_Subscriptions::append_numeral_suffix( $payment_day ) );
+								$subscription_string .= sprintf( __( '%1$s on the %2$s of each month', 'woocommerce-subscriptions' ), $price, WC_Subscriptions::append_numeral_suffix( $payment_day ) );
 							}
 						} else {
 							if ( $payment_day > 27 ) {
 								// translators: 1$: recurring amount, 2$: interval (e.g. "3rd") (e.g. "$10 on the last day of every 3rd month")
-								$subscription_string = sprintf( __( '%1$s on the last day of every %2$s month', 'woocommerce-subscriptions' ), $price, WC_Subscriptions::append_numeral_suffix( $billing_interval ) );
+								$subscription_string .= sprintf( __( '%1$s on the last day of every %2$s month', 'woocommerce-subscriptions' ), $price, WC_Subscriptions::append_numeral_suffix( $billing_interval ) );
 							} else {
 								// translators: 1$: <price> on the, 2$: <date> day of every, 3$: <interval> month (e.g. "$10 on the 23rd day of every 2nd month")
-								$subscription_string = sprintf( __( '%1$s on the %2$s day of every %3$s month', 'woocommerce-subscriptions' ), $price, WC_Subscriptions::append_numeral_suffix( $payment_day ), WC_Subscriptions::append_numeral_suffix( $billing_interval ) );
+								$subscription_string .= sprintf( __( '%1$s on the %2$s day of every %3$s month', 'woocommerce-subscriptions' ), $price, WC_Subscriptions::append_numeral_suffix( $payment_day ), WC_Subscriptions::append_numeral_suffix( $billing_interval ) );
 							}
 						}
 						break;
 					case 'year':
 						if ( 1 == $billing_interval ) {
 							// translators: 1$: <price> on, 2$: <date>, 3$: <month> each year (e.g. "$15 on March 15th each year")
-							$subscription_string = sprintf( __( '%1$s on %2$s %3$s each year', 'woocommerce-subscriptions' ), $price, $wp_locale->month[ $payment_day['month'] ], WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ) );
+							$subscription_string .= sprintf( __( '%1$s on %2$s %3$s each year', 'woocommerce-subscriptions' ), $price, $wp_locale->month[ $payment_day['month'] ], WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ) );
 						} else {
 							// translators: 1$: recurring amount, 2$: month (e.g. "March"), 3$: day of the month (e.g. "23rd") (e.g. "$15 on March 15th every 3rd year")
-							$subscription_string = sprintf( __( '%1$s on %2$s %3$s every %4$s year', 'woocommerce-subscriptions' ), $price, $wp_locale->month[ $payment_day['month'] ], WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ), WC_Subscriptions::append_numeral_suffix( $billing_interval ) );
+							$subscription_string .= sprintf( __( '%1$s on %2$s %3$s every %4$s year', 'woocommerce-subscriptions' ), $price, $wp_locale->month[ $payment_day['month'] ], WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ), WC_Subscriptions::append_numeral_suffix( $billing_interval ) );
 						}
 						break;
 				}

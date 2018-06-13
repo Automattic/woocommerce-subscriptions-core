@@ -298,6 +298,11 @@ function wcs_can_user_put_subscription_on_hold( $subscription, $user = '' ) {
  * Retrieve available actions that a user can perform on the subscription
  *
  * @since 2.0
+ *
+ * @param WC_Subscription $subscription The subscription.
+ * @param int             $user_id      The user.
+ *
+ * @return array
  */
 function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 
