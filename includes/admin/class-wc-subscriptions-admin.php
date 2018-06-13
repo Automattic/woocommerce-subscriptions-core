@@ -733,6 +733,7 @@ class WC_Subscriptions_Admin {
 					'bulkEditPeriodMessage'     => __( 'Enter the new period, either day, week, month or year:', 'woocommerce-subscriptions' ),
 					'bulkEditLengthMessage'     => __( 'Enter a new length (e.g. 5):', 'woocommerce-subscriptions' ),
 					'bulkEditIntervalhMessage'  => __( 'Enter a new interval as a single number (e.g. to charge every 2nd month, enter 2):', 'woocommerce-subscriptions' ),
+					'bulkDeleteOptionLabel'     => __( 'Delete all variations without a subscription', 'woocommerce-subscriptions' ),
 					'oneTimeShippingCheckNonce' => wp_create_nonce( 'one_time_shipping' ),
 				);
 			} else if ( 'edit-shop_order' == $screen->id ) {
@@ -1645,6 +1646,36 @@ class WC_Subscriptions_Admin {
 	public static function render_system_status_items() {
 		_deprecated_function( __METHOD__, '2.3', 'WCS_Admin_System_Status::render_system_status_items()' );
 		WCS_Admin_System_Status::render_system_status_items();
+	}
+
+	/**
+	 * Insert a setting or an array of settings after another specific setting by its ID.
+	 *
+	 * @since 2.2.20
+	 * @param array  $settings                The original list of settings.
+	 * @param string $insert_after_setting_id The setting id to insert the new setting after.
+	 * @param array  $new_setting             The new setting to insert. Can be a single setting or an array of settings.
+	 * @param string $insert_type             The type of insert to perform. Can be 'single_setting' or 'multiple_settings'. Optional. Defaults to a single setting insert.
+	 */
+	public static function insert_setting_after( &$settings, $insert_after_setting_id, $new_setting, $insert_type = 'single_setting' ) {
+		if ( ! is_array( $settings ) ) {
+			return;
+		}
+
+		$original_settings = $settings;
+		$settings          = array();
+
+		foreach ( $original_settings as $setting ) {
+			$settings[] = $setting;
+
+			if ( isset( $setting['id'] ) && $insert_after_setting_id === $setting['id'] ) {
+				if ( 'single_setting' === $insert_type ) {
+					$settings[] = $new_setting;
+				} else {
+					$settings = array_merge( $settings, $new_setting );
+				}
+			}
+		}
 	}
 
 	/**

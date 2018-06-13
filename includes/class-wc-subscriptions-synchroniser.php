@@ -100,8 +100,10 @@ class WC_Subscriptions_Synchroniser {
 
 		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 			add_action( 'woocommerce_order_add_product', __CLASS__ . '::maybe_add_meta_for_new_product', 10, 3 );
+			add_action( 'woocommerce_add_order_item_meta', array( __CLASS__, 'maybe_add_order_item_meta' ), 10, 2 );
 		} else {
 			add_action( 'woocommerce_new_order_item', __CLASS__ . '::maybe_add_meta_for_new_line_item', 10, 3 );
+			add_action( 'woocommerce_checkout_create_order_line_item', array( __CLASS__, 'maybe_add_line_item_meta' ), 10, 3 );
 		}
 
 		// Make sure the sign-up fee for a synchronised subscription is correct
@@ -1186,6 +1188,40 @@ class WC_Subscriptions_Synchroniser {
 			if ( self::is_product_synced( $product_id ) ) {
 				self::maybe_add_subscription_meta( $subscription_id );
 			}
+		}
+	}
+
+	/**
+	 * Store a synced product's signup fee on the line item on the subscription and order.
+	 *
+	 * When calculating prorated sign up fees during switches it's necessary to get the sign-up fee paid.
+	 * For synced product purchases we cannot rely on the order line item price as that might include a prorated recurring price or no recurring price all.
+	 *
+	 * Attached to WC 3.0+ hooks and uses WC 3.0 methods.
+	 *
+	 * @param WC_Order_Item_Product $item The order item object.
+	 * @param string $cart_item_key The hash used to identify the item in the cart
+	 * @param array $cart_item The cart item's data.
+	 * @since 2.3.0
+	 */
+	public static function maybe_add_line_item_meta( $item, $cart_item_key, $cart_item ) {
+		if ( self::is_product_synced( $cart_item['data'] ) && ! self::is_today( self::calculate_first_payment_date( $cart_item['data'], 'timestamp' ) ) ) {
+			$item->add_meta_data( '_synced_sign_up_fee', WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] ) );
+		}
+	}
+
+	/**
+	 * Store a synced product's signup fee on the line item on the subscription and order.
+	 *
+	 * This function is a pre WooCommerce 3.0 version of @see WC_Subscriptions_Synchroniser::maybe_add_line_item_meta()
+	 *
+	 * @param int $item_id The order item ID.
+	 * @param array $cart_item The cart item's data.
+	 * @since 2.3.0
+	 */
+	public static function maybe_add_order_item_meta( $item_id, $cart_item ) {
+		if ( self::is_product_synced( $cart_item['data'] ) && ! self::is_today( self::calculate_first_payment_date( $cart_item['data'], 'timestamp' ) ) ) {
+			wc_update_order_item_meta( $item_id, '_synced_sign_up_fee', WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] ) );
 		}
 	}
 
