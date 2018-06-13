@@ -28,7 +28,7 @@ class WC_Subscription_Legacy extends WC_Subscription {
 	/**
 	 * Initialize the subscription object.
 	 *
-	 * @param int|WC_Subscription $order
+	 * @param int|WC_Subscription $subscription
 	 */
 	public function __construct( $subscription ) {
 
