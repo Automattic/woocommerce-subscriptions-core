@@ -58,7 +58,10 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	/* Public methods required by WCS_Customer_Store */
 
 	/**
-	 * Get the IDs for a given user's subscriptions by querying post meta.
+	 * Get the IDs for a given user's subscriptions.
+	 *
+	 * Wrapper to support getting a user's subscription regardless of whether they are cached or not yet,
+	 * either in the old transient cache, or new persistent cache.
 	 *
 	 * @param int $user_id The id of the user whose subscriptions you want.
 	 * @return array
@@ -69,7 +72,19 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 
 		// get user meta returns an empty string when no matching row is found for the given key, meaning it's not set yet
 		if ( '' === $subscription_ids ) {
-			$subscription_ids = parent::get_users_subscription_ids( $user_id );
+
+			$transient_key = "wcs_user_subscriptions_{$user_id}";
+
+			// We do this here rather than in get_users_subscription_ids_from_cache(), because we want to make sure the new persistent cache is updated too
+			$subscription_ids = wcs_get_transient_even_if_expired( $transient_key );
+
+			if ( false === $subscription_ids ) {
+				$subscription_ids = parent::get_users_subscription_ids( $user_id ); // no data in transient, query directly
+			} else {
+				rsort( $subscription_ids ); // the results from the database query are ordered by date/ID in DESC, so make sure the transient value is too
+				delete_transient( $transient_key ); // migrate the data to our new cache
+			}
+
 			$this->update_subscription_id_cache( $user_id, $subscription_ids );
 		}
 
