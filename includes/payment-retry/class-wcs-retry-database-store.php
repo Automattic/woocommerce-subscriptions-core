@@ -29,6 +29,26 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 */
 	public function save( WCS_Retry $retry ) {
 		global $wpdb;
+
+		$wpdb->insert(
+			$wpdb->prefix . self::$table,
+			array(
+				'id'       => $retry->get_id(),
+				'order_id' => $retry->get_order_id(),
+				'status'   => $retry->get_status(),
+				'date_gmt' => $retry->get_date_gmt(),
+				'rule_raw' => wp_json_encode( $retry->get_rule()->get_raw_data() ),
+			),
+			array(
+				'%d',
+				'%d',
+				'%s',
+				'%s',
+				'%s',
+			)
+		);
+
+		return absint( $wpdb->insert_id );
 	}
 
 	/**
