@@ -13,6 +13,14 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	protected static $table = 'woocommerce_subscriptions_payment_retries';
 
 	/**
+	 * Init method.
+	 *
+	 * @return null|void
+	 */
+	public function init() {
+	}
+
+	/**
 	 * Save the details of a retry to the database
 	 *
 	 * @param WCS_Retry $retry
