@@ -56,10 +56,30 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 *
 	 * @param int $retry_id
 	 *
-	 * @return WCS_Retry
+	 * @return null|WCS_Retry
 	 */
 	public function get_retry( $retry_id ) {
 		global $wpdb;
+
+		$retry     = null;
+		$raw_retry = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM {$wpdb->prefix}{$this::$table} WHERE id = %d",
+				$retry_id
+			)
+		);
+
+		if ( $raw_retry ) {
+			$retry = new WCS_Retry( array(
+				'id'       => $raw_retry->id,
+				'order_id' => $raw_retry->order_id,
+				'status'   => $raw_retry->status,
+				'date_gmt' => $raw_retry->date_gmt,
+				'rule_raw' => json_decode( $raw_retry->rule_raw ),
+			) );
+		}
+
+		return $retry;
 	}
 
 	/**
