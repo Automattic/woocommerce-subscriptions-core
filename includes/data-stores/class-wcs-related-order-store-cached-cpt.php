@@ -75,7 +75,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	/**
 	 * Find orders related to a given subscription in a given way.
 	 *
-	 * Wrapper to support getting related orders regardless of whether they are cached or not yet.
+	 * Wrapper to support getting related orders regardless of whether they are cached or not yet,
+	 * either in the old transient cache, or new persistent cache.
 	 *
 	 * @param WC_Order $subscription The ID of the subscription for which calling code wants the related orders.
 	 * @param string $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
@@ -84,13 +85,29 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 */
 	public function get_related_order_ids( WC_Order $subscription, $relation_type ) {
 
-		// We can't rely on $subscription->get_id() being available here, because we only require a WC_Order, not a WC_Subscription, and WC_Order does not have get_id() available with WC < 3.0
-		$related_order_ids = $this->get_related_order_ids_from_cache( wcs_get_objects_property( $subscription, 'id' ), $relation_type );
+		$subscription_id   = wcs_get_objects_property( $subscription, 'id' ); // We can't rely on $subscription->get_id() being available because we only require a WC_Order, not a WC_Subscription, and WC_Order does not have get_id() available with WC < 3.0
+		$related_order_ids = $this->get_related_order_ids_from_cache( $subscription_id, $relation_type );
 
 		// get post meta returns an empty string when no matching row is found for the given key, meaning it's not set yet
 		if ( '' === $related_order_ids ) {
-			$related_order_ids = parent::get_related_order_ids( $subscription, $relation_type );
-			$this->update_related_order_id_cache( wcs_get_objects_property( $subscription, 'id' ), $related_order_ids, $relation_type );
+
+			if ( 'renewal' === $relation_type ) {
+				$transient_key = "wcs-related-orders-to-{$subscription_id}"; // despite the name, this transient only stores renewal orders, not all related orders, so we can only use it for finding renewal orders
+
+				// We do this here rather than in get_related_order_ids_from_cache(), because we want to make sure the new persistent cache is updated too
+				$related_order_ids = wcs_get_transient_even_if_expired( $transient_key );
+			} else {
+				$related_order_ids = false;
+			}
+
+			if ( false === $related_order_ids ) {
+				$related_order_ids = parent::get_related_order_ids( $subscription, $relation_type ); // no data in transient, query directly
+			} else {
+				rsort( $related_order_ids ); // queries are ordered from newest ID to oldest, so make sure the transient value is too
+				delete_transient( $transient_key ); // we migrate the data to our new cache so want to remote this cache
+			}
+
+			$this->update_related_order_id_cache( $subscription_id, $related_order_ids, $relation_type );
 		}
 
 		return $related_order_ids;

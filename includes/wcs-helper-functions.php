@@ -198,3 +198,23 @@ function wcs_get_calling_function_name() {
 
 	return $calling_function;
 }
+
+/**
+ * Get the value of a transient, even if it has expired.
+ *
+ * Handy when data cached in a transient will be valid even if the transient has expired.
+ *
+ * @param string $transient_key The key used to set/get the transient via get_transient()/set_transient()
+ * @return mixed If data exists in a transient, the value of the transient, else boolean false.
+ */
+function wcs_get_transient_even_if_expired( $transient_key ) {
+
+	// First, check if the transient exists via the Options API to access the value in the database without WordPress checking the transient's expiration time (and returning false if it's < now)
+	$transient_value = get_option( sprintf( '_transient_%s', $transient_key ) );
+
+	if ( false === $transient_value ) {
+		$transient_value = get_transient( $transient_key );
+	}
+
+	return $transient_value;
+}
