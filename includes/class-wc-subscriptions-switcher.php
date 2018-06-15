@@ -464,7 +464,7 @@ class WC_Subscriptions_Switcher {
 		}
 
 		$product = wc_get_product( $item['product_id'] );
-		$parent_products       = WC_Subscriptions_Product::get_grouped_parent_product_ids( $product );
+		$parent_products       = WC_Subscriptions_Product::get_visible_grouped_parent_product_ids( $product );
 		$additional_query_args = array();
 
 		// Grouped product
