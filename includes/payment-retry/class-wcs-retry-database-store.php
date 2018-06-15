@@ -11,18 +11,6 @@
 class WCS_Retry_Database_Store extends WCS_Retry_Store {
 
 	protected static $table = 'woocommerce_subscriptions_payment_retries';
-	protected static $wpdb;
-
-	/**
-	 * Setup the class, if required
-	 *
-	 * @return null
-	 */
-	public function init() {
-		global $wpdb;
-
-		self::$wpdb = $wpdb;
-	}
 
 	/**
 	 * Save the details of a retry to the database
@@ -32,6 +20,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 * @return int the retry's ID
 	 */
 	public function save( WCS_Retry $retry ) {
+		global $wpdb;
 	}
 
 	/**
@@ -42,12 +31,14 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 * @return WCS_Retry
 	 */
 	public function get_retry( $retry_id ) {
+		global $wpdb;
 	}
 
 	/**
 	 *
 	 */
 	public function get_retries( $args ) {
+		global $wpdb;
 	}
 
 	/**
@@ -58,5 +49,6 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 * @return array
 	 */
 	public function get_retry_ids_for_order( $order_id ) {
+		global $wpdb;
 	}
 }
