@@ -64,7 +64,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 		$retry     = null;
 		$raw_retry = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT * FROM {$wpdb->prefix}{$this::$table} WHERE id = %d",
+				"SELECT * FROM {$wpdb->prefix}{$this::$table} WHERE id = %d LIMIT 1",
 				$retry_id
 			)
 		);
