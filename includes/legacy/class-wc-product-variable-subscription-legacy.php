@@ -398,10 +398,8 @@ class WC_Product_Variable_Subscription_Legacy extends WC_Product_Variable_Subscr
 			$min_and_max_data = wcs_get_min_max_variation_data( $this, $variation_ids );
 		}
 
-		// Sort the variation IDs so the hash isn't different for the same array of IDs
-		sort( $variation_ids );
 		update_post_meta( $this->id, '_min_max_variation_data', $min_and_max_data, true );
-		update_post_meta( $this->id, '_min_max_variation_ids_hash', md5( json_encode( $variation_ids ) ), true );
+		update_post_meta( $this->id, '_min_max_variation_ids_hash', $this->get_variation_ids_hash( $variation_ids ), true );
 	}
 
 	/**
@@ -416,9 +414,7 @@ class WC_Product_Variable_Subscription_Legacy extends WC_Product_Variable_Subscr
 	 * @since 2.3.0
 	 */
 	public function get_min_and_max_variation_data( $variation_ids ) {
-		// Sort the variation IDs so the hash isn't different for the same array of IDs
-		sort( $variation_ids );
-		$variation_ids_hash = md5( json_encode( $variation_ids ) );
+		$variation_ids_hash = $this->get_variation_ids_hash( $variation_ids );
 
 		// If this variable product has no min and max variation data, set it.
 		if ( ! metadata_exists( 'post', $this->id, '_min_max_variation_ids_hash' ) ) {

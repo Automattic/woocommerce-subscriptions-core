@@ -190,10 +190,8 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 			$min_and_max_data = wcs_get_min_max_variation_data( $this, $variation_ids );
 		}
 
-		// Sort the variation IDs so the hash isn't different for the same array of IDs
-		sort( $variation_ids );
 		$this->add_meta_data( '_min_max_variation_data', $min_and_max_data, true );
-		$this->add_meta_data( '_min_max_variation_ids_hash', md5( json_encode( $variation_ids ) ), true );
+		$this->add_meta_data( '_min_max_variation_ids_hash', $this->get_variation_ids_hash( $variation_ids ), true );
 	}
 
 	/**
@@ -208,10 +206,7 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 	 * @since 2.3.0
 	 */
 	public function get_min_and_max_variation_data( $variation_ids ) {
-		// Sort the variation IDs so the hash isn't different for the same array of IDs
-		sort( $variation_ids );
-		$variation_ids_hash = md5( json_encode( $variation_ids ) );
-
+		$variation_ids_hash = $this->get_variation_ids_hash( $variation_ids );
 		// If this variable product has no min and max variation data, set it.
 		if ( ! $this->meta_exists( '_min_max_variation_ids_hash' ) ) {
 			$this->set_min_and_max_variation_data();
@@ -228,6 +223,19 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 		}
 
 		return $min_and_max_variation_data;
+	}
+
+	/**
+	 * Generate a unique hash from an array of variation IDs.
+	 *
+	 * @param  array $variation_ids
+	 * @return string
+	 */
+	protected static function get_variation_ids_hash( $variation_ids ) {
+		// Sort the variation IDs so the hash isn't different for the same array of IDs
+		sort( $variation_ids );
+
+		return md5( json_encode( $variation_ids ) );
 	}
 
 	/* Deprecated Functions */
