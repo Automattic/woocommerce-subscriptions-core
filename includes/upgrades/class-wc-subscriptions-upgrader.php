@@ -100,6 +100,8 @@ class WC_Subscriptions_Upgrader {
 
 		// When WC is updated from a version prior to 3.0 to a version after 3.0, add subscription address indexes. Must be hooked on before WC runs its updates, which occur on priority 5.
 		add_action( 'init', array( __CLASS__, 'maybe_add_subscription_address_indexes' ), 2 );
+
+		add_action( 'admin_notices', array( __CLASS__, 'maybe_add_downgrade_notice' ) );
 	}
 
 	/**
@@ -784,6 +786,29 @@ class WC_Subscriptions_Upgrader {
 	public static function repair_subscription_contains_sync_meta() {
 		include_once( 'class-wcs-upgrade-2-2-9.php' );
 		WCS_Upgrade_2_2_9::repair_subscriptions_containing_synced_variations();
+	}
+
+	/**
+	 * Display an admin notice if the database version is greater than the active version of the plugin by at least one minor release (eg 1.1 and 1.0).
+	 *
+	 * @since 2.3.0
+	 */
+	public static function maybe_add_downgrade_notice() {
+
+		// If there's no downgrade, exit early. self::$active_version is a bit of a misnomer here but in an upgrade context it refers to the database version of the plugin.
+		if ( ! version_compare( wcs_get_minor_version_string( self::$active_version ), wcs_get_minor_version_string( WC_Subscriptions::$version ), '>' ) ) {
+			return;
+		}
+
+		$admin_notice = new WCS_Admin_Notice( 'error' );
+		$admin_notice->set_simple_content( sprintf( esc_html__( '%1$sWarning!%2$s It appears that you have downgraded %1$sWooCommerce Subscriptions%2$s from %3$s to %4$s. Downgrading the plugin in this way may cause issues. Please update to %3$s or higher, or %5$sopen a new support ticket%6$s for further assistance.', 'woocommerce-subscriptions' ),
+			'<strong>', '</strong>',
+			'<code>' . self::$active_version . '</code>',
+			'<code>' . WC_Subscriptions::$version . '</code>',
+			'<a href="https://woocommerce.com/my-account/marketplace-ticket-form/" target="_blank">', '</a>'
+		) );
+
+		$admin_notice->display();
 	}
 
 	/**

@@ -218,3 +218,16 @@ function wcs_get_transient_even_if_expired( $transient_key ) {
 
 	return $transient_value;
 }
+
+/**
+ * Get a minor version string from a full version string.
+ *
+ * @param  string $version Version string (eg 1.0.1).
+ * @return string          The minor release version string (eg 1.0).
+ * @since 2.3.0
+ */
+function wcs_get_minor_version_string( $version ) {
+	$version_parts = array_pad( array_map( 'intval', explode( '.', $version ) ), 2, 0 );
+
+	return $version_parts[0] . '.' . $version_parts[1];
+}
