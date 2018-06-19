@@ -10,6 +10,11 @@
 
 class WCS_Retry_Database_Store extends WCS_Retry_Store {
 
+	/**
+	 * Custom table name we're using to store our retries data.
+	 *
+	 * @var string
+	 */
 	protected static $table = 'woocommerce_subscriptions_payment_retries';
 
 	/**
