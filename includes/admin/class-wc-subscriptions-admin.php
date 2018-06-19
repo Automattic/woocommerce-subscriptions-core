@@ -125,6 +125,10 @@ class WC_Subscriptions_Admin {
 		add_action( 'woocommerce_admin_order_totals_after_refunded', __CLASS__ . '::maybe_attach_gettext_callback', 10, 1 );
 		// Unhook gettext callback to prevent extra call impact
 		add_action( 'woocommerce_order_item_add_action_buttons', __CLASS__ . '::maybe_unattach_gettext_callback', 10, 1 );
+
+		// Add a reminder on the enable guest checkout setting that subscriptions still require an account
+		add_filter( 'woocommerce_payment_gateways_settings', array( __CLASS__, 'add_guest_checkout_setting_note' ), 10, 1 );
+		add_filter( 'woocommerce_account_settings', array( __CLASS__, 'add_guest_checkout_setting_note' ), 10, 1 );
 	}
 
 	/**
@@ -1668,6 +1672,33 @@ class WC_Subscriptions_Admin {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Add a reminder on the enable guest checkout setting that subscriptions still require an account
+	 * @since 2.3.0
+	 * @param array $settings The list of settings
+	 */
+	public static function add_guest_checkout_setting_note( $settings ) {
+		$is_wc_pre_3_4_0 = WC_Subscriptions::is_woocommerce_pre( '3.4.0' );
+		$current_filter  = current_filter();
+
+		if ( ( $is_wc_pre_3_4_0 && 'woocommerce_payment_gateways_settings' !== $current_filter ) || ( ! $is_wc_pre_3_4_0 && 'woocommerce_account_settings' !== $current_filter ) ) {
+			return $settings;
+		}
+
+		if ( ! is_array( $settings ) ) {
+			return $settings;
+		}
+
+		foreach ( $settings as &$value ) {
+			if ( isset( $value['id'] ) && 'woocommerce_enable_guest_checkout' === $value['id'] ) {
+				$value['desc_tip']  = ! empty( $value['desc_tip'] ) ? $value['desc_tip'] . ' ' : '';
+				$value['desc_tip'] .= __( 'Note that purchasing a subscription still requires an account.', 'woocommerce-subscriptions' );
+				break;
+			}
+		}
+		return $settings;
 	}
 
 	/**
