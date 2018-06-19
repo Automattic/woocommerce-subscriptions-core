@@ -23,7 +23,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	/**
 	 * Save the details of a retry to the database
 	 *
-	 * @param WCS_Retry $retry
+	 * @param WCS_Retry $retry the Retry we want to save.
 	 *
 	 * @return int the retry's ID
 	 */
@@ -54,7 +54,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	/**
 	 * Get the details of a retry from the database
 	 *
-	 * @param int $retry_id
+	 * @param int $retry_id The retry we want to get.
 	 *
 	 * @return null|WCS_Retry
 	 */
@@ -83,16 +83,41 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	}
 
 	/**
+	 * Get all the retries ordered by date.
 	 *
+	 * @param array $args The query arguments.
+	 *
+	 * @return array
 	 */
 	public function get_retries( $args ) {
 		global $wpdb;
+
+		$retries = array();
+
+		// @todo Parse date query.
+		$args = wp_parse_args( $args, array(
+			'status'     => 'any',
+			'date_query' => array(),
+		) );
+
+		$retry_ids = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT id from {$wpdb->prefix}{$this::$table} WHERE status = %s ORDER BY date_gmt DESC",
+				$args['status']
+			)
+		);
+
+		foreach ( $retry_ids as $retry_post_id ) {
+			$retries[ $retry_post_id ] = $this->get_retry( $retry_post_id );
+		}
+
+		return $retries;
 	}
 
 	/**
 	 * Get the IDs of all retries from the database for a given order
 	 *
-	 * @param int $order_id
+	 * @param int $order_id the order we want to get the retries for.
 	 *
 	 * @return array
 	 */
