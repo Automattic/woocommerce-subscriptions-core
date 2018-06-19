@@ -100,7 +100,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 			'date_query' => array(),
 		) );
 
-		$retry_ids = $wpdb->get_results(
+		$retry_ids = $wpdb->get_col(
 			$wpdb->prepare(
 				"SELECT id from {$wpdb->prefix}{$this::$table} WHERE status = %s ORDER BY date_gmt DESC",
 				$args['status']
