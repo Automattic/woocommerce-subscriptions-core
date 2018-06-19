@@ -19,14 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class WCS_Repair_Suspended_PayPal_Subscriptions extends WCS_Background_Updater {
-
-	/**
-	 * WC Logger instance for logging messages.
-	 *
-	 * @var WC_Logger
-	 */
-	protected $logger;
+class WCS_Repair_Suspended_PayPal_Subscriptions extends WCS_Background_Upgrader {
 
 	/**
 	 * Constructor.
@@ -36,17 +29,8 @@ class WCS_Repair_Suspended_PayPal_Subscriptions extends WCS_Background_Updater {
 	 */
 	public function __construct( WC_Logger $logger ) {
 		$this->scheduled_hook = 'wcs_repair_subscriptions_suspended_paypal_not_woocommerce';
+		$this->log_handle     = 'wcs-upgrade-subscriptions-paypal-suspended';
 		$this->logger         = $logger;
-	}
-
-	/**
-	 * Schedule the @see $this->scheduled_hook action to start repairing subscriptions in
-	 * @see $this->time_limit seconds (60 seconds by default).
-	 *
-	 * @since 2.3.0
-	 */
-	public function schedule_repair() {
-		$this->schedule_background_update();
 	}
 
 	/**
@@ -100,15 +84,5 @@ class WCS_Repair_Suspended_PayPal_Subscriptions extends WCS_Background_Updater {
 				),
 			),
 		) );
-	}
-
-	/**
-	 * Add a message to the wcs-upgrade-subscriptions-paypal-suspended log
-	 *
-	 * @param string $message The message to be logged
-	 * @since 2.3.0
-	 */
-	protected function log( $message ) {
-		$this->logger->add( 'wcs-upgrade-subscriptions-paypal-suspended', $message );
 	}
 }

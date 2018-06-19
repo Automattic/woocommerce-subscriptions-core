@@ -16,14 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class WCS_Repair_Subscription_Address_Indexes extends WCS_Background_Updater {
-
-	/**
-	 * WC_Logger instance for logging messages to.
-	 *
-	 * @var WC_Logger
-	 */
-	protected $logger;
+class WCS_Repair_Subscription_Address_Indexes extends WCS_Background_Upgrader {
 
 	/**
 	 * Constructor
@@ -33,17 +26,8 @@ class WCS_Repair_Subscription_Address_Indexes extends WCS_Background_Updater {
 	 */
 	public function __construct( WC_Logger $logger ) {
 		$this->scheduled_hook = 'wcs_add_missing_subscription_address_indexes';
+		$this->log_handle     = 'wcs-add-subscription-address-indexes';
 		$this->logger         = $logger;
-	}
-
-	/**
-	 * Schedule the @see $this->scheduled_hook action to start updating subscriptions in
-	 * @see $this->time_limit seconds (60 seconds by default).
-	 *
-	 * @since 2.3.0
-	 */
-	public function schedule_repair() {
-		$this->schedule_background_update();
 	}
 
 	/**
@@ -87,15 +71,5 @@ class WCS_Repair_Subscription_Address_Indexes extends WCS_Background_Updater {
 				),
 			),
 		) );
-	}
-
-	/**
-	 * Add a message to the wcs-add-subscriptions-address-indexes log.
-	 *
-	 * @since 2.3.0
-	 * @param string The message to be logged
-	 */
-	protected function log( $message ) {
-		$this->logger->add( 'wcs-add-subscription-address-indexes', $message );
 	}
 }
