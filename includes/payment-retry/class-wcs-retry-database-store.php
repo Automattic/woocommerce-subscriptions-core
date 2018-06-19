@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Store retry details in the WordPress custom table.
  *
@@ -7,7 +8,6 @@
  * @category       Class
  * @author         Prospress
  */
-
 class WCS_Retry_Database_Store extends WCS_Retry_Store {
 
 	/**
@@ -128,5 +128,14 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 */
 	public function get_retry_ids_for_order( $order_id ) {
 		global $wpdb;
+
+		$retry_ids = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT id from {$wpdb->prefix}{$this::$table} WHERE order_id = %d ORDER BY ID ASC",
+				$order_id
+			)
+		);
+
+		return $retry_ids;
 	}
 }
