@@ -207,11 +207,6 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 	 */
 	public function get_min_and_max_variation_data( $variation_ids ) {
 		$variation_ids_hash = $this->get_variation_ids_hash( $variation_ids );
-		// If this variable product has no min and max variation data, set it.
-		if ( ! $this->meta_exists( '_min_max_variation_ids_hash' ) ) {
-			$this->set_min_and_max_variation_data();
-			$this->save();
-		}
 
 		if ( $variation_ids_hash === $this->get_meta( '_min_max_variation_ids_hash', true ) ) {
 			$min_and_max_variation_data = $this->get_meta( '_min_max_variation_data', true );
