@@ -390,31 +390,42 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @return array
 	 */
 	protected function get_subscription_ids_without_cache( $relation_types = array(), $batch_size = 10 ) {
+		global $wpdb;
 
 		if ( empty( $relation_types ) ) {
 			$relation_types = $this->get_relation_types();
 		}
 
-		$meta_query = array();
+		$subscription_ids = array();
 
 		foreach ( $relation_types as $relation_type ) {
-			$meta_query[] = array(
-				'key'     => $this->get_cache_meta_key( $relation_type ),
-				'compare' => 'NOT EXISTS',
-			);
+
+			$limit = $batch_size - count( $subscription_ids );
+
+			// Use a subquery instead of a meta query with get_posts() as it's more performant than the multiple joins created by get_posts()
+			$post_ids = $wpdb->get_col( $wpdb->prepare(
+				"SELECT ID FROM $wpdb->posts
+					WHERE post_type = 'shop_subscription'
+					AND post_status NOT IN ('trash','auto-draft')
+					AND ID NOT IN (
+						SELECT post_id FROM $wpdb->postmeta
+						WHERE meta_key = %s
+					)
+					LIMIT 0, %d",
+				$this->get_cache_meta_key( $relation_type ),
+				$limit
+			) );
+
+			if ( $post_ids ) {
+				$subscription_ids += $post_ids;
+
+				if ( count( $subscription_ids ) >= $batch_size ) {
+					break;
+				}
+			}
 		}
 
-		if ( count( $meta_query ) > 1 ) {
-			$meta_query['relation'] = 'OR';
-		}
-
-		return get_posts( array(
-			'post_type'      => 'shop_subscription',
-			'posts_per_page' => $batch_size,
-			'post_status'    => 'any',
-			'fields'         => 'ids',
-			'meta_query'     => $meta_query,
-		) );
+		return $subscription_ids;
 	}
 
 	/**
