@@ -34,8 +34,8 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @void
 	 */
 	public function init() {
-		add_filter( 'init', array( self::destination_store(), 'init' ) );
-		add_filter( 'init', array( self::source_store(), 'init' ) );
+		self::destination_store()->init();
+		self::source_store()->init();
 	}
 
 	/**
