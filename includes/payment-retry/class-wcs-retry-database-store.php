@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Store retry details in the WordPress custom table.
  *
@@ -7,6 +6,12 @@
  * @subpackage     WCS_Retry_Store
  * @category       Class
  * @author         Prospress
+ */
+
+/**
+ * Class WCS_Retry_Database_Store
+ *
+ * Handles custom database retries store.
  */
 class WCS_Retry_Database_Store extends WCS_Retry_Store {
 
