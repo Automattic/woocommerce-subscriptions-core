@@ -46,7 +46,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @return int the retry's ID
 	 */
 	public function save( WCS_Retry $retry ) {
-		// TODO: Implement save() method.
+		return self::destination_store()->save( $retry );
 	}
 
 	/**
@@ -57,7 +57,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @return WCS_Retry
 	 */
 	public function get_retry( $retry_id ) {
-		// TODO: Implement get_retry() method.
+		return self::source_store()->get_retry( $retry_id );
 	}
 
 	/**
@@ -68,7 +68,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @return array An array of WCS_Retry objects
 	 */
 	public function get_retries( $args ) {
-		// TODO: Implement get_retries() method.
+		return self::source_store()->get_retries( $args );
 	}
 
 	/**
@@ -79,7 +79,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @return array
 	 */
 	protected function get_retry_ids_for_order( $order_id ) {
-		// TODO: Implement get_retry_ids_for_order() method.
+		return self::source_store()->get_retry_ids_for_order( $order_id );
 	}
 
 	/**
