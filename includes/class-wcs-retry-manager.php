@@ -364,7 +364,7 @@ class WCS_Retry_Manager {
 	 * @since 2.1
 	 */
 	protected static function get_store_class() {
-		return apply_filters( 'wcs_retry_store_class', 'WCS_Retry_Post_Store' );
+		return apply_filters( 'wcs_retry_store_class', 'WCS_Retry_Hybrid_Store' );
 	}
 
 	/**
