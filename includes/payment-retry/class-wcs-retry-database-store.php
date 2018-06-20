@@ -20,7 +20,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 *
 	 * @var string
 	 */
-	protected static $table = 'woocommerce_subscriptions_payment_retries';
+	protected static $table_name = 'woocommerce_subscriptions_payment_retries';
 
 	/**
 	 * Init method.
@@ -42,7 +42,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 		global $wpdb;
 
 		$wpdb->insert(
-			$wpdb->prefix . self::$table,
+			$wpdb->prefix . self::$table_name,
 			array(
 				'retry_id' => $retry->get_id(),
 				'order_id' => $retry->get_order_id(),
@@ -162,5 +162,14 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 		$columns[] = 'date_gmt';
 
 		return $columns;
+	}
+
+	/**
+	 * Returns the table name for public use.
+	 *
+	 * @return string
+	 */
+	public static function get_table_name() {
+		return self::$table_name;
 	}
 }
