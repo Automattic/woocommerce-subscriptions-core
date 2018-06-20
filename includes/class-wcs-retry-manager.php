@@ -96,6 +96,22 @@ class WCS_Retry_Manager {
 	 */
 	protected static function load_classes() {
 		WCS_Retry_Email::init();
+
+		require_once( 'abstracts/abstract-wcs-retry-store.php' );
+
+		require_once( 'payment-retry/class-wcs-retry.php' );
+
+		require_once( 'payment-retry/class-wcs-retry-rule.php' );
+
+		require_once( 'payment-retry/class-wcs-retry-rules.php' );
+
+		require_once( 'payment-retry/class-wcs-retry-post-store.php' );
+		require_once( 'payment-retry/class-wcs-retry-database-store.php' );
+		require_once( 'payment-retry/class-wcs-retry-hybrid-store.php' );
+
+		require_once( 'payment-retry/class-wcs-retry-email.php' );
+
+		require_once( 'admin/meta-boxes/class-wcs-meta-box-payment-retries.php' );
 	}
 
 	/**
