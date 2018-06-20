@@ -105,12 +105,15 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 			'date_query' => array(),
 		) );
 
-		$retry_ids = $wpdb->get_col(
-			$wpdb->prepare(
-				"SELECT id from {$wpdb->prefix}{$this::$table} WHERE status = %s ORDER BY date_gmt DESC",
+		$where = '';
+		if ( 'any' !== $args['status'] ) {
+			$where .= $wpdb->prepare(
+				' WHERE status = %s',
 				$args['status']
-			)
-		);
+			);
+		}
+
+		$retry_ids = $wpdb->get_col( "SELECT id from {$wpdb->prefix}{$this::$table} {$where} ORDER BY date_gmt DESC" );
 
 		foreach ( $retry_ids as $retry_post_id ) {
 			$retries[ $retry_post_id ] = $this->get_retry( $retry_post_id );
