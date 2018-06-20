@@ -143,7 +143,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 
 		$retry_ids = $wpdb->get_col(
 			$wpdb->prepare(
-				"SELECT retry_id from {$wpdb->prefix}{$this::$table} WHERE order_id = %d ORDER BY ID ASC",
+				"SELECT retry_id from {$wpdb->prefix}{$this::$table} WHERE order_id = %d ORDER BY retry_id ASC",
 				$order_id
 			)
 		);
