@@ -44,7 +44,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 		$wpdb->insert(
 			$wpdb->prefix . self::$table,
 			array(
-				'id'       => $retry->get_id(),
+				'retry_id' => $retry->get_id(),
 				'order_id' => $retry->get_order_id(),
 				'status'   => $retry->get_status(),
 				'date_gmt' => $retry->get_date_gmt(),
@@ -75,14 +75,14 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 		$retry     = null;
 		$raw_retry = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT * FROM {$wpdb->prefix}{$this::$table} WHERE id = %d LIMIT 1",
+				"SELECT * FROM {$wpdb->prefix}{$this::$table} WHERE retry_id = %d LIMIT 1",
 				$retry_id
 			)
 		);
 
 		if ( $raw_retry ) {
 			$retry = new WCS_Retry( array(
-				'id'       => $raw_retry->id,
+				'id'       => $raw_retry->retry_id,
 				'order_id' => $raw_retry->order_id,
 				'status'   => $raw_retry->status,
 				'date_gmt' => $raw_retry->date_gmt,
@@ -122,7 +122,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 			$where      .= $date_query->get_sql();
 		}
 
-		$retry_ids = $wpdb->get_col( "SELECT id from {$wpdb->prefix}{$this::$table} {$where} ORDER BY date_gmt DESC" );
+		$retry_ids = $wpdb->get_col( "SELECT retry_id from {$wpdb->prefix}{$this::$table} {$where} ORDER BY date_gmt DESC" );
 
 		foreach ( $retry_ids as $retry_post_id ) {
 			$retries[ $retry_post_id ] = $this->get_retry( $retry_post_id );
@@ -143,7 +143,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 
 		$retry_ids = $wpdb->get_col(
 			$wpdb->prepare(
-				"SELECT id from {$wpdb->prefix}{$this::$table} WHERE order_id = %d ORDER BY ID ASC",
+				"SELECT retry_id from {$wpdb->prefix}{$this::$table} WHERE order_id = %d ORDER BY ID ASC",
 				$order_id
 			)
 		);
