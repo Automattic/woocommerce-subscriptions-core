@@ -23,6 +23,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 * @return null|void
 	 */
 	public function init() {
+		add_filter( 'date_query_valid_columns', array( $this, 'add_date_valid_column' ) );
 	}
 
 	/**
@@ -99,7 +100,6 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 
 		$retries = array();
 
-		// @todo Parse date query.
 		$args = wp_parse_args( $args, array(
 			'status'     => 'any',
 			'date_query' => array(),
@@ -111,6 +111,10 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 				' WHERE status = %s',
 				$args['status']
 			);
+		}
+		if ( ! empty( $args['date_query'] ) ) {
+			$date_query = new WP_Date_Query( $args['date_query'], 'date_gmt' );
+			$where      .= $date_query->get_sql();
 		}
 
 		$retry_ids = $wpdb->get_col( "SELECT id from {$wpdb->prefix}{$this::$table} {$where} ORDER BY date_gmt DESC" );
@@ -140,5 +144,18 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 		);
 
 		return $retry_ids;
+	}
+
+	/**
+	 * Adds our table column to WP_Date_Query valid columns.
+	 *
+	 * @param array $columns Columns array we want to modify.
+	 *
+	 * @return array
+	 */
+	public function add_date_valid_column( $columns ) {
+		$columns[] = 'date_gmt';
+
+		return $columns;
 	}
 }
