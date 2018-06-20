@@ -190,11 +190,12 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 		}
 
 		$subscription_id = wcs_get_objects_property( $order, 'subscription_renewal_early' );
-		if ( ! $subscription_id ) {
+		$subscription    = wcs_get_subscription( $subscription_id );
+
+		if ( ! $subscription ) {
 			return;
 		}
 
-		$subscription      = wcs_get_subscription( $subscription_id );
 		$next_payment_time = $subscription->get_time( 'next_payment' );
 		$dates_to_update   = array();
 
