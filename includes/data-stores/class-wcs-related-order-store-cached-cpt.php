@@ -380,7 +380,10 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	}
 
 	/**
-	 * Get the IDs of subscriptions without related order cache set.
+	 * Get the IDs of subscriptions without related order cache set for a give relation type or types.
+	 *
+	 * If more than one relation is specified, a batch of subscription IDs will be returned that are missing
+	 * either of those relations, not both.
 	 *
 	 * @param array $relation_types The relations to check, or an empty array to check for any relation type (default).
 	 * @param int $batch_size The number of subscriptions to return. Use -1 to return all subscriptions.
