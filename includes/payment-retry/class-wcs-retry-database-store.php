@@ -61,14 +61,14 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 		$wpdb->insert(
 			$this->get_full_table_name(),
 			array(
-				'retry_id' => $retry->get_id(),
+				'retry_id' => $retry->get_id() > 0 ? $retry->get_id() : null,
 				'order_id' => $retry->get_order_id(),
 				'status'   => $retry->get_status(),
 				'date_gmt' => $retry->get_date_gmt(),
 				'rule_raw' => wp_json_encode( $retry->get_rule()->get_raw_data() ),
 			),
 			array(
-				'%d',
+				'%',
 				'%d',
 				'%s',
 				'%s',
