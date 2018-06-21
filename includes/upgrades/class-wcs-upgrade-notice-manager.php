@@ -77,26 +77,26 @@ class WCS_Upgrade_Notice_Manager {
 			return;
 		}
 
-		$version     = _x( '2.3', 'plugin version number used in admin notice', 'woocommerce-subscription' );
+		$version     = _x( '2.3', 'plugin version number used in admin notice', 'woocommerce-subscriptions' );
 		$dismiss_url = wp_nonce_url( add_query_arg( 'dismiss_upgrade_notice', self::$version ), 'dismiss_upgrade_notice', '_wcsnonce' );
 		$notice      = new WCS_Admin_Notice( 'notice notice-info', array(), $dismiss_url );
 		$features    = array(
 			array(
-				'title'       => __( 'New Subscription Coupon Features', 'woocommerce-subscription' ),
-				'description' => __( 'Want to offer customers coupons which apply for 6 months? You can now define the number of cycles discounts would be applied.', 'woocommerce-subscription' ),
+				'title'       => __( 'New Subscription Coupon Features', 'woocommerce-subscriptions' ),
+				'description' => __( 'Want to offer customers coupons which apply for 6 months? You can now define the number of cycles discounts would be applied.', 'woocommerce-subscriptions' ),
 			),
 			array(
-				'title'       => __( 'New Signup Pricing Options for Synchronized Subscriptions', 'woocommerce-subscription' ),
-				'description' => __( 'Charge the full recurring price at the time of sign up for synchronized subscriptions. Your customers can now receive their products straight away.', 'woocommerce-subscription' ),
+				'title'       => __( 'New Signup Pricing Options for Synchronized Subscriptions', 'woocommerce-subscriptions' ),
+				'description' => __( 'Charge the full recurring price at the time of sign up for synchronized subscriptions. Your customers can now receive their products straight away.', 'woocommerce-subscriptions' ),
 			),
 			array(
-				'title'       => __( 'Link Parent Orders to Subscriptions', 'woocommerce-subscription' ),
+				'title'       => __( 'Link Parent Orders to Subscriptions', 'woocommerce-subscriptions' ),
 				// translators: placeholders are opening and closing <a> tags linking to documentation.
-				'description' => sprintf( __( 'For subscriptions with no parent order, shop managers can now choose a parent order via the Edit Subscription screen. This makes it possible to set a parent order on %smanually created subscriptions%s. The order can also be sent to customers to act as an invoice that needs to be paid to activate the subscription.', 'woocommerce-subscription' ), '<a href="https://docs.woocommerce.com/document/subscriptions/add-or-modify-a-subscription/">', '</a>' ),
+				'description' => sprintf( __( 'For subscriptions with no parent order, shop managers can now choose a parent order via the Edit Subscription screen. This makes it possible to set a parent order on %smanually created subscriptions%s. The order can also be sent to customers to act as an invoice that needs to be paid to activate the subscription.', 'woocommerce-subscriptions' ), '<a href="https://docs.woocommerce.com/document/subscriptions/add-or-modify-a-subscription/">', '</a>' ),
 			),
 			array(
-				'title'       => __( 'Early Renewal', 'woocommerce-subscription' ),
-				'description' => __( 'Customers can now renew their subscriptions before the scheduled next payment date. Why not use this to email your customers a coupon a month before their annual subscription renewals to get access to that revenue sooner?', 'woocommerce-subscription' ),
+				'title'       => __( 'Early Renewal', 'woocommerce-subscriptions' ),
+				'description' => __( 'Customers can now renew their subscriptions before the scheduled next payment date. Why not use this to email your customers a coupon a month before their annual subscription renewals to get access to that revenue sooner?', 'woocommerce-subscriptions' ),
 			),
 		);
 
