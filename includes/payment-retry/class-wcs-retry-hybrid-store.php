@@ -173,14 +173,14 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 
 		global $wpdb;
 		$wpdb->insert(
-			self::get_full_table_name(),
+			self::destination_store()->get_full_table_name(),
 			array(
 				'retry_id' => $this->initial_autoincrement_id,
 				'order_id' => 0,
 			)
 		);
 		$wpdb->delete(
-			self::get_full_table_name(),
+			self::destination_store()->get_full_table_name(),
 			array( 'retry_id' => $this->initial_autoincrement_id )
 		);
 	}
