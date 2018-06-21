@@ -44,7 +44,13 @@ abstract class WCS_Background_Updater {
 		}
 
 		if ( is_null( $this->time_limit ) ) {
+
 			$this->time_limit = 60;
+
+			// Allow more time for CLI requests, as they're not beholden to script timeouts
+			if ( $this->is_wp_cli_request() ) {
+				$this->time_limit *= 3;
+			}
 		}
 
 		// Allow for each class's time limit to be customised by 3rd party code, as well as all tools' time limits
@@ -90,6 +96,9 @@ abstract class WCS_Background_Updater {
 
 		$this->schedule_background_update();
 
+		// if the update is being run via WP CLI, we don't need to worry about the request time, just the processing time for this method
+		$start_time = $this->is_wp_cli_request() ? gmdate( 'U' ) : WCS_INIT_TIMESTAMP;
+
 		do {
 
 			$items = $this->get_items_to_update();
@@ -126,5 +135,14 @@ abstract class WCS_Background_Updater {
 	 */
 	protected function unschedule_background_updates() {
 		wc_unschedule_action( $this->scheduled_hook );
+	}
+
+	/**
+	 * Check whether the current request is via WP CLI
+	 *
+	 * @return bool
+	 */
+	protected function is_wp_cli_request() {
+		return ( defined( 'WP_CLI' ) && WP_CLI );
 	}
 }
