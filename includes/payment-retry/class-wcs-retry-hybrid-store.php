@@ -68,7 +68,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	}
 
 	/**
-	 * Get the details of a retry from the database
+	 * Get the details of a retry from the database, and migrates when necessary.
 	 *
 	 * @param int $retry_id Retry we want to get.
 	 *
@@ -78,7 +78,18 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 		if ( $retry_id > $this->initial_autoincrement_id ) {
 			return self::destination_store()->get_retry( $retry_id );
 		} else {
-			return self::source_store()->get_retry( $retry_id );
+			$retry = self::source_store()->get_retry( $retry_id );
+
+			if ( $retry ) {
+				self::destination_store()->save( new WCS_Retry( array(
+					'order_id' => $retry->get_order_id(),
+					'status'   => $retry->get_status(),
+					'date_gmt' => $retry->get_date_gmt(),
+					'rule_raw' => $retry->get_rule()->get_raw_data(),
+				) ) );
+			}
+
+			return $retry;
 		}
 	}
 
