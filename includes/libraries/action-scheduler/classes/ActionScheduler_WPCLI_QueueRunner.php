@@ -39,19 +39,20 @@ class ActionScheduler_WPCLI_QueueRunner extends ActionScheduler_Abstract_QueueRu
 	 * @author Jeremy Pry
 	 *
 	 * @param int    $batch_size The batch size to process.
+	 * @param array  $hooks      The hooks being used to filter the actions claimed in this batch.
 	 * @param string $group      The group of actions to claim with this batch.
 	 * @param bool   $force      Whether to force running even with too many concurrent processes.
 	 *
 	 * @return int The number of actions that will be run.
 	 * @throws \WP_CLI\ExitException When there are too many concurrent batches.
 	 */
-	public function setup( $batch_size, $group = '', $force = false ) {
+	public function setup( $batch_size, $hooks = array(), $group = '', $force = false ) {
 		$this->run_cleanup();
 		$this->add_hooks();
 
 		// Check to make sure there aren't too many concurrent processes running.
 		$claim_count = $this->store->get_claim_count();
-		$too_many    = $claim_count >= apply_filters( 'action_scheduler_queue_runner_concurrent_batches', 5 );
+		$too_many    = $claim_count >= $this->get_allowed_concurrent_batches();
 		if ( $too_many ) {
 			if ( $force ) {
 				WP_CLI::warning( __( 'There are too many concurrent batches, but the run is forced to continue.', 'action-scheduler' ) );
@@ -61,7 +62,7 @@ class ActionScheduler_WPCLI_QueueRunner extends ActionScheduler_Abstract_QueueRu
 		}
 
 		// Stake a claim and store it.
-		$this->claim = $this->store->stake_claim( $batch_size, null, $group );
+		$this->claim = $this->store->stake_claim( $batch_size, null, $hooks, $group );
 		$this->monitor->attach( $this->claim );
 		$this->actions = $this->claim->get_actions();
 
