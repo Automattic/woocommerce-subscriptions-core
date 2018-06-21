@@ -766,7 +766,7 @@ class WC_Subscriptions_Coupon {
 
 		// If we have a virtual coupon, attempt to get the original coupon.
 		if ( isset( self::$renewal_coupons[ $coupon_type ] ) ) {
-			$coupon      = self::map_virtual_coupon( $coupon );
+			$coupon      = self::map_virtual_coupon( $code );
 			$coupon_type = $coupon->get_discount_type();
 		}
 
@@ -922,9 +922,9 @@ class WC_Subscriptions_Coupon {
 
 		// Set up the coupons we're looking for, and an initial count.
 		$limited_coupons = array();
-		foreach ( $coupons as $coupon ) {
-			if ( self::coupon_is_limited( $coupon ) ) {
-				$limited_coupons[ $coupon ] = 0;
+		foreach ( $coupons as $code ) {
+			if ( self::coupon_is_limited( $code ) ) {
+				$limited_coupons[ $code ] = 0;
 			}
 		}
 
@@ -972,18 +972,18 @@ class WC_Subscriptions_Coupon {
 		}
 
 		// Check each coupon to see if it needs to be removed.
-		foreach ( $limited_coupons as $coupon => $count ) {
-			$coupon_object = new WC_Coupon( $coupon );
-			if ( $coupon_object->get_meta( self::$coupons_renewals ) <= $count ) {
-				$subscription->remove_coupon( $coupon );
+		foreach ( $limited_coupons as $code => $count ) {
+			if ( self::get_coupon_limit( $code ) <= $count ) {
+				$subscription->remove_coupon( $code );
 				$subscription->add_order_note( sprintf(
 					_n(
+						/* translators: %1$s is the coupon code, %2$d is the number of payment usages */
 						'Limited use coupon "%1$s" removed from subscription. It has been used %2$d time.',
 						'Limited use coupon "%1$s" removed from subscription. It has been used %2$d times.',
 						$count,
 						'woocommerce-subscriptions'
 					),
-					$coupon,
+					$code,
 					number_format_i18n( $count )
 				) );
 			}
@@ -1011,7 +1011,7 @@ class WC_Subscriptions_Coupon {
 		echo '<br>';
 		if ( $limit ) {
 			echo esc_html( sprintf(
-				/* translators: %d refers to the number of renewals the coupon can be used for. */
+				/* translators: %d refers to the number of payments the coupon can be used for. */
 				_n( 'Active for %d payment', 'Active for %d payments', $limit, 'woocommerce-subscriptions' ),
 				number_format_i18n( $limit )
 			) );
