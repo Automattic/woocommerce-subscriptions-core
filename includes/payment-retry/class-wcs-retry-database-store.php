@@ -20,7 +20,14 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 *
 	 * @var string
 	 */
-	protected static $table_name = 'woocommerce_subscriptions_payment_retries';
+	const TABLE_NAME = 'woocommerce_subscriptions_payment_retries';
+
+	/**
+	 * The dividing line between IDs of retries created by the post and table stores.
+	 *
+	 * @var int
+	 */
+	private $initial_autoincrement_id = 0;
 
 	/**
 	 * Init method.
@@ -42,7 +49,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 		global $wpdb;
 
 		$wpdb->insert(
-			$wpdb->prefix . self::$table_name,
+			$wpdb->prefix . self::TABLE_NAME,
 			array(
 				'retry_id' => $retry->get_id(),
 				'order_id' => $retry->get_order_id(),
@@ -75,7 +82,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 		$retry     = null;
 		$raw_retry = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT * FROM {$wpdb->prefix}{$this::$table} WHERE retry_id = %d LIMIT 1",
+				"SELECT * FROM {$wpdb->prefix}{$this::TABLE_NAME} WHERE retry_id = %d LIMIT 1",
 				$retry_id
 			)
 		);
@@ -122,7 +129,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 			$where      .= $date_query->get_sql();
 		}
 
-		$retry_ids = $wpdb->get_col( "SELECT retry_id from {$wpdb->prefix}{$this::$table} {$where} ORDER BY date_gmt DESC" );
+		$retry_ids = $wpdb->get_col( "SELECT retry_id from {$wpdb->prefix}{$this::TABLE_NAME} {$where} ORDER BY date_gmt DESC" );
 
 		foreach ( $retry_ids as $retry_post_id ) {
 			$retries[ $retry_post_id ] = $this->get_retry( $retry_post_id );
@@ -143,7 +150,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 
 		$retry_ids = $wpdb->get_col(
 			$wpdb->prepare(
-				"SELECT retry_id from {$wpdb->prefix}{$this::$table} WHERE order_id = %d ORDER BY retry_id ASC",
+				"SELECT retry_id from {$wpdb->prefix}{$this::TABLE_NAME} WHERE order_id = %d ORDER BY retry_id ASC",
 				$order_id
 			)
 		);
@@ -170,6 +177,6 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 * @return string
 	 */
 	public static function get_table_name() {
-		return self::$table_name;
+		return self::TABLE_NAME;
 	}
 }
