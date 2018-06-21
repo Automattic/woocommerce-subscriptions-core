@@ -30,12 +30,22 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	private $initial_autoincrement_id = 0;
 
 	/**
+	 * The option we'll use to save the autoincrement id.
+	 *
+	 * @var string
+	 */
+	private $initial_autoincrement_id_option;
+
+	/**
 	 * Init method.
 	 *
 	 * @return null|void
 	 */
 	public function init() {
 		add_filter( 'date_query_valid_columns', array( $this, 'add_date_valid_column' ) );
+		add_action( 'wcs_tables_created', array( $this, 'set_autoincrement' ) );
+
+		$this->initial_autoincrement_id_option = WC_Subscriptions_admin::$option_prefix . '_retries_table_autoincrement_id';
 	}
 
 	/**
@@ -181,5 +191,44 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 
 		return $wpdb->prefix . self::TABLE_NAME;
 	}
+
+	/**
+	 * Set table autoincrement value to be one higher than the posts table.
+	 *
+	 * @void
+	 */
+	public function set_autoincrement() {
+		if ( empty( $this->initial_autoincrement_id ) ) {
+			$this->initial_autoincrement_id = $this->get_initial_autoincrement_id();
+		}
+
+		global $wpdb;
+		$wpdb->insert(
+			self::get_full_table_name(),
+			array(
+				'retry_id' => $this->initial_autoincrement_id,
+				'order_id' => 0,
+			)
+		);
+		$wpdb->delete(
+			self::get_full_table_name(),
+			array( 'retry_id' => $this->initial_autoincrement_id )
+		);
+	}
+
+	/**
+	 * Gets the initial autoincrement id for our custom table.
+	 *
+	 * @return int
+	 */
+	private function get_initial_autoincrement_id() {
+		global $wpdb;
+
+		$id = $wpdb->get_var( "SELECT MAX(ID) FROM {$wpdb->posts}" );
+		$id ++;
+
+		update_option( $this->initial_autoincrement_id_option, $id );
+
+		return $id;
 	}
 }
