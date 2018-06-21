@@ -190,15 +190,19 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 		}
 
 		$subscription_id = wcs_get_objects_property( $order, 'subscription_renewal_early' );
-		if ( ! $subscription_id ) {
+		$subscription    = wcs_get_subscription( $subscription_id );
+
+		if ( ! $subscription ) {
 			return;
 		}
 
-		$subscription      = wcs_get_subscription( $subscription_id );
+		$next_payment_time = $subscription->get_time( 'next_payment' );
 		$dates_to_update   = array();
 
-		if ( $subscription->get_time( 'next_payment' ) > 0 && $subscription->get_time( 'next_payment' ) > current_time( 'timestamp', true ) ) {
-			$dates_to_update['next_payment'] = gmdate( 'Y-m-d H:i:s', wcs_add_time( $subscription->get_billing_interval(), $subscription->get_billing_period(), $subscription->get_time( 'next_payment' ) ) );
+		if ( $next_payment_time > 0 && $next_payment_time > current_time( 'timestamp', true ) ) {
+			$next_payment_timestamp = wcs_add_time( $subscription->get_billing_interval(), $subscription->get_billing_period(), $next_payment_time );
+
+			$dates_to_update['next_payment'] = $next_payment_timestamp < $subscription->get_time( 'end' ) ? gmdate( 'Y-m-d H:i:s',  $next_payment_timestamp ) : 0;
 		} elseif ( $subscription->get_time( 'end' ) > 0 ) {
 			$dates_to_update['end'] = gmdate( 'Y-m-d H:i:s', wcs_add_time( $subscription->get_billing_interval(), $subscription->get_billing_period(), $subscription->get_time( 'end' ) ) );
 		}

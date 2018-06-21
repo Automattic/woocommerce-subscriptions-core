@@ -53,6 +53,10 @@ function wcs_can_user_renew_early( $subscription, $user_id = 0 ) {
 		$can_renew_early = false;
 	} elseif ( 0 === $subscription->get_total() ) {
 		$can_renew_early = false;
+	} elseif ( $subscription->get_time( 'trial_end' ) > gmdate( 'U' ) ) {
+		$can_renew_early = false;
+	} elseif ( ! $subscription->get_time( 'next_payment' ) ) {
+		$can_renew_early = false;
 	} elseif ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
 		$can_renew_early = false;
 	} elseif ( ! $subscription->payment_method_supports( 'subscription_date_changes' ) ) {
