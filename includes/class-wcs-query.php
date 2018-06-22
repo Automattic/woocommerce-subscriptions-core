@@ -28,7 +28,12 @@ class WCS_Query extends WC_Query {
 		}
 
 		$this->init_query_vars();
-		add_filter( 'woocommerce_account_settings', array( $this, 'add_endpoint_account_settings' ) );
+
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.4' ) ) {
+			add_filter( 'woocommerce_account_settings', array( $this, 'add_endpoint_account_settings' ) );
+		} else {
+			add_filter( 'woocommerce_get_settings_advanced', array( $this, 'add_endpoint_account_settings' ) );
+		}
 	}
 
 	/**
