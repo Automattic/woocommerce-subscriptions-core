@@ -18,6 +18,7 @@ class WCS_Query extends WC_Query {
 			add_action( 'parse_request', array( $this, 'parse_request' ), 0 );
 			add_filter( 'woocommerce_get_breadcrumb', array( $this, 'add_breadcrumb' ), 10 );
 			add_action( 'pre_get_posts', array( $this, 'pre_get_posts' ), 11 );
+			add_filter( 'woocommerce_get_query_vars', array( $this, 'add_wcs_query_vars' ) );
 
 			// Inserting your new tab/page into the My Account page.
 			add_filter( 'woocommerce_account_menu_items', array( $this, 'add_menu_items' ) );
@@ -297,6 +298,18 @@ class WCS_Query extends WC_Query {
 			add_filter( 'woocommerce_get_endpoint_url', array( $this, 'get_endpoint_url' ), 10, 4 );
 		}
 		return $url;
+	}
+
+	/**
+	 * Hooks into `woocommerce_get_query_vars` to make sure query vars defined in
+	 * this class are also considered `WC_Query` query vars.
+	 *
+	 * @param  array $query_vars
+	 * @return array
+	 * @since  2.3.0
+	 */
+	public function add_wcs_query_vars( $query_vars ) {
+		return array_merge( $query_vars, $this->query_vars );
 	}
 }
 new WCS_Query();
