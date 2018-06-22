@@ -28,7 +28,12 @@ class WCS_Query extends WC_Query {
 		}
 
 		$this->init_query_vars();
-		add_filter( 'woocommerce_account_settings', array( $this, 'add_endpoint_account_settings' ) );
+
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.4' ) ) {
+			add_filter( 'woocommerce_account_settings', array( $this, 'add_endpoint_account_settings' ) );
+		} else {
+			add_filter( 'woocommerce_get_settings_advanced', array( $this, 'add_endpoint_account_settings' ) );
+		}
 	}
 
 	/**
@@ -239,8 +244,6 @@ class WCS_Query extends WC_Query {
 	 * @return mixed $account_settings
 	 */
 	public function add_endpoint_account_settings( $settings ) {
-		$new_settings = array();
-		$order_endpoint_found = false;
 		$subscriptions_endpoint_setting = array(
 			'title'    => __( 'Subscriptions', 'woocommerce-subscriptions' ),
 			'desc'     => __( 'Endpoint for the My Account &rarr; Subscriptions page', 'woocommerce-subscriptions' ),
@@ -259,23 +262,9 @@ class WCS_Query extends WC_Query {
 			'desc_tip' => true,
 		);
 
-		// Loop over and look for View Order Endpoint and include Subscriptions endpoint options after that.
-		foreach ( $settings as $value ) {
+		WC_Subscriptions_Admin::insert_setting_after( $settings, 'woocommerce_myaccount_view_order_endpoint', array( $subscriptions_endpoint_setting, $view_subscription_endpoint_setting ), 'multiple_settings' );
 
-			if ( 'woocommerce_myaccount_view_order_endpoint' === $value['id'] ) {
-				$order_endpoint_found = true;
-				$new_settings[] = $value;
-				$new_settings[] = $subscriptions_endpoint_setting;
-				$new_settings[] = $view_subscription_endpoint_setting;
-				continue;
-			} elseif ( ! $order_endpoint_found && 'sectionend' === $value['type']  && 'account_endpoint_options' === $value['id'] ) {
-				// If we got to the end of the settings and didn't add our endpoints, add them to the end.
-				$new_settings[] = $subscriptions_endpoint_setting;
-				$new_settings[] = $view_subscription_endpoint_setting;
-			}
-			$new_settings[] = $value;
-		}
-		return $new_settings;
+		return $settings;
 	}
 
 	/**
