@@ -96,7 +96,7 @@ abstract class WCS_Background_Updater {
 
 		$this->schedule_background_update();
 
-		// if the update is being run via WP CLI, we don't need to worry about the request time, just the processing time for this method
+		// If the update is being run via WP CLI, we don't need to worry about the request time, just the processing time for this method
 		$start_time = $this->is_wp_cli_request() ? gmdate( 'U' ) : WCS_INIT_TIMESTAMP;
 
 		do {
@@ -107,7 +107,7 @@ abstract class WCS_Background_Updater {
 
 				$this->update_item( $item );
 
-				$time_elapsed = ( gmdate( 'U' ) - WCS_INIT_TIMESTAMP );
+				$time_elapsed = ( gmdate( 'U' ) - $start_time );
 
 				if ( $time_elapsed >= $this->time_limit ) {
 					break 2;
