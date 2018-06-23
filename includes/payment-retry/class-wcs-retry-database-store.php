@@ -41,25 +41,37 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	public function save( WCS_Retry $retry ) {
 		global $wpdb;
 
-		$wpdb->insert(
-			$this->get_full_table_name(),
-			array(
-				'retry_id' => $retry->get_id() > 0 ? $retry->get_id() : null,
-				'order_id' => $retry->get_order_id(),
-				'status'   => $retry->get_status(),
-				'date_gmt' => $retry->get_date_gmt(),
-				'rule_raw' => wp_json_encode( $retry->get_rule()->get_raw_data() ),
-			),
-			array(
-				'%',
-				'%d',
-				'%s',
-				'%s',
-				'%s',
-			)
+		$query_data   = array(
+			'order_id' => $retry->get_order_id(),
+			'status'   => $retry->get_status(),
+			'date_gmt' => $retry->get_date_gmt(),
+			'rule_raw' => wp_json_encode( $retry->get_rule()->get_raw_data() ),
+		);
+		$query_format = array(
+			'%d',
+			'%s',
+			'%s',
+			'%s',
 		);
 
-		return absint( $wpdb->insert_id );
+		if ( $retry->get_id() > 0 ) {
+			$wpdb->update(
+				$this->get_full_table_name(),
+				$query_data,
+				array( 'retry_id' => $retry->get_id() ),
+				$query_format
+			);
+
+			return absint( $retry->get_id() );
+		} else {
+			$wpdb->insert(
+				$this->get_full_table_name(),
+				$query_data,
+				$query_format
+			);
+
+			return absint( $wpdb->insert_id );
+		}
 	}
 
 	/**
