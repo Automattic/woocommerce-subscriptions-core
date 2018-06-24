@@ -76,9 +76,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @return WCS_Retry
 	 */
 	public function get_retry( $retry_id ) {
-		if ( $retry_id > $this->initial_autoincrement_id ) {
-			return self::destination_store()->get_retry( $retry_id );
-		} else {
+		if ( $retry_id < $this->initial_autoincrement_id ) {
 			$retry = self::source_store()->get_retry( $retry_id );
 
 			if ( $retry ) {
@@ -91,6 +89,8 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 			}
 
 			return $retry;
+		} else {
+			return self::destination_store()->get_retry( $retry_id );
 		}
 	}
 
