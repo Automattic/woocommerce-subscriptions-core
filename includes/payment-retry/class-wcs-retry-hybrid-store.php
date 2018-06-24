@@ -65,7 +65,18 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @return int the retry's ID
 	 */
 	public function save( WCS_Retry $retry ) {
-		return self::destination_store()->save( $retry );
+		if ( $retry->get_id() < $this->initial_autoincrement_id ) {
+			wp_delete_post( $retry->get_id() );
+
+			return self::destination_store()->save( new WCS_Retry( array(
+				'order_id' => $retry->get_order_id(),
+				'status'   => $retry->get_status(),
+				'date_gmt' => $retry->get_date_gmt(),
+				'rule_raw' => $retry->get_rule()->get_raw_data(),
+			) ) );
+		} else {
+			return self::destination_store()->save( $retry );
+		}
 	}
 
 	/**
