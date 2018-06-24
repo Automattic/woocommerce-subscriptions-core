@@ -49,6 +49,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 */
 	public function init() {
 		add_action( 'wcs_tables_created', array( $this, 'set_autoincrement' ) );
+
 		self::destination_store()->init();
 		self::source_store()->init();
 
