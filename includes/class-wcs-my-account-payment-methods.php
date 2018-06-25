@@ -205,20 +205,26 @@ class WCS_My_Account_Payment_Methods {
 	/**
 	 * Get the customer's alternative token.
 	 *
-	 * @param  WC_Payment_Token the token to find an alternative for
-	 * @return WC_Payment_Token the customer's alternative token
+	 * @param  WC_Payment_Token $token The token to find an alternative for
+	 * @return WC_Payment_Token The customer's alternative token
 	 * @since  2.2.7
 	 */
 	public static function get_customers_alternative_token( $token ) {
-		$payment_tokens         = self::get_customer_tokens( $token->get_gateway_id(), $token->get_user_id() );
-		$alternative_token      = null;
-		$has_single_alternative = count( $payment_tokens ) === 2; // if there are 2 tokens in total there is only 1 other alternative
+		$payment_tokens    = self::get_customer_tokens( $token->get_gateway_id(), $token->get_user_id() );
+		$alternative_token = null;
 
-		foreach ( $payment_tokens as $payment_token ) {
-			// if there is a default token which is different we can use it as an alternative.
-			if ( $payment_token->get_id() !== $token->get_id() && ( $payment_token->is_default() || $has_single_alternative ) ) {
-				$alternative_token = $payment_token;
-				break;
+		// Remove the token we're trying to find an alternative for.
+		unset( $payment_tokens[ $token->get_id() ] );
+
+		if ( count( $payment_tokens ) === 1 ) {
+			$alternative_token = reset( $payment_tokens );
+		} else {
+			foreach ( $payment_tokens as $payment_token ) {
+				// If there is a default token we can use it as an alternative.
+				if ( $payment_token->is_default() ) {
+					$alternative_token = $payment_token;
+					break;
+				}
 			}
 		}
 
