@@ -87,22 +87,11 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @return WCS_Retry
 	 */
 	public function get_retry( $retry_id ) {
-		if ( $retry_id < $this->initial_autoincrement_id ) {
-			$retry = self::source_store()->get_retry( $retry_id );
-
-			if ( $retry ) {
-				self::destination_store()->save( new WCS_Retry( array(
-					'order_id' => $retry->get_order_id(),
-					'status'   => $retry->get_status(),
-					'date_gmt' => $retry->get_date_gmt(),
-					'rule_raw' => $retry->get_rule()->get_raw_data(),
-				) ) );
-			}
-
-			return $retry;
-		} else {
-			return self::destination_store()->get_retry( $retry_id );
+		if ( $this->should_migrate_retry( $retry_id ) ) {
+			$retry_id = $this->migrate_retry( $retry_id );
 		}
+
+		return self::destination_store()->get_retry( $retry_id );
 	}
 
 	/**
@@ -211,5 +200,49 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 		update_option( $this->initial_autoincrement_id_option, $id );
 
 		return $id;
+	}
+
+	/**
+	 * Should this retry be migrated.
+	 *
+	 * @param int $retry_id
+	 *
+	 * @return bool
+	 */
+	private function should_migrate_retry( $retry_id ) {
+		if ( $retry_id > $this->initial_autoincrement_id ) {
+			return false;
+		}
+
+		if ( ! ! self::source_store()->get_retry( $retry_id ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Migrates our retry.
+	 *
+	 * @param int $retry_id
+	 *
+	 * @return bool|int
+	 */
+	private function migrate_retry( $retry_id ) {
+		$source_store_retry = self::source_store()->get_retry( $retry_id );
+		if ( $source_store_retry ) {
+			$destination_store_retry = self::destination_store()->save( new WCS_Retry( array(
+				'order_id' => $source_store_retry->get_order_id(),
+				'status'   => $source_store_retry->get_status(),
+				'date_gmt' => $source_store_retry->get_date_gmt(),
+				'rule_raw' => $source_store_retry->get_rule()->get_raw_data(),
+			) ) );
+
+			wp_delete_post( $retry_id );
+
+			return $destination_store_retry;
+		}
+
+		return false;
 	}
 }
