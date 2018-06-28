@@ -102,7 +102,15 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @return array An array of WCS_Retry objects
 	 */
 	public function get_retries( $args ) {
-		return self::source_store()->get_retries( $args );
+		$source_store_retries = self::source_store()->get_retries( $args );
+
+		foreach ( $source_store_retries as $source_store_retry_id => $source_store_retry ) {
+			if ( $this->should_migrate_retry( $source_store_retry_id ) ) {
+				$this->migrate_retry( $source_store_retry_id );
+			}
+		}
+
+		return self::destination_store()->get_retries( $args );
 	}
 
 	/**
