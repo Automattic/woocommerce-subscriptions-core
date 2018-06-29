@@ -73,7 +73,7 @@ class WC_Subscriptions_Order {
 		add_filter( 'woocommerce_order_needs_shipping_address', __CLASS__ . '::maybe_display_shipping_address', 10, 3 );
 
 		// Autocomplete subscription orders when they only contain a synchronised subscription or a resubscribe
-		add_filter( 'woocommerce_payment_complete_order_status', __CLASS__ . '::maybe_autocomplete_order', 10, 2 );
+		add_filter( 'woocommerce_payment_complete_order_status', __CLASS__ . '::maybe_autocomplete_order', 10, 3 );
 
 		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', array( __CLASS__, 'add_subscription_order_query_args' ), 10, 2 );
 	}
@@ -1041,18 +1041,22 @@ class WC_Subscriptions_Order {
 	 * Automatically set the order's status to complete if the order total is zero and all the subscriptions
 	 * in an order are synced or the order contains a resubscribe.
 	 *
-	 * @param string $new_order_status
-	 * @param int $order_id
+	 * @param string   $new_order_status
+	 * @param int      $order_id
+	 * @param WC_Order $order
+	 *
 	 * @return string $new_order_status
 	 *
 	 * @since 2.1.3
 	 */
-	public static function maybe_autocomplete_order( $new_order_status, $order_id ) {
+	public static function maybe_autocomplete_order( $new_order_status, $order_id, $order = null ) {
 
 		// Guard against infinite loops in WC 3.0+ where woocommerce_payment_complete_order_status is called while instantiating WC_Order objects
-		remove_filter( 'woocommerce_payment_complete_order_status', __METHOD__, 10 );
-		$order = wc_get_order( $order_id );
-		add_filter( 'woocommerce_payment_complete_order_status', __METHOD__, 10, 2 );
+		if ( null === $order ) {
+			remove_filter( 'woocommerce_payment_complete_order_status', __METHOD__, 10 );
+			$order = wc_get_order( $order_id );
+			add_filter( 'woocommerce_payment_complete_order_status', __METHOD__, 10, 3 );
+		}
 
 		if ( 'processing' == $new_order_status && $order->get_subtotal() == 0 && wcs_order_contains_subscription( $order ) ) {
 
