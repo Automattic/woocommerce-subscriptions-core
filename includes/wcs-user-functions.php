@@ -174,7 +174,12 @@ function wcs_get_users_subscriptions( $user_id = 0 ) {
 		$user_id = get_current_user_id();
 	}
 
-	$subscriptions = apply_filters( 'wcs_pre_get_users_subscriptions', array(), $user_id );
+	$subscriptions = array();
+
+	if ( has_filter( 'wcs_pre_get_users_subscriptions' ) ) {
+		wcs_deprecated_function( 'The "wcs_pre_get_users_subscriptions" hook should no longer be used. A persistent caching layer is now in place. Because of this, "wcs_pre_get_users_subscriptions"', '2.3.0' );
+		$subscriptions = apply_filters( 'wcs_pre_get_users_subscriptions', $subscriptions, $user_id );
+	}
 
 	if ( empty( $subscriptions ) && 0 !== $user_id && ! empty( $user_id ) ) {
 		$subscription_ids = WCS_Customer_Store::instance()->get_users_subscription_ids( $user_id );
