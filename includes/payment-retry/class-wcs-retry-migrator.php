@@ -20,7 +20,7 @@ class WCS_Retry_Migrator {
 	 *
 	 * @return bool
 	 */
-	public static function should_migrate_retry( $retry_id ) {
+	public function should_migrate_retry( $retry_id ) {
 		if ( ! ! WCS_Retry_Stores::get_post_store()->get_retry( $retry_id ) ) {
 			return false;
 		}
@@ -35,7 +35,7 @@ class WCS_Retry_Migrator {
 	 *
 	 * @return bool|int
 	 */
-	public static function migrate_retry( $retry_id ) {
+	public function migrate_retry( $retry_id ) {
 		$source_store_retry = WCS_Retry_Stores::get_post_store()->get_retry( $retry_id );
 		if ( $source_store_retry ) {
 			$destination_store_retry = WCS_Retry_Stores::get_database_store()->save( new WCS_Retry( array(
