@@ -29,18 +29,9 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	private static $source_store;
 
 	/**
-	 * The dividing line between IDs of retries created by the post and table stores.
 	 *
 	 * @var int
 	 */
-	private $initial_autoincrement_id = 0;
-
-	/**
-	 * The option we'll use to save the autoincrement id.
-	 *
-	 * @var string
-	 */
-	private $initial_autoincrement_id_option;
 
 	/**
 	 * Setup the class, if required
@@ -48,13 +39,9 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @void
 	 */
 	public function init() {
-		add_action( 'wcs_tables_created', array( $this, 'set_autoincrement' ) );
-
 		self::destination_store()->init();
 		self::source_store()->init();
 
-		$this->initial_autoincrement_id_option = WC_Subscriptions_admin::$option_prefix . '_retries_table_autoincrement_id';
-		$this->initial_autoincrement_id        = (int) get_option( $this->initial_autoincrement_id_option, 0 );
 	}
 
 	/**
@@ -178,45 +165,6 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 		return apply_filters( 'wcs_retry_source_store_class', 'WCS_Retry_Post_Store' );
 	}
 
-	/**
-	 * Set table autoincrement value to be one higher than the posts table.
-	 *
-	 * @void
-	 */
-	public function set_autoincrement() {
-		if ( empty( $this->initial_autoincrement_id ) ) {
-			$this->initial_autoincrement_id = $this->get_initial_autoincrement_id();
-		}
-
-		global $wpdb;
-		$wpdb->insert(
-			self::destination_store()->get_full_table_name(),
-			array(
-				'retry_id' => $this->initial_autoincrement_id,
-				'order_id' => 0,
-			)
-		);
-		$wpdb->delete(
-			self::destination_store()->get_full_table_name(),
-			array( 'retry_id' => $this->initial_autoincrement_id )
-		);
-	}
-
-	/**
-	 * Gets the initial autoincrement id for our custom table.
-	 *
-	 * @return int
-	 */
-	private function get_initial_autoincrement_id() {
-		global $wpdb;
-
-		$id = $wpdb->get_var( "SELECT MAX(ID) FROM {$wpdb->posts}" );
-		$id ++;
-
-		update_option( $this->initial_autoincrement_id_option, $id );
-
-		return $id;
-	}
 
 	/**
 	 * Should this retry be migrated.
