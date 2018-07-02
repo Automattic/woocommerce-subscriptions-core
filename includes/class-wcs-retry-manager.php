@@ -111,6 +111,10 @@ class WCS_Retry_Manager {
 
 		require_once( 'payment-retry/class-wcs-retry-email.php' );
 
+		require_once( 'payment-retry/class-wcs-retry-migrator.php' );
+
+		require_once( 'payment-retry/class-wcs-retry-stores.php' );
+
 		require_once( 'admin/meta-boxes/class-wcs-meta-box-payment-retries.php' );
 	}
 
