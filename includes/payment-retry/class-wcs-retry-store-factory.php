@@ -69,10 +69,10 @@ class WCS_Retry_Store_Factory implements IWCS_Retry_Store_Factory {
 		if ( empty( self::$post_store ) ) {
 			$class            = self::get_post_store_class();
 			self::$post_store = new $class();
-			self::post_store()->init();
+			self::$post_store->init();
 		}
 
-		return self::$database_store;
+		return self::$post_store;
 	}
 
 	/**
