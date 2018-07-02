@@ -283,21 +283,19 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 						) AS hundreds
 					) last_thousand_days
 					WHERE last_thousand_days.Date >= %s AND last_thousand_days.Date <= %s
-				) searchdate
-				LEFT JOIN (
-					{$wpdb->posts} AS wcsubs
-					JOIN {$wpdb->postmeta} AS wcsmeta
-						ON wcsubs.ID = wcsmeta.post_id AND wcsmeta.meta_key = %s
-				) ON DATE( wcsubs.post_date ) < searchdate.Date
-					AND wcsubs.post_type IN ( 'shop_subscription' )
-					AND wcsubs.post_status NOT IN( 'trash', 'auto-draft' )
-					AND (
-						DATE( CONVERT_TZ( wcsmeta.meta_value , '+00:00', %s ) ) >= searchdate.Date
-						OR wcsmeta.meta_value = 0
-						OR wcsmeta.meta_value IS NULL
-					)
-				GROUP BY searchdate.Date
-				ORDER BY searchdate.Date ASC",
+				) searchdate,
+					{$wpdb->posts} AS wcsubs,
+					{$wpdb->postmeta} AS wcsmeta
+					WHERE wcsubs.ID = wcsmeta.post_id AND wcsmeta.meta_key = '%s'
+						AND DATE( wcsubs.post_date ) <= searchdate.Date
+						AND wcsubs.post_type IN ( 'shop_subscription' )
+						AND wcsubs.post_status NOT IN( 'auto-draft' )
+						AND (
+							DATE( CONVERT_TZ( wcsmeta.meta_value , '+00:00', %s ) ) >= searchdate.Date
+							OR wcsmeta.meta_value = 0
+							OR wcsmeta.meta_value IS NULL
+						)
+					ORDER BY searchdate.Date ASC",
 			$query_end_date,
 			date( 'Y-m-d', $this->start_date ),
 			$query_end_date,
