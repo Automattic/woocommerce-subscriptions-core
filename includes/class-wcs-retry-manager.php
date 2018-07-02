@@ -24,6 +24,13 @@ class WCS_Retry_Manager {
 	protected static $admin;
 
 	/**
+	 * Background updater to process retries from old store.
+	 *
+	 * @var WCS_Retry_Background_Migrator
+	 */
+	protected static $background_process;
+
+	/**
 	 * Attach callbacks and set the retry rules
 	 *
 	 * @codeCoverageIgnore
@@ -56,6 +63,11 @@ class WCS_Retry_Manager {
 			add_action( 'woocommerce_scheduled_subscription_payment_retry', __CLASS__ . '::maybe_retry_payment' );
 
 			add_filter( 'woocommerce_subscriptions_is_failed_renewal_order', __CLASS__ . '::compare_order_and_retry_statuses', 10, 3 );
+
+			if ( ! self::$background_process ) {
+				self::$background_process = new WCS_Retry_Background_Migrator();
+				add_filter( 'init', array( self::$background_process, 'init' ) );
+			}
 		}
 	}
 
@@ -114,6 +126,8 @@ class WCS_Retry_Manager {
 		require_once( 'payment-retry/class-wcs-retry-migrator.php' );
 
 		require_once( 'payment-retry/class-wcs-retry-stores.php' );
+
+		require_once( 'payment-retry/class-wcs-retry-background-migrator.php' );
 
 		require_once( 'admin/meta-boxes/class-wcs-meta-box-payment-retries.php' );
 	}
