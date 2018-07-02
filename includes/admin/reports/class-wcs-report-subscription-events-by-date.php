@@ -257,32 +257,32 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$query = $wpdb->prepare(
 			"SELECT searchdate.Date as date, COUNT( DISTINCT wcsubs.ID) as count
 				FROM (
-					SELECT DATE_FORMAT(a.Date,'%%Y-%%m-%%d') as Date, 0 as cnt
+					SELECT DATE_FORMAT(last_thousand_days.Date,'%%Y-%%m-%%d') as Date
 					FROM (
-						SELECT DATE(%s) - INTERVAL(a.a + (10 * b.a) + (100 * c.a)) DAY as Date
+						SELECT DATE(%s) - INTERVAL(units.digit + (10 * tens.digit) + (100 * hundreds.digit)) DAY as Date
 						FROM (
-							SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2
+							SELECT 0 AS digit UNION ALL SELECT 1 UNION ALL SELECT 2
 							UNION ALL SELECT 3 UNION ALL SELECT 4
 							UNION ALL SELECT 5 UNION ALL SELECT 6
 							UNION ALL SELECT 7 UNION ALL SELECT 8
 							UNION ALL SELECT 9
-						) as a
+						) as units
 						CROSS JOIN (
-							SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2
+							SELECT 0 AS digit UNION ALL SELECT 1 UNION ALL SELECT 2
 							UNION ALL SELECT 3 UNION ALL SELECT 4
 							UNION ALL SELECT 5 UNION ALL SELECT 6
 							UNION ALL SELECT 7 UNION ALL SELECT 8
 							UNION ALL SELECT 9
-						) as b
+						) as tens
 						CROSS JOIN (
-							SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2
+							SELECT 0 AS digit UNION ALL SELECT 1 UNION ALL SELECT 2
 							UNION ALL SELECT 3 UNION ALL SELECT 4
 							UNION ALL SELECT 5 UNION ALL SELECT 6
 							UNION ALL SELECT 7 UNION ALL SELECT 8
 							UNION ALL SELECT 9
-						) AS c
-					) a
-					WHERE a.Date >= %s AND a.Date <= %s
+						) AS hundreds
+					) last_thousand_days
+					WHERE last_thousand_days.Date >= %s AND last_thousand_days.Date <= %s
 				) searchdate
 				LEFT JOIN (
 					{$wpdb->posts} AS wcsubs
