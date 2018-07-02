@@ -19,19 +19,21 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 *
 	 * @var WCS_Retry_Store
 	 */
-	private static $destination_store;
+	private $database_store;
 
 	/**
 	 * Where the data comes from.
 	 *
 	 * @var WCS_Retry_Store
 	 */
-	private static $source_store;
+	private $post_store;
 
 	/**
+	 * Our migration class.
 	 *
-	 * @var int
+	 * @var WCS_Retry_Migrator
 	 */
+	private $migrator;
 
 	/**
 	 * Setup the class, if required
@@ -39,9 +41,9 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @void
 	 */
 	public function init() {
-		self::destination_store()->init();
-		self::source_store()->init();
-
+		$this->database_store = WCS_Retry_Stores::get_database_store();
+		$this->post_store     = WCS_Retry_Stores::get_post_store();
+		$this->migrator       = wcs_get_retry_migrator();
 	}
 
 	/**
@@ -53,11 +55,11 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 */
 	public function save( WCS_Retry $retry ) {
 		$retry_id = $retry->get_id();
-		if ( $this->should_migrate_retry( $retry_id ) ) {
-			$retry_id = $this->migrate_retry( $retry_id );
+		if ( $this->migrator->should_migrate_retry( $retry_id ) ) {
+			$retry_id = $this->migrator->migrate_retry( $retry_id );
 		}
 
-		return self::destination_store()->save( new WCS_Retry( array(
+		return $this->database_store->save( new WCS_Retry( array(
 			'id'       => $retry_id,
 			'order_id' => $retry->get_order_id(),
 			'status'   => $retry->get_status(),
@@ -74,11 +76,11 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @return WCS_Retry
 	 */
 	public function get_retry( $retry_id ) {
-		if ( $this->should_migrate_retry( $retry_id ) ) {
-			$retry_id = $this->migrate_retry( $retry_id );
+		if ( $this->migrator->should_migrate_retry( $retry_id ) ) {
+			$retry_id = $this->migrator->migrate_retry( $retry_id );
 		}
 
-		return self::destination_store()->get_retry( $retry_id );
+		return $this->database_store->get_retry( $retry_id );
 	}
 
 	/**
@@ -89,15 +91,15 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @return array An array of WCS_Retry objects
 	 */
 	public function get_retries( $args ) {
-		$source_store_retries = self::source_store()->get_retries( $args );
+		$source_store_retries = $this->post_store->get_retries( $args );
 
 		foreach ( $source_store_retries as $source_store_retry_id => $source_store_retry ) {
-			if ( $this->should_migrate_retry( $source_store_retry_id ) ) {
-				$this->migrate_retry( $source_store_retry_id );
+			if ( $this->migrator->should_migrate_retry( $source_store_retry_id ) ) {
+				$this->migrator->migrate_retry( $source_store_retry_id );
 			}
 		}
 
-		return self::destination_store()->get_retries( $args );
+		return $this->database_store->get_retries( $args );
 	}
 
 	/**
@@ -108,105 +110,15 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @return array
 	 */
 	protected function get_retry_ids_for_order( $order_id ) {
-		$source_store_retries = self::source_store()->get_retry_ids_for_order( $order_id );
+		$source_store_retries = $this->post_store->get_retry_ids_for_order( $order_id );
 
 		foreach ( $source_store_retries as $source_store_retry_id => $source_store_retry ) {
-			if ( $this->should_migrate_retry( $source_store_retry_id ) ) {
-				$this->migrate_retry( $source_store_retry_id );
+			if ( $this->migrator->should_migrate_retry( $source_store_retry_id ) ) {
+				$this->migrator->migrate_retry( $source_store_retry_id );
 			}
 		}
 
-		return self::destination_store()->get_retry_ids_for_order( $order_id );
+		return $this->database_store->get_retry_ids_for_order( $order_id );
 	}
 
-	/**
-	 * Access the object used to interface with the destination store.
-	 *
-	 * @return WCS_Retry_Store
-	 */
-	public static function destination_store() {
-		if ( empty( self::$destination_store ) ) {
-			$class                   = self::get_destination_store_class();
-			self::$destination_store = new $class();
-		}
-
-		return self::$destination_store;
-	}
-
-	/**
-	 * Get the class used for instantiating retry storage via self::destination_store()
-	 *
-	 * @return mixed
-	 */
-	protected static function get_destination_store_class() {
-		return apply_filters( 'wcs_retry_destination_store_class', 'WCS_Retry_Database_Store' );
-	}
-
-	/**
-	 * Access the object used to interface with the source store.
-	 *
-	 * @return WCS_Retry_Store
-	 */
-	public static function source_store() {
-		if ( empty( self::$source_store ) ) {
-			$class              = self::get_source_store_class();
-			self::$source_store = new $class();
-		}
-
-		return self::$destination_store;
-	}
-
-	/**
-	 * Get the class used for instantiating retry storage via self::source_store()
-	 *
-	 * @return mixed
-	 */
-	protected static function get_source_store_class() {
-		return apply_filters( 'wcs_retry_source_store_class', 'WCS_Retry_Post_Store' );
-	}
-
-
-	/**
-	 * Should this retry be migrated.
-	 *
-	 * @param int $retry_id
-	 *
-	 * @return bool
-	 */
-	private function should_migrate_retry( $retry_id ) {
-		if ( $retry_id > $this->initial_autoincrement_id ) {
-			return false;
-		}
-
-		if ( ! ! self::source_store()->get_retry( $retry_id ) ) {
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * Migrates our retry.
-	 *
-	 * @param int $retry_id
-	 *
-	 * @return bool|int
-	 */
-	private function migrate_retry( $retry_id ) {
-		$source_store_retry = self::source_store()->get_retry( $retry_id );
-		if ( $source_store_retry ) {
-			$destination_store_retry = self::destination_store()->save( new WCS_Retry( array(
-				'order_id' => $source_store_retry->get_order_id(),
-				'status'   => $source_store_retry->get_status(),
-				'date_gmt' => $source_store_retry->get_date_gmt(),
-				'rule_raw' => $source_store_retry->get_rule()->get_raw_data(),
-			) ) );
-
-			wp_delete_post( $retry_id );
-
-			return $destination_store_retry;
-		}
-
-		return false;
-	}
 }
