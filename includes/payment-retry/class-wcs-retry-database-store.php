@@ -24,8 +24,6 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 
 	/**
 	 * Init method.
-	 *
-	 * @return null|void
 	 */
 	public function init() {
 		add_filter( 'date_query_valid_columns', array( $this, 'add_date_valid_column' ) );
