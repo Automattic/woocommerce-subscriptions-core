@@ -13,7 +13,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class WCS_Retry_Migrator {
-
 	/**
 	 * Should this retry be migrated.
 	 *
@@ -53,4 +52,13 @@ class WCS_Retry_Migrator {
 
 		return false;
 	}
+}
+
+/**
+ * Returns an instance of our migrator.
+ *
+ * @return WCS_Retry_Migrator
+ */
+function wcs_get_retry_migrator() {
+	return new WCS_Retry_Migrator();
 }
