@@ -286,7 +286,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				) searchdate
 				LEFT JOIN (
 					{$wpdb->posts} AS wcsubs
-					LEFT JOIN {$wpdb->postmeta} AS wcsmeta
+					JOIN {$wpdb->postmeta} AS wcsmeta
 						ON wcsubs.ID = wcsmeta.post_id AND wcsmeta.meta_key = %s
 				) ON DATE( wcsubs.post_date ) < searchdate.Date
 					AND wcsubs.post_type IN ( 'shop_subscription' )
