@@ -67,7 +67,6 @@ class WC_Subscriptions_Order {
 
 		add_filter( 'woocommerce_my_account_my_orders_actions', __CLASS__ . '::maybe_remove_pay_action', 10, 2 );
 
-		add_action( 'woocommerce_order_partially_refunded', __CLASS__ . '::maybe_cancel_subscription_on_partial_refund' );
 		add_action( 'woocommerce_order_fully_refunded', __CLASS__ . '::maybe_cancel_subscription_on_full_refund' );
 
 		add_filter( 'woocommerce_order_needs_shipping_address', __CLASS__ . '::maybe_display_shipping_address', 10, 3 );
@@ -971,35 +970,6 @@ class WC_Subscriptions_Order {
 					// translators: $1: opening link tag, $2: order number, $3: closing link tag
 					$subscription->update_status( 'cancelled', wp_kses( sprintf( __( 'Subscription cancelled for refunded order %1$s#%2$s%3$s.', 'woocommerce-subscriptions' ), sprintf( '<a href="%s">', esc_url( wcs_get_edit_post_link( wcs_get_objects_property( $order, 'id' ) ) ) ), $order->get_order_number(), '</a>' ), array( 'a' => array( 'href' => true ) ) ) );
 				}
-			}
-		}
-	}
-
-	/**
-	 * Handles partial refunds on orders in WC versions pre 2.5 which would be considered full refunds in WC 2.5.
-	 *
-	 * @param $order_id
-	 *
-	 * @since 2.0
-	 */
-	public static function maybe_cancel_subscription_on_partial_refund( $order_id ) {
-
-		if ( WC_Subscriptions::is_woocommerce_pre( '2.5' ) && wcs_order_contains_subscription( $order_id, array( 'parent', 'renewal' ) ) ) {
-
-			$order                 = wc_get_order( $order_id );
-			$remaining_order_total = wc_format_decimal( $order->get_total() - $order->get_total_refunded() );
-			$remaining_order_items = absint( $order->get_item_count() - $order->get_item_count_refunded() );
-			$order_has_free_item   = false;
-
-			foreach ( $order->get_items() as $item ) {
-				if ( ! $item['line_total'] ) {
-					$order_has_free_item = true;
-					break;
-				}
-			}
-
-			if ( ! ( $remaining_order_total > 0 || ( $order_has_free_item && $remaining_order_items > 0 ) ) ) {
-				self::maybe_cancel_subscription_on_full_refund( $order );
 			}
 		}
 	}
