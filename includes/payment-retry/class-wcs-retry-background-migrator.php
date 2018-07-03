@@ -42,7 +42,7 @@ class WCS_Retry_Background_Migrator extends WCS_Background_Updater {
 	/**
 	 * @var string The hook used to schedule retries migration.
 	 */
-	protected $schedule_hook = 'wcs_retries_migration_hook';
+	protected $scheduled_hook = 'wcs_retries_migration_hook';
 
 
 	/**
