@@ -46,7 +46,7 @@ class WCS_Retry_Stores {
 	/**
 	 * Get the class used for instantiating retry storage via self::destination_store()
 	 *
-	 * @return mixed
+	 * @return string
 	 */
 	public static function get_database_store_class() {
 		return apply_filters( 'wcs_retry_database_store_class', 'WCS_Retry_Database_Store' );
