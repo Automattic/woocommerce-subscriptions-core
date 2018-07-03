@@ -386,9 +386,7 @@ class WCS_Cart_Renewal {
 					if ( ! empty( $coupon_code ) ) {
 
 						// Set renewal order products as the product ids on the coupon
-						if ( ! WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
-							wcs_set_coupon_property( $coupon, 'product_ids', $this->get_products( $order ) );
-						}
+						wcs_set_coupon_property( $coupon, 'product_ids', $this->get_products( $order ) );
 
 						// Store the coupon info for later
 						$this->store_coupon( wcs_get_objects_property( $order, 'id' ), $coupon );
@@ -409,9 +407,7 @@ class WCS_Cart_Renewal {
 				wcs_set_coupon_property( $coupon, 'coupon_amount', $order_discount );
 
 				// Set renewal order products as the product ids on the coupon
-				if ( ! WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
-					wcs_set_coupon_property( $coupon, 'product_ids', $this->get_products( $order ) );
-				}
+				wcs_set_coupon_property( $coupon, 'product_ids', $this->get_products( $order ) );
 
 				// Store the coupon info for later
 				$this->store_coupon( wcs_get_objects_property( $order, 'id' ), $coupon );
