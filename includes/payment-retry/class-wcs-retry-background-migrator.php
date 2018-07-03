@@ -56,7 +56,7 @@ class WCS_Retry_Background_Migrator extends WCS_Background_Updater {
 	public function __construct() {
 		$this->database_store = WCS_Retry_Stores::get_database_store();
 		$this->post_store     = WCS_Retry_Stores::get_post_store();
-		$this->migrator       = wcs_get_retry_migrator();
+		$this->migrator       = WCS_Retry_Migrator::instance();
 	}
 
 	/**

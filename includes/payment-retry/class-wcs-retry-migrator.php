@@ -14,6 +14,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WCS_Retry_Migrator {
 	/**
+	 * @var null|WCS_Retry_Migrator
+	 */
+	private static $migrator = null;
+
+	/**
 	 * Should this retry be migrated.
 	 *
 	 * @param int $retry_id
@@ -48,13 +53,18 @@ class WCS_Retry_Migrator {
 
 		return false;
 	}
+
+	/**
+	 * Returns an instance of the current class.
+	 *
+	 * @return WCS_Retry_Migrator
+	 */
+	public static function instance() {
+		if ( empty( self::$migrator ) ) {
+			self::$migrator = new self();
+		}
+
+		return self::$migrator;
+	}
 }
 
-/**
- * Returns an instance of our migrator.
- *
- * @return WCS_Retry_Migrator
- */
-function wcs_get_retry_migrator() {
-	return new WCS_Retry_Migrator();
-}

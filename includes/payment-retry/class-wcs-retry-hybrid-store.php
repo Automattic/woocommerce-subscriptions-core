@@ -43,7 +43,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	public function init() {
 		$this->database_store = WCS_Retry_Stores::get_database_store();
 		$this->post_store     = WCS_Retry_Stores::get_post_store();
-		$this->migrator       = wcs_get_retry_migrator();
+		$this->migrator       = WCS_Retry_Migrator::instance();
 	}
 
 	/**
