@@ -70,7 +70,7 @@ class WCS_Retry_Stores {
 	/**
 	 * Get the class used for instantiating retry storage via self::source_store()
 	 *
-	 * @return mixed
+	 * @return string
 	 */
 	public static function get_post_store_class() {
 		return apply_filters( 'wcs_retry_post_store_class', 'WCS_Retry_Post_Store' );
