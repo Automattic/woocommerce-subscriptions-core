@@ -52,7 +52,7 @@ class WCS_Retry_Manager {
 
 			self::load_classes();
 
-			add_filter( 'init', array( self::store(), 'init' ), 0 );
+			add_filter( 'init', array( self::store(), 'init' ) );
 
 			add_filter( 'woocommerce_valid_order_statuses_for_payment', __CLASS__ . '::check_order_statuses_for_payment', 10, 2 );
 
