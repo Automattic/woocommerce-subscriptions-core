@@ -31,6 +31,13 @@ class WCS_Retry_Manager {
 	protected static $background_process;
 
 	/**
+	 * Our table maker instance.
+	 *
+	 * @var WCS_Table_Maker
+	 */
+	protected static $table_maker;
+
+	/**
 	 * Attach callbacks and set the retry rules
 	 *
 	 * @codeCoverageIgnore
@@ -126,6 +133,8 @@ class WCS_Retry_Manager {
 		require_once( 'payment-retry/class-wcs-retry-migrator.php' );
 
 		require_once( 'payment-retry/class-wcs-retry-stores.php' );
+
+		require_once( 'payment-retry/class-wcs-retry-table-maker.php' );
 
 		require_once( 'payment-retry/class-wcs-retry-background-migrator.php' );
 

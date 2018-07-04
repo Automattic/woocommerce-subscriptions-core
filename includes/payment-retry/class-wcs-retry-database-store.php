@@ -20,7 +20,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 *
 	 * @var string
 	 */
-	const TABLE_NAME = 'woocommerce_subscriptions_payment_retries';
+	const TABLE_NAME = 'wcs_payment_retries';
 
 	/**
 	 * Init method.
