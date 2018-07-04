@@ -75,6 +75,11 @@ class WCS_Retry_Manager {
 				self::$background_process = new WCS_Retry_Background_Migrator();
 				add_filter( 'init', array( self::$background_process, 'init' ) );
 			}
+
+			if ( ! self::$table_maker ) {
+				self::$table_maker = new WCS_Retry_Table_Maker();
+				add_filter( 'init', array( self::$table_maker, 'register_tables' ) );
+			}
 		}
 	}
 
