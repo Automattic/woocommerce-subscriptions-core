@@ -8,6 +8,10 @@
  * @author         Prospress
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+} // Exit if accessed directly
+
 /**
  * Class WCS_Retry_Database_Store
  *

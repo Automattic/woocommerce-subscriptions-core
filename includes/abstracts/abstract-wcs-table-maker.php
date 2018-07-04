@@ -9,6 +9,9 @@
  * @package  WooCommerce Subscriptions/Abstracts
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+} // Exit if accessed directly
 
 /**
  * Class WCS_Table_Maker
