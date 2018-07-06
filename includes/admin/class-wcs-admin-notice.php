@@ -266,7 +266,7 @@ class WCS_Admin_Notice {
 	 * @since 2.3.0
 	 * @param string $heading The notice heading.
 	 */
-	public function set_heading( string $heading ) {
+	public function set_heading( $heading ) {
 		$this->heading = $heading;
 	}
 }
