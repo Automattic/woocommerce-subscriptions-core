@@ -391,8 +391,6 @@ class WCS_Retry_Manager {
 
 	/**
 	 * Get the class used for instantiating retry storage via self::store()
-	 *
-	 * @since 2.1
 	 */
 	protected static function get_store_class() {
 		$default_store_class = 'WCS_Retry_Database_Store';
