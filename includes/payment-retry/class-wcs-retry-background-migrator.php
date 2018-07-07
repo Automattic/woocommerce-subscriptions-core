@@ -40,20 +40,12 @@ class WCS_Retry_Background_Migrator extends WCS_Background_Updater {
 	private $migrator;
 
 	/**
-	 * @var string The hook used to schedule retries migration.
-	 */
-	protected $scheduled_hook = 'wcs_retries_migration_hook';
-
-
-	/**
-	 * @var int Amount of second to give each run.
-	 */
-	protected $time_limit = 30;
-
-	/**
 	 * construct.
 	 */
 	public function __construct() {
+		$this->scheduled_hook = 'wcs_retries_migration_hook';
+		$this->time_limit     = 30;
+
 		$this->database_store = WCS_Retry_Stores::get_database_store();
 		$this->post_store     = WCS_Retry_Stores::get_post_store();
 		$this->migrator       = WCS_Retry_Migrator::instance();
