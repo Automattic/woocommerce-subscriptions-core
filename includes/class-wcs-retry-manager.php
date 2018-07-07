@@ -378,15 +378,14 @@ class WCS_Retry_Manager {
 	}
 
 	/**
-	 * Access the object used to interface with the database
-	 *
-	 * @since 2.1
+	 * Access the object used to interface with the store.
 	 */
 	public static function store() {
 		if ( empty( self::$store ) ) {
-			$class = self::get_store_class();
+			$class       = self::get_store_class();
 			self::$store = new $class();
 		}
+
 		return self::$store;
 	}
 
@@ -396,7 +395,12 @@ class WCS_Retry_Manager {
 	 * @since 2.1
 	 */
 	protected static function get_store_class() {
-		return apply_filters( 'wcs_retry_store_class', 'WCS_Retry_Hybrid_Store' );
+		$default_store_class = 'WCS_Retry_Database_Store';
+		if ( ! ! WCS_Retry_Stores::get_post_store()->get_retries( array() ) ) {
+			$default_store_class = 'WCS_Retry_Hybrid_Store';
+		}
+
+		return apply_filters( 'wcs_retry_store_class', $default_store_class );
 	}
 
 	/**
