@@ -54,9 +54,10 @@ class WCS_Retry_Admin {
 	 * and when that is the case, do not display the next payment date (because it will still be set to the original
 	 * payment date, in the past).
 	 *
-	 * @param bool $show_date_type
-	 * @param string $date_key
+	 * @param bool            $show_date_type
+	 * @param string          $date_key
 	 * @param WC_Subscription $the_subscription
+	 *
 	 * @return bool
 	 */
 	public function maybe_hide_date_type( $show_date_type, $date_key, $the_subscription ) {
@@ -73,8 +74,9 @@ class WCS_Retry_Admin {
 	/**
 	 * Dispay the number of retries on a renewal order in the Orders list table.
 	 *
-	 * @param string $column The string of the current column
-	 * @param int $post_id The ID of the order
+	 * @param string $column  The string of the current column
+	 * @param int    $post_id The ID of the order
+	 *
 	 * @since 2.1
 	 */
 	public static function add_column_content( $column, $post_id ) {
@@ -89,7 +91,7 @@ class WCS_Retry_Admin {
 				$tool_tip     = '';
 
 				foreach ( $retries as $retry ) {
-					$retry_counts[ $retry->get_status() ] = isset( $retry_counts[ $retry->get_status() ] ) ? ++$retry_counts[ $retry->get_status() ] : 1;
+					$retry_counts[ $retry->get_status() ] = isset( $retry_counts[ $retry->get_status() ] ) ? ++ $retry_counts[ $retry->get_status() ] : 1;
 				}
 
 				foreach ( $retry_counts as $retry_status => $retry_count ) {
@@ -124,11 +126,15 @@ class WCS_Retry_Admin {
 	 * Add a setting to enable/disable the retry system
 	 *
 	 * @param array
+	 *
 	 * @return null
 	 */
 	public function add_settings( $settings ) {
 
-		$misc_section_end = wp_list_filter( $settings, array( 'id' => 'woocommerce_subscriptions_miscellaneous', 'type' => 'sectionend' ) );
+		$misc_section_end = wp_list_filter( $settings, array(
+			'id'   => 'woocommerce_subscriptions_miscellaneous',
+			'type' => 'sectionend'
+		) );
 
 		$spliced_array = array_splice( $settings, key( $misc_section_end ), 0, array(
 			array(
@@ -148,6 +154,7 @@ class WCS_Retry_Admin {
 	 * Add system status information about custom retry rules.
 	 *
 	 * @param array $data
+	 *
 	 * @return array
 	 */
 	public static function add_system_status_content( $data ) {
@@ -155,6 +162,7 @@ class WCS_Retry_Admin {
 		$has_custom_retry_rule_class = has_action( 'wcs_retry_rule_class' );
 		$has_custom_raw_retry_rule   = has_action( 'wcs_get_retry_rule_raw' );
 		$has_custom_retry_rule       = has_action( 'wcs_get_retry_rule' );
+		$has_retry_on_post_store     = ! ! WCS_Retry_Stores::get_post_store()->get_retries( array() );
 
 		$data['wcs_retry_rules_overridden'] = array(
 			'name'      => _x( 'Custom Retry Rules', 'label for the system status page', 'woocommerce-subscriptions' ),
@@ -186,6 +194,14 @@ class WCS_Retry_Admin {
 			'mark_icon' => $has_custom_retry_rule ? 'warning' : 'yes',
 			'note'      => $has_custom_retry_rule ? 'Yes' : 'No',
 			'success'   => ! $has_custom_retry_rule,
+		);
+
+		$data['wcs_retry_data_migration_status'] = array(
+			'name'      => _x( 'Retries Migration Status', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'label'     => 'Retries Migration Status',
+			'mark_icon' => $has_retry_on_post_store ? 'no-alt' : 'yes',
+			'note'      => $has_retry_on_post_store ? 'Incompleted' : 'Completed',
+			'success'   => ! $has_retry_on_post_store,
 		);
 
 		return $data;
