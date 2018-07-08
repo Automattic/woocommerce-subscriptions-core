@@ -116,7 +116,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 *
 	 * @return array
 	 */
-	protected function get_retry_ids_for_order( $order_id ) {
+	public function get_retry_ids_for_order( $order_id ) {
 		$source_store_retries = $this->post_store->get_retry_ids_for_order( $order_id );
 
 		foreach ( $source_store_retries as $source_store_retry_id => $source_store_retry ) {

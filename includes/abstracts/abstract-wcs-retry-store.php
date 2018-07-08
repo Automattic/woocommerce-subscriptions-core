@@ -46,7 +46,7 @@ abstract class WCS_Retry_Store {
 	 * @param int $order_id
 	 * @return array
 	 */
-	abstract protected function get_retry_ids_for_order( $order_id );
+	abstract public function get_retry_ids_for_order( $order_id );
 
 	/**
 	 * Setup the class, if required
