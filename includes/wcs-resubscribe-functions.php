@@ -138,11 +138,7 @@ function wcs_cart_contains_resubscribe( $cart = '' ) {
  * @since 2.0
  */
 function wcs_get_subscriptions_for_resubscribe_order( $order ) {
-
-	$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'resubscribe' ) );
-
-
-	return apply_filters( 'wcs_subscriptions_for_resubscribe_order', $subscriptions, $order );
+	return wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'resubscribe' ) );
 }
 
 /**

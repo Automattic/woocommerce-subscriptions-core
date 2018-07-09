@@ -115,8 +115,5 @@ function wcs_cart_contains_failed_renewal_order_payment() {
  * @since 2.0
  */
 function wcs_get_subscriptions_for_renewal_order( $order ) {
-	$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'renewal' ) );
-
-
-	return apply_filters( 'wcs_subscriptions_for_renewal_order', $subscriptions, $order );
+	return wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'renewal' ) );
 }
