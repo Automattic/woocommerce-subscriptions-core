@@ -202,7 +202,12 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 		if ( $next_payment_time > 0 && $next_payment_time > current_time( 'timestamp', true ) ) {
 			$next_payment_timestamp = wcs_add_time( $subscription->get_billing_interval(), $subscription->get_billing_period(), $next_payment_time );
 
-			$dates_to_update['next_payment'] = $next_payment_timestamp < $subscription->get_time( 'end' ) ? gmdate( 'Y-m-d H:i:s',  $next_payment_timestamp ) : 0;
+			if ( $subscription->get_time( 'end' ) === 0 || $next_payment_timestamp > $subscription->get_time( 'end' ) ) {
+				$dates_to_update['next_payment'] = gmdate( 'Y-m-d H:i:s',  $next_payment_timestamp );
+			} else {
+				// Delete the next payment date if the calculated next payment date occurs after the end date.
+				$dates_to_update['next_payment'] = 0;
+			}
 		} elseif ( $subscription->get_time( 'end' ) > 0 ) {
 			$dates_to_update['end'] = gmdate( 'Y-m-d H:i:s', wcs_add_time( $subscription->get_billing_interval(), $subscription->get_billing_period(), $subscription->get_time( 'end' ) ) );
 		}
