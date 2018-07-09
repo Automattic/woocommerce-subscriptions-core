@@ -135,7 +135,16 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 			}
 
 			$filtered_subscriptions = apply_filters( $deprecated_filter_hook, $subscriptions, $order );
-			$subscription_ids       = array_keys( $filtered_subscriptions );
+
+			// Although this array was previously ordered by ID => instance, that key requirement wasn't enforced so it's possible 3rd party code was not using the ID as the key, and instead, numerical indexes are being used, so its safest not to rely on IDs as keys
+			if ( $filtered_subscriptions != $subscriptions ) {
+
+				$subscription_ids = array();
+
+				foreach ( $filtered_subscriptions as $subscription ) {
+					$subscription_ids[] = $subscription->get_id();
+				}
+			}
 		}
 
 		return $subscription_ids;
