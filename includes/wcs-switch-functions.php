@@ -50,24 +50,7 @@ function wcs_order_contains_switch( $order ) {
  * @since  2.0
  */
 function wcs_get_subscriptions_for_switch_order( $order ) {
-
-	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
-		$order = wc_get_order( $order );
-	}
-
-	$subscriptions    = array();
-	$subscription_ids = WCS_Related_Order_Store::instance()->get_related_subscription_ids( $order, 'switch' );
-
-	foreach ( $subscription_ids as $subscription_id ) {
-
-		$subscription = wcs_get_subscription( $subscription_id );
-
-		if ( $subscription ) {
-			$subscriptions[ $subscription_id ] = $subscription;
-		}
-	}
-
-	return $subscriptions;
+	return wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'switch' ) );
 }
 
 /**
