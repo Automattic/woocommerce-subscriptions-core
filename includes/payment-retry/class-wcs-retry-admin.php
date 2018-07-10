@@ -37,8 +37,6 @@ class WCS_Retry_Admin {
 
 	/**
 	 * Add a meta box to the Edit Order screen to display the retries relating to that order
-	 *
-	 * @return null
 	 */
 	public function add_meta_boxes() {
 		global $current_screen, $post_ID;
@@ -97,19 +95,19 @@ class WCS_Retry_Admin {
 				foreach ( $retry_counts as $retry_status => $retry_count ) {
 
 					switch ( $retry_status ) {
-						case 'pending' :
+						case 'pending':
 							$tool_tip .= sprintf( _n( '%d Pending Payment Retry', '%d Pending Payment Retries', $retry_count, 'woocommerce-subscriptions' ), $retry_count );
 							break;
-						case 'processing' :
+						case 'processing':
 							$tool_tip .= sprintf( _n( '%d Processing Payment Retry', '%d Processing Payment Retries', $retry_count, 'woocommerce-subscriptions' ), $retry_count );
 							break;
-						case 'failed' :
+						case 'failed':
 							$tool_tip .= sprintf( _n( '%d Failed Payment Retry', '%d Failed Payment Retries', $retry_count, 'woocommerce-subscriptions' ), $retry_count );
 							break;
-						case 'complete' :
+						case 'complete':
 							$tool_tip .= sprintf( _n( '%d Successful Payment Retry', '%d Successful Payment Retries', $retry_count, 'woocommerce-subscriptions' ), $retry_count );
 							break;
-						case 'cancelled' :
+						case 'cancelled':
 							$tool_tip .= sprintf( _n( '%d Cancelled Payment Retry', '%d Cancelled Payment Retries', $retry_count, 'woocommerce-subscriptions' ), $retry_count );
 							break;
 					}
@@ -133,7 +131,7 @@ class WCS_Retry_Admin {
 
 		$misc_section_end = wp_list_filter( $settings, array(
 			'id'   => 'woocommerce_subscriptions_miscellaneous',
-			'type' => 'sectionend'
+			'type' => 'sectionend',
 		) );
 
 		$spliced_array = array_splice( $settings, key( $misc_section_end ), 0, array(
