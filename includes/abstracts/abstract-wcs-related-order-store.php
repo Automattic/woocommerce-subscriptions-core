@@ -122,7 +122,7 @@ abstract class WCS_Related_Order_Store {
 	 *
 	 * @return array The possible relationships between a subscription and orders. Includes 'renewal', 'switch' or 'resubscribe' by default.
 	 */
-	protected function get_relation_types() {
+	public function get_relation_types() {
 		return self::$relation_types;
 	}
 

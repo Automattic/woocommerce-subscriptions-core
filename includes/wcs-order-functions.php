@@ -13,9 +13,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * A wrapper for @see wcs_get_subscriptions() which accepts simply an order ID
+ * Get the subscription related to an order, if any.
  *
- * @param int|WC_Order $order_id The post_id of a shop_order post or an instance of a WC_Order object
+ * @param WC_Order|int $order An instance of a WC_Order object or the ID of an order
  * @param array $args A set of name value pairs to filter the returned value.
  *		'subscriptions_per_page' The number of subscriptions to return. Default set to -1 to return all.
  *		'offset' An optional number of subscription to displace or pass over. Default 0.
@@ -29,14 +29,19 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return array Subscription details in post_id => WC_Subscription form.
  * @since  2.0
  */
-function wcs_get_subscriptions_for_order( $order_id, $args = array() ) {
+function wcs_get_subscriptions_for_order( $order, $args = array() ) {
 
-	if ( is_object( $order_id ) ) {
-		$order_id = wcs_get_objects_property( $order_id, 'id' );
+	$subscriptions = array();
+
+	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
+		$order = wc_get_order( $order );
+	}
+
+	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
+		return $subscriptions;
 	}
 
 	$args = wp_parse_args( $args, array(
-			'order_id'               => $order_id,
 			'subscriptions_per_page' => -1,
 			'order_type'             => array( 'parent', 'switch' ),
 		)
@@ -47,23 +52,29 @@ function wcs_get_subscriptions_for_order( $order_id, $args = array() ) {
 		$args['order_type'] = array( $args['order_type'] );
 	}
 
-	$subscriptions = array();
-	$get_all       = ( in_array( 'any', $args['order_type'] ) ) ? true : false;
+	$get_all = ( in_array( 'any', $args['order_type'] ) ) ? true : false;
 
-	if ( $order_id && in_array( 'parent', $args['order_type'] ) || $get_all ) {
-		$subscriptions = wcs_get_subscriptions( $args );
+	if ( $get_all || in_array( 'parent', $args['order_type'] ) ) {
+
+		$get_subscriptions_args = array_merge( $args, array(
+			'order_id' => wcs_get_objects_property( $order, 'id' ),
+		) );
+
+		$subscriptions = wcs_get_subscriptions( $get_subscriptions_args );
 	}
 
-	if ( ( in_array( 'resubscribe', $args['order_type'] ) || $get_all ) && wcs_order_contains_resubscribe( $order_id ) ) {
-		$subscriptions += wcs_get_subscriptions_for_resubscribe_order( $order_id );
-	}
+	$all_relation_types = WCS_Related_Order_Store::instance()->get_relation_types();
+	$relation_types     = $get_all ? $all_relation_types : array_intersect( $all_relation_types, $args['order_type'] );
 
-	if ( ( in_array( 'renewal', $args['order_type'] ) || $get_all ) && wcs_order_contains_renewal( $order_id ) ) {
-		$subscriptions += wcs_get_subscriptions_for_renewal_order( $order_id );
-	}
+	foreach ( $relation_types as $relation_type ) {
 
-	if ( ( in_array( 'switch', $args['order_type'] ) || $get_all ) && wcs_order_contains_switch( $order_id ) ) {
-		$subscriptions += wcs_get_subscriptions_for_switch_order( $order_id );
+		$subscription_ids = WCS_Related_Order_Store::instance()->get_related_subscription_ids( $order, $relation_type );
+
+		foreach ( $subscription_ids as $subscription_id ) {
+			if ( wcs_is_subscription( $subscription_id ) ) {
+				$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
+			}
+		}
 	}
 
 	return $subscriptions;

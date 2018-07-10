@@ -138,21 +138,7 @@ function wcs_cart_contains_resubscribe( $cart = '' ) {
  * @since 2.0
  */
 function wcs_get_subscriptions_for_resubscribe_order( $order ) {
-
-	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
-		$order = wc_get_order( $order );
-	}
-
-	$subscriptions    = array();
-	$subscription_ids = WCS_Related_Order_Store::instance()->get_related_subscription_ids( $order, 'resubscribe' );
-
-	foreach ( $subscription_ids as $subscription_id ) {
-		if ( wcs_is_subscription( $subscription_id ) ) {
-			$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
-		}
-	}
-
-	return apply_filters( 'wcs_subscriptions_for_resubscribe_order', $subscriptions, $order );
+	return wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'resubscribe' ) );
 }
 
 /**

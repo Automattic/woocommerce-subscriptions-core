@@ -115,23 +115,5 @@ function wcs_cart_contains_failed_renewal_order_payment() {
  * @since 2.0
  */
 function wcs_get_subscriptions_for_renewal_order( $order ) {
-
-	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
-		$order = wc_get_order( $order );
-	}
-
-	$subscriptions = array();
-
-	// Only use the order if we actually found a valid order object
-	if ( is_a( $order, 'WC_Abstract_Order' ) ) {
-		$subscription_ids = WCS_Related_Order_Store::instance()->get_related_subscription_ids( $order, 'renewal' );
-
-		foreach ( $subscription_ids as $subscription_id ) {
-			if ( wcs_is_subscription( $subscription_id ) ) {
-				$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
-			}
-		}
-	}
-
-	return apply_filters( 'wcs_subscriptions_for_renewal_order', $subscriptions, $order );
+	return wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'renewal' ) );
 }
