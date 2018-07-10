@@ -91,6 +91,17 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	}
 
 	/**
+	 * @inheritdoc
+	 */
+	public function delete_retry( $retry_id ) {
+		if ( $this->migrator->should_migrate_retry( $retry_id ) ) {
+			return $this->post_store->delete_retry( $retry_id );
+		}
+
+		return $this->database_store->delete_retry( $retry_id );
+	}
+
+	/**
 	 * Get a set of retries from the database
 	 *
 	 * @param array $args A set of filters.

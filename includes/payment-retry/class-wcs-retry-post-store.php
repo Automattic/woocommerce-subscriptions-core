@@ -109,6 +109,13 @@ class WCS_Retry_Post_Store extends WCS_Retry_Store {
 	}
 
 	/**
+	 * @inheritdoc
+	 */
+	public function delete_retry( $retry_id ) {
+		return wp_delete_post( $retry_id, true );
+	}
+
+	/**
 	 *
 	 */
 	public function get_retries( $args ) {

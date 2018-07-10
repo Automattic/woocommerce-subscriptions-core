@@ -108,6 +108,15 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	}
 
 	/**
+	 * @inheritdoc
+	 */
+	public function delete_retry( $retry_id ) {
+		global $wpdb;
+
+		return ! ! $wpdb->delete( $this->get_full_table_name(), array( 'retry_id' => $retry_id ), array( '%d' ) );
+	}
+
+	/**
 	 * Get all the retries ordered by date.
 	 *
 	 * @param array $args The query arguments.

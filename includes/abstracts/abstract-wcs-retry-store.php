@@ -31,6 +31,15 @@ abstract class WCS_Retry_Store {
 	abstract public function get_retry( $retry_id );
 
 	/**
+	 * Deletes a retry.
+	 *
+	 * @param int $retry_id
+	 *
+	 * @return bool
+	 */
+	abstract public function delete_retry( $retry_id );
+
+	/**
 	 * Get a set of retries from the database
 	 *
 	 * @param array $args A set of filters:
