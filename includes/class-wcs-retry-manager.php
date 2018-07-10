@@ -204,7 +204,7 @@ class WCS_Retry_Manager {
 			}
 
 			foreach ( self::store()->get_retry_ids_for_order( $post_id ) as $retry_id ) {
-				wp_trash_post( $retry_id );
+				self::store()->delete_retry( $retry_id );
 			}
 		}
 	}

@@ -46,7 +46,7 @@ class WCS_Retry_Migrator {
 				'rule_raw' => $source_store_retry->get_rule()->get_raw_data(),
 			) ) );
 
-			wp_delete_post( $retry_id );
+			WCS_Retry_Stores::get_post_store()->delete_retry( $retry_id );
 
 			return $destination_store_retry;
 		}
