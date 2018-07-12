@@ -51,6 +51,9 @@ class WCS_Cart_Renewal {
 
 		// Remove non-recurring fees from renewal carts. Hooked in late (priority 1000), to ensure we handle all fees added by third-parties.
 		add_action( 'woocommerce_cart_calculate_fees', array( $this, 'remove_non_recurring_fees' ), 1000 );
+
+		// Remove subscription products with "one time shipping" from shipping packages.
+		add_filter( 'woocommerce_cart_shipping_packages', array( $this, 'maybe_update_shipping_packages' ), 0, 1 );
 	}
 
 	/**
@@ -1302,6 +1305,33 @@ class WCS_Cart_Renewal {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Filters the shipping packages to remove subscriptions that have "one time shipping" enabled and, as such,
+	 * shouldn't have a shipping amount associated during a renewal.
+	 *
+	 * @since 2.3.3
+	 */
+	public function maybe_update_shipping_packages( $packages ) {
+		if ( ! $this->cart_contains() ) {
+			return $packages;
+		}
+
+		foreach ( $packages as $index => $package ) {
+			foreach ( $package['contents'] as $cart_item_key => $cart_item ) {
+				if ( WC_Subscriptions_Product::needs_one_time_shipping( $cart_item['data'] ) ) {
+					$packages[ $index ]['contents_cost'] -= $cart_item['line_total'];
+					unset( $packages[ $index ]['contents'][ $cart_item_key ] );
+				}
+			}
+
+			if ( empty( $packages[ $index ]['contents'] ) ) {
+				unset( $packages[ $index ] );
+			}
+		}
+
+		return $packages;
 	}
 
 	/* Deprecated */
