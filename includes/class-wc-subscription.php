@@ -2117,6 +2117,13 @@ class WC_Subscription extends WC_Order {
 				$sign_up_fee = ( (float) $original_order_item->get_total( 'edit' ) ) / $original_order_item->get_quantity( 'edit' );
 			} elseif ( $original_order_item->meta_exists( '_synced_sign_up_fee' ) ) {
 				$sign_up_fee = ( (float) $original_order_item->get_meta( '_synced_sign_up_fee' ) ) / $original_order_item->get_quantity( 'edit' );
+
+				// The synced sign up fee meta contains the raw product sign up fee, if the subscription totals are inclusive of tax, we need to adjust the synced sign up fee to match tax inclusivity.
+				if ( $this->get_prices_include_tax() ) {
+					$line_item_total    = (float) $original_order_item->get_total( 'edit' ) + $original_order_item->get_total_tax( 'edit' );
+					$signup_fee_portion = $sign_up_fee / $line_item_total;
+					$sign_up_fee        = (float) $original_order_item->get_total( 'edit' ) * $signup_fee_portion;
+				}
 			} else {
 				// Sign-up fee is any amount on top of recurring amount
 				$order_line_total        = ( (float) $original_order_item->get_total( 'edit' ) ) / $original_order_item->get_quantity( 'edit' );
