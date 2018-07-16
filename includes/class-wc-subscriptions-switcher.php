@@ -1410,7 +1410,7 @@ class WC_Subscriptions_Switcher {
 						// Find out how many days at the new price per day the customer would receive for the total amount already paid
 						// (e.g. if the customer paid $10 / month previously, and was switching to a $5 / week subscription, she has pre-paid 14 days at the new price)
 						$pre_paid_days = 0;
-						if ( $old_price_per_day != 0 ) {
+						if ( 0 != $old_price_per_day ) {
 							$pre_paid_days = ceil( $old_total_paid / $new_price_per_day );
 						}
 
