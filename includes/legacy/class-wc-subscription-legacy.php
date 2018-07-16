@@ -438,17 +438,14 @@ class WC_Subscription_Legacy extends WC_Subscription {
 				$sign_up_fee = max( $original_order_item['line_total'] / $original_order_item['qty'] - $line_item['line_total'] / $line_item['qty'], 0 );
 			}
 
-			if ( ! empty( $original_order_item ) && ! empty( $sign_up_fee ) ) {
+			// If prices don't inc tax, ensure that the sign up fee amount includes the tax.
+			if ( 'inclusive_of_tax' === $tax_inclusive_or_exclusive && ! empty( $original_order_item ) && ! empty( $sign_up_fee ) ) {
 				$sign_up_fee_proportion = $sign_up_fee / ( $original_order_item['line_total'] / $original_order_item['qty'] );
 				$sign_up_fee_tax        = wc_round_tax_total( $original_order_item['line_tax'] * $sign_up_fee_proportion );
 
-				// If prices don't inc tax, ensure that the sign up fee amount includes the tax.
-				if ( 'inclusive_of_tax' === $tax_inclusive_or_exclusive && ! $this->get_prices_include_tax() ) {
-					$sign_up_fee += $sign_up_fee_tax;
-				// If prices inc tax and the request is for prices exclusive of tax, remove the taxes.
-				} elseif ( 'inclusive_of_tax' !== $tax_inclusive_or_exclusive && $this->get_prices_include_tax() ) {
-					$sign_up_fee -= $sign_up_fee_tax;
-				}
+
+				$sign_up_fee += $sign_up_fee_tax;
+				$sign_up_fee  = wc_format_decimal( $sign_up_fee, wc_get_price_decimals() );
 			}
 		}
 
