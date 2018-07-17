@@ -61,50 +61,52 @@ class WCS_My_Account_Payment_Methods {
 	 * old token value stored in post meta will be updated using the same meta key to use the
 	 * new token value.
 	 *
-	 * @param int The deleted token id
-	 * @param WC_Payment_Token The deleted token object
+	 * @param int $deleted_token_id The deleted token id.
+	 * @param WC_Payment_Token $deleted_token The deleted token object.
 	 * @since 2.2.7
 	 */
 	public static function maybe_update_subscriptions_payment_meta( $deleted_token_id, $deleted_token ) {
-		if ( isset( $_GET['delete_subscription_token'] ) && ! empty( $_GET['wcs_nonce'] ) && wp_verify_nonce( $_GET['wcs_nonce'], 'delete_subscription_token_' . $_GET['delete_subscription_token'] ) ) {
-			// init payment gateways
-			WC()->payment_gateways();
+		if ( ! isset( $_GET['delete_subscription_token'] ) || empty( $_GET['wcs_nonce'] ) || ! wp_verify_nonce( $_GET['wcs_nonce'], 'delete_subscription_token_' . $_GET['delete_subscription_token'] ) ) {
+			return;
+		}
 
-			$new_token = self::get_customers_alternative_token( $deleted_token );
+		// init payment gateways
+		WC()->payment_gateways();
 
-			if ( empty( $new_token ) ) {
-				$notice = esc_html__( 'The deleted payment method was used for automatic subscription payments, we couldn\'t find an alternative token payment method token to change your subscriptions to.', 'woocommerce-subscriptions' );
-				wc_add_notice( $notice, 'error' );
-				return;
+		$new_token = self::get_customers_alternative_token( $deleted_token );
+
+		if ( empty( $new_token ) ) {
+			$notice = esc_html__( 'The deleted payment method was used for automatic subscription payments, we couldn\'t find an alternative token payment method token to change your subscriptions to.', 'woocommerce-subscriptions' );
+			wc_add_notice( $notice, 'error' );
+			return;
+		}
+
+		$subscriptions = self::get_subscriptions_by_token( $deleted_token );
+
+		if ( empty( $subscriptions ) ) {
+			return;
+		}
+
+		foreach ( $subscriptions as $subscription ) {
+			$subscription = wcs_get_subscription( $subscription );
+
+			if ( empty( $subscription ) ) {
+				continue;
 			}
 
-			$subscriptions = self::get_subscriptions_by_token( $deleted_token );
-
-			if ( empty( $subscriptions ) ) {
-				return;
-			}
-
-			// translators: $1: the token/credit card label, 2$-3$: opening and closing strong and link tags
-			$notice = sprintf( esc_html__( 'The deleted payment method was used for automatic subscription payments. To avoid failed renewal payments in future the subscriptions using this payment method have been updated to use your %1$s. To change the payment method of individual subscriptions go to your %2$sMy Account > Subscriptions%3$s page.', 'woocommerce-subscriptions' ),
-				self::get_token_label( $new_token ),
-				'<a href="' . esc_url( wc_get_account_endpoint_url( get_option( 'woocommerce_myaccount_subscriptions_endpoint', 'subscriptions' ) ) ) . '"><strong>',
-				'</strong></a>'
-			);
-
-			wc_add_notice( $notice , 'notice' );
-
-			foreach ( $subscriptions as $subscription ) {
-				$subscription = wcs_get_subscription( $subscription );
-
-				if ( empty( $subscription ) ) {
-					continue;
-				}
-
-				if ( self::update_subscription_token( $subscription, $new_token, $deleted_token ) ) {
-					$subscription->add_order_note( sprintf( _x( 'Payment method meta updated after customer deleted a token from their My Account page. Payment meta changed from %1$s to %2$s', 'used in subscription note', 'woocommerce-subscriptions' ), $deleted_token->get_token(), $new_token->get_token() ) );
-				}
+			if ( self::update_subscription_token( $subscription, $new_token, $deleted_token ) ) {
+				$subscription->add_order_note( sprintf( _x( 'Payment method meta updated after customer deleted a token from their My Account page. Payment meta changed from %1$s to %2$s', 'used in subscription note', 'woocommerce-subscriptions' ), $deleted_token->get_token(), $new_token->get_token() ) );
 			}
 		}
+
+		// translators: $1: the token/credit card label, 2$-3$: opening and closing strong and link tags
+		$notice = sprintf( esc_html__( 'The deleted payment method was used for automatic subscription payments. To avoid failed renewal payments in future the subscriptions using this payment method have been updated to use your %1$s. To change the payment method of individual subscriptions go to your %2$sMy Account > Subscriptions%3$s page.', 'woocommerce-subscriptions' ),
+			self::get_token_label( $new_token ),
+			'<a href="' . esc_url( wc_get_account_endpoint_url( get_option( 'woocommerce_myaccount_subscriptions_endpoint', 'subscriptions' ) ) ) . '"><strong>',
+			'</strong></a>'
+		);
+
+		wc_add_notice( $notice , 'notice' );
 	}
 
 	/**
