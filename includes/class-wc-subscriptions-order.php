@@ -975,6 +975,18 @@ class WC_Subscriptions_Order {
 	}
 
 	/**
+	 * Handles partial refunds on orders in WC versions pre 2.5 which would be considered full refunds in WC 2.5.
+	 *
+	 * @param $order_id
+	 *
+	 * @since 2.0
+	 * @deprecated 2.3.3
+	 */
+	public static function maybe_cancel_subscription_on_partial_refund( $order_id ) {
+		wcs_deprecated_function( __METHOD__, '2.3.3' );
+	}
+
+	/**
 	 * If the order doesn't contain shipping methods because it contains synced or trial products but the related subscription(s) does have a shipping method.
 	 * This function will ensure the shipping address is still displayed in order emails and on the order received and view order pages.
 	 *
