@@ -26,6 +26,7 @@ class WCS_My_Account_Payment_Methods {
 		add_filter( 'woocommerce_payment_methods_list_item', array( __CLASS__, 'flag_subscription_payment_token_deletions' ), 10, 2 );
 		add_action( 'woocommerce_payment_token_deleted',array( __CLASS__, 'maybe_update_subscriptions_payment_meta' ), 10, 2 );
 		add_action( 'woocommerce_payment_token_set_default', array( __CLASS__, 'display_default_payment_token_change_notice' ), 10, 2 );
+		add_action( 'wp', array( __CLASS__, 'update_subscription_tokens' ) );
 	}
 
 	/**
@@ -298,6 +299,43 @@ class WCS_My_Account_Payment_Methods {
 		);
 
 		wc_add_notice( $notice , 'notice' );
+	}
+
+	/**
+	 * Update the customer's subscription tokens if they opted to from their My Account page.
+	 *
+	 * @since 2.3.3
+	 */
+	public static function update_subscription_tokens() {
+		if ( ! isset( $_GET['update-subscription-tokens'], $_GET['token-id'],  $_GET['_wcsnonce'] ) || ! wp_verify_nonce( $_GET['_wcsnonce'], 'wcs-update-subscription-tokens' ) ) {
+			return;
+		}
+
+		// init payment gateways
+		WC()->payment_gateways();
+
+		$default_token_id = $_GET['token-id'];
+		$default_token    = WC_Payment_Tokens::get( $default_token_id );
+
+		if ( ! $default_token ) {
+			return;
+		}
+
+		$tokens = self::get_customer_tokens( $default_token->get_gateway_id(), $default_token->get_user_id() );
+		unset( $tokens[ $default_token_id ] );
+
+		foreach ( $tokens as $old_token ) {
+			foreach ( self::get_subscriptions_by_token( $old_token ) as $subscription ) {
+				$subscription = wcs_get_subscription( $subscription );
+
+				if ( ! empty( $subscription ) && self::update_subscription_token( $subscription, $default_token, $old_token ) ) {
+					$subscription->add_order_note( sprintf( _x( 'Payment method meta updated after customer changed their default token and opted to update their subscriptions. Payment meta changed from %1$s to %2$s', 'used in subscription note', 'woocommerce-subscriptions' ), $old_token->get_token(), $default_token->get_token() ) );
+				}
+			}
+		}
+
+		wp_redirect( remove_query_arg( array( 'update-subscription-tokens', 'token-id', '_wcsnonce' ) ) );
+		exit();
 	}
 }
 WCS_My_Account_Payment_Methods::init();
