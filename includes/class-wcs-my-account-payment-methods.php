@@ -18,12 +18,13 @@ class WCS_My_Account_Payment_Methods {
 	 * @since 2.2.7
 	 */
 	public static function init() {
-
 		// Only hook class functions if the payment token object exists
-		if ( class_exists( 'WC_Payment_Token' ) ) {
-			add_filter( 'woocommerce_payment_methods_list_item', __CLASS__ . '::flag_subscription_payment_token_deletions', 10, 2 );
-			add_action( 'woocommerce_payment_token_deleted', __CLASS__ . '::maybe_update_subscriptions_payment_meta', 10, 2 );
+		if ( ! class_exists( 'WC_Payment_Token' ) ) {
+			return;
 		}
+
+		add_filter( 'woocommerce_payment_methods_list_item', array( __CLASS__, 'flag_subscription_payment_token_deletions' ), 10, 2 );
+		add_action( 'woocommerce_payment_token_deleted',array( __CLASS__, 'maybe_update_subscriptions_payment_meta' ), 10, 2 );
 	}
 
 	/**
