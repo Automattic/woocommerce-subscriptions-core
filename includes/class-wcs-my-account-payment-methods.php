@@ -166,11 +166,6 @@ class WCS_My_Account_Payment_Methods {
 				'value' => 'false',
 			),
 			array(
-				'key'   => '_customer_user',
-				'value' => $payment_token->get_user_id(),
-				'type'  => 'numeric',
-			),
-			array(
 				'value' => $payment_token->get_token(),
 			),
 		);
@@ -180,6 +175,7 @@ class WCS_My_Account_Payment_Methods {
 			'post_status'    => array( 'wc-pending', 'wc-active', 'wc-on-hold' ),
 			'meta_query'     => $meta_query,
 			'posts_per_page' => -1,
+			'post__in'       => WCS_Customer_Store::instance()->get_users_subscription_ids( $payment_token->get_user_id() ),
 		) );
 
 		return apply_filters( 'woocommerce_subscriptions_by_payment_token', $user_subscriptions, $payment_token );
