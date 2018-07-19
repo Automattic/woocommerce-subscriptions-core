@@ -25,6 +25,7 @@ class WCS_My_Account_Payment_Methods {
 
 		add_filter( 'woocommerce_payment_methods_list_item', array( __CLASS__, 'flag_subscription_payment_token_deletions' ), 10, 2 );
 		add_action( 'woocommerce_payment_token_deleted',array( __CLASS__, 'maybe_update_subscriptions_payment_meta' ), 10, 2 );
+		add_action( 'woocommerce_payment_token_set_default', array( __CLASS__, 'display_default_payment_token_change_notice' ), 10, 2 );
 	}
 
 	/**
@@ -259,6 +260,44 @@ class WCS_My_Account_Payment_Methods {
 	 */
 	public static function customer_has_alternative_token( $token ) {
 		return self::get_customers_alternative_token( $token ) !== null;
+	}
+
+	/**
+	 * Display a notice when a customer sets a new default token notifying them of what this means for their subscriptions.
+	 *
+	 * @param int $default_token_id The default token id.
+	 * @param WC_Payment_Token $default_token The default token object.
+	 * @since 2.3.3
+	 */
+	public static function display_default_payment_token_change_notice( $default_token_id, $default_token ) {
+		$display_notice  = false;
+		$customer_tokens = self::get_customer_tokens( $default_token->get_gateway_id(), $default_token->get_user_id() );
+		unset( $customer_tokens[ $default_token_id ] );
+
+		// Check if there are subscriptions for one of the customer's other tokens.
+		foreach ( $customer_tokens as $token ) {
+			if ( count( self::get_subscriptions_by_token( $token ) ) > 0 ) {
+				$display_notice = true;
+				break;
+			}
+		}
+
+		if ( ! $display_notice ) {
+			return;
+		}
+
+		$notice = sprintf( esc_html__( 'Would you like to update your subscriptions to use this new payment method - %1$s?%2$sYes%4$s | %3$sNo%4$s', 'woocommerce-subscriptions' ),
+			self::get_token_label( $default_token ),
+			'</br><a href="' . esc_url( add_query_arg( array(
+				'update-subscription-tokens' => 'true',
+				'token-id'                   => $default_token_id,
+				'_wcsnonce'                  => wp_create_nonce( 'wcs-update-subscription-tokens' ),
+			), wc_get_account_endpoint_url( 'payment-methods' ) ) ) . '"><strong>',
+			'<a href=""><strong>',
+			'</strong></a>'
+		);
+
+		wc_add_notice( $notice , 'notice' );
 	}
 }
 WCS_My_Account_Payment_Methods::init();
