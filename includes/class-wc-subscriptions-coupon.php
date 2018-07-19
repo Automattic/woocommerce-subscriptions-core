@@ -1046,12 +1046,7 @@ class WC_Subscriptions_Coupon {
 				$coupon_type   = wcs_get_coupon_property( $coupon, 'discount_type' );
 				$coupon_amount = wcs_get_coupon_property( $coupon, 'coupon_amount' );
 
-				// Pre 2.5 is_valid_for_product() does not use wc_get_product_coupon_types()
-				if ( WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
-					$is_valid_for_product = true;
-				} else {
-					$is_valid_for_product = $coupon->is_valid_for_product( $cart_item['data'], $cart_item );
-				}
+				$is_valid_for_product = $coupon->is_valid_for_product( $cart_item['data'], $cart_item );
 
 				if ( $coupon->apply_before_tax() && $coupon->is_valid() && $is_valid_for_product ) {
 
