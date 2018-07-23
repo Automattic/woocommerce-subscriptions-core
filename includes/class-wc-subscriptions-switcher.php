@@ -1501,7 +1501,7 @@ class WC_Subscriptions_Switcher {
 	*/
 	public static function calculate_pre_paid_days( $old_total_paid, $new_price_per_day ) {
 		$pre_paid_days = 0;
-		if ( $new_price_per_day != 0 ) {
+		if ( 0 != $new_price_per_day ) {
 			$pre_paid_days = ceil( $old_total_paid / $new_price_per_day );
 		}
 		return $pre_paid_days;
