@@ -1499,7 +1499,7 @@ class WC_Subscriptions_Switcher {
 	* @param int $new_price_per_day The amount per day price for the new subscription
 	* @return int $pre_paid_days The number of days paid for already
 	*/
-	public static function calculate_pre_paid_days( $old_total_paid, $new_price_per_day ) {
+	private static function calculate_pre_paid_days( $old_total_paid, $new_price_per_day ) {
 		$pre_paid_days = 0;
 		if ( 0 != $new_price_per_day ) {
 			$pre_paid_days = ceil( $old_total_paid / $new_price_per_day );
