@@ -70,14 +70,21 @@ abstract class WCS_Table_Maker {
 	}
 
 	/**
+	 * Gets the schema version name.
+	 *
+	 * @return string
+	 */
+	private function get_schema_option_name() {
+		return 'schema-' . get_class( $this );
+	}
+
+	/**
 	 * Gets the schema version we have.
 	 *
 	 * @return mixed
 	 */
 	private function get_schema_option() {
-		$option_name = 'schema-' . get_class( $this );
-
-		return get_option( $option_name, 1 );
+		return get_option( $this->get_schema_option_name(), 1 );
 	}
 
 	/**
@@ -87,7 +94,7 @@ abstract class WCS_Table_Maker {
 	 * @return void
 	 */
 	private function mark_schema_update_complete() {
-		$option_name = 'schema-' . get_class( $this );
+		$option_name = $this->get_schema_option_name();
 
 		// work around race conditions and ensure that our option updates
 		$value_to_save = (string) $this->schema_version . '.0.' . time();
