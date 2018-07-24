@@ -394,7 +394,7 @@ class WCS_Retry_Manager {
 	 */
 	protected static function get_store_class() {
 		$default_store_class = 'WCS_Retry_Database_Store';
-		if ( ! ! WCS_Retry_Stores::get_post_store()->get_retries( array() ) ) {
+		if ( (bool) WCS_Retry_Stores::get_post_store()->get_retries( array() ) ) {
 			$default_store_class = 'WCS_Retry_Hybrid_Store';
 		}
 

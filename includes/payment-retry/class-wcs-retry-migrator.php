@@ -26,7 +26,7 @@ class WCS_Retry_Migrator {
 	 * @return bool
 	 */
 	public function should_migrate_retry( $retry_id ) {
-		return ! ! WCS_Retry_Stores::get_post_store()->get_retry( $retry_id );
+		return (bool) WCS_Retry_Stores::get_post_store()->get_retry( $retry_id );
 	}
 
 	/**
