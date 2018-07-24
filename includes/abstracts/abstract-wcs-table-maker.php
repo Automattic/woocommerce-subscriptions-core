@@ -20,7 +20,7 @@ abstract class WCS_Table_Maker {
 	/**
 	 * @var int Increment this value to trigger a schema update
 	 */
-	protected $schema_version = 0;
+	protected $schema_version = 1;
 
 	/**
 	 * @var array Names of tables that will be registered by this class
