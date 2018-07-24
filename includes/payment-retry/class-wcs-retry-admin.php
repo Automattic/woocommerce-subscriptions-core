@@ -89,7 +89,7 @@ class WCS_Retry_Admin {
 				$tool_tip     = '';
 
 				foreach ( $retries as $retry ) {
-					$retry_counts[ $retry->get_status() ] = isset( $retry_counts[ $retry->get_status() ] ) ? ++ $retry_counts[ $retry->get_status() ] : 1;
+					$retry_counts[ $retry->get_status() ] = isset( $retry_counts[ $retry->get_status() ] ) ? ++$retry_counts[ $retry->get_status() ] : 1;
 				}
 
 				foreach ( $retry_counts as $retry_status => $retry_count ) {
@@ -160,7 +160,7 @@ class WCS_Retry_Admin {
 		$has_custom_retry_rule_class = has_action( 'wcs_retry_rule_class' );
 		$has_custom_raw_retry_rule   = has_action( 'wcs_get_retry_rule_raw' );
 		$has_custom_retry_rule       = has_action( 'wcs_get_retry_rule' );
-		$has_retry_on_post_store     = ! ! WCS_Retry_Stores::get_post_store()->get_retries( array() );
+		$has_retry_on_post_store     = (bool) WCS_Retry_Stores::get_post_store()->get_retries( array() );
 
 		$data['wcs_retry_rules_overridden'] = array(
 			'name'      => _x( 'Custom Retry Rules', 'label for the system status page', 'woocommerce-subscriptions' ),
