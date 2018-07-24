@@ -49,7 +49,6 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 		$this->post_store     = WCS_Retry_Stores::get_post_store();
 		$this->migrator       = WCS_Retry_Migrator::instance();
 
-		// @see
 		do_action( 'wcs_retries_migration_hook' );
 	}
 
@@ -91,7 +90,11 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	}
 
 	/**
-	 * @inheritdoc
+	 * Deletes a retry.
+	 *
+	 * @param int $retry_id
+	 *
+	 * @return bool
 	 */
 	public function delete_retry( $retry_id ) {
 		if ( $this->migrator->should_migrate_retry( $retry_id ) ) {
