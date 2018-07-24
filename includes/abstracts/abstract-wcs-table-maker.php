@@ -64,10 +64,20 @@ abstract class WCS_Table_Maker {
 	 * @return bool
 	 */
 	private function schema_update_required() {
-		$option_name         = 'schema-' . get_class( $this );
-		$version_found_in_db = get_option( $option_name, 0 );
+		$version_found_in_db = $this->get_schema_option();
 
 		return version_compare( $version_found_in_db, $this->schema_version, '<' );
+	}
+
+	/**
+	 * Gets the schema version we have.
+	 *
+	 * @return mixed
+	 */
+	private function get_schema_option() {
+		$option_name = 'schema-' . get_class( $this );
+
+		return get_option( $option_name, 1 );
 	}
 
 	/**
