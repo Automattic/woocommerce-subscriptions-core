@@ -75,7 +75,7 @@ abstract class WCS_Table_Maker {
 	 * @return string
 	 */
 	private function get_schema_option_name() {
-		return 'schema-' . get_class( $this );
+		return 'wcs-schema-' . get_class( $this );
 	}
 
 	/**
@@ -84,7 +84,7 @@ abstract class WCS_Table_Maker {
 	 * @return mixed
 	 */
 	private function get_schema_option() {
-		return get_option( $this->get_schema_option_name(), 1 );
+		return get_option( $this->get_schema_option_name(), 0 );
 	}
 
 	/**
