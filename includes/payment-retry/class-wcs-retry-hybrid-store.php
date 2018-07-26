@@ -23,14 +23,14 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 *
 	 * @var WCS_Retry_Store
 	 */
-	private $database_store;
+	private $destination_store;
 
 	/**
 	 * Where the data comes from.
 	 *
 	 * @var WCS_Retry_Store
 	 */
-	private $post_store;
+	private $source_store;
 
 	/**
 	 * Our migration class.
@@ -45,9 +45,9 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @void
 	 */
 	public function init() {
-		$this->database_store = WCS_Retry_Stores::get_database_store();
-		$this->post_store     = WCS_Retry_Stores::get_post_store();
-		$this->migrator       = WCS_Retry_Migrator::instance();
+		$this->destination_store = WCS_Retry_Stores::get_database_store();
+		$this->source_store      = WCS_Retry_Stores::get_post_store();
+		$this->migrator          = WCS_Retry_Migrator::instance();
 
 		do_action( 'wcs_retries_migration_hook' );
 	}
@@ -65,7 +65,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 			$retry_id = $this->migrator->migrate_retry( $retry_id );
 		}
 
-		return $this->database_store->save( new WCS_Retry( array(
+		return $this->destination_store->save( new WCS_Retry( array(
 			'id'       => $retry_id,
 			'order_id' => $retry->get_order_id(),
 			'status'   => $retry->get_status(),
@@ -86,7 +86,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 			$retry_id = $this->migrator->migrate_retry( $retry_id );
 		}
 
-		return $this->database_store->get_retry( $retry_id );
+		return $this->destination_store->get_retry( $retry_id );
 	}
 
 	/**
@@ -98,10 +98,10 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 */
 	public function delete_retry( $retry_id ) {
 		if ( $this->migrator->should_migrate_retry( $retry_id ) ) {
-			return $this->post_store->delete_retry( $retry_id );
+			return $this->source_store->delete_retry( $retry_id );
 		}
 
-		return $this->database_store->delete_retry( $retry_id );
+		return $this->destination_store->delete_retry( $retry_id );
 	}
 
 	/**
@@ -112,7 +112,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @return array An array of WCS_Retry objects
 	 */
 	public function get_retries( $args = array() ) {
-		$source_store_retries = $this->post_store->get_retries( $args );
+		$source_store_retries = $this->source_store->get_retries( $args );
 
 		foreach ( $source_store_retries as $source_store_retry_id => $source_store_retry ) {
 			if ( $this->migrator->should_migrate_retry( $source_store_retry_id ) ) {
@@ -120,7 +120,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 			}
 		}
 
-		return $this->database_store->get_retries( $args );
+		return $this->destination_store->get_retries( $args );
 	}
 
 	/**
@@ -131,7 +131,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @return array
 	 */
 	public function get_retry_ids_for_order( $order_id ) {
-		$source_store_retries = $this->post_store->get_retry_ids_for_order( $order_id );
+		$source_store_retries = $this->source_store->get_retry_ids_for_order( $order_id );
 
 		foreach ( $source_store_retries as $source_store_retry_id => $source_store_retry ) {
 			if ( $this->migrator->should_migrate_retry( $source_store_retry_id ) ) {
@@ -139,7 +139,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 			}
 		}
 
-		return $this->database_store->get_retry_ids_for_order( $order_id );
+		return $this->destination_store->get_retry_ids_for_order( $order_id );
 	}
 
 }
