@@ -31,7 +31,7 @@ class WCS_Retry_Migrator extends WCS_Migrator {
 	 * @return bool
 	 */
 	public function should_migrate_entry( $retry_id ) {
-		return (bool) $this->source_store->get_retry( $retry_id );
+		return ! $this->destination_store->get_retry( $retry_id );
 	}
 
 	/**
@@ -55,12 +55,7 @@ class WCS_Retry_Migrator extends WCS_Migrator {
 	public function save_destination_store_entry( $entry_id ) {
 		$source_retry = $this->get_source_store_entry( $entry_id );
 
-		return $this->destination_store->save( new WCS_Retry( array(
-			'order_id' => $source_retry->get_order_id(),
-			'status'   => $source_retry->get_status(),
-			'date_gmt' => $source_retry->get_date_gmt(),
-			'rule_raw' => $source_retry->get_rule()->get_raw_data(),
-		) ) );
+		return $this->destination_store->save( $source_retry );
 	}
 
 	/**
