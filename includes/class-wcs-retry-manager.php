@@ -28,7 +28,7 @@ class WCS_Retry_Manager {
 	 *
 	 * @var WCS_Retry_Background_Migrator
 	 */
-	protected static $background_process;
+	protected static $background_migrator;
 
 	/**
 	 * Our table maker instance.
@@ -76,9 +76,9 @@ class WCS_Retry_Manager {
 				add_action( 'init', array( self::$table_maker, 'register_tables' ), 0 );
 			}
 
-			if ( ! self::$background_process ) {
-				self::$background_process = new WCS_Retry_Background_Migrator();
-				add_action( 'init', array( self::$background_process, 'init' ), 5 );
+			if ( ! self::$background_migrator ) {
+				self::$background_migrator = new WCS_Retry_Background_Migrator();
+				add_action( 'init', array( self::$background_migrator, 'init' ), 5 );
 			}
 		}
 	}
