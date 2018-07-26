@@ -35,7 +35,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	/**
 	 * Our migration class.
 	 *
-	 * @var WCS_Retry_Migrator
+	 * @var WCS_Migrator
 	 */
 	private $migrator;
 
@@ -47,7 +47,9 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	public function init() {
 		$this->destination_store = WCS_Retry_Stores::get_database_store();
 		$this->source_store      = WCS_Retry_Stores::get_post_store();
-		$this->migrator          = WCS_Retry_Migrator::instance();
+
+		$migrator_class = apply_filters( 'wcs_retry_retry_migrator_class', 'WCS_Retry_Migrator' );
+		$this->migrator = new $migrator_class( $this->source_store, $this->destination_store );
 
 		do_action( 'wcs_retries_migration_hook' );
 	}

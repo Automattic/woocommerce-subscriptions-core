@@ -12,11 +12,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-class WCS_Retry_Migrator {
+class WCS_Retry_Migrator extends WCS_Migrator {
 	/**
-	 * @var null|WCS_Retry_Migrator
+	 * @var WCS_Retry_Store
 	 */
-	private static $migrator = null;
+	private $source_store;
+
+	/**
+	 * @var WCS_Retry_Store
+	 */
+	private $destination_store;
 
 	/**
 	 * Should this retry be migrated.
@@ -25,46 +30,48 @@ class WCS_Retry_Migrator {
 	 *
 	 * @return bool
 	 */
-	public function should_migrate_retry( $retry_id ) {
-		return (bool) WCS_Retry_Stores::get_post_store()->get_retry( $retry_id );
+	public function should_migrate_entry( $retry_id ) {
+		return (bool) $this->source_store->get_retry( $retry_id );
 	}
 
 	/**
-	 * Migrates our retry.
+	 * Gets the item from the source store.
 	 *
-	 * @param int $retry_id
+	 * @param int $entry_id
 	 *
-	 * @return bool|int
+	 * @return WCS_Retry
 	 */
-	public function migrate_retry( $retry_id ) {
-		$source_store_retry = WCS_Retry_Stores::get_post_store()->get_retry( $retry_id );
-		if ( $source_store_retry ) {
-			$destination_store_retry = WCS_Retry_Stores::get_database_store()->save( new WCS_Retry( array(
-				'order_id' => $source_store_retry->get_order_id(),
-				'status'   => $source_store_retry->get_status(),
-				'date_gmt' => $source_store_retry->get_date_gmt(),
-				'rule_raw' => $source_store_retry->get_rule()->get_raw_data(),
-			) ) );
-
-			WCS_Retry_Stores::get_post_store()->delete_retry( $retry_id );
-
-			return $destination_store_retry;
-		}
-
-		return false;
+	public function get_source_store_entry( $entry_id ) {
+		return $this->source_store->get_retry( $entry_id );
 	}
 
 	/**
-	 * Returns an instance of the current class.
+	 * save the item to the destination store.
 	 *
-	 * @return WCS_Retry_Migrator
+	 * @param int $entry_id
+	 *
+	 * @return mixed
 	 */
-	public static function instance() {
-		if ( empty( self::$migrator ) ) {
-			self::$migrator = new self();
-		}
+	public function save_destination_store_entry( $entry_id ) {
+		$source_retry = $this->get_source_store_entry( $entry_id );
 
-		return self::$migrator;
+		return $this->destination_store->save( new WCS_Retry( array(
+			'order_id' => $source_retry->get_order_id(),
+			'status'   => $source_retry->get_status(),
+			'date_gmt' => $source_retry->get_date_gmt(),
+			'rule_raw' => $source_retry->get_rule()->get_raw_data(),
+		) ) );
+	}
+
+	/**
+	 * deletes the item from the source store.
+	 *
+	 * @param int $entry_id
+	 *
+	 * @return mixed
+	 */
+	public function delete_source_store_entry( $entry_id ) {
+		return wp_delete_post( $entry_id );
 	}
 }
 
