@@ -149,7 +149,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 			$where      .= $date_query->get_sql();
 		}
 
-		$retry_ids = $wpdb->get_col( "SELECT retry_id from {$this->get_full_table_name()} {$where} ORDER BY date_gmt DESC" );
+		$retry_ids = $wpdb->get_col( "SELECT retry_id FROM {$this->get_full_table_name()} {$where} ORDER BY date_gmt DESC" );
 
 		foreach ( $retry_ids as $retry_post_id ) {
 			$retries[ $retry_post_id ] = $this->get_retry( $retry_post_id );
@@ -170,7 +170,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 
 		$retry_ids = $wpdb->get_col(
 			$wpdb->prepare(
-				"SELECT retry_id from {$this->get_full_table_name()} WHERE order_id = %d ORDER BY retry_id ASC",
+				"SELECT retry_id FROM {$this->get_full_table_name()} WHERE order_id = %d ORDER BY retry_id ASC",
 				$order_id
 			)
 		);
