@@ -44,15 +44,15 @@ class WCS_Retry_Table_Maker extends WCS_Table_Maker {
 			case self::PAYMENT_RETRY_TABLE:
 				return "
 				CREATE TABLE {$table_name} (
-		            retry_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-		            order_id BIGINT UNSIGNED NOT NULL,
-		            status varchar(255) NOT NULL,
-		            date_gmt datetime NOT NULL default '0000-00-00 00:00:00',
-		            rule_raw text,
-		            PRIMARY KEY  (retry_id),
-		            KEY order_id (order_id)
+					retry_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+					order_id BIGINT UNSIGNED NOT NULL,
+					status varchar(255) NOT NULL,
+					date_gmt datetime NOT NULL default '0000-00-00 00:00:00',
+					rule_raw text,
+					PRIMARY KEY  (retry_id),
+					KEY order_id (order_id)
 				) $charset_collate;
-				        ";
+						";
 			default:
 				return '';
 		}
