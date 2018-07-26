@@ -57,7 +57,7 @@ class WCS_Retry_Background_Migrator extends WCS_Background_Updater {
 	 * @return array An array of items to update, or empty array if there are no items to update.
 	 */
 	protected function get_items_to_update() {
-		return $this->post_store->get_retries( array() );
+		return $this->post_store->get_retries();
 	}
 
 	/**

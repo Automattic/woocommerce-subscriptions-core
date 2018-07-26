@@ -47,7 +47,7 @@ abstract class WCS_Retry_Store {
 	 *			'date_query': array of dates to filter retries those that occur 'after' or 'before' a certain (or inbetween those two dates). Should be a MySQL formated date/time string.
 	 * @return array An array of WCS_Retry objects
 	 */
-	abstract public function get_retries( $args );
+	abstract public function get_retries( $args = array() );
 
 	/**
 	 * Get the IDs of all retries from the database for a given order

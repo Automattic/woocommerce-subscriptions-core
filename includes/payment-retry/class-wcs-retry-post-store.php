@@ -120,9 +120,13 @@ class WCS_Retry_Post_Store extends WCS_Retry_Store {
 	}
 
 	/**
+	 * Get a set of retries from the database
 	 *
+	 * @param array $args A set of filters.
+	 *
+	 * @return array An array of WCS_Retry objects
 	 */
-	public function get_retries( $args ) {
+	public function get_retries( $args = array() ) {
 
 		$args = wp_parse_args( $args, array(
 			'status'     => 'any',

@@ -111,7 +111,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 *
 	 * @return array An array of WCS_Retry objects
 	 */
-	public function get_retries( $args ) {
+	public function get_retries( $args = array() ) {
 		$source_store_retries = $this->post_store->get_retries( $args );
 
 		foreach ( $source_store_retries as $source_store_retry_id => $source_store_retry ) {

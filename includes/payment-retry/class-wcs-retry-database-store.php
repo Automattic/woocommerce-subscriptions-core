@@ -121,13 +121,13 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	}
 
 	/**
-	 * Get all the retries ordered by date.
+	 * Get a set of retries from the database
 	 *
-	 * @param array $args The query arguments.
+	 * @param array $args A set of filters.
 	 *
-	 * @return array
+	 * @return array An array of WCS_Retry objects
 	 */
-	public function get_retries( $args ) {
+	public function get_retries( $args = array() ) {
 		global $wpdb;
 
 		$retries = array();
