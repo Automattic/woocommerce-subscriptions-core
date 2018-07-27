@@ -57,6 +57,11 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 		);
 
 		if ( $retry->get_id() > 0 ) {
+			$query_data['retry_id'] = $retry->get_id();
+			$query_format[]         = '%d';
+		}
+
+		if ( $this->get_retry( $retry->get_id() ) ) {
 			$wpdb->update(
 				$this->get_full_table_name(),
 				$query_data,
