@@ -552,6 +552,19 @@ class WC_Subscriptions_Coupon {
 		foreach ( $applied_coupons as $coupon_code ) {
 			$coupon      = new WC_Coupon( $coupon_code );
 			$coupon_type = wcs_get_coupon_property( $coupon, 'discount_type' );
+
+			/**
+			 * Filters whether the coupon should be allowed to be removed.
+			 *
+			 * @param bool      $bypass_removal   Whether to bypass removing the coupon.
+			 * @param WC_Coupon $coupon           The coupon object.
+			 * @param string    $coupon_type      The coupon's discount_type property.
+			 * @param string    $calculation_type The current calculation type.
+			 */
+			if ( apply_filters( 'wcs_bypass_coupon_removal', false, $coupon, $coupon_type, $calculation_type ) ) {
+				continue;
+			}
+
 			if ( ! isset( self::$recurring_coupons[ $coupon_type ] ) ) {
 				$cart->remove_coupon( $coupon_code );
 				continue;
