@@ -16,13 +16,19 @@ abstract class WCS_Migrator {
 	/**
 	 * @var mixed
 	 */
-	private $source_store;
+	protected $source_store;
 
 	/**
 	 * @var mixed
 	 */
-	private $destination_store;
+	protected $destination_store;
 
+	/**
+	 * WCS_Migrator constructor.
+	 *
+	 * @param mixed $source_store Source store.
+	 * @param mixed $destination_store $destination store.
+	 */
 	public function __construct( $source_store, $destination_store ) {
 		$this->source_store      = $source_store;
 		$this->destination_store = $destination_store;

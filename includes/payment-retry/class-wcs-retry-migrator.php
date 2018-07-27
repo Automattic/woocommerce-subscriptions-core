@@ -16,12 +16,12 @@ class WCS_Retry_Migrator extends WCS_Migrator {
 	/**
 	 * @var WCS_Retry_Store
 	 */
-	private $source_store;
+	protected $source_store;
 
 	/**
 	 * @var WCS_Retry_Store
 	 */
-	private $destination_store;
+	protected $destination_store;
 
 	/**
 	 * Should this retry be migrated.
@@ -66,7 +66,7 @@ class WCS_Retry_Migrator extends WCS_Migrator {
 	 * @return mixed
 	 */
 	public function delete_source_store_entry( $entry_id ) {
-		return wp_delete_post( $entry_id );
+		return wp_delete_post( $entry_id, true );
 	}
 }
 
