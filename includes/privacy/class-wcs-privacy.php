@@ -61,6 +61,8 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 		add_filter( 'woocommerce_anonymize_completed_orders_query_args', array( __CLASS__, 'remove_subscription_orders_from_anonymization_query' ), 10, 2 );
 
 		add_action( 'woocommerce_cleanup_personal_data', array( $this, 'queue_cleanup_personal_data' ) );
+
+		add_filter( 'woocommerce_account_settings', array( __CLASS__, 'add_inactive_user_retention_note' ) );
 	}
 
 	/**
@@ -246,5 +248,23 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 		$query_args['subscription_resubscribe'] = false;
 
 		return $query_args;
+	}
+
+	/**
+	 * Add a note to the inactive user data retention setting noting that users with a subscription are excluded.
+	 *
+	 * @since 2.3.4
+	 * @param array $settings WooCommerce Account and Privacy settings.
+	 * @return array Account and Privacy settings.
+	 */
+	public static function add_inactive_user_retention_note( $settings ) {
+		foreach ( $settings as &$setting ) {
+			if ( isset( $setting['id'], $setting['desc_tip'] ) && 'woocommerce_delete_inactive_accounts' === $setting['id'] ) {
+				$setting['desc_tip'] .= ' ' .  __( 'Customers with a subscription are excluded from this setting.', 'woocommerce-subscriptions' );
+				break;
+			}
+		}
+
+		return $settings;
 	}
 }
