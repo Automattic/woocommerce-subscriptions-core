@@ -22,6 +22,14 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 	protected static $background_process;
 
 	/**
+	 * A flag which is set when WC is doing a user inactivity cleanup.
+	 * Used to exclude subscription customers from the inactive user query.
+	 *
+	 * @var bool
+	 */
+	protected static $doing_user_inactivity_query = false;
+
+	/**
 	 * WCS_Privacy constructor.
 	 */
 	public function __construct() {
@@ -62,6 +70,9 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 
 		add_action( 'woocommerce_cleanup_personal_data', array( $this, 'queue_cleanup_personal_data' ) );
 
+		// Hook in late so there is less opportunity for our flag to affect other user queries called on this hook.
+		add_filter( 'woocommerce_delete_inactive_account_roles', array( __CLASS__, 'flag_subscription_user_exclusion_from_query' ), 1000 );
+		add_action( 'pre_user_query', array( __CLASS__, 'maybe_exclude_subscription_customers' ) );
 		add_filter( 'woocommerce_account_settings', array( __CLASS__, 'add_inactive_user_retention_note' ) );
 	}
 
@@ -266,5 +277,36 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 		}
 
 		return $settings;
+	}
+
+	/**
+	 * Set a flag to record inactive user account deletion.
+	 *
+	 * @since 2.3.4
+	 * @param  array $user_roles The user roles included in the inactive user query.
+	 * @return array
+	 */
+	public static function flag_subscription_user_exclusion_from_query( $user_roles ) {
+		self::$doing_user_inactivity_query = true;
+		return $user_roles;
+	}
+
+	/**
+	 * Exclude customers who have subscriptions from the inactive user cleanup query.
+	 *
+	 * @since 2.3.4
+	 * @param WP_User_Query $user_query
+	 */
+	public static function maybe_exclude_subscription_customers( $user_query ) {
+		if ( ! self::$doing_user_inactivity_query ) {
+			return;
+		}
+
+		if ( ! isset( $user_query->query_where ) ) {
+			$user_query->query_where = 'WHERE 1=1';
+		}
+
+		$user_query->query_where .= sprintf( ' AND ID NOT IN ( %s )', WC_Data_Store::load( 'subscription' )->get_subscription_customers_query() );
+		self::$doing_user_inactivity_query = false;
 	}
 }
