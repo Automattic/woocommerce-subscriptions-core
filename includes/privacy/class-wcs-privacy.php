@@ -72,7 +72,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 
 		// Hook in late so there is less opportunity for our flag to affect other user queries called on this hook.
 		add_filter( 'woocommerce_delete_inactive_account_roles', array( __CLASS__, 'flag_subscription_user_exclusion_from_query' ), 1000 );
-		add_action( 'pre_user_query', array( __CLASS__, 'maybe_exclude_subscription_customers' ) );
+		add_action( 'pre_get_users', array( __CLASS__, 'maybe_exclude_subscription_customers' ) );
 		add_filter( 'woocommerce_account_settings', array( __CLASS__, 'add_inactive_user_retention_note' ) );
 	}
 
@@ -302,11 +302,11 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 			return;
 		}
 
-		if ( ! isset( $user_query->query_where ) ) {
-			$user_query->query_where = 'WHERE 1=1';
-		}
+		$user_query->set( 'exclude', array_merge(
+			(array) $user_query->get( 'exclude' ),
+			WC_Data_Store::load( 'subscription' )->get_subscription_customer_ids()
+		) );
 
-		$user_query->query_where .= sprintf( ' AND ID NOT IN ( %s )', WC_Data_Store::load( 'subscription' )->get_subscription_customers_query() );
 		self::$doing_user_inactivity_query = false;
 	}
 }
