@@ -350,6 +350,11 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 			wcs_add_admin_notice( sprintf( __( 'Error updating some information: %s', 'woocommerce-subscriptions' ), $e->getMessage() ), 'error' );
 		}
 
+		// Grant download permissions on initial save.
+		if ( isset( $_POST['original_post_status'] ) && 'auto-draft' === $_POST['original_post_status'] ) {
+			wc_downloadable_product_permissions( $post_id );
+		}
+
 		do_action( 'woocommerce_process_shop_subscription_meta', $post_id, $post );
 	}
 }
