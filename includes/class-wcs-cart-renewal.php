@@ -190,11 +190,16 @@ class WCS_Cart_Renewal {
 
 					do_action( 'wcs_before_renewal_setup_cart_subscription', $subscription, $order );
 
-					// Add the existing subscription items to the cart
-					$this->setup_cart( $order, array(
-						'subscription_id'  => $subscription->get_id(),
-						'renewal_order_id' => $order_id,
-					) );
+					// Check if order/subscription can be paid for
+					if ( $subscription->has_status( array( 'cancelled', 'trash', 'expired', 'switched' ) ) ) {
+						wc_add_notice( __( 'This order can no longer be paid for.', 'woocommerce-subscriptions' ), 'error' );
+					} else {
+						// Add the existing subscription items to the cart
+						$this->setup_cart( $order, array(
+							'subscription_id'  => $subscription->get_id(),
+							'renewal_order_id' => $order_id,
+						) );
+					}
 
 					do_action( 'wcs_after_renewal_setup_cart_subscription', $subscription, $order );
 				}
