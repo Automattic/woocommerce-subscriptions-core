@@ -443,10 +443,10 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	}
 
 	/**
-	 * Get the database query to retrieve customers who have a subscription.
+	 * Get the user IDs for customers who have a subscription.
 	 *
 	 * @since 3.4.3
-	 * @return string The database query.
+	 * @return array The user IDs.
 	 */
 	public function get_subscription_customer_ids() {
 		global $wpdb;
