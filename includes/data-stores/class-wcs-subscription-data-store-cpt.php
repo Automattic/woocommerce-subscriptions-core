@@ -451,10 +451,10 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	public function get_subscription_customer_ids() {
 		global $wpdb;
 
-		$query = "SELECT DISTINCT meta_value
+		return $wpdb->get_col(
+			"SELECT DISTINCT meta_value
 			FROM {$wpdb->postmeta} AS subscription_meta INNER JOIN {$wpdb->posts} AS posts ON subscription_meta.post_id = posts.ID
-			WHERE subscription_meta.meta_key = '_customer_user' AND posts.post_type = 'shop_subscription'";
-
-		return $wpdb->get_results( $query, ARRAY_N );
+			WHERE subscription_meta.meta_key = '_customer_user' AND posts.post_type = 'shop_subscription'"
+		);
 	}
 }
