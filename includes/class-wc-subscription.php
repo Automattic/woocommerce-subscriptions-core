@@ -99,8 +99,22 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function __construct( $subscription ) {
 
-		parent::__construct( $subscription );
+		// Add subscription date types as extra subscription data.
+		foreach ( wcs_get_subscription_date_types() as $date_type => $date_name ) {
+			// The last payment date is derived from other sources and shouldn't be stored on a subscription.
+			if ( 'last_payment' === $date_type ) {
+				continue;
+			}
 
+			$date_type_key = wcs_maybe_prefix_key( $date_type, 'schedule_' );
+
+			// Skip any custom dates which are already core date types.
+			if ( ! isset( $this->extra_data[ $date_type_key ] ) ) {
+				$this->extra_data[ $date_type_key ] = null;
+			}
+		}
+
+		parent::__construct( $subscription );
 		$this->order_type = 'shop_subscription';
 	}
 
