@@ -340,6 +340,19 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 			'_schedule_start',
 		);
 
+		// Add any custom date types to the date meta keys we need to save.
+		foreach ( wcs_get_subscription_date_types() as $date_type => $date_name ) {
+			if ( 'last_payment' === $date_type ) {
+				continue;
+			}
+
+			$date_meta_key = wcs_get_date_meta_key( $date_type );
+
+			if ( ! in_array( $date_meta_key, $date_meta_keys ) ) {
+				$date_meta_keys[] = $date_meta_key;
+			}
+		}
+
 		$date_meta_keys_to_props = array_intersect_key( $this->subscription_meta_keys_to_props, array_flip( $date_meta_keys ) );
 
 		// Save the changes to scheduled dates
