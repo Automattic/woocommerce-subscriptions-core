@@ -746,6 +746,43 @@ class WC_Subscriptions_Coupon {
 	}
 
 	/**
+	 * Determine if a given recurring cart contains a limited use coupon which when applied to a subscription will reach its usage limit within the subscription's length.
+	 *
+	 * @param WC_Cart $recurring_cart The recurring cart object.
+	 * @return bool
+	 */
+	public static function recurring_cart_contains_expiring_coupon( $recurring_cart ) {
+		$limited_recurring_coupons = array();
+
+		if ( isset( $recurring_cart->applied_coupons ) ) {
+			$limited_recurring_coupons = array_filter( $recurring_cart->applied_coupons, array( __CLASS__, 'coupon_is_limited' ) );
+		}
+
+		// Bail early if there are no limited coupons applied to the recurring cart or if there is no discount provided.
+		if ( empty( $limited_recurring_coupons ) || ! $recurring_cart->discount_cart ) {
+			return false;
+		}
+
+		$has_expiring_coupon   = false;
+		$subscription_length   = wcs_cart_pluck( $recurring_cart, 'subscription_length' );
+		$subscription_payments = $subscription_length / wcs_cart_pluck( $recurring_cart, 'subscription_period_interval' );
+
+		// Limited recurring coupons will always expire at some point on subscriptions with no length.
+		if ( empty( $subscription_length ) ) {
+			$has_expiring_coupon = true;
+		} else {
+			foreach ( $limited_recurring_coupons as $code ) {
+				if ( WC_Subscriptions_Coupon::get_coupon_limit( $code ) < $subscription_payments ) {
+					$has_expiring_coupon = true;
+					break;
+				}
+			}
+		}
+
+		return $has_expiring_coupon;
+	}
+
+	/**
 	 * Determine if a given coupon is limited to a certain number of renewals.
 	 *
 	 * @author Jeremy Pry
