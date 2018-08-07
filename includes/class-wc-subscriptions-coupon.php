@@ -964,7 +964,7 @@ class WC_Subscriptions_Coupon {
 			 */
 			$refunded = $order->get_total_refunded();
 			$total    = $order->get_total();
-			if ( null !== $refunded && $total == $refunded ) {
+			if ( $refunded && $total == $refunded ) {
 				continue;
 			}
 
