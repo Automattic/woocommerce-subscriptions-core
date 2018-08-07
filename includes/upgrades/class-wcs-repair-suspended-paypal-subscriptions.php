@@ -50,6 +50,11 @@ class WCS_Repair_Suspended_PayPal_Subscriptions extends WCS_Background_Upgrader 
 
 			$this->log( sprintf( 'Subscription ID %d suspended from 2.3.0 PayPal database repair script.', $subscription_id ) );
 		} catch ( Exception $e ) {
+			if ( $subscription ) {
+				// Adds meta to subscription in order to avoid this being updated again.
+				$subscription->add_meta_data( 'wcs_repair_suspended_paypal_subscription_failed', true, true );
+			}
+
 			$this->log( sprintf( '--- Exception caught repairing subscription %d - exception message: %s ---', $subscription_id, $e->getMessage() ) );
 		}
 	}
@@ -81,6 +86,10 @@ class WCS_Repair_Suspended_PayPal_Subscriptions extends WCS_Background_Upgrader 
 					'key'     => '_paypal_subscription_id',
 					'value'   => 'B-%',
 					'compare' => 'NOT LIKE',
+				),
+				array(
+					'key'     => 'wcs_repair_suspended_paypal_subscription_failed',
+					'compare' => 'NOT EXISTS',
 				),
 			),
 		) );
