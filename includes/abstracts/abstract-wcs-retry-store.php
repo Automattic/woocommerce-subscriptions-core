@@ -35,9 +35,11 @@ abstract class WCS_Retry_Store {
 	 *
 	 * @param int $retry_id
 	 *
-	 * @return bool
 	 */
-	abstract public function delete_retry( $retry_id );
+	public function delete_retry( $retry_id ) {
+		// @TODO set version once we define it.
+		wcs_doing_it_wrong( __FUNCTION__, sprintf( __( "Method '%s' must be overridden." ), __METHOD__ ), '' );
+	}
 
 	/**
 	 * Get a set of retries from the database
