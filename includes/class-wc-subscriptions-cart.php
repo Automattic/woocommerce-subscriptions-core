@@ -846,24 +846,19 @@ class WC_Subscriptions_Cart {
 	 * @return bool
 	 */
 	public static function cart_needs_payment( $needs_payment, $cart ) {
-
 		if ( false === $needs_payment && self::cart_contains_subscription() && $cart->total == 0 && false === WC_Subscriptions_Switcher::cart_contains_switches() && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
-
 			$recurring_total = 0;
 			$is_one_period   = true;
-			$is_synced = false;
+			$is_synced       = false;
 
 			foreach ( WC()->cart->recurring_carts as $cart ) {
-
 				$recurring_total += $cart->total;
-
-				$cart_length = wcs_cart_pluck( $cart, 'subscription_length' );
+				$cart_length      = wcs_cart_pluck( $cart, 'subscription_length' );
+				$is_synced        = ( $is_synced || false != WC_Subscriptions_Synchroniser::cart_contains_synced_subscription( $cart ) ) ? true : false;
 
 				if ( 0 == $cart_length || wcs_cart_pluck( $cart, 'subscription_period_interval' ) != $cart_length ) {
 					$is_one_period = false;
 				}
-
-				$is_synced = ( $is_synced || false != WC_Subscriptions_Synchroniser::cart_contains_synced_subscription( $cart ) ) ? true : false;
 			}
 
 			$has_trial = self::cart_contains_free_trial();
