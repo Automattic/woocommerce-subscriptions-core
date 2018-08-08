@@ -854,7 +854,7 @@ class WC_Subscriptions_Cart {
 			foreach ( WC()->cart->recurring_carts as $cart ) {
 				$recurring_total += $cart->total;
 				$cart_length      = wcs_cart_pluck( $cart, 'subscription_length' );
-				$is_synced        = ( $is_synced || false != WC_Subscriptions_Synchroniser::cart_contains_synced_subscription( $cart ) ) ? true : false;
+				$is_synced        = $is_synced || (bool) WC_Subscriptions_Synchroniser::cart_contains_synced_subscription( $cart );
 
 				if ( 0 == $cart_length || wcs_cart_pluck( $cart, 'subscription_period_interval' ) != $cart_length ) {
 					$is_one_period = false;
