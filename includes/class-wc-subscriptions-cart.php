@@ -863,7 +863,7 @@ class WC_Subscriptions_Cart {
 
 			$has_trial = self::cart_contains_free_trial();
 
-			if ( $recurring_total > 0 && ( false === $is_one_period || true === $has_trial || false !== $is_synced ) ) {
+			if ( $recurring_total > 0 && ( ! $is_one_period || $has_trial || $is_synced ) ) {
 				$needs_payment = true;
 			}
 		}
