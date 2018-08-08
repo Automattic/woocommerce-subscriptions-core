@@ -849,21 +849,21 @@ class WC_Subscriptions_Cart {
 		if ( false === $needs_payment && self::cart_contains_subscription() && $cart->total == 0 && false === WC_Subscriptions_Switcher::cart_contains_switches() && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
 			$recurring_total = 0;
 			$is_one_period   = true;
-			$is_synced       = false;
+			$contains_synced = false;
 
-			foreach ( WC()->cart->recurring_carts as $cart ) {
-				$recurring_total += $cart->total;
-				$cart_length      = wcs_cart_pluck( $cart, 'subscription_length' );
-				$is_synced        = $is_synced || (bool) WC_Subscriptions_Synchroniser::cart_contains_synced_subscription( $cart );
+			foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
+				$recurring_total    += $recurring_cart->total;
+				$subscription_length = wcs_cart_pluck( $recurring_cart, 'subscription_length' );
+				$contains_synced     = $contains_synced || (bool) WC_Subscriptions_Synchroniser::cart_contains_synced_subscription( $recurring_cart );
 
-				if ( 0 == $cart_length || wcs_cart_pluck( $cart, 'subscription_period_interval' ) != $cart_length ) {
+				if ( 0 == $subscription_length || wcs_cart_pluck( $recurring_cart, 'subscription_period_interval' ) != $subscription_length ) {
 					$is_one_period = false;
 				}
 			}
 
 			$has_trial = self::cart_contains_free_trial();
 
-			if ( $recurring_total > 0 && ( ! $is_one_period || $has_trial || $is_synced ) ) {
+			if ( $recurring_total > 0 && ( ! $is_one_period || $has_trial || $contains_synced ) ) {
 				$needs_payment = true;
 			}
 		}
