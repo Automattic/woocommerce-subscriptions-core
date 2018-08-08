@@ -863,7 +863,7 @@ class WC_Subscriptions_Cart {
 
 			$has_trial = self::cart_contains_free_trial();
 
-			if ( $recurring_total > 0 && ( false === $is_one_period || true === $has_trial || ( false !== $is_synced && false == WC_Subscriptions_Synchroniser::is_today( WC_Subscriptions_Synchroniser::calculate_first_payment_date( $is_synced['data'], 'timestamp' ) ) ) ) ) {
+			if ( $recurring_total > 0 && ( false === $is_one_period || true === $has_trial || false !== $is_synced ) ) {
 				$needs_payment = true;
 			}
 		}
