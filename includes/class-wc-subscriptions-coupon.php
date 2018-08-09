@@ -642,7 +642,6 @@ class WC_Subscriptions_Coupon {
 	 *
 	 * @param int|WC_Product $product_id
 	 * @param array $cart_item
-	 * @param WC_Cart $cart The WooCommerce cart object.
 	 * @return boolean whether a product is a renewal order line item
 	 * @since 2.0.10
 	 */
