@@ -249,8 +249,10 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 		switch ( $transaction_details['txn_type'] ) {
 			case 'subscr_signup':
 				$order = $subscription->get_parent();
+				// If missing parent order, get the last order and set it as parent order.
 				if ( ! $order ) {
 					$order = $subscription->get_last_order( 'all', array( 'renewal' ) );
+					$subscription->update_parent( $order->get_id() );
 				}
 
 				// Store PayPal Details on Subscription and Order
