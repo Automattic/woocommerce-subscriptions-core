@@ -25,6 +25,7 @@ class WCS_Repair_Suspended_PayPal_Subscriptions extends WCS_Background_Upgrader 
 	 * Constructor.
 	 *
 	 * @param WC_Logger $logger The WC Logger instance.
+	 *
 	 * @since 2.3.0
 	 */
 	public function __construct( WC_Logger $logger ) {
@@ -52,7 +53,7 @@ class WCS_Repair_Suspended_PayPal_Subscriptions extends WCS_Background_Upgrader 
 		} catch ( Exception $e ) {
 			if ( $subscription ) {
 				// Adds meta to subscription in order to avoid this being updated again.
-				$subscription->add_meta_data( 'wcs_repair_suspended_paypal_subscription_failed', true, true );
+				$subscription->update_meta_data( 'wcs_repair_suspended_paypal_subscription_failed', true, true );
 			}
 
 			$this->log( sprintf( '--- Exception caught repairing subscription %d - exception message: %s ---', $subscription_id, $e->getMessage() ) );
