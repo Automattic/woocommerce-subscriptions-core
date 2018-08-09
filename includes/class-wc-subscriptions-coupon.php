@@ -196,8 +196,8 @@ class WC_Subscriptions_Coupon {
 		if ( ! wcs_cart_contains_renewal() && ! WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 			return $discount;
 		}
-		// But if cart contains a renewal, we need to handle both subscription products and manually added non-susbscription products that could be part of a subscription
-		if ( wcs_cart_contains_renewal() && ! self::is_subsbcription_renewal_line_item( $cart_item['data'], $cart_item ) ) {
+		// But if cart contains a renewal, we need to handle both subscription products and manually added non-subscription products that could be part of a subscription
+		if ( wcs_cart_contains_renewal() && ! self::is_subscription_renewal_line_item( $cart_item['data'], $cart_item ) ) {
 			return $discount;
 		}
 
@@ -638,7 +638,7 @@ class WC_Subscriptions_Coupon {
 	}
 
 	/**
-	 * Check if a product is a renewal order line item (rather than a "susbscription") - to pick up non-subsbcription products added a subscription manually
+	 * Check if a product is a renewal order line item (rather than a "subscription") - to pick up non-subscription products added to a subscription manually
 	 *
 	 * @param int|WC_Product $product_id
 	 * @param array $cart_item
@@ -646,7 +646,7 @@ class WC_Subscriptions_Coupon {
 	 * @return boolean whether a product is a renewal order line item
 	 * @since 2.0.10
 	 */
-	private static function is_subsbcription_renewal_line_item( $product_id, $cart_item ) {
+	private static function is_subscription_renewal_line_item( $product_id, $cart_item ) {
 
 		$is_subscription_line_item = false;
 
