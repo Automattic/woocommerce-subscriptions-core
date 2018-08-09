@@ -461,7 +461,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 				// Make sure subscription hasn't been linked to a new payment method
 				if ( wcs_get_paypal_id( $subscription ) != $ipn_profile_id ) {
 
-					WC_Gateway_Paypal::log( sprintf( 'IPN "recurring_payment_suspended" ignored for subscription %d - PayPal profile ID has changed', $subscription->id ) );
+					WC_Gateway_Paypal::log( sprintf( 'IPN "recurring_payment_suspended" ignored for subscription %d - PayPal profile ID has changed', $subscription->get_id() ) );
 
 				} else if ( $subscription->has_status( 'active' ) ) {
 
