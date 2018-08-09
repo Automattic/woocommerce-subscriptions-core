@@ -248,15 +248,19 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 		switch ( $transaction_details['txn_type'] ) {
 			case 'subscr_signup':
+				$order = $subscription->get_parent();
+				if ( ! $order ) {
+					$order = $this->get_renewal_order_by_transaction_id( $subscription, $transaction_details['txn_id'] );
+				}
 
 				// Store PayPal Details on Subscription and Order
 				$this->save_paypal_meta_data( $subscription, $transaction_details );
-				$this->save_paypal_meta_data( $subscription->get_parent(), $transaction_details );
+				$this->save_paypal_meta_data( $order, $transaction_details );
 
 				// When there is a free trial & no initial payment amount, we need to mark the order as paid and activate the subscription
-				if ( ! $is_payment_change && ! $is_renewal_sign_up_after_failure && 0 == $subscription->get_parent()->get_total() ) {
+				if ( ! $is_payment_change && ! $is_renewal_sign_up_after_failure && 0 == $order->get_total() ) {
 					// Safe to assume the subscription has an order here because otherwise we wouldn't get a 'subscr_signup' IPN
-					$subscription->get_parent()->payment_complete(); // No 'txn_id' value for 'subscr_signup' IPN messages
+					$order->payment_complete(); // No 'txn_id' value for 'subscr_signup' IPN messages
 					update_post_meta( $subscription->get_id(), '_paypal_first_ipn_ignored_for_pdt', 'true' );
 				}
 
