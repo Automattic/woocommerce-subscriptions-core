@@ -302,7 +302,10 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 		}
 
 		// Update meta
-		update_post_meta( $post_id, '_customer_user', absint( $_POST['customer_user'] ) );
+		$customer_id = isset( $_POST['customer_user'] ) ? absint( $_POST['customer_user'] ) : 0;
+		if ( $customer_id !== $subscription->get_customer_id() ) {
+			wcs_set_objects_property( $subscription, '_customer_user', $customer_id );
+		}
 
 		// Handle the billing fields.
 		foreach ( self::$billing_fields as $key => $field ) {
