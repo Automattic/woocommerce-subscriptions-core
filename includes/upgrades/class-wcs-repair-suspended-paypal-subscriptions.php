@@ -54,7 +54,7 @@ class WCS_Repair_Suspended_PayPal_Subscriptions extends WCS_Background_Upgrader 
 		} catch ( Exception $e ) {
 			if ( $subscription ) {
 				// Adds meta to subscription in order to avoid this being updated again.
-				$subscription->update_meta_data( 'wcs_repair_suspended_paypal_subscription_failed', true, true );
+				$subscription->update_meta_data( 'wcs_repair_suspended_paypal_subscription_failed', true );
 				$subscription->save();
 			}
 
