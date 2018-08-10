@@ -732,10 +732,10 @@ class WCS_Admin_Post_Types {
 		if ( 'shop_subscription' === $typenow ) {
 
 			// Filter the orders by the posted customer.
-			if ( isset( $_GET['_customer_user'] ) && $_GET['_customer_user'] > 0 ) {
+			if ( isset( $_GET['_subscriber_id'] ) && $_GET['_subscriber_id'] > 0 ) {
 				$vars['meta_query'][] = array(
-					'key'   => '_customer_user',
-					'value' => (int) $_GET['_customer_user'],
+					'key'   => '_subscriber_id',
+					'value' => (int) $_GET['_subscriber_id'],
 					'compare' => '=',
 				);
 			}
@@ -1062,8 +1062,8 @@ class WCS_Admin_Post_Types {
 		$user_string = '';
 		$user_id     = '';
 
-		if ( ! empty( $_GET['_customer_user'] ) ) {
-			$user_id = absint( $_GET['_customer_user'] );
+		if ( ! empty( $_GET['_subscriber_id'] ) ) {
+			$user_id = absint( $_GET['_subscriber_id'] );
 			$user    = get_user_by( 'id', $user_id );
 
 			$user_string = sprintf(
@@ -1075,7 +1075,7 @@ class WCS_Admin_Post_Types {
 			);
 		}
 		?>
-		<select class="wc-customer-search" name="_customer_user" data-placeholder="<?php esc_attr_e( 'Search for a customer&hellip;', 'woocommerce-subscriptions' ); ?>" data-allow_clear="true">
+		<select class="wc-customer-search" name="_subscriber_id" data-placeholder="<?php esc_attr_e( 'Search for a customer&hellip;', 'woocommerce-subscriptions' ); ?>" data-allow_clear="true">
 			<option value="<?php echo esc_attr( $user_id ); ?>" selected="selected"><?php echo wp_kses_post( $user_string ); ?></option>
 		</select>
 		<?php
