@@ -731,24 +731,40 @@ class WCS_Admin_Post_Types {
 
 		if ( 'shop_subscription' === $typenow ) {
 
+			if ( ! isset( $vars['post__in'] ) ) {
+				$vars['post__in'] = array();
+			}
+
 			// Filter the orders by the posted customer.
 			if ( isset( $_GET['_subscriber_id'] ) && $_GET['_subscriber_id'] > 0 ) {
-				$vars['meta_query'][] = array(
-					'key'   => '_subscriber_id',
-					'value' => (int) $_GET['_subscriber_id'],
-					'compare' => '=',
-				);
+				$user_id          = absint( $_GET['_subscriber_id'] );
+				$subscription_ids = WCS_Customer_Store::instance()->get_users_subscription_ids( $user_id );
+
+				if ( empty( $subscription_ids ) ) {
+					// No subscriptions for this user, but we need to pass post__in an ID that no post will have because WP returns all posts when post__in is an empty array: https://core.trac.wordpress.org/ticket/28099
+					$vars['post__in'] = array( 0 );
+				} elseif ( empty( $vars['post__in'] ) ) {
+					// No other ID limitations, include all of these subscriptions
+					$vars['post__in'] = $subscription_ids;
+				} else {
+					// Existing post limitation, we only want to include existing IDs also in this set
+					$vars['post__in'] = array_intersect( $vars['post__in'], $subscription_ids );
+				}
 			}
 
 			if ( isset( $_GET['_wcs_product'] ) && $_GET['_wcs_product'] > 0 ) {
 
 				$subscription_ids = wcs_get_subscriptions_for_product( $_GET['_wcs_product'] );
 
-				if ( ! empty( $subscription_ids ) ) {
+				if ( empty( $subscription_ids ) ) {
+					// No subscriptions contain this product, but we need to pass post__in an ID that no post will have because WP returns all posts when post__in is an empty array: https://core.trac.wordpress.org/ticket/28099
+					$vars['post__in'] = array( 0 );
+				} elseif ( empty( $vars['post__in'] ) ) {
+					// No other ID limitations, include all of these subscriptions
 					$vars['post__in'] = $subscription_ids;
 				} else {
-					// no subscriptions contain this product, but we need to pass post__in an ID that no post will have because WP returns all posts when post__in is an empty array: https://core.trac.wordpress.org/ticket/28099
-					$vars['post__in'] = array( 0 );
+					// Existing post limitation, we only want to include existing IDs also in this set
+					$vars['post__in'] = array_intersect( $vars['post__in'], $subscription_ids );
 				}
 			}
 
