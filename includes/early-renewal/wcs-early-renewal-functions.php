@@ -58,7 +58,13 @@ function wcs_can_user_renew_early( $subscription, $user_id = 0 ) {
 	} elseif ( ! $subscription->get_time( 'next_payment' ) ) {
 		$can_renew_early = false;
 	} elseif ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
-		$can_renew_early = false;
+		/**
+		 * Determine whether a subscription with Synchronized products can be renewed early.
+		 *
+		 * @param bool            $can_renew_early Whether the subscription can be renewed early.
+		 * @param WC_Subscription $subscription    The subscription to be renewed early.
+		 */
+		$can_renew_early = (bool) apply_filters( 'wcs_allow_synced_product_early_renewal', false, $subscription );
 	} elseif ( ! $subscription->payment_method_supports( 'subscription_date_changes' ) ) {
 		$can_renew_early = false;
 	} else {
