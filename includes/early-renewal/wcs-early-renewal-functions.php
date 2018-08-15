@@ -79,7 +79,7 @@ function wcs_can_user_renew_early( $subscription, $user_id = 0 ) {
 	}
 
 	// Non-empty $reason means we can't renew early.
-	$can_renew_early = ! empty( $reason );
+	$can_renew_early = empty( $reason );
 
 	/**
 	 * Allow third-parties to filter whether the customer can renew a subscription early.
