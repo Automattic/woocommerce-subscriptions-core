@@ -24,6 +24,19 @@ if ( class_exists( 'WCS_Admin_Post_Types' ) ) {
 class WCS_Admin_Post_Types {
 
 	/**
+	 * The value to use for the 'post__in' query param when no results should be returned.
+	 *
+	 * We can't use an empty array, because WP returns all posts when post__in is an empty
+	 * array. Source: https://core.trac.wordpress.org/ticket/28099
+	 *
+	 * This would ideally be a private CONST but visibility modifiers are only allowed for
+	 * class constants in PHP >= 7.1.
+	 *
+	 * @var	array
+	 */
+	private static $post__in_none = array( 0 );
+
+	/**
 	 * Constructor
 	 */
 	public function __construct() {
@@ -731,41 +744,21 @@ class WCS_Admin_Post_Types {
 
 		if ( 'shop_subscription' === $typenow ) {
 
-			if ( ! isset( $vars['post__in'] ) ) {
-				$vars['post__in'] = array();
-			}
-
 			// Filter the orders by the posted customer.
 			if ( isset( $_GET['_subscriber_id'] ) && $_GET['_subscriber_id'] > 0 ) {
-				$user_id          = absint( $_GET['_subscriber_id'] );
-				$subscription_ids = WCS_Customer_Store::instance()->get_users_subscription_ids( $user_id );
-
-				if ( empty( $subscription_ids ) ) {
-					// No subscriptions for this user, but we need to pass post__in an ID that no post will have because WP returns all posts when post__in is an empty array: https://core.trac.wordpress.org/ticket/28099
-					$vars['post__in'] = array( 0 );
-				} elseif ( empty( $vars['post__in'] ) ) {
-					// No other ID limitations, include all of these subscriptions
-					$vars['post__in'] = $subscription_ids;
-				} else {
-					// Existing post limitation, we only want to include existing IDs also in this set
-					$vars['post__in'] = array_intersect( $vars['post__in'], $subscription_ids );
-				}
+				$subscription_ids = WCS_Customer_Store::instance()->get_users_subscription_ids( absint( $_GET['_subscriber_id'] ) );
+				$vars = self::set_post__in_query_var( $vars, $subscription_ids );
 			}
 
 			if ( isset( $_GET['_wcs_product'] ) && $_GET['_wcs_product'] > 0 ) {
-
 				$subscription_ids = wcs_get_subscriptions_for_product( $_GET['_wcs_product'] );
+				$subscription_ids = array_keys( $subscription_ids );
+				$vars = self::set_post__in_query_var( $vars, $subscription_ids );
+			}
 
-				if ( empty( $subscription_ids ) ) {
-					// No subscriptions contain this product, but we need to pass post__in an ID that no post will have because WP returns all posts when post__in is an empty array: https://core.trac.wordpress.org/ticket/28099
-					$vars['post__in'] = array( 0 );
-				} elseif ( empty( $vars['post__in'] ) ) {
-					// No other ID limitations, include all of these subscriptions
-					$vars['post__in'] = $subscription_ids;
-				} else {
-					// Existing post limitation, we only want to include existing IDs also in this set
-					$vars['post__in'] = array_intersect( $vars['post__in'], $subscription_ids );
-				}
+			// If we've using the 'none' flag for the post__in query var, there's no need to apply other query filters, as we're going to return no subscriptions anyway
+			if ( isset( $vars['post__in'] ) && self::$post__in_none === $vars['post__in'] ) {
+				return $vars;
 			}
 
 			if ( ! empty( $_GET['_payment_method'] ) ) {
@@ -795,7 +788,7 @@ class WCS_Admin_Post_Types {
 				if ( ! empty( $subscription_ids ) ) {
 					$vars['post__in'] = $subscription_ids;
 				} else {
-					$vars['post__in'] = array( 0 );
+					$vars['post__in'] = self::$post__in_none;
 				}
 			}
 
@@ -830,6 +823,40 @@ class WCS_Admin_Post_Types {
 		}
 
 		return $vars;
+	}
+
+	/**
+	 * Set the 'post__in' query var with a given set of post ids.
+	 *
+	 * There are a few special conditions for handling the post__in value. Namely:
+	 * - if there are no matching post_ids, the value should be array( 0 ), not an empty array()
+	 * - if there are existing IDs in post__in, we only want to retun posts with an ID in both
+	 *   the existing set and the new set
+	 *
+	 * While this method is public, it should not be used as it will eventually be deprecated and
+	 * it's only made publicly available for other Subscriptions methods until Subscriptions
+	 * requires WC 3.0, and can rely on using methods in the data store rather than a hack like
+	 * pulling this for use outside of the admin context.
+	 *
+	 * @param array $query_vars
+	 * @param array $post_ids
+	 * @return array
+	 */
+	public static function set_post__in_query_var( $query_vars, $post_ids ) {
+
+		if ( empty( $post_ids ) ) {
+			// No posts for this user
+			$query_vars['post__in'] = self::$post__in_none;
+		} elseif ( ! isset( $query_vars['post__in'] ) ) {
+			// No other posts limitations, include all of these posts
+			$query_vars['post__in'] = $post_ids;
+		} elseif ( self::$post__in_none !== $query_vars['post__in'] ) {
+			// Existing post limitation, we only want to include existing IDs that are also in this new set of IDs
+			$intersecting_post_ids  = array_intersect( $query_vars['post__in'], $post_ids );
+			$query_vars['post__in'] = empty( $intersecting_post_ids ) ? self::$post__in_none : $intersecting_post_ids;
+		}
+
+		return $query_vars;
 	}
 
 	/**
