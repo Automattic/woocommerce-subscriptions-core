@@ -2211,7 +2211,7 @@ class WC_Subscriptions_Switcher {
 
 			// if we are simply adding this product to an existing subscription
 			if ( isset( $switch_item_data['add_order_item_data'] ) ) {
-				$product              = WC_Subscriptions::get_product( wcs_get_canonical_product_id( $order_item ) );
+				$product              = wc_get_product( wcs_get_canonical_product_id( $order_item ) );
 				$line_tax_data        = wc_get_order_item_meta( $order_item_id, '_line_tax_data', true );
 				$variation_attributes = ( method_exists( $product, 'get_variation_attributes' ) ) ? $product->get_variation_attributes() : array();
 
