@@ -452,6 +452,18 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 				'type'        => 'date-time',
 				'context'     => array( 'view', 'edit' ),
 			),
+			'resubscribed_from' => array(
+				'description' => __( "The subscription's original subscription ID if this is a resubscribed subscription.", 'woocommerce-subscriptions' ),
+				'type'        => 'string',
+				'context'     => array( 'view' ),
+				'readonly'    => true,
+			),
+			'resubscribed_subscription' => array(
+				'description' => __( "The subscription's resubscribed subscription ID.", 'woocommerce-subscriptions' ),
+				'type'        => 'string',
+				'context'     => array( 'view' ),
+				'readonly'    => true,
+			),
 		);
 
 		$schema['properties'] += $subscriptions_schema;
