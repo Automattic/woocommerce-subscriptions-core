@@ -52,7 +52,7 @@ class WCS_Retry_Background_Migrator extends WCS_Background_Updater {
 		$this->source_store      = WCS_Retry_Stores::get_post_store();
 
 		$migrator_class = apply_filters( 'wcs_retry_retry_migrator_class', 'WCS_Retry_Migrator' );
-		$this->migrator = new $migrator_class( $this->source_store, $this->destination_store );
+		$this->migrator = new $migrator_class( $this->source_store, $this->destination_store, new WC_Logger() );
 	}
 
 	/**

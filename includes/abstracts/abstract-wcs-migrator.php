@@ -25,16 +25,28 @@ abstract class WCS_Migrator {
 	protected $destination_store;
 
 	/**
+	 * @var  WC_logger
+	 */
+	protected $logger;
+
+	/**
+	 * $var string
+	 */
+	protected $log_handle;
+
+	/**
 	 * WCS_Migrator constructor.
 	 *
-	 * @param mixed $source_store      Source store.
-	 * @param mixed $destination_store $destination store.
+	 * @param mixed     $source_store      Source store.
+	 * @param mixed     $destination_store $destination store.
+	 * @param WC_Logger $logger            Logger component.
 	 *
 	 * @since 2.4
 	 */
-	public function __construct( $source_store, $destination_store ) {
+	public function __construct( $source_store, $destination_store, $logger ) {
 		$this->source_store      = $source_store;
 		$this->destination_store = $destination_store;
+		$this->logger            = $logger;
 	}
 
 	/**
@@ -91,9 +103,22 @@ abstract class WCS_Migrator {
 			$destination_store_item = $this->save_destination_store_entry( $entry_id );
 			$this->delete_source_store_entry( $entry_id );
 
+			$this->log( sprintf( 'Retry ID %d migrated to custom tables with ID %d.', $entry_id, $destination_store_item ) );
+
 			return $destination_store_item;
 		}
 
 		return false;
+	}
+
+	/**
+	 * Add a message to the log
+	 *
+	 * @param string $message The message to be logged
+	 *
+	 * @since 2.3.0
+	 */
+	protected function log( $message ) {
+		$this->logger->add( $this->log_handle, $message );
 	}
 }
