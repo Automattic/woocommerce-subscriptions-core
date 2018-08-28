@@ -118,12 +118,16 @@ class WCS_Autoloader {
 	 */
 	protected function is_class_abstract( $class ) {
 		static $abstracts = array(
-			'wcs_cache_manager'           => true,
-			'wcs_dynamic_hook_deprecator' => true,
-			'wcs_hook_deprecator'         => true,
-			'wcs_retry_store'             => true,
-			'wcs_scheduler'               => true,
-			'wcs_sv_api_base'             => true,
+			'wcs_background_updater'       => true,
+			'wcs_background_upgrader'      => true,
+			'wcs_cache_manager'            => true,
+			'wcs_debug_tool'               => true,
+			'wcs_debug_tool_cache_updater' => true,
+			'wcs_dynamic_hook_deprecator'  => true,
+			'wcs_hook_deprecator'          => true,
+			'wcs_retry_store'              => true,
+			'wcs_scheduler'                => true,
+			'wcs_sv_api_base'              => true,
 		);
 
 		return isset( $abstracts[ $class ] );
@@ -171,6 +175,8 @@ class WCS_Autoloader {
 			$path .= '/admin/reports/deprecated';
 		} elseif ( false !== strpos( $class, 'report' ) ) {
 			$path .= '/admin/reports';
+		} elseif ( false !== strpos( $class, 'debug_tool' ) ) {
+			$path .= '/admin/debug-tools';
 		} elseif ( false !== strpos( $class, 'rest' ) ) {
 			$path .= $this->legacy_api ? '/api/legacy' : '/api';
 		} elseif ( false !== strpos( $class, 'api' ) && 'wcs_api' !== $class ) {
