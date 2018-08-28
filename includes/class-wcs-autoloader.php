@@ -36,12 +36,26 @@ class WCS_Autoloader {
 	}
 
 	/**
+	 * Destructor.
+	 */
+	public function __destruct() {
+		$this->unregister();
+	}
+
+	/**
 	 * Register the autoloader.
 	 *
 	 * @author Jeremy Pry
 	 */
 	public function register() {
 		spl_autoload_register( array( $this, 'autoload' ) );
+	}
+
+	/**
+	 * Unregister the autoloader.
+	 */
+	public function unregister() {
+		spl_autoload_unregister( array( $this, 'autoload' ) );
 	}
 
 	/**
