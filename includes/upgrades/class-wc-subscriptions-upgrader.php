@@ -817,10 +817,6 @@ class WC_Subscriptions_Upgrader {
 	 */
 	public static function initialise_background_updaters() {
 		$logger = new WC_logger();
-
-		include_once( dirname( __FILE__ ) . '/class-wcs-repair-suspended-paypal-subscriptions.php' );
-		include_once( dirname( __FILE__ ) . '/class-wcs-repair-subscription-address-indexes.php' );
-
 		self::$background_updaters['2.3']['suspended_paypal_repair'] = new WCS_Repair_Suspended_PayPal_Subscriptions( $logger );
 		self::$background_updaters['2.3']['address_indexes_repair']  = new WCS_Repair_Subscription_Address_Indexes( $logger );
 
