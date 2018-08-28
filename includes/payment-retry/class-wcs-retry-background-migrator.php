@@ -6,6 +6,7 @@
  * @category    Class
  * @package     WooCommerce Subscriptions
  * @subpackage  WCS_Retry_Backgound_Migrator
+ * @since       2.4
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -16,6 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class WCS_Retry_Background_Migrator.
  *
  * Updates our retries on background.
+ * @since 2.4
  */
 class WCS_Retry_Background_Migrator extends WCS_Background_Updater {
 	/**
@@ -57,6 +59,7 @@ class WCS_Retry_Background_Migrator extends WCS_Background_Updater {
 	 * Get the items to be updated, if any.
 	 *
 	 * @return array An array of items to update, or empty array if there are no items to update.
+	 * @since 2.4
 	 */
 	protected function get_items_to_update() {
 		return $this->source_store->get_retries();
@@ -68,6 +71,7 @@ class WCS_Retry_Background_Migrator extends WCS_Background_Updater {
 	 * @param WCS_Retry $retry The item to update.
 	 *
 	 * @return int
+	 * @since 2.4
 	 */
 	protected function update_item( $retry ) {
 		return $this->migrator->migrate_entry( $retry->get_id() );

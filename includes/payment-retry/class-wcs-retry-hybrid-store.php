@@ -6,17 +6,13 @@
  * @subpackage     WCS_Retry_Store
  * @category       Class
  * @author         Prospress
+ * @since          2.4
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 } // Exit if accessed directly
 
-/**
- * Class WCS_Retry_Hybrid_Store
- *
- * Hybrid wrapper around post and database store.
- */
 class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	/**
 	 * Where we're saving/migrating our data.
@@ -42,7 +38,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	/**
 	 * Setup the class, if required
 	 *
-	 * @void
+	 * @since 2.4
 	 */
 	public function init() {
 		$this->database_store = WCS_Retry_Stores::get_database_store();
@@ -60,6 +56,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @param WCS_Retry $retry Retry to save.
 	 *
 	 * @return int the retry's ID
+	 * @since 2.4
 	 */
 	public function save( WCS_Retry $retry ) {
 		$retry_id = $retry->get_id();
@@ -82,6 +79,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @param int $retry_id Retry we want to get.
 	 *
 	 * @return WCS_Retry
+	 * @since 2.4
 	 */
 	public function get_retry( $retry_id ) {
 		if ( $this->migrator->should_migrate_entry( $retry_id ) ) {
@@ -97,6 +95,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @param int $retry_id
 	 *
 	 * @return bool
+	 * @since 2.4
 	 */
 	public function delete_retry( $retry_id ) {
 		if ( $this->migrator->should_migrate_entry( $retry_id ) ) {
@@ -112,6 +111,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @param array $args A set of filters.
 	 *
 	 * @return array An array of WCS_Retry objects
+	 * @since 2.4
 	 */
 	public function get_retries( $args = array() ) {
 		$source_store_retries = $this->post_store->get_retries( $args );
@@ -131,6 +131,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @param int $order_id order we want to look for.
 	 *
 	 * @return array
+	 * @since 2.4
 	 */
 	public function get_retry_ids_for_order( $order_id ) {
 		$source_store_retries = $this->post_store->get_retry_ids_for_order( $order_id );

@@ -6,15 +6,13 @@
  * @subpackage     WCS_Retry_Table_Maker
  * @category       Class
  * @author         Prospress
+ * @since          2.4
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 } // Exit if accessed directly
 
-/**
- * Class WCS_Retry_Table_Maker
- */
 class WCS_Retry_Table_Maker extends WCS_Table_Maker {
 	const PAYMENT_RETRY_TABLE = 'wcs_payment_retries';
 
@@ -32,8 +30,12 @@ class WCS_Retry_Table_Maker extends WCS_Table_Maker {
 		);
 	}
 
+
 	/**
-	 * @inheritDoc
+	 * @param string $table
+	 *
+	 * @return string
+	 * @since 2.4
 	 */
 	protected function get_table_definition( $table ) {
 		global $wpdb;

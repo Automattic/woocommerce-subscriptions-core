@@ -6,6 +6,7 @@
  * @category    Class
  * @package     WooCommerce Subscriptions
  * @subpackage  WCS_Retry_Migrator
+ * @since       2.4
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -29,6 +30,7 @@ class WCS_Retry_Migrator extends WCS_Migrator {
 	 * @param int $retry_id
 	 *
 	 * @return bool
+	 * @since 2.4
 	 */
 	public function should_migrate_entry( $retry_id ) {
 		return ! $this->destination_store->get_retry( $retry_id );
@@ -40,6 +42,7 @@ class WCS_Retry_Migrator extends WCS_Migrator {
 	 * @param int $entry_id
 	 *
 	 * @return WCS_Retry
+	 * @since 2.4
 	 */
 	public function get_source_store_entry( $entry_id ) {
 		return $this->source_store->get_retry( $entry_id );
@@ -51,6 +54,7 @@ class WCS_Retry_Migrator extends WCS_Migrator {
 	 * @param int $entry_id
 	 *
 	 * @return mixed
+	 * @since 2.4
 	 */
 	public function save_destination_store_entry( $entry_id ) {
 		$source_retry = $this->get_source_store_entry( $entry_id );
@@ -64,6 +68,7 @@ class WCS_Retry_Migrator extends WCS_Migrator {
 	 * @param int $entry_id
 	 *
 	 * @return mixed
+	 * @since 2.4
 	 */
 	public function delete_source_store_entry( $entry_id ) {
 		return wp_delete_post( $entry_id, true );

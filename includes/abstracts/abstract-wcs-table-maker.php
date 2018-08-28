@@ -7,15 +7,13 @@
  * @author   Prospress
  * @category Abstract Class
  * @package  WooCommerce Subscriptions/Abstracts
+ * @since    2.4
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 } // Exit if accessed directly
 
-/**
- * Class WCS_Table_Maker
- */
 abstract class WCS_Table_Maker {
 	/**
 	 * @var int Increment this value to trigger a schema update

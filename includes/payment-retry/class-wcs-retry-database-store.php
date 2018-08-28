@@ -6,17 +6,13 @@
  * @subpackage     WCS_Retry_Store
  * @category       Class
  * @author         Prospress
+ * @since          2.4
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 } // Exit if accessed directly
 
-/**
- * Class WCS_Retry_Database_Store
- *
- * Handles custom database retries store.
- */
 class WCS_Retry_Database_Store extends WCS_Retry_Store {
 
 	/**
@@ -39,6 +35,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 * @param WCS_Retry $retry the Retry we want to save.
 	 *
 	 * @return int the retry's ID
+	 * @since 2.4
 	 */
 	public function save( WCS_Retry $retry ) {
 		global $wpdb;
@@ -87,6 +84,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 * @param int $retry_id The retry we want to get.
 	 *
 	 * @return null|WCS_Retry
+	 * @since 2.4
 	 */
 	public function get_retry( $retry_id ) {
 		global $wpdb;
@@ -118,6 +116,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 * @param int $retry_id
 	 *
 	 * @return bool
+	 * @since 2.4
 	 */
 	public function delete_retry( $retry_id ) {
 		global $wpdb;
@@ -131,6 +130,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 * @param array $args A set of filters.
 	 *
 	 * @return array An array of WCS_Retry objects
+	 * @since 2.4
 	 */
 	public function get_retries( $args = array() ) {
 		global $wpdb;
@@ -173,6 +173,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 * @param int $order_id the order we want to get the retries for.
 	 *
 	 * @return array
+	 * @since 2.4
 	 */
 	public function get_retry_ids_for_order( $order_id ) {
 		global $wpdb;
@@ -193,6 +194,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 * @param array $columns Columns array we want to modify.
 	 *
 	 * @return array
+	 * @since 2.4
 	 */
 	public function add_date_valid_column( $columns ) {
 		$columns[] = 'date_gmt';
@@ -204,6 +206,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 * Returns the table name for public use.
 	 *
 	 * @return string
+	 * @since 2.4
 	 */
 	public static function get_full_table_name() {
 		global $wpdb;

@@ -6,17 +6,13 @@
  * @subpackage     WCS_Retry_Store
  * @category       Class
  * @author         Prospress
+ * @since          2.4
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 } // Exit if accessed directly
 
-/**
- * Class WCS_Retry_Hybrid_Store
- *
- * Stores facade
- */
 class WCS_Retry_Stores {
 	/**
 	 * Where we're saving/migrating our data.
@@ -36,6 +32,7 @@ class WCS_Retry_Stores {
 	 * Access the object used to interface with the destination store.
 	 *
 	 * @return WCS_Retry_Store
+	 * @since 2.4
 	 */
 	public static function get_database_store() {
 		if ( empty( self::$database_store ) ) {
@@ -51,6 +48,7 @@ class WCS_Retry_Stores {
 	 * Get the class used for instantiating retry storage via self::destination_store()
 	 *
 	 * @return string
+	 * @since 2.4
 	 */
 	public static function get_database_store_class() {
 		return apply_filters( 'wcs_retry_database_store_class', 'WCS_Retry_Database_Store' );
@@ -60,6 +58,7 @@ class WCS_Retry_Stores {
 	 * Access the object used to interface with the source store.
 	 *
 	 * @return WCS_Retry_Store
+	 * @since 2.4
 	 */
 	public static function get_post_store() {
 		if ( empty( self::$post_store ) ) {
@@ -75,6 +74,7 @@ class WCS_Retry_Stores {
 	 * Get the class used for instantiating retry storage via self::source_store()
 	 *
 	 * @return string
+	 * @since 2.4
 	 */
 	public static function get_post_store_class() {
 		return apply_filters( 'wcs_retry_post_store_class', 'WCS_Retry_Post_Store' );

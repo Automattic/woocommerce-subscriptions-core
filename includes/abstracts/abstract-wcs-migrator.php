@@ -2,10 +2,11 @@
 /**
  * Retry migration class.
  *
- * @author      Prospress
- * @category    Class
- * @package     WooCommerce Subscriptions
- * @subpackage  WCS_Retry_Migrator
+ * @author       Prospress
+ * @category     Class
+ * @package      WooCommerce Subscriptions
+ * @subpackage   WCS_Retry_Migrator
+ * @since        2.4
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -26,8 +27,10 @@ abstract class WCS_Migrator {
 	/**
 	 * WCS_Migrator constructor.
 	 *
-	 * @param mixed $source_store Source store.
+	 * @param mixed $source_store      Source store.
 	 * @param mixed $destination_store $destination store.
+	 *
+	 * @since 2.4
 	 */
 	public function __construct( $source_store, $destination_store ) {
 		$this->source_store      = $source_store;
@@ -40,6 +43,7 @@ abstract class WCS_Migrator {
 	 * @param int $entry_id
 	 *
 	 * @return bool
+	 * @since 2.4
 	 */
 	abstract public function should_migrate_entry( $entry_id );
 
@@ -49,6 +53,7 @@ abstract class WCS_Migrator {
 	 * @param int $entry_id
 	 *
 	 * @return mixed
+	 * @since 2.4
 	 */
 	abstract public function get_source_store_entry( $entry_id );
 
@@ -58,6 +63,7 @@ abstract class WCS_Migrator {
 	 * @param int $entry_id
 	 *
 	 * @return mixed
+	 * @since 2.4
 	 */
 	abstract public function save_destination_store_entry( $entry_id );
 
@@ -67,6 +73,7 @@ abstract class WCS_Migrator {
 	 * @param int $entry_id
 	 *
 	 * @return mixed
+	 * @since 2.4
 	 */
 	abstract public function delete_source_store_entry( $entry_id );
 
@@ -76,6 +83,7 @@ abstract class WCS_Migrator {
 	 * @param int $entry_id
 	 *
 	 * @return mixed
+	 * @since 2.4
 	 */
 	public function migrate_entry( $entry_id ) {
 		$source_store_item = $this->get_source_store_entry( $entry_id );
