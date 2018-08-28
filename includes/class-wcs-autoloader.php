@@ -158,6 +158,9 @@ class WCS_Autoloader {
 			$path .= '/gateways/paypal';
 			if ( 'wcs_paypal' === $class ) {
 				$path .= '';
+			} elseif ( 'wcs_repair_suspended_paypal_subscriptions' === $class ) {
+				// Deliberately avoid concatenation for this class, using the base path.
+				$path = '/includes/upgrades';
 			} elseif ( $is_admin ) {
 				$path .= '/includes/admin';
 			} elseif ( 'wc_paypal_standard_subscriptions' === $class ) {
