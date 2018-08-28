@@ -185,6 +185,8 @@ class WCS_Autoloader {
 			$path .= '/gateways';
 		} elseif ( false !== strpos( $class, 'legacy' ) || 'wcs_array_property_post_meta_black_magic' === $class ) {
 			$path .= '/legacy';
+		} elseif ( false !== strpos( $class, 'privacy' ) ) {
+			$path .= '/privacy';
 		} elseif ( false !== strpos( $class, 'upgrade' ) || false !== strpos( $class, 'repair' ) ) {
 			$path .= '/upgrades';
 		} elseif ( false !== strpos( $class, 'early' ) ) {
