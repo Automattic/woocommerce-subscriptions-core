@@ -159,9 +159,9 @@ class WCS_Admin_Reports {
 	/**
 	 * If we hit one of our reports in the WC get_report function, change the path to our dir.
 	 *
-	 * @param report_path the parth to the report.
-	 * @param name the name of the report.
-	 * @param class the class of the report.
+	 * @param string $report_path the parth to the report.
+	 * @param string $name the name of the report.
+	 * @param string $class the class of the report.
 	 *
 	 * @return string  path to the report template.
 	 * @since 2.1
@@ -169,7 +169,7 @@ class WCS_Admin_Reports {
 	 * @access private
 	 */
 	public static function initialize_reports_path( $report_path, $name, $class ) {
-		_deprecated_function( __METHOD__, '2.3.0' );
+		_deprecated_function( __METHOD__, '2.4.0' );
 		if ( in_array( strtolower( $class ), array(
 			'wc_report_subscription_events_by_date',
 			'wc_report_upcoming_recurring_revenue',

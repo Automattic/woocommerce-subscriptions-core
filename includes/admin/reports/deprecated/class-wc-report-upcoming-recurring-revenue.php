@@ -12,4 +12,8 @@
  * @since      2.1
  * @deprecated In favor of WCS_Report_Upcoming_Recurring_Revenue
  */
-class WC_Report_Upcoming_Recurring_Revenue extends WCS_Report_Upcoming_Recurring_Revenue {}
+class WC_Report_Upcoming_Recurring_Revenue extends WCS_Report_Upcoming_Recurring_Revenue {
+	public function __construct() {
+		wcs_deprecated_function( __CLASS__, '2.4.0', get_parent_class( __CLASS__ ) );
+	}
+}

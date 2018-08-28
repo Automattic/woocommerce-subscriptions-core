@@ -12,4 +12,8 @@
  * @since      2.1
  * @deprecated In favor of WCS_Report_Subscription_Events_By_Date
  */
-class WC_Report_Subscription_Events_By_Date extends WCS_Report_Subscription_Events_By_Date {}
+class WC_Report_Subscription_Events_By_Date extends WCS_Report_Subscription_Events_By_Date {
+	public function __construct() {
+		wcs_deprecated_function( __CLASS__, '2.4.0', get_parent_class( __CLASS__ ) );
+	}
+}
