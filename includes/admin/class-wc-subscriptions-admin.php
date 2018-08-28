@@ -965,7 +965,31 @@ class WC_Subscriptions_Admin {
 			unset( $_POST[ self::$option_prefix . '_turn_off_automatic_payments' ] );
 		}
 
-		woocommerce_update_options( self::get_settings() );
+		$settings         = self::get_settings();
+		$defaults_to_find = array(
+			self::$option_prefix . '_add_to_cart_button_text' => '',
+			self::$option_prefix . '_order_button_text'       => '',
+		);
+
+		foreach ( $settings as $setting ) {
+			if ( ! isset( $setting['id'], $setting['default'], $defaults_to_find[ $setting['id'] ], $_POST[ $setting['id'] ] ) ) {
+				continue;
+			}
+
+			// Set the setting to its default if no value has been submitted.
+			if ( '' === wc_clean( $_POST[ $setting['id'] ] ) ) {
+				$_POST[ $setting['id'] ] = $setting['default'];
+			}
+
+			unset( $defaults_to_find[ $setting['id'] ] );
+
+			// If all defaults have been found, exit.
+			if ( ! count( $defaults_to_find ) ) {
+				break;
+			}
+		}
+
+		woocommerce_update_options( $settings );
 	}
 
 	/**
@@ -1036,25 +1060,27 @@ class WC_Subscriptions_Admin {
 			),
 
 			array(
-				'name'     => __( 'Add to Cart Button Text', 'woocommerce-subscriptions' ),
-				'desc'     => __( 'A product displays a button with the text "Add to Cart". By default, a subscription changes this to "Sign Up Now". You can customise the button text for subscriptions here.', 'woocommerce-subscriptions' ),
-				'tip'      => '',
-				'id'       => self::$option_prefix . '_add_to_cart_button_text',
-				'css'      => 'min-width:150px;',
-				'default'  => __( 'Sign Up Now', 'woocommerce-subscriptions' ),
-				'type'     => 'text',
-				'desc_tip' => true,
+				'name'        => __( 'Add to Cart Button Text', 'woocommerce-subscriptions' ),
+				'desc'        => __( 'A product displays a button with the text "Add to Cart". By default, a subscription changes this to "Sign Up Now". You can customise the button text for subscriptions here.', 'woocommerce-subscriptions' ),
+				'tip'         => '',
+				'id'          => self::$option_prefix . '_add_to_cart_button_text',
+				'css'         => 'min-width:150px;',
+				'default'     => __( 'Sign Up Now', 'woocommerce-subscriptions' ),
+				'type'        => 'text',
+				'desc_tip'    => true,
+				'placeholder' => __( 'Sign Up Now', 'woocommerce-subscriptions' ),
 			),
 
 			array(
-				'name'     => __( 'Place Order Button Text', 'woocommerce-subscriptions' ),
-				'desc'     => __( 'Use this field to customise the text displayed on the checkout button when an order contains a subscription. Normally the checkout submission button displays "Place Order". When the cart contains a subscription, this is changed to "Sign Up Now".', 'woocommerce-subscriptions' ),
-				'tip'      => '',
-				'id'       => self::$option_prefix . '_order_button_text',
-				'css'      => 'min-width:150px;',
-				'default'  => __( 'Sign Up Now', 'woocommerce-subscriptions' ),
-				'type'     => 'text',
-				'desc_tip' => true,
+				'name'        => __( 'Place Order Button Text', 'woocommerce-subscriptions' ),
+				'desc'        => __( 'Use this field to customise the text displayed on the checkout button when an order contains a subscription. Normally the checkout submission button displays "Place Order". When the cart contains a subscription, this is changed to "Sign Up Now".', 'woocommerce-subscriptions' ),
+				'tip'         => '',
+				'id'          => self::$option_prefix . '_order_button_text',
+				'css'         => 'min-width:150px;',
+				'default'     => __( 'Sign Up Now', 'woocommerce-subscriptions' ),
+				'type'        => 'text',
+				'desc_tip'    => true,
+				'placeholder' => __( 'Sign Up Now', 'woocommerce-subscriptions' ),
 			),
 
 			array( 'type' => 'sectionend', 'id' => self::$option_prefix . '_button_text' ),
