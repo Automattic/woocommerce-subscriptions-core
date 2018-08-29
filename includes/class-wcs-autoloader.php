@@ -173,6 +173,26 @@ class WCS_Autoloader {
 	}
 
 	/**
+	 * Determine if the class is one of our data stores.
+	 *
+	 * @param string $class The class name.
+
+	 * @return bool
+	 */
+	protected function is_class_data_store( $class ) {
+		static $data_stores = array(
+			'wcs_related_order_store_cached_cpt'  => true,
+			'wcs_related_order_store_cpt'         => true,
+			'wcs_customer_store_cached_cpt'       => true,
+			'wcs_customer_store_cpt'              => true,
+			'wcs_product_variable_data_store_cpt' => true,
+			'wcs_subscription_data_store_cpt'     => true,
+		);
+
+		return isset( $data_stores[ $class ] );
+	}
+
+	/**
 	 * Get the relative path for the class location.
 	 *
 	 * This handles all of the special class locations and exceptions.
@@ -225,7 +245,7 @@ class WCS_Autoloader {
 			$path .= $this->legacy_api ? '/api/legacy' : '/api';
 		} elseif ( false !== strpos( $class, 'api' ) && 'wcs_api' !== $class ) {
 			$path .= '/api/legacy';
-		} elseif ( false !== strpos( $class, 'data_store' ) ) {
+		} elseif ( $this->is_class_data_store( $class ) ) {
 			$path .= '/data-stores';
 		} elseif ( false !== strpos( $class, 'deprecat' ) ) {
 			$path .= '/deprecated';
