@@ -31,15 +31,9 @@ class WCS_Staging {
 		$renewal_order = wc_get_order( $renewal_order_id );
 
 		if ( $renewal_order ) {
-			$wp_site_url = '';
+			$wp_site_url = WC_Subscriptions::get_site_url( 'wp' );
 
-			if ( defined( 'WP_SITEURL' ) ) {
-				$wp_site_url = WP_SITEURL;
-			} else {
-				$wp_site_url = get_site_url();
-			}
-
-			$wcs_site_url = WC_Subscriptions::get_site_url();
+			$wcs_site_url = WC_Subscriptions::get_site_url( 'wcs' );
 
 			$message = sprintf( __( 'Payment processing skipped - renewal order created on staging site %s under staging site lock. Live site is at %s', 'woocommerce-subscriptions' ), $wcs_site_url, $wp_site_url );
 
