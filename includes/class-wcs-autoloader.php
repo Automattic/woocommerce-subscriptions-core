@@ -150,6 +150,8 @@ class WCS_Autoloader {
 			'wcs_retry_store'              => true,
 			'wcs_scheduler'                => true,
 			'wcs_sv_api_base'              => true,
+			'wcs_customer_store'           => true,
+			'wcs_related_order_store'      => true,
 		);
 
 		return isset( $abstracts[ $class ] );
