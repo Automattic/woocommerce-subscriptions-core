@@ -118,7 +118,15 @@ class WCS_Autoloader {
 	 * @return string The file name.
 	 */
 	protected function get_file_name( $class ) {
-		return ( $this->is_class_abstract( $class ) ? 'abstract-' : 'class-' ) . str_replace( '_', '-', $class ) . '.php';
+		$file_prefix = 'class-';
+
+		if ( $this->is_class_abstract( $class ) ) {
+			$file_prefix = 'abstract-';
+		} elseif ( $this->is_class_interface( $class ) ) {
+			$file_prefix = 'interface-';
+		}
+
+		return $file_prefix . str_replace( '_', '-', $class ) . '.php';
 	}
 
 	/**
@@ -148,6 +156,21 @@ class WCS_Autoloader {
 	}
 
 	/**
+	 * Determine if the class is one of our class interfaces.
+	 *
+	 * @param string $class The class name.
+
+	 * @return bool
+	 */
+	protected function is_class_interface( $class ) {
+		static $interfaces = array(
+			'wcs_cache_updater' => true,
+		);
+
+		return isset( $interfaces[ $class ] );
+	}
+
+	/**
 	 * Get the relative path for the class location.
 	 *
 	 * This handles all of the special class locations and exceptions.
@@ -168,6 +191,8 @@ class WCS_Autoloader {
 			} else {
 				$path .= '/abstracts';
 			}
+		} elseif ( $this->is_class_interface( $class ) ) {
+			$path .= '/interfaces';
 		} elseif ( false !== strpos( $class, 'paypal' ) ) {
 			$path .= '/gateways/paypal';
 			if ( 'wcs_paypal' === $class ) {
