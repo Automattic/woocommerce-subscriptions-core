@@ -440,6 +440,7 @@ class WC_Subscriptions_Upgrader {
 	private static function upgrade_really_old_versions() {
 
 		if ( '0' != self::$active_version && version_compare( self::$active_version, '1.2', '<' ) ) {
+			WCS_Upgrade_1_2::init();
 			self::generate_renewal_orders();
 			update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '1.2' );
 			$upgraded_versions = '1.2, ';
@@ -447,12 +448,14 @@ class WC_Subscriptions_Upgrader {
 
 		// Add Variable Subscription product type term
 		if ( '0' != self::$active_version && version_compare( self::$active_version, '1.3', '<' ) ) {
+			WCS_Upgrade_1_3::init();
 			update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '1.3' );
 			$upgraded_versions .= '1.3 & ';
 		}
 
 		// Moving subscription meta out of user meta and into item meta
 		if ( '0' != self::$active_version && version_compare( self::$active_version, '1.4', '<' ) ) {
+			WCS_Upgrade_1_4::init();
 			update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '1.4' );
 			$upgraded_versions .= '1.4.';
 		}
