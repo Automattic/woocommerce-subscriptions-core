@@ -41,6 +41,8 @@ class WC_Subscriptions_Payment_Gateways {
 	 */
 	public static function init_paypal() {
 		require_once( dirname( __FILE__ ) . '/paypal/includes/wcs-paypal-functions.php' );
+		WCS_PayPal_Standard_Change_Payment_Method::init();
+		add_action( 'init', 'WC_PayPal_Standard_Subscriptions::init', 11 );
 		WCS_PayPal::init();
 	}
 
