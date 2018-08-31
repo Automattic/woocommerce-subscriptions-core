@@ -124,4 +124,3 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 	}
 
 }
-new WCS_Cart_Initial_Payment();

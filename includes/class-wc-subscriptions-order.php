@@ -2120,4 +2120,3 @@ class WC_Subscriptions_Order {
 		return wcs_get_objects_property( $order, 'currency' );
 	}
 }
-WC_Subscriptions_Order::init();

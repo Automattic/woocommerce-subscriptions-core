@@ -936,11 +936,6 @@ class WC_Subscriptions_Admin {
 	public static function get_subscriptions_list_table() {
 
 		if ( ! isset( self::$subscriptions_list_table ) ) {
-
-			if ( ! class_exists( 'WC_Subscriptions_List_Table' ) ) {
-				require_once( 'class-wc-subscriptions-list-table.php' );
-			}
-
 			self::$subscriptions_list_table = new WC_Subscriptions_List_Table();
 		}
 
@@ -1742,7 +1737,7 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function related_orders_meta_box( $post ) {
 		_deprecated_function( __METHOD__, '2.0', 'WCS_Meta_Box_Related_Orders::output()' );
-		WCS_Meta_Box_Related_Orders::output();
+		WCS_Meta_Box_Related_Orders::output( $post );
 	}
 
 	/**
@@ -1798,5 +1793,3 @@ class WC_Subscriptions_Admin {
 		_deprecated_function( __METHOD__, '2.0' );
 	}
 }
-
-WC_Subscriptions_Admin::init();

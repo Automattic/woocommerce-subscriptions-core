@@ -40,7 +40,9 @@ class WC_Subscriptions_Payment_Gateways {
 	 * @since 2.0
 	 */
 	public static function init_paypal() {
-		require_once( 'paypal/class-wcs-paypal.php' );
+		require_once( dirname( __FILE__ ) . '/paypal/includes/wcs-paypal-functions.php' );
+		WCS_PayPal_Standard_Change_Payment_Method::init();
+		add_action( 'init', 'WC_PayPal_Standard_Subscriptions::init', 11 );
 		WCS_PayPal::init();
 	}
 
@@ -259,5 +261,3 @@ class WC_Subscriptions_Payment_Gateways {
 		self::trigger_gateway_status_updated_hook( wcs_get_subscription_from_key( $subscription_key ), 'expired' );
 	}
 }
-
-WC_Subscriptions_Payment_Gateways::init();

@@ -5,13 +5,13 @@
  * Display the renewal order count and revenue that will be processed for all currently active subscriptions
  * for a given period of time in the future.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Admin_Reports
- * @category	Class
- * @author		Prospress
- * @since		2.1
+ * @package    WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Admin_Reports
+ * @category   Class
+ * @author     Prospress
+ * @since      2.1
  */
-class WC_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
+class WCS_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 
 	public $chart_colours = array();
 

@@ -160,4 +160,3 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal {
 		}
 	}
 }
-new WCS_Cart_Switch();

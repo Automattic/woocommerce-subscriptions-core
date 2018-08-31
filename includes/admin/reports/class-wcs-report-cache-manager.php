@@ -27,30 +27,30 @@ class WCS_Report_Cache_Manager {
 	 */
 	private $update_events_and_classes = array(
 		'woocommerce_subscriptions_reports_schedule_cache_updates' => array( // a custom hook that can be called to schedule a full cache update, used by WC_Subscriptions_Upgrader
-			0 => 'WC_Report_Subscription_Events_By_Date',
-			1 => 'WC_Report_Upcoming_Recurring_Revenue',
-			3 => 'WC_Report_Subscription_By_Product',
-			4 => 'WC_Report_Subscription_By_Customer',
+			0 => 'WCS_Report_Subscription_Events_By_Date',
+			1 => 'WCS_Report_Upcoming_Recurring_Revenue',
+			3 => 'WCS_Report_Subscription_By_Product',
+			4 => 'WCS_Report_Subscription_By_Customer',
 		),
 		'woocommerce_subscription_payment_complete' => array( // this hook takes care of renewal, switch and initial payments
-			0 => 'WC_Report_Subscription_Events_By_Date',
-			4 => 'WC_Report_Subscription_By_Customer',
+			0 => 'WCS_Report_Subscription_Events_By_Date',
+			4 => 'WCS_Report_Subscription_By_Customer',
 		),
 		'woocommerce_subscriptions_switch_completed' => array(
-			0 => 'WC_Report_Subscription_Events_By_Date',
+			0 => 'WCS_Report_Subscription_Events_By_Date',
 		),
 		'woocommerce_subscription_status_changed' => array(
-			0 => 'WC_Report_Subscription_Events_By_Date', // we really only need cancelled, expired and active status here, but we'll use a more generic hook for convenience
-			4 => 'WC_Report_Subscription_By_Customer',
+			0 => 'WCS_Report_Subscription_Events_By_Date', // we really only need cancelled, expired and active status here, but we'll use a more generic hook for convenience
+			4 => 'WCS_Report_Subscription_By_Customer',
 		),
 		'woocommerce_subscription_status_active' => array(
-			1 => 'WC_Report_Upcoming_Recurring_Revenue',
+			1 => 'WCS_Report_Upcoming_Recurring_Revenue',
 		),
 		'woocommerce_new_order_item' => array(
-			3 => 'WC_Report_Subscription_By_Product',
+			3 => 'WCS_Report_Subscription_By_Product',
 		),
 		'woocommerce_update_order_item' => array(
-			3 => 'WC_Report_Subscription_By_Product',
+			3 => 'WCS_Report_Subscription_By_Product',
 		),
 	);
 
@@ -217,11 +217,6 @@ class WCS_Report_Cache_Manager {
 		require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 		require_once( WC()->plugin_path() . '/includes/admin/reports/class-wc-admin-report.php' );
 
-		$report_name = strtolower( str_replace( '_', '-', str_replace( 'WC_Report_', '', $report_class ) ) );
-		$report_path = WCS_Admin_Reports::initialize_reports_path( '', $report_name, $report_class );
-
-		require_once( $report_path );
-
 		$reflector = new ReflectionMethod( $report_class, 'get_data' );
 
 		// Some report classes extend WP_List_Table which has a constructor using methods not available on WP-Cron (and unable to be loaded with a __doing_it_wrong() notice), so they have a static get_data() method and do not need to be instantiated
@@ -355,5 +350,3 @@ class WCS_Report_Cache_Manager {
 		return $data;
 	}
 }
-
-return new WCS_Report_Cache_Manager();

@@ -247,4 +247,3 @@ class WCS_Download_Handler {
 		}
 	}
 }
-WCS_Download_Handler::init();

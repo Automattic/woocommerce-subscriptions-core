@@ -4,13 +4,13 @@
  *
  * Display important historical data for subscription revenue and events, like switches and cancellations.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Admin_Reports
- * @category	Class
- * @author		Prospress
- * @since		2.1
+ * @package    WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Admin_Reports
+ * @category   Class
+ * @author     Prospress
+ * @since      2.1
  */
-class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
+class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 
 	public $chart_colours = array();
 

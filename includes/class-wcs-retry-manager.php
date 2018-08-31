@@ -8,7 +8,6 @@
  * @author		Prospress
  * @since		2.1
  */
-require_once( 'payment-retry/class-wcs-retry-admin.php' );
 
 class WCS_Retry_Manager {
 
@@ -96,20 +95,7 @@ class WCS_Retry_Manager {
 	 * @since 2.1
 	 */
 	protected static function load_classes() {
-
-		require_once( 'abstracts/abstract-wcs-retry-store.php' );
-
-		require_once( 'payment-retry/class-wcs-retry.php' );
-
-		require_once( 'payment-retry/class-wcs-retry-rule.php' );
-
-		require_once( 'payment-retry/class-wcs-retry-rules.php' );
-
-		require_once( 'payment-retry/class-wcs-retry-post-store.php' );
-
-		require_once( 'payment-retry/class-wcs-retry-email.php' );
-
-		require_once( 'admin/meta-boxes/class-wcs-meta-box-payment-retries.php' );
+		WCS_Retry_Email::init();
 	}
 
 	/**
@@ -387,4 +373,3 @@ class WCS_Retry_Manager {
 		return apply_filters( 'wcs_retry_rules_class', 'WCS_Retry_Rules' );
 	}
 }
-WCS_Retry_Manager::init();
