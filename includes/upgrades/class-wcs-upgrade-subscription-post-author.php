@@ -58,8 +58,6 @@ class WCS_Upgrade_Subscription_Post_Author extends WCS_Background_Upgrader {
 	 * @return array A list of subscription ids which need to be updated.
 	 */
 	protected function get_items_to_update() {
-		global $wpdb;
-
 		$admin_subscriptions = WCS_Customer_Store::instance()->get_users_subscription_ids( 1 );
 
 		return get_posts( array(

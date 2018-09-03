@@ -826,15 +826,12 @@ class WC_Subscriptions_Upgrader {
 	 * @since 2.4.0
 	 */
 	public static function maybe_update_subscription_post_author() {
-		$woocommerce_active_version = WC()->version;
-		$woocommerce_db_version     = get_option( 'woocommerce_db_version' );
-
-		if ( version_compare( $woocommerce_active_version, '3.5.0', '<' ) ) {
+		if ( version_compare( WC()->version, '3.5.0', '<' ) ) {
 			return;
 		}
 
 		// If WC hasn't run the update routine yet we can hook into theirs to update subscriptions, otherwise we'll need to schedule our own update.
-		if ( version_compare( $woocommerce_db_version, '3.5.0', '<' ) ) {
+		if ( version_compare( get_option( 'woocommerce_db_version' ), '3.5.0', '<' ) ) {
 			self::$background_updaters['2.4']['subscription_post_author']->hook_into_wc_350_update();
 		} else if ( version_compare( self::$active_version, '2.4.0', '<' ) ) {
 			self::$background_updaters['2.4']['subscription_post_author']->schedule_repair();
