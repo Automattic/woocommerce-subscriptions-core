@@ -1726,10 +1726,7 @@ class WC_Subscriptions_Switcher {
 	 * @since 2.0
 	 */
 	protected static function is_item_switched( $item ) {
-
-		$is_item_switched = isset( $item['switched'] ) ? true : false;
-
-		return $is_item_switched;
+		return isset( $item['switched'] );
 	}
 
 	/**
