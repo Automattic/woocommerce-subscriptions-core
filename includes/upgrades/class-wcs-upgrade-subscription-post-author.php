@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-class WCS_Update_Subscription_Post_Author extends WCS_Background_Upgrader {
+class WCS_Upgrade_Subscription_Post_Author extends WCS_Background_Upgrader {
 
 	/**
 	 * Constructor
@@ -21,8 +21,8 @@ class WCS_Update_Subscription_Post_Author extends WCS_Background_Upgrader {
 	 * @since 2.4.0
 	 */
 	public function __construct( WC_Logger $logger ) {
-		$this->scheduled_hook = 'wcs_update_subscription_post_author';
-		$this->log_handle     = 'wcs-update-subscription-post-author';
+		$this->scheduled_hook = 'wcs_upgrade_subscription_post_author';
+		$this->log_handle     = 'wcs-upgrade-subscription-post-author';
 		$this->logger         = $logger;
 	}
 
@@ -78,7 +78,7 @@ class WCS_Update_Subscription_Post_Author extends WCS_Background_Upgrader {
 	protected function schedule_background_update() {
 		parent::schedule_background_update();
 
-		update_option( 'wcs_subscription_post_author_update_is_scheduled', true );
+		update_option( 'wcs_subscription_post_author_upgrade_is_scheduled', true );
 	}
 
 	/**
@@ -87,7 +87,7 @@ class WCS_Update_Subscription_Post_Author extends WCS_Background_Upgrader {
 	protected function unschedule_background_updates() {
 		parent::unschedule_background_updates();
 
-		delete_option( 'wcs_subscription_post_author_update_is_scheduled' );
+		delete_option( 'wcs_subscription_post_author_upgrade_is_scheduled' );
 	}
 
 	/**

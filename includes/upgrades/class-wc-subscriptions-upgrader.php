@@ -844,14 +844,14 @@ class WC_Subscriptions_Upgrader {
 	/**
 	 * Load and initialise the background updaters.
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 */
 	public static function initialise_background_updaters() {
 		$logger = new WC_logger();
 		self::$background_updaters['2.3']['suspended_paypal_repair'] = new WCS_Repair_Suspended_PayPal_Subscriptions( $logger );
 		self::$background_updaters['2.3']['address_indexes_repair']  = new WCS_Repair_Subscription_Address_Indexes( $logger );
 		self::$background_updaters['2.4']['start_date_metadata'] = new WCS_Repair_Start_Date_Metadata( $logger );
-		self::$background_updaters['2.4']['subscription_post_author']  = new WCS_Update_Subscription_Post_Author( $logger );
+		self::$background_updaters['2.4']['subscription_post_author'] = new WCS_Upgrade_Subscription_Post_Author( $logger );
 
 		// Init the updaters
 		foreach ( self::$background_updaters as $version => $updaters ) {
