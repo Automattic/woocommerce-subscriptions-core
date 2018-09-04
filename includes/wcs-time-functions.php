@@ -608,7 +608,7 @@ function wcs_is_datetime_mysql_format( $time ) {
 	}
 
 	if ( function_exists( 'strptime' ) ) {
-		$valid_time = $match = false !== strptime( $time, '%Y-%m-%d %H:%M:%S' );
+		$valid_time = $match = ( false !== strptime( $time, '%Y-%m-%d %H:%M:%S' ) );
 	} else {
 		// parses for the pattern of YYYY-MM-DD HH:MM:SS, but won't check whether it's a valid timedate
 		$match = preg_match( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $time );
