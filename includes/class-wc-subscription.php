@@ -2224,7 +2224,7 @@ class WC_Subscription extends WC_Order {
 		foreach ( $this->get_valid_date_types() as $date_type ) {
 
 			// While 'last_payment' is a valid date type, it is deprecated and we use 'last_order_date_created' now instead
-			if ( in_array( $date_type, array( 'last_payment' ) ) ) {
+			if ( 'last_payment' === $date_type ) {
 				continue;
 			}
 
