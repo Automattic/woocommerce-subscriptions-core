@@ -827,9 +827,7 @@ class WC_Subscriptions_Upgrader {
 		self::$background_updaters['2.3']['suspended_paypal_repair'] = new WCS_Repair_Suspended_PayPal_Subscriptions( $logger );
 		self::$background_updaters['2.3']['address_indexes_repair']  = new WCS_Repair_Subscription_Address_Indexes( $logger );
 
-		include_once( dirname( __FILE__ ) . '/class-wcs-add-start-date-metadata.php' );
-
-		self::$background_updaters['2.4']['start_date_metadata'] = new WCS_Add_Start_Date_Metadata( $logger );
+		self::$background_updaters['2.4']['start_date_metadata'] = new WCS_Repair_Start_Date_Metadata( $logger );
 
 		// Init the updaters
 		foreach ( self::$background_updaters as $version => $updaters ) {

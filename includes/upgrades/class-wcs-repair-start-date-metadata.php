@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class WCS_Add_Start_Date_Metadata extends WCS_Background_Upgrader {
+class WCS_Repair_Start_Date_Metadata extends WCS_Background_Upgrader {
 
 	/**
 	 * Constructor
