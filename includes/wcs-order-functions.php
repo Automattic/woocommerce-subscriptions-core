@@ -52,7 +52,7 @@ function wcs_get_subscriptions_for_order( $order, $args = array() ) {
 		$args['order_type'] = array( $args['order_type'] );
 	}
 
-	$get_all = ( in_array( 'any', $args['order_type'] ) ) ? true : false;
+	$get_all = in_array( 'any', $args['order_type'] );
 
 	if ( $get_all || in_array( 'parent', $args['order_type'] ) ) {
 
@@ -435,7 +435,7 @@ function wcs_order_contains_subscription( $order, $order_type = array( 'parent',
 	}
 
 	$contains_subscription = false;
-	$get_all               = ( in_array( 'any', $order_type ) ) ? true : false;
+	$get_all               = in_array( 'any', $order_type );
 
 	if ( ( in_array( 'parent', $order_type ) || $get_all ) && count( wcs_get_subscriptions_for_order( wcs_get_objects_property( $order, 'id' ), array( 'order_type' => 'parent' ) ) ) > 0 ) {
 		$contains_subscription = true;
@@ -471,7 +471,7 @@ function wcs_get_subscription_orders( $return_fields = 'ids', $order_type = 'par
 		$order_type = array( $order_type );
 	}
 
-	$any_order_type = in_array( 'any', $order_type ) ? true : false;
+	$any_order_type = in_array( 'any', $order_type );
 	$return_fields  = ( 'ids' == $return_fields ) ? $return_fields : 'all';
 
 	$orders    = array();
