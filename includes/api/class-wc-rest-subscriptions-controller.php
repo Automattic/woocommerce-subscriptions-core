@@ -340,14 +340,14 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 
 			if ( ! is_null( $value ) ) {
 				switch ( $key ) {
-					case 'billing' :
-					case 'shipping' :
+					case 'billing':
+					case 'shipping':
 						$this->update_address( $subscription, $value, $key );
 						break;
-					case 'line_items' :
-					case 'shipping_lines' :
-					case 'fee_lines' :
-					case 'coupon_lines' :
+					case 'line_items':
+					case 'shipping_lines':
+					case 'fee_lines':
+					case 'coupon_lines':
 						if ( is_array( $value ) ) {
 							foreach ( $value as $item ) {
 								if ( is_array( $item ) ) {
@@ -360,13 +360,13 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 							}
 						}
 						break;
-					case 'start_date' :
-					case 'trial_end_date' :
-					case 'next_payment_date' :
-					case 'end_date' :
+					case 'start_date':
+					case 'trial_end_date':
+					case 'next_payment_date':
+					case 'end_date':
 						$dates_to_update[ $key ] = $value;
 						break;
-					default :
+					default:
 						if ( is_callable( array( $subscription, "set_{$key}" ) ) ) {
 							$subscription->{"set_{$key}"}( $value );
 						}
