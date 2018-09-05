@@ -90,9 +90,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 			$response->data['resubscribed_subscription'] = strval( reset( $resubscribed_subscriptions ) ); // Subscriptions can only be resubscribed to once so return the first and only element.
 
 			foreach ( array( 'start', 'trial_end', 'next_payment', 'end' ) as $date_type ) {
-				$date_type_key = ( 'start' === $date_type ) ? 'date_created' : $date_type;
-				$date = $subscription->get_date( $date_type_key );
-
+				$date = $subscription->get_date( $date_type );
 				$response->data[ $date_type . '_date' ] = ( ! empty( $date ) ) ? wc_rest_prepare_date_response( $date ) : '';
 			}
 		}
