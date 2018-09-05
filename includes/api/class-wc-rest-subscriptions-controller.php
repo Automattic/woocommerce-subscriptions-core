@@ -364,8 +364,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 					case 'trial_end_date' :
 					case 'next_payment_date' :
 					case 'end_date' :
-						$date_type_key = ( 'start_date' === $key ) ? 'date_created' : $key;
-						$dates_to_update[ $date_type_key ] = $value;
+						$dates_to_update[ $key ] = $value;
 						break;
 					default :
 						if ( is_callable( array( $subscription, "set_{$key}" ) ) ) {
