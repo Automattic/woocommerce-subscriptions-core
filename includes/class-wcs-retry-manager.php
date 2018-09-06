@@ -49,9 +49,6 @@ class WCS_Retry_Manager {
 		self::$admin      = new WCS_Retry_Admin( self::$setting_id );
 
 		if ( self::is_retry_enabled() ) {
-
-			self::load_classes();
-
 			add_filter( 'init', array( self::store(), 'init' ) );
 
 			add_filter( 'woocommerce_valid_order_statuses_for_payment', __CLASS__ . '::check_order_statuses_for_payment', 10, 2 );
@@ -80,6 +77,8 @@ class WCS_Retry_Manager {
 				self::$background_migrator = new WCS_Retry_Background_Migrator();
 				add_action( 'init', array( self::$background_migrator, 'init' ), 5 );
 			}
+
+			WCS_Retry_Email::init();
 		}
 	}
 
@@ -117,33 +116,11 @@ class WCS_Retry_Manager {
 	 *
 	 * @codeCoverageIgnore
 	 * @since 2.1
+	 *
+	 * @deprecated 2.4
 	 */
 	protected static function load_classes() {
-		WCS_Retry_Email::init();
-
-		require_once( 'abstracts/abstract-wcs-retry-store.php' );
-
-		require_once( 'payment-retry/class-wcs-retry.php' );
-
-		require_once( 'payment-retry/class-wcs-retry-rule.php' );
-
-		require_once( 'payment-retry/class-wcs-retry-rules.php' );
-
-		require_once( 'payment-retry/class-wcs-retry-post-store.php' );
-		require_once( 'payment-retry/class-wcs-retry-database-store.php' );
-		require_once( 'payment-retry/class-wcs-retry-hybrid-store.php' );
-
-		require_once( 'payment-retry/class-wcs-retry-email.php' );
-
-		require_once( 'payment-retry/class-wcs-retry-migrator.php' );
-
-		require_once( 'payment-retry/class-wcs-retry-stores.php' );
-
-		require_once( 'payment-retry/class-wcs-retry-table-maker.php' );
-
-		require_once( 'payment-retry/class-wcs-retry-background-migrator.php' );
-
-		require_once( 'admin/meta-boxes/class-wcs-meta-box-payment-retries.php' );
+		wcs_deprecated_function( __FUNCTION__, '2.4.0' );
 	}
 
 	/**
