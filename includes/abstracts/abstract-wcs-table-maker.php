@@ -88,8 +88,6 @@ abstract class WCS_Table_Maker {
 	/**
 	 * Update the option in WordPress to indicate that
 	 * our schema is now up to date
-	 *
-	 * @return void
 	 */
 	private function mark_schema_update_complete() {
 		$option_name = $this->get_schema_option_name();
@@ -104,8 +102,6 @@ abstract class WCS_Table_Maker {
 	 * Update the schema for the given table
 	 *
 	 * @param string $table The name of the table to update
-	 *
-	 * @return void
 	 */
 	private function update_table( $table ) {
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
