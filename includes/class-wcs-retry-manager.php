@@ -68,14 +68,11 @@ class WCS_Retry_Manager {
 
 			add_filter( 'woocommerce_subscriptions_is_failed_renewal_order', __CLASS__ . '::compare_order_and_retry_statuses', 10, 3 );
 
+			add_action( 'plugins_loaded', __CLASS__ . '::load_dependant_classes' );
+
 			if ( ! self::$table_maker ) {
 				self::$table_maker = new WCS_Retry_Table_Maker();
 				add_action( 'init', array( self::$table_maker, 'register_tables' ), 0 );
-			}
-
-			if ( ! self::$background_migrator ) {
-				self::$background_migrator = new WCS_Retry_Background_Migrator();
-				add_action( 'init', array( self::$background_migrator, 'init' ), 5 );
 			}
 
 			WCS_Retry_Email::init();
@@ -352,6 +349,13 @@ class WCS_Retry_Manager {
 		}
 
 		return $is_failed_order;
+	}
+
+	public function load_dependant_classes() {
+		if ( ! self::$background_migrator ) {
+			self::$background_migrator = new WCS_Retry_Background_Migrator();
+			add_action( 'init', array( self::$background_migrator, 'init' ), 5 );
+		}
 	}
 
 	/**
