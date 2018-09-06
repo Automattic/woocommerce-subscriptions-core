@@ -90,14 +90,14 @@ abstract class WCS_Migrator {
 	abstract public function delete_source_store_entry( $entry_id );
 
 	/**
-	 * logs migrated entry.
+	 * Runs after a entry has been migrated.
 	 *
 	 * @param int $old_entry_id
 	 * @param mixed $new_entry
 	 *
 	 * @return mixed
 	 */
-	abstract protected function log_migrated_entry( $old_entry_id, $new_entry );
+	abstract protected function migrated_entry( $old_entry_id, $new_entry );
 
 	/**
 	 * Migrates our retry.
@@ -113,7 +113,7 @@ abstract class WCS_Migrator {
 			$destination_store_item = $this->save_destination_store_entry( $entry_id );
 			$this->delete_source_store_entry( $entry_id );
 
-			$this->log_migrated_entry( $entry_id, $destination_store_item );
+			$this->migrated_entry( $entry_id, $destination_store_item );
 
 			return $destination_store_item;
 		}
