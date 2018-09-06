@@ -97,9 +97,9 @@ abstract class WCS_Retry_Store {
 	 */
 	public function get_last_retry_for_order( $order_id ) {
 
-		$retry_ids = $this->get_retry_ids_for_order( $order_id );
-
+		$retry_ids  = $this->get_retry_ids_for_order( $order_id );
 		$last_retry = null;
+
 		if ( ! empty( $retry_ids ) ) {
 			$last_retry_id = array_pop( $retry_ids );
 			$last_retry    = $this->get_retry( $last_retry_id );
