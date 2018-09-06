@@ -67,11 +67,12 @@ class WCS_Retry_Migrator extends WCS_Migrator {
 	 *
 	 * @param int $entry_id
 	 *
-	 * @return mixed
+	 * @return bool
 	 * @since 2.4
 	 */
 	public function delete_source_store_entry( $entry_id ) {
-		return wp_delete_post( $entry_id, true );
+		return $this->source_store->delete_retry( $entry_id );
+	}
 
 	/**
 	 * Add a message to the log
