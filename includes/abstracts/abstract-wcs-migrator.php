@@ -126,7 +126,7 @@ abstract class WCS_Migrator {
 	 *
 	 * @param string $message The message to be logged
 	 *
-	 * @since 2.3.0
+	 * @since 2.4.0
 	 */
 	protected function log( $message ) {
 		$this->logger->add( $this->log_handle, $message );
