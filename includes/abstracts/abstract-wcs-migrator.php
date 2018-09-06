@@ -29,7 +29,7 @@ abstract class WCS_Migrator {
 	protected $logger;
 
 	/**
-	 * $var string
+	 * @var string
 	 */
 	protected $log_handle;
 
