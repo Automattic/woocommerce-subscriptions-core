@@ -1,11 +1,10 @@
 <?php
 /**
- * Retry migration class.
+ * Entry migration abstract class.
  *
  * @author       Prospress
  * @category     Class
  * @package      WooCommerce Subscriptions
- * @subpackage   WCS_Retry_Migrator
  * @since        2.4
  */
 
@@ -100,7 +99,7 @@ abstract class WCS_Migrator {
 	abstract protected function migrated_entry( $old_entry_id, $new_entry );
 
 	/**
-	 * Migrates our retry.
+	 * Migrates our entry.
 	 *
 	 * @param int $entry_id
 	 *
