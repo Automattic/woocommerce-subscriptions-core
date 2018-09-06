@@ -72,6 +72,15 @@ class WCS_Retry_Migrator extends WCS_Migrator {
 	 */
 	public function delete_source_store_entry( $entry_id ) {
 		return wp_delete_post( $entry_id, true );
+
+	/**
+	 * Add a message to the log
+	 *
+	 * @param int $old_retry_id Old retry id.
+	 * @param int $new_retry_id New retry id.
+	 */
+	protected function log_migrated_entry( $old_retry_id, $new_retry_id ) {
+		$this->log( sprintf( 'Retry ID %d migrated to %s with ID %d.', $old_retry_id, WCS_Retry_Table_Maker::PAYMENT_RETRY_TABLE, $new_retry_id ) );
 	}
 }
 
