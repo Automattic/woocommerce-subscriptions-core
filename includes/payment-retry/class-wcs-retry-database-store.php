@@ -58,7 +58,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 			$query_format[]         = '%d';
 		}
 
-		if ( $this->get_retry( $retry->get_id() ) ) {
+		if ( $retry->get_id() && $this->get_retry( $retry->get_id() ) ) {
 			$wpdb->update(
 				$this->get_full_table_name(),
 				$query_data,
@@ -66,7 +66,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 				$query_format
 			);
 
-			return absint( $retry->get_id() );
+			$retry_id = absint( $retry->get_id() );
 		} else {
 			$wpdb->insert(
 				$this->get_full_table_name(),
@@ -74,8 +74,10 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 				$query_format
 			);
 
-			return absint( $wpdb->insert_id );
+			$retry_id = absint( $wpdb->insert_id );
 		}
+
+		return $retry_id;
 	}
 
 	/**
