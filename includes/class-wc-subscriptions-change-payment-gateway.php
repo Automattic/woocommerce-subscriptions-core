@@ -32,7 +32,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		add_action( 'woocommerce_loaded', __CLASS__ . '::attach_dependant_hooks' );
 
 		// Keep a record of any messages or errors that should be displayed
-		add_action( 'before_woocommerce_pay', __CLASS__ . '::store_pay_shortcode_mesages', 100 );
+		add_action( 'before_woocommerce_pay', __CLASS__ . '::store_pay_shortcode_messages', 100 );
 
 		// Hijack the default pay shortcode
 		add_action( 'after_woocommerce_pay', __CLASS__ . '::maybe_replace_pay_shortcode', 100 );
@@ -99,21 +99,33 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	}
 
 	/**
-	 * Store any messages or errors added by other plugins, particularly important for those occasions when the new payment
-	 * method caused and error or failure.
+	 * Store any messages or errors added by other plugins.
 	 *
-	 * @since 1.4
+	 * This is particularly important for those occasions when the new payment method caused and error or failure.
+	 *
+	 * @since 2.3.6
 	 */
-	public static function store_pay_shortcode_mesages() {
-
+	public static function store_pay_shortcode_messages() {
 		if ( wc_notice_count( 'notice' ) > 0 ) {
-			self::$woocommerce_messages  = wc_get_notices( 'success' );
+			self::$woocommerce_messages = wc_get_notices( 'success' );
 			self::$woocommerce_messages += wc_get_notices( 'notice' );
 		}
 
 		if ( wc_notice_count( 'error' ) > 0 ) {
 			self::$woocommerce_errors = wc_get_notices( 'error' );
 		}
+	}
+
+	/**
+	 * Store messages ore errors added by other plugins.
+	 *
+	 * @since 1.4
+	 * @since 2.3.6 Deprecated in favor of the method with proper spelling.
+	 * @deprecated
+	 */
+	public static function store_pay_shortcode_mesages() {
+		wcs_deprecated_function( __METHOD__, '2.3.6', __CLASS__ . '::store_pay_shortcode_messages' );
+		self::store_pay_shortcode_messages();
 	}
 
 	/**
