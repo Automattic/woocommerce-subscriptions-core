@@ -1985,7 +1985,7 @@ class WC_Subscriptions_Cart {
 			'trial_period'          => self::get_cart_subscription_trial_period(),
 		);
 
-		$is_one_payment = ( self::get_cart_subscription_length() > 0 && self::get_cart_subscription_length() == self::get_cart_subscription_interval() ) ? true : false;
+		$is_one_payment = self::get_cart_subscription_length() > 0 && self::get_cart_subscription_length() == self::get_cart_subscription_interval();
 
 		// Override defaults when subscription is for one billing period
 		if ( $is_one_payment ) {

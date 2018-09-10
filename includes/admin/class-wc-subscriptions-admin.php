@@ -713,8 +713,8 @@ class WC_Subscriptions_Admin {
 		// Get admin screen id
 		$screen = get_current_screen();
 
-		$is_woocommerce_screen = ( in_array( $screen->id, array( 'product', 'edit-shop_order', 'shop_order', 'edit-shop_subscription', 'shop_subscription', 'users', 'woocommerce_page_wc-settings' ) ) ) ? true : false;
-		$is_activation_screen  = ( get_transient( WC_Subscriptions::$activation_transient ) == true ) ? true : false;
+		$is_woocommerce_screen = in_array( $screen->id, array( 'product', 'edit-shop_order', 'shop_order', 'edit-shop_subscription', 'shop_subscription', 'users', 'woocommerce_page_wc-settings' ) );
+		$is_activation_screen  = (bool) get_transient( WC_Subscriptions::$activation_transient );
 
 		if ( $is_woocommerce_screen ) {
 

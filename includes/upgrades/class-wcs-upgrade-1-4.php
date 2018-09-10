@@ -174,6 +174,6 @@ class WCS_Upgrade_1_4 {
 			self::$last_upgraded_user_id = get_option( 'wcs_1_4_last_upgraded_user_id', 0 );
 		}
 
-		return ( $user_id > self::$last_upgraded_user_id ) ? true : false;
+		return $user_id > self::$last_upgraded_user_id;
 	}
 }
