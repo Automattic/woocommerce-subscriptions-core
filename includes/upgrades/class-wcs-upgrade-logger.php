@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WCS_Upgrade_Logger {
 
-	/** @var WC_Logger instance */
+	/** @var WC_Logger_Interface instance */
 	protected static $log = false;
 
 	/** @var string File handle */
