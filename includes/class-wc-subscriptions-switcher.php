@@ -1932,11 +1932,7 @@ class WC_Subscriptions_Switcher {
 				}
 			}
 
-			// If the shipping data is in the old format
-			if ( ! empty( $switch_data['shipping_methods'] ) ) {
-				self::switch_shipping_line_items_pre_2_1_2( $subscription, $switch_data['shipping_methods'] );
-			} else if ( ! empty( $switch_data['shipping_line_items'] ) && is_array( $switch_data['shipping_line_items'] ) ) {
-
+			if ( ! empty( $switch_data['shipping_line_items'] ) && is_array( $switch_data['shipping_line_items'] ) ) {
 				// Archive the old subscription shipping methods
 				foreach ( $subscription->get_shipping_methods() as $shipping_line_item_id => $item ) {
 					wcs_update_order_item_type( $shipping_line_item_id, 'shipping_switched', $subscription->get_id() );
@@ -2187,44 +2183,6 @@ class WC_Subscriptions_Switcher {
 			}
 		}
 		return $total;
-	}
-
-	/**
-	 * Switch subscription shipping line items provided shipping line item data in the 2.1 switch order meta format.
-	 *
-	 * @param WC_Subscription $subscription the subscription being switched
-	 * @param array $shipping_methods an array of shipping line items and meta
-	 * @since 2.1.2
-	 */
-	protected static function switch_shipping_line_items_pre_2_1_2( $subscription, $shipping_methods ) {
-		// Archive the old subscription shipping methods
-		foreach ( $subscription->get_shipping_methods() as $shipping_line_item_id => $item ) {
-			wcs_update_order_item_type( $shipping_line_item_id, 'shipping_switched', $subscription->get_id() );
-		}
-
-		// Add the new shipping line item
-		foreach ( $shipping_methods as $shipping_line_item ) {
-			$item_id = wc_add_order_item( $subscription->get_id(), array(
-				'order_item_name' => $shipping_line_item['name'],
-				'order_item_type' => 'shipping',
-			) );
-
-			if ( ! $item_id || empty( $shipping_line_item['method_id'] ) || empty( $shipping_line_item['cost'] ) || empty( $shipping_line_item['taxes'] ) ) {
-				throw new Exception( __( 'Failed to update the subscription shipping method.', 'woocommerce-subscriptions' ) );
-			}
-
-			// Add shipping order item meta
-			wc_add_order_item_meta( $item_id, 'method_id', $shipping_line_item['method_id'] );
-			wc_add_order_item_meta( $item_id, 'cost', wc_format_decimal( $shipping_line_item['cost'] ) );
-
-			$taxes = array_map( 'wc_format_decimal', maybe_unserialize( $shipping_line_item['taxes'] ) );
-			wc_add_order_item_meta( $item_id, 'taxes', $taxes );
-
-			// Add custom shipping order item meta added by third-party plugins
-			foreach ( $shipping_line_item['item_meta'] as $key => $value ) {
-				wc_add_order_item_meta( $item_id, $key, $value );
-			}
-		}
 	}
 
 	/**
