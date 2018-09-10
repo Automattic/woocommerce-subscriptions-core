@@ -186,7 +186,7 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 		wcs_get_objects_property( $from_order, 'id' )
 	);
 
-	if ( 'renewal_order' == $type ) {
+	if ( in_array( $type, array( 'renewal_order', 'parent' ) ) ) {
 		$meta_query .= " AND `meta_key` NOT LIKE '_download_permissions_granted' ";
 	}
 
