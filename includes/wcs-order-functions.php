@@ -546,7 +546,9 @@ function wcs_get_subscription_orders( $return_fields = 'ids', $order_type = 'par
  * but no `wc_get_order_item()` function, so we need to add our own (for now).
  *
  * @param int $item_id The ID of an order item
- * @return WC_Subscription Subscription details in post_id => WC_Subscription form.
+ *
+ * @return array Subscription details in post_id => WC_Subscription form.
+ *
  * @since 2.0
  */
 function wcs_get_order_item( $item_id, $order ) {
