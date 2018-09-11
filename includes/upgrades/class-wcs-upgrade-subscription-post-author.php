@@ -44,9 +44,21 @@ class WCS_Upgrade_Subscription_Post_Author extends WCS_Background_Upgrader {
 				)
 			);
 
+			if ( 0 === $wpdb->rows_affected ) {
+				if ( '1' === get_post_meta( $subscription_id, '_customer_user', true ) && is_a( WCS_Customer_Store::instance(), 'WCS_Customer_Store_Cached_CPT' ) ) {
+					// Admin's subscription cache seems to be corrupt, force a refresh.
+					WCS_Customer_Store::instance()->delete_cache_for_user( 1 );
+				}
+
+				throw new Exception( 'post_author wasn\'t updated, it was already set to 1' );
+			}
+
 			$this->log( sprintf( 'Subscription ID %d post_author updated.', $subscription_id ) );
 		} catch ( Exception $e ) {
 			$this->log( sprintf( '--- Exception caught repairing subscription %d - exception message: %s ---', $subscription_id, $e->getMessage() ) );
+
+			// Ignore this subscription the next time around.
+			$this->add_subscription_to_ignore_list( $subscription_id );
 		}
 	}
 
@@ -58,14 +70,12 @@ class WCS_Upgrade_Subscription_Post_Author extends WCS_Background_Upgrader {
 	 * @return array A list of subscription ids which need to be updated.
 	 */
 	protected function get_items_to_update() {
-		$admin_subscriptions = WCS_Customer_Store::instance()->get_users_subscription_ids( 1 );
-
 		return get_posts( array(
 			'post_type'      => 'shop_subscription',
 			'posts_per_page' => 20,
 			'author'         => '1',
 			'post_status'    => 'any',
-			'post__not_in'   => $admin_subscriptions,
+			'post__not_in'   => $this->get_subscriptions_to_ignore(),
 			'fields'         => 'ids',
 		) );
 	}
@@ -86,6 +96,44 @@ class WCS_Upgrade_Subscription_Post_Author extends WCS_Background_Upgrader {
 		parent::unschedule_background_updates();
 
 		delete_option( 'wcs_subscription_post_author_upgrade_is_scheduled' );
+		delete_option( 'wcs_post_author_upgrade_other_subscriptions_to_ignore' );
+	}
+
+	/**
+	 * Returns the list of admin subscription IDs to ignore during this upgrade routine.
+	 *
+	 * @return array
+	 */
+	private function get_subscriptions_to_ignore() {
+		$subscriptions_to_ignore       = WCS_Customer_Store::instance()->get_users_subscription_ids( 1 );
+		$other_subscriptions_to_ignore = get_option( 'wcs_post_author_upgrade_other_subscriptions_to_ignore', array() );
+
+		if ( is_array( $other_subscriptions_to_ignore ) && ! empty( $other_subscriptions_to_ignore ) ) {
+			$subscriptions_to_ignore = array_unique( array_merge( $subscriptions_to_ignore, $other_subscriptions_to_ignore ) );
+		}
+
+		return $subscriptions_to_ignore;
+	}
+
+	/**
+	 * Adds a subscription ID to the ignore list for this upgrade routine.
+	 *
+	 * @param int $subscription_id
+	 */
+	private function add_subscription_to_ignore_list( $subscription_id ) {
+		$subscription_id = absint( $subscription_id );
+		if ( ! $subscription_id ) {
+			return;
+		}
+
+		$subscriptions_to_ignore = get_option( 'wcs_post_author_upgrade_other_subscriptions_to_ignore', array() );
+		$subscriptions_to_ignore = is_array( $subscriptions_to_ignore ) ? $subscriptions_to_ignore : array();
+
+		if ( ! in_array( $subscription_id, $subscriptions_to_ignore ) ) {
+			$subscriptions_to_ignore[] = $subscription_id;
+		}
+
+		update_option( 'wcs_post_author_upgrade_other_subscriptions_to_ignore', $subscriptions_to_ignore );
 	}
 
 	/**
