@@ -123,27 +123,36 @@ class WCS_Retry_Post_Store extends WCS_Retry_Store {
 	 * Get a set of retries from the database
 	 *
 	 * @param array $args A set of filters.
+	 * @param bool  $ids  If true will return an array with only ids.
 	 *
 	 * @return array An array of WCS_Retry objects
 	 */
-	public function get_retries( $args = array() ) {
+	public function get_retries( $args = array(), $ids = false ) {
+		$retries = array();
 
 		$args = wp_parse_args( $args, array(
 			'status'     => 'any',
 			'date_query' => array(),
+			'orderby'    => 'date',
+			'order'      => 'DESC',
+			'order_id'   => false,
+			'limit'      => - 1,
 		) );
 
 		$retry_post_ids = get_posts( array(
-			'posts_per_page' => -1,
+			'posts_per_page' => $args['limit'],
 			'post_type'      => self::$post_type,
 			'post_status'    => $args['status'],
 			'date_query'     => $args['date_query'],
 			'fields'         => 'ids',
-			'orderby'        => 'date',
-			'order'          => 'DESC',
+			'orderby'        => $args['orderby'],
+			'order'          => $args['order'],
+			'post_parent'    => $args['order_id'],
 		) );
 
-		$retries = array();
+		if ( $ids ) {
+			return $retry_post_ids;
+		}
 
 		foreach ( $retry_post_ids as $retry_post_id ) {
 			$retries[ $retry_post_id ] = $this->get_retry( $retry_post_id );
@@ -159,17 +168,10 @@ class WCS_Retry_Post_Store extends WCS_Retry_Store {
 	 * @return array
 	 */
 	public function get_retry_ids_for_order( $order_id ) {
-
-		$retry_post_ids = get_posts( array(
-			'posts_per_page' => -1,
-			'post_type'      => self::$post_type,
-			'post_status'    => 'any',
-			'post_parent'    => $order_id,
-			'fields'         => 'ids',
-			'orderby'        => 'ID',
-			'order'          => 'ASC',
-		) );
-
-		return $retry_post_ids;
+		return $this->get_retries( array(
+			'post_parent' => $order_id,
+			'orderby'     => 'ID',
+			'order'       => 'ASC',
+		), true );
 	}
 }

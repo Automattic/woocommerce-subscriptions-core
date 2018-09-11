@@ -134,39 +134,53 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 * @return array An array of WCS_Retry objects
 	 * @since 2.4
 	 */
-	public function get_retries( $args = array() ) {
+	public function get_retries( $args = array(), $ids = false ) {
 		global $wpdb;
 
 		$args = wp_parse_args( $args, array(
 			'status'     => 'any',
 			'date_query' => array(),
+			'orderby'    => 'date_gmt',
+			'order'      => 'DESC',
+			'order_id'   => false,
+			'limit'      => - 1,
 		) );
 
-		$where = '';
+		$where = ' WHERE 1=1';
 		if ( 'any' !== $args['status'] ) {
 			$where .= $wpdb->prepare(
-				' WHERE status = %s',
+				' AND WHERE status = %s',
 				$args['status']
 			);
 		}
+		if ( absint( $args['order_id'] ) ) {
+			$where .= $wpdb->prepare( ' WHERE order_id = %d', $args['order_id'] );
+		}
 		if ( ! empty( $args['date_query'] ) ) {
 			$date_query = new WP_Date_Query( $args['date_query'], 'date_gmt' );
-			$where      .= $date_query->get_sql();
+			$where     .= $date_query->get_sql();
 		}
+		$orderby = $wpdb->prepare( ' ORDER BY %s %s', $args['orderby'], $args['order'] );
+		$limit   = ( $args['limit'] > 0 ) ? $wpdb->preparea( ' LIMIT %d', $args['limit'] ) : '';
 
-		$raw_retries = $wpdb->get_results( "SELECT * FROM {$this->get_full_table_name()} {$where} ORDER BY date_gmt DESC" );
+		$raw_retries = $wpdb->get_results( "SELECT * FROM {$this->get_full_table_name()} $where $orderby $limit" );
+		$entries     = array();
 
 		foreach ( $raw_retries as $raw_retry ) {
-			$raw_retries[ $raw_retry->retry_id ] = new WCS_Retry( array(
-				'id'       => $raw_retry->retry_id,
-				'order_id' => $raw_retry->order_id,
-				'status'   => $raw_retry->status,
-				'date_gmt' => $raw_retry->date_gmt,
-				'rule_raw' => json_decode( $raw_retry->rule_raw ),
-			) );
+			if ( $ids ) {
+				$entries[] = $raw_retry->retry_id;
+			} else {
+				$entries[ $raw_retry->retry_id ] = new WCS_Retry( array(
+					'id'       => $raw_retry->retry_id,
+					'order_id' => $raw_retry->order_id,
+					'status'   => $raw_retry->status,
+					'date_gmt' => $raw_retry->date_gmt,
+					'rule_raw' => json_decode( $raw_retry->rule_raw ),
+				) );
+			}
 		}
 
-		return $raw_retries;
+		return $entries;
 	}
 
 	/**
@@ -178,16 +192,11 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 * @since 2.4
 	 */
 	public function get_retry_ids_for_order( $order_id ) {
-		global $wpdb;
-
-		$retry_ids = $wpdb->get_col(
-			$wpdb->prepare(
-				"SELECT retry_id FROM {$this->get_full_table_name()} WHERE order_id = %d ORDER BY retry_id ASC",
-				$order_id
-			)
-		);
-
-		return $retry_ids;
+		return $this->get_retries( array(
+			'post_parent' => $order_id,
+			'orderby'     => 'ID',
+			'order'       => 'ASC',
+		), true );
 	}
 
 	/**
