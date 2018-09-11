@@ -339,7 +339,10 @@ class WCS_Retry_Manager {
 		return $is_failed_order;
 	}
 
-	public function load_dependant_classes() {
+	/**
+	 * Loads/init our depended classes.
+	 */
+	public static function load_dependant_classes() {
 		if ( ! self::$background_migrator ) {
 			self::$background_migrator = new WCS_Retry_Background_Migrator();
 			add_action( 'init', array( self::$background_migrator, 'init' ), 5 );
