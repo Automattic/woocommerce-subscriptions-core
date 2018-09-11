@@ -557,7 +557,7 @@ function wcs_get_order_item( $item_id, $order ) {
 	$item = array();
 
 	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
-		throw new InvalidArgumentException( __( 'Invalid data. No valid order / order was passed in.', 'woocommerce-subscriptions' ), 422 );
+		throw new InvalidArgumentException( __( 'Invalid data. No valid subscription / order was passed in.', 'woocommerce-subscriptions' ), 422 );
 	}
 
 	if ( ! absint( $item_id ) ) {
