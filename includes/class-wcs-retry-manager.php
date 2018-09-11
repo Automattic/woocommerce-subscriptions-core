@@ -372,6 +372,8 @@ class WCS_Retry_Manager {
 
 	/**
 	 * Access the object used to interface with the store.
+	 *
+	 * @since 2.4
 	 */
 	public static function store() {
 		if ( empty( self::$store ) ) {
@@ -384,6 +386,8 @@ class WCS_Retry_Manager {
 
 	/**
 	 * Get the class used for instantiating retry storage via self::store()
+	 *
+	 * @since 2.4
 	 */
 	protected static function get_store_class() {
 		$default_store_class = 'WCS_Retry_Database_Store';
