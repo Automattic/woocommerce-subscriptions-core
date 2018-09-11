@@ -215,7 +215,17 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	}
 
 	/**
-	 * Returns the table name for public use.
+	 * Returns our table name with no prefix.
+	 *
+	 * @return string
+	 * @since 2.4
+	 */
+	public static function get_table_name() {
+		return self::TABLE_NAME;
+	}
+
+	/**
+	 * Returns the table name with prefix.
 	 *
 	 * @return string
 	 * @since 2.4

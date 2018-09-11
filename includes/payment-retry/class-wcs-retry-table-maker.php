@@ -14,8 +14,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 } // Exit if accessed directly
 
 class WCS_Retry_Table_Maker extends WCS_Table_Maker {
-	const PAYMENT_RETRY_TABLE = 'wcs_payment_retries';
-
 	/**
 	 * @inheritDoc
 	 */
@@ -26,10 +24,9 @@ class WCS_Retry_Table_Maker extends WCS_Table_Maker {
 	 */
 	public function __construct() {
 		$this->tables = array(
-			self::PAYMENT_RETRY_TABLE,
+			WCS_Retry_Stores::get_database_store()->get_table_name(),
 		);
 	}
-
 
 	/**
 	 * @param string $table
@@ -43,7 +40,7 @@ class WCS_Retry_Table_Maker extends WCS_Table_Maker {
 		$charset_collate = $wpdb->get_charset_collate();
 
 		switch ( $table ) {
-			case self::PAYMENT_RETRY_TABLE:
+			case WCS_Retry_Stores::get_database_store()->get_table_name():
 				return "
 				CREATE TABLE {$table_name} (
 					retry_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,

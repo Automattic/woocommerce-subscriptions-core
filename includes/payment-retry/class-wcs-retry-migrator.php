@@ -86,7 +86,7 @@ class WCS_Retry_Migrator extends WCS_Migrator {
 	 * @param int $new_retry_id New retry id.
 	 */
 	protected function migrated_entry( $old_retry_id, $new_retry_id ) {
-		$this->log( sprintf( 'Retry ID %d migrated to %s with ID %d.', $old_retry_id, WCS_Retry_Table_Maker::PAYMENT_RETRY_TABLE, $new_retry_id ) );
+		$this->log( sprintf( 'Retry ID %d migrated to %s with ID %d.', $old_retry_id, WCS_Retry_Stores::get_database_store()->get_full_table_name(), $new_retry_id ) );
 	}
 }
 
