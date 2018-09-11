@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Updates our retries on background.
  * @since 2.4
  */
-class WCS_Retry_Background_Migrator extends WCS_Background_Updater {
+class WCS_Retry_Background_Migrator extends WCS_Background_Upgrader {
 	/**
 	 * Where we're saving/migrating our data.
 	 *

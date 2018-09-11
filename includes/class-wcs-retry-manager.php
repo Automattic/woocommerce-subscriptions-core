@@ -38,6 +38,11 @@ class WCS_Retry_Manager {
 	protected static $table_maker;
 
 	/**
+	 * @var string
+	 */
+	private static $active_version;
+
+	/**
 	 * Attach callbacks and set the retry rules
 	 *
 	 * @codeCoverageIgnore
@@ -45,8 +50,9 @@ class WCS_Retry_Manager {
 	 */
 	public static function init() {
 
-		self::$setting_id = WC_Subscriptions_Admin::$option_prefix . '_enable_retry';
-		self::$admin      = new WCS_Retry_Admin( self::$setting_id );
+		self::$setting_id     = WC_Subscriptions_Admin::$option_prefix . '_enable_retry';
+		self::$admin          = new WCS_Retry_Admin( self::$setting_id );
+		self::$active_version = get_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '0' );
 
 		if ( self::is_retry_enabled() ) {
 			WCS_Retry_Email::init();
@@ -71,6 +77,8 @@ class WCS_Retry_Manager {
 			add_filter( 'woocommerce_subscriptions_is_failed_renewal_order', __CLASS__ . '::compare_order_and_retry_statuses', 10, 3 );
 
 			add_action( 'plugins_loaded', __CLASS__ . '::load_dependant_classes' );
+
+			add_action( 'wp_loaded', __CLASS__ . '::upgrade', 11 );
 
 			if ( ! self::$table_maker ) {
 				self::$table_maker = new WCS_Retry_Table_Maker();
@@ -341,11 +349,24 @@ class WCS_Retry_Manager {
 
 	/**
 	 * Loads/init our depended classes.
+	 *
+	 * @since 2.4
 	 */
 	public static function load_dependant_classes() {
 		if ( ! self::$background_migrator ) {
 			self::$background_migrator = new WCS_Retry_Background_Migrator();
-			add_action( 'init', array( self::$background_migrator, 'init' ), 5 );
+			add_action( 'init', array( self::$background_migrator, 'init' ), 15 );
+		}
+	}
+
+	/**
+	 * Runs our upgrade background scripts.
+	 *
+	 * @since 2.4
+	 */
+	public static function upgrade() {
+		if ( self::$background_migrator && ( '0' !== self::$active_version && version_compare( self::$active_version, '2.4', '>=' ) ) ) {
+			self::$background_migrator->schedule_repair();
 		}
 	}
 
