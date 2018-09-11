@@ -37,10 +37,11 @@ class WCS_Failed_Scheduled_Action_Manager {
 	/**
 	 * Constructor.
 	 *
-	 * @param WC_Logger $logger The WC Logger instance.
+	 * @param WC_Logger_Interface $logger The WC Logger instance.
+	 *
 	 * @since 2.2.19
 	 */
-	public function __construct( WC_Logger $logger ) {
+	public function __construct( WC_Logger_Interface $logger ) {
 		$this->logger = $logger;
 	}
 

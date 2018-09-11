@@ -18,10 +18,11 @@ class WCS_Repair_Start_Date_Metadata extends WCS_Background_Upgrader {
 	/**
 	 * Constructor
 	 *
-	 * @param WC_Logger $logger The WC_Logger instance.
+	 * @param WC_Logger_Interface $logger The WC_Logger instance.
+	 *
 	 * @since 2.4.0
 	 */
-	public function __construct( WC_Logger $logger ) {
+	public function __construct( WC_Logger_Interface $logger ) {
 		$this->scheduled_hook = 'wcs_add_start_date_metadata';
 		$this->log_handle     = 'wcs-add-start-date-metadata';
 		$this->logger         = $logger;
