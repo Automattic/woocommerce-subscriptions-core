@@ -109,18 +109,6 @@ class WCS_Retry_Manager {
 	}
 
 	/**
-	 * Load all the retry classes if the retry system is enabled
-	 *
-	 * @codeCoverageIgnore
-	 * @since 2.1
-	 *
-	 * @deprecated 2.4
-	 */
-	protected static function load_classes() {
-		wcs_deprecated_function( __FUNCTION__, '2.4.0' );
-	}
-
-	/**
 	 * Add a renewal retry date type to Subscriptions date types
 	 *
 	 * @since 2.1
