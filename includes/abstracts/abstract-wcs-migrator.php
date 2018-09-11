@@ -24,7 +24,7 @@ abstract class WCS_Migrator {
 	protected $destination_store;
 
 	/**
-	 * @var  WC_logger
+	 * @var  WC_Logger_Interface
 	 */
 	protected $logger;
 
