@@ -545,17 +545,18 @@ function wcs_get_subscription_orders( $return_fields = 'ids', $order_type = 'par
  * WooCommerce has a wc_add_order_item() function, wc_update_order_item() function and wc_delete_order_item() function,
  * but no `wc_get_order_item()` function, so we need to add our own (for now).
  *
- * @param int $item_id The ID of an order item
+ * @param int                      $item_id      The ID of an order item
+ * @param WC_Order|WC_Subscription $subscription The subscription or order object the item belongs to.
  *
- * @return array Subscription details in post_id => WC_Subscription form.
+ * @return WC_Order_Item|array Subscription details in post_id => WC_Subscription form.
  *
  * @since 2.0
  */
-function wcs_get_order_item( $item_id, $order ) {
+function wcs_get_order_item( $item_id, $subscription ) {
 
 	$item = array();
 
-	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
+	if ( ! is_a( $subscription, 'WC_Abstract_Order' ) ) {
 		throw new InvalidArgumentException( __( 'Invalid data. No valid subscription / order was passed in.', 'woocommerce-subscriptions' ), 422 );
 	}
 
@@ -563,7 +564,7 @@ function wcs_get_order_item( $item_id, $order ) {
 		throw new InvalidArgumentException( __( 'Invalid data. No valid item id was passed in.', 'woocommerce-subscriptions' ), 422 );
 	}
 
-	foreach ( $order->get_items() as $line_item_id => $line_item ) {
+	foreach ( $subscription->get_items() as $line_item_id => $line_item ) {
 		if ( $item_id == $line_item_id ) {
 			$item = $line_item;
 			break;
