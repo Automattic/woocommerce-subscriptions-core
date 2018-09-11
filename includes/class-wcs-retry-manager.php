@@ -49,6 +49,8 @@ class WCS_Retry_Manager {
 		self::$admin      = new WCS_Retry_Admin( self::$setting_id );
 
 		if ( self::is_retry_enabled() ) {
+			WCS_Retry_Email::init();
+
 			add_filter( 'init', array( self::store(), 'init' ) );
 
 			add_filter( 'woocommerce_valid_order_statuses_for_payment', __CLASS__ . '::check_order_statuses_for_payment', 10, 2 );
@@ -74,8 +76,6 @@ class WCS_Retry_Manager {
 				self::$table_maker = new WCS_Retry_Table_Maker();
 				add_action( 'init', array( self::$table_maker, 'register_tables' ), 0 );
 			}
-
-			WCS_Retry_Email::init();
 		}
 	}
 
