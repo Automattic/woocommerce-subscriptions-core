@@ -168,6 +168,19 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 		delete_metadata( 'user', null, $this->cache_meta_key, null, true );
 	}
 
+	/**
+	 * Clears the cache for a given user.
+	 *
+	 * @param int $user_id The id of the user
+	 */
+	public function delete_cache_for_user( $user_id ) {
+		if ( empty( $user_id ) ) {
+			return;
+		}
+
+		delete_user_meta( $user_id, $this->cache_meta_key );
+	}
+
 	/* Public methods used as callbacks on hooks for managing cache */
 
 	/**
