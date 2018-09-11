@@ -130,6 +130,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 * Get a set of retries from the database
 	 *
 	 * @param array $args A set of filters.
+	 * @param bool  $ids  If true will return an array with only ids.
 	 *
 	 * @return array An array of WCS_Retry objects
 	 * @since 2.4

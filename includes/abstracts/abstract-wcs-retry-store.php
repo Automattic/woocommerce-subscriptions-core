@@ -49,10 +49,11 @@ abstract class WCS_Retry_Store {
 	 * @param array $args A set of filters:
 	 *                    'status': filter to only retries of a certain status, either 'pending', 'processing', 'failed' or 'complete'. Default: 'any', which will return all retries.
 	 *                    'date_query': array of dates to filter retries those that occur 'after' or 'before' a certain (or inbetween those two dates). Should be a MySQL formated date/time string.
+	 * @param bool  $ids  If true will return an array with only ids.
 	 *
 	 * @return array An array of WCS_Retry objects
 	 */
-	abstract public function get_retries( $args = array() );
+	abstract public function get_retries( $args = array(), $ids = false );
 
 	/**
 	 * Get the IDs of all retries from the database for a given order
