@@ -53,7 +53,7 @@ abstract class WCS_Retry_Store {
 	 *
 	 * @return array An array of WCS_Retry objects
 	 */
-	abstract public function get_retries( $args = array(), $ids = false );
+	abstract public function get_retries( $args = array(), $return = 'objects' );
 
 	/**
 	 * Get the IDs of all retries from the database for a given order

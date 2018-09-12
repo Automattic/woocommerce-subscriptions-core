@@ -132,10 +132,10 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 * @param array $args A set of filters.
 	 * @param bool  $ids  If true will return an array with only ids.
 	 *
-	 * @return array An array of WCS_Retry objects
+	 * @return array An array of WCS_Retry objects or ids.
 	 * @since 2.4
 	 */
-	public function get_retries( $args = array(), $ids = false ) {
+	public function get_retries( $args = array(), $return = 'objects' ) {
 		global $wpdb;
 
 		$args = wp_parse_args( $args, array(
@@ -168,7 +168,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 		$entries     = array();
 
 		foreach ( $raw_retries as $raw_retry ) {
-			if ( $ids ) {
+			if ( 'ids' === $return ) {
 				$entries[] = $raw_retry->retry_id;
 			} else {
 				$entries[ $raw_retry->retry_id ] = new WCS_Retry( array(

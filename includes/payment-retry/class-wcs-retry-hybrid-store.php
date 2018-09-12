@@ -109,11 +109,10 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	 * @param array $args A set of filters.
 	 * @param bool  $ids  If true will return an array with only ids.
 	 *
-	 * @return array An array of WCS_Retry objects
-	 * @since 2.4
+	 * @return array An array of WCS_Retry objects or ids.
 	 */
-	public function get_retries( $args = array(), $ids = false ) {
-		$source_store_retries = $this->post_store->get_retries( $args, $ids );
+	public function get_retries( $args = array(), $return = 'objects' ) {
+		$source_store_retries = $this->post_store->get_retries( $args, $return );
 
 		foreach ( $source_store_retries as $source_store_retry_id => $source_store_retry ) {
 			if ( $this->migrator->should_migrate_entry( $source_store_retry_id ) ) {
@@ -121,7 +120,7 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 			}
 		}
 
-		return $this->database_store->get_retries( $args, $ids );
+		return $this->database_store->get_retries( $args, $return );
 	}
 
 	/**

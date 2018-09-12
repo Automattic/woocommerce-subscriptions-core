@@ -125,9 +125,10 @@ class WCS_Retry_Post_Store extends WCS_Retry_Store {
 	 * @param array $args A set of filters.
 	 * @param bool  $ids  If true will return an array with only ids.
 	 *
-	 * @return array An array of WCS_Retry objects
+	 * @return array An array of WCS_Retry objects or ids.
+	 * @since 2.4
 	 */
-	public function get_retries( $args = array(), $ids = false ) {
+	public function get_retries( $args = array(), $return = 'objects' ) {
 		$retries = array();
 
 		$args = wp_parse_args( $args, array(
@@ -150,7 +151,7 @@ class WCS_Retry_Post_Store extends WCS_Retry_Store {
 			'post_parent'    => $args['order_id'],
 		) );
 
-		if ( $ids ) {
+		if ( 'ids' === $return ) {
 			return $retry_post_ids;
 		}
 
