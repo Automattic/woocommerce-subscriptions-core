@@ -316,7 +316,7 @@ class WCS_Cart_Renewal {
 
 			$item_data = apply_filters( 'woocommerce_order_again_cart_item_data', array( $this->cart_item_key => $cart_item_data ), $line_item, $subscription );
 
-			if ( ! apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $quantity, $variation_id, $variations, $item_data ) ) {
+			if ( ! post_password_required( $product_id ) && ! apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $quantity, $variation_id, $variations, $item_data ) ) {
 				continue;
 			}
 
