@@ -150,19 +150,19 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 		$where = ' WHERE 1=1';
 		if ( 'any' !== $args['status'] ) {
 			$where .= $wpdb->prepare(
-				' AND WHERE status = %s',
+				' AND status = %s',
 				$args['status']
 			);
 		}
 		if ( absint( $args['order_id'] ) ) {
-			$where .= $wpdb->prepare( ' WHERE order_id = %d', $args['order_id'] );
+			$where .= $wpdb->prepare( ' AND order_id = %d', $args['order_id'] );
 		}
 		if ( ! empty( $args['date_query'] ) ) {
 			$date_query = new WP_Date_Query( $args['date_query'], 'date_gmt' );
 			$where     .= $date_query->get_sql();
 		}
 		$orderby = $wpdb->prepare( ' ORDER BY %s %s', $args['orderby'], $args['order'] );
-		$limit   = ( $args['limit'] > 0 ) ? $wpdb->preparea( ' LIMIT %d', $args['limit'] ) : '';
+		$limit   = ( $args['limit'] > 0 ) ? $wpdb->prepare( ' LIMIT %d', $args['limit'] ) : '';
 
 		$raw_retries = $wpdb->get_results( "SELECT * FROM {$this->get_full_table_name()} $where $orderby $limit" );
 		$entries     = array();
