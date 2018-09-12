@@ -169,18 +169,4 @@ class WCS_Retry_Post_Store extends WCS_Retry_Store {
 
 		return $retries;
 	}
-
-	/**
-	 * Get the IDs of all retries from the database for a given order
-	 *
-	 * @param int $order_id
-	 * @return array
-	 */
-	public function get_retry_ids_for_order( $order_id ) {
-		return $this->get_retries( array(
-			'post_parent' => $order_id,
-			'orderby'     => 'ID',
-			'order'       => 'ASC',
-		), true );
-	}
 }

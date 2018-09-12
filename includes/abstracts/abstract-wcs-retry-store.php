@@ -68,8 +68,15 @@ abstract class WCS_Retry_Store {
 	 * @param int $order_id
 	 *
 	 * @return array
+	 * @since 2.4
 	 */
-	abstract public function get_retry_ids_for_order( $order_id );
+	public function get_retry_ids_for_order( $order_id ) {
+		return $this->get_retries( array(
+			'post_parent' => $order_id,
+			'orderby'     => 'ID',
+			'order'       => 'ASC',
+		), 'ids' );
+	}
 
 	/**
 	 * Setup the class, if required
@@ -86,14 +93,7 @@ abstract class WCS_Retry_Store {
 	 * @return array
 	 */
 	public function get_retries_for_order( $order_id ) {
-
-		$retries = array();
-
-		foreach ( $this->get_retry_ids_for_order( $order_id ) as $retry_id ) {
-			$retries[ $retry_id ] = $this->get_retry( $retry_id );
-		}
-
-		return $retries;
+		return $this->get_retries( array( 'order_id' => $order_id ) );
 	}
 
 	/**

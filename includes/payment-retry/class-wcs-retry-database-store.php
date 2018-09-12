@@ -193,22 +193,6 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	}
 
 	/**
-	 * Get the IDs of all retries from the database for a given order
-	 *
-	 * @param int $order_id the order we want to get the retries for.
-	 *
-	 * @return array
-	 * @since 2.4
-	 */
-	public function get_retry_ids_for_order( $order_id ) {
-		return $this->get_retries( array(
-			'post_parent' => $order_id,
-			'orderby'     => 'ID',
-			'order'       => 'ASC',
-		), true );
-	}
-
-	/**
 	 * Adds our table column to WP_Date_Query valid columns.
 	 *
 	 * @param array $columns Columns array we want to modify.
