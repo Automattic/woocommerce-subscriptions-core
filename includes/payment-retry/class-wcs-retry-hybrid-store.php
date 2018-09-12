@@ -106,10 +106,19 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 	/**
 	 * Get a set of retries from the database
 	 *
-	 * @param array $args A set of filters.
-	 * @param bool  $ids  If true will return an array with only ids.
+	 * @param array  $args   A set of filters:
+	 *                       'status': filter to only retries of a certain status, either 'pending', 'processing', 'failed' or 'complete'. Default: 'any', which will return all retries.
+	 *                       'date_query': array of dates to filter retries those that occur 'after' or 'before' a certain (or inbetween those two dates). Should be a MySQL formated date/time string.
+	 *                       'orderby': Order by which property?
+	 *                       'order': Order in ASC/DESC.
+	 *                       'order_id': The parent order_id of the retries
+	 *                       'limit': How many retries we want to get.
+	 * @param string $return Defines in which format return the entries. options:
+	 *                       'object': Returns and array of WCS_Retry objects
+	 *                       'ids': Returns and array of ids.
 	 *
 	 * @return array An array of WCS_Retry objects or ids.
+	 * @since 2.4
 	 */
 	public function get_retries( $args = array(), $return = 'objects' ) {
 		$source_store_retries = $this->post_store->get_retries( $args, $return );
