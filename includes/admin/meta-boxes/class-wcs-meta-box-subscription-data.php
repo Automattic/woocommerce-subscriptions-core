@@ -62,6 +62,11 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 									esc_url( add_query_arg( $args, admin_url( 'edit.php' ) ) ),
 									esc_html__( 'View other subscriptions', 'woocommerce-subscriptions' )
 								);
+								printf(
+									'<a href="%s">%s</a>',
+									esc_url( add_query_arg( 'user_id', $subscription->get_user_id( 'edit' ), admin_url( 'user-edit.php' ) ) ),
+									' ' . __( 'Profile &rarr;', 'woocommerce' )
+								);
 							}
 							?></label>
 							<?php
