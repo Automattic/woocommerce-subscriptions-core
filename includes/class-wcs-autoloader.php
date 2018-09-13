@@ -152,6 +152,8 @@ class WCS_Autoloader {
 			'wcs_sv_api_base'              => true,
 			'wcs_customer_store'           => true,
 			'wcs_related_order_store'      => true,
+			'wcs_migrator'                 => true,
+			'wcs_table_maker'              => true,
 		);
 
 		return isset( $abstracts[ $class ] );

@@ -24,6 +24,25 @@ class WCS_Retry_Manager {
 	protected static $admin;
 
 	/**
+	 * Background updater to process retries from old store.
+	 *
+	 * @var WCS_Retry_Background_Migrator
+	 */
+	protected static $background_migrator;
+
+	/**
+	 * Our table maker instance.
+	 *
+	 * @var WCS_Table_Maker
+	 */
+	protected static $table_maker;
+
+	/**
+	 * @var string
+	 */
+	private static $active_version;
+
+	/**
 	 * Attach callbacks and set the retry rules
 	 *
 	 * @codeCoverageIgnore
@@ -31,12 +50,12 @@ class WCS_Retry_Manager {
 	 */
 	public static function init() {
 
-		self::$setting_id = WC_Subscriptions_Admin::$option_prefix . '_enable_retry';
-		self::$admin      = new WCS_Retry_Admin( self::$setting_id );
+		self::$setting_id     = WC_Subscriptions_Admin::$option_prefix . '_enable_retry';
+		self::$admin          = new WCS_Retry_Admin( self::$setting_id );
+		self::$active_version = get_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '0' );
 
 		if ( self::is_retry_enabled() ) {
-
-			self::load_classes();
+			WCS_Retry_Email::init();
 
 			add_filter( 'init', array( self::store(), 'init' ) );
 
@@ -56,6 +75,15 @@ class WCS_Retry_Manager {
 			add_action( 'woocommerce_scheduled_subscription_payment_retry', __CLASS__ . '::maybe_retry_payment' );
 
 			add_filter( 'woocommerce_subscriptions_is_failed_renewal_order', __CLASS__ . '::compare_order_and_retry_statuses', 10, 3 );
+
+			add_action( 'plugins_loaded', __CLASS__ . '::load_dependant_classes' );
+
+			add_action( 'wp_loaded', __CLASS__ . '::upgrade', 11 );
+
+			if ( ! self::$table_maker ) {
+				self::$table_maker = new WCS_Retry_Table_Maker();
+				add_action( 'init', array( self::$table_maker, 'register_tables' ), 0 );
+			}
 		}
 	}
 
@@ -70,7 +98,7 @@ class WCS_Retry_Manager {
 	 */
 	public static function check_order_statuses_for_payment( $statuses, $order ) {
 
-		$last_retry  = self::store()->get_last_retry_for_order( $order );
+		$last_retry = self::store()->get_last_retry_for_order( wcs_get_objects_property( $order, 'id' ) );
 		if ( $last_retry ) {
 			$statuses[] = $last_retry->get_rule()->get_status_to_apply( 'order' );
 			$statuses   = array_unique( $statuses );
@@ -86,16 +114,6 @@ class WCS_Retry_Manager {
 	 */
 	public static function is_retry_enabled() {
 		return (bool) apply_filters( 'wcs_is_retry_enabled', 'yes' == get_option( self::$setting_id, 'no' ) );
-	}
-
-	/**
-	 * Load all the retry classes if the retry system is enabled
-	 *
-	 * @codeCoverageIgnore
-	 * @since 2.1
-	 */
-	protected static function load_classes() {
-		WCS_Retry_Email::init();
 	}
 
 	/**
@@ -156,7 +174,7 @@ class WCS_Retry_Manager {
 			}
 
 			foreach ( self::store()->get_retry_ids_for_order( $post_id ) as $retry_id ) {
-				wp_trash_post( $retry_id );
+				self::store()->delete_retry( $retry_id );
 			}
 		}
 	}
@@ -330,25 +348,54 @@ class WCS_Retry_Manager {
 	}
 
 	/**
-	 * Access the object used to interface with the database
+	 * Loads/init our depended classes.
 	 *
-	 * @since 2.1
+	 * @since 2.4
+	 */
+	public static function load_dependant_classes() {
+		if ( ! self::$background_migrator ) {
+			self::$background_migrator = new WCS_Retry_Background_Migrator();
+			add_action( 'init', array( self::$background_migrator, 'init' ), 15 );
+		}
+	}
+
+	/**
+	 * Runs our upgrade background scripts.
+	 *
+	 * @since 2.4
+	 */
+	public static function upgrade() {
+		if ( self::$background_migrator && ( '0' !== self::$active_version && version_compare( self::$active_version, '2.4', '>=' ) ) ) {
+			self::$background_migrator->schedule_repair();
+		}
+	}
+
+	/**
+	 * Access the object used to interface with the store.
+	 *
+	 * @since 2.4
 	 */
 	public static function store() {
 		if ( empty( self::$store ) ) {
-			$class = self::get_store_class();
+			$class       = self::get_store_class();
 			self::$store = new $class();
 		}
+
 		return self::$store;
 	}
 
 	/**
 	 * Get the class used for instantiating retry storage via self::store()
 	 *
-	 * @since 2.1
+	 * @since 2.4
 	 */
 	protected static function get_store_class() {
-		return apply_filters( 'wcs_retry_store_class', 'WCS_Retry_Post_Store' );
+		$default_store_class = 'WCS_Retry_Database_Store';
+		if ( (bool) WCS_Retry_Stores::get_post_store()->get_retries() ) {
+			$default_store_class = 'WCS_Retry_Hybrid_Store';
+		}
+
+		return apply_filters( 'wcs_retry_store_class', $default_store_class );
 	}
 
 	/**
