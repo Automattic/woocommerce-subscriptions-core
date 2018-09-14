@@ -339,7 +339,11 @@ class WC_Subscriptions_Cart {
 		// We need to reset the packages and totals stored in WC()->shipping too
 		WC()->shipping->reset_shipping();
 		self::maybe_restore_shipping_methods();
-		WC()->cart->calculate_shipping();
+
+		// Only calculate the initial order cart shipping if we need to show shipping.
+		if ( WC()->cart->show_shipping() ) {
+			WC()->cart->calculate_shipping();
+		}
 
 		// We no longer need our backup of shipping methods
 		unset( WC()->session->wcs_shipping_methods );
