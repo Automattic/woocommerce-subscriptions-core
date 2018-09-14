@@ -1577,7 +1577,7 @@ class WC_Subscriptions_Switcher {
 	public static function get_recurring_cart_key( $cart_key, $cart_item ) {
 
 		if ( isset( $cart_item['subscription_switch']['first_payment_timestamp'] ) ) {
-			remove_filter( 'woocommerce_subscriptions_recurring_cart_key', __METHOD__, 10, 2 );
+			remove_filter( 'woocommerce_subscriptions_recurring_cart_key', __METHOD__, 10 );
 			$cart_key = WC_Subscriptions_Cart::get_recurring_cart_key( $cart_item, $cart_item['subscription_switch']['first_payment_timestamp'] );
 			add_filter( 'woocommerce_subscriptions_recurring_cart_key', __METHOD__, 10, 2 );
 		}

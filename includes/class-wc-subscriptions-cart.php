@@ -703,14 +703,14 @@ class WC_Subscriptions_Cart {
 			}
 
 			// Avoid infinite loop
-			remove_filter( 'woocommerce_cart_product_subtotal', __CLASS__ . '::get_formatted_product_subtotal', 11, 4 );
+			remove_filter( 'woocommerce_cart_product_subtotal', __CLASS__ . '::get_formatted_product_subtotal', 11 );
 
 			add_filter( $product_price_filter, 'WC_Subscriptions_Product::get_sign_up_fee_filter', 100, 2 );
 
 			// And get the appropriate sign up fee string
 			$sign_up_fee_string = $cart->get_product_subtotal( $product, $quantity );
 
-			remove_filter( $product_price_filter,  'WC_Subscriptions_Product::get_sign_up_fee_filter', 100, 2 );
+			remove_filter( $product_price_filter,  'WC_Subscriptions_Product::get_sign_up_fee_filter', 100 );
 
 			add_filter( 'woocommerce_cart_product_subtotal', __CLASS__ . '::get_formatted_product_subtotal', 11, 4 );
 
