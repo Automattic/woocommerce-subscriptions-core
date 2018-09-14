@@ -1528,7 +1528,7 @@ class WC_Subscriptions_Admin {
 			$screen = get_current_screen();
 
 			if ( is_object( $screen ) && 'shop_order' == $screen->id ) {
-				remove_filter( 'woocommerce_get_formatted_order_total', 'WC_Subscriptions_Order::get_formatted_order_total', 10, 2 );
+				remove_filter( 'woocommerce_get_formatted_order_total', 'WC_Subscriptions_Order::get_formatted_order_total', 10 );
 			}
 		}
 
@@ -1559,7 +1559,7 @@ class WC_Subscriptions_Admin {
 		$screen = get_current_screen();
 
 		if ( is_object( $screen ) && 'shop_subscription' == $screen->id ) {
-			remove_filter( 'gettext', __CLASS__ . '::change_order_item_editable_text', 10, 3 );
+			remove_filter( 'gettext', __CLASS__ . '::change_order_item_editable_text', 10 );
 		}
 	}
 
