@@ -131,14 +131,14 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 	 *
 	 * @param array  $args   A set of filters:
 	 *                       'status': filter to only retries of a certain status, either 'pending', 'processing', 'failed' or 'complete'. Default: 'any', which will return all retries.
-	 *                       'date_query': array of dates to filter retries those that occur 'after' or 'before' a certain (or inbetween those two dates). Should be a MySQL formated date/time string.
+	 *                       'date_query': array of dates to filter retries to those that occur 'after' or 'before' a certain date (or between those two dates). Should be a MySQL formated date/time string.
 	 *                       'orderby': Order by which property?
 	 *                       'order': Order in ASC/DESC.
-	 *                       'order_id': The parent order_id of the retries
+	 *                       'order_id': filter retries to those which belong to a certain order ID.
 	 *                       'limit': How many retries we want to get.
 	 * @param string $return Defines in which format return the entries. options:
-	 *                       'object': Returns and array of WCS_Retry objects
-	 *                       'ids': Returns and array of ids.
+	 *                       'objects': Returns an array of WCS_Retry objects
+	 *                       'ids': Returns an array of ids.
 	 *
 	 * @return array An array of WCS_Retry objects or ids.
 	 * @since 2.4
@@ -152,34 +152,38 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 			'orderby'    => 'date_gmt',
 			'order'      => 'DESC',
 			'order_id'   => false,
-			'limit'      => - 1,
+			'limit'      => -1,
 		) );
 
 		$where = ' WHERE 1=1';
+
 		if ( 'any' !== $args['status'] ) {
 			$where .= $wpdb->prepare(
 				' AND status = %s',
 				$args['status']
 			);
 		}
+
 		if ( absint( $args['order_id'] ) ) {
 			$where .= $wpdb->prepare( ' AND order_id = %d', $args['order_id'] );
 		}
+
 		if ( ! empty( $args['date_query'] ) ) {
 			$date_query = new WP_Date_Query( $args['date_query'], 'date_gmt' );
 			$where     .= $date_query->get_sql();
 		}
+
 		$orderby = $wpdb->prepare( ' ORDER BY %s %s', $args['orderby'], $args['order'] );
 		$limit   = ( $args['limit'] > 0 ) ? $wpdb->prepare( ' LIMIT %d', $args['limit'] ) : '';
 
 		$raw_retries = $wpdb->get_results( "SELECT * FROM {$this->get_full_table_name()} $where $orderby $limit" );
-		$entries     = array();
+		$retries     = array();
 
 		foreach ( $raw_retries as $raw_retry ) {
 			if ( 'ids' === $return ) {
-				$entries[] = $raw_retry->retry_id;
+				$retries[ $raw_retry->retry_id ] = $raw_retry->retry_id;
 			} else {
-				$entries[ $raw_retry->retry_id ] = new WCS_Retry( array(
+				$retries[ $raw_retry->retry_id ] = new WCS_Retry( array(
 					'id'       => $raw_retry->retry_id,
 					'order_id' => $raw_retry->order_id,
 					'status'   => $raw_retry->status,
@@ -189,7 +193,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 			}
 		}
 
-		return $entries;
+		return $retries;
 	}
 
 	/**

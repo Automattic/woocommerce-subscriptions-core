@@ -2,11 +2,11 @@
 /**
  * Manage the process of retrying a failed renewal payment that previously failed.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WCS_Retry_Manager
- * @category	Class
- * @author		Prospress
- * @since		2.1
+ * @package        WooCommerce Subscriptions
+ * @subpackage     WCS_Retry_Manager
+ * @category       Class
+ * @author         Prospress
+ * @since          2.1
  */
 
 class WCS_Retry_Manager {
@@ -38,21 +38,14 @@ class WCS_Retry_Manager {
 	protected static $table_maker;
 
 	/**
-	 * @var string
-	 */
-	private static $active_version;
-
-	/**
 	 * Attach callbacks and set the retry rules
 	 *
 	 * @codeCoverageIgnore
 	 * @since 2.1
 	 */
 	public static function init() {
-
-		self::$setting_id     = WC_Subscriptions_Admin::$option_prefix . '_enable_retry';
-		self::$admin          = new WCS_Retry_Admin( self::$setting_id );
-		self::$active_version = get_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '0' );
+		self::$setting_id = WC_Subscriptions_Admin::$option_prefix . '_enable_retry';
+		self::$admin      = new WCS_Retry_Admin( self::$setting_id );
 
 		if ( self::is_retry_enabled() ) {
 			WCS_Retry_Email::init();
@@ -78,7 +71,7 @@ class WCS_Retry_Manager {
 
 			add_action( 'plugins_loaded', __CLASS__ . '::load_dependant_classes' );
 
-			add_action( 'wp_loaded', __CLASS__ . '::upgrade', 11 );
+			add_action( 'woocommerce_subscriptions_before_upgrade', __CLASS__ . '::upgrade', 11, 2 );
 
 			if ( ! self::$table_maker ) {
 				self::$table_maker = new WCS_Retry_Table_Maker();
@@ -362,10 +355,13 @@ class WCS_Retry_Manager {
 	/**
 	 * Runs our upgrade background scripts.
 	 *
+	 * @param string $new_version Version we're upgrading to.
+	 * @param string $old_version Version we're upgrading from.
+	 *
 	 * @since 2.4
 	 */
-	public static function upgrade() {
-		if ( self::$background_migrator && ( '0' !== self::$active_version && version_compare( self::$active_version, '2.4', '>=' ) ) ) {
+	public static function upgrade( $new_version, $old_version ) {
+		if ( '0' !== $old_version && version_compare( $old_version, '2.4', '<' ) ) {
 			self::$background_migrator->schedule_repair();
 		}
 	}
@@ -391,7 +387,7 @@ class WCS_Retry_Manager {
 	 */
 	protected static function get_store_class() {
 		$default_store_class = 'WCS_Retry_Database_Store';
-		if ( (bool) WCS_Retry_Stores::get_post_store()->get_retries() ) {
+		if ( (bool) WCS_Retry_Stores::get_post_store()->get_retries( array( 'limit' => 1 ), 'ids' ) ) {
 			$default_store_class = 'WCS_Retry_Hybrid_Store';
 		}
 

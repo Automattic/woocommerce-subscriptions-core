@@ -156,6 +156,11 @@ class WC_Subscriptions_Upgrader {
 
 		update_option( WC_Subscriptions_Admin::$option_prefix . '_previous_version', self::$active_version );
 
+		/**
+		 * before upgrade hook.
+		 */
+		do_action( 'woocommerce_subscriptions_before_upgrade', WC_Subscriptions::$version, self::$active_version );
+
 		// Update the hold stock notification to be one week (if it's still at the default 60 minutes) to prevent cancelling subscriptions using manual renewals and payment methods that can take more than 1 hour (i.e. PayPal eCheck)
 		if ( '0' == self::$active_version || version_compare( self::$active_version, '1.4', '<' ) ) {
 

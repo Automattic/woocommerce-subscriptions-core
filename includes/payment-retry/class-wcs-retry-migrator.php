@@ -27,7 +27,7 @@ class WCS_Retry_Migrator extends WCS_Migrator {
 	/**
 	 * @var string
 	 */
-	protected $log_handle = 'wcs-retry-retry-migrator';
+	protected $log_handle = 'wcs-retry-migrator';
 
 	/**
 	 * Should this retry be migrated.

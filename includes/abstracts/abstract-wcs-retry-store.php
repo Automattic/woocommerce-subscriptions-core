@@ -40,7 +40,7 @@ abstract class WCS_Retry_Store {
 	 * @since 2.4
 	 */
 	public function delete_retry( $retry_id ) {
-		wcs_doing_it_wrong( __FUNCTION__, sprintf( __( "Method '%s' must be overridden." ), __METHOD__ ), '2.4' );
+		wcs_doing_it_wrong( __FUNCTION__, sprintf( "Method '%s' must be overridden.", __METHOD__ ), '2.4' );
 	}
 
 	/**
@@ -48,14 +48,14 @@ abstract class WCS_Retry_Store {
 	 *
 	 * @param array  $args   A set of filters:
 	 *                       'status': filter to only retries of a certain status, either 'pending', 'processing', 'failed' or 'complete'. Default: 'any', which will return all retries.
-	 *                       'date_query': array of dates to filter retries those that occur 'after' or 'before' a certain (or inbetween those two dates). Should be a MySQL formated date/time string.
+	 *                       'date_query': array of dates to filter retries to those that occur 'after' or 'before' a certain date (or between those two dates). Should be a MySQL formated date/time string.
 	 *                       'orderby': Order by which property?
 	 *                       'order': Order in ASC/DESC.
-	 *                       'order_id': The parent order_id of the retries
+	 *                       'order_id': filter retries to those which belong to a certain order ID.
 	 *                       'limit': How many retries we want to get.
 	 * @param string $return Defines in which format return the entries. options:
-	 *                       'object': Returns and array of WCS_Retry objects
-	 *                       'ids': Returns and array of ids.
+	 *                       'objects': Returns an array of WCS_Retry objects
+	 *                       'ids': Returns an array of ids.
 	 *
 	 * @return array An array of WCS_Retry objects or ids.
 	 * @since 2.4
@@ -71,11 +71,11 @@ abstract class WCS_Retry_Store {
 	 * @since 2.4
 	 */
 	public function get_retry_ids_for_order( $order_id ) {
-		return $this->get_retries( array(
-			'post_parent' => $order_id,
-			'orderby'     => 'ID',
-			'order'       => 'ASC',
-		), 'ids' );
+		return array_values( $this->get_retries( array(
+			'order_id' => $order_id,
+			'orderby'  => 'ID',
+			'order'    => 'ASC',
+		), 'ids' ) );
 	}
 
 	/**
