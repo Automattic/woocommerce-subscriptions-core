@@ -339,7 +339,11 @@ class WC_Subscriptions_Cart {
 		// We need to reset the packages and totals stored in WC()->shipping too
 		WC()->shipping->reset_shipping();
 		self::maybe_restore_shipping_methods();
-		WC()->cart->calculate_shipping();
+
+		// Only calculate the initial order cart shipping if we need to show shipping.
+		if ( WC()->cart->show_shipping() ) {
+			WC()->cart->calculate_shipping();
+		}
 
 		// We no longer need our backup of shipping methods
 		unset( WC()->session->wcs_shipping_methods );
@@ -703,14 +707,14 @@ class WC_Subscriptions_Cart {
 			}
 
 			// Avoid infinite loop
-			remove_filter( 'woocommerce_cart_product_subtotal', __CLASS__ . '::get_formatted_product_subtotal', 11, 4 );
+			remove_filter( 'woocommerce_cart_product_subtotal', __CLASS__ . '::get_formatted_product_subtotal', 11 );
 
 			add_filter( $product_price_filter, 'WC_Subscriptions_Product::get_sign_up_fee_filter', 100, 2 );
 
 			// And get the appropriate sign up fee string
 			$sign_up_fee_string = $cart->get_product_subtotal( $product, $quantity );
 
-			remove_filter( $product_price_filter,  'WC_Subscriptions_Product::get_sign_up_fee_filter', 100, 2 );
+			remove_filter( $product_price_filter,  'WC_Subscriptions_Product::get_sign_up_fee_filter', 100 );
 
 			add_filter( 'woocommerce_cart_product_subtotal', __CLASS__ . '::get_formatted_product_subtotal', 11, 4 );
 
