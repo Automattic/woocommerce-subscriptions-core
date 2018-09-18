@@ -597,7 +597,7 @@ class WC_Subscriptions_Upgrader {
 		$about_page_url = self::$about_page_url;
 
 		@header( 'Content-Type: ' . get_option( 'html_type' ) . '; charset=' . get_option( 'blog_charset' ) );
-		include_once( 'templates/wcs-upgrade.php' );
+		include_once( dirname( __FILE__ ) . '/templates/wcs-upgrade.php' );
 		WCS_Upgrade_Logger::add( 'Loaded database upgrade helper' );
 	}
 
@@ -610,7 +610,7 @@ class WC_Subscriptions_Upgrader {
 	 * @since 1.4
 	 */
 	public static function upgrade_in_progress_notice() {
-		include_once( 'templates/wcs-upgrade-in-progress.php' );
+		include_once( dirname( __FILE__ ) . '/templates/wcs-upgrade-in-progress.php' );
 		WCS_Upgrade_Logger::add( 'Loaded database upgrade in progress notice...' );
 	}
 
@@ -653,7 +653,7 @@ class WC_Subscriptions_Upgrader {
 		$active_version = self::$active_version;
 		$settings_page  = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 
-		include_once( 'templates/wcs-about.php' );
+		include_once( dirname( __FILE__ ) . '/templates/wcs-about.php' );
 	}
 
 	/**
