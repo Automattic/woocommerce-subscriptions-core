@@ -64,6 +64,25 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * Constructor.
 	 */
 	public function __construct() {
+
+		// Register any custom date types as internal meta keys and props.
+		foreach ( wcs_get_subscription_date_types() as $date_type => $date_name ) {
+			// The last payment date is derived from other sources and shouldn't be stored on a subscription.
+			if ( 'last_payment' === $date_type ) {
+				continue;
+			}
+
+			$meta_key = wcs_get_date_meta_key( $date_type );
+
+			// Skip any dates which are already core date types. We don't want custom date types to override them.
+			if ( isset( $this->subscription_meta_keys_to_props[ $meta_key ] ) ) {
+				continue;
+			}
+
+			$this->subscription_meta_keys_to_props[ $meta_key ] = wcs_maybe_prefix_key( $date_type, 'schedule_' );
+			$this->subscription_internal_meta_keys[]            = $meta_key;
+		}
+
 		// Exclude the subscription related meta data we set and manage manually from the objects "meta" data
 		$this->internal_meta_keys = array_merge( $this->internal_meta_keys, $this->subscription_internal_meta_keys );
 	}
@@ -320,6 +339,19 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 			'_schedule_payment_retry',
 			'_schedule_start',
 		);
+
+		// Add any custom date types to the date meta keys we need to save.
+		foreach ( wcs_get_subscription_date_types() as $date_type => $date_name ) {
+			if ( 'last_payment' === $date_type ) {
+				continue;
+			}
+
+			$date_meta_key = wcs_get_date_meta_key( $date_type );
+
+			if ( ! in_array( $date_meta_key, $date_meta_keys ) ) {
+				$date_meta_keys[] = $date_meta_key;
+			}
+		}
 
 		$date_meta_keys_to_props = array_intersect_key( $this->subscription_meta_keys_to_props, array_flip( $date_meta_keys ) );
 
