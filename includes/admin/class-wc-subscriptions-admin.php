@@ -92,7 +92,7 @@ class WC_Subscriptions_Admin {
 
 		add_filter( 'woocommerce_settings_tabs_array', __CLASS__ . '::add_subscription_settings_tab', 50 );
 
-		add_action( 'woocommerce_settings_tabs_subscriptions', __CLASS__ . '::subscription_settings_page' );
+		add_action( 'woocommerce_settings_subscriptions', __CLASS__ . '::subscription_settings_page' );
 
 		add_action( 'woocommerce_update_options_' . self::$tab_name, __CLASS__ . '::update_subscription_settings' );
 
