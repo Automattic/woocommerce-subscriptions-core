@@ -2140,7 +2140,7 @@ class WC_Subscription extends WC_Order {
 
 		if ( 0 != ( $end_time = $this->get_time( 'end' ) ) ) {
 
-			$from_timestamp = $this->get_time( 'date_created' );
+			$from_timestamp = $this->get_time( 'start' );
 
 			if ( 0 != $this->get_time( 'trial_end' ) || WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $this ) ) {
 
