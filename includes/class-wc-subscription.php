@@ -2154,7 +2154,7 @@ class WC_Subscription extends WC_Order {
 
 		if ( 0 != ( $end_time = $this->get_time( 'end' ) ) ) {
 
-			$from_timestamp = $this->get_time( 'date_created' );
+			$from_timestamp = $this->get_time( 'start' );
 
 			if ( 0 != $this->get_time( 'trial_end' ) || WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $this ) ) {
 
@@ -2307,7 +2307,7 @@ class WC_Subscription extends WC_Order {
 						$messages[] = sprintf( __( 'The %s date must occur after the trial end date.', 'woocommerce-subscriptions' ), $date_type );
 					}
 				case 'trial_end' :
-					if ( $timestamp <= $timestamps['start'] ) {
+					if ( ! in_array( $date_type, array( 'end', 'cancelled' ) ) && $timestamp <= $timestamps['start'] ) {
 						$messages[] = sprintf( __( 'The %s date must occur after the start date.', 'woocommerce-subscriptions' ), $date_type );
 					}
 			}
