@@ -129,6 +129,10 @@ class WCS_Cart_Renewal {
 
 		// Attach hooks which depend on WooCommerce version constants. Differs from @see attach_dependant_hooks() in that this is hooked inside an inherited function and so extended classes will also inherit these callbacks
 		add_action( 'woocommerce_loaded', array( &$this, 'attach_dependant_callbacks' ), 10 );
+
+		// Handles renew of password-protected products.
+		add_action( 'wcs_before_renewal_setup_cart_subscriptions', array( &$this, 'allow_protected_products_to_renew' ) );
+		add_action( 'wcs_after_renewal_setup_cart_subscriptions', array( &$this, 'disallow_protected_product_add_to_cart_validation' ) );
 	}
 
 	/**
@@ -1333,6 +1337,22 @@ class WCS_Cart_Renewal {
 		}
 
 		return $packages;
+	}
+
+	/**
+	 * Allows protected products to be renewed.
+	 */
+	public function allow_protected_products_to_renew() {
+		remove_filter( 'woocommerce_add_to_cart_validation', 'wc_protected_product_add_to_cart' );
+	}
+
+
+	/**
+	 * Restores protected products from being added to the cart.
+	 * @see WCS_Cart_Renewal::allow_protected_products_to_renew
+	 */
+	public function disallow_protected_product_add_to_cart_validation() {
+		add_filter( 'woocommerce_add_to_cart_validation', 'wc_protected_product_add_to_cart', 10, 2 );
 	}
 
 	/* Deprecated */
