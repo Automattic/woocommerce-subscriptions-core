@@ -1912,6 +1912,9 @@ class WC_Subscriptions_Switcher {
 				}
 			}
 
+			// Subscription objects hold an internal cache of line items so we need to get an updated subscription object after changing the line item types directly in the database.
+			$subscription = wcs_get_subscription( $subscription_id );
+
 			if ( ! empty( $add_note ) ) {
 				$subscription->add_order_note( $add_note );
 			}
