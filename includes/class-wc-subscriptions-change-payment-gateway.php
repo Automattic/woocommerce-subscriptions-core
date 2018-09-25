@@ -439,7 +439,8 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 */
 	public static function get_available_payment_gateways( $available_gateways ) {
 
-		if ( isset( $_GET['change_payment_method'] ) || wcs_cart_contains_failed_renewal_order_payment() ) {
+		// The customer change payment method flow uses the order pay endpoint and so we only need to check for order pay endpoints along side cart related conditions.
+		if ( isset( $_GET['change_payment_method'] ) || ( ! is_wc_endpoint_url( 'order-pay' ) && wcs_cart_contains_failed_renewal_order_payment() ) ) {
 			foreach ( $available_gateways as $gateway_id => $gateway ) {
 				if ( true !== $gateway->supports( 'subscription_payment_method_change_customer' ) ) {
 					unset( $available_gateways[ $gateway_id ] );
