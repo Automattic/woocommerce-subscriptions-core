@@ -82,10 +82,13 @@ class WC_Subscriptions_Addresses {
 				// translators: $1: address type (Shipping Address / Billing Address), $2: opening <strong> tag, $3: closing </strong> tag
 				$label = sprintf( __( 'Update the %1$s used for %2$sall%3$s of my active subscriptions', 'woocommerce-subscriptions' ), wcs_get_address_type_to_display( $address_type ), '<strong>', '</strong>' );
 
-				woocommerce_form_field( 'update_all_subscriptions_addresses', array(
-					'type'  => 'checkbox',
-					'class' => array( 'form-row-wide' ),
-					'label' => $label,
+				woocommerce_form_field(
+					'update_all_subscriptions_addresses',
+					array(
+						'type'    => 'checkbox',
+						'class'   => array( 'form-row-wide' ),
+						'label'   => $label,
+						'default' => apply_filters( 'wcs_update_all_subscriptions_addresses_checked', false ),
 					)
 				);
 			}
