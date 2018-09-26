@@ -1754,8 +1754,8 @@ class WC_Subscription extends WC_Order {
 	 * @return array
 	 */
 	public function get_related_orders_query( $subscription_id ) {
-		wcs_deprecated_function( __METHOD__, '2.3.0', 'WCS_Subscription_Data_Store_CPT::get_related_order_ids( $subscription_id ) via WCS_Subscription_Data_Store::instance()' );
-		return WCS_Related_Order_Store::instance()->get_related_order_ids( $subscription_id, 'renewal' );
+		wcs_deprecated_function( __METHOD__, '2.3.0', 'WCS_Subscription_Data_Store_CPT::get_related_order_ids( wcs_get_subscription( $subscription_id ) ) via WCS_Subscription_Data_Store::instance()' );
+		return WCS_Related_Order_Store::instance()->get_related_order_ids( wcs_get_subscription( $subscription_id ), 'renewal' );
 	}
 
 	/**
