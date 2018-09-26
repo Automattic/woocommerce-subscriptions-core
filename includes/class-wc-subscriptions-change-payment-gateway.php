@@ -438,9 +438,29 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 * @since 1.4
 	 */
 	public static function get_available_payment_gateways( $available_gateways ) {
+		$is_change_payment_method_request = isset( $_GET['change_payment_method'] );
 
-		// The customer change payment method flow uses the order pay endpoint and so we only need to check for order pay endpoints along side cart related conditions.
-		if ( isset( $_GET['change_payment_method'] ) || ( ! is_wc_endpoint_url( 'order-pay' ) && wcs_cart_contains_failed_renewal_order_payment() ) ) {
+		// If we're on a order-pay page but not changing a subscription's payment method, exit early - we don't want to filter the available payment gateways while the customer pays for an order.
+		if ( ! $is_change_payment_method_request && is_wc_endpoint_url( 'order-pay' ) ) {
+			return $available_gateways;
+		}
+
+		$renewal_order_cart_item             = wcs_cart_contains_failed_renewal_order_payment();
+		$cart_contains_failed_renewal        = (bool) $renewal_order_cart_item;
+		$cart_contains_failed_manual_renewal = false;
+
+		/**
+		 * If there's no change payment request and the cart contains a failed renewal order, check if the subscription is manual.
+		 *
+		 * We update failing, non-manual subscriptions in @see WC_Subscriptions_Change_Payment_Gateway::change_failing_payment_method() so we
+		 * don't need to apply our available payment gateways filter if the subscription is manual.
+		 */
+		if ( ! $is_change_payment_method_request && $cart_contains_failed_renewal ) {
+			$subscription = wcs_get_subscription( $renewal_order_cart_item['subscription_renewal']['subscription_id'] );
+			$cart_contains_failed_manual_renewal = $subscription->is_manual();
+		}
+
+		if ( $is_change_payment_method_request || ( $cart_contains_failed_renewal && ! $cart_contains_failed_manual_renewal ) ) {
 			foreach ( $available_gateways as $gateway_id => $gateway ) {
 				if ( true !== $gateway->supports( 'subscription_payment_method_change_customer' ) ) {
 					unset( $available_gateways[ $gateway_id ] );
