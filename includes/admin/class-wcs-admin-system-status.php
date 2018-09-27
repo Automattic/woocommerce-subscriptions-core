@@ -37,6 +37,7 @@ class WCS_Admin_System_Status {
 
 		self::set_debug_mode( $subscriptions_data );
 		self::set_staging_mode( $subscriptions_data );
+		self::set_live_site_url( $subscriptions_data );
 		self::set_theme_overrides( $subscriptions_data );
 		self::set_subscription_statuses( $subscriptions_data );
 		self::set_woocommerce_account_data( $subscriptions_data );
@@ -105,6 +106,19 @@ class WCS_Admin_System_Status {
 			'label'   => 'Subscriptions Mode',
 			'note'    => '<strong>' . ( ( WC_Subscriptions::is_duplicate_site() ) ? _x( 'Staging', 'refers to staging site', 'woocommerce-subscriptions' ) :  _x( 'Live', 'refers to live site', 'woocommerce-subscriptions' ) ) . '</strong>',
 			'success' => ( WC_Subscriptions::is_duplicate_site() ) ? 0 : 1,
+		);
+	}
+
+	/**
+	 * @param array $debug_data
+	 */
+	private static function set_live_site_url( &$debug_data ) {
+		$debug_data['wcs_live_site_url'] = array(
+			'name'      => _x( 'Subscriptions Live URL', 'Live URL, Label on WooCommerce -> System Status page', 'woocommerce-subscriptions' ),
+			'label'     => 'Subscriptions Live URL',
+			'note'      => '<a href="' . esc_url( WC_Subscriptions::get_site_url_from_source( 'subscriptions_install' ) ) . '">' . esc_html( WC_Subscriptions::get_site_url_from_source( 'subscriptions_install' ) ) . '</a>',
+			'mark'      => '',
+			'mark_icon' => '',
 		);
 	}
 
