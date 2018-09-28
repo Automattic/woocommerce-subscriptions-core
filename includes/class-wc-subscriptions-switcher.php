@@ -1152,7 +1152,7 @@ class WC_Subscriptions_Switcher {
 			if ( ! current_user_can( 'switch_shop_subscription', $subscription->get_id() ) ) {
 				wc_add_notice( __( 'You can not switch this subscription. It appears you do not own the subscription.', 'woocommerce-subscriptions' ), 'error' );
 				WC()->cart->empty_cart( true );
-				wp_redirect( get_permalink( $subscription['product_id'] ) );
+				wp_redirect( get_permalink( $product_id ) );
 				exit();
 			}
 
