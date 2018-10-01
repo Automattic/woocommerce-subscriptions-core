@@ -121,7 +121,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 		$subscription_ids = $this->get_users_subscription_ids( $user_id );
 
 		if ( ! in_array( $subscription_id, $subscription_ids ) ) {
-			$subscription_ids[] = $subscription_id;
+			array_unshift( $subscription_ids, $subscription_id );
 			$this->update_subscription_id_cache( $user_id, $subscription_ids );
 		}
 	}
