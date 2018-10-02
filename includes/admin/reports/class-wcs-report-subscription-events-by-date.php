@@ -295,6 +295,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 							OR wcsmeta.meta_value = 0
 							OR wcsmeta.meta_value IS NULL
 						)
+					GROUP BY searchdate.Date
 					ORDER BY searchdate.Date ASC",
 			$query_end_date,
 			date( 'Y-m-d', $this->start_date ),
