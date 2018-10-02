@@ -2154,4 +2154,3 @@ class WC_Subscriptions_Cart {
 		return $package_rates;
 	}
 }
-WC_Subscriptions_Cart::init();

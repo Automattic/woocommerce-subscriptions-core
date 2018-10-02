@@ -67,6 +67,7 @@ class WC_Subscription extends WC_Order {
 		'schedule_cancelled'      => null,
 		'schedule_end'            => null,
 		'schedule_payment_retry'  => null,
+		'schedule_start'          => null,
 
 		'switch_data'             => array(),
 	);
@@ -98,8 +99,22 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function __construct( $subscription ) {
 
-		parent::__construct( $subscription );
+		// Add subscription date types as extra subscription data.
+		foreach ( wcs_get_subscription_date_types() as $date_type => $date_name ) {
+			// The last payment date is derived from other sources and shouldn't be stored on a subscription.
+			if ( 'last_payment' === $date_type ) {
+				continue;
+			}
 
+			$date_type_key = wcs_maybe_prefix_key( $date_type, 'schedule_' );
+
+			// Skip any custom dates which are already core date types.
+			if ( ! isset( $this->extra_data[ $date_type_key ] ) ) {
+				$this->extra_data[ $date_type_key ] = null;
+			}
+		}
+
+		parent::__construct( $subscription );
 		$this->order_type = 'shop_subscription';
 	}
 
@@ -1147,7 +1162,7 @@ class WC_Subscription extends WC_Order {
 
 			// Delete dates with a 0 date time
 			if ( 0 == $datetime ) {
-				if ( ! in_array( $date_type, array( 'date_created', 'last_order_date_created', 'last_order_date_modified' ) ) ) {
+				if ( ! in_array( $date_type, array( 'date_created', 'start', 'last_order_date_created', 'last_order_date_modified' ) ) ) {
 					$this->delete_date( $date_type );
 				}
 				continue;
@@ -1210,6 +1225,9 @@ class WC_Subscription extends WC_Order {
 		// Make sure some dates are before next payment date
 		switch ( $date_type ) {
 			case 'date_created' :
+				$message = __( 'The creation date of a subscription can not be deleted, only updated.', 'woocommerce-subscriptions' );
+			break;
+			case 'start' :
 				$message = __( 'The start date of a subscription can not be deleted, only updated.', 'woocommerce-subscriptions' );
 			break;
 			case 'last_order_date_created' :
@@ -1241,6 +1259,7 @@ class WC_Subscription extends WC_Order {
 	public function can_date_be_updated( $date_type ) {
 
 		switch ( $date_type ) {
+			case 'start':
 			case 'date_created' :
 				if ( $this->has_status( array( 'auto-draft', 'pending' ) ) ) {
 					$can_date_be_updated = true;
@@ -1330,7 +1349,7 @@ class WC_Subscription extends WC_Order {
 		$next_payment_date = 0;
 
 		// If the subscription is not active, there is no next payment date
-		$start_time        = $this->get_time( 'date_created' );
+		$start_time        = $this->get_time( 'start' );
 		$next_payment_time = $this->get_time( 'next_payment' );
 		$trial_end_time    = $this->get_time( 'trial_end' );
 		$last_payment_time = max( $this->get_time( 'last_order_date_created' ), $this->get_time( 'last_order_date_paid' ) );
@@ -2135,7 +2154,7 @@ class WC_Subscription extends WC_Order {
 
 		if ( 0 != ( $end_time = $this->get_time( 'end' ) ) ) {
 
-			$from_timestamp = $this->get_time( 'date_created' );
+			$from_timestamp = $this->get_time( 'start' );
 
 			if ( 0 != $this->get_time( 'trial_end' ) || WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $this ) ) {
 
@@ -2218,8 +2237,8 @@ class WC_Subscription extends WC_Order {
 		// Get a full set of subscription dates made up of passed and current dates
 		foreach ( $this->get_valid_date_types() as $date_type ) {
 
-			// While 'start' & 'last_payment' are valid date types, they are deprecated and we use 'date_created' & 'last_order_date_created' to refer to them now instead
-			if ( in_array( $date_type, array( 'last_payment', 'start' ) ) ) {
+			// While 'last_payment' is a valid date type, it is deprecated and we use 'last_order_date_created' now instead
+			if ( 'last_payment' === $date_type ) {
 				continue;
 			}
 
@@ -2288,7 +2307,7 @@ class WC_Subscription extends WC_Order {
 						$messages[] = sprintf( __( 'The %s date must occur after the trial end date.', 'woocommerce-subscriptions' ), $date_type );
 					}
 				case 'trial_end' :
-					if ( $timestamp <= $timestamps['date_created'] ) {
+					if ( ! in_array( $date_type, array( 'end', 'cancelled' ) ) && $timestamp <= $timestamps['start'] ) {
 						$messages[] = sprintf( __( 'The %s date must occur after the start date.', 'woocommerce-subscriptions' ), $date_type );
 					}
 			}

@@ -1248,5 +1248,3 @@ class WC_Subscriptions_Product {
 		return wcs_get_price_excluding_tax( $product, array( 'qty' => $qty, 'price' => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) );
 	}
 }
-
-WC_Subscriptions_Product::init();

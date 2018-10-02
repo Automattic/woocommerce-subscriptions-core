@@ -540,13 +540,16 @@ function wcs_get_subscription_orders( $return_fields = 'ids', $order_type = 'par
 }
 
 /**
- * A wrapper for getting a specific item from a subscription.
+ * A wrapper for getting a specific item from an order or subscription.
  *
  * WooCommerce has a wc_add_order_item() function, wc_update_order_item() function and wc_delete_order_item() function,
  * but no `wc_get_order_item()` function, so we need to add our own (for now).
  *
- * @param int $item_id The ID of an order item
- * @return WC_Subscription Subscription details in post_id => WC_Subscription form.
+ * @param int                      $item_id The ID of an order item
+ * @param WC_Order|WC_Subscription $order   The order or order object the item belongs to.
+ *
+ * @return WC_Order_Item|array The order item object or an empty array if the item doesn't exist.
+ *
  * @since 2.0
  */
 function wcs_get_order_item( $item_id, $order ) {

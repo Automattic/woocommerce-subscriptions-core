@@ -1253,5 +1253,3 @@ class WC_Subscriptions_Coupon {
 		_deprecated_function( __METHOD__, '2.0', 'WooCommerce 2.3 removed after tax discounts. Use ' . __CLASS__ .'::apply_subscription_discount( $original_price, $cart_item, $cart )' );
 	}
 }
-
-WC_Subscriptions_Coupon::init();

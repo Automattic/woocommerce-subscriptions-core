@@ -1414,4 +1414,3 @@ class WCS_Cart_Renewal {
 		return $order;
 	}
 }
-new WCS_Cart_Renewal();

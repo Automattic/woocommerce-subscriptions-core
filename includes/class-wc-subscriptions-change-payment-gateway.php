@@ -660,4 +660,3 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		return $subscription_can_be_changed;
 	}
 }
-WC_Subscriptions_Change_Payment_Gateway::init();
