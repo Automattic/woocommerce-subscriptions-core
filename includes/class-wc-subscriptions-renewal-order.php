@@ -20,18 +20,18 @@ class WC_Subscriptions_Renewal_Order {
 	public static function init() {
 
 		// Trigger special hook when payment is completed on renewal orders
-		add_action( 'woocommerce_payment_complete', __CLASS__ . '::trigger_renewal_payment_complete', 10 );
+		add_action( 'woocommerce_payment_complete', array( __CLASS__, 'trigger_renewal_payment_complete' ), 10 );
 
 		// When a renewal order's status changes, check if a corresponding subscription's status should be changed by marking it as paid (we can't use the 'woocommerce_payment_complete' here because it's not triggered by all payment gateways)
-		add_filter( 'woocommerce_order_status_changed', __CLASS__ . '::maybe_record_subscription_payment', 10, 3 );
+		add_action( 'woocommerce_order_status_changed', array( __CLASS__, 'maybe_record_subscription_payment' ), 10, 3 );
 
-		add_filter( 'wcs_renewal_order_created', __CLASS__ . '::add_order_note', 10, 2 );
+		add_filter( 'wcs_renewal_order_created', array( __CLASS__, 'add_order_note' ), 10, 2 );
 
 		// Prevent customers from cancelling renewal orders. Needs to be hooked before WC_Form_Handler::cancel_order() (20)
-		add_filter( 'wp_loaded', __CLASS__ . '::prevent_cancelling_renewal_orders', 19, 3 );
+		add_action( 'wp_loaded', array( __CLASS__, 'prevent_cancelling_renewal_orders' ), 19, 3 );
 
 		// Don't copy switch order item meta to renewal order items
-		add_filter( 'wcs_new_order_items', __CLASS__ . '::remove_switch_item_meta_keys', 10, 1 );
+		add_filter( 'wcs_new_order_items', array( __CLASS__, 'remove_switch_item_meta_keys' ), 10, 1 );
 	}
 
 	/* Helper functions */
@@ -115,7 +115,7 @@ class WC_Subscriptions_Renewal_Order {
 			if ( $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( 'active' ) ) {
 
 				// Included here because calling payment_complete sets the retry status to 'cancelled'
-				$is_failed_renewal_order = ( 'failed' === $orders_old_status ) ? true : false;
+				$is_failed_renewal_order = 'failed' === $orders_old_status;
 				$is_failed_renewal_order = apply_filters( 'woocommerce_subscriptions_is_failed_renewal_order', $is_failed_renewal_order, $order_id, $orders_old_status );
 
 				if ( $order_needed_payment ) {
@@ -661,4 +661,3 @@ class WC_Subscriptions_Renewal_Order {
 		_deprecated_function( __METHOD__, '2.0', __CLASS__ . '::maybe_record_subscription_payment( $order_id, $orders_old_status, $orders_new_status )' );
 	}
 }
-WC_Subscriptions_Renewal_Order::init();

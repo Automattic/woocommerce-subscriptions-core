@@ -4,13 +4,13 @@
  *
  * Display important historical data for subscription revenue and events, like switches and cancellations.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Admin_Reports
- * @category	Class
- * @author		Prospress
- * @since		2.1
+ * @package    WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Admin_Reports
+ * @category   Class
+ * @author     Prospress
+ * @since      2.1
  */
-class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
+class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 
 	public $chart_colours = array();
 
@@ -44,6 +44,10 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$args = wp_parse_args( $args, $default_args );
 
 		$query_end_date = date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) );
+		$offset  = get_option( 'gmt_offset' );
+
+		//Convert from Decimal format(eg. 11.5) to a suitable format(eg. +11:30) for  CONVERT_TZ() of SQL query.
+		$site_timezone = sprintf( '%+02d:%02d', (int) $offset, ( $offset - floor( $offset ) ) * 60 );
 
 		$this->report_data = new stdClass;
 
@@ -60,6 +64,13 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 						'type'     => 'post_data',
 						'function' => '',
 						'name'     => 'post_date',
+					),
+				),
+				'where' => array(
+					'post_status' => array(
+						'key'      => 'post_status',
+						'operator' => 'NOT IN',
+						'value'    => array( 'trash', 'auto-draft' ),
 					),
 				),
 				'group_by'            => $this->group_by_query,
@@ -98,6 +109,13 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 						'join_type' => 'LEFT',   // To avoid issues if there is no renewal_total meta
 						),
 				),
+				'where' => array(
+					'post_status' => array(
+						'key'      => 'post_status',
+						'operator' => 'NOT IN',
+						'value'    => array( 'trash', 'auto-draft' ),
+					),
+				),
 				'group_by'            => $this->group_by_query,
 				'order_status'        => $args['order_status'],
 				'order_by'            => 'post_date ASC',
@@ -134,6 +152,13 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 						'join_type' => 'LEFT',   // To avoid issues if there is no resubscribe_total meta
 						),
 				),
+				'where' => array(
+					'post_status' => array(
+						'key'      => 'post_status',
+						'operator' => 'NOT IN',
+						'value'    => array( 'trash', 'auto-draft' ),
+					),
+				),
 				'group_by'            => $this->group_by_query,
 				'order_status'        => $args['order_status'],
 				'order_by'            => 'post_date ASC',
@@ -164,6 +189,13 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 						'name'     => 'switch_orders',
 					),
 				),
+				'where' => array(
+					'post_status' => array(
+						'key'      => 'post_status',
+						'operator' => 'NOT IN',
+						'value'    => array( 'trash', 'auto-draft' ),
+					),
+				),
 				'group_by'            => $this->group_by_query,
 				'order_status'        => $args['order_status'],
 				'order_by'            => 'post_date ASC',
@@ -191,6 +223,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				WHERE subscription_posts.post_type = 'shop_subscription'
 					AND subscription_posts.post_date >= %s
 					AND subscription_posts.post_date < %s
+					AND subscription_posts.post_status NOT IN ( 'trash', 'auto-draft' )
 				GROUP BY order_id
 			) AS subscriptions ON subscriptions.order_id = order_posts.ID
 			LEFT JOIN {$wpdb->postmeta} AS order_total_post_meta
@@ -224,51 +257,50 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$query = $wpdb->prepare(
 			"SELECT searchdate.Date as date, COUNT( DISTINCT wcsubs.ID) as count
 				FROM (
-					SELECT DATE_FORMAT(a.Date,'%%Y-%%m-%%d') as Date, 0 as cnt
+					SELECT DATE_FORMAT(last_thousand_days.Date,'%%Y-%%m-%%d') as Date
 					FROM (
-						SELECT DATE(%s) - INTERVAL(a.a + (10 * b.a) + (100 * c.a)) DAY as Date
+						SELECT DATE(%s) - INTERVAL(units.digit + (10 * tens.digit) + (100 * hundreds.digit)) DAY as Date
 						FROM (
-							SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2
+							SELECT 0 AS digit UNION ALL SELECT 1 UNION ALL SELECT 2
 							UNION ALL SELECT 3 UNION ALL SELECT 4
 							UNION ALL SELECT 5 UNION ALL SELECT 6
 							UNION ALL SELECT 7 UNION ALL SELECT 8
 							UNION ALL SELECT 9
-						) as a
+						) as units
 						CROSS JOIN (
-							SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2
+							SELECT 0 AS digit UNION ALL SELECT 1 UNION ALL SELECT 2
 							UNION ALL SELECT 3 UNION ALL SELECT 4
 							UNION ALL SELECT 5 UNION ALL SELECT 6
 							UNION ALL SELECT 7 UNION ALL SELECT 8
 							UNION ALL SELECT 9
-						) as b
+						) as tens
 						CROSS JOIN (
-							SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2
+							SELECT 0 AS digit UNION ALL SELECT 1 UNION ALL SELECT 2
 							UNION ALL SELECT 3 UNION ALL SELECT 4
 							UNION ALL SELECT 5 UNION ALL SELECT 6
 							UNION ALL SELECT 7 UNION ALL SELECT 8
 							UNION ALL SELECT 9
-						) AS c
-					) a
-					WHERE a.Date >= %s AND a.Date <= %s
-				) searchdate
-				LEFT JOIN (
-					{$wpdb->posts} AS wcsubs
-					LEFT JOIN {$wpdb->postmeta} AS wcsmeta
-						ON wcsubs.ID = wcsmeta.post_id AND wcsmeta.meta_key = %s
-				) ON DATE( wcsubs.post_date ) <= searchdate.Date
-					AND wcsubs.post_type IN ( 'shop_subscription' )
-					AND wcsubs.post_status NOT IN( 'wc-pending', 'trash', 'auto-draft' )
-					AND (
-						DATE( wcsmeta.meta_value ) >= searchdate.Date
-						OR wcsmeta.meta_value = 0
-						OR wcsmeta.meta_value IS NULL
-					)
-				GROUP BY searchdate.Date
-				ORDER BY searchdate.Date ASC",
+						) AS hundreds
+					) last_thousand_days
+					WHERE last_thousand_days.Date >= %s AND last_thousand_days.Date <= %s
+				) searchdate,
+					{$wpdb->posts} AS wcsubs,
+					{$wpdb->postmeta} AS wcsmeta
+					WHERE wcsubs.ID = wcsmeta.post_id AND wcsmeta.meta_key = '%s'
+						AND DATE( wcsubs.post_date ) <= searchdate.Date
+						AND wcsubs.post_type IN ( 'shop_subscription' )
+						AND wcsubs.post_status NOT IN( 'auto-draft' )
+						AND (
+							DATE( CONVERT_TZ( wcsmeta.meta_value , '+00:00', %s ) ) >= searchdate.Date
+							OR wcsmeta.meta_value = 0
+							OR wcsmeta.meta_value IS NULL
+						)
+					ORDER BY searchdate.Date ASC",
 			$query_end_date,
 			date( 'Y-m-d', $this->start_date ),
 			$query_end_date,
-			wcs_get_date_meta_key( 'end' )
+			wcs_get_date_meta_key( 'end' ),
+			$site_timezone
 		);
 
 		$query_hash = md5( $query );
@@ -285,13 +317,14 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		 * Subscription cancellations
 		 */
 		$query = $wpdb->prepare(
-			"SELECT COUNT(DISTINCT wcsubs.ID) as count, wcsmeta_cancel.meta_value as cancel_date
+			"SELECT COUNT( DISTINCT wcsubs.ID ) as count, CONVERT_TZ( wcsmeta_cancel.meta_value, '+00:00', '{$site_timezone}' ) as cancel_date
 				FROM {$wpdb->posts} as wcsubs
 				JOIN {$wpdb->postmeta} AS wcsmeta_cancel
 					ON wcsubs.ID = wcsmeta_cancel.post_id
 					AND wcsmeta_cancel.meta_key = %s
-				WHERE wcsmeta_cancel.meta_value BETWEEN %s AND %s
-				GROUP BY YEAR(wcsmeta_cancel.meta_value), MONTH(wcsmeta_cancel.meta_value), DAY(wcsmeta_cancel.meta_value)
+					AND wcsubs.post_status NOT IN ( 'trash', 'auto-draft' )
+				GROUP BY YEAR( cancel_date ), MONTH( cancel_date ), DAY( cancel_date )
+				HAVING cancel_date BETWEEN %s AND %s
 				ORDER BY wcsmeta_cancel.meta_value ASC",
 			wcs_get_date_meta_key( 'cancelled' ),
 			date( 'Y-m-d', $this->start_date ),
@@ -312,14 +345,14 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		 * Subscriptions ended
 		 */
 		$query = $wpdb->prepare(
-			"SELECT COUNT(DISTINCT wcsubs.ID) as count, wcsmeta_end.meta_value as end_date
+			"SELECT COUNT( DISTINCT wcsubs.ID ) as count, CONVERT_TZ( wcsmeta_end.meta_value, '+00:00', '{$site_timezone}' ) as end_date
 				FROM {$wpdb->posts} as wcsubs
 				JOIN {$wpdb->postmeta} AS wcsmeta_end
 					ON wcsubs.ID = wcsmeta_end.post_id
 						AND wcsmeta_end.meta_key = %s
-				WHERE
-						wcsmeta_end.meta_value BETWEEN %s AND %s
-				GROUP BY YEAR(wcsmeta_end.meta_value), MONTH(wcsmeta_end.meta_value), DAY(wcsmeta_end.meta_value)
+						AND wcsubs.post_status NOT IN ( 'trash', 'auto-draft' )
+				GROUP BY YEAR( end_date ), MONTH( end_date ), DAY( end_date )
+				HAVING end_date BETWEEN %s AND %s
 				ORDER BY wcsmeta_end.meta_value ASC",
 			wcs_get_date_meta_key( 'end' ),
 			date( 'Y-m-d', $this->start_date ),

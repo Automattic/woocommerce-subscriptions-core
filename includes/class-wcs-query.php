@@ -18,6 +18,7 @@ class WCS_Query extends WC_Query {
 			add_action( 'parse_request', array( $this, 'parse_request' ), 0 );
 			add_filter( 'woocommerce_get_breadcrumb', array( $this, 'add_breadcrumb' ), 10 );
 			add_action( 'pre_get_posts', array( $this, 'pre_get_posts' ), 11 );
+			add_filter( 'woocommerce_get_query_vars', array( $this, 'add_wcs_query_vars' ) );
 
 			// Inserting your new tab/page into the My Account page.
 			add_filter( 'woocommerce_account_menu_items', array( $this, 'add_menu_items' ) );
@@ -27,7 +28,12 @@ class WCS_Query extends WC_Query {
 		}
 
 		$this->init_query_vars();
-		add_filter( 'woocommerce_account_settings', array( $this, 'add_endpoint_account_settings' ) );
+
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.4' ) ) {
+			add_filter( 'woocommerce_account_settings', array( $this, 'add_endpoint_account_settings' ) );
+		} else {
+			add_filter( 'woocommerce_get_settings_advanced', array( $this, 'add_endpoint_account_settings' ) );
+		}
 	}
 
 	/**
@@ -96,7 +102,11 @@ class WCS_Query extends WC_Query {
 				$title        = ( $subscription ) ? sprintf( _x( 'Subscription #%s', 'hash before order number', 'woocommerce-subscriptions' ), $subscription->get_order_number() ) : '';
 				break;
 			case 'subscriptions':
-				$title = __( 'Subscriptions', 'woocommerce-subscriptions' );
+				if ( ! empty( $wp->query_vars['subscriptions'] ) ) {
+					$title = sprintf( __( 'Subscriptions (page %d)', 'woocommerce-subscriptions' ), intval( $wp->query_vars['subscriptions'] ) );
+				} else {
+					$title = __( 'Subscriptions', 'woocommerce-subscriptions' );
+				}
 				break;
 			default:
 				$title = '';
@@ -113,7 +123,7 @@ class WCS_Query extends WC_Query {
 	 * @return array
 	 */
 	public function add_menu_items( $menu_items ) {
-		if ( 1 == count( wcs_get_users_subscriptions() ) ) {
+		if ( 1 == count( wcs_get_users_subscriptions() ) && apply_filters( 'wcs_my_account_redirect_to_single_subscription', true ) ) {
 			$label = __( 'My Subscription', 'woocommerce-subscriptions' );
 		} else {
 			$label = __( 'Subscriptions', 'woocommerce-subscriptions' );
@@ -141,7 +151,7 @@ class WCS_Query extends WC_Query {
 		if ( 'subscriptions' == $endpoint && is_account_page() ) {
 			$subscriptions = wcs_get_users_subscriptions();
 
-			if ( 1 == count( $subscriptions ) ) {
+			if ( is_array( $subscriptions ) && 1 == count( $subscriptions ) && apply_filters( 'wcs_my_account_redirect_to_single_subscription', true ) ) {
 				$subscription = reset( $subscriptions );
 				$url = $subscription->get_view_order_url();
 			}
@@ -152,9 +162,14 @@ class WCS_Query extends WC_Query {
 
 	/**
 	 * Endpoint HTML content.
+	 *
+	 * @param int $current_page
 	 */
-	public function endpoint_content() {
-		wc_get_template( 'myaccount/subscriptions.php', array(), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+	public function endpoint_content( $current_page = 1 ) {
+
+		$current_page    = empty( $current_page ) ? 1 : absint( $current_page );
+
+		wc_get_template( 'myaccount/subscriptions.php', array( 'current_page' => $current_page ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
 	}
 
 	/**
@@ -229,8 +244,6 @@ class WCS_Query extends WC_Query {
 	 * @return mixed $account_settings
 	 */
 	public function add_endpoint_account_settings( $settings ) {
-		$new_settings = array();
-		$order_endpoint_found = false;
 		$subscriptions_endpoint_setting = array(
 			'title'    => __( 'Subscriptions', 'woocommerce-subscriptions' ),
 			'desc'     => __( 'Endpoint for the My Account &rarr; Subscriptions page', 'woocommerce-subscriptions' ),
@@ -249,23 +262,9 @@ class WCS_Query extends WC_Query {
 			'desc_tip' => true,
 		);
 
-		// Loop over and look for View Order Endpoint and include Subscriptions endpoint options after that.
-		foreach ( $settings as $value ) {
+		WC_Subscriptions_Admin::insert_setting_after( $settings, 'woocommerce_myaccount_view_order_endpoint', array( $subscriptions_endpoint_setting, $view_subscription_endpoint_setting ), 'multiple_settings' );
 
-			if ( 'woocommerce_myaccount_view_order_endpoint' === $value['id'] ) {
-				$order_endpoint_found = true;
-				$new_settings[] = $value;
-				$new_settings[] = $subscriptions_endpoint_setting;
-				$new_settings[] = $view_subscription_endpoint_setting;
-				continue;
-			} elseif ( ! $order_endpoint_found && 'sectionend' === $value['type']  && 'account_endpoint_options' === $value['id'] ) {
-				// If we got to the end of the settings and didn't add our endpoints, add them to the end.
-				$new_settings[] = $subscriptions_endpoint_setting;
-				$new_settings[] = $view_subscription_endpoint_setting;
-			}
-			$new_settings[] = $value;
-		}
-		return $new_settings;
+		return $settings;
 	}
 
 	/**
@@ -289,5 +288,16 @@ class WCS_Query extends WC_Query {
 		}
 		return $url;
 	}
+
+	/**
+	 * Hooks into `woocommerce_get_query_vars` to make sure query vars defined in
+	 * this class are also considered `WC_Query` query vars.
+	 *
+	 * @param  array $query_vars
+	 * @return array
+	 * @since  2.3.0
+	 */
+	public function add_wcs_query_vars( $query_vars ) {
+		return array_merge( $query_vars, $this->query_vars );
+	}
 }
-new WCS_Query();

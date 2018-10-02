@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 } // Exit if accessed directly
 
 if ( class_exists( 'WCS_Admin_Post_Types' ) ) {
-	return new WCS_Admin_Post_Types();
+	return;
 }
 
 /**
@@ -22,6 +22,19 @@ if ( class_exists( 'WCS_Admin_Post_Types' ) ) {
  * Handles the edit posts views and some functionality on the edit post screen for WC post types.
  */
 class WCS_Admin_Post_Types {
+
+	/**
+	 * The value to use for the 'post__in' query param when no results should be returned.
+	 *
+	 * We can't use an empty array, because WP returns all posts when post__in is an empty
+	 * array. Source: https://core.trac.wordpress.org/ticket/28099
+	 *
+	 * This would ideally be a private CONST but visibility modifiers are only allowed for
+	 * class constants in PHP >= 7.1.
+	 *
+	 * @var	array
+	 */
+	private static $post__in_none = array( 0 );
 
 	/**
 	 * Constructor
@@ -593,20 +606,7 @@ class WCS_Admin_Post_Types {
 			case 'next_payment_date':
 			case 'last_payment_date':
 			case 'end_date':
-				$date_type_map = array( 'start_date' => 'date_created', 'last_payment_date' => 'last_order_date_created' );
-				$date_type     = array_key_exists( $column, $date_type_map ) ? $date_type_map[ $column ] : $column;
-
-				if ( 0 == $the_subscription->get_time( $date_type, 'gmt' ) ) {
-					$column_content .= '-';
-				} else {
-					$column_content .= sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( date( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ) , $the_subscription->get_time( $date_type, 'site' ) ) ), esc_html( $the_subscription->get_date_to_display( $date_type ) ) );
-
-					if ( 'next_payment_date' == $column && $the_subscription->payment_method_supports( 'gateway_scheduled_payments' ) && ! $the_subscription->is_manual() && $the_subscription->has_status( 'active' ) ) {
-						$column_content .= '<div class="woocommerce-help-tip" data-tip="' . esc_attr__( 'This date should be treated as an estimate only. The payment gateway for this subscription controls when payments are processed.', 'woocommerce-subscriptions' ) . '"></div>';
-					}
-				}
-
-				$column_content = $column_content;
+				$column_content = self::get_date_column_content( $the_subscription, $column );
 				break;
 
 			case 'orders' :
@@ -616,6 +616,32 @@ class WCS_Admin_Post_Types {
 
 		echo wp_kses( apply_filters( 'woocommerce_subscription_list_table_column_content', $column_content, $the_subscription, $column ), array( 'a' => array( 'class' => array(), 'href' => array(), 'data-tip' => array(), 'title' => array() ), 'time' => array( 'class' => array(), 'title' => array() ), 'mark' => array( 'class' => array(), 'data-tip' => array() ), 'small' => array( 'class' => array() ), 'table' => array( 'class' => array(), 'cellspacing' => array(), 'cellpadding' => array() ), 'tr' => array( 'class' => array() ), 'td' => array( 'class' => array() ), 'div' => array( 'class' => array(), 'data-tip' => array() ), 'br' => array(), 'strong' => array(), 'span' => array( 'class' => array(), 'data-tip' => array() ), 'p' => array( 'class' => array() ), 'button' => array( 'type' => array(), 'class' => array() ) ) );
 
+	}
+
+	/**
+	 * Return the content for a date column on the Edit Subscription screen
+	 *
+	 * @param WC_Subscription $subscription
+	 * @param string $column
+	 * @return string
+	 * @since 2.3.0
+	 */
+	public static function get_date_column_content( $subscription, $column ) {
+
+		$date_type_map = array( 'last_payment_date' => 'last_order_date_created' );
+		$date_type     = array_key_exists( $column, $date_type_map ) ? $date_type_map[ $column ] : $column;
+
+		if ( 0 == $subscription->get_time( $date_type, 'gmt' ) ) {
+			$column_content = '-';
+		} else {
+			$column_content = sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( date( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ) , $subscription->get_time( $date_type, 'site' ) ) ), esc_html( $subscription->get_date_to_display( $date_type ) ) );
+
+			if ( 'next_payment_date' == $column && $subscription->payment_method_supports( 'gateway_scheduled_payments' ) && ! $subscription->is_manual() && $subscription->has_status( 'active' ) ) {
+				$column_content .= '<div class="woocommerce-help-tip" data-tip="' . esc_attr__( 'This date should be treated as an estimate only. The payment gateway for this subscription controls when payments are processed.', 'woocommerce-subscriptions' ) . '"></div>';
+			}
+		}
+
+		return $column_content;
 	}
 
 	/**
@@ -629,7 +655,7 @@ class WCS_Admin_Post_Types {
 		$sortable_columns = array(
 			'order_title'       => 'ID',
 			'recurring_total'   => 'order_total',
-			'start_date'        => 'date',
+			'start_date'        => 'start_date',
 			'trial_end_date'    => 'trial_end_date',
 			'next_payment_date' => 'next_payment_date',
 			'last_payment_date' => 'last_payment_date',
@@ -653,80 +679,19 @@ class WCS_Admin_Post_Types {
 			return;
 		}
 
-		$search_fields = array_map( 'wc_clean', apply_filters( 'woocommerce_shop_subscription_search_fields', array(
-			'_order_key',
-			'_billing_company',
-			'_billing_address_1',
-			'_billing_address_2',
-			'_billing_city',
-			'_billing_postcode',
-			'_billing_country',
-			'_billing_state',
-			'_billing_email',
-			'_billing_phone',
-			'_shipping_address_1',
-			'_shipping_address_2',
-			'_shipping_city',
-			'_shipping_postcode',
-			'_shipping_country',
-			'_shipping_state',
-		) ) );
+		$post_ids = wcs_subscription_search( $_GET['s'] );
 
-		$search_order_id = str_replace( 'Order #', '', $_GET['s'] );
-		if ( ! is_numeric( $search_order_id ) ) {
-			$search_order_id = 0;
+		if ( ! empty( $post_ids ) ) {
+
+			// Remove s - we don't want to search order name
+			unset( $wp->query_vars['s'] );
+
+			// so we know we're doing this
+			$wp->query_vars['shop_subscription_search'] = true;
+
+			// Search by found posts
+			$wp->query_vars['post__in'] = $post_ids;
 		}
-
-		// Search orders
-		$post_ids = array_unique( array_merge(
-			$wpdb->get_col(
-				$wpdb->prepare( "
-					SELECT p1.post_id
-					FROM {$wpdb->postmeta} p1
-					INNER JOIN {$wpdb->postmeta} p2 ON p1.post_id = p2.post_id
-					WHERE
-						( p1.meta_key = '_billing_first_name' AND p2.meta_key = '_billing_last_name' AND CONCAT(p1.meta_value, ' ', p2.meta_value) LIKE '%%%s%%' )
-					OR
-						( p1.meta_key = '_shipping_first_name' AND p2.meta_key = '_shipping_last_name' AND CONCAT(p1.meta_value, ' ', p2.meta_value) LIKE '%%%s%%' )
-					OR
-						( p1.meta_key IN ('" . implode( "','", esc_sql( $search_fields ) ) . "') AND p1.meta_value LIKE '%%%s%%' )
-					",
-					esc_attr( $_GET['s'] ), esc_attr( $_GET['s'] ), esc_attr( $_GET['s'] )
-				)
-			),
-			$wpdb->get_col(
-				$wpdb->prepare( "
-					SELECT order_id
-					FROM {$wpdb->prefix}woocommerce_order_items as order_items
-					WHERE order_item_name LIKE '%%%s%%'
-					",
-					esc_attr( $_GET['s'] )
-				)
-			),
-			$wpdb->get_col(
-				$wpdb->prepare( "
-					SELECT p1.ID
-					FROM {$wpdb->posts} p1
-					INNER JOIN {$wpdb->postmeta} p2 ON p1.ID = p2.post_id
-					INNER JOIN {$wpdb->users} u ON p2.meta_value = u.ID
-					WHERE u.user_email LIKE '%%%s%%'
-					AND p2.meta_key = '_customer_user'
-					AND p1.post_type = 'shop_subscription'
-					",
-					esc_attr( $_GET['s'] )
-				)
-			),
-			array( $search_order_id )
-		) );
-
-		// Remove s - we don't want to search order name
-		unset( $wp->query_vars['s'] );
-
-		// so we know we're doing this
-		$wp->query_vars['shop_subscription_search'] = true;
-
-		// Search by found posts
-		$wp->query_vars['post__in'] = $post_ids;
 	}
 
 	/**
@@ -781,23 +746,19 @@ class WCS_Admin_Post_Types {
 
 			// Filter the orders by the posted customer.
 			if ( isset( $_GET['_customer_user'] ) && $_GET['_customer_user'] > 0 ) {
-				$vars['meta_query'][] = array(
-					'key'   => '_customer_user',
-					'value' => (int) $_GET['_customer_user'],
-					'compare' => '=',
-				);
+				$subscription_ids = WCS_Customer_Store::instance()->get_users_subscription_ids( absint( $_GET['_customer_user'] ) );
+				$vars = self::set_post__in_query_var( $vars, $subscription_ids );
 			}
 
 			if ( isset( $_GET['_wcs_product'] ) && $_GET['_wcs_product'] > 0 ) {
-
 				$subscription_ids = wcs_get_subscriptions_for_product( $_GET['_wcs_product'] );
+				$subscription_ids = array_keys( $subscription_ids );
+				$vars = self::set_post__in_query_var( $vars, $subscription_ids );
+			}
 
-				if ( ! empty( $subscription_ids ) ) {
-					$vars['post__in'] = $subscription_ids;
-				} else {
-					// no subscriptions contain this product, but we need to pass post__in an ID that no post will have because WP returns all posts when post__in is an empty array: https://core.trac.wordpress.org/ticket/28099
-					$vars['post__in'] = array( 0 );
-				}
+			// If we've using the 'none' flag for the post__in query var, there's no need to apply other query filters, as we're going to return no subscriptions anyway
+			if ( isset( $vars['post__in'] ) && self::$post__in_none === $vars['post__in'] ) {
+				return $vars;
 			}
 
 			if ( ! empty( $_GET['_payment_method'] ) ) {
@@ -827,7 +788,7 @@ class WCS_Admin_Post_Types {
 				if ( ! empty( $subscription_ids ) ) {
 					$vars['post__in'] = $subscription_ids;
 				} else {
-					$vars['post__in'] = array( 0 );
+					$vars['post__in'] = self::$post__in_none;
 				}
 			}
 
@@ -843,6 +804,7 @@ class WCS_Admin_Post_Types {
 					case 'last_payment_date' :
 						add_filter( 'posts_clauses', array( $this, 'posts_clauses' ), 10, 2 );
 						break;
+					case 'start_date':
 					case 'trial_end_date' :
 					case 'next_payment_date' :
 					case 'end_date' :
@@ -862,6 +824,40 @@ class WCS_Admin_Post_Types {
 		}
 
 		return $vars;
+	}
+
+	/**
+	 * Set the 'post__in' query var with a given set of post ids.
+	 *
+	 * There are a few special conditions for handling the post__in value. Namely:
+	 * - if there are no matching post_ids, the value should be array( 0 ), not an empty array()
+	 * - if there are existing IDs in post__in, we only want to retun posts with an ID in both
+	 *   the existing set and the new set
+	 *
+	 * While this method is public, it should not be used as it will eventually be deprecated and
+	 * it's only made publicly available for other Subscriptions methods until Subscriptions
+	 * requires WC 3.0, and can rely on using methods in the data store rather than a hack like
+	 * pulling this for use outside of the admin context.
+	 *
+	 * @param array $query_vars
+	 * @param array $post_ids
+	 * @return array
+	 */
+	public static function set_post__in_query_var( $query_vars, $post_ids ) {
+
+		if ( empty( $post_ids ) ) {
+			// No posts for this user
+			$query_vars['post__in'] = self::$post__in_none;
+		} elseif ( ! isset( $query_vars['post__in'] ) ) {
+			// No other posts limitations, include all of these posts
+			$query_vars['post__in'] = $post_ids;
+		} elseif ( self::$post__in_none !== $query_vars['post__in'] ) {
+			// Existing post limitation, we only want to include existing IDs that are also in this new set of IDs
+			$intersecting_post_ids  = array_intersect( $query_vars['post__in'], $post_ids );
+			$query_vars['post__in'] = empty( $intersecting_post_ids ) ? self::$post__in_none : $intersecting_post_ids;
+		}
+
+		return $query_vars;
 	}
 
 	/**
@@ -1129,5 +1125,3 @@ class WCS_Admin_Post_Types {
 		<?php
 	}
 }
-
-new WCS_Admin_Post_Types();

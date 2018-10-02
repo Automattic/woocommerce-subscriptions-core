@@ -31,6 +31,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		'_schedule_end',
 		'_schedule_payment_retry',
 		'_subscription_switch_data',
+		'_schedule_start',
 	);
 
 	/**
@@ -54,6 +55,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		'_schedule_cancelled'       => 'schedule_cancelled',
 		'_schedule_end'             => 'schedule_end',
 		'_schedule_payment_retry'   => 'schedule_payment_retry',
+		'_schedule_start'           => 'schedule_start',
 
 		'_subscription_switch_data' => 'switch_data',
 	);
@@ -62,6 +64,25 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * Constructor.
 	 */
 	public function __construct() {
+
+		// Register any custom date types as internal meta keys and props.
+		foreach ( wcs_get_subscription_date_types() as $date_type => $date_name ) {
+			// The last payment date is derived from other sources and shouldn't be stored on a subscription.
+			if ( 'last_payment' === $date_type ) {
+				continue;
+			}
+
+			$meta_key = wcs_get_date_meta_key( $date_type );
+
+			// Skip any dates which are already core date types. We don't want custom date types to override them.
+			if ( isset( $this->subscription_meta_keys_to_props[ $meta_key ] ) ) {
+				continue;
+			}
+
+			$this->subscription_meta_keys_to_props[ $meta_key ] = wcs_maybe_prefix_key( $date_type, 'schedule_' );
+			$this->subscription_internal_meta_keys[]            = $meta_key;
+		}
+
 		// Exclude the subscription related meta data we set and manage manually from the objects "meta" data
 		$this->internal_meta_keys = array_merge( $this->internal_meta_keys, $this->subscription_internal_meta_keys );
 	}
@@ -75,6 +96,29 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	public function create( &$subscription ) {
 		parent::create( $subscription );
 		do_action( 'woocommerce_new_subscription', $subscription->get_id() );
+	}
+
+	/**
+	 * Returns an array of meta for an object.
+	 *
+	 * Ignore meta data that we don't want accessible on the object via meta APIs.
+	 *
+	 * @since  2.3.0
+	 * @param  WC_Data $object
+	 * @return array
+	 */
+	public function read_meta( &$object ) {
+		$meta_data = parent::read_meta( $object );
+
+		$props_to_ignore = $this->get_props_to_ignore();
+
+		foreach ( $meta_data as $index => $meta_object ) {
+			if ( array_key_exists( $meta_object->meta_key, $props_to_ignore ) ) {
+				unset( $meta_data[ $index ] );
+			}
+		}
+
+		return $meta_data;
 	}
 
 	/**
@@ -99,11 +143,22 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 				// Dates are set via update_dates() to make sure relationships between dates are validated
 				if ( 0 === strpos( $prop_key, 'schedule' ) ) {
 					$date_type = str_replace( 'schedule_', '', $prop_key );
+
+					if ( 'start' === $date_type && ! $meta_value ) {
+						$meta_value = $subscription->get_date( 'date_created' );
+					}
+
 					$dates_to_set[ $date_type ] = ( false == $meta_value ) ? 0 : $meta_value;
 				} else {
 					$props_to_set[ $prop_key ] = $meta_value;
 				}
 			}
+		}
+
+		// On WC 3.5.0 the ID of the user that placed the order was moved from the post meta _customer_user to the post_author field in the wp_posts table.
+		// If the update routine didn't manage to cover subscriptions, we need to use the value stored as post meta until our own update finishes.
+		if ( version_compare( get_option( 'woocommerce_db_version' ), '3.5.0', '>=' ) && 1 == $post_object->post_author && get_option( 'wcs_subscription_post_author_upgrade_is_scheduled', false ) ) {
+			$props_to_set['customer_id'] = get_post_meta( $subscription->get_id(), '_customer_user', true );
 		}
 
 		$subscription->update_dates( $dates_to_set );
@@ -238,9 +293,9 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		// We only want IDs from the parent method
 		$parent_args['return'] = 'ids';
 
-		$subscriptions = parent::get_orders( $parent_args );
+		$subscriptions = wc_get_orders( $parent_args );
 
-		if ( $args['paginate'] ) {
+		if ( isset( $args['paginate'] ) && $args['paginate'] ) {
 
 			if ( 'objects' === $args['return'] ) {
 				$return = array_map( 'wcs_get_subscription', $subscriptions->orders );
@@ -282,7 +337,21 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 			'_schedule_cancelled',
 			'_schedule_end',
 			'_schedule_payment_retry',
+			'_schedule_start',
 		);
+
+		// Add any custom date types to the date meta keys we need to save.
+		foreach ( wcs_get_subscription_date_types() as $date_type => $date_name ) {
+			if ( 'last_payment' === $date_type ) {
+				continue;
+			}
+
+			$date_meta_key = wcs_get_date_meta_key( $date_type );
+
+			if ( ! in_array( $date_meta_key, $date_meta_keys ) ) {
+				$date_meta_keys[] = $date_meta_key;
+			}
+		}
 
 		$date_meta_keys_to_props = array_intersect_key( $this->subscription_meta_keys_to_props, array_flip( $date_meta_keys ) );
 
@@ -331,6 +400,22 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 */
 	protected function get_props_to_update( $object, $meta_key_to_props, $meta_type = 'post' ) {
 		$props_to_update = parent::get_props_to_update( $object, $meta_key_to_props, $meta_type );
+		$props_to_ignore = $this->get_props_to_ignore();
+
+		foreach ( $props_to_ignore as $meta_key => $prop ) {
+			unset( $props_to_update[ $meta_key ] );
+		}
+
+		return $props_to_update;
+	}
+
+	/**
+	 * Get the props set on a subscription which we don't want used on a subscription, which may be
+	 * inherited order meta data, or other values using the post meta data store but not as props.
+	 *
+	 * @return array A mapping of meta keys => prop names
+	 */
+	protected function get_props_to_ignore() {
 
 		$props_to_ignore = array(
 			'_transaction_id' => 'transaction_id',
@@ -339,10 +424,83 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 			'_cart_hash'      => 'cart_hash',
 		);
 
-		foreach ( $props_to_ignore as $meta_key => $prop ) {
-			unset( $props_to_update[ $meta_key ] );
+		return apply_filters( 'wcs_subscription_data_store_props_to_ignore', $props_to_ignore, $this );
+	}
+
+	/**
+	 * Search subscription data for a term and returns subscription ids
+	 *
+	 * @param string $term Term to search
+	 * @return array of subscription ids
+	 * @since 2.3.0
+	 */
+	public function search_subscriptions( $term ) {
+		global $wpdb;
+
+		$subscription_ids = array();
+
+		$search_fields = array_map( 'wc_clean', apply_filters( 'woocommerce_shop_subscription_search_fields', array(
+			'_order_key',
+			'_billing_address_index',
+			'_shipping_address_index',
+			'_billing_email',
+		) ) );
+
+		if ( is_numeric( $term ) ) {
+			$subscription_ids[] = absint( $term );
 		}
 
-		return $props_to_update;
+		if ( ! empty( $search_fields ) ) {
+
+			$subscription_ids = array_unique( array_merge(
+				$wpdb->get_col(
+					$wpdb->prepare( "
+						SELECT DISTINCT p1.post_id
+						FROM {$wpdb->postmeta} p1
+						WHERE p1.meta_value LIKE '%%%s%%'", $wpdb->esc_like( wc_clean( $term ) ) ) . " AND p1.meta_key IN ('" . implode( "','", array_map( 'esc_sql', $search_fields ) ) . "')"
+				),
+				$wpdb->get_col(
+					$wpdb->prepare( "
+						SELECT order_id
+						FROM {$wpdb->prefix}woocommerce_order_items as order_items
+						WHERE order_item_name LIKE '%%%s%%'
+						",
+						$wpdb->esc_like( wc_clean( $term ) )
+					)
+				),
+				$wpdb->get_col(
+					$wpdb->prepare( "
+						SELECT p1.ID
+						FROM {$wpdb->posts} p1
+						INNER JOIN {$wpdb->postmeta} p2 ON p1.ID = p2.post_id
+						INNER JOIN {$wpdb->users} u ON p2.meta_value = u.ID
+						WHERE u.user_email LIKE '%%%s%%'
+						AND p2.meta_key = '_customer_user'
+						AND p1.post_type = 'shop_subscription'
+						",
+						esc_attr( $term )
+					)
+				),
+				$subscription_ids
+			) );
+		}
+
+		return apply_filters( 'woocommerce_shop_subscription_search_results', $subscription_ids, $term, $search_fields );
+	}
+
+	/**
+	 * Get the user IDs for customers who have a subscription.
+	 *
+	 * @since 3.4.3
+	 * @return array The user IDs.
+	 */
+	public function get_subscription_customer_ids() {
+		global $wpdb;
+
+		return $wpdb->get_col(
+			"SELECT DISTINCT meta_value
+			FROM {$wpdb->postmeta} AS subscription_meta INNER JOIN {$wpdb->posts} AS posts ON subscription_meta.post_id = posts.ID
+			WHERE subscription_meta.meta_key = '_customer_user' AND posts.post_type = 'shop_subscription'"
+		);
 	}
 }

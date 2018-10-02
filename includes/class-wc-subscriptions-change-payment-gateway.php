@@ -32,7 +32,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		add_action( 'woocommerce_loaded', __CLASS__ . '::attach_dependant_hooks' );
 
 		// Keep a record of any messages or errors that should be displayed
-		add_action( 'before_woocommerce_pay', __CLASS__ . '::store_pay_shortcode_mesages', 100 );
+		add_action( 'before_woocommerce_pay', __CLASS__ . '::store_pay_shortcode_messages', 100 );
 
 		// Hijack the default pay shortcode
 		add_action( 'after_woocommerce_pay', __CLASS__ . '::maybe_replace_pay_shortcode', 100 );
@@ -99,21 +99,33 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	}
 
 	/**
-	 * Store any messages or errors added by other plugins, particularly important for those occasions when the new payment
-	 * method caused and error or failure.
+	 * Store any messages or errors added by other plugins.
 	 *
-	 * @since 1.4
+	 * This is particularly important for those occasions when the new payment method caused and error or failure.
+	 *
+	 * @since 2.3.6
 	 */
-	public static function store_pay_shortcode_mesages() {
-
+	public static function store_pay_shortcode_messages() {
 		if ( wc_notice_count( 'notice' ) > 0 ) {
-			self::$woocommerce_messages  = wc_get_notices( 'success' );
+			self::$woocommerce_messages = wc_get_notices( 'success' );
 			self::$woocommerce_messages += wc_get_notices( 'notice' );
 		}
 
 		if ( wc_notice_count( 'error' ) > 0 ) {
 			self::$woocommerce_errors = wc_get_notices( 'error' );
 		}
+	}
+
+	/**
+	 * Store messages ore errors added by other plugins.
+	 *
+	 * @since 1.4
+	 * @since 2.3.6 Deprecated in favor of the method with proper spelling.
+	 * @deprecated
+	 */
+	public static function store_pay_shortcode_mesages() {
+		wcs_deprecated_function( __METHOD__, '2.3.6', __CLASS__ . '::store_pay_shortcode_messages' );
+		self::store_pay_shortcode_messages();
 	}
 
 	/**
@@ -430,8 +442,29 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 * @since 1.4
 	 */
 	public static function get_available_payment_gateways( $available_gateways ) {
+		$is_change_payment_method_request = isset( $_GET['change_payment_method'] );
 
-		if ( apply_filters( 'woocommerce_subscriptions_filter_payment_gateways_change_customer_support', isset( $_GET['change_payment_method'] ) || wcs_cart_contains_failed_renewal_order_payment() ) ) {
+		// If we're on a order-pay page but not changing a subscription's payment method, exit early - we don't want to filter the available payment gateways while the customer pays for an order.
+		if ( ! $is_change_payment_method_request && is_wc_endpoint_url( 'order-pay' ) ) {
+			return $available_gateways;
+		}
+
+		$renewal_order_cart_item             = wcs_cart_contains_failed_renewal_order_payment();
+		$cart_contains_failed_renewal        = (bool) $renewal_order_cart_item;
+		$cart_contains_failed_manual_renewal = false;
+
+		/**
+		 * If there's no change payment request and the cart contains a failed renewal order, check if the subscription is manual.
+		 *
+		 * We update failing, non-manual subscriptions in @see WC_Subscriptions_Change_Payment_Gateway::change_failing_payment_method() so we
+		 * don't need to apply our available payment gateways filter if the subscription is manual.
+		 */
+		if ( ! $is_change_payment_method_request && $cart_contains_failed_renewal ) {
+			$subscription = wcs_get_subscription( $renewal_order_cart_item['subscription_renewal']['subscription_id'] );
+			$cart_contains_failed_manual_renewal = $subscription->is_manual();
+		}
+
+		if ( apply_filters( 'wcs_payment_gateways_change_payment_method', $is_change_payment_method_request || ( $cart_contains_failed_renewal && ! $cart_contains_failed_manual_renewal ) ) ) {
 			foreach ( $available_gateways as $gateway_id => $gateway ) {
 				if ( true !== $gateway->supports( 'subscription_payment_method_change_customer' ) ) {
 					unset( $available_gateways[ $gateway_id ] );
@@ -450,7 +483,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	public static function maybe_zero_total( $total, $subscription ) {
 		global $wp;
 
-		if ( ! empty( $_POST['_wcsnonce'] ) && wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_change_payment_method' ) && isset( $_POST['woocommerce_change_payment'] ) && $subscription->get_order_key() == $_GET['key'] && $subscription->get_id() == absint( $_POST['woocommerce_change_payment'] ) ) {
+		if ( ! empty( $_POST['_wcsnonce'] ) && wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_change_payment_method' ) && isset( $_POST['woocommerce_change_payment'] ) && wcs_is_subscription( $subscription ) && $subscription->get_order_key() == $_GET['key'] && $subscription->get_id() == absint( $_POST['woocommerce_change_payment'] ) ) {
 			$total = 0;
 		} elseif ( ! self::$is_request_to_change_payment && isset( $wp->query_vars['order-pay'] ) && wcs_is_subscription( absint( $wp->query_vars['order-pay'] ) ) ) {
 			// if the request to pay for the order belongs to a subscription but there's no GET params for changing payment method, the receipt page is being used to collect credit card details so we still need to $0 the total
@@ -631,4 +664,3 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		return $subscription_can_be_changed;
 	}
 }
-WC_Subscriptions_Change_Payment_Gateway::init();

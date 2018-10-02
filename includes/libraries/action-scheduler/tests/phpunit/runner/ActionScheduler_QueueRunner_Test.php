@@ -6,7 +6,7 @@
  */
 class ActionScheduler_QueueRunner_Test extends ActionScheduler_UnitTestCase {
 	public function test_create_runner() {
-		$store = new ActionScheduler_wpPostStore();
+		$store = ActionScheduler::store();
 		$runner = new ActionScheduler_QueueRunner( $store );
 		$actions_run = $runner->run();
 
@@ -14,7 +14,7 @@ class ActionScheduler_QueueRunner_Test extends ActionScheduler_UnitTestCase {
 	}
 
 	public function test_run() {
-		$store = new ActionScheduler_wpPostStore();
+		$store = ActionScheduler::store();
 		$runner = new ActionScheduler_QueueRunner( $store );
 
 		$mock = new MockAction();
@@ -36,7 +36,7 @@ class ActionScheduler_QueueRunner_Test extends ActionScheduler_UnitTestCase {
 	}
 
 	public function test_run_with_future_actions() {
-		$store = new ActionScheduler_wpPostStore();
+		$store = ActionScheduler::store();
 		$runner = new ActionScheduler_QueueRunner( $store );
 
 		$mock = new MockAction();
@@ -64,7 +64,7 @@ class ActionScheduler_QueueRunner_Test extends ActionScheduler_UnitTestCase {
 	}
 
 	public function test_completed_action_status() {
-		$store = new ActionScheduler_wpPostStore();
+		$store = ActionScheduler::store();
 		$runner = new ActionScheduler_QueueRunner( $store );
 
 		$random = md5(rand());
@@ -81,7 +81,7 @@ class ActionScheduler_QueueRunner_Test extends ActionScheduler_UnitTestCase {
 	}
 
 	public function test_next_instance_of_action() {
-		$store = new ActionScheduler_wpPostStore();
+		$store = ActionScheduler::store();
 		$runner = new ActionScheduler_QueueRunner( $store );
 
 		$random = md5(rand());
@@ -104,7 +104,7 @@ class ActionScheduler_QueueRunner_Test extends ActionScheduler_UnitTestCase {
 
 
 		$this->assertEquals( $random, $new_action->get_hook() );
-		$this->assertEquals( $schedule->next(as_get_datetime_object()), $new_action->get_schedule()->next(as_get_datetime_object()) );
+		$this->assertEquals( $schedule->next(as_get_datetime_object())->getTimestamp(), $new_action->get_schedule()->next(as_get_datetime_object())->getTimestamp() );
 	}
 
 	public function test_hooked_into_wp_cron() {
@@ -113,13 +113,13 @@ class ActionScheduler_QueueRunner_Test extends ActionScheduler_UnitTestCase {
 	}
 
 	public function test_batch_count_limit() {
-		$store = new ActionScheduler_wpPostStore();
+		$store = ActionScheduler::store();
 		$runner = new ActionScheduler_QueueRunner( $store );
 
 		$mock = new MockAction();
 		$random = md5(rand());
 		add_action( $random, array( $mock, 'action' ) );
-		$schedule = new ActionScheduler_SimpleSchedule(new DateTime('1 day ago'));
+		$schedule = new ActionScheduler_SimpleSchedule(new ActionScheduler_DateTime('1 day ago'));
 
 		for ( $i = 0 ; $i < 30 ; $i++ ) {
 			$action = new ActionScheduler_Action( $random, array($random), $schedule );
@@ -149,11 +149,11 @@ class ActionScheduler_QueueRunner_Test extends ActionScheduler_UnitTestCase {
 	}
 
 	public function test_changing_batch_count_limit() {
-		$store = new ActionScheduler_wpPostStore();
+		$store = ActionScheduler::store();
 		$runner = new ActionScheduler_QueueRunner( $store );
 
 		$random = md5(rand());
-		$schedule = new ActionScheduler_SimpleSchedule(new DateTime('1 day ago'));
+		$schedule = new ActionScheduler_SimpleSchedule(new ActionScheduler_DateTime('1 day ago'));
 
 		for ( $i = 0 ; $i < 30 ; $i++ ) {
 			$action = new ActionScheduler_Action( $random, array($random), $schedule );
@@ -207,4 +207,3 @@ class ActionScheduler_QueueRunner_Test extends ActionScheduler_UnitTestCase {
 		return 6;
 	}
 }
- 

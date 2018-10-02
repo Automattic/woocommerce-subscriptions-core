@@ -30,13 +30,13 @@ class WCS_Retry_Admin {
 
 			// Display the number of retries in the Orders list table
 			add_action( 'manage_shop_order_posts_custom_column', __CLASS__ . '::add_column_content', 20, 2 );
+
+			add_filter( 'wcs_system_status', array( $this, 'add_system_status_content' ) );
 		}
 	}
 
 	/**
 	 * Add a meta box to the Edit Order screen to display the retries relating to that order
-	 *
-	 * @return null
 	 */
 	public function add_meta_boxes() {
 		global $current_screen, $post_ID;
@@ -52,9 +52,10 @@ class WCS_Retry_Admin {
 	 * and when that is the case, do not display the next payment date (because it will still be set to the original
 	 * payment date, in the past).
 	 *
-	 * @param bool $show_date_type
-	 * @param string $date_key
+	 * @param bool            $show_date_type
+	 * @param string          $date_key
 	 * @param WC_Subscription $the_subscription
+	 *
 	 * @return bool
 	 */
 	public function maybe_hide_date_type( $show_date_type, $date_key, $the_subscription ) {
@@ -71,8 +72,9 @@ class WCS_Retry_Admin {
 	/**
 	 * Dispay the number of retries on a renewal order in the Orders list table.
 	 *
-	 * @param string $column The string of the current column
-	 * @param int $post_id The ID of the order
+	 * @param string $column  The string of the current column
+	 * @param int    $post_id The ID of the order
+	 *
 	 * @since 2.1
 	 */
 	public static function add_column_content( $column, $post_id ) {
@@ -93,19 +95,19 @@ class WCS_Retry_Admin {
 				foreach ( $retry_counts as $retry_status => $retry_count ) {
 
 					switch ( $retry_status ) {
-						case 'pending' :
+						case 'pending':
 							$tool_tip .= sprintf( _n( '%d Pending Payment Retry', '%d Pending Payment Retries', $retry_count, 'woocommerce-subscriptions' ), $retry_count );
 							break;
-						case 'processing' :
+						case 'processing':
 							$tool_tip .= sprintf( _n( '%d Processing Payment Retry', '%d Processing Payment Retries', $retry_count, 'woocommerce-subscriptions' ), $retry_count );
 							break;
-						case 'failed' :
+						case 'failed':
 							$tool_tip .= sprintf( _n( '%d Failed Payment Retry', '%d Failed Payment Retries', $retry_count, 'woocommerce-subscriptions' ), $retry_count );
 							break;
-						case 'complete' :
+						case 'complete':
 							$tool_tip .= sprintf( _n( '%d Successful Payment Retry', '%d Successful Payment Retries', $retry_count, 'woocommerce-subscriptions' ), $retry_count );
 							break;
-						case 'cancelled' :
+						case 'cancelled':
 							$tool_tip .= sprintf( _n( '%d Cancelled Payment Retry', '%d Cancelled Payment Retries', $retry_count, 'woocommerce-subscriptions' ), $retry_count );
 							break;
 					}
@@ -122,11 +124,15 @@ class WCS_Retry_Admin {
 	 * Add a setting to enable/disable the retry system
 	 *
 	 * @param array
+	 *
 	 * @return null
 	 */
 	public function add_settings( $settings ) {
 
-		$misc_section_end = wp_list_filter( $settings, array( 'id' => 'woocommerce_subscriptions_miscellaneous', 'type' => 'sectionend' ) );
+		$misc_section_end = wp_list_filter( $settings, array(
+			'id'   => 'woocommerce_subscriptions_miscellaneous',
+			'type' => 'sectionend',
+		) );
 
 		$spliced_array = array_splice( $settings, key( $misc_section_end ), 0, array(
 			array(
@@ -140,5 +146,62 @@ class WCS_Retry_Admin {
 		) );
 
 		return $settings;
+	}
+
+	/**
+	 * Add system status information about custom retry rules.
+	 *
+	 * @param array $data
+	 *
+	 * @return array
+	 */
+	public static function add_system_status_content( $data ) {
+		$has_custom_retry_rules      = has_action( 'wcs_default_retry_rules' );
+		$has_custom_retry_rule_class = has_action( 'wcs_retry_rule_class' );
+		$has_custom_raw_retry_rule   = has_action( 'wcs_get_retry_rule_raw' );
+		$has_custom_retry_rule       = has_action( 'wcs_get_retry_rule' );
+		$has_retry_on_post_store     = (bool) WCS_Retry_Stores::get_post_store()->get_retries( array( 'limit' => 1 ), 'ids' );
+
+		$data['wcs_retry_rules_overridden'] = array(
+			'name'      => _x( 'Custom Retry Rules', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'label'     => 'Custom Retry Rules',
+			'mark_icon' => $has_custom_retry_rules ? 'warning' : 'yes',
+			'note'      => $has_custom_retry_rules ? 'Yes' : 'No',
+			'success'   => ! $has_custom_retry_rules,
+		);
+
+		$data['wcs_retry_rule_class_overridden'] = array(
+			'name'      => _x( 'Custom Retry Rule Class', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'label'     => 'Custom Retry Rule Class',
+			'mark_icon' => $has_custom_retry_rule_class ? 'warning' : 'yes',
+			'note'      => $has_custom_retry_rule_class ? 'Yes' : 'No',
+			'success'   => ! $has_custom_retry_rule_class,
+		);
+
+		$data['wcs_raw_retry_rule_overridden'] = array(
+			'name'      => _x( 'Custom Raw Retry Rule', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'label'     => 'Custom Raw Retry Rule',
+			'mark_icon' => $has_custom_raw_retry_rule ? 'warning' : 'yes',
+			'note'      => $has_custom_raw_retry_rule ? 'Yes' : 'No',
+			'success'   => ! $has_custom_raw_retry_rule,
+		);
+
+		$data['wcs_retry_rule_overridden'] = array(
+			'name'      => _x( 'Custom Retry Rule', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'label'     => 'Custom Retry Rule',
+			'mark_icon' => $has_custom_retry_rule ? 'warning' : 'yes',
+			'note'      => $has_custom_retry_rule ? 'Yes' : 'No',
+			'success'   => ! $has_custom_retry_rule,
+		);
+
+		$data['wcs_retry_data_migration_status'] = array(
+			'name'      => _x( 'Retries Migration Status', 'label for the system status page', 'woocommerce-subscriptions' ),
+			'label'     => 'Retries Migration Status',
+			'mark_icon' => $has_retry_on_post_store ? 'no-alt' : 'yes',
+			'note'      => $has_retry_on_post_store ? 'Incomplete' : 'Completed',
+			'success'   => ! $has_retry_on_post_store,
+		);
+
+		return $data;
 	}
 }

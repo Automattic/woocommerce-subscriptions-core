@@ -74,18 +74,21 @@ class WC_Subscriptions_Addresses {
 			} elseif ( ( ( isset( $wp->query_vars['edit-address'] ) && ! empty( $wp->query_vars['edit-address'] ) ) || isset( $_GET['address'] ) ) ) {
 
 				if ( isset( $wp->query_vars['edit-address'] ) ) {
-					$address_type = esc_attr( $wp->query_vars['edit-address'] ) . ' ';
+					$address_type = esc_attr( $wp->query_vars['edit-address'] );
 				} else {
-					$address_type = ( ! isset( $_GET['address'] ) ) ? esc_attr( $_GET['address'] ) . ' ' : '';
+					$address_type = ( ! isset( $_GET['address'] ) ) ? esc_attr( $_GET['address'] ) : '';
 				}
 
 				// translators: $1: address type (Shipping Address / Billing Address), $2: opening <strong> tag, $3: closing </strong> tag
-				$label = sprintf( __( 'Update the %1$s used for %2$sall%3$s of my active subscriptions', 'woocommerce-subscriptions' ), wcs_get_address_type_to_display( $address_type ), '<strong>', '</strong>' );
+				$label = sprintf( esc_html__( 'Update the %1$s used for %2$sall%3$s of my active subscriptions', 'woocommerce-subscriptions' ), wcs_get_address_type_to_display( $address_type ), '<strong>', '</strong>' );
 
-				woocommerce_form_field( 'update_all_subscriptions_addresses', array(
-					'type'  => 'checkbox',
-					'class' => array( 'form-row-wide' ),
-					'label' => $label,
+				woocommerce_form_field(
+					'update_all_subscriptions_addresses',
+					array(
+						'type'    => 'checkbox',
+						'class'   => array( 'form-row-wide' ),
+						'label'   => $label,
+						'default' => apply_filters( 'wcs_update_all_subscriptions_addresses_checked', false ),
 					)
 				);
 			}
@@ -177,5 +180,3 @@ class WC_Subscriptions_Addresses {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Order::set_address() or WC_Subscription::set_address()' );
 	}
 }
-
-WC_Subscriptions_Addresses::init();

@@ -33,7 +33,7 @@ class WCS_Meta_Box_Related_Orders {
 
 		add_action( 'woocommerce_subscriptions_related_orders_meta_box_rows', __CLASS__ . '::output_rows', 10 );
 
-		include_once( 'views/html-related-orders-table.php' );
+		include_once( dirname( __FILE__ ) . '/views/html-related-orders-table.php' );
 
 		do_action( 'woocommerce_subscriptions_related_orders_meta_box', $order, $post );
 	}
@@ -48,10 +48,12 @@ class WCS_Meta_Box_Related_Orders {
 
 		$subscriptions = array();
 		$orders        = array();
+		$is_subscription_screen = wcs_is_subscription( $post->ID );
 
 		// On the subscription page, just show related orders
-		if ( wcs_is_subscription( $post->ID ) ) {
-			$subscriptions[] = wcs_get_subscription( $post->ID );
+		if ( $is_subscription_screen ) {
+			$this_subscription = wcs_get_subscription( $post->ID );
+			$subscriptions[]   = $this_subscription;
 		} elseif ( wcs_order_contains_subscription( $post->ID, array( 'parent', 'renewal' ) ) ) {
 			$subscriptions = wcs_get_subscriptions_for_order( $post->ID, array( 'order_type' => array( 'parent', 'renewal' ) ) );
 		}
@@ -65,22 +67,17 @@ class WCS_Meta_Box_Related_Orders {
 		//Resubscribed
 		$initial_subscriptions = array();
 
-		if ( wcs_is_subscription( $post->ID ) ) {
+		if ( $is_subscription_screen ) {
 
-			$initial_subscriptions = wcs_get_subscriptions_for_resubscribe_order( $post->ID );
+			$initial_subscriptions = wcs_get_subscriptions_for_resubscribe_order( $this_subscription );
 
-			$resubscribed_subscriptions = get_posts( array(
-				'meta_key'       => '_subscription_resubscribe',
-				'meta_value'     => $post->ID,
-				'post_type'      => 'shop_subscription',
-				'post_status'    => 'any',
-				'posts_per_page' => -1,
-			) );
+			$resubscribe_order_ids = WCS_Related_Order_Store::instance()->get_related_order_ids( $this_subscription, 'resubscribe' );
 
-			foreach ( $resubscribed_subscriptions as $subscription ) {
-				$subscription = wcs_get_subscription( $subscription );
-				wcs_set_objects_property( $subscription, 'relationship', _x( 'Resubscribed Subscription', 'relation to order', 'woocommerce-subscriptions' ), 'set_prop_only' );
-				$orders[] = $subscription;
+			foreach ( $resubscribe_order_ids as $order_id ) {
+				$order    = wc_get_order( $order_id );
+				$relation = wcs_is_subscription( $order ) ? _x( 'Resubscribed Subscription', 'relation to order', 'woocommerce-subscriptions' ) : _x( 'Resubscribe Order', 'relation to order', 'woocommerce-subscriptions' );
+				wcs_set_objects_property( $order, 'relationship', $relation, 'set_prop_only' );
+				$orders[] = $order;
 			}
 		} else if ( wcs_order_contains_subscription( $post->ID, array( 'resubscribe' ) ) ) {
 			$initial_subscriptions = wcs_get_subscriptions_for_order( $post->ID, array( 'order_type' => array( 'resubscribe' ) ) );
@@ -118,7 +115,7 @@ class WCS_Meta_Box_Related_Orders {
 			if ( wcs_get_objects_property( $order, 'id' ) == $post->ID ) {
 				continue;
 			}
-			include( 'views/html-related-orders-row.php' );
+			include( dirname( __FILE__ ) . '/views/html-related-orders-row.php' );
 		}
 	}
 }

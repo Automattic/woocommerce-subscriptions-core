@@ -31,6 +31,11 @@ class WC_Subscriptions_Upgrader {
 	public static $updated_to_wc_2_0;
 
 	/**
+	 * @var array An array of WCS_Background_Updater objects used to run upgrade scripts in the background.
+	 */
+	protected static $background_updaters = array();
+
+	/**
 	 * Hooks upgrade function to init.
 	 *
 	 * @since 1.2
@@ -92,6 +97,17 @@ class WC_Subscriptions_Upgrader {
 		add_action( 'wcs_repair_end_of_prepaid_term_actions', __CLASS__ . '::repair_end_of_prepaid_term_actions' );
 
 		add_action( 'wcs_repair_subscriptions_containing_synced_variations', __CLASS__ . '::repair_subscription_contains_sync_meta' );
+
+		// When WC is updated from a version prior to 3.0 to a version after 3.0, add subscription address indexes. Must be hooked on before WC runs its updates, which occur on priority 5.
+		add_action( 'init', array( __CLASS__, 'maybe_add_subscription_address_indexes' ), 2 );
+
+		// Hooks into WC's wc_update_350_order_customer_id upgrade routine.
+		add_action( 'init', array( __CLASS__, 'maybe_update_subscription_post_author' ), 2 );
+
+		add_action( 'admin_notices', array( __CLASS__, 'maybe_add_downgrade_notice' ) );
+		add_action( 'admin_notices', array( __CLASS__, 'maybe_display_external_object_cache_warning' ) );
+
+		add_action( 'init', array( __CLASS__, 'initialise_background_updaters' ), 0 );
 	}
 
 	/**
@@ -140,6 +156,11 @@ class WC_Subscriptions_Upgrader {
 
 		update_option( WC_Subscriptions_Admin::$option_prefix . '_previous_version', self::$active_version );
 
+		/**
+		 * before upgrade hook.
+		 */
+		do_action( 'woocommerce_subscriptions_before_upgrade', WC_Subscriptions::$version, self::$active_version );
+
 		// Update the hold stock notification to be one week (if it's still at the default 60 minutes) to prevent cancelling subscriptions using manual renewals and payment methods that can take more than 1 hour (i.e. PayPal eCheck)
 		if ( '0' == self::$active_version || version_compare( self::$active_version, '1.4', '<' ) ) {
 
@@ -178,10 +199,7 @@ class WC_Subscriptions_Upgrader {
 
 			// Delete cached subscription length ranges to force an update with 2.1
 			WC_Subscriptions::$cache->delete_cached( 'wcs-sub-ranges-' . get_locale() );
-
 			WCS_Upgrade_Logger::add( 'v2.1: Deleted cached subscription ranges.' );
-
-			include_once( 'class-wcs-upgrade-2-1.php' );
 			WCS_Upgrade_2_1::set_cancelled_dates();
 
 			// Schedule report cache updates in the hopes that the data is ready and waiting for the store owner the first time they visit the reports pages
@@ -190,14 +208,34 @@ class WC_Subscriptions_Upgrader {
 
 		// Repair missing end_of_prepaid_term scheduled actions
 		if ( version_compare( self::$active_version, '2.2.0', '>=' ) && version_compare( self::$active_version, '2.2.7', '<' ) ) {
-			include_once( 'class-wcs-upgrade-2-2-7.php' );
 			WCS_Upgrade_2_2_7::schedule_end_of_prepaid_term_repair();
 		}
 
 		// Repair missing _contains_synced_subscription post meta
 		if ( version_compare( get_option( 'woocommerce_db_version' ), '3.0', '>=' ) && version_compare( self::$active_version, '2.2.0', '>=' ) && version_compare( self::$active_version, '2.2.9', '<' ) ) {
-			include_once( 'class-wcs-upgrade-2-2-9.php' );
 			WCS_Upgrade_2_2_9::schedule_repair();
+		}
+
+		// Repair subscriptions suspended via PayPal.
+		if ( version_compare( self::$active_version, '2.1.4', '>=' ) && version_compare( self::$active_version, '2.3.0', '<' ) ) {
+			self::$background_updaters['2.3']['suspended_paypal_repair']->schedule_repair();
+		}
+
+		// If the store is running WC 3.0, repair subscriptions with missing address indexes.
+		if ( '0' !== self::$active_version && version_compare( self::$active_version, '2.3.0', '<' ) && version_compare( WC()->version, '3.0', '>=' ) ) {
+			self::$background_updaters['2.3']['address_indexes_repair']->schedule_repair();
+		}
+
+		if ( version_compare( self::$active_version, '2.3.0', '>=' ) && version_compare( self::$active_version, '2.3.3', '<' ) && wp_using_ext_object_cache() ) {
+			$has_transient_cache = $wpdb->get_var( "SELECT option_id FROM {$wpdb->prefix}options WHERE option_name LIKE '_transient_wcs-related-orders-to%' OR option_name LIKE '_transient_wcs_user_subscriptions_%' LIMIT 1;" );
+
+			if ( ! empty( $has_transient_cache ) ) {
+				update_option( 'wcs_display_2_3_3_warning', 'yes' );
+			}
+		}
+
+		if ( version_compare( self::$active_version, '2.4.0', '<' ) ) {
+			self::$background_updaters['2.4']['start_date_metadata']->schedule_repair();
 		}
 
 		self::upgrade_complete();
@@ -294,9 +332,6 @@ class WC_Subscriptions_Upgrader {
 				break;
 
 			case 'products':
-
-				require_once( 'class-wcs-upgrade-1-5.php' );
-
 				$upgraded_product_count = WCS_Upgrade_1_5::upgrade_products();
 				$results = array(
 					// translators: placeholder is number of upgraded subscriptions
@@ -305,9 +340,6 @@ class WC_Subscriptions_Upgrader {
 				break;
 
 			case 'hooks':
-
-				require_once( 'class-wcs-upgrade-1-5.php' );
-
 				$upgraded_hook_count = WCS_Upgrade_1_5::upgrade_hooks( self::$upgrade_limit_hooks );
 				$results = array(
 					'upgraded_count' => $upgraded_hook_count,
@@ -317,10 +349,6 @@ class WC_Subscriptions_Upgrader {
 				break;
 
 			case 'subscriptions':
-
-				require_once( 'class-wcs-repair-2-0.php' );
-				require_once( 'class-wcs-upgrade-2-0.php' );
-
 				try {
 
 					$upgraded_subscriptions = WCS_Upgrade_2_0::upgrade_subscriptions( self::$upgrade_limit_subscriptions );
@@ -349,10 +377,6 @@ class WC_Subscriptions_Upgrader {
 				break;
 
 			case 'subscription_dates_repair':
-
-				require_once( 'class-wcs-upgrade-2-0.php' );
-				require_once( 'class-wcs-repair-2-0-2.php' );
-
 				$subscription_ids_to_repair = WCS_Repair_2_0_2::get_subscriptions_to_repair( self::$upgrade_limit_subscriptions );
 
 				try {
@@ -428,7 +452,7 @@ class WC_Subscriptions_Upgrader {
 	private static function upgrade_really_old_versions() {
 
 		if ( '0' != self::$active_version && version_compare( self::$active_version, '1.2', '<' ) ) {
-			include_once( 'class-wcs-upgrade-1-2.php' );
+			WCS_Upgrade_1_2::init();
 			self::generate_renewal_orders();
 			update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '1.2' );
 			$upgraded_versions = '1.2, ';
@@ -436,14 +460,14 @@ class WC_Subscriptions_Upgrader {
 
 		// Add Variable Subscription product type term
 		if ( '0' != self::$active_version && version_compare( self::$active_version, '1.3', '<' ) ) {
-			include_once( 'class-wcs-upgrade-1-3.php' );
+			WCS_Upgrade_1_3::init();
 			update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '1.3' );
 			$upgraded_versions .= '1.3 & ';
 		}
 
 		// Moving subscription meta out of user meta and into item meta
 		if ( '0' != self::$active_version && version_compare( self::$active_version, '1.4', '<' ) ) {
-			include_once( 'class-wcs-upgrade-1-4.php' );
+			WCS_Upgrade_1_4::init();
 			update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '1.4' );
 			$upgraded_versions .= '1.4.';
 		}
@@ -573,7 +597,7 @@ class WC_Subscriptions_Upgrader {
 		$about_page_url = self::$about_page_url;
 
 		@header( 'Content-Type: ' . get_option( 'html_type' ) . '; charset=' . get_option( 'blog_charset' ) );
-		include_once( 'templates/wcs-upgrade.php' );
+		include_once( dirname( __FILE__ ) . '/templates/wcs-upgrade.php' );
 		WCS_Upgrade_Logger::add( 'Loaded database upgrade helper' );
 	}
 
@@ -586,7 +610,7 @@ class WC_Subscriptions_Upgrader {
 	 * @since 1.4
 	 */
 	public static function upgrade_in_progress_notice() {
-		include_once( 'templates/wcs-upgrade-in-progress.php' );
+		include_once( dirname( __FILE__ ) . '/templates/wcs-upgrade-in-progress.php' );
 		WCS_Upgrade_Logger::add( 'Loaded database upgrade in progress notice...' );
 	}
 
@@ -629,7 +653,7 @@ class WC_Subscriptions_Upgrader {
 		$active_version = self::$active_version;
 		$settings_page  = admin_url( 'admin.php?page=wc-settings&tab=subscriptions' );
 
-		include_once( 'templates/wcs-about.php' );
+		include_once( dirname( __FILE__ ) . '/templates/wcs-about.php' );
 	}
 
 	/**
@@ -752,7 +776,6 @@ class WC_Subscriptions_Upgrader {
 	 * @since 2.2.7
 	 */
 	public static function repair_end_of_prepaid_term_actions() {
-		include_once( 'class-wcs-upgrade-2-2-7.php' );
 		WCS_Upgrade_2_2_7::repair_pending_cancelled_subscriptions();
 	}
 
@@ -762,8 +785,121 @@ class WC_Subscriptions_Upgrader {
 	 * @since 2.2.9
 	 */
 	public static function repair_subscription_contains_sync_meta() {
-		include_once( 'class-wcs-upgrade-2-2-9.php' );
 		WCS_Upgrade_2_2_9::repair_subscriptions_containing_synced_variations();
+	}
+
+	/**
+	 * Display an admin notice if the database version is greater than the active version of the plugin by at least one minor release (eg 1.1 and 1.0).
+	 *
+	 * @since 2.3.0
+	 */
+	public static function maybe_add_downgrade_notice() {
+
+		// If there's no downgrade, exit early. self::$active_version is a bit of a misnomer here but in an upgrade context it refers to the database version of the plugin.
+		if ( ! version_compare( wcs_get_minor_version_string( self::$active_version ), wcs_get_minor_version_string( WC_Subscriptions::$version ), '>' ) ) {
+			return;
+		}
+
+		$admin_notice = new WCS_Admin_Notice( 'error' );
+		$admin_notice->set_simple_content( sprintf( esc_html__( '%1$sWarning!%2$s It appears that you have downgraded %1$sWooCommerce Subscriptions%2$s from %3$s to %4$s. Downgrading the plugin in this way may cause issues. Please update to %3$s or higher, or %5$sopen a new support ticket%6$s for further assistance.', 'woocommerce-subscriptions' ),
+			'<strong>', '</strong>',
+			'<code>' . self::$active_version . '</code>',
+			'<code>' . WC_Subscriptions::$version . '</code>',
+			'<a href="https://woocommerce.com/my-account/marketplace-ticket-form/" target="_blank">', '</a>'
+		) );
+
+		$admin_notice->display();
+	}
+
+	/**
+	 * When updating WC to a version after 3.0 from a version prior to 3.0, schedule the repair script to add address indexes.
+	 *
+	 * @since 2.3.0
+	 */
+	public static function maybe_add_subscription_address_indexes() {
+		$woocommerce_active_version   = WC()->version;
+		$woocommerce_database_version = get_option( 'woocommerce_version' );
+
+		if ( $woocommerce_active_version !== $woocommerce_database_version && version_compare( $woocommerce_active_version, '3.0', '>=' ) && version_compare( $woocommerce_database_version, '3.0', '<' ) ) {
+			self::$background_updaters['2.3']['address_indexes_repair']->schedule_repair();
+		}
+	}
+
+	/**
+	 * Handles the WC 3.5.0 upgrade routine that moves customer IDs from post metadata to the 'post_author' column.
+	 *
+	 * @since 2.4.0
+	 */
+	public static function maybe_update_subscription_post_author() {
+		if ( version_compare( WC()->version, '3.5.0', '<' ) ) {
+			return;
+		}
+
+		// If WC hasn't run the update routine yet we can hook into theirs to update subscriptions, otherwise we'll need to schedule our own update.
+		if ( version_compare( get_option( 'woocommerce_db_version' ), '3.5.0', '<' ) ) {
+			self::$background_updaters['2.4']['subscription_post_author']->hook_into_wc_350_update();
+		} else if ( version_compare( self::$active_version, '2.4.0', '<' ) ) {
+			self::$background_updaters['2.4']['subscription_post_author']->schedule_repair();
+		}
+	}
+
+	/**
+	 * Load and initialise the background updaters.
+	 *
+	 * @since 2.4.0
+	 */
+	public static function initialise_background_updaters() {
+		$logger = new WC_logger();
+		self::$background_updaters['2.3']['suspended_paypal_repair'] = new WCS_Repair_Suspended_PayPal_Subscriptions( $logger );
+		self::$background_updaters['2.3']['address_indexes_repair']  = new WCS_Repair_Subscription_Address_Indexes( $logger );
+		self::$background_updaters['2.4']['start_date_metadata'] = new WCS_Repair_Start_Date_Metadata( $logger );
+		self::$background_updaters['2.4']['subscription_post_author'] = new WCS_Upgrade_Subscription_Post_Author( $logger );
+
+		// Init the updaters
+		foreach ( self::$background_updaters as $version => $updaters ) {
+			foreach ( $updaters as $updater ) {
+				$updater->init();
+			}
+		}
+	}
+
+	/**
+	 * Display an admin notice if the site had customer subscription and/or subscription renewal order cached data stored in the options table
+	 * and was using an external object cache at the time of updating to 2.3.3.
+	 *
+	 * Under these circumstances, there is a chance that the persistent caches introduced in 2.3 could contain invalid data.
+	 *
+	 * @see https://github.com/Prospress/woocommerce-subscriptions/issues/2822 for more details.
+	 * @since 2.3.3
+	 */
+	public static function maybe_display_external_object_cache_warning() {
+		$option_name = 'wcs_display_2_3_3_warning';
+		$nonce       = '_wcsnonce';
+		$action      = 'wcs_external_cache_warning';
+
+		// First, check if the notice is being dismissed.
+		if ( isset( $_GET[ $action ], $_GET[ $nonce ] ) && wp_verify_nonce( $_GET[ $nonce ], $action ) ) {
+			delete_option( $option_name );
+			return;
+		}
+
+		if ( 'yes' !== get_option( $option_name ) ) {
+			return;
+		}
+
+		$admin_notice = new WCS_Admin_Notice( 'error' );
+		$admin_notice->set_simple_content( sprintf( esc_html__( '%1$sWarning!%2$s We discovered an issue in %1$sWooCommerce Subscriptions 2.3.0 - 2.3.2%2$s that may cause your subscription renewal order and customer subscription caches to contain invalid data. For information about how to update the cached data, please %3$sopen a new support ticket%4$s.', 'woocommerce-subscriptions' ),
+			'<strong>', '</strong>',
+			'<a href="https://woocommerce.com/my-account/marketplace-ticket-form/" target="_blank">', '</a>'
+		) );
+		$admin_notice->set_actions( array(
+			array(
+				'name' => 'Dismiss',
+				'url'  => wp_nonce_url( add_query_arg( $action, 'dismiss' ), $action, $nonce ),
+			),
+		) );
+
+		$admin_notice->display();
 	}
 
 	/**
@@ -779,4 +915,3 @@ class WC_Subscriptions_Upgrader {
 		return WCS_Upgrade_1_4::is_user_upgraded( $user_id );
 	}
 }
-add_action( 'after_setup_theme', 'WC_Subscriptions_Upgrader::init', 11 );

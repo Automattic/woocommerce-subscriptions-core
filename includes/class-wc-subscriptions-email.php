@@ -36,17 +36,6 @@ class WC_Subscriptions_Email {
 	 * @since 1.4
 	 */
 	public static function add_emails( $email_classes ) {
-
-		require_once( 'emails/class-wcs-email-new-renewal-order.php' );
-		require_once( 'emails/class-wcs-email-new-switch-order.php' );
-		require_once( 'emails/class-wcs-email-customer-processing-renewal-order.php' );
-		require_once( 'emails/class-wcs-email-customer-completed-renewal-order.php' );
-		require_once( 'emails/class-wcs-email-customer-completed-switch-order.php' );
-		require_once( 'emails/class-wcs-email-customer-renewal-invoice.php' );
-		require_once( 'emails/class-wcs-email-cancelled-subscription.php' );
-		require_once( 'emails/class-wcs-email-expired-subscription.php' );
-		require_once( 'emails/class-wcs-email-on-hold-subscription.php' );
-
 		$email_classes['WCS_Email_New_Renewal_Order']        = new WCS_Email_New_Renewal_Order();
 		$email_classes['WCS_Email_New_Switch_Order']         = new WCS_Email_New_Switch_Order();
 		$email_classes['WCS_Email_Processing_Renewal_Order'] = new WCS_Email_Processing_Renewal_Order();
@@ -237,31 +226,23 @@ class WC_Subscriptions_Email {
 		}
 
 		if ( is_a( $order, 'WC_Abstract_Order' ) ) {
+			$show_download_links_callback = ( isset( $args['show_download_links'] ) && $args['show_download_links'] ) ? '__return_true' : '__return_false';
+			$show_purchase_note_callback  = ( isset( $args['show_purchase_note'] ) && $args['show_purchase_note'] ) ? '__return_true' : '__return_false';
 
-			if ( WC_Subscriptions::is_woocommerce_pre( '2.5' ) ) {
+			unset( $args['show_download_links'] );
+			unset( $args['show_purchase_note'] );
 
-				$items_table = call_user_func_array( array( $order, 'email_order_items_table' ), $args );
+			add_filter( 'woocommerce_order_is_download_permitted', $show_download_links_callback );
+			add_filter( 'woocommerce_order_is_paid', $show_purchase_note_callback );
+
+			if ( function_exists( 'wc_get_email_order_items' ) ) { // WC 3.0+
+				$items_table = wc_get_email_order_items( $order, $args );
 			} else {
-
-				// 2.5 doesn't support both the show_download_links or show_purchase_note parameters but uses $order->is_download_permitted and  $order->is_paid instead
-				$show_download_links_callback = ( isset( $args['show_download_links'] ) && $args['show_download_links'] ) ? '__return_true' : '__return_false';
-				$show_purchase_note_callback  = ( isset( $args['show_purchase_note'] ) && $args['show_purchase_note'] ) ? '__return_true' : '__return_false';
-
-				unset( $args['show_download_links'] );
-				unset( $args['show_purchase_note'] );
-
-				add_filter( 'woocommerce_order_is_download_permitted', $show_download_links_callback );
-				add_filter( 'woocommerce_order_is_paid', $show_purchase_note_callback );
-
-				if ( function_exists( 'wc_get_email_order_items' ) ) { // WC 3.0+
-					$items_table = wc_get_email_order_items( $order, $args );
-				} else {
-					$items_table = $order->email_order_items_table( $args );
-				}
-
-				remove_filter( 'woocommerce_order_is_download_permitted', $show_download_links_callback );
-				remove_filter( 'woocommerce_order_is_paid', $show_purchase_note_callback );
+				$items_table = $order->email_order_items_table( $args );
 			}
+
+			remove_filter( 'woocommerce_order_is_download_permitted', $show_download_links_callback );
+			remove_filter( 'woocommerce_order_is_paid', $show_purchase_note_callback );
 		}
 
 		return $items_table;
@@ -371,5 +352,3 @@ class WC_Subscriptions_Email {
 		_deprecated_function( __FUNCTION__, '2.0' );
 	}
 }
-
-WC_Subscriptions_Email::init();

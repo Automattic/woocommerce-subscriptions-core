@@ -1,12 +1,8 @@
 <?php
 
-$GLOBALS['wp_tests_options'] = array(
-	'active_plugins' => array(
-		basename(dirname(dirname(__FILE__))).'/action-scheduler.php',
-	),
-	'template' => 'twentythirteen',
-	'stylesheet' => 'twentythirteen',
-);
+$GLOBALS['wp_tests_options'][ 'template' ] = 'twentyseventeen';
+$GLOBALS['wp_tests_options'][ 'stylesheet' ] = 'twentyseventeen';
+$GLOBALS['wp_tests_options'][ 'active_plugins' ][] = basename( dirname( __DIR__ ) ) .'/action-scheduler.php';
 
 // Check for select constants defined as environment variables
 foreach ( array('WP_CONTENT_DIR', 'WP_CONTENT_URL', 'WP_PLUGIN_DIR', 'WP_PLUGIN_URL', 'WPMU_PLUGIN_DIR') as $env_constant ) {
@@ -28,4 +24,8 @@ if( false !== getenv( 'WP_TESTS_DIR' ) ) {
 	require dirname( dirname( dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) ) ) . '/tests/phpunit/includes/bootstrap.php';
 }
 
-include_once('ActionScheduler_UnitTestCase.php');
+if ( class_exists( 'PHPUnit\Framework\TestResult' ) ) { // PHPUnit 6.0 or newer
+	include_once('ActionScheduler_UnitTestCase.php');
+} else {
+	include_once('phpunit/deprecated/ActionScheduler_UnitTestCase.php');
+}

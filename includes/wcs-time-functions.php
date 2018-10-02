@@ -266,8 +266,8 @@ function wcs_add_months( $from_timestamp, $months_to_add ) {
  *
  * @param int $start_timestamp A Unix timestamp
  * @param int $end_timestamp A Unix timestamp at some time in the future
- * @param string $end_timestamp A unit of time, either day, week month or year.
- * @param string $unit_of_time A rounding method, either ceil (default) or floor for anything else
+ * @param string $unit_of_time A unit of time, either day, week month or year.
+ * @param string $rounding_method A rounding method, either ceil (default) or floor for anything else
  * @since 2.0
  */
 function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_of_time = 'month', $rounding_method = 'ceil' ) {
@@ -608,7 +608,7 @@ function wcs_is_datetime_mysql_format( $time ) {
 	}
 
 	if ( function_exists( 'strptime' ) ) {
-		$valid_time = $match = ( false !== strptime( $time, '%Y-%m-%d %H:%M:%S' ) ) ? true : false;
+		$valid_time = $match = ( false !== strptime( $time, '%Y-%m-%d %H:%M:%S' ) );
 	} else {
 		// parses for the pattern of YYYY-MM-DD HH:MM:SS, but won't check whether it's a valid timedate
 		$match = preg_match( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $time );
@@ -618,7 +618,7 @@ function wcs_is_datetime_mysql_format( $time ) {
 	}
 
 	// magic number -2209078800 is strtotime( '1900-01-00 00:00:00' ). Needed to achieve parity with strptime
-	return ( $match && false !== $valid_time && -2209078800 <= $valid_time ) ? true : false;
+	return $match && false !== $valid_time && -2209078800 <= $valid_time;
 }
 
 /**
@@ -644,9 +644,9 @@ function wcs_date_to_time( $date_string ) {
 		return 0;
 	}
 
-	$date_obj = new DateTime( $date_string, new DateTimeZone( 'UTC' ) );
+	$date_time = new WC_DateTime( $date_string, new DateTimeZone( 'UTC' ) );
 
-	return intval( $date_obj->format( 'U' ) );
+	return intval( $date_time->getTimestamp() );
 }
 
 /**

@@ -16,6 +16,17 @@ class ActionScheduler_wpPostStore_Test extends ActionScheduler_UnitTestCase {
 		$this->assertNotEmpty($action_id);
 	}
 
+	public function test_create_action_with_scheduled_date() {
+		$time   = as_get_datetime_object( strtotime( '-1 week' ) );
+		$action = new ActionScheduler_Action( 'my_hook', array(), new ActionScheduler_SimpleSchedule( $time ) );
+		$store  = new ActionScheduler_wpPostStore();
+
+		$action_id   = $store->save_action( $action, $time );
+		$action_date = $store->get_date( $action_id );
+
+		$this->assertEquals( $time->getTimestamp(), $action_date->getTimestamp() );
+	}
+
 	public function test_retrieve_action() {
 		$time = as_get_datetime_object();
 		$schedule = new ActionScheduler_SimpleSchedule($time);
@@ -26,8 +37,31 @@ class ActionScheduler_wpPostStore_Test extends ActionScheduler_UnitTestCase {
 		$retrieved = $store->fetch_action($action_id);
 		$this->assertEquals($action->get_hook(), $retrieved->get_hook());
 		$this->assertEqualSets($action->get_args(), $retrieved->get_args());
-		$this->assertEquals($action->get_schedule()->next()->format('U'), $retrieved->get_schedule()->next()->format('U'));
+		$this->assertEquals($action->get_schedule()->next()->getTimestamp(), $retrieved->get_schedule()->next()->getTimestamp());
 		$this->assertEquals($action->get_group(), $retrieved->get_group());
+	}
+
+	/**
+	 * @expectedException ActionScheduler_InvalidActionException
+	 * @dataProvider provide_bad_args
+	 *
+	 * @param string $content
+	 */
+	public function test_action_bad_args( $content ) {
+		$store   = new ActionScheduler_wpPostStore();
+		$post_id = wp_insert_post( array(
+			'post_type'    => ActionScheduler_wpPostStore::POST_TYPE,
+			'post_status'  => ActionScheduler_Store::STATUS_PENDING,
+			'post_content' => $content,
+		) );
+
+		$store->fetch_action( $post_id );
+	}
+
+	public function provide_bad_args() {
+		return array(
+			array( '{"bad_json":true}}' ),
+		);
 	}
 
 	public function test_cancel_action() {
@@ -39,7 +73,7 @@ class ActionScheduler_wpPostStore_Test extends ActionScheduler_UnitTestCase {
 		$store->cancel_action( $action_id );
 
 		$fetched = $store->fetch_action( $action_id );
-		$this->assertInstanceOf( 'ActionScheduler_NullAction', $fetched );
+		$this->assertInstanceOf( 'ActionScheduler_CanceledAction', $fetched );
 	}
 
 	public function test_claim_actions() {
@@ -57,6 +91,30 @@ class ActionScheduler_wpPostStore_Test extends ActionScheduler_UnitTestCase {
 
 		$this->assertCount( 3, $claim->get_actions() );
 		$this->assertEqualSets( array_slice( $created_actions, 3, 3 ), $claim->get_actions() );
+	}
+
+	public function test_claim_actions_order() {
+		$store           = new ActionScheduler_wpPostStore();
+		$schedule        = new ActionScheduler_SimpleSchedule( as_get_datetime_object( '-1 hour' ) );
+		$created_actions = array(
+			$store->save_action( new ActionScheduler_Action( 'my_hook', array( 1 ), $schedule, 'my_group' ) ),
+			$store->save_action( new ActionScheduler_Action( 'my_hook', array( 1 ), $schedule, 'my_group' ) ),
+		);
+
+		$claim = $store->stake_claim();
+		$this->assertInstanceof( 'ActionScheduler_ActionClaim', $claim );
+
+		// Verify uniqueness of action IDs.
+		$this->assertEquals( 2, count( array_unique( $created_actions ) ) );
+
+		// Verify the count and order of the actions.
+		$claimed_actions = $claim->get_actions();
+		$this->assertCount( 2, $claimed_actions );
+		$this->assertEquals( $created_actions, $claimed_actions );
+
+		// Verify the reversed order doesn't pass.
+		$reversed_actions = array_reverse( $created_actions );
+		$this->assertNotEquals( $reversed_actions, $claimed_actions );
 	}
 
 	public function test_duplicate_claim() {
@@ -181,19 +239,137 @@ class ActionScheduler_wpPostStore_Test extends ActionScheduler_UnitTestCase {
 		$store = new ActionScheduler_wpPostStore();
 		$action_id = $store->save_action($action);
 
-		$this->assertEquals( $store->get_date($action_id)->format('U'), $time->format('U') );
+		$this->assertEquals( $store->get_date($action_id)->getTimestamp(), $time->getTimestamp() );
 
 		$action = $store->fetch_action($action_id);
 		$action->execute();
 		$now = as_get_datetime_object();
 		$store->mark_complete( $action_id );
 
-		$this->assertEquals( $store->get_date($action_id)->format('U'), $now->format('U') );
+		$this->assertEquals( $store->get_date($action_id)->getTimestamp(), $now->getTimestamp() );
 
 		$next = $action->get_schedule()->next( $now );
 		$new_action_id = $store->save_action( $action, $next );
 
-		$this->assertEquals( (int)($now->format('U')) + HOUR_IN_SECONDS, $store->get_date($new_action_id)->format('U') );
+		$this->assertEquals( (int)($now->getTimestamp()) + HOUR_IN_SECONDS, $store->get_date($new_action_id)->getTimestamp() );
+	}
+
+	public function test_get_status() {
+		$time = as_get_datetime_object('-10 minutes');
+		$schedule = new ActionScheduler_IntervalSchedule($time, HOUR_IN_SECONDS);
+		$action = new ActionScheduler_Action('my_hook', array(), $schedule);
+		$store = new ActionScheduler_wpPostStore();
+		$action_id = $store->save_action($action);
+
+		$this->assertEquals( ActionScheduler_Store::STATUS_PENDING, $store->get_status( $action_id ) );
+
+		$store->mark_complete( $action_id );
+		$this->assertEquals( ActionScheduler_Store::STATUS_COMPLETE, $store->get_status( $action_id ) );
+
+		$store->mark_failure( $action_id );
+		$this->assertEquals( ActionScheduler_Store::STATUS_FAILED, $store->get_status( $action_id ) );
+	}
+
+	public function test_claim_actions_by_hooks() {
+		$hook1    = __FUNCTION__ . '_hook_1';
+		$hook2    = __FUNCTION__ . '_hook_2';
+		$store    = new ActionScheduler_wpPostStore();
+		$schedule = new ActionScheduler_SimpleSchedule( as_get_datetime_object( '-1 hour' ) );
+
+		$action1 = $store->save_action( new ActionScheduler_Action( $hook1, array(), $schedule ) );
+		$action2 = $store->save_action( new ActionScheduler_Action( $hook2, array(), $schedule ) );
+
+		// Claiming no hooks should include all actions.
+		$claim = $store->stake_claim( 10 );
+		$this->assertEquals( 2, count( $claim->get_actions() ) );
+		$this->assertTrue( in_array( $action1, $claim->get_actions() ) );
+		$this->assertTrue( in_array( $action2, $claim->get_actions() ) );
+		$store->release_claim( $claim );
+
+		// Claiming a hook should claim only actions with that hook
+		$claim = $store->stake_claim( 10, null, array( $hook1 ) );
+		$this->assertEquals( 1, count( $claim->get_actions() ) );
+		$this->assertTrue( in_array( $action1, $claim->get_actions() ) );
+		$store->release_claim( $claim );
+
+		// Claiming two hooks should claim actions with either of those hooks
+		$claim = $store->stake_claim( 10, null, array( $hook1, $hook2 ) );
+		$this->assertEquals( 2, count( $claim->get_actions() ) );
+		$this->assertTrue( in_array( $action1, $claim->get_actions() ) );
+		$this->assertTrue( in_array( $action2, $claim->get_actions() ) );
+		$store->release_claim( $claim );
+
+		// Claiming two hooks should claim actions with either of those hooks
+		$claim = $store->stake_claim( 10, null, array( __METHOD__ . '_hook_3' ) );
+		$this->assertEquals( 0, count( $claim->get_actions() ) );
+		$this->assertFalse( in_array( $action1, $claim->get_actions() ) );
+		$this->assertFalse( in_array( $action2, $claim->get_actions() ) );
+		$store->release_claim( $claim );
+	}
+
+	/**
+	 * @issue 121
+	 */
+	public function test_claim_actions_by_group() {
+		$group1   = md5( rand() );
+		$store    = new ActionScheduler_wpPostStore();
+		$schedule = new ActionScheduler_SimpleSchedule( as_get_datetime_object( '-1 hour' ) );
+
+		$action1 = $store->save_action( new ActionScheduler_Action( __METHOD__, array(), $schedule, $group1 ) );
+		$action2 = $store->save_action( new ActionScheduler_Action( __METHOD__, array(), $schedule ) );
+
+		// Claiming no group should include all actions.
+		$claim = $store->stake_claim( 10 );
+		$this->assertEquals( 2, count( $claim->get_actions() ) );
+		$this->assertTrue( in_array( $action1, $claim->get_actions() ) );
+		$this->assertTrue( in_array( $action2, $claim->get_actions() ) );
+		$store->release_claim( $claim );
+
+		// Claiming a group should claim only actions in that group.
+		$claim = $store->stake_claim( 10, null, array(), $group1 );
+		$this->assertEquals( 1, count( $claim->get_actions() ) );
+		$this->assertTrue( in_array( $action1, $claim->get_actions() ) );
+		$store->release_claim( $claim );
+	}
+
+	public function test_claim_actions_by_hook_and_group() {
+		$hook1    = __FUNCTION__ . '_hook_1';
+		$hook2    = __FUNCTION__ . '_hook_2';
+		$hook3    = __FUNCTION__ . '_hook_3';
+		$group1   = 'group_' . md5( rand() );
+		$group2   = 'group_' . md5( rand() );
+		$store    = new ActionScheduler_wpPostStore();
+		$schedule = new ActionScheduler_SimpleSchedule( as_get_datetime_object( '-1 hour' ) );
+
+		$action1 = $store->save_action( new ActionScheduler_Action( $hook1, array(), $schedule, $group1 ) );
+		$action2 = $store->save_action( new ActionScheduler_Action( $hook2, array(), $schedule ) );
+		$action3 = $store->save_action( new ActionScheduler_Action( $hook3, array(), $schedule, $group2 ) );
+
+		// Claiming no hooks or group should include all actions.
+		$claim = $store->stake_claim( 10 );
+		$this->assertEquals( 3, count( $claim->get_actions() ) );
+		$this->assertTrue( in_array( $action1, $claim->get_actions() ) );
+		$this->assertTrue( in_array( $action2, $claim->get_actions() ) );
+		$store->release_claim( $claim );
+
+		// Claiming a group and hook should claim only actions in that group.
+		$claim = $store->stake_claim( 10, null, array( $hook1 ), $group1 );
+		$this->assertEquals( 1, count( $claim->get_actions() ) );
+		$this->assertTrue( in_array( $action1, $claim->get_actions() ) );
+		$store->release_claim( $claim );
+
+		// Claiming a group and hook should claim only actions with that hook in that group.
+		$claim = $store->stake_claim( 10, null, array( $hook2 ), $group1 );
+		$this->assertEquals( 0, count( $claim->get_actions() ) );
+		$this->assertFalse( in_array( $action1, $claim->get_actions() ) );
+		$this->assertFalse( in_array( $action2, $claim->get_actions() ) );
+		$store->release_claim( $claim );
+
+		// Claiming a group and hook should claim only actions with that hook in that group.
+		$claim = $store->stake_claim( 10, null, array( $hook1, $hook2 ), $group2 );
+		$this->assertEquals( 0, count( $claim->get_actions() ) );
+		$this->assertFalse( in_array( $action1, $claim->get_actions() ) );
+		$this->assertFalse( in_array( $action2, $claim->get_actions() ) );
+		$store->release_claim( $claim );
 	}
 }
- 
