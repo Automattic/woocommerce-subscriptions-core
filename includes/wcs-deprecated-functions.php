@@ -194,7 +194,7 @@ function wcs_get_subscription_in_deprecated_structure( WC_Subscription $subscrip
 
 	$completed_payments = array();
 
-	if ( $subscription->get_completed_payment_count() ) {
+	if ( $subscription->get_payment_count() ) {
 
 		$order = $subscription->get_parent();
 

@@ -239,7 +239,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			}
 		}
 
-		$is_first_payment = $subscription->get_completed_payment_count() < 1;
+		$is_first_payment = $subscription->get_payment_count() < 1;
 
 		if ( $subscription->has_status( 'switched' ) ) {
 			WC_Gateway_Paypal::log( 'IPN ignored, subscription has been switched.' );
@@ -289,7 +289,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 			case 'subscr_payment':
 
-				if ( 0.01 == $transaction_details['mc_gross'] && 1 == $subscription->get_completed_payment_count() ) {
+				if ( 0.01 == $transaction_details['mc_gross'] && 1 == $subscription->get_payment_count() ) {
 					WC_Gateway_Paypal::log( 'IPN ignored, treating IPN as secondary trial period.' );
 					exit;
 				}
@@ -334,7 +334,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 						update_post_meta( $subscription->get_id(), '_paypal_first_ipn_ignored_for_pdt', 'true' );
 
 					// Ignore the first IPN message if the PDT should have handled it (if it didn't handle it, it will have been dealt with as first payment), but set a flag to make sure we only ignore it once
-					} elseif ( $subscription->get_completed_payment_count() == 1 && '' !== WCS_PayPal::get_option( 'identity_token' ) && 'true' != get_post_meta( $subscription->get_id(), '_paypal_first_ipn_ignored_for_pdt', true ) && false === $is_renewal_sign_up_after_failure ) {
+					} elseif ( $subscription->get_payment_count() == 1 && '' !== WCS_PayPal::get_option( 'identity_token' ) && 'true' != get_post_meta( $subscription->get_id(), '_paypal_first_ipn_ignored_for_pdt', true ) && false === $is_renewal_sign_up_after_failure ) {
 
 						WC_Gateway_Paypal::log( 'IPN subscription payment ignored for subscription ' . $subscription->get_id() . ' due to PDT previously handling the payment.' );
 

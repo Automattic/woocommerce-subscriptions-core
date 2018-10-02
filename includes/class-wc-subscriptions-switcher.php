@@ -1483,7 +1483,7 @@ class WC_Subscriptions_Switcher {
 			if ( 'yes' == $apportion_length || ( 'virtual' == $apportion_length && $is_virtual_product ) ) {
 
 				$base_length        = WC_Subscriptions_Product::get_length( $product_id );
-				$completed_payments = $subscription->get_completed_payment_count();
+				$completed_payments = $subscription->get_payment_count();
 				$length_remaining   = $base_length - $completed_payments;
 
 				// Default to the base length if more payments have already been made than this subscription requires
@@ -2463,7 +2463,7 @@ class WC_Subscriptions_Switcher {
 
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-		if ( $subscription->has_status( 'active' ) && $subscription->get_parent_id() && wcs_order_contains_switch( $subscription->get_parent_id() ) && 1 >= $subscription->get_completed_payment_count() ) {
+		if ( $subscription->has_status( 'active' ) && $subscription->get_parent_id() && wcs_order_contains_switch( $subscription->get_parent_id() ) && 1 >= $subscription->get_payment_count() ) {
 
 			$first_payment_timestamp = get_post_meta( $subscription->get_parent_id(), '_switched_subscription_first_payment_timestamp', true );
 
