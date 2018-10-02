@@ -657,12 +657,16 @@ class WC_Subscription extends WC_Order {
 
 				$related_order = wc_get_order( $related_order_id );
 
+				if ( ! $related_order ) {
+					continue;
+				}
+
 				// Not all gateways call $order->payment_complete(), so with WC < 3.0 we need to find renewal orders with a paid date or a paid status. WC 3.0+ takes care of setting the paid date when payment_complete() wasn't called, so isn't needed with WC 3.0 or newer.
 				if ( $related_order->has_status( $this->get_paid_order_statuses() ) ) {
 
 					$completed_payment_count++;
 
-				} elseif ( $related_order && ( null !== wcs_get_objects_property( $related_order, 'date_paid' ) ) ) {
+				} elseif ( null !== wcs_get_objects_property( $related_order, 'date_paid' ) ) {
 
 					$completed_payment_count++;
 
