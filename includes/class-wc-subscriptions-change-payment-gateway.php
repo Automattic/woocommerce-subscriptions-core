@@ -149,9 +149,17 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			$subscription_key = isset( $_GET['key'] ) ? wc_clean( $_GET['key'] ) : '';
 			$subscription     = wcs_get_subscription( absint( $wp->query_vars['order-pay'] ) );
 
-			// Calling action that allows payment methods to modify the subscription object so, for example,
-			// if the new payment method still hasn't been set, they can set it temporarily
-			do_action( 'woocommerce_subscription_before_replacing_pay_shortcode', $subscription );
+			/**
+			 * wcs_before_replace_pay_shortcode
+			 *
+			 * Action that allows payment methods to modify the subscription object so, for example,
+			 * if the new payment method still hasn't been set, they can set it temporarily (without saving)
+			 *
+			 * @since 2.4.0
+			 *
+			 * @param WC_Subscription $subscription
+			 */
+			do_action( 'wcs_before_replace_pay_shortcode', $subscription );
 
 			if ( $subscription->get_id() == absint( $wp->query_vars['order-pay'] ) && $subscription->get_order_key() == $subscription_key ) {
 
