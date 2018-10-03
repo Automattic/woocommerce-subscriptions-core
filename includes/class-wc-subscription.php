@@ -675,7 +675,6 @@ class WC_Subscription extends WC_Order {
 					}
 				}
 			}
-
 		} else {
 			$completed_payment_count = $this->cached_completed_payment_count;
 			$refunded_payment_count = $this->cached_refunded_payment_count;
