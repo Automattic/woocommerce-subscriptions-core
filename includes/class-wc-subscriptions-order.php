@@ -501,17 +501,18 @@ class WC_Subscriptions_Order {
 			$order_completed = in_array( $new_order_status, array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id, $order ), 'processing', 'completed' ) ) && in_array( $old_order_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ), $order ) );
 
 			foreach ( $subscriptions as $subscription ) {
+				// A special case where payment completes after user cancels subscription
 				if ( $order_completed && $subscription->has_status( 'cancelled' ) ) {
 
-					// Set end date to 0 to force calculation of next payment date. This next payment date will be set as end date.
+					$cancelled_date = $subscription->get_date( 'cancelled' );
+					$subscription->update_status( 'pending-cancel', __('Payment completed on order after subscription was cancelled', 'woocommerce-subscriptions' ) );
+
+					// Set end date to 0 to force calculation of next payment date.
+					// This next payment date will be set as end date.
 					$subscription->update_dates( array( 'end' => 0 ) );
 					$end_date = $subscription->calculate_date( 'next_payment' );
 
-					$subscription->add_order_note( __( "Due to payment completion, changing subscription's status from Cancelled to Pending Cancellation", 'woocommerce-subscriptions' ), false, true );
-
-					$subscription->update_status( 'pending-cancel' );
-
-					$subscription->update_dates( array( 'end' => $end_date ) );
+					$subscription->update_dates( array( 'end' => $end_date, 'cancelled' => $cancelled_date ) );
 				}
 
 				// Do we need to activate a subscription?
