@@ -80,6 +80,10 @@ class WCS_PayPal {
 
 		add_filter( 'woocommerce_subscriptions_admin_meta_boxes_script_parameters', __CLASS__ . '::maybe_add_change_payment_method_warning' );
 
+		// Remove payment lock when order is completely id paid or order is cancelled.
+		add_action( 'woocommerce_cancelled_order', __CLASS__ . '::maybe_remove_payment_lock' );
+		add_action( 'woocommerce_payment_complete', __CLASS__ . '::maybe_remove_payment_lock' );
+
 		// Adds payment lock on order received.
 		add_action( 'get_header', __CLASS__ . '::maybe_add_payment_lock' );
 
@@ -468,6 +472,22 @@ class WCS_PayPal {
 			$order->save();
 		}
 	}
+
+	/**
+	 * Removes payment lock when order is parent and has paypal method.
+	 *
+	 * @param int $order_id Order cancelled/paid.
+	 *
+	 * @since 2.4.0
+	 */
+	public static function maybe_remove_payment_lock( $order_id ) {
+		$order = wc_get_order( $order_id );
+
+		if ( wcs_order_contains_subscription( $order, array( 'parent' ) ) && self::instance()->get_id() === $order->get_payment_method() ) {
+			$order->delete_meta_data( 'wcs_lock_order_payment' );
+		}
+	}
+
 	/** Getters ******************************************************/
 
 	/**
