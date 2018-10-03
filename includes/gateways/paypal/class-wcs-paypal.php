@@ -80,6 +80,9 @@ class WCS_PayPal {
 
 		add_filter( 'woocommerce_subscriptions_admin_meta_boxes_script_parameters', __CLASS__ . '::maybe_add_change_payment_method_warning' );
 
+		// Adds payment lock on order received.
+		add_action( 'get_header', __CLASS__ . '::maybe_add_payment_lock' );
+
 		// Run the IPN failure handler attach and detach functions before and after processing to catch and log any unexpected shutdowns
 		add_action( 'valid-paypal-standard-ipn-request', 'WCS_PayPal_Standard_IPN_Failure_Handler::attach', -1, 1 );
 		add_action( 'valid-paypal-standard-ipn-request', 'WCS_PayPal_Standard_IPN_Failure_Handler::detach', 1, 1 );
@@ -447,6 +450,24 @@ class WCS_PayPal {
 		return $script_parameters;
 	}
 
+	/**
+	 * Adds payment lock meta when order is received.
+	 *
+	 * @since 2.4.0
+	 */
+	public static function maybe_add_payment_lock() {
+		if ( ! wcs_is_order_received_page() ) {
+			return;
+		}
+
+		global $wp;
+		$order = wc_get_order( $wp->query_vars['order-received'] );
+
+		if ( wcs_order_contains_subscription( $order, array( 'parent' ) ) && $order->needs_payment() && self::instance()->get_id() === $order->get_payment_method() ) {
+			$order->update_meta_data( 'wcs_lock_order_payment', 'true' );
+			$order->save();
+		}
+	}
 	/** Getters ******************************************************/
 
 	/**
