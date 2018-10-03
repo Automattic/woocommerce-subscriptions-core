@@ -34,7 +34,7 @@ class WCS_PayPal {
 	 * Main PayPal Instance, ensures only one instance is/can be loaded
 	 *
 	 * @see wc_paypal_express()
-	 * @return WC_PayPal_Express
+	 * @return WCS_PayPal
 	 * @since 2.0
 	 */
 	public static function instance() {
