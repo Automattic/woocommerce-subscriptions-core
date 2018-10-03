@@ -867,4 +867,20 @@ function wcs_copy_payment_method_to_order( $subscription, $order ) {
 	if ( ! empty( $payment_meta ) ) {
 		wcs_set_payment_meta( $order, $payment_meta );
 	}
+
+}
+
+/**
+ * Returns how many minutes ago the order was created.
+ *
+ * @param WC_Order $order
+ *
+ * @return int
+ * @since 2.4.0
+ */
+function wcs_minutes_since_order_created( $order ) {
+	$now             = new WC_DateTime( 'now', $order->get_date_created()->getTimezone() );
+	$diff_in_minutes = $now->diff( $order->get_date_created() );
+
+	return absint( $diff_in_minutes->i );
 }
