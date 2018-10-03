@@ -80,6 +80,9 @@ class WCS_PayPal {
 
 		add_filter( 'woocommerce_subscriptions_admin_meta_boxes_script_parameters', __CLASS__ . '::maybe_add_change_payment_method_warning' );
 
+		// Maybe order don't need payment because lock.
+		add_filter( 'woocommerce_order_needs_payment', __CLASS__ . '::maybe_dont_need_payment', 10, 2 );
+
 		// Remove payment lock when order is completely id paid or order is cancelled.
 		add_action( 'woocommerce_cancelled_order', __CLASS__ . '::maybe_remove_payment_lock' );
 		add_action( 'woocommerce_payment_complete', __CLASS__ . '::maybe_remove_payment_lock' );
@@ -452,6 +455,33 @@ class WCS_PayPal {
 		}
 
 		return $script_parameters;
+	}
+
+	/**
+	 * This validates against payment lock for PP and returns false if we meet the criteria:
+	 *  - is a parent order.
+	 *  - payment method is paypal
+	 *  - order has lock.
+	 *  - lock hasn't timeout.
+	 *
+	 * @param bool     $needs_payment Does this order needs to process payment?
+	 * @param WC_Order $order         The actual order.
+	 *
+	 * @return bool
+	 * @since 2.4.0
+	 */
+	public static function maybe_dont_need_payment( $needs_payment, $order ) {
+		if ( $needs_payment && wcs_order_contains_subscription( $order, array( 'parent' ) ) && self::instance()->get_id() === $order->get_payment_method() ) {
+			$has_lock            = $order->get_meta( 'wcs_lock_order_payment' );
+			$minutes_since_order = wcs_minutes_since_order_created( $order );
+
+			// We have lock and order hasn't meet the lock time.
+			if ( $has_lock && $minutes_since_order < apply_filters( 'wcs_lock_order_payment_minutes', 10 ) ) {
+				$needs_payment = false;
+			}
+		}
+
+		return $needs_payment;
 	}
 
 	/**
