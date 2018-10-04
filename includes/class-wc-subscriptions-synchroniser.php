@@ -590,7 +590,7 @@ class WC_Subscriptions_Synchroniser {
 	public static function calculate_first_payment_date( $product, $type = 'mysql', $from_date = '' ) {
 
 		if ( ! is_object( $product ) ) {
-			$product = WC_Subscriptions::get_product( $product );
+			$product = wc_get_product( $product );
 		}
 
 		if ( ! self::is_product_synced( $product ) ) {
@@ -1515,5 +1515,3 @@ class WC_Subscriptions_Synchroniser {
 	}
 
 }
-add_action( 'init', 'WC_Subscriptions_Synchroniser::init' );
-

@@ -4,13 +4,13 @@
  *
  * Display important historical data for subscription revenue and events, like switches and cancellations.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Admin_Reports
- * @category	Class
- * @author		Prospress
- * @since		2.1
+ * @package    WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Admin_Reports
+ * @category   Class
+ * @author     Prospress
+ * @since      2.1
  */
-class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
+class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 
 	public $chart_colours = array();
 
@@ -295,6 +295,7 @@ class WC_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 							OR wcsmeta.meta_value = 0
 							OR wcsmeta.meta_value IS NULL
 						)
+					GROUP BY searchdate.Date
 					ORDER BY searchdate.Date ASC",
 			$query_end_date,
 			date( 'Y-m-d', $this->start_date ),

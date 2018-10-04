@@ -265,4 +265,3 @@ class WCS_Limiter {
 	}
 
 }
-WCS_Limiter::init();

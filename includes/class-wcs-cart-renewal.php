@@ -60,6 +60,9 @@ class WCS_Cart_Renewal {
 
 		add_action( 'wcs_before_renewal_setup_cart_subscriptions', array( &$this, 'clear_coupons' ), 10 );
 
+		// Handles renew of password-protected products.
+		add_action( 'wcs_before_renewal_setup_cart_subscriptions', 'wcs_allow_protected_products_to_renew' );
+		add_action( 'wcs_after_renewal_setup_cart_subscriptions', 'wcs_disallow_protected_product_add_to_cart_validation' );
 	}
 
 	/**
@@ -1417,4 +1420,3 @@ class WCS_Cart_Renewal {
 		return $order;
 	}
 }
-new WCS_Cart_Renewal();

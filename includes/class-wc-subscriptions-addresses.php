@@ -180,5 +180,3 @@ class WC_Subscriptions_Addresses {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Order::set_address() or WC_Subscription::set_address()' );
 	}
 }
-
-WC_Subscriptions_Addresses::init();
