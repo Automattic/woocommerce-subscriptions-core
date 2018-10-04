@@ -58,6 +58,8 @@ class WCS_Cart_Renewal {
 		// Apply renewal discounts as pseudo coupons
 		add_action( 'wcs_after_renewal_setup_cart_subscription', array( &$this, 'maybe_setup_discounts' ), 10, 2 );
 
+		add_action( 'wcs_before_renewal_setup_cart_subscriptions', array( &$this, 'clear_coupons' ), 10 );
+
 	}
 
 	/**
@@ -108,7 +110,6 @@ class WCS_Cart_Renewal {
 		add_action( 'template_redirect', array( &$this, 'maybe_setup_cart' ), 100 );
 
 		add_filter( 'woocommerce_get_shop_coupon_data', array( &$this, 'renewal_coupon_data' ), 10, 2 );
-		add_action( 'wcs_before_renewal_setup_cart_subscriptions', array( &$this, 'clear_coupons' ), 10 );
 
 		add_action( 'woocommerce_remove_cart_item', array( &$this, 'maybe_remove_items' ), 10, 1 );
 		add_action( 'woocommerce_before_cart_item_quantity_zero', array( &$this, 'maybe_remove_items' ), 10, 1 );
