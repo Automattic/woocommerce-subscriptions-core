@@ -471,7 +471,7 @@ class WCS_PayPal {
 	 * @since 2.4.0
 	 */
 	public static function maybe_dont_need_payment( $needs_payment, $order ) {
-		if ( $needs_payment && wcs_order_contains_subscription( $order, array( 'parent' ) ) && self::instance()->get_id() === $order->get_payment_method() ) {
+		if ( $needs_payment && self::instance()->get_id() === $order->get_payment_method() && wcs_order_contains_subscription( $order, array( 'parent' ) ) ) {
 			$has_lock            = $order->get_meta( 'wcs_lock_order_payment' );
 			$minutes_since_order = wcs_minutes_since_order_created( $order );
 
@@ -497,7 +497,7 @@ class WCS_PayPal {
 		global $wp;
 		$order = wc_get_order( $wp->query_vars['order-received'] );
 
-		if ( wcs_order_contains_subscription( $order, array( 'parent' ) ) && $order->needs_payment() && self::instance()->get_id() === $order->get_payment_method() ) {
+		if ( self::instance()->get_id() === $order->get_payment_method() && $order->needs_payment() && wcs_order_contains_subscription( $order, array( 'parent' ) ) ) {
 			$order->update_meta_data( 'wcs_lock_order_payment', 'true' );
 			$order->save();
 		}
@@ -513,7 +513,7 @@ class WCS_PayPal {
 	public static function maybe_remove_payment_lock( $order_id ) {
 		$order = wc_get_order( $order_id );
 
-		if ( wcs_order_contains_subscription( $order, array( 'parent' ) ) && self::instance()->get_id() === $order->get_payment_method() ) {
+		if ( self::instance()->get_id() === $order->get_payment_method() && wcs_order_contains_subscription( $order, array( 'parent' ) ) ) {
 			$order->delete_meta_data( 'wcs_lock_order_payment' );
 		}
 	}
