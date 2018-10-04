@@ -361,7 +361,7 @@ class WC_Subscription extends WC_Order {
 					} else {
 						$can_be_updated = false;
 					}
-                } else {
+				} else {
 					$can_be_updated = false;
 				}
 				break;
