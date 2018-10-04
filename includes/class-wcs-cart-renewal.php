@@ -54,6 +54,10 @@ class WCS_Cart_Renewal {
 
 		// Remove subscription products with "one time shipping" from shipping packages.
 		add_filter( 'woocommerce_cart_shipping_packages', array( $this, 'maybe_update_shipping_packages' ), 0, 1 );
+
+		// Handles renew of password-protected products.
+		add_action( 'wcs_before_renewal_setup_cart_subscriptions', 'wcs_allow_protected_products_to_renew' );
+		add_action( 'wcs_after_renewal_setup_cart_subscriptions', 'wcs_disallow_protected_product_add_to_cart_validation' );
 	}
 
 	/**
