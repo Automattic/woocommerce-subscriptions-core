@@ -47,6 +47,10 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 		// Allow customers to cancel early renewal orders from their my account page.
 		add_filter( 'woocommerce_my_account_my_orders_actions', array( $this, 'add_cancel_order_action' ), 15, 2 );
 		add_action( 'wp_loaded', array( $this, 'allow_early_renewal_order_cancellation' ), 10, 3 );
+
+		// Handles early renew of password-protected products.
+		add_action( 'wcs_before_early_renewal_setup_cart_subscription', 'wcs_allow_protected_products_to_renew' );
+		add_action( 'wcs_after_early_renewal_setup_cart_subscription', 'wcs_disallow_protected_product_add_to_cart_validation' );
 	}
 
 	/**
