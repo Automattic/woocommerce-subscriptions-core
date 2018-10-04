@@ -473,10 +473,10 @@ class WCS_PayPal {
 	public static function maybe_dont_need_payment( $needs_payment, $order ) {
 		if ( $needs_payment && self::instance()->get_id() === $order->get_payment_method() && wcs_order_contains_subscription( $order, array( 'parent' ) ) ) {
 			$has_lock            = $order->get_meta( 'wcs_lock_order_payment' );
-			$minutes_since_order = wcs_minutes_since_order_created( $order );
+			$seconds_since_order = wcs_seconds_since_order_created( $order );
 
 			// We have lock and order hasn't meet the lock time.
-			if ( $has_lock && $minutes_since_order < apply_filters( 'wcs_lock_order_payment_minutes', 10 ) ) {
+			if ( $has_lock && $seconds_since_order < apply_filters( 'wcs_lock_order_payment_seconds', 180 ) ) {
 				$needs_payment = false;
 			}
 		}
