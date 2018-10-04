@@ -74,8 +74,6 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 	 * Check if a payment is being made on an early renewal order.
 	 */
 	public function maybe_setup_cart() {
-		global $wp;
-
 		if ( ! isset( $_GET['subscription_renewal_early'], $_GET['wcs_nonce'] ) ) {
 			return;
 		}
