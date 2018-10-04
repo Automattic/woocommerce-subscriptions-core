@@ -884,3 +884,15 @@ function wcs_minutes_since_order_created( $order ) {
 
 	return absint( $diff_in_minutes->i );
 }
+
+/**
+ * Returns how many seconds ago the order was created.
+ *
+ * @param WC_Order $order
+ *
+ * @return int
+ * @since 2.4.0
+ */
+function wcs_seconds_since_order_created( $order ) {
+	return time() - $order->get_date_created()->getTimestamp();
+}
