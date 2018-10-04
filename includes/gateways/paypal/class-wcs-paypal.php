@@ -84,7 +84,7 @@ class WCS_PayPal {
 		add_filter( 'woocommerce_order_needs_payment', __CLASS__ . '::maybe_dont_need_payment', 10, 2 );
 
 		// Remove payment lock when order is completely paid or order is cancelled.
-		add_action( 'woocommerce_cancelled_order', __CLASS__ . '::maybe_remove_payment_lock' );
+		add_action( 'woocommerce_order_status_cancelled', __CLASS__ . '::maybe_remove_payment_lock' );
 		add_action( 'woocommerce_payment_complete', __CLASS__ . '::maybe_remove_payment_lock' );
 
 		// Adds payment lock on order received.
