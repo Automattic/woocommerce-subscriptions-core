@@ -101,6 +101,8 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 
 		} else {
 
+			do_action( 'wcs_before_early_renewal_setup_cart_subscription', $subscription );
+
 			wc_add_notice( __( 'Complete checkout to renew now.', 'woocommerce-subscriptions' ), 'success' );
 
 			$this->setup_cart( $subscription, array(
@@ -108,6 +110,8 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 				'subscription_renewal_early' => true,
 				'renewal_order_id'           => $subscription->get_id(),
 			) );
+
+			do_action( 'wcs_after_early_renewal_setup_cart_subscription', $subscription );
 
 			$redirect_to = wc_get_checkout_url();
 		}
