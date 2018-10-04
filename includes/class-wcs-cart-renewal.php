@@ -1339,22 +1339,6 @@ class WCS_Cart_Renewal {
 		return $packages;
 	}
 
-	/**
-	 * Allows protected products to be renewed.
-	 */
-	public function allow_protected_products_to_renew() {
-		remove_filter( 'woocommerce_add_to_cart_validation', 'wc_protected_product_add_to_cart' );
-	}
-
-
-	/**
-	 * Restores protected products from being added to the cart.
-	 * @see WCS_Cart_Renewal::allow_protected_products_to_renew
-	 */
-	public function disallow_protected_product_add_to_cart_validation() {
-		add_filter( 'woocommerce_add_to_cart_validation', 'wc_protected_product_add_to_cart', 10, 2 );
-	}
-
 	/* Deprecated */
 
 	/**
