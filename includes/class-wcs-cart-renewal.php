@@ -55,6 +55,11 @@ class WCS_Cart_Renewal {
 		// Remove subscription products with "one time shipping" from shipping packages.
 		add_filter( 'woocommerce_cart_shipping_packages', array( $this, 'maybe_update_shipping_packages' ), 0, 1 );
 
+		// Apply renewal discounts as pseudo coupons
+		add_action( 'wcs_after_renewal_setup_cart_subscription', array( &$this, 'maybe_setup_discounts' ), 10, 2 );
+
+		add_action( 'wcs_before_renewal_setup_cart_subscriptions', array( &$this, 'clear_coupons' ), 10 );
+
 		// Handles renew of password-protected products.
 		add_action( 'wcs_before_renewal_setup_cart_subscriptions', 'wcs_allow_protected_products_to_renew' );
 		add_action( 'wcs_after_renewal_setup_cart_subscriptions', 'wcs_disallow_protected_product_add_to_cart_validation' );
@@ -107,10 +112,7 @@ class WCS_Cart_Renewal {
 		// Check if a user is requesting to create a renewal order for a subscription, needs to happen after $wp->query_vars are set
 		add_action( 'template_redirect', array( &$this, 'maybe_setup_cart' ), 100 );
 
-		// Apply renewal discounts as pseudo coupons
-		add_action( 'wcs_after_renewal_setup_cart_subscription', array( &$this, 'maybe_setup_discounts' ), 10, 2 );
 		add_filter( 'woocommerce_get_shop_coupon_data', array( &$this, 'renewal_coupon_data' ), 10, 2 );
-		add_action( 'wcs_before_renewal_setup_cart_subscriptions', array( &$this, 'clear_coupons' ), 10 );
 
 		add_action( 'woocommerce_remove_cart_item', array( &$this, 'maybe_remove_items' ), 10, 1 );
 		add_action( 'woocommerce_before_cart_item_quantity_zero', array( &$this, 'maybe_remove_items' ), 10, 1 );
