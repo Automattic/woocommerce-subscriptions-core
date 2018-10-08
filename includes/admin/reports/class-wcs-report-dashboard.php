@@ -92,7 +92,7 @@ class WCS_Report_Dashboard {
 			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
 		);
 
-		$signup_revenue = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_signup_revenue_query', $query ) );
+		$signup_revenue = absint( $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_signup_revenue_query', $query ) ) );
 
 		$query = $wpdb->prepare(
 			"SELECT SUM(order_total_meta.meta_value)
@@ -116,8 +116,8 @@ class WCS_Report_Dashboard {
 			date( 'Y-m-01', current_time( 'timestamp' ) ),
 			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
 		);
-
-		$renewal_revenue = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_renewal_revenue_query', $query ) );
+error_log($query);
+		$renewal_revenue = absint( $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_renewal_revenue_query', $query ) ) );
 
 
 		?>
