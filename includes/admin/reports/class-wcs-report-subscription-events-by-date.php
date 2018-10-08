@@ -46,7 +46,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$query_end_date = date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) );
 		$offset  = get_option( 'gmt_offset' );
 
-		//Convert from Decimal format(eg. 11.5) to a suitable format(eg. +11:30) for  CONVERT_TZ() of SQL query.
+		// Convert from Decimal format(eg. 11.5) to a suitable format(eg. +11:30) for CONVERT_TZ() of SQL query.
 		$site_timezone = sprintf( '%+02d:%02d', (int) $offset, ( $offset - floor( $offset ) ) * 60 );
 
 		$this->report_data = new stdClass;

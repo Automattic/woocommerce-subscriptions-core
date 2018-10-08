@@ -37,6 +37,12 @@ class WCS_Report_Dashboard {
 	public static function add_stats_to_dashboard() {
 		global $wpdb;
 
+		$offset  = get_option( 'gmt_offset' );
+
+		// Convert from Decimal format(eg. 11.5) to a suitable format(eg. +11:30) for CONVERT_TZ() of SQL query.
+		$site_timezone = sprintf( '%+02d:%02d', (int) $offset, ( $offset - floor( $offset ) ) * 60 );
+
+
 		$query = $wpdb->prepare(
 			"SELECT COUNT(DISTINCT wcsubs.ID) AS count
 				FROM {$wpdb->posts} AS wcsubs
@@ -126,11 +132,11 @@ class WCS_Report_Dashboard {
                         ON wcsubs.ID = wcsmeta_cancel.post_id
                     AND wcsmeta_cancel.meta_key = '_schedule_cancelled'
                     AND wcsubs.post_status NOT IN ( 'trash', 'auto-draft' )
-                    AND wcsmeta_cancel.meta_value BETWEEN '%s' AND '%s'",
+                    AND CONVERT_TZ( wcsmeta_cancel.meta_value, '+00:00', '{$site_timezone}' ) BETWEEN '%s' AND '%s'",
 			date( 'Y-m-01', current_time( 'timestamp' ) ),
 			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
 		);
-
+error_log($query);
 		$cancel_count = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_cancellation_query', $query ) );
 
 		?>
