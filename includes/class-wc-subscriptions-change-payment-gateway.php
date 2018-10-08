@@ -149,6 +149,18 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			$subscription_key = isset( $_GET['key'] ) ? wc_clean( $_GET['key'] ) : '';
 			$subscription     = wcs_get_subscription( absint( $wp->query_vars['order-pay'] ) );
 
+			/**
+			 * wcs_before_replace_pay_shortcode
+			 *
+			 * Action that allows payment methods to modify the subscription object so, for example,
+			 * if the new payment method still hasn't been set, they can set it temporarily (without saving)
+			 *
+			 * @since 2.4.0
+			 *
+			 * @param WC_Subscription $subscription
+			 */
+			do_action( 'wcs_before_replace_pay_shortcode', $subscription );
+
 			if ( $subscription->get_id() == absint( $wp->query_vars['order-pay'] ) && $subscription->get_order_key() == $subscription_key ) {
 
 				?>
@@ -460,7 +472,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			$cart_contains_failed_manual_renewal = $subscription->is_manual();
 		}
 
-		if ( $is_change_payment_method_request || ( $cart_contains_failed_renewal && ! $cart_contains_failed_manual_renewal ) ) {
+		if ( apply_filters( 'wcs_payment_gateways_change_payment_method', $is_change_payment_method_request || ( $cart_contains_failed_renewal && ! $cart_contains_failed_manual_renewal ) ) ) {
 			foreach ( $available_gateways as $gateway_id => $gateway ) {
 				if ( true !== $gateway->supports( 'subscription_payment_method_change_customer' ) ) {
 					unset( $available_gateways[ $gateway_id ] );
