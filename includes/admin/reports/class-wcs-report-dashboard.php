@@ -85,8 +85,8 @@ class WCS_Report_Dashboard {
                             AND wcsubs.post_type IN ( 'shop_subscription' )
                             AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
                             AND wcorder.post_date >= '%s'
-                            AND wcorder.post_date < '%s'q
-                    ) AS orders ON orders.ID = order_total_meta.post_idq
+                            AND wcorder.post_date < '%s'
+                    ) AS orders ON orders.ID = order_total_meta.post_id
                   WHERE order_total_meta.meta_key = '_order_total'",
 			date( 'Y-m-01', current_time( 'timestamp' ) ),
 			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
@@ -95,18 +95,24 @@ class WCS_Report_Dashboard {
 		$signup_revenue = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_signup_revenue_query', $query ) );
 
 		$query = $wpdb->prepare(
-			"SELECT COUNT(DISTINCT wcorder.ID) AS count
-				FROM {$wpdb->posts} AS wcorder
-				INNER JOIN {$wpdb->postmeta} AS meta__subscription_renewal
-					ON (
-						wcorder.id = meta__subscription_renewal.post_id
-						AND
-						meta__subscription_renewal.meta_key = '_subscription_renewal'
-					)
-				WHERE wcorder.post_type IN ( 'shop_order' )
-					AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
-					AND wcorder.post_date >= '%s'
-					AND wcorder.post_date < '%s'",
+			"SELECT SUM(order_total_meta.meta_value)
+                    FROM wp_postmeta as order_total_meta
+                    RIGHT JOIN
+                    (
+                    SELECT DISTINCT wcorder.ID
+                        FROM {$wpdb->posts} AS wcorder
+                        INNER JOIN {$wpdb->postmeta} AS meta__subscription_renewal
+                            ON (
+                                wcorder.id = meta__subscription_renewal.post_id
+                                AND
+                                meta__subscription_renewal.meta_key = '_subscription_renewal'
+                            )
+                        WHERE wcorder.post_type IN ( 'shop_order' )
+                            AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
+                            AND wcorder.post_date >= '%s'
+                            AND wcorder.post_date < '%s'
+                    ) AS orders ON orders.ID = order_total_meta.post_id
+                  WHERE order_total_meta.meta_key = '_order_total'",
 			date( 'Y-m-01', current_time( 'timestamp' ) ),
 			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
 		);
@@ -132,7 +138,7 @@ class WCS_Report_Dashboard {
         </li>
         <li class="renewal-revenue">
             <a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date' ) ); ?>">
-				<?php printf( wp_kses_post( __( '<strong>%s</strong> renewal revenue this month', $renewal_revenue, 'woocommerce-subscriptions' ) ), esc_html( $renewal_revenue ) ); ?>
+				<?php printf( wp_kses_post( __( '<strong>' . wc_price( $renewal_revenue ) . '</strong> renewal revenue this month', 'woocommerce-subscriptions' ) ), esc_html( $renewal_revenue ) ); ?>
             </a>
         </li>
 		<?php
