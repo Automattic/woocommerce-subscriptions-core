@@ -122,23 +122,23 @@ class WCS_Report_Dashboard {
 
 		?>
 		<li class="signup-count">
-			<a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date' ) ); ?>">
+			<a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
 				<?php printf( wp_kses_post( _n( '<strong>%s signup</strong> subscription signups this month', '<strong>%s signups</strong> subscription signups this month', $signup_count, 'woocommerce-subscriptions' ) ), esc_html( $signup_count ) ); ?>
 			</a>
 		</li>
 		<li class="renewal-count">
-			<a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date' ) ); ?>">
+			<a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
 				<?php printf( wp_kses_post( _n( '<strong>%s renewal</strong> subscription renewals this month', '<strong>%s renewals</strong> subscription renewals this month', $renewal_count, 'woocommerce-subscriptions' ) ), esc_html( $renewal_count ) ); ?>
 			</a>
 		</li>
         <li class="signup-revenue">
-            <a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date' ) ); ?>">
-				<?php printf( wp_kses_post( __( '<strong>' . wc_price( $signup_revenue ) . '</strong> signup revenue this month', 'woocommerce-subscriptions' ) ), esc_html( $signup_revenue ) ); ?>
+            <a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
+				<?php printf( wp_kses_post( __( '<strong>' . wc_price( $signup_revenue ) . '</strong> signup revenue this month', 'woocommerce-subscriptions' ) ) ); ?>
             </a>
         </li>
         <li class="renewal-revenue">
-            <a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date' ) ); ?>">
-				<?php printf( wp_kses_post( __( '<strong>' . wc_price( $renewal_revenue ) . '</strong> renewal revenue this month', 'woocommerce-subscriptions' ) ), esc_html( $renewal_revenue ) ); ?>
+            <a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=montj' ) ); ?>">
+				<?php printf( wp_kses_post( __( '<strong>' . wc_price( $renewal_revenue ) . '</strong> renewal revenue this month', 'woocommerce-subscriptions' ) ) ); ?>
             </a>
         </li>
 		<?php
