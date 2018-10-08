@@ -72,6 +72,8 @@ class WCS_Report_Dashboard {
 
 		$renewal_count = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_renewal_query', $query ) );
 
+		$signup_revenue = $renewal_revenue = 0;
+
 		?>
 		<li class="signup-count">
 			<a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date' ) ); ?>">
@@ -83,6 +85,16 @@ class WCS_Report_Dashboard {
 				<?php printf( wp_kses_post( _n( '<strong>%s renewal</strong> subscription renewals this month', '<strong>%s renewals</strong> subscription renewals this month', $renewal_count, 'woocommerce-subscriptions' ) ), esc_html( $renewal_count ) ); ?>
 			</a>
 		</li>
+        <li class="signup-revenue">
+            <a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date' ) ); ?>">
+				<?php printf( wp_kses_post( __( '<strong>%s</strong> signup revenue this month', $signup_revenue, 'woocommerce-subscriptions' ) ), esc_html( $signup_revenue ) ); ?>
+            </a>
+        </li>
+        <li class="renewal-revenue">
+            <a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date' ) ); ?>">
+				<?php printf( wp_kses_post( __( '<strong>%s</strong> renewal revenue this month', $renewal_revenue, 'woocommerce-subscriptions' ) ), esc_html( $renewal_revenue ) ); ?>
+            </a>
+        </li>
 		<?php
 
 	}
