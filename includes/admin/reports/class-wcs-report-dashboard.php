@@ -54,6 +54,28 @@ class WCS_Report_Dashboard {
 		$signup_count = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_signup_query', $query ) );
 
 		$query = $wpdb->prepare(
+			"SELECT SUM(order_total_meta.meta_value)
+                    FROM wp_postmeta as order_total_meta
+                    RIGHT JOIN
+                    (
+                    SELECT DISTINCT wcorder.ID
+                        FROM {$wpdb->posts} AS wcsubs
+                        INNER JOIN {$wpdb->posts} AS wcorder
+                            ON wcsubs.post_parent = wcorder.ID
+                        WHERE wcorder.post_type IN ( 'shop_order' )
+                            AND wcsubs.post_type IN ( 'shop_subscription' )
+                            AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
+                            AND wcorder.post_date >= '%s'
+                            AND wcorder.post_date < '%s'
+                    ) AS orders ON orders.ID = order_total_meta.post_id
+                  WHERE order_total_meta.meta_key = '_order_total'",
+			date( 'Y-m-01', current_time( 'timestamp' ) ),
+			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
+		);
+
+		$signup_revenue = absint( $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_signup_revenue_query', $query ) ) );
+
+		$query = $wpdb->prepare(
 			"SELECT COUNT(DISTINCT wcorder.ID) AS count
 				FROM {$wpdb->posts} AS wcorder
 				INNER JOIN {$wpdb->postmeta} AS meta__subscription_renewal
@@ -78,28 +100,6 @@ class WCS_Report_Dashboard {
                     RIGHT JOIN
                     (
                     SELECT DISTINCT wcorder.ID
-                        FROM {$wpdb->posts} AS wcsubs
-                        INNER JOIN {$wpdb->posts} AS wcorder
-                            ON wcsubs.post_parent = wcorder.ID
-                        WHERE wcorder.post_type IN ( 'shop_order' )
-                            AND wcsubs.post_type IN ( 'shop_subscription' )
-                            AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
-                            AND wcorder.post_date >= '%s'
-                            AND wcorder.post_date < '%s'
-                    ) AS orders ON orders.ID = order_total_meta.post_id
-                  WHERE order_total_meta.meta_key = '_order_total'",
-			date( 'Y-m-01', current_time( 'timestamp' ) ),
-			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
-		);
-
-		$signup_revenue = absint( $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_signup_revenue_query', $query ) ) );
-
-		$query = $wpdb->prepare(
-			"SELECT SUM(order_total_meta.meta_value)
-                    FROM wp_postmeta as order_total_meta
-                    RIGHT JOIN
-                    (
-                    SELECT DISTINCT wcorder.ID
                         FROM {$wpdb->posts} AS wcorder
                         INNER JOIN {$wpdb->postmeta} AS meta__subscription_renewal
                             ON (
@@ -116,9 +116,22 @@ class WCS_Report_Dashboard {
 			date( 'Y-m-01', current_time( 'timestamp' ) ),
 			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
 		);
-error_log($query);
+
 		$renewal_revenue = absint( $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_renewal_revenue_query', $query ) ) );
 
+		$query = $wpdb->prepare(
+			"SELECT COUNT(DISTINCT wcsubs.ID) AS count
+                    FROM {$wpdb->posts} AS wcsubs
+                    JOIN {$wpdb->postmeta} AS wcsmeta_cancel
+                        ON wcsubs.ID = wcsmeta_cancel.post_id
+                    AND wcsmeta_cancel.meta_key = '_schedule_cancelled'
+                    AND wcsubs.post_status NOT IN ( 'trash', 'auto-draft' )
+                    AND wcsmeta_cancel.meta_value BETWEEN '%s' AND '%s'",
+			date( 'Y-m-01', current_time( 'timestamp' ) ),
+			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
+		);
+
+		$cancel_count = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_cancellation_query', $query ) );
 
 		?>
 		<li class="signup-count">
@@ -126,19 +139,24 @@ error_log($query);
 				<?php printf( wp_kses_post( _n( '<strong>%s signup</strong> subscription signups this month', '<strong>%s signups</strong> subscription signups this month', $signup_count, 'woocommerce-subscriptions' ) ), esc_html( $signup_count ) ); ?>
 			</a>
 		</li>
-		<li class="renewal-count">
-			<a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
-				<?php printf( wp_kses_post( _n( '<strong>%s renewal</strong> subscription renewals this month', '<strong>%s renewals</strong> subscription renewals this month', $renewal_count, 'woocommerce-subscriptions' ) ), esc_html( $renewal_count ) ); ?>
-			</a>
-		</li>
         <li class="signup-revenue">
             <a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
 				<?php printf( wp_kses_post( __( '<strong>' . wc_price( $signup_revenue ) . '</strong> signup revenue this month', 'woocommerce-subscriptions' ) ) ); ?>
             </a>
         </li>
+		<li class="renewal-count">
+			<a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
+				<?php printf( wp_kses_post( _n( '<strong>%s renewal</strong> subscription renewals this month', '<strong>%s renewals</strong> subscription renewals this month', $renewal_count, 'woocommerce-subscriptions' ) ), esc_html( $renewal_count ) ); ?>
+			</a>
+		</li>
         <li class="renewal-revenue">
             <a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=montj' ) ); ?>">
 				<?php printf( wp_kses_post( __( '<strong>' . wc_price( $renewal_revenue ) . '</strong> renewal revenue this month', 'woocommerce-subscriptions' ) ) ); ?>
+            </a>
+        </li>
+        <li class="cancel-count">
+            <a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
+				<?php printf( wp_kses_post( _n( '<strong>%s cancellation</strong> subscription cancellations this month', '<strong>%s cancellations</strong> subscription cancellations this month', $renewal_count, 'woocommerce-subscriptions' ) ), esc_html( $cancel_count ) ); ?>
             </a>
         </li>
 		<?php
