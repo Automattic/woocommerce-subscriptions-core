@@ -81,7 +81,6 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 			if ( false === $subscription_ids ) {
 				$subscription_ids = parent::get_users_subscription_ids( $user_id ); // no data in transient, query directly
 			} else {
-				rsort( $subscription_ids ); // the results from the database query are ordered by date/ID in DESC, so make sure the transient value is too
 				delete_transient( $transient_key ); // migrate the data to our new cache
 			}
 
@@ -156,6 +155,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 			return false;
 		}
 
+		rsort( $subscription_ids ); // the results from the database query are ordered by date/ID in DESC, so make sure the transient value is too
 		return update_user_meta( $user_id, $this->cache_meta_key, $subscription_ids );
 	}
 
