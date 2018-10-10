@@ -37,6 +37,8 @@ class WCS_Report_Dashboard {
 	public static function add_stats_to_dashboard() {
 		global $wpdb;
 
+		$cached_results = get_transient( strtolower( self::class ) );
+
 		$offset  = get_option( 'gmt_offset' );
 
 		// Convert from Decimal format(eg. 11.5) to a suitable format(eg. +11:30) for CONVERT_TZ() of SQL query.
@@ -57,7 +59,15 @@ class WCS_Report_Dashboard {
 			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
 		);
 
-		$signup_count = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_signup_query', $query ) );
+		$query_hash = md5( $query );
+
+		if ( false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
+			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
+			$cached_results[ $query_hash ] = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_signup_query', $query ) );
+			set_transient( strtolower( self::class ), $cached_results, WEEK_IN_SECONDS );
+		}
+
+		$signup_count = $cached_results[ $query_hash ];
 
 		$query = $wpdb->prepare(
 			"SELECT SUM(order_total_meta.meta_value)
@@ -79,7 +89,15 @@ class WCS_Report_Dashboard {
 			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
 		);
 
-		$signup_revenue = absint( $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_signup_revenue_query', $query ) ) );
+		$query_hash = md5( $query );
+
+		if ( false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
+			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
+			$cached_results[ $query_hash ] = absint( $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_signup_revenue_query', $query ) ) );
+			set_transient( strtolower( self::class ), $cached_results, WEEK_IN_SECONDS );
+		}
+
+		$signup_revenue = $cached_results[ $query_hash ];
 
 		$query = $wpdb->prepare(
 			"SELECT COUNT(DISTINCT wcorder.ID) AS count
@@ -98,7 +116,15 @@ class WCS_Report_Dashboard {
 			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
 		);
 
-		$renewal_count = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_renewal_query', $query ) );
+		$query_hash = md5( $query );
+
+		if ( false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
+			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
+			$cached_results[ $query_hash ] = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_renewal_query', $query ) );
+			set_transient( strtolower( self::class ), $cached_results, WEEK_IN_SECONDS );
+		}
+
+		$renewal_count = $cached_results[ $query_hash ];
 
 		$query = $wpdb->prepare(
 			"SELECT SUM(order_total_meta.meta_value)
@@ -123,7 +149,15 @@ class WCS_Report_Dashboard {
 			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
 		);
 
-		$renewal_revenue = absint( $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_renewal_revenue_query', $query ) ) );
+		$query_hash = md5( $query );
+
+		if ( false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
+			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
+			$cached_results[ $query_hash ] = absint( $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_renewal_revenue_query', $query ) ) );
+			set_transient( strtolower( self::class ), $cached_results, WEEK_IN_SECONDS );
+		}
+
+		$renewal_revenue = $cached_results[ $query_hash ];
 
 		$query = $wpdb->prepare(
 			"SELECT COUNT(DISTINCT wcsubs.ID) AS count
@@ -136,8 +170,16 @@ class WCS_Report_Dashboard {
 			date( 'Y-m-01', current_time( 'timestamp' ) ),
 			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
 		);
-error_log($query);
-		$cancel_count = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_cancellation_query', $query ) );
+
+		$query_hash = md5( $query );
+
+		if ( false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
+			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
+			$cached_results[ $query_hash ] = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_cancellation_query', $query ) );
+			set_transient( strtolower( self::class ), $cached_results, WEEK_IN_SECONDS );
+		}
+
+		$cancel_count = $cached_results[ $query_hash ];
 
 		?>
 		<li class="signup-count">
