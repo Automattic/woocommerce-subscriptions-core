@@ -44,7 +44,6 @@ class WCS_Report_Dashboard {
 		// Convert from Decimal format(eg. 11.5) to a suitable format(eg. +11:30) for CONVERT_TZ() of SQL query.
 		$site_timezone = sprintf( '%+02d:%02d', (int) $offset, ( $offset - floor( $offset ) ) * 60 );
 
-
 		$query = $wpdb->prepare(
 			"SELECT COUNT(DISTINCT wcsubs.ID) AS count
 				FROM {$wpdb->posts} AS wcsubs
