@@ -359,6 +359,9 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 		}
 
 		if ( isset( $_POST['original_post_status'] ) && 'auto-draft' === $_POST['original_post_status'] ) {
+			$subscription->set_created_via( 'admin' );
+			$subscription->save();
+
 			// Grant download permissions on initial save.
 			wc_downloadable_product_permissions( $post_id );
 
