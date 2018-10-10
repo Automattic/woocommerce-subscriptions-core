@@ -81,7 +81,7 @@ class WCS_PayPal {
 		add_filter( 'woocommerce_subscriptions_admin_meta_boxes_script_parameters', __CLASS__ . '::maybe_add_change_payment_method_warning' );
 
 		// Maybe order don't need payment because lock.
-		add_filter( 'woocommerce_order_needs_payment', __CLASS__ . '::maybe_dont_need_payment', 10, 2 );
+		add_filter( 'woocommerce_order_needs_payment', __CLASS__ . '::maybe_override_needs_payment', 10, 2 );
 
 		// Remove payment lock when order is completely paid or order is cancelled.
 		add_action( 'woocommerce_order_status_cancelled', __CLASS__ . '::maybe_remove_payment_lock' );
@@ -468,9 +468,9 @@ class WCS_PayPal {
 	 * @param WC_Order $order         The actual order.
 	 *
 	 * @return bool
-	 * @since 2.4.0
+	 * @since 2.4.1
 	 */
-	public static function maybe_dont_need_payment( $needs_payment, $order ) {
+	public static function maybe_override_needs_payment( $needs_payment, $order ) {
 		if ( $needs_payment && self::instance()->get_id() === $order->get_payment_method() && wcs_order_contains_subscription( $order, array( 'parent' ) ) ) {
 			$has_lock            = $order->get_meta( 'wcs_lock_order_payment' );
 			$seconds_since_order = wcs_seconds_since_order_created( $order );
