@@ -487,7 +487,7 @@ class WCS_PayPal {
 	/**
 	 * Adds payment lock meta when order is received.
 	 *
-	 * @since 2.4.0
+	 * @since 2.4.1
 	 */
 	public static function maybe_add_payment_lock() {
 		if ( ! wcs_is_order_received_page() ) {
@@ -508,7 +508,7 @@ class WCS_PayPal {
 	 *
 	 * @param int $order_id Order cancelled/paid.
 	 *
-	 * @since 2.4.0
+	 * @since 2.4.1
 	 */
 	public static function maybe_remove_payment_lock( $order_id ) {
 		$order = wc_get_order( $order_id );
