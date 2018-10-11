@@ -1484,6 +1484,7 @@ class WC_Subscriptions_Admin {
 	/**
 	 * Check whether the payment gateway passed in supports automated renewals or not.
 	 * Automatically flag support for Paypal since it is included with subscriptions.
+	 * Display a list of each gateway supported features in a tooltip
 	 * Display in the Payment Gateway column.
 	 *
 	 * @since 1.5
@@ -1493,6 +1494,7 @@ class WC_Subscriptions_Admin {
 		echo '<td class="renewals">';
 		if ( ( is_array( $gateway->supports ) && in_array( 'subscriptions', $gateway->supports ) ) || $gateway->id == 'paypal' ) {
 			$status_html = '<span class="status-enabled tips" data-tip="' . esc_attr__( 'Supports automatic renewal payments with the WooCommerce Subscriptions extension.', 'woocommerce-subscriptions' ) . '">' . esc_html__( 'Yes', 'woocommerce-subscriptions' ) . '</span>';
+			$status_html .= '<span class="status-info tips" data-tip="' . esc_attr( '<strong> <u>' . __( "Supported features:" , 'woocommerce-subscriptions' ) . '</u> </strong> </br>' . implode( '<br />' , $gateway->supports ) )  . '"></span>';
 		} else {
 			$status_html = '-';
 		}
