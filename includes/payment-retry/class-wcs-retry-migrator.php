@@ -88,5 +88,27 @@ class WCS_Retry_Migrator extends WCS_Migrator {
 	protected function migrated_entry( $old_retry_id, $new_retry_id ) {
 		$this->log( sprintf( 'Retry ID %d migrated to %s with ID %d.', $old_retry_id, WCS_Retry_Stores::get_database_store()->get_full_table_name(), $new_retry_id ) );
 	}
+
+	/**
+	 * Validates if the payment retries need to be migrated.
+	 *
+	 * @return bool
+	 */
+	public static function needs_migration() {
+		$transient_key   = 'wcs_payment_retry_needs_migration';
+		$needs_migration = get_transient( $transient_key );
+
+		if ( false === $needs_migration ) {
+			if ( WCS_Retry_Stores::get_post_store()->get_retries( array( 'limit' => 1 ), 'ids' ) ) {
+				$needs_migration = 'true';
+			} else {
+				$needs_migration = 'false';
+			}
+
+			set_transient( $transient_key, $needs_migration, DAY_IN_SECONDS );
+		}
+
+		return ( 'true' === $needs_migration );
+	}
 }
 
