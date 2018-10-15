@@ -98,7 +98,7 @@ class WCS_Retry_Migrator extends WCS_Migrator {
 	 * If options exists, we need to run migration.
 	 *
 	 * @since 2.4.1
-	 * @return string|bool
+	 * @return bool
 	 */
 	public static function needs_migration() {
 		return apply_filters( self::$needs_migration_option_name, ( 'true' === get_option( self::$needs_migration_option_name ) ) );
