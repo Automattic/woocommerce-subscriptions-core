@@ -129,6 +129,11 @@ class WCS_Retry_Hybrid_Store extends WCS_Retry_Store {
 			}
 		}
 
+		// If the result is 0, we want to set needs_migration.
+		if ( 0 === count( $source_store_retries ) ) {
+			$this->migrator->set_needs_migration();
+		}
+
 		return $this->database_store->get_retries( $args, $return );
 	}
 
