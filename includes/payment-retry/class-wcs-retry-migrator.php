@@ -30,6 +30,11 @@ class WCS_Retry_Migrator extends WCS_Migrator {
 	protected $log_handle = 'wcs-retry-migrator';
 
 	/**
+	 * @var string
+	 */
+	static protected $needs_migration_option_name = 'wcs_payment_retry_needs_migration';
+
+	/**
 	 * Should this retry be migrated.
 	 *
 	 * @param int $retry_id
@@ -96,6 +101,19 @@ class WCS_Retry_Migrator extends WCS_Migrator {
 	 */
 	public static function needs_migration() {
 		return ( 'true' === get_option( 'wcs_payment_retry_needs_migration' ) );
+	}
+
+	/**
+	 * Sets needs migration option.
+	 *
+	 * @since 2.4.1
+	 */
+	public static function set_needs_migration() {
+		if ( WCS_Retry_Stores::get_post_store()->get_retries( array( 'limit' => 1 ), 'ids' ) ) {
+			update_option( self::$needs_migration_option_name, 'true' );
+		} else {
+			delete_option( self::$needs_migration_option_name );
+		}
 	}
 }
 
