@@ -364,6 +364,10 @@ class WCS_Retry_Manager {
 		if ( '0' !== $old_version && version_compare( $old_version, '2.4', '<' ) ) {
 			self::$background_migrator->schedule_repair();
 		}
+
+		if ( version_compare( $new_version, '2.4.0', '>' ) ) {
+			WCS_Retry_Migrator::set_needs_migration();
+		}
 	}
 
 	/**
