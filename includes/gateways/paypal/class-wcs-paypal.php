@@ -515,6 +515,7 @@ class WCS_PayPal {
 
 		if ( self::instance()->get_id() === $order->get_payment_method() && wcs_order_contains_subscription( $order, array( 'parent' ) ) ) {
 			$order->delete_meta_data( 'wcs_lock_order_payment' );
+			$order->save();
 		}
 	}
 
