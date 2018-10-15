@@ -346,7 +346,7 @@ class WCS_Retry_Manager {
 	 * @since 2.4
 	 */
 	public static function load_dependant_classes() {
-		if ( ! self::$background_migrator && WCS_Retry_Migrator::needs_migration() ) {
+		if ( ! self::$background_migrator ) {
 			self::$background_migrator = new WCS_Retry_Background_Migrator();
 			add_action( 'init', array( self::$background_migrator, 'init' ), 15 );
 		}
