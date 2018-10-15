@@ -90,25 +90,12 @@ class WCS_Retry_Migrator extends WCS_Migrator {
 	}
 
 	/**
-	 * Validates if the payment retries need to be migrated.
+	 * If options exists, we need to run migration.
 	 *
-	 * @return bool
+	 * @return string|bool
 	 */
 	public static function needs_migration() {
-		$transient_key   = 'wcs_payment_retry_needs_migration';
-		$needs_migration = get_transient( $transient_key );
-
-		if ( false === $needs_migration ) {
-			if ( WCS_Retry_Stores::get_post_store()->get_retries( array( 'limit' => 1 ), 'ids' ) ) {
-				$needs_migration = 'true';
-			} else {
-				$needs_migration = 'false';
-			}
-
-			set_transient( $transient_key, $needs_migration, DAY_IN_SECONDS );
-		}
-
-		return ( 'true' === $needs_migration );
+		return ( 'true' === get_option( 'wcs_payment_retry_needs_migration' ) );
 	}
 }
 
