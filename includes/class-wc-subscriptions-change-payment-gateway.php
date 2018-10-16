@@ -399,7 +399,8 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	/**
 	 * Update the recurring payment method on a subscription order.
 	 *
-	 * @param array $available_gateways The payment gateways which are currently being allowed.
+	 * @param WC_Subscription $subscription An instance of a WC_Subscription object.
+	 * @param string $new_payment_method The ID of the new payment method.
 	 * @since 1.4
 	 */
 	public static function update_payment_method( $subscription, $new_payment_method ) {
@@ -414,8 +415,8 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		WC_Subscriptions_Payment_Gateways::trigger_gateway_status_updated_hook( $subscription, 'cancelled' );
 
 		// Update meta
-		update_post_meta( $subscription->get_id(), '_old_payment_method', $old_payment_method );
-		update_post_meta( $subscription->get_id(), '_payment_method', $new_payment_method );
+		$subscription->update_meta_data( '_old_payment_method', $old_payment_method );
+		$subscription->update_meta_data( '_payment_method', $new_payment_method );
 
 		if ( isset( $available_gateways[ $new_payment_method ] ) ) {
 			$new_payment_method_title = $available_gateways[ $new_payment_method ]->get_title();
@@ -423,8 +424,8 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			$new_payment_method_title = '';
 		}
 
-		update_post_meta( $subscription->get_id(), '_old_payment_method_title', $old_payment_method_title );
-		update_post_meta( $subscription->get_id(), '_payment_method_title', $new_payment_method_title );
+		$subscription->update_meta_data( '_old_payment_method_title', $old_payment_method_title );
+		$subscription->update_meta_data( '_payment_method_title', $new_payment_method_title );
 
 		if ( empty( $old_payment_method_title )  ) {
 			$old_payment_method_title = $old_payment_method;
@@ -436,6 +437,8 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 		// Log change on order
 		$subscription->add_order_note( sprintf( _x( 'Payment method changed from "%1$s" to "%2$s" by the subscriber from their account page.', '%1$s: old payment title, %2$s: new payment title', 'woocommerce-subscriptions' ), $old_payment_method_title, $new_payment_method_title ) );
+
+		$subscription->save();
 
 		do_action( 'woocommerce_subscription_payment_method_updated', $subscription, $new_payment_method, $old_payment_method );
 		do_action( 'woocommerce_subscription_payment_method_updated_to_' . $new_payment_method, $subscription, $old_payment_method );
