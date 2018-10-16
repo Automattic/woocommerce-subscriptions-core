@@ -415,7 +415,10 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		WC_Subscriptions_Payment_Gateways::trigger_gateway_status_updated_hook( $subscription, 'cancelled' );
 
 		// Update meta
-		$subscription->update_meta_data( '_old_payment_method', $old_payment_method );
+		if ( $old_payment_method ) {
+			$subscription->update_meta_data( '_old_payment_method', $old_payment_method );
+			$subscription->update_meta_data( '_old_payment_method_title', $old_payment_method_title );
+		}
 		$subscription->update_meta_data( '_payment_method', $new_payment_method );
 
 		if ( isset( $available_gateways[ $new_payment_method ] ) ) {
@@ -424,7 +427,6 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			$new_payment_method_title = '';
 		}
 
-		$subscription->update_meta_data( '_old_payment_method_title', $old_payment_method_title );
 		$subscription->update_meta_data( '_payment_method_title', $new_payment_method_title );
 
 		if ( empty( $old_payment_method_title )  ) {
@@ -442,7 +444,9 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 		do_action( 'woocommerce_subscription_payment_method_updated', $subscription, $new_payment_method, $old_payment_method );
 		do_action( 'woocommerce_subscription_payment_method_updated_to_' . $new_payment_method, $subscription, $old_payment_method );
-		do_action( 'woocommerce_subscription_payment_method_updated_from_' . $old_payment_method, $subscription, $new_payment_method );
+		if ( $old_payment_method ) {
+			do_action( 'woocommerce_subscription_payment_method_updated_from_' . $old_payment_method, $subscription, $new_payment_method );
+		}
 	}
 
 	/**
@@ -565,13 +569,22 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 */
 	public static function can_subscription_be_updated_to_new_payment_method( $subscription_can_be_changed, $subscription ) {
 
-		if ( WC_Subscriptions_Payment_Gateways::one_gateway_supports( 'subscription_payment_method_change_customer' ) && $subscription->get_time( 'next_payment' ) > 0 && ! $subscription->is_manual() && $subscription->payment_method_supports( 'subscription_cancellation' ) && $subscription->has_status( 'active' ) ) {
-			$subscription_can_be_changed = true;
-		} else {
-			$subscription_can_be_changed = false;
+               // Don't allow if no gateways support changing methods.
+		if ( ! WC_Subscriptions_Payment_Gateways::one_gateway_supports( 'subscription_payment_method_change_customer' ) ) {
+			return false;
 		}
 
-		return $subscription_can_be_changed;
+		// Don't allow if there are no remaining payments or the subscription is not active.
+		if ( $subscription->get_time( 'next_payment' ) <= 0 || ! $subscription->has_status( 'active' ) ) {
+			return false;
+		}
+
+		// Don't allow on subscription with manual gateway or one that doesn't support changing methods.
+		if ( $subscription->has_payment_gateway() && ( $subscription->is_manual() || ! $subscription->payment_method_supports( 'subscription_cancellation' ) ) ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
