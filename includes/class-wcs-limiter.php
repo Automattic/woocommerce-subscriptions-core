@@ -171,9 +171,9 @@ class WCS_Limiter {
 		// Check if the cart contains a switch or if the cart is being restored from the session.
 		} elseif ( WC_Subscriptions_Switcher::cart_contains_switches() || isset( WC()->session->cart ) ) {
 			// Use the version of the cart we have access to.
-			$cart = isset( WC()->cart ) ? WC()->cart->cart_contents : WC()->session->cart;
+			$cart_contents = isset( WC()->cart ) ? WC()->cart->cart_contents : WC()->session->cart;
 
-			foreach ( $cart as $cart_item ) {
+			foreach ( $cart_contents as $cart_item ) {
 				if ( $product->get_id() === $cart_item['product_id'] && isset( $switch_cart_item['subscription_switch']['subscription_id'] ) && array_key_exists( $switch_cart_item['subscription_switch']['subscription_id'], $subscriptions ) ) {
 					$is_purchasable = true;
 					break;
