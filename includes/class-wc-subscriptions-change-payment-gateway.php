@@ -328,72 +328,84 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 */
 	public static function change_payment_method_via_pay_shortcode() {
 
-		if ( isset( $_POST['_wcsnonce'] ) && wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_change_payment_method' ) ) {
+		if ( ! isset( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_change_payment_method' ) ) {
+			return;
+		}
 
-			$subscription = wcs_get_subscription( absint( $_POST['woocommerce_change_payment'] ) );
+		$subscription_id = absint( $_POST['woocommerce_change_payment'] );
+		$subscription = wcs_get_subscription( $subscription_id );
 
-			do_action( 'woocommerce_subscription_change_payment_method_via_pay_shortcode', $subscription );
+		do_action( 'woocommerce_subscription_change_payment_method_via_pay_shortcode', $subscription );
 
-			ob_start();
+		if ( $subscription->get_order_key() != $_GET['key'] ) {
+			return;
+		}
 
-			if ( $subscription->get_order_key() == $_GET['key'] ) {
+		$new_payment_method = wc_clean( $_POST['payment_method'] );
+		$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
 
-				$subscription_billing_country  = $subscription->get_billing_country();
-				$subscription_billing_state    = $subscription->get_billing_state();
-				$subscription_billing_postcode = $subscription->get_billing_postcode();
-				$subscription_billing_city     = $subscription->get_billing_postcode();
+		ob_start();
 
-				// Set customer location to order location
-				if ( $subscription_billing_country ) {
-					$setter = is_callable( array( WC()->customer, 'set_billing_country' ) ) ? 'set_billing_country' : 'set_country';
-					WC()->customer->$setter( $subscription_billing_country );
-				}
-				if ( $subscription_billing_state ) {
-					$setter = is_callable( array( WC()->customer, 'set_billing_state' ) ) ? 'set_billing_state' : 'set_state';
-					WC()->customer->$setter( $subscription_billing_state );
-				}
-				if ( $subscription_billing_postcode ) {
-					$setter = is_callable( array( WC()->customer, 'set_billing_postcode' ) ) ? 'set_billing_postcode' : 'set_postcode';
-					WC()->customer->$setter( $subscription_billing_postcode );
-				}
-				if ( $subscription_billing_city ) {
-					$setter = is_callable( array( WC()->customer, 'set_billing_city' ) ) ? 'set_billing_city' : 'set_city';
-					WC()->customer->$setter( $subscription_billing_city );
-				}
+		$subscription_billing_country  = $subscription->get_billing_country();
+		$subscription_billing_state    = $subscription->get_billing_state();
+		$subscription_billing_postcode = $subscription->get_billing_postcode();
+		$subscription_billing_city     = $subscription->get_billing_postcode();
 
-				// Update payment method
-				$new_payment_method = wc_clean( $_POST['payment_method'] );
+		// Set customer location to order location
+		if ( $subscription_billing_country ) {
+			$setter = is_callable( array( WC()->customer, 'set_billing_country' ) ) ? 'set_billing_country' : 'set_country';
+			WC()->customer->$setter( $subscription_billing_country );
+		}
+		if ( $subscription_billing_state ) {
+			$setter = is_callable( array( WC()->customer, 'set_billing_state' ) ) ? 'set_billing_state' : 'set_state';
+			WC()->customer->$setter( $subscription_billing_state );
+		}
+		if ( $subscription_billing_postcode ) {
+			$setter = is_callable( array( WC()->customer, 'set_billing_postcode' ) ) ? 'set_billing_postcode' : 'set_postcode';
+			WC()->customer->$setter( $subscription_billing_postcode );
+		}
+		if ( $subscription_billing_city ) {
+			$setter = is_callable( array( WC()->customer, 'set_billing_city' ) ) ? 'set_billing_city' : 'set_city';
+			WC()->customer->$setter( $subscription_billing_city );
+		}
 
-				// Allow some payment gateways which can't process the payment immediately, like PayPal, to do it later after the payment/sign-up is confirmed
-				if ( apply_filters( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', true, $new_payment_method, $subscription ) ) {
-					self::update_payment_method( $subscription, $new_payment_method );
-				}
+		// Validate billing fields.
+		$available_gateways[ $new_payment_method ]->validate_fields();
 
-				$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
+		self::update_payment_method( $subscription, $new_payment_method );
 
-				// Validate
-				$available_gateways[ $new_payment_method ]->validate_fields();
+		// Stop if billing fields did not validate
+		if ( wc_notice_count( 'error' ) != 0 ) {
+			return;
+		}
 
-				// Process payment for the new method (with a $0 order total)
-				if ( wc_notice_count( 'error' ) == 0 ) {
+		// Process payment for the new method (with a $0 order total)
+		$result = $available_gateways[ $new_payment_method ]->process_payment( $subscription->get_id() );
 
-					$result = $available_gateways[ $new_payment_method ]->process_payment( $subscription->get_id() );
+		if ( 'success' != $result['result']  ) {
+			return;
+		}
 
-					if ( 'success' == $result['result'] && wc_get_page_permalink( 'myaccount' ) == $result['redirect'] ) {
-						$result['redirect'] = $subscription->get_view_order_url();
-					}
+		if ( wc_get_page_permalink( 'myaccount' ) == $result['redirect'] ) {
+			$result['redirect'] = $subscription->get_view_order_url();
+		}
 
-					$result = apply_filters( 'woocommerce_subscriptions_process_payment_for_change_method_via_pay_shortcode', $result, $subscription );
+		$result = apply_filters( 'woocommerce_subscriptions_process_payment_for_change_method_via_pay_shortcode', $result, $subscription );
 
-					// Redirect to success/confirmation/payment page
-					if ( 'success' == $result['result'] ) {
-						wc_add_notice( __( 'Payment method updated.', 'woocommerce-subscriptions' ), 'success' );
-						wp_redirect( $result['redirect'] );
-						exit;
-					}
-				}
+		// Does the customer want all current subscriptions to be updated to this payment method
+		if ( $available_gateways[ $new_payment_method ]->supports( 'tokenization' ) && isset( $_POST['update_all_subscriptions_payment_method'] ) && $_POST['update_all_subscriptions_payment_method'] ) {
+
+			$token = WCS_Payment_Tokens::get_token_by_subscription( $subscription, $new_payment_method );
+
+			if ( $token ) {
+				WCS_Payment_Tokens::update_all_subscription_tokens( $token->get_id() );
 			}
 		}
+
+		// Redirect to success/confirmation/payment page
+		wc_add_notice( __( 'Payment method updated.', 'woocommerce-subscriptions' ), 'success' );
+		wp_redirect( $result['redirect'] );
+		exit;
 	}
 
 	/**
@@ -404,6 +416,11 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 * @since 1.4
 	 */
 	public static function update_payment_method( $subscription, $new_payment_method ) {
+
+		// Allow some payment gateways which can't process the payment immediately, like PayPal, to do it later after the payment/sign-up is confirmed
+		if ( ! apply_filters( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', true, $new_payment_method, $subscription ) ) {
+			return;
+		}
 
 		$old_payment_method       = $subscription->get_payment_method();
 		$old_payment_method_title = $subscription->get_payment_method_title();
@@ -569,7 +586,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 */
 	public static function can_subscription_be_updated_to_new_payment_method( $subscription_can_be_changed, $subscription ) {
 
-               // Don't allow if no gateways support changing methods.
+		// Don't allow if no gateways support changing methods.
 		if ( ! WC_Subscriptions_Payment_Gateways::one_gateway_supports( 'subscription_payment_method_change_customer' ) ) {
 			return false;
 		}
