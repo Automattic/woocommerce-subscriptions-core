@@ -364,6 +364,10 @@ class WCS_Retry_Manager {
 		if ( '0' !== $old_version && version_compare( $old_version, '2.4', '<' ) ) {
 			self::$background_migrator->schedule_repair();
 		}
+
+		if ( version_compare( $new_version, '2.4.0', '>' ) ) {
+			WCS_Retry_Migrator::set_needs_migration();
+		}
 	}
 
 	/**
@@ -391,7 +395,7 @@ class WCS_Retry_Manager {
 	 */
 	protected static function get_store_class() {
 		$default_store_class = 'WCS_Retry_Database_Store';
-		if ( (bool) WCS_Retry_Stores::get_post_store()->get_retries( array( 'limit' => 1 ), 'ids' ) ) {
+		if ( WCS_Retry_Migrator::needs_migration() ) {
 			$default_store_class = 'WCS_Retry_Hybrid_Store';
 		}
 
