@@ -227,8 +227,16 @@ nt_method_endpoint', 'subscription-payment-method' );
         */
        public function maybe_redirect_payment_methods( $query ) {
 
-               $subscription = wcs_get_subscription( $query->get( 'subscription-payment-method' ) );
-               if ( $query->is_main_query() && $subscription ) {
+		$subscription = wcs_get_subscription( $query->get( 'subscription-payment-method' ) );
+		if ( ! $query->is_main_query() || ! $subscription ) {
+			return;
+		}
+
+		if ( 'no' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+
+			$url = $subscription->get_view_order_url();
+
+		} else {
 
 			$args = array(
 				'change_payment_method' => $subscription->get_id(),
@@ -236,9 +244,10 @@ nt_method_endpoint', 'subscription-payment-method' );
 			);
 			$url = add_query_arg( $args, $subscription->get_checkout_payment_url() );
 
-			wp_redirect( $url );
-			exit();
 		}
+
+		wp_redirect( $url );
+		exit();
 	}
 
 	/**
