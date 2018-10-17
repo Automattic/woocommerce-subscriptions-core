@@ -1293,8 +1293,8 @@ class WC_Subscriptions_Switcher {
 				continue;
 			}
 
-			$subscription       = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
-			$existing_item      = wcs_get_order_item( $cart_item['subscription_switch']['item_id'], $subscription );
+			$subscription  = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
+			$existing_item = wcs_get_order_item( $cart_item['subscription_switch']['item_id'], $subscription );
 
 			if ( empty( $existing_item ) ) {
 				WC()->cart->remove_cart_item( $cart_item_key );
