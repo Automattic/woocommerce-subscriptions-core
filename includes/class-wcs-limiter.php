@@ -167,14 +167,21 @@ class WCS_Limiter {
 		// Adding to cart
 		if ( isset( $_GET['switch-subscription'] ) && array_key_exists( $_GET['switch-subscription'], $subscriptions ) ) {
 			$is_purchasable = true;
+		} else {
+			// If we have a variation product get the variable product's ID. We can't use the variation ID for comparison because this function sometimes receives a variable product.
+			$product_id    = $product->is_type( 'variation' ) ? $product->get_parent_id() : $product->get_id();
+			$cart_contents = array();
 
-		// Check if the cart contains a switch or if the cart is being restored from the session.
-		} elseif ( WC_Subscriptions_Switcher::cart_contains_switches() || isset( WC()->session->cart ) ) {
-			// Use the version of the cart we have access to.
-			$cart_contents = isset( WC()->cart ) ? WC()->cart->cart_contents : WC()->session->cart;
+			// Use the version of the cart we have access to. We may need to look for switches in the cart being loaded from the session.
+			if ( WC_Subscriptions_Switcher::cart_contains_switches() ) {
+				$cart_contents = WC()->cart->cart_contents;
+			} elseif ( isset( WC()->session->cart ) ) {
+				$cart_contents = WC()->session->cart;
+			}
 
+			// Check if the cart contains a switch for this specific product.
 			foreach ( $cart_contents as $cart_item ) {
-				if ( $product->get_id() === $cart_item['product_id'] && isset( $switch_cart_item['subscription_switch']['subscription_id'] ) && array_key_exists( $switch_cart_item['subscription_switch']['subscription_id'], $subscriptions ) ) {
+				if ( $product_id === $cart_item['product_id'] && isset( $cart_item['subscription_switch']['subscription_id'] ) && array_key_exists( $cart_item['subscription_switch']['subscription_id'], $subscriptions ) ) {
 					$is_purchasable = true;
 					break;
 				}
