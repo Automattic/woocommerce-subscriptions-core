@@ -90,11 +90,26 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 	 */
 	public static function get_subscriptions_by_token( $payment_token ) {
 
-		$user_subscriptions = self::get_subscription_posts(
-			$payment_token->get_gateway_id(),
-			$payment_token->get_token(),
-			WCS_Customer_Store::instance()->get_users_subscription_ids( $payment_token->get_user_id() )
+		$meta_query = array(
+			array(
+				'key'   => '_payment_method',
+				'value' => $payment_token->get_gateway_id(),
+			),
+			array(
+				'key'   => '_requires_manual_renewal',
+				'value' => 'false',
+			),
+			array(
+				'value' => $payment_token->get_token(),
+			),
 		);
+		$user_subscriptions = get_posts( array(
+			'post_type'      => 'shop_subscription',
+			'post_status'    => array( 'wc-pending', 'wc-active', 'wc-on-hold' ),
+			'meta_query'     => $meta_query,
+			'posts_per_page' => -1,
+			'post__in'       => WCS_Customer_Store::instance()->get_users_subscription_ids( $payment_token->get_user_id() ),
+		) );
 
 		return apply_filters( 'woocommerce_subscriptions_by_payment_token', $user_subscriptions, $payment_token );
 	}
@@ -109,16 +124,17 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 	 */
 	public static function get_token_by_subscription( $subscription, $payment_gateway_id ) {
 
-		foreach( self::get_customer_tokens( $payment_gateway_id ) as $token ) {
+		$tokens = self::get_customer_tokens( $payment_gateway_id, $subscription->get_customer_id() );
 
-			$posts = self::get_subscription_posts(
-				$payment_gateway_id,
-				$token->get_token(),
-				array( $subscription->get_id() )
-			);
-
-			if ( count( $posts ) ) {
-				return $token;
+		foreach( $tokens as $token ) {
+			if ( $token->get_gateway_id() != $payment_gateway_id ) {
+				continue;
+			}
+			$subs = self::get_subscriptions_by_token( $token );
+			foreach( $subs as $sub ) {
+				if ( $sub->ID == $subscription->get_id() ) {
+					return $token;
+				}
 			}
 		}
 

@@ -196,7 +196,7 @@ class WCS_My_Account_Payment_Methods {
 	 * @param WC_Payment_Token $old_token A payment token object.
 	 * @since 2.5.0
 	 */
-	public function add_update_token_order_note( $subscription, $old_token, $new_token ) {
+	public static function add_update_token_order_note( $subscription, $old_token, $new_token ) {
 
 		if ( $new_token->get_id() == self::$default_token_id ) {
 			$subscription->add_order_note( sprintf(
