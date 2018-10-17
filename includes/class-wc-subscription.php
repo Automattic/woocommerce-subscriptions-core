@@ -2057,7 +2057,6 @@ class WC_Subscription extends WC_Order {
 	 * @return bool
 	 */
 	public function has_payment_gateway() {
-
 		return (bool) wc_get_payment_gateway_by_order( $this );
 	}
 

@@ -52,7 +52,11 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 	/**
 	 * Update all the customer's subscription tokens to one token.
 	 *
+<<<<<<< HEAD
 	 * @param string $token_id The token ID to assign to all subscriptions.
+=======
+	 * @param string $token_id The token ID to assign to all subscriptions 
+>>>>>>> 0f3bda701d423d1659823a72680fa867f92fed30
 	 * @since 2.5.0
 	 */
 	public static function update_all_subscription_tokens( $token_id ) {
@@ -84,12 +88,17 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 	 * Get subscriptions by a WC_Payment_Token. All automatic subscriptions with the token's payment method,
 	 * customer id and token value stored in post meta will be returned.
 	 *
+<<<<<<< HEAD
 	 * @param  WC_Payment_Token $payment_token Payment token object.
+=======
+	 * @param  WC_Payment_Token payment token object
+>>>>>>> 0f3bda701d423d1659823a72680fa867f92fed30
 	 * @return array subscription posts
 	 * @since  2.2.7
 	 */
 	public static function get_subscriptions_by_token( $payment_token ) {
 
+<<<<<<< HEAD
 		$meta_query = array(
 			array(
 				'key'   => '_payment_method',
@@ -110,6 +119,13 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 			'posts_per_page' => -1,
 			'post__in'       => WCS_Customer_Store::instance()->get_users_subscription_ids( $payment_token->get_user_id() ),
 		) );
+=======
+		$user_subscriptions = self::get_subscription_posts(
+			$payment_token->get_gateway_id(),
+			$payment_token->get_token(),
+			WCS_Customer_Store::instance()->get_users_subscription_ids( $payment_token->get_user_id() )
+		);
+>>>>>>> 0f3bda701d423d1659823a72680fa867f92fed30
 
 		return apply_filters( 'woocommerce_subscriptions_by_payment_token', $user_subscriptions, $payment_token );
 	}
@@ -117,13 +133,20 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 	/**
 	 * Get WC_Payment_Token by a subscription.
 	 *
+<<<<<<< HEAD
 	 * @param  WC_Subscription $subscription A subscription object.
 	 * @param  string $payment_gateway_id The subscriptions payment gateway ID.
 	 * @return WC_Payment_Token Subscription token.
+=======
+	 * @param WC_Subscription $subscription A subscription object
+	 * @param string $payment_gateway_id The subscriptions payment gateway ID
+	 * @return WC_Payment_Token subscription token
+>>>>>>> 0f3bda701d423d1659823a72680fa867f92fed30
 	 * @since  2.5.0
 	 */
 	public static function get_token_by_subscription( $subscription, $payment_gateway_id ) {
 
+<<<<<<< HEAD
 		$tokens = self::get_customer_tokens( $payment_gateway_id, $subscription->get_customer_id() );
 
 		foreach( $tokens as $token ) {
@@ -135,6 +158,18 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 				if ( $sub->ID == $subscription->get_id() ) {
 					return $token;
 				}
+=======
+		foreach( self::get_customer_tokens( $payment_gateway_id ) as $token ) {
+
+			$posts = self::get_subscription_posts(
+				$payment_gateway_id,
+				$token->get_token(),
+				array( $subscription->get_id() )
+			);
+
+			if ( count( $posts ) ) {
+				return $token;
+>>>>>>> 0f3bda701d423d1659823a72680fa867f92fed30
 			}
 		}
 
@@ -144,6 +179,7 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 	/**
 	 * Get subscription posts by gateway ID, payment token & post IDs.
 	 *
+<<<<<<< HEAD
 	 * @param  string $payment_gateway_id The subscriptions payment gateway ID.
 	 * @param  string $token A payment token.
 	 * @param  array $post_ids List of subscription post IDs.
@@ -151,6 +187,15 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 	 * @since  2.5.0
 	 */
 	protected static function get_subscription_posts( $payment_gateway_id, $token, $post_ids ) {
+=======
+	 * @param string $payment_gateway_id The subscriptions payment gateway ID
+	 * @param string $token A payment token
+	 * @param array $post_ids List of subscription post IDs.
+	 * @return array WP posts
+	 * @since  2.5.0
+	 */
+	protected function get_subscription_posts( $payment_gateway_id, $token, $post_ids ) {
+>>>>>>> 0f3bda701d423d1659823a72680fa867f92fed30
 
 		$meta_query = array(
 			array(

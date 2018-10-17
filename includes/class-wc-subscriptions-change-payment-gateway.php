@@ -342,6 +342,11 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 		do_action( 'woocommerce_subscription_change_payment_method_via_pay_shortcode', $subscription );
 
+		$subscription_id = absint( $_POST['woocommerce_change_payment'] );
+		$subscription = wcs_get_subscription( $subscription_id );
+
+		do_action( 'woocommerce_subscription_change_payment_method_via_pay_shortcode', $subscription );
+
 		ob_start();
 
 		if ( $subscription->get_order_key() == $_GET['key'] ) {
