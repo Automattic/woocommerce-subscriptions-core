@@ -307,9 +307,14 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 		if ( $subscription->can_be_updated_to( 'new-payment-method' ) ) {
 
+			if ( $subscription->has_payment_gateway() ) {
+				$action_name = _x( 'Change Payment', 'label on button, imperative', 'woocommerce-subscriptions' );
+			} else {
+				$action_name = _x( 'Add Payment', 'label on button, imperative', 'woocommerce-subscriptions' );
+			}
 			$actions['change_payment_method'] = array(
 				'url'  => wp_nonce_url( add_query_arg( array( 'change_payment_method' => $subscription->get_id() ), $subscription->get_checkout_payment_url() ) ),
-				'name' => _x( 'Change Payment', 'label on button, imperative', 'woocommerce-subscriptions' ),
+				'name' => $action_name,
 			);
 
 		}
@@ -372,6 +377,9 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		// Validate billing fields.
 		$available_gateways[ $new_payment_method ]->validate_fields();
 
+		if ( ! $subscription->has_payment_gateway() ) {
+			self::update_to_automatic( $subscription );
+		}
 		self::update_payment_method( $subscription, $new_payment_method );
 
 		// Stop if billing fields did not validate
@@ -398,7 +406,9 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			$token = WCS_Payment_Tokens::get_token_by_subscription( $subscription, $new_payment_method );
 
 			if ( $token ) {
+				add_action( 'woocommerce_subscription_token_changed', __CLASS__ . '::update_to_automatic' );
 				WCS_Payment_Tokens::update_all_subscription_tokens( $token->get_id() );
+				remove_action( 'woocommerce_subscription_token_changed', __CLASS__ . '::update_to_automatic' );
 			}
 		}
 
@@ -639,6 +649,18 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		return $needs_payment;
 	}
 
+	/**
+	 * Update a subscription to automatic when processing a change_payment_method request.
+	 *
+	 * @param WC_Subscription $subscription
+	 * @since 2.5.0
+	 */
+	public function update_to_automatic( $subscription ) {
+
+		$subscription->set_requires_manual_renewal( false );
+		$subscription->save();
+
+	}
 	/** Deprecated Functions **/
 
 	/**
