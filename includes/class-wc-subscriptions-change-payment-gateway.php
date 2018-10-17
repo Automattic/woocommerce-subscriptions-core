@@ -623,8 +623,23 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 */
 	public static function change_payment_method_page_title( $title ) {
 
-		if ( is_main_query() && in_the_loop() && is_page() && is_checkout_pay_page() && self::$is_request_to_change_payment ) {
+		global $wp;
+
+		// Skip if not on checkout pay page
+		if ( ! is_main_query() || ! in_the_loop() ||  ! is_page() || ! is_checkout_pay_page() ) {
+			return $title;
+		}
+
+		$subscription_key = isset( $_GET['key'] ) ? wc_clean( $_GET['key'] ) : '';
+		$subscription     = wcs_get_subscription( absint( $wp->query_vars['order-pay'] ) );
+		if ( ! self::$is_request_to_change_payment || ! $subscription ) {
+			return $title;
+		}
+
+		if ( $subscription->has_payment_gateway() ) {
 			$title = _x( 'Change Payment Method', 'the page title of the change payment method form', 'woocommerce-subscriptions' );
+		} else {
+			$title = _x( 'Add Payment Method', 'the page title of the add payment method form', 'woocommerce-subscriptions' );
 		}
 
 		return $title;
