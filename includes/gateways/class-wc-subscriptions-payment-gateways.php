@@ -27,6 +27,8 @@ class WC_Subscriptions_Payment_Gateways {
 
 		add_filter( 'woocommerce_no_available_payment_methods_message', __CLASS__ . '::no_available_payment_methods_message' );
 
+		add_filter( 'woocommerce_payment_gateways_renewal_support_status_html' , __CLASS__ . '::payment_gateways_rewewal_support_tooltip', 11, 2);
+
 		// Trigger a hook for gateways to charge recurring payments
 		add_action( 'woocommerce_scheduled_subscription_payment', __CLASS__ . '::gateway_scheduled_subscription_payment', 10, 1 );
 
@@ -212,6 +214,33 @@ class WC_Subscriptions_Payment_Gateways {
 		if ( ! $subscription->is_manual() && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) ) {
 			self::trigger_gateway_renewal_payment_hook( $subscription->get_last_order( 'all', 'renewal' ) );
 		}
+	}
+
+	/**
+	 * Display a list of each gateway supported features in a tooltip
+	 *
+	 * @since 2.5
+	 */
+	public static function payment_gateways_rewewal_support_tooltip( $status_html, $gateway ){
+		if ( ( is_array( $gateway->supports ) && in_array( 'subscriptions', $gateway->supports ) ) || $gateway->id == 'paypal' ) {
+
+			$basic_features = $gateway->supports;
+			$subscription_features = array();
+
+			foreach($basic_features as $key=>$feature){
+				if( strpos( $feature , 'subscription' ) === 0 ){
+					$subscription_features[] = str_replace('subscription_' , ' ' ,  $feature );
+					unset( $basic_features[$key] );
+				}
+			}
+
+			$status_html .= '<span class="status-info tips" data-tip="' . esc_attr( '<strong> <u>' . __( 'Supported features:' , 'woocommerce-subscriptions' ) . '</u> </strong> </br>' . implode( '<br />' , str_replace('_' , ' ' ,  $basic_features ) ) ) . esc_attr( '</br> <strong> <u>' . __( 'Subscription features:' , 'woocommerce-subscriptions' ) . '</u> </strong> </br>' . implode( '<br />' , str_replace('_' , ' ' ,  $subscription_features ) ) ) . '"></span>';
+		}
+
+		$allowed_html = wp_kses_allowed_html( 'post' );
+		$allowed_html['span']['data-tip'] = true;
+
+		return wp_kses( $status_html , $allowed_html );
 	}
 
 	/**
