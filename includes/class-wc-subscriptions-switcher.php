@@ -1462,6 +1462,7 @@ class WC_Subscriptions_Switcher {
 
 						// We need to find the per item extra to pay so we can set it as the sign-up fee (WC will then multiply it by the quantity)
 						$extra_to_pay = $extra_to_pay / $cart_item['quantity'];
+						$extra_to_pay = apply_filters( 'wcs_switch_proration_extra_to_pay', $extra_to_pay, $subscription, $cart_item, $days_in_old_cycle );
 
 						// Keep a record of the two separate amounts so we store these and calculate future switch amounts correctly
 						$existing_sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( WC()->cart->cart_contents[ $cart_item_key ]['data'] );
