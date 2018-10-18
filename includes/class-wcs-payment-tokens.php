@@ -76,6 +76,8 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 
 				if ( ! empty( $subscription ) && self::update_subscription_token( $subscription, $default_token, $old_token ) ) {
 					do_action( 'woocommerce_subscription_token_changed', $subscription, $old_token, $default_token );
+					$subscription->set_requires_manual_renewal( false );
+					$subscription->save();
 				}
 			}
 		}

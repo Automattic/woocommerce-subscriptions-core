@@ -243,7 +243,6 @@ nt_method_endpoint', 'subscription-payment-method' );
 				'_wpnonce'              => wp_create_nonce(),
 			);
 			$url = add_query_arg( $args, $subscription->get_checkout_payment_url() );
-
 		}
 
 		wp_redirect( $url );

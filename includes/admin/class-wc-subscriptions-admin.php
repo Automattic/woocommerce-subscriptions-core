@@ -1178,7 +1178,7 @@ class WC_Subscriptions_Admin {
 			array(
 				'name'          => __( '$0 Intial Checkout', 'woocommerce-subscriptions' ),
 				'desc'          => __( 'Allow $0 initial checkout without a payment method.', 'woocommerce-subscriptions' ),
-				'id'            => self::$option_prefix . '_0_initial_checkout_no_method',
+				'id'            => self::$option_prefix . '_zero_initial_payment_requires_payment',
 				'default'       => 'no',
 				'type'          => 'checkbox',
 				'desc_tip'      => __( 'Allow a subscription product with a $0 initial payment to be purchased without providing a payment method. The customer will be required to provide a payment method at the end of the initial period to keep the subscription active.', 'woocommerce-subscriptions' ),

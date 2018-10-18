@@ -792,9 +792,9 @@ class WC_Subscriptions_Cart {
 	 *
 	 * @since 2.5.0
 	 */
-	public static function cart_initial_payment_requires_payment() {
+	public static function zero_initial_payment_requires_payment() {
 
-		return 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_0_initial_checkout_no_method', 'no' );
+		return 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_zero_initial_payment_requires_payment', 'no' );
 
 	}
 
@@ -868,7 +868,7 @@ class WC_Subscriptions_Cart {
 		}
 
 		// Skip checks if new $0 initial payments don't require a payment method or cart has no subscriptions.
-		if ( ! self::cart_initial_payment_requires_payment() || ! self::cart_contains_subscription() ) {
+		if ( ! self::zero_initial_payment_requires_payment() || ! self::cart_contains_subscription() ) {
 			return $needs_payment;
 		}
 

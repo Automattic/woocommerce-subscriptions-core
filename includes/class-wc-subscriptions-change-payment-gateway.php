@@ -376,6 +376,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 			// Update payment method
 			$new_payment_method = wc_clean( $_POST['payment_method'] );
+			$notice = $subscription->has_payment_gateway() ? __( 'Payment method updated.', 'woocommerce-subscriptions' ) : __( 'Payment method added.', 'woocommerce-subscriptions' );
 
 			// Allow some payment gateways which can't process the payment immediately, like PayPal, to do it later after the payment/sign-up is confirmed
 			if ( apply_filters( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', true, $new_payment_method, $subscription ) ) {
@@ -391,9 +392,8 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			if ( wc_notice_count( 'error' ) == 0 ) {
 
 				$result = $available_gateways[ $new_payment_method ]->process_payment( $subscription->get_id() );
-				if ( ! $subscription->has_payment_gateway() ) {
-					self::update_to_automatic( $subscription );
-				}
+				$subscription->set_requires_manual_renewal( false );
+				$subscription->save();
 
 				if ( 'success' == $result['result'] && wc_get_page_permalink( 'myaccount' ) == $result['redirect'] ) {
 					$result['redirect'] = $subscription->get_view_order_url();
@@ -409,16 +409,15 @@ class WC_Subscriptions_Change_Payment_Gateway {
 				if ( $available_gateways[ $new_payment_method ]->supports( 'tokenization' ) && isset( $_POST['update_all_subscriptions_payment_method'] ) && $_POST['update_all_subscriptions_payment_method'] ) {
 
 					$token = WCS_Payment_Tokens::get_token_by_subscription( $subscription, $new_payment_method );
+					$notice = __( 'Payment method updated for all your subscriptions.', 'woocommerce-subscriptions' );
 
 					if ( $token ) {
-						add_action( 'woocommerce_subscription_token_changed', __CLASS__ . '::update_to_automatic' );
 						WCS_Payment_Tokens::update_all_subscription_tokens( $token->get_id() );
-						remove_action( 'woocommerce_subscription_token_changed', __CLASS__ . '::update_to_automatic' );
 					}
 				}
 
 				// Redirect to success/confirmation/payment page
-				wc_add_notice( __( 'Payment method updated.', 'woocommerce-subscriptions' ), 'success' );
+				wc_add_notice( $notice );
 				wp_redirect( $result['redirect'] );
 				exit;
 			}
@@ -671,18 +670,6 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		return $needs_payment;
 	}
 
-	/**
-	 * Update a subscription to automatic when processing a change_payment_method request.
-	 *
-	 * @param WC_Subscription $subscription
-	 * @since 2.5.0
-	 */
-	public function update_to_automatic( $subscription ) {
-
-		$subscription->set_requires_manual_renewal( false );
-		$subscription->save();
-
-	}
 	/** Deprecated Functions **/
 
 	/**
