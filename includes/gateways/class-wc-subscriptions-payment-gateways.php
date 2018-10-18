@@ -219,36 +219,40 @@ class WC_Subscriptions_Payment_Gateways {
 	/**
 	 * Display a list of each gateway supported features in a tooltip
 	 *
-	 * @since 2.5
+	 * @since 2.5.0
 	 */
 	public static function payment_gateways_rewewal_support_tooltip( $status_html, $gateway ){
-		if ( ( is_array( $gateway->supports ) && in_array( 'subscriptions', $gateway->supports ) ) || $gateway->id == 'paypal' ) {
 
-			$basic_features = $gateway->supports;
-			$subscription_features = array();
-			$payment_method_features = array();
+		if ( ( ! is_array( $gateway->supports ) || ! in_array( 'subscriptions', $gateway->supports ) ) && 'paypal' !== $gateway->id ) {
+			return $status_html;
+		}
 
-			foreach($basic_features as $key=>$feature){
-				if( strpos( $feature , 'subscription' ) === 0 && strpos( $feature , 'subscription_payment_method' ) !== 0){
-					$subscription_features[] = str_replace( 'subscription_' , ' ' ,  $feature );
-					unset( $basic_features[$key] );
+		$core_features         = $gateway->supports;
+		$subscription_features = $change_payment_method_features = array();
+
+		foreach( $core_features as $key => $feature ) {
+
+			if (  0 === strpos( $feature , 'subscription_payment_method' ) ) {
+				if ( 'subscription_payment_method_change' == $feature ) {
+					$change_payment_method_features[] = str_replace( 'subscription_payment_method' , 'payment method' ,  $feature );
+				}else {
+					$change_payment_method_features[] = str_replace( 'subscription_payment_method' , ' ' ,  $feature );
 				}
-				if( strpos( $feature , 'subscription_payment_method' ) === 0 ){
-					if( 'subscription_payment_method_change' == $feature ){
-						$payment_method_features[] = str_replace( 'subscription_payment_method' , 'payment method' ,  $feature );
-					}else{
-						$payment_method_features[] = str_replace( 'subscription_payment_method' , ' ' ,  $feature );
-					}
-					unset( $basic_features[$key] );
-				}
+				unset( $core_features[ $key ] );
 			}
 
-			$status_html .= '<span class="status-info tips" data-tip="'
-				. esc_attr( '<strong> <u>' . __( 'Supported features:' , 'woocommerce-subscriptions' ) . '</u> </strong> </br>' . implode( '<br />' , str_replace('_' , ' ' ,  $basic_features ) ) )
-				. esc_attr( '</br> <strong> <u>' . __( 'Subscription features:' , 'woocommerce-subscriptions' ) . '</u> </strong> </br>' . implode( '<br />' , str_replace('_' , ' ' ,  $subscription_features ) ) )
-				. esc_attr( '</br> <strong> <u>' . __( 'Payment method features:' , 'woocommerce-subscriptions' ) . '</u> </strong> </br>' . implode( '<br />' , str_replace('_' , ' ' ,  $payment_method_features ) ) )
-			. '"></span>';
+			if ( 0 === strpos( $feature , 'subscription' ) && 0 !== strpos( $feature , 'subscription_payment_method' ) ) {
+				$subscription_features[] = str_replace( 'subscription_' , ' ' ,  $feature );
+				unset( $core_features[ $key ] );
+			}
+
 		}
+
+		$status_html .= '<span class="status-info tips" data-tip="'
+			. esc_attr( '<strong> <u>' . __( 'Supported features:' , 'woocommerce-subscriptions' ) . '</u> </strong> </br>' . implode( '<br />' , str_replace('_' , ' ' ,  $core_features ) ) )
+			. esc_attr( '</br> <strong> <u>' . __( 'Subscription features:' , 'woocommerce-subscriptions' ) . '</u> </strong> </br>' . implode( '<br />' , str_replace('_' , ' ' ,  $subscription_features ) ) )
+			. esc_attr( '</br> <strong> <u>' . __( 'Payment method features:' , 'woocommerce-subscriptions' ) . '</u> </strong> </br>' . implode( '<br />' , str_replace('_' , ' ' ,  $change_payment_method_features ) ) )
+		. '"></span>';
 
 		$allowed_html = wp_kses_allowed_html( 'post' );
 		$allowed_html['span']['data-tip'] = true;
