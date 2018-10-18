@@ -1397,6 +1397,8 @@ class WC_Subscriptions_Switcher {
 			$new_price_per_day = ( WC_Subscriptions_Product::get_price( $item_data ) * $cart_item['quantity'] ) / $days_in_new_cycle;
 			add_filter( 'woocommerce_product_get_price', 'WC_Subscriptions_Cart::set_subscription_prices_for_calculation', 100, 2 );
 
+			$new_price_per_day = apply_filters( 'wcs_switch_proration_new_price_per_day', $new_price_per_day, $subscription, $cart_item, $days_in_new_cycle );
+
 			if ( $old_price_per_day < $new_price_per_day ) {
 
 				WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['upgraded_or_downgraded'] = 'upgraded';
