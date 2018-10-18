@@ -1301,7 +1301,7 @@ class WC_Subscriptions_Switcher {
 				continue;
 			}
 
-			$item_data          = $cart_item['data'];
+			$product_in_cart    = $cart_item['data'];
 			$product_id         = wcs_get_canonical_product_id( $cart_item );
 			$product            = wc_get_product( $product_id );
 			$is_virtual_product = $product->is_virtual();
@@ -1373,13 +1373,13 @@ class WC_Subscriptions_Switcher {
 			$old_price_per_day = $days_in_old_cycle > 0 ? $old_recurring_total / $days_in_old_cycle : $old_recurring_total;
 
 			// Find the price per day for the new subscription's recurring total based on billing schedule
-			$days_in_new_cycle = wcs_get_days_in_cycle( WC_Subscriptions_Product::get_period( $item_data ), WC_Subscriptions_Product::get_interval( $item_data ) );
+			$days_in_new_cycle = wcs_get_days_in_cycle( WC_Subscriptions_Product::get_period( $product_in_cart ), WC_Subscriptions_Product::get_interval( $product_in_cart ) );
 
 			// Whether the days in new cycle match the days in old,ignoring any rounding.
 			$days_in_new_and_old_cycle_match = ceil( $days_in_new_cycle ) == $days_in_old_cycle || floor( $days_in_new_cycle ) == $days_in_old_cycle;
 
 			// Whether the new item uses the same billing interval & cycle as the old subscription,
-			$matching_billing_cycle = WC_Subscriptions_Product::get_period( $item_data ) == $subscription->get_billing_period() && WC_Subscriptions_Product::get_interval( $item_data ) == $subscription->get_billing_interval();
+			$matching_billing_cycle = WC_Subscriptions_Product::get_period( $product_in_cart ) == $subscription->get_billing_period() && WC_Subscriptions_Product::get_interval( $product_in_cart ) == $subscription->get_billing_interval();
 			$switch_during_trial    = $subscription->get_time( 'trial_end' ) > gmdate( 'U' );
 
 			// Set the days in each cycle to match if they are equal (ignoring any rounding discrepancy) or if the subscription is switched during a trial and has a matching billing cycle.
@@ -1389,7 +1389,7 @@ class WC_Subscriptions_Switcher {
 
 			// We need to use the cart items price to ensure we include extras added by extensions like Product Add-ons, but we don't want the sign-up fee accounted for in the price, so make sure WC_Subscriptions_Cart::set_subscription_prices_for_calculation() isn't adding that.
 			remove_filter( 'woocommerce_product_get_price', 'WC_Subscriptions_Cart::set_subscription_prices_for_calculation', 100 );
-			$new_price_per_day = ( WC_Subscriptions_Product::get_price( $item_data ) * $cart_item['quantity'] ) / $days_in_new_cycle;
+			$new_price_per_day = ( WC_Subscriptions_Product::get_price( $product_in_cart ) * $cart_item['quantity'] ) / $days_in_new_cycle;
 			add_filter( 'woocommerce_product_get_price', 'WC_Subscriptions_Cart::set_subscription_prices_for_calculation', 100, 2 );
 
 			if ( $old_price_per_day < $new_price_per_day ) {
@@ -1437,7 +1437,7 @@ class WC_Subscriptions_Switcher {
 						$extra_to_pay = $days_until_next_payment * ( $new_price_per_day - $old_price_per_day );
 
 						// when calculating a subscription with one length (no more next payment date and the end date may have been pushed back) we need to pay for those extra days at the new price per day between the old next payment date and new end date
-						if ( 1 == WC_Subscriptions_Product::get_length( $item_data ) ) {
+						if ( 1 == WC_Subscriptions_Product::get_length( $product_in_cart ) ) {
 							$days_to_new_end = floor( ( $end_timestamp - $next_payment_timestamp ) / ( 60 * 60 * 24 ) );
 
 							if ( $days_to_new_end > 0 ) {
