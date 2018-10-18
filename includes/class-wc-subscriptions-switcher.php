@@ -1373,6 +1373,7 @@ class WC_Subscriptions_Switcher {
 
 			// Find the $price per day for the old subscription's recurring total
 			$old_price_per_day = $days_in_old_cycle > 0 ? $old_recurring_total / $days_in_old_cycle : $old_recurring_total;
+			$old_price_per_day = apply_filters( 'wcs_switch_proration_old_price_per_day', $old_price_per_day, $subscription, $cart_item, $old_recurring_total, $days_in_old_cycle );
 
 			// Find the price per day for the new subscription's recurring total based on billing schedule
 			$days_in_new_cycle = wcs_get_days_in_cycle( WC_Subscriptions_Product::get_period( $item_data ), WC_Subscriptions_Product::get_interval( $item_data ) );
