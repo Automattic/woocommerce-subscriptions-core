@@ -1352,6 +1352,8 @@ class WC_Subscriptions_Switcher {
 				$days_in_old_cycle = $days_until_next_payment + $days_since_last_payment;
 			}
 
+			$days_in_old_cycle = apply_filters( 'wcs_switch_proration_days_in_old_cycle', $days_in_old_cycle, $subscription, $cart_item );
+
 			// Find the actual recurring amount charged for the old subscription (we need to use the '_recurring_line_total' meta here rather than '_subscription_recurring_amount' because we want the recurring amount to include extra from extensions, like Product Add-ons etc.)
 			$old_recurring_total = $existing_item['line_total'];
 
