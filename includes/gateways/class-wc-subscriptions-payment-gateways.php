@@ -226,15 +226,28 @@ class WC_Subscriptions_Payment_Gateways {
 
 			$basic_features = $gateway->supports;
 			$subscription_features = array();
+			$payment_method_features = array();
 
 			foreach($basic_features as $key=>$feature){
-				if( strpos( $feature , 'subscription' ) === 0 ){
-					$subscription_features[] = str_replace('subscription_' , ' ' ,  $feature );
+				if( strpos( $feature , 'subscription' ) === 0 && strpos( $feature , 'subscription_payment_method' ) !== 0){
+					$subscription_features[] = str_replace( 'subscription_' , ' ' ,  $feature );
+					unset( $basic_features[$key] );
+				}
+				if( strpos( $feature , 'subscription_payment_method' ) === 0 ){
+					if( 'subscription_payment_method_change' == $feature ){
+						$payment_method_features[] = str_replace( 'subscription_payment_method' , 'payment method' ,  $feature );
+					}else{
+						$payment_method_features[] = str_replace( 'subscription_payment_method' , ' ' ,  $feature );
+					}
 					unset( $basic_features[$key] );
 				}
 			}
 
-			$status_html .= '<span class="status-info tips" data-tip="' . esc_attr( '<strong> <u>' . __( 'Supported features:' , 'woocommerce-subscriptions' ) . '</u> </strong> </br>' . implode( '<br />' , str_replace('_' , ' ' ,  $basic_features ) ) ) . esc_attr( '</br> <strong> <u>' . __( 'Subscription features:' , 'woocommerce-subscriptions' ) . '</u> </strong> </br>' . implode( '<br />' , str_replace('_' , ' ' ,  $subscription_features ) ) ) . '"></span>';
+			$status_html .= '<span class="status-info tips" data-tip="'
+				. esc_attr( '<strong> <u>' . __( 'Supported features:' , 'woocommerce-subscriptions' ) . '</u> </strong> </br>' . implode( '<br />' , str_replace('_' , ' ' ,  $basic_features ) ) )
+				. esc_attr( '</br> <strong> <u>' . __( 'Subscription features:' , 'woocommerce-subscriptions' ) . '</u> </strong> </br>' . implode( '<br />' , str_replace('_' , ' ' ,  $subscription_features ) ) )
+				. esc_attr( '</br> <strong> <u>' . __( 'Payment method features:' , 'woocommerce-subscriptions' ) . '</u> </strong> </br>' . implode( '<br />' , str_replace('_' , ' ' ,  $payment_method_features ) ) )
+			. '"></span>';
 		}
 
 		$allowed_html = wp_kses_allowed_html( 'post' );
