@@ -261,7 +261,7 @@ class WC_Subscriptions_Payment_Gateways {
 
 		}
 
-		$status_html .= '<span class="status-info tips" data-tip="';
+		$status_html .= '<span class="payment-method-features-info tips" data-tip="';
 		$status_html .= esc_attr( '<strong> <u>' . __( 'Supported features:' , 'woocommerce-subscriptions' ) . '</u> </strong> </br>' . implode( '<br />' , str_replace( '_' , ' ' ,  $core_features ) ) );
 
 		if( !empty( $subscription_features ) ) {
