@@ -50,7 +50,7 @@ class WCS_Query extends WC_Query {
 			$this->query_vars['subscriptions'] = get_option( 'woocommerce_myaccount_subscriptions_endpoint', 'subscriptions' );
 			$this->query_vars['subscription-payment-method'] = get_option( 'woocommerce_myaccount_subscription_payme
 nt_method_endpoint', 'subscription-payment-method' );
- 		}
+		}
 	}
 
 	/**
@@ -219,20 +219,20 @@ nt_method_endpoint', 'subscription-payment-method' );
 		}
 	}
 
-       /**
-        * Redirect to order-pay flow for Subscription Payment Method endpoint.
-        *
-        * @param WP_Query $query WordPress query object
-        * @since 2.5.0
-        */
-       public function maybe_redirect_payment_methods( $query ) {
+	/**
+	 * Redirect to order-pay flow for Subscription Payment Method endpoint.
+	 *
+	 * @param WP_Query $query WordPress query object
+	 * @since 2.5.0
+	 */
+	public function maybe_redirect_payment_methods( $query ) {
 
 		$subscription = wcs_get_subscription( $query->get( 'subscription-payment-method' ) );
 		if ( ! $query->is_main_query() || ! $subscription ) {
 			return;
 		}
 
-		if ( 'no' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+		if ( 'no' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) || $subscription->get_time( 'next_payment' ) <= 0 || ! $subscription->has_status( array( 'active', 'on-hold' ) ) ) {
 
 			$url = $subscription->get_view_order_url();
 

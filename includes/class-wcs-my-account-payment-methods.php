@@ -9,9 +9,6 @@
  */
 class WCS_My_Account_Payment_Methods {
 
-	/* New default payment token id. */
-	protected static $default_token_id;
-
 	/**
 	 * Initialize filters and hooks for class.
 	 *
@@ -27,7 +24,6 @@ class WCS_My_Account_Payment_Methods {
 		add_action( 'woocommerce_payment_token_deleted',array( __CLASS__, 'maybe_update_subscriptions_payment_meta' ), 10, 2 );
 		add_action( 'woocommerce_payment_token_set_default', array( __CLASS__, 'display_default_payment_token_change_notice' ), 10, 2 );
 		add_action( 'wp', array( __CLASS__, 'update_subscription_tokens' ) );
-		add_action( 'woocommerce_subscription_token_changed', array( __CLASS__, 'add_update_token_order_note' ), 10, 3 );
 
 	}
 
@@ -93,8 +89,6 @@ class WCS_My_Account_Payment_Methods {
 		}
 
 		foreach ( $subscriptions as $subscription ) {
-			$subscription = wcs_get_subscription( $subscription );
-
 			if ( empty( $subscription ) ) {
 				continue;
 			}
@@ -180,31 +174,73 @@ class WCS_My_Account_Payment_Methods {
 			return;
 		}
 
-		self::$default_token_id = $_GET['token-id'];
-		WCS_Payment_Tokens::update_all_subscription_tokens( self::$default_token_id );
+		// init payment gateways
+		WC()->payment_gateways();
+
+		$default_token_id = $_GET['token-id'];
+		$default_token    = WC_Payment_Tokens::get( $default_token_id );
+
+		if ( ! $default_token ) {
+			return;
+		}
+
+		$tokens = WCS_Payment_Tokens::get_customer_tokens( $default_token->get_gateway_id(), $default_token->get_user_id() );
+		unset( $tokens[ $default_token_id ] );
+
+		foreach ( $tokens as $old_token ) {
+			foreach ( WCS_Payment_Tokens::get_subscriptions_by_token( $old_token ) as $subscription ) {
+				if ( ! empty( $subscription ) && WCS_Payment_Tokens::update_subscription_token( $subscription, $default_token, $old_token ) ) {
+					$subscription->add_order_note( sprintf( _x( 'Payment method meta updated after customer changed their default token and opted to update their subscriptions. Payment meta changed from %1$s to %2$s', 'used in subscription note', 'woocommerce-subscriptions' ), $old_token->get_token(), $default_token->get_token() ) );
+				}
+			}
+		}
 
 		wp_redirect( remove_query_arg( array( 'update-subscription-tokens', 'token-id', '_wcsnonce' ) ) );
 		exit();
 	}
 
 	/**
-	 * Add order note on all subscriptions updated to the new default token.
+	 * Get subscriptions by a WC_Payment_Token. All automatic subscriptions with the token's payment method,
+	 * customer id and token value stored in post meta will be returned.
 	 *
-	 * @param WC_Subscription $subscription A subscription object.
-	 * @param integer $token_id ID of the new default token.
-	 * @param WC_Payment_Token $new_token A payment token object.
-	 * @param WC_Payment_Token $old_token A payment token object.
-	 * @since 2.5.0
+	 * @since  2.2.7
+	 * @deprecated 2.5.0
 	 */
-	public static function add_update_token_order_note( $subscription, $old_token, $new_token ) {
+	public static function get_subscriptions_by_token( $payment_token ) {
+		_deprecated_function( __METHOD__, '2.5.0', 'WCS_Payment_Tokens::get_subscriptions_by_token()' );
+		return WCS_Payment_Tokens::get_subscriptions_by_token( $payment_token );
+	}
 
-		if ( $new_token->get_id() == self::$default_token_id ) {
-			$subscription->add_order_note( sprintf(
-				_x( 'Payment method meta updated after customer changed their default token and opted to update their subscriptions. Payment meta changed from %1$s to %2$s', 'used in subscription note', 'woocommerce-subscriptions' ),
-				$old_token->get_token(),
-				$new_token->get_token()
-			) );
-		}
+	/**
+	 * Get a list of customer payment tokens. Caches results to avoid multiple database queries per request
+	 *
+	 * @since  2.2.7
+	 * @deprecated 2.5.0
+	 */
+	public static function get_customer_tokens( $gateway_id = '', $customer_id = '' ) {
+		_deprecated_function( __METHOD__, '2.5.0', 'WCS_Payment_Tokens::get_customer_tokens()' );
+		return WCS_Payment_Tokens::get_customer_tokens( $gateway_id, $customer_id );
+	}
 
+	/**
+	 * Get the customer's alternative token.
+	 *
+	 * @since  2.2.7
+	 * @deprecated 2.5.0
+	 */
+	public static function get_customers_alternative_token( $token ) {
+		_deprecated_function( __METHOD__, '2.5.0', 'WCS_Payment_Tokens::get_customers_alternative_token()' );
+		return WCS_Payment_Tokens::get_customers_alternative_token( $token );
+	}
+
+	/**
+	 * Determine if the customer has an alternative token.
+	 *
+	 * @since  2.2.7
+	 * @deprecated 2.5.0
+	 */
+	public static function customer_has_alternative_token( $token ) {
+		_deprecated_function( __METHOD__, '2.5.0', 'WCS_Payment_Tokens::customer_has_alternative_token()' );
+		return WCS_Payment_Tokens::customer_has_alternative_token( $token );
 	}
 }

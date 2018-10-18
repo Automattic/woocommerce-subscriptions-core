@@ -2051,7 +2051,7 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Check if the subscription has used a payment gateway.
+	 * Check if the subscription has a payment gateway.
 	 *
 	 * @since 2.5.0
 	 * @return bool

@@ -342,11 +342,6 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 		do_action( 'woocommerce_subscription_change_payment_method_via_pay_shortcode', $subscription );
 
-		$subscription_id = absint( $_POST['woocommerce_change_payment'] );
-		$subscription = wcs_get_subscription( $subscription_id );
-
-		do_action( 'woocommerce_subscription_change_payment_method_via_pay_shortcode', $subscription );
-
 		ob_start();
 
 		if ( $subscription->get_order_key() == $_GET['key'] ) {
@@ -392,8 +387,6 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			if ( wc_notice_count( 'error' ) == 0 ) {
 
 				$result = $available_gateways[ $new_payment_method ]->process_payment( $subscription->get_id() );
-				$subscription->set_requires_manual_renewal( false );
-				$subscription->save();
 
 				if ( 'success' == $result['result'] && wc_get_page_permalink( 'myaccount' ) == $result['redirect'] ) {
 					$result['redirect'] = $subscription->get_view_order_url();
@@ -405,15 +398,17 @@ class WC_Subscriptions_Change_Payment_Gateway {
 					return;
 				}
 
+				$subscription->set_requires_manual_renewal( false );
+				$subscription->save();
+
 				// Does the customer want all current subscriptions to be updated to this payment method?
-				if ( $available_gateways[ $new_payment_method ]->supports( 'tokenization' ) && isset( $_POST['update_all_subscriptions_payment_method'] ) && $_POST['update_all_subscriptions_payment_method'] ) {
-
-					$token = WCS_Payment_Tokens::get_token_by_subscription( $subscription, $new_payment_method );
-					$notice = __( 'Payment method updated for all your subscriptions.', 'woocommerce-subscriptions' );
-
-					if ( $token ) {
-						WCS_Payment_Tokens::update_all_subscription_tokens( $token->get_id() );
-					}
+				if (
+					$available_gateways[ $new_payment_method ]->supports( 'subscription_payment_method_change_admin' )
+					&& isset( $_POST['update_all_subscriptions_payment_method'] )
+					&& $_POST['update_all_subscriptions_payment_method']
+					&& self::update_all_payment_methods_from_subscription( $subscription, $new_payment_method )
+				) {
+						$notice = __( 'Payment method updated for all your current subscriptions.', 'woocommerce-subscriptions' );
 				}
 
 				// Redirect to success/confirmation/payment page
@@ -422,6 +417,51 @@ class WC_Subscriptions_Change_Payment_Gateway {
 				exit;
 			}
 		}
+
+		ob_get_clean();
+	}
+
+	/**
+	 * Update the recurring payment method on all current subscriptions to the payment method on this subscription.
+	 *
+	 * @param  WC_Subscription $subscription An instance of a WC_Subscription object.
+	 * @param  string $new_payment_method The ID of the new payment method.
+	 * @return bool Were other subscriptions updated.
+	 * @since 2.5.0
+	 */
+	protected static function update_all_payment_methods_from_subscription( $subscription, $new_payment_method ) {
+
+		$payment_meta_table = WCS_Payment_tokens::get_subscription_payment_meta( $subscription, $new_payment_method );
+		if ( ! is_array( $payment_meta_table ) ) {
+			return false;
+		}
+
+		$subscription_ids = WCS_Customer_Store::instance()->get_users_subscription_ids( $subscription->get_customer_id() );
+
+		foreach ( $subscription_ids as $subscription_id ) {
+			// Skip the subscription providing the new payment meta.
+			if ( $subscription->get_id() == $subscription_id ) {
+				continue;
+			}
+
+			$user_subscription = wcs_get_subscription( $subscription_id );
+			// Skip if subscription's current payment method is not supported
+			if ( ! $user_subscription->payment_method_supports( 'subscription_cancellation' ) ) {
+				continue;
+			}
+
+			// Skip if there are no remaining payments or the subscription is not current.
+			if ( $user_subscription->get_time( 'next_payment' ) <= 0 || ! $user_subscription->has_status( array( 'active', 'on-hold' ) ) ) {
+				continue;
+			}
+
+			self::update_payment_method( $user_subscription, $new_payment_method, $payment_meta_table );
+
+			$user_subscription->set_requires_manual_renewal( false );
+			$user_subscription->save();
+		}
+
+		return true;
 	}
 
 	/**
@@ -429,14 +469,10 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 *
 	 * @param WC_Subscription $subscription An instance of a WC_Subscription object.
 	 * @param string $new_payment_method The ID of the new payment method.
+	 * @param array  $new_payment_method_meta The meta for the new payment method. Optional. Default false.
 	 * @since 1.4
 	 */
-	public static function update_payment_method( $subscription, $new_payment_method ) {
-
-		// Allow some payment gateways which can't process the payment immediately, like PayPal, to do it later after the payment/sign-up is confirmed
-		if ( ! apply_filters( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', true, $new_payment_method, $subscription ) ) {
-			return;
-		}
+	public static function update_payment_method( $subscription, $new_payment_method, $new_payment_method_meta = false ) {
 
 		$old_payment_method       = $subscription->get_payment_method();
 		$old_payment_method_title = $subscription->get_payment_method_title();
@@ -448,19 +484,11 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		WC_Subscriptions_Payment_Gateways::trigger_gateway_status_updated_hook( $subscription, 'cancelled' );
 
 		// Update meta
-		if ( $old_payment_method ) {
-			$subscription->update_meta_data( '_old_payment_method', $old_payment_method );
-			$subscription->update_meta_data( '_old_payment_method_title', $old_payment_method_title );
-		}
-		$subscription->update_meta_data( '_payment_method', $new_payment_method );
-
 		if ( isset( $available_gateways[ $new_payment_method ] ) ) {
 			$new_payment_method_title = $available_gateways[ $new_payment_method ]->get_title();
 		} else {
 			$new_payment_method_title = '';
 		}
-
-		$subscription->update_meta_data( '_payment_method_title', $new_payment_method_title );
 
 		if ( empty( $old_payment_method_title )  ) {
 			$old_payment_method_title = $old_payment_method;
@@ -469,6 +497,11 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		if ( empty( $new_payment_method_title )  ) {
 			$new_payment_method_title = $new_payment_method;
 		}
+
+		$subscription->update_meta_data( '_old_payment_method', $old_payment_method );
+		$subscription->update_meta_data( '_old_payment_method_title', $old_payment_method_title );
+		$subscription->set_payment_method( $new_payment_method, $new_payment_method_meta );
+		$subscription->set_payment_method_title( $new_payment_method_title );
 
 		// Log change on order
 		$subscription->add_order_note( sprintf( _x( 'Payment method changed from "%1$s" to "%2$s" by the subscriber from their account page.', '%1$s: old payment title, %2$s: new payment title', 'woocommerce-subscriptions' ), $old_payment_method_title, $new_payment_method_title ) );
@@ -589,15 +622,9 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 * For the recurring payment method to be changeable, the subscription must be active, have future (automatic) payments
 	 * and use a payment gateway which allows the subscription to be cancelled.
 	 *
-	 * @param bool $subscription_can_be_changed Flag of whether the subscription can be changed to
-	 * @param string $new_status_or_meta The status or meta data you want to change th subscription to. Can be 'active', 'on-hold', 'cancelled', 'expired', 'trash', 'deleted', 'failed', 'new-payment-date' or some other value attached to the 'woocommerce_can_subscription_be_changed_to' filter.
-	 * @param object $args Set of values used in @see WC_Subscriptions_Manager::can_subscription_be_changed_to() for determining if a subscription can be changes, include:
-	 *			'subscription_key'           string A subscription key of the form created by @see WC_Subscriptions_Manager::get_subscription_key()
-	 *			'subscription'               array Subscription of the form returned by @see WC_Subscriptions_Manager::get_subscription()
-	 *			'user_id'                    int The ID of the subscriber.
-	 *			'order'                      WC_Order The order which recorded the successful payment (to make up for the failed automatic payment).
-	 *			'payment_gateway'            WC_Payment_Gateway The subscription's recurring payment gateway
-	 *			'order_uses_manual_payments' bool A boolean flag indicating whether the subscription requires manual renewal payment.
+	 * @param bool            $subscription_can_be_changed Flag of whether the subscription can be changed.
+	 * @param WC_Subscription $subscription The subscription to check.
+	 * @return bool Flag indicating whether the subscription payment method can be updated.
 	 * @since 1.4
 	 */
 	public static function can_subscription_be_updated_to_new_payment_method( $subscription_can_be_changed, $subscription ) {
@@ -612,8 +639,8 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			return false;
 		}
 
-		// Don't allow on subscription with manual gateway or one that doesn't support changing methods.
-		if ( $subscription->has_payment_gateway() && ( $subscription->is_manual() || ! $subscription->payment_method_supports( 'subscription_cancellation' ) ) ) {
+		// Don't allow on subscription that doesn't support changing methods.
+		if ( ! $subscription->payment_method_supports( 'subscription_cancellation' ) ) {
 			return false;
 		}
 
@@ -631,14 +658,13 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 		global $wp;
 
-		// Skip if not on checkout pay page
-		if ( ! is_main_query() || ! in_the_loop() ||  ! is_page() || ! is_checkout_pay_page() ) {
+		// Skip if not on checkout pay page or not a payment change request.
+		if ( ! self::$is_request_to_change_payment || ! is_main_query() || ! in_the_loop() || ! is_page() || ! is_checkout_pay_page() ) {
 			return $title;
 		}
 
-		$subscription_key = isset( $_GET['key'] ) ? wc_clean( $_GET['key'] ) : '';
-		$subscription     = wcs_get_subscription( absint( $wp->query_vars['order-pay'] ) );
-		if ( ! self::$is_request_to_change_payment || ! $subscription ) {
+		$subscription = wcs_get_subscription( absint( $wp->query_vars['order-pay'] ) );
+		if ( ! $subscription ) {
 			return $title;
 		}
 

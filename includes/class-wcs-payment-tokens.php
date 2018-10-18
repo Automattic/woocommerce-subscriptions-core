@@ -10,6 +10,10 @@
  * @since    2.5.0
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly
+}
+
 class WCS_Payment_Tokens extends WC_Payment_Tokens {
 
 	// A cache of a customer's payment tokens to avoid running multiple queries in the same request.
@@ -24,13 +28,13 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 	 * @return bool Whether the subscription was updated or not.
 	 */
 	public static function update_subscription_token( $subscription, $new_token, $old_token ) {
-		$payment_method_meta   = apply_filters( 'woocommerce_subscription_payment_meta', array(), $subscription );
 		$token_payment_gateway = $old_token->get_gateway_id();
+		$payment_meta_table    = self::get_subscription_payment_meta( $subscription, $token_payment_gateway );
 		$token_meta_key        = '';
 
 		// Attempt to find the token meta key from the subscription payment meta and the old token.
-		if ( is_array( $payment_method_meta ) && isset( $payment_method_meta[ $token_payment_gateway ] ) && is_array( $payment_method_meta[ $token_payment_gateway ] ) ) {
-			foreach ( $payment_method_meta[ $token_payment_gateway ] as $meta_table => $meta ) {
+		if ( is_array( $payment_meta_table ) ) {
+			foreach ( $payment_meta_table as $meta_table => $meta ) {
 				foreach ( $meta as $meta_key => $meta_data ) {
 					if ( $old_token->get_token() === $meta_data['value'] ) {
 						$token_meta_key = $meta_key;
@@ -50,37 +54,20 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 	}
 
 	/**
-	 * Update all the customer's subscription tokens to one token.
+	 * Get all payment meta on a subscription for a gateway.
 	 *
-	 * @param string $token_id The token ID to assign to all subscriptions.
-	 * @param string $token_id The token ID to assign to all subscriptions 
+	 * @param WC_Subscription $subscription The subscription to update.
+	 * @param string $gateway_id The target gateway ID.
+	 * @return bool|array Payment meta data. False if no meta is found.
 	 * @since 2.5.0
 	 */
-	public static function update_all_subscription_tokens( $token_id ) {
-
-		// init payment gateways
-		WC()->payment_gateways();
-
-		$default_token = self::get( $token_id );
-
-		if ( ! $default_token ) {
-			return;
+	public static function get_subscription_payment_meta( $subscription, $gateway_id ) {
+		$payment_method_meta = apply_filters( 'woocommerce_subscription_payment_meta', array(), $subscription );
+		if ( is_array( $payment_method_meta ) && isset( $payment_method_meta[ $gateway_id ] ) && is_array( $payment_method_meta[ $gateway_id ] ) ) {
+			return $payment_method_meta[ $gateway_id ];
 		}
 
-		$tokens = self::get_customer_tokens( $default_token->get_gateway_id(), $default_token->get_user_id() );
-		unset( $tokens[ $default_token_id ] );
-
-		foreach ( $tokens as $old_token ) {
-			foreach ( self::get_subscriptions_by_token( $old_token ) as $subscription ) {
-				$subscription = wcs_get_subscription( $subscription );
-
-				if ( ! empty( $subscription ) && self::update_subscription_token( $subscription, $default_token, $old_token ) ) {
-					do_action( 'woocommerce_subscription_token_changed', $subscription, $old_token, $default_token );
-					$subscription->set_requires_manual_renewal( false );
-					$subscription->save();
-				}
-			}
-		}
+		return false;
 	}
 
 	/**
@@ -106,86 +93,32 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 				'value' => $payment_token->get_token(),
 			),
 		);
-		$user_subscriptions = get_posts( array(
+		$subscription_ids = get_posts( array(
 			'post_type'      => 'shop_subscription',
 			'post_status'    => array( 'wc-pending', 'wc-active', 'wc-on-hold' ),
 			'meta_query'     => $meta_query,
 			'posts_per_page' => -1,
+			'fields'         => 'ids',
 			'post__in'       => WCS_Customer_Store::instance()->get_users_subscription_ids( $payment_token->get_user_id() ),
 		) );
+
+		$user_subscriptions = array();
+		foreach ( $subscription_ids as $subscription_id ) {
+			$user_subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
+		}
 
 		return apply_filters( 'woocommerce_subscriptions_by_payment_token', $user_subscriptions, $payment_token );
 	}
 
 	/**
-	 * Get WC_Payment_Token by a subscription.
-	 *
-	 * @param  WC_Subscription $subscription A subscription object.
-	 * @param  string $payment_gateway_id The subscriptions payment gateway ID.
-	 * @return WC_Payment_Token Subscription token.
-	 * @since  2.5.0
-	 */
-	public static function get_token_by_subscription( $subscription, $payment_gateway_id ) {
-
-		$tokens = self::get_customer_tokens( $payment_gateway_id, $subscription->get_customer_id() );
-
-		foreach( $tokens as $token ) {
-			if ( $token->get_gateway_id() != $payment_gateway_id ) {
-				continue;
-			}
-			$subs = self::get_subscriptions_by_token( $token );
-			foreach( $subs as $sub ) {
-				if ( $sub->ID == $subscription->get_id() ) {
-					return $token;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Get subscription posts by gateway ID, payment token & post IDs.
-	 *
-	 * @param  string $payment_gateway_id The subscriptions payment gateway ID.
-	 * @param  string $token A payment token.
-	 * @param  array $post_ids List of subscription post IDs.
-	 * @return array WP posts
-	 * @since  2.5.0
-	 */
-	protected static function get_subscription_posts( $payment_gateway_id, $token, $post_ids ) {
-
-		$meta_query = array(
-			array(
-				'key'   => '_payment_method',
-				'value' => $payment_gateway_id,
-			),
-			array(
-				'key'   => '_requires_manual_renewal',
-				'value' => 'false',
-			),
-			array(
-				'value' => $token,
-			),
-		);
-
-		return get_posts( array(
-			'post_type'      => 'shop_subscription',
-			'post_status'    => array( 'wc-pending', 'wc-active', 'wc-on-hold' ),
-			'meta_query'     => $meta_query,
-			'posts_per_page' => -1,
-			'post__in'       => $post_ids,
-		) );
-	}
-	/**
 	 * Get a list of customer payment tokens. Caches results to avoid multiple database queries per request
 	 *
-	 * @param  string (optional) Gateway ID for getting tokens for a specific gateway.
 	 * @param  int (optional) The customer id - defaults to the current user.
+	 * @param  string (optional) Gateway ID for getting tokens for a specific gateway.
 	 * @return array of WC_Payment_Token objects.
 	 * @since  2.2.7
 	 */
-	public static function get_customer_tokens( $gateway_id = '', $customer_id = '' ) {
+	public static function get_customer_tokens( $customer_id = '', $gateway_id = '' ) {
 		if ( '' === $customer_id ) {
 			$customer_id = get_current_user_id();
 		}

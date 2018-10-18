@@ -90,8 +90,9 @@ class WCS_PayPal {
 
 		if ( is_admin() ) {
 			WCS_PayPal_Admin::init();
-			WCS_PayPal_Change_Payment_Method_Admin::init();
 		}
+
+		WCS_PayPal_Change_Payment_Method_Admin::init();
 	}
 
 	/**
