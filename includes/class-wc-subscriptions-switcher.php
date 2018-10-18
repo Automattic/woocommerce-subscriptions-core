@@ -1421,8 +1421,10 @@ class WC_Subscriptions_Switcher {
 				// If the customer is upgrading, we may need to add a gap payment to the sign-up fee or to reduce the pre-paid period (or both)
 				if ( 'upgrade' === $switch_type ) {
 
-					// The new subscription may be more expensive, but it's also on a shorter billing cycle, so reduce the next pre-paid term
-					if ( $days_in_old_cycle > $days_in_new_cycle ) {
+					// The new subscription may be more expensive, but it's also on a shorter billing cycle, so reduce the next pre-paid term by default, but also allow this to be customised
+					$reduce_pre_paid_term = apply_filters( 'wcs_switch_proration_reduce_pre_paid_term', $days_in_old_cycle > $days_in_new_cycle, $subscription, $cart_item, $days_in_old_cycle, $days_in_new_cycle, $old_price_per_day, $new_price_per_day );
+
+					if ( $reduce_pre_paid_term ) {
 
 						// Find out how many days at the new price per day the customer would receive for the total amount already paid
 						// (e.g. if the customer paid $10 / month previously, and was switching to a $5 / week subscription, she has pre-paid 14 days at the new price)
