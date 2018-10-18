@@ -1390,6 +1390,8 @@ class WC_Subscriptions_Switcher {
 				$days_in_new_cycle = $days_in_old_cycle;
 			}
 
+			$days_in_new_cycle = apply_filters( 'wcs_switch_proration_days_in_new_cycle', $days_in_new_cycle, $subscription, $cart_item, $days_in_old_cycle );
+
 			// We need to use the cart items price to ensure we include extras added by extensions like Product Add-ons, but we don't want the sign-up fee accounted for in the price, so make sure WC_Subscriptions_Cart::set_subscription_prices_for_calculation() isn't adding that.
 			remove_filter( 'woocommerce_product_get_price', 'WC_Subscriptions_Cart::set_subscription_prices_for_calculation', 100 );
 			$new_price_per_day = ( WC_Subscriptions_Product::get_price( $item_data ) * $cart_item['quantity'] ) / $days_in_new_cycle;
