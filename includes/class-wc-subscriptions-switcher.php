@@ -1400,20 +1400,26 @@ class WC_Subscriptions_Switcher {
 			$new_price_per_day = apply_filters( 'wcs_switch_proration_new_price_per_day', $new_price_per_day, $subscription, $cart_item, $days_in_new_cycle );
 
 			if ( $old_price_per_day < $new_price_per_day ) {
-
-				WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['upgraded_or_downgraded'] = 'upgraded';
-
+				$switch_type = 'upgrade';
 			} elseif ( $old_price_per_day > $new_price_per_day && $new_price_per_day >= 0 ) {
-
-				WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['upgraded_or_downgraded'] = 'downgraded';
-
+				$switch_type = 'downgrade';
+			} else {
+				$switch_type = 'crossgrade';
 			}
+
+			$switch_type = apply_filters( 'wcs_switch_proration_switch_type', $switch_type, $subscription, $cart_item, $old_price_per_day, $new_price_per_day );
+
+			if ( ! in_array( $switch_type, array( 'upgrade', 'downgrade', 'crossgrade' ) ) ) {
+				throw new UnexpectedValueException( sprintf( __( 'Invalid switch type "%s". Switch must be one of: "upgrade", "downgrade" or "crossgrade".', 'woocommerce-subscriptions' ), $switch_type ) );
+			}
+
+			WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['upgraded_or_downgraded'] = sprintf( '%sd', $switch_type ); // preserve past tense for backward compatibility (luckily past tense for all allowed switch types end with a d)
 
 			// Now lets see if we should add a prorated amount to the sign-up fee (for upgrades) or extend the next payment date (for downgrades)
 			if ( in_array( $apportion_recurring_price, array( 'yes', 'yes-upgrade' ) ) || ( in_array( $apportion_recurring_price, array( 'virtual', 'virtual-upgrade' ) ) && $is_virtual_product ) ) {
 
 				// If the customer is upgrading, we may need to add a gap payment to the sign-up fee or to reduce the pre-paid period (or both)
-				if ( $old_price_per_day < $new_price_per_day ) {
+				if ( 'upgrade' === $switch_type ) {
 
 					// The new subscription may be more expensive, but it's also on a shorter billing cycle, so reduce the next pre-paid term
 					if ( $days_in_old_cycle > $days_in_new_cycle ) {
@@ -1463,7 +1469,7 @@ class WC_Subscriptions_Switcher {
 					}
 
 				// If the customer is downgrading, set the next payment date and maybe extend it if downgrades are prorated
-				} elseif ( $old_price_per_day > $new_price_per_day && $new_price_per_day > 0 ) {
+				} elseif ( 'downgrade' === $switch_type ) {
 
 					$old_total_paid = $old_price_per_day * $days_until_next_payment;
 
