@@ -20,11 +20,8 @@ class WC_Subscription extends WC_Order {
 	/** @public string Order type */
 	public $order_type = 'shop_subscription';
 
-	/** @private int Stores get_payment_count when used multiple times in payment_complete() */
-	private $cached_completed_payment_count = false;
-
-	/** @private int Stores get_payment_count when used multiple times in payment_complete() */
-	private $cached_refunded_payment_count = false;
+	/** @private int Stores get_payment_count when used multiple times */
+	private $cached_payment_count = null;
 
 	/**
 	 * Which data store to load. WC 3.0+ property.
@@ -637,19 +634,38 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Get the number of payments for a subscription
+	 * Get the number of payments for a subscription.
 	 *
-	 * @param string $type Type of count to return (completed|refunded|net). Default completed.
-	 * @returns integer Count.
-	 * @since 2.4
+	 * Completed payment include all $order_type orders and potentially an initial order (if the
+	 * subscription was created as a result of a purchase from the front end rather than
+	 * manually by the store manager).
+	 *
+	 * @param string $payment_type Type of count to return (completed|refunded|net). Default completed.
+	 * @param string $order_type Type of order to count to return. Default renewal.
+	 * @return integer Count.
+	 * @since 2.4.1
 	 */
-	public function get_payment_count( $type = 'completed' ) {
+	public function get_payment_count( $payment_type = 'completed', $order_type = 'renewal' ) {
+
+		if ( ! is_array( $this->cached_payment_count ) ) {
+			$default_counts = array(
+				'renewal'     => false,
+				'any'         => false,
+				'parent'      => false,
+				'resubscribe' => false,
+				'switch'      => false,
+			);
+			$this->cached_payment_count = array(
+				'completed' => $default_counts,
+				'refunded'  => $default_counts,
+			);
+		}
 
 		// If not cached, calculate the payment counts otherwise return the cached version
-		if ( false === $this->cached_completed_payment_count ) {
+		if ( false === $this->cached_payment_count['completed'][ $order_type ] ) {
 
 			$completed_payment_count = $refunded_payment_count = 0;
-			$related_order_ids   = $this->get_related_order_ids( 'renewal' );
+			$related_order_ids   = $this->get_related_order_ids( $order_type );
 			$related_order_ids[] = $this->get_parent_id();
 
 			// Looping over the known orders is faster than database queries on large sites
@@ -661,12 +677,7 @@ class WC_Subscription extends WC_Order {
 					continue;
 				}
 
-				// Not all gateways call $order->payment_complete(), so with WC < 3.0 we need to find renewal orders with a paid date or a paid status. WC 3.0+ takes care of setting the paid date when payment_complete() wasn't called, so isn't needed with WC 3.0 or newer.
-				if ( $related_order->has_status( $this->get_paid_order_statuses() ) ) {
-
-					$completed_payment_count++;
-
-				} elseif ( null !== wcs_get_objects_property( $related_order, 'date_paid' ) ) {
+				if ( null !== $related_order->get_date_paid() ) {
 
 					$completed_payment_count++;
 
@@ -676,23 +687,29 @@ class WC_Subscription extends WC_Order {
 				}
 			}
 		} else {
-			$completed_payment_count = $this->cached_completed_payment_count;
-			$refunded_payment_count = $this->cached_refunded_payment_count;
+			$completed_payment_count = $this->cached_payment_count['completed'][ $order_type ];
+			$refunded_payment_count = $this->cached_payment_count['refunded'][ $order_type ];
 		}
 
 		// Store the payment counts to avoid hitting the database again
-		$this->cached_completed_payment_count = apply_filters( 'woocommerce_subscription_payment_completed_count', $completed_payment_count, $this );
-		$this->cached_refunded_payment_count = apply_filters( 'woocommerce_subscription_payment_refunded_count', $refunded_payment_count, $this );
 
-		if ( 'refunded' == $type ) {
-			return $this->cached_refunded_payment_count;
-		} elseif ( 'net' == $type ) {
-			return $this->cached_completed_payment_count - $this->cached_refunded_payment_count;
-		} elseif ( 'completed' == $type ) {
-			return $this->cached_completed_payment_count;
+		$this->cached_payment_count['completed'][ $order_type ] = apply_filters( 'woocommerce_subscription_payment_completed_count', $completed_payment_count, $this, $order_type );
+		$this->cached_payment_count['refunded'][ $order_type ] = apply_filters( 'woocommerce_subscription_payment_refunded_count', $refunded_payment_count, $this, $order_type );
+
+		switch ( $payment_type ) {
+			case 'completed':
+			case 'refunded':
+				$count = $this->cached_payment_count[ $payment_type ][ $order_type ];
+				break;
+			case 'net':
+				$count = $this->cached_payment_count['completed'][ $order_type ] - $this->cached_payment_count['refunded'][ $order_type ];
+				break;
+			default:
+				$count = 0;
+				break;
 		}
 
-		return 0;
+		return $count;
 	}
 
 	/**
@@ -1284,7 +1301,10 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			case 'trial_end' :
-				$this->cached_completed_payment_count = false;
+				if ( isset( $this->cached_payment_count['completed'] ) ) {
+					$this->cached_payment_count['completed']['renewal'] = false;
+				}
+
 				if ( $this->get_payment_count() < 2 && ! $this->has_status( wcs_get_subscription_ended_statuses() ) && ( $this->has_status( 'pending' ) || $this->payment_method_supports( 'subscription_date_changes' ) ) ) {
 					$can_date_be_updated = true;
 				} else {
@@ -1634,7 +1654,9 @@ class WC_Subscription extends WC_Order {
 		}
 
 		// Clear the cached completed payment count, kept here for backward compat even though it's also reset in $this->process_payment_complete()
-		$this->cached_completed_payment_count = false;
+		if ( isset( $this->cached_payment_count['completed'] ) ) {
+			$this->cached_payment_count['completed']['renewal'] = false;
+		}
 
 		// Make sure the last order's status is updated
 		$last_order = $this->get_last_order( 'all', 'any' );
@@ -1654,7 +1676,9 @@ class WC_Subscription extends WC_Order {
 	public function payment_complete_for_order( $last_order ) {
 
 		// Clear the cached completed payment count
-		$this->cached_completed_payment_count = false;
+		if ( isset( $this->cached_payment_count['completed'] ) ) {
+			$this->cached_payment_count['completed']['renewal'] = false;
+		}
 
 		// Reset suspension count
 		$this->set_suspension_count( 0 );
@@ -2510,10 +2534,10 @@ class WC_Subscription extends WC_Order {
 	 * subscription was created as a result of a purchase from the front end rather than
 	 * manually by the store manager).
 	 *
-	 * @deprecated 2.4.0
+	 * @deprecated 2.4.1
 	 */
 	public function get_completed_payment_count() {
-		wcs_deprecated_function( __METHOD__, '2.4.0', __CLASS__ . '::get_payment_count()' );
+		wcs_deprecated_function( __METHOD__, '2.4.1', __CLASS__ . '::get_payment_count()' );
 
 		return $this->get_payment_count();
 	}
