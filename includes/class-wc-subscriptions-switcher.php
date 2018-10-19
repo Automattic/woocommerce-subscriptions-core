@@ -1352,6 +1352,8 @@ class WC_Subscriptions_Switcher {
 				$days_in_old_cycle = $days_until_next_payment + $days_since_last_payment;
 			}
 
+			$days_in_old_cycle = apply_filters( 'wcs_switch_proration_days_in_old_cycle', $days_in_old_cycle, $subscription, $cart_item );
+
 			// Find the actual recurring amount charged for the old subscription (we need to use the '_recurring_line_total' meta here rather than '_subscription_recurring_amount' because we want the recurring amount to include extra from extensions, like Product Add-ons etc.)
 			$old_recurring_total = $existing_item['line_total'];
 
@@ -1371,6 +1373,7 @@ class WC_Subscriptions_Switcher {
 
 			// Find the $price per day for the old subscription's recurring total
 			$old_price_per_day = $days_in_old_cycle > 0 ? $old_recurring_total / $days_in_old_cycle : $old_recurring_total;
+			$old_price_per_day = apply_filters( 'wcs_switch_proration_old_price_per_day', $old_price_per_day, $subscription, $cart_item, $old_recurring_total, $days_in_old_cycle );
 
 			// Find the price per day for the new subscription's recurring total based on billing schedule
 			$days_in_new_cycle = wcs_get_days_in_cycle( WC_Subscriptions_Product::get_period( $item_data ), WC_Subscriptions_Product::get_interval( $item_data ) );
@@ -1387,29 +1390,41 @@ class WC_Subscriptions_Switcher {
 				$days_in_new_cycle = $days_in_old_cycle;
 			}
 
+			$days_in_new_cycle = apply_filters( 'wcs_switch_proration_days_in_new_cycle', $days_in_new_cycle, $subscription, $cart_item, $days_in_old_cycle );
+
 			// We need to use the cart items price to ensure we include extras added by extensions like Product Add-ons, but we don't want the sign-up fee accounted for in the price, so make sure WC_Subscriptions_Cart::set_subscription_prices_for_calculation() isn't adding that.
 			remove_filter( 'woocommerce_product_get_price', 'WC_Subscriptions_Cart::set_subscription_prices_for_calculation', 100 );
 			$new_price_per_day = ( WC_Subscriptions_Product::get_price( $item_data ) * $cart_item['quantity'] ) / $days_in_new_cycle;
 			add_filter( 'woocommerce_product_get_price', 'WC_Subscriptions_Cart::set_subscription_prices_for_calculation', 100, 2 );
 
+			$new_price_per_day = apply_filters( 'wcs_switch_proration_new_price_per_day', $new_price_per_day, $subscription, $cart_item, $days_in_new_cycle );
+
 			if ( $old_price_per_day < $new_price_per_day ) {
-
-				WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['upgraded_or_downgraded'] = 'upgraded';
-
+				$switch_type = 'upgrade';
 			} elseif ( $old_price_per_day > $new_price_per_day && $new_price_per_day >= 0 ) {
-
-				WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['upgraded_or_downgraded'] = 'downgraded';
-
+				$switch_type = 'downgrade';
+			} else {
+				$switch_type = 'crossgrade';
 			}
+
+			$switch_type = apply_filters( 'wcs_switch_proration_switch_type', $switch_type, $subscription, $cart_item, $old_price_per_day, $new_price_per_day );
+
+			if ( ! in_array( $switch_type, array( 'upgrade', 'downgrade', 'crossgrade' ) ) ) {
+				throw new UnexpectedValueException( sprintf( __( 'Invalid switch type "%s". Switch must be one of: "upgrade", "downgrade" or "crossgrade".', 'woocommerce-subscriptions' ), $switch_type ) );
+			}
+
+			WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['upgraded_or_downgraded'] = sprintf( '%sd', $switch_type ); // preserve past tense for backward compatibility (luckily past tense for all allowed switch types end with a d)
 
 			// Now lets see if we should add a prorated amount to the sign-up fee (for upgrades) or extend the next payment date (for downgrades)
 			if ( in_array( $apportion_recurring_price, array( 'yes', 'yes-upgrade' ) ) || ( in_array( $apportion_recurring_price, array( 'virtual', 'virtual-upgrade' ) ) && $is_virtual_product ) ) {
 
 				// If the customer is upgrading, we may need to add a gap payment to the sign-up fee or to reduce the pre-paid period (or both)
-				if ( $old_price_per_day < $new_price_per_day ) {
+				if ( 'upgrade' === $switch_type ) {
 
-					// The new subscription may be more expensive, but it's also on a shorter billing cycle, so reduce the next pre-paid term
-					if ( $days_in_old_cycle > $days_in_new_cycle ) {
+					// The new subscription may be more expensive, but it's also on a shorter billing cycle, so reduce the next pre-paid term by default, but also allow this to be customised
+					$reduce_pre_paid_term = apply_filters( 'wcs_switch_proration_reduce_pre_paid_term', $days_in_old_cycle > $days_in_new_cycle, $subscription, $cart_item, $days_in_old_cycle, $days_in_new_cycle, $old_price_per_day, $new_price_per_day );
+
+					if ( $reduce_pre_paid_term ) {
 
 						// Find out how many days at the new price per day the customer would receive for the total amount already paid
 						// (e.g. if the customer paid $10 / month previously, and was switching to a $5 / week subscription, she has pre-paid 14 days at the new price)
@@ -1447,6 +1462,7 @@ class WC_Subscriptions_Switcher {
 
 						// We need to find the per item extra to pay so we can set it as the sign-up fee (WC will then multiply it by the quantity)
 						$extra_to_pay = $extra_to_pay / $cart_item['quantity'];
+						$extra_to_pay = apply_filters( 'wcs_switch_proration_extra_to_pay', $extra_to_pay, $subscription, $cart_item, $days_in_old_cycle );
 
 						// Keep a record of the two separate amounts so we store these and calculate future switch amounts correctly
 						$existing_sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( WC()->cart->cart_contents[ $cart_item_key ]['data'] );
@@ -1456,7 +1472,7 @@ class WC_Subscriptions_Switcher {
 					}
 
 				// If the customer is downgrading, set the next payment date and maybe extend it if downgrades are prorated
-				} elseif ( $old_price_per_day > $new_price_per_day && $new_price_per_day > 0 ) {
+				} elseif ( 'downgrade' === $switch_type ) {
 
 					$old_total_paid = $old_price_per_day * $days_until_next_payment;
 
