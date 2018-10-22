@@ -30,21 +30,22 @@ class WCS_Report_Dashboard {
 	}
 
 	/**
-	 * Add the subscription specific details to the bottom of the dashboard widget
-	 *
-	 * @since 2.1
+	 * Get all data needed for this report and store in the class
 	 */
-	public static function add_stats_to_dashboard() {
+	public static function get_data() {
 		global $wpdb;
-
-		$cached_results = get_transient( strtolower( self::class ) );
 
 		$offset  = get_option( 'gmt_offset' );
 
 		// Convert from Decimal format(eg. 11.5) to a suitable format(eg. +11:30) for CONVERT_TZ() of SQL query.
 		$site_timezone = sprintf( '%+02d:%02d', (int) $offset, ( $offset - floor( $offset ) ) * 60 );
 
-		$query = $wpdb->prepare(
+		$report_data = new stdClass;
+
+		$cached_results = get_transient( strtolower( self::class ) );
+
+		// Subscription signups this month
+        $query = $wpdb->prepare(
 			"SELECT COUNT(DISTINCT wcsubs.ID) AS count
 				FROM {$wpdb->posts} AS wcsubs
 				INNER JOIN {$wpdb->posts} AS wcorder
@@ -66,9 +67,10 @@ class WCS_Report_Dashboard {
 			set_transient( strtolower( self::class ), $cached_results, WEEK_IN_SECONDS );
 		}
 
-		$signup_count = $cached_results[ $query_hash ];
+		$report_data->signup_count = $cached_results[ $query_hash ];
 
-		$query = $wpdb->prepare(
+		// Signup revenue this month
+        $query = $wpdb->prepare(
 			"SELECT SUM(order_total_meta.meta_value)
                     FROM wp_postmeta as order_total_meta
                     RIGHT JOIN
@@ -96,9 +98,10 @@ class WCS_Report_Dashboard {
 			set_transient( strtolower( self::class ), $cached_results, WEEK_IN_SECONDS );
 		}
 
-		$signup_revenue = $cached_results[ $query_hash ];
+		$report_data->signup_revenue = $cached_results[ $query_hash ];
 
-		$query = $wpdb->prepare(
+		// Subscription renewals this month
+        $query = $wpdb->prepare(
 			"SELECT COUNT(DISTINCT wcorder.ID) AS count
 				FROM {$wpdb->posts} AS wcorder
 				INNER JOIN {$wpdb->postmeta} AS meta__subscription_renewal
@@ -123,8 +126,9 @@ class WCS_Report_Dashboard {
 			set_transient( strtolower( self::class ), $cached_results, WEEK_IN_SECONDS );
 		}
 
-		$renewal_count = $cached_results[ $query_hash ];
+		$report_data->renewal_count = $cached_results[ $query_hash ];
 
+		// Renewal revenue this month
 		$query = $wpdb->prepare(
 			"SELECT SUM(order_total_meta.meta_value)
                     FROM wp_postmeta as order_total_meta
@@ -156,8 +160,9 @@ class WCS_Report_Dashboard {
 			set_transient( strtolower( self::class ), $cached_results, WEEK_IN_SECONDS );
 		}
 
-		$renewal_revenue = $cached_results[ $query_hash ];
+		$report_data->renewal_revenue = $cached_results[ $query_hash ];
 
+		// Cancellation count this month
 		$query = $wpdb->prepare(
 			"SELECT COUNT(DISTINCT wcsubs.ID) AS count
                     FROM {$wpdb->posts} AS wcsubs
@@ -178,32 +183,43 @@ class WCS_Report_Dashboard {
 			set_transient( strtolower( self::class ), $cached_results, WEEK_IN_SECONDS );
 		}
 
-		$cancel_count = $cached_results[ $query_hash ];
+		$report_data->cancel_count = $cached_results[ $query_hash ];
+
+		return $report_data;
+	}
+
+	/**
+	 * Add the subscription specific details to the bottom of the dashboard widget
+	 *
+	 * @since 2.1
+	 */
+	public static function add_stats_to_dashboard() {
+		$report_data = self::get_data();
 
 		?>
 		<li class="signup-count">
 			<a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
-				<?php printf( wp_kses_post( _n( '<strong>%s signup</strong> subscription signups this month', '<strong>%s signups</strong> subscription signups this month', $signup_count, 'woocommerce-subscriptions' ) ), esc_html( $signup_count ) ); ?>
+				<?php printf( wp_kses_post( _n( '<strong>%s signup</strong> subscription signups this month', '<strong>%s signups</strong> subscription signups this month', $report_data->signup_count, 'woocommerce-subscriptions' ) ), esc_html( $report_data->signup_count ) ); ?>
 			</a>
 		</li>
         <li class="signup-revenue">
             <a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
-				<?php printf( wp_kses_post( __( '<strong>' . wc_price( $signup_revenue ) . '</strong> signup revenue this month', 'woocommerce-subscriptions' ) ) ); ?>
+				<?php printf( wp_kses_post( __( '<strong>' . wc_price( $report_data->signup_revenue ) . '</strong> signup revenue this month', 'woocommerce-subscriptions' ) ) ); ?>
             </a>
         </li>
 		<li class="renewal-count">
 			<a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
-				<?php printf( wp_kses_post( _n( '<strong>%s renewal</strong> subscription renewals this month', '<strong>%s renewals</strong> subscription renewals this month', $renewal_count, 'woocommerce-subscriptions' ) ), esc_html( $renewal_count ) ); ?>
+				<?php printf( wp_kses_post( _n( '<strong>%s renewal</strong> subscription renewals this month', '<strong>%s renewals</strong> subscription renewals this month', $report_data->renewal_count, 'woocommerce-subscriptions' ) ), esc_html( $report_data->renewal_count ) ); ?>
 			</a>
 		</li>
         <li class="renewal-revenue">
             <a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=montj' ) ); ?>">
-				<?php printf( wp_kses_post( __( '<strong>' . wc_price( $renewal_revenue ) . '</strong> renewal revenue this month', 'woocommerce-subscriptions' ) ) ); ?>
+				<?php printf( wp_kses_post( __( '<strong>' . wc_price( $report_data->renewal_revenue ) . '</strong> renewal revenue this month', 'woocommerce-subscriptions' ) ) ); ?>
             </a>
         </li>
         <li class="cancel-count">
             <a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
-				<?php printf( wp_kses_post( _n( '<strong>%s cancellation</strong> subscription cancellations this month', '<strong>%s cancellations</strong> subscription cancellations this month', $renewal_count, 'woocommerce-subscriptions' ) ), esc_html( $cancel_count ) ); ?>
+				<?php printf( wp_kses_post( _n( '<strong>%s cancellation</strong> subscription cancellations this month', '<strong>%s cancellations</strong> subscription cancellations this month', $report_data->cancel_count, 'woocommerce-subscriptions' ) ), esc_html( $report_data->cancel_count ) ); ?>
             </a>
         </li>
 		<?php
