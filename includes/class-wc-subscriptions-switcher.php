@@ -21,7 +21,7 @@ class WC_Subscriptions_Switcher {
 		add_action( 'woocommerce_loaded', __CLASS__ . '::attach_dependant_hooks' );
 
 		// Check if the current request is for switching a subscription and if so, start he switching process
-		add_filter( 'template_redirect', __CLASS__ . '::subscription_switch_handler', 100 );
+		add_action( 'template_redirect', __CLASS__ . '::subscription_switch_handler', 100 );
 
 		// Pass in the filter switch to the group items
 		add_filter( 'woocommerce_grouped_product_list_link', __CLASS__ . '::add_switch_query_arg_grouped', 12 );
@@ -31,7 +31,7 @@ class WC_Subscriptions_Switcher {
 		add_filter( 'woocommerce_subscription_settings', __CLASS__ . '::add_settings' );
 
 		// Add the "Switch" button to the View Subscription table
-		add_filter( 'woocommerce_order_item_meta_end', __CLASS__ . '::print_switch_link', 10, 3 );
+		add_action( 'woocommerce_order_item_meta_end', __CLASS__ . '::print_switch_link', 10, 3 );
 
 		// We need to create subscriptions on checkout and want to do it after almost all other extensions have added their products/items/fees
 		add_action( 'woocommerce_checkout_order_processed', __CLASS__ . '::process_checkout', 50, 2 );
@@ -46,13 +46,13 @@ class WC_Subscriptions_Switcher {
 		add_filter( 'woocommerce_add_to_cart_validation', __CLASS__ . '::validate_switch_request', 10, 4 );
 
 		// Record subscription switching in the cart
-		add_action( 'woocommerce_add_cart_item_data', __CLASS__ . '::set_switch_details_in_cart', 10, 3 );
+		add_filter( 'woocommerce_add_cart_item_data', __CLASS__ . '::set_switch_details_in_cart', 10, 3 );
 
 		// Make sure the 'switch_subscription' cart item data persists
-		add_action( 'woocommerce_get_cart_item_from_session', __CLASS__ . '::get_cart_from_session', 10, 3 );
+		add_filter( 'woocommerce_get_cart_item_from_session', __CLASS__ . '::get_cart_from_session', 10, 3 );
 
 		// Set totals for subscription switch orders (needs to be hooked just before WC_Subscriptions_Cart::calculate_subscription_totals())
-		add_filter( 'woocommerce_before_calculate_totals', __CLASS__ . '::calculate_prorated_totals', 99, 1 );
+		add_action( 'woocommerce_before_calculate_totals', __CLASS__ . '::calculate_prorated_totals', 99, 1 );
 
 		// Don't display free trials when switching a subscription, because no free trials are provided
 		add_filter( 'woocommerce_subscriptions_product_price_string_inclusions', __CLASS__ . '::customise_product_string_inclusions', 12, 2 );
@@ -73,7 +73,7 @@ class WC_Subscriptions_Switcher {
 		add_action( 'addons_add_to_cart_url', __CLASS__ . '::addons_add_to_cart_url', 10 );
 
 		// Make sure the switch process persists when having to choose product addons
-		add_action( 'woocommerce_hidden_order_itemmeta', __CLASS__ . '::hidden_order_itemmeta', 10 );
+		add_filter( 'woocommerce_hidden_order_itemmeta', __CLASS__ . '::hidden_order_itemmeta', 10 );
 
 		// Add/remove the print switch link filters when printing HTML/plain subscription emails
 		add_action( 'woocommerce_email_before_subscription_table', __CLASS__ . '::remove_print_switch_link' );
@@ -101,7 +101,7 @@ class WC_Subscriptions_Switcher {
 		add_filter( 'woocommerce_cart_needs_payment', __CLASS__ . '::cart_needs_payment' , 50, 2 );
 
 		// Require payment when switching from a $0 / period subscription to a non-zero subscription to process automatic payments
-		add_filter( 'woocommerce_subscriptions_switch_completed', __CLASS__ . '::maybe_set_payment_method_after_switch' , 10, 1 );
+		add_action( 'woocommerce_subscriptions_switch_completed', __CLASS__ . '::maybe_set_payment_method_after_switch' , 10, 1 );
 
 		// Do not reduce product stock when the order item is simply to record a switch
 		add_filter( 'woocommerce_order_item_quantity', __CLASS__ . '::maybe_do_not_reduce_stock', 10, 3 );
