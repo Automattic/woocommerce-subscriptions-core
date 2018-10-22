@@ -56,7 +56,7 @@ class WCS_Report_Dashboard {
 					AND wcorder.post_date >= '%s'
 					AND wcorder.post_date < '%s'",
 			date( 'Y-m-01', current_time( 'timestamp' ) ),
-			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
+			date( 'Y-m-d', strtotime( '+1 DAY', current_time( 'timestamp' ) ) )
 		);
 
 		$query_hash = md5( $query );
@@ -87,7 +87,7 @@ class WCS_Report_Dashboard {
                     ) AS orders ON orders.ID = order_total_meta.post_id
                   WHERE order_total_meta.meta_key = '_order_total'",
 			date( 'Y-m-01', current_time( 'timestamp' ) ),
-			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
+			date( 'Y-m-d', strtotime( '+1 DAY', current_time( 'timestamp' ) ) )
 		);
 
 		$query_hash = md5( $query );
@@ -115,7 +115,7 @@ class WCS_Report_Dashboard {
 					AND wcorder.post_date >= '%s'
 					AND wcorder.post_date < '%s'",
 			date( 'Y-m-01', current_time( 'timestamp' ) ),
-			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
+			date( 'Y-m-d', strtotime( '+1 DAY', current_time( 'timestamp' ) ) )
 		);
 
 		$query_hash = md5( $query );
@@ -149,7 +149,7 @@ class WCS_Report_Dashboard {
                     ) AS orders ON orders.ID = order_total_meta.post_id
                   WHERE order_total_meta.meta_key = '_order_total'",
 			date( 'Y-m-01', current_time( 'timestamp' ) ),
-			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
+			date( 'Y-m-d', strtotime( '+1 DAY', current_time( 'timestamp' ) ) )
 		);
 
 		$query_hash = md5( $query );
@@ -172,7 +172,7 @@ class WCS_Report_Dashboard {
                     AND wcsubs.post_status NOT IN ( 'trash', 'auto-draft' )
                     AND CONVERT_TZ( wcsmeta_cancel.meta_value, '+00:00', '{$site_timezone}' ) BETWEEN '%s' AND '%s'",
 			date( 'Y-m-01', current_time( 'timestamp' ) ),
-			date( 'Y-m-d H:i:s', current_time( 'timestamp' ) )
+			date( 'Y-m-d', strtotime( '+1 DAY', current_time( 'timestamp' ) ) )
 		);
 
 		$query_hash = md5( $query );
