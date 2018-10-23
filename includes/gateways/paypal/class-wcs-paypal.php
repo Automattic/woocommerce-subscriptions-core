@@ -460,7 +460,8 @@ class WCS_PayPal {
 	/**
 	 * This validates against payment lock for PP and returns false if we meet the criteria:
 	 *  - is a parent order.
-	 *  - payment method is paypal
+	 *  - payment method is paypal.
+	 *  - PayPal Reference Transactions is disabled.
 	 *  - order has lock.
 	 *  - lock hasn't timeout.
 	 *
@@ -471,7 +472,7 @@ class WCS_PayPal {
 	 * @since 2.5.3
 	 */
 	public static function maybe_override_needs_payment( $needs_payment, $order ) {
-		if ( $needs_payment && self::instance()->get_id() === $order->get_payment_method() && wcs_order_contains_subscription( $order, array( 'parent' ) ) ) {
+		if ( $needs_payment && self::instance()->get_id() === $order->get_payment_method() && ! self::are_reference_transactions_enabled() && wcs_order_contains_subscription( $order, array( 'parent' ) ) ) {
 			$has_lock            = $order->get_meta( '_wcs_lock_order_payment' );
 			$seconds_since_order = wcs_seconds_since_order_created( $order );
 
@@ -485,7 +486,12 @@ class WCS_PayPal {
 	}
 
 	/**
-	 * Adds payment lock meta when order is received.
+	 * Adds payment lock meta when order is received and...
+	 * - order is valid.
+	 * - payment method is paypal.
+	 * - order needs payment.
+	 * - PayPal Reference Transactions is disabled.
+	 * - order is parent order of a subscription.
 	 *
 	 * @since 2.5.3
 	 */
@@ -497,7 +503,7 @@ class WCS_PayPal {
 		global $wp;
 		$order = wc_get_order( absint( $wp->query_vars['order-received'] ) );
 
-		if ( $order && self::instance()->get_id() === $order->get_payment_method() && $order->needs_payment() && wcs_order_contains_subscription( $order, array( 'parent' ) ) ) {
+		if ( $order && self::instance()->get_id() === $order->get_payment_method() && $order->needs_payment() && ! self::are_reference_transactions_enabled() && wcs_order_contains_subscription( $order, array( 'parent' ) ) ) {
 			$order->update_meta_data( '_wcs_lock_order_payment', 'true' );
 			$order->save();
 		}
