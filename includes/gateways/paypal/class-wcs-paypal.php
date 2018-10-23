@@ -468,7 +468,7 @@ class WCS_PayPal {
 	 * @param WC_Order $order         The actual order.
 	 *
 	 * @return bool
-	 * @since 2.4.1
+	 * @since 2.5.3
 	 */
 	public static function maybe_override_needs_payment( $needs_payment, $order ) {
 		if ( $needs_payment && self::instance()->get_id() === $order->get_payment_method() && wcs_order_contains_subscription( $order, array( 'parent' ) ) ) {
@@ -487,7 +487,7 @@ class WCS_PayPal {
 	/**
 	 * Adds payment lock meta when order is received.
 	 *
-	 * @since 2.4.1
+	 * @since 2.5.3
 	 */
 	public static function maybe_add_payment_lock() {
 		if ( ! wcs_is_order_received_page() ) {
@@ -508,7 +508,7 @@ class WCS_PayPal {
 	 *
 	 * @param int $order_id Order cancelled/paid.
 	 *
-	 * @since 2.4.1
+	 * @since 2.5.3
 	 */
 	public static function maybe_remove_payment_lock( $order_id ) {
 		$order = wc_get_order( $order_id );
