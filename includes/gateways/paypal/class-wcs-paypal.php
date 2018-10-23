@@ -495,9 +495,9 @@ class WCS_PayPal {
 		}
 
 		global $wp;
-		$order = wc_get_order( $wp->query_vars['order-received'] );
+		$order = wc_get_order( absint( $wp->query_vars['order-received'] ) );
 
-		if ( self::instance()->get_id() === $order->get_payment_method() && $order->needs_payment() && wcs_order_contains_subscription( $order, array( 'parent' ) ) ) {
+		if ( $order && self::instance()->get_id() === $order->get_payment_method() && $order->needs_payment() && wcs_order_contains_subscription( $order, array( 'parent' ) ) ) {
 			$order->update_meta_data( 'wcs_lock_order_payment', 'true' );
 			$order->save();
 		}
