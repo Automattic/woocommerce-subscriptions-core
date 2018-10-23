@@ -87,6 +87,9 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 			$this->update_subscription_id_cache( $user_id, $subscription_ids );
 		}
 
+		// Sort results in order to keep consistency between cached results and queried results.
+		rsort( $subscription_ids );
+
 		return $subscription_ids;
 	}
 
