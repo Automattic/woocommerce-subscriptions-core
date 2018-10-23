@@ -158,7 +158,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 			return false;
 		}
 
-		rsort( $subscription_ids ); // the results from the database query are ordered by date/ID in DESC, so make sure the transient value is too
+		rsort( $subscription_ids ); // the results from the database query are ordered by date/ID in DESC, so make sure the user cached values are ordered the same.
 		return update_user_meta( $user_id, $this->cache_meta_key, $subscription_ids );
 	}
 
