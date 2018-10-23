@@ -472,7 +472,7 @@ class WCS_PayPal {
 	 */
 	public static function maybe_override_needs_payment( $needs_payment, $order ) {
 		if ( $needs_payment && self::instance()->get_id() === $order->get_payment_method() && wcs_order_contains_subscription( $order, array( 'parent' ) ) ) {
-			$has_lock            = $order->get_meta( 'wcs_lock_order_payment' );
+			$has_lock            = $order->get_meta( '_wcs_lock_order_payment' );
 			$seconds_since_order = wcs_seconds_since_order_created( $order );
 
 			// We have lock and order hasn't meet the lock time.
@@ -498,7 +498,7 @@ class WCS_PayPal {
 		$order = wc_get_order( absint( $wp->query_vars['order-received'] ) );
 
 		if ( $order && self::instance()->get_id() === $order->get_payment_method() && $order->needs_payment() && wcs_order_contains_subscription( $order, array( 'parent' ) ) ) {
-			$order->update_meta_data( 'wcs_lock_order_payment', 'true' );
+			$order->update_meta_data( '_wcs_lock_order_payment', 'true' );
 			$order->save();
 		}
 	}
