@@ -27,27 +27,28 @@ class WCS_Report_Cache_Manager {
 	 */
 	private $update_events_and_classes = array(
 		'woocommerce_subscriptions_reports_schedule_cache_updates' => array( // a custom hook that can be called to schedule a full cache update, used by WC_Subscriptions_Upgrader
-			0 => 'WCS_Report_Subscription_Events_By_Date',
-			1 => 'WCS_Report_Upcoming_Recurring_Revenue',
+			0 => 'WCS_Report_Dashboard',
+			1 => 'WCS_Report_Subscription_Events_By_Date',
+			2 => 'WCS_Report_Upcoming_Recurring_Revenue',
 			3 => 'WCS_Report_Subscription_By_Product',
 			4 => 'WCS_Report_Subscription_By_Customer',
-			5 => 'WCS_Report_Dashboard',
 		),
 		'woocommerce_subscription_payment_complete' => array( // this hook takes care of renewal, switch and initial payments
-			0 => 'WCS_Report_Subscription_Events_By_Date',
+			0 => 'WCS_Report_Dashboard',
+			1 => 'WCS_Report_Subscription_Events_By_Date',
 			4 => 'WCS_Report_Subscription_By_Customer',
-			5 => 'WCS_Report_Dashboard',
 		),
 		'woocommerce_subscriptions_switch_completed' => array(
-			0 => 'WCS_Report_Subscription_Events_By_Date',
+			0 => 'WCS_Report_Dashboard',
+			1 => 'WCS_Report_Subscription_Events_By_Date',
 		),
 		'woocommerce_subscription_status_changed' => array(
-			0 => 'WCS_Report_Subscription_Events_By_Date', // we really only need cancelled, expired and active status here, but we'll use a more generic hook for convenience
+			0 => 'WCS_Report_Dashboard',
+			1 => 'WCS_Report_Subscription_Events_By_Date', // we really only need cancelled, expired and active status here, but we'll use a more generic hook for convenience
 			4 => 'WCS_Report_Subscription_By_Customer',
-			5 => 'WCS_Report_Dashboard',
 		),
 		'woocommerce_subscription_status_active' => array(
-			1 => 'WCS_Report_Upcoming_Recurring_Revenue',
+			2 => 'WCS_Report_Upcoming_Recurring_Revenue',
 		),
 		'woocommerce_new_order_item' => array(
 			3 => 'WCS_Report_Subscription_By_Product',
