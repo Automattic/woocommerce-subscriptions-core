@@ -32,11 +32,19 @@ class WCS_Report_Dashboard {
 	/**
 	 * Get all data needed for this report and store in the class
 	 */
-	public static function get_data() {
+	public static function get_data( $args = array() ) {
 		global $wpdb;
 
-		$offset  = get_option( 'gmt_offset' );
+		$default_args = array(
+			'no_cache' => false,
+		);
 
+		$args = apply_filters( 'wcs_reports_subscription_events_args', $args );
+		$args = wp_parse_args( $args, $default_args );
+
+		$offset = get_option( 'gmt_offset' );
+
+		// Use this once it is merged - wcs_get_gmt_offset_string();
 		// Convert from Decimal format(eg. 11.5) to a suitable format(eg. +11:30) for CONVERT_TZ() of SQL query.
 		$site_timezone = sprintf( '%+02d:%02d', (int) $offset, ( $offset - floor( $offset ) ) * 60 );
 
@@ -45,7 +53,7 @@ class WCS_Report_Dashboard {
 		$cached_results = get_transient( strtolower( self::class ) );
 
 		// Subscription signups this month
-        $query = $wpdb->prepare(
+		$query = $wpdb->prepare(
 			"SELECT COUNT(DISTINCT wcsubs.ID) AS count
 				FROM {$wpdb->posts} AS wcsubs
 				INNER JOIN {$wpdb->posts} AS wcorder
@@ -61,7 +69,7 @@ class WCS_Report_Dashboard {
 
 		$query_hash = md5( $query );
 
-		if ( false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
+		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
 			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
 			$cached_results[ $query_hash ] = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_signup_query', $query ) );
 			set_transient( strtolower( self::class ), $cached_results, HOUR_IN_SECONDS );
@@ -70,29 +78,29 @@ class WCS_Report_Dashboard {
 		$report_data->signup_count = $cached_results[ $query_hash ];
 
 		// Signup revenue this month
-        $query = $wpdb->prepare(
+		$query = $wpdb->prepare(
 			"SELECT SUM(order_total_meta.meta_value)
-                    FROM wp_postmeta as order_total_meta
-                    RIGHT JOIN
-                    (
-                    SELECT DISTINCT wcorder.ID
-                        FROM {$wpdb->posts} AS wcsubs
-                        INNER JOIN {$wpdb->posts} AS wcorder
-                            ON wcsubs.post_parent = wcorder.ID
-                        WHERE wcorder.post_type IN ( 'shop_order' )
-                            AND wcsubs.post_type IN ( 'shop_subscription' )
-                            AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
-                            AND wcorder.post_date >= '%s'
-                            AND wcorder.post_date < '%s'
-                    ) AS orders ON orders.ID = order_total_meta.post_id
-                  WHERE order_total_meta.meta_key = '_order_total'",
+				FROM wp_postmeta as order_total_meta
+					RIGHT JOIN
+					(
+						SELECT DISTINCT wcorder.ID
+						FROM {$wpdb->posts} AS wcsubs
+						INNER JOIN {$wpdb->posts} AS wcorder
+							ON wcsubs.post_parent = wcorder.ID
+						WHERE wcorder.post_type IN ( 'shop_order' )
+							AND wcsubs.post_type IN ( 'shop_subscription' )
+							AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
+							AND wcorder.post_date >= '%s'
+							AND wcorder.post_date < '%s'
+					) AS orders ON orders.ID = order_total_meta.post_id
+				WHERE order_total_meta.meta_key = '_order_total'",
 			date( 'Y-m-01', current_time( 'timestamp' ) ),
 			date( 'Y-m-d', strtotime( '+1 DAY', current_time( 'timestamp' ) ) )
 		);
 
 		$query_hash = md5( $query );
 
-		if ( false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
+		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
 			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
 			$cached_results[ $query_hash ] = absint( $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_signup_revenue_query', $query ) ) );
 			set_transient( strtolower( self::class ), $cached_results, HOUR_IN_SECONDS );
@@ -101,7 +109,7 @@ class WCS_Report_Dashboard {
 		$report_data->signup_revenue = $cached_results[ $query_hash ];
 
 		// Subscription renewals this month
-        $query = $wpdb->prepare(
+		$query = $wpdb->prepare(
 			"SELECT COUNT(DISTINCT wcorder.ID) AS count
 				FROM {$wpdb->posts} AS wcorder
 				INNER JOIN {$wpdb->postmeta} AS meta__subscription_renewal
@@ -120,7 +128,7 @@ class WCS_Report_Dashboard {
 
 		$query_hash = md5( $query );
 
-		if ( false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
+		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
 			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
 			$cached_results[ $query_hash ] = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_renewal_query', $query ) );
 			set_transient( strtolower( self::class ), $cached_results, HOUR_IN_SECONDS );
@@ -131,30 +139,30 @@ class WCS_Report_Dashboard {
 		// Renewal revenue this month
 		$query = $wpdb->prepare(
 			"SELECT SUM(order_total_meta.meta_value)
-                    FROM wp_postmeta as order_total_meta
-                    RIGHT JOIN
-                    (
-                    SELECT DISTINCT wcorder.ID
-                        FROM {$wpdb->posts} AS wcorder
-                        INNER JOIN {$wpdb->postmeta} AS meta__subscription_renewal
-                            ON (
-                                wcorder.id = meta__subscription_renewal.post_id
-                                AND
-                                meta__subscription_renewal.meta_key = '_subscription_renewal'
-                            )
-                        WHERE wcorder.post_type IN ( 'shop_order' )
-                            AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
-                            AND wcorder.post_date >= '%s'
-                            AND wcorder.post_date < '%s'
-                    ) AS orders ON orders.ID = order_total_meta.post_id
-                  WHERE order_total_meta.meta_key = '_order_total'",
+				FROM wp_postmeta as order_total_meta
+				RIGHT JOIN
+				(
+					SELECT DISTINCT wcorder.ID
+					FROM {$wpdb->posts} AS wcorder
+					INNER JOIN {$wpdb->postmeta} AS meta__subscription_renewal
+						ON (
+							wcorder.id = meta__subscription_renewal.post_id
+							AND
+							meta__subscription_renewal.meta_key = '_subscription_renewal'
+						)
+					WHERE wcorder.post_type IN ( 'shop_order' )
+						AND wcorder.post_status IN ( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-refunded' )
+						AND wcorder.post_date >= '%s'
+						AND wcorder.post_date < '%s'
+				) AS orders ON orders.ID = order_total_meta.post_id
+				WHERE order_total_meta.meta_key = '_order_total'",
 			date( 'Y-m-01', current_time( 'timestamp' ) ),
 			date( 'Y-m-d', strtotime( '+1 DAY', current_time( 'timestamp' ) ) )
 		);
 
 		$query_hash = md5( $query );
 
-		if ( false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
+		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
 			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
 			$cached_results[ $query_hash ] = absint( $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_renewal_revenue_query', $query ) ) );
 			set_transient( strtolower( self::class ), $cached_results, HOUR_IN_SECONDS );
@@ -165,19 +173,19 @@ class WCS_Report_Dashboard {
 		// Cancellation count this month
 		$query = $wpdb->prepare(
 			"SELECT COUNT(DISTINCT wcsubs.ID) AS count
-                    FROM {$wpdb->posts} AS wcsubs
-                    JOIN {$wpdb->postmeta} AS wcsmeta_cancel
-                        ON wcsubs.ID = wcsmeta_cancel.post_id
-                    AND wcsmeta_cancel.meta_key = '_schedule_cancelled'
-                    AND wcsubs.post_status NOT IN ( 'trash', 'auto-draft' )
-                    AND CONVERT_TZ( wcsmeta_cancel.meta_value, '+00:00', '{$site_timezone}' ) BETWEEN '%s' AND '%s'",
+					FROM {$wpdb->posts} AS wcsubs
+					JOIN {$wpdb->postmeta} AS wcsmeta_cancel
+						ON wcsubs.ID = wcsmeta_cancel.post_id
+					AND wcsmeta_cancel.meta_key = '_schedule_cancelled'
+					AND wcsubs.post_status NOT IN ( 'trash', 'auto-draft' )
+					AND CONVERT_TZ( wcsmeta_cancel.meta_value, '+00:00', '{$site_timezone}' ) BETWEEN '%s' AND '%s'",
 			date( 'Y-m-01', current_time( 'timestamp' ) ),
 			date( 'Y-m-d', strtotime( '+1 DAY', current_time( 'timestamp' ) ) )
 		);
 
 		$query_hash = md5( $query );
 
-		if ( false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
+		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
 			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
 			$cached_results[ $query_hash ] = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_cancellation_query', $query ) );
 			set_transient( strtolower( self::class ), $cached_results, HOUR_IN_SECONDS );
@@ -202,26 +210,26 @@ class WCS_Report_Dashboard {
 				<?php printf( wp_kses_post( _n( '<strong>%s signup</strong> subscription signups this month', '<strong>%s signups</strong> subscription signups this month', $report_data->signup_count, 'woocommerce-subscriptions' ) ), esc_html( $report_data->signup_count ) ); ?>
 			</a>
 		</li>
-        <li class="signup-revenue">
-            <a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
+		<li class="signup-revenue">
+			<a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
 				<?php printf( wp_kses_post( __( '<strong>' . wc_price( $report_data->signup_revenue ) . '</strong> signup revenue this month', 'woocommerce-subscriptions' ) ) ); ?>
-            </a>
-        </li>
+			</a>
+		</li>
 		<li class="renewal-count">
 			<a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
 				<?php printf( wp_kses_post( _n( '<strong>%s renewal</strong> subscription renewals this month', '<strong>%s renewals</strong> subscription renewals this month', $report_data->renewal_count, 'woocommerce-subscriptions' ) ), esc_html( $report_data->renewal_count ) ); ?>
 			</a>
 		</li>
-        <li class="renewal-revenue">
-            <a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=montj' ) ); ?>">
+		<li class="renewal-revenue">
+			<a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=montj' ) ); ?>">
 				<?php printf( wp_kses_post( __( '<strong>' . wc_price( $report_data->renewal_revenue ) . '</strong> renewal revenue this month', 'woocommerce-subscriptions' ) ) ); ?>
-            </a>
-        </li>
-        <li class="cancel-count">
-            <a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
+			</a>
+		</li>
+		<li class="cancel-count">
+			<a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
 				<?php printf( wp_kses_post( _n( '<strong>%s cancellation</strong> subscription cancellations this month', '<strong>%s cancellations</strong> subscription cancellations this month', $report_data->cancel_count, 'woocommerce-subscriptions' ) ), esc_html( $report_data->cancel_count ) ); ?>
-            </a>
-        </li>
+			</a>
+		</li>
 		<?php
 
 	}
