@@ -262,7 +262,6 @@ class WC_Subscriptions_Payment_Gateways {
 			}
 
 			unset( $core_features[ $key ] );
-
 		}
 
 		$status_html .= '<span class="payment-method-features-info tips" data-tip="';
