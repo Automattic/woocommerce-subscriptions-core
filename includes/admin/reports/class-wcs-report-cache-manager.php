@@ -162,7 +162,7 @@ class WCS_Report_Cache_Manager {
 
 					if ( false === wp_next_scheduled( $this->cron_hook, $cron_args ) ) {
 						// Use the index to space out caching of each report to make them 15 minutes apart so that on large sites, where we assume they'll get a request at least once every few minutes, we don't try to update the caches of all reports in the same request
-						wp_schedule_single_event( $cache_update_timestamp + 15 * MINUTE_IN_SECONDS * ( $index + 1 ), $this->cron_hook, $cron_args );
+						as_schedule_single_action( $cache_update_timestamp + 15 * MINUTE_IN_SECONDS * ( $index + 1 ), $this->cron_hook, $cron_args );
 					}
 				}
 			} else { // Otherwise, run it 10 minutes after the last cache invalidating event
@@ -173,14 +173,14 @@ class WCS_Report_Cache_Manager {
 					$cron_args = array( 'report_class' => $report_class );
 
 					// Reschedule only if the already scheduled event is not sooner
-					if ( ( $next_scheduled = wp_next_scheduled( $this->cron_hook, $cron_args ) ) > ( gmdate( 'U' ) + ( MINUTE_IN_SECONDS * ( $index + 1 ) * 5 ) ) ) {
-						wp_unschedule_event($next_scheduled, $this->cron_hook, $cron_args);
+					if ( ( $next_scheduled = as_next_scheduled_action( $this->cron_hook, $cron_args ) ) > ( gmdate( 'U' ) + ( MINUTE_IN_SECONDS * ( $index + 1 ) * 5 ) ) ) {
+						as_unschedule_action( $next_scheduled, $this->cron_hook, $cron_args );
 						$next_scheduled = false;
 					}
 
 					// Use the index to space out caching of each report to make them 5 minutes apart so that on large sites, where we assume they'll get a request at least once every few minutes, we don't try to update the caches of all reports in the same request
-					if( false === $next_scheduled ) {
-						wp_schedule_single_event( gmdate( 'U' ) + MINUTE_IN_SECONDS * ( $index + 1 ) * 5, $this->cron_hook, $cron_args );
+					if ( false === $next_scheduled ) {
+						as_schedule_single_action( gmdate( 'U' ) + MINUTE_IN_SECONDS * ( $index + 1 ) * 5, $this->cron_hook, $cron_args );
 					}
 				}
 			}
