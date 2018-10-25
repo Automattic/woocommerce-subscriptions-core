@@ -704,6 +704,25 @@ function wcs_get_days_in_cycle( $period, $interval ) {
 	return apply_filters( 'wcs_get_days_in_cycle', $days_in_cycle, $period, $interval );
 }
 
+/**
+ * Set a DateTime's timezone to the WordPress site's timezone, or a UTC offset
+ * if no timezone string is available.
+ *
+ * @since 2.4.2
+ * @param WC_DateTime $date
+ * @return WC_DateTime
+ */
+function wcs_set_local_timezone( WC_DateTime $date ) {
+
+	if ( get_option( 'timezone_string' ) ) {
+		$date->setTimezone( new DateTimeZone( wc_timezone_string() ) );
+	} else {
+		$date->set_utc_offset( wc_timezone_offset() );
+	}
+
+	return $date;
+}
+
 /* Deprecated Functions */
 
 /**
