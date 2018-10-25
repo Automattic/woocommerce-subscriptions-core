@@ -39,7 +39,7 @@ class WCS_Report_Dashboard {
 			'no_cache' => false,
 		);
 
-		$args = apply_filters( 'wcs_reports_subscription_events_args', $args );
+		$args = apply_filters( 'wcs_reports_subscription_dashboard_args', $args );
 		$args = wp_parse_args( $args, $default_args );
 
 		$offset = get_option( 'gmt_offset' );
