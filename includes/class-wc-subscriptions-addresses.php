@@ -28,6 +28,7 @@ class WC_Subscriptions_Addresses {
 
 		add_filter( 'woocommerce_address_to_edit', __CLASS__ . '::maybe_populate_subscription_addresses', 10 );
 
+		add_filter( 'woocommerce_get_breadcrumb', __CLASS__ . '::change_addresses_breadcrumb', 10, 1 );
 	}
 
 	/**
@@ -178,5 +179,40 @@ class WC_Subscriptions_Addresses {
 	 */
 	public static function maybe_update_order_address( $subscription, $address_fields ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Order::set_address() or WC_Subscription::set_address()' );
+	}
+
+	/**
+	 * Replace the change address breadcrumbs structure to include a link back to the subscription.
+	 *
+	 * @param  array $crumbs
+	 * @return array
+	 * @since 2.5.0
+	 */
+	public static function change_addresses_breadcrumb( $crumbs ) {
+		if ( isset( $_GET['subscription'] ) && is_wc_endpoint_url() && 'edit-address' === WC()->query->get_current_endpoint() ) {
+			global $wp_query;
+			$subscription = wcs_get_subscription( absint( $_GET['subscription'] ) );
+
+			if ( ! $subscription ) {
+				return $crumbs;
+			}
+
+			$crumbs[1] = array(
+				get_the_title( wc_get_page_id( 'myaccount' ) ),
+				get_permalink( wc_get_page_id( 'myaccount' ) ),
+			);
+
+			$crumbs[2] = array(
+				sprintf( _x( 'Subscription #%s', 'hash before order number', 'woocommerce-subscriptions' ), $subscription->get_order_number() ),
+				esc_url( $subscription->get_view_order_url() ),
+			);
+
+			$crumbs[3] = array(
+				sprintf( _x( 'Change %s address', 'change billing or shipping address', 'woocommerce-subscriptions' ), $wp_query->query_vars['edit-address'] ),
+				'',
+			);
+		}
+
+		return $crumbs;
 	}
 }

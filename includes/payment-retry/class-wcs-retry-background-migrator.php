@@ -76,4 +76,13 @@ class WCS_Retry_Background_Migrator extends WCS_Background_Upgrader {
 	protected function update_item( $retry ) {
 		return $this->migrator->migrate_entry( $retry->get_id() );
 	}
+
+	/**
+	 * Unscheduled the instance's hook in Action Scheduler
+	 */
+	protected function unschedule_background_updates() {
+		parent::unschedule_background_updates();
+
+		$this->migrator->set_needs_migration();
+	}
 }

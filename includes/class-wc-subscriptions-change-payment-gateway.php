@@ -62,6 +62,9 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		// Change the "Pay for Order" page title to "Change Payment Method"
 		add_filter( 'the_title', __CLASS__ . '::change_payment_method_page_title', 100 );
 
+		// Change the "Pay for Order" breadcrumb to "Change Payment Method"
+		add_filter( 'woocommerce_get_breadcrumb', __CLASS__ . '::change_payment_method_breadcrumb', 10, 1 );
+
 		// Maybe filter subscriptions_needs_payment to return false when processing change-payment-gateway requests
 		add_filter( 'woocommerce_subscription_needs_payment', __CLASS__ . '::maybe_override_needs_payment', 10, 1 );
 	}
@@ -585,6 +588,42 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		}
 
 		return $title;
+	}
+
+	/**
+	 * Replace the breadcrumbs structure to add a link to the subscription page and change the current page to "Change Payment Method"
+	 *
+	 * @param  array $crumbs
+	 * @return array
+	 * @since 2.5.0
+	 */
+	public static function change_payment_method_breadcrumb( $crumbs ) {
+
+		if ( is_main_query() && is_page() && is_checkout_pay_page() && self::$is_request_to_change_payment ) {
+			global $wp_query;
+			$subscription = wcs_get_subscription( absint( $wp_query->query_vars['order-pay'] ) );
+
+			if ( ! $subscription ) {
+				return $crumbs;
+			}
+
+			$crumbs[1] = array(
+				get_the_title( wc_get_page_id( 'myaccount' ) ),
+				get_permalink( wc_get_page_id( 'myaccount' ) ),
+			);
+
+			$crumbs[2] = array(
+				sprintf( _x( 'Subscription #%s', 'hash before order number', 'woocommerce-subscriptions' ), $subscription->get_order_number() ),
+				esc_url( $subscription->get_view_order_url() ),
+			);
+
+			$crumbs[3] = array(
+				_x( 'Change Payment Method', 'the page title of the change payment method form', 'woocommerce-subscriptions' ),
+				'',
+			);
+		}
+
+		return $crumbs;
 	}
 
 	/**
