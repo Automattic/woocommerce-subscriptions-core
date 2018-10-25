@@ -39,7 +39,6 @@ class WCS_Report_Cache_Manager {
 			4 => 'WCS_Report_Subscription_By_Customer',
 		),
 		'woocommerce_subscriptions_switch_completed' => array(
-			0 => 'WCS_Report_Dashboard',
 			1 => 'WCS_Report_Subscription_Events_By_Date',
 		),
 		'woocommerce_subscription_status_changed' => array(
