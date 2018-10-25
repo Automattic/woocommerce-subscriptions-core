@@ -801,7 +801,7 @@ class WC_Subscriptions_Upgrader {
 		}
 
 		$admin_notice = new WCS_Admin_Notice( 'error' );
-		$admin_notice->set_simple_content( sprintf( esc_html__( '%1$sWarning!%2$s It appears that you have downgraded %1$sWooCommerce Subscriptions%2$s from %3$s to %4$s. Downgrading the plugin in this way may cause issues. Please update to %3$s or higher, or %5$sopen a new support ticket%6$s for further assistance. %7$sLearn more &raquo;%8$', 'woocommerce-subscriptions' ),
+		$admin_notice->set_simple_content( sprintf( esc_html__( '%1$sWarning!%2$s It appears that you have downgraded %1$sWooCommerce Subscriptions%2$s from %3$s to %4$s. Downgrading the plugin in this way may cause issues. Please update to %3$s or higher, or %5$sopen a new support ticket%6$s for further assistance. %7$sLearn more &raquo;%8$s', 'woocommerce-subscriptions' ),
 			'<strong>', '</strong>',
 			'<code>' . self::$active_version . '</code>',
 			'<code>' . WC_Subscriptions::$version . '</code>',

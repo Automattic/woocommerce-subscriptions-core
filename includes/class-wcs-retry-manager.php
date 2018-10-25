@@ -50,7 +50,7 @@ class WCS_Retry_Manager {
 		if ( self::is_retry_enabled() ) {
 			WCS_Retry_Email::init();
 
-			add_filter( 'init', array( self::store(), 'init' ) );
+			add_action( 'init', array( __CLASS__, 'init_store' ) );
 
 			add_filter( 'woocommerce_valid_order_statuses_for_payment', __CLASS__ . '::check_order_statuses_for_payment', 10, 2 );
 
@@ -364,6 +364,10 @@ class WCS_Retry_Manager {
 		if ( '0' !== $old_version && version_compare( $old_version, '2.4', '<' ) ) {
 			self::$background_migrator->schedule_repair();
 		}
+
+		if ( version_compare( $new_version, '2.4.0', '>' ) ) {
+			WCS_Retry_Migrator::set_needs_migration();
+		}
 	}
 
 	/**
@@ -373,6 +377,10 @@ class WCS_Retry_Manager {
 	 */
 	public static function store() {
 		if ( empty( self::$store ) ) {
+			if ( ! did_action( 'plugins_loaded' ) ) {
+				wcs_doing_it_wrong( __METHOD__, 'This method was called before the "plugins_loaded" hook. It applies a filter to the retry data store instantiated. For that to work, it should first be called after all plugins are loaded.', '2.4.1' );
+			}
+
 			$class       = self::get_store_class();
 			self::$store = new $class();
 		}
@@ -387,7 +395,7 @@ class WCS_Retry_Manager {
 	 */
 	protected static function get_store_class() {
 		$default_store_class = 'WCS_Retry_Database_Store';
-		if ( (bool) WCS_Retry_Stores::get_post_store()->get_retries( array( 'limit' => 1 ), 'ids' ) ) {
+		if ( WCS_Retry_Migrator::needs_migration() ) {
 			$default_store_class = 'WCS_Retry_Hybrid_Store';
 		}
 
@@ -414,5 +422,17 @@ class WCS_Retry_Manager {
 	 */
 	protected static function get_rules_class() {
 		return apply_filters( 'wcs_retry_rules_class', 'WCS_Retry_Rules' );
+	}
+
+	/**
+	 * Initialise the store object used to interface with retry data.
+	 *
+	 * Hooked onto 'init' to allow third-parties to use their own data store
+	 * and to ensure WordPress is fully loaded.
+	 *
+	 * @since 2.4.1
+	 */
+	public static function init_store() {
+		self::store()->init();
 	}
 }
