@@ -186,7 +186,7 @@ class WC_Subscriptions_Addresses {
 	 *
 	 * @param  array $crumbs
 	 * @return array
-	 * @since 2.5.0
+	 * @since 2.4.2
 	 */
 	public static function change_addresses_breadcrumb( $crumbs ) {
 		if ( isset( $_GET['subscription'] ) && is_wc_endpoint_url() && 'edit-address' === WC()->query->get_current_endpoint() ) {
