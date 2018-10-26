@@ -595,7 +595,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 *
 	 * @param  array $crumbs
 	 * @return array
-	 * @since 2.5.0
+	 * @since 2.4.2
 	 */
 	public static function change_payment_method_breadcrumb( $crumbs ) {
 
