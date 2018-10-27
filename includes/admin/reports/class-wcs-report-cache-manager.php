@@ -142,7 +142,7 @@ class WCS_Report_Cache_Manager {
 			if ( $this->use_large_site_cache() ) {
 
 				// Get the timestamp for 4 am in the site's timezone converted to the UTC equivalent.
-				$cache_update_timestamp = wc_string_to_timestamp( '4 am' ) - wc_timezone_offset();
+				$cache_update_timestamp = wc_string_to_timestamp( '4 am', current_time( 'timestamp' ) ) - wc_timezone_offset();
 
 				// PHP doesn't support a "next 4am" time format equivalent, so we need to manually handle getting 4am from earlier today (which will always happen when this is run after 4am and before midnight in the site's timezone)
 				if ( $cache_update_timestamp <= gmdate( 'U' ) ) {
