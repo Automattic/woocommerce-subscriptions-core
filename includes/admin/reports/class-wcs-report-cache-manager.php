@@ -171,7 +171,7 @@ class WCS_Report_Cache_Manager {
 
 					$cron_args = array( 'report_class' => $report_class );
 
-					if ( false !== ( $next_scheduled = as_next_scheduled_action( $this->cron_hook, $cron_args ) ) ) {
+					if ( false !== as_next_scheduled_action( $this->cron_hook, $cron_args ) ) {
 						as_unschedule_action( $this->cron_hook, $cron_args );
 					}
 
