@@ -2051,6 +2051,16 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
+	 * Check if the subscription has a payment gateway.
+	 *
+	 * @since 2.5.0
+	 * @return bool
+	 */
+	public function has_payment_gateway() {
+		return (bool) wc_get_payment_gateway_by_order( $this );
+	}
+
+	/**
 	 * The total sign-up fee for the subscription if any.
 	 *
 	 * @return int
