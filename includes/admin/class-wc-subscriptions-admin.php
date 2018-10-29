@@ -88,6 +88,9 @@ class WC_Subscriptions_Admin {
 
 		add_action( 'woocommerce_subscription_pre_update_status', __CLASS__ . '::check_customer_is_set', 10, 3 );
 
+		// Make appropriate changes when subscription is uncancelled from pending-cancel status
+		add_action( 'woocommerce_subscription_status_pending-cancel_to_active', __CLASS__ . '::recalculate_dates_for_active_status', 10 );
+
 		add_action( 'product_variation_linked', __CLASS__ . '::set_variation_meta_defaults_on_bulk_add' );
 
 		add_filter( 'woocommerce_settings_tabs_array', __CLASS__ . '::add_subscription_settings_tab', 50 );
@@ -182,6 +185,33 @@ class WC_Subscriptions_Admin {
 		$product_types['variable-subscription'] = __( 'Variable subscription', 'woocommerce-subscriptions' );
 
 		return $product_types;
+	}
+
+	/**
+	 * Recalculate and reset dates when subscription transitions to active status
+	 *
+	 * @param WC_Subscription $subscription Subscription for which the dates are to be recalculated
+	 * @since 2.5
+	 */
+	public static function recalculate_dates_for_active_status( $subscription ) {
+		// Recalculate and set next payment date
+		$stored_next_payment = $subscription->get_time( 'next_payment' );
+
+		// Force set cancelled_date and end date to 0 temporarily so that next_payment_date can be calculated properly
+		// This next_payment_date will be the end of prepaid term that will be picked by action scheduler
+		$subscription->delete_date( 'cancelled' );
+		$subscription->delete_date( 'end' );
+
+		$calculated_next_payment = $subscription->calculate_date( 'next_payment' );
+
+		if ( $calculated_next_payment > 0 ) {
+			$subscription->update_dates( array( 'next_payment' => $calculated_next_payment ) );
+		} elseif ( $stored_next_payment < gmdate( 'U' ) ) { // delete the stored date if it's in the past as we're not updating it (the calculated next payment date is 0 or none)
+			$subscription->delete_date( 'next_payment' );
+		}
+
+		// Trial end date doesn't change at all
+		wcs_make_user_active( $subscription->get_user_id() );
 	}
 
 	/**

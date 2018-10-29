@@ -327,7 +327,7 @@ class WC_Subscription extends WC_Order {
 			case 'active' :
 				if ( $this->payment_method_supports( 'subscription_reactivation' ) && $this->has_status( 'on-hold' ) ) {
 					$can_be_updated = true;
-				} elseif ( $this->has_status( 'pending' ) ) {
+				} elseif ( $this->has_status( array( 'pending', 'pending-cancel' ) ) ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
