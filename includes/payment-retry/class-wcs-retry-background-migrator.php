@@ -43,8 +43,10 @@ class WCS_Retry_Background_Migrator extends WCS_Background_Upgrader {
 
 	/**
 	 * construct.
+	 *
+	 * @param WC_Logger_Interface $logger The WC_Logger instance.
 	 */
-	public function __construct() {
+	public function __construct( WC_Logger_Interface $logger ) {
 		$this->scheduled_hook = 'wcs_retries_migration_hook';
 		$this->time_limit     = 30;
 
@@ -53,6 +55,9 @@ class WCS_Retry_Background_Migrator extends WCS_Background_Upgrader {
 
 		$migrator_class = apply_filters( 'wcs_retry_retry_migrator_class', 'WCS_Retry_Migrator' );
 		$this->migrator = new $migrator_class( $this->source_store, $this->destination_store, new WC_Logger() );
+
+		$this->log_handle = 'wcs-retries-background-migrator';
+		$this->logger     = $logger;
 	}
 
 	/**
@@ -70,11 +75,31 @@ class WCS_Retry_Background_Migrator extends WCS_Background_Upgrader {
 	 *
 	 * @param WCS_Retry $retry The item to update.
 	 *
-	 * @return int
+	 * @return int|null
 	 * @since 2.4
 	 */
 	protected function update_item( $retry ) {
-		return $this->migrator->migrate_entry( $retry->get_id() );
+		try {
+			if ( ! is_a( $retry, 'WCS_Retry' ) ) {
+				throw new Exception( 'The $retry parameter must be a valid WCS_Retry instance.' );
+			}
+
+			$new_item_id = $this->migrator->migrate_entry( $retry->get_id() );
+
+			$this->log( sprintf( 'Payment retry ID: %d, has been migrated to custom table with new ID: %d.', $retry->get_id(), $new_item_id ) );
+
+			return $new_item_id;
+		} catch ( Exception $e ) {
+			if ( is_object( $retry ) ) {
+				$retry_description = get_class( $retry ) . '(id=' . wcs_get_objects_property( $retry, 'id' ) . ')';
+			} else {
+				$retry_description = wp_json_encode( $retry );
+			}
+
+			$this->log( sprintf( '--- Exception caught migrating Payment retry %s - exception message: %s ---', $retry_description, $e->getMessage() ) );
+
+			return null;
+		}
 	}
 
 	/**
