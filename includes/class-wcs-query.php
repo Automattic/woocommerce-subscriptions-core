@@ -48,8 +48,7 @@ class WCS_Query extends WC_Query {
 		);
 		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
 			$this->query_vars['subscriptions'] = get_option( 'woocommerce_myaccount_subscriptions_endpoint', 'subscriptions' );
-			$this->query_vars['subscription-payment-method'] = get_option( 'woocommerce_myaccount_subscription_payme
-nt_method_endpoint', 'subscription-payment-method' );
+			$this->query_vars['subscription-payment-method'] = get_option( 'woocommerce_myaccount_subscription_payment_method_endpoint', 'subscription-payment-method' );
 		}
 	}
 
