@@ -2385,6 +2385,17 @@ class WC_Subscription extends WC_Order {
 		return $this->valid_date_types;
 	}
 
+	/**
+	 * Generates a URL to add or change the subscription's payment method from the my account page.
+	 *
+	 * @return string
+	 * @since 2.5.0
+	 */
+	public function get_change_payment_method_url() {
+		$change_payment_method_url = wc_get_endpoint_url( 'subscription-payment-method', $this->get_id(), wc_get_page_permalink( 'myaccount' ) );
+		return apply_filters( 'wcs_get_change_payment_method_url', $change_payment_method_url, $this->get_id() );
+	}
+
 	/************************
 	 * WC_Order overrides
 	 *
