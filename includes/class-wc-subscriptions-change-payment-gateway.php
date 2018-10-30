@@ -308,6 +308,11 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 */
 	public static function change_payment_method_button( $actions, $subscription ) {
 
+		// Don't add change method action if automatic payments are disabled.
+		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+			return $actions;
+		}
+
 		if ( $subscription->can_be_updated_to( 'new-payment-method' ) ) {
 
 			if ( $subscription->has_payment_gateway() ) {
@@ -632,6 +637,11 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 */
 	public static function can_subscription_be_updated_to_new_payment_method( $subscription_can_be_changed, $subscription ) {
 
+		// Don't allow if automatic payments are disabled.
+		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+			return false;
+		}
+
 		// Don't allow if no gateways support changing methods.
 		if ( ! WC_Subscriptions_Payment_Gateways::one_gateway_supports( 'subscription_payment_method_change_customer' ) ) {
 			return false;
@@ -707,10 +717,17 @@ class WC_Subscriptions_Change_Payment_Gateway {
 				esc_url( $subscription->get_view_order_url() ),
 			);
 
-			$crumbs[3] = array(
-				_x( 'Change Payment Method', 'the page title of the change payment method form', 'woocommerce-subscriptions' ),
-				'',
-			);
+			if ( $subscription->has_payment_gateway() ) {
+				$crumbs[3] = array(
+					_x( 'Change Payment Method', 'the page title of the change payment method form', 'woocommerce-subscriptions' ),
+					'',
+				);
+			} else {
+				$crumbs[3] = array(
+					_x( 'Add Payment Method', 'the page title of the add payment method form', 'woocommerce-subscriptions' ),
+					'',
+				);
+			}
 		}
 
 		return $crumbs;

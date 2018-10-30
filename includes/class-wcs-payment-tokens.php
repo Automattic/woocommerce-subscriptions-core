@@ -76,9 +76,9 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 	 *
 	 * @param  WC_Payment_Token $payment_token Payment token object.
 	 * @return array subscription posts
-	 * @since  2.2.7
+	 * @since  2.5.0
 	 */
-	public static function get_subscriptions_by_token( $payment_token ) {
+	public static function get_subscriptions_from_token( $payment_token ) {
 
 		$meta_query = array(
 			array(
@@ -93,21 +93,27 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 				'value' => $payment_token->get_token(),
 			),
 		);
-		$subscription_ids = get_posts( array(
+		$subscription_posts = get_posts( array(
 			'post_type'      => 'shop_subscription',
 			'post_status'    => array( 'wc-pending', 'wc-active', 'wc-on-hold' ),
 			'meta_query'     => $meta_query,
 			'posts_per_page' => -1,
-			'fields'         => 'ids',
 			'post__in'       => WCS_Customer_Store::instance()->get_users_subscription_ids( $payment_token->get_user_id() ),
 		) );
+
+		if ( has_filter( 'woocommerce_subscriptions_by_payment_token' ) ) {
+			wcs_deprecated_function( 'The "woocommerce_subscriptions_by_payment_token" hook should no longer be used. It previously filtered post objects and in moving to CRUD and Subscription APIs the "woocommerce_subscriptions_by_payment_token"', '2.5.0', 'woocommerce_subscriptions_with_payment_token' );
+
+			$subscription_posts = apply_filters( 'woocommerce_subscriptions_by_payment_token', $subscription_posts );
+			$subscription_ids   = array_unique( wp_list_pluck( $subscription_posts, 'ID' ) );
+		}
 
 		$user_subscriptions = array();
 		foreach ( $subscription_ids as $subscription_id ) {
 			$user_subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
 		}
 
-		return apply_filters( 'woocommerce_subscriptions_by_payment_token', $user_subscriptions, $payment_token );
+		return apply_filters( 'woocommerce_subscriptions_from_payment_token', $user_subscriptions, $payment_token );
 	}
 
 	/**

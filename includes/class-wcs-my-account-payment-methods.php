@@ -39,7 +39,7 @@ class WCS_My_Account_Payment_Methods {
 
 		if ( $payment_token instanceof WC_Payment_Token && isset( $payment_token_data['actions']['delete']['url'] ) ) {
 
-			if ( 0 < count( WCS_Payment_Tokens::get_subscriptions_by_token( $payment_token ) ) ) {
+			if ( 0 < count( WCS_Payment_Tokens::get_subscriptions_from_token( $payment_token ) ) ) {
 				if ( WCS_Payment_Tokens::customer_has_alternative_token( $payment_token ) ) {
 					$delete_subscription_token_args = array(
 						'delete_subscription_token' => $payment_token->get_id(),
@@ -82,7 +82,7 @@ class WCS_My_Account_Payment_Methods {
 			return;
 		}
 
-		$subscriptions = WCS_Payment_Tokens::get_subscriptions_by_token( $deleted_token );
+		$subscriptions = WCS_Payment_Tokens::get_subscriptions_from_token( $deleted_token );
 
 		if ( empty( $subscriptions ) ) {
 			return;
@@ -140,7 +140,7 @@ class WCS_My_Account_Payment_Methods {
 
 		// Check if there are subscriptions for one of the customer's other tokens.
 		foreach ( $customer_tokens as $token ) {
-			if ( count( WCS_Payment_Tokens::get_subscriptions_by_token( $token ) ) > 0 ) {
+			if ( count( WCS_Payment_Tokens::get_subscriptions_from_token( $token ) ) > 0 ) {
 				$display_notice = true;
 				break;
 			}
@@ -188,7 +188,7 @@ class WCS_My_Account_Payment_Methods {
 		unset( $tokens[ $default_token_id ] );
 
 		foreach ( $tokens as $old_token ) {
-			foreach ( WCS_Payment_Tokens::get_subscriptions_by_token( $old_token ) as $subscription ) {
+			foreach ( WCS_Payment_Tokens::get_subscriptions_from_token( $old_token ) as $subscription ) {
 				if ( ! empty( $subscription ) && WCS_Payment_Tokens::update_subscription_token( $subscription, $default_token, $old_token ) ) {
 					$subscription->add_order_note( sprintf( _x( 'Payment method meta updated after customer changed their default token and opted to update their subscriptions. Payment meta changed from %1$s to %2$s', 'used in subscription note', 'woocommerce-subscriptions' ), $old_token->get_token(), $default_token->get_token() ) );
 				}
@@ -207,8 +207,8 @@ class WCS_My_Account_Payment_Methods {
 	 * @deprecated 2.5.0
 	 */
 	public static function get_subscriptions_by_token( $payment_token ) {
-		_deprecated_function( __METHOD__, '2.5.0', 'WCS_Payment_Tokens::get_subscriptions_by_token()' );
-		return WCS_Payment_Tokens::get_subscriptions_by_token( $payment_token );
+		_deprecated_function( __METHOD__, '2.5.0', 'WCS_Payment_Tokens::get_subscriptions_from_token()' );
+		return WCS_Payment_Tokens::get_subscriptions_from_token( $payment_token );
 	}
 
 	/**
@@ -219,7 +219,7 @@ class WCS_My_Account_Payment_Methods {
 	 */
 	public static function get_customer_tokens( $gateway_id = '', $customer_id = '' ) {
 		_deprecated_function( __METHOD__, '2.5.0', 'WCS_Payment_Tokens::get_customer_tokens()' );
-		return WCS_Payment_Tokens::get_customer_tokens( $gateway_id, $customer_id );
+		return WCS_Payment_Tokens::get_customer_tokens( $customer_id, $gateway_id );
 	}
 
 	/**
