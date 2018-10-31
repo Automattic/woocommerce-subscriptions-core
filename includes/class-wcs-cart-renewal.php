@@ -1288,11 +1288,11 @@ class WCS_Cart_Renewal {
 		$coupons = array();
 
 		foreach ( $coupon_line_items as $coupon_item ) {
-			$coupon      = new WC_Coupon( $coupon_item['name'] );
-			$coupon_type = $coupon->get_discount_type();
+			$coupon = new WC_Coupon( $coupon_item['name'] );
 
 			// If the coupon still exists we can use the existing/available coupon properties
 			if ( $coupon->get_id() > 0 ) {
+				$coupon_type = $coupon->get_discount_type();
 
 				// But we only want to handle recurring coupons that have been applied to the order
 				if ( ! in_array( $coupon_type, array( 'recurring_percent', 'recurring_fee' ) ) ) {
