@@ -228,6 +228,11 @@ class WCS_PayPal {
 						// Store the billing agreement ID on the order and subscriptions
 						wcs_set_paypal_id( $order, $billing_agreement_response->get_billing_agreement_id() );
 
+						// Update payment method on all active subscriptions?
+						if ( wcs_is_subscription( $order ) && WC_Subscriptions_Change_Payment_Gateway::will_subscription_update_all_payment_methods( $order ) ) {
+							WC_Subscriptions_Change_Payment_Gateway::update_all_payment_methods_from_subscription( $order, $payment_method->id );
+						}
+
 						foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'any' ) ) as $subscription ) {
 							$subscription->set_payment_method( $payment_method );
 							wcs_set_paypal_id( $subscription, $billing_agreement_response->get_billing_agreement_id() ); // Also saves the subscription
