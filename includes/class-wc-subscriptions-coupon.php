@@ -188,7 +188,7 @@ class WC_Subscriptions_Coupon {
 		$coupon_type = wcs_get_coupon_property( $coupon, 'discount_type' );
 
 		// Only deal with subscriptions coupon types which apply to cart items
-		if ( ! in_array( $coupon_type, array( 'recurring_fee', 'recurring_percent', 'sign_up_fee', 'sign_up_fee_percent', 'renewal_fee', 'renewal_percent', 'renewal_cart' ) ) ) {
+		if ( ! in_array( $coupon_type, array( 'recurring_fee', 'recurring_percent', 'sign_up_fee', 'sign_up_fee_percent', 'renewal_fee', 'renewal_percent', 'renewal_cart', 'initial_cart' ) ) ) {
 			return $discount;
 		}
 
@@ -227,7 +227,7 @@ class WC_Subscriptions_Coupon {
 			// If all items have a free trial we don't need to apply recurring coupons to the initial total
 			if ( $is_switch || ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
 
-				if ( 'recurring_fee' == $coupon_type ) {
+				if ( 'recurring_fee' === $coupon_type || 'initial_cart' === $coupon_type ) {
 					$apply_initial_coupon = true;
 				}
 
@@ -437,7 +437,7 @@ class WC_Subscriptions_Coupon {
 		$coupon_type        = wcs_get_coupon_property( $coupon, 'discount_type' );
 
 		// ignore non-subscription coupons
-		if ( ! in_array( $coupon_type, array( 'recurring_fee', 'sign_up_fee', 'recurring_percent', 'sign_up_fee_percent', 'renewal_fee', 'renewal_percent', 'renewal_cart' ) ) ) {
+		if ( ! in_array( $coupon_type, array( 'recurring_fee', 'sign_up_fee', 'recurring_percent', 'sign_up_fee_percent', 'renewal_fee', 'renewal_percent', 'renewal_cart', 'initial_cart' ) ) ) {
 
 			// but make sure there is actually something for the coupon to be applied to (i.e. not a free trial)
 			if ( ( wcs_cart_contains_renewal() || WC_Subscriptions_Cart::cart_contains_subscription() ) && 0 == WC()->cart->subtotal ) {
@@ -597,7 +597,7 @@ class WC_Subscriptions_Coupon {
 	public static function filter_product_coupon_types( $product_coupon_types ) {
 
 		if ( is_array( $product_coupon_types ) ) {
-			$product_coupon_types = array_merge( $product_coupon_types, array( 'recurring_fee', 'recurring_percent', 'sign_up_fee', 'sign_up_fee_percent', 'renewal_fee', 'renewal_percent', 'renewal_cart' ) );
+			$product_coupon_types = array_merge( $product_coupon_types, array( 'recurring_fee', 'recurring_percent', 'sign_up_fee', 'sign_up_fee_percent', 'renewal_fee', 'renewal_percent', 'renewal_cart', 'initial_cart' ) );
 		}
 
 		return $product_coupon_types;
