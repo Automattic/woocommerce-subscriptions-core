@@ -59,10 +59,15 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 
 			$redirect = get_permalink( wc_get_page_id( 'myaccount' ) );
 		} else {
+			$subscriptions = wcs_get_subscriptions_for_order( $order );
+			do_action( 'wcs_before_parent_order_setup_cart', $subscriptions, $order );
+
 			// Add the existing order items to the cart
 			$this->setup_cart( $order, array(
 				'order_id' => $order_id,
 			) );
+
+			do_action( 'wcs_after_parent_order_setup_cart', $subscriptions, $order );
 
 			// Store order's ID in the session so it can be re-used after payment
 			WC()->session->set( 'order_awaiting_payment', $order_id );
