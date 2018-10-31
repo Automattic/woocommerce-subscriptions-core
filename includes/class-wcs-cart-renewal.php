@@ -1257,24 +1257,36 @@ class WCS_Cart_Renewal {
 	public function setup_discounts( $order ) {
 		$coupon_items   = $order->get_items( 'coupon' );
 		$order_discount = $order->get_total_discount();
+		$coupons        = array();
 
-		// Add any used coupon discounts to the cart (as best we can) using our pseudo renewal coupons
+		// Add any used coupon discounts to the cart (as best we can) using our pseudo renewal coupons if necessary.
 		if ( ! empty( $coupon_items ) ) {
-			$this->apply_coupon_line_items( $order, $coupon_items );
-		// If there are no coupons but there is still a discount (i.e. it might have been manually added), we need to account for that as well
-		} elseif ( ! empty( $order_discount ) ) {
-			$coupon = $this->get_pseudo_coupon( $order_discount );
+			$coupons += $this->get_line_item_coupons( $coupon_items );
+
+			// Deduct the discount amount being applied by coupons to see if there are manual discounts we need to apply.
+			$order_discount -= array_sum( wc_list_pluck( $coupon_items, 'get_discount' ) );
+		}
+
+		// If there is still a discount (i.e. it might have been manually added), we need to account for that as well
+		if ( 0 < $order_discount ) {
+			$coupons[] = $this->get_pseudo_coupon( $order_discount );
+		}
+
+		// Apply all the coupons
+		foreach ( $coupons as $coupon ) {
 			$this->apply_order_coupon( $order, $coupon );
 		}
 	}
 
 	/**
-	 * Copy coupon line items from an order into the cart.
+	 * Create coupon objects from coupon line items.
 	 *
-	 * @param WC_Order $order The order to which the coupon line items belong.
 	 * @param array $coupon_line_items The coupon line items to apply to the cart.
+	 * @return array $coupons
 	 */
-	protected function apply_coupon_line_items( $order, $coupon_line_items ) {
+	protected function get_line_item_coupons( $coupon_line_items ) {
+		$coupons = array();
+
 		foreach ( $coupon_line_items as $coupon_item ) {
 			$coupon      = new WC_Coupon( $coupon_item['name'] );
 			$coupon_type = $coupon->get_discount_type();
@@ -1296,8 +1308,10 @@ class WCS_Cart_Renewal {
 				$coupon = $this->get_pseudo_coupon( $coupon_item->get_discount() );
 			}
 
-			$this->apply_order_coupon( $order, $coupon );
+			$coupons[] = $coupon;
 		}
+
+		return $coupons;
 	}
 
 	/**
