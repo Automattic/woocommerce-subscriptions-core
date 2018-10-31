@@ -349,7 +349,7 @@ class WC_Subscriptions_Cart {
 		unset( WC()->session->wcs_shipping_methods );
 
 		// If there is no sign-up fee and a free trial, and no products being purchased with the subscription, we need to zero the fees for the first billing period
-		$remove_fees_from_cart = 0 == self::get_cart_subscription_sign_up_fee() && self::all_cart_items_have_free_trial();
+		$remove_fees_from_cart = ( 0 == self::get_cart_subscription_sign_up_fee() && self::all_cart_items_have_free_trial() );
 
 		/**
 		 * Allow third-parties to override whether the fees will be removed from the initial order cart.
