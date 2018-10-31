@@ -1306,6 +1306,7 @@ class WCS_Cart_Renewal {
 			} else {
 				// If the coupon no longer exists, get a pseudo coupon for the discounting amount.
 				$coupon = $this->get_pseudo_coupon( $coupon_item->get_discount() );
+				$coupon->set_code( $coupon_item['code'] );
 			}
 
 			$coupons[] = $coupon;
