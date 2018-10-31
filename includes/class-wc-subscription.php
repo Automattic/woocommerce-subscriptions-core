@@ -710,8 +710,8 @@ class WC_Subscription extends WC_Order {
 			}
 
 			// Store the payment counts to avoid hitting the database again
-			$this->cached_payment_count['completed'][ $order_type ] = apply_filters( 'woocommerce_subscription_payment_completed_count', $completed_payment_count, $this, $order_type );
-			$this->cached_payment_count['refunded'][ $order_type ] = apply_filters( 'woocommerce_subscription_payment_refunded_count', $refunded_payment_count, $this, $order_type );
+			$this->cached_payment_count['completed'][ $order_type ] = apply_filters( "woocommerce_subscription_{$order_type}_payment_completed_count", $completed_payment_count, $this, $order_type );
+			$this->cached_payment_count['refunded'][ $order_type ] = apply_filters( 'woocommerce_subscription_{$order_type}_payment_refunded_count', $refunded_payment_count, $this, $order_type );
 
 			/**
 			 * Apply deprecated completed payment count filter if parent and renewals have been counted.
