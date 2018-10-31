@@ -681,6 +681,7 @@ class WC_Subscriptions_Coupon {
 				'renewal_percent' => __( 'Renewal % discount', 'woocommerce-subscriptions' ),
 				'renewal_fee'     => __( 'Renewal product discount', 'woocommerce-subscriptions' ),
 				'renewal_cart'    => __( 'Renewal cart discount', 'woocommerce-subscriptions' ),
+				'initial_cart'    => __( 'Initial payment discount', 'woocommerce-subscriptions' ),
 			)
 		);
 	}
@@ -694,10 +695,14 @@ class WC_Subscriptions_Coupon {
 	 * @since 2.2.8
 	 */
 	public static function get_pseudo_coupon_label( $label, $coupon ) {
-
 		// If the coupon is one of our pseudo coupons, rather than displaying "Coupon: discount_renewal" display a nicer label.
-		if ( 'renewal_cart' === wcs_get_coupon_property( $coupon, 'discount_type' ) ) {
-			$label = esc_html( __( 'Renewal Discount', 'woocommerce-subscriptions' ) );
+		switch ( $coupon->get_discount_type() ) {
+			case 'renewal_cart':
+				$label = esc_html( __( 'Renewal Discount', 'woocommerce-subscriptions' ) );
+				break;
+			case 'initial_cart':
+				$label = esc_html( __( 'Discount', 'woocommerce-subscriptions' ) );
+				break;
 		}
 
 		return $label;

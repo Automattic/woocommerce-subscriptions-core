@@ -1281,13 +1281,16 @@ class WCS_Cart_Renewal {
 
 			// If the coupon still exists we can use the existing/available coupon properties
 			if ( $coupon->get_id() > 0 ) {
+
 				// But we only want to handle recurring coupons that have been applied to the order
 				if ( ! in_array( $coupon_type, array( 'recurring_percent', 'recurring_fee' ) ) ) {
 					continue;
 				}
 
-				// Set the coupon type to be a renewal equivalent for correct validation and calculations
-				$coupon->set_discount_type( str_replace( 'recurring', 'renewal', $coupon_type ) );
+				// If this is a renewal cart, set the coupon type to be a renewal equivalent for correct validation and calculations
+				if ( 'subscription_renewal' === $this->cart_item_key ) {
+					$coupon->set_discount_type( str_replace( 'recurring', 'renewal', $coupon_type ) );
+				}
 			} else {
 				// If the coupon no longer exists, get a pseudo coupon for the discounting amount.
 				$coupon = $this->get_pseudo_coupon( $coupon_item->get_discount() );
@@ -1304,10 +1307,18 @@ class WCS_Cart_Renewal {
 	 * @return WC_Coupon
 	 */
 	protected function get_pseudo_coupon( $discount ) {
-		$coupon = new WC_Coupon( 'discount_renewal' );
+		$cart_types = array(
+			'subscription_initial_payment' => 'initial',
+			'subscription_renewal'         => 'renewal',
+		);
 
-		// Apply our cart style pseudo coupon type and the set the amount
-		$coupon->set_discount_type( 'renewal_cart' );
+		$cart_type = $cart_types[ $this->cart_item_key ];
+
+		// Generate a unique coupon code from the cart type.
+		$coupon = new WC_Coupon( "discount_{$cart_type}" );
+
+		// Apply our cart style pseudo coupon type and the set the amount.
+		$coupon->set_discount_type( "{$cart_type}_cart" );
 		$coupon->set_amount( $discount );
 
 		return $coupon;
