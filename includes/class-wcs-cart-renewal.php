@@ -1304,6 +1304,11 @@ class WCS_Cart_Renewal {
 					$coupon->set_discount_type( str_replace( 'recurring', 'renewal', $coupon_type ) );
 				}
 			} else {
+				// If the coupon no longer exists, we shouldn't apply it to initial payment carts.
+				if ( 'subscription_initial_payment' === $this->cart_item_key ) {
+					continue;
+				}
+
 				// If the coupon no longer exists, get a pseudo coupon for the discounting amount.
 				$coupon = $this->get_pseudo_coupon( $coupon_item->get_discount() );
 				$coupon->set_code( $coupon_item['code'] );
