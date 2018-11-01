@@ -144,15 +144,7 @@ class WCS_Report_Cache_Manager {
 			// On large sites, we want to run the cache update once at 4am in the site's timezone
 			if ( $this->use_large_site_cache() ) {
 
-				$four_am_site_time = new WC_DateTime( '4 am', wcs_get_sites_timezone() );
-
-				// Convert to a UTC timestamp for scheduling
-				$cache_update_timestamp = $four_am_site_time->getTimestamp();
-
-				// PHP doesn't support a "next 4am" time format equivalent, so we need to manually handle getting 4am from earlier today (which will always happen when this is run after 4am and before midnight in the site's timezone)
-				if ( $cache_update_timestamp <= gmdate( 'U' ) ) {
-					$cache_update_timestamp += DAY_IN_SECONDS;
-				}
+				$cache_update_timestamp = $this->get_large_site_cache_update_timestamp();
 
 				// Schedule one update event for each class to avoid updating cache more than once for the same class for different events
 				foreach ( $this->reports_to_update as $index => $report_class ) {
@@ -351,5 +343,22 @@ class WCS_Report_Cache_Manager {
 		$data = array_merge( $data, $new_data );
 
 		return $data;
+	}
+
+	/**
+	 * Get the scheduled update cache time for large sites.
+	 *
+	 * @return int The timestamp of the next occurring 4 am in the site's timezone converted to UTC.
+	 */
+	protected function get_large_site_cache_update_timestamp() {
+		// Get the timestamp for 4 am in the site's timezone converted to the UTC equivalent.
+		$cache_update_timestamp = wc_string_to_timestamp( '4 am', current_time( 'timestamp' ) ) - wc_timezone_offset();
+
+		// PHP doesn't support a "next 4am" time format equivalent, so we need to manually handle getting 4am from earlier today (which will always happen when this is run after 4am and before midnight in the site's timezone)
+		if ( $cache_update_timestamp <= gmdate( 'U' ) ) {
+			$cache_update_timestamp += DAY_IN_SECONDS;
+		}
+
+		return $cache_update_timestamp;
 	}
 }

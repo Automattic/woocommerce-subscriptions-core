@@ -159,6 +159,17 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		// If the update routine didn't manage to cover subscriptions, we need to use the value stored as post meta until our own update finishes.
 		if ( version_compare( get_option( 'woocommerce_db_version' ), '3.5.0', '>=' ) && 1 == $post_object->post_author && get_option( 'wcs_subscription_post_author_upgrade_is_scheduled', false ) ) {
 			$props_to_set['customer_id'] = get_post_meta( $subscription->get_id(), '_customer_user', true );
+		} else {
+			/**
+			 * WC 3.5.0 and our 2.4.0 post author upgrade scripts didn't account for subscriptions created manually by admin users with a user ID not equal to 1.
+			 * This resulted in those subscription post author columns not being updated and so linked to the admin user who created them, not the customer.
+			 *
+			 * Until a permanent fix is found, revert to the previous behavior of getting the customer user from post meta.
+			 * This will be eventually removed.
+			 *
+			 * @see https://github.com/Prospress/woocommerce-subscriptions/issues/3036
+			 */
+			$props_to_set['customer_id'] = get_post_meta( $subscription->get_id(), '_customer_user', true );
 		}
 
 		$subscription->update_dates( $dates_to_set );

@@ -496,7 +496,7 @@ class WC_Subscriptions_Coupon {
 			$error_message = sprintf( __( 'Sorry, "%s" can only be applied to subscription parent orders which contain a product with signup fees.', 'woocommerce-subscriptions' ), wcs_get_coupon_property( $coupon, 'code' ) );
 		// Only recurring coupons can be applied to subscriptions
 		} elseif ( ! in_array( $coupon_type, array( 'recurring_fee', 'recurring_percent' ) ) && wcs_is_subscription( $order ) ) {
-			$error_message = __( 'Sorry, only recurring coupons can only be applied to subscriptions.', 'woocommerce-subscriptions' );
+			$error_message = __( 'Sorry, only recurring coupons can be applied to subscriptions.', 'woocommerce-subscriptions' );
 		}
 
 		if ( ! empty( $error_message ) ) {

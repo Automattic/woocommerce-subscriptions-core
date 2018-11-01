@@ -47,7 +47,7 @@ function wcs_can_user_renew_early( $subscription, $user_id = 0 ) {
 		$reason = 'not_a_subscription';
 	} elseif ( ! $subscription->has_status( array( 'active' ) ) ) {
 		$reason = 'subscription_not_active';
-	} elseif ( 0.0 === $subscription->get_total() ) {
+	} elseif ( 0.0 === floatval( $subscription->get_total() ) ) {
 		$reason = 'subscription_zero_total';
 	} elseif ( $subscription->get_time( 'trial_end' ) > gmdate( 'U' ) ) {
 		$reason = 'subscription_still_in_free_trial';
