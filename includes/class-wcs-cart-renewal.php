@@ -1255,24 +1255,25 @@ class WCS_Cart_Renewal {
 	 * @since 2.4.3
 	 */
 	public function setup_discounts( $order ) {
-		$coupon_items   = $order->get_items( 'coupon' );
 		$order_discount = $order->get_total_discount();
-		$coupons        = array();
 
-		// Add any used coupon discounts to the cart (as best we can) using our pseudo renewal coupons if necessary.
-		if ( ! empty( $coupon_items ) ) {
-			$coupons += $this->get_line_item_coupons( $coupon_items );
-
-			// Deduct the discount amount being applied by coupons to see if there are manual discounts we need to apply.
-			$order_discount -= array_sum( wc_list_pluck( $coupon_items, 'get_discount' ) );
+		if ( empty( $order_discount ) ) {
+			return;
 		}
 
-		// If there is still a discount (i.e. it might have been manually added), we need to account for that as well
-		if ( 0 < $order_discount ) {
+		$coupon_items          = $order->get_items( 'coupon' );
+		$total_coupon_discount = floatval( array_sum( wc_list_pluck( $coupon_items, 'get_discount' ) ) );
+		$coupons               = array();
+
+		// If the order total discount is different from the discount applied from coupons we have a manually applied discount.
+		$order_has_manual_discount = $order_discount !== $total_coupon_discount;
+
+		if ( $order_has_manual_discount ) {
 			$coupons[] = $this->get_pseudo_coupon( $order_discount );
+		} elseif ( ! empty( $coupon_items ) ) {
+			$coupons = $this->get_line_item_coupons( $coupon_items );
 		}
 
-		// Apply all the coupons
 		foreach ( $coupons as $coupon ) {
 			$this->apply_order_coupon( $order, $coupon );
 		}
