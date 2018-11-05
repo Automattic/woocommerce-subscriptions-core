@@ -75,12 +75,18 @@ class WCS_Report_Dashboard {
 		?>
 		<li class="signup-count">
 			<a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date' ) ); ?>">
-				<?php printf( wp_kses_post( _n( '<strong>%s signup</strong> subscription signups this month', '<strong>%s signups</strong> subscription signups this month', $signup_count, 'woocommerce-subscriptions' ) ), esc_html( $signup_count ) ); ?>
+				<?php
+				// translators: %%1$s and %%2$s are opening and closing strong tags, respectively.
+				printf( wp_kses_post( sprintf( _n( '%%1$s%s signup%%2$s subscription signups this month', '%%1$s%s signups%%2$s subscription signups this month', $signup_count, 'woocommerce-subscriptions' ) ), '<strong>', '</strong>' ), esc_html( $signup_count ) );
+				?>
 			</a>
 		</li>
 		<li class="renewal-count">
 			<a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date' ) ); ?>">
-				<?php printf( wp_kses_post( _n( '<strong>%s renewal</strong> subscription renewals this month', '<strong>%s renewals</strong> subscription renewals this month', $renewal_count, 'woocommerce-subscriptions' ) ), esc_html( $renewal_count ) ); ?>
+				<?php
+				// translators: %%1$s and %%2$s are opening and closing strong tags, respectively.
+				printf( wp_kses_post( sprintf( _n( '%%1$s%s renewal%%2$s subscription renewals this month', '%%1$s%s renewals%%2$s subscription renewals this month', $renewal_count, 'woocommerce-subscriptions' ) ), '<strong>', '</strong>' ), esc_html( $renewal_count ) );
+				?>
 			</a>
 		</li>
 		<?php
