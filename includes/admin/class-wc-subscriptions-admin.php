@@ -147,9 +147,10 @@ class WC_Subscriptions_Admin {
 
 		if ( wc_clean( $_GET['action'] ) === 'clear_transients' ) {
 			$transients_to_delete = array(
-				'wc_report_subscription_by_product',
-				'wc_report_subscription_by_customer',
-				'wc_report_subscription_events_by_date',
+				'wcs_report_subscription_by_product',
+				'wcs_report_subscription_by_customer',
+				'wcs_report_subscription_events_by_date',
+				'wcs_report_upcoming_recurring_revenue',
 			);
 
 			// Get all related order and subscription ranges transients
