@@ -690,16 +690,17 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 	}
 
 	/**
-	* Get a renewal order associated with a subscription that has a specified transaction id.
-	*
-	* @param WC_Subscription object $subscription
-	* @param int $transaction_id Id from transaction details as provided by PayPal
-	* @return WC_Order|null If order with that transaction id, WC_Order object, otherwise null
-	* @since 2.1
-	*/
-	protected function get_renewal_order_by_transaction_id( $subscription, $transaction_id ) {
-
-		$orders = $subscription->get_related_orders( 'all', 'renewal' );
+	 * Get an order associated with a subscription that has a specified transaction id.
+	 *
+	 * @param WC_Subscription object $subscription
+	 * @param int $transaction_id Id from transaction details as provided by PayPal
+	 * @param array|string Order type we want. Defaults to all.
+	 *
+	 * @return WC_Order|null If order with that transaction id, WC_Order object, otherwise null
+	 * @since 2.4.3
+	 */
+	protected function get_order_by_transaction_id( $subscription, $transaction_id, $order_types = 'all' ) {
+		$orders        = $subscription->get_related_orders( 'all', $order_types );
 		$renewal_order = null;
 
 		foreach ( $orders as $order ) {
@@ -710,5 +711,30 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 		}
 
 		return $renewal_order;
+	}
+
+	/**
+	* Get a renewal order associated with a subscription that has a specified transaction id.
+	*
+	* @param WC_Subscription object $subscription
+	* @param int $transaction_id Id from transaction details as provided by PayPal
+	* @return WC_Order|null If order with that transaction id, WC_Order object, otherwise null
+	* @since 2.1
+	*/
+	protected function get_renewal_order_by_transaction_id( $subscription, $transaction_id ) {
+		return self::get_order_by_transaction_id( $subscription, $transaction_id, 'renewal' );
+	}
+
+	/**
+	 * Get a renewal order associated with a subscription that has a specified transaction id.
+	 *
+	 * @param WC_Subscription object $subscription
+	 * @param int $transaction_id Id from transaction details as provided by PayPal
+	 *
+	 * @return WC_Order|null If order with that transaction id, WC_Order object, otherwise null
+	 * @since 2.4.3
+	 */
+	protected function get_parent_order_by_transaction_id( $subscription, $transaction_id ) {
+		return self::get_order_by_transaction_id( $subscription, $transaction_id, 'parent' );
 	}
 }
