@@ -302,7 +302,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 						add_action( 'woocommerce_subscription_on-hold_paypal', 'WCS_PayPal_Status_Manager::suspend_subscription' );
 					}
 
-					// Get s renewals order based on transactio id.
+					// Gets renewals order based on transaction id.
 					$transaction_order = $this->get_renewal_order_by_transaction_id( $subscription, $transaction_details['txn_id'] );
 					if ( is_null( $transaction_order ) ) {
 						// if renewal order is null, search for a parent order.
