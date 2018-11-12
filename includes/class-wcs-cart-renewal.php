@@ -1295,8 +1295,15 @@ class WCS_Cart_Renewal {
 			if ( $coupon->get_id() > 0 ) {
 				$coupon_type = $coupon->get_discount_type();
 
-				// But we only want to handle recurring coupons that have been applied to the order
-				if ( ! in_array( $coupon_type, array( 'recurring_percent', 'recurring_fee' ) ) ) {
+				// We only want to handle recurring coupons that have been applied to the order
+				$valid_coupon_types = array( 'recurring_percent', 'recurring_fee' );
+
+				// and for initial payments we also want to handle sign up fee coupons too.
+				if ( 'subscription_initial_payment' === $this->cart_item_key ) {
+					$valid_coupon_types = array_merge( $valid_coupon_types, array( 'sign_up_fee', 'sign_up_fee_percent' ) );
+				}
+
+				if ( ! in_array( $coupon_type, $valid_coupon_types ) ) {
 					continue;
 				}
 
