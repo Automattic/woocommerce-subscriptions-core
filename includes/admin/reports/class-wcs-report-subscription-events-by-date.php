@@ -381,7 +381,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$this->report_data->switch_orders_total_count           = absint( array_sum( wp_list_pluck( $this->report_data->switch_counts, 'count' ) ) );
 		$this->report_data->total_subscriptions_cancelled       = absint( array_sum( wp_list_pluck( $this->report_data->cancel_counts, 'count' ) ) );
 		$this->report_data->total_subscriptions_ended           = absint( array_sum( wp_list_pluck( $this->report_data->ended_counts, 'count' ) ) );
-		$this->report_data->total_subscriptions_at_period_end   = absint( end( $this->report_data->subscriber_counts )->count );
+		$this->report_data->total_subscriptions_at_period_end   = $this->report_data->subscriber_counts ? absint( end( $this->report_data->subscriber_counts )->count ) : 0;
 		$this->report_data->total_subscriptions_at_period_start = isset( $this->report_data->subscriber_counts[0]->count ) ? absint( $this->report_data->subscriber_counts[0]->count ) : 0;
 
 	}
