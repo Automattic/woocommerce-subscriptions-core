@@ -314,12 +314,12 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 						}
 					}
 
-					// If we still have a non-valid order, let's createm a renewal order.
+					// If we still have a non-valid order, let's create a renewal order.
 					if ( is_null( $transaction_order ) ) {
 						$transaction_order = wcs_create_renewal_order( $subscription );
 					}
 
-					// Set PayPal as the payment method (we can't use $transaction_order->set_payment_method() here as it requires an object we don't have)
+					// Set PayPal as the payment method.
 					$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
 					$transaction_order->set_payment_method( $available_gateways['paypal'] );
 				}
@@ -737,7 +737,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 	}
 
 	/**
-	 * Get a renewal order associated with a subscription that has a specified transaction id.
+	 * Get a parent order associated with a subscription that has a specified transaction id.
 	 *
 	 * @param WC_Subscription object $subscription
 	 * @param int $transaction_id Id from transaction details as provided by PayPal
