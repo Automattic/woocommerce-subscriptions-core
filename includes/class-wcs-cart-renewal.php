@@ -1291,35 +1291,23 @@ class WCS_Cart_Renewal {
 		foreach ( $coupon_line_items as $coupon_item ) {
 			$coupon = new WC_Coupon( $coupon_item['name'] );
 
-			// If the coupon still exists we can use the existing/available coupon properties
-			if ( $coupon->get_id() > 0 ) {
-				$coupon_type = $coupon->get_discount_type();
-
-				// We only want to handle recurring coupons that have been applied to the order
-				$valid_coupon_types = array( 'recurring_percent', 'recurring_fee' );
-
-				// and for initial payments we also want to handle sign up fee coupons too.
-				if ( 'subscription_initial_payment' === $this->cart_item_key ) {
-					$valid_coupon_types = array_merge( $valid_coupon_types, array( 'sign_up_fee', 'sign_up_fee_percent' ) );
-				}
-
-				if ( ! in_array( $coupon_type, $valid_coupon_types ) ) {
-					continue;
-				}
-
-				// If this is a renewal cart, set the coupon type to be a renewal equivalent for correct validation and calculations
-				if ( 'subscription_renewal' === $this->cart_item_key ) {
-					$coupon->set_discount_type( str_replace( 'recurring', 'renewal', $coupon_type ) );
-				}
-			} else {
-				// If the coupon no longer exists, we shouldn't apply it to initial payment carts.
+			// If the coupon no longer exists, get a pseudo coupon for the discounting amount.
+			if ( ! $coupon->get_id() > 0 ) {
+				// We shouldn't apply coupons which no longer exists it to initial payment carts.
 				if ( 'subscription_initial_payment' === $this->cart_item_key ) {
 					continue;
 				}
 
-				// If the coupon no longer exists, get a pseudo coupon for the discounting amount.
 				$coupon = $this->get_pseudo_coupon( $coupon_item->get_discount() );
 				$coupon->set_code( $coupon_item['code'] );
+			} elseif ( 'subscription_renewal' === $this->cart_item_key ) {
+				$coupon_type = $coupon->get_discount_type();
+
+				if ( ! in_array( $coupon_type, array( 'recurring_percent', 'recurring_fee' ) ) ) {
+					continue;
+				}
+
+				$coupon->set_discount_type( str_replace( 'recurring', 'renewal', $coupon_type ) );
 			}
 
 			$coupons[] = $coupon;
