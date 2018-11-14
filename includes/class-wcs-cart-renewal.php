@@ -1256,12 +1256,12 @@ class WCS_Cart_Renewal {
 	 */
 	public function setup_discounts( $order ) {
 		$order_discount = $order->get_total_discount();
+		$coupon_items   = $order->get_items( 'coupon' );
 
-		if ( empty( $order_discount ) ) {
+		if ( empty( $order_discount ) && empty( $coupon_items ) ) {
 			return;
 		}
 
-		$coupon_items          = $order->get_items( 'coupon' );
 		$total_coupon_discount = floatval( array_sum( wc_list_pluck( $coupon_items, 'get_discount' ) ) );
 		$coupons               = array();
 
