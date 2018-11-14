@@ -493,12 +493,12 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 */
 	public static function can_update_all_subscription_payment_methods( $gateway, $subscription ) {
 
-		if ( ! $gateway->supports( 'subscription_payment_method_change_admin' ) ) {
-			return false;
-		}
-
 		if ( $gateway->supports( 'subscription_payment_method_delayed_change' ) ) {
 			return true;
+		}
+
+		if ( ! $gateway->supports( 'subscription_payment_method_change_admin' ) ) {
+			return false;
 		}
 
 		if ( apply_filters( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', true, $gateway->id, $subscription ) ) {
