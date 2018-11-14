@@ -226,14 +226,19 @@ class WCS_Query extends WC_Query {
 	 */
 	public function maybe_redirect_payment_methods( $query ) {
 
-		$subscription = wcs_get_subscription( $query->get( 'subscription-payment-method' ) );
-		if ( ! $query->is_main_query() || ! $subscription ) {
+		if ( ! $query->is_main_query() || ! absint( $query->get( 'subscription-payment-method' ) ) ) {
 			return;
 		}
 
-		if ( 'no' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) || $subscription->get_time( 'next_payment' ) <= 0 || ! $subscription->has_status( array( 'active', 'on-hold' ) ) ) {
+		$subscription = wcs_get_subscription( absint( $query->get( 'subscription-payment-method' ) ) );
+		if ( ! $subscription ) {
+			return;
+		}
+
+		if ( ! $subscription->can_be_updated_to( 'new-payment-method' ) ) {
 
 			$url = $subscription->get_view_order_url();
+			wc_add_notice( __( 'The payment method can not be changed for that subscription.', 'woocommerce-subscriptions' ), 'error' );
 
 		} else {
 
@@ -295,7 +300,7 @@ class WCS_Query extends WC_Query {
 		);
 
 		$subscription_payment_method_endpoint_setting = array(
-			'title'    => __( 'Subscription Payment Method', 'woocommerce-subscriptions' ),
+			'title'    => __( 'Subscription payment method', 'woocommerce-subscriptions' ),
 			'desc'     => __( 'Endpoint for the My Account &rarr; Change Subscription Payment Method page', 'woocommerce-subscriptions' ),
 			'id'       => 'woocommerce_myaccount_subscription_payment_method_endpoint',
 			'type'     => 'text',
