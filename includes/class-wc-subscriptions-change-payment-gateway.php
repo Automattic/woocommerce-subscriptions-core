@@ -308,11 +308,6 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 */
 	public static function change_payment_method_button( $actions, $subscription ) {
 
-		// Don't add change method action if automatic payments are disabled.
-		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
-			return $actions;
-		}
-
 		if ( $subscription->can_be_updated_to( 'new-payment-method' ) ) {
 
 			if ( $subscription->has_payment_gateway() ) {
