@@ -291,18 +291,39 @@ class WCS_Retry_Manager {
 
 				// if both statuses are still the same or there no special status was applied and the order still needs payment (i.e. there has been no manual intervention), trigger the payment hook
 				if ( $valid_order_status && $valid_subscription_status ) {
+					$unique_payment_methods = array();
 
 					$last_order->update_status( 'pending', _x( 'Subscription renewal payment retry:', 'used in order note as reason for why order status changed', 'woocommerce-subscriptions' ), true );
 
-					// Make sure the subscription is on hold in case something goes wrong while trying to process renewal and in case gateways expect the subscription to be on-hold, which is normally the case with a renewal payment
 					foreach ( $subscriptions as $subscription ) {
+						// Make sure the subscription is on hold in case something goes wrong while trying to process renewal and in case gateways expect the subscription to be on-hold, which is normally the case with a renewal payment
 						$subscription->update_status( 'on-hold', _x( 'Subscription renewal payment retry:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
+
+						// Store a hash of the payment method and payment meta to determine if there's a single payment method being used.
+						$payment_meta_hash = md5( $subscription->get_payment_method() . json_encode( $subscription->get_payment_method_meta() ) );
+						$unique_payment_methods[ $payment_meta_hash ] = 1;
 					}
 
-					WC_Subscriptions_Payment_Gateways::trigger_gateway_renewal_payment_hook( $last_order );
+					// Delete the payment method from the renewal order if the subscription has changed to manual renewal.
+					if ( wcs_order_contains_manual_subscription( $last_order, 'renewal' ) ) {
+						$last_order->set_payment_method( '' );
+						$last_order->add_order_note( 'Renewal payment retry skipped - related subscription has changed to manual renewal.' );
 
-					// Now that we've attempted to process the payment, refresh the order
-					$last_order = wc_get_order( wcs_get_objects_property( $last_order, 'id' ) );
+						$last_order->save();
+					} elseif ( 1 < count( $unique_payment_methods ) ) {
+						// Throw an exception if there is more than 1 unique payment method.
+						// This could only occur under circumstances where batch processing renewals has grouped unlike subscriptions.
+						throw new Exception( __( 'Payment retry attempted on renewal order with multiple related subscriptions with no payment method in common.', 'woocommerce-subscriptions' ) );
+					} else {
+						// Before attempting to process payment, update the renewal order's payment method and meta to match the subscription's - in case it has changed.
+						wcs_copy_payment_method_to_order( $subscription, $last_order );
+						$last_order->save();
+
+						WC_Subscriptions_Payment_Gateways::trigger_gateway_renewal_payment_hook( $last_order );
+
+						// Now that we've attempted to process the payment, refresh the order
+						$last_order = wc_get_order( wcs_get_objects_property( $last_order, 'id' ) );
+					}
 
 					// if the order still needs payment, payment failed
 					if ( $last_order->needs_payment() ) {
