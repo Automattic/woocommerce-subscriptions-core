@@ -406,9 +406,9 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 				// Does the customer want all current subscriptions to be updated to this payment method?
 				if (
-					$available_gateways[ $new_payment_method ]->supports( 'subscription_payment_method_change_admin' )
-					&& isset( $_POST['update_all_subscriptions_payment_method'] )
+					isset( $_POST['update_all_subscriptions_payment_method'] )
 					&& $_POST['update_all_subscriptions_payment_method']
+					&& WC_Subscriptions_Change_Payment_Gateway::can_update_all_subscription_payment_methods( $available_gateways[ $new_payment_method ], $subscription )
 				) {
 					// Allow some payment gateways which can't process the payment immediately, like PayPal, to do it later after the payment/sign-up is confirmed
 					if ( ! apply_filters( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', true, $new_payment_method, $subscription ) ) {
