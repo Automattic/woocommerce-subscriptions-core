@@ -1268,10 +1268,23 @@ class WCS_Cart_Renewal {
 		// If the order total discount is different from the discount applied from coupons we have a manually applied discount.
 		$order_has_manual_discount = $order_discount !== $total_coupon_discount;
 
-		if ( $order_has_manual_discount ) {
-			$coupons[] = $this->get_pseudo_coupon( $order_discount );
-		} elseif ( ! empty( $coupon_items ) ) {
+		// Get all coupon line items as coupon objects.
+		if ( ! empty( $coupon_items ) ) {
 			$coupons = $this->get_line_item_coupons( $coupon_items );
+		}
+
+		if ( $order_has_manual_discount ) {
+			// Remove any coupon line items which don't grant free shipping.
+			foreach ( $coupons as $index => $coupon ) {
+				if ( ! $coupon->get_free_shipping() ) {
+					unset( $coupons[ $index ] );
+				}
+
+				// We're going to apply a coupon for the full order discount so make sure free shipping coupons don't apply any discount.
+				$coupon->set_amount( 0 );
+			}
+
+			$coupons[] = $this->get_pseudo_coupon( $order_discount );
 		}
 
 		foreach ( $coupons as $coupon ) {
