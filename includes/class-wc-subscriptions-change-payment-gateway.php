@@ -308,11 +308,6 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 */
 	public static function change_payment_method_button( $actions, $subscription ) {
 
-		// Don't add change method action if automatic payments are disabled.
-		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
-			return $actions;
-		}
-
 		if ( $subscription->can_be_updated_to( 'new-payment-method' ) ) {
 
 			if ( $subscription->has_payment_gateway() ) {
@@ -411,9 +406,9 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 				// Does the customer want all current subscriptions to be updated to this payment method?
 				if (
-					$available_gateways[ $new_payment_method ]->supports( 'subscription_payment_method_change_admin' )
-					&& isset( $_POST['update_all_subscriptions_payment_method'] )
+					isset( $_POST['update_all_subscriptions_payment_method'] )
 					&& $_POST['update_all_subscriptions_payment_method']
+					&& WC_Subscriptions_Change_Payment_Gateway::can_update_all_subscription_payment_methods( $available_gateways[ $new_payment_method ], $subscription )
 				) {
 					// Allow some payment gateways which can't process the payment immediately, like PayPal, to do it later after the payment/sign-up is confirmed
 					if ( ! apply_filters( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', true, $new_payment_method, $subscription ) ) {
@@ -498,12 +493,12 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 */
 	public static function can_update_all_subscription_payment_methods( $gateway, $subscription ) {
 
-		if ( ! $gateway->supports( 'subscription_payment_method_change_admin' ) ) {
-			return false;
-		}
-
 		if ( $gateway->supports( 'subscription_payment_method_delayed_change' ) ) {
 			return true;
+		}
+
+		if ( ! $gateway->supports( 'subscription_payment_method_change_admin' ) ) {
+			return false;
 		}
 
 		if ( apply_filters( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', true, $gateway->id, $subscription ) ) {

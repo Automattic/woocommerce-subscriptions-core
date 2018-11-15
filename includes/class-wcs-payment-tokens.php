@@ -103,7 +103,7 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 		) );
 
 		if ( has_filter( 'woocommerce_subscriptions_by_payment_token' ) ) {
-			wcs_deprecated_function( 'The "woocommerce_subscriptions_by_payment_token" hook should no longer be used. It previously filtered post objects and in moving to CRUD and Subscription APIs the "woocommerce_subscriptions_by_payment_token"', '2.5.0', 'woocommerce_subscriptions_with_payment_token' );
+			wcs_deprecated_function( 'The "woocommerce_subscriptions_by_payment_token" hook should no longer be used. It previously filtered post objects and in moving to CRUD and Subscription APIs the "woocommerce_subscriptions_by_payment_token"', '2.5.0', 'woocommerce_subscriptions_from_payment_token' );
 
 			$subscription_posts = apply_filters( 'woocommerce_subscriptions_by_payment_token', array_map( 'get_post', $subscription_ids ), $payment_token );
 			$subscription_ids   = array_unique( array_merge( $subscription_ids, wp_list_pluck( $subscription_posts, 'ID' ) ) );
