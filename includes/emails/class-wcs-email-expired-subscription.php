@@ -129,7 +129,7 @@ class WCS_Email_Expired_Subscription extends WC_Email {
 				'title'         => _x( 'Recipient(s)', 'of an email', 'woocommerce-subscriptions' ),
 				'type'          => 'text',
 				// translators: placeholder is admin email
-				'description'   => sprintf( __( 'Enter recipients (comma separated) for this email. Defaults to %s.', 'woocommerce-subscriptions' ), '<code>' . esc_attr( get_option( 'admin_email' ) ) . '</code>' ),
+				'description'   => sprintf( __( 'Enter recipients (comma separated) for this email. Defaults to %s.', 'woocommerce-subscriptions' ), '<code>' . esc_html( get_option( 'admin_email' ) ) . '</code>' ),
 				'placeholder'   => '',
 				'default'       => '',
 			),
