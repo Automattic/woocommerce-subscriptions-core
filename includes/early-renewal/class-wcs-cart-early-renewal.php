@@ -78,18 +78,14 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 	 * Check if a payment is being made on an early renewal order.
 	 */
 	public function maybe_setup_cart() {
-		if ( ! isset( $_GET['subscription_renewal_early'], $_GET['wcs_nonce'] ) ) {
+		if ( ! isset( $_GET['subscription_renewal_early'] ) ) {
 			return;
 		}
 
 		$subscription = wcs_get_subscription( absint( $_GET['subscription_renewal_early'] ) );
 		$redirect_to  = get_permalink( wc_get_page_id( 'myaccount' ) );
 
-		if ( false === wp_verify_nonce( $_GET['wcs_nonce'], 'wcs-renew-' . $subscription->get_id() ) ) {
-
-			wc_add_notice( __( 'There was an error with your request to renew. Please try again.', 'woocommerce-subscriptions' ), 'error' );
-
-		} elseif ( empty( $subscription ) ) {
+		if ( empty( $subscription ) ) {
 
 			wc_add_notice( __( 'That subscription does not exist. Has it been deleted?', 'woocommerce-subscriptions' ), 'error' );
 
