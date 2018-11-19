@@ -1316,11 +1316,10 @@ class WCS_Cart_Renewal {
 			} elseif ( 'subscription_renewal' === $this->cart_item_key ) {
 				$coupon_type = $coupon->get_discount_type();
 
-				if ( ! in_array( $coupon_type, array( 'recurring_percent', 'recurring_fee' ) ) ) {
-					continue;
+				// Change recurring coupons into renewal coupons so we can handle validation while paying for a renewal order manually.
+				if ( in_array( $coupon_type, array( 'recurring_percent', 'recurring_fee' ) ) ) {
+					$coupon->set_discount_type( str_replace( 'recurring', 'renewal', $coupon_type ) );
 				}
-
-				$coupon->set_discount_type( str_replace( 'recurring', 'renewal', $coupon_type ) );
 			}
 
 			$coupons[] = $coupon;
