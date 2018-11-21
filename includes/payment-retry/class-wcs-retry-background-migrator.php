@@ -69,7 +69,7 @@ class WCS_Retry_Background_Migrator extends WCS_Background_Upgrader {
 	 * @since 2.4.0
 	 */
 	protected function get_items_to_update() {
-		return $this->source_store->get_retries();
+		return $this->source_store->get_retries( array( 'limit' => 10 ) );
 	}
 
 	/**
