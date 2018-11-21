@@ -198,7 +198,7 @@ class WCS_Retry_Admin {
 			'name'      => _x( 'Retries Migration Status', 'label for the system status page', 'woocommerce-subscriptions' ),
 			'label'     => 'Retries Migration Status',
 			'mark_icon' => $has_retry_on_post_store ? '' : 'yes',
-			'note'      => $has_retry_on_post_store ? 'Incomplete' : 'Completed',
+			'note'      => $has_retry_on_post_store ? 'In-Progress' : 'Completed',
 			'mark'      => ( $has_retry_on_post_store ) ? '' : 'yes',
 		);
 
