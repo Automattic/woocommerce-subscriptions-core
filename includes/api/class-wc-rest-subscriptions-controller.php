@@ -294,6 +294,10 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 
 			$payment_method_meta = apply_filters( 'woocommerce_subscription_payment_meta', array(), $subscription );
 
+			// Reload the subscription to update the meta values.
+			// In particular, the update_post_meta() called while _stripe_card_id is updated to _stripe_source_id
+			$subscription = wcs_get_subscription( $subscription->get_id() );
+
 			if ( isset( $payment_method_meta[ $payment_method ] ) ) {
 				$payment_method_meta = $payment_method_meta[ $payment_method ];
 
