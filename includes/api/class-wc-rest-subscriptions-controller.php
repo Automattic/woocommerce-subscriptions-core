@@ -320,6 +320,9 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 
 			$subscription->set_payment_method( $payment_method, $payment_method_meta );
 
+			// Save the subscription to reflect the new values
+			$subscription->save();
+
 		} catch ( Exception $e ) {
 			$subscription->set_payment_method();
 			$subscription->save();
