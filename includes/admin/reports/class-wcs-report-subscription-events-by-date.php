@@ -257,7 +257,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$query = $wpdb->prepare(
 			"SELECT searchdate.Date as date, COUNT( DISTINCT wcsubs.ID) as count
 				FROM (
-					SELECT DATE_FORMAT(last_thousand_days.Date,'%%Y-%%m-%%d') as Date
+					SELECT DATE(last_thousand_days.Date) as Date
 					FROM (
 						SELECT DATE(%s) - INTERVAL(units.digit + (10 * tens.digit) + (100 * hundreds.digit)) DAY as Date
 						FROM (
