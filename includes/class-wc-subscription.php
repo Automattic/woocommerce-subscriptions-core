@@ -636,14 +636,14 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Get the number of payments for a subscription.
 	 *
-	 * Default completed payment include all renewal orders and potentially an initial order
+	 * Default payment count includes all renewal orders and potentially an initial order
 	 * (if the subscription was created as a result of a purchase from the front end
 	 * rather than manually by the store manager).
 	 *
 	 * @param  string       $payment_type Type of count (completed|refunded|net). Optional. Default completed.
 	 * @param  string|array $order_types Type of order relation(s) to count. Optional. Default array(parent,renewal).
 	 * @return integer Count.
-	 * @since 2.4.1
+	 * @since 2.5.0
 	 */
 	public function get_payment_count( $payment_type = 'completed', $order_types = '' ) {
 
@@ -711,19 +711,11 @@ class WC_Subscription extends WC_Order {
 
 			// Store the payment counts to avoid hitting the database again
 			$this->cached_payment_count['completed'][ $order_type ] = apply_filters( "woocommerce_subscription_{$order_type}_payment_completed_count", $completed_payment_count, $this, $order_type );
-			$this->cached_payment_count['refunded'][ $order_type ] = apply_filters( 'woocommerce_subscription_{$order_type}_payment_refunded_count', $refunded_payment_count, $this, $order_type );
+			$this->cached_payment_count['refunded'][ $order_type ] = apply_filters( "woocommerce_subscription_{$order_type}_payment_refunded_count", $refunded_payment_count, $this, $order_type );
 
-			/**
-			 * Apply deprecated completed payment count filter if parent and renewals have been counted.
-			 * Then remove the parent count from the adjusted count.
-			 */
-			if ( 'renewal' == $order_type && isset( $this->cached_payment_count['completed']['parent'] ) ) {
-				$combined_count = $this->cached_payment_count['completed']['parent'] + $this->cached_payment_count['completed']['renewal'];
-				$renewal_count = $this->apply_deprecated_completed_payment_count_filter( $combined_count );
-
-				if ( $combined_count !== $renewal_count ) {
-					$this->cached_payment_count['completed']['parent'] = $renewal_count - $this->cached_payment_count['completed']['renewal'];
-				}
+			// Apply deprecated completed payment count filter if parent and renewals have been counted.
+			if ( 'completed' == $payment_type && 'renewal' == $order_type && isset( $this->cached_payment_count['completed']['parent'] ) ) {
+				$this->apply_deprecated_completed_payment_count_filter();
 			}
 		}
 
@@ -1342,7 +1334,7 @@ class WC_Subscription extends WC_Order {
 				break;
 			case 'trial_end' :
 				if ( isset( $this->cached_payment_count['completed'] ) ) {
-					$this->cached_payment_count['completed']['renewal'] = false;
+					$this->cached_payment_count = null;
 				}
 
 				if ( $this->get_payment_count() < 2 && ! $this->has_status( wcs_get_subscription_ended_statuses() ) && ( $this->has_status( 'pending' ) || $this->payment_method_supports( 'subscription_date_changes' ) ) ) {
@@ -1695,7 +1687,7 @@ class WC_Subscription extends WC_Order {
 
 		// Clear the cached renewal payment counts, kept here for backward compat even though it's also reset in $this->process_payment_complete()
 		if ( isset( $this->cached_payment_count['completed'] ) ) {
-			unset( $this->cached_payment_count['completed']['renewal'], $this->cached_payment_count['refunded']['renewal'] );
+			$this->cached_payment_count = null;
 		}
 
 		// Make sure the last order's status is updated
@@ -1717,7 +1709,7 @@ class WC_Subscription extends WC_Order {
 
 		// Clear the cached renewal payment counts
 		if ( isset( $this->cached_payment_count['completed'] ) ) {
-			unset( $this->cached_payment_count['completed']['renewal'], $this->cached_payment_count['refunded']['renewal'] );
+			$this->cached_payment_count = null;
 		}
 
 		// Reset suspension count
@@ -2574,7 +2566,7 @@ class WC_Subscription extends WC_Order {
 	 * subscription was created as a result of a purchase from the front end rather than
 	 * manually by the store manager).
 	 *
-	 * @deprecated 2.4.1
+	 * @deprecated 2.5.0
 	 */
 	public function get_completed_payment_count() {
 		wcs_deprecated_function( __METHOD__, '2.4.1', __CLASS__ . '::get_payment_count()' );
@@ -2586,19 +2578,16 @@ class WC_Subscription extends WC_Order {
 	 * Apply the deprecated 'woocommerce_subscription_payment_completed_count' filter
 	 * to maintain backward compatibility.
 	 *
-	 * @deprecated 2.4.1
-	 * @param int $count The sum of this subscription's renewal and parent completed payment count.
-	 * @return int Filtered count.
+	 * @deprecated 2.5.0
 	 */
-	protected function apply_deprecated_completed_payment_count_filter( $count ) {
+	protected function apply_deprecated_completed_payment_count_filter() {
 		$deprecated_filter_hook = 'woocommerce_subscription_payment_completed_count';
 
 		if ( has_filter( $deprecated_filter_hook ) ) {
-			wcs_deprecated_function( sprintf( '"%s" filter should no longer be used and', $deprecated_filter_hook ), '2.4.1', '"woocommerce_subscription_parent_payment_completed_count" and "woocommerce_subscription_renewal_payment_completed_count" provide the discrete counts summed in the "' . $deprecated_filter_hook . '" filter.' );
+			wcs_deprecated_function( sprintf( '"%s" filter should no longer be used and', $deprecated_filter_hook ), '2.5.0', '"woocommerce_subscription_parent_payment_completed_count" and "woocommerce_subscription_renewal_payment_completed_count" provide the discrete counts summed in the "' . $deprecated_filter_hook . '" filter.' );
 
-			$count = apply_filters( $deprecated_filter_hook, $count );
+			$combined_count = $this->cached_payment_count['completed']['parent'] + $this->cached_payment_count['completed']['renewal'];
+			apply_filters( $deprecated_filter_hook, $combined_count );
 		}
-
-		return $count;
 	}
 }
