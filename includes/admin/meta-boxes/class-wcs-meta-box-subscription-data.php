@@ -200,10 +200,17 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 						// Display a link to the customer's add/change payment method screen.
 						if ( $subscription->can_be_updated_to( 'new-payment-method' ) ) {
+
+							if ( $subscription->has_payment_gateway() ) {
+								$link_text = __( 'Customer change payment method page &rarr;', 'woocommerce-subscriptions' );
+							} else {
+								$link_text = __( 'Customer add payment method page &rarr;', 'woocommerce-subscriptions' );
+							}
+
 							printf(
 								'<a href="%s">%s</a>',
 								esc_url( $subscription->get_change_payment_method_url() ),
-								$subscription->has_payment_gateway() ? esc_html__( 'Customer change payment method page &rarr;', 'woocommerce-subscriptions' ) : esc_html__( 'Customer add payment method page &rarr;', 'woocommerce-subscriptions' )
+								esc_html( $link_text )
 							);
 						}
 						?>

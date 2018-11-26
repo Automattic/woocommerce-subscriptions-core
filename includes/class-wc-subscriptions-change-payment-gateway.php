@@ -693,6 +693,11 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			return false;
 		}
 
+		// If there's no recurring payment, there's no need to add or update the payment method.
+		if ( $subscription->get_total() == 0 ) {
+			return false;
+		}
+
 		// Don't allow if no gateways support changing methods.
 		if ( ! WC_Subscriptions_Payment_Gateways::one_gateway_supports( 'subscription_payment_method_change_customer' ) ) {
 			return false;
