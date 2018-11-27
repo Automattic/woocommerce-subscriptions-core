@@ -335,8 +335,14 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 					// First payment on order, process payment & activate subscription
 					if ( $is_first_payment ) {
+						$parent_order = $subscription->get_parent();
 
-						$subscription->get_parent()->payment_complete( $transaction_details['txn_id'] );
+						// If the order has already been paid it might have been completed via PDT so reactivate the subscription now because calling payment complete won't.
+						if ( $parent_order->is_paid() ) {
+							$subscription->update_status( 'active' );
+						} else {
+							$parent_order->payment_complete( $transaction_details['txn_id'] );
+						}
 
 						// Store PayPal Details on Order
 						$this->save_paypal_meta_data( $subscription->get_parent(), $transaction_details );
