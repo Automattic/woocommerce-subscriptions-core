@@ -362,15 +362,25 @@ class WC_Subscriptions_Order {
 	 * Displays a few details about what happens to their subscription. Hooked
 	 * to the thank you page.
 	 *
+	 * @param int $order_id
+	 *
 	 * @since 1.0
 	 */
 	public static function subscription_thank_you( $order_id ) {
-
 		if ( wcs_order_contains_subscription( $order_id, 'any' ) ) {
-
-			$subscription_count           = count( wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'any' ) ) );
-			$thank_you_message            = '<p>' . _n( 'Your subscription will be activated when payment clears.', 'Your subscriptions will be activated when payment clears.', $subscription_count, 'woocommerce-subscriptions' ) . '</p>';
+			$subscriptions                = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'any' ) );
+			$subscription_count           = count( $subscriptions );
+			$thank_you_message            = '';
 			$my_account_subscriptions_url = get_permalink( wc_get_page_id( 'myaccount' ) );
+
+			if ( $subscription_count ) {
+				foreach ( $subscriptions as $subscription ) {
+					if ( ! $subscription->has_status( 'active' ) ) {
+						$thank_you_message = '<p>' . _n( 'Your subscription will be activated when payment clears.', 'Your subscriptions will be activated when payment clears.', $subscription_count, 'woocommerce-subscriptions' ) . '</p>';
+						break;
+					}
+				}
+			}
 
 			// translators: placeholders are opening and closing link tags
 			$thank_you_message .= '<p>' . sprintf( _n( 'View the status of your subscription in %syour account%s.', 'View the status of your subscriptions in %syour account%s.', $subscription_count, 'woocommerce-subscriptions' ), '<a href="' . $my_account_subscriptions_url . '">', '</a>' ) . '</p>';
