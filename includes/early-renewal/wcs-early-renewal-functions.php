@@ -134,7 +134,6 @@ function wcs_get_early_renewal_url( $subscription ) {
 	$url = add_query_arg( array(
 		'subscription_renewal_early' => $subscription_id,
 		'subscription_renewal'       => 'true',
-		'wcs_nonce'                  => wp_create_nonce( 'wcs-renew-' . $subscription_id ),
 	), get_permalink( wc_get_page_id( 'myaccount' ) ) );
 
 	/**

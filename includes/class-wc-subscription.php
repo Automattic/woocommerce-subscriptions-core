@@ -575,7 +575,7 @@ class WC_Subscription extends WC_Order {
 			$is_manual = false;
 		}
 
-		return $is_manual;
+		return apply_filters( 'woocommerce_subscription_is_manual', $is_manual, $this );
 	}
 
 	/**
@@ -1978,28 +1978,7 @@ class WC_Subscription extends WC_Order {
 		do_action( 'woocommerce_subscription_validate_payment_meta', $payment_method_id, $payment_meta, $this );
 		do_action( 'woocommerce_subscription_validate_payment_meta_' . $payment_method_id, $payment_meta, $this );
 
-		foreach ( $payment_meta as $meta_table => $meta ) {
-			foreach ( $meta as $meta_key => $meta_data ) {
-				if ( isset( $meta_data['value'] ) ) {
-					switch ( $meta_table ) {
-						case 'user_meta':
-						case 'usermeta':
-							update_user_meta( $this->get_user_id(), $meta_key, $meta_data['value'] );
-							break;
-						case 'post_meta':
-						case 'postmeta':
-							$this->update_meta_data( $meta_key, $meta_data['value'] );
-							break;
-						case 'options':
-							update_option( $meta_key, $meta_data['value'] );
-							break;
-						default:
-							do_action( 'wcs_save_other_payment_meta', $this, $meta_table, $meta_key, $meta_data['value'] );
-					}
-				}
-			}
-		}
-
+		wcs_set_payment_meta( $this, $payment_meta );
 	}
 
 	/**
@@ -2394,6 +2373,23 @@ class WC_Subscription extends WC_Order {
 	public function get_change_payment_method_url() {
 		$change_payment_method_url = wc_get_endpoint_url( 'subscription-payment-method', $this->get_id(), wc_get_page_permalink( 'myaccount' ) );
 		return apply_filters( 'wcs_get_change_payment_method_url', $change_payment_method_url, $this->get_id() );
+	}
+
+	 /* Get the subscription's payment method meta.
+	 *
+	 * @since 2.4.3
+	 * @return array The subscription's payment meta in the format returned by the woocommerce_subscription_payment_meta filter.
+	 */
+	public function get_payment_method_meta() {
+		WC()->payment_gateways();
+
+		if ( $this->is_manual() ) {
+			return array();
+		}
+
+		$payment_meta = apply_filters( 'woocommerce_subscription_payment_meta', array(), $this );
+
+		return isset( $payment_meta[ $this->get_payment_method() ] ) ? $payment_meta[ $this->get_payment_method() ]: array();
 	}
 
 	/************************
