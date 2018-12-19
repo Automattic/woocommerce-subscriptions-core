@@ -277,7 +277,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 			);
 		}
 
-		if ( $this->skip_line_items( $order, $order_items ) ) {
+		if ( $this->skip_line_items( $order, $order_items, $order_subtotal ) ) {
 
 			$total_amount = $this->round( $order->get_total() );
 
@@ -622,7 +622,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 	 * @param WC_Order $order Optional. The WC_Order object. Default null.
 	 * @return bool true if line items should be skipped, false otherwise
 	 */
-	private function skip_line_items( $order = null, $order_items = null ) {
+	private function skip_line_items( $order = null, $order_items = null, $order_subtotal = null ) {
 
 		$skip_line_items = wcs_get_objects_property( $order, 'prices_include_tax' );
 
@@ -635,11 +635,18 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 				$calculated_total += $this->round( $item['AMT'] * $item['QTY'] );
 			}
 
-			$calculated_total += $this->round( $order->get_total_shipping() ) + $this->round( $order->get_total_tax() );
-			$total_amount      = $this->round( $order->get_total() );
+			if ( $calculated_total != $this->round( $order_subtotal ) ) {
 
-			if ( $this->price_format( $total_amount ) !== $this->price_format( $calculated_total ) ) {
 				$skip_line_items = true;
+
+			} else {
+
+				$calculated_total += $this->round( $order->get_total_shipping() ) + $this->round( $order->get_total_tax() );
+				$total_amount      = $this->round( $order->get_total() );
+
+				if ( $this->price_format( $total_amount ) !== $this->price_format( $calculated_total ) ) {
+					$skip_line_items = true;
+				}
 			}
 		}
 
