@@ -12,7 +12,7 @@ class WCS_Template_Loader {
 		add_action( 'woocommerce_account_view-subscription_endpoint', array( __CLASS__, 'get_view_subscription_template' ) );
 		add_action( 'woocommerce_subscription_details_table', array( __CLASS__, 'get_subscription_details_template' ) );
 		add_action( 'woocommerce_subscription_totals_table', array( __CLASS__, 'get_subscription_totals_template' ) );
-		add_action( 'woocommerce_order_downloads_table', array( __CLASS__, 'get_order_downloads_template' ) );
+		add_action( 'woocommerce_subscription_downloads_table', array( __CLASS__, 'get_order_downloads_template' ) );
 	}
 
 	/**
@@ -68,13 +68,11 @@ class WCS_Template_Loader {
 	 * Get the order downloads template, which is part of the view subscription page.
 	 *
 	 * @param WC_Subscription $subscription Subscription object
-	 * @since 2.4.6
+	 * @since 2.5.0
 	 */
 	public static function get_order_downloads_template( $subscription ) {
-		$downloads      = $subscription->get_downloadable_items();
-		$show_downloads	= $subscription->has_downloadable_item() && $subscription->is_download_permitted();
-		if ( $show_downloads ) {
-			wc_get_template( 'order/order-downloads.php', array( 'downloads' => $downloads, 'show_title' => true ) );
+		if ( $subscription->has_downloadable_item() && $subscription->is_download_permitted() ) {
+			wc_get_template( 'order/order-downloads.php', array( 'downloads' => $subscription->get_downloadable_items(), 'show_title' => true ) );
 		}
 	}
 }
