@@ -42,10 +42,10 @@ class WCS_Report_Subscription_By_Customer extends WP_List_Table {
 		echo '	<div id="postbox-container-1" class="postbox-container" style="width: 280px;"><div class="postbox" style="padding: 10px;">';
 		echo '	<h3>' . esc_html__( 'Customer Totals', 'woocommerce-subscriptions' ) . '</h3>';
 		echo '	<p><strong>' . esc_html__( 'Total Subscribers', 'woocommerce-subscriptions' ) . '</strong> : ' . esc_html( $this->totals->total_customers ) . '<br />';
-		echo '	<strong>' . esc_html__( 'Active Subscriptions', 'woocommerce-subscriptions' ) . '</strong> : ' . esc_html( $this->totals->active_subscriptions ) . '<br />';
-		echo '	<strong>' . esc_html__( 'Total Subscriptions', 'woocommerce-subscriptions' ) . '</strong> : ' . esc_html( $this->totals->total_subscriptions ) . '<br />';
-		echo '	<strong>' . esc_html__( 'Total Subscription Orders', 'woocommerce-subscriptions' ) . '</strong> : ' . esc_html( $this->totals->initial_order_count + $this->totals->renewal_switch_count ) . '<br />';
-		echo '	<strong>' . esc_html__( 'Average Lifetime Value', 'woocommerce-subscriptions' ) . '</strong> : ' . wp_kses_post( wc_price( ( $this->totals->initial_order_total + $this->totals->renewal_switch_total ) / $this->totals->total_customers ) ) . '</p>';
+		echo '	<strong>' . esc_html__( 'Active Subscriptions', 'woocommerce-subscriptions' ) . '</strong>' . wcs_help_tip( __( 'The total number of subscriptions with a status of active or pending cancellation.', 'woocommerce-subscriptions' ) ) . ': ' . esc_html( $this->totals->active_subscriptions ) . '<br />';
+		echo '	<strong>' . esc_html__( 'Total Subscriptions', 'woocommerce-subscriptions' ) . '</strong>' .  wcs_help_tip( __( 'The total number of subscriptions with a status other than pending or trashed.', 'woocommerce-subscriptions' ) ) . ': ' . esc_html( $this->totals->total_subscriptions ) . '<br />';
+		echo '	<strong>' . esc_html__( 'Total Subscription Orders', 'woocommerce-subscriptions' ) . '</strong>' . wcs_help_tip( __( 'The total number of sign-up, switch and renewal orders placed with your store with a paid status (i.e. processing or complete).', 'woocommerce-subscriptions' ) ) . ': ' . esc_html( $this->totals->initial_order_count + $this->totals->renewal_switch_count ) . '<br />';
+		echo '	<strong>' . esc_html__( 'Average Lifetime Value', 'woocommerce-subscriptions' ) . '</strong>' . wcs_help_tip( __( 'The average value of all customers\' sign-up, switch and renewal orders.', 'woocommerce-subscriptions' ) ) . ': ' . wp_kses_post( wc_price( ( $this->totals->initial_order_total + $this->totals->renewal_switch_total ) / $this->totals->total_customers ) ) . '</p>';
 		echo '</div></div>';
 		$this->display();
 		echo '</div>';
