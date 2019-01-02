@@ -772,20 +772,29 @@ class WCS_Admin_Post_Types {
 			}
 
 			if ( ! empty( $_GET['_payment_method'] ) ) {
-
-				$payment_gateway_filter = ( 'none' == $_GET['_payment_method'] ) ? '' : $_GET['_payment_method'];
-
-				$query_vars = array(
-					'post_type'   => 'shop_subscription',
-					'posts_per_page' => -1,
-					'post_status' => 'any',
-					'fields'      => 'ids',
-					'meta_query'  => array(
+				if ( '_manual_renewal' === trim( $_GET['_payment_method'] ) ) {
+					$meta_query = array(
+						array(
+							'key'   => '_requires_manual_renewal',
+							'value' => 'true',
+						),
+					);
+				} else {
+					$payment_gateway_filter = ( 'none' == $_GET['_payment_method'] ) ? '' : $_GET['_payment_method'];
+					$meta_query             = array(
 						array(
 							'key'   => '_payment_method',
 							'value' => $payment_gateway_filter,
 						),
-					),
+					);
+				}
+
+				$query_vars = array(
+					'post_type'      => 'shop_subscription',
+					'posts_per_page' => -1,
+					'post_status'    => 'any',
+					'fields'         => 'ids',
+					'meta_query'     => $meta_query,
 				);
 
 				// If there are already set post restrictions (post__in) apply them to this query
