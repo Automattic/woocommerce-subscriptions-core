@@ -1799,10 +1799,13 @@ class WC_Subscription extends WC_Order {
 
 		$related_orders = array();
 		foreach ( $order_types as $order_type ) {
-
 			$related_orders_for_order_type = array();
 			foreach ( $this->get_related_order_ids( $order_type ) as $order_id ) {
-				$related_orders_for_order_type[ $order_id ] = ( 'all' == $return_fields ) ? wc_get_order( $order_id ) : $order_id;
+				if ( 'all' === $return_fields && $order = wc_get_order( $order_id ) ) {
+					$related_orders_for_order_type[ $order_id ] = $order;
+				} elseif ( 'ids' === $return_fields ) {
+					$related_orders_for_order_type[ $order_id ] = $order_id;
+				}
 			}
 
 			$related_orders += apply_filters( 'woocommerce_subscription_related_orders', $related_orders_for_order_type, $this, $return_fields, $order_type );
