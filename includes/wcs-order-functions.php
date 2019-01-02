@@ -747,7 +747,7 @@ function wcs_display_item_meta( $item, $order ) {
  * @return void
  */
 function wcs_display_item_downloads( $item, $order ) {
-	wcs_deprecated_function( __FUNCTION__, '2.5.0' );
+	wcs_deprecated_function( __FUNCTION__, '2.5.0', 'wc_display_item_downloads( $item )' );
 
 	if ( function_exists( 'wc_display_item_downloads' ) ) { // WC 3.0+
 		wc_display_item_downloads( $item );

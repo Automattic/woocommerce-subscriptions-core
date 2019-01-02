@@ -12,7 +12,7 @@ class WCS_Template_Loader {
 		add_action( 'woocommerce_account_view-subscription_endpoint', array( __CLASS__, 'get_view_subscription_template' ) );
 		add_action( 'woocommerce_subscription_details_table', array( __CLASS__, 'get_subscription_details_template' ) );
 		add_action( 'woocommerce_subscription_totals_table', array( __CLASS__, 'get_subscription_totals_template' ) );
-		add_action( 'woocommerce_subscription_downloads_table', array( __CLASS__, 'get_order_downloads_template' ) );
+		add_action( 'woocommerce_subscription_totals_table', array( __CLASS__, 'get_order_downloads_template' ), 20 );
 	}
 
 	/**
