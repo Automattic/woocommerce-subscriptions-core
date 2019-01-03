@@ -248,10 +248,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 		switch ( $transaction_details['txn_type'] ) {
 			case 'subscr_signup':
-				$order = $subscription->get_parent();
-				if ( ! $order ) {
-					$order = $subscription->get_last_order( 'all' );
-				}
+				$order = self::get_parent_order_with_fallback( $subscription );
 
 				// Store PayPal Details on Subscription and Order
 				$this->save_paypal_meta_data( $subscription, $transaction_details );
@@ -339,7 +336,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 					// First payment on order, process payment & activate subscription
 					if ( $is_first_payment ) {
-						$parent_order = $subscription->get_parent();
+						$parent_order = self::get_parent_order_with_fallback( $subscription );
 
 						if ( ! $parent_order->is_paid() ) {
 							$parent_order->payment_complete( $transaction_details['txn_id'] );
@@ -349,7 +346,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 						}
 
 						// Store PayPal Details on Order
-						$this->save_paypal_meta_data( $subscription->get_parent(), $transaction_details );
+						$this->save_paypal_meta_data( $parent_order, $transaction_details );
 
 						// IPN got here first or PDT will never arrive. Normally PDT would have arrived, so the first IPN would not be the first payment. In case the the first payment is an IPN, we need to make sure to not ignore the second one
 						update_post_meta( $subscription->get_id(), '_paypal_first_ipn_ignored_for_pdt', 'true' );
