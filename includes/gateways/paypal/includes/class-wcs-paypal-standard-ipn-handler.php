@@ -653,6 +653,22 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 	}
 
 	/**
+	 * This function will try to get the parent order, and if not available, will get the last order related to the Subscription.
+	 *
+	 * @param WC_Subscription $subscription The Subscription.
+	 *
+	 * @return WC_Order Parent order or the last related order (renewal)
+	 */
+	protected static function get_parent_order_with_fallback( $subscription ) {
+		$order = $subscription->get_parent();
+		if ( ! $order ) {
+			$order = $subscription->get_last_order( 'all' );
+		}
+
+		return $order;
+	}
+
+	/**
 	 * Cancel a specific PayPal Standard Subscription Profile with PayPal.
 	 *
 	 * Used when switching payment methods with PayPal Standard to make sure that
