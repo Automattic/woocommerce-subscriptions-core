@@ -340,8 +340,9 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 						if ( ! $parent_order->is_paid() ) {
 							$parent_order->payment_complete( $transaction_details['txn_id'] );
-						} elseif ( $subscription->can_be_updated_to( 'active' ) ) {
-							// If the order has already been paid it might have been completed via PDT so reactivate the subscription now because calling payment complete won't.
+						}
+
+						if ( $subscription->can_be_updated_to( 'active' ) ) {
 							$subscription->update_status( 'active' );
 						}
 
