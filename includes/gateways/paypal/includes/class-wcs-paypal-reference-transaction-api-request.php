@@ -252,7 +252,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 				'ITEMURL' => $product->get_permalink(),
 			);
 
-			$order_subtotal += $item['line_total'];
+			$order_subtotal += $order->get_line_total( $item );
 		}
 
 		// add fees
@@ -264,7 +264,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 				'QTY'  => 1,
 			);
 
-			$order_subtotal += $fee['line_total'];
+			$order_subtotal += $order->get_line_total( $fee );
 		}
 
 		// add discounts
