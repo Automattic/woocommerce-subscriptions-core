@@ -578,7 +578,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 
 				// amounts must be 10,000.00 or less for USD
 				if ( isset( $this->parameters['PAYMENTREQUEST_0_CURRENCYCODE'] ) && 'USD' == $this->parameters['PAYMENTREQUEST_0_CURRENCYCODE'] && $value > 10000 ) {
-					throw new Exception( sprintf( '%s amount of %s must be less than $10,000.00', $key, $value ) );
+					throw new Exception( sprintf( '%s amount of %s must be less than $10,000.00', $key, wc_price( $value ) ) );
 				}
 
 				// PayPal requires locale-specific number formats (e.g. USD is 123.45)
