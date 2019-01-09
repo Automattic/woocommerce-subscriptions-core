@@ -84,6 +84,9 @@ class WCS_PayPal {
 		add_action( 'valid-paypal-standard-ipn-request', 'WCS_PayPal_Standard_IPN_Failure_Handler::attach', -1, 1 );
 		add_action( 'valid-paypal-standard-ipn-request', 'WCS_PayPal_Standard_IPN_Failure_Handler::detach', 1, 1 );
 
+		// Remove PayPal from the available payment methods if it's disabled for subscription purchases.
+		add_filter( 'woocommerce_available_payment_gateways', array( __CLASS__, 'maybe_remove_paypal_standard' ) );
+
 		WCS_PayPal_Supports::init();
 		WCS_PayPal_Status_Manager::init();
 		WCS_PayPal_Standard_Switcher::init();
@@ -579,5 +582,32 @@ class WCS_PayPal {
 				break;
 			}
 		}
+	}
+
+	/**
+	 * Remove PayPal Standard as an available payment method if it is disabled for subscriptions.
+	 *
+	 * @param array $available_gateways A list of available payment methods displayed on the checkout.
+	 * @return array
+	 * @since 2.5.0
+	 */
+	public static function maybe_remove_paypal_standard( $available_gateways ) {
+
+		if ( ! isset( $available_gateways['paypal'] ) || 'yes' === self::get_option( 'enabled_for_subscriptions' ) || WCS_PayPal::are_reference_transactions_enabled() ) {
+			return $available_gateways;
+		}
+
+		$paying_for_order = absint( get_query_var( 'order-pay' ) );
+
+		if (
+			WC_Subscriptions_Change_Payment_Gateway::$is_request_to_change_payment ||
+			WC_Subscriptions_Cart::cart_contains_subscription() ||
+			wcs_cart_contains_renewal() ||
+			( $paying_for_order && wcs_order_contains_subscription( $paying_for_order ) )
+		) {
+			unset( $available_gateways['paypal'] );
+		}
+
+		return $available_gateways;
 	}
 }
