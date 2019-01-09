@@ -546,4 +546,38 @@ class WCS_PayPal {
 		return 'paypal';
 	}
 
+	/**
+	 * Set the default value for whether PayPal Standard is enabled or disabled for subscriptions purchases.
+	 *
+	 * PayPal Standard will be enabled for subscriptions when:
+	 * - PayPal is enabled.
+	 * - The store has existing subscriptions.
+	 *
+	 * In any other case, it will be disabled by default.
+	 * This function is called when 2.5.0 is active for the first time. @see WC_Subscriptions_Upgrader::upgrade()
+	 *
+	 * @since 2.5.0
+	 */
+	public static function set_enabled_for_subscriptions_default() {
+
+		// Exit early if it has already been set.
+		if ( self::get_option( 'enabled_for_subscriptions' ) ) {
+			return;
+		}
+
+		// For existing stores with PayPal enabled, PayPal is automatically enabled for subscriptions.
+		if ( 'yes' === WCS_PayPal::get_option( 'enabled' ) && wcs_do_subscriptions_exist() ) {
+			$default = 'yes';
+		} else {
+			$default = 'no';
+		}
+
+		// Find the PayPal Standard gateway instance to set the setting.
+		foreach ( WC()->payment_gateways->payment_gateways as $gateway ) {
+			if ( $gateway->id === 'paypal' ) {
+				$gateway->update_option( 'enabled_for_subscriptions', $default );
+				break;
+			}
+		}
+	}
 }

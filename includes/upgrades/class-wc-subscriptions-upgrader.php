@@ -235,6 +235,11 @@ class WC_Subscriptions_Upgrader {
 			self::$background_updaters['2.4']['start_date_metadata']->schedule_repair();
 		}
 
+		// Upon upgrading or installing 2.5.0 for the first time, enable or disable PayPal Standard for Subscriptions.
+		if ( version_compare( self::$active_version, '2.5.0', '<' ) ) {
+			WCS_PayPal::set_enabled_for_subscriptions_default();
+		}
+
 		self::upgrade_complete();
 	}
 
