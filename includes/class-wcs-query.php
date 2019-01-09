@@ -125,6 +125,12 @@ class WCS_Query extends WC_Query {
 	 * @return array
 	 */
 	public function add_menu_items( $menu_items ) {
+
+		// If the Subscriptions endpoint setting is empty, don't display it in line with core WC behaviour.
+		if ( empty( $this->query_vars['subscriptions'] ) ) {
+			return $menu_items;
+		}
+
 		if ( 1 == count( wcs_get_users_subscriptions() ) && apply_filters( 'wcs_my_account_redirect_to_single_subscription', true ) ) {
 			$label = __( 'My Subscription', 'woocommerce-subscriptions' );
 		} else {

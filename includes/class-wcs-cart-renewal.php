@@ -1361,8 +1361,10 @@ class WCS_Cart_Renewal {
 	protected function apply_order_coupon( $order, $coupon ) {
 		$coupon_code = $coupon->get_code();
 
-		// Set order products as the product ids on the coupon
-		$coupon->set_product_ids( $this->get_products( $order ) );
+		// Set order products as the product ids on the coupon if the coupon does not already have usage restrictions for some products
+		if ( ! $coupon->get_product_ids() ) {
+			$coupon->set_product_ids( $this->get_products( $order ) );
+		}
 
 		// Store the coupon info for later
 		$this->store_coupon( $order->get_id(), $coupon );
