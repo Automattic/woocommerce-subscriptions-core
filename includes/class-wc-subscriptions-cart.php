@@ -892,14 +892,16 @@ class WC_Subscriptions_Cart {
 		$contains_synced = false;
 		$contains_expiring_limited_coupon = false;
 
-		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
-			$recurring_total    += $recurring_cart->total;
-			$subscription_length = wcs_cart_pluck( $recurring_cart, 'subscription_length' );
-			$contains_synced     = $contains_synced || (bool) WC_Subscriptions_Synchroniser::cart_contains_synced_subscription( $recurring_cart );
-			$contains_expiring_limited_coupon = $contains_expiring_limited_coupon || WC_Subscriptions_Coupon::recurring_cart_contains_expiring_coupon( $recurring_cart );
+		if ( ! empty( WC()->cart->recurring_carts ) ) {
+			foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
+				$recurring_total    += $recurring_cart->total;
+				$subscription_length = wcs_cart_pluck( $recurring_cart, 'subscription_length' );
+				$contains_synced     = $contains_synced || (bool) WC_Subscriptions_Synchroniser::cart_contains_synced_subscription( $recurring_cart );
+				$contains_expiring_limited_coupon = $contains_expiring_limited_coupon || WC_Subscriptions_Coupon::recurring_cart_contains_expiring_coupon( $recurring_cart );
 
-			if ( 0 == $subscription_length || wcs_cart_pluck( $recurring_cart, 'subscription_period_interval' ) != $subscription_length ) {
-				$is_one_period = false;
+				if ( 0 == $subscription_length || wcs_cart_pluck( $recurring_cart, 'subscription_period_interval' ) != $subscription_length ) {
+					$is_one_period = false;
+				}
 			}
 		}
 
