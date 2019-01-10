@@ -791,7 +791,7 @@ class WC_Subscription extends WC_Order {
 	public function disable_subscription_auto_renew() {
 		$this->set_requires_manual_renewal( true );
 		$this->save();
-		wc_add_notice( sprintf( '<strong>Success:</strong> Auto renewal was disabled for subscription #%d.', $this->get_id() ), 'success' );
+		wc_add_notice( sprintf( __( '<strong>Success:</strong> Auto renewal was disabled for subscription #%d.', 'woocommerce-subscriptions' ), $this->get_id() ), 'success' );
 	}
 
 	/**
@@ -803,7 +803,7 @@ class WC_Subscription extends WC_Order {
 		if ( false !== ( $payment_gateway = wc_get_payment_gateway_by_order( $this ) ) ) {
 			$this->set_requires_manual_renewal( false );
 			$this->save();
-			wc_add_notice( sprintf( '<strong>Success:</strong> Auto renewal was enabled for subscription #%d.', $this->get_id() ), 'success' );
+			wc_add_notice( sprintf( __( '<strong>Success:</strong> Auto renewal was enabled for subscription #%d.', 'woocommerce-subscriptions' ), $this->get_id() ), 'success' );
 		}
 	}
 
