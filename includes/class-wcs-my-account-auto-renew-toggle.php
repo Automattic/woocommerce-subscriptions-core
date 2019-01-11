@@ -1,6 +1,6 @@
 <?php
 /**
- *
+ * Class for managing Auto Renew Toggle on View Subscription page of My Account
  *
  * @package  WooCommerce Subscriptions
  * @category Class
@@ -54,6 +54,4 @@ class WCS_My_Account_Auto_Renew_Toggle {
 			$subscription->save();
 		}
 	}
-
-
 }
