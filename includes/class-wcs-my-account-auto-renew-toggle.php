@@ -21,6 +21,39 @@ class WCS_My_Account_Auto_Renew_Toggle {
 
 	}
 
+
+	/**
+	 * Check all conditions for whether auto renewal is possible
+	 *
+	 * @param WC_Subscription $subscription The subscription for which the checks for auto-renewal needs to be made
+	 * @return boolean
+	 * @since 2.5.0
+	 */
+	public static function can_subscription_be_auto_renewed( $subscription ) {
+		// Cannot auto renew a subscription with status other than active
+		if ( ! $subscription->has_status( 'active' ) ) {
+			return false;
+		}
+		// Cannot auto renew a subscription in the final billing period. No next renewal date. So, why think of auto renew?
+		if ( 0 == $subscription->get_date( 'next_payment' ) ) {
+			return false;
+		}
+		// If it is not a manual subscription, look for other settings before deciding
+		if ( ! $subscription->is_manual() ) {
+			// Cannot turn on or off automatic payments with Paypal Standard as the gateway
+			if ( $subscription->payment_method_supports( 'gateway_scheduled_payments' ) ) {
+				return false;
+			}
+		}
+		// If the store accepts manual renewals, but automatic payments are turned off, not possible to auto renew
+		if ( 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals' ) && 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+			return false;
+		}
+
+		// Looks like auto renewal is indeed possible
+		return true;
+	}
+
 	/**
 	 * Disable auto renewal of subscription
 	 *
