@@ -15,13 +15,13 @@ class WCS_My_Account_Auto_Renew_Toggle {
 	 * @since 2.5.0
 	 */
 	public static function init() {
-		add_action( 'wp_ajax_wcs_disable_auto_renew', array( __CLASS__ . '::disable_auto_renew' ) );
-		add_action( 'wp_ajax_wcs_enable_auto_renew', array( __CLASS__ . '::enable_auto_renew' ) );
+		add_action( 'wp_ajax_wcs_disable_auto_renew', array( __CLASS__, 'disable_auto_renew' ) );
+		add_action( 'wp_ajax_wcs_enable_auto_renew', array( __CLASS__, 'enable_auto_renew' ) );
 	}
 
 
 	/**
-	 * Check all conditions for whether auto renewal is possible
+	 * Check all conditions for whether auto-renewal can be changed is possible
 	 *
 	 * @param WC_Subscription $subscription The subscription for which the checks for auto-renewal needs to be made
 	 * @return boolean
