@@ -528,33 +528,53 @@ class WC_Subscription extends WC_Order {
 	 * Handle the status transition.
 	 */
 	protected function status_transition() {
+		// Use local copy of status transition value.
+		$status_transition = $this->status_transition;
 
-		if ( $this->status_transition ) {
-			do_action( 'woocommerce_subscription_status_' . $this->status_transition['to'], $this );
+		// If we're not currently in the midst of a status transition, bail early.
+		if ( ! $status_transition ) {
+			return;
+		}
 
-			if ( ! empty( $this->status_transition['from'] ) ) {
-				/* translators: 1: old subscription status 2: new subscription status */
-				$transition_note = sprintf( __( 'Status changed from %1$s to %2$s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $this->status_transition['from'] ), wcs_get_subscription_status_name( $this->status_transition['to'] ) );
+		try {
+			do_action( "woocommerce_subscription_status_{$status_transition['to']}", $this );
 
-				do_action( 'woocommerce_subscription_status_' . $this->status_transition['from'] . '_to_' . $this->status_transition['to'], $this );
+			if ( ! empty( $status_transition['from'] ) ) {
+				$transition_note = sprintf(
+					/* translators: 1: old subscription status 2: new subscription status */
+					__( 'Status changed from %1$s to %2$s.', 'woocommerce-subscriptions' ),
+					wcs_get_subscription_status_name( $status_transition['from'] ),
+					wcs_get_subscription_status_name( $status_transition['to'] )
+				);
 
-				// Trigger a hook with params we want
-				do_action( 'woocommerce_subscription_status_updated', $this, $this->status_transition['to'], $this->status_transition['from'] );
+				do_action( "woocommerce_subscription_status_{$status_transition['from']}_to_{$status_transition['to']}", $this );
 
-				// Trigger a hook with params matching WooCommerce's 'woocommerce_order_status_changed' hook so functions attached to it can be attached easily to subscription status changes
-				do_action( 'woocommerce_subscription_status_changed', $this->get_id(), $this->status_transition['from'], $this->status_transition['to'], $this );
+				// Trigger a hook with params we want.
+				do_action( 'woocommerce_subscription_status_updated', $this, $status_transition['to'], $status_transition['from'] );
 
+				// Trigger a hook with params matching WooCommerce's 'woocommerce_order_status_changed' hook so functions attached to it can be attached easily to subscription status changes.
+				do_action( 'woocommerce_subscription_status_changed', $this->get_id(), $status_transition['from'], $status_transition['to'], $this );
 			} else {
 				/* translators: %s: new order status */
-				$transition_note = sprintf( __( 'Status set to %s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $this->status_transition['to'] ) );
+				$transition_note = sprintf( __( 'Status set to %s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $status_transition['to'] ) );
 			}
 
-			// Note the transition occured
-			$this->add_order_note( trim( $this->status_transition['note'] . ' ' . $transition_note ), 0, $this->status_transition['manual'] );
-
-			// This has ran, so reset status transition variable
-			$this->status_transition = false;
+			// Note the transition occurred.
+			$this->add_order_note( trim( "{$status_transition['note']} {$transition_note}" ), 0, $status_transition['manual'] );
+		} catch ( Exception $e ) {
+			$logger = wc_get_logger();
+			$logger->error(
+				sprintf( 'Status transition of subscription #%d errored!', $this->get_id() ),
+				array(
+					'order' => $this,
+					'error' => $e,
+				)
+			);
+			$this->add_order_note( __( 'Error during subscription status transition.', 'woocommerce-subscriptions' ) . ' ' . $e->getMessage() );
 		}
+
+		// This has run, so reset status transition variable
+		$this->status_transition = false;
 	}
 
 	/**
