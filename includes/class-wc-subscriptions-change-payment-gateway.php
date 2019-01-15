@@ -67,6 +67,10 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 		// Maybe filter subscriptions_needs_payment to return false when processing change-payment-gateway requests
 		add_filter( 'woocommerce_subscription_needs_payment', __CLASS__ . '::maybe_override_needs_payment', 10, 1 );
+
+		// Display a login form if the customer is requesting to change their payment method but aren't logged in.
+		add_filter( 'the_content', array( __CLASS__, 'maybe_request_log_in' ) );
+
 	}
 
 	/**
@@ -806,6 +810,37 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		}
 
 		return $needs_payment;
+	}
+
+	/**
+	 * Display a login form on the change payment method page if the customer isn't logged in.
+	 *
+	 * @param string $content The default HTML page content.
+	 * @return string $content.
+	 * @since 2.5.0
+	 */
+	public static function maybe_request_log_in( $content ) {
+		global $wp;
+
+		if ( ! self::$is_request_to_change_payment || is_user_logged_in() || ! isset( $wp->query_vars['order-pay'] ) ) {
+			return $content;
+		}
+
+		$subscription = wcs_get_subscription( absint( $wp->query_vars['order-pay'] ) );
+
+		if ( $subscription ) {
+			wc_add_notice( __( 'Please log in to your account below to choose a new payment method for your subscription.', 'woocommerce-subscriptions' ), 'notice' );
+
+			ob_start();
+			woocommerce_login_form( array(
+				'redirect' => $subscription->get_change_payment_method_url(),
+				'message'  => wc_print_notices( true ),
+			) );
+
+			$content = ob_get_clean();
+		}
+
+		return $content;
 	}
 
 	/** Deprecated Functions **/
