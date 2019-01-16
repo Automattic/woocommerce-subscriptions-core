@@ -32,8 +32,12 @@ class WCS_My_Account_Auto_Renew_Toggle {
 		if ( ! $subscription->has_status( 'active' ) ) {
 			return false;
 		}
+		// Cannot change to auto-renewal for a subscription with 0 total
+		if ( 0 == $subscription->get_total() ) { // Not using strict comparison intentionally
+			return false;
+		}
 		// Cannot change to auto-renewal for a subscription in the final billing period. No next renewal date.
-		if ( 0 == $subscription->get_date( 'next_payment' ) ) {
+		if ( 0 == $subscription->get_date( 'next_payment' ) ) { // Not using strict comparison intentionally
 			return false;
 		}
 		// If it is not a manual subscription, and the payment gateway is Paypal Standard
