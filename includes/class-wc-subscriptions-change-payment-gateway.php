@@ -314,16 +314,16 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 		if ( $subscription->can_be_updated_to( 'new-payment-method' ) ) {
 
-			if ( $subscription->has_payment_gateway() ) {
+			if ( ! $subscription->is_manual() ) {
 				$action_name = _x( 'Change Payment', 'label on button, imperative', 'woocommerce-subscriptions' );
 			} else {
 				$action_name = _x( 'Add Payment', 'label on button, imperative', 'woocommerce-subscriptions' );
 			}
+
 			$actions['change_payment_method'] = array(
 				'url'  => wp_nonce_url( add_query_arg( array( 'change_payment_method' => $subscription->get_id() ), $subscription->get_checkout_payment_url() ) ),
 				'name' => $action_name,
 			);
-
 		}
 
 		return $actions;
