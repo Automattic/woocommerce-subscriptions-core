@@ -38,7 +38,7 @@ class WCS_My_Account_Auto_Renew_Toggle {
 		}
 		// If it is not a manual subscription, and the payment gateway is Paypal Standard
 		if ( ! $subscription->is_manual() && $subscription->payment_method_supports( 'gateway_scheduled_payments' ) ) {
-				return false;
+			return false;
 		}
 		// If the store accepts manual renewals, but automatic payments are turned off, not possible to change to auto-renewal
 		if ( 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals' ) && 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
@@ -61,8 +61,10 @@ class WCS_My_Account_Auto_Renew_Toggle {
 		}
 		$subscription = wcs_get_subscription( $_POST['subscription_id'] );
 
-		$subscription->set_requires_manual_renewal( true );
-		$subscription->save();
+		if ( $subscription ) {
+			$subscription->set_requires_manual_renewal( true );
+			$subscription->save();
+		}
 	}
 
 	/**
