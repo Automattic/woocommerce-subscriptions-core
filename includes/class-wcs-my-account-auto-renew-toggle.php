@@ -59,11 +59,15 @@ class WCS_My_Account_Auto_Renew_Toggle {
 	 * @since 2.5.0
 	 */
 	public static function disable_auto_renew() {
-		check_ajax_referer( 'toggle-auto-renew', 'security' );
+
 		if ( ! isset( $_POST['subscription_id'] ) ) {
 			return -1;
 		}
-		$subscription = wcs_get_subscription( $_POST['subscription_id'] );
+
+		$subscription_id = absint( $_POST['subscription_id'] );
+		check_ajax_referer( "toggle-auto-renew-{$subscription_id}", 'security' );
+
+		$subscription = wcs_get_subscription( $subscription_id );
 
 		if ( $subscription ) {
 			$subscription->set_requires_manual_renewal( true );
@@ -77,11 +81,15 @@ class WCS_My_Account_Auto_Renew_Toggle {
 	 * @since 2.5.0
 	 */
 	public static function enable_auto_renew() {
-		check_ajax_referer( 'toggle-auto-renew', 'security' );
+
 		if ( ! isset( $_POST['subscription_id'] ) ) {
 			return -1;
 		}
-		$subscription = wcs_get_subscription( $_POST['subscription_id'] );
+
+		$subscription_id = absint( $_POST['subscription_id'] );
+		check_ajax_referer( "toggle-auto-renew-{$subscription_id}", 'security' );
+
+		$subscription = wcs_get_subscription( $subscription_id );
 
 		if ( wc_get_payment_gateway_by_order( $subscription ) ) {
 			$subscription->set_requires_manual_renewal( false );
