@@ -1909,9 +1909,11 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Determine how the payment method should be displayed for a subscription.
 	 *
+	 * @param string $context The context the payment method is being displayed in. Can be 'admin' or 'customer'. Default 'admin'.
+	 *
 	 * @since 2.0
 	 */
-	public function get_payment_method_to_display() {
+	public function get_payment_method_to_display( $context = 'admin' ) {
 
 		if ( $this->is_manual() ) {
 
@@ -1929,7 +1931,14 @@ class WC_Subscription extends WC_Order {
 
 		}
 
-		return apply_filters( 'woocommerce_subscription_payment_method_to_display', $payment_method_to_display, $this );
+		$payment_method_to_display = apply_filters( 'woocommerce_subscription_payment_method_to_display', $payment_method_to_display, $this, $context );
+
+		if ( 'customer' === $context ) {
+			$payment_method_to_display = sprintf( __( 'Via %s', 'woocommerce-subscriptions' ), $payment_method_to_display );
+			$payment_method_to_display = apply_filters( 'woocommerce_my_subscriptions_payment_method', $payment_method_to_display, $this );
+		}
+
+		return $payment_method_to_display;
 	}
 
 	/**
