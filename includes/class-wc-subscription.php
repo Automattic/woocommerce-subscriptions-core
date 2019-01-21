@@ -1935,7 +1935,11 @@ class WC_Subscription extends WC_Order {
 
 		if ( 'customer' === $context ) {
 			$payment_method_to_display = sprintf( __( 'Via %s', 'woocommerce-subscriptions' ), $payment_method_to_display );
-			$payment_method_to_display = apply_filters( 'woocommerce_my_subscriptions_payment_method', $payment_method_to_display, $this );
+
+			// Only filter the result for non-manual subscriptions.
+			if ( ! $this->is_manual() ) {
+				$payment_method_to_display = apply_filters( 'woocommerce_my_subscriptions_payment_method', $payment_method_to_display, $this );
+			}
 		}
 
 		return $payment_method_to_display;
