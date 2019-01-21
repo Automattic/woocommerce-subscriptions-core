@@ -2448,6 +2448,23 @@ class WC_Subscription extends WC_Order {
 		return null;
 	}
 
+	/**
+	 * Get totals for display on pages and in emails.
+	 *
+	 * @param mixed $tax_display Excl or incl tax display mode.
+	 * @return array
+	 */
+	public function get_order_item_totals( $tax_display = '' ) {
+		$total_rows = parent::get_order_item_totals( $tax_display );
+
+		// Use get_payment_method_to_display() as it displays "Manual Renewal" for manual subscriptions.
+		if ( isset( $total_rows['payment_method'] ) ) {
+			$total_rows['payment_method']['value'] = $this->get_payment_method_to_display( 'customer' );
+		}
+
+		return apply_filters( 'woocommerce_get_subscription_item_totals', $total_rows, $this, $tax_display );
+	}
+
 	/************************
 	 * Deprecated Functions *
 	 ************************/
