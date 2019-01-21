@@ -72,6 +72,8 @@ class WCS_My_Account_Auto_Renew_Toggle {
 		if ( $subscription ) {
 			$subscription->set_requires_manual_renewal( true );
 			$subscription->save();
+
+			self::send_ajax_response( $subscription );
 		}
 	}
 
@@ -94,6 +96,17 @@ class WCS_My_Account_Auto_Renew_Toggle {
 		if ( wc_get_payment_gateway_by_order( $subscription ) ) {
 			$subscription->set_requires_manual_renewal( false );
 			$subscription->save();
+
+			self::send_ajax_response( $subscription );
 		}
+	}
+
+	/**
+	 * Send a response after processing the AJAX request so the page can be updated.
+	 *
+	 * @param WC_Subscription $subscription
+	 */
+	protected static function send_ajax_response( $subscription ) {
+		wp_send_json( array( 'payment_method' => esc_attr( $subscription->get_payment_method_to_display( 'customer' ) ) ) );
 	}
 }
