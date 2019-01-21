@@ -1924,7 +1924,7 @@ class WC_Subscription extends WC_Order {
 
 			$payment_method_to_display = $payment_gateway->get_title();
 
-		// Fallback to the title of the payment method when the subscripion was created
+		// Fallback to the title of the payment method when the subscription was created
 		} else {
 
 			$payment_method_to_display = $this->get_payment_method_title();

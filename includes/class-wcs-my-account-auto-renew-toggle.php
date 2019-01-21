@@ -40,7 +40,7 @@ class WCS_My_Account_Auto_Renew_Toggle {
 		if ( 0 == $subscription->get_date( 'next_payment' ) ) { // Not using strict comparison intentionally
 			return false;
 		}
-		// If it is not a manual subscription, and the payment gateway is Paypal Standard
+		// If it is not a manual subscription, and the payment gateway is PayPal Standard
 		if ( ! $subscription->is_manual() && $subscription->payment_method_supports( 'gateway_scheduled_payments' ) ) {
 			return false;
 		}
