@@ -776,12 +776,12 @@ class WC_Subscriptions_Admin {
 					'productHasSubscriptions'   => wcs_get_subscriptions_for_product( $post->ID ) ? 'yes' : 'no',
 					'productTypeWarning'        => __( 'Product type can not be changed because this product is associated with active subscriptions', 'woocommerce-subscriptions' ),
 				);
-			} else if ( 'edit-shop_order' == $screen->id ) {
+			} elseif ( 'edit-shop_order' == $screen->id ) {
 				$script_params = array(
 					'bulkTrashWarning' => __( "You are about to trash one or more orders which contain a subscription.\n\nTrashing the orders will also trash the subscriptions purchased with these orders.", 'woocommerce-subscriptions' ),
 					'trashWarning'     => $trashing_subscription_order_warning,
 				);
-			} else if ( 'shop_order' == $screen->id ) {
+			} elseif ( 'shop_order' == $screen->id ) {
 				$dependencies[] = $woocommerce_admin_script_handle;
 				$dependencies[] = 'wc-admin-order-meta-boxes';
 
@@ -797,7 +797,7 @@ class WC_Subscriptions_Admin {
 					'EditOrderNonce'    => wp_create_nonce( 'woocommerce-subscriptions' ),
 					'postId'            => $post->ID,
 				);
-			} else if ( 'users' == $screen->id ) {
+			} elseif ( 'users' == $screen->id ) {
 				$script_params = array(
 					'deleteUserWarning' => __( "Warning: Deleting a user will also delete the user's subscriptions. The user's orders will remain but be reassigned to the 'Guest' user.\n\nDo you want to continue to delete this user and any associated subscriptions?", 'woocommerce-subscriptions' ),
 				);
