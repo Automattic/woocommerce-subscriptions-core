@@ -302,8 +302,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 		// Ensure there is an order key.
 		if ( ! $subscription->get_order_key() ) {
-			$key = 'wc_' . apply_filters( 'woocommerce_generate_order_key', uniqid( 'order_' ) );
-			wcs_set_objects_property( $subscription, 'order_key', $key );
+			wcs_set_objects_property( $subscription, 'order_key', wcs_generate_order_key() );
 		}
 
 		// Update meta
