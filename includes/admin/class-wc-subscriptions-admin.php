@@ -801,6 +801,10 @@ class WC_Subscriptions_Admin {
 				$script_params = array(
 					'deleteUserWarning' => __( "Warning: Deleting a user will also delete the user's subscriptions. The user's orders will remain but be reassigned to the 'Guest' user.\n\nDo you want to continue to delete this user and any associated subscriptions?", 'woocommerce-subscriptions' ),
 				);
+			} elseif ( 'woocommerce_page_wc-settings' === $screen->id ) {
+				$script_params = array(
+					'enablePayPalWarning' => __( 'PayPal Standard has a number of limitations and does not support all subscription features.', 'woocommerce-subscriptions' ) . "\n\n" . __( 'Are you sure you would like to enable PayPal Standard for Subscriptions?', 'woocommerce-subscriptions' ),
+				);
 			}
 
 			$script_params['ajaxLoaderImage'] = WC()->plugin_url() . '/assets/images/ajax-loader.gif';
