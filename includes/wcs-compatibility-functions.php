@@ -519,3 +519,22 @@ function wcs_set_coupon_property( &$coupon, $property, $value ) {
 		}
 	}
 }
+
+/**
+ * Generate an order/subscription key.
+ *
+ * This is a compatibility wrapper for @see wc_generate_order_key() which was introduced in WC 3.5.4.
+ *
+ * @return string $order_key.
+ * @since 2.5.0
+ */
+function wcs_generate_order_key() {
+
+	if ( function_exists( 'wc_generate_order_key' ) ) {
+		$order_key = wc_generate_order_key();
+	} else {
+		$order_key = 'wc_' . apply_filters( 'woocommerce_generate_order_key', 'order_' . wp_generate_password( 13, false ) );
+	}
+
+	return $order_key;
+}
