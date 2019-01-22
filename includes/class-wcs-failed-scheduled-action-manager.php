@@ -131,7 +131,7 @@ class WCS_Failed_Scheduled_Action_Manager {
 		) );
 		$notice->set_actions( array(
 			array(
-				'name'  => __( 'Ignore this error (not recommended)', 'woocommerce-subscriptions' ),
+				'name'  => __( 'Ignore this error', 'woocommerce-subscriptions' ),
 				'url'   => wp_nonce_url( add_query_arg( 'wcs_scheduled_action_timeout_error_notice', 'ignore' ), 'wcs_scheduled_action_timeout_error_notice', '_wcsnonce' ),
 				'class' => 'button',
 			),
