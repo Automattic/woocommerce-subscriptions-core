@@ -136,8 +136,8 @@ class WCS_Failed_Scheduled_Action_Manager {
 				'class' => 'button',
 			),
 			array(
-				'name'  => __( 'Open a ticket', 'woocommerce-subscriptions' ),
-				'url'   => 'https://woocommerce.com/my-account/marketplace-ticket-form/',
+				'name'  => __( 'Learn more', 'woocommerce-subscriptions' ),
+				'url'   => 'https://docs.woocommerce.com/document/subscriptions/scheduled-action-errors/',
 				'class' => 'button button-primary',
 			),
 		) );
