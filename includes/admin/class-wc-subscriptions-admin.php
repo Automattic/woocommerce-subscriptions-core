@@ -803,7 +803,7 @@ class WC_Subscriptions_Admin {
 				);
 			} elseif ( 'woocommerce_page_wc-settings' === $screen->id ) {
 				$script_params = array(
-					'enablePayPalWarning' => __( 'PayPal Standard has a number of limitations and does not support all subscription features.', 'woocommerce-subscriptions' ) . "\n\n" . __( 'Are you sure you would like to enable PayPal Standard for Subscriptions?', 'woocommerce-subscriptions' ),
+					'enablePayPalWarning' => __( 'PayPal Standard has a number of limitations and does not support all subscription features.', 'woocommerce-subscriptions' ) . "\n\n" . __( 'Because of this, it is not recommended as a payment method for Subscriptions unless it is the only available option for your country.', 'woocommerce-subscriptions' ),
 				);
 			}
 
