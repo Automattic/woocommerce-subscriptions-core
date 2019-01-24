@@ -692,8 +692,8 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 */
 	public static function can_subscription_be_updated_to_new_payment_method( $subscription_can_be_changed, $subscription ) {
 
-		// Don't allow if automatic payments are disabled.
-		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+		// Don't allow if automatic payments are disabled and the toggle is also disabled.
+		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) && ! WCS_My_Account_Auto_Renew_Toggle::is_enabled() ) {
 			return false;
 		}
 

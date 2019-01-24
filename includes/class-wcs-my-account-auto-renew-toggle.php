@@ -38,7 +38,7 @@ class WCS_My_Account_Auto_Renew_Toggle {
 	 */
 	public static function can_subscription_auto_renewal_be_changed( $subscription ) {
 
-		if ( 'no' === get_option( self::$setting_id, 'no' ) ) {
+		if ( ! self::is_enabled() ) {
 			return false;
 		}
 		// Cannot change to auto-renewal for a subscription with status other than active
@@ -137,5 +137,15 @@ class WCS_My_Account_Auto_Renew_Toggle {
 		) );
 
 		return $settings;
+	}
+
+	/**
+	 * Checks if the store has enabled the auto-renewal toggle.
+	 *
+	 * @return bool true if the toggle is enabled, otherwise false.
+	 * @since 2.5.0
+	 */
+	public static function is_enabled() {
+		return 'yes' === get_option( self::$setting_id, 'no' );
 	}
 }
