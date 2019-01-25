@@ -314,7 +314,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 		if ( $subscription->can_be_updated_to( 'new-payment-method' ) ) {
 
-			if ( ! $subscription->is_manual() ) {
+			if ( $subscription->has_payment_gateway() && wc_get_payment_gateway_by_order( $subscription )->supports( 'subscriptions' ) ) {
 				$action_name = _x( 'Change Payment', 'label on button, imperative', 'woocommerce-subscriptions' );
 			} else {
 				$action_name = _x( 'Add Payment', 'label on button, imperative', 'woocommerce-subscriptions' );
