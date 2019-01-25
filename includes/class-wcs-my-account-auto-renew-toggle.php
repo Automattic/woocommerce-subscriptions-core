@@ -10,15 +10,24 @@
 class WCS_My_Account_Auto_Renew_Toggle {
 
 	/**
+	 * The auto-renewal toggle setting ID.
+	 *
+	 * @var string
+	 */
+	protected static $setting_id;
+
+	/**
 	 * Initialize filters and hooks for class.
 	 *
 	 * @since 2.5.0
 	 */
 	public static function init() {
+		self::$setting_id = WC_Subscriptions_Admin::$option_prefix . '_enable_auto_renewal_toggle';
+
 		add_action( 'wp_ajax_wcs_disable_auto_renew', array( __CLASS__, 'disable_auto_renew' ) );
 		add_action( 'wp_ajax_wcs_enable_auto_renew', array( __CLASS__, 'enable_auto_renew' ) );
+		add_filter( 'woocommerce_subscription_settings', array( __CLASS__, 'add_setting' ), 20 );
 	}
-
 
 	/**
 	 * Check all conditions for whether auto-renewal can be changed is possible
@@ -28,6 +37,10 @@ class WCS_My_Account_Auto_Renew_Toggle {
 	 * @since 2.5.0
 	 */
 	public static function can_subscription_auto_renewal_be_changed( $subscription ) {
+
+		if ( ! self::is_enabled() ) {
+			return false;
+		}
 		// Cannot change to auto-renewal for a subscription with status other than active
 		if ( ! $subscription->has_status( 'active' ) ) {
 			return false;
@@ -40,12 +53,8 @@ class WCS_My_Account_Auto_Renew_Toggle {
 		if ( 0 == $subscription->get_date( 'next_payment' ) ) { // Not using strict comparison intentionally
 			return false;
 		}
-		// If it is not a manual subscription, and the payment gateway is Paypal Standard
+		// If it is not a manual subscription, and the payment gateway is PayPal Standard
 		if ( ! $subscription->is_manual() && $subscription->payment_method_supports( 'gateway_scheduled_payments' ) ) {
-			return false;
-		}
-		// If the store accepts manual renewals, but automatic payments are turned off, not possible to change to auto-renewal
-		if ( 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals' ) && 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
 			return false;
 		}
 
@@ -72,6 +81,8 @@ class WCS_My_Account_Auto_Renew_Toggle {
 		if ( $subscription ) {
 			$subscription->set_requires_manual_renewal( true );
 			$subscription->save();
+
+			self::send_ajax_response( $subscription );
 		}
 	}
 
@@ -94,6 +105,47 @@ class WCS_My_Account_Auto_Renew_Toggle {
 		if ( wc_get_payment_gateway_by_order( $subscription ) ) {
 			$subscription->set_requires_manual_renewal( false );
 			$subscription->save();
+
+			self::send_ajax_response( $subscription );
 		}
+	}
+
+	/**
+	 * Send a response after processing the AJAX request so the page can be updated.
+	 *
+	 * @param WC_Subscription $subscription
+	 */
+	protected static function send_ajax_response( $subscription ) {
+		wp_send_json( array( 'payment_method' => esc_attr( $subscription->get_payment_method_to_display( 'customer' ) ) ) );
+	}
+
+	/**
+	 * Add a setting to allow store managers to enable or disable the auto-renewal toggle.
+	 *
+	 * @param array $settings
+	 * @return array
+	 * @since 2.5.0
+	 */
+	public static function add_setting( $settings ) {
+		WC_Subscriptions_Admin::insert_setting_after( $settings, 'woocommerce_subscriptions_turn_off_automatic_payments', array(
+			'id'       => self::$setting_id,
+			'name'     => __( 'Auto Renewal Toggle', 'woocommerce-subscriptions' ),
+			'desc'     => __( 'Display the auto renewal toggle', 'woocommerce-subscriptions' ),
+			'desc_tip' => __( 'Allow customers to turn on and off automatic renewals from their View Subscription page.', 'woocommerce-subscriptions' ),
+			'default'  => 'no',
+			'type'     => 'checkbox',
+		) );
+
+		return $settings;
+	}
+
+	/**
+	 * Checks if the store has enabled the auto-renewal toggle.
+	 *
+	 * @return bool true if the toggle is enabled, otherwise false.
+	 * @since 2.5.0
+	 */
+	public static function is_enabled() {
+		return 'yes' === get_option( self::$setting_id, 'no' );
 	}
 }

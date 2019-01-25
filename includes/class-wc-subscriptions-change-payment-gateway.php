@@ -314,16 +314,16 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 		if ( $subscription->can_be_updated_to( 'new-payment-method' ) ) {
 
-			if ( $subscription->has_payment_gateway() ) {
+			if ( $subscription->has_payment_gateway() && wc_get_payment_gateway_by_order( $subscription )->supports( 'subscriptions' ) ) {
 				$action_name = _x( 'Change Payment', 'label on button, imperative', 'woocommerce-subscriptions' );
 			} else {
 				$action_name = _x( 'Add Payment', 'label on button, imperative', 'woocommerce-subscriptions' );
 			}
+
 			$actions['change_payment_method'] = array(
 				'url'  => wp_nonce_url( add_query_arg( array( 'change_payment_method' => $subscription->get_id() ), $subscription->get_checkout_payment_url() ) ),
 				'name' => $action_name,
 			);
-
 		}
 
 		return $actions;
@@ -692,8 +692,8 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 */
 	public static function can_subscription_be_updated_to_new_payment_method( $subscription_can_be_changed, $subscription ) {
 
-		// Don't allow if automatic payments are disabled.
-		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+		// Don't allow if automatic payments are disabled and the toggle is also disabled.
+		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) && ! WCS_My_Account_Auto_Renew_Toggle::is_enabled() ) {
 			return false;
 		}
 

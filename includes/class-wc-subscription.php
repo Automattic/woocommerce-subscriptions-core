@@ -1909,9 +1909,11 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Determine how the payment method should be displayed for a subscription.
 	 *
+	 * @param string $context The context the payment method is being displayed in. Can be 'admin' or 'customer'. Default 'admin'.
+	 *
 	 * @since 2.0
 	 */
-	public function get_payment_method_to_display() {
+	public function get_payment_method_to_display( $context = 'admin' ) {
 
 		if ( $this->is_manual() ) {
 
@@ -1922,14 +1924,25 @@ class WC_Subscription extends WC_Order {
 
 			$payment_method_to_display = $payment_gateway->get_title();
 
-		// Fallback to the title of the payment method when the subscripion was created
+		// Fallback to the title of the payment method when the subscription was created
 		} else {
 
 			$payment_method_to_display = $this->get_payment_method_title();
 
 		}
 
-		return apply_filters( 'woocommerce_subscription_payment_method_to_display', $payment_method_to_display, $this );
+		$payment_method_to_display = apply_filters( 'woocommerce_subscription_payment_method_to_display', $payment_method_to_display, $this, $context );
+
+		if ( 'customer' === $context ) {
+			$payment_method_to_display = sprintf( __( 'Via %s', 'woocommerce-subscriptions' ), $payment_method_to_display );
+
+			// Only filter the result for non-manual subscriptions.
+			if ( ! $this->is_manual() ) {
+				$payment_method_to_display = apply_filters( 'woocommerce_my_subscriptions_payment_method', $payment_method_to_display, $this );
+			}
+		}
+
+		return $payment_method_to_display;
 	}
 
 	/**
@@ -2437,6 +2450,23 @@ class WC_Subscription extends WC_Order {
 	 */
 	protected function maybe_set_date_completed() {
 		return null;
+	}
+
+	/**
+	 * Get totals for display on pages and in emails.
+	 *
+	 * @param mixed $tax_display Excl or incl tax display mode.
+	 * @return array
+	 */
+	public function get_order_item_totals( $tax_display = '' ) {
+		$total_rows = parent::get_order_item_totals( $tax_display );
+
+		// Use get_payment_method_to_display() as it displays "Manual Renewal" for manual subscriptions.
+		if ( isset( $total_rows['payment_method'] ) ) {
+			$total_rows['payment_method']['value'] = $this->get_payment_method_to_display( 'customer' );
+		}
+
+		return apply_filters( 'woocommerce_get_subscription_item_totals', $total_rows, $this, $tax_display );
 	}
 
 	/************************
