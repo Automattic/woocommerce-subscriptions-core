@@ -80,13 +80,6 @@ class WC_Subscriptions_Cart {
 		// Make sure cart product prices correctly include/exclude taxes
 		add_filter( 'woocommerce_cart_product_price', __CLASS__ . '::cart_product_price' , 10, 2 );
 
-		// Make sure cart totals are calculated when setting up the cart widget
-		add_action( 'wc_ajax_get_refreshed_fragments', __CLASS__ . '::pre_get_refreshed_fragments' , 1 );
-		add_action( 'wp_ajax_woocommerce_get_refreshed_fragments', __CLASS__ . '::pre_get_refreshed_fragments', 1 );
-		add_action( 'wp_ajax_nopriv_woocommerce_get_refreshed_fragments', __CLASS__ . '::pre_get_refreshed_fragments', 1, 1 );
-
-		add_action( 'woocommerce_ajax_added_to_cart', __CLASS__ . '::pre_get_refreshed_fragments', 1, 1 );
-
 		// Display grouped recurring amounts after order totals on the cart/checkout pages
 		add_action( 'woocommerce_cart_totals_after_order_total', __CLASS__ . '::display_recurring_totals' );
 		add_action( 'woocommerce_review_order_after_order_total', __CLASS__ . '::display_recurring_totals' );
@@ -966,19 +959,6 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
-	 * Make sure cart totals are calculated when the cart widget is populated via the get_refreshed_fragments() method
-	 * so that @see self::get_formatted_cart_subtotal() returns the correct subtotal price string.
-	 *
-	 * @since 1.5.11
-	 */
-	public static function pre_get_refreshed_fragments() {
-		if ( defined( 'DOING_AJAX' ) && true === DOING_AJAX && ! defined( 'WOOCOMMERCE_CART' ) ) {
-			define( 'WOOCOMMERCE_CART', true );
-			WC()->cart->calculate_totals();
-		}
-	}
-
-	/**
 	 * Display the recurring totals for items in the cart
 	 *
 	 * @since 2.0
@@ -1344,6 +1324,21 @@ class WC_Subscriptions_Cart {
 	}
 
 	/* Deprecated */
+
+	/**
+	 * Make sure cart totals are calculated when the cart widget is populated via the get_refreshed_fragments() method
+	 * so that @see self::get_formatted_cart_subtotal() returns the correct subtotal price string.
+	 *
+	 * @since 1.5.11
+	 * @deprecated 2.5.0
+	 */
+	public static function pre_get_refreshed_fragments() {
+		wcs_deprecated_function( __METHOD__, '2.5.0' );
+		if ( defined( 'DOING_AJAX' ) && true === DOING_AJAX && ! defined( 'WOOCOMMERCE_CART' ) ) {
+			define( 'WOOCOMMERCE_CART', true );
+			WC()->cart->calculate_totals();
+		}
+	}
 
 	/**
 	 * Checks the cart to see if it contains a subscription product renewal.
