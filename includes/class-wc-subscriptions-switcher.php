@@ -896,6 +896,31 @@ class WC_Subscriptions_Switcher {
 					// Keep a record of the subscription shipping total. Adding shipping methods will cause a new shipping total to be set, we'll need to set it back after.
 					$subscription_shipping_total = $subscription->get_total_shipping();
 
+					// If there are any fees applied in the cart, copy them to the subscription or replace if already present
+					$current_fees = array();
+					// Store the currently applied fees and the ids
+					foreach ( $subscription->get_fees() as $current_fee ) {
+						$name = $current_fee->get_name();
+						$id   = $current_fee->get_id();
+						$current_fees[ $name ] = $id;
+					}
+					// If the fee in the cart is present in the list of fees on the subscription,
+					// remove it from the subscription before adding
+					foreach ( $recurring_cart->get_fees() as $fee_key => $fee ) {
+						if ( in_array( $fee_key, array_keys( $current_fees ) ) ) {
+							$subscription->remove_item( $current_fees[ $fee_key ] );
+						}
+						$item_id = $subscription->add_fee( $fee );
+
+						if ( ! $item_id ) {
+							// translators: placeholder is an internal error number
+							throw new Exception( sprintf( __( 'Error %d: Unable to add fee. Please try again.', 'woocommerce-subscriptions' ), 403 ) );
+						}
+
+						// Allow plugins to add order item meta to fees
+						do_action( 'woocommerce_add_order_fee_meta', $subscription->get_id(), $item_id, $fee, $fee_key );
+					}
+
 					WC_Subscriptions_Checkout::add_shipping( $subscription, $recurring_cart );
 
 					if ( ! WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
