@@ -59,6 +59,9 @@ class WC_Subscriptions_Admin {
 		// Add subscriptions to the product select box
 		add_filter( 'product_type_selector', __CLASS__ . '::add_subscription_products_to_select' );
 
+		// Special handling of downloadable and virtual products on the WooCommerce > Products screen.
+		add_filter( 'request', array( __CLASS__, 'modify_downloadable_and_virtual_product_queries' ), 11 );
+
 		// Add subscription pricing fields on edit product page
 		add_action( 'woocommerce_product_options_general_product_data', __CLASS__ . '::subscription_pricing_fields' );
 
@@ -216,6 +219,42 @@ class WC_Subscriptions_Admin {
 
 		// Trial end date doesn't change at all
 		wcs_make_user_active( $subscription->get_user_id() );
+	}
+
+	/**
+	 * Modifies the main query on the WooCommerce products screen to correctly handle filtering by virtual and downloadable
+	 * product types.
+	 *
+	 * @param  array $query_vars
+	 * @return array $query_vars
+	 * @since  2.5.1
+	 */
+	public static function modify_downloadable_and_virtual_product_queries( $query_vars) {
+		global $pagenow, $typenow;
+
+		if ( ! is_admin() || 'edit.php' !== $pagenow || 'product' !== $typenow ) {
+			return $query_vars;
+		}
+
+		$current_product_type = isset( $_REQUEST['product_type'] ) ? wc_clean( wp_unslash( $_REQUEST['product_type'] ) ) : false;
+
+		if ( ! $current_product_type ) {
+			return $query_vars;
+		}
+
+		if ( in_array( $current_product_type, array( 'downloadable', 'virtual' ) ) && ! isset( $query_vars['tax_query'] ) ) {
+			// Do not include subscriptions when the default "Downloadable" or "Virtual" query for simple products is being executed.
+			$query_vars['tax_query'] = array(
+				array(
+					'taxonomy' => 'product_type',
+					'terms'    => array( 'subscription' ),
+					'field'    => 'slug',
+					'operator' => 'NOT IN',
+				),
+			);
+		}
+
+		return $query_vars;
 	}
 
 	/**
