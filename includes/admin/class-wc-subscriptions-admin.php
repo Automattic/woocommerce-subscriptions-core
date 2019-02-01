@@ -88,6 +88,9 @@ class WC_Subscriptions_Admin {
 
 		add_action( 'woocommerce_subscription_pre_update_status', __CLASS__ . '::check_customer_is_set', 10, 3 );
 
+		// Make appropriate changes when subscription is uncancelled from pending-cancel status
+		add_action( 'woocommerce_subscription_status_pending-cancel_to_active', __CLASS__ . '::recalculate_dates_for_active_status', 10 );
+
 		add_action( 'product_variation_linked', __CLASS__ . '::set_variation_meta_defaults_on_bulk_add' );
 
 		add_filter( 'woocommerce_settings_tabs_array', __CLASS__ . '::add_subscription_settings_tab', 50 );
@@ -186,6 +189,33 @@ class WC_Subscriptions_Admin {
 		$product_types['variable-subscription'] = __( 'Variable subscription', 'woocommerce-subscriptions' );
 
 		return $product_types;
+	}
+
+	/**
+	 * Recalculate and reset dates when subscription transitions to active status
+	 *
+	 * @param WC_Subscription $subscription Subscription for which the dates are to be recalculated
+	 * @since 2.5
+	 */
+	public static function recalculate_dates_for_active_status( $subscription ) {
+		// Recalculate and set next payment date
+		$stored_next_payment = $subscription->get_time( 'next_payment' );
+
+		// Force set cancelled_date and end date to 0 temporarily so that next_payment_date can be calculated properly
+		// This next_payment_date will be the end of prepaid term that will be picked by action scheduler
+		$subscription->delete_date( 'cancelled' );
+		$subscription->delete_date( 'end' );
+
+		$calculated_next_payment = $subscription->calculate_date( 'next_payment' );
+
+		if ( $calculated_next_payment > 0 ) {
+			$subscription->update_dates( array( 'next_payment' => $calculated_next_payment ) );
+		} elseif ( $stored_next_payment < gmdate( 'U' ) ) { // delete the stored date if it's in the past as we're not updating it (the calculated next payment date is 0 or none)
+			$subscription->delete_date( 'next_payment' );
+		}
+
+		// Trial end date doesn't change at all
+		wcs_make_user_active( $subscription->get_user_id() );
 	}
 
 	/**
@@ -746,12 +776,12 @@ class WC_Subscriptions_Admin {
 					'productHasSubscriptions'   => wcs_get_subscriptions_for_product( $post->ID ) ? 'yes' : 'no',
 					'productTypeWarning'        => __( 'Product type can not be changed because this product is associated with active subscriptions', 'woocommerce-subscriptions' ),
 				);
-			} else if ( 'edit-shop_order' == $screen->id ) {
+			} elseif ( 'edit-shop_order' == $screen->id ) {
 				$script_params = array(
 					'bulkTrashWarning' => __( "You are about to trash one or more orders which contain a subscription.\n\nTrashing the orders will also trash the subscriptions purchased with these orders.", 'woocommerce-subscriptions' ),
 					'trashWarning'     => $trashing_subscription_order_warning,
 				);
-			} else if ( 'shop_order' == $screen->id ) {
+			} elseif ( 'shop_order' == $screen->id ) {
 				$dependencies[] = $woocommerce_admin_script_handle;
 				$dependencies[] = 'wc-admin-order-meta-boxes';
 
@@ -767,9 +797,13 @@ class WC_Subscriptions_Admin {
 					'EditOrderNonce'    => wp_create_nonce( 'woocommerce-subscriptions' ),
 					'postId'            => $post->ID,
 				);
-			} else if ( 'users' == $screen->id ) {
+			} elseif ( 'users' == $screen->id ) {
 				$script_params = array(
 					'deleteUserWarning' => __( "Warning: Deleting a user will also delete the user's subscriptions. The user's orders will remain but be reassigned to the 'Guest' user.\n\nDo you want to continue to delete this user and any associated subscriptions?", 'woocommerce-subscriptions' ),
+				);
+			} elseif ( 'woocommerce_page_wc-settings' === $screen->id ) {
+				$script_params = array(
+					'enablePayPalWarning' => __( 'PayPal Standard has a number of limitations and does not support all subscription features.', 'woocommerce-subscriptions' ) . "\n\n" . __( 'Because of this, it is not recommended as a payment method for Subscriptions unless it is the only available option for your country.', 'woocommerce-subscriptions' ),
 				);
 			}
 
@@ -1177,6 +1211,15 @@ class WC_Subscriptions_Admin {
 				'default'       => 'no',
 				'type'          => 'checkbox',
 				'desc_tip'      => __( 'Allow a subscription product to be purchased with other products and subscriptions in the same transaction.', 'woocommerce-subscriptions' ),
+			),
+
+			array(
+				'name'          => __( '$0 Intial Checkout', 'woocommerce-subscriptions' ),
+				'desc'          => __( 'Allow $0 initial checkout without a payment method.', 'woocommerce-subscriptions' ),
+				'id'            => self::$option_prefix . '_zero_initial_payment_requires_payment',
+				'default'       => 'no',
+				'type'          => 'checkbox',
+				'desc_tip'      => __( 'Allow a subscription product with a $0 initial payment to be purchased without providing a payment method. The customer will be required to provide a payment method at the end of the initial period to keep the subscription active.', 'woocommerce-subscriptions' ),
 			),
 
 			array(

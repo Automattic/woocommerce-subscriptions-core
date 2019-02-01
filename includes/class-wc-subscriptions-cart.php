@@ -791,6 +791,17 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
+	 * Checks to see if payment method is required on a subscription product with a $0 initial payment.
+	 *
+	 * @since 2.5.0
+	 */
+	public static function zero_initial_payment_requires_payment() {
+
+		return 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_zero_initial_payment_requires_payment', 'no' );
+
+	}
+
+	/**
 	 * Gets the cart calculation type flag
 	 *
 	 * @since 1.2
@@ -853,30 +864,44 @@ class WC_Subscriptions_Cart {
 	 * @return bool
 	 */
 	public static function cart_needs_payment( $needs_payment, $cart ) {
-		if ( false === $needs_payment && self::cart_contains_subscription() && $cart->total == 0 && false === WC_Subscriptions_Switcher::cart_contains_switches() && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
-			$recurring_total = 0;
-			$is_one_period   = true;
-			$contains_synced = false;
-			$contains_expiring_limited_coupon = false;
 
-			if ( ! empty( WC()->cart->recurring_carts ) ) {
-				foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
-					$recurring_total    += $recurring_cart->total;
-					$subscription_length = wcs_cart_pluck( $recurring_cart, 'subscription_length' );
-					$contains_synced     = $contains_synced || (bool) WC_Subscriptions_Synchroniser::cart_contains_synced_subscription( $recurring_cart );
-					$contains_expiring_limited_coupon = $contains_expiring_limited_coupon || WC_Subscriptions_Coupon::recurring_cart_contains_expiring_coupon( $recurring_cart );
+		// Skip checks if needs payment is already set or cart total not 0.
+		if ( false !== $needs_payment || 0 != $cart->total ) {
+			return $needs_payment;
+		}
 
-					if ( 0 == $subscription_length || wcs_cart_pluck( $recurring_cart, 'subscription_period_interval' ) != $subscription_length ) {
-						$is_one_period = false;
-					}
+		// Skip checks if new $0 initial payments don't require a payment method or cart has no subscriptions.
+		if ( ! self::zero_initial_payment_requires_payment() || ! self::cart_contains_subscription() ) {
+			return $needs_payment;
+		}
+
+		// Skip checks if cart contains subscription switches or automatic payments are disabled.
+		if ( false !== WC_Subscriptions_Switcher::cart_contains_switches() || 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+			return $needs_payment;
+		}
+
+		$recurring_total = 0;
+		$is_one_period   = true;
+		$contains_synced = false;
+		$contains_expiring_limited_coupon = false;
+
+		if ( ! empty( WC()->cart->recurring_carts ) ) {
+			foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
+				$recurring_total    += $recurring_cart->total;
+				$subscription_length = wcs_cart_pluck( $recurring_cart, 'subscription_length' );
+				$contains_synced     = $contains_synced || (bool) WC_Subscriptions_Synchroniser::cart_contains_synced_subscription( $recurring_cart );
+				$contains_expiring_limited_coupon = $contains_expiring_limited_coupon || WC_Subscriptions_Coupon::recurring_cart_contains_expiring_coupon( $recurring_cart );
+
+				if ( 0 == $subscription_length || wcs_cart_pluck( $recurring_cart, 'subscription_period_interval' ) != $subscription_length ) {
+					$is_one_period = false;
 				}
 			}
+		}
 
-			$has_trial = self::cart_contains_free_trial();
+		$needs_trial_payment = self::cart_contains_free_trial();
 
-			if ( $contains_expiring_limited_coupon || $recurring_total > 0 && ( ! $is_one_period || $has_trial || $contains_synced ) ) {
-				$needs_payment = true;
-			}
+		if ( $contains_expiring_limited_coupon || $recurring_total > 0 && ( ! $is_one_period || $needs_trial_payment || $contains_synced ) ) {
+			$needs_payment = true;
 		}
 
 		return $needs_payment;

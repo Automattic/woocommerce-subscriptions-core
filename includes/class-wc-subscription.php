@@ -327,7 +327,7 @@ class WC_Subscription extends WC_Order {
 			case 'active' :
 				if ( $this->payment_method_supports( 'subscription_reactivation' ) && $this->has_status( 'on-hold' ) ) {
 					$can_be_updated = true;
-				} elseif ( $this->has_status( 'pending' ) ) {
+				} elseif ( $this->has_status( array( 'pending', 'pending-cancel' ) ) ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
@@ -528,33 +528,53 @@ class WC_Subscription extends WC_Order {
 	 * Handle the status transition.
 	 */
 	protected function status_transition() {
+		// Use local copy of status transition value.
+		$status_transition = $this->status_transition;
 
-		if ( $this->status_transition ) {
-			do_action( 'woocommerce_subscription_status_' . $this->status_transition['to'], $this );
+		// If we're not currently in the midst of a status transition, bail early.
+		if ( ! $status_transition ) {
+			return;
+		}
 
-			if ( ! empty( $this->status_transition['from'] ) ) {
-				/* translators: 1: old subscription status 2: new subscription status */
-				$transition_note = sprintf( __( 'Status changed from %1$s to %2$s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $this->status_transition['from'] ), wcs_get_subscription_status_name( $this->status_transition['to'] ) );
+		try {
+			do_action( "woocommerce_subscription_status_{$status_transition['to']}", $this );
 
-				do_action( 'woocommerce_subscription_status_' . $this->status_transition['from'] . '_to_' . $this->status_transition['to'], $this );
+			if ( ! empty( $status_transition['from'] ) ) {
+				$transition_note = sprintf(
+					/* translators: 1: old subscription status 2: new subscription status */
+					__( 'Status changed from %1$s to %2$s.', 'woocommerce-subscriptions' ),
+					wcs_get_subscription_status_name( $status_transition['from'] ),
+					wcs_get_subscription_status_name( $status_transition['to'] )
+				);
 
-				// Trigger a hook with params we want
-				do_action( 'woocommerce_subscription_status_updated', $this, $this->status_transition['to'], $this->status_transition['from'] );
+				do_action( "woocommerce_subscription_status_{$status_transition['from']}_to_{$status_transition['to']}", $this );
 
-				// Trigger a hook with params matching WooCommerce's 'woocommerce_order_status_changed' hook so functions attached to it can be attached easily to subscription status changes
-				do_action( 'woocommerce_subscription_status_changed', $this->get_id(), $this->status_transition['from'], $this->status_transition['to'], $this );
+				// Trigger a hook with params we want.
+				do_action( 'woocommerce_subscription_status_updated', $this, $status_transition['to'], $status_transition['from'] );
 
+				// Trigger a hook with params matching WooCommerce's 'woocommerce_order_status_changed' hook so functions attached to it can be attached easily to subscription status changes.
+				do_action( 'woocommerce_subscription_status_changed', $this->get_id(), $status_transition['from'], $status_transition['to'], $this );
 			} else {
 				/* translators: %s: new order status */
-				$transition_note = sprintf( __( 'Status set to %s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $this->status_transition['to'] ) );
+				$transition_note = sprintf( __( 'Status set to %s.', 'woocommerce-subscriptions' ), wcs_get_subscription_status_name( $status_transition['to'] ) );
 			}
 
-			// Note the transition occured
-			$this->add_order_note( trim( $this->status_transition['note'] . ' ' . $transition_note ), 0, $this->status_transition['manual'] );
-
-			// This has ran, so reset status transition variable
-			$this->status_transition = false;
+			// Note the transition occurred.
+			$this->add_order_note( trim( "{$status_transition['note']} {$transition_note}" ), 0, $status_transition['manual'] );
+		} catch ( Exception $e ) {
+			$logger = wc_get_logger();
+			$logger->error(
+				sprintf( 'Status transition of subscription #%d errored!', $this->get_id() ),
+				array(
+					'order' => $this,
+					'error' => $e,
+				)
+			);
+			$this->add_order_note( __( 'Error during subscription status transition.', 'woocommerce-subscriptions' ) . ' ' . $e->getMessage() );
 		}
+
+		// This has run, so reset status transition variable
+		$this->status_transition = false;
 	}
 
 	/**
@@ -1889,9 +1909,11 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Determine how the payment method should be displayed for a subscription.
 	 *
+	 * @param string $context The context the payment method is being displayed in. Can be 'admin' or 'customer'. Default 'admin'.
+	 *
 	 * @since 2.0
 	 */
-	public function get_payment_method_to_display() {
+	public function get_payment_method_to_display( $context = 'admin' ) {
 
 		if ( $this->is_manual() ) {
 
@@ -1902,14 +1924,25 @@ class WC_Subscription extends WC_Order {
 
 			$payment_method_to_display = $payment_gateway->get_title();
 
-		// Fallback to the title of the payment method when the subscripion was created
+		// Fallback to the title of the payment method when the subscription was created
 		} else {
 
 			$payment_method_to_display = $this->get_payment_method_title();
 
 		}
 
-		return apply_filters( 'woocommerce_subscription_payment_method_to_display', $payment_method_to_display, $this );
+		$payment_method_to_display = apply_filters( 'woocommerce_subscription_payment_method_to_display', $payment_method_to_display, $this, $context );
+
+		if ( 'customer' === $context ) {
+			$payment_method_to_display = sprintf( __( 'Via %s', 'woocommerce-subscriptions' ), $payment_method_to_display );
+
+			// Only filter the result for non-manual subscriptions.
+			if ( ! $this->is_manual() ) {
+				$payment_method_to_display = apply_filters( 'woocommerce_my_subscriptions_payment_method', $payment_method_to_display, $this );
+			}
+		}
+
+		return $payment_method_to_display;
 	}
 
 	/**
@@ -2030,6 +2063,16 @@ class WC_Subscription extends WC_Order {
 		}
 
 		return $has_product;
+	}
+
+	/**
+	 * Check if the subscription has a payment gateway.
+	 *
+	 * @since 2.5.0
+	 * @return bool
+	 */
+	public function has_payment_gateway() {
+		return (bool) wc_get_payment_gateway_by_order( $this );
 	}
 
 	/**
@@ -2358,7 +2401,17 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Get the subscription's payment method meta.
+	 * Generates a URL to add or change the subscription's payment method from the my account page.
+	 *
+	 * @return string
+	 * @since 2.5.0
+	 */
+	public function get_change_payment_method_url() {
+		$change_payment_method_url = wc_get_endpoint_url( 'subscription-payment-method', $this->get_id(), wc_get_page_permalink( 'myaccount' ) );
+		return apply_filters( 'wcs_get_change_payment_method_url', $change_payment_method_url, $this->get_id() );
+	}
+
+	 /* Get the subscription's payment method meta.
 	 *
 	 * @since 2.4.3
 	 * @return array The subscription's payment meta in the format returned by the woocommerce_subscription_payment_meta filter.
@@ -2397,6 +2450,23 @@ class WC_Subscription extends WC_Order {
 	 */
 	protected function maybe_set_date_completed() {
 		return null;
+	}
+
+	/**
+	 * Get totals for display on pages and in emails.
+	 *
+	 * @param mixed $tax_display Excl or incl tax display mode.
+	 * @return array
+	 */
+	public function get_order_item_totals( $tax_display = '' ) {
+		$total_rows = parent::get_order_item_totals( $tax_display );
+
+		// Use get_payment_method_to_display() as it displays "Manual Renewal" for manual subscriptions.
+		if ( isset( $total_rows['payment_method'] ) ) {
+			$total_rows['payment_method']['value'] = $this->get_payment_method_to_display( 'customer' );
+		}
+
+		return apply_filters( 'woocommerce_get_subscription_item_totals', $total_rows, $this, $tax_display );
 	}
 
 	/************************
