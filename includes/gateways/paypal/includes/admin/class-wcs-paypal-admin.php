@@ -300,8 +300,8 @@ class WCS_PayPal_Admin {
 		if ( 'no' === WCS_PayPal::get_option( 'enabled_for_subscriptions' ) ) {
 			$setting['description'] = sprintf(
 				/* translators: Placeholders are the opening and closing link tags.*/
-				__( 'Before enabling PayPal Standard for Subscriptions, please note, when using PayPal Standard, customers are locked into using PayPal Standard for the life of their subscription, and PayPal Standard has a number of limitations. Please read the guide on %sRecommended Payment Gateways for Subscriptions%s before choosing to use PayPal Standard.', 'woocommerce-subscriptions' ),
-				'<a href="https://docs.woocommerce.com/document/paypal-standard/#section-21">', '</a>'
+				__( "Before enabling PayPal Standard for Subscriptions, please note, when using PayPal Standard, customers are locked into using PayPal Standard for the life of their subscription, and PayPal Standard has a number of limitations. Please read the guide on %swhy we don't recommend PayPal Standard%s for Subscriptions before choosing to enable this option.", 'woocommerce-subscriptions' ),
+				'<a href="https://docs.woocommerce.com/document/subscriptions/payment-gateways/#paypal-limitations">', '</a>'
 			);
 		}
 
