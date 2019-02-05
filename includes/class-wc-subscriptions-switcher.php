@@ -1732,7 +1732,6 @@ class WC_Subscriptions_Switcher {
 		}
 
 		foreach ( $switch_order_data as $subscription_id => $switch_data ) {
-
 			$subscription = wcs_get_subscription( $subscription_id );
 
 			if ( ! $subscription instanceof WC_Subscription ) {
@@ -1801,6 +1800,18 @@ class WC_Subscriptions_Switcher {
 
 				if ( ! empty( $switch_data['dates']['update'] ) ) {
 					$subscription->update_dates( $switch_order_data[ $subscription->get_id() ]['dates']['update'] );
+				}
+			}
+
+			// Archive the old fees
+			foreach ( $subscription->get_fees() as $fee_item_id => $fee ) {
+				wcs_update_order_item_type( $fee_item_id, 'fee_switched', $subscription->get_id() );
+			}
+
+			if ( ! empty( $switch_data['fee_items'] ) && is_array( $switch_data['fee_items'] ) ) {
+				// Flip the switched fee items "on"
+				foreach ( $switch_data['fee_items'] as $fee_item_id ) {
+					wcs_update_order_item_type( $fee_item_id, 'fee', $subscription->get_id() );
 				}
 			}
 
