@@ -771,7 +771,6 @@ class WC_Subscriptions_Switcher {
 		}
 
 		$order             = wc_get_order( $order_id );
-		$order_items       = $order->get_items();
 		$switch_order_data = array();
 
 		try {
@@ -785,7 +784,6 @@ class WC_Subscriptions_Switcher {
 					}
 
 					$subscription  = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
-					$existing_item = wcs_get_order_item( $cart_item['subscription_switch']['item_id'], $subscription );
 
 					// If we haven't calculated a first payment date, fall back to the recurring cart's next payment date
 					if ( 0 == $cart_item['subscription_switch']['first_payment_timestamp'] ) {
@@ -839,7 +837,7 @@ class WC_Subscriptions_Switcher {
 
 							$subscription->add_item( $item );
 
-							// The subscription is not saved automatically, we need to call 'save' becaused we added an item
+							// The subscription is not saved automatically, we need to call 'save' because we added an item
 							$subscription->save();
 							$item_id = $item->get_id();
 						}
