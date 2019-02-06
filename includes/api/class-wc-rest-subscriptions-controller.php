@@ -97,6 +97,71 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 			// v1 API includes some date types in site time, include those dates in UTC as well.
 			$response->data['date_completed_gmt'] = wc_rest_prepare_date_response( $subscription->get_date_completed() );
 			$response->data['date_paid_gmt']      = wc_rest_prepare_date_response( $subscription->get_date_paid() );
+
+			// Include removed line items of a subscription
+			foreach ( $subscription->get_items( 'line_item_removed' ) as $item_id => $item ) {
+				$product      = $subscription->get_product_from_item( $item );
+				$product_id   = 0;
+				$variation_id = 0;
+				$product_sku  = null;
+
+				// Check if the product exists.
+				if ( is_object( $product ) ) {
+					$product_id   = $item->get_product_id();
+					$variation_id = $item->get_variation_id();
+					$product_sku  = $product->get_sku();
+				}
+
+				$item_meta = array();
+
+				$hideprefix = 'true' === $request['all_item_meta'] ? null : '_';
+
+				foreach ( $item->get_formatted_meta_data( $hideprefix, true ) as $meta_key => $formatted_meta ) {
+					$item_meta[] = array(
+						'key'   => $formatted_meta->key,
+						'label' => $formatted_meta->display_key,
+						'value' => wc_clean( $formatted_meta->display_value ),
+					);
+				}
+
+				$line_item = array(
+					'id'           => $item_id,
+					'name'         => $item['name'],
+					'sku'          => $product_sku,
+					'product_id'   => (int) $product_id,
+					'variation_id' => (int) $variation_id,
+					'quantity'     => wc_stock_amount( $item['qty'] ),
+					'tax_class'    => ! empty( $item['tax_class'] ) ? $item['tax_class'] : '',
+					'price'        => wc_format_decimal( $subscription->get_item_total( $item, false, false ), $dp ),
+					'subtotal'     => wc_format_decimal( $subscription->get_line_subtotal( $item, false, false ), $dp ),
+					'subtotal_tax' => wc_format_decimal( $item['line_subtotal_tax'], $dp ),
+					'total'        => wc_format_decimal( $subscription->get_line_total( $item, false, false ), $dp ),
+					'total_tax'    => wc_format_decimal( $item['line_tax'], $dp ),
+					'taxes'        => array(),
+					'meta'         => $item_meta,
+				);
+
+				$item_line_taxes = maybe_unserialize( $item['line_tax_data'] );
+				if ( isset( $item_line_taxes['total'] ) ) {
+					$line_tax = array();
+
+					foreach ( $item_line_taxes['total'] as $tax_rate_id => $tax ) {
+						$line_tax[ $tax_rate_id ] = array(
+							'id'       => $tax_rate_id,
+							'total'    => $tax,
+							'subtotal' => '',
+						);
+					}
+
+					foreach ( $item_line_taxes['subtotal'] as $tax_rate_id => $tax ) {
+						$line_tax[ $tax_rate_id ]['subtotal'] = $tax;
+					}
+
+					$line_item['taxes'] = array_values( $line_tax );
+				}
+
+				$response->data['removed_line_items'][] = $line_item;
+			}
 		}
 
 		return $response;
