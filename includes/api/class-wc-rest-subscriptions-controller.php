@@ -568,3 +568,10 @@ function wcs_add_type_to_group( $type_to_group_list ) {
 	$type_to_group_list['line_item_removed']	= 'removed_line_items';
 	return $type_to_group_list;
 }
+add_filter( 'woocommerce_get_order_item_classname', 'wcs_include_removed_line_items', 10, 3 );
+function wcs_include_removed_line_items( $classname, $item_type, $id ) {
+	if ( 'line_item_removed' === $item_type ) {
+		return 'WC_Order_Item_Product';
+	}
+	return $classname;
+}
