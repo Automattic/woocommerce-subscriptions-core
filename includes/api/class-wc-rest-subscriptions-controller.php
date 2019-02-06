@@ -563,3 +563,8 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 		}
 	}
 }
+add_filter( 'woocommerce_order_type_to_group', 'wcs_add_type_to_group' );
+function wcs_add_type_to_group( $type_to_group_list ) {
+	$type_to_group_list['line_item_removed']	= 'removed_line_items';
+	return $type_to_group_list;
+}
