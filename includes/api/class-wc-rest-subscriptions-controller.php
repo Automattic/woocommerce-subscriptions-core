@@ -77,7 +77,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 	 * @param WP_REST_Request $request
 	 */
 	public function filter_get_subscription_response( $response, $post, $request ) {
-		$decimal_places    = is_null( $request['dp'] ) ? wc_get_price_decimals() : absint( $request['dp'] );
+		$decimal_places = is_null( $request['dp'] ) ? wc_get_price_decimals() : absint( $request['dp'] );
 
 		if ( ! empty( $post->post_type ) && ! empty( $post->ID ) && 'shop_subscription' == $post->post_type ) {
 			$subscription = wcs_get_subscription( $post->ID );
@@ -762,16 +762,4 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 			throw new WC_REST_Exception( 'woocommerce_rest_cannot_update_subscription_dates', sprintf( __( 'Updating subscription dates errored with message: %s', 'woocommerce-subscriptions' ), $e->getMessage() ), 400 );
 		}
 	}
-}
-add_filter( 'woocommerce_order_type_to_group', 'wcs_add_type_to_group' );
-function wcs_add_type_to_group( $type_to_group_list ) {
-	$type_to_group_list['line_item_removed']	= 'removed_line_items';
-	return $type_to_group_list;
-}
-add_filter( 'woocommerce_get_order_item_classname', 'wcs_include_removed_line_items', 10, 3 );
-function wcs_include_removed_line_items( $classname, $item_type, $id ) {
-	if ( 'line_item_removed' === $item_type ) {
-		return 'WC_Order_Item_Product';
-	}
-	return $classname;
 }
