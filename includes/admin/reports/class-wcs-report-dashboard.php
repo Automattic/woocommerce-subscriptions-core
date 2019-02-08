@@ -80,7 +80,7 @@ class WCS_Report_Dashboard {
 		// Signup revenue this month
 		$query = $wpdb->prepare(
 			"SELECT SUM(order_total_meta.meta_value)
-				FROM wp_postmeta as order_total_meta
+				FROM {$wpdb->postmeta} AS order_total_meta
 					RIGHT JOIN
 					(
 						SELECT DISTINCT wcorder.ID
@@ -139,7 +139,7 @@ class WCS_Report_Dashboard {
 		// Renewal revenue this month
 		$query = $wpdb->prepare(
 			"SELECT SUM(order_total_meta.meta_value)
-				FROM wp_postmeta as order_total_meta
+				FROM {$wpdb->postmeta} as order_total_meta
 				RIGHT JOIN
 				(
 					SELECT DISTINCT wcorder.ID
