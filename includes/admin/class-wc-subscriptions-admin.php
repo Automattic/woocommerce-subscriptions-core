@@ -208,8 +208,8 @@ class WC_Subscriptions_Admin {
 
 		$product_options = array_reverse(
 			array(
-				'downloadable_subscription' => ( is_rtl() ? '&larr;' : '&rarr;' ) . ' ' . __( 'Downloadable', 'woocommerce' ),
-				'virtual_subscription'      => ( is_rtl() ? '&larr;' : '&rarr;' ) . ' ' . __( 'Virtual', 'woocommerce' ),
+				'downloadable_subscription' => ( is_rtl() ? '&larr;' : '&rarr;' ) . ' ' . __( 'Downloadable', 'woocommerce-subscriptions' ),
+				'virtual_subscription'      => ( is_rtl() ? '&larr;' : '&rarr;' ) . ' ' . __( 'Virtual', 'woocommerce-subscriptions' ),
 			)
 		);
 		foreach ( $product_options as $key => $label ) {
