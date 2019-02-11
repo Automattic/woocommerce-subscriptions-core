@@ -538,3 +538,29 @@ function wcs_generate_order_key() {
 
 	return $order_key;
 }
+
+/**
+ * Update a single option for a WC_Settings_API object.
+ *
+ * This is a compatibility wrapper for @see WC_Settings_API::update_option() which was introduced in WC 3.4.0.
+ *
+ * @param WC_Settings_API $settings_api The object to update the option for.
+ * @param string $key Option key.
+ * @param mixed $value Value to set.
+ * @since 2.5.1
+ */
+function wcs_update_settings_option( $settings_api, $key, $value ) {
+
+	// WooCommerce 3.4+
+	if ( is_callable( array( $settings_api, 'update_option' ) ) ) {
+		$settings_api->update_option( $key, $value );
+	} else {
+		if ( empty( $settings_api->settings ) ) {
+			$settings_api->init_settings();
+		}
+
+		$settings_api->settings[ $key ] = $value;
+
+		return update_option( $settings_api->get_option_key(), apply_filters( 'woocommerce_settings_api_sanitized_fields_' . $settings_api->id, $settings_api->settings ), 'yes' );
+	}
+}
