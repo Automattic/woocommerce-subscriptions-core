@@ -495,12 +495,8 @@ class WCS_Admin_Post_Types {
 							}
 						} else {
 
-							if ( 'pending-cancel' === $the_subscription->get_status() ) {
-								if ( 'cancelled' === $status ) {
-									$label = __( 'Cancel Now', 'woocommerce-subscriptions' );
-								} elseif ( 'active' === $status ) {
-									$label = __( 'Uncancel', 'woocommerce-subscriptions' );
-								}
+							if ( 'cancelled' === $status && 'pending-cancel' === $the_subscription->get_status() ) {
+								$label = __( 'Cancel Now', 'woocommerce-subscriptions' );
 							}
 
 							$actions[ $status ] = sprintf( '<a href="%s">%s</a>', add_query_arg( 'action', $status, $action_url ), $label );
