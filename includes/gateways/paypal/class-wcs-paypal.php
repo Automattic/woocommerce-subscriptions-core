@@ -578,7 +578,7 @@ class WCS_PayPal {
 		// Find the PayPal Standard gateway instance to set the setting.
 		foreach ( WC()->payment_gateways->payment_gateways as $gateway ) {
 			if ( $gateway->id === 'paypal' ) {
-				$gateway->update_option( 'enabled_for_subscriptions', $default );
+				wcs_update_settings_option( $gateway, 'enabled_for_subscriptions', $default );
 				break;
 			}
 		}
