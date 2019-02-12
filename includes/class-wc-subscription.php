@@ -675,7 +675,7 @@ class WC_Subscription extends WC_Order {
 	 * @param  string       $payment_type Type of count (completed|refunded|net). Optional. Default completed.
 	 * @param  string|array $order_types Type of order relation(s) to count. Optional. Default array(parent,renewal).
 	 * @return integer Count.
-	 * @since 2.5.0
+	 * @since 2.6.0
 	 */
 	public function get_payment_count( $payment_type = 'completed', $order_types = '' ) {
 
@@ -2651,10 +2651,10 @@ class WC_Subscription extends WC_Order {
 	 * subscription was created as a result of a purchase from the front end rather than
 	 * manually by the store manager).
 	 *
-	 * @deprecated 2.5.0
+	 * @deprecated 2.6.0
 	 */
 	public function get_completed_payment_count() {
-		wcs_deprecated_function( __METHOD__, '2.4.1', __CLASS__ . '::get_payment_count()' );
+		wcs_deprecated_function( __METHOD__, '2.6.0', __CLASS__ . '::get_payment_count()' );
 
 		return $this->get_payment_count();
 	}
@@ -2663,16 +2663,19 @@ class WC_Subscription extends WC_Order {
 	 * Apply the deprecated 'woocommerce_subscription_payment_completed_count' filter
 	 * to maintain backward compatibility.
 	 *
-	 * @deprecated 2.5.0
+	 * @deprecated 2.6.0
 	 */
 	protected function apply_deprecated_completed_payment_count_filter() {
 		$deprecated_filter_hook = 'woocommerce_subscription_payment_completed_count';
 
 		if ( has_filter( $deprecated_filter_hook ) ) {
-			wcs_deprecated_function( sprintf( '"%s" filter should no longer be used and', $deprecated_filter_hook ), '2.5.0', '"woocommerce_subscription_parent_payment_completed_count" and "woocommerce_subscription_renewal_payment_completed_count" provide the discrete counts summed in the "' . $deprecated_filter_hook . '" filter.' );
+			wcs_deprecated_function( sprintf( '"%s" filter should no longer be used and', $deprecated_filter_hook ), '2.6.0', '"woocommerce_subscription_parent_payment_completed_count" and "woocommerce_subscription_renewal_payment_completed_count" provide the discrete counts summed in the "' . $deprecated_filter_hook . '" filter.' );
 
-			$combined_count = $this->cached_payment_count['completed']['parent'] + $this->cached_payment_count['completed']['renewal'];
-			apply_filters( $deprecated_filter_hook, $combined_count );
+			if ( ! isset( $this->cached_payment_count['deprecated_completed'] ) ) {
+			$this->cached_payment_count['deprecated_completed'] = $this->cached_payment_count['completed']['parent'] + $this->cached_payment_count['completed']['renewal'];
+			}
+
+			$this->cached_payment_count['deprecated_completed'] = apply_filters( $deprecated_filter_hook, $this->cached_payment_count['deprecated_completed'] );
 		}
 	}
 }
