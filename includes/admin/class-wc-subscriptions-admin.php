@@ -150,6 +150,10 @@ class WC_Subscriptions_Admin {
 				'wc_report_subscription_by_product',
 				'wc_report_subscription_by_customer',
 				'wc_report_subscription_events_by_date',
+				'wcs_report_subscription_by_product',
+				'wcs_report_subscription_by_customer',
+				'wcs_report_subscription_events_by_date',
+				'wcs_report_upcoming_recurring_revenue',
 			);
 
 			// Get all related order and subscription ranges transients
@@ -742,12 +746,12 @@ class WC_Subscriptions_Admin {
 					'productHasSubscriptions'   => wcs_get_subscriptions_for_product( $post->ID ) ? 'yes' : 'no',
 					'productTypeWarning'        => __( 'Product type can not be changed because this product is associated with active subscriptions', 'woocommerce-subscriptions' ),
 				);
-			} else if ( 'edit-shop_order' == $screen->id ) {
+			} elseif ( 'edit-shop_order' == $screen->id ) {
 				$script_params = array(
 					'bulkTrashWarning' => __( "You are about to trash one or more orders which contain a subscription.\n\nTrashing the orders will also trash the subscriptions purchased with these orders.", 'woocommerce-subscriptions' ),
 					'trashWarning'     => $trashing_subscription_order_warning,
 				);
-			} else if ( 'shop_order' == $screen->id ) {
+			} elseif ( 'shop_order' == $screen->id ) {
 				$dependencies[] = $woocommerce_admin_script_handle;
 				$dependencies[] = 'wc-admin-order-meta-boxes';
 
@@ -763,9 +767,13 @@ class WC_Subscriptions_Admin {
 					'EditOrderNonce'    => wp_create_nonce( 'woocommerce-subscriptions' ),
 					'postId'            => $post->ID,
 				);
-			} else if ( 'users' == $screen->id ) {
+			} elseif ( 'users' == $screen->id ) {
 				$script_params = array(
 					'deleteUserWarning' => __( "Warning: Deleting a user will also delete the user's subscriptions. The user's orders will remain but be reassigned to the 'Guest' user.\n\nDo you want to continue to delete this user and any associated subscriptions?", 'woocommerce-subscriptions' ),
+				);
+			} elseif ( 'woocommerce_page_wc-settings' === $screen->id ) {
+				$script_params = array(
+					'enablePayPalWarning' => __( 'PayPal Standard has a number of limitations and does not support all subscription features.', 'woocommerce-subscriptions' ) . "\n\n" . __( 'Because of this, it is not recommended as a payment method for Subscriptions unless it is the only available option for your country.', 'woocommerce-subscriptions' ),
 				);
 			}
 
@@ -1173,6 +1181,15 @@ class WC_Subscriptions_Admin {
 				'default'       => 'no',
 				'type'          => 'checkbox',
 				'desc_tip'      => __( 'Allow a subscription product to be purchased with other products and subscriptions in the same transaction.', 'woocommerce-subscriptions' ),
+			),
+
+			array(
+				'name'          => __( '$0 Intial Checkout', 'woocommerce-subscriptions' ),
+				'desc'          => __( 'Allow $0 initial checkout without a payment method.', 'woocommerce-subscriptions' ),
+				'id'            => self::$option_prefix . '_zero_initial_payment_requires_payment',
+				'default'       => 'no',
+				'type'          => 'checkbox',
+				'desc_tip'      => __( 'Allow a subscription product with a $0 initial payment to be purchased without providing a payment method. The customer will be required to provide a payment method at the end of the initial period to keep the subscription active.', 'woocommerce-subscriptions' ),
 			),
 
 			array(

@@ -50,7 +50,7 @@ class WCS_Retry_Manager {
 		if ( self::is_retry_enabled() ) {
 			WCS_Retry_Email::init();
 
-			add_filter( 'init', array( self::store(), 'init' ) );
+			add_action( 'init', array( __CLASS__, 'init_store' ) );
 
 			add_filter( 'woocommerce_valid_order_statuses_for_payment', __CLASS__ . '::check_order_statuses_for_payment', 10, 2 );
 
@@ -63,7 +63,8 @@ class WCS_Retry_Manager {
 
 			add_action( 'woocommerce_subscriptions_retry_status_updated', __CLASS__ . '::maybe_delete_payment_retry_date', 0, 2 );
 
-			add_action( 'woocommerce_subscription_renewal_payment_failed', __CLASS__ . '::maybe_apply_retry_rule', 10, 2 );
+			add_action( 'woocommerce_subscription_renewal_payment_failed', array( __CLASS__, 'maybe_apply_retry_rule' ), 10, 2 );
+			add_action( 'woocommerce_subscription_renewal_payment_failed', array( __CLASS__, 'maybe_reapply_last_retry_rule' ), 15, 2 );
 
 			add_action( 'woocommerce_scheduled_subscription_payment_retry', __CLASS__ . '::maybe_retry_payment' );
 
@@ -196,13 +197,13 @@ class WCS_Retry_Manager {
 	/**
 	 * When a payment fails, apply a retry rule, if one exists that applies to this failure.
 	 *
-	 * @param WC_Subscription The subscription on which the payment failed
-	 * @param WC_Order The order on which the payment failed (will be the most recent order on the subscription specified with the subscription param)
+	 * @param WC_Subscription $subscription The subscription on which the payment failed.
+	 * @param WC_Order        $last_order   The order on which the payment failed (will be the most recent order on the subscription specified with the subscription param).
+	 *
 	 * @since 2.1
 	 */
 	public static function maybe_apply_retry_rule( $subscription, $last_order ) {
-
-		if ( $subscription->is_manual() || ! $subscription->payment_method_supports( 'subscription_date_changes' ) ) {
+		if ( $subscription->is_manual() || ! $subscription->payment_method_supports( 'subscription_date_changes' ) || ! self::is_scheduled_payment_attempt() ) {
 			return;
 		}
 
@@ -231,11 +232,41 @@ class WCS_Retry_Manager {
 			}
 
 			if ( $retry_rule->get_retry_interval() > 0 ) {
-				// by calling this after changing the status, this will also schedule the 'woocommerce_scheduled_subscription_payment_retry' action
+				// by calling this after changing the status, this will also schedule the 'woocommerce_scheduled_subscription_payment_retry' action.
 				$subscription->update_dates( array( 'payment_retry' => gmdate( 'Y-m-d H:i:s', gmdate( 'U' ) + $retry_rule->get_retry_interval( $retry_count ) ) ) );
 			}
 
 			do_action( 'woocommerce_subscriptions_after_apply_retry_rule', $retry_rule, $last_order, $subscription );
+		}
+	}
+
+	/**
+	 * (Maybe) reapply last retry rule if:
+	 * - Payment is no-scheduled
+	 * - $last_order contains a Retry
+	 * - Retry contains a rule
+	 *
+	 * @param WC_Subscription $subscription The subscription on which the payment failed.
+	 * @param WC_Order        $last_order   The order on which the payment failed (will be the most recent order on the subscription specified with the subscription param).
+	 *
+	 * @since 2.5.0
+	 */
+	public static function maybe_reapply_last_retry_rule( $subscription, $last_order ) {
+		// We're only interested in non-automatic payment attempts.
+		if ( self::is_scheduled_payment_attempt() ) {
+			return;
+		}
+
+		$last_retry = self::store()->get_last_retry_for_order( $last_order->get_id() );
+		if ( ! $last_retry || 'pending' !== $last_retry->get_status() || null === ( $last_retry_rule = $last_retry->get_rule() ) ) {
+			return;
+		}
+
+		foreach ( array( 'order' => $last_order, 'subscription' => $subscription ) as $object_type => $object ) {
+			$new_status = $last_retry_rule->get_status_to_apply( $object_type );
+			if ( '' !== $new_status && ! $object->has_status( $new_status ) ) {
+				$object->update_status( $new_status, _x( 'Retry rule reapplied:', 'used in order note as reason for why status changed', 'woocommerce-subscriptions' ) );
+			}
 		}
 	}
 
@@ -291,18 +322,39 @@ class WCS_Retry_Manager {
 
 				// if both statuses are still the same or there no special status was applied and the order still needs payment (i.e. there has been no manual intervention), trigger the payment hook
 				if ( $valid_order_status && $valid_subscription_status ) {
+					$unique_payment_methods = array();
 
 					$last_order->update_status( 'pending', _x( 'Subscription renewal payment retry:', 'used in order note as reason for why order status changed', 'woocommerce-subscriptions' ), true );
 
-					// Make sure the subscription is on hold in case something goes wrong while trying to process renewal and in case gateways expect the subscription to be on-hold, which is normally the case with a renewal payment
 					foreach ( $subscriptions as $subscription ) {
+						// Make sure the subscription is on hold in case something goes wrong while trying to process renewal and in case gateways expect the subscription to be on-hold, which is normally the case with a renewal payment
 						$subscription->update_status( 'on-hold', _x( 'Subscription renewal payment retry:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
+
+						// Store a hash of the payment method and payment meta to determine if there's a single payment method being used.
+						$payment_meta_hash = md5( $subscription->get_payment_method() . json_encode( $subscription->get_payment_method_meta() ) );
+						$unique_payment_methods[ $payment_meta_hash ] = 1;
 					}
 
-					WC_Subscriptions_Payment_Gateways::trigger_gateway_renewal_payment_hook( $last_order );
+					// Delete the payment method from the renewal order if the subscription has changed to manual renewal.
+					if ( wcs_order_contains_manual_subscription( $last_order, 'renewal' ) ) {
+						$last_order->set_payment_method( '' );
+						$last_order->add_order_note( 'Renewal payment retry skipped - related subscription has changed to manual renewal.' );
 
-					// Now that we've attempted to process the payment, refresh the order
-					$last_order = wc_get_order( wcs_get_objects_property( $last_order, 'id' ) );
+						$last_order->save();
+					} elseif ( 1 < count( $unique_payment_methods ) ) {
+						// Throw an exception if there is more than 1 unique payment method.
+						// This could only occur under circumstances where batch processing renewals has grouped unlike subscriptions.
+						throw new Exception( __( 'Payment retry attempted on renewal order with multiple related subscriptions with no payment method in common.', 'woocommerce-subscriptions' ) );
+					} else {
+						// Before attempting to process payment, update the renewal order's payment method and meta to match the subscription's - in case it has changed.
+						wcs_copy_payment_method_to_order( $subscription, $last_order );
+						$last_order->save();
+
+						WC_Subscriptions_Payment_Gateways::trigger_gateway_renewal_payment_hook( $last_order );
+
+						// Now that we've attempted to process the payment, refresh the order
+						$last_order = wc_get_order( wcs_get_objects_property( $last_order, 'id' ) );
+					}
 
 					// if the order still needs payment, payment failed
 					if ( $last_order->needs_payment() ) {
@@ -347,7 +399,7 @@ class WCS_Retry_Manager {
 	 */
 	public static function load_dependant_classes() {
 		if ( ! self::$background_migrator ) {
-			self::$background_migrator = new WCS_Retry_Background_Migrator();
+			self::$background_migrator = new WCS_Retry_Background_Migrator( wc_get_logger() );
 			add_action( 'init', array( self::$background_migrator, 'init' ), 15 );
 		}
 	}
@@ -364,15 +416,41 @@ class WCS_Retry_Manager {
 		if ( '0' !== $old_version && version_compare( $old_version, '2.4', '<' ) ) {
 			self::$background_migrator->schedule_repair();
 		}
+
+		if ( version_compare( $new_version, '2.4.0', '>' ) ) {
+			WCS_Retry_Migrator::set_needs_migration();
+		}
+	}
+
+	/**
+	 * Is `woocommerce_scheduled_subscription_payment` or `woocommerce_scheduled_subscription_payment_retry` current action?
+	 *
+	 * @return boolean
+	 *
+	 * @since 2.5.0
+	 */
+	protected static function is_scheduled_payment_attempt() {
+		/**
+		 * Filter 'Is scheduled payment attempt?'
+		 *
+		 * @param boolean doing_action( 'woocommerce_scheduled_subscription_payment' ) || doing_action( 'woocommerce_scheduled_subscription_payment_retry' )
+		 * @since 2.5.0
+		 */
+		return (bool) apply_filters( 'wcs_is_scheduled_payment_attempt', doing_action( 'woocommerce_scheduled_subscription_payment' ) || doing_action( 'woocommerce_scheduled_subscription_payment_retry' ) );
 	}
 
 	/**
 	 * Access the object used to interface with the store.
 	 *
+	 * @return WCS_Retry_Store
 	 * @since 2.4
 	 */
 	public static function store() {
 		if ( empty( self::$store ) ) {
+			if ( ! did_action( 'plugins_loaded' ) ) {
+				wcs_doing_it_wrong( __METHOD__, 'This method was called before the "plugins_loaded" hook. It applies a filter to the retry data store instantiated. For that to work, it should first be called after all plugins are loaded.', '2.4.1' );
+			}
+
 			$class       = self::get_store_class();
 			self::$store = new $class();
 		}
@@ -387,7 +465,7 @@ class WCS_Retry_Manager {
 	 */
 	protected static function get_store_class() {
 		$default_store_class = 'WCS_Retry_Database_Store';
-		if ( (bool) WCS_Retry_Stores::get_post_store()->get_retries( array( 'limit' => 1 ), 'ids' ) ) {
+		if ( WCS_Retry_Migrator::needs_migration() ) {
 			$default_store_class = 'WCS_Retry_Hybrid_Store';
 		}
 
@@ -414,5 +492,17 @@ class WCS_Retry_Manager {
 	 */
 	protected static function get_rules_class() {
 		return apply_filters( 'wcs_retry_rules_class', 'WCS_Retry_Rules' );
+	}
+
+	/**
+	 * Initialise the store object used to interface with retry data.
+	 *
+	 * Hooked onto 'init' to allow third-parties to use their own data store
+	 * and to ensure WordPress is fully loaded.
+	 *
+	 * @since 2.4.1
+	 */
+	public static function init_store() {
+		self::store()->init();
 	}
 }

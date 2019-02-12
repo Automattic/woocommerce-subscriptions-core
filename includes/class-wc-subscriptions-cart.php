@@ -80,18 +80,11 @@ class WC_Subscriptions_Cart {
 		// Make sure cart product prices correctly include/exclude taxes
 		add_filter( 'woocommerce_cart_product_price', __CLASS__ . '::cart_product_price' , 10, 2 );
 
-		// Make sure cart totals are calculated when setting up the cart widget
-		add_action( 'wc_ajax_get_refreshed_fragments', __CLASS__ . '::pre_get_refreshed_fragments' , 1 );
-		add_action( 'wp_ajax_woocommerce_get_refreshed_fragments', __CLASS__ . '::pre_get_refreshed_fragments', 1 );
-		add_action( 'wp_ajax_nopriv_woocommerce_get_refreshed_fragments', __CLASS__ . '::pre_get_refreshed_fragments', 1, 1 );
-
-		add_action( 'woocommerce_ajax_added_to_cart', __CLASS__ . '::pre_get_refreshed_fragments', 1, 1 );
-
 		// Display grouped recurring amounts after order totals on the cart/checkout pages
 		add_action( 'woocommerce_cart_totals_after_order_total', __CLASS__ . '::display_recurring_totals' );
 		add_action( 'woocommerce_review_order_after_order_total', __CLASS__ . '::display_recurring_totals' );
 
-		add_action( 'woocommerce_add_to_cart_validation', __CLASS__ . '::check_valid_add_to_cart', 10, 6 );
+		add_filter( 'woocommerce_add_to_cart_validation', __CLASS__ . '::check_valid_add_to_cart', 10, 6 );
 
 		add_filter( 'woocommerce_cart_needs_shipping', __CLASS__ . '::cart_needs_shipping', 11, 1 );
 
@@ -349,7 +342,17 @@ class WC_Subscriptions_Cart {
 		unset( WC()->session->wcs_shipping_methods );
 
 		// If there is no sign-up fee and a free trial, and no products being purchased with the subscription, we need to zero the fees for the first billing period
-		if ( 0 == self::get_cart_subscription_sign_up_fee() && self::all_cart_items_have_free_trial() ) {
+		$remove_fees_from_cart = ( 0 == self::get_cart_subscription_sign_up_fee() && self::all_cart_items_have_free_trial() );
+
+		/**
+		 * Allow third-parties to override whether the fees will be removed from the initial order cart.
+		 *
+		 * @since 2.4.3
+		 * @param bool $remove_fees_from_cart Whether the fees will be removed. By default fees will be removed if there is no signup fee and all cart items have a trial.
+		 * @param WC_Cart $cart The standard WC cart object.
+		 * @param array $recurring_carts All the recurring cart objects.
+		 */
+		if ( apply_filters( 'wcs_remove_fees_from_initial_cart', $remove_fees_from_cart, $cart, $recurring_carts ) ) {
 			$cart_fees = WC()->cart->get_fees();
 
 			if ( WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
@@ -788,6 +791,17 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
+	 * Checks to see if payment method is required on a subscription product with a $0 initial payment.
+	 *
+	 * @since 2.5.0
+	 */
+	public static function zero_initial_payment_requires_payment() {
+
+		return 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_zero_initial_payment_requires_payment', 'no' );
+
+	}
+
+	/**
 	 * Gets the cart calculation type flag
 	 *
 	 * @since 1.2
@@ -850,12 +864,28 @@ class WC_Subscriptions_Cart {
 	 * @return bool
 	 */
 	public static function cart_needs_payment( $needs_payment, $cart ) {
-		if ( false === $needs_payment && self::cart_contains_subscription() && $cart->total == 0 && false === WC_Subscriptions_Switcher::cart_contains_switches() && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
-			$recurring_total = 0;
-			$is_one_period   = true;
-			$contains_synced = false;
-			$contains_expiring_limited_coupon = false;
 
+		// Skip checks if needs payment is already set or cart total not 0.
+		if ( false !== $needs_payment || 0 != $cart->total ) {
+			return $needs_payment;
+		}
+
+		// Skip checks if new $0 initial payments don't require a payment method or cart has no subscriptions.
+		if ( ! self::zero_initial_payment_requires_payment() || ! self::cart_contains_subscription() ) {
+			return $needs_payment;
+		}
+
+		// Skip checks if cart contains subscription switches or automatic payments are disabled.
+		if ( false !== WC_Subscriptions_Switcher::cart_contains_switches() || 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+			return $needs_payment;
+		}
+
+		$recurring_total = 0;
+		$is_one_period   = true;
+		$contains_synced = false;
+		$contains_expiring_limited_coupon = false;
+
+		if ( ! empty( WC()->cart->recurring_carts ) ) {
 			foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
 				$recurring_total    += $recurring_cart->total;
 				$subscription_length = wcs_cart_pluck( $recurring_cart, 'subscription_length' );
@@ -866,12 +896,12 @@ class WC_Subscriptions_Cart {
 					$is_one_period = false;
 				}
 			}
+		}
 
-			$has_trial = self::cart_contains_free_trial();
+		$needs_trial_payment = self::cart_contains_free_trial();
 
-			if ( $contains_expiring_limited_coupon || $recurring_total > 0 && ( ! $is_one_period || $has_trial || $contains_synced ) ) {
-				$needs_payment = true;
-			}
+		if ( $contains_expiring_limited_coupon || $recurring_total > 0 && ( ! $is_one_period || $needs_trial_payment || $contains_synced ) ) {
+			$needs_payment = true;
 		}
 
 		return $needs_payment;
@@ -951,19 +981,6 @@ class WC_Subscriptions_Cart {
 		}
 
 		return $price;
-	}
-
-	/**
-	 * Make sure cart totals are calculated when the cart widget is populated via the get_refreshed_fragments() method
-	 * so that @see self::get_formatted_cart_subtotal() returns the correct subtotal price string.
-	 *
-	 * @since 1.5.11
-	 */
-	public static function pre_get_refreshed_fragments() {
-		if ( defined( 'DOING_AJAX' ) && true === DOING_AJAX && ! defined( 'WOOCOMMERCE_CART' ) ) {
-			define( 'WOOCOMMERCE_CART', true );
-			WC()->cart->calculate_totals();
-		}
 	}
 
 	/**
@@ -1332,6 +1349,21 @@ class WC_Subscriptions_Cart {
 	}
 
 	/* Deprecated */
+
+	/**
+	 * Make sure cart totals are calculated when the cart widget is populated via the get_refreshed_fragments() method
+	 * so that @see self::get_formatted_cart_subtotal() returns the correct subtotal price string.
+	 *
+	 * @since 1.5.11
+	 * @deprecated 2.5.0
+	 */
+	public static function pre_get_refreshed_fragments() {
+		wcs_deprecated_function( __METHOD__, '2.5.0' );
+		if ( defined( 'DOING_AJAX' ) && true === DOING_AJAX && ! defined( 'WOOCOMMERCE_CART' ) ) {
+			define( 'WOOCOMMERCE_CART', true );
+			WC()->cart->calculate_totals();
+		}
+	}
 
 	/**
 	 * Checks the cart to see if it contains a subscription product renewal.

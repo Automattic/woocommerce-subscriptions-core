@@ -160,7 +160,7 @@ class WCS_Retry_Admin {
 		$has_custom_retry_rule_class = has_action( 'wcs_retry_rule_class' );
 		$has_custom_raw_retry_rule   = has_action( 'wcs_get_retry_rule_raw' );
 		$has_custom_retry_rule       = has_action( 'wcs_get_retry_rule' );
-		$has_retry_on_post_store     = (bool) WCS_Retry_Stores::get_post_store()->get_retries( array( 'limit' => 1 ), 'ids' );
+		$has_retry_on_post_store     = WCS_Retry_Migrator::needs_migration();
 
 		$data['wcs_retry_rules_overridden'] = array(
 			'name'      => _x( 'Custom Retry Rules', 'label for the system status page', 'woocommerce-subscriptions' ),
@@ -197,9 +197,9 @@ class WCS_Retry_Admin {
 		$data['wcs_retry_data_migration_status'] = array(
 			'name'      => _x( 'Retries Migration Status', 'label for the system status page', 'woocommerce-subscriptions' ),
 			'label'     => 'Retries Migration Status',
-			'mark_icon' => $has_retry_on_post_store ? 'no-alt' : 'yes',
-			'note'      => $has_retry_on_post_store ? 'Incomplete' : 'Completed',
-			'success'   => ! $has_retry_on_post_store,
+			'mark_icon' => $has_retry_on_post_store ? '' : 'yes',
+			'note'      => $has_retry_on_post_store ? 'In-Progress' : 'Completed',
+			'mark'      => ( $has_retry_on_post_store ) ? '' : 'yes',
 		);
 
 		return $data;
