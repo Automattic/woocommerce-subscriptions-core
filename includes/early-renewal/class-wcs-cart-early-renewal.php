@@ -166,6 +166,9 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 		// Get the subscription.
 		$subscription = wcs_get_subscription( $cart_item[ $this->cart_item_key ]['subscription_id'] );
 
+		// Copy all meta from subscription to new renewal order
+		wcs_copy_order_meta( $subscription, $order, 'renewal_order' );
+
 		// Mark this order as a renewal.
 		$order->update_meta_data( '_subscription_renewal', $subscription->get_id() );
 
