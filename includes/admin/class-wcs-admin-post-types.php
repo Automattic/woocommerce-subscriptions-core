@@ -1045,7 +1045,7 @@ class WCS_Admin_Post_Types {
 		}
 
 		$item_name .= apply_filters( 'woocommerce_order_item_name', $item['name'], $item, false );
-		$item_name  = esc_html( $item_name );
+		$item_name  = wp_kses_post( $item_name );
 
 		if ( 'include_quantity' === $include_quantity && $item_quantity > 1 ) {
 			$item_name = sprintf( '%s &times; %s', absint( $item_quantity ), $item_name );
