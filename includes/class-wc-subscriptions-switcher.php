@@ -889,34 +889,29 @@ class WC_Subscriptions_Switcher {
 					// If there are fees in the cart, mark them for pending addition
 					$new_fee_items      = array();
 					foreach ( $recurring_cart->get_fees() as $fee_key => $fee ) {
+						$fee_item = new WC_Order_Item_Fee_Pending_Switch();
+						/* translators: %s fee amount */
+						$order->save();
+						$fee_item->legacy_values = $fee; // @deprecated For legacy actions.
+						$fee_item->legacy_cart_item_key = $fee_key; // @deprecated For legacy actions.
+						$fee_item->set_props( array(
+								'name'       => $fee->name,
+								'tax_status' => $fee->taxable,
+								'amount'     => $fee->amount,
+								'total'      => $fee->total,
+								'tax'        => $fee->tax,
+								'tax_class'  => $fee->tax_class,
+								'tax_data'   => $fee->tax_data,
+							)
+						);
 
-						if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-							$item_id = WC_Subscriptions_Checkout::add_fee( $subscription, $fee, $fee_key );
-							wcs_update_order_item_type( $item_id, 'fee_pending_switch', $subscription->get_id() );
-						} else {
-							$fee_item = new WC_Order_Item_Pending_Switch();
-							$fee_item->legacy_values = $fee; // @deprecated For legacy actions.
-							$fee_item->legacy_cart_item_key = $fee_key; // @deprecated For legacy actions.
-							$fee_item->set_props( array(
-									'name'       => $fee->name,
-									'tax_status' => $fee->taxable,
-									'amount'     => $fee->amount,
-									'total'      => $fee->total,
-									'tax'        => $fee->tax,
-									'tax_class'  => $fee->tax_class,
-									'tax_data'   => $fee->tax_data,
-								)
-							);
+						do_action( 'woocommerce_checkout_create_order_fee_item', $fee_item, $fee_key, $fee, $subscription );
+						$subscription->add_item( $fee_item );
+						$subscription->save();
 
-							do_action( 'woocommerce_checkout_create_order_fee_item', $fee_item, $fee_key, $fee, $subscription );
-							$subscription->add_item( $fee_item );
-							$subscription->save();
+						$item_id = $fee_item->get_id();
+						$new_fee_items[] = $item_id;
 
-							$item_id = $fee_item->get_id();
-							$new_fee_items[] = $item_id;
-							// Allow plugins to add order item meta to fees
-							do_action( 'woocommerce_add_order_fee_meta', $subscription->get_id(), $item_id, $fee, $fee_key );
-						}
 					}
 					$switch_order_data[ $subscription->get_id() ]['fee_items'] = $new_fee_items;
 
