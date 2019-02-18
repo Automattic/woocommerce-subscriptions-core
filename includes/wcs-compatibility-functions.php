@@ -54,10 +54,11 @@ function wcs_help_tip( $tip, $allow_html = false ) {
  * returned as MySQL strings in the site's timezone. We return them from here as MySQL strings in UTC timezone because that's how
  * dates are used in Subscriptions in almost all cases, for sanity's sake.
  *
- * @param WC_Order|WC_Product|WC_Subscription $object The object whose property we want to access.
- * @param string $property The property name.
- * @param string $single Whether to return just the first piece of meta data with the given property key, or all meta data.
- * @param mixed $default (optional) The value to return if no value is found - defaults to single -> null, multiple -> array()
+ * @param WC_Order|WC_Product|WC_Subscription $object   The object whose property we want to access.
+ * @param string                              $property The property name.
+ * @param string                              $single   Whether to return just the first piece of meta data with the given property key, or all meta data.
+ * @param mixed                               $default  (optional) The value to return if no value is found - defaults to single -> null, multiple -> array().
+ *
  * @since  2.2.0
  * @return mixed
  */
