@@ -81,9 +81,9 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 		case 'post' :
 			// In order to keep backwards compatibility it's required to use the parent data for variations.
 			if ( method_exists( $object, 'is_type' ) && $object->is_type( 'variation' ) ) {
-				$value = get_post( $object->get_parent_id() );
+				$value = get_post( wcs_get_objects_property( $object, 'parent_id' ) );
 			} else {
-				$value = get_post( $object->get_id() );
+				$value = get_post( wcs_get_objects_property( $object, 'id' ) );
 			}
 			break;
 
@@ -92,7 +92,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 			break;
 
 		case 'variation_data' :
-			$value = wc_get_product_variation_attributes( $object->get_id() );
+			$value = wc_get_product_variation_attributes( wcs_get_objects_property( $object, 'id' ) );
 			break;
 
 		default :
