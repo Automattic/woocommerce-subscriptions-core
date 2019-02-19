@@ -67,25 +67,16 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 	$value        = ! is_null( $default ) ? $default : ( ( 'single' === $single ) ? null : array() );
 
 	switch ( $property ) {
-
 		case 'name' : // the replacement for post_title added in 3.0
-			if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-				$value = $object->post->post_title;
-			} else { // WC 3.0+
-				$value = $object->get_name();
-			}
+			$value = $object->get_name();
 			break;
 
 		case 'post' :
-			if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-				$value = $object->post;
-			} else { // WC 3.0+
-				// In order to keep backwards compatibility it's required to use the parent data for variations.
-				if ( method_exists( $object, 'is_type' ) && $object->is_type( 'variation' ) ) {
-					$value = get_post( $object->get_parent_id() );
-				} else {
-					$value = get_post( $object->get_id() );
-				}
+			// In order to keep backwards compatibility it's required to use the parent data for variations.
+			if ( method_exists( $object, 'is_type' ) && $object->is_type( 'variation' ) ) {
+				$value = get_post( $object->get_parent_id() );
+			} else {
+				$value = get_post( $object->get_id() );
 			}
 			break;
 
@@ -94,103 +85,56 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 			break;
 
 		case 'parent_id' :
-			if ( method_exists( $object, 'get_parent_id' ) ) { // WC 3.0+ or an instance of WC_Product_Subscription_Variation_Legacy with WC < 3.0
-				$value = $object->get_parent_id();
-			} else { // WC 2.1-2.6
-				$value = $object->get_parent();
-			}
+			$value = $object->get_parent_id();
 			break;
 
 		case 'variation_data' :
-			if ( function_exists( 'wc_get_product_variation_attributes' ) ) { // WC 3.0+
-				$value = wc_get_product_variation_attributes( $object->get_id() );
-			} else {
-				$value = $object->$property;
-			}
+			$value = wc_get_product_variation_attributes( $object->get_id() );
 			break;
 
 		case 'downloads' :
-			if ( method_exists( $object, 'get_downloads' ) ) { // WC 3.0+
-				$value = $object->get_downloads();
-			} else {
-				$value = $object->get_files();
-			}
+			$value = $object->get_downloads();
 			break;
 
 		case 'order_version' :
 		case 'version' :
-			if ( method_exists( $object, 'get_version' ) ) { // WC 3.0+
-				$value = $object->get_version();
-			} else { // WC 2.1-2.6
-				$value = $object->order_version;
-			}
+			$value = $object->get_version();
 			break;
 
 		case 'order_currency' :
 		case 'currency' :
-			if ( method_exists( $object, 'get_currency' ) ) { // WC 3.0+
-				$value = $object->get_currency();
-			} else { // WC 2.1-2.6
-				$value = $object->get_order_currency();
-			}
+			$value = $object->get_currency();
 			break;
 
 		// Always return a PHP DateTime object in site timezone (or null), the same thing the WC_Order::get_date_created() method returns in WC 3.0+ to make it easier to migrate away from WC < 3.0
 		case 'date_created' :
 		case 'order_date' :
 		case 'date' :
-			if ( method_exists( $object, 'get_date_created' ) ) { // WC 3.0+
-				$value = $object->get_date_created();
-			} else {
-				// Base the value off tht GMT value when possible and then set the DateTime's timezone based on the current site's timezone to avoid incorrect values when the timezone has changed
-				if ( '0000-00-00 00:00:00' != $object->post->post_date_gmt ) {
-					$value = new WC_DateTime( $object->post->post_date_gmt, new DateTimeZone( 'UTC' ) );
-					$value->setTimezone( new DateTimeZone( wc_timezone_string() ) );
-				} else {
-					$value = new WC_DateTime( $object->post->post_date, new DateTimeZone( wc_timezone_string() ) );
-				}
-			}
+			$value = $object->get_date_created();
 			break;
 
 		// Always return a PHP DateTime object in site timezone (or null), the same thing the getter returns in WC 3.0+ to make it easier to migrate away from WC < 3.0
 		case 'date_paid' :
-			if ( method_exists( $object, 'get_date_paid' ) ) { // WC 3.0+
-				$value = $object->get_date_paid();
-			} else {
-				if ( ! empty( $object->paid_date ) ) {
-					// Because the paid_date post meta value was set in the site timezone at the time it was set, this won't always be correct, but is the best we can do with WC < 3.0
-					$value = new WC_DateTime( $object->paid_date, new DateTimeZone( wc_timezone_string() ) );
-				} else {
-					$value = null;
-				}
-			}
+			$value = $object->get_date_paid();
 			break;
 
 		case 'cart_discount' :
-			if ( method_exists( $object, 'get_total_discount' ) ) { // WC 3.0+
-				$value = $object->get_total_discount();
-			} else { // WC 2.1-2.6
-				$value = $object->cart_discount;
-			}
+			$value = $object->get_total_discount();
 			break;
 
 		default :
-
 			$function_name = 'get_' . $property;
 
 			if ( is_callable( array( $object, $function_name ) ) ) {
 				$value = $object->$function_name();
 			} else {
-
 				// If we don't have a method for this specific property, but we are using WC 3.0, it may be set as meta data on the object so check if we can use that
-				if ( method_exists( $object, 'get_meta' ) ) {
-					if ( $object->meta_exists( $prefixed_key ) ) {
-						if ( 'single' === $single ) {
-							$value = $object->get_meta( $prefixed_key, true );
-						} else {
-							// WC_Data::get_meta() returns an array of stdClass objects with id, key & value properties when meta is available
-							$value = wp_list_pluck( $object->get_meta( $prefixed_key, false ), 'value' );
-						}
+				if ( $object->meta_exists( $prefixed_key ) ) {
+					if ( 'single' === $single ) {
+						$value = $object->get_meta( $prefixed_key, true );
+					} else {
+						// WC_Data::get_meta() returns an array of stdClass objects with id, key & value properties when meta is available
+						$value = wp_list_pluck( $object->get_meta( $prefixed_key, false ), 'value' );
 					}
 				} elseif ( 'single' === $single && isset( $object->$property ) ) { // WC < 3.0
 					$value = $object->$property;
