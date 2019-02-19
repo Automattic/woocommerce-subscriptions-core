@@ -886,6 +886,47 @@ class WC_Subscriptions_Switcher {
 						}
 					}
 
+					// If there are coupons in the cart, mark them for pending addition
+					$new_coupons      = array();
+					foreach ( $recurring_cart->get_coupons() as $coupon_code => $coupon ) {
+						$coupon_item = new WC_Order_Item_Coupon_Pending_Switch( $coupon_code );
+						$order->save();
+						$coupon_item->set_props(
+							array(
+								'code'                        => $coupon_code,
+								'description'                 => $coupon->get_description(),
+								'date_created'                => $coupon->get_date_created(),
+								'date_modified'               => $coupon->get_date_modified(),
+								'date_expires'                => $coupon->get_date_expires(),
+								'discount_type'               => $coupon->get_discount_type(),
+								'amount'                      => $coupon->get_amount(),
+								'usage_count'                 => $coupon->get_usage_count(),
+								'individual_use'              => $coupon->get_individual_use(),
+								'product_ids'                 => $coupon->get_product_ids(),
+								'excluded_product_ids'        => $coupon->get_excluded_product_ids(),
+								'usage_limit'                 => $coupon->get_usage_limit(),
+								'usage_limit_per_user'        => $coupon->get_usage_limit_per_user(),
+								'limit_usage_to_x_items'      => $coupon->get_limit_usage_to_x_items(),
+								'free_shipping'               => $coupon->get_free_shipping(),
+								'product_categories'          => $coupon->get_product_categories(),
+								'excluded_product_categories' => $coupon->get_excluded_product_categories(),
+								'exclude_sale_items'          => $coupon->get_exclude_sale_items(),
+								'minimum_amount'              => $coupon->get_minimum_amount(),
+								'maximum_amount'              => $coupon->get_maximum_amount(),
+								'email_restrictions'          => $coupon->get_email_restrictions(),
+								'used_by'                     => $coupon->get_used_by(),
+							)
+						);
+
+						do_action( 'woocommerce_checkout_create_order_coupon_item', $coupon_item, $coupon_code, $coupon, $subscription );
+						$subscription->add_item( $coupon_item );
+						$subscription->save();
+
+						$item_id = $coupon_item->get_id();
+						$new_coupons[] = $item_id;
+					}
+					$switch_order_data[ $subscription->get_id() ]['coupons'] = $new_coupons;
+
 					// If there are fees in the cart, mark them for pending addition
 					$new_fee_items      = array();
 					foreach ( $recurring_cart->get_fees() as $fee_key => $fee ) {
@@ -1795,6 +1836,18 @@ class WC_Subscriptions_Switcher {
 
 				if ( ! empty( $switch_data['dates']['update'] ) ) {
 					$subscription->update_dates( $switch_order_data[ $subscription->get_id() ]['dates']['update'] );
+				}
+			}
+
+			// Archive the old coupons
+			foreach ( $subscription->get_items( 'coupon' ) as $coupon_code => $coupon ) {
+				wcs_update_order_item_type( $coupon_code, 'coupon_switched', $subscription->get_id() );
+			}
+
+			if ( ! empty( $switch_data['coupons'] ) && is_array( $switch_data['coupons'] ) ) {
+				// Flip the switched coupons "on"
+				foreach ( $switch_data['coupons'] as $coupon_code ) {
+					wcs_update_order_item_type( $coupon_code, 'coupon', $subscription->get_id() );
 				}
 			}
 
