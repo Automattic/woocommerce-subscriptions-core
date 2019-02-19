@@ -67,10 +67,6 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 	$value        = ! is_null( $default ) ? $default : ( ( 'single' === $single ) ? null : array() );
 
 	switch ( $property ) {
-		case 'name' : // the replacement for post_title added in 3.0
-			$value = $object->get_name();
-			break;
-
 		case 'post' :
 			// In order to keep backwards compatibility it's required to use the parent data for variations.
 			if ( method_exists( $object, 'is_type' ) && $object->is_type( 'variation' ) ) {
@@ -84,38 +80,21 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 			$value = wcs_get_objects_property( $object, 'post' )->post_status;
 			break;
 
-		case 'parent_id' :
-			$value = $object->get_parent_id();
-			break;
-
 		case 'variation_data' :
 			$value = wc_get_product_variation_attributes( $object->get_id() );
 			break;
 
-		case 'downloads' :
-			$value = $object->get_downloads();
-			break;
-
 		case 'order_version' :
-		case 'version' :
 			$value = $object->get_version();
 			break;
 
 		case 'order_currency' :
-		case 'currency' :
 			$value = $object->get_currency();
 			break;
 
-		// Always return a PHP DateTime object in site timezone (or null), the same thing the WC_Order::get_date_created() method returns in WC 3.0+ to make it easier to migrate away from WC < 3.0
-		case 'date_created' :
 		case 'order_date' :
 		case 'date' :
 			$value = $object->get_date_created();
-			break;
-
-		// Always return a PHP DateTime object in site timezone (or null), the same thing the getter returns in WC 3.0+ to make it easier to migrate away from WC < 3.0
-		case 'date_paid' :
-			$value = $object->get_date_paid();
 			break;
 
 		case 'cart_discount' :
