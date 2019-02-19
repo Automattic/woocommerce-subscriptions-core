@@ -63,8 +63,19 @@ function wcs_help_tip( $tip, $allow_html = false ) {
  * @return mixed
  */
 function wcs_get_objects_property( $object, $property, $single = 'single', $default = null ) {
-	$prefixed_key = wcs_maybe_prefix_key( $property );
-	$value        = ! is_null( $default ) ? $default : ( ( 'single' === $single ) ? null : array() );
+	$prefixed_key          = wcs_maybe_prefix_key( $property );
+	$value                 = ! is_null( $default ) ? $default : ( ( 'single' === $single ) ? null : array() );
+	$property_function_map = array(
+		'order_version'  => 'version',
+		'order_currency' => 'currency',
+		'order_date'     => 'date_created',
+		'date'           => 'date_created',
+		'cart_discount'  => 'total_discount',
+	);
+
+	if ( isset( $property_function_map[ $property ] ) ) {
+		$property = $property_function_map[ $property ];
+	}
 
 	switch ( $property ) {
 		case 'post' :
@@ -82,23 +93,6 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 
 		case 'variation_data' :
 			$value = wc_get_product_variation_attributes( $object->get_id() );
-			break;
-
-		case 'order_version' :
-			$value = $object->get_version();
-			break;
-
-		case 'order_currency' :
-			$value = $object->get_currency();
-			break;
-
-		case 'order_date' :
-		case 'date' :
-			$value = $object->get_date_created();
-			break;
-
-		case 'cart_discount' :
-			$value = $object->get_total_discount();
 			break;
 
 		default :
