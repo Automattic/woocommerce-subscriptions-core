@@ -192,7 +192,7 @@ function wcs_cart_totals_shipping_method_price_label( $method, $cart ) {
 		$price_label .= _x( 'Free', 'shipping method price', 'woocommerce-subscriptions' );
 	}
 
-	return $price_label;
+	return apply_filters( 'wcs_cart_totals_shipping_method_price_label', $price_label, $method, $cart );
 }
 
 /**
