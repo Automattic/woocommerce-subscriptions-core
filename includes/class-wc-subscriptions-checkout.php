@@ -40,6 +40,9 @@ class WC_Subscriptions_Checkout {
 
 		// When a line item is added to a subscription on checkout, ensure the backorder data added by WC is removed
 		add_action( 'woocommerce_checkout_create_order_line_item', __CLASS__ . '::remove_backorder_meta_from_subscription_line_item', 10, 4 );
+
+		// When a line item is added to a subscription, ensure the __has_trial meta data is added if applicable.
+		add_action( 'woocommerce_checkout_create_order_line_item', array( __CLASS__, 'maybe_add_free_trial_item_meta' ), 10, 4 );
 	}
 
 	/**
@@ -323,6 +326,21 @@ class WC_Subscriptions_Checkout {
 
 		if ( wcs_is_subscription( $subscription ) ) {
 			$item->delete_meta_data( apply_filters( 'woocommerce_backordered_item_meta_name', __( 'Backordered', 'woocommerce-subscriptions' ) ) );
+		}
+	}
+
+	/**
+	 * Set a flag in subscription line item meta if the line item has a free trial.
+	 *
+	 * @param WC_Order_Item_Product $item The item being added to the subscription.
+	 * @param string $cart_item_key The item's cart item key.
+	 * @param array $cart_item The cart item.
+	 * @param WC_Subscription $subscription The subscription the item is being added to.
+	 * @since 2.6.0
+	 */
+	public static function maybe_add_free_trial_item_meta( $item, $cart_item_key, $cart_item, $subscription ) {
+		if ( wcs_is_subscription( $subscription ) && WC_Subscriptions_Product::get_trial_length( $item->get_product() ) > 0 ) {
+			$item->update_meta_data( '_has_trial', 'true' );
 		}
 	}
 
