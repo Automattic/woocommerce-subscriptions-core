@@ -1097,9 +1097,9 @@ class WC_Subscriptions_Synchroniser {
 			$subscription = wcs_get_subscription( $post_id );
 
 			foreach ( $subscription->get_items() as $item ) {
-				$product_id = wcs_get_canonical_product_id( $item );
+				$product = $item->get_product();
 
-				if ( self::is_product_synced( $product_id ) ) {
+				if ( self::is_product_synced( $product ) ) {
 					update_post_meta( $subscription->get_id(), '_contains_synced_subscription', 'true' );
 					break;
 				}
@@ -1182,10 +1182,10 @@ class WC_Subscriptions_Synchroniser {
 	 * @since 2.2.3
 	 */
 	public static function maybe_add_meta_for_new_line_item( $item_id, $item, $subscription_id ) {
-		if ( is_callable( array( $item, 'get_product_id' ) ) ) {
-			$product_id = wcs_get_canonical_product_id( $item );
+		if ( is_callable( array( $item, 'get_product' ) ) ) {
+			$product = $item->get_product();
 
-			if ( self::is_product_synced( $product_id ) ) {
+			if ( self::is_product_synced( $product ) ) {
 				self::maybe_add_subscription_meta( $subscription_id );
 			}
 		}
