@@ -145,3 +145,28 @@ function wcs_get_early_renewal_url( $subscription ) {
 	 */
 	return apply_filters( 'woocommerce_subscriptions_get_early_renewal_url', $url, $subscription_id );
 }
+
+/**
+ * Get the last renewal order which isn't an early renewal order.
+ *
+ * @param WC_Subscription $subscription The subscription object.
+ *
+ * @return WC_Order|bool The last non-early renewal order, otherwise false.
+ * @since 2.6.0
+ */
+function wcs_get_last_non_early_renewal_order( $subscription ) {
+	$last_non_early_renewal = false;
+	$renewal_orders         = $subscription->get_related_orders( 'all', 'renewal' );
+
+	// We need the orders sorted by the date they were created, with the newest first.
+	wcs_sort_objects( $renewal_orders, 'date_created', 'descending' );
+
+	foreach ( $renewal_orders as $renewal_order ) {
+		if ( ! wcs_order_contains_early_renewal( $renewal_order ) ) {
+			$last_non_early_renewal = $renewal_order;
+			break;
+		}
+	}
+
+	return $last_non_early_renewal;
+}
