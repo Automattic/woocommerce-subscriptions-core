@@ -1343,23 +1343,6 @@ class WC_Subscriptions_Switcher {
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 
-			// Find the actual recurring amount charged for the old subscription (we need to use the '_recurring_line_total' meta here rather than '_subscription_recurring_amount' because we want the recurring amount to include extra from extensions, like Product Add-ons etc.)
-			$old_recurring_total = $existing_item['line_total'];
-
-			// Use previous parent or renewal order's actual line item total instead of what is due, to guard against not yet paid amounts in multi-switching
-			$last_order = $subscription->get_last_order( 'all' );
-			$last_order_items = $last_order->get_items();
-			foreach ( $last_order_items as $last_order_item ) {
-				if ( wcs_get_canonical_product_id( $last_order_item ) == $product_id ) {
-					$old_recurring_total = $last_order_item['line_total'];
-					break;
-				}
-			}
-
-			if ( $subscription->get_prices_include_tax() ) {
-				$old_recurring_total += $existing_item['line_tax'];
-			}
-
 			// Find the $price per day for the old subscription's recurring total
 			$old_price_per_day = $days_in_old_cycle > 0 ? $old_recurring_total / $days_in_old_cycle : $old_recurring_total;
 			$old_price_per_day = apply_filters( 'wcs_switch_proration_old_price_per_day', $old_price_per_day, $subscription, $cart_item, $old_recurring_total, $days_in_old_cycle );

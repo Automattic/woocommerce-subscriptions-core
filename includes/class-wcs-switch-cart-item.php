@@ -77,6 +77,12 @@ class WCS_Switch_Cart_Item {
 	public $days_in_old_cycle;
 
 	/**
+	 * The total paid for the existing item (@see $existing_item) in early renewals and switch orders since the last non-early renewal or parent order.
+	 * @var float
+	 */
+	public $total_paid_for_current_period;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param array $cart_item      The cart item.
@@ -150,6 +156,20 @@ class WCS_Switch_Cart_Item {
 		}
 
 		return $this->last_order_created_time;
+	}
+
+	/**
+	 * Get the total paid for the existing item (@see $this->existing_item) in early renewals and switch orders since the last non-early renewal or parent order.
+	 *
+	 * @return float
+	 * @since 2.6.0
+	 */
+	public function get_total_paid_for_current_period() {
+		if ( ! isset( $this->total_paid_for_current_period ) ) {
+			$this->total_paid_for_current_period = WC_Subscriptions_Switcher::calculate_total_paid_since_last_order( $this->subscription, $this->existing_item );
+		}
+
+		return $this->total_paid_for_current_period;
 	}
 
 	/**
