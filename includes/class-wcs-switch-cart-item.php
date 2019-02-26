@@ -64,4 +64,16 @@ class WCS_Switch_Cart_Item {
 		$this->product                 = $cart_item['data'];
 		$this->next_payment_timestamp  = $cart_item['subscription_switch']['next_payment_timestamp'];
 	}
+
+	/** Helper functions */
+
+	/**
+	 * Whether the new product is virtual or not.
+	 *
+	 * @return boolean
+	 * @since 2.6.0
+	 */
+	public function is_virtual_product() {
+		return $this->product->is_virtual();
+	}
 }
