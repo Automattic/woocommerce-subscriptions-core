@@ -71,6 +71,12 @@ class WCS_Switch_Cart_Item {
 	public $days_until_next_payment;
 
 	/**
+	 * The number of days in the old subscription's billing cycle.
+	 * @var int
+	 */
+	public $days_in_old_cycle;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param array $cart_item      The cart item.
@@ -104,6 +110,20 @@ class WCS_Switch_Cart_Item {
 		}
 
 		return $this->days_until_next_payment;
+	}
+
+	/**
+	 * Get the number of days in the old billing cycle.
+	 *
+	 * @return int
+	 * @since 2.6.0
+	 */
+	public function get_days_in_old_cycle() {
+		if ( ! isset( $this->days_in_old_cycle ) ) {
+			$this->days_in_old_cycle = $this->calculate_days_in_old_cycle();
+		}
+
+		return $this->days_in_old_cycle;
 	}
 
 	/**
@@ -144,6 +164,41 @@ class WCS_Switch_Cart_Item {
 		}
 
 		return $this->days_since_last_payment;
+	}
+
+	/** Calculator functions */
+
+	/**
+	 * Calculate the number of days in the old cycle.
+	 *
+	 * @return int
+	 * @since 2.6.0
+	 */
+	public function calculate_days_in_old_cycle() {
+		$method_to_use = 'days_between_payments';
+
+		// If the subscription contains a synced product and the next payment is actually the first payment, determine the days in the "old" cycle from the subscription object
+		if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $this->subscription ) ) {
+			$first_synced_payment = WC_Subscriptions_Synchroniser::calculate_first_payment_date( wc_get_product( $this->canonical_product_id ) , 'timestamp', $this->subscription->get_date( 'start' ) );
+
+			if ( $first_synced_payment === $this->next_payment_timestamp ) {
+				$method_to_use = 'days_in_billing_cycle';
+			}
+		}
+
+		// We need the product's billing cycle, not the trial length if the customer hasn't paid anything and it's still on trial.
+		if ( $this->is_switch_during_trial() && 0 === $this->get_total_paid_for_current_period() ) {
+			$method_to_use = 'days_in_billing_cycle';
+		}
+
+		// Find the number of days between the last payment and the next
+		if ( 'days_between_payments' === $method_to_use ) {
+			$days_in_old_cycle = floor( ( $this->next_payment_timestamp - $this->get_last_order_created_time() ) / DAY_IN_SECONDS );
+		} else {
+			$days_in_old_cycle = wcs_get_days_in_cycle( $this->subscription->get_billing_period(), $this->subscription->get_billing_interval() );
+		}
+
+		return apply_filters( 'wcs_switch_proration_days_in_old_cycle', $days_in_old_cycle, $this->subscription, $this->cart_item );
 	}
 
 	/** Helper functions */
