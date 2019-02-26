@@ -1338,10 +1338,7 @@ class WC_Subscriptions_Switcher {
 			return;
 		}
 
-		// Maybe charge an initial amount to account for upgrading from a cheaper subscription
-		$apportion_recurring_price = get_option( WC_Subscriptions_Admin::$option_prefix . '_apportion_recurring_price', 'no' );
-		$apportion_sign_up_fee     = get_option( WC_Subscriptions_Admin::$option_prefix . '_apportion_sign_up_fee', 'no' );
-		$apportion_length          = get_option( WC_Subscriptions_Admin::$option_prefix . '_apportion_length', 'no' );
+		$switch_totals_calculator = new WCS_Switch_Totals_Calculator( $cart );
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 
