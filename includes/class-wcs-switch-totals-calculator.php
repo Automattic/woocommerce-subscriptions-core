@@ -72,4 +72,41 @@ class WCS_Switch_Totals_Calculator {
 		$this->apportion_length          = get_option( WC_Subscriptions_Admin::$option_prefix . '_apportion_length', 'no' );
 		$this->prices_include_tax        = 'yes' === get_option( 'woocommerce_prices_include_tax' );
 	}
+
+	/**
+	 * Calculate the upgrade cost, and next payment dates for switch cart items.
+	 *
+	 * @since 2.6.0
+	 */
+	public function calculate_prorated_totals() {
+		foreach ( $this->get_switches_from_cart() as $cart_item_key => $switch_item ) {
+			// Handle all the switch upgrade/downgrade/crossgrade logic here.
+		}
+	}
+
+	/**
+	 * Get all the switch items in the cart.
+	 *
+	 * @return array
+	 * @since 2.6.0
+	 */
+	protected function get_switches_from_cart() {
+		$switches = array();
+
+		foreach ( $this->cart->get_cart() as $cart_item_key => $cart_item ) {
+			if ( ! isset( $cart_item['subscription_switch']['subscription_id'] ) ) {
+				continue;
+			}
+
+			$subscription  = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
+			$existing_item = wcs_get_order_item( $cart_item['subscription_switch']['item_id'], $subscription );
+
+			if ( empty( $subscription ) || empty( $existing_item ) ) {
+				$this->cart->remove_cart_item( $cart_item_key );
+				continue;
+			}
+		}
+
+		return $switches;
+	}
 }
