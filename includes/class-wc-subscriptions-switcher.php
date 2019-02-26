@@ -1287,32 +1287,6 @@ class WC_Subscriptions_Switcher {
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 
-			// Add any extra sign up fees required to switch to the new subscription
-			if ( 'yes' == $apportion_sign_up_fee ) {
-
-				// With WC 3.0, make sure we get a fresh copy of the product's meta to avoid prorating an already prorated sign-up fee
-				if ( is_callable( array( $product, 'read_meta_data' ) ) ) {
-					$product->read_meta_data( true );
-				}
-
-				// Because product add-ons etc. don't apply to sign-up fees, it's safe to use the product's sign-up fee value rather than the cart item's
-				$sign_up_fee_due  = WC_Subscriptions_Product::get_sign_up_fee( $product );
-				$sign_up_fee_paid = $subscription->get_items_sign_up_fee( $existing_item, get_option( 'woocommerce_prices_include_tax' ) === 'yes' ? 'inclusive_of_tax' : 'exclusive_of_tax' );
-
-				// Make sure total prorated sign-up fee is prorated across total amount of sign-up fee so that customer doesn't get extra discounts
-				if ( $cart_item['quantity'] > $existing_item['qty'] ) {
-					$sign_up_fee_paid = ( $sign_up_fee_paid * $existing_item['qty'] ) / $cart_item['quantity'];
-				}
-
-				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee', max( $sign_up_fee_due - $sign_up_fee_paid, 0 ), 'set_prop_only' );
-				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee_prorated', WC_Subscriptions_Product::get_sign_up_fee( WC()->cart->cart_contents[ $cart_item_key ]['data'] ), 'set_prop_only' );
-
-			} elseif ( 'no' == $apportion_sign_up_fee ) { // $0 the initial sign-up fee
-
-				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee', 0, 'set_prop_only' );
-
-			}
-
 			// Get the current subscription's last payment date
 			$last_order_time_created = $subscription->get_time( 'last_order_date_created' );
 			$days_since_last_payment = floor( ( gmdate( 'U' ) - $last_order_time_created ) / ( 60 * 60 * 24 ) );
