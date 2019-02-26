@@ -53,6 +53,12 @@ class WCS_Switch_Cart_Item {
 	public $end_timestamp;
 
 	/**
+	 * The subscription's last non-early renewal or parent order created timestamp.
+	 * @var int
+	 */
+	public $last_order_created_time;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param array $cart_item      The cart item.
@@ -70,6 +76,34 @@ class WCS_Switch_Cart_Item {
 		$this->product                 = $cart_item['data'];
 		$this->next_payment_timestamp  = $cart_item['subscription_switch']['next_payment_timestamp'];
 		$this->end_timestamp           = wcs_date_to_time( WC_Subscriptions_Product::get_expiration_date( $this->canonical_product_id, $this->subscription->get_date( 'last_order_date_created' ) ) );
+	}
+
+	/** Getters */
+
+	/**
+	 * Get the subscription's last order time.
+	 *
+	 * @return int The timestamp of the subscription's last non-early renewal or parent order. If none of those are present, the subscription's created time will be returned.
+	 * @since 2.6.0
+	 */
+	public function get_last_order_created_time() {
+		if ( ! isset( $this->last_order_created_time ) ) {
+			$last_order = wcs_get_last_non_early_renewal_order( $this->subscription );
+
+			// If there haven't been any non-early renewals yet, use the parent
+			if ( ! $last_order ) {
+				$last_order = $this->subscription->get_parent();
+			}
+
+			// If there aren't any renewals or a parent order, use the subscription's created date.
+			if ( ! $last_order ) {
+				$this->last_order_created_time = $this->subscription->get_date_created()->getTimestamp();
+			} else {
+				$this->last_order_created_time = $last_order->get_date_created()->getTimestamp();
+			}
+		}
+
+		return $this->last_order_created_time;
 	}
 
 	/** Helper functions */

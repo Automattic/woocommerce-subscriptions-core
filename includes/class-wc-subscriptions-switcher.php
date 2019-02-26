@@ -1343,8 +1343,6 @@ class WC_Subscriptions_Switcher {
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 
-			// Get the current subscription's last payment date
-			$last_order_time_created = $subscription->get_time( 'last_order_date_created' );
 			$days_since_last_payment = floor( ( gmdate( 'U' ) - $last_order_time_created ) / ( 60 * 60 * 24 ) );
 
 			$days_until_next_payment = ceil( ( $next_payment_timestamp - gmdate( 'U' ) ) / ( 60 * 60 * 24 ) );
