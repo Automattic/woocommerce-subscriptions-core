@@ -1287,8 +1287,6 @@ class WC_Subscriptions_Switcher {
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 
-			$days_since_last_payment = floor( ( gmdate( 'U' ) - $last_order_time_created ) / ( 60 * 60 * 24 ) );
-
 			$days_until_next_payment = ceil( ( $next_payment_timestamp - gmdate( 'U' ) ) / ( 60 * 60 * 24 ) );
 
 			// If the subscription contains a synced product and the next payment is actually the first payment, determine the days in the "old" cycle from the subscription object
