@@ -2111,6 +2111,76 @@ class WC_Subscriptions_Switcher {
 		add_action( 'woocommerce_grant_product_download_permissions', 'WCS_Download_Handler::save_downloadable_product_permissions' );
 	}
 
+	/**
+	 * Calculate the total amount a customer has paid in early renewals since the last scheduled renewal or parent order (inclusive).
+	 *
+	 * This function will map the current item back through multiple switches to make sure it finds the item that was used at the time of last parent/scheduled renewal.
+	 *
+	 * @param WC_Subscription $subscription    The Subscription
+	 * @param WC_Order_Item $subscription_item The current line item on the subscription to map back through the related orders.
+	 *
+	 * @return float The total amount paid for an existing subscription line item.
+	 * @since 2.6.0
+	 */
+	public static function calculate_total_paid_since_last_order( $subscription, $subscription_item ) {
+		$found_item      = false;
+		$item_total_paid = 0;
+		$orders          = $subscription->get_related_orders( 'all', array( 'parent', 'renewal', 'switch' ) );
+
+		// We need the orders sorted by the date they were paid, with the newest first.
+		wcs_sort_objects( $orders, 'date_paid', 'descending' );
+
+		// We'll need to make sure we map switched items back through past orders so flag if the current item has been switched before.
+		$has_been_switched           = $subscription_item->meta_exists( '_switched_subscription_item_id' );
+		$switched_subscription_items = $subscription->get_items( 'line_item_switched' );
+
+		foreach ( $orders as $order ) {
+			// Find the item on the order which matches the subscription item.
+			$order_item = wcs_find_matching_line_item( $order, $subscription_item );
+
+			if ( $order_item ) {
+				$item_total_paid += $order_item->get_total();
+
+				if ( $order->get_prices_include_tax( 'edit' ) ) {
+					$item_total_paid += $order_item->get_total_tax();
+				}
+
+				$found_item = true;
+			}
+
+			// If the next order in line contains a switch, we might need to start looking for the previous product in older related orders.
+			if ( $has_been_switched && wcs_order_contains_switch( $order ) ) {
+				// The new subscription item stores a reference to the old subscription item in meta.
+				$switched_subscription_item_id = $subscription_item->get_meta( '_switched_subscription_item_id' );
+
+				// Check that the switched subscription line item still exists.
+				if ( isset( $switched_subscription_items[ $switched_subscription_item_id ] ) ) {
+					$switched_subscription_item = $switched_subscription_items[ $switched_subscription_item_id ];
+
+					// The switched subscription item stores a reference to the new item on the switch order .
+					$switch_order_item_id = $switched_subscription_item->get_meta( '_switched_subscription_new_item_id' );
+
+					// Check that this switch order contains the switch for the current subscription item.
+					if ( $switch_order_item_id && (bool) wcs_get_order_item( $switch_order_item_id, $order ) ) {
+						// The item we need to look for now in older related orders is the subscription item which switched.
+						$subscription_item = $switched_subscription_item;
+
+						// If the switched subscription item has been switched, make a note of it too as we might have a multi-switch.
+						$has_been_switched = $subscription_item->meta_exists( '_switched_subscription_item_id' );
+					}
+				}
+			}
+
+			// If this is a renewal order but not an early renewal, or it's a parent order, we've gone back far enough -- exit out.
+			if ( ( wcs_order_contains_renewal( $order ) && ! wcs_order_contains_early_renewal( $order ) ) || wcs_order_contains_subscription( $order, 'parent' ) ) {
+				break;
+			}
+		}
+
+		// If we never found any amount paid, fall back to the existing item's line item total.
+		return $found_item ? $item_total_paid : $subscription_item['line_total'];
+	}
+
 	/** Deprecated Methods **/
 
 	/**
