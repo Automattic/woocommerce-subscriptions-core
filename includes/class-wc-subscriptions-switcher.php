@@ -1283,20 +1283,9 @@ class WC_Subscriptions_Switcher {
 		}
 
 		$switch_totals_calculator = new WCS_Switch_Totals_Calculator( $cart );
+		$switch_totals_calculator->calculate_prorated_totals();
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-
-			if ( ! isset( $cart_item['subscription_switch']['subscription_id'] ) ) {
-				continue;
-			}
-
-			$subscription  = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
-			$existing_item = wcs_get_order_item( $cart_item['subscription_switch']['item_id'], $subscription );
-
-			if ( empty( $existing_item ) ) {
-				WC()->cart->remove_cart_item( $cart_item_key );
-				continue;
-			}
 
 			$product_in_cart    = $cart_item['data'];
 			$product_id         = wcs_get_canonical_product_id( $cart_item );
