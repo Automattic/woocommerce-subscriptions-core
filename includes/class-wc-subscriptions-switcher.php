@@ -1343,16 +1343,6 @@ class WC_Subscriptions_Switcher {
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 
-			// If the subscription contains a synced product and the next payment is actually the first payment, determine the days in the "old" cycle from the subscription object
-			if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription->get_id() ) && WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product, 'timestamp', $subscription->get_date( 'start' ) ) == $next_payment_timestamp ) {
-				$days_in_old_cycle = wcs_get_days_in_cycle( $subscription->get_billing_period(), $subscription->get_billing_interval() );
-			} else {
-				// Find the number of days between the two
-				$days_in_old_cycle = $days_until_next_payment + $days_since_last_payment;
-			}
-
-			$days_in_old_cycle = apply_filters( 'wcs_switch_proration_days_in_old_cycle', $days_in_old_cycle, $subscription, $cart_item );
-
 			// Find the actual recurring amount charged for the old subscription (we need to use the '_recurring_line_total' meta here rather than '_subscription_recurring_amount' because we want the recurring amount to include extra from extensions, like Product Add-ons etc.)
 			$old_recurring_total = $existing_item['line_total'];
 
