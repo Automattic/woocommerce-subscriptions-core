@@ -47,6 +47,12 @@ class WCS_Switch_Cart_Item {
 	public $next_payment_timestamp;
 
 	/**
+	 * The subscription's end timestamp.
+	 * @var int
+	 */
+	public $end_timestamp;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param array $cart_item      The cart item.
@@ -63,6 +69,7 @@ class WCS_Switch_Cart_Item {
 		$this->canonical_product_id    = wcs_get_canonical_product_id( $cart_item );
 		$this->product                 = $cart_item['data'];
 		$this->next_payment_timestamp  = $cart_item['subscription_switch']['next_payment_timestamp'];
+		$this->end_timestamp           = wcs_date_to_time( WC_Subscriptions_Product::get_expiration_date( $this->canonical_product_id, $this->subscription->get_date( 'last_order_date_created' ) ) );
 	}
 
 	/** Helper functions */

@@ -80,7 +80,8 @@ class WCS_Switch_Totals_Calculator {
 	 */
 	public function calculate_prorated_totals() {
 		foreach ( $this->get_switches_from_cart() as $cart_item_key => $switch_item ) {
-			// Handle all the switch upgrade/downgrade/crossgrade logic here.
+			$this->set_first_payment_timestamp( $cart_item_key, $switch_item->next_payment_timestamp );
+			$this->set_end_timestamp( $cart_item_key, $switch_item->end_timestamp );
 		}
 	}
 
@@ -110,5 +111,29 @@ class WCS_Switch_Totals_Calculator {
 		}
 
 		return $switches;
+	}
+
+	/** Setters */
+
+	/**
+	 * Set the first payment timestamp on the cart item.
+	 *
+	 * @param string $cart_item_key The cart item key.
+	 * @param int $first_payment_timestamp The first payment timestamp.
+	 * @since 2.6.0
+	 */
+	public function set_first_payment_timestamp( $cart_item_key, $first_payment_timestamp ) {
+		$this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $first_payment_timestamp;
+	}
+
+	/**
+	 * Set the end timestamp on the cart item.
+	 *
+	 * @param string $cart_item_key The cart item key.
+	 * @param int $end_timestamp The subscription's end date timestamp.
+	 * @since 2.6.0
+	 */
+	public function set_end_timestamp( $cart_item_key, $end_timestamp ) {
+		$this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['end_timestamp'] = $end_timestamp;
 	}
 }
