@@ -85,9 +85,9 @@ class WCS_Switch_Totals_Calculator {
 	}
 
 	/**
-	 * Get all the switch items in the cart.
+	 * Get all the switch items in the cart as instances of @see WCS_Switch_Cart_Item.
 	 *
-	 * @return array
+	 * @return WCS_Switch_Cart_Item[]
 	 * @since 2.6.0
 	 */
 	protected function get_switches_from_cart() {
@@ -105,6 +105,8 @@ class WCS_Switch_Totals_Calculator {
 				$this->cart->remove_cart_item( $cart_item_key );
 				continue;
 			}
+
+			$switches[ $cart_item_key ] = new WCS_Switch_Cart_Item( $cart_item, $subscription, $existing_item );
 		}
 
 		return $switches;

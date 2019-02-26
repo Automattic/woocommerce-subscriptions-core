@@ -1287,9 +1287,6 @@ class WC_Subscriptions_Switcher {
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 
-			$product_in_cart    = $cart_item['data'];
-			$product_id         = wcs_get_canonical_product_id( $cart_item );
-			$product            = wc_get_product( $product_id );
 			$is_virtual_product = $product->is_virtual();
 
 			// Set when the first payment and end date for the new subscription should occur
@@ -1326,8 +1323,6 @@ class WC_Subscriptions_Switcher {
 			$last_order_time_created = $subscription->get_time( 'last_order_date_created' );
 			$days_since_last_payment = floor( ( gmdate( 'U' ) - $last_order_time_created ) / ( 60 * 60 * 24 ) );
 
-			// Get the current subscription's next payment date
-			$next_payment_timestamp  = $cart_item['subscription_switch']['next_payment_timestamp'];
 			$days_until_next_payment = ceil( ( $next_payment_timestamp - gmdate( 'U' ) ) / ( 60 * 60 * 24 ) );
 
 			// If the subscription contains a synced product and the next payment is actually the first payment, determine the days in the "old" cycle from the subscription object
