@@ -65,6 +65,12 @@ class WCS_Switch_Cart_Item {
 	public $days_since_last_payment;
 
 	/**
+	 * The number of days until the @see $next_payment_timestamp.
+	 * @var int
+	 */
+	public $days_until_next_payment;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param array $cart_item      The cart item.
@@ -85,6 +91,20 @@ class WCS_Switch_Cart_Item {
 	}
 
 	/** Getters */
+
+	/**
+	 * Get the number of days until the next payment.
+	 *
+	 * @return int
+	 * @since 2.6.0
+	 */
+	public function get_days_until_next_payment() {
+		if ( ! isset( $this->days_until_next_payment ) ) {
+			$this->days_until_next_payment = ceil( ( $this->next_payment_timestamp - gmdate( 'U' ) ) / DAY_IN_SECONDS );
+		}
+
+		return $this->days_until_next_payment;
+	}
 
 	/**
 	 * Get the subscription's last order time.
