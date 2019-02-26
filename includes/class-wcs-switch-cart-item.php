@@ -59,6 +59,12 @@ class WCS_Switch_Cart_Item {
 	public $last_order_created_time;
 
 	/**
+	 * The number of days since the @see $last_order_created_time.
+	 * @var int
+	 */
+	public $days_since_last_payment;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param array $cart_item      The cart item.
@@ -104,6 +110,20 @@ class WCS_Switch_Cart_Item {
 		}
 
 		return $this->last_order_created_time;
+	}
+
+	/**
+	 * Get the number of days since the last payment.
+	 *
+	 * @return int The number of days since the last non-early renewal or parent payment - rounded down.
+	 */
+	public function get_days_since_last_payment() {
+		if ( ! isset( $this->days_since_last_payment ) ) {
+			// Use the timestamp for the last non-early renewal order or parent order to avoid date miscalculations which early renewing creates.
+			$this->days_since_last_payment = floor( ( gmdate( 'U' ) - $this->get_last_order_created_time() ) / DAY_IN_SECONDS );
+		}
+
+		return $this->days_since_last_payment;
 	}
 
 	/** Helper functions */
