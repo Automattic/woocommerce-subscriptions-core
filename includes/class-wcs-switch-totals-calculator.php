@@ -82,6 +82,8 @@ class WCS_Switch_Totals_Calculator {
 		foreach ( $this->get_switches_from_cart() as $cart_item_key => $switch_item ) {
 			$this->set_first_payment_timestamp( $cart_item_key, $switch_item->next_payment_timestamp );
 			$this->set_end_timestamp( $cart_item_key, $switch_item->end_timestamp );
+
+			$this->apportion_sign_up_fees( $switch_item );
 		}
 	}
 
@@ -111,6 +113,39 @@ class WCS_Switch_Totals_Calculator {
 		}
 
 		return $switches;
+	}
+
+	/** Total Calculators */
+
+	/**
+	 * Apportion any sign-up fees if required.
+	 *
+	 * Implements the store's apportion sign-up fee setting (@see $this->apportion_sign_up_fee).
+	 *
+	 * @param WCS_Switch_Cart_Item $switch_item
+	 * @since 2.6.0
+	 */
+	protected function apportion_sign_up_fees( $switch_item ) {
+		if ( 'no' === $this->apportion_sign_up_fee ) {
+			$switch_item->product->update_meta_data( '_subscription_sign_up_fee', 0 );
+		} elseif ( 'yes' === $this->apportion_sign_up_fee ) {
+			$product = wc_get_product( $switch_item->canonical_product_id );
+
+			// Make sure we get a fresh copy of the product's meta to avoid prorating an already prorated sign-up fee
+			$product->read_meta_data( true );
+
+			// Because product add-ons etc. don't apply to sign-up fees, it's safe to use the product's sign-up fee value rather than the cart item's
+			$sign_up_fee_due  = WC_Subscriptions_Product::get_sign_up_fee( $product );
+			$sign_up_fee_paid = $switch_item->subscription->get_items_sign_up_fee( $switch_item->existing_item, $this->prices_include_tax ? 'inclusive_of_tax' : 'exclusive_of_tax' );
+
+			// Make sure total prorated sign-up fee is prorated across total amount of sign-up fee so that customer doesn't get extra discounts
+			if ( $switch_item->cart_item['quantity'] > $switch_item->existing_item['qty'] ) {
+				$sign_up_fee_paid = ( $sign_up_fee_paid * $switch_item->existing_item['qty'] ) / $switch_item->cart_item['quantity'];
+			}
+
+			$switch_item->product->update_meta_data( '_subscription_sign_up_fee', max( $sign_up_fee_due - $sign_up_fee_paid, 0 ) );
+			$switch_item->product->update_meta_data( '_subscription_sign_up_fee_prorated', WC_Subscriptions_Product::get_sign_up_fee( $switch_item->product ) );
+		}
 	}
 
 	/** Setters */
