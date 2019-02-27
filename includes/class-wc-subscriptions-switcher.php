@@ -1333,13 +1333,10 @@ class WC_Subscriptions_Switcher {
 	 * @since 2.0
 	 */
 	public static function calculate_prorated_totals( $cart ) {
-
-		if ( false === self::cart_contains_switches() ) {
-			return;
+		if ( self::cart_contains_switches() ) {
+			$switch_totals_calculator = new WCS_Switch_Totals_Calculator( $cart );
+			$switch_totals_calculator->calculate_prorated_totals();
 		}
-
-		$switch_totals_calculator = new WCS_Switch_Totals_Calculator( $cart );
-		$switch_totals_calculator->calculate_prorated_totals();
 	}
 
 	/**
