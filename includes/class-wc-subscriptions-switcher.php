@@ -2049,7 +2049,7 @@ class WC_Subscriptions_Switcher {
 	 * @return float The total amount paid for an existing subscription line item.
 	 * @since 2.6.0
 	 */
-	public static function calculate_total_paid_since_last_order( $subscription, $subscription_item ) {
+	public static function calculate_total_paid_since_last_order( $subscription, $subscription_item, $include_sign_up_fees = 'include_sign_up_fees' ) {
 		$found_item      = false;
 		$item_total_paid = 0;
 		$orders          = $subscription->get_related_orders( 'all', array( 'parent', 'renewal', 'switch' ) );
@@ -2062,20 +2062,37 @@ class WC_Subscriptions_Switcher {
 		$switched_subscription_items = $subscription->get_items( 'line_item_switched' );
 
 		foreach ( $orders as $order ) {
+			$order_is_parent = $order->get_id() === $subscription->get_parent_id();
+
 			// Find the item on the order which matches the subscription item.
 			$order_item = wcs_find_matching_line_item( $order, $subscription_item );
 
 			if ( $order_item ) {
-				$item_total_paid += $order_item->get_total();
+				$found_item = true;
+				$item_total = $order_item->get_total();
 
 				if ( $order->get_prices_include_tax( 'edit' ) ) {
-					$item_total_paid += $order_item->get_total_tax();
+					$item_total += $order_item->get_total_tax();
 				}
 
-				$found_item = true;
+				// Remove any signup fees if necessary.
+				if ( $order_is_parent && 'include_sign_up_fees' !== $include_sign_up_fees ) {
+					if ( $order_item->meta_exists( '_synced_sign_up_fee' ) ) {
+						$item_total -= $order_item->get_meta( '_synced_sign_up_fee' );
+					} elseif ( $subscription_item->meta_exists( '_has_trial' ) ) {
+						// Where there's a free trial, the sign up fee is the entire item total so the non-sign-up fee portion is 0.
+						$item_total = 0;
+					} else {
+						// For non-free trial subscriptions, the sign up fee portion is the order total minus the recurring total (subscription item total).
+						// Use the subscription item's subtotal (without discounts) to avoid signup fee coupon discrepancies
+						$item_total -= max( $order_item->get_total() - $subscription_item->get_subtotal(), 0 );
+					}
+				}
+
+				$item_total_paid += $item_total;
 			}
 
-			// If the next order in line contains a switch, we might need to start looking for the previous product in older related orders.
+			// If the current order in line contains a switch, we might need to start looking for the previous product in older related orders.
 			if ( $has_been_switched && wcs_order_contains_switch( $order ) ) {
 				// The new subscription item stores a reference to the old subscription item in meta.
 				$switched_subscription_item_id = $subscription_item->get_meta( '_switched_subscription_item_id' );
@@ -2098,8 +2115,8 @@ class WC_Subscriptions_Switcher {
 				}
 			}
 
-			// If this is a renewal order but not an early renewal, or it's a parent order, we've gone back far enough -- exit out.
-			if ( ( wcs_order_contains_renewal( $order ) && ! wcs_order_contains_early_renewal( $order ) ) || wcs_order_contains_subscription( $order, 'parent' ) ) {
+			// If this is a parent order, or it's a renewal order but not an early renewal, we've gone back far enough -- exit out.
+			if ( $order_is_parent || ( wcs_order_contains_renewal( $order ) && ! wcs_order_contains_early_renewal( $order ) ) ) {
 				break;
 			}
 		}
