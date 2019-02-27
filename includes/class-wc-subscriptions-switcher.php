@@ -1296,21 +1296,6 @@ class WC_Subscriptions_Switcher {
 
 					if ( true /*Refactored*/ ) {
 
-						// Find out how many days at the new price per day the customer would receive for the total amount already paid
-						// (e.g. if the customer paid $10 / month previously, and was switching to a $5 / week subscription, she has pre-paid 14 days at the new price)
-						$pre_paid_days = self::calculate_pre_paid_days( $old_recurring_total, $new_price_per_day );
-
-						// If the total amount the customer has paid entitles her to more days at the new price than she has received, there is no gap payment, just shorten the pre-paid term the appropriate number of days
-						if ( $days_since_last_payment < $pre_paid_days ) {
-
-							WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $last_order_time_created + ( $pre_paid_days * 60 * 60 * 24 );
-
-						// If the total amount the customer has paid entitles her to the same or less days at the new price then start the new subscription from today
-						} else {
-
-							WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = 0;
-
-						}
 					} else {
 
 						// If we've already calculated the prorated price recalculate the amounts but reset the values so we don't double the amounts
