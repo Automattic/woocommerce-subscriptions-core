@@ -1342,21 +1342,6 @@ class WC_Subscriptions_Switcher {
 	}
 
 	/**
-	* Calculate the number of days that have already been paid
-	*
-	* @param int $old_total_paid The amount paid previously, such as the old recurring total
-	* @param int $new_price_per_day The amount per day price for the new subscription
-	* @return int $pre_paid_days The number of days paid for already
-	*/
-	private static function calculate_pre_paid_days( $old_total_paid, $new_price_per_day ) {
-		$pre_paid_days = 0;
-		if ( 0 != $new_price_per_day ) {
-			$pre_paid_days = ceil( $old_total_paid / $new_price_per_day );
-		}
-		return $pre_paid_days;
-	}
-
-	/**
 	 * Make sure when displaying the first payment date for a switched subscription, the date takes into
 	 * account the switch (i.e. prepaid days and possibly a downgrade).
 	 *
