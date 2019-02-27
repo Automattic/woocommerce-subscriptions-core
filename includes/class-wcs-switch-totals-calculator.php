@@ -102,6 +102,11 @@ class WCS_Switch_Totals_Calculator {
 				} elseif ( 'downgrade' === $switch_type && $this->should_extend_prepaid_term() ) {
 					$this->extend_prepaid_term( $cart_item_key, $switch_item );
 				}
+
+				// Set a flag if the prepaid term has been adjusted.
+				if ( $this->get_first_payment_timestamp( $cart_item_key ) !== $switch_item->next_payment_timestamp ) {
+					$this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['recurring_payment_prorated'] = true;
+				}
 			}
 		}
 	}
@@ -366,5 +371,18 @@ class WCS_Switch_Totals_Calculator {
 
 		$switch_item->product->update_meta_data( '_subscription_price_prorated', $extra_to_pay );
 		$switch_item->product->update_meta_data( '_subscription_sign_up_fee', $existing_sign_up_fee + $extra_to_pay );
+	}
+
+	/** Getters */
+
+	/**
+	 * Get the first payment timestamp.
+	 *
+	 * @param string $cart_item_key The cart item's key.
+	 * @return int
+	 * @since 2.6.0
+	 */
+	protected function get_first_payment_timestamp( $cart_item_key ) {
+		return $this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'];
 	}
 }
