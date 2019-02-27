@@ -101,6 +101,12 @@ class WCS_Switch_Cart_Item {
 	public $new_price_per_day;
 
 	/**
+	 * The switch type.
+	 * @var string Can be upgrade, downgrade or crossgrade.
+	 */
+	public $switch_type;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param array $cart_item      The cart item.
@@ -260,6 +266,37 @@ class WCS_Switch_Cart_Item {
 		}
 
 		return $this->days_since_last_payment;
+	}
+
+	/**
+	 * Get the switch type.
+	 *
+	 * @return string Can be upgrade, downgrade or crossgrade.
+	 * @since 2.6.0
+	 */
+	public function get_switch_type() {
+		if ( ! isset( $this->switch_type ) ) {
+			$old_price_per_day = $this->get_old_price_per_day();
+			$new_price_per_day = $this->get_new_price_per_day();
+
+			if ( $old_price_per_day < $new_price_per_day ) {
+				$switch_type = 'upgrade';
+			} elseif ( $old_price_per_day > $new_price_per_day && $new_price_per_day >= 0 ) {
+				$switch_type = 'downgrade';
+			} else {
+				$switch_type = 'crossgrade';
+			}
+
+			$switch_type = apply_filters( 'wcs_switch_proration_switch_type', $switch_type, $this->subscription, $this->cart_item, $old_price_per_day, $new_price_per_day );
+
+			if ( ! in_array( $switch_type, array( 'upgrade', 'downgrade', 'crossgrade' ) ) ) {
+				throw new UnexpectedValueException( sprintf( __( 'Invalid switch type "%s". Switch must be one of: "upgrade", "downgrade" or "crossgrade".', 'woocommerce-subscriptions' ), $switch_type ) );
+			}
+
+			$this->switch_type = $switch_type;
+		}
+
+		return $this->switch_type;
 	}
 
 	/** Calculator functions */
