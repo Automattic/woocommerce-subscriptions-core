@@ -87,6 +87,10 @@ class WCS_Switch_Totals_Calculator {
 
 			$switch_type = $switch_item->get_switch_type();
 			$this->set_switch_type_in_cart( $cart_item_key, $switch_type );
+
+			if ( $this->should_prorate_recurring_price( $switch_item ) ) {
+
+			}
 		}
 	}
 
@@ -116,6 +120,22 @@ class WCS_Switch_Totals_Calculator {
 		}
 
 		return $switches;
+	}
+
+	/** Logic Functions */
+
+	/**
+	 * Whether the recurring price should be prorated based on the store's switch settings.
+	 *
+	 * @param WCS_Switch_Cart_Item $switch_item
+	 * @return bool
+	 * @since 2.6.0
+	 */
+	protected function should_prorate_recurring_price( $switch_item ) {
+		$prorate_all     = in_array( $this->apportion_recurring_price, array( 'yes', 'yes-upgrade' ) );
+		$prorate_virtual = in_array( $this->apportion_recurring_price, array( 'virtual', 'virtual-upgrade' ) );
+
+		return $prorate_all || ( $prorate_virtual && $switch_item->is_virtual_product() );
 	}
 
 	/** Total Calculators */

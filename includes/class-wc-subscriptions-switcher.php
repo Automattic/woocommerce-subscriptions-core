@@ -1289,7 +1289,7 @@ class WC_Subscriptions_Switcher {
 
 
 			// Now lets see if we should add a prorated amount to the sign-up fee (for upgrades) or extend the next payment date (for downgrades)
-			if ( in_array( $apportion_recurring_price, array( 'yes', 'yes-upgrade' ) ) || ( in_array( $apportion_recurring_price, array( 'virtual', 'virtual-upgrade' ) ) && $is_virtual_product ) ) {
+			if ( true /*Refactored*/ ) {
 
 				// If the customer is upgrading, we may need to add a gap payment to the sign-up fee or to reduce the pre-paid period (or both)
 				if ( 'upgrade' === $switch_type ) {
