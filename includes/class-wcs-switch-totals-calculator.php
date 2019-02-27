@@ -99,6 +99,8 @@ class WCS_Switch_Totals_Calculator {
 						$upgrade_cost = $this->calculate_upgrade_cost( $switch_item );
 						$this->set_upgrade_cost( $switch_item, $upgrade_cost );
 					}
+				} elseif ( 'downgrade' === $switch_type ) {
+
 				}
 			}
 		}

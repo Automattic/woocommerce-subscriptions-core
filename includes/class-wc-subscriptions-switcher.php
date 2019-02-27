@@ -1357,7 +1357,7 @@ class WC_Subscriptions_Switcher {
 					}
 
 				// If the customer is downgrading, set the next payment date and maybe extend it if downgrades are prorated
-				} elseif ( 'downgrade' === $switch_type ) {
+				} elseif ( true /*Refactored*/ ) {
 
 					$old_total_paid = $old_price_per_day * $days_until_next_payment;
 
