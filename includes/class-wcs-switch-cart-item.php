@@ -95,6 +95,12 @@ class WCS_Switch_Cart_Item {
 	public $days_in_new_cycle;
 
 	/**
+	 * The new subscription product's price per day.
+	 * @var float
+	 */
+	public $new_price_per_day;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param array $cart_item      The cart item.
@@ -175,6 +181,31 @@ class WCS_Switch_Cart_Item {
 		}
 
 		return $this->days_in_new_cycle;
+	}
+
+	/**
+	 * Get the number of days in the new billing cycle.
+	 *
+	 * @return void
+	 * @since 2.6.0
+	 */
+	public function get_new_price_per_day() {
+		if ( ! isset( $this->new_price_per_day ) ) {
+			$days_in_new_cycle = $this->get_days_in_new_cycle();
+
+			if ( $this->is_switch_during_trial() && $this->trial_periods_match() ) {
+				$new_price_per_day = 0;
+			} else {
+				// We need to use the cart items price to ensure we include extras added by extensions like Product Add-ons, but we don't want the sign-up fee accounted for in the price, so make sure WC_Subscriptions_Cart::set_subscription_prices_for_calculation() isn't adding that.
+				remove_filter( 'woocommerce_product_get_price', 'WC_Subscriptions_Cart::set_subscription_prices_for_calculation', 100 );
+				$new_price_per_day = ( WC_Subscriptions_Product::get_price( $this->product ) * $this->cart_item['quantity'] ) / $days_in_new_cycle;
+				add_filter( 'woocommerce_product_get_price', 'WC_Subscriptions_Cart::set_subscription_prices_for_calculation', 100, 2 );
+			}
+
+			$this->new_price_per_day = apply_filters( 'wcs_switch_proration_new_price_per_day', $new_price_per_day, $this->subscription, $this->cart_item, $days_in_new_cycle );
+		}
+
+		return $this->new_price_per_day;
 	}
 
 	/**

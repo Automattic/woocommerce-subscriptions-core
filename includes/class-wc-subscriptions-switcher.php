@@ -1287,13 +1287,6 @@ class WC_Subscriptions_Switcher {
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 
-			// We need to use the cart items price to ensure we include extras added by extensions like Product Add-ons, but we don't want the sign-up fee accounted for in the price, so make sure WC_Subscriptions_Cart::set_subscription_prices_for_calculation() isn't adding that.
-			remove_filter( 'woocommerce_product_get_price', 'WC_Subscriptions_Cart::set_subscription_prices_for_calculation', 100 );
-			$new_price_per_day = ( WC_Subscriptions_Product::get_price( $product_in_cart ) * $cart_item['quantity'] ) / $days_in_new_cycle;
-			add_filter( 'woocommerce_product_get_price', 'WC_Subscriptions_Cart::set_subscription_prices_for_calculation', 100, 2 );
-
-			$new_price_per_day = apply_filters( 'wcs_switch_proration_new_price_per_day', $new_price_per_day, $subscription, $cart_item, $days_in_new_cycle );
-
 			if ( $old_price_per_day < $new_price_per_day ) {
 				$switch_type = 'upgrade';
 			} elseif ( $old_price_per_day > $new_price_per_day && $new_price_per_day >= 0 ) {
