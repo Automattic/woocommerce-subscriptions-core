@@ -1303,20 +1303,13 @@ class WC_Subscriptions_Switcher {
 				// If the customer is downgrading, set the next payment date and maybe extend it if downgrades are prorated
 				} elseif ( true /*Refactored*/ ) {
 
-					$old_total_paid = $old_price_per_day * $days_until_next_payment;
-
 					// if downgrades are apportioned, extend the next payment date for n more days
 					if ( true /*Refactored*/ ) {
 
-						// Find how many more days at the new lower price it takes to exceed the amount already paid
-						$days_to_add = self::calculate_pre_paid_days( $old_total_paid, $new_price_per_day );
-
-						$days_to_add -= $days_until_next_payment;
 					} else {
 						$days_to_add = 0;
 					}
 
-					WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $next_payment_timestamp + ( $days_to_add * 60 * 60 * 24 );
 
 				} // The old price per day == the new price per day, no need to change anything
 
