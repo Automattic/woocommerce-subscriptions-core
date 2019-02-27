@@ -83,6 +83,12 @@ class WCS_Switch_Cart_Item {
 	public $total_paid_for_current_period;
 
 	/**
+	 * The existing subscription item's price per day.
+	 * @var float
+	 */
+	public $old_price_per_day;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param array $cart_item      The cart item.
@@ -130,6 +136,25 @@ class WCS_Switch_Cart_Item {
 		}
 
 		return $this->days_in_old_cycle;
+	}
+
+	/**
+	 * Get the old subscription's price per day.
+	 *
+	 * @return float
+	 * @since 2.6.0
+	 */
+	public function get_old_price_per_day() {
+		if ( ! isset( $this->old_price_per_day ) ) {
+			$days_in_old_cycle = $this->get_days_in_old_cycle();
+
+			$total_paid_for_current_period = $this->get_total_paid_for_current_period();
+
+			$old_price_per_day       = $days_in_old_cycle > 0 ? $total_paid_for_current_period / $days_in_old_cycle : $total_paid_for_current_period;
+			$this->old_price_per_day = apply_filters( 'wcs_switch_proration_old_price_per_day', $old_price_per_day, $this->subscription, $this->cart_item, $total_paid_for_current_period, $days_in_old_cycle );
+		}
+
+		return $this->old_price_per_day;
 	}
 
 	/**
