@@ -1370,20 +1370,6 @@ class WC_Subscriptions_Switcher {
 				} // The old price per day == the new price per day, no need to change anything
 
 			}
-
-			if ( 'yes' == $apportion_length || ( 'virtual' == $apportion_length && $is_virtual_product ) ) {
-
-				$base_length        = WC_Subscriptions_Product::get_length( $product_id );
-				$completed_payments = $subscription->get_payment_count();
-				$length_remaining   = $base_length - $completed_payments;
-
-				// Default to the base length if more payments have already been made than this subscription requires
-				if ( $length_remaining <= 0 ) {
-					$length_remaining = $base_length;
-				}
-
-				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_length', $length_remaining, 'set_prop_only' );
-			}
 		}
 	}
 
