@@ -263,6 +263,24 @@ class WCS_Switch_Totals_Calculator {
 		return apply_filters( 'wcs_switch_proration_extra_to_pay', $extra_to_pay, $switch_item->subscription, $switch_item->cart_item, $switch_item->get_days_in_old_cycle() );
 	}
 
+	/**
+	 * Calculate the number of days that have already been paid.
+	 *
+	 * @param int $old_total_paid The amount paid previously, such as the old recurring total
+	 * @param int $new_price_per_day The amount per day price for the new subscription
+	 * @return int $pre_paid_days The number of days paid for already
+	 * @since 2.6.0
+	 */
+	protected function calculate_pre_paid_days( $old_total_paid, $new_price_per_day ) {
+		$pre_paid_days = 0;
+
+		if ( 0 != $new_price_per_day ) {
+			$pre_paid_days = ceil( $old_total_paid / $new_price_per_day );
+		}
+
+		return $pre_paid_days;
+	}
+
 	/** Setters */
 
 	/**
