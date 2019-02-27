@@ -91,7 +91,7 @@ class WCS_Switch_Totals_Calculator {
 			if ( $this->should_prorate_recurring_price( $switch_item ) ) {
 				if ( 'upgrade' === $switch_type ) {
 					if ( $this->should_reduce_prepaid_term( $switch_item ) ) {
-
+						$this->reduce_prepaid_term( $cart_item_key, $switch_item );
 					}
 				}
 			}
@@ -196,6 +196,28 @@ class WCS_Switch_Totals_Calculator {
 
 			$switch_item->product->update_meta_data( '_subscription_sign_up_fee', max( $sign_up_fee_due - $sign_up_fee_paid, 0 ) );
 			$switch_item->product->update_meta_data( '_subscription_sign_up_fee_prorated', WC_Subscriptions_Product::get_sign_up_fee( $switch_item->product ) );
+		}
+	}
+
+	/**
+	 * Calculate the number of days the customer is entitled to at the new product's price per day
+	 * and reduce the subscription's prepaid term to match.
+	 *
+	 * @param string $cart_item_key
+	 * @param WCS_Switch_Cart_Item $switch_item
+	 * @since 2.6.0
+	 */
+	protected function reduce_prepaid_term( $cart_item_key, $switch_item ) {
+		// Find out how many days at the new price per day the customer would receive for the total amount already paid
+		// (e.g. if the customer paid $10 / month previously, and was switching to a $5 / week subscription, she has pre-paid 14 days at the new price)
+		$pre_paid_days = $this->calculate_pre_paid_days( $switch_item->get_total_paid_for_current_period(), $switch_item->get_new_price_per_day() );
+
+		// If the total amount the customer has paid entitles her to more days at the new price than she has received, there is no gap payment, just shorten the pre-paid term the appropriate number of days
+		if ( $switch_item->get_days_since_last_payment() < $pre_paid_days ) {
+			$this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $switch_item->get_last_order_created_time() + ( $pre_paid_days * DAY_IN_SECONDS );
+		} else {
+			// If the total amount the customer has paid entitles her to the same or fewer days at the new price then start the new subscription from today
+			$this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = 0;
 		}
 	}
 
