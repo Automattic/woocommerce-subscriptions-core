@@ -15,6 +15,7 @@ class WCS_Custom_Order_Item_Manager {
 	public static function init() {
 		add_filter( 'woocommerce_order_type_to_group', array( __CLASS__, 'add_extra_groups' ) );
 		add_filter( 'woocommerce_get_order_item_classname', array( __CLASS__, 'map_classname_for_extra_items' ), 10, 2 );
+		add_filter( 'woocommerce_data_stores', array( __CLASS__, 'register_data_stores' ) );
 	}
 
 	/**
@@ -41,8 +42,20 @@ class WCS_Custom_Order_Item_Manager {
 	 */
 	public static function map_classname_for_extra_items( $classname, $item_type ) {
 		if ( 'line_item_removed' === $item_type ) {
-			$classname = 'WC_Order_Item_Product';
+			$classname = 'WC_Subscription_Line_Item_Removed';
 		}
 		return $classname;
+	}
+
+	/**
+	 * Register the data stores to be used for our custom line item types.
+	 *
+	 * @param  array $data_stores The registered data stores.
+	 * @return array
+	 * @since 2.6.0
+	 */
+	public static function register_data_stores( $data_stores ) {
+		$data_stores['order-item-line_item_removed'] = 'WC_Order_Item_Product_Data_Store';
+		return $data_stores;
 	}
 }
