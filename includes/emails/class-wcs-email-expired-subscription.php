@@ -46,6 +46,26 @@ class WCS_Email_Expired_Subscription extends WC_Email {
 	}
 
 	/**
+	 * Get the default e-mail subject.
+	 *
+	 * @since 2.5.3
+	 * @return string
+	 */
+	public function get_default_subject() {
+		return $this->subject;
+	}
+
+	/**
+	 * Get the default e-mail heading.
+	 *
+	 * @since 2.5.3
+	 * @return string
+	 */
+	public function get_default_heading() {
+		return $this->heading;
+	}
+
+	/**
 	 * trigger function.
 	 *
 	 * @access public
@@ -137,14 +157,14 @@ class WCS_Email_Expired_Subscription extends WC_Email {
 				'title'         => _x( 'Subject', 'of an email', 'woocommerce-subscriptions' ),
 				'type'          => 'text',
 				'description'   => sprintf( __( 'This controls the email subject line. Leave blank to use the default subject: <code>%s</code>.', 'woocommerce-subscriptions' ), $this->subject ),
-				'placeholder'   => '',
+				'placeholder'   => $this->get_default_subject(),
 				'default'       => '',
 			),
 			'heading' => array(
 				'title'         => _x( 'Email Heading', 'Name the setting that controls the main heading contained within the email notification', 'woocommerce-subscriptions' ),
 				'type'          => 'text',
 				'description'   => sprintf( __( 'This controls the main heading contained within the email notification. Leave blank to use the default heading: <code>%s</code>.', 'woocommerce-subscriptions' ), $this->heading ),
-				'placeholder'   => '',
+				'placeholder'   => $this->get_default_heading(),
 				'default'       => '',
 			),
 			'email_type' => array(
