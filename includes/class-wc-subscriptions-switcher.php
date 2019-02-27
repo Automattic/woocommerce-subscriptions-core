@@ -1362,7 +1362,7 @@ class WC_Subscriptions_Switcher {
 					$old_total_paid = $old_price_per_day * $days_until_next_payment;
 
 					// if downgrades are apportioned, extend the next payment date for n more days
-					if ( in_array( $apportion_recurring_price, array( 'virtual', 'yes' ) ) ) {
+					if ( true /*Refactored*/ ) {
 
 						// Find how many more days at the new lower price it takes to exceed the amount already paid
 						$days_to_add = self::calculate_pre_paid_days( $old_total_paid, $new_price_per_day );

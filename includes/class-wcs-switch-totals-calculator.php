@@ -99,7 +99,7 @@ class WCS_Switch_Totals_Calculator {
 						$upgrade_cost = $this->calculate_upgrade_cost( $switch_item );
 						$this->set_upgrade_cost( $switch_item, $upgrade_cost );
 					}
-				} elseif ( 'downgrade' === $switch_type ) {
+				} elseif ( 'downgrade' === $switch_type && $this->should_extend_prepaid_term() ) {
 
 				}
 			}
@@ -172,6 +172,16 @@ class WCS_Switch_Totals_Calculator {
 		 *  - Or there are more days in the in old cycle as there are in the in new cycle (switching from yearly to monthly)
 		 */
 		return apply_filters( 'wcs_switch_proration_reduce_pre_paid_term', $is_switch_out_of_trial || $days_in_old_cycle > $days_in_new_cycle, $switch_item->subscription, $switch_item->cart_item, $days_in_old_cycle, $days_in_new_cycle, $switch_item->get_old_price_per_day(), $switch_item->get_new_price_per_day() );
+	}
+
+	/**
+	 * Whether the current subscription's prepaid term should extended based on the store's switch settings.
+	 *
+	 * @return bool
+	 * @since 2.6.0
+	 */
+	protected function should_extend_prepaid_term() {
+		return in_array( $this->apportion_recurring_price, array( 'virtual', 'yes' ) );
 	}
 
 	/** Total Calculators */
