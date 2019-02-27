@@ -92,6 +92,9 @@ class WCS_Switch_Totals_Calculator {
 				if ( 'upgrade' === $switch_type ) {
 					if ( $this->should_reduce_prepaid_term( $switch_item ) ) {
 						$this->reduce_prepaid_term( $cart_item_key, $switch_item );
+					} else {
+						// Reset any previously calculated prorated price so we don't double the amounts
+						$this->reset_prorated_price( $switch_item );
 					}
 				}
 			}
@@ -256,5 +259,18 @@ class WCS_Switch_Totals_Calculator {
 	 */
 	public function set_switch_type_in_cart( $cart_item_key, $switch_type ) {
 		$this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['upgraded_or_downgraded'] = sprintf( '%sd', $switch_type );
+	}
+
+	/**
+	 * Reset any previously calculated prorated price.
+	 *
+	 * @param WCS_Switch_Cart_Item $switch_item
+	 * @since 2.6.0
+	 */
+	public function reset_prorated_price( $switch_item ) {
+		if ( $switch_item->product->meta_exists( '_subscription_price_prorated' ) ) {
+			$prorated_sign_up_fee = $switch_item->product->get_meta( '_subscription_sign_up_fee_prorated' );
+			$switch_item->product->update_meta_data( '_subscription_sign_up_fee', $prorated_sign_up_fee );
+		}
 	}
 }
