@@ -84,6 +84,9 @@ class WCS_Switch_Totals_Calculator {
 			$this->set_end_timestamp( $cart_item_key, $switch_item->end_timestamp );
 
 			$this->apportion_sign_up_fees( $switch_item );
+
+			$switch_type = $switch_item->get_switch_type();
+			$this->set_switch_type_in_cart( $cart_item_key, $switch_type );
 		}
 	}
 
@@ -170,5 +173,18 @@ class WCS_Switch_Totals_Calculator {
 	 */
 	public function set_end_timestamp( $cart_item_key, $end_timestamp ) {
 		$this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['end_timestamp'] = $end_timestamp;
+	}
+
+	/**
+	 * Set the switch type on the cart item.
+	 *
+	 * To preserve past tense for backward compatibility 'd' will be appended to the $switch_type.
+	 *
+	 * @param string $cart_item_key The cart item's key.
+	 * @param string $switch_type Can be upgrade, downgrade or crossgrade.
+	 * @since 2.6.0
+	 */
+	public function set_switch_type_in_cart( $cart_item_key, $switch_type ) {
+		$this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['upgraded_or_downgraded'] = sprintf( '%sd', $switch_type );
 	}
 }
