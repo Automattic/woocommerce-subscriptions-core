@@ -1287,20 +1287,6 @@ class WC_Subscriptions_Switcher {
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 
-			if ( $old_price_per_day < $new_price_per_day ) {
-				$switch_type = 'upgrade';
-			} elseif ( $old_price_per_day > $new_price_per_day && $new_price_per_day >= 0 ) {
-				$switch_type = 'downgrade';
-			} else {
-				$switch_type = 'crossgrade';
-			}
-
-			$switch_type = apply_filters( 'wcs_switch_proration_switch_type', $switch_type, $subscription, $cart_item, $old_price_per_day, $new_price_per_day );
-
-			if ( ! in_array( $switch_type, array( 'upgrade', 'downgrade', 'crossgrade' ) ) ) {
-				throw new UnexpectedValueException( sprintf( __( 'Invalid switch type "%s". Switch must be one of: "upgrade", "downgrade" or "crossgrade".', 'woocommerce-subscriptions' ), $switch_type ) );
-			}
-
 			WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['upgraded_or_downgraded'] = sprintf( '%sd', $switch_type ); // preserve past tense for backward compatibility (luckily past tense for all allowed switch types end with a d)
 
 			// Now lets see if we should add a prorated amount to the sign-up fee (for upgrades) or extend the next payment date (for downgrades)
