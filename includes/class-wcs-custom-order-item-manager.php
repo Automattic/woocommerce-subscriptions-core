@@ -13,11 +13,7 @@ class WCS_Custom_Order_Item_Manager {
 	 * @since 2.6.0
 	 */
 	public static function init() {
-
-		// Add extra (say, removed_line_items ) group
 		add_filter( 'woocommerce_order_type_to_group', array( __CLASS__, 'add_extra_groups' ) );
-
-		// Map the classname for newer items (say, for a removed line item as WC_Order_Item_Product )
 		add_filter( 'woocommerce_get_order_item_classname', array( __CLASS__, 'map_classname_for_extra_items' ), 10, 2 );
 	}
 
@@ -45,7 +41,7 @@ class WCS_Custom_Order_Item_Manager {
 	 */
 	public static function map_classname_for_extra_items( $classname, $item_type ) {
 		if ( 'line_item_removed' === $item_type ) {
-			return 'WC_Order_Item_Product';
+			$classname = 'WC_Order_Item_Product';
 		}
 		return $classname;
 	}
