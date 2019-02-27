@@ -100,7 +100,7 @@ class WCS_Switch_Totals_Calculator {
 						$this->set_upgrade_cost( $switch_item, $upgrade_cost );
 					}
 				} elseif ( 'downgrade' === $switch_type && $this->should_extend_prepaid_term() ) {
-
+					$this->extend_prepaid_term( $cart_item_key, $switch_item );
 				}
 			}
 		}
@@ -281,6 +281,25 @@ class WCS_Switch_Totals_Calculator {
 		}
 
 		return $pre_paid_days;
+	}
+
+	/**
+	 * Calculate the number of days the customer is owed at the new product's price per day
+	 * and extend the subscription's prepaid term accordingly.
+	 *
+	 * @param string $cart_item_key
+	 * @param WCS_Switch_Cart_Item $switch_item
+	 * @since 2.6.0
+	 */
+	protected function extend_prepaid_term( $cart_item_key, $switch_item ) {
+		$amount_still_owing = $switch_item->get_old_price_per_day() * $switch_item->get_days_until_next_payment();
+
+		// Find how many more days at the new lower price it takes to exceed the amount owed
+		$days_to_add = $this->calculate_pre_paid_days( $amount_still_owing, $switch_item->get_new_price_per_day() );
+
+		$days_to_add -= $switch_item->get_days_until_next_payment();
+
+		$this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $switch_item->next_payment_timestamp + ( $days_to_add * DAY_IN_SECONDS );
 	}
 
 	/** Setters */
