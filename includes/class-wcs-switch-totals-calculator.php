@@ -95,6 +95,8 @@ class WCS_Switch_Totals_Calculator {
 					} else {
 						// Reset any previously calculated prorated price so we don't double the amounts
 						$this->reset_prorated_price( $switch_item );
+
+						$upgrade_cost = $this->calculate_upgrade_cost( $switch_item );
 					}
 				}
 			}
@@ -222,6 +224,30 @@ class WCS_Switch_Totals_Calculator {
 			// If the total amount the customer has paid entitles her to the same or fewer days at the new price then start the new subscription from today
 			$this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = 0;
 		}
+	}
+
+	/**
+	 * Calculate the upgrade cost for a given switch.
+	 *
+	 * @param WCS_Switch_Cart_Item $switch_item
+	 * @return float The amount to pay for the upgrade.
+	 * @since 2.6.0
+	 */
+	protected function calculate_upgrade_cost( $switch_item ) {
+		$extra_to_pay = $switch_item->get_days_until_next_payment() * ( $switch_item->get_new_price_per_day() - $switch_item->get_old_price_per_day() );
+
+		// When calculating a subscription with one length (no more next payment date and the end date may have been pushed back) we need to pay for those extra days at the new price per day between the old next payment date and new end date
+		if ( ! $switch_item->is_switch_during_trial() && 1 == WC_Subscriptions_Product::get_length( $switch_item->product ) ) {
+			$days_to_new_end = floor( ( $switch_item->get_end_timestamp() - $switch_item->next_payment_timestamp ) / DAY_IN_SECONDS );
+
+			if ( $days_to_new_end > 0 ) {
+				$extra_to_pay += $days_to_new_end * $switch_item->get_new_price_per_day();
+			}
+		}
+
+		// We need to find the per item extra to pay so we can set it as the sign-up fee (WC will then multiply it by the quantity)
+		$extra_to_pay = $extra_to_pay / $switch_item->cart_item['quantity'];
+		return apply_filters( 'wcs_switch_proration_extra_to_pay', $extra_to_pay, $switch_item->subscription, $switch_item->cart_item, $switch_item->get_days_in_old_cycle() );
 	}
 
 	/** Setters */
