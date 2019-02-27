@@ -89,7 +89,11 @@ class WCS_Switch_Totals_Calculator {
 			$this->set_switch_type_in_cart( $cart_item_key, $switch_type );
 
 			if ( $this->should_prorate_recurring_price( $switch_item ) ) {
+				if ( 'upgrade' === $switch_type ) {
+					if ( $this->should_reduce_prepaid_term( $switch_item ) ) {
 
+					}
+				}
 			}
 		}
 	}
@@ -136,6 +140,30 @@ class WCS_Switch_Totals_Calculator {
 		$prorate_virtual = in_array( $this->apportion_recurring_price, array( 'virtual', 'virtual-upgrade' ) );
 
 		return $prorate_all || ( $prorate_virtual && $switch_item->is_virtual_product() );
+	}
+
+	/**
+	 * Whether the current subscription's prepaid term should reduced.
+	 *
+	 * @param WCS_Switch_Cart_Item $switch_item
+	 * @return bool
+	 * @since 2.6.0
+	 */
+	protected function should_reduce_prepaid_term( $switch_item ) {
+		$days_in_old_cycle = $switch_item->get_days_in_old_cycle();
+		$days_in_new_cycle = $switch_item->get_days_in_new_cycle();
+
+		$is_switch_out_of_trial = 0 == $switch_item->get_total_paid_for_current_period() && ! $switch_item->trial_periods_match() && $switch_item->is_switch_during_trial();
+
+		/**
+		 * By default, reduce the prepaid term if:
+		 *  - The customer is leaving a free trial, this is determined by:
+		 *     - The subscription is still on trial,
+		 *     - They haven't paid anything in sign-up fees or early renewals since sign-up.
+		 *     - The old trial period and length doesn't match the new one.
+		 *  - Or there are more days in the in old cycle as there are in the in new cycle (switching from yearly to monthly)
+		 */
+		return apply_filters( 'wcs_switch_proration_reduce_pre_paid_term', $is_switch_out_of_trial || $days_in_old_cycle > $days_in_new_cycle, $switch_item->subscription, $switch_item->cart_item, $days_in_old_cycle, $days_in_new_cycle, $switch_item->get_old_price_per_day(), $switch_item->get_new_price_per_day() );
 	}
 
 	/** Total Calculators */
