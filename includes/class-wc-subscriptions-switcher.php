@@ -1298,11 +1298,6 @@ class WC_Subscriptions_Switcher {
 
 					} else {
 
-						// Keep a record of the two separate amounts so we store these and calculate future switch amounts correctly
-						$existing_sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( WC()->cart->cart_contents[ $cart_item_key ]['data'] );
-						wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee_prorated', $existing_sign_up_fee, 'set_prop_only' );
-						wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_price_prorated', round( $extra_to_pay, wc_get_price_decimals() ), 'set_prop_only' );
-						wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee', round( $existing_sign_up_fee + $extra_to_pay, wc_get_price_decimals() ), 'set_prop_only' );
 					}
 
 				// If the customer is downgrading, set the next payment date and maybe extend it if downgrades are prorated

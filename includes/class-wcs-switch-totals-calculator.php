@@ -97,6 +97,7 @@ class WCS_Switch_Totals_Calculator {
 						$this->reset_prorated_price( $switch_item );
 
 						$upgrade_cost = $this->calculate_upgrade_cost( $switch_item );
+						$this->set_upgrade_cost( $switch_item, $upgrade_cost );
 					}
 				}
 			}
@@ -298,5 +299,21 @@ class WCS_Switch_Totals_Calculator {
 			$prorated_sign_up_fee = $switch_item->product->get_meta( '_subscription_sign_up_fee_prorated' );
 			$switch_item->product->update_meta_data( '_subscription_sign_up_fee', $prorated_sign_up_fee );
 		}
+	}
+
+	/**
+	 * Set the upgrade cost on the cart item product instance as a sign up fee.
+	 *
+	 * @param WCS_Switch_Cart_Item $switch_item
+	 * @param float $extra_to_pay The upgrade cost.
+	 * @since 2.6.0
+	 */
+	public function set_upgrade_cost( $switch_item, $extra_to_pay ) {
+		// Keep a record of the original sign-up fees
+		$existing_sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( $switch_item->product );
+		$switch_item->product->update_meta_data( '_subscription_sign_up_fee_prorated', $existing_sign_up_fee );
+
+		$switch_item->product->update_meta_data( '_subscription_price_prorated', $extra_to_pay );
+		$switch_item->product->update_meta_data( '_subscription_sign_up_fee', $existing_sign_up_fee + $extra_to_pay );
 	}
 }
