@@ -1298,21 +1298,6 @@ class WC_Subscriptions_Switcher {
 
 					} else {
 
-						$extra_to_pay = $days_until_next_payment * ( $new_price_per_day - $old_price_per_day );
-
-						// when calculating a subscription with one length (no more next payment date and the end date may have been pushed back) we need to pay for those extra days at the new price per day between the old next payment date and new end date
-						if ( 1 == WC_Subscriptions_Product::get_length( $product_in_cart ) ) {
-							$days_to_new_end = floor( ( $end_timestamp - $next_payment_timestamp ) / ( 60 * 60 * 24 ) );
-
-							if ( $days_to_new_end > 0 ) {
-								$extra_to_pay += $days_to_new_end * $new_price_per_day;
-							}
-						}
-
-						// We need to find the per item extra to pay so we can set it as the sign-up fee (WC will then multiply it by the quantity)
-						$extra_to_pay = $extra_to_pay / $cart_item['quantity'];
-						$extra_to_pay = apply_filters( 'wcs_switch_proration_extra_to_pay', $extra_to_pay, $subscription, $cart_item, $days_in_old_cycle );
-
 						// Keep a record of the two separate amounts so we store these and calculate future switch amounts correctly
 						$existing_sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( WC()->cart->cart_contents[ $cart_item_key ]['data'] );
 						wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee_prorated', $existing_sign_up_fee, 'set_prop_only' );
