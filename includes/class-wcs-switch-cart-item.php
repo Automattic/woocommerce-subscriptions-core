@@ -232,4 +232,30 @@ class WCS_Switch_Cart_Item {
 	public function is_virtual_product() {
 		return $this->product->is_virtual();
 	}
+
+	/**
+	 * Whether the new product's trial period matches the old product's trial period.
+	 *
+	 * @return boolean
+	 * @since 2.6.0
+	 */
+	public function trial_periods_match() {
+		$existing_product = $this->existing_item->get_product();
+
+		// We need to cast the returned trial lengths as sometimes they may be strings.
+		$matching_length = (int) WC_Subscriptions_Product::get_trial_length( $this->product ) === (int) WC_Subscriptions_Product::get_trial_length( $existing_product );
+		$matching_period = WC_Subscriptions_Product::get_trial_period( $this->product ) === WC_Subscriptions_Product::get_trial_period( $existing_product );
+
+		return $matching_period && $matching_length;
+	}
+
+	/**
+	 * Whether the switch is happening while the subscription is still on trial.
+	 *
+	 * @return boolean
+	 * @since 2.6.0
+	 */
+	public function is_switch_during_trial() {
+		return $this->subscription->get_time( 'trial_end' ) > gmdate( 'U' );
+	}
 }
