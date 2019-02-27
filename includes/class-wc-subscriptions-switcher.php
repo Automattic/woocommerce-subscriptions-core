@@ -1340,37 +1340,6 @@ class WC_Subscriptions_Switcher {
 
 		$switch_totals_calculator = new WCS_Switch_Totals_Calculator( $cart );
 		$switch_totals_calculator->calculate_prorated_totals();
-
-		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-
-
-			// Now lets see if we should add a prorated amount to the sign-up fee (for upgrades) or extend the next payment date (for downgrades)
-			if ( true /*Refactored*/ ) {
-
-				// If the customer is upgrading, we may need to add a gap payment to the sign-up fee or to reduce the pre-paid period (or both)
-				if ( 'upgrade' === $switch_type ) {
-
-					if ( true /*Refactored*/ ) {
-
-					} else {
-
-					}
-
-				// If the customer is downgrading, set the next payment date and maybe extend it if downgrades are prorated
-				} elseif ( true /*Refactored*/ ) {
-
-					// if downgrades are apportioned, extend the next payment date for n more days
-					if ( true /*Refactored*/ ) {
-
-					} else {
-						$days_to_add = 0;
-					}
-
-
-				} // The old price per day == the new price per day, no need to change anything
-
-			}
-		}
 	}
 
 	/**
