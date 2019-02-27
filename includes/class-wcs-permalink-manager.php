@@ -66,6 +66,8 @@ class WCS_Permalink_Manager {
 				}
 
 				if ( isset( $_POST[ $permalink_option ] ) && $value === $_POST[ $permalink_option ] ) { // @codingStandardsIgnoreLine WordPress.CSRF.NonceVerification.NoNonceVerification
+					self::show_duplicate_permalink_notice();
+
 					return $old_value;
 				}
 			}
