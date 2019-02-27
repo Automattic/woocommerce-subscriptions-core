@@ -89,6 +89,12 @@ class WCS_Switch_Cart_Item {
 	public $old_price_per_day;
 
 	/**
+	 * The number of days in the new subscription's billing cycle.
+	 * @var float
+	 */
+	public $days_in_new_cycle;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param array $cart_item      The cart item.
@@ -155,6 +161,20 @@ class WCS_Switch_Cart_Item {
 		}
 
 		return $this->old_price_per_day;
+	}
+
+	/**
+	 * Get the number of days in the new billing cycle.
+	 *
+	 * @return int
+	 * @since 2.6.0
+	 */
+	public function get_days_in_new_cycle() {
+		if ( ! isset( $this->days_in_new_cycle ) ) {
+			$this->days_in_new_cycle = $this->calculate_days_in_new_cycle();
+		}
+
+		return $this->days_in_new_cycle;
 	}
 
 	/**
@@ -244,6 +264,32 @@ class WCS_Switch_Cart_Item {
 		}
 
 		return apply_filters( 'wcs_switch_proration_days_in_old_cycle', $days_in_old_cycle, $this->subscription, $this->cart_item );
+	}
+
+	/**
+	 * Calculate the number of days in the new cycle.
+	 *
+	 * @return int
+	 */
+	public function calculate_days_in_new_cycle() {
+		$last_order_time      = $this->get_last_order_created_time();
+		$new_billing_period   = WC_Subscriptions_Product::get_period( $this->product );
+		$new_billing_interval = WC_Subscriptions_Product::get_interval( $this->product );
+
+		// Calculate the number of days in the new cycle by finding what the renewal date would have been if the customer purchased the (new) product at the last payment date.
+		// This gives us the most accurate number of days in the new cycle and a value that is similar to the number of days in the old cycle which is usually calculated by the the number of days between the last order and the next payment date.
+		$days_in_new_cycle = ( wcs_add_time( $new_billing_interval, $new_billing_period, $last_order_time ) - $last_order_time ) / DAY_IN_SECONDS;
+
+		// Find if the days in new cycle match the days in the old cycle,ignoring any rounding.
+		$days_in_old_cycle = $this->get_days_in_old_cycle();
+		$days_in_new_and_old_cycle_match = ceil( $days_in_new_cycle ) == $days_in_old_cycle || floor( $days_in_new_cycle ) == $days_in_old_cycle;
+
+		// Set the days in each cycle to match if they are equal (ignoring any rounding discrepancy) or if the subscription is switched during a trial and has a matching trial period.
+		if ( $days_in_new_and_old_cycle_match || ( $this->is_switch_during_trial() && $this->trial_periods_match() ) ) {
+			$days_in_new_cycle = $days_in_old_cycle;
+		}
+
+		return apply_filters( 'wcs_switch_proration_days_in_new_cycle', $days_in_new_cycle, $this->subscription, $this->cart_item, $days_in_old_cycle );
 	}
 
 	/** Helper functions */

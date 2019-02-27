@@ -1287,23 +1287,6 @@ class WC_Subscriptions_Switcher {
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 
-			// Find the price per day for the new subscription's recurring total based on billing schedule
-			$days_in_new_cycle = wcs_get_days_in_cycle( WC_Subscriptions_Product::get_period( $product_in_cart ), WC_Subscriptions_Product::get_interval( $product_in_cart ) );
-
-			// Whether the days in new cycle match the days in old,ignoring any rounding.
-			$days_in_new_and_old_cycle_match = ceil( $days_in_new_cycle ) == $days_in_old_cycle || floor( $days_in_new_cycle ) == $days_in_old_cycle;
-
-			// Whether the new item uses the same billing interval & cycle as the old subscription,
-			$matching_billing_cycle = WC_Subscriptions_Product::get_period( $product_in_cart ) == $subscription->get_billing_period() && WC_Subscriptions_Product::get_interval( $product_in_cart ) == $subscription->get_billing_interval();
-			$switch_during_trial    = $subscription->get_time( 'trial_end' ) > gmdate( 'U' );
-
-			// Set the days in each cycle to match if they are equal (ignoring any rounding discrepancy) or if the subscription is switched during a trial and has a matching billing cycle.
-			if ( $days_in_new_and_old_cycle_match || ( $matching_billing_cycle && $switch_during_trial ) ) {
-				$days_in_new_cycle = $days_in_old_cycle;
-			}
-
-			$days_in_new_cycle = apply_filters( 'wcs_switch_proration_days_in_new_cycle', $days_in_new_cycle, $subscription, $cart_item, $days_in_old_cycle );
-
 			// We need to use the cart items price to ensure we include extras added by extensions like Product Add-ons, but we don't want the sign-up fee accounted for in the price, so make sure WC_Subscriptions_Cart::set_subscription_prices_for_calculation() isn't adding that.
 			remove_filter( 'woocommerce_product_get_price', 'WC_Subscriptions_Cart::set_subscription_prices_for_calculation', 100 );
 			$new_price_per_day = ( WC_Subscriptions_Product::get_price( $product_in_cart ) * $cart_item['quantity'] ) / $days_in_new_cycle;
