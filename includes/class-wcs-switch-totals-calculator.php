@@ -108,6 +108,10 @@ class WCS_Switch_Totals_Calculator {
 					$this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['recurring_payment_prorated'] = true;
 				}
 			}
+
+			if ( $this->should_apportion_length( $switch_item ) ) {
+				$this->apportion_length( $switch_item );
+			}
 		}
 	}
 
@@ -187,6 +191,17 @@ class WCS_Switch_Totals_Calculator {
 	 */
 	protected function should_extend_prepaid_term() {
 		return in_array( $this->apportion_recurring_price, array( 'virtual', 'yes' ) );
+	}
+
+	/**
+	 * Whether the subscription length should be apportioned based on the store's switch settings and product type.
+	 *
+	 * @param WCS_Switch_Cart_Item $switch_item
+	 * @return bool
+	 * @since 2.6.0
+	 */
+	protected function should_apportion_length( $switch_item ) {
+		return 'yes' == $this->apportion_length || ( 'virtual' == $this->apportion_length && $switch_item->is_virtual_product() );
 	}
 
 	/** Total Calculators */
@@ -305,6 +320,25 @@ class WCS_Switch_Totals_Calculator {
 		$days_to_add -= $switch_item->get_days_until_next_payment();
 
 		$this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $switch_item->next_payment_timestamp + ( $days_to_add * DAY_IN_SECONDS );
+	}
+
+	/**
+	 * Calculate the new subscription's remaining length based on the expected number of payments and the number of payments which have already occurred.
+	 *
+	 * @param WCS_Switch_Cart_Item $switch_item
+	 * @since 2.6.0
+	 */
+	protected function apportion_length( $switch_item ) {
+		$base_length        = WC_Subscriptions_Product::get_length( $switch_item->canonical_product_id );
+		$completed_payments = $switch_item->subscription->get_payment_count();
+		$length_remaining   = $base_length - $completed_payments;
+
+		// Default to the base length if more payments have already been made than this subscription requires
+		if ( $length_remaining <= 0 ) {
+			$length_remaining = $base_length;
+		}
+
+		$switch_item->product->update_meta_data( '_subscription_length', $length_remaining );
 	}
 
 	/** Setters */
