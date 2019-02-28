@@ -28,7 +28,7 @@ $order_post = wcs_get_objects_property( $order, 'post' );
 		if ( $timestamp_gmt > 0 ) {
 			// translators: php date format
 			$t_time          = get_the_time( _x( 'Y/m/d g:i:s A', 'post date', 'woocommerce-subscriptions' ), $order_post );
-			$date_to_display = wcs_get_human_time_diff( $timestamp_gmt );
+			$date_to_display = ucfirst( wcs_get_human_time_diff( $timestamp_gmt ) );
 		} else {
 			$t_time = $date_to_display = __( 'Unpublished', 'woocommerce-subscriptions' );
 		} ?>

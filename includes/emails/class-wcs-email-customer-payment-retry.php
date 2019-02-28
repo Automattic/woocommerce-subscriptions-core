@@ -53,9 +53,9 @@ class WCS_Email_Customer_Payment_Retry extends WCS_Email_Customer_Renewal_Invoic
 		$retry_time_index = array_search( '{retry_time}', $this->find );
 		if ( false === $retry_time_index ) {
 			$this->find['retry_time']    = '{retry_time}';
-			$this->replace['retry_time'] = strtolower( wcs_get_human_time_diff( $this->retry->get_time() ) );
+			$this->replace['retry_time'] = wcs_get_human_time_diff( $this->retry->get_time() );
 		} else {
-			$this->replace[ $retry_time_index ] = strtolower( wcs_get_human_time_diff( $this->retry->get_time() ) );
+			$this->replace[ $retry_time_index ] = wcs_get_human_time_diff( $this->retry->get_time() );
 		}
 
 		parent::trigger( $order_id, $order );
