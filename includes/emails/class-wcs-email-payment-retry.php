@@ -41,6 +41,26 @@ class WCS_Email_Payment_Retry extends WC_Email_Failed_Order {
 	}
 
 	/**
+	 * Get the default e-mail subject.
+	 *
+	 * @since 2.5.3
+	 * @return string
+	 */
+	public function get_default_subject() {
+		return $this->subject;
+	}
+
+	/**
+	 * Get the default e-mail heading.
+	 *
+	 * @since 2.5.3
+	 * @return string
+	 */
+	public function get_default_heading() {
+		return $this->heading;
+	}
+
+	/**
 	 * Trigger.
 	 *
 	 * @param int $order_id
