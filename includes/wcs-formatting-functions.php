@@ -232,6 +232,8 @@ function wcs_get_human_time_diff( $timestamp_gmt ) {
 	} else {
 		$timestamp_site  = wcs_date_to_time( get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $timestamp_gmt ) ) );
 		$date_to_display = date_i18n( wc_date_format(), $timestamp_site ) . ' ' . date_i18n( wc_time_format(), $timestamp_site );
+		// translators: placeholder is a localized date and time (e.g. "February 1, 2018 10:20 PM")
+		$date_to_display = sprintf( _x( '%s', $date_to_display, 'wcs_get_human_time_diff', 'woocommerce-subscriptions' ), $date_to_display );
 	}
 
 	return $date_to_display;
