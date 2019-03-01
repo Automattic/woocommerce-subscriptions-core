@@ -166,7 +166,7 @@ class WCS_Switch_Cart_Item {
 	 */
 	public function get_total_paid_for_current_period() {
 		if ( ! isset( $this->total_paid_for_current_period ) ) {
-			$this->total_paid_for_current_period = WC_Subscriptions_Switcher::calculate_total_paid_since_last_order( $this->subscription, $this->existing_item );
+			$this->total_paid_for_current_period = WC_Subscriptions_Switcher::calculate_total_paid_since_last_order( $this->subscription, $this->existing_item, 'exclude_sign_up_fees' );
 		}
 
 		return $this->total_paid_for_current_period;
