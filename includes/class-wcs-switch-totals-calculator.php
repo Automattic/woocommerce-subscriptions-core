@@ -275,7 +275,9 @@ class WCS_Switch_Totals_Calculator {
 		$pre_paid_days = 0;
 
 		if ( 0 != $new_price_per_day ) {
-			$pre_paid_days = ceil( $old_total_paid / $new_price_per_day );
+			// PHP says you cannot trust floats (http://php.net/float), and they do not lie. A calculation of 25/(25/31) doesn't equal 31. It equals 31.000000000000004.
+			// This is then rounded up to 32 :see-no-evil:. To get around this, round the result of the division to 8 decimal places. This should be more than enough.
+			$pre_paid_days = ceil( round( $old_total_paid / $new_price_per_day, 8 ) );
 		}
 
 		return $pre_paid_days;
