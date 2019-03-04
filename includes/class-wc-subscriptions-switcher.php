@@ -890,51 +890,31 @@ class WC_Subscriptions_Switcher {
 					$new_coupons      = array();
 					foreach ( $recurring_cart->get_coupons() as $coupon_code => $coupon ) {
 						$coupon_item = new WC_Order_Item_Coupon_Pending_Switch( $coupon_code );
-						$order->save();
 						$coupon_item->set_props(
 							array(
-								'code'                        => $coupon_code,
-								'description'                 => $coupon->get_description(),
-								'date_created'                => $coupon->get_date_created(),
-								'date_modified'               => $coupon->get_date_modified(),
-								'date_expires'                => $coupon->get_date_expires(),
-								'discount_type'               => $coupon->get_discount_type(),
-								'amount'                      => $coupon->get_amount(),
-								'usage_count'                 => $coupon->get_usage_count(),
-								'individual_use'              => $coupon->get_individual_use(),
-								'product_ids'                 => $coupon->get_product_ids(),
-								'excluded_product_ids'        => $coupon->get_excluded_product_ids(),
-								'usage_limit'                 => $coupon->get_usage_limit(),
-								'usage_limit_per_user'        => $coupon->get_usage_limit_per_user(),
-								'limit_usage_to_x_items'      => $coupon->get_limit_usage_to_x_items(),
-								'free_shipping'               => $coupon->get_free_shipping(),
-								'product_categories'          => $coupon->get_product_categories(),
-								'excluded_product_categories' => $coupon->get_excluded_product_categories(),
-								'exclude_sale_items'          => $coupon->get_exclude_sale_items(),
-								'minimum_amount'              => $coupon->get_minimum_amount(),
-								'maximum_amount'              => $coupon->get_maximum_amount(),
-								'email_restrictions'          => $coupon->get_email_restrictions(),
-								'used_by'                     => $coupon->get_used_by(),
+								'code'         => $coupon_code,
+								'discount'     => $recurring_cart->get_coupon_discount_amount( $coupon_code ),
+								'discount_tax' => $recurring_cart->get_coupon_discount_tax_amount( $coupon_code ),
 							)
 						);
+						// Avoid storing used_by - it's not needed and can get large.
+						$coupon_data = $coupon->get_data();
+						unset( $coupon_data['used_by'] );
+						$coupon_item->add_meta_data( 'coupon_data', $coupon_data );
 
+						$coupon_item->save();
 						do_action( 'woocommerce_checkout_create_order_coupon_item', $coupon_item, $coupon_code, $coupon, $subscription );
 						$subscription->add_item( $coupon_item );
-						$subscription->save();
 
-						$item_id = $coupon_item->get_id();
-						$new_coupons[] = $item_id;
+						$new_coupons[] = $coupon_item->get_id();
 					}
+					$subscription->save();
 					$switch_order_data[ $subscription->get_id() ]['coupons'] = $new_coupons;
 
 					// If there are fees in the cart, mark them for pending addition
 					$new_fee_items      = array();
 					foreach ( $recurring_cart->get_fees() as $fee_key => $fee ) {
 						$fee_item = new WC_Order_Item_Fee_Pending_Switch();
-						/* translators: %s fee amount */
-						$order->save();
-						$fee_item->legacy_values = $fee; // @deprecated For legacy actions.
-						$fee_item->legacy_cart_item_key = $fee_key; // @deprecated For legacy actions.
 						$fee_item->set_props( array(
 								'name'       => $fee->name,
 								'tax_status' => $fee->taxable,
@@ -946,14 +926,13 @@ class WC_Subscriptions_Switcher {
 							)
 						);
 
+						$fee_item->save();
 						do_action( 'woocommerce_checkout_create_order_fee_item', $fee_item, $fee_key, $fee, $subscription );
 						$subscription->add_item( $fee_item );
-						$subscription->save();
 
-						$item_id = $fee_item->get_id();
-						$new_fee_items[] = $item_id;
-
+						$new_fee_items[] = $fee_item->get_id();
 					}
+					$subscription->save();
 					$switch_order_data[ $subscription->get_id() ]['fee_items'] = $new_fee_items;
 
 					// Add the shipping
