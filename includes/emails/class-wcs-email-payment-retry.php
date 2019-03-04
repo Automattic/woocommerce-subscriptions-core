@@ -73,7 +73,7 @@ class WCS_Email_Payment_Retry extends WC_Email_Failed_Order {
 		$this->find['retry-time']      = '{retry_time}';
 		$this->replace['order-date']   = wcs_format_datetime( wcs_get_objects_property( $this->object, 'date_created' ) );
 		$this->replace['order-number'] = $this->object->get_order_number();
-		$this->replace['retry-time']   = strtolower( wcs_get_human_time_diff( $this->retry->get_time() ) );
+		$this->replace['retry-time']   = wcs_get_human_time_diff( $this->retry->get_time() );
 
 		if ( ! $this->is_enabled() || ! $this->get_recipient() ) {
 			return;
