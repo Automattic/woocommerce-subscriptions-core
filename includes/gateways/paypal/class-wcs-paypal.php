@@ -84,14 +84,18 @@ class WCS_PayPal {
 		add_action( 'valid-paypal-standard-ipn-request', 'WCS_PayPal_Standard_IPN_Failure_Handler::attach', -1, 1 );
 		add_action( 'valid-paypal-standard-ipn-request', 'WCS_PayPal_Standard_IPN_Failure_Handler::detach', 1, 1 );
 
+		// Remove PayPal from the available payment methods if it's disabled for subscription purchases.
+		add_filter( 'woocommerce_available_payment_gateways', array( __CLASS__, 'maybe_remove_paypal_standard' ) );
+
 		WCS_PayPal_Supports::init();
 		WCS_PayPal_Status_Manager::init();
 		WCS_PayPal_Standard_Switcher::init();
 
 		if ( is_admin() ) {
 			WCS_PayPal_Admin::init();
-			WCS_PayPal_Change_Payment_Method_Admin::init();
 		}
+
+		WCS_PayPal_Change_Payment_Method_Admin::init();
 	}
 
 	/**
@@ -226,6 +230,11 @@ class WCS_PayPal {
 
 						// Store the billing agreement ID on the order and subscriptions
 						wcs_set_paypal_id( $order, $billing_agreement_response->get_billing_agreement_id() );
+
+						// Update payment method on all active subscriptions?
+						if ( wcs_is_subscription( $order ) && WC_Subscriptions_Change_Payment_Gateway::will_subscription_update_all_payment_methods( $order ) ) {
+							WC_Subscriptions_Change_Payment_Gateway::update_all_payment_methods_from_subscription( $order, $payment_method->id );
+						}
 
 						foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'any' ) ) as $subscription ) {
 							$subscription->set_payment_method( $payment_method );
@@ -540,4 +549,65 @@ class WCS_PayPal {
 		return 'paypal';
 	}
 
+	/**
+	 * Set the default value for whether PayPal Standard is enabled or disabled for subscriptions purchases.
+	 *
+	 * PayPal Standard will be enabled for subscriptions when:
+	 * - PayPal is enabled.
+	 * - The store has existing subscriptions.
+	 *
+	 * In any other case, it will be disabled by default.
+	 * This function is called when 2.5.0 is active for the first time. @see WC_Subscriptions_Upgrader::upgrade()
+	 *
+	 * @since 2.5.0
+	 */
+	public static function set_enabled_for_subscriptions_default() {
+
+		// Exit early if it has already been set.
+		if ( self::get_option( 'enabled_for_subscriptions' ) ) {
+			return;
+		}
+
+		// For existing stores with PayPal enabled, PayPal is automatically enabled for subscriptions.
+		if ( 'yes' === WCS_PayPal::get_option( 'enabled' ) && wcs_do_subscriptions_exist() ) {
+			$default = 'yes';
+		} else {
+			$default = 'no';
+		}
+
+		// Find the PayPal Standard gateway instance to set the setting.
+		foreach ( WC()->payment_gateways->payment_gateways as $gateway ) {
+			if ( $gateway->id === 'paypal' ) {
+				wcs_update_settings_option( $gateway, 'enabled_for_subscriptions', $default );
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Remove PayPal Standard as an available payment method if it is disabled for subscriptions.
+	 *
+	 * @param array $available_gateways A list of available payment methods displayed on the checkout.
+	 * @return array
+	 * @since 2.5.0
+	 */
+	public static function maybe_remove_paypal_standard( $available_gateways ) {
+
+		if ( ! isset( $available_gateways['paypal'] ) || 'yes' === self::get_option( 'enabled_for_subscriptions' ) || WCS_PayPal::are_reference_transactions_enabled() ) {
+			return $available_gateways;
+		}
+
+		$paying_for_order = absint( get_query_var( 'order-pay' ) );
+
+		if (
+			WC_Subscriptions_Change_Payment_Gateway::$is_request_to_change_payment ||
+			WC_Subscriptions_Cart::cart_contains_subscription() ||
+			wcs_cart_contains_renewal() ||
+			( $paying_for_order && wcs_order_contains_subscription( $paying_for_order ) )
+		) {
+			unset( $available_gateways['paypal'] );
+		}
+
+		return $available_gateways;
+	}
 }

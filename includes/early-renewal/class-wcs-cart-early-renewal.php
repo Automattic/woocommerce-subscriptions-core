@@ -25,6 +25,7 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 		// Check if a user is requesting to create an early renewal order for a subscription.
 		add_action( 'template_redirect', array( $this, 'maybe_setup_cart' ), 100 );
 
+		add_action( 'woocommerce_checkout_create_order', array( $this, 'copy_subscription_meta_to_order' ), 90 );
 		// Record early renewal payments.
 		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
 			add_action( 'woocommerce_checkout_order_processed', array( $this, 'maybe_record_early_renewal' ), 100, 2 );
@@ -78,18 +79,14 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 	 * Check if a payment is being made on an early renewal order.
 	 */
 	public function maybe_setup_cart() {
-		if ( ! isset( $_GET['subscription_renewal_early'], $_GET['wcs_nonce'] ) ) {
+		if ( ! isset( $_GET['subscription_renewal_early'] ) ) {
 			return;
 		}
 
 		$subscription = wcs_get_subscription( absint( $_GET['subscription_renewal_early'] ) );
 		$redirect_to  = get_permalink( wc_get_page_id( 'myaccount' ) );
 
-		if ( false === wp_verify_nonce( $_GET['wcs_nonce'], 'wcs-renew-' . $subscription->get_id() ) ) {
-
-			wc_add_notice( __( 'There was an error with your request to renew. Please try again.', 'woocommerce-subscriptions' ), 'error' );
-
-		} elseif ( empty( $subscription ) ) {
+		if ( empty( $subscription ) ) {
 
 			wc_add_notice( __( 'That subscription does not exist. Has it been deleted?', 'woocommerce-subscriptions' ), 'error' );
 
@@ -151,6 +148,26 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 
 		// Put the subscription on hold until payment is complete.
 		$subscription->update_status( 'on-hold', _x( 'Customer requested to renew early:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
+	}
+
+	/**
+	 * Copies the metadata from the subscription to the order created on checkout.
+	 *
+	 * @param WC_Order $order The WC Order object.
+	 *
+	 * @since 2.5.2
+	 */
+	public function copy_subscription_meta_to_order( $order ) {
+		$cart_item = $this->cart_contains();
+		if ( ! $cart_item ) {
+			return;
+		}
+
+		// Get the subscription.
+		$subscription = wcs_get_subscription( $cart_item[ $this->cart_item_key ]['subscription_id'] );
+
+		// Copy all meta from subscription to new renewal order
+		wcs_copy_order_meta( $subscription, $order, 'renewal_order' );
 	}
 
 	/**

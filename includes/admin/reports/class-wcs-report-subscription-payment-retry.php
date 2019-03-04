@@ -80,7 +80,7 @@ class WCS_Report_Subscription_Payment_Retry extends WC_Admin_Report {
 		$this->report_data->retry_pending_count  = absint( array_sum( wp_list_pluck( wp_list_filter( $this->report_data->retry_data, array( 'status' => 'pending' ) ), 'count' ) ) );
 
 		$this->report_data->renewal_total_count  = absint( array_sum( wp_list_pluck( $this->report_data->renewal_data, 'count' ) ) );
-		$this->report_data->renewal_total_amount = absint( array_sum( wp_list_pluck( $this->report_data->renewal_data, 'renewal_totals' ) ) );
+		$this->report_data->renewal_total_amount = array_sum( wp_list_pluck( $this->report_data->renewal_data, 'renewal_totals' ) );
 	}
 
 	/**

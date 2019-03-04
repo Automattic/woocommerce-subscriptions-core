@@ -59,6 +59,10 @@ class WC_Subscriptions_Admin {
 		// Add subscriptions to the product select box
 		add_filter( 'product_type_selector', __CLASS__ . '::add_subscription_products_to_select' );
 
+		// Special handling of downloadable and virtual products on the WooCommerce > Products screen.
+		add_filter( 'product_type_selector', array( __CLASS__, 'add_downloadable_and_virtual_filters' ) );
+		add_filter( 'request', array( __CLASS__, 'modify_downloadable_and_virtual_product_queries' ), 11 );
+
 		// Add subscription pricing fields on edit product page
 		add_action( 'woocommerce_product_options_general_product_data', __CLASS__ . '::subscription_pricing_fields' );
 
@@ -150,6 +154,10 @@ class WC_Subscriptions_Admin {
 				'wc_report_subscription_by_product',
 				'wc_report_subscription_by_customer',
 				'wc_report_subscription_events_by_date',
+				'wcs_report_subscription_by_product',
+				'wcs_report_subscription_by_customer',
+				'wcs_report_subscription_events_by_date',
+				'wcs_report_upcoming_recurring_revenue',
 			);
 
 			// Get all related order and subscription ranges transients
@@ -182,6 +190,74 @@ class WC_Subscriptions_Admin {
 		$product_types['variable-subscription'] = __( 'Variable subscription', 'woocommerce-subscriptions' );
 
 		return $product_types;
+	}
+
+	/**
+	 * Add options for downloadable and virtual subscription products to the product type selector on the WooCommerce products screen.
+	 *
+	 * @param  array $product_types
+	 * @return array
+	 * @since 2.5.1
+	 */
+	public static function add_downloadable_and_virtual_filters( $product_types ) {
+		global $typenow;
+
+		if ( ! is_admin() || ! doing_action( 'restrict_manage_posts' ) || 'product' !== $typenow ) {
+			return $product_types;
+		}
+
+		$product_options = array_reverse(
+			array(
+				'downloadable_subscription' => ( is_rtl() ? '&larr;' : '&rarr;' ) . ' ' . __( 'Downloadable', 'woocommerce-subscriptions' ),
+				'virtual_subscription'      => ( is_rtl() ? '&larr;' : '&rarr;' ) . ' ' . __( 'Virtual', 'woocommerce-subscriptions' ),
+			)
+		);
+		foreach ( $product_options as $key => $label ) {
+			$product_types = wcs_array_insert_after( 'subscription', $product_types, $key, $label );
+		}
+
+		return $product_types;
+	}
+
+	/**
+	 * Modifies the main query on the WooCommerce products screen to correctly handle filtering by virtual and downloadable
+	 * product types.
+	 *
+	 * @param  array $query_vars
+	 * @return array $query_vars
+	 * @since  2.5.1
+	 */
+	public static function modify_downloadable_and_virtual_product_queries( $query_vars) {
+		global $pagenow, $typenow;
+
+		if ( ! is_admin() || 'edit.php' !== $pagenow || 'product' !== $typenow ) {
+			return $query_vars;
+		}
+
+		$current_product_type = isset( $_REQUEST['product_type'] ) ? wc_clean( wp_unslash( $_REQUEST['product_type'] ) ) : false;
+
+		if ( ! $current_product_type ) {
+			return $query_vars;
+		}
+
+		if ( in_array( $current_product_type, array( 'downloadable', 'virtual' ) ) && ! isset( $query_vars['tax_query'] ) ) {
+			// Do not include subscriptions when the default "Downloadable" or "Virtual" query for simple products is being executed.
+			$query_vars['tax_query'] = array(
+				array(
+					'taxonomy' => 'product_type',
+					'terms'    => array( 'subscription' ),
+					'field'    => 'slug',
+					'operator' => 'NOT IN',
+				),
+			);
+		} elseif ( in_array( $current_product_type, array( 'downloadable_subscription', 'virtual_subscription' ) ) ) {
+			// Limit query to subscription products when the "Downloadable" or "Virtual" choices under "Simple Subscription" are being used.
+			$query_vars['meta_value'] = 'yes';
+			$query_vars['meta_key'] = '_' . str_replace( '_subscription', '', $current_product_type );
+			$query_vars['product_type'] = 'subscription';
+		}
+
+		return $query_vars;
 	}
 
 	/**
@@ -742,12 +818,12 @@ class WC_Subscriptions_Admin {
 					'productHasSubscriptions'   => wcs_get_subscriptions_for_product( $post->ID ) ? 'yes' : 'no',
 					'productTypeWarning'        => __( 'Product type can not be changed because this product is associated with active subscriptions', 'woocommerce-subscriptions' ),
 				);
-			} else if ( 'edit-shop_order' == $screen->id ) {
+			} elseif ( 'edit-shop_order' == $screen->id ) {
 				$script_params = array(
 					'bulkTrashWarning' => __( "You are about to trash one or more orders which contain a subscription.\n\nTrashing the orders will also trash the subscriptions purchased with these orders.", 'woocommerce-subscriptions' ),
 					'trashWarning'     => $trashing_subscription_order_warning,
 				);
-			} else if ( 'shop_order' == $screen->id ) {
+			} elseif ( 'shop_order' == $screen->id ) {
 				$dependencies[] = $woocommerce_admin_script_handle;
 				$dependencies[] = 'wc-admin-order-meta-boxes';
 
@@ -763,9 +839,13 @@ class WC_Subscriptions_Admin {
 					'EditOrderNonce'    => wp_create_nonce( 'woocommerce-subscriptions' ),
 					'postId'            => $post->ID,
 				);
-			} else if ( 'users' == $screen->id ) {
+			} elseif ( 'users' == $screen->id ) {
 				$script_params = array(
 					'deleteUserWarning' => __( "Warning: Deleting a user will also delete the user's subscriptions. The user's orders will remain but be reassigned to the 'Guest' user.\n\nDo you want to continue to delete this user and any associated subscriptions?", 'woocommerce-subscriptions' ),
+				);
+			} elseif ( 'woocommerce_page_wc-settings' === $screen->id ) {
+				$script_params = array(
+					'enablePayPalWarning' => __( 'PayPal Standard has a number of limitations and does not support all subscription features.', 'woocommerce-subscriptions' ) . "\n\n" . __( 'Because of this, it is not recommended as a payment method for Subscriptions unless it is the only available option for your country.', 'woocommerce-subscriptions' ),
 				);
 			}
 
@@ -1173,6 +1253,15 @@ class WC_Subscriptions_Admin {
 				'default'       => 'no',
 				'type'          => 'checkbox',
 				'desc_tip'      => __( 'Allow a subscription product to be purchased with other products and subscriptions in the same transaction.', 'woocommerce-subscriptions' ),
+			),
+
+			array(
+				'name'          => __( '$0 Intial Checkout', 'woocommerce-subscriptions' ),
+				'desc'          => __( 'Allow $0 initial checkout without a payment method.', 'woocommerce-subscriptions' ),
+				'id'            => self::$option_prefix . '_zero_initial_payment_requires_payment',
+				'default'       => 'no',
+				'type'          => 'checkbox',
+				'desc_tip'      => __( 'Allow a subscription product with a $0 initial payment to be purchased without providing a payment method. The customer will be required to provide a payment method at the end of the initial period to keep the subscription active.', 'woocommerce-subscriptions' ),
 			),
 
 			array(
