@@ -102,7 +102,7 @@ class WCS_Report_Dashboard {
 
 		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
 			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
-			$cached_results[ $query_hash ] = absint( $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_signup_revenue_query', $query ) ) );
+			$cached_results[ $query_hash ] = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_signup_revenue_query', $query ) );
 			set_transient( strtolower( self::class ), $cached_results, HOUR_IN_SECONDS );
 		}
 
@@ -164,7 +164,7 @@ class WCS_Report_Dashboard {
 
 		if ( $args['no_cache'] || false === $cached_results || ! isset( $cached_results[ $query_hash ] ) ) {
 			$wpdb->query( 'SET SESSION SQL_BIG_SELECTS=1' );
-			$cached_results[ $query_hash ] = absint( $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_renewal_revenue_query', $query ) ) );
+			$cached_results[ $query_hash ] = $wpdb->get_var( apply_filters( 'woocommerce_subscription_dashboard_status_widget_renewal_revenue_query', $query ) );
 			set_transient( strtolower( self::class ), $cached_results, HOUR_IN_SECONDS );
 		}
 
