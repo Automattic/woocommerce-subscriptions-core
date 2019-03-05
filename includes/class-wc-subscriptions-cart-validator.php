@@ -18,7 +18,7 @@ class WC_Subscriptions_Cart_Validator {
 
 		add_filter( 'woocommerce_add_to_cart_validation', array( __CLASS__, 'maybe_empty_cart' ), 10, 5 );
 		add_filter( 'woocommerce_cart_loaded_from_session', array( __CLASS__, 'validate_cart_contents_for_mixed_checkout' ), 10 );
-		add_filter( 'woocommerce_add_to_cart_validation', array( __CLASS__, 'check_valid_add_to_cart' ), 10, 6 );
+		add_filter( 'woocommerce_add_to_cart_validation', array( __CLASS__, 'can_add_subscription_product_to_cart' ), 10, 6 );
 
 	}
 
@@ -35,10 +35,10 @@ class WC_Subscriptions_Cart_Validator {
 		$is_subscription                 = WC_Subscriptions_Product::is_subscription( $product_id );
 		$cart_contains_subscription      = WC_Subscriptions_Cart::cart_contains_subscription();
 		$multiple_subscriptions_possible = WC_Subscriptions_Payment_Gateways::one_gateway_supports( 'multiple_subscriptions' );
-		$manual_renewals_enabled         = ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals', 'no' ) );
+		$manual_renewals_enabled         = ( 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals', 'no' ) );
 		$canonical_product_id            = ! empty( $variation_id ) ? $variation_id : $product_id;
 
-		if ( $is_subscription && 'yes' != get_option( WC_Subscriptions_Admin::$option_prefix . '_multiple_purchase', 'no' ) ) {
+		if ( $is_subscription && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_multiple_purchase', 'no' ) ) {
 
 			// Generate a cart item key from variation and cart item data - which may be added by other plugins
 			$cart_item_data = (array) apply_filters( 'woocommerce_add_cart_item_data', array(), $product_id, $variation_id, $quantity );
@@ -61,7 +61,7 @@ class WC_Subscriptions_Cart_Validator {
 
 			wc_add_notice( __( 'A subscription has been removed from your cart. Due to payment gateway restrictions, different subscription products can not be purchased at the same time.', 'woocommerce-subscriptions' ), 'notice' );
 
-		} elseif ( $cart_contains_subscription && 'yes' != get_option( WC_Subscriptions_Admin::$option_prefix . '_multiple_purchase', 'no' ) ) {
+		} elseif ( $cart_contains_subscription && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_multiple_purchase', 'no' ) ) {
 
 			WC_Subscriptions_Cart::remove_subscriptions_from_cart();
 
@@ -79,7 +79,7 @@ class WC_Subscriptions_Cart_Validator {
 	}
 
 	/**
-	 * This checks cart items for mixed checkout. Can be used to validate other conditions as well
+	 * This checks cart items for mixed checkout.
 	 *
 	 * @param $cart WC_Cart the one we got from session
 	 * @return WC_Cart $cart
@@ -88,31 +88,34 @@ class WC_Subscriptions_Cart_Validator {
 	 */
 	public static function validate_cart_contents_for_mixed_checkout( $cart ) {
 
-		// When mixed checkout is disabled
-		if ( $cart->cart_contents && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_multiple_purchase', 'no' ) ) {
-			$contains_subscription = WC_Subscriptions_Cart::cart_contains_subscription();
-			$contains_renewal = wcs_cart_contains_renewal();
+		// When mixed checkout is enabled
+		if ( $cart->cart_contents && 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . '_multiple_purchase', 'no' ) ) {
+			return $cart;
+		}
 
-			foreach ( $cart->cart_contents as $key => $item ) {
-				$is_subscription = WC_Subscriptions_Product::is_subscription( $item['product_id'] );
+		if ( ! WC_Subscriptions_Cart::cart_contains_subscription() && ! wcs_cart_contains_renewal() ) {
+			return $cart;
+		}
 
-				// If a non-subscription product is found in the cart containing subscriptions ( maybe because of carts merge while logging in )
-				if ( ! $is_subscription && ( $contains_subscription || $contains_renewal ) ) {
+		foreach ( $cart->cart_contents as $key => $item ) {
+			$is_subscription = WC_Subscriptions_Product::is_subscription( $item['product_id'] );
 
-					// remove the subscriptions from the cart
-					WC_Subscriptions_Cart::remove_subscriptions_from_cart();
+			// If a non-subscription product is found in the cart containing subscriptions ( maybe because of carts merge while logging in )
+			if ( ! $is_subscription ) {
 
-					// and add an appropriate notice
-					wc_add_notice( __( 'Your cart has been emptied of subscription products. Products and subscriptions cannot be purchased at the same time.', 'woocommerce-subscriptions' ), 'notice' );
+				// remove the subscriptions from the cart
+				WC_Subscriptions_Cart::remove_subscriptions_from_cart();
 
-					// Redirect to cart page to remove subscription & notify shopper
-					if ( WC_Subscriptions::is_woocommerce_pre( '3.0.8' ) ) {
-						add_filter( 'add_to_cart_fragments', array( __CLASS__, 'redirect_ajax_add_to_cart' ) );
-					} else {
-						add_filter( 'woocommerce_add_to_cart_fragments', array( __CLASS__, 'redirect_ajax_add_to_cart' ) );
-					}
-					break;
+				// and add an appropriate notice
+				wc_add_notice( __( 'Your cart has been emptied of subscription products. Products and subscriptions cannot be purchased at the same time.', 'woocommerce-subscriptions' ), 'notice' );
+
+				// Redirect to cart page to remove subscription & notify shopper
+				if ( WC_Subscriptions::is_woocommerce_pre( '3.0.8' ) ) {
+					add_filter( 'add_to_cart_fragments', array( 'WC_Subscriptions', 'redirect_ajax_add_to_cart' ) );
+				} else {
+					add_filter( 'woocommerce_add_to_cart_fragments', array( 'WC_Subscriptions', 'redirect_ajax_add_to_cart' ) );
 				}
+				break;
 			}
 		}
 		return $cart;
@@ -123,15 +126,15 @@ class WC_Subscriptions_Cart_Validator {
 	 *
 	 * @since 2.6.0
 	 */
-	public static function check_valid_add_to_cart( $is_valid, $product_id, $quantity, $variation_id = '', $variations = array(), $item_data = array() ) {
+	public static function can_add_subscription_product_to_cart( $can_add, $product_id, $quantity, $variation_id = '', $variations = array(), $item_data = array() ) {
 
-		if ( $is_valid && ! isset( $item_data['subscription_renewal'] ) && wcs_cart_contains_renewal() && WC_Subscriptions_Product::is_subscription( $product_id ) ) {
+		if ( $can_add && ! isset( $item_data['subscription_renewal'] ) && wcs_cart_contains_renewal() && WC_Subscriptions_Product::is_subscription( $product_id ) ) {
 
 			wc_add_notice( __( 'That subscription product can not be added to your cart as it already contains a subscription renewal.', 'woocommerce-subscriptions' ), 'error' );
-			$is_valid = false;
+			$can_add = false;
 		}
 
-		return $is_valid;
+		return $can_add;
 	}
 
 }
