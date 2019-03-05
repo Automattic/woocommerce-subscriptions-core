@@ -106,6 +106,8 @@ class WC_Subscriptions_Admin {
 
 		add_filter( 'posts_where', __CLASS__ . '::filter_orders' );
 
+		add_filter( 'posts_where', array( __CLASS__, 'filter_paid_subscription_orders' ) );
+
 		add_action( 'admin_notices',  __CLASS__ . '::display_renewal_filter_notice' );
 
 		add_shortcode( 'subscriptions', __CLASS__ . '::do_subscriptions_shortcode' );
@@ -1322,6 +1324,37 @@ class WC_Subscriptions_Admin {
 			}
 		}
 
+		return $where;
+	}
+
+	/**
+	 * Filter the "Orders" list to show only paid subscription orders
+	 *
+	 * @param string $where
+	 * @return string
+	 * @since 2.5.3
+	 */
+	public static function filter_paid_subscription_orders( $where ) {
+		global $typenow, $wpdb;
+
+		if ( is_admin() && 'shop_order' === $typenow ) {
+
+			if ( isset( $_GET['_paid_subscription_orders'] ) && $_GET['_paid_subscription_orders'] > 0 ) {
+
+				$all_subscription_orders = wcs_get_subscription_orders( 'ids', 'any' );
+
+				if ( empty( $all_subscription_orders ) ) {
+					wcs_add_admin_notice( sprintf( __( 'We can\'t find a paid subscription order.', 'woocommerce-subscriptions' ) ), 'error' );
+					$where .= " AND {$wpdb->posts}.ID = 0";
+				} else {
+					// Orders with paid status
+					$where .= sprintf( " AND {$wpdb->posts}.post_status IN ( 'wc-processing', 'wc-completed' )" );
+
+					// Only subscription orders
+					$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", implode( ',', array_unique( $all_subscription_orders ) ) );
+				}
+			}
+		}
 		return $where;
 	}
 
