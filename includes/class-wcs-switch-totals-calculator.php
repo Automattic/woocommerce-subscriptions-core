@@ -48,9 +48,10 @@ class WCS_Switch_Totals_Calculator {
 	/**
 	 * Constructor.
 	 *
+	 * @since 2.6.0
+	 *
 	 * @param WC_Cart $cart Cart object to calculate totals for.
 	 * @throws Exception If $cart is invalid WC_Cart object.
-	 * @since 2.6.0
 	 */
 	public function __construct( &$cart = null ) {
 		if ( ! is_a( $cart, 'WC_Cart' ) ) {
@@ -62,7 +63,7 @@ class WCS_Switch_Totals_Calculator {
 	}
 
 	/**
-	 * Load the store's switch settings.
+	 * Loads the store's switch settings.
 	 *
 	 * @since 2.6.0
 	 */
@@ -74,7 +75,7 @@ class WCS_Switch_Totals_Calculator {
 	}
 
 	/**
-	 * Calculate the upgrade cost, and next payment dates for switch cart items.
+	 * Calculates the upgrade cost, and next payment dates for switch cart items.
 	 *
 	 * @since 2.6.0
 	 */
@@ -116,10 +117,10 @@ class WCS_Switch_Totals_Calculator {
 	}
 
 	/**
-	 * Get all the switch items in the cart as instances of @see WCS_Switch_Cart_Item.
+	 * Gets all the switch items in the cart as instances of @see WCS_Switch_Cart_Item.
 	 *
-	 * @return WCS_Switch_Cart_Item[]
 	 * @since 2.6.0
+	 * @return WCS_Switch_Cart_Item[]
 	 */
 	protected function get_switches_from_cart() {
 		$switches = array();
@@ -146,11 +147,11 @@ class WCS_Switch_Totals_Calculator {
 	/** Logic Functions */
 
 	/**
-	 * Whether the recurring price should be prorated based on the store's switch settings.
+	 * Determines whether the recurring price should be prorated based on the store's switch settings.
 	 *
+	 * @since 2.6.0
 	 * @param WCS_Switch_Cart_Item $switch_item
 	 * @return bool
-	 * @since 2.6.0
 	 */
 	protected function should_prorate_recurring_price( $switch_item ) {
 		$prorate_all     = in_array( $this->apportion_recurring_price, array( 'yes', 'yes-upgrade' ) );
@@ -160,11 +161,11 @@ class WCS_Switch_Totals_Calculator {
 	}
 
 	/**
-	 * Whether the current subscription's prepaid term should reduced.
+	 * Determines whether the current subscription's prepaid term should reduced.
 	 *
+	 * @since 2.6.0
 	 * @param WCS_Switch_Cart_Item $switch_item
 	 * @return bool
-	 * @since 2.6.0
 	 */
 	protected function should_reduce_prepaid_term( $switch_item ) {
 		$days_in_old_cycle = $switch_item->get_days_in_old_cycle();
@@ -173,32 +174,42 @@ class WCS_Switch_Totals_Calculator {
 		$is_switch_out_of_trial = 0 == $switch_item->get_total_paid_for_current_period() && ! $switch_item->trial_periods_match() && $switch_item->is_switch_during_trial();
 
 		/**
+		 * Allow third-parties to filter whether to reduce the prepaid term or not.
+		 *
 		 * By default, reduce the prepaid term if:
-		 *  - The customer is leaving a free trial, this is determined by:
+		 *  - The customer is leaving a free trial, this occurs if:
 		 *     - The subscription is still on trial,
-		 *     - They haven't paid anything in sign-up fees or early renewals since sign-up.
+		 *     - The customer hasn't paid anything in sign-up fees or early renewals since sign-up.
 		 *     - The old trial period and length doesn't match the new one.
-		 *  - Or there are more days in the in old cycle as there are in the in new cycle (switching from yearly to monthly)
+		 *  - Or there are more days in the in old cycle as there are in the in new cycle (for example switching from yearly to monthly)
+		 *
+		 * @param bool            Whether the switch should reduce the current subscription's prepaid term.
+		 * @param WC_Subscription $switch_item->subscription The subscription being switched.
+		 * @param array           $switch_item->cart_item The cart item recording the switch.
+		 * @param int             $days_in_old_cycle The number of days in the current subscription's billing cycle.
+		 * @param int             $days_in_new_cycle The number of days in the new product's billing cycle.
+		 * @param float           $switch_item->get_old_price_per_day() The current subscription's price per day.
+		 * @param float           $switch_item->get_new_price_per_day() The new product's price per day.
 		 */
 		return apply_filters( 'wcs_switch_proration_reduce_pre_paid_term', $is_switch_out_of_trial || $days_in_old_cycle > $days_in_new_cycle, $switch_item->subscription, $switch_item->cart_item, $days_in_old_cycle, $days_in_new_cycle, $switch_item->get_old_price_per_day(), $switch_item->get_new_price_per_day() );
 	}
 
 	/**
-	 * Whether the current subscription's prepaid term should extended based on the store's switch settings.
+	 * Determines whether the current subscription's prepaid term should extended based on the store's switch settings.
 	 *
-	 * @return bool
 	 * @since 2.6.0
+	 * @return bool
 	 */
 	protected function should_extend_prepaid_term() {
 		return in_array( $this->apportion_recurring_price, array( 'virtual', 'yes' ) );
 	}
 
 	/**
-	 * Whether the subscription length should be apportioned based on the store's switch settings and product type.
+	 * Determines whether the subscription length should be apportioned based on the store's switch settings and product type.
 	 *
+	 * @since 2.6.0
 	 * @param WCS_Switch_Cart_Item $switch_item
 	 * @return bool
-	 * @since 2.6.0
 	 */
 	protected function should_apportion_length( $switch_item ) {
 		return 'yes' == $this->apportion_length || ( 'virtual' == $this->apportion_length && $switch_item->is_virtual_product() );
@@ -207,12 +218,12 @@ class WCS_Switch_Totals_Calculator {
 	/** Total Calculators */
 
 	/**
-	 * Apportion any sign-up fees if required.
+	 * Apportions any sign-up fees if required.
 	 *
 	 * Implements the store's apportion sign-up fee setting (@see $this->apportion_sign_up_fee).
 	 *
-	 * @param WCS_Switch_Cart_Item $switch_item
 	 * @since 2.6.0
+	 * @param WCS_Switch_Cart_Item $switch_item
 	 */
 	protected function apportion_sign_up_fees( $switch_item ) {
 		if ( 'no' === $this->apportion_sign_up_fee ) {
@@ -238,12 +249,11 @@ class WCS_Switch_Totals_Calculator {
 	}
 
 	/**
-	 * Calculate the number of days the customer is entitled to at the new product's price per day
-	 * and reduce the subscription's prepaid term to match.
+	 * Calculates the number of days the customer is entitled to at the new product's price per day and reduce the subscription's prepaid term to match.
 	 *
+	 * @since 2.6.0
 	 * @param string $cart_item_key
 	 * @param WCS_Switch_Cart_Item $switch_item
-	 * @since 2.6.0
 	 */
 	protected function reduce_prepaid_term( $cart_item_key, $switch_item ) {
 		// Find out how many days at the new price per day the customer would receive for the total amount already paid
@@ -260,11 +270,11 @@ class WCS_Switch_Totals_Calculator {
 	}
 
 	/**
-	 * Calculate the upgrade cost for a given switch.
+	 * Calculates the upgrade cost for a given switch.
 	 *
+	 * @since 2.6.0
 	 * @param WCS_Switch_Cart_Item $switch_item
 	 * @return float The amount to pay for the upgrade.
-	 * @since 2.6.0
 	 */
 	protected function calculate_upgrade_cost( $switch_item ) {
 		$extra_to_pay = $switch_item->get_days_until_next_payment() * ( $switch_item->get_new_price_per_day() - $switch_item->get_old_price_per_day() );
@@ -284,12 +294,12 @@ class WCS_Switch_Totals_Calculator {
 	}
 
 	/**
-	 * Calculate the number of days that have already been paid.
+	 * Calculates the number of days that have already been paid.
 	 *
+	 * @since 2.6.0
 	 * @param int $old_total_paid The amount paid previously, such as the old recurring total
 	 * @param int $new_price_per_day The amount per day price for the new subscription
 	 * @return int $pre_paid_days The number of days paid for already
-	 * @since 2.6.0
 	 */
 	protected function calculate_pre_paid_days( $old_total_paid, $new_price_per_day ) {
 		$pre_paid_days = 0;
@@ -304,12 +314,11 @@ class WCS_Switch_Totals_Calculator {
 	}
 
 	/**
-	 * Calculate the number of days the customer is owed at the new product's price per day
-	 * and extend the subscription's prepaid term accordingly.
+	 * Calculates the number of days the customer is owed at the new product's price per day and extend the subscription's prepaid term accordingly.
 	 *
+	 * @since 2.6.0
 	 * @param string $cart_item_key
 	 * @param WCS_Switch_Cart_Item $switch_item
-	 * @since 2.6.0
 	 */
 	protected function extend_prepaid_term( $cart_item_key, $switch_item ) {
 		$amount_still_owing = $switch_item->get_old_price_per_day() * $switch_item->get_days_until_next_payment();
@@ -323,10 +332,10 @@ class WCS_Switch_Totals_Calculator {
 	}
 
 	/**
-	 * Calculate the new subscription's remaining length based on the expected number of payments and the number of payments which have already occurred.
+	 * Calculates the new subscription's remaining length based on the expected number of payments and the number of payments which have already occurred.
 	 *
-	 * @param WCS_Switch_Cart_Item $switch_item
 	 * @since 2.6.0
+	 * @param WCS_Switch_Cart_Item $switch_item
 	 */
 	protected function apportion_length( $switch_item ) {
 		$base_length        = WC_Subscriptions_Product::get_length( $switch_item->canonical_product_id );
@@ -344,45 +353,45 @@ class WCS_Switch_Totals_Calculator {
 	/** Setters */
 
 	/**
-	 * Set the first payment timestamp on the cart item.
+	 * Sets the first payment timestamp on the cart item.
 	 *
+	 * @since 2.6.0
 	 * @param string $cart_item_key The cart item key.
 	 * @param int $first_payment_timestamp The first payment timestamp.
-	 * @since 2.6.0
 	 */
 	public function set_first_payment_timestamp( $cart_item_key, $first_payment_timestamp ) {
 		$this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $first_payment_timestamp;
 	}
 
 	/**
-	 * Set the end timestamp on the cart item.
+	 * Sets the end timestamp on the cart item.
 	 *
+	 * @since 2.6.0
 	 * @param string $cart_item_key The cart item key.
 	 * @param int $end_timestamp The subscription's end date timestamp.
-	 * @since 2.6.0
 	 */
 	public function set_end_timestamp( $cart_item_key, $end_timestamp ) {
 		$this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['end_timestamp'] = $end_timestamp;
 	}
 
 	/**
-	 * Set the switch type on the cart item.
+	 * Sets the switch type on the cart item.
 	 *
 	 * To preserve past tense for backward compatibility 'd' will be appended to the $switch_type.
 	 *
+	 * @since 2.6.0
 	 * @param string $cart_item_key The cart item's key.
 	 * @param string $switch_type Can be upgrade, downgrade or crossgrade.
-	 * @since 2.6.0
 	 */
 	public function set_switch_type_in_cart( $cart_item_key, $switch_type ) {
 		$this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['upgraded_or_downgraded'] = sprintf( '%sd', $switch_type );
 	}
 
 	/**
-	 * Reset any previously calculated prorated price.
+	 * Resets any previously calculated prorated price.
 	 *
-	 * @param WCS_Switch_Cart_Item $switch_item
 	 * @since 2.6.0
+	 * @param WCS_Switch_Cart_Item $switch_item
 	 */
 	public function reset_prorated_price( $switch_item ) {
 		if ( $switch_item->product->meta_exists( '_subscription_price_prorated' ) ) {
@@ -392,11 +401,11 @@ class WCS_Switch_Totals_Calculator {
 	}
 
 	/**
-	 * Set the upgrade cost on the cart item product instance as a sign up fee.
+	 * Sets the upgrade cost on the cart item product instance as a sign up fee.
 	 *
+	 * @since 2.6.0
 	 * @param WCS_Switch_Cart_Item $switch_item
 	 * @param float $extra_to_pay The upgrade cost.
-	 * @since 2.6.0
 	 */
 	public function set_upgrade_cost( $switch_item, $extra_to_pay ) {
 		// Keep a record of the original sign-up fees
@@ -410,11 +419,11 @@ class WCS_Switch_Totals_Calculator {
 	/** Getters */
 
 	/**
-	 * Get the first payment timestamp.
+	 * Gets the first payment timestamp.
 	 *
+	 * @since 2.6.0
 	 * @param string $cart_item_key The cart item's key.
 	 * @return int
-	 * @since 2.6.0
 	 */
 	protected function get_first_payment_timestamp( $cart_item_key ) {
 		return $this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'];

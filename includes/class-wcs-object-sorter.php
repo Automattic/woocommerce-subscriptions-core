@@ -20,7 +20,9 @@ class WCS_Object_Sorter {
 	protected $sort_by_property = '';
 
 	/**
-	 * Constructor
+	 * Constructor.
+	 *
+	 * @since 2.6.0
 	 *
 	 * @param string $property The object property to use in comparisons. This will be used to generate the object getter by prepending 'get_'.
 	 */
@@ -29,9 +31,11 @@ class WCS_Object_Sorter {
 	}
 
 	/**
-	 * A function which compares two objects using the @see $this->sort_by_property getter.
+	 * Compares two objects using the @see $this->sort_by_property getter.
 	 *
 	 * Designed to be used by uasort(), usort() or uksort() functions.
+	 *
+	 * @since 2.6.0
 	 *
 	 * @param object $object_one
 	 * @param object $object_two
@@ -55,9 +59,11 @@ class WCS_Object_Sorter {
 	}
 
 	/**
-	 * A function which compares two objects using the @see $this->sort_by_property getter in reverse order.
+	 * Compares two objects using the @see $this->sort_by_property getter in reverse order.
 	 *
 	 * Designed to be used by uasort(), or usort() style functions.
+	 *
+	 * @since 2.6.0
 	 *
 	 * @param object $object_one
 	 * @param object $object_two
