@@ -149,14 +149,14 @@ class WCS_Email_On_Hold_Subscription extends WC_Email {
 				'title'         => _x( 'Recipient(s)', 'of an email', 'woocommerce-subscriptions' ),
 				'type'          => 'text',
 				// translators: placeholder is admin email
-				'description'   => sprintf( __( 'Enter recipients (comma separated) for this email. Defaults to <code>%s</code>.', 'woocommerce-subscriptions' ), esc_attr( get_option( 'admin_email' ) ) ),
+				'description'   => sprintf( __( 'Enter recipients (comma separated) for this email. Defaults to %s.', 'woocommerce-subscriptions' ), '<code>' . esc_attr( get_option( 'admin_email' ) ) . '</code>' ),
 				'placeholder'   => '',
 				'default'       => '',
 			),
 			'subject' => array(
 				'title'         => _x( 'Subject', 'of an email', 'woocommerce-subscriptions' ),
 				'type'          => 'text',
-				'description'   => sprintf( __( 'This controls the email subject line. Leave blank to use the default subject: <code>%s</code>.', 'woocommerce-subscriptions' ), $this->subject ),
+				'description'   => sprintf( __( 'This controls the email subject line. Leave blank to use the default subject: %s.', 'woocommerce-subscriptions' ), '<code>' . $this->subject . '</code>' ),
 				'placeholder'   => $this->get_default_subject(),
 				'default'       => '',
 			),

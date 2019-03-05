@@ -206,28 +206,36 @@ class WCS_Report_Dashboard {
 
 		?>
 		<li class="signup-count">
-			<a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
-				<?php printf( wp_kses_post( _n( '<strong>%s signup</strong> subscription signups this month', '<strong>%s signups</strong> subscription signups this month', $report_data->signup_count, 'woocommerce-subscriptions' ) ), esc_html( $report_data->signup_count ) ); ?>
+			<a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
+				<?php
+				// translators: 1$: count, 2$ and 3$ are opening and closing strong tags, respectively.
+				echo wp_kses_post( sprintf( _n( '%2$s%$1s signup%3$s subscription signups this month', '%2$s%1$s signups%3$s subscription signups this month', $report_data->signup_count, 'woocommerce-subscriptions' ), $report_data->signup_count, '<strong>', '</strong>' ) );
+				?>
 			</a>
 		</li>
 		<li class="signup-revenue">
-			<a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
-				<?php printf( wp_kses_post( __( '<strong>' . wc_price( $report_data->signup_revenue ) . '</strong> signup revenue this month', 'woocommerce-subscriptions' ) ) ); ?>
+			<a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
+				<?php echo wp_kses_post( sprintf( __( '%s signup revenue this month', 'woocommerce-subscriptions' ), '<strong>' . wc_price( $report_data->signup_revenue ) . '</strong>' ) ); ?>
 			</a>
 		</li>
 		<li class="renewal-count">
-			<a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
-				<?php printf( wp_kses_post( _n( '<strong>%s renewal</strong> subscription renewals this month', '<strong>%s renewals</strong> subscription renewals this month', $report_data->renewal_count, 'woocommerce-subscriptions' ) ), esc_html( $report_data->renewal_count ) ); ?>
+			<a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
+				<?php
+				// translators: 1$: count, 2$ and 3$ are opening and closing strong tags, respectively.
+				echo wp_kses_post( sprintf( _n( '%2$s%1$s renewal%3$s subscription renewals this month', '%2$s%1$s renewals%3$s subscription renewals this month', $report_data->renewal_count, 'woocommerce-subscriptions' ), $report_data->renewal_count, '<strong>', '</strong>' ) );
+				?>
 			</a>
 		</li>
 		<li class="renewal-revenue">
-			<a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=montj' ) ); ?>">
-				<?php printf( wp_kses_post( __( '<strong>' . wc_price( $report_data->renewal_revenue ) . '</strong> renewal revenue this month', 'woocommerce-subscriptions' ) ) ); ?>
+			<a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
+				<?php echo wp_kses_post( sprintf( __( '%s renewal revenue this month', 'woocommerce-subscriptions' ),  '<strong>' . wc_price( $report_data->renewal_revenue ) . '</strong>' ) ); ?>
 			</a>
 		</li>
 		<li class="cancel-count">
-			<a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
-				<?php printf( wp_kses_post( _n( '<strong>%s cancellation</strong> subscription cancellations this month', '<strong>%s cancellations</strong> subscription cancellations this month', $report_data->cancel_count, 'woocommerce-subscriptions' ) ), esc_html( $report_data->cancel_count ) ); ?>
+			<a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
+				<?php
+				// translators: 1$: count, 2$ and 3$ are opening and closing strong tags, respectively.
+				echo wp_kses_post( sprintf( _n( '%2$s%1$s cancellation%3$s subscription cancellations this month', '%2$s%1$s cancellations%3$s subscription cancellations this month', $report_data->cancel_count, 'woocommerce-subscriptions' ), $report_data->cancel_count, '<strong>', '</strong>' ) ); ?>
 			</a>
 		</li>
 		<?php
