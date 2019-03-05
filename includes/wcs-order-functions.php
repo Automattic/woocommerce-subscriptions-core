@@ -898,14 +898,15 @@ function wcs_seconds_since_order_created( $order ) {
 }
 
 /**
- * Find a corresponding subscription line item on an order.
+ * Finds a corresponding subscription line item on an order.
+ *
+ * @since 2.6.0
  *
  * @param WC_Abstract_Order $order         The order object to look for the item in.
  * @param WC_Order_Item $subscription_item The line item on the the subscription to find on the order.
- * @param string $match_type               The type of comparison to make. Optional. Can be 'match_product_ids' to compare product|variation IDs or 'match_attributes' to also compare by item attributes on top of matching product IDs. Default 'match_product_ids'.
+ * @param string $match_type               Optional. The type of comparison to make. Can be 'match_product_ids' to compare product|variation IDs or 'match_attributes' to also compare by item attributes on top of matching product IDs. Default 'match_product_ids'.
  *
- * @return bool|WC_Order_Item The order item which matches or false if one cannot be found.
- * @since 2.6.0
+ * @return WC_Order_Item|bool The order item which matches the subscription item or false if one cannot be found.
  */
 function wcs_find_matching_line_item( $order, $subscription_item, $match_type = 'match_product_ids' ) {
 	$matching_item = false;

@@ -1935,15 +1935,17 @@ class WC_Subscriptions_Switcher {
 	}
 
 	/**
-	 * Calculate the total amount a customer has paid in early renewals since the last scheduled renewal or parent order (inclusive).
+	 * Calculates the total amount a customer has paid in early renewals and switches since the last non-early renewal or parent order (inclusive).
 	 *
-	 * This function will map the current item back through multiple switches to make sure it finds the item that was used at the time of last parent/scheduled renewal.
+	 * This function will map the current item back through multiple switches to make sure it finds the item that was present at the time of last parent/scheduled renewal.
 	 *
-	 * @param WC_Subscription $subscription    The Subscription
-	 * @param WC_Order_Item $subscription_item The current line item on the subscription to map back through the related orders.
+	 * @since 2.6.0
+	 *
+	 * @param WC_Subscription $subscription         The Subscription.
+	 * @param WC_Order_Item   $subscription_item    The current line item on the subscription to map back through the related orders.
+	 * @param string          $include_sign_up_fees Optional. Whether to include the sign-up fees paid. Can be 'include_sign_up_fees' or 'exclude_sign_up_fees'. Default 'include_sign_up_fees'.
 	 *
 	 * @return float The total amount paid for an existing subscription line item.
-	 * @since 2.6.0
 	 */
 	public static function calculate_total_paid_since_last_order( $subscription, $subscription_item, $include_sign_up_fees = 'include_sign_up_fees' ) {
 		$found_item      = false;

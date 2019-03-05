@@ -109,12 +109,13 @@ class WCS_Switch_Cart_Item {
 	/**
 	 * Constructor.
 	 *
-	 * @param array $cart_item      The cart item.
-	 * @param WC_Subscription       The subscription being switched.
-	 * @param WC_Order_Item_Product The subscription line item being switched.
-	 *
-	 * @throws Exception If $cart is invalid WC_Cart object.
 	 * @since 2.6.0
+	 *
+	 * @param array $cart_item                     The cart item.
+	 * @param WC_Subscription $subscription        The subscription being switched.
+	 * @param WC_Order_Item_Product $existing_item The subscription line item being switched.
+	 *
+	 * @throws Exception If WC_Subscriptions_Product::get_expiration_date() returns an invalid date.
 	 */
 	public function __construct( $cart_item, $subscription, $existing_item ) {
 		$this->cart_item               = $cart_item;
@@ -129,10 +130,10 @@ class WCS_Switch_Cart_Item {
 	/** Getters */
 
 	/**
-	 * Get the number of days until the next payment.
+	 * Gets the number of days until the next payment.
 	 *
-	 * @return int
 	 * @since 2.6.0
+	 * @return int
 	 */
 	public function get_days_until_next_payment() {
 		if ( ! isset( $this->days_until_next_payment ) ) {
@@ -143,10 +144,10 @@ class WCS_Switch_Cart_Item {
 	}
 
 	/**
-	 * Get the number of days in the old billing cycle.
+	 * Gets the number of days in the old billing cycle.
 	 *
-	 * @return int
 	 * @since 2.6.0
+	 * @return int
 	 */
 	public function get_days_in_old_cycle() {
 		if ( ! isset( $this->days_in_old_cycle ) ) {
@@ -157,10 +158,10 @@ class WCS_Switch_Cart_Item {
 	}
 
 	/**
-	 * Get the old subscription's price per day.
+	 * Gets the old subscription's price per day.
 	 *
-	 * @return float
 	 * @since 2.6.0
+	 * @return float
 	 */
 	public function get_old_price_per_day() {
 		if ( ! isset( $this->old_price_per_day ) ) {
@@ -176,10 +177,10 @@ class WCS_Switch_Cart_Item {
 	}
 
 	/**
-	 * Get the number of days in the new billing cycle.
+	 * Gets the number of days in the new billing cycle.
 	 *
-	 * @return int
 	 * @since 2.6.0
+	 * @return int
 	 */
 	public function get_days_in_new_cycle() {
 		if ( ! isset( $this->days_in_new_cycle ) ) {
@@ -190,10 +191,10 @@ class WCS_Switch_Cart_Item {
 	}
 
 	/**
-	 * Get the number of days in the new billing cycle.
+	 * Gets the number of days in the new billing cycle.
 	 *
-	 * @return void
 	 * @since 2.6.0
+	 * @return float
 	 */
 	public function get_new_price_per_day() {
 		if ( ! isset( $this->new_price_per_day ) ) {
@@ -215,10 +216,10 @@ class WCS_Switch_Cart_Item {
 	}
 
 	/**
-	 * Get the subscription's last order time.
+	 * Gets the subscription's last order time.
 	 *
-	 * @return int The timestamp of the subscription's last non-early renewal or parent order. If none of those are present, the subscription's created time will be returned.
 	 * @since 2.6.0
+	 * @return int The timestamp of the subscription's last non-early renewal or parent order. If none of those are present, the subscription's created time will be returned.
 	 */
 	public function get_last_order_created_time() {
 		if ( ! isset( $this->last_order_created_time ) ) {
@@ -241,10 +242,10 @@ class WCS_Switch_Cart_Item {
 	}
 
 	/**
-	 * Get the total paid for the existing item (@see $this->existing_item) in early renewals and switch orders since the last non-early renewal or parent order.
+	 * Gets the total paid for the existing item (@see $this->existing_item) in early renewals and switch orders since the last non-early renewal or parent order.
 	 *
-	 * @return float
 	 * @since 2.6.0
+	 * @return float
 	 */
 	public function get_total_paid_for_current_period() {
 		if ( ! isset( $this->total_paid_for_current_period ) ) {
@@ -255,8 +256,9 @@ class WCS_Switch_Cart_Item {
 	}
 
 	/**
-	 * Get the number of days since the last payment.
+	 * Gets the number of days since the last payment.
 	 *
+	 * @since 2.6.0
 	 * @return int The number of days since the last non-early renewal or parent payment - rounded down.
 	 */
 	public function get_days_since_last_payment() {
@@ -269,10 +271,10 @@ class WCS_Switch_Cart_Item {
 	}
 
 	/**
-	 * Get the switch type.
+	 * Gets the switch type.
 	 *
-	 * @return string Can be upgrade, downgrade or crossgrade.
 	 * @since 2.6.0
+	 * @return string Can be upgrade, downgrade or crossgrade.
 	 */
 	public function get_switch_type() {
 		if ( ! isset( $this->switch_type ) ) {
@@ -302,10 +304,10 @@ class WCS_Switch_Cart_Item {
 	/** Calculator functions */
 
 	/**
-	 * Calculate the number of days in the old cycle.
+	 * Calculates the number of days in the old cycle.
 	 *
-	 * @return int
 	 * @since 2.6.0
+	 * @return int
 	 */
 	public function calculate_days_in_old_cycle() {
 		$method_to_use = 'days_between_payments';
@@ -335,8 +337,9 @@ class WCS_Switch_Cart_Item {
 	}
 
 	/**
-	 * Calculate the number of days in the new cycle.
+	 * Calculates the number of days in the new cycle.
 	 *
+	 * @since 2.6.0
 	 * @return int
 	 */
 	public function calculate_days_in_new_cycle() {
@@ -363,20 +366,20 @@ class WCS_Switch_Cart_Item {
 	/** Helper functions */
 
 	/**
-	 * Whether the new product is virtual or not.
+	 * Determines whether the new product is virtual or not.
 	 *
-	 * @return boolean
 	 * @since 2.6.0
+	 * @return bool
 	 */
 	public function is_virtual_product() {
 		return $this->product->is_virtual();
 	}
 
 	/**
-	 * Whether the new product's trial period matches the old product's trial period.
+	 * Determines whether the new product's trial period matches the old product's trial period.
 	 *
-	 * @return boolean
 	 * @since 2.6.0
+	 * @return bool
 	 */
 	public function trial_periods_match() {
 		$existing_product = $this->existing_item->get_product();
@@ -389,10 +392,10 @@ class WCS_Switch_Cart_Item {
 	}
 
 	/**
-	 * Whether the switch is happening while the subscription is still on trial.
+	 * Determines whether the switch is happening while the subscription is still on trial.
 	 *
-	 * @return boolean
 	 * @since 2.6.0
+	 * @return bool
 	 */
 	public function is_switch_during_trial() {
 		return $this->subscription->get_time( 'trial_end' ) > gmdate( 'U' );

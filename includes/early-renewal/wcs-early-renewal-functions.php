@@ -149,10 +149,10 @@ function wcs_get_early_renewal_url( $subscription ) {
 /**
  * Get the last renewal order which isn't an early renewal order.
  *
- * @param WC_Subscription $subscription The subscription object.
- *
- * @return WC_Order|bool The last non-early renewal order, otherwise false.
  * @since 2.6.0
+ *
+ * @param WC_Subscription $subscription The subscription object.
+ * @return WC_Order|bool The last non-early renewal order, otherwise false.
  */
 function wcs_get_last_non_early_renewal_order( $subscription ) {
 	$last_non_early_renewal = false;
