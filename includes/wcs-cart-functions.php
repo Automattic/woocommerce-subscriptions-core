@@ -305,7 +305,7 @@ function wcs_cart_price_string( $recurring_amount, $cart ) {
 		'subscription_interval' => wcs_cart_pluck( $cart, 'subscription_period_interval' ),
 		'subscription_period'   => wcs_cart_pluck( $cart, 'subscription_period', '' ),
 		'subscription_length'   => wcs_cart_pluck( $cart, 'subscription_length' ),
-	) ) );
+	), $cart ) );
 }
 
 /**
