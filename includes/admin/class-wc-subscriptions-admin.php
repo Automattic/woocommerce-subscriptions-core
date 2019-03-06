@@ -1303,9 +1303,7 @@ class WC_Subscriptions_Admin {
 	public static function filter_orders( $where ) {
 		global $typenow, $wpdb;
 
-		if ( is_admin() && 'shop_order' == $typenow ) {
-
-			$related_orders = array();
+		if ( is_admin() && 'shop_order' === $typenow ) {
 
 			if ( isset( $_GET['_subscription_related_orders'] ) && $_GET['_subscription_related_orders'] > 0 ) {
 
@@ -1337,24 +1335,23 @@ class WC_Subscriptions_Admin {
 	public static function filter_paid_subscription_orders( $where ) {
 		global $typenow, $wpdb;
 
-		if ( is_admin() && 'shop_order' === $typenow ) {
-
-			if ( isset( $_GET['_paid_subscription_orders'] ) && $_GET['_paid_subscription_orders'] > 0 ) {
-
-				$all_subscription_orders = wcs_get_subscription_orders( 'ids', 'any' );
-
-				if ( empty( $all_subscription_orders ) ) {
-					wcs_add_admin_notice( sprintf( __( 'We can\'t find a paid subscription order.', 'woocommerce-subscriptions' ) ), 'error' );
-					$where .= " AND {$wpdb->posts}.ID = 0";
-				} else {
-					// Orders with paid status
-					$where .= sprintf( " AND {$wpdb->posts}.post_status IN ( 'wc-processing', 'wc-completed' )" );
-
-					// Only subscription orders
-					$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", implode( ',', array_unique( $all_subscription_orders ) ) );
-				}
-			}
+		if ( ! is_admin() || 'shop_order' !== $typenow || ! isset( $_GET['_paid_subscription_orders'] ) || $_GET['_paid_subscription_orders'] <= 0 ) {
+			return $where;
 		}
+
+		$all_subscription_orders = wcs_get_subscription_orders( 'ids', 'any' );
+
+		if ( empty( $all_subscription_orders ) ) {
+			wcs_add_admin_notice( sprintf( __( 'We can\'t find a paid subscription order.', 'woocommerce-subscriptions' ) ), 'error' );
+			$where .= " AND {$wpdb->posts}.ID = 0";
+		} else {
+			// Orders with paid status
+			$where .= sprintf( " AND {$wpdb->posts}.post_status IN ( 'wc-processing', 'wc-completed' )" );
+
+			// Only subscription orders
+			$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", implode( ',', array_unique( $all_subscription_orders ) ) );
+		}
+
 		return $where;
 	}
 
