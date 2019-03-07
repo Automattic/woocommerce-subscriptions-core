@@ -708,26 +708,9 @@ class WC_Subscription extends WC_Order {
 			if ( ! isset( $this->cached_payment_count['completed'][ $order_type ] ) ) {
 				$completed_payment_count = $refunded_payment_count = 0;
 
-				if ( 'parent' == $order_type ) {
-					if ( $this->get_parent_id() ) {
-						$related_order_ids = array( $this->get_parent_id() => $this->get_parent_id() );
-					} else {
-						$related_order_ids = array();
-					}
-				} else {
-					$related_order_ids = WCS_Related_Order_Store::instance()->get_related_order_ids( $this, $order_type );
-				}
 				// Looping over the known orders is faster than database queries on large sites
-				foreach ( $related_order_ids as $related_order_id ) {
-
-					$related_order = wc_get_order( $related_order_id );
-
-					if ( ! $related_order ) {
-						continue;
-					}
-
+				foreach ( $this->get_related_orders( 'all', $order_type ) as $related_order ) {
 					if ( null !== $related_order->get_date_paid() ) {
-
 						$completed_payment_count++;
 
 						if ( $related_order->has_status( 'wc-refunded' ) ) {
