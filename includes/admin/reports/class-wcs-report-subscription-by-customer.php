@@ -75,7 +75,7 @@ class WCS_Report_Subscription_By_Customer extends WP_List_Table {
 				return sprintf( '<a href="%s%d">%d</a>', admin_url( 'edit.php?post_type=shop_subscription&_customer_user=' ), $user->customer_id, $user->total_subscriptions );
 
 			case 'total_subscription_order_count' :
-				return sprintf( '<a href="%s%d">%d</a>', admin_url( 'edit.php?post_type=shop_order&_paid_subscription_orders=1&_customer_user=' ), $user->customer_id, $user->initial_order_count + $user->renewal_switch_count );
+				return sprintf( '<a href="%s%d">%d</a>', admin_url( 'edit.php?post_type=shop_order&_paid_subscription_orders_for_customer_user=' ), $user->customer_id, $user->initial_order_count + $user->renewal_switch_count );
 
 			case 'customer_lifetime_value' :
 				return wc_price( $user->initial_order_total + $user->renewal_switch_total );

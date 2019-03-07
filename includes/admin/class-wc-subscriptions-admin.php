@@ -106,7 +106,7 @@ class WC_Subscriptions_Admin {
 
 		add_filter( 'posts_where', __CLASS__ . '::filter_orders' );
 
-		add_filter( 'posts_where', array( __CLASS__, 'filter_paid_subscription_orders' ) );
+		add_filter( 'posts_where', array( __CLASS__, 'filter_paid_subscription_orders_for_user' ) );
 
 		add_action( 'admin_notices',  __CLASS__ . '::display_renewal_filter_notice' );
 
@@ -1326,30 +1326,39 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Filter the "Orders" list to show only paid subscription orders
+	 * Filter the "Orders" list to show only paid subscription orders for a particular user
 	 *
 	 * @param string $where
 	 * @return string
 	 * @since 2.5.3
 	 */
-	public static function filter_paid_subscription_orders( $where ) {
+	public static function filter_paid_subscription_orders_for_user( $where ) {
 		global $typenow, $wpdb;
 
-		if ( ! is_admin() || 'shop_order' !== $typenow || ! isset( $_GET['_paid_subscription_orders'] ) || $_GET['_paid_subscription_orders'] <= 0 ) {
+		if ( ! is_admin() || 'shop_order' !== $typenow || ! isset( $_GET['_paid_subscription_orders_for_customer_user'] ) || 0 == $_GET['_paid_subscription_orders_for_customer_user'] ) {
 			return $where;
 		}
 
-		$all_subscription_orders = wcs_get_subscription_orders( 'ids', 'any' );
+		$user_id = $_GET['_paid_subscription_orders_for_customer_user'];
 
-		if ( empty( $all_subscription_orders ) ) {
-			wcs_add_admin_notice( sprintf( __( 'We can\'t find a paid subscription order.', 'woocommerce-subscriptions' ) ), 'error' );
+		// Unset the GET arg so that it doesn't interfere with the query for user's subscriptions.
+		unset( $_GET['_paid_subscription_orders_for_customer_user'] );
+
+		$users_subscriptions = wcs_get_users_subscriptions( $user_id );
+
+		$users_subscription_orders = array();
+
+		foreach ( $users_subscriptions as $subscription ) {
+			$users_subscription_orders = array_merge( $users_subscription_orders, $subscription->get_related_orders( 'ids' ) );
+		}
+
+		if ( empty( $users_subscription_orders ) ) {
+			wcs_add_admin_notice( sprintf( __( 'We can\'t find a paid subscription order for this user.', 'woocommerce-subscriptions' ) ), 'error' );
 			$where .= " AND {$wpdb->posts}.ID = 0";
 		} else {
 			// Orders with paid status
 			$where .= sprintf( " AND {$wpdb->posts}.post_status IN ( 'wc-processing', 'wc-completed' )" );
-
-			// Only subscription orders
-			$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", implode( ',', array_unique( $all_subscription_orders ) ) );
+			$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", implode( ',', array_unique( $users_subscription_orders ) ) );
 		}
 
 		return $where;
