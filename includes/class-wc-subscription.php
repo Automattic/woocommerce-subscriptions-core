@@ -2672,7 +2672,7 @@ class WC_Subscription extends WC_Order {
 			wcs_deprecated_function( sprintf( '"%s" filter should no longer be used and', $deprecated_filter_hook ), '2.6.0', '"woocommerce_subscription_parent_payment_completed_count" and "woocommerce_subscription_renewal_payment_completed_count" provide the discrete counts summed in the "' . $deprecated_filter_hook . '" filter.' );
 
 			if ( ! isset( $this->cached_payment_count['deprecated_completed'] ) ) {
-			$this->cached_payment_count['deprecated_completed'] = $this->cached_payment_count['completed']['parent'] + $this->cached_payment_count['completed']['renewal'];
+				$this->cached_payment_count['deprecated_completed'] = $this->cached_payment_count['completed']['parent'] + $this->cached_payment_count['completed']['renewal'];
 			}
 
 			$this->cached_payment_count['deprecated_completed'] = apply_filters( $deprecated_filter_hook, $this->cached_payment_count['deprecated_completed'] );
