@@ -703,8 +703,8 @@ class WC_Subscription extends WC_Order {
 			);
 		}
 
-		// If not cached, calculate the payment counts otherwise return the cached version.
 		foreach ( $order_types as $order_type ) {
+			// If not cached, calculate the payment counts otherwise use the cached version.
 			if ( ! isset( $this->cached_payment_count['completed'][ $order_type ] ) ) {
 				$completed_payment_count = $refunded_payment_count = 0;
 
@@ -736,14 +736,13 @@ class WC_Subscription extends WC_Order {
 					}
 				}
 			} else {
-
 				$completed_payment_count = $this->cached_payment_count['completed'][ $order_type ];
-				$refunded_payment_count = $this->cached_payment_count['refunded'][ $order_type ];
+				$refunded_payment_count  = $this->cached_payment_count['refunded'][ $order_type ];
 			}
 
 			// Store the payment counts to avoid hitting the database again
 			$this->cached_payment_count['completed'][ $order_type ] = apply_filters( "woocommerce_subscription_{$order_type}_payment_completed_count", $completed_payment_count, $this, $order_type );
-			$this->cached_payment_count['refunded'][ $order_type ] = apply_filters( "woocommerce_subscription_{$order_type}_payment_refunded_count", $refunded_payment_count, $this, $order_type );
+			$this->cached_payment_count['refunded'][ $order_type ]  = apply_filters( "woocommerce_subscription_{$order_type}_payment_refunded_count", $refunded_payment_count, $this, $order_type );
 
 			// Apply deprecated completed payment count filter if parent and renewals have been counted.
 			if ( 'completed' == $payment_type && 'renewal' == $order_type && isset( $this->cached_payment_count['completed']['parent'] ) ) {
