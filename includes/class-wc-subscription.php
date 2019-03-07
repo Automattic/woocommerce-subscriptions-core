@@ -713,7 +713,7 @@ class WC_Subscription extends WC_Order {
 					if ( null !== $related_order->get_date_paid() ) {
 						$completed_payment_count++;
 
-						if ( $related_order->has_status( 'wc-refunded' ) ) {
+						if ( $related_order->has_status( 'refunded' ) ) {
 							$refunded_payment_count++;
 						}
 					}
