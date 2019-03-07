@@ -1204,8 +1204,8 @@ class WC_Subscriptions_Manager {
 	 * @deprecated 2.0
 	 */
 	public static function get_subscriptions_completed_payment_count( $subscription_key ) {
-		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_completed_payment_count()' );
-		return apply_filters( 'woocommerce_subscription_completed_payment_count', wcs_get_subscription_from_key( $subscription_key )->get_completed_payment_count(), $subscription_key );
+		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_payment_count()' );
+		return apply_filters( 'woocommerce_subscription_completed_payment_count', wcs_get_subscription_from_key( $subscription_key )->get_payment_count(), $subscription_key );
 	}
 
 	/**
