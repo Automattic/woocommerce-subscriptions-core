@@ -703,6 +703,9 @@ class WC_Subscription extends WC_Order {
 			);
 		}
 
+		// Keep a tally of the counts of all requested order types
+		$total_completed_payment_count = $total_refunded_payment_count = 0;
+
 		foreach ( $order_types as $order_type ) {
 			// If not cached, calculate the payment counts otherwise use the cached version.
 			if ( ! isset( $this->cached_payment_count['completed'][ $order_type ] ) ) {
@@ -731,24 +734,20 @@ class WC_Subscription extends WC_Order {
 			if ( 'completed' == $payment_type && 'renewal' == $order_type && isset( $this->cached_payment_count['completed']['parent'] ) ) {
 				$this->apply_deprecated_completed_payment_count_filter();
 			}
-		}
 
-		// Tally the counts of all requested order types
-		$completed_payment_count = $refunded_payment_count = 0;
-		foreach ( $order_types as $order_type ) {
-			$completed_payment_count += $this->cached_payment_count['completed'][ $order_type ];
-			$refunded_payment_count += $this->cached_payment_count['refunded'][ $order_type ];
+			$total_completed_payment_count += $this->cached_payment_count['completed'][ $order_type ];
+			$total_refunded_payment_count  += $this->cached_payment_count['refunded'][ $order_type ];
 		}
 
 		switch ( $payment_type ) {
 			case 'completed':
-				$count = $completed_payment_count;
+				$count = $total_completed_payment_count;
 				break;
 			case 'refunded':
-				$count = $refunded_payment_count;
+				$count = $total_refunded_payment_count;
 				break;
 			case 'net':
-				$count = $completed_payment_count - $refunded_payment_count;
+				$count = $total_completed_payment_count - $total_refunded_payment_count;
 				break;
 			default:
 				$count = 0;
