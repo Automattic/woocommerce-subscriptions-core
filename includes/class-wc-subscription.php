@@ -2647,6 +2647,10 @@ class WC_Subscription extends WC_Order {
 	 * Apply the deprecated 'woocommerce_subscription_payment_completed_count' filter
 	 * to maintain backward compatibility.
 	 *
+	 * @param int $count
+	 *
+	 * @return int
+	 *
 	 * @deprecated 2.6.0
 	 */
 	protected function apply_deprecated_completed_payment_count_filter( $count ) {
