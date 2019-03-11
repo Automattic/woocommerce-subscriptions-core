@@ -248,7 +248,7 @@ class WCS_PayPal_Admin {
 	 * @param WC_Subscription $subscription
 	 */
 	public static function profile_link( $subscription ) {
-		if ( wcs_is_subscription( $subscription ) && 'paypal' == $subscription->get_payment_method() ) {
+		if ( wcs_is_subscription( $subscription ) && ! $subscription->is_manual() && 'paypal' == $subscription->get_payment_method() ) {
 
 			$paypal_profile_id = wcs_get_paypal_id( $subscription );
 
