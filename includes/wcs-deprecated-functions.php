@@ -273,7 +273,7 @@ function wcs_deprecated_hook( $hook, $version, $replacement = null, $message = n
 	if ( function_exists( 'wc_deprecated_hook' ) ) {
 		wc_deprecated_hook( $hook, $version, $replacement, $message );
 	} else {
-		// Reimplment wcs_deprecated_function() when WC 3.0 is not active
+		// Reimplement wcs_deprecated_function() when WC 3.0 is not active
 		if ( is_ajax() ) {
 			do_action( 'deprecated_hook_run', $hook, $replacement, $version, $message );
 
