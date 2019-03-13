@@ -258,14 +258,15 @@ class WCS_PayPal_Admin {
 			return;
 		}
 
-		$url = '';
+		$url    = '';
+		$domain = WCS_PayPal::get_option( 'testmode' ) === 'yes' ? 'sandbox.paypal' : 'paypal';
 
 		if ( false === wcs_is_paypal_profile_a( $paypal_profile_id, 'billing_agreement' ) ) {
 			// Standard subscription
-			$url = 'https://www.paypal.com/?cmd=_profile-recurring-payments&encrypted_profile_id=' . $paypal_profile_id;
+			$url = "https://www.{$domain}.com/?cmd=_profile-recurring-payments&encrypted_profile_id={$paypal_profile_id}";
 		} elseif ( wcs_is_paypal_profile_a( $paypal_profile_id, 'billing_agreement' ) ) {
 			// Reference Transaction subscription
-			$url = 'https://www.paypal.com/?cmd=_profile-merchant-pull&encrypted_profile_id=' . $paypal_profile_id . '&mp_id=' . $paypal_profile_id . '&return_to=merchant&flag_flow=merchant';
+			$url = "https://www.{$domain}.com/?cmd=_profile-merchant-pull&encrypted_profile_id={$paypal_profile_id}&mp_id={$paypal_profile_id}&return_to=merchant&flag_flow=merchant";
 		}
 
 		echo '<div class="address">';
