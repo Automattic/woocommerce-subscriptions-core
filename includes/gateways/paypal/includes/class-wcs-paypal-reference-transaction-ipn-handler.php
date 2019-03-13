@@ -51,6 +51,7 @@ class WCS_PayPal_Reference_Transaction_IPN_Handler extends WCS_PayPal_Standard_I
 
 			case 'mp_cancel':
 				$this->cancel_subscriptions( $transaction_details['mp_id'] );
+				$this->remove_billing_agreement_from_subscriptions( $transaction_details['mp_id'] );
 				break;
 
 			case 'merch_pmt' :
@@ -104,6 +105,24 @@ class WCS_PayPal_Reference_Transaction_IPN_Handler extends WCS_PayPal_Standard_I
 					WC_Gateway_Paypal::log( sprintf( 'Unable to cancel subscription %s: %s', $subscription->get_id(), $e->getMessage() ) );
 				}
 			}
+		}
+	}
+
+	/**
+	 * Removes a billing agreement from all subscriptions.
+	 *
+	 * @since 2.5.4
+	 * @param string $billing_agreement_id The billing agreement to remove.
+	 */
+	protected function remove_billing_agreement_from_subscriptions( $billing_agreement_id ) {
+		foreach ( WCS_PayPal::get_subscriptions_by_paypal_id( $billing_agreement_id, 'objects' ) as $subscription ) {
+			if ( 'paypal' === $subscription->get_payment_method() ) {
+				$subscription->set_payment_method();
+			}
+
+			$subscription->delete_meta_data( '_paypal_subscription_id' );
+			$subscription->update_meta_data( '_cancelled_paypal_billing_agreement', $billing_agreement_id );
+			$subscription->save();
 		}
 	}
 }
