@@ -919,7 +919,10 @@ class WC_Subscriptions_Synchroniser {
 			add_filter( 'woocommerce_subscriptions_product_trial_expiration_date', __METHOD__, 10, 2 ); // avoid infinite loop
 
 			// First make sure the day is in the past so that we don't end up jumping a month or year because of a few hours difference between now and the billing date
-			if ( $trial_expiration_timestamp > $first_payment_timestamp && gmdate( 'Ymd', $first_payment_timestamp ) == gmdate( 'Ymd', $trial_expiration_timestamp ) ) {
+			// Use site time to check if the trial expiration and first payment fall on the same day
+			$site_offset = get_option( 'gmt_offset' ) * 3600;
+
+			if ( $trial_expiration_timestamp > $first_payment_timestamp && gmdate( 'Ymd', $first_payment_timestamp + $site_offset ) === gmdate( 'Ymd', $trial_expiration_timestamp + $site_offset ) ) {
 				$trial_expiration_date = date( 'Y-m-d H:i:s', $first_payment_timestamp );
 			}
 		}
