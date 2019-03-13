@@ -889,6 +889,10 @@ class WC_Subscriptions_Switcher {
 					// If there are coupons in the cart, mark them for pending addition
 					$new_coupons      = array();
 					foreach ( $recurring_cart->get_coupons() as $coupon_code => $coupon ) {
+						// if any existing coupon is to be retained, do not do anything with it
+						if ( true === apply_filters( 'woocommerce_subscriptions_retain_coupon_after_switch', false, $coupon_code, $coupon, $subscription ) ) {
+							continue;
+						}
 						$coupon_item = new WC_Order_Item_Coupon_Pending_Switch( $coupon_code );
 						$coupon_item->set_props(
 							array(
@@ -1224,6 +1228,14 @@ class WC_Subscriptions_Switcher {
 							if ( $switch_item['item_id'] == $item_id ) {
 								WC()->cart->remove_cart_item( $cart_item_key );
 							}
+						}
+					}
+					// Also add to the cart any coupon that needs to be retained after switch
+					$existing_coupons = $subscription->get_used_coupons();
+					foreach ( $existing_coupons as $id => $code ) {
+						$coupon = new WC_Coupon;
+						if ( true === apply_filters( 'woocommerce_subscriptions_retain_coupon_after_switch', false, $code, $coupon, $subscription ) ) {
+							WC()->cart->add_discount( $code );
 						}
 					}
 				}
@@ -1819,8 +1831,10 @@ class WC_Subscriptions_Switcher {
 			}
 
 			// Archive the old coupons
-			foreach ( $subscription->get_items( 'coupon' ) as $coupon_code => $coupon ) {
-				wcs_update_order_item_type( $coupon_code, 'coupon_switched', $subscription->get_id() );
+			foreach ( $subscription->get_items( 'coupon' ) as $coupon_id => $coupon ) {
+				if ( false === apply_filters( 'woocommerce_subscriptions_retain_coupon_after_switch', false, $coupon->get_code( 'edit' ), $coupon, $subscription ) ) {
+					wcs_update_order_item_type( $coupon_id, 'coupon_switched', $subscription->get_id() );
+				}
 			}
 
 			if ( ! empty( $switch_data['coupons'] ) && is_array( $switch_data['coupons'] ) ) {
