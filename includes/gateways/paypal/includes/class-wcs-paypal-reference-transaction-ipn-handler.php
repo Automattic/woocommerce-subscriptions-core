@@ -114,11 +114,17 @@ class WCS_PayPal_Reference_Transaction_IPN_Handler extends WCS_PayPal_Standard_I
 		$note = esc_html__( 'Billing agreement cancelled at PayPal.', 'woocommerce-subscriptions' );
 
 		foreach ( $subscription_ids as $subscription_id ) {
-
 			$subscription = wcs_get_subscription( $subscription_id );
 
-			// Only cancel valid subscriptions using PayPal as the payment method that have not yet been ended
-			if ( false == $subscription || $subscription->is_manual() || 'paypal' != $subscription->get_payment_method() || $subscription->has_status( wcs_get_subscription_ended_statuses() ) ) {
+			if ( false == $subscription ) {
+				continue;
+			}
+
+			// Remove the cancelled billing agreement from subscriptions which are manual, no longer have PayPal as its payment method, or ended subscriptions.
+			if ( $subscription->is_manual() || 'paypal' != $subscription->get_payment_method() || $subscription->has_status( wcs_get_subscription_ended_statuses() ) ) {
+				$subscription->set_payment_method();
+				$subscription->delete_meta_data( '_paypal_subscription_id' );
+				$subscription->save();
 				continue;
 			}
 
