@@ -23,7 +23,12 @@ class WCS_Query extends WC_Query {
 
 			// Inserting your new tab/page into the My Account page.
 			add_filter( 'woocommerce_account_menu_items', array( $this, 'add_menu_items' ) );
-			add_filter( 'woocommerce_get_endpoint_url', array( $this, 'get_endpoint_url' ), 10, 4 );
+
+			// Since WC 3.3.0, add_wcs_query_vars() is enough for custom endpoints to work.
+			if ( WC_Subscriptions::is_woocommerce_pre( '3.3.0' ) ) {
+				add_filter( 'woocommerce_get_endpoint_url', array( $this, 'get_endpoint_url' ), 10, 4 );
+			}
+
 			add_filter( 'woocommerce_get_endpoint_url', array( $this, 'maybe_redirect_to_only_subscription' ), 10, 2 );
 			add_action( 'woocommerce_account_subscriptions_endpoint', array( $this, 'endpoint_content' ) );
 		}
@@ -330,7 +335,7 @@ class WCS_Query extends WC_Query {
 	 * @return string $url
 	 */
 
-	public function get_endpoint_url( $url, $endpoint, $value = '', $permalink = '') {
+	public function get_endpoint_url( $url, $endpoint, $value = '', $permalink = '' ) {
 
 		if ( ! empty( $this->query_vars[ $endpoint ] ) ) {
 			remove_filter( 'woocommerce_get_endpoint_url', array( $this, 'get_endpoint_url' ) );
