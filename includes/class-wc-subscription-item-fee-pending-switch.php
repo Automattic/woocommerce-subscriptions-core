@@ -10,7 +10,7 @@
  * @since    2.6.0
  */
 
-class WC_Order_Item_Fee_Pending_Switch extends WC_Order_Item_Fee {
+class WC_Subscription_Item_Fee_Pending_Switch extends WC_Order_Item_Fee {
 
 	/**
 	 * Get item type.

@@ -893,7 +893,7 @@ class WC_Subscriptions_Switcher {
 						if ( true === apply_filters( 'woocommerce_subscriptions_retain_coupon_after_switch', false, $coupon_code, $coupon, $subscription ) ) {
 							continue;
 						}
-						$coupon_item = new WC_Order_Item_Coupon_Pending_Switch( $coupon_code );
+						$coupon_item = new WC_Subscription_Item_Coupon_Pending_Switch( $coupon_code );
 						$coupon_item->set_props(
 							array(
 								'code'         => $coupon_code,
@@ -918,7 +918,7 @@ class WC_Subscriptions_Switcher {
 					// If there are fees in the cart, mark them for pending addition
 					$new_fee_items      = array();
 					foreach ( $recurring_cart->get_fees() as $fee_key => $fee ) {
-						$fee_item = new WC_Order_Item_Fee_Pending_Switch();
+						$fee_item = new WC_Subscription_Item_Fee_Pending_Switch();
 						$fee_item->set_props( array(
 								'name'       => $fee->name,
 								'tax_status' => $fee->taxable,

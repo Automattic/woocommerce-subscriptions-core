@@ -96,8 +96,6 @@ class WCS_Autoloader {
 		// There are some legacy classes without WCS or Subscription in the name.
 		static $legacy = array(
 			'wc_order_item_pending_switch'         => 1,
-			'wc_order_item_fee_pending_switch'     => 1,
-			'wc_order_item_coupon_pending_switch'  => 1,
 			'wc_report_retention_rate'             => 1,
 			'wc_report_upcoming_recurring_revenue' => 1,
 		);

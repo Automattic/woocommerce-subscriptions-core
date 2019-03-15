@@ -10,7 +10,7 @@
  * @since    2.6.0
  */
 
-class WC_Order_Item_Coupon_Pending_Switch extends WC_Order_Item_Coupon {
+class WC_Subscription_Item_Coupon_Pending_Switch extends WC_Order_Item_Coupon {
 
 	/**
 	 * Get item type.

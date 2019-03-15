@@ -32,6 +32,7 @@ class WCS_Custom_Order_Item_Manager {
 	 * @since 2.6.0
 	 */
 	public static function init() {
+
 		add_filter( 'woocommerce_order_type_to_group', array( __CLASS__, 'add_extra_groups' ) );
 		add_filter( 'woocommerce_get_order_item_classname', array( __CLASS__, 'map_classname_for_extra_items' ), 10, 2 );
 		add_filter( 'woocommerce_data_stores', array( __CLASS__, 'register_data_stores' ) );
