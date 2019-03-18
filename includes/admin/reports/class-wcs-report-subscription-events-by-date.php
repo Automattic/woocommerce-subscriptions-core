@@ -417,7 +417,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 
 		$legend[] = array(
 			'title'            => sprintf( __( '%s new subscriptions', 'woocommerce-subscriptions' ), '<strong>' . $this->report_data->new_subscription_total_count . '</strong>' ),
-			'placeholder'      => __( 'The number of subscriptions created during this period, either by being manually created, imported or a customer placing an order.', 'woocommerce-subscriptions' ),
+			'placeholder'      => __( 'The number of subscriptions created during this period, either by being manually created, imported or a customer placing an order. This includes orders pending payment.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['new_count'],
 			'highlight_series' => 1,
 		);
