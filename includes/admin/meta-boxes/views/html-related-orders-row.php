@@ -37,7 +37,13 @@ $order_post = wcs_get_objects_property( $order, 'post' );
 		</abbr>
 	</td>
 	<td>
-		<?php echo esc_html( wc_get_order_status_name( $order->get_status( 'view' ) ) ); ?>
+		<?php
+		if ( wcs_is_subscription( $order ) ) {
+		    echo esc_html( wcs_get_subscription_status_name( $order->get_status( 'view' ) ) );
+		} else {
+		    echo esc_html( wc_get_order_status_name( $order->get_status( 'view' ) ) );
+		}
+		?>
 	</td>
 	<td>
 		<span class="amount"><?php echo wp_kses( $order->get_formatted_order_total(), array( 'small' => array(), 'span' => array( 'class' => array() ), 'del' => array(), 'ins' => array() ) ); ?></span>
