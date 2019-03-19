@@ -118,7 +118,7 @@ class WC_Subscriptions_Admin {
 
 		add_filter( 'set-screen-option', __CLASS__ . '::set_manage_subscriptions_screen_option', 10, 3 );
 
-		add_filter( 'woocommerce_payment_gateways_setting_columns', __CLASS__ . '::payment_gateways_rewewal_column' );
+		add_filter( 'woocommerce_payment_gateways_setting_columns', array( __CLASS__, 'payment_gateways_renewal_column' ) );
 
 		add_action( 'woocommerce_payment_gateways_setting_column_renewals', __CLASS__ . '::payment_gateways_rewewal_support' );
 
@@ -1601,16 +1601,29 @@ class WC_Subscriptions_Admin {
 	/**
 	 * Add a column to the Payment Gateway table to show whether the gateway supports automated renewals.
 	 *
-	 * @since 1.5
+	 * @param array $header
+	 *
+	 * @since 2.5.3
+	 * @return array
+	 */
+	public static function payment_gateways_renewal_column( $header ) {
+		$header_new = array_slice( $header, 0, count( $header ) - 1, true ) + array( 'renewals' => __( 'Automatic Recurring Payments', 'woocommerce-subscriptions' ) ) + // Ideally, we could add a link to the docs here, but the title is passed through esc_html()
+		              array_slice( $header, count( $header ) - 1, count( $header ) - ( count( $header ) - 1 ), true );
+
+		return $header_new;
+	}
+
+	/**
+	 * Add a column to the Payment Gateway table to show whether the gateway supports automated renewals.
+	 *
+	 * @since      1.5
+	 * @deprecated 2.5.3
 	 * @return string
 	 */
 	public static function payment_gateways_rewewal_column( $header ) {
+		wcs_deprecated_function( __METHOD__, '2.5.3', 'WC_Subscriptions_Admin::payment_gateways_renewal_column( $header )' );
 
-		$header_new = array_slice( $header, 0, count( $header ) - 1, true ) +
-			array( 'renewals' => __( 'Automatic Recurring Payments', 'woocommerce-subscriptions' ) ) + // Ideally, we could add a link to the docs here, but the title is passed through esc_html()
-			array_slice( $header, count( $header ) - 1, count( $header ) - ( count( $header ) - 1 ), true );
-
-		return $header_new;
+		return self::payment_gateways_renewal_column( $header );
 	}
 
 	/**
