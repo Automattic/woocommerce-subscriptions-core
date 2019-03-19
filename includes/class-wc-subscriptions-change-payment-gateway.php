@@ -208,8 +208,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 				}
 
 				// translators: placeholder is either empty or "Next payment is due..."
-				wc_add_notice( sprintf( __( 'Choose a new payment method.%s', 'woocommerce-subscriptions' ), $next_payment_string ), 'notice' );
-				wc_print_notices();
+				wc_print_notice( sprintf( __( 'Choose a new payment method.%s', 'woocommerce-subscriptions' ), $next_payment_string ), 'notice' );
 
 				$subscription_billing_country  = $subscription->get_billing_country();
 				$subscription_billing_state    = $subscription->get_billing_state();
