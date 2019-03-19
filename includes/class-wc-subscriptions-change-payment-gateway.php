@@ -217,22 +217,13 @@ class WC_Subscriptions_Change_Payment_Gateway {
 				// translators: placeholder is either empty or "Next payment is due..."
 				wc_print_notice( sprintf( __( 'Choose a new payment method.%s', 'woocommerce-subscriptions' ), $next_payment_string ), 'notice' );
 
-				$subscription_billing_country  = $subscription->get_billing_country();
-				$subscription_billing_state    = $subscription->get_billing_state();
-				$subscription_billing_postcode = $subscription->get_billing_postcode();
+				// Set the customer location to subscription billing location
+				foreach ( array( 'country', 'state', 'postcode' ) as $address_property ) {
+					$subscription_address = $subscription->{"get_billing_$address_property"}();
 
-				// Set customer location to order location
-				if ( $subscription_billing_country ) {
-					$setter = is_callable( array( WC()->customer, 'set_billing_country' ) ) ? 'set_billing_country' : 'set_country';
-					WC()->customer->$setter( $subscription_billing_country );
-				}
-				if ( $subscription_billing_state ) {
-					$setter = is_callable( array( WC()->customer, 'set_billing_state' ) ) ? 'set_billing_state' : 'set_state';
-					WC()->customer->$setter( $subscription_billing_state );
-				}
-				if ( $subscription_billing_postcode ) {
-					$setter = is_callable( array( WC()->customer, 'set_billing_postcode' ) ) ? 'set_billing_postcode' : 'set_postcode';
-					WC()->customer->$setter( $subscription_billing_postcode );
+					if ( $subscription_address ) {
+						WC()->customer->{"set_billing_$address_property"}( $subscription_address );
+					}
 				}
 
 				wc_get_template( 'checkout/form-change-payment-method.php', array( 'subscription' => $subscription ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
