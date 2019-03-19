@@ -35,7 +35,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		add_action( 'woocommerce_loaded', __CLASS__ . '::attach_dependant_hooks' );
 
 		// Keep a record of any messages or errors that should be displayed
-		add_action( 'before_woocommerce_pay', __CLASS__ . '::store_pay_shortcode_messages', 100 );
+		add_action( 'before_woocommerce_pay', __CLASS__ . '::store_pay_shortcode_messages', 5 );
 
 		// Hijack the default pay shortcode
 		add_action( 'after_woocommerce_pay', __CLASS__ . '::maybe_replace_pay_shortcode', 100 );
