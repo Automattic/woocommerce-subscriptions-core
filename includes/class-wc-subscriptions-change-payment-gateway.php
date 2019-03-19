@@ -179,13 +179,17 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			}
 		} elseif ( ! self::$is_request_to_change_payment ) {
 			return;
-
 		} else {
 
+			/*
+			 * Clear the output buffer.
+			 *
+			 * Because this function is hooked onto 'after_woocommerce_pay', WC would have started outputting
+			 * the core order pay shortcode. Clearing the output buffer removes that partially outputted template.
+			 */
 			ob_clean();
 
-			do_action( 'before_woocommerce_pay' );
-
+			// Because we've cleared the buffer, we need to re-include the opening container div.
 			echo '<div class="woocommerce">';
 
 			// Re-add all the notices that would have been displayed but have now been cleared from the output.
@@ -197,6 +201,9 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 			$subscription = wcs_get_subscription( absint( $_GET['change_payment_method'] ) );
 			$is_valid     = self::validate_change_payment_request( $subscription );
+
+			// WC display notices on this hook so trigger it after all notices have been added,
+			do_action( 'before_woocommerce_pay' );
 
 			if ( $is_valid ) {
 				$valid_request = true;
