@@ -197,24 +197,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 			$subscription = wcs_get_subscription( absint( $_GET['change_payment_method'] ) );
 
-			if ( wp_verify_nonce( $_GET['_wpnonce'] ) === false ) {
-
-				wc_add_notice( __( 'There was an error with your request. Please try again.', 'woocommerce-subscriptions' ), 'error' );
-
-			} elseif ( empty( $subscription ) ) {
-
-				wc_add_notice( __( 'Invalid Subscription.', 'woocommerce-subscriptions' ), 'error' );
-
-			} elseif ( ! current_user_can( 'edit_shop_subscription_payment_method', $subscription->get_id() ) ) {
-
-				wc_add_notice( __( 'That doesn\'t appear to be one of your subscriptions.', 'woocommerce-subscriptions' ), 'error' );
-
-			} elseif ( ! $subscription->can_be_updated_to( 'new-payment-method' ) ) {
-
-				wc_add_notice( __( 'The payment method can not be changed for that subscription.', 'woocommerce-subscriptions' ), 'error' );
-
-			} else {
-
+			if ( self::validate_change_payment_request( $subscription ) ) {
 				if ( $subscription->get_time( 'next_payment' ) > 0 ) {
 					// translators: placeholder is next payment's date
 					$next_payment_string = sprintf( __( ' Next payment is due %s.', 'woocommerce-subscriptions' ), $subscription->get_date_to_display( 'next_payment' ) );
@@ -261,6 +244,36 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		if ( false === $valid_request ) {
 			wc_print_notices();
 		}
+	}
+
+	/**
+	 * Validates the request to change a subscription's payment method.
+	 *
+	 * Will display a customer facing notice if the request is invalid.
+	 *
+	 * @since 2.6.0
+	 *
+	 * @param WC_Subscription $subscription
+	 * @return bool Whether the request is valid or not.
+	 */
+	private static function validate_change_payment_request( $subscription ) {
+		$is_valid = true;
+
+		if ( wp_verify_nonce( $_GET['_wpnonce'] ) === false ) {
+			$is_valid = false;
+			wc_add_notice( __( 'There was an error with your request. Please try again.', 'woocommerce-subscriptions' ), 'error' );
+		} elseif ( empty( $subscription ) ) {
+			$is_valid = false;
+			wc_add_notice( __( 'Invalid Subscription.', 'woocommerce-subscriptions' ), 'error' );
+		} elseif ( ! current_user_can( 'edit_shop_subscription_payment_method', $subscription->get_id() ) ) {
+			$is_valid = false;
+			wc_add_notice( __( 'That doesn\'t appear to be one of your subscriptions.', 'woocommerce-subscriptions' ), 'error' );
+		} elseif ( ! $subscription->can_be_updated_to( 'new-payment-method' ) ) {
+			$is_valid = false;
+			wc_add_notice( __( 'The payment method can not be changed for that subscription.', 'woocommerce-subscriptions' ), 'error' );
+		}
+
+		return $is_valid;
 	}
 
 	/**
