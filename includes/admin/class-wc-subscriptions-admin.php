@@ -120,7 +120,7 @@ class WC_Subscriptions_Admin {
 
 		add_filter( 'woocommerce_payment_gateways_setting_columns', array( __CLASS__, 'payment_gateways_renewal_column' ) );
 
-		add_action( 'woocommerce_payment_gateways_setting_column_renewals', __CLASS__ . '::payment_gateways_rewewal_support' );
+		add_action( 'woocommerce_payment_gateways_setting_column_renewals', array( __CLASS__, 'payment_gateways_renewal_support' ) );
 
 		// Do not display formatted order total on the Edit Order administration screen
 		add_filter( 'woocommerce_get_formatted_order_total', __CLASS__ . '::maybe_remove_formatted_order_total_filter', 0, 2 );
@@ -1631,10 +1631,11 @@ class WC_Subscriptions_Admin {
 	 * Automatically flag support for Paypal since it is included with subscriptions.
 	 * Display in the Payment Gateway column.
 	 *
-	 * @since 1.5
+	 * @param WC_Payment_Gateway $gateway
+	 *
+	 * @since 2.5.3
 	 */
-	public static function payment_gateways_rewewal_support( $gateway ) {
-
+	public static function payment_gateways_renewal_support( $gateway ) {
 		echo '<td class="renewals">';
 		if ( ( is_array( $gateway->supports ) && in_array( 'subscriptions', $gateway->supports ) ) || $gateway->id == 'paypal' ) {
 			$status_html = '<span class="status-enabled tips" data-tip="' . esc_attr__( 'Supports automatic renewal payments with the WooCommerce Subscriptions extension.', 'woocommerce-subscriptions' ) . '">' . esc_html__( 'Yes', 'woocommerce-subscriptions' ) . '</span>';
@@ -1642,19 +1643,34 @@ class WC_Subscriptions_Admin {
 			$status_html = '-';
 		}
 
-		$allowed_html = wp_kses_allowed_html( 'post' );
+		$allowed_html                     = wp_kses_allowed_html( 'post' );
 		$allowed_html['span']['data-tip'] = true;
 
 		/**
 		 * Automatic Renewal Payments Support Status HTML Filter.
 		 *
 		 * @since 2.0
-		 * @param string $status_html
+		 *
+		 * @param string              $status_html
 		 * @param \WC_Payment_Gateway $gateway
 		 */
 		echo wp_kses( apply_filters( 'woocommerce_payment_gateways_renewal_support_status_html', $status_html, $gateway ), $allowed_html );
 
 		echo '</td>';
+	}
+
+	/**
+	 * Check whether the payment gateway passed in supports automated renewals or not.
+	 * Automatically flag support for Paypal since it is included with subscriptions.
+	 * Display in the Payment Gateway column.
+	 *
+	 * @since      1.5
+	 * @deprecated 2.5.3
+	 */
+	public static function payment_gateways_rewewal_support( $gateway ) {
+		wcs_deprecated_function( __METHOD__, '2.5.3', 'WC_Subscriptions_Admin::payment_gateways_renewal_support( $gateway )' );
+
+		return self::payment_gateways_renewal_support( $gateway );
 	}
 
 	/**
