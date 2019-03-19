@@ -151,10 +151,10 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 			ob_clean();
 
-			do_action( 'before_woocommerce_pay' );
-
 			$subscription_key = isset( $_GET['key'] ) ? wc_clean( $_GET['key'] ) : '';
 			$subscription     = wcs_get_subscription( absint( $wp->query_vars['order-pay'] ) );
+
+			do_action( 'before_woocommerce_pay' );
 
 			/**
 			 * wcs_before_replace_pay_shortcode
