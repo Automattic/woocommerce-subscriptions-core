@@ -196,8 +196,10 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			}
 
 			$subscription = wcs_get_subscription( absint( $_GET['change_payment_method'] ) );
+			$is_valid     = self::validate_change_payment_request( $subscription );
 
-			if ( self::validate_change_payment_request( $subscription ) ) {
+			if ( $is_valid ) {
+				$valid_request = true;
 				if ( $subscription->get_time( 'next_payment' ) > 0 ) {
 					// translators: placeholder is next payment's date
 					$next_payment_string = sprintf( __( ' Next payment is due %s.', 'woocommerce-subscriptions' ), $subscription->get_date_to_display( 'next_payment' ) );
@@ -209,35 +211,25 @@ class WC_Subscriptions_Change_Payment_Gateway {
 				wc_add_notice( sprintf( __( 'Choose a new payment method.%s', 'woocommerce-subscriptions' ), $next_payment_string ), 'notice' );
 				wc_print_notices();
 
-				if ( $subscription->get_order_key() == $_GET['key'] ) {
+				$subscription_billing_country  = $subscription->get_billing_country();
+				$subscription_billing_state    = $subscription->get_billing_state();
+				$subscription_billing_postcode = $subscription->get_billing_postcode();
 
-					$subscription_billing_country  = $subscription->get_billing_country();
-					$subscription_billing_state    = $subscription->get_billing_state();
-					$subscription_billing_postcode = $subscription->get_billing_postcode();
-
-					// Set customer location to order location
-					if ( $subscription_billing_country ) {
-						$setter = is_callable( array( WC()->customer, 'set_billing_country' ) ) ? 'set_billing_country' : 'set_country';
-						WC()->customer->$setter( $subscription_billing_country );
-					}
-					if ( $subscription_billing_state ) {
-						$setter = is_callable( array( WC()->customer, 'set_billing_state' ) ) ? 'set_billing_state' : 'set_state';
-						WC()->customer->$setter( $subscription_billing_state );
-					}
-					if ( $subscription_billing_postcode ) {
-						$setter = is_callable( array( WC()->customer, 'set_billing_postcode' ) ) ? 'set_billing_postcode' : 'set_postcode';
-						WC()->customer->$setter( $subscription_billing_postcode );
-					}
-
-					wc_get_template( 'checkout/form-change-payment-method.php', array( 'subscription' => $subscription ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
-
-					$valid_request = true;
-
-				} else {
-
-					wc_add_notice( __( 'Invalid order.', 'woocommerce-subscriptions' ), 'error' );
-
+				// Set customer location to order location
+				if ( $subscription_billing_country ) {
+					$setter = is_callable( array( WC()->customer, 'set_billing_country' ) ) ? 'set_billing_country' : 'set_country';
+					WC()->customer->$setter( $subscription_billing_country );
 				}
+				if ( $subscription_billing_state ) {
+					$setter = is_callable( array( WC()->customer, 'set_billing_state' ) ) ? 'set_billing_state' : 'set_state';
+					WC()->customer->$setter( $subscription_billing_state );
+				}
+				if ( $subscription_billing_postcode ) {
+					$setter = is_callable( array( WC()->customer, 'set_billing_postcode' ) ) ? 'set_billing_postcode' : 'set_postcode';
+					WC()->customer->$setter( $subscription_billing_postcode );
+				}
+
+				wc_get_template( 'checkout/form-change-payment-method.php', array( 'subscription' => $subscription ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
 			}
 		}
 
@@ -271,6 +263,9 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		} elseif ( ! $subscription->can_be_updated_to( 'new-payment-method' ) ) {
 			$is_valid = false;
 			wc_add_notice( __( 'The payment method can not be changed for that subscription.', 'woocommerce-subscriptions' ), 'error' );
+		} elseif ( $subscription->get_order_key() !== $_GET['key'] ) {
+			$is_valid = false;
+			wc_add_notice( __( 'Invalid order.', 'woocommerce-subscriptions' ), 'error' );
 		}
 
 		return $is_valid;
