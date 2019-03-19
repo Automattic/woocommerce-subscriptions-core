@@ -12,9 +12,12 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 	public static $is_request_to_change_payment = false;
 
-	private static $woocommerce_messages = array();
-
-	private static $woocommerce_errors = array();
+	/**
+	 * An internal cache of WooCommerce customer notices.
+	 *
+	 * @var array
+	 */
+	private static $notices = array();
 
 	private static $original_order_dates = array();
 
@@ -113,14 +116,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 * @since 2.3.6
 	 */
 	public static function store_pay_shortcode_messages() {
-		if ( wc_notice_count( 'notice' ) > 0 ) {
-			self::$woocommerce_messages = wc_get_notices( 'success' );
-			self::$woocommerce_messages += wc_get_notices( 'notice' );
-		}
-
-		if ( wc_notice_count( 'error' ) > 0 ) {
-			self::$woocommerce_errors = wc_get_notices( 'error' );
-		}
+		self::$notices = wc_get_notices();
 	}
 
 	/**
@@ -192,15 +188,10 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 			echo '<div class="woocommerce">';
 
-			if ( ! empty( self::$woocommerce_errors ) ) {
-				foreach ( self::$woocommerce_errors as $error ) {
-					wc_add_notice( $error, 'error' );
-				}
-			}
-
-			if ( ! empty( self::$woocommerce_messages ) ) {
-				foreach ( self::$woocommerce_messages as $message ) {
-					wc_add_notice( $message, 'success' );
+			// Re-add all the notices that would have been displayed but have now been cleared from the output.
+			foreach ( self::$notices as $notice_type => $notices ) {
+				foreach ( $notices as $notice ) {
+					wc_add_notice( $notice, $notice_type );
 				}
 			}
 
