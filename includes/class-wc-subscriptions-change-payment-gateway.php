@@ -178,11 +178,9 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			if ( $subscription->get_id() === absint( $wp->query_vars['order-pay'] ) && $subscription->get_order_key() === $subscription_key ) {
 				WCS_Template_Loader::get_subscription_receipt_template( $subscription );
 			} else {
-				wc_add_notice( __( 'Sorry, this subscription change payment method request is invalid and cannot be processed.', 'woocommerce-subscriptions' ), 'error' );
+				// The before_woocommerce_pay action would have printed all the notices so we need to print the notice directly.
+				wc_print_notice( __( 'Sorry, this subscription change payment method request is invalid and cannot be processed.', 'woocommerce-subscriptions' ), 'error' );
 			}
-
-			wc_print_notices();
-
 		} elseif ( ! self::$is_request_to_change_payment ) {
 			return;
 
