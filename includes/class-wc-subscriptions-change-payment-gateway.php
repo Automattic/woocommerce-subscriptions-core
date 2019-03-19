@@ -144,15 +144,19 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		global $wp;
 		$valid_request = false;
 
-		// if the request to pay for the order belongs to a subscription but there's no GET params for changing payment method, show receipt page.
+		// If the request to pay for the order belongs to a subscription but there's no GET params for changing payment method, show receipt page.
 		if ( ! self::$is_request_to_change_payment && isset( $wp->query_vars['order-pay'] ) && wcs_is_subscription( absint( $wp->query_vars['order-pay'] ) ) ) {
-
-			$valid_request = true;
-
-			ob_clean();
-
-			$subscription_key = isset( $_GET['key'] ) ? wc_clean( $_GET['key'] ) : '';
+			$valid_request    = true;
 			$subscription     = wcs_get_subscription( absint( $wp->query_vars['order-pay'] ) );
+			$subscription_key = isset( $_GET['key'] ) ? wc_clean( $_GET['key'] ) : '';
+
+			/*
+			 * Clear the output buffer.
+			 *
+			 * Because this function is hooked onto 'after_woocommerce_pay', WC would have started outputting
+			 * the core order pay shortcode. Clearing the output buffer removes that partially outputted template.
+			 */
+			ob_clean();
 
 			do_action( 'before_woocommerce_pay' );
 
@@ -160,7 +164,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			 * wcs_before_replace_pay_shortcode
 			 *
 			 * Action that allows payment methods to modify the subscription object so, for example,
-			 * if the new payment method still hasn't been set, they can set it temporarily (without saving)
+			 * if the new payment method still hasn't been set, they can set it temporarily (without saving).
 			 *
 			 * @since 2.4.0
 			 *
