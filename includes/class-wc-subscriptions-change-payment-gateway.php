@@ -158,6 +158,9 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			 */
 			ob_clean();
 
+			// Because we've cleared the buffer, we need to re-include the opening container div.
+			echo '<div class="woocommerce">';
+
 			do_action( 'before_woocommerce_pay' );
 
 			/**
