@@ -321,7 +321,8 @@ class WC_Subscriptions_Admin {
 		// Sign-up Fee
 		woocommerce_wp_text_input( array(
 			'id'          => '_subscription_sign_up_fee',
-			'class'       => 'wc_input_subscription_intial_price wc_input_price  short',
+			// Keep wc_input_subscription_intial_price for backward compatibility.
+			'class'       => 'wc_input_subscription_intial_price wc_input_subscription_initial_price wc_input_price  short',
 			// translators: %s is a currency symbol / code
 			'label'       => sprintf( __( 'Sign-up fee (%s)', 'woocommerce-subscriptions' ), get_woocommerce_currency_symbol() ),
 			'placeholder' => _x( 'e.g. 9.90', 'example price', 'woocommerce-subscriptions' ),
@@ -1261,7 +1262,7 @@ class WC_Subscriptions_Admin {
 			),
 
 			array(
-				'name'          => __( '$0 Intial Checkout', 'woocommerce-subscriptions' ),
+				'name'          => __( '$0 Initial Checkout', 'woocommerce-subscriptions' ),
 				'desc'          => __( 'Allow $0 initial checkout without a payment method.', 'woocommerce-subscriptions' ),
 				'id'            => self::$option_prefix . '_zero_initial_payment_requires_payment',
 				'default'       => 'no',
