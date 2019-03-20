@@ -118,9 +118,9 @@ class WC_Subscriptions_Admin {
 
 		add_filter( 'set-screen-option', __CLASS__ . '::set_manage_subscriptions_screen_option', 10, 3 );
 
-		add_filter( 'woocommerce_payment_gateways_setting_columns', __CLASS__ . '::payment_gateways_rewewal_column' );
+		add_filter( 'woocommerce_payment_gateways_setting_columns', array( __CLASS__, 'payment_gateways_renewal_column' ) );
 
-		add_action( 'woocommerce_payment_gateways_setting_column_renewals', __CLASS__ . '::payment_gateways_rewewal_support' );
+		add_action( 'woocommerce_payment_gateways_setting_column_renewals', array( __CLASS__, 'payment_gateways_renewal_support' ) );
 
 		// Do not display formatted order total on the Edit Order administration screen
 		add_filter( 'woocommerce_get_formatted_order_total', __CLASS__ . '::maybe_remove_formatted_order_total_filter', 0, 2 );
@@ -321,7 +321,8 @@ class WC_Subscriptions_Admin {
 		// Sign-up Fee
 		woocommerce_wp_text_input( array(
 			'id'          => '_subscription_sign_up_fee',
-			'class'       => 'wc_input_subscription_intial_price wc_input_price  short',
+			// Keep wc_input_subscription_intial_price for backward compatibility.
+			'class'       => 'wc_input_subscription_intial_price wc_input_subscription_initial_price wc_input_price  short',
 			// translators: %s is a currency symbol / code
 			'label'       => sprintf( __( 'Sign-up fee (%s)', 'woocommerce-subscriptions' ), get_woocommerce_currency_symbol() ),
 			'placeholder' => _x( 'e.g. 9.90', 'example price', 'woocommerce-subscriptions' ),
@@ -1261,7 +1262,7 @@ class WC_Subscriptions_Admin {
 			),
 
 			array(
-				'name'          => __( '$0 Intial Checkout', 'woocommerce-subscriptions' ),
+				'name'          => __( '$0 Initial Checkout', 'woocommerce-subscriptions' ),
 				'desc'          => __( 'Allow $0 initial checkout without a payment method.', 'woocommerce-subscriptions' ),
 				'id'            => self::$option_prefix . '_zero_initial_payment_requires_payment',
 				'default'       => 'no',
@@ -1600,16 +1601,29 @@ class WC_Subscriptions_Admin {
 	/**
 	 * Add a column to the Payment Gateway table to show whether the gateway supports automated renewals.
 	 *
-	 * @since 1.5
+	 * @param array $header
+	 *
+	 * @since 2.5.3
+	 * @return array
+	 */
+	public static function payment_gateways_renewal_column( $header ) {
+		$header_new = array_slice( $header, 0, count( $header ) - 1, true ) + array( 'renewals' => __( 'Automatic Recurring Payments', 'woocommerce-subscriptions' ) ) + // Ideally, we could add a link to the docs here, but the title is passed through esc_html()
+		              array_slice( $header, count( $header ) - 1, count( $header ) - ( count( $header ) - 1 ), true );
+
+		return $header_new;
+	}
+
+	/**
+	 * Add a column to the Payment Gateway table to show whether the gateway supports automated renewals.
+	 *
+	 * @since      1.5
+	 * @deprecated 2.5.3
 	 * @return string
 	 */
 	public static function payment_gateways_rewewal_column( $header ) {
+		wcs_deprecated_function( __METHOD__, '2.5.3', 'WC_Subscriptions_Admin::payment_gateways_renewal_column( $header )' );
 
-		$header_new = array_slice( $header, 0, count( $header ) - 1, true ) +
-			array( 'renewals' => __( 'Automatic Recurring Payments', 'woocommerce-subscriptions' ) ) + // Ideally, we could add a link to the docs here, but the title is passed through esc_html()
-			array_slice( $header, count( $header ) - 1, count( $header ) - ( count( $header ) - 1 ), true );
-
-		return $header_new;
+		return self::payment_gateways_renewal_column( $header );
 	}
 
 	/**
@@ -1617,10 +1631,11 @@ class WC_Subscriptions_Admin {
 	 * Automatically flag support for Paypal since it is included with subscriptions.
 	 * Display in the Payment Gateway column.
 	 *
-	 * @since 1.5
+	 * @param WC_Payment_Gateway $gateway
+	 *
+	 * @since 2.5.3
 	 */
-	public static function payment_gateways_rewewal_support( $gateway ) {
-
+	public static function payment_gateways_renewal_support( $gateway ) {
 		echo '<td class="renewals">';
 		if ( ( is_array( $gateway->supports ) && in_array( 'subscriptions', $gateway->supports ) ) || $gateway->id == 'paypal' ) {
 			$status_html = '<span class="status-enabled tips" data-tip="' . esc_attr__( 'Supports automatic renewal payments with the WooCommerce Subscriptions extension.', 'woocommerce-subscriptions' ) . '">' . esc_html__( 'Yes', 'woocommerce-subscriptions' ) . '</span>';
@@ -1628,19 +1643,34 @@ class WC_Subscriptions_Admin {
 			$status_html = '-';
 		}
 
-		$allowed_html = wp_kses_allowed_html( 'post' );
+		$allowed_html                     = wp_kses_allowed_html( 'post' );
 		$allowed_html['span']['data-tip'] = true;
 
 		/**
 		 * Automatic Renewal Payments Support Status HTML Filter.
 		 *
 		 * @since 2.0
-		 * @param string $status_html
+		 *
+		 * @param string              $status_html
 		 * @param \WC_Payment_Gateway $gateway
 		 */
 		echo wp_kses( apply_filters( 'woocommerce_payment_gateways_renewal_support_status_html', $status_html, $gateway ), $allowed_html );
 
 		echo '</td>';
+	}
+
+	/**
+	 * Check whether the payment gateway passed in supports automated renewals or not.
+	 * Automatically flag support for Paypal since it is included with subscriptions.
+	 * Display in the Payment Gateway column.
+	 *
+	 * @since      1.5
+	 * @deprecated 2.5.3
+	 */
+	public static function payment_gateways_rewewal_support( $gateway ) {
+		wcs_deprecated_function( __METHOD__, '2.5.3', 'WC_Subscriptions_Admin::payment_gateways_renewal_support( $gateway )' );
+
+		return self::payment_gateways_renewal_support( $gateway );
 	}
 
 	/**
