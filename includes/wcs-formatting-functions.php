@@ -157,7 +157,7 @@ function wcs_price_string( $subscription_details ) {
 				if ( 1 == $subscription_details['subscription_interval'] ) {
 					// e.g. $15 on March 15th each year
 					if ( ! empty( $subscription_details['initial_amount'] ) ) {
-						// translators: 1$: initial amount, 2$: intial description (e.g. "up front"), 3$: recurring amount, 4$: month of year (e.g. "March"), 5$: day of the month (e.g. "23rd")
+						// translators: 1$: initial amount, 2$: initial description (e.g. "up front"), 3$: recurring amount, 4$: month of year (e.g. "March"), 5$: day of the month (e.g. "23rd")
 						$subscription_string = sprintf( __( '%1$s %2$s then %3$s on %4$s %5$s each year', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, $wp_locale->month[ $payment_day['month'] ], WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ) );
 					} else {
 						// translators: 1$: recurring amount, 2$: month (e.g. "March"), 3$: day of the month (e.g. "23rd") (e.g. "$15 on March 15th every 3rd year")
