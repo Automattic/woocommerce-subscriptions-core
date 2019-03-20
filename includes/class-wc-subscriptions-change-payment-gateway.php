@@ -662,8 +662,8 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			return false;
 		}
 
-		// If there's no recurring payment, there's no need to add or update the payment method.
-		if ( $subscription->get_total() == 0 ) {
+		// If there's no recurring payment, there's no need to add or update the payment method. Use the 'edit' context so we check the unfiltered total.
+		if ( $subscription->get_total( 'edit' ) == 0 ) {
 			return false;
 		}
 
