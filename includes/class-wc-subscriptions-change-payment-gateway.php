@@ -19,8 +19,6 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	 */
 	private static $notices = array();
 
-	private static $original_order_dates = array();
-
 	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
