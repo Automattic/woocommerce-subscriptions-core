@@ -143,22 +143,22 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			return;
 		}
 
+		/*
+		 * Clear the output buffer.
+		 *
+		 * Because this function is hooked onto 'after_woocommerce_pay', WC would have started outputting
+		 * the core order pay shortcode. Clearing the output buffer removes that partially outputted template.
+		 */
+		ob_clean();
+
+		// Because we've cleared the buffer, we need to re-include the opening container div.
+		echo '<div class="woocommerce">';
+
 		// If the request to pay for the order belongs to a subscription but there's no GET params for changing payment method, show receipt page.
 		if ( ! self::$is_request_to_change_payment ) {
 			$valid_request    = true;
 			$subscription     = wcs_get_subscription( absint( $wp->query_vars['order-pay'] ) );
 			$subscription_key = isset( $_GET['key'] ) ? wc_clean( $_GET['key'] ) : '';
-
-			/*
-			 * Clear the output buffer.
-			 *
-			 * Because this function is hooked onto 'after_woocommerce_pay', WC would have started outputting
-			 * the core order pay shortcode. Clearing the output buffer removes that partially outputted template.
-			 */
-			ob_clean();
-
-			// Because we've cleared the buffer, we need to re-include the opening container div.
-			echo '<div class="woocommerce">';
 
 			do_action( 'before_woocommerce_pay' );
 
@@ -181,17 +181,6 @@ class WC_Subscriptions_Change_Payment_Gateway {
 				wc_print_notice( __( 'Sorry, this subscription change payment method request is invalid and cannot be processed.', 'woocommerce-subscriptions' ), 'error' );
 			}
 		} else {
-
-			/*
-			 * Clear the output buffer.
-			 *
-			 * Because this function is hooked onto 'after_woocommerce_pay', WC would have started outputting
-			 * the core order pay shortcode. Clearing the output buffer removes that partially outputted template.
-			 */
-			ob_clean();
-
-			// Because we've cleared the buffer, we need to re-include the opening container div.
-			echo '<div class="woocommerce">';
 
 			// Re-add all the notices that would have been displayed but have now been cleared from the output.
 			foreach ( self::$notices as $notice_type => $notices ) {
