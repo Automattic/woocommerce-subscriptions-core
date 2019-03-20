@@ -138,8 +138,13 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		global $wp;
 		$valid_request = false;
 
+		// Exit early if this isn't a change payment request and it's not a order-pay page for a subscription
+		if ( ! self::$is_request_to_change_payment && ( ! isset( $wp->query_vars['order-pay'] ) || ! wcs_is_subscription( absint( $wp->query_vars['order-pay'] ) ) ) ) {
+			return;
+		}
+
 		// If the request to pay for the order belongs to a subscription but there's no GET params for changing payment method, show receipt page.
-		if ( ! self::$is_request_to_change_payment && isset( $wp->query_vars['order-pay'] ) && wcs_is_subscription( absint( $wp->query_vars['order-pay'] ) ) ) {
+		if ( ! self::$is_request_to_change_payment ) {
 			$valid_request    = true;
 			$subscription     = wcs_get_subscription( absint( $wp->query_vars['order-pay'] ) );
 			$subscription_key = isset( $_GET['key'] ) ? wc_clean( $_GET['key'] ) : '';
@@ -175,8 +180,6 @@ class WC_Subscriptions_Change_Payment_Gateway {
 				// The before_woocommerce_pay action would have printed all the notices so we need to print the notice directly.
 				wc_print_notice( __( 'Sorry, this subscription change payment method request is invalid and cannot be processed.', 'woocommerce-subscriptions' ), 'error' );
 			}
-		} elseif ( ! self::$is_request_to_change_payment ) {
-			return;
 		} else {
 
 			/*
