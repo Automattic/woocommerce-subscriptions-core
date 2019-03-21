@@ -135,7 +135,7 @@ class WCS_My_Account_Payment_Methods {
 	 */
 	public static function display_default_payment_token_change_notice( $default_token_id, $default_token ) {
 		$display_notice  = false;
-		$customer_tokens = WCS_Payment_Tokens::get_customer_tokens( $default_token->get_gateway_id(), $default_token->get_user_id() );
+		$customer_tokens = WCS_Payment_Tokens::get_customer_tokens( $default_token->get_user_id(), $default_token->get_gateway_id() );
 		unset( $customer_tokens[ $default_token_id ] );
 
 		// Check if there are subscriptions for one of the customer's other tokens.
@@ -184,7 +184,7 @@ class WCS_My_Account_Payment_Methods {
 			return;
 		}
 
-		$tokens = WCS_Payment_Tokens::get_customer_tokens( $default_token->get_gateway_id(), $default_token->get_user_id() );
+		$tokens = WCS_Payment_Tokens::get_customer_tokens( $default_token->get_user_id(), $default_token->get_gateway_id() );
 		unset( $tokens[ $default_token_id ] );
 
 		foreach ( $tokens as $old_token ) {

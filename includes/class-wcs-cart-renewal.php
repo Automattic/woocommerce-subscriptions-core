@@ -941,7 +941,15 @@ class WCS_Cart_Renewal {
 	 */
 	protected function set_cart_hash( $order_id ) {
 		$order = wc_get_order( $order_id );
-		wcs_set_objects_property( $order, 'cart_hash', md5( json_encode( wc_clean( WC()->cart->get_cart_for_session() ) ) . WC()->cart->total ) );
+
+		// Use cart hash generator introduced in WooCommerce 3.6
+		if ( is_callable( array( WC()->cart, 'get_cart_hash' ) ) ) {
+			$cart_hash = WC()->cart->get_cart_hash();
+		} else {
+			$cart_hash = md5( json_encode( wc_clean( WC()->cart->get_cart_for_session() ) ) . WC()->cart->total );
+		}
+
+		wcs_set_objects_property( $order, 'cart_hash', $cart_hash );
 	}
 
 	/**

@@ -59,7 +59,8 @@ class WCS_PayPal_Admin {
 
 			// Warn store managers not to change their PayPal Email address as it can break existing Subscriptions in WC2.0+
 			WC()->payment_gateways->payment_gateways[ $key ]->form_fields['receiver_email']['desc_tip']     = false;
-			WC()->payment_gateways->payment_gateways[ $key ]->form_fields['receiver_email']['description'] .= ' </p><p class="description">' . __( 'It is <strong>strongly recommended you do not change the Receiver Email address</strong> if you have active subscriptions with PayPal. Doing so can break existing subscriptions.', 'woocommerce-subscriptions' );
+			// translators: $1 and $2 are opening and closing strong tags, respectively.
+			WC()->payment_gateways->payment_gateways[ $key ]->form_fields['receiver_email']['description'] .= ' </p><p class="description">' . sprintf( __( 'It is %sstrongly recommended you do not change the Receiver Email address%s if you have active subscriptions with PayPal. Doing so can break existing subscriptions.', 'woocommerce-subscriptions' ), '<strong>', '</strong>' );
 		}
 	}
 
@@ -247,7 +248,7 @@ class WCS_PayPal_Admin {
 	 * @param WC_Subscription $subscription
 	 */
 	public static function profile_link( $subscription ) {
-		if ( wcs_is_subscription( $subscription ) && 'paypal' == $subscription->get_payment_method() ) {
+		if ( wcs_is_subscription( $subscription ) && ! $subscription->is_manual() && 'paypal' == $subscription->get_payment_method() ) {
 
 			$paypal_profile_id = wcs_get_paypal_id( $subscription );
 
