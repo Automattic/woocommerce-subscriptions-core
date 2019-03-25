@@ -281,7 +281,7 @@ class WCS_Switch_Totals_Calculator {
 
 		// When calculating a subscription with one length (no more next payment date and the end date may have been pushed back) we need to pay for those extra days at the new price per day between the old next payment date and new end date
 		if ( ! $switch_item->is_switch_during_trial() && 1 == WC_Subscriptions_Product::get_length( $switch_item->product ) ) {
-			$days_to_new_end = floor( ( $switch_item->get_end_timestamp() - $switch_item->next_payment_timestamp ) / DAY_IN_SECONDS );
+			$days_to_new_end = floor( ( $switch_item->end_timestamp - $switch_item->next_payment_timestamp ) / DAY_IN_SECONDS );
 
 			if ( $days_to_new_end > 0 ) {
 				$extra_to_pay += $days_to_new_end * $switch_item->get_new_price_per_day();
