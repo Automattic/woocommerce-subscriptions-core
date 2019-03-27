@@ -1212,10 +1212,12 @@ class WC_Subscriptions_Coupon {
 	 * Validates a subscription coupon's use for a given product.
 	 *
 	 * @since 2.5.4
-	 * @param bool $is_valid
-	 * @param WC_Product $product
-	 * @param WC_Coupon $coupon
-	 * @return boolean Whether the coupon is valid for the product.
+	 *
+	 * @param bool       $is_valid Whether the coupon is valid for the product.
+	 * @param WC_Product $product  The product object.
+	 * @param WC_Coupon  $coupon   The coupon object.
+	 *
+	 * @return bool Whether the coupon is valid for the product.
 	 */
 	public static function validate_subscription_coupon_for_product( $is_valid, $product, $coupon ) {
 
