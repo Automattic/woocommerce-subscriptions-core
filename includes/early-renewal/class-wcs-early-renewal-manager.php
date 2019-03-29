@@ -96,4 +96,15 @@ class WCS_Early_Renewal_Manager {
 
 		return apply_filters( 'wcs_is_early_renewal_enabled', 'yes' === $enabled );
 	}
+
+	/**
+	 * Finds if the store has enabled early renewal via a modal.
+	 *
+	 * @since 2.6.0
+	 * @return bool
+	 */
+	public static function is_early_renewal_via_modal_enabled() {
+		$enabled = self::is_early_renewal_enabled() && 'yes' === get_option( self::$via_modal_setting_id, 'no' );
+		return apply_filters( 'wcs_is_early_renewal_via_modal_enabled', $enabled );
+	}
 }
