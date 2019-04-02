@@ -51,6 +51,9 @@ class WC_Subscriptions_Switcher {
 		// Record subscription switching in the cart
 		add_filter( 'woocommerce_add_cart_item_data', __CLASS__ . '::set_switch_details_in_cart', 10, 3 );
 
+		// Retain coupons if required
+		add_action('woocommerce_add_to_cart', __CLASS__ . '::retain_coupons', 15, 6 );
+
 		// Make sure the 'switch_subscription' cart item data persists
 		add_filter( 'woocommerce_get_cart_item_from_session', __CLASS__ . '::get_cart_from_session', 10, 3 );
 
@@ -890,7 +893,7 @@ class WC_Subscriptions_Switcher {
 					$new_coupons      = array();
 					foreach ( $recurring_cart->get_coupons() as $coupon_code => $coupon ) {
 						// if any existing coupon is to be retained, do not do anything with it
-						if ( true === apply_filters( 'woocommerce_subscriptions_retain_coupon_after_switch', false, $coupon_code, $coupon, $subscription ) ) {
+						if ( true === apply_filters( 'woocommerce_subscriptions_retain_coupon_on_switch', false, $coupon_code, $coupon, $subscription ) ) {
 							continue;
 						}
 						$coupon_item = new WC_Subscription_Item_Coupon_Pending_Switch( $coupon_code );
@@ -1162,6 +1165,26 @@ class WC_Subscriptions_Switcher {
 	}
 
 	/**
+	 * When a product is added to the cart, add coupons which should be retained during switch to the cart.
+	 *
+	 * @since 2.6.0
+	 */
+	public static function retain_coupons( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {
+		if ( ! isset( $_GET['switch-subscription'] ) ) {
+			return $cart_item_data ;
+		}
+		$subscription = wcs_get_subscription( $_GET['switch-subscription'] );
+		// Add to the cart any coupon that needs to be retained after switch
+		$existing_coupons = $subscription->get_used_coupons();
+		foreach ( $existing_coupons as $id => $code ) {
+			$coupon = new WC_Coupon;
+			if ( true === apply_filters( 'woocommerce_subscriptions_retain_coupon_on_switch', false, $code, $coupon, $subscription ) ) {
+				WC()->cart->add_discount( $code );
+			}
+		}
+	}
+
+	/**
 	 * When a product is added to the cart, check if it is being added to switch a subscription and if so,
 	 * make sure it's valid (i.e. not the same subscription).
 	 *
@@ -1228,14 +1251,6 @@ class WC_Subscriptions_Switcher {
 							if ( $switch_item['item_id'] == $item_id ) {
 								WC()->cart->remove_cart_item( $cart_item_key );
 							}
-						}
-					}
-					// Also add to the cart any coupon that needs to be retained after switch
-					$existing_coupons = $subscription->get_used_coupons();
-					foreach ( $existing_coupons as $id => $code ) {
-						$coupon = new WC_Coupon;
-						if ( true === apply_filters( 'woocommerce_subscriptions_retain_coupon_after_switch', false, $code, $coupon, $subscription ) ) {
-							WC()->cart->add_discount( $code );
 						}
 					}
 				}
@@ -1759,6 +1774,7 @@ class WC_Subscriptions_Switcher {
 		}
 
 		foreach ( $switch_order_data as $subscription_id => $switch_data ) {
+
 			$subscription = wcs_get_subscription( $subscription_id );
 
 			if ( ! $subscription instanceof WC_Subscription ) {
@@ -1832,7 +1848,7 @@ class WC_Subscriptions_Switcher {
 
 			// Archive the old coupons
 			foreach ( $subscription->get_items( 'coupon' ) as $coupon_id => $coupon ) {
-				if ( false === apply_filters( 'woocommerce_subscriptions_retain_coupon_after_switch', false, $coupon->get_code( 'edit' ), $coupon, $subscription ) ) {
+				if ( false === apply_filters( 'woocommerce_subscriptions_retain_coupon_on_switch', false, $coupon->get_code( 'edit' ), $coupon, $subscription ) ) {
 					wcs_update_order_item_type( $coupon_id, 'coupon_switched', $subscription->get_id() );
 				}
 			}
