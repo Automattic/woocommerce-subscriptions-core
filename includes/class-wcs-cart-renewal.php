@@ -92,6 +92,9 @@ class WCS_Cart_Renewal {
 
 			// Update customer's address on the subscription if it is changed during renewal
 			add_filter( 'woocommerce_checkout_update_user_meta', array( &$this, 'maybe_update_subscription_address_data' ), 10, 2 );
+
+			// Work around WC changing the "created_via" meta to "checkout" regardless of its previous value during checkout.
+			add_action( 'woocommerce_checkout_create_order', array( $this, 'maybe_preserve_order_created_via' ), 0, 1 );
 		}
 	}
 
@@ -1380,6 +1383,21 @@ class WCS_Cart_Renewal {
 		// Add the coupon to the cart
 		if ( WC()->cart && ! WC()->cart->has_discount( $coupon_code ) ) {
 			WC()->cart->add_discount( $coupon_code );
+		}
+	}
+
+	/**
+	 * Makes sure a renewal order's "created via" meta is not changed to "checkout" by WC during checkout.
+	 *
+	 * @param WC_Order $order
+	 * @since 2.5.4
+	 */
+	public function maybe_preserve_order_created_via( $order ) {
+		$changes = $order->get_changes();
+		$current_data = $order->get_data();
+
+		if ( isset( $changes['created_via'], $current_data['created_via'] ) && 'subscription' === $current_data['created_via'] && 'checkout' === $changes['created_via'] && wcs_order_contains_renewal( $order ) ) {
+			$order->set_created_via( 'subscription' );
 		}
 	}
 
