@@ -113,6 +113,8 @@ class WCS_Switch_Totals_Calculator {
 			if ( $this->should_apportion_length( $switch_item ) ) {
 				$this->apportion_length( $switch_item );
 			}
+
+			$this->log_switch( $switch_item );
 		}
 	}
 
@@ -427,5 +429,33 @@ class WCS_Switch_Totals_Calculator {
 	 */
 	protected function get_first_payment_timestamp( $cart_item_key ) {
 		return $this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'];
+	}
+
+	/** Helpers */
+
+	/**
+	 * Logs the switch item data to the wcs-switch-cart-items file.
+	 *
+	 * @since 2.6.0
+	 * @param WCS_Switch_Cart_Item $switch_item
+	 */
+	protected function log_switch( $switch_item ) {
+		static $logger    = null;
+		$subscription_id  = $switch_item->subscription->get_id();
+		$existing_item_id = $switch_item->existing_item->get_id();
+
+		if ( ! $logger ) {
+			$logger = wc_get_logger();
+		}
+
+		$messages = array( "Switch details for #{$subscription_id} ({$existing_item_id}):" );
+
+		foreach ( $switch_item as $property => $value ) {
+			if ( is_scalar( $value ) ) {
+				$messages[ $property ] = "$property: $value";
+			}
+		}
+
+		$logger->info( implode( PHP_EOL, $messages ), array( 'source' => 'wcs-switch-cart-items' ) );
 	}
 }
