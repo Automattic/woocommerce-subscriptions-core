@@ -795,6 +795,7 @@ class WC_Subscriptions_Switcher {
 					$is_different_billing_schedule = self::has_different_billing_schedule( $cart_item, $subscription );
 					$is_different_payment_date     = self::has_different_payment_date( $cart_item, $subscription );
 					$is_different_length           = self::has_different_length( $recurring_cart, $subscription );
+					$is_different_trial_end_date   = self::has_different_trial( $recurring_cart, $subscription );
 					$is_single_item_subscription   = self::is_single_item_subscription( $subscription );
 
 					$switched_item_data = array( 'remove_line_item' => $cart_item['subscription_switch']['item_id'] );
@@ -875,6 +876,10 @@ class WC_Subscriptions_Switcher {
 
 						if ( $is_different_length ) {
 							$updated_dates['end'] = $recurring_cart->end_date;
+						}
+
+						if ( $is_different_trial_end_date ) {
+							$updated_dates['trial_end'] = $recurring_cart->trial_end_date;
 						}
 
 						if ( ! empty( $updated_dates ) ) {
@@ -2222,6 +2227,22 @@ class WC_Subscriptions_Switcher {
 		}
 
 		return $cart_contains_subscription_creating_switch;
+	}
+
+	/**
+	 * @param WC_Cart         $recurring_cart
+	 * @param WC_Subscription $subscription
+	 *
+	 * @return bool
+	 * @see   self::process_checkout().
+	 *
+	 * @since 2.6.0
+	 */
+	public static function has_different_trial( $recurring_cart, $subscription ) {
+		$cart_trial_end_date         = gmdate( 'Y-m-d', wcs_date_to_time( $recurring_cart->trial_end_date ) );;
+		$subscription_trial_end_date = gmdate( 'Y-m-d', $subscription->get_time( 'trial_end' ) );
+
+		return $cart_trial_end_date !== $subscription_trial_end_date;
 	}
 
 	/**
