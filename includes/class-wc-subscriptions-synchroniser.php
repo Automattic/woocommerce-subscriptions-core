@@ -601,8 +601,8 @@ class WC_Subscriptions_Synchroniser {
 		}
 
 		$period       = WC_Subscriptions_Product::get_period( $product );
-		$trial_period = WC_Subscriptions_Product::get_trial_period( $product );
 		$trial_length = WC_Subscriptions_Product::get_trial_length( $product );
+		$interval     = get_option( self::$setting_id_proration, 'no' ) === 'recurring' ? WC_Subscriptions_Product::get_interval( $product ) : 1;
 
 		$from_date_param = $from_date;
 
@@ -633,8 +633,7 @@ class WC_Subscriptions_Synchroniser {
 				$month       = gmdate( 'F', $from_timestamp );
 
 			} elseif ( gmdate( 'j', $from_timestamp ) > $payment_day ) { // today is later than specified day in the from date, we need the next month
-
-				$month = gmdate( 'F', wcs_add_months( $from_timestamp, 1 ) );
+				$month = gmdate( 'F', wcs_add_months( $from_timestamp, $interval ) );
 
 			} else { // specified day is either today or still to come in the month of the from date
 
