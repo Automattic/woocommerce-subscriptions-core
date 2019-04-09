@@ -406,16 +406,8 @@ class WCS_Cart_Renewal {
 
 				$price = $item_to_renew['line_subtotal'];
 
-				if ( $_product->is_taxable() && wc_prices_include_tax() ) {
-
-					if ( apply_filters( 'woocommerce_adjust_non_base_location_prices', true ) ) {
-						$base_tax_rates = WC_Tax::get_base_tax_rates( wcs_get_objects_property( $_product, 'tax_class' ) );
-					} else {
-						$base_tax_rates = WC_Tax::get_rates( wcs_get_objects_property( $_product, 'tax_class' ) );
-					}
-
-					$base_taxes_on_item = WC_Tax::calc_tax( $price, $base_tax_rates, false, false );
-					$price += array_sum( $base_taxes_on_item );
+				if ( $_product->is_taxable() && $subscription->get_prices_include_tax() ) {
+					$price += $item_to_renew['subtotal_tax'];
 				}
 
 				$_product->set_price( $price / $item_to_renew['qty'] );
