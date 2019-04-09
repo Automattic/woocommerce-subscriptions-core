@@ -823,6 +823,7 @@ class WC_Subscriptions_Manager {
 		/** @var WC_Subscription[] $subscriptions */
 		$subscriptions = wcs_get_subscriptions_for_order( $post_id, array(
 			'subscription_status' => array( 'any', 'trash' ),
+			'order_type'          => 'parent',
 		) );
 		foreach ( $subscriptions as $subscription ) {
 			wp_delete_post( $subscription->get_id() );
