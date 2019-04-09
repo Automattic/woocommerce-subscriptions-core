@@ -63,6 +63,9 @@ class WCS_Cart_Renewal {
 
 		// Apply renewal discounts as pseudo coupons
 		add_action( 'woocommerce_setup_cart_for_subscription_renewal', array( $this, 'setup_discounts' ) );
+
+		// Work around WC changing the "created_via" meta to "checkout" regardless of its previous value during checkout.
+		add_action( 'woocommerce_checkout_create_order', array( $this, 'maybe_preserve_order_created_via' ), 0, 1 );
 	}
 
 	/**
@@ -92,9 +95,6 @@ class WCS_Cart_Renewal {
 
 			// Update customer's address on the subscription if it is changed during renewal
 			add_filter( 'woocommerce_checkout_update_user_meta', array( &$this, 'maybe_update_subscription_address_data' ), 10, 2 );
-
-			// Work around WC changing the "created_via" meta to "checkout" regardless of its previous value during checkout.
-			add_action( 'woocommerce_checkout_create_order', array( $this, 'maybe_preserve_order_created_via' ), 0, 1 );
 		}
 	}
 
