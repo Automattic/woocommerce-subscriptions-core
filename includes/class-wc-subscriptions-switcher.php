@@ -876,8 +876,7 @@ class WC_Subscriptions_Switcher {
 			wcs_set_objects_property( $order, 'subscription_switch_data', $switch_order_data );
 
 		} catch ( Exception $e ) {
-			// There was an error updating the subscription, roll back and delete pending order for switch
-			$wpdb->query( 'ROLLBACK' );
+			// There was an error updating the subscription, delete pending switch order.
 			wp_delete_post( $order_id, true );
 			throw $e;
 		}
