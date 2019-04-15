@@ -179,8 +179,10 @@ class WCS_Modal {
 	public function add_action( $action_args ) {
 		$action = wp_parse_args( $action_args, array(
 			'type'       => 'a',
-			'attributes' => array(),
 			'text'       => '',
+			'attributes' => array(
+				'class' => 'button',
+			),
 		) );
 
 		$this->actions[] = $action;
