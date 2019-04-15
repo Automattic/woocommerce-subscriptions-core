@@ -95,10 +95,19 @@ class WCS_Modal {
 	 */
 	function __construct( $content_type, $content, $trigger, $heading = '', $actions = array() ) {
 		$this->content_type = $content_type;
-		$this->content      = $content;
 		$this->trigger      = $trigger;
 		$this->heading      = $heading;
 		$this->actions      = $actions;
+
+		// Allow callers to provide the callback without any parameters. Assuming the content provided is the callback.
+		if ( 'callback' === $this->content_type && ! isset( $content['parameters'] ) ) {
+			$this->content = array(
+				'callback'   => $content,
+				'parameters' => array(),
+			);
+		} else {
+			$this->content = $content;
+		}
 
 		self::register_scripts_and_styles();
 	}
