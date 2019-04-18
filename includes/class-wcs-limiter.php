@@ -214,7 +214,7 @@ class WCS_Limiter {
 				$is_purchasable = true;
 
 			// Restoring cart from session, so need to check the cart in the session (wcs_cart_contains_renewal() only checks the cart)
-			} elseif ( WC()->session->cart ) {
+			} elseif ( ! empty( WC()->session->cart ) ) {
 				foreach ( WC()->session->cart as $cart_item_key => $cart_item ) {
 					if ( $product->get_id() == $cart_item['product_id'] && ( isset( $cart_item['subscription_renewal'] ) || isset( $cart_item['subscription_resubscribe'] ) ) ) {
 						$is_purchasable = true;
