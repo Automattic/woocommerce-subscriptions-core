@@ -915,8 +915,10 @@ function wcs_find_matching_line_item( $order, $subscription_item, $match_type = 
 		$subscription_item_attributes = wp_list_pluck( $subscription_item->get_formatted_meta_data( '_', true ), 'value', 'key' );
 	}
 
+	$subscription_item_canonical_product_id = wcs_get_canonical_product_id( $subscription_item );
+
 	foreach ( $order->get_items() as $order_item ) {
-		if ( wcs_get_canonical_product_id( $order_item ) !== wcs_get_canonical_product_id( $subscription_item ) ) {
+		if ( wcs_get_canonical_product_id( $order_item ) !== $subscription_item_canonical_product_id ) {
 			continue;
 		}
 
