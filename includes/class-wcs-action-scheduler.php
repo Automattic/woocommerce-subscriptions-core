@@ -10,7 +10,14 @@
  */
 class WCS_Action_Scheduler extends WCS_Scheduler {
 
-	/*@protected Array of $action_hook => $date_type values */
+	/**
+	 * An internal cache of action hooks and corresponding date types.
+	 *
+	 * This variable has been deprecated and will be removed completely in the future. You should use WCS_Action_Scheduler::get_scheduled_action_hook() and WCS_Action_Scheduler::get_date_types_to_schedule() instead.
+	 *
+	 * @deprecated 2.6.0
+	 * @var array An array of $action_hook => $date_type values
+	 */
 	protected $action_hooks = array(
 		'woocommerce_scheduled_subscription_trial_end'     => 'trial_end',
 		'woocommerce_scheduled_subscription_payment'       => 'next_payment',
