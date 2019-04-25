@@ -110,6 +110,8 @@ class WC_Subscriptions_Admin {
 
 		add_filter( 'posts_where', __CLASS__ . '::filter_orders' );
 
+		add_filter( 'posts_where', __CLASS__ . '::filter_subscriptions_from_list' );
+
 		add_filter( 'posts_where', array( __CLASS__, 'filter_paid_subscription_orders_for_user' ) );
 
 		add_action( 'admin_notices',  __CLASS__ . '::display_renewal_filter_notice' );
@@ -1448,6 +1450,25 @@ class WC_Subscriptions_Admin {
 			}
 		}
 
+		return $where;
+	}
+
+	/**
+	 * Filter the "Subscriptions" based on a list of ids
+	 *
+	 * @param string $where
+	 * @return string
+	 * @since 2.6
+	 */
+	public static function filter_subscriptions_from_list( $where ) {
+		global $typenow, $wpdb;
+
+		if ( is_admin() && 'shop_subscription' === $typenow ) {
+
+			if ( isset( $_GET['_subscriptions_list'] ) ) {
+				$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", $_GET['_subscriptions_list'] );
+			}
+		}
 		return $where;
 	}
 
