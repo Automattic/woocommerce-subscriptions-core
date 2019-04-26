@@ -89,7 +89,8 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			)
 		);
 
-		$this->report_data->new_subscriptions_post_ids = implode( ',', wp_list_pluck( $this->report_data->new_subscriptions, 'post_id', true ));
+		$this->report_data->new_subscription_ids = implode( ',', wp_list_pluck( $this->report_data->new_subscriptions, 'post_id', true ) );
+
 		$this->report_data->renewal_data = (array) $this->get_order_report_data(
 			array(
 				'data' => array(
@@ -97,6 +98,12 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 						'type'     => 'post_data',
 						'function' => 'COUNT',
 						'name'     => 'count',
+						'distinct' => true,
+					),
+					'id' => array(
+						'type'     => 'post_data',
+						'function' => 'GROUP_CONCAT',
+						'name'     => 'post_id',
 						'distinct' => true,
 					),
 					'post_date' => array(
@@ -132,6 +139,8 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				'nocache'             => $args['no_cache'],
 			)
 		);
+
+		$this->report_data->renewal_order_ids = implode( ',', wp_list_pluck( $this->report_data->renewal_data, 'post_id', true ) );
 
 		$this->report_data->resubscribe_data = (array) $this->get_order_report_data(
 			array(
@@ -424,7 +433,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 
 		$legend[] = array(
 			'title'            => sprintf( __( '<a href="%2$s">%1$s</a> new subscriptions', 'woocommerce-subscriptions' ), '<strong>' . $this->report_data->new_subscription_total_count . '</strong>',
-			admin_url( 'edit.php?post_type=shop_subscription&_subscriptions_list=' ) .  $data->new_subscriptions_post_ids ),
+			admin_url( 'edit.php?post_type=shop_subscription&_subscriptions_list=' ) .  $this->report_data->new_subscription_ids ),
 			'placeholder'      => __( 'The number of subscriptions created during this period, either by being manually created, imported or a customer placing an order. This includes orders pending payment.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['new_count'],
 			'highlight_series' => 1,
@@ -445,7 +454,8 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		);
 
 		$legend[] = array(
-			'title'            => sprintf( __( '%s subscription renewals', 'woocommerce-subscriptions' ), '<strong>' . $data->renewal_orders_total_count . '</strong>' ),
+			'title'            => sprintf( __( '<a href="%2$s">%1$s</a> subscription renewals', 'woocommerce-subscriptions' ), '<strong>' . $this->report_data->renewal_orders_total_count . '</strong>',
+			admin_url( 'edit.php?post_type=shop_order&_orders_list=' ) .  $this->report_data->renewal_order_ids ),
 			'placeholder'      => __( 'The number of renewal orders processed during this period.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['renewal_count'],
 			'highlight_series' => 4,
