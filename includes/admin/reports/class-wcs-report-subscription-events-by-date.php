@@ -202,6 +202,12 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 						'name'     => 'count',
 						'distinct' => true,
 					),
+					'id' => array(
+						'type'     => 'post_data',
+						'function' => 'GROUP_CONCAT',
+						'name'     => 'post_id',
+						'distinct' => true,
+					),
 					'post_date' => array(
 						'type'     => 'post_data',
 						'function' => '',
@@ -229,6 +235,8 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				'nocache'             => $args['no_cache'],
 			)
 		);
+
+		$this->report_data->switch_order_ids = implode( ',', wp_list_pluck( $this->report_data->switch_counts, 'post_id', true ) );
 
 		$cached_results = get_transient( strtolower( get_class( $this ) ) );
 
@@ -471,7 +479,8 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		);
 
 		$legend[] = array(
-			'title'            => sprintf( __( '%s subscription switches', 'woocommerce-subscriptions' ), '<strong>' . $data->switch_orders_total_count . '</strong>' ),
+			'title'            => sprintf( __( '<a href="%2$s">%1$s</a> subscription switches', 'woocommerce-subscriptions' ), '<strong>' . $this->report_data->switch_orders_total_count . '</strong>',
+			admin_url( 'edit.php?post_type=shop_order&_orders_list=' ) .  $this->report_data->switch_order_ids ),
 			'placeholder'      => __( 'The number of subscriptions upgraded, downgraded or cross-graded during this period.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['switch_count'],
 			'highlight_series' => 0,
