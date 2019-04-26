@@ -244,7 +244,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		* New subscription orders
 		*/
 		$query = $wpdb->prepare(
-			"SELECT SUM(subscriptions.count) as count,
+			"SELECT SUM(subscriptions.count) as count, GROUP_CONCAT( DISTINCT order_posts.id ) as post_id,
 				order_posts.post_date as post_date,
 				SUM(order_total_post_meta.meta_value) as signup_totals
 			FROM {$wpdb->posts} AS order_posts
@@ -283,11 +283,13 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 
 		$this->report_data->signup_data = $cached_results[ $query_hash ];
 
+		$this->report_data->signup_ids = implode( ',', wp_list_pluck( $this->report_data->signup_data, 'post_id', true ) );
+
 		/*
 		 * Subscribers by date
 		 */
 		$query = $wpdb->prepare(
-			"SELECT searchdate.Date as date, COUNT( DISTINCT wcsubs.ID) as count
+			"SELECT searchdate.Date as date, COUNT( DISTINCT wcsubs.ID) as count, GROUP_CONCAT( DISTINCT wcsubs.ID ) as post_id
 				FROM (
 					SELECT DATE(last_thousand_days.Date) as Date
 					FROM (
@@ -346,11 +348,13 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 
 		$this->report_data->subscriber_counts = $cached_results[ $query_hash ];
 
+		$this->report_data->current_subscriptions = $this->report_data->subscriber_counts ? end( $this->report_data->subscriber_counts )->post_id : '';
+
 		/*
 		 * Subscription cancellations
 		 */
 		$query = $wpdb->prepare(
-			"SELECT COUNT( DISTINCT wcsubs.ID ) as count, CONVERT_TZ( wcsmeta_cancel.meta_value, '+00:00', '{$site_timezone}' ) as cancel_date
+			"SELECT COUNT( DISTINCT wcsubs.ID ) as count, CONVERT_TZ( wcsmeta_cancel.meta_value, '+00:00', '{$site_timezone}' ) as cancel_date, GROUP_CONCAT( DISTINCT wcsubs.ID ) as post_id
 				FROM {$wpdb->posts} as wcsubs
 				JOIN {$wpdb->postmeta} AS wcsmeta_cancel
 					ON wcsubs.ID = wcsmeta_cancel.post_id
@@ -374,11 +378,13 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 
 		$this->report_data->cancel_counts = $cached_results[ $query_hash ];
 
+		$this->report_data->cancelled_ids = implode( ',', wp_list_pluck( $this->report_data->cancel_counts, 'post_id', true ) );
+
 		/*
 		 * Subscriptions ended
 		 */
 		$query = $wpdb->prepare(
-			"SELECT COUNT( DISTINCT wcsubs.ID ) as count, CONVERT_TZ( wcsmeta_end.meta_value, '+00:00', '{$site_timezone}' ) as end_date
+			"SELECT COUNT( DISTINCT wcsubs.ID ) as count, CONVERT_TZ( wcsmeta_end.meta_value, '+00:00', '{$site_timezone}' ) as end_date, GROUP_CONCAT( DISTINCT wcsubs.ID ) as post_id
 				FROM {$wpdb->posts} as wcsubs
 				JOIN {$wpdb->postmeta} AS wcsmeta_end
 					ON wcsubs.ID = wcsmeta_end.post_id
@@ -401,6 +407,8 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		}
 
 		$this->report_data->ended_counts = $cached_results[ $query_hash ];
+
+		$this->report_data->ended_ids = implode( ',', wp_list_pluck( $this->report_data->ended_counts, 'post_id', true ) );
 
 		// Total up the query data
 		$this->report_data->signup_orders_total_amount          = array_sum( wp_list_pluck( $this->report_data->signup_data, 'signup_totals' ) );
@@ -456,7 +464,8 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		);
 
 		$legend[] = array(
-			'title'            => sprintf( __( '%s subscription signups', 'woocommerce-subscriptions' ), '<strong>' . $this->report_data->signup_orders_total_count . '</strong>' ),
+			'title'            => sprintf( __( '<a href="%2$s">%1$s</a> subscription signups', 'woocommerce-subscriptions' ), '<strong>' . $this->report_data->signup_orders_total_count . '</strong>',
+			admin_url( 'edit.php?post_type=shop_order&_orders_list=' ) .  $this->report_data->signup_ids ),
 			'placeholder'      => __( 'The number of subscription parent orders created during this period. This represents the new subscriptions created by customers placing an order via checkout.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['signup_count'],
 			'highlight_series' => 2,
@@ -487,21 +496,24 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		);
 
 		$legend[] = array(
-			'title'            => sprintf( __( '%s subscription cancellations', 'woocommerce-subscriptions' ), '<strong>' . $data->total_subscriptions_cancelled . '</strong>' ),
+			'title'            => sprintf( __( '<a href="%2$s">%1$s</a> subscription cancellations', 'woocommerce-subscriptions' ), '<strong>' . $this->report_data->total_subscriptions_cancelled . '</strong>',
+			admin_url( 'edit.php?post_type=shop_subscription&_subscriptions_list=' ) .  $this->report_data->cancelled_ids ),
 			'placeholder'      => __( 'The number of subscriptions cancelled by the customer or store manager during this period.  The pre-paid term may not yet have ended during this period.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['cancel_count'],
 			'highlight_series' => 7,
 		);
 
 		$legend[] = array(
-			'title'            => sprintf( __( '%s subscriptions ended', 'woocommerce-subscriptions' ), '<strong>' . $data->total_subscriptions_ended . '</strong>' ),
+			'title'            => sprintf( __( '<a href="%2$s">%1$s</a> subscription ended', 'woocommerce-subscriptions' ), '<strong>' . $this->report_data->total_subscriptions_ended . '</strong>',
+			admin_url( 'edit.php?post_type=shop_subscription&_subscriptions_list=' ) .  $this->report_data->ended_ids ),
 			'placeholder'      => __( 'The number of subscriptions which have either expired or reached the end of the prepaid term if it was previously cancelled.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['ended_count'],
 			'highlight_series' => 6,
 		);
 
 		$legend[] = array(
-			'title'            => sprintf( __( '%s current subscriptions', 'woocommerce-subscriptions' ), '<strong>' . $data->total_subscriptions_at_period_end . '</strong>' ),
+			'title'            => sprintf( __( '<a href="%2$s">%1$s</a> current subscriptions', 'woocommerce-subscriptions' ), '<strong>' . $this->report_data->total_subscriptions_at_period_end . '</strong>',
+			admin_url( 'edit.php?post_type=shop_subscription&_subscriptions_list=' ) .  $this->report_data->current_subscriptions ),
 			'placeholder'      => __( 'The number of subscriptions during this period with an end date in the future and a status other than pending.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['subscriber_count'],
 			'highlight_series' => 5,
