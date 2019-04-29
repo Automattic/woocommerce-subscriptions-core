@@ -108,11 +108,11 @@ class WC_Subscriptions_Admin {
 
 		add_action( 'woocommerce_admin_field_informational', __CLASS__ . '::add_informational_admin_field' );
 
-		add_filter( 'posts_where', __CLASS__ . '::filter_orders' );
+		add_filter( 'posts_where', array( __CLASS__, 'filter_orders' ) );
 
-		add_filter( 'posts_where', __CLASS__ . '::filter_orders_from_list' );
+		add_filter( 'posts_where', array( __CLASS__, 'filter_orders_from_list' ) );
 
-		add_filter( 'posts_where', __CLASS__ . '::filter_subscriptions_from_list' );
+		add_filter( 'posts_where', array( __CLASS__, 'filter_subscriptions_from_list' ) );
 
 		add_filter( 'posts_where', array( __CLASS__, 'filter_paid_subscription_orders_for_user' ) );
 
@@ -1466,11 +1466,13 @@ class WC_Subscriptions_Admin {
 
 		if ( is_admin() && 'shop_order' === $typenow ) {
 
-			if ( isset( $_GET['_orders_list'] ) && ! empty( $_GET['_orders_list'] ) ) {
-				$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", $_GET['_orders_list'] );
-			} else {
-			    // No orders in list. So, give invalid 'where' clause so as to make the query return 0 items.
-				$where .= 'AND 1=2';
+			if ( isset( $_GET['_orders_list'] ) ) {
+				if ( ! empty( $_GET['_orders_list'] ) ) {
+					$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", $_GET['_orders_list'] );
+				} else {
+					// No orders in list. So, give invalid 'where' clause so as to make the query return 0 items.
+					$where = " AND {$wpdb->posts}.ID = 0";
+				}
 			}
 		}
 		return $where;
@@ -1488,11 +1490,13 @@ class WC_Subscriptions_Admin {
 
 		if ( is_admin() && 'shop_subscription' === $typenow ) {
 
-			if ( isset( $_GET['_subscriptions_list'] ) && ! empty( $_GET['_subscriptions_list'] ) ) {
-				$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", $_GET['_subscriptions_list'] );
-			} else {
-				// No subscriptions in list. So, give invalid 'where' clause so as to make the query return 0 items.
-				$where .= 'AND 1=2';
+			if ( isset( $_GET['_subscriptions_list'] ) ) {
+				if ( ! empty( $_GET['_subscriptions_list'] ) ) {
+					$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", $_GET['_subscriptions_list'] );
+				} else {
+					// No subscriptions in list. So, give invalid 'where' clause so as to make the query return 0 items.
+					$where = " AND {$wpdb->posts}.ID = 0";
+				}
 			}
 		}
 		return $where;
@@ -1530,7 +1534,7 @@ class WC_Subscriptions_Admin {
 			$where .= " AND {$wpdb->posts}.ID = 0";
 		} else {
 			// Orders with paid status
-			$where .= sprintf( " AND {$wpdb->posts}.post_status IN ( 'wc-processing', 'wc-completed' )" );
+			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_status IN ( 'wc-processing', 'wc-completed' )" );
 			$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", implode( ',', array_unique( $users_subscription_orders ) ) );
 		}
 
