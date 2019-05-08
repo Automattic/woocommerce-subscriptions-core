@@ -621,9 +621,21 @@ class WC_Subscriptions_Synchroniser {
 
 		if ( 'week' == $period ) {
 
+			// Get the day of the week for the from date
+			$from_day = gmdate( 'N', $from_timestamp );
+			$no_fee_days = get_option( self::$setting_id_days_no_fee );
+
+			// To account for rollover of the weekdays. For example, if payment day is Saturday and the from date is Monday,
+			// and the grace period is 2, Saturday is day 6 and Monday is day 1.
+			$add_days = $payment_day < $from_day ? 0 : 7;
+
+			// Calculate difference between the the two days after adding number of weekdays and compare against grace period
+			if ( ( $from_day + $add_days - $payment_day ) <= $no_fee_days ) {
+				$from_timestamp = wcs_add_time( $interval - 1, $period, $from_timestamp );
+			}
+
 			// strtotime() will figure out if the day is in the future or today (see: https://gist.github.com/thenbrent/9698083)
 			$first_payment_timestamp = wcs_strtotime_dark_knight( self::$weekdays[ $payment_day ], $from_timestamp );
-
 		} elseif ( 'month' == $period ) {
 
 			// strtotime() needs to know the month, so we need to determine if the specified day has occured this month yet or if we want the last day of the month (see: https://gist.github.com/thenbrent/9698083)
@@ -683,6 +695,11 @@ class WC_Subscriptions_Synchroniser {
 				case 12 :
 					$month = 'December';
 					break;
+			}
+
+			$payment_month_day = sprintf( '%02d%02d', $payment_day['month'], $payment_day['day'] );
+			if ( $payment_month_day < gmdate( 'md', $from_timestamp ) ) {
+				$from_timestamp = wcs_add_time( $interval - 1, $period, $from_timestamp );
 			}
 
 			$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month}", $from_timestamp );
