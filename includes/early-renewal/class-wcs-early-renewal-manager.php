@@ -104,8 +104,7 @@ class WCS_Early_Renewal_Manager {
 	 * @return bool
 	 */
 	public static function is_early_renewal_via_modal_enabled() {
-		$enabled = self::is_early_renewal_enabled() && 'yes' === get_option( self::$via_modal_setting_id, 'no' );
-		return apply_filters( 'wcs_is_early_renewal_via_modal_enabled', $enabled );
+		return self::is_early_renewal_enabled() && apply_filters( 'wcs_is_early_renewal_via_modal_enabled', 'yes' === get_option( self::$via_modal_setting_id, 'no' ) );
 	}
 
 	/**
