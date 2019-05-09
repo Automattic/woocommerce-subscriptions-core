@@ -40,7 +40,6 @@ class WCS_Early_Renewal_Modal_Handler {
 			'attributes' => array(
 				'id'    => 'early_renewal_modal_submit',
 				'class' => 'button alt ',
-				'style' => 'width: 100%; font-size:1.4em; text-align: center;',
 				'href'  => add_query_arg( array(
 					'subscription_id'       => $subscription->get_id(),
 					'process_early_renewal' => true,
