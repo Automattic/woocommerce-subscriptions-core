@@ -15,6 +15,7 @@ class WCS_Staging {
 		add_action( 'woocommerce_generated_manual_renewal_order', array( __CLASS__, 'maybe_record_staging_site_renewal' ) );
 		add_filter( 'woocommerce_register_post_type_subscription', array( __CLASS__, 'maybe_add_menu_badge' ) );
 		add_action( 'wp_loaded', array( __CLASS__, 'maybe_reset_admin_notice' ) );
+		add_action( 'woocommerce_admin_order_data_after_billing_address', array( __CLASS__, 'maybe_add_payment_method_note' ) );
 	}
 
 	/**
@@ -65,6 +66,21 @@ class WCS_Staging {
 		if ( isset( $_REQUEST['wcs_display_staging_notice'] ) && is_admin() && current_user_can( 'manage_options' ) ) {
 			delete_option( 'wcs_ignore_duplicate_siteurl_notice' );
 			wp_safe_redirect( remove_query_arg( array( 'wcs_display_staging_notice' ) ) );
+		}
+	}
+
+	/**
+	 * Displays a note under the edit subscription payment method field to explain why the subscription is set to Manual Renewal.
+	 *
+	 * @param WC_Subscription $subscription
+	 * @since 2.5.6
+	 */
+	public static function maybe_add_payment_method_note( $subscription ) {
+		if ( WC_Subscriptions::is_duplicate_site() && $subscription->has_payment_gateway() && ! $subscription->get_requires_manual_renewal() ) {
+			printf(
+				'<p>%s</p>',
+				esc_html__( 'Subscription locked to Manual Renewal while the store is in staging mode. Payment method changes will take effect in live mode.', 'woocommerce-subscriptions' )
+			);
 		}
 	}
 }
