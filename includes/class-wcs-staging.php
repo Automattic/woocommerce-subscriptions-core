@@ -83,4 +83,16 @@ class WCS_Staging {
 			);
 		}
 	}
+
+	/**
+	 * Returns the content for a tooltip explaining a subscription's payment method while in staging mode.
+	 *
+	 * @param WC_Subscription $subscription
+	 * @return string HTML content for a tooltip.
+	 * @since 2.5.6
+	 */
+	public static function get_payment_method_tooltip( $subscription ) {
+		return '<div class="woocommerce-help-tip" data-tip="' . esc_attr__( sprintf( 'Subscription locked to Manual Renewal while the store is in staging mode. Live payment method: %s', $subscription->get_payment_method_title() ), 'woocommerce-subscriptions' ) . '"></div>';
+	}
+
 }
