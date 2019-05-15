@@ -1282,7 +1282,7 @@ class WC_Subscriptions_Cart {
 			WC()->cart   = self::$cached_recurring_cart;
 
 			foreach ( WC()->shipping->get_shipping_methods() as $shipping_method ) {
-				if ( $shipping_method->id == 'free_shipping' ) {
+				if ( $shipping_method->id === 'free_shipping' && $shipping_method->get_instance_id() ) {
 					remove_filter( 'woocommerce_shipping_free_shipping_is_available', __METHOD__ );
 					$is_available = $shipping_method->is_available( $package );
 					add_filter( 'woocommerce_shipping_free_shipping_is_available', __METHOD__, 10, 2 );
