@@ -1275,23 +1275,24 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function maybe_recalculate_shipping_method_availability( $is_available, $package ) {
 
-		if ( isset( $package['recurring_cart_key'], self::$cached_recurring_cart ) && $package['recurring_cart_key'] == self::$cached_recurring_cart->recurring_cart_key ) {
-
-			// Take a copy of the WC global cart object so we can temporarily set it to base shipping method availability on the cached recurring cart
-			$global_cart = WC()->cart;
-			WC()->cart   = self::$cached_recurring_cart;
-
-			foreach ( WC()->shipping->get_shipping_methods() as $shipping_method ) {
-				if ( $shipping_method->id === 'free_shipping' && $shipping_method->get_instance_id() ) {
-					remove_filter( 'woocommerce_shipping_free_shipping_is_available', __METHOD__ );
-					$is_available = $shipping_method->is_available( $package );
-					add_filter( 'woocommerce_shipping_free_shipping_is_available', __METHOD__, 10, 2 );
-					break;
-				}
-			}
-
-			WC()->cart = $global_cart;
+		if ( ! isset( $package['recurring_cart_key'], self::$cached_recurring_cart ) || $package['recurring_cart_key'] !== self::$cached_recurring_cart->recurring_cart_key ) {
+			return $is_available;
 		}
+
+		// Take a copy of the WC global cart object so we can temporarily set it to base shipping method availability on the cached recurring cart
+		$global_cart = WC()->cart;
+		WC()->cart   = self::$cached_recurring_cart;
+
+		foreach ( WC()->shipping->get_shipping_methods() as $shipping_method ) {
+			if ( $shipping_method->id === 'free_shipping' && $shipping_method->get_instance_id() ) {
+				remove_filter( 'woocommerce_shipping_free_shipping_is_available', __METHOD__ );
+				$is_available = $shipping_method->is_available( $package );
+				add_filter( 'woocommerce_shipping_free_shipping_is_available', __METHOD__, 10, 2 );
+				break;
+			}
+		}
+
+		WC()->cart = $global_cart;
 
 		return $is_available;
 	}
