@@ -1275,7 +1275,7 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function maybe_recalculate_shipping_method_availability( $is_available, $package ) {
 
-		if ( isset( $package['recurring_cart_key'] ) && isset( self::$cached_recurring_cart ) && $package['recurring_cart_key'] == self::$cached_recurring_cart->recurring_cart_key ) {
+		if ( isset( $package['recurring_cart_key'], self::$cached_recurring_cart ) && $package['recurring_cart_key'] == self::$cached_recurring_cart->recurring_cart_key ) {
 
 			// Take a copy of the WC global cart object so we can temporarily set it to base shipping method availability on the cached recurring cart
 			$global_cart = WC()->cart;
