@@ -130,7 +130,11 @@ class WC_Subscriptions_Payment_Gateways {
 	 */
 	public static function no_available_payment_methods_message( $no_gateways_message ) {
 		if ( WC_Subscriptions_Cart::cart_contains_subscription() && 'no' == get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals', 'no' ) ) {
-			$no_gateways_message = __( 'Sorry, it seems there are no available payment methods which support subscriptions. Please contact us if you require assistance or wish to make alternate arrangements.', 'woocommerce-subscriptions' );
+			if ( current_user_can( 'manage_woocommerce' ) ) {
+				$no_gateways_message = sprintf( __( 'Sorry, it seems there are no available payment methods which support subscriptions. Please see %sEnabling Payment Gateways for Subscriptions%s if you require assistance.' ), '<a href="https://docs.woocommerce.com/document/subscriptions/enabling-payment-gateways-for-subscriptions/">', '</a>' );
+			} else {
+				$no_gateways_message = __( 'Sorry, it seems there are no available payment methods which support subscriptions. Please contact us if you require assistance or wish to make alternate arrangements.', 'woocommerce-subscriptions' );
+			}
 		}
 
 		return $no_gateways_message;
