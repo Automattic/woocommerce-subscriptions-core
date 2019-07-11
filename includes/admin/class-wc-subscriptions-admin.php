@@ -1054,6 +1054,27 @@ class WC_Subscriptions_Admin {
 			self::$option_prefix . '_order_button_text'       => '',
 		);
 
+		// Add the $_POST[ 'woocommerce_subscriptions_allow_switching' ] value
+		if ( isset( $_POST[ self::$option_prefix . '_allow_switching_variable' ] ) || isset( $_POST[ self::$option_prefix . '_allow_switching_grouped' ] ) ) {
+
+			$value = [];
+
+			if ( ! empty( $_POST[ self::$option_prefix . '_allow_switching_variable' ] ) ) {
+				$value[] = 'variable';
+				unset( $_POST[ self::$option_prefix . '_allow_switching_variable' ] );
+			}
+
+			if ( ! empty( $_POST[ self::$option_prefix . '_allow_switching_grouped' ] ) ) {
+				$value[] = 'grouped';
+				unset( $_POST[ self::$option_prefix . '_allow_switching_grouped' ] );
+			}
+
+			$_POST[ self::$option_prefix . '_allow_switching' ] = implode( '_', $value );
+
+		} else {
+			$_POST[ self::$option_prefix . '_allow_switching' ] = 'no';
+		}
+
 		foreach ( $settings as $setting ) {
 			if ( ! isset( $setting['id'], $setting['default'], $defaults_to_find[ $setting['id'] ], $_POST[ $setting['id'] ] ) ) {
 				continue;

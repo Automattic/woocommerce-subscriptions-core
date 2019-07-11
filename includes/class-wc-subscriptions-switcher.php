@@ -30,6 +30,9 @@ class WC_Subscriptions_Switcher {
 		// Add the settings to control whether Switching is enabled and how it will behave
 		add_filter( 'woocommerce_subscription_settings', __CLASS__ . '::add_settings' );
 
+		// Render "wcs_switching_options" field
+		add_action( 'woocommerce_admin_field_wcs_switching_options', __CLASS__ . '::switching_options_field_html' );
+
 		// Add the "Switch" button to the View Subscription table
 		add_action( 'woocommerce_order_item_meta_end', __CLASS__ . '::print_switch_link', 10, 3 );
 
@@ -346,20 +349,8 @@ class WC_Subscriptions_Switcher {
 			),
 
 			array(
-				'name'    => __( 'Allow Switching', 'woocommerce-subscriptions' ),
-				'desc'    => __( 'Allow subscribers to switch between subscriptions combined in a grouped product, different variations of a Variable subscription or don\'t allow switching.', 'woocommerce-subscriptions' ),
-				'tip'     => '',
-				'id'      => WC_Subscriptions_Admin::$option_prefix . '_allow_switching',
-				'css'     => 'min-width:150px;',
-				'default' => 'no',
-				'type'    => 'select',
-				'options' => array(
-					'no'               => _x( 'Never', 'when to allow a setting', 'woocommerce-subscriptions' ),
-					'variable'         => _x( 'Between Subscription Variations', 'when to allow switching', 'woocommerce-subscriptions' ),
-					'grouped'          => _x( 'Between Grouped Subscriptions', 'when to allow switching', 'woocommerce-subscriptions' ),
-					'variable_grouped' => _x( 'Between Both Variations & Grouped Subscriptions', 'when to allow switching', 'woocommerce-subscriptions' ),
-				),
-				'desc_tip' => true,
+				'type'  => 'wcs_switching_options',
+				'id'      => WC_Subscriptions_Admin::$option_prefix . '_allow_switching'
 			),
 
 			array(
@@ -427,6 +418,46 @@ class WC_Subscriptions_Switcher {
 		) );
 
 		return $settings;
+	}
+
+	/**
+	 * Render the wcs_switching_options setting field.
+	 *
+	 * @since 2.5.8
+	 * @return void
+	 */
+	public static function switching_options_field_html( $data ) {
+
+		// Calculate current checked options
+		$allow_switching = get_option( $data['id'], 'no' );
+		// Sanity check
+		if ( ! in_array( $allow_switching, array( 'no', 'variable', 'grouped', 'variable_grouped' ) ) ) {
+			$allow_switching = 'no';
+		}
+
+		$allow_switching_variable_checked = (bool) preg_match( '/(variable)/', $allow_switching ) ? ' checked="checked"' : '';
+		$allow_switching_grouped_checked  = (bool) preg_match( '/(grouped)/', $allow_switching ) ? ' checked="checked"' : '';
+		?>
+		<tr valign="top">
+			<th scope="row" class="titledesc">
+				<label for="wcs_switching_options">
+					<?php _e( 'Allow Switching', 'woocommerce-subscriptions' ) ?>
+					<?php echo wc_help_tip( __( 'Allow subscribers to switch between subscriptions combined in a grouped product, different variations of a Variable subscription or don\'t allow switching.', 'woocommerce-subscriptions' ) ); ?>
+
+				</label>
+			</th>
+			<td class="forminp forminp-wcs_switching_options">
+				<div class="wcs_setting_switching_options">
+					<label>
+						<input<?php echo $allow_switching_variable_checked ?> type="checkbox" name="<?php echo WC_Subscriptions_Admin::$option_prefix . '_allow_switching_variable' ?>"/>
+						<?php echo _x( 'Between Subscription Variations', 'when to allow switching', 'woocommerce-subscriptions' ) ?></label>
+					<label>
+						<input<?php echo $allow_switching_grouped_checked ?> type="checkbox" name="<?php echo WC_Subscriptions_Admin::$option_prefix . '_allow_switching_grouped' ?>"/>
+						<?php echo _x( 'Between Grouped Subscriptions', 'when to allow switching', 'woocommerce-subscriptions' ) ?></label>
+				</div>
+			</td>
+		</tr>
+		<?php
 	}
 
 	/**
