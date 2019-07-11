@@ -1093,6 +1093,20 @@ class WC_Subscriptions_Admin {
 			}
 		}
 
+		// Add extra switching options if any
+		$extra_switching_options = (array) apply_filters( 'woocommerce_subscription_switching_options', array() );
+		foreach ( $extra_switching_options as $option ) {
+			if ( ! isset( $option['id'], $option['name'] ) ) {
+				continue;
+			}
+
+			// Add to $settings to be natively saved
+			$settings[] = array(
+				'id'   => $option['id'],
+				'type' => 'checkbox' // This will sanitize value to yes/no
+			);
+		}
+
 		woocommerce_update_options( $settings );
 	}
 

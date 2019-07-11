@@ -450,10 +450,32 @@ class WC_Subscriptions_Switcher {
 				<div class="wcs_setting_switching_options" id="woocommerce_subscriptions_allow_switching">
 					<label>
 						<input<?php echo $allow_switching_variable_checked ?> type="checkbox" name="<?php echo WC_Subscriptions_Admin::$option_prefix . '_allow_switching_variable' ?>"/>
-						<?php echo _x( 'Between Subscription Variations', 'when to allow switching', 'woocommerce-subscriptions' ) ?></label>
+						<?php echo _x( 'Between Subscription Variations', 'when to allow switching', 'woocommerce-subscriptions' ) ?>
+					</label>
 					<label>
 						<input<?php echo $allow_switching_grouped_checked ?> type="checkbox" name="<?php echo WC_Subscriptions_Admin::$option_prefix . '_allow_switching_grouped' ?>"/>
-						<?php echo _x( 'Between Grouped Subscriptions', 'when to allow switching', 'woocommerce-subscriptions' ) ?></label>
+						<?php echo _x( 'Between Grouped Subscriptions', 'when to allow switching', 'woocommerce-subscriptions' ) ?>
+					</label>
+					<?php
+					/**
+					 * 'woocommerce_subscription_switching_options' filter.
+					 *
+					 * Used to add extra switching options.
+					 *
+					 * @param  array  $switching_options
+					 * @return array
+					 */
+					$extra_switching_options = (array) apply_filters( 'woocommerce_subscription_switching_options', array() );
+					foreach ( $extra_switching_options as $option ) {
+						if ( ! isset( $option['id'], $option['name'] ) ) {
+							continue;
+						}
+
+						$value   = get_option( $option['id'], 'no' );
+						$checked = checked( $value, 'yes', false );
+						echo sprintf( '<label><input%s type="checkbox" name="%s" value="1"/> %s</label>', $checked, $option['id'], $option['name'] );
+					}
+					?>
 				</div>
 			</td>
 		</tr>
