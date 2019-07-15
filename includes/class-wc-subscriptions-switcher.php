@@ -349,8 +349,8 @@ class WC_Subscriptions_Switcher {
 			),
 
 			array(
-				'type'  => 'wcs_switching_options',
-				'id'      => WC_Subscriptions_Admin::$option_prefix . '_allow_switching'
+				'type' => 'wcs_switching_options',
+				'id'   => WC_Subscriptions_Admin::$option_prefix . '_allow_switching',
 			),
 
 			array(
@@ -423,8 +423,8 @@ class WC_Subscriptions_Switcher {
 	/**
 	 * Render the wcs_switching_options setting field.
 	 *
-	 * @since 2.5.8
-	 * @return void
+	 * @since 2.6.0
+	 * @param array $data
 	 */
 	public static function switching_options_field_html( $data ) {
 
@@ -435,45 +435,50 @@ class WC_Subscriptions_Switcher {
 			$allow_switching = 'no';
 		}
 
-		$allow_switching_variable_checked = (bool) preg_match( '/(variable)/', $allow_switching ) ? ' checked="checked"' : '';
-		$allow_switching_grouped_checked  = (bool) preg_match( '/(grouped)/', $allow_switching ) ? ' checked="checked"' : '';
+		$allow_switching_variable_checked = strpos( $allow_switching, 'variable' ) !== false;
+		$allow_switching_grouped_checked  = strpos( $allow_switching, 'grouped' ) !== false;
 		?>
 		<tr valign="top">
 			<th scope="row" class="titledesc">
 				<label for="wcs_switching_options">
-					<?php _e( 'Allow Switching', 'woocommerce-subscriptions' ) ?>
-					<?php echo wc_help_tip( __( 'Allow subscribers to switch between subscriptions combined in a grouped product, different variations of a Variable subscription or don\'t allow switching.', 'woocommerce-subscriptions' ) ); ?>
-
+					<?php esc_html_e( 'Allow Switching', 'woocommerce-subscriptions' ) ?>
 				</label>
 			</th>
 			<td class="forminp forminp-wcs_switching_options">
 				<div class="wcs_setting_switching_options" id="woocommerce_subscriptions_allow_switching">
 					<label>
-						<input<?php echo $allow_switching_variable_checked ?> type="checkbox" name="<?php echo WC_Subscriptions_Admin::$option_prefix . '_allow_switching_variable' ?>"/>
-						<?php echo _x( 'Between Subscription Variations', 'when to allow switching', 'woocommerce-subscriptions' ) ?>
+						<input <?php checked( $allow_switching_variable_checked ); ?> type="checkbox" name="<?php echo WC_Subscriptions_Admin::$option_prefix . '_allow_switching_variable' ?>"/>
+						<?php echo esc_html_x( 'Between Subscription Variations', 'when to allow switching', 'woocommerce-subscriptions' ); ?>
 					</label>
 					<label>
-						<input<?php echo $allow_switching_grouped_checked ?> type="checkbox" name="<?php echo WC_Subscriptions_Admin::$option_prefix . '_allow_switching_grouped' ?>"/>
-						<?php echo _x( 'Between Grouped Subscriptions', 'when to allow switching', 'woocommerce-subscriptions' ) ?>
+						<input <?php checked( $allow_switching_grouped_checked ); ?> type="checkbox" name="<?php echo WC_Subscriptions_Admin::$option_prefix . '_allow_switching_grouped' ?>"/>
+						<?php echo esc_html_x( 'Between Grouped Subscriptions', 'when to allow switching', 'woocommerce-subscriptions' ); ?>
 					</label>
 					<?php
+
 					/**
 					 * 'woocommerce_subscription_switching_options' filter.
 					 *
 					 * Used to add extra switching options.
 					 *
+					 * @since  2.6.0
 					 * @param  array  $switching_options
 					 * @return array
 					 */
-					$extra_switching_options = (array) apply_filters( 'woocommerce_subscription_switching_options', array() );
+					$extra_switching_options = (array) apply_filters( 'woocommerce_subscriptions_allow_switching_options', array() );
+
 					foreach ( $extra_switching_options as $option ) {
-						if ( ! isset( $option['id'], $option['name'] ) ) {
+
+						if ( empty( $option['id'] ) || empty( $option['label'] ) ) {
 							continue;
 						}
 
-						$value   = get_option( $option['id'], 'no' );
+						$label   = $option['label'];
+						$name    = WC_Subscriptions_Admin::$option_prefix . '_allow_switching_' . $option['id'];
+						$value   = get_option( $name, 'no' );
 						$checked = checked( $value, 'yes', false );
-						echo sprintf( '<label><input%s type="checkbox" name="%s" value="1"/> %s</label>', $checked, $option['id'], $option['name'] );
+
+						echo sprintf( '<label><input%s type="checkbox" name="%s" value="1"/> %s</label>', $checked, esc_attr( $name ), esc_html( $label ) );
 					}
 					?>
 				</div>
