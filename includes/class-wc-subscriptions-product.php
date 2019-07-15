@@ -578,10 +578,13 @@ class WC_Subscriptions_Product {
 
 			} else {
 
-				$first_renewal_timestamp = wcs_add_time( $billing_interval, self::get_period( $product_id ), wcs_date_to_time( $from_date ) );
+				$site_time_offset = (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
 
-				if ( 'site' == $timezone ) {
-					$first_renewal_timestamp += ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
+				// As wcs_add_time() calls wcs_add_months() which checks for last day of month, pass the site time
+				$first_renewal_timestamp = wcs_add_time( $billing_interval, self::get_period( $product_id ), wcs_date_to_time( $from_date ) + $site_time_offset );
+
+				if ( 'site' !== $timezone ) {
+					$first_renewal_timestamp -= $site_time_offset;
 				}
 			}
 		} else {
