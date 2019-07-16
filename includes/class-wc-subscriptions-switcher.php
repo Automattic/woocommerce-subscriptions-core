@@ -447,11 +447,11 @@ class WC_Subscriptions_Switcher {
 			<td class="forminp forminp-wcs_switching_options">
 				<div class="wcs_setting_switching_options" id="woocommerce_subscriptions_allow_switching">
 					<label>
-						<input <?php checked( $allow_switching_variable_checked ); ?> type="checkbox" name="<?php echo WC_Subscriptions_Admin::$option_prefix . '_allow_switching_variable' ?>"/>
+						<input <?php checked( $allow_switching_variable_checked ); ?> type="checkbox" name="<?php echo esc_attr( WC_Subscriptions_Admin::$option_prefix . '_allow_switching_variable' ) ?>"/>
 						<?php echo esc_html_x( 'Between Subscription Variations', 'when to allow switching', 'woocommerce-subscriptions' ); ?>
 					</label>
 					<label>
-						<input <?php checked( $allow_switching_grouped_checked ); ?> type="checkbox" name="<?php echo WC_Subscriptions_Admin::$option_prefix . '_allow_switching_grouped' ?>"/>
+						<input <?php checked( $allow_switching_grouped_checked ); ?> type="checkbox" name="<?php echo esc_attr( WC_Subscriptions_Admin::$option_prefix . '_allow_switching_grouped' ) ?>"/>
 						<?php echo esc_html_x( 'Between Grouped Subscriptions', 'when to allow switching', 'woocommerce-subscriptions' ); ?>
 					</label>
 					<?php
