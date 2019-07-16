@@ -64,22 +64,16 @@ class WCS_Meta_Box_Related_Orders {
 			$initial_subscriptions = wcs_get_subscriptions_for_order( $post->ID, array( 'order_type' => array( 'resubscribe' ) ) );
 		}
 
-		// If we're on a single subscription or renewal order's page, display the parent orders
-		if ( 1 == count( $subscriptions ) ) {
-			foreach ( $subscriptions as $subscription ) {
-				if ( $subscription->get_parent_id() ) {
-					$orders_by_type['parent'][] = $subscription->get_parent_id();
-				}
+		foreach ( $subscriptions as $subscription ) {
+			// If we're on a single subscription or renewal order's page, display the parent orders
+			if ( 1 == count( $subscriptions ) && $subscription->get_parent_id() ) {
+				$orders_by_type['parent'][] = $subscription->get_parent_id();
 			}
-		}
 
-		// Finally, display the renewal orders
-		foreach ( $subscriptions as $subscription ) {
+			// Finally, display the renewal orders
 			$orders_by_type['renewal'] = $subscription->get_related_orders( 'ids', 'renewal' );
-		}
 
-		// Build the array of subscriptions and orders to display.
-		foreach ( $subscriptions as $subscription ) {
+			// Build the array of subscriptions and orders to display.
 			$subscription->update_meta_data( '_relationship', _x( 'Subscription', 'relation to order', 'woocommerce-subscriptions' ) );
 			$orders_to_display[] = $subscription;
 		}
