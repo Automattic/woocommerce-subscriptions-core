@@ -1057,7 +1057,7 @@ class WC_Subscriptions_Admin {
 		// Add the $_POST[ 'woocommerce_subscriptions_allow_switching' ] value
 		if ( isset( $_POST[ self::$option_prefix . '_allow_switching_variable' ] ) || isset( $_POST[ self::$option_prefix . '_allow_switching_grouped' ] ) ) {
 
-			$value = [];
+			$value = array();
 
 			if ( ! empty( $_POST[ self::$option_prefix . '_allow_switching_variable' ] ) ) {
 				$value[] = 'variable';
