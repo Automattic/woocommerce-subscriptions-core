@@ -460,7 +460,7 @@ class WCS_Switch_Totals_Calculator {
 	protected function log_switch( $switch_item ) {
 		static $logger    = null;
 		$subscription_id  = $switch_item->subscription->get_id();
-		$existing_item_id = $switch_item->existing_item->get_id();
+		$existing_item_id = $switch_item->is_new_item() ? 'new' : $switch_item->existing_item->get_id();
 
 		if ( ! $logger ) {
 			$logger = wc_get_logger();
