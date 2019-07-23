@@ -254,8 +254,8 @@ class WCS_Switch_Totals_Calculator {
 			$product->read_meta_data( true );
 
 			// Because product add-ons etc. don't apply to sign-up fees, it's safe to use the product's sign-up fee value rather than the cart item's
-			$sign_up_fee_due  = WC_Subscriptions_Product::get_sign_up_fee( $product );
-			$sign_up_fee_paid = $switch_item->subscription->get_items_sign_up_fee( $switch_item->existing_item, $this->prices_include_tax ? 'inclusive_of_tax' : 'exclusive_of_tax' );
+			$sign_up_fee_due   = WC_Subscriptions_Product::get_sign_up_fee( $product );
+			$sign_up_fee_paid  = $switch_item->is_new_item() ? 0.0 : $switch_item->subscription->get_items_sign_up_fee( $switch_item->existing_item, $this->prices_include_tax ? 'inclusive_of_tax' : 'exclusive_of_tax' );
 			$existing_item_qty = $switch_item->is_new_item() ? 0 : $switch_item->existing_item['qty'];
 
 			// Make sure total prorated sign-up fee is prorated across total amount of sign-up fee so that customer doesn't get extra discounts
