@@ -649,18 +649,27 @@ class WC_Subscriptions_Switcher {
 	public static function add_line_item_meta( $order_item, $cart_item_key, $cart_item, $order ) {
 		if ( isset( $cart_item['subscription_switch'] ) ) {
 			if ( $switches = self::cart_contains_switches() ) {
-				foreach ( $switches as $switch_item_key => $switch_details ) {
-					if ( $cart_item_key == $switch_item_key ) {
+				foreach ( WC()->cart->cart_contents as $switch_item_key => $switch_item ) {
 
-						if ( wcs_is_subscription( $order ) ) {
+					if ( $cart_item_key !== $switch_item_key ) {
+						continue;
+					}
+
+					if ( ! isset( $switch_item['subscription_switch'] ) ) {
+						continue;
+					}
+
+					$switch_details = $switch_item['subscription_switch'];
+
+					if ( wcs_is_subscription( $order ) ) {
+						if ( ! empty( $switch_details['item_id'] ) ) {
 							$order_item->add_meta_data( '_switched_subscription_item_id', $switch_details['item_id'] );
-						} else {
-							$sign_up_fee_prorated = WC()->cart->cart_contents[ $cart_item_key ]['data']->get_meta( 'subscription_sign_up_fee_prorated', true );
-							$price_prorated       = WC()->cart->cart_contents[ $cart_item_key ]['data']->get_meta( 'subscription_price_prorated', true );
-
-							$order_item->add_meta_data( '_switched_subscription_sign_up_fee_prorated', empty( $sign_up_fee_prorated ) ? 0 : $sign_up_fee_prorated );
-							$order_item->add_meta_data( '_switched_subscription_price_prorated', empty( $price_prorated ) ? 0 : $price_prorated );
 						}
+					} else {
+						$sign_up_fee_prorated = WC()->cart->cart_contents[ $cart_item_key ]['data']->get_meta( 'subscription_sign_up_fee_prorated', true );
+						$price_prorated       = WC()->cart->cart_contents[ $cart_item_key ]['data']->get_meta( 'subscription_price_prorated', true );
+						$order_item->add_meta_data( '_switched_subscription_sign_up_fee_prorated', empty( $sign_up_fee_prorated ) ? 0 : $sign_up_fee_prorated );
+						$order_item->add_meta_data( '_switched_subscription_price_prorated', empty( $price_prorated ) ? 0 : $price_prorated );
 					}
 				}
 			}
