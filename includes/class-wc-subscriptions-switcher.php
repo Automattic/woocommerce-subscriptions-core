@@ -1003,9 +1003,13 @@ class WC_Subscriptions_Switcher {
 		if ( isset( WC()->cart ) ) {
 			// We use WC()->cart->cart_contents instead of WC()->cart->get_cart() to prevent recursion caused when get_cart_from_session() too early is called ref: https://github.com/woocommerce/woocommerce/commit/1f3365f2066b1e9d7e84aca7b1d7e89a6989c213
 			foreach ( WC()->cart->cart_contents as $cart_item_key => $cart_item ) {
-				if ( isset( $cart_item['subscription_switch'] ) ) {
+				// Use WC()->cart->cart_contents instead of '$cart_item' as the item may have been removed by a parent item that manages it inside this loop.
+				if ( isset( WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch'] ) ) {
 					if ( wcs_is_subscription( $cart_item['subscription_switch']['subscription_id'] ) ) {
-						$subscription_switches[ $cart_item_key ] = $cart_item['subscription_switch'];
+						// Line items with an empty 'item_id' may exist if they are being added to a subscription along with "parent" item that is being switched.
+						if ( ! empty( $cart_item['subscription_switch']['item_id'] ) ) {
+							$subscription_switches[ $cart_item_key ] = $cart_item['subscription_switch'];
+						}
 					} else {
 						WC()->cart->remove_cart_item( $cart_item_key );
 						wc_add_notice( __( 'Your cart contained an invalid subscription switch request. It has been removed.', 'woocommerce-subscriptions' ), 'error' );
