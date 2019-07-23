@@ -128,16 +128,33 @@ class WCS_Switch_Totals_Calculator {
 		$switches = array();
 
 		foreach ( $this->cart->get_cart() as $cart_item_key => $cart_item ) {
+
+			// This item may not exist if its linked to an item that got removed with 'remove_cart_item' below.
+			if ( empty( $this->cart->cart_contents[ $cart_item_key ] ) ) {
+				continue;
+			}
+
 			if ( ! isset( $cart_item['subscription_switch']['subscription_id'] ) ) {
 				continue;
 			}
 
 			$subscription  = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
-			$existing_item = wcs_get_order_item( $cart_item['subscription_switch']['item_id'], $subscription );
 
-			if ( empty( $subscription ) || empty( $existing_item ) ) {
+			if ( empty( $subscription ) ) {
 				$this->cart->remove_cart_item( $cart_item_key );
 				continue;
+			}
+
+			$existing_item = null;
+
+			if ( ! empty( $cart_item['subscription_switch']['item_id'] ) ) {
+
+				$existing_item = wcs_get_order_item( $cart_item['subscription_switch']['item_id'], $subscription );
+
+				if ( empty( $existing_item ) ) {
+					$this->cart->remove_cart_item( $cart_item_key );
+					continue;
+				}
 			}
 
 			$switches[ $cart_item_key ] = new WCS_Switch_Cart_Item( $cart_item, $subscription, $existing_item );
@@ -239,10 +256,11 @@ class WCS_Switch_Totals_Calculator {
 			// Because product add-ons etc. don't apply to sign-up fees, it's safe to use the product's sign-up fee value rather than the cart item's
 			$sign_up_fee_due  = WC_Subscriptions_Product::get_sign_up_fee( $product );
 			$sign_up_fee_paid = $switch_item->subscription->get_items_sign_up_fee( $switch_item->existing_item, $this->prices_include_tax ? 'inclusive_of_tax' : 'exclusive_of_tax' );
+			$existing_item_qty = $switch_item->is_new_item() ? 0 : $switch_item->existing_item['qty'];
 
 			// Make sure total prorated sign-up fee is prorated across total amount of sign-up fee so that customer doesn't get extra discounts
-			if ( $switch_item->cart_item['quantity'] > $switch_item->existing_item['qty'] ) {
-				$sign_up_fee_paid = ( $sign_up_fee_paid * $switch_item->existing_item['qty'] ) / $switch_item->cart_item['quantity'];
+			if ( $switch_item->cart_item['quantity'] > $existing_item_qty ) {
+				$sign_up_fee_paid = ( $sign_up_fee_paid * $existing_item_qty ) / $switch_item->cart_item['quantity'];
 			}
 
 			$switch_item->product->update_meta_data( '_subscription_sign_up_fee', max( $sign_up_fee_due - $sign_up_fee_paid, 0 ) );
