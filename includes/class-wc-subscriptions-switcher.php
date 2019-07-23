@@ -727,8 +727,7 @@ class WC_Subscriptions_Switcher {
 						continue;
 					}
 
-					$subscription  = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
-					$existing_item = wcs_get_order_item( $cart_item['subscription_switch']['item_id'], $subscription );
+					$subscription = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
 
 					// If we haven't calculated a first payment date, fall back to the recurring cart's next payment date
 					if ( 0 == $cart_item['subscription_switch']['first_payment_timestamp'] ) {
@@ -741,7 +740,12 @@ class WC_Subscriptions_Switcher {
 					$is_different_trial_end_date   = self::has_different_trial( $recurring_cart, $subscription );
 					$is_single_item_subscription   = self::is_single_item_subscription( $subscription );
 
-					$switched_item_data = array( 'remove_line_item' => $cart_item['subscription_switch']['item_id'] );
+					$switched_item_data = array();
+
+					// Allow new, dependent items to be added during the switching process of another "parent" item
+					if ( ! empty( $cart_item['subscription_switch']['item_id'] ) ) {
+						$switched_item_data['remove_line_item'] = $cart_item['subscription_switch']['item_id'];
+					}
 
 					// If the item is on the same schedule, we can just add it to the new subscription and remove the old item
 					if ( $is_single_item_subscription || ( false === $is_different_billing_schedule && false === $is_different_payment_date && false === $is_different_length ) ) {
