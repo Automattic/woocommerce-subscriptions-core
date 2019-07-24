@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *		'customer_id' The user ID of a customer on the site.
  *		'product_id' The post ID of a WC_Product_Subscription, WC_Product_Variable_Subscription or WC_Product_Subscription_Variation object
  *		'order_id' The post ID of a shop_order post/WC_Order object which was used to create the subscription
- *		'subscription_status' Any valid subscription status. Can be 'any', 'active', 'cancelled', 'suspended', 'expired', 'pending' or 'trash'. Defaults to 'any'.
+ *		'subscription_status' Any valid subscription status. Can be 'any', 'active', 'cancelled', 'on-hold', 'expired', 'pending' or 'trash'. Defaults to 'any'.
  *		'order_type' Get subscriptions for the any order type in this array. Can include 'any', 'parent', 'renewal' or 'switch', defaults to parent.
  * @return array Subscription details in post_id => WC_Subscription form.
  * @since  2.0
