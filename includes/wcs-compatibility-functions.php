@@ -534,3 +534,22 @@ function wcs_doing_cron() {
 function wcs_doing_ajax() {
 	return function_exists( 'wp_doing_ajax' ) ? wp_doing_ajax() : defined( 'DOING_AJAX' ) && DOING_AJAX;
 }
+
+/**
+ * Attach a function callback for a certain WooCommerce versions.
+ *
+ * Enables attaching a callback if WooCommerce is before, after, equal or not equal to a given version.
+ * This function is a wrapper for @see WCS_Dependent_Hook_Manager::add_woocommerce_dependent_action().
+ *
+ * @since 2.5.9
+ *
+ * @param string $tag The action or filter tag to attach the callback too.
+ * @param string|array $function The callable function to attach to the hook.
+ * @param string $woocommerce_version The WooCommerce version to do a compare on. For example '3.0.0'.
+ * @param string $operator The version compare operator to use. @see https://www.php.net/manual/en/function.version-compare.php
+ * @param integer $priority The priority to attach this callback to.
+ * @param integer $number_of_args The number of arguments to pass to the callback function
+ */
+function wcs_add_woocommerce_dependent_action( $tag, $function, $woocommerce_version, $operator, $priority = 10, $number_of_args = 1 ) {
+	WCS_Dependent_Hook_Manager::add_woocommerce_dependent_action( $tag, $function, $woocommerce_version, $operator, $priority, $number_of_args );
+}
