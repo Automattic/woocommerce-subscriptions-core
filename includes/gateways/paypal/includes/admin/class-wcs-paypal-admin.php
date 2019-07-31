@@ -103,16 +103,18 @@ class WCS_PayPal_Admin {
 		$notices                 = array();
 
 		if ( ! WCS_PayPal::are_credentials_set() ) {
-			$notices[] = array(
-				'type' => 'warning',
-				// translators: placeholders are opening and closing link tags. 1$-2$: to docs on woocommerce, 3$-4$ to gateway settings on the site
-				'text'  => sprintf( esc_html__( 'PayPal is inactive for subscription transactions. Please %1$sset up the PayPal IPN%2$s and %3$senter your API credentials%4$s to enable PayPal for Subscriptions.', 'woocommerce-subscriptions' ),
-					'<a href="https://docs.woocommerce.com/document/subscriptions/store-manager-guide/#ipn-setup" target="_blank">',
-					'</a>',
-					'<a href="' . esc_url( $payment_gateway_tab_url ) . '">',
-					'</a>'
-				),
-			);
+			if ( 'yes' === WCS_PayPal::get_option( 'enabled_for_subscriptions' ) ) {
+				$notices[] = array(
+					'type' => 'warning',
+					// translators: placeholders are opening and closing link tags. 1$-2$: to docs on woocommerce, 3$-4$ to gateway settings on the site
+					'text'  => sprintf( esc_html__( 'PayPal is inactive for subscription transactions. Please %1$sset up the PayPal IPN%2$s and %3$senter your API credentials%4$s to enable PayPal for Subscriptions.', 'woocommerce-subscriptions' ),
+						'<a href="https://docs.woocommerce.com/document/subscriptions/store-manager-guide/#ipn-setup" target="_blank">',
+						'</a>',
+						'<a href="' . esc_url( $payment_gateway_tab_url ) . '">',
+						'</a>'
+					),
+				);
+			}
 		} elseif ( 'woocommerce_page_wc-settings' === get_current_screen()->base && isset( $_GET['tab'] ) && in_array( $_GET['tab'], array( 'subscriptions', 'checkout' ) ) && ! WCS_PayPal::are_reference_transactions_enabled() ) {
 			$notices[] = array(
 				'type' => 'warning',
