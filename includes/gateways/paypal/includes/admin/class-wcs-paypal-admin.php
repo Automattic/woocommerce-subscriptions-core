@@ -116,10 +116,18 @@ class WCS_PayPal_Admin {
 				);
 			}
 		} elseif ( 'woocommerce_page_wc-settings' === get_current_screen()->base && isset( $_GET['tab'] ) && in_array( $_GET['tab'], array( 'subscriptions', 'checkout' ) ) && ! WCS_PayPal::are_reference_transactions_enabled() ) {
+			if ( 'yes' === WCS_PayPal::get_option( 'enabled_for_subscriptions' ) ) {
+				$notice_type = 'warning';
+				$notice_text = esc_html__( '%1$sPayPal Reference Transactions are not enabled on your account%2$s, some subscription management features are not enabled. Please contact PayPal and request they %3$senable PayPal Reference Transactions%4$s on your account. %5$sCheck PayPal Account%6$s  %3$sLearn more %7$s', 'woocommerce-subscriptions' );
+			} else {
+				$notice_type = 'info';
+				$notice_text = esc_html__( '%1$sPayPal Reference Transactions are not enabled on your account%2$s. If you wish to use PayPal Reference Transactions with Subscriptions, please contact PayPal and request they %3$senable PayPal Reference Transactions%4$s on your account. %5$sCheck PayPal Account%6$s  %3$sLearn more %7$s', 'woocommerce-subscriptions' );
+			}
+
 			$notices[] = array(
-				'type' => 'warning',
+				'type' => $notice_type,
 				// translators: placeholders are opening and closing strong and link tags. 1$-2$: strong tags, 3$-8$ link to docs on woocommerce
-				'text'  => sprintf( esc_html__( '%1$sPayPal Reference Transactions are not enabled on your account%2$s, some subscription management features are not enabled. Please contact PayPal and request they %3$senable PayPal Reference Transactions%4$s on your account. %5$sCheck PayPal Account%6$s  %3$sLearn more %7$s', 'woocommerce-subscriptions' ),
+				'text' => sprintf( $notice_text,
 					'<strong>',
 					'</strong>',
 					'<a href="https://docs.woocommerce.com/document/subscriptions/faq/paypal-reference-transactions/" target="_blank">',
