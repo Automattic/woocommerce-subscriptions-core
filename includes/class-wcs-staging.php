@@ -73,7 +73,7 @@ class WCS_Staging {
 	 * Displays a note under the edit subscription payment method field to explain why the subscription is set to Manual Renewal.
 	 *
 	 * @param WC_Subscription $subscription
-	 * @since 2.5.6
+	 * @since 2.5.8
 	 */
 	public static function maybe_add_payment_method_note( $subscription ) {
 		if ( WC_Subscriptions::is_duplicate_site() && $subscription->has_payment_gateway() && ! $subscription->get_requires_manual_renewal() ) {
@@ -89,10 +89,9 @@ class WCS_Staging {
 	 *
 	 * @param WC_Subscription $subscription
 	 * @return string HTML content for a tooltip.
-	 * @since 2.5.6
+	 * @since 2.5.8
 	 */
 	public static function get_payment_method_tooltip( $subscription ) {
 		return '<div class="woocommerce-help-tip" data-tip="' . esc_attr__( sprintf( 'Subscription locked to Manual Renewal while the store is in staging mode. Live payment method: %s', $subscription->get_payment_method_title() ), 'woocommerce-subscriptions' ) . '"></div>';
 	}
-
 }
