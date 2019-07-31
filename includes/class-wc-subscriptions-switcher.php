@@ -795,6 +795,7 @@ class WC_Subscriptions_Switcher {
 					$is_different_billing_schedule = self::has_different_billing_schedule( $cart_item, $subscription );
 					$is_different_payment_date     = self::has_different_payment_date( $cart_item, $subscription );
 					$is_different_length           = self::has_different_length( $recurring_cart, $subscription );
+					$is_different_trial_end_date   = self::has_different_trial( $recurring_cart, $subscription );
 					$is_single_item_subscription   = self::is_single_item_subscription( $subscription );
 
 					$switched_item_data = array( 'remove_line_item' => $cart_item['subscription_switch']['item_id'] );
@@ -875,6 +876,10 @@ class WC_Subscriptions_Switcher {
 
 						if ( $is_different_length ) {
 							$updated_dates['end'] = $recurring_cart->end_date;
+						}
+
+						if ( $is_different_trial_end_date ) {
+							$updated_dates['trial_end'] = $recurring_cart->trial_end_date;
 						}
 
 						if ( ! empty( $updated_dates ) ) {
@@ -1333,254 +1338,10 @@ class WC_Subscriptions_Switcher {
 	 * @since 2.0
 	 */
 	public static function calculate_prorated_totals( $cart ) {
-
-		if ( false === self::cart_contains_switches() ) {
-			return;
+		if ( self::cart_contains_switches() ) {
+			$switch_totals_calculator = new WCS_Switch_Totals_Calculator( $cart );
+			$switch_totals_calculator->calculate_prorated_totals();
 		}
-
-		// Maybe charge an initial amount to account for upgrading from a cheaper subscription
-		$apportion_recurring_price = get_option( WC_Subscriptions_Admin::$option_prefix . '_apportion_recurring_price', 'no' );
-		$apportion_sign_up_fee     = get_option( WC_Subscriptions_Admin::$option_prefix . '_apportion_sign_up_fee', 'no' );
-		$apportion_length          = get_option( WC_Subscriptions_Admin::$option_prefix . '_apportion_length', 'no' );
-
-		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-
-			if ( ! isset( $cart_item['subscription_switch']['subscription_id'] ) ) {
-				continue;
-			}
-
-			$subscription  = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
-			$existing_item = wcs_get_order_item( $cart_item['subscription_switch']['item_id'], $subscription );
-
-			if ( empty( $existing_item ) ) {
-				WC()->cart->remove_cart_item( $cart_item_key );
-				continue;
-			}
-
-			$product_in_cart    = $cart_item['data'];
-			$product_id         = wcs_get_canonical_product_id( $cart_item );
-			$product            = wc_get_product( $product_id );
-			$is_virtual_product = $product->is_virtual();
-
-			// Set when the first payment and end date for the new subscription should occur
-			WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $cart_item['subscription_switch']['next_payment_timestamp'];
-			WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['end_timestamp'] = $end_timestamp = wcs_date_to_time( WC_Subscriptions_Product::get_expiration_date( $product_id, $subscription->get_date( 'last_order_date_created' ) ) );
-
-			// Add any extra sign up fees required to switch to the new subscription
-			if ( 'yes' == $apportion_sign_up_fee ) {
-
-				// With WC 3.0, make sure we get a fresh copy of the product's meta to avoid prorating an already prorated sign-up fee
-				if ( is_callable( array( $product, 'read_meta_data' ) ) ) {
-					$product->read_meta_data( true );
-				}
-
-				// Because product add-ons etc. don't apply to sign-up fees, it's safe to use the product's sign-up fee value rather than the cart item's
-				$sign_up_fee_due  = WC_Subscriptions_Product::get_sign_up_fee( $product );
-				$sign_up_fee_paid = $subscription->get_items_sign_up_fee( $existing_item, get_option( 'woocommerce_prices_include_tax' ) === 'yes' ? 'inclusive_of_tax' : 'exclusive_of_tax' );
-
-				// Make sure total prorated sign-up fee is prorated across total amount of sign-up fee so that customer doesn't get extra discounts
-				if ( $cart_item['quantity'] > $existing_item['qty'] ) {
-					$sign_up_fee_paid = ( $sign_up_fee_paid * $existing_item['qty'] ) / $cart_item['quantity'];
-				}
-
-				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee', max( $sign_up_fee_due - $sign_up_fee_paid, 0 ), 'set_prop_only' );
-				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee_prorated', WC_Subscriptions_Product::get_sign_up_fee( WC()->cart->cart_contents[ $cart_item_key ]['data'] ), 'set_prop_only' );
-
-			} elseif ( 'no' == $apportion_sign_up_fee ) { // $0 the initial sign-up fee
-
-				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee', 0, 'set_prop_only' );
-
-			}
-
-			// Get the current subscription's last payment date
-			$last_order_time_created = $subscription->get_time( 'last_order_date_created' );
-			$days_since_last_payment = floor( ( gmdate( 'U' ) - $last_order_time_created ) / ( 60 * 60 * 24 ) );
-
-			// Get the current subscription's next payment date
-			$next_payment_timestamp  = $cart_item['subscription_switch']['next_payment_timestamp'];
-			$days_until_next_payment = ceil( ( $next_payment_timestamp - gmdate( 'U' ) ) / ( 60 * 60 * 24 ) );
-
-			// If the subscription contains a synced product and the next payment is actually the first payment, determine the days in the "old" cycle from the subscription object
-			if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription->get_id() ) && WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product, 'timestamp', $subscription->get_date( 'start' ) ) == $next_payment_timestamp ) {
-				$days_in_old_cycle = wcs_get_days_in_cycle( $subscription->get_billing_period(), $subscription->get_billing_interval() );
-			} else {
-				// Find the number of days between the two
-				$days_in_old_cycle = $days_until_next_payment + $days_since_last_payment;
-			}
-
-			$days_in_old_cycle = apply_filters( 'wcs_switch_proration_days_in_old_cycle', $days_in_old_cycle, $subscription, $cart_item );
-
-			// Find the actual recurring amount charged for the old subscription (we need to use the '_recurring_line_total' meta here rather than '_subscription_recurring_amount' because we want the recurring amount to include extra from extensions, like Product Add-ons etc.)
-			$old_recurring_total = $existing_item['line_total'];
-
-			// Use previous parent or renewal order's actual line item total instead of what is due, to guard against not yet paid amounts in multi-switching
-			$last_order = $subscription->get_last_order( 'all' );
-			$last_order_items = $last_order->get_items();
-			foreach ( $last_order_items as $last_order_item ) {
-				if ( wcs_get_canonical_product_id( $last_order_item ) == $product_id ) {
-					$old_recurring_total = $last_order_item['line_total'];
-					break;
-				}
-			}
-
-			if ( $subscription->get_prices_include_tax() ) {
-				$old_recurring_total += $existing_item['line_tax'];
-			}
-
-			// Find the $price per day for the old subscription's recurring total
-			$old_price_per_day = $days_in_old_cycle > 0 ? $old_recurring_total / $days_in_old_cycle : $old_recurring_total;
-			$old_price_per_day = apply_filters( 'wcs_switch_proration_old_price_per_day', $old_price_per_day, $subscription, $cart_item, $old_recurring_total, $days_in_old_cycle );
-
-			// Find the price per day for the new subscription's recurring total based on billing schedule
-			$days_in_new_cycle = wcs_get_days_in_cycle( WC_Subscriptions_Product::get_period( $product_in_cart ), WC_Subscriptions_Product::get_interval( $product_in_cart ) );
-
-			// Whether the days in new cycle match the days in old,ignoring any rounding.
-			$days_in_new_and_old_cycle_match = ceil( $days_in_new_cycle ) == $days_in_old_cycle || floor( $days_in_new_cycle ) == $days_in_old_cycle;
-
-			// Whether the new item uses the same billing interval & cycle as the old subscription,
-			$matching_billing_cycle = WC_Subscriptions_Product::get_period( $product_in_cart ) == $subscription->get_billing_period() && WC_Subscriptions_Product::get_interval( $product_in_cart ) == $subscription->get_billing_interval();
-			$switch_during_trial    = $subscription->get_time( 'trial_end' ) > gmdate( 'U' );
-
-			// Set the days in each cycle to match if they are equal (ignoring any rounding discrepancy) or if the subscription is switched during a trial and has a matching billing cycle.
-			if ( $days_in_new_and_old_cycle_match || ( $matching_billing_cycle && $switch_during_trial ) ) {
-				$days_in_new_cycle = $days_in_old_cycle;
-			}
-
-			$days_in_new_cycle = apply_filters( 'wcs_switch_proration_days_in_new_cycle', $days_in_new_cycle, $subscription, $cart_item, $days_in_old_cycle );
-
-			// We need to use the cart items price to ensure we include extras added by extensions like Product Add-ons, but we don't want the sign-up fee accounted for in the price, so make sure WC_Subscriptions_Cart::set_subscription_prices_for_calculation() isn't adding that.
-			remove_filter( 'woocommerce_product_get_price', 'WC_Subscriptions_Cart::set_subscription_prices_for_calculation', 100 );
-			$new_price_per_day = ( WC_Subscriptions_Product::get_price( $product_in_cart ) * $cart_item['quantity'] ) / $days_in_new_cycle;
-			add_filter( 'woocommerce_product_get_price', 'WC_Subscriptions_Cart::set_subscription_prices_for_calculation', 100, 2 );
-
-			$new_price_per_day = apply_filters( 'wcs_switch_proration_new_price_per_day', $new_price_per_day, $subscription, $cart_item, $days_in_new_cycle );
-
-			if ( $old_price_per_day < $new_price_per_day ) {
-				$switch_type = 'upgrade';
-			} elseif ( $old_price_per_day > $new_price_per_day && $new_price_per_day >= 0 ) {
-				$switch_type = 'downgrade';
-			} else {
-				$switch_type = 'crossgrade';
-			}
-
-			$switch_type = apply_filters( 'wcs_switch_proration_switch_type', $switch_type, $subscription, $cart_item, $old_price_per_day, $new_price_per_day );
-
-			if ( ! in_array( $switch_type, array( 'upgrade', 'downgrade', 'crossgrade' ) ) ) {
-				throw new UnexpectedValueException( sprintf( __( 'Invalid switch type "%s". Switch must be one of: "upgrade", "downgrade" or "crossgrade".', 'woocommerce-subscriptions' ), $switch_type ) );
-			}
-
-			WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['upgraded_or_downgraded'] = sprintf( '%sd', $switch_type ); // preserve past tense for backward compatibility (luckily past tense for all allowed switch types end with a d)
-
-			// Now lets see if we should add a prorated amount to the sign-up fee (for upgrades) or extend the next payment date (for downgrades)
-			if ( in_array( $apportion_recurring_price, array( 'yes', 'yes-upgrade' ) ) || ( in_array( $apportion_recurring_price, array( 'virtual', 'virtual-upgrade' ) ) && $is_virtual_product ) ) {
-
-				// If the customer is upgrading, we may need to add a gap payment to the sign-up fee or to reduce the pre-paid period (or both)
-				if ( 'upgrade' === $switch_type ) {
-
-					// The new subscription may be more expensive, but it's also on a shorter billing cycle, so reduce the next pre-paid term by default, but also allow this to be customised
-					$reduce_pre_paid_term = apply_filters( 'wcs_switch_proration_reduce_pre_paid_term', $days_in_old_cycle > $days_in_new_cycle, $subscription, $cart_item, $days_in_old_cycle, $days_in_new_cycle, $old_price_per_day, $new_price_per_day );
-
-					if ( $reduce_pre_paid_term ) {
-
-						// Find out how many days at the new price per day the customer would receive for the total amount already paid
-						// (e.g. if the customer paid $10 / month previously, and was switching to a $5 / week subscription, she has pre-paid 14 days at the new price)
-						$pre_paid_days = self::calculate_pre_paid_days( $old_recurring_total, $new_price_per_day );
-
-						// If the total amount the customer has paid entitles her to more days at the new price than she has received, there is no gap payment, just shorten the pre-paid term the appropriate number of days
-						if ( $days_since_last_payment < $pre_paid_days ) {
-
-							WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $last_order_time_created + ( $pre_paid_days * 60 * 60 * 24 );
-
-						// If the total amount the customer has paid entitles her to the same or less days at the new price then start the new subscription from today
-						} else {
-
-							WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = 0;
-
-						}
-					} else {
-
-						// If we've already calculated the prorated price recalculate the amounts but reset the values so we don't double the amounts
-						if ( 0 < wcs_get_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_price_prorated', 'single', 0 ) ) {
-							$prorated_signup_fee = wcs_get_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee_prorated', 'single' );
-							wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee', $prorated_signup_fee, 'set_prop_only' );
-						}
-
-						$extra_to_pay = $days_until_next_payment * ( $new_price_per_day - $old_price_per_day );
-
-						// when calculating a subscription with one length (no more next payment date and the end date may have been pushed back) we need to pay for those extra days at the new price per day between the old next payment date and new end date
-						if ( 1 == WC_Subscriptions_Product::get_length( $product_in_cart ) ) {
-							$days_to_new_end = floor( ( $end_timestamp - $next_payment_timestamp ) / ( 60 * 60 * 24 ) );
-
-							if ( $days_to_new_end > 0 ) {
-								$extra_to_pay += $days_to_new_end * $new_price_per_day;
-							}
-						}
-
-						// We need to find the per item extra to pay so we can set it as the sign-up fee (WC will then multiply it by the quantity)
-						$extra_to_pay = $extra_to_pay / $cart_item['quantity'];
-						$extra_to_pay = apply_filters( 'wcs_switch_proration_extra_to_pay', $extra_to_pay, $subscription, $cart_item, $days_in_old_cycle );
-
-						// Keep a record of the two separate amounts so we store these and calculate future switch amounts correctly
-						$existing_sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( WC()->cart->cart_contents[ $cart_item_key ]['data'] );
-						wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee_prorated', $existing_sign_up_fee, 'set_prop_only' );
-						wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_price_prorated', round( $extra_to_pay, wc_get_price_decimals() ), 'set_prop_only' );
-						wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee', round( $existing_sign_up_fee + $extra_to_pay, wc_get_price_decimals() ), 'set_prop_only' );
-					}
-
-				// If the customer is downgrading, set the next payment date and maybe extend it if downgrades are prorated
-				} elseif ( 'downgrade' === $switch_type ) {
-
-					$old_total_paid = $old_price_per_day * $days_until_next_payment;
-
-					// if downgrades are apportioned, extend the next payment date for n more days
-					if ( in_array( $apportion_recurring_price, array( 'virtual', 'yes' ) ) ) {
-
-						// Find how many more days at the new lower price it takes to exceed the amount already paid
-						$days_to_add = self::calculate_pre_paid_days( $old_total_paid, $new_price_per_day );
-
-						$days_to_add -= $days_until_next_payment;
-					} else {
-						$days_to_add = 0;
-					}
-
-					WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $next_payment_timestamp + ( $days_to_add * 60 * 60 * 24 );
-
-				} // The old price per day == the new price per day, no need to change anything
-
-				if ( WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] != $cart_item['subscription_switch']['next_payment_timestamp'] ) {
-					WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch']['recurring_payment_prorated'] = true;
-				}
-			}
-
-			if ( 'yes' == $apportion_length || ( 'virtual' == $apportion_length && $is_virtual_product ) ) {
-
-				$base_length        = WC_Subscriptions_Product::get_length( $product_id );
-				$completed_payments = $subscription->get_payment_count();
-				$length_remaining   = $base_length - $completed_payments;
-
-				// Default to the base length if more payments have already been made than this subscription requires
-				if ( $length_remaining <= 0 ) {
-					$length_remaining = $base_length;
-				}
-
-				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_length', $length_remaining, 'set_prop_only' );
-			}
-		}
-	}
-
-	/**
-	* Calculate the number of days that have already been paid
-	*
-	* @param int $old_total_paid The amount paid previously, such as the old recurring total
-	* @param int $new_price_per_day The amount per day price for the new subscription
-	* @return int $pre_paid_days The number of days paid for already
-	*/
-	private static function calculate_pre_paid_days( $old_total_paid, $new_price_per_day ) {
-		$pre_paid_days = 0;
-		if ( 0 != $new_price_per_day ) {
-			$pre_paid_days = ceil( $old_total_paid / $new_price_per_day );
-		}
-		return $pre_paid_days;
 	}
 
 	/**
@@ -2178,6 +1939,95 @@ class WC_Subscriptions_Switcher {
 		add_action( 'woocommerce_grant_product_download_permissions', 'WCS_Download_Handler::save_downloadable_product_permissions' );
 	}
 
+	/**
+	 * Calculates the total amount a customer has paid in early renewals and switches since the last non-early renewal or parent order (inclusive).
+	 *
+	 * This function will map the current item back through multiple switches to make sure it finds the item that was present at the time of last parent/scheduled renewal.
+	 *
+	 * @since 2.6.0
+	 *
+	 * @param WC_Subscription $subscription         The Subscription.
+	 * @param WC_Order_Item   $subscription_item    The current line item on the subscription to map back through the related orders.
+	 * @param string          $include_sign_up_fees Optional. Whether to include the sign-up fees paid. Can be 'include_sign_up_fees' or 'exclude_sign_up_fees'. Default 'include_sign_up_fees'.
+	 *
+	 * @return float The total amount paid for an existing subscription line item.
+	 */
+	public static function calculate_total_paid_since_last_order( $subscription, $subscription_item, $include_sign_up_fees = 'include_sign_up_fees' ) {
+		$found_item      = false;
+		$item_total_paid = 0;
+		$orders          = $subscription->get_related_orders( 'all', array( 'parent', 'renewal', 'switch' ) );
+
+		// We need the orders sorted by the date they were paid, with the newest first.
+		wcs_sort_objects( $orders, 'date_paid', 'descending' );
+
+		// We'll need to make sure we map switched items back through past orders so flag if the current item has been switched before.
+		$has_been_switched           = $subscription_item->meta_exists( '_switched_subscription_item_id' );
+		$switched_subscription_items = $subscription->get_items( 'line_item_switched' );
+
+		foreach ( $orders as $order ) {
+			$order_is_parent = $order->get_id() === $subscription->get_parent_id();
+
+			// Find the item on the order which matches the subscription item.
+			$order_item = wcs_find_matching_line_item( $order, $subscription_item );
+
+			if ( $order_item ) {
+				$found_item = true;
+				$item_total = $order_item->get_total();
+
+				if ( $order->get_prices_include_tax( 'edit' ) ) {
+					$item_total += $order_item->get_total_tax();
+				}
+
+				// Remove any signup fees if necessary.
+				if ( $order_is_parent && 'include_sign_up_fees' !== $include_sign_up_fees ) {
+					if ( $order_item->meta_exists( '_synced_sign_up_fee' ) ) {
+						$item_total -= $order_item->get_meta( '_synced_sign_up_fee' );
+					} elseif ( $subscription_item->meta_exists( '_has_trial' ) ) {
+						// Where there's a free trial, the sign up fee is the entire item total so the non-sign-up fee portion is 0.
+						$item_total = 0;
+					} else {
+						// For non-free trial subscriptions, the sign up fee portion is the order total minus the recurring total (subscription item total).
+						// Use the subscription item's subtotal (without discounts) to avoid signup fee coupon discrepancies
+						$item_total -= max( $order_item->get_total() - $subscription_item->get_subtotal(), 0 );
+					}
+				}
+
+				$item_total_paid += $item_total;
+			}
+
+			// If the current order in line contains a switch, we might need to start looking for the previous product in older related orders.
+			if ( $has_been_switched && wcs_order_contains_switch( $order ) ) {
+				// The new subscription item stores a reference to the old subscription item in meta.
+				$switched_subscription_item_id = $subscription_item->get_meta( '_switched_subscription_item_id' );
+
+				// Check that the switched subscription line item still exists.
+				if ( isset( $switched_subscription_items[ $switched_subscription_item_id ] ) ) {
+					$switched_subscription_item = $switched_subscription_items[ $switched_subscription_item_id ];
+
+					// The switched subscription item stores a reference to the new item on the switch order .
+					$switch_order_item_id = $switched_subscription_item->get_meta( '_switched_subscription_new_item_id' );
+
+					// Check that this switch order contains the switch for the current subscription item.
+					if ( $switch_order_item_id && (bool) wcs_get_order_item( $switch_order_item_id, $order ) ) {
+						// The item we need to look for now in older related orders is the subscription item which switched.
+						$subscription_item = $switched_subscription_item;
+
+						// If the switched subscription item has been switched, make a note of it too as we might have a multi-switch.
+						$has_been_switched = $subscription_item->meta_exists( '_switched_subscription_item_id' );
+					}
+				}
+			}
+
+			// If this is a parent order, or it's a renewal order but not an early renewal, we've gone back far enough -- exit out.
+			if ( $order_is_parent || ( wcs_order_contains_renewal( $order ) && ! wcs_order_contains_early_renewal( $order ) ) ) {
+				break;
+			}
+		}
+
+		// If we never found any amount paid, fall back to the existing item's line item total.
+		return $found_item ? $item_total_paid : $subscription_item['line_total'];
+	}
+
 	/** Deprecated Methods **/
 
 	/**
@@ -2377,6 +2227,22 @@ class WC_Subscriptions_Switcher {
 		}
 
 		return $cart_contains_subscription_creating_switch;
+	}
+
+	/**
+	 * @param WC_Cart         $recurring_cart
+	 * @param WC_Subscription $subscription
+	 *
+	 * @return bool
+	 * @see   self::process_checkout().
+	 *
+	 * @since 2.6.0
+	 */
+	public static function has_different_trial( $recurring_cart, $subscription ) {
+		$cart_trial_end_date         = gmdate( 'Y-m-d', wcs_date_to_time( $recurring_cart->trial_end_date ) );;
+		$subscription_trial_end_date = gmdate( 'Y-m-d', $subscription->get_time( 'trial_end' ) );
+
+		return $cart_trial_end_date !== $subscription_trial_end_date;
 	}
 
 	/**

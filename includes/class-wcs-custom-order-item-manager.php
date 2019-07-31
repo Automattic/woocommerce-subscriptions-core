@@ -8,6 +8,25 @@
 class WCS_Custom_Order_Item_Manager {
 
 	/**
+	 * The custom line item types managed by this class.
+	 *
+	 * @var array Each item type should have:
+	 *   - A 'group' arg which is registered with WC_Abstract_Order::get_items() APIs via the woocommerce_order_type_to_group hook.
+	 *   - A 'class' arg which WooCommerce's WC_Abstract_Order::get_item() APIs will use to instantiate the line item object.
+	 *   - Optional. A 'data_store' arg. If provided, the line item will use this data store to load the line item data. Default is WC_Order_Item_Product_Data_Store.
+	 */
+	protected static $line_item_type_args = array(
+		'line_item_removed' => array(
+			'group' => 'removed_line_items',
+			'class' => 'WC_Subscription_Line_Item_Removed',
+		),
+		'line_item_switched' => array(
+			'group' => 'switched_line_items',
+			'class' => 'WC_Subscription_Line_Item_Switched',
+		),
+	);
+
+	/**
 	 * Initialise class hooks & filters when the file is loaded
 	 *
 	 * @since 2.6.0
@@ -19,21 +38,23 @@ class WCS_Custom_Order_Item_Manager {
 	}
 
 	/**
-	 * Adds extra groups
-	 * - 'removed_line_items group' for the type 'line_item_removed'
+	 * Adds extra groups.
 	 *
 	 * @param array $type_to_group_list Existing list of types and their groups
 	 * @return array $type_to_group_list
 	 * @since 2.6.0
 	 */
 	public static function add_extra_groups( $type_to_group_list ) {
-		$type_to_group_list['line_item_removed'] = 'removed_line_items';
+
+		foreach ( self::$line_item_type_args as $line_item_type => $args ) {
+			$type_to_group_list[ $line_item_type ] = $args['group'];
+		}
+
 		return $type_to_group_list;
 	}
 
 	/**
-	 * Maps the classname for extra items
-	 *  - a removed line item as WC_Order_Item_Product
+	 * Maps the classname for extra items.
 	 *
 	 * @param string $classname
 	 * @param string $item_type
@@ -41,9 +62,11 @@ class WCS_Custom_Order_Item_Manager {
 	 * @since 2.6.0
 	 */
 	public static function map_classname_for_extra_items( $classname, $item_type ) {
-		if ( 'line_item_removed' === $item_type ) {
-			$classname = 'WC_Subscription_Line_Item_Removed';
+
+		if ( isset( self::$line_item_type_args[ $item_type ] ) ) {
+			$classname = self::$line_item_type_args[ $item_type ]['class'];
 		}
+
 		return $classname;
 	}
 
@@ -55,7 +78,13 @@ class WCS_Custom_Order_Item_Manager {
 	 * @since 2.6.0
 	 */
 	public static function register_data_stores( $data_stores ) {
-		$data_stores['order-item-line_item_removed'] = 'WC_Order_Item_Product_Data_Store';
+
+		foreach ( self::$line_item_type_args as $line_item_type => $args ) {
+			// By default use the WC_Order_Item_Product_Data_Store unless specified otherwise.
+			$data_store = isset( $args['data_store'] ) ? $args['data_store'] : 'WC_Order_Item_Product_Data_Store';
+			$data_stores[ "order-item-{$line_item_type}" ] = $data_store;
+		}
+
 		return $data_stores;
 	}
 }

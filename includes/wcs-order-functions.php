@@ -896,3 +896,40 @@ function wcs_minutes_since_order_created( $order ) {
 function wcs_seconds_since_order_created( $order ) {
 	return time() - $order->get_date_created()->getTimestamp();
 }
+
+/**
+ * Finds a corresponding subscription line item on an order.
+ *
+ * @since 2.6.0
+ *
+ * @param WC_Abstract_Order $order         The order object to look for the item in.
+ * @param WC_Order_Item $subscription_item The line item on the the subscription to find on the order.
+ * @param string $match_type               Optional. The type of comparison to make. Can be 'match_product_ids' to compare product|variation IDs or 'match_attributes' to also compare by item attributes on top of matching product IDs. Default 'match_product_ids'.
+ *
+ * @return WC_Order_Item|bool The order item which matches the subscription item or false if one cannot be found.
+ */
+function wcs_find_matching_line_item( $order, $subscription_item, $match_type = 'match_product_ids' ) {
+	$matching_item = false;
+
+	if ( 'match_attributes' === $match_type ) {
+		$subscription_item_attributes = wp_list_pluck( $subscription_item->get_formatted_meta_data( '_', true ), 'value', 'key' );
+	}
+
+	$subscription_item_canonical_product_id = wcs_get_canonical_product_id( $subscription_item );
+
+	foreach ( $order->get_items() as $order_item ) {
+		if ( wcs_get_canonical_product_id( $order_item ) !== $subscription_item_canonical_product_id ) {
+			continue;
+		}
+
+		// Check if we have matching meta key and value pairs loosely - they can appear in any order,
+		if ( 'match_attributes' === $match_type && wp_list_pluck( $order_item->get_formatted_meta_data( '_', true ), 'value', 'key' ) != $subscription_item_attributes ) {
+			continue;
+		}
+
+		$matching_item = $order_item;
+		break;
+	}
+
+	return $matching_item;
+}
