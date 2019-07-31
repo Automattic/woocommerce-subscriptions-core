@@ -248,7 +248,7 @@ class WC_Subscriptions_Manager {
 	 * @since 1.0
 	 */
 	public static function process_subscription_payments_on_order( $order, $product_id = '' ) {
-
+		wcs_deprecated_function( __METHOD__, '2.6.0' );
 		$subscriptions = wcs_get_subscriptions_for_order( $order );
 
 		if ( ! empty( $subscriptions ) ) {
@@ -262,7 +262,7 @@ class WC_Subscriptions_Manager {
 	}
 
 	/**
-	 * This function should be called whenever a subscription payment has failed.
+	 * This function should be called whenever a subscription payment has failed on a parent order.
 	 *
 	 * The function is a convenience wrapper for @see self::process_subscription_payment_failure(), so if calling that
 	 * function directly, do not call this function also.
@@ -271,7 +271,7 @@ class WC_Subscriptions_Manager {
 	 * @since 1.0
 	 */
 	public static function process_subscription_payment_failure_on_order( $order, $product_id = '' ) {
-
+		wcs_deprecated_function( __METHOD__, '2.6.0' );
 		$subscriptions = wcs_get_subscriptions_for_order( $order );
 
 		if ( ! empty( $subscriptions ) ) {

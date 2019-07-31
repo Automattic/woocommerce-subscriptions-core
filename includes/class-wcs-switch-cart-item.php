@@ -328,7 +328,7 @@ class WCS_Switch_Cart_Item {
 
 		// Find the number of days between the last payment and the next
 		if ( 'days_between_payments' === $method_to_use ) {
-			$days_in_old_cycle = floor( ( $this->next_payment_timestamp - $this->get_last_order_created_time() ) / DAY_IN_SECONDS );
+			$days_in_old_cycle = round( ( $this->next_payment_timestamp - $this->get_last_order_created_time() ) / DAY_IN_SECONDS );
 		} else {
 			$days_in_old_cycle = wcs_get_days_in_cycle( $this->subscription->get_billing_period(), $this->subscription->get_billing_interval() );
 		}

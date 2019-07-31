@@ -84,8 +84,6 @@ class WC_Subscriptions_Cart {
 		add_action( 'woocommerce_cart_totals_after_order_total', __CLASS__ . '::display_recurring_totals' );
 		add_action( 'woocommerce_review_order_after_order_total', __CLASS__ . '::display_recurring_totals' );
 
-		add_filter( 'woocommerce_add_to_cart_validation', __CLASS__ . '::check_valid_add_to_cart', 10, 6 );
-
 		add_filter( 'woocommerce_cart_needs_shipping', __CLASS__ . '::cart_needs_shipping', 11, 1 );
 
 		// Remove recurring shipping methods stored in the session whenever a subscription product is removed from the cart
@@ -111,14 +109,26 @@ class WC_Subscriptions_Cart {
 		// Validate chosen recurring shipping methods
 		add_action( 'woocommerce_after_checkout_validation', __CLASS__ . '::validate_recurring_shipping_methods' );
 
-		// WooCommerce determines if free shipping is available using the WC->cart total and coupons, we need to recalculate its availability when obtaining shipping methods for a recurring cart
-		add_filter( 'woocommerce_shipping_free_shipping_is_available', __CLASS__ . '::maybe_recalculate_shipping_method_availability', 10, 2 );
-
 		add_filter( 'woocommerce_add_to_cart_handler', __CLASS__ . '::add_to_cart_handler', 10, 2 );
 
 		add_action( 'woocommerce_cart_calculate_fees', __CLASS__ . '::apply_recurring_fees', 1000, 1 );
 
 		add_action( 'woocommerce_checkout_update_order_review', __CLASS__ . '::update_chosen_shipping_methods' );
+		add_action( 'plugins_loaded', array( __CLASS__, 'attach_dependant_hooks' ) );
+	}
+
+	/**
+	 * Attach dependant callbacks.
+	 *
+	 * @since 2.5.6
+	 */
+	public static function attach_dependant_hooks() {
+		// WooCommerce determines if free shipping is available using the WC->cart total and coupons, we need to recalculate its availability when obtaining shipping methods for a recurring cart
+		if ( WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
+			add_filter( 'woocommerce_shipping_free_shipping_is_available', array( __CLASS__, 'maybe_recalculate_shipping_method_availability' ), 10, 2 );
+		} else {
+			add_filter( 'woocommerce_shipping_free_shipping_is_available', array( __CLASS__, 'recalculate_shipping_method_availability' ), 10, 3 );
+		}
 	}
 
 	/**
@@ -1079,22 +1089,6 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
-	 * Don't allow new subscription products to be added to the cart if it contains a subscription renewal already.
-	 *
-	 * @since 2.0
-	 */
-	public static function check_valid_add_to_cart( $is_valid, $product_id, $quantity, $variation_id = '', $variations = array(), $item_data = array() ) {
-
-		if ( $is_valid && ! isset( $item_data['subscription_renewal'] ) && wcs_cart_contains_renewal() && WC_Subscriptions_Product::is_subscription( $product_id ) ) {
-
-			wc_add_notice( __( 'That subscription product can not be added to your cart as it already contains a subscription renewal.', 'woocommerce-subscriptions' ), 'error' );
-			$is_valid = false;
-		}
-
-		return $is_valid;
-	}
-
-	/**
 	 * When calculating shipping for recurring carts, return a revised list of shipping methods that apply to this recurring cart.
 	 *
 	 * When WooCommerce determines the taxable address for local pick up methods, we only want to return pick up shipping methods
@@ -1275,23 +1269,64 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function maybe_recalculate_shipping_method_availability( $is_available, $package ) {
 
-		if ( isset( $package['recurring_cart_key'] ) && isset( self::$cached_recurring_cart ) && $package['recurring_cart_key'] == self::$cached_recurring_cart->recurring_cart_key ) {
-
-			// Take a copy of the WC global cart object so we can temporarily set it to base shipping method availability on the cached recurring cart
-			$global_cart = WC()->cart;
-			WC()->cart   = self::$cached_recurring_cart;
-
-			foreach ( WC()->shipping->get_shipping_methods() as $shipping_method ) {
-				if ( $shipping_method->id == 'free_shipping' ) {
-					remove_filter( 'woocommerce_shipping_free_shipping_is_available', __METHOD__ );
-					$is_available = $shipping_method->is_available( $package );
-					add_filter( 'woocommerce_shipping_free_shipping_is_available', __METHOD__, 10, 2 );
-					break;
-				}
-			}
-
-			WC()->cart = $global_cart;
+		if ( ! isset( $package['recurring_cart_key'], self::$cached_recurring_cart ) || $package['recurring_cart_key'] !== self::$cached_recurring_cart->recurring_cart_key ) {
+			return $is_available;
 		}
+
+		if ( ! WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
+			wcs_doing_it_wrong( __METHOD__, 'This method should no longer be used on WC 3.2.0 and newer. Use WC_Subscriptions_Cart::recalculate_shipping_method_availability() and pass the specific shipping method as the third parameter instead.', '2.5.6' );
+		}
+
+		// Take a copy of the WC global cart object so we can temporarily set it to base shipping method availability on the cached recurring cart
+		$global_cart      = WC()->cart;
+		WC()->cart        = self::$cached_recurring_cart;
+		$shipping_methods = WC()->shipping->get_shipping_methods();
+		$is_available     = false;
+
+		remove_filter( 'woocommerce_shipping_free_shipping_is_available', __METHOD__ );
+
+		foreach ( $shipping_methods as $shipping_method ) {
+			if ( 'free_shipping' === $shipping_method->id && $shipping_method->get_instance_id() && $shipping_method->is_available( $package ) ) {
+				$is_available = true;
+				break;
+			}
+		}
+
+		add_filter( 'woocommerce_shipping_free_shipping_is_available', __METHOD__, 10, 2 );
+
+		WC()->cart = $global_cart;
+
+		return $is_available;
+	}
+
+	/**
+	 * Calculates whether a shipping method is available for the recurring cart.
+	 *
+	 * By default WooCommerce core checks the initial cart for shipping method availability. For recurring carts,
+	 * shipping method availability is based whether the recurring total and coupons meet the requirements.
+	 *
+	 * @since 2.5.6
+	 *
+	 * @param bool $is_available Whether the shipping method is available or not.
+	 * @param array $package a shipping package.
+	 * @param WC_Shipping_Method $shipping_method An instance of a shipping method.
+	 * @return bool Whether the shipping method is available for the recurring cart or not.
+	 */
+	public static function recalculate_shipping_method_availability( $is_available, $package, $shipping_method ) {
+		if ( ! isset( $package['recurring_cart_key'], self::$cached_recurring_cart ) || $package['recurring_cart_key'] !== self::$cached_recurring_cart->recurring_cart_key ) {
+			return $is_available;
+		}
+
+		// Take a copy of the WC global cart object so we can temporarily set it to base shipping method availability on the cached recurring cart
+		$global_cart = WC()->cart;
+		WC()->cart   = self::$cached_recurring_cart;
+
+		remove_filter( 'woocommerce_shipping_free_shipping_is_available', __METHOD__ );
+		$is_available = $shipping_method->is_available( $package );
+		add_filter( 'woocommerce_shipping_free_shipping_is_available', __METHOD__, 10, 3 );
+
+		// Restore the global cart object.
+		WC()->cart = $global_cart;
 
 		return $is_available;
 	}
@@ -1348,7 +1383,39 @@ class WC_Subscriptions_Cart {
 		WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
 	}
 
+	/**
+	 * Removes all subscription products from the shopping cart.
+	 *
+	 * @since 2.6.0
+	 */
+	public static function remove_subscriptions_from_cart() {
+
+		foreach ( WC()->cart->cart_contents as $cart_item_key => $cart_item ) {
+			if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
+				WC()->cart->set_quantity( $cart_item_key, 0 );
+			}
+		}
+	}
+
 	/* Deprecated */
+
+	/**
+	 * Don't allow new subscription products to be added to the cart if it contains a subscription renewal already.
+	 *
+	 * @deprecated 2.6.0
+	 * @since 2.0
+	 */
+	public static function check_valid_add_to_cart( $is_valid, $product_id, $quantity, $variation_id = '', $variations = array(), $item_data = array() ) {
+		_deprecated_function( __METHOD__, '2.6.0', 'WC_Subscriptions_Cart_Validator::check_valid_add_to_cart' );
+
+		if ( $is_valid && ! isset( $item_data['subscription_renewal'] ) && wcs_cart_contains_renewal() && WC_Subscriptions_Product::is_subscription( $product_id ) ) {
+
+			wc_add_notice( __( 'That subscription product can not be added to your cart as it already contains a subscription renewal.', 'woocommerce-subscriptions' ), 'error' );
+			$is_valid = false;
+		}
+
+		return $is_valid;
+	}
 
 	/**
 	 * Make sure cart totals are calculated when the cart widget is populated via the get_refreshed_fragments() method
