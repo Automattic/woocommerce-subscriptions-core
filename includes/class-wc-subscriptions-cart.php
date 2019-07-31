@@ -1041,8 +1041,7 @@ class WC_Subscriptions_Cart {
 		$cart_key = '';
 
 		$product      = $cart_item['data'];
-		$product_id   = wcs_get_canonical_product_id( $product );
-		$renewal_time = ! empty( $renewal_time ) ? $renewal_time : WC_Subscriptions_Product::get_first_renewal_payment_time( $product_id );
+		$renewal_time = ! empty( $renewal_time ) ? $renewal_time : WC_Subscriptions_Product::get_first_renewal_payment_time( $product );
 		$interval     = WC_Subscriptions_Product::get_interval( $product );
 		$period       = WC_Subscriptions_Product::get_period( $product );
 		$length       = WC_Subscriptions_Product::get_length( $product );
