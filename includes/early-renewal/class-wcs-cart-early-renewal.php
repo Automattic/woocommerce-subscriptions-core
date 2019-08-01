@@ -68,7 +68,7 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 
 			$actions['subscription_renewal_early'] = array(
 				'url'  => wcs_get_early_renewal_url( $subscription ),
-				'name' => __( 'Renew Now', 'woocommerce-subscriptions' ),
+				'name' => __( 'Renew now', 'woocommerce-subscriptions' ),
 			);
 		}
 
