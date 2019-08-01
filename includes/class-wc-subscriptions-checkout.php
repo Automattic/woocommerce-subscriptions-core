@@ -21,25 +21,25 @@ class WC_Subscriptions_Checkout {
 	public static function init() {
 
 		// We need to create subscriptions on checkout and want to do it after almost all other extensions have added their products/items/fees
-		add_action( 'woocommerce_checkout_order_processed', __CLASS__ . '::process_checkout', 100, 2 );
+		add_action( 'woocommerce_checkout_order_processed', array( __CLASS__, 'process_checkout' ), 100, 2 );
 
 		// Make sure users can register on checkout (before any other hooks before checkout)
-		add_action( 'woocommerce_before_checkout_form', __CLASS__ . '::make_checkout_registration_possible', -1 );
+		add_action( 'woocommerce_before_checkout_form', array( __CLASS__, 'make_checkout_registration_possible' ), -1 );
 
 		// Display account fields as required
-		add_action( 'woocommerce_checkout_fields', __CLASS__ . '::make_checkout_account_fields_required', 10 );
+		add_action( 'woocommerce_checkout_fields', array( __CLASS__, 'make_checkout_account_fields_required' ), 10 );
 
 		// Restore the settings after switching them for the checkout form
-		add_action( 'woocommerce_after_checkout_form', __CLASS__ . '::restore_checkout_registration_settings', 100 );
+		add_action( 'woocommerce_after_checkout_form', array( __CLASS__, 'restore_checkout_registration_settings' ), 100 );
 
 		// Some callbacks need to hooked after WC has loaded.
 		add_action( 'woocommerce_loaded', array( __CLASS__, 'attach_dependant_hooks' ) );
 
 		// Force registration during checkout process
-		add_action( 'woocommerce_before_checkout_process', __CLASS__ . '::force_registration_during_checkout', 10 );
+		add_action( 'woocommerce_before_checkout_process', array( __CLASS__, 'force_registration_during_checkout' ), 10 );
 
 		// When a line item is added to a subscription on checkout, ensure the backorder data added by WC is removed
-		add_action( 'woocommerce_checkout_create_order_line_item', __CLASS__ . '::remove_backorder_meta_from_subscription_line_item', 10, 4 );
+		add_action( 'woocommerce_checkout_create_order_line_item', array( __CLASS__, 'remove_backorder_meta_from_subscription_line_item' ), 10, 4 );
 
 		// When a line item is added to a subscription, ensure the __has_trial meta data is added if applicable.
 		add_action( 'woocommerce_checkout_create_order_line_item', array( __CLASS__, 'maybe_add_free_trial_item_meta' ), 10, 4 );
