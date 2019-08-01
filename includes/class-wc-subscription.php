@@ -434,6 +434,8 @@ class WC_Subscription extends WC_Order {
 					break;
 
 					case 'pending-cancel' :
+						// Store the subscription's end date before overriding it. Used for restoring the dates if the customer reactivates the subscription.
+						$this->update_meta_data( 'end_date_pre_cancellation', $this->get_date( 'end' ) );
 
 						$end_date = $this->calculate_date( 'end_of_prepaid_term' );
 
@@ -456,7 +458,7 @@ class WC_Subscription extends WC_Order {
 						if ( 'pending-cancel' === $old_status ) {
 							$this->update_dates( array(
 								'cancelled'    => 0,
-								'end'          => 0,
+								'end'          => $this->meta_exists( 'end_date_pre_cancellation' ) ? $this->get_meta( 'end_date_pre_cancellation' ) : 0,
 								'next_payment' => $this->get_date( 'end' ),
 							) );
 						} else {
