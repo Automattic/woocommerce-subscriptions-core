@@ -840,7 +840,7 @@ class WC_Subscriptions_Switcher {
 		}
 
 		if ( isset( $cart_item['subscription_switch'] ) ) {
-			if ( $switches = self::cart_contains_switches( true ) ) {
+			if ( $switches = self::cart_contains_switches( 'switch' ) ) {
 				foreach ( $switches as $switch_item_key => $switch_details ) {
 					if ( $cart_item_key == $switch_item_key ) {
 						wc_add_order_item_meta( $item_id, '_switched_subscription_item_id', $switch_details['item_id'], true );
@@ -1146,13 +1146,13 @@ class WC_Subscriptions_Switcher {
 	}
 
 	/**
-	 * Check if the cart includes any items which are to switch an existing subscription's item.
+	 * Check if the cart includes any items which are to switch an existing subscription's contents.
 	 *
-	 * @return bool|array Returns all the items that are for a switching or false if none of the items in the cart are a switch request.
+	 * @return bool|array Returns cart items that modify subscription contents, or false if no such items exist.
 	 * @since 2.0
-	 * @param bool $exclude_new_items Whether to exclude items that are added without replacing an existing order item.
+	 * @param string $item_action Types of items to include ("any", "switch", or "add").
 	 */
-	public static function cart_contains_switches( $exclude_new_items = false ) {
+	public static function cart_contains_switches( $item_action = 'any' ) {
 
 		$subscription_switches = false;
 
@@ -1160,15 +1160,24 @@ class WC_Subscriptions_Switcher {
 			return $subscription_switches;
 		}
 
+		$exclude_new_items    = 'switch' !== $item_action;
+		$exclude_switch_items = 'add' === $item_action;
+
 		if ( isset( WC()->cart ) ) {
 			// We use WC()->cart->cart_contents instead of WC()->cart->get_cart() to prevent recursion caused when get_cart_from_session() too early is called ref: https://github.com/woocommerce/woocommerce/commit/1f3365f2066b1e9d7e84aca7b1d7e89a6989c213
 			foreach ( WC()->cart->cart_contents as $cart_item_key => $cart_item ) {
 				// Use WC()->cart->cart_contents instead of '$cart_item' as the item may have been removed by a parent item that manages it inside this loop.
 				if ( isset( WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch'] ) ) {
 					if ( wcs_is_subscription( $cart_item['subscription_switch']['subscription_id'] ) ) {
-						// Line items with an empty 'item_id' may exist if they are being added to a subscription along with "parent" item that is being switched.
-						if ( ! $exclude_new_items || ! empty( $cart_item['subscription_switch']['item_id'] ) ) {
-							$subscription_switches[ $cart_item_key ] = $cart_item['subscription_switch'];
+						// Line items with an empty 'item_id' may exist if they are being added to a subscription.
+						if ( empty( $cart_item['subscription_switch']['item_id'] ) ) {
+							if ( 'switch' !== $item_action ) {
+								$subscription_switches[ $cart_item_key ] = $cart_item['subscription_switch'];
+							}
+						} else {
+							if ( 'add' !== $item_action ) {
+								$subscription_switches[ $cart_item_key ] = $cart_item['subscription_switch'];
+							}
 						}
 					} else {
 						WC()->cart->remove_cart_item( $cart_item_key );
@@ -1191,7 +1200,7 @@ class WC_Subscriptions_Switcher {
 	public static function cart_contains_switch_for_product( $product ) {
 
 		$product_id         = ( is_object( $product ) ) ? $product->get_id() : $product;
-		$switch_items       = self::cart_contains_switches( true );
+		$switch_items       = self::cart_contains_switches( 'switch' );
 		$switch_product_ids = array();
 
 		if ( false !== $switch_items ) {
@@ -1278,7 +1287,7 @@ class WC_Subscriptions_Switcher {
 				// Also remove any existing items in the cart for switching this item (but don't make the switch invalid)
 				if ( $is_valid ) {
 
-					$existing_switch_items = self::cart_contains_switches( true );
+					$existing_switch_items = self::cart_contains_switches( 'switch' );
 
 					if ( false !== $existing_switch_items ) {
 						foreach ( $existing_switch_items as $cart_item_key => $switch_item ) {
