@@ -185,10 +185,28 @@ class WC_Subscriptions_Switcher {
 
 			foreach ( $switch_items as $cart_item_key => $switch_item ) {
 
-				$subscription = wcs_get_subscription( $switch_item['subscription_id'] );
-				$item         = ! empty( $switch_item['item_id'] ) ? wcs_get_order_item( $switch_item['item_id'], $subscription ) : WC()->cart->cart_contents[ $cart_item_key ];
+				$subscription  = wcs_get_subscription( $switch_item['subscription_id'] );
+				$is_valid_item = is_object( $subscription );
 
-				if ( ! is_object( $subscription ) || empty( $item ) || ! self::can_item_be_switched_by_user( $item, $subscription ) ) {
+				if ( $is_valid_item ) {
+					if ( empty( $switch_item['item_id'] ) ) {
+
+						$item = isset( WC()->cart->cart_contents[ $cart_item_key ] ) ? WC()->cart->cart_contents[ $cart_item_key ] : false;
+
+						if ( empty( $item ) || ! self::can_item_be_added_by_user( $item, $subscription ) ) {
+							$is_valid_item  = false;
+						}
+					} else {
+
+						$item = wcs_get_order_item( $switch_item['item_id'], $subscription );
+
+						if ( empty( $item ) || ! self::can_item_be_switched_by_user( $item, $subscription ) ) {
+							$is_valid_item  = false;
+						}
+					}
+				}
+
+				if ( ! $is_valid_item ) {
 					WC()->cart->remove_cart_item( $cart_item_key );
 					$removed_item_count++;
 				}
@@ -560,21 +578,30 @@ class WC_Subscriptions_Switcher {
 	}
 
 	/**
-	 * Check if a given item on a subscription can be switched.
+	 * Check if a given cart item can be added to a subscription, or if a given item subscription line item can be switched.
 	 *
 	 * For an item to be switchable, switching must be enabled, and the item must be for a variable subscription or
-	 * part of a grouped product (at the time the check is made, not at the time the subscription was purchased)
+	 * part of a grouped product (at the time the check is made, not at the time the subscription was purchased).
 	 *
 	 * The subscription must also be active and use manual renewals or use a payment method which supports cancellation.
 	 *
+	 * @since 2.6.0
+	 *
+	 * @param string $action The action to perform ("add" or "switch").
 	 * @param array $item An order item on the subscription to switch, or cart item to add.
 	 * @param WC_Subscription $subscription An instance of WC_Subscription
-	 * @since 2.0
 	 */
-	public static function can_item_be_switched( $item, $subscription = null ) {
+	protected static function is_action_allowed( $action, $item, $subscription = null ) {
+
+		if ( ! in_array( $action, array( 'add', 'switch' ) ) ) {
+			return false;
+		}
+
+		if ( 'switch' === $action && false === ( $item instanceof WC_Order_Item_Product ) ) {
+			return false;
+		}
 
 		$product_id = wcs_get_canonical_product_id( $item );
-		$action     = $item instanceof WC_Order_Item_Product ? 'switch' : 'add';
 
 		if ( 'switch' === $action ) {
 			if ( 'line_item' == $item['type'] && wcs_is_product_switchable_type( $product_id ) ) {
@@ -599,37 +626,104 @@ class WC_Subscriptions_Switcher {
 		}
 
 		if ( $is_product_switchable && $is_subscription_switchable && $can_subscription_be_updated ) {
-			$item_can_be_switch = true;
+			$is_action_allowed = true;
 		} else {
-			$item_can_be_switch = false;
+			$is_action_allowed = false;
 		}
 
-		return apply_filters( 'woocommerce_subscriptions_can_item_be_' . $action . 'ed', $item_can_be_switch, $item, $subscription );
+		return $is_action_allowed;
 	}
 
 	/**
-	 * Check if a given item on a subscription can be switched by a given user.
+	 * Check if a cart item can be added to a subscription.
 	 *
+	 * The subscription must be active and use manual renewals or use a payment method which supports cancellation.
+	 *
+	 * @since 2.6.0
+	 *
+	 * @param array $item A cart to add to a subscription.
+	 * @param WC_Subscription $subscription An instance of WC_Subscription
+	 */
+	public static function can_item_be_added( $item, $subscription = null ) {
+		return apply_filters( 'woocommerce_subscriptions_can_item_be_added', self::is_action_allowed( 'add', $item, $subscription ), $item, $subscription );
+	}
+
+	/**
+	 * Check if a given item on a subscription can be switched.
+	 *
+	 * For an item to be switchable, switching must be enabled, and the item must be for a variable subscription or
+	 * part of a grouped product (at the time the check is made, not at the time the subscription was purchased)
+	 *
+	 * The subscription must also be active and use manual renewals or use a payment method which supports cancellation.
+	 *
+	 * @param array $item An order item on the subscription to switch, or cart item to add.
+	 * @param WC_Subscription $subscription An instance of WC_Subscription
+	 * @since 2.0
+	 */
+	public static function can_item_be_switched( $item, $subscription = null ) {
+		return apply_filters( 'woocommerce_subscriptions_can_item_be_switched', self::is_action_allowed( 'switch', $item, $subscription ), $item, $subscription );
+	}
+
+	/**
+	 * Checks if a user can perform a cart item "add" or order item "switch" action, given a subscription.
+	 *
+	 * @since 2.6.0
+	 *
+	 * @param string $action An action to perform with the item ('add' or 'switch').
 	 * @param array $item An order item to switch, or cart item to add.
 	 * @param WC_Subscription $subscription An instance of WC_Subscription.
 	 * @param int $user_id (optional) The ID of a user. Defaults to currently logged in user.
-	 * @since 2.0
 	 */
-	public static function can_item_be_switched_by_user( $item, $subscription, $user_id = 0 ) {
+	protected static function can_user_perform_action( $action, $item, $subscription, $user_id = 0 ) {
+
+		if ( ! in_array( $action, array( 'add', 'switch' ) ) ) {
+			return false;
+		}
+
+		if ( 'switch' === $action && false === ( $item instanceof WC_Order_Item_Product ) ) {
+			return false;
+		}
 
 		if ( 0 === $user_id ) {
 			$user_id = get_current_user_id();
 		}
 
-		$item_can_be_switched = false;
+		$can_user_perform_action = false;
 
-		if ( user_can( $user_id, 'switch_shop_subscription', $subscription->get_id() ) && self::can_item_be_switched( $item, $subscription ) ) {
-			$item_can_be_switched = true;
+		if ( user_can( $user_id, 'switch_shop_subscription', $subscription->get_id() ) ) {
+			if ( 'switch' === $action ) {
+				$can_user_perform_action = self::can_item_be_switched( $item, $subscription );
+			} elseif ( 'add' === $action ) {
+				$can_user_perform_action = self::can_item_be_added( $item, $subscription );
+			}
 		}
 
-		$action = $item instanceof WC_Order_Item_Product ? 'switch' : 'add';
+		return $can_user_perform_action;
+	}
 
-		return apply_filters( 'woocommerce_subscriptions_can_item_be_' . $action . 'ed_by_user', $item_can_be_switched, $item, $subscription );
+	/**
+	 * Check if a given item can be added to a subscription by a given user.
+	 *
+	 * @since 2.6.0
+	 *
+	 * @param array $item A cart item to add to a subscription.
+	 * @param WC_Subscription $subscription An instance of WC_Subscription.
+	 * @param int $user_id (optional) The ID of a user. Defaults to currently logged in user.
+	 */
+	public static function can_item_be_added_by_user( $item, $subscription, $user_id = 0 ) {
+		return apply_filters( 'woocommerce_subscriptions_can_item_be_added_by_user', self::can_user_perform_action( 'add', $item, $subscription, $user_id = 0 ), $item, $subscription );
+	}
+
+	/**
+	 * Check if a given item on a subscription can be switched by a given user.
+	 *
+	 * @param array $item An order item to switch.
+	 * @param WC_Subscription $subscription An instance of WC_Subscription.
+	 * @param int $user_id (optional) The ID of a user. Defaults to currently logged in user.
+	 * @since 2.0
+	 */
+	public static function can_item_be_switched_by_user( $item, $subscription, $user_id = 0 ) {
+		return apply_filters( 'woocommerce_subscriptions_can_item_be_switched_by_user', self::can_user_perform_action( 'switch', $item, $subscription, $user_id = 0 ), $item, $subscription );
 	}
 
 	/**
