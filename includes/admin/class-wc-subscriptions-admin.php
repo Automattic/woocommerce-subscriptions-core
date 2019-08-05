@@ -1455,56 +1455,56 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Filter the "Orders" based on a list of ids
+	 * Filters the Admin orders table results based on a list of IDs returned by a report query.
 	 *
-	 * @param string $where
-	 * @return string
-	 * @since 2.6
+	 * @param string $where The query WHERE clause.
+	 * @return string $where
+	 * @since 2.6.0
 	 */
 	public static function filter_orders_from_list( $where ) {
 		global $typenow, $wpdb;
 
-		if ( is_admin() && 'shop_order' === $typenow ) {
-
-			if ( isset( $_GET['_orders_list'] ) && isset( $_GET['_class'] ) ) {
-				if ( ! empty( $_GET['_orders_list'] ) && ! empty( $_GET['_class'] ) ) {
-				    $cache = get_transient( $_GET['_class'] );
-				    $results = $cache[ $_GET['_orders_list'] ];
-					$ids = implode( ',', wp_list_pluck( $results, 'post_id', true ) );
-					$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", $ids );
-				} else {
-					// No orders in list. So, give invalid 'where' clause so as to make the query return 0 items.
-					$where = " AND {$wpdb->posts}.ID = 0";
-				}
-			}
+		if ( ! is_admin() || 'shop_order' !== $typenow || ! isset( $_GET['_orders_list'], $_GET['_class'] ) ) {
+			return $where;
 		}
+
+		if ( ! empty( $_GET['_orders_list'] ) && ! empty( $_GET['_class'] ) ) {
+			$cache   = get_transient( $_GET['_class'] );
+			$results = $cache[ $_GET['_orders_list'] ];
+			$ids     = implode( ',', wp_list_pluck( $results, 'post_id', true ) );
+			$where  .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", $ids );
+		} else {
+			// No orders in list. So, give invalid 'where' clause so as to make the query return 0 items.
+			$where = " AND {$wpdb->posts}.ID = 0";
+		}
+
 		return $where;
 	}
 
 	/**
-	 * Filter the "Subscriptions" based on a list of ids
+	 * Filters the Admin subscriptions table results based on a list of IDs returned by a report query.
 	 *
-	 * @param string $where
+	 * @param string $where The query WHERE clause.
 	 * @return string
-	 * @since 2.6
+	 * @since 2.6.0
 	 */
 	public static function filter_subscriptions_from_list( $where ) {
 		global $typenow, $wpdb;
 
-		if ( is_admin() && 'shop_subscription' === $typenow ) {
-
-			if ( isset( $_GET['_subscriptions_list'] ) && isset( $_GET['_class'] ) ) {
-				if ( ! empty( $_GET['_subscriptions_list'] ) && ! empty( $_GET['_class'] ) ) {
-					$cache = get_transient( $_GET['_class'] );
-					$results = $cache[ $_GET['_subscriptions_list'] ];
-					$ids = implode( ',', wp_list_pluck( $results, 'post_id', true ) );
-					$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", $ids );
-				} else {
-					// No subscriptions in list. So, give invalid 'where' clause so as to make the query return 0 items.
-					$where = " AND {$wpdb->posts}.ID = 0";
-				}
-			}
+		if ( ! is_admin() || 'shop_subscription' !== $typenow || ! isset( $_GET['_subscriptions_list'], $_GET['_class'] ) ) {
+			return $where;
 		}
+
+		if ( ! empty( $_GET['_subscriptions_list'] ) && ! empty( $_GET['_class'] ) ) {
+			$cache   = get_transient( $_GET['_class'] );
+			$results = $cache[ $_GET['_subscriptions_list'] ];
+			$ids     = implode( ',', wp_list_pluck( $results, 'post_id', true ) );
+			$where  .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", $ids );
+		} else {
+			// No subscriptions in list. So, give invalid 'where' clause so as to make the query return 0 items.
+			$where = " AND {$wpdb->posts}.ID = 0";
+		}
+
 		return $where;
 	}
 

@@ -20,20 +20,23 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_filter( 'woocommerce_reports_get_order_report_query', array( $this, 'save_query_hash' ) );
+		add_filter( 'woocommerce_reports_get_order_report_query', array( $this, 'set_query_hash' ) );
 	}
 
 	/**
-	 * Save the query hash for listing later
-	 * @return string
+	 * Sets the query hash for saving the results to enable listing later.
+	 *
+	 * @since 2.6.0
+	 * @param array $query The report query clause array.
+	 * @return array $query
 	 */
-	public function save_query_hash( $query ) {
+	public function set_query_hash( $query ) {
 
-	    $query_string = implode( ' ', $query );
+		$query_string = implode( ' ', $query );
 
-	    if ( strpos( $query_string, 'shop_subscription' ) !== false ) {
-		    $this->report_data->new_subscriptions = md5( 'get_results' . $query_string );
-	    }
+		if ( strpos( $query_string, 'shop_subscription' ) !== false ) {
+			$this->report_data->new_subscriptions = md5( 'get_results' . $query_string );
+		}
 		if ( strpos( $query_string, 'renewal' ) !== false ) {
 			$this->report_data->renewals = md5( 'get_results' . $query_string );
 		}
@@ -43,8 +46,8 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		if ( strpos( $query_string, 'switch' ) !== false ) {
 			$this->report_data->switches = md5( 'get_results' . $query_string );
 		}
-		return $query;
 
+		return $query;
 	}
 
 	/**
@@ -119,8 +122,6 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				'nocache'             => $args['no_cache'],
 			)
 		);
-
-		//$this->report_data->new_subscriptions_data = implode( ',', wp_list_pluck( $this->report_data->new_subscriptions, 'post_id', true ) );
 
 		$this->report_data->renewal_data = (array) $this->get_order_report_data(
 			array(
