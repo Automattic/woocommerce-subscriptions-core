@@ -51,8 +51,10 @@ class WC_Subscriptions_Switcher {
 		// Record subscription switching in the cart
 		add_filter( 'woocommerce_add_cart_item_data', array( __CLASS__, 'set_switch_details_in_cart' ), 10, 3 );
 
+		add_action( 'woocommerce_add_to_cart', array( __CLASS__, 'run_switch_actions' ), 15, 6 );
+
 		// Retain coupons if required
-		add_action( 'woocommerce_add_to_cart', __CLASS__ . '::retain_coupons', 15, 6 );
+		add_action( 'woocommerce_subscriptions_add_switch_to_cart', array( __CLASS__, 'retain_coupons' ), 15, 1 );
 
 		// Make sure the 'switch_subscription' cart item data persists
 		add_filter( 'woocommerce_get_cart_item_from_session', array( __CLASS__, 'get_cart_from_session' ), 10, 3 );
@@ -1165,14 +1167,22 @@ class WC_Subscriptions_Switcher {
 	}
 
 	/**
+	 * When a product is added to the cart, add actions specific to switch
+	 *
+	 * @since 2.6.0
+	 */
+	public static function run_switch_actions( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {
+		if ( isset( $cart_item_data['subscription_switch'] ) ) {
+			do_action( 'woocommerce_subscriptions_add_switch_to_cart', $cart_item_data );
+		}
+	}
+
+	/**
 	 * When a product is added to the cart, add coupons which should be retained during switch to the cart.
 	 *
 	 * @since 2.6.0
 	 */
-	public static function retain_coupons( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {
-		if ( ! isset( $_GET['switch-subscription'] ) ) {
-			return $cart_item_data ;
-		}
+	public static function retain_coupons( $cart_item_data ) {
 		$subscription = wcs_get_subscription( $_GET['switch-subscription'] );
 		// Add to the cart any coupon that needs to be retained after switch
 		$existing_coupons = $subscription->get_used_coupons();
