@@ -16,12 +16,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 
 	private $report_data;
 
-	/**
-	 * Constructor.
-	 */
-	public function __construct() {
-		add_filter( 'woocommerce_reports_get_order_report_query', array( $this, 'set_query_hash' ) );
-	}
+	private $generating_report;
 
 	/**
 	 * Sets the query hash for saving the results to enable listing later.
@@ -34,17 +29,9 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 
 		$query_string = implode( ' ', $query );
 
-		if ( strpos( $query_string, 'shop_subscription' ) !== false ) {
-			$this->report_data->new_subscriptions_query_hash = md5( 'get_results' . $query_string );
-		}
-		if ( strpos( $query_string, 'renewal' ) !== false ) {
-			$this->report_data->renewals_query_hash = md5( 'get_results' . $query_string );
-		}
-		if ( strpos( $query_string, 'resubscribe' ) !== false ) {
-			$this->report_data->resubscribes_query_hash = md5( 'get_results' . $query_string );
-		}
-		if ( strpos( $query_string, 'switch' ) !== false ) {
-			$this->report_data->switches_query_hash = md5( 'get_results' . $query_string );
+		if ( in_array( $this->generating_report, array( 'new_subscriptions', 'renewals', 'resubscribes', 'switches' ) ) ) {
+			$report_query_hash = $this->generating_report . '_query_hash';
+			$this->report_data->{$report_query_hash} = md5( 'get_results' . $query_string );
 		}
 
 		return $query;
@@ -57,6 +44,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 	public function get_report_data() {
 
 		if ( empty( $this->report_data ) ) {
+			add_filter( 'woocommerce_reports_get_order_report_query', array( $this, 'set_query_hash' ) );
 			$this->get_data();
 		}
 
@@ -84,6 +72,8 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$site_timezone = sprintf( '%+02d:%02d', (int) $offset, ( $offset - floor( $offset ) ) * 60 );
 
 		$this->report_data = new stdClass;
+
+		$this->generating_report = 'new_subscriptions';
 
 		$this->report_data->new_subscriptions_data = (array) $this->get_order_report_data(
 			array(
@@ -122,6 +112,8 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				'nocache'             => $args['no_cache'],
 			)
 		);
+
+		$this->generating_report = 'renewals';
 
 		$this->report_data->renewal_data = (array) $this->get_order_report_data(
 			array(
@@ -172,6 +164,8 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			)
 		);
 
+		$this->generating_report = 'resubscribes';
+
 		$this->report_data->resubscribe_data = (array) $this->get_order_report_data(
 			array(
 				'data' => array(
@@ -221,6 +215,8 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			)
 		);
 
+		$this->generating_report = 'switches';
+
 		$this->report_data->switch_counts = (array) $this->get_order_report_data(
 			array(
 				'data' => array(
@@ -263,6 +259,8 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				'nocache'             => $args['no_cache'],
 			)
 		);
+
+		unset( $this->generating_report );
 
 		$cached_results = get_transient( strtolower( get_class( $this ) ) );
 
