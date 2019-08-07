@@ -1464,14 +1464,14 @@ class WC_Subscriptions_Admin {
 	public static function filter_orders_from_list( $where ) {
 		global $typenow, $wpdb;
 
-		if ( ! is_admin() || 'shop_order' !== $typenow || ! isset( $_GET['_orders_list'], $_GET['_class'] ) ) {
+		if ( ! is_admin() || 'shop_order' !== $typenow || ! isset( $_GET['_orders_list_key'], $_GET['_report'] ) ) {
 			return $where;
 		}
 
-		if ( ! empty( $_GET['_orders_list'] ) && ! empty( $_GET['_class'] ) ) {
-			$cache   = get_transient( $_GET['_class'] );
-			$results = $cache[ $_GET['_orders_list'] ];
-			$ids = explode( ',', implode( ',', wp_list_pluck( $results, 'post_id', true ) ) );
+		if ( ! empty( $_GET['_orders_list_key'] ) && ! empty( $_GET['_report'] ) ) {
+			$cache   = get_transient( $_GET['_report'] );
+			$results = $cache[ $_GET['_orders_list_key'] ];
+			$ids = explode( ',', implode( ',', wp_list_pluck( $results, 'post_ids', true ) ) );
 
 			// $format = '%d, %d, %d, %d, %d, [...]'
 			$format = implode(', ', array_fill(0, count( $ids ), '%d') );
@@ -1494,14 +1494,14 @@ class WC_Subscriptions_Admin {
 	public static function filter_subscriptions_from_list( $where ) {
 		global $typenow, $wpdb;
 
-		if ( ! is_admin() || 'shop_subscription' !== $typenow || ! isset( $_GET['_subscriptions_list'], $_GET['_class'] ) ) {
+		if ( ! is_admin() || 'shop_subscription' !== $typenow || ! isset( $_GET['_subscriptions_list_key'], $_GET['_report'] ) ) {
 			return $where;
 		}
 
-		if ( ! empty( $_GET['_subscriptions_list'] ) && ! empty( $_GET['_class'] ) ) {
-			$cache   = get_transient( $_GET['_class'] );
-			$results = $cache[ $_GET['_subscriptions_list'] ];
-			$ids = explode( ',', implode( ',', wp_list_pluck( $results, 'post_id', true ) ) );
+		if ( ! empty( $_GET['_subscriptions_list_key'] ) && ! empty( $_GET['_report'] ) ) {
+			$cache   = get_transient( $_GET['_report'] );
+			$results = $cache[ $_GET['_subscriptions_list_key'] ];
+			$ids = explode( ',', implode( ',', wp_list_pluck( $results, 'post_ids', true ) ) );
 
 			// $format = '%d, %d, %d, %d, %d, [...]'
 			$format = implode(', ', array_fill(0, count( $ids ), '%d') );
