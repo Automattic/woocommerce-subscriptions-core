@@ -1474,7 +1474,7 @@ class WC_Subscriptions_Admin {
 			$ids = explode( ',', implode( ',', wp_list_pluck( $results, 'post_ids', true ) ) );
 
 			// $format = '%d, %d, %d, %d, %d, [...]'
-			$format = implode(', ', array_fill(0, count( $ids ), '%d') );
+			$format = implode( ', ', array_fill( 0, count( $ids ), '%d' ) );
 			$where  .= $wpdb->prepare( " AND {$wpdb->posts}.ID IN ($format)", $ids );
 		} else {
 			// No orders in list. So, give invalid 'where' clause so as to make the query return 0 items.
@@ -1504,7 +1504,7 @@ class WC_Subscriptions_Admin {
 			$ids = explode( ',', implode( ',', wp_list_pluck( $results, 'post_ids', true ) ) );
 
 			// $format = '%d, %d, %d, %d, %d, [...]'
-			$format = implode(', ', array_fill(0, count( $ids ), '%d') );
+			$format = implode( ', ', array_fill( 0, count( $ids ), '%d' ) );
 			$where  .= $wpdb->prepare( " AND {$wpdb->posts}.ID IN ($format)", $ids );
 		} else {
 			// No subscriptions in list. So, give invalid 'where' clause so as to make the query return 0 items.
@@ -2054,14 +2054,5 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function recurring_totals_meta_box( $post ) {
 		_deprecated_function( __METHOD__, '2.0' );
-	}
-}
-if ( ! function_exists('write_log')) {
-	function write_log ( $log )  {
-		if ( is_array( $log ) || is_object( $log ) ) {
-			error_log( print_r( $log, true ) );
-		} else {
-			error_log( $log );
-		}
 	}
 }
