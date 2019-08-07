@@ -1471,8 +1471,11 @@ class WC_Subscriptions_Admin {
 		if ( ! empty( $_GET['_orders_list'] ) && ! empty( $_GET['_class'] ) ) {
 			$cache   = get_transient( $_GET['_class'] );
 			$results = $cache[ $_GET['_orders_list'] ];
-			$ids     = implode( ',', wp_list_pluck( $results, 'post_id', true ) );
-			$where  .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", $ids );
+			$ids = explode( ',', implode( ',', wp_list_pluck( $results, 'post_id', true ) ) );
+
+			// $format = '%d, %d, %d, %d, %d, [...]'
+			$format = implode(', ', array_fill(0, count( $ids ), '%d') );
+			$where  .= $wpdb->prepare( " AND {$wpdb->posts}.ID IN ($format)", $ids );
 		} else {
 			// No orders in list. So, give invalid 'where' clause so as to make the query return 0 items.
 			$where = " AND {$wpdb->posts}.ID = 0";
@@ -1498,8 +1501,11 @@ class WC_Subscriptions_Admin {
 		if ( ! empty( $_GET['_subscriptions_list'] ) && ! empty( $_GET['_class'] ) ) {
 			$cache   = get_transient( $_GET['_class'] );
 			$results = $cache[ $_GET['_subscriptions_list'] ];
-			$ids     = implode( ',', wp_list_pluck( $results, 'post_id', true ) );
-			$where  .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", $ids );
+			$ids = explode( ',', implode( ',', wp_list_pluck( $results, 'post_id', true ) ) );
+
+			// $format = '%d, %d, %d, %d, %d, [...]'
+			$format = implode(', ', array_fill(0, count( $ids ), '%d') );
+			$where  .= $wpdb->prepare( " AND {$wpdb->posts}.ID IN ($format)", $ids );
 		} else {
 			// No subscriptions in list. So, give invalid 'where' clause so as to make the query return 0 items.
 			$where = " AND {$wpdb->posts}.ID = 0";
@@ -2048,5 +2054,14 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function recurring_totals_meta_box( $post ) {
 		_deprecated_function( __METHOD__, '2.0' );
+	}
+}
+if ( ! function_exists('write_log')) {
+	function write_log ( $log )  {
+		if ( is_array( $log ) || is_object( $log ) ) {
+			error_log( print_r( $log, true ) );
+		} else {
+			error_log( $log );
+		}
 	}
 }
