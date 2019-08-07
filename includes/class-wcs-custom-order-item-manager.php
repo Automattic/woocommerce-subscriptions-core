@@ -24,6 +24,11 @@ class WCS_Custom_Order_Item_Manager {
 			'group' => 'switched_line_items',
 			'class' => 'WC_Subscription_Line_Item_Switched',
 		),
+		'coupon_pending_switch' => array(
+			'group'      => 'pending_switch_coupons',
+			'class'      => 'WC_Subscription_Item_Coupon_Pending_Switch',
+			'data_store' => 'WC_Order_Item_Coupon_Data_Store',
+		),
 	);
 
 	/**
