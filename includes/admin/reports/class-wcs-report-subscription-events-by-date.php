@@ -492,8 +492,8 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 
 		$legend[] = array(
 			'title'            => sprintf( __( '%2$s %1$s subscription signups', 'woocommerce-subscriptions' ), '<strong> <span class="woocommerce-subscriptions-count count">' . $this->report_data->signup_orders_total_count . '</strong> </a>',
-			'<a href="' . esc_url( add_query_arg( array( 'post_type' => 'shop_order', '_orders_list_key' => $this->report_data->signup_orders_query_hash, '_report' => strtolower( get_class( $this ) ) ), admin_url( 'edit.php' ) ) ). '">' ),
-			'placeholder'      => __( 'The number of subscription parent orders created during this period. This represents the new subscriptions created by customers placing an order via checkout.', 'woocommerce-subscriptions' ),
+			'<a href="' . esc_url( add_query_arg( array( 'post_type' => 'shop_subscription', '_subscriptions_list_key' => $this->report_data->signup_orders_query_hash, '_report' => strtolower( get_class( $this ) ) ), admin_url( 'edit.php' ) ) ). '">' ),
+			'placeholder'      => __( 'The number of subscriptions purchased in parent orders created during this period. This represents the new subscriptions created by customers placing an order via checkout.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['signup_count'],
 			'highlight_series' => 2,
 		);
