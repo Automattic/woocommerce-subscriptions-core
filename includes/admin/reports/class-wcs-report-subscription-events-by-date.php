@@ -41,7 +41,6 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 	public function get_report_data() {
 
 		if ( empty( $this->report_data ) ) {
-			add_filter( 'woocommerce_reports_get_order_report_query', array( $this, 'set_query_hash' ) );
 			$this->get_data();
 		}
 
@@ -69,6 +68,8 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$site_timezone = sprintf( '%+02d:%02d', (int) $offset, ( $offset - floor( $offset ) ) * 60 );
 
 		$this->report_data = new stdClass;
+
+		add_filter( 'woocommerce_reports_get_order_report_query', array( $this, 'set_query_hash' ) );
 
 		$this->generating_report = 'new_subscriptions';
 
@@ -258,6 +259,8 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		);
 
 		unset( $this->generating_report );
+
+		remove_filter( 'woocommerce_reports_get_order_report_query', array( $this, 'set_query_hash' ) );
 
 		$cached_results = get_transient( strtolower( get_class( $this ) ) );
 
