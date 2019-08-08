@@ -215,7 +215,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 
 		$this->generating_report = 'switches';
 
-		$this->report_data->switch_counts = (array) $this->get_order_report_data(
+		$this->report_data->switch_data = (array) $this->get_order_report_data(
 			array(
 				'data' => array(
 					'ID' => array(
@@ -239,6 +239,12 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 						'type'     => 'meta',
 						'function' => '',
 						'name'     => 'switch_orders',
+					),
+					'_order_total' => array(
+						'type'      => 'meta',
+						'function'  => 'SUM',
+						'name'      => 'switch_totals',
+						'join_type' => 'LEFT',   // To avoid issues if there is no switch_total meta
 					),
 				),
 				'where' => array(
@@ -441,11 +447,12 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$this->report_data->signup_orders_total_amount          = array_sum( wp_list_pluck( $this->report_data->signup_data, 'signup_totals' ) );
 		$this->report_data->renewal_orders_total_amount         = array_sum( wp_list_pluck( $this->report_data->renewal_data, 'renewal_totals' ) );
 		$this->report_data->resubscribe_orders_total_amount     = array_sum( wp_list_pluck( $this->report_data->resubscribe_data, 'resubscribe_totals' ) );
+		$this->report_data->switch_orders_total_amount          = array_sum( wp_list_pluck( $this->report_data->switch_data, 'switch_totals' ) );
 		$this->report_data->new_subscription_total_count        = absint( array_sum( wp_list_pluck( $this->report_data->new_subscriptions_data, 'count' ) ) );
 		$this->report_data->signup_orders_total_count           = absint( array_sum( wp_list_pluck( $this->report_data->signup_data, 'count' ) ) );
 		$this->report_data->renewal_orders_total_count          = absint( array_sum( wp_list_pluck( $this->report_data->renewal_data, 'count' ) ) );
 		$this->report_data->resubscribe_orders_total_count      = absint( array_sum( wp_list_pluck( $this->report_data->resubscribe_data, 'count' ) ) );
-		$this->report_data->switch_orders_total_count           = absint( array_sum( wp_list_pluck( $this->report_data->switch_counts, 'count' ) ) );
+		$this->report_data->switch_orders_total_count           = absint( array_sum( wp_list_pluck( $this->report_data->switch_data, 'count' ) ) );
 		$this->report_data->total_subscriptions_cancelled       = absint( array_sum( wp_list_pluck( $this->report_data->cancel_counts, 'count' ) ) );
 		$this->report_data->total_subscriptions_ended           = absint( array_sum( wp_list_pluck( $this->report_data->ended_counts, 'count' ) ) );
 		$this->report_data->total_subscriptions_at_period_end   = $this->report_data->subscriber_counts ? absint( end( $this->report_data->subscriber_counts )->count ) : 0;
@@ -480,6 +487,13 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			'placeholder'      => __( 'The sum of all resubscribe orders including tax and shipping.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['resubscribe_total'],
 			'highlight_series' => 9,
+		);
+
+		$legend[] = array(
+			'title'            => sprintf( __( '%s switch revenue in this period', 'woocommerce-subscriptions' ), '<strong>' . wc_price( $data->switch_orders_total_amount ) . '</strong>' ),
+			'placeholder'      => __( 'The sum of all switch orders including tax and shipping.', 'woocommerce-subscriptions' ),
+			'color'            => $this->chart_colours['switch_total'],
+			'highlight_series' => 11,
 		);
 
 		$legend[] = array(
@@ -588,6 +602,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			'signup_total'      => '#439ad9',
 			'renewal_total'     => '#b1d4ea',
 			'resubscribe_total' => '#7ab7e2',
+			'switch_total'      => '#a7b7f1',
 			'new_count'         => '#9adbb5',
 			'signup_count'      => '#5cc488',
 			'resubscribe_count' => '#449163',
@@ -643,11 +658,12 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$signup_orders_amount      = $this->prepare_chart_data( $this->report_data->signup_data, 'post_date', 'signup_totals', $this->chart_interval, $this->start_date, $this->chart_groupby );
 		$renewal_orders_amount     = $this->prepare_chart_data( $this->report_data->renewal_data, 'post_date', 'renewal_totals', $this->chart_interval, $this->start_date, $this->chart_groupby );
 		$resubscribe_orders_amount = $this->prepare_chart_data( $this->report_data->resubscribe_data, 'post_date', 'resubscribe_totals', $this->chart_interval, $this->start_date, $this->chart_groupby );
+		$switch_orders_amount      = $this->prepare_chart_data( $this->report_data->switch_data, 'post_date', 'switch_totals', $this->chart_interval, $this->start_date, $this->chart_groupby );
 		$new_subscriptions_count   = $this->prepare_chart_data( $this->report_data->new_subscriptions_data, 'post_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
 		$signup_orders_count       = $this->prepare_chart_data( $this->report_data->signup_data, 'post_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
 		$renewal_orders_count      = $this->prepare_chart_data( $this->report_data->renewal_data, 'post_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
 		$resubscribe_orders_count  = $this->prepare_chart_data( $this->report_data->resubscribe_data, 'post_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
-		$switch_orders_count       = $this->prepare_chart_data( $this->report_data->switch_counts, 'post_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
+		$switch_orders_count       = $this->prepare_chart_data( $this->report_data->switch_data, 'post_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
 		$subscriber_count          = $this->prepare_chart_data_daily_average( $this->report_data->subscriber_counts, 'date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
 		$cancel_count              = $this->prepare_chart_data( $this->report_data->cancel_counts, 'cancel_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
 		$ended_count               = $this->prepare_chart_data( $this->report_data->ended_counts, 'end_date', 'count', $this->chart_interval, $this->start_date, $this->chart_groupby );
@@ -657,6 +673,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			'signup_orders_amount'      => array_map( array( $this, 'round_chart_totals' ), array_values( $signup_orders_amount ) ),
 			'renewal_orders_amount'     => array_map( array( $this, 'round_chart_totals' ), array_values( $renewal_orders_amount ) ),
 			'resubscribe_orders_amount' => array_map( array( $this, 'round_chart_totals' ), array_values( $resubscribe_orders_amount ) ),
+			'switch_orders_amount'      => array_map( array( $this, 'round_chart_totals' ), array_values( $switch_orders_amount ) ),
 			'new_subscriptions_count'   => array_values( $new_subscriptions_count ),
 			'signup_orders_count'       => array_values( $signup_orders_count ),
 			'renewal_orders_count'      => array_values( $renewal_orders_count ),
@@ -866,6 +883,26 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 							shadowSize: 0,
 							<?php echo wp_kses_post( $this->get_currency_tooltip() ); ?>
 						},
+                        {
+                            label: "<?php echo esc_js( __( 'Switch Totals', 'woocommerce-subscriptions' ) ) ?>",
+                            data: order_data.switch_orders_amount,
+                            yaxis: 2,
+                            color: '<?php echo esc_js( $this->chart_colours['switch_total'] ); ?>',
+                            points: {
+                                show: true,
+                                radius: 5,
+                                lineWidth: 4,
+                                fillColor: '#fff',
+                                fill: true
+                            },
+                            lines: {
+                                show: true,
+                                lineWidth: 5,
+                                fill: false
+                            },
+                            shadowSize: 0,
+							<?php echo wp_kses_post( $this->get_currency_tooltip() ); ?>
+                        },
 					];
 
 					if ( highlight !== 'undefined' && series[ highlight ] ) {
