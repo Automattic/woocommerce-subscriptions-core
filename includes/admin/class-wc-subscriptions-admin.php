@@ -1478,7 +1478,7 @@ class WC_Subscriptions_Admin {
 			$where  .= $wpdb->prepare( " AND {$wpdb->posts}.ID IN ($format)", $ids );
 		} else {
 			// No orders in list. So, give invalid 'where' clause so as to make the query return 0 items.
-			$where = " AND {$wpdb->posts}.ID = 0";
+			$where .= " AND {$wpdb->posts}.ID = 0";
 		}
 
 		return $where;
@@ -1508,7 +1508,7 @@ class WC_Subscriptions_Admin {
 			$where  .= $wpdb->prepare( " AND {$wpdb->posts}.ID IN ($format)", $ids );
 		} else {
 			// No subscriptions in list. So, give invalid 'where' clause so as to make the query return 0 items.
-			$where = " AND {$wpdb->posts}.ID = 0";
+			$where .= " AND {$wpdb->posts}.ID = 0";
 		}
 
 		return $where;
