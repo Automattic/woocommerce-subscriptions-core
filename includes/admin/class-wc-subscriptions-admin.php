@@ -1471,11 +1471,11 @@ class WC_Subscriptions_Admin {
 		if ( ! empty( $_GET['_orders_list_key'] ) && ! empty( $_GET['_report'] ) ) {
 			$cache   = get_transient( $_GET['_report'] );
 			$results = $cache[ $_GET['_orders_list_key'] ];
-			$ids = explode( ',', implode( ',', wp_list_pluck( $results, 'post_ids', true ) ) );
+			$ids     = explode( ',', implode( ',', wp_list_pluck( $results, 'post_ids', true ) ) );
 
 			// $format = '%d, %d, %d, %d, %d, [...]'
 			$format = implode( ', ', array_fill( 0, count( $ids ), '%d' ) );
-			$where  .= $wpdb->prepare( " AND {$wpdb->posts}.ID IN ($format)", $ids );
+			$where .= $wpdb->prepare( " AND {$wpdb->posts}.ID IN ($format)", $ids );
 		} else {
 			// No orders in list. So, give invalid 'where' clause so as to make the query return 0 items.
 			$where .= " AND {$wpdb->posts}.ID = 0";
