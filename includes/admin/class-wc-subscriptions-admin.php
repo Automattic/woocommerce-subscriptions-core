@@ -1469,13 +1469,13 @@ class WC_Subscriptions_Admin {
 		}
 
 		if ( ! empty( $_GET['_orders_list_key'] ) && ! empty( $_GET['_report'] ) ) {
-			$cache   = get_transient( $_GET['_report'] );
-			$results = $cache[ $_GET['_orders_list_key'] ];
-			$ids     = explode( ',', implode( ',', wp_list_pluck( $results, 'post_ids', true ) ) );
+			$cache     = get_transient( $_GET['_report'] );
+			$results   = $cache[ $_GET['_orders_list_key'] ];
+			$order_ids = explode( ',', implode( ',', wp_list_pluck( $results, 'order_ids', true ) ) );
 
 			// $format = '%d, %d, %d, %d, %d, [...]'
-			$format = implode( ', ', array_fill( 0, count( $ids ), '%d' ) );
-			$where .= $wpdb->prepare( " AND {$wpdb->posts}.ID IN ($format)", $ids );
+			$format = implode( ', ', array_fill( 0, count( $order_ids ), '%d' ) );
+			$where .= $wpdb->prepare( " AND {$wpdb->posts}.ID IN ($format)", $order_ids );
 		} else {
 			// No orders in list. So, give invalid 'where' clause so as to make the query return 0 items.
 			$where .= " AND {$wpdb->posts}.ID = 0";
@@ -1499,17 +1499,9 @@ class WC_Subscriptions_Admin {
 		}
 
 		if ( ! empty( $_GET['_subscriptions_list_key'] ) && ! empty( $_GET['_report'] ) ) {
-			$cache   = get_transient( $_GET['_report'] );
-			$results = $cache[ $_GET['_subscriptions_list_key'] ];
-
-			// Some reports include the subscription IDs under the 'subscription_ids' key. Check if that exists first, otherwise use 'post_ids'.
-			if ( count( $results ) && property_exists( reset( $results ), 'subscription_ids' ) ) {
-				$subscription_ids_list = wp_list_pluck( $results, 'subscription_ids', true );
-			} else {
-				$subscription_ids_list = wp_list_pluck( $results, 'post_ids', true );
-			}
-
-			$subscription_ids = explode( ',', implode( ',', $subscription_ids_list ) );
+			$cache            = get_transient( $_GET['_report'] );
+			$results          = $cache[ $_GET['_subscriptions_list_key'] ];
+			$subscription_ids = explode( ',', implode( ',', wp_list_pluck( $results, 'subscription_ids', true ) ) );
 
 			// $format = '%d, %d, %d, %d, %d, [...]'
 			$format = implode( ', ', array_fill( 0, count( $subscription_ids ), '%d' ) );

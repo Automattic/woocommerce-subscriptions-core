@@ -87,7 +87,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 					'id' => array(
 						'type'     => 'post_data',
 						'function' => 'GROUP_CONCAT',
-						'name'     => 'post_ids',
+						'name'     => 'subscription_ids',
 						'distinct' => true,
 					),
 					'post_date' => array(
@@ -127,7 +127,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 					'id' => array(
 						'type'     => 'post_data',
 						'function' => 'GROUP_CONCAT',
-						'name'     => 'post_ids',
+						'name'     => 'order_ids',
 						'distinct' => true,
 					),
 					'post_date' => array(
@@ -178,7 +178,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 					'id' => array(
 						'type'     => 'post_data',
 						'function' => 'GROUP_CONCAT',
-						'name'     => 'post_ids',
+						'name'     => 'order_ids',
 						'distinct' => true,
 					),
 					'post_date' => array(
@@ -229,7 +229,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 					'id' => array(
 						'type'     => 'post_data',
 						'function' => 'GROUP_CONCAT',
-						'name'     => 'post_ids',
+						'name'     => 'order_ids',
 						'distinct' => true,
 					),
 					'post_date' => array(
@@ -268,7 +268,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		* New subscription orders
 		*/
 		$query = $wpdb->prepare(
-			"SELECT SUM(subscriptions.count) as count, GROUP_CONCAT( DISTINCT order_posts.id ) as post_ids,
+			"SELECT SUM(subscriptions.count) as count,
 				order_posts.post_date as post_date,
 				SUM(order_total_post_meta.meta_value) as signup_totals,
 				GROUP_CONCAT( DISTINCT subscriptions.ids ) as subscription_ids
@@ -315,7 +315,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		 * Subscribers by date
 		 */
 		$query = $wpdb->prepare(
-			"SELECT searchdate.Date as date, COUNT( DISTINCT wcsubs.ID) as count, GROUP_CONCAT( DISTINCT wcsubs.ID ) as post_ids
+			"SELECT searchdate.Date as date, COUNT( DISTINCT wcsubs.ID) as count, GROUP_CONCAT( DISTINCT wcsubs.ID ) as subscription_ids
 				FROM (
 					SELECT DATE(last_thousand_days.Date) as Date
 					FROM (
@@ -381,7 +381,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		 * Subscription cancellations
 		 */
 		$query = $wpdb->prepare(
-			"SELECT COUNT( DISTINCT wcsubs.ID ) as count, CONVERT_TZ( wcsmeta_cancel.meta_value, '+00:00', '{$site_timezone}' ) as cancel_date, GROUP_CONCAT( DISTINCT wcsubs.ID ) as post_ids
+			"SELECT COUNT( DISTINCT wcsubs.ID ) as count, CONVERT_TZ( wcsmeta_cancel.meta_value, '+00:00', '{$site_timezone}' ) as cancel_date, GROUP_CONCAT( DISTINCT wcsubs.ID ) as subscription_ids
 				FROM {$wpdb->posts} as wcsubs
 				JOIN {$wpdb->postmeta} AS wcsmeta_cancel
 					ON wcsubs.ID = wcsmeta_cancel.post_id
@@ -411,7 +411,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		 * Subscriptions ended
 		 */
 		$query = $wpdb->prepare(
-			"SELECT COUNT( DISTINCT wcsubs.ID ) as count, CONVERT_TZ( wcsmeta_end.meta_value, '+00:00', '{$site_timezone}' ) as end_date, GROUP_CONCAT( DISTINCT wcsubs.ID ) as post_ids
+			"SELECT COUNT( DISTINCT wcsubs.ID ) as count, CONVERT_TZ( wcsmeta_end.meta_value, '+00:00', '{$site_timezone}' ) as end_date, GROUP_CONCAT( DISTINCT wcsubs.ID ) as subscription_ids
 				FROM {$wpdb->posts} as wcsubs
 				JOIN {$wpdb->postmeta} AS wcsmeta_end
 					ON wcsubs.ID = wcsmeta_end.post_id
