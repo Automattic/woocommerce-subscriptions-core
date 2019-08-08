@@ -27,11 +27,8 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 	 */
 	public function set_query_hash( $query ) {
 
-		$query_string = implode( ' ', $query );
-
 		if ( in_array( $this->generating_report, array( 'new_subscriptions', 'renewals', 'resubscribes', 'switches' ) ) ) {
-			$report_query_hash = $this->generating_report . '_query_hash';
-			$this->report_data->{$report_query_hash} = md5( 'get_results' . $query_string );
+			$this->report_data->{$this->generating_report . '_query_hash'} = md5( 'get_results' . implode( ' ', $query ) );
 		}
 
 		return $query;
