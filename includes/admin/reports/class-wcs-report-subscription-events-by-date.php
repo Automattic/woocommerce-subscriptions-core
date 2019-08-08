@@ -270,11 +270,13 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$query = $wpdb->prepare(
 			"SELECT SUM(subscriptions.count) as count, GROUP_CONCAT( DISTINCT order_posts.id ) as post_ids,
 				order_posts.post_date as post_date,
-				SUM(order_total_post_meta.meta_value) as signup_totals
+				SUM(order_total_post_meta.meta_value) as signup_totals,
+				GROUP_CONCAT( DISTINCT subscriptions.ids ) as subscription_ids
 			FROM {$wpdb->posts} AS order_posts
 			INNER JOIN (
 				SELECT COUNT(DISTINCT(subscription_posts.ID)) as count,
-					subscription_posts.post_parent as order_id
+					subscription_posts.post_parent as order_id,
+					GROUP_CONCAT( subscription_posts.ID ) as ids
 					FROM {$wpdb->posts} as subscription_posts
 				WHERE subscription_posts.post_type = 'shop_subscription'
 					AND subscription_posts.post_date >= %s
