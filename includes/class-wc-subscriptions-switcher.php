@@ -786,17 +786,18 @@ class WC_Subscriptions_Switcher {
 
 					$subscription  = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
 					$existing_item = wcs_get_order_item( $cart_item['subscription_switch']['item_id'], $subscription );
+					$switch_item   = new WCS_Switch_Cart_Item( $cart_item, $subscription, $existing_item );
 
 					// If we haven't calculated a first payment date, fall back to the recurring cart's next payment date
 					if ( 0 == $cart_item['subscription_switch']['first_payment_timestamp'] ) {
 						$cart_item['subscription_switch']['first_payment_timestamp'] = wcs_date_to_time( $recurring_cart->next_payment_date );
 					}
 
-					$is_different_billing_schedule = self::has_different_billing_schedule( $cart_item, $subscription );
-					$is_different_payment_date     = self::has_different_payment_date( $cart_item, $subscription );
-					$is_different_length           = self::has_different_length( $recurring_cart, $subscription );
-					$is_different_trial_end_date   = self::has_different_trial( $recurring_cart, $subscription );
-					$is_single_item_subscription   = self::is_single_item_subscription( $subscription );
+					$is_different_billing_schedule  = self::has_different_billing_schedule( $cart_item, $subscription );
+					$is_different_payment_date      = self::has_different_payment_date( $cart_item, $subscription );
+					$is_different_length            = self::has_different_length( $recurring_cart, $subscription );
+					$is_switch_with_matching_trials = $switch_item->is_switch_during_trial() && $switch_item->trial_periods_match();
+					$is_single_item_subscription    = self::is_single_item_subscription( $subscription );
 
 					$switched_item_data = array( 'remove_line_item' => $cart_item['subscription_switch']['item_id'] );
 
@@ -878,8 +879,11 @@ class WC_Subscriptions_Switcher {
 							$updated_dates['end'] = $recurring_cart->end_date;
 						}
 
-						if ( $is_different_trial_end_date ) {
-							$updated_dates['trial_end'] = $recurring_cart->trial_end_date;
+						// If the switch should maintain the current trial or delete it.
+						if ( $is_switch_with_matching_trials ) {
+							$updated_dates['trial_end'] = $subscription->get_date( 'trial_end' );
+						} else {
+							$updated_dates['trial_end'] = 0;
 						}
 
 						if ( ! empty( $updated_dates ) ) {

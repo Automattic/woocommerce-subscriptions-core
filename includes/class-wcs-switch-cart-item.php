@@ -384,9 +384,12 @@ class WCS_Switch_Cart_Item {
 	public function trial_periods_match() {
 		$existing_product = $this->existing_item->get_product();
 
-		// We need to cast the returned trial lengths as sometimes they may be strings.
-		$matching_length = (int) WC_Subscriptions_Product::get_trial_length( $this->product ) === (int) WC_Subscriptions_Product::get_trial_length( $existing_product );
-		$matching_period = WC_Subscriptions_Product::get_trial_period( $this->product ) === WC_Subscriptions_Product::get_trial_period( $existing_product );
+		/**
+		 * We need to cast the returned trial lengths as sometimes they may be strings.
+		 * We also need to pass the new product's ID so the raw product's trial is used, not the filtered trial set by @see WC_Subscriptions_Switcher::maybe_unset_free_trial() && WC_Subscriptions_Switcher::maybe_set_free_trial().
+		 */
+		$matching_length = (int) WC_Subscriptions_Product::get_trial_length( $this->product->get_id() ) === (int) WC_Subscriptions_Product::get_trial_length( $existing_product );
+		$matching_period = WC_Subscriptions_Product::get_trial_period( $this->product->get_id() ) === WC_Subscriptions_Product::get_trial_period( $existing_product );
 
 		return $matching_period && $matching_length;
 	}
