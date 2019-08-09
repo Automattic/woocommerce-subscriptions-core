@@ -2234,22 +2234,6 @@ class WC_Subscriptions_Switcher {
 	}
 
 	/**
-	 * @param WC_Cart         $recurring_cart
-	 * @param WC_Subscription $subscription
-	 *
-	 * @return bool
-	 * @see   self::process_checkout().
-	 *
-	 * @since 2.6.0
-	 */
-	public static function has_different_trial( $recurring_cart, $subscription ) {
-		$cart_trial_end_date         = gmdate( 'Y-m-d', wcs_date_to_time( $recurring_cart->trial_end_date ) );;
-		$subscription_trial_end_date = gmdate( 'Y-m-d', $subscription->get_time( 'trial_end' ) );
-
-		return $cart_trial_end_date !== $subscription_trial_end_date;
-	}
-
-	/**
 	 * Don't allow switched subscriptions to be cancelled.
 	 *
 	 * @param bool $subscription_can_be_changed
