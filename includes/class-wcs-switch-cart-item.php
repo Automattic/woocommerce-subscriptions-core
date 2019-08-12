@@ -24,7 +24,7 @@ class WCS_Switch_Cart_Item {
 
 	/**
 	 * The existing subscription line item being switched.
-	 * @var WC_Order_Item_Product|false
+	 * @var WC_Order_Item_Product
 	 */
 	public $existing_item;
 
@@ -111,9 +111,9 @@ class WCS_Switch_Cart_Item {
 	 *
 	 * @since 2.6.0
 	 *
-	 * @param array $cart_item                           The cart item.
-	 * @param WC_Subscription $subscription              The subscription being switched.
-	 * @param WC_Order_Item_Product|false $existing_item The subscription line item being switched, or false if the item accompanies another switched item.
+	 * @param array $cart_item                     The cart item.
+	 * @param WC_Subscription $subscription        The subscription being switched.
+	 * @param WC_Order_Item_Product $existing_item The subscription line item being switched.
 	 *
 	 * @throws Exception If WC_Subscriptions_Product::get_expiration_date() returns an invalid date.
 	 */
@@ -249,7 +249,7 @@ class WCS_Switch_Cart_Item {
 	 */
 	public function get_total_paid_for_current_period() {
 		if ( ! isset( $this->total_paid_for_current_period ) ) {
-			$this->total_paid_for_current_period = $this->is_new_item() ? 0.0 : WC_Subscriptions_Switcher::calculate_total_paid_since_last_order( $this->subscription, $this->existing_item, 'exclude_sign_up_fees' );
+			$this->total_paid_for_current_period = WC_Subscriptions_Switcher::calculate_total_paid_since_last_order( $this->subscription, $this->existing_item, 'exclude_sign_up_fees' );
 		}
 
 		return $this->total_paid_for_current_period;
@@ -382,11 +382,6 @@ class WCS_Switch_Cart_Item {
 	 * @return bool
 	 */
 	public function trial_periods_match() {
-
-		if ( $this->is_new_item() ) {
-			return false;
-		}
-
 		$existing_product = $this->existing_item->get_product();
 
 		// We need to cast the returned trial lengths as sometimes they may be strings.
@@ -403,16 +398,6 @@ class WCS_Switch_Cart_Item {
 	 * @return bool
 	 */
 	public function is_switch_during_trial() {
-		return ! $this->is_new_item() && $this->subscription->get_time( 'trial_end' ) > gmdate( 'U' );
-	}
-
-	/**
-	 * Determines whether the operation is replacing an existing item, or introducing a new item.
-	 *
-	 * @since 2.6.0
-	 * @return boolean
-	 */
-	public function is_new_item() {
-		return ! is_object( $this->existing_item );
+		return $this->subscription->get_time( 'trial_end' ) > gmdate( 'U' );
 	}
 }
