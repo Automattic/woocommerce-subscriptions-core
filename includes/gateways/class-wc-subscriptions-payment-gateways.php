@@ -231,7 +231,7 @@ class WC_Subscriptions_Payment_Gateways {
 		foreach ( $core_features as $key => $feature ) {
 
 			// Skip any non-subscription related features.
-			if ( 0 !== strpos( $feature, 'subscription' ) ) {
+			if ( false === strpos( $feature, 'subscription' ) ) {
 				continue;
 			}
 
