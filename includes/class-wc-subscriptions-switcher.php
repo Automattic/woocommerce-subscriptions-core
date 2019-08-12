@@ -578,7 +578,7 @@ class WC_Subscriptions_Switcher {
 	}
 
 	/**
-	 * Check if a given cart item can be added to a subscription, or if a given item subscription line item can be switched.
+	 * Check if a given cart item can be added to a subscription, or if a given subscription line item can be switched.
 	 *
 	 * For an item to be switchable, switching must be enabled, and the item must be for a variable subscription or
 	 * part of a grouped product (at the time the check is made, not at the time the subscription was purchased).
@@ -588,7 +588,7 @@ class WC_Subscriptions_Switcher {
 	 * @since 2.6.0
 	 *
 	 * @param string $action The action to perform ("add" or "switch").
-	 * @param array $item An order item on the subscription to switch, or cart item to add.
+	 * @param array|WC_Order_Item_Product $item An order item on the subscription to switch, or cart item to add.
 	 * @param WC_Subscription $subscription An instance of WC_Subscription
 	 */
 	protected static function is_action_allowed( $action, $item, $subscription = null ) {
@@ -656,7 +656,7 @@ class WC_Subscriptions_Switcher {
 	 *
 	 * The subscription must also be active and use manual renewals or use a payment method which supports cancellation.
 	 *
-	 * @param array $item An order item on the subscription to switch, or cart item to add.
+	 * @param WC_Order_Item_Product $item An order item on the subscription to switch, or cart item to add.
 	 * @param WC_Subscription $subscription An instance of WC_Subscription
 	 * @since 2.0
 	 */
@@ -670,7 +670,7 @@ class WC_Subscriptions_Switcher {
 	 * @since 2.6.0
 	 *
 	 * @param string $action An action to perform with the item ('add' or 'switch').
-	 * @param array $item An order item to switch, or cart item to add.
+	 * @param WC_Order_Item_Product $item An order item to switch, or cart item to add.
 	 * @param WC_Subscription $subscription An instance of WC_Subscription.
 	 * @param int $user_id (optional) The ID of a user. Defaults to currently logged in user.
 	 */
@@ -717,7 +717,7 @@ class WC_Subscriptions_Switcher {
 	/**
 	 * Check if a given item on a subscription can be switched by a given user.
 	 *
-	 * @param array $item An order item to switch.
+	 * @param WC_Order_Item_Product $item An order item to switch.
 	 * @param WC_Subscription $subscription An instance of WC_Subscription.
 	 * @param int $user_id (optional) The ID of a user. Defaults to currently logged in user.
 	 * @since 2.0
