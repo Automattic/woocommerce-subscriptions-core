@@ -1729,13 +1729,13 @@ class WC_Subscriptions_Switcher {
 
 			switch ( $cart_item['subscription_switch']['upgraded_or_downgraded'] ) {
 				case 'downgraded' :
-					$direction = _x( 'Downgrade', 'a switch order', 'woocommerce-subscriptions' );
+					$direction = _x( 'Downgrade', 'a switch type', 'woocommerce-subscriptions' );
 					break;
 				case 'upgraded' :
-					$direction = _x( 'Upgrade', 'a switch order', 'woocommerce-subscriptions' );
+					$direction = _x( 'Upgrade', 'a switch type', 'woocommerce-subscriptions' );
 					break;
 				default :
-					$direction = _x( 'Crossgrade', 'a switch order', 'woocommerce-subscriptions' );
+					$direction = _x( 'Crossgrade', 'a switch type', 'woocommerce-subscriptions' );
 				break;
 			}
 
