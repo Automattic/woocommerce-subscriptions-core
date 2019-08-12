@@ -711,7 +711,7 @@ class WC_Subscriptions_Switcher {
 	 * @param int $user_id (optional) The ID of a user. Defaults to currently logged in user.
 	 */
 	public static function can_item_be_added_by_user( $item, $subscription, $user_id = 0 ) {
-		return apply_filters( 'woocommerce_subscriptions_can_item_be_added_by_user', self::can_user_perform_action( 'add', $item, $subscription, $user_id = 0 ), $item, $subscription );
+		return apply_filters( 'woocommerce_subscriptions_can_item_be_added_by_user', self::can_user_perform_action( 'add', $item, $subscription, $user_id ), $item, $subscription );
 	}
 
 	/**
@@ -723,7 +723,7 @@ class WC_Subscriptions_Switcher {
 	 * @since 2.0
 	 */
 	public static function can_item_be_switched_by_user( $item, $subscription, $user_id = 0 ) {
-		return apply_filters( 'woocommerce_subscriptions_can_item_be_switched_by_user', self::can_user_perform_action( 'switch', $item, $subscription, $user_id = 0 ), $item, $subscription );
+		return apply_filters( 'woocommerce_subscriptions_can_item_be_switched_by_user', self::can_user_perform_action( 'switch', $item, $subscription, $user_id ), $item, $subscription );
 	}
 
 	/**
