@@ -225,7 +225,7 @@ class WC_Subscriptions_Payment_Gateways {
 			return $status_html;
 		}
 
-		$core_features         = $gateway->supports;
+		$core_features         = (array) apply_filters( 'woocommerce_subscriptions_payment_gateway_features_list', $gateway->supports, $gateway );
 		$subscription_features = $change_payment_method_features = array();
 
 		foreach ( $core_features as $key => $feature ) {
