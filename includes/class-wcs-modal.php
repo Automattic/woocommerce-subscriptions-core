@@ -91,14 +91,14 @@ class WCS_Modal {
 	 *
 	 * @since 2.6.0
 	 *
-	 * @param string           $content_type Optional. The modal content type. Can be 'plain-text', 'html', 'template' or 'callback'. Default is 'plain-text'.
 	 * @param string|callable  $content      The content to display in the modal. This should be a string when $content_type is either 'plain-text' or 'html',
 	 *                                       a WooCommerce template filename when $content_type is 'template' or a function that echoes out the content when $content_type is 'callback'.
 	 * @param string           $trigger      A jQuery selector of the element which triggers the modal to be displayed.
+	 * @param string           $content_type Optional. The modal content type. Can be 'plain-text', 'html', 'template' or 'callback'. Default is 'plain-text'.
 	 * @param string           $heading      Optional. The modal heading text.
 	 * @param array            $actions      Optional. An array of actions to add to the modal. See {@see 'WCS_Modal::add_action'} for details on the action array format.
 	 */
-	function __construct( $content_type, $content, $trigger, $heading = '', $actions = array() ) {
+	function __construct( $content, $trigger, $content_type = 'plain-text', $heading = '', $actions = array() ) {
 		$this->content_type = $content_type;
 		$this->trigger      = $trigger;
 		$this->heading      = $heading;
