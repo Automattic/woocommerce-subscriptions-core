@@ -36,7 +36,7 @@ class WCS_Early_Renewal_Modal_Handler {
 		}
 
 		$place_order_action = array(
-			'text'       => __( 'Pay Now', 'woocommerce-subscriptions' ),
+			'text'       => __( 'Pay now', 'woocommerce-subscriptions' ),
 			'attributes' => array(
 				'id'    => 'early_renewal_modal_submit',
 				'class' => 'button alt ',
@@ -53,7 +53,7 @@ class WCS_Early_Renewal_Modal_Handler {
 			'parameters' => array( 'subscription' => $subscription ),
 		);
 
-		$modal = new WCS_Modal( 'callback', $callback_args, '.subscription_renewal_early', __( 'Renew Early', 'woocommerce-subscriptions' ) );
+		$modal = new WCS_Modal( 'callback', $callback_args, '.subscription_renewal_early', __( 'Renew early', 'woocommerce-subscriptions' ) );
 		$modal->add_action( $place_order_action );
 		$modal->print_html();
 	}
