@@ -110,8 +110,7 @@ class WCS_Email_New_Switch_Order extends WC_Email_New_Order {
 	 * @return string
 	 */
 	function get_content_html() {
-		ob_start();
-		wc_get_template(
+		return wc_get_template_html(
 			$this->template_html,
 			array(
 				'order'              => $this->object,
@@ -125,7 +124,6 @@ class WCS_Email_New_Switch_Order extends WC_Email_New_Order {
 			'',
 			$this->template_base
 		);
-		return ob_get_clean();
 	}
 
 	/**
@@ -135,8 +133,7 @@ class WCS_Email_New_Switch_Order extends WC_Email_New_Order {
 	 * @return string
 	 */
 	function get_content_plain() {
-		ob_start();
-		wc_get_template(
+		return wc_get_template_html(
 			$this->template_plain,
 			array(
 				'order'              => $this->object,
@@ -150,6 +147,5 @@ class WCS_Email_New_Switch_Order extends WC_Email_New_Order {
 			'',
 			$this->template_base
 		);
-		return ob_get_clean();
 	}
 }
