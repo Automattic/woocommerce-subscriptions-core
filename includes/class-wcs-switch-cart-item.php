@@ -53,10 +53,10 @@ class WCS_Switch_Cart_Item {
 	public $end_timestamp;
 
 	/**
-	 * The subscription's last non-early renewal or parent order created timestamp.
+	 * The subscription's last non-early renewal or parent order paid timestamp.
 	 * @var int
 	 */
-	public $last_order_created_time;
+	public $last_order_paid_time;
 
 	/**
 	 * The number of days since the @see $last_order_created_time.
@@ -216,13 +216,13 @@ class WCS_Switch_Cart_Item {
 	}
 
 	/**
-	 * Gets the subscription's last order time.
+	 * Gets the subscription's last order paid time.
 	 *
 	 * @since 2.6.0
-	 * @return int The timestamp of the subscription's last non-early renewal or parent order. If none of those are present, the subscription's created time will be returned.
+	 * @return int The paid timestamp of the subscription's last non-early renewal or parent order. If none of those are present, the subscription's start time will be returned.
 	 */
-	public function get_last_order_created_time() {
-		if ( ! isset( $this->last_order_created_time ) ) {
+	public function get_last_order_paid_time() {
+		if ( ! isset( $this->last_order_paid_time ) ) {
 			$last_order = wcs_get_last_non_early_renewal_order( $this->subscription );
 
 			// If there haven't been any non-early renewals yet, use the parent
@@ -232,13 +232,20 @@ class WCS_Switch_Cart_Item {
 
 			// If there aren't any renewals or a parent order, use the subscription's created date.
 			if ( ! $last_order ) {
-				$this->last_order_created_time = $this->subscription->get_date_created()->getTimestamp();
+				$this->last_order_paid_time = $this->subscription->get_time( 'start' );
 			} else {
-				$this->last_order_created_time = $last_order->get_date_created()->getTimestamp();
+				$order_date = $last_order->get_date_paid();
+
+				// If the order hasn't been paid, use the created date. This shouldn't occur because only active (paid) subscriptions can be switched. However, we provide a fallback just in case.
+				if ( ! $order_date ) {
+					$order_date = $last_order->get_date_created();
+				}
+
+				$this->last_order_paid_time = $order_date->getTimestamp();
 			}
 		}
 
-		return $this->last_order_created_time;
+		return $this->last_order_paid_time;
 	}
 
 	/**
@@ -264,7 +271,7 @@ class WCS_Switch_Cart_Item {
 	public function get_days_since_last_payment() {
 		if ( ! isset( $this->days_since_last_payment ) ) {
 			// Use the timestamp for the last non-early renewal order or parent order to avoid date miscalculations which early renewing creates.
-			$this->days_since_last_payment = floor( ( gmdate( 'U' ) - $this->get_last_order_created_time() ) / DAY_IN_SECONDS );
+			$this->days_since_last_payment = floor( ( gmdate( 'U' ) - $this->get_last_order_paid_time() ) / DAY_IN_SECONDS );
 		}
 
 		return $this->days_since_last_payment;
@@ -328,7 +335,7 @@ class WCS_Switch_Cart_Item {
 
 		// Find the number of days between the last payment and the next
 		if ( 'days_between_payments' === $method_to_use ) {
-			$days_in_old_cycle = round( ( $this->next_payment_timestamp - $this->get_last_order_created_time() ) / DAY_IN_SECONDS );
+			$days_in_old_cycle = round( ( $this->next_payment_timestamp - $this->get_last_order_paid_time() ) / DAY_IN_SECONDS );
 		} else {
 			$days_in_old_cycle = wcs_get_days_in_cycle( $this->subscription->get_billing_period(), $this->subscription->get_billing_interval() );
 		}
@@ -343,7 +350,7 @@ class WCS_Switch_Cart_Item {
 	 * @return int
 	 */
 	public function calculate_days_in_new_cycle() {
-		$last_order_time      = $this->get_last_order_created_time();
+		$last_order_time      = $this->get_last_order_paid_time();
 		$new_billing_period   = WC_Subscriptions_Product::get_period( $this->product );
 		$new_billing_interval = WC_Subscriptions_Product::get_interval( $this->product );
 
