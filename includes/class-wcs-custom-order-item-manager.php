@@ -29,6 +29,11 @@ class WCS_Custom_Order_Item_Manager {
 			'class'      => 'WC_Subscription_Item_Coupon_Pending_Switch',
 			'data_store' => 'WC_Order_Item_Coupon_Data_Store',
 		),
+		'fee_pending_switch' => array(
+			'group'      => 'pending_switch_fees',
+			'class'      => 'WC_Subscription_Item_Fee_Pending_Switch',
+			'data_store' => 'WC_Order_Item_Fee_Data_Store',
+		),
 	);
 
 	/**
