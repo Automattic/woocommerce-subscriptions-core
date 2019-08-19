@@ -1180,8 +1180,8 @@ class WC_Subscriptions_Switcher {
 	 * @param array  $cart_item_data The cart item's custom data.
 	 */
 	public static function trigger_switch_added_to_cart_hook( $cart_item_key, $product_id, $quantity, $variation_id, $variation_attributes, $cart_item_data ) {
-		if ( ! isset( $cart_item_data['subscription_switch'] ) ) {
-			 return;
+		if ( ! isset( $cart_item_data['subscription_switch'] ) || empty( $cart_item_data['subscription_switch']['item_id'] ) ) {
+			return;
 		}
 
 		$subscription  = wcs_get_subscription( $cart_item_data['subscription_switch']['subscription_id'] );
