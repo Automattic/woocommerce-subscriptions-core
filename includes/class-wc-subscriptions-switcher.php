@@ -1203,7 +1203,7 @@ class WC_Subscriptions_Switcher {
 	public static function retain_coupons( $subscription ) {
 		foreach ( $subscription->get_used_coupons() as $coupon_code ) {
 			$coupon = new WC_Coupon( $coupon_code );
-			if ( true === apply_filters( 'woocommerce_subscriptions_retain_coupon_on_switch', false, $coupon_code, $coupon, $subscription ) ) {
+			if ( ! WC()->cart->has_discount( $coupon_code ) && true === apply_filters( 'woocommerce_subscriptions_retain_coupon_on_switch', false, $coupon_code, $coupon, $subscription ) ) {
 				WC()->cart->add_discount( $coupon_code );
 			}
 		}
