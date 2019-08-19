@@ -894,13 +894,15 @@ class WC_Subscriptions_Switcher {
 					$is_different_billing_schedule = self::has_different_billing_schedule( $cart_item, $subscription );
 					$is_different_payment_date     = self::has_different_payment_date( $cart_item, $subscription );
 					$is_different_length           = self::has_different_length( $recurring_cart, $subscription );
-					$is_different_trial_end_date   = self::has_different_trial( $recurring_cart, $subscription );
 					$is_single_item_subscription   = self::is_single_item_subscription( $subscription );
 
 					$switched_item_data = array();
 
 					if ( ! empty( $cart_item['subscription_switch']['item_id'] ) ) {
 						$switched_item_data['remove_line_item'] = $cart_item['subscription_switch']['item_id'];
+						$existing_item                          = wcs_get_order_item( $cart_item['subscription_switch']['item_id'], $subscription );
+						$switch_item                            = new WCS_Switch_Cart_Item( $cart_item, $subscription, $existing_item );
+						$is_switch_with_matching_trials         = $switch_item->is_switch_during_trial() && $switch_item->trial_periods_match();
 					}
 
 					// If the item is on the same schedule, we can just add it to the new subscription and remove the old item.
@@ -981,8 +983,11 @@ class WC_Subscriptions_Switcher {
 							$updated_dates['end'] = $recurring_cart->end_date;
 						}
 
-						if ( $is_different_trial_end_date ) {
-							$updated_dates['trial_end'] = $recurring_cart->trial_end_date;
+						// If the switch should maintain the current trial or delete it.
+						if ( isset( $is_switch_with_matching_trials ) && $is_switch_with_matching_trials ) {
+							$updated_dates['trial_end'] = $subscription->get_date( 'trial_end' );
+						} else {
+							$updated_dates['trial_end'] = 0;
 						}
 
 						if ( ! empty( $updated_dates ) ) {
@@ -2365,22 +2370,6 @@ class WC_Subscriptions_Switcher {
 		}
 
 		return $cart_contains_subscription_creating_switch;
-	}
-
-	/**
-	 * @param WC_Cart         $recurring_cart
-	 * @param WC_Subscription $subscription
-	 *
-	 * @return bool
-	 * @see   self::process_checkout().
-	 *
-	 * @since 2.6.0
-	 */
-	public static function has_different_trial( $recurring_cart, $subscription ) {
-		$cart_trial_end_date         = gmdate( 'Y-m-d', wcs_date_to_time( $recurring_cart->trial_end_date ) );;
-		$subscription_trial_end_date = gmdate( 'Y-m-d', $subscription->get_time( 'trial_end' ) );
-
-		return $cart_trial_end_date !== $subscription_trial_end_date;
 	}
 
 	/**

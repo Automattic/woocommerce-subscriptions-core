@@ -108,7 +108,11 @@ class WC_Subscriptions_Admin {
 
 		add_action( 'woocommerce_admin_field_informational', __CLASS__ . '::add_informational_admin_field' );
 
-		add_filter( 'posts_where', __CLASS__ . '::filter_orders' );
+		add_filter( 'posts_where', array( __CLASS__, 'filter_orders' ) );
+
+		add_filter( 'posts_where', array( __CLASS__, 'filter_orders_from_list' ) );
+
+		add_filter( 'posts_where', array( __CLASS__, 'filter_subscriptions_from_list' ) );
 
 		add_filter( 'posts_where', array( __CLASS__, 'filter_paid_subscription_orders_for_user' ) );
 
@@ -898,7 +902,7 @@ class WC_Subscriptions_Admin {
 			delete_transient( WC_Subscriptions::$activation_transient );
 		}
 
-		if ( $is_woocommerce_screen || $is_activation_screen || 'edit-product' == $screen->id ) {
+		if ( $is_woocommerce_screen || $is_activation_screen || 'edit-product' == $screen->id || ( isset( $_GET['page'], $_GET['tab'] ) && 'wc-reports' === $_GET['page'] && 'subscriptions' === $_GET['tab'] ) ) {
 			wp_enqueue_style( 'woocommerce_admin_styles', WC()->plugin_url() . '/assets/css/admin.css', array(), WC_Subscriptions::$version );
 			wp_enqueue_style( 'woocommerce_subscriptions_admin', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/css/admin.css', array( 'woocommerce_admin_styles' ), WC_Subscriptions::$version );
 		}
@@ -1422,7 +1426,6 @@ class WC_Subscriptions_Admin {
 	 * Filter the "Orders" list to show only orders associated with a specific subscription.
 	 *
 	 * @param string $where
-	 * @param string $request
 	 * @return string
 	 * @since 2.0
 	 */
@@ -1446,6 +1449,66 @@ class WC_Subscriptions_Admin {
 					$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", implode( ',', array_map( 'absint', array_unique( $subscription->get_related_orders( 'ids' ) ) ) ) );
 				}
 			}
+		}
+
+		return $where;
+	}
+
+	/**
+	 * Filters the Admin orders table results based on a list of IDs returned by a report query.
+	 *
+	 * @param string $where The query WHERE clause.
+	 * @return string $where
+	 * @since 2.6.0
+	 */
+	public static function filter_orders_from_list( $where ) {
+		global $typenow, $wpdb;
+
+		if ( ! is_admin() || 'shop_order' !== $typenow || ! isset( $_GET['_orders_list_key'], $_GET['_report'] ) ) {
+			return $where;
+		}
+
+		if ( ! empty( $_GET['_orders_list_key'] ) && ! empty( $_GET['_report'] ) ) {
+			$cache     = get_transient( $_GET['_report'] );
+			$results   = $cache[ $_GET['_orders_list_key'] ];
+			$order_ids = explode( ',', implode( ',', wp_list_pluck( $results, 'order_ids', true ) ) );
+
+			// $format = '%d, %d, %d, %d, %d, [...]'
+			$format = implode( ', ', array_fill( 0, count( $order_ids ), '%d' ) );
+			$where .= $wpdb->prepare( " AND {$wpdb->posts}.ID IN ($format)", $order_ids );
+		} else {
+			// No orders in list. So, give invalid 'where' clause so as to make the query return 0 items.
+			$where .= " AND {$wpdb->posts}.ID = 0";
+		}
+
+		return $where;
+	}
+
+	/**
+	 * Filters the Admin subscriptions table results based on a list of IDs returned by a report query.
+	 *
+	 * @param string $where The query WHERE clause.
+	 * @return string
+	 * @since 2.6.0
+	 */
+	public static function filter_subscriptions_from_list( $where ) {
+		global $typenow, $wpdb;
+
+		if ( ! is_admin() || 'shop_subscription' !== $typenow || ! isset( $_GET['_subscriptions_list_key'], $_GET['_report'] ) ) {
+			return $where;
+		}
+
+		if ( ! empty( $_GET['_subscriptions_list_key'] ) && ! empty( $_GET['_report'] ) ) {
+			$cache            = get_transient( $_GET['_report'] );
+			$results          = $cache[ $_GET['_subscriptions_list_key'] ];
+			$subscription_ids = explode( ',', implode( ',', wp_list_pluck( $results, 'subscription_ids', true ) ) );
+
+			// $format = '%d, %d, %d, %d, %d, [...]'
+			$format = implode( ', ', array_fill( 0, count( $subscription_ids ), '%d' ) );
+			$where .= $wpdb->prepare( " AND {$wpdb->posts}.ID IN ($format)", $subscription_ids );
+		} else {
+			// No subscriptions in list. So, give invalid 'where' clause so as to make the query return 0 items.
+			$where .= " AND {$wpdb->posts}.ID = 0";
 		}
 
 		return $where;
@@ -1483,7 +1546,7 @@ class WC_Subscriptions_Admin {
 			$where .= " AND {$wpdb->posts}.ID = 0";
 		} else {
 			// Orders with paid status
-			$where .= sprintf( " AND {$wpdb->posts}.post_status IN ( 'wc-processing', 'wc-completed' )" );
+			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_status IN ( 'wc-processing', 'wc-completed' )" );
 			$where .= sprintf( " AND {$wpdb->posts}.ID IN (%s)", implode( ',', array_unique( $users_subscription_orders ) ) );
 		}
 
