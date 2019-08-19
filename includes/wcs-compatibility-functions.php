@@ -534,3 +534,17 @@ function wcs_doing_cron() {
 function wcs_doing_ajax() {
 	return function_exists( 'wp_doing_ajax' ) ? wp_doing_ajax() : defined( 'DOING_AJAX' ) && DOING_AJAX;
 }
+
+/**
+ * A wrapper function for getting an order's used coupon codes.
+ *
+ * WC 3.7 deprecated @see WC_Abstract_Order::get_used_coupons() in favour of WC_Abstract_Order::get_coupon_codes().
+ *
+ * @since 2.6.0
+ *
+ * @param WC_Abstract_Order $order An order or subscription object to get the coupon codes for.
+ * @return array The coupon codes applied to the $order.
+ */
+function wcs_get_used_coupon_codes( $order ) {
+	return is_callable( array( $order, 'get_coupon_codes' ) ) ? $order->get_coupon_codes() : $order->get_used_coupons();
+}
