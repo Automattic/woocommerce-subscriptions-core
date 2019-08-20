@@ -128,19 +128,36 @@ class WCS_Switch_Totals_Calculator {
 		$switches = array();
 
 		foreach ( $this->cart->get_cart() as $cart_item_key => $cart_item ) {
+
+			// This item may not exist if its linked to an item that got removed with 'remove_cart_item' below.
+			if ( empty( $this->cart->cart_contents[ $cart_item_key ] ) ) {
+				continue;
+			}
+
 			if ( ! isset( $cart_item['subscription_switch']['subscription_id'] ) ) {
 				continue;
 			}
 
-			$subscription  = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
-			$existing_item = wcs_get_order_item( $cart_item['subscription_switch']['item_id'], $subscription );
+			$subscription = wcs_get_subscription( $cart_item['subscription_switch']['subscription_id'] );
 
-			if ( empty( $subscription ) || empty( $existing_item ) ) {
+			if ( empty( $subscription ) ) {
 				$this->cart->remove_cart_item( $cart_item_key );
 				continue;
 			}
 
-			$switches[ $cart_item_key ] = new WCS_Switch_Cart_Item( $cart_item, $subscription, $existing_item );
+			if ( ! empty( $cart_item['subscription_switch']['item_id'] ) ) {
+
+				$existing_item = wcs_get_order_item( $cart_item['subscription_switch']['item_id'], $subscription );
+
+				if ( empty( $existing_item ) ) {
+					$this->cart->remove_cart_item( $cart_item_key );
+					continue;
+				}
+
+				$switches[ $cart_item_key ] = new WCS_Switch_Cart_Item( $cart_item, $subscription, $existing_item );
+			} else {
+				$switches[ $cart_item_key ] = new WCS_Add_Cart_Item( $cart_item, $subscription );
+			}
 		}
 
 		return $switches;
@@ -230,7 +247,7 @@ class WCS_Switch_Totals_Calculator {
 	protected function apportion_sign_up_fees( $switch_item ) {
 		if ( 'no' === $this->apportion_sign_up_fee ) {
 			$switch_item->product->update_meta_data( '_subscription_sign_up_fee', 0 );
-		} elseif ( 'yes' === $this->apportion_sign_up_fee ) {
+		} elseif ( $switch_item->existing_item && 'yes' === $this->apportion_sign_up_fee ) {
 			$product = wc_get_product( $switch_item->canonical_product_id );
 
 			// Make sure we get a fresh copy of the product's meta to avoid prorating an already prorated sign-up fee
@@ -440,15 +457,14 @@ class WCS_Switch_Totals_Calculator {
 	 * @param WCS_Switch_Cart_Item $switch_item
 	 */
 	protected function log_switch( $switch_item ) {
-		static $logger    = null;
-		$subscription_id  = $switch_item->subscription->get_id();
-		$existing_item_id = $switch_item->existing_item->get_id();
+		static $logger = null;
+		$messages      = array();
 
 		if ( ! $logger ) {
 			$logger = wc_get_logger();
 		}
 
-		$messages = array( "Switch details for #{$subscription_id} ({$existing_item_id}):" );
+		$messages[] = sprintf( 'Switch details for #%s (%s):', $switch_item->subscription->get_id(), $switch_item->existing_item ? $switch_item->existing_item->get_id() : 'new item' );
 
 		foreach ( $switch_item as $property => $value ) {
 			if ( is_scalar( $value ) ) {
