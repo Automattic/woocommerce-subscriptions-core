@@ -545,7 +545,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		);
 
 		$legend[] = array(
-			'title'            => sprintf( __( '%2$s %1$s subscription ended', 'woocommerce-subscriptions' ), '<strong> <span class="woocommerce-subscriptions-count count">' . $this->report_data->total_subscriptions_ended . '</strong> </a>',
+			'title'            => sprintf( __( '%2$s %1$s ended subscriptions', 'woocommerce-subscriptions' ), '<strong> <span class="woocommerce-subscriptions-count count">' . $this->report_data->total_subscriptions_ended . '</strong> </a>',
 			'<a href="' . esc_url( add_query_arg( array( 'post_type' => 'shop_subscription', '_subscriptions_list_key' => $this->report_data->ended_subscriptions_query_hash, '_report' => strtolower( get_class( $this ) ) ), admin_url( 'edit.php' ) ) ). '">' ),
 			'placeholder'      => __( 'The number of subscriptions which have either expired or reached the end of the prepaid term if it was previously cancelled.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['ended_count'],
