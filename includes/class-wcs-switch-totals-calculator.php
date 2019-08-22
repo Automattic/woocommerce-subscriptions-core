@@ -474,7 +474,16 @@ class WCS_Switch_Totals_Calculator {
 			}
 		}
 
-		$logger->info( implode( PHP_EOL, $messages ), array( 'source' => 'wcs-switch-cart-items' ) );
+		// Prevent logging the same switch item to the log in the same request.
+		$key = md5( serialize( $messages ) );
+
+		if ( ! isset( $GLOBALS[ 'WCS_Switches_Logged' ], $GLOBALS[ 'WCS_Switches_Logged' ][ $key ] ) ) {
+			// Add a separator to the bottom of the log entry.
+			$messages[] = str_repeat( '=', 60 ) . PHP_EOL;
+
+			$logger->info( implode( PHP_EOL, $messages ), array( 'source' => 'wcs-switch-cart-items' ) );
+			$GLOBALS[ 'WCS_Switches_Logged' ][ $key ] = 1;
+		}
 	}
 
 	/**
