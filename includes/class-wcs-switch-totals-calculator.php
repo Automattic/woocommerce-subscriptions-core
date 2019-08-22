@@ -476,4 +476,15 @@ class WCS_Switch_Totals_Calculator {
 
 		$logger->info( implode( PHP_EOL, $messages ), array( 'source' => 'wcs-switch-cart-items' ) );
 	}
+
+	/**
+	 * Logs information about all the switches currently in the cart.
+	 *
+	 * @since 2.6.0
+	 */
+	public function log_switches() {
+		foreach ( $this->get_switches_from_cart() as $switch_item ) {
+			$this->log_switch( $switch_item );
+		}
+	}
 }
