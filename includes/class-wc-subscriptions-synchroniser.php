@@ -532,8 +532,7 @@ class WC_Subscriptions_Synchroniser {
 		// Normal cases where we aren't concerned with an upfront payment.
 		if (
 			0 !== WC_Subscriptions_Product::get_trial_length( $product ) ||
-			! self::is_product_synced( $product ) ||
-			'recurring' !== get_option( self::$setting_id_proration, 'no' )
+			! self::is_product_synced( $product )
 		) {
 			$is_upfront = false;
 		}
@@ -541,11 +540,19 @@ class WC_Subscriptions_Synchroniser {
 		// Maybe account for number of days without a fee.
 		if ( null === $is_upfront ) {
 			$no_fee_days = get_option( self::$setting_id_days_no_fee );
+			$payment_date = self::calculate_first_payment_date( $product, 'timestamp' );
 
-			if ( $no_fee_days > 0 ) {
-				$payment_date = self::calculate_first_payment_date( $product, 'timestamp' );
-				$buffer_date  = $payment_date - ( $no_fee_days * DAY_IN_SECONDS );
-				$is_upfront   = wcs_strtotime_dark_knight( 'now' ) < $buffer_date;
+			$site_offset = (int) get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
+
+			// The payment date is today - check for it in site time
+			if( gmdate("Y-m-d", $payment_date + $site_offset)  === gmdate("Y-m-d", strtotime('now') + $site_offset) ) {
+				$is_upfront = true;
+			} elseif( 'recurring' !== get_option( self::$setting_id_proration, 'no' ) ) {
+				$is_upfront = false;
+			} elseif( $no_fee_days > 0 ) {
+				// When proration setting is 'recurring' and there is a grace period
+				$buffer_date = $payment_date - ($no_fee_days * DAY_IN_SECONDS);
+				$is_upfront = wcs_strtotime_dark_knight('now') < strtotime(gmdate("Y-m-d 23:59:59", $buffer_date));
 			} else {
 				$is_upfront = true;
 			}
@@ -643,19 +650,29 @@ class WC_Subscriptions_Synchroniser {
 
 				$payment_day = gmdate( 't', $from_timestamp );
 				$month       = gmdate( 'F', $from_timestamp );
+				$month_number       = gmdate( 'm', $from_timestamp );
 
 			} elseif ( gmdate( 'j', $from_timestamp ) > $payment_day ) { // today is later than specified day in the from date, we need the next month
 				$month = gmdate( 'F', wcs_add_months( $from_timestamp, $interval ) );
+				$month_number = gmdate( 'm', wcs_add_months( $from_timestamp, $interval ) );
+
 
 			} else { // specified day is either today or still to come in the month of the from date
 
 				$month = gmdate( 'F', $from_timestamp );
+				$month_number       = gmdate( 'm', $from_timestamp );
 
 			}
 
-			$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day} {$month}", $from_timestamp );
+			if( $month_number < gmdate( 'm', $from_timestamp)) {
+				$year       = gmdate( 'Y', $from_timestamp );
+				$year++;
+				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day} {$month} {$year}", $from_timestamp );
+			} else {
+				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day} {$month} ", $from_timestamp );
+			}
 
-		} elseif ( 'year' == $period ) {
+	} elseif ( 'year' == $period ) {
 
 			// We can't use $wp_locale here because it is translated
 			switch ( $payment_day['month'] ) {
