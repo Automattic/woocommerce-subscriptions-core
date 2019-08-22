@@ -9,12 +9,13 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
 class WCS_Modal {
 
 	/**
 	 * The content to display inside the modal body.
 	 *
-	 * Can be plain text, raw HTML or a template file path.
+	 * Can be plain text, raw HTML, a template file path or a PHP callback function.
 	 *
 	 * @var string
 	 */
@@ -23,7 +24,7 @@ class WCS_Modal {
 	/**
 	 * The type of content to display.
 	 *
-	 * Can be 'plain-text', 'html', or 'template'.
+	 * Can be 'plain-text', 'html', 'template' or 'callback'.
 	 *
 	 * @var string
 	 */
@@ -90,10 +91,14 @@ class WCS_Modal {
 	 *
 	 * @since 2.6.0
 	 *
-	 * @param string $content The content to display in the modal.
-	 * @param string $type    Optional. The modal content type. Can be 'plain-text', 'html', or 'template'. Default is 'plain-text'.
+	 * @param string|callable  $content      The content to display in the modal. This should be a string when $content_type is either 'plain-text' or 'html',
+	 *                                       a WooCommerce template filename when $content_type is 'template' or a function that echoes out the content when $content_type is 'callback'.
+	 * @param string           $trigger      A jQuery selector of the element which triggers the modal to be displayed.
+	 * @param string           $content_type Optional. The modal content type. Can be 'plain-text', 'html', 'template' or 'callback'. Default is 'plain-text'.
+	 * @param string           $heading      Optional. The modal heading text.
+	 * @param array            $actions      Optional. An array of actions to add to the modal. See {@see 'WCS_Modal::add_action'} for details on the action array format.
 	 */
-	function __construct( $content_type, $content, $trigger, $heading = '', $actions = array() ) {
+	function __construct( $content, $trigger, $content_type = 'plain-text', $heading = '', $actions = array() ) {
 		$this->content_type = $content_type;
 		$this->trigger      = $trigger;
 		$this->heading      = $heading;
@@ -170,10 +175,12 @@ class WCS_Modal {
 	 *
 	 * @since 2.6.0
 	 *
-	 * @param array $action {
-	 *     @type string Optional. The element type. Can be 'button' or 'a'. Default 'a' (link element).
-	 *     @type array  Optional. An array of HTML attributes in a array( 'attribute' => 'value' ) format. The value can also be an array of attribute values. Default is empty array.
-	 *     @type string Optional. The text should appear inside the button or a tag. Default is empty string.
+	 * @param array $action_args {
+	 *	   Action button or link details.
+	 *
+	 *     @type string $type Optional. The element type. Can be 'button' or 'a'. Default 'a' (link element).
+	 *     @type array  $attributes Optional. An array of HTML attributes in a array( 'attribute' => 'value' ) format. The value can also be an array of attribute values. Default is empty array.
+	 *     @type string $text Optional. The text should appear inside the button or a tag. Default is empty string.
 	 * }
 	 */
 	public function add_action( $action_args ) {
