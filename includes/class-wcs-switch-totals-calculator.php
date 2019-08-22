@@ -114,7 +114,9 @@ class WCS_Switch_Totals_Calculator {
 				$this->apportion_length( $switch_item );
 			}
 
-			$this->log_switch( $switch_item );
+			if ( defined( 'WCS_DEBUG_SWITCHING' ) && WCS_DEBUG_SWITCHING ) {
+				$this->log_switch( $switch_item );
+			}
 		}
 	}
 
