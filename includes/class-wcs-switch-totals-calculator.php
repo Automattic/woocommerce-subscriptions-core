@@ -466,7 +466,7 @@ class WCS_Switch_Totals_Calculator {
 			$logger = wc_get_logger();
 		}
 
-		$messages[] = sprintf( 'Switch details for #%s (%s):', $switch_item->subscription->get_id(), $switch_item->existing_item ? $switch_item->existing_item->get_id() : 'new item' );
+		$messages[] = sprintf( 'Switch details for subscription #%s (%s):', $switch_item->subscription->get_id(), $switch_item->existing_item ? $switch_item->existing_item->get_id() : 'new item' );
 
 		foreach ( $switch_item as $property => $value ) {
 			if ( is_scalar( $value ) ) {
