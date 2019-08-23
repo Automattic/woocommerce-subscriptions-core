@@ -671,44 +671,21 @@ class WC_Subscriptions_Synchroniser {
 		} elseif ( 'year' == $period ) {
 
 			// We can't use $wp_locale here because it is translated
-			switch ( $payment_day['month'] ) {
-				case 1 :
-					$month = 'January';
-					break;
-				case 2 :
-					$month = 'February';
-					break;
-				case 3 :
-					$month = 'March';
-					break;
-				case 4 :
-					$month = 'April';
-					break;
-				case 5 :
-					$month = 'May';
-					break;
-				case 6 :
-					$month = 'June';
-					break;
-				case 7 :
-					$month = 'July';
-					break;
-				case 8 :
-					$month = 'August';
-					break;
-				case 9 :
-					$month = 'September';
-					break;
-				case 10 :
-					$month = 'October';
-					break;
-				case 11 :
-					$month = 'November';
-					break;
-				case 12 :
-					$month = 'December';
-					break;
-			}
+			$month_map = array(
+				'01' => 'January',
+				'02' => 'February',
+				'03' => 'March',
+				'04' => 'April',
+				'05' => 'May',
+				'06' => 'June',
+				'07' => 'July',
+				'08' => 'August',
+				'09' => 'September',
+				'10' => 'October',
+				'11' => 'November',
+				'12' => 'December',
+			);
+			$month = $month_map[ $payment_day['month'] ];
 
 			$payment_month_day = sprintf( '%02d%02d', $payment_day['month'], $payment_day['day'] );
 			if ( $payment_month_day < gmdate( 'md', $from_timestamp ) ) {
