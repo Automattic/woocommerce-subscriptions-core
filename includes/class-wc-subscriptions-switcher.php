@@ -129,6 +129,7 @@ class WC_Subscriptions_Switcher {
 		// Grant download permissions after the switch is complete.
 		add_action( 'woocommerce_grant_product_download_permissions', array( __CLASS__, 'delay_granting_download_permissions' ), 9, 1 );
 		add_action( 'woocommerce_subscriptions_switch_completed', array( __CLASS__, 'grant_download_permissions' ), 9, 1 );
+		add_action( 'woocommerce_subscription_checkout_switch_order_processed', array( __CLASS__, 'log_switches' ) );
 	}
 
 	/**
@@ -1096,8 +1097,10 @@ class WC_Subscriptions_Switcher {
 				}
 			}
 
-			wcs_set_objects_property( $order, 'subscription_switch_data', $switch_order_data );
-
+			if ( ! empty( $switch_order_data ) ) {
+				wcs_set_objects_property( $order, 'subscription_switch_data', $switch_order_data );
+				do_action( 'woocommerce_subscription_checkout_switch_order_processed', $order, $switch_order_data );
+			}
 		} catch ( Exception $e ) {
 			// There was an error updating the subscription, delete pending switch order.
 			wp_delete_post( $order_id, true );
@@ -2288,6 +2291,16 @@ class WC_Subscriptions_Switcher {
 
 		// If we never found any amount paid, fall back to the existing item's line item total.
 		return $found_item ? $item_total_paid : $subscription_item['line_total'];
+	}
+
+	/**
+	 * Logs information about all the switches in the cart to the wcs-switch-cart-items log.
+	 *
+	 * @since 2.6.0
+	 */
+	public static function log_switches() {
+		$switch_totals_calculator = new WCS_Switch_Totals_Calculator( WC()->cart );
+		$switch_totals_calculator->log_switches();
 	}
 
 	/** Deprecated Methods **/

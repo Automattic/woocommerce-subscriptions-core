@@ -114,7 +114,9 @@ class WCS_Switch_Totals_Calculator {
 				$this->apportion_length( $switch_item );
 			}
 
-			$this->log_switch( $switch_item );
+			if ( defined( 'WCS_DEBUG' ) && WCS_DEBUG && ! wcs_doing_ajax() ) {
+				$this->log_switch( $switch_item );
+			}
 		}
 	}
 
@@ -457,14 +459,15 @@ class WCS_Switch_Totals_Calculator {
 	 * @param WCS_Switch_Cart_Item $switch_item
 	 */
 	protected function log_switch( $switch_item ) {
-		static $logger = null;
-		$messages      = array();
+		static $logger       = null;
+		static $items_logged = array(); // A cache of the switch items already logged in this request. Prevents multiple log entries for the same item.
+		$messages            = array();
 
 		if ( ! $logger ) {
 			$logger = wc_get_logger();
 		}
 
-		$messages[] = sprintf( 'Switch details for #%s (%s):', $switch_item->subscription->get_id(), $switch_item->existing_item ? $switch_item->existing_item->get_id() : 'new item' );
+		$messages[] = sprintf( 'Switch details for subscription #%s (%s):', $switch_item->subscription->get_id(), $switch_item->existing_item ? $switch_item->existing_item->get_id() : 'new item' );
 
 		foreach ( $switch_item as $property => $value ) {
 			if ( is_scalar( $value ) ) {
@@ -472,6 +475,26 @@ class WCS_Switch_Totals_Calculator {
 			}
 		}
 
-		$logger->info( implode( PHP_EOL, $messages ), array( 'source' => 'wcs-switch-cart-items' ) );
+		// Prevent logging the same switch item to the log in the same request.
+		$key = md5( serialize( $messages ) );
+
+		if ( ! isset( $items_logged[ $key ] ) ) {
+			// Add a separator to the bottom of the log entry.
+			$messages[]           = str_repeat( '=', 60 ) . PHP_EOL;
+			$items_logged[ $key ] = 1;
+
+			$logger->info( implode( PHP_EOL, $messages ), array( 'source' => 'wcs-switch-cart-items' ) );
+		}
+	}
+
+	/**
+	 * Logs information about all the switches currently in the cart.
+	 *
+	 * @since 2.6.0
+	 */
+	public function log_switches() {
+		foreach ( $this->get_switches_from_cart() as $switch_item ) {
+			$this->log_switch( $switch_item );
+		}
 	}
 }
