@@ -281,7 +281,7 @@ class WCS_Switch_Totals_Calculator {
 
 		// If the total amount the customer has paid entitles her to more days at the new price than she has received, there is no gap payment, just shorten the pre-paid term the appropriate number of days
 		if ( $switch_item->get_days_since_last_payment() < $pre_paid_days ) {
-			$this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $switch_item->get_last_order_created_time() + ( $pre_paid_days * DAY_IN_SECONDS );
+			$this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $switch_item->get_last_order_paid_time() + ( $pre_paid_days * DAY_IN_SECONDS );
 		} else {
 			// If the total amount the customer has paid entitles her to the same or fewer days at the new price then start the new subscription from today
 			$this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = 0;
