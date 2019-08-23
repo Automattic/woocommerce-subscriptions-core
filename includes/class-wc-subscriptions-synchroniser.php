@@ -519,12 +519,14 @@ class WC_Subscriptions_Synchroniser {
 	 * @author Jeremy Pry
 	 *
 	 * @param WC_Product $product The product to check.
+	 * @param date $from_date Optional date of purchase; Default is now
 	 *
 	 * @return bool Whether an upfront payment is required for the product.
 	 */
-	public static function is_payment_upfront( $product ) {
+	public static function is_payment_upfront( $product, $from_date = '' ) {
 		static $results = array();
 		$is_upfront = null;
+		$from_timestamp = $from_date ? strtotime( $from_date ) : wcs_strtotime_dark_knight( 'now' );
 		if ( array_key_exists( $product->get_id(), $results ) ) {
 			return $results[ $product->get_id() ];
 		}
@@ -540,19 +542,20 @@ class WC_Subscriptions_Synchroniser {
 		// Maybe account for number of days without a fee.
 		if ( null === $is_upfront ) {
 			$no_fee_days = get_option( self::$setting_id_days_no_fee );
-			$payment_date = self::calculate_first_payment_date( $product, 'timestamp' );
+			$payment_date = self::calculate_first_payment_date( $product, 'timestamp', $from_date );
 
 			$site_offset = (int) get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
 
 			// The payment date is today - check for it in site time
-			if( gmdate("Y-m-d", $payment_date + $site_offset)  === gmdate("Y-m-d", strtotime('now') + $site_offset) ) {
+			if ( gmdate( 'Ymd', $payment_date + $site_offset ) === gmdate( 'Ymd', $from_timestamp + $site_offset ) ) {
 				$is_upfront = true;
-			} elseif( 'recurring' !== get_option( self::$setting_id_proration, 'no' ) ) {
+			} elseif ( 'recurring' !== get_option( self::$setting_id_proration, 'no' ) ) {
 				$is_upfront = false;
-			} elseif( $no_fee_days > 0 ) {
+			} elseif ( $no_fee_days > 0 ) {
 				// When proration setting is 'recurring' and there is a grace period
-				$buffer_date = $payment_date - ($no_fee_days * DAY_IN_SECONDS);
-				$is_upfront = wcs_strtotime_dark_knight('now') < strtotime(gmdate("Y-m-d 23:59:59", $buffer_date));
+				$buffer_date = $payment_date - ( $no_fee_days * DAY_IN_SECONDS );
+
+				$is_upfront = $from_timestamp < strtotime( gmdate( 'Y-m-d 23:59:59', $buffer_date ) );
 			} else {
 				$is_upfront = true;
 			}
@@ -647,32 +650,25 @@ class WC_Subscriptions_Synchroniser {
 
 			// strtotime() needs to know the month, so we need to determine if the specified day has occured this month yet or if we want the last day of the month (see: https://gist.github.com/thenbrent/9698083)
 			if ( $payment_day > 27 ) { // we actually want the last day of the month
-
-				$payment_day = gmdate( 't', $from_timestamp );
-				$month       = gmdate( 'F', $from_timestamp );
-				$month_number       = gmdate( 'm', $from_timestamp );
-
+				$payment_day  = gmdate( 't', $from_timestamp );
+				$month        = gmdate( 'F', $from_timestamp );
+				$month_number = gmdate( 'm', $from_timestamp );
 			} elseif ( gmdate( 'j', $from_timestamp ) > $payment_day ) { // today is later than specified day in the from date, we need the next month
-				$month = gmdate( 'F', wcs_add_months( $from_timestamp, $interval ) );
+				$month        = gmdate( 'F', wcs_add_months( $from_timestamp, $interval ) );
 				$month_number = gmdate( 'm', wcs_add_months( $from_timestamp, $interval ) );
-
-
 			} else { // specified day is either today or still to come in the month of the from date
-
-				$month = gmdate( 'F', $from_timestamp );
-				$month_number       = gmdate( 'm', $from_timestamp );
-
+				$month        = gmdate( 'F', $from_timestamp );
+				$month_number = gmdate( 'm', $from_timestamp );
 			}
-
-			if( $month_number < gmdate( 'm', $from_timestamp)) {
+			// when a certain number of mmonths are added and the first payment date moves to next year
+			if ( $month_number < gmdate( 'm', $from_timestamp ) ) {
 				$year       = gmdate( 'Y', $from_timestamp );
 				$year++;
 				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day} {$month} {$year}", $from_timestamp );
 			} else {
-				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day} {$month} ", $from_timestamp );
+				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day} {$month}", $from_timestamp );
 			}
-
-	} elseif ( 'year' == $period ) {
+		} elseif ( 'year' == $period ) {
 
 			// We can't use $wp_locale here because it is translated
 			switch ( $payment_day['month'] ) {
@@ -729,7 +725,7 @@ class WC_Subscriptions_Synchroniser {
 			if ( gmdate( 'Ymd', $first_payment_timestamp ) < gmdate( 'Ymd', $from_timestamp ) || gmdate( 'Ymd', $first_payment_timestamp ) < gmdate( 'Ymd', current_time( 'timestamp' ) ) ) {
 				$i = 1;
 				// Then make sure the date and time of the payment is in the future
-				while ( ( $first_payment_timestamp < gmdate( 'U' ) || $first_payment_timestamp < $from_timestamp ) && $i < 30 ) {
+				while ( gmdate( 'Ymd', $first_payment_timestamp ) < gmdate( 'Ymd',$from_timestamp ) && $i < 30 ) {
 					$first_payment_timestamp = wcs_add_time( 1, $period, $first_payment_timestamp );
 					$i = $i + 1;
 				}
