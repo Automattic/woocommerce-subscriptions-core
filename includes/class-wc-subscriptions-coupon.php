@@ -750,8 +750,8 @@ class WC_Subscriptions_Coupon {
 	 */
 	public static function order_has_limited_recurring_coupon( $order ) {
 		$has_coupon = false;
-		$coupons    = $order->get_used_coupons();
-		foreach ( $coupons as $code ) {
+
+		foreach ( wcs_get_used_coupon_codes( $order ) as $code ) {
 			if ( self::coupon_is_limited( $code ) ) {
 				$has_coupon = true;
 				break;
@@ -981,7 +981,7 @@ class WC_Subscriptions_Coupon {
 	 */
 	public static function check_coupon_usages( $subscription ) {
 		// If there aren't any coupons, there's nothing to do.
-		$coupons = $subscription->get_used_coupons();
+		$coupons = wcs_get_used_coupon_codes( $subscription );
 		if ( empty( $coupons ) ) {
 			return;
 		}

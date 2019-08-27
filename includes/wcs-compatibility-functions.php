@@ -536,12 +536,26 @@ function wcs_doing_ajax() {
 }
 
 /**
+ * A wrapper function for getting an order's used coupon codes.
+ *
+ * WC 3.7 deprecated @see WC_Abstract_Order::get_used_coupons() in favour of WC_Abstract_Order::get_coupon_codes().
+ *
+ * @since 2.6.0
+ *
+ * @param WC_Abstract_Order $order An order or subscription object to get the coupon codes for.
+ * @return array The coupon codes applied to the $order.
+ */
+function wcs_get_used_coupon_codes( $order ) {
+	return is_callable( array( $order, 'get_coupon_codes' ) ) ? $order->get_coupon_codes() : $order->get_used_coupons();
+}
+
+/**
  * Attach a function callback for a certain WooCommerce versions.
  *
  * Enables attaching a callback if WooCommerce is before, after, equal or not equal to a given version.
  * This function is a wrapper for @see WCS_Dependent_Hook_Manager::add_woocommerce_dependent_action().
  *
- * @since 2.5.9
+ * @since 2.6.0
  *
  * @param string $tag The action or filter tag to attach the callback too.
  * @param string|array $function The callable function to attach to the hook.
