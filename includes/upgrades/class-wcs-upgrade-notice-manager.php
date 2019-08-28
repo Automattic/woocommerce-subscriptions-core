@@ -107,7 +107,7 @@ class WCS_Upgrade_Notice_Manager {
 		) );
 		$notice->set_actions( array(
 			array(
-				'name' => __( 'Learn More', 'woocommerce-subscriptions' ),
+				'name' => __( 'Learn more', 'woocommerce-subscriptions' ),
 				'url'  => 'https://docs.woocommerce.com/document/subscriptions/whats-new-in-subscriptions-2-6/',
 			),
 		) );
