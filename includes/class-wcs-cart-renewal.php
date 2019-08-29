@@ -350,6 +350,8 @@ class WCS_Cart_Renewal {
 			}
 
 			WC()->cart->empty_cart( true );
+			wp_safe_redirect( wc_get_page_permalink( 'cart' ) );
+			exit;
 		}
 
 		do_action( 'woocommerce_setup_cart_for_' . $this->cart_item_key, $subscription, $cart_item_data );
