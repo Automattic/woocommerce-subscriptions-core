@@ -211,7 +211,7 @@ class WCS_Cart_Renewal {
 						$this->setup_cart( $order, array(
 							'subscription_id'  => $subscription->get_id(),
 							'renewal_order_id' => $order_id,
-						) );
+						), 'all_items_required' );
 					}
 
 					do_action( 'wcs_after_renewal_setup_cart_subscription', $subscription, $order );

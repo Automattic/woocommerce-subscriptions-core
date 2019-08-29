@@ -108,7 +108,7 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 				'subscription_id'            => $subscription->get_id(),
 				'subscription_renewal_early' => true,
 				'renewal_order_id'           => $subscription->get_id(),
-			) );
+			), 'all_items_required' );
 
 			do_action( 'wcs_after_early_renewal_setup_cart_subscription', $subscription );
 
