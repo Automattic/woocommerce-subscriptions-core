@@ -79,7 +79,11 @@ class WCS_Renewal_Cart_Stock_Manager {
 			// Use the stock managed product in case we have a variation product which is managed on the variable (parent level)
 			$stock_managed_product = wc_get_product( $product->get_stock_managed_by_id() );
 
-			if ( ! $product->is_in_stock() || wcs_get_total_line_item_product_quantity( $order, $stock_managed_product ) > $stock_managed_product->get_stock_quantity() ) {
+			// Account for stock which is being held by other unpaid orders.
+			$held_stock     = ( (int) get_option( 'woocommerce_hold_stock_minutes', 0 ) > 0 ) ? wc_get_held_stock_quantity( $product, $order->get_id() ) : 0;
+			$required_stock = wcs_get_total_line_item_product_quantity( $order, $stock_managed_product );
+
+			if ( ! $product->is_in_stock() || ( $required_stock + $held_stock ) > $stock_managed_product->get_stock_quantity() ) {
 				add_filter( 'woocommerce_product_is_in_stock', array( __CLASS__, 'adjust_is_in_stock' ), 10, 2 );
 				add_filter( 'woocommerce_product_backorders_allowed', array( __CLASS__, 'adjust_backorder_status' ), 10, 3 );
 				break;
