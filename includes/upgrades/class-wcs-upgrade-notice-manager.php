@@ -100,7 +100,7 @@ class WCS_Upgrade_Notice_Manager {
 		);
 
 		// translators: placeholder is Subscription version string ('2.3')
-		$notice->set_heading( sprintf( __( 'Welcome to Subscriptions %s', 'woocommerce-subscriptions' ), $version ) );
+		$notice->set_heading( sprintf( __( 'Welcome to WooCommerce Subscriptions %s!', 'woocommerce-subscriptions' ), $version ) );
 		$notice->set_content_template( 'update-welcome-notice.php', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'includes/upgrades/templates/', array(
 			'version'  => $version,
 			'features' => $features,

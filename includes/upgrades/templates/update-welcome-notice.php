@@ -13,4 +13,4 @@
 </ul>
 <hr>
 <?php // translators: placeholder is Subscription version string ('2.3') ?>
-<p><?php echo esc_html( sprintf( __( 'Want to know more about %s and these new features?', 'woocommerce-subscriptions' ), $version ) ); ?></p>
+<p><?php echo esc_html( sprintf( __( 'Want to know more about Subscriptions %s and these new features?', 'woocommerce-subscriptions' ), $version ) ); ?></p>
