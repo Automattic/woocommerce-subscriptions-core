@@ -742,9 +742,9 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		}
 
 		if ( $subscription->has_payment_gateway() ) {
-			$title = _x( 'Change Payment Method', 'the page title of the change payment method form', 'woocommerce-subscriptions' );
+			$title = _x( 'Change payment method', 'the page title of the change payment method form', 'woocommerce-subscriptions' );
 		} else {
-			$title = _x( 'Add Payment Method', 'the page title of the add payment method form', 'woocommerce-subscriptions' );
+			$title = _x( 'Add payment method', 'the page title of the add payment method form', 'woocommerce-subscriptions' );
 		}
 
 		return $title;
@@ -779,12 +779,12 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 			if ( $subscription->has_payment_gateway() ) {
 				$crumbs[3] = array(
-					_x( 'Change Payment Method', 'the page title of the change payment method form', 'woocommerce-subscriptions' ),
+					_x( 'Change payment method', 'the page title of the change payment method form', 'woocommerce-subscriptions' ),
 					'',
 				);
 			} else {
 				$crumbs[3] = array(
-					_x( 'Add Payment Method', 'the page title of the add payment method form', 'woocommerce-subscriptions' ),
+					_x( 'Add payment method', 'the page title of the add payment method form', 'woocommerce-subscriptions' ),
 					'',
 				);
 			}
