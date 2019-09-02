@@ -211,7 +211,7 @@ class WCS_Cart_Renewal {
 						$this->setup_cart( $order, array(
 							'subscription_id'  => $subscription->get_id(),
 							'renewal_order_id' => $order_id,
-						) );
+						), 'all_items_required' );
 					}
 
 					do_action( 'wcs_after_renewal_setup_cart_subscription', $subscription, $order );
@@ -235,9 +235,14 @@ class WCS_Cart_Renewal {
 	 * Set up cart item meta data to complete a subscription renewal via the cart.
 	 *
 	 * @since 2.2.0
-	 * @version 2.2.6
+	 *
+	 * @param WC_Abstract_Order $subscription The subscription or Order object to set up the cart from.
+	 * @param array             $cart_item_data Additional cart item data to set on the cart items.
+	 * @param string            $validation_type Whether all items are required or not. Optional. Can be 'all_items_not_required' or 'all_items_required'. 'all_items_not_required' by default.
+	 *     'all_items_not_required' - If an order/subscription line item fails to be added to the cart, the remaining items will be added.
+	 *     'all_items_required'     - If an order/subscription line item fails to be added to the cart, all items will be removed and the cart setup will be aborted.
 	 */
-	protected function setup_cart( $subscription, $cart_item_data ) {
+	protected function setup_cart( $subscription, $cart_item_data, $validation_type = 'all_items_not_required' ) {
 
 		WC()->cart->empty_cart( true );
 		$success = true;
@@ -334,11 +339,19 @@ class WCS_Cart_Renewal {
 			$success       = $success && (bool) $cart_item_key;
 		}
 
-		// If a product linked to a subscription failed to be added to the cart prevent partially paying for the order by removing all cart items.
-		if ( ! $success && wcs_is_subscription( $subscription ) ) {
-			// translators: %s is subscription's number
-			wc_add_notice( sprintf( esc_html__( 'Subscription #%s has not been added to the cart.', 'woocommerce-subscriptions' ), $subscription->get_order_number() ) , 'error' );
+		// If a product couldn't be added to the cart and if all items are required, prevent partially paying for the order by removing all cart items.
+		if ( ! $success && 'all_items_required' === $validation_type ) {
+			if ( wcs_is_subscription( $subscription ) ) {
+				// translators: %s is subscription's number
+				wc_add_notice( sprintf( esc_html__( 'Subscription #%s has not been added to the cart.', 'woocommerce-subscriptions' ), $subscription->get_order_number() ) , 'error' );
+			} else {
+				// translators: %s is order's number
+				wc_add_notice( sprintf( esc_html__( 'Order #%s has not been added to the cart.', 'woocommerce-subscriptions' ), $subscription->get_order_number() ) , 'error' );
+			}
+
 			WC()->cart->empty_cart( true );
+			wp_safe_redirect( wc_get_page_permalink( 'cart' ) );
+			exit;
 		}
 
 		do_action( 'woocommerce_setup_cart_for_' . $this->cart_item_key, $subscription, $cart_item_data );
