@@ -1399,7 +1399,7 @@ class WCS_Cart_Renewal {
 	/**
 	 * Disables renewal cart stock validation if the store has switched it off via a filter.
 	 *
-	 * @since 2.6.x
+	 * @since 2.6.0
 	 */
 	public function maybe_disable_manual_renewal_stock_validation() {
 		if ( apply_filters( 'woocommerce_subscriptions_disable_manual_renewal_stock_validation', false ) ) {

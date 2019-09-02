@@ -937,7 +937,7 @@ function wcs_find_matching_line_item( $order, $subscription_item, $match_type = 
 /**
  * Checks if an order contains a product.
  *
- * @since 2.6.x
+ * @since 2.6.0
  *
  * @param WC_Order $order     An order object
  * @param WC_Product $product A product object
