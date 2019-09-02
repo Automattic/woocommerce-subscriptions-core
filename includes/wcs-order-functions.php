@@ -933,3 +933,27 @@ function wcs_find_matching_line_item( $order, $subscription_item, $match_type = 
 
 	return $matching_item;
 }
+
+/**
+ * Checks if an order contains a product.
+ *
+ * @since 2.6.0
+ *
+ * @param WC_Order $order     An order object
+ * @param WC_Product $product A product object
+ *
+ * @return bool $order_has_product Whether the order contains a line item matching that product
+ */
+function wcs_order_contains_product( $order, $product ) {
+	$order_has_product = false;
+	$product_id        = wcs_get_canonical_product_id( $product );
+
+	foreach ( $order->get_items() as $line_item ) {
+		if ( wcs_get_canonical_product_id( $line_item ) === $product_id ) {
+			$order_has_product = true;
+			break;
+		}
+	}
+
+	return $order_has_product;
+}

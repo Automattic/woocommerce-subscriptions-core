@@ -66,6 +66,8 @@ class WCS_Cart_Renewal {
 
 		// Work around WC changing the "created_via" meta to "checkout" regardless of its previous value during checkout.
 		add_action( 'woocommerce_checkout_create_order', array( $this, 'maybe_preserve_order_created_via' ), 0, 1 );
+
+		add_action( 'plugins_loaded', array( $this, 'maybe_disable_manual_renewal_stock_validation' ) );
 	}
 
 	/**
@@ -1404,6 +1406,17 @@ class WCS_Cart_Renewal {
 
 		if ( isset( $changes['created_via'], $current_data['created_via'] ) && 'subscription' === $current_data['created_via'] && 'checkout' === $changes['created_via'] && wcs_order_contains_renewal( $order ) ) {
 			$order->set_created_via( 'subscription' );
+		}
+	}
+
+	/**
+	 * Disables renewal cart stock validation if the store has switched it off via a filter.
+	 *
+	 * @since 2.6.0
+	 */
+	public function maybe_disable_manual_renewal_stock_validation() {
+		if ( apply_filters( 'woocommerce_subscriptions_disable_manual_renewal_stock_validation', false ) ) {
+			WCS_Renewal_Cart_Stock_Manager::attach_callbacks();
 		}
 	}
 
