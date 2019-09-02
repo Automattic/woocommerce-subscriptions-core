@@ -94,14 +94,14 @@ class WCS_Early_Renewal_Modal_Handler {
 		}
 
 		if ( ! wp_verify_nonce( $_GET['wcs_nonce'], 'wcs-renew-early-modal-' . $_GET['subscription_id'] ) ) {
-			wc_add_notice( __( 'There was an error with your request. Please try again.', 'woocommerce-subscription' ), 'error' );
+			wc_add_notice( __( 'There was an error with your request. Please try again.', 'woocommerce-subscriptions' ), 'error' );
 			self::redirect();
 		}
 
 		$subscription = wcs_get_subscription( absint( $_GET['subscription_id'] ) );
 
 		if ( ! $subscription ) {
-			wc_add_notice( __( 'We were unable to locate that subscription, please try again.', 'woocommerce-subscription' ), 'error' );
+			wc_add_notice( __( 'We were unable to locate that subscription, please try again.', 'woocommerce-subscriptions' ), 'error' );
 			self::redirect();
 		}
 
@@ -111,7 +111,7 @@ class WCS_Early_Renewal_Modal_Handler {
 		$renewal_order = wcs_create_renewal_order( $subscription );
 
 		if ( ! wcs_is_order( $renewal_order ) ) {
-			wc_add_notice( __( "We couldn't create a renewal order for your subscription, please try again.", 'woocommerce-subscription' ), 'error' );
+			wc_add_notice( __( "We couldn't create a renewal order for your subscription, please try again.", 'woocommerce-subscriptions' ), 'error' );
 			self::redirect();
 		}
 
@@ -128,10 +128,10 @@ class WCS_Early_Renewal_Modal_Handler {
 		// Failed early renewals won't place the subscription on-hold so delete unsuccessful early renewal orders.
 		if ( $renewal_order->needs_payment() ) {
 			$renewal_order->delete( true );
-			wc_add_notice( __( 'Payment for this renewal order was unsuccessful, please try again.', 'woocommerce-subscription' ), 'error' );
+			wc_add_notice( __( 'Payment for this renewal order was unsuccessful, please try again.', 'woocommerce-subscriptions' ), 'error' );
 		} else {
 			wcs_update_dates_after_early_renewal( $subscription, $renewal_order );
-			wc_add_notice( __( 'Your early renewal order was successful.', 'woocommerce-subscription' ), 'success' );
+			wc_add_notice( __( 'Your early renewal order was successful.', 'woocommerce-subscriptions' ), 'success' );
 		}
 
 		self::redirect();
