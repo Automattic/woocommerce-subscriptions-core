@@ -126,7 +126,7 @@ class WCS_Switch_Totals_Calculator {
 			}
 
 			// Cache the calculated switched item so we can log it later.
-			self::$calculated_switch_items[ $cart_item_key ] = $switch_item;
+			$this->calculated_switch_items[ $cart_item_key ] = $switch_item;
 		}
 	}
 
@@ -498,12 +498,12 @@ class WCS_Switch_Totals_Calculator {
 	}
 
 	/**
-	 * Logs information about all the switches currently in the cart.
+	 * Logs information about all the calculated switches currently in the cart.
 	 *
 	 * @since 2.6.0
 	 */
 	public function log_switches() {
-		foreach ( $this->get_switches_from_cart() as $switch_item ) {
+		foreach ( $this->calculated_switch_items as $switch_item ) {
 			$this->log_switch( $switch_item );
 		}
 	}
