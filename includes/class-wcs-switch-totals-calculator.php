@@ -46,6 +46,13 @@ class WCS_Switch_Totals_Calculator {
 	protected $prices_include_tax;
 
 	/**
+	 * A cache of the cart item switch objects after they have had their totals calculated.
+	 *
+	 * @var WCS_Switch_Cart_Item[]
+	 */
+	protected $calculated_switch_items = array();
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 2.6.0
@@ -117,6 +124,9 @@ class WCS_Switch_Totals_Calculator {
 			if ( defined( 'WCS_DEBUG' ) && WCS_DEBUG && ! wcs_doing_ajax() ) {
 				$this->log_switch( $switch_item );
 			}
+
+			// Cache the calculated switched item so we can log it later.
+			self::$calculated_switch_items[ $cart_item_key ] = $switch_item;
 		}
 	}
 
