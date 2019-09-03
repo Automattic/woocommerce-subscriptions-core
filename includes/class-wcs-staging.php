@@ -76,7 +76,7 @@ class WCS_Staging {
 	 * @since 2.6.0
 	 */
 	public static function maybe_add_payment_method_note( $subscription ) {
-		if ( WC_Subscriptions::is_duplicate_site() && $subscription->has_payment_gateway() && ! $subscription->get_requires_manual_renewal() ) {
+		if ( wcs_is_subscription( $subscription ) && WC_Subscriptions::is_duplicate_site() && $subscription->has_payment_gateway() && ! $subscription->get_requires_manual_renewal() ) {
 			printf(
 				'<p>%s</p>',
 				esc_html__( 'Subscription locked to Manual Renewal while the store is in staging mode. Payment method changes will take effect in live mode.', 'woocommerce-subscriptions' )
