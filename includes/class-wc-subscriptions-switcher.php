@@ -11,6 +11,14 @@
 class WC_Subscriptions_Switcher {
 
 	/**
+	 * The last known switch total calculator instance which was calculated.
+	 *
+	 * @since 2.6.1
+	 * @var WCS_Switch_Totals_Calculator
+	 */
+	protected static $switch_totals_calculator;
+
+	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
 	 * @since 1.4
@@ -1561,11 +1569,12 @@ class WC_Subscriptions_Switcher {
 	 * Set the subscription prices to be used in calculating totals by @see WC_Subscriptions_Cart::calculate_subscription_totals()
 	 *
 	 * @since 2.0
+	 * @param WC_Cart The cart object which totals are being calculated.
 	 */
 	public static function calculate_prorated_totals( $cart ) {
 		if ( self::cart_contains_switches( 'any' ) ) {
-			$switch_totals_calculator = new WCS_Switch_Totals_Calculator( $cart );
-			$switch_totals_calculator->calculate_prorated_totals();
+			self::$switch_totals_calculator = new WCS_Switch_Totals_Calculator( $cart );
+			self::$switch_totals_calculator->calculate_prorated_totals();
 		}
 	}
 
@@ -2299,8 +2308,9 @@ class WC_Subscriptions_Switcher {
 	 * @since 2.6.0
 	 */
 	public static function log_switches() {
-		$switch_totals_calculator = new WCS_Switch_Totals_Calculator( WC()->cart );
-		$switch_totals_calculator->log_switches();
+		if ( isset( self::$switch_totals_calculator ) ) {
+			self::$switch_totals_calculator->log_switches();
+		}
 	}
 
 	/** Deprecated Methods **/
