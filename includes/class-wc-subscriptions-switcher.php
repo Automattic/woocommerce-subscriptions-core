@@ -912,10 +912,11 @@ class WC_Subscriptions_Switcher {
 					$switched_item_data = array();
 
 					if ( ! empty( $cart_item['subscription_switch']['item_id'] ) ) {
-						$switched_item_data['remove_line_item'] = $cart_item['subscription_switch']['item_id'];
 						$existing_item                          = wcs_get_order_item( $cart_item['subscription_switch']['item_id'], $subscription );
 						$switch_item                            = new WCS_Switch_Cart_Item( $cart_item, $subscription, $existing_item );
 						$is_switch_with_matching_trials         = $switch_item->is_switch_during_trial() && $switch_item->trial_periods_match();
+						$switched_item_data['remove_line_item'] = $cart_item['subscription_switch']['item_id'];
+						$switched_item_data['switch_direction'] = $switch_item->get_switch_type();
 					}
 
 					// If the item is on the same schedule, we can just add it to the new subscription and remove the old item.
