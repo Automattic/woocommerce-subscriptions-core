@@ -379,8 +379,6 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		}
 
 		$this->report_data->subscriber_counts = $cached_results[ $query_hash ];
-
-		$cached_results[ $query_hash ] = array_slice( $this->report_data->subscriber_counts, -1 );
 		$this->report_data->current_subscriptions_query_hash = $query_hash;
 
 		/*
