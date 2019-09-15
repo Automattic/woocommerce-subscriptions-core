@@ -122,6 +122,9 @@ class WC_Subscriptions_Synchroniser {
 
 		// Ensure options are the proper type.
 		add_filter( 'option_' . self::$setting_id_days_no_fee, 'intval' );
+
+		// Don't display migrated order item meta on the Edit Order screen
+		add_filter( 'woocommerce_hidden_order_itemmeta', array( __CLASS__, 'hide_order_itemmeta' ) );
 	}
 
 	/**
@@ -1226,6 +1229,22 @@ class WC_Subscriptions_Synchroniser {
 		if ( self::is_product_synced( $cart_item['data'] ) && ! self::is_today( self::calculate_first_payment_date( $cart_item['data'], 'timestamp' ) ) ) {
 			wc_update_order_item_meta( $item_id, '_synced_sign_up_fee', WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] ) );
 		}
+	}
+
+	/**
+	 * Hides synced subscription meta on the edit order and subscription screen on non-debug sites.
+	 *
+	 * @since 2.6.2
+	 * @param array $hidden_meta_keys the list of meta keys hidden on the edit order and subscription screen.
+	 * @return array $hidden_meta_keys
+	 */
+	public static function hide_order_itemmeta( $hidden_meta_keys ) {
+		if ( apply_filters( 'woocommerce_subscriptions_hide_synchronization_itemmeta', ! defined( 'WCS_DEBUG' ) || true !== WCS_DEBUG ) ) {
+			$hidden_meta_keys[] = '_synced_sign_up_fee';
+		}
+
+		return $hidden_meta_keys;
+
 	}
 
 	/* Deprecated Functions */
