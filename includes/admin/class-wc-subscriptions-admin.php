@@ -1501,6 +1501,12 @@ class WC_Subscriptions_Admin {
 		if ( ! empty( $_GET['_subscriptions_list_key'] ) && ! empty( $_GET['_report'] ) ) {
 			$cache            = get_transient( $_GET['_report'] );
 			$results          = $cache[ $_GET['_subscriptions_list_key'] ];
+
+			// The current subscriptions count report will include the specific result (the subscriptions active on the last day) that should be used to generate the subscription list.
+			if ( ! empty( $_GET['_data_key'] ) && isset( $results[ (int) $_GET['_data_key'] ] ) ) {
+				$results = array( $results[ (int) $_GET['_data_key'] ] );
+			}
+
 			$subscription_ids = explode( ',', implode( ',', wp_list_pluck( $results, 'subscription_ids', true ) ) );
 
 			// $format = '%d, %d, %d, %d, %d, [...]'

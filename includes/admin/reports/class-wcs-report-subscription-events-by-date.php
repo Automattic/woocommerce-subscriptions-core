@@ -565,9 +565,12 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			'highlight_series' => 6,
 		);
 
+		// For the subscriptions count we only need to display the subscriptions included on the last day of the report period so pass the last cache key. The array keys are integers so using max() returns the last array key.
+		$data_key = max( array_keys( $this->report_data->subscriber_counts ) );
+
 		$legend[] = array(
 			'title'            => sprintf( __( '%2$s %1$s current subscriptions', 'woocommerce-subscriptions' ), '<strong> <span class="woocommerce-subscriptions-count count">' . $this->report_data->total_subscriptions_at_period_end . '</strong> </a>',
-			'<a href="' . esc_url( add_query_arg( array( 'post_type' => 'shop_subscription', '_subscriptions_list_key' => $this->report_data->current_subscriptions_query_hash, '_report' => strtolower( get_class( $this ) ) ), admin_url( 'edit.php' ) ) ). '">' ),
+			'<a href="' . esc_url( add_query_arg( array( 'post_type' => 'shop_subscription', '_subscriptions_list_key' => $this->report_data->current_subscriptions_query_hash, '_report' => strtolower( get_class( $this ) ), '_data_key' => $data_key ), admin_url( 'edit.php' ) ) ). '">' ),
 			'placeholder'      => __( 'The number of subscriptions during this period with an end date in the future and a status other than pending.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['subscriber_count'],
 			'highlight_series' => 5,
