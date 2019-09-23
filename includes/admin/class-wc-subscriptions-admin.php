@@ -1499,8 +1499,24 @@ class WC_Subscriptions_Admin {
 		}
 
 		if ( ! empty( $_GET['_subscriptions_list_key'] ) && ! empty( $_GET['_report'] ) ) {
-			$cache            = get_transient( $_GET['_report'] );
-			$results          = $cache[ $_GET['_subscriptions_list_key'] ];
+			$cache = get_transient( $_GET['_report'] );
+
+			// Display an admin notice if we cannot find the report data requested.
+			if ( ! isset( $cache[ $_GET['_subscriptions_list_key'] ] ) ) {
+				$admin_notice = new WCS_Admin_Notice( 'error' );
+				$admin_notice->set_simple_content( sprintf(
+					/* translators: Placeholders are opening and closing link tags. */
+					__( "We weren't able to locate the set of report results you requested. Please regenerate the link from the %sSubscription Reports screen%s." ),
+					'<a href="' . esc_url( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date' ) ) . '">',
+					'</a>'
+				) );
+				$admin_notice->display();
+
+				$where .= " AND {$wpdb->posts}.ID = 0";
+				return $where;
+			}
+
+			$results = $cache[ $_GET['_subscriptions_list_key'] ];
 
 			// The current subscriptions count report will include the specific result (the subscriptions active on the last day) that should be used to generate the subscription list.
 			if ( ! empty( $_GET['_data_key'] ) && isset( $results[ (int) $_GET['_data_key'] ] ) ) {
