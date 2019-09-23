@@ -820,8 +820,9 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function add_line_item_meta( $order_item, $cart_item_key, $cart_item, $order ) {
 		if ( isset( $cart_item['subscription_switch'] ) ) {
-			if ( $switches = self::cart_contains_switches( 'any' ) && isset( $switches[ $cart_item_key ] ) ) {
+			$switches = self::cart_contains_switches( 'any' );
 
+			if ( isset( $switches[ $cart_item_key ] ) ) {
 				$switch_details = $switches[ $cart_item_key ];
 
 				if ( wcs_is_subscription( $order ) ) {
