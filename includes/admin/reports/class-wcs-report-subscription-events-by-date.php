@@ -63,17 +63,17 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		$args = wp_parse_args( $args, $default_args );
 
 		$query_end_date = date( 'Y-m-d', strtotime( '+1 DAY', $this->end_date ) );
-		$offset  = get_option( 'gmt_offset' );
+		$offset         = get_option( 'gmt_offset' );
 
 		// Convert from Decimal format(eg. 11.5) to a suitable format(eg. +11:30) for CONVERT_TZ() of SQL query.
 		$site_timezone = sprintf( '%+02d:%02d', (int) $offset, ( $offset - floor( $offset ) ) * 60 );
 
 		$this->report_data = new stdClass;
 
+		// While generating report data via get_order_report_data(), hook in to set the query hash so we can cache the results.
 		add_filter( 'woocommerce_reports_get_order_report_query', array( $this, 'set_query_hash' ) );
 
-		$this->generating_report = 'new_subscriptions';
-
+		$this->generating_report                   = 'new_subscriptions';
 		$this->report_data->new_subscriptions_data = (array) $this->get_order_report_data(
 			array(
 				'data' => array(
@@ -112,8 +112,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			)
 		);
 
-		$this->generating_report = 'renewals';
-
+		$this->generating_report         = 'renewals';
 		$this->report_data->renewal_data = (array) $this->get_order_report_data(
 			array(
 				'data' => array(
@@ -163,8 +162,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			)
 		);
 
-		$this->generating_report = 'resubscribes';
-
+		$this->generating_report             = 'resubscribes';
 		$this->report_data->resubscribe_data = (array) $this->get_order_report_data(
 			array(
 				'data' => array(
@@ -214,8 +212,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			)
 		);
 
-		$this->generating_report = 'switches';
-
+		$this->generating_report        = 'switches';
 		$this->report_data->switch_data = (array) $this->get_order_report_data(
 			array(
 				'data' => array(
@@ -265,8 +262,8 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			)
 		);
 
+		// We've finished generating report data via get_order_report_data() so unhook our query hash flagging function.
 		unset( $this->generating_report );
-
 		remove_filter( 'woocommerce_reports_get_order_report_query', array( $this, 'set_query_hash' ) );
 
 		$cached_results = get_transient( strtolower( get_class( $this ) ) );
@@ -281,8 +278,8 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 		}
 
 		/*
-		* New subscription orders
-		*/
+		 * New subscription orders
+		 */
 		$query = $wpdb->prepare(
 			"SELECT SUM(subscriptions.count) as count,
 				order_posts.post_date as post_date,
