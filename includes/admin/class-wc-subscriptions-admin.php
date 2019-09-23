@@ -1498,40 +1498,40 @@ class WC_Subscriptions_Admin {
 			return $where;
 		}
 
-		if ( ! empty( $_GET['_subscriptions_list_key'] ) && ! empty( $_GET['_report'] ) ) {
-			$cache = get_transient( $_GET['_report'] );
-
-			// Display an admin notice if we cannot find the report data requested.
-			if ( ! isset( $cache[ $_GET['_subscriptions_list_key'] ] ) ) {
-				$admin_notice = new WCS_Admin_Notice( 'error' );
-				$admin_notice->set_simple_content( sprintf(
-					/* translators: Placeholders are opening and closing link tags. */
-					__( "We weren't able to locate the set of report results you requested. Please regenerate the link from the %sSubscription Reports screen%s." ),
-					'<a href="' . esc_url( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date' ) ) . '">',
-					'</a>'
-				) );
-				$admin_notice->display();
-
-				$where .= " AND {$wpdb->posts}.ID = 0";
-				return $where;
-			}
-
-			$results = $cache[ $_GET['_subscriptions_list_key'] ];
-
-			// The current subscriptions count report will include the specific result (the subscriptions active on the last day) that should be used to generate the subscription list.
-			if ( ! empty( $_GET['_data_key'] ) && isset( $results[ (int) $_GET['_data_key'] ] ) ) {
-				$results = array( $results[ (int) $_GET['_data_key'] ] );
-			}
-
-			$subscription_ids = explode( ',', implode( ',', wp_list_pluck( $results, 'subscription_ids', true ) ) );
-
-			// $format = '%d, %d, %d, %d, %d, [...]'
-			$format = implode( ', ', array_fill( 0, count( $subscription_ids ), '%d' ) );
-			$where .= $wpdb->prepare( " AND {$wpdb->posts}.ID IN ($format)", $subscription_ids );
-		} else {
-			// No subscriptions in list. So, give invalid 'where' clause so as to make the query return 0 items.
+		if ( empty( $_GET['_subscriptions_list_key'] ) || empty( $_GET['_report'] ) ) {
 			$where .= " AND {$wpdb->posts}.ID = 0";
+			return $where;
 		}
+
+		$cache = get_transient( $_GET['_report'] );
+
+		// Display an admin notice if we cannot find the report data requested.
+		if ( ! isset( $cache[ $_GET['_subscriptions_list_key'] ] ) ) {
+			$admin_notice = new WCS_Admin_Notice( 'error' );
+			$admin_notice->set_simple_content( sprintf(
+				/* translators: Placeholders are opening and closing link tags. */
+				__( "We weren't able to locate the set of report results you requested. Please regenerate the link from the %sSubscription Reports screen%s." ),
+				'<a href="' . esc_url( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date' ) ) . '">',
+				'</a>'
+			) );
+			$admin_notice->display();
+
+			$where .= " AND {$wpdb->posts}.ID = 0";
+			return $where;
+		}
+
+		$results = $cache[ $_GET['_subscriptions_list_key'] ];
+
+		// The current subscriptions count report will include the specific result (the subscriptions active on the last day) that should be used to generate the subscription list.
+		if ( ! empty( $_GET['_data_key'] ) && isset( $results[ (int) $_GET['_data_key'] ] ) ) {
+			$results = array( $results[ (int) $_GET['_data_key'] ] );
+		}
+
+		$subscription_ids = explode( ',', implode( ',', wp_list_pluck( $results, 'subscription_ids', true ) ) );
+
+		// $format = '%d, %d, %d, %d, %d, [...]'
+		$format = implode( ', ', array_fill( 0, count( $subscription_ids ), '%d' ) );
+		$where .= $wpdb->prepare( " AND {$wpdb->posts}.ID IN ($format)", $subscription_ids );
 
 		return $where;
 	}
