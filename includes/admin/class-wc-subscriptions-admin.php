@@ -110,9 +110,7 @@ class WC_Subscriptions_Admin {
 
 		add_filter( 'posts_where', array( __CLASS__, 'filter_orders' ) );
 
-		add_filter( 'posts_where', array( __CLASS__, 'filter_orders_from_list' ) );
-
-		add_filter( 'posts_where', array( __CLASS__, 'filter_subscriptions_from_list' ) );
+		add_filter( 'posts_where', array( __CLASS__, 'filter_orders_and_subscriptions_from_list' ) );
 
 		add_filter( 'posts_where', array( __CLASS__, 'filter_paid_subscription_orders_for_user' ) );
 
@@ -1455,50 +1453,26 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Filters the Admin orders table results based on a list of IDs returned by a report query.
+	 * Filters the Admin orders and subscriptions table results based on a list of IDs returned by a report query.
+	 *
+	 * @since 2.6.2
 	 *
 	 * @param string $where The query WHERE clause.
 	 * @return string $where
-	 * @since 2.6.0
 	 */
-	public static function filter_orders_from_list( $where ) {
+	public static function filter_orders_and_subscriptions_from_list( $where ) {
 		global $typenow, $wpdb;
 
-		if ( ! is_admin() || 'shop_order' !== $typenow || ! isset( $_GET['_orders_list_key'], $_GET['_report'] ) ) {
+		if ( ! is_admin() || ! in_array( $typenow, array( 'shop_subscription', 'shop_order' ) ) || ! isset( $_GET['_report'] ) ) {
 			return $where;
 		}
 
-		if ( ! empty( $_GET['_orders_list_key'] ) && ! empty( $_GET['_report'] ) ) {
-			$cache     = get_transient( $_GET['_report'] );
-			$results   = $cache[ $_GET['_orders_list_key'] ];
-			$order_ids = explode( ',', implode( ',', wp_list_pluck( $results, 'order_ids', true ) ) );
+		// Map the order or subscription type to their respective keys and type key.
+		$object_type      = 'shop_order' === $typenow ? 'order' : 'subscription';
+		$cache_report_key = isset( $_GET[ "_{$object_type}s_list_key" ] ) ? $_GET[ "_{$object_type}s_list_key" ] : '';
 
-			// $format = '%d, %d, %d, %d, %d, [...]'
-			$format = implode( ', ', array_fill( 0, count( $order_ids ), '%d' ) );
-			$where .= $wpdb->prepare( " AND {$wpdb->posts}.ID IN ($format)", $order_ids );
-		} else {
-			// No orders in list. So, give invalid 'where' clause so as to make the query return 0 items.
-			$where .= " AND {$wpdb->posts}.ID = 0";
-		}
-
-		return $where;
-	}
-
-	/**
-	 * Filters the Admin subscriptions table results based on a list of IDs returned by a report query.
-	 *
-	 * @param string $where The query WHERE clause.
-	 * @return string
-	 * @since 2.6.0
-	 */
-	public static function filter_subscriptions_from_list( $where ) {
-		global $typenow, $wpdb;
-
-		if ( ! is_admin() || 'shop_subscription' !== $typenow || ! isset( $_GET['_subscriptions_list_key'], $_GET['_report'] ) ) {
-			return $where;
-		}
-
-		if ( empty( $_GET['_subscriptions_list_key'] ) || empty( $_GET['_report'] ) ) {
+		// If the report key or report arg is empty exit early.
+		if ( empty( $cache_report_key ) || empty( $_GET['_report'] ) ) {
 			$where .= " AND {$wpdb->posts}.ID = 0";
 			return $where;
 		}
@@ -1506,7 +1480,7 @@ class WC_Subscriptions_Admin {
 		$cache = get_transient( $_GET['_report'] );
 
 		// Display an admin notice if we cannot find the report data requested.
-		if ( ! isset( $cache[ $_GET['_subscriptions_list_key'] ] ) ) {
+		if ( ! isset( $cache[ $cache_report_key ] ) ) {
 			$admin_notice = new WCS_Admin_Notice( 'error' );
 			$admin_notice->set_simple_content( sprintf(
 				/* translators: Placeholders are opening and closing link tags. */
@@ -1520,18 +1494,18 @@ class WC_Subscriptions_Admin {
 			return $where;
 		}
 
-		$results = $cache[ $_GET['_subscriptions_list_key'] ];
+		$results = $cache[ $cache_report_key ];
 
 		// The current subscriptions count report will include the specific result (the subscriptions active on the last day) that should be used to generate the subscription list.
 		if ( ! empty( $_GET['_data_key'] ) && isset( $results[ (int) $_GET['_data_key'] ] ) ) {
 			$results = array( $results[ (int) $_GET['_data_key'] ] );
 		}
 
-		$subscription_ids = explode( ',', implode( ',', wp_list_pluck( $results, 'subscription_ids', true ) ) );
+		$ids = explode( ',', implode( ',', wp_list_pluck( $results, "{$object_type}_ids", true ) ) );
 
 		// $format = '%d, %d, %d, %d, %d, [...]'
-		$format = implode( ', ', array_fill( 0, count( $subscription_ids ), '%d' ) );
-		$where .= $wpdb->prepare( " AND {$wpdb->posts}.ID IN ($format)", $subscription_ids );
+		$format = implode( ', ', array_fill( 0, count( $ids ), '%d' ) );
+		$where .= $wpdb->prepare( " AND {$wpdb->posts}.ID IN ($format)", $ids );
 
 		return $where;
 	}
@@ -2076,5 +2050,35 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function recurring_totals_meta_box( $post ) {
 		_deprecated_function( __METHOD__, '2.0' );
+	}
+
+	/**
+	 * Filters the Admin orders table results based on a list of IDs returned by a report query.
+	 *
+	 * @deprecated 2.6.2
+	 *
+	 * @param string $where The query WHERE clause.
+	 * @return string $where
+	 * @since 2.6.0
+	 */
+	public static function filter_orders_from_list( $where ) {
+		wcs_deprecated_function( __METHOD__, '2.6.2', 'WC_Subscriptions_Admin::filter_orders_and_subscriptions_from_list( $where )' );
+
+		return WC_Subscriptions_Admin::filter_orders_and_subscriptions_from_list( $where );
+	}
+
+	/**
+	 * Filters the Admin subscriptions table results based on a list of IDs returned by a report query.
+	 *
+	 * @deprecated 2.6.2
+	 *
+	 * @param string $where The query WHERE clause.
+	 * @return string
+	 * @since 2.6.0
+	 */
+	public static function filter_subscriptions_from_list( $where ) {
+		wcs_deprecated_function( __METHOD__, '2.6.2', 'WC_Subscriptions_Admin::filter_orders_and_subscriptions_from_list( $where )' );
+
+		return WC_Subscriptions_Admin::filter_orders_and_subscriptions_from_list( $where );
 	}
 }
