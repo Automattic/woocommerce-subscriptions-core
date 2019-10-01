@@ -39,10 +39,11 @@ $order_post = wcs_get_objects_property( $order, 'post' );
 	<td>
 		<?php
 		if ( wcs_is_subscription( $order ) ) {
-		    echo esc_html( wcs_get_subscription_status_name( $order->get_status( 'view' ) ) );
+			$status_name = wcs_get_subscription_status_name( $order->get_status() );
 		} else {
-		    echo esc_html( wc_get_order_status_name( $order->get_status( 'view' ) ) );
+			$status_name = wc_get_order_status_name( $order->get_status() );
 		}
+		printf( '<mark class="order-status %s"><span>%s</span></mark>', esc_attr( sanitize_html_class( 'status-' . $order->get_status() ) ), esc_html( $status_name ) );
 		?>
 	</td>
 	<td>
