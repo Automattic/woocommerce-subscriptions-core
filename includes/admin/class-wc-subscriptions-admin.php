@@ -907,6 +907,9 @@ class WC_Subscriptions_Admin {
 			wp_enqueue_style( 'woocommerce_subscriptions_admin', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/css/admin.css', array( 'woocommerce_admin_styles' ), WC_Subscriptions::$version );
 		}
 
+		if ( in_array( $screen->id, array( 'shop_order', 'edit-shop_subscription', 'shop_subscription' ) ) && WC_Subscriptions::is_woocommerce_pre( '3.3' ) ) {
+			wp_enqueue_style( 'wc_subscriptions_statuses_admin', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/css/admin-order-statuses.css', array( 'woocommerce_admin_styles' ), WC_Subscriptions::$version );
+		}
 	}
 
 	/**
