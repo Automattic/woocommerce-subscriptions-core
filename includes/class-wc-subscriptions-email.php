@@ -67,13 +67,22 @@ class WC_Subscriptions_Email {
 		add_action( 'woocommerce_subscriptions_switch_completed', __CLASS__ . '::send_switch_order_email', 10 );
 
 		$order_email_actions = array(
-			'woocommerce_order_status_pending_to_processing',
+			// WC New Order Emails (Admin) -- other hooks below also trigger this email.
 			'woocommerce_order_status_pending_to_completed',
-			'woocommerce_order_status_pending_to_on-hold',
-			'woocommerce_order_status_failed_to_processing',
 			'woocommerce_order_status_failed_to_completed',
-			'woocommerce_order_status_failed_to_on-hold',
+
+			// WC Order Processing Emails.
+			'woocommerce_order_status_pending_to_processing',
+			'woocommerce_order_status_failed_to_processing',
+
+			// WC Order Completed Emails.
 			'woocommerce_order_status_completed',
+
+			// WC On-hold Order Emails.
+			'woocommerce_order_status_pending_to_on-hold',
+			'woocommerce_order_status_failed_to_on-hold',
+
+			// WCS Order Invoice Emails.
 			'woocommerce_generated_manual_renewal_order',
 			'woocommerce_order_status_failed',
 		);
