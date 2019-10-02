@@ -1016,7 +1016,7 @@ class WC_Subscription extends WC_Order {
 				$date->setTimezone( new DateTimeZone( 'UTC' ) );
 			}
 
-			$date = $date->format( 'Y-m-d H:i:s' );
+			$date = $date->date( 'Y-m-d H:i:s' );
 		}
 
 		return apply_filters( 'woocommerce_subscription_get_' . $date_type . '_date', $date, $this, $timezone );
