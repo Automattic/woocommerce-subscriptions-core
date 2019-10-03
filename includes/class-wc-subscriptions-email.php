@@ -36,15 +36,16 @@ class WC_Subscriptions_Email {
 	 * @since 1.4
 	 */
 	public static function add_emails( $email_classes ) {
-		$email_classes['WCS_Email_New_Renewal_Order']        = new WCS_Email_New_Renewal_Order();
-		$email_classes['WCS_Email_New_Switch_Order']         = new WCS_Email_New_Switch_Order();
-		$email_classes['WCS_Email_Processing_Renewal_Order'] = new WCS_Email_Processing_Renewal_Order();
-		$email_classes['WCS_Email_Completed_Renewal_Order']  = new WCS_Email_Completed_Renewal_Order();
-		$email_classes['WCS_Email_Completed_Switch_Order']   = new WCS_Email_Completed_Switch_Order();
-		$email_classes['WCS_Email_Customer_Renewal_Invoice'] = new WCS_Email_Customer_Renewal_Invoice();
-		$email_classes['WCS_Email_Cancelled_Subscription']   = new WCS_Email_Cancelled_Subscription();
-		$email_classes['WCS_Email_Expired_Subscription']     = new WCS_Email_Expired_Subscription();
-		$email_classes['WCS_Email_On_Hold_Subscription']     = new WCS_Email_On_Hold_Subscription();
+		$email_classes['WCS_Email_New_Renewal_Order']              = new WCS_Email_New_Renewal_Order();
+		$email_classes['WCS_Email_New_Switch_Order']               = new WCS_Email_New_Switch_Order();
+		$email_classes['WCS_Email_Processing_Renewal_Order']       = new WCS_Email_Processing_Renewal_Order();
+		$email_classes['WCS_Email_Completed_Renewal_Order']        = new WCS_Email_Completed_Renewal_Order();
+		$email_classes['WCS_Email_Customer_On_Hold_Renewal_Order'] = new WCS_Email_Customer_On_Hold_Renewal_Order();
+		$email_classes['WCS_Email_Completed_Switch_Order']         = new WCS_Email_Completed_Switch_Order();
+		$email_classes['WCS_Email_Customer_Renewal_Invoice']       = new WCS_Email_Customer_Renewal_Invoice();
+		$email_classes['WCS_Email_Cancelled_Subscription']         = new WCS_Email_Cancelled_Subscription();
+		$email_classes['WCS_Email_Expired_Subscription']           = new WCS_Email_Expired_Subscription();
+		$email_classes['WCS_Email_On_Hold_Subscription']           = new WCS_Email_On_Hold_Subscription();
 
 		return $email_classes;
 	}
