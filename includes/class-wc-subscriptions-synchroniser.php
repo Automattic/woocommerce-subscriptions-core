@@ -306,12 +306,13 @@ class WC_Subscriptions_Synchroniser {
 
 					<label for="<?php echo esc_attr( self::$post_meta_key_month ); ?>" class="wcs_hidden_label"><?php esc_html_e( 'Month for Synchronisation', 'woocommerce-subscriptions' ); ?></label>
 					<select id="<?php echo esc_attr( self::$post_meta_key_month ); ?>" name="<?php echo esc_attr( self::$post_meta_key_month ); ?>" class="wc_input_subscription_payment_sync last" >
-						<?php foreach ( $wp_locale->month as $value => $label ) { ?>
+						<?php foreach ( self::get_billing_period_ranges( $subscription_period ) as $value => $label ) { ?>
 							<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $value, $payment_month, true ) ?>><?php echo esc_html( $label ); ?></option>
 						<?php } ?>
 					</select>
 
-					<input type="number" id="<?php echo esc_attr( self::$post_meta_key_day ); ?>" name="<?php echo esc_attr( self::$post_meta_key_day ); ?>" class="wc_input_subscription_payment_sync" value="<?php echo esc_attr( $payment_day ); ?>" placeholder="<?php echo esc_attr_x( 'Day', 'input field placeholder for day field for annual subscriptions', 'woocommerce-subscriptions' ); ?>" step="1" min="1" max="<?php echo esc_attr( cal_days_in_month(CAL_GREGORIAN, $payment_month, 2001 ) ); ?>" />
+					<?php $daysInMonth = $payment_month ? cal_days_in_month( CAL_GREGORIAN, $payment_month, 2001 ) : 0; ?>
+					<input type="number" id="<?php echo esc_attr( self::$post_meta_key_day ); ?>" name="<?php echo esc_attr( self::$post_meta_key_day ); ?>" class="wc_input_subscription_payment_sync" value="<?php echo esc_attr( $payment_day ); ?>" placeholder="<?php echo esc_attr_x( 'Day', 'input field placeholder for day field for annual subscriptions', 'woocommerce-subscriptions' ); ?>" step="1" min="1" max="<?php echo esc_attr( $daysInMonth ); ?>" />
 				</span>
 				<?php echo wcs_help_tip( self::$sync_description_year ); ?>
 			</p><?php
@@ -448,6 +449,7 @@ class WC_Subscriptions_Synchroniser {
 			$script_parameters['syncOptions'] = array(
 				'week'  => $billing_period_strings['week'],
 				'month' => $billing_period_strings['month'],
+				'year'  => $billing_period_strings['year'],
 			);
 
 		}
@@ -741,6 +743,11 @@ class WC_Subscriptions_Synchroniser {
 				self::$billing_period_ranges['month'][ $i ] = sprintf( __( '%s day of the month', 'woocommerce-subscriptions' ), WC_Subscriptions::append_numeral_suffix( $i ) );
 			}
 			self::$billing_period_ranges['month'][28] = __( 'Last day of the month', 'woocommerce-subscriptions' );
+
+			// Year
+			foreach ( range( 1, 12 ) as $month ) {
+				self::$billing_period_ranges['year'][ $month ] = $wp_locale->get_month( $month );
+			}
 
 			self::$billing_period_ranges = apply_filters( 'woocommerce_subscription_billing_period_ranges', self::$billing_period_ranges );
 		}
