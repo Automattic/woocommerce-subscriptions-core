@@ -70,10 +70,13 @@ class WC_Subscriptions_Email {
 			// WC New Order Emails (Admin) -- other hooks below also trigger this email.
 			'woocommerce_order_status_pending_to_completed',
 			'woocommerce_order_status_failed_to_completed',
+			'woocommerce_order_status_cancelled_to_completed',
 
 			// WC Order Processing Emails.
 			'woocommerce_order_status_pending_to_processing',
 			'woocommerce_order_status_failed_to_processing',
+			'woocommerce_order_status_cancelled_to_processing',
+			'woocommerce_order_status_on-hold_to_processing',
 
 			// WC Order Completed Emails.
 			'woocommerce_order_status_completed',
@@ -81,6 +84,7 @@ class WC_Subscriptions_Email {
 			// WC On-hold Order Emails.
 			'woocommerce_order_status_pending_to_on-hold',
 			'woocommerce_order_status_failed_to_on-hold',
+			'woocommerce_order_status_cancelled_to_on-hold',
 
 			// WCS Order Invoice Emails.
 			'woocommerce_generated_manual_renewal_order',
