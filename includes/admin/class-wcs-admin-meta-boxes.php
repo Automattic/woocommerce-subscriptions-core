@@ -262,6 +262,7 @@ class WCS_Admin_Meta_Boxes {
 			// init payment gateways
 			WC()->payment_gateways();
 
+			$order->add_order_note( __( 'Retry renewal payment action requested by admin.', 'woocommerce-subscriptions' ), false, true );
 			do_action( 'woocommerce_scheduled_subscription_payment_' . wcs_get_objects_property( $order, 'payment_method' ), $order->get_total(), $order );
 		}
 	}
