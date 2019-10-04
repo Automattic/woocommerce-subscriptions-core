@@ -332,7 +332,7 @@ class WC_Subscriptions_Email {
 			$hook = current_filter();
 		}
 
-		if ( false === WC_Subscriptions::is_woocommerce_pre( '3.0' ) && apply_filters( 'woocommerce_defer_transactional_emails', true ) ) {
+		if ( false === WC_Subscriptions::is_woocommerce_pre( '3.0' ) && apply_filters( 'woocommerce_defer_transactional_emails', false ) ) {
 			add_action( $hook, array( 'WC_Emails', 'queue_transactional_email' ), $priority, $accepted_args );
 		} else {
 			add_action( $hook, array( 'WC_Emails', 'send_transactional_email' ), $priority, $accepted_args );
