@@ -1484,7 +1484,7 @@ class WC_Subscriptions_Admin {
 			$admin_notice = new WCS_Admin_Notice( 'error' );
 			$admin_notice->set_simple_content( sprintf(
 				/* translators: Placeholders are opening and closing link tags. */
-				__( "We weren't able to locate the set of report results you requested. Please regenerate the link from the %sSubscription Reports screen%s." ),
+				__( "We weren't able to locate the set of report results you requested. Please regenerate the link from the %sSubscription Reports screen%s.", 'woocommerce-subscriptions' ),
 				'<a href="' . esc_url( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date' ) ) . '">',
 				'</a>'
 			) );
