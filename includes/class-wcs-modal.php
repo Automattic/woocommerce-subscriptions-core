@@ -66,13 +66,14 @@ class WCS_Modal {
 			return;
 		}
 
-		$registered = true;
+		$registered             = true;
+		$enqueue_scripts_action = is_admin() ? 'admin_enqueue_scripts' : 'wp_enqueue_scripts';
 
 		// If the scripts are being registered late (after 'wp_enqueue_scripts' has run), it's safe to enqueue them immediately.
-		if ( did_action( 'wp_enqueue_scripts' ) ) {
+		if ( did_action( $enqueue_scripts_action ) ) {
 			self::enqueue_scripts_and_styles();
 		} else {
-			add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_scripts_and_styles' ) );
+			add_action( $enqueue_scripts_action, array( __CLASS__, 'enqueue_scripts_and_styles' ) );
 		}
 	}
 
