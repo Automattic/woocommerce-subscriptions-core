@@ -84,7 +84,7 @@ class WCS_Modal {
 	 */
 	public static function enqueue_scripts_and_styles() {
 		wp_enqueue_script( 'wcs-modal-scripts', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/modal.js', array( 'jquery' ), WC_Subscriptions::$version, true );
-		wp_enqueue_style( 'wcs-modal-styles', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/css/modal.css', array(), WC_Subscriptions::$version );
+		wp_enqueue_style( 'wcs-modal-styles', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/css/modal.css', array( 'dashicons' ), WC_Subscriptions::$version );
 	}
 
 	/**
