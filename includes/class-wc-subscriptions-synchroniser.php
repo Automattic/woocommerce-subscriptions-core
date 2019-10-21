@@ -276,8 +276,8 @@ class WC_Subscriptions_Synchroniser {
 
 			// An annual sync date is already set in the form: array( 'day' => 'nn', 'month' => 'nn' ), create a MySQL string from those values (year and time are irrelvent as they are ignored)
 			if ( is_array( $payment_day ) ) {
-				$payment_month = $payment_day['month'];
-				$payment_day   = $payment_day['day'];
+				$payment_month = (int) $payment_day['month'];
+				$payment_day   = (int) $payment_day['day'];
 			} else {
 				$payment_month = gmdate( 'm' );
 			}
@@ -306,7 +306,7 @@ class WC_Subscriptions_Synchroniser {
 
 					<label for="<?php echo esc_attr( self::$post_meta_key_month ); ?>" class="wcs_hidden_label"><?php esc_html_e( 'Month for Synchronisation', 'woocommerce-subscriptions' ); ?></label>
 					<select id="<?php echo esc_attr( self::$post_meta_key_month ); ?>" name="<?php echo esc_attr( self::$post_meta_key_month ); ?>" class="wc_input_subscription_payment_sync last" >
-						<?php foreach ( self::get_billing_period_ranges( $subscription_period ) as $value => $label ) { ?>
+						<?php foreach ( self::get_year_sync_options() as $value => $label ) { ?>
 							<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $value, $payment_month, true ) ?>><?php echo esc_html( $label ); ?></option>
 						<?php } ?>
 					</select>
@@ -449,9 +449,8 @@ class WC_Subscriptions_Synchroniser {
 			$script_parameters['syncOptions'] = array(
 				'week'  => $billing_period_strings['week'],
 				'month' => $billing_period_strings['month'],
-				'year'  => $billing_period_strings['year'],
+				'year'  => self::get_year_sync_options(),
 			);
-
 		}
 
 		return $script_parameters;
@@ -716,6 +715,20 @@ class WC_Subscriptions_Synchroniser {
 	}
 
 	/**
+	 * Return an i18n'ified associative array of sync options for 'year' as billing period
+	 *
+	 * @since 3.0.0
+	 */
+	public static function get_year_sync_options() {
+		global $wp_locale;
+		$year_sync_options[0] = __( 'Do not synchronise', 'woocommerce-subscriptions' );
+		foreach ( range( 1, 12 ) as $month ) {
+			$year_sync_options[ $month ] = $wp_locale->get_month( $month );
+		}
+		return $year_sync_options;
+	}
+
+	/**
 	 * Return an i18n'ified associative array of all possible subscription periods.
 	 *
 	 * @since 1.5
@@ -725,7 +738,7 @@ class WC_Subscriptions_Synchroniser {
 
 		if ( empty( self::$billing_period_ranges ) ) {
 
-			foreach ( array( 'week', 'month', 'year' ) as $key ) {
+			foreach ( array( 'week', 'month' ) as $key ) {
 				self::$billing_period_ranges[ $key ][0] = __( 'Do not synchronise', 'woocommerce-subscriptions' );
 			}
 
@@ -743,11 +756,6 @@ class WC_Subscriptions_Synchroniser {
 				self::$billing_period_ranges['month'][ $i ] = sprintf( __( '%s day of the month', 'woocommerce-subscriptions' ), WC_Subscriptions::append_numeral_suffix( $i ) );
 			}
 			self::$billing_period_ranges['month'][28] = __( 'Last day of the month', 'woocommerce-subscriptions' );
-
-			// Year
-			foreach ( range( 1, 12 ) as $month ) {
-				self::$billing_period_ranges['year'][ $month ] = $wp_locale->get_month( $month );
-			}
 
 			self::$billing_period_ranges = apply_filters( 'woocommerce_subscription_billing_period_ranges', self::$billing_period_ranges );
 		}
