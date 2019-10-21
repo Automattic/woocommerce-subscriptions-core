@@ -155,6 +155,13 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 			'limit'      => -1,
 		) );
 
+		// Map the internal properties to the database column names.
+		if ( strtolower( $args['orderby'] ) === 'id' ) {
+			$args['orderby'] = 'retry_id';
+		} elseif ( strtolower( $args['orderby'] ) === 'date' ) {
+			$args['orderby'] = 'date_gmt';
+		}
+
 		$where = ' WHERE 1=1';
 
 		if ( 'any' !== $args['status'] ) {
