@@ -173,7 +173,7 @@ class WCS_Retry_Database_Store extends WCS_Retry_Store {
 			$where     .= $date_query->get_sql();
 		}
 
-		$orderby = $wpdb->prepare( ' ORDER BY %s %s', $args['orderby'], $args['order'] );
+		$orderby = sprintf( ' ORDER BY %s', sanitize_sql_orderby( "{$args['orderby']} {$args['order']}" ) );
 		$limit   = ( $args['limit'] > 0 ) ? $wpdb->prepare( ' LIMIT %d', $args['limit'] ) : '';
 
 		$raw_retries = $wpdb->get_results( "SELECT * FROM {$this->get_full_table_name()} $where $orderby $limit" );
