@@ -174,7 +174,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			 */
 			do_action( 'wcs_before_replace_pay_shortcode', $subscription );
 
-			if ( $subscription->get_id() === absint( $wp->query_vars['order-pay'] ) && $subscription->get_order_key() === $subscription_key ) {
+			if ( $subscription && $subscription->get_id() === absint( $wp->query_vars['order-pay'] ) && $subscription->get_order_key() === $subscription_key ) {
 				WCS_Template_Loader::get_subscription_receipt_template( $subscription );
 			} else {
 				// The before_woocommerce_pay action would have printed all the notices so we need to print the notice directly.
