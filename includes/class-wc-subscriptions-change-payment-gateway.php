@@ -224,12 +224,13 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		}
 	}
 
+
 	/**
 	 * Validates the request to change a subscription's payment method.
 	 *
 	 * Will display a customer facing notice if the request is invalid.
 	 *
-	 * @since 2.6.0
+	 * @since 3.0.0
 	 *
 	 * @param WC_Subscription $subscription
 	 * @return bool Whether the request is valid or not.
