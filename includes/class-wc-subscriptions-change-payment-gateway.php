@@ -189,14 +189,13 @@ class WC_Subscriptions_Change_Payment_Gateway {
 				}
 			}
 
-			$subscription = wcs_get_subscription( absint( $_GET['change_payment_method'] ) );
-			$is_valid     = self::validate_change_payment_request( $subscription );
+			$subscription  = wcs_get_subscription( absint( $_GET['change_payment_method'] ) );
+			$valid_request = self::validate_change_payment_request( $subscription );
 
 			// WC display notices on this hook so trigger it after all notices have been added,
 			do_action( 'before_woocommerce_pay' );
 
-			if ( $is_valid ) {
-				$valid_request = true;
+			if ( $valid_request ) {
 				if ( $subscription->get_time( 'next_payment' ) > 0 ) {
 					// translators: placeholder is next payment's date
 					$next_payment_string = sprintf( __( ' Next payment is due %s.', 'woocommerce-subscriptions' ), $subscription->get_date_to_display( 'next_payment' ) );
