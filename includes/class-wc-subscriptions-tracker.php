@@ -19,6 +19,7 @@ class WC_Subscriptions_Tracker {
 
 	public static function add_subscriptions_tracking_data( $data ) {
 		$data['extensions']['wc_subscriptions']['settings'] = self::get_subscriptions_options();
+		$data['extensions']['wc_subscriptions']['subscriptions'] = self::get_subscriptions();
 		return $data;
 	}
 
@@ -76,5 +77,14 @@ class WC_Subscriptions_Tracker {
 		}
 
 		return $subs_data;
+	}
+
+	/**
+	 * Combine all subscription data.
+	 *
+	 * @return array
+	 */
+	private static function get_subscriptions() {
+		return array();
 	}
 }
