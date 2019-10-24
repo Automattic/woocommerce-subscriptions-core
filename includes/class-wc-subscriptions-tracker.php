@@ -87,8 +87,9 @@ class WC_Subscriptions_Tracker {
 	private static function get_subscriptions() {
 		$subscription_dates  = self::get_subscription_dates();
 		$subscription_counts = self::get_subscription_counts();
+		$subscription_totals = self::get_subscription_totals();
 
-		return array_merge( $subscription_dates, $subscription_counts );
+		return array_merge( $subscription_dates, $subscription_counts, $subscription_totals );
 	}
 
 	/**
@@ -103,6 +104,70 @@ class WC_Subscriptions_Tracker {
 			$subscription_counts[ $status_slug ] = $subscription_counts_data->{ $status_slug };
 		}
 		return $subscription_counts;
+	}
+
+	/**
+	 * Get order totals
+	 *
+	 * @return array
+	 */
+	private static function get_subscription_totals() {
+		global $wpdb;
+
+		$gross_totals   = array();
+		$relation_types = array(
+			'switch',
+			'renewal',
+			'resubscribe',
+		);
+
+		foreach ( $relation_types as $relation_type ) {
+
+			$gross_total = $wpdb->get_var( sprintf(
+				"
+				SELECT
+					SUM( order_total.meta_value ) AS 'gross_total'
+				FROM {$wpdb->prefix}posts AS orders
+					LEFT JOIN {$wpdb->prefix}postmeta AS order_relation ON order_relation.post_id = orders.ID
+					LEFT JOIN {$wpdb->prefix}postmeta AS order_total ON order_total.post_id = orders.ID
+				WHERE order_relation.meta_key =  '_subscription_%s'
+					AND orders.post_status in ( 'wc-completed', 'wc-refunded' )
+					AND order_total.meta_key = '_order_total'
+				GROUP BY order_total.meta_key
+			", $relation_type
+			);
+
+			if ( is_null( $gross_total ) ) {
+				$gross_total = 0;
+			}
+
+			$gross_totals[ $relation_type ] = $gross_total;
+		}
+
+		// Finally get the initial revenue
+		$gross_total = $wpdb->get_var( sprintf(
+			"
+			SELECT
+				SUM( order_total.meta_value ) AS 'gross_total'
+			FROM {$wpdb->prefix}posts AS orders
+				LEFT JOIN {$wpdb->prefix}posts AS subscriptions ON subscriptions.post_parent = orders.ID
+				LEFT JOIN {$wpdb->prefix}postmeta AS order_total ON order_total.post_id = orders.ID
+			WHERE orders.post_status in ( 'wc-completed', 'wc-refunded' )
+				AND subscriptions.post_type = 'shop_subscription'
+				AND orders.post_type = 'shop_order'
+				AND order_total.meta_key = '_order_total'
+			GROUP BY order_total.meta_key
+		", $relation_type
+		);
+
+		if ( is_null( $gross_total ) ) {
+			$gross_total = 0;
+		}
+
+		// Don't double count resubscribe revenue
+		$gross_totals['initial'] = $gross_total - $gross_totals['resubscribe'];
+
+		return $gross_totals;
 	}
 
 	/**
