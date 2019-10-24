@@ -85,6 +85,22 @@ class WC_Subscriptions_Tracker {
 	 * @return array
 	 */
 	private static function get_subscriptions() {
-		return array();
+		$subscription_counts = self::get_subscription_counts();
+
+		return $subscription_counts;
+	}
+
+	/**
+	 * Get subscription counts
+	 *
+	 * @return array
+	 */
+	private static function get_subscription_counts() {
+		$subscription_counts      = array();
+		$subscription_counts_data = wp_count_posts( 'shop_subscription' );
+		foreach ( wcs_get_subscription_statuses() as $status_slug => $status_name ) {
+			$subscription_counts[ $status_slug ] = $subscription_counts_data->{ $status_slug };
+		}
+		return $subscription_counts;
 	}
 }
