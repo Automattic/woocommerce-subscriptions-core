@@ -56,10 +56,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<?php
 				foreach ( array( 'order', 'subscription' ) as $object_type ) :
 					$status       = $rule->get_status_to_apply( $object_type );
-					$status_name  = ( 'subscription' === $object_type ) ? wcs_get_subscription_status_name( $status ) : wc_get_order_status_name( $status );
+					$css_classes  = array( 'order-status', 'status-' . $status );
+
+					if ( 'subscription' === $object_type ) :
+						$status_name   = wcs_get_subscription_status_name( $status );
+						$css_classes[] = 'subscription-status';
+					else :
+						$status_name = wc_get_order_status_name( $status );
+					endif;
 				?>
 				<td>
-					<?php echo esc_html( $status_name ); ?>
+					<mark class="<?php echo esc_attr( implode( ' ', $css_classes ) ); ?>"><span><?php echo esc_html( $status_name ); ?></span></mark>
 				</td>
 				<?php endforeach; ?>
 				<td>
