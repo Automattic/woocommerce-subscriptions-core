@@ -85,9 +85,10 @@ class WC_Subscriptions_Tracker {
 	 * @return array
 	 */
 	private static function get_subscriptions() {
+		$subscription_dates  = self::get_subscription_dates();
 		$subscription_counts = self::get_subscription_counts();
 
-		return $subscription_counts;
+		return array_merge( $subscription_dates, $subscription_counts );
 	}
 
 	/**
@@ -102,5 +103,34 @@ class WC_Subscriptions_Tracker {
 			$subscription_counts[ $status_slug ] = $subscription_counts_data->{ $status_slug };
 		}
 		return $subscription_counts;
+	}
+
+	/**
+	 * Get last order date
+	 *
+	 * @return string
+	 */
+	private static function get_subscription_dates() {
+		global $wpdb;
+
+		$min_max = $wpdb->get_row(
+			"
+			SELECT
+				MIN( post_date_gmt ) as 'first', MAX( post_date_gmt ) as 'last'
+			FROM {$wpdb->prefix}posts
+			WHERE post_type = 'shop_subscription'
+			AND post_status NOT IN ( 'trash', 'auto-draft' )
+		",
+			ARRAY_A
+		);
+
+		if ( is_null( $min_max ) ) {
+			$min_max = array(
+				'first' => '-',
+				'last'  => '-',
+			);
+		}
+
+		return $min_max;
 	}
 }
