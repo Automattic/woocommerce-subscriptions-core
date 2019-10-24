@@ -53,12 +53,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<td>
 					<?php echo esc_html( ucwords( $retry->get_status() ) ); ?>
 				</td>
+				<?php
+				foreach ( array( 'order', 'subscription' ) as $object_type ) :
+					$status       = $rule->get_status_to_apply( $object_type );
+					$status_name  = ( 'subscription' === $object_type ) ? wcs_get_subscription_status_name( $status ) : wc_get_order_status_name( $status );
+				?>
 				<td>
-					<?php echo esc_html( ucwords( $rule->get_status_to_apply( 'order' ) ) ); ?>
+					<?php echo esc_html( $status_name ); ?>
 				</td>
-				<td>
-					<?php echo esc_html( ucwords( $rule->get_status_to_apply( 'subscription' ) ) ); ?>
-				</td>
+				<?php endforeach; ?>
 				<td>
 					<?php $email_class = $rule->get_email_template(); ?>
 					<?php if ( ! empty( $email_class ) && class_exists( $email_class ) ) : ?>
