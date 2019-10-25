@@ -14,7 +14,10 @@ defined( 'ABSPATH' ) || exit;
 class WC_Subscriptions_Tracker {
 
 	public static function init() {
-		add_filter( 'woocommerce_tracker_data', array( __CLASS__, 'add_subscriptions_tracking_data' ), 10, 1 );
+		// Only add data if Tracker enabled
+		if ( 'yes' === get_option( 'woocommerce_allow_tracking', 'no' ) ) {
+			add_filter( 'woocommerce_tracker_data', array( __CLASS__, 'add_subscriptions_tracking_data' ), 10, 1 );
+		}
 	}
 
 	public static function add_subscriptions_tracking_data( $data ) {
@@ -135,7 +138,7 @@ class WC_Subscriptions_Tracker {
 					AND order_total.meta_key = '_order_total'
 				GROUP BY order_total.meta_key
 			", $relation_type
-			);
+			));
 
 			if ( is_null( $gross_total ) ) {
 				$gross_total = 0;
@@ -158,7 +161,7 @@ class WC_Subscriptions_Tracker {
 				AND order_total.meta_key = '_order_total'
 			GROUP BY order_total.meta_key
 		", $relation_type
-		);
+		));
 
 		if ( is_null( $gross_total ) ) {
 			$gross_total = 0;
