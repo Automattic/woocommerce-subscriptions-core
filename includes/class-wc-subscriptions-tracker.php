@@ -56,7 +56,7 @@ class WC_Subscriptions_Tracker {
 
 			// Synchronization
 			'sync_payments'           => get_option( WC_Subscriptions_Admin::$option_prefix . '_sync_payments' ),
-			'prorate_synced_payments' => $prorate_synced_payments = 'no' == get_option( WC_Subscriptions_Admin::$option_prefix . '_sync_payments' ) ? 'none' : get_option( WC_Subscriptions_Admin::$option_prefix . '_prorate_synced_payments', 'none' ),
+			'prorate_synced_payments' => $prorate_synced_payments = ( 'no' == get_option( WC_Subscriptions_Admin::$option_prefix . '_sync_payments' ) ? 'none' : get_option( WC_Subscriptions_Admin::$option_prefix . '_prorate_synced_payments', 'none' ) ),
 			'days_no_fee'             => 'recurring' == $prorate_synced_payments ? get_option( WC_Subscriptions_Admin::$option_prefix . '_days_no_fee', 'none' ) : 'none',
 
 			// Miscellaneous
