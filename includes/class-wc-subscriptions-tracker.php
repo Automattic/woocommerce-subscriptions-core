@@ -6,13 +6,16 @@
  * @version   3.0.0
  * @package   WooCommerce Subscriptions/Classes
  * @category  Class
- * @author    Automattic
+ * @author    WooCommerce
  */
 
 defined( 'ABSPATH' ) || exit;
 
 class WC_Subscriptions_Tracker {
 
+	/**
+	 * Initialize the Tracker.
+	 */
 	public static function init() {
 		// Only add data if Tracker enabled
 		if ( 'yes' === get_option( 'woocommerce_allow_tracking', 'no' ) ) {
@@ -20,12 +23,23 @@ class WC_Subscriptions_Tracker {
 		}
 	}
 
+	/**
+	 * Adds Subscriptions data to the WC tracked data.
+	 *
+	 * @param array $data
+	 * @return array all the tracking data.
+	 */
 	public static function add_subscriptions_tracking_data( $data ) {
 		$data['extensions']['wc_subscriptions']['settings'] = self::get_subscriptions_options();
 		$data['extensions']['wc_subscriptions']['subscriptions'] = self::get_subscriptions();
 		return $data;
 	}
 
+	/**
+	 * Gets the tracked Subscriptions options data.
+	 *
+	 * @return array Subscriptions options data.
+	 */
 	private static function get_subscriptions_options() {
 		$subs_data = array(
 			// Staging and live site
@@ -71,7 +85,7 @@ class WC_Subscriptions_Tracker {
 	}
 
 	/**
-	 * Combine all subscription data.
+	 * Gets the combined subscription dates, count, and totals data.
 	 *
 	 * @return array
 	 */
@@ -84,7 +98,7 @@ class WC_Subscriptions_Tracker {
 	}
 
 	/**
-	 * Get subscription counts
+	 * Gets subscription counts
 	 *
 	 * @return array
 	 */
@@ -98,7 +112,7 @@ class WC_Subscriptions_Tracker {
 	}
 
 	/**
-	 * Get order totals
+	 * Get subscription totals
 	 *
 	 * @return array
 	 */
@@ -162,9 +176,9 @@ class WC_Subscriptions_Tracker {
 	}
 
 	/**
-	 * Get last order date
+	 * Gets first and last subscription created dates.
 	 *
-	 * @return string
+	 * @return array
 	 */
 	private static function get_subscription_dates() {
 		global $wpdb;
