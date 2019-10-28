@@ -41,7 +41,7 @@ class WC_Subscriptions_Tracker {
 	 * @return array Subscriptions options data.
 	 */
 	private static function get_subscriptions_options() {
-		$subs_data = array(
+		return array(
 			// Staging and live site
 			'wc_subscriptions_staging'    => WC_Subscriptions::is_duplicate_site() ? 'staging' : 'live',
 			'wc_subscriptions_live_url'   => esc_url( WC_Subscriptions::get_site_url_from_source( 'subscriptions_install' ) ),
@@ -80,8 +80,6 @@ class WC_Subscriptions_Tracker {
 			'drip_downloadable_content_on_renewal'  => get_option( WC_Subscriptions_Admin::$option_prefix . '_drip_downloadable_content_on_renewal' ),
 			'enable_retry'                          => get_option( WC_Subscriptions_Admin::$option_prefix . '_enable_retry' ),
 		);
-
-		return $subs_data;
 	}
 
 	/**
