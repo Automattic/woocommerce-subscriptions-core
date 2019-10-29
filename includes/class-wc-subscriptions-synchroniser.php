@@ -282,7 +282,7 @@ class WC_Subscriptions_Synchroniser {
 				$payment_month = gmdate( 'm' );
 			}
 
-			echo '<div class="options_group subscription_pricing subscription_sync show_if_subscription">';
+			echo '<div class="options_group subscription_pricing subscription_sync show_if_subscription hidden">';
 			echo '<div class="subscription_sync_week_month" style="' . esc_attr( $display_week_month_select ) . '">';
 
 			woocommerce_wp_select( array(

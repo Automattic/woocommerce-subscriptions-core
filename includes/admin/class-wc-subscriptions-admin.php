@@ -286,7 +286,7 @@ class WC_Subscriptions_Admin {
 		 	$chosen_period = 'month';
 		}
 
-		echo '<div class="options_group subscription_pricing show_if_subscription">';
+		echo '<div class="options_group subscription_pricing show_if_subscription hidden">';
 
 		// Subscription Price, Interval and Period
 		?><p class="form-field _subscription_price_fields _subscription_price_field">
