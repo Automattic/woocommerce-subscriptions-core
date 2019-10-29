@@ -30,8 +30,9 @@ class WC_Subscriptions_Tracker {
 	 * @return array all the tracking data.
 	 */
 	public static function add_subscriptions_tracking_data( $data ) {
-		$data['extensions']['wc_subscriptions']['settings'] = self::get_subscriptions_options();
-		$data['extensions']['wc_subscriptions']['subscriptions'] = self::get_subscriptions();
+		$data['extensions']['wc_subscriptions']['settings']            = self::get_subscriptions_options();
+		$data['extensions']['wc_subscriptions']['subscriptions']       = self::get_subscriptions();
+		$data['extensions']['wc_subscriptions']['subscription_orders'] = self::get_subscription_orders();
 		return $data;
 	}
 
@@ -90,9 +91,8 @@ class WC_Subscriptions_Tracker {
 	private static function get_subscriptions() {
 		$subscription_dates  = self::get_subscription_dates();
 		$subscription_counts = self::get_subscription_counts();
-		$subscription_totals = self::get_subscription_totals();
 
-		return array_merge( $subscription_dates, $subscription_counts, $subscription_totals );
+		return array_merge( $subscription_dates, $subscription_counts );
 	}
 
 	/**
@@ -110,14 +110,14 @@ class WC_Subscriptions_Tracker {
 	}
 
 	/**
-	 * Get subscription totals
+	 * Gets subscription order counts and totals.
 	 *
 	 * @return array
 	 */
-	private static function get_subscription_totals() {
+	private static function get_subscription_orders() {
 		global $wpdb;
 
-		$gross_totals   = array();
+		$order_totals   = array();
 		$relation_types = array(
 			'switch',
 			'renewal',
@@ -126,32 +126,27 @@ class WC_Subscriptions_Tracker {
 
 		foreach ( $relation_types as $relation_type ) {
 
-			$gross_total = $wpdb->get_var( sprintf(
-				"
-				SELECT
-					SUM( order_total.meta_value ) AS 'gross_total'
+			$total_and_count = $wpdb->get_row( sprintf(
+				"SELECT
+					SUM( order_total.meta_value ) AS 'gross_total', COUNT( orders.ID ) as 'count'
 				FROM {$wpdb->prefix}posts AS orders
 					LEFT JOIN {$wpdb->prefix}postmeta AS order_relation ON order_relation.post_id = orders.ID
 					LEFT JOIN {$wpdb->prefix}postmeta AS order_total ON order_total.post_id = orders.ID
-				WHERE order_relation.meta_key =  '_subscription_%s'
+				WHERE order_relation.meta_key = '_subscription_%s'
 					AND orders.post_status in ( 'wc-completed', 'wc-refunded' )
 					AND order_total.meta_key = '_order_total'
 				GROUP BY order_total.meta_key
-			", $relation_type
-			));
+				", $relation_type
+			), ARRAY_A );
 
-			if ( is_null( $gross_total ) ) {
-				$gross_total = 0;
-			}
-
-			$gross_totals[ $relation_type ] = $gross_total;
+			$order_totals[ $relation_type . '_gross' ] = is_null( $total_and_count ) ? 0 : $total_and_count['gross_total'];
+			$order_totals[ $relation_type . '_count' ] = is_null( $total_and_count ) ? 0 : $total_and_count['count'];
 		}
 
-		// Finally get the initial revenue
-		$gross_total = $wpdb->get_var( sprintf(
-			"
-			SELECT
-				SUM( order_total.meta_value ) AS 'gross_total'
+		// Finally get the initial revenue and count
+		$total_and_count = $wpdb->get_row(
+			"SELECT
+				SUM( order_total.meta_value ) AS 'gross_total', COUNT( * ) as 'count'
 			FROM {$wpdb->prefix}posts AS orders
 				LEFT JOIN {$wpdb->prefix}posts AS subscriptions ON subscriptions.post_parent = orders.ID
 				LEFT JOIN {$wpdb->prefix}postmeta AS order_total ON order_total.post_id = orders.ID
@@ -160,17 +155,16 @@ class WC_Subscriptions_Tracker {
 				AND orders.post_type = 'shop_order'
 				AND order_total.meta_key = '_order_total'
 			GROUP BY order_total.meta_key
-		", $relation_type
-		));
+		", ARRAY_A );
 
-		if ( is_null( $gross_total ) ) {
-			$gross_total = 0;
-		}
+		$initial_order_total = is_null( $total_and_count ) ? 0 : $total_and_count['gross_total'];
+		$initial_order_count = is_null( $total_and_count ) ? 0 : $total_and_count['gross_total'];
 
-		// Don't double count resubscribe revenue
-		$gross_totals['initial'] = $gross_total - $gross_totals['resubscribe'];
+		// Don't double count resubscribe revenue and count
+		$order_totals['initial_gross'] = $initial_order_total - $order_totals['resubscribe_gross'];
+		$order_totals['initial_count'] = $initial_order_count - $order_totals['resubscribe_count'];
 
-		return $gross_totals;
+		return $order_totals;
 	}
 
 	/**
