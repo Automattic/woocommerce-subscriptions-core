@@ -538,7 +538,7 @@ class WCS_Admin_Post_Types {
 				}
 
 				if ( ! empty( $customer_tip ) ) {
-					echo '<div class="tips" data-tip="' . wc_sanitize_tooltip( $customer_tip ) . '">';
+					echo '<div class="tips" data-tip="' . wc_sanitize_tooltip( $customer_tip ) . '">'; // XSS ok.
 				}
 
 				// This is to stop PHP from complaining
