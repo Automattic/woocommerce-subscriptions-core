@@ -2255,16 +2255,21 @@ class WC_Subscriptions_Switcher {
 				}
 
 				// Remove any signup fees if necessary.
-				if ( $order_is_parent && 'include_sign_up_fees' !== $include_sign_up_fees ) {
-					if ( $order_item->meta_exists( '_synced_sign_up_fee' ) ) {
-						$item_total -= $order_item->get_meta( '_synced_sign_up_fee' );
-					} elseif ( $subscription_item->meta_exists( '_has_trial' ) ) {
-						// Where there's a free trial, the sign up fee is the entire item total so the non-sign-up fee portion is 0.
-						$item_total = 0;
-					} else {
-						// For non-free trial subscriptions, the sign up fee portion is the order total minus the recurring total (subscription item total).
-						// Use the subscription item's subtotal (without discounts) to avoid signup fee coupon discrepancies
-						$item_total -= max( $order_item->get_total() - $subscription_item->get_subtotal(), 0 );
+				if ( 'include_sign_up_fees' !== $include_sign_up_fees ) {
+					if ( $order_is_parent ) {
+						if ( $order_item->meta_exists( '_synced_sign_up_fee' ) ) {
+							$item_total -= $order_item->get_meta( '_synced_sign_up_fee' ) * $order_item->get_quantity();
+						} elseif ( $subscription_item->meta_exists( '_has_trial' ) ) {
+							// Where there's a free trial, the sign up fee is the entire item total so the non-sign-up fee portion is 0.
+							$item_total = 0;
+						} else {
+							// For non-free trial subscriptions, the sign up fee portion is the order total minus the recurring total (subscription item total).
+							// Use the subscription item's subtotal (without discounts) to avoid signup fee coupon discrepancies
+							$item_total -= max( $order_item->get_total() - $subscription_item->get_subtotal(), 0 );
+						}
+					// Remove the prorated sign up fees.
+					} elseif ( $order_item->meta_exists( '_switched_subscription_sign_up_fee_prorated' ) ) {
+						$item_total -= $order_item->get_meta( '_switched_subscription_sign_up_fee_prorated' ) * $order_item->get_quantity();
 					}
 				}
 
