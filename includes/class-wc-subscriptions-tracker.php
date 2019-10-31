@@ -133,7 +133,7 @@ class WC_Subscriptions_Tracker {
 					LEFT JOIN {$wpdb->prefix}postmeta AS order_relation ON order_relation.post_id = orders.ID
 					LEFT JOIN {$wpdb->prefix}postmeta AS order_total ON order_total.post_id = orders.ID
 				WHERE order_relation.meta_key = '_subscription_%s'
-					AND orders.post_status in ( 'wc-completed', 'wc-refunded' )
+					AND orders.post_status in ( 'wc-completed', 'wc-processing', 'wc-refunded' )
 					AND order_total.meta_key = '_order_total'
 				GROUP BY order_total.meta_key
 				", $relation_type
@@ -150,7 +150,7 @@ class WC_Subscriptions_Tracker {
 			FROM {$wpdb->prefix}posts AS orders
 				LEFT JOIN {$wpdb->prefix}posts AS subscriptions ON subscriptions.post_parent = orders.ID
 				LEFT JOIN {$wpdb->prefix}postmeta AS order_total ON order_total.post_id = orders.ID
-			WHERE orders.post_status in ( 'wc-completed', 'wc-refunded' )
+			WHERE orders.post_status in ( 'wc-completed', 'wc-processing', 'wc-refunded' )
 				AND subscriptions.post_type = 'shop_subscription'
 				AND orders.post_type = 'shop_order'
 				AND order_total.meta_key = '_order_total'
@@ -158,7 +158,7 @@ class WC_Subscriptions_Tracker {
 		", ARRAY_A );
 
 		$initial_order_total = is_null( $total_and_count ) ? 0 : $total_and_count['gross_total'];
-		$initial_order_count = is_null( $total_and_count ) ? 0 : $total_and_count['gross_total'];
+		$initial_order_count = is_null( $total_and_count ) ? 0 : $total_and_count['count'];
 
 		// Don't double count resubscribe revenue and count
 		$order_totals['initial_gross'] = $initial_order_total - $order_totals['resubscribe_gross'];
