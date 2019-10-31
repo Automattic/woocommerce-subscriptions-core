@@ -370,7 +370,7 @@ class WC_Subscriptions_Admin {
 		global $post;
 
 		echo '</div>';
-		echo '<div class="options_group subscription_one_time_shipping show_if_subscription show_if_variable-subscription">';
+		echo '<div class="options_group subscription_one_time_shipping show_if_subscription show_if_variable-subscription hidden">';
 
 		// Only one Subscription per customer
 		woocommerce_wp_checkbox( array(
