@@ -75,11 +75,11 @@ class WC_Subscriptions_Tracker {
 			'days_no_fee'             => 'recurring' == $prorate_synced_payments ? get_option( WC_Subscriptions_Admin::$option_prefix . '_days_no_fee', 'none' ) : 'none',
 
 			// Miscellaneous
-			'max_customer_suspensions'              => get_option( WC_Subscriptions_Admin::$option_prefix . '_max_customer_suspensions' ),
-			'multiple_purchase'                     => get_option( WC_Subscriptions_Admin::$option_prefix . '_multiple_purchase' ),
-			'zero_initial_payment_requires_payment' => get_option( WC_Subscriptions_Admin::$option_prefix . '_zero_initial_payment_requires_payment' ),
-			'drip_downloadable_content_on_renewal'  => get_option( WC_Subscriptions_Admin::$option_prefix . '_drip_downloadable_content_on_renewal' ),
-			'enable_retry'                          => get_option( WC_Subscriptions_Admin::$option_prefix . '_enable_retry' ),
+			'max_customer_suspensions'                        => get_option( WC_Subscriptions_Admin::$option_prefix . '_max_customer_suspensions' ),
+			'multiple_purchase'                               => get_option( WC_Subscriptions_Admin::$option_prefix . '_multiple_purchase' ),
+			'allow_zero_initial_order_without_payment_method' => get_option( WC_Subscriptions_Admin::$option_prefix . '_zero_initial_payment_requires_payment' ),
+			'drip_downloadable_content_on_renewal'            => get_option( WC_Subscriptions_Admin::$option_prefix . '_drip_downloadable_content_on_renewal' ),
+			'enable_retry'                                    => get_option( WC_Subscriptions_Admin::$option_prefix . '_enable_retry' ),
 		);
 	}
 
