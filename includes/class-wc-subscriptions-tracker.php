@@ -3,7 +3,7 @@
  * Tracker for Subscriptions usage.
  *
  * @class     WC_Subscriptions_Tracker
- * @version   3.0.0
+ * @version   2.6.4
  * @package   WooCommerce Subscriptions/Classes
  * @category  Class
  * @author    WooCommerce
@@ -96,7 +96,7 @@ class WC_Subscriptions_Tracker {
 	}
 
 	/**
-	 * Gets subscription counts
+	 * Gets subscription counts.
 	 *
 	 * @return array
 	 */
