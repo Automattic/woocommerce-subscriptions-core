@@ -276,13 +276,13 @@ class WC_Subscriptions_Synchroniser {
 
 			// An annual sync date is already set in the form: array( 'day' => 'nn', 'month' => 'nn' ), create a MySQL string from those values (year and time are irrelvent as they are ignored)
 			if ( is_array( $payment_day ) ) {
-				$payment_month = $payment_day['month'];
+				$payment_month = ( 0 === (int) $payment_day['day'] ) ? 0 : $payment_day['month'];
 				$payment_day   = $payment_day['day'];
 			} else {
-				$payment_month = gmdate( 'm' );
+				$payment_month = 0;
 			}
 
-			echo '<div class="options_group subscription_pricing subscription_sync show_if_subscription">';
+			echo '<div class="options_group subscription_pricing subscription_sync show_if_subscription hidden">';
 			echo '<div class="subscription_sync_week_month" style="' . esc_attr( $display_week_month_select ) . '">';
 
 			woocommerce_wp_select( array(
@@ -303,16 +303,16 @@ class WC_Subscriptions_Synchroniser {
 			?><p class="form-field _subscription_payment_sync_date_day_field">
 				<label for="_subscription_payment_sync_date_day"><?php echo esc_html( self::$sync_field_label ); ?></label>
 				<span class="wrap">
-					<input type="number" id="<?php echo esc_attr( self::$post_meta_key_day ); ?>" name="<?php echo esc_attr( self::$post_meta_key_day ); ?>" class="wc_input_subscription_payment_sync" value="<?php echo esc_attr( $payment_day ); ?>" placeholder="<?php echo esc_attr_x( 'Day', 'input field placeholder for day field for annual subscriptions', 'woocommerce-subscriptions' ); ?>"  />
 
 					<label for="<?php echo esc_attr( self::$post_meta_key_month ); ?>" class="wcs_hidden_label"><?php esc_html_e( 'Month for Synchronisation', 'woocommerce-subscriptions' ); ?></label>
 					<select id="<?php echo esc_attr( self::$post_meta_key_month ); ?>" name="<?php echo esc_attr( self::$post_meta_key_month ); ?>" class="wc_input_subscription_payment_sync last" >
-						<?php foreach ( $wp_locale->month as $value => $label ) { ?>
+						<?php foreach ( self::get_year_sync_options() as $value => $label ) { ?>
 							<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $value, $payment_month, true ) ?>><?php echo esc_html( $label ); ?></option>
 						<?php } ?>
 					</select>
 
-					</select>
+					<?php $daysInMonth = $payment_month ? cal_days_in_month( CAL_GREGORIAN, (int) $payment_month, 2001 ) : 0; ?>
+					<input type="number" id="<?php echo esc_attr( self::$post_meta_key_day ); ?>" name="<?php echo esc_attr( self::$post_meta_key_day ); ?>" class="wc_input_subscription_payment_sync" value="<?php echo esc_attr( $payment_day ); ?>" placeholder="<?php echo esc_attr_x( 'Day', 'input field placeholder for day field for annual subscriptions', 'woocommerce-subscriptions' ); ?>" step="1" min="<?php echo esc_attr( min( 1, $daysInMonth ) ); ?>" max="<?php echo esc_attr( $daysInMonth ); ?>" <?php disabled( 0, $payment_month, true ); ?> />
 				</span>
 				<?php echo wcs_help_tip( self::$sync_description_year ); ?>
 			</p><?php
@@ -346,10 +346,10 @@ class WC_Subscriptions_Synchroniser {
 
 			// An annual sync date is already set in the form: array( 'day' => 'nn', 'month' => 'nn' ), create a MySQL string from those values (year and time are irrelvent as they are ignored)
 			if ( is_array( $payment_day ) ) {
-				$payment_month = $payment_day['month'];
+				$payment_month = ( 0 === (int) $payment_day['day'] ) ? 0 : $payment_day['month'];
 				$payment_day   = $payment_day['day'];
 			} else {
-				$payment_month = gmdate( 'm' );
+				$payment_month = 0;
 			}
 
 			include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/html-variation-synchronisation.php' );
@@ -449,8 +449,8 @@ class WC_Subscriptions_Synchroniser {
 			$script_parameters['syncOptions'] = array(
 				'week'  => $billing_period_strings['week'],
 				'month' => $billing_period_strings['month'],
+				'year'  => self::get_year_sync_options(),
 			);
-
 		}
 
 		return $script_parameters;
@@ -715,6 +715,20 @@ class WC_Subscriptions_Synchroniser {
 	}
 
 	/**
+	 * Return an i18n'ified associative array of sync options for 'year' as billing period
+	 *
+	 * @since 3.0.0
+	 */
+	public static function get_year_sync_options() {
+		global $wp_locale;
+
+		$year_sync_options[0] = __( 'Do not synchronise', 'woocommerce-subscriptions' );
+		$year_sync_options   += $wp_locale->month;
+
+		return $year_sync_options;
+	}
+
+	/**
 	 * Return an i18n'ified associative array of all possible subscription periods.
 	 *
 	 * @since 1.5
@@ -724,7 +738,7 @@ class WC_Subscriptions_Synchroniser {
 
 		if ( empty( self::$billing_period_ranges ) ) {
 
-			foreach ( array( 'week', 'month', 'year' ) as $key ) {
+			foreach ( array( 'week', 'month' ) as $key ) {
 				self::$billing_period_ranges[ $key ][0] = __( 'Do not synchronise', 'woocommerce-subscriptions' );
 			}
 
