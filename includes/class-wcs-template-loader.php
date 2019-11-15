@@ -13,6 +13,7 @@ class WCS_Template_Loader {
 		add_action( 'woocommerce_subscription_totals_table', array( __CLASS__, 'get_subscription_totals_template' ) );
 		add_action( 'woocommerce_subscription_totals_table', array( __CLASS__, 'get_order_downloads_template' ), 20 );
 		add_action( 'woocommerce_subscription_totals', array( __CLASS__, 'get_subscription_totals_table_template' ), 10, 4 );
+		add_action( 'woocommerce_subscriptions_recurring_totals_subtotals', array( __CLASS__, 'get_recurring_cart_subtotals' ), 10, 2 );
 	}
 
 	/**
@@ -98,5 +99,17 @@ class WCS_Template_Loader {
 	 */
 	public static function get_subscription_receipt_template( $subscription ) {
 		wc_get_template( 'checkout/subscription-receipt.php', array( 'subscription' => $subscription ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+	}
+
+	/**
+	 * Gets the recurring totals subtotal rows content.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param array $recurring_carts The recurring carts.
+	 * @param int   $carts_with_multiple_payments The number of recurring carts with at least 1 future payment.
+	 */
+	public static function get_recurring_cart_subtotals( $recurring_carts, $carts_with_multiple_payments ) {
+		wc_get_template( 'checkout/recurring-subtotals.php', array( 'recurring_carts' => $recurring_carts, 'carts_with_multiple_payments' => $carts_with_multiple_payments ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
 	}
 }
