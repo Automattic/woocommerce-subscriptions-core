@@ -15,6 +15,7 @@ class WCS_Template_Loader {
 		add_action( 'woocommerce_subscription_totals', array( __CLASS__, 'get_subscription_totals_table_template' ), 10, 4 );
 		add_action( 'woocommerce_subscriptions_recurring_totals_subtotals', array( __CLASS__, 'get_recurring_cart_subtotals' ), 10, 2 );
 		add_action( 'woocommerce_subscriptions_recurring_totals_coupons', array( __CLASS__, 'get_recurring_cart_coupons' ), 10, 2 );
+		add_action( 'woocommerce_subscriptions_recurring_totals_shipping', array( __CLASS__, 'get_recurring_cart_shipping' ) );
 	}
 
 	/**
@@ -124,5 +125,16 @@ class WCS_Template_Loader {
 	 */
 	public static function get_recurring_cart_coupons( $recurring_carts, $carts_with_multiple_payments ) {
 		wc_get_template( 'checkout/recurring-coupon-totals.php', array( 'recurring_carts' => $recurring_carts, 'carts_with_multiple_payments' => $carts_with_multiple_payments ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+	}
+
+	/**
+	 * Gets the recurring totals shipping rows content.
+	 *
+	 * @since 3.1.0
+	 */
+	public static function get_recurring_cart_shipping () {
+		if ( WC()->cart->needs_shipping() && WC()->cart->show_shipping() ) {
+			wcs_cart_totals_shipping_html();
+		}
 	}
 }
