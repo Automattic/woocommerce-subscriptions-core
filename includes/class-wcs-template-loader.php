@@ -16,6 +16,7 @@ class WCS_Template_Loader {
 		add_action( 'woocommerce_subscriptions_recurring_totals_subtotals', array( __CLASS__, 'get_recurring_cart_subtotals' ), 10, 2 );
 		add_action( 'woocommerce_subscriptions_recurring_totals_coupons', array( __CLASS__, 'get_recurring_cart_coupons' ), 10, 2 );
 		add_action( 'woocommerce_subscriptions_recurring_totals_shipping', array( __CLASS__, 'get_recurring_cart_shipping' ) );
+		add_action( 'woocommerce_subscriptions_recurring_totals_fees', array( __CLASS__, 'get_recurring_cart_fees' ) );
 	}
 
 	/**
@@ -136,5 +137,16 @@ class WCS_Template_Loader {
 		if ( WC()->cart->needs_shipping() && WC()->cart->show_shipping() ) {
 			wcs_cart_totals_shipping_html();
 		}
+	}
+
+	/**
+	 * Gets the recurring totals fee rows content.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param array $recurring_carts The recurring carts.
+	 */
+	public static function get_recurring_cart_fees( $recurring_carts ) {
+		wc_get_template( 'checkout/recurring-fee-totals.php', array( 'recurring_carts' => $recurring_carts ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
 	}
 }
