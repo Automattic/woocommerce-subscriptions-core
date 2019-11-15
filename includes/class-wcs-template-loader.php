@@ -17,6 +17,7 @@ class WCS_Template_Loader {
 		add_action( 'woocommerce_subscriptions_recurring_totals_coupons', array( __CLASS__, 'get_recurring_cart_coupons' ), 10, 2 );
 		add_action( 'woocommerce_subscriptions_recurring_totals_shipping', array( __CLASS__, 'get_recurring_cart_shipping' ) );
 		add_action( 'woocommerce_subscriptions_recurring_totals_fees', array( __CLASS__, 'get_recurring_cart_fees' ) );
+		add_action( 'woocommerce_subscriptions_recurring_totals_taxes', array( __CLASS__, 'get_recurring_cart_taxes' ) );
 	}
 
 	/**
@@ -148,5 +149,24 @@ class WCS_Template_Loader {
 	 */
 	public static function get_recurring_cart_fees( $recurring_carts ) {
 		wc_get_template( 'checkout/recurring-fee-totals.php', array( 'recurring_carts' => $recurring_carts ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+	}
+
+	/**
+	 * Gets the recurring totals tax rows content.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param array $recurring_carts The recurring carts.
+	 */
+	public static function get_recurring_cart_taxes( $recurring_carts ) {
+		if ( ! wc_tax_enabled() || 'excl' !== WC()->cart->tax_display_cart ) {
+			return;
+		}
+
+		if ( 'itemized' === get_option( 'woocommerce_tax_total_display' ) ) {
+			wc_get_template( 'checkout/recurring-itemized-tax-totals.php', array( 'recurring_carts' => $recurring_carts ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+		} else {
+			wc_get_template( 'checkout/recurring-tax-totals.php', array( 'recurring_carts' => $recurring_carts ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+		}
 	}
 }
