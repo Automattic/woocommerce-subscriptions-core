@@ -18,6 +18,8 @@ class WCS_Template_Loader {
 		add_action( 'woocommerce_subscriptions_recurring_totals_shipping', array( __CLASS__, 'get_recurring_cart_shipping' ) );
 		add_action( 'woocommerce_subscriptions_recurring_totals_fees', array( __CLASS__, 'get_recurring_cart_fees' ) );
 		add_action( 'woocommerce_subscriptions_recurring_totals_taxes', array( __CLASS__, 'get_recurring_cart_taxes' ) );
+		add_action( 'woocommerce_subscriptions_recurring_subscription_totals', array( __CLASS__, 'get_recurring_subscription_totals' ), 10, 2 );
+
 	}
 
 	/**
@@ -168,5 +170,17 @@ class WCS_Template_Loader {
 		} else {
 			wc_get_template( 'checkout/recurring-tax-totals.php', array( 'recurring_carts' => $recurring_carts ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
 		}
+	}
+
+	/**
+	 * Gets the recurring subscription total rows content.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param array $recurring_carts The recurring carts.
+	 * @param int   $carts_with_multiple_payments The number of recurring carts with at least 1 future payment.
+	 */
+	public static function get_recurring_subscription_totals( $recurring_carts, $carts_with_multiple_payments ) {
+		wc_get_template( 'checkout/recurring-subscription-totals.php', array( 'recurring_carts' => $recurring_carts, 'carts_with_multiple_payments' => $carts_with_multiple_payments ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
 	}
 }
