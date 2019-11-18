@@ -51,8 +51,11 @@ function wcs_cart_totals_shipping_html() {
 	// Create new subscriptions for each subscription product in the cart (that is not a renewal)
 	foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
 
+		// Allow third parties to filter whether the recurring cart has a shipment.
+		$cart_has_next_shipment = apply_filters( 'woocommerce_subscriptions_cart_has_next_shipment', 0 !== $recurring_cart->next_payment_date, $recurring_cart );
+
 		// Create shipping packages for each subscription item
-		if ( WC_Subscriptions_Cart::cart_contains_subscriptions_needing_shipping( $recurring_cart ) && 0 !== $recurring_cart->next_payment_date ) {
+		if ( $cart_has_next_shipment && WC_Subscriptions_Cart::cart_contains_subscriptions_needing_shipping( $recurring_cart ) ) {
 
 			// This will get a package with the 'recurring_cart_key' set to 'none' (because WC_Subscriptions_Cart::display_recurring_totals() set WC_Subscriptions_Cart::$calculation_type to 'recurring_total', but WC_Subscriptions_Cart::$recurring_cart_key has not been set), which ensures that it's a unique package, which we need in order to get all the available packages, not just the package for the recurring cart calculation we completed previously where WC_Subscriptions_Cart::filter_package_rates() removed all unchosen rates and which WC then cached
 			$packages = $recurring_cart->get_shipping_packages();
