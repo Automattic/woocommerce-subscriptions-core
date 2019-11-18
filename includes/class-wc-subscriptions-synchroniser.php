@@ -526,7 +526,7 @@ class WC_Subscriptions_Synchroniser {
 	public static function is_payment_upfront( $product, $from_date = '' ) {
 		static $results = array();
 		$is_upfront = null;
-		$from_timestamp = $from_date ? strtotime( $from_date ) : wcs_strtotime_dark_knight( 'now' );
+		$from_timestamp = $from_date ? wcs_date_to_time( $from_date ) : gmdate( 'U' );
 		if ( array_key_exists( $product->get_id(), $results ) ) {
 			return $results[ $product->get_id() ];
 		}
@@ -544,7 +544,7 @@ class WC_Subscriptions_Synchroniser {
 			$no_fee_days = get_option( self::$setting_id_days_no_fee );
 			$payment_date = self::calculate_first_payment_date( $product, 'timestamp', $from_date );
 
-			$site_offset = (int) get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
+			$site_offset = (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
 
 			// The payment date is today - check for it in site time
 			if ( gmdate( 'Ymd', $payment_date + $site_offset ) === gmdate( 'Ymd', $from_timestamp + $site_offset ) ) {
@@ -555,7 +555,7 @@ class WC_Subscriptions_Synchroniser {
 				// When proration setting is 'recurring' and there is a grace period
 				$buffer_date = $payment_date - ( $no_fee_days * DAY_IN_SECONDS );
 
-				$is_upfront = $from_timestamp < strtotime( gmdate( 'Y-m-d 23:59:59', $buffer_date ) );
+				$is_upfront = $from_timestamp < wcs_date_to_time( gmdate( 'Y-m-d 23:59:59', $buffer_date ) );
 			} else {
 				$is_upfront = true;
 			}
@@ -630,7 +630,7 @@ class WC_Subscriptions_Synchroniser {
 			$from_date = WC_Subscriptions_Product::get_trial_expiration_date( $product, $from_date );
 		}
 
-		$from_timestamp = wcs_date_to_time( $from_date ) + ( (int) get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ); // Site time
+		$from_timestamp = wcs_date_to_time( $from_date ) + ( (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) ); // Site time
 
 		$payment_day = self::get_products_payment_day( $product );
 
@@ -718,7 +718,7 @@ class WC_Subscriptions_Synchroniser {
 		$first_payment_timestamp += 3 * HOUR_IN_SECONDS;
 
 		// And convert it to the UTC equivalent of 3am on that day
-		$first_payment_timestamp -= ( (int) get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
+		$first_payment_timestamp -= ( (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) );
 
 		$first_payment = ( 'mysql' == $type && 0 != $first_payment_timestamp ) ? gmdate( 'Y-m-d H:i:s', $first_payment_timestamp ) : $first_payment_timestamp;
 
@@ -816,7 +816,7 @@ class WC_Subscriptions_Synchroniser {
 				if ( $is_first_payment_today ) {
 					$payment_date_string = __( 'Today!', 'woocommerce-subscriptions' );
 				} else {
-					$payment_date_string = date_i18n( wc_date_format(), $first_payment_timestamp + ( (int) get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) );
+					$payment_date_string = date_i18n( wc_date_format(), $first_payment_timestamp + ( (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) ) );
 				}
 
 				if ( self::is_product_prorated( $product ) && ! $is_first_payment_today ) {
@@ -848,7 +848,7 @@ class WC_Subscriptions_Synchroniser {
 			if ( ! self::is_today( $next_renewal_timestamp ) ) {
 
 				if ( 'site' == $timezone ) {
-					$next_renewal_timestamp += ( (int) get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
+					$next_renewal_timestamp += ( (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) );
 				}
 				$first_renewal_timestamp = $next_renewal_timestamp;
 			}
@@ -948,7 +948,7 @@ class WC_Subscriptions_Synchroniser {
 
 			// First make sure the day is in the past so that we don't end up jumping a month or year because of a few hours difference between now and the billing date
 			// Use site time to check if the trial expiration and first payment fall on the same day
-			$site_offset = (int) get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
+			$site_offset = (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
 
 			if ( $trial_expiration_timestamp > $first_payment_timestamp && gmdate( 'Ymd', $first_payment_timestamp + $site_offset ) === gmdate( 'Ymd', $trial_expiration_timestamp + $site_offset ) ) {
 				$trial_expiration_date = date( 'Y-m-d H:i:s', $first_payment_timestamp );
@@ -988,7 +988,7 @@ class WC_Subscriptions_Synchroniser {
 	public static function is_today( $timestamp ) {
 
 		// Convert timestamp to site's time
-		$timestamp += (int) get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
+		$timestamp += (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
 
 		return gmdate( 'Y-m-d', current_time( 'timestamp' ) ) == gmdate( 'Y-m-d', $timestamp );
 	}
