@@ -632,8 +632,7 @@ class WC_Subscriptions_Synchroniser {
 		}
 
 		$from_timestamp = wcs_date_to_time( $from_date ) + ( (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) ); // Site time
-
-		$payment_day = self::get_products_payment_day( $product );
+		$payment_day    = self::get_products_payment_day( $product );
 
 		if ( 'week' == $period ) {
 
@@ -691,9 +690,10 @@ class WC_Subscriptions_Synchroniser {
 				'11' => 'November',
 				'12' => 'December',
 			);
-			$month = $month_map[ $payment_day['month'] ];
 
+			$month             = $month_map[ $payment_day['month'] ];
 			$payment_month_day = sprintf( '%02d%02d', $payment_day['month'], $payment_day['day'] );
+
 			if ( $payment_month_day < gmdate( 'md', $from_timestamp ) ) {
 				$from_timestamp = wcs_add_time( $interval - 1, $period, $from_timestamp );
 			}
