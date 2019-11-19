@@ -525,7 +525,7 @@ class WC_Subscriptions_Synchroniser {
 	 */
 	public static function is_payment_upfront( $product, $from_date = '' ) {
 		static $results = array();
-		$is_upfront = null;
+		$is_upfront     = null;
 
 		if ( array_key_exists( $product->get_id(), $results ) ) {
 			return $results[ $product->get_id() ];
@@ -541,10 +541,10 @@ class WC_Subscriptions_Synchroniser {
 
 		// Maybe account for number of days without a fee.
 		if ( null === $is_upfront ) {
-			$no_fee_days = get_option( self::$setting_id_days_no_fee );
-			$payment_date = self::calculate_first_payment_date( $product, 'timestamp', $from_date );
+			$no_fee_days    = get_option( self::$setting_id_days_no_fee );
+			$payment_date   = self::calculate_first_payment_date( $product, 'timestamp', $from_date );
 			$from_timestamp = $from_date ? wcs_date_to_time( $from_date ) : gmdate( 'U' );
-			$site_offset = (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
+			$site_offset    = (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
 
 			// The payment date is today - check for it in site time
 			if ( gmdate( 'Ymd', $payment_date + $site_offset ) === gmdate( 'Ymd', $from_timestamp + $site_offset ) ) {
