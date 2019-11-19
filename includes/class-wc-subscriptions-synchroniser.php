@@ -612,12 +612,13 @@ class WC_Subscriptions_Synchroniser {
 
 		$period       = WC_Subscriptions_Product::get_period( $product );
 		$trial_length = WC_Subscriptions_Product::get_trial_length( $product );
-		// For intervals > 1:
+
+		// For billing intervals > 1:
 		// When the proration setting is 'recurring', there is a full upfront payment for the entire billing interval
 		// So, the first payment date should be calculated after the entire interval
-		// When the proration setting is 'no' or 'yes', the upfront payment is for only 1 week/month/year.
-		// So, the first payment date should be calculated with 1 as interval
-		$interval     = get_option( self::$setting_id_proration, 'no' ) === 'recurring' ? WC_Subscriptions_Product::get_interval( $product ) : 1;
+		// When the proration setting is 'no' or 'yes', the upfront payment is until the next date occurrence (1 week/month/year).
+		// So, the first payment date should be calculated with 1 as the interval
+		$interval = get_option( self::$setting_id_proration, 'no' ) === 'recurring' ? WC_Subscriptions_Product::get_interval( $product ) : 1;
 
 		$from_date_param = $from_date;
 
