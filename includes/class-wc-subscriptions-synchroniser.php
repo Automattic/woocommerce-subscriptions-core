@@ -519,14 +519,14 @@ class WC_Subscriptions_Synchroniser {
 	 * @author Jeremy Pry
 	 *
 	 * @param WC_Product $product The product to check.
-	 * @param date $from_date Optional date of purchase; Default is now
+	 * @param string $from_date Optional. A MySQL formatted date/time string from which to calculate from. The default is an empty string which is today's date/time.
 	 *
 	 * @return bool Whether an upfront payment is required for the product.
 	 */
 	public static function is_payment_upfront( $product, $from_date = '' ) {
 		static $results = array();
 		$is_upfront = null;
-		$from_timestamp = $from_date ? wcs_date_to_time( $from_date ) : gmdate( 'U' );
+
 		if ( array_key_exists( $product->get_id(), $results ) ) {
 			return $results[ $product->get_id() ];
 		}
@@ -543,7 +543,7 @@ class WC_Subscriptions_Synchroniser {
 		if ( null === $is_upfront ) {
 			$no_fee_days = get_option( self::$setting_id_days_no_fee );
 			$payment_date = self::calculate_first_payment_date( $product, 'timestamp', $from_date );
-
+			$from_timestamp = $from_date ? wcs_date_to_time( $from_date ) : gmdate( 'U' );
 			$site_offset = (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
 
 			// The payment date is today - check for it in site time
