@@ -645,7 +645,7 @@ class WC_Subscriptions_Synchroniser {
 			$add_days = $payment_day < $from_day ? 0 : 7;
 
 			// Calculate difference between the the two days after adding number of weekdays and compare against grace period
-			if ( ( $from_day + $add_days - $payment_day ) <= $no_fee_days ) {
+			if ( ( $payment_day + $add_days - $from_day ) <= $no_fee_days ) {
 				$from_timestamp = wcs_add_time( $interval - 1, $period, $from_timestamp );
 			}
 
