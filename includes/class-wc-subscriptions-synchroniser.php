@@ -633,12 +633,12 @@ class WC_Subscriptions_Synchroniser {
 
 		$from_timestamp = wcs_date_to_time( $from_date ) + ( (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) ); // Site time
 		$payment_day    = self::get_products_payment_day( $product );
+		$no_fee_days = get_option( self::$setting_id_days_no_fee );
 
 		if ( 'week' == $period ) {
 
 			// Get the day of the week for the from date
 			$from_day = gmdate( 'N', $from_timestamp );
-			$no_fee_days = get_option( self::$setting_id_days_no_fee );
 
 			// To account for rollover of the weekdays. For example, if payment day is Saturday and the from date is Monday,
 			// and the grace period is 2, Saturday is day 6 and Monday is day 1.
@@ -653,19 +653,21 @@ class WC_Subscriptions_Synchroniser {
 			$first_payment_timestamp = wcs_strtotime_dark_knight( self::$weekdays[ $payment_day ], $from_timestamp );
 		} elseif ( 'month' == $period ) {
 
-			// strtotime() needs to know the month, so we need to determine if the specified day has occured this month yet or if we want the last day of the month (see: https://gist.github.com/thenbrent/9698083)
+			// strtotime() needs to know the month, so we need to determine if the payment day has occurred this month yet or if we want the last day of the month (see: https://gist.github.com/thenbrent/9698083)
 			if ( $payment_day > 27 ) { // we actually want the last day of the month
-				$payment_day  = gmdate( 't', $from_timestamp );
-				$month        = gmdate( 'F', $from_timestamp );
-				$month_number = gmdate( 'm', $from_timestamp );
-			} elseif ( gmdate( 'j', $from_timestamp ) > $payment_day ) { // today is later than specified day in the from date, we need the next month
+				$payment_day = gmdate( 't', $from_timestamp ); // the number of days in the month
+			}
+			if ( gmdate( 'j', $from_timestamp ) > $payment_day ) { // today is later than payment day in the from date, we need the next month
 				$month        = gmdate( 'F', wcs_add_months( $from_timestamp, $interval ) );
 				$month_number = gmdate( 'm', wcs_add_months( $from_timestamp, $interval ) );
-			} else { // specified day is either today or still to come in the month of the from date
+			} elseif ( $payment_day - $no_fee_days > gmdate( 'j', $from_timestamp ) ) { // payment day is either today or still to come in the month of the from date
+				$month        = gmdate( 'F', wcs_add_months( $from_timestamp, $interval - 1 ) );
+				$month_number = gmdate( 'm', wcs_add_months( $from_timestamp, $interval - 1 ) );
+			} else {
 				$month        = gmdate( 'F', $from_timestamp );
 				$month_number = gmdate( 'm', $from_timestamp );
 			}
-			// when a certain number of mmonths are added and the first payment date moves to next year
+			// when a certain number of months are added and the first payment date moves to next year
 			if ( $month_number < gmdate( 'm', $from_timestamp ) ) {
 				$year       = gmdate( 'Y', $from_timestamp );
 				$year++;
@@ -693,12 +695,17 @@ class WC_Subscriptions_Synchroniser {
 
 			$month             = $month_map[ $payment_day['month'] ];
 			$payment_month_day = sprintf( '%02d%02d', $payment_day['month'], $payment_day['day'] );
+			$year       = gmdate( 'Y', $from_timestamp );
 
 			if ( $payment_month_day < gmdate( 'md', $from_timestamp ) ) {
-				$from_timestamp = wcs_add_time( $interval - 1, $period, $from_timestamp );
+			    $year += $interval;
+				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}", wcs_add_time( $interval - 1, $period, $from_timestamp ) );
+			} elseif ( $payment_month_day - $no_fee_days > gmdate( 'md', $from_timestamp ) ) {
+				$year += $interval - 1;
+				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}", wcs_add_time( $interval, $period, $from_timestamp ) );
+			} else {
+				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}", $from_timestamp );
 			}
-
-			$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month}", $from_timestamp );
 		}
 
 		// Make sure the next payment is in the future and after the $from_date, as strtotime() will return the date this year for any day in the past when adding months or years (see: https://gist.github.com/thenbrent/9698083)
