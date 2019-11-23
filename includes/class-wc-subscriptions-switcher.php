@@ -508,8 +508,9 @@ class WC_Subscriptions_Switcher {
 						$label = $option['label'];
 						$name  = WC_Subscriptions_Admin::$option_prefix . '_allow_switching_' . $option['id'];
 						$value = get_option( $name, 'no' );
+						$desc = isset( $option['desc_tip'] ) ? sprintf( '<span class="woocommerce-help-tip" data-tip="%s"></span>', esc_attr( $option['desc_tip'] ) ) : '';
 
-						echo sprintf( '<label><input%s type="checkbox" name="%s" value="1"/> %s</label>', checked( $value, 'yes', false ), esc_attr( $name ), esc_html( $label ) );
+						echo sprintf( '<label><input%s type="checkbox" name="%s" value="1"/> %s%s</label>', checked( $value, 'yes', false ), esc_attr( $name ), esc_html( $label ), $desc );
 					}
 					?>
 				</div>
