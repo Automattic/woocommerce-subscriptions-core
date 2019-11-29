@@ -264,7 +264,7 @@ function wcs_cart_totals_coupon_html( $coupon, $cart ) {
  * @return void
  */
 function wcs_cart_totals_order_total_html( $cart ) {
-	$value = '<strong>' . $cart->get_total() . '</strong> ';
+	$order_total_html = '<strong>' . $cart->get_total() . '</strong> ';
 
 	// If prices are tax inclusive, show taxes here
 	if ( wc_tax_enabled() && $cart->tax_display_cart == 'incl' ) {
@@ -280,14 +280,14 @@ function wcs_cart_totals_order_total_html( $cart ) {
 
 		if ( ! empty( $tax_string_array ) ) {
 			// translators: placeholder is price string, denotes tax included in cart/order total
-			$value .= '<small class="includes_tax">' . sprintf( _x( '(Includes %s)', 'includes tax', 'woocommerce-subscriptions' ), implode( ', ', $tax_string_array ) ) . '</small>';
+			$order_total_html .= '<small class="includes_tax">' . sprintf( _x( '(Includes %s)', 'includes tax', 'woocommerce-subscriptions' ), implode( ', ', $tax_string_array ) ) . '</small>';
 		}
 	}
 
 	// Apply WooCommerce core filter
-	$value = apply_filters( 'woocommerce_cart_totals_order_total_html', $value );
+	$order_total_html = apply_filters( 'woocommerce_cart_totals_order_total_html', $order_total_html );
 
-	echo wp_kses_post( apply_filters( 'wcs_cart_totals_order_total_html', wcs_cart_price_string( $value, $cart ), $cart ) );
+	echo wp_kses_post( apply_filters( 'wcs_cart_totals_order_total_html', wcs_cart_price_string( $order_total_html, $cart ), $cart ) );
 }
 
 /**
