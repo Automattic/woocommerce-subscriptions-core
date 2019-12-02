@@ -19,10 +19,21 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Display a recurring cart's subtotal
  *
  * @access public
+ * @param WC_Cart $cart The cart do print the subtotal html for.
  * @return string
  */
 function wcs_cart_totals_subtotal_html( $cart ) {
-	echo wp_kses_post( wcs_cart_price_string( $cart->get_cart_subtotal(), $cart ) );
+	$subtotal_html = wcs_cart_price_string( wc_price( $cart->get_displayed_subtotal() ), $cart );
+
+	if ( $cart->get_subtotal_tax() > 0 ) {
+		if ( $cart->display_prices_including_tax() && ! wc_prices_include_tax() ) {
+			$subtotal_html .= ' <small class="tax_label">' . WC()->countries->inc_tax_or_vat() . '</small>';
+		} elseif ( ! $cart->display_prices_including_tax() && wc_prices_include_tax() ) {
+			$subtotal_html .= ' <small class="tax_label">' . WC()->countries->ex_tax_or_vat() . '</small>';
+		}
+	}
+
+	echo wp_kses_post( $subtotal_html );
 }
 
 /**
