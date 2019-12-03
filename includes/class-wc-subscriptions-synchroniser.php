@@ -657,15 +657,24 @@ class WC_Subscriptions_Synchroniser {
 			if ( $payment_day > 27 ) { // we actually want the last day of the month
 				$payment_day = gmdate( 't', $from_timestamp ); // the number of days in the month
 			}
-			if ( gmdate( 'j', $from_timestamp ) > $payment_day ) { // today is later than payment day in the from date, we need the next month
-				$month        = gmdate( 'F', wcs_add_months( $from_timestamp, $interval ) );
-				$month_number = gmdate( 'm', wcs_add_months( $from_timestamp, $interval ) );
-			} elseif ( $payment_day - $no_fee_days > gmdate( 'j', $from_timestamp ) ) { // payment day is either today or still to come in the month of the from date
-				$month        = gmdate( 'F', wcs_add_months( $from_timestamp, $interval - 1 ) );
-				$month_number = gmdate( 'm', wcs_add_months( $from_timestamp, $interval - 1 ) );
+			$from_day = gmdate( 'j', $from_timestamp );
+			if ( $from_day <= $payment_day ) {
+				if ( $from_day + $no_fee_days >= $payment_day ) {
+					$month        = gmdate( 'F', $from_timestamp );
+					$month_number = gmdate( 'm', $from_timestamp );
+				} else {
+					$month        = gmdate( 'F', wcs_add_months( $from_timestamp, $interval - 1 ) );
+					$month_number = gmdate( 'm', wcs_add_months( $from_timestamp, $interval - 1 ) );
+				}
 			} else {
-				$month        = gmdate( 'F', $from_timestamp );
-				$month_number = gmdate( 'm', $from_timestamp );
+				$days_in_month = gmdate( 't', $from_timestamp );
+				if( $from_day + $no_fee_days - $days_in_month >= $payment_day ) {
+					$month = gmdate('F', wcs_add_months($from_timestamp, 1));
+					$month_number = gmdate('m', wcs_add_months($from_timestamp, 1));
+				} else {
+					$month = gmdate('F', wcs_add_months($from_timestamp, $interval));
+					$month_number = gmdate('m', wcs_add_months($from_timestamp, $interval));
+				}
 			}
 			// when a certain number of months are added and the first payment date moves to next year
 			if ( $month_number < gmdate( 'm', $from_timestamp ) ) {
