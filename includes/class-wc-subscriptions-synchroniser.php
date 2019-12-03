@@ -640,7 +640,7 @@ class WC_Subscriptions_Synchroniser {
 			// Get the day of the week for the from date
 			$from_day = gmdate( 'N', $from_timestamp );
 
-			// To account for rollover of the weekdays. For example, if payment day is Saturday and the from date is Monday,
+			// To account for rollover of the weekdays. For example, if from day is Saturday and the payment date is Monday,
 			// and the grace period is 2, Saturday is day 6 and Monday is day 1.
 			$add_days = $payment_day < $from_day ? 0 : 7;
 
@@ -657,23 +657,27 @@ class WC_Subscriptions_Synchroniser {
 			if ( $payment_day > 27 ) { // we actually want the last day of the month
 				$payment_day = gmdate( 't', $from_timestamp ); // the number of days in the month
 			}
+
 			$from_day = gmdate( 'j', $from_timestamp );
+
+			// If 'from day' is before 'sync day' in the month
 			if ( $from_day <= $payment_day ) {
-				if ( $from_day + $no_fee_days >= $payment_day ) {
+				if ( $from_day + $no_fee_days >= $payment_day ) { // In grace period
 					$month        = gmdate( 'F', $from_timestamp );
 					$month_number = gmdate( 'm', $from_timestamp );
-				} else {
+				} else { // If not in grace period, then the sync day has passed by. So, reduce interval by 1.
 					$month        = gmdate( 'F', wcs_add_months( $from_timestamp, $interval - 1 ) );
 					$month_number = gmdate( 'm', wcs_add_months( $from_timestamp, $interval - 1 ) );
 				}
-			} else {
+			} else { // If 'from day' is after 'sync day' in the month
 				$days_in_month = gmdate( 't', $from_timestamp );
-				if( $from_day + $no_fee_days - $days_in_month >= $payment_day ) {
-					$month = gmdate('F', wcs_add_months($from_timestamp, 1));
-					$month_number = gmdate('m', wcs_add_months($from_timestamp, 1));
-				} else {
-					$month = gmdate('F', wcs_add_months($from_timestamp, $interval));
-					$month_number = gmdate('m', wcs_add_months($from_timestamp, $interval));
+				// Use 'days in month' to account for end of month dates
+				if ( $from_day + $no_fee_days - $days_in_month >= $payment_day ) { // In grace period
+					$month        = gmdate( 'F', wcs_add_months( $from_timestamp, 1 ) );
+					$month_number = gmdate( 'm', wcs_add_months( $from_timestamp, 1 ) );
+				} else { // Not in grace period, so add interval number of months
+					$month        = gmdate( 'F', wcs_add_months( $from_timestamp, $interval ) );
+					$month_number = gmdate( 'm', wcs_add_months( $from_timestamp, $interval ) );
 				}
 			}
 			// when a certain number of months are added and the first payment date moves to next year
@@ -714,20 +718,6 @@ class WC_Subscriptions_Synchroniser {
 				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}", wcs_add_time( $interval, $period, $from_timestamp ) );
 			} else {
 				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}", $from_timestamp );
-			}
-		}
-
-		// Make sure the next payment is in the future and after the $from_date, as strtotime() will return the date this year for any day in the past when adding months or years (see: https://gist.github.com/thenbrent/9698083)
-		if ( 'year' == $period || 'month' == $period ) {
-
-			// First make sure the day is in the past so that we don't end up jumping a month or year because of a few hours difference between now and the billing date
-			if ( gmdate( 'Ymd', $first_payment_timestamp ) < gmdate( 'Ymd', $from_timestamp ) || gmdate( 'Ymd', $first_payment_timestamp ) < gmdate( 'Ymd', current_time( 'timestamp' ) ) ) {
-				$i = 1;
-				// Then make sure the date and time of the payment is in the future
-				while ( gmdate( 'Ymd', $first_payment_timestamp ) < gmdate( 'Ymd',$from_timestamp ) && $i < 30 ) {
-					$first_payment_timestamp = wcs_add_time( 1, $period, $first_payment_timestamp );
-					$i = $i + 1;
-				}
 			}
 		}
 
