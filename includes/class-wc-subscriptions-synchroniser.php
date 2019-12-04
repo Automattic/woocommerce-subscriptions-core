@@ -722,7 +722,6 @@ class WC_Subscriptions_Synchroniser {
 				$year += $interval - 1 ;
 				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}", wcs_add_time( $interval - 1, $period, $from_timestamp ) );
 			}
-
 		}
 
 		// We calculated a timestamp for midnight on the specific day in the site's timezone, let's push it to 3am to account for any daylight savings changes
