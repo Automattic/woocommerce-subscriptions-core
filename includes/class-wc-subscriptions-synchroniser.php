@@ -708,17 +708,21 @@ class WC_Subscriptions_Synchroniser {
 
 			$month             = $month_map[ $payment_day['month'] ];
 			$payment_month_day = sprintf( '%02d%02d', $payment_day['month'], $payment_day['day'] );
-			$year       = gmdate( 'Y', $from_timestamp );
+			$year              = gmdate( 'Y', $from_timestamp );
+			$from_month_day    = gmdate( 'md', $from_timestamp );
 
-			if ( $payment_month_day < gmdate( 'md', $from_timestamp ) ) {
-			    $year += $interval;
-				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}", wcs_add_time( $interval - 1, $period, $from_timestamp ) );
-			} elseif ( $payment_month_day - $no_fee_days > gmdate( 'md', $from_timestamp ) ) {
-				$year += $interval - 1;
-				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}", wcs_add_time( $interval, $period, $from_timestamp ) );
-			} else {
-				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}", $from_timestamp );
+			if ( $from_month_day > $payment_month_day ) { // If 'from day' is after 'sync day' in the year
+				$year++;
 			}
+
+			if ( $from_timestamp + ( $no_fee_days * DAY_IN_SECONDS ) >=
+				wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}" ) ) { // In grace period
+				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}", $from_timestamp );
+			} else { // If not in grace period, then the sync day has passed by. So, reduce interval by 1.
+				$year += $interval - 1 ;
+				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}", wcs_add_time( $interval - 1, $period, $from_timestamp ) );
+			}
+
 		}
 
 		// We calculated a timestamp for midnight on the specific day in the site's timezone, let's push it to 3am to account for any daylight savings changes
