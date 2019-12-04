@@ -96,6 +96,7 @@ class WC_Subscriptions_Coupon {
 		add_action( 'plugins_loaded', array( __CLASS__, 'maybe_add_recurring_coupon_hooks' ) );
 
 		add_filter( 'woocommerce_coupon_is_valid_for_product', array( __CLASS__, 'validate_subscription_coupon_for_product' ), 10, 3 );
+		add_filter( 'woocommerce_coupon_get_apply_quantity', array( __CLASS__, 'override_applied_quantity_for_recurring_carts' ), 10, 3 );
 	}
 
 	/**
@@ -1283,6 +1284,66 @@ class WC_Subscriptions_Coupon {
 
 			self::$removed_coupons = array();
 		}
+	}
+
+	/**
+	 * Override the quantity to apply limited coupons to recurring cart items.
+	 *
+	 * Limited coupons can only apply to x number of items. By default that limit applies
+	 * to items in each cart instance. Because recurring carts are separate, the limit applies to
+	 * each recurring cart leading to the limit really being x * number-of-recurring-carts.
+	 *
+	 * This function overrides that by ensuring the limit is accounted for across all recurring carts.
+	 * The items which the coupon applied to in initial cart are the items in recurring carts that the coupon will apply to.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param int       $apply_quantity The item quantity to apply the coupon to.
+	 * @param object    $item The stdClass cart item object. @see WC_Discounts::set_items_from_cart() for an example of object properties.
+	 * @param WC_Coupon $coupon The coupon being applied
+	 *
+	 * @return int The item quantity to apply the coupon to.
+	 */
+	public static function override_applied_quantity_for_recurring_carts( $apply_quantity, $item, $coupon ) {
+		static $initial_cart_item_applied_counts = array();
+		static $recurring_cart_applied_counts    = array();
+
+		$coupon_code          = $coupon->get_code();
+		$coupon_type          = $coupon->get_discount_type();
+		$limited_use_quantity = $coupon->get_limit_usage_to_x_items();
+
+		if ( null === $limited_use_quantity || ! isset( self::$recurring_coupons[ $coupon_type ] ) ) {
+			return $apply_quantity;
+		}
+
+		if ( 'none' === WC_Subscriptions_Cart::get_calculation_type() ) {
+			// Record the number of times this coupon applied to the item in the initial cart so we can ensure the same applies in the recurring cart's calculation.
+			$initial_cart_item_applied_counts[ $coupon_code ][ $item->key ] = $apply_quantity;
+			return $apply_quantity;
+		}
+
+		// Continue no further if we don't have a count from the initial payment cart. This shouldn't be possible, however we put in a check to prevent an error.
+		if ( ! isset( $initial_cart_item_applied_counts[ $coupon_code ][ $item->key ] ) ) {
+			return $apply_quantity;
+		}
+
+		// Get the number of times this coupon has been applied in recurring carts.
+		$recurring_coupon_applied_count = isset( $recurring_cart_applied_counts[ $coupon_code ] ) ? $recurring_cart_applied_counts[ $coupon_code ] : 0;
+
+		// Find the maximum number of times this coupon could be applied ...
+		if ( ( $limited_use_quantity - $recurring_coupon_applied_count ) < $item->quantity ) {
+			$apply_quantity = $limited_use_quantity - $recurring_coupon_applied_count;
+		} else {
+			$apply_quantity = $item->quantity;
+		}
+
+		// ... but only apply it the number of times it applied in the initial cart at maximum.
+		$apply_quantity = min( $initial_cart_item_applied_counts[ $coupon_code ][ $item->key ], $apply_quantity );
+
+		// Record the number of items this coupon was applied in recurring carts.
+		$recurring_cart_applied_counts[ $coupon_code ] = $recurring_coupon_applied_count + $apply_quantity;
+
+		return $apply_quantity;
 	}
 
 	/**
