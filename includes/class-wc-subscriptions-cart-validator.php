@@ -98,10 +98,8 @@ class WC_Subscriptions_Cart_Validator {
 		}
 
 		foreach ( $cart->cart_contents as $key => $item ) {
-			$is_subscription = WC_Subscriptions_Product::is_subscription( $item['product_id'] );
-
 			// If a non-subscription product is found in the cart containing subscriptions ( maybe because of carts merge while logging in )
-			if ( ! $is_subscription ) {
+			if ( ! WC_Subscriptions_Product::is_subscription( $item['data'] ) ) {
 
 				// remove the subscriptions from the cart
 				WC_Subscriptions_Cart::remove_subscriptions_from_cart();
