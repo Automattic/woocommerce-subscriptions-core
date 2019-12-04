@@ -113,9 +113,11 @@ class WC_Subscriptions_Cart_Validator {
 				} else {
 					add_filter( 'woocommerce_add_to_cart_fragments', array( 'WC_Subscriptions', 'redirect_ajax_add_to_cart' ) );
 				}
+
 				break;
 			}
 		}
+
 		return $cart;
 	}
 
