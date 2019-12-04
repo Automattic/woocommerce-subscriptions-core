@@ -69,9 +69,9 @@ class WC_Subscriptions_Cart_Validator {
 
 			// Redirect to cart page to remove subscription & notify shopper
 			if ( WC_Subscriptions::is_woocommerce_pre( '3.0.8' ) ) {
-				add_filter( 'add_to_cart_fragments', __CLASS__ . '::redirect_ajax_add_to_cart' );
+				add_filter( 'add_to_cart_fragments', 'WC_Subscriptions::redirect_ajax_add_to_cart' );
 			} else {
-				add_filter( 'woocommerce_add_to_cart_fragments', __CLASS__ . '::redirect_ajax_add_to_cart' );
+				add_filter( 'woocommerce_add_to_cart_fragments', 'WC_Subscriptions::redirect_ajax_add_to_cart' );
 			}
 		}
 
