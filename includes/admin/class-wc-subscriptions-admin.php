@@ -889,7 +889,21 @@ class WC_Subscriptions_Admin {
 
 			$woocommerce_plugin_dir_file = self::get_woocommerce_plugin_dir_file();
 
-			if ( ! empty( $woocommerce_plugin_dir_file ) ) {
+			// check if subscription products exist in the store
+			$subscription_product = new WP_Query(array(
+				'post_type' => 'product',
+				'tax_query' => array(
+					array (
+						'taxonomy' => 'product_type',
+						'field' => 'slug',
+						'terms' => array('subscription', 'variable-subscription'),
+					)
+				),
+				'posts_per_page' => 1
+			));
+			$subscription_products_exist = ( $subscription_product->have_posts() );
+
+			if ( ! empty( $woocommerce_plugin_dir_file ) && ! $subscription_products_exist ) {
 
 				wp_enqueue_style( 'woocommerce-activation', plugins_url( '/assets/css/activation.css', self::get_woocommerce_plugin_dir_file() ), array(), WC_Subscriptions::$version );
 
