@@ -890,22 +890,11 @@ class WC_Subscriptions_Admin {
 			$woocommerce_plugin_dir_file = self::get_woocommerce_plugin_dir_file();
 
 			// check if subscription products exist in the store
-			$subscription_product = new WP_Query(array(
-				'post_type' => 'product',
-				'tax_query' => array(
-					array (
-						'taxonomy' => 'product_type',
-						'field' => 'slug',
-						'terms' => array('subscription', 'variable-subscription'),
-					)
-				),
-				'posts_per_page' => 1
-			));
-			$subscription_products_exist = ( $subscription_product->have_posts() );
+			$subscription_product = wc_get_products( array( 'type' => array( 'subscription', 'variable-subscription' ), 'limit' => 1, ) );
 
-			if ( ! empty( $woocommerce_plugin_dir_file ) && ! $subscription_products_exist ) {
+			if ( ! empty( $woocommerce_plugin_dir_file ) && 0 == count( $subscription_product ) ) {
 
-				wp_enqueue_style( 'woocommerce-activation', plugins_url( '/assets/css/activation.css', self::get_woocommerce_plugin_dir_file() ), array(), WC_Subscriptions::$version );
+				wp_enqueue_style( 'woocommerce-activation', plugins_url( '/assets/css/activation.css', $woocommerce_plugin_dir_file ), array(), WC_Subscriptions::$version );
 
 				if ( ! isset( $_GET['page'] ) || 'wcs-about' != $_GET['page'] ) {
 					add_action( 'admin_notices', __CLASS__ . '::admin_installed_notice' );
