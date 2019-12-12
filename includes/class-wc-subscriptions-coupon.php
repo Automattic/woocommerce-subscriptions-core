@@ -1322,13 +1322,18 @@ class WC_Subscriptions_Coupon {
 			return $apply_quantity;
 		}
 
-		// Continue no further if we don't have a count from the initial payment cart. This shouldn't be possible, however we put in a check to prevent an error.
-		if ( ! isset( $initial_cart_item_applied_counts[ $coupon_code ][ $item->key ] ) ) {
-			return $apply_quantity;
-		}
+		// Get the number of times this coupon applied in the initial cart.
+		$initial_cart_usage_count        = isset( $initial_cart_item_applied_counts[ $coupon_code ] ) ? array_sum( $initial_cart_item_applied_counts[ $coupon_code ] ) : 0;
+		$reached_limit_in_initial_cart   = $initial_cart_usage_count >= $limited_use_quantity;
+		$applied_to_item_in_initial_cart = isset( $initial_cart_item_applied_counts[ $coupon_code ][ $item->key ] );
 
 		// Get the number of times this coupon has been applied in recurring carts.
 		$recurring_coupon_applied_count = isset( $recurring_cart_applied_counts[ $coupon_code ] ) ? $recurring_cart_applied_counts[ $coupon_code ] : 0;
+
+		// Continue no further if we don't have a count from the initial payment cart and all uses were used. This could only happen if this product wasn't discounted in the initial cart like in the case of free trials or synced products.
+		if ( ! $applied_to_item_in_initial_cart && $reached_limit_in_initial_cart ) {
+			return 0;
+		}
 
 		// Find the maximum number of times this coupon could be applied ...
 		if ( ( $limited_use_quantity - $recurring_coupon_applied_count ) < $item->quantity ) {
@@ -1337,8 +1342,11 @@ class WC_Subscriptions_Coupon {
 			$apply_quantity = $item->quantity;
 		}
 
+		// Determine the maximum times the could apply before reaching the limit.
+		$maximum_times_coupon_could_apply = ( $applied_to_item_in_initial_cart || $reached_limit_in_initial_cart ) ? $initial_cart_item_applied_counts[ $coupon_code ][ $item->key ] : $limited_use_quantity - $initial_cart_usage_count;
+
 		// ... but only apply it the number of times it applied in the initial cart at maximum.
-		$apply_quantity = min( $initial_cart_item_applied_counts[ $coupon_code ][ $item->key ], $apply_quantity );
+		$apply_quantity = min( $maximum_times_coupon_could_apply, $apply_quantity );
 
 		// Record the number of items this coupon was applied in recurring carts.
 		$recurring_cart_applied_counts[ $coupon_code ] = $recurring_coupon_applied_count + $apply_quantity;
