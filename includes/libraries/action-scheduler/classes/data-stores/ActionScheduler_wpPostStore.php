@@ -43,7 +43,20 @@ class ActionScheduler_wpPostStore extends ActionScheduler_Store {
 	protected function save_post_array( $post_array ) {
 		add_filter( 'wp_insert_post_data', array( $this, 'filter_insert_post_data' ), 10, 1 );
 		add_filter( 'pre_wp_unique_post_slug', array( $this, 'set_unique_post_slug' ), 10, 5 );
+
+		$has_kses = false !== has_filter( 'content_save_pre', 'wp_filter_post_kses' );
+
+		if ( $has_kses ) {
+			// Prevent KSES from corrupting JSON in post_content.
+			kses_remove_filters();
+		}
+
 		$post_id = wp_insert_post($post_array);
+
+		if ( $has_kses ) {
+			kses_init_filters();
+		}
+
 		remove_filter( 'wp_insert_post_data', array( $this, 'filter_insert_post_data' ), 10 );
 		remove_filter( 'pre_wp_unique_post_slug', array( $this, 'set_unique_post_slug' ), 10 );
 
@@ -81,7 +94,7 @@ class ActionScheduler_wpPostStore extends ActionScheduler_Store {
 	 * action's slug, being probably unique is good enough.
 	 *
 	 * For more backstory on this issue, see:
-	 * - https://github.com/Prospress/action-scheduler/issues/44 and
+	 * - https://github.com/woocommerce/action-scheduler/issues/44 and
 	 * - https://core.trac.wordpress.org/ticket/21112
 	 *
 	 * @param string $override_slug Short-circuit return value.
@@ -115,7 +128,15 @@ class ActionScheduler_wpPostStore extends ActionScheduler_Store {
 		if ( empty($post) || $post->post_type != self::POST_TYPE ) {
 			return $this->get_null_action();
 		}
-		return $this->make_action_from_post($post);
+
+		try {
+			$action = $this->make_action_from_post( $post );
+		} catch ( ActionScheduler_InvalidActionException $exception ) {
+			do_action( 'action_scheduler_failed_fetch_action', $post->ID, $exception );
+			return $this->get_null_action();
+		}
+
+		return $action;
 	}
 
 	protected function get_post( $action_id ) {
@@ -131,13 +152,13 @@ class ActionScheduler_wpPostStore extends ActionScheduler_Store {
 
 	protected function make_action_from_post( $post ) {
 		$hook = $post->post_title;
+
 		$args = json_decode( $post->post_content, true );
 		$this->validate_args( $args, $post->ID );
 
 		$schedule = get_post_meta( $post->ID, self::SCHEDULE_META_KEY, true );
-		if ( empty( $schedule ) || ! is_a( $schedule, 'ActionScheduler_Schedule' ) ) {
-			$schedule = new ActionScheduler_NullSchedule();
-		}
+		$this->validate_schedule( $schedule, $post->ID );
+
 		$group = wp_get_object_terms( $post->ID, self::GROUP_TAXONOMY, array('fields' => 'names') );
 		$group = empty( $group ) ? '' : reset($group);
 
@@ -286,15 +307,16 @@ class ActionScheduler_wpPostStore extends ActionScheduler_Store {
 		$sql  = ( 'count' === $select_or_count ) ? 'SELECT count(p.ID)' : 'SELECT p.ID ';
 		$sql .= "FROM {$wpdb->posts} p";
 		$sql_params = array();
-		if ( ! empty( $query['group'] ) || 'group' === $query['orderby'] ) {
+		if ( empty( $query['group'] ) && 'group' === $query['orderby'] ) {
+			$sql .= " LEFT JOIN {$wpdb->term_relationships} tr ON tr.object_id=p.ID";
+			$sql .= " LEFT JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id=tt.term_taxonomy_id";
+			$sql .= " LEFT JOIN {$wpdb->terms} t ON tt.term_id=t.term_id";
+		} elseif ( ! empty( $query['group'] ) ) {
 			$sql .= " INNER JOIN {$wpdb->term_relationships} tr ON tr.object_id=p.ID";
 			$sql .= " INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id=tt.term_taxonomy_id";
 			$sql .= " INNER JOIN {$wpdb->terms} t ON tt.term_id=t.term_id";
-
-			if ( ! empty( $query['group'] ) ) {
-				$sql .= " AND t.slug=%s";
-				$sql_params[] = $query['group'];
-			}
+			$sql .= " AND t.slug=%s";
+			$sql_params[] = $query['group'];
 		}
 		$sql .= " WHERE post_type=%s";
 		$sql_params[] = self::POST_TYPE;
@@ -664,6 +686,7 @@ class ActionScheduler_wpPostStore extends ActionScheduler_Store {
 		$sql = $wpdb->prepare( $sql, array( $claim->get_id() ) );
 		$result = $wpdb->query($sql);
 		if ( $result === false ) {
+			/* translators: %s: claim ID */
 			throw new RuntimeException( sprintf( __('Unable to unlock claim %s. Database error.', 'action-scheduler'), $claim->get_id() ) );
 		}
 	}
@@ -678,6 +701,7 @@ class ActionScheduler_wpPostStore extends ActionScheduler_Store {
 		$sql = $wpdb->prepare( $sql, $action_id, self::POST_TYPE );
 		$result = $wpdb->query($sql);
 		if ( $result === false ) {
+			/* translators: %s: action ID */
 			throw new RuntimeException( sprintf( __('Unable to unlock claim on action %s. Database error.', 'action-scheduler'), $action_id ) );
 		}
 	}
@@ -689,6 +713,7 @@ class ActionScheduler_wpPostStore extends ActionScheduler_Store {
 		$sql = $wpdb->prepare( $sql, self::STATUS_FAILED, $action_id, self::POST_TYPE );
 		$result = $wpdb->query($sql);
 		if ( $result === false ) {
+			/* translators: %s: action ID */
 			throw new RuntimeException( sprintf( __('Unable to mark failure on action %s. Database error.', 'action-scheduler'), $action_id ) );
 		}
 	}
@@ -783,25 +808,5 @@ class ActionScheduler_wpPostStore extends ActionScheduler_Store {
 
 		$taxonomy_registrar = new ActionScheduler_wpPostStore_TaxonomyRegistrar();
 		$taxonomy_registrar->register();
-	}
-
-	/**
-	 * Validate that we could decode action arguments.
-	 *
-	 * @param mixed $args      The decoded arguments.
-	 * @param int   $action_id The action ID.
-	 *
-	 * @throws ActionScheduler_InvalidActionException When the decoded arguments are invalid.
-	 */
-	private function validate_args( $args, $action_id ) {
-		// Ensure we have an array of args.
-		if ( ! is_array( $args ) ) {
-			throw ActionScheduler_InvalidActionException::from_decoding_args( $action_id );
-		}
-
-		// Validate JSON decoding if possible.
-		if ( function_exists( 'json_last_error' ) && JSON_ERROR_NONE !== json_last_error() ) {
-			throw ActionScheduler_InvalidActionException::from_decoding_args( $action_id );
-		}
 	}
 }
