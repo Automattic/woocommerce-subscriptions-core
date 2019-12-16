@@ -890,7 +890,7 @@ class WC_Subscriptions_Admin {
 			$woocommerce_plugin_dir_file = self::get_woocommerce_plugin_dir_file();
 
 			// check if subscription products exist in the store
-			$subscription_product = wc_get_products( array( 'type' => array( 'subscription', 'variable-subscription' ), 'limit' => 1, ) );
+			$subscription_product = wc_get_products( array( 'type' => array( 'subscription', 'variable-subscription' ), 'limit' => 1, 'return' => 'ids' ) );
 
 			if ( ! empty( $woocommerce_plugin_dir_file ) && 0 == count( $subscription_product ) ) {
 
