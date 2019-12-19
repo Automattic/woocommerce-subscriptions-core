@@ -269,10 +269,9 @@ function wcs_cart_totals_coupon_html( $coupon, $cart ) {
 }
 
 /**
- * Get recurring total html including inc tax if needed
+ * Gets recurring total html including inc tax if needed.
  *
- * @access public
- * @return void
+ * @param WC_Cart The cart to display the total for.
  */
 function wcs_cart_totals_order_total_html( $cart ) {
 	$order_total_html = '<strong>' . $cart->get_total() . '</strong> ';
