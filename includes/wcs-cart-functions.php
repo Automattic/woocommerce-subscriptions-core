@@ -292,7 +292,7 @@ function wcs_cart_totals_order_total_html( $cart ) {
 
 		if ( ! empty( $tax_string_array ) ) {
 			// translators: placeholder is price string, denotes tax included in cart/order total
-			$tax_total_html = '<small class="includes_tax">' . sprintf( _x( '(Includes %s)', 'includes tax', 'woocommerce-subscriptions' ), implode( ', ', $tax_string_array ) ) . '</small>';
+			$tax_total_html = '<small class="includes_tax"> ' . sprintf( _x( '(includes %s)', 'includes tax', 'woocommerce-subscriptions' ), implode( ', ', $tax_string_array ) ) . '</small>';
 		}
 	}
 
