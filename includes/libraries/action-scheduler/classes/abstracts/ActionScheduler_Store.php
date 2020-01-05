@@ -15,6 +15,9 @@ abstract class ActionScheduler_Store extends ActionScheduler_Store_Deprecated {
 	/** @var ActionScheduler_Store */
 	private static $store = NULL;
 
+	/** @var int */
+	private static $max_index_length = 191;
+
 	/**
 	 * @param ActionScheduler_Action $action
 	 * @param DateTime $scheduled_date Optional Date of the first instance
@@ -211,6 +214,21 @@ abstract class ActionScheduler_Store extends ActionScheduler_Store_Deprecated {
 	}
 
 	/**
+	 * InnoDB indexes have a maximum size of 767 bytes by default, which is only 191 characters with utf8mb4.
+	 *
+	 * Previously, AS wasn't concerned about args length, as we used the (unindex) post_content column. However,
+	 * as we prepare to move to custom tables, and can use an indexed VARCHAR column instead, we want to warn
+	 * developers of this impending requirement.
+	 *
+	 * @param ActionScheduler_Action $action
+	 */
+	protected function validate_action( ActionScheduler_Action $action ) {
+		if ( strlen( json_encode( $action->get_args() ) ) > self::$max_index_length ) {
+			throw new InvalidArgumentException( __( 'ActionScheduler_Action::$args too long. To ensure the args column can be indexed, action args should not be more than 191 characters when encoded as JSON.', 'action-scheduler' ) );
+		}
+	}
+
+	/**
 	 * Cancel pending actions by hook.
 	 *
 	 * @since 3.0.0
@@ -304,7 +322,15 @@ abstract class ActionScheduler_Store extends ActionScheduler_Store_Deprecated {
 		return ! empty( $pending_actions );
 	}
 
+	/**
+	 * Callable initialization function optionally overridden in derived classes.
+	 */
 	public function init() {}
+
+	/**
+	 * Callable function to mark an action as migrated optionally overridden in derived classes.
+	 */
+	public function mark_migrated( $action_id ) {}
 
 	/**
 	 * @return ActionScheduler_Store

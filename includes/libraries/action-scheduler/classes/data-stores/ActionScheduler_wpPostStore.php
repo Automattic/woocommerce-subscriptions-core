@@ -7,12 +7,10 @@ class ActionScheduler_wpPostStore extends ActionScheduler_Store {
 	const POST_TYPE = 'scheduled-action';
 	const GROUP_TAXONOMY = 'action-group';
 	const SCHEDULE_META_KEY = '_action_manager_schedule';
+	const DEPENDENCIES_MET = 'as-post-store-dependencies-met';
 
 	/** @var DateTimeZone */
 	protected $local_timezone = NULL;
-
-	/** @var int */
-	private static $max_index_length = 191;
 
 	public function save_action( ActionScheduler_Action $action, DateTime $scheduled_date = NULL ){
 		try {
@@ -470,7 +468,8 @@ class ActionScheduler_wpPostStore extends ActionScheduler_Store {
 			throw new InvalidArgumentException(sprintf(__('Unidentified action %s', 'action-scheduler'), $action_id));
 		}
 		do_action( 'action_scheduler_deleted_action', $action_id );
-		wp_delete_post($action_id, TRUE);
+
+		wp_delete_post( $action_id, TRUE );
 	}
 
 	/**
@@ -762,7 +761,12 @@ class ActionScheduler_wpPostStore extends ActionScheduler_Store {
 		$wpdb->query($sql);
 	}
 
-
+	/**
+	 * Record that an action was completed.
+	 *
+	 * @param int $action_id ID of the completed action.
+	 * @throws InvalidArgumentException|RuntimeException
+	 */
 	public function mark_complete( $action_id ) {
 		$post = get_post($action_id);
 		if ( empty($post) || ($post->post_type != self::POST_TYPE) ) {
@@ -782,6 +786,43 @@ class ActionScheduler_wpPostStore extends ActionScheduler_Store {
 	}
 
 	/**
+	 * Mark action as migrated when there is an error deleting the action.
+	 *
+	 * @param int $action_id Action ID.
+	 */
+	public function mark_migrated( $action_id ) {
+		wp_update_post(
+			array(
+				'ID'          => $action_id,
+				'post_status' => 'migrated'
+			)
+		);
+	}
+
+	/**
+	 * Determine whether the post store can be migrated.
+	 *
+	 * @return bool
+	 */
+	public function migration_dependencies_met( $setting ) {
+		global $wpdb;
+
+		$dependencies_met = get_transient( self::DEPENDENCIES_MET );
+		if ( empty( $dependencies_met ) ) {
+			$found_action = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT ID FROM {$wpdb->posts} WHERE post_type = %s AND CHAR_LENGTH(post_content) > 191 LIMIT 1",
+					self::POST_TYPE
+				)
+			);
+			$dependencies_met = $found_action ? 'no' : 'yes';
+			set_transient( self::DEPENDENCIES_MET, $dependencies_met, DAY_IN_SECONDS );
+		}
+
+		return 'yes' == $dependencies_met ? $setting : false;
+	}
+
+	/**
 	 * InnoDB indexes have a maximum size of 767 bytes by default, which is only 191 characters with utf8mb4.
 	 *
 	 * Previously, AS wasn't concerned about args length, as we used the (unindex) post_content column. However,
@@ -791,8 +832,11 @@ class ActionScheduler_wpPostStore extends ActionScheduler_Store {
 	 * @param ActionScheduler_Action $action
 	 */
 	protected function validate_action( ActionScheduler_Action $action ) {
-		if ( strlen( json_encode( $action->get_args() ) ) > self::$max_index_length ) {
-			_doing_it_wrong( 'ActionScheduler_Action::$args', sprintf( 'To ensure the action args column can be indexed, action args should not be more than %d characters when encoded as JSON. Support for strings longer than this will be removed in a future version.', self::$max_index_length ), '2.1.0' );
+		try {
+			parent::validate_action( $action );
+		} catch ( Exception $e ) {
+			$message = sprintf( __( '%s Support for strings longer than this will be removed in a future version.', 'action-scheduler' ), $e->getMessage() );
+			_doing_it_wrong( 'ActionScheduler_Action::$args', $message, '2.1.0' );
 		}
 	}
 
@@ -800,6 +844,8 @@ class ActionScheduler_wpPostStore extends ActionScheduler_Store {
 	 * @codeCoverageIgnore
 	 */
 	public function init() {
+		add_filter( 'action_scheduler_migration_dependencies_met', array( $this, 'migration_dependencies_met' ) );
+
 		$post_type_registrar = new ActionScheduler_wpPostStore_PostTypeRegistrar();
 		$post_type_registrar->register();
 
