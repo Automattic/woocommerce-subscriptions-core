@@ -2275,6 +2275,46 @@ class WC_Subscriptions_Switcher {
 		}
 	}
 
+	/**
+	 * Adds switch orders or switched subscriptions to the related order meta box.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param WC_Abstract_Order[] $orders_to_display The list of related orders to display.
+	 * @param WC_Subscription[]   $subscriptions     The list of related subscriptions.
+	 * @param WP_Post             $post              The order or subscription post being viewed.
+	 *
+	 * @return $orders_to_display The orders/subscriptions to display in the meta box.
+	 */
+	public static function display_switches_in_related_order_metabox( $orders_to_display, $subscriptions, $post ) {
+		$switched_subscriptions = array();
+
+		// On the subscription page, just show related orders.
+		if ( wcs_is_subscription( $post->ID ) ) {
+
+			foreach ( wcs_get_switch_orders_for_subscription( $post->ID ) as $order ) {
+				$order->update_meta_data( '_relationship', __( 'Switch Order', 'woocommerce-subscriptions' ) );
+				$orders_to_display[] = $order;
+			}
+
+			// Display the subscriptions which had item/s switched to this subscription by its parent order.
+			if ( ! empty( $post->post_parent ) ) {
+				$switched_subscriptions = wcs_get_subscriptions_for_switch_order( $post->post_parent );
+			}
+
+		// On the Edit Order screen, show any subscriptions with items switched by this order.
+		} else {
+			$switched_subscriptions = wcs_get_subscriptions_for_switch_order( $post->ID );
+		}
+
+		foreach ( $switched_subscriptions as $subscription ) {
+			$subscription->update_meta_data( '_relationship', __( 'Switched Subscription', 'woocommerce-subscriptions' ) );
+			$orders_to_display[] = $subscription;
+		}
+
+		return $orders_to_display;
+	}
+
 	/** Deprecated Methods **/
 
 	/**
