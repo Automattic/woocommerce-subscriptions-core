@@ -57,16 +57,6 @@ class WC_Subscriptions_Email {
 	 */
 	public static function hook_transactional_emails() {
 
-		// Don't send subscription
-		if ( WC_Subscriptions::is_duplicate_site() && ! defined( 'WCS_FORCE_EMAIL' ) ) {
-			return;
-		}
-
-		add_action( 'woocommerce_subscription_status_updated', __CLASS__ . '::send_cancelled_email', 10, 2 );
-		add_action( 'woocommerce_subscription_status_expired', __CLASS__ . '::send_expired_email', 10, 2 );
-		add_action( 'woocommerce_customer_changed_subscription_to_on-hold', __CLASS__ . '::send_on_hold_email', 10, 2 );
-		add_action( 'woocommerce_subscriptions_switch_completed', __CLASS__ . '::send_switch_order_email', 10 );
-
 		$order_email_actions = array(
 			// WC New Order Emails (Admin) -- other hooks below also trigger this email.
 			'woocommerce_order_status_pending_to_completed',
@@ -91,6 +81,20 @@ class WC_Subscriptions_Email {
 			'woocommerce_generated_manual_renewal_order',
 			'woocommerce_order_status_failed',
 		);
+
+		// Don't send subscriptions emails
+		if ( WC_Subscriptions::is_duplicate_site() && ! defined( 'WCS_FORCE_EMAIL' ) ) {
+			// Remove WC emails as well to avoid unintended emails
+			foreach ( $order_email_actions as $action ) {
+				add_action( $action, __CLASS__ . '::maybe_remove_woocommerce_email', 9 );
+			}
+			return;
+		}
+
+		add_action( 'woocommerce_subscription_status_updated', __CLASS__ . '::send_cancelled_email', 10, 2 );
+		add_action( 'woocommerce_subscription_status_expired', __CLASS__ . '::send_expired_email', 10, 2 );
+		add_action( 'woocommerce_customer_changed_subscription_to_on-hold', __CLASS__ . '::send_on_hold_email', 10, 2 );
+		add_action( 'woocommerce_subscriptions_switch_completed', __CLASS__ . '::send_switch_order_email', 10 );
 
 		foreach ( $order_email_actions as $action ) {
 			add_action( $action, __CLASS__ . '::maybe_remove_woocommerce_email', 9 );
