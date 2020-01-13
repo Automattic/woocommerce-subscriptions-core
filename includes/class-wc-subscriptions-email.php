@@ -11,8 +11,6 @@
  */
 class WC_Subscriptions_Email {
 
-	private static $woocommerce_email;
-
 	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
