@@ -117,6 +117,8 @@ class WCS_Meta_Box_Related_Orders {
 
 		$orders_to_display = apply_filters( 'woocommerce_subscriptions_admin_related_orders_to_display', $orders_to_display, $subscriptions, $post );
 
+		wcs_sort_objects( $orders_to_display, 'date_created', 'descending' );
+
 		foreach ( $orders_to_display as $order ) {
 			// Skip the order being viewed.
 			if ( $order->get_id() === (int) $post->ID ) {
