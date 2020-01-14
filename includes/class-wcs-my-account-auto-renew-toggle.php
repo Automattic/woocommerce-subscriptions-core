@@ -63,6 +63,24 @@ class WCS_My_Account_Auto_Renew_Toggle {
 	}
 
 	/**
+	 * Determines if a subscription is eligible for toggling auto renewal and whether the user, or current user has permission to do so.
+	 *
+	 * @since 3.0.1
+	 *
+	 * @param WC_Subscription $subscription The subscription to check if auto renewal is allowed.
+	 * @param int             $user_id      The user ID to check if they have permission. Optional. Default is current user.
+	 *
+	 * @return bool Whether the subscription can be toggled and the user has the permission to do so.
+	 */
+	public static function can_user_toggle_auto_renewal( $subscription, $user_id = 0 ) {
+		if ( empty( $user_id ) ) {
+			$user_id = get_current_user_id();
+		}
+
+		return user_can( absint( $user_id ), 'toggle_shop_subscription_auto_renewal', $subscription->get_id() ) && self::can_subscription_auto_renewal_be_changed( $subscription );
+	}
+
+	/**
 	 * Disable auto renewal of subscription
 	 *
 	 * @since 2.5.0
