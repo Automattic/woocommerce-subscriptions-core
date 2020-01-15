@@ -96,7 +96,7 @@ class WCS_My_Account_Auto_Renew_Toggle {
 
 		$subscription = wcs_get_subscription( $subscription_id );
 
-		if ( $subscription ) {
+		if ( $subscription && self::can_user_toggle_auto_renewal( $subscription ) ) {
 			$subscription->set_requires_manual_renewal( true );
 			$subscription->save();
 
@@ -120,7 +120,7 @@ class WCS_My_Account_Auto_Renew_Toggle {
 
 		$subscription = wcs_get_subscription( $subscription_id );
 
-		if ( wc_get_payment_gateway_by_order( $subscription ) ) {
+		if ( wc_get_payment_gateway_by_order( $subscription ) && self::can_user_toggle_auto_renewal( $subscription ) ) {
 			$subscription->set_requires_manual_renewal( false );
 			$subscription->save();
 
