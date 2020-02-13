@@ -80,9 +80,9 @@ class WC_Subscriptions_Email {
 			'woocommerce_order_status_failed',
 		);
 
-		// Don't send subscriptions emails
+		// Don't send subscriptions emails or WC core emails for subscription-related events on staging sites.
 		if ( WC_Subscriptions::is_duplicate_site() && ! defined( 'WCS_FORCE_EMAIL' ) ) {
-			// Remove WC emails as well to avoid unintended emails
+			// Unhook WC order core emails which would normally be replaced by a subscription version on a live site.
 			foreach ( $order_email_actions as $action ) {
 				add_action( $action, __CLASS__ . '::maybe_remove_woocommerce_email', 9 );
 			}
