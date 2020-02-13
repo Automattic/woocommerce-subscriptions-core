@@ -142,8 +142,7 @@ class WC_Subscriptions_Email {
 	/**
 	 * Init the mailer and call the notifications for the renewal orders.
 	 *
-	 * @param int $order_id The order id
-	 * @return void
+	 * @param int $order_id The order ID.
 	 */
 	public static function send_renewal_order_email( $order_id ) {
 		WC()->mailer();
@@ -156,8 +155,7 @@ class WC_Subscriptions_Email {
 	/**
 	 * If the order is a renewal order or a switch order, don't send core emails.
 	 *
-	 * @param int $order_id The order id
-	 * @return void
+	 * @param int $order_id The order ID.
 	 */
 	public static function maybe_remove_woocommerce_email( $order_id ) {
 		if ( wcs_order_contains_renewal( $order_id ) || wcs_order_contains_switch( $order_id ) ) {
@@ -168,8 +166,7 @@ class WC_Subscriptions_Email {
 	/**
 	 * If the order is a renewal order or a switch order, send core emails
 	 *
-	 * @param int $order_id The order id
-	 * @return void
+	 * @param int $order_id The order ID.
 	 */
 	public static function maybe_reattach_woocommerce_email( $order_id ) {
 		if ( wcs_order_contains_renewal( $order_id ) || wcs_order_contains_switch( $order_id ) ) {
@@ -181,6 +178,7 @@ class WC_Subscriptions_Email {
 	 * If viewing a renewal order on the the Edit Order screen, set the available email actions for the order to use
 	 * renewal order emails, not core WooCommerce order emails.
 	 *
+	 * @param array $available_emails The emails available to send from the edit order screen.
 	 */
 	public static function renewal_order_emails_available( $available_emails ) {
 		global $theorder;
@@ -203,8 +201,7 @@ class WC_Subscriptions_Email {
 	/**
 	 * Init the mailer and call the notifications for subscription switch orders.
 	 *
-	 * @param int $order_id The order id
-	 * @return void
+	 * @param int $order_id The order ID.
 	 */
 	public static function send_switch_order_email( $order_id ) {
 		WC()->mailer();
