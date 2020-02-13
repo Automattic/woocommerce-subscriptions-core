@@ -169,9 +169,13 @@ function wcs_cart_print_shipping_input( $shipping_method_index, $shipping_method
  * @return string
  */
 function wcs_cart_totals_shipping_method( $method, $cart ) {
+	$label     = $method->get_label();
+	$has_cost  = 0 < $method->cost;
+	$hide_cost = ! $has_cost && in_array( $method->get_method_id(), array( 'free_shipping', 'local_pickup' ), true );
 
-	$label  = $method->get_label();
-	$label .= ': ' . wcs_cart_totals_shipping_method_price_label( $method, $cart );
+	if ( $has_cost && ! $hide_cost ) {
+		$label .= ': ' . wcs_cart_totals_shipping_method_price_label( $method, $cart );
+	}
 
 	return apply_filters( 'wcs_cart_totals_shipping_method', $label, $method, $cart );
 }
