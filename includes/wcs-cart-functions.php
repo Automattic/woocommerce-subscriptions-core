@@ -170,7 +170,7 @@ function wcs_cart_print_shipping_input( $shipping_method_index, $shipping_method
  */
 function wcs_cart_totals_shipping_method( $method, $cart ) {
 
-	$label = ( method_exists( $method, 'get_label' ) ) ? $method->get_label() : $method->label; // WC < 2.5 compatibility (WC_Shipping_Rate::get_label() was introduced with WC 2.5)
+	$label  = $method->get_label();
 	$label .= ': ' . wcs_cart_totals_shipping_method_price_label( $method, $cart );
 
 	return apply_filters( 'wcs_cart_totals_shipping_method', $label, $method, $cart );
