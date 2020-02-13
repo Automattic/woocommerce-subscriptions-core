@@ -89,6 +89,11 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 		$prices                 = $this->get_variation_prices( true );
 		$min_price_variation_id = $this->get_meta( '_min_price_variation_id' );
 
+		if ( empty( $min_price_variation_id ) ) {
+			WC_Subscriptions_Product::variable_subscription_product_sync( $this );
+			$min_price_variation_id = $this->get_meta( '_min_price_variation_id' );
+		}
+
 		if ( empty( $prices['price'] ) || ! $min_price_variation_id ) {
 			return apply_filters( 'woocommerce_variable_empty_price_html', '', $this );
 		}
