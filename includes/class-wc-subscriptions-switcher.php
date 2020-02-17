@@ -136,6 +136,9 @@ class WC_Subscriptions_Switcher {
 		add_action( 'woocommerce_subscriptions_switch_completed', array( __CLASS__, 'grant_download_permissions' ), 9, 1 );
 		add_action( 'woocommerce_subscription_checkout_switch_order_processed', array( __CLASS__, 'log_switches' ) );
 		add_filter( 'woocommerce_subscriptions_admin_related_orders_to_display', array( __CLASS__, 'display_switches_in_related_order_metabox' ), 10, 3 );
+
+		// Override the add to cart text when switch args are present.
+		add_filter( 'woocommerce_product_single_add_to_cart_text', array( __CLASS__, 'display_switch_add_to_cart_text' ), 10, 1 );
 	}
 
 	/**
@@ -2514,6 +2517,22 @@ class WC_Subscriptions_Switcher {
 		}
 
 		return $cart_contains_subscription_creating_switch;
+	}
+
+	/**
+	 * Filters the add to cart text for products during a switch request.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param  string $add_to_cart_text The product's default add to cart text.
+	 * @return string 'Switch subscription' during a switch, or the default add to cart text if switch args aren't present.
+	 */
+	public static function display_switch_add_to_cart_text( $add_to_cart_text ) {
+		if ( isset( $_GET['switch-subscription'], $_GET['item'] ) ) {
+			$add_to_cart_text = _x( 'Switch subscription', 'add to cart button text while switching a subscription', 'woocommerce-subscriptions' );
+		}
+
+		return $add_to_cart_text;
 	}
 
 	/**
