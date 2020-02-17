@@ -402,8 +402,11 @@ class WC_Subscriptions_Product {
 	 * @since 1.0
 	 */
 	public static function get_price( $product ) {
-
 		$product = self::maybe_get_product_instance( $product );
+
+		if ( ! is_a( $product, 'WC_Product' ) ) {
+			return '';
+		}
 
 		$subscription_price = self::get_meta_data( $product, 'subscription_price', 0 );
 		$sale_price         = self::get_sale_price( $product );
