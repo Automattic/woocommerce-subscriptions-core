@@ -824,7 +824,7 @@ class WC_Subscriptions_Admin {
 					'bulkDeleteOptionLabel'     => __( 'Delete all variations without a subscription', 'woocommerce-subscriptions' ),
 					'oneTimeShippingCheckNonce' => wp_create_nonce( 'one_time_shipping' ),
 					'productHasSubscriptions'   => wcs_get_subscriptions_for_product( $post->ID, 'ids', array( 'limit' => 1 ) ) ? 'yes' : 'no',
-					'productTypeWarning'        => __( 'Product type can not be changed because this product is associated with subscriptions', 'woocommerce-subscriptions' ),
+					'productTypeWarning'        => __( 'Product type can not be changed because this product is associated with subscriptions of any status', 'woocommerce-subscriptions' ),
 				);
 			} elseif ( 'edit-shop_order' == $screen->id ) {
 				$script_params = array(
