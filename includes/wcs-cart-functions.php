@@ -176,9 +176,10 @@ function wcs_cart_totals_shipping_method( $method, $cart ) {
 		return apply_filters( 'wcs_cart_totals_shipping_method', $label, $method, $cart );
 	}
 
+	$method_id = is_callable( array( $method, 'get_method_id' ) ) ? $method->get_method_id() : $method->method_id; // WC 3.2 compat. get_method_id() was introduced in 3.2.0.
 	$label     = $method->get_label();
 	$has_cost  = 0 < $method->cost;
-	$hide_cost = ! $has_cost && in_array( $method->get_method_id(), array( 'free_shipping', 'local_pickup' ), true );
+	$hide_cost = ! $has_cost && in_array( $method_id, array( 'free_shipping', 'local_pickup' ), true );
 
 	if ( $has_cost && ! $hide_cost ) {
 		$label .= ': ' . wcs_cart_totals_shipping_method_price_label( $method, $cart );
