@@ -25,6 +25,9 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal {
 
 		// Check if a user is requesting to pay for a switch order, needs to happen after $wp->query_vars are set
 		add_action( 'template_redirect', array( &$this, 'maybe_setup_cart' ), 99 );
+
+		// Filters the Place order button text
+		add_filter( 'woocommerce_order_button_text', array( $this, 'order_button_text' ), 15 );
 	}
 
 	/**
@@ -158,5 +161,23 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal {
 				wc_add_order_item_meta( WC()->cart->recurring_carts[ $recurring_cart_key ]->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['item_id'], '_switched_subscription_new_item_id', $order_item_id, true );
 			}
 		}
+	}
+
+	/**
+	 * Overrides the place order button text on the checkout when the cart contains only switch requests.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param string $place_order_text The place order button text.
+	 * @return string The place order button text. 'Switch subscription' if the cart contains only switches, otherwise the default.
+	 */
+	public function order_button_text( $place_order_text ) {
+		$cart_switches = WC_Subscriptions_Switcher::cart_contains_switches();
+
+		if ( isset( WC()->cart ) && $cart_switches && count( $cart_switches ) === WC()->cart->get_cart_contents_count() ) {
+			$place_order_text = _x( 'Switch subscription', 'The place order button text while switching a subscription', 'woocommerce-subscriptions' );
+		}
+
+		return $place_order_text;
 	}
 }
