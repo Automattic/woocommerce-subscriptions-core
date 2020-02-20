@@ -414,3 +414,34 @@ function wcs_allow_protected_products_to_renew() {
 function wcs_disallow_protected_product_add_to_cart_validation() {
 	add_filter( 'woocommerce_add_to_cart_validation', 'wc_protected_product_add_to_cart', 10, 2 );
 }
+
+/**
+ * Gets all the cart items linked to a given subscription order type.
+ *
+ * @since 3.1.0
+ *
+ * @param string $order_type The order type to get cart items for. Can be 'parent', 'renewal', 'resubscribe', 'switch'.
+ * @return array[] An array of cart items which are linked to an order or subscription by the order type relationship.
+ */
+function wcs_get_order_type_cart_items( $order_type ) {
+	$cart_items = array();
+
+	if ( ! in_array( $order_type, array( 'parent', 'renewal', 'resubscribe', 'switch' ) ) ) {
+		wcs_doing_it_wrong( __METHOD__, 'The parameter must be a valid subscription order type "parent", "renewal", "resubscribe", "switch".', '3.1.0' );
+		return $cart_items;
+	}
+
+	if ( empty( WC()->cart->cart_contents ) ) {
+		return $cart_items;
+	}
+
+	$order_type_cart_key = 'parent' === $order_type ? 'subscription_initial_payment' : "subscription_$order_type";
+
+	foreach ( WC()->cart->cart_contents as $cart_item_key => $cart_item ) {
+		if ( isset( $cart_item[ $order_type_cart_key ] ) ) {
+			$cart_items[ $cart_item_key ] = $cart_item;
+		}
+	}
+
+	return $cart_items;
+}
