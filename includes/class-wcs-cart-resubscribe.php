@@ -322,4 +322,21 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 			}
 		}
 	}
+
+	/**
+	 * Overrides the place order button text on the checkout when the cart contains only resubscribe requests.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param string $place_order_text The place order button text.
+	 * @return string The place order button text. 'Resubscribe' if the cart contains only resubscribe requests, otherwise the default.
+	 */
+	public function order_button_text( $place_order_text ) {
+		if ( isset( WC()->cart ) && count( wcs_get_order_type_cart_items( 'resubscribe' ) ) === WC()->cart->get_cart_contents_count() ) {
+			$place_order_text = _x( 'Resubscribe', 'The place order button text while resubscribing to a subscription', 'woocommerce-subscriptions' );
+		}
+
+		return $place_order_text;
+	}
+
 }

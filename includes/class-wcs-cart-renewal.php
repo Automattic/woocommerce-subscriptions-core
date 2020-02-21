@@ -141,6 +141,9 @@ class WCS_Cart_Renewal {
 
 		// Attach hooks which depend on WooCommerce version constants. Differs from @see attach_dependant_hooks() in that this is hooked inside an inherited function and so extended classes will also inherit these callbacks
 		add_action( 'woocommerce_loaded', array( &$this, 'attach_dependant_callbacks' ), 10 );
+
+		// Filters the Place order button text on checkout.
+		add_filter( 'woocommerce_order_button_text', array( $this, 'order_button_text' ), 15 );
 	}
 
 	/**
@@ -1427,6 +1430,22 @@ class WCS_Cart_Renewal {
 		if ( apply_filters( 'woocommerce_subscriptions_disable_manual_renewal_stock_validation', false ) ) {
 			WCS_Renewal_Cart_Stock_Manager::attach_callbacks();
 		}
+	}
+
+	/**
+	 * Overrides the place order button text on the checkout when the cart contains renewal order items, exclusively.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param string $place_order_text The place order button text.
+	 * @return string The place order button text. 'Renew subscription' if the cart contains only renewals, otherwise the default.
+	 */
+	public function order_button_text( $place_order_text ) {
+		if ( isset( WC()->cart ) && count( wcs_get_order_type_cart_items( 'renewal' ) ) === WC()->cart->get_cart_contents_count() ) {
+			$place_order_text = _x( 'Renew subscription', 'The place order button text while renewing a subscription', 'woocommerce-subscriptions' );
+		}
+
+		return $place_order_text;
 	}
 
 	/* Deprecated */
