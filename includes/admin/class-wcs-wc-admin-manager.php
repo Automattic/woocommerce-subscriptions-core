@@ -16,6 +16,10 @@ class WCS_WC_Admin_Manager {
 	 * Initialise the class and attach hook callbacks.
 	 */
 	public static function init() {
+		if ( ! defined( 'WC_ADMIN_PLUGIN_FILE' ) ) {
+			return;
+		}
+
 		add_action( 'admin_menu', array( __CLASS__, 'register_subscription_admin_pages' ) );
 	}
 
