@@ -280,12 +280,13 @@ function wcs_cart_totals_order_total_html( $cart ) {
 	// If prices are tax inclusive, show taxes here
 	if ( wc_tax_enabled() && 'incl' === $cart->tax_display_cart ) {
 		$tax_string_array = array();
+		$cart_taxes       = $cart->get_tax_totals();
 
-		if ( get_option( 'woocommerce_tax_total_display' ) == 'itemized' ) {
-			foreach ( $cart->get_tax_totals() as $code => $tax ) {
+		if ( get_option( 'woocommerce_tax_total_display' ) === 'itemized' ) {
+			foreach ( $cart_taxes as $tax ) {
 				$tax_string_array[] = sprintf( '%s %s', $tax->formatted_amount, $tax->label );
 			}
-		} else {
+		} elseif ( ! empty( $cart_taxes ) ) {
 			$tax_string_array[] = sprintf( '%s %s', wc_price( $cart->get_taxes_total( true, true ) ), WC()->countries->tax_or_vat() );
 		}
 
