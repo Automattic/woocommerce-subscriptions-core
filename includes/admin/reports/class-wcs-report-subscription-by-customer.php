@@ -212,7 +212,6 @@ class WCS_Report_Subscription_By_Customer extends WP_List_Table {
 			"SELECT COUNT( DISTINCT customer_ids.meta_value) as total_customers,
 					COUNT(subscription_posts.ID) as total_subscriptions,
 					COALESCE( SUM(parent_total.meta_value), 0) as initial_order_total,
-					COALESCE( SUM(parent_total.meta_value), 0) as initial_order_total,
 					COUNT(DISTINCT parent_order.ID) as initial_order_count,
 					COALESCE(SUM(CASE
 							WHEN subscription_posts.post_status
