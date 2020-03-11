@@ -25,6 +25,7 @@ class WCS_Limiter {
 			add_filter( 'woocommerce_subscription_variation_is_purchasable', __CLASS__ . '::is_purchasable_switch', 12, 2 );
 			add_filter( 'woocommerce_subscription_is_purchasable', __CLASS__ . '::is_purchasable_renewal', 12, 2 );
 			add_filter( 'woocommerce_subscription_variation_is_purchasable', __CLASS__ . '::is_purchasable_renewal', 12, 2 );
+			add_filter( 'woocommerce_valid_order_statuses_for_order_again', array( __CLASS__, 'filter_order_again_statuses_for_limited_subscriptions' ) );
 		}
 	}
 
@@ -270,4 +271,45 @@ class WCS_Limiter {
 		return self::$order_awaiting_payment_for_product[ $product_id ];
 	}
 
+	/**
+	 * Filters the order statuses that enable the order again button and functionality.
+	 *
+	 * This function will return no statuses if the order contains non purchasable or limited products.
+	 *
+	 * @since 3.0.2
+	 *
+	 * @param array $statuses The order statuses that enable the order again button.
+	 * @return array $statuses An empty array if the order contains limited products, otherwise the default statuses are returned.
+	 */
+	public static function filter_order_again_statuses_for_limited_subscriptions( $statuses ) {
+		global $wp;
+
+		if ( is_view_order_page() ) {
+			$order = wc_get_order( absint( $wp->query_vars['view-order'] ) );
+		} elseif ( is_order_received_page() ) {
+			$order = wc_get_order( absint( $wp->query_vars['order-received'] ) );
+		}
+
+		if ( empty( $order ) ) {
+			return $statuses;
+		}
+
+		$is_purchasable = true;
+
+		foreach ( $order->get_items() as $line_item ) {
+			$product = $line_item->get_product();
+
+			if ( WC_Subscriptions_Product::is_subscription( $product ) && wcs_is_product_limited_for_user( $product ) ) {
+				$is_purchasable = false;
+				break;
+			}
+		}
+
+		// If all products are purchasable, return the default statuses, otherwise return no statuses.
+		if ( $is_purchasable ) {
+			return $statuses;
+		} else {
+			return array();
+		}
+	}
 }
