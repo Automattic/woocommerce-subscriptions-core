@@ -80,6 +80,11 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 	 */
 	public static function get_subscriptions_from_token( $payment_token ) {
 
+		$users_subscription_ids = WCS_Customer_Store::instance()->get_users_subscription_ids( $payment_token->get_user_id() );
+		if ( empty( $users_subscription_ids ) ) {
+			return array();
+		}
+
 		$meta_query = array(
 			array(
 				'key'   => '_payment_method',
@@ -99,7 +104,7 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 			'meta_query'     => $meta_query,
 			'posts_per_page' => -1,
 			'fields'         => 'ids',
-			'post__in'       => WCS_Customer_Store::instance()->get_users_subscription_ids( $payment_token->get_user_id() ),
+			'post__in'       => $users_subscription_ids,
 		) );
 
 		if ( has_filter( 'woocommerce_subscriptions_by_payment_token' ) ) {
