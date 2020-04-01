@@ -25,11 +25,10 @@ class WCS_User_Change_Status_Handler {
 	 */
 	public static function maybe_change_users_subscription() {
 
-		if ( isset( $_GET['change_subscription_to'] ) && isset( $_GET['subscription_id'] ) && isset( $_GET['_wpnonce'] )  ) {
-
+		if ( isset( $_GET['change_subscription_to'], $_GET['subscription_id'], $_GET['_wpnonce'] ) && ! empty( $_GET['_wpnonce'] ) ) {
 			$user_id      = get_current_user_id();
-			$subscription = wcs_get_subscription( $_GET['subscription_id'] );
-			$new_status   = $_GET['change_subscription_to'];
+			$subscription = wcs_get_subscription( absint( $_GET['subscription_id'] ) );
+			$new_status   = wc_clean( $_GET['change_subscription_to'] );
 
 			if ( self::validate_request( $user_id, $subscription, $new_status, $_GET['_wpnonce'] ) ) {
 				self::change_users_subscription( $subscription, $new_status );
@@ -84,18 +83,25 @@ class WCS_User_Change_Status_Handler {
 	}
 
 	/**
-	 * Checks if the user's current request to change the status of their subscription is valid.
+	 * Validates a user change status change request.
 	 *
-	 * @since 2.0
+	 * @since 2.0.0
+	 *
+	 * @param int             $user_id The ID of the user performing the request.
+	 * @param WC_Subscription $subscription The Subscription to update.
+	 * @param string          $new_status The new subscription status to validate.
+	 * @param string|null     $wpnonce Optional. The nonce to validate the request or null if there's no nonce to validate.
+	 *
+	 * @return bool Whether the status change request is valid.
 	 */
-	public static function validate_request( $user_id, $subscription, $new_status, $wpnonce = '' ) {
+	public static function validate_request( $user_id, $subscription, $new_status, $wpnonce = null ) {
 		$subscription = ( ! is_object( $subscription ) ) ? wcs_get_subscription( $subscription ) : $subscription;
 
 		if ( ! wcs_is_subscription( $subscription ) ) {
 			wc_add_notice( __( 'That subscription does not exist. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), 'error' );
 			return false;
 
-		} elseif ( ! empty( $wpnonce ) && wp_verify_nonce( $wpnonce, $subscription->get_id() . $subscription->get_status() ) === false ) {
+		} elseif ( isset( $wpnonce ) && wp_verify_nonce( $wpnonce, $subscription->get_id() . $subscription->get_status() ) === false ) {
 			wc_add_notice( __( 'Security error. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), 'error' );
 			return false;
 
