@@ -1953,25 +1953,24 @@ class WC_Subscriptions_Switcher {
 					$remove_subscription_item = isset( $switched_item_data['remove_line_item'] );
 					$switch_order_item        = wcs_get_order_item( $order_item_id, $order );
 
-					if ( ! $add_subscription_item ) {
-						continue;
-					}
-
 					// Removing an existing subscription item?
 					if ( $remove_subscription_item ) {
 						$old_subscription_item = wcs_get_order_item( $switched_item_data['remove_line_item'], $subscription );
-					}
 
-					if ( $remove_subscription_item && empty( $old_subscription_item ) ) {
-						throw new Exception( __( 'The original subscription item being switched cannot be found.', 'woocommerce-subscriptions' ) );
-					} elseif ( empty( $switch_order_item ) ) {
-						throw new Exception( __( 'The item on the switch order cannot be found.', 'woocommerce-subscriptions' ) );
+						if ( empty( $old_subscription_item ) ) {
+							throw new Exception( __( 'The original subscription item being switched cannot be found.', 'woocommerce-subscriptions' ) );
+						} elseif ( empty( $switch_order_item ) ) {
+							throw new Exception( __( 'The item on the switch order cannot be found.', 'woocommerce-subscriptions' ) );
+						}
 					}
 
 					// If we are adding a line item to an existing subscription...
-					wcs_update_order_item_type( $switched_item_data['add_line_item'], 'line_item', $subscription->get_id() );
+					if ( $add_subscription_item ) {
+						wcs_update_order_item_type( $switched_item_data['add_line_item'], 'line_item', $subscription->get_id() );
+					}
 
-					if ( $remove_subscription_item ) {
+					// If we are switching from one item to another...
+					if ( $remove_subscription_item && $add_subscription_item ) {
 						do_action( 'woocommerce_subscription_item_switched', $order, $subscription, $switched_item_data['add_line_item'], $switched_item_data['remove_line_item'] );
 					}
 
