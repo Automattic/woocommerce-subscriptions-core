@@ -136,7 +136,7 @@ class WCS_Change_Payment_Method_Admin {
 		}
 
 		// Update the payment method for manual only if it has changed.
-		if ( ( $subscription->is_manual() && 'manual' !== $payment_method ) || ! $subscription->is_manual() ) {
+		if ( ! $subscription->is_manual() || 'manual' !== $payment_method ) {
 			$subscription->set_payment_method( $payment_gateway, $payment_method_meta );
 			$subscription->save();
 		}
