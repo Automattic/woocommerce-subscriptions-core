@@ -434,3 +434,17 @@ function wcs_user_has_capability( $allcaps, $caps, $args ) {
 	return $allcaps;
 }
 add_filter( 'user_has_cap', 'wcs_user_has_capability', 15, 3 );
+
+/**
+ * Grants shop managers the capability to edit subscribers.
+ *
+ * @since 3.0.4
+ * @param array $roles The user roles shop managers can edit.
+ * @return array The list of roles editable by shop managers.
+ */
+function wcs_grant_shop_manager_editable_roles( $roles ) {
+	$roles[] = get_option( WC_Subscriptions_Admin::$option_prefix . '_subscriber_role' );
+	return $roles;
+}
+
+add_filter( 'woocommerce_shop_manager_editable_roles', 'wcs_grant_shop_manager_editable_roles' );
