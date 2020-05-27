@@ -1210,6 +1210,29 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
+	 * Checks the cart to see if it contains any subscription product other than a specific product.
+	 *
+	 * @param int The product ID or variation ID other than which to look for.
+	 * @return bool Whether another subscription product is in the cart.
+	 * @since 3.0.5
+	 */
+	public static function cart_contains_other_subscription_products( $product_id ) {
+
+		$cart_contains_other_subscription_products = false;
+
+		if ( ! empty( WC()->cart->cart_contents ) ) {
+			foreach ( WC()->cart->cart_contents as $cart_item ) {
+				if ( WC_Subscriptions_Product::is_subscription( $product_id ) && wcs_get_canonical_product_id( $cart_item ) !== $product_id ) {
+					$cart_contains_other_subscription_products = true;
+					break;
+				}
+			}
+		}
+
+		return $cart_contains_other_subscription_products;
+	}
+
+	/**
 	 * Cache the package rates calculated by @see WC_Shipping::calculate_shipping_for_package() to avoid multiple calls of calculate_shipping_for_package() per request.
 	 *
 	 * @param array $rates A set of WC_Shipping_Rate objects.
