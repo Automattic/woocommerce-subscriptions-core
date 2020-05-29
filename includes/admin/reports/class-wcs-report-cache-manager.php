@@ -246,14 +246,8 @@ class WCS_Report_Cache_Manager {
 		if ( null === $this->use_large_site_cache ) {
 
 			if ( false == get_option( 'wcs_report_use_large_site_cache' ) ) {
-
-				$subscription_counts = (array) wp_count_posts( 'shop_subscription' );
-				$order_counts        = (array) wp_count_posts( 'shop_order' );
-
-				if ( array_sum( $subscription_counts ) > 3000 || array_sum( $order_counts ) > 25000 ) {
-
+				if ( wcs_is_large_site() ) {
 					update_option( 'wcs_report_use_large_site_cache', 'true', false );
-
 					$this->use_large_site_cache = true;
 				} else {
 					$this->use_large_site_cache = false;
