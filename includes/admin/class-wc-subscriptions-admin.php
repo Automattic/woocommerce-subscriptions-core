@@ -139,6 +139,9 @@ class WC_Subscriptions_Admin {
 		// Add a reminder on the enable guest checkout setting that subscriptions still require an account
 		add_filter( 'woocommerce_payment_gateways_settings', array( __CLASS__, 'add_guest_checkout_setting_note' ), 10, 1 );
 		add_filter( 'woocommerce_account_settings', array( __CLASS__, 'add_guest_checkout_setting_note' ), 10, 1 );
+
+		// Validate the product type change before other product changes are saved.
+		add_action( 'save_post', array( __CLASS__, 'validate_product_type_change' ), 0 );
 	}
 
 	/**
@@ -832,8 +835,8 @@ class WC_Subscriptions_Admin {
 					'bulkEditIntervalhMessage'  => __( 'Enter a new interval as a single number (e.g. to charge every 2nd month, enter 2):', 'woocommerce-subscriptions' ),
 					'bulkDeleteOptionLabel'     => __( 'Delete all variations without a subscription', 'woocommerce-subscriptions' ),
 					'oneTimeShippingCheckNonce' => wp_create_nonce( 'one_time_shipping' ),
-					'productHasSubscriptions'   => wcs_get_subscriptions_for_product( $post->ID, 'ids', array( 'limit' => 1 ) ) ? 'yes' : 'no',
-					'productTypeWarning'        => __( 'Product type can not be changed because this product is associated with subscriptions of any status', 'woocommerce-subscriptions' ),
+					'productHasSubscriptions'   => ! wcs_is_large_site() && wcs_get_subscriptions_for_product( $post->ID, 'ids', array( 'limit' => 1 ) ) ? 'yes' : 'no',
+					'productTypeWarning'        => self::get_change_product_type_warning(),
 				);
 			} elseif ( 'edit-shop_order' == $screen->id ) {
 				$script_params = array(
@@ -2035,6 +2038,49 @@ class WC_Subscriptions_Admin {
 			}
 		}
 		return $settings;
+	}
+
+	/**
+	 * Gets the product type warning message displayed for products associated with subscriptions
+	 *
+	 * @since 3.0.5
+	 * @return string The change product type warning message.
+	 */
+	private static function get_change_product_type_warning() {
+		return __( 'The product type can not be changed because this product is associated with subscriptions.', 'woocommerce-subscriptions' );
+	}
+
+	/**
+	 * Validates the product type change before other product data is saved.
+	 *
+	 * Subscription products associated with subscriptions cannot be changed. Doing so
+	 * can cause issues. For example when customers who try to manually renew where the subscription
+	 * products are placed in the cart.
+	 *
+	 * @since 3.0.5
+	 * @param int $product_id The product ID being saved.
+	 */
+	public static function validate_product_type_change( $product_id ) {
+
+		if ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) || empty( $_POST['product-type'] ) ) {
+			return;
+		}
+
+		$current_product_type = WC_Product_Factory::get_product_type( $product_id );
+
+		// Only validate subscription product type changes.
+		if ( 'subscription' !== $current_product_type && 'variable-subscription' !== $current_product_type ) {
+			return;
+		}
+
+		$new_product_type = sanitize_title( wp_unslash( $_POST['product-type'] ) );
+
+		// Display an error and don't save the product if the type is changing and it's linked to subscriptions.
+		if ( $new_product_type !== $current_product_type && (bool) wcs_get_subscriptions_for_product( $product_id, 'ids', array( 'limit' => 1 ) ) ) {
+			wcs_add_admin_notice( self::get_change_product_type_warning(), 'error' );
+			wp_safe_redirect( get_admin_url( null, "post.php?post={$product_id}&action=edit" ) );
+			exit;
+		}
 	}
 
 	/**
