@@ -99,14 +99,13 @@ class WC_Subscriptions_Cart_Validator {
 
 		foreach ( $cart->cart_contents as $key => $item ) {
 
-			$product = wc_get_product( wcs_get_canonical_product_id( $item['data'] ) );
+			
 
 			// If two different subscription products are in the cart
-			if ( WC_Subscriptions_Cart::cart_contains_other_subscription_products( $product->get_id() ) ||
-				// or a non-subscription product is found in the cart containing subscriptions
-				// ( maybe because of carts merge while logging in )
-				( ! WC_Subscriptions_Product::is_subscription( $item['data'] ) ) ) {
-
+			// or a non-subscription product is found in the cart containing subscriptions
+			// ( maybe because of carts merge while logging in )
+		    if ( ! WC_Subscriptions_Product::is_subscription( $item['data'] ) ||
+				WC_Subscriptions_Cart::cart_contains_other_subscription_products( wcs_get_canonical_product_id( $item['data'] ) ) ) {
 				// remove the subscriptions from the cart
 				WC_Subscriptions_Cart::remove_subscriptions_from_cart();
 
