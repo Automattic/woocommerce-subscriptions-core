@@ -63,15 +63,14 @@ class WC_Product_Subscription extends WC_Product_Simple {
 	/**
 	 * Get the add to cart button text
 	 *
-	 * @access public
 	 * @return string
 	 */
 	public function add_to_cart_text() {
 
 		if ( $this->is_purchasable() && $this->is_in_stock() ) {
-			$text = get_option( WC_Subscriptions_Admin::$option_prefix . '_add_to_cart_button_text', __( 'Sign up now', 'woocommerce-subscriptions' ) );
+			$text = WC_Subscriptions_Product::get_add_to_cart_text();
 		} else {
-			$text = parent::add_to_cart_text(); // translated "Read More"
+			$text = __( 'Read more', 'woocommerce-subscriptions' );
 		}
 
 		return apply_filters( 'woocommerce_product_add_to_cart_text', $text, $this );
@@ -80,11 +79,10 @@ class WC_Product_Subscription extends WC_Product_Simple {
 	/**
 	 * Get the add to cart button text for the single page
 	 *
-	 * @access public
-	 * @return string
+	 * @return string The single product page add to cart text.
 	 */
 	public function single_add_to_cart_text() {
-		return apply_filters( 'woocommerce_product_single_add_to_cart_text', self::add_to_cart_text(), $this );
+		return apply_filters( 'woocommerce_product_single_add_to_cart_text', WC_Subscriptions_Product::get_add_to_cart_text(), $this );
 	}
 
 	/**
