@@ -1162,6 +1162,16 @@ class WC_Subscriptions_Product {
 		return $parent_product_ids;
 	}
 
+	/**
+	 * Gets the add to cart text for subscription products.
+	 *
+	 * @since 3.0.7
+	 * @return string The add to cart text.
+	 */
+	public static function get_add_to_cart_text() {
+		return get_option( WC_Subscriptions_Admin::$option_prefix . '_add_to_cart_button_text', __( 'Sign up now', 'woocommerce-subscriptions' ) );
+	}
+
 	/************************
 	 * Deprecated Functions *
 	 ************************/
