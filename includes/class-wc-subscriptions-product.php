@@ -88,21 +88,6 @@ class WC_Subscriptions_Product {
 	}
 
 	/**
-	 * Override the WooCommerce "Add to cart" text with "Sign up now".
-	 *
-	 * @since 1.0
-	 */
-	public static function add_to_cart_text( $button_text, $product_type = '' ) {
-		global $product;
-
-		if ( self::is_subscription( $product ) || in_array( $product_type, array( 'subscription', 'subscription-variation' ) ) ) {
-			$button_text = get_option( WC_Subscriptions_Admin::$option_prefix . '_add_to_cart_button_text', __( 'Sign up now', 'woocommerce-subscriptions' ) );
-		}
-
-		return $button_text;
-	}
-
-	/**
 	 * Checks a given product to determine if it is a subscription.
 	 * When the received arg is a product object, make sure it is passed into the filter intact in order to retain any properties added on the fly.
 	 *
@@ -1180,6 +1165,23 @@ class WC_Subscriptions_Product {
 	/************************
 	 * Deprecated Functions *
 	 ************************/
+
+	/**
+	 * Override the WooCommerce "Add to cart" text with "Sign up now".
+	 *
+	 * @since 1.0
+	 * @deprecated 3.0.7
+	 */
+	public static function add_to_cart_text( $button_text, $product_type = '' ) {
+		_deprecated_function( __METHOD__, '3.0.7', 'WC_Subscriptions_Product::get_add_to_cart_text' );
+		global $product;
+
+		if ( self::is_subscription( $product ) || in_array( $product_type, array( 'subscription', 'subscription-variation' ) ) ) {
+			$button_text = get_option( WC_Subscriptions_Admin::$option_prefix . '_add_to_cart_button_text', __( 'Sign up now', 'woocommerce-subscriptions' ) );
+		}
+
+		return $button_text;
+	}
 
 	/**
 	 * If a product is being marked as not purchasable because it is limited and the customer has a subscription,
