@@ -1220,9 +1220,10 @@ class WC_Subscriptions_Cart {
 
 		$cart_contains_other_subscription_products = false;
 
-		if ( ! empty( WC()->cart->cart_contents ) ) {
+		if ( ! empty( WC()->cart->cart_contents ) && WC_Subscriptions_Product::is_subscription( $product_id ) ) {
+			$is_subscription = WC_Subscriptions_Product::is_subscription( $product_id );
 			foreach ( WC()->cart->cart_contents as $cart_item ) {
-				if ( WC_Subscriptions_Product::is_subscription( $product_id ) && wcs_get_canonical_product_id( $cart_item ) !== $product_id ) {
+				if ( wcs_get_canonical_product_id( $cart_item ) !== $product_id ) {
 					$cart_contains_other_subscription_products = true;
 					break;
 				}
