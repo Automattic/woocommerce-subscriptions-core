@@ -211,13 +211,14 @@ function wcs_get_subscription_trial_lengths( $subscription_period = '' ) {
  * @param int The number of periods to add to the timestamp
  * @param string One of day, week, month or year.
  * @param int A Unix timestamp to add the time too.
+ * @param string $timezone_behaviour If the $from_timestamp param should be offset to site time or not, either 'apply site time offset' or 'do not offset'. Default 'do not offset'.
  * @since 2.0
  */
-function wcs_add_time( $number_of_periods, $period, $from_timestamp ) {
+function wcs_add_time( $number_of_periods, $period, $from_timestamp, $timezone_behaviour = 'do not offset' ) {
 
 	if ( $number_of_periods > 0 ) {
 		if ( 'month' == $period ) {
-			$next_timestamp = wcs_add_months( $from_timestamp, $number_of_periods );
+			$next_timestamp = wcs_add_months( $from_timestamp, $number_of_periods, $timezone_behaviour );
 		} else {
 			$next_timestamp = wcs_strtotime_dark_knight( "+ {$number_of_periods} {$period}", $from_timestamp );
 		}
@@ -240,21 +241,28 @@ function wcs_add_time( $number_of_periods, $period, $from_timestamp ) {
  *
  * @param int $from_timestamp A Unix timestamp to add the months too.
  * @param int $months_to_add The number of months to add to the timestamp.
+ * @param string $timezone_behaviour If the $from_timestamp param should be offset to site time or not, either 'apply site time offset' or 'do not offset'. Default 'do not offset'.
  * @since 2.0
  */
-function wcs_add_months( $from_timestamp, $months_to_add ) {
+function wcs_add_months( $from_timestamp, $months_to_add, $timezone_behaviour = 'do not offset' ) {
 
+	if ( 'apply site time offset' === $timezone_behaviour ) {
+		$from_timestamp += wc_timezone_offset();
+	}
 	$first_day_of_month = gmdate( 'Y-m', $from_timestamp ) . '-1';
 	$days_in_next_month = gmdate( 't', wcs_strtotime_dark_knight( "+ {$months_to_add} month", wcs_date_to_time( $first_day_of_month ) ) );
 
 	// Payment is on the last day of the month OR number of days in next billing month is less than the the day of this month (i.e. current billing date is 30th January, next billing date can't be 30th February)
 	if ( gmdate( 'd m Y', $from_timestamp ) === gmdate( 't m Y', $from_timestamp ) || gmdate( 'd', $from_timestamp ) > $days_in_next_month ) {
 		for ( $i = 1; $i <= $months_to_add; $i++ ) {
-			$next_month = wcs_add_time( 3, 'days', $from_timestamp ); // Add 3 days to make sure we get to the next month, even when it's the 29th day of a month with 31 days
+			$next_month = wcs_add_time( 3, 'days', $from_timestamp, $timezone_behaviour ); // Add 3 days to make sure we get to the next month, even when it's the 29th day of a month with 31 days
 			$next_timestamp = $from_timestamp = wcs_date_to_time( gmdate( 'Y-m-t H:i:s', $next_month ) ); // NB the "t" to get last day of next month
 		}
 	} else { // Safe to just add a month
 		$next_timestamp = wcs_strtotime_dark_knight( "+ {$months_to_add} month", $from_timestamp );
+	}
+	if ( 'apply site time offset' === $timezone_behaviour ) {
+		$next_timestamp -= wc_timezone_offset();
 	}
 
 	return $next_timestamp;
