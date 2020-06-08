@@ -289,11 +289,18 @@ class WC_Subscriptions_Checkout {
 					$item->legacy_package_key = $package_key; // @deprecated For legacy actions.
 					$item->set_props( array(
 						'method_title' => $shipping_rate->label,
-						'method_id'    => $shipping_rate->id,
 						'total'        => wc_format_decimal( $shipping_rate->cost ),
 						'taxes'        => array( 'total' => $shipping_rate->taxes ),
 						'order_id'     => $subscription->get_id(),
 					) );
+
+					// Backwards compatibility for sites running WC pre 3.4 which stored shipping method and instance ID in a single meta row.
+					if ( WC_Subscriptions::is_woocommerce_pre( '3.4' ) ) {
+						$item->set_method_id( $shipping_rate->id );
+					} else {
+						$item->set_method_id( $shipping_rate->method_id );
+						$item->set_instance_id( $shipping_rate->instance_id );
+					}
 
 					foreach ( $shipping_rate->get_meta_data() as $key => $value ) {
 						$item->add_meta_data( $key, $value, true );
