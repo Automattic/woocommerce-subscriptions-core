@@ -633,7 +633,7 @@ class WC_Subscriptions_Synchroniser {
 
 		$from_timestamp = wcs_date_to_time( $from_date ) + ( (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) ); // Site time
 		$payment_day    = self::get_products_payment_day( $product );
-		$no_fee_days = get_option( self::$setting_id_days_no_fee );
+		$no_fee_days    = get_option( self::$setting_id_days_no_fee );
 
 		if ( 'week' == $period ) {
 
