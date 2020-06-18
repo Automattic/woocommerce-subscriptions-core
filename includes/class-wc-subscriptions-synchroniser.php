@@ -519,12 +519,14 @@ class WC_Subscriptions_Synchroniser {
 	 * @author Jeremy Pry
 	 *
 	 * @param WC_Product $product The product to check.
+	 * @param string $from_date Optional. A MySQL formatted date/time string from which to calculate from. The default is an empty string which is today's date/time.
 	 *
 	 * @return bool Whether an upfront payment is required for the product.
 	 */
-	public static function is_payment_upfront( $product ) {
+	public static function is_payment_upfront( $product, $from_date = '' ) {
 		static $results = array();
-		$is_upfront = null;
+		$is_upfront     = null;
+
 		if ( array_key_exists( $product->get_id(), $results ) ) {
 			return $results[ $product->get_id() ];
 		}
@@ -532,20 +534,28 @@ class WC_Subscriptions_Synchroniser {
 		// Normal cases where we aren't concerned with an upfront payment.
 		if (
 			0 !== WC_Subscriptions_Product::get_trial_length( $product ) ||
-			! self::is_product_synced( $product ) ||
-			'recurring' !== get_option( self::$setting_id_proration, 'no' )
+			! self::is_product_synced( $product )
 		) {
 			$is_upfront = false;
 		}
 
 		// Maybe account for number of days without a fee.
 		if ( null === $is_upfront ) {
-			$no_fee_days = get_option( self::$setting_id_days_no_fee );
+			$no_fee_days    = get_option( self::$setting_id_days_no_fee );
+			$payment_date   = self::calculate_first_payment_date( $product, 'timestamp', $from_date );
+			$from_timestamp = $from_date ? wcs_date_to_time( $from_date ) : gmdate( 'U' );
+			$site_offset    = (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
 
-			if ( $no_fee_days > 0 ) {
-				$payment_date = self::calculate_first_payment_date( $product, 'timestamp' );
-				$buffer_date  = $payment_date - ( $no_fee_days * DAY_IN_SECONDS );
-				$is_upfront   = wcs_strtotime_dark_knight( 'now' ) < $buffer_date;
+			// The payment date is today - check for it in site time
+			if ( gmdate( 'Ymd', $payment_date + $site_offset ) === gmdate( 'Ymd', $from_timestamp + $site_offset ) ) {
+				$is_upfront = true;
+			} elseif ( 'recurring' !== get_option( self::$setting_id_proration, 'no' ) ) {
+				$is_upfront = false;
+			} elseif ( $no_fee_days > 0 ) {
+				// When proration setting is 'recurring' and there is a grace period
+				$buffer_date = $payment_date - ( $no_fee_days * DAY_IN_SECONDS );
+
+				$is_upfront = $from_timestamp < wcs_date_to_time( gmdate( 'Y-m-d 23:59:59', $buffer_date ) );
 			} else {
 				$is_upfront = true;
 			}
@@ -601,8 +611,14 @@ class WC_Subscriptions_Synchroniser {
 		}
 
 		$period       = WC_Subscriptions_Product::get_period( $product );
-		$trial_period = WC_Subscriptions_Product::get_trial_period( $product );
 		$trial_length = WC_Subscriptions_Product::get_trial_length( $product );
+
+		// For billing intervals > 1:
+		// When the proration setting is 'recurring', there is a full upfront payment for the entire billing interval
+		// So, the first payment date should be calculated after the entire interval
+		// When the proration setting is 'no' or 'yes', the upfront payment is until the next date occurrence (1 week/month/year).
+		// So, the first payment date should be calculated with 1 as the interval
+		$interval = get_option( self::$setting_id_proration, 'no' ) === 'recurring' ? WC_Subscriptions_Product::get_interval( $product ) : 1;
 
 		$from_date_param = $from_date;
 
@@ -615,91 +631,96 @@ class WC_Subscriptions_Synchroniser {
 			$from_date = WC_Subscriptions_Product::get_trial_expiration_date( $product, $from_date );
 		}
 
-		$from_timestamp = wcs_date_to_time( $from_date ) + ( get_option( 'gmt_offset' ) * 3600 ); // Site time
-
-		$payment_day = self::get_products_payment_day( $product );
+		$from_timestamp = wcs_date_to_time( $from_date ) + ( (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) ); // Site time
+		$payment_day    = self::get_products_payment_day( $product );
+		$no_fee_days    = get_option( self::$setting_id_days_no_fee );
 
 		if ( 'week' == $period ) {
 
-			// strtotime() will figure out if the day is in the future or today (see: https://gist.github.com/thenbrent/9698083)
-			$first_payment_timestamp = wcs_strtotime_dark_knight( self::$weekdays[ $payment_day ], $from_timestamp );
+			// Get the day of the week for the from date
+			$from_day = gmdate( 'N', $from_timestamp );
 
-		} elseif ( 'month' == $period ) {
+			// To account for rollover of the weekdays. For example, if from day is Saturday and the payment date is Monday,
+			// and the grace period is 2, Saturday is day 6 and Monday is day 1.
+			$add_days = $payment_day < $from_day ? 0 : 7;
 
-			// strtotime() needs to know the month, so we need to determine if the specified day has occured this month yet or if we want the last day of the month (see: https://gist.github.com/thenbrent/9698083)
-			if ( $payment_day > 27 ) { // we actually want the last day of the month
-
-				$payment_day = gmdate( 't', $from_timestamp );
-				$month       = gmdate( 'F', $from_timestamp );
-
-			} elseif ( gmdate( 'j', $from_timestamp ) > $payment_day ) { // today is later than specified day in the from date, we need the next month
-
-				$month = gmdate( 'F', wcs_add_months( $from_timestamp, 1 ) );
-
-			} else { // specified day is either today or still to come in the month of the from date
-
-				$month = gmdate( 'F', $from_timestamp );
-
+			// Calculate difference between the the two days after adding number of weekdays and compare against grace period
+			if ( ( $payment_day + $add_days - $from_day ) <= $no_fee_days ) {
+				$from_timestamp = wcs_add_time( $interval - 1, $period, $from_timestamp );
 			}
 
-			$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day} {$month}", $from_timestamp );
+			// strtotime() will figure out if the day is in the future or today (see: https://gist.github.com/thenbrent/9698083)
+			$first_payment_timestamp = wcs_strtotime_dark_knight( self::$weekdays[ $payment_day ], $from_timestamp );
+		} elseif ( 'month' == $period ) {
 
+			// strtotime() needs to know the month, so we need to determine if the payment day has occurred this month yet or if we want the last day of the month (see: https://gist.github.com/thenbrent/9698083)
+			if ( $payment_day > 27 ) { // we actually want the last day of the month
+				$payment_day = gmdate( 't', $from_timestamp ); // the number of days in the month
+			}
+
+			$from_day = gmdate( 'j', $from_timestamp );
+
+			// If 'from day' is before 'sync day' in the month
+			if ( $from_day <= $payment_day ) {
+				if ( $from_day + $no_fee_days >= $payment_day ) { // In grace period
+					$month        = gmdate( 'F', $from_timestamp );
+					$month_number = gmdate( 'm', $from_timestamp );
+				} else { // If not in grace period, then the sync day has passed by. So, reduce interval by 1.
+					$month        = gmdate( 'F', wcs_add_months( $from_timestamp, $interval - 1 ) );
+					$month_number = gmdate( 'm', wcs_add_months( $from_timestamp, $interval - 1 ) );
+				}
+			} else { // If 'from day' is after 'sync day' in the month
+				$days_in_month = gmdate( 't', $from_timestamp );
+				// Use 'days in month' to account for end of month dates
+				if ( $from_day + $no_fee_days - $days_in_month >= $payment_day ) { // In grace period
+					$month        = gmdate( 'F', wcs_add_months( $from_timestamp, 1 ) );
+					$month_number = gmdate( 'm', wcs_add_months( $from_timestamp, 1 ) );
+				} else { // Not in grace period, so add interval number of months
+					$month        = gmdate( 'F', wcs_add_months( $from_timestamp, $interval ) );
+					$month_number = gmdate( 'm', wcs_add_months( $from_timestamp, $interval ) );
+				}
+			}
+			// when a certain number of months are added and the first payment date moves to next year
+			if ( $month_number < gmdate( 'm', $from_timestamp ) ) {
+				$year       = gmdate( 'Y', $from_timestamp );
+				$year++;
+				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day} {$month} {$year}", $from_timestamp );
+			} else {
+				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day} {$month}", $from_timestamp );
+			}
 		} elseif ( 'year' == $period ) {
 
 			// We can't use $wp_locale here because it is translated
-			switch ( $payment_day['month'] ) {
-				case 1 :
-					$month = 'January';
-					break;
-				case 2 :
-					$month = 'February';
-					break;
-				case 3 :
-					$month = 'March';
-					break;
-				case 4 :
-					$month = 'April';
-					break;
-				case 5 :
-					$month = 'May';
-					break;
-				case 6 :
-					$month = 'June';
-					break;
-				case 7 :
-					$month = 'July';
-					break;
-				case 8 :
-					$month = 'August';
-					break;
-				case 9 :
-					$month = 'September';
-					break;
-				case 10 :
-					$month = 'October';
-					break;
-				case 11 :
-					$month = 'November';
-					break;
-				case 12 :
-					$month = 'December';
-					break;
+			$month_map = array(
+				'01' => 'January',
+				'02' => 'February',
+				'03' => 'March',
+				'04' => 'April',
+				'05' => 'May',
+				'06' => 'June',
+				'07' => 'July',
+				'08' => 'August',
+				'09' => 'September',
+				'10' => 'October',
+				'11' => 'November',
+				'12' => 'December',
+			);
+
+			$month             = $month_map[ $payment_day['month'] ];
+			$payment_month_day = sprintf( '%02d%02d', $payment_day['month'], $payment_day['day'] );
+			$year              = gmdate( 'Y', $from_timestamp );
+			$from_month_day    = gmdate( 'md', $from_timestamp );
+
+			if ( $from_month_day > $payment_month_day ) { // If 'from day' is after 'sync day' in the year
+				$year++;
 			}
 
-			$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month}", $from_timestamp );
-		}
-
-		// Make sure the next payment is in the future and after the $from_date, as strtotime() will return the date this year for any day in the past when adding months or years (see: https://gist.github.com/thenbrent/9698083)
-		if ( 'year' == $period || 'month' == $period ) {
-
-			// First make sure the day is in the past so that we don't end up jumping a month or year because of a few hours difference between now and the billing date
-			if ( gmdate( 'Ymd', $first_payment_timestamp ) < gmdate( 'Ymd', $from_timestamp ) || gmdate( 'Ymd', $first_payment_timestamp ) < gmdate( 'Ymd', current_time( 'timestamp' ) ) ) {
-				$i = 1;
-				// Then make sure the date and time of the payment is in the future
-				while ( ( $first_payment_timestamp < gmdate( 'U' ) || $first_payment_timestamp < $from_timestamp ) && $i < 30 ) {
-					$first_payment_timestamp = wcs_add_time( 1, $period, $first_payment_timestamp );
-					$i = $i + 1;
-				}
+			if ( $from_timestamp + ( $no_fee_days * DAY_IN_SECONDS ) >=
+				wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}" ) ) { // In grace period
+				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}", $from_timestamp );
+			} else { // If not in grace period, then the sync day has passed by. So, reduce interval by 1.
+				$year += $interval - 1 ;
+				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}", wcs_add_time( $interval - 1, $period, $from_timestamp ) );
 			}
 		}
 
@@ -707,7 +728,7 @@ class WC_Subscriptions_Synchroniser {
 		$first_payment_timestamp += 3 * HOUR_IN_SECONDS;
 
 		// And convert it to the UTC equivalent of 3am on that day
-		$first_payment_timestamp -= ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
+		$first_payment_timestamp -= ( (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) );
 
 		$first_payment = ( 'mysql' == $type && 0 != $first_payment_timestamp ) ? gmdate( 'Y-m-d H:i:s', $first_payment_timestamp ) : $first_payment_timestamp;
 
@@ -805,7 +826,7 @@ class WC_Subscriptions_Synchroniser {
 				if ( $is_first_payment_today ) {
 					$payment_date_string = __( 'Today!', 'woocommerce-subscriptions' );
 				} else {
-					$payment_date_string = date_i18n( wc_date_format(), $first_payment_timestamp + ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) );
+					$payment_date_string = date_i18n( wc_date_format(), $first_payment_timestamp + ( (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) ) );
 				}
 
 				if ( self::is_product_prorated( $product ) && ! $is_first_payment_today ) {
@@ -837,7 +858,7 @@ class WC_Subscriptions_Synchroniser {
 			if ( ! self::is_today( $next_renewal_timestamp ) ) {
 
 				if ( 'site' == $timezone ) {
-					$next_renewal_timestamp += ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
+					$next_renewal_timestamp += ( (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) );
 				}
 				$first_renewal_timestamp = $next_renewal_timestamp;
 			}
@@ -937,7 +958,7 @@ class WC_Subscriptions_Synchroniser {
 
 			// First make sure the day is in the past so that we don't end up jumping a month or year because of a few hours difference between now and the billing date
 			// Use site time to check if the trial expiration and first payment fall on the same day
-			$site_offset = get_option( 'gmt_offset' ) * 3600;
+			$site_offset = (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
 
 			if ( $trial_expiration_timestamp > $first_payment_timestamp && gmdate( 'Ymd', $first_payment_timestamp + $site_offset ) === gmdate( 'Ymd', $trial_expiration_timestamp + $site_offset ) ) {
 				$trial_expiration_date = date( 'Y-m-d H:i:s', $first_payment_timestamp );
@@ -977,7 +998,7 @@ class WC_Subscriptions_Synchroniser {
 	public static function is_today( $timestamp ) {
 
 		// Convert timestamp to site's time
-		$timestamp += get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
+		$timestamp += (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
 
 		return gmdate( 'Y-m-d', current_time( 'timestamp' ) ) == gmdate( 'Y-m-d', $timestamp );
 	}
