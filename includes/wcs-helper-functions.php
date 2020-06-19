@@ -265,3 +265,21 @@ function wcs_sort_objects( &$objects, $property, $sort_order = 'ascending' ) {
 	uasort( $objects, array( new WCS_Object_Sorter( $property ), "{$sort_order}_compare" ) );
 	return $objects;
 }
+
+/**
+ * Has the trial for the Subscription passed? If the Subscription is invalid, will return a WP_Error
+ *
+ * @param int|WC_Subscription $subscription
+ *
+ * @return bool|WP_Error
+ * @since 3.0.6
+ */
+function wcs_trial_has_passed( $subscription ) {
+	$subscription = wcs_get_subscription( $subscription );
+
+	if ( $subscription ) {
+		return apply_filters( 'woocommerce_subscription_trial_has_passed', $subscription->get_time( 'trial_end' ) > 0 && $subscription->get_time( 'trial_end' ) < gmdate( 'U' ), $subscription );
+	} else {
+		return new WP_Error( 'woocommerce_subscription_invalid_subscription', __( 'Invalid Subscription.', 'woocommerce-subscriptions' ) );
+	}
+}
