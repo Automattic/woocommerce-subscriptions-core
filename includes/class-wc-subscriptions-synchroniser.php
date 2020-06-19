@@ -541,7 +541,7 @@ class WC_Subscriptions_Synchroniser {
 
 		// Maybe account for number of days without a fee.
 		if ( null === $is_upfront ) {
-			$no_fee_days    = get_option( self::$setting_id_days_no_fee );
+			$no_fee_days    = self::get_number_of_grace_period_days();
 			$payment_date   = self::calculate_first_payment_date( $product, 'timestamp', $from_date );
 			$from_timestamp = $from_date ? wcs_date_to_time( $from_date ) : gmdate( 'U' );
 			$site_offset    = (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
@@ -633,7 +633,7 @@ class WC_Subscriptions_Synchroniser {
 
 		$from_timestamp = wcs_date_to_time( $from_date ) + ( (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) ); // Site time
 		$payment_day    = self::get_products_payment_day( $product );
-		$no_fee_days    = get_option( self::$setting_id_days_no_fee );
+		$no_fee_days    = self::get_number_of_grace_period_days();
 
 		if ( 'week' == $period ) {
 
@@ -1280,6 +1280,16 @@ class WC_Subscriptions_Synchroniser {
 
 		return $hidden_meta_keys;
 
+	}
+
+	/**
+	 * Gets the number of sign-up grace period days.
+	 *
+	 * @since 3.0.6
+	 * @return int The number of days in the grace period. 0 will be returned if the stroe isn't charging the full recurring price on sign-up -- a prerequiste for setting a grace period.
+	 */
+	private static function get_number_of_grace_period_days() {
+		return get_option( self::$setting_id_proration, 'no' ) === 'recurring' ? get_option( self::$setting_id_days_no_fee ) : 0;
 	}
 
 	/* Deprecated Functions */
