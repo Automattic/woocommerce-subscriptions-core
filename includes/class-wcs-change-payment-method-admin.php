@@ -135,8 +135,11 @@ class WCS_Change_Payment_Method_Admin {
 			WC_Subscriptions_Payment_Gateways::trigger_gateway_status_updated_hook( $subscription, $gateway_status );
 		}
 
-		$subscription->set_payment_method( $payment_gateway, $payment_method_meta );
-		$subscription->save();
+		// Update the payment method for manual only if it has changed.
+		if ( ! $subscription->is_manual() || 'manual' !== $payment_method ) {
+			$subscription->set_payment_method( $payment_gateway, $payment_method_meta );
+			$subscription->save();
+		}
 	}
 
 	/**
