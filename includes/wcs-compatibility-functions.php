@@ -107,7 +107,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 				$value = $object->$function_name();
 			} else {
 				// If we don't have a method for this specific property, but we are using WC 3.0, it may be set as meta data on the object so check if we can use that.
-				if ( $object->meta_exists( $prefixed_key ) ) {
+				if ( method_exists( $object, 'get_meta' ) && $object->meta_exists( $prefixed_key ) ) {
 					if ( 'single' === $single ) {
 						$value = $object->get_meta( $prefixed_key, true );
 					} else {

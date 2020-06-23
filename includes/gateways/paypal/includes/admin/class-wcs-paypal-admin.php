@@ -99,7 +99,7 @@ class WCS_PayPal_Admin {
 			return;
 		}
 
-		$payment_gateway_tab_url = admin_url( 'admin.php?page=wc-settings&tab=checkout&section=wc_gateway_paypal' );
+		$payment_gateway_tab_url = admin_url( 'admin.php?page=wc-settings&tab=checkout&section=paypal' );
 		$notices                 = array();
 
 		if ( ! WCS_PayPal::are_credentials_set() ) {

@@ -168,13 +168,25 @@ function wcs_cart_print_shipping_input( $shipping_method_index, $shipping_method
 /**
  * Display a recurring shipping methods price & name as a label
  *
- * @param  object $method
- * @return string
+ * @param WC_Shipping_Rate $method The shipping method rate object.
+ * @return string The recurring shipping method price html.
  */
 function wcs_cart_totals_shipping_method( $method, $cart ) {
+	// Backwards compatibility for third-parties who passed WC_Shipping_Method or std object types.
+	if ( ! is_a( $method, 'WC_Shipping_Rate' ) ) {
+		wcs_deprecated_argument( __METHOD__, '3.0.2', 'The $method param must be a WC_Shipping_Rate object.' );
+		$label = $method->label . ': ' . wcs_cart_totals_shipping_method_price_label( $method, $cart );
+		return apply_filters( 'wcs_cart_totals_shipping_method', $label, $method, $cart );
+	}
 
-	$label = ( method_exists( $method, 'get_label' ) ) ? $method->get_label() : $method->label; // WC < 2.5 compatibility (WC_Shipping_Rate::get_label() was introduced with WC 2.5)
-	$label .= ': ' . wcs_cart_totals_shipping_method_price_label( $method, $cart );
+	$method_id = is_callable( array( $method, 'get_method_id' ) ) ? $method->get_method_id() : $method->method_id; // WC 3.2 compat. get_method_id() was introduced in 3.2.0.
+	$label     = $method->get_label();
+	$has_cost  = 0 < $method->cost;
+	$hide_cost = ! $has_cost && in_array( $method_id, array( 'free_shipping', 'local_pickup' ), true );
+
+	if ( $has_cost && ! $hide_cost ) {
+		$label .= ': ' . wcs_cart_totals_shipping_method_price_label( $method, $cart );
+	}
 
 	return apply_filters( 'wcs_cart_totals_shipping_method', $label, $method, $cart );
 }
@@ -281,14 +293,15 @@ function wcs_cart_totals_order_total_html( $cart ) {
 	$tax_total_html   = '';
 
 	// If prices are tax inclusive, show taxes here
-	if ( wc_tax_enabled() && $cart->tax_display_cart == 'incl' ) {
+	if ( wc_tax_enabled() && 'incl' === $cart->tax_display_cart ) {
 		$tax_string_array = array();
+		$cart_taxes       = $cart->get_tax_totals();
 
-		if ( get_option( 'woocommerce_tax_total_display' ) == 'itemized' ) {
-			foreach ( $cart->get_tax_totals() as $code => $tax ) {
+		if ( get_option( 'woocommerce_tax_total_display' ) === 'itemized' ) {
+			foreach ( $cart_taxes as $tax ) {
 				$tax_string_array[] = sprintf( '%s %s', $tax->formatted_amount, $tax->label );
 			}
-		} else {
+		} elseif ( ! empty( $cart_taxes ) ) {
 			$tax_string_array[] = sprintf( '%s %s', wc_price( $cart->get_taxes_total( true, true ) ), WC()->countries->tax_or_vat() );
 		}
 

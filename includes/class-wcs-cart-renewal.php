@@ -819,6 +819,7 @@ class WCS_Cart_Renewal {
 				'minimum_amount'              => '',
 				'maximum_amount'              => '',
 				'email_restrictions'          => array(),
+				'limit_usage_to_x_items'      => null,
 			);
 
 			foreach ( $property_defaults as $property => $value ) {

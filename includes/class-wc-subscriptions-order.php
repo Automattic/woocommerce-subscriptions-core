@@ -1054,6 +1054,23 @@ class WC_Subscriptions_Order {
 			return $new_order_status;
 		}
 
+		// Exit early if the order contains a non-subscription which needs processing product.
+		foreach ( $order->get_items() as $item ) {
+			$product = $item->get_product();
+
+			// We're only interested in non-subscription products.
+			if ( WC_Subscriptions_Product::is_subscription( $item->get_product() ) ) {
+				continue;
+			}
+
+			$virtual_downloadable_item = $product->is_downloadable() && $product->is_virtual();
+			$needs_processing          = apply_filters( 'woocommerce_order_item_needs_processing', ! $virtual_downloadable_item, $product, $order_id );
+
+			if ( $needs_processing ) {
+				return $new_order_status;
+			}
+		}
+
 		if ( wcs_order_contains_resubscribe( $order ) ) {
 			$new_order_status = 'completed';
 		} elseif ( wcs_order_contains_switch( $order ) ) {

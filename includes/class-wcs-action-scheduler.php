@@ -101,11 +101,11 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 					$next_scheduled = as_next_scheduled_action( $action_hook, $action_args );
 
 					// Maybe clear the existing schedule for this hook
-					if ( false !== $next_scheduled && $next_scheduled != $event_time ) {
+					if ( false !== $next_scheduled && $next_scheduled !== $event_time ) {
 						$this->unschedule_actions( $action_hook, $action_args );
 					}
 
-					if ( 0 != $event_time && $event_time > current_time( 'timestamp', true ) && $next_scheduled != $event_time ) {
+					if ( 0 != $event_time && $event_time > current_time( 'timestamp', true ) && $next_scheduled !== $event_time ) {
 						as_schedule_single_action( $event_time, $action_hook, $action_args );
 					}
 				}
@@ -129,12 +129,12 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 				$action_args    = $this->get_action_args( 'end', $subscription );
 				$next_scheduled = as_next_scheduled_action( 'woocommerce_scheduled_subscription_end_of_prepaid_term', $action_args );
 
-				if ( false !== $next_scheduled && $next_scheduled != $end_time ) {
+				if ( false !== $next_scheduled && $next_scheduled !== $end_time ) {
 					$this->unschedule_actions( 'woocommerce_scheduled_subscription_end_of_prepaid_term', $action_args );
 				}
 
 				// The end date was set in WC_Subscriptions::update_dates() to the appropriate value, so we can schedule our action for that time
-				if ( $end_time > current_time( 'timestamp', true ) && $next_scheduled != $end_time ) {
+				if ( $end_time > current_time( 'timestamp', true ) && $next_scheduled !== $end_time ) {
 					as_schedule_single_action( $end_time, 'woocommerce_scheduled_subscription_end_of_prepaid_term', $action_args );
 				}
 				break;

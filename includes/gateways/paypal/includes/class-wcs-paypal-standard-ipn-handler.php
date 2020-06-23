@@ -577,7 +577,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 	 */
 	protected function is_woocommerce_payload( $payload ) {
 		return is_numeric( $payload ) ||
-			(bool) preg_match( '/(wc_)?order_[a-f0-9]{5,20}/', $payload );
+			(bool) preg_match( '/(wc_)?order_[A-Za-z0-9]{5,20}/', $payload );
 	}
 
 	/**
