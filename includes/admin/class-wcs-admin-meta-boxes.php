@@ -48,6 +48,9 @@ class WCS_Admin_Meta_Boxes {
 		}
 
 		add_action( 'woocommerce_order_action_wcs_retry_renewal_payment', array( __CLASS__, 'process_retry_renewal_payment_action_request' ), 10, 1 );
+
+		// Disable stock managment while adding line items to a subscription via AJAX.
+		add_action( 'option_woocommerce_manage_stock', array( __CLASS__, 'override_stock_management' ) );
 	}
 
 	/**
@@ -300,5 +303,23 @@ class WCS_Admin_Meta_Boxes {
 		}
 
 		return $can_be_retried;
+	}
+
+	/**
+	 * Disables stock managment while adding items to a subscription via the edit subscription screen.
+	 *
+	 * @since 3.0.6
+	 *
+	 * @param string $manage_stock The default manage stock setting.
+	 * @return string Whether the stock should be managed.
+	 */
+	public static function override_stock_management( $manage_stock ) {
+
+		// Override stock management while adding line items to a subscription via AJAX.
+		if ( isset( $_POST['order_id'] ) && wp_verify_nonce( $_REQUEST['security'], 'order-item' ) && doing_action( 'wp_ajax_woocommerce_add_order_item' ) && wcs_is_subscription( absint( wp_unslash( $_POST['order_id'] ) ) ) ) {
+			$manage_stock = 'no';
+		}
+
+		return $manage_stock;
 	}
 }
