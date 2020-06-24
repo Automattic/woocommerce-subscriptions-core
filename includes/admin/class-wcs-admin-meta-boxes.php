@@ -37,17 +37,17 @@ class WCS_Admin_Meta_Boxes {
 		add_action( 'woocommerce_process_shop_order_meta', 'WCS_Meta_Box_Schedule::save', 10, 2 );
 		add_action( 'woocommerce_process_shop_order_meta', 'WCS_Meta_Box_Subscription_Data::save', 10, 2 );
 
-		add_filter( 'woocommerce_order_actions', __CLASS__ . '::add_subscription_actions', 10, 1 );
+		add_filter( 'woocommerce_order_actions', array( __CLASS__, 'add_subscription_actions' ), 10, 1 );
 
-		add_action( 'woocommerce_order_action_wcs_process_renewal', __CLASS__ .  '::process_renewal_action_request', 10, 1 );
-		add_action( 'woocommerce_order_action_wcs_create_pending_renewal', __CLASS__ .  '::create_pending_renewal_action_request', 10, 1 );
-		add_action( 'woocommerce_order_action_wcs_create_pending_parent', __CLASS__ .  '::create_pending_parent_action_request', 10, 1 );
+		add_action( 'woocommerce_order_action_wcs_process_renewal', array( __CLASS__, 'process_renewal_action_request' ), 10, 1 );
+		add_action( 'woocommerce_order_action_wcs_create_pending_renewal', array( __CLASS__, 'create_pending_renewal_action_request' ), 10, 1 );
+		add_action( 'woocommerce_order_action_wcs_create_pending_parent', array( __CLASS__, 'create_pending_parent_action_request' ), 10, 1 );
 
 		if ( WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
-			add_filter( 'woocommerce_resend_order_emails_available', __CLASS__ . '::remove_order_email_actions', 0, 1 );
+			add_filter( 'woocommerce_resend_order_emails_available', array( __CLASS__, 'remove_order_email_actions' ), 0, 1 );
 		}
 
-		add_action( 'woocommerce_order_action_wcs_retry_renewal_payment', __CLASS__ .  '::process_retry_renewal_payment_action_request', 10, 1 );
+		add_action( 'woocommerce_order_action_wcs_retry_renewal_payment', array( __CLASS__, 'process_retry_renewal_payment_action_request' ), 10, 1 );
 	}
 
 	/**
