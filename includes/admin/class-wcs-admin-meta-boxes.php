@@ -234,6 +234,7 @@ class WCS_Admin_Meta_Boxes {
 			}
 		}
 
+		wc_maybe_reduce_stock_levels( $parent_order );
 		$subscription->add_order_note( __( 'Create pending parent order requested by admin action.', 'woocommerce-subscriptions' ), false, true );
 	}
 
