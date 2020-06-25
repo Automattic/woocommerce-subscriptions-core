@@ -26,6 +26,9 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 		add_filter( 'woocommerce_create_order', array( &$this, 'update_cart_hash' ), 10, 1 );
 		// Apply initial discounts when there is a pending initial order
 		add_action( 'woocommerce_setup_cart_for_subscription_initial_payment', array( $this, 'setup_discounts' ) );
+
+		// Initialise the stock mananger.
+		WCS_Initial_Cart_Stock_Manager::attach_callbacks();
 	}
 
 	/**
