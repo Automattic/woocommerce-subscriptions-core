@@ -351,8 +351,7 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			case 'pending-cancel':
-				// Only active subscriptions can be given the "pending cancellation" status, becuase it is used to account for a prepaid term
-				if ( $this->payment_method_supports( 'subscription_cancellation' ) && $this->has_status( 'active' ) ) {
+				if ( $this->payment_method_supports( 'subscription_cancellation' ) && $this->has_status( array( 'active', 'on-hold' ) ) ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
@@ -1663,7 +1662,7 @@ class WC_Subscription extends WC_Order {
 	public function cancel_order( $note = '' ) {
 
 		// If the customer hasn't been through the pending cancellation period yet set the subscription to be pending cancellation
-		if ( $this->has_status( 'active' ) && $this->calculate_date( 'end_of_prepaid_term' ) > current_time( 'mysql', true ) && apply_filters( 'woocommerce_subscription_use_pending_cancel', true ) ) {
+		if ( $this->has_status( array( 'active', 'on-hold' ) ) && $this->calculate_date( 'end_of_prepaid_term' ) > current_time( 'mysql', true ) && apply_filters( 'woocommerce_subscription_use_pending_cancel', true ) ) {
 
 			$this->update_status( 'pending-cancel', $note );
 
