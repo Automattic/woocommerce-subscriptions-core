@@ -181,7 +181,8 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 			 '_requires_manual_renewal',
 			 '_cancelled_email_sent',
 			 '_trial_period',
-			 '_created_via'
+			 '_created_via',
+			 '_order_stock_reduced'
 		 )",
 		wcs_get_objects_property( $from_order, 'id' )
 	);
@@ -771,6 +772,10 @@ function wcs_copy_order_item( $from_item, &$to_item ) {
 	}
 
 	foreach ( $from_item->get_meta_data() as $meta_data ) {
+		if ( '_reduced_stock' === $meta_data->key ) {
+			continue;
+		}
+
 		$to_item->update_meta_data( $meta_data->key, $meta_data->value );
 	}
 
