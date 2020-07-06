@@ -185,7 +185,11 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			// Re-add all the notices that would have been displayed but have now been cleared from the output.
 			foreach ( self::$notices as $notice_type => $notices ) {
 				foreach ( $notices as $notice ) {
-					wc_add_notice( $notice, $notice_type );
+					if ( WC_Subscriptions::is_woocommerce_pre( '3.9' ) ) {
+						wc_add_notice( $notice, $notice_type );
+					} else {
+						wc_add_notice( $notice['notice'], $notice_type, $notice['data'] );
+					}
 				}
 			}
 
