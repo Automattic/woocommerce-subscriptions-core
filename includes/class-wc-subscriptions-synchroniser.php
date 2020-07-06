@@ -311,7 +311,7 @@ class WC_Subscriptions_Synchroniser {
 						<?php } ?>
 					</select>
 
-					<?php $daysInMonth = $payment_month ? cal_days_in_month( CAL_GREGORIAN, (int) $payment_month, 2001 ) : 0; ?>
+					<?php $daysInMonth = $payment_month ? gmdate( 't', wc_string_to_timestamp( "2001-{$payment_month}-01" ) ) : 0; ?>
 					<input type="number" id="<?php echo esc_attr( self::$post_meta_key_day ); ?>" name="<?php echo esc_attr( self::$post_meta_key_day ); ?>" class="wc_input_subscription_payment_sync" value="<?php echo esc_attr( $payment_day ); ?>" placeholder="<?php echo esc_attr_x( 'Day', 'input field placeholder for day field for annual subscriptions', 'woocommerce-subscriptions' ); ?>" step="1" min="<?php echo esc_attr( min( 1, $daysInMonth ) ); ?>" max="<?php echo esc_attr( $daysInMonth ); ?>" <?php disabled( 0, $payment_month, true ); ?> />
 				</span>
 				<?php echo wcs_help_tip( self::$sync_description_year ); ?>
