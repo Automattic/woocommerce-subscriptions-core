@@ -119,6 +119,12 @@ class WCS_Admin_Reports {
 
 			wp_enqueue_script( 'flot-order', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/jquery.flot.orderBars' . $suffix . '.js', array( 'jquery', 'flot' ), WC_Subscriptions::$version );
 			wp_enqueue_script( 'flot-axis-labels', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/jquery.flot.axislabels' . $suffix . '.js', array( 'jquery', 'flot' ), WC_Subscriptions::$version );
+
+			// Adds tracks script if tracking is enabled
+			if ( 'yes' === get_option( 'woocommerce_allow_tracking', 'no' ) ) {
+				wp_enqueue_script( 'wcs-tracks', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/tracks.js', array( 'jquery' ), WC_Subscriptions::$version );
+			}
+
 		}
 	}
 
