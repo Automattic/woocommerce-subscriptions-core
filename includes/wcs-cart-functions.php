@@ -288,9 +288,10 @@ function wcs_cart_totals_coupon_html( $coupon, $cart ) {
 function wcs_cart_totals_order_total_html( $cart ) {
 	$order_total_html = '<strong>' . $cart->get_total() . '</strong> ';
 	$tax_total_html   = '';
+	$display_prices_include_tax = WC_Subscriptions::is_woocommerce_pre( '4.4' ) ? ( 'incl' === $cart->tax_display_cart ) : $cart->display_prices_including_tax();
 
 	// If prices are tax inclusive, show taxes here
-	if ( wc_tax_enabled() && 'incl' === $cart->tax_display_cart ) {
+	if ( wc_tax_enabled() && $display_prices_include_tax ) {
 		$tax_string_array = array();
 		$cart_taxes       = $cart->get_tax_totals();
 
