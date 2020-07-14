@@ -43,6 +43,9 @@ class WC_Subscriptions_Checkout {
 
 		// When a line item is added to a subscription, ensure the __has_trial meta data is added if applicable.
 		add_action( 'woocommerce_checkout_create_order_line_item', array( __CLASS__, 'maybe_add_free_trial_item_meta' ), 10, 4 );
+
+		// Store the amount of tax removed from a line item to account the base location's tax.
+		add_action( 'woocommerce_checkout_create_order_line_item', array( __CLASS__, 'store_line_item_base_location_taxes' ), 10, 3 );
 	}
 
 	/**
@@ -490,6 +493,21 @@ class WC_Subscriptions_Checkout {
 		}
 
 		return $woocommerce_params;
+	}
+
+	/**
+	 * Stores the subtracted base location tax totals in the subscription line item meta.
+	 *
+	 * @since 3.0.6
+	 *
+	 * @param WC_Line_Item_Product $line_item     The line item added to the order/subscription.
+	 * @param string               $cart_item_key The key of the cart item being added to the cart.
+	 * @param array                $cart_item     The cart item data.
+	 */
+	public static function store_line_item_base_location_taxes( $line_item, $cart_item_key, $cart_item ) {
+		if ( isset( $cart_item['_subtracted_base_location_tax'] ) ) {
+			$line_item->add_meta_data( '_subtracted_base_location_tax', $cart_item['_subtracted_base_location_tax'] );
+		}
 	}
 
 	/**
