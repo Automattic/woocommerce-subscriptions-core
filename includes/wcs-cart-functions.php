@@ -199,8 +199,9 @@ function wcs_cart_totals_shipping_method_price_label( $method, $cart ) {
 	$price_label = '';
 
 	if ( $method->cost != 0 ) {
+		$display_prices_include_tax = WC_Subscriptions::is_woocommerce_pre( '3.3' ) ? ( 'incl' === WC()->cart->tax_display_cart ) : WC()->cart->display_prices_including_tax();
 
-		if ( WC()->cart->tax_display_cart == 'excl' ) {
+		if ( ! $display_prices_include_tax ) {
 			$price_label .= wcs_cart_price_string( $method->cost, $cart );
 			if ( $method->get_shipping_tax() > 0 && $cart->prices_include_tax ) {
 				$price_label .= ' <small>' . WC()->countries->ex_tax_or_vat() . '</small>';

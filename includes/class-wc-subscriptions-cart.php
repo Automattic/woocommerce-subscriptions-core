@@ -734,7 +734,7 @@ class WC_Subscriptions_Cart {
 			$product_subtotal = WC_Subscriptions_Product::get_price_string( $product, array(
 				'price'           => $product_subtotal,
 				'sign_up_fee'     => $sign_up_fee_string,
-				'tax_calculation' => WC()->cart->tax_display_cart,
+				'tax_calculation' => WC_Subscriptions::is_woocommerce_pre( '4.4' ) ? WC()->cart->tax_display_cart : WC()->cart->get_tax_price_display_mode(),
 				)
 			);
 
@@ -987,7 +987,8 @@ class WC_Subscriptions_Cart {
 	public static function cart_product_price( $price, $product ) {
 
 		if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
-			$price = WC_Subscriptions_Product::get_price_string( $product, array( 'price' => $price, 'tax_calculation' => WC()->cart->tax_display_cart ) );
+			$tax_price_display_mode = WC_Subscriptions::is_woocommerce_pre( '4.4' ) ? WC()->cart->tax_display_cart : WC()->cart->get_tax_price_display_mode();
+			$price = WC_Subscriptions_Product::get_price_string( $product, array( 'price' => $price, 'tax_calculation' => $tax_price_display_mode ) );
 		}
 
 		return $price;
