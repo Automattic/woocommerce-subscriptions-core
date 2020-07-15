@@ -521,16 +521,16 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				__( '%2$s %1$s new subscriptions', 'woocommerce-subscriptions' ),
 				'<strong> <span class="woocommerce-subscriptions-count count">' . $this->report_data->new_subscription_total_count . '</span> </strong> </a>',
 				'<a href="' .
-					esc_url(
-						add_query_arg(
-							array(
-								'post_type'               => 'shop_subscription',
-								'_subscriptions_list_key' => $this->report_data->new_subscriptions_query_hash,
-								'_report'                 => strtolower( get_class( $this ) ),
-							),
-							admin_url( 'edit.php' )
-						)
-					) . '" id="' . $tracks_id . 'new">'
+				esc_url(
+					add_query_arg(
+						array(
+							'post_type'               => 'shop_subscription',
+							'_subscriptions_list_key' => $this->report_data->new_subscriptions_query_hash,
+							'_report'                 => strtolower( get_class( $this ) ),
+						),
+						admin_url( 'edit.php' )
+					)
+				) . '" id="' . $tracks_id . 'new">'
 			),
 			'placeholder'      => __( 'The number of subscriptions created during this period, either by being manually created, imported or a customer placing an order. This includes orders pending payment.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['new_count'],

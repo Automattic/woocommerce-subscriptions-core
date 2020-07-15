@@ -120,11 +120,10 @@ class WCS_Admin_Reports {
 			wp_enqueue_script( 'flot-order', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/jquery.flot.orderBars' . $suffix . '.js', array( 'jquery', 'flot' ), WC_Subscriptions::$version );
 			wp_enqueue_script( 'flot-axis-labels', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/jquery.flot.axislabels' . $suffix . '.js', array( 'jquery', 'flot' ), WC_Subscriptions::$version );
 
-			// Adds tracks script if tracking is enabled
+			// Add tracks script if tracking is enabled.
 			if ( 'yes' === get_option( 'woocommerce_allow_tracking', 'no' ) ) {
-				wp_enqueue_script( 'wcs-tracks', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/tracks.js', array( 'jquery' ), WC_Subscriptions::$version );
+				wp_enqueue_script( 'wcs-tracks', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/tracks.js', array( 'jquery' ), WC_Subscriptions::$version, true );
 			}
-
 		}
 	}
 
@@ -161,15 +160,21 @@ class WCS_Admin_Reports {
 		if ( class_exists( 'WC_Tracks' ) && 'yes' === get_option( 'woocommerce_allow_tracking', 'no' ) ) {
 
 			$reports = array(
-				'subscription-events-by-date' => 'wcsubscriptions_reports_subscription_events_by_date_view',
-				'upcoming-recurring-revenue'  => 'wcsubscriptions_reports_upcoming_recurring_revenue_view',
-				'retention-rate'              => 'wcsubscriptions_reports_retention_rate_view',
-				'subscription-by-product'     => 'wcsubscriptions_reports_subscription_by_product_view',
-				'subscription-by-customer'    => 'wcsubscriptions_reports_subscription_by_customer_view',
+				'subscription-events-by-date' => 'subscriptions_report_subscription_events_by_date_view',
+				'upcoming-recurring-revenue'  => 'subscriptions_report_upcoming_recurring_revenue_view',
+				'retention-rate'              => 'subscriptions_report_retention_rate_view',
+				'subscription-by-product'     => 'subscriptions_report_subscription_by_product_view',
+				'subscription-by-customer'    => 'subscriptions_report_subscription_by_customer_view',
 			);
 
-			error_log( $reports[$name] );
-			//WC_Tracks::recordEvent( $reports[ $name ], {} );
+			$properties = array(
+				'orders_count'        => array_sum( (array) wp_count_posts( 'shop_order' ) ),
+				'products_count'      => array_sum( (array) wp_count_posts( 'product' ) ),
+				'subscriptions_count' => array_sum( (array) wp_count_posts( 'shop_subscription' ) ),
+				'version'             => WC_Subscriptions::$version,
+			);
+
+			WC_Tracks::record_event( $reports[ $name ], $properties );
 		}
 
 		$report = new $class();
