@@ -479,9 +479,9 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 	 * @return array
 	 */
 	public function get_chart_legend() {
-		$legend    = array();
-		$data      = $this->get_report_data();
-		$tracks_id = 'wc_report_subscription_events_by_date';
+		$legend = array();
+		$data   = $this->get_report_data();
+		$tracks_id = 'report_subscription_events_by_date_';
 
 		$legend[] = array(
 			// translators: %s: formatted total amount.
@@ -521,16 +521,16 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 				__( '%2$s %1$s new subscriptions', 'woocommerce-subscriptions' ),
 				'<strong> <span class="woocommerce-subscriptions-count count">' . $this->report_data->new_subscription_total_count . '</span> </strong> </a>',
 				'<a href="' .
-				esc_url(
-					add_query_arg(
-						array(
-							'post_type'               => 'shop_subscription',
-							'_subscriptions_list_key' => $this->report_data->new_subscriptions_query_hash,
-							'_report'                 => strtolower( get_class( $this ) ),
-						),
-						admin_url( 'edit.php' )
-					)
-				) . '" id="' . $tracks_id . '_new">'
+					esc_url(
+						add_query_arg(
+							array(
+								'post_type'               => 'shop_subscription',
+								'_subscriptions_list_key' => $this->report_data->new_subscriptions_query_hash,
+								'_report'                 => strtolower( get_class( $this ) ),
+							),
+							admin_url( 'edit.php' )
+						)
+					) . '" id="' . $tracks_id . 'new">'
 			),
 			'placeholder'      => __( 'The number of subscriptions created during this period, either by being manually created, imported or a customer placing an order. This includes orders pending payment.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['new_count'],
@@ -552,7 +552,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 						),
 						admin_url( 'edit.php' )
 					)
-				) . '" id="' . $tracks_id . '_signups">'
+				) . '" id="' . $tracks_id . 'signups">'
 			),
 			'placeholder'      => __( 'The number of subscriptions purchased in parent orders created during this period. This represents the new subscriptions created by customers placing an order via checkout.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['signup_count'],
@@ -574,7 +574,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 						),
 						admin_url( 'edit.php' )
 					)
-				) . '" id="' . $tracks_id . '_resubscribes">'
+				) . '" id="' . $tracks_id . 'resubscribes">'
 			),
 			'placeholder'      => __( 'The number of resubscribe orders processed during this period.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['resubscribe_count'],
@@ -596,7 +596,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 						),
 						admin_url( 'edit.php' )
 					)
-				) . '" id="' . $tracks_id . '_renewals">'
+				) . '" id="' . $tracks_id . 'renewals">'
 			),
 			'placeholder'      => __( 'The number of renewal orders processed during this period.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['renewal_count'],
@@ -618,7 +618,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 						),
 						admin_url( 'edit.php' )
 					)
-				) . '" id="' . $tracks_id . '_switches">'
+				) . '" id="' . $tracks_id . 'switches">'
 			),
 			'placeholder'      => __( 'The number of subscriptions upgraded, downgraded or cross-graded during this period.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['switch_count'],
@@ -640,7 +640,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 						),
 						admin_url( 'edit.php' )
 					)
-				) . '" id="' . $tracks_id . '_cancellations">'
+				) . '" id="' . $tracks_id . 'cancellations">'
 			),
 			'placeholder'      => __( 'The number of subscriptions cancelled by the customer or store manager during this period.  The pre-paid term may not yet have ended during this period.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['cancel_count'],
@@ -662,7 +662,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 						),
 						admin_url( 'edit.php' )
 					)
-				) . '" id="' . $tracks_id . '_ended">'
+				) . '" id="' . $tracks_id . 'ended">'
 			),
 			'placeholder'      => __( 'The number of subscriptions which have either expired or reached the end of the prepaid term if it was previously cancelled.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['ended_count'],
@@ -688,7 +688,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 						),
 						admin_url( 'edit.php' )
 					)
-				) . '" id="' . $tracks_id . '_current">'
+				) . '" id="' . $tracks_id . 'current">'
 			),
 			'placeholder'      => __( 'The number of subscriptions during this period with an end date in the future and a status other than pending.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['subscriber_count'],

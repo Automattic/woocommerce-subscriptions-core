@@ -158,6 +158,20 @@ class WCS_Admin_Reports {
 			return;
 		}
 
+		if ( class_exists( 'WC_Tracks' ) && 'yes' === get_option( 'woocommerce_allow_tracking', 'no' ) ) {
+
+			$reports = array(
+				'subscription-events-by-date' => 'wcsubscriptions_reports_subscription_events_by_date_view',
+				'upcoming-recurring-revenue'  => 'wcsubscriptions_reports_upcoming_recurring_revenue_view',
+				'retention-rate'              => 'wcsubscriptions_reports_retention_rate_view',
+				'subscription-by-product'     => 'wcsubscriptions_reports_subscription_by_product_view',
+				'subscription-by-customer'    => 'wcsubscriptions_reports_subscription_by_customer_view',
+			);
+
+			error_log( $reports[$name] );
+			//WC_Tracks::recordEvent( $reports[ $name ], {} );
+		}
+
 		$report = new $class();
 		$report->output_report();
 	}
