@@ -169,7 +169,6 @@ class WCS_Admin_Reports {
 
 			$properties = array(
 				'orders_count'        => array_sum( (array) wp_count_posts( 'shop_order' ) ),
-				'products_count'      => array_sum( (array) wp_count_posts( 'product' ) ),
 				'subscriptions_count' => array_sum( (array) wp_count_posts( 'shop_subscription' ) ),
 				'version'             => WC_Subscriptions::$version,
 			);
