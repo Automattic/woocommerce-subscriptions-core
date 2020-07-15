@@ -71,6 +71,9 @@ class WC_Subscriptions_Cart {
 		// Remove any subscriptions with a free trial from the initial shipping packages
 		add_filter( 'woocommerce_cart_shipping_packages', __CLASS__ . '::set_cart_shipping_packages', -10, 1 );
 
+		// Subscriptions with a free trial need extra handling to support the COD gateway
+		add_filter( 'woocommerce_available_payment_gateways', __CLASS__ . '::check_cod_gateway_for_free_trials' );
+
 		// Display Formatted Totals
 		add_filter( 'woocommerce_cart_product_subtotal', __CLASS__ . '::get_formatted_product_subtotal', 11, 4 );
 
@@ -282,6 +285,7 @@ class WC_Subscriptions_Cart {
 
 		// Back up the shipping method. Chances are WC is going to wipe the chosen_shipping_methods data
 		WC()->session->set( 'wcs_shipping_methods', WC()->session->get( 'chosen_shipping_methods', array() ) );
+		WC()->session->set( 'wcs_shipping_method_counts', WC()->session->get( 'shipping_method_counts', array() ) );
 
 		// Now let's calculate the totals for each group of subscriptions
 		self::$calculation_type = 'recurring_total';
@@ -350,6 +354,7 @@ class WC_Subscriptions_Cart {
 
 		// We no longer need our backup of shipping methods
 		unset( WC()->session->wcs_shipping_methods );
+		unset( WC()->session->shipping_method_counts );
 
 		// If there is no sign-up fee and a free trial, and no products being purchased with the subscription, we need to zero the fees for the first billing period
 		$remove_fees_from_cart = ( 0 == self::get_cart_subscription_sign_up_fee() && self::all_cart_items_have_free_trial() );
@@ -700,6 +705,50 @@ class WC_Subscriptions_Cart {
 		}
 
 		return $packages;
+	}
+
+	/**
+	 * Checks whether or not the COD gateway should be available on checkout when a subscription has a free trial.
+	 *
+	 * @since 3.0.6
+	 *
+	 * @param array $available_gateways The currently available payment gateways.
+	 * @return array All of the available payment gateways.
+	 */
+	public static function check_cod_gateway_for_free_trials( $available_gateways ) {
+
+		if ( ! self::cart_contains_free_trial() ) {
+			return $available_gateways;
+		}
+
+		$all_gateways = WC()->payment_gateways->payment_gateways();
+
+		if ( ! isset( $all_gateways['cod'] ) ) {
+			return $available_gateways;
+		}
+
+		$gateway = $all_gateways['cod'];
+
+		/**
+		 * Since the COD gateway supports shipping method restrictions we run into problems with free trials.
+		 * We don't make packages for free trial subscriptions and thus they have no assigned shipping
+		 * method to match against the payment gateway. We can get around this limitation by abusing
+		 * the fact that the user has to select a shipping method for the recurring cart.
+		 */
+		$packages = WC()->shipping->packages;
+		self::set_global_recurring_shipping_packages();
+
+		if ( $gateway->is_available() ) {
+			$available_gateways['cod'] = $gateway;
+		} else {
+			// Handle the case where it was previous available but the method chosen by the recurring package
+			// causes it to no longer be available.
+			unset( $available_gateways['cod'] );
+		}
+
+		WC()->shipping->packages = $packages;
+
+		return $available_gateways;
 	}
 
 	/* Formatted Totals Functions */
@@ -2247,10 +2296,12 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function maybe_restore_chosen_shipping_method() {
 		$chosen_shipping_method_cache = WC()->session->get( 'wcs_shipping_methods', false );
+		$shipping_method_counts_cache = WC()->session->get( 'wcs_shipping_method_counts', false );
 		$chosen_shipping_methods      = WC()->session->get( 'chosen_shipping_methods', array() );
 
 		if ( false !== $chosen_shipping_method_cache && empty( $chosen_shipping_methods ) ) {
 			WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_method_cache );
+			WC()->session->set( 'shipping_method_counts', $shipping_method_counts_cache );
 		}
 	}
 
