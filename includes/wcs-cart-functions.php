@@ -198,7 +198,7 @@ function wcs_cart_totals_shipping_method_price_label( $method, $cart ) {
 
 	$price_label = '';
 
-	if ( $method->cost != 0 ) {
+	if ( 0 !== $method->cost ) {
 		$display_prices_include_tax = WC_Subscriptions::is_woocommerce_pre( '3.3' ) ? ( 'incl' === WC()->cart->tax_display_cart ) : WC()->cart->display_prices_including_tax();
 
 		if ( ! $display_prices_include_tax ) {

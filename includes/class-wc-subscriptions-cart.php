@@ -4,11 +4,11 @@
  *
  * Mirrors a few functions in the WC_Cart class to work for subscriptions.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Cart
- * @category	Class
- * @author		Brent Shepherd
- * @since		1.0
+ * @package     WooCommerce Subscriptions
+ * @subpackage  WC_Subscriptions_Cart
+ * @category    Class
+ * @author      Brent Shepherd
+ * @since       1.0
  */
 class WC_Subscriptions_Cart {
 
@@ -45,14 +45,14 @@ class WC_Subscriptions_Cart {
 	 *
 	 * @since 2.0.18
 	 */
-	 private static $shipping_rates = array();
+	private static $shipping_rates = array();
 
 	 /**
-	 * A cache of the current recurring cart being calculated
-	 *
-	 * @since 2.0.20
-	 */
-	 private static $cached_recurring_cart = null;
+	  * A cache of the current recurring cart being calculated
+	  *
+	  * @since 2.0.20
+	  */
+	private static $cached_recurring_cart = null;
 
 	/**
 	 * Bootstraps the class and hooks required actions & filters.
@@ -75,10 +75,10 @@ class WC_Subscriptions_Cart {
 		add_filter( 'woocommerce_cart_product_subtotal', __CLASS__ . '::get_formatted_product_subtotal', 11, 4 );
 
 		// Sometimes, even if the order total is $0, the cart still needs payment
-		add_filter( 'woocommerce_cart_needs_payment', __CLASS__ . '::cart_needs_payment' , 10, 2 );
+		add_filter( 'woocommerce_cart_needs_payment', __CLASS__ . '::cart_needs_payment', 10, 2 );
 
 		// Make sure cart product prices correctly include/exclude taxes
-		add_filter( 'woocommerce_cart_product_price', __CLASS__ . '::cart_product_price' , 10, 2 );
+		add_filter( 'woocommerce_cart_product_price', __CLASS__ . '::cart_product_price', 10, 2 );
 
 		// Display grouped recurring amounts after order totals on the cart/checkout pages
 		add_action( 'woocommerce_cart_totals_after_order_total', __CLASS__ . '::display_recurring_totals' );
@@ -103,8 +103,8 @@ class WC_Subscriptions_Cart {
 		add_filter( 'woocommerce_shipping_packages', __CLASS__ . '::reset_shipping_method_counts', 1000, 1 );
 
 		// When WooCommerce determines the taxable address only return pick up shipping methods chosen for the recurring cart being calculated.
-		add_filter( 'woocommerce_local_pickup_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 100 ,1 );
-		add_filter( 'wc_shipping_local_pickup_plus_chosen_shipping_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 10 ,1 );
+		add_filter( 'woocommerce_local_pickup_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 100, 1 );
+		add_filter( 'wc_shipping_local_pickup_plus_chosen_shipping_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 10, 1 );
 
 		// Validate chosen recurring shipping methods
 		add_action( 'woocommerce_after_checkout_validation', __CLASS__ . '::validate_recurring_shipping_methods' );
@@ -175,17 +175,17 @@ class WC_Subscriptions_Cart {
 	/**
 	 * Use WC core add-to-cart handlers for subscription products.
 	 *
-	 * @param string $handler The name of the handler to use when adding product to the cart
+	 * @param string     $handler The name of the handler to use when adding product to the cart
 	 * @param WC_Product $product
 	 */
 	public static function add_to_cart_handler( $handler, $product ) {
 
 		if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
 			switch ( $handler ) {
-				case 'variable-subscription' :
+				case 'variable-subscription':
 					$handler = 'variable';
 					break;
-				case 'subscription' :
+				case 'subscription':
 					$handler = 'simple';
 					break;
 			}
@@ -211,7 +211,7 @@ class WC_Subscriptions_Cart {
 			// For original calculations, we need the items price to account for sign-up fees and/or free trial
 			if ( 'none' == self::$calculation_type ) {
 
-				$sign_up_fee  = WC_Subscriptions_Product::get_sign_up_fee( $product );
+				$sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( $product );
 
 				// Extra check to make sure that the sign up fee is numeric before using it
 				$sign_up_fee = is_numeric( $sign_up_fee ) ? (float) $sign_up_fee : 0;
@@ -227,7 +227,7 @@ class WC_Subscriptions_Cart {
 
 			$price = apply_filters( 'woocommerce_subscriptions_cart_get_price', $price, $product );
 
-		// Make sure the recurring amount for any non-subscription products in the cart with a subscription is $0
+			// Make sure the recurring amount for any non-subscription products in the cart with a subscription is $0
 		} elseif ( 'recurring_total' == self::$calculation_type ) {
 
 			$price = 0;
@@ -289,8 +289,8 @@ class WC_Subscriptions_Cart {
 		foreach ( $subscription_groups as $recurring_cart_key => $subscription_group ) {
 
 			// Create a clone cart to calculate and store totals for this group of subscriptions
-			$recurring_cart   = clone WC()->cart;
-			$product          = null;
+			$recurring_cart = clone WC()->cart;
+			$product        = null;
 
 			self::$recurring_cart_key = $recurring_cart->recurring_cart_key = $recurring_cart_key;
 
@@ -306,10 +306,10 @@ class WC_Subscriptions_Cart {
 				}
 			}
 
-			$recurring_cart->start_date         = apply_filters( 'wcs_recurring_cart_start_date', gmdate( 'Y-m-d H:i:s' ), $recurring_cart );
-			$recurring_cart->trial_end_date     = apply_filters( 'wcs_recurring_cart_trial_end_date', WC_Subscriptions_Product::get_trial_expiration_date( $product, $recurring_cart->start_date ), $recurring_cart, $product );
-			$recurring_cart->next_payment_date  = apply_filters( 'wcs_recurring_cart_next_payment_date', WC_Subscriptions_Product::get_first_renewal_payment_date( $product, $recurring_cart->start_date ), $recurring_cart, $product );
-			$recurring_cart->end_date           = apply_filters( 'wcs_recurring_cart_end_date', WC_Subscriptions_Product::get_expiration_date( $product, $recurring_cart->start_date ), $recurring_cart, $product );
+			$recurring_cart->start_date        = apply_filters( 'wcs_recurring_cart_start_date', gmdate( 'Y-m-d H:i:s' ), $recurring_cart );
+			$recurring_cart->trial_end_date    = apply_filters( 'wcs_recurring_cart_trial_end_date', WC_Subscriptions_Product::get_trial_expiration_date( $product, $recurring_cart->start_date ), $recurring_cart, $product );
+			$recurring_cart->next_payment_date = apply_filters( 'wcs_recurring_cart_next_payment_date', WC_Subscriptions_Product::get_first_renewal_payment_date( $product, $recurring_cart->start_date ), $recurring_cart, $product );
+			$recurring_cart->end_date          = apply_filters( 'wcs_recurring_cart_end_date', WC_Subscriptions_Product::get_expiration_date( $product, $recurring_cart->start_date ), $recurring_cart, $product );
 
 			// Before calculating recurring cart totals, store this recurring cart object
 			self::$cached_recurring_cart = $recurring_cart;
@@ -331,7 +331,7 @@ class WC_Subscriptions_Cart {
 
 			// And remove some other floatsam
 			$recurring_carts[ $recurring_cart_key ]->removed_cart_contents = array();
-			$recurring_carts[ $recurring_cart_key ]->cart_session_data = array();
+			$recurring_carts[ $recurring_cart_key ]->cart_session_data     = array();
 
 			// Keep a record of the shipping packages so we can add them to the global packages later
 			self::$recurring_shipping_packages[ $recurring_cart_key ] = WC()->shipping->get_packages();
@@ -368,7 +368,7 @@ class WC_Subscriptions_Cart {
 			if ( WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
 				foreach ( $cart_fees as $fee_index => $fee ) {
 					WC()->cart->fees[ $fee_index ]->amount = 0;
-					WC()->cart->fees[ $fee_index ]->tax = 0;
+					WC()->cart->fees[ $fee_index ]->tax    = 0;
 				}
 			} else {
 				foreach ( $cart_fees as $fee ) {
@@ -387,8 +387,8 @@ class WC_Subscriptions_Cart {
 		$total = max( 0, round( WC()->cart->cart_contents_total + WC()->cart->tax_total + WC()->cart->shipping_tax_total + WC()->cart->shipping_total + WC()->cart->fee_total, WC()->cart->dp ) );
 
 		if ( ! self::charge_shipping_up_front() ) {
-			$total = max( 0, $total - WC()->cart->shipping_tax_total - WC()->cart->shipping_total );
-			WC()->cart->shipping_taxes = array();
+			$total                         = max( 0, $total - WC()->cart->shipping_tax_total - WC()->cart->shipping_total );
+			WC()->cart->shipping_taxes     = array();
 			WC()->cart->shipping_tax_total = 0;
 			WC()->cart->shipping_total     = 0;
 		}
@@ -557,8 +557,8 @@ class WC_Subscriptions_Cart {
 	 * the default shipping method when WooCommerce could not find a matching shipping method.
 	 *
 	 * @param string $default_method the default shipping method for the customer/store returned by WC_Shipping::get_default_method()
-	 * @param array $available_methods set of shipping rates for this calculation
-	 * @param int $package_index WC doesn't pass the package index to callbacks on the 'woocommerce_shipping_chosen_method' filter (yet) so we set a default value of 0 for it in the function params
+	 * @param array  $available_methods set of shipping rates for this calculation
+	 * @param int    $package_index WC doesn't pass the package index to callbacks on the 'woocommerce_shipping_chosen_method' filter (yet) so we set a default value of 0 for it in the function params
 	 * @since 2.0.12
 	 */
 	public static function set_chosen_shipping_method( $default_method, $available_methods, $package_index = 0 ) {
@@ -570,7 +570,7 @@ class WC_Subscriptions_Cart {
 		if ( 'none' !== self::$recurring_cart_key && isset( $chosen_methods[ $recurring_cart_package_key ] ) && isset( $available_methods[ $chosen_methods[ $recurring_cart_package_key ] ] ) ) {
 			$default_method = $chosen_methods[ $recurring_cart_package_key ];
 
-		// Set the chosen shipping method (if available) to workaround WC_Shipping::get_default_method() setting the default shipping method whenever method count changes
+			// Set the chosen shipping method (if available) to workaround WC_Shipping::get_default_method() setting the default shipping method whenever method count changes
 		} elseif ( isset( $chosen_methods[ $package_index ] ) && $default_method !== $chosen_methods[ $package_index ] && isset( $available_methods[ $chosen_methods[ $package_index ] ] ) ) {
 			$default_method = $chosen_methods[ $package_index ];
 		}
@@ -582,7 +582,7 @@ class WC_Subscriptions_Cart {
 	 * Create a shipping package index for a given shipping package on a recurring cart.
 	 *
 	 * @param string $recurring_cart_key a cart key of the form returned by @see self::get_recurring_cart_key()
-	 * @param int $package_index the index of a package
+	 * @param int    $package_index the index of a package
 	 * @since 2.0.12
 	 */
 	public static function get_recurring_shipping_package_key( $recurring_cart_key, $package_index ) {
@@ -727,14 +727,16 @@ class WC_Subscriptions_Cart {
 			// And get the appropriate sign up fee string
 			$sign_up_fee_string = $cart->get_product_subtotal( $product, $quantity );
 
-			remove_filter( $product_price_filter,  'WC_Subscriptions_Product::get_sign_up_fee_filter', 100 );
+			remove_filter( $product_price_filter, 'WC_Subscriptions_Product::get_sign_up_fee_filter', 100 );
 
 			add_filter( 'woocommerce_cart_product_subtotal', __CLASS__ . '::get_formatted_product_subtotal', 11, 4 );
 
-			$product_subtotal = WC_Subscriptions_Product::get_price_string( $product, array(
-				'price'           => $product_subtotal,
-				'sign_up_fee'     => $sign_up_fee_string,
-				'tax_calculation' => WC_Subscriptions::is_woocommerce_pre( '4.4' ) ? WC()->cart->tax_display_cart : WC()->cart->get_tax_price_display_mode(),
+			$product_subtotal = WC_Subscriptions_Product::get_price_string(
+				$product,
+				array(
+					'price'           => $product_subtotal,
+					'sign_up_fee'     => $sign_up_fee_string,
+					'tax_calculation' => WC_Subscriptions::is_woocommerce_pre( '4.4' ) ? WC()->cart->tax_display_cart : WC()->cart->get_tax_price_display_mode(),
 				)
 			);
 
@@ -745,7 +747,7 @@ class WC_Subscriptions_Cart {
 				$product_subtotal = str_replace( WC()->countries->inc_tax_or_vat(), '', $product_subtotal ) . ' <small class="tax_label">' . WC()->countries->inc_tax_or_vat() . '</small>';
 			}
 			if ( ! empty( $ex_tax_or_vat_string ) && false !== strpos( $product_subtotal, $ex_tax_or_vat_string ) ) {
-				$product_subtotal = str_replace( WC()->countries->ex_tax_or_vat(), '', $product_subtotal ) . ' <small class="tax_label">' .  WC()->countries->ex_tax_or_vat() . '</small>';
+				$product_subtotal = str_replace( WC()->countries->ex_tax_or_vat(), '', $product_subtotal ) . ' <small class="tax_label">' . WC()->countries->ex_tax_or_vat() . '</small>';
 			}
 
 			$product_subtotal = '<span class="subscription-price">' . $product_subtotal . '</span>';
@@ -855,7 +857,7 @@ class WC_Subscriptions_Cart {
 					continue;
 				}
 
-				$cart_item_sign_up_fee  = WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] );
+				$cart_item_sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] );
 				// Extra check to make sure that the sign up fee is numeric before using it
 				$cart_item_sign_up_fee = is_numeric( $cart_item_sign_up_fee ) ? (float) $cart_item_sign_up_fee : 0;
 
@@ -869,7 +871,7 @@ class WC_Subscriptions_Cart {
 	/**
 	 * Check whether the cart needs payment even if the order total is $0
 	 *
-	 * @param bool $needs_payment The existing flag for whether the cart needs payment or not.
+	 * @param bool    $needs_payment The existing flag for whether the cart needs payment or not.
 	 * @param WC_Cart $cart The WooCommerce cart object.
 	 * @return bool
 	 */
@@ -890,16 +892,16 @@ class WC_Subscriptions_Cart {
 			return $needs_payment;
 		}
 
-		$recurring_total = 0;
-		$is_one_period   = true;
-		$contains_synced = false;
+		$recurring_total                  = 0;
+		$is_one_period                    = true;
+		$contains_synced                  = false;
 		$contains_expiring_limited_coupon = false;
 
 		if ( ! empty( WC()->cart->recurring_carts ) ) {
 			foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
-				$recurring_total    += $recurring_cart->total;
-				$subscription_length = wcs_cart_pluck( $recurring_cart, 'subscription_length' );
-				$contains_synced     = $contains_synced || (bool) WC_Subscriptions_Synchroniser::cart_contains_synced_subscription( $recurring_cart );
+				$recurring_total                 += $recurring_cart->total;
+				$subscription_length              = wcs_cart_pluck( $recurring_cart, 'subscription_length' );
+				$contains_synced                  = $contains_synced || (bool) WC_Subscriptions_Synchroniser::cart_contains_synced_subscription( $recurring_cart );
 				$contains_expiring_limited_coupon = $contains_expiring_limited_coupon || WC_Subscriptions_Coupon::recurring_cart_contains_expiring_coupon( $recurring_cart );
 
 				if ( 0 == $subscription_length || wcs_cart_pluck( $recurring_cart, 'subscription_period_interval' ) != $subscription_length ) {
@@ -988,7 +990,13 @@ class WC_Subscriptions_Cart {
 
 		if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
 			$tax_price_display_mode = WC_Subscriptions::is_woocommerce_pre( '4.4' ) ? WC()->cart->tax_display_cart : WC()->cart->get_tax_price_display_mode();
-			$price = WC_Subscriptions_Product::get_price_string( $product, array( 'price' => $price, 'tax_calculation' => $tax_price_display_mode ) );
+			$price                  = WC_Subscriptions_Product::get_price_string(
+				$product,
+				array(
+					'price'           => $price,
+					'tax_calculation' => $tax_price_display_mode,
+				)
+			);
 		}
 
 		return $price;
@@ -1020,7 +1028,16 @@ class WC_Subscriptions_Cart {
 			}
 
 			if ( $carts_with_multiple_payments >= 1 ) {
-				wc_get_template( 'checkout/recurring-totals.php', array( 'shipping_methods' => $shipping_methods, 'recurring_carts' => WC()->cart->recurring_carts, 'carts_with_multiple_payments' => $carts_with_multiple_payments ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+				wc_get_template(
+					'checkout/recurring-totals.php',
+					array(
+						'shipping_methods'             => $shipping_methods,
+						'recurring_carts'              => WC()->cart->recurring_carts,
+						'carts_with_multiple_payments' => $carts_with_multiple_payments,
+					),
+					'',
+					plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/'
+				);
 			}
 
 			self::$calculation_type = 'none';
@@ -1055,17 +1072,17 @@ class WC_Subscriptions_Cart {
 
 		// First start with the billing interval and period
 		switch ( $interval ) {
-			case 1 :
+			case 1:
 				if ( 'day' == $period ) {
 					$cart_key .= 'daily'; // always gotta be one exception
 				} else {
 					$cart_key .= sprintf( '%sly', $period );
 				}
 				break;
-			case 2 :
+			case 2:
 				$cart_key .= sprintf( 'every_2nd_%s', $period );
 				break;
-			case 3 :
+			case 3:
 				$cart_key .= sprintf( 'every_3rd_%s', $period ); // or sometimes two exceptions it would seem
 				break;
 			default:
@@ -1112,7 +1129,7 @@ class WC_Subscriptions_Cart {
 				if ( is_numeric( $key ) ) {
 					$standard_package_methods[ $key ] = $method;
 
-				} else if ( strpos( $key, self::$recurring_cart_key ) !== false ) {
+				} elseif ( strpos( $key, self::$recurring_cart_key ) !== false ) {
 
 					$recurring_cart_shipping_methods[ $key ] = $method;
 				}
@@ -1164,7 +1181,7 @@ class WC_Subscriptions_Cart {
 					continue;
 				}
 
-				$recurring_shipping_package_key = WC_Subscriptions_Cart::get_recurring_shipping_package_key( $recurring_cart_key, $package_index );
+				$recurring_shipping_package_key = self::get_recurring_shipping_package_key( $recurring_cart_key, $package_index );
 
 				if ( ! isset( $package['rates'][ $shipping_methods[ $recurring_shipping_package_key ] ] ) ) {
 
@@ -1285,7 +1302,7 @@ class WC_Subscriptions_Cart {
 	 * When calculating the free shipping method availability, WC uses the WC->cart object. During shipping calculations for
 	 * recurring carts we need the recurring cart's total and coupons to be the base for checking its availability
 	 *
-	 * @param bool $is_available
+	 * @param bool  $is_available
 	 * @param array $package
 	 * @return bool $is_available a revised version of is_available based off the recurring cart object
 	 *
@@ -1331,8 +1348,8 @@ class WC_Subscriptions_Cart {
 	 *
 	 * @since 2.5.6
 	 *
-	 * @param bool $is_available Whether the shipping method is available or not.
-	 * @param array $package a shipping package.
+	 * @param bool               $is_available Whether the shipping method is available or not.
+	 * @param array              $package a shipping package.
 	 * @param WC_Shipping_Method $shipping_method An instance of a shipping method.
 	 * @return bool Whether the shipping method is available for the recurring cart or not.
 	 */
@@ -1995,11 +2012,13 @@ class WC_Subscriptions_Cart {
 
 		foreach ( WC()->cart->recurring_carts as $cart ) {
 			foreach ( $cart->taxes as $key => $tax ) {
-				if ( ! $compound && WC_Tax::is_compound( $key ) ) { continue; }
+				if ( ! $compound && WC_Tax::is_compound( $key ) ) {
+					continue; }
 				$recurring_total += $tax;
 			}
 			foreach ( $cart->shipping_taxes as $key => $tax ) {
-				if ( ! $compound && WC_Tax::is_compound( $key ) ) { continue; }
+				if ( ! $compound && WC_Tax::is_compound( $key ) ) {
+					continue; }
 				$recurring_total += $tax;
 			}
 		}
@@ -2081,8 +2100,8 @@ class WC_Subscriptions_Cart {
 	 * Creates a string representation of the subscription period/term for each item in the cart
 	 *
 	 * @param string $initial_amount The initial amount to be displayed for the subscription as passed through the @see woocommerce_price() function.
-	 * @param float $recurring_amount The price to display in the subscription.
-	 * @param array $args (optional) Flags to customise  to display the trial and length of the subscription. Default to false - don't display.
+	 * @param float  $recurring_amount The price to display in the subscription.
+	 * @param array  $args (optional) Flags to customise  to display the trial and length of the subscription. Default to false - don't display.
 	 * @since 1.0
 	 * @deprecated 2.0
 	 */
@@ -2096,7 +2115,9 @@ class WC_Subscriptions_Cart {
 			);
 		}
 
-		$args = wp_parse_args( $args, array(
+		$args = wp_parse_args(
+			$args,
+			array(
 				'include_lengths' => false,
 				'include_trial'   => true,
 			)
