@@ -710,9 +710,10 @@ class WC_Subscriptions_Cart {
 	/**
 	 * Checks whether or not the COD gateway should be available on checkout when a subscription has a free trial.
 	 *
+	 * @since 3.0.6
+	 *
 	 * @param array $available_gateways The currently available payment gateways.
 	 * @return array All of the available payment gateways.
-	 * @since 3.1
 	 */
 	public static function check_cod_gateway_for_free_trials( $available_gateways ) {
 
@@ -721,17 +722,22 @@ class WC_Subscriptions_Cart {
 		}
 
 		$all_gateways = WC()->payment_gateways->payment_gateways();
+
 		if ( ! isset( $all_gateways['cod'] ) ) {
 			return $available_gateways;
 		}
+
 		$gateway = $all_gateways['cod'];
 
-		// Since the COD gateway supports shipping method restrictions we run into problems with free trials.
-		// We don't make packages for free trial subscriptions and thus they have no assigned shipping
-		// method to match against the payment gateway. We can get around this limitation by abusing
-		// the fact that the user has to select a shipping method for the renewal.
+		/**
+		 * Since the COD gateway supports shipping method restrictions we run into problems with free trials.
+		 * We don't make packages for free trial subscriptions and thus they have no assigned shipping
+		 * method to match against the payment gateway. We can get around this limitation by abusing
+		 * the fact that the user has to select a shipping method for the recurring cart.
+		 */
 		$packages = WC()->shipping->packages;
 		self::set_global_recurring_shipping_packages();
+
 		if ( $gateway->is_available() ) {
 			$available_gateways['cod'] = $gateway;
 		} else {
@@ -739,6 +745,7 @@ class WC_Subscriptions_Cart {
 			// causes it to no longer be available.
 			unset( $available_gateways['cod'] );
 		}
+
 		WC()->shipping->packages = $packages;
 
 		return $available_gateways;
