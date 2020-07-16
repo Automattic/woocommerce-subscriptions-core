@@ -351,7 +351,7 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			case 'pending-cancel':
-				if ( $this->payment_method_supports( 'subscription_cancellation' ) && $this->has_status( array( 'active', 'on-hold' ) ) ) {
+				if ( $this->payment_method_supports( 'subscription_cancellation' ) && ( $this->has_status( 'active' ) || $this->has_status( 'on-hold' ) && ! $this->needs_payment() ) ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
@@ -1661,12 +1661,12 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function cancel_order( $note = '' ) {
 
-		// If the customer hasn't been through the pending cancellation period yet set the subscription to be pending cancellation
-		if ( $this->has_status( array( 'active', 'on-hold' ) ) && $this->calculate_date( 'end_of_prepaid_term' ) > current_time( 'mysql', true ) && apply_filters( 'woocommerce_subscription_use_pending_cancel', true ) ) {
+		// If the customer hasn't been through the pending cancellation period yet set the subscription to be pending cancellation unless there is a pending renewal order.
+		if ( apply_filters( 'woocommerce_subscription_use_pending_cancel', true ) && $this->calculate_date( 'end_of_prepaid_term' ) > current_time( 'mysql', true ) && ( $this->has_status( 'active' ) || $this->has_status( 'on-hold' ) && ! $this->needs_payment() ) ) {
 
 			$this->update_status( 'pending-cancel', $note );
 
-		// If the subscription has already ended or can't be cancelled for some other reason, just record the note
+		// If the subscription has already ended or can't be cancelled for some other reason, just record the note.
 		} elseif ( ! $this->can_be_updated_to( 'cancelled' ) ) {
 
 			$this->add_order_note( $note );
