@@ -68,8 +68,8 @@ class WCS_Change_Payment_Method_Admin {
 					foreach ( $meta as $meta_key => $meta_data ) {
 
 						$field_id       = sprintf( '_payment_method_meta[%s][%s][%s]', $payment_method_id, $meta_table, $meta_key );
-						$field_label    = ( ! empty( $meta_data['label'] ) ) ? $meta_data['label'] : $meta_key ;
-						$field_value    = ( ! empty( $meta_data['value'] ) ) ? $meta_data['value'] : null ;
+						$field_label    = ( ! empty( $meta_data['label'] ) ) ? $meta_data['label'] : $meta_key;
+						$field_value    = ( ! empty( $meta_data['value'] ) ) ? $meta_data['value'] : null;
 						$field_disabled = ( isset( $meta_data['disabled'] ) && true == $meta_data['disabled'] ) ? ' readonly' : '';
 
 						echo '<p class="form-field form-field-wide">';

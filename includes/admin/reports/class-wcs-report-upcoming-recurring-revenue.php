@@ -75,7 +75,7 @@ class WCS_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 		foreach ( $this->order_ids_recurring_totals as $r ) {
 			if ( strtotime( $r->scheduled_date ) >= $this->start_date && strtotime( $r->scheduled_date ) <= $this->end_date ) {
 
-				$total_renewal_revenue += $r->recurring_total ;
+				$total_renewal_revenue += $r->recurring_total;
 				$total_renewal_count   += $r->total_renewals;
 			}
 		}

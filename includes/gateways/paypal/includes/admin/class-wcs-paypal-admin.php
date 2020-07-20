@@ -287,7 +287,7 @@ class WCS_PayPal_Admin {
 		if ( ! empty( $url ) ) {
 			echo '<a href="' . esc_url( $url ) . '" target="_blank">' . esc_html( $paypal_profile_id ) . '</a>';
 		} else {
-			echo  esc_html( $paypal_profile_id );
+			echo esc_html( $paypal_profile_id );
 		}
 
 		echo '</p></div>';

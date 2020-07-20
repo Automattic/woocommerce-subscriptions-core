@@ -88,7 +88,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 	 * @since 2.2.20
 	 */
 	public function get_privacy_message() {
-		return
+		return '' .
 		'<p>' . __( 'By using WooCommerce Subscriptions, you may be storing personal data and depending on which third-party payment processors you’re using to take subscription payments, you may be sharing personal data with external sources.', 'woocommerce-subscriptions' ) . '</p>' .
 		// translators: placeholders are opening and closing link tags, linking to additional privacy policy documentation.
 		'<h3>' . __( 'What we collect and store', 'woocommerce-subscriptions' ) . '</h3>' .

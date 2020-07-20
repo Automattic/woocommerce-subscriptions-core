@@ -719,7 +719,7 @@ class WC_Subscriptions_Synchroniser {
 				wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}" ) ) { // In grace period
 				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}", $from_timestamp );
 			} else { // If not in grace period, then the sync day has passed by. So, reduce interval by 1.
-				$year += $interval - 1 ;
+				$year += $interval - 1;
 				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}", wcs_add_time( $interval - 1, $period, $from_timestamp ) );
 			}
 		}
