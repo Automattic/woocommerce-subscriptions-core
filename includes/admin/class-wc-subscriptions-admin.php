@@ -283,7 +283,7 @@ class WC_Subscriptions_Admin {
 
 		// Set month as the default billing period
 		if ( ! $chosen_period = get_post_meta( $post->ID, '_subscription_period', true ) ) {
-		 	$chosen_period = 'month';
+			$chosen_period = 'month';
 		}
 
 		echo '<div class="options_group subscription_pricing show_if_subscription hidden">';
@@ -1710,7 +1710,7 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function payment_gateways_renewal_column( $header ) {
 		$header_new = array_slice( $header, 0, count( $header ) - 1, true ) + array( 'renewals' => __( 'Automatic Recurring Payments', 'woocommerce-subscriptions' ) ) // Ideally, we could add a link to the docs here, but the title is passed through esc_html()
-		        	+ array_slice( $header, count( $header ) - 1, count( $header ) - ( count( $header ) - 1 ), true );
+			+ array_slice( $header, count( $header ) - 1, count( $header ) - ( count( $header ) - 1 ), true );
 
 		return $header_new;
 	}

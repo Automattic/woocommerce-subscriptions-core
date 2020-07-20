@@ -265,7 +265,7 @@ class WC_Subscriptions_Synchroniser {
 
 			// Set month as the default billing period
 			if ( ! $subscription_period = get_post_meta( $post->ID, '_subscription_period', true ) ) {
-			 	$subscription_period = 'month';
+				$subscription_period = 'month';
 			}
 
 			// Determine whether to display the week/month sync fields or the annual sync fields

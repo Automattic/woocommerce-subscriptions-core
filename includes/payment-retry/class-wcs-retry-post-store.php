@@ -45,7 +45,7 @@ class WCS_Retry_Post_Store extends WCS_Retry_Store {
 					'not_found_in_trash' => __( 'No retries found in trash', 'woocommerce-subscriptions' ),
 				),
 			)
-	 	);
+		);
 	}
 
 	/**

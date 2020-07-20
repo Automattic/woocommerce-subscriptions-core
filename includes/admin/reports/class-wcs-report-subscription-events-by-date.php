@@ -899,26 +899,26 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 							shadowSize: 0,
 							<?php echo wp_kses_post( $this->get_currency_tooltip() ); ?>
 						},
-                        {
-                            label: "<?php echo esc_js( __( 'Switch Totals', 'woocommerce-subscriptions' ) ) ?>",
-                            data: order_data.switch_orders_amount,
-                            yaxis: 2,
-                            color: '<?php echo esc_js( $this->chart_colours['switch_total'] ); ?>',
-                            points: {
-                                show: true,
-                                radius: 5,
-                                lineWidth: 4,
-                                fillColor: '#fff',
-                                fill: true
-                            },
-                            lines: {
-                                show: true,
-                                lineWidth: 5,
-                                fill: false
-                            },
-                            shadowSize: 0,
+						{
+							label: "<?php echo esc_js( __( 'Switch Totals', 'woocommerce-subscriptions' ) ) ?>",
+							data: order_data.switch_orders_amount,
+							yaxis: 2,
+							color: '<?php echo esc_js( $this->chart_colours['switch_total'] ); ?>',
+							points: {
+								show: true,
+								radius: 5,
+								lineWidth: 4,
+								fillColor: '#fff',
+								fill: true
+							},
+							lines: {
+								show: true,
+								lineWidth: 5,
+								fill: false
+							},
+							shadowSize: 0,
 							<?php echo wp_kses_post( $this->get_currency_tooltip() ); ?>
-                        },
+						},
 					];
 
 					if ( highlight !== 'undefined' && series[ highlight ] ) {
