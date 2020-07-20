@@ -66,7 +66,7 @@ function wcs_get_edit_post_link( $post_id ) {
 		return;
 	}
 
-	return apply_filters( 'get_edit_post_link', admin_url( sprintf( $post_type_object->_edit_link . '&action=edit', $post_id ) ),$post_id, '' );
+	return apply_filters( 'get_edit_post_link', admin_url( sprintf( $post_type_object->_edit_link . '&action=edit', $post_id ) ), $post_id, '' );
 }
 
 /**

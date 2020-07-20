@@ -24,6 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function wcs_get_subscription_period_strings( $number = 1, $period = '' ) {
 
+	// phpcs:disable Generic.Functions.FunctionCallArgumentSpacing.TooMuchSpaceAfterComma
 	$translated_periods = apply_filters( 'woocommerce_subscription_periods',
 		array(
 			// translators: placeholder is number of days. (e.g. "Bill this every day / 4 days")
@@ -37,6 +38,7 @@ function wcs_get_subscription_period_strings( $number = 1, $period = '' ) {
 		),
 		$number
 	);
+	// phpcs:enable
 
 	return ( ! empty( $period ) ) ? $translated_periods[ $period ] : $translated_periods;
 }
@@ -172,6 +174,7 @@ function wcs_get_available_time_periods( $form = 'singular' ) {
 
 	$number = ( 'singular' === $form ) ? 1 : 2;
 
+	// phpcs:disable Generic.Functions.FunctionCallArgumentSpacing.TooMuchSpaceAfterComma
 	$translated_periods = apply_filters( 'woocommerce_subscription_available_time_periods',
 		array(
 			'day'   => _nx( 'day',   'days',   $number, 'Used in the trial period dropdown. Number is in text field. 0, 2+ will need plural, 1 will need singular.', 'woocommerce-subscriptions' ),
@@ -180,6 +183,7 @@ function wcs_get_available_time_periods( $form = 'singular' ) {
 			'year'  => _nx( 'year',  'years',  $number, 'Used in the trial period dropdown. Number is in text field. 0, 2+ will need plural, 1 will need singular.', 'woocommerce-subscriptions' ),
 		)
 	);
+	// phpcs:enable
 
 	return $translated_periods;
 }

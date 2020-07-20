@@ -42,7 +42,7 @@ class WCS_Cart_Renewal {
 		add_filter( 'woocommerce_create_order', array( &$this, 'update_cart_hash' ), 10, 1 );
 
 		// When a user is prevented from paying for a failed/pending renewal order because they aren't logged in, redirect them back after login
-		add_filter( 'woocommerce_login_redirect', array( &$this, 'maybe_redirect_after_login' ), 10 , 1 );
+		add_filter( 'woocommerce_login_redirect', array( &$this, 'maybe_redirect_after_login' ), 10, 1 );
 
 		// Once we have finished updating the renewal order on checkout, update the session cart so the cart changes are honoured.
 		add_action( 'woocommerce_checkout_order_processed', array( &$this, 'update_session_cart_after_updating_renewal_order' ), 10 );
@@ -154,7 +154,7 @@ class WCS_Cart_Renewal {
 			add_action( 'woocommerce_add_order_item_meta', array( &$this, 'add_order_item_meta' ), 10, 2 );
 			add_action( 'woocommerce_add_subscription_item_meta', array( &$this, 'add_order_item_meta' ), 10, 2 );
 		} else {
-			add_action( 'woocommerce_checkout_create_order_line_item',  array( &$this, 'add_order_line_item_meta' ), 10, 3 );
+			add_action( 'woocommerce_checkout_create_order_line_item', array( &$this, 'add_order_line_item_meta' ), 10, 3 );
 		}
 	}
 
@@ -345,10 +345,10 @@ class WCS_Cart_Renewal {
 		if ( ! $success && 'all_items_required' === $validation_type ) {
 			if ( wcs_is_subscription( $subscription ) ) {
 				// translators: %s is subscription's number
-				wc_add_notice( sprintf( esc_html__( 'Subscription #%s has not been added to the cart.', 'woocommerce-subscriptions' ), $subscription->get_order_number() ) , 'error' );
+				wc_add_notice( sprintf( esc_html__( 'Subscription #%s has not been added to the cart.', 'woocommerce-subscriptions' ), $subscription->get_order_number() ), 'error' );
 			} else {
 				// translators: %s is order's number
-				wc_add_notice( sprintf( esc_html__( 'Order #%s has not been added to the cart.', 'woocommerce-subscriptions' ), $subscription->get_order_number() ) , 'error' );
+				wc_add_notice( sprintf( esc_html__( 'Order #%s has not been added to the cart.', 'woocommerce-subscriptions' ), $subscription->get_order_number() ), 'error' );
 			}
 
 			WC()->cart->empty_cart( true );

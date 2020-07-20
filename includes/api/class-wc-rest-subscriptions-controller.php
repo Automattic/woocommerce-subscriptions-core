@@ -180,7 +180,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 	protected function create_order( $request ) {
 		try {
 			if ( ! is_null( $request['customer_id'] ) && 0 !== $request['customer_id'] && false === get_user_by( 'id', $request['customer_id'] ) ) {
-				throw new WC_REST_Exception( 'woocommerce_rest_invalid_customer_id',__( 'Customer ID is invalid.', 'woocommerce-subscriptions' ), 400 );
+				throw new WC_REST_Exception( 'woocommerce_rest_invalid_customer_id', __( 'Customer ID is invalid.', 'woocommerce-subscriptions' ), 400 );
 			}
 
 			// If the start date is not set in the request, set its default to now

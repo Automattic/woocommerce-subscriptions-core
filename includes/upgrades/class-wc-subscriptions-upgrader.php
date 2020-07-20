@@ -629,7 +629,7 @@ class WC_Subscriptions_Upgrader {
 	public static function updated_welcome_page() {
 		$about_page = add_dashboard_page( __( 'Welcome to WooCommerce Subscriptions 2.1', 'woocommerce-subscriptions' ), __( 'About WooCommerce Subscriptions', 'woocommerce-subscriptions' ), 'manage_options', 'wcs-about', __CLASS__ . '::about_screen' );
 		add_action( 'admin_print_styles-'. $about_page, __CLASS__ . '::admin_css' );
-		add_action( 'admin_head',  __CLASS__ . '::admin_head' );
+		add_action( 'admin_head', __CLASS__ . '::admin_head' );
 	}
 
 	/**

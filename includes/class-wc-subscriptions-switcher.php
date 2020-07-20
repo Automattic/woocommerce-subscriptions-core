@@ -114,10 +114,10 @@ class WC_Subscriptions_Switcher {
 		add_filter( 'woocommerce_subscriptions_calculated_total', array( __CLASS__, 'set_force_payment_flag_in_cart' ), 10, 1 );
 
 		// Require payment when switching from a $0 / period subscription to a non-zero subscription to process automatic payments
-		add_filter( 'woocommerce_cart_needs_payment', array( __CLASS__, 'cart_needs_payment' ) , 50, 2 );
+		add_filter( 'woocommerce_cart_needs_payment', array( __CLASS__, 'cart_needs_payment' ), 50, 2 );
 
 		// Require payment when switching from a $0 / period subscription to a non-zero subscription to process automatic payments
-		add_action( 'woocommerce_subscriptions_switch_completed', array( __CLASS__, 'maybe_set_payment_method_after_switch' ) , 10, 1 );
+		add_action( 'woocommerce_subscriptions_switch_completed', array( __CLASS__, 'maybe_set_payment_method_after_switch' ), 10, 1 );
 
 		// Do not reduce product stock when the order item is simply to record a switch
 		add_filter( 'woocommerce_order_item_quantity', array( __CLASS__, 'maybe_do_not_reduce_stock' ), 10, 3 );
@@ -227,7 +227,7 @@ class WC_Subscriptions_Switcher {
 			}
 
 			if ( $removed_item_count > 0 ) {
-				wc_add_notice( _n( 'Your cart contained an invalid subscription switch request. It has been removed.', 'Your cart contained invalid subscription switch requests. They have been removed.', 	$removed_item_count, 'woocommerce-subscriptions' ), 'error' );
+				wc_add_notice( _n( 'Your cart contained an invalid subscription switch request. It has been removed.', 'Your cart contained invalid subscription switch requests. They have been removed.', $removed_item_count, 'woocommerce-subscriptions' ), 'error' );
 
 				wp_redirect( wc_get_cart_url() );
 				exit();
@@ -414,7 +414,7 @@ class WC_Subscriptions_Switcher {
 				'options' => array(
 					'no'                 => _x( 'Never (do not charge a sign up fee)', 'when to prorate signup fee when switching', 'woocommerce-subscriptions' ),
 					'full'               => _x( 'Never (charge the full sign up fee)', 'when to prorate signup fee when switching', 'woocommerce-subscriptions' ),
-					'yes'                => _x( 'Always', 'when to prorate signup fee when switching','woocommerce-subscriptions' ),
+					'yes'                => _x( 'Always', 'when to prorate signup fee when switching', 'woocommerce-subscriptions' ),
 				),
 				'desc_tip' => true,
 			),

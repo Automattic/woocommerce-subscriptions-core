@@ -47,7 +47,7 @@ class WC_Subscriptions_Order {
 		add_action( 'woocommerce_order_status_changed', __CLASS__ . '::maybe_record_subscription_payment', 9, 3 );
 
 		// Sometimes, even if the order total is $0, the order still needs payment
-		add_filter( 'woocommerce_order_needs_payment', __CLASS__ . '::order_needs_payment' , 10, 3 );
+		add_filter( 'woocommerce_order_needs_payment', __CLASS__ . '::order_needs_payment', 10, 3 );
 
 		// Add subscription information to the order complete emails.
 		add_action( 'woocommerce_email_after_order_table', __CLASS__ . '::add_sub_info_email', 15, 3 );

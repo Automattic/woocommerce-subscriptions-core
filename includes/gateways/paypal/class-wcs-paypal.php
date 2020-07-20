@@ -162,7 +162,7 @@ class WCS_PayPal {
 
 		if ( self::are_credentials_set() ) {
 
-			$accounts_with_reference_transactions_enabled = json_decode( get_option( 'wcs_paypal_rt_enabled_accounts' , wcs_json_encode( array() ) ) );
+			$accounts_with_reference_transactions_enabled = json_decode( get_option( 'wcs_paypal_rt_enabled_accounts', wcs_json_encode( array() ) ) );
 
 			if ( in_array( $api_username, $accounts_with_reference_transactions_enabled ) ) {
 

@@ -862,8 +862,8 @@ class WC_Subscriptions_Manager {
 	 */
 	public static function fix_trash_meta_status( $post_id ) {
 
-		if ( 'shop_subscription' == get_post_type( $post_id ) && ! in_array( get_post_meta( $post_id,'_wp_trash_meta_status', true ), array( 'wc-pending', 'wc-expired', 'wc-cancelled' ) ) ) {
-			update_post_meta( $post_id,'_wp_trash_meta_status', 'wc-cancelled' );
+		if ( 'shop_subscription' == get_post_type( $post_id ) && ! in_array( get_post_meta( $post_id, '_wp_trash_meta_status', true ), array( 'wc-pending', 'wc-expired', 'wc-cancelled' ) ) ) {
+			update_post_meta( $post_id, '_wp_trash_meta_status', 'wc-cancelled' );
 		}
 	}
 
@@ -1220,7 +1220,7 @@ class WC_Subscriptions_Manager {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_date( "end" )' );
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
 		$expiration_date = ( 'mysql' == $type ) ? $subscription->get_date( 'end' ) : $subscription->get_time( 'end' );
-		return apply_filters( 'woocommerce_subscription_expiration_date' , $expiration_date, $subscription_key, $user_id );
+		return apply_filters( 'woocommerce_subscription_expiration_date', $expiration_date, $subscription_key, $user_id );
 	}
 
 	/**
@@ -1399,7 +1399,7 @@ class WC_Subscriptions_Manager {
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
 		$trial_end    = $subscription->calculate_date( 'trial_end' );
 		$trial_end    = ( 'mysql' == $type ) ? $trial_end : wcs_date_to_time( $trial_end );
-		return apply_filters( 'woocommerce_subscription_calculated_trial_expiration_date' , $trial_end, $subscription_key, $user_id );
+		return apply_filters( 'woocommerce_subscription_calculated_trial_expiration_date', $trial_end, $subscription_key, $user_id );
 	}
 
 	/**

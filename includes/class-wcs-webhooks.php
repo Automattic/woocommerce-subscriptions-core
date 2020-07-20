@@ -40,7 +40,7 @@ class WCS_Webhooks {
 
 		add_action( 'woocommerce_subscriptions_switch_completed', __CLASS__ . '::add_subscription_switched_callback', 10, 1 );
 
-		add_filter( 'woocommerce_webhook_topics' , __CLASS__ . '::add_topics_admin_menu', 10, 1 );
+		add_filter( 'woocommerce_webhook_topics', __CLASS__ . '::add_topics_admin_menu', 10, 1 );
 
 		add_filter( 'wcs_new_order_created', __CLASS__ . '::add_subscription_created_order_callback', 10, 1 );
 

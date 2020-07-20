@@ -88,7 +88,7 @@ class WC_Subscriptions_Admin {
 
 		// Save variable subscription meta
 		add_action( 'woocommerce_process_product_meta_variable-subscription', __CLASS__ . '::process_product_meta_variable_subscription' );
-		add_action( 'woocommerce_save_product_variation',  __CLASS__ . '::save_product_variation', 20, 2 );
+		add_action( 'woocommerce_save_product_variation', __CLASS__ . '::save_product_variation', 20, 2 );
 
 		add_action( 'woocommerce_subscription_pre_update_status', __CLASS__ . '::check_customer_is_set', 10, 3 );
 
@@ -114,7 +114,7 @@ class WC_Subscriptions_Admin {
 
 		add_filter( 'posts_where', array( __CLASS__, 'filter_paid_subscription_orders_for_user' ) );
 
-		add_action( 'admin_notices',  __CLASS__ . '::display_renewal_filter_notice' );
+		add_action( 'admin_notices', __CLASS__ . '::display_renewal_filter_notice' );
 
 		add_shortcode( 'subscriptions', __CLASS__ . '::do_subscriptions_shortcode' );
 
@@ -127,7 +127,7 @@ class WC_Subscriptions_Admin {
 		// Do not display formatted order total on the Edit Order administration screen
 		add_filter( 'woocommerce_get_formatted_order_total', __CLASS__ . '::maybe_remove_formatted_order_total_filter', 0, 2 );
 
-		add_action( 'woocommerce_payment_gateways_settings', __CLASS__ . '::add_recurring_payment_gateway_information', 10 , 1 );
+		add_action( 'woocommerce_payment_gateways_settings', __CLASS__ . '::add_recurring_payment_gateway_information', 10, 1 );
 
 		// Change text for when order items cannot be edited
 		add_action( 'woocommerce_admin_order_totals_after_refunded', __CLASS__ . '::maybe_attach_gettext_callback', 10, 1 );

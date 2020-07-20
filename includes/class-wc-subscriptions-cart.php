@@ -78,10 +78,10 @@ class WC_Subscriptions_Cart {
 		add_filter( 'woocommerce_cart_product_subtotal', __CLASS__ . '::get_formatted_product_subtotal', 11, 4 );
 
 		// Sometimes, even if the order total is $0, the cart still needs payment
-		add_filter( 'woocommerce_cart_needs_payment', __CLASS__ . '::cart_needs_payment' , 10, 2 );
+		add_filter( 'woocommerce_cart_needs_payment', __CLASS__ . '::cart_needs_payment', 10, 2 );
 
 		// Make sure cart product prices correctly include/exclude taxes
-		add_filter( 'woocommerce_cart_product_price', __CLASS__ . '::cart_product_price' , 10, 2 );
+		add_filter( 'woocommerce_cart_product_price', __CLASS__ . '::cart_product_price', 10, 2 );
 
 		// Display grouped recurring amounts after order totals on the cart/checkout pages
 		add_action( 'woocommerce_cart_totals_after_order_total', __CLASS__ . '::display_recurring_totals' );
@@ -106,8 +106,8 @@ class WC_Subscriptions_Cart {
 		add_filter( 'woocommerce_shipping_packages', __CLASS__ . '::reset_shipping_method_counts', 1000, 1 );
 
 		// When WooCommerce determines the taxable address only return pick up shipping methods chosen for the recurring cart being calculated.
-		add_filter( 'woocommerce_local_pickup_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 100 ,1 );
-		add_filter( 'wc_shipping_local_pickup_plus_chosen_shipping_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 10 ,1 );
+		add_filter( 'woocommerce_local_pickup_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 100, 1 );
+		add_filter( 'wc_shipping_local_pickup_plus_chosen_shipping_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 10, 1 );
 
 		// Validate chosen recurring shipping methods
 		add_action( 'woocommerce_after_checkout_validation', __CLASS__ . '::validate_recurring_shipping_methods' );
@@ -776,7 +776,7 @@ class WC_Subscriptions_Cart {
 			// And get the appropriate sign up fee string
 			$sign_up_fee_string = $cart->get_product_subtotal( $product, $quantity );
 
-			remove_filter( $product_price_filter,  'WC_Subscriptions_Product::get_sign_up_fee_filter', 100 );
+			remove_filter( $product_price_filter, 'WC_Subscriptions_Product::get_sign_up_fee_filter', 100 );
 
 			add_filter( 'woocommerce_cart_product_subtotal', __CLASS__ . '::get_formatted_product_subtotal', 11, 4 );
 

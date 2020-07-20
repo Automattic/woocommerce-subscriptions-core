@@ -65,7 +65,7 @@ class WC_Subscriptions_Synchroniser {
 
 		// Save sync options when a variable subscription product is saved
 		add_action( 'woocommerce_process_product_meta_variable-subscription', __CLASS__ . '::process_product_meta_variable_subscription' );
-		add_action( 'woocommerce_save_product_variation',  __CLASS__ . '::save_product_variation', 20, 2 );
+		add_action( 'woocommerce_save_product_variation', __CLASS__ . '::save_product_variation', 20, 2 );
 
 		// Make sure the expiration dates are calculated from the synced start date
 		add_filter( 'woocommerce_subscriptions_product_trial_expiration_date', __CLASS__ . '::recalculate_product_trial_expiration_date', 10, 2 );
