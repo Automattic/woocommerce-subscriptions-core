@@ -373,7 +373,7 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			case 'deleted' :
-				if ( 'trash' == $this->get_status()  ) {
+				if ( 'trash' == $this->get_status() ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
@@ -2260,7 +2260,7 @@ class WC_Subscription extends WC_Order {
 				$subscription_order_count = count( $this->get_related_orders() );
 
 				// when we have a sync'd subscription before its 1st payment, we need to base the calculations for the next payment on the first/next payment timestamp.
-				if ( $subscription_order_count < 2 && 0 != ( $next_payment_timestamp = $this->get_time( 'next_payment' ) )  ) {
+				if ( $subscription_order_count < 2 && 0 != ( $next_payment_timestamp = $this->get_time( 'next_payment' ) ) ) {
 					$from_timestamp = $next_payment_timestamp;
 
 				// when we have a sync'd subscription after its 1st payment, we need to base the calculations for the next payment on the last payment timestamp.

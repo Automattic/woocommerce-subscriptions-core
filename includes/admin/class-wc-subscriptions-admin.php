@@ -231,7 +231,7 @@ class WC_Subscriptions_Admin {
 	 * @return array $query_vars
 	 * @since  2.5.1
 	 */
-	public static function modify_downloadable_and_virtual_product_queries( $query_vars) {
+	public static function modify_downloadable_and_virtual_product_queries( $query_vars ) {
 		global $pagenow, $typenow;
 
 		if ( ! is_admin() || 'edit.php' !== $pagenow || 'product' !== $typenow ) {

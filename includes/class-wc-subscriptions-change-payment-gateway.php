@@ -512,11 +512,11 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			$new_payment_method_title = '';
 		}
 
-		if ( empty( $old_payment_method_title )  ) {
+		if ( empty( $old_payment_method_title ) ) {
 			$old_payment_method_title = $old_payment_method;
 		}
 
-		if ( empty( $new_payment_method_title )  ) {
+		if ( empty( $new_payment_method_title ) ) {
 			$new_payment_method_title = $new_payment_method;
 		}
 

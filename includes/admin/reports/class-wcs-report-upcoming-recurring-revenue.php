@@ -42,7 +42,7 @@ class WCS_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 				$next_payment_timestamp = strtotime( $r->scheduled_date );
 
 				//Remove the time part of the end date, if there is one
-				if ( '0' !== $scheduled_ends[ $key ]  ) {
+				if ( '0' !== $scheduled_ends[ $key ] ) {
 					$scheduled_ends[ $key ] = date( 'Y-m-d', strtotime( $scheduled_ends[ $key ] ) );
 				}
 

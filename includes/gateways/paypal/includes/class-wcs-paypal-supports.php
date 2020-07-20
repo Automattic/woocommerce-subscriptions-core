@@ -92,7 +92,7 @@ class WCS_PayPal_Supports {
 
 			} elseif ( in_array( $feature, self::$standard_supported_features ) ) {
 
-				if ( wcs_is_paypal_profile_a( $paypal_profile_id, 'out_of_date_id' )  ) {
+				if ( wcs_is_paypal_profile_a( $paypal_profile_id, 'out_of_date_id' ) ) {
 					$is_supported = false;
 				} else {
 					$is_supported = true;

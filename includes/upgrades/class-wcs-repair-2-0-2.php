@@ -124,7 +124,7 @@ class WCS_Repair_2_0_2 {
 		$matching_line_item_meta = $matching_line_item['item_meta'];
 
 		// if the order item doesn't have migrated subscription data, the subscription wasn't migrated from 1.5
-		if ( ! isset( $matching_line_item_meta['_wcs_migrated_subscription_status'] ) && ! isset( $matching_line_item_meta['_wcs_migrated_subscription_start_date'] )  ) {
+		if ( ! isset( $matching_line_item_meta['_wcs_migrated_subscription_status'] ) && ! isset( $matching_line_item_meta['_wcs_migrated_subscription_start_date'] ) ) {
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: no need to repair: matching line item has no migrated meta data.', $subscription->get_id() ) );
 			return $repaired_subscription;
 		}
