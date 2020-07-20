@@ -185,7 +185,7 @@ class WCS_PayPal_Admin {
 				'failed_ipn_log_handle' => $failed_ipn_log_handle,
 				'last_ipn_error'        => $last_ipn_error,
 				'log_file_url'          => admin_url( sprintf( 'admin.php?page=wc-status&tab=logs&log_file=%s-%s-log', $failed_ipn_log_handle, sanitize_file_name( wp_hash( $failed_ipn_log_handle ) ) ) ),
-			 ) );
+			) );
 
 			$notice->set_actions( array(
 				array(

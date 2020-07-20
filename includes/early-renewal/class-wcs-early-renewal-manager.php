@@ -71,7 +71,7 @@ class WCS_Early_Renewal_Manager {
 				'checkboxgroup'   => 'end',
 				'show_if_checked' => 'yes',
 			),
-		 );
+		);
 
 		WC_Subscriptions_Admin::insert_setting_after( $settings, 'woocommerce_subscriptions_turn_off_automatic_payments', $early_renewal_settings, 'multiple_settings' );
 

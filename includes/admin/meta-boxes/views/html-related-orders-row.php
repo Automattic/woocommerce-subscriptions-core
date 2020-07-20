@@ -41,7 +41,7 @@ $order_post = wcs_get_objects_property( $order, 'post' );
 		$classes = array(
 			'order-status',
 			sanitize_html_class( 'status-' . $order->get_status() ),
-		 );
+		);
 
 		if ( wcs_is_subscription( $order ) ) {
 			$status_name = wcs_get_subscription_status_name( $order->get_status() );

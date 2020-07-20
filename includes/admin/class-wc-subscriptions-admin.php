@@ -1709,8 +1709,8 @@ class WC_Subscriptions_Admin {
 	 * @return array
 	 */
 	public static function payment_gateways_renewal_column( $header ) {
-		$header_new = array_slice( $header, 0, count( $header ) - 1, true ) + array( 'renewals' => __( 'Automatic Recurring Payments', 'woocommerce-subscriptions' ) ) + // Ideally, we could add a link to the docs here, but the title is passed through esc_html()
-		              array_slice( $header, count( $header ) - 1, count( $header ) - ( count( $header ) - 1 ), true );
+		$header_new = array_slice( $header, 0, count( $header ) - 1, true ) + array( 'renewals' => __( 'Automatic Recurring Payments', 'woocommerce-subscriptions' ) ) // Ideally, we could add a link to the docs here, but the title is passed through esc_html()
+		        	+ array_slice( $header, count( $header ) - 1, count( $header ) - ( count( $header ) - 1 ), true );
 
 		return $header_new;
 	}

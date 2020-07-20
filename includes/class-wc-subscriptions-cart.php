@@ -45,14 +45,14 @@ class WC_Subscriptions_Cart {
 	 *
 	 * @since 2.0.18
 	 */
-	 private static $shipping_rates = array();
+	private static $shipping_rates = array();
 
-	 /**
+	/**
 	 * A cache of the current recurring cart being calculated
 	 *
 	 * @since 2.0.20
 	 */
-	 private static $cached_recurring_cart = null;
+	private static $cached_recurring_cart = null;
 
 	/**
 	 * Bootstraps the class and hooks required actions & filters.

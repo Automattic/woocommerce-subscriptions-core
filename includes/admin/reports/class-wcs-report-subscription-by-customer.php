@@ -187,9 +187,9 @@ class WCS_Report_Subscription_By_Customer extends WP_List_Table {
 		 * Pagination.
 		 */
 		$this->set_pagination_args( array(
-			 'total_items' => $this->totals->total_customers,
-			 'per_page'    => $per_page,
-			 'total_pages' => ceil( $this->totals->total_customers / $per_page ),
+			'total_items' => $this->totals->total_customers,
+			'per_page'    => $per_page,
+			'total_pages' => ceil( $this->totals->total_customers / $per_page ),
 		) );
 
 	}

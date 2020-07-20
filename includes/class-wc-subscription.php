@@ -2482,7 +2482,7 @@ class WC_Subscription extends WC_Order {
 		return apply_filters( 'wcs_get_change_payment_method_url', $change_payment_method_url, $this->get_id() );
 	}
 
-	 /* Get the subscription's payment method meta.
+	/* Get the subscription's payment method meta.
 	 *
 	 * @since 2.4.3
 	 * @return array The subscription's payment meta in the format returned by the woocommerce_subscription_payment_meta filter.

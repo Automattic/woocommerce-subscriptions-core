@@ -225,6 +225,7 @@ class WC_PayPal_Standard_Subscriptions {
 		_deprecated_function( __METHOD__, '2.0' );
 
 		if ( 'parent' == $new_order_role ) {
+			// phpcs:disable WordPress.WhiteSpace.PrecisionAlignment.Found
 			$order_meta_query .= ' AND `meta_key` NOT IN ('
 							  .		"'Transaction ID', "
 							  .		"'Payer first name', "
@@ -234,6 +235,7 @@ class WC_PayPal_Standard_Subscriptions {
 							  .		"'Payer PayPal first name', "
 							  .		"'Payer PayPal last name', "
 							  .		"'PayPal Subscriber ID' )";
+			// phpcs:enable
 		}
 
 		return $order_meta_query;

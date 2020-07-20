@@ -923,7 +923,7 @@ class WC_Subscriptions_Product {
 			$value    = wc_clean( $data['value'] );
 
 			foreach ( $variation_ids as $variation_id ) {
-				 $subscription_price = get_post_meta( $variation_id, '_subscription_price', true );
+				$subscription_price = get_post_meta( $variation_id, '_subscription_price', true );
 
 				if ( '%' === substr( $value, -1 ) ) {
 					$percent = wc_format_decimal( substr( $value, 0, -1 ) );
