@@ -414,7 +414,7 @@ class WC_Subscriptions_Product {
 
 		// Ensure that $sale_price is non-empty because other plugins can use woocommerce_product_is_on_sale filter to
 		// forcefully set a product's is_on_sale flag (like Dynamic Pricing )
-		if ( $product->is_on_sale() && '' !== $sale_price &&  $subscription_price > $sale_price ) {
+		if ( $product->is_on_sale() && '' !== $sale_price && $subscription_price > $sale_price ) {
 			$active_price = $sale_price;
 		}
 

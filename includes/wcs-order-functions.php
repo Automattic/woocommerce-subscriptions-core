@@ -447,7 +447,7 @@ function wcs_order_contains_subscription( $order, $order_type = array( 'parent',
 	} elseif ( ( in_array( 'resubscribe', $order_type ) || $get_all ) && wcs_order_contains_resubscribe( $order ) ) {
 		$contains_subscription = true;
 
-	} elseif ( ( in_array( 'switch', $order_type ) || $get_all )&& wcs_order_contains_switch( $order ) ) {
+	} elseif ( ( in_array( 'switch', $order_type ) || $get_all ) && wcs_order_contains_switch( $order ) ) {
 		$contains_subscription = true;
 
 	}

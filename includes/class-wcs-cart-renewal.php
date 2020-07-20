@@ -937,7 +937,7 @@ class WCS_Cart_Renewal {
 			$cart_item = $this->cart_contains();
 		}
 
-		if ( false !== $cart_item  && isset( $cart_item[ $this->cart_item_key ] ) ) {
+		if ( false !== $cart_item && isset( $cart_item[ $this->cart_item_key ] ) ) {
 			$order = wc_get_order( $cart_item[ $this->cart_item_key ]['renewal_order_id'] );
 		}
 

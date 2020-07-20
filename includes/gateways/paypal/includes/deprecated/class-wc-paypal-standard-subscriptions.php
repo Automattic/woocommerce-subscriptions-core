@@ -31,7 +31,7 @@ class WC_PayPal_Standard_Subscriptions {
 		self::$api_username  = WCS_PayPal::get_option( 'api_username' );
 		self::$api_password  = WCS_PayPal::get_option( 'api_password' );
 		self::$api_signature = WCS_PayPal::get_option( 'api_signature' );
-		self::$api_endpoint  = ( 'no' == WCS_PayPal::get_option( 'testmode' ) ) ? 'https://api-3t.paypal.com/nvp' :  'https://api-3t.sandbox.paypal.com/nvp';
+		self::$api_endpoint  = ( 'no' == WCS_PayPal::get_option( 'testmode' ) ) ? 'https://api-3t.paypal.com/nvp' : 'https://api-3t.sandbox.paypal.com/nvp';
 	}
 
 	/**

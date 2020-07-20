@@ -1673,13 +1673,13 @@ class WC_Subscriptions_Admin {
 
 		$debug_data['wcs_debug'] = array(
 			'name'    => _x( 'WCS_DEBUG', 'label that indicates whether debugging is turned on for the plugin', 'woocommerce-subscriptions' ),
-			'note'    => ( $is_wcs_debug ) ? __( 'Yes', 'woocommerce-subscriptions' ) :  __( 'No', 'woocommerce-subscriptions' ),
+			'note'    => ( $is_wcs_debug ) ? __( 'Yes', 'woocommerce-subscriptions' ) : __( 'No', 'woocommerce-subscriptions' ),
 			'success' => $is_wcs_debug ? 0 : 1,
 		);
 
 		$debug_data['wcs_staging'] = array(
 			'name'    => _x( 'Subscriptions Mode', 'Live or Staging, Label on WooCommerce -> System Status page', 'woocommerce-subscriptions' ),
-			'note'    => '<strong>' . ( ( WC_Subscriptions::is_duplicate_site() ) ? _x( 'Staging', 'refers to staging site', 'woocommerce-subscriptions' ) :  _x( 'Live', 'refers to live site', 'woocommerce-subscriptions' ) ) . '</strong>',
+			'note'    => '<strong>' . ( ( WC_Subscriptions::is_duplicate_site() ) ? _x( 'Staging', 'refers to staging site', 'woocommerce-subscriptions' ) : _x( 'Live', 'refers to live site', 'woocommerce-subscriptions' ) ) . '</strong>',
 			'success' => ( WC_Subscriptions::is_duplicate_site() ) ? 0 : 1,
 		);
 

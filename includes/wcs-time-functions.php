@@ -346,14 +346,14 @@ function wcs_number_of_leap_days( $start_timestamp, $end_timestamp ) {
 		$first_feb_29 = mktime( 23, 59, 59, 2, 29, reset( $leap_years ) );
 		$last_feb_29 = mktime( 0, 0, 0, 2, 29, end( $leap_years ) );
 
-		$is_first_feb_covered = ( $first_feb_29 >= $start_timestamp ) ? 1: 0;
-		$is_last_feb_covered = ( $last_feb_29 <= $end_timestamp ) ? 1: 0;
+		$is_first_feb_covered = ( $first_feb_29 >= $start_timestamp ) ? 1 : 0;
+		$is_last_feb_covered = ( $last_feb_29 <= $end_timestamp ) ? 1 : 0;
 
 		if ( count( $leap_years ) > 1 ) {
 			// the feb 29s are in different years
 			$total_feb_29s = count( $leap_years ) - 2 + $is_first_feb_covered + $is_last_feb_covered;
 		} else {
-			$total_feb_29s = ( $first_feb_29 >= $start_timestamp && $last_feb_29 <= $end_timestamp ) ? 1: 0;
+			$total_feb_29s = ( $first_feb_29 >= $start_timestamp && $last_feb_29 <= $end_timestamp ) ? 1 : 0;
 		}
 	}
 	date_default_timezone_set( $default_tz );

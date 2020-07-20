@@ -144,7 +144,7 @@ class WC_Subscriptions_Coupon {
 			$displaying_initial_cart_totals = did_action( 'woocommerce_review_order_after_cart_contents' ) > did_action( 'woocommerce_review_order_before_order_total' );
 		}
 
-		if ( $displaying_initial_cart_totals && WC_Subscriptions_Cart::all_cart_items_have_free_trial() &&  in_array( wcs_get_coupon_property( $coupon, 'discount_type' ), array( 'recurring_fee', 'recurring_percent' ) ) ) {
+		if ( $displaying_initial_cart_totals && WC_Subscriptions_Cart::all_cart_items_have_free_trial() && in_array( wcs_get_coupon_property( $coupon, 'discount_type' ), array( 'recurring_fee', 'recurring_percent' ) ) ) {
 			$coupon_html .= '<span class="wcs-hidden-coupon" type="hidden"></span>';
 		}
 

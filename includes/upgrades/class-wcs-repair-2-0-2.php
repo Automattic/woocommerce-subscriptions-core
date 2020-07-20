@@ -400,7 +400,7 @@ class WCS_Repair_2_0_2 {
 	protected static function maybe_repair_line_tax_data( $subscription_line_item_id, $old_order_item_id, $old_order_item ) {
 
 		// we need item meta in the old format so that we can use the (now fixed) WCS_Upgrade_2_0::add_line_tax_data() method and save duplicating its code
-		$old_order_item['item_meta']['_recurring_line_total']        = isset( $old_order_item['item_meta']['_wcs_migrated_recurring_line_total'] ) ? $old_order_item['item_meta']['_wcs_migrated_recurring_line_total']: 0;
+		$old_order_item['item_meta']['_recurring_line_total']        = isset( $old_order_item['item_meta']['_wcs_migrated_recurring_line_total'] ) ? $old_order_item['item_meta']['_wcs_migrated_recurring_line_total'] : 0;
 		$old_order_item['item_meta']['_recurring_line_tax']          = isset( $old_order_item['item_meta']['_wcs_migrated_recurring_line_tax'] ) ? $old_order_item['item_meta']['_wcs_migrated_recurring_line_tax'] : 0;
 		$old_order_item['item_meta']['_recurring_line_subtotal_tax'] = isset( $old_order_item['item_meta']['_wcs_migrated_recurring_line_subtotal_tax'] ) ? $old_order_item['item_meta']['_wcs_migrated_recurring_line_subtotal_tax'] : 0;
 

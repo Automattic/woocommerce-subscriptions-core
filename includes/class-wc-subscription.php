@@ -2496,7 +2496,7 @@ class WC_Subscription extends WC_Order {
 
 		$payment_meta = apply_filters( 'woocommerce_subscription_payment_meta', array(), $this );
 
-		return isset( $payment_meta[ $this->get_payment_method() ] ) ? $payment_meta[ $this->get_payment_method() ]: array();
+		return isset( $payment_meta[ $this->get_payment_method() ] ) ? $payment_meta[ $this->get_payment_method() ] : array();
 	}
 
 	/************************

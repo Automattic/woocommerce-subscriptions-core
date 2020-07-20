@@ -100,7 +100,7 @@ abstract class WCS_Hook_Deprecator {
 	 * @since 2.0
 	 */
 	protected static function get_order( $subscription ) {
-		return ( false == $subscription->get_parent_id() ) ? $subscription :  $subscription->get_parent();
+		return ( false == $subscription->get_parent_id() ) ? $subscription : $subscription->get_parent();
 	}
 
 	/**
