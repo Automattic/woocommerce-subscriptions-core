@@ -82,7 +82,7 @@ class WCS_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 
 		$legend = array();
 
-		$this->average_sales = ( 0 != $total_renewal_count ? $total_renewal_revenue / $total_renewal_count : 0);
+		$this->average_sales = ( 0 != $total_renewal_count ? $total_renewal_revenue / $total_renewal_count : 0 );
 
 		$legend[] = array(
 			'title'            => sprintf( __( '%s renewal income in this period', 'woocommerce-subscriptions' ), '<strong>' . wc_price( $total_renewal_revenue ) . '</strong>' ),
