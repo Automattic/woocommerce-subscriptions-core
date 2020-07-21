@@ -7,11 +7,11 @@
  * of parameters in the deprecated format so that the current return value also has the old filters applied
  * (whereever possible that is).
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WCS_Hook_Deprecator
- * @category	Class
- * @author		Prospress
- * @since		2.0
+ * @package    WooCommerce Subscriptions
+ * @subpackage WCS_Hook_Deprecator
+ * @category   Class
+ * @author     Prospress
+ * @since      2.0
  */
 
 class WCS_Filter_Deprecator extends WCS_Hook_Deprecator {

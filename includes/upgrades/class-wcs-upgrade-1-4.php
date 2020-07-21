@@ -4,10 +4,10 @@
  *
  * Version 1.4 moved subscription meta out of usermeta and into the new WC2.0 order item meta table.
  *
- * @author		Prospress
- * @category	Admin
- * @package		WooCommerce Subscriptions/Admin/Upgrades
- * @version		1.4.0
+ * @author      Prospress
+ * @category    Admin
+ * @package     WooCommerce Subscriptions/Admin/Upgrades
+ * @version     1.4.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

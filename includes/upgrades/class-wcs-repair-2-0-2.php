@@ -2,10 +2,10 @@
 /**
  * Repair subscriptions data corrupted with the v2.0.0 upgrade process
  *
- * @author		Prospress
- * @category	Admin
- * @package		WooCommerce Subscriptions/Admin/Upgrades
- * @version		2.0.2
+ * @author      Prospress
+ * @category    Admin
+ * @package     WooCommerce Subscriptions/Admin/Upgrades
+ * @version     2.0.2
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

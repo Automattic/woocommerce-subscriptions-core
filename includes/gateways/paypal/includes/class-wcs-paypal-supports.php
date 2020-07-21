@@ -7,11 +7,11 @@
  * reference transactions enabled or not. However, because we use two flavours of PayPal, both identified with
  * the same gateway ID, we also need to hook in to check for feature support on a subscription specific basis.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	Gateways/PayPal
- * @category	Class
- * @author		Prospress
- * @since		2.0
+ * @package     WooCommerce Subscriptions
+ * @subpackage  Gateways/PayPal
+ * @category    Class
+ * @author      Prospress
+ * @since       2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

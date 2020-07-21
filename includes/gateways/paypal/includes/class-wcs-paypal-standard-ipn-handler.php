@@ -8,11 +8,11 @@
  *
  * @link https://developer.paypal.com/docs/classic/ipn/integration-guide/IPNandPDTVariables/#id08CTB0S055Z
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	Gateways/PayPal
- * @category	Class
- * @author		Prospress
- * @since		2.0
+ * @package     WooCommerce Subscriptions
+ * @subpackage  Gateways/PayPal
+ * @category    Class
+ * @author      Prospress
+ * @since       2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -571,7 +571,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 	 * function uses regular expressions and looks for 'order key'. WooCommerce allows plugins to modify the order
 	 * keys through filtering, unfortunatelly we only check for the original
 	 *
-	 * @param string $payload	PayPal payload data
+	 * @param string $payload PayPal payload data
 	 *
 	 * @return bool
 	 */

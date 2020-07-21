@@ -4,11 +4,11 @@
  *
  * Functions for download related things within the Subscription Extension.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WCS_Download_Handler
- * @category	Class
- * @author		Prospress
- * @since		2.0
+ * @package    WooCommerce Subscriptions
+ * @subpackage WCS_Download_Handler
+ * @category   Class
+ * @author     Prospress
+ * @since      2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

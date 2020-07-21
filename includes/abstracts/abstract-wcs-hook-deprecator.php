@@ -8,11 +8,11 @@
  *
  * This is the base class for handling those deprecated hooks.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WCS_Hook_Deprecator
- * @category	Class
- * @author		Prospress
- * @since		2.0
+ * @package WooCommerce Subscriptions
+ * @subpackage WCS_Hook_Deprecator
+ * @category Class
+ * @author Prospress
+ * @since 2.0
  */
 
 abstract class WCS_Hook_Deprecator {

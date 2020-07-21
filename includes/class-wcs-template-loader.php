@@ -2,8 +2,8 @@
 /**
  * WC Subscriptions Template Loader
  *
- * @version		2.0
- * @author 		Prospress
+ * @version 2.0
+ * @author  Prospress
  */
 class WCS_Template_Loader {
 

@@ -6,11 +6,11 @@
  *
  * Replaced by WCS_PayPal.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_PayPal_Standard_Subscriptions
- * @category	Class
- * @author		Brent Shepherd
- * @since		1.0
+ * @package     WooCommerce Subscriptions
+ * @subpackage  WC_PayPal_Standard_Subscriptions
+ * @category    Class
+ * @author      Brent Shepherd
+ * @since       1.0
  */
 
 class WC_PayPal_Standard_Subscriptions {

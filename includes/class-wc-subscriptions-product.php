@@ -4,11 +4,11 @@
  *
  * An API for accessing details of a subscription product.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Product
- * @category	Class
- * @author		Brent Shepherd
- * @since		1.0
+ * @package    WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Product
+ * @category   Class
+ * @author     Brent Shepherd
+ * @since      1.0
  */
 class WC_Subscriptions_Product {
 
@@ -211,10 +211,10 @@ class WC_Subscriptions_Product {
 	 *
 	 * @param WC_Product|int $product A WC_Product object or ID of a WC_Product.
 	 * @param array $inclusions An associative array of flags to indicate how to calculate the price and what to include, values:
-	 *			'tax_calculation'     => false to ignore tax, 'include_tax' or 'exclude_tax' To indicate that tax should be added or excluded respectively
-	 *			'subscription_length' => true to include subscription's length (default) or false to exclude it
-	 *			'sign_up_fee'         => true to include subscription's sign up fee (default) or false to exclude it
-	 *			'price'               => string a price to short-circuit the price calculations and use in a string for the product
+	 *    'tax_calculation'     => false to ignore tax, 'include_tax' or 'exclude_tax' To indicate that tax should be added or excluded respectively
+	 *    'subscription_length' => true to include subscription's length (default) or false to exclude it
+	 *    'sign_up_fee'         => true to include subscription's sign up fee (default) or false to exclude it
+	 *    'price'               => string a price to short-circuit the price calculations and use in a string for the product
 	 * @since 1.0
 	 */
 	public static function get_price_string( $product, $include = array() ) {

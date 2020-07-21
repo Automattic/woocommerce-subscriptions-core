@@ -2,11 +2,11 @@
 /**
  * Allow for payment dates to be synchronised to a specific day of the week, month or year.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Sync
- * @category	Class
- * @author		Brent Shepherd
- * @since		1.5
+ * @package WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Sync
+ * @category Class
+ * @author Brent Shepherd
+ * @since 1.5
  */
 class WC_Subscriptions_Synchroniser {
 

@@ -4,9 +4,9 @@
  *
  * Functions to take advantage of APIs added to new versions of WooCommerce while maintaining backward compatibility.
  *
- * @author 		Prospress
- * @category 	Core
- * @package 	WooCommerce Subscriptions/Functions
+ * @author Prospress
+ * @category Core
+ * @package WooCommerce Subscriptions/Functions
  * @version     2.0
  */
 

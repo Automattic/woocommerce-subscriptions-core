@@ -5,11 +5,11 @@
  * Filters necessary functions in the WC_Paypal class to allow for subscriptions, either via PayPal Standard (default)
  * or PayPal Express Checkout using Reference Transactions (preferred)
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	Gateways/PayPal
- * @category	Class
- * @author		Prospress
- * @since		2.0
+ * @package     WooCommerce Subscriptions
+ * @subpackage  Gateways/PayPal
+ * @category    Class
+ * @author      Prospress
+ * @since       2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

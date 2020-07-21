@@ -4,11 +4,11 @@
  *
  * Hooks into the WooCommerce payment gateways class to add subscription specific functionality.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Payment_Gateways
- * @category	Class
- * @author		Brent Shepherd
- * @since		1.0
+ * @package    WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Payment_Gateways
+ * @category   Class
+ * @author     Brent Shepherd
+ * @since      1.0
  */
 class WC_Subscriptions_Payment_Gateways {
 

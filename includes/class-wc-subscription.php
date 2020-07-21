@@ -290,11 +290,11 @@ class WC_Subscription extends WC_Order {
 	 * method supports for the feature.
 	 *
 	 * @param string $payment_gateway_feature one of:
-	 *		'subscription_suspension'
-	 *		'subscription_reactivation'
-	 *		'subscription_cancellation'
-	 *		'subscription_date_changes'
-	 *		'subscription_amount_changes'
+	 *    'subscription_suspension'
+	 *    'subscription_reactivation'
+	 *    'subscription_cancellation'
+	 *    'subscription_date_changes'
+	 *    'subscription_amount_changes'
 	 * @since 2.0
 	 */
 	public function payment_method_supports( $payment_gateway_feature ) {

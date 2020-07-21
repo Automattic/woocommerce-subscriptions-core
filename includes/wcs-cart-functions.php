@@ -5,9 +5,9 @@
  * Functions for cart specific things, based on wc-cart-functions.php but overloaded
  * for use with recurring carts.
  *
- * @author 		Prospress
- * @category 	Core
- * @package 	WooCommerce Subscriptions/Functions
+ * @author Prospress
+ * @category Core
+ * @package WooCommerce Subscriptions/Functions
  * @version     2.0
  */
 

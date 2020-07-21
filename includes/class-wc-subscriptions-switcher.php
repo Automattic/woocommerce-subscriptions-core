@@ -2,11 +2,11 @@
 /**
  * A class to make it possible to switch between different subscriptions (i.e. upgrade/downgrade a subscription)
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Switcher
- * @category	Class
- * @author		Brent Shepherd
- * @since		1.4
+ * @package WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Switcher
+ * @category Class
+ * @author Brent Shepherd
+ * @since 1.4
  */
 class WC_Subscriptions_Switcher {
 

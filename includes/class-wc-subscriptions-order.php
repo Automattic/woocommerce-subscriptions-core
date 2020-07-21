@@ -4,10 +4,10 @@
  *
  * Mirrors and overloads a few functions in the WC_Order class to work for subscriptions.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Order
- * @category	Class
- * @author		Brent Shepherd
+ * @package    WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Order
+ * @category   Class
+ * @author     Brent Shepherd
  */
 class WC_Subscriptions_Order {
 

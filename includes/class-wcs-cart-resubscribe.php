@@ -6,11 +6,11 @@
  * - creates a new subscription with similar terms to the existing subscription, where as a renewal resumes the existing subscription
  * - is for an expired or cancelled subscription only.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WCS_Cart_Resubscribe
- * @category	Class
- * @author		Prospress
- * @since		2.0
+ * @package WooCommerce Subscriptions
+ * @subpackage WCS_Cart_Resubscribe
+ * @category Class
+ * @author Prospress
+ * @since 2.0
  */
 
 class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {

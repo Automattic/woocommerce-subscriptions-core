@@ -4,11 +4,11 @@
  *
  * Provides an API for creating and handling renewal orders.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Order
- * @category	Class
- * @author		Brent Shepherd
- * @since 		1.2
+ * @package WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Order
+ * @category Class
+ * @author Brent Shepherd
+ * @since 1.2
  */
 class WC_Subscriptions_Renewal_Order {
 

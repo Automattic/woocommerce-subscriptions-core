@@ -4,11 +4,11 @@
  *
  * Mirrors a few functions in the WC_Cart class to handle subscription-specific discounts
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Coupon
- * @category	Class
- * @author		Max Rice
- * @since		1.2
+ * @package WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Coupon
+ * @category Class
+ * @author Max Rice
+ * @since 1.2
  */
 class WC_Subscriptions_Coupon {
 

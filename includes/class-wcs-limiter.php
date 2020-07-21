@@ -2,9 +2,9 @@
 /**
  * A class to make it possible to limit a subscription product.
  *
- * @package		WooCommerce Subscriptions
- * @category	Class
- * @since		2.1
+ * @package WooCommerce Subscriptions
+ * @category Class
+ * @since 2.1
  */
 class WCS_Limiter {
 

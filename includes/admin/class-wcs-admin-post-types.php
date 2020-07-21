@@ -32,7 +32,7 @@ class WCS_Admin_Post_Types {
 	 * This would ideally be a private CONST but visibility modifiers are only allowed for
 	 * class constants in PHP >= 7.1.
 	 *
-	 * @var	array
+	 * @var array
 	 */
 	private static $post__in_none = array( 0 );
 
@@ -76,9 +76,9 @@ class WCS_Admin_Post_Types {
 	 * but independent posts, so subqueries are needed. That's something we can't get by filtering the request. This is hooked
 	 * in @see WCS_Admin_Post_Types::request_query function.
 	 *
-	 * @param  array 	$pieces 	all the pieces of the resulting SQL once WordPress has finished parsing it
-	 * @param  WP_Query $query  	the query object that forms the basis of the SQL
-	 * @return array 				modified pieces of the SQL query
+	 * @param  array    $pieces all the pieces of the resulting SQL once WordPress has finished parsing it
+	 * @param  WP_Query $query  the query object that forms the basis of the SQL
+	 * @return array modified pieces of the SQL query
 	 */
 	public function posts_clauses( $pieces, $query ) {
 		global $wpdb;
@@ -822,8 +822,8 @@ class WCS_Admin_Post_Types {
 				switch ( $vars['orderby'] ) {
 					case 'order_total':
 						$vars = array_merge( $vars, array(
-							'meta_key' 	=> '_order_total',
-							'orderby' 	=> 'meta_value_num',
+							'meta_key' => '_order_total',
+							'orderby'  => 'meta_value_num',
 						) );
 					break;
 					case 'last_payment_date':
@@ -918,7 +918,7 @@ class WCS_Admin_Post_Types {
 	 *
 	 * @uses  self::get_related_orders()
 	 * @since  2.0
-	 * @return string 						the link string
+	 * @return string the link string
 	 */
 	public function get_related_orders_link( $the_subscription ) {
 		return sprintf(

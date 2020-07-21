@@ -4,10 +4,10 @@
  *
  * This class extends the WC Variable product class to create variable products with recurring payments.
  *
- * @class 		WC_Product_Variable_Subscription
- * @package		WooCommerce Subscriptions
- * @category	Class
- * @since		1.3
+ * @class WC_Product_Variable_Subscription
+ * @package WooCommerce Subscriptions
+ * @category Class
+ * @since 1.3
  *
  */
 if ( ! defined( 'ABSPATH' ) ) {

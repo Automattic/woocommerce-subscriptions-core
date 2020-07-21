@@ -4,10 +4,10 @@
  *
  * Validates the Cart contents
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Cart_Validator
- * @category	Class
- * @since		2.6.0
+ * @package    WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Cart_Validator
+ * @category   Class
+ * @since      2.6.0
  */
 class WC_Subscriptions_Cart_Validator {
 

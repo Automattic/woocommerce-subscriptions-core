@@ -2,10 +2,10 @@
 /**
  * Upgrade subscriptions data to v2.0
  *
- * @author		Prospress
- * @category	Admin
- * @package		WooCommerce Subscriptions/Admin/Upgrades
- * @version		2.0
+ * @author      Prospress
+ * @category    Admin
+ * @package     WooCommerce Subscriptions/Admin/Upgrades
+ * @version     2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

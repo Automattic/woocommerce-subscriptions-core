@@ -5,11 +5,11 @@
  * Adds a Subscription setting tab and saves subscription settings. Adds a Subscriptions Management page. Adds
  * Welcome messages and pointers to streamline learning process for new users.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Admin
- * @category	Class
- * @author		Brent Shepherd
- * @since		1.0
+ * @package WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Admin
+ * @category Class
+ * @author Brent Shepherd
+ * @since 1.0
  */
 class WC_Subscriptions_Admin {
 

@@ -6,11 +6,11 @@
  * action had any callbacks attached to it, and if so, log a notice and trigger the old action with a set
  * of parameters in the deprecated format.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WCS_Hook_Deprecator
- * @category	Class
- * @author		Prospress
- * @since		2.0
+ * @package    WooCommerce Subscriptions
+ * @subpackage WCS_Hook_Deprecator
+ * @category   Class
+ * @author     Prospress
+ * @since      2.0
  */
 
 class WCS_Action_Deprecator extends WCS_Hook_Deprecator {

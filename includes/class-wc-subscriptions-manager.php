@@ -8,11 +8,11 @@
  * so your payment gateway only needs to work with WooCommerce APIs. You can however call other
  * management functions directly when necessary.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Manager
- * @category	Class
- * @author		Brent Shepherd
- * @since		1.0
+ * @package     WooCommerce Subscriptions
+ * @subpackage  WC_Subscriptions_Manager
+ * @category    Class
+ * @author      Brent Shepherd
+ * @since       1.0
  */
 class WC_Subscriptions_Manager {
 
@@ -434,8 +434,8 @@ class WC_Subscriptions_Manager {
 	 * @param int|WC_Order $order The order ID or WC_Order object to create the subscription from.
 	 * @param int $product_id The ID of the subscription product on the order, if a variation, it must be the variation's ID.
 	 * @param array $args An array of name => value pairs to customise the details of the subscription, including:
-	 * 			'start_date' A MySQL formatted date/time string on which the subscription should start, in UTC timezone
-	 * 			'expiry_date' A MySQL formatted date/time string on which the subscription should expire, in UTC timezone
+	 *     'start_date' A MySQL formatted date/time string on which the subscription should start, in UTC timezone
+	 *     'expiry_date' A MySQL formatted date/time string on which the subscription should expire, in UTC timezone
 	 * @since 1.1
 	 */
 	public static function create_pending_subscription_for_order( $order, $product_id, $args = array() ) {
@@ -1743,14 +1743,14 @@ class WC_Subscriptions_Manager {
 	 * Creates a subscription price string from an array of subscription details. For example, ""$5 / month for 12 months".
 	 *
 	 * @param array $subscription_details A set of name => value pairs for the subscription details to include in the string. Available keys:
-	 *		'initial_amount': The upfront payment for the subscription, including sign up fees, as a string from the @see woocommerce_price(). Default empty string (no initial payment)
-	 *		'initial_description': The word after the initial payment amount to describe the amount. Examples include "now" or "initial payment". Defaults to "up front".
-	 *		'recurring_amount': The amount charged per period. Default 0 (no recurring payment).
-	 *		'subscription_interval': How regularly the subscription payments are charged. Default 1, meaning each period e.g. per month.
-	 *		'subscription_period': The temporal period of the subscription. Should be one of {day|week|month|year} as used by @see self::get_subscription_period_strings()
-	 *		'subscription_length': The total number of periods the subscription should continue for. Default 0, meaning continue indefinitely.
-	 *		'trial_length': The total number of periods the subscription trial period should continue for.  Default 0, meaning no trial period.
-	 *		'trial_period': The temporal period for the subscription's trial period. Should be one of {day|week|month|year} as used by @see self::get_subscription_period_strings()
+	 *     'initial_amount': The upfront payment for the subscription, including sign up fees, as a string from the @see woocommerce_price(). Default empty string (no initial payment)
+	 *     'initial_description': The word after the initial payment amount to describe the amount. Examples include "now" or "initial payment". Defaults to "up front".
+	 *     'recurring_amount': The amount charged per period. Default 0 (no recurring payment).
+	 *     'subscription_interval': How regularly the subscription payments are charged. Default 1, meaning each period e.g. per month.
+	 *     'subscription_period': The temporal period of the subscription. Should be one of {day|week|month|year} as used by @see self::get_subscription_period_strings()
+	 *     'subscription_length': The total number of periods the subscription should continue for. Default 0, meaning continue indefinitely.
+	 *     'trial_length': The total number of periods the subscription trial period should continue for.  Default 0, meaning no trial period.
+	 *     'trial_period': The temporal period for the subscription's trial period. Should be one of {day|week|month|year} as used by @see self::get_subscription_period_strings()
 	 * @since 1.2
 	 * @deprecated 2.0
 	 * @return float $proportion A proportion of the total (e.g. 0.5 is half of the total)
@@ -1765,13 +1765,13 @@ class WC_Subscriptions_Manager {
 	 * Copy of the WordPress "touch_time" template function for use with a variety of different times
 	 *
 	 * @param array $args A set of name => value pairs to customise how the function operates. Available keys:
-	 *		'date': (string) the date to display in the selector in MySQL format ('Y-m-d H:i:s'). Required.
-	 *		'tab_index': (int) the tab index for the element. Optional. Default 0.
-	 *		'multiple': (bool) whether there will be multiple instances of the element on the same page (determines whether to include an ID or not). Default false.
-	 *		'echo': (bool) whether to return and print the element or simply return it. Default true.
-	 *		'include_time': (bool) whether to include a specific time for the selector. Default true.
-	 *		'include_year': (bool) whether to include a the year field. Default true.
-	 *		'include_buttons': (bool) whether to include submit buttons on the selector. Default true.
+	 *     'date': (string) the date to display in the selector in MySQL format ('Y-m-d H:i:s'). Required.
+	 *     'tab_index': (int) the tab index for the element. Optional. Default 0.
+	 *     'multiple': (bool) whether there will be multiple instances of the element on the same page (determines whether to include an ID or not). Default false.
+	 *     'echo': (bool) whether to return and print the element or simply return it. Default true.
+	 *     'include_time': (bool) whether to include a specific time for the selector. Default true.
+	 *     'include_year': (bool) whether to include a the year field. Default true.
+	 *     'include_buttons': (bool) whether to include submit buttons on the selector. Default true.
 	 * @since 1.2
 	 */
 	public static function touch_time( $args = array() ) {

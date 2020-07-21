@@ -4,11 +4,11 @@
  *
  * Mirrors a few functions in the WC_Cart class to work for subscriptions.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Cart
- * @category	Class
- * @author		Brent Shepherd
- * @since		1.0
+ * @package WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Cart
+ * @category Class
+ * @author Brent Shepherd
+ * @since 1.0
  */
 class WC_Subscriptions_Cart {
 

@@ -8,11 +8,11 @@
  * the data be upgraded to the new schema without hassle. A hassle could easily occur if 100,000 orders were being
  * modified - memory exhaustion, script time out etc.
  *
- * @author		Prospress
- * @category	Admin
- * @package		WooCommerce Subscriptions/Admin/Upgrades
- * @version		2.0.0
- * @since		1.2
+ * @author      Prospress
+ * @category    Admin
+ * @package     WooCommerce Subscriptions/Admin/Upgrades
+ * @version     2.0.0
+ * @since       1.2
  */
 class WC_Subscriptions_Upgrader {
 

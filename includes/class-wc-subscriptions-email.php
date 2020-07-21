@@ -4,10 +4,10 @@
  *
  * Modifies the base WooCommerce email class and extends it to send subscription emails.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Email
- * @category	Class
- * @author		Prospress
+ * @package    WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Email
+ * @category   Class
+ * @author     Prospress
  */
 class WC_Subscriptions_Email {
 
