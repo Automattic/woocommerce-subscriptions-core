@@ -573,10 +573,10 @@ class WC_Subscriptions_Admin {
 			$regular_price = esc_attr( stripslashes( $_REQUEST['_regular_price'] ) );
 
 			switch ( $change_regular_price ) {
-				case 1 :
+				case 1:
 					$new_price = $regular_price;
 				break;
-				case 2 :
+				case 2:
 					if ( strstr( $regular_price, '%' ) ) {
 						$percent = str_replace( '%', '', $regular_price ) / 100;
 						$new_price = $old_regular_price + ( $old_regular_price * $percent );
@@ -584,7 +584,7 @@ class WC_Subscriptions_Admin {
 						$new_price = $old_regular_price + $regular_price;
 					}
 				break;
-				case 3 :
+				case 3:
 					if ( strstr( $regular_price, '%' ) ) {
 						$percent = str_replace( '%', '', $regular_price ) / 100;
 						$new_price = $old_regular_price - ( $old_regular_price * $percent );
@@ -607,10 +607,10 @@ class WC_Subscriptions_Admin {
 			$sale_price = esc_attr( stripslashes( $_REQUEST['_sale_price'] ) );
 
 			switch ( $change_sale_price ) {
-				case 1 :
+				case 1:
 					$new_price = $sale_price;
 				break;
-				case 2 :
+				case 2:
 					if ( strstr( $sale_price, '%' ) ) {
 						$percent = str_replace( '%', '', $sale_price ) / 100;
 						$new_price = $old_sale_price + ( $old_sale_price * $percent );
@@ -618,7 +618,7 @@ class WC_Subscriptions_Admin {
 						$new_price = $old_sale_price + $sale_price;
 					}
 				break;
-				case 3 :
+				case 3:
 					if ( strstr( $sale_price, '%' ) ) {
 						$percent = str_replace( '%', '', $sale_price ) / 100;
 						$new_price = $old_sale_price - ( $old_sale_price * $percent );
@@ -626,7 +626,7 @@ class WC_Subscriptions_Admin {
 						$new_price = $old_sale_price - $sale_price;
 					}
 				break;
-				case 4 :
+				case 4:
 					if ( strstr( $sale_price, '%' ) ) {
 						$percent = str_replace( '%', '', $sale_price ) / 100;
 						$new_price = $product->get_regular_price() - ( $product->get_regular_price() * $percent );

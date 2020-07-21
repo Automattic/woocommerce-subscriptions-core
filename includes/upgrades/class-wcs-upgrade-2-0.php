@@ -527,15 +527,15 @@ class WCS_Upgrade_2_0 {
 			}
 
 			switch ( $date_type ) {
-				case 'end' :
+				case 'end':
 					if ( array_key_exists( 'next_payment', $dates_to_update ) && $date <= $dates_to_update['next_payment'] ) {
 						$dates_to_update[ $date_type ] = $date;
 					}
-				case 'next_payment' :
+				case 'next_payment':
 					if ( array_key_exists( 'trial_end', $dates_to_update ) && $date < $dates_to_update['trial_end'] ) {
 						$dates_to_update[ $date_type ] = $date;
 					}
-				case 'trial_end' :
+				case 'trial_end':
 					if ( array_key_exists( 'date_created', $dates_to_update ) && $date <= $dates_to_update['date_created'] ) {
 						$dates_to_update[ $date_type ] = $date;
 					}

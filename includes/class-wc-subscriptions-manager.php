@@ -594,21 +594,21 @@ class WC_Subscriptions_Manager {
 		foreach ( wcs_get_subscriptions_for_order( wcs_get_objects_property( $order, 'id' ), array( 'order_type' => 'parent' ) ) as $subscription_id => $subscription ) {
 
 			switch ( $status ) {
-				case 'cancelled' :
+				case 'cancelled':
 					$subscription->cancel_order();
 					break;
-				case 'active' :
-				case 'expired' :
-				case 'on-hold' :
+				case 'active':
+				case 'expired':
+				case 'on-hold':
 					$subscription->update_status( $status );
 					break;
-				case 'failed' :
+				case 'failed':
 					_deprecated_argument( __METHOD__, '2.0', 'The "failed" status value is deprecated.' );
 					self::failed_subscription_signup( $order->get_user_id(), $subscription_id );
 					break;
-				case 'pending' :
+				case 'pending':
 					_deprecated_argument( __METHOD__, '2.0', 'The "pending" status value is deprecated.' );
-				default :
+				default:
 					self::create_pending_subscription_for_order( $order );
 					break;
 			}
@@ -682,22 +682,22 @@ class WC_Subscriptions_Manager {
 
 			foreach ( $new_subscription_details as $meta_key => $meta_value ) {
 				switch ( $meta_key ) {
-					case 'start_date' :
+					case 'start_date':
 						$subscription->update_dates( array( 'date_created' => $meta_value ) );
 						break;
-					case 'trial_expiry_date' :
+					case 'trial_expiry_date':
 						$subscription->update_dates( array( 'trial_end' => $meta_value ) );
 						break;
-					case 'expiry_date' :
+					case 'expiry_date':
 						$subscription->update_dates( array( 'end' => $meta_value ) );
 						break;
-					case 'failed_payments' :
+					case 'failed_payments':
 						_deprecated_argument( __METHOD__, '2.0', 'The "failed_payments" meta value is deprecated. Create a renewal order with "failed" status instead.' );
 						break;
-					case 'completed_payments' :
+					case 'completed_payments':
 						_deprecated_argument( __METHOD__, '2.0', 'The "completed_payments" meta value is deprecated. Create a renewal order with completed payment instead.' );
 						break;
-					case 'suspension_count' :
+					case 'suspension_count':
 						$subscription->set_suspension_count( $subscription->get_suspension_count() + 1 );
 						break;
 				}
@@ -972,17 +972,17 @@ class WC_Subscriptions_Manager {
 			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
 			switch ( $new_status_or_meta ) {
-				case 'new-payment-date' :
+				case 'new-payment-date':
 					$subscription_can_be_changed = $subscription->can_date_be_updated( 'next_payment' );
 					break;
-				case 'active' :
-				case 'on-hold' :
-				case 'cancelled' :
-				case 'expired' :
-				case 'trash' :
-				case 'deleted' :
-				case 'failed' :
-				default :
+				case 'active':
+				case 'on-hold':
+				case 'cancelled':
+				case 'expired':
+				case 'trash':
+				case 'deleted':
+				case 'failed':
+				default:
 					$subscription_can_be_changed = $subscription->can_be_updated_to( $new_status_or_meta );
 					break;
 			}
@@ -1034,26 +1034,26 @@ class WC_Subscriptions_Manager {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_get_subscription_statuses()' );
 
 		switch ( $status ) {
-			case 'active' :
+			case 'active':
 				$status_string = _x( 'Active', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
-			case 'cancelled' :
+			case 'cancelled':
 				$status_string = _x( 'Cancelled', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
-			case 'expired' :
+			case 'expired':
 				$status_string = _x( 'Expired', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
-			case 'pending' :
+			case 'pending':
 				$status_string = _x( 'Pending', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
-			case 'failed' :
+			case 'failed':
 				$status_string = _x( 'Failed', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
-			case 'on-hold' :
-			case 'suspend' : // Backward compatibility
+			case 'on-hold':
+			case 'suspend': // Backward compatibility
 				$status_string = _x( 'On-hold', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
-			default :
+			default:
 				$status_string = apply_filters( 'woocommerce_subscriptions_custom_status_string', ucfirst( $status ), $subscription_key, $user_id );
 		}
 

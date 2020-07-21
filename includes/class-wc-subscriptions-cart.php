@@ -185,10 +185,10 @@ class WC_Subscriptions_Cart {
 
 		if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
 			switch ( $handler ) {
-				case 'variable-subscription' :
+				case 'variable-subscription':
 					$handler = 'variable';
 					break;
-				case 'subscription' :
+				case 'subscription':
 					$handler = 'simple';
 					break;
 			}
@@ -1103,17 +1103,17 @@ class WC_Subscriptions_Cart {
 
 		// First start with the billing interval and period
 		switch ( $interval ) {
-			case 1 :
+			case 1:
 				if ( 'day' == $period ) {
 					$cart_key .= 'daily'; // always gotta be one exception
 				} else {
 					$cart_key .= sprintf( '%sly', $period );
 				}
 				break;
-			case 2 :
+			case 2:
 				$cart_key .= sprintf( 'every_2nd_%s', $period );
 				break;
-			case 3 :
+			case 3:
 				$cart_key .= sprintf( 'every_3rd_%s', $period ); // or sometimes two exceptions it would seem
 				break;
 			default:

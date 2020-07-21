@@ -1850,13 +1850,13 @@ class WC_Subscriptions_Switcher {
 		if ( ! empty( $cart_item['subscription_switch'] ) ) {
 
 			switch ( $cart_item['subscription_switch']['upgraded_or_downgraded'] ) {
-				case 'downgraded' :
+				case 'downgraded':
 					$direction = _x( 'Downgrade', 'a switch type', 'woocommerce-subscriptions' );
 					break;
-				case 'upgraded' :
+				case 'upgraded':
 					$direction = _x( 'Upgrade', 'a switch type', 'woocommerce-subscriptions' );
 					break;
-				default :
+				default:
 					$direction = _x( 'Crossgrade', 'a switch type', 'woocommerce-subscriptions' );
 				break;
 			}

@@ -132,7 +132,7 @@ class WCS_Admin_Reports {
 		$screen = get_current_screen();
 
 		switch ( $screen->id ) {
-			case 'dashboard' :
+			case 'dashboard':
 				new WCS_Report_Dashboard();
 				break;
 		}

@@ -197,7 +197,7 @@ class WCS_PayPal {
 		switch ( $_GET['action'] ) {
 
 			// called when the customer is returned from PayPal after authorizing their payment, used for retrieving the customer's checkout details
-			case 'create_billing_agreement' :
+			case 'create_billing_agreement':
 
 				// bail if no token
 				if ( ! isset( $_GET['token'] ) ) {
@@ -286,7 +286,7 @@ class WCS_PayPal {
 
 				exit;
 
-			case 'reference_transaction_account_check' :
+			case 'reference_transaction_account_check':
 				exit;
 		}
 	}

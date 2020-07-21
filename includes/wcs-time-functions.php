@@ -300,15 +300,15 @@ function wcs_estimate_periods_between( $start_timestamp, $end_timestamp, $unit_o
 
 		switch ( $unit_of_time ) {
 
-			case 'day' :
+			case 'day':
 				$denominator = DAY_IN_SECONDS;
 				break;
 
-			case 'week' :
+			case 'week':
 				$denominator = WEEK_IN_SECONDS;
 				break;
 
-			case 'year' :
+			case 'year':
 				$denominator = YEAR_IN_SECONDS;
 				// we need to adjust this because YEAR_IN_SECONDS assumes a 365 day year. See notes on wcs_number_of_leap_days
 				$seconds_until_timestamp = $seconds_until_timestamp - wcs_number_of_leap_days( $start_timestamp, $end_timestamp ) * DAY_IN_SECONDS;
@@ -691,16 +691,16 @@ function wcs_strtotime_dark_knight( $time_string, $from_timestamp = null ) {
 function wcs_get_days_in_cycle( $period, $interval ) {
 
 	switch ( $period ) {
-		case 'day' :
+		case 'day':
 			$days_in_cycle = $interval;
 			break;
-		case 'week' :
+		case 'week':
 			$days_in_cycle = $interval * 7;
 			break;
-		case 'month' :
+		case 'month':
 			$days_in_cycle = $interval * 30.4375; // Average days per month over 4 year period
 			break;
-		case 'year' :
+		case 'year':
 			$days_in_cycle = $interval * 365.25; // Average days per year over 4 year period
 			break;
 	}

@@ -152,22 +152,22 @@ class WC_Subscriptions_Payment_Gateways {
 		}
 
 		switch ( $new_status ) {
-			case 'active' :
+			case 'active':
 				$hook_prefix = 'woocommerce_subscription_activated_';
 				break;
-			case 'on-hold' :
+			case 'on-hold':
 				$hook_prefix = 'woocommerce_subscription_on-hold_';
 				break;
-			case 'pending-cancel' :
+			case 'pending-cancel':
 				$hook_prefix = 'woocommerce_subscription_pending-cancel_';
 				break;
-			case 'cancelled' :
+			case 'cancelled':
 				$hook_prefix = 'woocommerce_subscription_cancelled_';
 				break;
-			case 'expired' :
+			case 'expired':
 				$hook_prefix = 'woocommerce_subscription_expired_';
 				break;
-			default :
+			default:
 				$hook_prefix = apply_filters( 'woocommerce_subscriptions_gateway_status_updated_hook_prefix', 'woocommerce_subscription_status_updated_', $subscription, $new_status );
 				break;
 		}

@@ -1043,13 +1043,13 @@ class WC_Subscriptions_Synchroniser {
 			}
 
 			switch ( WC_Subscriptions_Product::get_period( $product ) ) {
-				case 'week' :
+				case 'week':
 					$days_in_cycle = 7 * WC_Subscriptions_Product::get_interval( $product );
 					break;
-				case 'month' :
+				case 'month':
 					$days_in_cycle = gmdate( 't' ) * WC_Subscriptions_Product::get_interval( $product );
 					break;
-				case 'year' :
+				case 'year':
 					$days_in_cycle = ( 365 + gmdate( 'L' ) ) * WC_Subscriptions_Product::get_interval( $product );
 					break;
 			}

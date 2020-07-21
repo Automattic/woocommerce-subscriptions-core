@@ -353,7 +353,7 @@ class WCS_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 	 */
 	public function calculate_current_range( $current_range ) {
 		switch ( $current_range ) {
-			case 'custom' :
+			case 'custom':
 				$this->start_date = strtotime( sanitize_text_field( $_GET['start_date'] ) );
 				$this->end_date   = strtotime( 'midnight', strtotime( sanitize_text_field( $_GET['end_date'] ) ) );
 
@@ -374,22 +374,22 @@ class WCS_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 					$this->chart_groupby  = 'day';
 				}
 			break;
-			case 'year' :
+			case 'year':
 				$this->start_date    = strtotime( 'now', current_time( 'timestamp' ) );
 				$this->end_date      = strtotime( 'last day', strtotime( '+1 YEAR', current_time( 'timestamp' ) ) );
 				$this->chart_groupby = 'month';
 			break;
-			case 'last_month' : // misnomer to match historical reports keys, handy for caching
+			case 'last_month': // misnomer to match historical reports keys, handy for caching
 				$this->start_date     = strtotime( date( 'Y-m-01', wcs_add_months( current_time( 'timestamp' ), '1' ) ) );
 				$this->end_date       = strtotime( date( 'Y-m-t', $this->start_date ) );
 				$this->chart_groupby  = 'day';
 			break;
-			case 'month' :
+			case 'month':
 				$this->start_date    = strtotime( 'now', current_time( 'timestamp' ) );
 				$this->end_date      = wcs_add_months( current_time( 'timestamp' ), '1' );
 				$this->chart_groupby = 'day';
 			break;
-			case '7day' :
+			case '7day':
 				$this->start_date    = strtotime( 'now', current_time( 'timestamp' ) );
 				$this->end_date      = strtotime( '+7 days', current_time( 'timestamp' ) );
 				$this->chart_groupby = 'day';
@@ -398,12 +398,12 @@ class WCS_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 
 		// Group by
 		switch ( $this->chart_groupby ) {
-			case 'day' :
+			case 'day':
 				$this->group_by_query = 'YEAR(ms.meta_value), MONTH(ms.meta_value), DAY(ms.meta_value)';
 				$this->chart_interval = ceil( max( 0, ( $this->end_date - $this->start_date ) / ( 60 * 60 * 24 ) ) );
 				$this->barwidth       = 60 * 60 * 24 * 1000;
 			break;
-			case 'month' :
+			case 'month':
 				$this->group_by_query = 'YEAR(ms.meta_value), MONTH(ms.meta_value), DAY(ms.meta_value)';
 				$this->chart_interval = 0;
 				$min_date             = $this->start_date;

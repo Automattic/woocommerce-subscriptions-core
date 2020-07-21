@@ -737,13 +737,13 @@ class WC_Subscriptions_Order {
 			} else {
 
 				switch ( $_GET['shop_order_subtype'] ) {
-					case 'renewal' :
+					case 'renewal':
 						$meta_key = '_subscription_renewal';
 						break;
-					case 'resubscribe' :
+					case 'resubscribe':
 						$meta_key = '_subscription_resubscribe';
 						break;
-					case 'switch' :
+					case 'switch':
 						$meta_key = '_subscription_switch';
 						break;
 					default:
