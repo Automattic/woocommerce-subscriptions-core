@@ -794,7 +794,7 @@ class WC_Subscriptions_Cart {
 				$product_subtotal = str_replace( WC()->countries->inc_tax_or_vat(), '', $product_subtotal ) . ' <small class="tax_label">' . WC()->countries->inc_tax_or_vat() . '</small>';
 			}
 			if ( ! empty( $ex_tax_or_vat_string ) && false !== strpos( $product_subtotal, $ex_tax_or_vat_string ) ) {
-				$product_subtotal = str_replace( WC()->countries->ex_tax_or_vat(), '', $product_subtotal ) . ' <small class="tax_label">' .  WC()->countries->ex_tax_or_vat() . '</small>';
+				$product_subtotal = str_replace( WC()->countries->ex_tax_or_vat(), '', $product_subtotal ) . ' <small class="tax_label">' . WC()->countries->ex_tax_or_vat() . '</small>';
 			}
 
 			$product_subtotal = '<span class="subscription-price">' . $product_subtotal . '</span>';

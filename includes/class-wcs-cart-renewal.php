@@ -1137,7 +1137,7 @@ class WCS_Cart_Renewal {
 				if ( is_array( $checkout_fields ) ) {
 					foreach ( array_keys( $checkout_fields ) as $field ) {
 						if ( isset( $checkout_data[ $field ] ) ) {
-							$field_name = str_replace( $address_type. '_', '', $field );
+							$field_name = str_replace( $address_type . '_', '', $field );
 							${$address_type . '_address'}[ $field_name ] = $checkout_data[ $field ];
 						}
 					}
@@ -1438,7 +1438,7 @@ class WCS_Cart_Renewal {
 	 * @since 2.0
 	 */
 	public function set_renewal_discounts( $cart ) {
-		_deprecated_function( __METHOD__, '2.0.10', 'Applying original subscription discounts to renewals via cart are now handled within ' . __CLASS__ .'::maybe_setup_cart()' );
+		_deprecated_function( __METHOD__, '2.0.10', 'Applying original subscription discounts to renewals via cart are now handled within ' . __CLASS__ . '::maybe_setup_cart()' );
 	}
 
 	/**
@@ -1459,7 +1459,7 @@ class WCS_Cart_Renewal {
 	 * @since 2.0.10
 	 */
 	public function maybe_add_subscription_fees( $cart ) {
-		_deprecated_function( __METHOD__, '2.0.13', __CLASS__ .'::maybe_add_fees()' );
+		_deprecated_function( __METHOD__, '2.0.13', __CLASS__ . '::maybe_add_fees()' );
 	}
 
 	/**

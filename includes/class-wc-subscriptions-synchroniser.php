@@ -798,7 +798,7 @@ class WC_Subscriptions_Synchroniser {
 	public static function products_first_payment_date( $echo = false ) {
 		global $product;
 
-		$first_payment_date = '<p class="first-payment-date"><small>' . self::get_products_first_payment_date( $product ) .  '</small></p>';
+		$first_payment_date = '<p class="first-payment-date"><small>' . self::get_products_first_payment_date( $product ) . '</small></p>';
 
 		if ( false !== $echo ) {
 			echo wp_kses( $first_payment_date, array( 'p' => array( 'class' => array() ), 'small' => array() ) );

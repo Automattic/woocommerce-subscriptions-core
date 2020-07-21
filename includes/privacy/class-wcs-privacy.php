@@ -94,9 +94,9 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 		'<h3>' . __( 'What we collect and store', 'woocommerce-subscriptions' ) . '</h3>' .
 		'<p>' . __( 'For the purposes of processing recurring subscription payments, we store the customer\'s name, billing address, shipping address, email address, phone number and credit card/payment details.', 'woocommerce-subscriptions' ) . '</p>' .
 		'<h3>' . __( 'What we share with others', 'woocommerce-subscriptions' ) . '</h3>' .
-		'<p>' . __( 'What personal information your store shares with external sources depends on which third-party payment processor plugins you are using to collect subscription payments. We recommend that you consult with their privacy policies to inform this section of your privacy policy.', 'woocommerce-subscriptions' )  . '</p>' .
+		'<p>' . __( 'What personal information your store shares with external sources depends on which third-party payment processor plugins you are using to collect subscription payments. We recommend that you consult with their privacy policies to inform this section of your privacy policy.', 'woocommerce-subscriptions' ) . '</p>' .
 		// translators: placeholders are opening and closing link tags, linking to additional privacy policy documentation.
-		'<p>' . sprintf( __( 'If you are using PayPal Standard or PayPal Reference transactions please see the %sPayPal Privacy Policy%s for more details.', 'woocommerce-subscriptions' ), '<a href="https://www.paypal.com/us/webapps/mpp/ua/privacy-full">', '</a>' )  . '</p>';
+		'<p>' . sprintf( __( 'If you are using PayPal Standard or PayPal Reference transactions please see the %sPayPal Privacy Policy%s for more details.', 'woocommerce-subscriptions' ), '<a href="https://www.paypal.com/us/webapps/mpp/ua/privacy-full">', '</a>' ) . '</p>';
 	}
 
 	/**
@@ -273,7 +273,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 	public static function add_inactive_user_retention_note( $settings ) {
 		foreach ( $settings as &$setting ) {
 			if ( isset( $setting['id'], $setting['desc_tip'] ) && 'woocommerce_delete_inactive_accounts' === $setting['id'] ) {
-				$setting['desc_tip'] .= ' ' .  __( 'Customers with a subscription are excluded from this setting.', 'woocommerce-subscriptions' );
+				$setting['desc_tip'] .= ' ' . __( 'Customers with a subscription are excluded from this setting.', 'woocommerce-subscriptions' );
 				break;
 			}
 		}

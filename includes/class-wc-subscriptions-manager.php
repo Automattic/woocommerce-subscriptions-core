@@ -1805,7 +1805,7 @@ class WC_Subscriptions_Manager {
 		}
 		$month_input .= '</select>';
 
-		$day_input  = '<input type="text" ' . ( $args['multiple'] ? '' : 'id="edit-day" ' ) . 'name="edit-day" value="' .  mysql2date( 'd', $args['date'], false ) . '" size="2" maxlength="2"' . $tab_index_attribute . ' autocomplete="off" />';
+		$day_input  = '<input type="text" ' . ( $args['multiple'] ? '' : 'id="edit-day" ' ) . 'name="edit-day" value="' . mysql2date( 'd', $args['date'], false ) . '" size="2" maxlength="2"' . $tab_index_attribute . ' autocomplete="off" />';
 		$year_input = '<input type="text" ' . ( $args['multiple'] ? '' : 'id="edit-year" ' ) . 'name="edit-year" value="' . mysql2date( 'Y', $args['date'], false ) . '" size="4" maxlength="4"' . $tab_index_attribute . ' autocomplete="off" />';
 
 		if ( $args['include_time'] ) {

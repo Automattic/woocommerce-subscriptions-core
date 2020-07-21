@@ -443,7 +443,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 					WC_Gateway_Paypal::log( sprintf( 'IPN subscription payment %s for subscription %d ', $transaction_details['payment_status'], $subscription->get_id() ) );
 				} else {
 
-					WC_Gateway_Paypal::log( 'IPN subscription payment notification received for subscription ' . $subscription->get_id()  . ' with status ' . $transaction_details['payment_status'] );
+					WC_Gateway_Paypal::log( 'IPN subscription payment notification received for subscription ' . $subscription->get_id() . ' with status ' . $transaction_details['payment_status'] );
 
 				}
 

@@ -1095,7 +1095,7 @@ class WC_Subscriptions_Coupon {
 	 * @since 1.2
 	 */
 	public static function apply_subscription_discount( $original_price, $cart_item, $cart ) {
-		_deprecated_function( __METHOD__, '2.0.10', 'Have moved to filtering on "woocommerce_coupon_get_discount_amount" to return discount amount. See: '. __CLASS__ .'::get_discount_amount()' );
+		_deprecated_function( __METHOD__, '2.0.10', 'Have moved to filtering on "woocommerce_coupon_get_discount_amount" to return discount amount. See: ' . __CLASS__ . '::get_discount_amount()' );
 
 		if ( ! WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 			return $original_price;
@@ -1366,7 +1366,7 @@ class WC_Subscriptions_Coupon {
 	 * @since 1.2
 	 */
 	public static function apply_subscription_discount_before_tax( $original_price, $cart_item, $cart ) {
-		_deprecated_function( __METHOD__, '2.0', __CLASS__ .'::apply_subscription_discount( $original_price, $cart_item, $cart )' );
+		_deprecated_function( __METHOD__, '2.0', __CLASS__ . '::apply_subscription_discount( $original_price, $cart_item, $cart )' );
 		return self::apply_subscription_discount( $original_price, $cart_item, $cart );
 	}
 
@@ -1377,6 +1377,6 @@ class WC_Subscriptions_Coupon {
 	 * @version 1.3.6
 	 */
 	public static function apply_subscription_discount_after_tax( $coupon, $cart_item, $price ) {
-		_deprecated_function( __METHOD__, '2.0', 'WooCommerce 2.3 removed after tax discounts. Use ' . __CLASS__ .'::apply_subscription_discount( $original_price, $cart_item, $cart )' );
+		_deprecated_function( __METHOD__, '2.0', 'WooCommerce 2.3 removed after tax discounts. Use ' . __CLASS__ . '::apply_subscription_discount( $original_price, $cart_item, $cart )' );
 	}
 }

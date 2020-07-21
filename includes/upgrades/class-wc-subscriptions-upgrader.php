@@ -376,7 +376,7 @@ class WC_Subscriptions_Upgrader {
 					$results = array(
 						'upgraded_count' => 0,
 						// translators: 1$: error message, 2$: opening link tag, 3$: closing link tag, 4$: break tag
-						'message'        => sprintf( __( 'Unable to upgrade subscriptions.%4$sError: %1$s%4$sPlease refresh the page and try again. If problem persists, %2$scontact support%3$s.', 'woocommerce-subscriptions' ), '<code>' . $e->getMessage(). '</code>', '<a href="' . esc_url( 'https://woocommerce.com/my-account/create-a-ticket/' ) . '">', '</a>', '<br />' ),
+						'message'        => sprintf( __( 'Unable to upgrade subscriptions.%4$sError: %1$s%4$sPlease refresh the page and try again. If problem persists, %2$scontact support%3$s.', 'woocommerce-subscriptions' ), '<code>' . $e->getMessage() . '</code>', '<a href="' . esc_url( 'https://woocommerce.com/my-account/create-a-ticket/' ) . '">', '</a>', '<br />' ),
 						'status'         => 'error',
 					);
 				}
@@ -423,7 +423,7 @@ class WC_Subscriptions_Upgrader {
 						'repaired_count'   => 0,
 						'unrepaired_count' => 0,
 						// translators: 1$: error message, 2$: opening link tag, 3$: closing link tag, 4$: break tag
-						'message'          => sprintf( _x( 'Unable to repair subscriptions.%4$sError: %1$s%4$sPlease refresh the page and try again. If problem persists, %2$scontact support%3$s.', 'Error message that gets sent to front end when upgrading Subscriptions', 'woocommerce-subscriptions' ), '<code>' . $e->getMessage(). '</code>', '<a href="' . esc_url( 'https://woocommerce.com/my-account/create-a-ticket/' ) . '">', '</a>', '<br />' ),
+						'message'          => sprintf( _x( 'Unable to repair subscriptions.%4$sError: %1$s%4$sPlease refresh the page and try again. If problem persists, %2$scontact support%3$s.', 'Error message that gets sent to front end when upgrading Subscriptions', 'woocommerce-subscriptions' ), '<code>' . $e->getMessage() . '</code>', '<a href="' . esc_url( 'https://woocommerce.com/my-account/create-a-ticket/' ) . '">', '</a>', '<br />' ),
 						'status'           => 'error',
 					);
 				}
@@ -628,7 +628,7 @@ class WC_Subscriptions_Upgrader {
 	 */
 	public static function updated_welcome_page() {
 		$about_page = add_dashboard_page( __( 'Welcome to WooCommerce Subscriptions 2.1', 'woocommerce-subscriptions' ), __( 'About WooCommerce Subscriptions', 'woocommerce-subscriptions' ), 'manage_options', 'wcs-about', __CLASS__ . '::about_screen' );
-		add_action( 'admin_print_styles-'. $about_page, __CLASS__ . '::admin_css' );
+		add_action( 'admin_print_styles-' . $about_page, __CLASS__ . '::admin_css' );
 		add_action( 'admin_head', __CLASS__ . '::admin_head' );
 	}
 

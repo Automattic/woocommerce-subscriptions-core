@@ -227,14 +227,14 @@ class WC_PayPal_Standard_Subscriptions {
 		if ( 'parent' == $new_order_role ) {
 			// phpcs:disable WordPress.WhiteSpace.PrecisionAlignment.Found
 			$order_meta_query .= ' AND `meta_key` NOT IN ('
-							  .		"'Transaction ID', "
-							  .		"'Payer first name', "
-							  .		"'Payer last name', "
-							  .		"'Payment type', "
-							  .		"'Payer PayPal address', "
-							  .		"'Payer PayPal first name', "
-							  .		"'Payer PayPal last name', "
-							  .		"'PayPal Subscriber ID' )";
+				. "'Transaction ID', "
+				. "'Payer first name', "
+				. "'Payer last name', "
+				. "'Payment type', "
+				. "'Payer PayPal address', "
+				. "'Payer PayPal first name', "
+				. "'Payer PayPal last name', "
+				. "'PayPal Subscriber ID' )";
 			// phpcs:enable
 		}
 

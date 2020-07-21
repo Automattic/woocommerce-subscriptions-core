@@ -68,7 +68,7 @@ class WCS_Report_Subscription_By_Customer extends WP_List_Table {
 
 			case 'customer_name':
 				$user_info = get_userdata( $user->customer_id );
-				return '<a href="' . get_edit_user_link( $user->customer_id ) . '">' . $user_info->user_email  . '</a>';
+				return '<a href="' . get_edit_user_link( $user->customer_id ) . '">' . $user_info->user_email . '</a>';
 
 			case 'active_subscription_count':
 				return $user->active_subscriptions;

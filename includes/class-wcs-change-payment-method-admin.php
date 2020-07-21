@@ -61,7 +61,7 @@ class WCS_Change_Payment_Method_Admin {
 
 			foreach ( $payment_method_table as $payment_method_id => $payment_method_meta ) {
 
-				echo '<div class="wcs_payment_method_meta_fields" id="wcs_' . esc_attr( $payment_method_id ) . '_fields" ' . ( ( $payment_method_id != $payment_method || $subscription->is_manual() ) ? 'style="display:none;"' : '' ) .' >';
+				echo '<div class="wcs_payment_method_meta_fields" id="wcs_' . esc_attr( $payment_method_id ) . '_fields" ' . ( ( $payment_method_id != $payment_method || $subscription->is_manual() ) ? 'style="display:none;"' : '' ) . ' >';
 
 				foreach ( $payment_method_meta as $meta_table => $meta ) {
 
