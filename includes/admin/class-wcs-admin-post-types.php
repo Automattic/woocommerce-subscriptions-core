@@ -620,7 +620,7 @@ class WCS_Admin_Post_Types {
 				break;
 		}
 
-		echo wp_kses( apply_filters( 'woocommerce_subscription_list_table_column_content', $column_content, $the_subscription, $column ), array( 'a' => array( 'class' => array(), 'href' => array(), 'data-tip' => array(), 'title' => array() ), 'time' => array( 'class' => array(), 'title' => array() ), 'mark' => array( 'class' => array(), 'data-tip' => array() ), 'small' => array( 'class' => array() ), 'table' => array( 'class' => array(), 'cellspacing' => array(), 'cellpadding' => array() ), 'tr' => array( 'class' => array() ), 'td' => array( 'class' => array() ), 'div' => array( 'class' => array(), 'data-tip' => array() ), 'br' => array(), 'strong' => array(), 'span' => array( 'class' => array(), 'data-tip' => array() ), 'p' => array( 'class' => array() ), 'button' => array( 'type' => array(), 'class' => array() ) ) );
+		echo wp_kses( apply_filters( 'woocommerce_subscription_list_table_column_content', $column_content, $the_subscription, $column ), array( 'a' => array( 'class' => array(), 'href' => array(), 'data-tip' => array(), 'title' => array() ), 'time' => array( 'class' => array(), 'title' => array() ), 'mark' => array( 'class' => array(), 'data-tip' => array() ), 'small' => array( 'class' => array() ), 'table' => array( 'class' => array(), 'cellspacing' => array(), 'cellpadding' => array() ), 'tr' => array( 'class' => array() ), 'td' => array( 'class' => array() ), 'div' => array( 'class' => array(), 'data-tip' => array() ), 'br' => array(), 'strong' => array(), 'span' => array( 'class' => array(), 'data-tip' => array() ), 'p' => array( 'class' => array() ), 'button' => array( 'type' => array(), 'class' => array() ) ) ); // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
 
 	}
 
@@ -834,9 +834,9 @@ class WCS_Admin_Post_Types {
 					case 'next_payment_date':
 					case 'end_date':
 						$vars = array_merge( $vars, array(
-							'meta_key'     => sprintf( '_schedule_%s', str_replace( '_date', '', $vars['orderby'] ) ),
-							'meta_type'    => 'DATETIME',
-							'orderby'      => 'meta_value',
+							'meta_key'  => sprintf( '_schedule_%s', str_replace( '_date', '', $vars['orderby'] ) ),
+							'meta_type' => 'DATETIME',
+							'orderby'   => 'meta_value',
 						) );
 					break;
 				}
@@ -895,18 +895,18 @@ class WCS_Admin_Post_Types {
 		global $post, $post_ID;
 
 		$messages['shop_subscription'] = array(
-			0 => '', // Unused. Messages start at index 1.
-			1 => __( 'Subscription updated.', 'woocommerce-subscriptions' ),
-			2 => __( 'Custom field updated.', 'woocommerce-subscriptions' ),
-			3 => __( 'Custom field deleted.', 'woocommerce-subscriptions' ),
-			4 => __( 'Subscription updated.', 'woocommerce-subscriptions' ),
+			0  => '', // Unused. Messages start at index 1.
+			1  => __( 'Subscription updated.', 'woocommerce-subscriptions' ),
+			2  => __( 'Custom field updated.', 'woocommerce-subscriptions' ),
+			3  => __( 'Custom field deleted.', 'woocommerce-subscriptions' ),
+			4  => __( 'Subscription updated.', 'woocommerce-subscriptions' ),
 			// translators: placeholder is previous post title
-			5 => isset( $_GET['revision'] ) ? sprintf( _x( 'Subscription restored to revision from %s', 'used in post updated messages', 'woocommerce-subscriptions' ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
-			6 => __( 'Subscription updated.', 'woocommerce-subscriptions' ),
-			7 => __( 'Subscription saved.', 'woocommerce-subscriptions' ),
-			8 => __( 'Subscription submitted.', 'woocommerce-subscriptions' ),
+			5  => isset( $_GET['revision'] ) ? sprintf( _x( 'Subscription restored to revision from %s', 'used in post updated messages', 'woocommerce-subscriptions' ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
+			6  => __( 'Subscription updated.', 'woocommerce-subscriptions' ),
+			7  => __( 'Subscription saved.', 'woocommerce-subscriptions' ),
+			8  => __( 'Subscription submitted.', 'woocommerce-subscriptions' ),
 			// translators: php date string
-			9 => sprintf( __( 'Subscription scheduled for: %1$s.', 'woocommerce-subscriptions' ), '<strong>' . date_i18n( _x( 'M j, Y @ G:i', 'used in "Subscription scheduled for <date>"', 'woocommerce-subscriptions' ), wcs_date_to_time( $post->post_date ) ) . '</strong>' ),
+			9  => sprintf( __( 'Subscription scheduled for: %1$s.', 'woocommerce-subscriptions' ), '<strong>' . date_i18n( _x( 'M j, Y @ G:i', 'used in "Subscription scheduled for <date>"', 'woocommerce-subscriptions' ), wcs_date_to_time( $post->post_date ) ) . '</strong>' ),
 			10 => __( 'Subscription draft updated.', 'woocommerce-subscriptions' ),
 		);
 
