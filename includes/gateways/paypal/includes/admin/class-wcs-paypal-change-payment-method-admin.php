@@ -56,8 +56,8 @@ class WCS_PayPal_Change_Payment_Method_Admin {
 		$payment_meta['paypal'] = array(
 			'post_meta' => array(
 				'_paypal_subscription_id' => array(
-					'value' => $subscription_id,
-					'label' => $label,
+					'value'    => $subscription_id,
+					'label'    => $label,
 					'disabled' => $disabled,
 				),
 			),
