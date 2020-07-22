@@ -203,9 +203,20 @@ function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta
 		if ( is_callable( array( $object, 'save' ) ) ) { // WC 3.0+
 			$object->save();
 		} elseif ( 'date_created' == $key ) { // WC < 3.0+
-			wp_update_post( array( 'ID' => wcs_get_objects_property( $object, 'id' ), 'post_date' => get_date_from_gmt( $value ), 'post_date_gmt' => $value ) );
+			wp_update_post(
+				array(
+					'ID'            => wcs_get_objects_property( $object, 'id' ),
+					'post_date'     => get_date_from_gmt( $value ),
+					'post_date_gmt' => $value,
+				)
+			);
 		} elseif ( 'name' === $key ) { // the replacement for post_title added in 3.0, need to update post_title not post meta
-			wp_update_post( array( 'ID' => wcs_get_objects_property( $object, 'id' ), 'post_title' => $value ) );
+			wp_update_post(
+				array(
+					'ID'         => wcs_get_objects_property( $object, 'id' ),
+					'post_title' => $value,
+				)
+			);
 		} else {
 			$meta_key = ( 'prefix_meta_key' === $prefix_meta_key ) ? $prefixed_key : $key;
 

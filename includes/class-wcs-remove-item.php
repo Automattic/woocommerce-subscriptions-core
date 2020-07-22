@@ -28,7 +28,12 @@ class WCS_Remove_Item {
 	 */
 	public static function get_remove_url( $subscription_id, $order_item_id ) {
 
-		$remove_link = add_query_arg( array( 'subscription_id' => $subscription_id, 'remove_item' => $order_item_id ) );
+		$remove_link = add_query_arg(
+			array(
+				'subscription_id' => $subscription_id,
+				'remove_item'     => $order_item_id,
+			)
+		);
 		$remove_link = wp_nonce_url( $remove_link, $subscription_id );
 
 		return $remove_link;
@@ -44,7 +49,13 @@ class WCS_Remove_Item {
 	 */
 	public static function get_undo_remove_url( $subscription_id, $order_item_id, $base_url ) {
 
-		$undo_link = add_query_arg( array( 'subscription_id' => $subscription_id, 'undo_remove_item' => $order_item_id ), $base_url );
+		$undo_link = add_query_arg(
+			array(
+				'subscription_id'  => $subscription_id,
+				'undo_remove_item' => $order_item_id,
+			),
+			$base_url
+		);
 		$undo_link = wp_nonce_url( $undo_link, $subscription_id );
 
 		return $undo_link;

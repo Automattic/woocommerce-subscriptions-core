@@ -60,7 +60,13 @@ class WCS_Template_Loader {
 	 */
 	public static function get_order_downloads_template( $subscription ) {
 		if ( $subscription->has_downloadable_item() && $subscription->is_download_permitted() ) {
-			wc_get_template( 'order/order-downloads.php', array( 'downloads' => $subscription->get_downloadable_items(), 'show_title' => true ) );
+			wc_get_template(
+				'order/order-downloads.php',
+				array(
+					'downloads'  => $subscription->get_downloadable_items(),
+					'show_title' => true,
+				)
+			);
 		}
 	}
 
@@ -81,7 +87,16 @@ class WCS_Template_Loader {
 			$callback_detached = remove_action( 'woocommerce_order_item_meta_end', 'WC_Subscriptions_Switcher::print_switch_link' );
 		}
 
-		wc_get_template( 'myaccount/subscription-totals-table.php', array( 'subscription' => $subscription, 'allow_item_removal' => $include_item_removal_links, 'totals' => $totals ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+		wc_get_template(
+			'myaccount/subscription-totals-table.php',
+			array(
+				'subscription'       => $subscription,
+				'allow_item_removal' => $include_item_removal_links,
+				'totals'             => $totals,
+			),
+			'',
+			plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/'
+		);
 
 		// Reattach the callback if it was successfully removed.
 		if ( false === $include_switch_links && $callback_detached ) {

@@ -463,7 +463,12 @@ class WC_Subscriptions_Manager {
 		$product = wc_get_product( $product_id );
 
 		// Check if there is already a subscription for this product and order
-		$subscriptions = wcs_get_subscriptions( array( 'order_id' => wcs_get_objects_property( $order, 'id' ), 'product_id' => $product_id ) );
+		$subscriptions = wcs_get_subscriptions(
+			array(
+				'order_id'   => wcs_get_objects_property( $order, 'id' ),
+				'product_id' => $product_id,
+			)
+		);
 
 		if ( ! empty( $subscriptions ) ) {
 
@@ -501,7 +506,10 @@ class WC_Subscriptions_Manager {
 						'subtotal_tax' => 0,
 						'total'        => $product->get_price(),
 						'tax'          => 0,
-						'tax_data'     => array( 'subtotal' => array(), 'total' => array() ),
+						'tax_data'     => array(
+							'subtotal' => array(),
+							'total'    => array(),
+						),
 					),
 				)
 			);
@@ -799,7 +807,7 @@ class WC_Subscriptions_Manager {
 	 */
 	public static function maybe_untrash_subscription( $post_id ) {
 		if ( 'shop_order' == get_post_type( $post_id ) ) {
-			foreach ( wcs_get_subscriptions_for_order( $post_id, array( 'order_type' => 'parent', 'subscription_status' => array( 'trash' ) ) ) as $subscription ) {
+			foreach ( wcs_get_subscriptions_for_order( $post_id, array( 'order_type' => 'parent', 'subscription_status' => array( 'trash' ) ) ) as $subscription ) { // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
 				wp_untrash_post( $subscription->get_id() );
 			}
 		}
@@ -1777,7 +1785,9 @@ class WC_Subscriptions_Manager {
 	public static function touch_time( $args = array() ) {
 		global $wp_locale;
 
-		$args = wp_parse_args( $args, array(
+		$args = wp_parse_args(
+			$args,
+			array(
 				'date'            => true,
 				'tab_index'       => 0,
 				'multiple'        => false,
@@ -1830,27 +1840,27 @@ class WC_Subscriptions_Manager {
 
 		$allowed_html = array(
 			'select' => array(
-				'id' => array(),
-				'name' => array(),
+				'id'       => array(),
+				'name'     => array(),
 				'tabindex' => array(),
 			),
 			'option' => array(
-				'value' => array(),
+				'value'    => array(),
 				'selected' => array(),
 			),
-			'input' => array(
-				'type' => array(),
-				'id' => array(),
-				'name' => array(),
-				'value' => array(),
-				'size' => array(),
-				'tabindex' => array(),
-				'maxlength' => array(),
+			'input'  => array(
+				'type'         => array(),
+				'id'           => array(),
+				'name'         => array(),
+				'value'        => array(),
+				'size'         => array(),
+				'tabindex'     => array(),
+				'maxlength'    => array(),
 				'autocomplete' => array(),
 			),
-			'p' => array(),
-			'a' => array(
-				'href' => array(),
+			'p'      => array(),
+			'a'      => array(
+				'href'  => array(),
 				'title' => array(),
 				'class' => array(),
 			),

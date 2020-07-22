@@ -27,9 +27,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function wcs_date_input( $timestamp = 0, $args = array() ) {
 
-	$args = wp_parse_args( $args, array(
-			'name_attr'         => '',
-			'include_time'      => true,
+	$args = wp_parse_args(
+		$args,
+		array(
+			'name_attr'    => '',
+			'include_time' => true,
 		)
 	);
 
