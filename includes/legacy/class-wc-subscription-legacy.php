@@ -553,7 +553,12 @@ class WC_Subscription_Legacy extends WC_Subscription {
 		$prefix     = substr( $new_status, 0, 3 );
 		$new_status = 'wc-' === $prefix ? substr( $new_status, 3 ) : $new_status;
 
-		wp_update_post( array( 'ID' => $this->get_id(), 'post_status' => wcs_maybe_prefix_key( $new_status, 'wc-' ) ) );
+		wp_update_post(
+			array(
+				'ID'          => $this->get_id(),
+				'post_status' => wcs_maybe_prefix_key( $new_status, 'wc-' ),
+			)
+		);
 		$this->post_status = $this->post->post_status = wcs_maybe_prefix_key( $new_status, 'wc-' );
 
 		if ( $old_status !== $new_status ) {
