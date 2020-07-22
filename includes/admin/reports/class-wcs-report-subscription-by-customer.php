@@ -19,9 +19,9 @@ class WCS_Report_Subscription_By_Customer extends WP_List_Table {
 	 */
 	public function __construct() {
 		parent::__construct( array(
-			'singular'  => __( 'Customer', 'woocommerce-subscriptions' ),
-			'plural'    => __( 'Customers', 'woocommerce-subscriptions' ),
-			'ajax'      => false,
+			'singular' => __( 'Customer', 'woocommerce-subscriptions' ),
+			'plural'   => __( 'Customers', 'woocommerce-subscriptions' ),
+			'ajax'     => false,
 		) );
 	}
 
