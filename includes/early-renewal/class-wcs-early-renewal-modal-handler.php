@@ -80,7 +80,16 @@ class WCS_Early_Renewal_Modal_Handler {
 			$new_next_payment_date = null;
 		}
 
-		wc_get_template( 'html-early-renewal-modal-content.php', array( 'subscription' => $subscription, 'totals' => $totals, 'new_next_payment_date' => $new_next_payment_date ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . '/templates/' );
+		wc_get_template(
+			'html-early-renewal-modal-content.php',
+			array(
+				'subscription'          => $subscription,
+				'totals'                => $totals,
+				'new_next_payment_date' => $new_next_payment_date,
+			),
+			'',
+			plugin_dir_path( WC_Subscriptions::$plugin_file ) . '/templates/'
+		);
 	}
 
 	/**
