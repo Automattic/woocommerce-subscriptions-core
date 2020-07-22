@@ -2,9 +2,9 @@
 /**
  * A class to make it possible to limit a subscription product.
  *
- * @package		WooCommerce Subscriptions
- * @category	Class
- * @since		2.1
+ * @package WooCommerce Subscriptions
+ * @category Class
+ * @since 2.1
  */
 class WCS_Limiter {
 
@@ -67,13 +67,13 @@ class WCS_Limiter {
 	 */
 	public static function is_purchasable( $purchasable, $product ) {
 		switch ( $product->get_type() ) {
-			case 'subscription' :
-			case 'variable-subscription' :
+			case 'subscription':
+			case 'variable-subscription':
 				if ( true === $purchasable && false === self::is_purchasable_product( $purchasable, $product ) ) {
 					$purchasable = false;
 				}
 				break;
-			case 'subscription_variation' :
+			case 'subscription_variation':
 				$variable_product = wc_get_product( $product->get_parent_id() );
 
 				if ( 'no' != wcs_get_product_limitation( $variable_product ) && ! empty( WC()->cart->cart_contents ) && ! wcs_is_order_received_page() && ! wcs_is_paypal_api_page() ) {

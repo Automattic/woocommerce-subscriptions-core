@@ -21,7 +21,7 @@ class WCS_My_Account_Payment_Methods {
 		}
 
 		add_filter( 'woocommerce_payment_methods_list_item', array( __CLASS__, 'flag_subscription_payment_token_deletions' ), 10, 2 );
-		add_action( 'woocommerce_payment_token_deleted',array( __CLASS__, 'maybe_update_subscriptions_payment_meta' ), 10, 2 );
+		add_action( 'woocommerce_payment_token_deleted', array( __CLASS__, 'maybe_update_subscriptions_payment_meta' ), 10, 2 );
 		add_action( 'woocommerce_payment_token_set_default', array( __CLASS__, 'display_default_payment_token_change_notice' ), 10, 2 );
 		add_action( 'wp', array( __CLASS__, 'update_subscription_tokens' ) );
 
@@ -105,7 +105,7 @@ class WCS_My_Account_Payment_Methods {
 			'</strong></a>'
 		);
 
-		wc_add_notice( $notice , 'notice' );
+		wc_add_notice( $notice, 'notice' );
 	}
 
 	/**
@@ -157,7 +157,7 @@ class WCS_My_Account_Payment_Methods {
 			'</strong></a>'
 		);
 
-		wc_add_notice( $notice , 'notice' );
+		wc_add_notice( $notice, 'notice' );
 	}
 
 	/**
@@ -166,7 +166,7 @@ class WCS_My_Account_Payment_Methods {
 	 * @since 2.3.3
 	 */
 	public static function update_subscription_tokens() {
-		if ( ! isset( $_GET['update-subscription-tokens'], $_GET['token-id'],  $_GET['_wcsnonce'] ) || ! wp_verify_nonce( $_GET['_wcsnonce'], 'wcs-update-subscription-tokens' ) ) {
+		if ( ! isset( $_GET['update-subscription-tokens'], $_GET['token-id'], $_GET['_wcsnonce'] ) || ! wp_verify_nonce( $_GET['_wcsnonce'], 'wcs-update-subscription-tokens' ) ) {
 			return;
 		}
 

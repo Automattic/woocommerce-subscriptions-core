@@ -47,7 +47,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php $internal_date_key = wcs_normalise_date_type_key( $date_key ) ?>
 		<?php if ( false === wcs_display_date_type( $date_key, $the_subscription ) ) : ?>
 			<?php continue; ?>
-		<?php endif;?>
+		<?php endif; ?>
 	<div id="subscription-<?php echo esc_attr( $date_key ); ?>-date" class="date-fields">
 		<strong><?php echo esc_html( $date_label ); ?>:</strong>
 		<input type="hidden" name="<?php echo esc_attr( $date_key ); ?>_timestamp_utc" id="<?php echo esc_attr( $date_key ); ?>_timestamp_utc" value="<?php echo esc_attr( $the_subscription->get_time( $internal_date_key, 'gmt' ) ); ?>"/>

@@ -5,11 +5,11 @@
  * Adds a Subscription setting tab and saves subscription settings. Adds a Subscriptions Management page. Adds
  * Welcome messages and pointers to streamline learning process for new users.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Admin
- * @category	Class
- * @author		Brent Shepherd
- * @since		1.0
+ * @package WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Admin
+ * @category Class
+ * @author Brent Shepherd
+ * @since 1.0
  */
 class WC_Subscriptions_Admin {
 
@@ -88,7 +88,7 @@ class WC_Subscriptions_Admin {
 
 		// Save variable subscription meta
 		add_action( 'woocommerce_process_product_meta_variable-subscription', __CLASS__ . '::process_product_meta_variable_subscription' );
-		add_action( 'woocommerce_save_product_variation',  __CLASS__ . '::save_product_variation', 20, 2 );
+		add_action( 'woocommerce_save_product_variation', __CLASS__ . '::save_product_variation', 20, 2 );
 
 		add_action( 'woocommerce_subscription_pre_update_status', __CLASS__ . '::check_customer_is_set', 10, 3 );
 
@@ -114,7 +114,7 @@ class WC_Subscriptions_Admin {
 
 		add_filter( 'posts_where', array( __CLASS__, 'filter_paid_subscription_orders_for_user' ) );
 
-		add_action( 'admin_notices',  __CLASS__ . '::display_renewal_filter_notice' );
+		add_action( 'admin_notices', __CLASS__ . '::display_renewal_filter_notice' );
 
 		add_shortcode( 'subscriptions', __CLASS__ . '::do_subscriptions_shortcode' );
 
@@ -127,7 +127,7 @@ class WC_Subscriptions_Admin {
 		// Do not display formatted order total on the Edit Order administration screen
 		add_filter( 'woocommerce_get_formatted_order_total', __CLASS__ . '::maybe_remove_formatted_order_total_filter', 0, 2 );
 
-		add_action( 'woocommerce_payment_gateways_settings', __CLASS__ . '::add_recurring_payment_gateway_information', 10 , 1 );
+		add_action( 'woocommerce_payment_gateways_settings', __CLASS__ . '::add_recurring_payment_gateway_information', 10, 1 );
 
 		// Change text for when order items cannot be edited
 		add_action( 'woocommerce_admin_order_totals_after_refunded', __CLASS__ . '::maybe_attach_gettext_callback', 10, 1 );
@@ -231,7 +231,7 @@ class WC_Subscriptions_Admin {
 	 * @return array $query_vars
 	 * @since  2.5.1
 	 */
-	public static function modify_downloadable_and_virtual_product_queries( $query_vars) {
+	public static function modify_downloadable_and_virtual_product_queries( $query_vars ) {
 		global $pagenow, $typenow;
 
 		if ( ! is_admin() || 'edit.php' !== $pagenow || 'product' !== $typenow ) {
@@ -283,7 +283,7 @@ class WC_Subscriptions_Admin {
 
 		// Set month as the default billing period
 		if ( ! $chosen_period = get_post_meta( $post->ID, '_subscription_period', true ) ) {
-		 	$chosen_period = 'month';
+			$chosen_period = 'month';
 		}
 
 		echo '<div class="options_group subscription_pricing show_if_subscription hidden">';
@@ -573,10 +573,10 @@ class WC_Subscriptions_Admin {
 			$regular_price = esc_attr( stripslashes( $_REQUEST['_regular_price'] ) );
 
 			switch ( $change_regular_price ) {
-				case 1 :
+				case 1:
 					$new_price = $regular_price;
 				break;
-				case 2 :
+				case 2:
 					if ( strstr( $regular_price, '%' ) ) {
 						$percent = str_replace( '%', '', $regular_price ) / 100;
 						$new_price = $old_regular_price + ( $old_regular_price * $percent );
@@ -584,7 +584,7 @@ class WC_Subscriptions_Admin {
 						$new_price = $old_regular_price + $regular_price;
 					}
 				break;
-				case 3 :
+				case 3:
 					if ( strstr( $regular_price, '%' ) ) {
 						$percent = str_replace( '%', '', $regular_price ) / 100;
 						$new_price = $old_regular_price - ( $old_regular_price * $percent );
@@ -607,10 +607,10 @@ class WC_Subscriptions_Admin {
 			$sale_price = esc_attr( stripslashes( $_REQUEST['_sale_price'] ) );
 
 			switch ( $change_sale_price ) {
-				case 1 :
+				case 1:
 					$new_price = $sale_price;
 				break;
-				case 2 :
+				case 2:
 					if ( strstr( $sale_price, '%' ) ) {
 						$percent = str_replace( '%', '', $sale_price ) / 100;
 						$new_price = $old_sale_price + ( $old_sale_price * $percent );
@@ -618,7 +618,7 @@ class WC_Subscriptions_Admin {
 						$new_price = $old_sale_price + $sale_price;
 					}
 				break;
-				case 3 :
+				case 3:
 					if ( strstr( $sale_price, '%' ) ) {
 						$percent = str_replace( '%', '', $sale_price ) / 100;
 						$new_price = $old_sale_price - ( $old_sale_price * $percent );
@@ -626,7 +626,7 @@ class WC_Subscriptions_Admin {
 						$new_price = $old_sale_price - $sale_price;
 					}
 				break;
-				case 4 :
+				case 4:
 					if ( strstr( $sale_price, '%' ) ) {
 						$percent = str_replace( '%', '', $sale_price ) / 100;
 						$new_price = $product->get_regular_price() - ( $product->get_regular_price() * $percent );
@@ -1673,13 +1673,13 @@ class WC_Subscriptions_Admin {
 
 		$debug_data['wcs_debug'] = array(
 			'name'    => _x( 'WCS_DEBUG', 'label that indicates whether debugging is turned on for the plugin', 'woocommerce-subscriptions' ),
-			'note'    => ( $is_wcs_debug ) ? __( 'Yes', 'woocommerce-subscriptions' ) :  __( 'No', 'woocommerce-subscriptions' ),
+			'note'    => ( $is_wcs_debug ) ? __( 'Yes', 'woocommerce-subscriptions' ) : __( 'No', 'woocommerce-subscriptions' ),
 			'success' => $is_wcs_debug ? 0 : 1,
 		);
 
 		$debug_data['wcs_staging'] = array(
 			'name'    => _x( 'Subscriptions Mode', 'Live or Staging, Label on WooCommerce -> System Status page', 'woocommerce-subscriptions' ),
-			'note'    => '<strong>' . ( ( WC_Subscriptions::is_duplicate_site() ) ? _x( 'Staging', 'refers to staging site', 'woocommerce-subscriptions' ) :  _x( 'Live', 'refers to live site', 'woocommerce-subscriptions' ) ) . '</strong>',
+			'note'    => '<strong>' . ( ( WC_Subscriptions::is_duplicate_site() ) ? _x( 'Staging', 'refers to staging site', 'woocommerce-subscriptions' ) : _x( 'Live', 'refers to live site', 'woocommerce-subscriptions' ) ) . '</strong>',
 			'success' => ( WC_Subscriptions::is_duplicate_site() ) ? 0 : 1,
 		);
 
@@ -1709,8 +1709,8 @@ class WC_Subscriptions_Admin {
 	 * @return array
 	 */
 	public static function payment_gateways_renewal_column( $header ) {
-		$header_new = array_slice( $header, 0, count( $header ) - 1, true ) + array( 'renewals' => __( 'Automatic Recurring Payments', 'woocommerce-subscriptions' ) ) + // Ideally, we could add a link to the docs here, but the title is passed through esc_html()
-		              array_slice( $header, count( $header ) - 1, count( $header ) - ( count( $header ) - 1 ), true );
+		$header_new = array_slice( $header, 0, count( $header ) - 1, true ) + array( 'renewals' => __( 'Automatic Recurring Payments', 'woocommerce-subscriptions' ) ) // Ideally, we could add a link to the docs here, but the title is passed through esc_html()
+			+ array_slice( $header, count( $header ) - 1, count( $header ) - ( count( $header ) - 1 ), true );
 
 		return $header_new;
 	}

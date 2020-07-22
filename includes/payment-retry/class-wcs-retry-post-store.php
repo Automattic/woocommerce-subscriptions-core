@@ -2,11 +2,11 @@
 /**
  * Store retry details in the WordPress posts table as a custom post type
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WCS_Retry_Store
- * @category	Class
- * @author		Prospress
- * @since		2.1
+ * @package     WooCommerce Subscriptions
+ * @subpackage  WCS_Retry_Store
+ * @category    Class
+ * @author      Prospress
+ * @since       2.1
  */
 
 class WCS_Retry_Post_Store extends WCS_Retry_Store {
@@ -24,7 +24,7 @@ class WCS_Retry_Post_Store extends WCS_Retry_Store {
 			'public'       => false,
 			'map_meta_cap' => true,
 			'hierarchical' => false,
-			'supports'     => array( 'title', 'editor','comments' ),
+			'supports'     => array( 'title', 'editor', 'comments' ),
 			'rewrite'      => false,
 			'query_var'    => false,
 			'can_export'   => true,
@@ -45,7 +45,7 @@ class WCS_Retry_Post_Store extends WCS_Retry_Store {
 					'not_found_in_trash' => __( 'No retries found in trash', 'woocommerce-subscriptions' ),
 				),
 			)
-	 	);
+		);
 	}
 
 	/**

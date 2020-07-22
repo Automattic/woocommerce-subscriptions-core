@@ -2,11 +2,11 @@
 /**
  * Allow for payment dates to be synchronised to a specific day of the week, month or year.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Sync
- * @category	Class
- * @author		Brent Shepherd
- * @since		1.5
+ * @package WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Sync
+ * @category Class
+ * @author Brent Shepherd
+ * @since 1.5
  */
 class WC_Subscriptions_Synchroniser {
 
@@ -65,7 +65,7 @@ class WC_Subscriptions_Synchroniser {
 
 		// Save sync options when a variable subscription product is saved
 		add_action( 'woocommerce_process_product_meta_variable-subscription', __CLASS__ . '::process_product_meta_variable_subscription' );
-		add_action( 'woocommerce_save_product_variation',  __CLASS__ . '::save_product_variation', 20, 2 );
+		add_action( 'woocommerce_save_product_variation', __CLASS__ . '::save_product_variation', 20, 2 );
 
 		// Make sure the expiration dates are calculated from the synced start date
 		add_filter( 'woocommerce_subscriptions_product_trial_expiration_date', __CLASS__ . '::recalculate_product_trial_expiration_date', 10, 2 );
@@ -265,7 +265,7 @@ class WC_Subscriptions_Synchroniser {
 
 			// Set month as the default billing period
 			if ( ! $subscription_period = get_post_meta( $post->ID, '_subscription_period', true ) ) {
-			 	$subscription_period = 'month';
+				$subscription_period = 'month';
 			}
 
 			// Determine whether to display the week/month sync fields or the annual sync fields
@@ -719,7 +719,7 @@ class WC_Subscriptions_Synchroniser {
 				wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}" ) ) { // In grace period
 				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}", $from_timestamp );
 			} else { // If not in grace period, then the sync day has passed by. So, reduce interval by 1.
-				$year += $interval - 1 ;
+				$year += $interval - 1;
 				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day['day']} {$month} {$year}", wcs_add_time( $interval - 1, $period, $from_timestamp ) );
 			}
 		}
@@ -798,7 +798,7 @@ class WC_Subscriptions_Synchroniser {
 	public static function products_first_payment_date( $echo = false ) {
 		global $product;
 
-		$first_payment_date = '<p class="first-payment-date"><small>' . self::get_products_first_payment_date( $product ) .  '</small></p>';
+		$first_payment_date = '<p class="first-payment-date"><small>' . self::get_products_first_payment_date( $product ) . '</small></p>';
 
 		if ( false !== $echo ) {
 			echo wp_kses( $first_payment_date, array( 'p' => array( 'class' => array() ), 'small' => array() ) );
@@ -1043,13 +1043,13 @@ class WC_Subscriptions_Synchroniser {
 			}
 
 			switch ( WC_Subscriptions_Product::get_period( $product ) ) {
-				case 'week' :
+				case 'week':
 					$days_in_cycle = 7 * WC_Subscriptions_Product::get_interval( $product );
 					break;
-				case 'month' :
+				case 'month':
 					$days_in_cycle = gmdate( 't' ) * WC_Subscriptions_Product::get_interval( $product );
 					break;
-				case 'year' :
+				case 'year':
 					$days_in_cycle = ( 365 + gmdate( 'L' ) ) * WC_Subscriptions_Product::get_interval( $product );
 					break;
 			}

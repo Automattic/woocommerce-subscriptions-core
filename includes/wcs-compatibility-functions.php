@@ -4,9 +4,9 @@
  *
  * Functions to take advantage of APIs added to new versions of WooCommerce while maintaining backward compatibility.
  *
- * @author 		Prospress
- * @category 	Core
- * @package 	WooCommerce Subscriptions/Functions
+ * @author Prospress
+ * @category Core
+ * @package WooCommerce Subscriptions/Functions
  * @version     2.0
  */
 
@@ -83,7 +83,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 	}
 
 	switch ( $property ) {
-		case 'post' :
+		case 'post':
 			// In order to keep backwards compatibility it's required to use the parent data for variations.
 			if ( method_exists( $object, 'is_type' ) && $object->is_type( 'variation' ) ) {
 				$value = get_post( wcs_get_objects_property( $object, 'parent_id' ) );
@@ -92,15 +92,15 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 			}
 			break;
 
-		case 'post_status' :
+		case 'post_status':
 			$value = wcs_get_objects_property( $object, 'post' )->post_status;
 			break;
 
-		case 'variation_data' :
+		case 'variation_data':
 			$value = wc_get_product_variation_attributes( wcs_get_objects_property( $object, 'id' ) );
 			break;
 
-		default :
+		default:
 			$function_name = 'get_' . $property;
 
 			if ( is_callable( array( $object, $function_name ) ) ) {

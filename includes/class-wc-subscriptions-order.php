@@ -4,10 +4,10 @@
  *
  * Mirrors and overloads a few functions in the WC_Order class to work for subscriptions.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Order
- * @category	Class
- * @author		Brent Shepherd
+ * @package    WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Order
+ * @category   Class
+ * @author     Brent Shepherd
  */
 class WC_Subscriptions_Order {
 
@@ -47,7 +47,7 @@ class WC_Subscriptions_Order {
 		add_action( 'woocommerce_order_status_changed', __CLASS__ . '::maybe_record_subscription_payment', 9, 3 );
 
 		// Sometimes, even if the order total is $0, the order still needs payment
-		add_filter( 'woocommerce_order_needs_payment', __CLASS__ . '::order_needs_payment' , 10, 3 );
+		add_filter( 'woocommerce_order_needs_payment', __CLASS__ . '::order_needs_payment', 10, 3 );
 
 		// Add subscription information to the order complete emails.
 		add_action( 'woocommerce_email_after_order_table', __CLASS__ . '::add_sub_info_email', 15, 3 );
@@ -737,13 +737,13 @@ class WC_Subscriptions_Order {
 			} else {
 
 				switch ( $_GET['shop_order_subtype'] ) {
-					case 'renewal' :
+					case 'renewal':
 						$meta_key = '_subscription_renewal';
 						break;
-					case 'resubscribe' :
+					case 'resubscribe':
 						$meta_key = '_subscription_resubscribe';
 						break;
-					case 'switch' :
+					case 'switch':
 						$meta_key = '_subscription_switch';
 						break;
 					default:

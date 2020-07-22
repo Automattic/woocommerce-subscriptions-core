@@ -4,9 +4,9 @@
  *
  * Functions for formatting subscription data.
  *
- * @author 		Prospress
- * @category 	Core
- * @package 	WooCommerce Subscriptions/Functions
+ * @author Prospress
+ * @category Core
+ * @package WooCommerce Subscriptions/Functions
  * @version     2.0
  */
 
@@ -18,15 +18,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Creates a subscription price string from an array of subscription details. For example, "$5 / month for 12 months".
  *
  * @param array $subscription_details A set of name => value pairs for the subscription details to include in the string. Available keys:
- *		'initial_amount': The upfront payment for the subscription, including sign up fees, as a string from the @see wc_price(). Default empty string (no initial payment)
- *		'initial_description': The word after the initial payment amount to describe the amount. Examples include "now" or "initial payment". Defaults to "up front".
- *		'recurring_amount': The amount charged per period. Default 0 (no recurring payment).
- *		'subscription_interval': How regularly the subscription payments are charged. Default 1, meaning each period e.g. per month.
- *		'subscription_period': The temporal period of the subscription. Should be one of {day|week|month|year} as used by @see wcs_get_subscription_period_strings()
- *		'subscription_length': The total number of periods the subscription should continue for. Default 0, meaning continue indefinitely.
- *		'trial_length': The total number of periods the subscription trial period should continue for.  Default 0, meaning no trial period.
- *		'trial_period': The temporal period for the subscription's trial period. Should be one of {day|week|month|year} as used by @see wcs_get_subscription_period_strings()
- *		'use_per_slash': Allow calling code to determine if they want the shorter price string using a slash for singular billing intervals, e.g. $5 / month, or the longer form, e.g. $5 every month, which is normally reserved for intervals > 1
+ *    'initial_amount': The upfront payment for the subscription, including sign up fees, as a string from the @see wc_price(). Default empty string (no initial payment)
+ *    'initial_description': The word after the initial payment amount to describe the amount. Examples include "now" or "initial payment". Defaults to "up front".
+ *    'recurring_amount': The amount charged per period. Default 0 (no recurring payment).
+ *    'subscription_interval': How regularly the subscription payments are charged. Default 1, meaning each period e.g. per month.
+ *    'subscription_period': The temporal period of the subscription. Should be one of {day|week|month|year} as used by @see wcs_get_subscription_period_strings()
+ *    'subscription_length': The total number of periods the subscription should continue for. Default 0, meaning continue indefinitely.
+ *    'trial_length': The total number of periods the subscription trial period should continue for.  Default 0, meaning no trial period.
+ *    'trial_period': The temporal period for the subscription's trial period. Should be one of {day|week|month|year} as used by @see wcs_get_subscription_period_strings()
+ *    'use_per_slash': Allow calling code to determine if they want the shorter price string using a slash for singular billing intervals, e.g. $5 / month, or the longer form, e.g. $5 every month, which is normally reserved for intervals > 1
  * @since 2.0
  * @return string The price string with translated and billing periods included
  */
@@ -102,7 +102,7 @@ function wcs_price_string( $subscription_details ) {
 						$subscription_string = sprintf( __( '%1$s every %2$s', 'woocommerce-subscriptions' ), $recurring_amount_string, $payment_day_of_week );
 					}
 				} else {
-					 // e.g. $5 every 2 weeks on Wednesday
+					// e.g. $5 every 2 weeks on Wednesday
 					if ( ! empty( $subscription_details['initial_amount'] ) ) {
 						// translators: 1$: initial amount, 2$: initial description (e.g. "up front" ), 3$: recurring amount, 4$: interval (e.g. "2nd week"), 5$: day of the week (e.g. "Thursday"); (e.g. "$10 up front, then $20 every 2nd week on Wednesday")
 						$subscription_string = sprintf( __( '%1$s %2$s then %3$s every %4%s on %5$s', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, wcs_get_subscription_period_strings( $subscription_details['subscription_interval'], $subscription_details['subscription_period'] ), $payment_day_of_week );

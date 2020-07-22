@@ -5,9 +5,9 @@
  * Functions for cart specific things, based on wc-cart-functions.php but overloaded
  * for use with recurring carts.
  *
- * @author 		Prospress
- * @category 	Core
- * @package 	WooCommerce Subscriptions/Functions
+ * @author Prospress
+ * @category Core
+ * @package WooCommerce Subscriptions/Functions
  * @version     2.0
  */
 
@@ -373,7 +373,7 @@ function wcs_add_cart_first_renewal_payment_date( $order_total_html, $cart ) {
 	if ( 0 !== $cart->next_payment_date ) {
 		$first_renewal_date = date_i18n( wc_date_format(), wcs_date_to_time( get_date_from_gmt( $cart->next_payment_date ) ) );
 		// translators: placeholder is a date
-		$order_total_html  .= '<div class="first-payment-date"><small>' . sprintf( __( 'First renewal: %s', 'woocommerce-subscriptions' ), $first_renewal_date ) .  '</small></div>';
+		$order_total_html  .= '<div class="first-payment-date"><small>' . sprintf( __( 'First renewal: %s', 'woocommerce-subscriptions' ), $first_renewal_date ) . '</small></div>';
 	}
 
 	return $order_total_html;

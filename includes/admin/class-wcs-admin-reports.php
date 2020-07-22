@@ -24,7 +24,7 @@ class WCS_Admin_Reports {
 	 */
 	public function __construct() {
 		// Add the reports layout to the WooCommerce -> Reports admin section
-		add_filter( 'woocommerce_admin_reports',  __CLASS__ . '::initialize_reports', 12, 1 );
+		add_filter( 'woocommerce_admin_reports', __CLASS__ . '::initialize_reports', 12, 1 );
 
 		// Add any necessary scripts
 		add_action( 'admin_enqueue_scripts', __CLASS__ . '::reports_scripts' );
@@ -132,7 +132,7 @@ class WCS_Admin_Reports {
 		$screen = get_current_screen();
 
 		switch ( $screen->id ) {
-			case 'dashboard' :
+			case 'dashboard':
 				new WCS_Report_Dashboard();
 				break;
 		}

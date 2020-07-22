@@ -5,11 +5,11 @@
  * Filters necessary functions in the WC_Paypal class to allow for subscriptions, either via PayPal Standard (default)
  * or PayPal Express Checkout using Reference Transactions (preferred)
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	Gateways/PayPal
- * @category	Class
- * @author		Prospress
- * @since		2.0
+ * @package     WooCommerce Subscriptions
+ * @subpackage  Gateways/PayPal
+ * @category    Class
+ * @author      Prospress
+ * @since       2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -162,7 +162,7 @@ class WCS_PayPal {
 
 		if ( self::are_credentials_set() ) {
 
-			$accounts_with_reference_transactions_enabled = json_decode( get_option( 'wcs_paypal_rt_enabled_accounts' , wcs_json_encode( array() ) ) );
+			$accounts_with_reference_transactions_enabled = json_decode( get_option( 'wcs_paypal_rt_enabled_accounts', wcs_json_encode( array() ) ) );
 
 			if ( in_array( $api_username, $accounts_with_reference_transactions_enabled ) ) {
 
@@ -197,7 +197,7 @@ class WCS_PayPal {
 		switch ( $_GET['action'] ) {
 
 			// called when the customer is returned from PayPal after authorizing their payment, used for retrieving the customer's checkout details
-			case 'create_billing_agreement' :
+			case 'create_billing_agreement':
 
 				// bail if no token
 				if ( ! isset( $_GET['token'] ) ) {
@@ -286,7 +286,7 @@ class WCS_PayPal {
 
 				exit;
 
-			case 'reference_transaction_account_check' :
+			case 'reference_transaction_account_check':
 				exit;
 		}
 	}

@@ -2,11 +2,11 @@
 /**
  * A class to make it possible to switch between different subscriptions (i.e. upgrade/downgrade a subscription)
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Switcher
- * @category	Class
- * @author		Brent Shepherd
- * @since		1.4
+ * @package WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Switcher
+ * @category Class
+ * @author Brent Shepherd
+ * @since 1.4
  */
 class WC_Subscriptions_Switcher {
 
@@ -114,10 +114,10 @@ class WC_Subscriptions_Switcher {
 		add_filter( 'woocommerce_subscriptions_calculated_total', array( __CLASS__, 'set_force_payment_flag_in_cart' ), 10, 1 );
 
 		// Require payment when switching from a $0 / period subscription to a non-zero subscription to process automatic payments
-		add_filter( 'woocommerce_cart_needs_payment', array( __CLASS__, 'cart_needs_payment' ) , 50, 2 );
+		add_filter( 'woocommerce_cart_needs_payment', array( __CLASS__, 'cart_needs_payment' ), 50, 2 );
 
 		// Require payment when switching from a $0 / period subscription to a non-zero subscription to process automatic payments
-		add_action( 'woocommerce_subscriptions_switch_completed', array( __CLASS__, 'maybe_set_payment_method_after_switch' ) , 10, 1 );
+		add_action( 'woocommerce_subscriptions_switch_completed', array( __CLASS__, 'maybe_set_payment_method_after_switch' ), 10, 1 );
 
 		// Do not reduce product stock when the order item is simply to record a switch
 		add_filter( 'woocommerce_order_item_quantity', array( __CLASS__, 'maybe_do_not_reduce_stock' ), 10, 3 );
@@ -177,7 +177,7 @@ class WC_Subscriptions_Switcher {
 			$line_item    = wcs_get_order_item( $_GET['item'], $subscription );
 
 			// Visiting a switch link for someone elses subscription or if the switch link doesn't contain a valid nonce
-			if ( ! is_object( $subscription ) || empty( $_GET['_wcsnonce'] ) || ! wp_verify_nonce( $_GET['_wcsnonce'], 'wcs_switch_request' ) || empty( $line_item ) || ! self::can_item_be_switched_by_user( $line_item, $subscription )  ) {
+			if ( ! is_object( $subscription ) || empty( $_GET['_wcsnonce'] ) || ! wp_verify_nonce( $_GET['_wcsnonce'], 'wcs_switch_request' ) || empty( $line_item ) || ! self::can_item_be_switched_by_user( $line_item, $subscription ) ) {
 
 				wp_redirect( remove_query_arg( array( 'switch-subscription', 'auto-switch', 'item', '_wcsnonce' ) ) );
 				exit();
@@ -227,7 +227,7 @@ class WC_Subscriptions_Switcher {
 			}
 
 			if ( $removed_item_count > 0 ) {
-				wc_add_notice( _n( 'Your cart contained an invalid subscription switch request. It has been removed.', 'Your cart contained invalid subscription switch requests. They have been removed.', 	$removed_item_count, 'woocommerce-subscriptions' ), 'error' );
+				wc_add_notice( _n( 'Your cart contained an invalid subscription switch request. It has been removed.', 'Your cart contained invalid subscription switch requests. They have been removed.', $removed_item_count, 'woocommerce-subscriptions' ), 'error' );
 
 				wp_redirect( wc_get_cart_url() );
 				exit();
@@ -414,7 +414,7 @@ class WC_Subscriptions_Switcher {
 				'options' => array(
 					'no'                 => _x( 'Never (do not charge a sign up fee)', 'when to prorate signup fee when switching', 'woocommerce-subscriptions' ),
 					'full'               => _x( 'Never (charge the full sign up fee)', 'when to prorate signup fee when switching', 'woocommerce-subscriptions' ),
-					'yes'                => _x( 'Always', 'when to prorate signup fee when switching','woocommerce-subscriptions' ),
+					'yes'                => _x( 'Always', 'when to prorate signup fee when switching', 'woocommerce-subscriptions' ),
 				),
 				'desc_tip' => true,
 			),
@@ -1850,13 +1850,13 @@ class WC_Subscriptions_Switcher {
 		if ( ! empty( $cart_item['subscription_switch'] ) ) {
 
 			switch ( $cart_item['subscription_switch']['upgraded_or_downgraded'] ) {
-				case 'downgraded' :
+				case 'downgraded':
 					$direction = _x( 'Downgrade', 'a switch type', 'woocommerce-subscriptions' );
 					break;
-				case 'upgraded' :
+				case 'upgraded':
 					$direction = _x( 'Upgrade', 'a switch type', 'woocommerce-subscriptions' );
 					break;
-				default :
+				default:
 					$direction = _x( 'Crossgrade', 'a switch type', 'woocommerce-subscriptions' );
 				break;
 			}

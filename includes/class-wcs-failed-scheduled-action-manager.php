@@ -81,7 +81,7 @@ class WCS_Failed_Scheduled_Action_Manager {
 
 		$subscription_action = $this->get_action_hook_label( $action->get_hook() );
 
-		$this->log( sprintf( 'scheduled action %s (%s) failed to finish processing after %s seconds', $action_id, $subscription_action , $timeout ) );
+		$this->log( sprintf( 'scheduled action %s (%s) failed to finish processing after %s seconds', $action_id, $subscription_action, $timeout ) );
 		$this->log( sprintf( 'action args: %s', $this->get_action_args_string( $action->get_args() ) ) );
 
 		// Store information about the scheduled action for displaying an admin notice

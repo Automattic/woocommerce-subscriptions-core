@@ -4,10 +4,10 @@
  *
  * Extends the WooCommerce checkout class to add subscription meta on checkout.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Checkout
- * @category	Class
- * @author		Brent Shepherd
+ * @package WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Checkout
+ * @category Class
+ * @author Brent Shepherd
  */
 class WC_Subscriptions_Checkout {
 

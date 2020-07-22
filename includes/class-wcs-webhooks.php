@@ -40,7 +40,7 @@ class WCS_Webhooks {
 
 		add_action( 'woocommerce_subscriptions_switch_completed', __CLASS__ . '::add_subscription_switched_callback', 10, 1 );
 
-		add_filter( 'woocommerce_webhook_topics' , __CLASS__ . '::add_topics_admin_menu', 10, 1 );
+		add_filter( 'woocommerce_webhook_topics', __CLASS__ . '::add_topics_admin_menu', 10, 1 );
 
 		add_filter( 'wcs_new_order_created', __CLASS__ . '::add_subscription_created_order_callback', 10, 1 );
 
@@ -49,7 +49,7 @@ class WCS_Webhooks {
 	/**
 	 * Trigger `order.create` every time an order is created by Subscriptions.
 	 *
-	 * @param WC_Order $order	WC_Order Object
+	 * @param WC_Order $order WC_Order Object
 	 */
 	public static function add_subscription_created_order_callback( $order ) {
 

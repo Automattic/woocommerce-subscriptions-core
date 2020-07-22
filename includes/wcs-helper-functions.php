@@ -2,10 +2,10 @@
 /**
  * WooCommerce Subscriptions Helper Functions
  *
- * @author 		Prospress
- * @category 	Core
- * @package 	WooCommerce Subscriptions/Functions
- * @version     2.0
+ * @author   Prospress
+ * @category Core
+ * @package  WooCommerce Subscriptions/Functions
+ * @version  2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -17,12 +17,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @param int (optional) A timestamp for a certain date in the site's timezome. If left empty, or 0, it will be set to today's date.
  * @param array $args A set of name => value pairs to customise the input fields
- *		'id_attr': (string) the date to display in the selector in MySQL format ('Y-m-d H:i:s'). Required.
- *		'date': (string) the date to display in the selector in MySQL format ('Y-m-d H:i:s'). Required.
- *		'tab_index': (int) the tab index for the element. Optional. Default 0.
- *		'include_time': (bool) whether to include a specific time for the selector. Default true.
- *		'include_year': (bool) whether to include a the year field. Default true.
- *		'include_buttons': (bool) whether to include submit buttons on the selector. Default true.
+ *    'id_attr': (string) the date to display in the selector in MySQL format ('Y-m-d H:i:s'). Required.
+ *    'date': (string) the date to display in the selector in MySQL format ('Y-m-d H:i:s'). Required.
+ *    'tab_index': (int) the tab index for the element. Optional. Default 0.
+ *    'include_time': (bool) whether to include a specific time for the selector. Default true.
+ *    'include_year': (bool) whether to include a the year field. Default true.
+ *    'include_buttons': (bool) whether to include submit buttons on the selector. Default true.
  * @since 2.0
  */
 function wcs_date_input( $timestamp = 0, $args = array() ) {
@@ -66,7 +66,7 @@ function wcs_get_edit_post_link( $post_id ) {
 		return;
 	}
 
-	return apply_filters( 'get_edit_post_link', admin_url( sprintf( $post_type_object->_edit_link . '&action=edit', $post_id ) ),$post_id, '' );
+	return apply_filters( 'get_edit_post_link', admin_url( sprintf( $post_type_object->_edit_link . '&action=edit', $post_id ) ), $post_id, '' );
 }
 
 /**

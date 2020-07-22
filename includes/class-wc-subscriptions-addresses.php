@@ -4,11 +4,11 @@
  *
  * Hooks into WooCommerce to handle editing addresses for subscriptions (by editing the original order for the subscription)
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Addresses
- * @category	Class
- * @author		Brent Shepherd
- * @since		1.3
+ * @package    WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Addresses
+ * @category   Class
+ * @author     Brent Shepherd
+ * @since      1.3
  */
 class WC_Subscriptions_Addresses {
 

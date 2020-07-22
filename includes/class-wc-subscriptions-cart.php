@@ -4,11 +4,11 @@
  *
  * Mirrors a few functions in the WC_Cart class to work for subscriptions.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Cart
- * @category	Class
- * @author		Brent Shepherd
- * @since		1.0
+ * @package WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Cart
+ * @category Class
+ * @author Brent Shepherd
+ * @since 1.0
  */
 class WC_Subscriptions_Cart {
 
@@ -45,14 +45,14 @@ class WC_Subscriptions_Cart {
 	 *
 	 * @since 2.0.18
 	 */
-	 private static $shipping_rates = array();
+	private static $shipping_rates = array();
 
-	 /**
+	/**
 	 * A cache of the current recurring cart being calculated
 	 *
 	 * @since 2.0.20
 	 */
-	 private static $cached_recurring_cart = null;
+	private static $cached_recurring_cart = null;
 
 	/**
 	 * Bootstraps the class and hooks required actions & filters.
@@ -78,10 +78,10 @@ class WC_Subscriptions_Cart {
 		add_filter( 'woocommerce_cart_product_subtotal', __CLASS__ . '::get_formatted_product_subtotal', 11, 4 );
 
 		// Sometimes, even if the order total is $0, the cart still needs payment
-		add_filter( 'woocommerce_cart_needs_payment', __CLASS__ . '::cart_needs_payment' , 10, 2 );
+		add_filter( 'woocommerce_cart_needs_payment', __CLASS__ . '::cart_needs_payment', 10, 2 );
 
 		// Make sure cart product prices correctly include/exclude taxes
-		add_filter( 'woocommerce_cart_product_price', __CLASS__ . '::cart_product_price' , 10, 2 );
+		add_filter( 'woocommerce_cart_product_price', __CLASS__ . '::cart_product_price', 10, 2 );
 
 		// Display grouped recurring amounts after order totals on the cart/checkout pages
 		add_action( 'woocommerce_cart_totals_after_order_total', __CLASS__ . '::display_recurring_totals' );
@@ -106,8 +106,8 @@ class WC_Subscriptions_Cart {
 		add_filter( 'woocommerce_shipping_packages', __CLASS__ . '::reset_shipping_method_counts', 1000, 1 );
 
 		// When WooCommerce determines the taxable address only return pick up shipping methods chosen for the recurring cart being calculated.
-		add_filter( 'woocommerce_local_pickup_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 100 ,1 );
-		add_filter( 'wc_shipping_local_pickup_plus_chosen_shipping_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 10 ,1 );
+		add_filter( 'woocommerce_local_pickup_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 100, 1 );
+		add_filter( 'wc_shipping_local_pickup_plus_chosen_shipping_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 10, 1 );
 
 		// Validate chosen recurring shipping methods
 		add_action( 'woocommerce_after_checkout_validation', __CLASS__ . '::validate_recurring_shipping_methods' );
@@ -185,10 +185,10 @@ class WC_Subscriptions_Cart {
 
 		if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
 			switch ( $handler ) {
-				case 'variable-subscription' :
+				case 'variable-subscription':
 					$handler = 'variable';
 					break;
-				case 'subscription' :
+				case 'subscription':
 					$handler = 'simple';
 					break;
 			}
@@ -776,7 +776,7 @@ class WC_Subscriptions_Cart {
 			// And get the appropriate sign up fee string
 			$sign_up_fee_string = $cart->get_product_subtotal( $product, $quantity );
 
-			remove_filter( $product_price_filter,  'WC_Subscriptions_Product::get_sign_up_fee_filter', 100 );
+			remove_filter( $product_price_filter, 'WC_Subscriptions_Product::get_sign_up_fee_filter', 100 );
 
 			add_filter( 'woocommerce_cart_product_subtotal', __CLASS__ . '::get_formatted_product_subtotal', 11, 4 );
 
@@ -794,7 +794,7 @@ class WC_Subscriptions_Cart {
 				$product_subtotal = str_replace( WC()->countries->inc_tax_or_vat(), '', $product_subtotal ) . ' <small class="tax_label">' . WC()->countries->inc_tax_or_vat() . '</small>';
 			}
 			if ( ! empty( $ex_tax_or_vat_string ) && false !== strpos( $product_subtotal, $ex_tax_or_vat_string ) ) {
-				$product_subtotal = str_replace( WC()->countries->ex_tax_or_vat(), '', $product_subtotal ) . ' <small class="tax_label">' .  WC()->countries->ex_tax_or_vat() . '</small>';
+				$product_subtotal = str_replace( WC()->countries->ex_tax_or_vat(), '', $product_subtotal ) . ' <small class="tax_label">' . WC()->countries->ex_tax_or_vat() . '</small>';
 			}
 
 			$product_subtotal = '<span class="subscription-price">' . $product_subtotal . '</span>';
@@ -1103,17 +1103,17 @@ class WC_Subscriptions_Cart {
 
 		// First start with the billing interval and period
 		switch ( $interval ) {
-			case 1 :
+			case 1:
 				if ( 'day' == $period ) {
 					$cart_key .= 'daily'; // always gotta be one exception
 				} else {
 					$cart_key .= sprintf( '%sly', $period );
 				}
 				break;
-			case 2 :
+			case 2:
 				$cart_key .= sprintf( 'every_2nd_%s', $period );
 				break;
-			case 3 :
+			case 3:
 				$cart_key .= sprintf( 'every_3rd_%s', $period ); // or sometimes two exceptions it would seem
 				break;
 			default:

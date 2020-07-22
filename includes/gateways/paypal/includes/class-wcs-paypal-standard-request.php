@@ -4,11 +4,11 @@
  *
  * Generates URL parameters to send to PayPal to create a subscription with PayPal Standard
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	Gateways/PayPal
- * @category	Class
- * @author		Prospress
- * @since		2.0
+ * @package     WooCommerce Subscriptions
+ * @subpackage  Gateways/PayPal
+ * @category    Class
+ * @author      Prospress
+ * @since       2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

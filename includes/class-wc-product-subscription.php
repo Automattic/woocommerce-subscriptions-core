@@ -4,11 +4,11 @@
  *
  * The subscription product class is an extension of the simple product class.
  *
- * @class 		WC_Product_Subscription
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Product_Subscription
- * @category	Class
- * @since		1.3
+ * @class WC_Product_Subscription
+ * @package WooCommerce Subscriptions
+ * @subpackage WC_Product_Subscription
+ * @category Class
+ * @since 1.3
  *
  */
 if ( ! defined( 'ABSPATH' ) ) {

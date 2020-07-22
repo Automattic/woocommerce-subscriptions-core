@@ -2,8 +2,8 @@
 /**
  * WooCommerce Subscriptions Query Handler
  *
- * @version		2.0
- * @author 		Prospress
+ * @version 2.0
+ * @author  Prospress
  */
 class WCS_Query extends WC_Query {
 
@@ -325,7 +325,7 @@ class WCS_Query extends WC_Query {
 	}
 
 	/**
-	 *	Get endpoint URL.
+	 * Get endpoint URL.
 	 *
 	 * Gets the URL for an endpoint, which varies depending on permalink settings.
 	 *

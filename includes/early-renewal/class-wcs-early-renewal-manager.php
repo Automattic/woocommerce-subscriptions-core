@@ -71,7 +71,7 @@ class WCS_Early_Renewal_Manager {
 				'checkboxgroup'   => 'end',
 				'show_if_checked' => 'yes',
 			),
-		 );
+		);
 
 		WC_Subscriptions_Admin::insert_setting_after( $settings, 'woocommerce_subscriptions_turn_off_automatic_payments', $early_renewal_settings, 'multiple_settings' );
 
@@ -123,7 +123,7 @@ class WCS_Early_Renewal_Manager {
 			$next_payment_timestamp = wcs_add_time( $subscription->get_billing_interval(), $subscription->get_billing_period(), $next_payment_time );
 
 			if ( $subscription->get_time( 'end' ) === 0 || $next_payment_timestamp < $subscription->get_time( 'end' ) ) {
-				$dates_to_update['next_payment'] = gmdate( 'Y-m-d H:i:s',  $next_payment_timestamp );
+				$dates_to_update['next_payment'] = gmdate( 'Y-m-d H:i:s', $next_payment_timestamp );
 			} else {
 				// Delete the next payment date if the calculated next payment date occurs after the end date.
 				$dates_to_update['next_payment'] = 0;

@@ -2,9 +2,9 @@
 /**
  * WooCommerce Subscriptions User Functions
  *
- * @author 		Prospress
- * @category 	Core
- * @package 	WooCommerce Subscriptions/Functions
+ * @author Prospress
+ * @category Core
+ * @package WooCommerce Subscriptions/Functions
  * @version     2.0
  */
 
@@ -366,7 +366,7 @@ function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 function wcs_user_has_capability( $allcaps, $caps, $args ) {
 	if ( isset( $caps[0] ) ) {
 		switch ( $caps[0] ) {
-			case 'edit_shop_subscription_payment_method' :
+			case 'edit_shop_subscription_payment_method':
 				$user_id  = $args[1];
 				$subscription = wcs_get_subscription( $args[2] );
 
@@ -374,7 +374,7 @@ function wcs_user_has_capability( $allcaps, $caps, $args ) {
 					$allcaps['edit_shop_subscription_payment_method'] = true;
 				}
 			break;
-			case 'edit_shop_subscription_status' :
+			case 'edit_shop_subscription_status':
 				$user_id  = $args[1];
 				$subscription = wcs_get_subscription( $args[2] );
 
@@ -382,7 +382,7 @@ function wcs_user_has_capability( $allcaps, $caps, $args ) {
 					$allcaps['edit_shop_subscription_status'] = true;
 				}
 			break;
-			case 'edit_shop_subscription_line_items' :
+			case 'edit_shop_subscription_line_items':
 				$user_id  = $args[1];
 				$subscription = wcs_get_subscription( $args[2] );
 
@@ -390,7 +390,7 @@ function wcs_user_has_capability( $allcaps, $caps, $args ) {
 					$allcaps['edit_shop_subscription_line_items'] = true;
 				}
 			break;
-			case 'switch_shop_subscription' :
+			case 'switch_shop_subscription':
 				$user_id  = $args[1];
 				$subscription = wcs_get_subscription( $args[2] );
 
@@ -398,7 +398,7 @@ function wcs_user_has_capability( $allcaps, $caps, $args ) {
 					$allcaps['switch_shop_subscription'] = true;
 				}
 			break;
-			case 'subscribe_again' :
+			case 'subscribe_again':
 				$user_id  = $args[1];
 				$subscription = wcs_get_subscription( $args[2] );
 
@@ -406,7 +406,7 @@ function wcs_user_has_capability( $allcaps, $caps, $args ) {
 					$allcaps['subscribe_again'] = true;
 				}
 			break;
-			case 'pay_for_order' :
+			case 'pay_for_order':
 				$user_id = $args[1];
 				$order   = wc_get_order( $args[2] );
 
@@ -419,7 +419,7 @@ function wcs_user_has_capability( $allcaps, $caps, $args ) {
 					}
 				}
 			break;
-			case 'toggle_shop_subscription_auto_renewal' :
+			case 'toggle_shop_subscription_auto_renewal':
 				$user_id      = $args[1];
 				$subscription = wcs_get_subscription( $args[2] );
 
