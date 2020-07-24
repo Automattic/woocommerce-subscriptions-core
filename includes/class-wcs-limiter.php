@@ -40,17 +40,19 @@ class WCS_Limiter {
 		echo '<div class="options_group limit_subscription show_if_subscription show_if_variable-subscription hidden">';
 
 		// Only one Subscription per customer
-		woocommerce_wp_select( array(
-			'id'          => '_subscription_limit',
-			'label'       => __( 'Limit subscription', 'woocommerce-subscriptions' ),
-			// translators: placeholders are opening and closing link tags
-			'description' => sprintf( __( 'Only allow a customer to have one subscription to this product. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/store-manager-guide/#limit-subscription">', '</a>' ),
-			'options'     => array(
-				'no'      => __( 'Do not limit', 'woocommerce-subscriptions' ),
-				'active'  => __( 'Limit to one active subscription', 'woocommerce-subscriptions' ),
-				'any'     => __( 'Limit to one of any status', 'woocommerce-subscriptions' ),
-			),
-		) );
+		woocommerce_wp_select(
+			array(
+				'id'          => '_subscription_limit',
+				'label'       => __( 'Limit subscription', 'woocommerce-subscriptions' ),
+				// translators: placeholders are opening and closing link tags
+				'description' => sprintf( __( 'Only allow a customer to have one subscription to this product. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/store-manager-guide/#limit-subscription">', '</a>' ),
+				'options'     => array(
+					'no'     => __( 'Do not limit', 'woocommerce-subscriptions' ),
+					'active' => __( 'Limit to one active subscription', 'woocommerce-subscriptions' ),
+					'any'    => __( 'Limit to one of any status', 'woocommerce-subscriptions' ),
+				),
+			)
+		);
 		echo '</div>';
 
 		do_action( 'woocommerce_subscriptions_product_options_advanced' );

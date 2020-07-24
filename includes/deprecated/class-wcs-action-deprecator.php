@@ -15,6 +15,7 @@
 
 class WCS_Action_Deprecator extends WCS_Hook_Deprecator {
 
+	// phpcs:disable WordPress.Arrays.MultipleStatementAlignment.DoubleArrowNotAligned,WordPress.Arrays.MultipleStatementAlignment.LongIndexSpaceBeforeDoubleArrow
 	/* The actions that have been deprecated, 'new_hook' => 'old_hook' */
 	protected $deprecated_hooks = array(
 		'woocommerce_scheduled_subscription_payment'                       => 'scheduled_subscription_payment',
@@ -35,6 +36,7 @@ class WCS_Action_Deprecator extends WCS_Hook_Deprecator {
 		'woocommerce_scheduled_subscription_trial_end'                     => 'subscription_trial_end',
 		'woocommerce_scheduled_subscription_end_of_prepaid_term'           => 'subscription_end_of_prepaid_term',
 	);
+	// phpcs:enable
 
 	/**
 	 * Bootstraps the class and hooks required actions & filters.

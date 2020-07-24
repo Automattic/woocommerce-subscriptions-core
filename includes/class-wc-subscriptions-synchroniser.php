@@ -207,19 +207,19 @@ class WC_Subscriptions_Synchroniser {
 		array_splice( $settings, $index, 0, array(
 
 			array(
-				'name'          => __( 'Synchronisation', 'woocommerce-subscriptions' ),
-				'type'          => 'title',
+				'name' => __( 'Synchronisation', 'woocommerce-subscriptions' ),
+				'type' => 'title',
 				// translators: placeholders are opening and closing link tags
-				'desc'          => sprintf( _x( 'Align subscription renewal to a specific day of the week, month or year. For example, the first day of the month. %sLearn more%s.', 'used in the general subscription options page', 'woocommerce-subscriptions' ), '<a href="' . esc_url( 'http://docs.woocommerce.com/document/subscriptions/renewal-synchronisation/' ) . '">', '</a>' ),
-				'id'            => self::$setting_id . '_title',
+				'desc' => sprintf( _x( 'Align subscription renewal to a specific day of the week, month or year. For example, the first day of the month. %sLearn more%s.', 'used in the general subscription options page', 'woocommerce-subscriptions' ), '<a href="' . esc_url( 'http://docs.woocommerce.com/document/subscriptions/renewal-synchronisation/' ) . '">', '</a>' ),
+				'id'   => self::$setting_id . '_title',
 			),
 
 			array(
-				'name'          => self::$sync_field_label,
-				'desc'          => __( 'Align Subscription Renewal Day', 'woocommerce-subscriptions' ),
-				'id'            => self::$setting_id,
-				'default'       => 'no',
-				'type'          => 'checkbox',
+				'name'    => self::$sync_field_label,
+				'desc'    => __( 'Align Subscription Renewal Day', 'woocommerce-subscriptions' ),
+				'id'      => self::$setting_id,
+				'default' => 'no',
+				'type'    => 'checkbox',
 			),
 
 			array(
@@ -247,7 +247,10 @@ class WC_Subscriptions_Synchroniser {
 				'desc_tip' => __( 'Subscriptions created within this many days prior to the Renewal Day will not be charged at sign-up. Set to zero for all new Subscriptions to be charged the full recurring amount. Must be a positive number.', 'woocommerce-subscriptions' ),
 			),
 
-			array( 'type' => 'sectionend', 'id' => self::$setting_id . '_title' ),
+			array(
+				'type' => 'sectionend',
+				'id'   => self::$setting_id . '_title',
+			),
 		) );
 
 		return $settings;
@@ -285,14 +288,15 @@ class WC_Subscriptions_Synchroniser {
 			echo '<div class="options_group subscription_pricing subscription_sync show_if_subscription hidden">';
 			echo '<div class="subscription_sync_week_month" style="' . esc_attr( $display_week_month_select ) . '">';
 
-			woocommerce_wp_select( array(
-				'id'          => self::$post_meta_key,
-				'class'       => 'wc_input_subscription_payment_sync select short',
-				'label'       => self::$sync_field_label,
-				'options'     => self::get_billing_period_ranges( $subscription_period ),
-				'description' => self::$sync_description,
-				'desc_tip'    => true,
-				'value'       => $payment_day, // Explicity set value in to ensure backward compatibility
+			woocommerce_wp_select(
+				array(
+					'id'          => self::$post_meta_key,
+					'class'       => 'wc_input_subscription_payment_sync select short',
+					'label'       => self::$sync_field_label,
+					'options'     => self::get_billing_period_ranges( $subscription_period ),
+					'description' => self::$sync_description,
+					'desc_tip'    => true,
+					'value'       => $payment_day, // Explicity set value in to ensure backward compatibility
 				)
 			);
 
@@ -375,8 +379,8 @@ class WC_Subscriptions_Synchroniser {
 		if ( 'year' == $_POST['_subscription_period'] ) { // save the day & month for the date rather than just the day
 
 			$_POST[ self::$post_meta_key ] = array(
-				'day'    => isset( $_POST[ self::$post_meta_key_day ] ) ? $_POST[ self::$post_meta_key_day ] : 0,
-				'month'  => isset( $_POST[ self::$post_meta_key_month ] ) ? $_POST[ self::$post_meta_key_month ] : '01',
+				'day'   => isset( $_POST[ self::$post_meta_key_day ] ) ? $_POST[ self::$post_meta_key_day ] : 0,
+				'month' => isset( $_POST[ self::$post_meta_key_month ] ) ? $_POST[ self::$post_meta_key_month ] : '01',
 			);
 
 		} else {
@@ -421,8 +425,8 @@ class WC_Subscriptions_Synchroniser {
 		if ( 'year' == $_POST['variable_subscription_period'][ $index ] ) { // save the day & month for the date rather than just the day
 
 			$_POST[ 'variable' . self::$post_meta_key ][ $index ] = array(
-				'day'    => isset( $_POST[ $day_field ][ $index ] ) ? $_POST[ $day_field ][ $index ] : 0,
-				'month'  => isset( $_POST[ $month_field ][ $index ] ) ? $_POST[ $month_field ][ $index ] : 0,
+				'day'   => isset( $_POST[ $day_field ][ $index ] ) ? $_POST[ $day_field ][ $index ] : 0,
+				'month' => isset( $_POST[ $month_field ][ $index ] ) ? $_POST[ $month_field ][ $index ] : 0,
 			);
 
 		} elseif ( ! isset( $_POST[ 'variable' . self::$post_meta_key ][ $index ] ) ) {
@@ -801,7 +805,7 @@ class WC_Subscriptions_Synchroniser {
 		$first_payment_date = '<p class="first-payment-date"><small>' . self::get_products_first_payment_date( $product ) . '</small></p>';
 
 		if ( false !== $echo ) {
-			echo wp_kses( $first_payment_date, array( 'p' => array( 'class' => array() ), 'small' => array() ) );
+			echo wp_kses( $first_payment_date, array( 'p' => array( 'class' => array() ), 'small' => array() ) ); // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
 		}
 
 		return $first_payment_date;

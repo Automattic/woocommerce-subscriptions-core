@@ -451,7 +451,12 @@ class WC_Subscription extends WC_Order {
 
 						$this->delete_date( 'trial_end' );
 						$this->delete_date( 'next_payment' );
-						$this->update_dates( array( 'cancelled' => $cancelled_date, 'end' => $end_date ) );
+						$this->update_dates(
+							array(
+								'cancelled' => $cancelled_date,
+								'end'       => $end_date,
+							)
+						);
 					break;
 
 					case 'completed': // core WC order status mapped internally to avoid exceptions

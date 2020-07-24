@@ -20,10 +20,10 @@ class WCS_Failed_Scheduled_Action_Manager {
 	 * @var array
 	 */
 	protected $tracked_scheduled_actions = array(
-		'woocommerce_scheduled_subscription_trial_end'           => 1,
-		'woocommerce_scheduled_subscription_payment'             => 1,
-		'woocommerce_scheduled_subscription_payment_retry'       => 1,
-		'woocommerce_scheduled_subscription_expiration'          => 1,
+		'woocommerce_scheduled_subscription_trial_end'     => 1,
+		'woocommerce_scheduled_subscription_payment'       => 1,
+		'woocommerce_scheduled_subscription_payment_retry' => 1,
+		'woocommerce_scheduled_subscription_expiration'    => 1,
 		'woocommerce_scheduled_subscription_end_of_prepaid_term' => 1,
 	);
 

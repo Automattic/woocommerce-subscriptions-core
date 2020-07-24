@@ -310,28 +310,29 @@ class WC_Subscriptions_Admin {
 		</p><?php
 
 		// Subscription Length
-		woocommerce_wp_select( array(
-			'id'          => '_subscription_length',
-			'class'       => 'wc_input_subscription_length select short',
-			'label'       => __( 'Expire after', 'woocommerce-subscriptions' ),
-			'options'     => wcs_get_subscription_ranges( $chosen_period ),
-			'desc_tip'    => true,
-			'description' => __( 'Automatically expire the subscription after this length of time. This length is in addition to any free trial or amount of time provided before a synchronised first renewal date.', 'woocommerce-subscriptions' ),
+		woocommerce_wp_select(
+			array(
+				'id'          => '_subscription_length',
+				'class'       => 'wc_input_subscription_length select short',
+				'label'       => __( 'Expire after', 'woocommerce-subscriptions' ),
+				'options'     => wcs_get_subscription_ranges( $chosen_period ),
+				'desc_tip'    => true,
+				'description' => __( 'Automatically expire the subscription after this length of time. This length is in addition to any free trial or amount of time provided before a synchronised first renewal date.', 'woocommerce-subscriptions' ),
 			)
 		);
 
 		// Sign-up Fee
 		woocommerce_wp_text_input( array(
-			'id'          => '_subscription_sign_up_fee',
+			'id'                => '_subscription_sign_up_fee',
 			// Keep wc_input_subscription_intial_price for backward compatibility.
-			'class'       => 'wc_input_subscription_intial_price wc_input_subscription_initial_price wc_input_price  short',
+			'class'             => 'wc_input_subscription_intial_price wc_input_subscription_initial_price wc_input_price  short',
 			// translators: %s is a currency symbol / code
-			'label'       => sprintf( __( 'Sign-up fee (%s)', 'woocommerce-subscriptions' ), get_woocommerce_currency_symbol() ),
-			'placeholder' => _x( 'e.g. 9.90', 'example price', 'woocommerce-subscriptions' ),
-			'description' => __( 'Optionally include an amount to be charged at the outset of the subscription. The sign-up fee will be charged immediately, even if the product has a free trial or the payment dates are synced.', 'woocommerce-subscriptions' ),
-			'desc_tip'    => true,
-			'type'        => 'text',
-			'data_type'   => 'price',
+			'label'             => sprintf( __( 'Sign-up fee (%s)', 'woocommerce-subscriptions' ), get_woocommerce_currency_symbol() ),
+			'placeholder'       => _x( 'e.g. 9.90', 'example price', 'woocommerce-subscriptions' ),
+			'description'       => __( 'Optionally include an amount to be charged at the outset of the subscription. The sign-up fee will be charged immediately, even if the product has a free trial or the payment dates are synced.', 'woocommerce-subscriptions' ),
+			'desc_tip'          => true,
+			'type'              => 'text',
+			'data_type'         => 'price',
 			'custom_attributes' => array(
 				'step' => 'any',
 				'min'  => '0',
@@ -890,7 +891,13 @@ class WC_Subscriptions_Admin {
 			$woocommerce_plugin_dir_file = self::get_woocommerce_plugin_dir_file();
 
 			// check if subscription products exist in the store
-			$subscription_product = wc_get_products( array( 'type' => array( 'subscription', 'variable-subscription' ), 'limit' => 1, 'return' => 'ids' ) );
+			$subscription_product = wc_get_products(
+				array(
+					'type'   => array( 'subscription', 'variable-subscription' ),
+					'limit'  => 1,
+					'return' => 'ids',
+				)
+			);
 
 			if ( ! empty( $woocommerce_plugin_dir_file ) && 0 == count( $subscription_product ) ) {
 
@@ -988,10 +995,12 @@ class WC_Subscriptions_Admin {
 	 * @since 1.3.1
 	 */
 	public static function add_manage_subscriptions_screen_options() {
-		add_screen_option( 'per_page', array(
-			'label'   => __( 'Subscriptions', 'woocommerce-subscriptions' ),
-			'default' => 10,
-			'option'  => self::$option_prefix . '_admin_per_page',
+		add_screen_option(
+			'per_page',
+			array(
+				'label'   => __( 'Subscriptions', 'woocommerce-subscriptions' ),
+				'default' => 10,
+				'option'  => self::$option_prefix . '_admin_per_page',
 			)
 		);
 	}
@@ -1059,7 +1068,7 @@ class WC_Subscriptions_Admin {
 		$settings         = self::get_settings();
 		$defaults_to_find = array(
 			self::$option_prefix . '_add_to_cart_button_text' => '',
-			self::$option_prefix . '_order_button_text'       => '',
+			self::$option_prefix . '_order_button_text'       => '', // phpcs:ignore WordPress.Arrays.MultipleStatementAlignment.DoubleArrowNotAligned
 		);
 
 		// Add the $_POST[ 'woocommerce_subscriptions_allow_switching' ] value
@@ -1181,10 +1190,10 @@ class WC_Subscriptions_Admin {
 		return apply_filters( 'woocommerce_subscription_settings', array(
 
 			array(
-				'name'     => __( 'Button Text', 'woocommerce-subscriptions' ),
-				'type'     => 'title',
-				'desc'     => '',
-				'id'       => self::$option_prefix . '_button_text',
+				'name' => __( 'Button Text', 'woocommerce-subscriptions' ),
+				'type' => 'title',
+				'desc' => '',
+				'id'   => self::$option_prefix . '_button_text',
 			),
 
 			array(
@@ -1211,14 +1220,17 @@ class WC_Subscriptions_Admin {
 				'placeholder' => __( 'Sign up now', 'woocommerce-subscriptions' ),
 			),
 
-			array( 'type' => 'sectionend', 'id' => self::$option_prefix . '_button_text' ),
+			array(
+				'type' => 'sectionend',
+				'id'   => self::$option_prefix . '_button_text',
+			),
 
 			array(
-				'name'     => __( 'Roles', 'woocommerce-subscriptions' ),
-				'type'     => 'title',
+				'name' => __( 'Roles', 'woocommerce-subscriptions' ),
+				'type' => 'title',
 				// translators: placeholders are <em> tags
-				'desc'     => sprintf( __( 'Choose the default roles to assign to active and inactive subscribers. For record keeping purposes, a user account must be created for subscribers. Users with the %sadministrator%s role, such as yourself, will never be allocated these roles to prevent locking out administrators.', 'woocommerce-subscriptions' ), '<em>', '</em>' ),
-				'id'       => self::$option_prefix . '_role_options',
+				'desc' => sprintf( __( 'Choose the default roles to assign to active and inactive subscribers. For record keeping purposes, a user account must be created for subscribers. Users with the %sadministrator%s role, such as yourself, will never be allocated these roles to prevent locking out administrators.', 'woocommerce-subscriptions' ), '<em>', '</em>' ),
+				'id'   => self::$option_prefix . '_role_options',
 			),
 
 			array(
@@ -1245,13 +1257,16 @@ class WC_Subscriptions_Admin {
 				'desc_tip' => true,
 			),
 
-			array( 'type' => 'sectionend', 'id' => self::$option_prefix . '_role_options' ),
+			array(
+				'type' => 'sectionend',
+				'id'   => self::$option_prefix . '_role_options',
+			),
 
 			array(
-				'name'          => _x( 'Renewals', 'option section heading', 'woocommerce-subscriptions' ),
-				'type'          => 'title',
-				'desc'          => '',
-				'id'            => self::$option_prefix . '_renewal_options',
+				'name' => _x( 'Renewals', 'option section heading', 'woocommerce-subscriptions' ),
+				'type' => 'title',
+				'desc' => '',
+				'id'   => self::$option_prefix . '_renewal_options',
 			),
 
 			array(
@@ -1277,54 +1292,60 @@ class WC_Subscriptions_Admin {
 				'show_if_checked' => 'yes',
 			),
 
-			array( 'type' => 'sectionend', 'id' => self::$option_prefix . '_renewal_options' ),
-
 			array(
-				'name'          => _x( 'Miscellaneous', 'options section heading', 'woocommerce-subscriptions' ),
-				'type'          => 'title',
-				'desc'          => '',
-				'id'            => self::$option_prefix . '_miscellaneous',
+				'type' => 'sectionend',
+				'id'   => self::$option_prefix . '_renewal_options',
 			),
 
 			array(
-				'name'          => __( 'Customer Suspensions', 'woocommerce-subscriptions' ),
-				'desc'          => _x( 'suspensions per billing period.', 'there\'s a number immediately in front of this text', 'woocommerce-subscriptions' ),
-				'id'            => self::$option_prefix . '_max_customer_suspensions',
-				'css'           => 'min-width:50px;',
-				'default'       => 0,
-				'type'          => 'select',
-				'options'       => apply_filters( 'woocommerce_subscriptions_max_customer_suspension_range', array_merge( range( 0, 12 ), array( 'unlimited' => 'Unlimited' ) ) ),
-				'desc_tip'      => __( 'Set a maximum number of times a customer can suspend their account for each billing period. For example, for a value of 3 and a subscription billed yearly, if the customer has suspended their account 3 times, they will not be presented with the option to suspend their account until the next year. Store managers will always be able to suspend an active subscription. Set this to 0 to turn off the customer suspension feature completely.', 'woocommerce-subscriptions' ),
+				'name' => _x( 'Miscellaneous', 'options section heading', 'woocommerce-subscriptions' ),
+				'type' => 'title',
+				'desc' => '',
+				'id'   => self::$option_prefix . '_miscellaneous',
 			),
 
 			array(
-				'name'          => __( 'Mixed Checkout', 'woocommerce-subscriptions' ),
-				'desc'          => __( 'Allow multiple subscriptions and products to be purchased simultaneously.', 'woocommerce-subscriptions' ),
-				'id'            => self::$option_prefix . '_multiple_purchase',
-				'default'       => 'no',
-				'type'          => 'checkbox',
-				'desc_tip'      => __( 'Allow a subscription product to be purchased with other products and subscriptions in the same transaction.', 'woocommerce-subscriptions' ),
+				'name'     => __( 'Customer Suspensions', 'woocommerce-subscriptions' ),
+				'desc'     => _x( 'suspensions per billing period.', 'there\'s a number immediately in front of this text', 'woocommerce-subscriptions' ),
+				'id'       => self::$option_prefix . '_max_customer_suspensions',
+				'css'      => 'min-width:50px;',
+				'default'  => 0,
+				'type'     => 'select',
+				'options'  => apply_filters( 'woocommerce_subscriptions_max_customer_suspension_range', array_merge( range( 0, 12 ), array( 'unlimited' => 'Unlimited' ) ) ),
+				'desc_tip' => __( 'Set a maximum number of times a customer can suspend their account for each billing period. For example, for a value of 3 and a subscription billed yearly, if the customer has suspended their account 3 times, they will not be presented with the option to suspend their account until the next year. Store managers will always be able to suspend an active subscription. Set this to 0 to turn off the customer suspension feature completely.', 'woocommerce-subscriptions' ),
 			),
 
 			array(
-				'name'          => __( '$0 Initial Checkout', 'woocommerce-subscriptions' ),
-				'desc'          => __( 'Allow $0 initial checkout without a payment method.', 'woocommerce-subscriptions' ),
-				'id'            => self::$option_prefix . '_zero_initial_payment_requires_payment',
-				'default'       => 'no',
-				'type'          => 'checkbox',
-				'desc_tip'      => __( 'Allow a subscription product with a $0 initial payment to be purchased without providing a payment method. The customer will be required to provide a payment method at the end of the initial period to keep the subscription active.', 'woocommerce-subscriptions' ),
+				'name'     => __( 'Mixed Checkout', 'woocommerce-subscriptions' ),
+				'desc'     => __( 'Allow multiple subscriptions and products to be purchased simultaneously.', 'woocommerce-subscriptions' ),
+				'id'       => self::$option_prefix . '_multiple_purchase',
+				'default'  => 'no',
+				'type'     => 'checkbox',
+				'desc_tip' => __( 'Allow a subscription product to be purchased with other products and subscriptions in the same transaction.', 'woocommerce-subscriptions' ),
 			),
 
 			array(
-				'name'          => __( 'Drip Downloadable Content', 'woocommerce-subscriptions' ),
-				'desc'          => __( 'Enable dripping for downloadable content on subscription products.', 'woocommerce-subscriptions' ),
-				'id'            => self::$option_prefix . '_drip_downloadable_content_on_renewal',
-				'default'       => 'no',
-				'type'          => 'checkbox',
-				'desc_tip'      => sprintf( __( 'Enabling this grants access to new downloadable files added to a product only after the next renewal is processed.%sBy default, access to new downloadable files added to a product is granted immediately to any customer that has an active subscription with that product.', 'woocommerce-subscriptions' ), '<br />' ),
+				'name'     => __( '$0 Initial Checkout', 'woocommerce-subscriptions' ),
+				'desc'     => __( 'Allow $0 initial checkout without a payment method.', 'woocommerce-subscriptions' ),
+				'id'       => self::$option_prefix . '_zero_initial_payment_requires_payment',
+				'default'  => 'no',
+				'type'     => 'checkbox',
+				'desc_tip' => __( 'Allow a subscription product with a $0 initial payment to be purchased without providing a payment method. The customer will be required to provide a payment method at the end of the initial period to keep the subscription active.', 'woocommerce-subscriptions' ),
 			),
 
-			array( 'type' => 'sectionend', 'id' => self::$option_prefix . '_miscellaneous' ),
+			array(
+				'name'     => __( 'Drip Downloadable Content', 'woocommerce-subscriptions' ),
+				'desc'     => __( 'Enable dripping for downloadable content on subscription products.', 'woocommerce-subscriptions' ),
+				'id'       => self::$option_prefix . '_drip_downloadable_content_on_renewal',
+				'default'  => 'no',
+				'type'     => 'checkbox',
+				'desc_tip' => sprintf( __( 'Enabling this grants access to new downloadable files added to a product only after the next renewal is processed.%sBy default, access to new downloadable files added to a product is granted immediately to any customer that has an active subscription with that product.', 'woocommerce-subscriptions' ), '<br />' ),
+			),
+
+			array(
+				'type' => 'sectionend',
+				'id'   => self::$option_prefix . '_miscellaneous',
+			),
 		) );
 
 	}
@@ -1357,7 +1378,22 @@ class WC_Subscriptions_Admin {
 				<h4>
 					<?php
 					// translators: $1-$2: opening and closing <strong> tags, $3-$4: opening and closing <em> tags
-					echo wp_kses( sprintf( __( '%1$sWooCommerce Subscriptions Installed%2$s &#8211; %3$sYou\'re ready to start selling subscriptions!%4$s', 'woocommerce-subscriptions' ), '<strong>', '</strong>', '<em>', '</em>' ), array( 'strong' => true, 'em' => true ) );
+					echo wp_kses(
+						sprintf(
+							__(
+								'%1$sWooCommerce Subscriptions Installed%2$s &#8211; %3$sYou\'re ready to start selling subscriptions!%4$s',
+								'woocommerce-subscriptions'
+							),
+							'<strong>',
+							'</strong>',
+							'<em>',
+							'</em>'
+						),
+						array(
+							'strong' => true,
+							'em'     => true,
+						)
+					);
 					?>
 				</h4>
 
@@ -1884,10 +1920,12 @@ class WC_Subscriptions_Admin {
 			),
 		);
 
-		$insert_index = array_search( array(
-			'type' => 'sectionend',
-			'id'   => 'payment_gateways_options',
-			), $settings
+		$insert_index = array_search(
+			array(
+				'type' => 'sectionend',
+				'id'   => 'payment_gateways_options',
+			),
+			$settings
 		);
 
 		// reconstruct the settings array, inserting the new settings after the payment gatways table

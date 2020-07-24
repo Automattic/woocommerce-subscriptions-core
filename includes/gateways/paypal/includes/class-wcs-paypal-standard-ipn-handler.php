@@ -646,7 +646,10 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			}
 		}
 
-		return array( 'order_id' => (int) $order_id, 'order_key' => $order_key );
+		return array(
+			'order_id'  => (int) $order_id,
+			'order_key' => $order_key,
+		);
 	}
 
 	/**

@@ -384,7 +384,22 @@ class WC_Subscriptions_Order {
 
 			// translators: placeholders are opening and closing link tags
 			$thank_you_message .= '<p>' . sprintf( _n( 'View the status of your subscription in %syour account%s.', 'View the status of your subscriptions in %syour account%s.', $subscription_count, 'woocommerce-subscriptions' ), '<a href="' . $my_account_subscriptions_url . '">', '</a>' ) . '</p>';
-			echo wp_kses( apply_filters( 'woocommerce_subscriptions_thank_you_message', $thank_you_message, $order_id ), array( 'a' => array( 'href' => array(), 'title' => array() ), 'p' => array(), 'em' => array(), 'strong' => array() ) );
+			echo wp_kses(
+				apply_filters(
+					'woocommerce_subscriptions_thank_you_message',
+					$thank_you_message,
+					$order_id
+				),
+				array(
+					'a'      => array(
+						'href'  => array(),
+						'title' => array(),
+					),
+					'p'      => array(),
+					'em'     => array(),
+					'strong' => array(),
+				)
+			);
 		}
 
 	}
@@ -781,7 +796,15 @@ class WC_Subscriptions_Order {
 		$subscriptions = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'any' ) );
 
 		if ( ! empty( $subscriptions ) ) {
-			wc_get_template( $template, array( 'order_id' => $order_id, 'subscriptions' => $subscriptions ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+			wc_get_template(
+				$template,
+				array(
+					'order_id'      => $order_id,
+					'subscriptions' => $subscriptions,
+				),
+				'',
+				plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/'
+			);
 		}
 	}
 
@@ -795,7 +818,15 @@ class WC_Subscriptions_Order {
 		$subscription_orders = $subscription->get_related_orders();
 
 		if ( 0 !== count( $subscription_orders ) ) {
-			wc_get_template( 'myaccount/related-orders.php', array( 'subscription_orders' => $subscription_orders, 'subscription' => $subscription ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+			wc_get_template(
+				'myaccount/related-orders.php',
+				array(
+					'subscription_orders' => $subscription_orders,
+					'subscription'        => $subscription,
+				),
+				'',
+				plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/'
+			);
 		}
 	}
 
@@ -1129,8 +1160,8 @@ class WC_Subscriptions_Order {
 
 			$value      = $args[ $order_type ];
 			$meta_query = array(
-				'key'     => $meta_key,
-				'value'   => $value,
+				'key'   => $meta_key,
+				'value' => $value,
 			);
 
 			// Map the value type to the appropriate compare arg.

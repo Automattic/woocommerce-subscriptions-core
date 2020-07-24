@@ -198,7 +198,15 @@ class WC_Subscriptions_Product {
 	public static function get_gravity_form_prices( $price, $product ) {
 
 		if ( self::is_subscription( $product ) ) {
-			$price = self::get_price_string( $product, array( 'price' => $price, 'subscription_length' => false, 'sign_up_fee' => false, 'trial_length' => false ) );
+			$price = self::get_price_string(
+				$product,
+				array(
+					'price'               => $price,
+					'subscription_length' => false,
+					'sign_up_fee'         => false,
+					'trial_length'        => false,
+				)
+			);
 		}
 
 		return $price;
@@ -226,7 +234,9 @@ class WC_Subscriptions_Product {
 			return;
 		}
 
-		$include = wp_parse_args( $include, array(
+		$include = wp_parse_args(
+			$include,
+			array(
 				'tax_calculation'     => get_option( 'woocommerce_tax_display_shop' ),
 				'subscription_price'  => true,
 				'subscription_period' => true,
@@ -1247,7 +1257,13 @@ class WC_Subscriptions_Product {
 	 */
 	public static function get_sign_up_fee_including_tax( $product, $qty = 1 ) {
 		wcs_deprecated_function( __METHOD__, '2.2.0', 'wcs_get_price_including_tax( $product, array( "qty" => $qty, "price" => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) )' );
-		return wcs_get_price_including_tax( $product, array( 'qty' => $qty, 'price' => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) );
+		return wcs_get_price_including_tax(
+			$product,
+			array(
+				'qty'   => $qty,
+				'price' => WC_Subscriptions_Product::get_sign_up_fee( $product ),
+			)
+		);
 	}
 
 	/**
@@ -1258,6 +1274,12 @@ class WC_Subscriptions_Product {
 	 */
 	public static function get_sign_up_fee_excluding_tax( $product, $qty = 1 ) {
 		wcs_deprecated_function( __METHOD__, '2.2.0', 'wcs_get_price_excluding_tax( $product, array( "qty" => $qty, "price" => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) )' );
-		return wcs_get_price_excluding_tax( $product, array( 'qty' => $qty, 'price' => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) );
+		return wcs_get_price_excluding_tax(
+			$product,
+			array(
+				'qty'   => $qty,
+				'price' => WC_Subscriptions_Product::get_sign_up_fee( $product ),
+			)
+		);
 	}
 }

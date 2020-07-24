@@ -19,17 +19,19 @@ class WCS_Retry_Post_Store extends WCS_Retry_Store {
 	 * @return null
 	 */
 	public function init() {
-		register_post_type( self::$post_type, array(
-			'description'  => __( 'Payment retry posts store details about the automatic retry of failed renewal payments.', 'woocommerce-subscriptions' ),
-			'public'       => false,
-			'map_meta_cap' => true,
-			'hierarchical' => false,
-			'supports'     => array( 'title', 'editor', 'comments' ),
-			'rewrite'      => false,
-			'query_var'    => false,
-			'can_export'   => true,
-			'ep_mask'      => EP_NONE,
-			'labels'       => array(
+		register_post_type(
+			self::$post_type,
+			array(
+				'description'  => __( 'Payment retry posts store details about the automatic retry of failed renewal payments.', 'woocommerce-subscriptions' ),
+				'public'       => false,
+				'map_meta_cap' => true,
+				'hierarchical' => false,
+				'supports'     => array( 'title', 'editor', 'comments' ),
+				'rewrite'      => false,
+				'query_var'    => false,
+				'can_export'   => true,
+				'ep_mask'      => EP_NONE,
+				'labels'       => array(
 					'name'               => _x( 'Renewal Payment Retries', 'Post type name', 'woocommerce-subscriptions' ),
 					'singular_name'      => __( 'Renewal Payment Retry', 'woocommerce-subscriptions' ),
 					'menu_name'          => _x( 'Renewal Payment Retries', 'Admin menu name', 'woocommerce-subscriptions' ),

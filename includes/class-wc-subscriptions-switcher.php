@@ -373,11 +373,11 @@ class WC_Subscriptions_Switcher {
 		array_splice( $settings, 12, 0, array(
 
 			array(
-				'name'     => __( 'Switching', 'woocommerce-subscriptions' ),
-				'type'     => 'title',
+				'name' => __( 'Switching', 'woocommerce-subscriptions' ),
+				'type' => 'title',
 				// translators: placeholders are opening and closing link tags
-				'desc'     => sprintf( __( 'Allow subscribers to switch (upgrade or downgrade) between different subscriptions. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( 'http://docs.woocommerce.com/document/subscriptions/switching-guide/' ) . '">', '</a>' ),
-				'id'       => WC_Subscriptions_Admin::$option_prefix . '_switch_settings',
+				'desc' => sprintf( __( 'Allow subscribers to switch (upgrade or downgrade) between different subscriptions. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( 'http://docs.woocommerce.com/document/subscriptions/switching-guide/' ) . '">', '</a>' ),
+				'id'   => WC_Subscriptions_Admin::$option_prefix . '_switch_settings',
 			),
 
 			array(
@@ -386,14 +386,14 @@ class WC_Subscriptions_Switcher {
 			),
 
 			array(
-				'name'    => __( 'Prorate Recurring Payment', 'woocommerce-subscriptions' ),
-				'desc'    => __( 'When switching to a subscription with a different recurring payment or billing period, should the price paid for the existing billing period be prorated when switching to the new subscription?', 'woocommerce-subscriptions' ),
-				'tip'     => '',
-				'id'      => WC_Subscriptions_Admin::$option_prefix . '_apportion_recurring_price',
-				'css'     => 'min-width:150px;',
-				'default' => 'no',
-				'type'    => 'select',
-				'options' => array(
+				'name'     => __( 'Prorate Recurring Payment', 'woocommerce-subscriptions' ),
+				'desc'     => __( 'When switching to a subscription with a different recurring payment or billing period, should the price paid for the existing billing period be prorated when switching to the new subscription?', 'woocommerce-subscriptions' ),
+				'tip'      => '',
+				'id'       => WC_Subscriptions_Admin::$option_prefix . '_apportion_recurring_price',
+				'css'      => 'min-width:150px;',
+				'default'  => 'no',
+				'type'     => 'select',
+				'options'  => array(
 					'no'              => _x( 'Never', 'when to allow a setting', 'woocommerce-subscriptions' ),
 					'virtual-upgrade' => _x( 'For Upgrades of Virtual Subscription Products Only', 'when to prorate recurring fee when switching', 'woocommerce-subscriptions' ),
 					'yes-upgrade'     => _x( 'For Upgrades of All Subscription Products', 'when to prorate recurring fee when switching', 'woocommerce-subscriptions' ),
@@ -404,33 +404,33 @@ class WC_Subscriptions_Switcher {
 			),
 
 			array(
-				'name'    => __( 'Prorate Sign up Fee', 'woocommerce-subscriptions' ),
-				'desc'    => __( 'When switching to a subscription with a sign up fee, you can require the customer pay only the gap between the existing subscription\'s sign up fee and the new subscription\'s sign up fee (if any).', 'woocommerce-subscriptions' ),
-				'tip'     => '',
-				'id'      => WC_Subscriptions_Admin::$option_prefix . '_apportion_sign_up_fee',
-				'css'     => 'min-width:150px;',
-				'default' => 'no',
-				'type'    => 'select',
-				'options' => array(
-					'no'                 => _x( 'Never (do not charge a sign up fee)', 'when to prorate signup fee when switching', 'woocommerce-subscriptions' ),
-					'full'               => _x( 'Never (charge the full sign up fee)', 'when to prorate signup fee when switching', 'woocommerce-subscriptions' ),
-					'yes'                => _x( 'Always', 'when to prorate signup fee when switching', 'woocommerce-subscriptions' ),
+				'name'     => __( 'Prorate Sign up Fee', 'woocommerce-subscriptions' ),
+				'desc'     => __( 'When switching to a subscription with a sign up fee, you can require the customer pay only the gap between the existing subscription\'s sign up fee and the new subscription\'s sign up fee (if any).', 'woocommerce-subscriptions' ),
+				'tip'      => '',
+				'id'       => WC_Subscriptions_Admin::$option_prefix . '_apportion_sign_up_fee',
+				'css'      => 'min-width:150px;',
+				'default'  => 'no',
+				'type'     => 'select',
+				'options'  => array(
+					'no'   => _x( 'Never (do not charge a sign up fee)', 'when to prorate signup fee when switching', 'woocommerce-subscriptions' ),
+					'full' => _x( 'Never (charge the full sign up fee)', 'when to prorate signup fee when switching', 'woocommerce-subscriptions' ),
+					'yes'  => _x( 'Always', 'when to prorate signup fee when switching', 'woocommerce-subscriptions' ),
 				),
 				'desc_tip' => true,
 			),
 
 			array(
-				'name'    => __( 'Prorate Subscription Length', 'woocommerce-subscriptions' ),
-				'desc'    => __( 'When switching to a subscription with a length, you can take into account the payments already completed by the customer when determining how many payments the subscriber needs to make for the new subscription.', 'woocommerce-subscriptions' ),
-				'tip'     => '',
-				'id'      => WC_Subscriptions_Admin::$option_prefix . '_apportion_length',
-				'css'     => 'min-width:150px;',
-				'default' => 'no',
-				'type'    => 'select',
-				'options' => array(
-					'no'                 => _x( 'Never', 'when to allow a setting', 'woocommerce-subscriptions' ),
-					'virtual'            => _x( 'For Virtual Subscription Products Only', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
-					'yes'                => _x( 'For All Subscription Products', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
+				'name'     => __( 'Prorate Subscription Length', 'woocommerce-subscriptions' ),
+				'desc'     => __( 'When switching to a subscription with a length, you can take into account the payments already completed by the customer when determining how many payments the subscriber needs to make for the new subscription.', 'woocommerce-subscriptions' ),
+				'tip'      => '',
+				'id'       => WC_Subscriptions_Admin::$option_prefix . '_apportion_length',
+				'css'      => 'min-width:150px;',
+				'default'  => 'no',
+				'type'     => 'select',
+				'options'  => array(
+					'no'      => _x( 'Never', 'when to allow a setting', 'woocommerce-subscriptions' ),
+					'virtual' => _x( 'For Virtual Subscription Products Only', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
+					'yes'     => _x( 'For All Subscription Products', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
 				),
 				'desc_tip' => true,
 			),
@@ -446,7 +446,10 @@ class WC_Subscriptions_Switcher {
 				'desc_tip' => true,
 			),
 
-			array( 'type' => 'sectionend', 'id' => WC_Subscriptions_Admin::$option_prefix . '_switch_settings' ),
+			array(
+				'type' => 'sectionend',
+				'id'   => WC_Subscriptions_Admin::$option_prefix . '_switch_settings',
+			),
 		) );
 
 		return $settings;
@@ -539,7 +542,7 @@ class WC_Subscriptions_Switcher {
 		$switch_text = get_option( WC_Subscriptions_Admin::$option_prefix . '_switch_button_text', __( 'Upgrade or Downgrade', 'woocommerce-subscriptions' ) );
 		$switch_link = sprintf( '<a href="%s" class="wcs-switch-link button">%s</a>', $switch_url, $switch_text );
 
-		echo wp_kses( apply_filters( 'woocommerce_subscriptions_switch_link', $switch_link, $item_id, $item, $subscription ), array( 'a' => array( 'href' => array(), 'title' => array(), 'class' => array() ) ) );
+		echo wp_kses( apply_filters( 'woocommerce_subscriptions_switch_link', $switch_link, $item_id, $item, $subscription ), array( 'a' => array( 'href' => array(), 'title' => array(), 'class' => array() ) ) ); // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
 	}
 
 	/**
@@ -588,7 +591,14 @@ class WC_Subscriptions_Switcher {
 	protected static function add_switch_query_args( $subscription_id, $item_id, $permalink, $additional_query_args = array() ) {
 
 		// manually add a nonce because we can't use wp_nonce_url() (it would escape the URL)
-		$query_args = array_merge( $additional_query_args, array( 'switch-subscription' => absint( $subscription_id ), 'item' => absint( $item_id ), '_wcsnonce' => wp_create_nonce( 'wcs_switch_request' ) ) );
+		$query_args = array_merge(
+			$additional_query_args,
+			array(
+				'switch-subscription' => absint( $subscription_id ),
+				'item'                => absint( $item_id ),
+				'_wcsnonce'           => wp_create_nonce( 'wcs_switch_request' ),
+			)
+		);
 		$permalink  = add_query_arg( $query_args, $permalink );
 
 		return apply_filters( 'woocommerce_subscriptions_add_switch_query_args', $permalink, $subscription_id, $item_id );
@@ -1043,7 +1053,8 @@ class WC_Subscriptions_Switcher {
 					$new_fee_items      = array();
 					foreach ( $recurring_cart->get_fees() as $fee_key => $fee ) {
 						$fee_item = new WC_Subscription_Item_Fee_Pending_Switch();
-						$fee_item->set_props( array(
+						$fee_item->set_props(
+							array(
 								'name'       => $fee->name,
 								'tax_status' => $fee->taxable,
 								'amount'     => $fee->amount,
@@ -1480,10 +1491,10 @@ class WC_Subscriptions_Switcher {
 			}
 
 			$cart_item_data['subscription_switch'] = array(
-				'subscription_id'         => $subscription->get_id(),
-				'item_id'                 => absint( $_GET['item'] ),
-				'next_payment_timestamp'  => $next_payment_timestamp,
-				'upgraded_or_downgraded'  => '',
+				'subscription_id'        => $subscription->get_id(),
+				'item_id'                => absint( $_GET['item'] ),
+				'next_payment_timestamp' => $next_payment_timestamp,
+				'upgraded_or_downgraded' => '',
 			);
 
 			return $cart_item_data;
@@ -1809,11 +1820,13 @@ class WC_Subscriptions_Switcher {
 	public static function hidden_order_itemmeta( $hidden_meta_keys ) {
 
 		if ( apply_filters( 'woocommerce_subscriptions_hide_switch_itemmeta', ! defined( 'WCS_DEBUG' ) || true !== WCS_DEBUG ) ) {
-			$hidden_meta_keys = array_merge( $hidden_meta_keys, array(
-				'_switched_subscription_item_id',
-				'_switched_subscription_new_item_id',
-				'_switched_subscription_sign_up_fee_prorated',
-				'_switched_subscription_price_prorated',
+			$hidden_meta_keys = array_merge(
+				$hidden_meta_keys,
+				array(
+					'_switched_subscription_item_id',
+					'_switched_subscription_new_item_id',
+					'_switched_subscription_sign_up_fee_prorated',
+					'_switched_subscription_price_prorated',
 				)
 			);
 		}

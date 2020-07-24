@@ -33,28 +33,30 @@ if ( ! defined( 'ABSPATH' ) ) {
 function wcs_price_string( $subscription_details ) {
 	global $wp_locale;
 
-	$subscription_details = wp_parse_args( $subscription_details, array(
-			'currency'              => '',
-			'initial_amount'        => '',
-			'initial_description'   => _x( 'up front', 'initial payment on a subscription', 'woocommerce-subscriptions' ),
-			'recurring_amount'      => '',
+	$subscription_details = wp_parse_args(
+		$subscription_details,
+		array(
+			'currency'                    => '',
+			'initial_amount'              => '',
+			'initial_description'         => _x( 'up front', 'initial payment on a subscription', 'woocommerce-subscriptions' ),
+			'recurring_amount'            => '',
 
 			// Schedule details
-			'subscription_interval' => 1,
-			'subscription_period'   => '',
-			'subscription_length'   => 0,
-			'trial_length'          => 0,
-			'trial_period'          => '',
+			'subscription_interval'       => 1,
+			'subscription_period'         => '',
+			'subscription_length'         => 0,
+			'trial_length'                => 0,
+			'trial_period'                => '',
 
 			// Syncing details
-			'is_synced'                => false,
-			'synchronised_payment_day' => 0,
+			'is_synced'                   => false,
+			'synchronised_payment_day'    => 0,
 
 			// Params for wc_price()
 			'display_excluding_tax_label' => false,
 
 			// Params for formatting customisation
-			'use_per_slash' => true,
+			'use_per_slash'               => true,
 		)
 	);
 
@@ -62,13 +64,25 @@ function wcs_price_string( $subscription_details ) {
 
 	// Make sure prices have been through wc_price()
 	if ( is_numeric( $subscription_details['initial_amount'] ) ) {
-		$initial_amount_string = wc_price( $subscription_details['initial_amount'], array( 'currency' => $subscription_details['currency'], 'ex_tax_label' => $subscription_details['display_excluding_tax_label'] ) );
+		$initial_amount_string = wc_price(
+			$subscription_details['initial_amount'],
+			array(
+				'currency'     => $subscription_details['currency'],
+				'ex_tax_label' => $subscription_details['display_excluding_tax_label'],
+			)
+		);
 	} else {
 		$initial_amount_string = $subscription_details['initial_amount'];
 	}
 
 	if ( is_numeric( $subscription_details['recurring_amount'] ) ) {
-		$recurring_amount_string = wc_price( $subscription_details['recurring_amount'], array( 'currency' => $subscription_details['currency'], 'ex_tax_label' => $subscription_details['display_excluding_tax_label'] ) );
+		$recurring_amount_string = wc_price(
+			$subscription_details['recurring_amount'],
+			array(
+				'currency'     => $subscription_details['currency'],
+				'ex_tax_label' => $subscription_details['display_excluding_tax_label'],
+			)
+		);
 	} else {
 		$recurring_amount_string = $subscription_details['recurring_amount'];
 	}

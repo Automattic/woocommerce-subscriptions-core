@@ -572,14 +572,14 @@ class WC_Subscriptions_Upgrader {
 		}
 
 		$script_data = array(
-			'really_old_version'        => ( version_compare( self::$active_version, '1.4', '<' ) ) ? 'true' : 'false',
-			'upgrade_to_1_5'            => ( version_compare( self::$active_version, '1.5', '<' ) ) ? 'true' : 'false',
-			'upgrade_to_2_0'            => ( version_compare( self::$active_version, '2.0.0', '<' ) ) ? 'true' : 'false',
-			'repair_2_0'                => ( version_compare( self::$active_version, '2.0.0', '>=' ) && version_compare( self::$active_version, '2.0.2', '<' ) ) ? 'true' : 'false',
-			'hooks_per_request'         => self::$upgrade_limit_hooks,
-			'ajax_url'                  => admin_url( 'admin-ajax.php' ),
-			'upgrade_nonce'             => wp_create_nonce( 'wcs_upgrade_process' ),
-			'subscription_count'        => $subscription_count,
+			'really_old_version' => ( version_compare( self::$active_version, '1.4', '<' ) ) ? 'true' : 'false',
+			'upgrade_to_1_5'     => ( version_compare( self::$active_version, '1.5', '<' ) ) ? 'true' : 'false',
+			'upgrade_to_2_0'     => ( version_compare( self::$active_version, '2.0.0', '<' ) ) ? 'true' : 'false',
+			'repair_2_0'         => ( version_compare( self::$active_version, '2.0.0', '>=' ) && version_compare( self::$active_version, '2.0.2', '<' ) ) ? 'true' : 'false',
+			'hooks_per_request'  => self::$upgrade_limit_hooks,
+			'ajax_url'           => admin_url( 'admin-ajax.php' ),
+			'upgrade_nonce'      => wp_create_nonce( 'wcs_upgrade_process' ),
+			'subscription_count' => $subscription_count,
 		);
 
 		wp_localize_script( 'wcs-upgrade', 'wcs_update_script_data', $script_data );

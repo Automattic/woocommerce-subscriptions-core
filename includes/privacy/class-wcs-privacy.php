@@ -137,10 +137,10 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 		$subscription_ids = array_map( 'absint', (array) $_REQUEST['post'] );
 		$changed          = 0;
 		$sendback_args    = array(
-			'post_type'    => 'shop_subscription',
-			'bulk_action'  => 'remove_personal_data',
-			'ids'          => join( ',', $subscription_ids ),
-			'error_count'  => 0,
+			'post_type'   => 'shop_subscription',
+			'bulk_action' => 'remove_personal_data',
+			'ids'         => join( ',', $subscription_ids ),
+			'error_count' => 0,
 		);
 
 		foreach ( $subscription_ids as $subscription_id ) {

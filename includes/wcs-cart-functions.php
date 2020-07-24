@@ -116,7 +116,9 @@ function wcs_cart_totals_shipping_html() {
 						$package_name = '';
 					}
 
-					wc_get_template( 'cart/cart-recurring-shipping.php', array(
+					wc_get_template(
+						'cart/cart-recurring-shipping.php',
+						array(
 							'package'              => $package,
 							'available_methods'    => $package['rates'],
 							'show_package_details' => $show_package_details,

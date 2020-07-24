@@ -33,7 +33,7 @@ class WCS_Report_Cache_Manager {
 			4 => 'WCS_Report_Subscription_By_Product',
 			5 => 'WCS_Report_Subscription_By_Customer',
 		),
-		'woocommerce_subscription_payment_complete' => array( // this hook takes care of renewal, switch and initial payments
+		'woocommerce_subscription_payment_complete'  => array( // this hook takes care of renewal, switch and initial payments
 			0 => 'WCS_Report_Dashboard',
 			1 => 'WCS_Report_Subscription_Events_By_Date',
 			5 => 'WCS_Report_Subscription_By_Customer',
@@ -41,18 +41,18 @@ class WCS_Report_Cache_Manager {
 		'woocommerce_subscriptions_switch_completed' => array(
 			1 => 'WCS_Report_Subscription_Events_By_Date',
 		),
-		'woocommerce_subscription_status_changed' => array(
+		'woocommerce_subscription_status_changed'    => array(
 			0 => 'WCS_Report_Dashboard',
 			1 => 'WCS_Report_Subscription_Events_By_Date', // we really only need cancelled, expired and active status here, but we'll use a more generic hook for convenience
 			5 => 'WCS_Report_Subscription_By_Customer',
 		),
-		'woocommerce_subscription_status_active' => array(
+		'woocommerce_subscription_status_active'     => array(
 			2 => 'WCS_Report_Upcoming_Recurring_Revenue',
 		),
-		'woocommerce_new_order_item' => array(
+		'woocommerce_new_order_item'                 => array(
 			4 => 'WCS_Report_Subscription_By_Product',
 		),
-		'woocommerce_update_order_item' => array(
+		'woocommerce_update_order_item'              => array(
 			4 => 'WCS_Report_Subscription_By_Product',
 		),
 	);

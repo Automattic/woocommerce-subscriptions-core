@@ -16,6 +16,7 @@
 
 class WCS_Filter_Deprecator extends WCS_Hook_Deprecator {
 
+	// phpcs:disable WordPress.Arrays.MultipleStatementAlignment.DoubleArrowNotAligned,WordPress.Arrays.MultipleStatementAlignment.LongIndexSpaceBeforeDoubleArrow
 	/* The filters that have been deprecated, 'new_hook' => 'old_hook' */
 	protected $deprecated_hooks = array(
 
@@ -63,6 +64,7 @@ class WCS_Filter_Deprecator extends WCS_Hook_Deprecator {
 		'woocommerce_subscriptions_update_payment_via_pay_shortcode' => 'woocommerce_subscriptions_update_recurring_payment_via_pay_shortcode',
 		'woocommerce_can_subscription_be_updated_to'                 => 'woocommerce_can_subscription_be_changed_to',
 	);
+	// phpcs:enable
 
 	/**
 	 * Bootstraps the class and hooks required actions & filters.

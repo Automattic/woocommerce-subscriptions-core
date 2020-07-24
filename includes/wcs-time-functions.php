@@ -422,7 +422,7 @@ function wcs_estimate_period_between( $last_date, $second_date, $interval = 1 ) 
 	);
 
 	// check for different time spans
-	foreach ( array( 'year' => YEAR_IN_SECONDS, 'week' => WEEK_IN_SECONDS, 'day' => DAY_IN_SECONDS ) as $time => $seconds ) {
+	foreach ( array( 'year' => YEAR_IN_SECONDS, 'week' => WEEK_IN_SECONDS, 'day' => DAY_IN_SECONDS ) as $time => $seconds ) { // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
 		$possible_periods[ $time ] = array(
 			'intervals'         => floor( $period_in_seconds / $seconds ),
 			'remainder'         => $period_in_seconds % $seconds,
@@ -512,7 +512,7 @@ function wcs_find_full_months_between( $start_timestamp, $end_timestamp, $interv
 	$remainder_in_period += $remainder;
 
 	$time_difference = array(
-		'months' => $number_of_months,
+		'months'    => $number_of_months,
 		'remainder' => $remainder_in_period,
 	);
 

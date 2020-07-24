@@ -360,7 +360,12 @@ class WCS_Repair_2_0_2 {
 			try {
 
 				// we need to bypass the update_status() method here because normally an expired subscription can't have it's status changed, we also don't want normal status change hooks to be fired
-				wp_update_post( array( 'ID' => $subscription->get_id(), 'post_status' => 'wc-on-hold' ) );
+				wp_update_post(
+					array(
+						'ID'          => $subscription->get_id(),
+						'post_status' => 'wc-on-hold',
+					)
+				);
 
 				// if the payment method doesn't support date changes, we still want to reactivate the subscription but we also need to process a special failed payment at the next renewal to fix up the payment method so we'll set a special flag in post meta to handle that
 				if ( ! $subscription->payment_method_supports( 'subscription_date_changes' ) && $subscription->get_total() > 0 ) {

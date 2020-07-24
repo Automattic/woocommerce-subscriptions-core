@@ -97,8 +97,8 @@ class WCS_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 			'highlight_series' => 0,
 		);
 		$legend[] = array(
-			'title'       => sprintf( __( '%s average renewal amount', 'woocommerce-subscriptions' ), '<strong>' . wc_price( $this->average_sales ) . '</strong>' ),
-			'color'       => $this->chart_colours['renewals_average'],
+			'title' => sprintf( __( '%s average renewal amount', 'woocommerce-subscriptions' ), '<strong>' . wc_price( $this->average_sales ) . '</strong>' ),
+			'color' => $this->chart_colours['renewals_average'],
 		);
 
 		return $legend;
@@ -112,7 +112,7 @@ class WCS_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 		global $wpdb;
 
 		$default_args = array(
-			'no_cache'  => false,
+			'no_cache' => false,
 		);
 
 		$args = apply_filters( 'wcs_reports_upcoming_recurring_revenue_args', $args );

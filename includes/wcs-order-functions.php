@@ -41,7 +41,9 @@ function wcs_get_subscriptions_for_order( $order, $args = array() ) {
 		return $subscriptions;
 	}
 
-	$args = wp_parse_args( $args, array(
+	$args = wp_parse_args(
+		$args,
+		array(
 			'subscriptions_per_page' => -1,
 			'order_type'             => array( 'parent', 'switch' ),
 		)

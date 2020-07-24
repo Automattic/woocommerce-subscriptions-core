@@ -481,10 +481,7 @@ class WC_Subscriptions_Checkout {
 	 */
 	public static function filter_woocommerce_script_parameters( $woocommerce_params, $handle = '' ) {
 		// WC 3.3+ deprecates handle-specific filters in favor of 'woocommerce_get_script_data'.
-		if ( 'woocommerce_get_script_data' === current_filter() && ! in_array( $handle, array(
-				'woocommerce',
-				'wc-checkout',
-			) ) ) {
+		if ( 'woocommerce_get_script_data' === current_filter() && ! in_array( $handle, array( 'woocommerce', 'wc-checkout' ) ) ) {
 			return $woocommerce_params;
 		}
 

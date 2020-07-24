@@ -17,9 +17,9 @@ class WCS_Report_Subscription_By_Product extends WP_List_Table {
 	 */
 	public function __construct() {
 		parent::__construct( array(
-			'singular'  => __( 'Product', 'woocommerce-subscriptions' ),
-			'plural'    => __( 'Products', 'woocommerce-subscriptions' ),
-			'ajax'      => false,
+			'singular' => __( 'Product', 'woocommerce-subscriptions' ),
+			'plural'   => __( 'Products', 'woocommerce-subscriptions' ),
+			'ajax'     => false,
 		) );
 	}
 
