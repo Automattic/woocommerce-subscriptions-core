@@ -2062,12 +2062,14 @@ class WC_Subscriptions_Cart {
 		foreach ( WC()->cart->recurring_carts as $cart ) {
 			foreach ( $cart->taxes as $key => $tax ) {
 				if ( ! $compound && WC_Tax::is_compound( $key ) ) {
-					continue; }
+					continue;
+				}
 				$recurring_total += $tax;
 			}
 			foreach ( $cart->shipping_taxes as $key => $tax ) {
 				if ( ! $compound && WC_Tax::is_compound( $key ) ) {
-					continue; }
+					continue;
+				}
 				$recurring_total += $tax;
 			}
 		}
