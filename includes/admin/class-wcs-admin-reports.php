@@ -147,7 +147,7 @@ class WCS_Admin_Reports {
 	/**
 	 * Get a report from one of our classes.
 	 *
-	 * @param string $name
+	 * @param string $name report name to be fetched.
 	 */
 	public static function get_report( $name ) {
 		$name  = sanitize_title( str_replace( '_', '-', $name ) );
@@ -160,11 +160,12 @@ class WCS_Admin_Reports {
 		if ( class_exists( 'WC_Tracks' ) && 'yes' === get_option( 'woocommerce_allow_tracking', 'no' ) ) {
 
 			$reports = array(
-				'subscription-events-by-date' => 'subscriptions_report_subscription_events_by_date_view',
+				'subscription-events-by-date' => 'subscriptions_report_events_by_date_view',
 				'upcoming-recurring-revenue'  => 'subscriptions_report_upcoming_recurring_revenue_view',
 				'retention-rate'              => 'subscriptions_report_retention_rate_view',
-				'subscription-by-product'     => 'subscriptions_report_subscription_by_product_view',
-				'subscription-by-customer'    => 'subscriptions_report_subscription_by_customer_view',
+				'subscription-by-product'     => 'subscriptions_report_by_product_view',
+				'subscription-by-customer'    => 'subscriptions_report_by_customer_view',
+				'subscription-payment-retry'  => 'subscriptions_report_payment_retry_view',
 			);
 
 			$properties = array(
