@@ -460,6 +460,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 				$subscription->update_dates( $dates_to_update );
 			}
 		} catch ( Exception $e ) {
+			// translators: placeholder is an error message.
 			throw new WC_REST_Exception( 'woocommerce_rest_cannot_update_subscription_dates', sprintf( __( 'Updating subscription dates errored with message: %s', 'woocommerce-subscriptions' ), $e->getMessage() ), 400 );
 		}
 
@@ -759,6 +760,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 				$subscription->update_dates( $dates_to_update );
 			}
 		} catch ( Exception $e ) {
+			// translators: placeholder is an error message.
 			throw new WC_REST_Exception( 'woocommerce_rest_cannot_update_subscription_dates', sprintf( __( 'Updating subscription dates errored with message: %s', 'woocommerce-subscriptions' ), $e->getMessage() ), 400 );
 		}
 	}

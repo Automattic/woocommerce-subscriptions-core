@@ -85,18 +85,21 @@ class WCS_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 		$this->average_sales = ( 0 != $total_renewal_count ? $total_renewal_revenue / $total_renewal_count : 0 );
 
 		$legend[] = array(
+			// translators: %s: formatted amount.
 			'title'            => sprintf( __( '%s renewal income in this period', 'woocommerce-subscriptions' ), '<strong>' . wc_price( $total_renewal_revenue ) . '</strong>' ),
 			'placeholder'      => __( 'The sum of all the upcoming renewal orders, including items, fees, tax and shipping, for currently active subscriptions.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['renewals_amount'],
 			'highlight_series' => 1,
 		);
 		$legend[] = array(
+			// translators: %s: renewal count.
 			'title'            => sprintf( __( '%s renewal orders', 'woocommerce-subscriptions' ), '<strong>' . $total_renewal_count . '</strong>' ),
 			'placeholder'      => __( 'The number of upcoming renewal orders, for currently active subscriptions.', 'woocommerce-subscriptions' ),
 			'color'            => $this->chart_colours['renewals_count'],
 			'highlight_series' => 0,
 		);
 		$legend[] = array(
+			// translators: %s: formatted amount.
 			'title' => sprintf( __( '%s average renewal amount', 'woocommerce-subscriptions' ), '<strong>' . wc_price( $this->average_sales ) . '</strong>' ),
 			'color' => $this->chart_colours['renewals_average'],
 		);

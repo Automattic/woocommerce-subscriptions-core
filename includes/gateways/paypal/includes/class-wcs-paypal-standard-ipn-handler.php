@@ -435,8 +435,8 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 							$this->add_order_note( sprintf( _x( 'IPN subscription payment %s.', 'used in order note', 'woocommerce-subscriptions' ), $transaction_details['payment_status'] ), $transaction_order, $transaction_details );
 						} else {
 							$transaction_order->update_status( 'on-hold' );
-							// translators: placeholder is payment status (e.g. "completed")
-							$this->add_order_note( sprintf( _x( 'IPN subscription payment %s for reason: %s.', 'used in order note', 'woocommerce-subscriptions' ), $transaction_details['payment_status'], $transaction_details['pending_reason'] ), $transaction_order, $transaction_details );
+							// translators: 1: payment status (e.g. "completed"), 2: pending reason.
+							$this->add_order_note( sprintf( _x( 'IPN subscription payment %1$s for reason: %2$s.', 'used in order note', 'woocommerce-subscriptions' ), $transaction_details['payment_status'], $transaction_details['pending_reason'] ), $transaction_order, $transaction_details );
 						}
 					}
 

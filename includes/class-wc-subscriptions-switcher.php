@@ -376,7 +376,7 @@ class WC_Subscriptions_Switcher {
 				'name' => __( 'Switching', 'woocommerce-subscriptions' ),
 				'type' => 'title',
 				// translators: placeholders are opening and closing link tags
-				'desc' => sprintf( __( 'Allow subscribers to switch (upgrade or downgrade) between different subscriptions. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( 'http://docs.woocommerce.com/document/subscriptions/switching-guide/' ) . '">', '</a>' ),
+				'desc' => sprintf( __( 'Allow subscribers to switch (upgrade or downgrade) between different subscriptions. %1$sLearn more%2$s.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( 'http://docs.woocommerce.com/document/subscriptions/switching-guide/' ) . '">', '</a>' ),
 				'id'   => WC_Subscriptions_Admin::$option_prefix . '_switch_settings',
 			),
 
@@ -1116,6 +1116,7 @@ class WC_Subscriptions_Switcher {
 
 				foreach ( $switch_orders as $switch_order_id => $switch_order ) {
 					if ( wcs_get_objects_property( $order, 'id' ) !== $switch_order_id && in_array( $switch_order->get_status(), apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'failed', 'on-hold' ), $switch_order ) ) ) {
+						// translators: %s: order number.
 						$switch_order->update_status( 'cancelled', sprintf( __( 'Switch order cancelled due to a new switch order being created #%s.', 'woocommerce-subscriptions' ), $order->get_order_number() ) );
 					}
 				}
@@ -1996,6 +1997,7 @@ class WC_Subscriptions_Switcher {
 						// translators: 1$: old item, 2$: new item when switching
 						$add_note = sprintf( _x( 'Customer switched from: %1$s to %2$s.', 'used in order notes', 'woocommerce-subscriptions' ), wcs_get_order_item_name( $old_subscription_item, array( 'attributes' => true ) ), $new_item_name );
 					} else {
+						// translators: %s: new item name.
 						$add_note = sprintf( _x( 'Customer added %s.', 'used in order notes', 'woocommerce-subscriptions' ), $new_item_name );
 					}
 

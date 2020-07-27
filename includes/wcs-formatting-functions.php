@@ -119,7 +119,7 @@ function wcs_price_string( $subscription_details ) {
 					// e.g. $5 every 2 weeks on Wednesday
 					if ( ! empty( $subscription_details['initial_amount'] ) ) {
 						// translators: 1$: initial amount, 2$: initial description (e.g. "up front" ), 3$: recurring amount, 4$: interval (e.g. "2nd week"), 5$: day of the week (e.g. "Thursday"); (e.g. "$10 up front, then $20 every 2nd week on Wednesday")
-						$subscription_string = sprintf( __( '%1$s %2$s then %3$s every %4%s on %5$s', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, wcs_get_subscription_period_strings( $subscription_details['subscription_interval'], $subscription_details['subscription_period'] ), $payment_day_of_week );
+						$subscription_string = sprintf( __( '%1$s %2$s then %3$s every %4$s on %5$s', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, wcs_get_subscription_period_strings( $subscription_details['subscription_interval'], $subscription_details['subscription_period'] ), $payment_day_of_week );
 					} else {
 						// translators: 1$: recurring amount string, 2$: period, 3$: day of the week (e.g. "$10 every 2nd week on Wednesday")
 						$subscription_string = sprintf( __( '%1$s every %2$s on %3$s', 'woocommerce-subscriptions' ), $recurring_amount_string, wcs_get_subscription_period_strings( $subscription_details['subscription_interval'], $subscription_details['subscription_period'] ), $payment_day_of_week );
@@ -193,10 +193,11 @@ function wcs_price_string( $subscription_details ) {
 		// translators: 1$: initial amount, 2$: initial description (e.g. "up front"), 3$: recurring amount, 4$: subscription period (e.g. "month" or "3 months")
 		$subscription_string = sprintf( _n( '%1$s %2$s then %3$s / %4$s', '%1$s %2$s then %3$s every %4$s', $subscription_details['subscription_interval'], 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, $subscription_period_string );
 	} elseif ( ! empty( $subscription_details['recurring_amount'] ) || intval( $subscription_details['recurring_amount'] ) === 0 ) {
-		// translators: 1$: recurring amount, 2$: subscription period (e.g. "month" or "3 months") (e.g. "$15 / month" or "$15 every 2nd month")
 		if ( true === $subscription_details['use_per_slash'] ) {
+			// translators: 1$: recurring amount, 2$: subscription period (e.g. "month" or "3 months") (e.g. "$15 / month" or "$15 every 2nd month")
 			$subscription_string = sprintf( _n( '%1$s / %2$s', '%1$s every %2$s', $subscription_details['subscription_interval'], 'woocommerce-subscriptions' ), $recurring_amount_string, $subscription_period_string );
 		} else {
+			// translators: %1$: recurring amount (e.g. "$15"), %2$: subscription period (e.g. "month") (e.g. "$15 every 2nd month")
 			$subscription_string = sprintf( __( '%1$s every %2$s', 'woocommerce-subscriptions' ), $recurring_amount_string, $subscription_period_string );
 		}
 	} else {
@@ -247,7 +248,7 @@ function wcs_get_human_time_diff( $timestamp_gmt ) {
 		$timestamp_site  = wcs_date_to_time( get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $timestamp_gmt ) ) );
 		$date_to_display = date_i18n( wc_date_format(), $timestamp_site ) . ' ' . date_i18n( wc_time_format(), $timestamp_site );
 		// translators: placeholder is a localized date and time (e.g. "February 1, 2018 10:20 PM")
-		$date_to_display = sprintf( _x( '%s', 'wcs_get_human_time_diff', 'woocommerce-subscriptions' ), $date_to_display );
+		$date_to_display = sprintf( _x( '%s', 'wcs_get_human_time_diff', 'woocommerce-subscriptions' ), $date_to_display ); // phpcs:ignore WordPress.WP.I18n.NoEmptyStrings
 	}
 
 	return $date_to_display;

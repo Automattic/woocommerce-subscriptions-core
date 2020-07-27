@@ -45,7 +45,7 @@ class WCS_Limiter {
 				'id'          => '_subscription_limit',
 				'label'       => __( 'Limit subscription', 'woocommerce-subscriptions' ),
 				// translators: placeholders are opening and closing link tags
-				'description' => sprintf( __( 'Only allow a customer to have one subscription to this product. %sLearn more%s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/store-manager-guide/#limit-subscription">', '</a>' ),
+				'description' => sprintf( __( 'Only allow a customer to have one subscription to this product. %1$sLearn more%2$s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/store-manager-guide/#limit-subscription">', '</a>' ),
 				'options'     => array(
 					'no'     => __( 'Do not limit', 'woocommerce-subscriptions' ),
 					'active' => __( 'Limit to one active subscription', 'woocommerce-subscriptions' ),

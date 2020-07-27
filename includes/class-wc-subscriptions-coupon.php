@@ -1043,8 +1043,8 @@ class WC_Subscriptions_Coupon {
 			if ( self::get_coupon_limit( $code ) <= $count ) {
 				$subscription->remove_coupon( $code );
 				$subscription->add_order_note( sprintf(
+					/* translators: %1$s is the coupon code, %2$d is the number of payment usages */
 					_n(
-						/* translators: %1$s is the coupon code, %2$d is the number of payment usages */
 						'Limited use coupon "%1$s" removed from subscription. It has been used %2$d time.',
 						'Limited use coupon "%1$s" removed from subscription. It has been used %2$d times.',
 						$count,

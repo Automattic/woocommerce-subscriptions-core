@@ -131,7 +131,8 @@ class WC_Subscriptions_Payment_Gateways {
 	public static function no_available_payment_methods_message( $no_gateways_message ) {
 		if ( WC_Subscriptions_Cart::cart_contains_subscription() && 'no' == get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals', 'no' ) ) {
 			if ( current_user_can( 'manage_woocommerce' ) ) {
-				$no_gateways_message = sprintf( __( 'Sorry, it seems there are no available payment methods which support subscriptions. Please see %sEnabling Payment Gateways for Subscriptions%s if you require assistance.', 'woocommerce-subscriptions' ), '<a href="https://docs.woocommerce.com/document/subscriptions/enabling-payment-gateways-for-subscriptions/">', '</a>' );
+				// translators: 1-2: opening/closing tags - link to documentation.
+				$no_gateways_message = sprintf( __( 'Sorry, it seems there are no available payment methods which support subscriptions. Please see %1$sEnabling Payment Gateways for Subscriptions%2$s if you require assistance.', 'woocommerce-subscriptions' ), '<a href="https://docs.woocommerce.com/document/subscriptions/enabling-payment-gateways-for-subscriptions/">', '</a>' );
 			} else {
 				$no_gateways_message = __( 'Sorry, it seems there are no available payment methods which support subscriptions. Please contact us if you require assistance or wish to make alternate arrangements.', 'woocommerce-subscriptions' );
 			}
@@ -210,6 +211,7 @@ class WC_Subscriptions_Payment_Gateways {
 		}
 
 		if ( false === $subscription ) {
+			// translators: %d: subscription ID.
 			throw new InvalidArgumentException( sprintf( __( 'Subscription doesn\'t exist in scheduled action: %d', 'woocommerce-subscriptions' ), $subscription_id ) );
 		}
 

@@ -95,9 +95,13 @@ class WCS_Report_Subscription_By_Customer extends WP_List_Table {
 	public function get_columns() {
 		$columns = array(
 			'customer_name'                  => __( 'Customer', 'woocommerce-subscriptions' ),
+			// translators: %s: help tip.
 			'active_subscription_count'      => sprintf( __( 'Active Subscriptions %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The number of subscriptions this customer has with a status of active or pending cancellation.', 'woocommerce-subscriptions' ) ) ),
+			// translators: %s: help tip.
 			'total_subscription_count'       => sprintf( __( 'Total Subscriptions %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The number of subscriptions this customer has with a status other than pending or trashed.', 'woocommerce-subscriptions' ) ) ),
+			// translators: %s: help tip.
 			'total_subscription_order_count' => sprintf( __( 'Total Subscription Orders %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The number of sign-up, switch and renewal orders this customer has placed with your store with a paid status (i.e. processing or complete).', 'woocommerce-subscriptions' ) ) ),
+			// translators: %s: help tip.
 			'customer_lifetime_value'        => sprintf( __( 'Lifetime Value from Subscriptions %s', 'woocommerce-subscriptions' ), wcs_help_tip( __( 'The total value of this customer\'s sign-up, switch and renewal orders.', 'woocommerce-subscriptions' ) ) ),
 		);
 

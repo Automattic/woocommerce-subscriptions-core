@@ -60,7 +60,7 @@ class WCS_PayPal_Admin {
 			// Warn store managers not to change their PayPal Email address as it can break existing Subscriptions in WC2.0+
 			WC()->payment_gateways->payment_gateways[ $key ]->form_fields['receiver_email']['desc_tip']     = false;
 			// translators: $1 and $2 are opening and closing strong tags, respectively.
-			WC()->payment_gateways->payment_gateways[ $key ]->form_fields['receiver_email']['description'] .= ' </p><p class="description">' . sprintf( __( 'It is %sstrongly recommended you do not change the Receiver Email address%s if you have active subscriptions with PayPal. Doing so can break existing subscriptions.', 'woocommerce-subscriptions' ), '<strong>', '</strong>' );
+			WC()->payment_gateways->payment_gateways[ $key ]->form_fields['receiver_email']['description'] .= ' </p><p class="description">' . sprintf( __( 'It is %1$sstrongly recommended you do not change the Receiver Email address%2$s if you have active subscriptions with PayPal. Doing so can break existing subscriptions.', 'woocommerce-subscriptions' ), '<strong>', '</strong>' );
 		}
 	}
 
@@ -118,9 +118,11 @@ class WCS_PayPal_Admin {
 		} elseif ( 'woocommerce_page_wc-settings' === get_current_screen()->base && isset( $_GET['tab'] ) && in_array( $_GET['tab'], array( 'subscriptions', 'checkout' ) ) && ! WCS_PayPal::are_reference_transactions_enabled() ) {
 			if ( 'yes' === WCS_PayPal::get_option( 'enabled_for_subscriptions' ) ) {
 				$notice_type = 'warning';
+				// translators: opening/closing tags - links to documentation.
 				$notice_text = esc_html__( '%1$sPayPal Reference Transactions are not enabled on your account%2$s, some subscription management features are not enabled. Please contact PayPal and request they %3$senable PayPal Reference Transactions%4$s on your account. %5$sCheck PayPal Account%6$s  %3$sLearn more %7$s', 'woocommerce-subscriptions' );
 			} else {
 				$notice_type = 'info';
+				// translators: opening/closing tags - links to documentation.
 				$notice_text = esc_html__( '%1$sPayPal Reference Transactions are not enabled on your account%2$s. If you wish to use PayPal Reference Transactions with Subscriptions, please contact PayPal and request they %3$senable PayPal Reference Transactions%4$s on your account. %5$sCheck PayPal Account%6$s  %3$sLearn more %7$s', 'woocommerce-subscriptions' );
 			}
 
@@ -315,7 +317,7 @@ class WCS_PayPal_Admin {
 		if ( 'no' === WCS_PayPal::get_option( 'enabled_for_subscriptions' ) ) {
 			$setting['description'] = sprintf(
 				/* translators: Placeholders are the opening and closing link tags.*/
-				__( "Before enabling PayPal Standard for Subscriptions, please note, when using PayPal Standard, customers are locked into using PayPal Standard for the life of their subscription, and PayPal Standard has a number of limitations. Please read the guide on %swhy we don't recommend PayPal Standard%s for Subscriptions before choosing to enable this option.", 'woocommerce-subscriptions' ),
+				__( "Before enabling PayPal Standard for Subscriptions, please note, when using PayPal Standard, customers are locked into using PayPal Standard for the life of their subscription, and PayPal Standard has a number of limitations. Please read the guide on %1\$swhy we don't recommend PayPal Standard%2\$s for Subscriptions before choosing to enable this option.", 'woocommerce-subscriptions' ),
 				'<a href="https://docs.woocommerce.com/document/subscriptions/payment-gateways/#paypal-limitations">', '</a>'
 			);
 		}

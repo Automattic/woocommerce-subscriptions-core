@@ -383,7 +383,7 @@ class WCS_PayPal {
 			}
 
 			// translators: placeholders are PayPal API error code and PayPal API error message
-			$order->update_status( 'failed', sprintf( __( 'PayPal API error: (%d) %s', 'woocommerce-subscriptions' ), $response->get_api_error_code(), $error_message ) );
+			$order->update_status( 'failed', sprintf( __( 'PayPal API error: (%1$d) %2$s', 'woocommerce-subscriptions' ), $response->get_api_error_code(), $error_message ) );
 
 		} elseif ( $response->transaction_held() ) {
 
@@ -403,7 +403,7 @@ class WCS_PayPal {
 			$order->update_status( 'failed', sprintf( __( 'PayPal payment declined: %s', 'woocommerce-subscriptions' ), $response->get_status_message() ) );
 
 		} elseif ( $response->transaction_approved() ) {
-
+			// translators: placeholder is a transaction ID.
 			$order->add_order_note( sprintf( __( 'PayPal payment approved (ID: %s)', 'woocommerce-subscriptions' ), $response->get_transaction_id() ) );
 
 			$order->payment_complete( $response->get_transaction_id() );

@@ -808,6 +808,7 @@ class WC_Subscriptions_Upgrader {
 		}
 
 		$admin_notice = new WCS_Admin_Notice( 'error' );
+		// translators: 1-2: opening/closing <strong> tags, 3: active version of Subscriptions, 4: current version of Subscriptions, 5-6: opening/closing tags linked to ticket form, 7-8: opening/closing tags linked to documentation.
 		$admin_notice->set_simple_content( sprintf( esc_html__( '%1$sWarning!%2$s It appears that you have downgraded %1$sWooCommerce Subscriptions%2$s from %3$s to %4$s. Downgrading the plugin in this way may cause issues. Please update to %3$s or higher, or %5$sopen a new support ticket%6$s for further assistance. %7$sLearn more &raquo;%8$s', 'woocommerce-subscriptions' ),
 			'<strong>', '</strong>',
 			'<code>' . self::$active_version . '</code>',
@@ -878,10 +879,14 @@ class WC_Subscriptions_Upgrader {
 		}
 
 		$admin_notice = new WCS_Admin_Notice( 'error' );
-		$admin_notice->set_simple_content( sprintf( esc_html__( '%1$sWarning!%2$s We discovered an issue in %1$sWooCommerce Subscriptions 2.3.0 - 2.3.2%2$s that may cause your subscription renewal order and customer subscription caches to contain invalid data. For information about how to update the cached data, please %3$sopen a new support ticket%4$s.', 'woocommerce-subscriptions' ),
-			'<strong>', '</strong>',
-			'<a href="https://woocommerce.com/my-account/marketplace-ticket-form/" target="_blank">', '</a>'
-		) );
+		$admin_notice->set_simple_content(
+			sprintf(
+				// translators: 1-2: opening/closing <strong> tags, 3-4: opening/closing tags linked to ticket form.
+				esc_html__( '%1$sWarning!%2$s We discovered an issue in %1$sWooCommerce Subscriptions 2.3.0 - 2.3.2%2$s that may cause your subscription renewal order and customer subscription caches to contain invalid data. For information about how to update the cached data, please %3$sopen a new support ticket%4$s.', 'woocommerce-subscriptions' ),
+				'<strong>', '</strong>',
+				'<a href="https://woocommerce.com/my-account/marketplace-ticket-form/" target="_blank">', '</a>'
+			)
+		);
 		$admin_notice->set_actions( array(
 			array(
 				'name' => 'Dismiss',

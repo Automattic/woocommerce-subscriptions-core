@@ -532,7 +532,7 @@ class WCS_PayPal_Reference_Transaction_API_Request {
 				$item_desc = implode( ', ', $item_desc );
 
 			} else {
-
+				// translators: %s: product SKU.
 				$item_desc = is_callable( array( $product, 'get_sku' ) ) && $product->get_sku() ? sprintf( __( 'SKU: %s', 'woocommerce-subscriptions' ), $product->get_sku() ) : null;
 			}
 		}

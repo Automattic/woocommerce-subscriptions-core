@@ -96,7 +96,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 		'<h3>' . __( 'What we share with others', 'woocommerce-subscriptions' ) . '</h3>' .
 		'<p>' . __( 'What personal information your store shares with external sources depends on which third-party payment processor plugins you are using to collect subscription payments. We recommend that you consult with their privacy policies to inform this section of your privacy policy.', 'woocommerce-subscriptions' ) . '</p>' .
 		// translators: placeholders are opening and closing link tags, linking to additional privacy policy documentation.
-		'<p>' . sprintf( __( 'If you are using PayPal Standard or PayPal Reference transactions please see the %sPayPal Privacy Policy%s for more details.', 'woocommerce-subscriptions' ), '<a href="https://www.paypal.com/us/webapps/mpp/ua/privacy-full">', '</a>' ) . '</p>';
+		'<p>' . sprintf( __( 'If you are using PayPal Standard or PayPal Reference transactions please see the %1$sPayPal Privacy Policy%2$s for more details.', 'woocommerce-subscriptions' ), '<a href="https://www.paypal.com/us/webapps/mpp/ua/privacy-full">', '</a>' ) . '</p>';
 	}
 
 	/**
@@ -172,6 +172,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 		}
 
 		$changed = isset( $_REQUEST['changed'] ) ? absint( $_REQUEST['changed'] ) : 0;
+		// translators: %d: number of subscriptions affected.
 		$message = sprintf( _n( 'Removed personal data from %d subscription.', 'Removed personal data from %d subscriptions.', $changed, 'woocommerce-subscriptions' ), number_format_i18n( $changed ) );
 		echo '<div class="updated"><p>' . esc_html( $message ) . '</p></div>';
 	}
@@ -191,7 +192,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 		foreach ( $settings as &$setting ) {
 			if ( isset( $setting['id'], $setting['type'] ) && 'personal_data_retention' === $setting['id'] && 'title' === $setting['type'] ) {
 				// translators: placeholders are opening and closing tags.
-				$note            = sprintf( __( '%sNote:%s Orders which are related to subscriptions will not be included in the orders affected by these settings.', 'woocommerce-subscriptions' ), '<b>', '</b>' );
+				$note            = sprintf( __( '%1$sNote:%2$s Orders which are related to subscriptions will not be included in the orders affected by these settings.', 'woocommerce-subscriptions' ), '<b>', '</b>' );
 				$setting['desc'] = isset( $setting['desc'] ) ? $setting['desc'] . '<br>' . $note : $note;
 			}
 		}

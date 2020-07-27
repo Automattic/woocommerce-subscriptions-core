@@ -62,6 +62,7 @@ class WCS_Early_Renewal_Manager {
 				'id'              => self::$via_modal_setting_id,
 				'desc'            => __( 'Accept Early Renewal Payments via a Modal', 'woocommerce-subscriptions' ),
 				'desc_tip'        => sprintf(
+					/* translators: 1-2: opening/closing <strong> tags , 2-3: opening/closing tags for a link to docs on early renewal. */
 					__( 'Allow customers to bypass the checkout and renew their subscription early from their %1$sMy Account > View Subscription%2$s page. %3$sLearn more.%4$s', 'woocommerce-subscriptions' ),
 					'<strong>', '</strong>',
 					'<a href="https://docs.woocommerce.com/document/subscriptions/early-renewal/">', '</a>'

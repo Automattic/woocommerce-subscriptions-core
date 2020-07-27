@@ -16,7 +16,10 @@ $order_post = wcs_get_objects_property( $order, 'post' );
 <tr>
 	<td>
 		<a href="<?php echo esc_url( get_edit_post_link( wcs_get_objects_property( $order, 'id' ) ) ); ?>">
-			<?php echo sprintf( esc_html_x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), esc_html( $order->get_order_number() ) ); ?>
+			<?php
+			// translators: placeholder is an order number.
+			echo sprintf( esc_html_x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), esc_html( $order->get_order_number() ) );
+			?>
 		</a>
 	</td>
 	<td>
