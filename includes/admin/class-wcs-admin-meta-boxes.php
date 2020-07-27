@@ -125,8 +125,11 @@ class WCS_Admin_Meta_Boxes {
 
 			wp_enqueue_script( 'wcs-admin-meta-boxes-order', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/wcs-meta-boxes-order.js' );
 
-			wp_localize_script( 'wcs-admin-meta-boxes-order', 'wcs_admin_order_meta_boxes', array(
-				'retry_renewal_payment_action_warning' => __( "Are you sure you want to retry payment for this renewal order?\n\nThis will attempt to charge the customer and send renewal order emails (if emails are enabled).", 'woocommerce-subscriptions' ),
+			wp_localize_script(
+				'wcs-admin-meta-boxes-order',
+				'wcs_admin_order_meta_boxes',
+				array(
+					'retry_renewal_payment_action_warning' => __( "Are you sure you want to retry payment for this renewal order?\n\nThis will attempt to charge the customer and send renewal order emails (if emails are enabled).", 'woocommerce-subscriptions' ),
 				)
 			);
 		}

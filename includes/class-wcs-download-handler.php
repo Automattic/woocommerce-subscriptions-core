@@ -4,11 +4,11 @@
  *
  * Functions for download related things within the Subscription Extension.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WCS_Download_Handler
- * @category	Class
- * @author		Prospress
- * @since		2.0
+ * @package    WooCommerce Subscriptions
+ * @subpackage WCS_Download_Handler
+ * @category   Class
+ * @author     Prospress
+ * @since      2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -249,7 +249,7 @@ class WCS_Download_Handler {
 
 					foreach ( $new_download_ids as $download_id ) {
 
-						$has_permission = isset( $permissions_by_order_id[ $subscription_id ] ) && in_array( $download_id,  $permissions_by_order_id[ $subscription_id ] );
+						$has_permission = isset( $permissions_by_order_id[ $subscription_id ] ) && in_array( $download_id, $permissions_by_order_id[ $subscription_id ] );
 
 						if ( $subscription && ! $has_permission && apply_filters( 'woocommerce_process_product_file_download_paths_grant_access_to_new_file', true, $download_id, $product_id, $subscription ) ) {
 							wc_downloadable_file_permission( $download_id, $product_id, $subscription );

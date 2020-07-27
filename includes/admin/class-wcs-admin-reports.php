@@ -24,7 +24,7 @@ class WCS_Admin_Reports {
 	 */
 	public function __construct() {
 		// Add the reports layout to the WooCommerce -> Reports admin section
-		add_filter( 'woocommerce_admin_reports',  __CLASS__ . '::initialize_reports', 12, 1 );
+		add_filter( 'woocommerce_admin_reports', __CLASS__ . '::initialize_reports', 12, 1 );
 
 		// Add any necessary scripts
 		add_action( 'admin_enqueue_scripts', __CLASS__ . '::reports_scripts' );
@@ -43,7 +43,7 @@ class WCS_Admin_Reports {
 	public static function initialize_reports( $reports ) {
 
 		$reports['subscriptions'] = array(
-			'title'  => __( 'Subscriptions', 'woocommerce-subscriptions' ),
+			'title'   => __( 'Subscriptions', 'woocommerce-subscriptions' ),
 			'reports' => array(
 				'subscription_events_by_date' => array(
 					'title'       => __( 'Subscription Events by Date', 'woocommerce-subscriptions' ),
@@ -51,25 +51,25 @@ class WCS_Admin_Reports {
 					'hide_title'  => true,
 					'callback'    => array( 'WCS_Admin_Reports', 'get_report' ),
 				),
-				'upcoming_recurring_revenue' => array(
+				'upcoming_recurring_revenue'  => array(
 					'title'       => __( 'Upcoming Recurring Revenue', 'woocommerce-subscriptions' ),
 					'description' => '',
 					'hide_title'  => true,
 					'callback'    => array( 'WCS_Admin_Reports', 'get_report' ),
 				),
-				'retention_rate' => array(
+				'retention_rate'              => array(
 					'title'       => __( 'Retention Rate', 'woocommerce-subscriptions' ),
 					'description' => '',
 					'hide_title'  => true,
 					'callback'    => array( 'WCS_Admin_Reports', 'get_report' ),
 				),
-				'subscription_by_product' => array(
+				'subscription_by_product'     => array(
 					'title'       => __( 'Subscriptions by Product', 'woocommerce-subscriptions' ),
 					'description' => '',
 					'hide_title'  => true,
 					'callback'    => array( 'WCS_Admin_Reports', 'get_report' ),
 				),
-				'subscription_by_customer' => array(
+				'subscription_by_customer'    => array(
 					'title'       => __( 'Subscriptions by Customer', 'woocommerce-subscriptions' ),
 					'description' => '',
 					'hide_title'  => true,
@@ -110,11 +110,11 @@ class WCS_Admin_Reports {
 
 			// Add currency localisation params for axis label
 			wp_localize_script( 'wcs-reports', 'wcs_reports', array(
-				'currency_format_num_decimals'  => wc_get_price_decimals(),
-				'currency_format_symbol'        => get_woocommerce_currency_symbol(),
-				'currency_format_decimal_sep'   => esc_js( wc_get_price_decimal_separator() ),
-				'currency_format_thousand_sep'  => esc_js( wc_get_price_thousand_separator() ),
-				'currency_format'               => esc_js( str_replace( array( '%1$s', '%2$s' ), array( '%s', '%v' ), get_woocommerce_price_format() ) ), // For accounting JS
+				'currency_format_num_decimals' => wc_get_price_decimals(),
+				'currency_format_symbol'       => get_woocommerce_currency_symbol(),
+				'currency_format_decimal_sep'  => esc_js( wc_get_price_decimal_separator() ),
+				'currency_format_thousand_sep' => esc_js( wc_get_price_thousand_separator() ),
+				'currency_format'              => esc_js( str_replace( array( '%1$s', '%2$s' ), array( '%s', '%v' ), get_woocommerce_price_format() ) ), // For accounting JS
 			) );
 
 			wp_enqueue_script( 'flot-order', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/jquery.flot.orderBars' . $suffix . '.js', array( 'jquery', 'flot' ), WC_Subscriptions::$version );
@@ -132,7 +132,7 @@ class WCS_Admin_Reports {
 		$screen = get_current_screen();
 
 		switch ( $screen->id ) {
-			case 'dashboard' :
+			case 'dashboard':
 				new WCS_Report_Dashboard();
 				break;
 		}

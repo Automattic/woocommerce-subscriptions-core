@@ -4,11 +4,11 @@
  *
  * The subscription product class is an extension of the simple product class.
  *
- * @class 		WC_Product_Subscription
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Product_Subscription
- * @category	Class
- * @since		1.3
+ * @class WC_Product_Subscription
+ * @package WooCommerce Subscriptions
+ * @subpackage WC_Product_Subscription
+ * @category Class
+ * @since 1.3
  *
  */
 if ( ! defined( 'ABSPATH' ) ) {
@@ -121,7 +121,13 @@ class WC_Product_Subscription extends WC_Product_Simple {
 	 */
 	public function get_sign_up_fee_including_tax( $qty = 1 ) {
 		wcs_deprecated_function( __METHOD__, '2.2.0', 'wcs_get_price_including_tax( $product, array( "qty" => $qty, "price" => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) )' );
-		return wcs_get_price_including_tax( $this, array( 'qty' => $qty, 'price' => WC_Subscriptions_Product::get_sign_up_fee( $this ) ) );
+		return wcs_get_price_including_tax(
+			$this,
+			array(
+				'qty'   => $qty,
+				'price' => WC_Subscriptions_Product::get_sign_up_fee( $this ),
+			)
+		);
 	}
 
 	/**
@@ -132,6 +138,12 @@ class WC_Product_Subscription extends WC_Product_Simple {
 	 */
 	public function get_sign_up_fee_excluding_tax( $qty = 1 ) {
 		wcs_deprecated_function( __METHOD__, '2.2.0', 'wcs_get_price_excluding_tax( $product, array( "qty" => $qty, "price" => WC_Subscriptions_Product::get_sign_up_fee( $product ) ) )' );
-		return wcs_get_price_excluding_tax( $this, array( 'qty' => $qty, 'price' => WC_Subscriptions_Product::get_sign_up_fee( $this ) ) );
+		return wcs_get_price_excluding_tax(
+			$this,
+			array(
+				'qty'   => $qty,
+				'price' => WC_Subscriptions_Product::get_sign_up_fee( $this ),
+			)
+		);
 	}
 }

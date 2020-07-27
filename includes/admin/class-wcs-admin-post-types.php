@@ -32,7 +32,7 @@ class WCS_Admin_Post_Types {
 	 * This would ideally be a private CONST but visibility modifiers are only allowed for
 	 * class constants in PHP >= 7.1.
 	 *
-	 * @var	array
+	 * @var array
 	 */
 	private static $post__in_none = array( 0 );
 
@@ -76,9 +76,9 @@ class WCS_Admin_Post_Types {
 	 * but independent posts, so subqueries are needed. That's something we can't get by filtering the request. This is hooked
 	 * in @see WCS_Admin_Post_Types::request_query function.
 	 *
-	 * @param  array 	$pieces 	all the pieces of the resulting SQL once WordPress has finished parsing it
-	 * @param  WP_Query $query  	the query object that forms the basis of the SQL
-	 * @return array 				modified pieces of the SQL query
+	 * @param  array    $pieces all the pieces of the resulting SQL once WordPress has finished parsing it
+	 * @param  WP_Query $query  the query object that forms the basis of the SQL
+	 * @return array modified pieces of the SQL query
 	 */
 	public function posts_clauses( $pieces, $query ) {
 		global $wpdb;
@@ -262,10 +262,10 @@ class WCS_Admin_Post_Types {
 
 		// No need to display certain bulk actions if we know all the subscriptions on the page have that status already
 		switch ( $post_status ) {
-			case 'wc-active' :
+			case 'wc-active':
 				unset( $bulk_actions['active'] );
 				break;
-			case 'wc-on-hold' :
+			case 'wc-on-hold':
 				unset( $bulk_actions['on-hold'] );
 				break;
 		}
@@ -310,7 +310,7 @@ class WCS_Admin_Post_Types {
 		switch ( $action ) {
 			case 'active':
 			case 'on-hold':
-			case 'cancelled' :
+			case 'cancelled':
 				$new_status = $action;
 				break;
 			default:
@@ -344,10 +344,10 @@ class WCS_Admin_Post_Types {
 
 				// Fire the action hooks
 				switch ( $action ) {
-					case 'active' :
-					case 'on-hold' :
-					case 'cancelled' :
-					case 'trash' :
+					case 'active':
+					case 'on-hold':
+					case 'cancelled':
+					case 'trash':
 						do_action( 'woocommerce_admin_changed_subscription_to_' . $action, $subscription_id );
 						break;
 				}
@@ -448,7 +448,7 @@ class WCS_Admin_Post_Types {
 		$column_content = '';
 
 		switch ( $column ) {
-			case 'status' :
+			case 'status':
 				// The status label
 				$column_content = sprintf( '<mark class="subscription-status order-status status-%1$s %1$s tips" data-tip="%2$s"><span>%3$s</span></mark>', sanitize_title( $the_subscription->get_status() ), wcs_get_subscription_status_name( $the_subscription->get_status() ), wcs_get_subscription_status_name( $the_subscription->get_status() ) );
 
@@ -519,7 +519,7 @@ class WCS_Admin_Post_Types {
 				$column_content = apply_filters( 'woocommerce_subscription_list_table_column_status_content', $column_content, $the_subscription, $actions );
 				break;
 
-			case 'order_title' :
+			case 'order_title':
 
 				$customer_tip = '';
 
@@ -569,19 +569,19 @@ class WCS_Admin_Post_Types {
 				$column_content .= '<button type="button" class="toggle-row"><span class="screen-reader-text">' . __( 'Show more details', 'woocommerce-subscriptions' ) . '</span></button>';
 
 				break;
-			case 'order_items' :
+			case 'order_items':
 				// Display either the item name or item count with a collapsed list of items
 				$subscription_items = $the_subscription->get_items();
 				switch ( count( $subscription_items ) ) {
-					case 0 :
+					case 0:
 						$column_content .= '&ndash;';
 						break;
-					case 1 :
+					case 1:
 						foreach ( $subscription_items as $item ) {
 							$column_content .= self::get_item_display( $item, $the_subscription );
 						}
 						break;
-					default :
+					default:
 						$column_content .= '<a href="#" class="show_order_items">' . esc_html( apply_filters( 'woocommerce_admin_order_item_count', sprintf( _n( '%d item', '%d items', $the_subscription->get_item_count(), 'woocommerce-subscriptions' ), $the_subscription->get_item_count() ), $the_subscription ) ) . '</a>';
 						$column_content .= '<table class="order_items" cellspacing="0">';
 
@@ -594,7 +594,7 @@ class WCS_Admin_Post_Types {
 				}
 				break;
 
-			case 'recurring_total' :
+			case 'recurring_total':
 				$column_content .= esc_html( strip_tags( $the_subscription->get_formatted_order_total() ) );
 				$column_content .= '<small class="meta">';
 				// translators: placeholder is the display name of a payment gateway a subscription was paid by
@@ -615,12 +615,12 @@ class WCS_Admin_Post_Types {
 				$column_content = self::get_date_column_content( $the_subscription, $column );
 				break;
 
-			case 'orders' :
+			case 'orders':
 				$column_content .= $this->get_related_orders_link( $the_subscription );
 				break;
 		}
 
-		echo wp_kses( apply_filters( 'woocommerce_subscription_list_table_column_content', $column_content, $the_subscription, $column ), array( 'a' => array( 'class' => array(), 'href' => array(), 'data-tip' => array(), 'title' => array() ), 'time' => array( 'class' => array(), 'title' => array() ), 'mark' => array( 'class' => array(), 'data-tip' => array() ), 'small' => array( 'class' => array() ), 'table' => array( 'class' => array(), 'cellspacing' => array(), 'cellpadding' => array() ), 'tr' => array( 'class' => array() ), 'td' => array( 'class' => array() ), 'div' => array( 'class' => array(), 'data-tip' => array() ), 'br' => array(), 'strong' => array(), 'span' => array( 'class' => array(), 'data-tip' => array() ), 'p' => array( 'class' => array() ), 'button' => array( 'type' => array(), 'class' => array() ) ) );
+		echo wp_kses( apply_filters( 'woocommerce_subscription_list_table_column_content', $column_content, $the_subscription, $column ), array( 'a' => array( 'class' => array(), 'href' => array(), 'data-tip' => array(), 'title' => array() ), 'time' => array( 'class' => array(), 'title' => array() ), 'mark' => array( 'class' => array(), 'data-tip' => array() ), 'small' => array( 'class' => array() ), 'table' => array( 'class' => array(), 'cellspacing' => array(), 'cellpadding' => array() ), 'tr' => array( 'class' => array() ), 'td' => array( 'class' => array() ), 'div' => array( 'class' => array(), 'data-tip' => array() ), 'br' => array(), 'strong' => array(), 'span' => array( 'class' => array(), 'data-tip' => array() ), 'p' => array( 'class' => array() ), 'button' => array( 'type' => array(), 'class' => array() ) ) ); // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
 
 	}
 
@@ -640,7 +640,7 @@ class WCS_Admin_Post_Types {
 		if ( 0 == $subscription->get_time( $date_type, 'gmt' ) ) {
 			$column_content = '-';
 		} else {
-			$column_content = sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( date( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ) , $subscription->get_time( $date_type, 'site' ) ) ), esc_html( $subscription->get_date_to_display( $date_type ) ) );
+			$column_content = sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( date( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ), $subscription->get_time( $date_type, 'site' ) ) ), esc_html( $subscription->get_date_to_display( $date_type ) ) );
 
 			if ( 'next_payment_date' == $column && $subscription->payment_method_supports( 'gateway_scheduled_payments' ) && ! $subscription->is_manual() && $subscription->has_status( 'active' ) ) {
 				$column_content .= '<div class="woocommerce-help-tip" data-tip="' . esc_attr__( 'This date should be treated as an estimate only. The payment gateway for this subscription controls when payments are processed.', 'woocommerce-subscriptions' ) . '"></div>';
@@ -820,23 +820,23 @@ class WCS_Admin_Post_Types {
 			// Sorting
 			if ( isset( $vars['orderby'] ) ) {
 				switch ( $vars['orderby'] ) {
-					case 'order_total' :
+					case 'order_total':
 						$vars = array_merge( $vars, array(
-							'meta_key' 	=> '_order_total',
-							'orderby' 	=> 'meta_value_num',
+							'meta_key' => '_order_total',
+							'orderby'  => 'meta_value_num',
 						) );
 					break;
-					case 'last_payment_date' :
+					case 'last_payment_date':
 						add_filter( 'posts_clauses', array( $this, 'posts_clauses' ), 10, 2 );
 						break;
 					case 'start_date':
-					case 'trial_end_date' :
-					case 'next_payment_date' :
-					case 'end_date' :
+					case 'trial_end_date':
+					case 'next_payment_date':
+					case 'end_date':
 						$vars = array_merge( $vars, array(
-							'meta_key'     => sprintf( '_schedule_%s', str_replace( '_date', '', $vars['orderby'] ) ),
-							'meta_type'    => 'DATETIME',
-							'orderby'      => 'meta_value',
+							'meta_key'  => sprintf( '_schedule_%s', str_replace( '_date', '', $vars['orderby'] ) ),
+							'meta_type' => 'DATETIME',
+							'orderby'   => 'meta_value',
 						) );
 					break;
 				}
@@ -895,18 +895,18 @@ class WCS_Admin_Post_Types {
 		global $post, $post_ID;
 
 		$messages['shop_subscription'] = array(
-			0 => '', // Unused. Messages start at index 1.
-			1 => __( 'Subscription updated.', 'woocommerce-subscriptions' ),
-			2 => __( 'Custom field updated.', 'woocommerce-subscriptions' ),
-			3 => __( 'Custom field deleted.', 'woocommerce-subscriptions' ),
-			4 => __( 'Subscription updated.', 'woocommerce-subscriptions' ),
+			0  => '', // Unused. Messages start at index 1.
+			1  => __( 'Subscription updated.', 'woocommerce-subscriptions' ),
+			2  => __( 'Custom field updated.', 'woocommerce-subscriptions' ),
+			3  => __( 'Custom field deleted.', 'woocommerce-subscriptions' ),
+			4  => __( 'Subscription updated.', 'woocommerce-subscriptions' ),
 			// translators: placeholder is previous post title
-			5 => isset( $_GET['revision'] ) ? sprintf( _x( 'Subscription restored to revision from %s', 'used in post updated messages', 'woocommerce-subscriptions' ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
-			6 => __( 'Subscription updated.', 'woocommerce-subscriptions' ),
-			7 => __( 'Subscription saved.', 'woocommerce-subscriptions' ),
-			8 => __( 'Subscription submitted.', 'woocommerce-subscriptions' ),
+			5  => isset( $_GET['revision'] ) ? sprintf( _x( 'Subscription restored to revision from %s', 'used in post updated messages', 'woocommerce-subscriptions' ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
+			6  => __( 'Subscription updated.', 'woocommerce-subscriptions' ),
+			7  => __( 'Subscription saved.', 'woocommerce-subscriptions' ),
+			8  => __( 'Subscription submitted.', 'woocommerce-subscriptions' ),
 			// translators: php date string
-			9 => sprintf( __( 'Subscription scheduled for: %1$s.', 'woocommerce-subscriptions' ), '<strong>' . date_i18n( _x( 'M j, Y @ G:i', 'used in "Subscription scheduled for <date>"', 'woocommerce-subscriptions' ), wcs_date_to_time( $post->post_date ) ) . '</strong>' ),
+			9  => sprintf( __( 'Subscription scheduled for: %1$s.', 'woocommerce-subscriptions' ), '<strong>' . date_i18n( _x( 'M j, Y @ G:i', 'used in "Subscription scheduled for <date>"', 'woocommerce-subscriptions' ), wcs_date_to_time( $post->post_date ) ) . '</strong>' ),
 			10 => __( 'Subscription draft updated.', 'woocommerce-subscriptions' ),
 		);
 
@@ -918,7 +918,7 @@ class WCS_Admin_Post_Types {
 	 *
 	 * @uses  self::get_related_orders()
 	 * @since  2.0
-	 * @return string 						the link string
+	 * @return string the link string
 	 */
 	public function get_related_orders_link( $the_subscription ) {
 		return sprintf(
@@ -948,7 +948,7 @@ class WCS_Admin_Post_Types {
 		<?php
 
 		foreach ( WC()->payment_gateways->get_available_payment_gateways() as $gateway_id => $gateway ) {
-			echo '<option value="' . esc_attr( $gateway_id ) . '"' . ( $selected_gateway_id == $gateway_id  ? 'selected' : '' ) . '>' . esc_html( $gateway->title ) . '</option>';
+			echo '<option value="' . esc_attr( $gateway_id ) . '"' . ( $selected_gateway_id == $gateway_id ? 'selected' : '' ) . '>' . esc_html( $gateway->title ) . '</option>';
 		}
 		echo '<option value="_manual_renewal">' . esc_html__( 'Manual Renewal', 'woocommerce-subscriptions' ) . '</option>';
 		?>

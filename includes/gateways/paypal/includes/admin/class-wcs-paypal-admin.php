@@ -4,11 +4,11 @@
  *
  * Hooks into WooCommerce's core PayPal class to display fields and notices relating to subscriptions.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	Gateways/PayPal
- * @category	Class
- * @author		Prospress
- * @since		2.0
+ * @package     WooCommerce Subscriptions
+ * @subpackage  Gateways/PayPal
+ * @category    Class
+ * @author      Prospress
+ * @since       2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -107,7 +107,7 @@ class WCS_PayPal_Admin {
 				$notices[] = array(
 					'type' => 'warning',
 					// translators: placeholders are opening and closing link tags. 1$-2$: to docs on woocommerce, 3$-4$ to gateway settings on the site
-					'text'  => sprintf( esc_html__( 'PayPal is inactive for subscription transactions. Please %1$sset up the PayPal IPN%2$s and %3$senter your API credentials%4$s to enable PayPal for Subscriptions.', 'woocommerce-subscriptions' ),
+					'text' => sprintf( esc_html__( 'PayPal is inactive for subscription transactions. Please %1$sset up the PayPal IPN%2$s and %3$senter your API credentials%4$s to enable PayPal for Subscriptions.', 'woocommerce-subscriptions' ),
 						'<a href="https://docs.woocommerce.com/document/subscriptions/store-manager-guide/#ipn-setup" target="_blank">',
 						'</a>',
 						'<a href="' . esc_url( $payment_gateway_tab_url ) . '">',
@@ -143,7 +143,7 @@ class WCS_PayPal_Admin {
 			$notices[] = array(
 				'type' => 'confirmation',
 				// translators: placeholders are opening and closing strong tags.
-				'text'  => sprintf( esc_html__( '%1$sPayPal Reference Transactions are enabled on your account%2$s. All subscription management features are now enabled. Happy selling!', 'woocommerce-subscriptions' ),
+				'text' => sprintf( esc_html__( '%1$sPayPal Reference Transactions are enabled on your account%2$s. All subscription management features are now enabled. Happy selling!', 'woocommerce-subscriptions' ),
 					'<strong>',
 					'</strong>'
 				),
@@ -154,7 +154,7 @@ class WCS_PayPal_Admin {
 			$notices[] = array(
 				'type' => 'error',
 				// translators: placeholders are link opening and closing tags. 1$-2$: to gateway settings, 3$-4$: support docs on woocommerce.com
-				'text'  => sprintf( esc_html__( 'There is a problem with PayPal. Your API credentials may be incorrect. Please update your %1$sAPI credentials%2$s. %3$sLearn more%4$s.', 'woocommerce-subscriptions' ),
+				'text' => sprintf( esc_html__( 'There is a problem with PayPal. Your API credentials may be incorrect. Please update your %1$sAPI credentials%2$s. %3$sLearn more%4$s.', 'woocommerce-subscriptions' ),
 					'<a href="' . esc_url( $payment_gateway_tab_url ) . '">',
 					'</a>',
 					'<a href="https://docs.woocommerce.com/document/subscriptions-canceled-suspended-paypal/#section-2" target="_blank">',
@@ -167,7 +167,7 @@ class WCS_PayPal_Admin {
 			$notices[] = array(
 				'type' => 'error',
 				// translators: placeholders are opening and closing link tags. 1$-2$: docs on woocommerce, 3$-4$: dismiss link
-				'text'  => sprintf( esc_html__( 'There is a problem with PayPal. Your PayPal account is issuing out-of-date subscription IDs. %1$sLearn more%2$s. %3$sDismiss%4$s.', 'woocommerce-subscriptions' ),
+				'text' => sprintf( esc_html__( 'There is a problem with PayPal. Your PayPal account is issuing out-of-date subscription IDs. %1$sLearn more%2$s. %3$sDismiss%4$s.', 'woocommerce-subscriptions' ),
 					'<a href="https://docs.woocommerce.com/document/subscriptions-canceled-suspended-paypal/#section-3" target="_blank">',
 					'</a>',
 					'<a href="' . esc_url( add_query_arg( 'wcs_disable_paypal_invalid_profile_id_notice', 'true' ) ) . '">',
@@ -185,7 +185,7 @@ class WCS_PayPal_Admin {
 				'failed_ipn_log_handle' => $failed_ipn_log_handle,
 				'last_ipn_error'        => $last_ipn_error,
 				'log_file_url'          => admin_url( sprintf( 'admin.php?page=wc-status&tab=logs&log_file=%s-%s-log', $failed_ipn_log_handle, sanitize_file_name( wp_hash( $failed_ipn_log_handle ) ) ) ),
-			 ) );
+			) );
 
 			$notice->set_actions( array(
 				array(
@@ -287,7 +287,7 @@ class WCS_PayPal_Admin {
 		if ( ! empty( $url ) ) {
 			echo '<a href="' . esc_url( $url ) . '" target="_blank">' . esc_html( $paypal_profile_id ) . '</a>';
 		} else {
-			echo  esc_html( $paypal_profile_id );
+			echo esc_html( $paypal_profile_id );
 		}
 
 		echo '</p></div>';

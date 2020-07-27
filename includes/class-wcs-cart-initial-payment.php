@@ -2,11 +2,11 @@
 /**
  * Handles the initial payment for a pending subscription via the cart.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WCS_Cart_Initial_Payment
- * @category	Class
- * @author		Prospress
- * @since		2.0
+ * @package WooCommerce Subscriptions
+ * @subpackage WCS_Cart_Initial_Payment
+ * @category Class
+ * @author Prospress
+ * @since 2.0
  */
 
 class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {

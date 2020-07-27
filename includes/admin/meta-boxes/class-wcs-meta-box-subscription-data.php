@@ -55,7 +55,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							<label for="customer_user"><?php esc_html_e( 'Customer:', 'woocommerce-subscriptions' ) ?> <?php
 							if ( $subscription->get_user_id() ) {
 								$args = array(
-									'post_status' => 'all',
+									'post_status'    => 'all',
 									'post_type'      => 'shop_subscription',
 									'_customer_user' => absint( $subscription->get_user_id() ),
 								);
@@ -186,10 +186,10 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 								$field['id'] = '_billing_' . $key;
 							}
 							switch ( $field['type'] ) {
-								case 'select' :
+								case 'select':
 									woocommerce_wp_select( $field );
 								break;
-								default :
+								default:
 									woocommerce_wp_text_input( $field );
 								break;
 							}
@@ -275,10 +275,10 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 								}
 
 								switch ( $field['type'] ) {
-									case 'select' :
+									case 'select':
 										woocommerce_wp_select( $field );
 									break;
-									default :
+									default:
 										woocommerce_wp_text_input( $field );
 									break;
 								}

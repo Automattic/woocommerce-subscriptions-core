@@ -63,8 +63,8 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 
 		register_rest_route( $this->namespace, '/' . $this->rest_base . '/statuses', array(
 			array(
-				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'get_statuses' ),
+				'methods'  => WP_REST_Server::READABLE,
+				'callback' => array( $this, 'get_statuses' ),
 			),
 			'schema' => array( $this, 'get_public_item_schema' ),
 		) );
@@ -343,18 +343,18 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 		$schema = parent::get_item_schema();
 
 		$subscriptions_schema = array(
-			'billing_interval' => array(
+			'billing_interval'  => array(
 				'description' => __( 'The number of billing periods between subscription renewals.', 'woocommerce-subscriptions' ),
 				'type'        => 'integer',
 				'context'     => array( 'view', 'edit' ),
 			),
-			'billing_period' => array(
+			'billing_period'    => array(
 				'description' => __( 'Billing period for the subscription.', 'woocommerce-subscriptions' ),
 				'type'        => 'string',
 				'enum'        => array_keys( wcs_get_subscription_period_strings() ),
 				'context'     => array( 'view', 'edit' ),
 			),
-			'payment_details' => array(
+			'payment_details'   => array(
 				'description' => __( 'Subscription payment details.', 'woocommerce-subscriptions' ),
 				'type'        => 'object',
 				'context'     => array( 'edit' ),
@@ -366,12 +366,12 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 					),
 				),
 			),
-			'start_date' => array(
+			'start_date'        => array(
 				'description' => __( "The subscription's start date.", 'woocommerce-subscriptions' ),
 				'type'        => 'date-time',
 				'context'     => array( 'view', 'edit' ),
 			),
-			'trial_date' => array(
+			'trial_date'        => array(
 				'description' => __( "The subscription's trial date", 'woocommerce-subscriptions' ),
 				'type'        => 'date-time',
 				'context'     => array( 'view', 'edit' ),
@@ -381,7 +381,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 				'type'        => 'date-time',
 				'context'     => array( 'view', 'edit' ),
 			),
-			'end_date' => array(
+			'end_date'          => array(
 				'description' => __( "The subscription's end date.", 'woocommerce-subscriptions' ),
 				'type'        => 'date-time',
 				'context'     => array( 'view', 'edit' ),

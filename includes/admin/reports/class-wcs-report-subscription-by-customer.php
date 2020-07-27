@@ -19,9 +19,9 @@ class WCS_Report_Subscription_By_Customer extends WP_List_Table {
 	 */
 	public function __construct() {
 		parent::__construct( array(
-			'singular'  => __( 'Customer', 'woocommerce-subscriptions' ),
-			'plural'    => __( 'Customers', 'woocommerce-subscriptions' ),
-			'ajax'      => false,
+			'singular' => __( 'Customer', 'woocommerce-subscriptions' ),
+			'plural'   => __( 'Customers', 'woocommerce-subscriptions' ),
+			'ajax'     => false,
 		) );
 	}
 
@@ -66,20 +66,20 @@ class WCS_Report_Subscription_By_Customer extends WP_List_Table {
 
 		switch ( $column_name ) {
 
-			case 'customer_name' :
+			case 'customer_name':
 				$user_info = get_userdata( $user->customer_id );
-				return '<a href="' . get_edit_user_link( $user->customer_id ) . '">' . $user_info->user_email  . '</a>';
+				return '<a href="' . get_edit_user_link( $user->customer_id ) . '">' . $user_info->user_email . '</a>';
 
-			case 'active_subscription_count' :
+			case 'active_subscription_count':
 				return $user->active_subscriptions;
 
-			case 'total_subscription_count' :
+			case 'total_subscription_count':
 				return sprintf( '<a href="%s%d">%d</a>', admin_url( 'edit.php?post_type=shop_subscription&_customer_user=' ), $user->customer_id, $user->total_subscriptions );
 
-			case 'total_subscription_order_count' :
+			case 'total_subscription_order_count':
 				return sprintf( '<a href="%s%d">%d</a>', admin_url( 'edit.php?post_type=shop_order&_paid_subscription_orders_for_customer_user=' ), $user->customer_id, $user->initial_order_count + $user->renewal_switch_count );
 
-			case 'customer_lifetime_value' :
+			case 'customer_lifetime_value':
 				return wc_price( $user->initial_order_total + $user->renewal_switch_total );
 
 		}
@@ -187,9 +187,9 @@ class WCS_Report_Subscription_By_Customer extends WP_List_Table {
 		 * Pagination.
 		 */
 		$this->set_pagination_args( array(
-			 'total_items' => $this->totals->total_customers,
-			 'per_page'    => $per_page,
-			 'total_pages' => ceil( $this->totals->total_customers / $per_page ),
+			'total_items' => $this->totals->total_customers,
+			'per_page'    => $per_page,
+			'total_pages' => ceil( $this->totals->total_customers / $per_page ),
 		) );
 
 	}
