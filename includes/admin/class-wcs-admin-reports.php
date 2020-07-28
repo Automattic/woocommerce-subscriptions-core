@@ -157,7 +157,7 @@ class WCS_Admin_Reports {
 			return;
 		}
 
-		if ( class_exists( 'WC_Tracks' ) && 'yes' === get_option( 'woocommerce_allow_tracking', 'no' ) ) {
+		if ( class_exists( 'WC_Tracks' ) ) {
 
 			$reports = array(
 				'subscription-events-by-date' => 'subscriptions_events_by_date_report_view',
