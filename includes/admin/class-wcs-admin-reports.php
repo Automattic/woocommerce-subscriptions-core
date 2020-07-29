@@ -160,12 +160,12 @@ class WCS_Admin_Reports {
 		if ( class_exists( 'WC_Tracks' ) ) {
 
 			$reports = array(
-				'subscription-events-by-date' => 'subscriptions_events_by_date_report_view',
-				'upcoming-recurring-revenue'  => 'subscriptions_upcoming_recurring_revenue_report_view',
-				'retention-rate'              => 'subscriptions_retention_rate_report_view',
-				'subscription-by-product'     => 'subscriptions_by_product_report_view',
-				'subscription-by-customer'    => 'subscriptions_by_customer_report_view',
-				'subscription-payment-retry'  => 'subscriptions_payment_retry_report_view',
+				'subscription-events-by-date' => 'subscriptions_report_events_by_date_view',
+				'upcoming-recurring-revenue'  => 'subscriptions_report_upcoming_recurring_revenue_view',
+				'retention-rate'              => 'subscriptions_report_retention_rate_view',
+				'subscription-by-product'     => 'subscriptions_report_by_product_view',
+				'subscription-by-customer'    => 'subscriptions_report_by_customer_view',
+				'subscription-payment-retry'  => 'subscriptions_report_payment_retry_view',
 			);
 
 			$properties = array(
