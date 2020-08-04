@@ -582,6 +582,7 @@ class WCS_Admin_Post_Types {
 						}
 						break;
 					default:
+						// translators: %d: item count.
 						$column_content .= '<a href="#" class="show_order_items">' . esc_html( apply_filters( 'woocommerce_admin_order_item_count', sprintf( _n( '%d item', '%d items', $the_subscription->get_item_count(), 'woocommerce-subscriptions' ), $the_subscription->get_item_count() ), $the_subscription ) ) . '</a>';
 						$column_content .= '<table class="order_items" cellspacing="0">';
 

@@ -154,6 +154,7 @@ class WC_Subscriptions_Renewal_Order {
 
 		if ( is_a( $renewal_order, 'WC_Order' ) && wcs_is_subscription( $subscription ) ) {
 
+			// translators: %s: order number.
 			$order_number = sprintf( _x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), $renewal_order->get_order_number() );
 
 			// translators: placeholder is order ID

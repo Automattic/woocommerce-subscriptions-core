@@ -120,6 +120,7 @@ class WC_Subscriptions_Manager {
 				$renewal_order = wcs_create_renewal_order( $subscription );
 
 				if ( is_wp_error( $renewal_order ) ) {
+					// translators: placeholder is an order note.
 					throw new Exception( sprintf( __( 'Error: Unable to create renewal order with note "%s"', 'woocommerce-subscriptions' ), $order_note ) );
 				}
 			}
@@ -162,6 +163,7 @@ class WC_Subscriptions_Manager {
 		}
 
 		if ( false === $subscription ) {
+			// translators: placeholder is a subscription ID.
 			throw new InvalidArgumentException( sprintf( __( 'Subscription doesn\'t exist in scheduled action: %d', 'woocommerce-subscriptions' ), $subscription_id ) );
 		}
 

@@ -340,13 +340,16 @@ function wcs_get_new_order_title( $type ) {
 
 	$type = wcs_validate_new_order_type( $type );
 
-	$order_date = strftime( _x( '%b %d, %Y @ %I:%M %p', 'Used in subscription post title. "Subscription renewal order - <this>"', 'woocommerce-subscriptions' ) );
+	// translators: placeholders are strftime() strings.
+	$order_date = strftime( _x( '%b %d, %Y @ %I:%M %p', 'Used in subscription post title. "Subscription renewal order - <this>"', 'woocommerce-subscriptions' ) ); // phpcs:ignore WordPress.WP.I18n.UnorderedPlaceholdersText
 
 	switch ( $type ) {
 		case 'renewal_order':
+			// translators: placeholder is a date.
 			$title = sprintf( __( 'Subscription Renewal Order &ndash; %s', 'woocommerce-subscriptions' ), $order_date );
 			break;
 		case 'resubscribe_order':
+			// translators: placeholder is a date.
 			$title = sprintf( __( 'Resubscribe Order &ndash; %s', 'woocommerce-subscriptions' ), $order_date );
 			break;
 		default:
@@ -370,6 +373,7 @@ function wcs_validate_new_order_type( $type ) {
 	}
 
 	if ( ! in_array( $type, apply_filters( 'wcs_new_order_types', array( 'renewal_order', 'resubscribe_order', 'parent' ) ) ) ) {
+		// translators: placeholder is an order type.
 		return new WP_Error( 'order_from_subscription_type', sprintf( __( '"%s" is not a valid new order type.', 'woocommerce-subscriptions' ), $type ) );
 	}
 

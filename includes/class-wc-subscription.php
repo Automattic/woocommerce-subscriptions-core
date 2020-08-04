@@ -412,6 +412,7 @@ class WC_Subscription extends WC_Order {
 			// Only update if possible
 			if ( ! $this->can_be_updated_to( $new_status ) ) {
 
+				// translators: %s: subscription status.
 				$message = sprintf( __( 'Unable to change subscription status to "%s".', 'woocommerce-subscriptions' ), $new_status );
 
 				$this->add_order_note( $message );
@@ -534,7 +535,8 @@ class WC_Subscription extends WC_Order {
 				// There is no status transition
 				$this->status_transition = false;
 
-				$this->add_order_note( sprintf( __( 'Unable to change subscription status to "%s". Exception: %s', 'woocommerce-subscriptions' ), $new_status, $e->getMessage() ) );
+				// translators: 1: subscription status, 2: error message.
+				$this->add_order_note( sprintf( __( 'Unable to change subscription status to "%1$s". Exception: %2$s', 'woocommerce-subscriptions' ), $new_status, $e->getMessage() ) );
 
 				// Make sure status is saved when WC 3.0+ is active, similar to WC_Order::update_status() with WC 3.0+ - set_status() can be used to avoid saving.
 				$this->save();
@@ -1321,6 +1323,7 @@ class WC_Subscription extends WC_Order {
 			break;
 			case 'last_order_date_created':
 			case 'last_order_date_modified':
+				// translators: %s: date type (e.g. "trial_end").
 				$message = sprintf( __( 'The %s date of a subscription can not be deleted. You must delete the order.', 'woocommerce-subscriptions' ), $date_type );
 			break;
 			default:
@@ -1329,6 +1332,7 @@ class WC_Subscription extends WC_Order {
 		}
 
 		if ( ! empty( $message ) ) {
+			// translators: %d: subscription ID.
 			throw new Exception( sprintf( __( 'Subscription #%d: ', 'woocommerce-subscriptions' ), $this->get_id() ) . $message );
 		}
 
@@ -2010,6 +2014,7 @@ class WC_Subscription extends WC_Order {
 		$payment_method_to_display = apply_filters( 'woocommerce_subscription_payment_method_to_display', $payment_method_to_display, $this, $context );
 
 		if ( 'customer' === $context ) {
+			// translators: %s: payment method.
 			$payment_method_to_display = sprintf( __( 'Via %s', 'woocommerce-subscriptions' ), $payment_method_to_display );
 
 			// Only filter the result for non-manual subscriptions.
@@ -2394,24 +2399,29 @@ class WC_Subscription extends WC_Order {
 			switch ( $date_type ) {
 				case 'end':
 					if ( array_key_exists( 'cancelled', $timestamps ) && $timestamp < $timestamps['cancelled'] ) {
+						// translators: %s: date type (e.g. "end").
 						$messages[] = sprintf( __( 'The %s date must occur after the cancellation date.', 'woocommerce-subscriptions' ), $date_type );
 					}
 
 				case 'cancelled':
 					if ( array_key_exists( 'last_order_date_created', $timestamps ) && $timestamp < $timestamps['last_order_date_created'] ) {
+						// translators: %s: date type (e.g. "end").
 						$messages[] = sprintf( __( 'The %s date must occur after the last payment date.', 'woocommerce-subscriptions' ), $date_type );
 					}
 
 					if ( array_key_exists( 'next_payment', $timestamps ) && $timestamp <= $timestamps['next_payment'] ) {
+						// translators: %s: date type (e.g. "end").
 						$messages[] = sprintf( __( 'The %s date must occur after the next payment date.', 'woocommerce-subscriptions' ), $date_type );
 					}
 				case 'next_payment':
 					// Guarantees that end is strictly after trial_end, because if next_payment and end can't be at same time
 					if ( array_key_exists( 'trial_end', $timestamps ) && $timestamp < $timestamps['trial_end'] ) {
+						// translators: %s: date type (e.g. "end").
 						$messages[] = sprintf( __( 'The %s date must occur after the trial end date.', 'woocommerce-subscriptions' ), $date_type );
 					}
 				case 'trial_end':
 					if ( ! in_array( $date_type, array( 'end', 'cancelled' ) ) && $timestamp <= $timestamps['start'] ) {
+						// translators: %s: date type (e.g. "next_payment").
 						$messages[] = sprintf( __( 'The %s date must occur after the start date.', 'woocommerce-subscriptions' ), $date_type );
 					}
 			}
@@ -2421,6 +2431,7 @@ class WC_Subscription extends WC_Order {
 
 		// Don't validate dates while the subscription is being read, only dates set outside of instantiation require the strict validation rules to apply
 		if ( $this->object_read && ! empty( $messages ) ) {
+			// translators: %d: order ID.
 			throw new Exception( sprintf( __( 'Subscription #%d: ', 'woocommerce-subscriptions' ), $this->get_id() ) . join( ' ', $messages ) );
 		}
 

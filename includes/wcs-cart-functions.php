@@ -91,8 +91,16 @@ function wcs_cart_totals_shipping_html() {
 					// packages match, display shipping amounts only
 					?>
 					<tr class="shipping recurring-total <?php echo esc_attr( $recurring_cart_key ); ?>">
-						<th><?php echo esc_html( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ) ); ?></th>
-						<td data-title="<?php echo esc_attr( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ) ); ?>">
+						<th>
+							<?php
+							// translators: %s: shipping method label.
+							echo esc_html( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ) );
+							?>
+						</th>
+						<td data-title="<?php
+							// translators: %s: shipping method label.
+							echo esc_attr( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ) );
+						?>">
 							<?php echo wp_kses_post( wcs_cart_totals_shipping_method_price_label( $shipping_method, $recurring_cart ) ); ?>
 							<?php if ( 1 === count( $package['rates'] ) ) : ?>
 								<?php wcs_cart_print_shipping_input( $index, $shipping_method ); ?>
@@ -111,7 +119,8 @@ function wcs_cart_totals_shipping_html() {
 					$shipping_selection_displayed = true;
 
 					if ( $show_package_name ) {
-						$package_name = apply_filters( 'woocommerce_shipping_package_name', sprintf( _n( 'Shipping', 'Shipping %d', ( $i + 1 ), 'woocommerce-subscriptions' ), ( $i + 1 ) ), $i, $package );
+						// translators: %d: package number.
+						$package_name = apply_filters( 'woocommerce_shipping_package_name', sprintf( _n( 'Shipping', 'Shipping %d', ( $i + 1 ), 'woocommerce-subscriptions' ), ( $i + 1 ) ), $i, $package ); // phpcs:ignore WordPress.WP.I18n.MissingSingularPlaceholder,WordPress.WP.I18n.MismatchedPlaceholders
 					} else {
 						$package_name = '';
 					}

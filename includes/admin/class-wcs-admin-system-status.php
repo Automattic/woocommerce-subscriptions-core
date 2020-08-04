@@ -141,7 +141,8 @@ class WCS_Admin_System_Status {
 			if ( ! empty( $theme_overrides['has_outdated_templates'] ) && true === $theme_overrides['has_outdated_templates'] ) {
 				$debug_data['wcs_theme_overrides'] += array(
 					'mark_icon' => 'warning',
-					'note'      => sprintf( __( '%sLearn how to update%s', 'woocommerce-subscriptions' ), '<a href="https://docs.woocommerce.com/document/fix-outdated-templates-woocommerce/" target="_blank">', '</a>' ),
+					// translators: placeholders are opening/closing tags linking to documentation on outdated templates.
+					'note'      => sprintf( __( '%1$sLearn how to update%2$s', 'woocommerce-subscriptions' ), '<a href="https://docs.woocommerce.com/document/fix-outdated-templates-woocommerce/" target="_blank">', '</a>' ),
 				);
 			}
 		}

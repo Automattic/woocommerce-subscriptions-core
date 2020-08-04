@@ -215,7 +215,10 @@ class WCS_Report_Dashboard {
 		</li>
 		<li class="signup-revenue">
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
-				<?php echo wp_kses_post( sprintf( __( '%s signup revenue this month', 'woocommerce-subscriptions' ), '<strong>' . wc_price( $report_data->signup_revenue ) . '</strong>' ) ); ?>
+				<?php
+				// translators: %s: formatted amount.
+				echo wp_kses_post( sprintf( __( '%s signup revenue this month', 'woocommerce-subscriptions' ), '<strong>' . wc_price( $report_data->signup_revenue ) . '</strong>' ) );
+				?>
 			</a>
 		</li>
 		<li class="renewal-count">
@@ -228,7 +231,10 @@ class WCS_Report_Dashboard {
 		</li>
 		<li class="renewal-revenue">
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date&range=month' ) ); ?>">
-				<?php echo wp_kses_post( sprintf( __( '%s renewal revenue this month', 'woocommerce-subscriptions' ), '<strong>' . wc_price( $report_data->renewal_revenue ) . '</strong>' ) ); ?>
+				<?php
+				// translators: %s: formatted amount.
+				echo wp_kses_post( sprintf( __( '%s renewal revenue this month', 'woocommerce-subscriptions' ), '<strong>' . wc_price( $report_data->renewal_revenue ) . '</strong>' ) );
+				?>
 			</a>
 		</li>
 		<li class="cancel-count">

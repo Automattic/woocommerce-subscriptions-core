@@ -383,7 +383,7 @@ class WC_Subscriptions_Order {
 			}
 
 			// translators: placeholders are opening and closing link tags
-			$thank_you_message .= '<p>' . sprintf( _n( 'View the status of your subscription in %syour account%s.', 'View the status of your subscriptions in %syour account%s.', $subscription_count, 'woocommerce-subscriptions' ), '<a href="' . $my_account_subscriptions_url . '">', '</a>' ) . '</p>';
+			$thank_you_message .= '<p>' . sprintf( _n( 'View the status of your subscription in %1$syour account%2$s.', 'View the status of your subscriptions in %1$syour account%2$s.', $subscription_count, 'woocommerce-subscriptions' ), '<a href="' . $my_account_subscriptions_url . '">', '</a>' ) . '</p>';
 			echo wp_kses(
 				apply_filters(
 					'woocommerce_subscriptions_thank_you_message',

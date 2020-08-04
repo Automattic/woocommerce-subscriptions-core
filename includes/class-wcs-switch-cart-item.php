@@ -299,6 +299,7 @@ class WCS_Switch_Cart_Item {
 			$switch_type = apply_filters( 'wcs_switch_proration_switch_type', $switch_type, $this->subscription, $this->cart_item, $old_price_per_day, $new_price_per_day );
 
 			if ( ! in_array( $switch_type, array( 'upgrade', 'downgrade', 'crossgrade' ) ) ) {
+				// translators: placeholder is a switch type.
 				throw new UnexpectedValueException( sprintf( __( 'Invalid switch type "%s". Switch must be one of: "upgrade", "downgrade" or "crossgrade".', 'woocommerce-subscriptions' ), $switch_type ) );
 			}
 

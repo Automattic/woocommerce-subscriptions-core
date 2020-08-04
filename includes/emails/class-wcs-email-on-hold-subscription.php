@@ -154,6 +154,7 @@ class WCS_Email_On_Hold_Subscription extends WC_Email {
 			'subject'    => array(
 				'title'       => _x( 'Subject', 'of an email', 'woocommerce-subscriptions' ),
 				'type'        => 'text',
+				// translators: %s: default e-mail subject.
 				'description' => sprintf( __( 'This controls the email subject line. Leave blank to use the default subject: %s.', 'woocommerce-subscriptions' ), '<code>' . $this->subject . '</code>' ),
 				'placeholder' => $this->get_default_subject(),
 				'default'     => '',
@@ -161,6 +162,7 @@ class WCS_Email_On_Hold_Subscription extends WC_Email {
 			'heading'    => array(
 				'title'       => _x( 'Email Heading', 'Name the setting that controls the main heading contained within the email notification', 'woocommerce-subscriptions' ),
 				'type'        => 'text',
+				// translators: %s: default e-mail heading.
 				'description' => sprintf( __( 'This controls the main heading contained within the email notification. Leave blank to use the default heading: <code>%s</code>.', 'woocommerce-subscriptions' ), $this->heading ),
 				'placeholder' => $this->get_default_heading(),
 				'default'     => '',

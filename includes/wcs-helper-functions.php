@@ -262,7 +262,8 @@ function wcs_is_frontend_request() {
  */
 function wcs_sort_objects( &$objects, $property, $sort_order = 'ascending' ) {
 	if ( 'ascending' !== $sort_order && 'descending' !== $sort_order ) {
-		throw new InvalidArgumentException( sprintf( __( 'Invalid sort order type: %s. The $sort_order argument must be %s or %s.', 'woocommerce-subscriptions' ), $sort_order, '"descending"', '"ascending"' ) );
+		// translators: 1) passed sort order type argument, 2) 'ascending', 3) 'descending'.
+		throw new InvalidArgumentException( sprintf( __( 'Invalid sort order type: %1$s. The $sort_order argument must be %2$s or %3$s.', 'woocommerce-subscriptions' ), $sort_order, '"descending"', '"ascending"' ) );
 	}
 	uasort( $objects, array( new WCS_Object_Sorter( $property ), "{$sort_order}_compare" ) );
 	return $objects;
