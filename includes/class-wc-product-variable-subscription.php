@@ -331,21 +331,25 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 	}
 
 	/**
-	 * Get an array of available variations for the current product.
+	 * Gets an array of available variations.
 	 *
-	 * @return array
+	 * @param string $return Optional. The format to return the results in. Can be 'array' to return an array of variation data or 'objects' for the product objects. Default 'array'.
+	 * @return array|WC_Product_Subscription_Variation[]
 	 */
-	public function get_available_variations() {
-		$available_variations_data = parent::get_available_variations();
+	public function get_available_variations( $return = 'array' ) {
+		$available_variations = parent::get_available_variations( $return );
 
-		foreach ( $available_variations_data as $index => $variation_data ) {
+		// Add the variation first payment date if data is being prepared for the add to cart form.
+		if ( 'array' === $return ) {
+			foreach ( $available_variations as $index => $variation_data ) {
 
-			// Add the product's synced first payment date to the variation data if applicable.
-			if ( isset( $variation_data['variation_id'] ) ) {
-				$available_variations_data[ $index ]['first_payment_html'] = WC_Subscriptions_Synchroniser::get_products_first_payment_date( wc_get_product( $variation_data['variation_id'] ) );
+				// Add the product's synced first payment date to the variation data if applicable.
+				if ( isset( $variation_data['variation_id'] ) ) {
+					$available_variations[ $index ]['first_payment_html'] = WC_Subscriptions_Synchroniser::get_products_first_payment_date( wc_get_product( $variation_data['variation_id'] ) );
+				}
 			}
 		}
 
-		return $available_variations_data;
+		return $available_variations;
 	}
 }
