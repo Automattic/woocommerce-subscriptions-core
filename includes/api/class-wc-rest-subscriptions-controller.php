@@ -61,8 +61,9 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 
 		register_rest_route( $this->namespace, '/' . $this->rest_base . '/statuses', array(
 			array(
-				'methods'  => WP_REST_Server::READABLE,
-				'callback' => array( $this, 'get_statuses' ),
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_statuses' ),
+				'permission_callback' => '__return_true',
 			),
 			'schema' => array( $this, 'get_public_item_schema' ),
 		) );
