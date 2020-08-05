@@ -1807,7 +1807,7 @@ class WC_Subscriptions_Admin {
 		if ( is_admin() && function_exists( 'get_current_screen' ) ) {
 			$screen = get_current_screen();
 
-			if ( is_object( $screen ) && 'shop_subscription' == $screen->id ) {
+			if ( is_object( $screen ) && 'shop_subscription' === $screen->id ) {
 				add_filter( 'gettext', array( __CLASS__, 'change_order_item_editable_text' ), 10, 3 );
 			}
 		}
@@ -1823,7 +1823,7 @@ class WC_Subscriptions_Admin {
 		if ( is_admin() && function_exists( 'get_current_screen' ) ) {
 			$screen = get_current_screen();
 
-			if ( is_object( $screen ) && 'shop_subscription' == $screen->id ) {
+			if ( is_object( $screen ) && 'shop_subscription' === $screen->id ) {
 				remove_filter( 'gettext', array( __CLASS__, 'change_order_item_editable_text' ), 10 );
 			}
 		}
@@ -1839,7 +1839,6 @@ class WC_Subscriptions_Admin {
 	public static function change_order_item_editable_text( $translated_text, $text, $domain ) {
 
 		switch ( $text ) {
-
 			case 'This order is no longer editable.':
 				$translated_text = __( 'Subscription items can no longer be edited.', 'woocommerce-subscriptions' );
 				break;
