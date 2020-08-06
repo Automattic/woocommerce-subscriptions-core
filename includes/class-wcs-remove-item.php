@@ -98,7 +98,7 @@ class WCS_Remove_Item {
 						$subscription = wcs_get_subscription( $subscription->get_id() );
 						$line_items = $subscription->get_items();
 						$line_item  = $line_items[ $item_id ];
-						$_product   = $subscription->get_product_from_item( $line_item );
+						$_product   = $line_item->get_product();
 						$product_id = wcs_get_canonical_product_id( $line_item );
 
 						if ( $_product && $_product->exists() && $_product->is_downloadable() ) {

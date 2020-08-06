@@ -998,7 +998,7 @@ class WCS_Admin_Post_Types {
 	 */
 	protected static function get_item_display( $item, $the_subscription, $element = 'div' ) {
 
-		$_product       = apply_filters( 'woocommerce_order_item_product', $the_subscription->get_product_from_item( $item ), $item );
+		$_product       = apply_filters( 'woocommerce_order_item_product', $item->get_product(), $item );
 		$item_meta_html = self::get_item_meta_html( $item, $_product );
 
 		if ( 'div' === $element ) {

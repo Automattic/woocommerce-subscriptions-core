@@ -78,7 +78,7 @@ class WCS_Download_Handler {
 		foreach ( $subscriptions as $subscription ) {
 			if ( sizeof( $subscription->get_items() ) > 0 ) {
 				foreach ( $subscription->get_items() as $item ) {
-					$_product = $subscription->get_product_from_item( $item );
+					$_product = $item->get_product();
 
 					if ( $_product && $_product->exists() && $_product->is_downloadable() ) {
 						$downloads  = wcs_get_objects_property( $_product, 'downloads' );
