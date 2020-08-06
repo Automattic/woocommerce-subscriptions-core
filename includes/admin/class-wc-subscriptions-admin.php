@@ -2043,7 +2043,7 @@ class WC_Subscriptions_Admin {
 	/**
 	 * Gets the product type warning message displayed for products associated with subscriptions
 	 *
-	 * @since 3.0.5
+	 * @since 3.0.7
 	 * @return string The change product type warning message.
 	 */
 	private static function get_change_product_type_warning() {
@@ -2057,7 +2057,7 @@ class WC_Subscriptions_Admin {
 	 * can cause issues. For example when customers who try to manually renew where the subscription
 	 * products are placed in the cart.
 	 *
-	 * @since 3.0.5
+	 * @since 3.0.7
 	 * @param int $product_id The product ID being saved.
 	 */
 	public static function validate_product_type_change( $product_id ) {
