@@ -169,10 +169,15 @@ class WCS_Admin_Reports {
 			);
 
 			$properties = array(
-				'orders_count'        => array_sum( (array) wp_count_posts( 'shop_order' ) ),
-				'subscriptions_count' => array_sum( (array) wp_count_posts( 'shop_subscription' ) ),
-				'version'             => WC_Subscriptions::$version,
+				'orders_count'          => array_sum( (array) wp_count_posts( 'shop_order' ) ),
+				'subscriptions_count'   => array_sum( (array) wp_count_posts( 'shop_subscription' ) ),
+				'subscriptions_version' => WC_Subscriptions::$version,
 			);
+
+			// Add range property to only reports that include range options.
+			if ( in_array( $name, array( 'subscription-events-by-date', 'upcoming-recurring-revenue', 'subscription-payment-retry' ), true ) ) {
+				$properties['range'] = ! empty( $_GET['range'] ) ? sanitize_text_field( $_GET['range'] ) : '7day'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification.Recommended
+			}
 
 			WC_Tracks::record_event( $reports[ $name ], $properties );
 		}
