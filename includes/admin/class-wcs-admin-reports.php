@@ -157,6 +157,9 @@ class WCS_Admin_Reports {
 			return;
 		}
 
+		$report = new $class();
+		$report->output_report();
+
 		if ( class_exists( 'WC_Tracks' ) ) {
 
 			$reports = array(
@@ -174,16 +177,18 @@ class WCS_Admin_Reports {
 				'subscriptions_version' => WC_Subscriptions::$version,
 			);
 
-			// Add range property to only reports that include range options.
 			if ( in_array( $name, array( 'subscription-events-by-date', 'upcoming-recurring-revenue', 'subscription-payment-retry' ), true ) ) {
 				$properties['range'] = ! empty( $_GET['range'] ) ? sanitize_text_field( $_GET['range'] ) : '7day'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification.Recommended
+				if ( 'custom' === $properties['range'] ) {
+					// We have to get start date from _GET variables since $report sets this far into the past when empty.
+					$properties['start_date'] = ! empty( $_GET['start_date'] ) ? sanitize_text_field( $_GET['start_date'] ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification.Recommended
+					$properties['end_date']   = gmdate( 'Y-m-d', $report->end_date );
+					$properties['span']       = $properties['start_date'] ? floor( ( $report->end_date - $report->start_date ) / DAY_IN_SECONDS ) + 1 . 'day' : null;
+				}
 			}
 
 			WC_Tracks::record_event( $reports[ $name ], $properties );
 		}
-
-		$report = new $class();
-		$report->output_report();
 	}
 
 	/**
