@@ -141,7 +141,7 @@ class WC_Subscriptions_Admin {
 		add_filter( 'woocommerce_account_settings', array( __CLASS__, 'add_guest_checkout_setting_note' ), 10, 1 );
 
 		// Validate the product type change before other product changes are saved.
-		add_action( 'save_post', array( __CLASS__, 'validate_product_type_change' ), 0 );
+		add_action( 'woocommerce_process_product_meta', array( __CLASS__, 'validate_product_type_change' ), 5 );
 	}
 
 	/**
@@ -2062,7 +2062,7 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function validate_product_type_change( $product_id ) {
 
-		if ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) || empty( $_POST['product-type'] ) ) {
+		if ( empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['woocommerce_meta_nonce'] ), 'woocommerce_save_data' ) || empty( $_POST['product-type'] ) ) {
 			return;
 		}
 
