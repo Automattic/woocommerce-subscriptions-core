@@ -127,15 +127,19 @@ function wcs_get_non_cached_subscription_ranges() {
  * @return bool|mixed
  */
 function wcs_get_subscription_ranges( $subscription_period = '' ) {
+	static $subscription_locale_ranges = array();
+
 	if ( ! is_string( $subscription_period ) ) {
 		$subscription_period = '';
 	}
 
 	$locale = function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
 
-	$subscription_ranges = WC_Subscriptions::$cache->cache_and_get( 'wcs-sub-ranges-' . $locale, 'wcs_get_non_cached_subscription_ranges', array(), 3 * HOUR_IN_SECONDS );
+	if ( ! isset( $subscription_locale_ranges[ $locale ] ) ) {
+		$subscription_locale_ranges[ $locale ] = wcs_get_non_cached_subscription_ranges();
+	}
 
-	$subscription_ranges = apply_filters( 'woocommerce_subscription_lengths', $subscription_ranges, $subscription_period );
+	$subscription_ranges = apply_filters( 'woocommerce_subscription_lengths', $subscription_locale_ranges[ $locale ], $subscription_period );
 
 	if ( ! empty( $subscription_period ) ) {
 		return $subscription_ranges[ $subscription_period ];
