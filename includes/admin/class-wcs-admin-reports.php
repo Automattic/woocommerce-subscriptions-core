@@ -119,6 +119,11 @@ class WCS_Admin_Reports {
 
 			wp_enqueue_script( 'flot-order', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/jquery.flot.orderBars' . $suffix . '.js', array( 'jquery', 'flot' ), WC_Subscriptions::$version );
 			wp_enqueue_script( 'flot-axis-labels', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/jquery.flot.axislabels' . $suffix . '.js', array( 'jquery', 'flot' ), WC_Subscriptions::$version );
+
+			// Add tracks script if tracking is enabled.
+			if ( 'yes' === get_option( 'woocommerce_allow_tracking', 'no' ) ) {
+				wp_enqueue_script( 'wcs-tracks', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/tracks.js', array( 'jquery' ), WC_Subscriptions::$version, true );
+			}
 		}
 	}
 
@@ -142,7 +147,7 @@ class WCS_Admin_Reports {
 	/**
 	 * Get a report from one of our classes.
 	 *
-	 * @param string $name
+	 * @param string $name report name to be fetched.
 	 */
 	public static function get_report( $name ) {
 		$name  = sanitize_title( str_replace( '_', '-', $name ) );
@@ -154,6 +159,36 @@ class WCS_Admin_Reports {
 
 		$report = new $class();
 		$report->output_report();
+
+		if ( class_exists( 'WC_Tracks' ) ) {
+
+			$reports = array(
+				'subscription-events-by-date' => 'subscriptions_report_events_by_date_view',
+				'upcoming-recurring-revenue'  => 'subscriptions_report_upcoming_recurring_revenue_view',
+				'retention-rate'              => 'subscriptions_report_retention_rate_view',
+				'subscription-by-product'     => 'subscriptions_report_by_product_view',
+				'subscription-by-customer'    => 'subscriptions_report_by_customer_view',
+				'subscription-payment-retry'  => 'subscriptions_report_payment_retry_view',
+			);
+
+			$properties = array(
+				'orders_count'          => array_sum( (array) wp_count_posts( 'shop_order' ) ),
+				'subscriptions_count'   => array_sum( (array) wp_count_posts( 'shop_subscription' ) ),
+				'subscriptions_version' => WC_Subscriptions::$version,
+			);
+
+			if ( in_array( $name, array( 'subscription-events-by-date', 'upcoming-recurring-revenue', 'subscription-payment-retry' ), true ) ) {
+				$properties['range'] = ! empty( $_GET['range'] ) ? sanitize_text_field( $_GET['range'] ) : '7day'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification.Recommended
+				if ( 'custom' === $properties['range'] ) {
+					// We have to get start date from _GET variables since $report sets this far into the past when empty.
+					$properties['start_date'] = ! empty( $_GET['start_date'] ) ? sanitize_text_field( $_GET['start_date'] ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification.Recommended
+					$properties['end_date']   = gmdate( 'Y-m-d', $report->end_date );
+					$properties['span']       = $properties['start_date'] ? floor( ( $report->end_date - $report->start_date ) / DAY_IN_SECONDS ) + 1 . 'day' : null;
+				}
+			}
+
+			WC_Tracks::record_event( $reports[ $name ], $properties );
+		}
 	}
 
 	/**
