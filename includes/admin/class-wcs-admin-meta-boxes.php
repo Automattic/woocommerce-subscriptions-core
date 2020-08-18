@@ -110,7 +110,7 @@ class WCS_Admin_Meta_Boxes {
 
 			wp_localize_script( 'wcs-admin-meta-boxes-subscription', 'wcs_admin_meta_boxes', apply_filters( 'woocommerce_subscriptions_admin_meta_boxes_script_parameters', array(
 				'i18n_start_date_notice'         => __( 'Please enter a start date in the past.', 'woocommerce-subscriptions' ),
-				'i18n_past_date_notice'          => __( 'Please enter a date at least one hour into the future.', 'woocommerce-subscriptions' ),
+				'i18n_past_date_notice'          => WC_Subscriptions::is_duplicate_site() ? __( 'Please enter a date at least 2 minutes into the future.', 'woocommerce-subscriptions' ) : __( 'Please enter a date at least one hour into the future.', 'woocommerce-subscriptions' ),
 				'i18n_next_payment_start_notice' => __( 'Please enter a date after the trial end.', 'woocommerce-subscriptions' ),
 				'i18n_next_payment_trial_notice' => __( 'Please enter a date after the start date.', 'woocommerce-subscriptions' ),
 				'i18n_trial_end_start_notice'    => __( 'Please enter a date after the start date.', 'woocommerce-subscriptions' ),
@@ -120,6 +120,7 @@ class WCS_Admin_Meta_Boxes {
 				'payment_method'                 => wcs_get_subscription( $post )->get_payment_method(),
 				'search_customers_nonce'         => wp_create_nonce( 'search-customers' ),
 				'get_customer_orders_nonce'      => wp_create_nonce( 'get-customer-orders' ),
+				'is_duplicate_site'              => WC_Subscriptions::is_duplicate_site(),
 			) ) );
 		} else if ( 'shop_order' == $screen_id ) {
 
