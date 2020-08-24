@@ -48,6 +48,8 @@ class WCS_User_Change_Status_Handler {
 		$subscription = ( ! is_object( $subscription ) ) ? wcs_get_subscription( $subscription ) : $subscription;
 		$changed = false;
 
+		do_action( 'woocommerce_before_customer_changed_subscription_to_' . $new_status, $subscription );
+
 		switch ( $new_status ) {
 			case 'active':
 				if ( ! $subscription->needs_payment() ) {
