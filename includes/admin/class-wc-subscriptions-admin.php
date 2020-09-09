@@ -142,6 +142,10 @@ class WC_Subscriptions_Admin {
 
 		// Validate the product type change before other product changes are saved.
 		add_action( 'woocommerce_process_product_meta', array( __CLASS__, 'validate_product_type_change' ), 5 );
+
+		// Prevent variations from being deleted if switching from a variable product type to a variable product type.
+		add_filter( 'woocommerce_from_product_type_changed', array( __CLASS__, 'maybe_keep_variations' ) );
+		add_filter( 'woocommerce_to_product_type_changed', array( __CLASS__, 'maybe_keep_variations' ) );
 	}
 
 	/**
@@ -2182,5 +2186,20 @@ class WC_Subscriptions_Admin {
 		wcs_deprecated_function( __METHOD__, '2.6.2', 'WC_Subscriptions_Admin::filter_orders_and_subscriptions_from_list( $where )' );
 
 		return WC_Subscriptions_Admin::filter_orders_and_subscriptions_from_list( $where );
+	}
+
+	/**
+	 * Prevent variations from being deleted if switching from a variable product type to a variable product type.
+	 *
+	 * @since 3.0.8
+	 *
+	 * @param string $product_type The product type value to filter.
+	 * @return string $product_type The filtered product type value.
+	 */
+	public static function maybe_keep_variations( $product_type ) {
+		if ( strpos( $product_type, 'variable' ) ) {
+			$product_type = 'variable';
+		}
+		return $product_type;
 	}
 }
