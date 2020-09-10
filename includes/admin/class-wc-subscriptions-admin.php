@@ -144,8 +144,7 @@ class WC_Subscriptions_Admin {
 		add_action( 'woocommerce_process_product_meta', array( __CLASS__, 'validate_product_type_change' ), 5 );
 
 		// Prevent variations from being deleted if switching from a variable product type to a variable product type.
-		add_filter( 'woocommerce_from_product_type_changed', array( __CLASS__, 'maybe_keep_variations' ) );
-		add_filter( 'woocommerce_to_product_type_changed', array( __CLASS__, 'maybe_keep_variations' ) );
+		add_filter( 'woocommerce_delete_variations_on_product_type_change', array( __CLASS__, 'maybe_keep_variations' ), 10, 4 );
 	}
 
 	/**
@@ -2193,13 +2192,15 @@ class WC_Subscriptions_Admin {
 	 *
 	 * @since 3.0.8
 	 *
-	 * @param string $product_type The product type value to filter.
-	 * @return string $product_type The filtered product type value.
+	 * @param bool       $delete_variations A boolean value of true will delete the variations.
+	 * @param WC_Product $product           Product data.
+	 * @return string    $from              Origin type.
+	 * @param string     $to                New type.
 	 */
-	public static function maybe_keep_variations( $product_type ) {
-		if ( strpos( $product_type, 'variable' ) ) {
-			$product_type = 'variable';
+	public static function maybe_keep_variations( $delete_variations, $product, $from, $to ) {
+		if ( ( false !== strpos( $from, 'variable' ) ) && ( false !== strpos( $to, 'variable' ) ) ) {
+			$delete_variations = false;
 		}
-		return $product_type;
+		return $delete_variations;
 	}
 }
