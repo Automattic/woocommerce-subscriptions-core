@@ -523,7 +523,7 @@ class WC_Subscriptions_Synchroniser {
 	 * @author Jeremy Pry
 	 *
 	 * @param WC_Product $product The product to check.
-	 * @param string $from_date Optional. A MySQL formatted date/time string from which to calculate from. The default is an empty string which is today's date/time.
+	 * @param string     $from_date Optional. A MySQL formatted date/time string from which to calculate from. The default is an empty string which is today's date/time.
 	 *
 	 * @return bool Whether an upfront payment is required for the product.
 	 */
@@ -550,13 +550,13 @@ class WC_Subscriptions_Synchroniser {
 			$from_timestamp = $from_date ? wcs_date_to_time( $from_date ) : gmdate( 'U' );
 			$site_offset    = (int) ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
 
-			// The payment date is today - check for it in site time
+			// The payment date is today - check for it in site time.
 			if ( gmdate( 'Ymd', $payment_date + $site_offset ) === gmdate( 'Ymd', $from_timestamp + $site_offset ) ) {
 				$is_upfront = true;
 			} elseif ( 'recurring' !== get_option( self::$setting_id_proration, 'no' ) ) {
 				$is_upfront = false;
 			} elseif ( $no_fee_days > 0 ) {
-				// When proration setting is 'recurring' and there is a grace period
+				// When proration setting is 'recurring' and there is a grace period.
 				$buffer_date = $payment_date - ( $no_fee_days * DAY_IN_SECONDS );
 
 				$is_upfront = $from_timestamp < wcs_date_to_time( gmdate( 'Y-m-d 23:59:59', $buffer_date ) );
