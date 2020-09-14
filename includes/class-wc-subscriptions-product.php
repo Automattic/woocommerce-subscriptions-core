@@ -282,7 +282,7 @@ class WC_Subscriptions_Product {
 			} elseif ( WC_Subscriptions_Synchroniser::is_product_synced( $product ) && in_array( $billing_period, array( 'week', 'month', 'year' ), true ) ) {
 				$subscription_string = '';
 
-				if ( WC_Subscriptions_Synchroniser::is_payment_upfront( $product ) ) {
+				if ( WC_Subscriptions_Synchroniser::is_payment_upfront( $product ) && ! WC_Subscriptions_Synchroniser::is_today( WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product, 'timestamp' ) ) ) {
 					/* translators: %1$s refers to the price. This string is meant to prefix another string below, e.g. "$5 now, and $5 on March 15th each year" */
 					$subscription_string = sprintf( __( '%1$s now, and ', 'woocommerce-subscriptions' ), $price );
 				}

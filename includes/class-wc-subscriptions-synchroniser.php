@@ -552,7 +552,7 @@ class WC_Subscriptions_Synchroniser {
 
 			// The payment date is today - check for it in site time.
 			if ( gmdate( 'Ymd', $payment_date + $site_offset ) === gmdate( 'Ymd', $from_timestamp + $site_offset ) ) {
-				$is_upfront = false;
+				$is_upfront = true;
 			} elseif ( 'recurring' !== get_option( self::$setting_id_proration, 'no' ) ) {
 				$is_upfront = false;
 			} elseif ( $no_fee_days > 0 ) {
