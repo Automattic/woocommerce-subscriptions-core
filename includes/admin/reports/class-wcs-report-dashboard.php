@@ -256,4 +256,13 @@ class WCS_Report_Dashboard {
 	public static function dashboard_scripts() {
 		wp_enqueue_style( 'wcs-dashboard-report', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/css/dashboard.css', array(), WC_Subscriptions::$version );
 	}
+
+	/**
+	 * Clears the cached report data.
+	 *
+	 * @since 3.0.8
+	 */
+	public static function clear_cache() {
+		delete_transient( strtolower( __CLASS__ ) );
+	}
 }
