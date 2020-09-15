@@ -2198,7 +2198,7 @@ class WC_Subscriptions_Admin {
 	 * @param string     $to                New type.
 	 */
 	public static function maybe_keep_variations( $delete_variations, $product, $from, $to ) {
-		if ( ( false !== strpos( $from, 'variable' ) ) && ( false !== strpos( $to, 'variable' ) ) ) {
+		if ( ( 'variable' === $from && 'variable-subscription' === $to ) || ( 'variable-subscription' === $from && 'variable' === $to ) ) {
 			$delete_variations = false;
 		}
 		return $delete_variations;
