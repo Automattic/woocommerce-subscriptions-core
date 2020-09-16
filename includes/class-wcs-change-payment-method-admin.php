@@ -75,7 +75,16 @@ class WCS_Change_Payment_Method_Admin {
 
 						echo '<p class="form-field form-field-wide">';
 						echo '<label for="' . esc_attr( $field_id ) . '">' . esc_html( $field_label ) . '</label>';
-						echo '<input type="text" class="short" name="' . esc_attr( $field_id ) . '" id="' . esc_attr( $field_id ) . '" value="' . esc_attr( $field_value ) . '" placeholder="" ' . esc_attr( $field_disabled ) . '>';
+
+						$payment_meta_input_action_name = sprintf( 'woocommerce_subscription_payment_meta_input_%s_%s_%s', $payment_method_id, $meta_table, $meta_key );
+
+						// Allow third parties to display their own custom meta input fields.
+						if ( has_action( $payment_meta_input_action_name ) ) {
+							do_action( $payment_meta_input_action_name, $subscription, $field_id, $field_value, $meta_data );
+						} else {
+							echo '<input type="text" class="short" name="' . esc_attr( $field_id ) . '" id="' . esc_attr( $field_id ) . '" value="' . esc_attr( $field_value ) . '" placeholder="" ' . esc_attr( $field_disabled ) . '>';
+						}
+
 						echo '</p>';
 					}
 				}
