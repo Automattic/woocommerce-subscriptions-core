@@ -255,8 +255,14 @@ class WCS_Switch_Cart_Item {
 	 * @return float
 	 */
 	public function get_total_paid_for_current_period() {
+
 		if ( ! isset( $this->total_paid_for_current_period ) ) {
-			$this->total_paid_for_current_period = WC_Subscriptions_Switcher::calculate_total_paid_since_last_order( $this->subscription, $this->existing_item, 'exclude_sign_up_fees' );
+			// If the last order was a switch with a fully reduced pre-paid term, the amount the cutomer has paid is just the total in that order.
+			if ( $this->is_switch_after_fully_reduced_prepaid_term() ) {
+				$this->total_paid_for_current_period = WC_Subscriptions_Switcher::calculate_total_paid_since_last_order( $this->subscription, $this->existing_item, 'exclude_sign_up_fees', array( $this->get_last_switch_order() ) );
+			} else {
+				$this->total_paid_for_current_period = WC_Subscriptions_Switcher::calculate_total_paid_since_last_order( $this->subscription, $this->existing_item, 'exclude_sign_up_fees' );
+			}
 		}
 
 		return $this->total_paid_for_current_period;
@@ -334,9 +340,16 @@ class WCS_Switch_Cart_Item {
 			$method_to_use = 'days_in_billing_cycle';
 		}
 
+		// If the last order was a switch order with a fully reduced pre-paid term.
+		if ( $this->is_switch_after_fully_reduced_prepaid_term() ) {
+			$method_to_use = 'days_between_switch_and_next_payment';
+		}
+
 		// Find the number of days between the last payment and the next
 		if ( 'days_between_payments' === $method_to_use ) {
 			$days_in_old_cycle = round( ( $this->next_payment_timestamp - $this->get_last_order_paid_time() ) / DAY_IN_SECONDS );
+		} elseif ( 'days_between_switch_and_next_payment' === $method_to_use ) {
+			$days_in_old_cycle = round( ( $this->next_payment_timestamp - $this->get_last_switch_order()->get_date_paid()->getTimestamp() ) / DAY_IN_SECONDS );
 		} else {
 			$days_in_old_cycle = wcs_get_days_in_cycle( $this->subscription->get_billing_period(), $this->subscription->get_billing_interval() );
 		}
@@ -351,7 +364,12 @@ class WCS_Switch_Cart_Item {
 	 * @return int
 	 */
 	public function calculate_days_in_new_cycle() {
-		$last_order_time      = $this->get_last_order_paid_time();
+		if ( $this->is_switch_after_fully_reduced_prepaid_term() ) {
+			$last_order_time = $this->get_last_switch_order()->get_date_paid()->getTimestamp();
+		} else {
+			$last_order_time = $this->get_last_order_paid_time();
+		}
+
 		$new_billing_period   = WC_Subscriptions_Product::get_period( $this->product );
 		$new_billing_interval = WC_Subscriptions_Product::get_interval( $this->product );
 
