@@ -2239,13 +2239,14 @@ class WC_Subscriptions_Switcher {
 	 * @param WC_Subscription $subscription         The Subscription.
 	 * @param WC_Order_Item   $subscription_item    The current line item on the subscription to map back through the related orders.
 	 * @param string          $include_sign_up_fees Optional. Whether to include the sign-up fees paid. Can be 'include_sign_up_fees' or 'exclude_sign_up_fees'. Default 'include_sign_up_fees'.
+	 * @param WC_Order[]      $orders_to_include    Optional. The orders to include in the total.
 	 *
 	 * @return float The total amount paid for an existing subscription line item.
 	 */
-	public static function calculate_total_paid_since_last_order( $subscription, $subscription_item, $include_sign_up_fees = 'include_sign_up_fees' ) {
+	public static function calculate_total_paid_since_last_order( $subscription, $subscription_item, $include_sign_up_fees = 'include_sign_up_fees', $orders_to_include = array() ) {
 		$found_item      = false;
 		$item_total_paid = 0;
-		$orders          = $subscription->get_related_orders( 'all', array( 'parent', 'renewal', 'switch' ) );
+		$orders          = empty( $orders_to_include ) ? $subscription->get_related_orders( 'all', array( 'parent', 'renewal', 'switch' ) ) : $orders_to_include;
 
 		// We need the orders sorted by the date they were paid, with the newest first.
 		wcs_sort_objects( $orders, 'date_paid', 'descending' );
