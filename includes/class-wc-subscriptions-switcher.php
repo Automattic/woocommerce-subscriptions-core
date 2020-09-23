@@ -840,7 +840,7 @@ class WC_Subscriptions_Switcher {
 
 				if ( wcs_is_subscription( $order ) ) {
 					if ( ! empty( $switch_details['item_id'] ) ) {
-						$order_item->add_meta_data( '_switched_subscription_item_id', $switch_details['item_id'] );
+						$order_item->update_meta_data( '_switched_subscription_item_id', $switch_details['item_id'] );
 					}
 				} else {
 					$sign_up_fee_prorated = WC()->cart->cart_contents[ $cart_item_key ]['data']->get_meta( '_subscription_sign_up_fee_prorated', true );
