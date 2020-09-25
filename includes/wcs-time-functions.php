@@ -208,13 +208,13 @@ function wcs_get_subscription_trial_lengths( $subscription_period = '' ) {
 /**
  * Convenience wrapper for adding "{n} {periods}" to a timestamp (e.g. 2 months or 5 days).
  *
- * @param int The number of periods to add to the timestamp
- * @param string One of day, week, month or year.
- * @param int A Unix timestamp to add the time too.
- * @param string $timezone_behaviour If the $from_timestamp param should be offset to site time or not, either 'apply site time offset' or 'do not offset'. Default 'do not offset'.
+ * @param int    $number_of_periods  The number of periods to add to the timestamp
+ * @param string $period             One of day, week, month or year.
+ * @param int    $from_timestamp     A Unix timestamp to add the time too.
+ * @param string $timezone_behaviour Optional. If the $from_timestamp parameter should be offset to the site time or not, either 'offset_site_time' or 'no_offset'. Default 'no_offset'.
  * @since 2.0
  */
-function wcs_add_time( $number_of_periods, $period, $from_timestamp, $timezone_behaviour = 'do not offset' ) {
+function wcs_add_time( $number_of_periods, $period, $from_timestamp, $timezone_behaviour = 'no_offset' ) {
 
 	if ( $number_of_periods > 0 ) {
 		if ( 'month' == $period ) {
@@ -239,16 +239,17 @@ function wcs_add_time( $number_of_periods, $period, $from_timestamp, $timezone_b
  *
  * What humans usually want is for the date to continue on the last day of the month.
  *
- * @param int $from_timestamp A Unix timestamp to add the months too.
- * @param int $months_to_add The number of months to add to the timestamp.
- * @param string $timezone_behaviour If the $from_timestamp param should be offset to site time or not, either 'apply site time offset' or 'do not offset'. Default 'do not offset'.
+ * @param int $from_timestamp        A Unix timestamp to add the months too.
+ * @param int $months_to_add         The number of months to add to the timestamp.
+ * @param string $timezone_behaviour Optional. If the $from_timestamp parameter should be offset to the site time or not, either 'offset_site_time' or 'no_offset'. Default 'no_offset'.
  * @since 2.0
  */
-function wcs_add_months( $from_timestamp, $months_to_add, $timezone_behaviour = 'do not offset' ) {
+function wcs_add_months( $from_timestamp, $months_to_add, $timezone_behaviour = 'no_offset' ) {
 
-	if ( 'apply site time offset' === $timezone_behaviour ) {
+	if ( 'offset_site_time' === $timezone_behaviour ) {
 		$from_timestamp += wc_timezone_offset();
 	}
+
 	$first_day_of_month = gmdate( 'Y-m', $from_timestamp ) . '-1';
 	$days_in_next_month = gmdate( 't', wcs_strtotime_dark_knight( "+ {$months_to_add} month", wcs_date_to_time( $first_day_of_month ) ) );
 
@@ -261,7 +262,8 @@ function wcs_add_months( $from_timestamp, $months_to_add, $timezone_behaviour = 
 	} else { // Safe to just add a month
 		$next_timestamp = wcs_strtotime_dark_knight( "+ {$months_to_add} month", $from_timestamp );
 	}
-	if ( 'apply site time offset' === $timezone_behaviour ) {
+
+	if ( 'offset_site_time' === $timezone_behaviour ) {
 		$next_timestamp -= wc_timezone_offset();
 	}
 
