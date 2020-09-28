@@ -271,37 +271,16 @@ class WCS_Cart_Renewal {
 			);
 
 			// Load all product info including variation data
-			if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+			$product_id   = $line_item->get_product_id();
+			$quantity     = $line_item->get_quantity();
+			$variation_id = $line_item->get_variation_id();
+			$item_name    = $line_item->get_name();
 
-				$product_id   = (int) $line_item['product_id'];
-				$quantity     = (int) $line_item['qty'];
-				$variation_id = (int) $line_item['variation_id'];
-				$item_name    = $line_item['name'];
-
-				foreach ( $line_item['item_meta'] as $meta_name => $meta_value ) {
-					if ( taxonomy_is_product_attribute( $meta_name ) ) {
-						$variations[ $meta_name ] = $meta_value[0];
-					} elseif ( meta_is_product_attribute( $meta_name, $meta_value[0], $product_id ) ) {
-						$variations[ $meta_name ] = $meta_value[0];
-					} elseif ( ! in_array( $meta_name, $reserved_item_meta_keys ) ) {
-						$custom_line_item_meta[ $meta_name ] = $meta_value[0];
-					}
-				}
-			} else {
-
-				$product_id   = $line_item->get_product_id();
-				$quantity     = $line_item->get_quantity();
-				$variation_id = $line_item->get_variation_id();
-				$item_name    = $line_item->get_name();
-
-				foreach ( $line_item->get_meta_data() as $meta ) {
-					if ( taxonomy_is_product_attribute( $meta->key ) ) {
-						$variations[ $meta->key ] = $meta->value;
-					} elseif ( meta_is_product_attribute( $meta->key, $meta->value, $product_id ) ) {
-						$variations[ $meta->key ] = $meta->value;
-					} elseif ( ! in_array( $meta->key, $reserved_item_meta_keys ) ) {
-						$custom_line_item_meta[ $meta->key ] = $meta->value;
-					}
+			foreach ( $line_item->get_meta_data() as $meta ) {
+				if ( taxonomy_is_product_attribute( $meta->key ) || meta_is_product_attribute( $meta->key, $meta->value, $product_id ) ) {
+					$variations[ "attribute_{$meta->key}" ] = $meta->value;
+				} elseif ( ! in_array( $meta->key, $reserved_item_meta_keys, true ) ) {
+					$custom_line_item_meta[ $meta->key ] = $meta->value;
 				}
 			}
 
