@@ -279,7 +279,7 @@ class WCS_Cart_Renewal {
 			foreach ( $line_item->get_meta_data() as $meta ) {
 				if ( taxonomy_is_product_attribute( $meta->key ) || meta_is_product_attribute( $meta->key, $meta->value, $product_id ) ) {
 					$variations[ "attribute_{$meta->key}" ] = $meta->value;
-				} elseif ( ! in_array( $meta->key, $reserved_item_meta_keys ) ) {
+				} elseif ( ! in_array( $meta->key, $reserved_item_meta_keys, true ) ) {
 					$custom_line_item_meta[ $meta->key ] = $meta->value;
 				}
 			}
