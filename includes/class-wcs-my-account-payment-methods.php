@@ -131,6 +131,13 @@ class WCS_My_Account_Payment_Methods {
 	 * @since 2.3.3
 	 */
 	public static function display_default_payment_token_change_notice( $default_token_id, $default_token ) {
+		global $wp;
+
+		// Only display the change token notice on the My Account > Add Payment Method page.
+		if ( ! isset( $wp->query_vars['set-default-payment-method'] ) ) {
+			return;
+		}
+
 		$display_notice  = false;
 		$customer_tokens = WCS_Payment_Tokens::get_customer_tokens( $default_token->get_user_id(), $default_token->get_gateway_id() );
 		unset( $customer_tokens[ $default_token_id ] );
