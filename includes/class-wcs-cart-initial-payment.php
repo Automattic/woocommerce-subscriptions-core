@@ -130,4 +130,16 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 		return $order;
 	}
 
+	/**
+	 * Deteremines if the cart should honor the granfathered subscription/order line item total.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param array $cart_item The cart item to check.
+	 * @return bool Whether the cart should honor the order's prices.
+	 */
+	public function should_honor_subscription_prices( $cart_item ) {
+		$order = $this->get_order( $cart_item );
+		return $order && $order->meta_exists( '_manual_price_increases_locked' );
+	}
 }
