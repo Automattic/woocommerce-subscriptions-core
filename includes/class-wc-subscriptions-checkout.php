@@ -23,6 +23,9 @@ class WC_Subscriptions_Checkout {
 		// We need to create subscriptions on checkout and want to do it after almost all other extensions have added their products/items/fees
 		add_action( 'woocommerce_checkout_order_processed', array( __CLASS__, 'process_checkout' ), 100, 2 );
 
+		// Same as above, but this is for the Checkout block.
+		add_action( 'woocommerce_blocks_checkout_order_processed', array( __CLASS__, 'process_checkout' ), 100, 2 );
+
 		// Make sure users can register on checkout (before any other hooks before checkout)
 		add_action( 'woocommerce_before_checkout_form', array( __CLASS__, 'make_checkout_registration_possible' ), -1 );
 
