@@ -226,11 +226,9 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 		return $type;
 	}
 
-	global $wpdb;
-
 	try {
-
-		$wpdb->query( 'START TRANSACTION' );
+		$transaction = new WCS_SQL_Transaction();
+		$transaction->start();
 
 		if ( ! is_object( $subscription ) ) {
 			$subscription = wcs_get_subscription( $subscription );
@@ -317,13 +315,13 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 		}
 
 		// If we got here, the subscription was created without problems
-		$wpdb->query( 'COMMIT' );
+		$transaction->commit();
 
 		return apply_filters( 'wcs_new_order_created', $new_order, $subscription, $type );
 
 	} catch ( Exception $e ) {
 		// There was an error adding the subscription
-		$wpdb->query( 'ROLLBACK' );
+		$transaction->rollback();
 		return new WP_Error( 'new-order-error', $e->getMessage() );
 	}
 }
