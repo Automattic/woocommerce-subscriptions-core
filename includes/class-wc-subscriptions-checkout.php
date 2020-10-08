@@ -24,7 +24,7 @@ class WC_Subscriptions_Checkout {
 		add_action( 'woocommerce_checkout_order_processed', array( __CLASS__, 'process_checkout' ), 100, 2 );
 
 		// Same as above, but this is for the Checkout block.
-		add_action( 'woocommerce_blocks_checkout_order_processed', array( __CLASS__, 'process_checkout' ), 100, 2 );
+		add_action( 'woocommerce_blocks_checkout_order_processed', array( __CLASS__, 'process_checkout' ), 100, 1 );
 
 		// Make sure users can register on checkout (before any other hooks before checkout)
 		add_action( 'woocommerce_before_checkout_form', array( __CLASS__, 'make_checkout_registration_possible' ), -1 );
@@ -71,7 +71,7 @@ class WC_Subscriptions_Checkout {
 	 * @param array $posted_data The data posted on checkout
 	 * @since 2.0
 	 */
-	public static function process_checkout( $order_id, $posted_data ) {
+	public static function process_checkout( $order_id, $posted_data = array() ) {
 
 		if ( ! WC_Subscriptions_Cart::cart_contains_subscription() ) {
 			return;
