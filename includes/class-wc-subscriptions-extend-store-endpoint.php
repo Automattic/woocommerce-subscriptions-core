@@ -9,7 +9,7 @@
  * @author  WooCommerce
  * @since   3.0.9
  */
-class WC_Subscriptions_Extend_Store_API {
+class WC_Subscriptions_Extend_Store_Endpoint {
 
 	/**
 	 * Bootstraps the class and hooks required actions & filters.
@@ -17,6 +17,8 @@ class WC_Subscriptions_Extend_Store_API {
 	 * @since 3.0.9
 	 */
 	public static function init() {
+		// This is going to be changed in the future to a dedicated register
+		// function and not a filter, once we go public and stable, I will update this.
 		add_filter( '__internal_woocommerce_blocks_cart_item', __CLASS__ . '::extend_cart_item', 10, 4 );
 	}
 
@@ -31,7 +33,6 @@ class WC_Subscriptions_Extend_Store_API {
 				"trial_period"    => WC_Subscriptions_Product::get_trial_period( $product ),
 				"first_renewal"   => WC_Subscriptions_Product::get_first_renewal_payment_date( $product ),
 				"fees"            => WC_Subscriptions_Product::get_sign_up_fee( $product ),
-				"expiration_date" => WC_Subscriptions_Product::get_expiration_date( $product )
 			];
 		}
 		return $item_data;
