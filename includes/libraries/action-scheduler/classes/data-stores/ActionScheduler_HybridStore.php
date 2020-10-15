@@ -77,33 +77,18 @@ class ActionScheduler_HybridStore extends Store {
 			}
 			/** @var \wpdb $wpdb */
 			global $wpdb;
-			/**
-			 * A default date of '0000-00-00 00:00:00' is invalid in MySQL 5.7 when configured with 
-			 * sql_mode including both STRICT_TRANS_TABLES and NO_ZERO_DATE.
-			 */
-			$default_date = new DateTime( 'tomorrow' );
-			$null_action  = new ActionScheduler_NullAction();
-			$date_gmt     = $this->get_scheduled_date_string( $null_action, $default_date );
-			$date_local   = $this->get_scheduled_date_string_local( $null_action, $default_date );
-
-			$row_count = $wpdb->insert(
+			$wpdb->insert(
 				$wpdb->{ActionScheduler_StoreSchema::ACTIONS_TABLE},
 				[
-					'action_id'            => $this->demarkation_id,
-					'hook'                 => '',
-					'status'               => '',
-					'scheduled_date_gmt'   => $date_gmt,
-					'scheduled_date_local' => $date_local,
-					'last_attempt_gmt'     => $date_gmt,
-					'last_attempt_local'   => $date_local,
+					'action_id' => $this->demarkation_id,
+					'hook'      => '',
+					'status'    => '',
 				]
 			);
-			if ( $row_count > 0 ) {
-				$wpdb->delete(
-					$wpdb->{ActionScheduler_StoreSchema::ACTIONS_TABLE},
-					[ 'action_id' => $this->demarkation_id ]
-				);
-			}
+			$wpdb->delete(
+				$wpdb->{ActionScheduler_StoreSchema::ACTIONS_TABLE},
+				[ 'action_id' => $this->demarkation_id ]
+			);
 		}
 	}
 
@@ -235,8 +220,6 @@ class ActionScheduler_HybridStore extends Store {
 	 *
 	 * @param ActionScheduler_Action $action Action object to be saved.
 	 * @param DateTime               $date Optional. Schedule date. Default null.
-	 *
-	 * @return int The action ID
 	 */
 	public function save_action( ActionScheduler_Action $action, DateTime $date = null ) {
 		return $this->primary_store->save_action( $action, $date );
@@ -248,11 +231,10 @@ class ActionScheduler_HybridStore extends Store {
 	 * @param int $action_id Action ID.
 	 */
 	public function fetch_action( $action_id ) {
-		$store = $this->get_store_from_action_id( $action_id, true );
-		if ( $store ) {
-			return $store->fetch_action( $action_id );
+		if ( $action_id < $this->demarkation_id ) {
+			return $this->secondary_store->fetch_action( $action_id );
 		} else {
-			return new ActionScheduler_NullAction();
+			return $this->primary_store->fetch_action( $action_id );
 		}
 	}
 
@@ -262,9 +244,10 @@ class ActionScheduler_HybridStore extends Store {
 	 * @param int $action_id Action ID.
 	 */
 	public function cancel_action( $action_id ) {
-		$store = $this->get_store_from_action_id( $action_id );
-		if ( $store ) {
-			$store->cancel_action( $action_id );
+		if ( $action_id < $this->demarkation_id ) {
+			$this->secondary_store->cancel_action( $action_id );
+		} else {
+			$this->primary_store->cancel_action( $action_id );
 		}
 	}
 
@@ -274,9 +257,10 @@ class ActionScheduler_HybridStore extends Store {
 	 * @param int $action_id Action ID.
 	 */
 	public function delete_action( $action_id ) {
-		$store = $this->get_store_from_action_id( $action_id );
-		if ( $store ) {
-			$store->delete_action( $action_id );
+		if ( $action_id < $this->demarkation_id ) {
+			$this->secondary_store->delete_action( $action_id );
+		} else {
+			$this->primary_store->delete_action( $action_id );
 		}
 	}
 
@@ -286,11 +270,10 @@ class ActionScheduler_HybridStore extends Store {
 	 * @param int $action_id Action ID.
 	 */
 	public function get_date( $action_id ) {
-		$store = $this->get_store_from_action_id( $action_id );
-		if ( $store ) {
-			return $store->get_date( $action_id );
+		if ( $action_id < $this->demarkation_id ) {
+			return $this->secondary_store->get_date( $action_id );
 		} else {
-			return null;
+			return $this->primary_store->get_date( $action_id );
 		}
 	}
 
@@ -300,9 +283,10 @@ class ActionScheduler_HybridStore extends Store {
 	 * @param int $action_id Action ID.
 	 */
 	public function mark_failure( $action_id ) {
-		$store = $this->get_store_from_action_id( $action_id );
-		if ( $store ) {
-			$store->mark_failure( $action_id );
+		if ( $action_id < $this->demarkation_id ) {
+			$this->secondary_store->mark_failure( $action_id );
+		} else {
+			$this->primary_store->mark_failure( $action_id );
 		}
 	}
 
@@ -312,9 +296,10 @@ class ActionScheduler_HybridStore extends Store {
 	 * @param int $action_id Action ID.
 	 */
 	public function log_execution( $action_id ) {
-		$store = $this->get_store_from_action_id( $action_id );
-		if ( $store ) {
-			$store->log_execution( $action_id );
+		if ( $action_id < $this->demarkation_id ) {
+			$this->secondary_store->log_execution( $action_id );
+		} else {
+			$this->primary_store->log_execution( $action_id );
 		}
 	}
 
@@ -324,9 +309,10 @@ class ActionScheduler_HybridStore extends Store {
 	 * @param int $action_id Action ID.
 	 */
 	public function mark_complete( $action_id ) {
-		$store = $this->get_store_from_action_id( $action_id );
-		if ( $store ) {
-			$store->mark_complete( $action_id );
+		if ( $action_id < $this->demarkation_id ) {
+			$this->secondary_store->mark_complete( $action_id );
+		} else {
+			$this->primary_store->mark_complete( $action_id );
 		}
 	}
 
@@ -336,45 +322,13 @@ class ActionScheduler_HybridStore extends Store {
 	 * @param int $action_id Action ID.
 	 */
 	public function get_status( $action_id ) {
-		$store = $this->get_store_from_action_id( $action_id );
-		if ( $store ) {
-			return $store->get_status( $action_id );
-		}
-		return null;
-	}
-
-	/**
-	 * Return which store an action is stored in.
-	 *
-	 * @param int  $action_id ID of the action.
-	 * @param bool $primary_first Optional flag indicating search the primary store first.
-	 * @return ActionScheduler_Store
-	 */
-	protected function get_store_from_action_id( $action_id, $primary_first = false ) {
-		if ( $primary_first ) {
-			$stores = [
-				$this->primary_store,
-				$this->secondary_store,
-			];
-		} elseif ( $action_id < $this->demarkation_id ) {
-			$stores = [
-				$this->secondary_store,
-				$this->primary_store,
-			];
+		if ( $action_id < $this->demarkation_id ) {
+			return $this->secondary_store->get_status( $action_id );
 		} else {
-			$stores = [
-				$this->primary_store,
-			];
+			return $this->primary_store->get_status( $action_id );
 		}
-
-		foreach ( $stores as $store ) {
-			$action = $store->fetch_action( $action_id );
-			if ( ! is_a( $action, 'ActionScheduler_NullAction' ) ) {
-				return $store;
-			}
-		}
-		return null;
 	}
+
 
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * *
 	 * All claim-related functions should operate solely

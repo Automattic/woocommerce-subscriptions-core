@@ -140,6 +140,7 @@ abstract class ActionScheduler_Abstract_ListTable extends WP_List_Table {
 		global $wpdb;
 		// Detect when a bulk action is being triggered.
 		$action = $this->current_action();
+
 		if ( ! $action ) {
 			return;
 		}
@@ -160,14 +161,13 @@ abstract class ActionScheduler_Abstract_ListTable extends WP_List_Table {
 	}
 
 	/**
-	 * Default code for deleting entries.
+	 * Default code for deleting entries. We trust ids_sql because it is
 	 * validated already by process_bulk_action()
 	 */
 	protected function bulk_delete( array $ids, $ids_sql ) {
-		$store = ActionScheduler::store();
-		foreach ( $ids as $action_id ) {
-			$store->delete( $action_id );
-		}
+		global $wpdb;
+
+		$wpdb->query( "DELETE FROM {$this->table_name} WHERE {$this->ID} IN $ids_sql" );
 	}
 
 	/**
@@ -606,7 +606,6 @@ abstract class ActionScheduler_Abstract_ListTable extends WP_List_Table {
 			}
 
 			$status_filter_url   = ( 'all' === $status_name ) ? remove_query_arg( 'status' ) : add_query_arg( 'status', $status_name );
-			$status_filter_url   = remove_query_arg( array( 'paged', 's' ), $status_filter_url );
 			$status_list_items[] = sprintf( $status_list_item, esc_attr( $status_name ), esc_url( $status_filter_url ), esc_html( ucfirst( $status_name ) ), absint( $count ) );
 		}
 
@@ -642,6 +641,7 @@ abstract class ActionScheduler_Abstract_ListTable extends WP_List_Table {
 	 */
 	public function process_actions() {
 		$this->process_bulk_action();
+
 		$this->process_row_actions();
 
 		if ( ! empty( $_REQUEST['_wp_http_referer'] ) ) {
