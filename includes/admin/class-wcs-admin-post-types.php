@@ -272,18 +272,18 @@ class WCS_Admin_Post_Types {
 
 		?>
 		<script type="text/javascript">
-			jQuery(document).ready(function($) {
+			jQuery( function( $ ) {
 				<?php
 				foreach ( $bulk_actions as $action => $title ) {
 					?>
-					$('<option>')
-						.val('<?php echo esc_attr( $action ); ?>')
-						.text('<?php echo esc_html( $title ); ?>')
-						.appendTo("select[name='action'], select[name='action2']" );
+					$( '<option>' )
+						.val( '<?php echo esc_attr( $action ); ?>' )
+						.text( '<?php echo esc_html( $title ); ?>' )
+						.appendTo( "select[name='action'], select[name='action2']" );
 					<?php
 				}
 				?>
-			});
+			} );
 		</script>
 		<?php
 	}
