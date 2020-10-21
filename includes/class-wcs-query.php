@@ -16,7 +16,6 @@ class WCS_Query extends WC_Query {
 		if ( ! is_admin() ) {
 			add_filter( 'query_vars', array( $this, 'add_query_vars' ), 0 );
 			add_action( 'parse_request', array( $this, 'parse_request' ), 0 );
-			add_filter( 'woocommerce_get_breadcrumb', array( $this, 'add_breadcrumb' ), 10 );
 			add_action( 'pre_get_posts', array( $this, 'maybe_redirect_payment_methods' ) );
 			add_action( 'pre_get_posts', array( $this, 'pre_get_posts' ), 11 );
 			add_filter( 'woocommerce_get_query_vars', array( $this, 'add_wcs_query_vars' ) );
@@ -59,22 +58,6 @@ class WCS_Query extends WC_Query {
 			$this->query_vars['subscriptions']               = get_option( 'woocommerce_myaccount_subscriptions_endpoint', 'subscriptions' );
 			$this->query_vars['subscription-payment-method'] = get_option( 'woocommerce_myaccount_subscription_payment_method_endpoint', 'subscription-payment-method' );
 		}
-	}
-
-	/**
-	 * Adds endpoint breadcrumb when viewing subscription
-	 *
-	 * @param  array $crumbs already assembled breadcrumb data
-	 * @return array $crumbs if we're on a view-subscription page, then augmented breadcrumb data
-	 */
-	public function add_breadcrumb( $crumbs ) {
-
-		foreach ( $this->query_vars as $key => $query_var ) {
-			if ( $this->is_query( $query_var ) ) {
-				$crumbs[] = array( $this->get_endpoint_title( $key ) );
-			}
-		}
-		return $crumbs;
 	}
 
 	/**
@@ -380,5 +363,27 @@ class WCS_Query extends WC_Query {
 		}
 
 		return $classes;
+	}
+
+	/**
+	 * Adds endpoint breadcrumb when viewing subscription.
+	 *
+	 * Deprecated as we now use the `woocommerce_endpoint_{$endpoint}_title` hook which automatically integrates with
+	 * breadcrumb generation.
+	 *
+	 * @param  array $crumbs already assembled breadcrumb data
+	 * @return array $crumbs if we're on a view-subscription page, then augmented breadcrumb data
+	 *
+	 * @deprecated 3.1.0
+	 */
+	public function add_breadcrumb( $crumbs ) {
+		_deprecated_function( __METHOD__, '3.1.0' );
+
+		foreach ( $this->query_vars as $key => $query_var ) {
+			if ( $this->is_query( $query_var ) ) {
+				$crumbs[] = array( $this->get_endpoint_title( $key ) );
+			}
+		}
+		return $crumbs;
 	}
 }
