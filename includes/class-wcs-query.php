@@ -56,7 +56,7 @@ class WCS_Query extends WC_Query {
 			'view-subscription' => $this->get_view_subscription_endpoint(),
 		);
 		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
-			$this->query_vars['subscriptions'] = get_option( 'woocommerce_myaccount_subscriptions_endpoint', 'subscriptions' );
+			$this->query_vars['subscriptions']               = get_option( 'woocommerce_myaccount_subscriptions_endpoint', 'subscriptions' );
 			$this->query_vars['subscription-payment-method'] = get_option( 'woocommerce_myaccount_subscription_payment_method_endpoint', 'subscription-payment-method' );
 		}
 	}
@@ -115,7 +115,7 @@ class WCS_Query extends WC_Query {
 			case 'view-subscription':
 				$subscription = wcs_get_subscription( $wp->query_vars['view-subscription'] );
 				// translators: placeholder is a subscription ID.
-				$title        = ( $subscription ) ? sprintf( _x( 'Subscription #%s', 'hash before order number', 'woocommerce-subscriptions' ), $subscription->get_order_number() ) : '';
+				$title = ( $subscription ) ? sprintf( _x( 'Subscription #%s', 'hash before order number', 'woocommerce-subscriptions' ), $subscription->get_order_number() ) : '';
 				break;
 			case 'subscriptions':
 				if ( ! empty( $wp->query_vars['subscriptions'] ) ) {
@@ -172,9 +172,9 @@ class WCS_Query extends WC_Query {
 		if ( $this->query_vars['subscriptions'] === $endpoint && is_account_page() ) {
 			$subscriptions = wcs_get_users_subscriptions();
 
-			if ( is_array( $subscriptions ) && 1 == count( $subscriptions ) && apply_filters( 'wcs_my_account_redirect_to_single_subscription', true ) ) {
+			if ( is_array( $subscriptions ) && 1 === count( $subscriptions ) && apply_filters( 'wcs_my_account_redirect_to_single_subscription', true ) ) {
 				$subscription = reset( $subscriptions );
-				$url = $subscription->get_view_order_url();
+				$url          = $subscription->get_view_order_url();
 			}
 		}
 
@@ -188,7 +188,7 @@ class WCS_Query extends WC_Query {
 	 */
 	public function endpoint_content( $current_page = 1 ) {
 
-		$current_page    = empty( $current_page ) ? 1 : absint( $current_page );
+		$current_page = empty( $current_page ) ? 1 : absint( $current_page );
 
 		wc_get_template( 'myaccount/subscriptions.php', array( 'current_page' => $current_page ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
 	}
@@ -265,10 +265,10 @@ class WCS_Query extends WC_Query {
 				'change_payment_method' => $subscription->get_id(),
 				'_wpnonce'              => wp_create_nonce(),
 			);
-			$url = add_query_arg( $args, $subscription->get_checkout_payment_url() );
+			$url  = add_query_arg( $args, $subscription->get_checkout_payment_url() );
 		}
 
-		wp_redirect( $url );
+		wp_redirect( $url ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect
 		exit();
 	}
 
