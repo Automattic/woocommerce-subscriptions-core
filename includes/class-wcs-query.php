@@ -32,6 +32,9 @@ class WCS_Query extends WC_Query {
 			add_filter( 'woocommerce_get_endpoint_url', array( $this, 'maybe_redirect_to_only_subscription' ), 10, 2 );
 			add_action( 'woocommerce_account_subscriptions_endpoint', array( $this, 'endpoint_content' ) );
 			add_filter( 'woocommerce_account_menu_item_classes', array( $this, 'maybe_add_active_class' ), 10, 2 );
+
+			add_filter( 'woocommerce_endpoint_subscriptions_title', array( $this, 'change_my_account_endpoint_title' ), 10, 2 );
+			add_filter( 'woocommerce_endpoint_view-subscription_title', array( $this, 'change_my_account_endpoint_title' ), 10, 2 );
 		}
 
 		$this->init_query_vars();
@@ -96,12 +99,16 @@ class WCS_Query extends WC_Query {
 	}
 
 	/**
-	 * Set the subscription page title when viewing a subscription.
+	 * Hooks onto `woocommerce_endpoint_{$endpoint}_title` to return the correct page title for subscription endpoints
+	 * in My Account.
 	 *
-	 * @since 2.0
-	 * @param $title
+	 * @param string $title
+	 * @param string $endpoint
+	 * @return string
+	 *
+	 * @since 3.1.0
 	 */
-	public function get_endpoint_title( $endpoint ) {
+	public function change_my_account_endpoint_title( $title, $endpoint ) {
 		global $wp;
 
 		switch ( $endpoint ) {
@@ -117,9 +124,7 @@ class WCS_Query extends WC_Query {
 				} else {
 					$title = __( 'Subscriptions', 'woocommerce-subscriptions' );
 				}
-				break;
-			default:
-				$title = '';
+
 				break;
 		}
 
