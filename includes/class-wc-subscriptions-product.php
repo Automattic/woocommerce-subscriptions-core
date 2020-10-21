@@ -242,6 +242,10 @@ class WC_Subscriptions_Product {
 		$sign_up_fee         = 0;
 		$include_length      = $include['subscription_length'] && 0 !== $subscription_length;
 
+		if ( empty( $billing_period ) ) {
+			$billing_period = 'month';
+		}
+
 		if ( $include_length ) {
 			$ranges = wcs_get_subscription_ranges( $billing_period );
 		}
