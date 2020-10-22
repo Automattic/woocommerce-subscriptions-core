@@ -371,10 +371,14 @@ class WCS_Admin_Meta_Boxes {
 		}
 
 		if ( $needs_price_lock ) {
+			// So the help tip is initialized when the line items are reloaded, we need to add the 'tips' class to the element.
+			$help_tip = wcs_help_tip( __( "This order contains line items with prices above the current product price. To override the product's live price when the customer pays for this order, lock in the manual price increases.", 'woocommerce-subscriptions' ) );
+			$help_tip = str_replace( 'woocommerce-help-tip', 'woocommerce-help-tip tips', $help_tip );
+
 			printf(
 				'<div id="wcs_order_price_lock"><label for="wcs-order-price-lock">%s</label>%s<input id="wcs-order-price-lock" type="checkbox" name="wcs_order_price_lock" value="yes" %s></div>',
 				esc_html__( 'Lock manual price increases', 'woocommerce-subscriptions' ),
-				wcs_help_tip( __( "This order contains line items with prices above the current product price. To override the product's live price when the customer pays for this order, lock in the manual price increases.", 'woocommerce-subscriptions' ) ),
+				$help_tip, // phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped
 				checked( $order->get_meta( '_manual_price_increases_locked' ), 'true', false )
 			);
 		}
