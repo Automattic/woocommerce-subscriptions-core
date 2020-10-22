@@ -387,7 +387,7 @@ class WCS_Cart_Renewal {
 	 */
 	public function get_cart_item_from_session( $cart_item_session_data, $cart_item, $key ) {
 
-		if ( isset( $cart_item[ $this->cart_item_key ]['subscription_id'] ) ) {
+		if ( $this->should_honor_subscription_prices( $cart_item ) ) {
 			$cart_item_session_data[ $this->cart_item_key ] = $cart_item[ $this->cart_item_key ];
 
 			$_product = $cart_item_session_data['data'];
@@ -1396,6 +1396,19 @@ class WCS_Cart_Renewal {
 		if ( isset( $changes['created_via'], $current_data['created_via'] ) && 'subscription' === $current_data['created_via'] && 'checkout' === $changes['created_via'] && wcs_order_contains_renewal( $order ) ) {
 			$order->set_created_via( 'subscription' );
 		}
+	}
+
+
+	/**
+	 * Deteremines if the cart should honor the granfathered subscription/order line item total.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param array $cart_item The cart item to check.
+	 * @return bool Whether the cart should honor the order's prices.
+	 */
+	public function should_honor_subscription_prices( $cart_item ) {
+		return isset( $cart_item[ $this->cart_item_key ]['subscription_id'] );
 	}
 
 	/**
