@@ -16,7 +16,6 @@ class WCS_Query extends WC_Query {
 		if ( ! is_admin() ) {
 			add_filter( 'query_vars', array( $this, 'add_query_vars' ), 0 );
 			add_action( 'parse_request', array( $this, 'parse_request' ), 0 );
-			add_filter( 'woocommerce_get_breadcrumb', array( $this, 'add_breadcrumb' ), 10 );
 			add_action( 'pre_get_posts', array( $this, 'maybe_redirect_payment_methods' ) );
 			add_action( 'pre_get_posts', array( $this, 'pre_get_posts' ), 11 );
 			add_filter( 'woocommerce_get_query_vars', array( $this, 'add_wcs_query_vars' ) );
@@ -32,6 +31,9 @@ class WCS_Query extends WC_Query {
 			add_filter( 'woocommerce_get_endpoint_url', array( $this, 'maybe_redirect_to_only_subscription' ), 10, 2 );
 			add_action( 'woocommerce_account_subscriptions_endpoint', array( $this, 'endpoint_content' ) );
 			add_filter( 'woocommerce_account_menu_item_classes', array( $this, 'maybe_add_active_class' ), 10, 2 );
+
+			add_filter( 'woocommerce_endpoint_subscriptions_title', array( $this, 'change_my_account_endpoint_title' ), 10, 2 );
+			add_filter( 'woocommerce_endpoint_view-subscription_title', array( $this, 'change_my_account_endpoint_title' ), 10, 2 );
 		}
 
 		$this->init_query_vars();
@@ -53,25 +55,9 @@ class WCS_Query extends WC_Query {
 			'view-subscription' => $this->get_view_subscription_endpoint(),
 		);
 		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
-			$this->query_vars['subscriptions'] = get_option( 'woocommerce_myaccount_subscriptions_endpoint', 'subscriptions' );
+			$this->query_vars['subscriptions']               = get_option( 'woocommerce_myaccount_subscriptions_endpoint', 'subscriptions' );
 			$this->query_vars['subscription-payment-method'] = get_option( 'woocommerce_myaccount_subscription_payment_method_endpoint', 'subscription-payment-method' );
 		}
-	}
-
-	/**
-	 * Adds endpoint breadcrumb when viewing subscription
-	 *
-	 * @param  array $crumbs already assembled breadcrumb data
-	 * @return array $crumbs if we're on a view-subscription page, then augmented breadcrumb data
-	 */
-	public function add_breadcrumb( $crumbs ) {
-
-		foreach ( $this->query_vars as $key => $query_var ) {
-			if ( $this->is_query( $query_var ) ) {
-				$crumbs[] = array( $this->get_endpoint_title( $key ) );
-			}
-		}
-		return $crumbs;
 	}
 
 	/**
@@ -96,19 +82,23 @@ class WCS_Query extends WC_Query {
 	}
 
 	/**
-	 * Set the subscription page title when viewing a subscription.
+	 * Hooks onto `woocommerce_endpoint_{$endpoint}_title` to return the correct page title for subscription endpoints
+	 * in My Account.
 	 *
-	 * @since 2.0
-	 * @param $title
+	 * @param string $title
+	 * @param string $endpoint
+	 * @return string
+	 *
+	 * @since 3.1.0
 	 */
-	public function get_endpoint_title( $endpoint ) {
+	public function change_my_account_endpoint_title( $title, $endpoint ) {
 		global $wp;
 
 		switch ( $endpoint ) {
 			case 'view-subscription':
 				$subscription = wcs_get_subscription( $wp->query_vars['view-subscription'] );
 				// translators: placeholder is a subscription ID.
-				$title        = ( $subscription ) ? sprintf( _x( 'Subscription #%s', 'hash before order number', 'woocommerce-subscriptions' ), $subscription->get_order_number() ) : '';
+				$title = ( $subscription ) ? sprintf( _x( 'Subscription #%s', 'hash before order number', 'woocommerce-subscriptions' ), $subscription->get_order_number() ) : '';
 				break;
 			case 'subscriptions':
 				if ( ! empty( $wp->query_vars['subscriptions'] ) ) {
@@ -117,9 +107,7 @@ class WCS_Query extends WC_Query {
 				} else {
 					$title = __( 'Subscriptions', 'woocommerce-subscriptions' );
 				}
-				break;
-			default:
-				$title = '';
+
 				break;
 		}
 
@@ -167,9 +155,9 @@ class WCS_Query extends WC_Query {
 		if ( $this->query_vars['subscriptions'] === $endpoint && is_account_page() ) {
 			$subscriptions = wcs_get_users_subscriptions();
 
-			if ( is_array( $subscriptions ) && 1 == count( $subscriptions ) && apply_filters( 'wcs_my_account_redirect_to_single_subscription', true ) ) {
+			if ( is_array( $subscriptions ) && 1 === count( $subscriptions ) && apply_filters( 'wcs_my_account_redirect_to_single_subscription', true ) ) {
 				$subscription = reset( $subscriptions );
-				$url = $subscription->get_view_order_url();
+				$url          = $subscription->get_view_order_url();
 			}
 		}
 
@@ -183,7 +171,7 @@ class WCS_Query extends WC_Query {
 	 */
 	public function endpoint_content( $current_page = 1 ) {
 
-		$current_page    = empty( $current_page ) ? 1 : absint( $current_page );
+		$current_page = empty( $current_page ) ? 1 : absint( $current_page );
 
 		wc_get_template( 'myaccount/subscriptions.php', array( 'current_page' => $current_page ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
 	}
@@ -260,10 +248,10 @@ class WCS_Query extends WC_Query {
 				'change_payment_method' => $subscription->get_id(),
 				'_wpnonce'              => wp_create_nonce(),
 			);
-			$url = add_query_arg( $args, $subscription->get_checkout_payment_url() );
+			$url  = add_query_arg( $args, $subscription->get_checkout_payment_url() );
 		}
 
-		wp_redirect( $url );
+		wp_redirect( $url ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect
 		exit();
 	}
 
@@ -375,5 +363,27 @@ class WCS_Query extends WC_Query {
 		}
 
 		return $classes;
+	}
+
+	/**
+	 * Adds endpoint breadcrumb when viewing subscription.
+	 *
+	 * Deprecated as we now use the `woocommerce_endpoint_{$endpoint}_title` hook which automatically integrates with
+	 * breadcrumb generation.
+	 *
+	 * @param  array $crumbs already assembled breadcrumb data
+	 * @return array $crumbs if we're on a view-subscription page, then augmented breadcrumb data
+	 *
+	 * @deprecated 3.1.0
+	 */
+	public function add_breadcrumb( $crumbs ) {
+		_deprecated_function( __METHOD__, '3.1.0' );
+
+		foreach ( $this->query_vars as $key => $query_var ) {
+			if ( $this->is_query( $query_var ) ) {
+				$crumbs[] = array( $this->get_endpoint_title( $key ) );
+			}
+		}
+		return $crumbs;
 	}
 }
