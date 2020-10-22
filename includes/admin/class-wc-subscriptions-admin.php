@@ -1615,7 +1615,7 @@ class WC_Subscriptions_Admin {
 
 		if ( isset( $_GET[ $query_arg ] ) && $_GET[ $query_arg ] > 0 && true === self::$found_related_orders ) {
 
-			$initial_order = new WC_Order( absint( $_GET[ $query_arg ] ) );
+			$initial_order = wc_get_order( absint( $_GET[ $query_arg ] ) );
 
 			if ( version_compare( $wp_version, '4.2', '<' ) ) {
 				echo '<div class="updated"><p>';

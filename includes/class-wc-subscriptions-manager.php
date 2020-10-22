@@ -406,7 +406,7 @@ class WC_Subscriptions_Manager {
 		if ( ! empty( $subscriptions ) ) {
 
 			if ( ! is_object( $order ) ) {
-				$order = new WC_Order( $order );
+				$order = wc_get_order( $order );
 			}
 
 			// Set subscription status to failed and log failure
@@ -444,7 +444,7 @@ class WC_Subscriptions_Manager {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_create_subscription()' );
 
 		if ( ! is_object( $order ) ) {
-			$order = new WC_Order( $order );
+			$order = wc_get_order( $order );
 		}
 
 		if ( ! WC_Subscriptions_Product::is_subscription( $product_id ) ) {
@@ -593,7 +593,7 @@ class WC_Subscriptions_Manager {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscriptions::update_status()' );
 
 		if ( ! is_object( $order ) ) {
-			$order = new WC_Order( $order );
+			$order = wc_get_order( $order );
 		}
 
 		if ( 'suspend' === $status ) {
@@ -1609,7 +1609,7 @@ class WC_Subscriptions_Manager {
 		_deprecated_function( __METHOD__, '2.0' );
 
 		if ( ! is_object( $order ) ) {
-			$order = new WC_Order( $order );
+			$order = wc_get_order( $order );
 		}
 
 		update_user_meta( $order->get_user_id(), 'paying_customer', 1 );
@@ -1629,7 +1629,7 @@ class WC_Subscriptions_Manager {
 		_deprecated_function( __METHOD__, '2.0' );
 
 		if ( ! is_object( $order ) ) {
-			$order = new WC_Order( $order );
+			$order = wc_get_order( $order );
 		}
 
 		if ( $order->get_user_id() > 0 ) {

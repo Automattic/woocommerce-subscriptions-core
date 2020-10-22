@@ -93,7 +93,7 @@ class WC_Subscriptions_Order {
 	public static function get_non_subscription_total( $order ) {
 
 		if ( ! is_object( $order ) ) {
-			$order = new WC_Order( $order );
+			$order = wc_get_order( $order );
 		}
 
 		$non_subscription_total = 0;
@@ -166,7 +166,7 @@ class WC_Subscriptions_Order {
 	public static function get_item_by_product_id( $order, $product_id = '' ) {
 
 		if ( ! is_object( $order ) ) {
-			$order = new WC_Order( $order );
+			$order = wc_get_order( $order );
 		}
 
 		foreach ( $order->get_items() as $item ) {
@@ -237,7 +237,7 @@ class WC_Subscriptions_Order {
 			WHERE  order_item_id = %d
 		", $order_item_id ), ARRAY_A );
 
-		$order = new WC_Order( absint( $item['order_id'] ) );
+		$order = wc_get_order( absint( $item['order_id'] ) );
 
 		$item['name']      = $item['order_item_name'];
 		$item['type']      = $item['order_item_type'];
@@ -338,7 +338,7 @@ class WC_Subscriptions_Order {
 	public static function get_meta( $order, $meta_key, $default = 0 ) {
 
 		if ( ! is_object( $order ) ) {
-			$order = new WC_Order( $order );
+			$order = wc_get_order( $order );
 		}
 
 		$meta_key = preg_replace( '/^_/', '', $meta_key );
@@ -992,7 +992,7 @@ class WC_Subscriptions_Order {
 	public static function maybe_cancel_subscription_on_full_refund( $order ) {
 
 		if ( ! is_object( $order ) ) {
-			$order = new WC_Order( $order );
+			$order = wc_get_order( $order );
 		}
 
 		if ( wcs_order_contains_subscription( $order, array( 'parent', 'renewal' ) ) ) {
@@ -1382,7 +1382,7 @@ class WC_Subscriptions_Order {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Order::get_total()' );
 
 		if ( ! is_object( $order ) ) {
-			$order = new WC_Order( $order );
+			$order = wc_get_order( $order );
 		}
 
 		return apply_filters( 'woocommerce_subscriptions_total_initial_payment', $order->get_total(), $order, $product_id );
@@ -1711,7 +1711,7 @@ class WC_Subscriptions_Order {
 		_deprecated_function( __METHOD__, '2.0', 'the items on each individual subscription object (i.e. "shop_subscription")' );
 
 		if ( ! is_object( $order ) ) {
-			$order = new WC_Order( $order );
+			$order = wc_get_order( $order );
 		}
 
 		$items = array();
@@ -1929,7 +1929,7 @@ class WC_Subscriptions_Order {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_date( "last_payment" )' );
 
 		if ( ! is_object( $order ) ) {
-			$order = new WC_Order( $order );
+			$order = wc_get_order( $order );
 		}
 
 		if ( $subscription = self::get_matching_subscription( $order, $product_id ) ) {
@@ -1962,7 +1962,7 @@ class WC_Subscriptions_Order {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::calculate_date( "next_payment" )' );
 
 		if ( ! is_object( $order ) ) {
-			$order = new WC_Order( $order );
+			$order = wc_get_order( $order );
 		}
 
 		$next_payment = 0;
