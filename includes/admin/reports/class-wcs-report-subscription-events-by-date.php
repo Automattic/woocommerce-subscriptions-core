@@ -1205,4 +1205,13 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 
 		return $prepared_data;
 	}
+
+	/**
+	 * Clears the cached report data.
+	 *
+	 * @since 3.0.10
+	 */
+	public function clear_cache() {
+		delete_transient( strtolower( get_class( $this ) ) );
+	}
 }

@@ -430,4 +430,13 @@ class WCS_Report_Upcoming_Recurring_Revenue extends WC_Admin_Report {
 
 		return $current_range;
 	}
+
+	/**
+	 * Clears the cached query results.
+	 *
+	 * @since 3.0.10
+	 */
+	public function clear_cache() {
+		delete_transient( strtolower( get_class( $this ) ) );
+	}
 }
