@@ -284,7 +284,7 @@ class WCS_Report_Subscription_By_Customer extends WP_List_Table {
 	/**
 	 * Clears the cached report data.
 	 *
-	 * @since 3.0.8
+	 * @since 3.0.10
 	 */
 	public static function clear_cache() {
 		delete_transient( strtolower( __CLASS__ ) );

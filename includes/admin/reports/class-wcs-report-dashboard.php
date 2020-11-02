@@ -264,7 +264,7 @@ class WCS_Report_Dashboard {
 	/**
 	 * Clears the cached report data.
 	 *
-	 * @since 3.0.8
+	 * @since 3.0.10
 	 */
 	public static function clear_cache() {
 		delete_transient( strtolower( __CLASS__ ) );
