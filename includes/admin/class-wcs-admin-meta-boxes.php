@@ -418,7 +418,7 @@ class WCS_Admin_Meta_Boxes {
 	/**
 	 * Stores the subtracted base location tax totals for subscription and renewal line items.
 	 *
-	 * @since 3.1.0
+	 * @since 3.0.10
 	 *
 	 * @param int                   $item_id   The ID of the order item added.
 	 * @param WC_Order_Item_Product $line_item The line item added.

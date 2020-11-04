@@ -498,7 +498,7 @@ class WC_Subscriptions_Checkout {
 	/**
 	 * Stores the subtracted base location tax totals in the subscription line item meta.
 	 *
-	 * @since 3.0.6
+	 * @since 3.0.10
 	 *
 	 * @param WC_Line_Item_Product $line_item     The line item added to the order/subscription.
 	 * @param string               $cart_item_key The key of the cart item being added to the cart.

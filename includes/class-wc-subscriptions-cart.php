@@ -1498,7 +1498,7 @@ class WC_Subscriptions_Cart {
 	 * We need to record these base tax rates to be able to honour grandfathered subscription
 	 * recurring prices in renewal carts.
 	 *
-	 * @since 3.0.6
+	 * @since 3.0.10
 	 * @param WC_Cart $cart The cart object. Could be the global (initial cart) or a recurring cart.
 	 */
 	public static function record_base_tax_rates( $cart ) {
