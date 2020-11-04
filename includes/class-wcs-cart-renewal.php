@@ -1004,6 +1004,7 @@ class WCS_Cart_Renewal {
 		if ( $this->cart_contains() ) {
 			// Update the cart stored in the session with the new data
 			WC()->session->cart = WC()->cart->get_cart_for_session();
+			WC()->cart->persistent_cart_update();
 		}
 	}
 
