@@ -805,6 +805,12 @@ function wcs_copy_order_item( $from_item, &$to_item ) {
 				'total'     => $from_item->get_total(),
 				'taxes'     => $from_item->get_taxes(),
 			) );
+
+			// Post WC 3.4 the instance ID is stored separately.
+			if ( ! WC_Subscriptions::is_woocommerce_pre( '3.4' ) ) {
+				$to_item->set_instance_id( $from_item->get_instance_id() );
+			}
+
 			break;
 		case 'tax':
 			/**
