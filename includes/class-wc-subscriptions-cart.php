@@ -118,6 +118,8 @@ class WC_Subscriptions_Cart {
 
 		add_action( 'woocommerce_checkout_update_order_review', __CLASS__ . '::update_chosen_shipping_methods' );
 		add_action( 'plugins_loaded', array( __CLASS__, 'attach_dependant_hooks' ) );
+
+		add_action( 'woocommerce_after_calculate_totals', array( __CLASS__, 'record_base_tax_rates' ) );
 	}
 
 	/**
@@ -1483,6 +1485,43 @@ class WC_Subscriptions_Cart {
 		foreach ( WC()->cart->cart_contents as $cart_item_key => $cart_item ) {
 			if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 				WC()->cart->set_quantity( $cart_item_key, 0 );
+			}
+		}
+	}
+
+	/**
+	 * Records the cart item base location tax total for later storage.
+	 *
+	 * If the customer is outside of the base location, WC core removes the taxes
+	 * which apply to the base location. @see WC_Cart_Totals::adjust_non_base_location_price().
+	 *
+	 * We need to record these base tax rates to be able to honour grandfathered subscription
+	 * recurring prices in renewal carts.
+	 *
+	 * @since 3.0.10
+	 * @param WC_Cart $cart The cart object. Could be the global (initial cart) or a recurring cart.
+	 */
+	public static function record_base_tax_rates( $cart ) {
+		// We only need to record the tax rates on recurring carts when prices are reduced by tax applicable to the base store location.
+		if ( ! isset( $cart->recurring_cart_key ) || ! apply_filters( 'woocommerce_adjust_non_base_location_prices', true ) || ! wc_prices_include_tax() ) {
+			return;
+		}
+
+		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
+			// Skip non-taxable items
+			if ( 'taxable' !== $cart_item['data']->get_tax_status() ) {
+				continue;
+			}
+
+			$product = $cart_item['data'];
+
+			// Get the taxes which apply to the store's base location and to the customer.
+			$base_tax_rates       = WC_Tax::get_base_tax_rates( $product->get_tax_class( 'unfiltered' ) );
+			$applicable_tax_rates = WC_Tax::get_rates( $product->get_tax_class(), $cart->get_customer() );
+
+			// We only need to keep track if the taxes applicable to the customer are different to the taxes which apply to the store's base location.
+			if ( $applicable_tax_rates !== $base_tax_rates ) {
+				$cart->cart_contents[ $cart_item_key ]['_subtracted_base_location_tax'] = WC_Tax::calc_tax( $product->get_price() * $cart_item['quantity'], $base_tax_rates, true );
 			}
 		}
 	}

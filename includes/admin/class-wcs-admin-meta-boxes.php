@@ -56,6 +56,9 @@ class WCS_Admin_Meta_Boxes {
 		add_action( 'woocommerce_order_item_add_action_buttons', array( __CLASS__, 'output_price_lock_html' ) );
 		add_action( 'woocommerce_process_shop_order_meta', array( __CLASS__, 'save_increased_price_lock' ) );
 		add_action( 'wp_ajax_wcs_order_price_lock' , array( __CLASS__, 'save_increased_price_lock' ) );
+
+		// After calculating subscription/renewal order line item taxes, update base location tax item meta.
+		add_action( 'woocommerce_ajax_add_order_item_meta', array( __CLASS__, 'store_item_base_location_tax' ), 10, 3 );
 	}
 
 	/**
@@ -409,6 +412,37 @@ class WCS_Admin_Meta_Boxes {
 		} elseif ( $order->meta_exists( '_manual_price_increases_locked' ) ) {
 			$order->delete_meta_data( '_manual_price_increases_locked' );
 			$order->save();
+		}
+	}
+
+	/**
+	 * Stores the subtracted base location tax totals for subscription and renewal line items.
+	 *
+	 * @since 3.0.10
+	 *
+	 * @param int                   $item_id   The ID of the order item added.
+	 * @param WC_Order_Item_Product $line_item The line item added.
+	 * @param WC_Abstract_Order     $order     The order or subscription the product was added to.
+	 */
+	public static function store_item_base_location_tax( $item_id, $line_item, $order ) {
+
+		if ( ! apply_filters( 'woocommerce_adjust_non_base_location_prices', true ) ) {
+			return;
+		}
+
+		if ( ! wc_prices_include_tax() ) {
+			return;
+		}
+
+		if ( ! wcs_is_subscription( $order ) && ! wcs_order_contains_renewal( $order ) ) {
+			return;
+		}
+
+		if ( '0' !== $line_item->get_tax_class() && 'taxable' === $line_item->get_tax_status() ) {
+			$base_tax_rates = WC_Tax::get_base_tax_rates( $line_item->get_tax_class() );
+
+			$line_item->update_meta_data( '_subtracted_base_location_tax', WC_Tax::calc_tax( $line_item->get_product()->get_price() * $line_item->get_quantity(), $base_tax_rates, true ) );
+			$line_item->save();
 		}
 	}
 }
