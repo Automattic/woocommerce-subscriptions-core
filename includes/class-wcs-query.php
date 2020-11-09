@@ -89,7 +89,7 @@ class WCS_Query extends WC_Query {
 	 * @param string $endpoint
 	 * @return string
 	 *
-	 * @since 3.1.0
+	 * @since 3.0.10
 	 */
 	public function change_my_account_endpoint_title( $title, $endpoint ) {
 		global $wp;
@@ -374,10 +374,10 @@ class WCS_Query extends WC_Query {
 	 * @param  array $crumbs already assembled breadcrumb data
 	 * @return array $crumbs if we're on a view-subscription page, then augmented breadcrumb data
 	 *
-	 * @deprecated 3.1.0
+	 * @deprecated 3.0.10
 	 */
 	public function add_breadcrumb( $crumbs ) {
-		_deprecated_function( __METHOD__, '3.1.0' );
+		_deprecated_function( __METHOD__, '3.0.10' );
 
 		foreach ( $this->query_vars as $key => $query_var ) {
 			if ( $this->is_query( $query_var ) ) {

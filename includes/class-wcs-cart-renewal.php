@@ -1407,7 +1407,7 @@ class WCS_Cart_Renewal {
 	/**
 	 * Deteremines if the cart should honor the granfathered subscription/order line item total.
 	 *
-	 * @since 3.1.0
+	 * @since 3.0.10
 	 *
 	 * @param array $cart_item The cart item to check.
 	 * @return bool Whether the cart should honor the order's prices.
