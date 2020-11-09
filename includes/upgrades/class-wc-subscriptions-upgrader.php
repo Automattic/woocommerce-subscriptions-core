@@ -246,7 +246,7 @@ class WC_Subscriptions_Upgrader {
 		}
 
 		// Delete old subscription period string ranges transients.
-		if ( version_compare( self::$active_version, '3.1.0', '<' ) ) {
+		if ( version_compare( self::$active_version, '3.0.10', '<' ) ) {
 			$deleted_rows = $wpdb->query( "DELETE FROM {$wpdb->options} WHERE `option_name` LIKE '_transient_timeout_wcs-sub-ranges-%' OR `option_name` LIKE '_transient_wcs-sub-ranges-%'" );
 		}
 

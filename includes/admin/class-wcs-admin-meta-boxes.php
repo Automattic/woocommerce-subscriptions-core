@@ -343,7 +343,7 @@ class WCS_Admin_Meta_Boxes {
 	 * - The order's currency matches the base store currency.
 	 * - The order contains a line item with a subtotal greater than the product's current live price.
 	 *
-	 * @since 3.1.0
+	 * @since 3.0.10
 	 *
 	 * @param WC_Order $order The order being edited.
 	 */
@@ -387,7 +387,7 @@ class WCS_Admin_Meta_Boxes {
 	/**
 	 * Saves the manual price increase lock via Edit order save and ajax request.
 	 *
-	 * @since 3.1.0
+	 * @since 3.0.10
 	 *
 	 * @param string $order_id Optional. The order ID. For non-ajax requests, this parameter is required.
 	 */
