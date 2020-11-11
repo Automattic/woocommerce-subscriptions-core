@@ -107,7 +107,9 @@ class WCS_Switch_Totals_Calculator {
 						$upgrade_cost = $this->calculate_upgrade_cost( $switch_item );
 						$this->set_upgrade_cost( $switch_item, $upgrade_cost );
 					}
-				} elseif ( 'downgrade' === $switch_type && $this->should_extend_prepaid_term() ) {
+				}
+
+				if ( apply_filters( 'wcs_switch_should_extend_prepaid_term', 'downgrade' === $switch_type && $this->should_extend_prepaid_term(), $switch_item ) ) {
 					$this->extend_prepaid_term( $cart_item_key, $switch_item );
 				}
 
@@ -207,10 +209,11 @@ class WCS_Switch_Totals_Calculator {
 	 * @return bool
 	 */
 	protected function should_prorate_recurring_price( $switch_item ) {
+
 		$prorate_all     = in_array( $this->apportion_recurring_price, array( 'yes', 'yes-upgrade' ) );
 		$prorate_virtual = in_array( $this->apportion_recurring_price, array( 'virtual', 'virtual-upgrade' ) );
 
-		return $prorate_all || ( $prorate_virtual && $switch_item->is_virtual_product() );
+		return apply_filters( 'wcs_switch_should_prorate_recurring_price', $prorate_all || ( $prorate_virtual && $switch_item->is_virtual_product() ), $switch_item );
 	}
 
 	/**
@@ -265,7 +268,10 @@ class WCS_Switch_Totals_Calculator {
 	 * @return bool
 	 */
 	protected function should_apportion_length( $switch_item ) {
-		return 'yes' == $this->apportion_length || ( 'virtual' == $this->apportion_length && $switch_item->is_virtual_product() );
+
+		$apportion_length = apply_filters( 'wcs_switch_must_prorate_length', $this->apportion_length, $switch_item );
+
+		return 'yes' == $apportion_length || ( 'virtual' == $apportion_length && $switch_item->is_virtual_product() );
 	}
 
 	/** Total Calculators */
@@ -279,9 +285,12 @@ class WCS_Switch_Totals_Calculator {
 	 * @param WCS_Switch_Cart_Item $switch_item
 	 */
 	protected function apportion_sign_up_fees( $switch_item ) {
-		if ( 'no' === $this->apportion_sign_up_fee ) {
-			$switch_item->product->update_meta_data( '_subscription_sign_up_fee', 0 );
-		} elseif ( $switch_item->existing_item && 'yes' === $this->apportion_sign_up_fee ) {
+
+		$apportion_sign_up_fee = apply_filters( 'wcs_switch_must_prorate_sign_up_fee', $this->apportion_sign_up_fee, $switch_item );
+
+		if ( 'no' === $apportion_sign_up_fee ) {
+			$switch_item->product->update_meta_data( '_subscription_sign_up_fee',  apply_filters( 'wcs_switch_sign_up_fee', 0, $switch_item ) );
+		} elseif ( $switch_item->existing_item && 'yes' === $apportion_sign_up_fee ) {
 			$product = wc_get_product( $switch_item->canonical_product_id );
 
 			// Make sure we get a fresh copy of the product's meta to avoid prorating an already prorated sign-up fee
@@ -296,8 +305,8 @@ class WCS_Switch_Totals_Calculator {
 				$sign_up_fee_paid = ( $sign_up_fee_paid * $switch_item->existing_item['qty'] ) / $switch_item->cart_item['quantity'];
 			}
 
-			$switch_item->product->update_meta_data( '_subscription_sign_up_fee', max( $sign_up_fee_due - $sign_up_fee_paid, 0 ) );
-			$switch_item->product->update_meta_data( '_subscription_sign_up_fee_prorated', WC_Subscriptions_Product::get_sign_up_fee( $switch_item->product ) );
+			$switch_item->product->update_meta_data( '_subscription_sign_up_fee',  apply_filters( 'wcs_switch_sign_up_fee', max( $sign_up_fee_due - $sign_up_fee_paid, 0 ), $switch_item ) );
+			$switch_item->product->update_meta_data( '_subscription_sign_up_fee_prorated', apply_filters( 'wcs_switch_sign_up_fee_prorated', WC_Subscriptions_Product::get_sign_up_fee( $switch_item->product ), $switch_item ) );
 		}
 	}
 
@@ -381,6 +390,8 @@ class WCS_Switch_Totals_Calculator {
 
 		$days_to_add -= $switch_item->get_days_until_next_payment();
 
+		$days_to_add = apply_filters( 'wcs_switch_days_to_extend_prepaid_term', $days_to_add, $cart_item_key, $switch_item );
+
 		$this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $switch_item->next_payment_timestamp + ( $days_to_add * DAY_IN_SECONDS );
 	}
 
@@ -399,6 +410,8 @@ class WCS_Switch_Totals_Calculator {
 		if ( $length_remaining <= 0 ) {
 			$length_remaining = $base_length;
 		}
+
+		$length_remaining = apply_filters( 'wcs_switch_length_remaining', $length_remaining, $switch_item );
 
 		$switch_item->product->update_meta_data( '_subscription_length', $length_remaining );
 	}
