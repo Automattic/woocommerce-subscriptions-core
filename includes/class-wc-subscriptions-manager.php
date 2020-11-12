@@ -185,7 +185,9 @@ class WC_Subscriptions_Manager {
 			$subscription = wcs_get_subscription( $subscription_id );
 		}
 
-		$subscription->update_status( 'cancelled' );
+		if ( $subscription ) {
+			$subscription->update_status( 'cancelled' );
+		}
 	}
 
 	/**
