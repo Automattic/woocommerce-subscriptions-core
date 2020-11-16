@@ -37,6 +37,9 @@ class WC_Subscriptions_Checkout {
 
 		// Store the amount of tax removed from a line item to account the base location's tax.
 		add_action( 'woocommerce_checkout_create_order_line_item', array( __CLASS__, 'store_line_item_base_location_taxes' ), 10, 3 );
+
+		// Make sure user registration is required when purchasing subscriptions.
+		add_filter( 'woocommerce_checkout_registration_required', array( __CLASS__, 'require_registration_during_checkout' ) );
 	}
 
 	/**
@@ -466,6 +469,23 @@ class WC_Subscriptions_Checkout {
 
 		return self::filter_woocommerce_script_parameters( $woocommerce_params, $handle );
 	}
+
+	/**
+	 * Enables the 'registeration required' (guest checkout) setting when purchasing subscriptions.
+	 *
+	 * @since 3.0.11
+	 *
+	 * @param bool $account_required Whether an account is required to checkout.
+	 * @return bool
+	 */
+	public static function require_registration_during_checkout( $account_required ) {
+		if ( WC_Subscriptions_Cart::cart_contains_subscription() && ! is_user_logged_in() ) {
+			$account_required = true;
+		}
+
+		return $account_required;
+	}
+
 
 	/**
 	 * During the checkout process, force registration when the cart contains a subscription.
