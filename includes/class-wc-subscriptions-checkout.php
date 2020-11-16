@@ -38,8 +38,6 @@ class WC_Subscriptions_Checkout {
 		// Some callbacks need to hooked after WC has loaded.
 		add_action( 'woocommerce_loaded', array( __CLASS__, 'attach_dependant_hooks' ) );
 
-		// Force registration during checkout process
-		add_action( 'woocommerce_before_checkout_process', array( __CLASS__, 'force_registration_during_checkout' ), 10 );
 
 		// When a line item is added to a subscription on checkout, ensure the backorder data added by WC is removed
 		add_action( 'woocommerce_checkout_create_order_line_item', array( __CLASS__, 'remove_backorder_meta_from_subscription_line_item' ), 10, 4 );
@@ -52,6 +50,7 @@ class WC_Subscriptions_Checkout {
 
 		// Make sure user registration is required when purchasing subscriptions.
 		add_filter( 'woocommerce_checkout_registration_required', array( __CLASS__, 'require_registration_during_checkout' ) );
+		add_action( 'woocommerce_before_checkout_process', array( __CLASS__, 'force_registration_during_checkout' ), 10 );
 	}
 
 	/**
@@ -543,18 +542,16 @@ class WC_Subscriptions_Checkout {
 		return $account_required;
 	}
 
-
 	/**
 	 * During the checkout process, force registration when the cart contains a subscription.
 	 *
 	 * @since 1.1
+	 * @param $woocommerce_params This parameter is not used.
 	 */
 	public static function force_registration_during_checkout( $woocommerce_params ) {
-
 		if ( WC_Subscriptions_Cart::cart_contains_subscription() && ! is_user_logged_in() ) {
 			$_POST['createaccount'] = 1;
 		}
-
 	}
 
 	/**
