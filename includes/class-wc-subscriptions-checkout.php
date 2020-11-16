@@ -51,6 +51,7 @@ class WC_Subscriptions_Checkout {
 		// Make sure user registration is required when purchasing subscriptions.
 		add_filter( 'woocommerce_checkout_registration_required', array( __CLASS__, 'require_registration_during_checkout' ) );
 		add_action( 'woocommerce_before_checkout_process', array( __CLASS__, 'force_registration_during_checkout' ), 10 );
+		add_filter( 'woocommerce_checkout_registration_enabled', array( __CLASS__, 'maybe_enable_registration' ) );
 	}
 
 	/**
@@ -576,6 +577,31 @@ class WC_Subscriptions_Checkout {
 		}
 
 		return sprintf( $message, '<strong><a href="' . wc_get_page_permalink( 'myaccount' ) . '">', '</a></strong>' );
+	}
+
+	/**
+	 * Enables registration for carts containing subscriptions if admin allow it.
+	 *
+	 * @since 3.0.11
+	 *
+	 * @param  bool $registration_enabled Whether registration is enabled on checkout by default.
+	 * @return bool
+	 */
+	public static function maybe_enable_registration( $registration_enabled ) {
+		// Exit early if regristration is already allowed.
+		if ( $registration_enabled ) {
+			return $registration_enabled;
+		}
+
+		if ( is_user_logged_in() || ! WC_Subscriptions_Cart::cart_contains_subscription() ) {
+			return $registration_enabled;
+		}
+
+		if ( apply_filters( 'wc_is_registration_enabled_for_subscription_purchases', 'yes' === get_option( 'woocommerce_enable_signup_from_checkout_for_subscriptions', 'yes' ) ) ) {
+			$registration_enabled = true;
+		}
+
+		return $registration_enabled;
 	}
 
 	/**
