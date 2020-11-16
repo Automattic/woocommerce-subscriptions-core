@@ -379,7 +379,10 @@ class WCS_Switch_Totals_Calculator {
 		// Find how many more days at the new lower price it takes to exceed the amount owed
 		$days_to_add = $this->calculate_pre_paid_days( $amount_still_owing, $switch_item->get_new_price_per_day() );
 
-		$days_to_add -= $switch_item->get_days_until_next_payment();
+		// Subtract days until next payments only if days to add is not zero
+		if ( 0 !== $days_to_add ) {
+			$days_to_add -= $switch_item->get_days_until_next_payment();
+		}
 
 		$this->cart->cart_contents[ $cart_item_key ]['subscription_switch']['first_payment_timestamp'] = $switch_item->next_payment_timestamp + ( $days_to_add * DAY_IN_SECONDS );
 	}
