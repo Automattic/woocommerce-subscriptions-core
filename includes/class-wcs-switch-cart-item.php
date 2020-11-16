@@ -494,4 +494,14 @@ class WCS_Switch_Cart_Item {
 
 		return $this->is_switch_after_fully_reduced_prepaid_term;
 	}
+
+	/**
+	 * Determines whether the customer is switching to a subscription with a length of 1 - one off payment.
+	 *
+	 * @since 3.0.12
+	 * @return bool
+	 */
+	public function is_switch_to_one_payment_subscription() {
+		return 1 === absint( WC_Subscriptions_Product::get_length( $this->product ) );
+	}
 }
