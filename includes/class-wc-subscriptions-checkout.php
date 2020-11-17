@@ -26,7 +26,6 @@ class WC_Subscriptions_Checkout {
 		// Some callbacks need to hooked after WC has loaded.
 		add_action( 'woocommerce_loaded', array( __CLASS__, 'attach_dependant_hooks' ) );
 
-
 		// When a line item is added to a subscription on checkout, ensure the backorder data added by WC is removed
 		add_action( 'woocommerce_checkout_create_order_line_item', array( __CLASS__, 'remove_backorder_meta_from_subscription_line_item' ), 10, 4 );
 
