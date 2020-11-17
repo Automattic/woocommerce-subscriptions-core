@@ -647,7 +647,7 @@ class WC_Subscriptions_Order {
 	 */
 	public static function order_needs_payment( $needs_payment, $order, $valid_order_statuses ) {
 
-		if ( false === $needs_payment && 0 == $order->get_total() && in_array( $order->get_status(), $valid_order_statuses ) && wcs_order_contains_subscription( $order ) && self::get_recurring_total( $order ) > 0 && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+		if ( false === $needs_payment && 0 == $order->get_total() && in_array( $order->get_status(), $valid_order_statuses ) && wcs_order_contains_subscription( $order ) && self::get_recurring_total( $order ) > 0 && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_zero_initial_payment_requires_payment', 'no' ) ) {
 			$needs_payment = true;
 		}
 
