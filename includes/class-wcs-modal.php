@@ -144,7 +144,7 @@ class WCS_Modal {
 				wc_get_template( $this->content['template_name'], $this->content['args'], '', $this->content['template_path'] );
 				break;
 			case 'callback':
-				call_user_func_array( $this->content['callback'], $this->content['parameters'] );
+				call_user_func_array( $this->content['callback'], array_values( $this->content['parameters'] ) );
 				break;
 		}
 	}

@@ -57,7 +57,7 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 
 		// if there isn't a transient currently stored and we have a callback update function, fetch and store
 		if ( false === $data && ! empty( $callback ) ) {
-			$data = call_user_func_array( $callback, $params );
+			$data = call_user_func_array( $callback, array_values( $params ) );
 			set_transient( $key, $data, $expires );
 		}
 
