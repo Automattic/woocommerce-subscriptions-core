@@ -209,7 +209,6 @@ class WCS_Switch_Totals_Calculator {
 	 * @return bool
 	 */
 	protected function should_prorate_recurring_price( $switch_item ) {
-
 		$prorate_all     = in_array( $this->apportion_recurring_price, array( 'yes', 'yes-upgrade' ) );
 		$prorate_virtual = in_array( $this->apportion_recurring_price, array( 'virtual', 'virtual-upgrade' ) );
 
