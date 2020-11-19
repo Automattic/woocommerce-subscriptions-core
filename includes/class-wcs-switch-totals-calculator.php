@@ -288,7 +288,10 @@ class WCS_Switch_Totals_Calculator {
 		$apportion_sign_up_fee = apply_filters( 'wcs_switch_must_prorate_sign_up_fee', $this->apportion_sign_up_fee, $switch_item );
 
 		if ( 'no' === $apportion_sign_up_fee ) {
-			$switch_item->product->update_meta_data( '_subscription_sign_up_fee',  apply_filters( 'wcs_switch_sign_up_fee', 0, $switch_item ) );
+			// Allowing third parties to force the application of a sign-up fee
+			$subscription_sign_up_fee = apply_filters( 'wcs_switch_sign_up_fee', 0, $switch_item );
+
+			$switch_item->product->update_meta_data( '_subscription_sign_up_fee',  $subscription_sign_up_fee );
 		} elseif ( $switch_item->existing_item && 'yes' === $apportion_sign_up_fee ) {
 			$product = wc_get_product( $switch_item->canonical_product_id );
 
@@ -304,8 +307,11 @@ class WCS_Switch_Totals_Calculator {
 				$sign_up_fee_paid = ( $sign_up_fee_paid * $switch_item->existing_item['qty'] ) / $switch_item->cart_item['quantity'];
 			}
 
-			$switch_item->product->update_meta_data( '_subscription_sign_up_fee',  apply_filters( 'wcs_switch_sign_up_fee', max( $sign_up_fee_due - $sign_up_fee_paid, 0 ), $switch_item ) );
-			$switch_item->product->update_meta_data( '_subscription_sign_up_fee_prorated', apply_filters( 'wcs_switch_sign_up_fee_prorated', WC_Subscriptions_Product::get_sign_up_fee( $switch_item->product ), $switch_item ) );
+			// Allowing third parties to customize the applied sign-up fee
+			$subscription_sign_up_fee = apply_filters( 'wcs_switch_sign_up_fee', max( $sign_up_fee_due - $sign_up_fee_paid, 0 ), $switch_item );
+
+			$switch_item->product->update_meta_data( '_subscription_sign_up_fee',  $subscription_sign_up_fee );
+			$switch_item->product->update_meta_data( '_subscription_sign_up_fee_prorated', WC_Subscriptions_Product::get_sign_up_fee( $switch_item->product ) );
 		}
 	}
 
