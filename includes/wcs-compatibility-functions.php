@@ -275,7 +275,7 @@ function wcs_delete_objects_property( &$object, $key, $save = 'save', $meta_id =
  */
 function wcs_is_order( $order ) {
 
-	if ( method_exists( $order, 'get_type' ) ) {
+	if ( is_object( $order ) && method_exists( $order, 'get_type' ) ) {
 		$is_order = ( 'shop_order' === $order->get_type() );
 	} else {
 		$is_order = ( isset( $order->order_type ) && 'simple' === $order->order_type );
