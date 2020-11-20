@@ -502,7 +502,7 @@ class WC_Subscriptions_Manager {
 				$product,
 				1,
 				array(
-					'variation' => ( method_exists( $product, 'get_variation_attributes' ) ) ? $product->get_variation_attributes() : array(),
+					'variation' => ( is_callable( array( $product, 'get_variation_attributes' ) ) ) ? $product->get_variation_attributes() : array(),
 					'totals'    => array(
 						'subtotal'     => $product->get_price(),
 						'subtotal_tax' => 0,

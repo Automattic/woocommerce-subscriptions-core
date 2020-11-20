@@ -130,7 +130,7 @@ class WCS_Webhooks {
 
 			wp_set_current_user( $webhook->get_user_id() );
 
-			$webhook_api_version = ( method_exists( $webhook, 'get_api_version' ) ) ? $webhook->get_api_version() : 'legacy_v3';
+			$webhook_api_version = ( is_callable( array( $webhook, 'get_api_version' ) ) ) ? $webhook->get_api_version() : 'legacy_v3';
 
 			switch ( $webhook_api_version ) {
 				case 'legacy_v3':

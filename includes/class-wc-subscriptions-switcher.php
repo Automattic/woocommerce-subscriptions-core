@@ -1164,7 +1164,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function maybe_update_subscription_address( $order, $subscription ) {
 
-		if ( method_exists( $subscription, 'get_address' ) ) {
+		if ( is_callable( array( $subscription, 'get_address' ) ) ) {
 
 			$order_billing         = $order->get_address( 'billing' );
 			$order_shipping        = $order->get_address();
