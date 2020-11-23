@@ -107,11 +107,12 @@ class WCS_Limiter {
 	 */
 	public static function is_purchasable_product( $is_purchasable, $product ) {
 
-		//Set up cache
+		// Set up cache
 		if ( ! isset( self::$is_purchasable_cache[ $product->get_id() ] ) ) {
 			self::$is_purchasable_cache[ $product->get_id() ] = array();
 		}
 
+		// Populate the cache if it hasn't been set yet.
 		if ( ! isset( self::$is_purchasable_cache[ $product->get_id() ]['standard'] ) ) {
 			self::$is_purchasable_cache[ $product->get_id() ]['standard'] = $is_purchasable;
 
@@ -122,8 +123,8 @@ class WCS_Limiter {
 				}
 			}
 		}
-		return self::$is_purchasable_cache[ $product->get_id() ]['standard'];
 
+		return self::$is_purchasable_cache[ $product->get_id() ]['standard'];
 	}
 
 	/**
