@@ -147,6 +147,7 @@ class WCS_Limiter {
 			return self::$is_purchasable_cache[ $product_key ]['switch'];
 		}
 
+		// If the product is already purchasble, we don't need to determine it's purchasibility via switching/auto-switching.
 		if ( true === $is_purchasable || ! is_user_logged_in() || ! wcs_is_product_switchable_type( $product ) || ! WC_Subscriptions_Product::is_subscription( $product->get_id() ) ) {
 			self::$is_purchasable_cache[ $product_key ]['switch'] = $is_purchasable;
 			return self::$is_purchasable_cache[ $product_key ]['switch'];
@@ -160,15 +161,8 @@ class WCS_Limiter {
 			return self::$is_purchasable_cache[ $product_key ]['switch'];
 		}
 
-		// Limited products are only purchasable while switching the subscription which contains that product so we need the customer's subscriptions to this product.
-		$subscriptions = wcs_get_subscriptions( array(
-			'customer_id' => $user_id,
-			'status'      => $product_limitation,
-			'product_id'  => $product->get_id(),
-		) );
-
 		// Adding to cart
-		if ( isset( $_GET['switch-subscription'] ) && array_key_exists( $_GET['switch-subscription'], $subscriptions ) ) {
+		if ( isset( $_GET['switch-subscription'] ) && array_key_exists( $_GET['switch-subscription'], self::get_user_subscriptions_to_product( $product, $user_id, $product_limitation ) ) ) {
 			$is_purchasable = true;
 		} else {
 			// If we have a variation product get the variable product's ID. We can't use the variation ID for comparison because this function sometimes receives a variable product.
@@ -184,7 +178,7 @@ class WCS_Limiter {
 
 			// Check if the cart contains a switch for this specific product.
 			foreach ( $cart_contents as $cart_item ) {
-				if ( $product_id === $cart_item['product_id'] && isset( $cart_item['subscription_switch']['subscription_id'] ) && array_key_exists( $cart_item['subscription_switch']['subscription_id'], $subscriptions ) ) {
+				if ( $product_id === $cart_item['product_id'] && isset( $cart_item['subscription_switch']['subscription_id'] ) && array_key_exists( $cart_item['subscription_switch']['subscription_id'], self::get_user_subscriptions_to_product( $product, $user_id, $product_limitation ) ) ) {
 					$is_purchasable = true;
 					break;
 				}
@@ -321,5 +315,40 @@ class WCS_Limiter {
 		} else {
 			return array();
 		}
+	}
+
+	/**
+	 * Gets a list of the customer subscriptions to a product with a particular limited status.
+	 *
+	 * @param WC_Product|int $product      The product object or product ID.
+	 * @param int            $user_id      The user's ID.
+	 * @param string         $limit_status The limit status.
+	 *
+	 * @return WC_Subscription[] An array of a customer's subscriptions with a specific status and product.
+	 */
+	protected static function get_user_subscriptions_to_product( $product, $user_id, $limit_status ) {
+		static $user_subscriptions_to_product = array();
+		$product_id = is_object( $product ) ? $product->get_id() : $product;
+		$cache_key  = "{$product_id}_{$user_id}_{$limit_status}";
+
+		if ( ! isset( $user_subscriptions_to_product[ $cache_key ] ) ) {
+			// Getting all the customers subscriptions and removing ones without the product is more performant than querying for subscriptions with the product.
+			$subscriptions = wcs_get_subscriptions(
+				array(
+					'customer_id' => $user_id,
+					'status'      => $limit_status,
+				)
+			);
+
+			foreach ( $subscriptions as $subscription_id => $subscription ) {
+				if ( ! $subscription->has_product( $product_id ) ) {
+					unset( $subscriptions[ $subscription_id ] );
+				}
+			}
+
+			$user_subscriptions_to_product[ $cache_key ] = $subscriptions;
+		}
+
+		return $user_subscriptions_to_product[ $cache_key ];
 	}
 }
