@@ -85,7 +85,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 	switch ( $property ) {
 		case 'post':
 			// In order to keep backwards compatibility it's required to use the parent data for variations.
-			if ( is_callable( array( $object, 'is_type' ) ) && $object->is_type( 'variation' ) ) {
+			if ( method_exists( $object, 'is_type' ) && $object->is_type( 'variation' ) ) {
 				$value = get_post( wcs_get_objects_property( $object, 'parent_id' ) );
 			} else {
 				$value = get_post( wcs_get_objects_property( $object, 'id' ) );
@@ -107,7 +107,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 				$value = $object->$function_name();
 			} else {
 				// If we don't have a method for this specific property, but we are using WC 3.0, it may be set as meta data on the object so check if we can use that.
-				if ( is_callable( array( $object, 'get_meta' ) ) && $object->meta_exists( $prefixed_key ) ) {
+				if ( method_exists( $object, 'get_meta' ) && $object->meta_exists( $prefixed_key ) ) {
 					if ( 'single' === $single ) {
 						$value = $object->get_meta( $prefixed_key, true );
 					} else {
