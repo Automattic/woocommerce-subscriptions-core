@@ -233,38 +233,45 @@ class WCS_Limiter {
 	/**
 	 * Check if the current session has an order awaiting payment for a subscription to a specific product line item.
 	 *
-	 * @since 2.1 Moved from WC_Subscriptions_Product
+	 * @since 2.1.0
+	 * @param int $product_id The product to look for a subscription awaiting payment.
 	 * @return bool
 	 **/
 	protected static function order_awaiting_payment_for_product( $product_id ) {
 		global $wp;
 
-		if ( ! isset( self::$order_awaiting_payment_for_product[ $product_id ] ) ) {
+		if ( isset( self::$order_awaiting_payment_for_product[ $product_id ] ) ) {
+			return self::$order_awaiting_payment_for_product[ $product_id ];
+		}
 
-			self::$order_awaiting_payment_for_product[ $product_id ] = false;
+		// Set up the cache with a default value.
+		self::$order_awaiting_payment_for_product[ $product_id ] = false;
 
-			if ( ! empty( WC()->session->order_awaiting_payment ) || isset( $_GET['pay_for_order'] ) ) {
+		// If there's no order waiting payment, exit early.
+		if ( empty( WC()->session->order_awaiting_payment ) && ! isset( $_GET['pay_for_order'] ) ) {
+			return self::$order_awaiting_payment_for_product[ $product_id ];
+		}
 
-				$order_id = ! empty( WC()->session->order_awaiting_payment ) ? WC()->session->order_awaiting_payment : $wp->query_vars['order-pay'];
-				$order    = wc_get_order( absint( $order_id ) );
+		$order_id = ! empty( WC()->session->order_awaiting_payment ) ? WC()->session->order_awaiting_payment : $wp->query_vars['order-pay'];
+		$order    = wc_get_order( absint( $order_id ) );
 
-				if ( is_object( $order ) && $order->has_status( array( 'pending', 'failed' ) ) ) {
-					foreach ( $order->get_items() as $item ) {
-						if ( $item['product_id'] == $product_id || $item['variation_id'] == $product_id ) {
+		if ( is_object( $order ) && $order->has_status( array( 'pending', 'failed' ) ) ) {
+			foreach ( $order->get_items() as $item ) {
 
-							$subscriptions = wcs_get_subscriptions( array(
-								'order_id'   => wcs_get_objects_property( $order, 'id' ),
-								'product_id' => $product_id,
-							) );
+				// If this order contains the product we're interested in, continue finding a related subscription.
+				if ( $item['product_id'] == $product_id && $item['variation_id'] == $product_id ) {
+					$subscriptions = wcs_get_subscriptions(
+						array(
+							'order_id'            => $order->get_id(),
+							'subscription_status' => array( 'pending', 'on-hold' ),
+						)
+					);
 
-							if ( ! empty( $subscriptions ) ) {
-								$subscription = array_pop( $subscriptions );
-
-								if ( $subscription->has_status( array( 'pending', 'on-hold' ) ) ) {
-									self::$order_awaiting_payment_for_product[ $product_id ] = true;
-								}
-							}
-							break;
+					foreach ( $subscriptions as $subscription ) {
+						// Check that the subscription has the product we're interested in.
+						if ( $subscription->has_product( $product_id ) ) {
+							self::$order_awaiting_payment_for_product[ $product_id ] = true;
+							break 2; // break out of the $subscriptions and order line item loops - we've found at least 1 subscription pending payment for the product.
 						}
 					}
 				}
