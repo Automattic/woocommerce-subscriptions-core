@@ -130,9 +130,7 @@ class WCS_Webhooks {
 
 			wp_set_current_user( $webhook->get_user_id() );
 
-			$webhook_api_version = ( method_exists( $webhook, 'get_api_version' ) ) ? $webhook->get_api_version() : 'legacy_v3';
-
-			switch ( $webhook_api_version ) {
+			switch ( $webhook->get_api_version() ) {
 				case 'legacy_v3':
 					WC()->api->WC_API_Subscriptions->register_routes( array() );
 					$payload = WC()->api->WC_API_Subscriptions->get_subscription( $resource_id );

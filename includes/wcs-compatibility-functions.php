@@ -243,9 +243,9 @@ function wcs_delete_objects_property( &$object, $key, $save = 'save', $meta_id =
 
 	$prefixed_key = wcs_maybe_prefix_key( $key );
 
-	if ( ! empty( $meta_id ) && method_exists( $object, 'delete_meta_data_by_mid' ) ) {
+	if ( ! empty( $meta_id ) && is_callable( array( $object, 'delete_meta_data_by_mid' ) ) ) {
 		$object->delete_meta_data_by_mid( $meta_id );
-	} elseif ( method_exists( $object, 'delete_meta_data' ) ) {
+	} elseif ( is_callable( array( $object, 'delete_meta_data' ) ) ) {
 		$object->delete_meta_data( $prefixed_key );
 	} elseif ( isset( $object->$key ) ) {
 		unset( $object->$key );
@@ -253,7 +253,7 @@ function wcs_delete_objects_property( &$object, $key, $save = 'save', $meta_id =
 
 	// Save the data
 	if ( 'save' === $save ) {
-		if ( method_exists( $object, 'save' ) ) { // WC 3.0+
+		if ( is_callable( array( $object, 'save' ) ) ) { // WC 3.0+
 			$object->save();
 		} elseif ( ! empty( $meta_id ) ) {
 			delete_metadata_by_mid( 'post', $meta_id );
@@ -275,7 +275,7 @@ function wcs_delete_objects_property( &$object, $key, $save = 'save', $meta_id =
  */
 function wcs_is_order( $order ) {
 
-	if ( method_exists( $order, 'get_type' ) ) {
+	if ( is_callable( array( $order, 'get_type' ) ) ) {
 		$is_order = ( 'shop_order' === $order->get_type() );
 	} else {
 		$is_order = ( isset( $order->order_type ) && 'simple' === $order->order_type );

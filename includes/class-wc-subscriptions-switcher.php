@@ -1159,30 +1159,12 @@ class WC_Subscriptions_Switcher {
 	/**
 	 * Updates address on the subscription if one of them is changed.
 	 *
-	 * @param  WC_Order $order The new order
-	 * @param  WC_Subscription $subscription The original subscription
+	 * @param WC_Order        $order The new order
+	 * @param WC_Subscription $subscription The original subscription
 	 */
 	public static function maybe_update_subscription_address( $order, $subscription ) {
-
-		if ( method_exists( $subscription, 'get_address' ) ) {
-
-			$order_billing         = $order->get_address( 'billing' );
-			$order_shipping        = $order->get_address();
-			$subscription_billing  = $subscription->get_address( 'billing' );
-			$subscription_shipping = $subscription->get_address();
-
-		} else {
-
-			$order_billing         = wcs_get_order_address( $order, 'billing' );
-			$order_shipping        = wcs_get_order_address( $order );
-			$subscription_billing  = wcs_get_order_address( $subscription, 'billing' );
-			$subscription_shipping = wcs_get_order_address( $subscription );
-
-		}
-
-		$subscription->set_address( array_diff_assoc( $order_billing, $subscription_billing ), 'billing' );
-		$subscription->set_address( array_diff_assoc( $order_shipping, $subscription_shipping ), 'shipping' );
-
+		$subscription->set_address( array_diff_assoc( $order->get_address( 'billing' ), $subscription->get_address( 'billing' ) ), 'billing' );
+		$subscription->set_address( array_diff_assoc( $order->get_address(), $subscription->get_address() ), 'shipping' );
 	}
 
 	/**

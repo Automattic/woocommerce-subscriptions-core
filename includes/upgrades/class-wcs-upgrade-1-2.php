@@ -218,7 +218,7 @@ class WCS_Upgrade_1_2 {
 				}
 
 				// Upgrading with WC 1.x
-				if ( method_exists( $item_meta, 'add' ) ) {
+				if ( is_callable( array( $item_meta, 'add' ) ) ) {
 
 					$item_meta->add( '_subscription_period', $order_subscription_periods[ $product_id ] );
 					$item_meta->add( '_subscription_interval', $subscription_interval );
