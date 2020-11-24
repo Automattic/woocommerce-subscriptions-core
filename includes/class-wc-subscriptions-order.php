@@ -646,8 +646,25 @@ class WC_Subscriptions_Order {
 	 * @return bool
 	 */
 	public static function order_needs_payment( $needs_payment, $order, $valid_order_statuses ) {
+		// Skips checks if the order already needs payment.
+		if ( $needs_payment ) {
+			return $needs_payment;
+		}
 
-		if ( false === $needs_payment && 0 == $order->get_total() && in_array( $order->get_status(), $valid_order_statuses ) && wcs_order_contains_subscription( $order ) && self::get_recurring_total( $order ) > 0 && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+		// Skip checks if order doesn't contain a subscription product.
+		if ( ! wcs_order_contains_subscription( $order ) ) {
+			return $needs_payment;
+		}
+
+		// Skip checks if order total is greater than zero, or
+		// recurring total is zero, or
+		// order status isn't valid for payment.
+		if ( $order->get_total() > 0 || self::get_recurring_total( $order ) <= 0 || ! $order->has_status( $valid_order_statuses ) ) {
+			return $needs_payment;
+		}
+
+		// If 'turn off automatic payments' is not enabled or '$0 initial checkout' is not enabled, set needs_payments to true.
+		if ( 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_zero_initial_payment_requires_payment', 'no' ) ) {
 			$needs_payment = true;
 		}
 
