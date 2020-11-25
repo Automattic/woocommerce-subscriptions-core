@@ -107,11 +107,12 @@ class WCS_Limiter {
 	 */
 	public static function is_purchasable_product( $is_purchasable, $product ) {
 
-		//Set up cache
+		// Set up cache
 		if ( ! isset( self::$is_purchasable_cache[ $product->get_id() ] ) ) {
 			self::$is_purchasable_cache[ $product->get_id() ] = array();
 		}
 
+		// Populate the cache if it hasn't been set yet.
 		if ( ! isset( self::$is_purchasable_cache[ $product->get_id() ]['standard'] ) ) {
 			self::$is_purchasable_cache[ $product->get_id() ]['standard'] = $is_purchasable;
 
@@ -122,8 +123,8 @@ class WCS_Limiter {
 				}
 			}
 		}
-		return self::$is_purchasable_cache[ $product->get_id() ]['standard'];
 
+		return self::$is_purchasable_cache[ $product->get_id() ]['standard'];
 	}
 
 	/**
@@ -146,6 +147,7 @@ class WCS_Limiter {
 			return self::$is_purchasable_cache[ $product_key ]['switch'];
 		}
 
+		// If the product is already purchasble, we don't need to determine it's purchasibility via switching/auto-switching.
 		if ( true === $is_purchasable || ! is_user_logged_in() || ! wcs_is_product_switchable_type( $product ) || ! WC_Subscriptions_Product::is_subscription( $product->get_id() ) ) {
 			self::$is_purchasable_cache[ $product_key ]['switch'] = $is_purchasable;
 			return self::$is_purchasable_cache[ $product_key ]['switch'];
@@ -159,15 +161,8 @@ class WCS_Limiter {
 			return self::$is_purchasable_cache[ $product_key ]['switch'];
 		}
 
-		// Limited products are only purchasable while switching the subscription which contains that product so we need the customer's subscriptions to this product.
-		$subscriptions = wcs_get_subscriptions( array(
-			'customer_id' => $user_id,
-			'status'      => $product_limitation,
-			'product_id'  => $product->get_id(),
-		) );
-
 		// Adding to cart
-		if ( isset( $_GET['switch-subscription'] ) && array_key_exists( $_GET['switch-subscription'], $subscriptions ) ) {
+		if ( isset( $_GET['switch-subscription'] ) && array_key_exists( $_GET['switch-subscription'], self::get_user_subscriptions_to_product( $product, $user_id, $product_limitation ) ) ) {
 			$is_purchasable = true;
 		} else {
 			// If we have a variation product get the variable product's ID. We can't use the variation ID for comparison because this function sometimes receives a variable product.
@@ -183,7 +178,7 @@ class WCS_Limiter {
 
 			// Check if the cart contains a switch for this specific product.
 			foreach ( $cart_contents as $cart_item ) {
-				if ( $product_id === $cart_item['product_id'] && isset( $cart_item['subscription_switch']['subscription_id'] ) && array_key_exists( $cart_item['subscription_switch']['subscription_id'], $subscriptions ) ) {
+				if ( $product_id === $cart_item['product_id'] && isset( $cart_item['subscription_switch']['subscription_id'] ) && array_key_exists( $cart_item['subscription_switch']['subscription_id'], self::get_user_subscriptions_to_product( $product, $user_id, $product_limitation ) ) ) {
 					$is_purchasable = true;
 					break;
 				}
@@ -232,38 +227,45 @@ class WCS_Limiter {
 	/**
 	 * Check if the current session has an order awaiting payment for a subscription to a specific product line item.
 	 *
-	 * @since 2.1 Moved from WC_Subscriptions_Product
+	 * @since 2.1.0
+	 * @param int $product_id The product to look for a subscription awaiting payment.
 	 * @return bool
 	 **/
 	protected static function order_awaiting_payment_for_product( $product_id ) {
 		global $wp;
 
-		if ( ! isset( self::$order_awaiting_payment_for_product[ $product_id ] ) ) {
+		if ( isset( self::$order_awaiting_payment_for_product[ $product_id ] ) ) {
+			return self::$order_awaiting_payment_for_product[ $product_id ];
+		}
 
-			self::$order_awaiting_payment_for_product[ $product_id ] = false;
+		// Set up the cache with a default value.
+		self::$order_awaiting_payment_for_product[ $product_id ] = false;
 
-			if ( ! empty( WC()->session->order_awaiting_payment ) || isset( $_GET['pay_for_order'] ) ) {
+		// If there's no order waiting payment, exit early.
+		if ( empty( WC()->session->order_awaiting_payment ) && ! isset( $_GET['pay_for_order'] ) ) {
+			return self::$order_awaiting_payment_for_product[ $product_id ];
+		}
 
-				$order_id = ! empty( WC()->session->order_awaiting_payment ) ? WC()->session->order_awaiting_payment : $wp->query_vars['order-pay'];
-				$order    = wc_get_order( absint( $order_id ) );
+		$order_id = ! empty( WC()->session->order_awaiting_payment ) ? WC()->session->order_awaiting_payment : $wp->query_vars['order-pay'];
+		$order    = wc_get_order( absint( $order_id ) );
 
-				if ( is_object( $order ) && $order->has_status( array( 'pending', 'failed' ) ) ) {
-					foreach ( $order->get_items() as $item ) {
-						if ( $item['product_id'] == $product_id || $item['variation_id'] == $product_id ) {
+		if ( is_object( $order ) && $order->has_status( array( 'pending', 'failed' ) ) ) {
+			foreach ( $order->get_items() as $item ) {
 
-							$subscriptions = wcs_get_subscriptions( array(
-								'order_id'   => wcs_get_objects_property( $order, 'id' ),
-								'product_id' => $product_id,
-							) );
+				// If this order contains the product we're interested in, continue finding a related subscription.
+				if ( $item['product_id'] == $product_id && $item['variation_id'] == $product_id ) {
+					$subscriptions = wcs_get_subscriptions(
+						array(
+							'order_id'            => $order->get_id(),
+							'subscription_status' => array( 'pending', 'on-hold' ),
+						)
+					);
 
-							if ( ! empty( $subscriptions ) ) {
-								$subscription = array_pop( $subscriptions );
-
-								if ( $subscription->has_status( array( 'pending', 'on-hold' ) ) ) {
-									self::$order_awaiting_payment_for_product[ $product_id ] = true;
-								}
-							}
-							break;
+					foreach ( $subscriptions as $subscription ) {
+						// Check that the subscription has the product we're interested in.
+						if ( $subscription->has_product( $product_id ) ) {
+							self::$order_awaiting_payment_for_product[ $product_id ] = true;
+							break 2; // break out of the $subscriptions and order line item loops - we've found at least 1 subscription pending payment for the product.
 						}
 					}
 				}
@@ -313,5 +315,40 @@ class WCS_Limiter {
 		} else {
 			return array();
 		}
+	}
+
+	/**
+	 * Gets a list of the customer subscriptions to a product with a particular limited status.
+	 *
+	 * @param WC_Product|int $product      The product object or product ID.
+	 * @param int            $user_id      The user's ID.
+	 * @param string         $limit_status The limit status.
+	 *
+	 * @return WC_Subscription[] An array of a customer's subscriptions with a specific status and product.
+	 */
+	protected static function get_user_subscriptions_to_product( $product, $user_id, $limit_status ) {
+		static $user_subscriptions_to_product = array();
+		$product_id = is_object( $product ) ? $product->get_id() : $product;
+		$cache_key  = "{$product_id}_{$user_id}_{$limit_status}";
+
+		if ( ! isset( $user_subscriptions_to_product[ $cache_key ] ) ) {
+			// Getting all the customers subscriptions and removing ones without the product is more performant than querying for subscriptions with the product.
+			$subscriptions = wcs_get_subscriptions(
+				array(
+					'customer_id' => $user_id,
+					'status'      => $limit_status,
+				)
+			);
+
+			foreach ( $subscriptions as $subscription_id => $subscription ) {
+				if ( ! $subscription->has_product( $product_id ) ) {
+					unset( $subscriptions[ $subscription_id ] );
+				}
+			}
+
+			$user_subscriptions_to_product[ $cache_key ] = $subscriptions;
+		}
+
+		return $user_subscriptions_to_product[ $cache_key ];
 	}
 }
