@@ -138,7 +138,7 @@ class WC_Subscriptions_Checkout {
 
 			if ( is_wp_error( $subscription ) ) {
 				// If the customer wasn't created on checkout and registration isn't enabled, display a more appropriate error message.
-				if ( 'woocommerce_subscription_invalid_customer_id' === $subscription->get_error_code() && ! WC()->checkout->is_registration_enabled() ) {
+				if ( 'woocommerce_subscription_invalid_customer_id' === $subscription->get_error_code() && ! is_user_logged_in() && ! WC()->checkout->is_registration_enabled() ) {
 					throw new Exception( self::get_registration_error_message() );
 				}
 
