@@ -146,6 +146,9 @@ class WCS_Early_Renewal_Modal_Handler {
 			wp_redirect( wcs_get_early_renewal_url( $subscription ) );
 			exit();
 		} else {
+			// Trigger the subscription payment complete hooks and reset suspension counts and user roles.
+			$subscription->payment_complete();
+
 			wcs_update_dates_after_early_renewal( $subscription, $renewal_order );
 			wc_add_notice( __( 'Your early renewal order was successful.', 'woocommerce-subscriptions' ), 'success' );
 		}
