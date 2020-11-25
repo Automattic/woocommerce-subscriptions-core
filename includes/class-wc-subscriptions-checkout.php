@@ -137,6 +137,11 @@ class WC_Subscriptions_Checkout {
 			) );
 
 			if ( is_wp_error( $subscription ) ) {
+				// If the customer wasn't created on checkout and registration isn't enabled, display a more appropriate error message.
+				if ( 'woocommerce_subscription_invalid_customer_id' === $subscription->get_error_code() && ! is_user_logged_in() && ! WC()->checkout->is_registration_enabled() ) {
+					throw new Exception( self::get_registration_error_message() );
+				}
+
 				throw new Exception( $subscription->get_error_message() );
 			}
 
@@ -541,6 +546,30 @@ class WC_Subscriptions_Checkout {
 			$_POST['createaccount'] = 1;
 		}
 
+	}
+
+	/**
+	 * Generates a registration failed error message depending on the store's registration settings.
+	 *
+	 * When a customer wasn't created on checkout because checkout registration is disabled,
+	 * this function generates the error message displayed to the customer.
+	 *
+	 * The message will redirect the customer to the My Account page if registration is enabled there, otherwise a generic 'you need an account' message will be displayed.
+	 *
+	 * @since 3.0.11
+	 * @return string The error message.
+	 */
+	private static function get_registration_error_message() {
+		// Direct the customer to login/register on the my account page if that's enabled.
+		if ( 'yes' === get_option( 'woocommerce_enable_myaccount_registration' ) ) {
+			// Translators: Placeholders are opening and closing strong and link tags.
+			$message = __( 'Purchasing a subscription product requires an account. Please go to the %sMy Account%s page to login or register.', 'woocommerce-subscriptions' );
+		} else {
+			// Translators: Placeholders are opening and closing strong and link tags.
+			$message = __( 'Purchasing a subscription product requires an account. Please go to the %sMy Account%s page to login or contact us if you need assistance.', 'woocommerce-subscriptions' );
+		}
+
+		return sprintf( $message, '<strong><a href="' . wc_get_page_permalink( 'myaccount' ) . '">', '</a></strong>' );
 	}
 
 	/**
