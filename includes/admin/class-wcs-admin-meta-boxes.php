@@ -37,17 +37,28 @@ class WCS_Admin_Meta_Boxes {
 		add_action( 'woocommerce_process_shop_order_meta', 'WCS_Meta_Box_Schedule::save', 10, 2 );
 		add_action( 'woocommerce_process_shop_order_meta', 'WCS_Meta_Box_Subscription_Data::save', 10, 2 );
 
-		add_filter( 'woocommerce_order_actions', __CLASS__ . '::add_subscription_actions', 10, 1 );
+		add_filter( 'woocommerce_order_actions', array( __CLASS__, 'add_subscription_actions' ), 10, 1 );
 
-		add_action( 'woocommerce_order_action_wcs_process_renewal', __CLASS__ .  '::process_renewal_action_request', 10, 1 );
-		add_action( 'woocommerce_order_action_wcs_create_pending_renewal', __CLASS__ .  '::create_pending_renewal_action_request', 10, 1 );
-		add_action( 'woocommerce_order_action_wcs_create_pending_parent', __CLASS__ .  '::create_pending_parent_action_request', 10, 1 );
+		add_action( 'woocommerce_order_action_wcs_process_renewal', array( __CLASS__, 'process_renewal_action_request' ), 10, 1 );
+		add_action( 'woocommerce_order_action_wcs_create_pending_renewal', array( __CLASS__, 'create_pending_renewal_action_request' ), 10, 1 );
+		add_action( 'woocommerce_order_action_wcs_create_pending_parent', array( __CLASS__, 'create_pending_parent_action_request' ), 10, 1 );
 
 		if ( WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
-			add_filter( 'woocommerce_resend_order_emails_available', __CLASS__ . '::remove_order_email_actions', 0, 1 );
+			add_filter( 'woocommerce_resend_order_emails_available', array( __CLASS__, 'remove_order_email_actions' ), 0, 1 );
 		}
 
-		add_action( 'woocommerce_order_action_wcs_retry_renewal_payment', __CLASS__ .  '::process_retry_renewal_payment_action_request', 10, 1 );
+		add_action( 'woocommerce_order_action_wcs_retry_renewal_payment', array( __CLASS__, 'process_retry_renewal_payment_action_request' ), 10, 1 );
+
+		// Disable stock managment while adding line items to a subscription via AJAX.
+		add_action( 'option_woocommerce_manage_stock', array( __CLASS__, 'override_stock_management' ) );
+
+		// Parent order line item price lock option.
+		add_action( 'woocommerce_order_item_add_action_buttons', array( __CLASS__, 'output_price_lock_html' ) );
+		add_action( 'woocommerce_process_shop_order_meta', array( __CLASS__, 'save_increased_price_lock' ) );
+		add_action( 'wp_ajax_wcs_order_price_lock' , array( __CLASS__, 'save_increased_price_lock' ) );
+
+		// After calculating subscription/renewal order line item taxes, update base location tax item meta.
+		add_action( 'woocommerce_ajax_add_order_item_meta', array( __CLASS__, 'store_item_base_location_tax' ), 10, 3 );
 	}
 
 	/**
@@ -107,7 +118,7 @@ class WCS_Admin_Meta_Boxes {
 
 			wp_localize_script( 'wcs-admin-meta-boxes-subscription', 'wcs_admin_meta_boxes', apply_filters( 'woocommerce_subscriptions_admin_meta_boxes_script_parameters', array(
 				'i18n_start_date_notice'         => __( 'Please enter a start date in the past.', 'woocommerce-subscriptions' ),
-				'i18n_past_date_notice'          => __( 'Please enter a date at least one hour into the future.', 'woocommerce-subscriptions' ),
+				'i18n_past_date_notice'          => WC_Subscriptions::is_duplicate_site() ? __( 'Please enter a date at least 2 minutes into the future.', 'woocommerce-subscriptions' ) : __( 'Please enter a date at least one hour into the future.', 'woocommerce-subscriptions' ),
 				'i18n_next_payment_start_notice' => __( 'Please enter a date after the trial end.', 'woocommerce-subscriptions' ),
 				'i18n_next_payment_trial_notice' => __( 'Please enter a date after the start date.', 'woocommerce-subscriptions' ),
 				'i18n_trial_end_start_notice'    => __( 'Please enter a date after the start date.', 'woocommerce-subscriptions' ),
@@ -117,13 +128,17 @@ class WCS_Admin_Meta_Boxes {
 				'payment_method'                 => wcs_get_subscription( $post )->get_payment_method(),
 				'search_customers_nonce'         => wp_create_nonce( 'search-customers' ),
 				'get_customer_orders_nonce'      => wp_create_nonce( 'get-customer-orders' ),
+				'is_duplicate_site'              => WC_Subscriptions::is_duplicate_site(),
 			) ) );
 		} else if ( 'shop_order' == $screen_id ) {
 
 			wp_enqueue_script( 'wcs-admin-meta-boxes-order', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/wcs-meta-boxes-order.js' );
 
-			wp_localize_script( 'wcs-admin-meta-boxes-order', 'wcs_admin_order_meta_boxes', array(
-				'retry_renewal_payment_action_warning' => __( "Are you sure you want to retry payment for this renewal order?\n\nThis will attempt to charge the customer and send renewal order emails (if emails are enabled).", 'woocommerce-subscriptions' ),
+			wp_localize_script(
+				'wcs-admin-meta-boxes-order',
+				'wcs_admin_order_meta_boxes',
+				array(
+					'retry_renewal_payment_action_warning' => __( "Are you sure you want to retry payment for this renewal order?\n\nThis will attempt to charge the customer and send renewal order emails (if emails are enabled).", 'woocommerce-subscriptions' ),
 				)
 			);
 		}
@@ -231,6 +246,7 @@ class WCS_Admin_Meta_Boxes {
 			}
 		}
 
+		wc_maybe_reduce_stock_levels( $parent_order );
 		$subscription->add_order_note( __( 'Create pending parent order requested by admin action.', 'woocommerce-subscriptions' ), false, true );
 	}
 
@@ -300,5 +316,133 @@ class WCS_Admin_Meta_Boxes {
 		}
 
 		return $can_be_retried;
+	}
+
+	/**
+	 * Disables stock managment while adding items to a subscription via the edit subscription screen.
+	 *
+	 * @since 3.0.6
+	 *
+	 * @param string $manage_stock The default manage stock setting.
+	 * @return string Whether the stock should be managed.
+	 */
+	public static function override_stock_management( $manage_stock ) {
+
+		// Override stock management while adding line items to a subscription via AJAX.
+		if ( isset( $_POST['order_id'] ) && wp_verify_nonce( $_REQUEST['security'], 'order-item' ) && doing_action( 'wp_ajax_woocommerce_add_order_item' ) && wcs_is_subscription( absint( wp_unslash( $_POST['order_id'] ) ) ) ) {
+			$manage_stock = 'no';
+		}
+
+		return $manage_stock;
+	}
+
+
+	/**
+	 * Displays a checkbox allowing admin to lock in prices increases in the edit order line items meta box.
+	 *
+	 * This checkbox is only displayed if the following criteria is met:
+	 * - The order is unpaid.
+	 * - The order is a subscription parent order. Renewal orders already lock in the subscription recurring price.
+	 * - The order's currency matches the base store currency.
+	 * - The order contains a line item with a subtotal greater than the product's current live price.
+	 *
+	 * @since 3.0.10
+	 *
+	 * @param WC_Order $order The order being edited.
+	 */
+	public static function output_price_lock_html( $order ) {
+
+		if ( ! $order->needs_payment() || ! wcs_order_contains_subscription( $order, 'parent' ) ) {
+			return;
+		}
+
+		// If the order currency doesn't match the base currency we can't know if the order contains manually increased prices.
+		if ( $order->get_currency() !== get_woocommerce_currency() ) {
+			return;
+		}
+
+		$needs_price_lock = false;
+
+		foreach ( $order->get_items() as $line_item ) {
+			$product = $line_item->get_product();
+
+			// If the line item price is above the current live price.
+			if ( $product && ( $line_item->get_subtotal() / $line_item->get_quantity() ) > $product->get_price() ) {
+				$needs_price_lock = true;
+				break;
+			}
+		}
+
+		if ( $needs_price_lock ) {
+			// So the help tip is initialized when the line items are reloaded, we need to add the 'tips' class to the element.
+			$help_tip = wcs_help_tip( __( "This order contains line items with prices above the current product price. To override the product's live price when the customer pays for this order, lock in the manual price increases.", 'woocommerce-subscriptions' ) );
+			$help_tip = str_replace( 'woocommerce-help-tip', 'woocommerce-help-tip tips', $help_tip );
+
+			printf(
+				'<div id="wcs_order_price_lock"><label for="wcs-order-price-lock">%s</label>%s<input id="wcs-order-price-lock" type="checkbox" name="wcs_order_price_lock" value="yes" %s></div>',
+				esc_html__( 'Lock manual price increases', 'woocommerce-subscriptions' ),
+				$help_tip, // phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped
+				checked( $order->get_meta( '_manual_price_increases_locked' ), 'true', false )
+			);
+		}
+	}
+
+	/**
+	 * Saves the manual price increase lock via Edit order save and ajax request.
+	 *
+	 * @since 3.0.10
+	 *
+	 * @param string $order_id Optional. The order ID. For non-ajax requests, this parameter is required.
+	 */
+	public static function save_increased_price_lock( $order_id = '' ) {
+
+		if ( empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) {
+			return;
+		}
+
+		$order = wc_get_order( is_ajax() ? absint( $_POST['order_id'] ) : $order_id );
+
+		if ( ! $order ) {
+			return;
+		}
+
+		if ( isset( $_POST['wcs_order_price_lock'] ) && 'yes' === wc_clean( $_POST['wcs_order_price_lock'] ) ) {
+			$order->update_meta_data( '_manual_price_increases_locked', 'true' );
+			$order->save();
+		} elseif ( $order->meta_exists( '_manual_price_increases_locked' ) ) {
+			$order->delete_meta_data( '_manual_price_increases_locked' );
+			$order->save();
+		}
+	}
+
+	/**
+	 * Stores the subtracted base location tax totals for subscription and renewal line items.
+	 *
+	 * @since 3.0.10
+	 *
+	 * @param int                   $item_id   The ID of the order item added.
+	 * @param WC_Order_Item_Product $line_item The line item added.
+	 * @param WC_Abstract_Order     $order     The order or subscription the product was added to.
+	 */
+	public static function store_item_base_location_tax( $item_id, $line_item, $order ) {
+
+		if ( ! apply_filters( 'woocommerce_adjust_non_base_location_prices', true ) ) {
+			return;
+		}
+
+		if ( ! wc_prices_include_tax() ) {
+			return;
+		}
+
+		if ( ! wcs_is_subscription( $order ) && ! wcs_order_contains_renewal( $order ) ) {
+			return;
+		}
+
+		if ( '0' !== $line_item->get_tax_class() && 'taxable' === $line_item->get_tax_status() ) {
+			$base_tax_rates = WC_Tax::get_base_tax_rates( $line_item->get_tax_class() );
+
+			$line_item->update_meta_data( '_subtracted_base_location_tax', WC_Tax::calc_tax( $line_item->get_product()->get_price() * $line_item->get_quantity(), $base_tax_rates, true ) );
+			$line_item->save();
+		}
 	}
 }

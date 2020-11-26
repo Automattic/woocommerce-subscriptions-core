@@ -4,9 +4,9 @@
  *
  * Functions to take advantage of APIs added to new versions of WooCommerce while maintaining backward compatibility.
  *
- * @author 		Prospress
- * @category 	Core
- * @package 	WooCommerce Subscriptions/Functions
+ * @author Prospress
+ * @category Core
+ * @package WooCommerce Subscriptions/Functions
  * @version     2.0
  */
 
@@ -83,7 +83,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 	}
 
 	switch ( $property ) {
-		case 'post' :
+		case 'post':
 			// In order to keep backwards compatibility it's required to use the parent data for variations.
 			if ( method_exists( $object, 'is_type' ) && $object->is_type( 'variation' ) ) {
 				$value = get_post( wcs_get_objects_property( $object, 'parent_id' ) );
@@ -92,15 +92,15 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 			}
 			break;
 
-		case 'post_status' :
+		case 'post_status':
 			$value = wcs_get_objects_property( $object, 'post' )->post_status;
 			break;
 
-		case 'variation_data' :
+		case 'variation_data':
 			$value = wc_get_product_variation_attributes( wcs_get_objects_property( $object, 'id' ) );
 			break;
 
-		default :
+		default:
 			$function_name = 'get_' . $property;
 
 			if ( is_callable( array( $object, $function_name ) ) ) {
@@ -203,9 +203,20 @@ function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta
 		if ( is_callable( array( $object, 'save' ) ) ) { // WC 3.0+
 			$object->save();
 		} elseif ( 'date_created' == $key ) { // WC < 3.0+
-			wp_update_post( array( 'ID' => wcs_get_objects_property( $object, 'id' ), 'post_date' => get_date_from_gmt( $value ), 'post_date_gmt' => $value ) );
+			wp_update_post(
+				array(
+					'ID'            => wcs_get_objects_property( $object, 'id' ),
+					'post_date'     => get_date_from_gmt( $value ),
+					'post_date_gmt' => $value,
+				)
+			);
 		} elseif ( 'name' === $key ) { // the replacement for post_title added in 3.0, need to update post_title not post meta
-			wp_update_post( array( 'ID' => wcs_get_objects_property( $object, 'id' ), 'post_title' => $value ) );
+			wp_update_post(
+				array(
+					'ID'         => wcs_get_objects_property( $object, 'id' ),
+					'post_title' => $value,
+				)
+			);
 		} else {
 			$meta_key = ( 'prefix_meta_key' === $prefix_meta_key ) ? $prefixed_key : $key;
 
@@ -232,9 +243,9 @@ function wcs_delete_objects_property( &$object, $key, $save = 'save', $meta_id =
 
 	$prefixed_key = wcs_maybe_prefix_key( $key );
 
-	if ( ! empty( $meta_id ) && method_exists( $object, 'delete_meta_data_by_mid' ) ) {
+	if ( ! empty( $meta_id ) && is_callable( array( $object, 'delete_meta_data_by_mid' ) ) ) {
 		$object->delete_meta_data_by_mid( $meta_id );
-	} elseif ( method_exists( $object, 'delete_meta_data' ) ) {
+	} elseif ( is_callable( array( $object, 'delete_meta_data' ) ) ) {
 		$object->delete_meta_data( $prefixed_key );
 	} elseif ( isset( $object->$key ) ) {
 		unset( $object->$key );
@@ -242,7 +253,7 @@ function wcs_delete_objects_property( &$object, $key, $save = 'save', $meta_id =
 
 	// Save the data
 	if ( 'save' === $save ) {
-		if ( method_exists( $object, 'save' ) ) { // WC 3.0+
+		if ( is_callable( array( $object, 'save' ) ) ) { // WC 3.0+
 			$object->save();
 		} elseif ( ! empty( $meta_id ) ) {
 			delete_metadata_by_mid( 'post', $meta_id );
@@ -264,7 +275,7 @@ function wcs_delete_objects_property( &$object, $key, $save = 'save', $meta_id =
  */
 function wcs_is_order( $order ) {
 
-	if ( method_exists( $order, 'get_type' ) ) {
+	if ( is_callable( array( $order, 'get_type' ) ) ) {
 		$is_order = ( 'shop_order' === $order->get_type() );
 	} else {
 		$is_order = ( isset( $order->order_type ) && 'simple' === $order->order_type );

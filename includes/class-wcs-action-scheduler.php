@@ -45,12 +45,16 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 				$next_scheduled = as_next_scheduled_action( $action_hook, $action_args );
 
 				if ( $next_scheduled !== $timestamp ) {
-
 					// Maybe clear the existing schedule for this hook
 					$this->unschedule_actions( $action_hook, $action_args );
 
 					// Only reschedule if it's in the future
-					if ( $timestamp > current_time( 'timestamp', true ) && ( 'payment_retry' == $date_type || 'active' == $subscription->get_status() ) ) {
+					if ( $timestamp <= current_time( 'timestamp', true ) ) {
+						return;
+					}
+
+					// Only schedule it if it's valid. It's active, it's a payment retry or it's pending cancelled and the end date being updated.
+					if ( 'payment_retry' === $date_type || $subscription->has_status( 'active' ) || ( $subscription->has_status( 'pending-cancel' ) && 'end' === $date_type ) ) {
 						as_schedule_single_action( $timestamp, $action_hook, $action_args );
 					}
 				}
@@ -78,7 +82,7 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 	public function update_status( $subscription, $new_status, $old_status ) {
 
 		switch ( $new_status ) {
-			case 'active' :
+			case 'active':
 
 				$this->unschedule_actions( 'woocommerce_scheduled_subscription_end_of_prepaid_term', $this->get_action_args( 'end', $subscription ) );
 
@@ -111,7 +115,7 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 				}
 
 				break;
-			case 'pending-cancel' :
+			case 'pending-cancel':
 
 				// Now that we have the current times, clear the scheduled hooks
 				foreach ( $this->get_date_types_to_schedule() as $date_type ) {
@@ -138,11 +142,11 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 					as_schedule_single_action( $end_time, 'woocommerce_scheduled_subscription_end_of_prepaid_term', $action_args );
 				}
 				break;
-			case 'on-hold' :
-			case 'cancelled' :
-			case 'switched' :
-			case 'expired' :
-			case 'trash' :
+			case 'on-hold':
+			case 'cancelled':
+			case 'switched':
+			case 'expired':
+			case 'trash':
 				foreach ( $this->get_date_types_to_schedule() as $date_type ) {
 
 					$action_hook = $this->get_scheduled_action_hook( $subscription, $date_type );
@@ -170,18 +174,18 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 		$hook = '';
 
 		switch ( $date_type ) {
-			case 'next_payment' :
+			case 'next_payment':
 				$hook = 'woocommerce_scheduled_subscription_payment';
 				break;
-			case 'payment_retry' :
+			case 'payment_retry':
 				$hook = 'woocommerce_scheduled_subscription_payment_retry';
 				break;
-			case 'trial_end' :
+			case 'trial_end':
 				$hook = 'woocommerce_scheduled_subscription_trial_end';
 				break;
-			case 'end' :
+			case 'end':
 				// End dates may need either an expiration or end of prepaid term hook, depending on the status
-				if ( $subscription->has_status( 'cancelled' ) ) {
+				if ( $subscription->has_status( array( 'cancelled', 'pending-cancel' ) ) ) {
 					$hook = 'woocommerce_scheduled_subscription_end_of_prepaid_term';
 				} elseif ( $subscription->has_status( 'active' ) ) {
 					$hook = 'woocommerce_scheduled_subscription_expiration';
