@@ -283,14 +283,14 @@ class WCS_Switch_Totals_Calculator {
 	 */
 	protected function apportion_sign_up_fees( $switch_item ) {
 
-		$apportion_sign_up_fee = apply_filters( 'wcs_switch_must_prorate_sign_up_fee', $this->apportion_sign_up_fee, $switch_item );
+		$should_apportion_sign_up_fee = apply_filters( 'wcs_switch_should_prorate_sign_up_fee', 'yes' === $this->apportion_sign_up_fee, $switch_item );
 
-		if ( 'no' === $apportion_sign_up_fee ) {
+		if ( ! $should_apportion_sign_up_fee ) {
 			// Allowing third parties to force the application of a sign-up fee
 			$subscription_sign_up_fee = apply_filters( 'wcs_switch_sign_up_fee', 0, $switch_item );
 
 			$switch_item->product->update_meta_data( '_subscription_sign_up_fee',  $subscription_sign_up_fee );
-		} elseif ( $switch_item->existing_item && 'yes' === $apportion_sign_up_fee ) {
+		} elseif ( $switch_item->existing_item ) {
 			$product = wc_get_product( $switch_item->canonical_product_id );
 
 			// Make sure we get a fresh copy of the product's meta to avoid prorating an already prorated sign-up fee
