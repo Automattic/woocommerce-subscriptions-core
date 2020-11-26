@@ -268,9 +268,7 @@ class WCS_Switch_Totals_Calculator {
 	 */
 	protected function should_apportion_length( $switch_item ) {
 
-		$should_apportion_length =  apply_filters(  'wcs_switch_should_prorate_length', 'yes' == $this->apportion_length || ( 'virtual' == $this->apportion_length && $switch_item->is_virtual_product() ), $switch_item );
-
-		return $should_apportion_length;
+		return apply_filters(  'wcs_switch_should_prorate_length', 'yes' == $this->apportion_length || ( 'virtual' == $this->apportion_length && $switch_item->is_virtual_product() ), $switch_item );
 	}
 
 	/** Total Calculators */
