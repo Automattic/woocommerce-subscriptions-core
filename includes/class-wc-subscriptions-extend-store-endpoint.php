@@ -7,33 +7,32 @@
  *
  * @package WooCommerce Subscriptions
  * @author  WooCommerce
- * @since   3.0.9
+ * @since   WCBLOCKS-DEV
  */
 
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\Domain\Services\ExtendRestApi;
 use Automattic\WooCommerce\Blocks\StoreApi\Schemas\CartItemSchema;
-
 class WC_Subscriptions_Extend_Store_Endpoint {
 
 	/**
-	 * Stores Rest Extending instance
+	 * Stores Rest Extending instance.
 	 *
 	 * @var ExtendRestApi
 	 */
 	private static $extend;
 
 	/**
-	 * Plugin Identifier
+	 * Plugin Identifier, unique to each plugin.
 	 *
 	 * @var string
 	 */
 	const IDENTIFIER = 'subscriptions';
 
 	/**
-	 * Bootstraps the class and hooks required actions & filters.
+	 * Bootstraps the class and hooks required data.
 	 *
-	 * @since 3.0.9
+	 * @since WCBLOCKS-DEV
 	 */
 	public static function init() {
 
@@ -41,6 +40,9 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 		self::extend_store();
 	}
 
+	/**
+	 * Registers the actual data into each endpoint.
+	 */
 	public static function extend_store() {
 
 		self::$extend->register_endpoint_data( [
@@ -51,12 +53,19 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 		] );
 	}
 
+	/**
+	 * Register subscription product data into cart/items endpoint.
+	 *
+	 * @param array $cart_item Current cart item data.
+	 *
+	 * @return array $item_data Registered data or empty array if condition is not satisfied.
+	 */
 	public static function extend_cart_item_data( $cart_item ) {
 
 		$product = $cart_item['data'];
 		$item_data = [];
 
-		if ( $product->get_type() === 'subscription' ) {
+		if ( $product->get_type() === 'subscription' || $product->get_type() === 'subscription_variation' ) {
 			$item_data = [
 				"billing_period"      => WC_Subscriptions_Product::get_period( $product ),
 				"billing_interval"    => (int) WC_Subscriptions_Product::get_interval( $product ),
@@ -70,6 +79,12 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 		return $item_data;
 	}
 
+	/**
+	 * Register subscription product schema into cart/items endpoint.
+	 *
+	 *
+	 * @return array $item_data Registered schema.
+	 */
 	public static function extend_cart_item_schema() {
 		return [
 			'billing_period'            => [
