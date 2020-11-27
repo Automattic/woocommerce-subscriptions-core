@@ -12,6 +12,7 @@
 
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\Domain\Services\ExtendRestApi;
+use Automattic\WooCommerce\Blocks\StoreApi\Schemas\CartSchema;
 use Automattic\WooCommerce\Blocks\StoreApi\Schemas\CartItemSchema;
 
 class WC_Subscriptions_Extend_Store_Endpoint {
@@ -46,12 +47,23 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 	 */
 	public static function extend_store() {
 
+		// Register into `cart/items`
 		self::$extend->register_endpoint_data(
 			array(
 				'endpoint'        => CartItemSchema::IDENTIFIER,
 				'namespace'       => self::IDENTIFIER,
 				'data_callback'   => array( 'WC_Subscriptions_Extend_Store_Endpoint', 'extend_cart_item_data' ),
 				'schema_callback' => array( 'WC_Subscriptions_Extend_Store_Endpoint', 'extend_cart_item_schema' ),
+			)
+		);
+
+		// Register into `cart`
+		self::$extend->register_endpoint_data(
+			array(
+				'endpoint'        => CartSchema::IDENTIFIER,
+				'namespace'       => self::IDENTIFIER,
+				'data_callback'   => array( 'WC_Subscriptions_Extend_Store_Endpoint', 'extend_cart_data' ),
+				'schema_callback' => array( 'WC_Subscriptions_Extend_Store_Endpoint', 'extend_cart_schema' ),
 			)
 		);
 	}
@@ -85,8 +97,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 	/**
 	 * Register subscription product schema into cart/items endpoint.
 	 *
-	 *
-	 * @return array $item_data Registered schema.
+	 * @return array Registered schema.
 	 */
 	public static function extend_cart_item_schema() {
 		return array(
@@ -95,11 +106,13 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 				'type'        => 'string',
 				'enum'        => array_keys( wcs_get_subscription_period_strings() ),
 				'context'     => array( 'view', 'edit' ),
+				'readonly'    => true,
 			),
 			'billing_interval'    => array(
 				'description' => __( 'The number of billing periods between subscription renewals.', 'woocommerce-subscriptions' ),
 				'type'        => 'integer',
 				'context'     => array( 'view', 'edit' ),
+				'readonly'    => true,
 			),
 			'subscription_length' => array(
 				'description' => __( 'Subscription Product length.', 'woocommerce-subscriptions' ),
@@ -129,6 +142,189 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 		);
 	}
 
+
+	/**
+	 * Register future subscriptions into cart endpoint.
+	 *
+	 *
+	 * @return array $future_subscriptions Registered data or empty array if condition is not satisfied.
+	 */
+	public static function extend_cart_data() {
+
+		// return early if we don't have any subscription.
+		if ( ! WC_Subscriptions_Cart::cart_contains_subscription() ) {
+			return array();
+		}
+
+		$core_cart            = wc()->cart;
+		$future_subscriptions = array();
+
+		// Load recurring carts into $core_cart;
+		WC_Subscriptions_Cart::calculate_subscription_totals( $core_cart->get_total( 'total' ), $core_cart );
+
+		foreach ( $core_cart->recurring_carts as $cart_key => $cart ) {
+			$cart_item = array_pop( $cart->cart_contents );
+			$product   = $cart_item['data'];
+
+			$future_subscriptions[] = array(
+				'key'                 => $cart_key,
+				'next_payment_date'   => $cart->next_payment_date,
+				'billing_period'      => WC_Subscriptions_Product::get_period( $product ),
+				'billing_interval'    => (int) WC_Subscriptions_Product::get_interval( $product ),
+				'subscription_length' => (int) WC_Subscriptions_Product::get_length( $product ),
+				'totals'              => array(
+					'total_items'        => self::prepare_money_response( $cart->get_subtotal(), wc_get_price_decimals() ),
+					'total_items_tax'    => self::prepare_money_response( $cart->get_subtotal_tax(), wc_get_price_decimals() ),
+					'total_fees'         => self::prepare_money_response( $cart->get_fee_total(), wc_get_price_decimals() ),
+					'total_fees_tax'     => self::prepare_money_response( $cart->get_fee_tax(), wc_get_price_decimals() ),
+					'total_discount'     => self::prepare_money_response( $cart->get_discount_total(), wc_get_price_decimals() ),
+					'total_discount_tax' => self::prepare_money_response( $cart->get_discount_tax(), wc_get_price_decimals() ),
+					'total_shipping'     => self::prepare_money_response( $cart->get_shipping_total(), wc_get_price_decimals() ),
+					'total_shipping_tax' => self::prepare_money_response( $cart->get_shipping_tax(), wc_get_price_decimals() ),
+
+					// Explicitly request context='edit'; default ('view') will render total as markup.
+					'total_price'        => self::prepare_money_response( $cart->get_total( 'edit' ), wc_get_price_decimals() ),
+					'total_tax'          => self::prepare_money_response( $cart->get_total_tax(), wc_get_price_decimals() ),
+					'tax_lines'          => self::get_tax_lines( $cart ),
+				),
+			);
+		}
+
+		return $future_subscriptions;
+	}
+
+	/**
+	 * Register future subscriptions schema into cart endpoint.
+	 *
+	 * @return array Registered schema.
+	 */
+	public static function extend_cart_schema() {
+		return array(
+			'key'                 => array(
+				'description' => __( 'Subscription key', 'woocommerce-subscriptions' ),
+				'type'        => 'string',
+				'context'     => array( 'view', 'edit' ),
+				'readonly'    => true,
+			),
+			'next_payment_date'   => array(
+				'description' => __( "The subscription's next payment date.", 'woocommerce-subscriptions' ),
+				'type'        => 'date-time',
+				'context'     => array( 'view', 'edit' ),
+				'readonly'    => true,
+			),
+			'billing_period'      => array(
+				'description' => __( 'Billing period for the subscription.', 'woocommerce-subscriptions' ),
+				'type'        => 'string',
+				'enum'        => array_keys( wcs_get_subscription_period_strings() ),
+				'context'     => array( 'view', 'edit' ),
+				'readonly'    => true,
+			),
+			'billing_interval'    => array(
+				'description' => __( 'The number of billing periods between subscription renewals.', 'woocommerce-subscriptions' ),
+				'type'        => 'integer',
+				'context'     => array( 'view', 'edit' ),
+				'readonly'    => true,
+			),
+			'subscription_length' => array(
+				'description' => __( 'Subscription length.', 'woocommerce-subscriptions' ),
+				'type'        => 'integer',
+				'context'     => array( 'view', 'edit' ),
+				'readonly'    => true,
+			),
+			'totals'              => array(
+				'description' => __( 'Cart total amounts provided using the smallest unit of the currency.', 'woocommerce-subscriptions' ),
+				'type'        => 'object',
+				'context'     => array( 'view', 'edit' ),
+				'readonly'    => true,
+				'properties'  => array(
+					'total_items'        => array(
+						'description' => __( 'Total price of items in the cart.', 'woocommerce-subscriptions' ),
+						'type'        => 'string',
+						'context'     => array( 'view', 'edit' ),
+						'readonly'    => true,
+					),
+					'total_items_tax'    => array(
+						'description' => __( 'Total tax on items in the cart.', 'woocommerce-subscriptions' ),
+						'type'        => 'string',
+						'context'     => array( 'view', 'edit' ),
+						'readonly'    => true,
+					),
+					'total_fees'         => array(
+						'description' => __( 'Total price of any applied fees.', 'woocommerce-subscriptions' ),
+						'type'        => 'string',
+						'context'     => array( 'view', 'edit' ),
+						'readonly'    => true,
+					),
+					'total_fees_tax'     => array(
+						'description' => __( 'Total tax on fees.', 'woocommerce-subscriptions' ),
+						'type'        => 'string',
+						'context'     => array( 'view', 'edit' ),
+						'readonly'    => true,
+					),
+					'total_discount'     => array(
+						'description' => __( 'Total discount from applied coupons.', 'woocommerce-subscriptions' ),
+						'type'        => 'string',
+						'context'     => array( 'view', 'edit' ),
+						'readonly'    => true,
+					),
+					'total_discount_tax' => array(
+						'description' => __( 'Total tax removed due to discount from applied coupons.', 'woocommerce-subscriptions' ),
+						'type'        => 'string',
+						'context'     => array( 'view', 'edit' ),
+						'readonly'    => true,
+					),
+					'total_shipping'     => array(
+						'description' => __( 'Total price of shipping. If shipping has not been calculated, a null response will be sent.', 'woocommerce-subscriptions' ),
+						'type'        => array( 'string', 'null' ),
+						'context'     => array( 'view', 'edit' ),
+						'readonly'    => true,
+					),
+					'total_shipping_tax' => array(
+						'description' => __( 'Total tax on shipping. If shipping has not been calculated, a null response will be sent.', 'woocommerce-subscriptions' ),
+						'type'        => array( 'string', 'null' ),
+						'context'     => array( 'view', 'edit' ),
+						'readonly'    => true,
+					),
+					'total_price'        => array(
+						'description' => __( 'Total price the customer will pay.', 'woocommerce-subscriptions' ),
+						'type'        => 'string',
+						'context'     => array( 'view', 'edit' ),
+						'readonly'    => true,
+					),
+					'total_tax'          => array(
+						'description' => __( 'Total tax applied to items and shipping.', 'woocommerce-subscriptions' ),
+						'type'        => 'string',
+						'context'     => array( 'view', 'edit' ),
+						'readonly'    => true,
+					),
+					'tax_lines'          => array(
+						'description' => __( 'Lines of taxes applied to items and shipping.', 'woocommerce-subscriptions' ),
+						'type'        => 'array',
+						'context'     => array( 'view', 'edit' ),
+						'readonly'    => true,
+						'items'       => array(
+							'type'       => 'object',
+							'properties' => array(
+								'name'  => array(
+									'description' => __( 'The name of the tax.', 'woocommerce-subscriptions' ),
+									'type'        => 'string',
+									'context'     => array( 'view', 'edit' ),
+									'readonly'    => true,
+								),
+								'price' => array(
+									'description' => __( 'The amount of tax charged.', 'woocommerce-subscriptions' ),
+									'type'        => 'string',
+									'context'     => array( 'view', 'edit' ),
+									'readonly'    => true,
+								),
+							),
+						),
+					),
+				),
+			),
+		);
+	}
+
 	/**
 	 * Convert monetary values from WooCommerce to string based integers, using
 	 * the smallest unit of a currency.
@@ -148,5 +344,26 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 				absint( $rounding_mode )
 			)
 		);
+	}
+
+	/**
+	 * Get tax lines from the cart and format to match schema.
+	 *
+	 * TODO: This function is copied from WooCommerce Blocks, remove it once https://github.com/woocommerce/woocommerce-gutenberg-products-block/issues/3264 is closed.
+	 * @param \WC_Cart $cart Cart class instance.
+	 * @return array
+	 */
+	protected static function get_tax_lines( $cart ) {
+		$cart_tax_totals = $cart->get_tax_totals();
+		$tax_lines       = array();
+
+		foreach ( $cart_tax_totals as $cart_tax_total ) {
+			$tax_lines[] = array(
+				'name'  => $cart_tax_total->label,
+				'price' => self::prepare_money_response( $cart_tax_total->amount, wc_get_price_decimals() ),
+			);
+		}
+
+		return $tax_lines;
 	}
 }
