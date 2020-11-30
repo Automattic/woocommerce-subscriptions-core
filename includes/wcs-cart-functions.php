@@ -5,9 +5,9 @@
  * Functions for cart specific things, based on wc-cart-functions.php but overloaded
  * for use with recurring carts.
  *
- * @author 		Prospress
- * @category 	Core
- * @package 	WooCommerce Subscriptions/Functions
+ * @author Prospress
+ * @category Core
+ * @package WooCommerce Subscriptions/Functions
  * @version     2.0
  */
 
@@ -94,8 +94,16 @@ function wcs_cart_totals_shipping_html() {
 					// packages match, display shipping amounts only
 					?>
 					<tr class="shipping recurring-total <?php echo esc_attr( $recurring_cart_key ); ?>">
-						<th><?php echo esc_html( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ) ); ?></th>
-						<td data-title="<?php echo esc_attr( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ) ); ?>">
+						<th>
+							<?php
+							// translators: %s: shipping method label.
+							echo esc_html( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ) );
+							?>
+						</th>
+						<td data-title="<?php
+							// translators: %s: shipping method label.
+							echo esc_attr( sprintf( __( 'Shipping via %s', 'woocommerce-subscriptions' ), $shipping_method->label ) );
+						?>">
 							<?php echo wp_kses_post( wcs_cart_totals_shipping_method_price_label( $shipping_method, $recurring_cart ) ); ?>
 							<?php if ( 1 === count( $package['rates'] ) ) : ?>
 								<?php wcs_cart_print_shipping_input( $index, $shipping_method ); ?>
@@ -114,12 +122,15 @@ function wcs_cart_totals_shipping_html() {
 					$shipping_selection_displayed = true;
 
 					if ( $show_package_name ) {
-						$package_name = apply_filters( 'woocommerce_shipping_package_name', sprintf( _n( 'Shipping', 'Shipping %d', ( $i + 1 ), 'woocommerce-subscriptions' ), ( $i + 1 ) ), $i, $package );
+						// translators: %d: package number.
+						$package_name = apply_filters( 'woocommerce_shipping_package_name', sprintf( _n( 'Shipping', 'Shipping %d', ( $i + 1 ), 'woocommerce-subscriptions' ), ( $i + 1 ) ), $i, $package ); // phpcs:ignore WordPress.WP.I18n.MissingSingularPlaceholder,WordPress.WP.I18n.MismatchedPlaceholders
 					} else {
 						$package_name = '';
 					}
 
-					wc_get_template( 'cart/cart-recurring-shipping.php', array(
+					wc_get_template(
+						'cart/cart-recurring-shipping.php',
+						array(
 							'package'              => $package,
 							'available_methods'    => $package['rates'],
 							'show_package_details' => $show_package_details,
@@ -201,9 +212,10 @@ function wcs_cart_totals_shipping_method_price_label( $method, $cart ) {
 
 	$price_label = '';
 
-	if ( $method->cost != 0 ) {
+	if ( 0 < $method->cost ) {
+		$display_prices_include_tax = WC_Subscriptions::is_woocommerce_pre( '3.3' ) ? ( 'incl' === WC()->cart->tax_display_cart ) : WC()->cart->display_prices_including_tax();
 
-		if ( WC()->cart->tax_display_cart == 'excl' ) {
+		if ( ! $display_prices_include_tax ) {
 			$price_label .= wcs_cart_price_string( $method->cost, $cart );
 			if ( $method->get_shipping_tax() > 0 && $cart->prices_include_tax ) {
 				$price_label .= ' <small>' . WC()->countries->ex_tax_or_vat() . '</small>';
@@ -291,9 +303,10 @@ function wcs_cart_totals_coupon_html( $coupon, $cart ) {
 function wcs_cart_totals_order_total_html( $cart ) {
 	$order_total_html = '<strong>' . $cart->get_total() . '</strong> ';
 	$tax_total_html   = '';
+	$display_prices_include_tax = WC_Subscriptions::is_woocommerce_pre( '3.3' ) ? ( 'incl' === $cart->tax_display_cart ) : $cart->display_prices_including_tax();
 
 	// If prices are tax inclusive, show taxes here
-	if ( wc_tax_enabled() && 'incl' === $cart->tax_display_cart ) {
+	if ( wc_tax_enabled() && $display_prices_include_tax ) {
 		$tax_string_array = array();
 		$cart_taxes       = $cart->get_tax_totals();
 
@@ -376,7 +389,7 @@ function wcs_add_cart_first_renewal_payment_date( $order_total_html, $cart ) {
 	if ( 0 !== $cart->next_payment_date ) {
 		$first_renewal_date = date_i18n( wc_date_format(), wcs_date_to_time( get_date_from_gmt( $cart->next_payment_date ) ) );
 		// translators: placeholder is a date
-		$order_total_html  .= '<div class="first-payment-date"><small>' . sprintf( __( 'First renewal: %s', 'woocommerce-subscriptions' ), $first_renewal_date ) .  '</small></div>';
+		$order_total_html  .= '<div class="first-payment-date"><small>' . sprintf( __( 'First renewal: %s', 'woocommerce-subscriptions' ), $first_renewal_date ) . '</small></div>';
 	}
 
 	return $order_total_html;

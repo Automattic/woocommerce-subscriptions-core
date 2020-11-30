@@ -4,11 +4,11 @@
  *
  * Mirrors a few functions in the WC_Cart class to handle subscription-specific discounts
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Coupon
- * @category	Class
- * @author		Max Rice
- * @since		1.2
+ * @package WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Coupon
+ * @category Class
+ * @author Max Rice
+ * @since 1.2
  */
 class WC_Subscriptions_Coupon {
 
@@ -144,7 +144,7 @@ class WC_Subscriptions_Coupon {
 			$displaying_initial_cart_totals = did_action( 'woocommerce_review_order_after_cart_contents' ) > did_action( 'woocommerce_review_order_before_order_total' );
 		}
 
-		if ( $displaying_initial_cart_totals && WC_Subscriptions_Cart::all_cart_items_have_free_trial() &&  in_array( wcs_get_coupon_property( $coupon, 'discount_type' ), array( 'recurring_fee', 'recurring_percent' ) ) ) {
+		if ( $displaying_initial_cart_totals && WC_Subscriptions_Cart::all_cart_items_have_free_trial() && in_array( wcs_get_coupon_property( $coupon, 'discount_type' ), array( 'recurring_fee', 'recurring_percent' ) ) ) {
 			$coupon_html .= '<span class="wcs-hidden-coupon" type="hidden"></span>';
 		}
 
@@ -1043,8 +1043,8 @@ class WC_Subscriptions_Coupon {
 			if ( self::get_coupon_limit( $code ) <= $count ) {
 				$subscription->remove_coupon( $code );
 				$subscription->add_order_note( sprintf(
+					/* translators: %1$s is the coupon code, %2$d is the number of payment usages */
 					_n(
-						/* translators: %1$s is the coupon code, %2$d is the number of payment usages */
 						'Limited use coupon "%1$s" removed from subscription. It has been used %2$d time.',
 						'Limited use coupon "%1$s" removed from subscription. It has been used %2$d times.',
 						$count,
@@ -1095,7 +1095,7 @@ class WC_Subscriptions_Coupon {
 	 * @since 1.2
 	 */
 	public static function apply_subscription_discount( $original_price, $cart_item, $cart ) {
-		_deprecated_function( __METHOD__, '2.0.10', 'Have moved to filtering on "woocommerce_coupon_get_discount_amount" to return discount amount. See: '. __CLASS__ .'::get_discount_amount()' );
+		_deprecated_function( __METHOD__, '2.0.10', 'Have moved to filtering on "woocommerce_coupon_get_discount_amount" to return discount amount. See: ' . __CLASS__ . '::get_discount_amount()' );
 
 		if ( ! WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 			return $original_price;
@@ -1366,7 +1366,7 @@ class WC_Subscriptions_Coupon {
 	 * @since 1.2
 	 */
 	public static function apply_subscription_discount_before_tax( $original_price, $cart_item, $cart ) {
-		_deprecated_function( __METHOD__, '2.0', __CLASS__ .'::apply_subscription_discount( $original_price, $cart_item, $cart )' );
+		_deprecated_function( __METHOD__, '2.0', __CLASS__ . '::apply_subscription_discount( $original_price, $cart_item, $cart )' );
 		return self::apply_subscription_discount( $original_price, $cart_item, $cart );
 	}
 
@@ -1377,6 +1377,6 @@ class WC_Subscriptions_Coupon {
 	 * @version 1.3.6
 	 */
 	public static function apply_subscription_discount_after_tax( $coupon, $cart_item, $price ) {
-		_deprecated_function( __METHOD__, '2.0', 'WooCommerce 2.3 removed after tax discounts. Use ' . __CLASS__ .'::apply_subscription_discount( $original_price, $cart_item, $cart )' );
+		_deprecated_function( __METHOD__, '2.0', 'WooCommerce 2.3 removed after tax discounts. Use ' . __CLASS__ . '::apply_subscription_discount( $original_price, $cart_item, $cart )' );
 	}
 }

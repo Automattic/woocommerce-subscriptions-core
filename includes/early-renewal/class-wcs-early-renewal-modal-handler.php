@@ -80,7 +80,16 @@ class WCS_Early_Renewal_Modal_Handler {
 			$new_next_payment_date = null;
 		}
 
-		wc_get_template( 'html-early-renewal-modal-content.php', array( 'subscription' => $subscription, 'totals' => $totals, 'new_next_payment_date' => $new_next_payment_date ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . '/templates/' );
+		wc_get_template(
+			'html-early-renewal-modal-content.php',
+			array(
+				'subscription'          => $subscription,
+				'totals'                => $totals,
+				'new_next_payment_date' => $new_next_payment_date,
+			),
+			'',
+			plugin_dir_path( WC_Subscriptions::$plugin_file ) . '/templates/'
+		);
 	}
 
 	/**
@@ -137,6 +146,9 @@ class WCS_Early_Renewal_Modal_Handler {
 			wp_redirect( wcs_get_early_renewal_url( $subscription ) );
 			exit();
 		} else {
+			// Trigger the subscription payment complete hooks and reset suspension counts and user roles.
+			$subscription->payment_complete();
+
 			wcs_update_dates_after_early_renewal( $subscription, $renewal_order );
 			wc_add_notice( __( 'Your early renewal order was successful.', 'woocommerce-subscriptions' ), 'success' );
 		}

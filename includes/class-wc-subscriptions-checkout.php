@@ -4,10 +4,10 @@
  *
  * Extends the WooCommerce checkout class to add subscription meta on checkout.
  *
- * @package		WooCommerce Subscriptions
- * @subpackage	WC_Subscriptions_Checkout
- * @category	Class
- * @author		Brent Shepherd
+ * @package WooCommerce Subscriptions
+ * @subpackage WC_Subscriptions_Checkout
+ * @category Class
+ * @author Brent Shepherd
  */
 class WC_Subscriptions_Checkout {
 
@@ -43,6 +43,9 @@ class WC_Subscriptions_Checkout {
 
 		// When a line item is added to a subscription, ensure the __has_trial meta data is added if applicable.
 		add_action( 'woocommerce_checkout_create_order_line_item', array( __CLASS__, 'maybe_add_free_trial_item_meta' ), 10, 4 );
+
+		// Store the amount of tax removed from a line item to account the base location's tax.
+		add_action( 'woocommerce_checkout_create_order_line_item', array( __CLASS__, 'store_line_item_base_location_taxes' ), 10, 3 );
 	}
 
 	/**
@@ -134,6 +137,11 @@ class WC_Subscriptions_Checkout {
 			) );
 
 			if ( is_wp_error( $subscription ) ) {
+				// If the customer wasn't created on checkout and registration isn't enabled, display a more appropriate error message.
+				if ( 'woocommerce_subscription_invalid_customer_id' === $subscription->get_error_code() && ! is_user_logged_in() && ! WC()->checkout->is_registration_enabled() ) {
+					throw new Exception( self::get_registration_error_message() );
+				}
+
 				throw new Exception( $subscription->get_error_message() );
 			}
 
@@ -289,11 +297,18 @@ class WC_Subscriptions_Checkout {
 					$item->legacy_package_key = $package_key; // @deprecated For legacy actions.
 					$item->set_props( array(
 						'method_title' => $shipping_rate->label,
-						'method_id'    => $shipping_rate->id,
 						'total'        => wc_format_decimal( $shipping_rate->cost ),
 						'taxes'        => array( 'total' => $shipping_rate->taxes ),
 						'order_id'     => $subscription->get_id(),
 					) );
+
+					// Backwards compatibility for sites running WC pre 3.4 which stored shipping method and instance ID in a single meta row.
+					if ( WC_Subscriptions::is_woocommerce_pre( '3.4' ) ) {
+						$item->set_method_id( $shipping_rate->id );
+					} else {
+						$item->set_method_id( $shipping_rate->method_id );
+						$item->set_instance_id( $shipping_rate->instance_id );
+					}
 
 					foreach ( $shipping_rate->get_meta_data() as $key => $value ) {
 						$item->add_meta_data( $key, $value, true );
@@ -481,10 +496,7 @@ class WC_Subscriptions_Checkout {
 	 */
 	public static function filter_woocommerce_script_parameters( $woocommerce_params, $handle = '' ) {
 		// WC 3.3+ deprecates handle-specific filters in favor of 'woocommerce_get_script_data'.
-		if ( 'woocommerce_get_script_data' === current_filter() && ! in_array( $handle, array(
-				'woocommerce',
-				'wc-checkout',
-			) ) ) {
+		if ( 'woocommerce_get_script_data' === current_filter() && ! in_array( $handle, array( 'woocommerce', 'wc-checkout' ) ) ) {
 			return $woocommerce_params;
 		}
 
@@ -493,6 +505,21 @@ class WC_Subscriptions_Checkout {
 		}
 
 		return $woocommerce_params;
+	}
+
+	/**
+	 * Stores the subtracted base location tax totals in the subscription line item meta.
+	 *
+	 * @since 3.0.10
+	 *
+	 * @param WC_Line_Item_Product $line_item     The line item added to the order/subscription.
+	 * @param string               $cart_item_key The key of the cart item being added to the cart.
+	 * @param array                $cart_item     The cart item data.
+	 */
+	public static function store_line_item_base_location_taxes( $line_item, $cart_item_key, $cart_item ) {
+		if ( isset( $cart_item['_subtracted_base_location_tax'] ) ) {
+			$line_item->add_meta_data( '_subtracted_base_location_tax', $cart_item['_subtracted_base_location_tax'] );
+		}
 	}
 
 	/**
@@ -519,6 +546,30 @@ class WC_Subscriptions_Checkout {
 			$_POST['createaccount'] = 1;
 		}
 
+	}
+
+	/**
+	 * Generates a registration failed error message depending on the store's registration settings.
+	 *
+	 * When a customer wasn't created on checkout because checkout registration is disabled,
+	 * this function generates the error message displayed to the customer.
+	 *
+	 * The message will redirect the customer to the My Account page if registration is enabled there, otherwise a generic 'you need an account' message will be displayed.
+	 *
+	 * @since 3.0.11
+	 * @return string The error message.
+	 */
+	private static function get_registration_error_message() {
+		// Direct the customer to login/register on the my account page if that's enabled.
+		if ( 'yes' === get_option( 'woocommerce_enable_myaccount_registration' ) ) {
+			// Translators: Placeholders are opening and closing strong and link tags.
+			$message = __( 'Purchasing a subscription product requires an account. Please go to the %sMy Account%s page to login or register.', 'woocommerce-subscriptions' );
+		} else {
+			// Translators: Placeholders are opening and closing strong and link tags.
+			$message = __( 'Purchasing a subscription product requires an account. Please go to the %sMy Account%s page to login or contact us if you need assistance.', 'woocommerce-subscriptions' );
+		}
+
+		return sprintf( $message, '<strong><a href="' . wc_get_page_permalink( 'myaccount' ) . '">', '</a></strong>' );
 	}
 
 	/**
