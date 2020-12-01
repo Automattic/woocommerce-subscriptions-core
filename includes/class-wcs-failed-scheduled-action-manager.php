@@ -101,6 +101,12 @@ class WCS_Failed_Scheduled_Action_Manager {
 	 * @since 2.2.19
 	 */
 	public function maybe_show_admin_notice() {
+
+		// Responding to this notice requires investigating subscriptions and scheduled actions so only display it to users who can manage woocommerce.
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
 		$this->maybe_disable_admin_notice();
 		$failed_scheduled_actions = get_option( WC_Subscriptions_Admin::$option_prefix . '_failed_scheduled_actions', array() );
 
