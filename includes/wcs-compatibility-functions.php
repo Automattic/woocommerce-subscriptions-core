@@ -18,27 +18,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Display a tooltip in the WordPress administration area.
  *
- * Uses wc_help_tip() when WooCommerce 2.5+ is active, otherwise it manually prints the HTML for a tooltip.
+ * @since 2.1.0
  *
- * @param string $tip The content to display in the tooltip.
- * @since  2.1.0
- * @return string
+ * @param string $tip        The content to display in the tooltip.
+ * @param bool   $allow_html Allow sanitized HTML if true or escape. Optional. False by default.
+ * @param string $class      The help tip's class attribute. Optional. Default is 'woocommerce-help-tip'.
+ *
+ * @return string The helptip HTML.
  */
-function wcs_help_tip( $tip, $allow_html = false ) {
+function wcs_help_tip( $tip, $allow_html = false, $class = 'woocommerce-help-tip' ) {
+	$help_tip = wc_help_tip( $tip, $allow_html );
 
-	if ( function_exists( 'wc_help_tip' ) ) {
-
-		$help_tip = wc_help_tip( $tip, $allow_html );
-
-	} else {
-
-		if ( $allow_html ) {
-			$tip = wc_sanitize_tooltip( $tip );
-		} else {
-			$tip = esc_attr( $tip );
-		}
-
-		$help_tip = sprintf( '<img class="help_tip" data-tip="%s" src="%s/assets/images/help.png" height="16" width="16" />', $tip, esc_url( WC()->plugin_url() ) );
+	if ( 'woocommerce-help-tip' !== $class ) {
+		$help_tip = str_replace( 'woocommerce-help-tip', esc_attr( $class ), $help_tip );
 	}
 
 	return $help_tip;
