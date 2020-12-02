@@ -97,7 +97,9 @@ class WCS_Switch_Totals_Calculator {
 			$this->set_switch_type_in_cart( $cart_item_key, $switch_type );
 
 			if ( $this->should_prorate_recurring_price( $switch_item ) ) {
-				if ( 'upgrade' === $switch_type ) {
+
+				// Switching to a product with only 1 payment means no next payment can be collected and so we calculate a gap payment in that scenario.
+				if ( 'upgrade' === $switch_type || $switch_item->is_switch_to_one_payment_subscription() ) {
 					if ( $this->should_reduce_prepaid_term( $switch_item ) ) {
 						$this->reduce_prepaid_term( $cart_item_key, $switch_item );
 					} else {
