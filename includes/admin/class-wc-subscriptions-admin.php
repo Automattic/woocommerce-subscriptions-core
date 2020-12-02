@@ -2095,7 +2095,7 @@ class WC_Subscriptions_Admin {
 	 * This setting allows stores to enable users to create an account when purchasing a subscription, but
 	 * not allow an account to be created when they are making one off/standard purchases.
 	 *
-	 * @since 3.0.11
+	 * @since 3.1.0
 	 *
 	 * @param array $settings The Accounts & Privacy settings.
 	 * @return array $settings.

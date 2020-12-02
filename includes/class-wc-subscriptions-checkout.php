@@ -472,7 +472,7 @@ class WC_Subscriptions_Checkout {
 	/**
 	 * Enables the 'registeration required' (guest checkout) setting when purchasing subscriptions.
 	 *
-	 * @since 3.0.11
+	 * @since 3.1.0
 	 *
 	 * @param bool $account_required Whether an account is required to checkout.
 	 * @return bool
@@ -524,7 +524,7 @@ class WC_Subscriptions_Checkout {
 	/**
 	 * Enables registration for carts containing subscriptions if admin allow it.
 	 *
-	 * @since 3.0.11
+	 * @since 3.1.0
 	 *
 	 * @param  bool $registration_enabled Whether registration is enabled on checkout by default.
 	 * @return bool
@@ -572,10 +572,10 @@ class WC_Subscriptions_Checkout {
 	 * If shopping cart contains subscriptions, make sure a user can register on the checkout page
 	 *
 	 * @since 1.0
-	 * @deprecated 3.0.11
+	 * @deprecated 3.1.0
 	 */
 	public static function make_checkout_registration_possible( $checkout = '' ) {
-		wcs_deprecated_function( __METHOD__, '3.0.11' );
+		wcs_deprecated_function( __METHOD__, '3.1.0' );
 		if ( WC_Subscriptions_Cart::cart_contains_subscription() && ! is_user_logged_in() ) {
 
 			// Make sure users are required to register an account
@@ -592,10 +592,10 @@ class WC_Subscriptions_Checkout {
 	 * Make sure account fields display the required "*" when they are required.
 	 *
 	 * @since 1.3.5
-	 * @deprecated 3.0.11
+	 * @deprecated 3.1.0
 	 */
 	public static function make_checkout_account_fields_required( $checkout_fields ) {
-		wcs_deprecated_function( __METHOD__, '3.0.11' );
+		wcs_deprecated_function( __METHOD__, '3.1.0' );
 		if ( WC_Subscriptions_Cart::cart_contains_subscription() && ! is_user_logged_in() ) {
 
 			$account_fields = array(
@@ -618,10 +618,10 @@ class WC_Subscriptions_Checkout {
 	 * After displaying the checkout form, restore the store's original registration settings.
 	 *
 	 * @since 1.1
-	 * @deprecated 3.0.11
+	 * @deprecated 3.1.0
 	 */
 	public static function restore_checkout_registration_settings( $checkout = '' ) {
-		wcs_deprecated_function( __METHOD__, '3.0.11' );
+		wcs_deprecated_function( __METHOD__, '3.1.0' );
 		if ( self::$guest_checkout_option_changed ) {
 			$checkout->enable_guest_checkout = true;
 			if ( ! is_user_logged_in() ) { // Also changed must_create_account
