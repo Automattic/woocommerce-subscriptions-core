@@ -84,16 +84,19 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 			'trial_length'        => null,
 			'trial_period'        => null,
 			'sign_up_fees'        => null,
+			'sign_up_fees_tax'    => null,
 		);
 
 		if ( in_array( $product->get_type(), array( 'subscription', 'subscription_variation' ), true ) ) {
-			$item_data = array(
-				'billing_period'      => WC_Subscriptions_Product::get_period( $product ),
-				'billing_interval'    => (int) WC_Subscriptions_Product::get_interval( $product ),
-				'subscription_length' => (int) WC_Subscriptions_Product::get_length( $product ),
-				'trial_length'        => (int) WC_Subscriptions_Product::get_trial_length( $product ),
-				'trial_period'        => WC_Subscriptions_Product::get_trial_period( $product ),
-				'sign_up_fees'        => self::$extend->formatters->money->format( WC_Subscriptions_Product::get_sign_up_fee( $product ) ),
+			$item_data = array_merge(
+				array(
+					'billing_period'      => WC_Subscriptions_Product::get_period( $product ),
+					'billing_interval'    => (int) WC_Subscriptions_Product::get_interval( $product ),
+					'subscription_length' => (int) WC_Subscriptions_Product::get_length( $product ),
+					'trial_length'        => (int) WC_Subscriptions_Product::get_trial_length( $product ),
+					'trial_period'        => WC_Subscriptions_Product::get_trial_period( $product ),
+				),
+				self::format_sign_up_fees( $product )
 			);
 		}
 
@@ -140,11 +143,18 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 				'readonly'    => true,
 			),
 			'sign_up_fees'        => array(
-				'description' => __( 'Subscription Product Signup fees.', 'woocommerce-subscriptions' ),
+				'description' => __( 'Subscription Product signup fees.', 'woocommerce-subscriptions' ),
 				'type'        => array( 'string', 'null' ),
 				'context'     => array( 'view', 'edit' ),
 				'readonly'    => true,
 			),
+			'sign_up_fees_tax'    => array(
+				'description' => __( 'Subscription Product signup fees taxes.', 'woocommerce-subscriptions' ),
+				'type'        => array( 'string', 'null' ),
+				'context'     => array( 'view', 'edit' ),
+				'readonly'    => true,
+			),
+
 		);
 	}
 
@@ -197,6 +207,41 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 		}
 
 		return $future_subscriptions;
+	}
+
+	/**
+	 * Format sign-up fees.
+	 *
+	 * @param \WC_Product $product current product.
+	 * @return array
+	 */
+	private static function format_sign_up_fees( $product ) {
+		$fees_excluding_tax = wcs_get_price_excluding_tax(
+			$product,
+			array(
+				'qty'   => 1,
+				'price' => WC_Subscriptions_Product::get_sign_up_fee( $product ),
+			)
+		);
+
+		$fees_including_tax = wcs_get_price_including_tax(
+			$product,
+			array(
+				'qty'   => 1,
+				'price' => WC_Subscriptions_Product::get_sign_up_fee( $product ),
+			)
+		);
+
+		return array(
+			'sign_up_fees'     => self::$extend->formatters->money->format(
+				$fees_excluding_tax
+			),
+			'sign_up_fees_tax' => self::$extend->formatters->money->format(
+				$fees_including_tax
+				- $fees_excluding_tax
+			),
+
+		);
 	}
 
 	/**
