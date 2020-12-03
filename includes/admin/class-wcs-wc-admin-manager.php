@@ -2,8 +2,6 @@
 /**
  * WooCommerce Subscriptions WC Admin Manager.
  *
- * @author   WooCommerce
- * @category Admin
  * @package  WooCommerce Subscriptions/Admin
  * @version  3.0.2
  */
