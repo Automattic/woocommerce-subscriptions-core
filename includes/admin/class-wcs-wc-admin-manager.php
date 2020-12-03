@@ -79,7 +79,7 @@ class WCS_WC_Admin_Manager {
 		$subscription_items = Menu::get_post_type_items(
 			'shop_subscription',
 			array(
-				'title' => __( 'WooCommerce Subscriptions', 'woocommerce-subscriptions' ),
+				'title' => __( 'Subscriptions', 'woocommerce-subscriptions' ),
 			)
 		);
 
