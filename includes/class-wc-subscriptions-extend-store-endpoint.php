@@ -173,7 +173,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 
 		$core_cart            = wc()->cart;
 		$future_subscriptions = array();
-		$money_formatter      = self::$extend->formatters->money;
+		$money_formatter      = self::$extend->get_formatter( 'money' );
 
 		// Load recurring carts into $core_cart;
 		WC_Subscriptions_Cart::calculate_subscription_totals( $core_cart->get_total( 'total' ), $core_cart );
@@ -188,7 +188,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 				'billing_period'      => WC_Subscriptions_Product::get_period( $product ),
 				'billing_interval'    => (int) WC_Subscriptions_Product::get_interval( $product ),
 				'subscription_length' => (int) WC_Subscriptions_Product::get_length( $product ),
-				'totals'              => self::$extend->formatters->currency->format(
+				'totals'              => self::$extend->get_formatter( 'currency' )->format(
 					array(
 						'total_items'        => $money_formatter->format( $cart->get_subtotal() ),
 						'total_items_tax'    => $money_formatter->format( $cart->get_subtotal_tax() ),
@@ -232,11 +232,13 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 			)
 		);
 
+		$money_formatter = self::$extend->get_formatter( 'money' );
+
 		return array(
-			'sign_up_fees'     => self::$extend->formatters->money->format(
+			'sign_up_fees'     => $money_formatter->format(
 				$fees_excluding_tax
 			),
-			'sign_up_fees_tax' => self::$extend->formatters->money->format(
+			'sign_up_fees_tax' => $money_formatter->format(
 				$fees_including_tax
 				- $fees_excluding_tax
 			),
@@ -437,7 +439,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 		foreach ( $cart_tax_totals as $cart_tax_total ) {
 			$tax_lines[] = array(
 				'name'  => $cart_tax_total->label,
-				'price' => self::$extend->formatters->money->format( $cart_tax_total->amount ),
+				'price' => self::$extend->get_formatter( 'money' )->format( $cart_tax_total->amount ),
 			);
 		}
 
