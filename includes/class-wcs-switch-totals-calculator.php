@@ -123,7 +123,7 @@ class WCS_Switch_Totals_Calculator {
 				$this->apportion_length( $switch_item );
 			}
 
-			$switch_item = apply_filters( 'wcs_switch_calculations_completed', $switch_item, $cart_item_key );
+			do_action( 'wcs_switch_calculations_completed', $switch_item, $cart_item_key );
 
 			if ( defined( 'WCS_DEBUG' ) && WCS_DEBUG && ! wcs_doing_ajax() ) {
 				$this->log_switch( $switch_item );
