@@ -76,18 +76,24 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 	 * @return array $item_data Registered data or empty array if condition is not satisfied.
 	 */
 	public static function extend_cart_item_data( $cart_item ) {
-
 		$product   = $cart_item['data'];
-		$item_data = array();
+		$item_data = array(
+			'billing_period'      => null,
+			'billing_interval'    => null,
+			'subscription_length' => null,
+			'trial_length'        => null,
+			'trial_period'        => null,
+			'sign_up_fees'        => null,
+		);
 
-		if ( $product->get_type() === 'subscription' || $product->get_type() === 'subscription_variation' ) {
+		if ( in_array( $product->get_type(), array( 'subscription', 'subscription_variation' ), true ) ) {
 			$item_data = array(
 				'billing_period'      => WC_Subscriptions_Product::get_period( $product ),
 				'billing_interval'    => (int) WC_Subscriptions_Product::get_interval( $product ),
 				'subscription_length' => (int) WC_Subscriptions_Product::get_length( $product ),
 				'trial_length'        => (int) WC_Subscriptions_Product::get_trial_length( $product ),
 				'trial_period'        => WC_Subscriptions_Product::get_trial_period( $product ),
-				'sign_up_fees'        => self::prepare_money_response( WC_Subscriptions_Product::get_sign_up_fee( $product ), wc_get_price_decimals() ),
+				'sign_up_fees'        => self::$extend->formatters->money->format( WC_Subscriptions_Product::get_sign_up_fee( $product ) ),
 			);
 		}
 
@@ -103,39 +109,39 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 		return array(
 			'billing_period'      => array(
 				'description' => __( 'Billing period for the subscription.', 'woocommerce-subscriptions' ),
-				'type'        => 'string',
+				'type'        => array( 'string', 'null' ),
 				'enum'        => array_keys( wcs_get_subscription_period_strings() ),
 				'context'     => array( 'view', 'edit' ),
 				'readonly'    => true,
 			),
 			'billing_interval'    => array(
 				'description' => __( 'The number of billing periods between subscription renewals.', 'woocommerce-subscriptions' ),
-				'type'        => 'integer',
+				'type'        => array( 'integer', 'null' ),
 				'context'     => array( 'view', 'edit' ),
 				'readonly'    => true,
 			),
 			'subscription_length' => array(
 				'description' => __( 'Subscription Product length.', 'woocommerce-subscriptions' ),
-				'type'        => 'integer',
+				'type'        => array( 'integer', 'null' ),
 				'context'     => array( 'view', 'edit' ),
 				'readonly'    => true,
 			),
 			'trial_period'        => array(
 				'description' => __( 'Subscription Product trial period.', 'woocommerce-subscriptions' ),
-				'type'        => 'string',
+				'type'        => array( 'string', 'null' ),
 				'enum'        => array_keys( wcs_get_subscription_period_strings() ),
 				'context'     => array( 'view', 'edit' ),
 				'readonly'    => true,
 			),
 			'trial_length'        => array(
 				'description' => __( 'Subscription Product trial interval.', 'woocommerce-subscriptions' ),
-				'type'        => 'integer',
+				'type'        => array( 'integer', 'null' ),
 				'context'     => array( 'view', 'edit' ),
 				'readonly'    => true,
 			),
 			'sign_up_fees'        => array(
-				'description' => __( 'Subscription Product signup fees.', 'woocommerce-subscriptions' ),
-				'type'        => 'string',
+				'description' => __( 'Subscription Product Signup fees.', 'woocommerce-subscriptions' ),
+				'type'        => array( 'string', 'null' ),
 				'context'     => array( 'view', 'edit' ),
 				'readonly'    => true,
 			),
@@ -150,7 +156,6 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 	 * @return array $future_subscriptions Registered data or empty array if condition is not satisfied.
 	 */
 	public static function extend_cart_data() {
-
 		// return early if we don't have any subscription.
 		if ( ! WC_Subscriptions_Cart::cart_contains_subscription() ) {
 			return array();
@@ -158,6 +163,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 
 		$core_cart            = wc()->cart;
 		$future_subscriptions = array();
+		$money_formatter      = self::$extend->formatters->money;
 
 		// Load recurring carts into $core_cart;
 		WC_Subscriptions_Cart::calculate_subscription_totals( $core_cart->get_total( 'total' ), $core_cart );
@@ -172,20 +178,20 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 				'billing_period'      => WC_Subscriptions_Product::get_period( $product ),
 				'billing_interval'    => (int) WC_Subscriptions_Product::get_interval( $product ),
 				'subscription_length' => (int) WC_Subscriptions_Product::get_length( $product ),
-				'totals'              => array(
-					'total_items'        => self::prepare_money_response( $cart->get_subtotal(), wc_get_price_decimals() ),
-					'total_items_tax'    => self::prepare_money_response( $cart->get_subtotal_tax(), wc_get_price_decimals() ),
-					'total_fees'         => self::prepare_money_response( $cart->get_fee_total(), wc_get_price_decimals() ),
-					'total_fees_tax'     => self::prepare_money_response( $cart->get_fee_tax(), wc_get_price_decimals() ),
-					'total_discount'     => self::prepare_money_response( $cart->get_discount_total(), wc_get_price_decimals() ),
-					'total_discount_tax' => self::prepare_money_response( $cart->get_discount_tax(), wc_get_price_decimals() ),
-					'total_shipping'     => self::prepare_money_response( $cart->get_shipping_total(), wc_get_price_decimals() ),
-					'total_shipping_tax' => self::prepare_money_response( $cart->get_shipping_tax(), wc_get_price_decimals() ),
-
-					// Explicitly request context='edit'; default ('view') will render total as markup.
-					'total_price'        => self::prepare_money_response( $cart->get_total( 'edit' ), wc_get_price_decimals() ),
-					'total_tax'          => self::prepare_money_response( $cart->get_total_tax(), wc_get_price_decimals() ),
-					'tax_lines'          => self::get_tax_lines( $cart ),
+				'totals'              => self::$extend->formatters->currency->format(
+					array(
+						'total_items'        => $money_formatter->format( $cart->get_subtotal() ),
+						'total_items_tax'    => $money_formatter->format( $cart->get_subtotal_tax() ),
+						'total_fees'         => $money_formatter->format( $cart->get_fee_total() ),
+						'total_fees_tax'     => $money_formatter->format( $cart->get_fee_tax() ),
+						'total_discount'     => $money_formatter->format( $cart->get_discount_total() ),
+						'total_discount_tax' => $money_formatter->format( $cart->get_discount_tax() ),
+						'total_shipping'     => $money_formatter->format( $cart->get_shipping_total() ),
+						'total_shipping_tax' => $money_formatter->format( $cart->get_shipping_tax() ),
+						'total_price'        => $money_formatter->format( $cart->get_total( 'edit' ) ),
+						'total_tax'          => $money_formatter->format( $cart->get_total_tax() ),
+						'tax_lines'          => self::get_tax_lines( $cart ),
+					)
 				),
 			);
 		}
@@ -199,6 +205,11 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 	 * @return array Registered schema.
 	 */
 	public static function extend_cart_schema() {
+		// return early if we don't have any subscription.
+		if ( ! WC_Subscriptions_Cart::cart_contains_subscription() ) {
+			return array();
+		}
+
 		return array(
 			'key'                 => array(
 				'description' => __( 'Subscription key', 'woocommerce-subscriptions' ),
@@ -237,67 +248,67 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 				'context'     => array( 'view', 'edit' ),
 				'readonly'    => true,
 				'properties'  => array(
-					'total_items'        => array(
+					'total_items'                 => array(
 						'description' => __( 'Total price of items in the cart.', 'woocommerce-subscriptions' ),
 						'type'        => 'string',
 						'context'     => array( 'view', 'edit' ),
 						'readonly'    => true,
 					),
-					'total_items_tax'    => array(
+					'total_items_tax'             => array(
 						'description' => __( 'Total tax on items in the cart.', 'woocommerce-subscriptions' ),
 						'type'        => 'string',
 						'context'     => array( 'view', 'edit' ),
 						'readonly'    => true,
 					),
-					'total_fees'         => array(
+					'total_fees'                  => array(
 						'description' => __( 'Total price of any applied fees.', 'woocommerce-subscriptions' ),
 						'type'        => 'string',
 						'context'     => array( 'view', 'edit' ),
 						'readonly'    => true,
 					),
-					'total_fees_tax'     => array(
+					'total_fees_tax'              => array(
 						'description' => __( 'Total tax on fees.', 'woocommerce-subscriptions' ),
 						'type'        => 'string',
 						'context'     => array( 'view', 'edit' ),
 						'readonly'    => true,
 					),
-					'total_discount'     => array(
+					'total_discount'              => array(
 						'description' => __( 'Total discount from applied coupons.', 'woocommerce-subscriptions' ),
 						'type'        => 'string',
 						'context'     => array( 'view', 'edit' ),
 						'readonly'    => true,
 					),
-					'total_discount_tax' => array(
+					'total_discount_tax'          => array(
 						'description' => __( 'Total tax removed due to discount from applied coupons.', 'woocommerce-subscriptions' ),
 						'type'        => 'string',
 						'context'     => array( 'view', 'edit' ),
 						'readonly'    => true,
 					),
-					'total_shipping'     => array(
+					'total_shipping'              => array(
 						'description' => __( 'Total price of shipping. If shipping has not been calculated, a null response will be sent.', 'woocommerce-subscriptions' ),
 						'type'        => array( 'string', 'null' ),
 						'context'     => array( 'view', 'edit' ),
 						'readonly'    => true,
 					),
-					'total_shipping_tax' => array(
+					'total_shipping_tax'          => array(
 						'description' => __( 'Total tax on shipping. If shipping has not been calculated, a null response will be sent.', 'woocommerce-subscriptions' ),
 						'type'        => array( 'string', 'null' ),
 						'context'     => array( 'view', 'edit' ),
 						'readonly'    => true,
 					),
-					'total_price'        => array(
+					'total_price'                 => array(
 						'description' => __( 'Total price the customer will pay.', 'woocommerce-subscriptions' ),
 						'type'        => 'string',
 						'context'     => array( 'view', 'edit' ),
 						'readonly'    => true,
 					),
-					'total_tax'          => array(
+					'total_tax'                   => array(
 						'description' => __( 'Total tax applied to items and shipping.', 'woocommerce-subscriptions' ),
 						'type'        => 'string',
 						'context'     => array( 'view', 'edit' ),
 						'readonly'    => true,
 					),
-					'tax_lines'          => array(
+					'tax_lines'                   => array(
 						'description' => __( 'Lines of taxes applied to items and shipping.', 'woocommerce-subscriptions' ),
 						'type'        => 'array',
 						'context'     => array( 'view', 'edit' ),
@@ -320,29 +331,50 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 							),
 						),
 					),
+					'currency_code'               => array(
+						'description' => __( 'Currency code (in ISO format) for returned prices.', 'woocommerce-subscriptions' ),
+						'type'        => 'string',
+						'context'     => array( 'view', 'edit' ),
+						'readonly'    => true,
+					),
+					'currency_symbol'             => array(
+						'description' => __( 'Currency symbol for the currency which can be used to format returned prices.', 'woocommerce-subscriptions' ),
+						'type'        => 'string',
+						'context'     => array( 'view', 'edit' ),
+						'readonly'    => true,
+					),
+					'currency_minor_unit'         => array(
+						'description' => __( 'Currency minor unit (number of digits after the decimal separator) for returned prices.', 'woocommerce-subscriptions' ),
+						'type'        => 'integer',
+						'context'     => array( 'view', 'edit' ),
+						'readonly'    => true,
+					),
+					'currency_decimal_separator'  => array(
+						'description' => __( 'Decimal separator for the currency which can be used to format returned prices.', 'woocommerce-subscriptions' ),
+						'type'        => 'string',
+						'context'     => array( 'view', 'edit' ),
+						'readonly'    => true,
+					),
+					'currency_thousand_separator' => array(
+						'description' => __( 'Thousand separator for the currency which can be used to format returned prices.', 'woocommerce-subscriptions' ),
+						'type'        => 'string',
+						'context'     => array( 'view', 'edit' ),
+						'readonly'    => true,
+					),
+					'currency_prefix'             => array(
+						'description' => __( 'Price prefix for the currency which can be used to format returned prices.', 'woocommerce-subscriptions' ),
+						'type'        => 'string',
+						'context'     => array( 'view', 'edit' ),
+						'readonly'    => true,
+					),
+					'currency_suffix'             => array(
+						'description' => __( 'Price prefix for the currency which can be used to format returned prices.', 'woocommerce-subscriptions' ),
+						'type'        => 'string',
+						'context'     => array( 'view', 'edit' ),
+						'readonly'    => true,
+					),
 				),
 			),
-		);
-	}
-
-	/**
-	 * Convert monetary values from WooCommerce to string based integers, using
-	 * the smallest unit of a currency.
-	 *
-	 * TODO: This function is copied from WooCommerce Blocks, remove it once https://github.com/woocommerce/woocommerce-gutenberg-products-block/issues/3264 is closed.
-	 *
-	 * @param string|float $amount Monetary amount with decimals.
-	 * @param int          $decimals Number of decimals the amount is formatted with.
-	 * @param int          $rounding_mode Defaults to the PHP_ROUND_HALF_UP constant.
-	 * @return string      The new amount.
-	 */
-	protected static function prepare_money_response( $amount, $decimals = 2, $rounding_mode = PHP_ROUND_HALF_UP ) {
-		return (string) intval(
-			round(
-				( (float) wc_format_decimal( $amount ) ) * ( 10 ** $decimals ),
-				0,
-				absint( $rounding_mode )
-			)
 		);
 	}
 
@@ -360,7 +392,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 		foreach ( $cart_tax_totals as $cart_tax_total ) {
 			$tax_lines[] = array(
 				'name'  => $cart_tax_total->label,
-				'price' => self::prepare_money_response( $cart_tax_total->amount, wc_get_price_decimals() ),
+				'price' => self::$extend->formatters->money->format( $cart_tax_total->amount ),
 			);
 		}
 
