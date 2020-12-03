@@ -13,6 +13,7 @@
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\Domain\Services\ExtendRestApi;
 use Automattic\WooCommerce\Blocks\StoreApi\Schemas\CartItemSchema;
+
 class WC_Subscriptions_Extend_Store_Endpoint {
 
 	/**
@@ -120,7 +121,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 				'readonly'    => true,
 			),
 			'sign_up_fees'        => array(
-				'description' => __( 'Subscription Product Signup fees.', 'woocommerce-subscriptions' ),
+				'description' => __( 'Subscription Product signup fees.', 'woocommerce-subscriptions' ),
 				'type'        => 'string',
 				'context'     => array( 'view', 'edit' ),
 				'readonly'    => true,
