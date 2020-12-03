@@ -2,11 +2,13 @@
 /**
  * WooCommerce Subscriptions WC Admin Manager.
  *
- * @author   WooCommerce
- * @category Admin
  * @package  WooCommerce Subscriptions/Admin
  * @version  3.0.2
  */
+
+use Automattic\WooCommerce\Admin\Loader;
+use Automattic\WooCommerce\Admin\Features\Navigation\Menu;
+use Automattic\WooCommerce\Admin\Features\Navigation\Screen;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -21,6 +23,7 @@ class WCS_WC_Admin_Manager {
 		}
 
 		add_action( 'admin_menu', array( __CLASS__, 'register_subscription_admin_pages' ) );
+		add_action( 'admin_menu', array( __CLASS__, 'register_navigation_items' ), 6 );
 	}
 
 	/**
@@ -56,5 +59,29 @@ class WCS_WC_Admin_Manager {
 				'title'     => __( 'Edit Subscription', 'woocommerce-subscriptions' ),
 			)
 		);
+	}
+
+	/**
+	 * Register the navigation items in the WooCommerce navigation.
+	 *
+	 * @since 3.0.12
+	 */
+	public static function register_navigation_items() {
+		if (
+			! class_exists( '\Automattic\WooCommerce\Admin\Features\Navigation\Menu' ) ||
+			! class_exists( '\Automattic\WooCommerce\Admin\Features\Navigation\Screen' )
+		) {
+			return;
+		}
+
+		$subscription_items = Menu::get_post_type_items(
+			'shop_subscription',
+			array(
+				'title' => __( 'Subscriptions', 'woocommerce-subscriptions' ),
+			)
+		);
+
+		Menu::add_plugin_item( $subscription_items['all'] );
+		Screen::register_post_type( 'shop_subscription' );
 	}
 }
