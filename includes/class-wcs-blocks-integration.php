@@ -2,12 +2,10 @@
 /**
  * Class for integrating with WooCommerce Blocks
  *
- * @author   Rubik
- * @category Class
- * @package  WooCommerce Subscriptions
- * @since    2.2.0
+ * @package WooCommerce Subscriptions
+ * @author  WooCommerce
+ * @since   WCBLOCKS-DEV
  */
-
 use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
 class WCS_Blocks_Integration {
 
