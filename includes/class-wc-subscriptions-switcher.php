@@ -558,7 +558,7 @@ class WC_Subscriptions_Switcher {
 			$subscription = wcs_get_subscription( $subscription );
 		}
 
-		$product = wc_get_product( $item['product_id'] );
+		$product               = wc_get_product( $item['product_id'] );
 		$parent_products       = WC_Subscriptions_Product::get_visible_grouped_parent_product_ids( $product );
 		$additional_query_args = array();
 
@@ -569,7 +569,13 @@ class WC_Subscriptions_Switcher {
 			$switch_url = get_permalink( $product->get_id() );
 
 			if ( ! empty( $_GET ) && is_product() ) {
-				$product_variations    = $product->get_variation_attributes();
+				$product_variations = array();
+
+				// Attributes in GET args are prefixed with attribute_ so to make sure we compare them correctly, apply the same prefix.
+				foreach ( $product->get_variation_attributes() as $attribute => $value ) {
+					$product_variations[ wcs_maybe_prefix_key( strtolower( $attribute ), 'attribute_' ) ] = $value;
+				}
+
 				$additional_query_args = array_intersect_key( $_GET, $product_variations );
 			}
 		}
