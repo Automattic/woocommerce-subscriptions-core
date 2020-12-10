@@ -27,3 +27,4 @@ if ( ! defined( 'ABSPATH' ) ) {
 function wcs_is_order_received_page() {
 	return ( false !== strpos( $_SERVER['REQUEST_URI'], 'order-received' ) );
 }
+

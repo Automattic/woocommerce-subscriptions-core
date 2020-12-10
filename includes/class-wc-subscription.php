@@ -350,9 +350,17 @@ class WC_Subscription extends WC_Order {
 					$can_be_updated = false;
 				}
 				break;
-			case 'pending-cancel':
-				if ( $this->payment_method_supports( 'subscription_cancellation' ) && ( $this->has_status( 'active' ) || $this->has_status( 'on-hold' ) && ! $this->needs_payment() ) ) {
-					$can_be_updated = true;
+			case 'pending-cancel' :
+				// Only active subscriptions can be given the "pending cancellation" status, becuase it is used to account for a prepaid term
+				if ( $this->payment_method_supports( 'subscription_cancellation' ) ) {
+					if ( $this->has_status( 'active' ) ) {
+						$can_be_updated = true;
+					} elseif ( ! $this->needs_payment() && $this->has_status( array( 'cancelled', 'on-hold' ) ) ) {
+						// Payment completed and subscription is cancelled
+						$can_be_updated = true;
+					} else {
+						$can_be_updated = false;
+					}
 				} else {
 					$can_be_updated = false;
 				}

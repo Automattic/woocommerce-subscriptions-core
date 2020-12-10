@@ -501,6 +501,24 @@ class WC_Subscriptions_Order {
 			$order_completed = in_array( $new_order_status, array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id, $order ), 'processing', 'completed' ) ) && in_array( $old_order_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ), $order ) );
 
 			foreach ( $subscriptions as $subscription ) {
+				// A special case where payment completes after user cancels subscription
+				if ( $order_completed && $subscription->has_status( 'cancelled' ) ) {
+
+					// Store the actual cancelled_date so as to restore it after it is rewritten by update_status()
+					$cancelled_date = $subscription->get_date( 'cancelled' );
+
+					// Force set cancelled_date and end date to 0 temporarily so that next_payment_date can be calculated properly
+					// This next_payment_date will be the end of prepaid term that will be picked by action scheduler
+					$subscription->update_dates( array( 'cancelled' => 0, 'end' => 0 ) );
+
+					$next_payment_date = $subscription->calculate_date( 'next_payment' );
+					$subscription->update_dates( array( 'next_payment' => $next_payment_date ) );
+
+					$subscription->update_status( 'pending-cancel', __( 'Payment completed on order after subscription was cancelled.', 'woocommerce-subscriptions' ) );
+
+					// Restore the actual cancelled date
+					$subscription->update_dates( array( 'cancelled' => $cancelled_date ) );
+				}
 
 				// Do we need to activate a subscription?
 				if ( $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( 'active' ) ) {
