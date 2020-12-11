@@ -66,10 +66,7 @@ class WCS_SQL_Transaction {
 	 * @since 3.1.0
 	 */
 	public function start() {
-		global $wpdb;
-
-		$wpdb->query( 'START TRANSACTION' );
-
+		wc_transaction_query( 'start' );
 		$this->active_transaction = true;
 	}
 
@@ -79,10 +76,7 @@ class WCS_SQL_Transaction {
 	 * @since 3.1.0
 	 */
 	public function commit() {
-		global $wpdb;
-
-		$wpdb->query( 'COMMIT' );
-
+		wc_transaction_query( 'commit' );
 		$this->active_transaction = false;
 	}
 
@@ -92,10 +86,7 @@ class WCS_SQL_Transaction {
 	 * @since 3.1.0
 	 */
 	public function rollback() {
-		global $wpdb;
-
-		$wpdb->query( 'ROLLBACK' );
-
+		wc_transaction_query( 'rollback' );
 		$this->active_transaction = false;
 	}
 
