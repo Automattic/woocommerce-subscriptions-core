@@ -59,6 +59,9 @@ class WCS_Admin_Meta_Boxes {
 
 		// After calculating subscription/renewal order line item taxes, update base location tax item meta.
 		add_action( 'woocommerce_ajax_add_order_item_meta', array( __CLASS__, 'store_item_base_location_tax' ), 10, 3 );
+
+		// Prevent WC core's stock handling when saving the line item meta box for subscriptions.
+		add_filter( 'woocommerce_prevent_adjust_line_item_product_stock', array( __CLASS__, 'prevent_subscription_line_item_stock_handling' ), 10, 2 );
 	}
 
 	/**
@@ -443,5 +446,27 @@ class WCS_Admin_Meta_Boxes {
 			$line_item->update_meta_data( '_subtracted_base_location_tax', WC_Tax::calc_tax( $line_item->get_product()->get_price() * $line_item->get_quantity(), $base_tax_rates, true ) );
 			$line_item->save();
 		}
+	}
+
+	/**
+	 * Prevents WC core's handling of stock for subscriptions saved via the edit subscription screen.
+	 *
+	 * Hooked onto 'woocommerce_prevent_adjust_line_item_product_stock' which is triggered in
+	 * wc_maybe_adjust_line_item_product_stock() via:
+	 *    - WC_AJAX::remove_order_item().
+	 *    - wc_save_order_items().
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param WC_Order_Item $item The line item being saved/updated via the edit subscription screen.
+	 * @return bool Whether to reduce stock for the line item.
+	 */
+	public static function prevent_subscription_line_item_stock_handling( $prevent_stock_handling, $item ) {
+
+		if ( wcs_is_subscription( $item->get_order_id() ) ) {
+			$prevent_stock_handling = true;
+		}
+
+		return $prevent_stock_handling;
 	}
 }
