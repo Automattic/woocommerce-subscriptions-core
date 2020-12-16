@@ -94,6 +94,7 @@ class WCS_WC_Admin_Manager {
 				'nav_args'   => array(
 					'url'   => 'admin.php?page=wc-settings&tab=subscriptions',
 					'order' => 100,
+					'parent' => 'woocommerce-settings',
 				),
 			)
 		);
