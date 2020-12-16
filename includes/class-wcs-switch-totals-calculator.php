@@ -369,7 +369,16 @@ class WCS_Switch_Totals_Calculator {
 	 * @param WCS_Switch_Cart_Item $switch_item
 	 */
 	protected function apportion_length( $switch_item ) {
-		$base_length        = WC_Subscriptions_Product::get_length( $switch_item->canonical_product_id );
+
+		// If this property is set, it means that we have already modified the subscription length of this instance again here.
+		if ( isset( $switch_item->product->base_length ) ) {
+			$base_length = $switch_item->product->base_length;
+		} else {
+			// Get the length from the unmodified product instance, and save it for later, instead of using the canonical product id.
+			$base_length = WC_Subscriptions_Product::get_length( $switch_item->product );
+			$switch_item->product->base_length = $base_length;
+		}
+
 		$completed_payments = $switch_item->subscription->get_payment_count();
 		$length_remaining   = $base_length - $completed_payments;
 
