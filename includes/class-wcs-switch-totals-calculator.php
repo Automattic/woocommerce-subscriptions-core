@@ -370,13 +370,14 @@ class WCS_Switch_Totals_Calculator {
 	 */
 	protected function apportion_length( $switch_item ) {
 
-		// If this property is set, it means that we have already modified the subscription length of this instance again here.
-		if ( isset( $switch_item->product->base_length ) ) {
-			$base_length = $switch_item->product->base_length;
-		} else {
-			// Get the length from the unmodified product instance, and save it for later, instead of using the canonical product id.
+		$base_length = wcs_get_objects_property( $switch_item->product, 'switch_totals_calc_base_length' );
+		// Already modified the subscription length of this instance previously?
+		if ( is_null( $base_length ) ) {
+			// Get the length from the unmodified product instance, and save it for later.
+			// A "lazier" way to do the same would have been to call 'WC_Subscriptions_Product::get_length( $switch_item->canonical_product_id )', but this breaks APFS, and is more expensive performance-wise.
+			// See https://github.com/woocommerce/woocommerce-subscriptions/issues/3928
 			$base_length = WC_Subscriptions_Product::get_length( $switch_item->product );
-			$switch_item->product->base_length = $base_length;
+			wcs_set_objects_property( $switch_item->product, 'switch_totals_calc_base_length', $base_length );
 		}
 
 		$completed_payments = $switch_item->subscription->get_payment_count();
