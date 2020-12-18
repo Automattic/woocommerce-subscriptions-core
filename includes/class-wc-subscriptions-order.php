@@ -1382,7 +1382,7 @@ class WC_Subscriptions_Order {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Order::get_total()' );
 
 		if ( ! is_object( $order ) ) {
-			$order = wc_get_order( $order );
+			$order = new WC_Order( $order );
 		}
 
 		return apply_filters( 'woocommerce_subscriptions_total_initial_payment', $order->get_total(), $order, $product_id );
@@ -1711,7 +1711,7 @@ class WC_Subscriptions_Order {
 		_deprecated_function( __METHOD__, '2.0', 'the items on each individual subscription object (i.e. "shop_subscription")' );
 
 		if ( ! is_object( $order ) ) {
-			$order = wc_get_order( $order );
+			$order = new WC_Order( $order );
 		}
 
 		$items = array();
@@ -1929,7 +1929,7 @@ class WC_Subscriptions_Order {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_date( "last_payment" )' );
 
 		if ( ! is_object( $order ) ) {
-			$order = wc_get_order( $order );
+			$order = new WC_Order( $order );
 		}
 
 		if ( $subscription = self::get_matching_subscription( $order, $product_id ) ) {
@@ -1962,7 +1962,7 @@ class WC_Subscriptions_Order {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::calculate_date( "next_payment" )' );
 
 		if ( ! is_object( $order ) ) {
-			$order = wc_get_order( $order );
+			$order = new WC_Order( $order );
 		}
 
 		$next_payment = 0;

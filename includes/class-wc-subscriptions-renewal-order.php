@@ -307,7 +307,7 @@ class WC_Subscriptions_Renewal_Order {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_get_subscriptions_for_renewal_order()' );
 
 		if ( ! is_object( $renewal_order ) ) {
-			$renewal_order = wc_get_order( $renewal_order );
+			$renewal_order = new WC_Order( $renewal_order );
 		}
 
 		$subscriptions = wcs_get_subscriptions_for_renewal_order( $renewal_order );
