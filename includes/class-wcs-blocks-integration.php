@@ -16,7 +16,7 @@ class WCS_Blocks_Integration {
 	 *
 	 * @var AssetDataRegistry Holds the data we want to output onto the front-end.
 	 */
-	protected AssetDataRegistry $registry;
+	protected $registry;
 
 	/**
 	 * WCS_Blocks_Integration constructor.
