@@ -117,7 +117,6 @@ class WC_Subscriptions_Checkout {
 	 * @since 2.0
 	 */
 	public static function create_subscription( $order, $cart, $posted_data ) {
-		global $wpdb;
 
 		try {
 			// Start transaction if available

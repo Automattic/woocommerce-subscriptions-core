@@ -1741,8 +1741,6 @@ class WC_Subscriptions_Switcher {
 	 * @since 2.1
 	 */
 	public static function process_subscription_switches( $order_id, $order_old_status, $order_new_status ) {
-		global $wpdb;
-
 		$order            = wc_get_order( $order_id );
 		$switch_processed = wcs_get_objects_property( $order, 'completed_subscription_switch' );
 
