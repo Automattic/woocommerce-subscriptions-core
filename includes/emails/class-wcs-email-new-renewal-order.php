@@ -83,7 +83,7 @@ class WCS_Email_New_Renewal_Order extends WC_Email_New_Order {
 	function trigger( $order_id, $order = null ) {
 
 		if ( $order_id ) {
-			$this->object = new WC_Order( $order_id );
+			$this->object = wc_get_order( $order_id );
 
 			$order_date_index = array_search( '{order_date}', $this->find );
 			if ( false === $order_date_index ) {

@@ -74,7 +74,7 @@ class WC_Subscriptions_Checkout {
 			return;
 		}
 
-		$order = new WC_Order( $order_id );
+		$order = wc_get_order( $order_id );
 
 		$subscriptions = array();
 
