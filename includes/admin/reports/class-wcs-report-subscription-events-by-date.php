@@ -103,7 +103,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 					),
 				),
 				'group_by'     => $this->group_by_query,
-				'order_status' => '',
+				'order_status' => array(),
 				'order_by'     => 'post_date ASC',
 				'query_type'   => 'get_results',
 				'filter_range' => true,
