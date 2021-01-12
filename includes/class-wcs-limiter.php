@@ -253,7 +253,7 @@ class WCS_Limiter {
 			foreach ( $order->get_items() as $item ) {
 
 				// If this order contains the product we're interested in, continue finding a related subscription.
-				if ( $item['product_id'] == $product_id && $item['variation_id'] == $product_id ) {
+				if ( $item['product_id'] == $product_id || $item['variation_id'] == $product_id ) {
 					$subscriptions = wcs_get_subscriptions(
 						array(
 							'order_id'            => $order->get_id(),
