@@ -175,9 +175,6 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 		$future_subscriptions = array();
 		$money_formatter      = self::$extend->get_formatter( 'money' );
 
-		// Load recurring carts into $core_cart;
-		WC_Subscriptions_Cart::calculate_subscription_totals( $core_cart->get_total( 'total' ), $core_cart );
-
 		foreach ( $core_cart->recurring_carts as $cart_key => $cart ) {
 			$cart_item = array_pop( $cart->cart_contents );
 			$product   = $cart_item['data'];
