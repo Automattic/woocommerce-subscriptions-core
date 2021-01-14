@@ -57,6 +57,17 @@ class WCS_Add_Cart_Item extends WCS_Switch_Cart_Item {
 		return 0;
 	}
 
+	/**
+	 * Determines if the last order was a switch and the outcome of that was a fully reduced pre-paid term.
+	 * Since the last order didn't contain this item, we can safely return false here.
+	 *
+	 * @since 3.0.7
+	 * @return bool Whether the last order was a switch and it fully reduced the prepaid term.
+	 */
+	protected function is_switch_after_fully_reduced_prepaid_term() {
+		return false;
+	}
+
 	/** Helper functions */
 
 	/**
