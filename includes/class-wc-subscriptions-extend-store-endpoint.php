@@ -158,10 +158,73 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 		);
 	}
 
+	/**
+	 * Get packages from the recurring carts.
+	 *
+	 * @param string $cart_key Recurring cart key.
+	 * @param array $cart Recurring cart data.
+	 * @return array
+	 */
+	private static function get_packages_for_recurring_cart( $cart_key, $cart ) {
+		$packages_by_cart = WC_Subscriptions_Cart::get_recurring_shipping_packages();
+
+		if ( ! isset( $packages_by_cart[ $cart_key ] ) ) {
+			return array();
+		}
+
+		$packages = $packages_by_cart[ $cart_key ];
+
+		// Add extra package data to array.
+		if ( count( $packages ) ) {
+			$packages = array_map(
+				function( $key, $package, $index ) use ( $cart ) {
+					$package['package_id']   = isset( $package['package_id'] ) ? $package['package_id'] : $key;
+					$package['package_name'] = isset( $package['package_name'] ) ? $package['package_name'] : self::get_shipping_package_name( $package, $cart );
+					return $package;
+				},
+				array_keys( $packages ),
+				$packages,
+				range( 1, count( $packages ) )
+			);
+		}
+
+		return $packages;
+	}
+
+	/**
+	 * Changes the shipping package name to add more meaningful information about it's content.
+	 *
+	 * @param array  $package All shipping package data.
+	 * @param array $cart Recurring cart data.
+	 * @return string
+	 */
+	private static function get_shipping_package_name( $package, $cart ) {
+		$package_name = __( 'Shipping', 'woocommerce-subscriptions' );
+		$interval     = wcs_cart_pluck( $cart, 'subscription_period_interval', '' );
+		$period       = wcs_cart_pluck( $cart, 'subscription_period', '' );
+		switch ( $period ) {
+			case 'year':
+				// translators: %d subscription interval.
+				$package_name = $interval > 1 ? _n( 'Shipment every %d year', 'Shipment every %d years', $interval, 'woocommerce-subscriptions' ) : __( 'Yearly shipment', 'woocommerce-subscriptions' );
+				break;
+			case 'month':
+				// translators: %d subscription interval.
+				$package_name = $interval > 1 ? _n( 'Shipment every %d month', 'Shipment every %d years', $interval, 'woocommerce-subscriptions' ) : __( 'Monthly shipment', 'woocommerce-subscriptions' );
+				break;
+			case 'week':
+				// translators: %d subscription interval.
+				$package_name = $interval > 1 ? _n( 'Shipment every %d week', 'Shipment every %d years', $interval, 'woocommerce-subscriptions' ) : __( 'Weekly shipment', 'woocommerce-subscriptions' );
+				break;
+			case 'day':
+				// translators: %d subscription interval.
+				$package_name = $interval > 1 ? _n( 'Shipment every %d day', 'Shipment every %d years', $interval, 'woocommerce-subscriptions' ) : __( 'Daily shipment', 'woocommerce-subscriptions' );
+				break;
+		}
+		return $package_name;
+	}
 
 	/**
 	 * Register future subscriptions into cart endpoint.
-	 *
 	 *
 	 * @return array $future_subscriptions Registered data or empty array if condition is not satisfied.
 	 */
@@ -171,36 +234,39 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 			return array();
 		}
 
-		$core_cart            = wc()->cart;
 		$future_subscriptions = array();
 		$money_formatter      = self::$extend->get_formatter( 'money' );
 
-		foreach ( $core_cart->recurring_carts as $cart_key => $cart ) {
-			$cart_item = array_pop( $cart->cart_contents );
-			$product   = $cart_item['data'];
+		if ( ! empty( wc()->cart->recurring_carts ) ) {
+			foreach ( wc()->cart->recurring_carts as $cart_key => $cart ) {
+				$cart_item         = $cart->cart_contents[0];
+				$product           = $cart_item['data'];
+				$shipping_packages = self::get_packages_for_recurring_cart( $cart_key, $cart );
 
-			$future_subscriptions[] = array(
-				'key'                 => $cart_key,
-				'next_payment_date'   => $cart->next_payment_date,
-				'billing_period'      => WC_Subscriptions_Product::get_period( $product ),
-				'billing_interval'    => (int) WC_Subscriptions_Product::get_interval( $product ),
-				'subscription_length' => (int) WC_Subscriptions_Product::get_length( $product ),
-				'totals'              => self::$extend->get_formatter( 'currency' )->format(
-					array(
-						'total_items'        => $money_formatter->format( $cart->get_subtotal() ),
-						'total_items_tax'    => $money_formatter->format( $cart->get_subtotal_tax() ),
-						'total_fees'         => $money_formatter->format( $cart->get_fee_total() ),
-						'total_fees_tax'     => $money_formatter->format( $cart->get_fee_tax() ),
-						'total_discount'     => $money_formatter->format( $cart->get_discount_total() ),
-						'total_discount_tax' => $money_formatter->format( $cart->get_discount_tax() ),
-						'total_shipping'     => $money_formatter->format( $cart->get_shipping_total() ),
-						'total_shipping_tax' => $money_formatter->format( $cart->get_shipping_tax() ),
-						'total_price'        => $money_formatter->format( $cart->get_total( 'edit' ) ),
-						'total_tax'          => $money_formatter->format( $cart->get_total_tax() ),
-						'tax_lines'          => self::get_tax_lines( $cart ),
-					)
-				),
-			);
+				$future_subscriptions[] = array(
+					'key'                 => $cart_key,
+					'next_payment_date'   => $cart->next_payment_date,
+					'billing_period'      => WC_Subscriptions_Product::get_period( $product ),
+					'billing_interval'    => (int) WC_Subscriptions_Product::get_interval( $product ),
+					'subscription_length' => (int) WC_Subscriptions_Product::get_length( $product ),
+					'totals'              => self::$extend->get_formatter( 'currency' )->format(
+						array(
+							'total_items'        => $money_formatter->format( $cart->get_subtotal() ),
+							'total_items_tax'    => $money_formatter->format( $cart->get_subtotal_tax() ),
+							'total_fees'         => $money_formatter->format( $cart->get_fee_total() ),
+							'total_fees_tax'     => $money_formatter->format( $cart->get_fee_tax() ),
+							'total_discount'     => $money_formatter->format( $cart->get_discount_total() ),
+							'total_discount_tax' => $money_formatter->format( $cart->get_discount_tax() ),
+							'total_shipping'     => $money_formatter->format( $cart->get_shipping_total() ),
+							'total_shipping_tax' => $money_formatter->format( $cart->get_shipping_tax() ),
+							'total_price'        => $money_formatter->format( $cart->get_total( 'edit' ) ),
+							'total_tax'          => $money_formatter->format( $cart->get_total_tax() ),
+							'tax_lines'          => self::get_tax_lines( $cart ),
+						)
+					),
+					'shipping_rates'      => array_values( array_map( array( self::$extend->get_schema( 'cart-shipping-rate' ), 'get_item_response' ), $shipping_packages ) ),
+				);
+			}
 		}
 
 		return $future_subscriptions;

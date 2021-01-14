@@ -262,7 +262,6 @@ class WC_Subscriptions_Cart {
 	 * @version 2.0
 	 */
 	public static function calculate_subscription_totals( $total, $cart ) {
-
 		if ( ! self::cart_contains_subscription() && ! wcs_cart_contains_resubscribe() ) { // cart doesn't contain subscription
 			return $total;
 		} elseif ( 'none' != self::$calculation_type ) { // We're in the middle of a recalculation, let it run
@@ -359,7 +358,7 @@ class WC_Subscriptions_Cart {
 
 		// We no longer need our backup of shipping methods
 		unset( WC()->session->wcs_shipping_methods );
-		unset( WC()->session->shipping_method_counts );
+		unset( WC()->session->wcs_shipping_method_counts );
 
 		// If there is no sign-up fee and a free trial, and no products being purchased with the subscription, we need to zero the fees for the first billing period
 		$remove_fees_from_cart = ( 0 == self::get_cart_subscription_sign_up_fee() && self::all_cart_items_have_free_trial() );
@@ -597,6 +596,15 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function get_recurring_shipping_package_key( $recurring_cart_key, $package_index ) {
 		return $recurring_cart_key . '_' . $package_index;
+	}
+
+	/**
+	 * Create a shipping package index for a given shipping package on a recurring cart.
+	 *
+	 * @return array
+	 */
+	public static function get_recurring_shipping_packages() {
+		return self::$recurring_shipping_packages;
 	}
 
 	/**
