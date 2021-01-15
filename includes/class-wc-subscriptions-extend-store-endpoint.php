@@ -239,7 +239,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 
 		if ( ! empty( wc()->cart->recurring_carts ) ) {
 			foreach ( wc()->cart->recurring_carts as $cart_key => $cart ) {
-				$cart_item         = $cart->cart_contents[0];
+				$cart_item         = current( $cart->cart_contents );
 				$product           = $cart_item['data'];
 				$shipping_packages = self::get_packages_for_recurring_cart( $cart_key, $cart );
 
