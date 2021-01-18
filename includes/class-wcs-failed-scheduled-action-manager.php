@@ -52,6 +52,8 @@ class WCS_Failed_Scheduled_Action_Manager {
 	 */
 	public function init() {
 		add_action( 'action_scheduler_failed_action', array( $this, 'log_action_scheduler_failure' ), 10, 2 );
+		add_action( 'action_scheduler_failed_execution', array( $this, 'log_action_scheduler_failure' ), 10, 2 );
+		add_action( 'action_scheduler_unexpected_shutdown', array( $this, 'log_action_scheduler_failure' ), 10, 2 );
 		add_action( 'admin_notices', array( $this, 'maybe_show_admin_notice' ) );
 	}
 
@@ -68,11 +70,11 @@ class WCS_Failed_Scheduled_Action_Manager {
 	/**
 	 * When a scheduled action failure is triggered, log information about the failed action to a WC logger.
 	 *
-	 * @param int $action_id the action which failed.
-	 * @param int $timeout the number of seconds an action can run for before timing out.
+	 * @param int                 $action_id The ID of the action which failed.
+	 * @param int|Exception|array $error The number of seconds an action timeouts out after or the exception/error that caused the error/shutdown.
 	 * @since 2.2.19
 	 */
-	public function log_action_scheduler_failure( $action_id, $timeout ) {
+	public function log_action_scheduler_failure( $action_id, $error ) {
 		$action = $this->get_action( $action_id );
 
 		if ( ! isset( $this->tracked_scheduled_actions[ $action->get_hook() ] ) ) {
@@ -81,7 +83,18 @@ class WCS_Failed_Scheduled_Action_Manager {
 
 		$subscription_action = $this->get_action_hook_label( $action->get_hook() );
 
-		$this->log( sprintf( 'scheduled action %s (%s) failed to finish processing after %s seconds', $action_id, $subscription_action, $timeout ) );
+		switch ( current_filter() ) {
+			case 'action_scheduler_failed_action':
+				$this->log( sprintf( 'scheduled action %s (%s) failed to finish processing after %s seconds', $action_id, $subscription_action, absint( $error ) ) );
+				break;
+			case 'action_scheduler_failed_execution':
+				$this->log( sprintf( 'scheduled action %s (%s) failed to finish processing due to the following exception: %s', $action_id, $subscription_action, $error->getMessage() ) );
+				break;
+			case 'action_scheduler_unexpected_shutdown':
+				$this->log( sprintf( 'scheduled action %s (%s) failed to finish processing due to the following error: %s', $action_id, $subscription_action, $error['message'] ) );
+				break;
+		}
+
 		$this->log( sprintf( 'action args: %s', $this->get_action_args_string( $action->get_args() ) ) );
 
 		// Store information about the scheduled action for displaying an admin notice
@@ -117,11 +130,16 @@ class WCS_Failed_Scheduled_Action_Manager {
 		$affected_subscription_events = $separator = '';
 
 		foreach ( array_slice( $failed_scheduled_actions, -10, 10 ) as $action ) {
+			$id = false;
 
-			if ( isset( $action['args']['subscription_id'] ) ) {
-				$subject = '<a href="' . get_edit_post_link( $action['args']['subscription_id'] ) . '">#' . $action['args']['subscription_id'] . '</a>';
-			} elseif ( isset( $action['args']['order_id'] ) ) {
-				$subject = '<a href="' . get_edit_post_link( $action['args']['order_id'] ) . '">#' . $action['args']['order_id'] . '</a>';
+			if ( isset( $action['args']['subscription_id'] ) && wcs_is_subscription( $action['args']['subscription_id'] ) ) {
+				$id = $action['args']['subscription_id'];
+			} elseif ( isset( $action['args']['order_id'] ) && wc_get_order( $action['args']['order_id'] ) ) {
+				$id = $action['args']['order_id'];
+			}
+
+			if ( $id ) {
+				$subject = '<a href="' . get_edit_post_link( $id ) . '">#' . $id . '</a>';
 			} else {
 				$subject = 'unknown';
 			}

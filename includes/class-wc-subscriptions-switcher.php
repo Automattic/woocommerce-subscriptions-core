@@ -1741,8 +1741,6 @@ class WC_Subscriptions_Switcher {
 	 * @since 2.1
 	 */
 	public static function process_subscription_switches( $order_id, $order_old_status, $order_new_status ) {
-		global $wpdb;
-
 		$order            = wc_get_order( $order_id );
 		$switch_processed = wcs_get_objects_property( $order, 'completed_subscription_switch' );
 
@@ -1755,16 +1753,17 @@ class WC_Subscriptions_Switcher {
 		if ( $order_completed ) {
 			try {
 				// Start transaction if available
-				$wpdb->query( 'START TRANSACTION' );
+				$transaction = new WCS_SQL_Transaction();
+				$transaction->start();
 
 				self::complete_subscription_switches( $order );
 
 				wcs_set_objects_property( $order, 'completed_subscription_switch', 'true' );
 
-				$wpdb->query( 'COMMIT' );
+				$transaction->commit();
 
 			} catch ( Exception $e ) {
-				$wpdb->query( 'ROLLBACK' );
+				$transaction->rollback();
 				throw $e;
 			}
 
