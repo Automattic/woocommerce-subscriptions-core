@@ -2403,6 +2403,16 @@ class WC_Subscriptions_Cart {
 			return $other_data;
 		}
 
+		// Only add meta data in WC Blocks.
+		if (
+			! class_exists( 'WC_Blocks_Utils' ) || (
+				! WC_Blocks_Utils::has_block_in_page( get_the_ID(), 'woocommerce/cart' ) &&
+				! WC_Blocks_Utils::has_block_in_page( get_the_ID(), 'woocommerce/checkout' )
+			)
+		) {
+			return $other_data;
+		}
+
 		$trial_length = WC_Subscriptions_Product::get_trial_length( $product );
 		if ( $trial_length ) {
 			$other_data[] = array(
