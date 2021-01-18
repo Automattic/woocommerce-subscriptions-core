@@ -120,6 +120,9 @@ class WC_Subscriptions_Cart {
 		add_action( 'plugins_loaded', array( __CLASS__, 'attach_dependant_hooks' ) );
 
 		add_action( 'woocommerce_after_calculate_totals', array( __CLASS__, 'record_base_tax_rates' ) );
+
+		// Add Subscriptions data to cart items.
+		add_filter( 'woocommerce_get_item_data', __CLASS__ . '::woocommerce_get_item_data', 10, 2 );
 	}
 
 	/**
@@ -2388,5 +2391,34 @@ class WC_Subscriptions_Cart {
 	public static function filter_package_rates( $package_rates, $package ) {
 		_deprecated_function( __METHOD__, '2.0.19' );
 		return $package_rates;
+	}
+
+	/**
+	 * Adds meta data so it can be displayed in the Cart.
+	 */
+	public static function woocommerce_get_item_data( $other_data, $cart_item ) {
+		$product = $cart_item['data'];
+
+		if ( ! WC_Subscriptions_Product::is_subscription( $product ) ) {
+			return $other_data;
+		}
+
+		$trial_length = WC_Subscriptions_Product::get_trial_length( $product );
+		if ( $trial_length ) {
+			$other_data[] = array(
+				'name'    => __( 'Free trial', 'woocommerce-subscriptions' ),
+				'value'   => wcs_get_subscription_period_strings( $trial_length, WC_Subscriptions_Product::get_trial_period( $product ) ),
+			);
+		}
+
+		$sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( $product );
+		if ( $sign_up_fee ) {
+			$other_data[] = array(
+				'name'    => __( 'Sign up fee', 'woocommerce-subscriptions' ),
+				'value'   => wc_price( $sign_up_fee ),
+			);
+		}
+
+		return $other_data;
 	}
 }
