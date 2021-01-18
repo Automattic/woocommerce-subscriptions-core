@@ -130,11 +130,16 @@ class WCS_Failed_Scheduled_Action_Manager {
 		$affected_subscription_events = $separator = '';
 
 		foreach ( array_slice( $failed_scheduled_actions, -10, 10 ) as $action ) {
+			$id = false;
 
-			if ( isset( $action['args']['subscription_id'] ) ) {
-				$subject = '<a href="' . get_edit_post_link( $action['args']['subscription_id'] ) . '">#' . $action['args']['subscription_id'] . '</a>';
-			} elseif ( isset( $action['args']['order_id'] ) ) {
-				$subject = '<a href="' . get_edit_post_link( $action['args']['order_id'] ) . '">#' . $action['args']['order_id'] . '</a>';
+			if ( isset( $action['args']['subscription_id'] ) && wcs_is_subscription( $action['args']['subscription_id'] ) ) {
+				$id = $action['args']['subscription_id'];
+			} elseif ( isset( $action['args']['order_id'] ) && wc_get_order( $action['args']['order_id'] ) ) {
+				$id = $action['args']['order_id'];
+			}
+
+			if ( $id ) {
+				$subject = '<a href="' . get_edit_post_link( $id ) . '">#' . $id . '</a>';
 			} else {
 				$subject = 'unknown';
 			}
