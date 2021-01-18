@@ -287,7 +287,7 @@ class WCS_Cart_Renewal {
 			$product_id = apply_filters( 'woocommerce_add_to_cart_product_id', $product_id );
 			$product    = wc_get_product( $product_id );
 
-			// The notice displayed when a subscription product has been deleted and the custoemr attempts to manually renew or make a renewal payment for a failed recurring payment for that product/subscription
+			// The notice displayed when a subscription product has been deleted and the customer attempts to manually renew or make a renewal payment for a failed recurring payment for that product/subscription
 			// translators: placeholder is an item name
 			$product_deleted_error_message = apply_filters( 'woocommerce_subscriptions_renew_deleted_product_error_message', __( 'The %s product has been deleted and can no longer be renewed. Please choose a new product or contact us for assistance.', 'woocommerce-subscriptions' ) );
 
