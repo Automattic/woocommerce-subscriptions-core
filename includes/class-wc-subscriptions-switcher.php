@@ -47,8 +47,14 @@ class WC_Subscriptions_Switcher {
 		// We need to create subscriptions on checkout and want to do it after almost all other extensions have added their products/items/fees
 		add_action( 'woocommerce_checkout_order_processed', array( __CLASS__, 'process_checkout' ), 50, 2 );
 
+		// We need to create subscriptions on checkout and want to do it after almost all other extensions have added their products/items/fees
+		add_action( '__experimental_woocommerce_blocks_checkout_order_processed', array( __CLASS__, 'process_checkout' ), 50, 2 );
+
 		// When creating an order, add meta if it's for switching a subscription
 		add_action( 'woocommerce_checkout_update_order_meta', array( __CLASS__, 'add_order_meta' ), 10, 2 );
+
+		// From blocks - When creating an order, add meta if it's for switching a subscription
+		add_action( '__experimental_woocommerce_blocks_checkout_update_order_meta', array( __CLASS__, 'add_order_meta' ), 10, 1 );
 
 		// Add a renewal orders section to the Related Orders meta box
 		add_action( 'woocommerce_subscriptions_related_orders_meta_box_rows', array( __CLASS__, 'switch_order_meta_box_rows' ), 10 );
@@ -767,7 +773,7 @@ class WC_Subscriptions_Switcher {
 	 * @param array $posted The data posted on checkout
 	 * @since 1.4
 	 */
-	public static function add_order_meta( $order_id, $posted ) {
+	public static function add_order_meta( $order_id, $posted = [] ) {
 
 		$order = wc_get_order( $order_id );
 
@@ -897,7 +903,7 @@ class WC_Subscriptions_Switcher {
 	 * @param array $posted_data The data posted on checkout
 	 * @since 2.0
 	 */
-	public static function process_checkout( $order_id, $posted_data ) {
+	public static function process_checkout( $order_id, $posted_data = [] ) {
 		global $wpdb;
 
 		if ( ! WC_Subscriptions_Cart::cart_contains_subscription() ) {
