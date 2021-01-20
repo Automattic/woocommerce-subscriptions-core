@@ -103,6 +103,7 @@ class WC_Subscriptions_Cart {
 		add_filter( 'woocommerce_package_rates', __CLASS__ . '::cache_package_rates', 1, 2 );
 
 		// When WooCommerce calculates rates for a recurring shipping package, make sure there is a different set of rates
+		add_filter( 'woocommerce_shipping_package_name', __CLASS__ . '::change_initial_shipping_package_name', 1 );
 		add_filter( 'woocommerce_shipping_packages', __CLASS__ . '::reset_shipping_method_counts', 1000, 1 );
 
 		// When WooCommerce determines the taxable address only return pick up shipping methods chosen for the recurring cart being calculated.
@@ -528,6 +529,19 @@ class WC_Subscriptions_Cart {
 				$_POST['shipping_method'][ $key ] = $methods;
 			}
 		}
+	}
+
+	/**
+	 * When shipping subscriptions, changes the original package to "initial shipment".
+	 *
+	 * @param string $package_name Package name.
+	 * @return string
+	 */
+	public static function change_initial_shipping_package_name( $package_name ) {
+		if ( ! self::cart_contains_subscription() ) {
+			return $package_name;
+		}
+		return __( 'Initial Shipment', 'woocommerce-subscriptions' );
 	}
 
 	/**
