@@ -2394,6 +2394,32 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
+	 * Return a localized free trial period string.
+	 *
+	 * @param int An interval in the range 1-6
+	 * @param string One of day, week, month or year.
+	 */
+	public static function format_free_trial_period( $number, $period ) {
+		if ( $period === 'day' ) {
+			// translators: placeholder is a number of days.
+			return sprintf( _n( '%s day', '%s days', $number, 'woocommerce-subscriptions' ), $number );
+		}
+		if ( $period === 'week' ) {
+			// translators: placeholder is a number of weeks.
+			return sprintf( _n( '%s week', '%s weeks', $number, 'woocommerce-subscriptions' ), $number );
+		}
+		if ( $period === 'month' ) {
+			// translators: placeholder is a number of months.
+			return sprintf( _n( '%s month', '%s months', $number, 'woocommerce-subscriptions' ), $number );
+		}
+		if ( $period === 'year' ) {
+			// translators: placeholder is a number of years.
+			return sprintf( _n( '%s year', '%s years', $number, 'woocommerce-subscriptions' ), $number );
+		}
+		return '';
+	}
+
+	/**
 	 * Adds meta data so it can be displayed in the Cart.
 	 */
 	public static function woocommerce_get_item_data( $other_data, $cart_item ) {
@@ -2417,7 +2443,7 @@ class WC_Subscriptions_Cart {
 		if ( $trial_length ) {
 			$other_data[] = array(
 				'name'    => __( 'Free trial', 'woocommerce-subscriptions' ),
-				'value'   => wcs_get_subscription_period_strings( $trial_length, WC_Subscriptions_Product::get_trial_period( $product ) ),
+				'value'   => self::format_free_trial_period( $trial_length, WC_Subscriptions_Product::get_trial_period( $product ) ),
 			);
 		}
 
