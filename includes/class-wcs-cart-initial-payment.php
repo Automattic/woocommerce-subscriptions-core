@@ -54,10 +54,13 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 
 		if ( ! is_user_logged_in() ) {
 			// Allow the customer to login first and then redirect them back.
-			$redirect = add_query_arg( array(
-				'wcs_redirect'    => 'pay_for_order',
-				'wcs_redirect_id' => $order_id,
-			), get_permalink( wc_get_page_id( 'myaccount' ) ) );
+			$redirect = add_query_arg(
+				array(
+					'wcs_redirect'    => 'pay_for_order',
+					'wcs_redirect_id' => $order_id,
+				),
+				get_permalink( wc_get_page_id( 'myaccount' ) )
+			);
 		} elseif ( ! current_user_can( 'pay_for_order', $order_id ) ) {
 			wc_add_notice( __( 'That doesn\'t appear to be your order.', 'woocommerce-subscriptions' ), 'error' );
 
@@ -67,17 +70,17 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 			do_action( 'wcs_before_parent_order_setup_cart', $subscriptions, $order );
 
 			// Add the existing order items to the cart
-			$this->setup_cart( $order, array(
-				'order_id' => $order_id,
-			) );
+			$this->setup_cart(
+				$order,
+				array(
+					'order_id' => $order_id,
+				)
+			);
 
 			do_action( 'wcs_after_parent_order_setup_cart', $subscriptions, $order );
 
 			// Store order's ID in the session so it can be re-used after payment
-			WC()->session->set( 'order_awaiting_payment', $order_id );
-
-			$this->set_cart_hash( $order_id );
-
+			$this->set_order_awaiting_payment( $order_id );
 			$redirect = wc_get_checkout_url();
 		}
 
