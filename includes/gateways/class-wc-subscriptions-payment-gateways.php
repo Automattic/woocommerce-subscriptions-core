@@ -36,7 +36,7 @@ class WC_Subscriptions_Payment_Gateways {
 		add_action( 'woocommerce_subscription_status_updated', __CLASS__ . '::trigger_gateway_status_updated_hook', 10, 2 );
 
 		// Compatibility with WooCommerce blocks cart and checkout blocks.
-		add_action( 'woocommerce_blocks_store_api_cart_payment_requirements', __CLASS__ . '::inject_payment_feature_requirements_for_cart_api', 10, 2 );
+		add_action( 'woocommerce_blocks_store_api_cart_payment_requirements', __CLASS__ . '::inject_payment_feature_requirements_for_cart_api' );
 	}
 
 	/**
