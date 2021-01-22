@@ -34,6 +34,9 @@ class WC_Subscriptions_Payment_Gateways {
 
 		// Create a gateway specific hooks for subscription events.
 		add_action( 'woocommerce_subscription_status_updated', __CLASS__ . '::trigger_gateway_status_updated_hook', 10, 2 );
+
+		// Compatibility with WooCommerce blocks cart and checkout blocks.
+		add_action( 'woocommerce_blocks_store_api_cart_payment_requirements', __CLASS__ . '::inject_payment_feature_requirements_for_cart_api', 10, 2 );
 	}
 
 	/**
@@ -98,6 +101,36 @@ class WC_Subscriptions_Payment_Gateways {
 		}
 
 		return $available_gateways;
+	}
+
+	/**
+	 * Check the content of the cart and add required payment methods.
+	 *
+	 * @param array $features of required features for the cart checkout.
+	 *
+	 * @return array list of features required by cart items.
+	 */
+	public static function inject_payment_feature_requirements_for_cart_api( $features ) {
+
+		// No subscriptions in the cart, no need to add anything.
+		if ( ! WC_Subscriptions_Cart::cart_contains_subscription() ) {
+			return $features;
+		}
+
+		// Manual renewals are accepted - all payment gateways are suitable.
+		if ( 'no' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals', 'no' ) ) {
+			return $features;
+		}
+
+		$subscriptions_in_cart = is_array( WC()->cart->recurring_carts ) ? count( WC()->cart->recurring_carts ) : 0;
+
+		if ( $subscriptions_in_cart > 1 && ! in_array( 'multiple_subscriptions', $features, true ) ) {
+			$features[] = 'multiple_subscriptions';
+		} elseif ( ! in_array( 'subscriptions', $features, true ) ) {
+			$features[] = 'subscriptions';
+		}
+
+		return $features;
 	}
 
 	/**
