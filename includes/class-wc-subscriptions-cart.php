@@ -2424,17 +2424,28 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function woocommerce_get_item_data( $other_data, $cart_item ) {
 		$product = $cart_item['data'];
-
 		if ( ! WC_Subscriptions_Product::is_subscription( $product ) ) {
 			return $other_data;
 		}
 
 		// Only add meta data in WC Blocks.
+		if ( ! class_exists( 'WC_Blocks_Utils' ) ) {
+			return $other_data;
+		}
+
+		// Get current page ID or the page that made the request.
+		$current_page = get_the_ID();
+		if ( ! $current_page ) {
+			$referer = wp_get_referer();
+			if ( $referer ) {
+				$current_page = url_to_postid( $referer );
+			}
+		}
+
 		if (
-			! class_exists( 'WC_Blocks_Utils' ) || (
-				! WC_Blocks_Utils::has_block_in_page( get_the_ID(), 'woocommerce/cart' ) &&
-				! WC_Blocks_Utils::has_block_in_page( get_the_ID(), 'woocommerce/checkout' )
-			)
+			$current_page &&
+			! WC_Blocks_Utils::has_block_in_page( $current_page, 'woocommerce/cart' ) &&
+			! WC_Blocks_Utils::has_block_in_page( $current_page, 'woocommerce/checkout' )
 		) {
 			return $other_data;
 		}
