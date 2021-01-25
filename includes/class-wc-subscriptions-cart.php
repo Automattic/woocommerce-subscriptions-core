@@ -2420,17 +2420,14 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
-	 * Adds meta data so it can be displayed in the Cart.
+	 * Check if the current page or the page that made the request is using the
+	 * Cart or Checkout blocks.
+	 *
+	 * @return boolean Whether the page has the Cart or Checkout blocks in its content.
 	 */
-	public static function woocommerce_get_item_data( $other_data, $cart_item ) {
-		$product = $cart_item['data'];
-		if ( ! WC_Subscriptions_Product::is_subscription( $product ) ) {
-			return $other_data;
-		}
-
-		// Only add meta data in WC Blocks.
+	public static function current_page_uses_blocks() {
 		if ( ! class_exists( 'WC_Blocks_Utils' ) ) {
-			return $other_data;
+			return false;
 		}
 
 		// Get current page ID or the page that made the request.
@@ -2443,9 +2440,25 @@ class WC_Subscriptions_Cart {
 		}
 
 		if (
-			$current_page &&
-			! WC_Blocks_Utils::has_block_in_page( $current_page, 'woocommerce/cart' ) &&
-			! WC_Blocks_Utils::has_block_in_page( $current_page, 'woocommerce/checkout' )
+			$current_page && (
+				WC_Blocks_Utils::has_block_in_page( $current_page, 'woocommerce/cart' ) ||
+				WC_Blocks_Utils::has_block_in_page( $current_page, 'woocommerce/checkout' )
+			)
+		) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Adds meta data so it can be displayed in the Cart.
+	 */
+	public static function woocommerce_get_item_data( $other_data, $cart_item ) {
+		$product = $cart_item['data'];
+		if (
+			! WC_Subscriptions_Product::is_subscription( $product ) ||
+			! self::current_page_uses_blocks()
 		) {
 			return $other_data;
 		}
