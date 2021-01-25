@@ -434,6 +434,8 @@ class WC_Subscriptions_Cart {
 					$needs_shipping = false;
 				} elseif ( false == $needs_shipping && ( self::charge_shipping_up_front() || self::cart_contains_subscriptions_needing_shipping() ) ) {
 					$needs_shipping = false;
+				} elseif ( true == $needs_shipping && ! self::charge_shipping_up_front() && self::all_cart_items_have_free_trial() ) {
+					$needs_shipping = false;
 				}
 			} elseif ( 'recurring_total' == self::$calculation_type ) {
 				$cart = ( isset( self::$cached_recurring_cart ) ) ? self::$cached_recurring_cart : WC()->cart;
