@@ -12,10 +12,18 @@
 
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\Domain\Services\ExtendRestApi;
+use Automattic\WooCommerce\Blocks\StoreApi\SchemaController;
 use Automattic\WooCommerce\Blocks\StoreApi\Schemas\CartSchema;
 use Automattic\WooCommerce\Blocks\StoreApi\Schemas\CartItemSchema;
 
 class WC_Subscriptions_Extend_Store_Endpoint {
+
+	/**
+	 * Stores Rest Schema Controller.
+	 *
+	 * @var ExtendRestApi
+	 */
+	private static $schema;
 
 	/**
 	 * Stores Rest Extending instance.
@@ -37,7 +45,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 	 * @since WCBLOCKS-DEV
 	 */
 	public static function init() {
-
+		self::$schema = Package::container()->get( SchemaController::class );
 		self::$extend = Package::container()->get( ExtendRestApi::class );
 		self::extend_store();
 	}
@@ -264,7 +272,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 							'tax_lines'          => self::get_tax_lines( $cart ),
 						)
 					),
-					'shipping_rates'      => array_values( array_map( array( self::$extend->get_schema( 'cart-shipping-rate' ), 'get_item_response' ), $shipping_packages ) ),
+					'shipping_rates'      => array_values( array_map( array( self::$schema->get( 'cart-shipping-rate' ), 'get_item_response' ), $shipping_packages ) ),
 				);
 			}
 		}
