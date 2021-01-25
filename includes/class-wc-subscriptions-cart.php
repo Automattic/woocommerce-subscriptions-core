@@ -2420,46 +2420,12 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
-	 * Check if the current page or the page that made the request is using the
-	 * Cart or Checkout blocks.
-	 *
-	 * @return boolean Whether the page has the Cart or Checkout blocks in its content.
-	 */
-	public static function current_page_uses_blocks() {
-		if ( ! class_exists( 'WC_Blocks_Utils' ) ) {
-			return false;
-		}
-
-		// Get current page ID or the page that made the request.
-		$current_page = get_the_ID();
-		if ( ! $current_page ) {
-			$referer = wp_get_referer();
-			if ( $referer ) {
-				$current_page = url_to_postid( $referer );
-			}
-		}
-
-		if (
-			$current_page && (
-				WC_Blocks_Utils::has_block_in_page( $current_page, 'woocommerce/cart' ) ||
-				WC_Blocks_Utils::has_block_in_page( $current_page, 'woocommerce/checkout' )
-			)
-		) {
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
 	 * Adds meta data so it can be displayed in the Cart.
 	 */
 	public static function woocommerce_get_item_data( $other_data, $cart_item ) {
 		$product = $cart_item['data'];
-		if (
-			! WC_Subscriptions_Product::is_subscription( $product ) ||
-			! self::current_page_uses_blocks()
-		) {
+
+		if ( ! WC_Subscriptions_Product::is_subscription( $product ) ) {
 			return $other_data;
 		}
 
@@ -2468,6 +2434,8 @@ class WC_Subscriptions_Cart {
 			$other_data[] = array(
 				'name'    => __( 'Free trial', 'woocommerce-subscriptions' ),
 				'value'   => self::format_free_trial_period( $trial_length, WC_Subscriptions_Product::get_trial_period( $product ) ),
+				'hidden'  => true,
+				'__experimental_woocommerce_blocks_hidden'  => false,
 			);
 		}
 
@@ -2476,6 +2444,8 @@ class WC_Subscriptions_Cart {
 			$other_data[] = array(
 				'name'    => __( 'Sign up fee', 'woocommerce-subscriptions' ),
 				'value'   => wc_price( $sign_up_fee ),
+				'hidden'  => true,
+				'__experimental_woocommerce_blocks_hidden'  => false,
 			);
 		}
 
