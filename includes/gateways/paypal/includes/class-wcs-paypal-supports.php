@@ -52,7 +52,7 @@ class WCS_PayPal_Supports {
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', __CLASS__ . '::add_feature_support_for_subscription', 10, 3 );
 
 		add_filter( 'woocommerce_subscriptions_payment_gateway_features_list', array( __CLASS__, 'add_paypal_billing_type_supported_features' ), 10, 2 );
-		add_filter( 'woocommerce_blocks_payment_gateway_features_list', array( __CLASS__, 'add_paypal_billing_type_supported_features_blocks_store_api' ), 10, 2 );
+		add_filter( '__experimental_woocommerce_blocks_payment_gateway_features_list', array( __CLASS__, 'add_paypal_billing_type_supported_features_blocks_store_api' ), 10, 2 );
 	}
 
 	/**
