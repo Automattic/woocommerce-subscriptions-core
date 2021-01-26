@@ -74,6 +74,13 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 				'schema_callback' => array( 'WC_Subscriptions_Extend_Store_Endpoint', 'extend_cart_schema' ),
 			)
 		);
+
+		// Register payment requirements.
+		self::$extend->register_payment_requirements(
+			array(
+				'data_callback' => array( 'WC_Subscriptions_Payment_Gateways', 'inject_payment_feature_requirements_for_cart_api' ),
+			)
+		);
 	}
 
 	/**
