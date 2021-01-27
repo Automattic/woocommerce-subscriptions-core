@@ -186,7 +186,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 		if ( count( $packages ) ) {
 			$packages = array_map(
 				function( $key, $package, $index ) use ( $cart, $cart_key ) {
-					$package['package_id']   = isset( $package['package_id'] ) ? $package['package_id'] : $cart_key;
+					$package['package_id']   = isset( $package['package_id'] ) ? $package['package_id'] : $key;
 					$package['package_name'] = isset( $package['package_name'] ) ? $package['package_name'] : self::get_shipping_package_name( $package, $cart );
 					return $package;
 				},

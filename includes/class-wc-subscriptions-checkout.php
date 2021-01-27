@@ -130,14 +130,16 @@ class WC_Subscriptions_Checkout {
 			$variation_id = wcs_cart_pluck( $cart, 'variation_id' );
 			$product_id   = empty( $variation_id ) ? wcs_cart_pluck( $cart, 'product_id' ) : $variation_id;
 
-			$subscription = wcs_create_subscription( array(
-				'start_date'       => $cart->start_date,
-				'order_id'         => wcs_get_objects_property( $order, 'id' ),
-				'customer_id'      => $order->get_user_id(),
-				'billing_period'   => wcs_cart_pluck( $cart, 'subscription_period' ),
-				'billing_interval' => wcs_cart_pluck( $cart, 'subscription_period_interval' ),
-				'customer_note'    => wcs_get_objects_property( $order, 'customer_note' ),
-			) );
+			$subscription = wcs_create_subscription(
+				array(
+					'start_date'       => $cart->start_date,
+					'order_id'         => wcs_get_objects_property( $order, 'id' ),
+					'customer_id'      => $order->get_user_id(),
+					'billing_period'   => wcs_cart_pluck( $cart, 'subscription_period' ),
+					'billing_interval' => wcs_cart_pluck( $cart, 'subscription_period_interval' ),
+					'customer_note'    => wcs_get_objects_property( $order, 'customer_note' ),
+				)
+			);
 
 			if ( is_wp_error( $subscription ) ) {
 				// If the customer wasn't created on checkout and registration isn't enabled, display a more appropriate error message.
@@ -151,11 +153,13 @@ class WC_Subscriptions_Checkout {
 			// Set the subscription's billing and shipping address
 			$subscription = wcs_copy_order_address( $order, $subscription );
 
-			$subscription->update_dates( array(
-				'trial_end'    => $cart->trial_end_date,
-				'next_payment' => $cart->next_payment_date,
-				'end'          => $cart->end_date,
-			) );
+			$subscription->update_dates(
+				array(
+					'trial_end'    => $cart->trial_end_date,
+					'next_payment' => $cart->next_payment_date,
+					'end'          => $cart->end_date,
+				)
+			);
 
 			// Store trial period for PayPal
 			if ( wcs_cart_pluck( $cart, 'subscription_trial_length' ) > 0 ) {
@@ -268,19 +272,17 @@ class WC_Subscriptions_Checkout {
 		// We need to make sure we only get recurring shipping packages
 		WC_Subscriptions_Cart::set_calculation_type( 'recurring_total' );
 
-		foreach ( $cart->get_shipping_packages() as $package_index => $base_package ) {
-
-			$package = WC_Subscriptions_Cart::get_calculated_shipping_for_package( $base_package );
-
+		foreach ( $cart->get_shipping_packages() as $recurring_cart_package ) {
+			$package_index                  = isset( $recurring_cart_package['package_index'] ) ? $recurring_cart_package['package_index'] : 0;
+			$package                        = WC_Subscriptions_Cart::get_calculated_shipping_for_package( $recurring_cart_package );
 			$recurring_shipping_package_key = WC_Subscriptions_Cart::get_recurring_shipping_package_key( $cart->recurring_cart_key, $package_index );
-
-			$shipping_method_id = isset( WC()->checkout()->shipping_methods[ $package_index ] ) ? WC()->checkout()->shipping_methods[ $package_index ] : '';
+			$shipping_method_id             = isset( WC()->checkout()->shipping_methods[ $package_index ] ) ? WC()->checkout()->shipping_methods[ $package_index ] : '';
 
 			if ( isset( WC()->checkout()->shipping_methods[ $recurring_shipping_package_key ] ) ) {
 				$shipping_method_id = WC()->checkout()->shipping_methods[ $recurring_shipping_package_key ];
 				$package_key        = $recurring_shipping_package_key;
 			} else {
-				$package_key        = $package_index;
+				$package_key = $package_index;
 			}
 
 			if ( isset( $package['rates'][ $shipping_method_id ] ) ) {
@@ -298,12 +300,14 @@ class WC_Subscriptions_Checkout {
 					$shipping_rate            = $package['rates'][ $shipping_method_id ];
 					$item                     = new WC_Order_Item_Shipping();
 					$item->legacy_package_key = $package_key; // @deprecated For legacy actions.
-					$item->set_props( array(
-						'method_title' => $shipping_rate->label,
-						'total'        => wc_format_decimal( $shipping_rate->cost ),
-						'taxes'        => array( 'total' => $shipping_rate->taxes ),
-						'order_id'     => $subscription->get_id(),
-					) );
+					$item->set_props(
+						array(
+							'method_title' => $shipping_rate->label,
+							'total'        => wc_format_decimal( $shipping_rate->cost ),
+							'taxes'        => array( 'total' => $shipping_rate->taxes ),
+							'order_id'     => $subscription->get_id(),
+						)
+					);
 
 					// Backwards compatibility for sites running WC pre 3.4 which stored shipping method and instance ID in a single meta row.
 					if ( WC_Subscriptions::is_woocommerce_pre( '3.4' ) ) {
@@ -439,7 +443,7 @@ class WC_Subscriptions_Checkout {
 
 			// Make sure users are required to register an account
 			if ( true === $checkout->enable_guest_checkout ) {
-				$checkout->enable_guest_checkout = false;
+				$checkout->enable_guest_checkout     = false;
 				self::$guest_checkout_option_changed = true;
 
 				$checkout->must_create_account = true;
@@ -566,10 +570,10 @@ class WC_Subscriptions_Checkout {
 		// Direct the customer to login/register on the my account page if that's enabled.
 		if ( 'yes' === get_option( 'woocommerce_enable_myaccount_registration' ) ) {
 			// Translators: Placeholders are opening and closing strong and link tags.
-			$message = __( 'Purchasing a subscription product requires an account. Please go to the %sMy Account%s page to login or register.', 'woocommerce-subscriptions' );
+			$message = __( 'Purchasing a subscription product requires an account. Please go to the %1$sMy Account%2$s page to login or register.', 'woocommerce-subscriptions' );
 		} else {
 			// Translators: Placeholders are opening and closing strong and link tags.
-			$message = __( 'Purchasing a subscription product requires an account. Please go to the %sMy Account%s page to login or contact us if you need assistance.', 'woocommerce-subscriptions' );
+			$message = __( 'Purchasing a subscription product requires an account. Please go to the %1$sMy Account%2$s page to login or contact us if you need assistance.', 'woocommerce-subscriptions' );
 		}
 
 		return sprintf( $message, '<strong><a href="' . wc_get_page_permalink( 'myaccount' ) . '">', '</a></strong>' );
