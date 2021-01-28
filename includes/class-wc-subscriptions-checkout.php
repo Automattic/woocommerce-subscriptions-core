@@ -271,32 +271,21 @@ class WC_Subscriptions_Checkout {
 
 		// We need to make sure we only get recurring shipping packages
 		WC_Subscriptions_Cart::set_calculation_type( 'recurring_total' );
+		WC_Subscriptions_Cart::set_recurring_cart_key( $cart->recurring_cart_key );
 
-		foreach ( $cart->get_shipping_packages() as $recurring_cart_package ) {
-			$package_index                  = isset( $recurring_cart_package['package_index'] ) ? $recurring_cart_package['package_index'] : 0;
-			$package                        = WC_Subscriptions_Cart::get_calculated_shipping_for_package( $recurring_cart_package );
-			$recurring_shipping_package_key = WC_Subscriptions_Cart::get_recurring_shipping_package_key( $cart->recurring_cart_key, $package_index );
-			$shipping_method_id             = isset( WC()->checkout()->shipping_methods[ $package_index ] ) ? WC()->checkout()->shipping_methods[ $package_index ] : '';
+		foreach ( $cart->get_shipping_packages() as $recurring_cart_package_key => $recurring_cart_package ) {
+			$package_index      = isset( $recurring_cart_package['package_index'] ) ? $recurring_cart_package['package_index'] : 0;
+			$package            = WC_Subscriptions_Cart::get_calculated_shipping_for_package( $recurring_cart_package );
+			$shipping_method_id = isset( WC()->checkout()->shipping_methods[ $package_index ] ) ? WC()->checkout()->shipping_methods[ $package_index ] : '';
 
-			if ( isset( WC()->checkout()->shipping_methods[ $recurring_shipping_package_key ] ) ) {
-				$shipping_method_id = WC()->checkout()->shipping_methods[ $recurring_shipping_package_key ];
-				$package_key        = $recurring_shipping_package_key;
+			if ( isset( WC()->checkout()->shipping_methods[ $recurring_cart_package_key ] ) ) {
+				$shipping_method_id = WC()->checkout()->shipping_methods[ $recurring_cart_package_key ];
+				$package_key        = $recurring_cart_package_key;
 			} else {
 				$package_key = $package_index;
 			}
 
 			if ( isset( $package['rates'][ $shipping_method_id ] ) ) {
-
-				if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-
-					$item_id = $subscription->add_shipping( $package['rates'][ $shipping_method_id ] );
-
-					// Allows plugins to add order item meta to shipping
-					do_action( 'woocommerce_add_shipping_order_item', $subscription->get_id(), $item_id, $package_key );
-					do_action( 'woocommerce_subscriptions_add_recurring_shipping_order_item', $subscription->get_id(), $item_id, $package_key );
-
-				} else { // WC 3.0+
-
 					$shipping_rate            = $package['rates'][ $shipping_method_id ];
 					$item                     = new WC_Order_Item_Shipping();
 					$item->legacy_package_key = $package_key; // @deprecated For legacy actions.
@@ -310,16 +299,16 @@ class WC_Subscriptions_Checkout {
 					);
 
 					// Backwards compatibility for sites running WC pre 3.4 which stored shipping method and instance ID in a single meta row.
-					if ( WC_Subscriptions::is_woocommerce_pre( '3.4' ) ) {
-						$item->set_method_id( $shipping_rate->id );
-					} else {
-						$item->set_method_id( $shipping_rate->method_id );
-						$item->set_instance_id( $shipping_rate->instance_id );
-					}
+				if ( WC_Subscriptions::is_woocommerce_pre( '3.4' ) ) {
+					$item->set_method_id( $shipping_rate->id );
+				} else {
+					$item->set_method_id( $shipping_rate->method_id );
+					$item->set_instance_id( $shipping_rate->instance_id );
+				}
 
-					foreach ( $shipping_rate->get_meta_data() as $key => $value ) {
-						$item->add_meta_data( $key, $value, true );
-					}
+				foreach ( $shipping_rate->get_meta_data() as $key => $value ) {
+					$item->add_meta_data( $key, $value, true );
+				}
 
 					$subscription->add_item( $item );
 
@@ -328,11 +317,11 @@ class WC_Subscriptions_Checkout {
 
 					do_action( 'woocommerce_checkout_create_order_shipping_item', $item, $package_key, $package, $subscription ); // WC 3.0+ will also trigger the deprecated 'woocommerce_add_shipping_order_item' hook
 					do_action( 'woocommerce_checkout_create_subscription_shipping_item', $item, $package_key, $package, $subscription );
-				}
 			}
 		}
 
 		WC_Subscriptions_Cart::set_calculation_type( 'none' );
+		WC_Subscriptions_Cart::set_recurring_cart_key( 'none' );
 	}
 
 	/**
@@ -372,9 +361,7 @@ class WC_Subscriptions_Checkout {
 	 * @since 2.0
 	 */
 	public static function add_cart_item( $subscription, $cart_item, $cart_item_key ) {
-		if ( ! WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-			_deprecated_function( __METHOD__, '2.2.0', 'WC_Checkout::create_order_line_items( $subscription, $cart )' );
-		}
+		_deprecated_function( __METHOD__, '2.2.0', 'WC_Checkout::create_order_line_items( $subscription, $cart )' );
 
 		$item_id = $subscription->add_product(
 			$cart_item['data'],
@@ -403,13 +390,8 @@ class WC_Subscriptions_Checkout {
 		}
 
 		// Allow plugins to add order item meta
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-			do_action( 'woocommerce_add_order_item_meta', $item_id, $cart_item, $cart_item_key );
-			do_action( 'woocommerce_add_subscription_item_meta', $item_id, $cart_item, $cart_item_key );
-		} else {
-			wc_do_deprecated_action( 'woocommerce_add_order_item_meta', array( $item_id, $cart_item, $cart_item_key ), '3.0', 'CRUD and woocommerce_checkout_create_order_line_item action instead' );
-			wc_do_deprecated_action( 'woocommerce_add_subscription_item_meta', array( $item_id, $cart_item, $cart_item_key ), '3.0', 'CRUD and woocommerce_checkout_create_order_line_item action instead' );
-		}
+		wc_do_deprecated_action( 'woocommerce_add_order_item_meta', array( $item_id, $cart_item, $cart_item_key ), '3.0', 'CRUD and woocommerce_checkout_create_order_line_item action instead' );
+		wc_do_deprecated_action( 'woocommerce_add_subscription_item_meta', array( $item_id, $cart_item, $cart_item_key ), '3.0', 'CRUD and woocommerce_checkout_create_order_line_item action instead' );
 
 		return $item_id;
 	}

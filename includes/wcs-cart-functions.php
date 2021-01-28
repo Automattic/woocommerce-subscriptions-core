@@ -49,17 +49,16 @@ function wcs_cart_totals_shipping_html() {
 
 	// Create new subscriptions for each subscription product in the cart (that is not a renewal)
 	foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
+		// This ensures we get the correct package IDs (these are filtered by WC_Subscriptions_Cart).
+		WC_Subscriptions_Cart::set_calculation_type( 'recurring_total' );
+		WC_Subscriptions_Cart::set_recurring_cart_key( $recurring_cart_key );
 
 		// Create shipping packages for each subscription item
 		if ( WC_Subscriptions_Cart::cart_contains_subscriptions_needing_shipping( $recurring_cart ) && 0 !== $recurring_cart->next_payment_date ) {
-
-			// This will get a package with the 'recurring_cart_key' set to 'none' WC_Cart->get_shipping_packages() will get the packages,
-			// and WC_Subscriptions_Cart will filter the results, but as this occurs, $calculation_type will be 'none'.
-			foreach ( $recurring_cart->get_shipping_packages() as $recurring_cart_package ) {
-				$package_index              = isset( $recurring_cart_package['package_index'] ) ? $recurring_cart_package['package_index'] : 0;
-				$product_names              = array();
-				$recurring_cart_package_key = WC_Subscriptions_Cart::get_recurring_shipping_package_key( $recurring_cart_key, $package_index );
-				$package                    = WC_Subscriptions_Cart::get_calculated_shipping_for_package( $recurring_cart_package );
+			foreach ( $recurring_cart->get_shipping_packages() as $recurring_cart_package_key => $recurring_cart_package ) {
+				$package_index = isset( $recurring_cart_package['package_index'] ) ? $recurring_cart_package['package_index'] : 0;
+				$product_names = array();
+				$package       = WC_Subscriptions_Cart::get_calculated_shipping_for_package( $recurring_cart_package );
 
 				if ( $show_package_details ) {
 					foreach ( $package['contents'] as $item_id => $values ) {
@@ -144,6 +143,9 @@ function wcs_cart_totals_shipping_html() {
 				do_action( 'woocommerce_subscriptions_after_recurring_shipping_rates', $recurring_cart_package_key, $recurring_cart_package, $recurring_cart, $chosen_recurring_method, $shipping_selection_displayed );
 			}
 		}
+
+		WC_Subscriptions_Cart::set_calculation_type( 'none' );
+		WC_Subscriptions_Cart::set_recurring_cart_key( 'none' );
 	}
 }
 

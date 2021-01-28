@@ -261,7 +261,6 @@ class WC_Subscriptions_Cart {
 
 		// Group the subscription items by their cart item key based on billing schedule
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-
 			if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 				$subscription_groups[ self::get_recurring_cart_key( $cart_item ) ][] = $cart_item_key;
 			}
@@ -284,11 +283,13 @@ class WC_Subscriptions_Cart {
 			$recurring_cart = clone WC()->cart;
 			$product        = null;
 
-			self::$recurring_cart_key = $recurring_cart->recurring_cart_key = $recurring_cart_key;
+			// Set the current recurring key flag on this class, and store the recurring_cart_key to the new cart instance.
+			self::$recurring_cart_key           = $recurring_cart_key;
+			$recurring_cart->recurring_cart_key = $recurring_cart_key;
 
 			// Remove any items not in this subscription group
 			foreach ( $recurring_cart->get_cart() as $cart_item_key => $cart_item ) {
-				if ( ! in_array( $cart_item_key, $subscription_group ) ) {
+				if ( ! in_array( $cart_item_key, $subscription_group, true ) ) {
 					unset( $recurring_cart->cart_contents[ $cart_item_key ] );
 					continue;
 				}
@@ -329,6 +330,7 @@ class WC_Subscriptions_Cart {
 			self::$recurring_shipping_packages[ $recurring_cart_key ] = WC()->shipping->get_packages();
 		}
 
+		// Reset flags when we're done processing recurring carts.
 		self::$calculation_type = self::$recurring_cart_key = 'none';
 
 		// We need to reset the packages and totals stored in WC()->shipping too
@@ -584,49 +586,50 @@ class WC_Subscriptions_Cart {
 	 * @since 2.0
 	 */
 	public static function set_cart_shipping_packages( $packages ) {
+		if ( ! self::cart_contains_subscription() ) {
+			return $packages;
+		}
 
-		if ( self::cart_contains_subscription() ) {
-			if ( 'none' === self::$calculation_type ) {
-				foreach ( $packages as $index => $package ) {
-					foreach ( $package['contents'] as $cart_item_key => $cart_item ) {
-						if ( WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) > 0 ) {
-							unset( $packages[ $index ]['contents'][ $cart_item_key ] );
-						}
-					}
-
-					if ( empty( $packages[ $index ]['contents'] ) ) {
-						unset( $packages[ $index ] );
-					}
-				}
-			} elseif ( 'recurring_total' === self::$calculation_type ) {
-				/**
-				 * This logic runs for recurring carts, not the main cart.
-				 */
-				$new_packages = array();
-
-				foreach ( $packages as $index => $package ) {
-					$new_package = $package;
-
-					// we need to make sure the package is different for recurring carts to bypass WC's cache
-					$new_package['recurring_cart_key'] = self::$recurring_cart_key;
-
-					// We need to track the original package index.
-					$new_package['package_index'] = $index;
-
-					foreach ( $new_package['contents'] as $cart_item_key => $cart_item ) {
-						if ( WC_Subscriptions_Product::needs_one_time_shipping( $cart_item['data'] ) ) {
-							$new_package['contents_cost'] -= $cart_item['line_total'];
-							unset( $new_package['contents'][ $cart_item_key ] );
-						}
-					}
-
-					if ( ! empty( $packages[ $index ]['contents'] ) ) {
-						$new_packages[ self::get_recurring_shipping_package_key( self::$recurring_cart_key, $index ) ] = $new_package;
+		if ( 'none' === self::$calculation_type ) {
+			foreach ( $packages as $index => $package ) {
+				foreach ( $package['contents'] as $cart_item_key => $cart_item ) {
+					if ( WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) > 0 ) {
+						unset( $packages[ $index ]['contents'][ $cart_item_key ] );
 					}
 				}
 
-				$packages = $new_packages;
+				if ( empty( $packages[ $index ]['contents'] ) ) {
+					unset( $packages[ $index ] );
+				}
 			}
+		} elseif ( 'recurring_total' === self::$calculation_type ) {
+			/**
+			 * This logic runs for recurring carts, not the main cart.
+			 */
+			$new_packages = array();
+
+			foreach ( $packages as $index => $package ) {
+				$new_package = $package;
+
+				// we need to make sure the package is different for recurring carts to bypass WC's cache
+				$new_package['recurring_cart_key'] = self::$recurring_cart_key;
+
+				// We need to track the original package index.
+				$new_package['package_index'] = $index;
+
+				foreach ( $new_package['contents'] as $cart_item_key => $cart_item ) {
+					if ( WC_Subscriptions_Product::needs_one_time_shipping( $cart_item['data'] ) ) {
+						$new_package['contents_cost'] -= $cart_item['line_total'];
+						unset( $new_package['contents'][ $cart_item_key ] );
+					}
+				}
+
+				if ( ! empty( $packages[ $index ]['contents'] ) ) {
+					$new_packages[ self::get_recurring_shipping_package_key( self::$recurring_cart_key, $index ) ] = $new_package;
+				}
+			}
+
+			$packages = $new_packages;
 		}
 
 		return $packages;
@@ -797,10 +800,21 @@ class WC_Subscriptions_Cart {
 	 * @since 2.0
 	 */
 	public static function set_calculation_type( $calculation_type ) {
-
 		self::$calculation_type = $calculation_type;
-
 		return $calculation_type;
+	}
+
+	/**
+	 * Sets the recurring cart key flag.
+	 *
+	 * @internal While this is indeed stored to the cart object, some hooks such as woocommerce_cart_shipping_packages
+	 *           do not have access to this property. So we can properly set package IDs we make use of this flag.
+	 *
+	 * @param string $recurring_cart_key Recurring cart key used to identify the current recurring cart being processed.
+	 */
+	public static function set_recurring_cart_key( $recurring_cart_key ) {
+		self::$recurring_cart_key = $recurring_cart_key;
+		return $recurring_cart_key;
 	}
 
 	/**
@@ -1086,7 +1100,7 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function filter_recurring_cart_chosen_shipping_method( $shipping_methods ) {
 
-		if ( 'recurring_total' == self::$calculation_type && 'none' !== self::$recurring_cart_key ) {
+		if ( 'recurring_total' === self::$calculation_type && 'none' !== self::$recurring_cart_key ) {
 
 			$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', array() );
 
@@ -1121,43 +1135,40 @@ class WC_Subscriptions_Cart {
 	 * @since 2.0.14
 	 */
 	public static function validate_recurring_shipping_methods() {
-
 		$shipping_methods     = WC()->checkout()->shipping_methods;
 		$added_invalid_notice = false;
 		$standard_packages    = WC()->shipping->get_packages();
 
 		// temporarily store the current calculation type and recurring cart key so we can restore them later
 		$calculation_type        = self::$calculation_type;
-		self::$calculation_type  = 'recurring_total';
 		$recurring_cart_key_flag = self::$recurring_cart_key;
 
 		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
-
 			if ( false === $recurring_cart->needs_shipping() || 0 == $recurring_cart->next_payment_date ) {
 				continue;
 			}
 
-			self::$recurring_cart_key = $recurring_cart_key;
+			self::set_calculation_type( 'recurring_total' );
+			self::set_recurring_cart_key( $recurring_cart_key );
 
-			$packages = $recurring_cart->get_shipping_packages();
+			foreach ( $recurring_cart->get_shipping_packages() as $recurring_cart_package_key => $recurring_cart_package ) {
+				$package_index = isset( $recurring_cart_package['package_index'] ) ? $recurring_cart_package['package_index'] : 0;
+				$package       = self::get_calculated_shipping_for_package( $recurring_cart_package );
 
-			foreach ( $packages as $index => $recurring_shipping_package ) {
-				$recurring_shipping_package_key = $recurring_cart_key . '_' . $recurring_shipping_package['package_index'];
-				$package                        = self::get_calculated_shipping_for_package( $recurring_shipping_package );
-
-				if ( ( isset( $standard_packages[ $recurring_shipping_package['package_index'] ] ) && $package['rates'] === $standard_packages[ $package_index ]['rates'] ) && apply_filters( 'wcs_cart_totals_shipping_html_price_only', true, $package, WC()->cart->recurring_carts[ $recurring_cart_key ] ) ) {
-					// the recurring package rates match the initial package rates, there won't be a selected shipping method for this recurring cart package
-					// move on to the next package
-					continue;
+				if ( ( isset( $standard_packages[ $package_index ] ) && $package['rates'] === $standard_packages[ $package_index ]['rates'] ) ) {
+					// the recurring package rates match the initial package rates, there won't be a selected shipping method for this recurring cart package move on to the next package.
+					if ( apply_filters( 'wcs_cart_totals_shipping_html_price_only', true, $package, $recurring_cart ) ) {
+						continue;
+					}
 				}
 
-				if ( ! isset( $package['rates'][ $shipping_methods[ $recurring_shipping_package_key ] ] ) ) {
+				if ( ! isset( $package['rates'][ $shipping_methods[ $recurring_cart_package_key ] ] ) ) {
 					if ( ! $added_invalid_notice ) {
 						wc_add_notice( __( 'Invalid recurring shipping method.', 'woocommerce-subscriptions' ), 'error' );
 						$added_invalid_notice = true;
 					}
 
-					$shipping_methods[ $recurring_shipping_package_key ] = '';
+					$shipping_methods[ $recurring_cart_package_key ] = '';
 				}
 			}
 		}
@@ -1167,8 +1178,8 @@ class WC_Subscriptions_Cart {
 			WC()->checkout()->shipping_methods = $shipping_methods;
 		}
 
-		self::$calculation_type   = $calculation_type;
-		self::$recurring_cart_key = $recurring_cart_key_flag;
+		self::set_calculation_type( $calculation_type );
+		self::set_recurring_cart_key( $recurring_cart_key_flag );
 	}
 
 	/**
@@ -2322,20 +2333,20 @@ class WC_Subscriptions_Cart {
 		$trial_length = WC_Subscriptions_Product::get_trial_length( $product );
 		if ( $trial_length ) {
 			$other_data[] = array(
-				'name'    => __( 'Free trial', 'woocommerce-subscriptions' ),
-				'value'   => self::format_free_trial_period( $trial_length, WC_Subscriptions_Product::get_trial_period( $product ) ),
-				'hidden'  => true,
-				'__experimental_woocommerce_blocks_hidden'  => false,
+				'name'                                     => __( 'Free trial', 'woocommerce-subscriptions' ),
+				'value'                                    => self::format_free_trial_period( $trial_length, WC_Subscriptions_Product::get_trial_period( $product ) ),
+				'hidden'                                   => true,
+				'__experimental_woocommerce_blocks_hidden' => false,
 			);
 		}
 
 		$sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( $product );
 		if ( $sign_up_fee ) {
 			$other_data[] = array(
-				'name'    => __( 'Sign up fee', 'woocommerce-subscriptions' ),
-				'value'   => wc_price( $sign_up_fee ),
-				'hidden'  => true,
-				'__experimental_woocommerce_blocks_hidden'  => false,
+				'name'                                     => __( 'Sign up fee', 'woocommerce-subscriptions' ),
+				'value'                                    => wc_price( $sign_up_fee ),
+				'hidden'                                   => true,
+				'__experimental_woocommerce_blocks_hidden' => false,
 			);
 		}
 
