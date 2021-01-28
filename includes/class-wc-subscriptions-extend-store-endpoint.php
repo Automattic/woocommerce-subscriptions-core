@@ -217,15 +217,15 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 				break;
 			case 'month':
 				// translators: %d subscription interval.
-				$package_name = $interval > 1 ? _n( 'Shipment every %d month', 'Shipment every %d years', $interval, 'woocommerce-subscriptions' ) : __( 'Monthly shipment', 'woocommerce-subscriptions' );
+				$package_name = $interval > 1 ? _n( 'Shipment every %d month', 'Shipment every %d months', $interval, 'woocommerce-subscriptions' ) : __( 'Monthly shipment', 'woocommerce-subscriptions' );
 				break;
 			case 'week':
 				// translators: %d subscription interval.
-				$package_name = $interval > 1 ? _n( 'Shipment every %d week', 'Shipment every %d years', $interval, 'woocommerce-subscriptions' ) : __( 'Weekly shipment', 'woocommerce-subscriptions' );
+				$package_name = $interval > 1 ? _n( 'Shipment every %d week', 'Shipment every %d weeks', $interval, 'woocommerce-subscriptions' ) : __( 'Weekly shipment', 'woocommerce-subscriptions' );
 				break;
 			case 'day':
 				// translators: %d subscription interval.
-				$package_name = $interval > 1 ? _n( 'Shipment every %d day', 'Shipment every %d years', $interval, 'woocommerce-subscriptions' ) : __( 'Daily shipment', 'woocommerce-subscriptions' );
+				$package_name = $interval > 1 ? _n( 'Shipment every %d day', 'Shipment every %d days', $interval, 'woocommerce-subscriptions' ) : __( 'Daily shipment', 'woocommerce-subscriptions' );
 				break;
 		}
 		return $package_name;
