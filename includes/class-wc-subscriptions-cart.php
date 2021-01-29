@@ -422,8 +422,6 @@ class WC_Subscriptions_Cart {
 				// If we have a subscription that either needs shipping, or needs shipping charging up front, force true.
 				if ( $has_subscription_needing_shipping && $charge_shipping_up_front ) {
 					$needs_shipping = true;
-				} if ( ! $charge_shipping_up_front ) {
-					$needs_shipping = false;
 				}
 			} elseif ( 'recurring_total' === self::$calculation_type ) {
 				$cart           = isset( self::$cached_recurring_cart ) ? self::$cached_recurring_cart : WC()->cart;
@@ -555,6 +553,7 @@ class WC_Subscriptions_Cart {
 	 * @since 1.5.4
 	 */
 	public static function cart_contains_subscriptions_needing_shipping( $cart = null ) {
+
 		if ( 'no' === get_option( 'woocommerce_calc_shipping' ) ) {
 			return false;
 		}
