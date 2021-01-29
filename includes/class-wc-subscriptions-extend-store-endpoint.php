@@ -110,6 +110,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 					'subscription_length' => (int) WC_Subscriptions_Product::get_length( $product ),
 					'trial_length'        => (int) WC_Subscriptions_Product::get_trial_length( $product ),
 					'trial_period'        => WC_Subscriptions_Product::get_trial_period( $product ),
+					'is_resubscribe'      => isset( $cart_item['subscription_resubscribe'] ),
 				),
 				self::format_sign_up_fees( $product )
 			);
@@ -169,6 +170,15 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 				'context'     => array( 'view', 'edit' ),
 				'readonly'    => true,
 			),
+			'is_resubscribe'    => array(
+				'description' => __(
+					'Indicates whether this product is being used to resubscribe the customer to an existing, expired subscription',
+					'woocommerce-subscriptions'
+				),
+				'type'        => 'boolean',
+				'context'     => array( 'view', 'edit' ),
+				'readonly'    => true
+			)
 
 		);
 	}
