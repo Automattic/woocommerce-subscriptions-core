@@ -100,6 +100,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 			'trial_period'        => null,
 			'sign_up_fees'        => null,
 			'sign_up_fees_tax'    => null,
+			'is_resubscribe'      => null,
 		);
 
 		if ( in_array( $product->get_type(), array( 'subscription', 'subscription_variation' ), true ) ) {
