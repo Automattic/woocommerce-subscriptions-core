@@ -413,8 +413,8 @@ class WC_Subscriptions_Cart {
 	 * @return boolean
 	 */
 	public static function cart_needs_shipping( $needs_shipping ) {
+
 		if ( self::cart_contains_subscription() ) {
-			// If this is 'none' we are currently calculating the main cart.
 			if ( 'none' === self::$calculation_type ) {
 				$has_subscription_needing_shipping = self::cart_contains_subscriptions_needing_shipping();
 				$charge_shipping_up_front          = self::charge_shipping_up_front();
