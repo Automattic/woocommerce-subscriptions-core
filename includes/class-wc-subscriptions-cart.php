@@ -273,7 +273,6 @@ class WC_Subscriptions_Cart {
 
 		// Back up the shipping method. Chances are WC is going to wipe the chosen_shipping_methods data
 		WC()->session->set( 'wcs_shipping_methods', WC()->session->get( 'chosen_shipping_methods', array() ) );
-		WC()->session->set( 'wcs_shipping_method_counts', WC()->session->get( 'shipping_method_counts', array() ) );
 
 		// Now let's calculate the totals for each group of subscriptions
 		self::$calculation_type = 'recurring_total';
@@ -344,7 +343,6 @@ class WC_Subscriptions_Cart {
 
 		// We no longer need our backup of shipping methods
 		unset( WC()->session->wcs_shipping_methods );
-		unset( WC()->session->wcs_shipping_method_counts );
 
 		// If there is no sign-up fee and a free trial, and no products being purchased with the subscription, we need to zero the fees for the first billing period
 		$remove_fees_from_cart = ( 0 == self::get_cart_subscription_sign_up_fee() && self::all_cart_items_have_free_trial() );
@@ -2286,11 +2284,9 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function maybe_restore_chosen_shipping_method() {
 		$chosen_shipping_method_cache = WC()->session->get( 'wcs_shipping_methods', false );
-		$shipping_method_counts_cache = WC()->session->get( 'wcs_shipping_method_counts', false );
 
 		if ( false !== $chosen_shipping_method_cache ) {
 			WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_method_cache );
-			WC()->session->set( 'shipping_method_counts', $shipping_method_counts_cache );
 		}
 	}
 
