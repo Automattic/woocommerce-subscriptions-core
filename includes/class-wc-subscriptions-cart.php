@@ -396,55 +396,37 @@ class WC_Subscriptions_Cart {
 	 * When the cart contains a physical subscription with a free trial and no other physical items, shipping
 	 * should not be charged up-front.
 	 *
+	 * @internal self::all_cart_items_have_free_trial() is false if non-subscription products are in the cart.
+	 *
 	 * @since 1.5.4
 	 */
 	public static function charge_shipping_up_front() {
-
-		$charge_shipping_up_front = true;
-
-		if ( self::all_cart_items_have_free_trial() ) {
-
-			$charge_shipping_up_front  = false;
-			$other_items_need_shipping = false;
-
-			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-				if ( ! WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) && $cart_item['data']->needs_shipping() ) {
-					$other_items_need_shipping = true;
-				}
-			}
-
-			if ( false === $other_items_need_shipping ) {
-				$charge_shipping_up_front = false;
-			}
-		}
-
-		return apply_filters( 'woocommerce_subscriptions_cart_shipping_up_front', $charge_shipping_up_front );
+		return apply_filters( 'woocommerce_subscriptions_cart_shipping_up_front', ! self::all_cart_items_have_free_trial() );
 	}
 
 	/**
 	 * The cart needs shipping only if it needs shipping up front and/or for recurring items.
 	 *
 	 * @since 2.0
+	 * @param boolean $needs_shipping True if shipping is needed for the cart.
+	 * @return boolean
 	 */
 	public static function cart_needs_shipping( $needs_shipping ) {
-
 		if ( self::cart_contains_subscription() ) {
-			if ( 'none' == self::$calculation_type ) {
-				if ( true == $needs_shipping && ! self::charge_shipping_up_front() && ! self::cart_contains_subscriptions_needing_shipping() ) {
-					$needs_shipping = false;
-				} elseif ( false == $needs_shipping && ( self::charge_shipping_up_front() || self::cart_contains_subscriptions_needing_shipping() ) ) {
-					$needs_shipping = false;
-				} elseif ( true == $needs_shipping && ! self::charge_shipping_up_front() && self::all_cart_items_have_free_trial() ) {
-					$needs_shipping = false;
-				}
-			} elseif ( 'recurring_total' == self::$calculation_type ) {
-				$cart = ( isset( self::$cached_recurring_cart ) ) ? self::$cached_recurring_cart : WC()->cart;
+			// If this is 'none' we are currently calculating the main cart.
+			if ( 'none' === self::$calculation_type ) {
+				$has_subscription_needing_shipping = self::cart_contains_subscriptions_needing_shipping();
+				$charge_shipping_up_front          = self::charge_shipping_up_front();
 
-				if ( true == $needs_shipping && ! self::cart_contains_subscriptions_needing_shipping( $cart ) ) {
-					$needs_shipping = false;
-				} elseif ( false == $needs_shipping && self::cart_contains_subscriptions_needing_shipping( $cart ) ) {
+				// If we have a subscription that either needs shipping, or needs shipping charging up front, force true.
+				if ( $has_subscription_needing_shipping && $charge_shipping_up_front ) {
 					$needs_shipping = true;
+				} if ( ! $charge_shipping_up_front ) {
+					$needs_shipping = false;
 				}
+			} elseif ( 'recurring_total' === self::$calculation_type ) {
+				$cart           = isset( self::$cached_recurring_cart ) ? self::$cached_recurring_cart : WC()->cart;
+				$needs_shipping = self::cart_contains_subscriptions_needing_shipping( $cart );
 			}
 		}
 
@@ -558,7 +540,6 @@ class WC_Subscriptions_Cart {
 	 * @since 1.5.4
 	 */
 	public static function cart_contains_subscriptions_needing_shipping( $cart = null ) {
-
 		if ( 'no' === get_option( 'woocommerce_calc_shipping' ) ) {
 			return false;
 		}
@@ -572,9 +553,16 @@ class WC_Subscriptions_Cart {
 		if ( self::cart_contains_subscription() ) {
 			foreach ( $cart->cart_contents as $cart_item_key => $values ) {
 				$_product = $values['data'];
-				if ( WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && false === WC_Subscriptions_Product::needs_one_time_shipping( $_product ) ) {
-					$cart_contains_subscriptions_needing_shipping = true;
+
+				if ( ! WC_Subscriptions_Product::is_subscription( $_product ) || ! $_product->needs_shipping() ) {
+					continue;
 				}
+
+				if ( 'recurring_total' === self::$calculation_type && WC_Subscriptions_Product::needs_one_time_shipping( $_product ) ) {
+					continue;
+				}
+
+				$cart_contains_subscriptions_needing_shipping = true;
 			}
 		}
 
@@ -738,21 +726,17 @@ class WC_Subscriptions_Cart {
 	 * Checks the cart to see if it contains a subscription product.
 	 *
 	 * @since 1.0
+	 * @return boolean
 	 */
 	public static function cart_contains_subscription() {
-
-		$contains_subscription = false;
-
 		if ( ! empty( WC()->cart->cart_contents ) && ! wcs_cart_contains_renewal() ) {
 			foreach ( WC()->cart->cart_contents as $cart_item ) {
 				if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
-					$contains_subscription = true;
-					break;
+					return true;
 				}
 			}
 		}
-
-		return $contains_subscription;
+		return false;
 	}
 
 	/**
