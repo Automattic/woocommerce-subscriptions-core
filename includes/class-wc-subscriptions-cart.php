@@ -87,6 +87,7 @@ class WC_Subscriptions_Cart {
 		add_action( 'woocommerce_review_order_after_order_total', __CLASS__ . '::display_recurring_totals' );
 
 		add_filter( 'woocommerce_cart_needs_shipping', __CLASS__ . '::cart_needs_shipping', 11, 1 );
+		add_filter( 'woocommerce_cart_needs_shipping_address', __CLASS__ . '::cart_needs_shipping_address', 11, 1 );
 
 		// Remove recurring shipping methods stored in the session whenever a subscription product is removed from the cart
 		add_action( 'woocommerce_remove_cart_item', array( __CLASS__, 'maybe_reset_chosen_shipping_methods' ) );
@@ -431,6 +432,20 @@ class WC_Subscriptions_Cart {
 		}
 
 		return $needs_shipping;
+	}
+
+	/**
+	 * The cart needs a shipping address if any item needs shipping, including recurring items.
+	 *
+	 * @param boolean $needs_shipping_address True if a shipping address is needed for the cart.
+	 * @return boolean
+	 */
+	public static function cart_needs_shipping_address( $needs_shipping_address ) {
+		if ( self::cart_contains_subscription() ) {
+			$needs_shipping_address = $needs_shipping_address || self::cart_contains_subscriptions_needing_shipping();
+		}
+
+		return $needs_shipping_address;
 	}
 
 	/**
