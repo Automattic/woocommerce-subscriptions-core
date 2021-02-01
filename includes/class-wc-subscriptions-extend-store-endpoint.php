@@ -195,22 +195,15 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 			),
 			'synchronization'     => array(
 				'description' => __( 'Synchronization data for the subscription.', 'woocommerce-subscriptions' ),
-				'type'        => array( 'object', 'null' ),
+				'type'        => array( 'object', 'integer', 'null' ),
 				'properties'  => array(
-					'synchronization_date' => array(
-						'description' => __( 'Synchronization Date or day.', 'woocommerce-subscriptions' ),
-						'type'        => array( 'object', 'integer' ),
-						'properties'  => array(
-							'day'   => array(
-								'description' => __( 'Synchronization day if subscription is annual.', 'woocommerce-subscriptions' ),
-								'type'        => 'integer',
-							),
-							'month' => array(
-								'description' => __( 'Synchronization month if subscription is annual.', 'woocommerce-subscriptions' ),
-								'type'        => 'string',
-								'enum'        => array( __( 'January', 'woocommerce-subscriptions' ), __( 'February', 'woocommerce-subscriptions' ), __( 'March', 'woocommerce-subscriptions' ), __( 'April', 'woocommerce-subscriptions' ), __( 'May', 'woocommerce-subscriptions' ), __( 'June', 'woocommerce-subscriptions' ), __( 'July', 'woocommerce-subscriptions' ), __( 'August', 'woocommerce-subscriptions' ), __( 'September', 'woocommerce-subscriptions' ), __( 'October', 'woocommerce-subscriptions' ), __( 'November', 'woocommerce-subscriptions' ), __( 'December', 'woocommerce-subscriptions' ) ),
-							),
-						),
+					'day'   => array(
+						'description' => __( 'Synchronization day if subscription is annual.', 'woocommerce-subscriptions' ),
+						'type'        => 'integer',
+					),
+					'month' => array(
+						'description' => __( 'Synchronization month if subscription is annual.', 'woocommerce-subscriptions' ),
+						'type'        => 'integer',
 					),
 				),
 			),
@@ -383,15 +376,12 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 		$payment_day = WC_Subscriptions_Synchroniser::get_products_payment_day( $product );
 
 		if ( ! is_array( $payment_day ) ) {
-			return array(
-				'synchronization_date' => (int) $payment_day,
-			);
+			return (int) $payment_day;
 		}
+
 		return (object) array(
-			'synchronization_date' => array(
-				'month' => (int) $payment_day['month'],
-				'day'   => (int) $payment_day['day'],
-			),
+			'month' => (int) $payment_day['month'],
+			'day'   => (int) $payment_day['day'],
 		);
 	}
 	/**

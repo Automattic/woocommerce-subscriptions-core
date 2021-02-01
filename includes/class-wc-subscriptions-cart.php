@@ -2333,7 +2333,7 @@ class WC_Subscriptions_Cart {
 				$payment_day_of_week = WC_Subscriptions_Synchroniser::get_weekday( $payment_day );
 				if ( 1 === $interval ) {
 					// translators: 1$: day of the week (e.g. "every Wednesday").
-					return sprintf( __( 'every %1$s', 'woocommerce-subscriptions' ),  $payment_day_of_week );
+					return sprintf( __( 'every %1$s', 'woocommerce-subscriptions' ), $payment_day_of_week );
 				} else {
 					return sprintf(
 						// translators: 1$: period, 2$: day of the week (e.g. "every 2nd week on Wednesday").
@@ -2346,7 +2346,7 @@ class WC_Subscriptions_Cart {
 			case 'month':
 				if ( 1 === $interval ) {
 					if ( $payment_day > 27 ) {
-						return  __( 'on the last day of each month', 'woocommerce-subscriptions' );
+						return __( 'on the last day of each month', 'woocommerce-subscriptions' );
 					} else {
 						return sprintf(
 							// translators: 1$: day of the month (e.g. "23rd") (e.g. "every 23rd of each month").
@@ -2388,7 +2388,7 @@ class WC_Subscriptions_Cart {
 						WC_Subscriptions::append_numeral_suffix( $interval )
 					);
 				}
-			break;
+				break;
 		}
 	}
 	/**
@@ -2425,7 +2425,7 @@ class WC_Subscriptions_Cart {
 		if ( $synchronised_cart_item ) {
 			$other_data[] = array(
 				'name'                                     => __( 'Renews', 'woocommerce-subscriptions' ),
-				'value'                                    =>  self::format_sync_period( $product, WC_Subscriptions_Product::get_period( $product ), WC_Subscriptions_Product::get_interval( $product ) ),
+				'value'                                    => self::format_sync_period( $product, WC_Subscriptions_Product::get_period( $product ), WC_Subscriptions_Product::get_interval( $product ) ),
 				'hidden'                                   => true,
 				'__experimental_woocommerce_blocks_hidden' => false,
 			);
