@@ -101,6 +101,8 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 			'sign_up_fees_tax'    => null,
 			'is_resubscribe'      => null,
 			'switch_type'         => null,
+			'synchronization'     => null,
+
 		);
 
 		if ( in_array( $product->get_type(), array( 'subscription', 'subscription_variation' ), true ) ) {
@@ -113,6 +115,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 					'trial_period'        => WC_Subscriptions_Product::get_trial_period( $product ),
 					'is_resubscribe'      => isset( $cart_item['subscription_resubscribe'] ),
 					'switch_type'         => WC_Subscriptions_Switcher::get_cart_item_switch_type( $cart_item ),
+					'synchronization'     => self::format_sync_data( $product ),
 				),
 				self::format_sign_up_fees( $product )
 			);
@@ -189,6 +192,27 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 				'type'        => array( 'string', 'null' ),
 				'context'     => array( 'view', 'edit' ),
 				'readonly'    => true,
+			),
+			'synchronization'     => array(
+				'description' => __( 'Synchronization data for the subscription.', 'woocommerce-subscriptions' ),
+				'type'        => array( 'object', 'null' ),
+				'properties'  => array(
+					'synchronization_date' => array(
+						'description' => __( 'Synchronization Date or day.', 'woocommerce-subscriptions' ),
+						'type'        => array( 'object', 'integer' ),
+						'properties'  => array(
+							'day'   => array(
+								'description' => __( 'Synchronization day if subscription is annual.', 'woocommerce-subscriptions' ),
+								'type'        => 'integer',
+							),
+							'month' => array(
+								'description' => __( 'Synchronization month if subscription is annual.', 'woocommerce-subscriptions' ),
+								'type'        => 'string',
+								'enum'        => array( __( 'January', 'woocommerce-subscriptions' ), __( 'February', 'woocommerce-subscriptions' ), __( 'March', 'woocommerce-subscriptions' ), __( 'April', 'woocommerce-subscriptions' ), __( 'May', 'woocommerce-subscriptions' ), __( 'June', 'woocommerce-subscriptions' ), __( 'July', 'woocommerce-subscriptions' ), __( 'August', 'woocommerce-subscriptions' ), __( 'September', 'woocommerce-subscriptions' ), __( 'October', 'woocommerce-subscriptions' ), __( 'November', 'woocommerce-subscriptions' ), __( 'December', 'woocommerce-subscriptions' ) ),
+							),
+						),
+					),
+				),
 			),
 		);
 	}
@@ -344,6 +368,32 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 		);
 	}
 
+	/**
+	 * Format sync data to the correct so it either returns a day integer or an object of day and month.
+	 *
+	 * @param WC_Product_Subscription $product current cart item product.
+	 *
+	 * @return object synchronization_date;
+	 */
+	private static function format_sync_data( $product ) {
+		if ( ! WC_Subscriptions_Synchroniser::is_product_synced( $product ) ) {
+			return null;
+		}
+
+		$payment_day = WC_Subscriptions_Synchroniser::get_products_payment_day( $product );
+
+		if ( ! is_array( $payment_day ) ) {
+			return array(
+				'synchronization_date' => (int) $payment_day,
+			);
+		}
+		return (object) array(
+			'synchronization_date' => array(
+				'month' => (int) $payment_day['month'],
+				'day'   => (int) $payment_day['day'],
+			),
+		);
+	}
 	/**
 	 * Register future subscriptions schema into cart endpoint.
 	 *
