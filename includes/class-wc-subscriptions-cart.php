@@ -2316,6 +2316,81 @@ class WC_Subscriptions_Cart {
 		return '';
 	}
 
+
+	/**
+	 * Return a localized sync string, copied from WC_Subscriptions_Product::get_price_string
+	 *
+	 * @param WC_Product_Subscription $product The synced product.
+	 * @param string                  $period One of day, week, month or year.
+	 * @param int                     $interval An interval in the range 1-6
+	 * @return string The new sync string.
+	 */
+	public static function format_sync_period( $product, string $period, int $interval ) {
+		global $wp_locale;
+		$payment_day = WC_Subscriptions_Synchroniser::get_products_payment_day( $product );
+		switch ($period ) {
+			case 'week':
+				$payment_day_of_week = WC_Subscriptions_Synchroniser::get_weekday( $payment_day );
+				if ( 1 === $interval ) {
+					// translators: 1$: day of the week (e.g. "every Wednesday").
+					return sprintf( __( 'every %1$s', 'woocommerce-subscriptions' ),  $payment_day_of_week );
+				} else {
+					return sprintf(
+						// translators: 1$: period, 2$: day of the week (e.g. "every 2nd week on Wednesday").
+						__( 'every %1$s on %2$s', 'woocommerce-subscriptions' ),
+						wcs_get_subscription_period_strings( $interval,$period ),
+						$payment_day_of_week
+					);
+				}
+				break;
+			case 'month':
+				if ( 1 === $interval ) {
+					if ( $payment_day > 27 ) {
+						return  __( 'on the last day of each month', 'woocommerce-subscriptions' );
+					} else {
+						return sprintf(
+							// translators: 1$: day of the month (e.g. "23rd") (e.g. "every 23rd of each month").
+							__( 'on the %1$s of each month', 'woocommerce-subscriptions' ),
+							WC_Subscriptions::append_numeral_suffix( $payment_day )
+						);
+					}
+				} else {
+					if ( $payment_day > 27 ) {
+						return sprintf(
+							// translators: 1$: interval (e.g. "3rd") (e.g. "on the last day of every 3rd month").
+							__( 'on the last day of every %1$s month', 'woocommerce-subscriptions' ),
+							WC_Subscriptions::append_numeral_suffix( $interval )
+						);
+					} else {
+						return sprintf(
+							// translators: on the, 1$: <date> day of every, 2$: <interval> month (e.g. "on the 23rd day of every 2nd month").
+							__( 'on the %1$s day of every %2$s month', 'woocommerce-subscriptions' ),
+							WC_Subscriptions::append_numeral_suffix( $payment_day ),
+							WC_Subscriptions::append_numeral_suffix( $interval )
+						);
+					}
+				}
+				break;
+			case 'year':
+				if ( 1 === $interval ) {
+					return sprintf(
+						// translators: on, 1$: <date>, 2$: <month> each year (e.g. "on March 15th each year").
+						__( 'on %1$s %2$s each year', 'woocommerce-subscriptions' ),
+						$wp_locale->month[ $payment_day['month'] ],
+						WC_Subscriptions::append_numeral_suffix( $payment_day['day'] )
+					);
+				} else {
+					return sprintf(
+						// translators: 1$: month (e.g. "March"), 2$: day of the month (e.g. "23rd), 3$: interval year (r.g  March 23rd every 2nd year").
+						__( 'on %1$s %2$s every %3$s year', 'woocommerce-subscriptions' ),
+						$wp_locale->month[ $payment_day['month'] ],
+						WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ),
+						WC_Subscriptions::append_numeral_suffix( $interval )
+					);
+				}
+			break;
+		}
+	}
 	/**
 	 * Adds meta data so it can be displayed in the Cart.
 	 */
@@ -2341,6 +2416,16 @@ class WC_Subscriptions_Cart {
 			$other_data[] = array(
 				'name'                                     => __( 'Sign up fee', 'woocommerce-subscriptions' ),
 				'value'                                    => wc_price( $sign_up_fee ),
+				'hidden'                                   => true,
+				'__experimental_woocommerce_blocks_hidden' => false,
+			);
+		}
+
+		$synchronised_cart_item = WC_Subscriptions_Synchroniser::is_product_synced( $product );
+		if ( $synchronised_cart_item ) {
+			$other_data[] = array(
+				'name'                                     => __( 'Renews', 'woocommerce-subscriptions' ),
+				'value'                                    =>  self::format_sync_period( $product, WC_Subscriptions_Product::get_period( $product ), WC_Subscriptions_Product::get_interval( $product ) ),
 				'hidden'                                   => true,
 				'__experimental_woocommerce_blocks_hidden' => false,
 			);
