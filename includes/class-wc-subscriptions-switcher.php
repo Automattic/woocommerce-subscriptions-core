@@ -1878,6 +1878,21 @@ class WC_Subscriptions_Switcher {
 	}
 
 	/**
+	 * Gets the switch direction of a cart item.
+	 *
+	 * @param array $cart_item Cart item object.
+	 * @return string|null Cart item subscription switch direction or null.
+	 */
+	public static function get_cart_item_switch_direction( $cart_item ) {
+
+		if ( ! empty( $cart_item['subscription_switch'] ) ) {
+			return $cart_item['subscription_switch']['upgraded_or_downgraded'];
+		}
+
+		return null;
+	}
+
+	/**
 	 * Creates a 2.0 updated version of the "subscriptions_switched" callback for developers to hook onto.
 	 *
 	 * The subscription passed to the new `woocommerce_subscriptions_switched_item` callback is strictly the subscription

@@ -111,6 +111,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 					'trial_length'        => (int) WC_Subscriptions_Product::get_trial_length( $product ),
 					'trial_period'        => WC_Subscriptions_Product::get_trial_period( $product ),
 					'is_resubscribe'      => isset( $cart_item['subscription_resubscribe'] ),
+					'switch_type'         => WC_Subscriptions_Switcher::get_cart_item_switch_direction( $cart_item ),
 				),
 				self::format_sign_up_fees( $product )
 			);
@@ -177,9 +178,17 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 				),
 				'type'        => 'boolean',
 				'context'     => array( 'view', 'edit' ),
-				'readonly'    => true
-			)
-
+				'readonly'    => true,
+			),
+			'switch_type'         => array(
+				'description' => __(
+					'Indicates whether this product a subscription update, downgrade, cross grade or none of the above.',
+					'woocommerce-subscriptions'
+				),
+				'type'        => array( 'string', 'null' ),
+				'context'     => array( 'view', 'edit' ),
+				'readonly'    => true,
+			),
 		);
 	}
 
