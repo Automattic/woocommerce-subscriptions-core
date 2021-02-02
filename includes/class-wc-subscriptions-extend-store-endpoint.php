@@ -6,7 +6,6 @@
  * for each subscription item
  *
  * @package WooCommerce Subscriptions
- * @author  WooCommerce
  * @since   WCBLOCKS-DEV
  */
 
@@ -171,9 +170,9 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 				'context'     => array( 'view', 'edit' ),
 				'readonly'    => true,
 			),
-			'is_resubscribe'    => array(
+			'is_resubscribe'      => array(
 				'description' => __(
-					'Indicates whether this product is being used to resubscribe the customer to an existing, expired subscription',
+					'Indicates whether this product is being used to resubscribe the customer to an existing, expired subscription.',
 					'woocommerce-subscriptions'
 				),
 				'type'        => 'boolean',
@@ -188,7 +187,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 	 * Get packages from the recurring carts.
 	 *
 	 * @param string $cart_key Recurring cart key.
-	 * @param array $cart Recurring cart data.
+	 * @param array  $cart Recurring cart data.
 	 * @return array
 	 */
 	private static function get_packages_for_recurring_cart( $cart_key, $cart ) {
@@ -220,7 +219,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 	/**
 	 * Changes the shipping package name to add more meaningful information about it's content.
 	 *
-	 * @param array  $package All shipping package data.
+	 * @param array $package All shipping package data.
 	 * @param array $cart Recurring cart data.
 	 * @return string
 	 */
@@ -518,6 +517,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 	 * Get tax lines from the cart and format to match schema.
 	 *
 	 * TODO: This function is copied from WooCommerce Blocks, remove it once https://github.com/woocommerce/woocommerce-gutenberg-products-block/issues/3264 is closed.
+	 *
 	 * @param \WC_Cart $cart Cart class instance.
 	 * @return array
 	 */
