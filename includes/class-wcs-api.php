@@ -46,7 +46,7 @@ class WCS_API {
 	public static function register_routes() {
 		global $wp_version;
 
-		if ( version_compare( $wp_version, 4.4, '<' ) || WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
+		if ( version_compare( $wp_version, 4.4, '<' ) ) {
 			return;
 		}
 
@@ -55,5 +55,4 @@ class WCS_API {
 			$controller->register_routes();
 		}
 	}
-
 }
