@@ -50,7 +50,7 @@ class WCS_API {
 			return;
 		}
 
-		foreach ( array( 'WC_REST_Subscriptions_Controller', 'WC_REST_Subscription_Notes_Controller' ) as $api_class ) {
+		foreach ( array( 'WC_REST_Subscriptions_V1_Controller', 'WC_REST_Subscription_Notes_V1_Controller' ) as $api_class ) {
 			$controller = new $api_class();
 			$controller->register_routes();
 		}
