@@ -1883,7 +1883,7 @@ class WC_Subscriptions_Switcher {
 	 * @param array $cart_item Cart item object.
 	 * @return string|null Cart item subscription switch direction or null.
 	 */
-	public static function get_cart_item_switch_direction( $cart_item ) {
+	public static function get_cart_item_switch_type( $cart_item ) {
 
 		if ( ! empty( $cart_item['subscription_switch'] ) ) {
 			return $cart_item['subscription_switch']['upgraded_or_downgraded'];
