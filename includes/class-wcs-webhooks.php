@@ -125,7 +125,6 @@ class WCS_Webhooks {
 
 		if ( 'subscription' == $resource && empty( $payload ) && wcs_is_subscription( $resource_id ) ) {
 			$webhook      = new WC_Webhook( $id );
-			$event        = $webhook->get_event();
 			$current_user = get_current_user_id();
 
 			wp_set_current_user( $webhook->get_user_id() );
