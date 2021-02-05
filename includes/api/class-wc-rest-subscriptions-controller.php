@@ -178,6 +178,215 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 	}
 
 	/**
+	 * Prepares a single subscription for creation or update.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param WP_REST_Request $request  Request object.
+	 * @param bool            $creating If the request is for creating a new object.
+	 * @return WP_Error|WC_Subscription
+	 */
+	public function prepare_object_for_database( $request, $creating = false ) {
+		$id           = isset( $request['id'] ) ? absint( $request['id'] ) : 0;
+		$subscription = new WC_Subscription( $id );
+		$schema       = $this->get_item_schema();
+		$data_keys    = array_keys( array_filter( $schema['properties'], array( $this, 'filter_writable_props' ) ) );
+
+		// Prepare variables for properties which need to be saved late (like status) or in a group (dates and payment data).
+		$status         = '';
+		$payment_method = '';
+		$payment_meta   = array();
+		$dates          = array();
+
+		// Both setting (set_status()) and updating (update_status()) are valid ways for requests to set a subscription's status.
+		$status_transition = 'set';
+
+		foreach ( $data_keys as $i => $key ) {
+			$value = $request[ $key ];
+
+			if ( is_null( $value ) ) {
+				continue;
+			}
+
+			switch ( $key ) {
+				case 'parent_id':
+					$subscription->set_parent_id( $value );
+					break;
+				case 'transition_status':
+					$status_transition = 'update';
+				case 'status':
+					// This needs to be done later so status changes take into account other data like dates.
+					$status = $value;
+					break;
+				case 'billing':
+				case 'shipping':
+					$this->update_address( $subscription, $value, $key );
+					break;
+				case 'start_date':
+				case 'trial_end':
+				case 'next_payment_date':
+				case 'cancelled_date':
+				case 'end_date':
+					// Group all the subscription date properties so they can be validated together.
+					$dates[ $key ] = $value;
+					break;
+				case 'payment_method':
+					$payment_method = $value;
+					break;
+				case 'payment_details':
+					// Format the value in a way payment gateways expect so it can be validated.
+					$payment_meta = $value;
+					break;
+				case 'line_items':
+				case 'shipping_lines':
+				case 'fee_lines':
+					if ( is_array( $value ) ) {
+						foreach ( $value as $item ) {
+							if ( is_array( $item ) ) {
+								if ( $this->item_is_null( $item ) || ( isset( $item['quantity'] ) && 0 === $item['quantity'] ) ) {
+									$order->remove_item( $item['id'] );
+								} else {
+									$this->set_item( $subscription, $key, $item );
+								}
+							}
+						}
+					}
+					break;
+				case 'meta_data':
+					if ( is_array( $value ) ) {
+						foreach ( $value as $meta ) {
+							$subscription->update_meta_data( $meta['key'], $meta['value'], isset( $meta['id'] ) ? $meta['id'] : '' );
+						}
+					}
+					break;
+				default:
+					if ( is_callable( array( $subscription, "set_{$key}" ) ) ) {
+						$subscription->{"set_{$key}"}( $value );
+					}
+					break;
+			}
+		}
+
+		if ( ! empty( $payment_method ) ) {
+			$this->update_payment_method( $subscription, $payment_method, $payment_meta );
+		}
+
+		if ( ! empty( $dates ) ) {
+			// If the start date is not set in the request when a subscription is created with an active status, set its default to now.
+			if ( 'active' === $status && empty( $id ) && ! isset( $dates['start_date'] ) ) {
+				$dates['start_date'] = gmdate( 'Y-m-d H:i:s' );
+			}
+
+			$subscription->update_dates( $dates );
+		}
+
+		if ( ! empty( $status ) ) {
+			if ( 'set' === $status_transition ) {
+				$subscription->set_status( $status );
+			} else {
+				$subscription->update_status( $status );
+				$request['status'] = $status; // Set the request status so parent::save_object() doesn't set it to the default 'pending' status.
+			}
+		}
+
+		$subscription->save();
+
+		return $subscription;
+	}
+
+	/**
+	 * Adds additional item schema information for subscription requests.
+	 *
+	 * @since 3.1.0
+	 * @return array
+	 */
+	public function get_item_schema() {
+		$schema = parent::get_item_schema();
+
+		// Base order schema overrides.
+		$schema['properties']['status']['description'] = __( 'Subscription status.', 'woocommerce-subscriptions' );
+		$schema['properties']['status']['enum']        = $this->get_order_statuses();
+
+		$schema['properties']['created_via']['description']       = __( 'Where the subscription was created.', 'woocommerce-subscriptions' );
+		$schema['properties']['currency']['description']          = __( 'Currency the subscription was created with, in ISO format.', 'woocommerce-subscriptions' );
+		$schema['properties']['date_created']['description']      = __( "The date the subscription was created, in the site's timezone.", 'woocommerce-subscriptions' );
+		$schema['properties']['date_created_gmt']['description']  = __( 'The date the subscription was created, as GMT.', 'woocommerce-subscriptions' );
+		$schema['properties']['date_modified']['description']     = __( "The date the subscription was last modified, in the site's timezone.", 'woocommerce-subscriptions' );
+		$schema['properties']['date_modified_gmt']['description'] = __( 'The date the subscription was last modified, as GMT.', 'woocommerce-subscriptions' );
+		$schema['properties']['customer_id']['description']       = __( 'User ID who owns the subscription.', 'woocommerce-subscriptions' );
+
+		unset( $schema['properties']['transaction_id'] );
+		unset( $schema['properties']['refunds'] );
+		unset( $schema['properties']['set_paid'] );
+		unset( $schema['properties']['cart_hash'] );
+
+		// Add subscription schema.
+		$schema['properties'] += array(
+			'transition_status' => array(
+				'description' => __( 'The status to transition a subscription to.', 'woocommerce-subscriptions' ),
+				'type'        => 'string',
+				'context'     => array( 'edit' ),
+				'enum'        => $this->get_order_statuses(),
+			),
+			'billing_interval' => array(
+				'description' => __( 'The number of billing periods between subscription renewals.', 'woocommerce-subscriptions' ),
+				'type'        => 'integer',
+				'context'     => array( 'view', 'edit' ),
+			),
+			'billing_period' => array(
+				'description' => __( 'Billing period for the subscription.', 'woocommerce-subscriptions' ),
+				'type'        => 'string',
+				'enum'        => array_keys( wcs_get_subscription_period_strings() ),
+				'context'     => array( 'view', 'edit' ),
+			),
+			'payment_details' => array(
+				'description' => __( 'Subscription payment details.', 'woocommerce-subscriptions' ),
+				'type'        => 'object',
+				'context'     => array( 'edit' ),
+				'properties' => array(
+					'post_meta' => array(
+						'description' => __( 'Payment method meta and token in a post_meta_key: token format.', 'woocommerce-subscriptions' ),
+						'type'        => 'object',
+						'context'     => array( 'edit' ),
+					),
+					'user_meta' => array(
+						'description' => __( 'Payment method meta and token in a user_meta_key : token format.', 'woocommerce-subscriptions' ),
+						'type'        => 'object',
+						'context'     => array( 'view' ),
+					),
+				),
+			),
+			'start_date' => array(
+				'description' => __( "The subscription's start date, as GMT.", 'woocommerce-subscriptions' ),
+				'type'        => 'date-time',
+				'context'     => array( 'view', 'edit' ),
+			),
+			'trial_date' => array(
+				'description' => __( "The subscription's trial date, as GMT.", 'woocommerce-subscriptions' ),
+				'type'        => 'date-time',
+				'context'     => array( 'view', 'edit' ),
+			),
+			'next_payment_date' => array(
+				'description' => __( "The subscription's next payment date, as GMT.", 'woocommerce-subscriptions' ),
+				'type'        => 'date-time',
+				'context'     => array( 'view', 'edit' ),
+			),
+			'cancelled_date' => array(
+				'description' => __( "The subscription's cancelled date, as GMT.", 'woocommerce-subscriptions' ),
+				'type'        => 'date-time',
+				'context'     => array( 'view', 'edit' ),
+			),
+			'end_date' => array(
+				'description' => __( "The subscription's end date, as GMT.", 'woocommerce-subscriptions' ),
+				'type'        => 'date-time',
+				'context'     => array( 'view', 'edit' ),
+			),
+		);
+
+		return $schema;
+	}
+
+	/**
 	 * Get the query params for collections.
 	 *
 	 * @since 3.1.0
@@ -214,5 +423,41 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 		}
 
 		return $links;
+	}
+
+	/**
+	 * Updates a subscription's payment method and meta from data provided in a REST API request.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param WC_Subscription $subscription   The subscription to update.
+	 * @param string          $payment_method The ID of the payment method to set.
+	 * @param array           $payment_meta   The payment method meta.
+	 */
+	public function update_payment_method( $subscription, $payment_method, $payment_meta ) {
+		$updating_subscription = (bool) $subscription->get_id();
+
+		try {
+			if ( $updating_subscription && ! array_key_exists( $payment_method, WCS_Change_Payment_Method_Admin::get_valid_payment_methods( $subscription ) ) ) {
+				// translators: placeholder is the payment method ID.
+				throw new Exception( sprintf( __( 'The %s payment gateway does not support admin changing the payment method.', 'woocommerce-subscriptions' ), $payment_method ) );
+			}
+
+			// Format the payment meta in the way payment gateways expect so it can be validated.
+			$payment_method_meta = array();
+
+			foreach ( $payment_meta as $table => $meta ) {
+				foreach ( $meta as $meta_key => $value ) {
+					$payment_method_meta[ $table ][ $meta_key ] = array( 'value' => $value );
+				}
+			}
+
+			$subscription->set_payment_method( $payment_method, $payment_method_meta );
+		} catch ( Exception $e ) {
+			$subscription->set_payment_method();
+			$subscription->save();
+			// translators: 1$: gateway id, 2$: error message
+			throw new WC_REST_Exception( 'woocommerce_rest_invalid_payment_data', sprintf( __( 'Subscription payment method could not be set to %1$s with error message: %2$s', 'woocommerce-subscriptions' ), $payment_method, $e->getMessage() ), 400 );
+		}
 	}
 }
