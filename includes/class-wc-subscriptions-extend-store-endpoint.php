@@ -366,7 +366,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 	 *
 	 * @param WC_Product_Subscription $product current cart item product.
 	 *
-	 * @return object synchronization_date;
+	 * @return object|int|null synchronization_date;
 	 */
 	private static function format_sync_data( $product ) {
 		if ( ! WC_Subscriptions_Synchroniser::is_product_synced( $product ) ) {
