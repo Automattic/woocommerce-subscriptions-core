@@ -31,6 +31,7 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 			add_action( 'woocommerce_checkout_order_processed', array( $this, 'maybe_record_early_renewal' ), 100, 2 );
 		} else {
 			add_action( 'woocommerce_checkout_create_order', array( $this, 'add_early_renewal_metadata_to_order' ), 100, 2 );
+			add_action( '__experimental_woocommerce_blocks_checkout_update_order_meta', array( $this, 'add_early_renewal_metadata_to_order' ), 100, 1 );
 		}
 
 		// Process early renewal by making sure subscription's dates are updated.
@@ -178,7 +179,7 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 	 * @param array $data The data posted on checkout.
 	 * @since 2.3.0
 	 */
-	public function add_early_renewal_metadata_to_order( $order, $data ) {
+	public function add_early_renewal_metadata_to_order( $order, $data = array() ) {
 
 		$cart_item = $this->cart_contains();
 		if ( ! $cart_item ) {
