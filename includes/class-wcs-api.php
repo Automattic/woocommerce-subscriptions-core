@@ -56,6 +56,7 @@ class WCS_API {
 			'WC_REST_Subscription_Notes_V1_Controller',
 			// V3 (latest)
 			'WC_REST_Subscriptions_Controller',
+			'WC_REST_Subscription_notes_Controller',
 		);
 
 		foreach ( $endpoint_classes as $class ) {
