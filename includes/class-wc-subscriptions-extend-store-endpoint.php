@@ -297,7 +297,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 
 				$future_subscriptions[] = array(
 					'key'                 => $cart_key,
-					'next_payment_date'   => $cart->next_payment_date,
+					'next_payment_date'   => date_i18n( get_option( 'date_format' ), $cart->next_payment_date ),
 					'billing_period'      => WC_Subscriptions_Product::get_period( $product ),
 					'billing_interval'    => (int) WC_Subscriptions_Product::get_interval( $product ),
 					'subscription_length' => (int) WC_Subscriptions_Product::get_length( $product ),
