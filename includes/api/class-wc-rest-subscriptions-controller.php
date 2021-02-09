@@ -84,7 +84,7 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 		$response->data['billing_interval'] = $object->get_billing_interval();
 
 		foreach ( wcs_get_subscription_date_types() as $date_type => $date_name ) {
-			$date = $object->get_date( $date_type );
+			$date = $object->get_date( wcs_normalise_date_type_key( $date_type ) );
 			$response->data[ $date_type . '_date_gmt' ] = ( ! empty( $date ) ) ? wc_rest_prepare_date_response( $date ) : '';
 		}
 
@@ -197,6 +197,11 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 		$payment_method = '';
 		$payment_meta   = array();
 		$dates          = array();
+
+		// If the start date is not set in the request, set its default to now.
+		if ( ! isset( $request['start_date'] ) ) {
+			$request['start_date'] = gmdate( 'Y-m-d H:i:s' );
+		}
 
 		// Both setting (set_status()) and updating (update_status()) are valid ways for requests to set a subscription's status.
 		$status_transition = 'set';
