@@ -208,21 +208,12 @@ class WCS_Admin_System_Status {
 	 */
 	private static function set_subscription_statuses( &$debug_data ) {
 
-		$subscriptions_by_status        = (array) wp_count_posts( 'shop_subscription' );
-		$subscriptions_by_status_output = array();
-
-		foreach ( $subscriptions_by_status as $status => $count ) {
-			if ( ! empty( $count ) ) {
-				$subscriptions_by_status_output[] = $status . ': ' . $count;
-			}
-		}
-
 		$debug_data['wcs_subscriptions_by_status'] = array(
 			'name'      => _x( 'Subscription Statuses', 'label for the system status page', 'woocommerce-subscriptions' ),
 			'label'     => 'Subscription Statuses',
 			'mark'      => '',
 			'mark_icon' => '',
-			'data'      => $subscriptions_by_status_output,
+			'data'      => self::get_subscription_statuses(),
 		);
 	}
 
@@ -273,21 +264,9 @@ class WCS_Admin_System_Status {
 	 * Add a breakdown of subscriptions per payment gateway.
 	 */
 	private static function set_subscriptions_by_payment_gateway( &$debug_data ) {
-		global $wpdb;
-
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
-		$results  = $wpdb->get_results( "
-			SELECT COUNT(subscriptions.ID) as count, post_meta.meta_value as payment_method, subscriptions.post_status
-			FROM $wpdb->posts as subscriptions RIGHT JOIN $wpdb->postmeta as post_meta ON post_meta.post_id = subscriptions.ID
-			WHERE subscriptions.post_type = 'shop_subscription' && post_meta.meta_key = '_payment_method'
-			GROUP BY post_meta.meta_value, subscriptions.post_status", ARRAY_A );
 
-		$subscriptions_payment_gateway_data = array();
-
-		foreach ( $results as $result ) {
-			$payment_method      = $result['payment_method'];
-			$subscription_status = $result['post_status'];
-
+		foreach ( self::get_subscriptions_by_gateway() as $payment_method => $status_counts ) {
 			if ( isset( $gateways[ $payment_method ] ) ) {
 				$payment_method_name = $payment_method_label = $gateways[ $payment_method ]->method_title;
 			} else {
@@ -297,15 +276,15 @@ class WCS_Admin_System_Status {
 
 			$key = 'wcs_payment_method_subscriptions_by' . $payment_method;
 
-			if ( ! isset( $debug_data[ $key ] ) ) {
-				$debug_data[ $key ] = array(
-					'name'  => $payment_method_name,
-					'label' => $payment_method_label,
-					'data'  => array(),
-				);
-			}
+			$debug_data[ $key ] = array(
+				'name'  => $payment_method_name,
+				'label' => $payment_method_label,
+				'data'  => array(),
+			);
 
-			$debug_data[ $key ]['data'][] = $subscription_status . ': ' . $result['count'];
+			foreach ( $status_counts as $status => $count ) {
+				$debug_data[ $key ]['data'][] = "$status: $count";
+			}
 		}
 	}
 
@@ -360,5 +339,47 @@ class WCS_Admin_System_Status {
 			'mark'      => '',
 			'mark_icon' => '',
 		);
+	}
+
+	/**
+	 * Gets the store's subscription broken down by payment gateway and status.
+	 *
+	 * @since 3.1.0
+	 * @return array The subscription gateway and status data array( 'gateway_id' => array( 'status' => count ) );
+	 */
+	public static function get_subscriptions_by_gateway() {
+		global $wpdb;
+		$subscription_gatway_data = array();
+
+		$results = $wpdb->get_results( "
+			SELECT COUNT(subscriptions.ID) as count, post_meta.meta_value as payment_method, subscriptions.post_status
+			FROM $wpdb->posts as subscriptions RIGHT JOIN $wpdb->postmeta as post_meta ON post_meta.post_id = subscriptions.ID
+			WHERE subscriptions.post_type = 'shop_subscription' && post_meta.meta_key = '_payment_method'
+			GROUP BY post_meta.meta_value, subscriptions.post_status", ARRAY_A );
+
+		foreach ( $results as $result ) {
+			$subscription_gatway_data[ $result['payment_method'] ][ $result['post_status'] ] = $result['count'];
+		}
+
+		return $subscription_gatway_data;
+	}
+
+	/**
+	 * Gets the store's subscriptions by status.
+	 *
+	 * @since 3.1.0
+	 * @return array
+	 */
+	public static function get_subscription_statuses() {
+		$subscriptions_by_status        = (array) wp_count_posts( 'shop_subscription' );
+		$subscriptions_by_status_output = array();
+
+		foreach ( $subscriptions_by_status as $status => $count ) {
+			if ( ! empty( $count ) ) {
+				$subscriptions_by_status_output[] = $status . ': ' . $count;
+			}
+		}
+
+		return $subscriptions_by_status_output;
 	}
 }
