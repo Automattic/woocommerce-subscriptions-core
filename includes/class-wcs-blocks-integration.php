@@ -1,39 +1,100 @@
 <?php
-use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
+use Automattic\WooCommerce\Blocks\Integrations\IntegrationInterface;
 
 /**
  * Class for integrating with WooCommerce Blocks
  *
  * @package WooCommerce Subscriptions
- * @author  WooCommerce
  * @since   WCBLOCKS-DEV
  */
-class WCS_Blocks_Integration {
-
+class WCS_Blocks_Integration implements IntegrationInterface {
 	/**
-	 * The AssetDataRegistry that holds all of the data that should be output to the front-end.
-	 * We can insert items here using the add_data method of this class.
+	 * The name of the integration.
 	 *
-	 * @var AssetDataRegistry Holds the data we want to output onto the front-end.
+	 * @return string
 	 */
-	protected $registry;
-
-	/**
-	 * WCS_Blocks_Integration constructor.
-	 *
-	 * @param AssetDataRegistry $registry The registry that data from this plugin should be added to.
-	 */
-	public function __construct( AssetDataRegistry $registry ) {
-		$this->registry = $registry;
+	public function get_name() {
+		return 'subscriptions';
 	}
 
 	/**
-	 * Populate the registry with the predefined data.
+	 * When called invokes any initialization/setup for the integration.
 	 */
-	public function add_data() {
-		$this->registry->add(
-			'woocommerce-subscriptions-blocks',
-			'active'
+	public function initialize() {
+		$script_path = '/build/index.js';
+		$style_path  = '/build/index.css';
+
+		$script_url = plugins_url( $script_path, \WC_Subscriptions::$plugin_file );
+		$style_url  = plugins_url( $style_path, \WC_Subscriptions::$plugin_file );
+
+		$script_asset_path = dirname( \WC_Subscriptions::$plugin_file ) . '/build/index.asset.php';
+		$script_asset      = file_exists( $script_asset_path )
+			? require $script_asset_path
+			: array(
+				'dependencies' => array(),
+				'version'      => $this->get_file_version( $script_path ),
+			);
+
+		wp_register_script(
+			'wc-blocks-integration',
+			$script_url,
+			$script_asset['dependencies'],
+			$script_asset['version'],
+			true
 		);
+		wp_set_script_translations(
+			'wc-blocks-integration',
+			'woocommerce-subscriptions',
+			dirname( \WC_Subscriptions::$plugin_file ) . '/languages'
+		);
+		wp_enqueue_style(
+			'wc-blocks-integration',
+			$style_url,
+			'',
+			$this->get_file_version( dirname( \WC_Subscriptions::$plugin_file ) . '/build/index.css' ),
+			'all'
+		);
+	}
+
+	/**
+	 * Returns an array of script handles to enqueue in the frontend context.
+	 *
+	 * @return string[]
+	 */
+	public function get_script_handles() {
+		return array( 'wc-blocks-integration' );
+	}
+
+	/**
+	 * Returns an array of script handles to enqueue in the editor context.
+	 *
+	 * @return string[]
+	 */
+	public function get_editor_script_handles() {
+		return array( 'wc-blocks-integration' );
+	}
+
+	/**
+	 * An array of key, value pairs of data made available to the block on the client side.
+	 *
+	 * @return array
+	 */
+	public function get_script_data() {
+		return array(
+			'woocommerce-subscriptions-blocks' => 'active',
+		);
+	}
+
+	/**
+	 * Get the file modified time as a cache buster if we're in dev mode.
+	 *
+	 * @param string $file Local path to the file.
+	 * @return string The cache buster value to use for the given file.
+	 */
+	protected function get_file_version( $file ) {
+		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG && file_exists( $file ) ) {
+			return filemtime( $file );
+		}
+		return \WC_Subscriptions::$version;
 	}
 }
