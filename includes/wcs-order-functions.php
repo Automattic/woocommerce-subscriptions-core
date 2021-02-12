@@ -271,34 +271,9 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 				$product    = wc_get_product( $product_id );
 
 				if ( false !== $product ) {
-
-					$args = array(
-						'totals' => array(
-							'subtotal'     => $item['line_subtotal'],
-							'total'        => $item['line_total'],
-							'subtotal_tax' => $item['line_subtotal_tax'],
-							'tax'          => $item['line_tax'],
-							'tax_data'     => maybe_unserialize( $item['line_tax_data'] ),
-						),
-					);
-
-					// If we have a variation, get the attribute meta data from teh item to pass to callbacks
-					if ( ! empty( $item['variation_id'] ) && null !== ( $variation_data = wcs_get_objects_property( $product, 'variation_data' ) ) ) {
-						foreach ( $variation_data as $attribute => $variation ) {
-							if ( isset( $item[ str_replace( 'attribute_', '', $attribute ) ] ) ) {
-								$args['variation'][ $attribute ] = $item[ str_replace( 'attribute_', '', $attribute ) ];
-							}
-						}
-					}
-
 					// Backorders
 					$order_item->set_backorder_meta();
 					$order_item->save();
-
-					if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-						// WC 3.0+ will also trigger the 'woocommerce_order_add_product when 'woocommerce_new_order_item', which is triggered in wc_add_order_item_meta()
-						do_action( 'woocommerce_order_add_product', wcs_get_objects_property( $new_order, 'id' ), $order_item_id, $product, $item['qty'], $args );
-					}
 				}
 			}
 		}
