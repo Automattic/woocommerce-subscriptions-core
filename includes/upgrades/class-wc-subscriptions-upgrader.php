@@ -250,6 +250,11 @@ class WC_Subscriptions_Upgrader {
 			$deleted_rows = $wpdb->query( "DELETE FROM {$wpdb->options} WHERE `option_name` LIKE '_transient_timeout_wcs-sub-ranges-%' OR `option_name` LIKE '_transient_wcs-sub-ranges-%'" );
 		}
 
+		// When upgrading from version 3.0.12, delete `switch_totals_calc_base_length` meta from product post meta as it was saved rather than set in memory.
+		if ( version_compare( self::$active_version, '3.0.12', '==' ) ) {
+			$deleted_rows = $wpdb->query( "DELETE FROM {$wpdb->postmeta} WHERE `meta_key` = '_switch_totals_calc_base_length'" );
+		}
+
 		self::upgrade_complete();
 	}
 
