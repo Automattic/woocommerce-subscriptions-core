@@ -249,13 +249,13 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 		$items = apply_filters( "wcs_{$type}_items", $items, $new_order, $subscription );
 
 		foreach ( $items as $item ) {
-			$item_name = apply_filters( 'wcs_new_order_item_name', $item['name'], $item, $subscription );
+			$item_name = apply_filters( 'wcs_new_order_item_name', $item->get_name(), $item, $subscription );
 			$item_name = apply_filters( "wcs_{$type}_item_name", $item_name, $item, $subscription );
 
 			// Create order line item on the renewal order
-			$order_item_id = wc_add_order_item( wcs_get_objects_property( $new_order, 'id' ), array(
+			$order_item_id = wc_add_order_item( $new_order->get_id(), array(
 				'order_item_name' => $item_name,
-				'order_item_type' => $item['type'],
+				'order_item_type' => $item->get_type(),
 			) );
 
 			$order_item = $new_order->get_item( $order_item_id );
@@ -264,14 +264,9 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 			$order_item->save();
 
 			// If the line item we're adding is a product line item and that product still exists, set any applicable backorder meta.
-			if ( 'line_item' == $item['type'] && isset( $item['product_id'] ) ) {
-				$product_id = wcs_get_canonical_product_id( $item );
-				$product    = wc_get_product( $product_id );
-
-				if ( false !== $product ) {
-					$order_item->set_backorder_meta();
-					$order_item->save();
-				}
+			if ( $item->is_type( 'line_item' ) && $item->get_product() ) {
+				$order_item->set_backorder_meta();
+				$order_item->save();
 			}
 		}
 
