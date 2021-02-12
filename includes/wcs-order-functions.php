@@ -248,8 +248,7 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 		$items = apply_filters( 'wcs_new_order_items', $subscription->get_items( array( 'line_item', 'fee', 'shipping', 'tax', 'coupon' ) ), $new_order, $subscription );
 		$items = apply_filters( "wcs_{$type}_items", $items, $new_order, $subscription );
 
-		foreach ( $items as $item_index => $item ) {
-
+		foreach ( $items as $item ) {
 			$item_name = apply_filters( 'wcs_new_order_item_name', $item['name'], $item, $subscription );
 			$item_name = apply_filters( "wcs_{$type}_item_name", $item_name, $item, $subscription );
 
@@ -264,14 +263,12 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 			wcs_copy_order_item( $item, $order_item );
 			$order_item->save();
 
-			// If the line item we're adding is a product line item and that product still exists, trigger the 'woocommerce_order_add_product' hook
+			// If the line item we're adding is a product line item and that product still exists, set any applicable backorder meta.
 			if ( 'line_item' == $item['type'] && isset( $item['product_id'] ) ) {
-
 				$product_id = wcs_get_canonical_product_id( $item );
 				$product    = wc_get_product( $product_id );
 
 				if ( false !== $product ) {
-					// Backorders
 					$order_item->set_backorder_meta();
 					$order_item->save();
 				}
