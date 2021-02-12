@@ -259,19 +259,10 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 				'order_item_type' => $item['type'],
 			) );
 
-			// Remove recurring line items and set item totals based on recurring line totals
-			if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-				foreach ( $item['item_meta'] as $meta_key => $meta_values ) {
-					foreach ( $meta_values as $meta_value ) {
-						wc_add_order_item_meta( $order_item_id, $meta_key, maybe_unserialize( $meta_value ) );
-					}
-				}
-			} else {
-				$order_item = $new_order->get_item( $order_item_id );
+			$order_item = $new_order->get_item( $order_item_id );
 
-				wcs_copy_order_item( $item, $order_item );
-				$order_item->save();
-			}
+			wcs_copy_order_item( $item, $order_item );
+			$order_item->save();
 
 			// If the line item we're adding is a product line item and that product still exists, trigger the 'woocommerce_order_add_product' hook
 			if ( 'line_item' == $item['type'] && isset( $item['product_id'] ) ) {
