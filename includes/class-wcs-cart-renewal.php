@@ -1308,14 +1308,14 @@ class WCS_Cart_Renewal {
 	/**
 	 * Create coupon objects from coupon line items.
 	 *
-	 * @param array $coupon_line_items The coupon line items to apply to the cart.
+	 * @param WC_Order_Item_Coupon[] $coupon_line_items The coupon line items to apply to the cart.
 	 * @return array $coupons
 	 */
 	protected function get_line_item_coupons( $coupon_line_items ) {
 		$coupons = array();
 
 		foreach ( $coupon_line_items as $coupon_item ) {
-			$coupon = new WC_Coupon( $coupon_item['name'] );
+			$coupon = new WC_Coupon( $coupon_item->get_name() );
 
 			// If the coupon no longer exists, get a pseudo coupon for the discounting amount.
 			if ( ! $coupon->get_id() > 0 ) {
@@ -1325,7 +1325,7 @@ class WCS_Cart_Renewal {
 				}
 
 				$coupon = $this->get_pseudo_coupon( $coupon_item->get_discount() );
-				$coupon->set_code( $coupon_item['code'] );
+				$coupon->set_code( $coupon_item->get_code() );
 			} elseif ( 'subscription_renewal' === $this->cart_item_key ) {
 				$coupon_type = $coupon->get_discount_type();
 
@@ -1534,7 +1534,7 @@ class WCS_Cart_Renewal {
 
 				foreach ( $coupon_items as $coupon_item ) {
 
-					$coupon      = new WC_Coupon( $coupon_item['name'] );
+					$coupon      = new WC_Coupon( $coupon_item->get_name() );
 					$coupon_type = wcs_get_coupon_property( $coupon, 'discount_type' );
 					$coupon_code = '';
 
