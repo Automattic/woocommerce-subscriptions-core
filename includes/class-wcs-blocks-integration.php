@@ -5,7 +5,7 @@ use Automattic\WooCommerce\Blocks\Integrations\IntegrationInterface;
  * Class for integrating with WooCommerce Blocks
  *
  * @package WooCommerce Subscriptions
- * @since   WCBLOCKS-DEV
+ * @since   3.1.0
  */
 class WCS_Blocks_Integration implements IntegrationInterface {
 	/**
