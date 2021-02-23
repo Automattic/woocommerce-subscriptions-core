@@ -304,7 +304,7 @@ class WCS_Report_Subscription_By_Product extends WP_List_Table {
 						}
 					}
 				);
-				jQuery('.chart-placeholder.variation_breakdown_chart').resize();
+				jQuery('.chart-placeholder.variation_breakdown_chart').trigger( 'resize' );
 				jQuery.plot(
 					jQuery('.chart-placeholder.product_breakdown_chart'),
 					[
@@ -346,7 +346,7 @@ class WCS_Report_Subscription_By_Product extends WP_List_Table {
 						}
 					}
 				);
-				jQuery('.chart-placeholder.product_breakdown_chart').resize();
+				jQuery('.chart-placeholder.product_breakdown_chart').trigger( 'resize' );
 			});
 		</script>
 		<?php
