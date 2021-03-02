@@ -1079,7 +1079,7 @@ class WCS_Cart_Renewal {
 	 * @param array $checkout_posted_data
 	 * @since 2.2.1
 	 */
-	public function set_order_item_id( $order_id, $posted_checkout_data = [] ) {
+	public function set_order_item_id( $order_id, $posted_checkout_data = array() ) {
 
 		$order = wc_get_order( $order_id );
 
