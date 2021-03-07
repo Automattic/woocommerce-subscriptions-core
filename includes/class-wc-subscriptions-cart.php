@@ -2297,19 +2297,19 @@ class WC_Subscriptions_Cart {
 	 * @param string One of day, week, month or year.
 	 */
 	public static function format_free_trial_period( $number, $period ) {
-		if ( $period === 'day' ) {
+		if ( 'day' === $period ) {
 			// translators: placeholder is a number of days.
 			return sprintf( _n( '%s day', '%s days', $number, 'woocommerce-subscriptions' ), $number );
 		}
-		if ( $period === 'week' ) {
+		if ( 'week' === $period ) {
 			// translators: placeholder is a number of weeks.
 			return sprintf( _n( '%s week', '%s weeks', $number, 'woocommerce-subscriptions' ), $number );
 		}
-		if ( $period === 'month' ) {
+		if ( 'month' === $period ) {
 			// translators: placeholder is a number of months.
 			return sprintf( _n( '%s month', '%s months', $number, 'woocommerce-subscriptions' ), $number );
 		}
-		if ( $period === 'year' ) {
+		if ( 'year' === $period ) {
 			// translators: placeholder is a number of years.
 			return sprintf( _n( '%s year', '%s years', $number, 'woocommerce-subscriptions' ), $number );
 		}
@@ -2328,7 +2328,7 @@ class WC_Subscriptions_Cart {
 	public static function format_sync_period( $product, string $period, int $interval ) {
 		global $wp_locale;
 		$payment_day = WC_Subscriptions_Synchroniser::get_products_payment_day( $product );
-		switch ($period ) {
+		switch ( $period ) {
 			case 'week':
 				$payment_day_of_week = WC_Subscriptions_Synchroniser::get_weekday( $payment_day );
 				if ( 1 === $interval ) {

@@ -773,7 +773,7 @@ class WC_Subscriptions_Switcher {
 	 * @param array         $posted The data posted on checkout
 	 * @since 1.4
 	 */
-	public static function add_order_meta( $order_id, $posted = [] ) {
+	public static function add_order_meta( $order_id, $posted = array() ) {
 
 		$order = wc_get_order( $order_id );
 
@@ -904,7 +904,7 @@ class WC_Subscriptions_Switcher {
 	 * @param array         $posted_data The data posted on checkout
 	 * @since 2.0
 	 */
-	public static function process_checkout( $order_id, $posted_data = [] ) {
+	public static function process_checkout( $order_id, $posted_data = array() ) {
 		global $wpdb;
 
 		if ( ! WC_Subscriptions_Cart::cart_contains_subscription() ) {
