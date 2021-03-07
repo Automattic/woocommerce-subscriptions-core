@@ -61,6 +61,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 				'namespace'       => self::IDENTIFIER,
 				'data_callback'   => array( 'WC_Subscriptions_Extend_Store_Endpoint', 'extend_cart_item_data' ),
 				'schema_callback' => array( 'WC_Subscriptions_Extend_Store_Endpoint', 'extend_cart_item_schema' ),
+				'schema_type'     => ARRAY_A,
 			)
 		);
 
@@ -71,6 +72,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 				'namespace'       => self::IDENTIFIER,
 				'data_callback'   => array( 'WC_Subscriptions_Extend_Store_Endpoint', 'extend_cart_data' ),
 				'schema_callback' => array( 'WC_Subscriptions_Extend_Store_Endpoint', 'extend_cart_schema' ),
+				'schema_type'     => ARRAY_N,
 			)
 		);
 
