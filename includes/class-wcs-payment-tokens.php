@@ -34,7 +34,7 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 
 		// Attempt to find the token meta key from the subscription payment meta and the old token.
 		if ( is_array( $payment_meta_table ) ) {
-			foreach ( $payment_meta_table as $meta_table => $meta ) {
+			foreach ( $payment_meta_table as $meta ) {
 				foreach ( $meta as $meta_key => $meta_data ) {
 					if ( $old_token->get_token() === $meta_data['value'] ) {
 						$token_meta_key = $meta_key;
