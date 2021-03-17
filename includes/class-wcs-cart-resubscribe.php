@@ -251,13 +251,15 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	 * @since 2.1
 	 */
 	public function recurring_cart_next_payment_date( $first_renewal_date, $cart ) {
-		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
+		foreach ( $cart->get_cart() as $cart_item ) {
 			$subscription = $this->get_order( $cart_item );
-			if ( false !== $subscription && $subscription->has_status( 'pending-cancel' ) ) {
+
+			if ( $this->is_pre_cancelled_resubscribe( $subscription ) ) {
 				$first_renewal_date = ( '1' != WC_Subscriptions_Product::get_length( $cart_item['data'] ) ) ? $subscription->get_date( 'end' ) : 0;
 				break;
 			}
 		}
+
 		return $first_renewal_date;
 	}
 
@@ -271,7 +273,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	public function maybe_set_free_trial( $total = '' ) {
 		$subscription = $this->get_order();
 
-		if ( false !== $subscription && $subscription->has_status( 'pending-cancel' ) ) {
+		if ( $this->is_pre_cancelled_resubscribe( $subscription ) ) {
 			foreach ( WC()->cart->cart_contents as &$cart_item ) {
 				if ( isset( $cart_item[ $this->cart_item_key ] ) ) {
 					wcs_set_objects_property( $cart_item['data'], 'subscription_trial_length', 1, 'set_prop_only' );
@@ -292,7 +294,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	public function maybe_unset_free_trial( $total = '' ) {
 		$subscription = $this->get_order();
 
-		if ( false !== $subscription && $subscription->has_status( 'pending-cancel' ) ) {
+		if ( $this->is_pre_cancelled_resubscribe( $subscription ) ) {
 			foreach ( WC()->cart->cart_contents as &$cart_item ) {
 				if ( isset( $cart_item[ $this->cart_item_key ] ) ) {
 					wcs_set_objects_property( $cart_item['data'], 'subscription_trial_length', 0, 'set_prop_only' );
@@ -340,4 +342,15 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 		return $place_order_text;
 	}
 
+	/**
+	 * Determines if the customer is resubscribe prior to the subscription being cancelled.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param WC_Subscription $subscription
+	 * @return bool
+	 */
+	private function is_pre_cancelled_resubscribe( $subscription ) {
+		return is_a( $subscription, 'WC_Subscription' ) && $subscription->has_status( 'pending-cancel' ) && $subscription->get_time( 'end' ) > gmdate( 'U' );
+	}
 }
