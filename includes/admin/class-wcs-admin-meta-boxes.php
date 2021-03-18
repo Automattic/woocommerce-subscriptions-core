@@ -510,7 +510,7 @@ class WCS_Admin_Meta_Boxes {
 					$new_base_taxes              = array();
 
 					// Update all the base taxes for the new quantity.
-					foreach( $current_base_location_taxes as $rate_id => $tax_amount ) {
+					foreach ( $current_base_location_taxes as $rate_id => $tax_amount ) {
 						$new_base_taxes[ $rate_id ] = ( $tax_amount / $previous_quantity ) * $new_quantity;
 					}
 
