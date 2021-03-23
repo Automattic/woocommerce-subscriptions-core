@@ -305,7 +305,7 @@ class WC_Subscriptions_Cart {
 			$recurring_cart->end_date          = apply_filters( 'wcs_recurring_cart_end_date', WC_Subscriptions_Product::get_expiration_date( $product, $recurring_cart->start_date ), $recurring_cart, $product );
 
 			// Before calculating recurring cart totals, store this recurring cart object
-			self::$cached_recurring_cart = $recurring_cart;
+			self::set_cached_recurring_cart( $recurring_cart );
 
 			// No fees recur (yet)
 			if ( is_callable( array( $recurring_cart, 'fees_api' ) ) ) { // WC 3.2 +
@@ -812,6 +812,15 @@ class WC_Subscriptions_Cart {
 	public static function set_recurring_cart_key( $recurring_cart_key ) {
 		self::$recurring_cart_key = $recurring_cart_key;
 		return $recurring_cart_key;
+	}
+
+	/**
+	 * Update the cached recurring cart.
+	 *
+	 * @param \WC_Cart $recurring_cart Cart object.
+	 */
+	public static function set_cached_recurring_cart( $recurring_cart ) {
+		self::$cached_recurring_cart = $recurring_cart;
 	}
 
 	/**

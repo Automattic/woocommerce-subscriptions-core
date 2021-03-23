@@ -52,6 +52,7 @@ function wcs_cart_totals_shipping_html() {
 		// This ensures we get the correct package IDs (these are filtered by WC_Subscriptions_Cart).
 		WC_Subscriptions_Cart::set_calculation_type( 'recurring_total' );
 		WC_Subscriptions_Cart::set_recurring_cart_key( $recurring_cart_key );
+		WC_Subscriptions_Cart::set_cached_recurring_cart( $recurring_cart );
 
 		// Create shipping packages for each subscription item
 		if ( WC_Subscriptions_Cart::cart_contains_subscriptions_needing_shipping( $recurring_cart ) && 0 !== $recurring_cart->next_payment_date ) {
