@@ -316,7 +316,6 @@ class WC_Subscriptions_Cart {
 
 			$recurring_cart->fee_total = 0;
 			self::maybe_restore_shipping_methods();
-			$recurring_cart->calculate_shipping();
 			$recurring_cart->calculate_totals();
 
 			// Store this groups cart details
