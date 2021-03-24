@@ -591,7 +591,7 @@ class WC_Subscriptions_Coupon {
 				continue;
 			}
 
-if ( ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
+			if ( ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
 				continue;
 			}
 
