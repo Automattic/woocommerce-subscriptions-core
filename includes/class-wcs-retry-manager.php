@@ -274,14 +274,11 @@ class WCS_Retry_Manager {
 	 * When a retry hook is triggered, check if the rules for that retry are still valid
 	 * and if so, retry the payment.
 	 *
-	 * @param WC_Order|int The order on which the payment failed
-	 * @since 2.1
+	 * @since 2.1.0
+	 * @param WC_Order|int The order on which the payment failed.
 	 */
-	public static function maybe_retry_payment( $last_order ) {
-
-		if ( ! is_object( $last_order ) ) {
-			$last_order = wc_get_order( $last_order );
-		}
+	public static function maybe_retry_payment( $order_id ) {
+		$last_order = ! is_object( $order_id ) ? wc_get_order( $order_id ) : $order_id;
 
 		if ( false === $last_order ) {
 			return;

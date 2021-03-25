@@ -408,7 +408,7 @@ class WC_Subscriptions_Manager {
 		if ( ! empty( $subscriptions ) ) {
 
 			if ( ! is_object( $order ) ) {
-				$order = new WC_Order( $order );
+				$order = wc_get_order( $order );
 			}
 
 			// Set subscription status to failed and log failure

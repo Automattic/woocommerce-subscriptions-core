@@ -77,7 +77,7 @@ class WCS_Email_Completed_Switch_Order extends WC_Email_Customer_Completed_Order
 	function trigger( $order_id, $order = null ) {
 
 		if ( $order_id ) {
-			$this->object    = new WC_Order( $order_id );
+			$this->object    = wc_get_order( $order_id );
 			$this->recipient = wcs_get_objects_property( $this->object, 'billing_email' );
 
 			$order_date_index = array_search( '{order_date}', $this->find );

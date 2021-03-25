@@ -341,10 +341,6 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 							$parent_order->payment_complete( $transaction_details['txn_id'] );
 						}
 
-						if ( $subscription->can_be_updated_to( 'active' ) ) {
-							$subscription->update_status( 'active' );
-						}
-
 						// Store PayPal Details on Order
 						$this->save_paypal_meta_data( $parent_order, $transaction_details );
 

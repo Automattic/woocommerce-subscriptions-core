@@ -93,7 +93,7 @@ class WC_Subscriptions_Order {
 	public static function get_non_subscription_total( $order ) {
 
 		if ( ! is_object( $order ) ) {
-			$order = new WC_Order( $order );
+			$order = wc_get_order( $order );
 		}
 
 		$non_subscription_total = 0;
@@ -166,7 +166,7 @@ class WC_Subscriptions_Order {
 	public static function get_item_by_product_id( $order, $product_id = '' ) {
 
 		if ( ! is_object( $order ) ) {
-			$order = new WC_Order( $order );
+			$order = wc_get_order( $order );
 		}
 
 		foreach ( $order->get_items() as $item ) {
@@ -237,7 +237,7 @@ class WC_Subscriptions_Order {
 			WHERE  order_item_id = %d
 		", $order_item_id ), ARRAY_A );
 
-		$order = new WC_Order( absint( $item['order_id'] ) );
+		$order = wc_get_order( absint( $item['order_id'] ) );
 
 		$item['name']      = $item['order_item_name'];
 		$item['type']      = $item['order_item_type'];
@@ -338,7 +338,7 @@ class WC_Subscriptions_Order {
 	public static function get_meta( $order, $meta_key, $default = 0 ) {
 
 		if ( ! is_object( $order ) ) {
-			$order = new WC_Order( $order );
+			$order = wc_get_order( $order );
 		}
 
 		$meta_key = preg_replace( '/^_/', '', $meta_key );
@@ -501,6 +501,24 @@ class WC_Subscriptions_Order {
 			$order_completed = in_array( $new_order_status, array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id, $order ), 'processing', 'completed' ) ) && in_array( $old_order_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ), $order ) );
 
 			foreach ( $subscriptions as $subscription ) {
+				// A special case where payment completes after user cancels subscription
+				if ( $order_completed && $subscription->has_status( 'cancelled' ) ) {
+
+					// Store the actual cancelled_date so as to restore it after it is rewritten by update_status()
+					$cancelled_date = $subscription->get_date( 'cancelled' );
+
+					// Force set cancelled_date and end date to 0 temporarily so that next_payment_date can be calculated properly
+					// This next_payment_date will be the end of prepaid term that will be picked by action scheduler
+					$subscription->update_dates( array( 'cancelled' => 0, 'end' => 0 ) );
+
+					$next_payment_date = $subscription->calculate_date( 'next_payment' );
+					$subscription->update_dates( array( 'next_payment' => $next_payment_date ) );
+
+					$subscription->update_status( 'pending-cancel', __( 'Payment completed on order after subscription was cancelled.', 'woocommerce-subscriptions' ) );
+
+					// Restore the actual cancelled date
+					$subscription->update_dates( array( 'cancelled' => $cancelled_date ) );
+				}
 
 				// Do we need to activate a subscription?
 				if ( $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( 'active' ) ) {
@@ -660,6 +678,20 @@ class WC_Subscriptions_Order {
 		// recurring total is zero, or
 		// order status isn't valid for payment.
 		if ( $order->get_total() > 0 || self::get_recurring_total( $order ) <= 0 || ! $order->has_status( $valid_order_statuses ) ) {
+			return $needs_payment;
+		}
+
+		// Check that there is at least 1 subscription with a next payment that would require a payment method.
+		$has_next_payment = false;
+
+		foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
+			if ( $subscription->get_time( 'next_payment' ) ) {
+				$has_next_payment = true;
+				break;
+			}
+		}
+
+		if ( ! $has_next_payment ) {
 			return $needs_payment;
 		}
 
@@ -1009,7 +1041,7 @@ class WC_Subscriptions_Order {
 	public static function maybe_cancel_subscription_on_full_refund( $order ) {
 
 		if ( ! is_object( $order ) ) {
-			$order = new WC_Order( $order );
+			$order = wc_get_order( $order );
 		}
 
 		if ( wcs_order_contains_subscription( $order, array( 'parent', 'renewal' ) ) ) {
