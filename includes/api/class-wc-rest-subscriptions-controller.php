@@ -88,6 +88,12 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 			$response->data[ $date_type . '_date_gmt' ] = ( ! empty( $date ) ) ? wc_rest_prepare_date_response( $date ) : '';
 		}
 
+		// Some base WC_Order dates need to be pulled from the subscription object to be correct.
+		$response->data['date_paid']          = wc_rest_prepare_date_response( $object->get_date_paid(), false );
+		$response->data['date_paid_gmt']      = wc_rest_prepare_date_response( $object->get_date_paid() );
+		$response->data['date_completed']     = wc_rest_prepare_date_response( $object->get_date_completed(), false );
+		$response->data['date_completed_gmt'] = wc_rest_prepare_date_response( $object->get_date_completed() );
+
 		// Include resubscribe data.
 		$resubscribed_subscriptions                  = array_filter( $object->get_related_orders( 'ids', 'resubscribe' ), 'wcs_is_subscription' );
 		$response->data['resubscribed_from']         = strval( $object->get_meta( '_subscription_resubscribe' ) );
