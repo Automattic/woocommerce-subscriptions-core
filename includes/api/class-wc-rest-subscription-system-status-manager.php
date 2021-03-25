@@ -35,7 +35,7 @@ class WC_REST_Subscription_System_Status_Manager {
 			'live_url'                         => esc_url( WC_Subscriptions::get_site_url_from_source( 'subscriptions_install' ) ),
 			'statuses'                         => array_filter( (array) wp_count_posts( 'shop_subscription' ) ),
 			'report_cache_enabled'             => ( 'yes' === get_option( 'woocommerce_subscriptions_cache_updates_enabled', 'yes' ) ),
-			'cache_update_failures'            => absint(  get_option( 'woocommerce_subscriptions_cache_updates_failures', 0 ) ),
+			'cache_update_failures'            => absint( get_option( 'woocommerce_subscriptions_cache_updates_failures', 0 ) ),
 			'subscriptions_by_payment_gateway' => WCS_Admin_System_Status::get_subscriptions_by_gateway(),
 			'payment_gateway_feature_support'  => self::get_payment_gateway_feature_support(),
 		);
@@ -137,10 +137,10 @@ class WC_REST_Subscription_System_Status_Manager {
 						'readonly'    => true,
 						'items'       => array(
 							'type' => 'string',
-						)
-					)
-				)
-			)
+						),
+					),
+				),
+			),
 		);
 
 		return $schema;
