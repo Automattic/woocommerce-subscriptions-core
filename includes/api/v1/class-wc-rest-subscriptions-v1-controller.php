@@ -2,10 +2,11 @@
 /**
  * REST API Subscriptions controller
  *
- * Handles requests to the /subscription endpoint.
+ * Handles requests to the /subscriptions endpoint.
  *
- * @author   Prospress
- * @since    2.1
+ * @package WooCommerce Subscriptions\Rest Api
+ * @author  WooCommerce
+ * @since   2.1.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
