@@ -137,21 +137,9 @@ class WCS_Webhooks {
 				case 'wp_api_v1':
 				case 'wp_api_v2':
 				case 'wp_api_v3':
-					// Get the subscription payload in a version compatible way.
-					if ( WC_Subscriptions::is_woocommerce_pre( '3.7' ) ) {
-						$request    = new WP_REST_Request( 'GET' );
-						$controller = 'wp_api_v3' === $webhook->get_api_version() ? new WC_REST_Subscriptions_Controller :  new WC_REST_Subscriptions_v1_Controller;
-
-						$request->set_param( 'id', $resource_id );
-						$result  = $controller->get_item( $request );
-						$payload = isset( $result->data ) ? $result->data : array();
-
-					} else {
-						// There is no v2 subscritpion endpoint support so they fall back to v1.
-						$version = 'wp_api_v3' === $webhook->get_api_version() ? 'v3' : 'v1';
-						$payload = wc()->api->get_endpoint_data( "/wc/{$version}/subscriptions/{$resource_id}" );
-					}
-
+					// There is no v2 subscritpion endpoint support so they fall back to v1.
+					$version = 'wp_api_v3' === $webhook->get_api_version() ? 'v3' : 'v1';
+					$payload = wc()->api->get_endpoint_data( "/wc/{$version}/subscriptions/{$resource_id}" );
 					break;
 			}
 
