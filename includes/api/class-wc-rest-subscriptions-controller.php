@@ -63,6 +63,23 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 	}
 
 	/**
+	 * Gets the request object. Return false if the ID is not a subscription.
+	 *
+	 * @since  3.1.0
+	 * @param  int $id Object ID.
+	 * @return WC_Subscription|bool
+	 */
+	protected function get_object( $id ) {
+		$subscription = wcs_get_subscription( $id );
+
+		if ( ! $subscription || ! is_a( $subscription, 'WC_Subscription' ) ) {
+			return false;
+		}
+
+		return $subscription;
+	}
+
+	/**
 	 * Prepare a single subscription output for response.
 	 *
 	 * @since  3.1.0
