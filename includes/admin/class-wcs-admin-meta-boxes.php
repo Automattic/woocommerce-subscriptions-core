@@ -59,6 +59,11 @@ class WCS_Admin_Meta_Boxes {
 
 		// After calculating subscription/renewal order line item taxes, update base location tax item meta.
 		add_action( 'woocommerce_ajax_add_order_item_meta', array( __CLASS__, 'store_item_base_location_tax' ), 10, 3 );
+
+		// Prevent WC core's stock handling when saving the line item meta box for subscriptions.
+		add_filter( 'woocommerce_prevent_adjust_line_item_product_stock', array( __CLASS__, 'prevent_subscription_line_item_stock_handling' ), 10, 2 );
+
+		add_action( 'woocommerce_before_save_order_items', array( __CLASS__, 'update_subtracted_base_location_tax_meta' ), 10, 2 );
 	}
 
 	/**
@@ -442,6 +447,77 @@ class WCS_Admin_Meta_Boxes {
 
 			$line_item->update_meta_data( '_subtracted_base_location_tax', WC_Tax::calc_tax( $line_item->get_product()->get_price() * $line_item->get_quantity(), $base_tax_rates, true ) );
 			$line_item->save();
+		}
+	}
+
+	/**
+	 * Prevents WC core's handling of stock for subscriptions saved via the edit subscription screen.
+	 *
+	 * Hooked onto 'woocommerce_prevent_adjust_line_item_product_stock' which is triggered in
+	 * wc_maybe_adjust_line_item_product_stock() via:
+	 *    - WC_AJAX::remove_order_item().
+	 *    - wc_save_order_items().
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param WC_Order_Item $item The line item being saved/updated via the edit subscription screen.
+	 * @return bool Whether to reduce stock for the line item.
+	 */
+	public static function prevent_subscription_line_item_stock_handling( $prevent_stock_handling, $item ) {
+
+		if ( wcs_is_subscription( $item->get_order_id() ) ) {
+			$prevent_stock_handling = true;
+		}
+
+		return $prevent_stock_handling;
+	}
+
+	/**
+	 * Updates the `_subtracted_base_location_tax` meta when admin users update a line item's quantity.
+	 *
+	 * @since 3.0.14
+	 *
+	 * @param int   $order_id  The edited order or subscription ID.
+	 * @param array $item_data An array of data about all line item changes.
+	 */
+	public static function update_subtracted_base_location_tax_meta( $order_id, $item_data ) {
+
+		// We're only interested in item quantity changes.
+		if ( ! isset( $item_data['order_item_qty'] ) ) {
+			return;
+		}
+
+		$is_subscription = wcs_is_subscription( $order_id );
+
+		// We only need to update subscription and renewal order `_subtracted_base_location_tax` meta data.
+		if ( ! $is_subscription && ! wcs_order_contains_renewal( $order_id ) ) {
+			return;
+		}
+
+		$object = $is_subscription ? wcs_get_subscription( $order_id ) : wc_get_order( $order_id );
+
+		if ( ! $object ) {
+			return;
+		}
+
+		foreach ( $object->get_items() as $line_item ) {
+			// If the line item is tracking the base store location tax amount and the quantity has changed, hook in the function to update that item's meta.
+			if ( $line_item->meta_exists( '_subtracted_base_location_tax' ) ) {
+				if ( isset( $item_data['order_item_qty'][ $line_item->get_id() ] ) && $item_data['order_item_qty'][ $line_item->get_id() ] !== $line_item->get_quantity() ) {
+					$current_base_location_taxes = $line_item->get_meta( '_subtracted_base_location_tax' );
+					$previous_quantity           = $line_item->get_quantity();
+					$new_quantity                = $item_data['order_item_qty'][ $line_item->get_id() ];
+					$new_base_taxes              = array();
+
+					// Update all the base taxes for the new quantity.
+					foreach ( $current_base_location_taxes as $rate_id => $tax_amount ) {
+						$new_base_taxes[ $rate_id ] = ( $tax_amount / $previous_quantity ) * $new_quantity;
+					}
+
+					$line_item->update_meta_data( '_subtracted_base_location_tax', $new_base_taxes );
+					$line_item->save();
+				}
+			}
 		}
 	}
 }

@@ -67,7 +67,7 @@ class WC_Subscriptions_Checkout {
 			return;
 		}
 
-		$order = new WC_Order( $order_id );
+		$order = wc_get_order( $order_id );
 
 		$subscriptions = array();
 
@@ -110,11 +110,11 @@ class WC_Subscriptions_Checkout {
 	 * @since 2.0
 	 */
 	public static function create_subscription( $order, $cart, $posted_data ) {
-		global $wpdb;
 
 		try {
 			// Start transaction if available
-			$wpdb->query( 'START TRANSACTION' );
+			$transaction = new WCS_SQL_Transaction();
+			$transaction->start();
 
 			// Set the recurring line totals on the subscription
 			$variation_id = wcs_cart_pluck( $cart, 'variation_id' );
@@ -235,11 +235,11 @@ class WC_Subscriptions_Checkout {
 			$subscription->save();
 
 			// If we got here, the subscription was created without problems
-			$wpdb->query( 'COMMIT' );
+			$transaction->commit();
 
 		} catch ( Exception $e ) {
 			// There was an error adding the subscription
-			$wpdb->query( 'ROLLBACK' );
+			$transaction->rollback();
 			return new WP_Error( 'checkout-error', $e->getMessage() );
 		}
 

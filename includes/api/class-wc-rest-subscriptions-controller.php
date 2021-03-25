@@ -215,6 +215,8 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 				$subscription->payment_complete( $request['transaction_id'] );
 			}
 
+			do_action( 'wcs_api_subscription_created', $subscription->get_id() );
+
 			return $subscription->get_id();
 		} catch ( WC_Data_Exception $e ) {
 			return new WP_Error( $e->getErrorCode(), $e->getMessage(), $e->getErrorData() );
@@ -266,6 +268,8 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_V1_Controller {
 			if ( $subscription->needs_payment() && true === $request['set_paid'] ) {
 				$subscription->payment_complete();
 			}
+
+			do_action( 'wcs_api_subscription_updated', $subscription->get_id() );
 
 			return $subscription->get_id();
 		} catch ( WC_Data_Exception $e ) {

@@ -226,11 +226,9 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 		return $type;
 	}
 
-	global $wpdb;
-
 	try {
-
-		$wpdb->query( 'START TRANSACTION' );
+		$transaction = new WCS_SQL_Transaction();
+		$transaction->start();
 
 		if ( ! is_object( $subscription ) ) {
 			$subscription = wcs_get_subscription( $subscription );
@@ -248,82 +246,36 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 		$items = apply_filters( 'wcs_new_order_items', $subscription->get_items( array( 'line_item', 'fee', 'shipping', 'tax', 'coupon' ) ), $new_order, $subscription );
 		$items = apply_filters( "wcs_{$type}_items", $items, $new_order, $subscription );
 
-		foreach ( $items as $item_index => $item ) {
-
-			$item_name = apply_filters( 'wcs_new_order_item_name', $item['name'], $item, $subscription );
+		foreach ( $items as $item ) {
+			$item_name = apply_filters( 'wcs_new_order_item_name', $item->get_name(), $item, $subscription );
 			$item_name = apply_filters( "wcs_{$type}_item_name", $item_name, $item, $subscription );
 
 			// Create order line item on the renewal order
-			$order_item_id = wc_add_order_item( wcs_get_objects_property( $new_order, 'id' ), array(
+			$order_item_id = wc_add_order_item( $new_order->get_id(), array(
 				'order_item_name' => $item_name,
-				'order_item_type' => $item['type'],
+				'order_item_type' => $item->get_type(),
 			) );
 
-			// Remove recurring line items and set item totals based on recurring line totals
-			if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-				foreach ( $item['item_meta'] as $meta_key => $meta_values ) {
-					foreach ( $meta_values as $meta_value ) {
-						wc_add_order_item_meta( $order_item_id, $meta_key, maybe_unserialize( $meta_value ) );
-					}
-				}
-			} else {
-				$order_item = $new_order->get_item( $order_item_id );
+			$order_item = $new_order->get_item( $order_item_id );
 
-				wcs_copy_order_item( $item, $order_item );
+			wcs_copy_order_item( $item, $order_item );
+			$order_item->save();
+
+			// If the line item we're adding is a product line item and that product still exists, set any applicable backorder meta.
+			if ( $item->is_type( 'line_item' ) && $item->get_product() ) {
+				$order_item->set_backorder_meta();
 				$order_item->save();
-			}
-
-			// If the line item we're adding is a product line item and that product still exists, trigger the 'woocommerce_order_add_product' hook
-			if ( 'line_item' == $item['type'] && isset( $item['product_id'] ) ) {
-
-				$product_id = wcs_get_canonical_product_id( $item );
-				$product    = wc_get_product( $product_id );
-
-				if ( false !== $product ) {
-
-					$args = array(
-						'totals' => array(
-							'subtotal'     => $item['line_subtotal'],
-							'total'        => $item['line_total'],
-							'subtotal_tax' => $item['line_subtotal_tax'],
-							'tax'          => $item['line_tax'],
-							'tax_data'     => maybe_unserialize( $item['line_tax_data'] ),
-						),
-					);
-
-					// If we have a variation, get the attribute meta data from teh item to pass to callbacks
-					if ( ! empty( $item['variation_id'] ) && null !== ( $variation_data = wcs_get_objects_property( $product, 'variation_data' ) ) ) {
-						foreach ( $variation_data as $attribute => $variation ) {
-							if ( isset( $item[ str_replace( 'attribute_', '', $attribute ) ] ) ) {
-								$args['variation'][ $attribute ] = $item[ str_replace( 'attribute_', '', $attribute ) ];
-							}
-						}
-					}
-
-					// Backorders
-					if ( isset( $order_item ) && is_callable( array( $order_item, 'set_backorder_meta' ) ) ) { // WC 3.0
-						$order_item->set_backorder_meta();
-						$order_item->save();
-					} elseif ( $product->backorders_require_notification() && $product->is_on_backorder( $item['qty'] ) ) { // WC 2.6
-						wc_add_order_item_meta( $order_item_id, apply_filters( 'woocommerce_backordered_item_meta_name', __( 'Backordered', 'woocommerce-subscriptions' ) ), $item['qty'] - max( 0, $product->get_total_stock() ) );
-					}
-
-					if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
-						// WC 3.0+ will also trigger the 'woocommerce_order_add_product when 'woocommerce_new_order_item', which is triggered in wc_add_order_item_meta()
-						do_action( 'woocommerce_order_add_product', wcs_get_objects_property( $new_order, 'id' ), $order_item_id, $product, $item['qty'], $args );
-					}
-				}
 			}
 		}
 
 		// If we got here, the subscription was created without problems
-		$wpdb->query( 'COMMIT' );
+		$transaction->commit();
 
 		return apply_filters( 'wcs_new_order_created', $new_order, $subscription, $type );
 
 	} catch ( Exception $e ) {
 		// There was an error adding the subscription
-		$wpdb->query( 'ROLLBACK' );
+		$transaction->rollback();
 		return new WP_Error( 'new-order-error', $e->getMessage() );
 	}
 }
