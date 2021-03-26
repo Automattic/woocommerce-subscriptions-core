@@ -2188,19 +2188,23 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Prevent variations from being deleted if switching from a variable product type to a variable product type.
+	 * Prevents variations from being deleted if switching from a variable product type to a subscription variable product type (and vice versa).
 	 *
-	 * @since 3.0.8
+	 * @since 3.0.14
 	 *
 	 * @param bool       $delete_variations A boolean value of true will delete the variations.
 	 * @param WC_Product $product           Product data.
 	 * @return string    $from              Origin type.
 	 * @param string     $to                New type.
+	 *
+	 * @return bool Whehter the variations should be deleted.
 	 */
 	public static function maybe_keep_variations( $delete_variations, $product, $from, $to ) {
+
 		if ( ( 'variable' === $from && 'variable-subscription' === $to ) || ( 'variable-subscription' === $from && 'variable' === $to ) ) {
 			$delete_variations = false;
 		}
+
 		return $delete_variations;
 	}
 }
