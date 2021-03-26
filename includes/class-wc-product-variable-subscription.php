@@ -197,6 +197,8 @@ class WC_Product_Variable_Subscription extends WC_Product_Variable {
 
 		$this->add_meta_data( '_min_max_variation_data', $min_and_max_data, true );
 		$this->add_meta_data( '_min_max_variation_ids_hash', $this->get_variation_ids_hash( $variation_ids ), true );
+
+		do_action( 'wc_subscriptions_min_and_max_variation_data_set', $this, $min_and_max_data, $variation_ids );
 	}
 
 	/**
