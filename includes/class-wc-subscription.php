@@ -2036,7 +2036,9 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Save new payment method for a subscription
 	 *
-	 * @since 2.0
+	 * @since 2.0.0
+	 *
+	 * @throws InvalidArgumentException An exception is thrown via @see WC_Subscription::set_payment_method_meta() if the payment meta passed is invalid.
 	 * @param WC_Payment_Gateway|string $payment_method
 	 * @param array $payment_meta Associated array of the form: $database_table => array( value, )
 	 */
@@ -2089,8 +2091,12 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Save payment method meta data for the Subscription
 	 *
-	 * @since 2.0
-	 * @param array $payment_meta Associated array of the form: $database_table => array( value, )
+	 * @since 2.0.0
+	 *
+	 * @throws InvalidArgumentException An exception if the payment meta variable isn't an array.
+	 *
+	 * @param string $payment_method_id The payment method's ID.
+	 * @param array  $payment_meta      Associated array of the form: $database_table => array( value, )
 	 */
 	protected function set_payment_method_meta( $payment_method_id, $payment_meta ) {
 
