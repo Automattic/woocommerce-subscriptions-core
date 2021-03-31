@@ -260,11 +260,20 @@ class WC_Subscriptions_Coupon {
 					$apply_initial_percent_coupon = true;
 				}
 
+				// Get the sign-up fee including tax.
+				$signup_fee = wc_get_price_including_tax(
+					$cart_item['data'],
+					array(
+						'qty'   => 1,
+						'price' => WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] ),
+					)
+				);
+
 				// Only Sign up fee coupons apply to sign up fees, adjust the discounting_amount accordingly
 				if ( in_array( $coupon_type, array( 'sign_up_fee', 'sign_up_fee_percent' ) ) ) {
-					$discounting_amount = WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] );
+					$discounting_amount = $signup_fee;
 				} else {
-					$discounting_amount -= WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] );
+					$discounting_amount -= $signup_fee;
 				}
 			}
 
