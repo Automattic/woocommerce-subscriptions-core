@@ -183,29 +183,29 @@ class WCS_PayPal_Standard_Switcher {
 	 */
 	public static function cancel_paypal_standard_after_switch( $order ) {
 
-		if ( 'paypal_standard' == get_post_meta( wcs_get_objects_property( $order, 'id' ), '_old_payment_method', true ) ) {
+		if ( 'paypal_standard' === $order->get_meta( '_old_payment_method' )  ) {
 
-			$old_profile_id = get_post_meta( wcs_get_objects_property( $order, 'id' ), '_old_paypal_subscription_id', true );
+			$old_profile_id = $order->get_meta( '_old_paypal_subscription_id' );
 
 			if ( ! empty( $old_profile_id ) ) {
 
-				$subscriptions = wcs_get_subscriptions_for_order( wcs_get_objects_property( $order, 'id' ), array( 'order_type' => 'switch' ) );
+				$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'switch' ) );
 
 				foreach ( $subscriptions as $subscription ) {
 
 					if ( ! wcs_is_paypal_profile_a( $old_profile_id, 'billing_agreement' ) ) {
-
 						$new_payment_method = $subscription->get_payment_method();
-						$new_profile_id     = get_post_meta( $subscription->get_id(), '_paypal_subscription_id', true ); // grab the current paypal subscription id in case it's a billing agreement
+						$new_profile_id     = $subscription->get_meta( '_paypal_subscription_id' ); // grab the current paypal subscription id in case it's a billing agreement
 
-						update_post_meta( $subscription->get_id(), '_payment_method', 'paypal' );
-						update_post_meta( $subscription->get_id(), '_paypal_subscription_id', $old_profile_id );
+						$subscription->update_meta_data( '_payment_method', 'paypal' );
+						$subscription->update_meta_data( '_paypal_subscription_id', $old_profile_id );
 
 						WCS_PayPal_Status_Manager::suspend_subscription( $subscription );
 
 						// restore payment meta to the new data
-						update_post_meta( $subscription->get_id(), '_payment_method', $new_payment_method );
-						update_post_meta( $subscription->get_id(), '_paypal_subscription_id', $new_profile_id );
+						$subscription->update_meta_data( '_payment_method', $new_payment_method );
+						$subscription->update_meta_data( '_paypal_subscription_id', $new_profile_id );
+						$subscription->save();
 					}
 				}
 			}
