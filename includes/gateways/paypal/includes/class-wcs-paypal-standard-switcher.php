@@ -200,7 +200,9 @@ class WCS_PayPal_Standard_Switcher {
 						$subscription->update_meta_data( '_payment_method', 'paypal' );
 						$subscription->update_meta_data( '_paypal_subscription_id', $old_profile_id );
 
+						add_filter( 'wc_subscriptions_paypal_standard_suspension_note', array( __CLASS__, 'filter_suspended_switch_note' ) );
 						WCS_PayPal_Status_Manager::suspend_subscription( $subscription );
+						remove_filter( 'wc_subscriptions_paypal_standard_suspension_note', array( __CLASS__, 'filter_suspended_switch_note' ) );
 
 						// restore payment meta to the new data
 						$subscription->update_meta_data( '_payment_method', $new_payment_method );
@@ -250,5 +252,17 @@ class WCS_PayPal_Standard_Switcher {
 		if ( $order_completed && wcs_order_contains_switch( $order_id ) ) {
 			self::cancel_paypal_standard_after_switch( $order );
 		}
+	}
+
+	/**
+	 * Filters the note added to a subscription when the payment method is changed from PayPal Standard to PayPal Reference Transactions after a switch.
+	 *
+	 * Hooked onto 'wc_subscriptions_paypal_standard_suspension_note'. @see WCS_PayPal_Standard_Switcher::cancel_paypal_standard_after_switch()
+	 *
+	 * @since 3.1.0
+	 * @return string The note added to a subscription when the payment method changes from PayPal Standard to PayPal RT.
+	 */
+	public static function filter_suspended_switch_note() {
+		return __( 'Subscription changed from PayPal Standard to PayPal Reference Transactions via customer initiated switch. The PayPal Standard subscription has been suspended.', 'woocommerce-subscriptions' );
 	}
 }
