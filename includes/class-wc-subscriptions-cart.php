@@ -1516,7 +1516,8 @@ class WC_Subscriptions_Cart {
 
 			// We only need to keep track if the taxes applicable to the customer are different to the taxes which apply to the store's base location.
 			if ( $applicable_tax_rates !== $base_tax_rates ) {
-				$cart->cart_contents[ $cart_item_key ]['_subtracted_base_location_tax'] = WC_Tax::calc_tax( $product->get_price() * $cart_item['quantity'], $base_tax_rates, true );
+				$cart->cart_contents[ $cart_item_key ]['_subtracted_base_location_taxes'] = WC_Tax::calc_tax( $product->get_price(), $base_tax_rates, true );
+				$cart->cart_contents[ $cart_item_key ]['_subtracted_base_location_rates'] = $base_tax_rates;
 			}
 		}
 	}

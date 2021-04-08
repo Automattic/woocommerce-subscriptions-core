@@ -445,7 +445,8 @@ class WCS_Admin_Meta_Boxes {
 		if ( '0' !== $line_item->get_tax_class() && 'taxable' === $line_item->get_tax_status() ) {
 			$base_tax_rates = WC_Tax::get_base_tax_rates( $line_item->get_tax_class() );
 
-			$line_item->update_meta_data( '_subtracted_base_location_tax', WC_Tax::calc_tax( $line_item->get_product()->get_price() * $line_item->get_quantity(), $base_tax_rates, true ) );
+			$line_item->update_meta_data( '_subtracted_base_location_taxes', WC_Tax::calc_tax( $line_item->get_product()->get_price(), $base_tax_rates, true ) );
+			$line_item->update_meta_data( '_subtracted_base_location_rates', $base_tax_rates );
 			$line_item->save();
 		}
 	}
