@@ -257,13 +257,13 @@ class WCS_Limiter {
 					$subscriptions = wcs_get_subscriptions(
 						array(
 							'order_id'            => $order->get_id(),
-							'subscription_status' => array( 'pending', 'on-hold' ),
+							'subscription_status' => array( 'active', 'pending', 'on-hold' ),
 						)
 					);
 
 					foreach ( $subscriptions as $subscription ) {
 						// Check that the subscription has the product we're interested in.
-						if ( $subscription->has_product( $product_id ) ) {
+						if ( $subscription->has_product( $product_id ) && $subscription->needs_payment() ) {
 							self::$order_awaiting_payment_for_product[ $product_id ] = true;
 							break 2; // break out of the $subscriptions and order line item loops - we've found at least 1 subscription pending payment for the product.
 						}
