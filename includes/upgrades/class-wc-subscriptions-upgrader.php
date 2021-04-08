@@ -255,6 +255,11 @@ class WC_Subscriptions_Upgrader {
 			$deleted_rows = $wpdb->query( "DELETE FROM {$wpdb->postmeta} WHERE `meta_key` = '_switch_totals_calc_base_length'" );
 		}
 
+		// Upon upgrading to 3.1.0 from a version after 3.0.10, repair subscriptions _subtracted_base_location_tax line item meta.
+		if ( version_compare( self::$active_version, '3.1.0', '<' ) && version_compare( self::$active_version, '3.0.10', '>=' ) ) {
+			self::$background_updaters['3.1']['subtracted_base_tax_repair']->schedule_repair();
+		}
+
 		self::upgrade_complete();
 	}
 
@@ -851,10 +856,11 @@ class WC_Subscriptions_Upgrader {
 	 */
 	public static function initialise_background_updaters() {
 		$logger = new WC_logger();
-		self::$background_updaters['2.3']['suspended_paypal_repair'] = new WCS_Repair_Suspended_PayPal_Subscriptions( $logger );
-		self::$background_updaters['2.3']['address_indexes_repair']  = new WCS_Repair_Subscription_Address_Indexes( $logger );
-		self::$background_updaters['2.4']['start_date_metadata']     = new WCS_Repair_Start_Date_Metadata( $logger );
-		self::$background_updaters['2.6']['has_trial_item_meta']     = new WCS_Repair_Line_Item_Has_Trial_Meta( $logger );
+		self::$background_updaters['2.3']['suspended_paypal_repair']    = new WCS_Repair_Suspended_PayPal_Subscriptions( $logger );
+		self::$background_updaters['2.3']['address_indexes_repair']     = new WCS_Repair_Subscription_Address_Indexes( $logger );
+		self::$background_updaters['2.4']['start_date_metadata']        = new WCS_Repair_Start_Date_Metadata( $logger );
+		self::$background_updaters['2.6']['has_trial_item_meta']        = new WCS_Repair_Line_Item_Has_Trial_Meta( $logger );
+		self::$background_updaters['3.1']['subtracted_base_tax_repair'] = new WCS_Repair_Subtracted_Base_Tax_Line_Item_Meta( $logger );
 
 		// Init the updaters
 		foreach ( self::$background_updaters as $version => $updaters ) {
