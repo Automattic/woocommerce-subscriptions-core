@@ -302,7 +302,11 @@ class WC_REST_Subscriptions_V1_Controller extends WC_REST_Orders_V1_Controller {
 
 		foreach ( $subscription_orders as $order_id ) {
 			$post = get_post( $order_id );
-			if ( ! wc_rest_check_post_permissions( $this->post_type, 'read', $post->ID ) ) {
+
+			// Validate that the order can be loaded before trying to generate a response object for it.
+			$order = wc_get_order( $order_id );
+
+			if ( ! $order || ! wc_rest_check_post_permissions( $this->post_type, 'read', $post->ID ) ) {
 				continue;
 			}
 

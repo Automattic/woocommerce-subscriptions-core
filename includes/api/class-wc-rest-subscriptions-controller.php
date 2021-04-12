@@ -166,7 +166,13 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 					continue;
 				}
 
-				$order    = wc_get_order( $order_id );
+				// Validate that the order can be loaded before trying to generate a response object for it.
+				$order = wc_get_order( $order_id );
+
+				if ( ! $order ) {
+					continue;
+				}
+
 				$response = $this->prepare_object_for_response( $order, $request );
 
 				// Add the order's relationship to the response.
