@@ -1077,7 +1077,7 @@ class WC_Subscriptions_Cart {
 				wc_get_template(
 					'checkout/recurring-totals.php',
 					array(
-						'shipping_methods'             => $shipping_methods,
+						'shipping_methods'             => array(),
 						'recurring_carts'              => WC()->cart->recurring_carts,
 						'carts_with_multiple_payments' => $carts_with_multiple_payments,
 					),
