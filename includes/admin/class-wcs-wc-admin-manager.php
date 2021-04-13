@@ -83,20 +83,5 @@ class WCS_WC_Admin_Manager {
 
 		Menu::add_plugin_item( $subscription_items['all'] );
 		Screen::register_post_type( 'shop_subscription' );
-
-		// Add the Subscription settings link in the WooCommerce > Settings navigation list
-		wc_admin_connect_page(
-			array(
-				'id'         => 'subscriptions-setting',
-				'parent'     => 'settings',
-				'title'      => __( 'Subscriptions', 'woocommerce-subscriptions' ),
-				'capability' => 'manage_woocommerce',
-				'nav_args'   => array(
-					'url'   => 'admin.php?page=wc-settings&tab=subscriptions',
-					'order' => 100,
-					'parent' => 'woocommerce-settings',
-				),
-			)
-		);
 	}
 }
