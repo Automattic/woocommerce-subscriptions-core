@@ -113,7 +113,7 @@ class WCS_Repair_Subtracted_Base_Tax_Line_Item_Meta extends WCS_Background_Repai
 			$item->delete_meta_data( '_subtracted_base_location_tax' );
 			$item->save();
 
-			$this->log( sprintf( 'The "_subtracted_base_location_tax" line item meta for %d (#%s) was repaired.', $line_item_id, $item->get_order_id() ) );
+			$this->log( sprintf( 'The "_subtracted_base_location_tax" line item meta for %d (#%s) was repaired. Original product price assumed: $%s.', $line_item_id, $item->get_order_id(), $product_price ) );
 		} catch ( Exception $e ) {
 			$this->log( sprintf( 'ERROR: Exception caught trying to repair the subtracted base tax data for line item: %d - exception message: %s ---', $line_item_id, $e->getMessage() ) );
 		}
