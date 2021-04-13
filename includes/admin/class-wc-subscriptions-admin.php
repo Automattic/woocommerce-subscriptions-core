@@ -143,6 +143,9 @@ class WC_Subscriptions_Admin {
 		// Validate the product type change before other product changes are saved.
 		add_action( 'woocommerce_process_product_meta', array( __CLASS__, 'validate_product_type_change' ), 5 );
 
+		// Allow admin to enable account creation specifically for subscription purchases.
+		add_filter( 'woocommerce_account_settings', array( __CLASS__, 'add_registration_for_subscription_purchases_setting' ), 10, 1 );
+
 		// Prevent variations from being deleted if switching from a variable product type to a variable product type.
 		add_filter( 'woocommerce_delete_variations_on_product_type_change', array( __CLASS__, 'maybe_keep_variations' ), 10, 4 );
 	}
@@ -2084,6 +2087,35 @@ class WC_Subscriptions_Admin {
 			wp_safe_redirect( get_admin_url( null, "post.php?post={$product_id}&action=edit" ) );
 			exit;
 		}
+	}
+
+	/**
+	 * Adds a setting to allow customer registration on checkout specifically for subscription purchases.
+	 *
+	 * If the store allows registration on the checkout, this setting is hidden because that higher level
+	 * setting overrides any need for a specific subscription setting.
+	 *
+	 * This setting allows stores to enable users to create an account when purchasing a subscription, but
+	 * not allow an account to be created when they are making one off/standard purchases.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param array $settings The Accounts & Privacy settings.
+	 * @return array $settings.
+	 */
+	public static function add_registration_for_subscription_purchases_setting( $settings ) {
+
+		self::insert_setting_after( $settings, 'woocommerce_enable_signup_and_login_from_checkout', array(
+			'id'              => 'woocommerce_enable_signup_from_checkout_for_subscriptions',
+			'name'            => __( 'Allow subscription customers to create an account during checkout', 'woocommerce-subscriptions' ),
+			'desc'            => __( 'Allow subscription customers to create an account during checkout', 'woocommerce-subscriptions' ),
+			'default'         => 'yes',
+			'type'            => 'checkbox',
+			'checkboxgroup'   => '',
+			'autoload'        => false,
+		) );
+
+		return $settings;
 	}
 
 	/**

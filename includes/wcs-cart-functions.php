@@ -51,8 +51,11 @@ function wcs_cart_totals_shipping_html() {
 	// Create new subscriptions for each subscription product in the cart (that is not a renewal)
 	foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
 
+		// Allow third parties to filter whether the recurring cart has a shipment.
+		$cart_has_next_shipment = apply_filters( 'woocommerce_subscriptions_cart_has_next_shipment', 0 !== $recurring_cart->next_payment_date, $recurring_cart );
+
 		// Create shipping packages for each subscription item
-		if ( WC_Subscriptions_Cart::cart_contains_subscriptions_needing_shipping( $recurring_cart ) && 0 !== $recurring_cart->next_payment_date ) {
+		if ( $cart_has_next_shipment && WC_Subscriptions_Cart::cart_contains_subscriptions_needing_shipping( $recurring_cart ) ) {
 
 			// This will get a package with the 'recurring_cart_key' set to 'none' (because WC_Subscriptions_Cart::display_recurring_totals() set WC_Subscriptions_Cart::$calculation_type to 'recurring_total', but WC_Subscriptions_Cart::$recurring_cart_key has not been set), which ensures that it's a unique package, which we need in order to get all the available packages, not just the package for the recurring cart calculation we completed previously where WC_Subscriptions_Cart::filter_package_rates() removed all unchosen rates and which WC then cached
 			$packages = $recurring_cart->get_shipping_packages();
@@ -436,4 +439,35 @@ function wcs_allow_protected_products_to_renew() {
  */
 function wcs_disallow_protected_product_add_to_cart_validation() {
 	add_filter( 'woocommerce_add_to_cart_validation', 'wc_protected_product_add_to_cart', 10, 2 );
+}
+
+/**
+ * Gets all the cart items linked to a given subscription order type.
+ *
+ * @since 3.1.0
+ *
+ * @param string $order_type The order type to get cart items for. Can be 'parent', 'renewal', 'resubscribe', 'switch'.
+ * @return array[] An array of cart items which are linked to an order or subscription by the order type relationship.
+ */
+function wcs_get_order_type_cart_items( $order_type ) {
+	$cart_items = array();
+
+	if ( ! in_array( $order_type, array( 'parent', 'renewal', 'resubscribe', 'switch' ) ) ) {
+		wcs_doing_it_wrong( __METHOD__, 'The parameter must be a valid subscription order type "parent", "renewal", "resubscribe", "switch".', '3.1.0' );
+		return $cart_items;
+	}
+
+	if ( empty( WC()->cart->cart_contents ) ) {
+		return $cart_items;
+	}
+
+	$order_type_cart_key = 'parent' === $order_type ? 'subscription_initial_payment' : "subscription_$order_type";
+
+	foreach ( WC()->cart->cart_contents as $cart_item_key => $cart_item ) {
+		if ( isset( $cart_item[ $order_type_cart_key ] ) ) {
+			$cart_items[ $cart_item_key ] = $cart_item;
+		}
+	}
+
+	return $cart_items;
 }

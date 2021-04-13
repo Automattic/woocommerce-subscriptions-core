@@ -286,3 +286,28 @@ function wcs_trial_has_passed( $subscription ) {
 		return new WP_Error( 'woocommerce_subscription_invalid_subscription', __( 'Invalid Subscription.', 'woocommerce-subscriptions' ) );
 	}
 }
+
+/**
+ * Filters an array using a WP filter.
+ *
+ * This function behaves similar to PHP's array_filter(), except instead of a callback it uses a filter.
+ * This allows third-parties via WP filter callbacks to filter the array.
+ *
+ * @since 3.1.0
+ *
+ * @param string $filter   The WP filter to apply to each element.
+ * @param array  $array    The array of items to check.
+ * @param array  $property The name of object's property to check. Optional. Default is '' - the array element value as a boolean will be used, the same as array_filter().
+ */
+function wcs_apply_array_filter( $filter, $array, $property = '' ) {
+
+	foreach ( $array as $index => $element ) {
+		$value = empty( $property ) ? $element : $element->{$property};
+
+		if ( ! apply_filters( $filter, (bool) $value, $element, $property, $array ) ) {
+			unset( $array[ $index ] );
+		}
+	}
+
+	return $array;
+}
