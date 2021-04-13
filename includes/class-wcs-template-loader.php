@@ -179,7 +179,9 @@ class WCS_Template_Loader {
 	 * @param array $recurring_carts The recurring carts.
 	 */
 	public static function get_recurring_cart_taxes( $recurring_carts ) {
-		if ( ! wc_tax_enabled() || 'excl' !== WC()->cart->tax_display_cart ) {
+		$tax_display_mode = WC_Subscriptions::is_woocommerce_pre( '4.4' ) ? WC()->cart->tax_display_cart : WC()->cart->get_tax_price_display_mode();
+
+		if ( ! wc_tax_enabled() || 'excl' !== $tax_display_mode ) {
 			return;
 		}
 
