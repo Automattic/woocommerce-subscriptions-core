@@ -451,8 +451,9 @@ class WC_Subscriptions_Checkout {
 	 * @param array                $cart_item     The cart item data.
 	 */
 	public static function store_line_item_base_location_taxes( $line_item, $cart_item_key, $cart_item ) {
-		if ( isset( $cart_item['_subtracted_base_location_tax'] ) ) {
-			$line_item->add_meta_data( '_subtracted_base_location_tax', $cart_item['_subtracted_base_location_tax'] );
+		if ( isset( $cart_item['_subtracted_base_location_taxes'] ) ) {
+			$line_item->add_meta_data( '_subtracted_base_location_taxes', $cart_item['_subtracted_base_location_taxes'] );
+			$line_item->add_meta_data( '_subtracted_base_location_rates', $cart_item['_subtracted_base_location_rates'] );
 		}
 	}
 

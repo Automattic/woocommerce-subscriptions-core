@@ -405,8 +405,17 @@ class WCS_Cart_Renewal {
 				$price = $item_to_renew['line_subtotal'];
 
 				if ( $_product->is_taxable() && $subscription->get_prices_include_tax() ) {
+
+					// If this item's subtracted tax data hasn't been repaired, do that now.
 					if ( isset( $item_to_renew['_subtracted_base_location_tax'] ) ) {
-						$price += array_sum( $item_to_renew['_subtracted_base_location_tax'] );
+						WC_Subscriptions_Upgrader::repair_subtracted_base_taxes( $item_to_renew->get_id() );
+
+						// The item has been updated so get a refreshed version of the item.
+						$item_to_renew = WC_Order_Factory::get_order_item( $item_to_renew->get_id() );
+					}
+
+					if ( isset( $item_to_renew['_subtracted_base_location_taxes'] ) ) {
+						$price += array_sum( $item_to_renew['_subtracted_base_location_taxes'] ) * $item_to_renew['qty'];
 					} else {
 						$price += array_sum( $item_to_renew['taxes']['subtotal'] ); // Use the taxes array items here as they contain taxes to a more accurate number of decimals.
 					}

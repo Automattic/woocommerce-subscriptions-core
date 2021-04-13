@@ -125,7 +125,8 @@ abstract class WCS_Background_Updater {
 	 * Schedule the instance's hook to run in $this->time_limit seconds, if it's not already scheduled.
 	 */
 	protected function schedule_background_update() {
-		if ( false === as_next_scheduled_action( $this->scheduled_hook ) ) {
+		// A timestamp is returned if there's a pending action already scheduled. Otherwise true if its running or false if one doesn't exist.
+		if ( ! is_numeric( as_next_scheduled_action( $this->scheduled_hook ) ) ) {
 			as_schedule_single_action( gmdate( 'U' ) + $this->time_limit, $this->scheduled_hook );
 		}
 	}
