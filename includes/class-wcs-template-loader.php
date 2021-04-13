@@ -152,8 +152,8 @@ class WCS_Template_Loader {
 	 *
 	 * @since 3.1.0
 	 */
-	public static function get_recurring_cart_shipping () {
-		if ( WC()->cart->needs_shipping() && WC()->cart->show_shipping() ) {
+	public static function get_recurring_cart_shipping() {
+		if ( WC()->cart->show_shipping() && WC_Subscriptions_Cart::cart_contains_subscriptions_needing_shipping() ) {
 			wcs_cart_totals_shipping_html();
 		}
 	}
