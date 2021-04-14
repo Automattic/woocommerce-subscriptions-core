@@ -883,7 +883,8 @@ class WC_Subscriptions_Synchroniser {
 				self::is_product_synced( $cart_item['data'] ) &&
 				! self::is_payment_upfront( $cart_item['data'] ) &&
 				! self::is_product_prorated( $cart_item['data'] ) &&
-				! self::is_today( self::calculate_first_payment_date( $cart_item['data'], 'timestamp' ) )
+				! self::is_today( self::calculate_first_payment_date( $cart_item['data'], 'timestamp' ) ) &&
+				( ! isset( $cart_item['subscription_resubscribe'] ) || ! self::is_sync_proration_enabled() ) // Dont override trial length set while resubscribing unless proration is disabled.
 			) {
 				$current_trial_length = WC_Subscriptions_Product::get_trial_length( WC()->cart->cart_contents[ $cart_item_key ]['data'] );
 				$new_trial_length     = ( $current_trial_length > 1 ) ? $current_trial_length : 1;
@@ -902,8 +903,17 @@ class WC_Subscriptions_Synchroniser {
 	public static function maybe_unset_free_trial( $total = '' ) {
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-			if ( self::is_product_synced( $cart_item['data'] ) ) {
-				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_trial_length', WC_Subscriptions_Product::get_trial_length( wcs_get_canonical_product_id( $cart_item ) ), 'set_prop_only' );
+			// Dont override trial length set while resubscribing, unless proration is disabled.
+			if ( self::is_product_synced( $cart_item['data'] ) && ( ! isset( $cart_item['subscription_resubscribe'] ) || ! self::is_sync_proration_enabled() ) ) {
+
+				// When reinstating the trial length, set resubscribes trial length to 0 so we don't grant a second trial period.
+				if ( isset( $cart_item['subscription_resubscribe'] ) ) {
+					$trial_length = 0;
+				} else {
+					$trial_length = WC_Subscriptions_Product::get_trial_length( wcs_get_canonical_product_id( $cart_item ) );
+				}
+
+				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_trial_length', $trial_length, 'set_prop_only' );
 			}
 		}
 		return $total;
