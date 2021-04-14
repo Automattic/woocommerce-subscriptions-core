@@ -906,7 +906,7 @@ class WC_Subscriptions_Synchroniser {
 			// Dont override trial length set while resubscribing, unless proration is disabled.
 			if ( self::is_product_synced( $cart_item['data'] ) && ( ! isset( $cart_item['subscription_resubscribe'] ) || ! self::is_sync_proration_enabled() ) ) {
 
-				// When reinstating the trial length, set resubscribes trial length to 1 so we don't grant a second trial period.
+				// When reinstating the trial length, set resubscribes trial length to 0 so we don't grant a second trial period.
 				if ( isset( $cart_item['subscription_resubscribe'] ) ) {
 					$trial_length = 0;
 				} else {
