@@ -56,9 +56,6 @@ class WC_Subscriptions_Switcher {
 		// From blocks - When creating an order, add meta if it's for switching a subscription
 		add_action( '__experimental_woocommerce_blocks_checkout_update_order_meta', array( __CLASS__, 'add_order_meta' ), 10, 1 );
 
-		// Add a renewal orders section to the Related Orders meta box
-		add_action( 'woocommerce_subscriptions_related_orders_meta_box_rows', array( __CLASS__, 'switch_order_meta_box_rows' ), 10 );
-
 		// Don't allow switching to the same product
 		add_filter( 'woocommerce_add_to_cart_validation', array( __CLASS__, 'validate_switch_request' ), 10, 4 );
 
@@ -144,6 +141,10 @@ class WC_Subscriptions_Switcher {
 		add_action( 'woocommerce_grant_product_download_permissions', array( __CLASS__, 'delay_granting_download_permissions' ), 9, 1 );
 		add_action( 'woocommerce_subscriptions_switch_completed', array( __CLASS__, 'grant_download_permissions' ), 9, 1 );
 		add_action( 'woocommerce_subscription_checkout_switch_order_processed', array( __CLASS__, 'log_switches' ) );
+		add_filter( 'woocommerce_subscriptions_admin_related_orders_to_display', array( __CLASS__, 'display_switches_in_related_order_metabox' ), 10, 3 );
+
+		// Override the add to cart text when switch args are present.
+		add_filter( 'woocommerce_product_single_add_to_cart_text', array( __CLASS__, 'display_switch_add_to_cart_text' ), 10, 1 );
 	}
 
 	/**
@@ -1178,52 +1179,6 @@ class WC_Subscriptions_Switcher {
 	public static function maybe_update_subscription_address( $order, $subscription ) {
 		$subscription->set_address( array_diff_assoc( $order->get_address( 'billing' ), $subscription->get_address( 'billing' ) ), 'billing' );
 		$subscription->set_address( array_diff_assoc( $order->get_address(), $subscription->get_address() ), 'shipping' );
-	}
-
-	/**
-	 * If the subscription purchased in an order has since been switched, include a link to the order placed to switch the subscription
-	 * in the "Related Orders" meta box (displayed on the Edit Order screen).
-	 *
-	 * @param WC_Order $order The current order.
-	 * @since 1.4
-	 */
-	public static function switch_order_meta_box_rows( $post ) {
-
-		$subscriptions          = array();
-		$switched_subscriptions = array();
-		$orders                 = array();
-
-		// On the subscription page, just show related orders
-		if ( wcs_is_subscription( $post->ID ) ) {
-
-			// Select the orders which switched item/s from this subscription
-			$orders = wcs_get_switch_orders_for_subscription( $post->ID );
-
-			foreach ( $orders as $order_id => $order ) {
-				wcs_set_objects_property( $order, 'relationship', __( 'Switch Order', 'woocommerce-subscriptions' ), 'set_prop_only' );
-			}
-
-			// Select the subscriptions which had item/s switched to this subscription by its parent order
-			if ( ! empty( $post->post_parent ) ) {
-				$switched_subscriptions = wcs_get_subscriptions_for_switch_order( $post->post_parent );
-			}
-
-		// On the Edit Order screen, show any subscriptions with items switched by this order
-		} else {
-			$switched_subscriptions = wcs_get_subscriptions_for_switch_order( $post->ID );
-		}
-
-		if ( is_array( $switched_subscriptions ) ) {
-			foreach ( $switched_subscriptions as $subscription_id => $subscription ) {
-				wcs_set_objects_property( $subscription, 'relationship', __( 'Switched Subscription', 'woocommerce-subscriptions' ), 'set_prop_only' );
-				$orders[ $subscription_id ] = $subscription;
-			}
-		}
-
-		foreach ( $orders as $order ) {
-			include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'includes/admin/meta-boxes/views/html-related-orders-row.php' );
-		}
-
 	}
 
 	/**
@@ -2340,6 +2295,46 @@ class WC_Subscriptions_Switcher {
 		}
 	}
 
+	/**
+	 * Adds switch orders or switched subscriptions to the related order meta box.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param WC_Abstract_Order[] $orders_to_display The list of related orders to display.
+	 * @param WC_Subscription[]   $subscriptions     The list of related subscriptions.
+	 * @param WP_Post             $post              The order or subscription post being viewed.
+	 *
+	 * @return $orders_to_display The orders/subscriptions to display in the meta box.
+	 */
+	public static function display_switches_in_related_order_metabox( $orders_to_display, $subscriptions, $post ) {
+		$switched_subscriptions = array();
+
+		// On the subscription page, just show related orders.
+		if ( wcs_is_subscription( $post->ID ) ) {
+
+			foreach ( wcs_get_switch_orders_for_subscription( $post->ID ) as $order ) {
+				$order->update_meta_data( '_relationship', __( 'Switch Order', 'woocommerce-subscriptions' ) );
+				$orders_to_display[] = $order;
+			}
+
+			// Display the subscriptions which had item/s switched to this subscription by its parent order.
+			if ( ! empty( $post->post_parent ) ) {
+				$switched_subscriptions = wcs_get_subscriptions_for_switch_order( $post->post_parent );
+			}
+
+		// On the Edit Order screen, show any subscriptions with items switched by this order.
+		} else {
+			$switched_subscriptions = wcs_get_subscriptions_for_switch_order( $post->ID );
+		}
+
+		foreach ( $switched_subscriptions as $subscription ) {
+			$subscription->update_meta_data( '_relationship', __( 'Switched Subscription', 'woocommerce-subscriptions' ) );
+			$orders_to_display[] = $subscription;
+		}
+
+		return $orders_to_display;
+	}
+
 	/** Deprecated Methods **/
 
 	/**
@@ -2539,6 +2534,22 @@ class WC_Subscriptions_Switcher {
 		}
 
 		return $cart_contains_subscription_creating_switch;
+	}
+
+	/**
+	 * Filters the add to cart text for products during a switch request.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param  string $add_to_cart_text The product's default add to cart text.
+	 * @return string 'Switch subscription' during a switch, or the default add to cart text if switch args aren't present.
+	 */
+	public static function display_switch_add_to_cart_text( $add_to_cart_text ) {
+		if ( isset( $_GET['switch-subscription'], $_GET['item'] ) ) {
+			$add_to_cart_text = _x( 'Switch subscription', 'add to cart button text while switching a subscription', 'woocommerce-subscriptions' );
+		}
+
+		return $add_to_cart_text;
 	}
 
 	/**
@@ -2832,5 +2843,52 @@ class WC_Subscriptions_Switcher {
 		}
 
 		return $related_orders;
+	}
+
+	/**
+	 * If the subscription purchased in an order has since been switched, include a link to the order placed to switch the subscription
+	 * in the "Related Orders" meta box (displayed on the Edit Order screen).
+	 *
+	 * @param WC_Order $order The current order.
+	 * @since 1.4
+	 * @deprecated 3.1.0
+	 */
+	public static function switch_order_meta_box_rows( $post ) {
+		wcs_deprecated_function( __METHOD__, '3.1.0' );
+		$subscriptions          = array();
+		$switched_subscriptions = array();
+		$orders                 = array();
+
+		// On the subscription page, just show related orders
+		if ( wcs_is_subscription( $post->ID ) ) {
+
+			// Select the orders which switched item/s from this subscription
+			$orders = wcs_get_switch_orders_for_subscription( $post->ID );
+
+			foreach ( $orders as $order_id => $order ) {
+				wcs_set_objects_property( $order, 'relationship', __( 'Switch Order', 'woocommerce-subscriptions' ), 'set_prop_only' );
+			}
+
+			// Select the subscriptions which had item/s switched to this subscription by its parent order
+			if ( ! empty( $post->post_parent ) ) {
+				$switched_subscriptions = wcs_get_subscriptions_for_switch_order( $post->post_parent );
+			}
+
+		// On the Edit Order screen, show any subscriptions with items switched by this order
+		} else {
+			$switched_subscriptions = wcs_get_subscriptions_for_switch_order( $post->ID );
+		}
+
+		if ( is_array( $switched_subscriptions ) ) {
+			foreach ( $switched_subscriptions as $subscription_id => $subscription ) {
+				wcs_set_objects_property( $subscription, 'relationship', __( 'Switched Subscription', 'woocommerce-subscriptions' ), 'set_prop_only' );
+				$orders[ $subscription_id ] = $subscription;
+			}
+		}
+
+		foreach ( $orders as $order ) {
+			include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'includes/admin/meta-boxes/views/html-related-orders-row.php' );
+		}
+
 	}
 }

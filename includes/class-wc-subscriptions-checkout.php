@@ -26,15 +26,6 @@ class WC_Subscriptions_Checkout {
 		// Same as above, but this is for the Checkout block.
 		add_action( '__experimental_woocommerce_blocks_checkout_order_processed', array( __CLASS__, 'process_checkout' ), 100, 1 );
 
-		// Make sure users can register on checkout (before any other hooks before checkout)
-		add_action( 'woocommerce_before_checkout_form', array( __CLASS__, 'make_checkout_registration_possible' ), -1 );
-
-		// Display account fields as required
-		add_action( 'woocommerce_checkout_fields', array( __CLASS__, 'make_checkout_account_fields_required' ), 10 );
-
-		// Restore the settings after switching them for the checkout form
-		add_action( 'woocommerce_after_checkout_form', array( __CLASS__, 'restore_checkout_registration_settings' ), 100 );
-
 		// Some callbacks need to hooked after WC has loaded.
 		add_action( 'woocommerce_loaded', array( __CLASS__, 'attach_dependant_hooks' ) );
 
@@ -417,65 +408,6 @@ class WC_Subscriptions_Checkout {
 	}
 
 	/**
-	 * If shopping cart contains subscriptions, make sure a user can register on the checkout page
-	 *
-	 * @since 1.0
-	 */
-	public static function make_checkout_registration_possible( $checkout = '' ) {
-
-		if ( WC_Subscriptions_Cart::cart_contains_subscription() && ! is_user_logged_in() ) {
-
-			// Make sure users are required to register an account
-			if ( true === $checkout->enable_guest_checkout ) {
-				$checkout->enable_guest_checkout     = false;
-				self::$guest_checkout_option_changed = true;
-
-				$checkout->must_create_account = true;
-			}
-		}
-	}
-
-	/**
-	 * Make sure account fields display the required "*" when they are required.
-	 *
-	 * @since 1.3.5
-	 */
-	public static function make_checkout_account_fields_required( $checkout_fields ) {
-
-		if ( WC_Subscriptions_Cart::cart_contains_subscription() && ! is_user_logged_in() ) {
-
-			$account_fields = array(
-				'account_username',
-				'account_password',
-				'account_password-2',
-			);
-
-			foreach ( $account_fields as $account_field ) {
-				if ( isset( $checkout_fields['account'][ $account_field ] ) ) {
-					$checkout_fields['account'][ $account_field ]['required'] = true;
-				}
-			}
-		}
-
-		return $checkout_fields;
-	}
-
-	/**
-	 * After displaying the checkout form, restore the store's original registration settings.
-	 *
-	 * @since 1.1
-	 */
-	public static function restore_checkout_registration_settings( $checkout = '' ) {
-
-		if ( self::$guest_checkout_option_changed ) {
-			$checkout->enable_guest_checkout = true;
-			if ( ! is_user_logged_in() ) { // Also changed must_create_account
-				$checkout->must_create_account = false;
-			}
-		}
-	}
-
-	/**
 	 * Also make sure the guest checkout option value passed to the woocommerce.js forces registration.
 	 * Otherwise the registration form is hidden by woocommerce.js.
 	 *
@@ -508,8 +440,9 @@ class WC_Subscriptions_Checkout {
 	 * @param array                $cart_item     The cart item data.
 	 */
 	public static function store_line_item_base_location_taxes( $line_item, $cart_item_key, $cart_item ) {
-		if ( isset( $cart_item['_subtracted_base_location_tax'] ) ) {
-			$line_item->add_meta_data( '_subtracted_base_location_tax', $cart_item['_subtracted_base_location_tax'] );
+		if ( isset( $cart_item['_subtracted_base_location_taxes'] ) ) {
+			$line_item->add_meta_data( '_subtracted_base_location_taxes', $cart_item['_subtracted_base_location_taxes'] );
+			$line_item->add_meta_data( '_subtracted_base_location_rates', $cart_item['_subtracted_base_location_rates'] );
 		}
 	}
 
@@ -529,7 +462,7 @@ class WC_Subscriptions_Checkout {
 	/**
 	 * Enables the 'registeration required' (guest checkout) setting when purchasing subscriptions.
 	 *
-	 * @since 3.0.11
+	 * @since 3.1.0
 	 *
 	 * @param bool $account_required Whether an account is required to checkout.
 	 * @return bool
@@ -581,7 +514,7 @@ class WC_Subscriptions_Checkout {
 	/**
 	 * Enables registration for carts containing subscriptions if admin allow it.
 	 *
-	 * @since 3.0.11
+	 * @since 3.1.0
 	 *
 	 * @param  bool $registration_enabled Whether registration is enabled on checkout by default.
 	 * @return bool
@@ -623,5 +556,67 @@ class WC_Subscriptions_Checkout {
 	public static function filter_woocommerce_my_account_my_orders_actions( $actions, $order ) {
 		_deprecated_function( __METHOD__, '2.0', 'WCS_Cart_Renewal::filter_my_account_my_orders_actions()' );
 		return $actions;
+	}
+
+	/**
+	 * If shopping cart contains subscriptions, make sure a user can register on the checkout page
+	 *
+	 * @since 1.0
+	 * @deprecated 3.1.0
+	 */
+	public static function make_checkout_registration_possible( $checkout = '' ) {
+		wcs_deprecated_function( __METHOD__, '3.1.0' );
+		if ( WC_Subscriptions_Cart::cart_contains_subscription() && ! is_user_logged_in() ) {
+
+			// Make sure users are required to register an account
+			if ( true === $checkout->enable_guest_checkout ) {
+				$checkout->enable_guest_checkout     = false;
+				self::$guest_checkout_option_changed = true;
+
+				$checkout->must_create_account = true;
+			}
+		}
+	}
+
+	/**
+	 * Make sure account fields display the required "*" when they are required.
+	 *
+	 * @since 1.3.5
+	 * @deprecated 3.1.0
+	 */
+	public static function make_checkout_account_fields_required( $checkout_fields ) {
+		wcs_deprecated_function( __METHOD__, '3.1.0' );
+		if ( WC_Subscriptions_Cart::cart_contains_subscription() && ! is_user_logged_in() ) {
+
+			$account_fields = array(
+				'account_username',
+				'account_password',
+				'account_password-2',
+			);
+
+			foreach ( $account_fields as $account_field ) {
+				if ( isset( $checkout_fields['account'][ $account_field ] ) ) {
+					$checkout_fields['account'][ $account_field ]['required'] = true;
+				}
+			}
+		}
+
+		return $checkout_fields;
+	}
+
+	/**
+	 * After displaying the checkout form, restore the store's original registration settings.
+	 *
+	 * @since 1.1
+	 * @deprecated 3.1.0
+	 */
+	public static function restore_checkout_registration_settings( $checkout = '' ) {
+		wcs_deprecated_function( __METHOD__, '3.1.0' );
+		if ( self::$guest_checkout_option_changed ) {
+			$checkout->enable_guest_checkout = true;
+			if ( ! is_user_logged_in() ) { // Also changed must_create_account
+				$checkout->must_create_account = false;
+			}
+		}
 	}
 }

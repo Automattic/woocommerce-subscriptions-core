@@ -13,6 +13,13 @@ class WCS_Template_Loader {
 		add_action( 'woocommerce_subscription_totals_table', array( __CLASS__, 'get_subscription_totals_template' ) );
 		add_action( 'woocommerce_subscription_totals_table', array( __CLASS__, 'get_order_downloads_template' ), 20 );
 		add_action( 'woocommerce_subscription_totals', array( __CLASS__, 'get_subscription_totals_table_template' ), 10, 4 );
+		add_action( 'woocommerce_subscriptions_recurring_totals_subtotals', array( __CLASS__, 'get_recurring_cart_subtotals' ) );
+		add_action( 'woocommerce_subscriptions_recurring_totals_coupons', array( __CLASS__, 'get_recurring_cart_coupons' ) );
+		add_action( 'woocommerce_subscriptions_recurring_totals_shipping', array( __CLASS__, 'get_recurring_cart_shipping' ) );
+		add_action( 'woocommerce_subscriptions_recurring_totals_fees', array( __CLASS__, 'get_recurring_cart_fees' ) );
+		add_action( 'woocommerce_subscriptions_recurring_totals_taxes', array( __CLASS__, 'get_recurring_cart_taxes' ) );
+		add_action( 'woocommerce_subscriptions_recurring_subscription_totals', array( __CLASS__, 'get_recurring_subscription_totals' ) );
+
 	}
 
 	/**
@@ -113,5 +120,91 @@ class WCS_Template_Loader {
 	 */
 	public static function get_subscription_receipt_template( $subscription ) {
 		wc_get_template( 'checkout/subscription-receipt.php', array( 'subscription' => $subscription ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+	}
+
+	/**
+	 * Gets the recurring totals subtotal rows content.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param array $recurring_carts The recurring carts.
+	 */
+	public static function get_recurring_cart_subtotals( $recurring_carts ) {
+		$recurring_carts = wcs_apply_array_filter( 'woocommerce_subscriptions_display_recurring_subtotals', $recurring_carts, 'next_payment_date' );
+		wc_get_template( 'checkout/recurring-subtotals.php', array( 'recurring_carts' => $recurring_carts ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+	}
+
+	/**
+	 * Gets the recurring totals coupon rows content.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param array $recurring_carts The recurring carts.
+	 */
+	public static function get_recurring_cart_coupons( $recurring_carts ) {
+		// Filter out all recurring carts without a next payment date.
+		$recurring_carts = wcs_apply_array_filter( 'woocommerce_subscriptions_display_recurring_coupon_totals', $recurring_carts, 'next_payment_date' );
+		wc_get_template( 'checkout/recurring-coupon-totals.php', array( 'recurring_carts' => $recurring_carts ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+	}
+
+	/**
+	 * Gets the recurring totals shipping rows content.
+	 *
+	 * @since 3.1.0
+	 */
+	public static function get_recurring_cart_shipping() {
+		if ( WC()->cart->show_shipping() && WC_Subscriptions_Cart::cart_contains_subscriptions_needing_shipping() ) {
+			wcs_cart_totals_shipping_html();
+		}
+	}
+
+	/**
+	 * Gets the recurring totals fee rows content.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param array $recurring_carts The recurring carts.
+	 */
+	public static function get_recurring_cart_fees( $recurring_carts ) {
+		// Filter out all recurring carts without a next payment date.
+		$recurring_carts = wcs_apply_array_filter( 'woocommerce_subscriptions_display_recurring_fee_totals', $recurring_carts, 'next_payment_date' );
+		wc_get_template( 'checkout/recurring-fee-totals.php', array( 'recurring_carts' => $recurring_carts ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+	}
+
+	/**
+	 * Gets the recurring totals tax rows content.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param array $recurring_carts The recurring carts.
+	 */
+	public static function get_recurring_cart_taxes( $recurring_carts ) {
+		$tax_display_mode = WC_Subscriptions::is_woocommerce_pre( '4.4' ) ? WC()->cart->tax_display_cart : WC()->cart->get_tax_price_display_mode();
+
+		if ( ! wc_tax_enabled() || 'excl' !== $tax_display_mode ) {
+			return;
+		}
+
+		// Filter out all recurring carts without a next payment date.
+		$recurring_carts = wcs_apply_array_filter( 'woocommerce_subscriptions_display_recurring_tax_totals', $recurring_carts, 'next_payment_date' );
+
+		if ( 'itemized' === get_option( 'woocommerce_tax_total_display' ) ) {
+			wc_get_template( 'checkout/recurring-itemized-tax-totals.php', array( 'recurring_carts' => $recurring_carts ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+		} else {
+			wc_get_template( 'checkout/recurring-tax-totals.php', array( 'recurring_carts' => $recurring_carts ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+		}
+	}
+
+	/**
+	 * Gets the recurring subscription total rows content.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param array $recurring_carts The recurring carts.
+	 */
+	public static function get_recurring_subscription_totals( $recurring_carts ) {
+		// Filter out all recurring carts without a next payment date.
+		$recurring_carts = wcs_apply_array_filter( 'woocommerce_subscriptions_display_recurring_subscription_totals', $recurring_carts, 'next_payment_date' );
+		wc_get_template( 'checkout/recurring-subscription-totals.php', array( 'recurring_carts' => $recurring_carts ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
 	}
 }

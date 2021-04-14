@@ -1001,26 +1001,21 @@ class WC_Subscriptions_Cart {
 		if ( self::cart_contains_subscription() ) {
 
 			// We only want shipping for recurring amounts, and they need to be calculated again here
-			self::$calculation_type = 'recurring_total';
-
-			$shipping_methods = array();
-
+			self::$calculation_type       = 'recurring_total';
 			$carts_with_multiple_payments = 0;
 
-			// Create new subscriptions for each subscription product in the cart (that is not a renewal)
-			foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
-
+			foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
 				// Cart contains more than one payment
 				if ( 0 != $recurring_cart->next_payment_date ) {
 					$carts_with_multiple_payments++;
 				}
 			}
 
-			if ( $carts_with_multiple_payments >= 1 ) {
+			if ( apply_filters( 'woocommerce_subscriptions_display_recurring_totals', $carts_with_multiple_payments >= 1 ) ) {
 				wc_get_template(
 					'checkout/recurring-totals.php',
 					array(
-						'shipping_methods'             => $shipping_methods,
+						'shipping_methods'             => array(),
 						'recurring_carts'              => WC()->cart->recurring_carts,
 						'carts_with_multiple_payments' => $carts_with_multiple_payments,
 					),
@@ -1454,7 +1449,8 @@ class WC_Subscriptions_Cart {
 
 			// We only need to keep track if the taxes applicable to the customer are different to the taxes which apply to the store's base location.
 			if ( $applicable_tax_rates !== $base_tax_rates ) {
-				$cart->cart_contents[ $cart_item_key ]['_subtracted_base_location_tax'] = WC_Tax::calc_tax( $product->get_price() * $cart_item['quantity'], $base_tax_rates, true );
+				$cart->cart_contents[ $cart_item_key ]['_subtracted_base_location_taxes'] = WC_Tax::calc_tax( $product->get_price(), $base_tax_rates, true );
+				$cart->cart_contents[ $cart_item_key ]['_subtracted_base_location_rates'] = $base_tax_rates;
 			}
 		}
 	}

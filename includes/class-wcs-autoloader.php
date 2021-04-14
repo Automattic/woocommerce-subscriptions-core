@@ -243,7 +243,7 @@ class WCS_Autoloader {
 		} elseif ( false !== strpos( $class, 'debug_tool' ) ) {
 			$path .= '/admin/debug-tools';
 		} elseif ( false !== strpos( $class, 'rest' ) ) {
-			$path .= $this->legacy_api ? '/api/legacy' : '/api';
+			$path .= $this->legacy_api ? '/api/legacy' : $this->get_rest_api_directory( $class );
 		} elseif ( false !== strpos( $class, 'api' ) && 'wcs_api' !== $class ) {
 			$path .= '/api/legacy';
 		} elseif ( $this->is_class_data_store( $class ) ) {
@@ -280,5 +280,24 @@ class WCS_Autoloader {
 		$this->legacy_api = (bool) $use_legacy_api;
 
 		return $this;
+	}
+
+	/**
+	 * Gets the correct subdirectory for a version of the a REST API class.
+	 *
+	 * @param string $class The rest API class name.
+	 * @return string The subdirectory for a rest API class.
+	 */
+	protected function get_rest_api_directory( $class ) {
+		$directory = '/api';
+
+		// Check for an API version in the class name.
+		preg_match( '/v\d/', $class, $matches );
+
+		if ( ! empty( $matches ) ) {
+			$directory .= "/{$matches[0]}";
+		}
+
+		return $directory;
 	}
 }

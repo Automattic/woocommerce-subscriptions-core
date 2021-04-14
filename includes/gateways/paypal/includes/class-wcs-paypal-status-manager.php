@@ -39,7 +39,7 @@ class WCS_PayPal_Status_Manager extends WCS_PayPal {
 	 */
 	public static function cancel_subscription( $subscription ) {
 		if ( ! wcs_is_paypal_profile_a( wcs_get_paypal_id( $subscription->get_id() ), 'billing_agreement' ) && self::update_subscription_status( $subscription, 'Cancel' ) ) {
-			$subscription->add_order_note( __( 'Subscription cancelled with PayPal', 'woocommerce-subscriptions' ) );
+			$subscription->add_order_note( apply_filters( 'wc_subscriptions_paypal_standard_cancellation_note', __( 'Subscription cancelled with PayPal.', 'woocommerce-subscriptions' ), $subscription ) );
 		}
 	}
 
@@ -50,7 +50,7 @@ class WCS_PayPal_Status_Manager extends WCS_PayPal {
 	 */
 	public static function suspend_subscription( $subscription ) {
 		if ( ! wcs_is_paypal_profile_a( wcs_get_paypal_id( $subscription->get_id() ), 'billing_agreement' ) && self::update_subscription_status( $subscription, 'Suspend' ) ) {
-			$subscription->add_order_note( __( 'Subscription suspended with PayPal', 'woocommerce-subscriptions' ) );
+			$subscription->add_order_note( apply_filters( 'wc_subscriptions_paypal_standard_suspension_note', __( 'Subscription suspended with PayPal.', 'woocommerce-subscriptions' ), $subscription ) );
 		}
 	}
 
@@ -63,7 +63,7 @@ class WCS_PayPal_Status_Manager extends WCS_PayPal {
 	 */
 	public static function reactivate_subscription( $subscription ) {
 		if ( ! wcs_is_paypal_profile_a( wcs_get_paypal_id( $subscription->get_id() ), 'billing_agreement' ) && self::update_subscription_status( $subscription, 'Reactivate' ) ) {
-			$subscription->add_order_note( __( 'Subscription reactivated with PayPal', 'woocommerce-subscriptions' ) );
+			$subscription->add_order_note( apply_filters( 'wc_subscriptions_paypal_standard_activation_note', __( 'Subscription reactivated with PayPal.', 'woocommerce-subscriptions' ), $subscription ) );
 		}
 	}
 
