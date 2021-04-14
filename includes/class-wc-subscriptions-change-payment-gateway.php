@@ -520,25 +520,47 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			$new_payment_method_title = $new_payment_method;
 		}
 
-		$subscription->update_meta_data( '_old_payment_method', $old_payment_method );
-		$subscription->update_meta_data( '_old_payment_method_title', $old_payment_method_title );
-		$subscription->set_payment_method( $new_payment_method, $new_payment_method_meta );
-		$subscription->set_payment_method_title( $new_payment_method_title );
+		// Changing the payment method can throw an exception via set_payment_method() -> set_payment_method_meta(). Catch it and display an error.
+		try {
+			$subscription->set_payment_method( $new_payment_method, $new_payment_method_meta );
+			$subscription->set_payment_method_title( $new_payment_method_title );
+			$subscription->update_meta_data( '_old_payment_method', $old_payment_method );
+			$subscription->update_meta_data( '_old_payment_method_title', $old_payment_method_title );
 
-		// Allow third-parties to filter the payment method titles used in the subscription note.
-		$old_payment_method_title = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $subscription );
-		$new_payment_method_title = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $subscription );
+			// Allow third-parties to filter the payment method titles used in the subscription note.
+			$old_payment_method_title = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $subscription );
+			$new_payment_method_title = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $subscription );
 
-		// Log change on order
-		// translators: 1: old payment title, 2: new payment title.
-		$subscription->add_order_note( sprintf( _x( 'Payment method changed from "%1$s" to "%2$s" by the subscriber from their account page.', '%1$s: old payment title, %2$s: new payment title', 'woocommerce-subscriptions' ), $old_payment_method_title, $new_payment_method_title ) );
+			// Log change on order
+			// translators: 1: old payment title, 2: new payment title.
+			$subscription->add_order_note( sprintf( _x( 'Payment method changed from "%1$s" to "%2$s" by the subscriber from their account page.', '%1$s: old payment title, %2$s: new payment title', 'woocommerce-subscriptions' ), $old_payment_method_title, $new_payment_method_title ) );
 
-		$subscription->save();
+			$subscription->save();
 
-		do_action( 'woocommerce_subscription_payment_method_updated', $subscription, $new_payment_method, $old_payment_method );
-		do_action( 'woocommerce_subscription_payment_method_updated_to_' . $new_payment_method, $subscription, $old_payment_method );
-		if ( $old_payment_method ) {
-			do_action( 'woocommerce_subscription_payment_method_updated_from_' . $old_payment_method, $subscription, $new_payment_method );
+			do_action( 'woocommerce_subscription_payment_method_updated', $subscription, $new_payment_method, $old_payment_method );
+			do_action( 'woocommerce_subscription_payment_method_updated_to_' . $new_payment_method, $subscription, $old_payment_method );
+
+			if ( $old_payment_method ) {
+				do_action( 'woocommerce_subscription_payment_method_updated_from_' . $old_payment_method, $subscription, $new_payment_method );
+			}
+		} catch ( Exception $e ) {
+			$message = __( "An error occurred updating your subscription's payment method. Please contact us for assistance.", 'woocommerce-subscriptions' );
+
+			if ( ! wc_has_notice( $message, 'error' ) ) {
+				wc_add_notice( $message, 'error' );
+			}
+
+			// Add an error notice specific to this error if it hasn't been added yet. This will generate the unique list of errors which occured.
+			$error_message = sprintf(
+				__( '%1$sError:%2$s %3$s', 'woocommerce-subscriptions' ),
+				'<strong>',
+				'</strong>',
+				$e->getMessage()
+			);
+
+			if ( ! wc_has_notice( $error_message, 'error' ) ) {
+				wc_add_notice( $error_message, 'error' );
+			}
 		}
 	}
 
