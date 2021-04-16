@@ -21,6 +21,8 @@ class WC_Subscriptions_Addresses {
 
 		add_filter( 'wcs_view_subscription_actions', __CLASS__ . '::add_edit_address_subscription_action', 10, 2 );
 
+		add_action( 'template_redirect', array( __CLASS__, 'maybe_restrict_edit_address_endpoint' ) );
+
 		add_action( 'woocommerce_after_edit_address_form_billing', __CLASS__ . '::maybe_add_edit_address_checkbox', 10 );
 		add_action( 'woocommerce_after_edit_address_form_shipping', __CLASS__ . '::maybe_add_edit_address_checkbox', 10 );
 
@@ -29,6 +31,21 @@ class WC_Subscriptions_Addresses {
 		add_filter( 'woocommerce_address_to_edit', __CLASS__ . '::maybe_populate_subscription_addresses', 10 );
 
 		add_filter( 'woocommerce_get_breadcrumb', __CLASS__ . '::change_addresses_breadcrumb', 10, 1 );
+	}
+
+	/**
+	 * Checks if a user can edit a subscription's address.
+	 *
+	 * @param int|WC_Subscription $subscription Post ID of a 'shop_subscription' post, or instance of a WC_Subscription object.
+	 * @param int                 $user_id      The ID of a user.
+	 * @return bool Whether the user can edit the subscription's address.
+	 * @since 3.0.15
+	 */
+	private static function can_user_edit_subscription_address( $subscription, $user_id = 0 ) {
+		$subscription = wcs_get_subscription( $subscription );
+		$user_id      = empty( $user_id ) ? get_current_user_id() : absint( $user_id );
+
+		return $subscription ? user_can( $user_id, 'view_order', $subscription->get_id() ) : false;
 	}
 
 	/**
@@ -52,6 +69,23 @@ class WC_Subscriptions_Addresses {
 	}
 
 	/**
+	 * Redirects to "My Account" when attempting to edit the address on a subscription that doesn't belong to the user.
+	 *
+	 * @since 3.0.15
+	 */
+	public static function maybe_restrict_edit_address_endpoint() {
+		if ( ! is_wc_endpoint_url() || 'edit-address' !== WC()->query->get_current_endpoint() || ! isset( $_GET['subscription'] ) ) {
+			return;
+		}
+
+		if ( ! self::can_user_edit_subscription_address( absint( $_GET['subscription'] ) ) ) {
+			wc_add_notice( 'Invalid subscription.', 'error' );
+			wp_redirect( wc_get_account_endpoint_url( 'dashboard' ) );
+			exit();
+		}
+	}
+
+	/**
 	 * Outputs the necessary markup on the "My Account" > "Edit Address" page for editing a single subscription's
 	 * address or to check if the customer wants to update the addresses for all of their subscriptions.
 	 *
@@ -65,12 +99,13 @@ class WC_Subscriptions_Addresses {
 		global $wp;
 
 		if ( wcs_user_has_subscription() ) {
+			$subscription_id = isset( $_GET['subscription'] ) ? absint( $_GET['subscription'] ) : 0;
 
-			if ( isset( $_GET['subscription'] ) ) {
+			if ( $subscription_id && self::can_user_edit_subscription_address( $subscription_id ) ) {
 
 				echo '<p>' . esc_html__( 'Both the shipping address used for the subscription and your default shipping address for future purchases will be updated.', 'woocommerce-subscriptions' ) . '</p>';
 
-				echo '<input type="hidden" name="update_subscription_address" value="' . absint( $_GET['subscription'] ) . '" id="update_subscription_address" />';
+				echo '<input type="hidden" name="update_subscription_address" value="' . $subscription_id . '" id="update_subscription_address" />';
 
 			} elseif ( ( ( isset( $wp->query_vars['edit-address'] ) && ! empty( $wp->query_vars['edit-address'] ) ) || isset( $_GET['address'] ) ) ) {
 
@@ -134,15 +169,15 @@ class WC_Subscriptions_Addresses {
 			}
 		} elseif ( isset( $_POST['update_subscription_address'] ) ) {
 
-			$subscription = wcs_get_subscription( intval( $_POST['update_subscription_address'] ) );
+			$subscription = wcs_get_subscription( absint( $_POST['update_subscription_address'] ) );
 
-			// Update the address only if the user actually owns the subscription
-			if ( ! empty( $subscription ) ) {
+			if ( $subscription && self::can_user_edit_subscription_address( $subscription->get_id() ) ) {
+				// Update the address only if the user actually owns the subscription
 				$subscription->set_address( $address, $address_type );
-			}
 
-			wp_safe_redirect( $subscription->get_view_order_url() );
-			exit();
+				wp_safe_redirect( $subscription->get_view_order_url() );
+				exit();
+			}
 		}
 	}
 
@@ -153,9 +188,10 @@ class WC_Subscriptions_Addresses {
 	 * @since 1.5
 	 */
 	public static function maybe_populate_subscription_addresses( $address ) {
+		$subscription_id = isset( $_GET['subscription'] ) ? absint( $_GET['subscription'] ) : 0;
 
-		if ( isset( $_GET['subscription'] ) ) {
-			$subscription = wcs_get_subscription( absint( $_GET['subscription'] ) );
+		if ( $subscription_id && self::can_user_edit_subscription_address( $subscription_id ) ) {
+			$subscription = wcs_get_subscription( $subscription_id );
 
 			foreach ( array_keys( $address ) as $key ) {
 
