@@ -105,7 +105,7 @@ class WC_Subscriptions_Addresses {
 
 				echo '<p>' . esc_html__( 'Both the shipping address used for the subscription and your default shipping address for future purchases will be updated.', 'woocommerce-subscriptions' ) . '</p>';
 
-				echo '<input type="hidden" name="update_subscription_address" value="' . $subscription_id . '" id="update_subscription_address" />';
+				echo '<input type="hidden" name="update_subscription_address" value="' . esc_attr( $subscription_id ) . '" id="update_subscription_address" />';
 
 			} elseif ( ( ( isset( $wp->query_vars['edit-address'] ) && ! empty( $wp->query_vars['edit-address'] ) ) || isset( $_GET['address'] ) ) ) {
 
