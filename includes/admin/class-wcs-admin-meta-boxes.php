@@ -64,6 +64,8 @@ class WCS_Admin_Meta_Boxes {
 		add_filter( 'woocommerce_prevent_adjust_line_item_product_stock', array( __CLASS__, 'prevent_subscription_line_item_stock_handling' ), 10, 2 );
 
 		add_action( 'woocommerce_before_save_order_items', array( __CLASS__, 'update_subtracted_base_location_tax_meta' ), 10, 2 );
+
+		add_action( 'woocommerce_before_save_order_items', array( __CLASS__, 'update_subtracted_base_location_taxes_amount' ), 10, 2 );
 	}
 
 	/**
@@ -519,6 +521,59 @@ class WCS_Admin_Meta_Boxes {
 					$line_item->save();
 				}
 			}
+		}
+	}
+
+	/**
+	 * Updates the `_subtracted_base_location_taxes` meta when admin users update a line item's price.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param int   $order_id  The edited order or subscription ID.
+	 * @param array $item_data An array of data about all line item changes.
+	 */
+	public static function update_subtracted_base_location_taxes_amount( $order_id, $item_data ) {
+		// We're only interested in item subtotal changes.
+		if ( ! isset( $item_data['line_subtotal'] ) || ! is_array( $item_data['line_subtotal'] ) ) {
+			return;
+		}
+
+		$is_subscription = wcs_is_subscription( $order_id );
+
+		// We only need to update subscription and renewal order `_subtracted_base_location_taxes` meta data.
+		if ( ! $is_subscription && ! wcs_order_contains_renewal( $order_id ) ) {
+			return;
+		}
+
+		$object = $is_subscription ? wcs_get_subscription( $order_id ) : wc_get_order( $order_id );
+
+		if ( ! $object ) {
+			return;
+		}
+
+		foreach( $item_data['line_subtotal'] as $line_item_id => $new_line_subtotal ) {
+			$line_item = WC_Order_Factory::get_order_item( $line_item_id );
+
+			// If this item's subtracted tax data hasn't been repaired, do that now.
+			if ( $line_item->meta_exists( '_subtracted_base_location_tax' ) ) {
+				WC_Subscriptions_Upgrader::repair_subtracted_base_taxes( $line_item->get_id() );
+				$line_item = WC_Order_Factory::get_order_item( $line_item->get_id() );
+			}
+
+			if ( ! $line_item->meta_exists( '_subtracted_base_location_taxes' ) ) {
+				continue;
+			}
+
+			$current_base_location_taxes = $line_item->get_meta( '_subtracted_base_location_taxes' );
+			$old_line_subtotal           = $line_item->get_subtotal();
+
+			// Update all the base taxes for the new product subtotal.
+			foreach ( $current_base_location_taxes as $rate_id => $tax_amount ) {
+				$new_base_taxes[ $rate_id ] = ( $new_line_subtotal / $old_line_subtotal ) * $tax_amount;
+			}
+
+			$line_item->update_meta_data( '_subtracted_base_location_taxes', $new_base_taxes );
+			$line_item->save();
 		}
 	}
 }
