@@ -1448,7 +1448,7 @@ class WCS_Cart_Renewal {
 	 * @return string The place order button text. 'Renew subscription' if the cart contains only renewals, otherwise the default.
 	 */
 	public function order_button_text( $place_order_text ) {
-		if ( isset( WC()->cart ) && count( wcs_get_order_type_cart_items( 'renewal' ) ) === WC()->cart->get_cart_contents_count() ) {
+		if ( isset( WC()->cart ) && count( wcs_get_order_type_cart_items( 'renewal' ) ) === count( WC()->cart->get_cart() ) ) {
 			$place_order_text = _x( 'Renew subscription', 'The place order button text while renewing a subscription', 'woocommerce-subscriptions' );
 		}
 
