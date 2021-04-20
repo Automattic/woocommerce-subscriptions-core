@@ -52,6 +52,7 @@ class WCS_PayPal_Supports {
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', __CLASS__ . '::add_feature_support_for_subscription', 10, 3 );
 
 		add_filter( 'woocommerce_subscriptions_payment_gateway_features_list', array( __CLASS__, 'add_paypal_billing_type_supported_features' ), 10, 2 );
+		add_filter( '__experimental_woocommerce_blocks_payment_gateway_features_list', array( __CLASS__, 'add_paypal_billing_type_supported_features_blocks_store_api' ), 10, 2 );
 	}
 
 	/**
@@ -140,4 +141,16 @@ class WCS_PayPal_Supports {
 
 		return array_unique( $features );
 	}
+
+	/**
+	 * Adds the payment gateway features supported by the type of billing the PayPal account supports (Reference Transactions or Standard).
+	 *
+	 * @param array  $features The list of features the payment gateway supports.
+	 * @param string $gateway_name name of the gateway.
+	 * @return array $features.
+	 */
+	public static function add_paypal_billing_type_supported_features_blocks_store_api( $features, $gateway_name ) {
+		return self::add_paypal_billing_type_supported_features( $features, (object) array( 'id' => $gateway_name ) );
+	}
+
 }

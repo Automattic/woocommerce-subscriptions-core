@@ -101,6 +101,37 @@ class WC_Subscriptions_Payment_Gateways {
 	}
 
 	/**
+	 * Check the content of the cart and add required payment methods.
+	 *
+	 * @param array $features of required features for the cart checkout.
+	 *
+	 * @return array list of features required by cart items.
+	 */
+	public static function inject_payment_feature_requirements_for_cart_api() {
+
+		// No subscriptions in the cart, no need to add anything.
+		if ( ! WC_Subscriptions_Cart::cart_contains_subscription() ) {
+			return array();
+		}
+
+		// Manual renewals are accepted - all payment gateways are suitable.
+		if ( 'no' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals', 'no' ) ) {
+			return array();
+		}
+
+		$subscriptions_in_cart = is_array( WC()->cart->recurring_carts ) ? count( WC()->cart->recurring_carts ) : 0;
+
+		$features = array();
+		if ( $subscriptions_in_cart > 1 && ! in_array( 'multiple_subscriptions', $features, true ) ) {
+			$features[] = 'multiple_subscriptions';
+		} elseif ( ! in_array( 'subscriptions', $features, true ) ) {
+			$features[] = 'subscriptions';
+		}
+
+		return $features;
+	}
+
+	/**
 	 * Helper function to check if at least one payment gateway on the site supports a certain subscription feature.
 	 *
 	 * @since 2.0

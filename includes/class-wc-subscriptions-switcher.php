@@ -47,8 +47,14 @@ class WC_Subscriptions_Switcher {
 		// We need to create subscriptions on checkout and want to do it after almost all other extensions have added their products/items/fees
 		add_action( 'woocommerce_checkout_order_processed', array( __CLASS__, 'process_checkout' ), 50, 2 );
 
+		// We need to create subscriptions on checkout and want to do it after almost all other extensions have added their products/items/fees
+		add_action( '__experimental_woocommerce_blocks_checkout_order_processed', array( __CLASS__, 'process_checkout' ), 50, 1 );
+
 		// When creating an order, add meta if it's for switching a subscription
 		add_action( 'woocommerce_checkout_update_order_meta', array( __CLASS__, 'add_order_meta' ), 10, 2 );
+
+		// From blocks - When creating an order, add meta if it's for switching a subscription
+		add_action( '__experimental_woocommerce_blocks_checkout_update_order_meta', array( __CLASS__, 'add_order_meta' ), 10, 1 );
 
 		// Don't allow switching to the same product
 		add_filter( 'woocommerce_add_to_cart_validation', array( __CLASS__, 'validate_switch_request' ), 10, 4 );
@@ -764,11 +770,11 @@ class WC_Subscriptions_Switcher {
 	 * If the order being generated is for switching a subscription, keep a record of some of the switch
 	 * routines meta against the order.
 	 *
-	 * @param int $order_id The ID of a WC_Order object
-	 * @param array $posted The data posted on checkout
+	 * @param int|\WC_Order $order_id The ID of a WC_Order object
+	 * @param array         $posted The data posted on checkout
 	 * @since 1.4
 	 */
-	public static function add_order_meta( $order_id, $posted ) {
+	public static function add_order_meta( $order_id, $posted = array() ) {
 
 		$order = wc_get_order( $order_id );
 
@@ -894,11 +900,12 @@ class WC_Subscriptions_Switcher {
 	 * If the item is on a new billing schedule and there are other items on the existing subscription, the old item will
 	 * be removed and the new item will be added to a new subscription by @see WC_Subscriptions_Checkout::process_checkout()
 	 *
-	 * @param int $order_id The post_id of a shop_order post/WC_Order object
-	 * @param array $posted_data The data posted on checkout
+	 * @param int|\WC_Order $order_id The post_id of a shop_order post/WC_Order
+	 *  object
+	 * @param array         $posted_data The data posted on checkout
 	 * @since 2.0
 	 */
-	public static function process_checkout( $order_id, $posted_data ) {
+	public static function process_checkout( $order_id, $posted_data = array() ) {
 		global $wpdb;
 
 		if ( ! WC_Subscriptions_Cart::cart_contains_subscription() ) {
@@ -1823,6 +1830,17 @@ class WC_Subscriptions_Switcher {
 		}
 
 		return $product_subtotal;
+	}
+
+	/**
+	 * Gets the switch direction of a cart item.
+	 *
+	 * @param array $cart_item Cart item object.
+	 * @return string|null Cart item subscription switch direction or null.
+	 */
+	public static function get_cart_item_switch_type( $cart_item ) {
+
+		return isset( $cart_item['subscription_switch'], $cart_item['subscription_switch']['upgraded_or_downgraded'] ) ? $cart_item['subscription_switch']['upgraded_or_downgraded'] : null;
 	}
 
 	/**

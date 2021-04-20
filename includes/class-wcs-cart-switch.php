@@ -104,7 +104,7 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal {
 
 							// Backwards compatibility (2.1 -> 2.1.2)
 							$subscription_item_id_key = ( isset( $switch_data['switches'][ $item_id ]['subscription_item_id'] ) ) ? 'subscription_item_id' : 'remove_line_item';
-							$_GET['item'] = $switch_data['switches'][ $item_id ][ $subscription_item_id_key ];
+							$_GET['item']             = $switch_data['switches'][ $item_id ][ $subscription_item_id_key ];
 							break;
 						}
 					}
@@ -124,7 +124,7 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal {
 						$meta_value = is_array( $meta_value ) ? $meta_value[0] : $meta_value; // In WC 3.0 the meta values are no longer arrays
 
 						if ( taxonomy_is_product_attribute( $meta_key ) || meta_is_product_attribute( $meta_key, $meta_value, $product_id ) ) {
-							$variations[ $meta_key ] = $meta_value;
+							$variations[ $meta_key ]           = $meta_value;
 							$_POST[ 'attribute_' . $meta_key ] = $meta_value;
 						}
 					}
@@ -137,9 +137,7 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal {
 				}
 			}
 
-			WC()->session->set( 'order_awaiting_payment', $order_id );
-			$this->set_cart_hash( $order_id );
-
+			$this->set_order_awaiting_payment( $order_id );
 			wp_safe_redirect( wc_get_checkout_url() );
 			exit;
 		}
