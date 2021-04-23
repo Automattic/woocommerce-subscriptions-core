@@ -92,7 +92,7 @@ class WCS_Repair_Subtracted_Base_Tax_Line_Item_Meta extends WCS_Background_Repai
 				$rate = WC_Tax::_get_tax_rate( $rate_id );
 
 				if ( empty( $rate ) ) {
-					$this->log( sprintf( 'WARNING: The line item %d (#%s) could not be repaired because a tax rate applicable at the time of purchase no longer exists.', $line_item_id, $item->get_order_id() ) );
+					$this->log( sprintf( 'WARNING: The line item %d (#%s) could not be repaired because the tax rate (#%d) applicable at the time of purchase no longer exists.', $line_item_id, $item->get_order_id(), $rate_id ) );
 					return;
 				}
 
