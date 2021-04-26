@@ -29,17 +29,17 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	 *
 	 * @var string
 	 */
-	const _cache_meta_key = '_wcs_subscription_ids_cache';
+	const _CACHE_META_KEY = '_wcs_subscription_ids_cache';
 
 	/**
 	 * Allow to be multi-site
 	 * @param $name
 	 * @return mixed
 	 */
-	public function __get($name) {
+	public function __get( $name ) {
 
-		if ( 'cache_meta_key' === $name) {
-			return self::_cache_meta_key . '_' . get_current_blog_id();
+		if ( 'cache_meta_key' === $name ) {
+			return self::_CACHE_META_KEY . '_' . get_current_blog_id();
 		}
 		return $this->$name;
 	}
