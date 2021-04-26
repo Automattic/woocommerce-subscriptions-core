@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Adds a persistent caching layer on top of WCS_Customer_Store_CPT for more
  * performant queries to find a user's subscriptions.
+ * Cache is based on the current blog in case of a multisite environment.
  *
  * @version  2.3.0
  * @category Class
@@ -28,7 +29,20 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	 *
 	 * @var string
 	 */
-	private $cache_meta_key = '_wcs_subscription_ids_cache';
+	const _cache_meta_key = '_wcs_subscription_ids_cache';
+
+	/**
+	 * Allow to be multi-site
+	 * @param $name
+	 * @return mixed
+	 */
+	public function __get($name) {
+
+		if ( 'cache_meta_key' === $name) {
+			return self::_cache_meta_key . '_' . get_current_blog_id();
+		}
+		return $this->$name;
+	}
 
 	/**
 	 * Constructor
