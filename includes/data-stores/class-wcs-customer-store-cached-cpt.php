@@ -36,12 +36,8 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	 * @param $name
 	 * @return mixed
 	 */
-	public function __get( $name ) {
-
-		if ( 'cache_meta_key' === $name ) {
-			return self::_CACHE_META_KEY . '_' . get_current_blog_id();
-		}
-		return $this->$name;
+	public function get_cache_meta_key() {
+		return self::_CACHE_META_KEY . '_' . get_current_blog_id();
 	}
 
 	/**
@@ -121,7 +117,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	protected function get_users_subscription_ids_from_cache( $user_id ) {
 
 		// Empty user IDs, like 0 or '', are never cached
-		$subscription_ids = empty( $user_id ) ? array() : get_user_meta( $user_id, $this->cache_meta_key, true );
+		$subscription_ids = empty( $user_id ) ? array() : get_user_meta( $user_id, $this->get_cache_meta_key(), true );
 
 		return apply_filters( 'wcs_get_cached_users_subscription_ids', $subscription_ids, $user_id );
 	}
@@ -173,7 +169,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 		}
 
 		rsort( $subscription_ids ); // the results from the database query are ordered by date/ID in DESC, so make sure the user cached values are ordered the same.
-		return update_user_meta( $user_id, $this->cache_meta_key, $subscription_ids );
+		return update_user_meta( $user_id, $this->get_cache_meta_key(), $subscription_ids );
 	}
 
 	/* Public methods used to bulk edit cache */
@@ -182,7 +178,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	 * Clear all caches for all subscriptions against all users.
 	 */
 	public function delete_caches_for_all_users() {
-		delete_metadata( 'user', null, $this->cache_meta_key, null, true );
+		delete_metadata( 'user', null, $this->get_cache_meta_key(), null, true );
 	}
 
 	/**
@@ -195,7 +191,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 			return;
 		}
 
-		delete_user_meta( $user_id, $this->cache_meta_key );
+		delete_user_meta( $user_id, $this->get_cache_meta_key() );
 	}
 
 	/* Public methods used as callbacks on hooks for managing cache */
@@ -275,7 +271,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 		return get_users( array(
 			'fields'       => 'ids',
 			'number'       => $number,
-			'meta_key'     => $this->cache_meta_key,
+			'meta_key'     => $this->get_cache_meta_key(),
 			'meta_compare' => 'NOT EXISTS',
 		) );
 	}
@@ -306,4 +302,5 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	 */
 	public function delete_all_caches() {
 		$this->delete_caches_for_all_users();
-	}}
+	}
+}
