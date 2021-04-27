@@ -37,7 +37,11 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	 * @return mixed
 	 */
 	public function get_cache_meta_key() {
-		return self::_CACHE_META_KEY . '_' . get_current_blog_id();
+		if ( is_multisite() ) {
+			return self::_CACHE_META_KEY . '_' . get_current_blog_id();
+		}
+		return self::_CACHE_META_KEY;
+
 	}
 
 	/**
