@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Adds a persistent caching layer on top of WCS_Customer_Store_CPT for more
  * performant queries to find a user's subscriptions.
+ *
  * Cache is based on the current blog in case of a multisite environment.
  *
  * @version  2.3.0
@@ -30,19 +31,6 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	 * @var string
 	 */
 	const _CACHE_META_KEY = '_wcs_subscription_ids_cache';
-
-	/**
-	 * Allow to be multi-site
-	 * @param $name
-	 * @return mixed
-	 */
-	public function get_cache_meta_key() {
-		if ( is_multisite() ) {
-			return self::_CACHE_META_KEY . '_' . get_current_blog_id();
-		}
-		return self::_CACHE_META_KEY;
-
-	}
 
 	/**
 	 * Constructor
@@ -306,5 +294,21 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	 */
 	public function delete_all_caches() {
 		$this->delete_caches_for_all_users();
+	}
+
+	/**
+	 * Gets the cache meta key.
+	 *
+	 * On multi-site installations, the current site ID is appended.
+	 *
+	 * @since 3.1.0
+	 * @return string
+	 */
+	public function get_cache_meta_key() {
+		if ( is_multisite() ) {
+			return self::_CACHE_META_KEY . '_' . get_current_blog_id();
+		}
+
+		return self::_CACHE_META_KEY;
 	}
 }
