@@ -175,7 +175,7 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal {
 	public function order_button_text( $place_order_text ) {
 		$cart_switches = WC_Subscriptions_Switcher::cart_contains_switches();
 
-		if ( isset( WC()->cart ) && $cart_switches && count( $cart_switches ) === WC()->cart->get_cart_contents_count() ) {
+		if ( isset( WC()->cart ) && $cart_switches && count( $cart_switches ) === count( WC()->cart->get_cart() ) ) {
 			$place_order_text = _x( 'Switch subscription', 'The place order button text while switching a subscription', 'woocommerce-subscriptions' );
 		}
 
