@@ -25,6 +25,8 @@ class WCS_My_Account_Payment_Methods {
 		add_action( 'woocommerce_payment_token_set_default', array( __CLASS__, 'display_default_payment_token_change_notice' ), 10, 2 );
 		add_action( 'wp', array( __CLASS__, 'update_subscription_tokens' ) );
 
+		add_action( 'woocommerce_before_account_payment_methods', array( __CLASS__, 'print_deleting_notices' ) );
+		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_frontend_scripts' ) );
 	}
 
 	/**
@@ -48,8 +50,36 @@ class WCS_My_Account_Payment_Methods {
 
 					$payment_token_data['actions']['delete']['url'] = add_query_arg( $delete_subscription_token_args, $payment_token_data['actions']['delete']['url'] );
 				} else {
-					// Cannot delete a token used for active subscriptions where there is no alternative
-					unset( $payment_token_data['actions']['delete'] );
+					/**
+					 * Allow third-party gateways to override whether the token delete button should be removed.
+					 *
+					 * Some gateways, like Bambora, don't allow customers to add a new card with the same card number but different expiry or cvv.
+					 * This means customers updating their expiring card need to delete the exisitng card first before adding the new one. This
+					 * isn't possible however because we prevent deleting tokens linked to active subscriptions.
+					 *
+					 * Gateways can use this filter to make their own checks to allow deletion.
+					 *
+					 * @since 3.1.0
+					 *
+					 * @param bool Whether the delete button should be shown for tokens linked to a subscription. true - show, false - not shown (default).
+					 * @param WC_Payment_Token The payment token in question.
+					 */
+					if ( isset( $payment_token_data['actions']['delete'] ) && ! apply_filters( 'wc_subscriptions_allow_subscription_token_deletion', false, $payment_token ) ) {
+						// Cannot delete a token used for active subscriptions where there is no alternative.
+						// Override the delete URL. We'll display a notice explaining why you cant delete that method instead.
+						$payment_token_data['actions']['wcs_deletion_error'] = $payment_token_data['actions']['delete'];
+						unset( $payment_token_data['actions']['delete'] );
+
+						// Determine which notice we need to display. The 'choose a default' or 'add a payment method'.
+						// If they have more than 1 alternative method, they need to select a default, otherwise they need to add one.
+						if ( count( WCS_Payment_Tokens::get_customer_tokens( $payment_token->get_user_id(), $payment_token->get_gateway_id() ) ) > 2 ) {
+							$notice_to_display = 'choose_default';
+						} else {
+							$notice_to_display = 'add_method';
+						}
+
+						$payment_token_data['actions']['wcs_deletion_error']['url'] = "#{$notice_to_display}";
+					}
 				}
 			}
 		}
@@ -203,6 +233,53 @@ class WCS_My_Account_Payment_Methods {
 
 		wp_redirect( remove_query_arg( array( 'update-subscription-tokens', 'token-id', '_wcsnonce' ) ) );
 		exit();
+	}
+
+	/**
+	 * Enqueues the frontend scripts for the My account > Payment methods page.
+	 *
+	 * @since 3.1.0
+	 */
+	public static function enqueue_frontend_scripts() {
+		if ( 'payment-methods' !== WC()->query->get_current_endpoint() ) {
+			return;
+		}
+
+		$script_params  = array(
+			'add_method_error' => __(
+				sprintf(
+					'That payment method cannot be deleted because it is linked to an automatic subscription. Please %1$sadd a payment method%2$s, before trying again.',
+					'<strong>',
+					'</strong>'
+				)
+			),
+			'choose_default_error' => __(
+				sprintf(
+					'That payment method cannot be deleted because it is linked to an automatic subscription. Please choose a %1$sdefault%2$s payment method%3$s, before trying again.',
+					'<strong><em>',
+					'</em>',
+					'</strong>'
+				)
+			),
+		);
+
+		wp_enqueue_script( 'wc-subscriptions-payment-methods', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/frontend/payment-methods.js', array( 'jquery' ), WC_Subscriptions::$version, true );
+		wp_localize_script( 'wc-subscriptions-payment-methods', 'wcs_payment_methods', $script_params );
+	}
+
+	/**
+	 * Prints an error notice stub, to be used when a customer attempts to delete a payment token used by a subscription.
+	 *
+	 * @see self::enqueue_frontend_scripts()                  For the error message content.
+	 * @see self::flag_subscription_payment_token_deletions() For the determination of when a token cannot be deleted.
+	 *
+	 * @since 3.1.0
+	 */
+	public static function print_deleting_notices() {
+		// The notice is hidden on load, and only shown when a token delete request is made.
+		echo '<div id="wcs_delete_token_warning" style="display: none;">';
+		wc_print_notice( '', 'error' );
+		echo '</div>';
 	}
 
 	/**
