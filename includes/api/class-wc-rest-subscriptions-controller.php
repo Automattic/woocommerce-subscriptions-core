@@ -123,6 +123,10 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 			$response->data['removed_line_items'][] = $this->get_order_item_data( $item );
 		}
 
+		// Remove non-subscription properties
+		unset( $response->data['cart_hash'] );
+		unset( $response->data['transaction_id'] );
+
 		return $response;
 	}
 
