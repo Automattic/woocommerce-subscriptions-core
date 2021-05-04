@@ -84,9 +84,13 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @return array
 	 */
 	public function get_related_order_ids( WC_Order $subscription, $relation_type ) {
-
 		$subscription_id   = wcs_get_objects_property( $subscription, 'id' ); // We can't rely on $subscription->get_id() being available because we only require a WC_Order, not a WC_Subscription, and WC_Order does not have get_id() available with WC < 3.0
 		$related_order_ids = $this->get_related_order_ids_from_cache( $subscription_id, $relation_type );
+
+		// get_post_meta returns false if the post ID is invalid. This can arise when the subscription hasn't been created yet. In any case, the related IDs should be an empty array to avoid a boolean return from this function.
+		if ( false === $related_order_ids ) {
+			$related_order_ids = array();
+		}
 
 		// get post meta returns an empty string when no matching row is found for the given key, meaning it's not set yet
 		if ( '' === $related_order_ids ) {

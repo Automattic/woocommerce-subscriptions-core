@@ -123,6 +123,10 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 			$response->data['removed_line_items'][] = $this->get_order_item_data( $item );
 		}
 
+		// Remove non-subscription properties
+		unset( $response->data['cart_hash'] );
+		unset( $response->data['transaction_id'] );
+
 		return $response;
 	}
 
@@ -311,7 +315,11 @@ class WC_REST_Subscriptions_Controller extends WC_REST_Orders_Controller {
 				$dates['start_date'] = gmdate( 'Y-m-d H:i:s' );
 			}
 
-			$subscription->update_dates( $dates );
+			try {
+				$subscription->update_dates( $dates );
+			} catch ( Exception $e ) {
+				throw new WC_REST_Exception( 'woocommerce_rest_invalid_payment_data', sprintf( __( 'Subscription dates could not be set. Error message: %s', 'woocommerce-subscriptions' ), $e->getMessage() ), 400 );
+			}
 		}
 
 		if ( ! empty( $status ) ) {
