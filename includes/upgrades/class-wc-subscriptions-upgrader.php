@@ -255,9 +255,15 @@ class WC_Subscriptions_Upgrader {
 			$deleted_rows = $wpdb->query( "DELETE FROM {$wpdb->postmeta} WHERE `meta_key` = '_switch_totals_calc_base_length'" );
 		}
 
-		// Upon upgrading to 3.1.0 from a version after 3.0.10, repair subscriptions _subtracted_base_location_tax line item meta.
-		if ( version_compare( self::$active_version, '3.1.0', '<' ) && version_compare( self::$active_version, '3.0.10', '>=' ) ) {
-			self::$background_updaters['3.1']['subtracted_base_tax_repair']->schedule_repair();
+		if ( version_compare( self::$active_version, '3.1.0', '<' ) ) {
+			// Upon upgrading to 3.1.0 from a version after 3.0.10, repair subscriptions _subtracted_base_location_tax line item meta.
+			if ( version_compare( self::$active_version, '3.0.10', '>=' ) ) {
+				self::$background_updaters['3.1']['subtracted_base_tax_repair']->schedule_repair();
+			}
+
+			// When updating to 3.1.0, set each existing subscription webhook to use API version 1 to maintain backwards compatibility in the payload delivered
+			$updated_rows = $wpdb->query( "UPDATE {$wpdb->prefix}wc_webhooks SET `api_version` = 1 WHERE `topic` LIKE 'subscription._%' AND `api_version` = 3" );
+			WCS_Upgrade_Logger::add( sprintf( '3.1.0 Migrated %d webhooks to use v1 of the REST API when building the payload to preserve backwards compatibility.', $updated_rows ) );
 		}
 
 		self::upgrade_complete();
