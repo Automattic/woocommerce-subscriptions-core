@@ -261,9 +261,7 @@ class WC_Subscriptions_Upgrader {
 				self::$background_updaters['3.1']['subtracted_base_tax_repair']->schedule_repair();
 			}
 
-			// When updating to 3.1.0, set each existing subscription webhook to use API version 1 to maintain backwards compatibility in the payload delivered
-			$updated_rows = $wpdb->query( "UPDATE {$wpdb->prefix}wc_webhooks SET `api_version` = 1 WHERE `topic` LIKE 'subscription._%' AND `api_version` = 3" );
-			WCS_Upgrade_Logger::add( sprintf( '3.1.0 Migrated %d webhooks to use v1 of the REST API when building the payload to preserve backwards compatibility.', $updated_rows ) );
+			WCS_Upgrade_3_1_0::migrate_subscription_webhooks_using_api_version_3();
 		}
 
 		self::upgrade_complete();
