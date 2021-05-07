@@ -19,7 +19,7 @@ class WCS_Upgrade_Notice_Manager {
 	 *
 	 * @var string
 	 */
-	protected static $version = '3.0.0';
+	protected static $version = '3.1.0';
 
 	/**
 	 * The number of times the notice will be displayed before being dismissed automatically.
@@ -77,25 +77,31 @@ class WCS_Upgrade_Notice_Manager {
 			return;
 		}
 
-		$version     = _x( '3.0', 'plugin version number used in admin notice', 'woocommerce-subscriptions' );
+		$version     = _x( '3.1', 'plugin version number used in admin notice', 'woocommerce-subscriptions' );
 		$dismiss_url = wp_nonce_url( add_query_arg( 'dismiss_upgrade_notice', self::$version ), 'dismiss_upgrade_notice', '_wcsnonce' );
 		$notice      = new WCS_Admin_Notice( 'notice notice-info', array(), $dismiss_url );
 		$features    = array(
 			array(
-				'title'       => __( 'Improved scheduled action data storage', 'woocommerce-subscriptions' ),
-				'description' => __( 'Scheduled action data, which was previously stored in the WordPress post tables, has been moved to a custom database table. Amongst other benefits, this will greatly improve the performance of processing scheduled actions such as subscription payments.', 'woocommerce-subscriptions' ),
+				'title'       => __( 'v3 REST API endpoint support', 'woocommerce-subscriptions' ),
+				'description' => sprintf(
+					// translators: 1-3: opening/closing <a> tags - link to documentation.
+					__( 'Webhook and REST API users can now use v3 subscription endpoints. Click here to %1$slearn more%2$s about the REST API and check out the technical API docs %3$shere%2$s.', 'woocommerce-subscriptions' ),
+					'<a href="https://docs.woocommerce.com/document/woocommerce-rest-api/">',
+					'</a>',
+					'<a href="https://woocommerce.github.io/subscriptions-rest-api-docs/">'
+				),
 			),
 			array(
-				'title'       => __( 'Increased processing rate for scheduled payments', 'woocommerce-subscriptions' ),
+				'title'       => __( 'WooCommerce checkout and cart blocks integration', 'woocommerce-subscriptions' ),
 				'description' => sprintf(
 					// translators: 1-2: opening/closing <a> tags - link to documentation.
-					__( 'Previous versions of Subscriptions relied on %1$sWP Cron%2$s to process subscription payments and other scheduled events. In 3.0, these events will now run on admin request with loopback support. This will significantly increase the throughput of payment processing.', 'woocommerce-subscriptions' ),
-					'<a href="https://docs.woocommerce.com/document/subscriptions/develop/complete-guide-to-scheduled-events-with-subscriptions/#section-2">', '</a>'
+					__( 'Subscriptions is now compatible with the WooCommerce cart and checkout blocks. You can learn more about the compatibility status of the cart & checkout blocks %1$shere%2$s.', 'woocommerce-subscriptions' ),
+					'<a href="https://docs.woocommerce.com/document/cart-checkout-blocks-support-status/">', '</a>'
 				),
 			),
 		);
 
-		// translators: placeholder is Subscription version string ('2.3')
+		// translators: placeholder is Subscription version string ('3.1')
 		$notice->set_heading( sprintf( __( 'Welcome to WooCommerce Subscriptions %s!', 'woocommerce-subscriptions' ), $version ) );
 		$notice->set_content_template( 'update-welcome-notice.php', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'includes/upgrades/templates/', array(
 			'version'  => $version,
@@ -104,7 +110,7 @@ class WCS_Upgrade_Notice_Manager {
 		$notice->set_actions( array(
 			array(
 				'name' => __( 'Learn more', 'woocommerce-subscriptions' ),
-				'url'  => 'https://docs.woocommerce.com/document/subscriptions/whats-new-in-subscriptions-3-0/',
+				'url'  => 'https://docs.woocommerce.com/document/subscriptions/whats-new-in-subscriptions-3-1/',
 			),
 		) );
 
