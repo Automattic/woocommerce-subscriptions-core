@@ -1144,13 +1144,14 @@ class WC_Subscriptions_Cart {
 		$calculation_type        = self::$calculation_type;
 		$recurring_cart_key_flag = self::$recurring_cart_key;
 
+		self::set_calculation_type( 'recurring_total' );
+
 		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
+			self::set_recurring_cart_key( $recurring_cart_key );
+
 			if ( false === $recurring_cart->needs_shipping() || 0 == $recurring_cart->next_payment_date ) {
 				continue;
 			}
-
-			self::set_calculation_type( 'recurring_total' );
-			self::set_recurring_cart_key( $recurring_cart_key );
 
 			foreach ( $recurring_cart->get_shipping_packages() as $recurring_cart_package_key => $recurring_cart_package ) {
 				$package_index = isset( $recurring_cart_package['package_index'] ) ? $recurring_cart_package['package_index'] : 0;
