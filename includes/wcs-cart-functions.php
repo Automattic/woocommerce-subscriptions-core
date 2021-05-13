@@ -84,7 +84,7 @@ function wcs_cart_totals_shipping_html() {
 				}
 
 				$shipping_selection_displayed       = false;
-				$only_one_shipping_option           = 1 === count( $package['rates'] );
+				$only_one_shipping_option           = count( $package['rates'] ) === 1;
 				$recurring_rates_match_intial_rates = isset( $package['rates'][ $chosen_initial_method ] ) && isset( $initial_packages[ $package_index ] ) && $package['rates'] == $initial_packages[ $package_index ]['rates'];
 
 				if ( $only_one_shipping_option || ( $recurring_rates_match_intial_rates && apply_filters( 'wcs_cart_totals_shipping_html_price_only', true, $package, $recurring_cart ) ) ) {
