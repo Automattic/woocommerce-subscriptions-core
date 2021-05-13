@@ -551,7 +551,7 @@ class WCS_Admin_Meta_Boxes {
 			return;
 		}
 
-		foreach( $item_data['line_subtotal'] as $line_item_id => $new_line_subtotal ) {
+		foreach ( $item_data['line_subtotal'] as $line_item_id => $new_line_subtotal ) {
 			$line_item = WC_Order_Factory::get_order_item( $line_item_id );
 
 			// If this item's subtracted tax data hasn't been repaired, do that now.
