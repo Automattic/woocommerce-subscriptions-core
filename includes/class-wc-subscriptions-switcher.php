@@ -1178,7 +1178,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function maybe_update_subscription_address( $order, $subscription ) {
 		$subscription->set_address( array_diff_assoc( $order->get_address( 'billing' ), $subscription->get_address( 'billing' ) ), 'billing' );
-		$subscription->set_address( array_diff_assoc( $order->get_address(), $subscription->get_address() ), 'shipping' );
+		$subscription->set_address( array_diff_assoc( $order->get_address( 'shipping' ), $subscription->get_address( 'shipping' ) ), 'shipping' );
 	}
 
 	/**
