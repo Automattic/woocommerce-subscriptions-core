@@ -2472,4 +2472,74 @@ class WC_Subscriptions_Cart {
 
 		return $other_data;
 	}
+
+	/**
+	 * Parse recurring shipping rates from the front end and put them into the $_POST['shipping_method'] used by WooCommerce.
+	 *
+	 * When WooCommerce takes the value of inputs for shipping methods selection from the cart and checkout pages, it uses a
+	 * JavaScript array and therefore, can only use numerical indexes. This works for WC core, because it only needs shipping
+	 * selection for different packages. However, we want to use string indexes to differentiate between different recurring
+	 * cart shipping selection inputs *and* packages. To do this, we need to get our shipping methods from the $_POST['post_data']
+	 * values and manually add them $_POST['shipping_method'] array.
+	 *
+	 * We can't do this on the cart page unfortunately because it doesn't pass the entire forms post data and instead only
+	 * sends the shipping methods with a numerical index.
+	 *
+	 * @deprecated 3.1.0
+	 * @return null
+	 * @since 2.0.12
+	 */
+	public static function add_shipping_method_post_data() {
+		wcs_deprecated_function( __METHOD__, '3.1.0' );
+		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
+			return;
+		}
+
+		check_ajax_referer( 'update-order-review', 'security' );
+
+		parse_str( $_POST['post_data'], $form_data );
+
+		// In case we have only free trials/sync'd products in the cart and shipping methods aren't being displayed
+		if ( ! isset( $_POST['shipping_method'] ) ) {
+			$_POST['shipping_method'] = array();
+		}
+		if ( ! isset( $form_data['shipping_method'] ) ) {
+			$form_data['shipping_method'] = array();
+		}
+
+		foreach ( $form_data['shipping_method'] as $key => $methods ) {
+			if ( ! is_numeric( $key ) && ! array_key_exists( $key, $_POST['shipping_method'] ) ) {
+				$_POST['shipping_method'][ $key ] = $methods;
+			}
+		}
+	}
+
+	/**
+	 * When WooCommerce calculates rates for a recurring shipping package, we need to make sure there is a
+	 * different number of rates to make sure WooCommerce updates the chosen method for the recurring cart
+	 * and the 'woocommerce_shipping_chosen_method' filter is called, which we use to make sure the chosen
+	 * method is the recurring method, not the initial method.
+	 *
+	 * This function is hooked to 'woocommerce_shipping_packages' called by WC_Shipping->calculate_shipping()
+	 * which is why it accepts and returns the $packages array. It is also attached with a very high priority
+	 * to avoid conflicts with any 3rd party plugins that may use the method count session value (only a couple
+	 * of other hooks, including 'woocommerce_shipping_chosen_method' and 'woocommerce_shipping_method_chosen'
+	 * are triggered between when this callback runs on 'woocommerce_shipping_packages' and when the session
+	 * value is set again by WC_Shipping->calculate_shipping()).
+	 *
+	 * For more details, see: https://github.com/Prospress/woocommerce-subscriptions/pull/1187#issuecomment-186091152
+	 *
+	 * @deprecated 3.1.0
+	 *
+	 * @param array $packages An array of shipping package of the form returned by WC_Cart->get_shipping_packages() which includes the package's contents, cost, customer, destination and alternative rates
+	 * @since 2.0.19
+	 */
+	public static function reset_shipping_method_counts( $packages ) {
+		wcs_deprecated_function( __METHOD__, '3.1.0' );
+		if ( 'none' !== self::$recurring_cart_key ) {
+			WC()->session->set( 'shipping_method_counts', array() );
+		}
+
+		return $packages;
+	}
 }
