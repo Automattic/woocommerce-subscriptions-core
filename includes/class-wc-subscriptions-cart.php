@@ -93,6 +93,9 @@ class WC_Subscriptions_Cart {
 		add_action( 'woocommerce_remove_cart_item', array( __CLASS__, 'maybe_reset_chosen_shipping_methods' ) );
 		wcs_add_woocommerce_dependent_action( 'woocommerce_before_cart_item_quantity_zero', array( __CLASS__, 'maybe_reset_chosen_shipping_methods' ), '3.7.0', '<' );
 
+		// Make sure we use our recurring shipping method for recurring shipping calculations not the default method
+		add_filter( 'woocommerce_shipping_chosen_method', array( __CLASS__, 'set_chosen_shipping_method' ), 10, 2 );
+
 		// Cache package rates. Hook in early to ensure we get a full set of rates.
 		add_filter( 'woocommerce_package_rates', __CLASS__ . '::cache_package_rates', 1, 2 );
 
@@ -1454,6 +1457,37 @@ class WC_Subscriptions_Cart {
 				$cart->cart_contents[ $cart_item_key ]['_subtracted_base_location_rates'] = $base_tax_rates;
 			}
 		}
+	}
+
+	/**
+	 * Set the chosen shipping method for recurring cart calculations
+	 *
+	 * In WC_Shipping::calculate_shipping(), WooCommerce tries to determine the chosen shipping method
+	 * based on the package index and stores rates. However, for recurring cart shipping selection, we
+	 * use the recurring cart key instead of numeric index. Therefore, we need to hook in to override
+	 * the default shipping method when WooCommerce could not find a matching shipping method.
+	 *
+	 * @since 2.0.12
+	 *
+	 * @param string $default_method the default shipping method for the customer/store returned by WC_Shipping::get_default_method()
+	 * @param array  $available_methods set of shipping rates for this calculation
+	 * @param int    $package_index WC doesn't pass the package index to callbacks on the 'woocommerce_shipping_chosen_method' filter (yet) so we set a default value of 0 for it in the function params
+	 *
+	 * @return $default_method
+	 */
+	public static function set_chosen_shipping_method( $default_method, $available_methods, $package_index = 0 ) {
+		$chosen_methods             = WC()->session->get( 'chosen_shipping_methods', array() );
+		$recurring_cart_package_key = self::get_recurring_shipping_package_key( self::$recurring_cart_key, $package_index );
+
+		if ( 'none' !== self::$recurring_cart_key && isset( $chosen_methods[ $recurring_cart_package_key ], $available_methods[ $chosen_methods[ $recurring_cart_package_key ] ] ) ) {
+			$default_method = $chosen_methods[ $recurring_cart_package_key ];
+
+		// Set the chosen shipping method (if available) to workaround WC_Shipping::get_default_method() setting the default shipping method whenever method count changes
+		} elseif ( isset( $chosen_methods[ $package_index ], $available_methods[ $chosen_methods[ $package_index ] ] ) && $default_method !== $chosen_methods[ $package_index ] ) {
+			$default_method = $chosen_methods[ $package_index ];
+		}
+
+		return $default_method;
 	}
 
 	/* Deprecated */
