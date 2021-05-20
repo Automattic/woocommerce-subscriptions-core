@@ -286,15 +286,9 @@ class WCS_Switch_Totals_Calculator {
 	 * @param WCS_Switch_Cart_Item $switch_item
 	 */
 	protected function apportion_sign_up_fees( $switch_item ) {
-
 		$should_apportion_sign_up_fee = apply_filters( 'wcs_switch_should_prorate_sign_up_fee', 'yes' === $this->apportion_sign_up_fee, $switch_item );
 
-		if ( ! $should_apportion_sign_up_fee ) {
-			// Allowing third parties to force the application of a sign-up fee
-			$subscription_sign_up_fee = apply_filters( 'wcs_switch_sign_up_fee', 0, $switch_item );
-
-			$switch_item->product->update_meta_data( '_subscription_sign_up_fee',  $subscription_sign_up_fee );
-		} elseif ( $switch_item->existing_item ) {
+		if ( $should_apportion_sign_up_fee && $switch_item->existing_item ) {
 			$product = wc_get_product( $switch_item->canonical_product_id );
 
 			// Make sure we get a fresh copy of the product's meta to avoid prorating an already prorated sign-up fee
@@ -314,6 +308,11 @@ class WCS_Switch_Totals_Calculator {
 
 			$switch_item->product->update_meta_data( '_subscription_sign_up_fee',  $subscription_sign_up_fee );
 			$switch_item->product->update_meta_data( '_subscription_sign_up_fee_prorated', WC_Subscriptions_Product::get_sign_up_fee( $switch_item->product ) );
+		} elseif ( 'no' === $this->apportion_sign_up_fee ) {
+			// Allowing third parties to force the application of a sign-up fee
+			$subscription_sign_up_fee = apply_filters( 'wcs_switch_sign_up_fee', 0, $switch_item );
+
+			$switch_item->product->update_meta_data( '_subscription_sign_up_fee',  $subscription_sign_up_fee );
 		}
 	}
 
