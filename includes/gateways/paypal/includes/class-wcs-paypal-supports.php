@@ -139,7 +139,7 @@ class WCS_PayPal_Supports {
 			$features = array_merge( self::$reference_transaction_supported_features, $features );
 		}
 
-		return array_unique( $features );
+		return array_values( array_unique( $features ) );
 	}
 
 	/**
