@@ -594,6 +594,8 @@ class WCS_Admin_Meta_Boxes {
 			$new_line_subtotal           = wc_format_decimal( $new_line_subtotal );
 			$current_base_location_taxes = $line_item->get_meta( '_subtracted_base_location_taxes' );
 			$old_line_subtotal           = $line_item->get_subtotal();
+			$old_line_quantity           = $line_item->get_quantity();
+			$new_line_quantity           = $item_data['order_item_qty'][ $line_item_id ];
 
 			if ( $line_item->meta_exists( '_subtracted_base_location_rates' ) ) {
 				$base_tax_rates = $line_item->get_meta( '_subtracted_base_location_rates' );
@@ -603,7 +605,7 @@ class WCS_Admin_Meta_Boxes {
 			} else {
 				// Update all the base taxes for the new product subtotal.
 				foreach ( $current_base_location_taxes as $rate_id => $tax_amount ) {
-					$new_base_taxes[ $rate_id ] = ( $new_line_subtotal / $old_line_subtotal ) * $tax_amount;
+					$new_base_taxes[ $rate_id ] = ( ( $new_line_subtotal / $new_line_quantity ) / ( $old_line_subtotal / $old_line_quantity ) ) * $tax_amount;
 				}
 			}
 
