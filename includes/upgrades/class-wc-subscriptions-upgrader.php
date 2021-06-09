@@ -174,7 +174,7 @@ class WC_Subscriptions_Upgrader {
 
 		// Keep track of site url to prevent duplicate payments from staging sites, first added in 1.3.8 & updated with 1.4.2 to work with WP Engine staging sites
 		if ( '0' == self::$active_version || version_compare( self::$active_version, '1.4.2', '<' ) ) {
-			WC_Subscriptions::set_duplicate_site_url_lock();
+			WCS_Staging::set_duplicate_site_url_lock();
 		}
 
 		// Migrate products, WP-Cron hooks and subscriptions to the latest architecture, via Ajax

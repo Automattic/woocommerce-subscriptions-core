@@ -106,8 +106,8 @@ class WCS_Admin_System_Status {
 		$debug_data['wcs_staging'] = array(
 			'name'    => _x( 'Subscriptions Mode', 'Live or Staging, Label on WooCommerce -> System Status page', 'woocommerce-subscriptions' ),
 			'label'   => 'Subscriptions Mode',
-			'note'    => '<strong>' . ( ( WC_Subscriptions::is_duplicate_site() ) ? _x( 'Staging', 'refers to staging site', 'woocommerce-subscriptions' ) : _x( 'Live', 'refers to live site', 'woocommerce-subscriptions' ) ) . '</strong>',
-			'success' => ( WC_Subscriptions::is_duplicate_site() ) ? 0 : 1,
+			'note'    => '<strong>' . ( ( WCS_Staging::is_duplicate_site() ) ? _x( 'Staging', 'refers to staging site', 'woocommerce-subscriptions' ) : _x( 'Live', 'refers to live site', 'woocommerce-subscriptions' ) ) . '</strong>',
+			'success' => ( WCS_Staging::is_duplicate_site() ) ? 0 : 1,
 		);
 	}
 

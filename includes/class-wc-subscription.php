@@ -620,7 +620,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function is_manual() {
 
-		if ( WC_Subscriptions::is_duplicate_site() || true === $this->get_requires_manual_renewal() || false === wc_get_payment_gateway_by_order( $this ) ) {
+		if ( WCS_Staging::is_duplicate_site() || true === $this->get_requires_manual_renewal() || false === wc_get_payment_gateway_by_order( $this ) ) {
 			$is_manual = true;
 		} else {
 			$is_manual = false;

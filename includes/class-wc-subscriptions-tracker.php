@@ -44,7 +44,7 @@ class WC_Subscriptions_Tracker {
 	private static function get_subscriptions_options() {
 		return array(
 			// Staging and live site
-			'wc_subscriptions_staging'             => WC_Subscriptions::is_duplicate_site() ? 'staging' : 'live',
+			'wc_subscriptions_staging'             => WCS_Staging::is_duplicate_site() ? 'staging' : 'live',
 			'wc_subscriptions_live_url'            => esc_url( WC_Subscriptions::get_site_url_from_source( 'subscriptions_install' ) ),
 
 			// Button text, roles
