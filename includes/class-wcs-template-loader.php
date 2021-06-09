@@ -207,4 +207,30 @@ class WCS_Template_Loader {
 		$recurring_carts = wcs_apply_array_filter( 'woocommerce_subscriptions_display_recurring_subscription_totals', $recurring_carts, 'next_payment_date' );
 		wc_get_template( 'checkout/recurring-subscription-totals.php', array( 'recurring_carts' => $recurring_carts ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
 	}
+
+	/**
+	 * Loads the my-subscriptions.php template on the My Account page.
+	 *
+	 * @since 4.0.0
+	 * @param int $current_page The My Account Subscriptions page.
+	 */
+	public static function get_my_subscriptions( $current_page = 1 ) {
+		$all_subscriptions = wcs_get_users_subscriptions();
+		$current_page      = empty( $current_page ) ? 1 : absint( $current_page );
+		$posts_per_page    = get_option( 'posts_per_page' );
+		$max_num_pages     = ceil( count( $all_subscriptions ) / $posts_per_page );
+		$subscriptions     = array_slice( $all_subscriptions, ( $current_page - 1 ) * $posts_per_page, $posts_per_page );
+
+		wc_get_template(
+			'myaccount/my-subscriptions.php',
+			array(
+				'subscriptions' => $subscriptions,
+				'current_page'  => $current_page,
+				'max_num_pages' => $max_num_pages,
+				'paginate'      => true,
+			),
+			'',
+			plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/'
+		);
+	}
 }

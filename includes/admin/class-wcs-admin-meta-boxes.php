@@ -66,6 +66,8 @@ class WCS_Admin_Meta_Boxes {
 		add_action( 'woocommerce_before_save_order_items', array( __CLASS__, 'update_subtracted_base_location_tax_meta' ), 10, 2 );
 
 		add_action( 'woocommerce_before_save_order_items', array( __CLASS__, 'update_subtracted_base_location_taxes_amount' ), 10, 2 );
+
+		add_action( 'wp_ajax_wcs_get_customer_orders', array( __CLASS__, 'get_customer_orders' ) );
 	}
 
 	/**
@@ -575,5 +577,37 @@ class WCS_Admin_Meta_Boxes {
 			$line_item->update_meta_data( '_subtracted_base_location_taxes', $new_base_taxes );
 			$line_item->save();
 		}
+	}
+
+	/**
+	 * Gets a list of customer orders via ajax.
+	 *
+	 * Populates the parent order list on the edit subscription screen with orders belonging to the customer.
+	 *
+	 * @since 4.0.0
+	 */
+	public static function get_customer_orders() {
+		check_ajax_referer( 'get-customer-orders', 'security' );
+
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			wp_die( -1 );
+		}
+
+		$customer_orders = array();
+		$user_id         = absint( $_POST['user_id'] );
+		$orders          = wc_get_orders(
+			array(
+				'customer'       => $user_id,
+				'post_type'      => 'shop_order',
+				'posts_per_page' => '-1',
+			)
+		);
+
+
+		foreach ( $orders as $order ) {
+			$customer_orders[ $order->get_id() ] = $order->get_order_number();
+		}
+
+		wp_send_json( $customer_orders );
 	}
 }
