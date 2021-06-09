@@ -1490,6 +1490,47 @@ class WC_Subscriptions_Cart {
 		return $default_method;
 	}
 
+	/**
+	 * Redirects the customer to the cart after they add a subscription to the cart.
+	 *
+	 * Only enabled if multiple checkout is not enabled.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param string $url The cart redirect $url.
+	 * @return string $url.
+	 */
+	public static function add_to_cart_redirect( $url ) {
+		if ( ! isset( $_REQUEST['add-to-cart'] ) || ! is_numeric( $_REQUEST['add-to-cart'] ) ) {
+			return $url;
+		}
+
+		// If product is of the subscription type
+		if ( ! WC_Subscriptions_Product::is_subscription( absint( $_REQUEST['add-to-cart'] ) ) ) {
+			return $url;
+		}
+
+		// Redirect to checkout if mixed checkout is disabled
+		if ( 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . '_multiple_purchase', 'no' ) ) {
+			return $url;
+		}
+
+		$quantity   = isset( $_REQUEST['quantity'] ) ? $_REQUEST['quantity'] : 1;
+		$product_id = $_REQUEST['add-to-cart'];
+
+		$add_to_cart_notice = wc_add_to_cart_message( array( $product_id => $quantity ), true, true );
+
+		if ( wc_has_notice( $add_to_cart_notice ) ) {
+			$notices                  = wc_get_notices();
+			$add_to_cart_notice_index = array_search( $add_to_cart_notice, $notices['success'] );
+
+			unset( $notices['success'][ $add_to_cart_notice_index ] );
+			wc_set_notices( $notices );
+		}
+
+		return wc_get_checkout_url();
+	}
+
 	/* Deprecated */
 
 	/**
