@@ -881,3 +881,28 @@ function wcs_format_datetime( $date, $format = '' ) {
 
 	return $formatted_datetime;
 }
+
+/**
+ * Compares two periods and returns the longest period.
+ *
+ * @since 4.0.0
+ *
+ * @param string $current_period Period string. Can be 'day', 'week', 'month', 'year'.
+ * @param string $new_period     Period string. Can be 'day', 'week', 'month', 'year'.
+ *
+ * @return string The longest period between the two provided.
+ */
+function wcs_get_longest_period( $current_period, $new_period ) {
+
+	if ( empty( $current_period ) || 'year' == $new_period ) {
+		$longest_period = $new_period;
+	} elseif ( 'month' === $new_period && in_array( $current_period, array( 'week', 'day' ) ) ) {
+		$longest_period = $new_period;
+	} elseif ( 'week' === $new_period && 'day' === $current_period ) {
+		$longest_period = $new_period;
+	} else {
+		$longest_period = $current_period;
+	}
+
+	return $longest_period;
+}

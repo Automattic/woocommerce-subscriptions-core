@@ -185,7 +185,7 @@ function wcs_calculate_min_max_variations( $variations_data ) {
 
 		// Determine some recurring price flags
 		$is_lowest_price     = $variation_data['price'] < $lowest_price || '' === $lowest_price;
-		$is_longest_period   = WC_Subscriptions::get_longest_period( $variable_subscription_period, $variation_data['subscription']['period'] ) === $variation_data['subscription']['period'];
+		$is_longest_period   = wcs_get_longest_period( $variable_subscription_period, $variation_data['subscription']['period'] ) === $variation_data['subscription']['period'];
 		$is_longest_interval = $variation_data['subscription']['interval'] >= $variable_subscription_period_interval || '' === $variable_subscription_period_interval;
 
 		// Find the amount the subscriber will have to pay up-front
@@ -236,7 +236,7 @@ function wcs_calculate_min_max_variations( $variations_data ) {
 				$is_min = $variation_data['subscription']['trial_length'] > $variable_subscription_trial_length;
 
 			// Otherwise just a longer trial period (that isn't equal to the longest period)
-			} elseif ( WC_Subscriptions::get_longest_period( $longest_trial_period, $variation_data['subscription']['trial_period'] ) === $variation_data['subscription']['trial_period'] ) {
+			} elseif ( wcs_get_longest_period( $longest_trial_period, $variation_data['subscription']['trial_period'] ) === $variation_data['subscription']['trial_period'] ) {
 
 				$is_min = true;
 
@@ -273,7 +273,7 @@ function wcs_calculate_min_max_variations( $variations_data ) {
 			}
 		} else {
 
-			$longest_initial_period  = WC_Subscriptions::get_longest_period( $longest_initial_period, $initial_period );
+			$longest_initial_period  = wcs_get_longest_period( $longest_initial_period, $initial_period );
 			$shortest_initial_period = WC_Subscriptions::get_shortest_period( $shortest_initial_period, $initial_period );
 
 			$is_lowest_initial_amount    = $initial_amount < $lowest_initial_amount || '' === $lowest_initial_amount;
