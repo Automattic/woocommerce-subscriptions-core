@@ -43,7 +43,7 @@ class WCS_Admin_Meta_Boxes {
 		add_action( 'woocommerce_order_action_wcs_create_pending_renewal', array( __CLASS__, 'create_pending_renewal_action_request' ), 10, 1 );
 		add_action( 'woocommerce_order_action_wcs_create_pending_parent', array( __CLASS__, 'create_pending_parent_action_request' ), 10, 1 );
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.2' ) ) {
 			add_filter( 'woocommerce_resend_order_emails_available', array( __CLASS__, 'remove_order_email_actions' ), 0, 1 );
 		}
 
@@ -153,7 +153,7 @@ class WCS_Admin_Meta_Boxes {
 		}
 
 		// Enqueue the metabox script for coupons.
-		if ( ! WC_Subscriptions::is_woocommerce_pre( '3.2' ) && in_array( $screen_id, array( 'shop_coupon', 'edit-shop_coupon' ) ) ) {
+		if ( ! wcs_is_woocommerce_pre( '3.2' ) && in_array( $screen_id, array( 'shop_coupon', 'edit-shop_coupon' ) ) ) {
 			wp_enqueue_script(
 				'wcs-admin-coupon-meta-boxes',
 				plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/meta-boxes-coupon.js',
@@ -174,7 +174,7 @@ class WCS_Admin_Meta_Boxes {
 		global $theorder;
 
 		if ( wcs_is_subscription( $theorder ) ) {
-			if ( ! WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
+			if ( ! wcs_is_woocommerce_pre( '3.2' ) ) {
 				unset( $actions['send_order_details'], $actions['send_order_details_admin'] );
 			}
 

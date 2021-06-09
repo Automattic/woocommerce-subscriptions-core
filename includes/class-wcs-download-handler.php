@@ -244,7 +244,7 @@ class WCS_Download_Handler {
 			foreach ( $subscriptions as $subscription_id ) {
 
 				// Grant permissions to subscriptions which have no permissions for this product, pre WC3.0, or all subscriptions, post WC3.0, as WC doesn't grant them retrospectively anymore.
-				if ( ! in_array( $subscription_id, array_keys( $permissions_by_order_id ) ) || false === WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+				if ( ! in_array( $subscription_id, array_keys( $permissions_by_order_id ) ) || false === wcs_is_woocommerce_pre( '3.0' ) ) {
 					$subscription = wcs_get_subscription( $subscription_id );
 
 					foreach ( $new_download_ids as $download_id ) {

@@ -1091,7 +1091,7 @@ class WCS_Admin_Post_Types {
 		global $typenow;
 
 		// Prior to WC 3.3 this was handled by WC core so exit early if an earlier version of WC is active.
-		if ( 'shop_subscription' !== $typenow || WC_Subscriptions::is_woocommerce_pre( '3.3' ) ) {
+		if ( 'shop_subscription' !== $typenow || wcs_is_woocommerce_pre( '3.3' ) ) {
 			return;
 		}
 

@@ -222,7 +222,7 @@ function wcs_cart_totals_shipping_method_price_label( $method, $cart ) {
 	$price_label = '';
 
 	if ( 0 < $method->cost ) {
-		$display_prices_include_tax = WC_Subscriptions::is_woocommerce_pre( '3.3' ) ? ( 'incl' === WC()->cart->tax_display_cart ) : WC()->cart->display_prices_including_tax();
+		$display_prices_include_tax = wcs_is_woocommerce_pre( '3.3' ) ? ( 'incl' === WC()->cart->tax_display_cart ) : WC()->cart->display_prices_including_tax();
 
 		if ( ! $display_prices_include_tax ) {
 			$price_label .= wcs_cart_price_string( $method->cost, $cart );
@@ -312,7 +312,7 @@ function wcs_cart_totals_coupon_html( $coupon, $cart ) {
 function wcs_cart_totals_order_total_html( $cart ) {
 	$order_total_html           = '<strong>' . $cart->get_total() . '</strong> ';
 	$tax_total_html             = '';
-	$display_prices_include_tax = WC_Subscriptions::is_woocommerce_pre( '3.3' ) ? ( 'incl' === $cart->tax_display_cart ) : $cart->display_prices_including_tax();
+	$display_prices_include_tax = wcs_is_woocommerce_pre( '3.3' ) ? ( 'incl' === $cart->tax_display_cart ) : $cart->display_prices_including_tax();
 
 	// If prices are tax inclusive, show taxes here
 	if ( wc_tax_enabled() && $display_prices_include_tax ) {

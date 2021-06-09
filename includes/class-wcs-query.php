@@ -24,7 +24,7 @@ class WCS_Query extends WC_Query {
 			add_filter( 'woocommerce_account_menu_items', array( $this, 'add_menu_items' ) );
 
 			// Since WC 3.3.0, add_wcs_query_vars() is enough for custom endpoints to work.
-			if ( WC_Subscriptions::is_woocommerce_pre( '3.3.0' ) ) {
+			if ( wcs_is_woocommerce_pre( '3.3.0' ) ) {
 				add_filter( 'woocommerce_get_endpoint_url', array( $this, 'get_endpoint_url' ), 10, 4 );
 			}
 
@@ -38,7 +38,7 @@ class WCS_Query extends WC_Query {
 
 		$this->init_query_vars();
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.4' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.4' ) ) {
 			add_filter( 'woocommerce_account_settings', array( $this, 'add_endpoint_account_settings' ) );
 		} else {
 			add_filter( 'woocommerce_get_settings_advanced', array( $this, 'add_endpoint_account_settings' ) );
@@ -54,7 +54,7 @@ class WCS_Query extends WC_Query {
 		$this->query_vars = array(
 			'view-subscription' => $this->get_view_subscription_endpoint(),
 		);
-		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
+		if ( ! wcs_is_woocommerce_pre( '2.6' ) ) {
 			$this->query_vars['subscriptions']               = get_option( 'woocommerce_myaccount_subscriptions_endpoint', 'subscriptions' );
 			$this->query_vars['subscription-payment-method'] = get_option( 'woocommerce_myaccount_subscription_payment_method_endpoint', 'subscription-payment-method' );
 		}

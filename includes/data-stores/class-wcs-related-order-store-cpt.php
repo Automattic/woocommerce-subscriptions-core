@@ -91,7 +91,7 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 */
 	public function get_related_subscription_ids( WC_Order $order, $relation_type ) {
 		$related_order_meta_key = $this->get_meta_key( $relation_type );
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 			$related_subscription_ids = get_post_meta( wcs_get_objects_property( $order, 'id' ), $related_order_meta_key, false );
 		} else {
 			$related_subscription_ids = $order->get_meta( $related_order_meta_key, false );
@@ -169,7 +169,7 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 		$subscription_id        = wcs_get_objects_property( $subscription, 'id' );
 		$related_order_meta_key = $this->get_meta_key( $relation_type );
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 			$order_id             = wcs_get_objects_property( $order, 'id' );
 			$existing_related_ids = get_post_meta( $order_id, $related_order_meta_key, false );
 
@@ -202,7 +202,7 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 */
 	public function delete_relation( WC_Order $order, WC_Order $subscription, $relation_type ) {
 		$related_order_meta_key = $this->get_meta_key( $relation_type );
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 			delete_post_meta( wcs_get_objects_property( $order, 'id' ), $related_order_meta_key, wcs_get_objects_property( $subscription, 'id' ) );
 		} else {
 			foreach ( $order->get_meta_data() as $meta ) {
@@ -222,7 +222,7 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 */
 	public function delete_relations( WC_Order $order, $relation_type ) {
 		$related_order_meta_key = $this->get_meta_key( $relation_type );
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 			delete_post_meta( wcs_get_objects_property( $order, 'id' ), $related_order_meta_key, null );
 		} else {
 			$order->delete_meta_data( $related_order_meta_key );

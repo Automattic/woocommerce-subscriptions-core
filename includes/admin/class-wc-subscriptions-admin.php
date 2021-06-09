@@ -693,7 +693,7 @@ class WC_Subscriptions_Admin {
 		$_POST['variable_regular_price'] = isset( $_POST['variable_subscription_price'] ) ? $_POST['variable_subscription_price'] : 0;
 
 		// Sync the min variation price
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 			$variable_subscription = wc_get_product( $post_id );
 			$variable_subscription->variable_product_sync();
 		} else {
@@ -858,7 +858,7 @@ class WC_Subscriptions_Admin {
 				$dependencies[] = $woocommerce_admin_script_handle;
 				$dependencies[] = 'wc-admin-order-meta-boxes';
 
-				if ( WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
+				if ( wcs_is_woocommerce_pre( '2.6' ) ) {
 					$dependencies[] = 'wc-admin-order-meta-boxes-modal';
 				}
 
@@ -882,7 +882,7 @@ class WC_Subscriptions_Admin {
 
 			$script_params['ajaxLoaderImage'] = WC()->plugin_url() . '/assets/images/ajax-loader.gif';
 			$script_params['ajaxUrl']         = admin_url( 'admin-ajax.php' );
-			$script_params['isWCPre24']       = var_export( WC_Subscriptions::is_woocommerce_pre( '2.4' ), true );
+			$script_params['isWCPre24']       = var_export( wcs_is_woocommerce_pre( '2.4' ), true );
 
 			wp_enqueue_script( 'woocommerce_subscriptions_admin', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/admin.js', $dependencies, filemtime( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/admin.js' ) );
 			wp_localize_script( 'woocommerce_subscriptions_admin', 'WCSubscriptions', apply_filters( 'woocommerce_subscriptions_admin_script_parameters', $script_params ) );
@@ -937,7 +937,7 @@ class WC_Subscriptions_Admin {
 			wp_enqueue_style( 'woocommerce_subscriptions_admin', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/css/admin.css', array( 'woocommerce_admin_styles' ), WC_Subscriptions::$version );
 		}
 
-		if ( in_array( $screen->id, array( 'shop_order', 'edit-shop_subscription', 'shop_subscription' ) ) && WC_Subscriptions::is_woocommerce_pre( '3.3' ) ) {
+		if ( in_array( $screen->id, array( 'shop_order', 'edit-shop_subscription', 'shop_subscription' ) ) && wcs_is_woocommerce_pre( '3.3' ) ) {
 			wp_enqueue_style( 'wc_subscriptions_statuses_admin', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/css/admin-order-statuses.css', array( 'woocommerce_admin_styles' ), WC_Subscriptions::$version );
 		}
 	}
@@ -2030,7 +2030,7 @@ class WC_Subscriptions_Admin {
 	 * @param array $settings The list of settings
 	 */
 	public static function add_guest_checkout_setting_note( $settings ) {
-		$is_wc_pre_3_4_0 = WC_Subscriptions::is_woocommerce_pre( '3.4.0' );
+		$is_wc_pre_3_4_0 = wcs_is_woocommerce_pre( '3.4.0' );
 		$current_filter  = current_filter();
 
 		if ( ( $is_wc_pre_3_4_0 && 'woocommerce_payment_gateways_settings' !== $current_filter ) || ( ! $is_wc_pre_3_4_0 && 'woocommerce_account_settings' !== $current_filter ) ) {

@@ -31,7 +31,7 @@ class WCS_Product_Legacy {
 	 */
 	public static function set_product_class( $classname, $product_type, $post_type, $product_id ) {
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) && in_array( $classname, array( 'WC_Product_Subscription', 'WC_Product_Variable_Subscription', 'WC_Product_Subscription_Variation' ) ) ) {
+		if ( wcs_is_woocommerce_pre( '3.0' ) && in_array( $classname, array( 'WC_Product_Subscription', 'WC_Product_Variable_Subscription', 'WC_Product_Subscription_Variation' ) ) ) {
 			$classname .= '_Legacy';
 		}
 

@@ -135,7 +135,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function __isset( $key ) {
 
-		if ( ! WC_Subscriptions::is_woocommerce_pre( '3.0' ) && in_array( $key, $this->deprecated_properties ) ) {
+		if ( ! wcs_is_woocommerce_pre( '3.0' ) && in_array( $key, $this->deprecated_properties ) ) {
 
 			$is_set = true;
 
@@ -188,7 +188,7 @@ class WC_Subscription extends WC_Order {
 					break;
 			}
 
-			if ( ! WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+			if ( ! wcs_is_woocommerce_pre( '3.0' ) ) {
 				wcs_doing_it_wrong( $key, sprintf( 'Subscription properties should not be set directly as WooCommerce 3.0 no longer supports direct property access. Use %s instead.', $function ), '2.2.0' );
 			}
 		} else {
@@ -235,7 +235,7 @@ class WC_Subscription extends WC_Order {
 					break;
 			}
 
-			if ( ! WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+			if ( ! wcs_is_woocommerce_pre( '3.0' ) ) {
 				wcs_doing_it_wrong( $key, sprintf( 'Subscription properties should not be accessed directly as WooCommerce 3.0 no longer supports direct property access. Use %s instead.', $function ), '2.2.0' );
 			}
 		} else {
@@ -2310,7 +2310,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_item_downloads( $item ) {
 
-		if ( ! WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		if ( ! wcs_is_woocommerce_pre( '3.0' ) ) {
 			wcs_deprecated_function( __METHOD__, '2.2.0', 'WC_Order_Item_Product::get_item_downloads(), because WooCommerce 3.0+ now uses that' );
 		}
 

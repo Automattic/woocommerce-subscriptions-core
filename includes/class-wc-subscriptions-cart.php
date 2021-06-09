@@ -120,6 +120,9 @@ class WC_Subscriptions_Cart {
 
 		// Add Subscriptions data to cart items.
 		add_filter( 'woocommerce_get_item_data', __CLASS__ . '::woocommerce_get_item_data', 10, 2 );
+
+		// Redirect the user immediately to the checkout page after clicking "Sign Up Now" buttons to encourage immediate checkout
+		add_filter( 'woocommerce_add_to_cart_redirect', array( __CLASS__, 'add_to_cart_redirect' ) );
 	}
 
 	/**
@@ -129,7 +132,7 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function attach_dependant_hooks() {
 		// WooCommerce determines if free shipping is available using the WC->cart total and coupons, we need to recalculate its availability when obtaining shipping methods for a recurring cart
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.2' ) ) {
 			add_filter( 'woocommerce_shipping_free_shipping_is_available', array( __CLASS__, 'maybe_recalculate_shipping_method_availability' ), 10, 2 );
 		} else {
 			add_filter( 'woocommerce_shipping_free_shipping_is_available', array( __CLASS__, 'recalculate_shipping_method_availability' ), 10, 3 );
@@ -360,7 +363,7 @@ class WC_Subscriptions_Cart {
 		if ( apply_filters( 'wcs_remove_fees_from_initial_cart', $remove_fees_from_cart, $cart, $recurring_carts ) ) {
 			$cart_fees = WC()->cart->get_fees();
 
-			if ( WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
+			if ( wcs_is_woocommerce_pre( '3.2' ) ) {
 				foreach ( $cart_fees as $fee_index => $fee ) {
 					WC()->cart->fees[ $fee_index ]->amount = 0;
 					WC()->cart->fees[ $fee_index ]->tax    = 0;
@@ -712,7 +715,7 @@ class WC_Subscriptions_Cart {
 				array(
 					'price'           => $product_subtotal,
 					'sign_up_fee'     => $sign_up_fee_string,
-					'tax_calculation' => WC_Subscriptions::is_woocommerce_pre( '4.4' ) ? WC()->cart->tax_display_cart : WC()->cart->get_tax_price_display_mode(),
+					'tax_calculation' => wcs_is_woocommerce_pre( '4.4' ) ? WC()->cart->tax_display_cart : WC()->cart->get_tax_price_display_mode(),
 				)
 			);
 
@@ -981,7 +984,7 @@ class WC_Subscriptions_Cart {
 	public static function cart_product_price( $price, $product ) {
 
 		if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
-			$tax_price_display_mode = WC_Subscriptions::is_woocommerce_pre( '4.4' ) ? WC()->cart->tax_display_cart : WC()->cart->get_tax_price_display_mode();
+			$tax_price_display_mode = wcs_is_woocommerce_pre( '4.4' ) ? WC()->cart->tax_display_cart : WC()->cart->get_tax_price_display_mode();
 			$price                  = WC_Subscriptions_Product::get_price_string(
 				$product,
 				array(
@@ -1297,7 +1300,7 @@ class WC_Subscriptions_Cart {
 			return $is_available;
 		}
 
-		if ( ! WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
+		if ( ! wcs_is_woocommerce_pre( '3.2' ) ) {
 			wcs_doing_it_wrong( __METHOD__, 'This method should no longer be used on WC 3.2.0 and newer. Use WC_Subscriptions_Cart::recalculate_shipping_method_availability() and pass the specific shipping method as the third parameter instead.', '2.5.6' );
 		}
 
@@ -2532,7 +2535,7 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function add_shipping_method_post_data() {
 		wcs_deprecated_function( __METHOD__, '3.1.0' );
-		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
+		if ( ! wcs_is_woocommerce_pre( '2.6' ) ) {
 			return;
 		}
 

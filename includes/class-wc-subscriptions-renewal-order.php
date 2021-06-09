@@ -85,7 +85,7 @@ class WC_Subscriptions_Renewal_Order {
 
 		if ( $order_completed && $order_needed_payment ) {
 
-			if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+			if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 				$update_post_data  = array(
 					'ID'            => $order_id,
 					'post_date'     => current_time( 'mysql', 0 ),

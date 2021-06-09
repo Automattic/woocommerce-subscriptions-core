@@ -467,7 +467,7 @@ class WCS_Report_Subscription_Events_By_Date extends WC_Admin_Report {
 			set_transient( strtolower( get_class( $this ) ), $cached_results, WEEK_IN_SECONDS );
 
 			// Remove this class from the list of classes WC updates on shutdown. Introduced in WC 3.7
-			if ( ! WC_Subscriptions::is_woocommerce_pre( '3.7' ) ) {
+			if ( ! wcs_is_woocommerce_pre( '3.7' ) ) {
 				unset( WC_Admin_Report::$transients_to_update[ strtolower( get_class( $this ) ) ] );
 			}
 		}

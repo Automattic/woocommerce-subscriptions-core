@@ -441,7 +441,7 @@ class WC_Subscriptions_Product {
 	 */
 	public static function get_regular_price( $product, $context = 'view' ) {
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 			$regular_price = $product->regular_price;
 		} else {
 			$regular_price = $product->get_regular_price( $context );
@@ -459,7 +459,7 @@ class WC_Subscriptions_Product {
 	 */
 	public static function get_sale_price( $product, $context = 'view' ) {
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 			$sale_price = $product->sale_price;
 		} else {
 			$sale_price = $product->get_sale_price( $context );
@@ -1156,7 +1156,7 @@ class WC_Subscriptions_Product {
 		global $wpdb;
 		$parent_product_ids = array();
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) && isset( $product->post->post_parent ) ) {
+		if ( wcs_is_woocommerce_pre( '3.0' ) && isset( $product->post->post_parent ) ) {
 			$parent_product_ids[] = $product->get_parent();
 		} else {
 			$parent_product_ids = $wpdb->get_col( $wpdb->prepare(
