@@ -906,3 +906,28 @@ function wcs_get_longest_period( $current_period, $new_period ) {
 
 	return $longest_period;
 }
+
+/**
+ * Compares two periods and returns the shortest period.
+ *
+ * @since 4.0.0
+ *
+ * @param string $current_period A period string. Can be 'day', 'week', 'month', 'year'.
+ * @param string $new_period     A period string. Can be 'day', 'week', 'month', 'year'.
+ *
+ * @return string The shortest period between the two provided.
+ */
+function wcs_get_shortest_period( $current_period, $new_period ) {
+
+	if ( empty( $current_period ) || 'day' == $new_period ) {
+		$shortest_period = $new_period;
+	} elseif ( 'week' === $new_period && in_array( $current_period, array( 'month', 'year' ) ) ) {
+		$shortest_period = $new_period;
+	} elseif ( 'month' === $new_period && 'year' === $current_period ) {
+		$shortest_period = $new_period;
+	} else {
+		$shortest_period = $current_period;
+	}
+
+	return $shortest_period;
+}

@@ -260,7 +260,7 @@ function wcs_calculate_min_max_variations( $variations_data ) {
 					$is_max = $variation_data['subscription']['trial_length'] < $shortest_trial_length;
 
 				// Need to find shortest period
-				} elseif ( WC_Subscriptions::get_shortest_period( $shortest_trial_period, $variation_data['subscription']['trial_period'] ) === $variation_data['subscription']['trial_period'] ) {
+				} elseif ( wcs_get_shortest_period( $shortest_trial_period, $variation_data['subscription']['trial_period'] ) === $variation_data['subscription']['trial_period'] ) {
 
 					$is_max = true;
 
@@ -274,7 +274,7 @@ function wcs_calculate_min_max_variations( $variations_data ) {
 		} else {
 
 			$longest_initial_period  = wcs_get_longest_period( $longest_initial_period, $initial_period );
-			$shortest_initial_period = WC_Subscriptions::get_shortest_period( $shortest_initial_period, $initial_period );
+			$shortest_initial_period = wcs_get_shortest_period( $shortest_initial_period, $initial_period );
 
 			$is_lowest_initial_amount    = $initial_amount < $lowest_initial_amount || '' === $lowest_initial_amount;
 			$is_longest_initial_period   = $initial_period === $longest_initial_period;
