@@ -778,7 +778,7 @@ class WC_Subscriptions_Synchroniser {
 			// Month
 			foreach ( range( 1, 27 ) as $i ) {
 				// translators: placeholder is a number of day with language specific suffix applied (e.g. "1st", "3rd", "5th", etc...)
-				self::$billing_period_ranges['month'][ $i ] = sprintf( __( '%s day of the month', 'woocommerce-subscriptions' ), WC_Subscriptions::append_numeral_suffix( $i ) );
+				self::$billing_period_ranges['month'][ $i ] = sprintf( __( '%s day of the month', 'woocommerce-subscriptions' ), wcs_append_numeral_suffix( $i ) );
 			}
 			self::$billing_period_ranges['month'][28] = __( 'Last day of the month', 'woocommerce-subscriptions' );
 

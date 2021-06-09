@@ -160,7 +160,7 @@ function wcs_get_subscription_period_interval_strings( $interval = '' ) {
 
 	foreach ( range( 2, 6 ) as $i ) {
 		// translators: period interval, placeholder is ordinal (eg "$10 every _2nd/3rd/4th_", etc)
-		$intervals[ $i ] = sprintf( _x( 'every %s', 'period interval with ordinal number (e.g. "every 2nd"', 'woocommerce-subscriptions' ), WC_Subscriptions::append_numeral_suffix( $i ) );
+		$intervals[ $i ] = sprintf( _x( 'every %s', 'period interval with ordinal number (e.g. "every 2nd"', 'woocommerce-subscriptions' ), wcs_append_numeral_suffix( $i ) );
 	}
 
 	$intervals = apply_filters( 'woocommerce_subscription_period_interval_strings', $intervals );

@@ -2390,7 +2390,7 @@ class WC_Subscriptions_Cart {
 						return sprintf(
 							// translators: 1$: day of the month (e.g. "23rd") (e.g. "every 23rd of each month").
 							__( 'on the %1$s of each month', 'woocommerce-subscriptions' ),
-							WC_Subscriptions::append_numeral_suffix( $payment_day )
+							wcs_append_numeral_suffix( $payment_day )
 						);
 					}
 				} else {
@@ -2398,14 +2398,14 @@ class WC_Subscriptions_Cart {
 						return sprintf(
 							// translators: 1$: interval (e.g. "3rd") (e.g. "on the last day of every 3rd month").
 							__( 'on the last day of every %1$s month', 'woocommerce-subscriptions' ),
-							WC_Subscriptions::append_numeral_suffix( $interval )
+							wcs_append_numeral_suffix( $interval )
 						);
 					} else {
 						return sprintf(
 							// translators: on the, 1$: <date> day of every, 2$: <interval> month (e.g. "on the 23rd day of every 2nd month").
 							__( 'on the %1$s day of every %2$s month', 'woocommerce-subscriptions' ),
-							WC_Subscriptions::append_numeral_suffix( $payment_day ),
-							WC_Subscriptions::append_numeral_suffix( $interval )
+							wcs_append_numeral_suffix( $payment_day ),
+							wcs_append_numeral_suffix( $interval )
 						);
 					}
 				}
@@ -2416,15 +2416,15 @@ class WC_Subscriptions_Cart {
 						// translators: on, 1$: <date>, 2$: <month> each year (e.g. "on March 15th each year").
 						__( 'on %1$s %2$s each year', 'woocommerce-subscriptions' ),
 						$wp_locale->month[ $payment_day['month'] ],
-						WC_Subscriptions::append_numeral_suffix( $payment_day['day'] )
+						wcs_append_numeral_suffix( $payment_day['day'] )
 					);
 				} else {
 					return sprintf(
 						// translators: 1$: month (e.g. "March"), 2$: day of the month (e.g. "23rd), 3$: interval year (r.g  March 23rd every 2nd year").
 						__( 'on %1$s %2$s every %3$s year', 'woocommerce-subscriptions' ),
 						$wp_locale->month[ $payment_day['month'] ],
-						WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ),
-						WC_Subscriptions::append_numeral_suffix( $interval )
+						wcs_append_numeral_suffix( $payment_day['day'] ),
+						wcs_append_numeral_suffix( $interval )
 					);
 				}
 				break;
