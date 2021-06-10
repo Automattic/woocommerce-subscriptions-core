@@ -161,6 +161,10 @@ class WC_Subscriptions_Deprecation_Handler extends WCS_Deprecated_Functions_Hand
 			'replacement' => array( 'WC_Subscriptions_Cart_Validator', 'add_to_cart_ajax_redirect' ),
 			'version'     => '4.0.0',
 		),
+		'order_button_text' => array(
+			'replacement' => array( 'WC_Subscriptions_Checkout', 'order_button_text' ),
+			'version'     => '4.0.0',
+		),
 	);
 
 	/**

@@ -42,6 +42,9 @@ class WC_Subscriptions_Checkout {
 		add_filter( 'woocommerce_checkout_registration_required', array( __CLASS__, 'require_registration_during_checkout' ) );
 		add_action( 'woocommerce_before_checkout_process', array( __CLASS__, 'force_registration_during_checkout' ), 10 );
 		add_filter( 'woocommerce_checkout_registration_enabled', array( __CLASS__, 'maybe_enable_registration' ) );
+
+		// Override the WC default "Add to cart" text to "Sign up now" (in various places/templates)
+		add_filter( 'woocommerce_order_button_text', array( __CLASS__, 'order_button_text' ) );
 	}
 
 	/**
@@ -620,5 +623,26 @@ class WC_Subscriptions_Checkout {
 				$checkout->must_create_account = false;
 			}
 		}
+	}
+
+	/**
+	 * Overrides the "Place order" button text with "Sign up now" when the cart contains initial subscription purchases.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param string  $button_text The place order button text.
+	 * @return string $button_text
+	 */
+	public static function order_button_text( $button_text ) {
+		if ( ! WC_Subscriptions_Cart::cart_contains_subscription() ) {
+			return $button_text;
+		}
+
+		// Return the default button text if the cart contains a Subscription order type. The button text for these carts is filtered separately.
+		if ( wcs_cart_contains_renewal() || wcs_cart_contains_resubscribe() || WC_Subscriptions_Switcher::cart_contains_switches() ) {
+			return $button_text;
+		}
+
+		return get_option( WC_Subscriptions_Admin::$option_prefix . '_order_button_text', __( 'Sign up now', 'woocommerce-subscriptions' ) );
 	}
 }
