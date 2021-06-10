@@ -153,6 +153,10 @@ class WC_Subscriptions_Deprecation_Handler extends WCS_Deprecated_Functions_Hand
 			'replacement' => array( 'WCS_Staging', 'get_live_site_url' ),
 			'version'     => '4.0.0',
 		),
+		'get_site_url_from_source' => array(
+			'replacement' => array( 'WCS_Staging', 'get_site_url_from_source' ),
+			'version'     => '4.0.0',
+		),
 	);
 
 	/**

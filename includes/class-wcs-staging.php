@@ -34,8 +34,8 @@ class WCS_Staging {
 		$renewal_order = wc_get_order( $renewal_order_id );
 
 		if ( $renewal_order ) {
-			$wp_site_url  = WC_Subscriptions::get_site_url_from_source( 'current_wp_site' );
-			$wcs_site_url = WC_Subscriptions::get_site_url_from_source( 'subscriptions_install' );
+			$wp_site_url  = self::get_site_url_from_source( 'current_wp_site' );
+			$wcs_site_url = self::get_site_url_from_source( 'subscriptions_install' );
 
 			// translators: 1-2: opening/closing <a> tags - linked to staging site, 3: link to live site.
 			$message = sprintf( __( 'Payment processing skipped - renewal order created on %1$sstaging site%2$s under staging site lock. Live site is at %3$s', 'woocommerce-subscriptions' ), '<a href="' . $wp_site_url . '">', '</a>', '<a href="' . $wcs_site_url . '">' . $wcs_site_url . '</a>' );
@@ -131,9 +131,9 @@ class WCS_Staging {
 						'</strong>',
 						'<a href="https://docs.woocommerce.com/document/subscriptions-handles-staging-sites/" target="_blank">',
 						'</a>',
-						'<a href="' . esc_url( WC_Subscriptions::get_site_url_from_source( 'subscriptions_install' ) ) . '" target="_blank">',
+						'<a href="' . esc_url( self::get_site_url_from_source( 'subscriptions_install' ) ) . '" target="_blank">',
 						'</a>',
-						esc_url( WC_Subscriptions::get_site_url_from_source( 'subscriptions_install' ) )
+						esc_url( self::get_site_url_from_source( 'subscriptions_install' ) )
 					)
 				);
 				$notice->set_actions(
@@ -170,7 +170,7 @@ class WCS_Staging {
 	 * @return string The duplicate lock key.
 	 */
 	public static function get_duplicate_site_lock_key() {
-		$site_url = WC_Subscriptions::get_site_url_from_source( 'current_wp_site' );
+		$site_url = self::get_site_url_from_source( 'current_wp_site' );
 		$scheme   = parse_url( $site_url, PHP_URL_SCHEME ) . '://';
 		$site_url = str_replace( $scheme, '', $site_url );
 
@@ -182,26 +182,26 @@ class WCS_Staging {
 	 *
 	 * This key is checked to determine if this database has moved to a different URL.
 	 *
-	 * @see WCS_Staging::get_duplicate_site_lock_key() which generates the key.
+	 * @see self::get_duplicate_site_lock_key() which generates the key.
 	 *
 	 * @since 4.0.0
 	 */
 	public static function set_duplicate_site_url_lock() {
-		update_option( 'wc_subscriptions_siteurl', WCS_Staging::get_duplicate_site_lock_key() );
+		update_option( 'wc_subscriptions_siteurl', self::get_duplicate_site_lock_key() );
 	}
 
 	/**
 	 * Determines if this is a duplicate/staging site.
 	 *
 	 * Checks if the WordPress site URL is the same as the URL subscriptions considers
-	 * the live URL (@see WCS_Staging::set_duplicate_site_url_lock()).
+	 * the live URL (@see self::set_duplicate_site_url_lock()).
 	 *
 	 * @since 4.0.0
 	 * @return bool Whether the site is a duplicate URL or not.
 	 */
 	public static function is_duplicate_site() {
-		$wp_site_url_parts  = wp_parse_url( WC_Subscriptions::get_site_url_from_source( 'current_wp_site' ) );
-		$wcs_site_url_parts = wp_parse_url( WC_Subscriptions::get_site_url_from_source( 'subscriptions_install' ) );
+		$wp_site_url_parts  = wp_parse_url( self::get_site_url_from_source( 'current_wp_site' ) );
+		$wcs_site_url_parts = wp_parse_url( self::get_site_url_from_source( 'subscriptions_install' ) );
 
 		if ( ! isset( $wp_site_url_parts['path'] ) && ! isset( $wcs_site_url_parts['path'] ) ) {
 			$paths_match = true;
@@ -257,5 +257,29 @@ class WCS_Staging {
 		}
 
 		return apply_filters( 'wc_subscriptions_site_url', $url, $path, $scheme, $blog_id );
+	}
+
+	/**
+	 * Gets the sites WordPress or Subscriptions URL.
+	 *
+	 * WordPress - This is typically the URL the current site is accessable via.
+	 * Subscriptions is the URL Subscritpions considers to be the URL to process live payments on. It may differ to the WP URL if the site has moved.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param string $source The URL source to get. Optional. Takes values 'current_wp_site' or 'subscriptions_install'. Default is 'current_wp_site' - the URL WP considers to be the site's.
+	 * @return string The URL.
+	 */
+	public static function get_site_url_from_source( $source = 'current_wp_site' ) {
+		// Let the default source be WP
+		if ( 'subscriptions_install' === $source ) {
+			$site_url = self::get_live_site_url();
+		} elseif ( ! is_multisite() && defined( 'WP_SITEURL' ) ) {
+			$site_url = WP_SITEURL;
+		} else {
+			$site_url = get_site_url();
+		}
+
+		return $site_url;
 	}
 }
