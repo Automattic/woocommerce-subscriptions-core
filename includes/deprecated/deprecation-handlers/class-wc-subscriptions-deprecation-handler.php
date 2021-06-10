@@ -149,6 +149,10 @@ class WC_Subscriptions_Deprecation_Handler extends WCS_Deprecated_Functions_Hand
 			'replacement' => array( __CLASS__, '_show_downgrade_notice' ),
 			'version'     => '4.0.0',
 		),
+		'get_site_url' => array(
+			'replacement' => array( 'WCS_Staging', 'get_live_site_url' ),
+			'version'     => '4.0.0',
+		),
 	);
 
 	/**

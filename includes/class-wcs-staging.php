@@ -226,4 +226,36 @@ class WCS_Staging {
 
 		return apply_filters( 'woocommerce_subscriptions_is_duplicate_site', $is_duplicate );
 	}
+
+	/**
+	 * Gets the URL Subscriptions considers as the live site URL.
+	 *
+	 * This URL is set by @see WCS_Staging::set_duplicate_site_url_lock(). This function removes the obfuscation to get a raw URL.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param int|null    $blog_id The blog to get the URL for. Optional. Default is null. Used for multisites only.
+	 * @param string      $path    The URL path to append. Optional. Default is ''.
+	 * @param string|null $scheme  The URL scheme passed to @see set_url_scheme(). Optional. Default is null which automatically returns the URL as https or http depending on @see is_ssl().
+	 */
+	public static function get_live_site_url( $blog_id = null, $path = '', $scheme = null ) {
+		if ( empty( $blog_id ) || ! is_multisite() ) {
+			$url = get_option( 'wc_subscriptions_siteurl' );
+		} else {
+			switch_to_blog( $blog_id );
+			$url = get_option( 'wc_subscriptions_siteurl' );
+			restore_current_blog();
+		}
+
+		// Remove the prefix used to prevent the site URL being updated on WP Engine
+		$url = str_replace( '_[wc_subscriptions_siteurl]_', '', $url );
+
+		$url = set_url_scheme( $url, $scheme );
+
+		if ( ! empty( $path ) && is_string( $path ) && strpos( $path, '..' ) === false ) {
+			$url .= '/' . ltrim( $path, '/' );
+		}
+
+		return apply_filters( 'wc_subscriptions_site_url', $url, $path, $scheme, $blog_id );
+	}
 }
