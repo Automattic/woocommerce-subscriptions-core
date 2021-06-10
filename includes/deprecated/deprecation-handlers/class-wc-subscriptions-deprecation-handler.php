@@ -157,6 +157,10 @@ class WC_Subscriptions_Deprecation_Handler extends WCS_Deprecated_Functions_Hand
 			'replacement' => array( 'WCS_Staging', 'get_site_url_from_source' ),
 			'version'     => '4.0.0',
 		),
+		'redirect_ajax_add_to_cart' => array(
+			'replacement' => array( 'WC_Subscriptions_Cart_Validator', 'add_to_cart_ajax_redirect' ),
+			'version'     => '4.0.0',
+		),
 	);
 
 	/**

@@ -68,11 +68,7 @@ class WC_Subscriptions_Cart_Validator {
 			wc_add_notice( __( 'A subscription has been removed from your cart. Products and subscriptions can not be purchased at the same time.', 'woocommerce-subscriptions' ), 'notice' );
 
 			// Redirect to cart page to remove subscription & notify shopper
-			if ( wcs_is_woocommerce_pre( '3.0.8' ) ) {
-				add_filter( 'add_to_cart_fragments', 'WC_Subscriptions::redirect_ajax_add_to_cart' );
-			} else {
-				add_filter( 'woocommerce_add_to_cart_fragments', 'WC_Subscriptions::redirect_ajax_add_to_cart' );
-			}
+			add_filter( 'woocommerce_add_to_cart_fragments', array( __CLASS__, 'redirect_ajax_add_to_cart' ) );
 		}
 
 		return $valid;
@@ -111,11 +107,7 @@ class WC_Subscriptions_Cart_Validator {
 				wc_add_notice( __( 'Your cart has been emptied of subscription products. Only one subscription product can be purchased at a time.', 'woocommerce-subscriptions' ), 'notice' );
 
 				// Redirect to cart page to remove subscription & notify shopper
-				if ( wcs_is_woocommerce_pre( '3.0.8' ) ) {
-					add_filter( 'add_to_cart_fragments', array( 'WC_Subscriptions', 'redirect_ajax_add_to_cart' ) );
-				} else {
-					add_filter( 'woocommerce_add_to_cart_fragments', array( 'WC_Subscriptions', 'redirect_ajax_add_to_cart' ) );
-				}
+				add_filter( 'woocommerce_add_to_cart_fragments', array( __CLASS__, 'redirect_ajax_add_to_cart' ) );
 
 				break;
 			}
@@ -140,4 +132,28 @@ class WC_Subscriptions_Cart_Validator {
 		return $can_add;
 	}
 
+	/**
+	 * Adds the required cart AJAX args and filter callbacks to cause an error and redirect the customer.
+	 *
+	 * Attached by @see WC_Subscriptions_Cart_Validator::validate_cart_contents_for_mixed_checkout() and
+	 * @see WC_Subscriptions_Cart_Validator::maybe_empty_cart() when the store has multiple subscription
+	 * purcahses disabled, the cart already contains products and the customer adds a new item or logs in
+	 * causing a cart merge.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param array  $fragments The add to cart AJAX args.
+	 * @return array $fragments
+	 */
+	public static function add_to_cart_ajax_redirect( $fragments ) {
+		$fragments['error']       = true;
+		$fragments['product_url'] = wc_get_cart_url();
+
+		# Force error on add_to_cart() to redirect
+		add_filter( 'woocommerce_add_to_cart_validation', '__return_false', 10 );
+		add_filter( 'woocommerce_cart_redirect_after_error', 'wc_get_cart_url', 10, 2 );
+		do_action( 'wc_ajax_add_to_cart' );
+
+		return $fragments;
+	}
 }
