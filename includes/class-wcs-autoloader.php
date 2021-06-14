@@ -138,21 +138,22 @@ class WCS_Autoloader {
 	 */
 	protected function is_class_abstract( $class ) {
 		static $abstracts = array(
-			'wcs_background_repairer'      => true,
-			'wcs_background_updater'       => true,
-			'wcs_background_upgrader'      => true,
-			'wcs_cache_manager'            => true,
-			'wcs_debug_tool'               => true,
-			'wcs_debug_tool_cache_updater' => true,
-			'wcs_dynamic_hook_deprecator'  => true,
-			'wcs_hook_deprecator'          => true,
-			'wcs_retry_store'              => true,
-			'wcs_scheduler'                => true,
-			'wcs_sv_api_base'              => true,
-			'wcs_customer_store'           => true,
-			'wcs_related_order_store'      => true,
-			'wcs_migrator'                 => true,
-			'wcs_table_maker'              => true,
+			'wcs_background_repairer'          => true,
+			'wcs_background_updater'           => true,
+			'wcs_background_upgrader'          => true,
+			'wcs_cache_manager'                => true,
+			'wcs_debug_tool'                   => true,
+			'wcs_debug_tool_cache_updater'     => true,
+			'wcs_dynamic_hook_deprecator'      => true,
+			'wcs_hook_deprecator'              => true,
+			'wcs_retry_store'                  => true,
+			'wcs_scheduler'                    => true,
+			'wcs_sv_api_base'                  => true,
+			'wcs_customer_store'               => true,
+			'wcs_related_order_store'          => true,
+			'wcs_migrator'                     => true,
+			'wcs_table_maker'                  => true,
+			'wcs_deprecated_functions_handler' => true,
 		);
 
 		return isset( $abstracts[ $class ] );
@@ -250,6 +251,10 @@ class WCS_Autoloader {
 			$path .= '/data-stores';
 		} elseif ( false !== strpos( $class, 'deprecat' ) ) {
 			$path .= '/deprecated';
+
+			if ( false !== strpos( $class, 'handler' ) ) {
+				$path .= '/deprecation-handlers';
+			}
 		} elseif ( false !== strpos( $class, 'email' ) && 'wc_subscriptions_email' !== $class ) {
 			$path .= '/emails';
 		} elseif ( false !== strpos( $class, 'gateway' ) && 'wc_subscriptions_change_payment_gateway' !== $class ) {

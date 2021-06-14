@@ -31,8 +31,8 @@ class WC_REST_Subscription_System_Status_Manager {
 	public static function add_subscription_fields_to_reponse( $response ) {
 		$response->data['subscriptions'] = array(
 			'wcs_debug'                        => defined( 'WCS_DEBUG' ) ? WCS_DEBUG : false,
-			'mode'                             => ( WC_Subscriptions::is_duplicate_site() ) ? __( 'staging', 'woocommerce-subscriptions' ) : __( 'live', 'woocommerce-subscriptions' ),
-			'live_url'                         => esc_url( WC_Subscriptions::get_site_url_from_source( 'subscriptions_install' ) ),
+			'mode'                             => ( WCS_Staging::is_duplicate_site() ) ? __( 'staging', 'woocommerce-subscriptions' ) : __( 'live', 'woocommerce-subscriptions' ),
+			'live_url'                         => esc_url( WCS_Staging::get_site_url_from_source( 'subscriptions_install' ) ),
 			'statuses'                         => array_filter( (array) wp_count_posts( 'shop_subscription' ) ),
 			'report_cache_enabled'             => ( 'yes' === get_option( 'woocommerce_subscriptions_cache_updates_enabled', 'yes' ) ),
 			'cache_update_failures'            => absint( get_option( 'woocommerce_subscriptions_cache_updates_failures', 0 ) ),

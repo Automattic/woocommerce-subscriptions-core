@@ -98,7 +98,7 @@ class WC_Subscriptions_Synchroniser {
 		// When adding an item to a subscription, check if it is for a synced product to make sure the sync meta is set on the subscription. We can't attach to just the 'woocommerce_new_order_item' here because the '_product_id' and '_variation_id' meta are not set before it fires
 		add_action( 'woocommerce_ajax_add_order_item_meta', __CLASS__ . '::ajax_maybe_add_meta_for_item', 10, 2 );
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 			add_action( 'woocommerce_order_add_product', __CLASS__ . '::maybe_add_meta_for_new_product', 10, 3 );
 			add_action( 'woocommerce_add_order_item_meta', array( __CLASS__, 'maybe_add_order_item_meta' ), 10, 2 );
 		} else {
@@ -778,7 +778,7 @@ class WC_Subscriptions_Synchroniser {
 			// Month
 			foreach ( range( 1, 27 ) as $i ) {
 				// translators: placeholder is a number of day with language specific suffix applied (e.g. "1st", "3rd", "5th", etc...)
-				self::$billing_period_ranges['month'][ $i ] = sprintf( __( '%s day of the month', 'woocommerce-subscriptions' ), WC_Subscriptions::append_numeral_suffix( $i ) );
+				self::$billing_period_ranges['month'][ $i ] = sprintf( __( '%s day of the month', 'woocommerce-subscriptions' ), wcs_append_numeral_suffix( $i ) );
 			}
 			self::$billing_period_ranges['month'][28] = __( 'Last day of the month', 'woocommerce-subscriptions' );
 

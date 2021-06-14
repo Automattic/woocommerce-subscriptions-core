@@ -81,7 +81,7 @@ class WC_Subscriptions_Email {
 		);
 
 		// Don't send subscriptions emails or WC core emails for subscription-related events on staging sites.
-		if ( WC_Subscriptions::is_duplicate_site() && ! defined( 'WCS_FORCE_EMAIL' ) ) {
+		if ( WCS_Staging::is_duplicate_site() && ! defined( 'WCS_FORCE_EMAIL' ) ) {
 			// Unhook WC order core emails which would normally be replaced by a subscription version on a live site.
 			foreach ( $order_email_actions as $action ) {
 				add_action( $action, __CLASS__ . '::maybe_remove_woocommerce_email', 9 );
@@ -324,7 +324,7 @@ class WC_Subscriptions_Email {
 			$hook = current_filter();
 		}
 
-		if ( false === WC_Subscriptions::is_woocommerce_pre( '3.0' ) && apply_filters( 'woocommerce_defer_transactional_emails', false ) ) {
+		if ( false === wcs_is_woocommerce_pre( '3.0' ) && apply_filters( 'woocommerce_defer_transactional_emails', false ) ) {
 			add_action( $hook, array( 'WC_Emails', 'queue_transactional_email' ), $priority, $accepted_args );
 		} else {
 			add_action( $hook, array( 'WC_Emails', 'send_transactional_email' ), $priority, $accepted_args );

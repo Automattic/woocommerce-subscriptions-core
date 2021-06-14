@@ -19,7 +19,9 @@ class WCS_Template_Loader {
 		add_action( 'woocommerce_subscriptions_recurring_totals_fees', array( __CLASS__, 'get_recurring_cart_fees' ) );
 		add_action( 'woocommerce_subscriptions_recurring_totals_taxes', array( __CLASS__, 'get_recurring_cart_taxes' ) );
 		add_action( 'woocommerce_subscriptions_recurring_subscription_totals', array( __CLASS__, 'get_recurring_subscription_totals' ) );
-
+		add_action( 'woocommerce_subscription_add_to_cart', array( __CLASS__, 'get_subscription_add_to_cart' ), 30 );
+		add_action( 'woocommerce_variable-subscription_add_to_cart', array( __CLASS__, 'get_variable_subscription_add_to_cart' ), 30 );
+		add_action( 'wcopc_subscription_add_to_cart', array( __CLASS__, 'get_opc_subscription_add_to_cart' ) ); // One Page Checkout compatibility
 	}
 
 	/**
@@ -179,7 +181,7 @@ class WCS_Template_Loader {
 	 * @param array $recurring_carts The recurring carts.
 	 */
 	public static function get_recurring_cart_taxes( $recurring_carts ) {
-		$tax_display_mode = WC_Subscriptions::is_woocommerce_pre( '4.4' ) ? WC()->cart->tax_display_cart : WC()->cart->get_tax_price_display_mode();
+		$tax_display_mode = wcs_is_woocommerce_pre( '4.4' ) ? WC()->cart->tax_display_cart : WC()->cart->get_tax_price_display_mode();
 
 		if ( ! wc_tax_enabled() || 'excl' !== $tax_display_mode ) {
 			return;
@@ -206,5 +208,85 @@ class WCS_Template_Loader {
 		// Filter out all recurring carts without a next payment date.
 		$recurring_carts = wcs_apply_array_filter( 'woocommerce_subscriptions_display_recurring_subscription_totals', $recurring_carts, 'next_payment_date' );
 		wc_get_template( 'checkout/recurring-subscription-totals.php', array( 'recurring_carts' => $recurring_carts ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+	}
+
+	/**
+	 * Loads the my-subscriptions.php template on the My Account page.
+	 *
+	 * @since 4.0.0
+	 * @param int $current_page The My Account Subscriptions page.
+	 */
+	public static function get_my_subscriptions( $current_page = 1 ) {
+		$all_subscriptions = wcs_get_users_subscriptions();
+		$current_page      = empty( $current_page ) ? 1 : absint( $current_page );
+		$posts_per_page    = get_option( 'posts_per_page' );
+		$max_num_pages     = ceil( count( $all_subscriptions ) / $posts_per_page );
+		$subscriptions     = array_slice( $all_subscriptions, ( $current_page - 1 ) * $posts_per_page, $posts_per_page );
+
+		wc_get_template(
+			'myaccount/my-subscriptions.php',
+			array(
+				'subscriptions' => $subscriptions,
+				'current_page'  => $current_page,
+				'max_num_pages' => $max_num_pages,
+				'paginate'      => true,
+			),
+			'',
+			plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/'
+		);
+	}
+
+	/**
+	 * Gets the subscription add_to_cart template.
+	 *
+	 * Use the same cart template for subscription as that which is used for simple products. Reduce code duplication
+	 * and is made possible by the friendly actions & filters found through WC.
+	 *
+	 * @since 4.0.0
+	 */
+	public static function get_subscription_add_to_cart() {
+		wc_get_template( 'single-product/add-to-cart/subscription.php', array(), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+	}
+
+	/**
+	 * Gets the variable subscription add_to_cart template.
+	 *
+	 * Use a very similar cart template as that of a variable product with added functionality.
+	 *
+	 * @since 4.0.0
+	 */
+	public static function get_variable_subscription_add_to_cart() {
+		global $product;
+
+		// Enqueue variation scripts
+		wp_enqueue_script( 'wc-add-to-cart-variation' );
+
+		// Get Available variations?
+		$get_variations = count( $product->get_children() ) <= apply_filters( 'woocommerce_ajax_variation_threshold', 30, $product );
+
+		// Load the template
+		wc_get_template(
+			'single-product/add-to-cart/variable-subscription.php',
+			array(
+				'available_variations' => $get_variations ? $product->get_available_variations() : false,
+				'attributes'           => $product->get_variation_attributes(),
+				'selected_attributes'  => $product->get_default_attributes(),
+			),
+			'',
+			plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/'
+		);
+	}
+
+	/**
+	 * Gets OPC's simple add to cart template for simple subscription products (to ensure data attributes required by OPC are added).
+	 *
+	 * Variable subscription products will be handled automatically because they identify as "variable" in response to is_type() method calls,
+	 * which OPC uses.
+	 *
+	 * @since 4.0.0
+	 */
+	public static function get_opc_subscription_add_to_cart() {
+		global $product;
+		wc_get_template( 'checkout/add-to-cart/simple.php', array( 'product' => $product ), '', PP_One_Page_Checkout::$template_path );
 	}
 }

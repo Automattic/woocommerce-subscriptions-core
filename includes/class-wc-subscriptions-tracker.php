@@ -44,8 +44,8 @@ class WC_Subscriptions_Tracker {
 	private static function get_subscriptions_options() {
 		return array(
 			// Staging and live site
-			'wc_subscriptions_staging'             => WC_Subscriptions::is_duplicate_site() ? 'staging' : 'live',
-			'wc_subscriptions_live_url'            => esc_url( WC_Subscriptions::get_site_url_from_source( 'subscriptions_install' ) ),
+			'wc_subscriptions_staging'             => WCS_Staging::is_duplicate_site() ? 'staging' : 'live',
+			'wc_subscriptions_live_url'            => esc_url( WCS_Staging::get_site_url_from_source( 'subscriptions_install' ) ),
 
 			// Button text, roles
 			'add_to_cart_button_text'              => get_option( WC_Subscriptions_Admin::$option_prefix . '_add_to_cart_button_text' ),

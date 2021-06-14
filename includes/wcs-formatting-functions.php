@@ -135,7 +135,7 @@ function wcs_price_string( $subscription_details ) {
 							$subscription_string = sprintf( __( '%1$s %2$s then %3$s on the last day of each month', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string );
 						} else {
 							// translators: 1$: initial amount, 2$: initial description (e.g. "up front"), 3$: recurring amount, 4$: day of the month (e.g. "23rd"); (e.g. "$10 up front then $40 on the 23rd of each month")
-							$subscription_string = sprintf( __( '%1$s %2$s then %3$s on the %4$s of each month', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, WC_Subscriptions::append_numeral_suffix( $payment_day ) );
+							$subscription_string = sprintf( __( '%1$s %2$s then %3$s on the %4$s of each month', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, wcs_append_numeral_suffix( $payment_day ) );
 						}
 					} else {
 						if ( $payment_day > 27 ) {
@@ -143,7 +143,7 @@ function wcs_price_string( $subscription_details ) {
 							$subscription_string = sprintf( __( '%s on the last day of each month', 'woocommerce-subscriptions' ), $recurring_amount_string );
 						} else {
 							// translators: 1$: recurring amount, 2$: day of the month (e.g. "23rd") (e.g. "$5 every 23rd of each month")
-							$subscription_string = sprintf( __( '%1$s on the %2$s of each month', 'woocommerce-subscriptions' ), $recurring_amount_string, WC_Subscriptions::append_numeral_suffix( $payment_day ) );
+							$subscription_string = sprintf( __( '%1$s on the %2$s of each month', 'woocommerce-subscriptions' ), $recurring_amount_string, wcs_append_numeral_suffix( $payment_day ) );
 						}
 					}
 				} else {
@@ -151,18 +151,18 @@ function wcs_price_string( $subscription_details ) {
 					if ( ! empty( $subscription_details['initial_amount'] ) ) {
 						if ( $payment_day > 27 ) {
 							// translators: 1$: initial amount, 2$: initial description (e.g. "up front"), 3$: recurring amount, 4$: interval (e.g. "3rd")
-							$subscription_string = sprintf( __( '%1$s %2$s then %3$s on the last day of every %4$s month', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, WC_Subscriptions::append_numeral_suffix( $subscription_details['subscription_interval'] ) );
+							$subscription_string = sprintf( __( '%1$s %2$s then %3$s on the last day of every %4$s month', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, wcs_append_numeral_suffix( $subscription_details['subscription_interval'] ) );
 						} else {
 							// translators: 1$: initial amount, 2$: initial description (e.g. "up front"), 3$: recurring amount, 4$: day of the month (e.g. "23rd"), 5$: interval (e.g. "3rd")
-							$subscription_string = sprintf( __( '%1$s %2$s then %3$s on the %4$s day of every %5$s month', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, WC_Subscriptions::append_numeral_suffix( $payment_day ), WC_Subscriptions::append_numeral_suffix( $subscription_details['subscription_interval'] ) );
+							$subscription_string = sprintf( __( '%1$s %2$s then %3$s on the %4$s day of every %5$s month', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, wcs_append_numeral_suffix( $payment_day ), wcs_append_numeral_suffix( $subscription_details['subscription_interval'] ) );
 						}
 					} else {
 						if ( $payment_day > 27 ) {
 							// translators: 1$: recurring amount, 2$: interval (e.g. "3rd") (e.g. "$10 on the last day of every 3rd month")
-							$subscription_string = sprintf( __( '%1$s on the last day of every %2$s month', 'woocommerce-subscriptions' ), $recurring_amount_string, WC_Subscriptions::append_numeral_suffix( $subscription_details['subscription_interval'] ) );
+							$subscription_string = sprintf( __( '%1$s on the last day of every %2$s month', 'woocommerce-subscriptions' ), $recurring_amount_string, wcs_append_numeral_suffix( $subscription_details['subscription_interval'] ) );
 						} else {
 							// translators: 1$: recurring amount, 2$: day of the month (e.g. "23rd") (e.g. "$5 every 23rd of each month")
-							$subscription_string = sprintf( __( '%1$s on the %2$s day of every %3$s month', 'woocommerce-subscriptions' ), $recurring_amount_string, WC_Subscriptions::append_numeral_suffix( $payment_day ), WC_Subscriptions::append_numeral_suffix( $subscription_details['subscription_interval'] ) );
+							$subscription_string = sprintf( __( '%1$s on the %2$s day of every %3$s month', 'woocommerce-subscriptions' ), $recurring_amount_string, wcs_append_numeral_suffix( $payment_day ), wcs_append_numeral_suffix( $subscription_details['subscription_interval'] ) );
 						}
 					}
 				}
@@ -172,19 +172,19 @@ function wcs_price_string( $subscription_details ) {
 					// e.g. $15 on March 15th each year
 					if ( ! empty( $subscription_details['initial_amount'] ) ) {
 						// translators: 1$: initial amount, 2$: initial description (e.g. "up front"), 3$: recurring amount, 4$: month of year (e.g. "March"), 5$: day of the month (e.g. "23rd")
-						$subscription_string = sprintf( __( '%1$s %2$s then %3$s on %4$s %5$s each year', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, $wp_locale->month[ $payment_day['month'] ], WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ) );
+						$subscription_string = sprintf( __( '%1$s %2$s then %3$s on %4$s %5$s each year', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, $wp_locale->month[ $payment_day['month'] ], wcs_append_numeral_suffix( $payment_day['day'] ) );
 					} else {
 						// translators: 1$: recurring amount, 2$: month (e.g. "March"), 3$: day of the month (e.g. "23rd") (e.g. "$15 on March 15th every 3rd year")
-						$subscription_string = sprintf( __( '%1$s on %2$s %3$s each year', 'woocommerce-subscriptions' ), $recurring_amount_string, $wp_locale->month[ $payment_day['month'] ], WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ) );
+						$subscription_string = sprintf( __( '%1$s on %2$s %3$s each year', 'woocommerce-subscriptions' ), $recurring_amount_string, $wp_locale->month[ $payment_day['month'] ], wcs_append_numeral_suffix( $payment_day['day'] ) );
 					}
 				} else {
 					// e.g. $15 on March 15th every 3rd year
 					if ( ! empty( $subscription_details['initial_amount'] ) ) {
 						// translators: 1$: initial amount, 2$: initial description (e.g. "up front"), 3$: recurring amount, 4$: month (e.g. "March"), 5$: day of the month (e.g. "23rd"), 6$: interval (e.g. "3rd")
-						$subscription_string = sprintf( __( '%1$s %2$s then %3$s on %4$s %5$s every %6$s year', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, $wp_locale->month[ $payment_day['month'] ], WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ), WC_Subscriptions::append_numeral_suffix( $subscription_details['subscription_interval'] ) );
+						$subscription_string = sprintf( __( '%1$s %2$s then %3$s on %4$s %5$s every %6$s year', 'woocommerce-subscriptions' ), $initial_amount_string, $subscription_details['initial_description'], $recurring_amount_string, $wp_locale->month[ $payment_day['month'] ], wcs_append_numeral_suffix( $payment_day['day'] ), wcs_append_numeral_suffix( $subscription_details['subscription_interval'] ) );
 					} else {
 						// translators: 1$: recurring amount, 2$: month (e.g. "March"), 3$: day of the month (e.g. "23rd") (e.g. "$15 on March 15th every 3rd year")
-						$subscription_string = sprintf( __( '%1$s on %2$s %3$s every %4$s year', 'woocommerce-subscriptions' ), $recurring_amount_string, $wp_locale->month[ $payment_day['month'] ], WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ), WC_Subscriptions::append_numeral_suffix( $subscription_details['subscription_interval'] ) );
+						$subscription_string = sprintf( __( '%1$s on %2$s %3$s every %4$s year', 'woocommerce-subscriptions' ), $recurring_amount_string, $wp_locale->month[ $payment_day['month'] ], wcs_append_numeral_suffix( $payment_day['day'] ), wcs_append_numeral_suffix( $subscription_details['subscription_interval'] ) );
 					}
 				}
 				break;
@@ -276,4 +276,44 @@ function wp_kses_allow_underscores( $content, $allowed_html ) {
 	$content = preg_replace( '/\b([-A-Za-z]+)_([-A-Za-z]+)=/', '$1--$2=', $content );
 	$content = wp_kses( $content, $allowed_html ); // Now pass through wp_kses the attribute name with --
 	return preg_replace( '/\b([-A-Za-z]+)--([-A-Za-z]+)=/', '$1_$2=', $content ); // Replace the _ back
+}
+
+/**
+ * Appends the ordinal suffix to a given number.
+ *
+ * eg. Given 2, the function returns 2nd.
+ *
+ * @since 4.0.0
+ *
+ * @param string The number to append the ordinal suffix to.
+ * @return string
+ */
+function wcs_append_numeral_suffix( $number ) {
+
+	// Handle teens: if the tens digit of a number is 1, then write "th" after the number. For example: 11th, 13th, 19th, 112th, 9311th. http://en.wikipedia.org/wiki/English_numerals
+	if ( strlen( $number ) > 1 && 1 == substr( $number, -2, 1 ) ) {
+		// translators: placeholder is a number, this is for the teens
+		$number_string = sprintf( __( '%sth', 'woocommerce-subscriptions' ), $number );
+	} else { // Append relevant suffix
+		switch ( substr( $number, -1 ) ) {
+			case 1:
+				// translators: placeholder is a number, numbers ending in 1
+				$number_string = sprintf( __( '%sst', 'woocommerce-subscriptions' ), $number );
+				break;
+			case 2:
+				// translators: placeholder is a number, numbers ending in 2
+				$number_string = sprintf( __( '%snd', 'woocommerce-subscriptions' ), $number );
+				break;
+			case 3:
+				// translators: placeholder is a number, numbers ending in 3
+				$number_string = sprintf( __( '%srd', 'woocommerce-subscriptions' ), $number );
+				break;
+			default:
+				// translators: placeholder is a number, numbers ending in 4-9, 0
+				$number_string = sprintf( __( '%sth', 'woocommerce-subscriptions' ), $number );
+				break;
+		}
+	}
+
+	return apply_filters( 'woocommerce_numeral_suffix', $number_string, $number );
 }

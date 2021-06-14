@@ -27,7 +27,7 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 
 		add_action( 'woocommerce_checkout_create_order', array( $this, 'copy_subscription_meta_to_order' ), 90 );
 		// Record early renewal payments.
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 			add_action( 'woocommerce_checkout_order_processed', array( $this, 'maybe_record_early_renewal' ), 100, 2 );
 		} else {
 			add_action( 'woocommerce_checkout_create_order', array( $this, 'add_early_renewal_metadata_to_order' ), 100, 2 );
@@ -128,7 +128,7 @@ class WCS_Cart_Early_Renewal extends WCS_Cart_Renewal {
 	 * @since 2.3.0
 	 */
 	public function maybe_record_early_renewal( $order_id, $posted_data ) {
-		if ( ! WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		if ( ! wcs_is_woocommerce_pre( '3.0' ) ) {
 			wcs_deprecated_function( __METHOD__, '2.0', 'WCS_Cart_Early_Renewal::add_early_renewal_metadata_to_order( $order, $posted_data )' );
 		}
 

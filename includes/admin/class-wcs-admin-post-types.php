@@ -608,7 +608,7 @@ class WCS_Admin_Post_Types {
 				// translators: placeholder is the display name of a payment gateway a subscription was paid by
 				$column_content .= esc_html( sprintf( __( 'Via %s', 'woocommerce-subscriptions' ), $the_subscription->get_payment_method_to_display() ) );
 
-				if ( WC_Subscriptions::is_duplicate_site() && $the_subscription->has_payment_gateway() && ! $the_subscription->get_requires_manual_renewal() ) {
+				if ( WCS_Staging::is_duplicate_site() && $the_subscription->has_payment_gateway() && ! $the_subscription->get_requires_manual_renewal() ) {
 					$column_content .= WCS_Staging::get_payment_method_tooltip( $the_subscription );
 				}
 
@@ -1091,7 +1091,7 @@ class WCS_Admin_Post_Types {
 		global $typenow;
 
 		// Prior to WC 3.3 this was handled by WC core so exit early if an earlier version of WC is active.
-		if ( 'shop_subscription' !== $typenow || WC_Subscriptions::is_woocommerce_pre( '3.3' ) ) {
+		if ( 'shop_subscription' !== $typenow || wcs_is_woocommerce_pre( '3.3' ) ) {
 			return;
 		}
 

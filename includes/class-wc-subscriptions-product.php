@@ -320,7 +320,7 @@ class WC_Subscriptions_Product {
 									// translators: 1$: recurring amount, 2$: day of the month (e.g. "23rd") (e.g. "$5 every 23rd of each month").
 									__( '%1$s on the %2$s of each month', 'woocommerce-subscriptions' ),
 									$price,
-									WC_Subscriptions::append_numeral_suffix( $payment_day )
+									wcs_append_numeral_suffix( $payment_day )
 								);
 							}
 						} else {
@@ -329,15 +329,15 @@ class WC_Subscriptions_Product {
 									// translators: 1$: recurring amount, 2$: interval (e.g. "3rd") (e.g. "$10 on the last day of every 3rd month").
 									__( '%1$s on the last day of every %2$s month', 'woocommerce-subscriptions' ),
 									$price,
-									WC_Subscriptions::append_numeral_suffix( $billing_interval )
+									wcs_append_numeral_suffix( $billing_interval )
 								);
 							} else {
 								$subscription_string .= sprintf(
 									// translators: 1$: <price> on the, 2$: <date> day of every, 3$: <interval> month (e.g. "$10 on the 23rd day of every 2nd month").
 									__( '%1$s on the %2$s day of every %3$s month', 'woocommerce-subscriptions' ),
 									$price,
-									WC_Subscriptions::append_numeral_suffix( $payment_day ),
-									WC_Subscriptions::append_numeral_suffix( $billing_interval )
+									wcs_append_numeral_suffix( $payment_day ),
+									wcs_append_numeral_suffix( $billing_interval )
 								);
 							}
 						}
@@ -349,7 +349,7 @@ class WC_Subscriptions_Product {
 								__( '%1$s on %2$s %3$s each year', 'woocommerce-subscriptions' ),
 								$price,
 								$wp_locale->month[ $payment_day['month'] ],
-								WC_Subscriptions::append_numeral_suffix( $payment_day['day'] )
+								wcs_append_numeral_suffix( $payment_day['day'] )
 							);
 						} else {
 							$subscription_string .= sprintf(
@@ -357,8 +357,8 @@ class WC_Subscriptions_Product {
 								__( '%1$s on %2$s %3$s every %4$s year', 'woocommerce-subscriptions' ),
 								$price,
 								$wp_locale->month[ $payment_day['month'] ],
-								WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ),
-								WC_Subscriptions::append_numeral_suffix( $billing_interval )
+								wcs_append_numeral_suffix( $payment_day['day'] ),
+								wcs_append_numeral_suffix( $billing_interval )
 							);
 						}
 						break;
@@ -441,7 +441,7 @@ class WC_Subscriptions_Product {
 	 */
 	public static function get_regular_price( $product, $context = 'view' ) {
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 			$regular_price = $product->regular_price;
 		} else {
 			$regular_price = $product->get_regular_price( $context );
@@ -459,7 +459,7 @@ class WC_Subscriptions_Product {
 	 */
 	public static function get_sale_price( $product, $context = 'view' ) {
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 			$sale_price = $product->sale_price;
 		} else {
 			$sale_price = $product->get_sale_price( $context );
@@ -1156,7 +1156,7 @@ class WC_Subscriptions_Product {
 		global $wpdb;
 		$parent_product_ids = array();
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) && isset( $product->post->post_parent ) ) {
+		if ( wcs_is_woocommerce_pre( '3.0' ) && isset( $product->post->post_parent ) ) {
 			$parent_product_ids[] = $product->get_parent();
 		} else {
 			$parent_product_ids = $wpdb->get_col( $wpdb->prepare(

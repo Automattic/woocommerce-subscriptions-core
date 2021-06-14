@@ -77,7 +77,7 @@ class WCS_Cart_Renewal {
 	 */
 	public function attach_dependant_hooks() {
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 
 			// When a renewal order's line items are being updated, update the line item IDs stored in cart data.
 			add_action( 'woocommerce_add_order_item_meta', array( &$this, 'update_line_item_cart_data' ), 10, 3 );
@@ -156,7 +156,7 @@ class WCS_Cart_Renewal {
 	 */
 	public function attach_dependant_callbacks() {
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 			add_action( 'woocommerce_add_order_item_meta', array( &$this, 'add_order_item_meta' ), 10, 2 );
 			add_action( 'woocommerce_add_subscription_item_meta', array( &$this, 'add_order_item_meta' ), 10, 2 );
 		} else {
@@ -767,7 +767,7 @@ class WCS_Cart_Renewal {
 
 				// Tweak the coupon data for renewal coupons
 				if ( $coupon_code == $code ) {
-					$expiry_date_property = WC_Subscriptions::is_woocommerce_pre( '3.0' ) ? 'expiry_date' : 'date_expires';
+					$expiry_date_property = wcs_is_woocommerce_pre( '3.0' ) ? 'expiry_date' : 'date_expires';
 
 					// Some coupon properties are overridden specifically for renewals
 					$renewal_coupon_overrides = array(
@@ -819,7 +819,7 @@ class WCS_Cart_Renewal {
 	protected function store_coupon( $order_id, $coupon ) {
 		if ( ! empty( $order_id ) && ! empty( $coupon ) ) {
 			$renewal_coupons   = WC()->session->get( 'wcs_renewal_coupons', array() );
-			$use_bools         = WC_Subscriptions::is_woocommerce_pre( '3.0' ); // Some coupon properties have changed from accepting 'no' and 'yes' to true and false args.
+			$use_bools         = wcs_is_woocommerce_pre( '3.0' ); // Some coupon properties have changed from accepting 'no' and 'yes' to true and false args.
 			$coupon_properties = array();
 			$property_defaults = array(
 				'discount_type'               => '',
@@ -1518,7 +1518,7 @@ class WCS_Cart_Renewal {
 	 */
 	public function update_line_item_cart_data( $item_id, $cart_item_data, $cart_item_key ) {
 
-		if ( false === WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		if ( false === wcs_is_woocommerce_pre( '3.0' ) ) {
 			_deprecated_function( __METHOD__, '2.2.0 and WooCommerce 3.0', __CLASS__ . '::add_line_item_meta( $order_item, $cart_item_key, $cart_item )' );
 		}
 

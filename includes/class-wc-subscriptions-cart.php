@@ -120,6 +120,9 @@ class WC_Subscriptions_Cart {
 
 		// Add Subscriptions data to cart items.
 		add_filter( 'woocommerce_get_item_data', __CLASS__ . '::woocommerce_get_item_data', 10, 2 );
+
+		// Redirect the user immediately to the checkout page after clicking "Sign Up Now" buttons to encourage immediate checkout
+		add_filter( 'woocommerce_add_to_cart_redirect', array( __CLASS__, 'add_to_cart_redirect' ) );
 	}
 
 	/**
@@ -129,7 +132,7 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function attach_dependant_hooks() {
 		// WooCommerce determines if free shipping is available using the WC->cart total and coupons, we need to recalculate its availability when obtaining shipping methods for a recurring cart
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.2' ) ) {
 			add_filter( 'woocommerce_shipping_free_shipping_is_available', array( __CLASS__, 'maybe_recalculate_shipping_method_availability' ), 10, 2 );
 		} else {
 			add_filter( 'woocommerce_shipping_free_shipping_is_available', array( __CLASS__, 'recalculate_shipping_method_availability' ), 10, 3 );
@@ -360,7 +363,7 @@ class WC_Subscriptions_Cart {
 		if ( apply_filters( 'wcs_remove_fees_from_initial_cart', $remove_fees_from_cart, $cart, $recurring_carts ) ) {
 			$cart_fees = WC()->cart->get_fees();
 
-			if ( WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
+			if ( wcs_is_woocommerce_pre( '3.2' ) ) {
 				foreach ( $cart_fees as $fee_index => $fee ) {
 					WC()->cart->fees[ $fee_index ]->amount = 0;
 					WC()->cart->fees[ $fee_index ]->tax    = 0;
@@ -712,7 +715,7 @@ class WC_Subscriptions_Cart {
 				array(
 					'price'           => $product_subtotal,
 					'sign_up_fee'     => $sign_up_fee_string,
-					'tax_calculation' => WC_Subscriptions::is_woocommerce_pre( '4.4' ) ? WC()->cart->tax_display_cart : WC()->cart->get_tax_price_display_mode(),
+					'tax_calculation' => wcs_is_woocommerce_pre( '4.4' ) ? WC()->cart->tax_display_cart : WC()->cart->get_tax_price_display_mode(),
 				)
 			);
 
@@ -981,7 +984,7 @@ class WC_Subscriptions_Cart {
 	public static function cart_product_price( $price, $product ) {
 
 		if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
-			$tax_price_display_mode = WC_Subscriptions::is_woocommerce_pre( '4.4' ) ? WC()->cart->tax_display_cart : WC()->cart->get_tax_price_display_mode();
+			$tax_price_display_mode = wcs_is_woocommerce_pre( '4.4' ) ? WC()->cart->tax_display_cart : WC()->cart->get_tax_price_display_mode();
 			$price                  = WC_Subscriptions_Product::get_price_string(
 				$product,
 				array(
@@ -1297,7 +1300,7 @@ class WC_Subscriptions_Cart {
 			return $is_available;
 		}
 
-		if ( ! WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
+		if ( ! wcs_is_woocommerce_pre( '3.2' ) ) {
 			wcs_doing_it_wrong( __METHOD__, 'This method should no longer be used on WC 3.2.0 and newer. Use WC_Subscriptions_Cart::recalculate_shipping_method_availability() and pass the specific shipping method as the third parameter instead.', '2.5.6' );
 		}
 
@@ -1488,6 +1491,47 @@ class WC_Subscriptions_Cart {
 		}
 
 		return $default_method;
+	}
+
+	/**
+	 * Redirects the customer to the cart after they add a subscription to the cart.
+	 *
+	 * Only enabled if multiple checkout is not enabled.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param string $url The cart redirect $url.
+	 * @return string $url.
+	 */
+	public static function add_to_cart_redirect( $url ) {
+		if ( ! isset( $_REQUEST['add-to-cart'] ) || ! is_numeric( $_REQUEST['add-to-cart'] ) ) {
+			return $url;
+		}
+
+		// If product is of the subscription type
+		if ( ! WC_Subscriptions_Product::is_subscription( absint( $_REQUEST['add-to-cart'] ) ) ) {
+			return $url;
+		}
+
+		// Redirect to checkout if mixed checkout is disabled
+		if ( 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . '_multiple_purchase', 'no' ) ) {
+			return $url;
+		}
+
+		$quantity   = isset( $_REQUEST['quantity'] ) ? $_REQUEST['quantity'] : 1;
+		$product_id = $_REQUEST['add-to-cart'];
+
+		$add_to_cart_notice = wc_add_to_cart_message( array( $product_id => $quantity ), true, true );
+
+		if ( wc_has_notice( $add_to_cart_notice ) ) {
+			$notices                  = wc_get_notices();
+			$add_to_cart_notice_index = array_search( $add_to_cart_notice, $notices['success'] );
+
+			unset( $notices['success'][ $add_to_cart_notice_index ] );
+			wc_set_notices( $notices );
+		}
+
+		return wc_get_checkout_url();
 	}
 
 	/* Deprecated */
@@ -2390,7 +2434,7 @@ class WC_Subscriptions_Cart {
 						return sprintf(
 							// translators: 1$: day of the month (e.g. "23rd") (e.g. "every 23rd of each month").
 							__( 'on the %1$s of each month', 'woocommerce-subscriptions' ),
-							WC_Subscriptions::append_numeral_suffix( $payment_day )
+							wcs_append_numeral_suffix( $payment_day )
 						);
 					}
 				} else {
@@ -2398,14 +2442,14 @@ class WC_Subscriptions_Cart {
 						return sprintf(
 							// translators: 1$: interval (e.g. "3rd") (e.g. "on the last day of every 3rd month").
 							__( 'on the last day of every %1$s month', 'woocommerce-subscriptions' ),
-							WC_Subscriptions::append_numeral_suffix( $interval )
+							wcs_append_numeral_suffix( $interval )
 						);
 					} else {
 						return sprintf(
 							// translators: on the, 1$: <date> day of every, 2$: <interval> month (e.g. "on the 23rd day of every 2nd month").
 							__( 'on the %1$s day of every %2$s month', 'woocommerce-subscriptions' ),
-							WC_Subscriptions::append_numeral_suffix( $payment_day ),
-							WC_Subscriptions::append_numeral_suffix( $interval )
+							wcs_append_numeral_suffix( $payment_day ),
+							wcs_append_numeral_suffix( $interval )
 						);
 					}
 				}
@@ -2416,15 +2460,15 @@ class WC_Subscriptions_Cart {
 						// translators: on, 1$: <date>, 2$: <month> each year (e.g. "on March 15th each year").
 						__( 'on %1$s %2$s each year', 'woocommerce-subscriptions' ),
 						$wp_locale->month[ $payment_day['month'] ],
-						WC_Subscriptions::append_numeral_suffix( $payment_day['day'] )
+						wcs_append_numeral_suffix( $payment_day['day'] )
 					);
 				} else {
 					return sprintf(
 						// translators: 1$: month (e.g. "March"), 2$: day of the month (e.g. "23rd), 3$: interval year (r.g  March 23rd every 2nd year").
 						__( 'on %1$s %2$s every %3$s year', 'woocommerce-subscriptions' ),
 						$wp_locale->month[ $payment_day['month'] ],
-						WC_Subscriptions::append_numeral_suffix( $payment_day['day'] ),
-						WC_Subscriptions::append_numeral_suffix( $interval )
+						wcs_append_numeral_suffix( $payment_day['day'] ),
+						wcs_append_numeral_suffix( $interval )
 					);
 				}
 				break;
@@ -2491,7 +2535,7 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function add_shipping_method_post_data() {
 		wcs_deprecated_function( __METHOD__, '3.1.0' );
-		if ( ! WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) {
+		if ( ! wcs_is_woocommerce_pre( '2.6' ) ) {
 			return;
 		}
 

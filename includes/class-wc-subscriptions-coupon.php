@@ -108,7 +108,7 @@ class WC_Subscriptions_Coupon {
 	 * @author Jeremy Pry
 	 */
 	public static function maybe_add_recurring_coupon_hooks() {
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.2' ) ) {
 			return;
 		}
 
@@ -832,7 +832,7 @@ class WC_Subscriptions_Coupon {
 	 *                   A value of 0 is for unlimited usage.
 	 */
 	public static function get_coupon_limit( $code ) {
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.2' ) ) {
 			return false;
 		}
 

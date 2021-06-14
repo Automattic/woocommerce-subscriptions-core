@@ -43,7 +43,7 @@ class WCS_Admin_Meta_Boxes {
 		add_action( 'woocommerce_order_action_wcs_create_pending_renewal', array( __CLASS__, 'create_pending_renewal_action_request' ), 10, 1 );
 		add_action( 'woocommerce_order_action_wcs_create_pending_parent', array( __CLASS__, 'create_pending_parent_action_request' ), 10, 1 );
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.2' ) ) {
 			add_filter( 'woocommerce_resend_order_emails_available', array( __CLASS__, 'remove_order_email_actions' ), 0, 1 );
 		}
 
@@ -66,6 +66,8 @@ class WCS_Admin_Meta_Boxes {
 		add_action( 'woocommerce_before_save_order_items', array( __CLASS__, 'update_subtracted_base_location_tax_meta' ), 10, 2 );
 
 		add_action( 'woocommerce_before_save_order_items', array( __CLASS__, 'update_subtracted_base_location_taxes_amount' ), 10, 2 );
+
+		add_action( 'wp_ajax_wcs_get_customer_orders', array( __CLASS__, 'get_customer_orders' ) );
 	}
 
 	/**
@@ -125,7 +127,7 @@ class WCS_Admin_Meta_Boxes {
 
 			wp_localize_script( 'wcs-admin-meta-boxes-subscription', 'wcs_admin_meta_boxes', apply_filters( 'woocommerce_subscriptions_admin_meta_boxes_script_parameters', array(
 				'i18n_start_date_notice'         => __( 'Please enter a start date in the past.', 'woocommerce-subscriptions' ),
-				'i18n_past_date_notice'          => WC_Subscriptions::is_duplicate_site() ? __( 'Please enter a date at least 2 minutes into the future.', 'woocommerce-subscriptions' ) : __( 'Please enter a date at least one hour into the future.', 'woocommerce-subscriptions' ),
+				'i18n_past_date_notice'          => WCS_Staging::is_duplicate_site() ? __( 'Please enter a date at least 2 minutes into the future.', 'woocommerce-subscriptions' ) : __( 'Please enter a date at least one hour into the future.', 'woocommerce-subscriptions' ),
 				'i18n_next_payment_start_notice' => __( 'Please enter a date after the trial end.', 'woocommerce-subscriptions' ),
 				'i18n_next_payment_trial_notice' => __( 'Please enter a date after the start date.', 'woocommerce-subscriptions' ),
 				'i18n_trial_end_start_notice'    => __( 'Please enter a date after the start date.', 'woocommerce-subscriptions' ),
@@ -135,7 +137,7 @@ class WCS_Admin_Meta_Boxes {
 				'payment_method'                 => wcs_get_subscription( $post )->get_payment_method(),
 				'search_customers_nonce'         => wp_create_nonce( 'search-customers' ),
 				'get_customer_orders_nonce'      => wp_create_nonce( 'get-customer-orders' ),
-				'is_duplicate_site'              => WC_Subscriptions::is_duplicate_site(),
+				'is_duplicate_site'              => WCS_Staging::is_duplicate_site(),
 			) ) );
 		} else if ( 'shop_order' == $screen_id ) {
 
@@ -151,7 +153,7 @@ class WCS_Admin_Meta_Boxes {
 		}
 
 		// Enqueue the metabox script for coupons.
-		if ( ! WC_Subscriptions::is_woocommerce_pre( '3.2' ) && in_array( $screen_id, array( 'shop_coupon', 'edit-shop_coupon' ) ) ) {
+		if ( ! wcs_is_woocommerce_pre( '3.2' ) && in_array( $screen_id, array( 'shop_coupon', 'edit-shop_coupon' ) ) ) {
 			wp_enqueue_script(
 				'wcs-admin-coupon-meta-boxes',
 				plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/meta-boxes-coupon.js',
@@ -172,7 +174,7 @@ class WCS_Admin_Meta_Boxes {
 		global $theorder;
 
 		if ( wcs_is_subscription( $theorder ) ) {
-			if ( ! WC_Subscriptions::is_woocommerce_pre( '3.2' ) ) {
+			if ( ! wcs_is_woocommerce_pre( '3.2' ) ) {
 				unset( $actions['send_order_details'], $actions['send_order_details_admin'] );
 			}
 
@@ -575,5 +577,37 @@ class WCS_Admin_Meta_Boxes {
 			$line_item->update_meta_data( '_subtracted_base_location_taxes', $new_base_taxes );
 			$line_item->save();
 		}
+	}
+
+	/**
+	 * Gets a list of customer orders via ajax.
+	 *
+	 * Populates the parent order list on the edit subscription screen with orders belonging to the customer.
+	 *
+	 * @since 4.0.0
+	 */
+	public static function get_customer_orders() {
+		check_ajax_referer( 'get-customer-orders', 'security' );
+
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			wp_die( -1 );
+		}
+
+		$customer_orders = array();
+		$user_id         = absint( $_POST['user_id'] );
+		$orders          = wc_get_orders(
+			array(
+				'customer'       => $user_id,
+				'post_type'      => 'shop_order',
+				'posts_per_page' => '-1',
+			)
+		);
+
+
+		foreach ( $orders as $order ) {
+			$customer_orders[ $order->get_id() ] = $order->get_order_number();
+		}
+
+		wp_send_json( $customer_orders );
 	}
 }

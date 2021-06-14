@@ -160,7 +160,7 @@ function wcs_get_subscription_period_interval_strings( $interval = '' ) {
 
 	foreach ( range( 2, 6 ) as $i ) {
 		// translators: period interval, placeholder is ordinal (eg "$10 every _2nd/3rd/4th_", etc)
-		$intervals[ $i ] = sprintf( _x( 'every %s', 'period interval with ordinal number (e.g. "every 2nd"', 'woocommerce-subscriptions' ), WC_Subscriptions::append_numeral_suffix( $i ) );
+		$intervals[ $i ] = sprintf( _x( 'every %s', 'period interval with ordinal number (e.g. "every 2nd"', 'woocommerce-subscriptions' ), wcs_append_numeral_suffix( $i ) );
 	}
 
 	$intervals = apply_filters( 'woocommerce_subscription_period_interval_strings', $intervals );
@@ -880,4 +880,54 @@ function wcs_format_datetime( $date, $format = '' ) {
 	}
 
 	return $formatted_datetime;
+}
+
+/**
+ * Compares two periods and returns the longest period.
+ *
+ * @since 4.0.0
+ *
+ * @param string $current_period Period string. Can be 'day', 'week', 'month', 'year'.
+ * @param string $new_period     Period string. Can be 'day', 'week', 'month', 'year'.
+ *
+ * @return string The longest period between the two provided.
+ */
+function wcs_get_longest_period( $current_period, $new_period ) {
+
+	if ( empty( $current_period ) || 'year' == $new_period ) {
+		$longest_period = $new_period;
+	} elseif ( 'month' === $new_period && in_array( $current_period, array( 'week', 'day' ) ) ) {
+		$longest_period = $new_period;
+	} elseif ( 'week' === $new_period && 'day' === $current_period ) {
+		$longest_period = $new_period;
+	} else {
+		$longest_period = $current_period;
+	}
+
+	return $longest_period;
+}
+
+/**
+ * Compares two periods and returns the shortest period.
+ *
+ * @since 4.0.0
+ *
+ * @param string $current_period A period string. Can be 'day', 'week', 'month', 'year'.
+ * @param string $new_period     A period string. Can be 'day', 'week', 'month', 'year'.
+ *
+ * @return string The shortest period between the two provided.
+ */
+function wcs_get_shortest_period( $current_period, $new_period ) {
+
+	if ( empty( $current_period ) || 'day' == $new_period ) {
+		$shortest_period = $new_period;
+	} elseif ( 'week' === $new_period && in_array( $current_period, array( 'month', 'year' ) ) ) {
+		$shortest_period = $new_period;
+	} elseif ( 'month' === $new_period && 'year' === $current_period ) {
+		$shortest_period = $new_period;
+	} else {
+		$shortest_period = $current_period;
+	}
+
+	return $shortest_period;
 }

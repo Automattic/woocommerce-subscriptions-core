@@ -154,7 +154,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function attach_dependant_hooks() {
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 
 			// For order items created as part of a switch, keep a record of the prorated amounts
 			add_action( 'woocommerce_add_order_item_meta', array( __CLASS__, 'add_order_item_meta' ), 10, 3 );
@@ -802,7 +802,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function add_order_item_meta( $order_item_id, $cart_item, $cart_item_key ) {
 
-		if ( false === WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		if ( false === wcs_is_woocommerce_pre( '3.0' ) ) {
 			_deprecated_function( __METHOD__, '2.2.0 and WooCommerce 3.0.0', __CLASS__ . '::add_order_line_item_meta( $order_item, $cart_item_key, $cart_item )' );
 		}
 
@@ -876,7 +876,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function set_subscription_item_meta( $item_id, $cart_item, $cart_item_key ) {
 
-		if ( ! WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		if ( ! wcs_is_woocommerce_pre( '3.0' ) ) {
 			_deprecated_function( __METHOD__, '2.2.0', __CLASS__ . '::add_subscription_line_item_meta( $order_item, $cart_item_key, $cart_item )' );
 		}
 
@@ -951,7 +951,7 @@ class WC_Subscriptions_Switcher {
 					if ( $is_single_item_subscription || ( false === $is_different_billing_schedule && false === $is_different_payment_date && false === $is_different_length ) ) {
 
 						// Add the new item
-						if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+						if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 							$item_id = WC_Subscriptions_Checkout::add_cart_item( $subscription, $cart_item, $cart_item_key );
 							wcs_update_order_item_type( $item_id, 'line_item_pending_switch', $subscription->get_id() );
 						} else {
@@ -1098,7 +1098,7 @@ class WC_Subscriptions_Switcher {
 
 					WC_Subscriptions_Checkout::add_shipping( $subscription, $recurring_cart );
 
-					if ( ! WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+					if ( ! wcs_is_woocommerce_pre( '3.0' ) ) {
 						// We must save the subscription, we need the Shipping method saved
 						// otherwise the ID is bogus (new:1) and we need it.
 						$subscription->save();
@@ -1113,7 +1113,7 @@ class WC_Subscriptions_Switcher {
 						}
 					}
 
-					if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+					if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 						$subscription->set_total( $subscription_shipping_total, 'shipping' );
 					} else {
 						$subscription->set_shipping_total( $subscription_shipping_total );

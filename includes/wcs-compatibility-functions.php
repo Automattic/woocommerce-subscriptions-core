@@ -366,7 +366,7 @@ function wcs_get_coupon_property( $coupon, $property ) {
 
 	$value = '';
 
-	if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+	if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 		$value = $coupon->$property;
 	} else {
 		// Some coupon properties don't map nicely to their corresponding getter function. This array contains those exceptions.
@@ -409,7 +409,7 @@ function wcs_get_coupon_property( $coupon, $property ) {
  */
 function wcs_set_coupon_property( &$coupon, $property, $value ) {
 
-	if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+	if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 		$coupon->$property = $value;
 	} else {
 		// Some coupon properties don't map nicely to their corresponding setter function. This array contains those exceptions.
@@ -569,4 +569,16 @@ function wcs_get_used_coupon_codes( $order ) {
  */
 function wcs_add_woocommerce_dependent_action( $tag, $function, $woocommerce_version, $operator, $priority = 10, $number_of_args = 1 ) {
 	WCS_Dependent_Hook_Manager::add_woocommerce_dependent_action( $tag, $function, $woocommerce_version, $operator, $priority, $number_of_args );
+}
+
+/**
+ * Checks if the installed version of WooCommerce is older than a specified version.
+ *
+ * @since 4.0.0
+ *
+ * @param  string The version string to check in a version_compare() compatible format.
+ * @return bool   Whether the installed version of WC is prior to the given version string.
+ */
+function wcs_is_woocommerce_pre( $version ) {
+	return ! defined( 'WC_VERSION' ) || version_compare( WC_VERSION, $version, '<' );
 }

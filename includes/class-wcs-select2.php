@@ -51,7 +51,7 @@ class WCS_Select2 {
 	 * @since 2.2
 	 */
 	protected function get_property_name( $property ) {
-		$data_properties = WC_Subscriptions::is_woocommerce_pre( '3.0' ) ? array( 'placeholder', 'selected', 'allow_clear' ) : array( 'placeholder', 'allow_clear' );
+		$data_properties = wcs_is_woocommerce_pre( '3.0' ) ? array( 'placeholder', 'selected', 'allow_clear' ) : array( 'placeholder', 'allow_clear' );
 		return in_array( $property, $data_properties ) ? 'data-' . $property : $property;
 	}
 
@@ -106,7 +106,7 @@ class WCS_Select2 {
 	public function get_html() {
 		$html = "\n<!--select2 -->\n";
 
-		if ( WC_Subscriptions::is_woocommerce_pre( '3.0' ) ) {
+		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 			if ( isset( $this->attributes['class'] ) && $this->attributes['class'] === 'wc-enhanced-select' ) {
 				$html .= '<select ';
 				$html .= $this->attributes_to_html( $this->attributes );
