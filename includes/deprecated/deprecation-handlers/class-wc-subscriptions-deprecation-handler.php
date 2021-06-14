@@ -118,7 +118,7 @@ class WC_Subscriptions_Deprecation_Handler extends WCS_Deprecated_Functions_Hand
 			'version'     => '4.0.0',
 		),
 		'wcopc_subscription_add_to_cart' => array(
-			'replacement' => array( 'WCS_Template_Loader', 'get_wcopc_subscription_add_to_cart' ),
+			'replacement' => array( 'WCS_Template_Loader', 'get_opc_subscription_add_to_cart' ),
 			'version'     => '4.0.0',
 		),
 		'add_to_cart_redirect' => array(
