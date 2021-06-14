@@ -89,6 +89,10 @@ class WC_Subscriptions_Plugin {
 
 		// Attach the callback to load version dependant classes.
 		add_action( 'plugins_loaded', array( $this, 'init_version_dependant_classes' ) );
+
+		// Initialised the related order and customter data store instances.
+		add_action( 'plugins_loaded', 'WCS_Related_Order_Store::instance' );
+		add_action( 'plugins_loaded', 'WCS_Customer_Store::instance' );
 	}
 
 	/**
