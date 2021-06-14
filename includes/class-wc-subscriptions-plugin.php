@@ -43,4 +43,43 @@ class WC_Subscriptions_Plugin {
 		// Load libraries.
 		require_once dirname( $this->file ) . '/includes/libraries/action-scheduler/action-scheduler.php';
 	}
+
+	/**
+	 * Initialise the plugin.
+	 */
+	public function init() {
+		WC_Subscriptions_Coupon::init();
+		WC_Subscriptions_Product::init();
+		WC_Subscriptions_Admin::init();
+		WC_Subscriptions_Manager::init();
+		WC_Subscriptions_Cart::init();
+		WC_Subscriptions_Cart_Validator::init();
+		WC_Subscriptions_Order::init();
+		WC_Subscriptions_Renewal_Order::init();
+		WC_Subscriptions_Checkout::init();
+		WC_Subscriptions_Email::init();
+		WC_Subscriptions_Addresses::init();
+		WC_Subscriptions_Change_Payment_Gateway::init();
+		WC_Subscriptions_Payment_Gateways::init();
+		WCS_PayPal_Standard_Change_Payment_Method::init();
+		WC_Subscriptions_Switcher::init();
+		WC_Subscriptions_Tracker::init();
+		WCS_Upgrade_Logger::init();
+		new WCS_Cart_Renewal();
+		new WCS_Cart_Resubscribe();
+		new WCS_Cart_Initial_Payment();
+		WCS_Download_Handler::init();
+		WCS_Retry_Manager::init();
+		new WCS_Cart_Switch();
+		WCS_Limiter::init();
+		WCS_Admin_System_Status::init();
+		WCS_Upgrade_Notice_Manager::init();
+		WCS_Staging::init();
+		WCS_Permalink_Manager::init();
+		WCS_Custom_Order_Item_Manager::init();
+		WCS_Early_Renewal_Modal_Handler::init();
+		WCS_Dependent_Hook_Manager::init();
+		WCS_Admin_Product_Import_Export_Manager::init();
+		WC_Subscriptions_Frontend_Scripts::init();
+	}
 }
