@@ -22,6 +22,7 @@ class WC_Subscriptions_Plugin {
 	public function __construct( $file ) {
 		$this->file = $file;
 		$this->define_constants();
+		$this->includes();
 	}
 
 	/**
@@ -29,5 +30,14 @@ class WC_Subscriptions_Plugin {
 	 */
 	protected function define_constants() {
 		define( 'WCS_INIT_TIMESTAMP', gmdate( 'U' ) );
+	}
+
+	/**
+	 * Includes required files.
+	 */
+	protected function includes() {
+		// Load function files.
+		require_once dirname( $this->file ) . '/wcs-functions.php';
+		require_once dirname( $this->file ) . '/includes/gateways/paypal/includes/wcs-paypal-functions.php';
 	}
 }
