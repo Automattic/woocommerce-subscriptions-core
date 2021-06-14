@@ -169,6 +169,9 @@ class WC_Subscriptions_Deprecation_Handler extends WCS_Deprecated_Functions_Hand
 			'replacement' => array( array( 'WC_Subscriptions', 'get_plugin' ), 'init_version_dependant_classes' ),
 			'version'     => '4.0.0',
 		),
+		'attach_dependant_hooks' => array(
+			'version' => '4.0.0',
+		),
 	);
 
 	/**
