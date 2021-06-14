@@ -86,5 +86,79 @@ class WC_Subscriptions_Plugin {
 		add_action( 'after_setup_theme', array( 'WC_Subscriptions_Upgrader', 'init' ), 11 );
 		add_action( 'init', array( 'WC_PayPal_Standard_Subscriptions', 'init' ), 11 );
 		add_action( 'init', array( 'WCS_WC_Admin_Manager', 'init' ), 11 );
+
+		// Attach the callback to load version dependant classes.
+		add_action( 'plugins_loaded', array( $this, 'init_version_dependant_classes' ) );
+	}
+
+	/**
+	 * Initialises classes which need to be loaded after other plugins have loaded.
+	 *
+	 * Hooked onto 'plugins_loaded' by @see WC_Subscriptions_Plugin::init()
+	 */
+	public function init_version_dependant_classes() {
+		new WCS_Admin_Post_Types();
+		new WCS_Admin_Meta_Boxes();
+		new WCS_Admin_Reports();
+		new WCS_Report_Cache_Manager();
+		WCS_Webhooks::init();
+		new WCS_Auth();
+		WCS_API::init();
+		WCS_Template_Loader::init();
+		WCS_Remove_Item::init();
+		WCS_User_Change_Status_Handler::init();
+		WCS_My_Account_Payment_Methods::init();
+		WCS_My_Account_Auto_Renew_Toggle::init();
+		new WCS_Deprecated_Filter_Hooks();
+
+		// On some loads the WC_Query doesn't exist. To avoid a fatal, only load the WCS_Query class when it exists.
+		if ( class_exists( 'WC_Query' ) ) {
+			new WCS_Query();
+		}
+
+		$failed_scheduled_action_manager = new WCS_Failed_Scheduled_Action_Manager( new WC_Logger() );
+		$failed_scheduled_action_manager->init();
+
+		/**
+		 * Allow third-party code to enable running v2.0 hook deprecation handling for stores that might want to check for deprecated code.
+		 *
+		 * @param bool Whether the hook deprecation handlers should be loaded. False by default.
+		 */
+		if ( apply_filters( 'woocommerce_subscriptions_load_deprecation_handlers', false ) ) {
+			new WCS_Action_Deprecator();
+			new WCS_Filter_Deprecator();
+			new WCS_Dynamic_Action_Deprecator();
+			new WCS_Dynamic_Filter_Deprecator();
+		}
+
+		// Only load privacy handling on WC applicable versions.
+		if ( class_exists( 'WC_Abstract_Privacy' ) ) {
+			new WCS_Privacy();
+		}
+
+		if ( class_exists( 'WCS_Early_Renewal' ) ) {
+			$notice = new WCS_Admin_Notice( 'error' );
+
+			// translators: 1-2: opening/closing <b> tags, 3: Subscriptions version.
+			$notice->set_simple_content( sprintf( __( '%1$sWarning!%2$s We can see the %1$sWooCommerce Subscriptions Early Renewal%2$s plugin is active. Version %3$s of %1$sWooCommerce Subscriptions%2$s comes with that plugin\'s functionality packaged into the core plugin. Please deactivate WooCommerce Subscriptions Early Renewal to avoid any conflicts.', 'woocommerce-subscriptions' ), '<b>', '</b>', self::$version ) );
+			$notice->set_actions(
+				array(
+					array(
+						'name' => __( 'Installed Plugins', 'woocommerce-subscriptions' ),
+						'url'  => admin_url( 'plugins.php' ),
+					),
+				)
+			);
+
+			$notice->display();
+		} else {
+			WCS_Early_Renewal_Manager::init();
+
+			require_once dirname( $this->file ) . '/includes/early-renewal/wcs-early-renewal-functions.php';
+
+			if ( WCS_Early_Renewal_Manager::is_early_renewal_enabled() ) {
+				new WCS_Cart_Early_Renewal();
+			}
+		}
 	}
 }
