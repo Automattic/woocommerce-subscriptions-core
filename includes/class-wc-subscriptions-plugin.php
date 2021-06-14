@@ -17,6 +17,13 @@ class WC_Subscriptions_Plugin {
 	protected $file = '';
 
 	/**
+	 * The subscription scheduler instance.
+	 *
+	 * @var WCS_Action_Scheduler
+	 */
+	protected $scheduler = null;
+
+	/**
 	 * Initialise class and attach callbacks.
 	 */
 	public function __construct( $file ) {
@@ -93,6 +100,10 @@ class WC_Subscriptions_Plugin {
 		// Initialised the related order and customter data store instances.
 		add_action( 'plugins_loaded', 'WCS_Related_Order_Store::instance' );
 		add_action( 'plugins_loaded', 'WCS_Customer_Store::instance' );
+
+		// Initialise the scheduler.
+		$scheduler_class = apply_filters( 'woocommerce_subscriptions_scheduler', 'WCS_Action_Scheduler' );
+		$this->scheduler = new $scheduler_class();
 	}
 
 	/**
