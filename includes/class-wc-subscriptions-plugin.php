@@ -39,5 +39,8 @@ class WC_Subscriptions_Plugin {
 		// Load function files.
 		require_once dirname( $this->file ) . '/wcs-functions.php';
 		require_once dirname( $this->file ) . '/includes/gateways/paypal/includes/wcs-paypal-functions.php';
+
+		// Load libraries.
+		require_once dirname( $this->file ) . '/includes/libraries/action-scheduler/action-scheduler.php';
 	}
 }
