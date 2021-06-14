@@ -81,5 +81,10 @@ class WC_Subscriptions_Plugin {
 		WCS_Dependent_Hook_Manager::init();
 		WCS_Admin_Product_Import_Export_Manager::init();
 		WC_Subscriptions_Frontend_Scripts::init();
+
+		add_action( 'init', array( 'WC_Subscriptions_Synchroniser', 'init' ) );
+		add_action( 'after_setup_theme', array( 'WC_Subscriptions_Upgrader', 'init' ), 11 );
+		add_action( 'init', array( 'WC_PayPal_Standard_Subscriptions', 'init' ), 11 );
+		add_action( 'init', array( 'WCS_WC_Admin_Manager', 'init' ), 11 );
 	}
 }
