@@ -21,5 +21,13 @@ class WC_Subscriptions_Plugin {
 	 */
 	public function __construct( $file ) {
 		$this->file = $file;
+		$this->define_constants();
+	}
+
+	/**
+	 * Defines WC Subscriptions contants.
+	 */
+	protected function define_constants() {
+		define( 'WCS_INIT_TIMESTAMP', gmdate( 'U' ) );
 	}
 }
