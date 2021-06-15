@@ -219,6 +219,7 @@ class WC_Subscriptions_Plugin {
 
 		// Add the "Settings | Documentation" links on the Plugins administration screen
 		add_filter( 'plugin_action_links_' . plugin_basename( $this->file ), array( $this, 'add_plugin_action_links' ) );
+		add_action( 'in_plugin_update_message-' . plugin_basename( $this->file ), array( __CLASS__, 'update_notice' ), 10, 2 );
 	}
 
 	/**
@@ -396,5 +397,28 @@ class WC_Subscriptions_Plugin {
 		);
 
 		return array_merge( $plugin_links, $links );
+	}
+
+	/**
+	 * Displays an upgrade notice for stores upgrading to 2.0.0.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param array $plugin_data Information about the plugin.
+	 * @param array $r response from the server about the new version.
+	 */
+	public function update_notice( $plugin_data, $r ) {
+
+		// Bail if the update notice is not relevant (new version is not yet 2.0 or we're already on 2.0)
+		if ( version_compare( '2.0.0', $plugin_data['new_version'], '>' ) || version_compare( '2.0.0', $plugin_data['Version'], '<=' ) ) {
+			return;
+		}
+
+		$update_notice = '<div class="wc_plugin_upgrade_notice">';
+		// translators: placeholders are opening and closing tags. Leads to docs on version 2
+		$update_notice .= sprintf( __( 'Warning! Version 2.0 is a major update to the WooCommerce Subscriptions extension. Before updating, please create a backup, update all WooCommerce extensions and test all plugins, custom code and payment gateways with version 2.0 on a staging site. %1$sLearn more about the changes in version 2.0 &raquo;%2$s', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/version-2/">', '</a>' );
+		$update_notice .= '</div> ';
+
+		echo wp_kses_post( $update_notice );
 	}
 }
