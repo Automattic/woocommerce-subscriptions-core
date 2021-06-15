@@ -226,6 +226,8 @@ class WC_Subscriptions_Plugin {
 		// Add the "Settings | Documentation" links on the Plugins administration screen
 		add_filter( 'plugin_action_links_' . plugin_basename( $this->file ), array( $this, 'add_plugin_action_links' ) );
 		add_action( 'in_plugin_update_message-' . plugin_basename( $this->file ), array( __CLASS__, 'update_notice' ), 10, 2 );
+
+		add_action( 'init', array( $this, 'activate_plugin' ) );
 	}
 
 	/**
@@ -235,6 +237,24 @@ class WC_Subscriptions_Plugin {
 	 */
 	public function get_autoloader() {
 		return $this->autoloader;
+	}
+
+	/**
+	 * Gets the product type name.
+	 *
+	 * @return string The product type name.
+	 */
+	protected function get_product_type_name() {
+		return WC_Subscriptions::$name;
+	}
+
+	/**
+	 * Gets the activation transient name.
+	 *
+	 * @return string The transient name used to record when the plugin was activated.
+	 */
+	protected function get_activation_transient() {
+		return WC_Subscriptions::$activation_transient;
 	}
 
 	/**
@@ -373,6 +393,49 @@ class WC_Subscriptions_Plugin {
 		delete_option( WC_Subscriptions_Admin::$option_prefix . '_is_active' );
 		flush_rewrite_rules();
 		do_action( 'woocommerce_subscriptions_deactivated' );
+	}
+
+	/**
+	 * Runs the required process on plugin activation.
+	 *
+	 * @since 4.0.0
+	 */
+	public static function activate_plugin() {
+		$is_active = get_option( WC_Subscriptions_Admin::$option_prefix . '_is_active', false );
+
+		if ( false === $is_active ) {
+
+			// Add the "Subscriptions" product type
+			if ( ! get_term_by( 'slug', $this->get_product_type_name(), 'product_type' ) ) {
+				wp_insert_term( $this->get_product_type_name(), 'product_type' );
+			}
+
+			// Maybe add the "Variable Subscriptions" product type
+			if ( ! get_term_by( 'slug', 'variable-subscription', 'product_type' ) ) {
+				wp_insert_term( __( 'Variable Subscription', 'woocommerce-subscriptions' ), 'product_type' );
+			}
+
+			// If no Subscription settings exist, its the first activation, so add defaults
+			if ( get_option( WC_Subscriptions_Admin::$option_prefix . '_cancelled_role', false ) == false ) {
+				WC_Subscriptions_Admin::add_default_settings();
+			}
+
+			// if this is the first time activating WooCommerce Subscription we want to enable PayPal debugging by default.
+			if ( '0' == get_option( WC_Subscriptions_Admin::$option_prefix . '_previous_version', '0' ) && false == get_option( WC_Subscriptions_admin::$option_prefix . '_paypal_debugging_default_set', false ) ) {
+				$paypal_settings          = get_option( 'woocommerce_paypal_settings' );
+				$paypal_settings['debug'] = 'yes';
+				update_option( 'woocommerce_paypal_settings', $paypal_settings );
+				update_option( WC_Subscriptions_admin::$option_prefix . '_paypal_debugging_default_set', 'true' );
+			}
+
+			update_option( WC_Subscriptions_Admin::$option_prefix . '_is_active', true );
+
+			set_transient( $this->get_activation_transient(), true, 60 * 60 );
+
+			flush_rewrite_rules();
+
+			do_action( 'woocommerce_subscriptions_activated' );
+		}
 	}
 
 	/**
