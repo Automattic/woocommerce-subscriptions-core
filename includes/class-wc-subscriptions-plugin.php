@@ -17,6 +17,13 @@ class WC_Subscriptions_Plugin {
 	protected $file = '';
 
 	/**
+	 * The plugin's version string.
+	 *
+	 * @var string
+	 */
+	protected $version = '';
+
+	/**
 	 * The subscription scheduler instance.
 	 *
 	 * @var WCS_Action_Scheduler
@@ -40,8 +47,9 @@ class WC_Subscriptions_Plugin {
 	/**
 	 * Initialise class and attach callbacks.
 	 */
-	public function __construct( $file, $autoloader ) {
-		$this->file = $file;
+	public function __construct( $file, $version, $autoloader ) {
+		$this->file       = $file;
+		$this->version    = $version;
 		$this->autoloader = $autoloader ? $autoloader : new WCS_Autoloader( dirname( $this->file ) );
 
 		$this->define_constants();
@@ -176,7 +184,7 @@ class WC_Subscriptions_Plugin {
 			$notice = new WCS_Admin_Notice( 'error' );
 
 			// translators: 1-2: opening/closing <b> tags, 3: Subscriptions version.
-			$notice->set_simple_content( sprintf( __( '%1$sWarning!%2$s We can see the %1$sWooCommerce Subscriptions Early Renewal%2$s plugin is active. Version %3$s of %1$sWooCommerce Subscriptions%2$s comes with that plugin\'s functionality packaged into the core plugin. Please deactivate WooCommerce Subscriptions Early Renewal to avoid any conflicts.', 'woocommerce-subscriptions' ), '<b>', '</b>', self::$version ) );
+			$notice->set_simple_content( sprintf( __( '%1$sWarning!%2$s We can see the %1$sWooCommerce Subscriptions Early Renewal%2$s plugin is active. Version %3$s of %1$sWooCommerce Subscriptions%2$s comes with that plugin\'s functionality packaged into the core plugin. Please deactivate WooCommerce Subscriptions Early Renewal to avoid any conflicts.', 'woocommerce-subscriptions' ), '<b>', '</b>', $this->version ) );
 			$notice->set_actions(
 				array(
 					array(
