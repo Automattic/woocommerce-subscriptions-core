@@ -236,6 +236,8 @@ class WC_Subscriptions_Plugin {
 		add_action( 'in_plugin_update_message-' . plugin_basename( $this->file ), array( __CLASS__, 'update_notice' ), 10, 2 );
 
 		add_action( 'init', array( $this, 'activate_plugin' ) );
+
+		add_filter( 'action_scheduler_queue_runner_batch_size', array( $this, 'reduce_multisite_action_scheduler_batch_size' ) );
 	}
 
 	/**
@@ -517,5 +519,24 @@ class WC_Subscriptions_Plugin {
 				$integration_registry->register( new WCS_Blocks_Integration() );
 			}
 		);
+	}
+
+	/**
+	 * Reduces the default Action Scheduler batch size on multi-sites.
+	 *
+	 * Renewals use a lot more memory on WordPress multisite (10-15mb instead of 0.1-1mb) so
+	 * we need to reduce the number of renewals run in each request.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param int $batch_size The default Action Scheduler batch size.
+	 * @return int
+	 */
+	public static function reduce_multisite_action_scheduler_batch_size( $batch_size ) {
+		if ( is_multisite() ) {
+			$batch_size = 10;
+		}
+
+		return $batch_size;
 	}
 }

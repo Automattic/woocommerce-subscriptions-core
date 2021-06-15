@@ -208,6 +208,10 @@ class WC_Subscriptions_Deprecation_Handler extends WCS_Deprecated_Functions_Hand
 			'replacement' => array( WC_Subscriptions::get_plugin(), 'activate_plugin' ),
 			'version'     => '4.0.0',
 		),
+		'action_scheduler_multisite_batch_size' => array(
+			'replacement' => array( WC_Subscriptions::get_plugin(), 'reduce_multisite_action_scheduler_batch_size' ),
+			'version'     => '4.0.0',
+		),
 	);
 
 	/**
