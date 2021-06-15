@@ -26,10 +26,13 @@ class WC_Subscriptions_Plugin {
 	/**
 	 * Initialise class and attach callbacks.
 	 */
-	public function __construct( $file ) {
+	public function __construct( $file, $autoloader ) {
 		$this->file = $file;
+		$this->autoloader = $autoloader ? $autoloader : new WCS_Autoloader( dirname( $this->file ) );
+
 		$this->define_constants();
 		$this->includes();
+		$this->init();
 	}
 
 	/**
