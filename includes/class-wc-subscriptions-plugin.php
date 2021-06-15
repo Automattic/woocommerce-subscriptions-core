@@ -47,6 +47,7 @@ class WC_Subscriptions_Plugin {
 		$this->define_constants();
 		$this->includes();
 		$this->init();
+		$this->init_hooks();
 	}
 
 	/**
@@ -198,11 +199,92 @@ class WC_Subscriptions_Plugin {
 	}
 
 	/**
+	 * Attaches the hooks to init/setup the plugin.
+	 *
+	 * @since 4.0.0
+	 */
+	public function init_hooks() {
+		// Register our custom subscription order type after WC_Post_types::register_post_types()
+		add_action( 'init', array( $this, 'register_order_types' ), 6 );
+	}
+
+	/**
 	 * Gets the autoloader instance.
 	 *
 	 * @return WCS_Autoloader
 	 */
 	public function get_autoloader() {
 		return $this->autoloader;
+	}
+
+	/**
+	 * Registers Subscriptions order types.
+	 *
+	 * @since 4.0.0
+	 */
+	public function register_order_types() {
+		$subscriptions_exist = $this->cache->cache_and_get( 'wcs_do_subscriptions_exist', 'wcs_do_subscriptions_exist' );
+
+		if ( true === apply_filters( 'woocommerce_subscriptions_not_empty', $subscriptions_exist ) ) {
+			$not_found_text = __( 'No Subscriptions found', 'woocommerce-subscriptions' );
+		} else {
+			$not_found_text = '<p>' . __( 'Subscriptions will appear here for you to view and manage once purchased by a customer.', 'woocommerce-subscriptions' ) . '</p>';
+			// translators: placeholders are opening and closing link tags
+			$not_found_text .= '<p>' . sprintf( __( '%1$sLearn more about managing subscriptions &raquo;%2$s', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/store-manager-guide/#section-3" target="_blank">', '</a>' ) . '</p>';
+			// translators: placeholders are opening and closing link tags
+			$not_found_text .= '<p>' . sprintf( __( '%1$sAdd a subscription product &raquo;%2$s', 'woocommerce-subscriptions' ), '<a href="' . esc_url( WC_Subscriptions_Admin::add_subscription_url() ) . '">', '</a>' ) . '</p>';
+		}
+
+		$subscriptions_not_found_text = apply_filters( 'woocommerce_subscriptions_not_found_label', $not_found_text );
+
+		wc_register_order_type(
+			'shop_subscription',
+			apply_filters(
+				'woocommerce_register_post_type_subscription',
+				array(
+					// register_post_type() params
+					'labels'                           => array(
+						'name'               => __( 'Subscriptions', 'woocommerce-subscriptions' ),
+						'singular_name'      => __( 'Subscription', 'woocommerce-subscriptions' ),
+						'add_new'            => _x( 'Add Subscription', 'custom post type setting', 'woocommerce-subscriptions' ),
+						'add_new_item'       => _x( 'Add New Subscription', 'custom post type setting', 'woocommerce-subscriptions' ),
+						'edit'               => _x( 'Edit', 'custom post type setting', 'woocommerce-subscriptions' ),
+						'edit_item'          => _x( 'Edit Subscription', 'custom post type setting', 'woocommerce-subscriptions' ),
+						'new_item'           => _x( 'New Subscription', 'custom post type setting', 'woocommerce-subscriptions' ),
+						'view'               => _x( 'View Subscription', 'custom post type setting', 'woocommerce-subscriptions' ),
+						'view_item'          => _x( 'View Subscription', 'custom post type setting', 'woocommerce-subscriptions' ),
+						'search_items'       => __( 'Search Subscriptions', 'woocommerce-subscriptions' ),
+						'not_found'          => $subscriptions_not_found_text,
+						'not_found_in_trash' => _x( 'No Subscriptions found in trash', 'custom post type setting', 'woocommerce-subscriptions' ),
+						'parent'             => _x( 'Parent Subscriptions', 'custom post type setting', 'woocommerce-subscriptions' ),
+						'menu_name'          => __( 'Subscriptions', 'woocommerce-subscriptions' ),
+					),
+					'description'                      => __( 'This is where subscriptions are stored.', 'woocommerce-subscriptions' ),
+					'public'                           => false,
+					'show_ui'                          => true,
+					'capability_type'                  => 'shop_order',
+					'map_meta_cap'                     => true,
+					'publicly_queryable'               => false,
+					'exclude_from_search'              => true,
+					'show_in_menu'                     => current_user_can( 'manage_woocommerce' ) ? 'woocommerce' : true,
+					'hierarchical'                     => false,
+					'show_in_nav_menus'                => false,
+					'rewrite'                          => false,
+					'query_var'                        => false,
+					'supports'                         => array( 'title', 'comments', 'custom-fields' ),
+					'has_archive'                      => false,
+
+					// wc_register_order_type() params
+					'exclude_from_orders_screen'       => true,
+					'add_order_meta_boxes'             => true,
+					'exclude_from_order_count'         => true,
+					'exclude_from_order_views'         => true,
+					'exclude_from_order_webhooks'      => true,
+					'exclude_from_order_reports'       => true,
+					'exclude_from_order_sales_reports' => true,
+					'class_name'                       => 'WC_Subscription',
+				)
+			)
+		);
 	}
 }
