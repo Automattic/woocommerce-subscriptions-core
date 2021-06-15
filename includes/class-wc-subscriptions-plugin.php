@@ -24,6 +24,20 @@ class WC_Subscriptions_Plugin {
 	protected $scheduler = null;
 
 	/**
+	 * The plugin's autoloader instance.
+	 *
+	 * @var WCS_Autoloader
+	 */
+	protected $autoloader = null;
+
+	/**
+	 * The plugin's cache manager instance.
+	 *
+	 * @var WCS_Cache_Manager
+	 */
+	public $cache = null;
+
+	/**
 	 * Initialise class and attach callbacks.
 	 */
 	public function __construct( $file, $autoloader ) {
@@ -107,6 +121,9 @@ class WC_Subscriptions_Plugin {
 		// Initialise the scheduler.
 		$scheduler_class = apply_filters( 'woocommerce_subscriptions_scheduler', 'WCS_Action_Scheduler' );
 		$this->scheduler = new $scheduler_class();
+
+		// Initialise the cache.
+		$this->cache = WCS_Cache_Manager::get_instance();
 	}
 
 	/**
@@ -178,5 +195,14 @@ class WC_Subscriptions_Plugin {
 				new WCS_Cart_Early_Renewal();
 			}
 		}
+	}
+
+	/**
+	 * Gets the autoloader instance.
+	 *
+	 * @return WCS_Autoloader
+	 */
+	public function get_autoloader() {
+		return $this->autoloader;
 	}
 }
