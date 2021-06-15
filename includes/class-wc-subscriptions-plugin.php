@@ -216,6 +216,9 @@ class WC_Subscriptions_Plugin {
 
 		// Load translation files
 		add_action( 'init', array( $this, 'load_plugin_textdomain' ), 3 );
+
+		// Add the "Settings | Documentation" links on the Plugins administration screen
+		add_filter( 'plugin_action_links_' . plugin_basename( $this->file ), array( $this, 'add_plugin_action_links' ) );
 	}
 
 	/**
@@ -375,5 +378,23 @@ class WC_Subscriptions_Plugin {
 
 		// Then check for a language file in /wp-content/plugins/woocommerce-subscriptions/languages/ (this will be overriden by any file already loaded)
 		load_plugin_textdomain( 'woocommerce-subscriptions', false, $plugin_rel_path );
+	}
+
+	/**
+	 * Adds the settings, docs and support links to the plugin screen.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param string[] $links The plugin's links displayed on the plugin screen.
+	 * @return string[]
+	 */
+	public function add_plugin_action_links( $links ) {
+		$plugin_links = array(
+			'<a href="' . WC_Subscriptions_Admin::settings_tab_url() . '">' . __( 'Settings', 'woocommerce-subscriptions' ) . '</a>',
+			'<a href="http://docs.woocommerce.com/document/subscriptions/">' . _x( 'Docs', 'short for documents', 'woocommerce-subscriptions' ) . '</a>',
+			'<a href="https://woocommerce.com/my-account/marketplace-ticket-form/">' . __( 'Support', 'woocommerce-subscriptions' ) . '</a>',
+		);
+
+		return array_merge( $plugin_links, $links );
 	}
 }

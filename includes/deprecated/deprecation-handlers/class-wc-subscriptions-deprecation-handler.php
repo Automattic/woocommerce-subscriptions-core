@@ -192,6 +192,10 @@ class WC_Subscriptions_Deprecation_Handler extends WCS_Deprecated_Functions_Hand
 			'replacement' => array( WC_Subscriptions::get_plugin(), 'load_plugin_textdomain' ),
 			'version'     => '4.0.0',
 		),
+		'action_links' => array(
+			'replacement' => array( WC_Subscriptions::get_plugin(), 'add_plugin_action_links' ),
+			'version'     => '4.0.0',
+		),
 	);
 
 	/**
