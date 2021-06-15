@@ -176,6 +176,10 @@ class WC_Subscriptions_Deprecation_Handler extends WCS_Deprecated_Functions_Hand
 			'replacement' => array( WC_Subscriptions::get_plugin(), 'register_order_types' ),
 			'version'     => '4.0.0',
 		),
+		'add_data_stores' => array(
+			'replacement' => array( WC_Subscriptions::get_plugin(), 'add_data_stores' ),
+			'version'     => '4.0.0',
+		),
 	);
 
 	/**

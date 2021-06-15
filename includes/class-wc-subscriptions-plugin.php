@@ -206,6 +206,8 @@ class WC_Subscriptions_Plugin {
 	public function init_hooks() {
 		// Register our custom subscription order type after WC_Post_types::register_post_types()
 		add_action( 'init', array( $this, 'register_order_types' ), 6 );
+
+		add_filter( 'woocommerce_data_stores', array( $this, 'add_data_stores' ) );
 	}
 
 	/**
@@ -286,5 +288,23 @@ class WC_Subscriptions_Plugin {
 				)
 			)
 		);
+	}
+
+	/**
+	 * Registers data stores.
+	 *
+	 * @since 4.0.0
+	 * @return string[]
+	 */
+	public function add_data_stores( $data_stores ) {
+		// Our custom data stores.
+		$data_stores['subscription']                  = 'WCS_Subscription_Data_Store_CPT';
+		$data_stores['product-variable-subscription'] = 'WCS_Product_Variable_Data_Store_CPT';
+
+		// Use WC core data stores for our products.
+		$data_stores['product-subscription_variation']      = 'WC_Product_Variation_Data_Store_CPT';
+		$data_stores['order-item-line_item_pending_switch'] = 'WC_Order_Item_Product_Data_Store';
+
+		return $data_stores;
 	}
 }
