@@ -196,6 +196,12 @@ class WC_Subscriptions_Plugin {
 				new WCS_Cart_Early_Renewal();
 			}
 		}
+
+		if ( class_exists( 'Automattic\WooCommerce\Blocks\Package' ) && version_compare( \Automattic\WooCommerce\Blocks\Package::get_version(), '4.4.0', '>' ) ) {
+			// When WooCommerceBlocks is loaded, set up the Integration class.
+			add_action( 'woocommerce_blocks_loaded', array( $this, 'setup_blocks_integration' ) );
+			add_action( 'woocommerce_blocks_loaded', array( 'WC_Subscriptions_Extend_Store_Endpoint', 'init' ) );
+		}
 	}
 
 	/**
@@ -420,5 +426,25 @@ class WC_Subscriptions_Plugin {
 		$update_notice .= '</div> ';
 
 		echo wp_kses_post( $update_notice );
+	}
+
+	/**
+	 * Sets up the Blocks integration class.
+	 *
+	 * @since 4.0.0
+	 */
+	public function setup_blocks_integration() {
+		add_action(
+			'woocommerce_blocks_cart_block_registration',
+			function( $integration_registry ) {
+				$integration_registry->register( new WCS_Blocks_Integration() );
+			}
+		);
+		add_action(
+			'woocommerce_blocks_checkout_block_registration',
+			function( $integration_registry ) {
+				$integration_registry->register( new WCS_Blocks_Integration() );
+			}
+		);
 	}
 }

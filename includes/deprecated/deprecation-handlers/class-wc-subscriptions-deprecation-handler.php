@@ -200,6 +200,10 @@ class WC_Subscriptions_Deprecation_Handler extends WCS_Deprecated_Functions_Hand
 			'replacement' => array( WC_Subscriptions::get_plugin(), 'update_notice' ),
 			'version'     => '4.0.0',
 		),
+		'setup_blocks_integration' => array(
+			'replacement' => array( WC_Subscriptions::get_plugin(), 'setup_blocks_integration' ),
+			'version'     => '4.0.0',
+		),
 	);
 
 	/**
