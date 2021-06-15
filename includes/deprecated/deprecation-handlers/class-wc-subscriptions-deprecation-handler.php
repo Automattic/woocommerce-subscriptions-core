@@ -184,6 +184,10 @@ class WC_Subscriptions_Deprecation_Handler extends WCS_Deprecated_Functions_Hand
 			'replacement' => array( WC_Subscriptions::get_plugin(), 'register_post_statuses' ),
 			'version'     => '4.0.0',
 		),
+		'deactivate_woocommerce_subscriptions' => array(
+			'replacement' => array( WC_Subscriptions::get_plugin(), 'deactivate_plugin' ),
+			'version'     => '4.0.0',
+		),
 	);
 
 	/**

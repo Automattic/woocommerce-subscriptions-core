@@ -204,6 +204,8 @@ class WC_Subscriptions_Plugin {
 	 * @since 4.0.0
 	 */
 	public function init_hooks() {
+		register_deactivation_hook( $this->file, array( $this, 'deactivate_plugin' ) );
+
 		// Register our custom subscription order type after WC_Post_types::register_post_types()
 		add_action( 'init', array( $this, 'register_order_types' ), 6 );
 
@@ -347,5 +349,16 @@ class WC_Subscriptions_Plugin {
 				);
 			}
 		}
+	}
+
+	/**
+	 * Runs the required processes when the plugin is deactivated.
+	 *
+	 * @since 4.0.0
+	 */
+	public function deactivate_plugin() {
+		delete_option( WC_Subscriptions_Admin::$option_prefix . '_is_active' );
+		flush_rewrite_rules();
+		do_action( 'woocommerce_subscriptions_deactivated' );
 	}
 }
