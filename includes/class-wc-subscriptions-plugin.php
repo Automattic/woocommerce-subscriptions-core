@@ -213,6 +213,9 @@ class WC_Subscriptions_Plugin {
 
 		// Register our custom subscription order statuses before WC_Post_types::register_post_status()
 		add_action( 'init', array( $this, 'register_post_statuses' ), 9 );
+
+		// Load translation files
+		add_action( 'init', array( $this, 'load_plugin_textdomain' ), 3 );
 	}
 
 	/**
@@ -360,5 +363,17 @@ class WC_Subscriptions_Plugin {
 		delete_option( WC_Subscriptions_Admin::$option_prefix . '_is_active' );
 		flush_rewrite_rules();
 		do_action( 'woocommerce_subscriptions_deactivated' );
+	}
+
+	/**
+	 * Registers plugin translation files.
+	 *
+	 * @since 4.0.0
+	 */
+	public function load_plugin_textdomain() {
+		$plugin_rel_path = apply_filters( 'woocommerce_subscriptions_translation_file_rel_path', dirname( plugin_basename( $this->file ) ) . '/languages' );
+
+		// Then check for a language file in /wp-content/plugins/woocommerce-subscriptions/languages/ (this will be overriden by any file already loaded)
+		load_plugin_textdomain( 'woocommerce-subscriptions', false, $plugin_rel_path );
 	}
 }

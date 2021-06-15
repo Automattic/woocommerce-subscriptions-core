@@ -188,6 +188,10 @@ class WC_Subscriptions_Deprecation_Handler extends WCS_Deprecated_Functions_Hand
 			'replacement' => array( WC_Subscriptions::get_plugin(), 'deactivate_plugin' ),
 			'version'     => '4.0.0',
 		),
+		'load_plugin_textdomain' => array(
+			'replacement' => array( WC_Subscriptions::get_plugin(), 'load_plugin_textdomain' ),
+			'version'     => '4.0.0',
+		),
 	);
 
 	/**
