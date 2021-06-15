@@ -180,6 +180,10 @@ class WC_Subscriptions_Deprecation_Handler extends WCS_Deprecated_Functions_Hand
 			'replacement' => array( WC_Subscriptions::get_plugin(), 'add_data_stores' ),
 			'version'     => '4.0.0',
 		),
+		'register_post_status' => array(
+			'replacement' => array( WC_Subscriptions::get_plugin(), 'register_post_statuses' ),
+			'version'     => '4.0.0',
+		),
 	);
 
 	/**

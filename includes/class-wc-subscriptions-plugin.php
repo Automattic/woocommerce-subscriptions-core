@@ -208,6 +208,9 @@ class WC_Subscriptions_Plugin {
 		add_action( 'init', array( $this, 'register_order_types' ), 6 );
 
 		add_filter( 'woocommerce_data_stores', array( $this, 'add_data_stores' ) );
+
+		// Register our custom subscription order statuses before WC_Post_types::register_post_status()
+		add_action( 'init', array( $this, 'register_post_statuses' ), 9 );
 	}
 
 	/**
@@ -306,5 +309,43 @@ class WC_Subscriptions_Plugin {
 		$data_stores['order-item-line_item_pending_switch'] = 'WC_Order_Item_Product_Data_Store';
 
 		return $data_stores;
+	}
+
+	/**
+	 * Registers our custom post statuses, used for subscription statuses.
+	 *
+	 * @since 4.0.0
+	 */
+	public function register_post_statuses() {
+		$subscription_statuses = wcs_get_subscription_statuses();
+		$registered_statuses   = apply_filters(
+			'woocommerce_subscriptions_registered_statuses',
+			array(
+				// translators: placeholder is a post count.
+				'wc-active'         => _nx_noop( 'Active <span class="count">(%s)</span>', 'Active <span class="count">(%s)</span>', 'post status label including post count', 'woocommerce-subscriptions' ),
+				// translators: placeholder is a post count.
+				'wc-switched'       => _nx_noop( 'Switched <span class="count">(%s)</span>', 'Switched <span class="count">(%s)</span>', 'post status label including post count', 'woocommerce-subscriptions' ),
+				// translators: placeholder is a post count.
+				'wc-expired'        => _nx_noop( 'Expired <span class="count">(%s)</span>', 'Expired <span class="count">(%s)</span>', 'post status label including post count', 'woocommerce-subscriptions' ),
+				// translators: placeholder is a post count.
+				'wc-pending-cancel' => _nx_noop( 'Pending Cancellation <span class="count">(%s)</span>', 'Pending Cancellation <span class="count">(%s)</span>', 'post status label including post count', 'woocommerce-subscriptions' ),
+			)
+		);
+
+		if ( is_array( $subscription_statuses ) && is_array( $registered_statuses ) ) {
+			foreach ( $registered_statuses as $status => $label_count ) {
+				register_post_status(
+					$status,
+					array(
+						'label'                     => $subscription_statuses[ $status ], // use same label/translations as wcs_get_subscription_statuses()
+						'public'                    => false,
+						'exclude_from_search'       => false,
+						'show_in_admin_all_list'    => true,
+						'show_in_admin_status_list' => true,
+						'label_count'               => $label_count,
+					)
+				);
+			}
+		}
 	}
 }
