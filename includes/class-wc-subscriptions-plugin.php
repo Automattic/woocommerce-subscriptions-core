@@ -10,13 +10,6 @@ defined( 'ABSPATH' ) || exit;
 class WC_Subscriptions_Plugin {
 
 	/**
-	 * The plugin's base file directory.
-	 *
-	 * @var string
-	 */
-	protected $base_plugin_file = '';
-
-	/**
 	 * The plugin's version string.
 	 *
 	 * @var string
@@ -48,9 +41,8 @@ class WC_Subscriptions_Plugin {
 	 * Initialise class and attach callbacks.
 	 */
 	public function __construct( $version, $autoloader ) {
-		$this->base_plugin_file = $this->get_base_plugin_file();
-		$this->version          = $version;
-		$this->autoloader       = $autoloader ? $autoloader : new WCS_Autoloader( dirname( $this->base_plugin_file ) );
+		$this->version    = $version;
+		$this->autoloader = $autoloader ? $autoloader : new WCS_Autoloader( dirname( $this->get_base_plugin_file() ) );
 
 		$this->define_constants();
 		$this->includes();
@@ -70,11 +62,11 @@ class WC_Subscriptions_Plugin {
 	 */
 	protected function includes() {
 		// Load function files.
-		require_once dirname( $this->base_plugin_file ) . '/wcs-functions.php';
-		require_once dirname( $this->base_plugin_file ) . '/includes/gateways/paypal/includes/wcs-paypal-functions.php';
+		require_once dirname( $this->get_base_plugin_file() ) . '/wcs-functions.php';
+		require_once dirname( $this->get_base_plugin_file() ) . '/includes/gateways/paypal/includes/wcs-paypal-functions.php';
 
 		// Load libraries.
-		require_once dirname( $this->base_plugin_file ) . '/includes/libraries/action-scheduler/action-scheduler.php';
+		require_once dirname( $this->get_base_plugin_file() ) . '/includes/libraries/action-scheduler/action-scheduler.php';
 	}
 
 	/**
@@ -198,7 +190,7 @@ class WC_Subscriptions_Plugin {
 		} else {
 			WCS_Early_Renewal_Manager::init();
 
-			require_once dirname( $this->base_plugin_file ) . '/includes/early-renewal/wcs-early-renewal-functions.php';
+			require_once dirname( $this->get_base_plugin_file() ) . '/includes/early-renewal/wcs-early-renewal-functions.php';
 
 			if ( WCS_Early_Renewal_Manager::is_early_renewal_enabled() ) {
 				new WCS_Cart_Early_Renewal();
@@ -218,7 +210,7 @@ class WC_Subscriptions_Plugin {
 	 * @since 4.0.0
 	 */
 	public function init_hooks() {
-		register_deactivation_hook( $this->base_plugin_file, array( $this, 'deactivate_plugin' ) );
+		register_deactivation_hook( $this->get_base_plugin_file(), array( $this, 'deactivate_plugin' ) );
 
 		// Register our custom subscription order type after WC_Post_types::register_post_types()
 		add_action( 'init', array( $this, 'register_order_types' ), 6 );
@@ -232,8 +224,8 @@ class WC_Subscriptions_Plugin {
 		add_action( 'init', array( $this, 'load_plugin_textdomain' ), 3 );
 
 		// Add the "Settings | Documentation" links on the Plugins administration screen
-		add_filter( 'plugin_action_links_' . plugin_basename( $this->base_plugin_file ), array( $this, 'add_plugin_action_links' ) );
-		add_action( 'in_plugin_update_message-' . plugin_basename( $this->base_plugin_file ), array( __CLASS__, 'update_notice' ), 10, 2 );
+		add_filter( 'plugin_action_links_' . plugin_basename( $this->get_base_plugin_file() ), array( $this, 'add_plugin_action_links' ) );
+		add_action( 'in_plugin_update_message-' . plugin_basename( $this->get_base_plugin_file() ), array( __CLASS__, 'update_notice' ), 10, 2 );
 
 		add_action( 'init', array( $this, 'activate_plugin' ) );
 
@@ -463,7 +455,7 @@ class WC_Subscriptions_Plugin {
 	 * @since 4.0.0
 	 */
 	public function load_plugin_textdomain() {
-		$plugin_rel_path = apply_filters( 'woocommerce_subscriptions_translation_file_rel_path', dirname( plugin_basename( $this->base_plugin_file ) ) . '/languages' );
+		$plugin_rel_path = apply_filters( 'woocommerce_subscriptions_translation_file_rel_path', dirname( plugin_basename( $this->get_base_plugin_file() ) ) . '/languages' );
 
 		// Then check for a language file in /wp-content/plugins/woocommerce-subscriptions/languages/ (this will be overriden by any file already loaded)
 		load_plugin_textdomain( 'woocommerce-subscriptions', false, $plugin_rel_path );
