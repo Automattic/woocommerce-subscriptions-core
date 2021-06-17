@@ -40,7 +40,7 @@ class WC_Subscriptions_Plugin {
 	/**
 	 * Initialise class and attach callbacks.
 	 */
-	public function __construct( $autoloader ) {
+	public function __construct( $autoloader = null ) {
 		$this->autoloader = $autoloader ? $autoloader : new WCS_Autoloader( dirname( $this->get_base_plugin_file() ) );
 
 		$this->define_constants();
