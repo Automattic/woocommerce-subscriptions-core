@@ -70,8 +70,14 @@ abstract class WCS_Deprecated_Functions_Handler {
 			$replacement = $this->deprecated_functions[ $function ]['replacement'];
 
 			// Handle replacements which are handled internally.
-			if ( is_array( $replacement ) && get_class( $this ) === $replacement[0] ) {
-				return $this->{$replacement[1]}( ...$arguments );
+			if ( is_array( $replacement ) ) {
+				if ( is_array( $replacement[0] ) ) {
+					$instance = call_user_func( $replacement[0] );
+
+					return call_user_func( array( $instance, $replacement[1] ), $arguments );
+				} elseif ( get_class( $this ) === $replacement[0] ) {
+					return $this->{$replacement[1]}( ...$arguments );
+				}
 			} else {
 				return call_user_func_array( $replacement, $arguments );
 			}
@@ -96,11 +102,15 @@ abstract class WCS_Deprecated_Functions_Handler {
 				$replacement_function = $this->deprecated_functions[ $function ]['replacement'];
 
 				if ( is_array( $replacement_function ) ) {
-					// Replacement functions which point back to the handler class, aren't legitimate replacements so treat them as having no replacements.
-					if ( get_class( $this ) === $replacement_function[0] ) {
+
+					if ( is_array( $replacement_function[0] ) ) {
+						$replacement_function[0] = implode( '::', $replacement_function[0] ) . '()';
+						$replacement_function    = implode( '->', $replacement_function ) . '()';
+					} elseif ( get_class( $this ) === $replacement_function[0] ) {
+						// Replacement functions which point back to the handler class, aren't legitimate replacements so treat them as having no replacements.
 						$replacement_function = null;
 					} else {
-						$replacement_function = implode( '::', $replacement_function );
+						$replacement_function = implode( '::', $replacement_function ) . '()';
 					}
 				}
 			}
