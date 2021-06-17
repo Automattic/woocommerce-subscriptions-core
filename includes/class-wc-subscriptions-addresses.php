@@ -116,7 +116,7 @@ class WC_Subscriptions_Addresses {
 				}
 
 				// translators: $1: address type (Shipping Address / Billing Address), $2: opening <strong> tag, $3: closing </strong> tag
-				$label = sprintf( esc_html__( 'Update the %1$s used for %2$sall%3$s of my active subscriptions', 'woocommerce-subscriptions' ), wcs_get_address_type_to_display( $address_type ), '<strong>', '</strong>' );
+				$label = sprintf( esc_html__( 'Update the %1$s used for %2$sall%3$s future renewals of my active subscriptions', 'woocommerce-subscriptions' ), wcs_get_address_type_to_display( $address_type ), '<strong>', '</strong>' );
 
 				woocommerce_form_field(
 					'update_all_subscriptions_addresses',
