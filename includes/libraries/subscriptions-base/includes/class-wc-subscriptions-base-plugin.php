@@ -38,15 +38,39 @@ class WC_Subscriptions_Base_Plugin {
 	public $cache = null;
 
 	/**
+	 * The base plugin instance.
+	 *
+	 * @var WC_Subscriptions_Base_Plugin
+	 */
+	protected static $instance = null;
+
+	/**
 	 * Initialise class and attach callbacks.
 	 */
 	public function __construct( $autoloader = null ) {
-		$this->autoloader = $autoloader ? $autoloader : new WCS_Autoloader( dirname( $this->get_base_plugin_file() ) );
+		$this->autoloader = $autoloader ? $autoloader : new WCS_Autoloader( $this->get_base_plugin_directory() );
 
 		$this->define_constants();
 		$this->includes();
 		$this->init();
 		$this->init_hooks();
+
+		// Store this instance so we can access it globally.
+		self::$instance = $this;
+	}
+
+	/**
+	 * Gets the base plugin instance.
+	 *
+	 * @since 4.0.0
+	 * @return WC_Subscriptions_Base_Plugin
+	 */
+	public static function get_instance() {
+		if ( ! self::$instance ) {
+			// Doing it wrong. WC_Subscriptions_Base_Plugin::get_instance() should not be called before an instance has been created.
+		}
+
+		return self::$instance;
 	}
 
 	/**
@@ -61,11 +85,11 @@ class WC_Subscriptions_Base_Plugin {
 	 */
 	protected function includes() {
 		// Load function files.
-		require_once dirname( $this->get_base_plugin_file() ) . '/wcs-functions.php';
-		require_once dirname( $this->get_base_plugin_file() ) . '/includes/gateways/paypal/includes/wcs-paypal-functions.php';
+		require_once $this->get_base_plugin_directory() . '/wcs-functions.php';
+		require_once $this->get_base_plugin_directory() . '/includes/gateways/paypal/includes/wcs-paypal-functions.php';
 
 		// Load libraries.
-		require_once dirname( $this->get_base_plugin_file() ) . '/includes/libraries/action-scheduler/action-scheduler.php';
+		require_once $this->get_base_plugin_directory() . '/includes/libraries/action-scheduler/action-scheduler.php';
 	}
 
 	/**
@@ -189,7 +213,7 @@ class WC_Subscriptions_Base_Plugin {
 		} else {
 			WCS_Early_Renewal_Manager::init();
 
-			require_once dirname( $this->get_base_plugin_file() ) . '/includes/early-renewal/wcs-early-renewal-functions.php';
+			require_once $this->get_base_plugin_directory() . '/includes/early-renewal/wcs-early-renewal-functions.php';
 
 			if ( WCS_Early_Renewal_Manager::is_early_renewal_enabled() ) {
 				new WCS_Cart_Early_Renewal();
@@ -209,7 +233,7 @@ class WC_Subscriptions_Base_Plugin {
 	 * @since 4.0.0
 	 */
 	public function init_hooks() {
-		register_deactivation_hook( $this->get_base_plugin_file(), array( $this, 'deactivate_plugin' ) );
+		register_deactivation_hook( WC_Subscriptions::$plugin_file, array( $this, 'deactivate_plugin' ) );
 
 		// Register our custom subscription order type after WC_Post_types::register_post_types()
 		add_action( 'init', array( $this, 'register_order_types' ), 6 );
@@ -223,8 +247,8 @@ class WC_Subscriptions_Base_Plugin {
 		add_action( 'init', array( $this, 'load_plugin_textdomain' ), 3 );
 
 		// Add the "Settings | Documentation" links on the Plugins administration screen
-		add_filter( 'plugin_action_links_' . plugin_basename( $this->get_base_plugin_file() ), array( $this, 'add_plugin_action_links' ) );
-		add_action( 'in_plugin_update_message-' . plugin_basename( $this->get_base_plugin_file() ), array( __CLASS__, 'update_notice' ), 10, 2 );
+		add_filter( 'plugin_action_links_' . plugin_basename( WC_Subscriptions::$plugin_file ), array( $this, 'add_plugin_action_links' ) );
+		add_action( 'in_plugin_update_message-' . plugin_basename( WC_Subscriptions::$plugin_file ), array( __CLASS__, 'update_notice' ), 10, 2 );
 
 		add_action( 'init', array( $this, 'activate_plugin' ) );
 
@@ -236,8 +260,8 @@ class WC_Subscriptions_Base_Plugin {
 	 *
 	 * @since 4.0.0
 	 */
-	public function get_base_plugin_file() {
-		return WC_Subscriptions::$plugin_file;
+	public function get_base_plugin_directory() {
+		return dirname( dirname( __FILE__ ) );
 	}
 
 	/**
@@ -419,7 +443,7 @@ class WC_Subscriptions_Base_Plugin {
 	 *
 	 * @since 4.0.0
 	 */
-	public static function activate_plugin() {
+	public function activate_plugin() {
 		$is_active = get_option( WC_Subscriptions_Admin::$option_prefix . '_is_active', false );
 
 		if ( false === $is_active ) {
@@ -463,7 +487,7 @@ class WC_Subscriptions_Base_Plugin {
 	 * @since 4.0.0
 	 */
 	public function load_plugin_textdomain() {
-		$plugin_rel_path = apply_filters( 'woocommerce_subscriptions_translation_file_rel_path', dirname( plugin_basename( $this->get_base_plugin_file() ) ) . '/languages' );
+		$plugin_rel_path = apply_filters( 'woocommerce_subscriptions_translation_file_rel_path', $this->get_base_plugin_directory() . '/languages' );
 
 		// Then check for a language file in /wp-content/plugins/woocommerce-subscriptions/languages/ (this will be overriden by any file already loaded)
 		load_plugin_textdomain( 'woocommerce-subscriptions', false, $plugin_rel_path );
@@ -541,7 +565,7 @@ class WC_Subscriptions_Base_Plugin {
 	 * @param int $batch_size The default Action Scheduler batch size.
 	 * @return int
 	 */
-	public static function reduce_multisite_action_scheduler_batch_size( $batch_size ) {
+	public function reduce_multisite_action_scheduler_batch_size( $batch_size ) {
 		if ( is_multisite() ) {
 			$batch_size = 10;
 		}
