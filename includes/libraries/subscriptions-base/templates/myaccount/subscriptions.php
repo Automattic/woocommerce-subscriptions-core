@@ -11,4 +11,4 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-WC_Subscriptions::get_my_subscriptions_template( $current_page );
+WCS_Template_Loader::get_my_subscriptions( $current_page );
