@@ -31,7 +31,7 @@ class WCS_Email_Payment_Retry extends WC_Email_Failed_Order {
 
 		$this->template_html  = 'emails/admin-payment-retry.php';
 		$this->template_plain = 'emails/plain/admin-payment-retry.php';
-		$this->template_base  = plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/';
+		$this->template_base  = WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' );
 
 		// We want all the parent's methods, with none of its properties, so call its parent's constructor, rather than my parent constructor
 		WC_Email::__construct();

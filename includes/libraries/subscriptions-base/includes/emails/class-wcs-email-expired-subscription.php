@@ -32,7 +32,7 @@ class WCS_Email_Expired_Subscription extends WC_Email {
 
 		$this->template_html  = 'emails/expired-subscription.php';
 		$this->template_plain = 'emails/plain/expired-subscription.php';
-		$this->template_base  = plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/';
+		$this->template_base  = WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' );
 
 		add_action( 'expired_subscription_notification', array( $this, 'trigger' ) );
 

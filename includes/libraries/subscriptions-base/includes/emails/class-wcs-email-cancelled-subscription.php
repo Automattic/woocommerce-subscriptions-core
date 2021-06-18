@@ -32,7 +32,7 @@ class WCS_Email_Cancelled_Subscription extends WC_Email {
 
 		$this->template_html  = 'emails/cancelled-subscription.php';
 		$this->template_plain = 'emails/plain/cancelled-subscription.php';
-		$this->template_base  = plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/';
+		$this->template_base  = WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' );
 
 		add_action( 'cancelled_subscription_notification', array( $this, 'trigger' ) );
 

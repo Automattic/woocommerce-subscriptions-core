@@ -32,7 +32,7 @@ class WCS_Email_On_Hold_Subscription extends WC_Email {
 
 		$this->template_html  = 'emails/on-hold-subscription.php';
 		$this->template_plain = 'emails/plain/on-hold-subscription.php';
-		$this->template_base  = plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/';
+		$this->template_base  = WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' );
 
 		add_action( 'on-hold_subscription_notification', array( $this, 'trigger' ) );
 

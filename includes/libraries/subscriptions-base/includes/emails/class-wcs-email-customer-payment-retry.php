@@ -27,7 +27,7 @@ class WCS_Email_Customer_Payment_Retry extends WCS_Email_Customer_Renewal_Invoic
 
 		$this->template_html  = 'emails/customer-payment-retry.php';
 		$this->template_plain = 'emails/plain/customer-payment-retry.php';
-		$this->template_base  = plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/';
+		$this->template_base  = WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' );
 
 		$this->subject        = __( 'Automatic payment failed for {order_number}, we will retry {retry_time}', 'woocommerce-subscriptions' );
 		$this->heading        = __( 'Automatic payment failed for order {order_number}', 'woocommerce-subscriptions' );

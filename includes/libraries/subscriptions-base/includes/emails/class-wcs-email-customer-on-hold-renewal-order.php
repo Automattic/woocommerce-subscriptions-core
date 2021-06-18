@@ -26,7 +26,7 @@ class WCS_Email_Customer_On_Hold_Renewal_Order extends WC_Email_Customer_On_Hold
 		$this->heading        = __( 'Thank you for your renewal order', 'woocommerce-subscriptions' );
 		$this->template_html  = 'emails/customer-on-hold-renewal-order.php';
 		$this->template_plain = 'emails/plain/customer-on-hold-renewal-order.php';
-		$this->template_base  = plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/';
+		$this->template_base  = WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' );
 		$this->placeholders   = array(
 			'{order_date}'   => '',
 			'{order_number}' => '',
