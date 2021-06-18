@@ -26,7 +26,7 @@ $time_until_update_allowed = $upgrade_transient_timeout - time();
 		<?php wp_admin_css( 'ie', true ); ?>
 	</head>
 	<body class="wp-core-ui">
-		<h1 id="logo"><img alt="WooCommerce Subscriptions" width="325px" height="120px" src="<?php echo esc_url( plugins_url( '/assets/images/woocommerce_subscriptions_logo.png', WC_Subscriptions::$plugin_file ) ); ?>" /></h1>
+		<h1 id="logo"><img alt="WooCommerce Subscriptions" width="325px" height="120px" src="<?php echo esc_url( wcs_get_image_asset_url( 'woocommerce_subscriptions_logo.png' ) ); ?>" /></h1>
 		<h2><?php esc_html_e( 'The Upgrade is in Progress', 'woocommerce-subscriptions' ); ?></h2>
 		<p><?php esc_html_e( 'The WooCommerce Subscriptions plugin is currently running its database upgrade routine.', 'woocommerce-subscriptions' ); ?></p>
 		<p><?php
