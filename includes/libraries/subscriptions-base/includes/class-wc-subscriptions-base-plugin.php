@@ -267,6 +267,17 @@ class WC_Subscriptions_Base_Plugin {
 	}
 
 	/**
+	 * Gets the plugin's base directory url.
+	 *
+	 * @since 4.0.0
+	 * @param string $path Optional. The path to append.
+	 * @return string
+	 */
+	public function get_base_plugin_directory_url( $path = '' ) {
+		return plugin_dir_url( __DIR__ ) . $path;
+	}
+
+	/**
 	 * Gets the plugin's version
 	 *
 	 * @since 4.0.0
