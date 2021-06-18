@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php wp_print_scripts( 'wcs-upgrade' ); ?>
 	</head>
 	<body class="wp-core-ui">
-		<h1 id="logo"><img alt="WooCommerce Subscriptions" width="325px" height="120px" src="<?php echo esc_url( plugins_url( '/assets/images/woocommerce_subscriptions_logo.png', WC_Subscriptions::$plugin_file ) ); ?>" /></h1>
+		<h1 id="logo"><img alt="WooCommerce Subscriptions" width="325px" height="120px" src="<?php echo esc_url( wcs_get_image_asset_url( 'woocommerce_subscriptions_logo.png' ) ); ?>" /></h1>
 		<div id="update-welcome">
 			<h2><?php esc_html_e( 'Database Update Required', 'woocommerce-subscriptions' ); ?></h2>
 			<p><?php esc_html_e( 'The WooCommerce Subscriptions plugin has been updated!', 'woocommerce-subscriptions' ); ?></p>
@@ -54,7 +54,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php endif; ?>
 			<ol>
 			</ol>
-			<img id="update-ajax-loader" alt="loading..." width="16px" height="16px" src="<?php echo esc_url( plugins_url( '/assets/images/ajax-loader@2x.gif', WC_Subscriptions::$plugin_file ) ); ?>" />
+			<img id="update-ajax-loader" alt="loading..." width="16px" height="16px" src="<?php echo esc_url( wcs_get_image_asset_url( 'ajax-loader@2x.gif' ) ); ?>" />
 			<p id="estimated_time"></p>
 		</div>
 		<div id="update-complete">
