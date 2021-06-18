@@ -256,14 +256,14 @@ class WC_Subscriptions_Base_Plugin {
 	}
 
 	/**
-	 * Gets the plugin's base file.
+	 * Gets the plugin's base directory.
 	 *
 	 * @since 4.0.0
 	 * @param string $path Optional. The path to append.
 	 * @return string
 	 */
 	public function get_base_plugin_directory( $path = '' ) {
-		return $path ? trailingslashit( dirname( dirname( __FILE__ ) ) ) . $path : dirname( dirname( __FILE__ ) );
+		return $path ? trailingslashit( dirname( __DIR__ ) ) . $path : dirname( __DIR__ );
 	}
 
 	/**
