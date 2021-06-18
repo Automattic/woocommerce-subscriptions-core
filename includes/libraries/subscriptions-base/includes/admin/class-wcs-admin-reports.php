@@ -96,10 +96,7 @@ class WCS_Admin_Reports {
 	 * @since 1.5
 	 */
 	public static function reports_scripts() {
-		global $wp_query, $post;
-
 		$suffix       = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
-
 		$screen       = get_current_screen();
 		$wc_screen_id = sanitize_title( __( 'WooCommerce', 'woocommerce-subscriptions' ) );
 
