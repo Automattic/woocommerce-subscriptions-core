@@ -25,7 +25,7 @@ class WC_Subscriptions_Frontend_Scripts {
 	 * @return string The file URL.
 	 */
 	public static function get_file_url( $file_relative_url = '' ) {
-		return plugin_dir_url( WC_Subscriptions::$plugin_file ) . $file_relative_url;
+		return WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( $file_relative_url );
 	}
 
 	/**
@@ -37,9 +37,9 @@ class WC_Subscriptions_Frontend_Scripts {
 		$dependencies = array( 'jquery' );
 
 		if ( is_cart() || is_checkout() ) {
-			wp_enqueue_script( 'wcs-cart', self::get_file_url( 'assets/js/frontend/wcs-cart.js' ), $dependencies, WC_Subscriptions::$version, true );
+			wp_enqueue_script( 'wcs-cart', self::get_file_url( 'assets/js/frontend/wcs-cart.js' ), $dependencies, WC_Subscriptions_Base_Plugin::instance()->get_plugin_version(), true );
 		} elseif ( is_product() ) {
-			wp_enqueue_script( 'wcs-single-product', self::get_file_url( 'assets/js/frontend/single-product.js' ), $dependencies, WC_Subscriptions::$version, true );
+			wp_enqueue_script( 'wcs-single-product', self::get_file_url( 'assets/js/frontend/single-product.js' ), $dependencies, WC_Subscriptions_Base_Plugin::instance()->get_plugin_version(), true );
 		} elseif ( wcs_is_view_subscription_page() ) {
 			$subscription = wcs_get_subscription( absint( get_query_var( 'view-subscription' ) ) );
 
@@ -54,7 +54,7 @@ class WC_Subscriptions_Frontend_Scripts {
 					'has_payment_gateway'    => $subscription->has_payment_gateway() && wc_get_payment_gateway_by_order( $subscription )->supports( 'subscriptions' ),
 				);
 
-				wp_enqueue_script( 'wcs-view-subscription', self::get_file_url( 'assets/js/frontend/view-subscription.js' ), $dependencies, WC_Subscriptions::$version, true );
+				wp_enqueue_script( 'wcs-view-subscription', self::get_file_url( 'assets/js/frontend/view-subscription.js' ), $dependencies, WC_Subscriptions_Base_Plugin::instance()->get_plugin_version(), true );
 				wp_localize_script( 'wcs-view-subscription', 'WCSViewSubscription', apply_filters( 'woocommerce_subscriptions_frontend_view_subscription_script_parameters', $script_params ) );
 			}
 		}
@@ -78,7 +78,7 @@ class WC_Subscriptions_Frontend_Scripts {
 			$styles['wcs-view-subscription'] = array(
 				'src'     => str_replace( array( 'http:', 'https:' ), '', self::get_file_url( 'assets/css/view-subscription.css' ) ),
 				'deps'    => 'woocommerce-smallscreen',
-				'version' => WC_Subscriptions::$version,
+				'version' => WC_Subscriptions_Base_Plugin::instance()->get_plugin_version(),
 				'media'   => 'all',
 			);
 		}

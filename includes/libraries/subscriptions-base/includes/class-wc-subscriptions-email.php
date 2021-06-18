@@ -288,7 +288,7 @@ class WC_Subscriptions_Email {
 				'order_items_table_args' => $order_items_table_args,
 			),
 			'',
-			plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/'
+			WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' ),
 		);
 	}
 

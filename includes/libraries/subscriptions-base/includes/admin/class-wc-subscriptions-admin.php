@@ -884,7 +884,7 @@ class WC_Subscriptions_Admin {
 			$script_params['ajaxUrl']         = admin_url( 'admin-ajax.php' );
 			$script_params['isWCPre24']       = var_export( wcs_is_woocommerce_pre( '2.4' ), true );
 
-			wp_enqueue_script( 'woocommerce_subscriptions_admin', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/admin.js', $dependencies, filemtime( WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory() . '/assets/js/admin/admin.js' ) );
+			wp_enqueue_script( 'woocommerce_subscriptions_admin', plugin_dir_url( WC_Subscriptions::$plugin_file ) . 'assets/js/admin/admin.js', $dependencies, filemtime( WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'assets/js/admin/admin.js' ) ) );
 			wp_localize_script( 'woocommerce_subscriptions_admin', 'WCSubscriptions', apply_filters( 'woocommerce_subscriptions_admin_script_parameters', $script_params ) );
 
 			// Maybe add the pointers for first timers

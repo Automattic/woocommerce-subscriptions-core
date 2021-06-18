@@ -24,10 +24,10 @@ class WCS_Blocks_Integration implements IntegrationInterface {
 		$script_path = '/build/index.js';
 		$style_path  = '/build/index.css';
 
-		$script_url = plugins_url( $script_path, \WC_Subscriptions::$plugin_file );
-		$style_url  = plugins_url( $style_path, \WC_Subscriptions::$plugin_file );
+		$script_url = plugins_url( WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( $script_path ) );
+		$style_url  = plugins_url( WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( $style_path ) );
 
-		$script_asset_path = dirname( \WC_Subscriptions::$plugin_file ) . '/build/index.asset.php';
+		$script_asset_path = WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( '/build/index.asset.php' );
 		$script_asset      = file_exists( $script_asset_path )
 			? require $script_asset_path
 			: array(
@@ -51,7 +51,7 @@ class WCS_Blocks_Integration implements IntegrationInterface {
 			'wc-blocks-integration',
 			$style_url,
 			'',
-			$this->get_file_version( dirname( \WC_Subscriptions::$plugin_file ) . '/build/index.css' ),
+			WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( '/build/index.css' ),
 			'all'
 		);
 	}

@@ -356,7 +356,7 @@ class WC_Subscriptions_Synchroniser {
 				$payment_month = 0;
 			}
 
-			include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/html-variation-synchronisation.php' );
+			include( WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/admin/html-variation-synchronisation.php' ) );
 		}
 	}
 

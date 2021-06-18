@@ -67,7 +67,7 @@ class WC_Subscriptions_Base_Plugin {
 	 */
 	public static function instance() {
 		if ( ! self::$instance ) {
-			// Doing it wrong. WC_Subscriptions_Base_Plugin::get_instance() should not be called before an instance has been created.
+			// Doing it wrong. WC_Subscriptions_Base_Plugin::instance() should not be called before an instance has been created.
 		}
 
 		return self::$instance;
@@ -85,11 +85,11 @@ class WC_Subscriptions_Base_Plugin {
 	 */
 	protected function includes() {
 		// Load function files.
-		require_once $this->get_base_plugin_directory() . '/wcs-functions.php';
-		require_once $this->get_base_plugin_directory() . '/includes/gateways/paypal/includes/wcs-paypal-functions.php';
+		require_once $this->get_base_plugin_directory( 'wcs-functions.php' );
+		require_once $this->get_base_plugin_directory( 'includes/gateways/paypal/includes/wcs-paypal-functions.php' );
 
 		// Load libraries.
-		require_once $this->get_base_plugin_directory() . '/includes/libraries/action-scheduler/action-scheduler.php';
+		require_once $this->get_base_plugin_directory( 'includes/libraries/action-scheduler/action-scheduler.php' );
 	}
 
 	/**

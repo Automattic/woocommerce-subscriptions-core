@@ -219,7 +219,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 					}
 				}
 
-				wc_get_template( 'checkout/form-change-payment-method.php', array( 'subscription' => $subscription ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+				wc_get_template( 'checkout/form-change-payment-method.php', array( 'subscription' => $subscription ), '', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' ) );
 			}
 		}
 
