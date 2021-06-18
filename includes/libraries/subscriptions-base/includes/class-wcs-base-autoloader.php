@@ -72,10 +72,21 @@ class WCS_Base_Autoloader {
 			return;
 		}
 
-		$full_path = $this->base_path . $this->get_relative_class_path( $class ) . $this->get_file_name( $class );
+		$full_path = $this->get_class_base_path( $class ) . $this->get_relative_class_path( $class ) . $this->get_file_name( $class );
+
 		if ( is_readable( $full_path ) ) {
 			require_once( $full_path );
 		}
+	}
+
+	/**
+	 * Gets the base path for a given class.
+	 *
+	 * @since 4.0.0
+	 * @return string
+	 */
+	public function get_class_base_path( $class ) {
+		return $this->base_path;
 	}
 
 	/**
