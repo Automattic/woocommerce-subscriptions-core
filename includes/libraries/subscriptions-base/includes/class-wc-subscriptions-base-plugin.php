@@ -7,7 +7,7 @@
  */
 
 defined( 'ABSPATH' ) || exit;
-class WC_Subscriptions_Plugin {
+class WC_Subscriptions_Base_Plugin {
 
 	/**
 	 * The plugin's version string.

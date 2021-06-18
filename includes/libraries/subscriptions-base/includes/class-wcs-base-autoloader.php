@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @class WCS_Autoloader
  */
-class WCS_Autoloader {
+class WCS_Base_Autoloader {
 
 	/**
 	 * The base path for autoloading.
