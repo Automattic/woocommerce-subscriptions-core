@@ -1,0 +1,12 @@
+coverage:
+  ignore:
+  - tests/.*
+  - i18n/.*
+  - apigen/.*
+  - tmp/.*
+  status:
+    project: false
+    patch: false
+    changes: false
+
+comment: false
