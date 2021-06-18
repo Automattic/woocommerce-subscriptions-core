@@ -65,7 +65,7 @@ class WC_Subscriptions_Base_Plugin {
 	 * @since 4.0.0
 	 * @return WC_Subscriptions_Base_Plugin
 	 */
-	public static function get_instance() {
+	public static function instance() {
 		if ( ! self::$instance ) {
 			// Doing it wrong. WC_Subscriptions_Base_Plugin::get_instance() should not be called before an instance has been created.
 		}
