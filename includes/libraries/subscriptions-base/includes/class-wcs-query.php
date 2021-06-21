@@ -173,7 +173,7 @@ class WCS_Query extends WC_Query {
 
 		$current_page = empty( $current_page ) ? 1 : absint( $current_page );
 
-		wc_get_template( 'myaccount/subscriptions.php', array( 'current_page' => $current_page ), '', plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/' );
+		wc_get_template( 'myaccount/subscriptions.php', array( 'current_page' => $current_page ), '', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' ) );
 	}
 
 	/**
