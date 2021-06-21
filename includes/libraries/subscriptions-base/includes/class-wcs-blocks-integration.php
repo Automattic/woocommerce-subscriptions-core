@@ -21,18 +21,18 @@ class WCS_Blocks_Integration implements IntegrationInterface {
 	 * When called invokes any initialization/setup for the integration.
 	 */
 	public function initialize() {
-		$script_path = '/build/index.js';
-		$style_path  = '/build/index.css';
+		$script_path = 'build/index.js';
+		$style_path  = 'build/index.css';
 
-		$script_url = plugins_url( WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( $script_path ) );
-		$style_url  = plugins_url( WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( $style_path ) );
+		$script_url = \WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( $script_path );
+		$style_url  = \WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( $style_path );
 
-		$script_asset_path = WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( '/build/index.asset.php' );
+		$script_asset_path = \WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'build/index.asset.php' );
 		$script_asset      = file_exists( $script_asset_path )
 			? require $script_asset_path
 			: array(
 				'dependencies' => array(),
-				'version'      => $this->get_file_version( $script_path ),
+				'version'      => $this->get_file_version( $script_asset_path ),
 			);
 
 		wp_register_script(
@@ -45,13 +45,13 @@ class WCS_Blocks_Integration implements IntegrationInterface {
 		wp_set_script_translations(
 			'wc-blocks-integration',
 			'woocommerce-subscriptions',
-			dirname( \WC_Subscriptions::$plugin_file ) . '/languages'
+			\WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'languages' )
 		);
 		wp_enqueue_style(
 			'wc-blocks-integration',
 			$style_url,
 			'',
-			WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( '/build/index.css' ),
+			$this->get_file_version( \WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'build/index.css' ) ),
 			'all'
 		);
 	}
@@ -95,6 +95,6 @@ class WCS_Blocks_Integration implements IntegrationInterface {
 		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG && file_exists( $file ) ) {
 			return filemtime( $file );
 		}
-		return \WC_Subscriptions::$version;
+		return \WC_Subscriptions_Base_Plugin::instance()->get_plugin_version();
 	}
 }
