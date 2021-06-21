@@ -25,7 +25,7 @@ class WC_Subscriptions_Frontend_Scripts {
 	 * @return string The file URL.
 	 */
 	public static function get_file_url( $file_relative_url = '' ) {
-		return WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( $file_relative_url );
+		return WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( $file_relative_url );
 	}
 
 	/**
