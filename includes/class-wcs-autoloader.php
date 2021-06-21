@@ -23,6 +23,7 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 		'wc_subscriptions_plugin',
 		'wc_subscriptions_switcher',
 		'wcs_cart_switch',
+		'wcs_switch_totals_calculator',
 	 );
 
 	/**
