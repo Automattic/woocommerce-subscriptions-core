@@ -300,7 +300,7 @@ class WC_Subscriptions_Base_Plugin {
 	 *
 	 * @return string The product type name.
 	 */
-	protected function get_product_type_name() {
+	public function get_product_type_name() {
 		return WC_Subscriptions::$name;
 	}
 
@@ -309,7 +309,7 @@ class WC_Subscriptions_Base_Plugin {
 	 *
 	 * @return string The transient name used to record when the plugin was activated.
 	 */
-	protected function get_activation_transient() {
+	public function get_activation_transient() {
 		return WC_Subscriptions::$activation_transient;
 	}
 
