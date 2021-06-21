@@ -79,7 +79,7 @@ class WCS_Admin_System_Status {
 			$section_tooltip = $section['tooltip'];
 			$debug_data      = $section['data'];
 
-			include( plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/admin/status.php' );
+			include( WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/admin/status.php' ) );
 		}
 	}
 
@@ -155,7 +155,7 @@ class WCS_Admin_System_Status {
 	 * @return array Theme override data.
 	 */
 	private static function get_theme_overrides() {
-		$wcs_template_dir = dirname( WC_Subscriptions::$plugin_file ) . '/templates/';
+		$wcs_template_dir = WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' );
 		$wc_template_path = trailingslashit( wc()->template_path() );
 		$theme_root       = trailingslashit( get_theme_root() );
 		$overridden       = array();
