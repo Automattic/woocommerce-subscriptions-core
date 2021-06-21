@@ -48,7 +48,7 @@ class WC_Subscriptions_Upgrader {
 
 		self::$about_page_url = admin_url( 'index.php?page=wcs-about&wcs-updated=true' );
 
-		$version_out_of_date = version_compare( self::$active_version, WC_Subscriptions::$version, '<' );
+		$version_out_of_date = version_compare( self::$active_version,  WC_Subscriptions_Base_Plugin::instance()->get_plugin_version(), '<' );
 
 		// Set the cron lock on every request with an out of date version, regardless of authentication level, as we can only lock cron for up to 10 minutes at a time, but we need to keep it locked until the upgrade is complete, regardless of who is browing the site
 		if ( $version_out_of_date ) {
@@ -156,7 +156,7 @@ class WC_Subscriptions_Upgrader {
 		/**
 		 * before upgrade hook.
 		 */
-		do_action( 'woocommerce_subscriptions_before_upgrade', WC_Subscriptions::$version, self::$active_version );
+		do_action( 'woocommerce_subscriptions_before_upgrade',  WC_Subscriptions_Base_Plugin::instance()->get_plugin_version(), self::$active_version );
 
 		// Update the hold stock notification to be one week (if it's still at the default 60 minutes) to prevent cancelling subscriptions using manual renewals and payment methods that can take more than 1 hour (i.e. PayPal eCheck)
 		if ( '0' == self::$active_version || version_compare( self::$active_version, '1.4', '<' ) ) {
@@ -195,7 +195,7 @@ class WC_Subscriptions_Upgrader {
 		if ( '0' != self::$active_version && version_compare( self::$active_version, '2.1.0', '<' ) ) {
 
 			// Delete cached subscription length ranges to force an update with 2.1
-			WC_Subscriptions::$cache->delete_cached( 'wcs-sub-ranges-' . get_locale() );
+			WC_Subscriptions_Base_Plugin::instance()->cache->delete_cached( 'wcs-sub-ranges-' . get_locale() );
 			WCS_Upgrade_Logger::add( 'v2.1: Deleted cached subscription ranges.' );
 			WCS_Upgrade_2_1::set_cancelled_dates();
 
@@ -274,13 +274,13 @@ class WC_Subscriptions_Upgrader {
 	 */
 	public static function upgrade_complete() {
 
-		update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', WC_Subscriptions::$version );
+		update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version',  WC_Subscriptions_Base_Plugin::instance()->get_plugin_version() );
 
 		delete_transient( 'doing_cron' );
 
 		delete_option( 'wc_subscriptions_is_upgrading' );
 
-		do_action( 'woocommerce_subscriptions_upgraded', WC_Subscriptions::$version, self::$active_version );
+		do_action( 'woocommerce_subscriptions_upgraded',  WC_Subscriptions_Base_Plugin::instance()->get_plugin_version(), self::$active_version );
 	}
 
 	/**
@@ -575,8 +575,8 @@ class WC_Subscriptions_Upgrader {
 	 */
 	public static function display_database_upgrade_helper() {
 
-		wp_register_style( 'wcs-upgrade', plugins_url( '/assets/css/wcs-upgrade.css', WC_Subscriptions::$plugin_file ) );
-		wp_register_script( 'wcs-upgrade', plugins_url( '/assets/js/wcs-upgrade.js', WC_Subscriptions::$plugin_file ), 'jquery' );
+		wp_register_style( 'wcs-upgrade', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( 'assets/css/wcs-upgrade.css' ) );
+		wp_register_script( 'wcs-upgrade', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( 'assets/js/wcs-upgrade.js' ), 'jquery' );
 
 		if ( version_compare( self::$active_version, '2.0.0', '<' ) ) {
 			// We're running the 2.0 upgrade routine
@@ -658,7 +658,7 @@ class WC_Subscriptions_Upgrader {
 	 * @return void
 	 */
 	public static function admin_css() {
-		wp_enqueue_style( 'woocommerce-subscriptions-about', plugins_url( '/assets/css/about.css', WC_Subscriptions::$plugin_file ), array(), self::$active_version );
+		wp_enqueue_style( 'woocommerce-subscriptions-about', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( 'assets/css/about.css' ), array(), self::$active_version );
 	}
 
 	/**
@@ -822,7 +822,7 @@ class WC_Subscriptions_Upgrader {
 	public static function maybe_add_downgrade_notice() {
 
 		// If there's no downgrade, exit early. self::$active_version is a bit of a misnomer here but in an upgrade context it refers to the database version of the plugin.
-		if ( ! version_compare( wcs_get_minor_version_string( self::$active_version ), wcs_get_minor_version_string( WC_Subscriptions::$version ), '>' ) ) {
+		if ( ! version_compare( wcs_get_minor_version_string( self::$active_version ), wcs_get_minor_version_string(  WC_Subscriptions_Base_Plugin::instance()->get_plugin_version() ), '>' ) ) {
 			return;
 		}
 
@@ -831,7 +831,7 @@ class WC_Subscriptions_Upgrader {
 		$admin_notice->set_simple_content( sprintf( esc_html__( '%1$sWarning!%2$s It appears that you have downgraded %1$sWooCommerce Subscriptions%2$s from %3$s to %4$s. Downgrading the plugin in this way may cause issues. Please update to %3$s or higher, or %5$sopen a new support ticket%6$s for further assistance. %7$sLearn more &raquo;%8$s', 'woocommerce-subscriptions' ),
 			'<strong>', '</strong>',
 			'<code>' . self::$active_version . '</code>',
-			'<code>' . WC_Subscriptions::$version . '</code>',
+			'<code>' .  WC_Subscriptions_Base_Plugin::instance()->get_plugin_version() . '</code>',
 			'<a href="https://woocommerce.com/my-account/marketplace-ticket-form/" target="_blank">', '</a>',
 			'<a href="https://docs.woocommerce.com/document/subscriptions/upgrade-instructions/#section-12" target="_blank">', '</a>'
 		) );
