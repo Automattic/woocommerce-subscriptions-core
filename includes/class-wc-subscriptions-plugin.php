@@ -19,5 +19,6 @@ class WC_Subscriptions_Plugin extends WC_Subscriptions_Base_Plugin {
 		parent::init();
 		WC_Subscriptions_Switcher::init();
 		new WCS_Cart_Switch();
+		WCS_Manual_Renewal_Manager::init();
 	}
 }
