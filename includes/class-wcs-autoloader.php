@@ -43,4 +43,26 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 
 		return parent::get_class_base_path( $class );
 	}
+
+	/**
+	 * Get the relative path for the class location.
+	 *
+	 * @param string $class The class name.
+	 * @return string The relative path (from the plugin root) to the class file.
+	 */
+	protected function get_relative_class_path( $class ) {
+		if ( in_array( $class, $this->classes ) ) {
+			$path = '/includes';
+
+			switch ( $class ) {
+				case stripos( $class, 'switch') !== false:
+					$path .= '/switching';
+					break;
+			}
+
+			return trailingslashit( $path );
+		}
+
+		return parent::get_relative_class_path( $class );
+	}
 }
