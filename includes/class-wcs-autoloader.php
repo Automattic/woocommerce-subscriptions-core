@@ -26,6 +26,7 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 		'wcs_switch_totals_calculator',
 		'wcs_switch_cart_item',
 		'wcs_add_cart_item',
+		'wc_order_item_pending_switch',
 	 );
 
 	/**
