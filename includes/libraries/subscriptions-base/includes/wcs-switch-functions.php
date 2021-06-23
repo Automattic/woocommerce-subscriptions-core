@@ -163,3 +163,14 @@ function wcs_cart_contains_switches( $item_action = 'any' ) {
 
 	return $subscription_switches;
 }
+
+/**
+ * Gets the switch direction of a cart item.
+ *
+ * @since 4.0.0
+ * @param array $cart_item Cart item object.
+ * @return string|null Cart item subscription switch direction or null.
+ */
+function wcs_get_cart_item_switch_type( $cart_item ) {
+	return isset( $cart_item['subscription_switch'], $cart_item['subscription_switch']['upgraded_or_downgraded'] ) ? $cart_item['subscription_switch']['upgraded_or_downgraded'] : null;
+}

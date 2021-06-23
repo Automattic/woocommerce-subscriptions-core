@@ -1802,8 +1802,8 @@ class WC_Subscriptions_Switcher {
 	 * @return string|null Cart item subscription switch direction or null.
 	 */
 	public static function get_cart_item_switch_type( $cart_item ) {
-
-		return isset( $cart_item['subscription_switch'], $cart_item['subscription_switch']['upgraded_or_downgraded'] ) ? $cart_item['subscription_switch']['upgraded_or_downgraded'] : null;
+		wcs_deprecated_function( __METHOD__, '4.0.0', 'wcs_get_cart_item_switch_type' );
+		return wcs_get_cart_item_switch_type();
 	}
 
 	/**
