@@ -1,0 +1,54 @@
+{
+	"name": "woocommerce-subscriptions",
+	"title": "WooCommerce Subscriptions",
+	"author": "Prospress",
+	"license": "GPL-2.0",
+	"version": "3.0.10",
+	"description": "",
+	"homepage": "https://github.com/Prospress/woocommerce-subscriptions",
+	"main": "Gruntfile.js",
+	"config": {
+		"translate": true
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Prospress/woocommerce-subscriptions.git"
+	},
+	"bugs": {
+		"url": "https://github.com/Prospress/woocommerce-subscriptions/issues"
+	},
+	"directories": {
+		"test": "tests"
+	},
+	"scripts": {
+		"archive": "composer archive --file=$npm_package_name --format=zip",
+		"build": "npm run build:js && npm run archive",
+		"build:js": "wp-scripts build assets/src/js/index.js",
+		"check-engines": "wp-scripts check-engines",
+		"check-licenses": "wp-scripts check-licenses",
+		"format:js": "wp-scripts format-js",
+		"lint:css": "wp-scripts lint-style assets/src/js",
+		"lint:js": "wp-scripts lint-js assets/src/js",
+		"start": "wp-scripts start assets/src/js/index.js",
+		"test:unit": "wp-scripts test-unit-js",
+		"makepot": "wp i18n make-pot . languages/woocommerce-subscriptions.pot",
+		"prearchive": "rm -rf woocommerce-subscriptions && rm -rf woocommerce-subscriptions.zip",
+		"postarchive": "unzip woocommerce-subscriptions.zip -d woocommerce-subscriptions && rm woocommerce-subscriptions.zip && zip -r woocommerce-subscriptions.zip woocommerce-subscriptions && rm -rf woocommerce-subscriptions"
+	},
+	"engines": {
+		"node": ">=0.8.0",
+		"npm": ">=1.1.0"
+	},
+	"devDependencies": {
+		"@woocommerce/dependency-extraction-webpack-plugin": "1.1.0",
+		"@woocommerce/eslint-plugin": "1.0.0-beta.0",
+		"@wordpress/scripts": "^12.6.1",
+		"exec": "^0.1.2",
+		"promised-exec": "~1.0.1",
+		"semver": "^4.1.0"
+	},
+	"dependencies": {
+		"@wordpress/dependency-extraction-webpack-plugin": "^3.0.1",
+		"@wordpress/plugins": "^2.24.2"
+	}
+}

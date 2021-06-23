@@ -1,0 +1,17 @@
+# Codeception Test Suite Configuration
+
+# suite for acceptance tests.
+# perform tests in browser using the WebDriver or PhpBrowser.
+# If you need both WebDriver and PHPBrowser tests - create a separate suite.
+
+class_name: AcceptanceTester
+modules:
+    enabled:
+        - PhpBrowser
+        - AcceptanceHelper
+        - GimmeHelper
+    config:
+        PhpBrowser:
+            url: 'http://gimme.subscription.beer/%{site_id}'
+        GimmeHelper:
+            site_id: '%{site_id}'
