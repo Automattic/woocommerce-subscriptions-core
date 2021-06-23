@@ -113,3 +113,53 @@ function wcs_is_product_switchable_type( $product ) {
 
 	return apply_filters( 'wcs_is_product_switchable', $is_product_switchable, $product, $variation );
 }
+
+/**
+ * Check if the cart includes any items which are to switch an existing subscription's contents.
+ *
+ * @since 4.0.0
+ * @param string $item_action Types of items to include ("any", "switch", or "add").
+ * @return bool|array Returns cart items that modify subscription contents, or false if no such items exist.
+ */
+function wcs_cart_contains_switches( $item_action = 'any' ) {
+	$subscription_switches = false;
+
+	if ( is_admin() && ( ! defined( 'DOING_AJAX' ) || false == DOING_AJAX ) ) {
+		return $subscription_switches;
+	}
+
+	if ( ! isset( WC()->cart ) ) {
+		return $subscription_switches;
+	}
+
+	// We use WC()->cart->cart_contents instead of WC()->cart->get_cart() to prevent recursion caused when get_cart_from_session() is called too early ref: https://github.com/woocommerce/woocommerce/commit/1f3365f2066b1e9d7e84aca7b1d7e89a6989c213
+	foreach ( WC()->cart->cart_contents as $cart_item_key => $cart_item ) {
+		// Use WC()->cart->cart_contents instead of '$cart_item' as the item may have been removed by a parent item that manages it inside this loop.
+		if ( ! isset( WC()->cart->cart_contents[ $cart_item_key ]['subscription_switch'] ) ) {
+			continue;
+		}
+
+		if ( ! wcs_is_subscription( $cart_item['subscription_switch']['subscription_id'] ) ) {
+			WC()->cart->remove_cart_item( $cart_item_key );
+			wc_add_notice( __( 'Your cart contained an invalid subscription switch request. It has been removed.', 'woocommerce-subscriptions' ), 'error' );
+			continue;
+		}
+
+		$is_switch    = ! empty( $cart_item['subscription_switch']['item_id'] );
+		$include_item = false;
+
+		if ( 'any' === $item_action ) {
+			$include_item = true;
+		} elseif ( 'switch' === $item_action && $is_switch ) {
+			$include_item = true;
+		} elseif ( 'add' === $item_action && ! $is_switch ) {
+			$include_item = true;
+		}
+
+		if ( $include_item ) {
+			$subscription_switches[ $cart_item_key ] = $cart_item['subscription_switch'];
+		}
+	}
+
+	return $subscription_switches;
+}
