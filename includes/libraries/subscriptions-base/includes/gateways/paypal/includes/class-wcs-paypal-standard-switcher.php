@@ -91,7 +91,7 @@ class WCS_PayPal_Standard_Switcher {
 	 */
 	public static function cart_needs_payment( $needs_payment, $cart ) {
 
-		$cart_switch_items = WC_Subscriptions_Switcher::cart_contains_switches();
+		$cart_switch_items = wcs_cart_contains_switches();
 
 		if ( false === $needs_payment && 0 == $cart->total && false !== $cart_switch_items && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
 
@@ -221,7 +221,7 @@ class WCS_PayPal_Standard_Switcher {
 	 */
 	public static function get_available_payment_gateways( $available_gateways ) {
 
-		if ( ! is_wc_endpoint_url( 'order-pay' ) && ( WC_Subscriptions_Switcher::cart_contains_switches() || ( isset( $_GET['order_id'] ) && wcs_order_contains_switch( $_GET['order_id'] ) ) ) ) {
+		if ( ! is_wc_endpoint_url( 'order-pay' ) && ( wcs_cart_contains_switches() || ( isset( $_GET['order_id'] ) && wcs_order_contains_switch( $_GET['order_id'] ) ) ) ) {
 			foreach ( $available_gateways as $gateway_id => $gateway ) {
 				if ( 'paypal' == $gateway_id && false == WCS_PayPal::are_reference_transactions_enabled() ) {
 					unset( $available_gateways[ $gateway_id ] );

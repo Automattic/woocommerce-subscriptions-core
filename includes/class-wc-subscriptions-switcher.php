@@ -200,7 +200,7 @@ class WC_Subscriptions_Switcher {
 				wc_add_notice( $switch_message, 'notice' );
 
 			}
-		} elseif ( ( is_cart() || is_checkout() ) && ! is_order_received_page() && false !== ( $switch_items = self::cart_contains_switches( 'any' ) ) ) {
+		} elseif ( ( is_cart() || is_checkout() ) && ! is_order_received_page() && false !== ( $switch_items = wcs_cart_contains_switches( 'any' ) ) ) {
 
 			$removed_item_count = 0;
 
@@ -781,7 +781,7 @@ class WC_Subscriptions_Switcher {
 		// delete all the existing subscription switch links before adding new ones
 		WCS_Related_Order_Store::instance()->delete_relations( $order, 'switch' );
 
-		$switches = self::cart_contains_switches( 'any' );
+		$switches = wcs_cart_contains_switches( 'any' );
 
 		if ( false !== $switches ) {
 
@@ -807,7 +807,7 @@ class WC_Subscriptions_Switcher {
 		}
 
 		if ( isset( $cart_item['subscription_switch'] ) ) {
-			if ( $switches = self::cart_contains_switches() ) {
+			if ( $switches = wcs_cart_contains_switches() ) {
 				foreach ( $switches as $switch_item_key => $switch_details ) {
 					if ( $cart_item_key == $switch_item_key ) {
 						wc_add_order_item_meta( $order_item_id, '_switched_subscription_sign_up_fee_prorated', wcs_get_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_sign_up_fee_prorated', 'single', 0 ), true );
@@ -846,7 +846,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function add_line_item_meta( $order_item, $cart_item_key, $cart_item, $order ) {
 		if ( isset( $cart_item['subscription_switch'] ) ) {
-			$switches = self::cart_contains_switches( 'any' );
+			$switches = wcs_cart_contains_switches( 'any' );
 
 			if ( isset( $switches[ $cart_item_key ] ) ) {
 				$switch_details = $switches[ $cart_item_key ];
@@ -881,7 +881,7 @@ class WC_Subscriptions_Switcher {
 		}
 
 		if ( isset( $cart_item['subscription_switch'] ) ) {
-			if ( $switches = self::cart_contains_switches() ) {
+			if ( $switches = wcs_cart_contains_switches() ) {
 				foreach ( $switches as $switch_item_key => $switch_details ) {
 					if ( $cart_item_key == $switch_item_key ) {
 						wc_add_order_item_meta( $item_id, '_switched_subscription_item_id', $switch_details['item_id'], true );
@@ -1204,7 +1204,7 @@ class WC_Subscriptions_Switcher {
 	public static function cart_contains_switch_for_product( $product ) {
 
 		$product_id         = ( is_object( $product ) ) ? $product->get_id() : $product;
-		$switch_items       = self::cart_contains_switches();
+		$switch_items       = wcs_cart_contains_switches();
 		$switch_product_ids = array();
 
 		if ( false !== $switch_items ) {
@@ -1333,7 +1333,7 @@ class WC_Subscriptions_Switcher {
 				// Also remove any existing items in the cart for switching this item (but don't make the switch invalid)
 				if ( $is_valid ) {
 
-					$existing_switch_items = self::cart_contains_switches();
+					$existing_switch_items = wcs_cart_contains_switches();
 
 					if ( false !== $existing_switch_items ) {
 						foreach ( $existing_switch_items as $cart_item_key => $switch_item ) {
@@ -1502,7 +1502,7 @@ class WC_Subscriptions_Switcher {
 	 * @param WC_Cart The cart object which totals are being calculated.
 	 */
 	public static function calculate_prorated_totals( $cart ) {
-		if ( self::cart_contains_switches( 'any' ) ) {
+		if ( wcs_cart_contains_switches( 'any' ) ) {
 			self::$switch_totals_calculator = new WCS_Switch_Totals_Calculator( $cart );
 			self::$switch_totals_calculator->calculate_prorated_totals();
 		}
@@ -2024,7 +2024,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function set_force_payment_flag_in_cart( $total ) {
 
-		if ( $total > 0 || 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) || false === self::cart_contains_switches( 'any' ) ) {
+		if ( $total > 0 || 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) || false === wcs_cart_contains_switches( 'any' ) ) {
 			return $total;
 		}
 
@@ -2077,7 +2077,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function cart_needs_payment( $needs_payment, $cart ) {
 
-		if ( false === $needs_payment && 0 == $cart->total && false !== ( $switch_items = self::cart_contains_switches( 'any' ) ) ) {
+		if ( false === $needs_payment && 0 == $cart->total && false !== ( $switch_items = wcs_cart_contains_switches( 'any' ) ) ) {
 
 			foreach ( $switch_items as $switch_item ) {
 				if ( isset( $switch_item['force_payment'] ) && true === $switch_item['force_payment'] ) {
@@ -2599,9 +2599,9 @@ class WC_Subscriptions_Switcher {
 	 * @deprecated 2.0
 	 */
 	public static function cart_contains_subscription_switch() {
-		_deprecated_function( __METHOD__, '2.0', __CLASS__ . '::cart_contains_switches()' );
+		_deprecated_function( __METHOD__, '2.0','wcs_cart_contains_switches()' );
 
-		$cart_contains_subscription_switch = self::cart_contains_switches();
+		$cart_contains_subscription_switch = wcs_cart_contains_switches();
 
 		// For backward compatiblity, only send the first switch item, not all of them
 		if ( false !== $cart_contains_subscription_switch ) {
