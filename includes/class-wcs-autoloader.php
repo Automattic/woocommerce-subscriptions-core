@@ -20,14 +20,14 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 	 * @var array
 	 */
 	private $classes = array(
-		'wc_subscriptions_plugin',
-		'wc_subscriptions_switcher',
-		'wcs_cart_switch',
-		'wcs_switch_totals_calculator',
-		'wcs_switch_cart_item',
-		'wcs_add_cart_item',
-		'wc_order_item_pending_switch',
-	 );
+		'wc_subscriptions_plugin'      => true,
+		'wc_subscriptions_switcher'    => true,
+		'wcs_cart_switch'              => true,
+		'wcs_switch_totals_calculator' => true,
+		'wcs_switch_cart_item'         => true,
+		'wcs_add_cart_item'            => true,
+		'wc_order_item_pending_switch' => true,
+	);
 
 	/**
 	 * Gets the class's base path.
@@ -38,7 +38,7 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 	 * @return string
 	 */
 	public function get_class_base_path( $class ) {
-		if ( in_array( $class, $this->classes ) ) {
+		if ( $this->is_plugin_class( $class ) ) {
 			return dirname( WC_Subscriptions::$plugin_file );
 		}
 
@@ -52,7 +52,7 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 	 * @return string The relative path (from the plugin root) to the class file.
 	 */
 	protected function get_relative_class_path( $class ) {
-		if ( in_array( $class, $this->classes ) ) {
+		if ( $this->is_plugin_class( $class ) ) {
 			$path = '/includes';
 
 			switch ( $class ) {
@@ -65,5 +65,16 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 		}
 
 		return parent::get_relative_class_path( $class );
+	}
+
+	/**
+	 * Is the given class found in the Subscriptions plugin
+	 *
+	 * @since 4.0.0
+	 * @param string $class
+	 * @return bool
+	 */
+	private function is_plugin_class( $class ) {
+		return isset( $this->classes[ $class ] );
 	}
 }
