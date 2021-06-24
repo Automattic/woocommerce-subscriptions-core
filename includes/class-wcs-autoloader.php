@@ -55,10 +55,8 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 		if ( $this->is_plugin_class( $class ) ) {
 			$path = '/includes';
 
-			switch ( $class ) {
-				case stripos( $class, 'switch') !== false:
-					$path .= '/switching';
-					break;
+			if ( stripos( $class, 'switch') !== false || 'wcs_add_cart_item' === $class ) {
+				$path .= '/switching';
 			}
 
 			return trailingslashit( $path );
