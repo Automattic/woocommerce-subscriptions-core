@@ -695,8 +695,8 @@ class WC_Subscriptions_Order {
 			return $needs_payment;
 		}
 
-		// If 'turn off automatic payments' is not enabled or '$0 initial checkout' is not enabled, set needs_payments to true.
-		if ( 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_zero_initial_payment_requires_payment', 'no' ) ) {
+		// If manual renewals are not required or '$0 initial checkout' is not enabled, set needs_payments to true.
+		if ( ! wcs_is_manual_renewal_required() && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_zero_initial_payment_requires_payment', 'no' ) ) {
 			$needs_payment = true;
 		}
 
