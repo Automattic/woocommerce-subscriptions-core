@@ -67,4 +67,14 @@ class WCS_Manual_Renewal_Manager {
 
 		return $settings;
 	}
+
+	/**
+	 * Checks if manual renewals are required - automatic renewals are disabled.
+	 *
+	 * @since 4.0.0
+	 * @return bool Weather manual renewal is required.
+	 */
+	public static function is_manual_renewal_required() {
+		return 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' );
+	}
 }
