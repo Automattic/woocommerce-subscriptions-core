@@ -151,3 +151,13 @@ function wcs_get_last_non_early_renewal_order( $subscription ) {
 function wcs_is_manual_renewal_required() {
 	return class_exists( 'WCS_Manual_Renewal_Manager' ) ? WCS_Manual_Renewal_Manager::is_manual_renewal_required() : true;
 }
+
+/**
+ * Checks if manual renewals are enabled.
+ *
+ * @since 4.0.0
+ * @return bool Weather manual renewal are enabled.
+ */
+function wcs_is_manual_renewal_enabled() {
+	return class_exists( 'WCS_Manual_Renewal_Manager' ) ? WCS_Manual_Renewal_Manager::is_manual_renewal_enabled() : false;
+}

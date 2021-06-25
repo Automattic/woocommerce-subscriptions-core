@@ -77,4 +77,14 @@ class WCS_Manual_Renewal_Manager {
 	public static function is_manual_renewal_required() {
 		return 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' );
 	}
+
+	/**
+	 * Checks if manual renewals are enabled.
+	 *
+	 * @since 4.0.0
+	 * @return bool Weather manual renewal is enabled.
+	 */
+	public static function is_manual_renewal_enabled() {
+		return 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals', 'no' );
+	}
 }
