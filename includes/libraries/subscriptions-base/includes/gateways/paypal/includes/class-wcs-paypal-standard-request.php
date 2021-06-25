@@ -56,7 +56,7 @@ class WCS_PayPal_Standard_Request {
 			$subscription = array_pop( $subscriptions );
 		}
 
-		if ( $order_contains_failed_renewal || ( ! empty( $subscription ) && $subscription->get_total() > 0 && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) ) {
+		if ( $order_contains_failed_renewal || ( ! empty( $subscription ) && $subscription->get_total() > 0 && ! wcs_is_manual_renewal_required() ) ) {
 
 			// It's a subscription
 			$paypal_args['cmd'] = '_xclick-subscriptions';

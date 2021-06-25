@@ -31,11 +31,10 @@ class WC_Subscriptions_Cart_Validator {
 	 * @since 2.6.0
 	 */
 	public static function maybe_empty_cart( $valid, $product_id, $quantity, $variation_id = '', $variations = array() ) {
-
 		$is_subscription                 = WC_Subscriptions_Product::is_subscription( $product_id );
 		$cart_contains_subscription      = WC_Subscriptions_Cart::cart_contains_subscription();
 		$multiple_subscriptions_possible = WC_Subscriptions_Payment_Gateways::one_gateway_supports( 'multiple_subscriptions' );
-		$manual_renewals_enabled         = ( 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals', 'no' ) );
+		$manual_renewals_enabled         = wcs_is_manual_renewal_enabled();
 		$canonical_product_id            = ! empty( $variation_id ) ? $variation_id : $product_id;
 
 		if ( $is_subscription && 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_multiple_purchase', 'no' ) ) {

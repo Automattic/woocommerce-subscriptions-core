@@ -1285,41 +1285,6 @@ class WC_Subscriptions_Admin {
 			),
 
 			array(
-				'name' => _x( 'Renewals', 'option section heading', 'woocommerce-subscriptions' ),
-				'type' => 'title',
-				'desc' => '',
-				'id'   => self::$option_prefix . '_renewal_options',
-			),
-
-			array(
-				'name'            => __( 'Manual Renewal Payments', 'woocommerce-subscriptions' ),
-				'desc'            => __( 'Accept Manual Renewals', 'woocommerce-subscriptions' ),
-				'id'              => self::$option_prefix . '_accept_manual_renewals',
-				'default'         => 'no',
-				'type'            => 'checkbox',
-				// translators: placeholders are opening and closing link tags
-				'desc_tip'        => sprintf( __( 'With manual renewals, a customer\'s subscription is put on-hold until they login and pay to renew it. %1$sLearn more%2$s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/store-manager-guide/#accept-manual-renewals">', '</a>' ),
-				'checkboxgroup'   => 'start',
-				'show_if_checked' => 'option',
-			),
-
-			array(
-				'desc'            => __( 'Turn off Automatic Payments', 'woocommerce-subscriptions' ),
-				'id'              => self::$option_prefix . '_turn_off_automatic_payments',
-				'default'         => 'no',
-				'type'            => 'checkbox',
-				// translators: placeholders are opening and closing link tags
-				'desc_tip'        => sprintf( __( 'If you don\'t want new subscription purchases to automatically charge renewal payments, you can turn off automatic payments. Existing automatic subscriptions will continue to charge customers automatically. %1$sLearn more%2$s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/store-manager-guide/#turn-off-automatic-payments">', '</a>' ),
-				'checkboxgroup'   => 'end',
-				'show_if_checked' => 'yes',
-			),
-
-			array(
-				'type' => 'sectionend',
-				'id'   => self::$option_prefix . '_renewal_options',
-			),
-
-			array(
 				'name' => _x( 'Miscellaneous', 'options section heading', 'woocommerce-subscriptions' ),
 				'type' => 'title',
 				'desc' => '',
@@ -1998,21 +1963,31 @@ class WC_Subscriptions_Admin {
 	 * Insert a setting or an array of settings after another specific setting by its ID.
 	 *
 	 * @since 2.2.20
-	 * @param array  $settings                The original list of settings.
+	 * @param array  $settings                The original list of settings. Passed by reference.
 	 * @param string $insert_after_setting_id The setting id to insert the new setting after.
 	 * @param array  $new_setting             The new setting to insert. Can be a single setting or an array of settings.
 	 * @param string $insert_type             The type of insert to perform. Can be 'single_setting' or 'multiple_settings'. Optional. Defaults to a single setting insert.
+	 * @param string $insert_after            The setting type to insert the new settings after. Optional. Default is 'first' - the setting will be inserted after the first occuring setting with the matching ID (no specific type). Pass a setting type (like 'sectionend') to insert after a setting type.
 	 */
-	public static function insert_setting_after( &$settings, $insert_after_setting_id, $new_setting, $insert_type = 'single_setting' ) {
+	public static function insert_setting_after( &$settings, $insert_after_setting_id, $new_setting, $insert_type = 'single_setting', $insert_after = 'first' ) {
 		if ( ! is_array( $settings ) ) {
 			return;
 		}
 
 		$original_settings = $settings;
 		$settings          = array();
+		$inserted          = false;
 
 		foreach ( $original_settings as $setting ) {
 			$settings[] = $setting;
+
+			if ( $inserted ) {
+				continue;
+			}
+
+			if ( 'first' !== $insert_after && isset( $setting['type'] ) && $setting['type'] !== $insert_after ) {
+				continue;
+			}
 
 			if ( isset( $setting['id'] ) && $insert_after_setting_id === $setting['id'] ) {
 				if ( 'single_setting' === $insert_type ) {
@@ -2020,6 +1995,8 @@ class WC_Subscriptions_Admin {
 				} else {
 					$settings = array_merge( $settings, $new_setting );
 				}
+
+				$inserted = true;
 			}
 		}
 	}

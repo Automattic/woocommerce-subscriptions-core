@@ -171,9 +171,8 @@ class WCS_Change_Payment_Method_Admin {
 
 		foreach ( $available_gateways as $gateway_id => $gateway ) {
 
-			if ( $gateway->supports( 'subscription_payment_method_change_admin' ) && 'no' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) || ( ! $subscription->is_manual() && $gateway_id == $subscription->get_payment_method() ) ) {
+			if ( $gateway->supports( 'subscription_payment_method_change_admin' ) && ! wcs_is_manual_renewal_required() || ( ! $subscription->is_manual() && $gateway_id == $subscription->get_payment_method() ) ) {
 				$valid_gateways[ $gateway_id ] = $gateway->get_title();
-
 			}
 		}
 

@@ -2072,7 +2072,7 @@ class WC_Subscription extends WC_Order {
 						$payment_gateway  = isset( $payment_gateways[ $payment_method_id ] ) ? $payment_gateways[ $payment_method_id ] : null;
 					}
 
-					if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+					if ( wcs_is_manual_renewal_required() ) {
 						$this->set_requires_manual_renewal( true );
 					} elseif ( is_null( $payment_gateway ) || false == $payment_gateway->supports( 'subscriptions' ) ) {
 						$this->set_requires_manual_renewal( true );

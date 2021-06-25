@@ -2060,7 +2060,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function set_force_payment_flag_in_cart( $total ) {
 
-		if ( $total > 0 || 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) || false === self::cart_contains_switches( 'any' ) ) {
+		if ( $total > 0 || wcs_is_manual_renewal_required() || false === self::cart_contains_switches( 'any' ) ) {
 			return $total;
 		}
 
@@ -2137,7 +2137,7 @@ class WC_Subscriptions_Switcher {
 	public static function maybe_set_payment_method_after_switch( $order ) {
 
 		// Only set manual subscriptions to automatic if automatic payments are enabled
-		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+		if ( wcs_is_manual_renewal_required() ) {
 			return;
 		}
 

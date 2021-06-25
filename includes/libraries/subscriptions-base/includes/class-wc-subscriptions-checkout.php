@@ -170,7 +170,7 @@ class WC_Subscriptions_Checkout {
 				$subscription->set_payment_method( $available_gateways[ $order_payment_method ] );
 			}
 
-			if ( ! $cart->needs_payment() || 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+			if ( ! $cart->needs_payment() || wcs_is_manual_renewal_required() ) {
 				$subscription->set_requires_manual_renewal( true );
 			} elseif ( ! isset( $available_gateways[ $order_payment_method ] ) || ! $available_gateways[ $order_payment_method ]->supports( 'subscriptions' ) ) {
 				$subscription->set_requires_manual_renewal( true );

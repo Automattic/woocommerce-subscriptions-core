@@ -27,6 +27,7 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 		'wcs_switch_cart_item'         => true,
 		'wcs_add_cart_item'            => true,
 		'wc_order_item_pending_switch' => true,
+		'wcs_manual_renewal_manager'   => true,
 	);
 
 	/**
