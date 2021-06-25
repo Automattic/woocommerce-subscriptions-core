@@ -80,7 +80,7 @@ class WC_Subscriptions_Payment_Gateways {
 			return $available_gateways;
 		}
 
-		$accept_manual_renewals = ( 'no' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals', 'no' ) );
+		$accept_manual_renewals = wcs_is_manual_renewal_enabled();
 		$subscriptions_in_cart  = is_array( WC()->cart->recurring_carts ) ? count( WC()->cart->recurring_carts ) : 0;
 
 		foreach ( $available_gateways as $gateway_id => $gateway ) {
@@ -115,7 +115,7 @@ class WC_Subscriptions_Payment_Gateways {
 		}
 
 		// Manual renewals are accepted - all payment gateways are suitable.
-		if ( 'no' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals', 'no' ) ) {
+		if ( wcs_is_manual_renewal_enabled() ) {
 			return array();
 		}
 
@@ -160,7 +160,7 @@ class WC_Subscriptions_Payment_Gateways {
 	 * @since 1.5.2
 	 */
 	public static function no_available_payment_methods_message( $no_gateways_message ) {
-		if ( WC_Subscriptions_Cart::cart_contains_subscription() && 'no' == get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals', 'no' ) ) {
+		if ( WC_Subscriptions_Cart::cart_contains_subscription() && ! wcs_is_manual_renewal_enabled() ) {
 			if ( current_user_can( 'manage_woocommerce' ) ) {
 				// translators: 1-2: opening/closing tags - link to documentation.
 				$no_gateways_message = sprintf( __( 'Sorry, it seems there are no available payment methods which support subscriptions. Please see %1$sEnabling Payment Gateways for Subscriptions%2$s if you require assistance.', 'woocommerce-subscriptions' ), '<a href="https://docs.woocommerce.com/document/subscriptions/enabling-payment-gateways-for-subscriptions/">', '</a>' );
