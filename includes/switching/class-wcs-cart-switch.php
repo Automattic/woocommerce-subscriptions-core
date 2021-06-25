@@ -173,7 +173,7 @@ class WCS_Cart_Switch extends WCS_Cart_Renewal {
 	 * @return string The place order button text. 'Switch subscription' if the cart contains only switches, otherwise the default.
 	 */
 	public function order_button_text( $place_order_text ) {
-		$cart_switches = wcs_cart_contains_switches();
+		$cart_switches = WC_Subscriptions_Switcher::cart_contains_switches();
 
 		if ( isset( WC()->cart ) && $cart_switches && count( $cart_switches ) === count( WC()->cart->get_cart() ) ) {
 			$place_order_text = _x( 'Switch subscription', 'The place order button text while switching a subscription', 'woocommerce-subscriptions' );
