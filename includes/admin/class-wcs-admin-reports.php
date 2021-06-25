@@ -99,7 +99,7 @@ class WCS_Admin_Reports {
 		$suffix         = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 		$screen         = get_current_screen();
 		$wc_screen_id   = sanitize_title( __( 'WooCommerce', 'woocommerce-subscriptions' ) );
-		$version        = WC_Subscriptions_Base_Plugin::instance()->get_plugin_version();
+		$version        = WC_Subscriptions_Plugin::instance()->get_plugin_version();
 
 		// Reports Subscriptions Pages
 		if ( in_array( $screen->id, apply_filters( 'woocommerce_reports_screen_ids', array( $wc_screen_id . '_page_wc-reports', 'toplevel_page_wc-reports', 'dashboard' ) ) ) && isset( $_GET['tab'] ) && 'subscriptions' == $_GET['tab'] ) {
@@ -172,7 +172,7 @@ class WCS_Admin_Reports {
 			$properties = array(
 				'orders_count'          => array_sum( (array) wp_count_posts( 'shop_order' ) ),
 				'subscriptions_count'   => array_sum( (array) wp_count_posts( 'shop_subscription' ) ),
-				'subscriptions_version' => WC_Subscriptions_Base_Plugin::instance()->get_plugin_version(),
+				'subscriptions_version' => WC_Subscriptions_Plugin::instance()->get_plugin_version(),
 			);
 
 			if ( in_array( $name, array( 'subscription-events-by-date', 'upcoming-recurring-revenue', 'subscription-payment-retry' ), true ) ) {
