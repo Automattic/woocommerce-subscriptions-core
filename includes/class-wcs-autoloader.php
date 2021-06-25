@@ -83,6 +83,23 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 	}
 
 	/**
+	 * Determine whether we should autoload a given class.
+	 *
+	 * @param string $class The class name.
+	 * @return bool
+	 */
+	protected function should_autoload( $class ) {
+		static $legacy = array(
+			'wc_order_item_pending_switch'         => 1,
+			'wc_report_retention_rate'             => 1,
+			'wc_report_upcoming_recurring_revenue' => 1,
+		);
+
+		return isset( $legacy[ $class ] ) ? true : parent::should_autoload( $class );
+
+	}
+
+	/**
 	 * Is the given class found in the Subscriptions plugin
 	 *
 	 * @since 4.0.0
