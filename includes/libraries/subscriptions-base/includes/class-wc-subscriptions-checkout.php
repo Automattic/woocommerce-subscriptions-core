@@ -639,7 +639,7 @@ class WC_Subscriptions_Checkout {
 		}
 
 		// Return the default button text if the cart contains a Subscription order type. The button text for these carts is filtered separately.
-		if ( wcs_cart_contains_renewal() || wcs_cart_contains_resubscribe() || WC_Subscriptions_Switcher::cart_contains_switches() ) {
+		if ( wcs_cart_contains_renewal() || wcs_cart_contains_resubscribe() || wcs_cart_contains_switches() ) {
 			return $button_text;
 		}
 

@@ -113,3 +113,25 @@ function wcs_is_product_switchable_type( $product ) {
 
 	return apply_filters( 'wcs_is_product_switchable', $is_product_switchable, $product, $variation );
 }
+
+/**
+ * Check if the cart includes any items which are to switch an existing subscription's contents.
+ *
+ * @since 4.0.0
+ * @param string $item_action Types of items to include ("any", "switch", or "add").
+ * @return bool|array Returns cart items that modify subscription contents, or false if no such items exist.
+ */
+function wcs_cart_contains_switches( $item_action = 'any' ) {
+	return class_exists( 'WC_Subscriptions_Switcher' ) ? WC_Subscriptions_Switcher::cart_contains_switches( $item_action ) : false;
+}
+
+/**
+ * Gets the switch direction of a cart item.
+ *
+ * @since 4.0.0
+ * @param array $cart_item Cart item object.
+ * @return string|null Cart item subscription switch direction or null.
+ */
+function wcs_get_cart_item_switch_type( $cart_item ) {
+	return class_exists( 'WC_Subscriptions_Switcher' ) ? WC_Subscriptions_Switcher::get_cart_item_switch_type( $cart_item ) : null;
+}

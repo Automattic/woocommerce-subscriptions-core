@@ -1184,9 +1184,9 @@ class WC_Subscriptions_Switcher {
 	/**
 	 * Check if the cart includes any items which are to switch an existing subscription's contents.
 	 *
-	 * @return bool|array Returns cart items that modify subscription contents, or false if no such items exist.
 	 * @since 2.0
 	 * @param string $item_action Types of items to include ("any", "switch", or "add").
+	 * @return bool|array Returns cart items that modify subscription contents, or false if no such items exist.
 	 */
 	public static function cart_contains_switches( $item_action = 'switch' ) {
 		$subscription_switches = false;
@@ -1839,7 +1839,6 @@ class WC_Subscriptions_Switcher {
 	 * @return string|null Cart item subscription switch direction or null.
 	 */
 	public static function get_cart_item_switch_type( $cart_item ) {
-
 		return isset( $cart_item['subscription_switch'], $cart_item['subscription_switch']['upgraded_or_downgraded'] ) ? $cart_item['subscription_switch']['upgraded_or_downgraded'] : null;
 	}
 

@@ -116,7 +116,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 					'trial_length'        => (int) WC_Subscriptions_Product::get_trial_length( $product ),
 					'trial_period'        => WC_Subscriptions_Product::get_trial_period( $product ),
 					'is_resubscribe'      => isset( $cart_item['subscription_resubscribe'] ),
-					'switch_type'         => WC_Subscriptions_Switcher::get_cart_item_switch_type( $cart_item ),
+					'switch_type'         => wcs_get_cart_item_switch_type( $cart_item ),
 					'synchronization'     => self::format_sync_data( $product ),
 				),
 				self::format_sign_up_fees( $product )

@@ -110,7 +110,6 @@ class WC_Subscriptions_Base_Plugin {
 		WC_Subscriptions_Change_Payment_Gateway::init();
 		WC_Subscriptions_Payment_Gateways::init();
 		WCS_PayPal_Standard_Change_Payment_Method::init();
-		WC_Subscriptions_Switcher::init();
 		WC_Subscriptions_Tracker::init();
 		WCS_Upgrade_Logger::init();
 		new WCS_Cart_Renewal();
@@ -118,7 +117,6 @@ class WC_Subscriptions_Base_Plugin {
 		new WCS_Cart_Initial_Payment();
 		WCS_Download_Handler::init();
 		WCS_Retry_Manager::init();
-		new WCS_Cart_Switch();
 		WCS_Limiter::init();
 		WCS_Admin_System_Status::init();
 		WCS_Upgrade_Notice_Manager::init();

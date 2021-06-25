@@ -883,7 +883,7 @@ class WC_Subscriptions_Cart {
 		}
 
 		// Skip checks if cart contains subscription switches or automatic payments are disabled.
-		if ( false !== WC_Subscriptions_Switcher::cart_contains_switches( 'any' ) || 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
+		if ( false !== wcs_cart_contains_switches( 'any' ) || 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'no' ) ) {
 			return $needs_payment;
 		}
 

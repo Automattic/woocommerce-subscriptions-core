@@ -170,7 +170,7 @@ class WCS_Limiter {
 			$cart_contents = array();
 
 			// Use the version of the cart we have access to. We may need to look for switches in the cart being loaded from the session.
-			if ( WC_Subscriptions_Switcher::cart_contains_switches() ) {
+			if ( wcs_cart_contains_switches() ) {
 				$cart_contents = WC()->cart->cart_contents;
 			} elseif ( isset( WC()->session->cart ) ) {
 				$cart_contents = WC()->session->cart;
