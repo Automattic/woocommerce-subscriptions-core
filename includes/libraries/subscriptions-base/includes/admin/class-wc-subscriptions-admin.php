@@ -1967,7 +1967,7 @@ class WC_Subscriptions_Admin {
 	 * @param string $insert_after_setting_id The setting id to insert the new setting after.
 	 * @param array  $new_setting             The new setting to insert. Can be a single setting or an array of settings.
 	 * @param string $insert_type             The type of insert to perform. Can be 'single_setting' or 'multiple_settings'. Optional. Defaults to a single setting insert.
-	 * @param string $insert_after            The setting type to insert the new settings after. Optional. Default is 'first' - the setting will in inserted after the first occuring setting with the matching ID (no specific type). Pass a setting type (like 'sectionend') to insert after a setting type.
+	 * @param string $insert_after            The setting type to insert the new settings after. Optional. Default is 'first' - the setting will be inserted after the first occuring setting with the matching ID (no specific type). Pass a setting type (like 'sectionend') to insert after a setting type.
 	 */
 	public static function insert_setting_after( &$settings, $insert_after_setting_id, $new_setting, $insert_type = 'single_setting', $insert_after = 'first' ) {
 		if ( ! is_array( $settings ) ) {
