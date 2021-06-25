@@ -31,6 +31,16 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 	);
 
 	/**
+	 * The substrings of the classes that the Subscriptions plugin has ownership of.
+	 *
+	 * @var array
+	 */
+	private $class_substrings = array(
+		'wc_reports',
+		'report',
+	);
+
+	/**
 	 * Gets the class's base path.
 	 *
 	 * If the a class is one the plugin is responsible for, we return the plugin's path. Otherwise we let the library handle it.
@@ -58,6 +68,12 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 
 			if ( stripos( $class, 'switch') !== false || 'wcs_add_cart_item' === $class ) {
 				$path .= '/switching';
+			} elseif ( false !== strpos( $class, 'admin' ) ) {
+				$path .= '/admin';
+			} elseif ( false !== strpos( $class, 'wc_report' ) ) {
+				$path .= '/admin/reports/deprecated';
+			} elseif ( false !== strpos( $class, 'report' ) ) {
+				$path .= '/admin/reports';
 			}
 
 			return trailingslashit( $path );
@@ -74,6 +90,16 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 	 * @return bool
 	 */
 	private function is_plugin_class( $class ) {
-		return isset( $this->classes[ $class ] );
+		if ( isset( $this->classes[ $class ] ) ) {
+			return true;
+		}
+
+		foreach ( $this->class_substrings as $substring ) {
+			if ( false !== stripos( $class, $substring ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
