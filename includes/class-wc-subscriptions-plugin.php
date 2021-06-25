@@ -23,4 +23,15 @@ class WC_Subscriptions_Plugin extends WC_Subscriptions_Base_Plugin {
 		new WCS_Admin_Reports();
 		new WCS_Report_Cache_Manager();
 	}
+
+	/**
+	 * Gets the plugin's directory url.
+	 *
+	 * @since 4.0.0
+	 * @param string $path Optional. The path to append.
+	 * @return string
+	 */
+	public function get_plugin_directory_url( $path = '' ) {
+		return plugin_dir_url( __DIR__ ) . $path;
+	}
 }

@@ -104,7 +104,7 @@ class WCS_Admin_Reports {
 		// Reports Subscriptions Pages
 		if ( in_array( $screen->id, apply_filters( 'woocommerce_reports_screen_ids', array( $wc_screen_id . '_page_wc-reports', 'toplevel_page_wc-reports', 'dashboard' ) ) ) && isset( $_GET['tab'] ) && 'subscriptions' == $_GET['tab'] ) {
 
-			wp_enqueue_script( 'wcs-reports', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( 'assets/js/admin/reports.js' ), array( 'jquery', 'jquery-ui-datepicker', 'wc-reports', 'accounting' ), $version );
+			wp_enqueue_script( 'wcs-reports', WC_Subscriptions_Plugin::instance()->get_plugin_directory_url( 'assets/js/admin/reports.js' ), array( 'jquery', 'jquery-ui-datepicker', 'wc-reports', 'accounting' ), $version );
 
 			// Add currency localisation params for axis label
 			wp_localize_script( 'wcs-reports', 'wcs_reports', array(
@@ -120,7 +120,7 @@ class WCS_Admin_Reports {
 
 			// Add tracks script if tracking is enabled.
 			if ( 'yes' === get_option( 'woocommerce_allow_tracking', 'no' ) ) {
-				wp_enqueue_script( 'wcs-tracks', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( 'assets/js/admin/tracks.js' ), array( 'jquery' ), $version, true );
+				wp_enqueue_script( 'wcs-tracks', WC_Subscriptions_Plugin::instance()->get_plugin_directory_url( 'assets/js/admin/tracks.js' ), array( 'jquery' ), $version, true );
 			}
 		}
 	}
