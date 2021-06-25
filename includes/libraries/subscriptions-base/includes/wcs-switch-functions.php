@@ -133,5 +133,5 @@ function wcs_cart_contains_switches( $item_action = 'any' ) {
  * @return string|null Cart item subscription switch direction or null.
  */
 function wcs_get_cart_item_switch_type( $cart_item ) {
-	return isset( $cart_item['subscription_switch'], $cart_item['subscription_switch']['upgraded_or_downgraded'] ) ? $cart_item['subscription_switch']['upgraded_or_downgraded'] : null;
+	return class_exists( 'WC_Subscriptions_Switcher' ) ? WC_Subscriptions_Switcher::get_cart_item_switch_type( $cart_item ) : null;
 }
