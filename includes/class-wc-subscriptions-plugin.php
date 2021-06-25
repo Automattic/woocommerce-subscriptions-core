@@ -32,7 +32,7 @@ class WC_Subscriptions_Plugin extends WC_Subscriptions_Base_Plugin {
 	 * @return string
 	 */
 	public function get_plugin_directory_url( $path = '' ) {
-		return plugin_dir_url( __DIR__ ) . $path;
+		return plugin_dir_url( WC_Subscriptions::$plugin_file ) . $path;
 	}
 
 	/**
