@@ -115,8 +115,8 @@ class WCS_Admin_Reports {
 				'currency_format'              => esc_js( str_replace( array( '%1$s', '%2$s' ), array( '%s', '%v' ), get_woocommerce_price_format() ) ), // For accounting JS
 			) );
 
-			wp_enqueue_script( 'flot-order', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( 'assets/js/admin/jquery.flot.orderBars' ) . $suffix . '.js', array( 'jquery', 'flot' ), $version );
-			wp_enqueue_script( 'flot-axis-labels', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url('assets/js/admin/jquery.flot.axislabels' ) . $suffix . '.js', array( 'jquery', 'flot' ), $version );
+			wp_enqueue_script( 'flot-order', WC_Subscriptions_Plugin::instance()->get_plugin_directory_url( 'assets/js/admin/jquery.flot.orderBars' ) . $suffix . '.js', array( 'jquery', 'flot' ), $version );
+			wp_enqueue_script( 'flot-axis-labels', WC_Subscriptions_Plugin::instance()->get_plugin_directory_url('assets/js/admin/jquery.flot.axislabels' ) . $suffix . '.js', array( 'jquery', 'flot' ), $version );
 
 			// Add tracks script if tracking is enabled.
 			if ( 'yes' === get_option( 'woocommerce_allow_tracking', 'no' ) ) {
