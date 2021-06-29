@@ -129,7 +129,7 @@ class WCS_Report_Retention_Rate extends WC_Admin_Report {
 	 * @return null
 	 */
 	public function output_report() {
-		include( WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'includes/admin/views/html-report-by-period.php' ) );
+		include( WC_Subscriptions_Plugin::instance()->get_plugin_directory( 'includes/admin/views/html-report-by-period.php' ) );
 	}
 
 	/**

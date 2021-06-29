@@ -104,16 +104,6 @@ class WCS_Base_Autoloader {
 			return false;
 		}
 
-		// There are some legacy classes without WCS or Subscription in the name.
-		static $legacy = array(
-			'wc_order_item_pending_switch'         => 1,
-			'wc_report_retention_rate'             => 1,
-			'wc_report_upcoming_recurring_revenue' => 1,
-		);
-		if ( isset( $legacy[ $class ] ) ) {
-			return true;
-		}
-
 		return false !== strpos( $class, 'wcs_' ) || 0 === strpos( $class, 'wc_subscription' ) || ( false !== strpos( $class, 'wc_' ) && false !== strpos( $class, 'subscription' ) );
 	}
 
@@ -248,10 +238,6 @@ class WCS_Base_Autoloader {
 			$path .= '/admin';
 		} elseif ( false !== strpos( $class, 'meta_box' ) ) {
 			$path .= '/admin/meta-boxes';
-		} elseif ( false !== strpos( $class, 'wc_report' ) ) {
-			$path .= '/admin/reports/deprecated';
-		} elseif ( false !== strpos( $class, 'report' ) ) {
-			$path .= '/admin/reports';
 		} elseif ( false !== strpos( $class, 'debug_tool' ) ) {
 			$path .= '/admin/debug-tools';
 		} elseif ( false !== strpos( $class, 'rest' ) ) {

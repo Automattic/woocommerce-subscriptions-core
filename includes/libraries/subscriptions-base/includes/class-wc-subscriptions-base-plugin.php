@@ -156,8 +156,6 @@ class WC_Subscriptions_Base_Plugin {
 	public function init_version_dependant_classes() {
 		new WCS_Admin_Post_Types();
 		new WCS_Admin_Meta_Boxes();
-		new WCS_Admin_Reports();
-		new WCS_Report_Cache_Manager();
 		WCS_Webhooks::init();
 		new WCS_Auth();
 		WCS_API::init();
