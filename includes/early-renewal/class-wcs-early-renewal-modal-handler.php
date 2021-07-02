@@ -45,6 +45,7 @@ class WCS_Early_Renewal_Modal_Handler {
 					'process_early_renewal' => true,
 					'wcs_nonce'             => wp_create_nonce( 'wcs-renew-early-modal-' . $subscription->get_id() ),
 				) ),
+				'data-payment-method' => $subscription->get_payment_method(),
 			),
 		);
 
