@@ -1999,6 +1999,8 @@ class WC_Subscriptions_Admin {
 				$inserted = true;
 			}
 		}
+
+		return $inserted;
 	}
 
 	/**
