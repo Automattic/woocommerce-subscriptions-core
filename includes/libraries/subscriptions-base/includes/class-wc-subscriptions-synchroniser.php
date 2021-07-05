@@ -194,18 +194,7 @@ class WC_Subscriptions_Synchroniser {
 	 * @since 1.5
 	 */
 	public static function add_settings( $settings ) {
-
-		// Get the index of the setting.
-		$index = 0;
-		foreach ( $settings as $i => $setting ) {
-			if ( 'title' == $setting['type'] && 'woocommerce_subscriptions_miscellaneous' == $setting['id'] ) {
-				$index = $i;
-				break;
-			}
-		}
-
-		array_splice( $settings, $index, 0, array(
-
+		$synchronisation_settings = array(
 			array(
 				'name' => __( 'Synchronisation', 'woocommerce-subscriptions' ),
 				'type' => 'title',
@@ -251,7 +240,12 @@ class WC_Subscriptions_Synchroniser {
 				'type' => 'sectionend',
 				'id'   => self::$setting_id . '_title',
 			),
-		) );
+		);
+
+		// Insert the switch settings in after the Roles section otherwise add the settings to the end.
+		if ( ! WC_Subscriptions_Admin::insert_setting_after( $settings, WC_Subscriptions_Admin::$option_prefix . '_role_options', $synchronisation_settings, 'multiple-settings', 'sectionend' ) ) {
+			$settings = array_merge( $settings, $synchronisation_settings );
+		}
 
 		return $settings;
 	}
