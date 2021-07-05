@@ -273,7 +273,6 @@ function wcs_get_users_change_status_link( $subscription_id, $status, $current_s
  * @since 2.0
  */
 function wcs_can_user_put_subscription_on_hold( $subscription, $user = '' ) {
-
 	$user_can_suspend = false;
 
 	if ( empty( $user ) ) {
@@ -283,29 +282,10 @@ function wcs_can_user_put_subscription_on_hold( $subscription, $user = '' ) {
 	}
 
 	if ( user_can( $user, 'manage_woocommerce' ) ) { // Admin, so can always suspend a subscription
-
 		$user_can_suspend = true;
-
-	} else {  // Need to make sure user owns subscription & the suspension limit hasn't been reached
-
-		if ( ! is_object( $subscription ) ) {
-			$subscription = wcs_get_subscription( $subscription );
-		}
-
-		// Make sure current user owns subscription
-		if ( $user->ID == $subscription->get_user_id() ) {
-
-			// Make sure subscription suspension count hasn't been reached
-			$suspension_count    = intval( $subscription->get_suspension_count() );
-			$allowed_suspensions = get_option( WC_Subscriptions_Admin::$option_prefix . '_max_customer_suspensions', 0 );
-
-			if ( 'unlimited' === $allowed_suspensions || $allowed_suspensions > $suspension_count ) { // 0 not > anything so prevents a customer ever being able to suspend
-				$user_can_suspend = true;
-			}
-		}
 	}
 
-	return apply_filters( 'wcs_can_user_put_subscription_on_hold', $user_can_suspend, $subscription );
+	return apply_filters( 'wcs_can_user_put_subscription_on_hold', $user_can_suspend, $subscription, $user );
 }
 
 /**
@@ -323,16 +303,9 @@ function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 	$actions = array();
 
 	if ( user_can( $user_id, 'edit_shop_subscription_status', $subscription->get_id() ) ) {
-
-		$admin_with_suspension_disallowed = current_user_can( 'manage_woocommerce' ) && '0' === get_option( WC_Subscriptions_Admin::$option_prefix . '_max_customer_suspensions', '0' );
 		$current_status = $subscription->get_status();
 
-		if ( $subscription->can_be_updated_to( 'on-hold' ) && wcs_can_user_put_subscription_on_hold( $subscription, $user_id ) && ! $admin_with_suspension_disallowed ) {
-			$actions['suspend'] = array(
-				'url'  => wcs_get_users_change_status_link( $subscription->get_id(), 'on-hold', $current_status ),
-				'name' => __( 'Suspend', 'woocommerce-subscriptions' ),
-			);
-		} elseif ( $subscription->can_be_updated_to( 'active' ) && ! $subscription->needs_payment() ) {
+		if ( $subscription->can_be_updated_to( 'active' ) && ! $subscription->needs_payment() ) {
 			$actions['reactivate'] = array(
 				'url'  => wcs_get_users_change_status_link( $subscription->get_id(), 'active', $current_status ),
 				'name' => __( 'Reactivate', 'woocommerce-subscriptions' ),
@@ -356,7 +329,7 @@ function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 		}
 	}
 
-	return apply_filters( 'wcs_view_subscription_actions', $actions, $subscription );
+	return apply_filters( 'wcs_view_subscription_actions', $actions, $subscription, $user_id );
 }
 
 /**

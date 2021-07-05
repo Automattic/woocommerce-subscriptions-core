@@ -20,14 +20,15 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 	 * @var array
 	 */
 	private $classes = array(
-		'wc_subscriptions_plugin'      => true,
-		'wc_subscriptions_switcher'    => true,
-		'wcs_cart_switch'              => true,
-		'wcs_switch_totals_calculator' => true,
-		'wcs_switch_cart_item'         => true,
-		'wcs_add_cart_item'            => true,
-		'wc_order_item_pending_switch' => true,
-		'wcs_manual_renewal_manager'   => true,
+		'wc_subscriptions_plugin'         => true,
+		'wc_subscriptions_switcher'       => true,
+		'wcs_cart_switch'                 => true,
+		'wcs_switch_totals_calculator'    => true,
+		'wcs_switch_cart_item'            => true,
+		'wcs_add_cart_item'               => true,
+		'wc_order_item_pending_switch'    => true,
+		'wcs_manual_renewal_manager'      => true,
+		'wcs_customer_suspension_manager' => true,
 	);
 
 	/**
