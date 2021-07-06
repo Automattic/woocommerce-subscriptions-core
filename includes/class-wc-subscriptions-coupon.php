@@ -999,7 +999,10 @@ class WC_Subscriptions_Coupon {
 		$limited_coupons = array();
 		foreach ( $coupons as $code ) {
 			if ( self::coupon_is_limited( $code ) ) {
-				$limited_coupons[ $code ] = 0;
+				$limited_coupons[ $code ] = array(
+					'code'  => $code,
+					'count' => 0,
+				);
 			}
 		}
 
@@ -1041,25 +1044,25 @@ class WC_Subscriptions_Coupon {
 			/** @var WC_Order_Item_Coupon $used_coupon */
 			foreach ( $used_coupons as $used_coupon ) {
 				if ( isset( $limited_coupons[ $used_coupon->get_code() ] ) && $used_coupon->get_discount() ) {
-					$limited_coupons[ $used_coupon->get_code() ]++;
+					$limited_coupons[ $used_coupon->get_code() ]['count']++;
 				}
 			}
 		}
 
 		// Check each coupon to see if it needs to be removed.
-		foreach ( $limited_coupons as $code => $count ) {
-			if ( self::get_coupon_limit( $code ) <= $count ) {
-				$subscription->remove_coupon( $code );
+		foreach ( $limited_coupons as $limited_coupon ) {
+			if ( self::get_coupon_limit( $limited_coupon['code'] ) <= $limited_coupon['count']) {
+				$subscription->remove_coupon( $limited_coupon['code'] );
 				$subscription->add_order_note( sprintf(
 					/* translators: %1$s is the coupon code, %2$d is the number of payment usages */
 					_n(
 						'Limited use coupon "%1$s" removed from subscription. It has been used %2$d time.',
 						'Limited use coupon "%1$s" removed from subscription. It has been used %2$d times.',
-						$count,
+						$limited_coupon['count'],
 						'woocommerce-subscriptions'
 					),
-					$code,
-					number_format_i18n( $count )
+					$limited_coupon['code'],
+					number_format_i18n( $limited_coupon['count'] )
 				) );
 			}
 		}
