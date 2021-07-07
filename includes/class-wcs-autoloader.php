@@ -29,6 +29,7 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 		'wc_order_item_pending_switch'    => true,
 		'wcs_manual_renewal_manager'      => true,
 		'wcs_customer_suspension_manager' => true,
+		'wcs_drip_downloads_manager'      => true,
 	);
 
 	/**

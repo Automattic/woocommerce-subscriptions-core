@@ -21,6 +21,7 @@ class WC_Subscriptions_Plugin extends WC_Subscriptions_Base_Plugin {
 		new WCS_Cart_Switch();
 		WCS_Manual_Renewal_Manager::init();
 		WCS_Customer_Suspension_Manager::init();
+		WCS_Drip_Downloads_Manager::init();
 		new WCS_Admin_Reports();
 		new WCS_Report_Cache_Manager();
 	}
