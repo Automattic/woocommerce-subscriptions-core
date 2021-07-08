@@ -831,18 +831,23 @@ class WC_Subscriptions_Admin {
 				$dependencies[] = 'wc-admin-variation-meta-boxes';
 
 				$script_params = array(
-					'productType'               => WC_Subscriptions::$name,
-					'trialPeriodSingular'       => wcs_get_available_time_periods(),
-					'trialPeriodPlurals'        => wcs_get_available_time_periods( 'plural' ),
-					'subscriptionLengths'       => wcs_get_subscription_ranges(),
-					'trialTooLongMessages'      => self::get_trial_period_validation_message( 'separate' ),
-					'bulkEditPeriodMessage'     => __( 'Enter the new period, either day, week, month or year:', 'woocommerce-subscriptions' ),
-					'bulkEditLengthMessage'     => __( 'Enter a new length (e.g. 5):', 'woocommerce-subscriptions' ),
-					'bulkEditIntervalhMessage'  => __( 'Enter a new interval as a single number (e.g. to charge every 2nd month, enter 2):', 'woocommerce-subscriptions' ),
-					'bulkDeleteOptionLabel'     => __( 'Delete all variations without a subscription', 'woocommerce-subscriptions' ),
-					'oneTimeShippingCheckNonce' => wp_create_nonce( 'one_time_shipping' ),
-					'productHasSubscriptions'   => ! wcs_is_large_site() && wcs_get_subscriptions_for_product( $post->ID, 'ids', array( 'limit' => 1 ) ) ? 'yes' : 'no',
-					'productTypeWarning'        => self::get_change_product_type_warning(),
+					'productType'                 => WC_Subscriptions::$name,
+					'trialPeriodSingular'         => wcs_get_available_time_periods(),
+					'trialPeriodPlurals'          => wcs_get_available_time_periods( 'plural' ),
+					'subscriptionLengths'         => wcs_get_subscription_ranges(),
+					'trialTooLongMessages'        => self::get_trial_period_validation_message( 'separate' ),
+					'bulkEditPeriodMessage'       => __( 'Enter the new period, either day, week, month or year:', 'woocommerce-subscriptions' ),
+					'bulkEditLengthMessage'       => __( 'Enter a new length (e.g. 5):', 'woocommerce-subscriptions' ),
+					'bulkEditIntervalhMessage'    => __( 'Enter a new interval as a single number (e.g. to charge every 2nd month, enter 2):', 'woocommerce-subscriptions' ),
+					'bulkDeleteOptionLabel'       => __( 'Delete all variations without a subscription', 'woocommerce-subscriptions' ),
+					'oneTimeShippingCheckNonce'   => wp_create_nonce( 'one_time_shipping' ),
+					'productHasSubscriptions'     => ! wcs_is_large_site() && wcs_get_subscriptions_for_product( $post->ID, 'ids', array( 'limit' => 1 ) ) ? 'yes' : 'no',
+					'productTypeWarning'          => self::get_change_product_type_warning(),
+					'isLargeSite'                 => wcs_is_large_site(),
+					'nonce'                       => wp_create_nonce( 'wc_subscriptions_admin' ),
+					'variationDeleteErrorMessage' => __( 'An error occurred determining if that variation can be deleted. Please try again.', 'woocommerce-subscriptions' ),
+					'variationDeleteFailMessage'  => __( 'That variation can not be removed because it is associated with active subscriptions. To remove this variation, please cancel and delete the subscriptions for it.', 'woocommerce-subscriptions' ),
+
 				);
 			} elseif ( 'edit-shop_order' == $screen->id ) {
 				$script_params = array(
