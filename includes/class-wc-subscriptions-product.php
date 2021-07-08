@@ -960,7 +960,7 @@ class WC_Subscriptions_Product {
 	 * @since 2.2.17
 	 */
 	public static function add_variation_removal_flag( $loop, $variation_data, $variation ) {
-		$related_subscriptions = wcs_get_subscriptions_for_product( $variation->ID );
+		$related_subscriptions = wcs_get_subscriptions_for_product( $variation->ID, 'ids', array( 'limit' => 1 ) );
 		$can_remove            = empty( $related_subscriptions );
 
 		printf( '<input type="hidden" class="wcs-can-remove-variation" value="%d" />', intval( $can_remove ) );
