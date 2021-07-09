@@ -116,7 +116,6 @@ class WC_Subscriptions_Base_Plugin {
 		new WCS_Cart_Resubscribe();
 		new WCS_Cart_Initial_Payment();
 		WCS_Download_Handler::init();
-		WCS_Retry_Manager::init();
 		WCS_Limiter::init();
 		WCS_Admin_System_Status::init();
 		WCS_Upgrade_Notice_Manager::init();
