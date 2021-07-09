@@ -778,17 +778,6 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
-	 * Checks to see if payment method is required on a subscription product with a $0 initial payment.
-	 *
-	 * @since 2.5.0
-	 */
-	public static function zero_initial_payment_requires_payment() {
-
-		return 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . '_zero_initial_payment_requires_payment', 'no' );
-
-	}
-
-	/**
 	 * Gets the cart calculation type flag
 	 *
 	 * @since 1.2
@@ -877,8 +866,8 @@ class WC_Subscriptions_Cart {
 			return $needs_payment;
 		}
 
-		// Skip checks if new $0 initial payments don't require a payment method or cart has no subscriptions.
-		if ( ! self::zero_initial_payment_requires_payment() || ! self::cart_contains_subscription() ) {
+		// Skip checks if cart has no subscriptions.
+		if ( ! self::cart_contains_subscription() ) {
 			return $needs_payment;
 		}
 
@@ -2585,5 +2574,21 @@ class WC_Subscriptions_Cart {
 		}
 
 		return $packages;
+	}
+
+	/**
+	 * Checks to see if payment method is required on a subscription product with a $0 initial payment.
+	 *
+	 * @since 2.5.0
+	 * @deprecated 4.0.0
+	 */
+	public static function zero_initial_payment_requires_payment() {
+		wcs_deprecated_function( __METHOD__, '4.0.0', 'WCS_Zero_Initial_Payment_Checkout_Manager::zero_initial_checkout_requires_payment() if available.' );
+
+		if ( class_exists( 'WCS_Zero_Initial_Payment_Checkout_Manager' ) ) {
+			return WCS_Zero_Initial_Payment_Checkout_Manager::zero_initial_checkout_requires_payment();
+		}
+
+		return true;
 	}
 }
