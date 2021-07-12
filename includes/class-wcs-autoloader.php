@@ -77,7 +77,7 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 		if ( stripos( $class, 'switch') !== false || 'wcs_add_cart_item' === $class ) {
 			$path .= '/switching';
 		} elseif ( false !== strpos( $class, 'retry' ) || false !== strpos( $class, 'retries' ) ) {
-			$path .= $this->get_retry_relative_path( $class );
+			$path .= $this->get_payment_retry_class_relative_path( $class );
 		} elseif ( false !== strpos( $class, 'admin' ) ) {
 			$path .= '/admin';
 		} elseif ( false !== strpos( $class, 'wc_report' ) ) {
@@ -133,7 +133,7 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 	 * @param string $class The retry class being loaded.
 	 * @return string The relative path to the retry class.
 	 */
-	private function get_retry_relative_path( $class ) {
+	private function get_payment_retry_class_relative_path( $class ) {
 		$relative_path = '/payment-retry';
 
 		if ( false !== strpos( $class, 'admin' ) || false !== strpos( $class, 'meta_box' )) {
