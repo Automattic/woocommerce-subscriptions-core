@@ -1292,17 +1292,6 @@ class WC_Subscriptions_Admin {
 			),
 
 			array(
-				'name'     => __( 'Customer Suspensions', 'woocommerce-subscriptions' ),
-				'desc'     => _x( 'suspensions per billing period.', 'there\'s a number immediately in front of this text', 'woocommerce-subscriptions' ),
-				'id'       => self::$option_prefix . '_max_customer_suspensions',
-				'css'      => 'min-width:50px;',
-				'default'  => 0,
-				'type'     => 'select',
-				'options'  => apply_filters( 'woocommerce_subscriptions_max_customer_suspension_range', array_merge( range( 0, 12 ), array( 'unlimited' => 'Unlimited' ) ) ),
-				'desc_tip' => __( 'Set a maximum number of times a customer can suspend their account for each billing period. For example, for a value of 3 and a subscription billed yearly, if the customer has suspended their account 3 times, they will not be presented with the option to suspend their account until the next year. Store managers will always be able to suspend an active subscription. Set this to 0 to turn off the customer suspension feature completely.', 'woocommerce-subscriptions' ),
-			),
-
-			array(
 				'name'     => __( 'Mixed Checkout', 'woocommerce-subscriptions' ),
 				'desc'     => __( 'Allow multiple subscriptions and products to be purchased simultaneously.', 'woocommerce-subscriptions' ),
 				'id'       => self::$option_prefix . '_multiple_purchase',
@@ -1999,6 +1988,8 @@ class WC_Subscriptions_Admin {
 				$inserted = true;
 			}
 		}
+
+		return $inserted;
 	}
 
 	/**

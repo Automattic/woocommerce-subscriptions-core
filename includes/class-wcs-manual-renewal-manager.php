@@ -62,8 +62,9 @@ class WCS_Manual_Renewal_Manager {
 			),
 		);
 
-		$insert_after = WC_Subscriptions_Admin::$option_prefix . '_role_options';
-		WC_Subscriptions_Admin::insert_setting_after( $settings, $insert_after, $manual_renewal_settings, 'multiple_settings', 'sectionend' );
+		if ( ! WC_Subscriptions_Admin::insert_setting_after( $settings, WC_Subscriptions_Admin::$option_prefix . '_role_options', $manual_renewal_settings, 'multiple_settings', 'sectionend' ) ) {
+			$settings = array_merge( $settings, $manual_renewal_settings );
+		}
 
 		return $settings;
 	}

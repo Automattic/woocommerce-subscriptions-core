@@ -36,7 +36,7 @@ class WC_Subscriptions_Switcher {
 		add_filter( 'post_type_link', array( __CLASS__, 'add_switch_query_arg_post_link' ), 12, 2 );
 
 		// Add the settings to control whether Switching is enabled and how it will behave
-		add_filter( 'woocommerce_subscription_settings', array( __CLASS__, 'add_settings' ) );
+		add_filter( 'woocommerce_subscription_settings', array( __CLASS__, 'add_settings' ), 15 );
 
 		// Render "wcs_switching_options" field
 		add_action( 'woocommerce_admin_field_wcs_switching_options', __CLASS__ . '::switching_options_field_html' );
@@ -377,8 +377,7 @@ class WC_Subscriptions_Switcher {
 	 */
 	public static function add_settings( $settings ) {
 
-		array_splice( $settings, 12, 0, array(
-
+		$switching_settings = array(
 			array(
 				'name' => __( 'Switching', 'woocommerce-subscriptions' ),
 				'type' => 'title',
@@ -386,12 +385,10 @@ class WC_Subscriptions_Switcher {
 				'desc' => sprintf( __( 'Allow subscribers to switch (upgrade or downgrade) between different subscriptions. %1$sLearn more%2$s.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( 'http://docs.woocommerce.com/document/subscriptions/switching-guide/' ) . '">', '</a>' ),
 				'id'   => WC_Subscriptions_Admin::$option_prefix . '_switch_settings',
 			),
-
 			array(
 				'type' => 'wcs_switching_options',
 				'id'   => WC_Subscriptions_Admin::$option_prefix . '_allow_switching',
 			),
-
 			array(
 				'name'     => __( 'Prorate Recurring Payment', 'woocommerce-subscriptions' ),
 				'desc'     => __( 'When switching to a subscription with a different recurring payment or billing period, should the price paid for the existing billing period be prorated when switching to the new subscription?', 'woocommerce-subscriptions' ),
@@ -409,7 +406,6 @@ class WC_Subscriptions_Switcher {
 				),
 				'desc_tip' => true,
 			),
-
 			array(
 				'name'     => __( 'Prorate Sign up Fee', 'woocommerce-subscriptions' ),
 				'desc'     => __( 'When switching to a subscription with a sign up fee, you can require the customer pay only the gap between the existing subscription\'s sign up fee and the new subscription\'s sign up fee (if any).', 'woocommerce-subscriptions' ),
@@ -425,7 +421,6 @@ class WC_Subscriptions_Switcher {
 				),
 				'desc_tip' => true,
 			),
-
 			array(
 				'name'     => __( 'Prorate Subscription Length', 'woocommerce-subscriptions' ),
 				'desc'     => __( 'When switching to a subscription with a length, you can take into account the payments already completed by the customer when determining how many payments the subscriber needs to make for the new subscription.', 'woocommerce-subscriptions' ),
@@ -441,7 +436,6 @@ class WC_Subscriptions_Switcher {
 				),
 				'desc_tip' => true,
 			),
-
 			array(
 				'name'     => __( 'Switch Button Text', 'woocommerce-subscriptions' ),
 				'desc'     => __( 'Customise the text displayed on the button next to the subscription on the subscriber\'s account page. The default is "Switch Subscription", but you may wish to change this to "Upgrade" or "Change Subscription".', 'woocommerce-subscriptions' ),
@@ -452,12 +446,16 @@ class WC_Subscriptions_Switcher {
 				'type'     => 'text',
 				'desc_tip' => true,
 			),
-
 			array(
 				'type' => 'sectionend',
 				'id'   => WC_Subscriptions_Admin::$option_prefix . '_switch_settings',
 			),
-		) );
+		);
+
+		// Insert the switch settings in after the synchronisation section otherwise add them to the end.
+		if ( ! WC_Subscriptions_Admin::insert_setting_after( $settings, WC_Subscriptions_Synchroniser::$setting_id . '_title', $switching_settings, 'multiple-settings', 'sectionend' ) ) {
+			$settings = array_merge( $settings, $switching_settings );
+		}
 
 		return $settings;
 	}
