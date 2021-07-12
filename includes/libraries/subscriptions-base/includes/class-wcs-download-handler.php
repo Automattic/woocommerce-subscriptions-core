@@ -23,9 +23,6 @@ class WCS_Download_Handler {
 	 * @since 2.0
 	 */
 	public static function init() {
-
-		add_filter( 'woocommerce_process_product_file_download_paths_grant_access_to_new_file', __CLASS__ . '::maybe_revoke_immediate_access', 10, 4 );
-
 		add_action( 'woocommerce_grant_product_download_permissions', __CLASS__ . '::save_downloadable_product_permissions' );
 
 		add_filter( 'woocommerce_get_item_downloads', __CLASS__ . '::get_item_downloads', 10, 3 );
@@ -37,25 +34,6 @@ class WCS_Download_Handler {
 		add_action( 'deleted_post', __CLASS__ . '::delete_subscription_permissions' );
 
 		add_action( 'woocommerce_process_product_file_download_paths', __CLASS__ . '::grant_new_file_product_permissions', 11, 3 );
-	}
-
-	/**
-	 * When adding new downloadable content to a subscription product, check if we don't
-	 * want to automatically add the new downloadable files to the subscription or initial and renewal orders.
-	 *
-	 * @param bool $grant_access
-	 * @param string $download_id
-	 * @param int $product_id
-	 * @param WC_Order $order
-	 * @return bool
-	 * @since 2.0
-	 */
-	public static function maybe_revoke_immediate_access( $grant_access, $download_id, $product_id, $order ) {
-
-		if ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_drip_downloadable_content_on_renewal', 'no' ) && ( wcs_is_subscription( wcs_get_objects_property( $order, 'id' ) ) || wcs_order_contains_subscription( $order, 'any' ) ) ) {
-			$grant_access = false;
-		}
-		return $grant_access;
 	}
 
 	/**
@@ -258,5 +236,28 @@ class WCS_Download_Handler {
 				}
 			}
 		}
+	}
+
+	/**
+	 * When adding new downloadable content to a subscription product, check if we don't
+	 * want to automatically add the new downloadable files to the subscription or initial and renewal orders.
+	 *
+	 * @deprecated 4.0.0
+	 *
+	 * @param bool $grant_access
+	 * @param string $download_id
+	 * @param int $product_id
+	 * @param WC_Order $order
+	 * @return bool
+	 * @since 2.0
+	 */
+	public static function maybe_revoke_immediate_access( $grant_access, $download_id, $product_id, $order ) {
+		wcs_deprecated_function( __METHOD__, '4.0.0', 'WCS_Drip_Downloads_Manager::maybe_revoke_immediate_access() if available' );
+
+		if ( class_exists( 'WCS_Drip_Downloads_Manager' ) ) {
+			return WCS_Drip_Downloads_Manager::maybe_revoke_immediate_access( $grant_access, $download_id, $product_id, $order );
+		}
+
+		return $grant_access;
 	}
 }

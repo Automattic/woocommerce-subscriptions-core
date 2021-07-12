@@ -1310,16 +1310,6 @@ class WC_Subscriptions_Admin {
 			),
 
 			array(
-				'name'     => __( 'Drip Downloadable Content', 'woocommerce-subscriptions' ),
-				'desc'     => __( 'Enable dripping for downloadable content on subscription products.', 'woocommerce-subscriptions' ),
-				'id'       => self::$option_prefix . '_drip_downloadable_content_on_renewal',
-				'default'  => 'no',
-				'type'     => 'checkbox',
-				// translators: %s is a line break.
-				'desc_tip' => sprintf( __( 'Enabling this grants access to new downloadable files added to a product only after the next renewal is processed.%sBy default, access to new downloadable files added to a product is granted immediately to any customer that has an active subscription with that product.', 'woocommerce-subscriptions' ), '<br />' ),
-			),
-
-			array(
 				'type' => 'sectionend',
 				'id'   => self::$option_prefix . '_miscellaneous',
 			),
