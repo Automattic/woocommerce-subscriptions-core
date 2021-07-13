@@ -147,7 +147,6 @@ class WCS_Base_Autoloader {
 			'wcs_debug_tool_cache_updater'     => true,
 			'wcs_dynamic_hook_deprecator'      => true,
 			'wcs_hook_deprecator'              => true,
-			'wcs_retry_store'                  => true,
 			'wcs_scheduler'                    => true,
 			'wcs_sv_api_base'                  => true,
 			'wcs_customer_store'               => true,
@@ -232,8 +231,6 @@ class WCS_Base_Autoloader {
 			} else {
 				$path .= '/includes';
 			}
-		} elseif ( 0 === strpos( $class, 'wcs_retry' ) && 'wcs_retry_manager' !== $class ) {
-			$path .= '/payment-retry';
 		} elseif ( $is_admin && 'wcs_change_payment_method_admin' !== $class ) {
 			$path .= '/admin';
 		} elseif ( false !== strpos( $class, 'meta_box' ) ) {

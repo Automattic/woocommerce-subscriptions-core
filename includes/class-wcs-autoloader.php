@@ -31,6 +31,7 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 		'wcs_customer_suspension_manager'           => true,
 		'wcs_drip_downloads_manager'                => true,
 		'wcs_zero_initial_payment_checkout_manager' => true,
+		'wcs_meta_box_payment_retries'              => true
 	);
 
 	/**
@@ -41,6 +42,7 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 	private $class_substrings = array(
 		'wc_reports',
 		'report',
+		'retry',
 	);
 
 	/**
@@ -66,23 +68,25 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 	 * @return string The relative path (from the plugin root) to the class file.
 	 */
 	protected function get_relative_class_path( $class ) {
-		if ( $this->is_plugin_class( $class ) ) {
-			$path = '/includes';
-
-			if ( stripos( $class, 'switch') !== false || 'wcs_add_cart_item' === $class ) {
-				$path .= '/switching';
-			} elseif ( false !== strpos( $class, 'admin' ) ) {
-				$path .= '/admin';
-			} elseif ( false !== strpos( $class, 'wc_report' ) ) {
-				$path .= '/admin/reports/deprecated';
-			} elseif ( false !== strpos( $class, 'report' ) ) {
-				$path .= '/admin/reports';
-			}
-
-			return trailingslashit( $path );
+		if ( ! $this->is_plugin_class( $class ) ) {
+			return parent::get_relative_class_path( $class );
 		}
 
-		return parent::get_relative_class_path( $class );
+		$path = '/includes';
+
+		if ( stripos( $class, 'switch') !== false || 'wcs_add_cart_item' === $class ) {
+			$path .= '/switching';
+		} elseif ( false !== strpos( $class, 'retry' ) || false !== strpos( $class, 'retries' ) ) {
+			$path .= $this->get_payment_retry_class_relative_path( $class );
+		} elseif ( false !== strpos( $class, 'admin' ) ) {
+			$path .= '/admin';
+		} elseif ( false !== strpos( $class, 'wc_report' ) ) {
+			$path .= '/admin/reports/deprecated';
+		} elseif ( false !== strpos( $class, 'report' ) ) {
+			$path .= '/admin/reports';
+		}
+
+		return trailingslashit( $path );
 	}
 
 	/**
@@ -121,5 +125,39 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Gets a retry class's relative path.
+	 *
+	 * @param string $class The retry class being loaded.
+	 * @return string The relative path to the retry class.
+	 */
+	private function get_payment_retry_class_relative_path( $class ) {
+		$relative_path = '/payment-retry';
+
+		if ( false !== strpos( $class, 'admin' ) || false !== strpos( $class, 'meta_box' )) {
+			$relative_path .= '/admin';
+		} elseif ( false !== strpos( $class, 'email' ) ) {
+			$relative_path .= '/emails';
+		} elseif ( false !== strpos( $class, 'store' ) ) {
+			$relative_path .= '/data-stores';
+		}
+
+		return $relative_path;
+	}
+
+	/**
+	 * Determine if the class is one of our abstract classes.
+	 *
+	 * @param string $class The class name.
+	 * @return bool
+	 */
+	protected function is_class_abstract( $class ) {
+		static $abstracts = array(
+			'wcs_retry_store' => true,
+		);
+
+		return isset( $abstracts[ $class ] ) || parent::is_class_abstract( $class );
 	}
 }

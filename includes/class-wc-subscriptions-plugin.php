@@ -25,6 +25,7 @@ class WC_Subscriptions_Plugin extends WC_Subscriptions_Base_Plugin {
 		new WCS_Admin_Reports();
 		new WCS_Report_Cache_Manager();
 		WCS_Zero_Initial_Payment_Checkout_Manager::init();
+		WCS_Retry_Manager::init();
 	}
 
 	/**
