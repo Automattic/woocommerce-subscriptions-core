@@ -22,10 +22,21 @@ class WC_Subscriptions_Plugin extends WC_Subscriptions_Base_Plugin {
 		WCS_Manual_Renewal_Manager::init();
 		WCS_Customer_Suspension_Manager::init();
 		WCS_Drip_Downloads_Manager::init();
-		new WCS_Admin_Reports();
-		new WCS_Report_Cache_Manager();
 		WCS_Zero_Initial_Payment_Checkout_Manager::init();
 		WCS_Retry_Manager::init();
+	}
+
+	/**
+	 * Initialises classes which need to be loaded after other plugins have loaded.
+	 *
+	 * Hooked onto 'plugins_loaded' by @see WC_Subscriptions_Base_Plugin::init()
+	 *
+	 * @since 4.0.0
+	 */
+	public function init_version_dependant_classes() {
+		parent::init_version_dependant_classes();
+		new WCS_Admin_Reports();
+		new WCS_Report_Cache_Manager();
 	}
 
 	/**
