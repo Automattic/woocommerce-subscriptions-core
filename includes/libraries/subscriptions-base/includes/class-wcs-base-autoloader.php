@@ -259,8 +259,6 @@ class WCS_Base_Autoloader {
 			$path .= '/privacy';
 		} elseif ( false !== strpos( $class, 'upgrade' ) || false !== strpos( $class, 'repair' ) ) {
 			$path .= '/upgrades';
-		} elseif ( false !== strpos( $class, 'early' ) ) {
-			$path .= '/early-renewal';
 		}
 
 		return trailingslashit( $path );
