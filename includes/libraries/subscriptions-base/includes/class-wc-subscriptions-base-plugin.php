@@ -7,6 +7,9 @@
  */
 
 defined( 'ABSPATH' ) || exit;
+
+require_once dirname( __FILE__ ) . '/class-wcs-base-autoloader.php';
+
 class WC_Subscriptions_Base_Plugin {
 
 	/**
@@ -48,7 +51,12 @@ class WC_Subscriptions_Base_Plugin {
 	 * Initialise class and attach callbacks.
 	 */
 	public function __construct( $autoloader = null ) {
-		$this->autoloader = $autoloader ? $autoloader : new WCS_Autoloader( $this->get_base_plugin_directory() );
+		if ( $autoloader ) {
+			$this->autoloader = $autoloader;
+		} else {
+			$this->autoloader = new WCS_Base_Autoloader( $this->get_base_plugin_directory() );
+			$this->autoloader->register();
+		}
 
 		$this->define_constants();
 		$this->includes();
