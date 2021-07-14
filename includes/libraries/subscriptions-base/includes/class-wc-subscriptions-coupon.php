@@ -562,7 +562,7 @@ class WC_Subscriptions_Coupon {
 				continue;
 			}
 
-			if ( ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
+			if ( 'recurring_total' === $calculation_type || ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
 				continue;
 			}
 
