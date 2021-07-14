@@ -562,15 +562,6 @@ class WC_Subscriptions_Coupon {
 				continue;
 			}
 
-			if ( 'recurring_total' === $calculation_type ) {
-				// Special handling for a single payment coupon.
-				if ( 1 === self::get_coupon_limit( $coupon_code ) && 0 < WC()->cart->get_coupon_discount_amount( $coupon_code ) ) {
-					$cart->remove_coupon( $coupon_code );
-				}
-
-				continue;
-			}
-
 			if ( ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
 				continue;
 			}

@@ -33,6 +33,9 @@ class WCS_Limited_Recurring_Coupon_Manager {
 
 		// Add info to the Coupons list table.
 		add_action( 'manage_shop_coupon_posts_custom_column', array( __CLASS__, 'add_limit_to_list_table' ), 20, 2 );
+
+		// Must be hooked later to honour early callbacks choosing to bypass the coupon removal.
+		add_filter( 'wcs_bypass_coupon_removal', array( __CLASS__, 'maybe_remove_coupons_from_recurring_cart' ), 1000, 5 );
 	}
 
 	/**
@@ -370,5 +373,40 @@ class WCS_Limited_Recurring_Coupon_Manager {
 	 */
 	public static function no_available_payment_methods_message() {
 		return __( 'Sorry, it seems there are no available payment methods which support the recurring coupon you are using. Please contact us if you require assistance or wish to make alternate arrangements.', 'woocommerce-subscriptions' );
+	}
+
+	/**
+	 * Removes limited coupons from the recurring cart if the coupons limit is reached in the initial cart.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param bool      $bypass_default_checks Whether to bypass WC Subscriptions default conditions for removing a coupon.
+	 * @param WC_Coupon $coupon                The coupon to check.
+	 * @param string    $coupon_type           The coupon's type.
+	 * @param string    $calculation_type      The WC Subscriptions cart calculation mode. Can be 'recurring_total' or 'none'. @see WC_Subscriptions_Cart::get_calculation_type()
+	 *
+	 * @return bool Whether to bypass WC Subscriptions default conditions for removing a coupon.
+	 */
+	public static function maybe_remove_coupons_from_recurring_cart( $bypass_default_checks, $coupon, $coupon_type, $calculation_type, $cart ) {
+
+		// Bypass this check if a third-party has already opted to bypass default conditions.
+		if ( $bypass_default_checks ) {
+			return $bypass_default_checks;
+		}
+
+		if ( 'recurring_total' !== $calculation_type ) {
+			return $bypass_default_checks;
+		}
+
+		if ( ! WC_Subscriptions_Coupon::is_recurring_coupon( $coupon_type ) ){
+			return $bypass_default_checks;
+		}
+
+		// Special handling for a single payment coupon.
+		if ( 1 === self::get_coupon_limit( $coupon->get_code() ) && 0 < WC()->cart->get_coupon_discount_amount( $coupon->get_code() ) ) {
+			$cart->remove_coupon( $coupon->get_code() );
+		}
+
+		return $bypass_default_checks;
 	}
 }
