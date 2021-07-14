@@ -43,7 +43,7 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 		'wc_reports',
 		'report',
 		'retry',
-		'early-renewal',
+		'early_renewal',
 	);
 
 	/**
