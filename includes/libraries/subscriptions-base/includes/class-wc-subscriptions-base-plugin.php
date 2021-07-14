@@ -122,7 +122,6 @@ class WC_Subscriptions_Base_Plugin {
 		WCS_Staging::init();
 		WCS_Permalink_Manager::init();
 		WCS_Custom_Order_Item_Manager::init();
-		WCS_Early_Renewal_Modal_Handler::init();
 		WCS_Dependent_Hook_Manager::init();
 		WCS_Admin_Product_Import_Export_Manager::init();
 		WC_Subscriptions_Frontend_Scripts::init();

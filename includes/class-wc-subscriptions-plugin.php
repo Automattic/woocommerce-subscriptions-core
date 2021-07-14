@@ -24,6 +24,7 @@ class WC_Subscriptions_Plugin extends WC_Subscriptions_Base_Plugin {
 		WCS_Drip_Downloads_Manager::init();
 		WCS_Zero_Initial_Payment_Checkout_Manager::init();
 		WCS_Retry_Manager::init();
+		WCS_Early_Renewal_Modal_Handler::init();
 	}
 
 	/**
