@@ -89,7 +89,7 @@ class WCS_Early_Renewal_Modal_Handler {
 				'new_next_payment_date' => $new_next_payment_date,
 			),
 			'',
-			WC_Subscriptions_Plugin::instance()->get_base_plugin_directory( 'templates/' ),
+			WC_Subscriptions_Plugin::instance()->get_plugin_directory( 'templates/' ),
 		);
 	}
 
