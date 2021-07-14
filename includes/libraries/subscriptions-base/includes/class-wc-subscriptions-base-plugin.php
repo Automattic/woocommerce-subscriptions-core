@@ -236,7 +236,7 @@ class WC_Subscriptions_Base_Plugin {
 	 * @since 4.0.0
 	 */
 	public function init_hooks() {
-		register_deactivation_hook( WC_Subscriptions::$plugin_file, array( $this, 'deactivate_plugin' ) );
+		register_deactivation_hook( $this->get_plugin_file(), array( $this, 'deactivate_plugin' ) );
 
 		// Register our custom subscription order type after WC_Post_types::register_post_types()
 		add_action( 'init', array( $this, 'register_order_types' ), 6 );
@@ -250,8 +250,8 @@ class WC_Subscriptions_Base_Plugin {
 		add_action( 'init', array( $this, 'load_plugin_textdomain' ), 3 );
 
 		// Add the "Settings | Documentation" links on the Plugins administration screen
-		add_filter( 'plugin_action_links_' . plugin_basename( WC_Subscriptions::$plugin_file ), array( $this, 'add_plugin_action_links' ) );
-		add_action( 'in_plugin_update_message-' . plugin_basename( WC_Subscriptions::$plugin_file ), array( __CLASS__, 'update_notice' ), 10, 2 );
+		add_filter( 'plugin_action_links_' . plugin_basename( $this->get_plugin_file() ), array( $this, 'add_plugin_action_links' ) );
+		add_action( 'in_plugin_update_message-' . plugin_basename( $this->get_plugin_file() ), array( __CLASS__, 'update_notice' ), 10, 2 );
 
 		add_action( 'init', array( $this, 'activate_plugin' ) );
 
@@ -286,7 +286,16 @@ class WC_Subscriptions_Base_Plugin {
 	 * @since 4.0.0
 	 */
 	public function get_plugin_version() {
-		return WC_Subscriptions::$version;
+		return $this->version;
+	}
+
+	/**
+	 * Gets the plugin file name
+	 *
+	 * @return string The plugin file
+	 */
+	public function get_plugin_file() {
+		return __FILE__;
 	}
 
 	/**
@@ -304,7 +313,7 @@ class WC_Subscriptions_Base_Plugin {
 	 * @return string The product type name.
 	 */
 	public function get_product_type_name() {
-		return WC_Subscriptions::$name;
+		return 'subscription';
 	}
 
 	/**
@@ -313,7 +322,7 @@ class WC_Subscriptions_Base_Plugin {
 	 * @return string The transient name used to record when the plugin was activated.
 	 */
 	public function get_activation_transient() {
-		return WC_Subscriptions::$activation_transient;
+		return 'woocommerce_subscriptions_activated';
 	}
 
 	/**
