@@ -31,7 +31,8 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 		'wcs_customer_suspension_manager'           => true,
 		'wcs_drip_downloads_manager'                => true,
 		'wcs_zero_initial_payment_checkout_manager' => true,
-		'wcs_meta_box_payment_retries'              => true
+		'wcs_meta_box_payment_retries'              => true,
+		'wcs_limited_recurring_coupon_manager'      => true,
 	);
 
 	/**
