@@ -75,6 +75,8 @@ class WC_Subscriptions_Product {
 
 		// maybe update the One Time Shipping product setting when users edit variations using bulk actions and the variation level save
 		add_action( 'wp_ajax_wcs_update_one_time_shipping', __CLASS__ . '::maybe_update_one_time_shipping_on_variation_edits' );
+
+		add_action( 'wp_ajax_wcs_validate_variation_deletion', array( __CLASS__, 'validate_variation_deletion' ) );
 	}
 
 	/**
@@ -960,14 +962,20 @@ class WC_Subscriptions_Product {
 	 * @since 2.2.17
 	 */
 	public static function add_variation_removal_flag( $loop, $variation_data, $variation ) {
-		$related_subscriptions = wcs_get_subscriptions_for_product( $variation->ID );
-		$can_remove            = empty( $related_subscriptions );
+
+		// On large sites we validate the request on submit, rather than on page load to avoid performance hits caused by wcs_get_subscriptions_for_product().
+		if ( wcs_is_large_site() ) {
+			$can_remove = false;
+		} else {
+			$related_subscriptions = wcs_get_subscriptions_for_product( $variation->ID, 'ids', array( 'limit' => 1 ) );
+			$can_remove            = empty( $related_subscriptions );
+		}
 
 		printf( '<input type="hidden" class="wcs-can-remove-variation" value="%d" />', intval( $can_remove ) );
 
 		if ( ! $can_remove ) {
 			$msg = __( 'This variation can not be removed because it is associated with active subscriptions. To remove this variation, please cancel and delete the subscriptions for it.', 'woocommerce-subscriptions' );
-			printf( '<a href="#" class="tips delete wcs-can-not-remove-variation-msg" data-tip="%s"></a>', wc_sanitize_tooltip( $msg ) ); // XSS ok.
+			printf( '<a href="#" class="tips delete wcs-can-not-remove-variation-msg" data-tip="%s" rel="%s"></a>', wc_sanitize_tooltip( $msg ), absint( $variation->ID ) ); // XSS ok.
 		}
 	}
 
@@ -1194,6 +1202,20 @@ class WC_Subscriptions_Product {
 	 */
 	public static function get_add_to_cart_text() {
 		return get_option( WC_Subscriptions_Admin::$option_prefix . '_add_to_cart_button_text', __( 'Sign up now', 'woocommerce-subscriptions' ) );
+	}
+
+	/**
+	 * Validates an ajax request to delete a subscription variation.
+	 *
+	 * @since 3.x.x
+	 */
+	public static function validate_variation_deletion() {
+		check_admin_referer( 'wc_subscriptions_admin', 'nonce' );
+
+		$variation_id  = absint( $_POST['variation_id'] );
+		$subscriptions = wcs_get_subscriptions_for_product( $variation_id, 'ids', array( 'limit' => 1 ) );
+
+		wp_send_json( array( 'can_remove' => empty( $subscriptions ) ? 'yes' : 'no' ) );
 	}
 
 	/************************
