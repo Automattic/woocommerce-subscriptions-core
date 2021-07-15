@@ -102,8 +102,8 @@ function wcs_update_users_role( $user_id, $role_new ) {
  * @return array with keys 'old' and 'new'.
  */
 function wcs_get_new_user_role_names( $role_new ) {
-	$default_subscriber_role = get_option( WC_Subscriptions_Admin::$option_prefix . '_subscriber_role' );
-	$default_cancelled_role = get_option( WC_Subscriptions_Admin::$option_prefix . '_cancelled_role' );
+	$default_subscriber_role = wcs_get_subscriber_role();
+	$default_cancelled_role  = wcs_get_inactive_subscriber_role();
 	$role_old = '';
 
 	if ( 'default_subscriber_role' == $role_new ) {
@@ -421,8 +421,38 @@ add_filter( 'user_has_cap', 'wcs_user_has_capability', 15, 3 );
  * @return array The list of roles editable by shop managers.
  */
 function wcs_grant_shop_manager_editable_roles( $roles ) {
-	$roles[] = get_option( WC_Subscriptions_Admin::$option_prefix . '_subscriber_role' );
+	$roles[] = wcs_get_subscriber_role();
 	return $roles;
 }
 
 add_filter( 'woocommerce_shop_manager_editable_roles', 'wcs_grant_shop_manager_editable_roles' );
+
+/**
+ * Gets the subscriber role.
+ *
+ * @since 4.0.0
+ *
+ * @return string The role to apply to subscribers.
+ */
+function wcs_get_subscriber_role() {
+	if ( class_exists( 'WCS_Subscriber_Role_Manager' ) ) {
+		return WCS_Subscriber_Role_Manager::get_subscriber_role();
+	}
+
+	return 'subscriber';
+}
+
+/**
+ * Gets the inactive subscriber role.
+ *
+ * @since 4.0.0
+ *
+ * @return string The role to apply to inactive subscribers.
+ */
+function wcs_get_inactive_subscriber_role() {
+	if ( class_exists( 'WCS_Subscriber_Role_Manager' ) ) {
+		return WCS_Subscriber_Role_Manager::get_inactive_subscriber_role();
+	}
+
+	return 'customer';
+}

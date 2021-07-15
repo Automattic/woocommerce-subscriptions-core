@@ -34,6 +34,7 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 		'wcs_meta_box_payment_retries'              => true,
 		'wcs_limited_recurring_coupon_manager'      => true,
 		'wcs_call_to_action_button_text_manager'    => true,
+		'wcs_subscriber_role_manager'               => true,
 	);
 
 	/**
