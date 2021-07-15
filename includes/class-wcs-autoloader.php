@@ -43,6 +43,7 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 		'wc_reports',
 		'report',
 		'retry',
+		'early_renewal',
 	);
 
 	/**
@@ -84,6 +85,8 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 			$path .= '/admin/reports/deprecated';
 		} elseif ( false !== strpos( $class, 'report' ) ) {
 			$path .= '/admin/reports';
+		} elseif ( false !== strpos( $class, 'early' ) ) {
+			$path .= '/early-renewal';
 		}
 
 		return trailingslashit( $path );

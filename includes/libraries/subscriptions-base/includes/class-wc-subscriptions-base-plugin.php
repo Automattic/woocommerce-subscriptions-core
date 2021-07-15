@@ -130,7 +130,6 @@ class WC_Subscriptions_Base_Plugin {
 		WCS_Staging::init();
 		WCS_Permalink_Manager::init();
 		WCS_Custom_Order_Item_Manager::init();
-		WCS_Early_Renewal_Modal_Handler::init();
 		WCS_Dependent_Hook_Manager::init();
 		WCS_Admin_Product_Import_Export_Manager::init();
 		WC_Subscriptions_Frontend_Scripts::init();
@@ -196,31 +195,6 @@ class WC_Subscriptions_Base_Plugin {
 		// Only load privacy handling on WC applicable versions.
 		if ( class_exists( 'WC_Abstract_Privacy' ) ) {
 			new WCS_Privacy();
-		}
-
-		if ( class_exists( 'WCS_Early_Renewal' ) ) {
-			$notice = new WCS_Admin_Notice( 'error' );
-
-			// translators: 1-2: opening/closing <b> tags, 3: Subscriptions version.
-			$notice->set_simple_content( sprintf( __( '%1$sWarning!%2$s We can see the %1$sWooCommerce Subscriptions Early Renewal%2$s plugin is active. Version %3$s of %1$sWooCommerce Subscriptions%2$s comes with that plugin\'s functionality packaged into the core plugin. Please deactivate WooCommerce Subscriptions Early Renewal to avoid any conflicts.', 'woocommerce-subscriptions' ), '<b>', '</b>', $this->get_plugin_version() ) );
-			$notice->set_actions(
-				array(
-					array(
-						'name' => __( 'Installed Plugins', 'woocommerce-subscriptions' ),
-						'url'  => admin_url( 'plugins.php' ),
-					),
-				)
-			);
-
-			$notice->display();
-		} else {
-			WCS_Early_Renewal_Manager::init();
-
-			require_once $this->get_base_plugin_directory() . '/includes/early-renewal/wcs-early-renewal-functions.php';
-
-			if ( WCS_Early_Renewal_Manager::is_early_renewal_enabled() ) {
-				new WCS_Cart_Early_Renewal();
-			}
 		}
 
 		if ( class_exists( 'Automattic\WooCommerce\Blocks\Package' ) && version_compare( \Automattic\WooCommerce\Blocks\Package::get_version(), '4.4.0', '>' ) ) {
