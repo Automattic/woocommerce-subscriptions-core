@@ -92,38 +92,8 @@ class WC_Subscriptions_Coupon {
 
 		add_filter( 'woocommerce_cart_totals_coupon_html', __CLASS__ . '::mark_recurring_coupon_in_initial_cart_for_hiding', 10, 3 );
 
-		// Hook recurring coupon functionality.
-		add_action( 'plugins_loaded', array( __CLASS__, 'maybe_add_recurring_coupon_hooks' ) );
-
 		add_filter( 'woocommerce_coupon_is_valid_for_product', array( __CLASS__, 'validate_subscription_coupon_for_product' ), 10, 3 );
 		add_filter( 'woocommerce_coupon_get_apply_quantity', array( __CLASS__, 'override_applied_quantity_for_recurring_carts' ), 10, 3 );
-	}
-
-	/**
-	 * Maybe add Recurring Coupon functionality.
-	 *
-	 * WC 3.2 added many API enhancements, especially around coupons. It would be very challenging to implement
-	 * this functionality in older versions of WC, so we require 3.2+ to enable this.
-	 *
-	 * @author Jeremy Pry
-	 */
-	public static function maybe_add_recurring_coupon_hooks() {
-		if ( wcs_is_woocommerce_pre( '3.2' ) ) {
-			return;
-		}
-
-		// Add custom coupon fields.
-		add_action( 'woocommerce_coupon_options', array( __CLASS__, 'add_coupon_fields' ), 10 );
-		add_action( 'woocommerce_coupon_options_save', array( __CLASS__, 'save_coupon_fields' ), 10 );
-
-		// Filter the available payment gateways.
-		add_filter( 'woocommerce_available_payment_gateways', array( __CLASS__, 'gateways_subscription_amount_changes' ), 20 );
-
-		// Check coupons when a subscription is renewed.
-		add_action( 'woocommerce_subscription_payment_complete', array( __CLASS__, 'check_coupon_usages' ) );
-
-		// Add info to the Coupons list table.
-		add_action( 'manage_shop_coupon_posts_custom_column', array( __CLASS__, 'add_limit_to_list_table' ), 20, 2 );
 	}
 
 	/**
@@ -583,7 +553,7 @@ class WC_Subscriptions_Coupon {
 			 * @param string    $coupon_type      The coupon's discount_type property.
 			 * @param string    $calculation_type The current calculation type.
 			 */
-			if ( apply_filters( 'wcs_bypass_coupon_removal', false, $coupon, $coupon_type, $calculation_type ) ) {
+			if ( apply_filters( 'wcs_bypass_coupon_removal', false, $coupon, $coupon_type, $calculation_type, $cart ) ) {
 				continue;
 			}
 
@@ -592,16 +562,7 @@ class WC_Subscriptions_Coupon {
 				continue;
 			}
 
-			if ( 'recurring_total' === $calculation_type ) {
-				// Special handling for a single payment coupon.
-				if ( 1 === self::get_coupon_limit( $coupon_code ) && 0 < WC()->cart->get_coupon_discount_amount( $coupon_code ) ) {
-					$cart->remove_coupon( $coupon_code );
-				}
-
-				continue;
-			}
-
-			if ( ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
+			if ( 'recurring_total' === $calculation_type || ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
 				continue;
 			}
 
@@ -731,127 +692,6 @@ class WC_Subscriptions_Coupon {
 	}
 
 	/**
-	 * Determine whether the cart contains a recurring coupon with set number of renewals.
-	 *
-	 * @author Jeremy Pry
-	 * @return bool
-	 */
-	public static function cart_contains_limited_recurring_coupon() {
-		$has_coupon      = false;
-		$applied_coupons = isset( WC()->cart->applied_coupons ) ? WC()->cart->applied_coupons : array();
-		foreach ( $applied_coupons as $code ) {
-			if ( self::coupon_is_limited( $code ) ) {
-				$has_coupon = true;
-				break;
-			}
-		}
-
-		return $has_coupon;
-	}
-
-	/**
-	 * Determine if a given order has a limited use coupon.
-	 *
-	 * @author Jeremy Pry
-	 *
-	 * @param WC_Order|WC_Subscription $order
-	 *
-	 * @return bool
-	 */
-	public static function order_has_limited_recurring_coupon( $order ) {
-		$has_coupon = false;
-
-		foreach ( wcs_get_used_coupon_codes( $order ) as $code ) {
-			if ( self::coupon_is_limited( $code ) ) {
-				$has_coupon = true;
-				break;
-			}
-		}
-
-		return $has_coupon;
-	}
-
-	/**
-	 * Determine if a given recurring cart contains a limited use coupon which when applied to a subscription will reach its usage limit within the subscription's length.
-	 *
-	 * @param WC_Cart $recurring_cart The recurring cart object.
-	 * @return bool
-	 */
-	public static function recurring_cart_contains_expiring_coupon( $recurring_cart ) {
-		$limited_recurring_coupons = array();
-
-		if ( isset( $recurring_cart->applied_coupons ) ) {
-			$limited_recurring_coupons = array_filter( $recurring_cart->applied_coupons, array( __CLASS__, 'coupon_is_limited' ) );
-		}
-
-		// Bail early if there are no limited coupons applied to the recurring cart or if there is no discount provided.
-		if ( empty( $limited_recurring_coupons ) || ! $recurring_cart->discount_cart ) {
-			return false;
-		}
-
-		$has_expiring_coupon   = false;
-		$subscription_length   = wcs_cart_pluck( $recurring_cart, 'subscription_length' );
-		$subscription_payments = $subscription_length / wcs_cart_pluck( $recurring_cart, 'subscription_period_interval' );
-
-		// Limited recurring coupons will always expire at some point on subscriptions with no length.
-		if ( empty( $subscription_length ) ) {
-			$has_expiring_coupon = true;
-		} else {
-			foreach ( $limited_recurring_coupons as $code ) {
-				if ( WC_Subscriptions_Coupon::get_coupon_limit( $code ) < $subscription_payments ) {
-					$has_expiring_coupon = true;
-					break;
-				}
-			}
-		}
-
-		return $has_expiring_coupon;
-	}
-
-	/**
-	 * Determine if a given coupon is limited to a certain number of renewals.
-	 *
-	 * @author Jeremy Pry
-	 *
-	 * @param string $code The coupon code.
-	 *
-	 * @return bool
-	 */
-	public static function coupon_is_limited( $code ) {
-		return (bool) self::get_coupon_limit( $code );
-	}
-
-	/**
-	 * Get the number of renewals for a limited coupon.
-	 *
-	 * @author Jeremy Pry
-	 *
-	 * @param string $code The coupon code.
-	 *
-	 * @return false|int False for non-recurring coupons, or the limit number for recurring coupons.
-	 *                   A value of 0 is for unlimited usage.
-	 */
-	public static function get_coupon_limit( $code ) {
-		if ( wcs_is_woocommerce_pre( '3.2' ) ) {
-			return false;
-		}
-
-		// Retrieve the coupon data.
-		$coupon      = new WC_Coupon( $code );
-		$coupon_type = $coupon->get_discount_type();
-
-		// If we have a virtual coupon, attempt to get the original coupon.
-		if ( isset( self::$renewal_coupons[ $coupon_type ] ) ) {
-			$coupon      = self::map_virtual_coupon( $code );
-			$coupon_type = $coupon->get_discount_type();
-		}
-
-		$limited = $coupon->get_meta( self::$coupons_renewals );
-
-		return isset( self::$recurring_coupons[ $coupon_type ] ) ? intval( $limited ) : false;
-	}
-
-	/**
 	 * Get a normal coupon from one of our virtual coupons.
 	 *
 	 * This is necessary when manually processing a renewal to ensure that we are correctly
@@ -863,7 +703,7 @@ class WC_Subscriptions_Coupon {
 	 *
 	 * @return WC_Coupon The original coupon.
 	 */
-	private static function map_virtual_coupon( $code ) {
+	public static function map_virtual_coupon( $code ) {
 		add_filter( 'woocommerce_get_shop_coupon_data', '__return_false', 100 );
 		$coupon = new WC_Coupon( $code );
 		remove_filter( 'woocommerce_get_shop_coupon_data', '__return_false', 100 );
@@ -872,228 +712,27 @@ class WC_Subscriptions_Coupon {
 	}
 
 	/**
-	 * Limit payment gateways to those that support changing subscription amounts.
+	 * Checks if a coupon is one of our virtual coupons applied to renewal carts.
 	 *
-	 * @author Jeremy Pry
+	 * @since 4.0.0
 	 *
-	 * @param WC_Payment_Gateway[] $gateways The current available gateways.
-	 *
-	 * @return WC_Payment_Gateway[],
+	 * @param string $coupon_type The coupon's type.
+	 * @return bool Whether the coupon is a recuring cart virtual coupon.
 	 */
-	private static function limit_gateways_subscription_amount_changes( $gateways ) {
-		foreach ( $gateways as $index => $gateway ) {
-			if ( $gateway->supports( 'subscriptions' ) && ! $gateway->supports( 'subscription_amount_changes' ) ) {
-				unset( $gateways[ $index ] );
-			}
-		}
-
-		return $gateways;
+	public static function is_renewal_cart_coupon( $coupon_type ) {
+		return isset( self::$renewal_coupons[ $coupon_type ] );
 	}
 
 	/**
-	 * Filter the available gateways when there is a recurring coupon.
+	 * Checks if a coupon is one of our recurring coupons.
 	 *
-	 * @author Jeremy Pry
+	 * @since 4.0.0
 	 *
-	 * @param WC_Payment_Gateway[] $gateways The available payment gateways.
-	 *
-	 * @return array The filtered payment gateways.
+	 * @param string $coupon_type The coupon's type.
+	 * @return bool Whether the coupon is a recuring cart virtual coupon.
 	 */
-	public static function gateways_subscription_amount_changes( $gateways ) {
-		// If there are already no gateways or we're on the order-pay screen, bail early.
-		if ( empty( $gateways ) || is_wc_endpoint_url( 'order-pay' ) ) {
-			return $gateways;
-		}
-
-		// See if this is a request to change payment for an existing subscription.
-		$change_payment     = isset( $_GET['change_payment_method'] ) ? wc_clean( $_GET['change_payment_method'] ) : 0;
-		$has_limited_coupon = false;
-		if ( $change_payment && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'] ) ) {
-			$subscription       = wcs_get_subscription( $change_payment );
-			$has_limited_coupon = self::order_has_limited_recurring_coupon( $subscription );
-		}
-
-		// If the cart doesn't have a limited coupon, and a change payment doesn't have a limited coupon, bail early.
-		if ( ! self::cart_contains_limited_recurring_coupon() && ! $has_limited_coupon ) {
-			return $gateways;
-		}
-
-		// If we got this far, we should limit the gateways as needed.
-		$gateways = self::limit_gateways_subscription_amount_changes( $gateways );
-
-		// If there are no gateways now, it's because of the coupon. Filter the 'no available payment methods' message.
-		if ( empty( $gateways ) ) {
-			add_filter( 'woocommerce_no_available_payment_methods_message', array( __CLASS__, 'no_available_payment_methods_message' ), 20 );
-		}
-
-		return $gateways;
-	}
-
-	/**
-	 * Filter the message for when no payment gateways are available.
-	 *
-	 * @author Jeremy Pry
-	 *
-	 * @param string $message The current message indicating there are no payment methods available..
-	 *
-	 * @return string The filtered message indicating there are no payment methods available.
-	 */
-	public static function no_available_payment_methods_message( $message ) {
-		return __( 'Sorry, it seems there are no available payment methods which support the recurring coupon you are using. Please contact us if you require assistance or wish to make alternate arrangements.', 'woocommerce-subscriptions' );
-	}
-
-	/**
-	 * Add custom fields to the coupon data form.
-	 *
-	 * @see    WC_Meta_Box_Coupon_Data::output()
-	 * @author Jeremy Pry
-	 *
-	 * @param int $id The coupon ID.
-	 */
-	public static function add_coupon_fields( $id ) {
-		$coupon = new WC_Coupon( $id );
-		woocommerce_wp_text_input( array(
-			'id'          => 'wcs_number_payments',
-			'label'       => __( 'Active for x payments', 'woocommerce-subscriptions' ),
-			'placeholder' => __( 'Unlimited payments', 'woocommerce-subscriptions' ),
-			'description' => __( 'Coupon will be limited to the given number of payments. It will then be automatically removed from the subscription. "Payments" also includes the initial subscription payment.', 'woocommerce-subscriptions' ),
-			'desc_tip'    => true,
-			'data_type'   => 'decimal',
-			'value'       => $coupon->get_meta( self::$coupons_renewals ),
-		) );
-	}
-
-	/**
-	 * Save our custom coupon fields.
-	 *
-	 * @see    WC_Meta_Box_Coupon_Data::save()
-	 * @author Jeremy Pry
-	 *
-	 * @param int $post_id
-	 */
-	public static function save_coupon_fields( $post_id ) {
-		// Check the nonce (again).
-		if ( empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) {
-			return;
-		}
-
-		$coupon = new WC_Coupon( $post_id );
-		$coupon->add_meta_data( self::$coupons_renewals, wc_clean( $_POST['wcs_number_payments'] ), true );
-		$coupon->save();
-	}
-
-	/**
-	 * Determine how many subscriptions the coupon has been applied to.
-	 *
-	 * @author Jeremy Pry
-	 *
-	 * @param WC_Subscription $subscription The current subscription.
-	 */
-	public static function check_coupon_usages( $subscription ) {
-		// If there aren't any coupons, there's nothing to do.
-		$coupons = wcs_get_used_coupon_codes( $subscription );
-		if ( empty( $coupons ) ) {
-			return;
-		}
-
-		// Set up the coupons we're looking for, and an initial count.
-		$limited_coupons = array();
-		foreach ( $coupons as $code ) {
-			if ( self::coupon_is_limited( $code ) ) {
-				$limited_coupons[ $code ] = 0;
-			}
-		}
-
-		// Don't continue if we have no limited use coupons.
-		if ( empty( $limited_coupons ) ) {
-			return;
-		}
-
-		// Get all related orders, and count the number of uses for each coupon.
-		$related = $subscription->get_related_orders( 'all' );
-
-		/** @var WC_Order $order */
-		foreach ( $related as $id => $order ) {
-			// Unpaid orders don't count as usages.
-			if ( $order->needs_payment() ) {
-				continue;
-			}
-
-			/*
-			 * If the order has been refunded, treat coupon as unused. We'll consider the order to be
-			 * refunded when there is a non-null refund amount, and the order total equals the refund amount.
-			 *
-			 * The use of == instead of === is deliberate, to account for differences in amount formatting.
-			 */
-			$refunded = $order->get_total_refunded();
-			$total    = $order->get_total();
-			if ( $refunded && $total == $refunded ) {
-				continue;
-			}
-
-			// If there was nothing discounted, then consider the coupon unused.
-			if ( ! $order->get_discount_total() ) {
-				continue;
-			}
-
-			// Check for limited coupons, and add them to the count if the provide a discount.
-			$used_coupons = $order->get_items( 'coupon' );
-
-			/** @var WC_Order_Item_Coupon $used_coupon */
-			foreach ( $used_coupons as $used_coupon ) {
-				if ( isset( $limited_coupons[ $used_coupon->get_code() ] ) && $used_coupon->get_discount() ) {
-					$limited_coupons[ $used_coupon->get_code() ]++;
-				}
-			}
-		}
-
-		// Check each coupon to see if it needs to be removed.
-		foreach ( $limited_coupons as $code => $count ) {
-			if ( self::get_coupon_limit( $code ) <= $count ) {
-				$subscription->remove_coupon( $code );
-				$subscription->add_order_note( sprintf(
-					/* translators: %1$s is the coupon code, %2$d is the number of payment usages */
-					_n(
-						'Limited use coupon "%1$s" removed from subscription. It has been used %2$d time.',
-						'Limited use coupon "%1$s" removed from subscription. It has been used %2$d times.',
-						$count,
-						'woocommerce-subscriptions'
-					),
-					$code,
-					number_format_i18n( $count )
-				) );
-			}
-		}
-	}
-
-	/**
-	 * Add our limited coupon data to the Coupon list table.
-	 *
-	 * @author Jeremy Pry
-	 *
-	 * @param string $column_name The name of the current column in the table.
-	 * @param int    $post_id     The coupon post ID.
-	 */
-	public static function add_limit_to_list_table( $column_name, $post_id ) {
-		if ( 'usage' !== $column_name ) {
-			return;
-		}
-
-		$limit = self::get_coupon_limit( wc_get_coupon_code_by_id( $post_id ) );
-		if ( false === $limit ) {
-			return;
-		}
-
-		echo '<br>';
-		if ( $limit ) {
-			echo esc_html( sprintf(
-				/* translators: %d refers to the number of payments the coupon can be used for. */
-				_n( 'Active for %d payment', 'Active for %d payments', $limit, 'woocommerce-subscriptions' ),
-				number_format_i18n( $limit )
-			) );
-		} else {
-			esc_html_e( 'Active for unlimited payments', 'woocommerce-subscriptions' );
-		}
+	public static function is_recurring_coupon( $coupon_type ) {
+		return isset( self::$recurring_coupons[ $coupon_type ] );
 	}
 
 	/* Deprecated */
@@ -1387,5 +1026,205 @@ class WC_Subscriptions_Coupon {
 	 */
 	public static function apply_subscription_discount_after_tax( $coupon, $cart_item, $price ) {
 		_deprecated_function( __METHOD__, '2.0', 'WooCommerce 2.3 removed after tax discounts. Use ' . __CLASS__ . '::apply_subscription_discount( $original_price, $cart_item, $cart )' );
+	}
+
+	/**
+	 * Maybe add Recurring Coupon functionality.
+	 *
+	 * WC 3.2 added many API enhancements, especially around coupons. It would be very challenging to implement
+	 * this functionality in older versions of WC, so we require 3.2+ to enable this.
+	 *
+	 * @author Jeremy Pry
+	 * @deprecated 4.0.0
+	 */
+	public static function maybe_add_recurring_coupon_hooks() {
+		_deprecated_function( __METHOD__, '4.0.0' );
+	}
+
+	/**
+	 * Add custom fields to the coupon data form.
+	 *
+	 * @see    WC_Meta_Box_Coupon_Data::output()
+	 * @author Jeremy Pry
+	 *
+	 * @param int $id The coupon ID.
+	 * @deprecated 4.0.0
+	 */
+	public static function add_coupon_fields( $id ) {
+		_deprecated_function( __METHOD__, '4.0.0', 'WCS_Limited_Recurring_Coupon_Manager::add_coupon_fields( $id ) if available' );
+		if ( class_exists( 'WCS_Limited_Recurring_Coupon_Manager' ) ) {
+			WCS_Limited_Recurring_Coupon_Manager::add_coupon_fields( $id );
+		}
+	}
+
+	/**
+	 * Save our custom coupon fields.
+	 *
+	 * @see    WC_Meta_Box_Coupon_Data::save()
+	 * @author Jeremy Pry
+	 *
+	 * @param int $post_id
+	 * @deprecated 4.0.0
+	 */
+	public static function save_coupon_fields( $post_id ) {
+		_deprecated_function( __METHOD__, '4.0.0', 'WCS_Limited_Recurring_Coupon_Manager::save_coupon_fields( $post_id ) if available' );
+		if ( class_exists( 'WCS_Limited_Recurring_Coupon_Manager' ) ) {
+			WCS_Limited_Recurring_Coupon_Manager::save_coupon_fields( $post_id );
+		}
+	}
+
+	/**
+	 * Determine how many subscriptions the coupon has been applied to.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param WC_Subscription $subscription The current subscription.
+	 * @deprecated 4.0.0
+	 */
+	public static function check_coupon_usages( $subscription ) {
+		_deprecated_function( __METHOD__, '4.0.0', 'WCS_Limited_Recurring_Coupon_Manager::check_coupon_usages( $subscription ) if available' );
+		if ( class_exists( 'WCS_Limited_Recurring_Coupon_Manager' ) ) {
+			WCS_Limited_Recurring_Coupon_Manager::check_coupon_usages( $subscription );
+		}
+	}
+
+	/**
+	 * Add our limited coupon data to the Coupon list table.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param string $column_name The name of the current column in the table.
+	 * @param int    $post_id     The coupon post ID.
+	 * @deprecated 4.0.0
+	 */
+	public static function add_limit_to_list_table( $column_name, $post_id ) {
+		wcs_deprecated_function( __METHOD__, '4.0.0', 'WCS_Limited_Recurring_Coupon_Manager::add_limit_to_list_table( $column_name, $post_id ) if available' );
+		if ( class_exists( 'WCS_Limited_Recurring_Coupon_Manager' ) ) {
+			WCS_Limited_Recurring_Coupon_Manager::add_limit_to_list_table( $column_name, $post_id );
+		}
+	}
+
+	/**
+	 * Filter the available gateways when there is a recurring coupon.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param WC_Payment_Gateway[] $gateways The available payment gateways.
+	 *
+	 * @return array The filtered payment gateways.
+	 * @deprecated 4.0.0
+	 */
+	public static function gateways_subscription_amount_changes( $gateways ) {
+		wcs_deprecated_function( __METHOD__, '4.0.0', 'WCS_Limited_Recurring_Coupon_Manager::gateways_subscription_amount_changes( $gateways ) if available' );
+		if ( class_exists( 'WCS_Limited_Recurring_Coupon_Manager' ) ) {
+			return WCS_Limited_Recurring_Coupon_Manager::gateways_subscription_amount_changes( $gateways );
+		}
+
+		return $gateways;
+	}
+
+	/**
+	 * Filter the message for when no payment gateways are available.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param string $message The current message indicating there are no payment methods available..
+	 *
+	 * @return string The filtered message indicating there are no payment methods available.
+	 * @deprecated 4.0.0
+	 */
+	public static function no_available_payment_methods_message( $message ) {
+		wcs_deprecated_function( __METHOD__, '4.0.0', 'WCS_Limited_Recurring_Coupon_Manager::no_available_payment_methods_message() if available' );
+		return __( 'Sorry, it seems there are no available payment methods which support the recurring coupon you are using. Please contact us if you require assistance or wish to make alternate arrangements.', 'woocommerce-subscriptions' );
+	}
+
+	/**
+	 * Determine if a given coupon is limited to a certain number of renewals.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param string $code The coupon code.
+	 *
+	 * @return bool
+	 * @deprecated 4.0.0
+	 */
+	public static function coupon_is_limited( $code ) {
+		wcs_deprecated_function( __METHOD__, '4.0.0', 'WCS_Limited_Recurring_Coupon_Manager::coupon_is_limited() if available' );
+		if ( class_exists( 'WCS_Limited_Recurring_Coupon_Manager' ) ) {
+			return WCS_Limited_Recurring_Coupon_Manager::coupon_is_limited( $code );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Determine whether the cart contains a recurring coupon with set number of renewals.
+	 *
+	 * @author Jeremy Pry
+	 * @return bool
+	 * @deprecated 4.0.0
+	 */
+	public static function cart_contains_limited_recurring_coupon() {
+		wcs_deprecated_function( __METHOD__, '4.0.0', 'WCS_Limited_Recurring_Coupon_Manager::coupon_is_limited() if available' );
+		if ( class_exists( 'WCS_Limited_Recurring_Coupon_Manager' ) ) {
+			return WCS_Limited_Recurring_Coupon_Manager::cart_contains_limited_recurring_coupon();
+		}
+
+		return false;
+	}
+
+	/**
+	 * Determine if a given order has a limited use coupon.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param WC_Order|WC_Subscription $order
+	 *
+	 * @return bool
+	 * @deprecated 4.0.0
+	 */
+	public static function order_has_limited_recurring_coupon( $order ) {
+		wcs_deprecated_function( __METHOD__, '4.0.0', 'WCS_Limited_Recurring_Coupon_Manager::order_has_limited_recurring_coupon( $order ) if available' );
+		if ( class_exists( 'WCS_Limited_Recurring_Coupon_Manager' ) ) {
+			return WCS_Limited_Recurring_Coupon_Manager::order_has_limited_recurring_coupon( $order );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Get the number of renewals for a limited coupon.
+	 *
+	 * @author Jeremy Pry
+	 *
+	 * @param string $code The coupon code.
+	 *
+	 * @return false|int False for non-recurring coupons, or the limit number for recurring coupons.
+	 *                   A value of 0 is for unlimited usage.
+	 * @deprecated 4.0.0
+	 */
+	public static function get_coupon_limit( $code ) {
+		wcs_deprecated_function( __METHOD__, '4.0.0', 'WCS_Limited_Recurring_Coupon_Manager::get_coupon_limit( $code ) if available' );
+		if ( class_exists( 'WCS_Limited_Recurring_Coupon_Manager' ) ) {
+			return WCS_Limited_Recurring_Coupon_Manager::get_coupon_limit( $code );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Determine if a given recurring cart contains a limited use coupon which when applied to a subscription will reach its usage limit within the subscription's length.
+	 *
+	 * @param WC_Cart $recurring_cart The recurring cart object.
+	 * @return bool
+	 * @deprecated 4.0.0
+	 */
+	public static function recurring_cart_contains_expiring_coupon( $recurring_cart ) {
+		wcs_deprecated_function( __METHOD__, '4.0.0', 'WCS_Limited_Recurring_Coupon_Manager::recurring_cart_contains_expiring_coupon( $recurring_cart ) if available' );
+		if ( class_exists( 'WCS_Limited_Recurring_Coupon_Manager' ) ) {
+			return WCS_Limited_Recurring_Coupon_Manager::recurring_cart_contains_expiring_coupon( $recurring_cart );
+		}
+
+		return false;
 	}
 }
