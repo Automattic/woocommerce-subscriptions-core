@@ -60,4 +60,44 @@ class WC_Subscriptions_Plugin extends WC_Subscriptions_Base_Plugin {
 	public function get_plugin_directory( $path = '' ) {
 		return plugin_dir_path( WC_Subscriptions::$plugin_file ) . $path;
 	}
+
+	/**
+	 * Gets the activation transient name.
+	 *
+	 * @since 4.0.0
+	 * @return string The transient name used to record when the plugin was activated.
+	*/
+	public function get_activation_transient() {
+		return WC_Subscriptions::$activation_transient;
+	}
+
+	/**
+	 * Gets the product type name.
+	 *
+	 * @since 4.0.0
+	 * @return string The product type name.
+	 */
+	public function get_product_type_name() {
+		return WC_Subscriptions::$name;
+	}
+
+	/**
+	 * Gets the plugin's version
+	 *
+	 * @since 4.0.0
+	 * @return string The plugin version.
+	 */
+	public function get_plugin_version() {
+		return WC_Subscriptions::$version;
+	}
+
+	/**
+	 * Gets the plugin file name
+	 *
+	 * @since 4.0.0
+	 * @return string The plugin file
+	 */
+	public function get_plugin_file() {
+		return WC_Subscriptions::$plugin_file;
+	}
 }
