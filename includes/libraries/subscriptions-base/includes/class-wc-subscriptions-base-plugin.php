@@ -458,7 +458,7 @@ class WC_Subscriptions_Base_Plugin {
 			}
 
 			// If no Subscription settings exist, its the first activation, so add defaults
-			if ( get_option( WC_Subscriptions_Admin::$option_prefix . '_cancelled_role', false ) == false ) {
+			if ( WC_Subscriptions_Admin::has_settings() ) {
 				WC_Subscriptions_Admin::add_default_settings();
 			}
 

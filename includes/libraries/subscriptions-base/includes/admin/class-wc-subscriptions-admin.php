@@ -1189,7 +1189,22 @@ class WC_Subscriptions_Admin {
 				add_option( $setting['id'], $setting['default'] );
 			}
 		}
+	}
 
+	/**
+	 * Deteremines if the subscriptions settings have been setup.
+	 *
+	 * @since 4.0.0
+	 * @return bool Whether any subscription settings exist.
+	 */
+	public static function has_settings() {
+		foreach ( self::get_settings() as $setting ) {
+			if ( get_option( $setting['id'], false ) !== false ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
