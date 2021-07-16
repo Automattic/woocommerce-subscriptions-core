@@ -458,7 +458,7 @@ class WC_Subscriptions_Base_Plugin {
 			}
 
 			// If no Subscription settings exist, its the first activation, so add defaults
-			if ( WC_Subscriptions_Admin::has_settings() ) {
+			if ( ! WC_Subscriptions_Admin::has_settings() ) {
 				WC_Subscriptions_Admin::add_default_settings();
 			}
 
