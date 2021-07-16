@@ -174,7 +174,7 @@ class WCS_Admin_Post_Types {
 		$wpdb->query( "DROP TEMPORARY TABLE IF EXISTS {$table_name}" );
 
 		$wpdb->query(
-			"CREATE TEMPORARY TABLE {$table_name} (id INT, INDEX USING BTREE (id), last_payment DATETIME) AS
+			"CREATE TEMPORARY TABLE {$table_name} (id INT PRIMARY KEY, last_payment DATETIME) AS
 			 SELECT pm.meta_value as id, MAX( p.post_date_gmt ) as last_payment FROM {$wpdb->postmeta} pm
 			 LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id
 			 WHERE pm.meta_key = '_subscription_renewal'
