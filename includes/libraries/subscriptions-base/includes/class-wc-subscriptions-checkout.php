@@ -643,6 +643,6 @@ class WC_Subscriptions_Checkout {
 			return $button_text;
 		}
 
-		return get_option( WC_Subscriptions_Admin::$option_prefix . '_order_button_text', __( 'Sign up now', 'woocommerce-subscriptions' ) );
+		return apply_filters( 'wcs_place_subscription_order_text', __( 'Sign up now', 'woocommerce-subscriptions' ) );
 	}
 }

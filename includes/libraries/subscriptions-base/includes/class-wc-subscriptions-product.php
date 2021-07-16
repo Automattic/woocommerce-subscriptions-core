@@ -1201,7 +1201,7 @@ class WC_Subscriptions_Product {
 	 * @return string The add to cart text.
 	 */
 	public static function get_add_to_cart_text() {
-		return get_option( WC_Subscriptions_Admin::$option_prefix . '_add_to_cart_button_text', __( 'Sign up now', 'woocommerce-subscriptions' ) );
+		return apply_filters( 'wc_subscription_product_add_to_cart_text', __( 'Sign up now', 'woocommerce-subscriptions' ) );
 	}
 
 	/**
