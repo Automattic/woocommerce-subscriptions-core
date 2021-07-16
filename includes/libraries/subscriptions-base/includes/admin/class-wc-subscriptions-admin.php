@@ -1189,7 +1189,22 @@ class WC_Subscriptions_Admin {
 				add_option( $setting['id'], $setting['default'] );
 			}
 		}
+	}
 
+	/**
+	 * Deteremines if the subscriptions settings have been setup.
+	 *
+	 * @since 4.0.0
+	 * @return bool Whether any subscription settings exist.
+	 */
+	public static function has_settings() {
+		foreach ( self::get_settings() as $setting ) {
+			if ( get_option( $setting['id'], false ) !== false ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -1199,54 +1214,8 @@ class WC_Subscriptions_Admin {
 	 * @since 1.0
 	 */
 	public static function get_settings() {
-		if ( ! function_exists( 'get_editable_roles' ) ) {
-			require_once( ABSPATH . 'wp-admin/includes/user.php' );
-		}
-
-		$roles = get_editable_roles();
-
-		foreach ( $roles as $role => $details ) {
-			$roles_options[ $role ] = translate_user_role( $details['name'] );
-		}
 
 		return apply_filters( 'woocommerce_subscription_settings', array(
-
-			array(
-				'name' => __( 'Roles', 'woocommerce-subscriptions' ),
-				'type' => 'title',
-				// translators: placeholders are <em> tags
-				'desc' => sprintf( __( 'Choose the default roles to assign to active and inactive subscribers. For record keeping purposes, a user account must be created for subscribers. Users with the %1$sadministrator%2$s role, such as yourself, will never be allocated these roles to prevent locking out administrators.', 'woocommerce-subscriptions' ), '<em>', '</em>' ),
-				'id'   => self::$option_prefix . '_role_options',
-			),
-
-			array(
-				'name'     => __( 'Subscriber Default Role', 'woocommerce-subscriptions' ),
-				'desc'     => __( 'When a subscription is activated, either manually or after a successful purchase, new users will be assigned this role.', 'woocommerce-subscriptions' ),
-				'tip'      => '',
-				'id'       => self::$option_prefix . '_subscriber_role',
-				'css'      => 'min-width:150px;',
-				'default'  => 'subscriber',
-				'type'     => 'select',
-				'options'  => $roles_options,
-				'desc_tip' => true,
-			),
-
-			array(
-				'name'     => __( 'Inactive Subscriber Role', 'woocommerce-subscriptions' ),
-				'desc'     => __( 'If a subscriber\'s subscription is manually cancelled or expires, she will be assigned this role.', 'woocommerce-subscriptions' ),
-				'tip'      => '',
-				'id'       => self::$option_prefix . '_cancelled_role',
-				'css'      => 'min-width:150px;',
-				'default'  => 'customer',
-				'type'     => 'select',
-				'options'  => $roles_options,
-				'desc_tip' => true,
-			),
-
-			array(
-				'type' => 'sectionend',
-				'id'   => self::$option_prefix . '_role_options',
-			),
 
 			array(
 				'name' => _x( 'Miscellaneous', 'options section heading', 'woocommerce-subscriptions' ),
