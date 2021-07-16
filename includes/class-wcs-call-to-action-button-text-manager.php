@@ -15,8 +15,7 @@ class WCS_Call_To_Action_Button_Text_Manager {
 	 */
 	public static function init() {
 		add_filter( 'woocommerce_subscription_settings', array( __CLASS__, 'add_settings' ), 5 );
-		add_filter( 'woocommerce_product_add_to_cart_text', array( __CLASS__, 'filter_add_to_cart_text' ), 10, 2 );
-		add_filter( 'woocommerce_product_single_add_to_cart_text', array( __CLASS__, 'filter_add_to_cart_text' ), 10, 2 );
+		add_filter( 'wc_subscription_product_add_to_cart_text', array( __CLASS__, 'filter_add_to_cart_text' ), 10, 2 );
 		add_filter( 'wcs_place_subscription_order_text', array( __CLASS__, 'filter_place_subscription_order_text' ) );
 	}
 
@@ -77,13 +76,8 @@ class WCS_Call_To_Action_Button_Text_Manager {
 	 *
 	 * @return string
 	 */
-	public static function filter_add_to_cart_text( $add_to_cart_text, $product ) {
-
-		if ( in_array( $product->get_type(), array( 'subscription_variation', 'subscription', 'variable-subscription' ) ) ) {
-			$add_to_cart_text = get_option( WC_Subscriptions_Admin::$option_prefix . '_add_to_cart_button_text', __( 'Sign up now', 'woocommerce-subscriptions' ) );
-		}
-
-		return $add_to_cart_text;
+	public static function filter_add_to_cart_text( $add_to_cart_text ) {
+		return get_option( WC_Subscriptions_Admin::$option_prefix . '_add_to_cart_button_text', $add_to_cart_text );
 	}
 
 	/**
