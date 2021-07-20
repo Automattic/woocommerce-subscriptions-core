@@ -886,7 +886,7 @@ class WC_Subscriptions_Cart {
 				$recurring_total                 += $recurring_cart->total;
 				$subscription_length              = wcs_cart_pluck( $recurring_cart, 'subscription_length' );
 				$contains_synced                  = $contains_synced || (bool) WC_Subscriptions_Synchroniser::cart_contains_synced_subscription( $recurring_cart );
-				$contains_expiring_limited_coupon = $contains_expiring_limited_coupon || WC_Subscriptions_Coupon::recurring_cart_contains_expiring_coupon( $recurring_cart );
+				$contains_expiring_limited_coupon = $contains_expiring_limited_coupon || ( class_exists( 'WCS_Limited_Recurring_Coupon_Manager' ) && WCS_Limited_Recurring_Coupon_Manager::recurring_cart_contains_expiring_coupon( $recurring_cart ) );
 
 				if ( 0 == $subscription_length || wcs_cart_pluck( $recurring_cart, 'subscription_period_interval' ) != $subscription_length ) {
 					$is_one_period = false;
