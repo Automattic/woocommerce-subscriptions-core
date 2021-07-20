@@ -266,50 +266,52 @@ class WC_Subscriptions_Checkout {
 		WC_Subscriptions_Cart::set_calculation_type( 'recurring_total' );
 		WC_Subscriptions_Cart::set_recurring_cart_key( $cart->recurring_cart_key );
 
-		foreach ( $cart->get_shipping_packages() as $recurring_cart_package_key => $recurring_cart_package ) {
-			$package_index      = isset( $recurring_cart_package['package_index'] ) ? $recurring_cart_package['package_index'] : 0;
-			$package            = WC_Subscriptions_Cart::get_calculated_shipping_for_package( $recurring_cart_package );
-			$shipping_method_id = isset( WC()->checkout()->shipping_methods[ $package_index ] ) ? WC()->checkout()->shipping_methods[ $package_index ] : '';
+		if ( $cart->needs_shipping() ) {
+			foreach ( $cart->get_shipping_packages() as $recurring_cart_package_key => $recurring_cart_package ) {
+				$package_index      = isset( $recurring_cart_package['package_index'] ) ? $recurring_cart_package['package_index'] : 0;
+				$package            = WC_Subscriptions_Cart::get_calculated_shipping_for_package( $recurring_cart_package );
+				$shipping_method_id = isset( WC()->checkout()->shipping_methods[ $package_index ] ) ? WC()->checkout()->shipping_methods[ $package_index ] : '';
 
-			if ( isset( WC()->checkout()->shipping_methods[ $recurring_cart_package_key ] ) ) {
-				$shipping_method_id = WC()->checkout()->shipping_methods[ $recurring_cart_package_key ];
-				$package_key        = $recurring_cart_package_key;
-			} else {
-				$package_key = $package_index;
-			}
-
-			if ( isset( $package['rates'][ $shipping_method_id ] ) ) {
-				$shipping_rate            = $package['rates'][ $shipping_method_id ];
-				$item                     = new WC_Order_Item_Shipping();
-				$item->legacy_package_key = $package_key; // @deprecated For legacy actions.
-				$item->set_props(
-					array(
-						'method_title' => $shipping_rate->label,
-						'total'        => wc_format_decimal( $shipping_rate->cost ),
-						'taxes'        => array( 'total' => $shipping_rate->taxes ),
-						'order_id'     => $subscription->get_id(),
-					)
-				);
-
-				// Backwards compatibility for sites running WC pre 3.4 which stored shipping method and instance ID in a single meta row.
-				if ( WC_Subscriptions::is_woocommerce_pre( '3.4' ) ) {
-					$item->set_method_id( $shipping_rate->id );
+				if ( isset( WC()->checkout()->shipping_methods[ $recurring_cart_package_key ] ) ) {
+					$shipping_method_id = WC()->checkout()->shipping_methods[ $recurring_cart_package_key ];
+					$package_key        = $recurring_cart_package_key;
 				} else {
-					$item->set_method_id( $shipping_rate->method_id );
-					$item->set_instance_id( $shipping_rate->instance_id );
+					$package_key = $package_index;
 				}
 
-				foreach ( $shipping_rate->get_meta_data() as $key => $value ) {
-					$item->add_meta_data( $key, $value, true );
+				if ( isset( $package['rates'][ $shipping_method_id ] ) ) {
+					$shipping_rate            = $package['rates'][ $shipping_method_id ];
+					$item                     = new WC_Order_Item_Shipping();
+					$item->legacy_package_key = $package_key; // @deprecated For legacy actions.
+					$item->set_props(
+						array(
+							'method_title' => $shipping_rate->label,
+							'total'        => wc_format_decimal( $shipping_rate->cost ),
+							'taxes'        => array( 'total' => $shipping_rate->taxes ),
+							'order_id'     => $subscription->get_id(),
+						)
+					);
+
+					// Backwards compatibility for sites running WC pre 3.4 which stored shipping method and instance ID in a single meta row.
+					if ( WC_Subscriptions::is_woocommerce_pre( '3.4' ) ) {
+						$item->set_method_id( $shipping_rate->id );
+					} else {
+						$item->set_method_id( $shipping_rate->method_id );
+						$item->set_instance_id( $shipping_rate->instance_id );
+					}
+
+					foreach ( $shipping_rate->get_meta_data() as $key => $value ) {
+						$item->add_meta_data( $key, $value, true );
+					}
+
+					$subscription->add_item( $item );
+
+					$item->save(); // We need the item ID for old hooks, this can be removed once support for WC < 3.0 is dropped
+					wc_do_deprecated_action( 'woocommerce_subscriptions_add_recurring_shipping_order_item', array( $subscription->get_id(), $item->get_id(), $package_key ), '2.2.0', 'CRUD and woocommerce_checkout_create_subscription_shipping_item action instead' );
+
+					do_action( 'woocommerce_checkout_create_order_shipping_item', $item, $package_key, $package, $subscription ); // WC 3.0+ will also trigger the deprecated 'woocommerce_add_shipping_order_item' hook
+					do_action( 'woocommerce_checkout_create_subscription_shipping_item', $item, $package_key, $package, $subscription );
 				}
-
-				$subscription->add_item( $item );
-
-				$item->save(); // We need the item ID for old hooks, this can be removed once support for WC < 3.0 is dropped
-				wc_do_deprecated_action( 'woocommerce_subscriptions_add_recurring_shipping_order_item', array( $subscription->get_id(), $item->get_id(), $package_key ), '2.2.0', 'CRUD and woocommerce_checkout_create_subscription_shipping_item action instead' );
-
-				do_action( 'woocommerce_checkout_create_order_shipping_item', $item, $package_key, $package, $subscription ); // WC 3.0+ will also trigger the deprecated 'woocommerce_add_shipping_order_item' hook
-				do_action( 'woocommerce_checkout_create_subscription_shipping_item', $item, $package_key, $package, $subscription );
 			}
 		}
 
