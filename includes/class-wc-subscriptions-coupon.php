@@ -559,7 +559,8 @@ class WC_Subscriptions_Coupon {
 		// Only hook when totals are being calculated completely (on cart & checkout pages)
 		if (
 			'none' === $calculation_type ||
-			! WC_Subscriptions_Cart::cart_contains_subscription()
+			! WC_Subscriptions_Cart::cart_contains_subscription() ||
+			empty( $cart->recurring_cart_key )
 		) {
 			return;
 		}
