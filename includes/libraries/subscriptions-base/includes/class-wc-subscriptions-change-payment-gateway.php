@@ -727,13 +727,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			return $title;
 		}
 
-		if ( $subscription->has_payment_gateway() ) {
-			$title = _x( 'Change payment method', 'the page title of the change payment method form', 'woocommerce-subscriptions' );
-		} else {
-			$title = _x( 'Add payment method', 'the page title of the add payment method form', 'woocommerce-subscriptions' );
-		}
-
-		return $title;
+		return self::get_change_payment_method_page_title( $subscription );
 	}
 
 	/**
@@ -764,20 +758,30 @@ class WC_Subscriptions_Change_Payment_Gateway {
 				esc_url( $subscription->get_view_order_url() ),
 			);
 
-			if ( $subscription->has_payment_gateway() ) {
-				$crumbs[3] = array(
-					_x( 'Change payment method', 'the page title of the change payment method form', 'woocommerce-subscriptions' ),
-					'',
-				);
-			} else {
-				$crumbs[3] = array(
-					_x( 'Add payment method', 'the page title of the add payment method form', 'woocommerce-subscriptions' ),
-					'',
-				);
-			}
+			$crumbs[3] = array(
+				self::get_change_payment_method_page_title( $subscription ),
+				'',
+			);
 		}
 
 		return $crumbs;
+	}
+
+	/**
+	 * Get the Change Payment Method page title (also used for the page breadcrumb)
+	 *
+	 * @since 4.0.0
+	 * @param WC_Subscription $subscription
+	 * @return string
+	 */
+	public static function get_change_payment_method_page_title( $subscription ) {
+		if ( $subscription->has_payment_gateway() ) {
+			$title = _x( 'Change payment method', 'the page title of the change payment method form', 'woocommerce-subscriptions' );
+		} else {
+			$title = _x( 'Add payment method', 'the page title of the add payment method form', 'woocommerce-subscriptions' );
+		}
+
+		return apply_filters( 'woocommerce_subscriptions_change_payment_method_page_title', $title, $subscription );
 	}
 
 	/**
