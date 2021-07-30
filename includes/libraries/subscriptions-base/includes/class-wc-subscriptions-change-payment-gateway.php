@@ -208,7 +208,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 				}
 
 				// translators: placeholder is either empty or "Next payment is due..."
-				wc_print_notice( sprintf( __( 'Choose a new payment method.%s', 'woocommerce-subscriptions' ), $next_payment_string ), 'notice' );
+				wc_print_notice( apply_filters( 'woocommerce_subscriptions_change_payment_method_page_notice_message', sprintf( __( 'Choose a new payment method.%s', 'woocommerce-subscriptions' ), $next_payment_string ), $subscription ), 'notice' );
 
 				// Set the customer location to subscription billing location
 				foreach ( array( 'country', 'state', 'postcode' ) as $address_property ) {
