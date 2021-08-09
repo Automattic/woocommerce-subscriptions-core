@@ -104,6 +104,8 @@ class WC_Subscriptions_Base_Plugin {
 	 * Initialise the plugin.
 	 */
 	public function init() {
+		$payment_gateways_handler = $this->get_gateways_handler_class();
+
 		WC_Subscriptions_Coupon::init();
 		WC_Subscriptions_Product::init();
 		WC_Subscriptions_Admin::init();
@@ -116,7 +118,7 @@ class WC_Subscriptions_Base_Plugin {
 		WC_Subscriptions_Email::init();
 		WC_Subscriptions_Addresses::init();
 		WC_Subscriptions_Change_Payment_Gateway::init();
-		WC_Subscriptions_Payment_Gateways::init();
+		$payment_gateways_handler::init();
 		WCS_PayPal_Standard_Change_Payment_Method::init();
 		WC_Subscriptions_Tracker::init();
 		WCS_Upgrade_Logger::init();
@@ -297,6 +299,16 @@ class WC_Subscriptions_Base_Plugin {
 	 */
 	public function get_activation_transient() {
 		return 'woocommerce_subscriptions_activated';
+	}
+
+	/**
+	 * Gets the base Payment Gateways handler class
+	 *
+	 * @since 4.0.0
+	 * @return string
+	 */
+	public function get_gateways_handler_class() {
+		return 'WC_Subscriptions_Base_Payment_Gateways';
 	}
 
 	/**

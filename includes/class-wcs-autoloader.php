@@ -35,6 +35,7 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 		'wcs_limited_recurring_coupon_manager'      => true,
 		'wcs_call_to_action_button_text_manager'    => true,
 		'wcs_subscriber_role_manager'               => true,
+		'wc_subscriptions_payment_gateways'         => true,
 	);
 
 	/**
@@ -90,6 +91,8 @@ class WCS_Autoloader extends WCS_Base_Autoloader {
 			$path .= '/admin/reports';
 		} elseif ( false !== strpos( $class, 'early' ) ) {
 			$path .= '/early-renewal';
+		} elseif ( false !== strpos( $class, 'gateways' ) ) {
+			$path .= '/gateways';
 		}
 
 		return trailingslashit( $path );

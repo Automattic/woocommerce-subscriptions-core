@@ -129,4 +129,14 @@ class WC_Subscriptions_Plugin extends WC_Subscriptions_Base_Plugin {
 	public function get_plugin_file() {
 		return WC_Subscriptions::$plugin_file;
 	}
+
+	/**
+	 * Gets the Payment Gateways handler class
+	 *
+	 * @since 4.0.0
+	 * @return string
+	 */
+	public function get_gateways_handler_class() {
+		return 'WC_Subscriptions_Payment_Gateways';
+	}
 }
