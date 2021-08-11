@@ -1,16 +1,11 @@
 <?php
 /**
- * Subscriptions Payment Gateways
- *
+ * Subscriptions Base Payment Gateways
  * Hooks into the WooCommerce payment gateways class to add subscription specific functionality.
  *
- * @package    WooCommerce Subscriptions
- * @subpackage WC_Subscriptions_Payment_Gateways
- * @category   Class
- * @author     Brent Shepherd
- * @since      1.0
+ * @since 4.0.0
  */
-class WC_Subscriptions_Payment_Gateways {
+class WC_Subscriptions_Base_Payment_Gateways {
 
 	protected static $one_gateway_supports = array();
 
@@ -21,19 +16,19 @@ class WC_Subscriptions_Payment_Gateways {
 	 */
 	public static function init() {
 
-		add_action( 'init', __CLASS__ . '::init_paypal', 5 ); // run before default priority 10 in case the site is using ALTERNATE_WP_CRON to avoid https://core.trac.wordpress.org/ticket/24160.
+		add_action( 'init', array( get_called_class(), 'init_paypal' ), 5 ); // run before default priority 10 in case the site is using ALTERNATE_WP_CRON to avoid https://core.trac.wordpress.org/ticket/24160.
 
-		add_filter( 'woocommerce_available_payment_gateways', __CLASS__ . '::get_available_payment_gateways' );
+		add_filter( 'woocommerce_available_payment_gateways', array( get_called_class(), 'get_available_payment_gateways' ) );
 
-		add_filter( 'woocommerce_no_available_payment_methods_message', __CLASS__ . '::no_available_payment_methods_message' );
+		add_filter( 'woocommerce_no_available_payment_methods_message', array( get_called_class(), 'no_available_payment_methods_message' ) );
 
-		add_filter( 'woocommerce_payment_gateways_renewal_support_status_html', __CLASS__ . '::payment_gateways_support_tooltip', 11, 2 );
+		add_filter( 'woocommerce_payment_gateways_renewal_support_status_html', array( get_called_class(), 'payment_gateways_support_tooltip' ), 11, 2 );
 
 		// Trigger a hook for gateways to charge recurring payments.
-		add_action( 'woocommerce_scheduled_subscription_payment', __CLASS__ . '::gateway_scheduled_subscription_payment', 10, 1 );
+		add_action( 'woocommerce_scheduled_subscription_payment', array( get_called_class(), 'gateway_scheduled_subscription_payment' ), 10, 1 );
 
 		// Create a gateway specific hooks for subscription events.
-		add_action( 'woocommerce_subscription_status_updated', __CLASS__ . '::trigger_gateway_status_updated_hook', 10, 2 );
+		add_action( 'woocommerce_subscription_status_updated', array( get_called_class(), 'trigger_gateway_status_updated_hook' ), 10, 2 );
 	}
 
 	/**
@@ -65,12 +60,13 @@ class WC_Subscriptions_Payment_Gateways {
 	}
 
 	/**
-	 * Only display the gateways which support subscriptions if manual payments are not allowed.
+	 * Only display the gateways which subscriptions-base supports
 	 *
-	 * @since 1.0
+	 * @since 4.0.0
+	 * @param array $available_gateways
+	 * @return array
 	 */
 	public static function get_available_payment_gateways( $available_gateways ) {
-
 		// We don't want to filter the available payment methods while the customer is paying for a standard order via the order-pay screen.
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
 			return $available_gateways;
@@ -80,19 +76,8 @@ class WC_Subscriptions_Payment_Gateways {
 			return $available_gateways;
 		}
 
-		$accept_manual_renewals = wcs_is_manual_renewal_enabled();
-		$subscriptions_in_cart  = is_array( WC()->cart->recurring_carts ) ? count( WC()->cart->recurring_carts ) : 0;
-
 		foreach ( $available_gateways as $gateway_id => $gateway ) {
-
-			$supports_subscriptions = $gateway->supports( 'subscriptions' );
-
-			// Remove the payment gateway if there are multiple subscriptions in the cart and this gateway either doesn't support multiple subscriptions or isn't manual (all manual gateways support multiple subscriptions)
-			if ( $subscriptions_in_cart > 1 && $gateway->supports( 'multiple_subscriptions' ) !== true && ( $supports_subscriptions || ! $accept_manual_renewals ) ) {
-				unset( $available_gateways[ $gateway_id ] );
-
-			// If there is just the one subscription the cart, remove the payment gateway if manual renewals are disabled and this gateway doesn't support automatic payments
-			} elseif ( ! $supports_subscriptions && ! $accept_manual_renewals ) {
+			if ( 'woocommerce_payments' !== $gateway_id ) {
 				unset( $available_gateways[ $gateway_id ] );
 			}
 		}

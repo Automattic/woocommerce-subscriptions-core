@@ -1946,7 +1946,7 @@ class WC_Subscriptions_Manager {
 
 			// We've already processed the renewal
 			remove_action( 'woocommerce_scheduled_subscription_payment', __CLASS__ . '::prepare_renewal' );
-			remove_action( 'woocommerce_scheduled_subscription_payment', 'WC_Subscriptions_Payment_Gateways::gateway_scheduled_subscription_payment', 10 );
+			remove_action( 'woocommerce_scheduled_subscription_payment', WC_Subscriptions_Base_Plugin::instance()->get_gateways_handler_class() . '::gateway_scheduled_subscription_payment', 10 );
 		}
 	}
 

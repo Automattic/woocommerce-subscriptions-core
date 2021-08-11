@@ -23,7 +23,8 @@ class WCS_Change_Payment_Method_Admin {
 		$valid_payment_methods = self::get_valid_payment_methods( $subscription );
 
 		if ( ! $subscription->is_manual() && ! isset( $valid_payment_methods[ $payment_method ] ) ) {
-			$subscription_payment_gateway = WC_Subscriptions_Payment_Gateways::get_payment_gateway( $payment_method );
+			$payment_gateways_handler     = WC_Subscriptions_Base_Plugin::instance()->get_gateways_handler_class();
+			$subscription_payment_gateway = $payment_gateways_handler::get_payment_gateway( $payment_method );
 
 			if ( false != $subscription_payment_gateway ) {
 				$valid_payment_methods[ $payment_method ] = $subscription_payment_gateway->title;
@@ -140,9 +141,10 @@ class WCS_Change_Payment_Method_Admin {
 
 		if ( ! $subscription->is_manual() && ( '' == $payment_gateway || $subscription->get_payment_method() != $payment_gateway->id ) ) {
 			// Before updating to a new payment gateway make sure the subscription status is updated with the current gateway
-			$gateway_status = apply_filters( 'wcs_gateway_status_payment_changed', 'cancelled', $subscription, $payment_gateway );
+			$gateway_status           = apply_filters( 'wcs_gateway_status_payment_changed', 'cancelled', $subscription, $payment_gateway );
+			$payment_gateways_handler = WC_Subscriptions_Base_Plugin::instance()->get_gateways_handler_class();
 
-			WC_Subscriptions_Payment_Gateways::trigger_gateway_status_updated_hook( $subscription, $gateway_status );
+			$payment_gateways_handler::trigger_gateway_status_updated_hook( $subscription, $gateway_status );
 		}
 
 		// Update the payment method for manual only if it has changed.
