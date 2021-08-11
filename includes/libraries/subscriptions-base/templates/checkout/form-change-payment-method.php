@@ -51,6 +51,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		$pay_order_button_text     = apply_filters( 'woocommerce_change_payment_button_text', $pay_order_button_text );
 		$customer_subscription_ids = WCS_Customer_Store::instance()->get_users_subscription_ids( $subscription->get_customer_id() );
+		$payment_gateways_handler  = WC_Subscriptions_Base_Plugin::instance()->get_gateways_handler_class();
 
 		if ( $available_gateways = WC()->payment_gateways->get_available_payment_gateways() ) :
 			?>
@@ -84,7 +85,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php endif; ?>
 
 		<?php if ( $available_gateways ) : ?>
-			<?php if ( count( $customer_subscription_ids ) > 1 && WC_Subscriptions_Payment_Gateways::one_gateway_supports( 'subscription_payment_method_change_admin' ) ) : ?>
+			<?php if ( count( $customer_subscription_ids ) > 1 && $payment_gateways_handler::one_gateway_supports( 'subscription_payment_method_change_admin' ) ) : ?>
 			<span class="update-all-subscriptions-payment-method-wrap">
 				<?php
 				// translators: $1: opening <strong> tag, $2: closing </strong> tag
