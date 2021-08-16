@@ -431,7 +431,6 @@ class WCS_Admin_Meta_Boxes {
 	 * @param WC_Abstract_Order     $order     The order or subscription the product was added to.
 	 */
 	public static function store_item_base_location_tax( $item_id, $line_item, $order ) {
-
 		if ( ! apply_filters( 'woocommerce_adjust_non_base_location_prices', true ) ) {
 			return;
 		}
@@ -446,6 +445,34 @@ class WCS_Admin_Meta_Boxes {
 
 		if ( '0' !== $line_item->get_tax_class() && 'taxable' === $line_item->get_tax_status() ) {
 			$base_tax_rates = WC_Tax::get_base_tax_rates( $line_item->get_tax_class() );
+
+			/**
+			 * Find the tax rates that apply to the line item given the current order's address and on what tax calculations are based off.
+			 */
+			$tax_based_on = get_option( 'woocommerce_tax_based_on' );
+
+			// If tax calculations are based on the base store location, exit since we know the rates will match.
+			if ( 'base' === $tax_based_on ) {
+				return;
+			}
+
+			if ( 'shipping' === $tax_based_on && ! $order->get_shipping_country() ) {
+				$tax_based_on = 'billing';
+			}
+
+			$applicable_tax_rates = WC_Tax::find_rates(
+				array(
+					'country'   => 'billing' === $tax_based_on ? $order->get_billing_country() : $order->get_shipping_country(),
+					'state'     => 'billing' === $tax_based_on ? $order->get_billing_state() : $order->get_shipping_state(),
+					'postcode'  => 'billing' === $tax_based_on ? $order->get_billing_postcode() : $order->get_shipping_postcode(),
+					'city'      => 'billing' === $tax_based_on ? $order->get_billing_city() : $order->get_shipping_city(),
+					'tax_class' => $line_item->get_tax_class(),
+				)
+			);
+
+			if ( $applicable_tax_rates === $base_tax_rates ) {
+				return;
+			}
 
 			$line_item->update_meta_data( '_subtracted_base_location_taxes', WC_Tax::calc_tax( $line_item->get_product()->get_price(), $base_tax_rates, true ) );
 			$line_item->update_meta_data( '_subtracted_base_location_rates', $base_tax_rates );
