@@ -564,6 +564,7 @@ class WCS_Admin_Meta_Boxes {
 				continue;
 			}
 
+			$new_line_subtotal           = wc_format_decimal( $new_line_subtotal );
 			$current_base_location_taxes = $line_item->get_meta( '_subtracted_base_location_taxes' );
 			$old_line_subtotal           = $line_item->get_subtotal();
 
