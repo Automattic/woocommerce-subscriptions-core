@@ -8,9 +8,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
-require_once dirname( __FILE__ ) . '/class-wcs-base-autoloader.php';
+require_once dirname( __FILE__ ) . '/class-wcs-core-autoloader.php';
 
-class WC_Subscriptions_Base_Plugin {
+class WC_Subscriptions_Core_Plugin {
 
 	/**
 	 * The plugin's version string.
@@ -41,9 +41,9 @@ class WC_Subscriptions_Base_Plugin {
 	public $cache = null;
 
 	/**
-	 * The base plugin instance.
+	 * The subscriptions instance.
 	 *
-	 * @var WC_Subscriptions_Base_Plugin
+	 * @var WC_Subscriptions_Core_Plugin
 	 */
 	protected static $instance = null;
 
@@ -54,7 +54,7 @@ class WC_Subscriptions_Base_Plugin {
 		if ( $autoloader ) {
 			$this->autoloader = $autoloader;
 		} else {
-			$this->autoloader = new WCS_Base_Autoloader( $this->get_base_plugin_directory() );
+			$this->autoloader = new WCS_Core_Autoloader( $this->get_subscriptions_core_directory() );
 			$this->autoloader->register();
 		}
 
@@ -68,14 +68,14 @@ class WC_Subscriptions_Base_Plugin {
 	}
 
 	/**
-	 * Gets the base plugin instance.
+	 * Gets the Subscriptions Core instance.
 	 *
 	 * @since 4.0.0
-	 * @return WC_Subscriptions_Base_Plugin
+	 * @return WC_Subscriptions_Core_Plugin
 	 */
 	public static function instance() {
 		if ( ! self::$instance ) {
-			// Doing it wrong. WC_Subscriptions_Base_Plugin::instance() should not be called before an instance has been created.
+			// Doing it wrong. WC_Subscriptions_Core_Plugin::instance() should not be called before an instance has been created.
 		}
 
 		return self::$instance;
@@ -93,11 +93,11 @@ class WC_Subscriptions_Base_Plugin {
 	 */
 	protected function includes() {
 		// Load function files.
-		require_once $this->get_base_plugin_directory( 'wcs-functions.php' );
-		require_once $this->get_base_plugin_directory( 'includes/gateways/paypal/includes/wcs-paypal-functions.php' );
+		require_once $this->get_subscriptions_core_directory( 'wcs-functions.php' );
+		require_once $this->get_subscriptions_core_directory( 'includes/gateways/paypal/includes/wcs-paypal-functions.php' );
 
 		// Load libraries.
-		require_once $this->get_base_plugin_directory( 'includes/libraries/action-scheduler/action-scheduler.php' );
+		require_once $this->get_subscriptions_core_directory( 'includes/libraries/action-scheduler/action-scheduler.php' );
 	}
 
 	/**
@@ -235,24 +235,24 @@ class WC_Subscriptions_Base_Plugin {
 	}
 
 	/**
-	 * Gets the plugin's base directory.
+	 * Gets the subscriptions core directory.
 	 *
 	 * @since 4.0.0
 	 * @param string $path Optional. The path to append.
 	 * @return string
 	 */
-	public function get_base_plugin_directory( $path = '' ) {
+	public function get_subscriptions_core_directory( $path = '' ) {
 		return $path ? trailingslashit( dirname( __DIR__ ) ) . $path : dirname( __DIR__ );
 	}
 
 	/**
-	 * Gets the plugin's base directory url.
+	 * Gets the subscriptions core directory url.
 	 *
 	 * @since 4.0.0
 	 * @param string $path Optional. The path to append.
 	 * @return string
 	 */
-	public function get_base_plugin_directory_url( $path = '' ) {
+	public function get_subscriptions_core_directory_url( $path = '' ) {
 		return plugin_dir_url( __DIR__ ) . $path;
 	}
 
@@ -302,13 +302,13 @@ class WC_Subscriptions_Base_Plugin {
 	}
 
 	/**
-	 * Gets the base Payment Gateways handler class
+	 * Gets the core Payment Gateways handler class
 	 *
 	 * @since 4.0.0
 	 * @return string
 	 */
 	public function get_gateways_handler_class() {
-		return 'WC_Subscriptions_Base_Payment_Gateways';
+		return 'WC_Subscriptions_Core_Payment_Gateways';
 	}
 
 	/**
@@ -498,7 +498,7 @@ class WC_Subscriptions_Base_Plugin {
 	 * @since 4.0.0
 	 */
 	public function load_plugin_textdomain() {
-		$plugin_rel_path = apply_filters( 'woocommerce_subscriptions_translation_file_rel_path', $this->get_base_plugin_directory() . '/languages' );
+		$plugin_rel_path = apply_filters( 'woocommerce_subscriptions_translation_file_rel_path', $this->get_subscriptions_core_directory() . '/languages' );
 
 		// Then check for a language file in /wp-content/plugins/woocommerce-subscriptions/languages/ (this will be overriden by any file already loaded)
 		load_plugin_textdomain( 'woocommerce-subscriptions', false, $plugin_rel_path );

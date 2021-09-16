@@ -10,7 +10,7 @@
  * @author     Brent Shepherd
  * @since      1.0
  */
-class WC_Subscriptions_Payment_Gateways extends WC_Subscriptions_Base_Payment_Gateways {
+class WC_Subscriptions_Payment_Gateways extends WC_Subscriptions_Core_Payment_Gateways {
 
 	/**
 	 * Display the gateways which support subscriptions if manual payments are not allowed.

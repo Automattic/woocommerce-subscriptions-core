@@ -1,11 +1,11 @@
 <?php
 /**
- * Subscriptions Base Payment Gateways
+ * Subscriptions Core Payment Gateways
  * Hooks into the WooCommerce payment gateways class to add subscription specific functionality.
  *
  * @since 4.0.0
  */
-class WC_Subscriptions_Base_Payment_Gateways {
+class WC_Subscriptions_Core_Payment_Gateways {
 
 	protected static $one_gateway_supports = array();
 
@@ -60,7 +60,7 @@ class WC_Subscriptions_Base_Payment_Gateways {
 	}
 
 	/**
-	 * Only display the gateways which subscriptions-base supports
+	 * Only display the gateways which subscriptions-core supports
 	 *
 	 * @since 4.0.0
 	 * @param array $available_gateways

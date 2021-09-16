@@ -30,7 +30,7 @@ class WCS_Email_Processing_Renewal_Order extends WC_Email_Customer_Processing_Or
 
 		$this->template_html  = 'emails/customer-processing-renewal-order.php';
 		$this->template_plain = 'emails/plain/customer-processing-renewal-order.php';
-		$this->template_base  = WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' );
+		$this->template_base  = WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' );
 
 		// Triggers for this email
 		add_action( 'woocommerce_order_status_pending_to_processing_renewal_notification', array( $this, 'trigger' ) );

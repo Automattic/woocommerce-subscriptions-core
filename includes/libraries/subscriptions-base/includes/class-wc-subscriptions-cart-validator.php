@@ -33,7 +33,7 @@ class WC_Subscriptions_Cart_Validator {
 	public static function maybe_empty_cart( $valid, $product_id, $quantity, $variation_id = '', $variations = array() ) {
 		$is_subscription                 = WC_Subscriptions_Product::is_subscription( $product_id );
 		$cart_contains_subscription      = WC_Subscriptions_Cart::cart_contains_subscription();
-		$payment_gateways_handler        = WC_Subscriptions_Base_Plugin::instance()->get_gateways_handler_class();
+		$payment_gateways_handler        = WC_Subscriptions_Core_Plugin::instance()->get_gateways_handler_class();
 		$multiple_subscriptions_possible = $payment_gateways_handler::one_gateway_supports( 'multiple_subscriptions' );
 		$manual_renewals_enabled         = wcs_is_manual_renewal_enabled();
 		$canonical_product_id            = ! empty( $variation_id ) ? $variation_id : $product_id;

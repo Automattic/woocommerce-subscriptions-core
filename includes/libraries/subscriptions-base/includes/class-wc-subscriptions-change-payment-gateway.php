@@ -219,7 +219,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 					}
 				}
 
-				wc_get_template( 'checkout/form-change-payment-method.php', array( 'subscription' => $subscription ), '', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' ) );
+				wc_get_template( 'checkout/form-change-payment-method.php', array( 'subscription' => $subscription ), '', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' ) );
 			}
 		}
 
@@ -499,7 +499,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		$old_payment_method       = $subscription->get_payment_method();
 		$old_payment_method_title = $subscription->get_payment_method_title();
 		$available_gateways       = WC()->payment_gateways->get_available_payment_gateways(); // Also inits all payment gateways to make sure that hooks are attached correctly
-		$payment_gateways_handler = WC_Subscriptions_Base_Plugin::instance()->get_gateways_handler_class();
+		$payment_gateways_handler = WC_Subscriptions_Core_Plugin::instance()->get_gateways_handler_class();
 
 		do_action( 'woocommerce_subscriptions_pre_update_payment_method', $subscription, $new_payment_method, $old_payment_method );
 
@@ -690,7 +690,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		}
 
 		// Don't allow if no gateways support changing methods.
-		$payment_gateways_handler = WC_Subscriptions_Base_Plugin::instance()->get_gateways_handler_class();
+		$payment_gateways_handler = WC_Subscriptions_Core_Plugin::instance()->get_gateways_handler_class();
 		if ( ! $payment_gateways_handler::one_gateway_supports( 'subscription_payment_method_change_customer' ) ) {
 			return false;
 		}

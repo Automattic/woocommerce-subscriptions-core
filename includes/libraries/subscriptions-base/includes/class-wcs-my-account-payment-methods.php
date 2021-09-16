@@ -263,7 +263,7 @@ class WCS_My_Account_Payment_Methods {
 			),
 		);
 
-		wp_enqueue_script( 'wc-subscriptions-payment-methods', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( 'assets/js/frontend/payment-methods.js' ), array( 'jquery' ), WC_Subscriptions_Base_Plugin::instance()->get_plugin_version(), true );
+		wp_enqueue_script( 'wc-subscriptions-payment-methods', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/frontend/payment-methods.js' ), array( 'jquery' ), WC_Subscriptions_Core_Plugin::instance()->get_plugin_version(), true );
 		wp_localize_script( 'wc-subscriptions-payment-methods', 'wcs_payment_methods', $script_params );
 	}
 

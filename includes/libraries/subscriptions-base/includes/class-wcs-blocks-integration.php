@@ -24,10 +24,10 @@ class WCS_Blocks_Integration implements IntegrationInterface {
 		$script_path = 'build/index.js';
 		$style_path  = 'build/index.css';
 
-		$script_url = \WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( $script_path );
-		$style_url  = \WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( $style_path );
+		$script_url = \WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( $script_path );
+		$style_url  = \WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( $style_path );
 
-		$script_asset_path = \WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'build/index.asset.php' );
+		$script_asset_path = \WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'build/index.asset.php' );
 		$script_asset      = file_exists( $script_asset_path )
 			? require $script_asset_path
 			: array(
@@ -45,13 +45,13 @@ class WCS_Blocks_Integration implements IntegrationInterface {
 		wp_set_script_translations(
 			'wc-blocks-integration',
 			'woocommerce-subscriptions',
-			\WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'languages' )
+			\WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'languages' )
 		);
 		wp_enqueue_style(
 			'wc-blocks-integration',
 			$style_url,
 			'',
-			$this->get_file_version( \WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'build/index.css' ) ),
+			$this->get_file_version( \WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'build/index.css' ) ),
 			'all'
 		);
 	}
@@ -95,6 +95,6 @@ class WCS_Blocks_Integration implements IntegrationInterface {
 		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG && file_exists( $file ) ) {
 			return filemtime( $file );
 		}
-		return \WC_Subscriptions_Base_Plugin::instance()->get_plugin_version();
+		return \WC_Subscriptions_Core_Plugin::instance()->get_plugin_version();
 	}
 }

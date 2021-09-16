@@ -2884,7 +2884,7 @@ class WC_Subscriptions_Switcher {
 		}
 
 		foreach ( $orders as $order ) {
-			include( WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'includes/admin/meta-boxes/views/html-related-orders-row.php' ) );
+			include( WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'includes/admin/meta-boxes/views/html-related-orders-row.php' ) );
 		}
 
 	}

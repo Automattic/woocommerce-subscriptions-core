@@ -434,7 +434,7 @@ class WC_Subscriptions_Admin {
 			$billing_period = 'month';
 		}
 
-		include( WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/admin/html-variation-price.php' ) );
+		include( WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/admin/html-variation-price.php' ) );
 
 		wp_nonce_field( 'wcs_subscription_variations', '_wcsnonce_save_variations', false );
 
@@ -470,7 +470,7 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function save_subscription_meta( $post_id ) {
 
-		if ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) || false === self::is_subscription_product_save_request( $post_id, apply_filters( 'woocommerce_subscription_product_types', array( WC_Subscriptions_Base_Plugin::instance()->get_product_type_name() ) ) ) ) {
+		if ( empty( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_subscription_meta' ) || false === self::is_subscription_product_save_request( $post_id, apply_filters( 'woocommerce_subscription_product_types', array( WC_Subscriptions_Core_Plugin::instance()->get_product_type_name() ) ) ) ) {
 			return;
 		}
 
@@ -816,7 +816,7 @@ class WC_Subscriptions_Admin {
 		$screen = get_current_screen();
 
 		$is_woocommerce_screen = in_array( $screen->id, array( 'product', 'edit-shop_order', 'shop_order', 'edit-shop_subscription', 'shop_subscription', 'users', 'woocommerce_page_wc-settings' ) );
-		$is_activation_screen  = (bool) get_transient( WC_Subscriptions_Base_Plugin::instance()->get_activation_transient() );
+		$is_activation_screen  = (bool) get_transient( WC_Subscriptions_Core_Plugin::instance()->get_activation_transient() );
 
 		if ( $is_woocommerce_screen ) {
 
@@ -831,7 +831,7 @@ class WC_Subscriptions_Admin {
 				$dependencies[] = 'wc-admin-variation-meta-boxes';
 
 				$script_params = array(
-					'productType'                 => WC_Subscriptions_Base_Plugin::instance()->get_product_type_name(),
+					'productType'                 => WC_Subscriptions_Core_Plugin::instance()->get_product_type_name(),
 					'trialPeriodSingular'         => wcs_get_available_time_periods(),
 					'trialPeriodPlurals'          => wcs_get_available_time_periods( 'plural' ),
 					'subscriptionLengths'         => wcs_get_subscription_ranges(),
@@ -884,7 +884,7 @@ class WC_Subscriptions_Admin {
 			$script_params['ajaxUrl']         = admin_url( 'admin-ajax.php' );
 			$script_params['isWCPre24']       = var_export( wcs_is_woocommerce_pre( '2.4' ), true );
 
-			wp_enqueue_script( 'woocommerce_subscriptions_admin', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( 'assets/js/admin/admin.js' ), $dependencies, filemtime( WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'assets/js/admin/admin.js' ) ) );
+			wp_enqueue_script( 'woocommerce_subscriptions_admin', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/admin.js' ), $dependencies, filemtime( WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'assets/js/admin/admin.js' ) ) );
 			wp_localize_script( 'woocommerce_subscriptions_admin', 'WCSubscriptions', apply_filters( 'woocommerce_subscriptions_admin_script_parameters', $script_params ) );
 
 			// Maybe add the pointers for first timers
@@ -899,7 +899,7 @@ class WC_Subscriptions_Admin {
 					'pricePointerContent' => sprintf( _x( '%1$sSet a Price%2$s%3$sSubscription prices are a little different to other product prices. For a subscription, you can set a billing period, length, sign-up fee and free trial.%4$s', 'used in admin pointer script params in javascript as price pointer content', 'woocommerce-subscriptions' ), '<h3>', '</h3>', '<p>', '</p>' ),
 				);
 
-				wp_enqueue_script( 'woocommerce_subscriptions_admin_pointers', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( 'assets/js/admin/admin-pointers.js' ), $dependencies, WC_Subscriptions_Base_Plugin::instance()->get_plugin_version() );
+				wp_enqueue_script( 'woocommerce_subscriptions_admin_pointers', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/admin-pointers.js' ), $dependencies, WC_Subscriptions_Core_Plugin::instance()->get_plugin_version() );
 
 				wp_localize_script( 'woocommerce_subscriptions_admin_pointers', 'WCSPointers', apply_filters( 'woocommerce_subscriptions_admin_pointer_script_parameters', $pointer_script_params ) );
 
@@ -923,22 +923,22 @@ class WC_Subscriptions_Admin {
 
 			if ( ! empty( $woocommerce_plugin_dir_file ) && 0 == count( $subscription_product ) ) {
 
-				wp_enqueue_style( 'woocommerce-activation', plugins_url( '/assets/css/activation.css', $woocommerce_plugin_dir_file ), array(), WC_Subscriptions_Base_Plugin::instance()->get_plugin_version() );
+				wp_enqueue_style( 'woocommerce-activation', plugins_url( '/assets/css/activation.css', $woocommerce_plugin_dir_file ), array(), WC_Subscriptions_Core_Plugin::instance()->get_plugin_version() );
 
 				if ( ! isset( $_GET['page'] ) || 'wcs-about' != $_GET['page'] ) {
 					add_action( 'admin_notices', __CLASS__ . '::admin_installed_notice' );
 				}
 			}
-			delete_transient( WC_Subscriptions_Base_Plugin::instance()->get_activation_transient() );
+			delete_transient( WC_Subscriptions_Core_Plugin::instance()->get_activation_transient() );
 		}
 
 		if ( $is_woocommerce_screen || $is_activation_screen || 'edit-product' == $screen->id || ( isset( $_GET['page'], $_GET['tab'] ) && 'wc-reports' === $_GET['page'] && 'subscriptions' === $_GET['tab'] ) ) {
-			wp_enqueue_style( 'woocommerce_admin_styles', WC()->plugin_url() . '/assets/css/admin.css', array(), WC_Subscriptions_Base_Plugin::instance()->get_plugin_version() );
-			wp_enqueue_style( 'woocommerce_subscriptions_admin', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( 'assets/css/admin.css' ), array( 'woocommerce_admin_styles' ), WC_Subscriptions_Base_Plugin::instance()->get_plugin_version() );
+			wp_enqueue_style( 'woocommerce_admin_styles', WC()->plugin_url() . '/assets/css/admin.css', array(), WC_Subscriptions_Core_Plugin::instance()->get_plugin_version() );
+			wp_enqueue_style( 'woocommerce_subscriptions_admin', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/css/admin.css' ), array( 'woocommerce_admin_styles' ), WC_Subscriptions_Core_Plugin::instance()->get_plugin_version() );
 		}
 
 		if ( in_array( $screen->id, array( 'shop_order', 'edit-shop_subscription', 'shop_subscription' ) ) && wcs_is_woocommerce_pre( '3.3' ) ) {
-			wp_enqueue_style( 'wc_subscriptions_statuses_admin', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( 'assets/css/admin-order-statuses.css' ), array( 'woocommerce_admin_styles' ), WC_Subscriptions_Base_Plugin::instance()->get_plugin_version() );
+			wp_enqueue_style( 'wc_subscriptions_statuses_admin', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/css/admin-order-statuses.css' ), array( 'woocommerce_admin_styles' ), WC_Subscriptions_Core_Plugin::instance()->get_plugin_version() );
 		}
 	}
 
@@ -1581,7 +1581,7 @@ class WC_Subscriptions_Admin {
 				'user_id'       => $attributes['user_id'],
 			),
 			'',
-			WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' )
+			WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' )
 		);
 
 		return ob_get_clean();
@@ -1785,7 +1785,7 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function add_recurring_payment_gateway_information( $settings ) {
 		$available_gateways_description = '';
-		$payment_gateways_handler       = WC_Subscriptions_Base_Plugin::instance()->get_gateways_handler_class();
+		$payment_gateways_handler       = WC_Subscriptions_Core_Plugin::instance()->get_gateways_handler_class();
 
 		if ( ! $payment_gateways_handler::one_gateway_supports( 'subscriptions' ) ) {
 			// translators: $1-2: opening and closing tags of a link that takes to Woo marketplace / Stripe product page
