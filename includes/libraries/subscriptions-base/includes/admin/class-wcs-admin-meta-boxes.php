@@ -119,11 +119,11 @@ class WCS_Admin_Meta_Boxes {
 
 		if ( 'shop_subscription' == $screen_id ) {
 
-			wp_register_script( 'jstz', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( 'assets/js/admin/jstz.min.js' ) );
+			wp_register_script( 'jstz', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/jstz.min.js' ) );
 
-			wp_register_script( 'momentjs', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( 'assets/js/admin/moment.min.js' ) );
+			wp_register_script( 'momentjs', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/moment.min.js' ) );
 
-			wp_enqueue_script( 'wcs-admin-meta-boxes-subscription', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( 'assets/js/admin/meta-boxes-subscription.js' ), array( 'wc-admin-meta-boxes', 'jstz', 'momentjs' ), WC_VERSION );
+			wp_enqueue_script( 'wcs-admin-meta-boxes-subscription', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/meta-boxes-subscription.js' ), array( 'wc-admin-meta-boxes', 'jstz', 'momentjs' ), WC_VERSION );
 
 			wp_localize_script( 'wcs-admin-meta-boxes-subscription', 'wcs_admin_meta_boxes', apply_filters( 'woocommerce_subscriptions_admin_meta_boxes_script_parameters', array(
 				'i18n_start_date_notice'         => __( 'Please enter a start date in the past.', 'woocommerce-subscriptions' ),
@@ -141,7 +141,7 @@ class WCS_Admin_Meta_Boxes {
 			) ) );
 		} else if ( 'shop_order' == $screen_id ) {
 
-			wp_enqueue_script( 'wcs-admin-meta-boxes-order', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( 'assets/js/admin/wcs-meta-boxes-order.js' ) );
+			wp_enqueue_script( 'wcs-admin-meta-boxes-order', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/wcs-meta-boxes-order.js' ) );
 
 			wp_localize_script(
 				'wcs-admin-meta-boxes-order',
@@ -156,9 +156,9 @@ class WCS_Admin_Meta_Boxes {
 		if ( ! wcs_is_woocommerce_pre( '3.2' ) && in_array( $screen_id, array( 'shop_coupon', 'edit-shop_coupon' ) ) ) {
 			wp_enqueue_script(
 				'wcs-admin-coupon-meta-boxes',
-				WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( 'assets/js/admin/meta-boxes-coupon.js' ),
+				WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/meta-boxes-coupon.js' ),
 				array( 'jquery', 'wc-admin-meta-boxes' ),
-				WC_Subscriptions_Base_Plugin::instance()->get_plugin_version()
+				WC_Subscriptions_Core_Plugin::instance()->get_plugin_version()
 			);
 		}
 	}

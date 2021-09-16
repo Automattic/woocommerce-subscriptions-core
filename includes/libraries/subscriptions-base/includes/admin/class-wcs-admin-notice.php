@@ -91,7 +91,7 @@ class WCS_Admin_Notice {
 		}
 
 		$template_name = 'html-admin-notice.php';
-		$template_path = WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/admin/' );
+		$template_path = WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/admin/' );
 
 		if ( function_exists( 'wc_get_template' ) ) {
 			wc_get_template( $template_name, array( 'notice' => $this ), '', $template_path );

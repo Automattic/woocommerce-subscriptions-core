@@ -8,7 +8,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class WC_Subscriptions_Plugin extends WC_Subscriptions_Base_Plugin {
+class WC_Subscriptions_Plugin extends WC_Subscriptions_Core_Plugin {
 
 	/**
 	 * Initialise the WC Subscriptions plugin.
@@ -33,7 +33,7 @@ class WC_Subscriptions_Plugin extends WC_Subscriptions_Base_Plugin {
 	/**
 	 * Initialises classes which need to be loaded after other plugins have loaded.
 	 *
-	 * Hooked onto 'plugins_loaded' by @see WC_Subscriptions_Base_Plugin::init()
+	 * Hooked onto 'plugins_loaded' by @see WC_Subscriptions_Core_Plugin::init()
 	 *
 	 * @since 4.0.0
 	 */

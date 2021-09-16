@@ -38,7 +38,7 @@ class WCS_Template_Loader {
 			return;
 		}
 
-		wc_get_template( 'myaccount/view-subscription.php', compact( 'subscription' ), '', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' ) );
+		wc_get_template( 'myaccount/view-subscription.php', compact( 'subscription' ), '', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' ) );
 	}
 
 	/**
@@ -48,7 +48,7 @@ class WCS_Template_Loader {
 	 * @since 2.2.19
 	 */
 	public static function get_subscription_details_template( $subscription ) {
-		wc_get_template( 'myaccount/subscription-details.php', array( 'subscription' => $subscription ), '', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' ) );
+		wc_get_template( 'myaccount/subscription-details.php', array( 'subscription' => $subscription ), '', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' ) );
 	}
 
 	/**
@@ -58,7 +58,7 @@ class WCS_Template_Loader {
 	 * @since 2.2.19
 	 */
 	public static function get_subscription_totals_template( $subscription ) {
-		wc_get_template( 'myaccount/subscription-totals.php', array( 'subscription' => $subscription ), '', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' ) );
+		wc_get_template( 'myaccount/subscription-totals.php', array( 'subscription' => $subscription ), '', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' ) );
 	}
 
 	/**
@@ -104,7 +104,7 @@ class WCS_Template_Loader {
 				'totals'             => $totals,
 			),
 			'',
-			WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' )
+			WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' )
 		);
 
 		// Reattach the callback if it was successfully removed.
@@ -121,7 +121,7 @@ class WCS_Template_Loader {
 	 * @param WC_Subscription $subscription The subscription to display the receipt for.
 	 */
 	public static function get_subscription_receipt_template( $subscription ) {
-		wc_get_template( 'checkout/subscription-receipt.php', array( 'subscription' => $subscription ), '', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' ) );
+		wc_get_template( 'checkout/subscription-receipt.php', array( 'subscription' => $subscription ), '', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' ) );
 	}
 
 	/**
@@ -133,7 +133,7 @@ class WCS_Template_Loader {
 	 */
 	public static function get_recurring_cart_subtotals( $recurring_carts ) {
 		$recurring_carts = wcs_apply_array_filter( 'woocommerce_subscriptions_display_recurring_subtotals', $recurring_carts, 'next_payment_date' );
-		wc_get_template( 'checkout/recurring-subtotals.php', array( 'recurring_carts' => $recurring_carts ), '', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' ) );
+		wc_get_template( 'checkout/recurring-subtotals.php', array( 'recurring_carts' => $recurring_carts ), '', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' ) );
 	}
 
 	/**
@@ -146,7 +146,7 @@ class WCS_Template_Loader {
 	public static function get_recurring_cart_coupons( $recurring_carts ) {
 		// Filter out all recurring carts without a next payment date.
 		$recurring_carts = wcs_apply_array_filter( 'woocommerce_subscriptions_display_recurring_coupon_totals', $recurring_carts, 'next_payment_date' );
-		wc_get_template( 'checkout/recurring-coupon-totals.php', array( 'recurring_carts' => $recurring_carts ), '', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' ) );
+		wc_get_template( 'checkout/recurring-coupon-totals.php', array( 'recurring_carts' => $recurring_carts ), '', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' ) );
 	}
 
 	/**
@@ -170,7 +170,7 @@ class WCS_Template_Loader {
 	public static function get_recurring_cart_fees( $recurring_carts ) {
 		// Filter out all recurring carts without a next payment date.
 		$recurring_carts = wcs_apply_array_filter( 'woocommerce_subscriptions_display_recurring_fee_totals', $recurring_carts, 'next_payment_date' );
-		wc_get_template( 'checkout/recurring-fee-totals.php', array( 'recurring_carts' => $recurring_carts ), '', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' ) );
+		wc_get_template( 'checkout/recurring-fee-totals.php', array( 'recurring_carts' => $recurring_carts ), '', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' ) );
 	}
 
 	/**
@@ -191,9 +191,9 @@ class WCS_Template_Loader {
 		$recurring_carts = wcs_apply_array_filter( 'woocommerce_subscriptions_display_recurring_tax_totals', $recurring_carts, 'next_payment_date' );
 
 		if ( 'itemized' === get_option( 'woocommerce_tax_total_display' ) ) {
-			wc_get_template( 'checkout/recurring-itemized-tax-totals.php', array( 'recurring_carts' => $recurring_carts ), '', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' ) );
+			wc_get_template( 'checkout/recurring-itemized-tax-totals.php', array( 'recurring_carts' => $recurring_carts ), '', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' ) );
 		} else {
-			wc_get_template( 'checkout/recurring-tax-totals.php', array( 'recurring_carts' => $recurring_carts ), '', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' ) );
+			wc_get_template( 'checkout/recurring-tax-totals.php', array( 'recurring_carts' => $recurring_carts ), '', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' ) );
 		}
 	}
 
@@ -207,7 +207,7 @@ class WCS_Template_Loader {
 	public static function get_recurring_subscription_totals( $recurring_carts ) {
 		// Filter out all recurring carts without a next payment date.
 		$recurring_carts = wcs_apply_array_filter( 'woocommerce_subscriptions_display_recurring_subscription_totals', $recurring_carts, 'next_payment_date' );
-		wc_get_template( 'checkout/recurring-subscription-totals.php', array( 'recurring_carts' => $recurring_carts ), '', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' ) );
+		wc_get_template( 'checkout/recurring-subscription-totals.php', array( 'recurring_carts' => $recurring_carts ), '', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' ) );
 	}
 
 	/**
@@ -232,7 +232,7 @@ class WCS_Template_Loader {
 				'paginate'      => true,
 			),
 			'',
-			WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' )
+			WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' )
 		);
 	}
 
@@ -245,7 +245,7 @@ class WCS_Template_Loader {
 	 * @since 4.0.0
 	 */
 	public static function get_subscription_add_to_cart() {
-		wc_get_template( 'single-product/add-to-cart/subscription.php', array(), '', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' ) );
+		wc_get_template( 'single-product/add-to-cart/subscription.php', array(), '', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' ) );
 	}
 
 	/**
@@ -273,7 +273,7 @@ class WCS_Template_Loader {
 				'selected_attributes'  => $product->get_default_attributes(),
 			),
 			'',
-			WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' )
+			WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' )
 		);
 	}
 

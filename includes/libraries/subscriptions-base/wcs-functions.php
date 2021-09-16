@@ -724,7 +724,7 @@ function wcs_is_view_subscription_page() {
  * @since 2.2.20
  */
 function wcs_get_image_asset_url( $file_name ) {
-	return WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory_url( "assets/images/{$file_name}" );
+	return WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( "assets/images/{$file_name}" );
 }
 
 /**

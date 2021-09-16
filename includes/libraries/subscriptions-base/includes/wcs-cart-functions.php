@@ -142,7 +142,7 @@ function wcs_cart_totals_shipping_html() {
 							'recurring_cart'       => $recurring_cart,
 						),
 						'',
-						WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' )
+						WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' )
 					);
 					$show_package_name = false;
 				}

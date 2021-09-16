@@ -51,7 +51,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		$pay_order_button_text     = apply_filters( 'woocommerce_change_payment_button_text', $pay_order_button_text );
 		$customer_subscription_ids = WCS_Customer_Store::instance()->get_users_subscription_ids( $subscription->get_customer_id() );
-		$payment_gateways_handler  = WC_Subscriptions_Base_Plugin::instance()->get_gateways_handler_class();
+		$payment_gateways_handler  = WC_Subscriptions_Core_Plugin::instance()->get_gateways_handler_class();
 
 		if ( $available_gateways = WC()->payment_gateways->get_available_payment_gateways() ) :
 			?>

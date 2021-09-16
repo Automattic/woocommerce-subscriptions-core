@@ -32,7 +32,7 @@ class WCS_Email_Completed_Renewal_Order extends WC_Email_Customer_Completed_Orde
 
 		$this->template_html  = 'emails/customer-completed-renewal-order.php';
 		$this->template_plain = 'emails/plain/customer-completed-renewal-order.php';
-		$this->template_base  = WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' );
+		$this->template_base  = WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' );
 
 		// Other settings
 		$this->heading_downloadable = $this->get_option( 'heading_downloadable', _x( 'Your subscription renewal order is complete - download your files', 'Default email heading for email with downloadable files in it', 'woocommerce-subscriptions' ) );

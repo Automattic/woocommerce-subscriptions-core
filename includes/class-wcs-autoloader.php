@@ -9,8 +9,8 @@
 defined( 'ABSPATH' ) || exit;
 
 // load the base autoloader class - we can't rely on base plugin autoloader to load it as this class is loaded before the base plugin class
-require_once dirname( __FILE__ ) . '/libraries/subscriptions-base/includes/class-wcs-base-autoloader.php';
-class WCS_Autoloader extends WCS_Base_Autoloader {
+require_once dirname( __FILE__ ) . '/libraries/subscriptions-base/includes/class-wcs-core-autoloader.php';
+class WCS_Autoloader extends WCS_Core_Autoloader {
 
 	/**
 	 * The classes the Subscritions plugin has ownership of.

@@ -149,7 +149,7 @@ class WCS_Failed_Scheduled_Action_Manager {
 		}
 
 		$notice = new WCS_Admin_Notice( 'error' );
-		$notice->set_content_template( 'html-failed-scheduled-action-notice.php', WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/admin/' ), array(
+		$notice->set_content_template( 'html-failed-scheduled-action-notice.php', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/admin/' ), array(
 			'failed_scheduled_actions'     => $failed_scheduled_actions,
 			'affected_subscription_events' => $affected_subscription_events,
 		) );

@@ -43,7 +43,7 @@ class WCS_Email_Customer_Renewal_Invoice extends WC_Email_Customer_Invoice {
 
 		$this->template_html  = 'emails/customer-renewal-invoice.php';
 		$this->template_plain = 'emails/plain/customer-renewal-invoice.php';
-		$this->template_base  = WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' );
+		$this->template_base  = WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' );
 
 		$this->subject        = __( 'Invoice for renewal order {order_number} from {order_date}', 'woocommerce-subscriptions' );
 		$this->heading        = __( 'Invoice for renewal order {order_number}', 'woocommerce-subscriptions' );

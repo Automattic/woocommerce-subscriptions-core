@@ -714,7 +714,7 @@ class WC_Subscriptions_Order {
 
 		if ( ! empty( $subscriptions ) ) {
 
-			$template_base  = WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' );
+			$template_base  = WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' );
 			$template       = ( $plaintext ) ? 'emails/plain/subscription-info.php' : 'emails/subscription-info.php';
 
 			wc_get_template(
@@ -852,7 +852,7 @@ class WC_Subscriptions_Order {
 					'subscriptions' => $subscriptions,
 				),
 				'',
-				WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' ),
+				WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' ),
 			);
 		}
 	}
@@ -874,7 +874,7 @@ class WC_Subscriptions_Order {
 					'subscription'        => $subscription,
 				),
 				'',
-				WC_Subscriptions_Base_Plugin::instance()->get_base_plugin_directory( 'templates/' ),
+				WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' ),
 			);
 		}
 	}

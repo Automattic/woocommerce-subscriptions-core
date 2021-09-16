@@ -1,16 +1,15 @@
 <?php
-
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	die();
 }
 
 /**
- * WooCommerce Subscriptions Autoloader.
+ * WooCommerce Subscriptions Core Autoloader.
  *
  * @class WCS_Autoloader
  */
-class WCS_Base_Autoloader {
+class WCS_Core_Autoloader {
 
 	/**
 	 * The base path for autoloading.
