@@ -11,6 +11,8 @@ This package adds core subscriptions functionality to your WooCommerce store.
 
 The `/Automattic/woocommerce-subscriptions-core/` repository is treated as a _development_ repository and includes development assets, like unit tests and configuration files.
 
+This package can be loaded as standalone plugin for development purposes, however it's intended to be loaded as follows:
+
 *composer.json*
 ```
 "repositories": [
