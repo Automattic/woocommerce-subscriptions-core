@@ -166,50 +166,50 @@ class WC_Subscriptions_Deprecation_Handler extends WCS_Deprecated_Functions_Hand
 			'version'     => '4.0.0',
 		),
 		'load_dependant_classes' => array(
-			'replacement' => array( array( 'WC_Subscriptions', 'get_plugin' ), 'init_version_dependant_classes' ),
+			'replacement' => array( array( 'WC_Subscriptions_Plugin', 'instance' ), 'init_version_dependant_classes' ),
 			'version'     => '4.0.0',
 		),
 		'attach_dependant_hooks' => array(
 			'version' => '4.0.0',
 		),
 		'register_order_types' => array(
-			'replacement' => array( array( 'WC_Subscriptions', 'get_plugin' ), 'register_order_types' ),
+			'replacement' => array( array( 'WC_Subscriptions_Plugin', 'instance' ), 'register_order_types' ),
 			'version'     => '4.0.0',
 		),
 		'add_data_stores' => array(
-			'replacement' => array( array( 'WC_Subscriptions', 'get_plugin' ), 'add_data_stores' ),
+			'replacement' => array( array( 'WC_Subscriptions_Plugin', 'instance' ), 'add_data_stores' ),
 			'version'     => '4.0.0',
 		),
 		'register_post_status' => array(
-			'replacement' => array( array( 'WC_Subscriptions', 'get_plugin' ), 'register_post_statuses' ),
+			'replacement' => array( array( 'WC_Subscriptions_Plugin', 'instance' ), 'register_post_statuses' ),
 			'version'     => '4.0.0',
 		),
 		'deactivate_woocommerce_subscriptions' => array(
-			'replacement' => array( array( 'WC_Subscriptions', 'get_plugin' ), 'deactivate_plugin' ),
+			'replacement' => array( array( 'WC_Subscriptions_Plugin', 'instance' ), 'deactivate_plugin' ),
 			'version'     => '4.0.0',
 		),
 		'load_plugin_textdomain' => array(
-			'replacement' => array( array( 'WC_Subscriptions', 'get_plugin' ), 'load_plugin_textdomain' ),
+			'replacement' => array( array( 'WC_Subscriptions_Plugin', 'instance' ), 'load_plugin_textdomain' ),
 			'version'     => '4.0.0',
 		),
 		'action_links' => array(
-			'replacement' => array( array( 'WC_Subscriptions', 'get_plugin' ), 'add_plugin_action_links' ),
+			'replacement' => array( array( 'WC_Subscriptions_Plugin', 'instance' ), 'add_plugin_action_links' ),
 			'version'     => '4.0.0',
 		),
 		'update_notice' => array(
-			'replacement' => array( array( 'WC_Subscriptions', 'get_plugin' ), 'update_notice' ),
+			'replacement' => array( array( 'WC_Subscriptions_Plugin', 'instance' ), 'update_notice' ),
 			'version'     => '4.0.0',
 		),
 		'setup_blocks_integration' => array(
-			'replacement' => array( array( 'WC_Subscriptions', 'get_plugin' ), 'setup_blocks_integration' ),
+			'replacement' => array( array( 'WC_Subscriptions_Plugin', 'instance' ), 'setup_blocks_integration' ),
 			'version'     => '4.0.0',
 		),
 		'maybe_activate_woocommerce_subscriptions' => array(
-			'replacement' => array( array( 'WC_Subscriptions', 'get_plugin' ), 'activate_plugin' ),
+			'replacement' => array( array( 'WC_Subscriptions_Plugin', 'instance' ), 'activate_plugin' ),
 			'version'     => '4.0.0',
 		),
 		'action_scheduler_multisite_batch_size' => array(
-			'replacement' => array( array( 'WC_Subscriptions', 'get_plugin' ), 'reduce_multisite_action_scheduler_batch_size' ),
+			'replacement' => array( array( 'WC_Subscriptions_Plugin', 'instance' ), 'reduce_multisite_action_scheduler_batch_size' ),
 			'version'     => '4.0.0',
 		),
 	);
