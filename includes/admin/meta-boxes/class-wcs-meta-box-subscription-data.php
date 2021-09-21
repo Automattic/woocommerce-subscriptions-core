@@ -355,7 +355,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 		}
 
 		// Update shipping fields.
-		foreach ( self::$billing_fields as $key => $field ) {
+		foreach ( self::$shipping_fields as $key => $field ) {
 			$field['id'] = isset( $field['id'] ) ? $field['id'] : "_shipping_{$key}";
 
 			if ( ! isset( $_POST[ $field['id'] ] ) ) {
@@ -364,7 +364,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 			$value = wc_clean( wp_unslash( $_POST[ $field['id'] ] ) );
 
-			if ( is_callable( array( $subscription, 'set_billing_' . $key ) ) ) {
+			if ( is_callable( array( $subscription, 'set_shipping_' . $key ) ) ) {
 				$props[ "shipping_{$key}" ] = $value;
 			} else {
 				$subscription->update_meta_data( $field['id'], $value );
