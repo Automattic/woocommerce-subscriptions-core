@@ -33,11 +33,11 @@ function wcs_get_subscriptions_for_order( $order, $args = array() ) {
 
 	$subscriptions = array();
 
-	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
+	if ( ! is_a( $order, 'WC_Order' ) ) {
 		$order = wc_get_order( $order );
 	}
 
-	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
+	if ( ! is_a( $order, 'WC_Order' ) ) {
 		return $subscriptions;
 	}
 
