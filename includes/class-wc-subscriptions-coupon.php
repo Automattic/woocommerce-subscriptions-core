@@ -1051,7 +1051,7 @@ class WC_Subscriptions_Coupon {
 
 		// Check each coupon to see if it needs to be removed.
 		foreach ( $limited_coupons as $limited_coupon ) {
-			if ( self::get_coupon_limit( $limited_coupon['code'] ) <= $limited_coupon['count']) {
+			if ( self::get_coupon_limit( $limited_coupon['code'] ) <= $limited_coupon['count'] ) {
 				$subscription->remove_coupon( $limited_coupon['code'] );
 				$subscription->add_order_note( sprintf(
 					/* translators: %1$s is the coupon code, %2$d is the number of payment usages */
