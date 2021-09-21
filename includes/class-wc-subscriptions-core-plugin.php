@@ -95,9 +95,6 @@ class WC_Subscriptions_Core_Plugin {
 		// Load function files.
 		require_once $this->get_subscriptions_core_directory( 'wcs-functions.php' );
 		require_once $this->get_subscriptions_core_directory( 'includes/gateways/paypal/includes/wcs-paypal-functions.php' );
-
-		// Load libraries.
-		require_once $this->get_subscriptions_core_directory( 'includes/libraries/action-scheduler/action-scheduler.php' );
 	}
 
 	/**
