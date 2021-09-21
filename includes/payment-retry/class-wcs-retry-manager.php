@@ -347,8 +347,7 @@ class WCS_Retry_Manager {
 						wcs_copy_payment_method_to_order( $subscription, $last_order );
 						$last_order->save();
 
-						$payment_gateways_handler = WC_Subscriptions_Core_Plugin::instance()->get_gateways_handler_class();
-						$payment_gateways_handler::trigger_gateway_renewal_payment_hook( $last_order );
+						WC_Subscriptions_Payment_Gateways::trigger_gateway_renewal_payment_hook( $last_order );
 
 						// Now that we've attempted to process the payment, refresh the order
 						$last_order = wc_get_order( wcs_get_objects_property( $last_order, 'id' ) );

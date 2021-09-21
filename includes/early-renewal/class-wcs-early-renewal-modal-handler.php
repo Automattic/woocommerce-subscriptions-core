@@ -135,8 +135,7 @@ class WCS_Early_Renewal_Modal_Handler {
 		$renewal_order->save();
 
 		// Attempt to collect payment with the subscription's current payment method.
-		$payment_gateways_handler = WC_Subscriptions_Core_Plugin::instance()->get_gateways_handler_class();
-		$payment_gateways_handler::trigger_gateway_renewal_payment_hook( $renewal_order );
+		WC_Subscriptions_Payment_Gateways::trigger_gateway_renewal_payment_hook( $renewal_order );
 
 		// Now that we've attempted to process the payment, refresh the order.
 		$renewal_order = wc_get_order( $renewal_order->get_id() );
