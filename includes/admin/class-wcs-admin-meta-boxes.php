@@ -595,11 +595,11 @@ class WCS_Admin_Meta_Boxes {
 			$current_base_location_taxes = $line_item->get_meta( '_subtracted_base_location_taxes' );
 			$old_line_subtotal           = $line_item->get_subtotal();
 			$old_line_quantity           = $line_item->get_quantity();
-			$new_line_quantity           = $item_data['order_item_qty'][ $line_item_id ];
+			$new_line_quantity           = absint( $item_data['order_item_qty'][ $line_item_id ] );
 
 			if ( $line_item->meta_exists( '_subtracted_base_location_rates' ) ) {
 				$base_tax_rates = $line_item->get_meta( '_subtracted_base_location_rates' );
-				$product_price  = ( $new_line_subtotal + array_sum( WC_Tax::calc_exclusive_tax( $new_line_subtotal, $base_tax_rates ) ) ) / absint( $item_data['order_item_qty'][ $line_item_id ] );
+				$product_price  = ( $new_line_subtotal + array_sum( WC_Tax::calc_exclusive_tax( $new_line_subtotal, $base_tax_rates ) ) ) / $new_line_quantity;
 
 				$new_base_taxes = WC_Tax::calc_tax( $product_price, $base_tax_rates, true );
 			} else {
