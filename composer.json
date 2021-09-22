@@ -2,13 +2,10 @@
 	"name": "woocommerce/subscriptions-core",
 	"description": "Sell products and services with recurring payments in your WooCommerce Store.",
 	"homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
-	"type": "wordpress-plugin",
+	"type": "library",
 	"license": "GPL-3.0-or-later",
 	"require": {
 		"composer/installers": "~1.2"
-	},
-	"config": {
-		"vendor-dir": "includes/libraries"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "6.5.14",
@@ -16,7 +13,7 @@
 	},
 	"scripts": {
 		"phpcs": [
-			"includes/libraries/bin/phpcs"
+			"vendor/bin/phpcs"
 		]
 	},
 	"extra": {
