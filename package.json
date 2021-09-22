@@ -1,24 +1,21 @@
 {
-	"name": "woocommerce-subscriptions",
-	"title": "WooCommerce Subscriptions",
-	"author": "Prospress",
-	"license": "GPL-2.0",
-	"version": "3.0.10",
+	"name": "woocommerce-subscriptions-core",
+	"title": "WooCommerce Subscriptions Core",
+	"author": "Automattic",
+	"license": "GPL-3.0-or-later",
+	"version": "1.0.0",
 	"description": "",
-	"homepage": "https://github.com/Prospress/woocommerce-subscriptions",
+	"homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
 	"main": "Gruntfile.js",
 	"config": {
 		"translate": true
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Prospress/woocommerce-subscriptions.git"
+		"url": "https://github.com/Automattic/woocommerce-subscriptions-core.git"
 	},
 	"bugs": {
-		"url": "https://github.com/Prospress/woocommerce-subscriptions/issues"
-	},
-	"directories": {
-		"test": "tests"
+		"url": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
 	},
 	"scripts": {
 		"archive": "composer archive --file=$npm_package_name --format=zip",
