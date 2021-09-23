@@ -13,11 +13,11 @@ require_once dirname( __FILE__ ) . '/class-wcs-core-autoloader.php';
 class WC_Subscriptions_Core_Plugin {
 
 	/**
-	 * The plugin's version string.
+	 * The plugin version core is based off.
 	 *
 	 * @var string
 	 */
-	protected $version = '';
+	protected $plugin_version = '4.0.0';
 
 	/**
 	 * The subscription scheduler instance.
@@ -259,7 +259,7 @@ class WC_Subscriptions_Core_Plugin {
 	 * @since 4.0.0
 	 */
 	public function get_plugin_version() {
-		return $this->version;
+		return $this->plugin_version;
 	}
 
 	/**
