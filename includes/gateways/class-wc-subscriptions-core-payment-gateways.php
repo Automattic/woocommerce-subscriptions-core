@@ -257,16 +257,14 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	}
 
 	/**
-	 * Returns the subscription payment gateway if it's supported by `subscriptions-core`
-	 * otherwise returns false.
+	 * Returns whether the subscription has an available payment gateway that's supported by `subscriptions-core1.
 	 *
 	 * @since 1.0.0
 	 * @param WC_Subscription $subscription Subscription to get the gateway object from.
-	 * @return bool|WC_Payment_Gateway
+	 * @return bool
 	 */
-	public static function get_subscription_payment_gateway( $subscription ) {
-		$payment_gateway = wc_get_payment_gateway_by_order( $subscription );
-		return $payment_gateway && isset( $payment_gateway->id ) && 'woocommerce_payments' === $payment_gateway->id && method_exists( WC_Payments_Subscription_Service::class, 'is_wcpay_subscription' ) && WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ? $payment_gateway : false;
+	public static function has_available_payment_method( $subscription ) {
+		return 'woocommerce_payments' === $subscription->get_payment_method() && method_exists( WC_Payments_Subscription_Service::class, 'is_wcpay_subscription' ) && WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ? true : false;
 	}
 
 	/**
