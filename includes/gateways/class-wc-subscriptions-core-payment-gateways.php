@@ -257,10 +257,10 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	}
 
 	/**
-	 * Returns whether the subscription has an available payment gateway that's supported by `subscriptions-core1.
+	 * Returns whether the subscription has an available payment gateway that's supported by subscriptions-core.
 	 *
 	 * @since 1.0.0
-	 * @param WC_Subscription $subscription Subscription to get the gateway object from.
+	 * @param WC_Subscription $subscription Subscription to check if the gateway is available.
 	 * @return bool
 	 */
 	public static function has_available_payment_method( $subscription ) {
