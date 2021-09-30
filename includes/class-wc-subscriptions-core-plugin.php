@@ -163,7 +163,6 @@ class WC_Subscriptions_Core_Plugin {
 		new WCS_Admin_Meta_Boxes();
 		WCS_Webhooks::init();
 		new WCS_Auth();
-		WCS_API::init();
 		WCS_Template_Loader::init();
 		WCS_Remove_Item::init();
 		WCS_User_Change_Status_Handler::init();
