@@ -33,10 +33,6 @@ class WC_Subscriptions_Deprecation_Handler extends WCS_Deprecated_Functions_Hand
 			'replacement' => array( __CLASS__, '_is_large_site' ),
 			'version'     => '2.0.0',
 		),
-		'get_total_subscription_count' => array(
-			'replacement' => array( __CLASS__, '_get_total_subscription_count' ),
-			'version'     => '2.0.0',
-		),
 		'get_subscription_status_counts' => array(
 			'replacement' => array( __CLASS__, '_get_subscription_status_counts' ),
 			'version'     => '2.0.0',
@@ -227,23 +223,6 @@ class WC_Subscriptions_Deprecation_Handler extends WCS_Deprecated_Functions_Hand
 	 */
 	protected function _is_large_site() {
 		return apply_filters( 'woocommerce_subscriptions_is_large_site', false );
-	}
-
-	/**
-	 * Deprecation handling of the original WC_Subscriptions::get_total_subscription_count() function.
-	 *
-	 * Not to be called directly.
-	 *
-	 * @deprecated
-	 */
-	protected function _get_total_subscription_count() {
-		static $total_subscription_count = null;
-
-		if ( null === $total_subscription_count ) {
-			$total_subscription_count = WC_Subscriptions::get_subscription_count();
-		}
-
-		return apply_filters( 'woocommerce_get_total_subscription_count', $total_subscription_count );
 	}
 
 	/**
