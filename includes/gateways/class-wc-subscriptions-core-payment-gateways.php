@@ -257,6 +257,17 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	}
 
 	/**
+	 * Returns whether the subscription has an available payment gateway that's supported by subscriptions-core.
+	 *
+	 * @since 1.0.0
+	 * @param WC_Subscription $subscription Subscription to check if the gateway is available.
+	 * @return bool
+	 */
+	public static function has_available_payment_method( $subscription ) {
+		return 'woocommerce_payments' === $subscription->get_payment_method() && method_exists( WC_Payments_Subscription_Service::class, 'is_wcpay_subscription' ) && WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ? true : false;
+	}
+
+	/**
 	 * Fire a gateway specific hook for when a subscription is activated.
 	 *
 	 * @since 1.0

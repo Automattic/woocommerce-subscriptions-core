@@ -619,8 +619,9 @@ class WC_Subscription extends WC_Order {
 	 * @return bool
 	 */
 	public function is_manual() {
+		$gateways_handler = WC_Subscriptions_Core_Plugin::instance()->get_gateways_handler_class();
 
-		if ( WCS_Staging::is_duplicate_site() || true === $this->get_requires_manual_renewal() || false === wc_get_payment_gateway_by_order( $this ) ) {
+		if ( WCS_Staging::is_duplicate_site() || true === $this->get_requires_manual_renewal() || false === $gateways_handler::has_available_payment_method( $this ) ) {
 			$is_manual = true;
 		} else {
 			$is_manual = false;
