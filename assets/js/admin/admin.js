@@ -37,6 +37,17 @@ jQuery( function( $ ) {
 			// In order for WooCommerce not to show the stock_status_field on variable subscriptions, make sure it has the hide if variable subscription class.
 			$( 'p.stock_status_field' ).addClass( 'hide_if_variable-subscription' );
 
+			/**
+			 * WC core will hide and show product specific fields in show_and_hide_panels(), however that function only runs on specific events, but not
+			 * when variations are added or loaded. To make sure our subscription-related fields aren't shown by default when a variation is added, we set
+			 * subscription pricing elements "base" cases here.
+			 *
+			 * Note: show() being called on the 'hide_if_' fields and vice versa is intentional. All fields are set in their inverse state first, and
+			 * then shown/hidden by product type afterwards.
+			 */
+			$( '.hide_if_variable-subscription' ).show();
+			$( '.show_if_variable-subscription' ).hide();
+
 			if ($('select#product-type').val()=='variable-subscription') {
 
 				$( 'input#_downloadable' ).prop( 'checked', false );
