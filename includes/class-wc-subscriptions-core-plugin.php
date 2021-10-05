@@ -161,7 +161,6 @@ class WC_Subscriptions_Core_Plugin {
 	public function init_version_dependant_classes() {
 		new WCS_Admin_Post_Types();
 		new WCS_Admin_Meta_Boxes();
-		WCS_Webhooks::init();
 		new WCS_Auth();
 		WCS_Template_Loader::init();
 		WCS_Remove_Item::init();
