@@ -54,13 +54,11 @@ jQuery( function( $ ) {
 			} else {
 
 				if ( 'variable' === $('select#product-type').val() ) {
+					$( '.show_if_variable-subscription' ).hide();
 					$( '.show_if_variable' ).show();
 					$( '.hide_if_variable' ).hide();
 					$.showOrHideStockFields();
 				}
-
-				// Always hide variable subscription fields if not a variable subscription.
-				$( '.show_if_variable-subscription' ).hide();
 
 				// Restore the sale price row width to half
 				$('.sale_price_dates_fields').prev('.form-row').removeClass('form-row-full').addClass('form-row-last');
