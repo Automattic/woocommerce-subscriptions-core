@@ -19,13 +19,6 @@ class WCS_Core_Autoloader {
 	protected $base_path = '';
 
 	/**
-	 * Whether to use the legacy API classes.
-	 *
-	 * @var bool
-	 */
-	protected $legacy_api = false;
-
-	/**
 	 * WCS_Autoloader constructor.
 	 *
 	 * @param string $base_path
@@ -236,10 +229,6 @@ class WCS_Core_Autoloader {
 			$path .= '/admin/meta-boxes';
 		} elseif ( false !== strpos( $class, 'debug_tool' ) ) {
 			$path .= '/admin/debug-tools';
-		} elseif ( false !== strpos( $class, 'rest' ) ) {
-			$path .= $this->legacy_api ? '/api/legacy' : $this->get_rest_api_directory( $class );
-		} elseif ( false !== strpos( $class, 'api' ) && 'wcs_api' !== $class ) {
-			$path .= '/api/legacy';
 		} elseif ( $this->is_class_data_store( $class ) ) {
 			$path .= '/data-stores';
 		} elseif ( false !== strpos( $class, 'deprecat' ) ) {
@@ -261,39 +250,5 @@ class WCS_Core_Autoloader {
 		}
 
 		return trailingslashit( $path );
-	}
-
-	/**
-	 * Set whether the legacy API should be used.
-	 *
-	 * @author Jeremy Pry
-	 *
-	 * @param bool $use_legacy_api Whether to use the legacy API classes.
-	 *
-	 * @return $this
-	 */
-	public function use_legacy_api( $use_legacy_api ) {
-		$this->legacy_api = (bool) $use_legacy_api;
-
-		return $this;
-	}
-
-	/**
-	 * Gets the correct subdirectory for a version of the a REST API class.
-	 *
-	 * @param string $class The rest API class name.
-	 * @return string The subdirectory for a rest API class.
-	 */
-	protected function get_rest_api_directory( $class ) {
-		$directory = '/api';
-
-		// Check for an API version in the class name.
-		preg_match( '/v\d/', $class, $matches );
-
-		if ( ! empty( $matches ) ) {
-			$directory .= "/{$matches[0]}";
-		}
-
-		return $directory;
 	}
 }
