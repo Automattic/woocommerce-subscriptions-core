@@ -221,7 +221,7 @@ class WC_Subscriptions_Core_Plugin {
 
 		// Add the "Settings | Documentation" links on the Plugins administration screen
 		add_filter( 'plugin_action_links_' . plugin_basename( $this->get_plugin_file() ), array( $this, 'add_plugin_action_links' ) );
-		add_action( 'in_plugin_update_message-' . plugin_basename( $this->get_plugin_file() ), array( __CLASS__, 'update_notice' ), 10, 2 );
+		add_action( 'in_plugin_update_message-' . plugin_basename( $this->get_plugin_file() ), array( $this, 'update_notice' ), 10, 2 );
 
 		add_action( 'init', array( $this, 'activate_plugin' ) );
 

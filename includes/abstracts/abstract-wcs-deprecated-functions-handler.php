@@ -74,7 +74,7 @@ abstract class WCS_Deprecated_Functions_Handler {
 				if ( is_array( $replacement[0] ) ) {
 					$instance = call_user_func( $replacement[0] );
 
-					return call_user_func( array( $instance, $replacement[1] ), $arguments );
+					return call_user_func_array( array( $instance, $replacement[1] ), $arguments );
 				} elseif ( get_class( $this ) === $replacement[0] ) {
 					return $this->{$replacement[1]}( ...$arguments );
 				}
