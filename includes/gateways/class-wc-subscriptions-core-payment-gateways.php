@@ -69,7 +69,11 @@ class WC_Subscriptions_Core_Payment_Gateways {
 			return $available_gateways;
 		}
 
-		if ( ! WC_Subscriptions_Cart::cart_contains_subscription() && ( ! isset( $_GET['order_id'] ) || ! wcs_order_contains_subscription( $_GET['order_id'] ) ) ) {
+		if (
+			! wcs_cart_contains_renewal() &&
+			! WC_Subscriptions_Cart::cart_contains_subscription() &&
+			( ! isset( $_GET['order_id'] ) || ! wcs_order_contains_subscription( $_GET['order_id'] ) )
+		) {
 			return $available_gateways;
 		}
 
