@@ -17,7 +17,7 @@ class WC_Subscriptions_Core_Plugin {
 	 *
 	 * @var string
 	 */
-	protected $plugin_version = '4.0.0';
+	protected $plugin_version = '3.1.6';
 
 	/**
 	 * The subscription scheduler instance.
