@@ -1,6 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
 2021-xx-xx - version x.x.x
+* Fix: Don't show a downgrade notice when activating the WC Subscriptions extension after installing WCS Core. PR#7
 * Fix: Correctly show the available payment methods when paying for a subscription renewal order. PR#9
 
 2021-09-22 - version 0.1.0
