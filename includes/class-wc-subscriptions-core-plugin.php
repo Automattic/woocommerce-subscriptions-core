@@ -287,6 +287,15 @@ class WC_Subscriptions_Core_Plugin {
 	}
 
 	/**
+	 * Gets the activation transient name.
+	 *
+	 * @return string The transient name used to record when the plugin was activated.
+	 */
+	public function get_activation_transient() {
+		return 'woocommerce_subscriptions_activated';
+	}
+
+	/**
 	 * Gets the core Payment Gateways handler class
 	 *
 	 * @since 4.0.0
@@ -468,6 +477,8 @@ class WC_Subscriptions_Core_Plugin {
 			}
 
 			update_option( WC_Subscriptions_Admin::$option_prefix . '_is_active', true );
+
+			set_transient( $this->get_activation_transient(), true, 60 * 60 );
 
 			flush_rewrite_rules();
 
