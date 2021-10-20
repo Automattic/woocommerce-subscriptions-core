@@ -816,7 +816,6 @@ class WC_Subscriptions_Admin {
 		$screen = get_current_screen();
 
 		$is_woocommerce_screen = in_array( $screen->id, array( 'product', 'edit-shop_order', 'shop_order', 'edit-shop_subscription', 'shop_subscription', 'users', 'woocommerce_page_wc-settings' ) );
-		$is_activation_screen  = (bool) get_transient( WC_Subscriptions_Core_Plugin::instance()->get_activation_transient() );
 
 		if ( $is_woocommerce_screen ) {
 
@@ -907,32 +906,7 @@ class WC_Subscriptions_Admin {
 			}
 		}
 
-		// Maybe add the admin notice
-		if ( $is_activation_screen ) {
-
-			$woocommerce_plugin_dir_file = self::get_woocommerce_plugin_dir_file();
-
-			// check if subscription products exist in the store
-			$subscription_product = wc_get_products(
-				array(
-					'type'   => array( 'subscription', 'variable-subscription' ),
-					'limit'  => 1,
-					'return' => 'ids',
-				)
-			);
-
-			if ( ! empty( $woocommerce_plugin_dir_file ) && 0 == count( $subscription_product ) ) {
-
-				wp_enqueue_style( 'woocommerce-activation', plugins_url( '/assets/css/activation.css', $woocommerce_plugin_dir_file ), array(), WC_Subscriptions_Core_Plugin::instance()->get_plugin_version() );
-
-				if ( ! isset( $_GET['page'] ) || 'wcs-about' != $_GET['page'] ) {
-					add_action( 'admin_notices', __CLASS__ . '::admin_installed_notice' );
-				}
-			}
-			delete_transient( WC_Subscriptions_Core_Plugin::instance()->get_activation_transient() );
-		}
-
-		if ( $is_woocommerce_screen || $is_activation_screen || 'edit-product' == $screen->id || ( isset( $_GET['page'], $_GET['tab'] ) && 'wc-reports' === $_GET['page'] && 'subscriptions' === $_GET['tab'] ) ) {
+		if ( $is_woocommerce_screen || 'edit-product' == $screen->id || ( isset( $_GET['page'], $_GET['tab'] ) && 'wc-reports' === $_GET['page'] && 'subscriptions' === $_GET['tab'] ) ) {
 			wp_enqueue_style( 'woocommerce_admin_styles', WC()->plugin_url() . '/assets/css/admin.css', array(), WC_Subscriptions_Core_Plugin::instance()->get_plugin_version() );
 			wp_enqueue_style( 'woocommerce_subscriptions_admin', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/css/admin.css' ), array( 'woocommerce_admin_styles' ), WC_Subscriptions_Core_Plugin::instance()->get_plugin_version() );
 		}
@@ -1255,48 +1229,6 @@ class WC_Subscriptions_Admin {
 		if ( isset( $field_details['desc'] ) && $field_details['desc'] ) {
 			echo wp_kses_post( wpautop( wptexturize( $field_details['desc'] ) ) );
 		}
-	}
-
-	/**
-	 * Outputs a welcome message. Called when the Subscriptions extension is activated.
-	 *
-	 * @since 1.0
-	 */
-	public static function admin_installed_notice() {
-		?>
-		<div id="message" class="updated woocommerce-message wc-connect woocommerce-subscriptions-activated">
-			<div class="squeezer">
-				<h4>
-					<?php
-					echo wp_kses(
-						sprintf(
-							// translators: $1-$2: opening and closing <strong> tags, $3-$4: opening and closing <em> tags
-							__(
-								'%1$sWooCommerce Subscriptions Installed%2$s &#8211; %3$sYou\'re ready to start selling subscriptions!%4$s',
-								'woocommerce-subscriptions'
-							),
-							'<strong>',
-							'</strong>',
-							'<em>',
-							'</em>'
-						),
-						array(
-							'strong' => true,
-							'em'     => true,
-						)
-					);
-					?>
-				</h4>
-
-				<p class="submit">
-					<a href="<?php echo esc_url( self::add_subscription_url() ); ?>" class="button button-primary"><?php esc_html_e( 'Add a Subscription Product', 'woocommerce-subscriptions' ); ?></a>
-					<a href="<?php echo esc_url( self::settings_tab_url() ); ?>" class="docs button button-primary"><?php esc_html_e( 'Settings', 'woocommerce-subscriptions' ); ?></a>
-					<a href="https://twitter.com/share" class="twitter-share-button" data-url="http://www.woocommerce.com/products/woocommerce-subscriptions/" data-text="Woot! I can sell subscriptions with #WooCommerce" data-via="WooCommerce" data-size="large">Tweet</a>
-					<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-				</p>
-			</div>
-		</div>
-		<?php
 	}
 
 	/**

@@ -3,6 +3,7 @@
 2021-xx-xx - version x.x.x
 * Fix: Don't show a downgrade notice when activating the WC Subscriptions extension after installing WCS Core. PR#7
 * Fix: Correctly show the available payment methods when paying for a subscription renewal order. PR#9
+* Fix: Don't show the WC Subscriptions extension welcome/installation message after installing WCS Core. PR#11
 
-2021-09-22 - version 0.1.0
+2021-09-22 - version 1.0.0
 * New: Subscriptions Core first release

@@ -95,7 +95,7 @@ class WCS_PayPal_Admin {
 
 		$valid_paypal_currency = in_array( get_woocommerce_currency(), apply_filters( 'woocommerce_paypal_supported_currencies', array( 'AUD', 'BRL', 'CAD', 'MXN', 'NZD', 'HKD', 'SGD', 'USD', 'EUR', 'JPY', 'TRY', 'NOK', 'CZK', 'DKK', 'HUF', 'ILS', 'MYR', 'PHP', 'PLN', 'SEK', 'CHF', 'TWD', 'THB', 'GBP', 'RMB' ) ) );
 
-		if ( ! $valid_paypal_currency || ! current_user_can( 'manage_options' ) || has_action( 'admin_notices', 'WC_Subscriptions_Admin::admin_installed_notice' ) || 'yes' !== WCS_PayPal::get_option( 'enabled' ) ) {
+		if ( ! $valid_paypal_currency || ! current_user_can( 'manage_options' ) || 'yes' !== WCS_PayPal::get_option( 'enabled' ) ) {
 			return;
 		}
 
