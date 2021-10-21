@@ -96,8 +96,8 @@ class WCS_PayPal_Admin {
 		$valid_paypal_currency = in_array( get_woocommerce_currency(), apply_filters( 'woocommerce_paypal_supported_currencies', array( 'AUD', 'BRL', 'CAD', 'MXN', 'NZD', 'HKD', 'SGD', 'USD', 'EUR', 'JPY', 'TRY', 'NOK', 'CZK', 'DKK', 'HUF', 'ILS', 'MYR', 'PHP', 'PLN', 'SEK', 'CHF', 'TWD', 'THB', 'GBP', 'RMB' ) ) );
 		$is_paypal_enabled = 'yes' === WCS_PayPal::get_option( 'enabled' );
 
-		//We don't want to show Paypal warnings while showing WC Subscriptions Pro welcome notice
-		$is_showing_wc_subscriptions_welcome_notice = class_exists('WC_Subscriptions_Core_Plugin') && has_action( 'admin_notices', array( WC_Subscriptions_Core_Plugin::instance(), 'admin_installed_notice' ) );
+		// We don't want to show Paypal warnings while showing the WC Subscriptions extension welcome notice
+		$is_showing_wc_subscriptions_welcome_notice = class_exists( 'WC_Subscriptions_Core_Plugin' ) && has_action( 'admin_notices', array( WC_Subscriptions_Core_Plugin::instance(), 'admin_installed_notice' ) );
 
 		if ( ! $is_paypal_enabled || ! $valid_paypal_currency || ! current_user_can( 'manage_options' ) || $is_showing_wc_subscriptions_welcome_notice ) {
 			return;
