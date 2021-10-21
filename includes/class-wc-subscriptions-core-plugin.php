@@ -125,7 +125,6 @@ class WC_Subscriptions_Core_Plugin {
 		WCS_Download_Handler::init();
 		WCS_Limiter::init();
 		WCS_Admin_System_Status::init();
-		WCS_Upgrade_Notice_Manager::init();
 		WCS_Staging::init();
 		WCS_Permalink_Manager::init();
 		WCS_Custom_Order_Item_Manager::init();
