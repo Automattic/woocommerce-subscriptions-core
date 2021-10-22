@@ -49,7 +49,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<h2><?php esc_html_e( 'Update in Progress', 'woocommerce-subscriptions' ); ?></h2>
 			<p><?php esc_html_e( 'This page will display the results of the process as each batch of subscriptions is updated.', 'woocommerce-subscriptions' ); ?></p>
 			<p><?php esc_html_e( 'Please keep this page open until the update process completes. No need to refresh or restart the process.', 'woocommerce-subscriptions' ); ?></p>
-			<?php if ( $estimated_duration > 20 ) : ?>
+			<?php if ( isset( $estimated_duration ) && $estimated_duration > 20 ) : ?>
 			<p><?php esc_html_e( 'Remember, although the update process may take a while, customers and other non-administrative users can browse and purchase from your store without interruption while the update is in progress.', 'woocommerce-subscriptions' ); ?></p>
 			<?php endif; ?>
 			<ol>

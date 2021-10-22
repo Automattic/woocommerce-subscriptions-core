@@ -46,7 +46,7 @@ class WC_Subscriptions_Upgrader {
 
 		self::$is_wc_version_2 = version_compare( get_option( 'woocommerce_db_version' ), '2.0', '>=' );
 
-		self::$about_page_url = admin_url( 'index.php?page=wcs-about&wcs-updated=true' );
+		self::$about_page_url = admin_url( 'admin.php?page=wc-admin' );
 
 		$version_out_of_date = version_compare( self::$active_version,  WC_Subscriptions_Core_Plugin::instance()->get_plugin_version(), '<' );
 

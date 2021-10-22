@@ -67,7 +67,7 @@ class WCS_Upgrade_1_2 {
 			$cart_discount = $order->get_total_discount();
 			update_post_meta( $order_id, '_order_recurring_discount_cart', $cart_discount );
 
-			$order_discount = $order->get_order_discount();
+			$order_discount = $order->get_total_discount();
 			update_post_meta( $order_id, '_order_recurring_discount_total', $order_discount );
 
 			$order_shipping_tax = get_post_meta( $order_id, '_order_shipping_tax', true );
