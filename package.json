@@ -3,7 +3,7 @@
 	"title": "WooCommerce Subscriptions Core",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "",
 	"homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
 	"main": "Gruntfile.js",
@@ -29,8 +29,8 @@
 		"start": "wp-scripts start assets/src/js/index.js",
 		"test:unit": "wp-scripts test-unit-js",
 		"makepot": "wp i18n make-pot . languages/woocommerce-subscriptions.pot",
-		"prearchive": "rm -rf woocommerce-subscriptions && rm -rf woocommerce-subscriptions.zip",
-		"postarchive": "unzip woocommerce-subscriptions.zip -d woocommerce-subscriptions && rm woocommerce-subscriptions.zip && zip -r woocommerce-subscriptions.zip woocommerce-subscriptions && rm -rf woocommerce-subscriptions"
+		"prearchive": "rm -rf woocommerce-subscriptions-core && rm -rf woocommerce-subscriptions-core.zip",
+		"postarchive": "unzip woocommerce-subscriptions-core.zip -d woocommerce-subscriptions-core && rm woocommerce-subscriptions-core.zip && zip -r woocommerce-subscriptions-core.zip woocommerce-subscriptions-core && rm -rf woocommerce-subscriptions-core"
 	},
 	"engines": {
 		"node": ">=0.8.0",
