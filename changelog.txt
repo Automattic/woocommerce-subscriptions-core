@@ -7,6 +7,7 @@
 * Fix: Remove the "Welcome to Subscriptions" notice that is displayed upon upgrading from previous minor versions. PR#14
 * Fix: Don't display a "Welcome to Subscriptions 2.1" for stores that have upgraded from really old version of Subscriptions. PR#16
 * Fix: Errors during the upgrade process for stores that are upgrading from very old versions of Subscriptions (1.5.0). PR#16
+* Fix: Show subscription billing information (recurring cart totals, sign up fees etc) on the WooCommerce Checkout block. PR#18
 
 2021-09-22 - version 1.0.0
 * New: Subscriptions Core first release
