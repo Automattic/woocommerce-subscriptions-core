@@ -58,7 +58,13 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 			$payment_meta_table = self::get_subscription_payment_meta( $subscription, $new_token_payment_gateway );
 
 			if ( is_array( $payment_meta_table ) ) {
-				WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $subscription, $new_token->get_gateway_id(), $payment_meta_table );
+				if ( $new_token_payment_gateway === $token_payment_gateway ) {
+					// Update the token alone if both tokens belong to the same gateway.
+					$subscription->set_payment_method( $gateway_instance, $payment_meta_table );
+					$subscription->save();
+				} else {
+					WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $subscription, $new_token->get_gateway_id(), $payment_meta_table );
+				}
 			}
 		}
 
