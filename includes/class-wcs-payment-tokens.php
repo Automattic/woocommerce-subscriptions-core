@@ -47,6 +47,21 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 		$subscription->update_meta_data( $token_meta_key, $new_token->get_token() );
 		$subscription->save();
 
+		$available_gateways        = WC()->payment_gateways->get_available_payment_gateways();
+		$new_token_payment_gateway = $new_token->get_gateway_id();
+
+		// Add the new token to the subscription.
+		if ( isset( $available_gateways[ $new_token_payment_gateway ] ) ) {
+			$gateway_instance = $available_gateways[ $new_token_payment_gateway ];
+			$gateway_instance->add_token_to_order( $subscription, $new_token );
+
+			$payment_meta_table = self::get_subscription_payment_meta( $subscription, $new_token_payment_gateway );
+
+			if ( is_array( $payment_meta_table ) ) {
+				WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $subscription, $new_token->get_gateway_id(), $payment_meta_table );
+			}
+		}
+
 		// Copy the new token to the last renewal order if it needs payment so the retry system will pick up the new method.
 		$last_renewal_order = $subscription->get_last_order( 'all', 'renewal' );
 
