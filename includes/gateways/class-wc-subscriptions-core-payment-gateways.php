@@ -16,8 +16,6 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	 */
 	public static function init() {
 
-		add_action( 'init', array( get_called_class(), 'init_paypal' ), 5 ); // run before default priority 10 in case the site is using ALTERNATE_WP_CRON to avoid https://core.trac.wordpress.org/ticket/24160.
-
 		add_filter( 'woocommerce_available_payment_gateways', array( get_called_class(), 'get_available_payment_gateways' ) );
 
 		add_filter( 'woocommerce_no_available_payment_methods_message', array( get_called_class(), 'no_available_payment_methods_message' ) );
@@ -26,15 +24,6 @@ class WC_Subscriptions_Core_Payment_Gateways {
 
 		// Create a gateway specific hooks for subscription events.
 		add_action( 'woocommerce_subscription_status_updated', array( get_called_class(), 'trigger_gateway_status_updated_hook' ), 10, 2 );
-	}
-
-	/**
-	 * Instantiate our custom PayPal class
-	 *
-	 * @since 2.0
-	 */
-	public static function init_paypal() {
-		WCS_PayPal::init();
 	}
 
 	/**
