@@ -1,7 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-2021-10-22 - version 1.0.2
-* Fix: PHP 7.2 compatibility - remove trailing commas from function args. PR#23
+2021-10-29 - version 1.0.2
+* Fix: PHP 7.2 compatibility - remove trailing commas from function args. PR #23
 
 2021-10-22 - version 1.0.1
 * Fix: Don't show a downgrade notice when activating the WC Subscriptions extension after installing WCS Core. PR#7
