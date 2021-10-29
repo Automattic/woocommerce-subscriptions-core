@@ -114,8 +114,8 @@ class WCS_Change_Payment_Method_Admin {
 
 		$payment_gateways    = WC()->payment_gateways->payment_gateways();
 		$payment_method      = isset( $_POST['_payment_method'] ) ? wc_clean( $_POST['_payment_method'] ) : '';
-		$payment_method_meta = apply_filters( 'woocommerce_subscription_payment_meta', array(), $subscription );
-		$payment_method_meta = ( ! empty( $payment_method_meta[ $payment_method ] ) ) ? $payment_method_meta[ $payment_method ] : array();
+		$payment_method_meta = apply_filters( 'woocommerce_subscription_payment_meta', [], $subscription );
+		$payment_method_meta = ( ! empty( $payment_method_meta[ $payment_method ] ) ) ? $payment_method_meta[ $payment_method ] : [];
 
 		$valid_payment_methods = self::get_valid_payment_methods( $subscription );
 
@@ -167,7 +167,11 @@ class WCS_Change_Payment_Method_Admin {
 			$subscription = wcs_get_subscription( $subscription );
 		}
 
-		$valid_gateways = array( 'manual' => __( 'Manual Renewal', 'woocommerce-subscriptions' ) );
+		$valid_gateways = [ 'manual' => __( 'Manual Renewal', 'woocommerce-subscriptions' ) ];
+
+		if ( ! $subscription->get_customer_id() ) {
+			return $valid_gateways;
+		}
 
 		$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
 
