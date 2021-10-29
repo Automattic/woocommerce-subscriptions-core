@@ -12,6 +12,22 @@
 
 class WCS_Change_Payment_Method_Admin {
 
+	public static function init() {
+		add_action( 'wp_ajax_wcs_get_allowed_payment_gateways', __CLASS__ . '::get_allowed_payment_gateways' );
+	}
+
+	public static function get_allowed_payment_gateways() {
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( wc_clean( wp_unslash( $_POST['nonce'] ) ), 'get_cards_tokens_nonce' ) ) {
+			return;
+		}
+
+		$data    = $_POST;
+		$methods = self::get_valid_payment_methods( $data['subscription_id'], $data['customer'] );
+
+		echo wp_json_encode( $methods );
+		die();
+	}
+
 	/**
 	 * Display the edit payment gateway option under
 	 *
@@ -33,31 +49,22 @@ class WCS_Change_Payment_Method_Admin {
 
 		echo '<p class="form-field form-field-wide">';
 
-		if ( count( $valid_payment_methods ) > 1 ) {
+		$found_method = false;
+		echo '<label>' . esc_html__( 'Payment Method', 'woocommerce-subscriptions' ) . ':</label>';
+		echo '<select class="wcs_payment_method_selector" name="_payment_method" id="_payment_method" class="first">';
 
-			$found_method = false;
-			echo '<label>' . esc_html__( 'Payment Method', 'woocommerce-subscriptions' ) . ':</label>';
-			echo '<select class="wcs_payment_method_selector" name="_payment_method" id="_payment_method" class="first">';
+		foreach ( $valid_payment_methods as $gateway_id => $gateway_title ) {
 
-			foreach ( $valid_payment_methods as $gateway_id => $gateway_title ) {
-
-				echo '<option value="' . esc_attr( $gateway_id ) . '" ' . selected( $payment_method, $gateway_id, false ) . '>' . esc_html( $gateway_title ) . '</option>';
-				if ( $payment_method == $gateway_id ) {
-					$found_method = true;
-				}
+			echo '<option value="' . esc_attr( $gateway_id ) . '" ' . selected( $payment_method, $gateway_id, false ) . '>' . esc_html( $gateway_title ) . '</option>';
+			if ( $payment_method == $gateway_id ) {
+				$found_method = true;
 			}
-			echo '</select>';
-
-		} elseif ( count( $valid_payment_methods ) == 1 ) {
-			echo '<strong>' . esc_html__( 'Payment Method', 'woocommerce-subscriptions' ) . ':</strong><br/>' . esc_html( current( $valid_payment_methods ) );
-			// translators: %s: gateway ID.
-			echo wcs_help_tip( sprintf( _x( 'Gateway ID: [%s]', 'The gateway ID displayed on the Edit Subscriptions screen when editing payment method.', 'woocommerce-subscriptions' ), key( $valid_payment_methods ) ) );
-			echo '<input type="hidden" value="' . esc_attr( key( $valid_payment_methods ) ) . '" id="_payment_method" name="_payment_method">';
 		}
+		echo '</select>';
 
 		echo '</p>';
 
-		$payment_method_table = apply_filters( 'woocommerce_subscription_payment_meta', array(), $subscription );
+		$payment_method_table = apply_filters( 'woocommerce_subscription_payment_meta', [], $subscription );
 
 		if ( is_array( $payment_method_table ) ) {
 
@@ -161,7 +168,7 @@ class WCS_Change_Payment_Method_Admin {
 	 * @param $subscription int | WC_Subscription
 	 * @return
 	 */
-	public static function get_valid_payment_methods( $subscription ) {
+	public static function get_valid_payment_methods( $subscription, $user = null ) {
 
 		if ( ! $subscription instanceof WC_Subscription ) {
 			$subscription = wcs_get_subscription( $subscription );
@@ -169,7 +176,11 @@ class WCS_Change_Payment_Method_Admin {
 
 		$valid_gateways = [ 'manual' => __( 'Manual Renewal', 'woocommerce-subscriptions' ) ];
 
-		if ( ! $subscription->get_customer_id() ) {
+		if ( ! $user ) {
+			$user = $subscription->get_customer_id();
+		}
+
+		if ( ! $user ) {
 			return $valid_gateways;
 		}
 
@@ -177,7 +188,7 @@ class WCS_Change_Payment_Method_Admin {
 
 		foreach ( $available_gateways as $gateway_id => $gateway ) {
 			$tokens = WC_Payment_Tokens::get_customer_tokens(
-				$subscription->get_customer_id(),
+				$user,
 				$gateway_id
 			);
 

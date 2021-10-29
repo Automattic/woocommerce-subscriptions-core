@@ -921,4 +921,39 @@ jQuery( function( $ ) {
 	};
 	wcs_accounts_and_privacy_settings.init();
 
+	//Loads the saved credit cards after customer is selected
+	//when editing/creating a subscription
+	$( '#woocommerce-subscription-data #customer_user' ).change( function () {
+		const data = new FormData();
+
+		data.append( 'action', 'wcs_get_allowed_payment_gateways' );
+		data.append( 'customer', this.options[ this.selectedIndex ].value );
+		data.append( 'subscription_id', document.getElementById('post_ID').value );
+		data.append( 'nonce', WCSubscriptions.getValidPaymentGatewaysNonce );
+
+		fetch( woocommerce_admin.ajax_url, {
+			method: 'POST',
+			credentials: 'same-origin',
+			body: data,
+		} )
+			.then( ( response ) => response.json() )
+			.then( ( cards ) => {
+				const cardsSelect = document.querySelector(
+					'#_payment_method'
+				);
+
+				cardsSelect.innerHTML = '';
+
+				for ( var i in cards ) {
+					if (!cards.hasOwnProperty(i)) {
+						continue;
+					}
+
+					const option = document.createElement( 'option' );
+					option.value = i;
+					option.text = cards[i];
+					cardsSelect.appendChild( option );
+				}
+			} );
+	} );
 });
