@@ -176,8 +176,16 @@ class WCS_Change_Payment_Method_Admin {
 		$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
 
 		foreach ( $available_gateways as $gateway_id => $gateway ) {
+			$tokens = WC_Payment_Tokens::get_customer_tokens(
+				$subscription->get_customer_id(),
+				$gateway_id
+			);
 
-			if ( $gateway->supports( 'subscription_payment_method_change_admin' ) && ! wcs_is_manual_renewal_required() || ( ! $subscription->is_manual() && $gateway_id == $subscription->get_payment_method() ) ) {
+			$valid = $gateway->supports( 'subscription_payment_method_change_admin' ) && ! wcs_is_manual_renewal_required();
+			$valid = $valid || ( ! $subscription->is_manual() && $gateway_id === $subscription->get_payment_method() );
+			$valid = $valid && count( $tokens );
+
+			if ( $valid ) {
 				$valid_gateways[ $gateway_id ] = $gateway->get_title();
 			}
 		}
