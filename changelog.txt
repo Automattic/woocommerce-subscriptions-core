@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+2021-10-29 - version 1.0.3
+* Fix: Errors when attempting to get the plugin version during PayPal requests. PR#27
+
 2021-10-29 - version 1.0.2
 * Fix: PHP 7.2 compatibility - remove trailing commas from function args. PR #23
 
