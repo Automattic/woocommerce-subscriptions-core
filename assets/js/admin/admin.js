@@ -373,6 +373,18 @@ jQuery( function( $ ) {
 
 			$( '#_subscription_one_time_shipping' ).prop( 'disabled', is_synced_or_has_trial );
 		},
+		// Sets the interval to 1 and disables its select when the selected period is yearly.
+		// Stripe doesn't allow greater intervals for yearly subscriptions.
+		limitYearlyPeriodInterval: function( $periodSelect ) {
+			const $intervalSelect = $periodSelect.closest( '._subscription_price_field').find( '.wc_input_subscription_period_interval' );
+
+			if ( 'year' === $periodSelect.val() ) {
+				$intervalSelect.val( 1 );
+				$intervalSelect.prop( 'disabled', true );
+			} else {
+				$intervalSelect.prop( 'disabled', false );
+			}
+		},
 		showHideSubscriptionsPanels: function() {
 			var tab = $( 'div.panel-wrap' ).find( 'ul.wc-tabs li' ).eq( 0 ).find( 'a' );
 			var panel = tab.attr( 'href' );
@@ -443,6 +455,11 @@ jQuery( function( $ ) {
 
 	$('#woocommerce-product-data').on('propertychange keyup input paste change','[name^="_subscription_trial_length"], [name^="variable_subscription_trial_length"]',function(){
 		$.setTrialPeriods();
+	});
+
+	// Limit the period interval to 1 when using yearly periods.
+	$('#woocommerce-product-data').on('change','[name^="_subscription_period"], [name^="variable_subscription_period"]',function(){
+		$.limitYearlyPeriodInterval( $(this) );
 	});
 
 	// Handles changes to sync date select/input for yearly subscription products.
