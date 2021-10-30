@@ -47,7 +47,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<input type="text" class="wc_input_price wc_input_subscription_price" name="variable_subscription_price[<?php echo esc_attr( $loop ); ?>]" value="<?php echo esc_attr( wc_format_localized_price( WC_Subscriptions_Product::get_regular_price( $variation_product ) ) ); ?>" placeholder="<?php echo esc_attr_x( 'e.g. 9.90', 'example price', 'woocommerce-subscriptions' ); ?>">
 
 		<label for="variable_subscription_period_interval[<?php echo esc_attr( $loop ); ?>]" class="wcs_hidden_label"><?php esc_html_e( 'Billing interval:', 'woocommerce-subscriptions' ); ?></label>
-		<select name="variable_subscription_period_interval[<?php echo esc_attr( $loop ); ?>]" class="wc_input_subscription_period_interval">
+		<select name="variable_subscription_period_interval[<?php echo esc_attr( $loop ); ?>]" class="wc_input_subscription_period_interval" <?php disabled( 'year', $billing_period, true ); ?>>
 		<?php foreach ( wcs_get_subscription_period_interval_strings() as $key => $value ) : ?>
 			<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, WC_Subscriptions_Product::get_interval( $variation_product ) ); ?>><?php echo esc_html( $value ); ?></option>
 		<?php endforeach; ?>

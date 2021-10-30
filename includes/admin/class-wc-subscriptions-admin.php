@@ -310,7 +310,7 @@ class WC_Subscriptions_Admin {
 			<span class="wrap">
 				<input type="text" id="_subscription_price" name="_subscription_price" class="wc_input_price wc_input_subscription_price" placeholder="<?php echo esc_attr_x( 'e.g. 5.90', 'example price', 'woocommerce-subscriptions' ); ?>" step="any" min="0" value="<?php echo esc_attr( wc_format_localized_price( $chosen_price ) ); ?>" />
 				<label for="_subscription_period_interval" class="wcs_hidden_label"><?php esc_html_e( 'Subscription interval', 'woocommerce-subscriptions' ); ?></label>
-				<select id="_subscription_period_interval" name="_subscription_period_interval" class="wc_input_subscription_period_interval">
+				<select id="_subscription_period_interval" name="_subscription_period_interval" class="wc_input_subscription_period_interval" <?php disabled( 'year', $chosen_period, true ); ?>>
 				<?php foreach ( wcs_get_subscription_period_interval_strings() as $value => $label ) { ?>
 					<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $value, $chosen_interval, true ) ?>><?php echo esc_html( $label ); ?></option>
 				<?php } ?>
