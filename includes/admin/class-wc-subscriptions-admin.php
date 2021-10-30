@@ -539,6 +539,11 @@ class WC_Subscriptions_Admin {
 			}
 		}
 
+		// Force the interval to '1' when the period is yearly.
+		if ( isset( $_REQUEST['_subscription_period'] ) && 'year' === $_REQUEST['_subscription_period'] ) {
+			update_post_meta( $post_id, '_subscription_period_interval', '1' );
+		}
+
 		// To prevent running this function on multiple save_post triggered events per update. Similar to WC_Admin_Meta_Boxes:$saved_meta_boxes implementation.
 		self::$saved_product_meta = true;
 	}
@@ -753,6 +758,11 @@ class WC_Subscriptions_Admin {
 			if ( isset( $_POST[ 'variable' . $field_name ][ $index ] ) ) {
 				update_post_meta( $variation_id, $field_name, wc_clean( $_POST[ 'variable' . $field_name ][ $index ] ) );
 			}
+		}
+
+		// Force the interval to '1' when the period is yearly.
+		if ( isset( $_POST['variable_subscription_period'][ $index ] ) && 'year' === $_POST['variable_subscription_period'][ $index ] ) {
+			update_post_meta( $variation_id, '_subscription_period_interval', '1' );
 		}
 	}
 
