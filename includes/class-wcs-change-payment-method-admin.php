@@ -169,9 +169,11 @@ class WCS_Change_Payment_Method_Admin {
 
 	/**
 	 * Get a list of possible gateways that a subscription could be changed to by admins.
+	 * If a user id is passed it will take precedence over the customer inside the subscription
 	 *
 	 * @since 2.0
 	 * @param $subscription int | WC_Subscription
+	 * @param $user int
 	 * @return
 	 */
 	public static function get_valid_payment_methods( $subscription, $user = null ) {
