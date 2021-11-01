@@ -70,7 +70,7 @@ class WCS_Change_Payment_Method_Admin {
 
 		echo '</p>';
 
-		$payment_method_table = apply_filters( 'woocommerce_subscription_payment_meta', [], $subscription );
+		$payment_method_table = apply_filters( 'woocommerce_subscription_payment_meta', array(), $subscription );
 
 		if ( is_array( $payment_method_table ) ) {
 
@@ -127,8 +127,8 @@ class WCS_Change_Payment_Method_Admin {
 
 		$payment_gateways    = WC()->payment_gateways->payment_gateways();
 		$payment_method      = isset( $_POST['_payment_method'] ) ? wc_clean( $_POST['_payment_method'] ) : '';
-		$payment_method_meta = apply_filters( 'woocommerce_subscription_payment_meta', [], $subscription );
-		$payment_method_meta = ( ! empty( $payment_method_meta[ $payment_method ] ) ) ? $payment_method_meta[ $payment_method ] : [];
+		$payment_method_meta = apply_filters( 'woocommerce_subscription_payment_meta', array(), $subscription );
+		$payment_method_meta = ( ! empty( $payment_method_meta[ $payment_method ] ) ) ? $payment_method_meta[ $payment_method ] : array();
 
 		$valid_payment_methods = self::get_valid_payment_methods( $subscription );
 
