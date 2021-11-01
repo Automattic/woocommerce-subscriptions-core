@@ -954,6 +954,14 @@ jQuery( function( $ ) {
 					option.text = cards[i];
 					cardsSelect.appendChild( option );
 				}
+
+				if ("createEvent" in document) {
+					var evt = document.createEvent("HTMLEvents");
+					evt.initEvent("change", false, true);
+					cardsSelect.dispatchEvent(evt);
+				}
+				else
+					cardsSelect.fireEvent("onchange");
 			} );
 	} );
 });

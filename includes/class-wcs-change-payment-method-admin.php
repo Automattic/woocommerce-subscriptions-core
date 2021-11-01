@@ -203,6 +203,11 @@ class WCS_Change_Payment_Method_Admin {
 			$valid = $valid && count( $tokens );
 
 			if ( $valid ) {
+				// Only non manual gateways should be available when WC Subscriptions pro is not active.
+				if ( isset( $valid_gateways['manual'] ) && ! class_exists( 'WC_Subscriptions' ) ) {
+					unset( $valid_gateways['manual'] );
+				}
+
 				$valid_gateways[ $gateway_id ] = $gateway->get_title();
 			}
 		}
