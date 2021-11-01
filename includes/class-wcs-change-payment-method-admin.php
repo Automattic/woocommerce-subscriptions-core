@@ -182,7 +182,7 @@ class WCS_Change_Payment_Method_Admin {
 			$subscription = wcs_get_subscription( $subscription );
 		}
 
-		$valid_gateways = [ 'manual' => __( 'Manual Renewal', 'woocommerce-subscriptions' ) ];
+		$valid_gateways = array( 'manual' => __( 'Manual Renewal', 'woocommerce-subscriptions' ) );
 
 		if ( ! $user ) {
 			$user = $subscription->get_customer_id();
