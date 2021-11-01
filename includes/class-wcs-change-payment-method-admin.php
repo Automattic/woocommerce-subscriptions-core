@@ -16,8 +16,14 @@ class WCS_Change_Payment_Method_Admin {
 		add_action( 'wp_ajax_wcs_get_allowed_payment_gateways', __CLASS__ . '::get_allowed_payment_gateways' );
 	}
 
+	/**
+	 * Get payment gateways that can be used
+	 * on a subscription on wp-admin for a given user
+	 *
+	 * @since 1.1.0
+	 */
 	public static function get_allowed_payment_gateways() {
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( wc_clean( wp_unslash( $_POST['nonce'] ) ), 'get_cards_tokens_nonce' ) ) {
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( wc_clean( wp_unslash( $_POST['nonce'] ) ), 'get_valid_payment_gateways_nonce' ) ) {
 			return;
 		}
 
