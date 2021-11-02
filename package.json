@@ -26,6 +26,8 @@
 		"format:js": "wp-scripts format-js",
 		"lint:css": "wp-scripts lint-style assets/src/js",
 		"lint:js": "wp-scripts lint-js assets/src/js",
+		"lint:php": "./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
+		"lint:php-fix": "./vendor/bin/phpcbf --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
 		"start": "wp-scripts start assets/src/js/index.js",
 		"test:unit": "wp-scripts test-unit-js",
 		"makepot": "wp i18n make-pot . languages/woocommerce-subscriptions.pot",
