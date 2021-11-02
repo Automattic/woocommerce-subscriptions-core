@@ -1,7 +1,7 @@
 name: PHP linting and tests
 
 on:
-  pull_request
+  push
 
 jobs:
   phpcs:
