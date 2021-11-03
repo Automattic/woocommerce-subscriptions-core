@@ -10,6 +10,8 @@ jobs:
     steps:
       # clone the repository
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       # enable dependencies caching
       - uses: actions/cache@v2
         with:

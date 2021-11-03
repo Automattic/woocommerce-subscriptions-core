@@ -1019,7 +1019,7 @@ class WC_Subscriptions_Cart {
 						'carts_with_multiple_payments' => $carts_with_multiple_payments,
 					),
 					'',
-					WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' ),
+					WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' )
 				);
 			}
 
