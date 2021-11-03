@@ -10,6 +10,8 @@ jobs:
     steps:
       # clone the repository
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       # enable dependencies caching
       - uses: actions/cache@v2
         with:
@@ -33,8 +35,8 @@ jobs:
       matrix:
         php: [ '7.0', '7.1', '7.2', '7.3', '7.4' ]
     steps:
-        # clone the repository
-        - uses: actions/checkout@v2
+      # clone the repository
+      - uses: actions/checkout@v2
       # setup PHP, but without debug extensions for reasonable performance
       - uses: shivammathur/setup-php@v2
         with:

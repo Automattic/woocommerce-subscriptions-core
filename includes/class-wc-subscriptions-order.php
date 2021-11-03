@@ -852,7 +852,7 @@ class WC_Subscriptions_Order {
 					'subscriptions' => $subscriptions,
 				),
 				'',
-				WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' ),
+				WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' )
 			);
 		}
 	}
