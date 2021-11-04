@@ -4,3 +4,5 @@ composer.* export-ignore
 package.json export-ignore
 package-lock.json export-ignore
 assets/src export-ignore
+.github export-ignore
+phpcs.* export-ignore
