@@ -270,7 +270,24 @@ class WC_Subscriptions_Coupon {
 		}
 
 		// Calculate our discount
-		if ( $apply_recurring_coupon || $apply_initial_coupon ) {
+		if ( $apply_initial_coupon ) {
+			$include_tax           = wc_prices_include_tax();
+			$item_price            = $include_tax ? wc_get_price_including_tax( $cart_item['data'] ) : wc_get_price_excluding_tax( $cart_item['data'] );
+			$subscription_subtotal = array_reduce(
+				WC()->cart->get_cart_contents(),
+				function( $carry, $item ) use ( $include_tax ) {
+					if ( ! WC_Subscriptions_Product::is_subscription( $item['data'] ) ) {
+						return $carry;
+					}
+					return $carry + ( $include_tax ? wc_get_price_including_tax( $item['data'] ) : wc_get_price_excluding_tax( $item['data'] ) );
+				},
+				0
+			);
+
+			$discount_percent = ( $item_price * $cart_item_qty ) / $subscription_subtotal;
+			$discount_amount  = ( (float) $coupon->get_amount() * $discount_percent ) / $cart_item_qty;
+
+		} elseif ( $apply_recurring_coupon ) {
 
 			// Recurring coupons only apply when there is no free trial (carts can have a mix of free trial and non free trial items)
 			if ( $apply_initial_coupon && 'recurring_fee' == $coupon_type && ! $is_switch && WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) > 0 ) {
