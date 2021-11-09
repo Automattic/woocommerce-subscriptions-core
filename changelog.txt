@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+2021-x-x - version 1.0.4
+* Fix: Fatal error due to order with no created date in order row template. PR#40
+
 2021-10-29 - version 1.0.3
 * Fix: Errors when attempting to get the plugin version during PayPal requests. PR#27
 
