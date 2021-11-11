@@ -850,7 +850,7 @@ function wcs_set_payment_meta( $subscription, $payment_meta ) {
 }
 
 /**
- * Get total quantity of a product on a subscription or order, even across multiple line items.
+ * Get total quantity of a product on a subscription or order, even across multiple line items. So we can determine if product has stock available.
  *
  * @since 2.6.0
  *
@@ -877,7 +877,13 @@ function wcs_get_total_line_item_product_quantity( $order, $product, $product_ma
 				$product_id           = $product->get_id(); // The variation ID for variations or product ID.
 				break;
 			default:
-				$line_item_product_id = $line_item->get_product()->get_stock_managed_by_id();
+				$line_item_product = $line_item->get_product();
+				if ( false === $line_item_product ) {
+					// Skip processing here if line item product doesn't exist.
+					// NB: Product not found generates a notice later in the flow in \WCS_Cart_Renewal::setup_cart
+					continue 2;
+				}
+				$line_item_product_id = $line_item_product->get_stock_managed_by_id();
 				$product_id           = $product->get_stock_managed_by_id();
 				break;
 		}
