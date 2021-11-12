@@ -7,6 +7,7 @@ import {
 	Subtotal,
 	TotalsItem,
 	TotalsTaxes,
+	TotalsWrapper,
 } from '@woocommerce/blocks-checkout';
 import { getCurrencyFromPriceResponse } from '@woocommerce/price-format';
 import { getSetting } from '@woocommerce/settings';
@@ -252,24 +253,32 @@ const RecurringSubscription = ( {
 				initialOpen={ false }
 				title={ __( 'Details', 'woocommerce-subscriptions' ) }
 			>
-				<Subtotal currency={ currency } values={ totals } />
-				<DiscountTotals currency={ currency } values={ totals } />
-				<ShippingTotal
-					currency={ currency }
-					needsShipping={ needsShipping }
-					calculatedShipping={ calculatedShipping }
-					values={ totals }
-					selectedRate={ selectedRate }
-				/>
+				<TotalsWrapper>
+					<Subtotal currency={ currency } values={ totals } />
+					<DiscountTotals currency={ currency } values={ totals } />
+				</TotalsWrapper>
+				<TotalsWrapper>
+					<ShippingTotal
+						currency={ currency }
+						needsShipping={ needsShipping }
+						calculatedShipping={ calculatedShipping }
+						values={ totals }
+						selectedRate={ selectedRate }
+					/>
+				</TotalsWrapper>
 				{ ! DISPLAY_CART_PRICES_INCLUDING_TAX && (
-					<TotalsTaxes currency={ currency } values={ totals } />
+					<TotalsWrapper>
+						<TotalsTaxes currency={ currency } values={ totals } />
+					</TotalsWrapper>
 				) }
-				<TotalsItem
-					className="wcs-recurring-totals-panel__details-total"
-					currency={ currency }
-					label={ __( 'Total', 'woocommerce-subscriptions' ) }
-					value={ parseInt( totals.total_price, 10 ) }
-				/>
+				<TotalsWrapper>
+					<TotalsItem
+						className="wcs-recurring-totals-panel__details-total"
+						currency={ currency }
+						label={ __( 'Total', 'woocommerce-subscriptions' ) }
+						value={ parseInt( totals.total_price, 10 ) }
+					/>
+				</TotalsWrapper>
 			</Panel>
 		</div>
 	);

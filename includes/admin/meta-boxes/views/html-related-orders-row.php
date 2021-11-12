@@ -8,14 +8,10 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
-
-// WC 3.0+ compatibility
-$order_post = wcs_get_objects_property( $order, 'post' );
-
 ?>
 <tr>
 	<td>
-		<a href="<?php echo esc_url( get_edit_post_link( wcs_get_objects_property( $order, 'id' ) ) ); ?>">
+		<a href="<?php echo esc_url( get_edit_post_link( $order->get_id() ) ); ?>">
 			<?php
 			// translators: placeholder is an order number.
 			echo sprintf( esc_html_x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), esc_html( $order->get_order_number() ) );
@@ -23,20 +19,24 @@ $order_post = wcs_get_objects_property( $order, 'post' );
 		</a>
 	</td>
 	<td>
-		<?php echo esc_html( wcs_get_objects_property( $order, 'relationship' ) ); ?>
+		<?php echo esc_html( $order->get_meta( '_relationship' ) ); ?>
 	</td>
 	<td>
 		<?php
-		$timestamp_gmt = wcs_get_objects_property( $order, 'date_created' )->getTimestamp();
-		if ( $timestamp_gmt > 0 ) {
-			// translators: php date format
-			$t_time          = get_the_time( _x( 'Y/m/d g:i:s A', 'post date', 'woocommerce-subscriptions' ), $order_post );
-			$date_to_display = ucfirst( wcs_get_human_time_diff( $timestamp_gmt ) );
+		$date_created = $order->get_date_created();
+
+		if ( $date_created ) {
+			$t_time          = $order->get_date_created()->date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) );
+			$date_to_display = ucfirst( wcs_get_human_time_diff( $date_created->getTimestamp() ) );
 		} else {
 			$t_time = $date_to_display = __( 'Unpublished', 'woocommerce-subscriptions' );
-		} ?>
+		}
+
+		// Backwards compatibility for third-parties using the generic WP post time filter.
+		$date_to_display = apply_filters( 'post_date_column_time', $date_to_display, get_post( $order->get_id() ) );
+		?>
 		<abbr title="<?php echo esc_attr( $t_time ); ?>">
-			<?php echo esc_html( apply_filters( 'post_date_column_time', $date_to_display, $order_post ) ); ?>
+			<?php echo esc_html( apply_filters( 'wc_subscriptions_related_order_date_column', $date_to_display, $order ) ); ?>
 		</abbr>
 	</td>
 	<td>
