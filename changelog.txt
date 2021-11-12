@@ -3,6 +3,7 @@
 2021-xx-xx - version 1.1.0
 * Fix: Add consistent margins to the recurring taxes totals row on the Checkout and Cart block. PR#39
 * Fix: Fatal error due to order with no created date in order row template. PR#40
+* Fix: Fatal error on the customer payment page for renewal orders with deleted products. PR#42
 
 2021-10-29 - version 1.0.3
 * Fix: Errors when attempting to get the plugin version during PayPal requests. PR#27
