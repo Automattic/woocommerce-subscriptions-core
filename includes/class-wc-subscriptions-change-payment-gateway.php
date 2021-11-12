@@ -534,7 +534,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 			// Log change on order
 			// translators: 1: old payment title, 2: new payment title.
-			$subscription->add_order_note( sprintf( _x( 'Payment method changed from "%1$s" to "%2$s" by the subscriber from their account page.', '%1$s: old payment title, %2$s: new payment title', 'woocommerce-subscriptions' ), $old_payment_method_title, $new_payment_method_title ) );
+			$subscription->add_order_note( sprintf( _x( 'Payment method changed from "%1$s" to "%2$s" by the subscriber.', '%1$s: old payment title, %2$s: new payment title', 'woocommerce-subscriptions' ), $old_payment_method_title, $new_payment_method_title ) );
 
 			$subscription->save();
 
