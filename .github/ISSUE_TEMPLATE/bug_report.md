@@ -7,10 +7,10 @@ assignees: ''
 
 ---
 
-### Describe the bug
-<!-- A clear and concise description of what the bug is. Please be as descriptive as possible. -->
+## Describe the bug
+<!-- A clear and concise description of what the bug is. Please be as descriptive as possible, and include screenshots to illustrate. -->
 
-### To Reproduce
+## To Reproduce
 <!-- Describe the steps to reproduce the behavior. -->
 
 1. Go to '…'
@@ -18,28 +18,26 @@ assignees: ''
 3. Scroll down to …'
 4. See error
 
-### Actual behavior
-<!-- A clear and concise description of what actually happens. -->
-
-### Screenshots
-<!-- If applicable, add screenshots to help explain your problem. -->
-
 ### Expected behavior
 <!-- A clear and concise description of what you expected to happen. -->
 
-### Desktop (please complete the following information):
+### Actual behavior
+<!-- A clear and concise description of what actually happens. -->
 
-* OS: [e.g. iOS]
-* Browser [e.g. chrome, safari]
-* Version [e.g. 22]
+## Product impact
+<!-- What products does this issue affect? -->
 
-### Smartphone (please complete the following information):
+- [ ] Does this issue affect WooCommerce Subscriptions? yes/no/tbc, add issue ref
+- [ ] Does this issue affect WooCommerce Payments? yes/no/tbc, add issue ref
 
-* Device: [e.g. iPhone6]
-* OS: [e.g. iOS8.1]
-* Browser [e.g. stock browser, safari]
-* Version [e.g. 22]
-
-### Additional context
+## Additional context
 <!-- Any additional context or details you think might be helpful. -->
 <!-- Ticket numbers/links, plugin versions, system statuses etc. -->
+
+<!-- Collapse lengthy logs or status reports with a <details> tag -->
+<!--
+<details>
+```
+```
+</details>
+-->
