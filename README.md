@@ -1,17 +1,19 @@
-# WooCommerce Subscriptions Core
+# WooCommerce subscriptions-core
 
-This package adds core subscriptions functionality to your WooCommerce store.
+This package is a code library used to power core subscriptions related functionality in other products:
+
+ - [WooCommerce Subscriptions](https://woocommerce.com/products/woocommerce-subscriptions/), a paid extension 
+ - [WooCommerce Payments](https://woocommerce.com/products/woocommerce-payments/), a free payment gateway (with transaction fees)
 
 ## Dependencies
 
  - [WooCommerce](https://woocommerce.com/download/)
- - [WooCommerce Subscriptions](https://woocommerce.com/products/woocommerce-subscriptions/) or [WooCommerce Payments](https://woocommerce.com/products/woocommerce-payments/)
 
 ## Usage
 
 The `/Automattic/woocommerce-subscriptions-core/` repository is treated as a _development_ repository and includes development assets, like unit tests and configuration files.
 
-This package can be loaded as standalone plugin for development purposes, however it's intended to be loaded as follows:
+This package should be loaded as follows:
 
 *composer.json*
 ```
@@ -34,6 +36,8 @@ new WC_Subscriptions_Core_Plugin();
 
 ## Development
 
+This repository can also be loaded as standalone plugin, for development purposes only.
+
 After cloning the repo, install dependencies and build:
 
 ```
@@ -41,7 +45,7 @@ npm install && composer install
 npm run build
 ```
 
-## Features Provided in Core
+## Features provided in core
 
 - Simple & Variable Subscriptions Product Types
   - Virtual and Downloadable
