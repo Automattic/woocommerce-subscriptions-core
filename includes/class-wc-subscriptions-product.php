@@ -974,7 +974,7 @@ class WC_Subscriptions_Product {
 		printf( '<input type="hidden" class="wcs-can-remove-variation" value="%d" />', intval( $can_remove ) );
 
 		if ( ! $can_remove ) {
-			$msg = __( 'This variation can not be removed because it is associated with active subscriptions. To remove this variation, please cancel and delete the subscriptions for it.', 'woocommerce-subscriptions' );
+			$msg = __( 'This variation can not be removed because it is associated with existing subscriptions. To remove this variation, please permanently delete any related subscriptions.', 'woocommerce-subscriptions' );
 			printf( '<a href="#" class="tips delete wcs-can-not-remove-variation-msg" data-tip="%s" rel="%s"></a>', wc_sanitize_tooltip( $msg ), absint( $variation->ID ) ); // XSS ok.
 		}
 	}
