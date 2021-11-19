@@ -337,6 +337,8 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 			$props['customer_id'] = $customer_id;
 		}
 
+		self::check_minimum_order_value( $subscription );
+
 		// Update billing fields.
 		foreach ( self::$billing_fields as $key => $field ) {
 			$field['id'] = isset( $field['id'] ) ? $field['id'] : "_billing_{$key}";
@@ -415,5 +417,43 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 		}
 
 		do_action( 'woocommerce_process_shop_subscription_meta', $post_id, $post );
+	}
+
+	/**
+	 * Ensure minimum subscription value is met.
+	 * @param WC_Subscription|false $subscription
+	 */
+	private static function check_minimum_order_value( $subscription ) {
+		if ( ! $subscription ) {
+			return;
+		}
+
+		$minimum_order_value = apply_filters( 'woocommerce_subscriptions_minimum_order_value', 1 );
+		$subscription_total  = $subscription->get_total();
+		// Check if the order is below the minimum allowed order value.
+		if ( $subscription_total >= (float) $minimum_order_value ) {
+			return;
+		}
+
+		wcs_add_admin_notice(
+			__( 'This subscription is below the minimum order value. A fee has been added to the subscription to meet the minimum order value.', 'woocommerce-subscriptions' ),
+			'error'
+		);
+
+		// Rather than trying to alter individual line items, we simply add a fee
+		$order_fee = new WC_Order_Item_Fee();
+
+		$order_fee->set_props(
+			array(
+				'name'      => __( 'Minimum subscription fee', 'woocommerce-subscriptions' ),
+				'tax_class' => 0,
+				'total'     => $minimum_order_value - $subscription_total,
+				'total_tax' => 0,
+				'order_id'  => $subscription->get_id(),
+			)
+		);
+
+		$order_fee->save();
+		$subscription->add_item( $order_fee );
 	}
 }
