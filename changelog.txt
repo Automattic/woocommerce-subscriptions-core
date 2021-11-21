@@ -2,6 +2,7 @@
 
 2021-xx-xx - version 1.x.x
 * Fix: Update tooltip wording when deleting product variation. PR#46
+* Add: Minimum subscription order value. PR#48  wcpay#3311
 
 2021-11-12 - version 1.1.0
 * Fix: Add consistent margins to the recurring taxes totals row on the Checkout and Cart block. PR#39
