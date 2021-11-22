@@ -39,5 +39,6 @@ Add as many details as possible to help others reproduce the issue and test the 
 ## Product impact
 <!-- What products will this PR ship in? -->
 
+- [ ] Added changelog entry (or does not apply)
 - [ ] Will this PR affect WooCommerce Subscriptions? yes/no/tbc, add issue ref
 - [ ] Will this PR affect WooCommerce Payments? yes/no/tbc, add issue ref
