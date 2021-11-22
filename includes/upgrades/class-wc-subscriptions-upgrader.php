@@ -892,6 +892,18 @@ class WC_Subscriptions_Upgrader {
 	}
 
 	/**
+	 * Repair a single item's subtracted base tax meta.
+	 *
+	 * @since 3.1.0
+	 * @param int $item_id The ID of the item which needs repairing.
+	 */
+	public static function repair_subtracted_base_taxes( $item_id ) {
+		self::$background_updaters['3.1']['subtracted_base_tax_repair']->repair_item( $item_id );
+	}
+
+	/* Deprecated Functions */
+
+	/**
 	 * Handles the WC 3.5.0 upgrade routine that moves customer IDs from post metadata to the 'post_author' column.
 	 *
 	 * @since 2.4.0
@@ -923,16 +935,6 @@ class WC_Subscriptions_Upgrader {
 	public static function is_user_upgraded_to_1_4( $user_id ) {
 		_deprecated_function( __METHOD__, '2.0', 'WCS_Upgrade_1_4::is_user_upgraded( $user_id )' );
 		return WCS_Upgrade_1_4::is_user_upgraded( $user_id );
-	}
-
-	/**
-	 * Repair a single item's subtracted base tax meta.
-	 *
-	 * @since 3.1.0
-	 * @param int $item_id The ID of the item which needs repairing.
-	 */
-	public static function repair_subtracted_base_taxes( $item_id ) {
-		self::$background_updaters['3.1']['subtracted_base_tax_repair']->repair_item( $item_id );
 	}
 
 	/**
