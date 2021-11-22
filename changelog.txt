@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-2021-xx-xx - version 1.x.x
+2021-11-22 - version 1.2.0
 * Fix: Update tooltip wording when deleting product variation. PR#46
 * Fix: Don't show an admin error notice when a store downgrades to a previous minor version of Subscriptions. WCS#4271
 
