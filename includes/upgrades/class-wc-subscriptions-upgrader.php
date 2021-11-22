@@ -939,10 +939,10 @@ class WC_Subscriptions_Upgrader {
 	 * Display an admin notice if the database version is greater than the active version of the plugin by at least one minor release (eg 1.1 and 1.0).
 	 *
 	 * @since 2.3.0
-	 * @deprecated 4.0.0
+	 * @deprecated 1.2.0
 	 */
 	public static function maybe_add_downgrade_notice() {
-		wcs_deprecated_function( __METHOD__, '4.0.0' );
+		wcs_deprecated_function( __METHOD__, '1.2.0' );
 
 		// If there's no downgrade, exit early. self::$active_version is a bit of a misnomer here but in an upgrade context it refers to the database version of the plugin.
 		if ( ! version_compare( wcs_get_minor_version_string( self::$active_version ), wcs_get_minor_version_string( WC_Subscriptions_Core_Plugin::instance()->get_plugin_version() ), '>' ) ) {
