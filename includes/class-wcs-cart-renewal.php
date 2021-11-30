@@ -93,7 +93,7 @@ class WCS_Cart_Renewal {
 			add_action( 'woocommerce_checkout_update_order_meta', array( &$this, 'set_order_item_id' ), 10, 2 );
 
 			// After order meta is saved, get the order line item ID for the renewal so we can update it later
-			add_action( '__experimental_woocommerce_blocks_checkout_update_order_meta', array( &$this, 'set_order_item_id' ), 10, 1 );
+			add_action( 'woocommerce_blocks_checkout_update_order_meta', array( &$this, 'set_order_item_id' ), 10, 1 );
 
 			// Don't display cart item key meta stored above on the Edit Order screen
 			add_action( 'woocommerce_hidden_order_itemmeta', array( &$this, 'hidden_order_itemmeta' ), 10 );
