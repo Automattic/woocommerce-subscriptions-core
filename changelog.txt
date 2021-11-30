@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+2021-xx-xx - version 1.3.0
+* Tweak: Update deprecation message when calling WC_Subscriptions_Coupon::cart_contains_limited_recurring_coupon() to mention the correct replacement function. PR#53
+
 2021-11-23 - version 1.2.0
 * Fix: Update tooltip wording when deleting product variation. PR#46
 * Fix: Don't show an admin error notice when a store downgrades to a previous minor version of Subscriptions. WCS#4271
