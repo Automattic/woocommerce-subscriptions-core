@@ -1175,7 +1175,7 @@ class WC_Subscriptions_Coupon {
 	 * @deprecated 4.0.0
 	 */
 	public static function cart_contains_limited_recurring_coupon() {
-		wcs_deprecated_function( __METHOD__, '4.0.0', 'WCS_Limited_Recurring_Coupon_Manager::coupon_is_limited() if available' );
+		wcs_deprecated_function( __METHOD__, '4.0.0', 'WCS_Limited_Recurring_Coupon_Manager::cart_contains_limited_recurring_coupon() if available' );
 		if ( class_exists( 'WCS_Limited_Recurring_Coupon_Manager' ) ) {
 			return WCS_Limited_Recurring_Coupon_Manager::cart_contains_limited_recurring_coupon();
 		}
