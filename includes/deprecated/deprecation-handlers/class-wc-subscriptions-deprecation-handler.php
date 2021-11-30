@@ -86,10 +86,6 @@ class WC_Subscriptions_Deprecation_Handler extends WCS_Deprecated_Functions_Hand
 			'version'     => '4.0.0',
 		),
 		'redirect_to_cart' => array(
-			'replacement' => array( 'WCS_Template_Loader', 'get_my_subscriptions' ),
-			'version'     => '4.0.0',
-		),
-		'redirect_to_cart' => array(
 			'replacement' => array( __CLASS__, '_redirect_to_cart' ),
 			'version'     => '4.0.0',
 		),
