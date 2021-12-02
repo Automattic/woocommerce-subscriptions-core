@@ -285,7 +285,8 @@ class WC_Subscriptions_Core_Payment_Gateways {
 				'woocommerce_subscriptions_payment_restrictions',
 				WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/payment-method-restrictions.js' ),
 				array( 'jquery', 'woocommerce_admin' ),
-				filemtime( WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'assets/js/admin/payment-method-restrictions.js' ) )
+				filemtime( WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'assets/js/admin/payment-method-restrictions.js' ) ),
+				true // Load in footer.
 			);
 
 			$decimals          = wc_get_price_decimals();
@@ -294,7 +295,7 @@ class WC_Subscriptions_Core_Payment_Gateways {
 
 			$script_data = array(
 				// Translators: placeholder is a 0 price formatted with the the store's currency and decimal settings.
-				'i18n_zero_subscription_error' => sprintf( __( 'Please enter a price greater than %s.', 'woocommerce-subscription' ), $zero_price ),
+				'i18n_zero_subscription_error' => sprintf( __( 'Please enter a price greater than %s.', 'woocommerce-subscriptions' ), $zero_price ),
 				'number_of_decimal_places'     => $decimals,
 				'decimal_point_separator'      => $decimal_separator,
 			);
