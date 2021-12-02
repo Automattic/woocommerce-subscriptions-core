@@ -71,6 +71,4 @@ jQuery( function( $ ) {
 				.fadeIn( '100' );
 		}
 	})
-
-
 } );
