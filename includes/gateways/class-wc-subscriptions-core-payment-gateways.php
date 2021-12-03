@@ -26,8 +26,6 @@ class WC_Subscriptions_Core_Payment_Gateways {
 
 		// Create a gateway specific hooks for subscription events.
 		add_action( 'woocommerce_subscription_status_updated', array( get_called_class(), 'trigger_gateway_status_updated_hook' ), 10, 2 );
-
-		add_action( 'admin_enqueue_scripts', array( get_called_class(), 'enqueue_payment_gateway_restriction_scripts' ) );
 	}
 
 	/**
@@ -274,43 +272,12 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	}
 
 	/**
-	 * Registers and enqueues payment gateway specific scripts.
-	 */
-	public static function enqueue_payment_gateway_restriction_scripts() {
-		$screen    = get_current_screen();
-		$screen_id = isset( $screen->id ) ? $screen->id : '';
-
-		if ( 'product' === $screen_id && self::is_subscriptions_core() ) {
-			wp_enqueue_script(
-				'woocommerce_subscriptions_payment_restrictions',
-				WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/payment-method-restrictions.js' ),
-				array( 'jquery', 'woocommerce_admin' ),
-				filemtime( WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'assets/js/admin/payment-method-restrictions.js' ) ),
-				true // Load in footer.
-			);
-
-			$decimals          = wc_get_price_decimals();
-			$decimal_separator = wc_get_price_decimal_separator();
-			$zero_price        = sprintf( get_woocommerce_price_format(), get_woocommerce_currency_symbol(), number_format( 0, $decimals, $decimal_separator, '' ) );
-
-			$script_data = array(
-				// Translators: placeholder is a 0 price formatted with the the store's currency and decimal settings.
-				'i18n_zero_subscription_error' => sprintf( __( 'Please enter a price greater than %s.', 'woocommerce-subscriptions' ), $zero_price ),
-				'number_of_decimal_places'     => $decimals,
-				'decimal_point_separator'      => $decimal_separator,
-			);
-
-			wp_localize_script( 'woocommerce_subscriptions_payment_restrictions', 'wcs_gateway_restrictions', $script_data );
-		}
-	}
-
-	/**
-	 * Determines if the current class's context is subscriptions core.
+	 * Determines if subscriptions with a total of nothing (0) are allowed.
 	 *
-	 * @return bool True If the context of this class is subscriptions core, otherwise false.
+	 * @return bool
 	 */
-	private static function is_subscriptions_core() {
-		return get_called_class() === 'WC_Subscriptions_Core_Payment_Gateways';
+	public static function are_zero_total_subscriptions_allowed() {
+		return get_called_class() !== 'WC_Subscriptions_Core_Payment_Gateways';
 	}
 
 	/**
