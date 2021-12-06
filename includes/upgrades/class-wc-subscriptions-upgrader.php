@@ -101,7 +101,6 @@ class WC_Subscriptions_Upgrader {
 		// When WC is updated from a version prior to 3.0 to a version after 3.0, add subscription address indexes. Must be hooked on before WC runs its updates, which occur on priority 5.
 		add_action( 'init', array( __CLASS__, 'maybe_add_subscription_address_indexes' ), 2 );
 
-		add_action( 'admin_notices', array( __CLASS__, 'maybe_add_downgrade_notice' ) );
 		add_action( 'admin_notices', array( __CLASS__, 'maybe_display_external_object_cache_warning' ) );
 
 		add_action( 'init', array( __CLASS__, 'initialise_background_updaters' ), 0 );
@@ -815,31 +814,6 @@ class WC_Subscriptions_Upgrader {
 	}
 
 	/**
-	 * Display an admin notice if the database version is greater than the active version of the plugin by at least one minor release (eg 1.1 and 1.0).
-	 *
-	 * @since 2.3.0
-	 */
-	public static function maybe_add_downgrade_notice() {
-
-		// If there's no downgrade, exit early. self::$active_version is a bit of a misnomer here but in an upgrade context it refers to the database version of the plugin.
-		if ( ! version_compare( wcs_get_minor_version_string( self::$active_version ), wcs_get_minor_version_string(  WC_Subscriptions_Core_Plugin::instance()->get_plugin_version() ), '>' ) ) {
-			return;
-		}
-
-		$admin_notice = new WCS_Admin_Notice( 'error' );
-		// translators: 1-2: opening/closing <strong> tags, 3: active version of Subscriptions, 4: current version of Subscriptions, 5-6: opening/closing tags linked to ticket form, 7-8: opening/closing tags linked to documentation.
-		$admin_notice->set_simple_content( sprintf( esc_html__( '%1$sWarning!%2$s It appears that you have downgraded %1$sWooCommerce Subscriptions%2$s from %3$s to %4$s. Downgrading the plugin in this way may cause issues. Please update to %3$s or higher, or %5$sopen a new support ticket%6$s for further assistance. %7$sLearn more &raquo;%8$s', 'woocommerce-subscriptions' ),
-			'<strong>', '</strong>',
-			'<code>' . self::$active_version . '</code>',
-			'<code>' .  WC_Subscriptions_Core_Plugin::instance()->get_plugin_version() . '</code>',
-			'<a href="https://woocommerce.com/my-account/marketplace-ticket-form/" target="_blank">', '</a>',
-			'<a href="https://docs.woocommerce.com/document/subscriptions/upgrade-instructions/#section-12" target="_blank">', '</a>'
-		) );
-
-		$admin_notice->display();
-	}
-
-	/**
 	 * When updating WC to a version after 3.0 from a version prior to 3.0, schedule the repair script to add address indexes.
 	 *
 	 * @since 2.3.0
@@ -918,6 +892,18 @@ class WC_Subscriptions_Upgrader {
 	}
 
 	/**
+	 * Repair a single item's subtracted base tax meta.
+	 *
+	 * @since 3.1.0
+	 * @param int $item_id The ID of the item which needs repairing.
+	 */
+	public static function repair_subtracted_base_taxes( $item_id ) {
+		self::$background_updaters['3.1']['subtracted_base_tax_repair']->repair_item( $item_id );
+	}
+
+	/* Deprecated Functions */
+
+	/**
 	 * Handles the WC 3.5.0 upgrade routine that moves customer IDs from post metadata to the 'post_author' column.
 	 *
 	 * @since 2.4.0
@@ -952,12 +938,35 @@ class WC_Subscriptions_Upgrader {
 	}
 
 	/**
-	 * Repair a single item's subtracted base tax meta.
+	 * Display an admin notice if the database version is greater than the active version of the plugin by at least one minor release (eg 1.1 and 1.0).
 	 *
-	 * @since 3.1.0
-	 * @param int $item_id The ID of the item which needs repairing.
+	 * @since 2.3.0
+	 * @deprecated 1.2.0
 	 */
-	public static function repair_subtracted_base_taxes( $item_id ) {
-		self::$background_updaters['3.1']['subtracted_base_tax_repair']->repair_item( $item_id );
+	public static function maybe_add_downgrade_notice() {
+		wcs_deprecated_function( __METHOD__, '1.2.0' );
+
+		// If there's no downgrade, exit early. self::$active_version is a bit of a misnomer here but in an upgrade context it refers to the database version of the plugin.
+		if ( ! version_compare( wcs_get_minor_version_string( self::$active_version ), wcs_get_minor_version_string( WC_Subscriptions_Core_Plugin::instance()->get_plugin_version() ), '>' ) ) {
+			return;
+		}
+
+		$admin_notice = new WCS_Admin_Notice( 'error' );
+		$admin_notice->set_simple_content(
+			sprintf(
+				// translators: 1-2: opening/closing <strong> tags, 3: active version of Subscriptions, 4: current version of Subscriptions, 5-6: opening/closing tags linked to ticket form, 7-8: opening/closing tags linked to documentation.
+				esc_html__( '%1$sWarning!%2$s It appears that you have downgraded %1$sWooCommerce Subscriptions%2$s from %3$s to %4$s. Downgrading the plugin in this way may cause issues. Please update to %3$s or higher, or %5$sopen a new support ticket%6$s for further assistance. %7$sLearn more &raquo;%8$s', 'woocommerce-subscriptions' ),
+				'<strong>',
+				'</strong>',
+				'<code>' . self::$active_version . '</code>',
+				'<code>' . WC_Subscriptions_Core_Plugin::instance()->get_plugin_version() . '</code>',
+				'<a href="https://woocommerce.com/my-account/marketplace-ticket-form/" target="_blank">',
+				'</a>',
+				'<a href="https://docs.woocommerce.com/document/subscriptions/upgrade-instructions/#section-12" target="_blank">',
+				'</a>'
+			)
+		);
+
+		$admin_notice->display();
 	}
 }
