@@ -3,6 +3,10 @@ name: PHP linting and tests
 on:
   pull_request
 
+env:
+  WP_VERSION: latest
+  WC_VERSION: 5.5.0  # the min supported version as per L-2 policy
+
 jobs:
   phpcs:
     name:    PHP Code Sniffer
