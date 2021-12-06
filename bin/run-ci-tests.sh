@@ -4,7 +4,7 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-composer self-update 2.0.6 && composer install --no-progress
+composer self-update 2.0.6 && composer install --no-progress && composer remove "dave-liddament/sarb" # sarb creates problems on php 7.0
 sudo systemctl start mysql.service
 bash bin/install-wp-tests.sh woocommerce_test root root localhost $WP_VERSION $WC_VERSION false
 echo 'Running the tests...'
