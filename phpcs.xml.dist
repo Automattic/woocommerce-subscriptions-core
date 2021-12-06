@@ -34,4 +34,10 @@
 	<exclude-pattern type="relative">includes/libraries/*</exclude-pattern>
 	<exclude-pattern type="relative">templates/*</exclude-pattern>
 	<exclude-pattern type="relative">build/*</exclude-pattern>
+
+	<!-- The testing bootstrap file uses string concats to stop IDEs seeing the class aliases -->
+	<rule ref="WordPress.Files.FileName">
+		<exclude-pattern>tests/WP_UnitTestCase\.php</exclude-pattern>
+	</rule>
+
 </ruleset>
