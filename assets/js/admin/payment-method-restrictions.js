@@ -55,6 +55,53 @@ jQuery( function( $ ) {
 		}
 	} );
 
+	$( document.body ).on( 'items_saved', function() {
+		// Add a hidden element to the order items table we will know when the save items ajax request has finished when has been removed.
+		$( '#woocommerce-order-items' ).find( '.inside' ).append( '<input type="hidden" id="wcs-items-being-saved">' );
+
+		var check_if_items_have_updated = setInterval( function() {
+
+			if ( 0 === $( '#wcs-items-being-saved' ).length ) {
+				$( document.body ).trigger( 'subscription-items-saved' );
+				clearInterval( check_if_items_have_updated );
+			}
+		 }, 300 );
+
+		 // After 1 minute, stop checking
+		 setTimeout( function(){ clearInterval( check_if_items_have_updated ); }, 60000 );
+	} );
+
+	$( document.body ).on( 'order-totals-recalculate-complete subscription-items-saved', function() {
+		var data = {
+			subscription_id: $( '#post_ID' ).val(),
+			action:   wcs_gateway_restrictions.validate_recurring_total_action,
+			security: wcs_gateway_restrictions.security,
+		};
+
+		$.ajax({
+			url:  wcs_gateway_restrictions.ajax_url,
+			data: data,
+			type: 'POST',
+			success: function( response ) {
+				var error_type = 'i18n_zero_recurring_total_error'
+				var element    = $( '.wc-order-totals' );
+				console.log(response);
+				if ( response.has_zero_recurring_total && 'yes' === response.has_zero_recurring_total ) {
+					$( document.body ).triggerHandler( 'wc_subscriptions_add_error_tip', [ element, error_type ] );
+				} else {
+					$( document.body ).triggerHandler( 'wc_remove_error_tip', [ element, error_type ] );
+				}
+			},
+		});
+	} );
+
+	/**
+	 *
+	 */
+	function validate_recurring_total() {
+
+	}
+
 	/**
 	 * Displays a WC error tip against an element for a given error type.
 	 *
