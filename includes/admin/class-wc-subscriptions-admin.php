@@ -1597,9 +1597,11 @@ class WC_Subscriptions_Admin {
 	 * @since 2.5.3
 	 */
 	public static function payment_gateways_renewal_support( $gateway ) {
+		$payment_gateways_handler = WC_Subscriptions_Core_Plugin::instance()->get_gateways_handler_class();
+
 		echo '<td class="renewals">';
-		if ( ( is_array( $gateway->supports ) && in_array( 'subscriptions', $gateway->supports ) ) || $gateway->id == 'paypal' ) {
-			$status_html = '<span class="status-enabled tips" data-tip="' . esc_attr__( 'Supports automatic renewal payments with the WooCommerce Subscriptions extension.', 'woocommerce-subscriptions' ) . '">' . esc_html__( 'Yes', 'woocommerce-subscriptions' ) . '</span>';
+		if ( $payment_gateways_handler::gateway_supports_subscriptions( $gateway ) ) {
+			$status_html = '<span class="status-enabled tips" data-tip="' . esc_attr__( 'Supports automatic renewal payments.', 'woocommerce-subscriptions' ) . '">' . esc_html__( 'Yes', 'woocommerce-subscriptions' ) . '</span>';
 		} else {
 			$status_html = '-';
 		}
