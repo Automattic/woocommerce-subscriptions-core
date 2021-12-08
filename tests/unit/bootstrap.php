@@ -26,5 +26,5 @@ if ( PHP_VERSION_ID >= 80000 && file_exists( $_tests_dir . '/includes/phpunit7/M
 
 // Give access to tests_add_filter() function.
 require_once $_tests_dir . '/includes/functions.php';
-require_once dirname( __DIR__ ) . '/WP_UnitTestCase.php';
+require_once $_tests_dir . '/includes/bootstrap.php';
 
