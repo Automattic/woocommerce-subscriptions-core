@@ -12,7 +12,7 @@ jQuery( function( $ ) {
 		}
 
 		// We're only interested in product price input.
-		if ( ! $( element ).hasClass( 'wc_input_price' ) || $( element ).hasClass( 'wc_input_subscription_initial_price' ) ) {
+		if ( ! $( element ).is( '#_subscription_price' ) && ! $( element ).hasClass( 'wc_input_subscription_price' ) ) {
 			return;
 		}
 
