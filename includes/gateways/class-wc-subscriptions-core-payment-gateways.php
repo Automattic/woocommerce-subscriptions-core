@@ -278,8 +278,9 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	 */
 	public static function are_zero_total_subscriptions_allowed() {
 		return get_called_class() !== 'WC_Subscriptions_Core_Payment_Gateways';
-  }
+	}
 
+	/**
 	 * Returns whether the gateway supports subscriptions and automatic renewals.
 	 *
 	 * @since 1.3.0
