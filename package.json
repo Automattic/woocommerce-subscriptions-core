@@ -53,6 +53,8 @@
 		"husky": "^7.0.4",
 		"lint-staged": "^12.1.2",
 		"promised-exec": "~1.0.1",
+		"stylelint-config-prettier": "8.0.2",
+		"stylelint-config-wordpress": "17.0.0",
 		"semver": "^4.1.0"
 	},
 	"dependencies": {
