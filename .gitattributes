@@ -7,3 +7,6 @@ assets/src export-ignore
 .github export-ignore
 phpcs.* export-ignore
 bin export-ignore
+.husky export-ignore
+tests export-ignore
+lint-staged.config.js export-ignore
