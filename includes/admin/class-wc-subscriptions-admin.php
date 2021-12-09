@@ -1726,27 +1726,24 @@ class WC_Subscriptions_Admin {
 			$available_gateways_description = sprintf( __( 'No payment gateways capable of processing automatic subscription payments are enabled. If you would like to process automatic payments, we recommend the %1$sfree Stripe extension%2$s.', 'woocommerce-subscriptions' ), '<strong><a href="https://www.woocommerce.com/products/stripe/">', '</a></strong>' );
 		}
 
-		$recurring_payment_settings = array(
+		$recurring_payment_settings = apply_filters(
+			'woocommerce_subscriptions_admin_recurring_payment_information',
 			array(
-				'name' => __( 'Recurring Payments', 'woocommerce-subscriptions' ),
-				'desc' => $available_gateways_description,
-				'id'   => WC_Subscriptions_Admin::$option_prefix . '_payment_gateways_available',
-				'type' => 'informational',
-			),
+				array(
+					'name' => __( 'Recurring Payments', 'woocommerce-subscriptions' ),
+					'desc' => $available_gateways_description,
+					'id'   => WC_Subscriptions_Admin::$option_prefix . '_payment_gateways_available',
+					'type' => 'informational',
+				),
 
-			array(
-				// translators: placeholders are opening and closing link tags
-				'desc' => sprintf( __( 'Payment gateways which don\'t support automatic recurring payments can be used to process %1$smanual subscription renewal payments%2$s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/renewal-process/">', '</a>' ),
-				'id'   => WC_Subscriptions_Admin::$option_prefix . '_payment_gateways_additional',
-				'type' => 'informational',
+				array(
+					// translators: placeholders are opening and closing link tags
+					'desc' => sprintf( __( 'Payment gateways which don\'t support automatic recurring payments can be used to process %1$smanual subscription renewal payments%2$s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/renewal-process/">', '</a>' ),
+					'id'   => WC_Subscriptions_Admin::$option_prefix . '_payment_gateways_additional',
+					'type' => 'informational',
+				),
 			),
-
-			array(
-				// translators: $1-$2: opening and closing tags. Link to documents->payment gateways, 3$-4$: opening and closing tags. Link to WooCommerce extensions shop page
-				'desc' => sprintf( __( 'Find new gateways that %1$ssupport automatic subscription payments%2$s in the official %3$sWooCommerce Marketplace%4$s.', 'woocommerce-subscriptions' ), '<a href="' . esc_url( 'http://docs.woocommerce.com/document/subscriptions/payment-gateways/' ) . '">', '</a>', '<a href="' . esc_url( 'http://www.woocommerce.com/product-category/woocommerce-extensions/' ) . '">', '</a>' ),
-				'id'   => WC_Subscriptions_Admin::$option_prefix . '_payment_gateways_additional',
-				'type' => 'informational',
-			),
+			WC_Subscriptions_Admin::$option_prefix,
 		);
 
 		$insert_index = array_search(
