@@ -30,7 +30,7 @@
 		"format:css": "npm run format:provided '**/*.scss' '**/*.css'",
 		"format:provided": "prettier --write",
 		"lint": "npm run lint:js && npm run lint:css && npm run lint:php",
-		"lint:css": "wp-scripts lint-style assets/css",
+		"lint:css": "wp-scripts lint-style assets/css assets/src/js",
 		"lint:js": "wp-scripts lint-js assets/src/js",
 		"lint:js-fix": "wp-scripts lint-js assets/src/js --fix",
 		"lint:php": "./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$)",

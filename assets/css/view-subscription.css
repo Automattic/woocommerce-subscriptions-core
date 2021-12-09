@@ -27,7 +27,7 @@
 	vertical-align: text-top;
 }
 
-.subscription-auto-renew-toggle__i:before {
+.subscription-auto-renew-toggle__i::before {
 	content: "";
 	display: block;
 	width: 16px;
@@ -44,7 +44,7 @@
 	background-color: #999;
 }
 
-.subscription-auto-renew-toggle--off .subscription-auto-renew-toggle__i:before {
+.subscription-auto-renew-toggle--off .subscription-auto-renew-toggle__i::before {
 	right: auto;
 	left: 0;
 }

@@ -7,7 +7,7 @@ ul {
 	margin-top: 0;
 	margin-bottom: 1.6em;
 }
-.wcs-badge:before {
+.wcs-badge::before {
 	font-family: WooCommerce !important;
 	content: "\e03d";
 	color: #fff;
@@ -70,12 +70,12 @@ ul {
 	overflow: visible !important;
 	*zoom:1;
 }
-.about-wrap .wcs-feature:before,
-.about-wrap .wcs-feature:after {
+.about-wrap .wcs-feature::before,
+.about-wrap .wcs-feature::after {
 	content: " ";
 	display: table;
 }
-.about-wrap .wcs-feature:after {
+.about-wrap .wcs-feature::after {
 	clear: both;
 }
 .about-wrap .two-col .feature-right {
@@ -183,7 +183,7 @@ p.woocommerce-actions {
 }
 
 @media only screen and (max-width: 500px) {
-	.about-wrap .wcs-badge:before {
+	.about-wrap .wcs-badge::before {
 		width: 100%;
 	}
 	.about-wrap .wcs-badge {

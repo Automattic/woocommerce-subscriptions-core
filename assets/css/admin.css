@@ -260,7 +260,7 @@ a.close-subscriptions-search {
 }
 
 /* Users Administration Screen */
-.woocommerce_active_subscriber .active-subscriber:before {
+.woocommerce_active_subscriber .active-subscriber::before {
 	content: "\f147";
 	display: inline-block;
 	-webkit-font-smoothing: antialiased;
@@ -347,8 +347,8 @@ a.close-subscriptions-search {
 	display: inline-block;
 	margin: 0 .5em 0 0;
 }
-#woocommerce-subscription-schedule .wcs-edit-date:before,
-#woocommerce-subscription-schedule .wcs-delete-date:before {
+#woocommerce-subscription-schedule .wcs-edit-date::before,
+#woocommerce-subscription-schedule .wcs-delete-date::before {
 	font-family: WooCommerce;
 	speak: none;
 	font-weight: 400;
@@ -366,16 +366,16 @@ a.close-subscriptions-search {
 	text-align: center;
 	color: #999;
 }
-#woocommerce-subscription-schedule .wcs-edit-date:before {
+#woocommerce-subscription-schedule .wcs-edit-date::before {
 	content: "\e603";
 }
-#woocommerce-subscription-schedule .wcs-edit-date:hover:before {
+#woocommerce-subscription-schedule .wcs-edit-date:hover::before {
 	color: #555555;
 }
-#woocommerce-subscription-schedule .wcs-delete-date:before {
+#woocommerce-subscription-schedule .wcs-delete-date::before {
 	content: "\e013";
 }
-#woocommerce-subscription-schedule .wcs-delete-date:hover:before {
+#woocommerce-subscription-schedule .wcs-delete-date:hover::before {
 	color: #AA0000;
 }
 
@@ -479,30 +479,30 @@ table.wp-list-table .subscription_renewal_order {
 	margin: 0 auto;
 }
 
-table.wp-list-table .subscription_head:after,
-table.wp-list-table .subscription_parent_order:after {
+table.wp-list-table .subscription_head::after,
+table.wp-list-table .subscription_parent_order::after {
 	font-family: WooCommerce;
 	content: "\e014";
 }
 
-table.wp-list-table .subscription_resubscribe_order:after {
+table.wp-list-table .subscription_resubscribe_order::after {
 	font-family: WooCommerce;
 	content: "\e014";
 	color: #999;
 }
-table.wp-list-table .subscription_renewal_order:after {
+table.wp-list-table .subscription_renewal_order::after {
 	font-family: Dashicons;
 	content: "\f321";
 }
-table.wp-list-table .payment_retry:after {
+table.wp-list-table .payment_retry::after {
 	font-family: WooCommerce;
 	content: "\e012";
 }
 
-table.wp-list-table .subscription_head:after,
-table.wp-list-table .subscription_parent_order:after,
-table.wp-list-table .subscription_resubscribe_order:after,
-table.wp-list-table .subscription_renewal_order:after {
+table.wp-list-table .subscription_head::after,
+table.wp-list-table .subscription_parent_order::after,
+table.wp-list-table .subscription_resubscribe_order::after,
+table.wp-list-table .subscription_renewal_order::after {
 	font-weight: 400;
 	margin: 0;
 	text-indent: 0;
@@ -592,7 +592,7 @@ body.post-type-shop_subscription .add-items .button.refund-items {
 		margin: 0;
 	}
 
-	.post-type-shop_subscription .wp-list-table .column-status:before {
+	.post-type-shop_subscription .wp-list-table .column-status::before {
 		display: none !important;
 	}
 
@@ -601,7 +601,7 @@ body.post-type-shop_subscription .add-items .button.refund-items {
 	}
 
 }
-span.product-type.variable-subscription:before {
+span.product-type.variable-subscription::before {
 	content: "\e003" !important;
 }
 
@@ -619,7 +619,7 @@ span.product-type.variable-subscription:before {
 .woocommerce-reports-wide .postbox .chart-legend li a {
 	text-decoration: none;
 }
-.woocommerce-reports-wide .postbox .chart-legend li a .woocommerce-subscriptions-count:after {
+.woocommerce-reports-wide .postbox .chart-legend li a .woocommerce-subscriptions-count::after {
 	margin-left: 1.5%;
 	font-size: 60%;
 	font-weight: normal;
