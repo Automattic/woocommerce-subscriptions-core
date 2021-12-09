@@ -52,10 +52,10 @@ table.wp-list-table span.product-type.variable-subscription {
 /* Orders List Table */
 a.close-subscriptions-search {
 	font-size: 1em;
-	padding: 0em 0.45em;
+	padding: 0 0.45em;
 	border-radius: 1.4em;
-	background: #dd0000;
-	color: #ffffff;
+	background: #d00;
+	color: #fff;
 	margin: -0.3em 0.6em 0 0;
 }
 .dismiss-subscriptions-search {
@@ -411,7 +411,7 @@ a.close-subscriptions-search {
 ._subscription_limit_field .description {
 	display: block;
 	clear: both;
-	margin-left: 0px;
+	margin-left: 0;
 }
 
 /* Users Administration Screen */
@@ -506,7 +506,7 @@ a.close-subscriptions-search {
 }
 #woocommerce-subscription-schedule .wcs-edit-date::before,
 #woocommerce-subscription-schedule .wcs-delete-date::before {
-	font-family: WooCommerce;
+	font-family: 'WooCommerce';
 	speak: none;
 	font-weight: 400;
 	font-variant: normal;
@@ -527,13 +527,13 @@ a.close-subscriptions-search {
 	content: '\e603';
 }
 #woocommerce-subscription-schedule .wcs-edit-date:hover::before {
-	color: #555555;
+	color: #555;
 }
 #woocommerce-subscription-schedule .wcs-delete-date::before {
 	content: '\e013';
 }
 #woocommerce-subscription-schedule .wcs-delete-date:hover::before {
-	color: #aa0000;
+	color: #a00;
 }
 
 /* Related Orders and Failed Payment Retries Metabox on Edit Subscription/Order Admin Screen */
@@ -638,21 +638,21 @@ table.wp-list-table .subscription_renewal_order {
 
 table.wp-list-table .subscription_head::after,
 table.wp-list-table .subscription_parent_order::after {
-	font-family: WooCommerce;
+	font-family: 'WooCommerce';
 	content: '\e014';
 }
 
 table.wp-list-table .subscription_resubscribe_order::after {
-	font-family: WooCommerce;
+	font-family: 'WooCommerce';
 	content: '\e014';
 	color: #999;
 }
 table.wp-list-table .subscription_renewal_order::after {
-	font-family: Dashicons;
+	font-family: 'Dashicons';
 	content: '\f321';
 }
 table.wp-list-table .payment_retry::after {
-	font-family: WooCommerce;
+	font-family: 'WooCommerce';
 	content: '\e012';
 }
 
@@ -702,7 +702,7 @@ table.wp-list-table .subscription_renewal_order::after {
 }
 
 .payment-method-features-info::before {
-	font-family: WooCommerce;
+	font-family: 'WooCommerce';
 	speak: none;
 	font-weight: 400;
 	font-variant: normal;
@@ -791,7 +791,7 @@ span.product-type.variable-subscription::before {
 	margin-left: 1.5%;
 	font-size: 60%;
 	font-weight: normal;
-	font-family: dashicons;
+	font-family: 'dashicons';
 	content: '\f504';
 }
 .subscription-status.status-active {

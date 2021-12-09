@@ -9,7 +9,7 @@ body.wcs-modal-open {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	height: 0vh;
+	height: 0;
 	background-color: transparent;
 	overflow: hidden;
 	transition: background-color 0.25s ease;
@@ -38,7 +38,7 @@ body.wcs-modal-open {
 	justify-content: flex-start;
 	margin: 0;
 	padding: 2em;
-	background-color: white;
+	background-color: #fff;
 	border-radius: 0.3em;
 	transform: scale( 0 );
 	transition: transform 0.25s;
@@ -47,8 +47,8 @@ body.wcs-modal-open {
 
 .wcs-modal .content-wrapper .close {
 	position: absolute;
-	top: 0px;
-	right: 0px;
+	top: 0;
+	right: 0;
 	z-index: 50;
 }
 

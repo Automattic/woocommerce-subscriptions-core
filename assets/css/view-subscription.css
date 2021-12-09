@@ -72,7 +72,7 @@
 
 .wcs_early_renew_modal_note {
 	position: sticky;
-	bottom: 0px;
+	bottom: 0;
 	min-width: 100%;
 	width: 0;
 }

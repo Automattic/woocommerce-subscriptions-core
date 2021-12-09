@@ -8,7 +8,7 @@ ul {
 	margin-bottom: 1.6em;
 }
 .wcs-badge::before {
-	font-family: WooCommerce !important;
+	font-family: 'WooCommerce' !important;
 	content: '\e03d';
 	color: #fff;
 	-webkit-font-smoothing: antialiased;
