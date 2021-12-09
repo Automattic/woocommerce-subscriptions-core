@@ -1711,9 +1711,8 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Add recurring payment gateway information after the Settings->Checkout->Payment Gateways table.
-	 * This includes links to find additional gateways, information about manual renewals
-	 * and a warning if no payment gateway which supports automatic recurring payments is enabled/setup correctly.
+	 * Add recurring payment gateway information after the Settings->Payments->Payment Methods table.
+	 * This includes information about manual renewals and a warning if no payment gateway which supports automatic recurring payments is enabled/setup correctly.
 	 *
 	 * @since 2.1
 	 */
