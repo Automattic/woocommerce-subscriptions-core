@@ -23,16 +23,16 @@ class WCS_Helper_Coupon {
 	 * @return WC_Coupon
 	 */
 	public static function __callStatic( $name, $arguments ) {
-		$type   = str_replace( [ 'create_', '_coupon' ], '', $name );
+		$type   = str_replace( array( 'create_', '_coupon' ), '', $name );
 		$code   = isset( $arguments[0] ) ? $arguments[0] : 'dummycoupon';
 		$amount = isset( $arguments[1] ) ? $arguments[1] : 10;
-		$meta   = isset( $arguments[2] ) ? (array) $arguments[2] : [];
+		$meta   = isset( $arguments[2] ) ? (array) $arguments[2] : array();
 		$meta   = wp_parse_args(
 			$meta,
-			[
+			array(
 				'discount_type' => $type,
 				'coupon_amount' => $amount,
-			]
+			)
 		);
 
 		return self::create_coupon( $code, $meta );
@@ -46,18 +46,20 @@ class WCS_Helper_Coupon {
 	 *
 	 * @return WC_Coupon
 	 */
-	public static function create_coupon( $coupon_code = 'dummycoupon', $meta = [] ) {
+	public static function create_coupon( $coupon_code = 'dummycoupon', $meta = array() ) {
 		// Insert post.
-		$coupon_id = wp_insert_post( [
-			'post_title'   => $coupon_code,
-			'post_type'    => 'shop_coupon',
-			'post_status'  => 'publish',
-			'post_excerpt' => 'This is a dummy coupon',
-		] );
+		$coupon_id = wp_insert_post(
+			array(
+				'post_title'   => $coupon_code,
+				'post_type'    => 'shop_coupon',
+				'post_status'  => 'publish',
+				'post_excerpt' => 'This is a dummy coupon',
+			)
+		);
 
 		$meta = wp_parse_args(
 			$meta,
-			[
+			array(
 				'discount_type'              => 'fixed_cart',
 				'coupon_amount'              => '1',
 				'individual_use'             => 'no',
@@ -69,13 +71,13 @@ class WCS_Helper_Coupon {
 				'expiry_date'                => '',
 				'free_shipping'              => 'no',
 				'exclude_sale_items'         => 'no',
-				'product_categories'         => [],
-				'exclude_product_categories' => [],
+				'product_categories'         => array(),
+				'exclude_product_categories' => array(),
 				'minimum_amount'             => '',
 				'maximum_amount'             => '',
-				'customer_email'             => [],
+				'customer_email'             => array(),
 				'usage_count'                => '0',
-			]
+			)
 		);
 
 		// Update meta.

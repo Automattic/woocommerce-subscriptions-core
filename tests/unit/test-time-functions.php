@@ -871,45 +871,4 @@ class Test_Time_Functions extends WP_UnitTestCase {
 			array( mktime( 1, 1, 1, 1, 1, 2007 ), mktime( 0, 0, 0, 2, 29, 2016 ), 3 ), // touching lower bound, multiple leap years
 		);
 	}
-
-	/**
-	 * Test WCS_Report_Cache_Manager::get_large_site_cache_update_timestamp()
-	 */
-	public function test_get_large_site_cache_update_timestamp() {
-		// Skip PHP versions prior to 5.5.10.
-		if ( version_compare( PHP_VERSION, '5.5.10', '<' ) ) {
-			$this->markTestSkipped( 'PHP 5.5.10 is required to reliably get a timestamp for 4 am via a timezone object' );
-		}
-
-		$report_cache_manager              = new WCS_Report_Cache_Manager();
-		$get_cache_update_timestamp_method = $this->get_accessible_protected_method( $report_cache_manager, 'get_large_site_cache_update_timestamp' );
-
-		// Check all GMT offsets between -12 and +12.
-		foreach ( range( -12, 12 ) as $gmt_offset ) {
-			update_option( 'gmt_offset', $gmt_offset );
-
-			// Convert the GMT offset into +0100 or -1200 format.
-			$is_negative = $gmt_offset < 0;
-			$gmt_offset  = abs( $gmt_offset );
-			$gmt_offset  = sprintf( '%02d00', $gmt_offset );
-
-			if ( $is_negative ) {
-				$gmt_offset = '-' . $gmt_offset;
-			} else {
-				$gmt_offset = '+' . $gmt_offset;
-			}
-
-			// Get the timestamp via the the timezone approach. This is the reliable approach however is only available on PHP 5.5.10+
-			$timezone_approach  = new DateTime( '4 am', new DateTimeZone( $gmt_offset ) );
-			$expected_timestamp = $timezone_approach->format( 'U' );
-
-			if ( $expected_timestamp <= gmdate( 'U' ) ) {
-				$expected_timestamp += DAY_IN_SECONDS;
-			}
-
-			$timestamp = $get_cache_update_timestamp_method->invoke( $report_cache_manager );
-
-			$this->assertEquals( $expected_timestamp, $timestamp );
-		}
-	}
 }

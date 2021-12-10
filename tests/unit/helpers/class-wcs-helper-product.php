@@ -20,8 +20,8 @@ class WCS_Helper_Product {
 	 *
 	 * @return WC_Product_Subscription
 	 */
-	public static function create_simple_subscription_product( $meta_filters = [], $post_filters = [] ) {
-		$default_meta_args = [
+	public static function create_simple_subscription_product( $meta_filters = array(), $post_filters = array() ) {
+		$default_meta_args = array(
 			'stock_status'                   => 'instock',
 			'downloadable'                   => 'no',
 			'virtual'                        => 'no',
@@ -35,16 +35,16 @@ class WCS_Helper_Product {
 			'subscription_length'            => 0,
 			'subscription_trial_length'      => 0,
 			'subscription_limit'             => 'no',
-		];
+		);
 
 		$meta_data         = wp_parse_args( $meta_filters, $default_meta_args );
-		$default_post_args = [
-			'post_status'    => 'publish',
-			'post_type'      => 'product',
-			'post_title'     => 'Monthly WooNinja Goodies',
-		];
-		$post_data  = wp_parse_args( $post_filters, $default_post_args );
-		$product_id = wp_insert_post( $post_data );
+		$default_post_args = array(
+			'post_status' => 'publish',
+			'post_type'   => 'product',
+			'post_title'  => 'Monthly WooNinja Goodies',
+		);
+		$post_data         = wp_parse_args( $post_filters, $default_post_args );
+		$product_id        = wp_insert_post( $post_data );
 
 		if ( is_wp_error( $product_id ) ) {
 			return false;
@@ -73,11 +73,13 @@ class WCS_Helper_Product {
 
 		// Create all attribute related things and a product
 		$attribute_data = self::create_attribute();
-		$product_id     = wp_insert_post( [
-			'post_title'  => 'Dummy Product',
-			'post_type'   => 'product',
-			'post_status' => 'publish',
-		] );
+		$product_id     = wp_insert_post(
+			array(
+				'post_title'  => 'Dummy Product',
+				'post_type'   => 'product',
+				'post_status' => 'publish',
+			)
+		);
 
 		// Set it as variable.
 		wp_set_object_terms( $product_id, 'variable-subscription', 'product_type' );
@@ -98,17 +100,21 @@ class WCS_Helper_Product {
 		update_post_meta( $product_id, '_stock_status', 'instock' );
 
 		// Attributes
-		update_post_meta( $product_id, '_default_attributes', [] );
-		update_post_meta( $product_id, '_product_attributes', [
-			'pa_size' => [
-				'name'         => 'pa_size',
-				'value'        => '',
-				'position'     => '1',
-				'is_visible'   => 0,
-				'is_variation' => 1,
-				'is_taxonomy'  => 1,
-			],
-		] );
+		update_post_meta( $product_id, '_default_attributes', array() );
+		update_post_meta(
+			$product_id,
+			'_product_attributes',
+			array(
+				'pa_size' => array(
+					'name'         => 'pa_size',
+					'value'        => '',
+					'position'     => '1',
+					'is_visible'   => 0,
+					'is_variation' => 1,
+					'is_taxonomy'  => 1,
+				),
+			)
+		);
 
 		// Link the product to the attribute
 		if ( isset( $attribute_data['term_ids'] ) ) {
@@ -116,23 +122,25 @@ class WCS_Helper_Product {
 		} else {
 			$wpdb->insert(
 				$wpdb->prefix . 'term_relationships',
-				[
+				array(
 					'object_id'        => $product_id,
 					'term_taxonomy_id' => $attribute_data['term_taxonomy_id'],
 					'term_order'       => 0,
-				]
+				)
 			);
 		}
 
 		// Create the variation
-		$variation_id = wp_insert_post( [
-			'post_title'  => 'Variation #' . ( $product_id + 1 ) . ' of Dummy Product',
-			'post_type'   => 'product_variation',
-			'post_parent' => $product_id,
-			'post_status' => 'publish',
-			'menu_order'  => 1,
-			'post_date'   => date( 'Y-m-d H:i:s', time() - 30 ), // Makes sure post dates differ if super quick.
-		] );
+		$variation_id = wp_insert_post(
+			array(
+				'post_title'  => 'Variation #' . ( $product_id + 1 ) . ' of Dummy Product',
+				'post_type'   => 'product_variation',
+				'post_parent' => $product_id,
+				'post_status' => 'publish',
+				'menu_order'  => 1,
+				'post_date'   => gmdate( 'Y-m-d H:i:s', time() - 30 ), // Makes sure post dates differ if super quick.
+			)
+		);
 
 		// Price related meta
 		update_post_meta( $variation_id, '_price', '10' );
@@ -152,13 +160,15 @@ class WCS_Helper_Product {
 		self::clear_product_cache( $variation_id );
 
 		// Create the variation
-		$variation_id = wp_insert_post( [
-			'post_title'  => 'Variation #' . ( $product_id + 2 ) . ' of Dummy Product',
-			'post_type'   => 'product_variation',
-			'post_parent' => $product_id,
-			'post_status' => 'publish',
-			'menu_order'  => 2,
-		] );
+		$variation_id = wp_insert_post(
+			array(
+				'post_title'  => 'Variation #' . ( $product_id + 2 ) . ' of Dummy Product',
+				'post_type'   => 'product_variation',
+				'post_parent' => $product_id,
+				'post_status' => 'publish',
+				'menu_order'  => 2,
+			)
+		);
 
 		// Price related meta
 		update_post_meta( $variation_id, '_price', '15' );
@@ -181,7 +191,7 @@ class WCS_Helper_Product {
 		self::clear_product_cache( $product_id );
 		self::clear_product_cache( $variation_id );
 
-		return 'variable' === $return_product ? wc_get_product( $product_id ) :wc_get_product( $variation_id );
+		return 'variable' === $return_product ? wc_get_product( $product_id ) : wc_get_product( $variation_id );
 	}
 
 	/**
@@ -193,11 +203,13 @@ class WCS_Helper_Product {
 	 */
 	public static function create_grouped_subscription_product( $return_product = 'simple' ) {
 		// Create the product
-		$product = wp_insert_post( [
-			'post_title'  => 'Dummy Grouped Product',
-			'post_type'   => 'product',
-			'post_status' => 'publish',
-		] );
+		$product = wp_insert_post(
+			array(
+				'post_title'  => 'Dummy Grouped Product',
+				'post_type'   => 'product',
+				'post_status' => 'publish',
+			)
+		);
 
 		$simple_product_1 = self::create_simple_subscription_product();
 		$simple_product_2 = self::create_simple_subscription_product();
@@ -210,7 +222,7 @@ class WCS_Helper_Product {
 		update_post_meta( $product, '_stock_status', 'instock' );
 
 		// Set the subscription product grouped relationship in a version compatible way.
-		update_post_meta( $product, '_children', [ $simple_product_1->get_id(), $simple_product_2->get_id() ] );
+		update_post_meta( $product, '_children', array( $simple_product_1->get_id(), $simple_product_2->get_id() ) );
 
 		wp_set_object_terms( $product, 'grouped', 'product_type' );
 
@@ -246,7 +258,7 @@ class WCS_Helper_Product {
 	 *
 	 * @return array
 	 */
-	public static function create_attribute( $raw_name = 'size', $terms = [ 'small' ] ) {
+	public static function create_attribute( $raw_name = 'size', $terms = array( 'small' ) ) {
 		global $wpdb, $wc_product_attributes;
 
 		// Make sure caches are clean.
@@ -270,35 +282,35 @@ class WCS_Helper_Product {
 			unregister_taxonomy( $taxonomy_name );
 
 			$attribute_id = wc_create_attribute(
-				[
+				array(
 					'name'         => $raw_name,
 					'slug'         => $attribute_name,
 					'type'         => 'select',
 					'order_by'     => 'menu_order',
 					'has_archives' => 0,
-				]
+				)
 			);
 
 			// Register as taxonomy.
 			register_taxonomy(
 				$taxonomy_name,
-				apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy_name, [ 'product' ] ),
+				apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy_name, array( 'product' ) ),
 				apply_filters(
 					'woocommerce_taxonomy_args_' . $taxonomy_name,
-					[
-						'labels'       => [
+					array(
+						'labels'       => array(
 							'name' => $raw_name,
-						],
+						),
 						'hierarchical' => false,
 						'show_ui'      => false,
 						'query_var'    => true,
 						'rewrite'      => false,
-					]
+					)
 				)
 			);
 
 			// Set product attributes global.
-			$wc_product_attributes = [];
+			$wc_product_attributes = array();
 
 			foreach ( wc_get_attribute_taxonomies() as $taxonomy ) {
 				$wc_product_attributes[ wc_attribute_taxonomy_name( $taxonomy->attribute_name ) ] = $taxonomy;
@@ -306,12 +318,12 @@ class WCS_Helper_Product {
 		}
 
 		$attribute = wc_get_attribute( $attribute_id );
-		$return    = [
+		$return    = array(
 			'attribute_name'     => $attribute->name,
 			'attribute_taxonomy' => $attribute->slug,
 			'attribute_id'       => $attribute_id,
-			'term_ids'           => [],
-		];
+			'term_ids'           => array(),
+		);
 
 		foreach ( $terms as $term ) {
 			$result = term_exists( $term, $attribute->slug );

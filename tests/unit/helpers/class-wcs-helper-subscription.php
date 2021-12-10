@@ -19,9 +19,9 @@ class WCS_Helper_Subscription {
 	 *
 	 * @return array
 	 */
-	public static function create_subscriptions( $data = [] ) {
+	public static function create_subscriptions( $data = array() ) {
 		$statuses      = wcs_get_subscription_statuses();
-		$subscriptions = [];
+		$subscriptions = array();
 		$username      = 'testCustomer';
 		$counter       = 0;
 
@@ -30,21 +30,23 @@ class WCS_Helper_Subscription {
 			$counter++;
 		}
 
-		$customer_id = wp_insert_user( [
+		$customer_id = wp_insert_user(
+			array(
 				'user_login' => $username,
 				'user_pass'  => 'password',
 				'user_email' => $username . '@example.com',
 				'role'       => 'customer',
-		] );
+			)
+		);
 
 		foreach ( $statuses as $status => $name ) {
 			$status = substr( $status, 3 );
-			$args   = [
+			$args   = array(
 				'status'           => $status,
 				'customer_id'      => $customer_id,
 				'billing_period'   => 'month',
 				'billing_interval' => 1,
-			];
+			);
 
 			if ( ! empty( $data[ $status ] ) ) {
 				$args = wp_parse_args( $data[ $status ], $args );
@@ -65,24 +67,24 @@ class WCS_Helper_Subscription {
 	 *
 	 * @return array
 	 */
-	public static function subscriptions_data_provider( $data = [] ) {
+	public static function subscriptions_data_provider( $data = array() ) {
 		$statuses      = wcs_get_subscription_statuses();
-		$subscriptions = [];
+		$subscriptions = array();
 
 		foreach ( $statuses as $status => $name ) {
 			$status = substr( $status, 3 );
-			$args   = [
+			$args   = array(
 				'status'           => $status,
 				'customer_id'      => 1,
 				'billing_period'   => 'month',
 				'billing_interval' => 1,
-			];
+			);
 
 			if ( ! empty( $data[ $status ] ) ) {
 				$args = wp_parse_args( $data[ $status ], $args );
 			}
 
-			$subscriptions[] = [ $status, wcs_create_subscription( $args ) ];
+			$subscriptions[] = array( $status, wcs_create_subscription( $args ) );
 		}
 
 		return $subscriptions;
@@ -97,16 +99,16 @@ class WCS_Helper_Subscription {
 	 * @return WC_Subscription
 	 */
 	public static function create_subscription( $post_meta = null, $subscription_meta = null ) {
-		$default_args = [
+		$default_args = array(
 			'status'           => '',
 			'customer_id'      => 1,
 			'start_date'       => current_time( 'mysql' ),
 			'billing_period'   => 'month',
 			'billing_interval' => 1,
-		];
+		);
 
 		$args              = wp_parse_args( $post_meta, $default_args );
-		$default_meta_args = [
+		$default_meta_args = array(
 			'order_shipping'          => 0,
 			'order_total'             => 10,
 			'order_tax'               => 0,
@@ -118,7 +120,7 @@ class WCS_Helper_Subscription {
 			'payment_method'          => '',
 			'payment_method_title'    => '',
 			'requires_manual_renewal' => 'true',
-		];
+		);
 
 		$subscription_meta_data = wp_parse_args( $subscription_meta, $default_meta_args );
 		$subscription           = wcs_create_subscription( $args );
@@ -144,13 +146,13 @@ class WCS_Helper_Subscription {
 	 * @param array $order_data   Data to apply to the order object.
 	 * @param array $billing_data Billing fields.
 	 * @param bool  $simple       Whether to create a simple order, with no discounts
-	 * 
+	 *
 	 * @return WC_Order
 	 */
-	public static function create_order( $order_data = [], $billing_data = [], $simple = false ) {
+	public static function create_order( $order_data = array(), $billing_data = array(), $simple = false ) {
 		WC_Helper_Shipping::create_simple_flat_rate();
 
-		$default_order_data = [
+		$default_order_data = array(
 			'status'        => 'pending',
 			'customer_id'   => 1,
 			'customer_note' => '',
@@ -158,7 +160,7 @@ class WCS_Helper_Subscription {
 			'created_via'   => null,
 			'cart_hash'     => null,
 			'order_id'      => 0,
-		];
+		);
 
 		$_SERVER['REMOTE_ADDR'] = '127.0.0.1'; // Required, else wc_create_order throws an exception
 
@@ -167,7 +169,7 @@ class WCS_Helper_Subscription {
 
 		// Set billing address
 		$billing_address = array_merge(
-			[
+			array(
 				'country'    => 'US',
 				'first_name' => 'Jeroen',
 				'last_name'  => 'Sormani',
@@ -179,7 +181,7 @@ class WCS_Helper_Subscription {
 				'state'      => 'NY',
 				'email'      => 'admin@example.org',
 				'phone'      => '555-32123',
-			],
+			),
 			$billing_data
 		);
 		$order->set_address( $billing_address, 'billing' );
@@ -257,7 +259,7 @@ class WCS_Helper_Subscription {
 		if ( is_int( $subscription ) ) {
 			$subscription = wcs_get_subscription( $subscription );
 		}
-		$order = self::create_order( [ 'customer_id' => $subscription->get_customer_id() ] );
+		$order = self::create_order( array( 'customer_id' => $subscription->get_customer_id() ) );
 
 		$subscription->set_parent_id( $order->get_id() );
 		$subscription->save();
@@ -283,13 +285,15 @@ class WCS_Helper_Subscription {
 		}
 
 		$item = new WC_Order_Item_Shipping();
-		$item->set_props( [
-			'method_id'    => $shipping_rate->id,
-			'method_title' => $shipping_rate->label,
-			'total'        => wc_format_decimal( $shipping_rate->cost ),
-			'taxes'        => $shipping_rate->taxes,
-			'order_id'     => $order->get_id(),
-		] );
+		$item->set_props(
+			array(
+				'method_id'    => $shipping_rate->id,
+				'method_title' => $shipping_rate->label,
+				'total'        => wc_format_decimal( $shipping_rate->cost ),
+				'taxes'        => $shipping_rate->taxes,
+				'order_id'     => $order->get_id(),
+			)
+		);
 
 		foreach ( $shipping_rate->get_meta_data() as $key => $value ) {
 			$item->add_meta_data( $key, $value, true );
@@ -308,19 +312,19 @@ class WCS_Helper_Subscription {
 	 *
 	 * @return int
 	 */
-	public static function add_product( &$order, $product, $qty = 1, $args = [] ) {
+	public static function add_product( &$order, $product, $qty = 1, $args = array() ) {
 		$args = wp_parse_args(
 			$args,
-			[
+			array(
 				'name'         => $product->get_name(),
 				'tax_class'    => $product->get_tax_class(),
 				'product_id'   => $product->is_type( 'variation' ) ? $product->get_parent_id() : $product->get_id(),
 				'variation_id' => $product->is_type( 'variation' ) ? $product->get_id() : 0,
-				'variation'    => $product->is_type( 'variation' ) ? $product->get_attributes() : [],
-				'subtotal'     => wc_get_price_excluding_tax( $product, [ 'qty' => $qty ] ),
-				'total'        => wc_get_price_excluding_tax( $product, [ 'qty' => $qty ] ),
+				'variation'    => $product->is_type( 'variation' ) ? $product->get_attributes() : array(),
+				'subtotal'     => wc_get_price_excluding_tax( $product, array( 'qty' => $qty ) ),
+				'total'        => wc_get_price_excluding_tax( $product, array( 'qty' => $qty ) ),
 				'quantity'     => $qty,
-			]
+			)
 		);
 
 		// BW compatibility with old args

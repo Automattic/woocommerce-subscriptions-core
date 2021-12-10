@@ -29,6 +29,7 @@ if ( PHP_VERSION_ID >= 80000 && file_exists( $_tests_dir . '/includes/phpunit7/M
 require_once $_tests_dir . '/includes/functions.php';
 
 
+
 /**
  * Manually load the plugin being tested.
  */
@@ -53,6 +54,14 @@ require_once dirname( __FILE__ ) . '/../../vendor/yoast/phpunit-polyfills/phpuni
 
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
+require dirname( __FILE__ ) . '/helpers/class-wcs-helper-coupon.php';
+require dirname( __FILE__ ) . '/helpers/class-wcs-helper-product.php';
+require dirname( __FILE__ ) . '/helpers/class-wcs-helper-subscription.php';
+require dirname( __FILE__ ) . '/helpers/class-wcs-helper-upgrade-repair.php';
+require dirname( __FILE__ ) . '/helpers/class-wc-helper-order.php';
+require dirname( __FILE__ ) . '/helpers/class-wc-helper-shipping.php';
+require dirname( __FILE__ ) . '/helpers/class-wc-helper-product.php';
+require dirname( __FILE__ ) . '/helpers/class-wcs-email-listener.php';
 
 // We use outdated PHPUnit version, which emits deprecation errors in PHP 7.4 (deprecated reflection APIs).
 if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
