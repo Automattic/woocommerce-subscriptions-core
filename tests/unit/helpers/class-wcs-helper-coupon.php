@@ -48,12 +48,14 @@ class WCS_Helper_Coupon {
 	 */
 	public static function create_coupon( $coupon_code = 'dummycoupon', $meta = [] ) {
 		// Insert post.
-		$coupon_id = wp_insert_post( [
-			'post_title'   => $coupon_code,
-			'post_type'    => 'shop_coupon',
-			'post_status'  => 'publish',
-			'post_excerpt' => 'This is a dummy coupon',
-		] );
+		$coupon_id = wp_insert_post(
+			[
+				'post_title'   => $coupon_code,
+				'post_type'    => 'shop_coupon',
+				'post_status'  => 'publish',
+				'post_excerpt' => 'This is a dummy coupon',
+			]
+		);
 
 		$meta = wp_parse_args(
 			$meta,

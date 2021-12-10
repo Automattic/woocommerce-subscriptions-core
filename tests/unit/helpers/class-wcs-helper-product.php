@@ -39,10 +39,11 @@ class WCS_Helper_Product {
 
 		$meta_data         = wp_parse_args( $meta_filters, $default_meta_args );
 		$default_post_args = [
-			'post_status'    => 'publish',
-			'post_type'      => 'product',
-			'post_title'     => 'Monthly WooNinja Goodies',
+			'post_status' => 'publish',
+			'post_type'   => 'product',
+			'post_title'  => 'Monthly WooNinja Goodies',
 		];
+
 		$post_data  = wp_parse_args( $post_filters, $default_post_args );
 		$product_id = wp_insert_post( $post_data );
 
@@ -73,11 +74,13 @@ class WCS_Helper_Product {
 
 		// Create all attribute related things and a product
 		$attribute_data = self::create_attribute();
-		$product_id     = wp_insert_post( [
-			'post_title'  => 'Dummy Product',
-			'post_type'   => 'product',
-			'post_status' => 'publish',
-		] );
+		$product_id     = wp_insert_post(
+			[
+				'post_title'  => 'Dummy Product',
+				'post_type'   => 'product',
+				'post_status' => 'publish',
+			]
+		);
 
 		// Set it as variable.
 		wp_set_object_terms( $product_id, 'variable-subscription', 'product_type' );
@@ -99,16 +102,20 @@ class WCS_Helper_Product {
 
 		// Attributes
 		update_post_meta( $product_id, '_default_attributes', [] );
-		update_post_meta( $product_id, '_product_attributes', [
-			'pa_size' => [
-				'name'         => 'pa_size',
-				'value'        => '',
-				'position'     => '1',
-				'is_visible'   => 0,
-				'is_variation' => 1,
-				'is_taxonomy'  => 1,
-			],
-		] );
+		update_post_meta(
+			$product_id,
+			'_product_attributes',
+			[
+				'pa_size' => [
+					'name'         => 'pa_size',
+					'value'        => '',
+					'position'     => '1',
+					'is_visible'   => 0,
+					'is_variation' => 1,
+					'is_taxonomy'  => 1,
+				],
+			]
+		);
 
 		// Link the product to the attribute
 		if ( isset( $attribute_data['term_ids'] ) ) {
@@ -125,14 +132,16 @@ class WCS_Helper_Product {
 		}
 
 		// Create the variation
-		$variation_id = wp_insert_post( [
-			'post_title'  => 'Variation #' . ( $product_id + 1 ) . ' of Dummy Product',
-			'post_type'   => 'product_variation',
-			'post_parent' => $product_id,
-			'post_status' => 'publish',
-			'menu_order'  => 1,
-			'post_date'   => date( 'Y-m-d H:i:s', time() - 30 ), // Makes sure post dates differ if super quick.
-		] );
+		$variation_id = wp_insert_post(
+			[
+				'post_title'  => 'Variation #' . ( $product_id + 1 ) . ' of Dummy Product',
+				'post_type'   => 'product_variation',
+				'post_parent' => $product_id,
+				'post_status' => 'publish',
+				'menu_order'  => 1,
+				'post_date'   => gmdate( 'Y-m-d H:i:s', time() - 30 ), // Makes sure post dates differ if super quick.
+			]
+		);
 
 		// Price related meta
 		update_post_meta( $variation_id, '_price', '10' );
@@ -152,13 +161,15 @@ class WCS_Helper_Product {
 		self::clear_product_cache( $variation_id );
 
 		// Create the variation
-		$variation_id = wp_insert_post( [
-			'post_title'  => 'Variation #' . ( $product_id + 2 ) . ' of Dummy Product',
-			'post_type'   => 'product_variation',
-			'post_parent' => $product_id,
-			'post_status' => 'publish',
-			'menu_order'  => 2,
-		] );
+		$variation_id = wp_insert_post(
+			[
+				'post_title'  => 'Variation #' . ( $product_id + 2 ) . ' of Dummy Product',
+				'post_type'   => 'product_variation',
+				'post_parent' => $product_id,
+				'post_status' => 'publish',
+				'menu_order'  => 2,
+			]
+		);
 
 		// Price related meta
 		update_post_meta( $variation_id, '_price', '15' );
@@ -181,7 +192,7 @@ class WCS_Helper_Product {
 		self::clear_product_cache( $product_id );
 		self::clear_product_cache( $variation_id );
 
-		return 'variable' === $return_product ? wc_get_product( $product_id ) :wc_get_product( $variation_id );
+		return 'variable' === $return_product ? wc_get_product( $product_id ) : wc_get_product( $variation_id );
 	}
 
 	/**
@@ -193,11 +204,13 @@ class WCS_Helper_Product {
 	 */
 	public static function create_grouped_subscription_product( $return_product = 'simple' ) {
 		// Create the product
-		$product = wp_insert_post( [
-			'post_title'  => 'Dummy Grouped Product',
-			'post_type'   => 'product',
-			'post_status' => 'publish',
-		] );
+		$product = wp_insert_post(
+			[
+				'post_title'  => 'Dummy Grouped Product',
+				'post_type'   => 'product',
+				'post_status' => 'publish',
+			]
+		);
 
 		$simple_product_1 = self::create_simple_subscription_product();
 		$simple_product_2 = self::create_simple_subscription_product();

@@ -30,12 +30,14 @@ class WCS_Helper_Subscription {
 			$counter++;
 		}
 
-		$customer_id = wp_insert_user( [
+		$customer_id = wp_insert_user(
+			[
 				'user_login' => $username,
 				'user_pass'  => 'password',
 				'user_email' => $username . '@example.com',
 				'role'       => 'customer',
-		] );
+			]
+		);
 
 		foreach ( $statuses as $status => $name ) {
 			$status = substr( $status, 3 );
@@ -144,7 +146,7 @@ class WCS_Helper_Subscription {
 	 * @param array $order_data   Data to apply to the order object.
 	 * @param array $billing_data Billing fields.
 	 * @param bool  $simple       Whether to create a simple order, with no discounts
-	 * 
+	 *
 	 * @return WC_Order
 	 */
 	public static function create_order( $order_data = [], $billing_data = [], $simple = false ) {
@@ -283,13 +285,15 @@ class WCS_Helper_Subscription {
 		}
 
 		$item = new WC_Order_Item_Shipping();
-		$item->set_props( [
-			'method_id'    => $shipping_rate->id,
-			'method_title' => $shipping_rate->label,
-			'total'        => wc_format_decimal( $shipping_rate->cost ),
-			'taxes'        => $shipping_rate->taxes,
-			'order_id'     => $order->get_id(),
-		] );
+		$item->set_props(
+			[
+				'method_id'    => $shipping_rate->id,
+				'method_title' => $shipping_rate->label,
+				'total'        => wc_format_decimal( $shipping_rate->cost ),
+				'taxes'        => $shipping_rate->taxes,
+				'order_id'     => $order->get_id(),
+			]
+		);
 
 		foreach ( $shipping_rate->get_meta_data() as $key => $value ) {
 			$item->add_meta_data( $key, $value, true );
