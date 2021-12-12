@@ -23,6 +23,7 @@
 		<exclude name="Core.Commenting.CommentTags.CopyrightTag" />
 		<exclude name="Core.Commenting.CommentTags.LicenseTag" />
 		<exclude name="WooCommerce.Commenting.CommentTags.CategoryTag" />
+		<exclude name="Generic.Arrays.DisallowShortArraySyntax.Found"/>
 	</rule>
 
 	<!-- Files to check -->

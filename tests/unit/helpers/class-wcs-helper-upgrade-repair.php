@@ -7,7 +7,7 @@
 class WCS_Helper_Upgrade_Repair {
 
 	public static function fetch_old_subscription() {
-		return array(
+		return [
 			'order_id'           => '28',
 			'name'               => 'variable subs',
 			'user_id'            => '2',
@@ -25,16 +25,16 @@ class WCS_Helper_Upgrade_Repair {
 			'expiry_date'        => '0',
 			'trial_expiry_date'  => '2015-07-17 02:26:29',
 			'failed_payments'    => '0',
-			'completed_payments' => array(
+			'completed_payments' => [
 				'2015-07-10 02:26:29',
 				'2015-07-17 02:26:29',
 				'2015-07-24 02:26:29',
 				'2015-07-31 02:26:29',
-			),
+			],
 			'status'             => 'on-hold',
 			'end_date'           => '',
 			'suspension_count'   => '1',
-		);
+		];
 	}
 
 	public static function fetch_item_id() {
@@ -42,180 +42,180 @@ class WCS_Helper_Upgrade_Repair {
 	}
 
 	public static function fetch_item_meta() {
-		return array(
-			'_qty'                             => array( '1' ),
-			'_tax_class'                       => array( '' ),
-			'_product_id'                      => array( '12' ),
-			'_variation_id'                    => array( '14' ),
-			'_subscription_period'             => array( 'week' ),
-			'_subscription_interval'           => array( '1' ),
-			'_subscription_length'             => array( '0' ),
-			'_subscription_trial_length'       => array( '7' ),
-			'_subscription_trial_period'       => array( 'day' ),
-			'_subscription_recurring_amount'   => array( '11' ),
-			'_subscription_sign_up_fee'        => array( '20' ),
-			'_recurring_line_total'            => array( '11' ),
-			'_recurring_line_tax'              => array( '0' ),
-			'_recurring_line_subtotal'         => array( '11' ),
-			'_recurring_line_subtotal_tax'     => array( '0' ),
-			'_subscription_start_date'         => array( '2015-07-10 02:26:29' ),
-			'_subscription_expiry_date'        => array( '0' ),
-			'_subscription_trial_expiry_date'  => array( '2015-07-17 02:26:29' ),
-			'_subscription_failed_payments'    => array( '0' ),
-			'_subscription_completed_payments' => array( 'a:4:{i:0;s:19:"2015-07-10 02:26:29";i:1;s:19:"2015-07-17 02:26:29";i:2;s:19:"2015-07-24 02:26:29";i:3;s:19:"2015-07-31 02:26:29";}' ),
-			'_subscription_status'             => array( 'on-hold' ),
-			'_subscription_end_date'           => array( '' ),
-			'_subscription_suspension_count'   => array( '1' ),
-			'_line_subtotal'                   => array( '11' ),
-			'_line_total'                      => array( '11' ),
-			'_line_tax'                        => array( '0' ),
-			'_line_subtotal_tax'               => array( '0' ),
-		);
+		return [
+			'_qty'                             => [ '1' ],
+			'_tax_class'                       => [ '' ],
+			'_product_id'                      => [ '12' ],
+			'_variation_id'                    => [ '14' ],
+			'_subscription_period'             => [ 'week' ],
+			'_subscription_interval'           => [ '1' ],
+			'_subscription_length'             => [ '0' ],
+			'_subscription_trial_length'       => [ '7' ],
+			'_subscription_trial_period'       => [ 'day' ],
+			'_subscription_recurring_amount'   => [ '11' ],
+			'_subscription_sign_up_fee'        => [ '20' ],
+			'_recurring_line_total'            => [ '11' ],
+			'_recurring_line_tax'              => [ '0' ],
+			'_recurring_line_subtotal'         => [ '11' ],
+			'_recurring_line_subtotal_tax'     => [ '0' ],
+			'_subscription_start_date'         => [ '2015-07-10 02:26:29' ],
+			'_subscription_expiry_date'        => [ '0' ],
+			'_subscription_trial_expiry_date'  => [ '2015-07-17 02:26:29' ],
+			'_subscription_failed_payments'    => [ '0' ],
+			'_subscription_completed_payments' => [ 'a:4:{i:0;s:19:"2015-07-10 02:26:29";i:1;s:19:"2015-07-17 02:26:29";i:2;s:19:"2015-07-24 02:26:29";i:3;s:19:"2015-07-31 02:26:29";}' ],
+			'_subscription_status'             => [ 'on-hold' ],
+			'_subscription_end_date'           => [ '' ],
+			'_subscription_suspension_count'   => [ '1' ],
+			'_line_subtotal'                   => [ '11' ],
+			'_line_total'                      => [ '11' ],
+			'_line_tax'                        => [ '0' ],
+			'_line_subtotal_tax'               => [ '0' ],
+		];
 	}
 
 	public static function fetch_order_item() {
-		return array(
+		return [
 			'name'                            => 'variable subs',
 			'type'                            => 'line_item',
-			'item_meta'                       => array(
-				'_qty'                             => array( '1' ),
-				'_tax_class'                       => array( '' ),
-				'_product_id'                      => array( '12' ),
-				'_variation_id'                    => array( '14' ),
-				'_subscription_period'             => array( 'week' ),
-				'_subscription_interval'           => array( '1' ),
-				'_subscription_length'             => array( '0' ),
-				'_subscription_trial_length'       => array( '7' ),
-				'_subscription_trial_period'       => array( 'day' ),
-				'_subscription_recurring_amount'   => array( '11' ),
-				'_subscription_sign_up_fee'        => array( '20' ),
-				'_recurring_line_total'            => array( '11' ),
-				'_recurring_line_tax'              => array( '0' ),
-				'_recurring_line_subtotal'         => array( '11' ),
-				'_recurring_line_subtotal_tax'     => array( '0' ),
-				'_subscription_start_date'         => array( '2015-07-10 02:26:29' ),
-				'_subscription_expiry_date'        => array( '0' ),
-				'_subscription_trial_expiry_date'  => array( '2015-07-17 02:26:29' ),
-				'_subscription_failed_payments'    => array( '0' ),
-				'_subscription_completed_payments' => array( 'a:4:{i:0;s:19:"2015-07-10 02:26:29";i:1;s:19:"2015-07-17 2:26:29";i:2;s:19:"2015-07-24 02:26:29";i:3;s:19:"2015-07-31 02:26:29";}' ),
-				'_subscription_status'             => array( 'on-hold' ),
-				'_subscription_end_date'           => array( '' ),
-				'_subscription_suspension_count'   => array( '1' ),
-				'_line_subtotal'                   => array( '11' ),
-				'_line_total'                      => array( '11' ),
-				'_line_tax'                        => array( '0' ),
-				'_line_subtotal_tax'               => array( '0' ),
-			),
-			'item_meta_array'                 => array(
-				(object) array(
+			'item_meta'                       => [
+				'_qty'                             => [ '1' ],
+				'_tax_class'                       => [ '' ],
+				'_product_id'                      => [ '12' ],
+				'_variation_id'                    => [ '14' ],
+				'_subscription_period'             => [ 'week' ],
+				'_subscription_interval'           => [ '1' ],
+				'_subscription_length'             => [ '0' ],
+				'_subscription_trial_length'       => [ '7' ],
+				'_subscription_trial_period'       => [ 'day' ],
+				'_subscription_recurring_amount'   => [ '11' ],
+				'_subscription_sign_up_fee'        => [ '20' ],
+				'_recurring_line_total'            => [ '11' ],
+				'_recurring_line_tax'              => [ '0' ],
+				'_recurring_line_subtotal'         => [ '11' ],
+				'_recurring_line_subtotal_tax'     => [ '0' ],
+				'_subscription_start_date'         => [ '2015-07-10 02:26:29' ],
+				'_subscription_expiry_date'        => [ '0' ],
+				'_subscription_trial_expiry_date'  => [ '2015-07-17 02:26:29' ],
+				'_subscription_failed_payments'    => [ '0' ],
+				'_subscription_completed_payments' => [ 'a:4:{i:0;s:19:"2015-07-10 02:26:29";i:1;s:19:"2015-07-17 2:26:29";i:2;s:19:"2015-07-24 02:26:29";i:3;s:19:"2015-07-31 02:26:29";}' ],
+				'_subscription_status'             => [ 'on-hold' ],
+				'_subscription_end_date'           => [ '' ],
+				'_subscription_suspension_count'   => [ '1' ],
+				'_line_subtotal'                   => [ '11' ],
+				'_line_total'                      => [ '11' ],
+				'_line_tax'                        => [ '0' ],
+				'_line_subtotal_tax'               => [ '0' ],
+			],
+			'item_meta_array'                 => [
+				(object) [
 					'key'   => '_qty',
 					'value' => '1',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_tax_class',
 					'value' => '',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_product_id',
 					'value' => '12',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_variation_id',
 					'value' => '14',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_subscription_period',
 					'value' => 'week',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_subscription_interval',
 					'value' => '1',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_subscription_length',
 					'value' => '0',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_subscription_trial_length',
 					'value' => '7',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_subscription_trial_period',
 					'value' => 'day',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_subscription_recurring_amount',
 					'value' => '11',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_subscription_sign_up_fee',
 					'value' => '20',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_recurring_line_total',
 					'value' => '11',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_recurring_line_tax',
 					'value' => '0',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_recurring_line_subtotal',
 					'value' => '11',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_recurring_line_subtotal_tax',
 					'value' => '0',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_subscription_start_date',
 					'value' => '2015-07-10 02:26:29',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_subscription_expiry_date',
 					'value' => '0',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_subscription_trial_expiry_date',
 					'value' => '2015-07-17 02:26:29',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_subscription_failed_payments',
 					'value' => '0',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_subscription_completed_payments',
 					'value' => 'a:4:{i:0;s:19:"2015-07-10 02:26:29";i:1;s:19:"2015-07-17 02:26:29";i:2;s:19:"2015-07-24 02:26:29";i:3;s:19:"2015-07-31 02:26:29";}',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_subscription_status',
 					'value' => 'on-hold',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_subscription_end_date',
 					'value' => '',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_subscription_suspension_count',
 					'value' => '1',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_line_subtotal',
 					'value' => '11',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_line_total',
 					'value' => '11',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_line_tax',
 					'value' => '0',
-				),
-				(object) array(
+				],
+				(object) [
 					'key'   => '_line_subtotal_tax',
 					'value' => '0',
-				),
-			),
+				],
+			],
 			'qty'                             => '1',
 			'tax_class'                       => '',
 			'product_id'                      => '12',
@@ -243,6 +243,6 @@ class WCS_Helper_Upgrade_Repair {
 			'line_total'                      => '11',
 			'line_tax'                        => '0',
 			'line_subtotal_tax'               => '0',
-		);
+		];
 	}
 }
