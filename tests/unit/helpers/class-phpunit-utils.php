@@ -18,7 +18,8 @@ class PHPUnit_Utils {
 	 * @param  object $obj  The class instance.
 	 * @param  string $name The name of the method to call.
 	 * @param  array  $args The method arguments.
-	 * @return mixed        The method return value.
+	 *
+	 * @return mixed
 	 */
 	public static function call_method( $obj, $name, $args ) {
 		$class  = new \ReflectionClass( $obj );
