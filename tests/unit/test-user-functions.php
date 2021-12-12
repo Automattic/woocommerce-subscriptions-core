@@ -6,12 +6,13 @@
 class Test_User_Functions extends WP_UnitTestCase {
 
 	public $admin_user_id;
+	public $user_id = 1;
 
 	public function setUp() {
 		parent::setUp();
 
 		// setup a shop_manager and admin for testing
-		$admin_user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
+		$this->admin_user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
 	}
 
 	/**
