@@ -46,17 +46,6 @@ function _manually_load_plugin() {
 	require $_plugin_dir . '/includes/class-wc-subscriptions-core-plugin.php';
 	new WC_Subscriptions_Core_Plugin();
 }
-$wcs_test_helper_autoloader = function ( $class_name ) {
-	if ( false === stripos( $class_name, 'helper' ) ) {
-		return;
-	}
-	$filename = 'class- ' . strtolower( strtr( $class_name, [ '_' => '-' ] ) ) . '.php';
-	$path     = dirname( __FILE__ ) . '/helpers/' . $filename;
-
-	if ( file_exists( $filename ) ) {
-		require $filename;
-	}
-};
 
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
@@ -65,8 +54,6 @@ require_once dirname( __FILE__ ) . '/../../vendor/yoast/phpunit-polyfills/phpuni
 
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
-
-spl_autoload_register( $wcs_test_helper_autoloader );
 
 // We use outdated PHPUnit version, which emits deprecation errors in PHP 7.4 (deprecated reflection APIs).
 if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
