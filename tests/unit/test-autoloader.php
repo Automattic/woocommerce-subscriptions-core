@@ -22,8 +22,7 @@ class Test_Autoloader extends WP_UnitTestCase {
 	 * @dataProvider should_autoload_provider
 	 */
 	public function test_should_autoload( $class_name, $expected ) {
-		$should_autoload = $this->get_accessible_protected_method( $this->autoloader, 'should_autoload' );
-		$result          = $should_autoload->invoke( $this->autoloader, strtolower( $class_name ) );
+		$result = PHPUnit_Utils::call_method( $this->autoloader, 'should_autoload', [ strtolower( $class_name ) ] );
 		$this->assertEquals( $expected, $result, "{$class_name} should_autoload() test" );
 	}
 
@@ -50,8 +49,7 @@ class Test_Autoloader extends WP_UnitTestCase {
 	 * @dataProvider relative_class_path_provider
 	 */
 	public function test_relative_class_path( $class_name, $expected_path ) {
-		$get_relative_class_path = $this->get_accessible_protected_method( $this->autoloader, 'get_relative_class_path' );
-		$path                    = $get_relative_class_path->invoke( $this->autoloader, strtolower( $class_name ) );
+		$path = PHPUnit_Utils::call_method( $this->autoloader, 'get_relative_class_path', [ strtolower( $class_name ) ] );
 		$this->assertEquals( $expected_path, $path, "{$class_name} get_relative_class_path() test" );
 	}
 
@@ -209,8 +207,7 @@ class Test_Autoloader extends WP_UnitTestCase {
 	 * @dataProvider get_file_name_provider
 	 */
 	public function test_get_file_name( $class_name, $expected ) {
-		$get_file_name = $this->get_accessible_protected_method( $this->autoloader, 'get_file_name' );
-		$name          = $get_file_name->invoke( $this->autoloader, strtolower( $class_name ) );
+		$name = PHPUnit_Utils::call_method( $this->autoloader, 'get_file_name', [ strtolower( $class_name ) ] );
 		$this->assertEquals( $expected, $name, "{$class_name} get_file_name() test" );
 	}
 
@@ -373,25 +370,5 @@ class Test_Autoloader extends WP_UnitTestCase {
 			array( 'WCS_Upgrade_Logger', 'class-wcs-upgrade-logger.php' ),
 			array( 'WCS_Upgrade_Notice_Manager', 'class-wcs-upgrade-notice-manager.php' ),
 		);
-	}
-
-	/**
-	 * A utility function to make certain methods public, useful for testing protected methods
-	 * that affect public APIs, but are not public to avoid use due to potential confusion, like
-	 * like @see WCS_Retry_Manager::get_store_class() & WCS_Retry_Manager::get_rules_class(), both
-	 * of which are important to test to ensure that @see WCS_Retry_Manager::get_store() and @see
-	 * WCS_Retry_Manager::get_rules() return correct custom classes when filtered, which can not
-	 * be tested due to the use of static properties to store them.
-	 *
-	 * @return ReflectionMethod
-	 */
-	protected function get_accessible_protected_method( $object, $method_name ) {
-
-		$reflected_object = new ReflectionClass( $object );
-		$reflected_method = $reflected_object->getMethod( $method_name );
-
-		$reflected_method->setAccessible( true );
-
-		return $reflected_method;
 	}
 }

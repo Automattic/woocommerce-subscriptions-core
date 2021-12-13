@@ -623,6 +623,7 @@ class Test_Functions extends WP_UnitTestCase {
 					'billing_period'   => 'month',
 					'billing_interval' => 3,
 					'customer_id'      => 1,
+					'currency'         => 'GBP',
 				),
 				array(
 					'currency'    => 'GBP',
@@ -646,7 +647,6 @@ class Test_Functions extends WP_UnitTestCase {
 					'status'           => 'active',
 					'customer_note'    => 'This is a test',
 					'created_via'      => 'Woo Subs 2 test case',
-					'currency'         => 'USD',
 					'customer_id'      => 2,
 					'order_version'    => '1.5.11',
 					'start_date'       => $custom_start_date,
