@@ -39,7 +39,7 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 		$order_ids    = [];
 
 		// Create some related orders
-		for( $i = 0; $i < 3; $i++ ) {
+		for ( $i = 0; $i < 3; $i++ ) {
 			$order       = WCS_Helper_Subscription::create_order();
 			$order_id    = wcs_get_objects_property( $order, 'id' );
 			$order_ids[] = $order_id;
@@ -95,9 +95,9 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 		$subscription_one = WCS_Helper_Subscription::create_subscription();
 		$subscription_two = WCS_Helper_Subscription::create_subscription();
 		$order_ids        = [];
-		
+
 		// Create some related orders
-		for( $i = 0; $i < 3; $i++ ) {
+		for ( $i = 0; $i < 3; $i++ ) {
 			$order       = WCS_Helper_Subscription::create_order();
 			$order_id    = wcs_get_objects_property( $order, 'id' );
 			$order_ids[] = $order_id;
@@ -125,7 +125,7 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 		self::$cache_store->add_relation( $order, $subscription, $relation_type );
 
 		$this->assertEquals( $subscription->get_id(), get_post_meta( $order_id, $this->get_meta_key( $relation_type ), true ) );
-		$this->assertTrue( in_array( $order_id, $this->get_cache_from_source( $subscription, $relation_type ) ) );
+		$this->assertTrue( in_array( $order_id, $this->get_cache_from_source( $subscription, $relation_type ), true ) );
 	}
 
 	/**
@@ -155,11 +155,11 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 		$this->add_relation_mock( $order_to_keep, $subscription_two, $persistent_relation_type );
 
 		// Make sure all relations are setup and cached correctly
-		foreach( [ $persistent_relation_type, $relation_type ] as $type ) {
+		foreach ( [ $persistent_relation_type, $relation_type ] as $type ) {
 			foreach ( [ $subscription_one, $subscription_two ] as $subscription ) {
 				foreach ( [ $order_id_to_delete, $order_id_to_keep ] as $order_id ) {
 					$cache = $this->get_cache_from_source( $subscription, $type );
-					$this->assertTrue( in_array( $order_id, $cache ) );
+					$this->assertTrue( in_array( $order_id, $cache, true ) );
 				}
 			}
 		}
@@ -168,21 +168,21 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 
 		// Make sure the specified relation was deleted from the cache
 		$subscription_one_cache = $this->get_cache_from_source( $subscription_one, $relation_type );
-		$this->assertFalse( in_array( $order_id_to_delete, $subscription_one_cache ) );
+		$this->assertFalse( in_array( $order_id_to_delete, $subscription_one_cache, true ) );
 
 		// But not the same relation on the same subscription for other orders
-		$this->assertTrue( in_array( $order_id_to_keep, $subscription_one_cache ) );
+		$this->assertTrue( in_array( $order_id_to_keep, $subscription_one_cache, true ) );
 
 		// And not the same relation for the same orders for other subscriptions
 		$subscription_two_cache = $this->get_cache_from_source( $subscription_two, $relation_type );
-		$this->assertTrue( in_array( $order_id_to_delete, $subscription_two_cache ) );
-		$this->assertTrue( in_array( $order_id_to_keep, $subscription_two_cache ) );
+		$this->assertTrue( in_array( $order_id_to_delete, $subscription_two_cache, true ) );
+		$this->assertTrue( in_array( $order_id_to_keep, $subscription_two_cache, true ) );
 
 		// And no other relation types for the same subscriptions on the same order
 		foreach ( [ $subscription_one, $subscription_two ] as $subscription ) {
 			$persistent_related_order_cache = $this->get_cache_from_source( $subscription, $persistent_relation_type );
-			$this->assertTrue( in_array( $order_id_to_delete, $persistent_related_order_cache ) );
-			$this->assertTrue( in_array( $order_id_to_keep, $persistent_related_order_cache ) );
+			$this->assertTrue( in_array( $order_id_to_delete, $persistent_related_order_cache, true ) );
+			$this->assertTrue( in_array( $order_id_to_keep, $persistent_related_order_cache, true ) );
 		}
 	}
 
@@ -212,11 +212,11 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 		$this->add_relation_mock( $order_to_keep, $subscription_two, $persistent_relation_type );
 
 		// Make sure all relations are setup and cached correctly
-		foreach( [ $persistent_relation_type, $relation_type ] as $type ) {
+		foreach ( [ $persistent_relation_type, $relation_type ] as $type ) {
 			foreach ( [ $subscription_one, $subscription_two ] as $subscription ) {
 				foreach ( [ $order_id_to_delete, $order_id_to_keep ] as $order_id ) {
 					$cache = $this->get_cache_from_source( $subscription, $type );
-					$this->assertTrue( in_array( $order_id, $cache ) );
+					$this->assertTrue( in_array( $order_id, $cache, true ) );
 				}
 			}
 		}
@@ -226,18 +226,18 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 		// Make sure the specified relation was deleted from the cache
 		$subscription_one_cache = $this->get_cache_from_source( $subscription_one, $relation_type );
 		$subscription_two_cache = $this->get_cache_from_source( $subscription_two, $relation_type );
-		$this->assertFalse( in_array( $order_id_to_delete, $subscription_one_cache ) );
-		$this->assertFalse( in_array( $order_id_to_delete, $subscription_two_cache ) );
+		$this->assertFalse( in_array( $order_id_to_delete, $subscription_one_cache, true ) );
+		$this->assertFalse( in_array( $order_id_to_delete, $subscription_two_cache, true ) );
 
 		// But not the same relation on the same subscription for other orders
-		$this->assertTrue( in_array( $order_id_to_keep, $subscription_one_cache ) );
-		$this->assertTrue( in_array( $order_id_to_keep, $subscription_two_cache ) );
+		$this->assertTrue( in_array( $order_id_to_keep, $subscription_one_cache, true ) );
+		$this->assertTrue( in_array( $order_id_to_keep, $subscription_two_cache, true ) );
 
 		// And no other relation types for the same subscriptions on the same order
 		foreach ( [ $subscription_one, $subscription_two ] as $subscription ) {
 			$persistent_related_order_cache = $this->get_cache_from_source( $subscription, $persistent_relation_type );
-			$this->assertTrue( in_array( $order_id_to_delete, $persistent_related_order_cache ) );
-			$this->assertTrue( in_array( $order_id_to_keep, $persistent_related_order_cache ) );
+			$this->assertTrue( in_array( $order_id_to_delete, $persistent_related_order_cache, true ) );
+			$this->assertTrue( in_array( $order_id_to_keep, $persistent_related_order_cache, true ) );
 		}
 	}
 
@@ -297,7 +297,7 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 			$related_order_ids = [];
 		}
 
-		if ( ! in_array( $order_id, $related_order_ids ) ) {
+		if ( ! in_array( $order_id, $related_order_ids, true ) ) {
 			array_unshift( $related_order_ids, $order_id );
 			update_post_meta( $subscription_id, $this->get_cache_meta_key( $relation_type ), $related_order_ids, false );
 		}

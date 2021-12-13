@@ -7,7 +7,7 @@
 
 /**
  * Class WCS_Base_Related_Order_Store_Test_Case.
- * 
+ *
  * Share data providers across different WCS_Related_Order_Store test classes.
  */
 class WCS_Base_Related_Order_Store_Test_Case extends WP_UnitTestCase {
@@ -29,7 +29,7 @@ class WCS_Base_Related_Order_Store_Test_Case extends WP_UnitTestCase {
 	public function provider_relation_type() {
 		$relation_types_as_separate_params = [];
 
-		foreach( $this->relation_types as $relation_type ) {
+		foreach ( $this->relation_types as $relation_type ) {
 			$relation_types_as_separate_params[] = [ $relation_type ];
 		}
 

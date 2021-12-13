@@ -33,7 +33,7 @@ class WCS_Customer_Store_CPT_Test extends WCS_Base_Customer_Store_Test_Case {
 		$subscription_ids = [];
 
 		// Create some subscriptions for the user
-		for( $i = 0; $i < 3; $i++ ) {
+		for ( $i = 0; $i < 3; $i++ ) {
 			$subscription       = WCS_Helper_Subscription::create_subscription( [ 'customer_id' => $this->customer_id ] );
 			$subscription_ids[] = $subscription->get_id();
 		}

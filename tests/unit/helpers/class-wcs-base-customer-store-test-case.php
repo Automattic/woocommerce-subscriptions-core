@@ -6,8 +6,8 @@
  */
 
 /**
- * Class WCS_Customer_Store_Base.
- * 
+ * Class WCS_Base_Customer_Store_Test_Case.
+ *
  * Share some properties across different WCS_Customer_Store test classes.
  */
 class WCS_Base_Customer_Store_Test_Case extends WP_UnitTestCase {

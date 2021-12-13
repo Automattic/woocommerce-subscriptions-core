@@ -1,4 +1,9 @@
 <?php
+/**
+ * Class WCS_Customer_Store_Test
+ *
+ * @package WooCommerce\SubscriptionsCore\Tests
+ */
 
 /**
  * Test suite for the WCS_Customer_Store class
@@ -53,7 +58,7 @@ class WCS_Customer_Store_Test extends WCS_Base_Customer_Store_Test_Case {
 		$this->assertGreaterThan( $doing_it_wrong_run_count_original, did_action( 'doing_it_wrong_run' ) );
 
 		// Restore the 'plugins_load' action count to avoid messing with any other code
-		$wp_actions['plugins_loaded'] = $wp_actions_original['plugins_loaded'];
+		$wp_actions['plugins_loaded'] = $wp_actions_original['plugins_loaded']; //phpcs:ignore
 	}
 
 	/**
@@ -67,7 +72,7 @@ class WCS_Customer_Store_Test extends WCS_Base_Customer_Store_Test_Case {
 
 		$this->assertInstanceOf( $this->get_instance_class(), WCS_Customer_Store::instance() );
 
-		for( $i = 1; $i < 4; $i++ ) {
+		for ( $i = 1; $i < 4; $i++ ) {
 			WCS_Customer_Store::instance();
 			$this->assertEquals( 1, WCS_Customer_Store::instance()->get_init_call_count() );
 		}

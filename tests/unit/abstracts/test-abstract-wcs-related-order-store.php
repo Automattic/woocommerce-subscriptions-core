@@ -59,7 +59,7 @@ class WCS_Related_Order_Store_Test extends WCS_Base_Related_Order_Store_Test_Cas
 		$this->assertGreaterThan( $doing_it_wrong_run_count_original, did_action( 'doing_it_wrong_run' ) );
 
 		// Restore the 'plugins_load' action count to avoid messing with any other code
-		$wp_actions['plugins_loaded'] = $wp_actions_original['plugins_loaded'];
+		$wp_actions['plugins_loaded'] = $wp_actions_original['plugins_loaded']; // phpcs:ignore
 	}
 
 	/**
@@ -74,7 +74,7 @@ class WCS_Related_Order_Store_Test extends WCS_Base_Related_Order_Store_Test_Cas
 
 		$this->assertInstanceOf( $this->get_instance_class(), WCS_Related_Order_Store::instance() );
 
-		for( $i = 1; $i < 4; $i++ ) {
+		for ( $i = 1; $i < 4; $i++ ) {
 			WCS_Related_Order_Store::instance();
 			$this->assertEquals( 1, WCS_Related_Order_Store::instance()->get_init_call_count() );
 		}
@@ -92,7 +92,7 @@ class WCS_Related_Order_Store_Test extends WCS_Base_Related_Order_Store_Test_Cas
 	 */
 	public function test_get_relation_types( $expected_relation_type ) {
 		$returned_relation_types = WCS_Related_Order_Store::instance()->get_relation_types();
-		$this->assertTrue( in_array( $expected_relation_type, $returned_relation_types ) );
+		$this->assertTrue( in_array( $expected_relation_type, $returned_relation_types, true ) );
 	}
 
 	/**
@@ -103,7 +103,7 @@ class WCS_Related_Order_Store_Test extends WCS_Base_Related_Order_Store_Test_Cas
 	 */
 	public function test_check_relation_type_valid( $relation_type ) {
 		$mock_related_order_store = $this->getMockForAbstractClass( 'WCS_Related_Order_Store' );
-		
+
 		$this->assertNull(
 			PHPUnit_Utils::call_method(
 				$mock_related_order_store,
