@@ -24,8 +24,8 @@ class WCS_Helper_Coupon {
 	 */
 	public static function __callStatic( $name, $arguments ) {
 		$type   = str_replace( [ 'create_', '_coupon' ], '', $name );
-		$code   = isset( $arguments[0] ) ? $arguments[0] : 'dummycoupon';
-		$amount = isset( $arguments[1] ) ? $arguments[1] : 10;
+		$code   = $arguments[0] ?? 'dummycoupon';
+		$amount = $arguments[1] ?? 10;
 		$meta   = isset( $arguments[2] ) ? (array) $arguments[2] : [];
 		$meta   = wp_parse_args(
 			$meta,

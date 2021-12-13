@@ -8,10 +8,10 @@ function wcs_max_log_size_filter() {
 /**
  *
  */
-class Test_Functions extends WP_UnitTestCase {
+class WCS_Functions_Test extends WP_UnitTestCase {
 
 	public function tearDown() {
-		remove_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription', 10 );
+		remove_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 		_delete_all_posts();
 		$this->commit_transaction();
 		parent::tearDown();
@@ -67,8 +67,8 @@ class Test_Functions extends WP_UnitTestCase {
 		$subscription_id_zeropad = '00' . $subscription_id_string;
 
 		$non_subscription_object     = $this->factory->post->create_and_get();
-		$non_subscription_id_int     = (int) 9993993;
-		$non_subscription_id_float   = (float) 9993993.23;
+		$non_subscription_id_int     = 9993993;
+		$non_subscription_id_float   = 9993993.23;
 		$non_subscription_id_string  = '9993993';
 		$non_subscription_id_zeropad = '009993993';
 
@@ -95,7 +95,7 @@ class Test_Functions extends WP_UnitTestCase {
 	public function test_wcs_do_subscriptions_exist() {
 		$this->assertEquals( false, wcs_do_subscriptions_exist(), 'Subscriptions should not exist, yet wcs_do_subscriptions_exist is reporting they do' );
 
-		$subscription = WCS_Helper_Subscription::create_subscription( array( 'status' => 'active' ) );
+		WCS_Helper_Subscription::create_subscription( array( 'status' => 'active' ) );
 
 		$this->assertEquals( true, wcs_do_subscriptions_exist(), 'There should be a subscription, yet wcs_do_subscriptions_exist is reporting they do not.' );
 	}
@@ -834,8 +834,7 @@ class Test_Functions extends WP_UnitTestCase {
 			array(
 				$this,
 				'filter_wcs_get_date_meta_key',
-			),
-			10
+			)
 		);
 	}
 
@@ -855,7 +854,7 @@ class Test_Functions extends WP_UnitTestCase {
 			array( '', 'Date type can not be an empty string.' ),
 			array( 4 ),
 			array( -1 ),
-			array( (float) 34.56 ),
+			array( 34.56 ),
 			array( array( 'foo' ) ),
 			array( array() ),
 			array( true ),
@@ -1908,9 +1907,6 @@ class Test_Functions extends WP_UnitTestCase {
 		);
 	}
 
-	/**
-	 * @expectedException InvalidArgumentException
-	 */
 	public function test_set_payment_meta() {
 		$subscription = WCS_Helper_Subscription::create_subscription();
 
@@ -1936,10 +1932,11 @@ class Test_Functions extends WP_UnitTestCase {
 		wcs_set_payment_meta( $subscription, array( 'options' => array( 'option_1' => array( 'value' => 'option_1_value' ) ) ) );
 		$this->assertEquals( 'option_1_value', get_option( 'option_1' ) );
 
+		$this->expectException( InvalidArgumentException::class );
 		wcs_set_payment_meta( $subscription, null );
 	}
 
-	private function assertDateTimeString( $actual, $message = '' ) {
-		$this->assertRegExp( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $actual, $message );
+	private function assertDateTimeString( $actual ) {
+		$this->assertRegExp( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $actual );
 	}
 }

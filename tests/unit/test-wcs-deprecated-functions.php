@@ -2,7 +2,7 @@
 /**
  *
  */
-class Test_Deprecated_Functions extends WP_UnitTestCase {
+class WCS_Deprecated_Functions_Test extends WP_UnitTestCase {
 
 	public function setUp() {
 		parent::setUp();
@@ -13,7 +13,7 @@ class Test_Deprecated_Functions extends WP_UnitTestCase {
 	public function tearDown() {
 		global $wpdb;
 
-		remove_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription', 10 );
+		remove_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 		_delete_all_posts();
 
 		// Delete line items
@@ -38,7 +38,7 @@ class Test_Deprecated_Functions extends WP_UnitTestCase {
 
 		$key_should_be = $subscription->get_id() . '_' . $product->get_id();
 
-		$key = wcs_get_old_subscription_key( $subscription );
+		wcs_get_old_subscription_key( $subscription );
 
 		$this->assertEquals( $key_should_be, wcs_get_old_subscription_key( $subscription ) );
 	}
@@ -125,9 +125,9 @@ class Test_Deprecated_Functions extends WP_UnitTestCase {
 
 	/**
 	 * @dataProvider wcs_get_singular_garbage_datas
-	 * @expectedException PHPUnit_Framework_Error
 	 */
 	public function test_wcs_get_subscription_from_key_fail( $input ) {
+		$this->expectException( PHPUnit_Framework_Error::class );
 		if ( ! method_exists( 'PHPUnit_Runner_Version', 'id' ) || version_compare( PHPUnit_Runner_Version::id(), '6.0', '>=' ) ) {
 			$this->setExpectedException( '\PHPUnit\Framework\Error\Notice' );
 		}

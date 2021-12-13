@@ -2,7 +2,7 @@
 /**
  *
  */
-class Test_Cart_Functions extends WP_UnitTestCase {
+class WCS_Cart_Functions_Test extends WP_UnitTestCase {
 
 	/**
 	* Data provider for mock cart object

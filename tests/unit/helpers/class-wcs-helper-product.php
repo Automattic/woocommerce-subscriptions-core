@@ -18,7 +18,7 @@ class WCS_Helper_Product {
 	 * @param array $meta_filter
 	 * @param array $post_meta
 	 *
-	 * @return WC_Product_Subscription
+	 * @return WC_Product_Subscription|false
 	 */
 	public static function create_simple_subscription_product( $meta_filters = [], $post_filters = [] ) {
 		$default_meta_args = [
@@ -260,7 +260,7 @@ class WCS_Helper_Product {
 	 * @return array
 	 */
 	public static function create_attribute( $raw_name = 'size', $terms = [ 'small' ] ) {
-		global $wpdb, $wc_product_attributes;
+		global $wc_product_attributes;
 
 		// Make sure caches are clean.
 		delete_transient( 'wc_attribute_taxonomies' );
@@ -330,11 +330,9 @@ class WCS_Helper_Product {
 			$result = term_exists( $term, $attribute->slug );
 
 			if ( ! $result ) {
-				$result               = wp_insert_term( $term, $attribute->slug );
-				$return['term_ids'][] = $result['term_id'];
-			} else {
-				$return['term_ids'][] = $result['term_id'];
+				$result = wp_insert_term( $term, $attribute->slug );
 			}
+			$return['term_ids'][] = $result['term_id'];
 		}
 
 		return $return;

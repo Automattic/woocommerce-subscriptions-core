@@ -5,7 +5,7 @@
 /**
  * Test suite for the WCS_Post_Meta_Cache_Manager class
  */
-class Test_Post_Meta_Cache_Manager extends WP_UnitTestCase {
+class WCS_Post_Meta_Cache_Manager_Test extends WP_UnitTestCase {
 
 	/** @var string The post type to test with the cache manager. */
 	protected $post_type = 'test_post';
@@ -349,7 +349,6 @@ class Test_Post_Meta_Cache_Manager extends WP_UnitTestCase {
 		$known_meta_key   = reset( $this->meta_keys );
 		$unknown_meta_key = 'unknown_meta_key';
 		$meta_value       = 'some_meta_value';
-		$check            = null;
 
 		return array(
 
@@ -552,10 +551,9 @@ class Test_Post_Meta_Cache_Manager extends WP_UnitTestCase {
 	 * @param null $check
 	 * @param int $post_id
 	 * @param string $meta_key
-	 * @param bool $single
 	 * @return mixed
 	 */
-	public function get_post_meta_filter( $check, $post_id, $meta_key, $single ) {
+	public function get_post_meta_filter( $check, $post_id, $meta_key ) {
 		if ( isset( $this->post_meta_filter_args['post_id'] ) && $post_id === $this->post_meta_filter_args['post_id'] && $meta_key === $this->post_meta_filter_args['meta_key'] ) {
 			$check = $this->post_meta_filter_args['return_value'];
 		}
@@ -608,28 +606,19 @@ class Test_Post_Meta_Cache_Manager extends WP_UnitTestCase {
 		}
 
 		// Return first param, when set, in case it's attached to a filter
-		return isset( $args[0] ) ? $args[0] : null;
+		return $args[0] ?? null;
 	}
 
 	/**
 	 * Get an instance of WCS_Post_Meta_Cache_Manager for testing against.
 	 *
 	 * @param mixed $post_id The post ID being tested, used to determine whether to mock the WCS_Post_Meta_Cache_Manager::is_managed_post_type() method to return true or false
-	 * @param string $prefix Optional prefix to add to post type and meta
 	 * @return WCS_Post_Meta_Cache_Manager
 	 */
-	private function get_mock_cache_manager( $post_id = null, $test_prefix = '' ) {
+	private function get_mock_cache_manager( $post_id = null ) {
 
-		if ( empty( $test_prefix ) ) {
-			$post_type = $this->post_type;
-			$meta_keys = $this->meta_keys;
-		} else {
-			$post_type = $test_prefix . $this->post_type;
-			$meta_keys = array();
-			foreach ( $this->meta_keys as $meta_key ) {
-				$meta_keys = $test_prefix . $meta_key;
-			}
-		}
+		$post_type = $this->post_type;
+		$meta_keys = $this->meta_keys;
 
 		$mock_cache_manager = $this->getMockBuilder( 'WCS_Post_Meta_Cache_Manager' )
 								->setConstructorArgs( array( $post_type, $meta_keys ) )

@@ -3,12 +3,11 @@
 /**
  * @since 2.4.3
  */
-class Test_Order_Functions extends WP_UnitTestCase {
+class WCS_Order_Functions_Test extends WP_UnitTestCase {
 
 	public function test_find_matching_line_item() {
 		$order        = WC_Helper_Order::create_order();
 		$subscription = WCS_Helper_Subscription::create_subscription();
-		$item         = false;
 
 		foreach ( $order->get_items() as $item ) {
 			// Validate falsy cases.

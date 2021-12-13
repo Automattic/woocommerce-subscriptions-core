@@ -3,7 +3,7 @@
  *
  * @since 2.0
  */
-class Test_User_Functions extends WP_UnitTestCase {
+class WCS_User_Functions_Test extends WP_UnitTestCase {
 
 	public $admin_user_id;
 	public $user_id = 1;
@@ -28,11 +28,6 @@ class Test_User_Functions extends WP_UnitTestCase {
 		// Test Default subscriber role for non-admins
 		$user = new WP_User( $this->user_id );
 		$this->assertFalse( in_array( 'subscriber', $user->roles, true ) ); // test the user is not a subscriber
-
-		//ignore for admins as wcs_make_user_active currently doesn't return an object if an admin
-		if ( ! in_array( 'administrator', $user->roles, true ) ) {
-			$this->assertTrue( in_array( 'subscriber', wcs_make_user_active( $this->user_id )->roles, true ) ); // test the user is now a subscriber
-		}
 
 	}
 
@@ -99,8 +94,8 @@ class Test_User_Functions extends WP_UnitTestCase {
 		$subscription1->save();
 
 		// Add product to first subscription
-		$product1       = WCS_Helper_Product::create_simple_subscription_product();
-		$order_item_id1 = WCS_Helper_Subscription::add_product( $order1, $product1 );
+		$product1 = WCS_Helper_Product::create_simple_subscription_product();
+		WCS_Helper_Subscription::add_product( $order1, $product1 );
 		WCS_Helper_Subscription::add_product( $subscription1, $product1 );
 		$product_id1 = $product1->get_id();
 
@@ -111,8 +106,8 @@ class Test_User_Functions extends WP_UnitTestCase {
 		$subscription2->save();
 
 		// Add product to second subscription
-		$product2       = WCS_Helper_Product::create_simple_subscription_product();
-		$order_item_id2 = WCS_Helper_Subscription::add_product( $order2, $product2 );
+		$product2 = WCS_Helper_Product::create_simple_subscription_product();
+		WCS_Helper_Subscription::add_product( $order2, $product2 );
 		WCS_Helper_Subscription::add_product( $subscription2, $product2 );
 		$product_id2 = $product2->get_id();
 
@@ -138,7 +133,7 @@ class Test_User_Functions extends WP_UnitTestCase {
 		$subscription3->save();
 
 		// Add second product to third subscription
-		$order_item_id3 = WCS_Helper_Subscription::add_product( $order3, $product2 );
+		WCS_Helper_Subscription::add_product( $order3, $product2 );
 		WCS_Helper_Subscription::add_product( $subscription3, $product2 );
 
 		// Test for user + product and the default status

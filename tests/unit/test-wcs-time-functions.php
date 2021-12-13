@@ -3,7 +3,7 @@
  *
  * @since 2.0
  */
-class Test_Time_Functions extends WP_UnitTestCase {
+class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 
 	private $date_display_format = 'Y-m-d H:i:s';
 
@@ -796,7 +796,7 @@ class Test_Time_Functions extends WP_UnitTestCase {
 			array( '0000-00-00 00:00:00' ),
 			array( 4 ),
 			array( -1 ),
-			array( (float) 34.56 ),
+			array( 34.56 ),
 			array( array( 'foo' ) ),
 			array( array() ),
 			array( true ),

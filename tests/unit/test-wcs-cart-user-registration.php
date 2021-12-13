@@ -3,7 +3,7 @@
  * Unit tests for requireing user registration on the checkout.
  */
 
-class Test_Cart_User_Registration extends WP_UnitTestCase {
+class WCS_Cart_User_Registration_Test extends WP_UnitTestCase {
 
 	/**
 	 * Data Provider

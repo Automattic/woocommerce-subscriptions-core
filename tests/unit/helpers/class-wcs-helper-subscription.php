@@ -96,7 +96,7 @@ class WCS_Helper_Subscription {
 	 * @param array $post_meta         Custom susbcription post meta (i.e. billing period, interval)
 	 * @param array $subscription_meta Custom subscription meta (i.e payment method/title, requires manual renewal)
 	 *
-	 * @return WC_Subscription
+	 * @return WC_Subscription|void
 	 */
 	public static function create_subscription( $post_meta = null, $subscription_meta = null ) {
 		$default_args = [
@@ -274,7 +274,7 @@ class WCS_Helper_Subscription {
 	 * @param WC_Shipping_Rate|null The shipping rate to add, if any.
 	 * @param array|null            Array of taxes on the shipping rate, if any.
 	 */
-	protected static function add_shipping( &$order, $shipping_rate = null, $shipping_taxes = null ) {
+	protected static function add_shipping( $order, $shipping_rate = null, $shipping_taxes = null ) {
 
 		if ( is_null( $shipping_taxes ) ) {
 			$shipping_taxes = WC_Tax::calc_shipping_tax( '10', WC_Tax::get_shipping_tax_rates() );
@@ -312,7 +312,7 @@ class WCS_Helper_Subscription {
 	 *
 	 * @return int
 	 */
-	public static function add_product( &$order, $product, $qty = 1, $args = [] ) {
+	public static function add_product( $order, $product, $qty = 1, $args = [] ) {
 		$args = wp_parse_args(
 			$args,
 			[
@@ -348,8 +348,6 @@ class WCS_Helper_Subscription {
 
 		$order->add_item( $item );
 
-		$item_id = $item->get_id();
-
-		return $item_id;
+		return $item->get_id();
 	}
 }

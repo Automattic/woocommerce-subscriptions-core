@@ -1,6 +1,6 @@
 <?php
 
-class Test_Compatibility_Functions extends WP_UnitTestCase {
+class WCS_Compatibility_Functions_Test extends WP_UnitTestCase {
 	/**
 	 * @covers ::wcs_get_objects_property
 	 */

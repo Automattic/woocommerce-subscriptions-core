@@ -3,7 +3,7 @@
 /**
  * @group wcs-helper-functions
  */
-class Test_Helper_Functions extends WP_UnitTestCase {
+class WCS_Helper_Functions_Test extends WP_UnitTestCase {
 
 	/**
 	 * @dataProvider wcs_maybe_unprefix_key_provider
@@ -66,7 +66,7 @@ class Test_Helper_Functions extends WP_UnitTestCase {
 		WCS_Helper_Subscription::create_parent_order( $subscription );
 		for ( $i = 0; $i <= 5; $i++ ) {
 			$order = WCS_Helper_Subscription::create_renewal_order( $subscription );
-			$order->set_date_paid( strtotime( "-{$i} week" ) );
+			$order->set_date_paid( strtotime( "-$i week" ) );
 			$order->save();
 		}
 
@@ -90,10 +90,10 @@ class Test_Helper_Functions extends WP_UnitTestCase {
 
 	/**
 	 * Test error condition.
-	 * @expectedException InvalidArgumentException
 	 * @requires PHP 7.0.0
 	 */
 	public function test_wcs_sort_objects_throw() {
+		$this->expectException( InvalidArgumentException::class );
 		wcs_sort_objects( $orders, 'date_paid', 'FAKE_ORDER' );
 	}
 

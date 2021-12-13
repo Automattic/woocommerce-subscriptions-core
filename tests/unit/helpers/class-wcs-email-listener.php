@@ -131,7 +131,7 @@ class WCS_Email_Listener {
 				break;
 		}
 
-		return isset( $counts[ $recipient ] ) ? $counts[ $recipient ] : 0;
+		return $counts[ $recipient ] ?? 0;
 	}
 
 	/**

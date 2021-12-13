@@ -1,8 +1,8 @@
 <?php
 
-class Test_Autoloader extends WP_UnitTestCase {
+class WCS_Core_Autoloader_Test extends WP_UnitTestCase {
 
-	/** @var WCS_Autoloader */
+	/** @var WCS_Core_Autoloader */
 	protected $autoloader;
 
 	/**
@@ -23,7 +23,7 @@ class Test_Autoloader extends WP_UnitTestCase {
 	 */
 	public function test_should_autoload( $class_name, $expected ) {
 		$result = PHPUnit_Utils::call_method( $this->autoloader, 'should_autoload', [ strtolower( $class_name ) ] );
-		$this->assertEquals( $expected, $result, "{$class_name} should_autoload() test" );
+		$this->assertEquals( $expected, $result, "$class_name should_autoload() test" );
 	}
 
 	/**
@@ -50,7 +50,7 @@ class Test_Autoloader extends WP_UnitTestCase {
 	 */
 	public function test_relative_class_path( $class_name, $expected_path ) {
 		$path = PHPUnit_Utils::call_method( $this->autoloader, 'get_relative_class_path', [ strtolower( $class_name ) ] );
-		$this->assertEquals( $expected_path, $path, "{$class_name} get_relative_class_path() test" );
+		$this->assertEquals( $expected_path, $path, "$class_name get_relative_class_path() test" );
 	}
 
 	/**
@@ -208,7 +208,7 @@ class Test_Autoloader extends WP_UnitTestCase {
 	 */
 	public function test_get_file_name( $class_name, $expected ) {
 		$name = PHPUnit_Utils::call_method( $this->autoloader, 'get_file_name', [ strtolower( $class_name ) ] );
-		$this->assertEquals( $expected, $name, "{$class_name} get_file_name() test" );
+		$this->assertEquals( $expected, $name, "$class_name get_file_name() test" );
 	}
 
 	/**

@@ -51,7 +51,7 @@ class WC_Helper_Shipping {
 	 * @param string $state State code.
 	 * @return string
 	 */
-	public static function force_customer_us_state( $state ) {
+	public static function force_customer_us_state() {
 		return 'NY';
 	}
 
@@ -62,7 +62,7 @@ class WC_Helper_Shipping {
 	 * @param string $country Country code.
 	 * @return string
 	 */
-	public static function force_customer_us_country( $country ) {
+	public static function force_customer_us_country() {
 		return 'US';
 	}
 
@@ -73,7 +73,7 @@ class WC_Helper_Shipping {
 	 * @param string $postcode Postal code.
 	 * @return string
 	 */
-	public static function force_customer_us_postcode( $postcode ) {
+	public static function force_customer_us_postcode() {
 		return '12345';
 	}
 
