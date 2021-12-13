@@ -1,4 +1,9 @@
 <?php
+/**
+ * Class WCS_Related_Order_Store_Test
+ *
+ * @package WooCommerce\SubscriptionsCore\Tests
+ */
 
 /**
  * Test suite for the WCS_Related_Order_Store class
@@ -17,9 +22,9 @@ class WCS_Related_Order_Store_Test extends WCS_Base_Related_Order_Store_Test_Cas
 	 */
 	public function test_instance_filter() {
 		$this->clear_related_order_store_instance();
-		add_filter( 'wcs_related_order_store_class', array( $this, 'get_instance_class' ) );
+		add_filter( 'wcs_related_order_store_class', [ $this, 'get_instance_class' ] );
 		$this->assertInstanceOf( $this->get_instance_class(), WCS_Related_Order_Store::instance() );
-		remove_filter( 'wcs_related_order_store_class', array( $this, 'get_instance_class' ) );
+		remove_filter( 'wcs_related_order_store_class', [ $this, 'get_instance_class' ] );
 		$this->clear_related_order_store_instance();
 	}
 
@@ -65,7 +70,7 @@ class WCS_Related_Order_Store_Test extends WCS_Base_Related_Order_Store_Test_Cas
 
 		$this->clear_related_order_store_instance();
 
-		add_filter( 'wcs_related_order_store_class', array( $this, 'get_instance_class' ) );
+		add_filter( 'wcs_related_order_store_class', [ $this, 'get_instance_class' ] );
 
 		$this->assertInstanceOf( $this->get_instance_class(), WCS_Related_Order_Store::instance() );
 
@@ -74,7 +79,7 @@ class WCS_Related_Order_Store_Test extends WCS_Base_Related_Order_Store_Test_Cas
 			$this->assertEquals( 1, WCS_Related_Order_Store::instance()->get_init_call_count() );
 		}
 
-		remove_filter( 'wcs_related_order_store_class', array( $this, 'get_instance_class' ) );
+		remove_filter( 'wcs_related_order_store_class', [ $this, 'get_instance_class' ] );
 
 		$this->clear_related_order_store_instance();
 	}
