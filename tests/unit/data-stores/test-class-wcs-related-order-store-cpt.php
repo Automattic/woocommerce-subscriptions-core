@@ -180,8 +180,8 @@ class WCS_Related_Order_Store_CPT_Test extends WCS_Base_Related_Order_Store_Test
 		foreach ( [ $persistent_relation_type, $relation_type ] as $type ) {
 			foreach ( [ $order_id_to_delete, $order_id_to_keep ] as $order_id ) {
 				$related_subscriptions = get_post_meta( $order_id, $this->get_meta_key( $type ), false );
-				$this->assertTrue( in_array( (string) $subscription_one->get_id(), $related_subscriptions ) );
-				$this->assertTrue( in_array( (string) $subscription_two->get_id(), $related_subscriptions ) );
+				$this->assertTrue( in_array( (string) $subscription_one->get_id(), $related_subscriptions, true ) );
+				$this->assertTrue( in_array( (string) $subscription_two->get_id(), $related_subscriptions, true ) );
 			}
 		}
 
