@@ -64,9 +64,6 @@ class WCS_Base_Related_Order_Store_Test_Case extends WP_UnitTestCase {
 	 * @return void
 	 */
 	protected function clear_related_order_store_instance() {
-		$reflected_related_order_store = new ReflectionClass( 'WCS_Related_Order_Store' );
-		$reflected_instance_property   = $reflected_related_order_store->getProperty( 'instance' );
-		$reflected_instance_property->setAccessible( true );
-		$reflected_instance_property->setValue( null, null );
+		PHPUnit_Utils::clear_singleton_instance( 'WCS_Related_Order_Store' );
 	}
 }
