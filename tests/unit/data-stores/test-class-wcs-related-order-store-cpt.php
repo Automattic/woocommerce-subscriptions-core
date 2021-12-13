@@ -180,8 +180,8 @@ class WCS_Related_Order_Store_CPT_Test extends WCS_Base_Related_Order_Store_Test
 		foreach ( [ $persistent_relation_type, $relation_type ] as $type ) {
 			foreach ( [ $order_id_to_delete, $order_id_to_keep ] as $order_id ) {
 				$related_subscriptions = get_post_meta( $order_id, $this->get_meta_key( $type ), false );
-				$this->assertTrue( in_array( $subscription_one->get_id(), $related_subscriptions, true ) );
-				$this->assertTrue( in_array( $subscription_two->get_id(), $related_subscriptions, true ) );
+				$this->assertTrue( in_array( (string) $subscription_one->get_id(), $related_subscriptions ) );
+				$this->assertTrue( in_array( (string) $subscription_two->get_id(), $related_subscriptions ) );
 			}
 		}
 
@@ -189,20 +189,20 @@ class WCS_Related_Order_Store_CPT_Test extends WCS_Base_Related_Order_Store_Test
 
 		// Make sure the specified relation was deleted
 		$order_to_delete_related_subscriptions = get_post_meta( $order_id_to_delete, $this->get_meta_key( $relation_type ), false );
-		$this->assertFalse( in_array( $subscription_one->get_id(), $order_to_delete_related_subscriptions, true ) );
+		$this->assertFalse( in_array( (string) $subscription_one->get_id(), $order_to_delete_related_subscriptions, true ) );
 
 		// But not the same relation on the same order for other subscriptions
-		$this->assertTrue( in_array( $subscription_two->get_id(), $order_to_delete_related_subscriptions, true ) );
+		$this->assertTrue( in_array( (string) $subscription_two->get_id(), $order_to_delete_related_subscriptions, true ) );
 
 		// And not the same relation for the same subscriptions for other orders
 		$order_to_keep_related_subscriptions = get_post_meta( $order_id_to_keep, $this->get_meta_key( $relation_type ), false );
-		$this->assertTrue( in_array( $subscription_one->get_id(), $order_to_keep_related_subscriptions, true ) );
-		$this->assertTrue( in_array( $subscription_two->get_id(), $order_to_keep_related_subscriptions, true ) );
+		$this->assertTrue( in_array( (string) $subscription_one->get_id(), $order_to_keep_related_subscriptions, true ) );
+		$this->assertTrue( in_array( (string) $subscription_two->get_id(), $order_to_keep_related_subscriptions, true ) );
 
 		// And not other relation types for the same subscriptions on the same order
 		$persistent_related_subscriptions = get_post_meta( $order_id_to_delete, $this->get_meta_key( $persistent_relation_type ), false );
-		$this->assertTrue( in_array( $subscription_one->get_id(), $persistent_related_subscriptions, true ) );
-		$this->assertTrue( in_array( $subscription_two->get_id(), $persistent_related_subscriptions, true ) );
+		$this->assertTrue( in_array( (string) $subscription_one->get_id(), $persistent_related_subscriptions, true ) );
+		$this->assertTrue( in_array( (string) $subscription_two->get_id(), $persistent_related_subscriptions, true ) );
 	}
 
 	/**
@@ -235,8 +235,8 @@ class WCS_Related_Order_Store_CPT_Test extends WCS_Base_Related_Order_Store_Test
 		foreach ( [ $persistent_relation_type, $relation_type ] as $type ) {
 			foreach ( [ $order_id_one, $order_id_two ] as $order_id ) {
 				$related_subscriptions = get_post_meta( $order_id, $this->get_meta_key( $type ), false );
-				$this->assertTrue( in_array( $subscription_one->get_id(), $related_subscriptions, true ) );
-				$this->assertTrue( in_array( $subscription_two->get_id(), $related_subscriptions, true ) );
+				$this->assertTrue( in_array( (string) $subscription_one->get_id(), $related_subscriptions, true ) );
+				$this->assertTrue( in_array( (string) $subscription_two->get_id(), $related_subscriptions, true ) );
 			}
 		}
 
@@ -248,13 +248,13 @@ class WCS_Related_Order_Store_CPT_Test extends WCS_Base_Related_Order_Store_Test
 
 		// But not the same relation for the same subscriptions for other orders
 		$order_two_related_subscriptions = get_post_meta( $order_id_two, $this->get_meta_key( $relation_type ), false );
-		$this->assertTrue( in_array( $subscription_one->get_id(), $order_two_related_subscriptions, true ) );
-		$this->assertTrue( in_array( $subscription_two->get_id(), $order_two_related_subscriptions, true ) );
+		$this->assertTrue( in_array( (string) $subscription_one->get_id(), $order_two_related_subscriptions, true ) );
+		$this->assertTrue( in_array( (string) $subscription_two->get_id(), $order_two_related_subscriptions, true ) );
 
 		// And not other relation types for the same subscriptions on the same order
 		$persistent_related_subscriptions = get_post_meta( $order_id_one, $this->get_meta_key( $persistent_relation_type ), false );
-		$this->assertTrue( in_array( $subscription_one->get_id(), $persistent_related_subscriptions, true ) );
-		$this->assertTrue( in_array( $subscription_two->get_id(), $persistent_related_subscriptions, true ) );
+		$this->assertTrue( in_array( (string) $subscription_one->get_id(), $persistent_related_subscriptions, true ) );
+		$this->assertTrue( in_array( (string) $subscription_two->get_id(), $persistent_related_subscriptions, true ) );
 	}
 
 	/**
