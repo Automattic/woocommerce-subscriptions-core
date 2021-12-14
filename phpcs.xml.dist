@@ -34,7 +34,7 @@
 	<exclude-pattern type="relative">vendor/*</exclude-pattern>
 	<exclude-pattern type="relative">includes/libraries/*</exclude-pattern>
 	<exclude-pattern type="relative">templates/*</exclude-pattern>
-	<exclude-pattern type="relative">build/*</exclude-pattern>
+	<exclude-pattern>build/*</exclude-pattern>
 
 	<!-- This is a standard that breaks the standard, keeping as is. -->
 	<rule ref="WordPress.Files.FileName">
