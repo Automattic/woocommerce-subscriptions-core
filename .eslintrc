@@ -1,0 +1,71 @@
+/** @format */
+{
+	"root": true,
+	"parser": "babel-eslint",
+	"extends": [
+		"prettier",
+		"plugin:@woocommerce/eslint-plugin/recommended"
+	],
+	"plugins": [ ],
+	"env": {
+		"browser": true,
+		"jest/globals": true,
+		"node": true
+	},
+	"globals": {
+		"wp": true,
+		"wpApiSettings": true,
+		"wcSettings": true,
+		"wcpaySettings": true,
+		"page": true,
+		"browser": true,
+		"context": true,
+		"jestPuppeteer": true
+	},
+	"settings": {
+		"react": {
+			"version": "detect"
+		},
+		"import/resolver": {
+			"typescript": {}
+		}
+	},
+	"rules": {
+		"camelcase": [
+			"error",
+			{
+				"properties": "never",
+				"ignoreGlobals": true
+			}
+		],
+		"import/no-extraneous-dependencies": "off",
+		"indent": "off",
+		"max-len": [
+			"error",
+			{
+				"code": 140
+			}
+		],
+		"no-console": "warn",
+		"react/no-danger": "off",
+		"react/react-in-jsx-scope": "off",
+		"react/jsx-curly-spacing": [
+			2,
+			{
+				"when": "always",
+				"children": {
+					"when": "always"
+				}
+			}
+		],
+		"jsdoc/check-tag-names": [
+			"error",
+			{
+				"definedTags": [ "format" ]
+			}
+		],
+		"yoda": [ "error", "always" ],
+		/* partially disable rules to get @woocommerce/eslint-plugin integration done */
+		"@wordpress/i18n-translator-comments": "off" // disabled due to inability to have multiline comment
+	}
+}

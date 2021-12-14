@@ -40,11 +40,11 @@ export const SubscriptionsRecurringPackages = ( {
 				.flat(),
 		[ subscriptions ]
 	);
-	const shouldCollapse = useMemo( () => packages.length > 1 || collapse, [
+	const shouldCollapse = useMemo( () => 1 < packages.length || collapse, [
 		packages.length,
 		collapse,
 	] );
-	const shouldShowItems = useMemo( () => packages.length > 1 || showItems, [
+	const shouldShowItems = useMemo( () => 1 < packages.length || showItems, [
 		packages.length,
 		showItems,
 	] );
