@@ -2,7 +2,7 @@
 /**
  * WC Subscriptions Helper Upgrade Repair class.
  *
- * @package WooCommerce/SubscriptionsCore/Tests/Helper
+ * @package WooCommerce/Tests
  */
 class WCS_Helper_Upgrade_Repair {
 

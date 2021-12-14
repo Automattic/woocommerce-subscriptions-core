@@ -15,6 +15,8 @@ class WC_Helper_Shipping {
 	/**
 	 * Create a simple flat rate at the cost of 10.
 	 *
+	 * @since 2.3
+	 *
 	 * @param float $cost Optional. Cost of flat rate method.
 	 */
 	public static function create_simple_flat_rate( $cost = 10 ) {
