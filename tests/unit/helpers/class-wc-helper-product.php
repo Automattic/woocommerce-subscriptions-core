@@ -2,7 +2,7 @@
 /**
  * Product helpers.
  *
- * @package WooCommerce\Tests
+ * @package WooCommerce/SubscriptionsCore/Tests/Helper
  */
 
 /**
@@ -27,7 +27,6 @@ class WC_Helper_Product {
 	/**
 	 * Create simple product.
 	 *
-	 * @since 2.3
 	 * @param bool  $save Save or return object.
 	 * @param array $props Properties to be set in the new product, as an associative array.
 	 * @return WC_Product_Simple
@@ -61,7 +60,6 @@ class WC_Helper_Product {
 	/**
 	 * Create external product.
 	 *
-	 * @since 3.0.0
 	 * @return WC_Product_External
 	 */
 	public static function create_external_product() {
@@ -83,7 +81,6 @@ class WC_Helper_Product {
 	/**
 	 * Create grouped product.
 	 *
-	 * @since 3.0.0
 	 * @return WC_Product_Grouped
 	 */
 	public static function create_grouped_product() {
@@ -106,7 +103,6 @@ class WC_Helper_Product {
 	 * Create a dummy variation product or configure an existing product object with dummy data.
 	 *
 	 *
-	 * @since 2.3
 	 * @param WC_Product_Variable|null $product Product object to configure, or null to create a new one.
 	 * @return WC_Product_Variable
 	 */
@@ -256,7 +252,6 @@ class WC_Helper_Product {
 	/**
 	 * Create a dummy attribute.
 	 *
-	 * @since 2.3
 	 *
 	 * @param string        $raw_name Name of attribute to create.
 	 * @param array(string) $terms          Terms to create for the attribute.
@@ -346,7 +341,6 @@ class WC_Helper_Product {
 	 *
 	 * @param int $attribute_id ID to delete.
 	 *
-	 * @since 2.3
 	 */
 	public static function delete_attribute( $attribute_id ) {
 		global $wpdb;
@@ -361,7 +355,6 @@ class WC_Helper_Product {
 	/**
 	 * Creates a new product review on a specific product.
 	 *
-	 * @since 3.0
 	 * @param int    $product_id integer Product ID that the review is for.
 	 * @param string $review_content string Content to use for the product review.
 	 * @return integer Product Review ID.
@@ -382,7 +375,6 @@ class WC_Helper_Product {
 
 	/**
 	 * A helper function for hooking into save_post during the test_product_meta_save_post test.
-	 * @since 3.0.1
 	 *
 	 * @param int $id ID to update.
 	 */

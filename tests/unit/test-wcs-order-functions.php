@@ -1,8 +1,5 @@
 <?php
 
-/**
- * @since 2.4.3
- */
 class WCS_Order_Functions_Test extends WP_UnitTestCase {
 
 	public function test_find_matching_line_item() {
@@ -29,7 +26,6 @@ class WCS_Order_Functions_Test extends WP_UnitTestCase {
 	 * Testing get_subscriptions_for_order
 	 *
 	 * @group order-functions
-	 * @since 2.0
 	 */
 	public function test_get_subscriptions_for_order() {
 		// no subscription (just a standard order)

@@ -1,7 +1,6 @@
 <?php
 /**
  *
- * @since 2.0
  */
 class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 
@@ -12,8 +11,6 @@ class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 
 	/**
 	 * Testing wcs_get_subscription_period_strings()
-	 *
-	 * @since 2.0
 	 */
 	public function test_wcs_get_subscription_period_strings() {
 		// Expected output for multiple test cases
@@ -126,8 +123,6 @@ class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 
 	/**
 	 * Testing wcs_get_subscription_ranges()
-	 *
-	 * @since 2.0
 	 */
 	public function test_wcs_get_subscription_ranges() {
 
@@ -335,8 +330,6 @@ class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 
 	/**
 	 * Testing wcs_get_subscription_period_interval_strings()
-	 *
-	 * @since 2.0
 	 */
 	public function test_wcs_get_period_interval_strings() {
 		$expected_intervals = array(
@@ -361,8 +354,6 @@ class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 
 	/**
 	 * Function: wcs_get_available_time_periods
-	 *
-	 * @since 2.0
 	 */
 	public function test_wcs_get_available_time_periods() {
 
@@ -393,8 +384,6 @@ class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 
 	/**
 	 * wcs_get_subscription_trial_lengths
-	 *
-	 * @since 2.0
 	 */
 	public function test_wcs_get_subscription_trial_lengths() {
 
@@ -456,7 +445,6 @@ class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 	 * Testing wcs_add_time()
 	 *
 	 * @dataProvider wcs_add_time_data
-	 * @since 2.0
 	 */
 	public function test_wcs_add_time( $from, $expected, $interval, $period, $timezone_behaviour = 'no_offset' ) {
 		$actual_result = wcs_add_time( $interval, $period, strtotime( $from ), $timezone_behaviour );
@@ -520,7 +508,6 @@ class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 	 * Testing wcs_add_months()
 	 *
 	 * @dataProvider add_months_test_data
-	 * @since 2.0
 	 */
 	public function test_wcs_add_months( $from_date, $expected, $months_to_add, $timezone_behaviour = 'no_offset' ) {
 		$actual_result = wcs_add_months( strtotime( $from_date ), $months_to_add, $timezone_behaviour );
@@ -530,8 +517,6 @@ class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 	/**
 	 * Testing wcs_add_months() for various timezones
 	 *
-	 *
-	 * @since 3.0.6
 	 */
 	public function add_months_test_data_for_timezones() {
 		// For various time zones
@@ -624,7 +609,6 @@ class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 	 * Testing wcs_add_months()
 	 *
 	 * @dataProvider add_months_test_data_for_timezones
-	 * @since 2.0
 	 */
 	public function test1_wcs_add_months( $timezone, $from_date, $expected, $months_to_add, $timezone_behaviour = 'no_offset' ) {
 		$original_timezone = get_option( 'timezone_string' );
@@ -693,7 +677,6 @@ class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 	 * Testing wcs_estimate_periods_between()
 	 *
 	 * @dataProvider estimate_periods_between_data
-	 * @since 2.0
 	 */
 	public function test_estimate_periods_between( $start, $end, $unit_of_time, $rounding_method, $expected ) {
 		$this->assertEquals( $expected, wcs_estimate_periods_between( strtotime( $start ), strtotime( $end ), $unit_of_time, $rounding_method ) );
@@ -768,7 +751,6 @@ class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 	 *
 	 * @dataProvider estimate_period_between_data
 	 * @group estperiod
-	 * @since 2.0
 	 */
 	public function test_estimate_period_between( $start, $end, $interval, $expected ) {
 		$this->assertEquals( $expected, wcs_estimate_period_between( $start, $end, $interval ) );

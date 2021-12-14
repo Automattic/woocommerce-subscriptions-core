@@ -2,7 +2,7 @@
 /**
  * WC Subscriptions Helper Coupon.
  *
- * @package WooCommerce/Tests
+ * @package WooCommerce/SubscriptionsCore/Tests/Helper
  */
 
 /**

@@ -28,4 +28,16 @@ class PHPUnit_Utils {
 
 		return $method->invokeArgs( $obj, $args );
 	}
+
+	/**
+	 * A utility function to clear the $instance var in singleton classes.
+	 *
+	 * @param string $singleton_class The singleton class name.
+	 */
+	public static function clear_singleton_instance( $singleton_class ) {
+		$reflected_singleton         = new \ReflectionClass( $singleton_class );
+		$reflected_instance_property = $reflected_singleton->getProperty( 'instance' );
+		$reflected_instance_property->setAccessible( true );
+		$reflected_instance_property->setValue( null, null );
+	}
 }

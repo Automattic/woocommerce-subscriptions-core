@@ -1,8 +1,5 @@
 <?php
-/**
- *
- * @since 2.0
- */
+
 class WCS_User_Functions_Test extends WP_UnitTestCase {
 
 	public $admin_user_id;
@@ -18,8 +15,6 @@ class WCS_User_Functions_Test extends WP_UnitTestCase {
 	/**
 	 * Function: wcs_make_user_active
 	 *
-	 *
-	 * @since 2.0
 	 */
 	public function test_wcs_make_user_active() {
 		// Set default subscriber role
@@ -35,7 +30,6 @@ class WCS_User_Functions_Test extends WP_UnitTestCase {
 	* Function: wcs_user_has_subscription()
 	*
 	*
-	* @since 2.3.4
 	*/
 	public function test_wcs_user_has_subscription() {
 

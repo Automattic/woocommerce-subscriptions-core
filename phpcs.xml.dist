@@ -38,7 +38,7 @@
 
 	<!-- This is a standard that breaks the standard, keeping as is. -->
 	<rule ref="WordPress.Files.FileName">
-		<exclude-pattern>tests/WP_UnitTestCase\.php</exclude-pattern>
+		<exclude-pattern>tests/*</exclude-pattern>
 	</rule>
 
 </ruleset>

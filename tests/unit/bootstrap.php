@@ -28,8 +28,6 @@ if ( PHP_VERSION_ID >= 80000 && file_exists( $_tests_dir . '/includes/phpunit7/M
 // Give access to tests_add_filter() function.
 require_once $_tests_dir . '/includes/functions.php';
 
-
-
 /**
  * Manually load the plugin being tested.
  */
@@ -59,5 +57,3 @@ require $_tests_dir . '/includes/bootstrap.php';
 if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
 	error_reporting( error_reporting() ^ E_DEPRECATED ); // phpcs:ignore
 }
-
-

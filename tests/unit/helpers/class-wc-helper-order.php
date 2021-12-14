@@ -2,7 +2,7 @@
 /**
  * Order helpers.
  *
- * @package WooCommerce\Tests
+ * @package WooCommerce/SubscriptionsCore/Tests/Helper
  */
 
 /**
@@ -34,9 +34,6 @@ class WC_Helper_Order {
 
 	/**
 	 * Create a order.
-	 *
-	 * @since   2.4
-	 * @version 3.0 New parameter $product.
 	 *
 	 * @param int        $customer_id The ID of the customer the order is for.
 	 * @param WC_Product $product The product to add to the order.

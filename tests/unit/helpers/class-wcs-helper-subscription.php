@@ -2,7 +2,7 @@
 /**
  * WC Subscriptions Helper Subscription class.
  *
- * @package WooCommerce/Tests
+ * @package WooCommerce/SubscriptionsCore/Tests/Helper
  */
 
 /**
