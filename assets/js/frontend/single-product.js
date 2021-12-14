@@ -1,14 +1,14 @@
-(function ( document, $ ) {
-
+( function ( document, $ ) {
 	var $cache = {};
 
 	/**
 	 * Cache our DOM selectors.
 	 */
 	function generate_cache() {
-		$cache.document                 = $( document );
-		$cache.first_payment_date       = $( '.first-payment-date' );
-		$cache.is_variable_subscription = 0 < $( 'div.product-type-variable-subscription' ).length;
+		$cache.document = $( document );
+		$cache.first_payment_date = $( '.first-payment-date' );
+		$cache.is_variable_subscription =
+			0 < $( 'div.product-type-variable-subscription' ).length;
 	}
 
 	/**
@@ -16,7 +16,10 @@
 	 */
 	function attach_events() {
 		if ( $cache.is_variable_subscription ) {
-			$cache.document.on( 'found_variation', update_first_payment_element );
+			$cache.document.on(
+				'found_variation',
+				update_first_payment_element
+			);
 			$cache.document.on( 'reset_data', clear_first_payment_element );
 		}
 	}
@@ -47,6 +50,4 @@
 	}
 
 	$( init );
-
-})( document, jQuery );
-
+} )( document, jQuery );
