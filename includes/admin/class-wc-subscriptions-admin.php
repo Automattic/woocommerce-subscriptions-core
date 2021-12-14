@@ -1742,7 +1742,7 @@ class WC_Subscriptions_Admin {
 					'type' => 'informational',
 				),
 			),
-			WC_Subscriptions_Admin::$option_prefix,
+			self::$option_prefix
 		);
 
 		$insert_index = array_search(
