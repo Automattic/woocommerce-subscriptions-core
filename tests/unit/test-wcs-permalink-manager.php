@@ -11,7 +11,8 @@
 class WCS_Permalink_Manager_Test extends WP_UnitTestCase {
 
 	/**
-	 * Make sure updating a subscriptions-related permalink option will WCS_Permalink_Manager::maybe_allow_permalink_update()
+	 * Make sure updating a subscriptions-related permalink option will be allowed if they are different.
+	 * Tests the WCS_Permalink_Manager::maybe_allow_permalink_update() function.
 	 */
 	public function test_maybe_allow_permalink_update() {
 		$options = [
