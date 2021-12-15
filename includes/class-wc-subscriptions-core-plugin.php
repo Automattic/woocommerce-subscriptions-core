@@ -156,6 +156,10 @@ class WC_Subscriptions_Core_Plugin {
 			add_action( 'woocommerce_blocks_loaded', array( $this, 'setup_blocks_integration' ) );
 			add_action( 'woocommerce_blocks_loaded', array( 'WC_Subscriptions_Extend_Store_Endpoint', 'init' ) );
 		}
+
+		if ( ! $payment_gateways_handler::are_zero_total_subscriptions_allowed() ) {
+			WC_Subscriptions_Gateway_Restrictions_Manager::init();
+		}
 	}
 
 	/**

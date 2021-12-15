@@ -6,6 +6,7 @@
 * Tweak: Update deprecation message when calling WC_Subscriptions_Coupon::cart_contains_limited_recurring_coupon() to mention the correct replacement function. PR#53
 * Tweak: Update recurring payments copy on payment gateways page.
 * Fix: Incorrect text when filtering subscriptions to no results.
+* Changed: Subscription products must have a recurring amount greater than $0. PR#56 wcpay#3309
 
 2021-11-23 - version 1.2.0
 * Fix: Update tooltip wording when deleting product variation. PR#46
