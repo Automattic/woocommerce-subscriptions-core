@@ -47,11 +47,6 @@ jQuery( function( $ ) {
 			return;
 		}
 
-		// Sign up fees are exempt from zero price validation.
-		if ( $( this ).hasClass( 'wc_input_subscription_initial_price' ) ) {
-			return;
-		}
-
 		// Reformat the product price - remove the decimal place separator and remove excess decimal places.
 		var price = accounting.unformat( $( this ).val(), wcs_gateway_restrictions.decimal_point_separator );
 		price     = accounting.formatNumber( price, wcs_gateway_restrictions.number_of_decimal_places );
