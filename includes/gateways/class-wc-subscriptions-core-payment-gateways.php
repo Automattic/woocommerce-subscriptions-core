@@ -200,7 +200,7 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	 */
 	public static function payment_gateways_support_tooltip( $status_html, $gateway ) {
 
-		if ( ( ! is_array( $gateway->supports ) || ! in_array( 'subscriptions', $gateway->supports ) ) && 'paypal' !== $gateway->id ) {
+		if ( ! static::gateway_supports_subscriptions( $gateway ) ) {
 			return $status_html;
 		}
 
@@ -269,6 +269,26 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	 */
 	public static function has_available_payment_method( $subscription ) {
 		return 'woocommerce_payments' === $subscription->get_payment_method() && method_exists( WC_Payments_Subscription_Service::class, 'is_wcpay_subscription' ) && WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ? true : false;
+	}
+
+	/**
+	 * Determines if subscriptions with a total of nothing (0) are allowed.
+	 *
+	 * @return bool
+	 */
+	public static function are_zero_total_subscriptions_allowed() {
+		return get_called_class() !== 'WC_Subscriptions_Core_Payment_Gateways';
+	}
+
+	/**
+	 * Returns whether the gateway supports subscriptions and automatic renewals.
+	 *
+	 * @since 1.3.0
+	 * @param WC_Gateway $gateway Gateway to check if it supports subscriptions.
+	 * @return bool
+	 */
+	public static function gateway_supports_subscriptions( $gateway ) {
+		return ! empty( $gateway->id ) && 'woocommerce_payments' === $gateway->id;
 	}
 
 	/**
