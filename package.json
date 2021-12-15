@@ -18,12 +18,18 @@
 		"url": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
 	},
 	"scripts": {
+		"postinstall": "composer install",
+		"prepare": "is-ci || husky install",
 		"archive": "composer archive --file=$npm_package_name --format=zip",
 		"build": "npm run build:js && npm run archive",
 		"build:js": "wp-scripts build assets/src/js/index.js",
 		"check-engines": "wp-scripts check-engines",
 		"check-licenses": "wp-scripts check-licenses",
 		"format:js": "wp-scripts format-js",
+		"format": "npm run format:js && npm run format:css",
+		"format:css": "npm run format:provided '**/*.scss' '**/*.css'",
+		"format:provided": "prettier --write",
+		"lint": "npm run lint:js && npm run lint:css && npm run lint:php",
 		"lint:css": "wp-scripts lint-style assets/src/js",
 		"lint:js": "wp-scripts lint-js assets/src/js",
 		"lint:php": "./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
@@ -43,6 +49,8 @@
 		"@woocommerce/eslint-plugin": "1.0.0-beta.0",
 		"@wordpress/scripts": "^12.6.1",
 		"exec": "^0.1.2",
+		"husky": "^7.0.4",
+		"lint-staged": "^12.1.2",
 		"promised-exec": "~1.0.1",
 		"semver": "^4.1.0"
 	},

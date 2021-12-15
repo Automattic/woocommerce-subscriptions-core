@@ -3,6 +3,10 @@ name: PHP linting and tests
 on:
   pull_request
 
+env:
+  WP_VERSION: latest
+  WC_VERSION: 5.5.0  # the min supported version as per L-2 policy
+
 jobs:
   phpcs:
     name:    PHP Code Sniffer
@@ -39,3 +43,28 @@ jobs:
           coverage:    none
       # run CI checks
       - run: find . \( -path ./vendor \) -prune -o \( -name '*.php' \) -exec php -lf {} \;| (! grep -v "No syntax errors detected" )
+
+  test:
+    name:    PHP testing
+    runs-on: ubuntu-18.04
+    strategy:
+      fail-fast:    false
+      max-parallel: 10
+      matrix:
+        php: [ '7.0', '7.1', '7.2', '7.3', '7.4' ]
+    steps:
+      # clone the repository
+      - uses: actions/checkout@v2
+      # enable dependencies caching
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/composer/
+          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+      # setup PHP, but without debug extensions for reasonable performance
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools:       composer
+          coverage:    xdebug2
+      # run CI checks
+      - run: bash bin/run-ci-tests.sh

@@ -316,7 +316,7 @@ class WC_Subscriptions_Core_Plugin {
 	public function register_order_types() {
 		$subscriptions_exist = $this->cache->cache_and_get( 'wcs_do_subscriptions_exist', 'wcs_do_subscriptions_exist' );
 
-		if ( true === apply_filters( 'woocommerce_subscriptions_not_empty', $subscriptions_exist ) ) {
+		if ( true === (bool) apply_filters( 'woocommerce_subscriptions_not_empty', $subscriptions_exist ) ) {
 			$not_found_text = __( 'No Subscriptions found', 'woocommerce-subscriptions' );
 		} else {
 			$not_found_text = '<p>' . __( 'Subscriptions will appear here for you to view and manage once purchased by a customer.', 'woocommerce-subscriptions' ) . '</p>';
