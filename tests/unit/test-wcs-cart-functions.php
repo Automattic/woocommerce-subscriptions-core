@@ -250,7 +250,7 @@ class WCS_Cart_Functions_Test extends WP_UnitTestCase {
 	public function test_wcs_get_cart_item_name( $cart ) {
 
 		// Create mock product
-		$product = $this->getMockBuilder( 'WC_Product' )->disableOriginalConstructor()->getMock();
+//		$product = $this->getMockBuilder( 'WC_Product' )->disableOriginalConstructor()->getMock();
 
 		/*
 		// Create cart item
