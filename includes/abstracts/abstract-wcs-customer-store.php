@@ -43,7 +43,7 @@ abstract class WCS_Customer_Store {
 				wcs_doing_it_wrong( __METHOD__, 'This method was called before the "plugins_loaded" hook. It applies a filter to the customer data store instantiated. For that to work, it should first be called after all plugins are loaded.', '2.3.0' );
 			}
 
-			$class = apply_filters( 'wcs_customer_store_class', 'WCS_Customer_Store_Cached_CPT' );
+			$class          = apply_filters( 'wcs_customer_store_class', 'WCS_Customer_Store_Cached_CPT' );
 			self::$instance = new $class();
 			self::$instance->init();
 		}

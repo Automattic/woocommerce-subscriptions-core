@@ -121,8 +121,8 @@ abstract class WCS_Hook_Deprecator {
 	 * @since 2.0
 	 */
 	protected static function get_product_id( $subscription ) {
-		$order_items  = $subscription->get_items();
-		$product_id   = ( empty( $order_items ) ) ? 0 : WC_Subscriptions_Order::get_items_product_id( reset( $order_items ) );
+		$order_items = $subscription->get_items();
+		$product_id  = ( empty( $order_items ) ) ? 0 : WC_Subscriptions_Order::get_items_product_id( reset( $order_items ) );
 		return $product_id;
 	}
 }

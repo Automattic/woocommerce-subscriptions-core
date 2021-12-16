@@ -104,7 +104,7 @@ abstract class WCS_Table_Maker {
 	 * @param string $table The name of the table to update
 	 */
 	private function update_table( $table ) {
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		$definition = $this->get_table_definition( $table );
 		if ( $definition ) {
 			$updated = dbDelta( $definition );
