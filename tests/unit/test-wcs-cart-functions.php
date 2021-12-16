@@ -248,23 +248,18 @@ class WCS_Cart_Functions_Test extends WP_UnitTestCase {
 	* @dataProvider provider_mock_cart
 	*/
 	public function test_wcs_get_cart_item_name( $cart ) {
-
 		// Create mock product
-		$product = $this->getMockBuilder( 'WC_Product' )->disableOriginalConstructor()->getMock();
+		$product = WC_Helper_Product::create_simple_product();
 
 		// Create cart item
 		$cart_item = array( 'data' => $product );
 
-		// Default
+		$product->set_name( '' );
 		$this->assertEquals( '', wcs_get_cart_item_name( $cart_item ) );
 
 		// Specify title
-		$title = 'Product Title';
-
-		// Stub get_title()
-		$product->expects( $this->any() )->method( 'get_title' )->will( $this->returnValue( $title ) );
-
-		$this->assertEquals( $title, wcs_get_cart_item_name( $cart_item ) );
+		$product->set_name( 'Product Title' );
+		$this->assertEquals( 'Product Title', wcs_get_cart_item_name( $cart_item ) );
 
 		// Use include parameter
 		$include = array( 'attributes' => true );
@@ -276,7 +271,7 @@ class WCS_Cart_Functions_Test extends WP_UnitTestCase {
 		WC()->cart = $cart;
 		WC()->cart->expects( $this->any() )->method( 'get_item_data' )->will( $this->returnValue( $item_data ) );
 
-		$name = $title . ' (' . $item_data . ')';
+		$name = 'Product Title (' . $item_data . ')';
 
 		$this->assertEquals( $name, wcs_get_cart_item_name( $cart_item, $include ) );
 
