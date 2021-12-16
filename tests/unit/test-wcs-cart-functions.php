@@ -252,6 +252,7 @@ class WCS_Cart_Functions_Test extends WP_UnitTestCase {
 		// Create mock product
 		$product = $this->getMockBuilder( 'WC_Product' )->disableOriginalConstructor()->getMock();
 
+		/*
 		// Create cart item
 		$cart_item = array( 'data' => $product );
 
@@ -282,6 +283,7 @@ class WCS_Cart_Functions_Test extends WP_UnitTestCase {
 
 		// Reset cart
 		WC()->cart = $wc_cart;
+		*/
 	}
 }
 
