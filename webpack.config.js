@@ -30,7 +30,7 @@ module.exports = {
 	plugins: [
 		...defaultConfig.plugins.filter(
 			( plugin ) =>
-				plugin.constructor.name !== 'DependencyExtractionWebpackPlugin'
+				'DependencyExtractionWebpackPlugin' !== plugin.constructor.name
 		),
 		new WooCommerceDependencyExtractionWebpackPlugin( {
 			requestToExternal,
