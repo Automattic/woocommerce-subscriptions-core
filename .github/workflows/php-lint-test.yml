@@ -31,5 +31,4 @@ jobs:
           tools:       composer
           coverage:    xdebug2
       # run CI checks
-      #- run: bash bin/run-ci-tests.sh
-      - run: vendor/bin/phpunit --version
+      - run: bash bin/run-ci-tests.sh
