@@ -1,0 +1,28 @@
+version: '3'
+
+volumes:
+  ## Kludge for not having the ./docker directory bound recursively
+  dockerdirectory:
+
+services:
+  wordpress:
+    build: .
+    container_name: woocommerce_subscriptions_core_wordpress
+    image: woocommerce_subscriptions_core_wordpress
+    restart: always
+    depends_on:
+      - db
+    links:
+      - db:mysql
+    env_file:
+      - default.env
+    volumes:
+      - ./docker/wordpress:/var/www/html/
+      - ./docker/logs/apache2/:/var/log/apache2
+      - .:/var/www/html/wp-content/plugins/woocommerce-subscriptions-core
+      - dockerdirectory:/var/www/html/wp-content/plugins/woocommerce-subscriptions-core/docker
+  db:
+    container_name: woocommerce_subscriptions_core_mysql
+    image: mariadb:10.5.8
+    env_file:
+      - default.env
