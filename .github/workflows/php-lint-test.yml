@@ -31,4 +31,5 @@ jobs:
           tools:       composer
           coverage:    xdebug2
       # run CI checks
-      - run: bash bin/run-ci-tests.sh
+      #- run: bash bin/run-ci-tests.sh
+      - run: phpunit --version
