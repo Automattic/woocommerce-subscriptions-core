@@ -52,6 +52,8 @@ require_once dirname( __FILE__ ) . '/../../vendor/yoast/phpunit-polyfills/phpuni
 
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
+require dirname( __FILE__ ) . '/helpers/class-wcs-base-related-order-store-test-case.php';
+require dirname( __FILE__ ) . '/helpers/class-wcs-base-customer-store-test-case.php';
 
 // We use outdated PHPUnit version, which emits deprecation errors in PHP 7.4 (deprecated reflection APIs).
 if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
