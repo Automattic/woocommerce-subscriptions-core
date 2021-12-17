@@ -21,7 +21,7 @@ class PHPUnit_Utils {
 	 *
 	 * @return mixed
 	 */
-	public static function call_method( $obj, $name, $args ) {
+	public static function call_method( $obj, $name, $args = [] ) {
 		$class  = new ReflectionClass( $obj );
 		$method = $class->getMethod( $name );
 		$method->setAccessible( true );
