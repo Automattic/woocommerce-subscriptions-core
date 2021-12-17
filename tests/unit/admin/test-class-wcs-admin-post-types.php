@@ -1,4 +1,9 @@
 <?php
+/**
+ * Class WCS_Admin_Post_Types_Test
+ *
+ * @package WooCommerce\SubscriptionsCore\Tests
+ */
 
 /**
  * Test suite for the WCS_Admin_Post_Types class
