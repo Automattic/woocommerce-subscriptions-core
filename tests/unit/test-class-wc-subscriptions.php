@@ -3,7 +3,7 @@
 /**
  * Class: WC_Subscriptions_Get_Date_Test
  */
-class WCS_Subscriptions_Test extends WP_UnitTestCase {
+class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 	/** An array of basic subscriptions used to test against */
 	public $subscriptions = [];
