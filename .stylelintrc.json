@@ -18,6 +18,7 @@
 		"rule-empty-line-before": null,
 		"selector-class-pattern": null,
 		"selector-pseudo-class-parentheses-space-inside": "always",
+		"selector-id-pattern": null,
 		"string-quotes": "single",
 		"value-keyword-case": null,
 		"value-list-comma-newline-after": null

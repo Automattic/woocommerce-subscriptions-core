@@ -9,7 +9,7 @@ body.wcs-modal-open {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	height: 0vh;
+	height: 0;
 	background-color: transparent;
 	overflow: hidden;
 	transition: background-color 0.25s ease;
@@ -20,12 +20,12 @@ body.wcs-modal-open {
 	position: fixed;
 	width: 100%;
 	height: 100vh;
-	background-color: rgba(0, 0, 0, 0.5);
+	background-color: rgba( 0, 0, 0, 0.5 );
 	transition: background-color 0.25s;
 }
 
 .wcs-modal.open > .content-wrapper {
-	transform: scale(1);
+	transform: scale( 1 );
 	min-width: 30%;
 	max-width: 80%;
 }
@@ -38,17 +38,17 @@ body.wcs-modal-open {
 	justify-content: flex-start;
 	margin: 0;
 	padding: 2em;
-	background-color: white;
+	background-color: #fff;
 	border-radius: 0.3em;
-	transform: scale(0);
+	transform: scale( 0 );
 	transition: transform 0.25s;
 	transition-delay: 0.15s;
 }
 
 .wcs-modal .content-wrapper .close {
 	position: absolute;
-	top: 0px;
-	right: 0px;
+	top: 0;
+	right: 0;
 	z-index: 50;
 }
 
@@ -95,11 +95,10 @@ body.wcs-modal-open {
 	margin-left: 0.8em;
 }
 
-
 /*
  * Mobile Display Styles
  */
-@media only screen and (max-width:414px) {
+@media only screen and ( max-width: 414px ) {
 	.wcs-modal.open > .content-wrapper {
 		max-width: none;
 		width: 100%;
@@ -118,7 +117,7 @@ body.wcs-modal-open {
 	}
 }
 
-@media only screen and (max-width:320px) {
+@media only screen and ( max-width: 320px ) {
 	.wcs-modal.open .content-wrapper .modal-header {
 		height: 7%;
 	}
@@ -129,7 +128,7 @@ body.wcs-modal-open {
 	}
 }
 
-@media only screen and (max-width:768px) {
+@media only screen and ( max-width: 768px ) {
 	.wcs-modal.open > .content-wrapper {
 		min-width: 60%;
 	}

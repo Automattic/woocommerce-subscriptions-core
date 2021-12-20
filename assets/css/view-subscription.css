@@ -1,4 +1,4 @@
-@media only screen and (max-width:768px) {
+@media only screen and ( max-width: 768px ) {
 	.subscription_details .button {
 		margin-bottom: 2px;
 		width: 100%;
@@ -17,8 +17,8 @@
 .subscription-auto-renew-toggle__i {
 	height: 20px;
 	width: 32px;
-	border: 2px solid #00BA8A;
-	background-color: #00BA8A;
+	border: 2px solid #00ba8a;
+	background-color: #00ba8a;
 	display: inline-block;
 	text-indent: -9999px;
 	border-radius: 10em;
@@ -27,8 +27,8 @@
 	vertical-align: text-top;
 }
 
-.subscription-auto-renew-toggle__i:before {
-	content: "";
+.subscription-auto-renew-toggle__i::before {
+	content: '';
 	display: block;
 	width: 16px;
 	height: 16px;
@@ -44,7 +44,8 @@
 	background-color: #999;
 }
 
-.subscription-auto-renew-toggle--off .subscription-auto-renew-toggle__i:before {
+.subscription-auto-renew-toggle--off
+	.subscription-auto-renew-toggle__i::before {
 	right: auto;
 	left: 0;
 }
@@ -71,13 +72,13 @@
 
 .wcs_early_renew_modal_note {
 	position: sticky;
-	bottom: 0px;
+	bottom: 0;
 	min-width: 100%;
 	width: 0;
 }
 
 #early_renewal_modal_submit {
 	width: 100%;
-	font-size:1.4em;
+	font-size: 1.4em;
 	text-align: center;
 }
