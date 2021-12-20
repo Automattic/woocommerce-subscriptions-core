@@ -2,7 +2,7 @@
 /**
  * Class: WC_Subscription_Payment_Count_Test
  */
-class WCS_Subscriptions_Payment_Count_Test extends WP_UnitTestCase {
+class WC_Subscriptions_Payment_Count_Test extends WP_UnitTestCase {
 
 	/** A basic subscription used to test against */
 	public $subscription;
@@ -129,7 +129,7 @@ class WCS_Subscriptions_Payment_Count_Test extends WP_UnitTestCase {
 		// Mark 1 switch as paid and refunded.
 		$this->mark_related_order_as_complete( $this->orders['switch'][0] );
 		$this->mark_related_order_as_refunded( $this->orders['switch'][0] );
-		$this->clear_subscription_payment_cache();
+		PHPUnit_Utils::$this->clear_subscription_payment_cache();
 
 		$this->assertEquals( 1, $this->subscription->get_payment_count( 'completed', 'switch' ) );
 		$this->assertEquals( 1, $this->subscription->get_payment_count( 'refunded', 'switch' ) );
