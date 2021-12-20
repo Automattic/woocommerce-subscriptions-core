@@ -1,14 +1,14 @@
-jQuery( function( $ ) {
+jQuery( function ( $ ) {
 	const modals = $( '.wcs-modal' );
 
 	// Resize all open modals on window resize.
 	$( window ).on( 'resize', resizeModals );
 
 	// Initialize modals
-	$( modals ).each( function() {
+	$( modals ).each( function () {
 		trigger = $( this ).data( 'modal-trigger' );
 		$( trigger ).on( 'click', { modal: this }, show_modal );
-	});
+	} );
 
 	/**
 	 * Displays the modal linked to a click event.
@@ -28,7 +28,7 @@ jQuery( function( $ ) {
 		event.preventDefault();
 
 		const contentWrapper = modal.find( '.content-wrapper' );
-		const close          = modal.find( '.close' );
+		const close = modal.find( '.close' );
 
 		modal.trigger( 'focus' );
 		modal.addClass( 'open' );
@@ -43,9 +43,9 @@ jQuery( function( $ ) {
 		contentWrapper.on( 'click', ( e ) => e.stopPropagation() );
 
 		// Close the modal if the escape key is pressed.
-		modal.on( 'keyup', function( e ) {
+		modal.on( 'keyup', function ( e ) {
 			if ( 27 === e.keyCode ) {
-				close_modal( modal )
+				close_modal( modal );
 			}
 		} );
 	}
@@ -73,7 +73,7 @@ jQuery( function( $ ) {
 	 */
 	function should_show_modal( modal ) {
 		// Allow third-parties to filter whether the modal should be displayed.
-		var event   = jQuery.Event( 'wcs_show_modal' );
+		var event = jQuery.Event( 'wcs_show_modal' );
 		event.modal = modal;
 
 		$( document ).trigger( event );
@@ -86,13 +86,13 @@ jQuery( function( $ ) {
 	 * Resize all open modals to fit the display.
 	 */
 	function resizeModals() {
-		$( modals ).each( function() {
+		$( modals ).each( function () {
 			if ( ! $( this ).hasClass( 'open' ) ) {
 				return;
 			}
 
 			resizeModal( this );
-		});
+		} );
 	}
 
 	/**
@@ -111,4 +111,4 @@ jQuery( function( $ ) {
 			modal_container.css( 'height', '90%' );
 		}
 	}
-});
+} );

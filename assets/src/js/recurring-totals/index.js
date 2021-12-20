@@ -298,7 +298,7 @@ const RecurringSubscription = ( {
 export const SubscriptionsRecurringTotals = ( { extensions, cart } ) => {
 	const { subscriptions } = extensions;
 	const { cartNeedsShipping, cartHasCalculatedShipping } = cart;
-	if ( ! subscriptions || subscriptions.length === 0 ) {
+	if ( ! subscriptions || 0 === subscriptions.length ) {
 		return null;
 	}
 	return subscriptions.map( ( { key, ...subscription } ) => (

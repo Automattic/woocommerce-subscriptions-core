@@ -7,9 +7,9 @@ ul {
 	margin-top: 0;
 	margin-bottom: 1.6em;
 }
-.wcs-badge:before {
-	font-family: WooCommerce !important;
-	content: "\e03d";
+.wcs-badge::before {
+	font-family: 'WooCommerce' !important;
+	content: '\e03d';
 	color: #fff;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
@@ -26,7 +26,7 @@ ul {
 	vertical-align: middle;
 }
 .wcs-badge {
-	position: relative;;
+	position: relative;
 	background: #9c5d90;
 	text-rendering: optimizeLegibility;
 	padding-top: 150px;
@@ -37,11 +37,11 @@ ul {
 	text-align: center;
 	color: #ddc8d9;
 	margin: 5px 0 0 0;
-	-webkit-box-shadow: 0 1px 3px rgba(0,0,0,.2);
-	box-shadow: 0 1px 3px rgba(0,0,0,.2);
+	-webkit-box-shadow: 0 1px 3px rgba( 0, 0, 0, 0.2 );
+	box-shadow: 0 1px 3px rgba( 0, 0, 0, 0.2 );
 }
 .about-wrap h2 {
-	border-bottom: 1px solid #DDD;
+	border-bottom: 1px solid #ddd;
 	margin: 0;
 	padding: 1em 0;
 }
@@ -51,12 +51,12 @@ ul {
 .about-wrap .feature-section {
 	padding-top: 1.6em;
 	padding-bottom: 0.4em;
-	border-bottom: 1px solid #DDD;
+	border-bottom: 1px solid #ddd;
 }
 .about-wrap .still-more .feature-section {
 	padding-top: 0;
 	padding-bottom: 0.4em;
-	border-bottom: 1px solid #DDD;
+	border-bottom: 1px solid #ddd;
 }
 .about-wrap .under-the-hood {
 	padding-top: 0;
@@ -68,14 +68,14 @@ ul {
 }
 .about-wrap .wcs-feature {
 	overflow: visible !important;
-	*zoom:1;
+	*zoom: 1;
 }
-.about-wrap .wcs-feature:before,
-.about-wrap .wcs-feature:after {
-	content: " ";
+.about-wrap .wcs-feature::before,
+.about-wrap .wcs-feature::after {
+	content: ' ';
 	display: table;
 }
-.about-wrap .wcs-feature:after {
+.about-wrap .wcs-feature::after {
 	clear: both;
 }
 .about-wrap .two-col .feature-right {
@@ -92,40 +92,51 @@ ul {
 }
 .woocommerce-message {
 	position: relative;
-	border-left-color: #cc99c2!important;
+	border-left-color: #cc99c2 !important;
 	overflow: hidden;
 }
 
-.woocommerce-message a.button-primary,p.woocommerce-actions a.button-primary,
-.woocommerce-message a.button-primary:focus, p.woocommerce-actions a.button-primary:focus,
-.woocommerce-message a.button-primary:active, p.woocommerce-actions a.button-primary:active {
+.woocommerce-message a.button-primary,
+p.woocommerce-actions a.button-primary,
+.woocommerce-message a.button-primary:focus,
+p.woocommerce-actions a.button-primary:focus,
+.woocommerce-message a.button-primary:active,
+p.woocommerce-actions a.button-primary:active {
 	background: #b366a4;
 	border-color: #b366a4;
-	-webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.25),0 1px 0 rgba(0,0,0,.15);
-	box-shadow: inset 0 1px 0 rgba(255,255,255,.25),0 1px 0 rgba(0,0,0,.15);
-	text-shadow: 0 -1px 1px #b366a4, 1px 0 1px #b366a4, 0 1px 1px #b366a4, -1px 0 1px #b366a4;
+	-webkit-box-shadow: inset 0 1px 0 rgba( 255, 255, 255, 0.25 ),
+		0 1px 0 rgba( 0, 0, 0, 0.15 );
+	box-shadow: inset 0 1px 0 rgba( 255, 255, 255, 0.25 ),
+		0 1px 0 rgba( 0, 0, 0, 0.15 );
+	text-shadow: 0 -1px 1px #b366a4, 1px 0 1px #b366a4, 0 1px 1px #b366a4,
+		-1px 0 1px #b366a4;
 	color: #fff;
 	text-decoration: none;
 }
 
-.woocommerce-message a.button-primary:hover,p.woocommerce-actions a.button-primary:hover {
+.woocommerce-message a.button-primary:hover,
+p.woocommerce-actions a.button-primary:hover {
 	background: #bb77ae;
 	border-color: #aa559a;
-	-webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.25),0 1px 0 rgba(0,0,0,.15);
-	box-shadow: inset 0 1px 0 rgba(255,255,255,.25),0 1px 0 rgba(0,0,0,.15);
+	-webkit-box-shadow: inset 0 1px 0 rgba( 255, 255, 255, 0.25 ),
+		0 1px 0 rgba( 0, 0, 0, 0.15 );
+	box-shadow: inset 0 1px 0 rgba( 255, 255, 255, 0.25 ),
+		0 1px 0 rgba( 0, 0, 0, 0.15 );
 }
 
-.woocommerce-message a.button-primary:active,p.woocommerce-actions a.button-primary:active {
+.woocommerce-message a.button-primary:active,
+p.woocommerce-actions a.button-primary:active {
 	background: #aa559a;
 	border-color: #aa559a;
 }
 
 .woocommerce-message a.skip,
 p.woocommerce-actions a.skip {
-	opacity: .7;
+	opacity: 0.7;
 }
 
-.woocommerce-message .twitter-share-button,p.woocommerce-actions .twitter-share-button {
+.woocommerce-message .twitter-share-button,
+p.woocommerce-actions .twitter-share-button {
 	vertical-align: middle;
 	margin-left: 3px;
 }
@@ -135,7 +146,7 @@ p.woocommerce-actions {
 }
 
 .woocommerce-about-text {
-	margin-bottom: 1em!important;
+	margin-bottom: 1em !important;
 }
 
 .about-wrap .feature-section.three-col .col {
@@ -157,13 +168,13 @@ p.woocommerce-actions {
 	float: right !important;
 }
 
-@media only screen and (max-width: 1200px) {
+@media only screen and ( max-width: 1200px ) {
 	.about-wrap .two-col .feature-copy {
 		margin-top: 0;
 	}
 }
 
-@media only screen and (max-width: 781px) {
+@media only screen and ( max-width: 781px ) {
 	.about-wrap .two-col .feature-copy,
 	.about-wrap .feature-section {
 		padding-bottom: 1em;
@@ -178,12 +189,12 @@ p.woocommerce-actions {
 		width: 100%;
 		margin: 40px 0 0;
 		padding: 0 0 40px;
-		border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+		border-bottom: 1px solid rgba( 0, 0, 0, 0.1 );
 	}
 }
 
-@media only screen and (max-width: 500px) {
-	.about-wrap .wcs-badge:before {
+@media only screen and ( max-width: 500px ) {
+	.about-wrap .wcs-badge::before {
 		width: 100%;
 	}
 	.about-wrap .wcs-badge {

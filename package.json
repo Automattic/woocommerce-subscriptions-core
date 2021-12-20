@@ -30,8 +30,9 @@
 		"format:css": "npm run format:provided '**/*.scss' '**/*.css'",
 		"format:provided": "prettier --write",
 		"lint": "npm run lint:js && npm run lint:css && npm run lint:php",
-		"lint:css": "wp-scripts lint-style assets/src/js",
-		"lint:js": "wp-scripts lint-js assets/src/js",
+		"lint:css": "wp-scripts lint-style assets/css",
+		"lint:js": "wp-scripts lint-js",
+		"lint:js-fix": "wp-scripts lint-js --fix",
 		"lint:php": "./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
 		"lint:php-fix": "./vendor/bin/phpcbf --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
 		"start": "wp-scripts start assets/src/js/index.js",
@@ -52,6 +53,8 @@
 		"husky": "^7.0.4",
 		"lint-staged": "^12.1.2",
 		"promised-exec": "~1.0.1",
+		"stylelint-config-prettier": "8.0.2",
+		"stylelint-config-wordpress": "17.0.0",
 		"semver": "^4.1.0"
 	},
 	"dependencies": {

@@ -6,7 +6,7 @@
 }
 .shipping.recurring-total ul li {
 	margin: 0;
-	padding: .25em 0 .25em 22px;
+	padding: 0.25em 0 0.25em 22px;
 	text-indent: -22px;
 	list-style: none outside;
 }
@@ -20,8 +20,11 @@
 	font-weight: 700;
 }
 .woocommerce-page table.shop_table_responsive tbody .recurring-totals th {
-	display:table-cell;
+	display: table-cell;
 }
-.woocommerce-page table.shop_table_responsive tr.recurring-total td:not([data-title]):before {
-	content:"";
+.woocommerce-page
+	table.shop_table_responsive
+	tr.recurring-total
+	td:not( [data-title] )::before {
+	content: '';
 }

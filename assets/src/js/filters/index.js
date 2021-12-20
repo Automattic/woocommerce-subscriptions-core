@@ -28,7 +28,7 @@ export const registerFilters = () => {
 	__experimentalRegisterCheckoutFilters( 'woocommerce-subscriptions', {
 		// subscriptions data here comes from register_endpoint_data /cart registration.
 		totalLabel: ( label, { subscriptions } ) => {
-			if ( subscriptions?.length > 0 ) {
+			if ( 0 < subscriptions?.length ) {
 				return __( 'Total due today', 'woocommerce-subscriptions' );
 			}
 			return label;
@@ -43,7 +43,8 @@ export const registerFilters = () => {
 					billing_interval: billingInterval,
 					subscription_length: subscriptionLength,
 				} = subscriptions;
-				// We check if we have a length and its equal or less to the billing interval, when this is true, it means we don't have a next payment date.
+				// We check if we have a length and its equal or less to the billing interval.
+				// When this is true, it means we don't have a next payment date.
 				if (
 					isOneOffSubscription( {
 						subscriptionLength,
@@ -51,7 +52,7 @@ export const registerFilters = () => {
 					} )
 				) {
 					// An edge case when length is 1 so it doens't have a length prefix
-					if ( subscriptionLength === 1 ) {
+					if ( 1 === subscriptionLength ) {
 						return getBillingFrequencyString(
 							subscriptions,
 							// translators: the word used to describe billing frequency, e.g. "fo1" 1 day or "for" 1 month.
@@ -104,7 +105,7 @@ export const registerFilters = () => {
 		},
 		cartItemPrice: ( pricePlaceholder, { subscriptions }, { context } ) => {
 			if ( subscriptions?.sign_up_fees ) {
-				return context === 'cart'
+				return 'cart' === context
 					? sprintf(
 							/* translators: %s is the subscription price to pay immediately (ie: $10). */
 							__( 'Due today %s', 'woocommerce-subscriptions' ),

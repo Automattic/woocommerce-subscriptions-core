@@ -59,22 +59,22 @@ export function getAvailablePeriods( number ) {
 export function getRecurringPeriodString( { billingInterval, billingPeriod } ) {
 	switch ( billingInterval ) {
 		case 1:
-			if ( billingPeriod === 'day' ) {
+			if ( 'day' === billingPeriod ) {
 				return __(
 					'Daily recurring total',
 					'woocommerce-subscriptions'
 				);
-			} else if ( billingPeriod === 'week' ) {
+			} else if ( 'week' === billingPeriod ) {
 				return __(
 					'Weekly recurring total',
 					'woocommerce-subscriptions'
 				);
-			} else if ( billingPeriod === 'month' ) {
+			} else if ( 'month' === billingPeriod ) {
 				return __(
 					'Monthly recurring total',
 					'woocommerce-subscriptions'
 				);
-			} else if ( billingPeriod === 'year' ) {
+			} else if ( 'year' === billingPeriod ) {
 				return __(
 					'Yearly recurring total',
 					'woocommerce-subscriptions'
@@ -139,7 +139,7 @@ export function getSubscriptionLengthString( {
  * @param {Object} subscription                  Subscription object.
  * @param {string} subscription.billing_period   Period (month, day, week, year).
  * @param {number} subscription.billing_interval Internal (1 month, 5 day, 4 week, 6 year).
- * @param {string} separator                     This string will be prepended to the output of this function, followed by a space. Examples: (every, each, /)
+ * @param {string} separator                     A string to be prepended to frequency. followed by a space. Eg: (every, each, /)
  * @param {string} price                         This is the string representation of the price of the product.
  */
 export function getBillingFrequencyString(
@@ -155,7 +155,10 @@ export function getBillingFrequencyString(
 			return `${ price } ${ separator } ${ translatedPeriod }`;
 		default:
 			return sprintf(
-				/* translators: %1$s is the price of the product. %2$s is the separator used e.g "every" or "/", %3$d is the length, %4$s is week, month, year */
+				/*
+				 * translators: %1$s is the price of the product. %2$s is the separator used e.g "every" or "/",
+				 * %3$d is the length, %4$s is week, month, year
+				 */
 				__( `%1$s %2$s %3$d %4$s`, 'woocommerce-subscriptions' ),
 				price,
 				separator,

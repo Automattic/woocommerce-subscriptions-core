@@ -1,14 +1,14 @@
 // Shows a border with the current color and a custom opacity. That can't be achieved
 // with normal border because `currentColor` doesn't allow tweaking the opacity, and
 // setting the opacity of the entire element would change the children's opacity too.
-@mixin with-translucent-border($border-width: 1px, $opacity: 0.3) {
+@mixin with-translucent-border( $border-width: 1px, $opacity: 0.3 ) {
 	position: relative;
 
 	&::after {
 		border-style: solid;
 		border-width: $border-width;
 		bottom: 0;
-		content: "";
+		content: '';
 		display: block;
 		left: 0;
 		opacity: $opacity;
@@ -61,7 +61,8 @@
 		}
 	}
 
-	.wcs-recurring-totals-panel__details-total .wc-block-components-totals-item__label {
+	.wcs-recurring-totals-panel__details-total
+		.wc-block-components-totals-item__label {
 		font-weight: 700;
 	}
 }
