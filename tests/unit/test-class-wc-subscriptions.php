@@ -532,8 +532,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 2.0
 	 */
 	public function test_calculate_trial_end_date() {
-		$now                 = time();
-		$active_subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
+		$now                  = time();
+		$active_subscription  = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
 		$pending_subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'pending' ] );
 
 		$trial_end = gmdate( 'Y-m-d H:i:s', wcs_add_months( $now, 1 ) );

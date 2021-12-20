@@ -73,7 +73,7 @@ class WC_Subscriptions_Payment_Count_Test extends WP_UnitTestCase {
 
 		// Mark the parent order as paid.
 		$this->mark_related_order_as_complete( $this->orders['parent'] );
-		PHPUnit_Utils::clear_singleton_property( $this->subscription, 'cached_payment_count');
+		PHPUnit_Utils::clear_singleton_property( $this->subscription, 'cached_payment_count' );
 		$this->assertEquals( 100, $this->subscription->get_payment_count() );
 
 		remove_filter( $deprecated_hook, $callback );
