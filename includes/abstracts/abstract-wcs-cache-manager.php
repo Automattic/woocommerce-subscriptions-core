@@ -17,7 +17,7 @@ abstract class WCS_Cache_Manager {
 		 * Modeled after WP_Session_Tokens
 		 */
 		$manager = apply_filters( 'wcs_cache_manager_class', 'WCS_Cached_Data_Manager' );
-		return new $manager;
+		return new $manager();
 	}
 
 	/**

@@ -68,7 +68,7 @@ abstract class WCS_Related_Order_Store {
 
 			self::$relation_type_keys = array_fill_keys( self::$relation_types, true );
 
-			$class = apply_filters( 'wcs_related_order_store_class', 'WCS_Related_Order_Store_Cached_CPT' );
+			$class          = apply_filters( 'wcs_related_order_store_class', 'WCS_Related_Order_Store_Cached_CPT' );
 			self::$instance = new $class();
 			self::$instance->init();
 		}
