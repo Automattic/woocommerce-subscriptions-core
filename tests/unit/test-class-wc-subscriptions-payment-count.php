@@ -68,12 +68,12 @@ class WC_Subscriptions_Payment_Count_Test extends WP_UnitTestCase {
 
 		// Mark all renewal orders as paid
 		array_walk( $this->orders['renewal'], array( $this, 'mark_related_order_as_complete' ) );
-		$this->clear_subscription_payment_cache();
+		PHPUnit_Utils::clear_singleton_property( $this->subscription, 'cached_payment_count' );
 		$this->assertEquals( 100, $this->subscription->get_payment_count() );
 
 		// Mark the parent order as paid.
 		$this->mark_related_order_as_complete( $this->orders['parent'] );
-		$this->clear_subscription_payment_cache();
+		PHPUnit_Utils::clear_singleton_property( $this->subscription, 'cached_payment_count');
 		$this->assertEquals( 100, $this->subscription->get_payment_count() );
 
 		remove_filter( $deprecated_hook, $callback );
@@ -98,7 +98,7 @@ class WC_Subscriptions_Payment_Count_Test extends WP_UnitTestCase {
 
 		// Mark the parent as paid
 		$this->mark_related_order_as_complete( $this->orders['parent'] );
-		$this->clear_subscription_payment_cache();
+		PHPUnit_Utils::clear_singleton_property( $this->subscription, 'cached_payment_count' );
 
 		$this->assertEquals( 1, $this->subscription->get_payment_count( 'completed', 'parent' ) );
 
@@ -112,7 +112,7 @@ class WC_Subscriptions_Payment_Count_Test extends WP_UnitTestCase {
 		$first_three_renewals = array_slice( $this->orders['renewal'], 0, 3 );
 		array_walk( $first_three_renewals, array( $this, 'mark_related_order_as_complete' ) );
 		$this->mark_related_order_as_refunded( $this->orders['renewal'][0] );
-		$this->clear_subscription_payment_cache();
+		PHPUnit_Utils::clear_singleton_property( $this->subscription, 'cached_payment_count' );
 
 		// Check the parent and renewal combined totals are correct (3 paid renewals, 1 refunded renewal and 1 paid parent).
 		$this->assertEquals( 4, $this->subscription->get_payment_count( 'completed' ) );
@@ -129,7 +129,7 @@ class WC_Subscriptions_Payment_Count_Test extends WP_UnitTestCase {
 		// Mark 1 switch as paid and refunded.
 		$this->mark_related_order_as_complete( $this->orders['switch'][0] );
 		$this->mark_related_order_as_refunded( $this->orders['switch'][0] );
-		PHPUnit_Utils::$this->clear_subscription_payment_cache();
+		PHPUnit_Utils::clear_singleton_property( $this->subscription, 'cached_payment_count' );
 
 		$this->assertEquals( 1, $this->subscription->get_payment_count( 'completed', 'switch' ) );
 		$this->assertEquals( 1, $this->subscription->get_payment_count( 'refunded', 'switch' ) );
@@ -158,18 +158,4 @@ class WC_Subscriptions_Payment_Count_Test extends WP_UnitTestCase {
 		$order->update_status( 'refunded' );
 		$order->save();
 	}
-
-	/**
-	 * Clears the subscription's internal and protected payment count cache.
-	 *
-	 * @return void
-	 */
-	protected function clear_subscription_payment_cache() {
-		$reflection          = new ReflectionClass( $this->subscription );
-		$reflection_property = $reflection->getProperty( 'cached_payment_count' );
-		$reflection_property->setAccessible( true );
-
-		$reflection_property->setValue( $this->subscription, null );
-	}
 }
-
