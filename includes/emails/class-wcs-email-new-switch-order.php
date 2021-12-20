@@ -73,7 +73,6 @@ class WCS_Email_New_Switch_Order extends WC_Email_New_Order {
 	 * @return void
 	 */
 	function trigger( $order_id, $order = null ) {
-
 		if ( $order_id ) {
 			$this->object = wc_get_order( $order_id );
 

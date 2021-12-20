@@ -21,7 +21,7 @@ class PHPUnit_Utils {
 	 *
 	 * @return mixed
 	 */
-	public static function call_method( $obj, $name, $args ) {
+	public static function call_method( $obj, $name, $args = [] ) {
 		$class  = new ReflectionClass( $obj );
 		$method = $class->getMethod( $name );
 		$method->setAccessible( true );
@@ -39,5 +39,18 @@ class PHPUnit_Utils {
 		$reflected_instance_property = $reflected_singleton->getProperty( 'instance' );
 		$reflected_instance_property->setAccessible( true );
 		$reflected_instance_property->setValue( null, null );
+	}
+
+	/**
+	 * A utility function to clear any property var in singleton classes.
+	 *
+	 * @param string $singleton_class The singleton class name.
+	 * @param string $property        The name of the property to clear.
+	 */
+	public static function clear_singleton_property( $singleton_class, $property = '' ) {
+		$reflected_singleton         = new \ReflectionClass( $singleton_class );
+		$reflected_instance_property = $reflected_singleton->getProperty( $property );
+		$reflected_instance_property->setAccessible( true );
+		$reflected_instance_property->setValue( $singleton_class, null );
 	}
 }

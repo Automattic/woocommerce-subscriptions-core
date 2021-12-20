@@ -24,6 +24,8 @@ class WCS_Email_Listener {
 	 */
 	private $untracked_sent_counts = array();
 
+	public $emails = array();
+
 	/**
 	 * Constructor.
 	 *
@@ -65,6 +67,8 @@ class WCS_Email_Listener {
 			$this->untracked_sent_counts[ $email_recipient ] = ! isset( $this->untracked_sent_counts[ $email_recipient ] ) ? 1 : $this->untracked_sent_counts[ $email_recipient ] + 1;
 		}
 
+		$this->emails[] = $email;
+
 		return $params;
 	}
 
@@ -97,10 +101,25 @@ class WCS_Email_Listener {
 	 * Determines if any untracked email has been sent to a given recipient.
 	 *
 	 * @param string $email_recipient The recipient of email sent. Optional. Can be 'customer', 'admin', 'any' or a specific email address. Default is 'any'.
-	 * @return boolean
+	 * @return array|null Returns either null or a list of untracked emails
 	 */
-	public function has_sent_untracked( $email_recipient = 'any' ) {
-		return $this->get_sent_count_for_recipient( $this->untracked_sent_counts, $email_recipient ) > 0;
+	public function get_untracked( $email_recipient = 'any' ) {
+		if ( $this->get_sent_count_for_recipient( $this->untracked_sent_counts, $email_recipient ) === 0 ) {
+			return null;
+		}
+		$untracked_emails = array_filter(
+			$this->emails,
+			function ( $email ) {
+				return get_class( $email ) !== $this->email_class_name;
+			}
+		);
+
+		return array_map(
+			function ( $email ) {
+				return get_class( $email ) . ' to ' . $email->recipient;
+			},
+			$untracked_emails
+		);
 	}
 
 	/**
@@ -120,11 +139,11 @@ class WCS_Email_Listener {
 				break;
 			case 'admin':
 				// By default the admin email is admin@woocommerce.com.
-				$recipient = 'admin@woocommerce.com';
+				$recipient = 'admin@example.org';
 				break;
 			case 'customer':
 				// Remove any emails sent to the admin.
-				unset( $counts['admin@woocommerce.com'] );
+				unset( $counts['admin@example.org'] );
 
 				// Map all the remaining sent emails to the customer recipient.
 				$counts = array( 'customer' => array_sum( $counts ) );
