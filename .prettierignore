@@ -1,0 +1,5 @@
+bin
+node_modules
+vendor
+assets/js/*
+build/

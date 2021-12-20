@@ -1,4 +1,4 @@
-jQuery( function( $ ) {
+jQuery( function ( $ ) {
 	'use strict';
 
 	var renewals_field = document.querySelector( '.wcs_number_payments_field' ),
@@ -9,13 +9,14 @@ jQuery( function( $ ) {
 	 * @type {{init: function, type_options: function, move_field: function}}
 	 */
 	var wcs_meta_boxes_coupon_actions = {
-
 		/**
 		 * Initialize variation actions.
 		 */
-		init: function() {
+		init: function () {
 			if ( renewals_field ) {
-				$( document.getElementById( 'discount_type' ) ).on( 'change', this.type_options ).trigger( 'change' );
+				$( document.getElementById( 'discount_type' ) )
+					.on( 'change', this.type_options )
+					.trigger( 'change' );
 				this.move_field();
 			}
 		},
@@ -23,7 +24,7 @@ jQuery( function( $ ) {
 		/**
 		 * Show/hide fields by coupon type options.
 		 */
-		type_options: function() {
+		type_options: function () {
 			var select_val = $( this ).val();
 
 			switch ( select_val ) {
@@ -41,12 +42,12 @@ jQuery( function( $ ) {
 		/**
 		 * Move the renewal form field in the DOM to a better location.
 		 */
-		move_field: function() {
+		move_field: function () {
 			var parent = document.getElementById( 'general_coupon_data' ),
 				shipping = parent.querySelector( '.free_shipping_field' );
 
 			parent.insertBefore( renewals_field, shipping );
-		}
+		},
 	};
 
 	wcs_meta_boxes_coupon_actions.init();
