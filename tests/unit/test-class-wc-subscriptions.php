@@ -8,8 +8,6 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/** An array of basic subscriptions used to test against */
 	public static $subscriptions = [];
 
-	public static $yes;
-
 	/**
 	 * Setup the suite for testing the WC_Subscription class
 	 *
