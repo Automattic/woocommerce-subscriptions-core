@@ -74,6 +74,10 @@ jQuery( function ( $ ) {
 					$.showOrHideStockFields();
 				}
 
+				if ( 'subscription' === $( 'select#product-type' ).val() ) {
+					$( '.show_if_subscription' ).show();
+				}
+
 				// Restore the sale price row width to half
 				$( '.sale_price_dates_fields' )
 					.prev( '.form-row' )
