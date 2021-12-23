@@ -76,6 +76,7 @@ jQuery( function ( $ ) {
 
 				if ( 'subscription' === $( 'select#product-type' ).val() ) {
 					$( '.show_if_subscription' ).show();
+					$( '.hide_if_subscription' ).hide();
 				}
 
 				// Restore the sale price row width to half
