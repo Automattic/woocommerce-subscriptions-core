@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-2022-xx-x - version 1.4.0
+2022-01-03 - version 1.4.0
 * Fix: Simple subscription elements on the product edit page not shown/hidden when necessary. PR#80
 
 2021-12-21 - version 1.3.0
