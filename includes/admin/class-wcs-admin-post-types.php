@@ -436,7 +436,7 @@ class WCS_Admin_Post_Types {
 
 	/**
 	 * Output custom columns for subscriptions
-	 * @param  string $column
+	 * @param string $column
 	 */
 	public function render_shop_subscription_columns( $column ) {
 		global $post, $the_subscription, $wp_list_table;
@@ -448,7 +448,7 @@ class WCS_Admin_Post_Types {
 		// If the subscription failed to load, only display the ID.
 		if ( empty( $the_subscription ) ) {
 			if ( 'order_title' === $column ) {
-				// translators: placeholder is an subscription ID.
+				// translators: placeholder is a subscription ID.
 				echo '<strong>' . sprintf( esc_html_x( '#%s', 'hash before subscription number', 'woocommerce-subscriptions' ), esc_html( $post->ID ) ) . '</strong>';
 				?>
 				<div class="wcs-unknown-order-info-wrapper">
