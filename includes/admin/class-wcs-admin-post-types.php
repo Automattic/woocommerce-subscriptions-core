@@ -452,7 +452,7 @@ class WCS_Admin_Post_Types {
 				echo '<strong>' . sprintf( esc_html_x( '#%s', 'hash before subscription number', 'woocommerce-subscriptions' ), esc_html( $post->ID ) ) . '</strong>';
 				?>
 				<div class="wcs-unknown-order-info-wrapper">
-					<a href="https://woocommerce.com/document/subscriptions/store-manager-guide/#section-18"><?php echo wcs_help_tip( sprintf( "This subscription couldn't be loaded from the database. %s Click to learn more.", '</br>' ) ); ?></a> <?php // @codingStandardsIgnoreLine ?>
+					<a href="https://woocommerce.com/document/subscriptions/store-manager-guide/#section-18"><?php echo wcs_help_tip( sprintf( "This subscription couldn't be loaded from the database. %s Click to learn more.", '</br>' ) ); ?></a><?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</div>
 				<?php
 			} else {
