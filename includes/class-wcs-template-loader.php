@@ -7,6 +7,72 @@
  */
 class WCS_Template_Loader {
 
+	/**
+	 * Relocated templates from WooCommerce Subscriptions.
+	 *
+	 * @var array[]
+	 */
+	private static $relocated_templates = [
+		'admin/deprecated/html-variation-price.php',
+		'admin/deprecated/html-variation-synchronisation.php',
+		'admin/deprecated/order-shipping-html.php',
+		'admin/deprecated/order-tax-html.php',
+		'admin/html-admin-notice.php',
+		'admin/html-failed-scheduled-action-notice.php',
+		'admin/html-variation-price.php',
+		'admin/html-variation-synchronisation.php',
+		'admin/status.php',
+		'cart/cart-recurring-shipping.php',
+		'checkout/form-change-payment-method.php',
+		'checkout/recurring-coupon-totals.php',
+		'checkout/recurring-fee-totals.php',
+		'checkout/recurring-itemized-tax-totals.php',
+		'checkout/recurring-subscription-totals.php',
+		'checkout/recurring-subtotals.php',
+		'checkout/recurring-tax-totals.php',
+		'checkout/recurring-totals.php',
+		'checkout/subscription-receipt.php',
+		'emails/admin-new-renewal-order.php',
+		'emails/admin-new-switch-order.php',
+		'emails/admin-payment-retry.php',
+		'emails/cancelled-subscription.php',
+		'emails/customer-completed-renewal-order.php',
+		'emails/customer-completed-switch-order.php',
+		'emails/customer-on-hold-renewal-order.php',
+		'emails/customer-payment-retry.php',
+		'emails/customer-processing-renewal-order.php',
+		'emails/customer-renewal-invoice.php',
+		'emails/email-order-details.php',
+		'emails/expired-subscription.php',
+		'emails/on-hold-subscription.php',
+		'emails/plain/admin-new-renewal-order.php',
+		'emails/plain/admin-new-switch-order.php',
+		'emails/plain/admin-payment-retry.php',
+		'emails/plain/cancelled-subscription.php',
+		'emails/plain/customer-completed-renewal-order.php',
+		'emails/plain/customer-completed-switch-order.php',
+		'emails/plain/customer-on-hold-renewal-order.php',
+		'emails/plain/customer-payment-retry.php',
+		'emails/plain/customer-processing-renewal-order.php',
+		'emails/plain/customer-renewal-invoice.php',
+		'emails/plain/email-order-details.php',
+		'emails/plain/expired-subscription.php',
+		'emails/plain/on-hold-subscription.php',
+		'emails/plain/subscription-info.php',
+		'emails/subscription-info.php',
+		'html-modal.php',
+		'myaccount/my-subscriptions.php',
+		'myaccount/related-orders.php',
+		'myaccount/related-subscriptions.php',
+		'myaccount/subscription-details.php',
+		'myaccount/subscription-totals-table.php',
+		'myaccount/subscription-totals.php',
+		'myaccount/subscriptions.php',
+		'myaccount/view-subscription.php',
+		'single-product/add-to-cart/subscription.php',
+		'single-product/add-to-cart/variable-subscription.php',
+	];
+
 	public static function init() {
 		add_action( 'woocommerce_account_view-subscription_endpoint', array( __CLASS__, 'get_view_subscription_template' ) );
 		add_action( 'woocommerce_subscription_details_table', array( __CLASS__, 'get_subscription_details_template' ) );
@@ -22,6 +88,8 @@ class WCS_Template_Loader {
 		add_action( 'woocommerce_subscription_add_to_cart', array( __CLASS__, 'get_subscription_add_to_cart' ), 30 );
 		add_action( 'woocommerce_variable-subscription_add_to_cart', array( __CLASS__, 'get_variable_subscription_add_to_cart' ), 30 );
 		add_action( 'wcopc_subscription_add_to_cart', array( __CLASS__, 'get_opc_subscription_add_to_cart' ) ); // One Page Checkout compatibility
+
+		add_filter( 'wc_get_template', array( __CLASS__, 'handle_relocated_templates' ), 10, 5 );
 	}
 
 	/**
@@ -288,5 +356,54 @@ class WCS_Template_Loader {
 	public static function get_opc_subscription_add_to_cart() {
 		global $product;
 		wc_get_template( 'checkout/add-to-cart/simple.php', array( 'product' => $product ), '', PP_One_Page_Checkout::$template_path );
+	}
+
+	/**
+	 * Handles relocated templates.
+	 *
+	 * Hooked onto 'wc_get_templates'.
+	 *
+	 * @since 1.5.0
+	 */
+	public static function handle_relocated_templates( $template, $template_name, $args, $template_path, $default_path ) {
+		if ( ! $default_path || ! in_array( $template_name, self::$relocated_templates, true ) ) {
+			return $template;
+		}
+
+		$subscriptions_core_templates_path = WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' );
+		if ( $default_path === $subscriptions_core_templates_path ) {
+			return $template;
+		}
+
+		$is_default_path_wcs = false;
+		if ( class_exists( 'WC_Subscriptions_Plugin' ) ) {
+			// WCS 4+ is active.
+			$wcs_templates_path  = WC_Subscriptions_Plugin::instance()->get_plugin_directory( 'templates/' );
+			$is_default_path_wcs = $default_path === $wcs_templates_path;
+		} elseif ( class_exists( 'WC_Subscriptions' ) ) {
+			// WCS 3 or older is active.
+			$wcs_templates_path  = plugin_dir_path( WC_Subscriptions::$plugin_file ) . 'templates/';
+			$is_default_path_wcs = $default_path === $wcs_templates_path;
+		} elseif ( file_exists( dirname( $default_path ) . '/woocommerce-subscriptions.php' ) ) {
+			// WCS is installed but not active.
+			$is_default_path_wcs = true;
+		} elseif ( preg_match( '/woocommerce-subscriptions(|[A-Za-z0-9\-\_ ]+)\/templates/', $default_path ) ) {
+			$maybe_a_plugin_name = basename( dirname( $default_path ) );
+			// Avoid the case where $default_path is referring to some other plugin like woocommerce-subscriptions-extension.
+			if ( ! file_exists( dirname( $default_path ) . "/$maybe_a_plugin_name.php" ) ) {
+				$is_default_path_wcs = true;
+			}
+		}
+
+		if ( ! $is_default_path_wcs ) {
+			return $template;
+		}
+
+		return wc_get_template(
+			$template_name,
+			$args,
+			$template_path,
+			$subscriptions_core_templates_path
+		);
 	}
 }
