@@ -363,7 +363,7 @@ class WCS_Template_Loader {
 	 *
 	 * Hooked onto 'wc_get_templates'.
 	 *
-	 * @since 1.5.0
+	 * @since 1.4.0
 	 */
 	public static function handle_relocated_templates( $template, $template_name, $args, $template_path, $default_path ) {
 		if ( ! $default_path || ! in_array( $template_name, self::$relocated_templates, true ) ) {
