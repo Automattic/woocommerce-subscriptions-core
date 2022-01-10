@@ -384,7 +384,7 @@ class WCS_Template_Loader {
 			return $template;
 		}
 
-		return $subscriptions_core_path . 'templates/' . self::$relocated_templates[ $template_file ] . $template_file;
+		return $subscriptions_core_path . '/templates/' . self::$relocated_templates[ $template_file ] . $template_file;
 	}
 
 	/**
