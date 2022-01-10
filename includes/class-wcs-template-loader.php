@@ -401,7 +401,7 @@ class WCS_Template_Loader {
 	public static function is_deprecated_default_path( $template_file, $default_path ) {
 		$is_default_path_wcs = false;
 
-		if ( in_array( $template_file, self::$relocated_templates, true ) ) {
+		if ( isset( self::$relocated_templates[ $template_file ] ) ) {
 			if ( class_exists( 'WC_Subscriptions_Plugin' ) ) {
 				// WCS 4+ is active.
 				$wcs_templates_path  = WC_Subscriptions_Plugin::instance()->get_plugin_directory();
