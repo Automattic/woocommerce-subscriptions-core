@@ -74,12 +74,28 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	 * @return array
 	 */
 	public static function get_available_payment_gateways( $available_gateways ) {
+		global $post;
+
 		// We don't want to filter the available payment methods while the customer is paying for a standard order via the order-pay screen.
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
 			return $available_gateways;
 		}
 
-		if (
+		// If a gateway is getting available payment methods for the mini-cart widget or when setting the mini-cart cache, make sure the correct methods are available.
+		$is_mini_cart = did_action( 'woocommerce_before_mini_cart' ) !== did_action( 'woocommerce_after_mini_cart' );
+
+		if ( ( $is_mini_cart || self::$is_displaying_mini_cart ) && ! wcs_cart_contains_renewal() && ! WC_Subscriptions_Cart::cart_contains_subscription() ) {
+			return $available_gateways;
+		}
+
+		// If there's a subscription in the cart and you're viewing a WC Product page, make sure the correct available payment methods are returned for a simple WC Product.
+		if ( is_product() && isset( $post->post_type, $post->ID ) && 'product' === $post->post_type ) {
+			$product = wc_get_product( $post->ID );
+
+			if ( $product && ! $product->is_type( array( 'subscription', 'variable-subscription', 'subscription_variation' ) ) ) {
+				return $available_gateways;
+			}
+		} elseif (
 			! wcs_cart_contains_renewal() &&
 			! WC_Subscriptions_Cart::cart_contains_subscription() &&
 			( ! isset( $_GET['order_id'] ) || ! wcs_order_contains_subscription( $_GET['order_id'] ) )
