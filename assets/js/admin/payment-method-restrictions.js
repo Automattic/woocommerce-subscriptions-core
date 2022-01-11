@@ -24,21 +24,30 @@ jQuery( function( $ ) {
 		price     = accounting.formatNumber( price, wcs_gateway_restrictions.number_of_decimal_places );
 
 		// Error types to validate.
-		var zero_error              = 'i18n_zero_subscription_error';
-		var below_minimum_error     = 'i18n_below_minimum_subscription_error';
+		var zero_error            = 'i18n_zero_subscription_error';
+		var displaying_zero_error = element.parent().find( '.wc_error_tip, .' + zero_error ).length !== 0;
 
 		// Check if the product price is above 0.
 		if ( 0 >= price ) {
 			$( document.body ).triggerHandler( 'wc_subscriptions_add_error_tip', [ element, zero_error ] );
-		} else if ( removed_error_type !== zero_error ) {
+			displaying_zero_error = true;
+		} else if ( displaying_zero_error && removed_error_type !== zero_error ) {
 			$( document.body ).triggerHandler( 'wc_remove_error_tip', [ element, zero_error ] );
+			displaying_zero_error = false;
 		}
 
 		// Check if the product price is below the amount that can be processed by the payment gateway.
-		if ( 0 < price && wcs_gateway_restrictions.minimum_subscription_amount >= price ) {
-			$( document.body ).triggerHandler( 'wc_subscriptions_add_error_tip', [ element, below_minimum_error ] );
-		} else if ( removed_error_type !== below_minimum_error ) {
-			$( document.body ).triggerHandler( 'wc_remove_error_tip', [ element, below_minimum_error ] );
+		if ( ! displaying_zero_error && 'undefined' !== typeof wcs_gateway_restrictions.minimum_subscription_amount ) {
+			var below_minimum_error      = 'i18n_below_minimum_subscription_error';
+			var displaying_minimum_error = element.parent().find( '.wc_error_tip, .' + below_minimum_error ).length !== 0;
+
+			if ( wcs_gateway_restrictions.minimum_subscription_amount >= price ) {
+				$( document.body ).triggerHandler( 'wc_subscriptions_add_error_tip', [ element, below_minimum_error ] );
+				displaying_minimum_error = true;
+			} else if ( displaying_minimum_error && removed_error_type !== below_minimum_error ) {
+				$( document.body ).triggerHandler( 'wc_remove_error_tip', [ element, below_minimum_error ] );
+				displaying_minimum_error = false;
+			}
 		}
 	} );
 
