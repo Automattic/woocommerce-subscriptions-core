@@ -60,8 +60,8 @@ class WC_Subscriptions_Gateway_Restrictions_Manager {
 				$i18n_minimum_price                         = sprintf( get_woocommerce_price_format(), get_woocommerce_currency_symbol(), number_format( $minimum_processable_amount, $decimals, $decimal_separator, '' ) );
 				$script_data['minimum_subscription_amount'] = $minimum_processable_amount;
 
-				// Translators: The %1 placeholder is the localized minimum price string ($0.50). %2 is the currency identifier string ('USD').
-				$script_data['i18n_below_minimum_subscription_error'] = sprintf( __( 'Warning! Your store\'s payment method cannot process a recurring total below %1$s %2$s.', 'woocommerce-subscriptions' ), $i18n_minimum_price, get_woocommerce_currency() );
+				// Translators: Placeholder is a localized price string (eg. $1.00).
+				$script_data['i18n_below_minimum_subscription_error'] = sprintf( __( "Warning! Your store's payment method cannot process a recurring total below %s", 'woocommerce-subscriptions' ), $i18n_minimum_price );
 			}
 
 			wp_localize_script( 'woocommerce_subscriptions_payment_restrictions', 'wcs_gateway_restrictions', $script_data );
