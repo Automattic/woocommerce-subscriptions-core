@@ -4,13 +4,6 @@ jQuery( function( $ ) {
 	 * If the WC core validation passes (errors removed), check our own validation.
 	 */
 	$( document.body ).on( 'wc_remove_error_tip', function( e, element, removed_error_type ) {
-		var type_error = 'i18n_zero_subscription_error';
-
-		// Exit early if it's the zero subscription error that has been removed.
-		if ( removed_error_type === type_error ) {
-			return;
-		}
-
 		var product_type = $( '#product-type' ).val();
 
 		if ( 'subscription' !== product_type && 'variable-subscription' !== product_type ) {
@@ -30,10 +23,22 @@ jQuery( function( $ ) {
 		var price = accounting.unformat( $( element ).val(), wcs_gateway_restrictions.decimal_point_separator );
 		price     = accounting.formatNumber( price, wcs_gateway_restrictions.number_of_decimal_places );
 
+		// Error types to validate.
+		var zero_error              = 'i18n_zero_subscription_error';
+		var below_minimum_error     = 'i18n_below_minimum_subscription_error';
+
+		// Check if the product price is above 0.
 		if ( 0 >= price ) {
-			$( document.body ).triggerHandler( 'wc_subscriptions_add_error_tip', [ element, type_error ] );
-		} else {
-			$( document.body ).triggerHandler( 'wc_remove_error_tip', [ element, type_error ] );
+			$( document.body ).triggerHandler( 'wc_subscriptions_add_error_tip', [ element, zero_error ] );
+		} else if ( removed_error_type !== zero_error ) {
+			$( document.body ).triggerHandler( 'wc_remove_error_tip', [ element, zero_error ] );
+		}
+
+		// Check if the product price is below the amount that can be processed by the payment gateway.
+		if ( 0 < price && wcs_gateway_restrictions.minimum_subscription_amount >= price ) {
+			$( document.body ).triggerHandler( 'wc_subscriptions_add_error_tip', [ element, below_minimum_error ] );
+		} else if ( removed_error_type !== below_minimum_error ) {
+			$( document.body ).triggerHandler( 'wc_remove_error_tip', [ element, below_minimum_error ] );
 		}
 	} );
 
@@ -80,12 +85,16 @@ jQuery( function( $ ) {
 	$( document.body ).on( 'wc_subscriptions_add_error_tip', function( e, element, error_type ) {
 		var offset = element.position();
 
-		if ( element.parent().find( '.wc_error_tip' ).length === 0 ) {
-			element.after( '<div class="wc_error_tip ' + error_type + '">' + wcs_gateway_restrictions[ error_type ] + '</div>' );
-			element.parent().find( '.wc_error_tip' )
-				.css( 'left', offset.left + element.width() - ( element.width() / 2 ) - ( $( '.wc_error_tip' ).width() / 2 ) )
-				.css( 'top', offset.top + element.height() )
-				.fadeIn( '100' );
+		// Remove any error that is already being shown before adding a new one.
+		if ( element.parent().find( '.wc_error_tip' ).length !== 0 ) {
+			element.parent().find( '.wc_error_tip' ).remove();
 		}
+
+		element.after( '<div class="wc_error_tip ' + error_type + '">' + wcs_gateway_restrictions[ error_type ] + '</div>' );
+		element.parent().find( '.wc_error_tip' )
+			.css( 'left', offset.left + element.width() - ( element.width() / 2 ) - ( $( '.wc_error_tip' ).width() / 2 ) )
+			.css( 'top', offset.top + element.height() )
+			.fadeIn( '100' );
+
 	})
 } );
