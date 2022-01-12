@@ -41,7 +41,7 @@ jQuery( function( $ ) {
 			var below_minimum_error      = 'i18n_below_minimum_subscription_error';
 			var displaying_minimum_error = element.parent().find( '.wc_error_tip, .' + below_minimum_error ).length !== 0;
 
-			if ( wcs_gateway_restrictions.minimum_subscription_amount >= price ) {
+			if ( parseFloat( wcs_gateway_restrictions.minimum_subscription_amount ) >= parseFloat( price ) ) {
 				$( document.body ).triggerHandler( 'wc_subscriptions_add_error_tip', [ element, below_minimum_error ] );
 				displaying_minimum_error = true;
 			} else if ( displaying_minimum_error && removed_error_type !== below_minimum_error ) {
