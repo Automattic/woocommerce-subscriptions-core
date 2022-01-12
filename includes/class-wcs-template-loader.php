@@ -7,6 +7,72 @@
  */
 class WCS_Template_Loader {
 
+	/**
+	 * Relocated templates from WooCommerce Subscriptions.
+	 *
+	 * @var array[] Array of file names and their directory found in templates/
+	 */
+	private static $relocated_templates = [
+		'html-variation-price.php'                => 'admin/deprecated/',
+		'html-variation-synchronisation.php'      => 'admin/deprecated/',
+		'order-shipping-html.php'                 => 'admin/deprecated/',
+		'order-tax-html.php'                      => 'admin/deprecated/',
+		'html-admin-notice.php'                   => 'admin/',
+		'html-failed-scheduled-action-notice.php' => 'admin/',
+		'html-variation-price.php'                => 'admin/',
+		'html-variation-synchronisation.php'      => 'admin/',
+		'status.php'                              => 'admin/',
+		'cart-recurring-shipping.php'             => 'cart/',
+		'form-change-payment-method.php'          => 'checkout/',
+		'recurring-coupon-totals.php'             => 'checkout/',
+		'recurring-fee-totals.php'                => 'checkout/',
+		'recurring-itemized-tax-totals.php'       => 'checkout/',
+		'recurring-subscription-totals.php'       => 'checkout/',
+		'recurring-subtotals.php'                 => 'checkout/',
+		'recurring-tax-totals.php'                => 'checkout/',
+		'recurring-totals.php'                    => 'checkout/',
+		'subscription-receipt.php'                => 'checkout/',
+		'admin-new-renewal-order.php'             => 'emails/',
+		'admin-new-switch-order.php'              => 'emails/',
+		'admin-payment-retry.php'                 => 'emails/',
+		'cancelled-subscription.php'              => 'emails/',
+		'customer-completed-renewal-order.php'    => 'emails/',
+		'customer-completed-switch-order.php'     => 'emails/',
+		'customer-on-hold-renewal-order.php'      => 'emails/',
+		'customer-payment-retry.php'              => 'emails/',
+		'customer-processing-renewal-order.php'   => 'emails/',
+		'customer-renewal-invoice.php'            => 'emails/',
+		'email-order-details.php'                 => 'emails/',
+		'expired-subscription.php'                => 'emails/',
+		'on-hold-subscription.php'                => 'emails/',
+		'admin-new-renewal-order.php'             => 'emails/plain/',
+		'admin-new-switch-order.php'              => 'emails/plain/',
+		'admin-payment-retry.php'                 => 'emails/plain/',
+		'cancelled-subscription.php'              => 'emails/plain/',
+		'customer-completed-renewal-order.php'    => 'emails/plain/',
+		'customer-completed-switch-order.php'     => 'emails/plain/',
+		'customer-on-hold-renewal-order.php'      => 'emails/plain/',
+		'customer-payment-retry.php'              => 'emails/plain/',
+		'customer-processing-renewal-order.php'   => 'emails/plain/',
+		'customer-renewal-invoice.php'            => 'emails/plain/',
+		'email-order-details.php'                 => 'emails/plain/',
+		'expired-subscription.php'                => 'emails/plain/',
+		'on-hold-subscription.php'                => 'emails/plain/',
+		'subscription-info.php'                   => 'emails/plain/',
+		'subscription-info.php'                   => 'emails/',
+		'html-modal.php'                          => '',
+		'my-subscriptions.php'                    => 'myaccount/',
+		'related-orders.php'                      => 'myaccount/',
+		'related-subscriptions.php'               => 'myaccount/',
+		'subscription-details.php'                => 'myaccount/',
+		'subscription-totals-table.php'           => 'myaccount/',
+		'subscription-totals.php'                 => 'myaccount/',
+		'subscriptions.php'                       => 'myaccount/',
+		'view-subscription.php'                   => 'myaccount/',
+		'subscription.php'                        => 'single-product/add-to-cart/',
+		'variable-subscription.php'               => 'single-product/add-to-cart/',
+	];
+
 	public static function init() {
 		add_action( 'woocommerce_account_view-subscription_endpoint', array( __CLASS__, 'get_view_subscription_template' ) );
 		add_action( 'woocommerce_subscription_details_table', array( __CLASS__, 'get_subscription_details_template' ) );
@@ -22,6 +88,8 @@ class WCS_Template_Loader {
 		add_action( 'woocommerce_subscription_add_to_cart', array( __CLASS__, 'get_subscription_add_to_cart' ), 30 );
 		add_action( 'woocommerce_variable-subscription_add_to_cart', array( __CLASS__, 'get_variable_subscription_add_to_cart' ), 30 );
 		add_action( 'wcopc_subscription_add_to_cart', array( __CLASS__, 'get_opc_subscription_add_to_cart' ) ); // One Page Checkout compatibility
+
+		add_filter( 'wc_get_template', array( __CLASS__, 'handle_relocated_templates' ), 10, 5 );
 	}
 
 	/**
@@ -288,5 +356,68 @@ class WCS_Template_Loader {
 	public static function get_opc_subscription_add_to_cart() {
 		global $product;
 		wc_get_template( 'checkout/add-to-cart/simple.php', array( 'product' => $product ), '', PP_One_Page_Checkout::$template_path );
+	}
+
+	/**
+	 * Handles relocated subscription templates.
+	 *
+	 * Hooked onto 'wc_get_template'.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param string $template
+	 * @param string $tempalte_name
+	 * @param array  $args
+	 * @param string $template_path
+	 * @param
+	 */
+	public static function handle_relocated_templates( $template, $template_name, $args, $template_path, $default_path ) {
+		// We only want to relocate subscription template files that can't be found.
+		if ( file_exists( $template ) ) {
+			return $template;
+		}
+
+		$subscriptions_core_path = WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory();
+		$template_file           = basename( $template_name );
+
+		if ( ! $default_path || strpos( $default_path, $subscriptions_core_path ) !== false || ! self::is_deprecated_default_path( $template_file, $default_path ) ) {
+			return $template;
+		}
+
+		return $subscriptions_core_path . '/templates/' . self::$relocated_templates[ $template_file ] . $template_file;
+	}
+
+	/**
+	 * Determine if the given template file and default path is sourcing the template
+	 * from a outdated location.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param string $template_file Template file name.
+	 * @param string $default_path  Default path passed to `wc_get_template()`.
+	 *
+	 * @return bool
+	 */
+	public static function is_deprecated_default_path( $template_file, $default_path ) {
+		$is_default_path_wcs = false;
+
+		if ( isset( self::$relocated_templates[ $template_file ] ) ) {
+			if ( class_exists( 'WC_Subscriptions_Plugin' ) ) {
+				// WCS 4+ is active.
+				$wcs_templates_path  = WC_Subscriptions_Plugin::instance()->get_plugin_directory();
+				$is_default_path_wcs = strpos( $default_path, $wcs_templates_path ) !== false;
+			} elseif ( file_exists( dirname( $default_path ) . '/woocommerce-subscriptions.php' ) ) {
+				// WCS is installed but not active.
+				$is_default_path_wcs = true;
+			} elseif ( preg_match( '/woocommerce-subscriptions(|[A-Za-z0-9\-\_ ]+)\/templates/', $default_path ) ) {
+				$maybe_a_plugin_name = basename( dirname( $default_path ) );
+				// Avoid the case where $default_path is referring to some other plugin like woocommerce-subscriptions-extension.
+				if ( ! file_exists( dirname( $default_path ) . "/$maybe_a_plugin_name.php" ) ) {
+					$is_default_path_wcs = true;
+				}
+			}
+		}
+
+		return $is_default_path_wcs;
 	}
 }

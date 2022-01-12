@@ -1,10 +1,13 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+2022-xx-xx - version 1.5.0
+* Fix: When viewing a WCPay Subscription product page, make sure other gateway's express payment buttons aren't shown. PR# wcpay#3401
+* Fix: When viewing a WC Product page with a WCPay subscription product in cart, make sure other gateway's express payment buttons are shown. PR# wcpay#3401
+
 2022-01-03 - version 1.4.0
 * Fix: Simple subscription elements on the product edit page not shown/hidden when necessary. PR#80
 * Fix: Prevent fatal errors on the admin subscriptions screen when a subscription fails to load. PR#84 wcpay#3596 wcs#4286
-* Fix: When viewing a WCPay Subscription product page, make sure other gateway's express payment buttons aren't shown. PR# wcpay#3401
-* Fix: When viewing a WC Product page with a WCPay subscription product in cart, make sure other gateway's express payment buttons are shown. PR# wcpay#3401
+* Fix: Compatibility issue when loading subscriptions templates. PR#86 wcpay#3606 wcs#4291
 
 2021-12-21 - version 1.3.0
 * Fix: Remove references to the Subscription extension in the tooltips found on the Payment Methods settings table. PR#55 wcpay#3234
