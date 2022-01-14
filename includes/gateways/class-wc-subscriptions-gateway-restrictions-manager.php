@@ -46,6 +46,24 @@ class WC_Subscriptions_Gateway_Restrictions_Manager {
 				'decimal_point_separator'      => $decimal_separator,
 			);
 
+			/**
+			 * Allow WC Payments to return the minimum amount that can be processed.
+			 *
+			 * @since 1.5.0
+			 *
+			 * @param false|float The minimum amount that can be processed in the given currency.
+			 * @param string      The currency.
+			 */
+			$minimum_processable_amount = apply_filters( 'woocommerce_subscriptions_minimum_processable_recurring_amount', false, get_woocommerce_currency() );
+
+			if ( is_numeric( $minimum_processable_amount ) ) {
+				$i18n_minimum_price                         = sprintf( get_woocommerce_price_format(), get_woocommerce_currency_symbol(), number_format( $minimum_processable_amount, $decimals, $decimal_separator, '' ) );
+				$script_data['minimum_subscription_amount'] = $minimum_processable_amount;
+
+				// Translators: Placeholder is a localized price string (eg. $1.00).
+				$script_data['i18n_below_minimum_subscription_error'] = sprintf( __( 'Warning! Your store cannot create subscriptions less than %s', 'woocommerce-subscriptions' ), $i18n_minimum_price );
+			}
+
 			wp_localize_script( 'woocommerce_subscriptions_payment_restrictions', 'wcs_gateway_restrictions', $script_data );
 		}
 	}

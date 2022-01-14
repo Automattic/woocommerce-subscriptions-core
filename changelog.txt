@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+2022-xx-xx - version 1.5.0
+* New: Introduce filter to allow third-parties to specify the minimum recurring amount the payment method can support. Displays a warning to the merchant when creating products below that amount. #PR89 wcpay#3542
+
 2022-01-03 - version 1.4.0
 * Fix: Simple subscription elements on the product edit page not shown/hidden when necessary. PR#80
 * Fix: Prevent fatal errors on the admin subscriptions screen when a subscription fails to load. PR#84 wcpay#3596 wcs#4286
