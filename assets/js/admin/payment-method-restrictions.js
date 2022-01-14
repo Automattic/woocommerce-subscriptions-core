@@ -21,13 +21,13 @@ jQuery( function( $ ) {
 
 		// Reformat the product price - remove the decimal place separator and remove excess decimal places.
 		var price = accounting.unformat( $( element ).val(), wcs_gateway_restrictions.decimal_point_separator );
-		price     = accounting.formatNumber( price, wcs_gateway_restrictions.number_of_decimal_places );
+		price     = accounting.formatNumber( price, wcs_gateway_restrictions.number_of_decimal_places, '' );
 
 		// Error types to validate.
 		var zero_error            = 'i18n_zero_subscription_error';
 		var displaying_zero_error = element.parent().find( '.wc_error_tip, .' + zero_error ).length !== 0;
 
-		// Check if the product price is above 0.
+		// Check if the product price is 0 or less.
 		if ( 0 >= price ) {
 			$( document.body ).triggerHandler( 'wc_subscriptions_add_error_tip', [ element, zero_error ] );
 			displaying_zero_error = true;
@@ -41,7 +41,7 @@ jQuery( function( $ ) {
 			var below_minimum_error      = 'i18n_below_minimum_subscription_error';
 			var displaying_minimum_error = element.parent().find( '.wc_error_tip, .' + below_minimum_error ).length !== 0;
 
-			if ( parseFloat( wcs_gateway_restrictions.minimum_subscription_amount ) >= parseFloat( price ) ) {
+			if ( parseFloat( wcs_gateway_restrictions.minimum_subscription_amount ) > parseFloat( price ) ) {
 				$( document.body ).triggerHandler( 'wc_subscriptions_add_error_tip', [ element, below_minimum_error ] );
 				displaying_minimum_error = true;
 			} else if ( displaying_minimum_error && removed_error_type !== below_minimum_error ) {
