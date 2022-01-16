@@ -323,7 +323,7 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	 *
 	 * This function is hooked on to 0 priority to make sure we set $is_displaying_mini_cart to true before displaying the mini-cart.
 	 *
-	 * @since 1.4.0
+	 * @since 1.6.0
 	 *
 	 * @param string $title   Widget title.
 	 * @param array $instance Array of widget data.
@@ -342,7 +342,7 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	 *
 	 * This function is hooked on to priority 1000 to make sure we set $is_displaying_mini_cart back to false after any JS is enqueued for the mini-cart.
 	 *
-	 * @since 1.4.0
+	 * @since 1.6.0
 	 *
 	 * @param string $title   Widget title.
 	 * @param array $instance Array of widget data.

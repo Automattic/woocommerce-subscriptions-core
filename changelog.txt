@@ -1,8 +1,11 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-2022-xx-xx - version 1.5.0
-* Fix: When viewing a WCPay Subscription product page, make sure other gateway's express payment buttons aren't shown. PR# wcpay#3401
-* Fix: When viewing a WC Product page with a WCPay subscription product in cart, make sure other gateway's express payment buttons are shown. PR# wcpay#3401
+2022-xx-xx - version 1.6.0
+* Fix: When viewing a WCPay Subscription product page, make sure other gateway's express payment buttons aren't shown. PR#87 wcpay#3401
+* Fix: When viewing a WC Product page with a WCPay subscription product in cart, make sure other gateway's express payment buttons are shown. PR#87 wcpay#3401
+
+2022-01-14 - version 1.5.0
+* New: Introduce filter to allow third-parties to specify the minimum recurring amount the payment method can support. Displays a warning to the merchant when creating products below that amount. #PR89 wcpay#3542
 
 2022-01-03 - version 1.4.0
 * Fix: Simple subscription elements on the product edit page not shown/hidden when necessary. PR#80
