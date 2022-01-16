@@ -10,11 +10,17 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	protected static $one_gateway_supports = array();
 
 	/**
+	 * @var bool $is_displaying_mini_cart
+	 */
+	protected static $is_displaying_mini_cart = false;
+
+	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
 	 * @since 1.0
 	 */
 	public static function init() {
+		self::$is_displaying_mini_cart = false;
 
 		add_action( 'init', array( get_called_class(), 'init_paypal' ), 5 ); // run before default priority 10 in case the site is using ALTERNATE_WP_CRON to avoid https://core.trac.wordpress.org/ticket/24160.
 
@@ -26,6 +32,10 @@ class WC_Subscriptions_Core_Payment_Gateways {
 
 		// Create a gateway specific hooks for subscription events.
 		add_action( 'woocommerce_subscription_status_updated', array( get_called_class(), 'trigger_gateway_status_updated_hook' ), 10, 2 );
+
+		// Determine if the mini-cart widget is being displayed.
+		add_filter( 'widget_title', array( get_called_class(), 'before_displaying_mini_cart' ), 0, 3 );
+		add_filter( 'widget_title', array( get_called_class(), 'after_displaying_mini_cart' ), 1000, 3 );
 	}
 
 	/**
@@ -64,12 +74,28 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	 * @return array
 	 */
 	public static function get_available_payment_gateways( $available_gateways ) {
+		global $post;
+
 		// We don't want to filter the available payment methods while the customer is paying for a standard order via the order-pay screen.
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
 			return $available_gateways;
 		}
 
-		if (
+		// If a gateway is getting available payment methods for the mini-cart widget or when setting the mini-cart cache, make sure the correct methods are available.
+		$is_mini_cart = did_action( 'woocommerce_before_mini_cart' ) !== did_action( 'woocommerce_after_mini_cart' );
+
+		if ( ( $is_mini_cart || self::$is_displaying_mini_cart ) && ! wcs_cart_contains_renewal() && ! WC_Subscriptions_Cart::cart_contains_subscription() ) {
+			return $available_gateways;
+		}
+
+		// If there's a subscription in the cart and you're viewing a WC Product page, make sure the correct available payment methods are returned for a simple WC Product.
+		if ( is_product() && isset( $post->post_type, $post->ID ) && 'product' === $post->post_type ) {
+			$product = wc_get_product( $post->ID );
+
+			if ( $product && ! $product->is_type( array( 'subscription', 'variable-subscription', 'subscription_variation' ) ) ) {
+				return $available_gateways;
+			}
+		} elseif (
 			! wcs_cart_contains_renewal() &&
 			! WC_Subscriptions_Cart::cart_contains_subscription() &&
 			( ! isset( $_GET['order_id'] ) || ! wcs_order_contains_subscription( $_GET['order_id'] ) )
@@ -289,6 +315,44 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	 */
 	public static function gateway_supports_subscriptions( $gateway ) {
 		return ! empty( $gateway->id ) && 'woocommerce_payments' === $gateway->id;
+	}
+
+	/**
+	 * The PayPal Checkout plugin checks for available payment methods on this hook
+	 * before enqueuing their SPB JS when displaying the buttons in the mini-cart widget.
+	 *
+	 * This function is hooked on to 0 priority to make sure we set $is_displaying_mini_cart to true before displaying the mini-cart.
+	 *
+	 * @since 1.6.0
+	 *
+	 * @param string $title   Widget title.
+	 * @param array $instance Array of widget data.
+	 * @param string $widget  ID/name of the widget being displayed.
+	 *
+	 * @return string
+	 */
+	public static function before_displaying_mini_cart( $title, $instance, $widget_id ) {
+		self::$is_displaying_mini_cart = 'woocommerce_widget_cart' === $widget_id;
+		return $title;
+	}
+
+	/**
+	 * The PayPal Checkout plugin checks for available payment methods on this hook
+	 * before enqueuing their SPB JS when displaying the buttons in the mini-cart widget.
+	 *
+	 * This function is hooked on to priority 1000 to make sure we set $is_displaying_mini_cart back to false after any JS is enqueued for the mini-cart.
+	 *
+	 * @since 1.6.0
+	 *
+	 * @param string $title   Widget title.
+	 * @param array $instance Array of widget data.
+	 * @param string $widget  ID/name of the widget being displayed.
+	 *
+	 * @return string
+	 */
+	public static function after_displaying_mini_cart( $title, $instance, $widget_id ) {
+		self::$is_displaying_mini_cart = false;
+		return $title;
 	}
 
 	/**
