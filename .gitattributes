@@ -10,3 +10,11 @@ bin export-ignore
 .husky export-ignore
 tests export-ignore
 lint-staged.config.js export-ignore
+.eslintignore export-ignore
+.eslintrc export-ignore
+.gitignore export-ignore
+.prettierignore export-ignore
+.prettierrc export-ignore
+.stylelintrc.json export-ignore
+phpunit.xml.dist export-ignore
+webpack.config.js export-ignore
