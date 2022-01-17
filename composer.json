@@ -2,7 +2,7 @@
 	"name": "woocommerce/subscriptions-core",
 	"description": "Sell products and services with recurring payments in your WooCommerce Store.",
 	"homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
-	"type": "library",
+	"type": "wordpress-plugin",
 	"license": "GPL-3.0-or-later",
 	"require": {
 		"php": "^7.0",
