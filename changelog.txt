@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+2022-xx-xx - version 1.6.1
+* Dev: Update the list of "export-ignore" in `.gitattributes` to include recent developer files.
+
 2022-01-17 - version 1.6.0
 * Fix: When viewing a WCPay Subscription product page, make sure other gateway's express payment buttons aren't shown. PR#87 wcpay#3401
 * Fix: When viewing a WC Product page with a WCPay subscription product in cart, make sure other gateway's express payment buttons are shown. PR#87 wcpay#3401
