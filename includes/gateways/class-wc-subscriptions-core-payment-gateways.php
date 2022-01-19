@@ -331,7 +331,7 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	 *
 	 * @return string
 	 */
-	public static function before_displaying_mini_cart( $title, $instance, $widget_id ) {
+	public static function before_displaying_mini_cart( $title, $instance, $widget_id = '' ) {
 		self::$is_displaying_mini_cart = 'woocommerce_widget_cart' === $widget_id;
 		return $title;
 	}
