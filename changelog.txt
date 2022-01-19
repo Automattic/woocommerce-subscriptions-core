@@ -1,7 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
 2022-xx-xx - version 1.6.2
-* Fix: Prefvent fatal error when too few arguments passed to widget_title filter. PR#100
+* Fix: Prevent fatal error when too few arguments passed to widget_title filter. PR#100
 
 2022-01-18 - version 1.6.1
 * Dev: Update the list of "export-ignore" in `.gitattributes` to include recent developer files. PR#97
