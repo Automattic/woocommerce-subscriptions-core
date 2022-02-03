@@ -54,7 +54,7 @@ class WC_Subscriptions_Core_Plugin {
 		if ( $autoloader ) {
 			$this->autoloader = $autoloader;
 		} else {
-			$this->autoloader = new WCS_Core_Autoloader( $this->get_subscriptions_core_directory() );
+			$this->autoloader = new WCS_Core_Autoloader( $this->get_subscriptions_core_directory()  );
 			$this->autoloader->register();
 		}
 
