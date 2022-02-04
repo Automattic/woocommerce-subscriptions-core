@@ -29,7 +29,7 @@ function wcs_doing_it_wrong( $function, $message, $version ) {
 	if ( function_exists( 'wc_doing_it_wrong' ) ) {
 		wc_doing_it_wrong( $function, $message, $version );
 	} else {
-		// Reimplment wc_doing_it_wrong() when WC 3.0 is not active
+		// Reimplement wc_doing_it_wrong() when WC 3.0 is not active
 		if ( wp_doing_ajax() ) {
 			do_action( 'doing_it_wrong_run', $function, $message, $version );
 			error_log( "{$function} was called incorrectly. {$message}. This message was added in version {$version}." );
