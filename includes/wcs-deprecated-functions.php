@@ -29,8 +29,8 @@ function wcs_doing_it_wrong( $function, $message, $version ) {
 	if ( function_exists( 'wc_doing_it_wrong' ) ) {
 		wc_doing_it_wrong( $function, $message, $version );
 	} else {
-		// Reimplment wc_doing_it_wrong() when WC 3.0 is not active
-		if ( is_ajax() ) {
+		// Reimplement wc_doing_it_wrong() when WC 3.0 is not active
+		if ( wp_doing_ajax() ) {
 			do_action( 'doing_it_wrong_run', $function, $message, $version );
 			error_log( "{$function} was called incorrectly. {$message}. This message was added in version {$version}." );
 		} else {
@@ -54,8 +54,8 @@ function wcs_deprecated_function( $function, $version, $replacement = null ) {
 	if ( function_exists( 'wc_deprecated_function' ) ) {
 		wc_deprecated_function( $function, $version, $replacement );
 	} else {
-		// Reimplment wcs_deprecated_function() when WC 3.0 is not active
-		if ( is_ajax() ) {
+		// Reimplement wcs_deprecated_function() when WC 3.0 is not active
+		if ( wp_doing_ajax() ) {
 			do_action( 'deprecated_function_run', $function, $replacement, $version );
 			$log_string  = "The {$function} function is deprecated since version {$version}.";
 			$log_string .= $replacement ? " Replace with {$replacement}." : '';
@@ -75,7 +75,7 @@ function wcs_deprecated_function( $function, $version, $replacement = null ) {
  * @param  string $message
  */
 function wcs_deprecated_argument( $function, $version, $message = null ) {
-	if ( is_ajax() ) {
+	if ( wp_doing_ajax() ) {
 		do_action( 'deprecated_argument_run', $function, $message, $version );
 		error_log( "{$function} was called with an argument that is deprecated since version {$version}. {$message}" );
 	} else {
@@ -274,7 +274,7 @@ function wcs_deprecated_hook( $hook, $version, $replacement = null, $message = n
 		wc_deprecated_hook( $hook, $version, $replacement, $message );
 	} else {
 		// Reimplement wcs_deprecated_function() when WC 3.0 is not active
-		if ( is_ajax() ) {
+		if ( wp_doing_ajax() ) {
 			do_action( 'deprecated_hook_run', $hook, $replacement, $version, $message );
 
 			$message    = empty( $message ) ? '' : ' ' . $message;

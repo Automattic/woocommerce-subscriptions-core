@@ -408,7 +408,7 @@ class WCS_Admin_Meta_Boxes {
 			return;
 		}
 
-		$order = wc_get_order( is_ajax() ? absint( $_POST['order_id'] ) : $order_id );
+		$order = wc_get_order( wp_doing_ajax() && isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : $order_id );
 
 		if ( ! $order ) {
 			return;
