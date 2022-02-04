@@ -54,7 +54,7 @@ function wcs_deprecated_function( $function, $version, $replacement = null ) {
 	if ( function_exists( 'wc_deprecated_function' ) ) {
 		wc_deprecated_function( $function, $version, $replacement );
 	} else {
-		// Reimplment wcs_deprecated_function() when WC 3.0 is not active
+		// Reimplement wcs_deprecated_function() when WC 3.0 is not active
 		if ( wp_doing_ajax() ) {
 			do_action( 'deprecated_function_run', $function, $replacement, $version );
 			$log_string  = "The {$function} function is deprecated since version {$version}.";
