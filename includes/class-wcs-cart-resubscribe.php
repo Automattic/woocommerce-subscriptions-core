@@ -352,4 +352,16 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	private function is_pre_cancelled_resubscribe( $subscription ) {
 		return is_a( $subscription, 'WC_Subscription' ) && $subscription->has_status( 'pending-cancel' ) && $subscription->get_time( 'end' ) > gmdate( 'U' );
 	}
+
+	/**
+	 * Checks if the current user can resubscribe to the subscription.
+	 *
+	 * @since 1.6.3
+	 *
+	 * @param WC_Subscription $subscription The WC subscription to validate the current user against.
+	 * @return bool Whether the current user can resubscribe to the subscription.
+	 */
+	public function validate_current_user( $subscription ) {
+		return current_user_can( 'subscribe_again', $subscription->get_id() );
+	}
 }

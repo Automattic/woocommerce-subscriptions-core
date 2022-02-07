@@ -151,6 +151,9 @@ class WCS_Cart_Renewal {
 
 		// Filters the Place order button text on checkout.
 		add_filter( 'woocommerce_order_button_text', array( $this, 'order_button_text' ), 15 );
+
+		// Before WC loads the cart from the session, verify if it belongs to the current user.
+		add_action( 'woocommerce_load_cart_from_session', array( $this, 'verify_session_belongs_to_customer' ) );
 	}
 
 	/**
@@ -1480,6 +1483,64 @@ class WCS_Cart_Renewal {
 		}
 
 		return $place_order_text;
+	}
+
+	/**
+	 * Verifies if the cart being loaded from the session belongs to the current user.
+	 *
+	 * If a customer is logged out via the session cookie expiring or being killed, it's possible that
+	 * their cart session persists. Before WC load it, we need to verify if it contains a
+	 * subscription-related order and if so, whether the current user has permission to pay for it.
+	 *
+	 * This function will destroy any session which contains a subscription-related payment that doesn't belong to the current user.
+	 *
+	 * @since 1.6.3
+	 */
+	public function verify_session_belongs_to_customer() {
+		$cart     = WC()->session->get( 'cart', null );
+		$customer = WC()->session->get( 'customer', null );
+
+		if ( ! $cart ) {
+			return;
+		}
+
+		foreach ( $cart as $cart_item ) {
+			$order = $this->get_order( $cart_item );
+
+			// If this cart item doesn't contain a subscription-related order, skip.
+			if ( ! $order ) {
+				continue;
+			}
+
+			// If there is no logged in user. The session has most likely expired.
+			if ( ! is_user_logged_in() ) {
+				WC()->session->destroy_session();
+				return;
+			}
+
+			// If the session has a stored customer and that customer is no longer logged in, destroy the session.
+			if ( $customer && get_current_user_id() !== (int) $customer['id'] ) {
+				WC()->session->destroy_session();
+				return;
+			}
+
+			if ( ! $this->validate_current_user( $order ) ) {
+				WC()->session->destroy_session();
+				return;
+			}
+		}
+	}
+
+	/**
+	 * Checks if the current user can pay for the order.
+	 *
+	 * @since 1.6.3
+	 *
+	 * @param WC_Order $order The order to check the current user against.
+	 * @return bool Whether the current user can pay for this order.
+	 */
+	public function validate_current_user( $order ) {
+		return current_user_can( 'pay_for_order', $order->get_id() );
 	}
 
 	/* Deprecated */
