@@ -1,7 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-2022-xx-xx - version 1.6.3
+2022-02-07 - version 1.6.3
 * Fix: Replace uses of is_ajax() with wp_doing_ajax(). PR#108 wcpay#3695 wcs#4296
+* Improve handling of session data.
 
 2022-01-19 - version 1.6.2
 * Fix: Prevent fatal error when too few arguments passed to widget_title filter. PR#100
