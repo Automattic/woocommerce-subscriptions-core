@@ -556,7 +556,7 @@ class WC_Subscriptions_Core_Plugin {
 			[ 'cart', 'checkout', 'mini-cart' ]
 		);
 
-		foreach( $compatible_blocks as $block_name ) {
+		foreach ( $compatible_blocks as $block_name ) {
 			add_action(
 				"woocommerce_blocks_{$block_name}_block_registration",
 				function( $integration_registry ) {
