@@ -29,8 +29,8 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		// Maybe allow for a recurring payment method to be changed
 		add_action( 'plugins_loaded', __CLASS__ . '::set_change_payment_method_flag' );
 
-		// Attach hooks which depend on WooCommerce constants
-		add_action( 'woocommerce_loaded', __CLASS__ . '::attach_dependant_hooks' );
+		// If we're changing the payment method, we want to make sure a number of totals return $0 (to prevent payments being processed now)
+		add_filter( 'woocommerce_subscription_get_total', __CLASS__ . '::maybe_zero_total', 11, 2 );
 
 		// Keep a record of any messages or errors that should be displayed
 		add_action( 'before_woocommerce_pay', __CLASS__ . '::store_pay_shortcode_messages', 5 );
@@ -72,26 +72,6 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		// Display a login form if the customer is requesting to change their payment method but aren't logged in.
 		add_filter( 'the_content', array( __CLASS__, 'maybe_request_log_in' ) );
 
-	}
-
-	/**
-	 * Attach WooCommerce version dependent hooks
-	 *
-	 * @since 2.2.0
-	 */
-	public static function attach_dependant_hooks() {
-
-		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
-
-			// If we're changing the payment method, we want to make sure a number of totals return $0 (to prevent payments being processed now)
-			add_filter( 'woocommerce_order_amount_total', __CLASS__ . '::maybe_zero_total', 11, 2 );
-
-		} else {
-
-			// If we're changing the payment method, we want to make sure a number of totals return $0 (to prevent payments being processed now)
-			add_filter( 'woocommerce_subscription_get_total', __CLASS__ . '::maybe_zero_total', 11, 2 );
-
-		}
 	}
 
 	/**
@@ -900,5 +880,24 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		}
 
 		return $subscription_can_be_changed;
+	}
+
+	/**
+	 * Attach WooCommerce version dependent hooks
+	 *
+	 * @since 1.0.0
+	 *
+	 * @deprecated 1.6.4
+	 */
+	public static function attach_dependant_hooks() {
+		_deprecated_function( __METHOD__, '1.6.4' );
+
+		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
+			// If we're changing the payment method, we want to make sure a number of totals return $0 (to prevent payments being processed now)
+			add_filter( 'woocommerce_order_amount_total', __CLASS__ . '::maybe_zero_total', 11, 2 );
+		} else {
+			// If we're changing the payment method, we want to make sure a number of totals return $0 (to prevent payments being processed now)
+			add_filter( 'woocommerce_subscription_get_total', __CLASS__ . '::maybe_zero_total', 11, 2 );
+		}
 	}
 }
