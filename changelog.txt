@@ -1,7 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
 2022-xx-xx - version 1.6.4
-* Fix: When changing the payment method, make sure the subscription total returns $0 when `subscriptions-core` is loaded after the `woocommerce_loaded` action hook. PR# wcpay#3768
+* Fix: When changing the payment method, make sure the subscription total returns $0 when `subscriptions-core` is loaded after the `woocommerce_loaded` action hook. PR#111 wcpay#3768
 
 2022-02-07 - version 1.6.3
 * Fix: Replace uses of is_ajax() with wp_doing_ajax(). PR#108 wcpay#3695 wcs#4296
