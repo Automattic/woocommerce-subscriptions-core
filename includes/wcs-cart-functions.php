@@ -105,10 +105,8 @@ function wcs_cart_totals_shipping_html() {
 						?>
 						">
 							<?php echo wp_kses_post( wcs_cart_totals_shipping_method_price_label( $shipping_method, $recurring_cart ) ); ?>
-							<?php if ( 1 === count( $package['rates'] ) ) : ?>
-								<?php wcs_cart_print_shipping_input( $recurring_cart_package_key, $shipping_method ); ?>
-								<?php do_action( 'woocommerce_after_shipping_rate', $shipping_method, $recurring_cart_package_key ); ?>
-							<?php endif; ?>
+							<?php wcs_cart_print_shipping_input( $recurring_cart_package_key, $shipping_method ); ?>
+							<?php do_action( 'woocommerce_after_shipping_rate', $shipping_method, $recurring_cart_package_key ); ?>
 							<?php if ( ! empty( $show_package_details ) ) : ?>
 								<?php echo '<p class="woocommerce-shipping-contents"><small>' . esc_html( $package_details ) . '</small></p>'; ?>
 							<?php endif; ?>
