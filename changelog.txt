@@ -2,6 +2,14 @@
 
 2022-xx-xx - version 1.7.0
 * Fix: Sets up subscriptions integration with the Mini Cart Block and adds new hook to filter compatible blocks. PR#103
+* Fix: When using a WooCommerce Blocks powered checkout, fix an issue that led to limited products being removed from the cart when completing a switch or renewal order. PR#119 wcs#4232
+
+2022-02-10 - version 1.6.4
+* Fix: When changing the payment method, make sure the subscription total returns $0 when `subscriptions-core` is loaded after the `woocommerce_loaded` action hook. PR#111 wcpay#3768
+
+2022-02-07 - version 1.6.3
+* Fix: Replace uses of is_ajax() with wp_doing_ajax(). PR#108 wcpay#3695 wcs#4296
+* Improve handling of session data.
 
 2022-01-19 - version 1.6.2
 * Fix: Prevent fatal error when too few arguments passed to widget_title filter. PR#100

@@ -515,6 +515,28 @@ function wcs_is_rest_api_request() {
 }
 
 /**
+ * Determines if the current request is to any or a specific Checkout blocks REST API endpoint.
+ *
+ * @see Automattic\WooCommerce\Blocks\StoreApi\RoutesController::initialize() for a list of routes.
+ *
+ * @since 1.7.0
+ * @param string $endpoint The checkout/checkout blocks endpoint. Optional. Can be empty (any checkout blocks API) or a specific endpoint ('checkout', 'cart', 'products' etc)
+ * @return bool Whether the current request is for a cart/checkout blocks REST API endpoint.
+ */
+function wcs_is_checkout_blocks_api_request( $endpoint = '' ) {
+
+	if ( ! wcs_is_rest_api_request() || empty( $_SERVER['REQUEST_URI'] ) ) {
+		return false;
+	}
+
+	$endpoint    = empty( $endpoint ) ? '' : '/' . $endpoint;
+	$rest_prefix = trailingslashit( rest_get_url_prefix() );
+	$request_uri = esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) );
+
+	return false !== strpos( $request_uri, $rest_prefix . 'wc/store' . $endpoint );
+}
+
+/**
  * Determines whether the current request is a WordPress cron request.
  *
  * This function is a compatibility wrapper for wp_doing_cron() which was introduced in WP 4.8.
