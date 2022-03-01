@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+2022-xx-xx - version 1.7.0
+* Fix: Sets up subscriptions integration with the Mini Cart Block and adds new hook to filter compatible blocks. PR#103
+
 2022-01-19 - version 1.6.2
 * Fix: Prevent fatal error when too few arguments passed to widget_title filter. PR#100
 
