@@ -548,18 +548,22 @@ class WC_Subscriptions_Core_Plugin {
 	 * @since 4.0.0
 	 */
 	public function setup_blocks_integration() {
-		add_action(
-			'woocommerce_blocks_cart_block_registration',
-			function( $integration_registry ) {
-				$integration_registry->register( new WCS_Blocks_Integration() );
-			}
+		/**
+		 * Filter the compatible blocks for WooCommerce Subscriptions.
+		 */
+		$compatible_blocks = apply_filters(
+			'wcs_compatible_blocks',
+			[ 'cart', 'checkout', 'mini-cart' ]
 		);
-		add_action(
-			'woocommerce_blocks_checkout_block_registration',
-			function( $integration_registry ) {
-				$integration_registry->register( new WCS_Blocks_Integration() );
-			}
-		);
+
+		foreach ( $compatible_blocks as $block_name ) {
+			add_action(
+				"woocommerce_blocks_{$block_name}_block_registration",
+				function( $integration_registry ) {
+					$integration_registry->register( new WCS_Blocks_Integration() );
+				}
+			);
+		}
 	}
 
 	/**
