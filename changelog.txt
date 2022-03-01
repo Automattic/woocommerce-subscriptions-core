@@ -2,6 +2,7 @@
 
 2022-xx-xx - version 1.7.0
 * Fix - When using a WooCommerce Blocks powered checkout, fix an issue that led to limited products being removed from the cart when completing a switch or renewal order. PR#119 wcs#4232
+* Fix - When there is only one Shipping Method available in the recurring shipping package, make sure that this method is treated as selected in the current session and the `woocommerce_after_shipping_rate` action runs. PR#115
 
 2022-02-10 - version 1.6.4
 * Fix: When changing the payment method, make sure the subscription total returns $0 when `subscriptions-core` is loaded after the `woocommerce_loaded` action hook. PR#111 wcpay#3768
