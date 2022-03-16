@@ -56,49 +56,63 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 	}
 
 	/**
+	 * Register endpoint data with the API.
+	 *
+	 * @param array $args Endpoint data to register.
+	 */
+	protected static function register_endpoint_data( $args ) {
+		if ( function_exists( 'woocommerce_store_api_register_endpoint_data' ) ) {
+			woocommerce_store_api_register_endpoint_data( $args );
+		} else {
+			Package::container()->get( ExtendRestApi::class )->register_endpoint_data( $args );
+		}
+	}
+
+	/**
+	 * Register payment requirements with the API.
+	 *
+	 * @param array $args Data to register.
+	 */
+	protected static function register_payment_requirements( $args ) {
+		if ( function_exists( 'woocommerce_store_api_register_payment_requirements' ) ) {
+			woocommerce_store_api_register_payment_requirements( $args );
+		} else {
+			Package::container()->get( ExtendRestApi::class )->register_payment_requirements( $args );
+		}
+	}
+
+	/**
 	 * Registers the actual data into each endpoint.
 	 */
 	public static function extend_store() {
 		// Register into `cart/items`
-		$cart_item_endpoint_data = array(
-			'endpoint'        => CartItemSchema::IDENTIFIER,
-			'namespace'       => self::IDENTIFIER,
-			'data_callback'   => array( 'WC_Subscriptions_Extend_Store_Endpoint', 'extend_cart_item_data' ),
-			'schema_callback' => array( 'WC_Subscriptions_Extend_Store_Endpoint', 'extend_cart_item_schema' ),
-			'schema_type'     => ARRAY_A,
+		self::register_endpoint_data(
+			array(
+				'endpoint'        => CartItemSchema::IDENTIFIER,
+				'namespace'       => self::IDENTIFIER,
+				'data_callback'   => array( 'WC_Subscriptions_Extend_Store_Endpoint', 'extend_cart_item_data' ),
+				'schema_callback' => array( 'WC_Subscriptions_Extend_Store_Endpoint', 'extend_cart_item_schema' ),
+				'schema_type'     => ARRAY_A,
+			)
 		);
 
 		// Register into `cart`
-		$cart_endpoint_data = array(
-			'endpoint'        => CartSchema::IDENTIFIER,
-			'namespace'       => self::IDENTIFIER,
-			'data_callback'   => array( 'WC_Subscriptions_Extend_Store_Endpoint', 'extend_cart_data' ),
-			'schema_callback' => array( 'WC_Subscriptions_Extend_Store_Endpoint', 'extend_cart_schema' ),
-			'schema_type'     => ARRAY_N,
+		self::register_endpoint_data(
+			array(
+				'endpoint'        => CartSchema::IDENTIFIER,
+				'namespace'       => self::IDENTIFIER,
+				'data_callback'   => array( 'WC_Subscriptions_Extend_Store_Endpoint', 'extend_cart_data' ),
+				'schema_callback' => array( 'WC_Subscriptions_Extend_Store_Endpoint', 'extend_cart_schema' ),
+				'schema_type'     => ARRAY_N,
+			)
 		);
 
-		if ( function_exists( 'woocommerce_store_api_register_endpoint_data' ) ) {
-			woocommerce_store_api_register_endpoint_data( $cart_item_endpoint_data );
-			woocommerce_store_api_register_endpoint_data( $cart_endpoint_data );
-		} else {
-			Package::container()->get( ExtendRestApi::class )->register_endpoint_data( $cart_item_endpoint_data );
-			Package::container()->get( ExtendRestApi::class )->register_endpoint_data( $cart_endpoint_data );
-		}
-
 		// Register payment requirements.
-		if ( function_exists( 'woocommerce_store_api_register_payment_requirements' ) ) {
-			woocommerce_store_api_register_payment_requirements(
-				array(
-					'data_callback' => array( WC_Subscriptions_Core_Plugin::instance()->get_gateways_handler_class(), 'inject_payment_feature_requirements_for_cart_api' ),
-				)
-			);
-		} else {
-			Package::container()->get( ExtendRestApi::class )->register_payment_requirements(
-				array(
-					'data_callback' => array( WC_Subscriptions_Core_Plugin::instance()->get_gateways_handler_class(), 'inject_payment_feature_requirements_for_cart_api' ),
-				)
-			);
-		}
+		self::register_payment_requirements(
+			array(
+				'data_callback' => array( WC_Subscriptions_Core_Plugin::instance()->get_gateways_handler_class(), 'inject_payment_feature_requirements_for_cart_api' ),
+			)
+		);
 	}
 
 	/**
