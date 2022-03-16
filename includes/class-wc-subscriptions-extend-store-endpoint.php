@@ -11,11 +11,16 @@
 
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\Domain\Services\ExtendRestApi;
-use Automattic\WooCommerce\Blocks\StoreApi\SchemaController;
 use Automattic\WooCommerce\Blocks\StoreApi\Schemas\CartSchema;
 use Automattic\WooCommerce\Blocks\StoreApi\Schemas\CartItemSchema;
 
 class WC_Subscriptions_Extend_Store_Endpoint {
+	/**
+		 * Stores Rest Schema Controller.
+		 *
+		 * @var Automattic\WooCommerce\StoreApi\SchemaController
+		 */
+	private static $schema;
 
 	/**
 	 * Stores Money formatter instance.
@@ -44,6 +49,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 	 * @since WCBLOCKS-DEV
 	 */
 	public static function init() {
+		self::$schema             = class_exists( 'Automattic\WooCommerce\StoreApi\StoreApi' ) ? Automattic\WooCommerce\StoreApi\StoreApi::container()->get( Automattic\WooCommerce\StoreApi\SchemaController::class ) : Package::container()->get( Automattic\WooCommerce\Blocks\StoreApi\SchemaController::class );
 		self::$money_formatter    = function_exists( 'woocommerce_store_api_get_formatter' ) ? woocommerce_store_api_get_formatter( 'money' ) : Package::container()->get( ExtendRestApi::class )->get_formatter( 'money' );
 		self::$currency_formatter = function_exists( 'woocommerce_store_api_get_formatter' ) ? woocommerce_store_api_get_formatter( 'currency' ) : Package::container()->get( ExtendRestApi::class )->get_formatter( 'currency' );
 		self::extend_store();
@@ -328,7 +334,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 							'tax_lines'          => self::get_tax_lines( $cart ),
 						)
 					),
-					'shipping_rates'      => array_values( array_map( array( Package::container()->get( SchemaController::class )->get( 'cart-shipping-rate' ), 'get_item_response' ), $shipping_packages ) ),
+					'shipping_rates'      => array_values( array_map( array( self::$schema->get( 'cart-shipping-rate' ), 'get_item_response' ), $shipping_packages ) ),
 				);
 			}
 		}
