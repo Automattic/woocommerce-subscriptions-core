@@ -245,21 +245,19 @@ class WCS_My_Account_Payment_Methods {
 			return;
 		}
 
-		$script_params  = array(
-			'add_method_error' => __(
-				sprintf(
-					'That payment method cannot be deleted because it is linked to an automatic subscription. Please %1$sadd a payment method%2$s, before trying again.',
-					'<strong>',
-					'</strong>'
-				)
+		$script_params = array(
+			'add_method_error'     => sprintf(
+				// translators: %1$s opening strong HTML tag, %2$s closing strong HTML tag.
+				__( 'That payment method cannot be deleted because it is linked to an automatic subscription. Please %1$sadd a payment method%2$s, before trying again.', 'woocommerce-subscriptions' ),
+				'<strong>',
+				'</strong>'
 			),
-			'choose_default_error' => __(
-				sprintf(
-					'That payment method cannot be deleted because it is linked to an automatic subscription. Please choose a %1$sdefault%2$s payment method%3$s, before trying again.',
-					'<strong><em>',
-					'</em>',
-					'</strong>'
-				)
+			'choose_default_error' => sprintf(
+				// translators: %1$s opening strong and em HTML tags, %2$s closing em HTML tag, %3$s closing strong HTML tag.
+				__( 'That payment method cannot be deleted because it is linked to an automatic subscription. Please choose a %1$sdefault%2$s payment method%3$s, before trying again.', 'woocommerce-subscriptions' ),
+				'<strong><em>',
+				'</em>',
+				'</strong>'
 			),
 		);
 
