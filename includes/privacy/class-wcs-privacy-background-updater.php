@@ -168,7 +168,7 @@ class WCS_Privacy_Background_Updater {
 		// Reschedule the cleanup just in case something goes wrong.
 		$this->schedule_subscription_orders_anonymization( $subscription_id );
 
-		$related_orders = $subscription->get_related_orders( 'ids', array( 'parent', 'renewal', 'switch', 'resubscribe' ) );
+		$related_orders = $subscription->get_related_orders( 'ids', array( 'parent', 'renewal', 'switch' ) );
 		$count          = 0;
 		$limit          = 20;
 
