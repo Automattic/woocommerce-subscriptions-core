@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+2022-xx-xx - version 1.8.0
+* Update: Switch to global functions to remove deprecation warnings originating from WooCommerce Blocks. PR#124
+
 2022-03-18 - version 1.7.0
 * Fix: Sets up subscriptions integration with the Mini Cart Block and adds new hook to filter compatible blocks. PR#103
 * Fix: When using a WooCommerce Blocks powered checkout, fix an issue that led to limited products being removed from the cart when completing a switch or renewal order. PR#119 wcs#4232

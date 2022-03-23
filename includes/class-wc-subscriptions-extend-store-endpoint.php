@@ -16,10 +16,10 @@ use Automattic\WooCommerce\Blocks\StoreApi\Schemas\CartItemSchema;
 
 class WC_Subscriptions_Extend_Store_Endpoint {
 	/**
-		 * Stores Rest Schema Controller.
-		 *
-		 * @var Automattic\WooCommerce\StoreApi\SchemaController
-		 */
+	 * Stores Rest Schema Controller.
+	 *
+	 * @var Automattic\WooCommerce\StoreApi\SchemaController
+	 */
 	private static $schema;
 
 	/**
