@@ -11,25 +11,30 @@
 
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\Domain\Services\ExtendRestApi;
-use Automattic\WooCommerce\Blocks\StoreApi\SchemaController;
 use Automattic\WooCommerce\Blocks\StoreApi\Schemas\CartSchema;
 use Automattic\WooCommerce\Blocks\StoreApi\Schemas\CartItemSchema;
 
 class WC_Subscriptions_Extend_Store_Endpoint {
-
 	/**
 	 * Stores Rest Schema Controller.
 	 *
-	 * @var ExtendRestApi
+	 * @var Automattic\WooCommerce\StoreApi\SchemaController
 	 */
 	private static $schema;
 
 	/**
-	 * Stores Rest Extending instance.
+	 * Stores Money formatter instance.
 	 *
-	 * @var ExtendRestApi
+	 * @var Automattic\WooCommerce\StoreApi\Formatters\FormatterInterface
 	 */
-	private static $extend;
+	private static $money_formatter;
+
+	/**
+	 * Stores Currency formatter instance.
+	 *
+	 * @var Automattic\WooCommerce\StoreApi\Formatters\FormatterInterface
+	 */
+	private static $currency_formatter;
 
 	/**
 	 * Plugin Identifier, unique to each plugin.
@@ -44,18 +49,44 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 	 * @since WCBLOCKS-DEV
 	 */
 	public static function init() {
-		self::$schema = Package::container()->get( SchemaController::class );
-		self::$extend = Package::container()->get( ExtendRestApi::class );
+		self::$schema             = class_exists( 'Automattic\WooCommerce\StoreApi\StoreApi' ) ? Automattic\WooCommerce\StoreApi\StoreApi::container()->get( Automattic\WooCommerce\StoreApi\SchemaController::class ) : Package::container()->get( Automattic\WooCommerce\Blocks\StoreApi\SchemaController::class );
+		self::$money_formatter    = function_exists( 'woocommerce_store_api_get_formatter' ) ? woocommerce_store_api_get_formatter( 'money' ) : Package::container()->get( ExtendRestApi::class )->get_formatter( 'money' );
+		self::$currency_formatter = function_exists( 'woocommerce_store_api_get_formatter' ) ? woocommerce_store_api_get_formatter( 'currency' ) : Package::container()->get( ExtendRestApi::class )->get_formatter( 'currency' );
 		self::extend_store();
+	}
+
+	/**
+	 * Register endpoint data with the API.
+	 *
+	 * @param array $args Endpoint data to register.
+	 */
+	protected static function register_endpoint_data( $args ) {
+		if ( function_exists( 'woocommerce_store_api_register_endpoint_data' ) ) {
+			woocommerce_store_api_register_endpoint_data( $args );
+		} else {
+			Package::container()->get( ExtendRestApi::class )->register_endpoint_data( $args );
+		}
+	}
+
+	/**
+	 * Register payment requirements with the API.
+	 *
+	 * @param array $args Data to register.
+	 */
+	protected static function register_payment_requirements( $args ) {
+		if ( function_exists( 'woocommerce_store_api_register_payment_requirements' ) ) {
+			woocommerce_store_api_register_payment_requirements( $args );
+		} else {
+			Package::container()->get( ExtendRestApi::class )->register_payment_requirements( $args );
+		}
 	}
 
 	/**
 	 * Registers the actual data into each endpoint.
 	 */
 	public static function extend_store() {
-
 		// Register into `cart/items`
-		self::$extend->register_endpoint_data(
+		self::register_endpoint_data(
 			array(
 				'endpoint'        => CartItemSchema::IDENTIFIER,
 				'namespace'       => self::IDENTIFIER,
@@ -66,7 +97,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 		);
 
 		// Register into `cart`
-		self::$extend->register_endpoint_data(
+		self::register_endpoint_data(
 			array(
 				'endpoint'        => CartSchema::IDENTIFIER,
 				'namespace'       => self::IDENTIFIER,
@@ -77,7 +108,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 		);
 
 		// Register payment requirements.
-		self::$extend->register_payment_requirements(
+		self::register_payment_requirements(
 			array(
 				'data_callback' => array( WC_Subscriptions_Core_Plugin::instance()->get_gateways_handler_class(), 'inject_payment_feature_requirements_for_cart_api' ),
 			)
@@ -289,7 +320,6 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 		}
 
 		$future_subscriptions = array();
-		$money_formatter      = self::$extend->get_formatter( 'money' );
 
 		if ( ! empty( wc()->cart->recurring_carts ) ) {
 			foreach ( wc()->cart->recurring_carts as $cart_key => $cart ) {
@@ -303,18 +333,18 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 					'billing_period'      => WC_Subscriptions_Product::get_period( $product ),
 					'billing_interval'    => (int) WC_Subscriptions_Product::get_interval( $product ),
 					'subscription_length' => (int) WC_Subscriptions_Product::get_length( $product ),
-					'totals'              => self::$extend->get_formatter( 'currency' )->format(
+					'totals'              => self::$currency_formatter->format(
 						array(
-							'total_items'        => $money_formatter->format( $cart->get_subtotal() ),
-							'total_items_tax'    => $money_formatter->format( $cart->get_subtotal_tax() ),
-							'total_fees'         => $money_formatter->format( $cart->get_fee_total() ),
-							'total_fees_tax'     => $money_formatter->format( $cart->get_fee_tax() ),
-							'total_discount'     => $money_formatter->format( $cart->get_discount_total() ),
-							'total_discount_tax' => $money_formatter->format( $cart->get_discount_tax() ),
-							'total_shipping'     => $money_formatter->format( $cart->get_shipping_total() ),
-							'total_shipping_tax' => $money_formatter->format( $cart->get_shipping_tax() ),
-							'total_price'        => $money_formatter->format( $cart->get_total( 'edit' ) ),
-							'total_tax'          => $money_formatter->format( $cart->get_total_tax() ),
+							'total_items'        => self::$money_formatter->format( $cart->get_subtotal() ),
+							'total_items_tax'    => self::$money_formatter->format( $cart->get_subtotal_tax() ),
+							'total_fees'         => self::$money_formatter->format( $cart->get_fee_total() ),
+							'total_fees_tax'     => self::$money_formatter->format( $cart->get_fee_tax() ),
+							'total_discount'     => self::$money_formatter->format( $cart->get_discount_total() ),
+							'total_discount_tax' => self::$money_formatter->format( $cart->get_discount_tax() ),
+							'total_shipping'     => self::$money_formatter->format( $cart->get_shipping_total() ),
+							'total_shipping_tax' => self::$money_formatter->format( $cart->get_shipping_tax() ),
+							'total_price'        => self::$money_formatter->format( $cart->get_total( 'edit' ) ),
+							'total_tax'          => self::$money_formatter->format( $cart->get_total_tax() ),
 							'tax_lines'          => self::get_tax_lines( $cart ),
 						)
 					),
@@ -349,13 +379,11 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 			)
 		);
 
-		$money_formatter = self::$extend->get_formatter( 'money' );
-
 		return array(
-			'sign_up_fees'     => $money_formatter->format(
+			'sign_up_fees'     => self::$money_formatter->format(
 				$fees_excluding_tax
 			),
-			'sign_up_fees_tax' => $money_formatter->format(
+			'sign_up_fees_tax' => self::$money_formatter->format(
 				$fees_including_tax
 				- $fees_excluding_tax
 			),
@@ -580,7 +608,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 		foreach ( $cart_tax_totals as $cart_tax_total ) {
 			$tax_lines[] = array(
 				'name'  => $cart_tax_total->label,
-				'price' => self::$extend->get_formatter( 'money' )->format( $cart_tax_total->amount ),
+				'price' => self::$money_formatter->format( $cart_tax_total->amount ),
 			);
 		}
 
