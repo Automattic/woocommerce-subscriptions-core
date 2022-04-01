@@ -1,42 +1,42 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-2022-xx-xx - version 1.8.0
+= 1.8.0 - 2022-xx-xx =
 * Update: Switch to global functions to remove deprecation warnings originating from WooCommerce Blocks. PR#124
 
-2022-03-18 - version 1.7.0
+= 1.7.0 - 2022-03-18 =
 * Fix: Sets up subscriptions integration with the Mini Cart Block and adds new hook to filter compatible blocks. PR#103
 * Fix: When using a WooCommerce Blocks powered checkout, fix an issue that led to limited products being removed from the cart when completing a switch or renewal order. PR#119 wcs#4232
 * Fix: When there is only one Shipping Method available in the recurring shipping package, make sure that this method is treated as selected in the current session and the `woocommerce_after_shipping_rate` action runs. PR#115
 * Fix: Don't anonymize new subscriptions related to old subscriptions via a resubscribe relationship. PR#121 wcs#4304 wcpay#3889
 * Fix: Content that appears on the My account > Payment methods page should be translatable. PR#125 wcs#4180 wcpay#3974
 
-2022-02-10 - version 1.6.4
+= 1.6.4 - 2022-02-10 =
 * Fix: When changing the payment method, make sure the subscription total returns $0 when `subscriptions-core` is loaded after the `woocommerce_loaded` action hook. PR#111 wcpay#3768
 
-2022-02-07 - version 1.6.3
+= 1.6.3 - 2022-02-07 =
 * Fix: Replace uses of is_ajax() with wp_doing_ajax(). PR#108 wcpay#3695 wcs#4296
 * Improve handling of session data.
 
-2022-01-19 - version 1.6.2
+= 1.6.2 - 2022-01-19 =
 * Fix: Prevent fatal error when too few arguments passed to widget_title filter. PR#100
 
-2022-01-18 - version 1.6.1
+= 1.6.1 - 2022-01-18 =
 * Dev: Update the list of "export-ignore" in `.gitattributes` to include recent developer files. PR#97
 * Dev: Set the composer package type to "wordpress-plugin". PR#96
 
-2022-01-17 - version 1.6.0
+= 1.6.0 - 2022-01-17 =
 * Fix: When viewing a WCPay Subscription product page, make sure other gateway's express payment buttons aren't shown. PR#87 wcpay#3401
 * Fix: When viewing a WC Product page with a WCPay subscription product in cart, make sure other gateway's express payment buttons are shown. PR#87 wcpay#3401
 
-2022-01-14 - version 1.5.0
+= 1.5.0 - 2022-01-14 =
 * New: Introduce filter to allow third-parties to specify the minimum recurring amount the payment method can support. Displays a warning to the merchant when creating products below that amount. #PR89 wcpay#3542
 
-2022-01-03 - version 1.4.0
+= 1.4.0 - 2022-01-03 =
 * Fix: Simple subscription elements on the product edit page not shown/hidden when necessary. PR#80
 * Fix: Prevent fatal errors on the admin subscriptions screen when a subscription fails to load. PR#84 wcpay#3596 wcs#4286
 * Fix: Compatibility issue when loading subscriptions templates. PR#86 wcpay#3606 wcs#4291
 
-2021-12-21 - version 1.3.0
+= 1.3.0 - 2021-12-21 =
 * Fix: Remove references to the Subscription extension in the tooltips found on the Payment Methods settings table. PR#55 wcpay#3234
 * Fix: Update the Automatic Recurring Payments column on the Payment Methods table to only show which payment methods are supported by Subscriptions Core. PR#55
 * Tweak: Update deprecation message when calling WC_Subscriptions_Coupon::cart_contains_limited_recurring_coupon() to mention the correct replacement function. PR#53
@@ -45,23 +45,23 @@
 * Fix: Incorrect text when filtering subscriptions to no results.
 * Changed: Subscription products must have a recurring amount greater than $0. PR#56 wcpay#3309
 
-2021-11-23 - version 1.2.0
+= 1.2.0 - 2021-11-23 =
 * Fix: Update tooltip wording when deleting product variation. PR#46
 * Fix: Don't show an admin error notice when a store downgrades to a previous minor version of Subscriptions. WCS#4271
 
-2021-11-12 - version 1.1.0
+= 1.1.0 - 2021-11-12 =
 * Fix: Add consistent margins to the recurring taxes totals row on the Checkout and Cart block. PR#39
 * Fix: Fatal error due to order with no created date in order row template. PR#40
 * Fix: Fatal error on the customer payment page for renewal orders with deleted products. PR#42
 * Fix: Misleading order note on payment method change. PR#41
 
-2021-10-29 - version 1.0.3
+= 1.0.3 - 2021-10-29 =
 * Fix: Errors when attempting to get the plugin version during PayPal requests. PR#27
 
-2021-10-29 - version 1.0.2
+= 1.0.2 - 2021-10-29 =
 * Fix: PHP 7.2 compatibility - remove trailing commas from function args. PR #23
 
-2021-10-22 - version 1.0.1
+= 1.0.1 - 2021-10-22 =
 * Fix: Don't show a downgrade notice when activating the WC Subscriptions extension after installing WCS Core. PR#7
 * Fix: Correctly show the available payment methods when paying for a subscription renewal order. PR#9
 * Fix: Don't show the WC Subscriptions extension welcome/installation message after installing WCS Core. PR#11
@@ -70,5 +70,5 @@
 * Fix: Errors during the upgrade process for stores that are upgrading from very old versions of Subscriptions (1.5.0). PR#16
 * Fix: Show subscription billing information (recurring cart totals, sign up fees etc) on the WooCommerce Checkout block. PR#18
 
-2021-09-22 - version 1.0.0
+= 1.0.0 - 2021-09-22 =
 * New: Subscriptions Core first release
