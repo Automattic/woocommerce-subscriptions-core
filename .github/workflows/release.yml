@@ -1,0 +1,35 @@
+name: Create new release from release branch
+
+# This action will only run when a pull request is closed/merged.
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  create-release:
+    # Action will be skipped unless we have a successful merge AND the original PR started with release
+    # If this condition isn't matched, then github will show the action as skipped. 
+    if:  startsWith(github.head_ref, 'release') && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "A release branch has been merged with trunk, time to create a new release"
+
+      # We need to checkout the code so we can access the version from package.json
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          # We checkout based on the merge_commit_sha trunk so we're acting on post-merge state rather than pre-merge.
+          ref: ${{github.event.pull_request.merge_commit_sha}}
+      - name: version
+        id: version
+        run: echo ::set-output name=data::$(jq '.version' package.json -r)
+
+      # Tag a new release with the body set to the description of the original PR.
+      - name: Release
+        uses: softprops/action-gh-release@v0.1.14
+        with:
+          tag_name: ${{steps.version.outputs.data}}
+          name: "Version ${{steps.version.outputs.data}}"
+          body: ${{github.event.pull_request.body}}
+          target_commitish: ${{github.event.pull_request.merge_commit_sha}}
