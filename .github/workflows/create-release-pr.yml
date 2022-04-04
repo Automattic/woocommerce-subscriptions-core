@@ -20,6 +20,9 @@ jobs:
         with:
           repository: woocommerce/woorelease
           ref: 2.2.0
+          # This token uses the "repo" scope to check out the private Woorelease repo.
+          # This personal access token is owned by the botwoo account - https://github.com/botwoo
+          # Note: GITHUB_TOKEN does not work here.
           token: ${{ secrets.GH_REPO_PAT }}
           path: woorelease
 
