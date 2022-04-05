@@ -18,7 +18,7 @@
 		"url": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
 	},
 	"scripts": {
-		"postinstall": "composer install",
+		"postinstall": "is-ci || composer install",
 		"prepare": "is-ci || husky install",
 		"archive": "composer archive --file=$npm_package_name --format=zip",
 		"build": "npm run build:js && npm run archive",

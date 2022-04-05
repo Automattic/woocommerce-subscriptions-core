@@ -63,21 +63,16 @@ jobs:
         run: |
           git checkout -b release/$VERSION
 
-      - name: Build assets
-        run: |
-          # Temporarily remove the postinstall script as it runs "composer install".
-          npm set-script postinstall ""
-          npm ci
-
-          # Revert the changes to the postinstall script.
-          git reset --hard
-          npm run build:js
-
       - name: Update version
         env:
           VERSION: ${{ steps.get_version.outputs.VERSION }}
         run: |
           php bin/update-version.php $VERSION
+
+      - name: Build assets
+        run: |
+          npm install
+          npm run build:js
 
       - name: Commit changes and create PR
         env:
