@@ -1,8 +1,10 @@
-name: Create new release from release branch
+name: Create a new release when a release PR is merged
 
-# This action will only run when a pull request is closed/merged.
+# This action will only run when a pull request targeting `trunk` is closed/merged.
 on:
-  pull_request:
+  pull_request_target:
+    branches:
+      - 'trunk'
     types:
       - closed
 
@@ -21,7 +23,7 @@ jobs:
         with:
           # We checkout based on the merge_commit_sha trunk so we're acting on post-merge state rather than pre-merge.
           ref: ${{github.event.pull_request.merge_commit_sha}}
-      - name: version
+      - name: Get version
         id: version
         run: echo ::set-output name=data::$(jq '.version' package.json -r)
 
