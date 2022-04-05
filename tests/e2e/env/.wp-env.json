@@ -1,0 +1,15 @@
+{
+	"core": null,
+	"plugins": [
+		"https://downloads.wordpress.org/plugin/woocommerce.zip",
+		"../../../.",
+		"."
+	],
+	"port": 8881,
+	"themes": ["https://downloads.wordpress.org/theme/storefront.4.0.0.zip"],
+	"env": {
+		"tests": {
+			"port": 8882
+		}
+	}
+}
