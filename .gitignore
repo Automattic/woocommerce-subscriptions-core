@@ -31,9 +31,13 @@ Thumbs.db
 phpcs.xml
 phpunit.xml
 
+playwright-report/
+tests/e2e/test-results/
+tests/e2e/storageState.json
 
 # Composer
 /vendor/
 
 # Release Packages
 *.zip
+

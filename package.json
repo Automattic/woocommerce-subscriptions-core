@@ -37,6 +37,7 @@
 		"lint:php-fix": "./vendor/bin/phpcbf --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
 		"start": "wp-scripts start assets/src/js/index.js",
 		"test:unit": "wp-scripts test-unit-js",
+		"test:e2e": "playwright test",
 		"test:e2e-setup": "./tests/e2e/env/setup.sh",
 		"test:e2e-down": "wp-env stop",
 		"makepot": "wp i18n make-pot . languages/woocommerce-subscriptions.pot",
@@ -49,6 +50,7 @@
 		"npm": ">=1.1.0"
 	},
 	"devDependencies": {
+		"@playwright/test": "^1.20.2",
 		"@woocommerce/dependency-extraction-webpack-plugin": "1.1.0",
 		"@woocommerce/eslint-plugin": "1.0.0-beta.0",
 		"@wordpress/env": "^4.4.0",
