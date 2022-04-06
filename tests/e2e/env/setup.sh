@@ -8,6 +8,9 @@ wp-env start
 echo "Updating permalink structure"
 wp-env run cli "wp rewrite structure '/%postname%/'"
 
+echo "Activating storefront theme..."
+wp-env run cli "wp theme activate storefront"
+
 echo "Adding basic WooCommerce settings..."
 wp-env run cli "wp option set woocommerce_store_address '60 29th Street'"
 wp-env run cli "wp option set woocommerce_store_address_2 '#343'"
