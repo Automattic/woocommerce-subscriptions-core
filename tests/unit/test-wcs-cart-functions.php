@@ -69,8 +69,8 @@ class WCS_Cart_Functions_Test extends WP_UnitTestCase {
 		$shipping_method_label = wcs_cart_totals_shipping_method( $shipping_rate, $cart );
 
 		if ( $price_expected ) {
-			$this->assertContains( (string) $cost, $shipping_method_label );
-			$this->assertContains( $shipping_method->method_title, $shipping_method_label );
+			$this->assertStringContainsString( (string) $cost, $shipping_method_label );
+			$this->assertStringContainsString( $shipping_method->method_title, $shipping_method_label );
 		} else {
 			$this->assertEquals( $shipping_method->method_title, $shipping_method_label );
 		}
@@ -117,8 +117,8 @@ class WCS_Cart_Functions_Test extends WP_UnitTestCase {
 		$cart->subscription_period_interval = $interval;
 		$cart->subscription_length          = $length;
 
-		$this->assertContains( $exp_amount, wcs_cart_price_string( $amount, $cart ) );
-		$this->assertContains( $exp_string, wcs_cart_price_string( $amount, $cart ) );
+		$this->assertStringContainsString( $exp_amount, wcs_cart_price_string( $amount, $cart ) );
+		$this->assertStringContainsString( $exp_string, wcs_cart_price_string( $amount, $cart ) );
 	}
 
 	/**

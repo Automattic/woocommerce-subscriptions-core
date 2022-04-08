@@ -5,8 +5,8 @@ class WCS_User_Functions_Test extends WP_UnitTestCase {
 	public $admin_user_id;
 	public $user_id = 1;
 
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		// setup a shop_manager and admin for testing
 		$this->admin_user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );

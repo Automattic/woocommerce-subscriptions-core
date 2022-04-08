@@ -13,7 +13,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 *
 	 * @since 2.0
 	 */
-	public static function setUpBeforeClass() {
+	public static function set_up_before_class() {
 		self::$subscriptions = WCS_Helper_Subscription::create_subscriptions();
 	}
 
@@ -1344,7 +1344,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 					$subscription->update_status( 'cancelled' );
 
 					// end date should be set to the current time
-					$this->assertEquals( $now, $subscription->get_time( 'end' ), '', 3 ); // delta set to 3 as a margin of error between the dates, shouldn't be more than 1 but just to be safe.
+					$this->assertEquals( $now, $subscription->get_time( 'end' ), '', 5 ); // delta set to 3 as a margin of error between the dates, shouldn't be more than 1 but just to be safe.
 				} catch ( Exception $e ) {
 					$this->fail( $e->getMessage() );
 				}
