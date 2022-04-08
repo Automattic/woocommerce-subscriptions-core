@@ -566,7 +566,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			]
 		);
 
-		$this->assertEquals( strtotime( $start_date ), strtotime( $subscription->calculate_date( 'end_of_prepaid_term' ) ), '', 3 ); // delta set to 3 as a margin of error between the dates, shouldn't be more than 1 but just to be safe.
+		$this->assertEqualsWithDelta( strtotime( $start_date ), strtotime( $subscription->calculate_date( 'end_of_prepaid_term' ) ), 3 ); // delta set to 3 as a margin of error between the dates, shouldn't be more than 1 but just to be safe.
 
 		$expected_date = gmdate( 'Y-m-d H:i:s', wcs_add_months( $now, 1 ) );
 
@@ -576,7 +576,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			]
 		);
 
-		$this->assertEquals( strtotime( $expected_date ), strtotime( $subscription->calculate_date( 'end_of_prepaid_term' ) ), '', 3 ); // delta set to 3 as a margin of error between the dates, shouldn't be more than 1 but just to be safe.
+		$this->assertEqualsWithDelta( strtotime( $expected_date ), strtotime( $subscription->calculate_date( 'end_of_prepaid_term' ) ), 3 ); // delta set to 3 as a margin of error between the dates, shouldn't be more than 1 but just to be safe.
 
 		$expected_date = gmdate( 'Y-m-d H:i:s', wcs_add_months( $now, 2 ) );
 
@@ -588,7 +588,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			]
 		);
 
-		$this->assertEquals( strtotime( $expected_date ), strtotime( $subscription->calculate_date( 'end_of_prepaid_term' ) ), '', 3 ); // delta set to 3 as a margin of error between the dates, shouldn't be more than 1 but just to be safe.
+		$this->assertEqualsWithDelta( strtotime( $expected_date ), strtotime( $subscription->calculate_date( 'end_of_prepaid_term' ) ), 3 ); // delta set to 3 as a margin of error between the dates, shouldn't be more than 1 but just to be safe.
 	}
 
 	/**
@@ -1297,7 +1297,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 				try {
 					$subscription->update_status( 'expired' );
 					// end date should be set to the current time
-					$this->assertEquals( $now, $subscription->get_time( 'end' ), '', 3 ); // delta set to 3 as a margin of error between the dates, shouldn't be more than 1 but just to be safe.
+					$this->assertEqualsWithDelta( $now, $subscription->get_time( 'end' ), 3 ); // delta set to 3 as a margin of error between the dates, shouldn't be more than 1 but just to be safe.
 				} catch ( Exception $e ) {
 					$this->fail( $e->getMessage() );
 				}
@@ -1344,7 +1344,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 					$subscription->update_status( 'cancelled' );
 
 					// end date should be set to the current time
-					$this->assertEquals( $now, $subscription->get_time( 'end' ), '', 5 ); // delta set to 3 as a margin of error between the dates, shouldn't be more than 1 but just to be safe.
+					$this->assertEqualsWithDelta( $now, $subscription->get_time( 'end' ), 3 ); // delta set to 3 as a margin of error between the dates, shouldn't be more than 1 but just to be safe.
 				} catch ( Exception $e ) {
 					$this->fail( $e->getMessage() );
 				}
