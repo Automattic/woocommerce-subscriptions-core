@@ -5,7 +5,7 @@ on:
 
 env:
   WP_VERSION: latest
-  WC_VERSION: 5.5.0  # the min supported version as per L-2 policy
+  WC_VERSION: latest  # the min supported version as per L-2 policy
 
 jobs:
   phpcs:
@@ -65,6 +65,47 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           tools:       composer
-          coverage:    xdebug2
+      # run CI checks
+      - run: bash bin/run-ci-tests.sh
+  compatibility-oldest:
+    name: Run unit tests on Oldest supported version
+    runs-on: ubuntu-18.04
+    env:
+      WC_VERSION: 5.5.0  # the min supported version as per L-2 policy
+      WP_VERSION: 5.6.0
+    steps:
+      # clone the repository
+      - uses: actions/checkout@v2
+      # enable dependencies caching
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/composer/
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+      # setup PHP, but without debug extensions for reasonable performance
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.1'
+          tools: composer
+      # run CI checks
+      - run: bash bin/run-ci-tests.sh
+  compatibility-beta:
+    name: Run unit tests on beta of WP / WC
+    runs-on: ubuntu-18.04
+    env:
+      WC_VERSION: 'beta'
+      WP_VERSION: 'beta'
+    steps:
+      # clone the repository
+      - uses: actions/checkout@v2
+      # enable dependencies caching
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/composer/
+          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+      # setup PHP, but without debug extensions for reasonable performance
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          tools:       composer
       # run CI checks
       - run: bash bin/run-ci-tests.sh
