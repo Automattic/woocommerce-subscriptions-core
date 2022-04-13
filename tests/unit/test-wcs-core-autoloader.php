@@ -9,7 +9,7 @@ class WCS_Core_Autoloader_Test extends WP_UnitTestCase {
 	 * Set up the test case suite for the autoloader.
 	 *
 	 */
-	public function setUp() {
+	public function set_up() {
 		$this->autoloader = new WCS_Core_Autoloader( dirname( __DIR__, 2 ) );
 	}
 

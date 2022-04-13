@@ -15,7 +15,7 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 	 */
 	protected static $cache_store;
 
-	public static function setUpBeforeClass() {
+	public static function set_up_before_class() {
 		self::$cache_store = new WCS_Related_Order_Store_Cached_CPT();
 	}
 

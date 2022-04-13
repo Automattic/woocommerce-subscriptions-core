@@ -117,9 +117,9 @@ class WCS_Related_Order_Store_Test extends WCS_Base_Related_Order_Store_Test_Cas
 	 * Check WCS_Related_Order_Store->check_relation_type() throws an exception for invalid relation types.
 	 *
 	 * @dataProvider provider_relation_type
-	 * @expectedException InvalidArgumentException
 	 */
 	public function test_check_relation_type_invalid( $relation_type ) {
+		$this->setExpectedException( 'InvalidArgumentException' );
 		$invalid_relation_type    = sprintf( '%s_invalid_test', $relation_type );
 		$mock_related_order_store = $this->getMockForAbstractClass( 'WCS_Related_Order_Store' );
 

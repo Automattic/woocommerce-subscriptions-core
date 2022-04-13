@@ -15,7 +15,7 @@ class WCS_Customer_Store_Cached_CPT_Test extends WCS_Base_Customer_Store_Test_Ca
 	 */
 	protected static $cache_store;
 
-	public static function setUpBeforeClass() {
+	public static function set_up_before_class() {
 		self::$cache_store = new WCS_Customer_Store_Cached_CPT();
 	}
 

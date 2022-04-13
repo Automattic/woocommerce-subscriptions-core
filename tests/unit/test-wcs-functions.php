@@ -10,11 +10,11 @@ function wcs_max_log_size_filter() {
  */
 class WCS_Functions_Test extends WP_UnitTestCase {
 
-	public function tearDown() {
+	public function tear_down() {
 		remove_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 		_delete_all_posts();
 		$this->commit_transaction();
-		parent::tearDown();
+		parent::tear_down();
 		add_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription', 10, 1 );
 	}
 
@@ -135,7 +135,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	/**
 	 * @dataProvider wcs_create_subscription_errors_provider
 	 */
-	public function test_wcs_create_subscription_errors( $args, $error_code, $message = null ) {
+	public function test_wcs_create_subscription_errors( $args, $error_code, $message = '' ) {
 		$subscription = wcs_create_subscription( $args );
 
 		$this->assertEquals( true, is_wp_error( $subscription ), $message );
@@ -675,7 +675,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	 */
 	public function test_wcs_get_subscription_statuses( $key, $value ) {
 		$statuses = wcs_get_subscription_statuses();
-		$this->assertInternalType( 'array', $statuses );
+		$this->assertIsArray( $statuses );
 		$this->assertArrayHasKey( $key, $statuses );
 		$this->assertEquals( $value, $statuses[ $key ] );
 	}
@@ -778,7 +778,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	 */
 	public function test_wcs_get_subscription_date_types( $key, $value ) {
 		$date_types = wcs_get_subscription_date_types();
-		$this->assertInternalType( 'array', $date_types );
+		$this->assertIsArray( $date_types );
 		$this->assertArrayHasKey( $key, $date_types );
 		$this->assertEquals( $value, $date_types[ $key ] );
 	}
@@ -798,7 +798,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$date_types = wcs_get_subscription_date_types();
 
-		$this->assertInternalType( 'array', $date_types );
+		$this->assertIsArray( $date_types );
 		$this->assertArrayHasKey( 'big_bang', $date_types );
 		$this->assertEquals( 'Big Bang', $date_types['big_bang'] );
 
@@ -934,7 +934,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		// Check for on-hold
 		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'on-hold' ) );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_3->get_id(), $subscriptions );
 		$this->assertArrayNotHasKey( $subscription_1->get_id(), $subscriptions );
@@ -949,7 +949,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		// Pending
 		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'pending' ) );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 2, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
 		$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions );
@@ -964,7 +964,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		// Switched
 		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'switched' ) );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_4->get_id(), $subscriptions );
 		$this->assertArrayNotHasKey( $subscription_1->get_id(), $subscriptions );
@@ -979,7 +979,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		// Any
 		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'any' ) );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 8, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
 		$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions );
@@ -994,14 +994,14 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		// Trash
 		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'trash' ) );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEmpty( $subscriptions );
 		unset( $subscriptions );
 
 		// Active
 		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'active' ) );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_5->get_id(), $subscriptions );
 		$this->assertArrayNotHasKey( $subscription_1->get_id(), $subscriptions );
@@ -1016,7 +1016,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		// Cancelled
 		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'cancelled' ) );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_6->get_id(), $subscriptions );
 		$this->assertArrayNotHasKey( $subscription_1->get_id(), $subscriptions );
@@ -1031,7 +1031,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		// Expired
 		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'expired' ) );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_7->get_id(), $subscriptions );
 		$this->assertArrayNotHasKey( $subscription_1->get_id(), $subscriptions );
@@ -1046,7 +1046,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		// Pending Cancellation
 		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'pending-cancel' ) );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_8->get_id(), $subscriptions );
 		$this->assertArrayNotHasKey( $subscription_1->get_id(), $subscriptions );
@@ -1061,7 +1061,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		// Rubbish
 		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'rubbish' ) );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 8, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
 		$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions );
@@ -1076,7 +1076,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => '' ) );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 0, count( $subscriptions ) );
 
 		unset( $subscriptions );
@@ -1100,13 +1100,13 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$subscriptions_1 = wcs_get_subscriptions( array( 'order_id' => wcs_get_objects_property( $order_1, 'id' ) ) );
 		$subscriptions_2 = wcs_get_subscriptions( array( 'order_id' => wcs_get_objects_property( $order_2, 'id' ) ) );
 
-		$this->assertInternalType( 'array', $subscriptions_1 );
+		$this->assertIsArray( $subscriptions_1 );
 		$this->assertEquals( 1, count( $subscriptions_1 ) );
 		$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions_1 );
 		$this->assertArrayNotHasKey( $subscription_2->get_id(), $subscriptions_1 );
 		$this->assertArrayNotHasKey( $subscription_3->get_id(), $subscriptions_1 );
 
-		$this->assertInternalType( 'array', $subscriptions_2 );
+		$this->assertIsArray( $subscriptions_2 );
 		$this->assertEquals( 2, count( $subscriptions_2 ) );
 		$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions_2 );
 		$this->assertArrayHasKey( $subscription_3->get_id(), $subscriptions_2 );
@@ -1173,7 +1173,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		);
 
 		$subscriptions = wcs_get_subscriptions( array( 'orderby' => 'status' ) );
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 9, count( $subscriptions ) );
 		$correct_order = array(
 			$subscription_1->get_id() => $subscription_1,
@@ -1219,7 +1219,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		);
 
 		$subscriptions = wcs_get_subscriptions( array( 'orderby' => 'start_date' ) );
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 4, count( $subscriptions ) );
 		$correct_order = array(
 			$subscription_3->get_id() => $subscription_3,
@@ -1295,7 +1295,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscriptions = wcs_get_subscriptions_for_product( $product_id1 );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
 		$this->assertArrayNotHasKey( $subscription_2->get_id(), $subscriptions );
@@ -1305,7 +1305,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscriptions = wcs_get_subscriptions_for_product( $product_id1 );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 2, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
 		$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions );
@@ -1321,7 +1321,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$subscriptions_1 = wcs_get_subscriptions_for_product( $product_id1 );
 		$subscriptions_2 = wcs_get_subscriptions_for_product( $product_id2 );
 
-		$this->assertInternalType( 'array', $subscriptions_1 );
+		$this->assertIsArray( $subscriptions_1 );
 		$this->assertEquals( 2, count( $subscriptions_1 ) );
 		$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions_1 );
 		$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions_1 );
@@ -1330,7 +1330,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$this->assertArrayNotHasKey( $subscription_5->get_id(), $subscriptions_1 );
 		$this->assertArrayNotHasKey( $subscription_6->get_id(), $subscriptions_1 );
 
-		$this->assertInternalType( 'array', $subscriptions_2 );
+		$this->assertIsArray( $subscriptions_2 );
 		$this->assertEquals( 3, count( $subscriptions_2 ) );
 		$this->assertArrayNotHasKey( $subscription_1->get_id(), $subscriptions_2 );
 		$this->assertArrayNotHasKey( $subscription_2->get_id(), $subscriptions_2 );
@@ -1372,7 +1372,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscriptions = wcs_get_subscriptions_for_product( $product_id1, 'ids' );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 2, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
 		$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions );
@@ -1384,7 +1384,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscriptions = wcs_get_subscriptions_for_product( $product_id1, 'subscription' );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 2, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
 		$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions );
@@ -1469,7 +1469,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscriptions = wcs_get_subscriptions_for_product( $product_id1, 'ids', array( 'subscription_status' => 'expired' ) );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 2, count( $subscriptions ) );
 		$this->assertArrayNotHasKey( $subscription_1->get_id(), $subscriptions );
 		$this->assertArrayNotHasKey( $subscription_2->get_id(), $subscriptions );
@@ -1491,7 +1491,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
 		$this->assertArrayNotHasKey( $subscription_1->get_id(), $subscriptions );
 		$this->assertArrayNotHasKey( $subscription_2->get_id(), $subscriptions );
@@ -1513,7 +1513,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscriptions = wcs_get_subscriptions_for_product( array( $product_id1, $product_id2 ), 'ids', array( 'subscription_status' => array( 'expired', 'cancelled' ) ) );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 3, count( $subscriptions ) );
 		$this->assertArrayNotHasKey( $subscription_1->get_id(), $subscriptions );
 		$this->assertArrayNotHasKey( $subscription_2->get_id(), $subscriptions );
@@ -1535,7 +1535,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 2, count( $subscriptions ) );
 		$this->assertArrayNotHasKey( $subscription_1->get_id(), $subscriptions );
 		$this->assertArrayNotHasKey( $subscription_2->get_id(), $subscriptions );
@@ -1560,7 +1560,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 2, count( $subscriptions ) );
 		$this->assertArrayNotHasKey( $subscription_1->get_id(), $subscriptions ); // Skipped by offset
 		$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions );
@@ -1584,7 +1584,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 0, count( $subscriptions ) );
 		unset( $subscriptions );
 
@@ -1597,7 +1597,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 4, count( $subscriptions ) );
 		$this->assertArrayNotHasKey( $subscription_1->get_id(), $subscriptions ); // Skipped by offset
 		$this->assertArrayNotHasKey( $subscription_2->get_id(), $subscriptions ); // Skipped by offset
@@ -1695,7 +1695,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscriptions = wcs_get_subscriptions_for_product( $product_id1, 'ids' );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 6, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
 		$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions );
@@ -1710,7 +1710,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscriptions = wcs_get_subscriptions_for_product( $variations1[0], 'ids' );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 3, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
 		$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions );
@@ -1725,7 +1725,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscriptions = wcs_get_subscriptions_for_product( $variations1[1], 'ids' );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 3, count( $subscriptions ) );
 		$this->assertArrayNotHasKey( $subscription_1->get_id(), $subscriptions );
 		$this->assertArrayNotHasKey( $subscription_2->get_id(), $subscriptions );
@@ -1740,7 +1740,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscriptions = wcs_get_subscriptions_for_product( array( $variations1[0], $variations1[1], $variations2[0] ), 'ids', array( 'subscription_status' => 'active' ) );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 2, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
 		$this->assertArrayNotHasKey( $subscription_2->get_id(), $subscriptions );
@@ -1755,7 +1755,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscriptions = wcs_get_subscriptions_for_product( array_merge( $variations1, $variations2 ), 'ids', array( 'subscription_status' => array( 'on-hold', 'active' ) ) );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 3, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
 		$this->assertArrayNotHasKey( $subscription_2->get_id(), $subscriptions );
@@ -1777,7 +1777,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 2, count( $subscriptions ) );
 		unset( $subscriptions );
 	}
@@ -1825,7 +1825,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		// Only 1 subscription remains with variation 1 ($subscription_2)
 		$subscriptions = wcs_get_subscriptions_for_product( $variation_1->get_id(), 'ids' );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions );
 		unset( $subscriptions );
@@ -1833,7 +1833,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		// 2 subscriptions exist with variation 2 [$subscription_1 (switched from variation 1) and $subscription_3]
 		$subscriptions = wcs_get_subscriptions_for_product( $variation_2->get_id(), 'ids' );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 2, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
 		$this->assertArrayHasKey( $subscription_3->get_id(), $subscriptions );
@@ -1849,7 +1849,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
 		$this->assertArrayNotHasKey( $subscription_1->get_id(), $subscriptions ); // Skipped by offset
 		$this->assertArrayHasKey( $subscription_3->get_id(), $subscriptions );
@@ -1858,14 +1858,14 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		// Check status filter. Subscription 1 is active but switched from variation 1 to variation 2 so no results should be returned.
 		$subscriptions = wcs_get_subscriptions_for_product( $variation_1->get_id(), 'ids', array( 'subscription_status' => 'active' ) );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 0, count( $subscriptions ) );
 		unset( $subscriptions );
 
 		// Check status filter. Subscription 1 is active but switched from variation 1 to variation 2 so only subscription 2 should be returnd.
 		$subscriptions = wcs_get_subscriptions_for_product( $variation_1->get_id(), 'ids', array( 'subscription_status' => array( 'active', 'on-hold' ) ) );
 
-		$this->assertInternalType( 'array', $subscriptions );
+		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions );
 		unset( $subscriptions );
@@ -1937,6 +1937,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	}
 
 	private function assertDateTimeString( $actual ) {
-		$this->assertRegExp( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $actual );
+		$this->assertMatchesRegularExpression( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $actual );
 	}
 }

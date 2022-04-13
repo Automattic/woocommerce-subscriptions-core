@@ -798,9 +798,9 @@ class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 
 	/**
 	 * @dataProvider wcs_number_of_leap_days_error_provider
-	 * @expectedException InvalidArgumentException
 	 */
 	public function test_wcs_number_of_leap_days_error( $start_time, $end_time ) {
+		$this->setExpectedException( 'InvalidArgumentException' );
 		wcs_number_of_leap_days( $start_time, $end_time );
 	}
 

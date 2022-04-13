@@ -15,7 +15,7 @@ class WCS_Customer_Store_CPT_Test extends WCS_Base_Customer_Store_Test_Case {
 	 */
 	protected static $store;
 
-	public static function setUpBeforeClass() {
+	public static function set_up_before_class() {
 		self::$store = new WCS_Customer_Store_CPT();
 	}
 

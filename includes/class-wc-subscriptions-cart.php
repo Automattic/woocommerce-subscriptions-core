@@ -220,7 +220,7 @@ class WC_Subscriptions_Cart {
 				if ( $trial_length > 0 ) {
 					$price = $sign_up_fee;
 				} else {
-					$price += $sign_up_fee;
+					$price = (float) $price + $sign_up_fee; // Casting to float for php8 compatibility.
 				}
 			}  // else $price = recurring amount already as WC_Product->get_price() returns subscription price
 

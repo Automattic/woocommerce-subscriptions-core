@@ -4,13 +4,13 @@
  */
 class WCS_Deprecated_Functions_Test extends WP_UnitTestCase {
 
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		add_filter( 'woocommerce_order_item_get_subtotal', array( $this, 'return_0_if_empty' ) );
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		global $wpdb;
 
 		remove_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
@@ -21,7 +21,7 @@ class WCS_Deprecated_Functions_Test extends WP_UnitTestCase {
 		$wpdb->query( "TRUNCATE TABLE {$wpdb->prefix}woocommerce_order_itemmeta" );
 
 		$this->commit_transaction();
-		parent::tearDown();
+		parent::tear_down();
 		add_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription', 10, 1 );
 	}
 
@@ -127,9 +127,10 @@ class WCS_Deprecated_Functions_Test extends WP_UnitTestCase {
 	 * @dataProvider wcs_get_singular_garbage_datas
 	 */
 	public function test_wcs_get_subscription_from_key_fail( $input ) {
-		$this->expectException( PHPUnit_Framework_Error::class );
-		if ( ! method_exists( 'PHPUnit_Runner_Version', 'id' ) || version_compare( PHPUnit_Runner_Version::id(), '6.0', '>=' ) ) {
-			$this->setExpectedException( '\PHPUnit\Framework\Error\Notice' );
+		// Warnings are issued in php8+ as is_object() is called on an undefined variable.
+		$this->setExpectedException( '\PHPUnit\Framework\Error\Notice' );
+		if ( PHP_MAJOR_VERSION >= 8 ) {
+			$this->setExpectedException( '\PHPUnit\Framework\Error\Warning' );
 		}
 		$this->assertNull( wcs_get_subscription_from_key( $input ) );
 	}

@@ -23,8 +23,8 @@ class WC_Subscriptions_Payment_Count_Test extends WP_UnitTestCase {
 	 *
 	 * @since 2.6.0
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$subscription = WCS_Helper_Subscription::create_subscription();
 
