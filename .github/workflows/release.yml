@@ -12,7 +12,7 @@ jobs:
   create-release:
     # Action will be skipped unless we have a successful merge AND the original PR started with release
     # If this condition isn't matched, then github will show the action as skipped. 
-    if:  startsWith(github.head_ref, 'release') && github.event.pull_request.merged == true
+    if:  startsWith(github.head_ref, 'release/') && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - run: echo "A release branch has been merged with trunk, time to create a new release"
