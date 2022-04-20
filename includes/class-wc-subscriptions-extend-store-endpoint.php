@@ -138,7 +138,7 @@ class WC_Subscriptions_Extend_Store_Endpoint {
 
 		);
 
-		if ( in_array( $product->get_type(), array( 'subscription', 'subscription_variation' ), true ) ) {
+		if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
 			$item_data = array_merge(
 				array(
 					'billing_period'      => WC_Subscriptions_Product::get_period( $product ),
