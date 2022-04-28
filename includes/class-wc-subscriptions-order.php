@@ -635,12 +635,12 @@ class WC_Subscriptions_Order {
 		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $custom_query_var_handler, 10, 2 );
 
 		$args = array(
-			'limit'    => 1,
-			'type'     => 'shop_order',
-			'status'   => 'any',
-			'orderby'  => 'date',
-			'order'    => 'DESC',
-			'customer' => $user_id,
+			'limit'       => 1,
+			'type'        => 'shop_order',
+			'status'      => 'any',
+			'orderby'     => 'date',
+			'order'       => 'DESC',
+			'customer_id' => $user_id,
 		);
 
 		$args['_non_subscription_renewal'] = true;
