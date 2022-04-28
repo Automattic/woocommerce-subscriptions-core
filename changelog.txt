@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 1.9.0 - 20xx-xx-xx =
+= 1.9.0 - 2022-04-27 =
 * Fix: Display subscription billing details in the Cart Block when purchasing products with subscription plans created using the All Products extension. PR#149
 * Dev: Update phpunit to v9 to allow testing against newer php versions. PR#140
 
