@@ -325,40 +325,6 @@ class WC_Subscriptions_Order {
 	}
 
 	/**
-	 * A unified API for accessing subscription order meta, especially for sign-up fee related order meta.
-	 *
-	 * Because WooCommerce 2.1 deprecated WC_Order::$order_custom_fields, this function is also used to provide
-	 * version independent meta data access to non-subscription meta data.
-	 *
-	 * @param WC_Order|int $order The WC_Order object or ID of the order for which the meta should be sought.
-	 * @param string $meta_key The key as stored in the post meta table for the meta item.
-	 * @param mixed $default (optional) The default value to return if the meta key does not exist. Default 0.
-	 * @since 1.0
-	 */
-	public static function get_meta( $order, $meta_key, $default = 0 ) {
-
-		if ( ! is_object( $order ) ) {
-			$order = wc_get_order( $order );
-		}
-
-		$meta_key = preg_replace( '/^_/', '', $meta_key );
-
-		if ( isset( $order->$meta_key ) ) { // WC 2.1+ magic __isset() & __get() methods
-			$meta_value = $order->$meta_key;
-		} elseif ( is_array( $order->order_custom_fields ) && isset( $order->order_custom_fields[ '_' . $meta_key ][0] ) && $order->order_custom_fields[ '_' . $meta_key ][0] ) {  // < WC 2.1+
-			$meta_value = maybe_unserialize( $order->order_custom_fields[ '_' . $meta_key ][0] );
-		} else {
-			$meta_value = get_post_meta( wcs_get_objects_property( $order, 'id' ), '_' . $meta_key, true );
-
-			if ( empty( $meta_value ) ) {
-				$meta_value = $default;
-			}
-		}
-
-		return $meta_value;
-	}
-
-	/**
 	 * Displays a few details about what happens to their subscription. Hooked
 	 * to the thank you page.
 	 *
@@ -2220,5 +2186,42 @@ class WC_Subscriptions_Order {
 	public static function get_order_currency( $order ) {
 		_deprecated_function( __METHOD__, '2.2.0', 'wcs_get_objects_property( $order, "currency" ) or $order->get_currency()' );
 		return wcs_get_objects_property( $order, 'currency' );
+	}
+
+	/**
+	 * A unified API for accessing subscription order meta, especially for sign-up fee related order meta.
+	 *
+	 * Because WooCommerce 2.1 deprecated WC_Order::$order_custom_fields, this function is also used to provide
+	 * version independent meta data access to non-subscription meta data.
+	 *
+	 * Deprecated in Subscriptions Core 2.0 since we have the wcs_get_objects_property() which serves the same purpose.
+	 *
+	 * @deprecated 2.0
+	 * @since 1.0
+	 *
+	 * @param  WC_Order|int $order    The WC_Order object or ID of the order for which the meta should be sought.
+	 * @param  string       $meta_key The key as stored in the post meta table for the meta item.
+	 * @param  mixed        $default  The default value to return if the meta key does not exist. Default 0.
+	 *
+	 * @return mixed Order meta data found by key.
+	 */
+	public static function get_meta( $order, $meta_key, $default = 0 ) {
+		wcs_deprecated_function( __METHOD__, '2.0', 'wcs_get_objects_property( $order, $meta_key, "single", $default )' );
+
+		if ( ! is_object( $order ) ) {
+			$order = wc_get_order( $order );
+		}
+
+		$meta_key = preg_replace( '/^_/', '', $meta_key );
+
+		if ( isset( $order->$meta_key ) ) { // WC 2.1+ magic __isset() & __get() methods
+			$meta_value = $order->$meta_key;
+		} elseif ( is_array( $order->order_custom_fields ) && isset( $order->order_custom_fields[ '_' . $meta_key ][0] ) && $order->order_custom_fields[ '_' . $meta_key ][0] ) {  // < WC 2.1+
+			$meta_value = maybe_unserialize( $order->order_custom_fields[ '_' . $meta_key ][0] );
+		} else {
+			$meta_value = wcs_get_objects_property( $order, $meta_key, 'single', $default );
+		}
+
+		return $meta_value;
 	}
 }
