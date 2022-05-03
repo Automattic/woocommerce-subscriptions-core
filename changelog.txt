@@ -2,7 +2,6 @@
 
 = 1.9.0 - 20xx-xx-xx =
 * Dev: Update phpunit to v9 to allow testing against newer php versions. PR#140
-* Dev: Update `update_post_meta($order_id, ...)` function calls to use CRUD layer. PR#159
 
 = 1.8.0 - 2022-04-04 =
 * Update: Switch to global functions to remove deprecation warnings originating from WooCommerce Blocks. PR#124
