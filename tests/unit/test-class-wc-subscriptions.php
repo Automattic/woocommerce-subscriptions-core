@@ -1137,13 +1137,13 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			if ( in_array( $status, $expected_to_pass, true ) ) {
 
 				try {
-
-					$start_date = gmdate( 'Y-m-d H:i:s', strtotime( '-1 month' ) );
+					$expected_end_date = gmdate( 'Y-m-d H:i:s' );
+					$start_date        = gmdate( 'Y-m-d H:i:s', strtotime( $expected_end_date . ' -1 month' ) );
 					$subscription->update_dates( [ 'start' => $start_date ] );
 
 					$subscription->update_status( 'pending-cancel' );
 
-					$this->assertEquals( time(), $subscription->get_time( 'end' ), '', 2 );
+					$this->assertEquals( strtotime( $expected_end_date ), $subscription->get_time( 'end' ), '', 2 );
 				} catch ( Exception $e ) {
 
 					$this->fail( $e->getMessage() );
