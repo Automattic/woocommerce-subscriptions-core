@@ -98,13 +98,15 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 			if ( is_callable( array( $object, $function_name ) ) ) {
 				$value = $object->$function_name();
 			} else {
-				// If we don't have a method for this specific property, but we are using WC 3.0, it may be set as meta data on the object so check if we can use that.
-				if ( method_exists( $object, 'get_meta' ) && $object->meta_exists( $prefixed_key ) ) {
-					if ( 'single' === $single ) {
-						$value = $object->get_meta( $prefixed_key, true );
-					} else {
-						// WC_Data::get_meta() returns an array of stdClass objects with id, key & value properties when meta is available.
-						$value = wp_list_pluck( $object->get_meta( $prefixed_key, false ), 'value' );
+				// If we don't have a method for this specific property, but we are using WC 3.0, use $object->get_meta().
+				if ( method_exists( $object, 'get_meta' ) ) {
+					if ( $object->meta_exists( $prefixed_key ) ) {
+						if ( 'single' === $single ) {
+							$value = $object->get_meta( $prefixed_key, true );
+						} else {
+							// WC_Data::get_meta() returns an array of stdClass objects with id, key & value properties when meta is available.
+							$value = wp_list_pluck( $object->get_meta( $prefixed_key, false ), 'value' );
+						}
 					}
 				} elseif ( 'single' === $single && isset( $object->$property ) ) { // WC < 3.0.
 					$value = $object->$property;
