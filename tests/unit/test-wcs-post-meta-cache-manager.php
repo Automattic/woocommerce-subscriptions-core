@@ -37,7 +37,8 @@ class WCS_Post_Meta_Cache_Manager_Test extends WP_UnitTestCase {
 	/** @var int Keep track of how many times a callback on a hook has been called. */
 	protected $callback_check_count = 0;
 
-	public static function setUpBeforeClass() {
+	public static function set_up_before_class() {
+		parent::set_up_before_class();
 		// Create a dummy WP post for the $known_post_id used in these tests.
 		$post_data = array(
 			'post_title'   => 'Test Post ',
@@ -48,7 +49,8 @@ class WCS_Post_Meta_Cache_Manager_Test extends WP_UnitTestCase {
 		wp_insert_post( $post_data );
 	}
 
-	public static function tearDownAfterClass() {
+	public static function tear_down_after_class() {
+		parent::tear_down_after_class();
 		wp_delete_post( 12358, true );
 	}
 
