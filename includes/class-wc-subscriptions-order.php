@@ -635,10 +635,12 @@ class WC_Subscriptions_Order {
 		};
 		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $custom_query_var_handler, 10, 2 );
 
+		$all_possible_statuses = array_values( array_unique( array_keys( wc_get_order_statuses() ) ) );
+
 		$args = array(
 			'limit'       => 1,
 			'type'        => 'shop_order',
-			'status'      => 'any',
+			'status'      => $all_possible_statuses,
 			'orderby'     => 'date',
 			'order'       => 'DESC',
 			'customer_id' => $user_id,
