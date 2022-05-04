@@ -628,6 +628,7 @@ class WC_Subscriptions_Order {
 					'key'     => '_subscription_renewal',
 					'compare' => 'NOT EXISTS',
 				);
+				unset( $query_vars['_non_subscription_renewal'] );
 			}
 
 			return $query;
