@@ -4,32 +4,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Related order data store for orders stored in Custom Post Types.
+ * Related order data store for orders.
  *
  * Importantly, this class uses WC_Data API methods, like WC_Data::add_meta_data() and WC_Data::get_meta(), to manage the
  * relationships instead of add_post_meta() or get_post_meta(). This ensures that the relationship is stored, regardless
- * of the order data store being used. However, it also creates potential for relationships to fall out of sync if a
- * custom order data store is active, because @see $this->get_related_order_ids() queries the posts table via wp_posts(),
- * not the order's data store. This is unavoidable as wc_get_orders() and WC_Order_Query do not provide any way to query
- * meta data abstracted from the data store. Instead, it relies on 3rd party code to add custom parameter support for meta.
- * Source: https://github.com/woocommerce/woocommerce/wiki/wc_get_orders-and-WC_Order_Query#adding-custom-parameter-support
+ * of the order data store being used.
  *
- * Adding custom parameter support to order querying APIs won't help solve this issue, as the code would still directly
- * query post meta by default, and require additional code for different order data stores.
- *
- * The solution will be to eventually move away from the use of meta data on the order to a standalone relationship table.
- * This can be done already on sites running custom order data stores as WCS_Related_Order_Store::instance() is
- * filterable. It will eventually also be the default implementation in a future version of Subscriptions.
- *
- * @version  2.3.0
- * @category Class
+ * @version 2.0.0
  */
 class WCS_Related_Order_Data_Store extends WCS_Related_Order_Store {
 
 	/**
 	 * Meta keys used to link an order with a subscription for each type of relationship.
 	 *
-	 * @since 2.3.0
+	 * @since 2.0.0
 	 * @var array $meta_keys Relationship => Meta key
 	 */
 	private $meta_keys;
@@ -46,15 +34,10 @@ class WCS_Related_Order_Data_Store extends WCS_Related_Order_Store {
 	/**
 	 * Find orders related to a given subscription in a given way.
 	 *
-	 * This method uses the WordPress Posts API instead of the WooCommerce Order's API, because
-	 * order's can not be queried by meta data with either wc_get_orders() or WC_Order_Query, so
-	 * a custom query parameter would need to be added to WC_Order_Query to run that query, which
-	 * is not something we want to add public APIs for because in future, that relationship will
-	 * be moved out of order meta and into its own table and queries on it should come through
-	 * here instead of the order querying API.
+	 * @since 2.0.0
 	 *
-	 * @param WC_Order $subscription The ID of the subscription for which calling code wants the related orders.
-	 * @param string $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
+	 * @param WC_Order $subscription  The ID of the subscription for which calling code wants the related orders.
+	 * @param string   $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
 	 *
 	 * @return array
 	 */
@@ -83,8 +66,10 @@ class WCS_Related_Order_Data_Store extends WCS_Related_Order_Store {
 	/**
 	 * Find subscriptions related to a given order in a given way, if any.
 	 *
-	 * @param WC_Order $order The ID of an order that may be linked with subscriptions.
-	 * @param string $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
+	 * @since 2.0.0
+	 *
+	 * @param WC_Order $order         The ID of an order that may be linked with subscriptions.
+	 * @param string   $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
 	 *
 	 * @return array
 	 */
@@ -109,14 +94,15 @@ class WCS_Related_Order_Data_Store extends WCS_Related_Order_Store {
 	 * Apply the deprecated 'wcs_subscriptions_for_renewal_order' and 'wcs_subscriptions_for_resubscribe_order' filters
 	 * to maintain backward compatibility.
 	 *
-	 * @param array $subscription_ids The IDs of subscription linked to the given order, if any.
-	 * @param WC_Order $order An instance of an order that may be linked with subscriptions.
-	 * @param string $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe'.
+	 * @since 2.0.0
+	 *
+	 * @param array    $subscription_ids The IDs of subscription linked to the given order, if any.
+	 * @param WC_Order $order            An instance of an order that may be linked with subscriptions.
+	 * @param string   $relation_type    The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe'.
 	 *
 	 * @return array
 	 */
 	protected function apply_deprecated_related_order_filter( $subscription_ids, WC_Order $order, $relation_type ) {
-
 		$deprecated_filter_hook = "wcs_subscriptions_for_{$relation_type}_order";
 
 		if ( has_filter( $deprecated_filter_hook ) ) {
@@ -152,18 +138,15 @@ class WCS_Related_Order_Data_Store extends WCS_Related_Order_Store {
 	 * Existing order relationships of the same type will not be overwritten. This only adds a relationship. To overwrite,
 	 * you must also remove any existing relationship with @see $this->delete_relation().
 	 *
-	 * This data store links the relationship for a renewal order and a subscription in meta data against the order.
-	 * That's inefficient for queries, so will be changed in future with a different data store. It also leads to potential
-	 * bugs when WooCommerce 3.0 or newer is running with a custom data store for order data, as related orders are queried
-	 * in $this->get_related_order_ids() using post meta directly, but set here using the CRUD WC_Data::add_meta_data() method.
-	 * This is unfortunately unavoidable. See the WCS_Related_Order_Store_CPT docblock for more details.
+	 * @since 2.0.0
 	 *
-	 * @param WC_Order $order The order to link with the subscription.
-	 * @param WC_Order $subscription The order or subscription to link the order to.
-	 * @param string $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
+	 * @param WC_Order $order         The order to link with the subscription.
+	 * @param WC_Order $subscription  The order or subscription to link the order to.
+	 * @param string   $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
+	 *
+	 * @return void
 	 */
 	public function add_relation( WC_Order $order, WC_Order $subscription, $relation_type ) {
-
 		// We can't rely on $subscription->get_id() being available here, because we only require a WC_Order, not a WC_Subscription, and WC_Order does not have get_id() available with WC < 3.0
 		$subscription_id        = wcs_get_objects_property( $subscription, 'id' );
 		$related_order_meta_key = $this->get_meta_key( $relation_type );
@@ -195,9 +178,13 @@ class WCS_Related_Order_Data_Store extends WCS_Related_Order_Store {
 	 * with custom data stores for order data, as $this->get_related_order_ids() queries post meta directly. This is
 	 * unavoidable. See the WCS_Related_Order_Store_CPT docblock for more details.
 	 *
-	 * @param WC_Order $order An order that may be linked with subscriptions.
-	 * @param WC_Order $subscription A subscription or order to unlink the order with, if a relation exists.
-	 * @param string $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
+	 * @since 2.0.0
+	 *
+	 * @param WC_Order $order         An order that may be linked with subscriptions.
+	 * @param WC_Order $subscription  A subscription or order to unlink the order with, if a relation exists.
+	 * @param string   $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
+	 *
+	 * @return void
 	 */
 	public function delete_relation( WC_Order $order, WC_Order $subscription, $relation_type ) {
 		$related_order_meta_key = $this->get_meta_key( $relation_type );
@@ -216,8 +203,12 @@ class WCS_Related_Order_Data_Store extends WCS_Related_Order_Store {
 	/**
 	 * Remove all related orders/subscriptions of a given type from an order.
 	 *
-	 * @param WC_Order $order An order that may be linked with subscriptions.
-	 * @param string $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
+	 * @since 2.0.0
+	 *
+	 * @param WC_Order $order         An order that may be linked with subscriptions.
+	 * @param string   $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
+	 *
+	 * @return void
 	 */
 	public function delete_relations( WC_Order $order, $relation_type ) {
 		$related_order_meta_key = $this->get_meta_key( $relation_type );
@@ -232,6 +223,8 @@ class WCS_Related_Order_Data_Store extends WCS_Related_Order_Store {
 	/**
 	 * Get the meta keys used to link orders with subscriptions.
 	 *
+	 * @since 2.0.0
+	 *
 	 * @return array
 	 */
 	protected function get_meta_keys() {
@@ -241,12 +234,14 @@ class WCS_Related_Order_Data_Store extends WCS_Related_Order_Store {
 	/**
 	 * Get the meta key used to link an order with a subscription based on the type of relationship.
 	 *
-	 * @param string $relation_type The order's relationship with the subscription. Must be 'renewal', 'switch' or 'resubscribe'.
+	 * @since 2.0.0
+	 *
+	 * @param string $relation_type   The order's relationship with the subscription. Must be 'renewal', 'switch' or 'resubscribe'.
 	 * @param string $prefix_meta_key Whether to add the underscore prefix to the meta key or not. 'prefix' to prefix the key. 'do_not_prefix' to not prefix the key.
+	 *
 	 * @return string
 	 */
 	protected function get_meta_key( $relation_type, $prefix_meta_key = 'prefix' ) {
-
 		$this->check_relation_type( $relation_type );
 
 		$meta_key = $this->meta_keys[ $relation_type ];
