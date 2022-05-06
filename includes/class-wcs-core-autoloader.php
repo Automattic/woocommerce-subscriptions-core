@@ -181,6 +181,7 @@ class WCS_Core_Autoloader {
 			'wcs_customer_store_cpt'              => true,
 			'wcs_product_variable_data_store_cpt' => true,
 			'wcs_subscription_data_store_cpt'     => true,
+			'wcs_related_order_data_store'        => true,
 		);
 
 		return isset( $data_stores[ $class ] );
@@ -231,6 +232,10 @@ class WCS_Core_Autoloader {
 			$path .= '/admin/debug-tools';
 		} elseif ( $this->is_class_data_store( $class ) ) {
 			$path .= '/data-stores';
+
+			if ( in_array( $class, [ 'wcs_related_order_store_cpt' ], true ) ) {
+				$path .= '/deprecated';
+			}
 		} elseif ( false !== strpos( $class, 'deprecat' ) ) {
 			$path .= '/deprecated';
 
