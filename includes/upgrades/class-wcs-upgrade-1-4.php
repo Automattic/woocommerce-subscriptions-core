@@ -14,12 +14,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
+/**
+ * @deprecated x.x.x
+ */
 class WCS_Upgrade_1_4 {
 
 	private static $last_upgraded_user_id = false;
 
 	public static function init() {
-
+		wcs_deprecated_function( __METHOD__, 'x.x.x' );
 		global $wpdb;
 
 		$subscriptions_meta_key = $wpdb->get_blog_prefix() . 'woocommerce_subscriptions';
@@ -166,11 +169,11 @@ class WCS_Upgrade_1_4 {
 	 *
 	 * Needs to be a separate function so that it can use a static variable (and therefore avoid calling get_option() thousands
 	 * of times when iterating over thousands of users).
-	 *
 	 * @since 1.4
+	 * @deprecated x.x.x
 	 */
 	public static function is_user_upgraded( $user_id ) {
-
+		wcs_deprecated_function( __METHOD__, 'x.x.x' );
 		if ( false === self::$last_upgraded_user_id ) {
 			self::$last_upgraded_user_id = get_option( 'wcs_1_4_last_upgraded_user_id', 0 );
 		}
