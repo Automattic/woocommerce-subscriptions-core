@@ -134,7 +134,7 @@ class WCS_Related_Order_Data_Store extends WCS_Related_Order_Store {
 		$related_order_meta_key = $this->get_meta_key( $relation_type );
 
 		foreach ( $order->get_meta_data() as $meta ) {
-			if ( $related_order_meta_key === $meta->key && wcs_get_objects_property( $subscription, 'id' ) === $meta->value ) { // we can't do strict comparison here, because WC_Meta_Data casts the subscription ID to be a string
+			if ( $related_order_meta_key === $meta->key && wcs_get_objects_property( $subscription, 'id' ) === (int) $meta->value ) { // we can't do strict comparison here, because WC_Meta_Data casts the subscription ID to be a string
 				$order->delete_meta_data_by_mid( $meta->id );
 			}
 		}
