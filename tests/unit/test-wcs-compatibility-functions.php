@@ -23,7 +23,7 @@ class WCS_Compatibility_Functions_Test extends WP_UnitTestCase {
 		$this->assertEquals( get_post( $simple_product->get_id() ), wcs_get_objects_property( $simple_product, 'post' ) );
 		$this->assertEquals( get_post( $variation_product->get_parent_id() ), wcs_get_objects_property( $variation_product, 'post' ) );
 
-		// post_status - now deprecated as a property
+		// post_status
 		$this->assertEquals( get_post( $subscription->get_id() )->post_status, wcs_get_objects_property( $subscription, 'post_status' ) );
 		$this->assertEquals( get_post( $order->get_id() )->post_status, wcs_get_objects_property( $order, 'post_status' ) );
 		$this->assertEquals( get_post( $simple_product->get_id() )->post_status, wcs_get_objects_property( $simple_product, 'post_status' ) );
