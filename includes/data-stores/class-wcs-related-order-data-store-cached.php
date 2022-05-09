@@ -4,37 +4,38 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Related order data store for orders and subscriptions stored in Custom Post Types, with caching.
+ * Related order data store for orders and subscriptions with caching.
  *
- * Adds a persistent caching layer on top of WCS_Related_Order_Store_CPT for more
+ * Adds a persistent caching layer on top of WCS_Related_Order_Data_Store for more
  * performant queries on related orders.
  *
- * @version  2.3.0
- * @category Class
+ * @version  2.0.0
  */
 class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store implements WCS_Cache_Updater {
 
 	/**
-	 * Keep cache up-to-date with changes to our meta data via WordPress post meta APIs
-	 * by using a post meta cache manager.
+	 * Keep cache up-to-date with changes to our meta data using a meta cache manager.
 	 *
+	 * @since 2.0.0
 	 * @var WCS_Post_Meta_Cache_Manager
 	 */
 	protected $post_meta_cache_manager;
 
 	/**
-	 * Store order relations using post meta keys as the array key for more performant searches
+	 * Store order relations using meta keys as the array key for more performant searches
 	 * in @see $this->get_relation_type_for_meta_key() than using array_search().
 	 *
-	 * @var array $relation_keys Post meta key => Order Relationship
+	 * @since 2.0.0
+	 * @var array $relation_keys meta key => Order Relationship
 	 */
 	private $relation_keys;
 
 	/**
 	 * Constructor
+	 *
+	 * @since 2.0.0
 	 */
 	public function __construct() {
-
 		parent::__construct();
 
 		foreach ( $this->get_meta_keys() as $relation_type => $meta_key ) {
@@ -47,9 +48,10 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	/**
 	 * Attach callbacks to keep related order caches up-to-date and make sure
 	 * the cache doesn't mess with other data stores.
+	 *
+	 * @since 2.0.0
 	 */
 	protected function init() {
-
 		$this->post_meta_cache_manager->init();
 
 		// Don't load cached related order meta data into subscriptions
@@ -77,8 +79,10 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	 * Wrapper to support getting related orders regardless of whether they are cached or not yet,
 	 * either in the old transient cache, or new persistent cache.
 	 *
-	 * @param WC_Order $subscription The ID of the subscription for which calling code wants the related orders.
-	 * @param string $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
+	 * @since 2.0.0
+	 *
+	 * @param WC_Order $subscription  The ID of the subscription for which calling code wants the related orders.
+	 * @param string   $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
 	 *
 	 * @return array
 	 */
@@ -86,12 +90,12 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 		$subscription_id   = wcs_get_objects_property( $subscription, 'id' ); // We can't rely on $subscription->get_id() being available because we only require a WC_Order, not a WC_Subscription, and WC_Order does not have get_id() available with WC < 3.0
 		$related_order_ids = $this->get_related_order_ids_from_cache( $subscription_id, $relation_type );
 
-		// get_post_meta returns false if the post ID is invalid. This can arise when the subscription hasn't been created yet. In any case, the related IDs should be an empty array to avoid a boolean return from this function.
+		// Fetching post meta returns false if the post ID is invalid. This can arise when the subscription hasn't been created yet. In any case, the related IDs should be an empty array to avoid a boolean return from this function.
 		if ( false === $related_order_ids ) {
 			$related_order_ids = array();
 		}
 
-		// get post meta returns an empty string when no matching row is found for the given key, meaning it's not set yet
+		// Fetching returns an empty string when no matching row is found for the given key, meaning it's not set yet
 		if ( '' === $related_order_ids ) {
 
 			if ( 'renewal' === $relation_type ) {
@@ -119,9 +123,13 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	/**
 	 * Helper function for linking an order to a subscription via a given relationship.
 	 *
-	 * @param WC_Order $order The order to link with the subscription.
-	 * @param WC_Order $subscription The order or subscription to link the order to.
-	 * @param string $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
+	 * @since 2.0.0
+	 *
+	 * @param WC_Order $order         The order to link with the subscription.
+	 * @param WC_Order $subscription  The order or subscription to link the order to.
+	 * @param string   $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
+	 *
+	 * @return void
 	 */
 	public function add_relation( WC_Order $order, WC_Order $subscription, $relation_type ) {
 		$this->add_related_order_id_to_cache( wcs_get_objects_property( $order, 'id' ), wcs_get_objects_property( $subscription, 'id' ), $relation_type );
@@ -131,9 +139,13 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	/**
 	 * Remove the relationship between a given order and subscription.
 	 *
-	 * @param WC_Order $order An order that may be linked with subscriptions.
-	 * @param WC_Order $subscription A subscription or order to unlink the order with, if a relation exists.
-	 * @param string $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
+	 * @since 2.0.0
+	 *
+	 * @param WC_Order $order         An order that may be linked with subscriptions.
+	 * @param WC_Order $subscription  A subscription or order to unlink the order with, if a relation exists.
+	 * @param string   $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
+	 *
+	 * @return void
 	 */
 	public function delete_relation( WC_Order $order, WC_Order $subscription, $relation_type ) {
 		$this->delete_related_order_id_from_cache( wcs_get_objects_property( $order, 'id' ), wcs_get_objects_property( $subscription, 'id' ), $relation_type );
@@ -143,8 +155,12 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	/**
 	 * Remove all related orders/subscriptions of a given type from an order.
 	 *
-	 * @param WC_Order $order An order that may be linked with subscriptions.
-	 * @param string $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
+	 * @since 2.0.0
+	 *
+	 * @param WC_Order $order         An order that may be linked with subscriptions.
+	 * @param string   $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
+	 *
+	 * @return void
 	 */
 	public function delete_relations( WC_Order $order, $relation_type ) {
 		$this->delete_related_order_id_from_caches( wcs_get_objects_property( $order, 'id' ), $relation_type );
@@ -156,8 +172,11 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	/**
 	 * Find orders related to a given subscription in a given way from the cache.
 	 *
-	 * @param int $subscription_id The ID of the subscription for which calling code wants the related orders.
-	 * @param string $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
+	 * @since 2.0.0
+	 *
+	 * @param int    $subscription_id The ID of the subscription for which calling code wants the related orders.
+	 * @param string $relation_type   The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
+	 *
 	 * @return string|array An array of related orders in the cache, or an empty string when no matching row is found for the given key, meaning it's cache is not set yet or has been deleted
 	 */
 	protected function get_related_order_ids_from_cache( $subscription_id, $relation_type ) {
@@ -167,12 +186,15 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	/**
 	 * Add a related order ID to the cached related order IDs for a given order relationship.
 	 *
-	 * @param int $order_id An order to link with the subscription.
-	 * @param int $subscription_id A subscription to link the order to.
-	 * @param string $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
+	 * @since 2.0.0
+	 *
+	 * @param int    $order_id        An order to link with the subscription.
+	 * @param int    $subscription_id A subscription to link the order to.
+	 * @param string $relation_type   The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
+	 *
+	 * @return void
 	 */
 	protected function add_related_order_id_to_cache( $order_id, $subscription_id, $relation_type ) {
-
 		$subscription = wcs_get_subscription( $subscription_id );
 
 		// If we can't get a valid subscription, we can't update its cache
@@ -192,12 +214,15 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	/**
 	 * Delete a related order ID from the cached related order IDs for a given order relationship.
 	 *
-	 * @param int $order_id The order that may be linked with subscriptions.
-	 * @param int $subscription_id A subscription to remove a linked order from.
-	 * @param string $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
+	 * @since 2.0.0
+	 *
+	 * @param int    $order_id        The order that may be linked with subscriptions.
+	 * @param int    $subscription_id A subscription to remove a linked order from.
+	 * @param string $relation_type   The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
+	 *
+	 * @return void
 	 */
 	protected function delete_related_order_id_from_cache( $order_id, $subscription_id, $relation_type ) {
-
 		$subscription = wcs_get_subscription( $subscription_id );
 
 		// If we can't get a valid subscription, we can't udpate its cache
@@ -216,10 +241,17 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	/**
 	 * Helper function for setting related order cache.
 	 *
-	 * @param int $subscription_id A subscription to update the linked order IDs for.
-	 * @param array $related_order_ids Set of orders related to the given subscription.
-	 * @param string $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
-	 * @return bool|int Returns related order cache's meta ID if it doesn't exist yet, otherwise returns true on success and false on failure. NOTE: If the $related_order_ids passed to this function are the same as those already in the database, this function returns false.
+	 * Returns related order cache's meta ID if it doesn't exist yet, otherwise returns true on success and false on failure.
+	 * NOTE: If the $related_order_ids passed to this function are the same as those already in the database,
+	 * this function returns false.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param int    $subscription_id   A subscription to update the linked order IDs for.
+	 * @param array  $related_order_ids Set of orders related to the given subscription.
+	 * @param string $relation_type     The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
+	 *
+	 * @return bool|int
 	 */
 	protected function update_related_order_id_cache( $subscription_id, array $related_order_ids, $relation_type ) {
 		return update_post_meta( $subscription_id, $this->get_cache_meta_key( $relation_type ), $related_order_ids );
@@ -228,8 +260,11 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	/**
 	 * Get the meta key used to store the cache of linked order with a subscription, based on the type of relationship.
 	 *
-	 * @param string $relation_type The order's relationship with the subscription. Must be 'renewal', 'switch' or 'resubscribe'.
+	 * @since 2.0.0
+	 *
+	 * @param string $relation_type   The order's relationship with the subscription. Must be 'renewal', 'switch' or 'resubscribe'.
 	 * @param string $prefix_meta_key Whether to add the underscore prefix to the meta key or not. 'prefix' to prefix the key. 'do_not_prefix' to not prefix the key.
+	 *
 	 * @return string
 	 */
 	protected function get_cache_meta_key( $relation_type, $prefix_meta_key = 'prefix' ) {
@@ -241,8 +276,12 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	/**
 	 * Clear related order caches for a given subscription.
 	 *
-	 * @param int $subscription_id The ID of a subscription that may have linked orders.
-	 * @param string $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented. Use 'any' to delete all cached.
+	 * @since 2.0.0
+	 *
+	 * @param int    $subscription_id The ID of a subscription that may have linked orders.
+	 * @param string $relation_type   The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented. Use 'any' to delete all cached.
+	 *
+	 * @return void
 	 */
 	public function delete_caches_for_subscription( $subscription_id, $relation_type = 'any' ) {
 		foreach ( $this->get_relation_types() as $possible_relation_type ) {
@@ -255,8 +294,12 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	/**
 	 * Remove an order from all related order caches.
 	 *
-	 * @param int $order_id The order that may be linked with subscriptions.
+	 * @since 2.0.0
+	 *
+	 * @param int    $order_id      The order that may be linked with subscriptions.
 	 * @param string $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented. Use 'any' to delete all cached.
+	 *
+	 * @return void
 	 */
 	public function delete_related_order_id_from_caches( $order_id, $relation_type = 'any' ) {
 		$relation_types = 'any' === $relation_type ? $this->get_relation_types() : array( $relation_type );
@@ -270,10 +313,13 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	/**
 	 * Clear all related order caches for all subscriptions.
 	 *
+	 * @since 2.0.0
+	 *
 	 * @param array $relation_types The relations to clear, or an empty array to clear all relations (default).
+	 *
+	 * @return void
 	 */
 	public function delete_caches_for_all_subscriptions( $relation_types = array() ) {
-
 		if ( empty( $relation_types ) ) {
 			$relation_types = $this->get_relation_types();
 		}
@@ -297,12 +343,16 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	 * cache, but regardless, the prop should never be a source of that data. This method is attached to the filter
 	 * 'wcs_subscription_data_store_props_to_ignore' so that cache keys are ignored.
 	 *
-	 * @param array $props_to_ignore A mapping of meta keys => prop names.
-	 * @param WCS_Subscription_Data_Store_CPT $data_store
-	 * @return array A mapping of meta keys => prop names, filtered by ones that should be updated.
+	 * Returns a mapping of meta keys => prop names, filtered by ones that should be updated.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param array                           $props_to_ignore A mapping of meta keys => prop names.
+	 * @param WCS_Subscription_Data_Store_CPT $data_store      Subscriptions Data Store
+	 *
+	 * @return array
 	 */
 	public function add_related_order_cache_props( $props_to_ignore, $data_store ) {
-
 		if ( is_a( $data_store, 'WCS_Subscription_Data_Store_CPT' ) ) {
 			foreach ( $this->get_meta_keys() as $relation_type => $meta_key ) {
 				$props_to_ignore[ $this->get_cache_meta_key( $relation_type ) ] = $this->get_cache_meta_key( $relation_type, 'do_not_prefix' );
@@ -319,8 +369,13 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	 * subscription is created. They can have switch or resubscribe orders, which may have been created before them on
 	 * checkout, so we don't touch those caches.
 	 *
+	 * Returns the instance of the subscription, required as method is attached to the 'wcs_created_subscription' filter.
+	 *
+	 * @since 2.0.0
+	 *
 	 * @param WC_Subscription $subscription A subscription to set empty renewal cache against.
-	 * @return WC_Subscription Return the instance of the subscription, required as method is attached to the 'wcs_created_subscription' filter
+	 *
+	 * @return WC_Subscription
 	 */
 	public function set_empty_renewal_order_cache( WC_Subscription $subscription ) {
 		$this->update_related_order_id_cache( $subscription->get_id(), array(), 'renewal' );
@@ -330,17 +385,20 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	/* Public methods attached to WCS_Post_Meta_Cache_Manager hooks for managing the cache */
 
 	/**
-	 * If there is a change to a related order post meta key, update the cache.
+	 * If there is a change to a related order meta key, update the cache.
 	 *
-	 * @param string $update_type The type of update to check. Can be 'add', 'update' or 'delete'.
-	 * @param int $order_id The post the meta is being changed on.
-	 * @param string $post_meta_key The post meta key being changed.
-	 * @param mixed $subscription_id The related subscription's ID, as stored in meta value (only when the meta key is a related order meta key).
-	 * @param mixed $old_subscription_id The previous value stored in the database for the related subscription. Optional.
+	 * @since 2.0.0
+	 *
+	 * @param string $update_type         The type of update to check. Can be 'add', 'update' or 'delete'.
+	 * @param int    $order_id            The post the meta is being changed on.
+	 * @param string $meta_key            The meta key being changed.
+	 * @param mixed  $subscription_id     The related subscription's ID, as stored in meta value (only when the meta key is a related order meta key).
+	 * @param mixed  $old_subscription_id The previous value stored in the database for the related subscription. Optional.
+	 *
+	 * @return void
 	 */
-	public function maybe_update_for_post_meta_change( $update_type, $order_id, $post_meta_key, $subscription_id, $old_subscription_id = '' ) {
-
-		$relation_type = $this->get_relation_type_for_meta_key( $post_meta_key );
+	public function maybe_update_for_post_meta_change( $update_type, $order_id, $meta_key, $subscription_id, $old_subscription_id = '' ) {
+		$relation_type = $this->get_relation_type_for_meta_key( $meta_key );
 
 		if ( false === $relation_type ) {
 			return;
@@ -371,11 +429,14 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	/**
 	 * Remove all caches for a given meta key if all entries for that meta key are being deleted.
 	 *
-	 * @param string $post_meta_key The post meta key being changed.
+	 * @since 2.0.0
+	 *
+	 * @param string $meta_key The meta key being changed.
+	 *
+	 * @return void
 	 */
-	public function maybe_delete_all_for_post_meta_change( $post_meta_key ) {
-
-		$relation_type = $this->get_relation_type_for_meta_key( $post_meta_key );
+	public function maybe_delete_all_for_post_meta_change( $meta_key ) {
+		$relation_type = $this->get_relation_type_for_meta_key( $meta_key );
 
 		if ( $relation_type ) {
 			$this->delete_caches_for_all_subscriptions( array( $relation_type ) );
@@ -388,8 +449,11 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	 * If more than one relation is specified, a batch of subscription IDs will be returned that are missing
 	 * either of those relations, not both.
 	 *
+	 * @since 2.0.0
+	 *
 	 * @param array $relation_types The relations to check, or an empty array to check for any relation type (default).
-	 * @param int $batch_size The number of subscriptions to return. Use -1 to return all subscriptions.
+	 * @param int   $batch_size     The number of subscriptions to return. Use -1 to return all subscriptions.
+	 *
 	 * @return array
 	 */
 	protected function get_subscription_ids_without_cache( $relation_types = array(), $batch_size = 10 ) {
@@ -432,10 +496,14 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	}
 
 	/**
-	 * Get the order relation for a given post meta key.
+	 * Get the order relation for a given meta key.
+	 * Returns false if no such meta key exists.
+	 *
+	 * @since 2.0.0
 	 *
 	 * @param string $meta_key The post meta key being changed.
-	 * @return bool|string The order relation if it exists, or false if no such meta key exists.
+	 *
+	 * @return bool|string
 	 */
 	private function get_relation_type_for_meta_key( $meta_key ) {
 		return isset( $this->relation_keys[ $meta_key ] ) ? $this->relation_keys[ $meta_key ] : false;
@@ -443,12 +511,15 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 
 	/**
 	 * Remove related order cache meta data from order meta copied from subscriptions to renewal orders.
+	 * The returned value is a list of filtered order meta data to be copied.
 	 *
-	 * @param  array $meta An order's meta data.
-	 * @return array Filtered order meta data to be copied.
+	 * @since 2.0.0
+	 *
+	 * @param array $meta An order's meta data.
+	 *
+	 * @return array
 	 */
 	public function remove_related_order_cache_keys( $meta ) {
-
 		$cache_meta_keys = array_map( array( $this, 'get_cache_meta_key' ), $this->get_relation_types() );
 
 		foreach ( $meta as $index => $meta_data ) {
@@ -464,8 +535,11 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 
 	/**
 	 * Get the items to be updated, if any.
+	 * Returns an empty array if there are no items to update.
 	 *
-	 * @return array An array of items to update, or empty array if there are no items to update.
+	 * @since 2.0.0
+	 *
+	 * @return array
 	 */
 	public function get_items_to_update() {
 		return $this->get_subscription_ids_without_cache();
@@ -474,10 +548,15 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	/**
 	 * Run the update for a single item.
 	 *
+	 * @since 2.0.0
+	 *
 	 * @param mixed $item The item to update.
+	 *
+	 * @return void
 	 */
 	public function update_items_cache( $subscription_id ) {
 		$subscription = wcs_get_subscription( $subscription_id );
+
 		if ( $subscription ) {
 			foreach ( $this->get_relation_types() as $relation_type ) {
 				// Getting the related IDs also sets the cache when it's not already set
@@ -488,6 +567,9 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 
 	/**
 	 * Clear all caches.
+	 *
+	 * @since 2.0.0
+	 * @return void
 	 */
 	public function delete_all_caches() {
 		$this->delete_caches_for_all_subscriptions();
