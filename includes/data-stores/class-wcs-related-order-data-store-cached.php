@@ -204,7 +204,7 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 
 		$related_order_ids = $this->get_related_order_ids( $subscription, $relation_type );
 
-		if ( ! in_array( $order_id, $related_order_ids ) ) { // phpcs:ignore
+		if ( ! in_array( $order_id, $related_order_ids, true ) ) {
 			// Add the new order to the beginning of the array to preserve sort order from newest to oldest
 			array_unshift( $related_order_ids, $order_id );
 			$this->update_related_order_id_cache( $subscription_id, $related_order_ids, $relation_type );
@@ -231,8 +231,9 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 		}
 
 		$related_order_ids = $this->get_related_order_ids( $subscription, $relation_type );
+		$index             = array_search( $order_id, $related_order_ids, true );
 
-		if ( ( $index = array_search( $order_id, $related_order_ids ) ) !== false ) { // phpcs:ignore
+		if ( false !== $index ) {
 			unset( $related_order_ids[ $index ] );
 			$this->update_related_order_id_cache( $subscription_id, $related_order_ids, $relation_type );
 		}
@@ -325,8 +326,10 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 		}
 
 		// Set variables to workaround ambiguous parameters of delete_metadata()
-		$delete_all   = true;
-		$null_post_id = $null_meta_value = null; // phpcs:ignore
+		$delete_all      = true;
+		$null_post_id    = null;
+		$null_meta_value = null;
+
 		foreach ( $relation_types as $relation_type ) {
 			delete_metadata( 'post', $null_post_id, $this->get_cache_meta_key( $relation_type ), $null_meta_value, $delete_all );
 		}
@@ -470,18 +473,20 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 			$limit = $batch_size - count( $subscription_ids );
 
 			// Use a subquery instead of a meta query with get_posts() as it's more performant than the multiple joins created by get_posts()
-			$post_ids = $wpdb->get_col( $wpdb->prepare( // phpcs:ignore
-				"SELECT ID FROM $wpdb->posts
-					WHERE post_type = 'shop_subscription'
-					AND post_status NOT IN ('trash','auto-draft')
-					AND ID NOT IN (
-						SELECT post_id FROM $wpdb->postmeta
-						WHERE meta_key = %s
-					)
-					LIMIT 0, %d",
-				$this->get_cache_meta_key( $relation_type ),
-				$limit
-			) ); // phpcs:ignore
+			$post_ids = $wpdb->get_col(
+				$wpdb->prepare(
+					"SELECT ID FROM $wpdb->posts
+						WHERE post_type = 'shop_subscription'
+						AND post_status NOT IN ('trash','auto-draft')
+						AND ID NOT IN (
+							SELECT post_id FROM $wpdb->postmeta
+							WHERE meta_key = %s
+						)
+						LIMIT 0, %d",
+					$this->get_cache_meta_key( $relation_type ),
+					$limit
+				)
+			);
 
 			if ( $post_ids ) {
 				$subscription_ids += $post_ids;
@@ -523,7 +528,7 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 		$cache_meta_keys = array_map( array( $this, 'get_cache_meta_key' ), $this->get_relation_types() );
 
 		foreach ( $meta as $index => $meta_data ) {
-			if ( ! empty( $meta_data['meta_key'] ) && in_array( $meta_data['meta_key'], $cache_meta_keys ) ) { //phpcs:ignore
+			if ( ! empty( $meta_data['meta_key'] ) && in_array( $meta_data['meta_key'], $cache_meta_keys, true ) ) {
 				unset( $meta[ $index ] );
 			}
 		}
