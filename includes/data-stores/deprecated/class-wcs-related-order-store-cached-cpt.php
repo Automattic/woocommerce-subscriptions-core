@@ -12,6 +12,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @version  2.3.0
  * @category Class
  * @author   Prospress
+ *
+ * @deprecated 2.0.0
  */
 class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT implements WCS_Cache_Updater {
 
@@ -35,7 +37,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * Constructor
 	 */
 	public function __construct() {
-
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'The WCS_Related_Order_Store_Cached_CPT class is deprecated. Please use the new WCS_Related_Order_Data_Store_Cached class which moves away from using WP Post APIs to get/save order meta data.' );
 		parent::__construct();
 
 		foreach ( $this->get_meta_keys() as $relation_type => $meta_key ) {
@@ -50,7 +52,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * the cache doesn't mess with other data stores.
 	 */
 	protected function init() {
-
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::init()' );
 		$this->post_meta_cache_manager->init();
 
 		// Don't load cached related order meta data into subscriptions
@@ -84,6 +86,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @return array
 	 */
 	public function get_related_order_ids( WC_Order $subscription, $relation_type ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::get_related_order_ids()' );
+
 		$subscription_id   = wcs_get_objects_property( $subscription, 'id' ); // We can't rely on $subscription->get_id() being available because we only require a WC_Order, not a WC_Subscription, and WC_Order does not have get_id() available with WC < 3.0
 		$related_order_ids = $this->get_related_order_ids_from_cache( $subscription_id, $relation_type );
 
@@ -125,6 +129,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param string $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
 	 */
 	public function add_relation( WC_Order $order, WC_Order $subscription, $relation_type ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::add_relation()' );
+
 		$this->add_related_order_id_to_cache( wcs_get_objects_property( $order, 'id' ), wcs_get_objects_property( $subscription, 'id' ), $relation_type );
 		parent::add_relation( $order, $subscription, $relation_type );
 	}
@@ -137,6 +143,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param string $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
 	 */
 	public function delete_relation( WC_Order $order, WC_Order $subscription, $relation_type ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::delete_relation()' );
+
 		$this->delete_related_order_id_from_cache( wcs_get_objects_property( $order, 'id' ), wcs_get_objects_property( $subscription, 'id' ), $relation_type );
 		parent::delete_relation( $order, $subscription, $relation_type );
 	}
@@ -148,6 +156,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param string $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
 	 */
 	public function delete_relations( WC_Order $order, $relation_type ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::delete_relations()' );
+
 		$this->delete_related_order_id_from_caches( wcs_get_objects_property( $order, 'id' ), $relation_type );
 		parent::delete_relations( $order, $relation_type );
 	}
@@ -162,6 +172,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @return string|array An array of related orders in the cache, or an empty string when no matching row is found for the given key, meaning it's cache is not set yet or has been deleted
 	 */
 	protected function get_related_order_ids_from_cache( $subscription_id, $relation_type ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::get_related_order_ids_from_cache()' );
+
 		return get_post_meta( $subscription_id, $this->get_cache_meta_key( $relation_type ), true );
 	}
 
@@ -173,6 +185,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param string $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
 	 */
 	protected function add_related_order_id_to_cache( $order_id, $subscription_id, $relation_type ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::add_related_order_id_to_cache()' );
 
 		$subscription = wcs_get_subscription( $subscription_id );
 
@@ -198,6 +211,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param string $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
 	 */
 	protected function delete_related_order_id_from_cache( $order_id, $subscription_id, $relation_type ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::delete_related_order_id_from_cache()' );
 
 		$subscription = wcs_get_subscription( $subscription_id );
 
@@ -223,6 +237,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @return bool|int Returns related order cache's meta ID if it doesn't exist yet, otherwise returns true on success and false on failure. NOTE: If the $related_order_ids passed to this function are the same as those already in the database, this function returns false.
 	 */
 	protected function update_related_order_id_cache( $subscription_id, array $related_order_ids, $relation_type ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::update_related_order_id_cache()' );
+
 		return update_post_meta( $subscription_id, $this->get_cache_meta_key( $relation_type ), $related_order_ids );
 	}
 
@@ -234,6 +250,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @return string
 	 */
 	protected function get_cache_meta_key( $relation_type, $prefix_meta_key = 'prefix' ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::get_cache_meta_key()' );
+
 		return sprintf( '%s_order_ids_cache', $this->get_meta_key( $relation_type, $prefix_meta_key ) );
 	}
 
@@ -246,6 +264,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param string $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented. Use 'any' to delete all cached.
 	 */
 	public function delete_caches_for_subscription( $subscription_id, $relation_type = 'any' ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::delete_caches_for_subscription()' );
+
 		foreach ( $this->get_relation_types() as $possible_relation_type ) {
 			if ( 'any' === $relation_type || $relation_type === $possible_relation_type ) {
 				delete_post_meta( $subscription_id, $this->get_cache_meta_key( $possible_relation_type ) );
@@ -260,6 +280,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param string $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented. Use 'any' to delete all cached.
 	 */
 	public function delete_related_order_id_from_caches( $order_id, $relation_type = 'any' ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::delete_related_order_id_from_caches()' );
+
 		$relation_types = 'any' === $relation_type ? $this->get_relation_types() : array( $relation_type );
 		foreach ( wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => $relation_types ) ) as $subscription_id => $subscription ) {
 			foreach ( $relation_types as $type ) {
@@ -274,6 +296,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param array $relation_types The relations to clear, or an empty array to clear all relations (default).
 	 */
 	public function delete_caches_for_all_subscriptions( $relation_types = array() ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::delete_caches_for_all_subscriptions()' );
 
 		if ( empty( $relation_types ) ) {
 			$relation_types = $this->get_relation_types();
@@ -303,6 +326,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @return array A mapping of meta keys => prop names, filtered by ones that should be updated.
 	 */
 	public function add_related_order_cache_props( $props_to_ignore, $data_store ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::add_related_order_cache_props()' );
 
 		if ( is_a( $data_store, 'WCS_Subscription_Data_Store_CPT' ) ) {
 			foreach ( $this->get_meta_keys() as $relation_type => $meta_key ) {
@@ -324,6 +348,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @return WC_Subscription Return the instance of the subscription, required as method is attached to the 'wcs_created_subscription' filter
 	 */
 	public function set_empty_renewal_order_cache( WC_Subscription $subscription ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::set_empty_renewal_order_cache()' );
+
 		$this->update_related_order_id_cache( $subscription->get_id(), array(), 'renewal' );
 		return $subscription;
 	}
@@ -340,6 +366,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param mixed $old_subscription_id The previous value stored in the database for the related subscription. Optional.
 	 */
 	public function maybe_update_for_post_meta_change( $update_type, $order_id, $post_meta_key, $subscription_id, $old_subscription_id = '' ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::maybe_update_for_post_meta_change()' );
 
 		$relation_type = $this->get_relation_type_for_meta_key( $post_meta_key );
 
@@ -375,6 +402,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param string $post_meta_key The post meta key being changed.
 	 */
 	public function maybe_delete_all_for_post_meta_change( $post_meta_key ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::maybe_delete_all_for_post_meta_change()' );
 
 		$relation_type = $this->get_relation_type_for_meta_key( $post_meta_key );
 
@@ -394,6 +422,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @return array
 	 */
 	protected function get_subscription_ids_without_cache( $relation_types = array(), $batch_size = 10 ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::get_subscription_ids_without_cache()' );
+
 		global $wpdb;
 
 		if ( empty( $relation_types ) ) {
@@ -439,6 +469,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @return bool|string The order relation if it exists, or false if no such meta key exists.
 	 */
 	private function get_relation_type_for_meta_key( $meta_key ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::get_relation_type_for_meta_key()' );
+
 		return isset( $this->relation_keys[ $meta_key ] ) ? $this->relation_keys[ $meta_key ] : false;
 	}
 
@@ -449,6 +481,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @return array Filtered order meta data to be copied.
 	 */
 	public function remove_related_order_cache_keys( $meta ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::remove_related_order_cache_keys()' );
 
 		$cache_meta_keys = array_map( array( $this, 'get_cache_meta_key' ), $this->get_relation_types() );
 
@@ -469,6 +502,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @return array An array of items to update, or empty array if there are no items to update.
 	 */
 	public function get_items_to_update() {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::get_items_to_update()' );
+
 		return $this->get_subscription_ids_without_cache();
 	}
 
@@ -478,6 +513,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param mixed $item The item to update.
 	 */
 	public function update_items_cache( $subscription_id ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::update_items_cache()' );
+
 		$subscription = wcs_get_subscription( $subscription_id );
 		if ( $subscription ) {
 			foreach ( $this->get_relation_types() as $relation_type ) {
@@ -491,6 +528,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * Clear all caches.
 	 */
 	public function delete_all_caches() {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store_Cached::delete_all_caches()' );
+
 		$this->delete_caches_for_all_subscriptions();
 	}
 }
