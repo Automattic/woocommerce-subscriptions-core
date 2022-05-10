@@ -180,6 +180,7 @@ class WCS_Core_Autoloader {
 			'wcs_product_variable_data_store_cpt' => true,
 			'wcs_subscription_data_store_cpt'     => true,
 			'wcs_related_order_data_store'        => true,
+			'wcs_related_order_data_store_cached' => true,
 		);
 
 		return isset( $data_stores[ $class ] );

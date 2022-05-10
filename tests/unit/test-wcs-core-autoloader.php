@@ -132,6 +132,7 @@ class WCS_Core_Autoloader_Test extends WP_UnitTestCase {
 			array( 'WCS_Related_Order_Store_Cached_CPT', '/includes/deprecated/' ),
 			array( 'WCS_Related_Order_Store_CPT', '/includes/deprecated/' ),
 			array( 'WCS_Related_Order_Data_Store', '/includes/data-stores/' ),
+			array( 'WCS_Related_Order_Data_Store_Cached', '/includes/data-stores/' ),
 			array( 'WCS_Subscription_Data_Store_CPT', '/includes/data-stores/' ),
 			array( 'WCS_Action_Deprecator', '/includes/deprecated/' ),
 			array( 'WCS_Deprecated_Filter_Hooks', '/includes/deprecated/' ),
