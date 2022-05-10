@@ -175,8 +175,6 @@ class WCS_Core_Autoloader {
 	 */
 	protected function is_class_data_store( $class ) {
 		static $data_stores = array(
-			'wcs_related_order_store_cached_cpt'  => true,
-			'wcs_related_order_store_cpt'         => true,
 			'wcs_customer_store_cached_cpt'       => true,
 			'wcs_customer_store_cpt'              => true,
 			'wcs_product_variable_data_store_cpt' => true,
@@ -185,6 +183,24 @@ class WCS_Core_Autoloader {
 		);
 
 		return isset( $data_stores[ $class ] );
+	}
+
+	/**
+	 * Determine if the class is one of our deprecated classes.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param string $class The class name.
+	 *
+	 * @return bool
+	 */
+	protected function is_deprecated_class( $class ) {
+		static $deprecated_classes = array(
+			'wcs_related_order_store_cached_cpt' => true,
+			'wcs_related_order_store_cpt'        => true,
+		);
+
+		return isset( $deprecated_classes[ $class ] );
 	}
 
 	/**
@@ -202,7 +218,9 @@ class WCS_Core_Autoloader {
 		$path     = '/includes';
 		$is_admin = ( false !== strpos( $class, 'admin' ) );
 
-		if ( $this->is_class_abstract( $class ) ) {
+		if ( $this->is_deprecated_class( $class ) ) {
+			$path .= '/deprecated';
+		} elseif ( $this->is_class_abstract( $class ) ) {
 			if ( 'wcs_sv_api_base' === $class ) {
 				$path .= '/gateways/paypal/includes/abstracts';
 			} else {
@@ -232,10 +250,6 @@ class WCS_Core_Autoloader {
 			$path .= '/admin/debug-tools';
 		} elseif ( $this->is_class_data_store( $class ) ) {
 			$path .= '/data-stores';
-
-			if ( in_array( $class, [ 'wcs_related_order_store_cpt' ], true ) ) {
-				$path .= '/deprecated';
-			}
 		} elseif ( false !== strpos( $class, 'deprecat' ) ) {
 			$path .= '/deprecated';
 
