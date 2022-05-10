@@ -155,21 +155,26 @@ class WCS_PayPal_Standard_Switcher {
 	 * @since 2.0.15
 	 */
 	public static function save_old_paypal_meta( $order_id, $posted ) {
+		$order = wc_get_order( $order_id );
 
-		if ( wcs_order_contains_switch( $order_id ) ) {
-			$subscriptions = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'switch' ) );
+		if ( ! wcs_is_order( $order ) || ! wcs_order_contains_switch( $order ) ) {
+			return;
+		}
 
-			foreach ( $subscriptions as $subscription ) {
+		$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'switch' ) );
 
-				if ( 'paypal' === $subscription->get_payment_method() ) {
+		foreach ( $subscriptions as $subscription ) {
 
-					$paypal_id = wcs_get_paypal_id( $subscription->get_id() );
+			if ( 'paypal' === $subscription->get_payment_method() ) {
 
-					if ( ! wcs_is_paypal_profile_a( $paypal_id, 'billing_agreement' ) ) {
-						update_post_meta( $order_id, '_old_payment_method', 'paypal_standard' );
-						update_post_meta( $order_id, '_old_paypal_subscription_id', $paypal_id );
-						update_post_meta( $subscription->get_id(), '_switched_paypal_subscription_id', $paypal_id );
-					}
+				$paypal_id = wcs_get_paypal_id( $subscription->get_id() );
+
+				if ( ! wcs_is_paypal_profile_a( $paypal_id, 'billing_agreement' ) ) {
+					$order->update_meta_data( '_old_payment_method', 'paypal_standard' );
+					$order->update_meta_data( '_old_paypal_subscription_id', $paypal_id );
+					$order->save();
+
+					update_post_meta( $subscription->get_id(), '_switched_paypal_subscription_id', $paypal_id );
 				}
 			}
 		}
