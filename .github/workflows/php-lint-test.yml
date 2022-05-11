@@ -74,6 +74,7 @@ jobs:
           else
             echo "bash bin/run-ci-tests.sh"
             bash bin/run-ci-tests.sh
+          fi
   compatibility-oldest:
     name: Run unit tests on Oldest supported version
     runs-on: ubuntu-18.04
@@ -94,14 +95,7 @@ jobs:
           php-version: '7.1'
           tools: composer
       # run CI checks
-      - run: |
-          IS_PHP_71_OR_LOWER=`php -r "echo version_compare('7.1', phpversion(), '<=');"`
-          if [[ $IS_PHP_71_OR_LOWER == '1' ]]; then
-            echo "WC_VERSION=6.4.1 bash bin/run-ci-tests.sh"
-            WC_VERSION=6.4.1 bash bin/run-ci-tests.sh
-          else
-            echo "bash bin/run-ci-tests.sh"
-            bash bin/run-ci-tests.sh
+      - run: bash bin/run-ci-tests.sh
   compatibility-beta:
     name: Run unit tests on beta WC
     runs-on: ubuntu-18.04
