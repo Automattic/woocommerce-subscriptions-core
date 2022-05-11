@@ -19,7 +19,7 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	 * @since 2.0.0
 	 * @var WCS_Post_Meta_Cache_Manager
 	 */
-	protected $post_meta_cache_manager;
+	protected $meta_cache_manager;
 
 	/**
 	 * Store order relations using meta keys as the array key for more performant searches
@@ -42,7 +42,7 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 			$this->relation_keys[ $meta_key ] = $relation_type;
 		}
 
-		$this->post_meta_cache_manager = new WCS_Post_Meta_Cache_Manager( 'shop_order', $this->get_meta_keys() );
+		$this->meta_cache_manager = new WCS_Post_Meta_Cache_Manager( 'shop_order', $this->get_meta_keys() );
 	}
 
 	/**
@@ -52,7 +52,7 @@ class WCS_Related_Order_Data_Store_Cached extends WCS_Related_Order_Data_Store i
 	 * @since 2.0.0
 	 */
 	protected function init() {
-		$this->post_meta_cache_manager->init();
+		$this->meta_cache_manager->init();
 
 		// Don't load cached related order meta data into subscriptions
 		add_filter( 'wcs_subscription_data_store_props_to_ignore', array( $this, 'add_related_order_cache_props' ), 10, 2 );
