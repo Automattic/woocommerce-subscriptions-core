@@ -644,20 +644,23 @@ class WC_Subscriptions_Order {
 			'orderby'     => 'date',
 			'order'       => 'DESC',
 			'customer_id' => $user_id,
+			'return'      => 'ids',
 		);
 
 		$args['_non_subscription_renewal'] = true;
 
-		$orders = wc_get_orders( $args );
+		$order_ids = wc_get_orders( $args );
 
 		remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $custom_query_var_handler, 10 );
 
-		$order_ids = [];
-		foreach ( $orders as $order ) {
-			if ( wcs_order_contains_subscription( $order->id, 'parent' ) ) {
-				$order_ids[] = $order->id;
+		foreach ( $order_ids as $index => $order_id ) {
+			if ( ! wcs_order_contains_subscription( $order_id, 'parent' ) ) {
+				unset( $order_ids[ $index ] );
 			}
 		}
+
+		// Normalise array keys
+		$order_ids = array_values( $order_ids );
 
 		return apply_filters( 'users_subscription_orders', $order_ids, $user_id );
 	}
