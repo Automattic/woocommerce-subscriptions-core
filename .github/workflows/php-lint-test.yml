@@ -87,7 +87,14 @@ jobs:
           php-version: '7.1'
           tools: composer
       # run CI checks
-      - run: bash bin/run-ci-tests.sh
+      - run: |
+          IS_PHP_71_OR_LOWER=`php -r "echo version_compare('7.1', phpversion(), '<=');"`
+          if [[ $IS_PHP_71_OR_LOWER == '1' ]]; then
+            echo "WC_VERSION=6.4.1 bash bin/run-ci-tests.sh"
+            WC_VERSION=6.4.1 bash bin/run-ci-tests.sh
+          else
+            echo "bash bin/run-ci-tests.sh"
+            bash bin/run-ci-tests.sh
   compatibility-beta:
     name: Run unit tests on beta WC
     runs-on: ubuntu-18.04
