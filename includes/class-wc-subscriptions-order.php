@@ -622,26 +622,35 @@ class WC_Subscriptions_Order {
 		}
 
 		// Get all the customers orders which are not subscription renewal orders
-		$order_ids = get_posts( array(
-			'posts_per_page' => 1,
-			'post_type'      => 'shop_order',
-			'post_status'    => 'any',
-			'fields'         => 'ids',
-			'orderby'        => 'date',
-			'order'          => 'DESC',
-			'meta_query'     => array(
-				array(
-					'key'     => '_customer_user',
-					'compare' => '=',
-					'value'   => $user_id,
-					'type'    => 'numeric',
-				),
-				array(
+		$custom_query_var_handler = function( $query, $query_vars ) {
+			if ( ! empty( $query_vars['_non_subscription_renewal'] ) ) {
+				$query['meta_query'][] = array(
 					'key'     => '_subscription_renewal',
 					'compare' => 'NOT EXISTS',
-				),
-			),
-		) );
+				);
+				unset( $query_vars['_non_subscription_renewal'] );
+			}
+
+			return $query;
+		};
+		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $custom_query_var_handler, 10, 2 );
+
+		$all_possible_statuses = array_values( array_unique( array_keys( wc_get_order_statuses() ) ) );
+
+		$args = array(
+			'type'        => 'shop_order',
+			'status'      => $all_possible_statuses,
+			'orderby'     => 'date',
+			'order'       => 'DESC',
+			'customer_id' => $user_id,
+			'return'      => 'ids',
+		);
+
+		$args['_non_subscription_renewal'] = true;
+
+		$order_ids = wc_get_orders( $args );
+
+		remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $custom_query_var_handler, 10 );
 
 		foreach ( $order_ids as $index => $order_id ) {
 			if ( ! wcs_order_contains_subscription( $order_id, 'parent' ) ) {
