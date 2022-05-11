@@ -638,7 +638,6 @@ class WC_Subscriptions_Order {
 		$all_possible_statuses = array_values( array_unique( array_keys( wc_get_order_statuses() ) ) );
 
 		$args = array(
-			'limit'       => 1,
 			'type'        => 'shop_order',
 			'status'      => $all_possible_statuses,
 			'orderby'     => 'date',
