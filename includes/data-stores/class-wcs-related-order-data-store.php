@@ -42,23 +42,34 @@ class WCS_Related_Order_Data_Store extends WCS_Related_Order_Store {
 	 * @return array
 	 */
 	public function get_related_order_ids( WC_Order $subscription, $relation_type ) {
-		$related_order_ids = get_posts( array( // phpcs:ignore
-			'posts_per_page'         => -1,
-			'post_type'              => 'shop_order',
-			'post_status'            => 'any',
-			'fields'                 => 'ids',
-			'meta_query'             => array( // phpcs:ignore
-				array(
+		$order_relation_query_var_handler = function( $query, $query_vars ) use ( $subscription, $relation_type ) {
+			if ( ! empty( $query_vars['_related_orders_by_relation_type'] ) ) {
+				$query['meta_query'][] = array(
 					'key'     => $this->get_meta_key( $relation_type ),
 					'compare' => '=',
-					'value'   => wcs_get_objects_property( $subscription, 'id' ), // We can't rely on get_id() being available here, because we only require a WC_Order, not a WC_Subscription, and WC_Order does not have get_id() available with WC < 3.0
+					'value'   => $subscription->get_id(), // We can't rely on get_id() being available here, because we only require a WC_Order, not a WC_Subscription, and WC_Order does not have get_id() available with WC < 3.0
 					'type'    => 'numeric',
-				),
-			),
-			'update_post_term_cache' => false,
-		) ); // phpcs:ignore
+				);
+				unset( $query_vars['_related_orders_by_relation_type'] );
+			}
 
-		rsort( $related_order_ids );
+			return $query;
+		};
+
+		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $order_relation_query_var_handler, 10, 2 );
+
+		$related_order_ids = wc_get_orders(
+			array(
+				'limit'                            => -1,
+				'status'                           => 'any',
+				'return'                           => 'ids',
+				'orderby'                          => 'ID',
+				'order'                            => 'DESC',
+				'_related_orders_by_relation_type' => true,
+			)
+		);
+
+		remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $order_relation_query_var_handler, 10 );
 
 		return $related_order_ids;
 	}
