@@ -129,9 +129,6 @@ class WCS_Related_Order_Data_Store extends WCS_Related_Order_Store {
 	 * Remove the relationship between a given order and subscription.
 	 *
 	 * This data store links the relationship for a renewal order and a subscription in meta data against the order.
-	 * That's inefficient for queries, so will be changed in future with a different data store. It also leads to bugs
-	 * with custom data stores for order data, as $this->get_related_order_ids() queries post meta directly. This is
-	 * unavoidable. See the WCS_Related_Order_Store_CPT docblock for more details.
 	 *
 	 * @since 2.0.0
 	 *
