@@ -391,7 +391,7 @@ class WCS_Cart_Renewal {
 				continue;
 			}
 
-			if ( isset( $item[ $this->cart_item_key ]['renewal_order_id'] ) && ! 'shop_order' == get_post_type( $item[ $this->cart_item_key ]['renewal_order_id'] ) ) {
+			if ( isset( $item[ $this->cart_item_key ]['renewal_order_id'] ) && ! 'shop_order' === WC_Data_Store::load( 'order' )->get_order_type( $item[ $this->cart_item_key ]['renewal_order_id'] ) ) {
 				$cart->remove_cart_item( $key );
 				$removed_count_order++;
 				continue;

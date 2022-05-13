@@ -62,13 +62,13 @@ function wcs_date_input( $timestamp = 0, $args = array() ) {
  * @since 2.0
  */
 function wcs_get_edit_post_link( $post_id ) {
-	$post_type_object = get_post_type_object( get_post_type( $post_id ) );
+	$object = wc_get_order( $post_id ); // works for both WC Order and WC Subscription objects.
 
-	if ( ! $post_type_object || ! in_array( $post_type_object->name, array( 'shop_order', 'shop_subscription' ) ) ) {
+	if ( ! $object || ! in_array( $object->get_type(), array( 'shop_order', 'shop_subscription' ), true ) ) {
 		return;
 	}
 
-	return apply_filters( 'get_edit_post_link', admin_url( sprintf( $post_type_object->_edit_link . '&action=edit', $post_id ) ), $post_id, '' );
+	return apply_filters( 'get_edit_post_link', $object->get_edit_order_url(), $post_id, '' );
 }
 
 /**
