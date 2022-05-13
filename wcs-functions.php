@@ -440,7 +440,7 @@ function wcs_get_subscriptions( $args ) {
 	);
 
 	// if order_id is not a shop_order
-	if ( 0 !== $args['order_id'] && 'shop_order' !== get_post_type( $args['order_id'] ) ) {
+	if ( 0 !== $args['order_id'] && 'shop_order' !== WC_Data_Store::load( 'order' )->get_order_type( $args['order_id'] ) ) {
 		return array();
 	}
 
