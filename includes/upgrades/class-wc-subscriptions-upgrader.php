@@ -63,7 +63,7 @@ class WC_Subscriptions_Upgrader {
 
 		$version_out_of_date = version_compare( self::$active_version, WC_Subscriptions_Core_Plugin::instance()->get_plugin_version(), '<' );
 
-		if ( version_compare( self::$minimum_supported_version, WC_Subscriptions_Core_Plugin::instance()->get_plugin_version(), '<' ) ) {
+		if ( version_compare( WC_Subscriptions_Core_Plugin::instance()->get_plugin_version(), self::$minimum_supported_version, '<' ) ) {
 			// Show warning that upgrades are no longer supported
 			add_action(
 				'admin_notices',
@@ -122,8 +122,6 @@ class WC_Subscriptions_Upgrader {
 
 		// When WC is updated from a version prior to 3.0 to a version after 3.0, add subscription address indexes. Must be hooked on before WC runs its updates, which occur on priority 5.
 		add_action( 'init', array( __CLASS__, 'maybe_add_subscription_address_indexes' ), 2 );
-
-		add_action( 'admin_notices', array( __CLASS__, 'maybe_display_external_object_cache_warning' ) );
 
 		add_action( 'init', array( __CLASS__, 'initialise_background_updaters' ), 0 );
 	}
@@ -769,12 +767,15 @@ class WC_Subscriptions_Upgrader {
 	 * @since 2.3.0
 	 */
 	public static function maybe_add_subscription_address_indexes() {
-		wcs_deprecated_function( __METHOD__, 'x.x.x' );
 		$woocommerce_active_version   = WC()->version;
 		$woocommerce_database_version = get_option( 'woocommerce_version' );
 
 		if ( $woocommerce_active_version !== $woocommerce_database_version && version_compare( $woocommerce_active_version, '3.0', '>=' ) && version_compare( $woocommerce_database_version, '3.0', '<' ) ) {
-			self::$background_updaters['2.3']['address_indexes_repair']->schedule_repair();
+			wcs_deprecated_function( __METHOD__, 'x.x.x' );
+			$logger             = new WC_logger();
+			$background_updater = new WCS_Repair_Subscription_Address_Indexes( $logger );
+			$background_updater->init();
+			$background_updater->schedule_repair();
 		}
 	}
 
