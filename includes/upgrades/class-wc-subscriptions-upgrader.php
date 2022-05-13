@@ -63,7 +63,7 @@ class WC_Subscriptions_Upgrader {
 
 		$version_out_of_date = version_compare( self::$active_version, WC_Subscriptions_Core_Plugin::instance()->get_plugin_version(), '<' );
 
-		if ( version_compare( WC_Subscriptions_Core_Plugin::instance()->get_plugin_version(), self::$minimum_supported_version, '<' ) ) {
+		if ( version_compare( WC_Subscriptions_Core_Plugin::instance()->get_plugin_version(), self::$minimum_supported_version, '>' ) ) {
 			// Show warning that upgrades are no longer supported
 			add_action(
 				'admin_notices',
