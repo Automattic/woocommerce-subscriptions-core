@@ -2199,9 +2199,9 @@ class WC_Subscriptions_Order {
 	 * @deprecated 2.0
 	 * @since 1.0
 	 *
-	 * @param  WC_Order|int $order    The WC_Order object or ID of the order for which the meta should be sought.
-	 * @param  string       $meta_key The key as stored in the post meta table for the meta item.
-	 * @param  mixed        $default  The default value to return if the meta key does not exist. Default 0.
+	 * @param WC_Order|int $order    The WC_Order object or ID of the order for which the meta should be sought.
+	 * @param string       $meta_key The key as stored in the post meta table for the meta item.
+	 * @param mixed        $default  The default value to return if the meta key does not exist. Default 0.
 	 *
 	 * @return mixed Order meta data found by key.
 	 */

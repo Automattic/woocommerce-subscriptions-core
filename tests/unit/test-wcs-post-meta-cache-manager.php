@@ -41,7 +41,7 @@ class WCS_Post_Meta_Cache_Manager_Test extends WP_UnitTestCase {
 		parent::set_up_before_class();
 		// Create a dummy WP post for the $known_post_id used in these tests.
 		$post_data = array(
-			'post_title'   => 'Test Post ',
+			'post_title'   => 'Test Post',
 			'post_content' => '',
 			'import_id'    => 12358,
 		);
