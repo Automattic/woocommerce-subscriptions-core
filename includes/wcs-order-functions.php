@@ -414,6 +414,70 @@ function wcs_order_contains_subscription( $order, $order_type = array( 'parent',
 }
 
 /**
+ * Drop in replacement for `get_posts()` function to help aid with transition to wc_get_orders
+ *
+ * @param array $args
+ *
+ * @return array
+ */
+function wcs_get_orders( $args ) {
+
+	// For testing we check the results from get_posts() against our wc_get_orders() results
+	// The following two lines can be removed once testing is completed
+	$request_args     = $args;
+	$get_post_results = get_posts( $args );
+
+	$mapping = [
+		'post_type'      => 'type',
+		'post_status'    => 'status',
+		'posts_per_page' => 'limit',
+		'post_parent'    => 'parent',
+		'fields'         => 'return',
+		'number'         => 'limit',
+	];
+
+	// Roughly remap source => destination key and remove source key.
+	foreach ( $mapping as $source_key => $dest_key ) {
+		if ( isset( $args[ $source_key ] ) ) {
+			$args[ $dest_key ] = $args[ $source_key ];
+			unset( $args[ $source_key ] );
+		}
+	}
+
+	$meta = $args['meta_query'] ?? [];
+	unset( $args['meta_query'] );
+
+	$handle_meta = function ( $query, $query_vars ) use ( $meta ) {
+		if ( [] === $meta ) {
+			return $query;
+		}
+
+		$query['meta_query'] = $meta;
+
+		return $query;
+	};
+
+	add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $handle_meta, 10, 2 );
+	$results = wc_get_orders( $args );
+	remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $handle_meta, 10 );
+
+	// The following if block is for testing only, to compare results between the two lookups. It can be removed once testing is complete.
+	if ( $results !== $get_post_results ) {
+		throw new \Exception(
+			'Call to wcs_get_orders gave differing results with the following args: <pre>' .
+			"\n\n" . 'get_posts(' . var_export( $request_args, true ) . "):\n" .
+			var_export( $get_post_results, true ) .
+			"\n\n" . 'wc_get_orders(' . var_export( $args, true ) . "):\n" .
+			var_export( $results, true ) .
+			'</pre>'
+		);
+
+	}
+
+	return $results;
+}
+
+/**
  * Get all the orders that relate to a subscription in some form (rather than only the orders associated with
  * a specific subscription).
  *
@@ -473,7 +537,7 @@ function wcs_get_subscription_orders( $return_fields = 'ids', $order_type = 'par
 		}
 
 		if ( count( $meta_query ) > 1 ) {
-			$order_ids = array_merge( $order_ids, get_posts( array(
+			$order_ids = array_merge( $order_ids, wcs_get_orders( array(
 				'posts_per_page' => -1,
 				'post_type'      => 'shop_order',
 				'post_status'    => 'any',
