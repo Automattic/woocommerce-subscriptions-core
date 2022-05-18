@@ -794,8 +794,7 @@ class WC_Subscriptions_Manager {
 	 * @since 1.0
 	 */
 	public static function maybe_trash_subscription( $post_id ) {
-
-		if ( 'shop_order' == get_post_type( $post_id ) ) {
+		if ( 'shop_order' === WC_Data_Store::load( 'order' )->get_order_type( $post_id ) ) {
 
 			// delete subscription
 			foreach ( wcs_get_subscriptions_for_order( $post_id, array( 'order_type' => 'parent' ) ) as $subscription ) {
@@ -810,7 +809,7 @@ class WC_Subscriptions_Manager {
 	 * @since 2.2.17
 	 */
 	public static function maybe_untrash_subscription( $post_id ) {
-		if ( 'shop_order' == get_post_type( $post_id ) ) {
+		if ( 'shop_order' === WC_Data_Store::load( 'order' )->get_order_type( $post_id ) ) {
 			foreach ( wcs_get_subscriptions_for_order( $post_id, array( 'order_type' => 'parent', 'subscription_status' => array( 'trash' ) ) ) as $subscription ) { // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
 				wp_untrash_post( $subscription->get_id() );
 			}
@@ -825,7 +824,7 @@ class WC_Subscriptions_Manager {
 	 * @param int $post_id The post ID being deleted.
 	 */
 	public static function maybe_delete_subscription( $post_id ) {
-		if ( 'shop_order' !== get_post_type( $post_id ) ) {
+		if ( 'shop_order' !== WC_Data_Store::load( 'order' )->get_order_type( $post_id ) ) {
 			return;
 		}
 
