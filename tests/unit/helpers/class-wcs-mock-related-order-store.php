@@ -10,7 +10,7 @@
  *
  * Related order data store for use in testing.
  */
-class WCS_Mock_Related_Order_Store extends WCS_Related_Order_Store_Cached_CPT {
+class WCS_Mock_Related_Order_Store extends WCS_Related_Order_Data_Store_Cached {
 
 	/**
 	 * @var int $init_call_count Record how many times this method is called.

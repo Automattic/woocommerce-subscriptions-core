@@ -39,6 +39,8 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 * Constructor: sets meta keys used for storing each order relation.
 	 */
 	public function __construct() {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'The WCS_Related_Order_Store_CPT class is deprecated. Please use the new WCS_Related_Order_Data_Store class which moves away from being tied to Custom Post Type.' );
+
 		foreach ( $this->get_relation_types() as $relation_type ) {
 			$this->meta_keys[ $relation_type ] = sprintf( '_subscription_%s', $relation_type );
 		}
@@ -60,6 +62,8 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 * @return array
 	 */
 	public function get_related_order_ids( WC_Order $subscription, $relation_type ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store::get_related_order_ids()' );
+
 		$related_order_ids = get_posts( array(
 			'posts_per_page'         => -1,
 			'post_type'              => 'shop_order',
@@ -90,6 +94,8 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 * @return array
 	 */
 	public function get_related_subscription_ids( WC_Order $order, $relation_type ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store::get_related_subscription_ids()' );
+
 		$related_order_meta_key = $this->get_meta_key( $relation_type );
 		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 			$related_subscription_ids = get_post_meta( wcs_get_objects_property( $order, 'id' ), $related_order_meta_key, false );
@@ -117,6 +123,7 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 * @return array
 	 */
 	protected function apply_deprecated_related_order_filter( $subscription_ids, WC_Order $order, $relation_type ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store::apply_deprecated_related_order_filter()' );
 
 		$deprecated_filter_hook = "wcs_subscriptions_for_{$relation_type}_order";
 
@@ -164,6 +171,7 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 * @param string $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
 	 */
 	public function add_relation( WC_Order $order, WC_Order $subscription, $relation_type ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store::add_relation()' );
 
 		// We can't rely on $subscription->get_id() being available here, because we only require a WC_Order, not a WC_Subscription, and WC_Order does not have get_id() available with WC < 3.0
 		$subscription_id        = wcs_get_objects_property( $subscription, 'id' );
@@ -201,6 +209,8 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 * @param string $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
 	 */
 	public function delete_relation( WC_Order $order, WC_Order $subscription, $relation_type ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store::delete_relation()' );
+
 		$related_order_meta_key = $this->get_meta_key( $relation_type );
 		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 			delete_post_meta( wcs_get_objects_property( $order, 'id' ), $related_order_meta_key, wcs_get_objects_property( $subscription, 'id' ) );
@@ -221,6 +231,8 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 * @param string $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
 	 */
 	public function delete_relations( WC_Order $order, $relation_type ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store::delete_relations()' );
+
 		$related_order_meta_key = $this->get_meta_key( $relation_type );
 		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
 			delete_post_meta( wcs_get_objects_property( $order, 'id' ), $related_order_meta_key, null );
@@ -236,6 +248,8 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 * @return array
 	 */
 	protected function get_meta_keys() {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store::get_meta_keys()' );
+
 		return $this->meta_keys;
 	}
 
@@ -247,6 +261,7 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 * @return string
 	 */
 	protected function get_meta_key( $relation_type, $prefix_meta_key = 'prefix' ) {
+		wcs_deprecated_function( __METHOD__, '2.0.0', 'WCS_Related_Order_Data_Store::get_meta_key()' );
 
 		$this->check_relation_type( $relation_type );
 

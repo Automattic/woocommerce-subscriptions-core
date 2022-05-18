@@ -14,7 +14,7 @@ class WCS_Related_Order_Store_Test extends WCS_Base_Related_Order_Store_Test_Cas
 	 * Make sure calling WCS_Related_Order_Store::instance() returns a valid WCS_Related_Order_Store.
 	 */
 	public function test_default_instance_class() {
-		$this->assertInstanceOf( 'WCS_Related_Order_Store_Cached_CPT', WCS_Related_Order_Store::instance() );
+		$this->assertInstanceOf( 'WCS_Related_Order_Data_Store_Cached', WCS_Related_Order_Store::instance() );
 	}
 
 	/**

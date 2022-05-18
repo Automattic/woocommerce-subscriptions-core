@@ -1,22 +1,22 @@
 <?php
 /**
- * Class WCS_Related_Order_Store_Cached_CPT_Test
+ * Class WCS_Related_Order_Data_Store_Cached_Test
  *
  * @package WooCommerce\SubscriptionsCore\Tests
  */
 
 /**
- * Test suite for the WCS_Related_Order_Store_Cached_CPT class
+ * Test suite for the WCS_Related_Order_Data_Store_Cached class
  */
-class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Store_Test_Case {
+class WCS_Related_Order_Data_Store_Cached_Test extends WCS_Base_Related_Order_Store_Test_Case {
 
 	/**
-	 * @var WCS_Related_Order_Store_CPT
+	 * @var WCS_Related_Order_Data_Store_Cached
 	 */
 	protected static $cache_store;
 
 	public static function set_up_before_class() {
-		self::$cache_store = new WCS_Related_Order_Store_Cached_CPT();
+		self::$cache_store = new WCS_Related_Order_Data_Store_Cached();
 	}
 
 	/**
@@ -124,7 +124,7 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 
 		self::$cache_store->add_relation( $order, $subscription, $relation_type );
 
-		$this->assertEquals( $subscription->get_id(), get_post_meta( $order_id, $this->get_meta_key( $relation_type ), true ) );
+		$this->assertEquals( $subscription->get_id(), $order->get_meta( $this->get_meta_key( $relation_type ), true ) );
 		$this->assertTrue( in_array( $order_id, $this->get_cache_from_source( $subscription, $relation_type ), true ) );
 	}
 
@@ -243,7 +243,7 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 
 	/**
 	 * Check the related renewal order cache value is set when creating a subscription, becuase it should be set by
-	 * WCS_Related_Order_Store_Cached_CPT::set_empty_renewal_order_cache()
+	 * WCS_Related_Order_Data_Store_Cached::set_empty_renewal_order_cache()
 	 */
 	public function test_set_empty_renewal_order_cache() {
 		// get_post_meta() returns an empty string ('') by default when the 3rd param (single) is true, so if we have an empty array, we know it's the cache value
@@ -275,13 +275,13 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 	 * Provide a method to set the relation directly to avoid a breaking change in WCS_Related_Order_Store::add_relation()
 	 * breaking tests that aren't primarily designed to test WCS_Related_Order_Store::add_relation().
 	 *
-	 * @param int|WC_Order $subscription A subscription to remove a linked order from.
 	 * @param int|WC_Order $order An order that may be linked with the subscription.
+	 * @param int|WC_Order $subscription A subscription to remove a linked order from.
 	 * @param string $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
 	 */
 	private function add_relation_mock( $order_id, $subscription_id, $relation_type ) {
 		if ( is_object( $order_id ) ) {
-			$order_id = wcs_get_objects_property( $order_id, 'id' );
+			$order_id = $order_id->get_id();
 		}
 
 		if ( is_object( $subscription_id ) ) {
