@@ -20,10 +20,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
+/**
+ * @deprecated x.x.x
+ */
 class WCS_Upgrade_1_2 {
 
 	public static function init() {
 		global $wpdb;
+		wcs_deprecated_function( __METHOD__, 'x.x.x' );
 
 		// Get IDs only and use a direct DB query for efficiency
 		$orders_to_upgrade = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_type = 'shop_order' AND post_parent = 0" );

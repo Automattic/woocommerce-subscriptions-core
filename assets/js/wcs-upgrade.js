@@ -1,3 +1,6 @@
+/**
+ * @deprecated x.x.x This file is no longer in use and can be removed in future.
+ */
 jQuery( function ( $ ) {
 	var upgrade_start_time = null,
 		total_subscriptions = wcs_update_script_data.subscription_count;
