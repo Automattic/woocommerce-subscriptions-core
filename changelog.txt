@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 2.0.0 - 2022-xx-xx =
+= 2.0.0 - 2022-05-20 =
 * Dev - Retrieving users subscriptions order has been updated to use the WooCommerce specific APIs in WC_Subscriptions_Order.
 * Dev - Deprecate the WC_Subscriptions_Order::get_meta() function. Use wcs_get_objects_property( $order, $meta_key, "single", $default ) instead.
 * Dev - Update the wcs_get_objects_property() function to prevent calls to get_post_meta() on objects that support calling the get_meta() function.
