@@ -451,7 +451,10 @@ class WCS_Cart_Renewal {
 					}
 				}
 
-				$_product->set_price( $price / $item_to_renew['qty'] );
+				// In rare cases quantity can be zero. Check first to prevent triggering a fatal error in php8+
+				if ( 0 !== $item_to_renew['qty'] ) {
+					$_product->set_price( $price / $item_to_renew['qty'] );
+				}
 
 				// Don't carry over any sign up fee
 				wcs_set_objects_property( $_product, 'subscription_sign_up_fee', 0, 'set_prop_only' );
