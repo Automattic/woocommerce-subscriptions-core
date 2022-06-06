@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 2.1.0 - 2022-xx-xx =
+* Fix - Fatal Error caused in rare cases where quantity is zero during renewal.
+
 = 2.0.0 - 2022-05-20 =
 * Dev - Retrieving users subscriptions order has been updated to use the WooCommerce specific APIs in WC_Subscriptions_Order.
 * Dev - Deprecate the WC_Subscriptions_Order::get_meta() function. Use wcs_get_objects_property( $order, $meta_key, "single", $default ) instead.
