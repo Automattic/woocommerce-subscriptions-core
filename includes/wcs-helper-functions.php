@@ -311,3 +311,37 @@ function wcs_apply_array_filter( $filter, $array, $property = '' ) {
 
 	return $array;
 }
+
+/**
+ * Compares an order's billing address and shipping address and returns true if they are the same.
+ *
+ * @param  WC_Order $order
+ * @return bool     True if the order's billing address and shipping address are the same, false otherwise.
+ */
+function wcs_compare_order_billing_shipping_address( $order ) {
+	$billing_address  = $order->get_address( 'billing' );
+	$shipping_address = $order->get_address( 'shipping' );
+
+	// Remove extraneous fields from each address when comparing
+	if ( isset( $billing_address['email'] ) ) {
+		unset( $billing_address['email'] );
+	}
+
+	if ( isset( $billing_address['phone'] ) ) {
+		unset( $billing_address['phone'] );
+	}
+
+	if ( isset( $shipping_address['email'] ) ) {
+		unset( $shipping_address['email'] );
+	}
+
+	if ( isset( $shipping_address['phone'] ) ) {
+		unset( $shipping_address['phone'] );
+	}
+
+	// Compare the two addresses using array equality operator.
+	// phpcs:ignore -- using `==` is suitable here to ignore the order of array keys.
+	$addresses_are_equal = $shipping_address == $billing_address;
+
+	return $addresses_are_equal;
+}
