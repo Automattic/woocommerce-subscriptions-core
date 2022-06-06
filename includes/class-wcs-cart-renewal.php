@@ -141,9 +141,6 @@ class WCS_Cart_Renewal {
 		// When loading checkout address details, use the renewal order address details for renewals
 		add_filter( 'woocommerce_checkout_get_value', array( &$this, 'checkout_get_value' ), 10, 2 );
 
-		// If the shipping address on a renewal order differs to the order's billing address, check the "Ship to different address" automatically to make sure the renewal order's fields are used by default
-		add_filter( 'woocommerce_ship_to_different_address_checked', array( &$this, 'maybe_check_ship_to_different_address' ), 100, 1 );
-
 		add_filter( 'woocommerce_get_item_data', array( &$this, 'display_line_item_data_in_cart' ), 10, 2 );
 
 		// Attach hooks which depend on WooCommerce version constants. Differs from @see attach_dependant_hooks() in that this is hooked inside an inherited function and so extended classes will also inherit these callbacks
@@ -503,40 +500,6 @@ class WCS_Cart_Renewal {
 		}
 
 		return $value;
-	}
-
-	/**
-	 * If the cart contains a renewal order that needs to ship to an address that is different
-	 * to the order's billing address, tell the checkout to toggle the ship to a different address
-	 * checkbox and make sure the shipping fields are displayed by default.
-	 *
-	 * @param bool $ship_to_different_address Whether the order will ship to a different address
-	 * @return bool $ship_to_different_address
-	 */
-	public function maybe_check_ship_to_different_address( $ship_to_different_address ) {
-
-		if ( ! $ship_to_different_address && false !== ( $item = $this->cart_contains() ) ) {
-
-			$order = $this->get_order( $item );
-
-			$renewal_shipping_address = $order->get_address( 'shipping' );
-			$renewal_billing_address  = $order->get_address( 'billing' );
-
-			if ( isset( $renewal_billing_address['email'] ) ) {
-				unset( $renewal_billing_address['email'] );
-			}
-
-			if ( isset( $renewal_billing_address['phone'] ) ) {
-				unset( $renewal_billing_address['phone'] );
-			}
-
-			// If the order's addresses are different, we need to display the shipping fields otherwise the billing address will override it
-			if ( $renewal_shipping_address != $renewal_billing_address ) {
-				$ship_to_different_address = 1;
-			}
-		}
-
-		return $ship_to_different_address;
 	}
 
 	/**
