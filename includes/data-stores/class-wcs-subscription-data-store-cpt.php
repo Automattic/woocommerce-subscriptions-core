@@ -461,13 +461,25 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 
 		if ( ! empty( $search_fields ) ) {
 
+			$search_fields_results = array();
+
+			foreach ( $search_fields AS $search_field ) {
+				$search_fields_results = array_merge(
+					$search_fields_results,
+					$wpdb->get_col(
+						$wpdb->prepare( "
+							SELECT DISTINCT p1.post_id
+							FROM {$wpdb->postmeta} p1
+							WHERE p1.meta_value LIKE '%%%s%%' AND p1.meta_key = %s",
+							$wpdb->esc_like( wc_clean( $term ) ),
+							$search_field
+						)
+					)
+				);
+			}
+
 			$subscription_ids = array_unique( array_merge(
-				$wpdb->get_col(
-					$wpdb->prepare( "
-						SELECT DISTINCT p1.post_id
-						FROM {$wpdb->postmeta} p1
-						WHERE p1.meta_value LIKE '%%%s%%'", $wpdb->esc_like( wc_clean( $term ) ) ) . " AND p1.meta_key IN ('" . implode( "','", array_map( 'esc_sql', $search_fields ) ) . "')"
-				),
+				$search_fields_results,
 				$wpdb->get_col(
 					$wpdb->prepare( "
 						SELECT order_id
