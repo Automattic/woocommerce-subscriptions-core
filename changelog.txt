@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 2.2.0 - 2022-xx-xx =
+= 2.2.0 - 2022-08-03 =
 * Fix - Update subscription address when changed with renewals on block checkout.
 
 = 2.1.0 - 2022-06-06 =
