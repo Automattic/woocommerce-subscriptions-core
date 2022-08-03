@@ -201,6 +201,11 @@ class WC_Subscriptions_Core_Plugin {
 		if ( class_exists( 'WC_Abstract_Privacy' ) ) {
 			new WCS_Privacy();
 		}
+
+		// Load Subscriptions COT compatibility class for stores that have COT enabled.
+		if ( method_exists( 'Automattic\WooCommerce\Utilities\OrderUtil', 'custom_orders_table_usage_is_enabled' ) && Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			WC_Subscriptions_COT_Compatibility::init();
+		}
 	}
 
 	/**
