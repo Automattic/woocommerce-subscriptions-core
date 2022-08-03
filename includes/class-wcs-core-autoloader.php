@@ -247,6 +247,8 @@ class WCS_Core_Autoloader {
 			$path .= '/privacy';
 		} elseif ( false !== strpos( $class, 'upgrade' ) || false !== strpos( $class, 'repair' ) ) {
 			$path .= '/upgrades';
+		} elseif ( false !== strpos( $class, 'compatibility' ) ) {
+			$path .= '/compatibility';
 		}
 
 		return trailingslashit( $path );
