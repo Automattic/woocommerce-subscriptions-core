@@ -1190,8 +1190,7 @@ class WCS_Cart_Renewal {
 		$cart_renewal_item = $this->cart_contains();
 
 		if ( false !== $cart_renewal_item ) {
-			$subscription    = wcs_get_subscription( $cart_renewal_item[ $this->cart_item_key ]['subscription_id'] );
-
+			$subscription = wcs_get_subscription( $cart_renewal_item[ $this->cart_item_key ]['subscription_id'] );
 
 			// Billing address is a required field.
 			foreach ( $request['billing_address'] as $key => $value ) {
@@ -1199,8 +1198,6 @@ class WCS_Cart_Renewal {
 					$customer->{"set_billing_$key"}( $value );
 				}
 			}
-			error_log(print_r($request['billing_address'], true));
-			error_log(print_r($request['shipping_address'], true));
 			// Billing address is a required field.
 			$subscription->set_address( $request['billing_address'], 'billing' );
 			// If shipping address (optional field) was not provided, set it to the given billing address (required field).
