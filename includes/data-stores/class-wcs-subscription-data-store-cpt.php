@@ -225,7 +225,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * @return string
 	 * @since 2.2.0
 	 */
-	public function get_total_refunded( $subscription ) : float {
+	public function get_total_refunded( $subscription ) {
 
 		$total = 0;
 
