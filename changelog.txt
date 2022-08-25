@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 2.3.0 - 2022-xx-xx =
+= 2.2.1 - 2022-xx-xx =
 * Fix - Fatal Error caused in rare cases where quantity is zero during renewal.
 
 = 2.2.0 - 2022-08-03 =
