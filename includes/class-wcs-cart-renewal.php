@@ -454,7 +454,7 @@ class WCS_Cart_Renewal {
 				}
 
 				// In rare cases quantity can be zero. Check first to prevent triggering a fatal error in php8+
-				if ( 0 !== $item_to_renew['qty'] ) {
+				if ( 0 !== (int) $item_to_renew['qty'] ) {
 					$_product->set_price( $price / $item_to_renew['qty'] );
 				}
 
