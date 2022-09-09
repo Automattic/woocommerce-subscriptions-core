@@ -392,7 +392,7 @@ class WC_Subscriptions_Admin {
 
 		$needs_html_fix = 'woocommerce_product_options_shipping' === current_filter();
 
-		 // Old hook is nested and requires invalid html markup to be compatible with other plugins.
+		// Old hook is nested and requires invalid html markup to be compatible with other plugins.
 		if ( $needs_html_fix ) {
 			echo '</div>';
 		}
