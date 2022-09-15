@@ -165,6 +165,7 @@ class WC_Subscriptions_Addresses {
 			foreach ( $users_subscriptions as $subscription ) {
 				if ( $subscription->has_status( array( 'active', 'on-hold' ) ) ) {
 					$subscription->set_address( $address, $address_type );
+					$subscription->add_order_note( __( 'Subscription address has been changed. You may need to recalculate taxes and/or shipping.', 'woocommerce-subscriptions' ) );
 				}
 			}
 		} elseif ( isset( $_POST['update_subscription_address'] ) ) {
@@ -174,7 +175,7 @@ class WC_Subscriptions_Addresses {
 			if ( $subscription && self::can_user_edit_subscription_address( $subscription->get_id() ) ) {
 				// Update the address only if the user actually owns the subscription
 				$subscription->set_address( $address, $address_type );
-
+				$subscription->add_order_note( __( 'Subscription address has been changed. You may need to recalculate taxes and/or shipping.', 'woocommerce-subscriptions' ) );
 				wp_safe_redirect( $subscription->get_view_order_url() );
 				exit();
 			}
