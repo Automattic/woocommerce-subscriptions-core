@@ -71,7 +71,11 @@ class WC_Subscriptions_Admin {
 		add_action( 'woocommerce_page_wc-status', __CLASS__ . '::clear_subscriptions_transients' );
 
 		// Add subscription shipping options on edit product page
-		add_action( 'woocommerce_product_options_shipping', __CLASS__ . '::subscription_shipping_fields' );
+		if ( wcs_is_woocommerce_pre( '6.0' ) ) {
+			add_action( 'woocommerce_product_options_shipping', __CLASS__ . '::subscription_shipping_fields' );
+		} else {
+			add_action( 'woocommerce_product_options_shipping_product_data', __CLASS__ . '::subscription_shipping_fields' );
+		}
 
 		// And also on the variations section
 		add_action( 'woocommerce_product_after_variable_attributes', __CLASS__ . '::variable_subscription_pricing_fields', 10, 3 );
@@ -386,7 +390,13 @@ class WC_Subscriptions_Admin {
 	public static function subscription_shipping_fields() {
 		global $post;
 
-		echo '</div>';
+		$needs_html_fix = 'woocommerce_product_options_shipping' === current_filter();
+
+		// Old hook is nested and requires invalid html markup to be compatible with other plugins.
+		if ( $needs_html_fix ) {
+			echo '</div>';
+		}
+
 		echo '<div class="options_group subscription_one_time_shipping show_if_subscription show_if_variable-subscription hidden">';
 
 		// Only one Subscription per customer
@@ -398,6 +408,10 @@ class WC_Subscriptions_Admin {
 		) );
 
 		do_action( 'woocommerce_subscriptions_product_options_shipping' );
+
+		if ( ! $needs_html_fix ) {
+			echo '</div>';
+		}
 
 	}
 
