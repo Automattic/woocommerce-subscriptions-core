@@ -29,11 +29,17 @@
 	"config": {
 		"platform": {
 			"php": "7.3"
+		},
+		"allow-plugins": {
+			"composer/installers": true,
+			"dealerdirect/phpcodesniffer-composer-installer": true
 		}
 	},
 	"archive": {
 		"exclude": [
-			"!/build"
+			"!/build",
+			"*.zip",
+			"node_modules"
 		]
 	}
 }
