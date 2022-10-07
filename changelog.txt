@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 2.3.0 - 2022-xx-xx =
+= 2.3.0 - 2022-10-07 =
 * Fix - Move One Time Shipping metabox fields to use the woocommerce_product_options_shipping_product_data hook introduced in WC 6.0.
 * Dev - Define build tool version requirements for consistent development and build environments.
 * Update - Improve handling of bulk action execution.
