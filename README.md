@@ -47,7 +47,7 @@ After cloning the repo, install dependencies and build:
 
 ```
 nvm use
-npm install && composer install
+npm install
 npm run build
 ```
 
