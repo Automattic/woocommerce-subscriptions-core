@@ -3,6 +3,7 @@
 = 2.3.0 - 2022-xx-xx =
 * Fix - Move One Time Shipping metabox fields to use the woocommerce_product_options_shipping_product_data hook introduced in WC 6.0.
 * Dev - Define build tool version requirements for consistent development and build environments.
+* Update - Improve handling of bulk action execution.
 
 = 2.2.1 - 2022-08-25 =
 * Fix - Fatal Error caused in rare cases where quantity is zero during renewal.
