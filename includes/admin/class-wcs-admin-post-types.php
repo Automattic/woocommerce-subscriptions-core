@@ -299,12 +299,15 @@ class WCS_Admin_Post_Types {
 			return;
 		}
 
+		// Verify the nonce before proceeding, using the bulk actions nonce name as defined in WP core.
+		check_admin_referer( 'bulk-posts' );
+
 		$action = '';
 
 		if ( isset( $_REQUEST['action'] ) && -1 != $_REQUEST['action'] ) {
-			$action = $_REQUEST['action'];
-		} else if ( isset( $_REQUEST['action2'] ) && -1 != $_REQUEST['action2'] ) {
-			$action = $_REQUEST['action2'];
+			$action = wc_clean( wp_unslash( $_REQUEST['action'] ) );
+		} elseif ( isset( $_REQUEST['action2'] ) && -1 != $_REQUEST['action2'] ) {
+			$action = wc_clean( wp_unslash( $_REQUEST['action2'] ) );
 		}
 
 		switch ( $action ) {
@@ -336,7 +339,7 @@ class WCS_Admin_Post_Types {
 
 			try {
 
-				if ( 'cancelled' == $action ) {
+				if ( 'cancelled' === $action ) {
 					$subscription->cancel_order( $order_note );
 				} else {
 					$subscription->update_status( $new_status, $order_note, true );
@@ -361,7 +364,7 @@ class WCS_Admin_Post_Types {
 		}
 
 		$sendback_args['changed'] = $changed;
-		$sendback = add_query_arg( $sendback_args, wp_get_referer() ? wp_get_referer() : '' );
+		$sendback                 = add_query_arg( $sendback_args, wp_get_referer() ? wp_get_referer() : '' );
 		wp_safe_redirect( esc_url_raw( $sendback ) );
 
 		exit();
@@ -481,6 +484,7 @@ class WCS_Admin_Post_Types {
 				$action_url = add_query_arg(
 					array(
 						'post'     => $the_subscription->get_id(),
+						// Using the bulk actions nonce name as defined in WP core.
 						'_wpnonce' => wp_create_nonce( 'bulk-posts' ),
 					)
 				);
