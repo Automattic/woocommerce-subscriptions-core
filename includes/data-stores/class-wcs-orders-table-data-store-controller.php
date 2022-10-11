@@ -27,8 +27,6 @@ class WCS_Orders_Table_Data_Store_Controller {
 	/**
 	 * Initialise WCS_Orders_Table_Data_Store_Controller class hooks.
 	 *
-	 * @since 2.4.0
-	 *
 	 * @return void
 	 */
 	public function init_hooks() {
