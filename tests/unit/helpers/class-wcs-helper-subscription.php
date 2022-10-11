@@ -129,14 +129,14 @@ class WCS_Helper_Subscription {
 			return;
 		}
 
-		$subscription->save();
-
+		// @TODO: update_post_meta disallowed, need to replace how this is handled.
+		/**
 		// mock subscription meta
 		foreach ( $subscription_meta_data as $meta_key => $meta_value ) {
 			update_post_meta( $subscription->get_id(), '_' . $meta_key, $meta_value );
-		}
+		}*/
 
-		return wcs_get_subscription( $subscription->get_id() );
+		return $subscription;
 	}
 
 	/**
