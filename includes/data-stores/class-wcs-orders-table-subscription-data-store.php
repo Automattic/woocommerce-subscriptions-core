@@ -8,7 +8,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @version 
  */
-class Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\Internal\DataStores\Orders\OrdersTableDataStore {
+class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\Internal\DataStores\Orders\OrdersTableDataStore {
 
 	/**
 	 * Define subscription specific data which augments the meta of an order.
