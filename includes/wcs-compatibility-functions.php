@@ -570,3 +570,20 @@ function wcs_add_woocommerce_dependent_action( $tag, $function, $woocommerce_ver
 function wcs_is_woocommerce_pre( $version ) {
 	return ! defined( 'WC_VERSION' ) || version_compare( WC_VERSION, $version, '<' );
 }
+
+/**
+ * Checks if the WooCommerce feature is enabled using WC's new FeaturesUtil class.
+ *
+ * @param string $feature_name The name of the WC feature to check if enabled.
+ *
+ * @return bool
+ */
+function wcs_is_wc_feature_enabled( $feature_name ) {
+	$feature_is_enabled = false;
+
+	if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) && \Automattic\WooCommerce\Utilities\FeaturesUtil::feature_is_enabled( $feature_name ) ) {
+		$feature_is_enabled = true;
+	}
+
+	return $feature_is_enabled;
+}
