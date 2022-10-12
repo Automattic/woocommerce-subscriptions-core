@@ -94,7 +94,6 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 * @return array A mapping of meta keys => prop names
 	 */
 	protected function get_props_to_ignore() {
-
 		$props_to_ignore = array(
 			'_transaction_id' => 'transaction_id',
 			'_date_completed' => 'date_completed',
@@ -104,18 +103,6 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 
 		return apply_filters( 'wcs_subscription_data_store_props_to_ignore', $props_to_ignore, $this );
 	}
-
-	// /**
-	//  * Helper method to get a CPT data store instance to use.
-	//  *
-	//  * @return \WCS_Subscription_Data_Store_CPT Data store instance.
-	//  */
-	// private function get_cpt_data_store_instance() {
-	// 	if ( ! isset( $this->cpt_data_store ) ) {
-	// 		$this->cpt_data_store = new \WCS_Subscription_Data_Store_CPT();
-	// 	}
-	// 	return $this->cpt_data_store;
-	// }
 
 	/**
 	 * Returns data store object to use backfilling.
@@ -243,7 +230,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	/**
 	 * Create a new subscription in the database.
 	 *
-	 * @param WC_Subscription $subscription
+	 * @param \WC_Subscription $subscription
 	 * @since 2.2.0
 	 */
 	public function create( &$subscription ) {
@@ -254,7 +241,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	/**
 	 * Update subscription in the database.
 	 *
-	 * @param WC_Subscription $subscription
+	 * @param \WC_Subscription $subscription
 	 * @since 2.4.0
 	 */
 	public function update( &$subscription ) {
