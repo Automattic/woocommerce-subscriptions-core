@@ -1485,7 +1485,7 @@ class WC_Subscriptions_Cart {
 		if ( 'none' !== self::$recurring_cart_key && isset( $chosen_methods[ $recurring_cart_package_key ], $available_methods[ $chosen_methods[ $recurring_cart_package_key ] ] ) ) {
 			$default_method = $chosen_methods[ $recurring_cart_package_key ];
 
-		// Set the chosen shipping method (if available) to workaround WC_Shipping::get_default_method() setting the default shipping method whenever method count changes
+			// Set the chosen shipping method (if available) to workaround WC_Shipping::get_default_method() setting the default shipping method whenever method count changes
 		} elseif ( isset( $chosen_methods[ $package_index ], $available_methods[ $chosen_methods[ $package_index ] ] ) && $default_method !== $chosen_methods[ $package_index ] ) {
 			$default_method = $chosen_methods[ $package_index ];
 		}
@@ -2421,7 +2421,7 @@ class WC_Subscriptions_Cart {
 					return sprintf(
 						// translators: 1$: period, 2$: day of the week (e.g. "every 2nd week on Wednesday").
 						__( 'every %1$s on %2$s', 'woocommerce-subscriptions' ),
-						wcs_get_subscription_period_strings( $interval,$period ),
+						wcs_get_subscription_period_strings( $interval, $period ),
 						$payment_day_of_week
 					);
 				}
