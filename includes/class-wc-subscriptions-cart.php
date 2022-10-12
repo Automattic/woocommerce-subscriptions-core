@@ -996,6 +996,13 @@ class WC_Subscriptions_Cart {
 	 * @since 2.0
 	 */
 	public static function display_recurring_totals() {
+		if ( isset( $_POST['post_data'] ) ) {
+			parse_str( $_POST['post_data'], $form_data );
+		}
+
+		if ( isset( $_GET['update_subscription_address'] ) || isset( $form_data['update_subscription_address'] ) ) {
+			return;
+		}
 
 		if ( self::cart_contains_subscription() ) {
 

@@ -31,6 +31,12 @@ class WC_Subscriptions_Addresses {
 		add_filter( 'woocommerce_address_to_edit', __CLASS__ . '::maybe_populate_subscription_addresses', 10 );
 
 		add_filter( 'woocommerce_get_breadcrumb', __CLASS__ . '::change_addresses_breadcrumb', 10, 1 );
+
+		add_action( 'wp_loaded', array( __CLASS__, 'maybe_add_subscription_to_cart_for_address_change' ) );
+		add_action( 'woocommerce_checkout_before_customer_details', array( __CLASS__, 'maybe_add_hidden_input_for_address_change' ) );
+		add_filter( 'woocommerce_update_order_review_fragments', array( __CLASS__, 'maybe_modify_checkout_tempate_for_address_change' ) );
+		add_action( 'woocommerce_checkout_process', array( __CLASS__, 'process_address_change' ) );
+		add_action( 'wp_loaded', array( __CLASS__, 'maybe_navigated_away_from_change_address_page' ) );
 	}
 
 	/**
@@ -60,7 +66,7 @@ class WC_Subscriptions_Addresses {
 
 		if ( $subscription->needs_shipping_address() && $subscription->has_status( array( 'active', 'on-hold' ) ) ) {
 			$actions['change_address'] = array(
-				'url'  => add_query_arg( array( 'subscription' => $subscription->get_id() ), wc_get_endpoint_url( 'edit-address', 'shipping' ) ),
+				'url'  => add_query_arg( array( 'update_subscription_address' => $subscription->get_id() ), wc_get_checkout_url() ),
 				'name' => __( 'Change address', 'woocommerce-subscriptions' ),
 			);
 		}
@@ -252,5 +258,226 @@ class WC_Subscriptions_Addresses {
 		}
 
 		return $crumbs;
+	}
+
+	public static function maybe_add_subscription_to_cart_for_address_change() {
+
+		if ( isset( $_GET['update_subscription_address'] ) ) {
+
+			$subscription = wcs_get_subscription( absint( $_GET['update_subscription_address'] ) );
+
+			$subscription_items = $subscription->get_items();
+
+			// Save current cart contents and empty the cart.
+			if ( count( WC()->cart->get_cart() ) > 0 ) {
+				update_user_meta(
+					get_current_user_id(),
+					'_wcs_address_change_cart_' . get_current_blog_id(),
+					WC()->cart->get_cart_contents()
+				);
+
+				WC()->cart->empty_cart();
+			}
+
+			// Add all the subscription items to cart temporarily.
+			foreach ( $subscription_items as $subscription_item ) {
+				WC()->cart->add_to_cart( $subscription_item['product_id'], $subscription_item['qty'] );
+			}
+
+			add_filter( 'woocommerce_coupons_enabled', '__return_false' );
+			add_filter( 'woocommerce_cart_needs_shipping_address', '__return_false' );
+			add_filter( 'gettext', array( __CLASS__, 'fields_for_address_change' ), 20, 3 );
+			add_filter( 'the_title', array( __CLASS__, 'title_for_address_change' ), 100 );
+			add_filter( 'woocommerce_get_breadcrumb', array( __CLASS__, 'crumbs_for_address_change' ), 10, 1 );
+
+		}
+	}
+
+	// Change the 'Billing details' checkout label to 'Shipping Details'
+	public static function fields_for_address_change( $translated_text, $text, $domain ) {
+
+		switch ( $translated_text ) {
+			case 'Billing details':
+				$translated_text = __( 'Shipping details', 'woocommerce-subscriptions' );
+				break;
+			case 'Your order':
+				$translated_text = __( 'Subscription totals', 'woocommerce-subscriptions' );
+				break;
+		}
+
+		return $translated_text;
+	}
+
+	public static function title_for_address_change( $title ) {
+
+		// Skip if not on checkout pay page or not a address change request.
+		if ( ! isset( $_GET['update_subscription_address'] ) || ! is_main_query() || ! in_the_loop() || ! is_page() || ! is_checkout() ) {
+			return $title;
+		}
+
+		$title = 'Change subscription address';
+		return $title;
+	}
+
+	public static function crumbs_for_address_change( $crumbs ) {
+
+		if ( ! isset( $_GET['update_subscription_address'] ) && ! is_main_query() && ! is_page() && ! is_checkout() ) {
+			return $crumbs;
+		}
+
+		$subscription = wcs_get_subscription( absint( $_GET['update_subscription_address'] ) );
+
+		if ( ! $subscription ) {
+			return $crumbs;
+		}
+
+		$crumbs[1] = array(
+			get_the_title( wc_get_page_id( 'myaccount' ) ),
+			get_permalink( wc_get_page_id( 'myaccount' ) ),
+		);
+
+		$crumbs[2] = array(
+			// translators: %s: order number.
+			sprintf( _x( 'Subscription #%s', 'hash before order number', 'woocommerce-subscriptions' ), $subscription->get_order_number() ),
+			esc_url( $subscription->get_view_order_url() ),
+		);
+
+		$crumbs[3] = array(
+			_x( 'Change subscription address', 'the page title of the change payment method form', 'woocommerce-subscriptions' ),
+			'',
+		);
+
+		return $crumbs;
+	}
+
+	public static function maybe_add_hidden_input_for_address_change() {
+
+		if ( isset( $_GET['update_subscription_address'] ) ) {
+
+			ob_start();
+			?>
+
+			<input type="hidden" name="update_subscription_address" value=<?php echo $_GET['update_subscription_address']; ?>>
+
+			<?php
+			echo ob_get_clean(); // @codingStandardsIgnoreLine
+		}
+	}
+
+	public static function maybe_modify_checkout_tempate_for_address_change( $fragments ) {
+
+		if ( ! isset( $_POST['post_data'] ) ) {
+			return;
+		}
+
+		parse_str( $_POST['post_data'], $form_data );
+
+		if ( isset( $form_data['update_subscription_address'] ) ) {
+			ob_start();
+
+			wc_get_template(
+				'checkout/update-address-for-subscription.php',
+				array(
+					'subscription'      => wcs_get_subscription( absint( $form_data['update_subscription_address'] ) ),
+					'order_button_text' => apply_filters( 'wcs_update_address_button_text', __( 'Update Address', 'woocommerce-subscriptions' ) ),
+				),
+				'',
+				WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' )
+			);
+
+			$new_fragment = ob_get_clean(); // @codingStandardsIgnoreLine
+			$fragments['.woocommerce-checkout-payment'] = $new_fragment;
+		}
+
+		return $fragments;
+	}
+
+	public static function process_address_change() {
+
+		if ( ! isset( $_POST['update_subscription_address'] ) ) {
+			return;
+		}
+
+		$subscription = wcs_get_subscription( absint( $_POST['update_subscription_address'] ) );
+
+		// Update shipping address of the subscription.
+		$address_type   = 'billing';
+		$address_fields = WC()->countries->get_address_fields( esc_attr( $_POST[ $address_type . '_country' ] ), $address_type . '_' );
+		$address        = array();
+
+		foreach ( $address_fields as $key => $field ) {
+			if ( isset( $_POST[ $key ] ) ) {
+				$address[ str_replace( $address_type . '_', '', $key ) ] = wc_clean( $_POST[ $key ] );
+			}
+		}
+
+		$subscription->set_address( $address, 'shipping' );
+
+		// Get all the subscription shipping items.
+		$subscription_shipping_items = (array) $subscription->get_items( 'shipping' );
+
+		// Remove those shipping items from the subscription.
+		if ( count( $subscription_shipping_items ) > 0 ) {
+			foreach ( $subscription_shipping_items as $item_id => $item ) {
+				$subscription->remove_item( $item_id );
+			}
+		}
+
+		$cart = WC()->cart;
+		WC_Subscriptions_Checkout::add_shipping( $subscription, $cart );
+		$subscription->set_shipping_total( $cart->shipping_total );
+		$subscription->set_cart_tax( $cart->tax_total );
+		$subscription->set_shipping_tax( $cart->shipping_tax_total );
+		$subscription->set_total( $cart->total );
+		$subscription->save();
+
+		if ( count( WC()->cart->get_cart() ) > 0 ) {
+			WC()->cart->empty_cart();
+		}
+
+		self::maybe_restore_saved_cart_contents();
+
+		// IF NOT AJAX
+		if ( ! is_ajax() ) {
+			wp_safe_redirect( $subscription->get_view_order_url() );
+			exit();
+		}
+
+		// IF AJAX
+		wp_send_json(
+			array(
+				'result'   => 'success',
+				'redirect' => $subscription->get_view_order_url(),
+			)
+		);
+	}
+
+	public static function maybe_navigated_away_from_change_address_page() {
+		if ( ! is_admin() && ! isset( $_GET['update_subscription_address'] ) && ! is_ajax() ) {
+			self::maybe_restore_saved_cart_contents();
+		}
+	}
+
+	public static function maybe_restore_saved_cart_contents() {
+		if ( ! get_current_user_id() ) {
+			return;
+		}
+
+		$saved_cart_contents = get_user_meta( get_current_user_id(), '_wcs_address_change_cart_' . get_current_blog_id() );
+
+		if ( $saved_cart_contents ) {
+			// Empty the cart.
+			if ( count( WC()->cart->get_cart() ) > 0 ) {
+				WC()->cart->empty_cart();
+			}
+
+			// Restore saved cart contents.
+			foreach ( $saved_cart_contents[0] as $key => $value ) {
+				WC()->cart->add_to_cart( $value['product_id'], $value['quantity'] );
+			}
+
+			// Delete saved cart contents.
+			delete_user_meta( get_current_user_id(), '_wcs_address_change_cart_' . get_current_blog_id() );
+		}
 	}
 }
