@@ -329,7 +329,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 		foreach ( $this->subscription_meta_keys_to_props as $meta_key => $prop_key ) {
 			if ( 0 === strpos( $prop_key, 'schedule' ) || in_array( $meta_key, $this->subscription_internal_meta_keys ) ) {
 
-				$meta_value = get_post_meta( $subscription->get_id(), $meta_key, true );
+				$meta_value = wcs_get_objects_property( $subscription, $meta_key );
 
 				// Dates are set via update_dates() to make sure relationships between dates are validated
 				if ( 0 === strpos( $prop_key, 'schedule' ) ) {
