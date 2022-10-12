@@ -94,7 +94,6 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 * @return array A mapping of meta keys => prop names
 	 */
 	protected function get_props_to_ignore() {
-
 		$props_to_ignore = array(
 			'_transaction_id' => 'transaction_id',
 			'_date_completed' => 'date_completed',
@@ -104,18 +103,6 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 
 		return apply_filters( 'wcs_subscription_data_store_props_to_ignore', $props_to_ignore, $this );
 	}
-
-	// /**
-	//  * Helper method to get a CPT data store instance to use.
-	//  *
-	//  * @return \WCS_Subscription_Data_Store_CPT Data store instance.
-	//  */
-	// private function get_cpt_data_store_instance() {
-	// 	if ( ! isset( $this->cpt_data_store ) ) {
-	// 		$this->cpt_data_store = new \WCS_Subscription_Data_Store_CPT();
-	// 	}
-	// 	return $this->cpt_data_store;
-	// }
 
 	/**
 	 * Returns data store object to use backfilling.
@@ -243,7 +230,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	/**
 	 * Create a new subscription in the database.
 	 *
-	 * @param WC_Subscription $subscription
+	 * @param \WC_Subscription $subscription
 	 * @since 2.2.0
 	 */
 	public function create( &$subscription ) {
@@ -252,9 +239,33 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
+	 * Read a subscription object from custom tables.
+	 *
+	 * @param \WC_Subscription $subscription Subscription object.
+	 *
+	 * @return void
+	 */
+	public function read( &$subscription ) {
+		parent::read( $subscription );
+		$this->set_subscription_props( $subscription );
+	}
+
+	/**
+	 * Read multiple subscription objects from custom tables.
+	 *
+	 * @param \WC_Order $subscriptions Subscription objects.
+	 */
+	public function read_multiple( &$subscriptions ) {
+		parent::read_multiple( $subscriptions );
+		foreach ( $subscriptions as $subscription ) {
+			$this->set_subscription_props( $subscription );
+		}
+	}
+
+	/**
 	 * Update subscription in the database.
 	 *
-	 * @param WC_Subscription $subscription
+	 * @param \WC_Subscription $subscription
 	 * @since 2.4.0
 	 */
 	public function update( &$subscription ) {
@@ -267,6 +278,38 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 		do_action( 'woocommerce_update_order', $subscription->get_id() );
 
 		do_action( 'woocommerce_update_subscription', $subscription->get_id() );
+	}
+
+	/**
+	 * Helper method to set subscription props.
+	 *
+	 * @param \WC_Order $subscription Subscription object.
+	 */
+	private function set_subscription_props( $subscription ) {
+		$props_to_set = $dates_to_set = [];
+
+		foreach ( $this->subscription_meta_keys_to_props as $meta_key => $prop_key ) {
+			if ( 0 === strpos( $prop_key, 'schedule' ) || in_array( $meta_key, $this->subscription_internal_meta_keys ) ) {
+
+				$meta_value = $subscription->get_meta( $meta_key, true );
+
+				// Dates are set via update_dates() to make sure relationships between dates are validated
+				if ( 0 === strpos( $prop_key, 'schedule' ) ) {
+					$date_type = str_replace( 'schedule_', '', $prop_key );
+
+					if ( 'start' === $date_type && ! $meta_value ) {
+						$meta_value = $subscription->get_date( 'date_created' );
+					}
+
+					$dates_to_set[ $date_type ] = ( false == $meta_value ) ? 0 : $meta_value;
+				} else {
+					$props_to_set[ $prop_key ] = $meta_value;
+				}
+			}
+		}
+
+		$subscription->update_dates( $dates_to_set );
+		$subscription->set_props( $props_to_set );
 	}
 
 	/**
@@ -286,7 +329,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 		foreach ( $this->subscription_meta_keys_to_props as $meta_key => $prop_key ) {
 			if ( 0 === strpos( $prop_key, 'schedule' ) || in_array( $meta_key, $this->subscription_internal_meta_keys ) ) {
 
-				$meta_value = get_post_meta( $subscription->get_id(), $meta_key, true );
+				$meta_value = wcs_get_objects_property( $subscription, $meta_key );
 
 				// Dates are set via update_dates() to make sure relationships between dates are validated
 				if ( 0 === strpos( $prop_key, 'schedule' ) ) {
@@ -305,6 +348,33 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 
 		$subscription->update_dates( $dates_to_set );
 		$subscription->set_props( $props_to_set );
+	}
+
+	/**
+	 * Helper method that updates post meta based on an order object.
+	 *
+	 * @param \WC_Subscription $subscription Order object.
+	 *
+	 * @since 3.0.0
+	 */
+	protected function update_order_meta( &$subscription ) {
+		$updated_props = array();
+
+		foreach ( $this->get_props_to_update( $subscription, $this->subscription_meta_keys_to_props ) as $meta_key => $prop ) {
+			$meta_value = ( 'schedule_' == substr( $prop, 0, 9 ) ) ? $subscription->get_date( $prop ) : $subscription->{"get_$prop"}( 'edit' );
+
+			// Store as a string of the boolean for backward compatibility (yep, it's gross)
+			if ( 'requires_manual_renewal' === $prop ) {
+				$meta_value = $meta_value ? 'true' : 'false';
+			}
+
+			$subscription->update_meta_data( $meta_key, $meta_value );
+			$updated_props[] = $prop;
+		}
+
+		do_action( 'woocommerce_subscription_object_updated_props', $subscription, $updated_props );
+
+		parent::update_order_meta( $subscription );
 	}
 
 	/**
@@ -341,22 +411,21 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 		}
 
 		$date_meta_keys_to_props = array_intersect_key( $this->subscription_meta_keys_to_props, array_flip( $date_meta_keys ) );
-		$subscription_meta_data  = $this->read_meta( $subscription );
-
+		$subscription_meta_data  = $this->data_store_meta->read_meta( $subscription );
 
 		// Save the changes to scheduled dates
 		foreach ( $this->get_props_to_update( $subscription, $date_meta_keys_to_props ) as $meta_key => $prop ) {
-			$existing_meta_data = array_column( $subscription_meta_data, null, 'meta_key')[ $meta_key ] ?? false;
+			$existing_meta_data = array_column( $subscription_meta_data, null, 'meta_key' )[ $meta_key ] ?? false;
 			$new_meta_data      = [
 				'key'   => $meta_key,
 				'value' => $subscription->get_date( $prop ),
 			];
 
-			if ( $existing_meta_data && ! empty( $meta_data->meta_id ) ) {
-				$new_meta_data['id'] = $meta_data->meta_id;
-				$this->update_meta( $subscription, (object) $meta_object );
+			if ( ! empty( $existing_meta_data ) ) {
+				$new_meta_data['id'] = $existing_meta_data->meta_id;
+				$this->data_store_meta->update_meta( $subscription, (object) $new_meta_data );
 			} else {
-				$this->add_meta( $subscription, (object) $new_meta_data );
+				$this->data_store_meta->add_meta( $subscription, (object) $new_meta_data );
 			}
 
 			$saved_dates[ $prop ] = wcs_get_datetime_from( $subscription->get_time( $prop ) );
