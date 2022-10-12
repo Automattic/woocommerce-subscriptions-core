@@ -351,6 +351,33 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
+	 * Helper method that updates post meta based on an order object.
+	 *
+	 * @param \WC_Subscription $subscription Order object.
+	 *
+	 * @since 3.0.0
+	 */
+	protected function update_order_meta( &$subscription ) {
+		$updated_props = array();
+
+		foreach ( $this->get_props_to_update( $subscription, $this->subscription_meta_keys_to_props ) as $meta_key => $prop ) {
+			$meta_value = ( 'schedule_' == substr( $prop, 0, 9 ) ) ? $subscription->get_date( $prop ) : $subscription->{"get_$prop"}( 'edit' );
+
+			// Store as a string of the boolean for backward compatibility (yep, it's gross)
+			if ( 'requires_manual_renewal' === $prop ) {
+				$meta_value = $meta_value ? 'true' : 'false';
+			}
+
+			$subscription->update_meta_data( $meta_key, $meta_value );
+			$updated_props[] = $prop;
+		}
+
+		do_action( 'woocommerce_subscription_object_updated_props', $subscription, $updated_props );
+
+		parent::update_order_meta( $subscription );
+	}
+
+	/**
 	 * Update subscription dates in the database.
 	 *
 	 * @param  WC_Subscription $subscription
