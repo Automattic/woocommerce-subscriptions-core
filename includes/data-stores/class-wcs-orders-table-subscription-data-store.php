@@ -239,6 +239,30 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
+	 * Read a subscription object from custom tables.
+	 *
+	 * @param \WC_Subscription $subscription Subscription object.
+	 *
+	 * @return void
+	 */
+	public function read( &$subscription ) {
+		parent::read( $subscription );
+		$this->set_subscription_props( $subscription );
+	}
+
+	/**
+	 * Read multiple subscription objects from custom tables.
+	 *
+	 * @param \WC_Order $subscriptions Subscription objects.
+	 */
+	public function read_multiple( &$subscriptions ) {
+		parent::read_multiple( $subscriptions );
+		foreach ( $subscriptions as $subscription ) {
+			$this->set_subscription_props( $subscription );
+		}
+	}
+
+	/**
 	 * Update subscription in the database.
 	 *
 	 * @param \WC_Subscription $subscription
@@ -254,6 +278,38 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 		do_action( 'woocommerce_update_order', $subscription->get_id() );
 
 		do_action( 'woocommerce_update_subscription', $subscription->get_id() );
+	}
+
+	/**
+	 * Helper method to set subscription props.
+	 *
+	 * @param \WC_Order $subscription Subscription object.
+	 */
+	private function set_subscription_props( $subscription ) {
+		$props_to_set = $dates_to_set = [];
+
+		foreach ( $this->subscription_meta_keys_to_props as $meta_key => $prop_key ) {
+			if ( 0 === strpos( $prop_key, 'schedule' ) || in_array( $meta_key, $this->subscription_internal_meta_keys ) ) {
+
+				$meta_value = $subscription->get_meta( $meta_key, true );
+
+				// Dates are set via update_dates() to make sure relationships between dates are validated
+				if ( 0 === strpos( $prop_key, 'schedule' ) ) {
+					$date_type = str_replace( 'schedule_', '', $prop_key );
+
+					if ( 'start' === $date_type && ! $meta_value ) {
+						$meta_value = $subscription->get_date( 'date_created' );
+					}
+
+					$dates_to_set[ $date_type ] = ( false == $meta_value ) ? 0 : $meta_value;
+				} else {
+					$props_to_set[ $prop_key ] = $meta_value;
+				}
+			}
+		}
+
+		$subscription->update_dates( $dates_to_set );
+		$subscription->set_props( $props_to_set );
 	}
 
 	/**
