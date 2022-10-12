@@ -411,22 +411,21 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 		}
 
 		$date_meta_keys_to_props = array_intersect_key( $this->subscription_meta_keys_to_props, array_flip( $date_meta_keys ) );
-		$subscription_meta_data  = $this->read_meta( $subscription );
-
+		$subscription_meta_data  = $this->data_store_meta->read_meta( $subscription );
 
 		// Save the changes to scheduled dates
 		foreach ( $this->get_props_to_update( $subscription, $date_meta_keys_to_props ) as $meta_key => $prop ) {
-			$existing_meta_data = array_column( $subscription_meta_data, null, 'meta_key')[ $meta_key ] ?? false;
+			$existing_meta_data = array_column( $subscription_meta_data, null, 'meta_key' )[ $meta_key ] ?? false;
 			$new_meta_data      = [
 				'key'   => $meta_key,
 				'value' => $subscription->get_date( $prop ),
 			];
 
-			if ( $existing_meta_data && ! empty( $meta_data->meta_id ) ) {
-				$new_meta_data['id'] = $meta_data->meta_id;
-				$this->update_meta( $subscription, (object) $meta_object );
+			if ( ! empty( $existing_meta_data ) ) {
+				$new_meta_data['id'] = $existing_meta_data->meta_id;
+				$this->data_store_meta->update_meta( $subscription, (object) $new_meta_data );
 			} else {
-				$this->add_meta( $subscription, (object) $new_meta_data );
+				$this->data_store_meta->add_meta( $subscription, (object) $new_meta_data );
 			}
 
 			$saved_dates[ $prop ] = wcs_get_datetime_from( $subscription->get_time( $prop ) );
