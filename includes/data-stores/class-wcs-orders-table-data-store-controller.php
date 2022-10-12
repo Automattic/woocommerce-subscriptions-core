@@ -42,6 +42,11 @@ class WCS_Orders_Table_Data_Store_Controller {
 	private function get_data_store_instance() {
 		if ( ! isset( $this->data_store ) ) {
 			$this->data_store = new WCS_Orders_Table_Subscription_Data_Store();
+			$this->data_store->init(
+				wc_get_container()->get( \Automattic\WooCommerce\Internal\DataStores\Orders\OrdersTableDataStoreMeta::class ),
+				wc_get_container()->get( \Automattic\WooCommerce\Internal\Utilities\DatabaseUtil::class ),
+				wc_get_container()->get( \Automattic\WooCommerce\Proxies\LegacyProxy::class )
+			);
 		}
 
 		return $this->data_store;
