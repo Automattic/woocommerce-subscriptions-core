@@ -388,21 +388,23 @@ class WC_Subscriptions_Addresses {
 	}
 
 	public static function process_address_change() {
+		// Ignoring the nonce check here as it's already been verified in WC_Checkout::process_checkout().
+		$subscription_id = absint( wc_clean( wp_unslash( $_POST['update_subscription_address'] ?? null ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
-		if ( ! isset( $_POST['update_subscription_address'] ) ) {
+		if ( ! $subscription_id ) {
 			return;
 		}
 
-		$subscription = wcs_get_subscription( absint( $_POST['update_subscription_address'] ) );
+		$subscription = wcs_get_subscription( $subscription_id );
 
 		// Update shipping address of the subscription.
 		$address_type   = 'billing';
-		$address_fields = WC()->countries->get_address_fields( esc_attr( $_POST[ $address_type . '_country' ] ), $address_type . '_' );
+		$address_fields = WC()->countries->get_address_fields( wc_clean( wp_unslash( $_POST[ $address_type . '_country' ] ?? '' ) ), $address_type . '_' );// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$address        = array();
 
 		foreach ( $address_fields as $key => $field ) {
-			if ( isset( $_POST[ $key ] ) ) {
-				$address[ str_replace( $address_type . '_', '', $key ) ] = wc_clean( $_POST[ $key ] );
+			if ( isset( $_POST[ $key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				$address[ str_replace( $address_type . '_', '', $key ) ] = wc_clean( wp_unslash( $_POST[ $key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			}
 		}
 
