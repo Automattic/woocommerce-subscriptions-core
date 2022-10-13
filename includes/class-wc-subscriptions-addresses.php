@@ -85,7 +85,7 @@ class WC_Subscriptions_Addresses {
 
 		if ( ! self::can_user_edit_subscription_address( absint( $_GET['subscription'] ) ) ) {
 			wc_add_notice( 'Invalid subscription.', 'error' );
-			wp_redirect( wc_get_account_endpoint_url( 'dashboard' ) );
+			wp_safe_redirect( wc_get_account_endpoint_url( 'dashboard' ) );
 			exit();
 		}
 	}
