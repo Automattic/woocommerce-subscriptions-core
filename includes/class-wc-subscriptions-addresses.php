@@ -352,14 +352,7 @@ class WC_Subscriptions_Addresses {
 	public static function maybe_add_hidden_input_for_address_change() {
 
 		if ( isset( $_GET['update_subscription_address'] ) ) {
-
-			ob_start();
-			?>
-
-			<input type="hidden" name="update_subscription_address" value=<?php echo $_GET['update_subscription_address']; ?>>
-
-			<?php
-			echo ob_get_clean(); // @codingStandardsIgnoreLine
+			echo '<input type="hidden" name="update_subscription_address" value="' . esc_attr( wc_clean( wp_unslash( $_GET['update_subscription_address'] ) ) ) . '">';
 		}
 	}
 
