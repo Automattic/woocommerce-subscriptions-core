@@ -34,7 +34,7 @@ class WC_Subscriptions_Addresses {
 
 		add_action( 'wp_loaded', array( __CLASS__, 'maybe_add_subscription_to_cart_for_address_change' ) );
 		add_action( 'woocommerce_checkout_before_customer_details', array( __CLASS__, 'maybe_add_hidden_input_for_address_change' ) );
-		add_filter( 'woocommerce_update_order_review_fragments', array( __CLASS__, 'maybe_modify_checkout_tempate_for_address_change' ) );
+		add_filter( 'woocommerce_update_order_review_fragments', array( __CLASS__, 'maybe_modify_checkout_template_for_address_change' ) );
 		add_action( 'woocommerce_checkout_process', array( __CLASS__, 'process_address_change' ) );
 		add_action( 'wp_loaded', array( __CLASS__, 'maybe_navigated_away_from_change_address_page' ) );
 	}
@@ -364,7 +364,7 @@ class WC_Subscriptions_Addresses {
 		}
 	}
 
-	public static function maybe_modify_checkout_tempate_for_address_change( $fragments ) {
+	public static function maybe_modify_checkout_template_for_address_change( $fragments ) {
 
 		if ( ! isset( $_POST['post_data'] ) ) {
 			return;
