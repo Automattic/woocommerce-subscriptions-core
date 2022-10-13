@@ -364,12 +364,8 @@ class WC_Subscriptions_Addresses {
 	}
 
 	public static function maybe_modify_checkout_template_for_address_change( $fragments ) {
-
-		if ( ! isset( $_POST['post_data'] ) ) {
-			return;
-		}
-
-		parse_str( $_POST['post_data'], $form_data );
+		// Ignoring the nonce check here as it's already been verified in WC_AJAX::update_order_review().
+		$form_data = wp_parse_args( wc_clean( wp_unslash( $_POST['post_data'] ?? null ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		if ( isset( $form_data['update_subscription_address'] ) ) {
 			ob_start();
