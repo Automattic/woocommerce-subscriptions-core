@@ -570,3 +570,39 @@ function wcs_add_woocommerce_dependent_action( $tag, $function, $woocommerce_ver
 function wcs_is_woocommerce_pre( $version ) {
 	return ! defined( 'WC_VERSION' ) || version_compare( WC_VERSION, $version, '<' );
 }
+
+/**
+ * Checks if the WooCommerce feature is enabled using WC's new FeaturesUtil class.
+ *
+ * @param string $feature_name The name of the WC feature to check if enabled.
+ *
+ * @return bool
+ */
+function wcs_is_wc_feature_enabled( $feature_name ) {
+	$feature_is_enabled = false;
+
+	if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) && \Automattic\WooCommerce\Utilities\FeaturesUtil::feature_is_enabled( $feature_name ) ) {
+		$feature_is_enabled = true;
+	}
+
+	return $feature_is_enabled;
+}
+
+/**
+ * Helper function to determine whether custom orders table usage is enabled.
+ *
+ * Custom order table feature can be enabled but the store is still using WP posts as the authoriative source of order data,
+ * therefore this function will only return true if:
+ *  - the HPOS feature is enabled
+ *  - the HPOS tables have been generated
+ *  - HPOS is the authoriative source of order data
+ *
+ * @return bool
+ */
+function wcs_is_custom_order_tables_usage_enabled() {
+	if ( ! class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' ) || ! wcs_is_wc_feature_enabled( 'custom_order_tables' ) ) {
+		return false;
+	}
+
+	return \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+}

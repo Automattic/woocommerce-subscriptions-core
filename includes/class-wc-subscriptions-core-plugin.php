@@ -58,6 +58,9 @@ class WC_Subscriptions_Core_Plugin {
 			$this->autoloader->register();
 		}
 
+		// Load the Order Tables/Data Store Controller class early.
+		new WCS_Orders_Table_Data_Store_Controller();
+
 		$this->define_constants();
 		$this->includes();
 		$this->init();
