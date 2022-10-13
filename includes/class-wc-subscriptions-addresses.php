@@ -7,7 +7,6 @@
  * @package    WooCommerce Subscriptions
  * @subpackage WC_Subscriptions_Addresses
  * @category   Class
- * @author     Brent Shepherd
  * @since      1.3
  */
 class WC_Subscriptions_Addresses {
