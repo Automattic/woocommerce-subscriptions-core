@@ -996,10 +996,10 @@ class WC_Subscriptions_Cart {
 	 * @since 2.0
 	 */
 	public static function display_recurring_totals() {
-		if ( isset( $_POST['post_data'] ) ) {
-			parse_str( $_POST['post_data'], $form_data );
-		}
+		// Ignoring the nonce check here as it's already been verified in WC_Checkout::process_checkout().
+		$form_data = wp_parse_args( wc_clean( wp_unslash( $_POST['post_data'] ?? null ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
+		// Don't show recurring totals if we're updating the shipping address.
 		if ( isset( $_GET['update_subscription_address'] ) || isset( $form_data['update_subscription_address'] ) ) {
 			return;
 		}
