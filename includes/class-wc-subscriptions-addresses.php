@@ -260,11 +260,10 @@ class WC_Subscriptions_Addresses {
 	}
 
 	public static function maybe_add_subscription_to_cart_for_address_change() {
+		$subscription_id = absint( $_GET['update_subscription_address'] ?? null ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-		if ( isset( $_GET['update_subscription_address'] ) ) {
-
-			$subscription = wcs_get_subscription( absint( $_GET['update_subscription_address'] ) );
-
+		if ( $subscription_id ) {
+			$subscription       = wcs_get_subscription( $subscription_id );
 			$subscription_items = $subscription->get_items();
 
 			// Save current cart contents and empty the cart.
@@ -310,7 +309,7 @@ class WC_Subscriptions_Addresses {
 	public static function title_for_address_change( $title ) {
 
 		// Skip if not on checkout pay page or not a address change request.
-		if ( ! isset( $_GET['update_subscription_address'] ) || ! is_main_query() || ! in_the_loop() || ! is_page() || ! is_checkout() ) {
+		if ( ! isset( $_GET['update_subscription_address'] ) || ! is_main_query() || ! in_the_loop() || ! is_page() || ! is_checkout() ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return $title;
 		}
 
@@ -320,11 +319,11 @@ class WC_Subscriptions_Addresses {
 
 	public static function crumbs_for_address_change( $crumbs ) {
 
-		if ( ! isset( $_GET['update_subscription_address'] ) && ! is_main_query() && ! is_page() && ! is_checkout() ) {
+		if ( ! isset( $_GET['update_subscription_address'] ) && ! is_main_query() && ! is_page() && ! is_checkout() ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return $crumbs;
 		}
 
-		$subscription = wcs_get_subscription( absint( $_GET['update_subscription_address'] ) );
+		$subscription = wcs_get_subscription( absint( $_GET['update_subscription_address'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		if ( ! $subscription ) {
 			return $crumbs;
@@ -350,9 +349,10 @@ class WC_Subscriptions_Addresses {
 	}
 
 	public static function maybe_add_hidden_input_for_address_change() {
+		$subscription_id = absint( wc_clean( wp_unslash( $_GET['update_subscription_address'] ?? null ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-		if ( isset( $_GET['update_subscription_address'] ) ) {
-			echo '<input type="hidden" name="update_subscription_address" value="' . esc_attr( wc_clean( wp_unslash( $_GET['update_subscription_address'] ) ) ) . '">';
+		if ( $subscription_id ) {
+			echo '<input type="hidden" name="update_subscription_address" value="' . esc_attr( $subscription_id ) . '">';
 		}
 	}
 
@@ -443,7 +443,7 @@ class WC_Subscriptions_Addresses {
 	}
 
 	public static function maybe_navigated_away_from_change_address_page() {
-		if ( ! is_admin() && ! isset( $_GET['update_subscription_address'] ) && ! is_ajax() ) {
+		if ( ! is_admin() && ! isset( $_GET['update_subscription_address'] ) && ! is_ajax() ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			self::maybe_restore_saved_cart_contents();
 		}
 	}
