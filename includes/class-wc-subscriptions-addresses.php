@@ -54,6 +54,21 @@ class WC_Subscriptions_Addresses {
 	}
 
 	/**
+	 * Checks if the WC checkout is using WC Blocks.
+	 *
+	 * @return bool Whether the WC checkout is using WC Blocks.
+	 * @since 2.4.0
+	 */
+	private static function is_checkout_using_blocks() {
+		$block_name      = 'woocommerce/checkout';
+		$woo_page_name   = 'checkout';
+		$checkout_blocks = WC_Blocks_Utils::get_blocks_from_page( $block_name, $woo_page_name );
+		$is_using_blocks = ! empty( $checkout_blocks );
+		return $is_using_blocks;
+	}
+
+
+	/**
 	 * Add a "Change Shipping Address" button to the "My Subscriptions" table for those subscriptions
 	 * which require shipping.
 	 *
@@ -64,8 +79,13 @@ class WC_Subscriptions_Addresses {
 	public static function add_edit_address_subscription_action( $actions, $subscription ) {
 
 		if ( $subscription->needs_shipping_address() && $subscription->has_status( array( 'active', 'on-hold' ) ) ) {
+			// If WC Blocks is used for checkout, use the existing edit-address url.
+			$edit_address_url = self::is_checkout_using_blocks()
+				? add_query_arg( array( 'subscription' => $subscription->get_id() ), wc_get_endpoint_url( 'edit-address', 'shipping' ) )
+				: add_query_arg( array( 'update_subscription_address' => $subscription->get_id() ), wc_get_checkout_url() );
+
 			$actions['change_address'] = array(
-				'url'  => add_query_arg( array( 'update_subscription_address' => $subscription->get_id() ), wc_get_checkout_url() ),
+				'url'  => $edit_address_url,
 				'name' => __( 'Change address', 'woocommerce-subscriptions' ),
 			);
 		}
