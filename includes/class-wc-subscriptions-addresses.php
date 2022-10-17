@@ -67,7 +67,6 @@ class WC_Subscriptions_Addresses {
 		return $is_using_blocks;
 	}
 
-
 	/**
 	 * Add a "Change Shipping Address" button to the "My Subscriptions" table for those subscriptions
 	 * which require shipping.
