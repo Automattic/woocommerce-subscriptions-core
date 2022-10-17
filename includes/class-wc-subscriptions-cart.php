@@ -1000,7 +1000,7 @@ class WC_Subscriptions_Cart {
 		$form_data = wp_parse_args( wc_clean( wp_unslash( $_POST['post_data'] ?? null ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		// Don't show recurring totals if we're updating the shipping address.
-		if ( isset( $_GET['update_subscription_address'] ) || isset( $form_data['update_subscription_address'] ) ) {
+		if ( isset( $_GET['update_subscription_address'] ) || isset( $form_data['update_subscription_address'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return;
 		}
 
