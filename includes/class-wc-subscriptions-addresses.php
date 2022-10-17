@@ -390,7 +390,7 @@ class WC_Subscriptions_Addresses {
 
 		$subscription = wcs_get_subscription( $subscription_id );
 
-		// Update shipping address of the subscription.
+		// Prepare the new shipping address for the subscription.
 		$address_type   = 'billing';
 		$address_fields = WC()->countries->get_address_fields( wc_clean( wp_unslash( $_POST[ $address_type . '_country' ] ?? '' ) ), $address_type . '_' );// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$address        = array();
@@ -401,19 +401,29 @@ class WC_Subscriptions_Addresses {
 			}
 		}
 
-		$subscription->set_address( $address, 'shipping' );
-
-		// Get all the subscription shipping items.
+		// Remove existing subscription shipping items before updating.
 		$subscription_shipping_items = (array) $subscription->get_items( 'shipping' );
-
-		// Remove those shipping items from the subscription.
 		if ( count( $subscription_shipping_items ) > 0 ) {
 			foreach ( $subscription_shipping_items as $item_id => $item ) {
 				$subscription->remove_item( $item_id );
 			}
 		}
 
+		// Remove existing subscription line items before updating.
+		$subscription_line_items = (array) $subscription->get_items( 'line_item' );
+		foreach ( $subscription_line_items as $item_id => $item ) {
+			$subscription->remove_item( $item_id );
+		}
+
 		$cart = WC()->cart;
+
+		// Add the subscription line items with the latest product changes from the cart.
+		WC()->checkout->create_order_line_items( $subscription, $cart );
+
+		// Update the subscription shipping address.
+		$subscription->set_address( $address, 'shipping' );
+
+		// Update the subscription shipping items.
 		WC_Subscriptions_Checkout::add_shipping( $subscription, $cart );
 		$subscription->set_shipping_total( $cart->shipping_total );
 		$subscription->set_cart_tax( $cart->tax_total );
