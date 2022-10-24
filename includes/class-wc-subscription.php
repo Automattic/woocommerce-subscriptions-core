@@ -93,13 +93,11 @@ class WC_Subscription extends WC_Order {
 	);
 
 	/**
-	 * Get the order if ID is passed, otherwise the order is new and empty.
-	 * This class should NOT be instantiated, instead the functions wcs_create_subscription() and wcs_get_subscription()
-	 * should be used
+	 * Initialize the subscription object.
 	 *
-	 * @param int|WC_Subscription $subscription Subscription to read.
+	 * @param int|WC_Subscription $subscription
 	 */
-	public function __construct( $subscription = 0 ) {
+	public function __construct( $subscription ) {
 
 		// Add subscription date types as extra subscription data.
 		foreach ( wcs_get_subscription_date_types() as $date_type => $date_name ) {
@@ -926,15 +924,6 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function set_suspension_count( $value ) {
 		$this->set_prop( 'suspension_count', absint( $value ) );
-	}
-
-	/**
-	 * Set schedule start date.
-	 *
-	 * @param string $schedule_start
-	 */
-	public function set_schedule_start( $schedule_start ) {
-		$this->set_prop( 'schedule_start', $schedule_start );
 	}
 
 	/**
