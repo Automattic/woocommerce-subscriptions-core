@@ -38,10 +38,16 @@ new WC_Subscriptions_Core_Plugin();
 
 This repository can also be loaded as standalone plugin, for development purposes only.
 
+### Prerequisites
+- [Node](https://nodejs.org/en/) LTS v16.x.x
+- [Composer](https://getcomposer.org/doc/00-intro.md) LTS v2.2.x
+- [NVM](https://github.com/nvm-sh/nvm#installing-and-updating): We recommend using NVM to ensure you’re aligned with the expected Node version. This repository contains [an `.nvmrc` file](.nvmrc) which helps ensure you are using the correct version of Node.
+
 After cloning the repo, install dependencies and build:
 
 ```
-npm install && composer install
+nvm use
+npm install
 npm run build
 ```
 

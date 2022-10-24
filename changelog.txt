@@ -1,7 +1,9 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 2.3.0 - 2022-xx-xx =
+= 2.3.0 - 2022-10-07 =
 * Fix - Move One Time Shipping metabox fields to use the woocommerce_product_options_shipping_product_data hook introduced in WC 6.0.
+* Dev - Define build tool version requirements for consistent development and build environments.
+* Update - Improve handling of bulk action execution.
 
 = 2.2.1 - 2022-08-25 =
 * Fix - Fatal Error caused in rare cases where quantity is zero during renewal.
@@ -18,7 +20,7 @@
 * Dev - Update the wcs_get_objects_property() function to prevent calls to get_post_meta() on objects that support calling the get_meta() function.
 * Dev - Remove the get_post_meta() call from WCS_Post_Meta_Cache_Manager::maybe_update_for_post_change().
 * Dev - Replace code using get_post_type( $order_id ) with WC Data Store get_order_type().
-* Dev - Replace all cases of update_post_meta() where an Order ID is passed to use WC_Order::update_meta_data() instead. 
+* Dev - Replace all cases of update_post_meta() where an Order ID is passed to use WC_Order::update_meta_data() instead.
 
 = 1.9.0 - 2022-04-27 =
 * Fix: Display subscription billing details in the Cart Block when purchasing products with subscription plans created using the All Products extension. PR#149
