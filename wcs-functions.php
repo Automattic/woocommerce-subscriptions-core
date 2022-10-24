@@ -169,7 +169,7 @@ function wcs_create_subscription( $args = array() ) {
 		$subscription->set_parent_id( $args['order_id'] );
 	}
 
-	$subscription->save();
+	$subscription->get_data_store()->create( $subscription );
 
 	/**
 	 * Filter the newly created subscription object.
