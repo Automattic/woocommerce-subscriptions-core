@@ -241,7 +241,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	protected function get_post_title() {
 		// @codingStandardsIgnoreStart
 		/* translators: %s: Order date */
-		return sprintf( __( 'Subscription &ndash; %s', 'woocommerce-subscriptions' ), (new DateTime('now'))->format( _x( 'M d, Y @ h:i A', 'Order date parsed by DateTime::format', 'woocommerce-subscriptions' ) ) );
+		return sprintf( __( 'Subscription &ndash; %s', 'woocommerce-subscriptions' ), ( new DateTime( 'now' ) )->format( _x( 'M d, Y @ h:i A', 'Order date parsed by DateTime::format', 'woocommerce-subscriptions' ) ) );
 		// @codingStandardsIgnoreEnd
 	}
 
