@@ -5,8 +5,6 @@ defined( 'ABSPATH' ) || exit;
  * Subscription Data Store: Stored in Custom Order Tables.
  *
  * Extends OrdersTableDataStore to make sure subscription related meta data is read/updated.
- *
- * @version 
  */
 class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\Internal\DataStores\Orders\OrdersTableDataStore {
 
@@ -17,7 +15,6 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 * the $internal_meta_keys property from OrdersTableDataStore because we want its value
 	 * too, so instead we create our own and merge it into $internal_meta_keys in __construct.
 	 *
-	 * @since 2.4.0
 	 * @var array
 	 */
 	protected $subscription_internal_meta_keys = array(
@@ -35,7 +32,6 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 *
 	 * Used to read/update props on the subscription.
 	 *
-	 * @since 2.4.0
 	 * @var array
 	 */
 	protected $subscription_meta_keys_to_props = array(
@@ -81,10 +77,10 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 		// Exclude the subscription related meta data we set and manage manually from the objects "meta" data
 		$this->internal_meta_keys = array_merge( $this->internal_meta_keys, $this->subscription_internal_meta_keys );
 
-		foreach( $this->get_props_to_ignore() as $prop ) {
-			// if transaction ID remove from order column mapping array
-			// else remove from operation meta data column mapping array
-		}
+		// foreach ( $this->get_props_to_ignore() as $prop ) {
+		// if transaction ID remove from order column mapping array
+		// else remove from operation meta data column mapping array
+		// }
 	}
 
 	/**
@@ -116,8 +112,8 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	/**
 	 * Get amount refunded for all related orders.
 	 *
-	 * @since 2.4.0
-	 * @param WC_Subscription $subscription
+	 * @param \WC_Subscription $subscription
+	 *
 	 * @return string
 	 */
 	public function get_total_refunded( $subscription ) {
@@ -134,9 +130,9 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	/**
 	 * Get the total tax refunded for all related orders.
 	 *
-	 * @param WC_Subscription $subscription
+	 * @param \WC_Subscription $subscription
+	 *
 	 * @return float
-	 * @since 2.2.0
 	 */
 	public function get_total_tax_refunded( $subscription ) {
 
@@ -152,9 +148,9 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	/**
 	 * Get the total shipping refunded for all related orders.
 	 *
-	 * @param WC_Subscription $subscription
+	 * @param \WC_Subscription $subscription
+	 *
 	 * @return float
-	 * @since 2.2.0
 	 */
 	public function get_total_shipping_refunded( $subscription ) {
 
@@ -170,7 +166,8 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	/**
 	 * Return count of orders with a specific status.
 	 *
-	 * @param  string $status Order status. Function wc_get_order_statuses() returns a list of valid statuses.
+	 * @param string $status Order status. Function wc_get_order_statuses() returns a list of valid statuses.
+	 *
 	 * @return int
 	 */
 	public function get_order_count( $status ) {
@@ -184,17 +181,19 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	/**
 	 * Get all subscriptions matching the passed in args.
 	 *
-	 * @see    wc_get_orders()
-	 * @param  array $args
+	 * @param array $args
+	 *
 	 * @return array of orders
-	 * @since 2.4.0
 	 */
-	public function get_orders( $args = array() ) {
-
-		$parent_args = $args = wp_parse_args( $args, array(
-			'type'   => 'shop_subscription',
-			'return' => 'objects',
-		) );
+	public function get_orders( $args = [] ) {
+		$args        = wp_parse_args(
+			$args,
+			[
+				'type'   => 'shop_subscription',
+				'return' => 'objects',
+			]
+		);
+		$parent_args = $args;
 
 		// We only want IDs from the parent method
 		$parent_args['return'] = 'ids';
@@ -209,11 +208,11 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 				$return = $subscriptions->orders;
 			}
 
-			return (object) array(
+			return (object) [
 				'orders'        => $return,
 				'total'         => $subscriptions->total,
 				'max_num_pages' => $subscriptions->max_num_pages,
-			);
+			];
 
 		} else {
 
@@ -231,7 +230,6 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 * Create a new subscription in the database.
 	 *
 	 * @param \WC_Subscription $subscription
-	 * @since 2.2.0
 	 */
 	public function create( &$subscription ) {
 		parent::create( $subscription );
@@ -254,6 +252,8 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 * Read multiple subscription objects from custom tables.
 	 *
 	 * @param \WC_Order $subscriptions Subscription objects.
+	 *
+	 * @return void
 	 */
 	public function read_multiple( &$subscriptions ) {
 		parent::read_multiple( $subscriptions );
@@ -266,10 +266,10 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 * Update subscription in the database.
 	 *
 	 * @param \WC_Subscription $subscription
-	 * @since 2.4.0
+	 *
+	 * @return void
 	 */
 	public function update( &$subscription ) {
-
 		// TODO: check date paid logic at top of parent::update function
 		// Old comment: We don't want to call parent here becuase WC_Order_Data_Store_CPT includes a JIT setting of the paid date which is not needed for subscriptions, and also very resource intensive
 		parent::update( $subscription );
@@ -284,12 +284,15 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 * Helper method to set subscription props.
 	 *
 	 * @param \WC_Order $subscription Subscription object.
+	 *
+	 * @return void
 	 */
 	private function set_subscription_props( $subscription ) {
-		$props_to_set = $dates_to_set = [];
+		$props_to_set = [];
+		$dates_to_set = [];
 
 		foreach ( $this->subscription_meta_keys_to_props as $meta_key => $prop_key ) {
-			if ( 0 === strpos( $prop_key, 'schedule' ) || in_array( $meta_key, $this->subscription_internal_meta_keys ) ) {
+			if ( 0 === strpos( $prop_key, 'schedule' ) || in_array( $meta_key, $this->subscription_internal_meta_keys, true ) ) {
 
 				$meta_value = $subscription->get_meta( $meta_key, true );
 
@@ -301,7 +304,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 						$meta_value = $subscription->get_date( 'date_created' );
 					}
 
-					$dates_to_set[ $date_type ] = ( false == $meta_value ) ? 0 : $meta_value;
+					$dates_to_set[ $date_type ] = ( false === $meta_value ) ? 0 : $meta_value;
 				} else {
 					$props_to_set[ $prop_key ] = $meta_value;
 				}
@@ -315,19 +318,20 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	/**
 	 * Read subscription data.
 	 *
-	 * @param WC_Subscription $subscription
+	 * @param \WC_Subscription $subscription
 	 * @param object $post_object
-	 * @since 2.2.0
+	 *
+	 * @return void
 	 */
 	protected function read_order_data( &$subscription, $post_object ) {
+		$props_to_set = [];
+		$dates_to_set = [];
 
 		// Set all order meta data, as well as data defined by WC_Subscription::$extra_keys which has corresponding setter methods
 		parent::read_order_data( $subscription, $post_object );
 
-		$props_to_set = $dates_to_set = array();
-
 		foreach ( $this->subscription_meta_keys_to_props as $meta_key => $prop_key ) {
-			if ( 0 === strpos( $prop_key, 'schedule' ) || in_array( $meta_key, $this->subscription_internal_meta_keys ) ) {
+			if ( 0 === strpos( $prop_key, 'schedule' ) || in_array( $meta_key, $this->subscription_internal_meta_keys, true ) ) {
 
 				$meta_value = wcs_get_objects_property( $subscription, $meta_key );
 
@@ -339,7 +343,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 						$meta_value = $subscription->get_date( 'date_created' );
 					}
 
-					$dates_to_set[ $date_type ] = ( false == $meta_value ) ? 0 : $meta_value;
+					$dates_to_set[ $date_type ] = ( false === $meta_value ) ? 0 : $meta_value;
 				} else {
 					$props_to_set[ $prop_key ] = $meta_value;
 				}
@@ -355,13 +359,13 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 *
 	 * @param \WC_Subscription $subscription Order object.
 	 *
-	 * @since 3.0.0
+	 * @return void
 	 */
 	protected function update_order_meta( &$subscription ) {
-		$updated_props = array();
+		$updated_props = [];
 
 		foreach ( $this->get_props_to_update( $subscription, $this->subscription_meta_keys_to_props ) as $meta_key => $prop ) {
-			$meta_value = ( 'schedule_' == substr( $prop, 0, 9 ) ) ? $subscription->get_date( $prop ) : $subscription->{"get_$prop"}( 'edit' );
+			$meta_value = ( 'schedule_' === substr( $prop, 0, 9 ) ) ? $subscription->get_date( $prop ) : $subscription->{"get_$prop"}( 'edit' );
 
 			// Store as a string of the boolean for backward compatibility (yep, it's gross)
 			if ( 'requires_manual_renewal' === $prop ) {
@@ -379,9 +383,11 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 
 	/**
 	 * Update subscription dates in the database.
+	 * Returns the date properties saved to the database in array format: [ $prop_name => DateTime Object ]
 	 *
-	 * @param  WC_Subscription $subscription
-	 * @return array           The date properties saved to the database in the format: array( $prop_name => DateTime Object )
+	 * @param \WC_Subscription $subscription
+	 *
+	 * @return array
 	 */
 	public function save_dates( $subscription ) {
 		global $wpdb;
@@ -405,7 +411,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 
 			$date_meta_key = wcs_get_date_meta_key( $date_type );
 
-			if ( ! in_array( $date_meta_key, $date_meta_keys ) ) {
+			if ( ! in_array( $date_meta_key, $date_meta_keys, true ) ) {
 				$date_meta_keys[] = $date_meta_key;
 			}
 		}
@@ -433,25 +439,27 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 
 		$order_update_query = [];
 
-		// Record any changes to the created date
+		// Record any changes to the created date.
 		if ( isset( $changes['date_created'] ) ) {
 			$order_update_query[]        = '`date_created_gmt` = ' . gmdate( 'Y-m-d H:i:s', $subscription->get_date_created( 'edit' )->getTimestamp() );
 			$saved_dates['date_created'] = $subscription->get_date_created();
 		}
 
-		// Record any changes to the modified date
+		// Record any changes to the modified date.
 		if ( isset( $changes['date_modified'] ) ) {
 			$order_update_query[]         = '`date_updated_gmt` = ' . gmdate( 'Y-m-d H:i:s', $subscription->get_date_modified( 'edit' )->getTimestamp() );
 			$saved_dates['date_modified'] = $subscription->get_date_modified();
 		}
 
-		// Manually update the order's created and/or modified date if it has changed
+		// Manually update the order's created and/or modified date if it has changed.
 		if ( ! empty( $order_update_query ) ) {
 			$table_name = self::get_orders_table_name();
 			$wpdb->query(
 				$wpdb->prepare(
-					"UPDATE {$table_name} SET %s WHERE order_id = {$subscription->get_id()}",
-					implode( ', ', $order_update_query )
+					'UPDATE %s SET %s WHERE order_id = %d',
+					$table_name,
+					implode( ', ', $order_update_query ),
+					$subscription->get_id()
 				)
 			);
 		}
@@ -462,62 +470,32 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	/**
 	 * Search subscription data for a term and returns subscription ids
 	 *
-	 * @param string $term Term to search
-	 * @return array of subscription ids
-	 * @since 2.3.0
+	 * @param string $term Term to search.
+	 *
+	 * @return array
 	 */
 	public function search_subscriptions( $term ) {
 		global $wpdb;
 
-		$subscription_ids = array();
+		$subscription_ids = [];
+		$search_fields    = array_map(
+			'wc_clean',
+			apply_filters(
+				'woocommerce_shop_subscription_search_fields',
+				[
+					'_order_key',
+					'_billing_address_index',
+					'_shipping_address_index',
+					'_billing_email',
+				]
+			)
+		);
 
-		// TODO: rewrite queries to search subscriptions in new datastore
+		if ( is_numeric( $term ) ) {
+			$subscription_ids[] = absint( $term );
+		}
 
-		// $search_fields = array_map( 'wc_clean', apply_filters( 'woocommerce_shop_subscription_search_fields', array(
-		// 	'_order_key',
-		// 	'_billing_address_index',
-		// 	'_shipping_address_index',
-		// 	'_billing_email',
-		// ) ) );
-
-		// if ( is_numeric( $term ) ) {
-		// 	$subscription_ids[] = absint( $term );
-		// }
-
-		// if ( ! empty( $search_fields ) ) {
-
-		// 	$subscription_ids = array_unique( array_merge(
-		// 		$wpdb->get_col(
-		// 			$wpdb->prepare( "
-		// 				SELECT DISTINCT p1.post_id
-		// 				FROM {$wpdb->postmeta} p1
-		// 				WHERE p1.meta_value LIKE '%%%s%%'", $wpdb->esc_like( wc_clean( $term ) ) ) . " AND p1.meta_key IN ('" . implode( "','", array_map( 'esc_sql', $search_fields ) ) . "')"
-		// 		),
-		// 		$wpdb->get_col(
-		// 			$wpdb->prepare( "
-		// 				SELECT order_id
-		// 				FROM {$wpdb->prefix}woocommerce_order_items as order_items
-		// 				WHERE order_item_name LIKE '%%%s%%'
-		// 				",
-		// 				$wpdb->esc_like( wc_clean( $term ) )
-		// 			)
-		// 		),
-		// 		$wpdb->get_col(
-		// 			$wpdb->prepare( "
-		// 				SELECT p1.ID
-		// 				FROM {$wpdb->posts} p1
-		// 				INNER JOIN {$wpdb->postmeta} p2 ON p1.ID = p2.post_id
-		// 				INNER JOIN {$wpdb->users} u ON p2.meta_value = u.ID
-		// 				WHERE u.user_email LIKE '%%%s%%'
-		// 				AND p2.meta_key = '_customer_user'
-		// 				AND p1.post_type = 'shop_subscription'
-		// 				",
-		// 				esc_attr( $term )
-		// 			)
-		// 		),
-		// 		$subscription_ids
-		// 	) );
-		// }
+		// TODO: Query for subscription IDs that contain the search term in search fields
 
 		return apply_filters( 'woocommerce_shop_subscription_search_results', $subscription_ids, $term, $search_fields );
 	}
@@ -525,18 +503,10 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	/**
 	 * Get the user IDs for customers who have a subscription.
 	 *
-	 * @since 3.4.3
-	 * @return array The user IDs.
+	 * @return array
 	 */
 	public function get_subscription_customer_ids() {
 		global $wpdb;
-		return array();
-		// TODO: rewrite queries to search subscriptions customer IDs
-
-		// return $wpdb->get_col(
-		// 	"SELECT DISTINCT meta_value
-		// 	FROM {$wpdb->postmeta} AS subscription_meta INNER JOIN {$wpdb->posts} AS posts ON subscription_meta.post_id = posts.ID
-		// 	WHERE subscription_meta.meta_key = '_customer_user' AND posts.post_type = 'shop_subscription'"
-		// );
+		return [];
 	}
 }
