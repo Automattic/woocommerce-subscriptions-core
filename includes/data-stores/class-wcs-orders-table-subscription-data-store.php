@@ -475,29 +475,41 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 * @return array
 	 */
 	public function search_subscriptions( $term ) {
-		global $wpdb;
+		add_filter( 'woocommerce_order_table_search_query_meta_keys', [ $this, 'get_subscription_order_table_search_fields' ] );
 
-		$subscription_ids = [];
-		$search_fields    = array_map(
+		$subscription_ids = wc_get_orders(
+			[
+				's'      => $term,
+				'type'   => 'shop_subscription',
+				'status' => array_keys( wcs_get_subscription_statuses() ),
+				'return' => 'ids',
+				'limit'  => -1,
+			]
+		);
+
+		remove_filter( 'woocommerce_order_table_search_query_meta_keys', [ $this, 'get_subscription_order_table_search_fields' ] );
+
+		return apply_filters( 'woocommerce_shop_subscription_search_results', $subscription_ids, $term, $this->get_subscription_search_fields() );
+	}
+
+	/**
+	 * Get the subscription search fields.
+	 *
+	 * @param array $search_fields
+	 *
+	 * @return array
+	 */
+	public function get_subscription_order_table_search_fields( $search_fields = [] ) {
+		return array_map(
 			'wc_clean',
 			apply_filters(
 				'woocommerce_shop_subscription_search_fields',
 				[
-					'_order_key',
 					'_billing_address_index',
 					'_shipping_address_index',
-					'_billing_email',
 				]
 			)
 		);
-
-		if ( is_numeric( $term ) ) {
-			$subscription_ids[] = absint( $term );
-		}
-
-		// TODO: Query for subscription IDs that contain the search term in search fields
-
-		return apply_filters( 'woocommerce_shop_subscription_search_results', $subscription_ids, $term, $search_fields );
 	}
 
 	/**
