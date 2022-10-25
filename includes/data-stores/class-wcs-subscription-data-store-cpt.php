@@ -95,16 +95,17 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 */
 	public function create( &$subscription ) {
 
-		$default_subscription_data = array(
-			'post_status' => 'wc-' . apply_filters( 'woocommerce_default_subscription_status', 'pending' ),
-		);
+		$subscription_status = $subscription->get_status( 'edit' );
+
+		if ( ! $subscription_status ) {
+			$subscription->set_status( 'wc' . apply_filters( 'woocommerce_default_subscription_status', 'pending' ) );
+		}
 
 		/**
 		 * This function is called on the `woocommerce_new_order_data` filter.
 		 * We hook into this function, calling our own filter `woocommerce_new_subscription_data` to allow overriding the default subscription data.
 		 */
-		$new_subscription_data = function ( $args ) use ( $default_subscription_data ) {
-			$args = wp_parse_args( $default_subscription_data, $args );
+		$new_subscription_data = function ( $args ) {
 			return apply_filters( 'woocommerce_new_subscription_data', $args );
 		};
 		add_filter( 'woocommerce_new_order_data', $new_subscription_data );

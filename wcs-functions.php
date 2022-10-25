@@ -114,11 +114,13 @@ function wcs_create_subscription( $args = array() ) {
 		'start_date'         => $default_start_date,
 		'date_created'       => $now,
 		'created_via'        => ( ! empty( $order ) ) ? wcs_get_objects_property( $order, 'created_via' ) : '',
-		'order_version'      => ( ! empty( $order ) ) ? wcs_get_objects_property( $order, 'version' ) : WC_VERSION,
 		'currency'           => ( ! empty( $order ) ) ? wcs_get_objects_property( $order, 'currency' ) : get_woocommerce_currency(),
 		'prices_include_tax' => ( ! empty( $order ) ) ? ( ( wcs_get_objects_property( $order, 'prices_include_tax' ) ) ? 'yes' : 'no' ) : get_option( 'woocommerce_prices_include_tax' ), // we don't use wc_prices_include_tax() here because WC doesn't use it in wc_create_order(), not 100% sure why it doesn't also check the taxes are enabled, but there could forseeably be a reason
 	);
 
+	if ( isset( $args['order_version'] ) ) {
+		wcs_deprecated_argument( __FUNCTION__, '2.0', 'The "order_version" argument is no longer changeable.' );
+	}
 	$args = wp_parse_args( $args, $default_args );
 
 	if ( ! empty( $args['status'] ) && ! array_key_exists( 'wc-' . $args['status'], wcs_get_subscription_statuses() ) ) {
@@ -153,14 +155,15 @@ function wcs_create_subscription( $args = array() ) {
 	}
 
 	$subscription = new \WC_Subscription();
-	$subscription->set_status( $args['status'] );
+	if ( $args['status'] ) {
+		$subscription->set_status( $args['status'] );
+	}
 	$subscription->set_customer_note( $args['customer_note'] ?? '' );
 	$subscription->set_customer_id( $args['customer_id'] );
 	$subscription->set_date_created( $args['date_created'] );
 	$subscription->set_created_via( $args['created_via'] );
-	$subscription->set_version( $args['order_version'] );
 	$subscription->set_currency( $args['currency'] );
-	$subscription->set_prices_include_tax( $args['prices_include_tax'] );
+	$subscription->set_prices_include_tax( 'no' !== $args['prices_include_tax'] );
 	$subscription->set_billing_period( $args['billing_period'] );
 	$subscription->set_billing_interval( absint( $args['billing_interval'] ) );
 	$subscription->set_schedule_start( $args['start_date'] );
@@ -178,6 +181,9 @@ function wcs_create_subscription( $args = array() ) {
 	 * @param WC_Subscription $subscription
 	 */
 	$subscription = apply_filters( 'wcs_created_subscription', $subscription );
+
+	// we need to fetch the subscription from the database as the current object state doesn't match the loaded state.
+	$subscription = wcs_get_subscription( $subscription );
 
 	/**
 	 * Triggered after a new subscription is created.
