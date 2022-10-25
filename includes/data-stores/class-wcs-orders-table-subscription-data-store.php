@@ -454,10 +454,10 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 		// Manually update the order's created and/or modified date if it has changed.
 		if ( ! empty( $order_update_query ) ) {
 			$table_name = self::get_orders_table_name();
+
 			$wpdb->query(
 				$wpdb->prepare(
-					'UPDATE %s SET %s WHERE order_id = %d',
-					$table_name,
+					"UPDATE {$table_name} SET %s WHERE order_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 					implode( ', ', $order_update_query ),
 					$subscription->get_id()
 				)
