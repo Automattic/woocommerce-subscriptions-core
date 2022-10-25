@@ -115,7 +115,6 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		do_action( 'woocommerce_new_subscription', $subscription->get_id() );
 	}
 
-
 	/**
 	 * Returns an array of meta for an object.
 	 *
