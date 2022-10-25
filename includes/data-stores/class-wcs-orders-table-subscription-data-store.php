@@ -53,6 +53,129 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	);
 
 	/**
+	 * Table column to WC_Subscription mapping for wc_orders table.
+	 *
+	 * @var \string[][]
+	 */
+	protected $order_column_mapping = array(
+		'id'                   => array(
+			'type' => 'int',
+			'name' => 'id',
+		),
+		'status'               => array(
+			'type' => 'string',
+			'name' => 'status',
+		),
+		'type'                 => array(
+			'type' => 'string',
+			'name' => 'type',
+		),
+		'currency'             => array(
+			'type' => 'string',
+			'name' => 'currency',
+		),
+		'tax_amount'           => array(
+			'type' => 'decimal',
+			'name' => 'cart_tax',
+		),
+		'total_amount'         => array(
+			'type' => 'decimal',
+			'name' => 'total',
+		),
+		'customer_id'          => array(
+			'type' => 'int',
+			'name' => 'customer_id',
+		),
+		'billing_email'        => array(
+			'type' => 'string',
+			'name' => 'billing_email',
+		),
+		'date_created_gmt'     => array(
+			'type' => 'date',
+			'name' => 'date_created',
+		),
+		'date_updated_gmt'     => array(
+			'type' => 'date',
+			'name' => 'date_modified',
+		),
+		'parent_order_id'      => array(
+			'type' => 'int',
+			'name' => 'parent_id',
+		),
+		'payment_method'       => array(
+			'type' => 'string',
+			'name' => 'payment_method',
+		),
+		'payment_method_title' => array(
+			'type' => 'string',
+			'name' => 'payment_method_title',
+		),
+		'ip_address'           => array(
+			'type' => 'string',
+			'name' => 'customer_ip_address',
+		),
+		'user_agent'           => array(
+			'type' => 'string',
+			'name' => 'customer_user_agent',
+		),
+		'customer_note'        => array(
+			'type' => 'string',
+			'name' => 'customer_note',
+		),
+	);
+
+
+	/**
+	 * Table column to WC_Subscription mapping for wc_operational_data table.
+	 *
+	 * @var \string[][]
+	 */
+	protected $operational_data_column_mapping = array(
+		'id'                          => array( 'type' => 'int' ),
+		'order_id'                    => array( 'type' => 'int' ),
+		'created_via'                 => array(
+			'type' => 'string',
+			'name' => 'created_via',
+		),
+		'woocommerce_version'         => array(
+			'type' => 'string',
+			'name' => 'version',
+		),
+		'prices_include_tax'          => array(
+			'type' => 'bool',
+			'name' => 'prices_include_tax',
+		),
+		'coupon_usages_are_counted'   => array(
+			'type' => 'bool',
+			'name' => 'recorded_coupon_usage_counts',
+		),
+		'download_permission_granted' => array(
+			'type' => 'bool',
+			'name' => 'download_permissions_granted',
+		),
+		'order_key'                   => array(
+			'type' => 'string',
+			'name' => 'order_key',
+		),
+		'shipping_tax_amount'         => array(
+			'type' => 'decimal',
+			'name' => 'shipping_tax',
+		),
+		'shipping_total_amount'       => array(
+			'type' => 'decimal',
+			'name' => 'shipping_total',
+		),
+		'discount_tax_amount'         => array(
+			'type' => 'decimal',
+			'name' => 'discount_tax',
+		),
+		'discount_total_amount'       => array(
+			'type' => 'decimal',
+			'name' => 'discount_total',
+		),
+	);
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {
@@ -76,28 +199,6 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 
 		// Exclude the subscription related meta data we set and manage manually from the objects "meta" data
 		$this->internal_meta_keys = array_merge( $this->internal_meta_keys, $this->subscription_internal_meta_keys );
-
-		// foreach ( $this->get_props_to_ignore() as $prop ) {
-		// if transaction ID remove from order column mapping array
-		// else remove from operation meta data column mapping array
-		// }
-	}
-
-	/**
-	 * Get the props set on a subscription which we don't want used on a subscription, which may be
-	 * inherited order meta data, or other values using the post meta data store but not as props.
-	 *
-	 * @return array A mapping of meta keys => prop names
-	 */
-	protected function get_props_to_ignore() {
-		$props_to_ignore = array(
-			'_transaction_id' => 'transaction_id',
-			'_date_completed' => 'date_completed',
-			'_date_paid'      => 'date_paid',
-			'_cart_hash'      => 'cart_hash',
-		);
-
-		return apply_filters( 'wcs_subscription_data_store_props_to_ignore', $props_to_ignore, $this );
 	}
 
 	/**
