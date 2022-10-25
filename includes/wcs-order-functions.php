@@ -95,7 +95,7 @@ function wcs_get_subscriptions_for_order( $order, $args = array() ) {
  */
 function wcs_copy_order_address( $from_order, $to_order, $address_type = 'all' ) {
 
-	if ( in_array( $address_type, array( 'shipping', 'all' ), true ) ) {
+	if ( $address_type === 'all' || $address_type === 'shipping' ) {
 		$to_order->set_shipping_address(
 			array(
 				'first_name' => $from_order->get_shipping_first_name( 'edit' ),
@@ -111,7 +111,7 @@ function wcs_copy_order_address( $from_order, $to_order, $address_type = 'all' )
 		);
 	}
 
-	if ( in_array( $address_type, array( 'billing', 'all' ), true ) ) {
+	if ( $address_type === 'all' || $address_type === 'billing' ) {
 		$to_order->set_billing_address(
 			array(
 				'first_name' => $from_order->get_billing_first_name( 'edit' ),
