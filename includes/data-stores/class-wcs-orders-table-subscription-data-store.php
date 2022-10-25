@@ -519,6 +519,8 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 */
 	public function get_subscription_customer_ids() {
 		global $wpdb;
-		return [];
+		$table_name = self::get_orders_table_name();
+
+		return $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT customer_id FROM {$table_name} WHERE type = %s", 'shop_subscription' ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	}
 }
