@@ -96,7 +96,6 @@ function wcs_get_subscription( $the_subscription ) {
  * @since  2.0
  */
 function wcs_create_subscription( $args = array() ) {
-
 	$now   = gmdate( 'Y-m-d H:i:s' );
 	$order = ( isset( $args['order_id'] ) ) ? wc_get_order( $args['order_id'] ) : null;
 
@@ -121,6 +120,7 @@ function wcs_create_subscription( $args = array() ) {
 	if ( isset( $args['order_version'] ) ) {
 		wcs_deprecated_argument( __FUNCTION__, '2.0', 'The "order_version" argument is no longer changeable.' );
 	}
+
 	$args = wp_parse_args( $args, $default_args );
 
 	if ( ! empty( $args['status'] ) && ! array_key_exists( 'wc-' . $args['status'], wcs_get_subscription_statuses() ) ) {
@@ -139,25 +139,27 @@ function wcs_create_subscription( $args = array() ) {
 		return new WP_Error( 'woocommerce_subscription_invalid_start_date_format', _x( 'Invalid date. The date must be a string and of the format: "Y-m-d H:i:s".', 'Error message while creating a subscription', 'woocommerce-subscriptions' ) );
 	}
 
-	// check customer id is set
+	// Check customer id is set.
 	if ( empty( $args['customer_id'] ) || ! is_numeric( $args['customer_id'] ) || $args['customer_id'] <= 0 ) {
 		return new WP_Error( 'woocommerce_subscription_invalid_customer_id', _x( 'Invalid subscription customer_id.', 'Error message while creating a subscription', 'woocommerce-subscriptions' ) );
 	}
 
-	// check the billing period
+	// Check the billing period.
 	if ( empty( $args['billing_period'] ) || ! in_array( strtolower( $args['billing_period'] ), array_keys( wcs_get_subscription_period_strings() ) ) ) {
 		return new WP_Error( 'woocommerce_subscription_invalid_billing_period', __( 'Invalid subscription billing period given.', 'woocommerce-subscriptions' ) );
 	}
 
-	// check the billing interval
+	// Check the billing interval.
 	if ( empty( $args['billing_interval'] ) || ! is_numeric( $args['billing_interval'] ) || absint( $args['billing_interval'] ) <= 0 ) {
 		return new WP_Error( 'woocommerce_subscription_invalid_billing_interval', __( 'Invalid subscription billing interval given. Must be an integer greater than 0.', 'woocommerce-subscriptions' ) );
 	}
 
 	$subscription = new \WC_Subscription();
+
 	if ( $args['status'] ) {
 		$subscription->set_status( $args['status'] );
 	}
+
 	$subscription->set_customer_note( $args['customer_note'] ?? '' );
 	$subscription->set_customer_id( $args['customer_id'] );
 	$subscription->set_date_created( $args['date_created'] );
