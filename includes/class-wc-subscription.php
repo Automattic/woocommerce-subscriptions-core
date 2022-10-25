@@ -93,7 +93,7 @@ class WC_Subscription extends WC_Order {
 	);
 
 	/**
-	 * Get the Subscription if the ID is passed, otherwise a new and empty subscription is returned.
+	 * Initializes a specific subscription if the ID is passed, otherwise a new and empty instance of a subscription.
 	 *
 	 * This class should NOT be instantiated, instead the functions wcs_create_subscription() and wcs_get_subscription()
 	 * should be used.
