@@ -361,7 +361,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 *
 	 * @return void
 	 */
-	protected function update_order_meta( &$subscription ) {
+	public function update_order_meta( &$subscription ) {
 		$updated_props = [];
 
 		foreach ( $this->get_props_to_update( $subscription, $this->subscription_meta_keys_to_props ) as $meta_key => $prop ) {
