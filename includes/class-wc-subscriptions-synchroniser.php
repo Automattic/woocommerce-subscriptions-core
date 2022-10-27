@@ -1139,9 +1139,11 @@ class WC_Subscriptions_Synchroniser {
 	/**
 	 * Add subscription meta for subscription that contains a synced product.
 	 *
-	 * @param WC_Order Parent order for the subscription
-	 * @param WC_Subscription new subscription
 	 * @since 2.0
+	 *
+	 * @param WC_Subscription|int Subscription object or ID.
+	 *
+	 * @return void
 	 */
 	public static function maybe_add_subscription_meta( $subscription ) {
 		if ( ! is_object( $subscription ) ) {
