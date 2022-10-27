@@ -112,8 +112,8 @@ class WC_Subscription_Data_Copier {
 
 		foreach ( $data as $key => $value ) {
 			$data_array[] = array(
-				'meta_key'   => $key,
-				'meta_value' => $value,
+				'meta_key'   => $key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- This is a meta key, not a query.
+				'meta_value' => $value, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- This is a meta value, not a query.
 			);
 		}
 
