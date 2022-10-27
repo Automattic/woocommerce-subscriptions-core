@@ -42,8 +42,8 @@
 		"postarchive": "unzip woocommerce-subscriptions-core.zip -d woocommerce-subscriptions-core && rm woocommerce-subscriptions-core.zip && zip -r woocommerce-subscriptions-core.zip woocommerce-subscriptions-core && rm -rf woocommerce-subscriptions-core"
 	},
 	"engines": {
-		"node": "^16.17.1",
-		"npm": "^8.15.0"
+		"node": "^18.12.0",
+		"npm": "^8.19.2"
 	},
 	"devDependencies": {
 		"@woocommerce/dependency-extraction-webpack-plugin": "1.1.0",
