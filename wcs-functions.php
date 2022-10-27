@@ -102,7 +102,7 @@ function wcs_create_subscription( $args = array() ) {
 	if ( ! empty( $order ) ) {
 		$default_start_date = wcs_get_datetime_utc_string( wcs_get_objects_property( $order, 'date_created' ) );
 	} else {
-		$default_start_date = ( isset( $args['date_created'] ) ) ? $args['date_created'] : $now;
+		$default_start_date = $args['date_created'] ?? $now;
 	}
 
 	$default_args = array(
@@ -130,7 +130,9 @@ function wcs_create_subscription( $args = array() ) {
 	// Validate the date_created arg.
 	if ( ! is_string( $args['date_created'] ) || false === wcs_is_datetime_mysql_format( $args['date_created'] ) ) {
 		return new WP_Error( 'woocommerce_subscription_invalid_date_created_format', _x( 'Invalid created date. The date must be a string and of the format: "Y-m-d H:i:s".', 'Error message while creating a subscription', 'woocommerce-subscriptions' ) );
-	} elseif ( wcs_date_to_time( $args['date_created'] ) > current_time( 'timestamp', true ) ) {
+	}
+	// Check if the date is in the future.
+	if ( wcs_date_to_time( $args['date_created'] ) > time() ) {
 		return new WP_Error( 'woocommerce_subscription_invalid_date_created', _x( 'Subscription created date must be before current day.', 'Error message while creating a subscription', 'woocommerce-subscriptions' ) );
 	}
 
@@ -145,7 +147,7 @@ function wcs_create_subscription( $args = array() ) {
 	}
 
 	// Check the billing period.
-	if ( empty( $args['billing_period'] ) || ! in_array( strtolower( $args['billing_period'] ), array_keys( wcs_get_subscription_period_strings() ) ) ) {
+	if ( empty( $args['billing_period'] ) || ! array_key_exists( strtolower( $args['billing_period'] ), wcs_get_subscription_period_strings() ) ) {
 		return new WP_Error( 'woocommerce_subscription_invalid_billing_period', __( 'Invalid subscription billing period given.', 'woocommerce-subscriptions' ) );
 	}
 
@@ -156,6 +158,7 @@ function wcs_create_subscription( $args = array() ) {
 
 	$subscription = new \WC_Subscription();
 
+	// Only call set_status() if required as this triggers a number of WC flows. Default status of 'wc-pending' is during
 	if ( $args['status'] ) {
 		$subscription->set_status( $args['status'] );
 	}
@@ -178,14 +181,12 @@ function wcs_create_subscription( $args = array() ) {
 
 	/**
 	 * Filter the newly created subscription object.
+	 * We need to fetch the subscription from the database as the current object state doesn't match the loaded state.
 	 *
 	 * @since 2.2.22
 	 * @param WC_Subscription $subscription
 	 */
-	$subscription = apply_filters( 'wcs_created_subscription', $subscription );
-
-	// we need to fetch the subscription from the database as the current object state doesn't match the loaded state.
-	$subscription = wcs_get_subscription( $subscription );
+	$subscription = apply_filters( 'wcs_created_subscription', wcs_get_subscription( $subscription ) );
 
 	/**
 	 * Triggered after a new subscription is created.
