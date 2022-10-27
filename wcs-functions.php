@@ -118,7 +118,7 @@ function wcs_create_subscription( $args = array() ) {
 	);
 
 	if ( isset( $args['order_version'] ) ) {
-		wcs_deprecated_argument( __FUNCTION__, '2.0', 'The "order_version" argument is no longer changeable.' );
+		wcs_deprecated_argument( __FUNCTION__, '2.4', 'The "order_version" argument is no longer changeable due to a change in the WC order creation process.' );
 	}
 
 	$args = wp_parse_args( $args, $default_args );
