@@ -93,11 +93,7 @@ class WC_Subscriptions_Synchroniser {
 		add_filter( 'woocommerce_subscriptions_cart_get_price', __CLASS__ . '::set_prorated_price_for_calculation', 10, 2 );
 
 		// When creating a subscription check if it contains a synced product and make sure the correct meta is set on the subscription
-		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			add_action( 'woocommerce_after_subscription_object_save', __CLASS__ . '::maybe_add_subscription_meta', 10, 1 );
-		} else {
-			add_action( 'save_post', __CLASS__ . '::maybe_add_subscription_meta', 10, 1 );
-		}
+		add_action( 'save_post', __CLASS__ . '::maybe_add_subscription_meta', 10, 1 );
 
 		// When adding an item to a subscription, check if it is for a synced product to make sure the sync meta is set on the subscription. We can't attach to just the 'woocommerce_new_order_item' here because the '_product_id' and '_variation_id' meta are not set before it fires
 		add_action( 'woocommerce_ajax_add_order_item_meta', __CLASS__ . '::ajax_maybe_add_meta_for_item', 10, 2 );
@@ -1143,17 +1139,17 @@ class WC_Subscriptions_Synchroniser {
 	 * @param WC_Subscription new subscription
 	 * @since 2.0
 	 */
-	public static function maybe_add_subscription_meta( $subscription ) {
-		if ( ! is_object( $subscription ) ) {
-			$subscription = wcs_get_subscription( $subscription );
-		}
+	public static function maybe_add_subscription_meta( $post_id ) {
 
-		if ( $subscription && ! self::subscription_contains_synced_product( $subscription->get_id() ) ) {
+		if ( 'shop_subscription' == get_post_type( $post_id ) && ! self::subscription_contains_synced_product( $post_id ) ) {
+
+			$subscription = wcs_get_subscription( $post_id );
+
 			foreach ( $subscription->get_items() as $item ) {
 				$product = $item->get_product();
 
 				if ( self::is_product_synced( $product ) ) {
-					$subscription->update_meta_data( '_contains_synced_subscription', 'true' );
+					update_post_meta( $subscription->get_id(), '_contains_synced_subscription', 'true' );
 					break;
 				}
 			}
