@@ -123,6 +123,7 @@ function wcs_create_subscription( $args = array() ) {
 
 	$args = wp_parse_args( $args, $default_args );
 
+	// Check that the given status exists.
 	if ( ! empty( $args['status'] ) && ! array_key_exists( 'wc-' . $args['status'], wcs_get_subscription_statuses() ) ) {
 		return new WP_Error( 'woocommerce_invalid_subscription_status', __( 'Invalid subscription status given.', 'woocommerce-subscriptions' ) );
 	}
