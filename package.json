@@ -46,19 +46,20 @@
 		"npm": "^8.19.2"
 	},
 	"devDependencies": {
-		"@woocommerce/dependency-extraction-webpack-plugin": "1.1.0",
-		"@woocommerce/eslint-plugin": "1.0.0-beta.0",
-		"@wordpress/scripts": "^12.6.1",
+		"@woocommerce/dependency-extraction-webpack-plugin": "^2.2.0",
+		"@woocommerce/eslint-plugin": "^2.2.0",
+		"@wordpress/scripts": "^24.4.0",
 		"exec": "^0.1.2",
-		"husky": "^7.0.4",
-		"lint-staged": "^12.1.2",
+		"husky": "^8.0.1",
+		"lint-staged": "^13.0.3",
+		"postcss": "^8.4.18",
 		"promised-exec": "~1.0.1",
-		"stylelint-config-prettier": "8.0.2",
-		"stylelint-config-wordpress": "17.0.0",
-		"semver": "^4.1.0"
+		"semver": "^7.3.8",
+		"stylelint-config-prettier": "^9.0.3",
+		"stylelint-config-wordpress": "17.0.0"
 	},
 	"dependencies": {
-		"@wordpress/dependency-extraction-webpack-plugin": "^3.0.1",
-		"@wordpress/plugins": "^2.24.2"
+		"@wordpress/dependency-extraction-webpack-plugin": "^4.3.0",
+		"@wordpress/plugins": "^4.18.0"
 	}
 }
