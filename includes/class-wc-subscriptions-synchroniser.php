@@ -1156,6 +1156,7 @@ class WC_Subscriptions_Synchroniser {
 
 				if ( self::is_product_synced( $product ) ) {
 					$subscription->update_meta_data( '_contains_synced_subscription', 'true' );
+					$subscription->save();
 					break;
 				}
 			}
