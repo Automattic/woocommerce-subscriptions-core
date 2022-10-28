@@ -129,14 +129,9 @@ class WCS_Helper_Subscription {
 			return;
 		}
 
-		$subscription->save();
+		$subscription->set_meta_data( $subscription_meta_data );
 
-		// mock subscription meta
-		foreach ( $subscription_meta_data as $meta_key => $meta_value ) {
-			update_post_meta( $subscription->get_id(), '_' . $meta_key, $meta_value );
-		}
-
-		return wcs_get_subscription( $subscription->get_id() );
+		return $subscription;
 	}
 
 	/**
