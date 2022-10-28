@@ -52,6 +52,7 @@ function wcs_help_tip( $tip, $allow_html = false, $class = 'woocommerce-help-tip
  * @param mixed                               $default  (optional) The value to return if no value is found - defaults to single -> null, multiple -> array().
  *
  * @since  2.2.0
+ * @deprecated 2.4.0 Use of this compatibility function is no longer required, getters should be used on the objects instead. Please note there may be differences in dates between this function and the getter.
  * @return mixed
  */
 function wcs_get_objects_property( $object, $property, $single = 'single', $default = null ) {
