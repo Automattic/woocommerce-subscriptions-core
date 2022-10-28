@@ -94,7 +94,24 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * @since 2.2.0
 	 */
 	public function create( &$subscription ) {
+
+		$subscription_status = $subscription->get_status( 'edit' );
+
+		if ( ! $subscription_status ) {
+			$subscription->set_status( 'wc' . apply_filters( 'woocommerce_default_subscription_status', 'pending' ) );
+		}
+
+		/**
+		 * This function is called on the `woocommerce_new_order_data` filter.
+		 * We hook into this function, calling our own filter `woocommerce_new_subscription_data` to allow overriding the default subscription data.
+		 */
+		$new_subscription_data = function ( $args ) {
+			return apply_filters( 'woocommerce_new_subscription_data', $args );
+		};
+		add_filter( 'woocommerce_new_order_data', $new_subscription_data );
 		parent::create( $subscription );
+		remove_filter( 'woocommerce_new_order_data', $new_subscription_data );
+
 		do_action( 'woocommerce_new_subscription', $subscription->get_id() );
 	}
 
@@ -216,6 +233,26 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		do_action( 'woocommerce_subscription_object_updated_props', $subscription, $updated_props );
 
 		parent::update_post_meta( $subscription );
+	}
+
+	/**
+	 * Get the subscription's post title
+	 */
+	protected function get_post_title() {
+		// @codingStandardsIgnoreStart
+		/* translators: %s: Order date */
+		return sprintf( __( 'Subscription &ndash; %s', 'woocommerce-subscriptions' ), ( new DateTime( 'now' ) )->format( _x( 'M d, Y @ h:i A', 'Order date parsed by DateTime::format', 'woocommerce-subscriptions' ) ) );
+		// @codingStandardsIgnoreEnd
+	}
+
+	/**
+	 * Excerpt for post.
+	 *
+	 * @param  \WC_Subscription $order Subscription object.
+	 * @return string
+	 */
+	protected function get_post_excerpt( $order ) {
+		return $order->get_customer_note();
 	}
 
 	/**

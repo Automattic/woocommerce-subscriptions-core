@@ -1,5 +1,11 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 2.4.0 - 2022-10-28 =
+* Update - The subscription creation function `wcs_create_subscription` has been updated to use WooCommerce CRUD methods in preparation for supporting High Performance Order Storage (HPOS).
+* Update - Improve wcs_copy_order_address() to use modern APIs for setting address fields.
+* Dev - woocommerce_new_subscription_data hook will only work with CPT datastore and so has been deprecated.
+* Dev - i18n usage of strftime has been deprecated for subscription titles. Date is now formatted using woocommerce standard date formatting.
+
 = 2.3.0 - 2022-10-07 =
 * Fix - Move One Time Shipping metabox fields to use the woocommerce_product_options_shipping_product_data hook introduced in WC 6.0.
 * Dev - Define build tool version requirements for consistent development and build environments.
