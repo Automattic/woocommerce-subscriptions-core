@@ -99,23 +99,26 @@ function wcs_create_subscription( $args = array() ) {
 	$now   = gmdate( 'Y-m-d H:i:s' );
 	$order = ( isset( $args['order_id'] ) ) ? wc_get_order( $args['order_id'] ) : null;
 
-	if ( ! empty( $order ) ) {
-		$default_start_date = wcs_get_datetime_utc_string( wcs_get_objects_property( $order, 'date_created' ) );
-	} else {
-		$default_start_date = $args['date_created'] ?? $now;
-	}
-
 	$default_args = array(
 		'status'             => '',
 		'order_id'           => 0,
 		'customer_note'      => null,
-		'customer_id'        => ( ! empty( $order ) ) ? $order->get_user_id() : null,
-		'start_date'         => $default_start_date,
+		'customer_id'        => null,
+		'start_date'         => $args['date_created'] ?? $now,
 		'date_created'       => $now,
-		'created_via'        => ( ! empty( $order ) ) ? wcs_get_objects_property( $order, 'created_via' ) : '',
-		'currency'           => ( ! empty( $order ) ) ? wcs_get_objects_property( $order, 'currency' ) : get_woocommerce_currency(),
-		'prices_include_tax' => ( ! empty( $order ) ) ? ( ( wcs_get_objects_property( $order, 'prices_include_tax' ) ) ? 'yes' : 'no' ) : get_option( 'woocommerce_prices_include_tax' ), // we don't use wc_prices_include_tax() here because WC doesn't use it in wc_create_order(), not 100% sure why it doesn't also check the taxes are enabled, but there could forseeably be a reason
+		'created_via'        => '',
+		'currency'           => get_woocommerce_currency(),
+		'prices_include_tax' => get_option( 'woocommerce_prices_include_tax' ), // we don't use wc_prices_include_tax() here because WC doesn't use it in wc_create_order(), not 100% sure why it doesn't also check the taxes are enabled, but there could forseeably be a reason
 	);
+
+	// If we are creating a subscription from an order, we use some of the order's data as defaults.
+	if ( $order instanceof \WC_Order ) {
+		$default_args['customer_id']        = $order->get_user_id();
+		$default_args['created_via']        = $order->get_created_via( 'edit' );
+		$default_args['currency']           = $order->get_currency( 'edit' );
+		$default_args['prices_include_tax'] = $order->get_prices_include_tax( 'edit' ) ? 'yes' : 'no';
+		$default_args['date_created']       = wcs_get_datetime_utc_string( $order->get_date_created( 'edit' ) );
+	}
 
 	if ( isset( $args['order_version'] ) ) {
 		wcs_deprecated_argument( __FUNCTION__, '2.4', 'The "order_version" argument is no longer changeable due to a change in the WC order creation process.' );
