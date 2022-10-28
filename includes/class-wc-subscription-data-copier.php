@@ -328,7 +328,7 @@ class WC_Subscription_Data_Copier {
 		$excluded_keys = array();
 
 		// If there are no third-parties hooked into the deprecated filter, there is no need to parse the query.
-		if ( false && ! $this->has_filter_on_meta_query_hook() ) {
+		if ( ! $this->has_filter_on_meta_query_hook() ) {
 			$excluded_keys['in'] = self::DEFAULT_EXCLUDED_META_KEYS;
 
 			if ( in_array( $this->copy_type, array( 'renewal_order', 'parent' ), true ) ) {
