@@ -1202,13 +1202,12 @@ class WC_Subscriptions_Synchroniser {
 	 * @return bool
 	 * @since 2.0
 	 */
-	public static function subscription_contains_synced_product( $subscription_id ) {
-
-		if ( is_object( $subscription_id ) ) {
-			$subscription_id = $subscription_id->get_id();
+	public static function subscription_contains_synced_product( $subscription ) {
+		if ( ! is_object( $subscription ) ) {
+			$subscription = wcs_get_subscription( $subscription );
 		}
 
-		return 'true' == get_post_meta( $subscription_id, '_contains_synced_subscription', true );
+		return is_a( $subscription, 'WC_Subscription' ) && 'true' === $subscription->get_meta( '_contains_synced_subscription' );
 	}
 
 	/**
