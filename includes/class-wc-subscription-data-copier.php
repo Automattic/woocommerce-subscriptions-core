@@ -361,7 +361,7 @@ class WC_Subscription_Data_Copier {
 			);
 		}
 
-		wcs_deprecated_hook( "wcs_{$this->copy_type}_meta", '2.0.0', "wcs_{$this->copy_type}_meta_data" );
+		wcs_deprecated_hook( "wcs_{$this->copy_type}_meta", '2.0.0', "wc_subscriptions_{$this->copy_type}_data" );
 		$data_array = apply_filters( "wcs_{$this->copy_type}_meta", $data_array, $this->to_object, $this->from_object );
 
 		// Return the data to a key => value format.
