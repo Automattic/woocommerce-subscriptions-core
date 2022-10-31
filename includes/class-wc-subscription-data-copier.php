@@ -133,7 +133,7 @@ class WC_Subscription_Data_Copier {
 	 * @param string $key   The data key to set.
 	 * @param mixed  $value The value to set.
 	 */
-	private function set_data( $key, $value ) {
+	public function set_data( $key, $value ) {
 
 		// WC will automatically set/update these keys when a shipping/billing address attribute changes so we can ignore these keys.
 		if ( in_array( $key, array( '_shipping_address_index', '_billing_address_index' ), true ) ) {
@@ -205,7 +205,7 @@ class WC_Subscription_Data_Copier {
 	 *
 	 * @return string[] The operational data with the legacy meta key.
 	 */
-	private function get_operational_data() {
+	public function get_operational_data() {
 		return array(
 			'_created_via'                  => $this->from_object->get_created_via( 'edit' ),
 			'_order_version'                => $this->from_object->get_version( 'edit' ),
@@ -231,7 +231,7 @@ class WC_Subscription_Data_Copier {
 	 *
 	 * @return string[] The core data with the legacy meta keys.
 	 */
-	private function get_order_data() {
+	public function get_order_data() {
 		return array(
 			'_order_currency'       => $this->from_object->get_currency( 'edit' ),
 			'_order_tax'            => $this->from_object->get_cart_tax( 'edit' ),
@@ -251,7 +251,7 @@ class WC_Subscription_Data_Copier {
 	 *
 	 * @return string[] The address data with the legacy meta keys.
 	 */
-	private function get_address_data() {
+	public function get_address_data() {
 		return array_filter(
 			array(
 				'_billing_first_name'  => $this->from_object->get_billing_first_name( 'edit' ),
@@ -380,7 +380,7 @@ class WC_Subscription_Data_Copier {
 	 *
 	 * @return string[][] An array of excluded meta keys. The array has two keys: 'in' and 'regex'. The 'in' key contains an array of meta keys to exclude. The 'regex' key contains an array of regular expressions to exclude.
 	 */
-	private function get_excluded_data_keys() {
+	public function get_excluded_data_keys() {
 		$excluded_keys = array();
 
 		// If there are no third-parties hooked into the deprecated filter, there is no need to parse the query.
