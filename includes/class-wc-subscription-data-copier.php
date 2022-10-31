@@ -100,7 +100,7 @@ class WC_Subscription_Data_Copier {
 	 */
 	public function copy_data() {
 
-		if ( $this->is_cpt_data_store() ) {
+		if ( $this->is_using_cpt_data_stores() ) {
 			$data_array = $GLOBALS['wpdb']->get_results( $this->get_deprecated_meta_query(), ARRAY_A );
 			$data       = wp_list_pluck( $data_array, 'meta_value', 'meta_key' );
 		} else {
@@ -172,7 +172,7 @@ class WC_Subscription_Data_Copier {
 	 *
 	 * @return bool
 	 */
-	private function is_cpt_data_store() {
+	private function is_using_cpt_data_stores() {
 		return true;
 	}
 
