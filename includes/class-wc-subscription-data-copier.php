@@ -99,26 +99,23 @@ class WC_Subscription_Data_Copier {
 	 * operational, address and internal meta data is passed through filters before it is copied.
 	 */
 	public function copy_data() {
-		$data  = $this->get_meta_data();
-		$data += $this->get_order_data();
-		$data += $this->get_operational_data();
-		$data += $this->get_address_data();
 
-		// Remove any excluded meta keys.
-		$data = $this->filter_excluded_meta_keys( $data );
+		if ( $this->is_cpt_data_store() ) {
+			$data_array = $GLOBALS['wpdb']->get_results( $this->get_deprecated_meta_query(), ARRAY_A );
+			$data       = wp_list_pluck( $data_array, 'meta_value', 'meta_key' );
+		} else {
+			$data  = $this->get_meta_data();
+			$data += $this->get_order_data();
+			$data += $this->get_operational_data();
+			$data += $this->get_address_data();
 
-		// Convert the data into the backwards compatible format ready for filtering - wpdb's ARRAY_A format.
-		$data_array = array();
-
-		foreach ( $data as $key => $value ) {
-			$data_array[] = array(
-				'meta_key'   => $key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- This is a meta key, not a query.
-				'meta_value' => $value, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- This is a meta value, not a query.
-			);
+			// Remove any excluded meta keys.
+			$data = $this->filter_excluded_meta_keys_via_query( $data );
 		}
 
-		// Allow third parties to filter the data before it is copied.
-		$data_array = apply_filters( "wcs_{$this->copy_type}_meta", $data_array, $this->to_object, $this->from_object );
+		$data = $this->apply_deprecated_filter( $data );
+		$data = apply_filters( "wc_subscriptions_{$this->copy_type}_data", $data, $this->to_object, $this->from_object );
+		$data = apply_filters( 'wc_subscriptions_copied_data', $data, $this->to_object, $this->from_object, $this->copy_type );
 
 		foreach ( $data_array as $object_data ) {
 			$this->set_data( $object_data['meta_key'], $object_data['meta_value'] );
@@ -137,8 +134,26 @@ class WC_Subscription_Data_Copier {
 	 * @param mixed  $value The value to set.
 	 */
 	private function set_data( $key, $value ) {
-		// Currency needs special handling because its key and setter don't map nicely.
-		$setter = '_order_currency' === $key ? 'set_currency' : 'set_' . ltrim( $key, '_' );
+
+		// WC will automatically set/update these keys when a shipping/billing address attribute changes so we can ignore these keys.
+		if ( in_array( $key, array( '_shipping_address_index', '_billing_address_index' ), true ) ) {
+			return;
+		}
+
+		// Special cases where properties with setters don't map nicely to their function names.
+		$setter_map = array(
+			'_cart_discount'      => 'set_discount_total',
+			'_cart_discount_tax'  => 'set_discount_tax',
+			'_customer_user'      => 'set_customer_id',
+			'_order_tax'          => 'set_cart_tax',
+			'_order_shipping'     => 'set_shipping_total',
+			'_order_currency'     => 'set_currency',
+			'_order_shipping_tax' => 'set_shipping_tax',
+			'_order_total'        => 'set_total',
+			'_order_version'      => 'set_version',
+		);
+
+		$setter = isset( $setter_map[ $key ] ) ? $setter_map[ $key ] : 'set_' . ltrim( $key, '_' );
 
 		if ( is_callable( array( $this->to_object, $setter ) ) ) {
 			// Re-bool the value before setting it. Setters like `set_prices_include_tax()` expect a bool.
@@ -150,6 +165,15 @@ class WC_Subscription_Data_Copier {
 		} else {
 			$this->to_object->update_meta_data( $key, $value );
 		}
+	}
+
+	/**
+	 * Determines if the store is using the WP CPT datastores.
+	 *
+	 * @return bool
+	 */
+	private function is_cpt_data_store() {
+		return true;
 	}
 
 	/**
@@ -255,11 +279,12 @@ class WC_Subscription_Data_Copier {
 	}
 
 	/**
-	 * Removes the excluded meta keys from the set of data to be copied.
+	 * Removes the meta keys excluded via the deprecated from the set of data to be copied.
 	 *
-	 * @return string[] The data to be copied with the excluded keys removed.
+	 * @param array $data The data to be copied.
+	 * @return array The data to be copied with the excluded keys removed.
 	 */
-	private function filter_excluded_meta_keys( $data ) {
+	private function filter_excluded_meta_keys_via_query( $data ) {
 		$excluded_keys = $this->get_excluded_data_keys();
 
 		foreach ( $data as $meta_key => $meta_value ) {
@@ -310,6 +335,37 @@ class WC_Subscription_Data_Copier {
 		}
 
 		return $meta_query;
+	}
+
+	/**
+	 * Applies the deprecated "wcs_{$this->copy_type}_meta filter.
+	 *
+	 * Triggers a deprecation notice if the deprecated "wcs_{$this->copy_type}_meta" filter is in use by at least 1 third-party.
+	 *
+	 * @param array $data The data to copy.
+	 * @return array The filtered set of data to copy.
+	 */
+	private function apply_deprecated_filter( $data ) {
+		// Only continue if the filter is use.
+		if ( ! has_filter( "wcs_{$this->copy_type}_meta" ) ) {
+			return $data;
+		}
+
+		// Convert the data into the backwards compatible format ready for filtering - wpdb's ARRAY_A format.
+		$data_array = array();
+
+		foreach ( $data as $key => $value ) {
+			$data_array[] = array(
+				'meta_key'   => $key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- This is a meta key, not a query.
+				'meta_value' => $value, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- This is a meta value, not a query.
+			);
+		}
+
+		wcs_deprecated_hook( "wcs_{$this->copy_type}_meta", '2.0.0', "wcs_{$this->copy_type}_meta_data" );
+		$data_array = apply_filters( "wcs_{$this->copy_type}_meta", $data_array, $this->to_object, $this->from_object );
+
+		// Return the data to a key => value format.
+		return wp_list_pluck( $data_array, 'meta_value', 'meta_key' );
 	}
 
 	/**
