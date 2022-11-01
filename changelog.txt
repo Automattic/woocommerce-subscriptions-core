@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 2.4.1 - 2022-xx-xx =
+* Fix - Undefined method WC_Order::set_shipping_address() on stores running pre-7.1 of WooCommerce which prevented subscriptions from being purchased.
+
 = 2.4.0 - 2022-10-28 =
 * Update - The subscription creation function `wcs_create_subscription` has been updated to use WooCommerce CRUD methods in preparation for supporting High Performance Order Storage (HPOS).
 * Update - Improve wcs_copy_order_address() to use modern APIs for setting address fields.
