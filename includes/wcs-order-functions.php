@@ -121,6 +121,8 @@ function wcs_copy_order_address( $from_order, $to_order, $address_type = 'all' )
 		$to_order->set_billing_phone( $from_order->get_billing_phone() );
 	}
 
+	$to_order->save();
+
 	return apply_filters( 'woocommerce_subscriptions_copy_order_address', $to_order, $from_order, $address_type );
 }
 
