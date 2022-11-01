@@ -207,7 +207,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 			$this->subscription_internal_meta_keys[]            = $meta_key;
 		}
 
-		// Exclude the subscription related meta data we set and manage manually from the objects "meta" data
+		// Exclude the subscription related meta data we set and manage manually from the objects "meta" data.
 		$this->internal_meta_keys = array_merge( $this->internal_meta_keys, $this->subscription_internal_meta_keys );
 	}
 
@@ -513,11 +513,11 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 		}
 
 		$date_meta_keys_to_props = array_intersect_key( $this->subscription_meta_keys_to_props, array_flip( $date_meta_keys ) );
-		$subscription_meta_data  = $this->data_store_meta->read_meta( $subscription );
+		$subscription_meta_data  = array_column( $this->data_store_meta->read_meta( $subscription ), null, 'meta_key' );
 
 		// Save the changes to scheduled dates
 		foreach ( $this->get_props_to_update( $subscription, $date_meta_keys_to_props ) as $meta_key => $prop ) {
-			$existing_meta_data = array_column( $subscription_meta_data, null, 'meta_key' )[ $meta_key ] ?? false;
+			$existing_meta_data = $subscription_meta_data[ $meta_key ] ?? false;
 			$new_meta_data      = [
 				'key'   => $meta_key,
 				'value' => $subscription->get_date( $prop ),
@@ -537,24 +537,24 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 
 		// Record any changes to the created date.
 		if ( isset( $changes['date_created'] ) ) {
-			$order_update_query[]        = '`date_created_gmt` = ' . gmdate( 'Y-m-d H:i:s', $subscription->get_date_created( 'edit' )->getTimestamp() );
+			$order_update_query[]        = $wpdb->prepare( '`date_created_gmt` = %s', gmdate( 'Y-m-d H:i:s', $subscription->get_date_created( 'edit' )->getTimestamp() ) );
 			$saved_dates['date_created'] = $subscription->get_date_created();
 		}
 
 		// Record any changes to the modified date.
 		if ( isset( $changes['date_modified'] ) ) {
-			$order_update_query[]         = '`date_updated_gmt` = ' . gmdate( 'Y-m-d H:i:s', $subscription->get_date_modified( 'edit' )->getTimestamp() );
+			$order_update_query[]         = $wpdb->prepare( '`date_updated_gmt` = %s', gmdate( 'Y-m-d H:i:s', $subscription->get_date_modified( 'edit' )->getTimestamp() ) );
 			$saved_dates['date_modified'] = $subscription->get_date_modified();
 		}
 
 		// Manually update the order's created and/or modified date if it has changed.
 		if ( ! empty( $order_update_query ) ) {
 			$table_name = self::get_orders_table_name();
+			$set        = implode( ', ', $order_update_query );
 
 			$wpdb->query(
 				$wpdb->prepare(
-					"UPDATE {$table_name} SET %s WHERE order_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-					implode( ', ', $order_update_query ),
+					"UPDATE {$table_name} SET {$set} WHERE order_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 					$subscription->get_id()
 				)
 			);
