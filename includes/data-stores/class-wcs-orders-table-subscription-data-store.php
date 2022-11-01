@@ -55,6 +55,8 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	/**
 	 * Table column to WC_Subscription mapping for wc_orders table.
 	 *
+	 * All columns are inherited from orders except the `transaction_id` column isn't used for subscriptions.
+	 *
 	 * @var \string[][]
 	 */
 	protected $order_column_mapping = array(
@@ -124,9 +126,17 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 		),
 	);
 
-
 	/**
 	 * Table column to WC_Subscription mapping for wc_operational_data table.
+	 *
+	 * For subscriptions, all columns are inherited from orders except for the following columns:
+	 *
+	 * - cart_hash
+	 * - new_order_email_sent
+	 * - order_stock_reduced
+	 * - date_paid_gmt
+	 * - recorded_sales
+	 * - date_completed_gmt
 	 *
 	 * @var \string[][]
 	 */
@@ -211,14 +221,13 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Get amount refunded for all related orders.
+	 * Gets amount refunded for all related orders.
 	 *
 	 * @param \WC_Subscription $subscription
 	 *
 	 * @return string
 	 */
 	public function get_total_refunded( $subscription ) {
-
 		$total = 0;
 
 		foreach ( $subscription->get_related_orders( 'all' ) as $order ) {
@@ -229,7 +238,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Get the total tax refunded for all related orders.
+	 * Gets the total tax refunded for all related orders.
 	 *
 	 * @param \WC_Subscription $subscription
 	 *
@@ -246,9 +255,9 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Get the total shipping refunded for all related orders.
+	 * Gets the total shipping refunded for all related orders.
 	 *
-	 * @param \WC_Subscription $subscription
+	 * @param \WC_Subscription $subscription The subscription object.
 	 *
 	 * @return float
 	 */
@@ -263,15 +272,14 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Return count of orders with a specific status.
+	 * Returns count of subscriptions with a specific status.
 	 *
-	 * @param string $status Order status. Function wc_get_order_statuses() returns a list of valid statuses.
+	 * @param string $status Subscription status. The wcs_get_subscription_statuses() function returns a list of valid statuses.
 	 *
-	 * @return int
+	 * @return int The number of subscriptions with a specific status.
 	 */
 	public function get_order_count( $status ) {
 		global $wpdb;
-
 		$orders_table = self::get_orders_table_name();
 
 		return absint( $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$orders_table} WHERE type = %s AND status = %s", 'shop_subscription', $status ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
@@ -326,9 +334,9 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Create a new subscription in the database.
+	 * Creates a new subscription in the database.
 	 *
-	 * @param \WC_Subscription $subscription
+	 * @param \WC_Subscription $subscription Subscription object.
 	 */
 	public function create( &$subscription ) {
 		parent::create( $subscription );
@@ -336,11 +344,9 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Read a subscription object from custom tables.
+	 * Reads a subscription object from custom tables.
 	 *
 	 * @param \WC_Subscription $subscription Subscription object.
-	 *
-	 * @return void
 	 */
 	public function read( &$subscription ) {
 		parent::read( $subscription );
@@ -348,11 +354,9 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Read multiple subscription objects from custom tables.
+	 * Reads multiple subscription objects from custom tables.
 	 *
 	 * @param \WC_Order $subscriptions Subscription objects.
-	 *
-	 * @return void
 	 */
 	public function read_multiple( &$subscriptions ) {
 		parent::read_multiple( $subscriptions );
@@ -362,11 +366,9 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Update subscription in the database.
+	 * Updates a subscription in the database.
 	 *
-	 * @param \WC_Subscription $subscription
-	 *
-	 * @return void
+	 * @param \WC_Subscription $subscription Subscription object
 	 */
 	public function update( &$subscription ) {
 		// TODO: check date paid logic at top of parent::update function
@@ -380,11 +382,9 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Helper method to set subscription props.
+	 * Sets subscription props.
 	 *
 	 * @param \WC_Order $subscription Subscription object.
-	 *
-	 * @return void
 	 */
 	private function set_subscription_props( $subscription ) {
 		$props_to_set = [];
@@ -454,11 +454,9 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Helper method that updates post meta based on an order object.
+	 * Updates meta data based on a subscription object.
 	 *
-	 * @param \WC_Subscription $subscription Order object.
-	 *
-	 * @return void
+	 * @param \WC_Subscription $subscription Subscription object.
 	 */
 	public function update_order_meta( &$subscription ) {
 		$updated_props = [];
@@ -481,12 +479,11 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Update subscription dates in the database.
-	 * Returns the date properties saved to the database in array format: [ $prop_name => DateTime Object ]
+	 * Updates subscription dates in the database.
 	 *
-	 * @param \WC_Subscription $subscription
+	 * @param \WC_Subscription $subscription Subscription object.
 	 *
-	 * @return array
+	 * @return DateTime[] The date properties which were saved to the database in array format: [ $prop_name => DateTime Object ]
 	 */
 	public function save_dates( $subscription ) {
 		global $wpdb;
@@ -567,11 +564,11 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Search subscription data for a term and returns subscription ids
+	 * Searches subscription data for a term and returns subscription IDs.
 	 *
 	 * @param string $term Term to search.
 	 *
-	 * @return array
+	 * @return array A list of subscriptions IDs that match the search term.
 	 */
 	public function search_subscriptions( $term ) {
 		add_filter( 'woocommerce_order_table_search_query_meta_keys', [ $this, 'get_subscription_order_table_search_fields' ] );
@@ -592,11 +589,13 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Get the subscription search fields.
+	 * Gets the subscription search fields.
 	 *
-	 * @param array $search_fields
+	 * This function is hooked onto the 'woocommerce_order_table_search_query_meta_keys' filter.
 	 *
-	 * @return array
+	 * @param array The default order search fields.
+	 *
+	 * @return array The subscription search fields.
 	 */
 	public function get_subscription_order_table_search_fields( $search_fields = [] ) {
 		return array_map(
@@ -612,9 +611,9 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Get the user IDs for customers who have a subscription.
+	 * Gets user IDs for customers who have a subscription.
 	 *
-	 * @return array
+	 * @return array An array of user IDs.
 	 */
 	public function get_subscription_customer_ids() {
 		global $wpdb;
