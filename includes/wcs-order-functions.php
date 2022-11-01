@@ -96,37 +96,29 @@ function wcs_get_subscriptions_for_order( $order, $args = array() ) {
 function wcs_copy_order_address( $from_order, $to_order, $address_type = 'all' ) {
 
 	if ( 'all' === $address_type || 'shipping' === $address_type ) {
-		$to_order->set_shipping_address(
-			array(
-				'first_name' => $from_order->get_shipping_first_name( 'edit' ),
-				'last_name'  => $from_order->get_shipping_last_name( 'edit' ),
-				'company'    => $from_order->get_shipping_company( 'edit' ),
-				'address_1'  => $from_order->get_shipping_address_1( 'edit' ),
-				'address_2'  => $from_order->get_shipping_address_2( 'edit' ),
-				'city'       => $from_order->get_shipping_city( 'edit' ),
-				'state'      => $from_order->get_shipping_state( 'edit' ),
-				'postcode'   => $from_order->get_shipping_postcode( 'edit' ),
-				'country'    => $from_order->get_shipping_country( 'edit' ),
-			)
-		);
+		$to_order->set_shipping_first_name( $from_order->get_shipping_first_name() );
+		$to_order->set_shipping_last_name( $from_order->get_shipping_last_name() );
+		$to_order->set_shipping_company( $from_order->get_shipping_company() );
+		$to_order->set_shipping_address_1( $from_order->get_shipping_address_1() );
+		$to_order->set_shipping_address_2( $from_order->get_shipping_address_2() );
+		$to_order->set_shipping_city( $from_order->get_shipping_city() );
+		$to_order->set_shipping_state( $from_order->get_shipping_state() );
+		$to_order->set_shipping_postcode( $from_order->get_shipping_postcode() );
+		$to_order->set_shipping_country( $from_order->get_shipping_country() );
 	}
 
 	if ( 'all' === $address_type || 'billing' === $address_type ) {
-		$to_order->set_billing_address(
-			array(
-				'first_name' => $from_order->get_billing_first_name( 'edit' ),
-				'last_name'  => $from_order->get_billing_last_name( 'edit' ),
-				'company'    => $from_order->get_billing_company( 'edit' ),
-				'address_1'  => $from_order->get_billing_address_1( 'edit' ),
-				'address_2'  => $from_order->get_billing_address_2( 'edit' ),
-				'city'       => $from_order->get_billing_city( 'edit' ),
-				'state'      => $from_order->get_billing_state( 'edit' ),
-				'postcode'   => $from_order->get_billing_postcode( 'edit' ),
-				'country'    => $from_order->get_billing_country( 'edit' ),
-				'email'      => $from_order->get_billing_email( 'edit' ),
-				'phone'      => $from_order->get_billing_phone( 'edit' ),
-			)
-		);
+		$to_order->set_billing_first_name( $from_order->get_billing_first_name() );
+		$to_order->set_billing_last_name( $from_order->get_billing_last_name() );
+		$to_order->set_billing_company( $from_order->get_billing_company() );
+		$to_order->set_billing_address_1( $from_order->get_billing_address_1() );
+		$to_order->set_billing_address_2( $from_order->get_billing_address_2() );
+		$to_order->set_billing_city( $from_order->get_billing_city() );
+		$to_order->set_billing_state( $from_order->get_billing_state() );
+		$to_order->set_billing_postcode( $from_order->get_billing_postcode() );
+		$to_order->set_billing_country( $from_order->get_billing_country() );
+		$to_order->set_billing_email( $from_order->get_billing_email() );
+		$to_order->set_billing_phone( $from_order->get_billing_phone() );
 	}
 
 	return apply_filters( 'woocommerce_subscriptions_copy_order_address', $to_order, $from_order, $address_type );
