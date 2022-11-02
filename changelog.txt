@@ -1,5 +1,9 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 2.5.0 - 2022-xx-xx =
+* Fix - When saving sync meta data on a new subscription, use 'woocommerce_new_subscription' instead of 'save_post'. This is to prevent errors when purchasing a subscription on stores that have HPOS enabled.
+* Update - Improve maybe_add_subscription_meta() and subscription_contains_synced_product() inside our WC_Subscriptions_Synchroniser class to use CRUD methods. 
+
 = 2.4.1 - 2022-11-02 =
 * Fix - Undefined method WC_Order::set_shipping_address() on stores running pre-7.1 of WooCommerce which prevented subscriptions from being purchased.
 
