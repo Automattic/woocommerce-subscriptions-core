@@ -131,7 +131,7 @@ class WC_Subscriptions_Data_Copier {
 	 * @param string $key   The data key to set.
 	 * @param mixed  $value The value to set.
 	 */
-	public function set_data( $key, $value ) {
+	private function set_data( $key, $value ) {
 
 		// WC will automatically set/update these keys when a shipping/billing address attribute changes so we can ignore these keys.
 		if ( in_array( $key, [ '_shipping_address_index', '_billing_address_index' ], true ) ) {
