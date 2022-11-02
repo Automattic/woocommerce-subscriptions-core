@@ -371,12 +371,33 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 * @param \WC_Subscription $subscription Subscription object
 	 */
 	public function update( &$subscription ) {
-		// TODO: check date paid logic at top of parent::update function
-		// Old comment: We don't want to call parent here becuase WC_Order_Data_Store_CPT includes a JIT setting of the paid date which is not needed for subscriptions, and also very resource intensive
-		parent::update( $subscription );
+		// We don't want to call parent::update() here because OrdersTableDataStore includes a JIT setting of the paid date which is not needed for subscriptions, and also very resource intensive due to needed to search related orders to get the latest orders paid date.
+		if ( null === $subscription->get_date_created( 'edit' ) ) {
+			$subscription->set_date_created( time() );
+		}
 
-		// We used to call parent::update() above, which triggered this hook, so we trigger it manually here for backward compatibilty (and to improve compatibility with 3rd party code which may run validation or additional operations on it which should also be applied to a subscription)
-		do_action( 'woocommerce_update_order', $subscription->get_id() );
+		$subscription->set_version( Constants::get_constant( 'WC_VERSION' ) );
+
+		// Fetch changes.
+		$changes = $subscription->get_changes();
+		$this->persist_updates( $subscription );
+
+		// Update download permissions if necessary.
+		if ( array_key_exists( 'billing_email', $changes ) || array_key_exists( 'customer_id', $changes ) ) {
+			$data_store = \WC_Data_Store::load( 'customer-download' );
+			$data_store->update_user_by_order_id( $subscription->get_id(), $subscription->get_customer_id(), $subscription->get_billing_email() );
+		}
+
+		// Mark user account as active.
+		if ( array_key_exists( 'customer_id', $changes ) ) {
+			wc_update_user_last_active( $subscription->get_customer_id() );
+		}
+
+		$subscription->apply_changes();
+		$this->clear_caches( $subscription );
+
+		// For backwards compatibility we trigger the `woocommerce_update_order` hook.
+		do_action( 'woocommerce_update_order', $subscription->get_id(), $subscription );
 
 		do_action( 'woocommerce_update_subscription', $subscription->get_id() );
 	}
