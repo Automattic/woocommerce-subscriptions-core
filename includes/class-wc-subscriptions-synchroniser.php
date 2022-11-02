@@ -1133,13 +1133,11 @@ class WC_Subscriptions_Synchroniser {
 	}
 
 	/**
-	 * Add subscription meta for subscription that contains a synced product.
+	 * Adds meta on a subscription that contains a synced product.
 	 *
 	 * @since 2.0
 	 *
 	 * @param WC_Subscription|int Subscription object or ID.
-	 *
-	 * @return void
 	 */
 	public static function maybe_add_subscription_meta( $subscription ) {
 		if ( ! is_object( $subscription ) ) {
@@ -1192,11 +1190,12 @@ class WC_Subscriptions_Synchroniser {
 	}
 
 	/**
-	 * Check if a given subscription is synced to a certain day.
+	 * Checks if a given subscription is synced to a certain day.
 	 *
-	 * @param int|WC_Subscription Accepts either a subscription object of post id
-	 * @return bool
 	 * @since 2.0
+	 *
+	 * @param int|WC_Subscription Accepts either a subscription object or ID.
+	 * @return bool True if the subscription is synced, false otherwise.
 	 */
 	public static function subscription_contains_synced_product( $subscription ) {
 		if ( ! is_object( $subscription ) ) {
