@@ -5,7 +5,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class WC_Subscription_Data_Copier {
+class WC_Subscriptions_Data_Copier {
 
 	/**
 	 * The default copy type.
@@ -13,11 +13,11 @@ class WC_Subscription_Data_Copier {
 	const DEFAULT_COPY_TYPE = 'subscription';
 
 	/**
-	 * The data keys that are excluded from the copy.
+	 * The default data keys that are excluded from the copy.
 	 *
 	 * @var string[]
 	 */
-	const DEFAULT_EXCLUDED_META_KEYS = array(
+	const DEFAULT_EXCLUDED_META_KEYS = [
 		'_paid_date',
 		'_date_paid',
 		'_completed_date',
@@ -41,24 +41,24 @@ class WC_Subscription_Data_Copier {
 		'_trial_period',
 		'_created_via',
 		'_order_stock_reduced',
-	);
+	];
 
 	/**
-	 * The subscription being copied.
+	 * The subscription or order being copied.
 	 *
 	 * @var WC_Order
 	 */
 	private $from_object = null;
 
 	/**
-	 * The subscription being copied to.
+	 * The subscription or order being copied to.
 	 *
 	 * @var WC_Order
 	 */
 	private $to_object = null;
 
 	/**
-	 * The type of copy. Can be 'subscription' or 'renewal'. Optional. Default is 'subscription'.
+	 * The type of copy. Can be 'subscription' or 'renewal'.
 	 *
 	 * Used in dynamic filters to allow third parties to target specific meta keys in different copying contexts.
 	 *
@@ -67,16 +67,17 @@ class WC_Subscription_Data_Copier {
 	private $copy_type = '';
 
 	/**
-	 * Gets an instance of a copier.
+	 * Copies data from one object to another.
+	 *
+	 * This function acts as a publicly accessible wrapper for obtaining an instance of the copier and completing the copy.
 	 *
 	 * @param WC_Order $from_object The object to copy data from.
 	 * @param WC_Order $to_object   The object to copy data to.
-	 * @param string                   $copy_type   The type of copy. Can be 'subscription', 'parent', 'renewal_order' or 'resubscribe_order'. Optional. Default is 'subscription'.
-	 *
-	 * @return WC_Subscription_Data_Copier
+	 * @param string   $copy_type   Optional. The type of copy. Can be 'subscription', 'parent', 'renewal_order' or 'resubscribe_order'. Default is 'subscription'.
 	 */
-	public static function get_instance( $from_object, $to_object, $copy_type = self::DEFAULT_COPY_TYPE ) {
-		return new self( $from_object, $to_object, $copy_type );
+	public static function copy( $from_object, $to_object, $copy_type = self::DEFAULT_COPY_TYPE ) {
+		$instance = new self( $from_object, $to_object, $copy_type );
+		$instance->copy_data();
 	}
 
 	/**
@@ -84,7 +85,7 @@ class WC_Subscription_Data_Copier {
 	 *
 	 * @param WC_Order $from_object The object to copy data from.
 	 * @param WC_Order $to_object   The object to copy data to.
-	 * @param string                   $copy_type   The type of copy. Can be 'subscription', 'parent', 'renewal_order' or 'resubscribe_order'. Optional. Default is 'subscription'.
+	 * @param string   $copy_type   Optional. The type of copy. Can be 'subscription', 'parent', 'renewal_order' or 'resubscribe_order'. Default is 'subscription'.
 	 */
 	public function __construct( $from_object, $to_object, $copy_type = self::DEFAULT_COPY_TYPE ) {
 		$this->from_object = $from_object;
@@ -94,9 +95,6 @@ class WC_Subscription_Data_Copier {
 
 	/**
 	 * Copies the data from the "from" object to the "to" object.
-	 *
-	 * To remain backwards compatible with the pre-existing filters, all data including meta,
-	 * operational, address and internal meta data is passed through filters before it is copied.
 	 */
 	public function copy_data() {
 
@@ -136,12 +134,12 @@ class WC_Subscription_Data_Copier {
 	public function set_data( $key, $value ) {
 
 		// WC will automatically set/update these keys when a shipping/billing address attribute changes so we can ignore these keys.
-		if ( in_array( $key, array( '_shipping_address_index', '_billing_address_index' ), true ) ) {
+		if ( in_array( $key, [ '_shipping_address_index', '_billing_address_index' ], true ) ) {
 			return;
 		}
 
 		// Special cases where properties with setters don't map nicely to their function names.
-		$setter_map = array(
+		$setter_map = [
 			'_cart_discount'      => 'set_discount_total',
 			'_cart_discount_tax'  => 'set_discount_tax',
 			'_customer_user'      => 'set_customer_id',
@@ -151,13 +149,13 @@ class WC_Subscription_Data_Copier {
 			'_order_shipping_tax' => 'set_shipping_tax',
 			'_order_total'        => 'set_total',
 			'_order_version'      => 'set_version',
-		);
+		];
 
 		$setter = isset( $setter_map[ $key ] ) ? $setter_map[ $key ] : 'set_' . ltrim( $key, '_' );
 
-		if ( is_callable( array( $this->to_object, $setter ) ) ) {
+		if ( is_callable( [ $this->to_object, $setter ] ) ) {
 			// Re-bool the value before setting it. Setters like `set_prices_include_tax()` expect a bool.
-			if ( is_string( $value ) && in_array( $value, array( 'yes', 'no' ), true ) ) {
+			if ( is_string( $value ) && in_array( $value, [ 'yes', 'no' ], true ) ) {
 				$value = 'yes' === $value;
 			}
 
@@ -191,7 +189,7 @@ class WC_Subscription_Data_Copier {
 	 * @return string[] The meta data.
 	 */
 	private function get_meta_data() {
-		$meta_data = array();
+		$meta_data = [];
 
 		foreach ( $this->from_object->get_meta_data() as $meta ) {
 			$meta_data[ $meta->key ] = $meta->value;
@@ -206,7 +204,7 @@ class WC_Subscription_Data_Copier {
 	 * @return string[] The operational data with the legacy meta key.
 	 */
 	private function get_operational_data() {
-		return array(
+		return [
 			'_created_via'                  => $this->from_object->get_created_via( 'edit' ),
 			'_order_version'                => $this->from_object->get_version( 'edit' ),
 			'_prices_include_tax'           => wc_bool_to_string( $this->from_object->get_prices_include_tax( 'edit' ) ),
@@ -223,7 +221,7 @@ class WC_Subscription_Data_Copier {
 			'_cart_discount_tax'            => $this->from_object->get_discount_tax( 'edit' ),
 			'_cart_discount'                => $this->from_object->get_discount_total( 'edit' ),
 			'_recorded_sales'               => wc_bool_to_string( $this->from_object->get_recorded_sales( 'edit' ) ),
-		);
+		];
 	}
 
 	/**
@@ -232,7 +230,7 @@ class WC_Subscription_Data_Copier {
 	 * @return string[] The core data with the legacy meta keys.
 	 */
 	private function get_order_data() {
-		return array(
+		return [
 			'_order_currency'       => $this->from_object->get_currency( 'edit' ),
 			'_order_tax'            => $this->from_object->get_cart_tax( 'edit' ),
 			'_order_total'          => $this->from_object->get_total( 'edit' ),
@@ -243,7 +241,7 @@ class WC_Subscription_Data_Copier {
 			'_customer_ip_address'  => $this->from_object->get_customer_ip_address( 'edit' ),
 			'_customer_user_agent'  => $this->from_object->get_customer_user_agent( 'edit' ),
 			'_transaction_id'       => $this->from_object->get_transaction_id( 'edit' ),
-		);
+		];
 	}
 
 	/**
@@ -253,7 +251,7 @@ class WC_Subscription_Data_Copier {
 	 */
 	private function get_address_data() {
 		return array_filter(
-			array(
+			[
 				'_billing_first_name'  => $this->from_object->get_billing_first_name( 'edit' ),
 				'_billing_last_name'   => $this->from_object->get_billing_last_name( 'edit' ),
 				'_billing_company'     => $this->from_object->get_billing_company( 'edit' ),
@@ -274,7 +272,7 @@ class WC_Subscription_Data_Copier {
 				'_shipping_state'      => $this->from_object->get_shipping_state( 'edit' ),
 				'_shipping_postcode'   => $this->from_object->get_shipping_postcode( 'edit' ),
 				'_shipping_country'    => $this->from_object->get_shipping_country( 'edit' ),
-			)
+			]
 		);
 	}
 
@@ -325,12 +323,12 @@ class WC_Subscription_Data_Copier {
 			implode( "', '", self::DEFAULT_EXCLUDED_META_KEYS )
 		);
 
-		if ( in_array( $this->copy_type, array( 'renewal_order', 'parent' ), true ) ) {
+		if ( in_array( $this->copy_type, [ 'renewal_order', 'parent' ], true ) ) {
 			$meta_query .= " AND `meta_key` NOT LIKE '_download_permissions_granted' ";
 		}
 
 		if ( $this->has_filter_on_meta_query_hook() ) {
-			wcs_deprecated_hook( "wcs_{$this->copy_type}_meta_query", '2.0.0', "wcs_{$this->copy_type}_meta" );
+			wcs_deprecated_hook( "wcs_{$this->copy_type}_meta_query", 'wcs-core 2.4.0', "wcs_{$this->copy_type}_meta" );
 			$meta_query = apply_filters( "wcs_{$this->copy_type}_meta_query", $meta_query, $this->to_object, $this->from_object );
 		}
 
@@ -352,16 +350,16 @@ class WC_Subscription_Data_Copier {
 		}
 
 		// Convert the data into the backwards compatible format ready for filtering - wpdb's ARRAY_A format.
-		$data_array = array();
+		$data_array = [];
 
 		foreach ( $data as $key => $value ) {
-			$data_array[] = array(
+			$data_array[] = [
 				'meta_key'   => $key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- This is a meta key, not a query.
 				'meta_value' => $value, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- This is a meta value, not a query.
-			);
+			];
 		}
 
-		wcs_deprecated_hook( "wcs_{$this->copy_type}_meta", '2.0.0', "wc_subscriptions_{$this->copy_type}_data" );
+		wcs_deprecated_hook( "wcs_{$this->copy_type}_meta", 'wcs-core 2.4.0', "wc_subscriptions_{$this->copy_type}_data" );
 		$data_array = apply_filters( "wcs_{$this->copy_type}_meta", $data_array, $this->to_object, $this->from_object );
 
 		// Return the data to a key => value format.
@@ -381,13 +379,13 @@ class WC_Subscription_Data_Copier {
 	 * @return string[][] An array of excluded meta keys. The array has two keys: 'in' and 'regex'. The 'in' key contains an array of meta keys to exclude. The 'regex' key contains an array of regular expressions to exclude.
 	 */
 	private function get_excluded_data_keys() {
-		$excluded_keys = array();
+		$excluded_keys = [];
 
 		// If there are no third-parties hooked into the deprecated filter, there is no need to parse the query.
 		if ( ! $this->has_filter_on_meta_query_hook() ) {
 			$excluded_keys['in'] = self::DEFAULT_EXCLUDED_META_KEYS;
 
-			if ( in_array( $this->copy_type, array( 'renewal_order', 'parent' ), true ) ) {
+			if ( in_array( $this->copy_type, [ 'renewal_order', 'parent' ], true ) ) {
 				$excluded_keys['regex'][] = $this->get_keys_from_like_clause( '_download_permissions_granted' );
 			}
 
@@ -398,7 +396,7 @@ class WC_Subscription_Data_Copier {
 		$meta_query = $this->get_deprecated_meta_query();
 
 		// Normalize the query.
-		$meta_query = str_replace( array( "\r", "\n", "\t" ), ' ', $meta_query ); // Remove line breaks, tabs, etc.
+		$meta_query = str_replace( [ "\r", "\n", "\t" ], ' ', $meta_query ); // Remove line breaks, tabs, etc.
 		$meta_query = preg_replace( '/\s+/', ' ', $meta_query ); // Remove duplicate whitespace.
 		$meta_query = str_replace( '`', '', $meta_query ); // Remove backticks.
 		$meta_query = str_replace( '"', "'", $meta_query ); // Replace double quotes with single quotes.
@@ -416,7 +414,7 @@ class WC_Subscription_Data_Copier {
 		preg_match_all( '/meta_key NOT IN \((.*?)\)/', $meta_query, $not_in_clauses );
 
 		if ( ! empty( $not_in_clauses[1] ) ) {
-			$excluded_keys['in'] = array();
+			$excluded_keys['in'] = [];
 			foreach ( $not_in_clauses[1] as $not_in_clause ) {
 				$excluded_keys['in'] = array_merge( $excluded_keys['in'], $this->get_keys_from_in_clause( $not_in_clause ) );
 			}
@@ -429,7 +427,7 @@ class WC_Subscription_Data_Copier {
 	 * Gets a list of meta keys from a SQL IN clause.
 	 *
 	 * @param string $in_clause The concatenated string of meta keys from the IN clause. eg: '_paid_date', '_date_paid', '_completed_date' ...
-	 * @return string[] The meta keys from the IN clause. eg: array( '_paid_date', '_date_paid', '_completed_date' )
+	 * @return string[] The meta keys from the IN clause. eg: [ '_paid_date', '_date_paid', '_completed_date' ]
 	 */
 	private function get_keys_from_in_clause( $in_clause ) {
 		// Remove single quotes.

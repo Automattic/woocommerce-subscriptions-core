@@ -155,7 +155,7 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 		$type = 'copy_order';
 	}
 
-	WC_Subscription_Data_Copier::get_instance( $from_order, $to_order, $type )->copy_data();
+	WC_Subscriptions_Data_Copier::copy( $from_order, $to_order, $type );
 }
 
 /**
