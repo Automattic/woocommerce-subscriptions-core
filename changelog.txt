@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 2.4.1 - 2022-xx-xx =
+= 2.4.1 - 2022-11-02 =
 * Fix - Undefined method WC_Order::set_shipping_address() on stores running pre-7.1 of WooCommerce which prevented subscriptions from being purchased.
 
 = 2.4.0 - 2022-10-28 =
