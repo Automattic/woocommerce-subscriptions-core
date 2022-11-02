@@ -415,45 +415,6 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Read subscription data.
-	 *
-	 * @param \WC_Subscription $subscription
-	 * @param object $post_object
-	 *
-	 * @return void
-	 */
-	protected function read_order_data( &$subscription, $post_object ) {
-		$props_to_set = [];
-		$dates_to_set = [];
-
-		// Set all order meta data, as well as data defined by WC_Subscription::$extra_keys which has corresponding setter methods
-		parent::read_order_data( $subscription, $post_object );
-
-		foreach ( $this->subscription_meta_keys_to_props as $meta_key => $prop_key ) {
-			if ( 0 === strpos( $prop_key, 'schedule' ) || in_array( $meta_key, $this->subscription_internal_meta_keys, true ) ) {
-
-				$meta_value = wcs_get_objects_property( $subscription, $meta_key );
-
-				// Dates are set via update_dates() to make sure relationships between dates are validated
-				if ( 0 === strpos( $prop_key, 'schedule' ) ) {
-					$date_type = str_replace( 'schedule_', '', $prop_key );
-
-					if ( 'start' === $date_type && ! $meta_value ) {
-						$meta_value = $subscription->get_date( 'date_created' );
-					}
-
-					$dates_to_set[ $date_type ] = ( false === $meta_value ) ? 0 : $meta_value;
-				} else {
-					$props_to_set[ $prop_key ] = $meta_value;
-				}
-			}
-		}
-
-		$subscription->update_dates( $dates_to_set );
-		$subscription->set_props( $props_to_set );
-	}
-
-	/**
 	 * Updates meta data based on a subscription object.
 	 *
 	 * @param \WC_Subscription $subscription Subscription object.
