@@ -376,7 +376,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 			$subscription->set_date_created( time() );
 		}
 
-		$subscription->set_version( Constants::get_constant( 'WC_VERSION' ) );
+		$subscription->set_version( \Automattic\Jetpack\Constants::get_constant( 'WC_VERSION' ) );
 
 		// Fetch changes.
 		$changes = $subscription->get_changes();

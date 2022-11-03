@@ -932,9 +932,15 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Set schedule start date.
 	 *
+	 * This function should not be used. It omly exists to support setting the start date on subscription creation without
+	 * having to call update_dates() which results in a save.
+	 *
+	 * The more aptly named set_schedule_start() cannot exist because then WC core thinks the _schedule_start meta is an
+	 * internal meta key and throws errors.
+	 *
 	 * @param string $schedule_start
 	 */
-	public function set_schedule_start( $schedule_start ) {
+	public function set_start_date( $schedule_start ) {
 		$this->set_prop( 'schedule_start', $schedule_start );
 	}
 
