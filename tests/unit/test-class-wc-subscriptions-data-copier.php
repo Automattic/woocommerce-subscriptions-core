@@ -10,7 +10,7 @@ class WC_Subscriptions_Data_Copier_Test extends WP_UnitTestCase {
 
 	public $copier;
 
-	private $orginal_db;
+	private $original_db;
 
 	public function set_up() {
 		parent::set_up();
@@ -30,8 +30,8 @@ class WC_Subscriptions_Data_Copier_Test extends WP_UnitTestCase {
 		parent::tear_down();
 
 		// Restore the database to its original state.
-		if ( $this->orginal_db ) {
-			$GLOBALS['wpdb'] = $this->orginal_db;
+		if ( $this->original_db ) {
+			$GLOBALS['wpdb'] = $this->original_db;
 		}
 	}
 
@@ -208,7 +208,7 @@ class WC_Subscriptions_Data_Copier_Test extends WP_UnitTestCase {
 			->will( $this->returnValue( $return ) );
 
 		// Keep a record of the wpdb instance so we can restore it later.
-		$this->orginal_db = $GLOBALS['wpdb'];
+		$this->original_db = $GLOBALS['wpdb'];
 
 		// Override the global $wpdb object with our mock.
 		$GLOBALS['wpdb'] = $mock_db;
