@@ -52,6 +52,7 @@ function wcs_help_tip( $tip, $allow_html = false, $class = 'woocommerce-help-tip
  * @param mixed                               $default  (optional) The value to return if no value is found - defaults to single -> null, multiple -> array().
  *
  * @since  2.2.0
+ * @deprecated 2.4.0 Use of this compatibility function is no longer required, getters should be used on the objects instead. Please note there may be differences in dates between this function and the getter.
  * @return mixed
  */
 function wcs_get_objects_property( $object, $property, $single = 'single', $default = null ) {
@@ -135,6 +136,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
  * @param string $save Whether to write the data to the database or not. Use 'save' to write to the database, anything else to only update it in memory.
  * @param int $meta_id The meta ID of existing meta data if you wish to overwrite an existing piece of meta.
  * @param string $prefix_meta_key Whether the key should be prefixed with an '_' when stored in meta. Defaulted to 'prefix_meta_key', pass any other value to bypass automatic prefixing (optional)
+ * @deprecated 2.4.0 Use of this compatibility function is no longer required, setters should be used on the objects instead.
  * @since  2.2.0
  * @return mixed
  */
@@ -195,6 +197,7 @@ function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta
  * @param mixed $value The data to set as the value of the meta
  * @param string $save Whether to save the data or not, 'save' to save the data, otherwise it won't be saved.
  * @since  2.2.0
+ * @deprecated 2.4.0 Use of this compatibility function is no longer required, setters should be used on the objects instead.
  * @return mixed
  */
 function wcs_delete_objects_property( &$object, $key, $save = 'save', $meta_id = '' ) {
