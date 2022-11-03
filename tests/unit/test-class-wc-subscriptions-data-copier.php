@@ -2,13 +2,15 @@
 /**
  * Undocumented class
  */
-class WC_Subscriptions_Data_Copier extends WP_UnitTestCase {
+class WC_Subscriptions_Data_Copier_Test extends WP_UnitTestCase {
 
 	public $mock_subscription;
 
 	public $mock_order;
 
 	public $copier;
+
+	private $orginal_db;
 
 	public function set_up() {
 		parent::set_up();
@@ -21,68 +23,84 @@ class WC_Subscriptions_Data_Copier extends WP_UnitTestCase {
 									->disableOriginalConstructor()
 									->getMock();
 
-		$this->copier = new WC_Subscription_Data_Copier( $this->mock_order, $this->mock_subscription, 'subscription' );
+		$this->copier = new WC_Subscriptions_Data_Copier( $this->mock_order, $this->mock_subscription, 'subscription' );
+	}
+
+	public function tear_down() {
+		parent::tear_down();
+
+		// Restore the database to its original state.
+		if ( $this->orginal_db ) {
+			$GLOBALS['wpdb'] = $this->orginal_db;
+		}
 	}
 
 	/**
-	 * Test WC_Subscription_Data_Copier::set_data() sets the data correctly via object setters.
+	 * Test WC_Subscription_Data_Copier::copy_data() sets the data correctly via object setters.
 	 */
-	public function test_set_data_via_setter() {
-		// TODO: Turn this test into a test for copy data now that `set_data` is private.
-		return;
+	public function test_copy_data() {
+		// Mock order data
+		$order_meta_data   = [];
+		$order_meta_data[] = [
+			'meta_key'   => '_billing_first_name', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			'meta_value' => 'John', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+		];
+		$order_meta_data[] = [
+			'meta_key'   => '_billing_last_name', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			'meta_value' => 'Doe', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+		];
+		$order_meta_data[] = [
+			'meta_key'   => '_customer_user', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			'meta_value' => '1230', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+		];
+		$order_meta_data[] = [
+			'meta_key'   => '_prices_include_tax', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			'meta_value' => 'yes', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+		];
+		$order_meta_data[] = [
+			'meta_key'   => '_order_currency', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			'meta_value' => 'USD', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+		];
+		$order_meta_data[] = [
+			'meta_key'   => '_custom_meta', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			'meta_value' => 'test meta value', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+		];
 
-		// Standard data setter (billing first name).
+		// Mock the direct database query to return the order meta data.
+		$this->mock_meta_database_query_results( $order_meta_data );
+
+		// Setup expectations for the setters to be called on the mock subscription (the "to" object).
 		$this->mock_subscription
 			->expects( $this->once() )
 			->method( 'set_billing_first_name' )
 			->with( 'John' );
 
-		$this->copier->set_data( '_billing_first_name', 'John' );
+		$this->mock_subscription
+			->expects( $this->once() )
+			->method( 'set_billing_last_name' )
+			->with( 'Doe' );
 
-		// Mapped setter (_customer_user -> set_customer_id).
 		$this->mock_subscription
 			->expects( $this->once() )
 			->method( 'set_customer_id' )
-			->with( '123' );
+			->with( '1230' );
 
-		$this->copier->set_data( '_customer_user', '123' );
-
-		// Boolean setters (set_prices_include_tax no -> false, yes -> true).
 		$this->mock_subscription
-			->expects( $this->exactly( 2 ) )
+			->expects( $this->once() )
 			->method( 'set_prices_include_tax' )
-			->withConsecutive( [ true ], [ false ] );
+			->with( true );
 
-		// Yes (↓) gets converted to true (↑).
-		$this->copier->set_data( '_prices_include_tax', 'yes' );
-		// No (↓) gets converted to false (↑↑).
-		$this->copier->set_data( '_prices_include_tax', 'no' );
-
-	}
-
-	/**
-	 * Test WC_Subscription_Data_Copier::set_data() doesn't set data for address indexes.
-	 */
-	public function test_set_data_nothing_set() {
 		$this->mock_subscription
-			->expects( $this->never() )
-			->method( $this->anything() );
+			->expects( $this->once() )
+			->method( 'set_currency' )
+			->with( 'USD' );
 
-		$this->copier->set_data( '_billing_address_index', 'First Last Address Email Phone' );
-		$this->copier->set_data( '_billing_address_index', 'First Last Address Email Phone' );
-	}
-
-	/**
-	 * Test WC_Subscription_Data_Copier::set_data() sets custom meta (where there is no setter) via update_meta_data.
-	 */
-	public function test_set_data_custom_meta() {
-		// Custom meta data
 		$this->mock_subscription
 			->expects( $this->once() )
 			->method( 'update_meta_data' )
-			->with( '_custom_meta', 'value' );
+			->with( '_custom_meta', 'test meta value' );
 
-		$this->copier->set_data( '_custom_meta', 'value' );
+		$this->copier->copy_data();
 	}
 
 	/**
@@ -178,5 +196,21 @@ class WC_Subscriptions_Data_Copier extends WP_UnitTestCase {
 		foreach ( $excluded_data as $key => $value ) {
 			$this->assertArrayNotHasKey( $key, $data );
 		}
+	}
+
+	private function mock_meta_database_query_results( $return, $function = 'get_results' ) {
+		$mock_db = $this->getMockBuilder( wpdb::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$mock_db->expects( $this->any() )
+			->method( $function )
+			->will( $this->returnValue( $return ) );
+
+		// Keep a record of the wpdb instance so we can restore it later.
+		$this->orginal_db = $GLOBALS['wpdb'];
+
+		// Override the global $wpdb object with our mock.
+		$GLOBALS['wpdb'] = $mock_db;
 	}
 }
