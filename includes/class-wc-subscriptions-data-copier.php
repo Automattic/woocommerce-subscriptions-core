@@ -113,7 +113,7 @@ class WC_Subscriptions_Data_Copier {
 
 		$data = $this->apply_deprecated_filter( $data );
 		$data = apply_filters( "wc_subscriptions_{$this->copy_type}_data", $data, $this->to_object, $this->from_object );
-		$data = apply_filters( 'wc_subscriptions_copied_data', $data, $this->to_object, $this->from_object, $this->copy_type );
+		$data = apply_filters( 'wc_subscriptions_object_data', $data, $this->to_object, $this->from_object, $this->copy_type );
 
 		foreach ( $data_array as $object_data ) {
 			$this->set_data( $object_data['meta_key'], $object_data['meta_value'] );
