@@ -116,8 +116,11 @@ class WC_Subscriptions_Data_Copier {
 		/**
 		 * Filters the data to be copied from one object to another.
 		 *
-		 * This filter name contains a dynamic part, $this->copy_type, which can be one of:
-		 * 'subscription', 'parent', 'renewal_order' or 'resubscribe_order'.
+		 * This filter name contains a dynamic part, $this->copy_type. The full set of hooks include:
+		 *     - wc_subscriptions_subscription_data
+		 *     - wc_subscriptions_parent_data
+		 *     - wc_subscriptions_renewal_order_data
+		 *     - wc_subscriptions_resubscribe_order_data
 		 *
 		 * @since subscriptions-core 2.5.0
 		 *
@@ -353,8 +356,11 @@ class WC_Subscriptions_Data_Copier {
 			/**
 			 * Filters the data to be copied from one object to another.
 			 *
-			 * This filter name contains a dynamic part, $this->copy_type, which can be one of:
-			 * 'subscription', 'parent', 'renewal_order' or 'resubscribe_order'.
+			 * This filter name contains a dynamic part, $this->copy_type. The full set of hooks include:
+			 *     - wcs_subscription_meta_query
+			 *     - wcs_parent_meta_query
+			 *     - wcs_renewal_order_meta_query
+			 *     - wcs_resubscribe_order_meta_query
 			 *
 			 * @deprecated subscriptions-core 2.5.0
 			 *
@@ -398,8 +404,11 @@ class WC_Subscriptions_Data_Copier {
 		/**
 		 * Filters the data to be copied from one object to another.
 		 *
-		 * This filter name contains a dynamic part, $this->copy_type, which can be one of:
-		 * 'subscription', 'parent', 'renewal_order' or 'resubscribe_order'.
+		 * This filter name contains a dynamic part, $this->copy_type. The full set of hooks include:
+		 *     - wcs_subscription_meta
+		 *     - wcs_parent_meta
+		 *     - wcs_renewal_order_meta
+		 *     - wcs_resubscribe_order_meta
 		 *
 		 * @deprecated subscriptions-core 2.5.0
 		 *
