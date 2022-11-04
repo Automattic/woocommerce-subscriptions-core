@@ -98,7 +98,7 @@ class WC_Subscriptions_Data_Copier {
 	 */
 	public function copy_data() {
 
-		if ( $this->is_using_cpt_data_stores() ) {
+		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
 			$data_array = $GLOBALS['wpdb']->get_results( $this->get_deprecated_meta_query(), ARRAY_A );
 			$data       = wp_list_pluck( $data_array, 'meta_value', 'meta_key' );
 		} else {
@@ -194,15 +194,6 @@ class WC_Subscriptions_Data_Copier {
 		} else {
 			$this->to_object->update_meta_data( $key, $value );
 		}
-	}
-
-	/**
-	 * Determines if the store is using the WP CPT datastores.
-	 *
-	 * @return bool
-	 */
-	private function is_using_cpt_data_stores() {
-		return true;
 	}
 
 	/**
