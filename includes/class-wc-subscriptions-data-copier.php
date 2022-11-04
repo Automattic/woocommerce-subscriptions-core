@@ -112,7 +112,38 @@ class WC_Subscriptions_Data_Copier {
 		}
 
 		$data = $this->apply_deprecated_filter( $data );
+
+		/**
+		 * Filters the data to be copied from one object to another.
+		 *
+		 * This filter name contains a dynamic part, $this->copy_type, which can be one of:
+		 * 'subscription', 'parent', 'renewal_order' or 'resubscribe_order'.
+		 *
+		 * @since subscriptions-core 2.4.0
+		 *
+		 * @param array    $data {
+		 *     The data to be copied to the "to" object. Each value is keyed by the meta key. Example format [ '_meta_key' => 'meta_value' ].
+		 *
+		 *     @type mixed $meta_value The meta value to be copied.
+		 * }
+		 * @param WC_Order $from_object The object to copy data from.
+		 * @param WC_Order $to_object   The object to copy data to.
+		 */
 		$data = apply_filters( "wc_subscriptions_{$this->copy_type}_data", $data, $this->to_object, $this->from_object );
+
+		/**
+		 * Filters the data to be copied from one object to another.
+		 *
+		 * @since subscriptions-core 2.4.0
+		 *
+		 * @param array    $data {
+		 *     The data to be copied to the "to" object. Each value is keyed by the meta key. Example format [ '_meta_key' => 'meta_value' ].
+		 *
+		 *     @type mixed $meta_value The meta value to be copied.
+		 * }
+		 * @param WC_Order $from_object The object to copy data from.
+		 * @param WC_Order $to_object   The object to copy data to.
+		 */
 		$data = apply_filters( 'wc_subscriptions_object_data', $data, $this->to_object, $this->from_object, $this->copy_type );
 
 		foreach ( $data as $key => $value ) {
@@ -328,8 +359,20 @@ class WC_Subscriptions_Data_Copier {
 		}
 
 		if ( $this->has_filter_on_meta_query_hook() ) {
-			wcs_deprecated_hook( "wcs_{$this->copy_type}_meta_query", 'wcs-core 2.4.0', "wcs_{$this->copy_type}_meta" );
+			/**
+			 * Filters the data to be copied from one object to another.
+			 *
+			 * This filter name contains a dynamic part, $this->copy_type, which can be one of:
+			 * 'subscription', 'parent', 'renewal_order' or 'resubscribe_order'.
+			 *
+			 * @deprecated subscriptions-core 2.4.0
+			 *
+			 * @param string   $meta_query        The SQL query to fetch the meta data to be copied.
+			 * @param WC_Order $this->to_object   The object to copy data to.
+			 * @param WC_Order $this->from_object The object to copy data from.
+			 */
 			$meta_query = apply_filters( "wcs_{$this->copy_type}_meta_query", $meta_query, $this->to_object, $this->from_object );
+			wcs_deprecated_hook( "wcs_{$this->copy_type}_meta_query", 'subscriptions-core 2.4.0', "wcs_{$this->copy_type}_meta" );
 		}
 
 		return $meta_query;
@@ -360,6 +403,28 @@ class WC_Subscriptions_Data_Copier {
 		}
 
 		wcs_deprecated_hook( "wcs_{$this->copy_type}_meta", 'wcs-core 2.4.0', "wc_subscriptions_{$this->copy_type}_data" );
+
+		/**
+		 * Filters the data to be copied from one object to another.
+		 *
+		 * This filter name contains a dynamic part, $this->copy_type, which can be one of:
+		 * 'subscription', 'parent', 'renewal_order' or 'resubscribe_order'.
+		 *
+		 * @deprecated subscriptions-core 2.4.0
+		 *
+		 * @param array[]    $data_array {
+		 *     The metadata to be copied to the "to" object.
+		 *
+		 *     @type array $meta_data {
+		 *          The metadata to be copied.
+		 *
+		 *          @type string $meta_key   The meta key to be copied.
+		 *          @type mixed  $meta_value The meta value to be copied.
+		 *     }
+		 * }
+		 * @param WC_Order $this->to_object   The object to copy data to.
+		 * @param WC_Order $this->from_object The object to copy data from.
+		 */
 		$data_array = apply_filters( "wcs_{$this->copy_type}_meta", $data_array, $this->to_object, $this->from_object );
 
 		// Return the data to a key => value format.
