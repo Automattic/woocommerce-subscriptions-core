@@ -3,9 +3,16 @@
 = 2.5.0 - 2022-xx-xx =
 * Add - New WCS_Orders_Table_Subscription_Data_Store class to support subscriptions stored in High-Performance Order Storage (HPOS).
 * Add - New WCS_Orders_Table_Data_Store_Controller class to load the proper subscriptions data store when the store has HPOS enabled.
+* Add - New data copier class to copy data to subscriptions and related orders in place of direct database queries in prepraration for HPOS support.
 * Fix - When saving sync meta data on a new subscription, use 'woocommerce_new_subscription' instead of 'save_post'. This is to prevent errors when purchasing a subscription on stores that have HPOS enabled.
 * Update - Improve maybe_add_subscription_meta() and subscription_contains_synced_product() inside our WC_Subscriptions_Synchroniser class to use CRUD methods.
 * Dev - wcs_get_objects_property and wcs_set_objects_property have been marked as deprecated. Getters/Setters should be used on the objects instead.
+* Dev - Deprecated the "wcs_{type}_meta_query" dynamic hook used to alter the database query used to fetch the meta data to copy between subscriptions and renewal orders. There is no direct replacement. Third-parties should use the "wc_subscriptions_{type}_data" or "wc_subscriptions_object_data" hooks instead.
+* Dev - Deprecated the "wcs_{type}_meta" dynamic hook used to filter data copied to subscriptions and renewal orders. Third-parties should use wc_subscriptions_{type}_data instead.
+        wcs_subscription_meta      -> wc_subscriptions_subscription_data
+        wcs_parent_meta            -> wc_subscriptions_parent_data
+        wcs_resubscribe_order_meta -> wc_subscriptions_resubscribe_order_data
+        wcs_renewal_order_meta     -> wc_subscriptions_renewal_order_data
 
 = 2.4.1 - 2022-11-02 =
 * Fix - Undefined method WC_Order::set_shipping_address() on stores running pre-7.1 of WooCommerce which prevented subscriptions from being purchased.
