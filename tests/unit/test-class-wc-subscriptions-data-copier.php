@@ -24,6 +24,9 @@ class WC_Subscriptions_Data_Copier_Test extends WP_UnitTestCase {
 									->getMock();
 
 		$this->copier = new WC_Subscriptions_Data_Copier( $this->mock_order, $this->mock_subscription, 'subscription' );
+
+		// Disable custom tables.
+		update_option( 'woocommerce_feature_custom_order_tables_enabled', 'no' );
 	}
 
 	public function tear_down() {
