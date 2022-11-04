@@ -65,6 +65,11 @@ class WC_Subscriptions_Data_Copier_Test extends WP_UnitTestCase {
 			'meta_key'   => '_custom_meta', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 			'meta_value' => 'test meta value', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 		];
+		// Test the serialized data is set as meta as an array.
+		$order_meta_data[] = [
+			'meta_key'   => '_custom_meta_array', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			'meta_value' => maybe_serialize( [ 'an' => 'array' ] ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+		];
 
 		// Mock the direct database query to return the order meta data.
 		$this->mock_meta_database_query_results( $order_meta_data );
@@ -96,9 +101,12 @@ class WC_Subscriptions_Data_Copier_Test extends WP_UnitTestCase {
 			->with( 'USD' );
 
 		$this->mock_subscription
-			->expects( $this->once() )
+			->expects( $this->exactly( 2 ) )
 			->method( 'update_meta_data' )
-			->with( '_custom_meta', 'test meta value' );
+			->withConsecutive(
+				[ '_custom_meta', 'test meta value' ],
+				[ '_custom_meta_array', [ 'an' => 'array' ] ] // <-- Test that the serialized data from the database is set as an array.
+			);
 
 		$this->copier->copy_data();
 	}
