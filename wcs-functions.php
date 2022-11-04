@@ -175,7 +175,7 @@ function wcs_create_subscription( $args = array() ) {
 	$subscription->set_prices_include_tax( 'no' !== $args['prices_include_tax'] );
 	$subscription->set_billing_period( $args['billing_period'] );
 	$subscription->set_billing_interval( absint( $args['billing_interval'] ) );
-	$subscription->set_schedule_start( $args['start_date'] );
+	$subscription->set_start_date( $args['start_date'] );
 
 	if ( $args['order_id'] > 0 ) {
 		$subscription->set_parent_id( $args['order_id'] );
