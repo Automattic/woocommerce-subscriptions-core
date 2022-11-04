@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 2.5.0 - 2022-xx-xx =
+= 2.5.0 - 2022-11-04 =
 * Add - New WCS_Orders_Table_Subscription_Data_Store class to support subscriptions stored in High-Performance Order Storage (HPOS).
 * Add - New WCS_Orders_Table_Data_Store_Controller class to load the proper subscriptions data store when the store has HPOS enabled.
 * Add - New data copier class to copy data to subscriptions and related orders in place of direct database queries in prepraration for HPOS support.
