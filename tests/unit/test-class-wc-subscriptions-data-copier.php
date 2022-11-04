@@ -165,7 +165,7 @@ class WC_Subscriptions_Data_Copier_Test extends WP_UnitTestCase {
 		$this->mock_subscription
 			->expects( $this->once() )
 			->method( 'update_meta_data' )
-			->with( '_3pd_custom_meta_too', 'doodacky' );
+			->with( '_3pd_custom_meta_too', 'doovalacky' );
 
 		$this->copier->copy_data();
 	}
