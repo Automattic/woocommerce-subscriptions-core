@@ -127,21 +127,15 @@ function wcs_copy_order_address( $from_order, $to_order, $address_type = 'all' )
 }
 
 /**
- * Utility function to copy order meta between two orders. Originally intended to copy meta between
- * first order and subscription object, then between subscription and renewal orders.
+ * Copies order meta between two order objects (orders or subscriptions).
  *
- * The hooks used here in those cases are
- * - wcs_subscription_meta_query
- * - wcs_subscription_meta
- * - wcs_renewal_order_meta_query
- * - wcs_renewal_order_meta
+ * Intended to copy meta between first order and subscription object, then between subscription and renewal orders.
  *
- * @param  WC_Order $from_order Order to copy meta from
- * @param  WC_Order $to_order   Order to copy meta to
- * @param  string $type type of copy
+ * @param WC_Order $from_order Order|Subscription to copy meta from.
+ * @param WC_Order $to_order   Order|Subscription to copy meta to.
+ * @param string   $type       The type of copy. Can be 'subscription' or 'renewal'. Optional. Default is 'subscription'.
  */
 function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
-	global $wpdb;
 
 	if ( ! is_a( $from_order, 'WC_Abstract_Order' ) || ! is_a( $to_order, 'WC_Abstract_Order' ) ) {
 		throw new InvalidArgumentException( _x( 'Invalid data. Orders expected aren\'t orders.', 'In wcs_copy_order_meta error message. Refers to origin and target order objects.', 'woocommerce-subscriptions' ) );
@@ -155,58 +149,7 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 		$type = 'copy_order';
 	}
 
-	$meta_query = $wpdb->prepare(
-		"SELECT `meta_key`, `meta_value`
-		 FROM {$wpdb->postmeta}
-		 WHERE `post_id` = %d
-		 AND `meta_key` NOT LIKE '_schedule_%%'
-		 AND `meta_key` NOT IN (
-			 '_paid_date',
-			 '_date_paid',
-			 '_completed_date',
-			 '_date_completed',
-			 '_edit_last',
-			 '_subscription_switch_data',
-			 '_order_key',
-			 '_edit_lock',
-			 '_wc_points_earned',
-			 '_transaction_id',
-			 '_billing_interval',
-			 '_billing_period',
-			 '_subscription_resubscribe',
-			 '_subscription_renewal',
-			 '_subscription_switch',
-			 '_payment_method',
-			 '_payment_method_title',
-			 '_suspension_count',
-			 '_requires_manual_renewal',
-			 '_cancelled_email_sent',
-			 '_trial_period',
-			 '_created_via',
-			 '_order_stock_reduced'
-		 )",
-		wcs_get_objects_property( $from_order, 'id' )
-	);
-
-	if ( in_array( $type, array( 'renewal_order', 'parent' ) ) ) {
-		$meta_query .= " AND `meta_key` NOT LIKE '_download_permissions_granted' ";
-	}
-
-	// Allow extensions to add/remove order meta
-	$meta_query = apply_filters( 'wcs_' . $type . '_meta_query', $meta_query, $to_order, $from_order );
-	$meta       = $wpdb->get_results( $meta_query, 'ARRAY_A' );
-	$meta       = apply_filters( 'wcs_' . $type . '_meta', $meta, $to_order, $from_order );
-
-	// Pre WC 3.0 we need to save each meta individually, post 3.0 we can save the object once
-	$save = wcs_is_woocommerce_pre( '3.0' ) ? 'save' : 'set_prop_only';
-
-	foreach ( $meta as $meta_item ) {
-		wcs_set_objects_property( $to_order, $meta_item['meta_key'], maybe_unserialize( $meta_item['meta_value'] ), $save, '', 'omit_key_prefix' );
-	}
-
-	if ( is_callable( array( $to_order, 'save' ) ) ) {
-		$to_order->save();
-	}
+	WC_Subscriptions_Data_Copier::copy( $from_order, $to_order, $type );
 }
 
 /**
