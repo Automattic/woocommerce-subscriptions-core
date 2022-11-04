@@ -64,7 +64,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 		add_action( 'wcs_delete_all_post_meta_caches', array( $this, 'maybe_delete_all_for_post_meta_change' ), 10, 1 );
 
 		// When copying meta from a subscription to a renewal order, don't copy cache related order meta keys.
-		add_filter( 'wcs_renewal_order_meta', array( $this, 'remove_related_order_cache_keys' ), 10, 1 );
+		add_filter( 'wc_subscriptions_renewal_order_data', array( $this, 'remove_related_order_cache_keys' ), 10, 1 );
 
 		WCS_Debug_Tool_Factory::add_cache_tool( 'generator', __( 'Generate Related Order Cache', 'woocommerce-subscriptions' ), __( 'This will generate the persistent cache of all renewal, switch, resubscribe and other order types for all subscriptions in your store. The caches will be generated overtime in the background (via Action Scheduler).', 'woocommerce-subscriptions' ), self::instance() );
 		WCS_Debug_Tool_Factory::add_cache_tool( 'eraser', __( 'Delete Related Order Cache', 'woocommerce-subscriptions' ), __( 'This will clear the persistent cache of all renewal, switch, resubscribe and other order types for all subscriptions in your store. Expect slower performance of checkout, renewal and other subscription related functions after taking this action. The caches will be regenerated overtime as related order queries are run.', 'woocommerce-subscriptions' ), self::instance() );
@@ -452,10 +452,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 
 		$cache_meta_keys = array_map( array( $this, 'get_cache_meta_key' ), $this->get_relation_types() );
 
-		foreach ( $meta as $index => $meta_data ) {
-			if ( ! empty( $meta_data['meta_key'] ) && in_array( $meta_data['meta_key'], $cache_meta_keys ) ) {
-				unset( $meta[ $index ] );
-			}
+		foreach ( $cache_meta_keys as $cache_meta_key ) {
+			unset( $meta[ $cache_meta_key ] );
 		}
 
 		return $meta;

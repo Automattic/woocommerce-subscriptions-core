@@ -369,7 +369,7 @@ class WC_Subscriptions_Data_Copier {
 			 * @param WC_Order $this->from_object The object to copy data from.
 			 */
 			$meta_query = apply_filters( "wcs_{$this->copy_type}_meta_query", $meta_query, $this->to_object, $this->from_object );
-			wcs_deprecated_hook( "wcs_{$this->copy_type}_meta_query", 'subscriptions-core 2.5.0', "wcs_{$this->copy_type}_meta" );
+			wcs_deprecated_hook( "wcs_{$this->copy_type}_meta_query", 'subscriptions-core 2.5.0', "wc_subscriptions_{$this->copy_type}_data" );
 		}
 
 		return $meta_query;
