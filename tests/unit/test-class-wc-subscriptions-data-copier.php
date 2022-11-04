@@ -104,6 +104,65 @@ class WC_Subscriptions_Data_Copier_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * @expectedDeprecated wcs_subscription_meta
+	 */
+	public function test_deprecated_wcs_subscription_meta() {
+		// Mock order data
+		$order_meta_data   = [];
+		$order_meta_data[] = [
+			'meta_key'   => '_billing_first_name', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			'meta_value' => 'John', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+		];
+		$order_meta_data[] = [
+			'meta_key'   => '_billing_last_name', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			'meta_value' => 'Doe', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+		];
+		$order_meta_data[] = [
+			'meta_key'   => '_3pd_custom_meta', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			'meta_value' => 'doodacky', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+		];
+		$order_meta_data[] = [
+			'meta_key'   => '_3pd_custom_meta_too', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			'meta_value' => 'doovalacky', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+		];
+
+		// Mock the direct database query to return the order meta data.
+		$this->mock_meta_database_query_results( $order_meta_data );
+
+		// Mock a third-party hooking onto the deprecated filter to remove their meta.
+		add_filter(
+			'wcs_subscription_meta',
+			function( $data ) {
+				foreach ( $data as $index => $meta_data ) {
+					if ( '_3pd_custom_meta' === $meta_data['meta_key'] ) {
+						unset( $data[ $index ] );
+					}
+				}
+				return $data;
+			}
+		);
+
+		// Setup expectations for the setters to be called on the mock subscription (the "to" object).
+		$this->mock_subscription
+			->expects( $this->once() )
+			->method( 'set_billing_first_name' )
+			->with( 'John' );
+
+		$this->mock_subscription
+			->expects( $this->once() )
+			->method( 'set_billing_last_name' )
+			->with( 'Doe' );
+
+		// Only expect the update_meta_data to be called once for the custom meta data that remains.
+		$this->mock_subscription
+			->expects( $this->once() )
+			->method( 'update_meta_data' )
+			->with( '_3pd_custom_meta_too', 'doodacky' );
+
+		$this->copier->copy_data();
+	}
+
+	/**
 	 * Test WC_Subscription_Data_Copier::filter_excluded_meta_keys() filters out keys based on custom NOT IN and NOT LIKE clauses
 	 * in the filtered SQL query.
 	 *
