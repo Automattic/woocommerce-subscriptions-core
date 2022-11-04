@@ -116,7 +116,7 @@ class WC_Subscriptions_Data_Copier {
 		$data = apply_filters( 'wc_subscriptions_object_data', $data, $this->to_object, $this->from_object, $this->copy_type );
 
 		foreach ( $data as $key => $value ) {
-			$this->set_data( $key, $value );
+			$this->set_data( $key, maybe_unserialize( $value ) );
 		}
 
 		$this->to_object->save();
