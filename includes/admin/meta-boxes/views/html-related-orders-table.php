@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</tr>
 		</thead>
 		<tbody>
-			<?php do_action( 'woocommerce_subscriptions_related_orders_meta_box_rows', $post ); ?>
+			<?php do_action( 'woocommerce_subscriptions_related_orders_meta_box_rows', $order ); ?>
 		</tbody>
 	</table>
 </div>
