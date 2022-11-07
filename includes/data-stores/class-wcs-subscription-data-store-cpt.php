@@ -549,4 +549,14 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 			WHERE subscription_meta.meta_key = '_customer_user' AND posts.post_type = 'shop_subscription'"
 		);
 	}
+
+	/**
+	 * Deletes all rows in the postmeta table with the given meta key.
+	 *
+	 * @param string $meta_key The meta key to delete.
+	 */
+	public function delete_all_meta_data_with_key( $meta_key ) {
+		// Set variables to workaround ambiguous parameters of delete_metadata()
+		delete_metadata( 'post', null, $meta_key, null, true );
+	}
 }

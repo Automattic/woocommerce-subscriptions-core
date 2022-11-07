@@ -296,11 +296,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			$relation_types = $this->get_relation_types();
 		}
 
-		// Set variables to workaround ambiguous parameters of delete_metadata()
-		$delete_all   = true;
-		$null_post_id = $null_meta_value = null;
 		foreach ( $relation_types as $relation_type ) {
-			delete_metadata( 'post', $null_post_id, $this->get_cache_meta_key( $relation_type ), $null_meta_value, $delete_all );
+			WC_Data_Store::load( 'subscription' )->delete_all_meta_data_with_key( $this->get_cache_meta_key( $relation_type ) );
 		}
 	}
 
