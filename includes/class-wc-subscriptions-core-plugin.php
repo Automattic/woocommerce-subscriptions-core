@@ -258,7 +258,7 @@ class WC_Subscriptions_Core_Plugin {
 	/**
 	 * Gets the plugin's version
 	 *
-	 * @deprecated x.x.x This function is no longer recommended for version detection. Use get_library_version() instead.
+	 * @deprecated 5.0.0 This function is no longer recommended for version detection. Use get_library_version() instead.
 	 * @since 4.0.0
 	 */
 	public function get_plugin_version() {
