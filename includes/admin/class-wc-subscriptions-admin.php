@@ -829,7 +829,7 @@ class WC_Subscriptions_Admin {
 		// Get admin screen id
 		$screen = get_current_screen();
 
-		$is_woocommerce_screen = in_array( $screen->id, array( 'product', 'edit-shop_order', 'shop_order', 'edit-shop_subscription', 'shop_subscription', 'users', 'woocommerce_page_wc-settings' ) );
+		$is_woocommerce_screen = in_array( $screen->id, array( 'product', 'edit-shop_order', 'shop_order', 'edit-shop_subscription', 'shop_subscription', 'users', 'woocommerce_page_wc-settings', 'woocommerce_page_wc-orders' ), true );
 
 		if ( $is_woocommerce_screen ) {
 
