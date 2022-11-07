@@ -485,7 +485,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 
 		$date_meta_keys_to_props = array_intersect_key( $this->subscription_meta_keys_to_props, $date_meta_keys );
 
-		// Save the changes to scheduled dates
+		// Save the changes to scheduled dates.
 		foreach ( $this->get_props_to_update( $subscription, $date_meta_keys_to_props ) as $prop ) {
 			$dates_to_save[] = $prop;
 		}
@@ -500,8 +500,8 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 			$dates_to_save[] = 'date_modified';
 		}
 
+		// Backfill the saved dates if syncing is enabled.
 		$data_synchronizer = wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer::class );
-
 		if ( $data_synchronizer && $data_synchronizer->data_sync_is_enabled() ) {
 			$this->get_post_data_store_for_backfill()->write_dates_to_database( $subscription, $dates_to_save );
 		}
@@ -512,8 +512,10 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	/**
 	 * Writes subscription dates to the database.
 	 *
-	 * @param WC_Subscription $subscription The subscription to write date changes for.
-	 * @param array           $dates        The dates to write to the database.
+	 * @param WC_Subscription $subscription  The subscription to write date changes for.
+	 * @param array           $dates_to_save The dates to write to the database.
+	 *
+	 * @return WC_DateTime[] The date properties saved to the database in the format: array( $prop_name => WC_DateTime Object ).
 	 */
 	public function write_dates_to_database( $subscription, $dates_to_save ) {
 		global $wpdb;

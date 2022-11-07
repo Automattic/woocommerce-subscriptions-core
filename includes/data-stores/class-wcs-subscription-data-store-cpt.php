@@ -393,17 +393,17 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		// Get the date meta keys we need to save.
 		$date_meta_keys_to_props = array_intersect_key( $this->subscription_meta_keys_to_props, $date_meta_keys );
 
-		// Save the changes to scheduled dates
+		// Save the changes to scheduled dates.
 		foreach ( $this->get_props_to_update( $subscription, $date_meta_keys_to_props ) as $prop ) {
 			$dates_to_save[] = $prop;
 		}
 
-		// Save any changes to the created date
+		// Save any changes to the created date.
 		if ( isset( $changes['date_created'] ) ) {
 			$dates_to_save[] = 'date_created';
 		}
 
-		// Save any changes to the modified date
+		// Save any changes to the modified date.
 		if ( isset( $changes['date_modified'] ) ) {
 			$dates_to_save[] = 'date_modified';
 		}
@@ -414,31 +414,33 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	/**
 	 * Writes subscription dates to the database.
 	 *
-	 * @param WC_Subscription $subscription The subscription to write date changes for.
-	 * @param array           $dates        The dates to write to the database.
+	 * @param WC_Subscription $subscription  The subscription to write date changes for.
+	 * @param array           $dates_to_save The dates to write to the database.
+	 *
+	 * @return WC_DateTime[] The date properties saved to the database in the format: array( $prop_name => WC_DateTime Object )
 	 */
-	public function write_dates_to_database( $subscription, $dates ) {
+	public function write_dates_to_database( $subscription, $dates_to_save ) {
 		// Flip the dates for easier access and removal.
-		$dates       = array_flip( $dates );
-		$dates_saved = [];
-		$post_data   = [];
+		$dates_to_save = array_flip( $dates_to_save );
+		$dates_saved   = [];
+		$post_data     = [];
 
-		if ( isset( $dates['date_created'] ) ) {
+		if ( isset( $dates_to_save['date_created'] ) ) {
 			$post_data['post_date']     = gmdate( 'Y-m-d H:i:s', $subscription->get_date_created( 'edit' )->getOffsetTimestamp() );
 			$post_data['post_date_gmt'] = gmdate( 'Y-m-d H:i:s', $subscription->get_date_created( 'edit' )->getTimestamp() );
 
 			// Mark the created date as saved.
 			$dates_saved['date_created'] = $subscription->get_date_created();
-			unset( $dates['date_created'] );
+			unset( $dates_to_save['date_created'] );
 		}
 
-		if ( isset( $dates['date_modified'] ) ) {
+		if ( isset( $dates_to_save['date_modified'] ) ) {
 			$post_data['post_modified']     = gmdate( 'Y-m-d H:i:s', $subscription->get_date_modified( 'edit' )->getOffsetTimestamp() );
 			$post_data['post_modified_gmt'] = gmdate( 'Y-m-d H:i:s', $subscription->get_date_modified( 'edit' )->getTimestamp() );
 
 			// Mark the modified date as saved.
 			$dates_saved['date_modified'] = $subscription->get_date_modified();
-			unset( $dates['date_modified'] );
+			unset( $dates_to_save['date_modified'] );
 		}
 
 		// Write the dates stored on in post data.
@@ -448,7 +450,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		}
 
 		// Write the remaining dates to meta.
-		foreach ( $dates as $date_prop => $index ) {
+		foreach ( $dates_to_save as $date_prop => $index ) {
 			$date_type = wcs_normalise_date_type_key( $date_prop );
 
 			update_post_meta( $subscription->get_id(), wcs_get_date_meta_key( $date_type ), $subscription->get_date( $date_type ) );
