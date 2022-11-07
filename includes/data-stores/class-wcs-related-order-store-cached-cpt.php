@@ -422,23 +422,25 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 		foreach ( $relation_types as $relation_type ) {
 
 			$limit = $batch_size - count( $subscription_ids );
+			$ids   = wcs_get_orders_with_meta_query(
+				[
+					'limit'   => $limit,
+					'return'  => 'ids',
+					'orderby' => 'ID',
+					'order'   => 'ASC',
+					'type'    => 'shop_subscription',
+					'status'  => array_keys( wcs_get_subscription_statuses() ),
+					'meta_query' => [
+						[
+							'key'     => $this->get_cache_meta_key( $relation_type ),
+							'compare' => 'NOT EXISTS',
+						],
+					],
+				]
+			);
 
-			// Use a subquery instead of a meta query with get_posts() as it's more performant than the multiple joins created by get_posts()
-			$post_ids = $wpdb->get_col( $wpdb->prepare(
-				"SELECT ID FROM $wpdb->posts
-					WHERE post_type = 'shop_subscription'
-					AND post_status NOT IN ('trash','auto-draft')
-					AND ID NOT IN (
-						SELECT post_id FROM $wpdb->postmeta
-						WHERE meta_key = %s
-					)
-					LIMIT 0, %d",
-				$this->get_cache_meta_key( $relation_type ),
-				$limit
-			) );
-
-			if ( $post_ids ) {
-				$subscription_ids += $post_ids;
+			if ( $ids ) {
+				$subscription_ids += $ids;
 
 				if ( count( $subscription_ids ) >= $batch_size ) {
 					break;

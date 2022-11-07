@@ -40,36 +40,22 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 * @return array
 	 */
 	public function get_related_order_ids( WC_Order $subscription, $relation_type ) {
-		$order_relation_query_var_handler = function( $query, $query_vars ) use ( $subscription, $relation_type ) {
-			if ( ! empty( $query_vars['_related_orders_by_relation_type'] ) ) {
-				$query['meta_query'][] = array(
-					'key'     => $this->get_meta_key( $relation_type ),
-					'compare' => '=',
-					'value'   => $subscription->get_id(),
-					'type'    => 'numeric',
-				);
-				unset( $query_vars['_related_orders_by_relation_type'] );
-			}
-
-			return $query;
-		};
-
-		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $order_relation_query_var_handler, 10, 2 );
-
-		$related_order_ids = wc_get_orders(
-			array(
-				'limit'                            => -1,
-				'status'                           => 'any',
-				'return'                           => 'ids',
-				'orderby'                          => 'ID',
-				'order'                            => 'DESC',
-				'_related_orders_by_relation_type' => true,
-			)
+		return wcs_get_orders_with_meta_query(
+			[
+				'limit'      => -1,
+				'status'     => 'any',
+				'return'     => 'ids',
+				'orderby'    => 'ID',
+				'order'      => 'DESC',
+				'meta_query' => [
+					[
+						'key'     => $this->get_meta_key( $relation_type ),
+						'compare' => '=',
+						'value'   => $subscription->get_id(),
+					]
+				]
+			]
 		);
-
-		remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $order_relation_query_var_handler, 10 );
-
-		return $related_order_ids;
 	}
 
 	/**
