@@ -1,5 +1,54 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 2.5.1 - 2022-11-04 =
+* Dev - Replace the use of the deprecated wcs_renewal_order_meta hook with wc_subscription_renewal_order_data in the WCS_Related_Order_Store_Cached_CPT class.
+* Dev - Fix typo in deprecation notice for the 'wcs_{type}_meta_query' filter. Incorrect replacement hook.
+
+= 2.5.0 - 2022-11-04 =
+* Add - New WCS_Orders_Table_Subscription_Data_Store class to support subscriptions stored in High-Performance Order Storage (HPOS).
+* Add - New WCS_Orders_Table_Data_Store_Controller class to load the proper subscriptions data store when the store has HPOS enabled.
+* Add - New data copier class to copy data to subscriptions and related orders in place of direct database queries in prepraration for HPOS support.
+* Fix - When saving sync meta data on a new subscription, use 'woocommerce_new_subscription' instead of 'save_post'. This is to prevent errors when purchasing a subscription on stores that have HPOS enabled.
+* Update - Improve maybe_add_subscription_meta() and subscription_contains_synced_product() inside our WC_Subscriptions_Synchroniser class to use CRUD methods.
+* Dev - wcs_get_objects_property and wcs_set_objects_property have been marked as deprecated. Getters/Setters should be used on the objects instead.
+* Dev - Deprecated the "wcs_{type}_meta_query" dynamic hook used to alter the database query used to fetch the meta data to copy between subscriptions and renewal orders. There is no direct replacement. Third-parties should use the "wc_subscriptions_{type}_data" or "wc_subscriptions_object_data" hooks instead.
+* Dev - Deprecated the "wcs_{type}_meta" dynamic hook used to filter data copied to subscriptions and renewal orders. Third-parties should use wc_subscriptions_{type}_data instead.
+        wcs_subscription_meta      -> wc_subscriptions_subscription_data
+        wcs_parent_meta            -> wc_subscriptions_parent_data
+        wcs_resubscribe_order_meta -> wc_subscriptions_resubscribe_order_data
+        wcs_renewal_order_meta     -> wc_subscriptions_renewal_order_data
+
+= 2.4.1 - 2022-11-02 =
+* Fix - Undefined method WC_Order::set_shipping_address() on stores running pre-7.1 of WooCommerce which prevented subscriptions from being purchased.
+
+= 2.4.0 - 2022-10-28 =
+* Update - The subscription creation function `wcs_create_subscription` has been updated to use WooCommerce CRUD methods in preparation for supporting High Performance Order Storage (HPOS).
+* Update - Improve wcs_copy_order_address() to use modern APIs for setting address fields.
+* Dev - woocommerce_new_subscription_data hook will only work with CPT datastore and so has been deprecated.
+* Dev - i18n usage of strftime has been deprecated for subscription titles. Date is now formatted using woocommerce standard date formatting.
+
+= 2.3.0 - 2022-10-07 =
+* Fix - Move One Time Shipping metabox fields to use the woocommerce_product_options_shipping_product_data hook introduced in WC 6.0.
+* Dev - Define build tool version requirements for consistent development and build environments.
+* Update - Improve handling of bulk action execution.
+
+= 2.2.1 - 2022-08-25 =
+* Fix - Fatal Error caused in rare cases where quantity is zero during renewal.
+
+= 2.2.0 - 2022-08-03 =
+* Fix - Update subscription address when changed with renewals on block checkout.
+
+= 2.1.0 - 2022-06-06 =
+* Fix - Fatal Error caused in rare cases where quantity is zero during renewal.
+
+= 2.0.0 - 2022-05-20 =
+* Dev - Retrieving users subscriptions order has been updated to use the WooCommerce specific APIs in WC_Subscriptions_Order.
+* Dev - Deprecate the WC_Subscriptions_Order::get_meta() function. Use wcs_get_objects_property( $order, $meta_key, "single", $default ) instead.
+* Dev - Update the wcs_get_objects_property() function to prevent calls to get_post_meta() on objects that support calling the get_meta() function.
+* Dev - Remove the get_post_meta() call from WCS_Post_Meta_Cache_Manager::maybe_update_for_post_change().
+* Dev - Replace code using get_post_type( $order_id ) with WC Data Store get_order_type().
+* Dev - Replace all cases of update_post_meta() where an Order ID is passed to use WC_Order::update_meta_data() instead.
+
 = 1.9.0 - 2022-04-27 =
 * Fix: Display subscription billing details in the Cart Block when purchasing products with subscription plans created using the All Products extension. PR#149
 * Dev: Update phpunit to v9 to allow testing against newer php versions. PR#140

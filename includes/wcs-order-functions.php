@@ -83,66 +83,59 @@ function wcs_get_subscriptions_for_order( $order, $args = array() ) {
 }
 
 /**
- * Copy the billing, shipping or all addresses from one order to another (including custom order types, like the
- * WC_Subscription order type).
+ * Copy the billing, shipping or all addresses from one order or subscription to another.
  *
- * @param WC_Order $to_order The WC_Order object to copy the address to.
- * @param WC_Order $from_order The WC_Order object to copy the address from.
- * @param string $address_type The address type to copy, can be 'shipping', 'billing' or 'all'
+ * @since 2.0.0
+ *
+ * @param WC_Order $to_order     The WC_Order object to copy the address to.
+ * @param WC_Order $from_order   The WC_Order object to copy the address from.
+ * @param string   $address_type The address type to copy, can be 'shipping', 'billing' or 'all'. Optional. Default is "all".
+ *
  * @return WC_Order The WC_Order object with the new address set.
- * @since  2.0
  */
 function wcs_copy_order_address( $from_order, $to_order, $address_type = 'all' ) {
 
-	if ( in_array( $address_type, array( 'shipping', 'all' ) ) ) {
-		$to_order->set_address( array(
-			'first_name' => wcs_get_objects_property( $from_order, 'shipping_first_name' ),
-			'last_name'  => wcs_get_objects_property( $from_order, 'shipping_last_name' ),
-			'company'    => wcs_get_objects_property( $from_order, 'shipping_company' ),
-			'address_1'  => wcs_get_objects_property( $from_order, 'shipping_address_1' ),
-			'address_2'  => wcs_get_objects_property( $from_order, 'shipping_address_2' ),
-			'city'       => wcs_get_objects_property( $from_order, 'shipping_city' ),
-			'state'      => wcs_get_objects_property( $from_order, 'shipping_state' ),
-			'postcode'   => wcs_get_objects_property( $from_order, 'shipping_postcode' ),
-			'country'    => wcs_get_objects_property( $from_order, 'shipping_country' ),
-		), 'shipping' );
+	if ( 'all' === $address_type || 'shipping' === $address_type ) {
+		$to_order->set_shipping_first_name( $from_order->get_shipping_first_name() );
+		$to_order->set_shipping_last_name( $from_order->get_shipping_last_name() );
+		$to_order->set_shipping_company( $from_order->get_shipping_company() );
+		$to_order->set_shipping_address_1( $from_order->get_shipping_address_1() );
+		$to_order->set_shipping_address_2( $from_order->get_shipping_address_2() );
+		$to_order->set_shipping_city( $from_order->get_shipping_city() );
+		$to_order->set_shipping_state( $from_order->get_shipping_state() );
+		$to_order->set_shipping_postcode( $from_order->get_shipping_postcode() );
+		$to_order->set_shipping_country( $from_order->get_shipping_country() );
 	}
 
-	if ( in_array( $address_type, array( 'billing', 'all' ) ) ) {
-		$to_order->set_address( array(
-			'first_name' => wcs_get_objects_property( $from_order, 'billing_first_name' ),
-			'last_name'  => wcs_get_objects_property( $from_order, 'billing_last_name' ),
-			'company'    => wcs_get_objects_property( $from_order, 'billing_company' ),
-			'address_1'  => wcs_get_objects_property( $from_order, 'billing_address_1' ),
-			'address_2'  => wcs_get_objects_property( $from_order, 'billing_address_2' ),
-			'city'       => wcs_get_objects_property( $from_order, 'billing_city' ),
-			'state'      => wcs_get_objects_property( $from_order, 'billing_state' ),
-			'postcode'   => wcs_get_objects_property( $from_order, 'billing_postcode' ),
-			'country'    => wcs_get_objects_property( $from_order, 'billing_country' ),
-			'email'      => wcs_get_objects_property( $from_order, 'billing_email' ),
-			'phone'      => wcs_get_objects_property( $from_order, 'billing_phone' ),
-		), 'billing' );
+	if ( 'all' === $address_type || 'billing' === $address_type ) {
+		$to_order->set_billing_first_name( $from_order->get_billing_first_name() );
+		$to_order->set_billing_last_name( $from_order->get_billing_last_name() );
+		$to_order->set_billing_company( $from_order->get_billing_company() );
+		$to_order->set_billing_address_1( $from_order->get_billing_address_1() );
+		$to_order->set_billing_address_2( $from_order->get_billing_address_2() );
+		$to_order->set_billing_city( $from_order->get_billing_city() );
+		$to_order->set_billing_state( $from_order->get_billing_state() );
+		$to_order->set_billing_postcode( $from_order->get_billing_postcode() );
+		$to_order->set_billing_country( $from_order->get_billing_country() );
+		$to_order->set_billing_email( $from_order->get_billing_email() );
+		$to_order->set_billing_phone( $from_order->get_billing_phone() );
 	}
+
+	$to_order->save();
 
 	return apply_filters( 'woocommerce_subscriptions_copy_order_address', $to_order, $from_order, $address_type );
 }
 
 /**
- * Utility function to copy order meta between two orders. Originally intended to copy meta between
- * first order and subscription object, then between subscription and renewal orders.
+ * Copies order meta between two order objects (orders or subscriptions).
  *
- * The hooks used here in those cases are
- * - wcs_subscription_meta_query
- * - wcs_subscription_meta
- * - wcs_renewal_order_meta_query
- * - wcs_renewal_order_meta
+ * Intended to copy meta between first order and subscription object, then between subscription and renewal orders.
  *
- * @param  WC_Order $from_order Order to copy meta from
- * @param  WC_Order $to_order   Order to copy meta to
- * @param  string $type type of copy
+ * @param WC_Order $from_order Order|Subscription to copy meta from.
+ * @param WC_Order $to_order   Order|Subscription to copy meta to.
+ * @param string   $type       The type of copy. Can be 'subscription' or 'renewal'. Optional. Default is 'subscription'.
  */
 function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
-	global $wpdb;
 
 	if ( ! is_a( $from_order, 'WC_Abstract_Order' ) || ! is_a( $to_order, 'WC_Abstract_Order' ) ) {
 		throw new InvalidArgumentException( _x( 'Invalid data. Orders expected aren\'t orders.', 'In wcs_copy_order_meta error message. Refers to origin and target order objects.', 'woocommerce-subscriptions' ) );
@@ -156,58 +149,7 @@ function wcs_copy_order_meta( $from_order, $to_order, $type = 'subscription' ) {
 		$type = 'copy_order';
 	}
 
-	$meta_query = $wpdb->prepare(
-		"SELECT `meta_key`, `meta_value`
-		 FROM {$wpdb->postmeta}
-		 WHERE `post_id` = %d
-		 AND `meta_key` NOT LIKE '_schedule_%%'
-		 AND `meta_key` NOT IN (
-			 '_paid_date',
-			 '_date_paid',
-			 '_completed_date',
-			 '_date_completed',
-			 '_edit_last',
-			 '_subscription_switch_data',
-			 '_order_key',
-			 '_edit_lock',
-			 '_wc_points_earned',
-			 '_transaction_id',
-			 '_billing_interval',
-			 '_billing_period',
-			 '_subscription_resubscribe',
-			 '_subscription_renewal',
-			 '_subscription_switch',
-			 '_payment_method',
-			 '_payment_method_title',
-			 '_suspension_count',
-			 '_requires_manual_renewal',
-			 '_cancelled_email_sent',
-			 '_trial_period',
-			 '_created_via',
-			 '_order_stock_reduced'
-		 )",
-		wcs_get_objects_property( $from_order, 'id' )
-	);
-
-	if ( in_array( $type, array( 'renewal_order', 'parent' ) ) ) {
-		$meta_query .= " AND `meta_key` NOT LIKE '_download_permissions_granted' ";
-	}
-
-	// Allow extensions to add/remove order meta
-	$meta_query = apply_filters( 'wcs_' . $type . '_meta_query', $meta_query, $to_order, $from_order );
-	$meta       = $wpdb->get_results( $meta_query, 'ARRAY_A' );
-	$meta       = apply_filters( 'wcs_' . $type . '_meta', $meta, $to_order, $from_order );
-
-	// Pre WC 3.0 we need to save each meta individually, post 3.0 we can save the object once
-	$save = wcs_is_woocommerce_pre( '3.0' ) ? 'save' : 'set_prop_only';
-
-	foreach ( $meta as $meta_item ) {
-		wcs_set_objects_property( $to_order, $meta_item['meta_key'], maybe_unserialize( $meta_item['meta_value'] ), $save, '', 'omit_key_prefix' );
-	}
-
-	if ( is_callable( array( $to_order, 'save' ) ) ) {
-		$to_order->save();
-	}
+	WC_Subscriptions_Data_Copier::copy( $from_order, $to_order, $type );
 }
 
 /**

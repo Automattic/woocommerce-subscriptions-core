@@ -93,11 +93,14 @@ class WC_Subscription extends WC_Order {
 	);
 
 	/**
-	 * Initialize the subscription object.
+	 * Initializes a specific subscription if the ID is passed, otherwise a new and empty instance of a subscription.
 	 *
-	 * @param int|WC_Subscription $subscription
+	 * This class should NOT be instantiated, instead the functions wcs_create_subscription() and wcs_get_subscription()
+	 * should be used.
+	 *
+	 * @param int|WC_Subscription $subscription Subscription to read.
 	 */
-	public function __construct( $subscription ) {
+	public function __construct( $subscription = 0 ) {
 
 		// Add subscription date types as extra subscription data.
 		foreach ( wcs_get_subscription_date_types() as $date_type => $date_name ) {
@@ -924,6 +927,21 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function set_suspension_count( $value ) {
 		$this->set_prop( 'suspension_count', absint( $value ) );
+	}
+
+	/**
+	 * Set schedule start date.
+	 *
+	 * This function should not be used. It only exists to support setting the start date on subscription creation without
+	 * having to call update_dates() which results in a save.
+	 *
+	 * The more aptly named set_schedule_start() cannot exist because then WC core thinks the _schedule_start meta is an
+	 * internal meta key and throws errors.
+	 *
+	 * @param string $schedule_start
+	 */
+	public function set_start_date( $schedule_start ) {
+		$this->set_prop( 'schedule_start', $schedule_start );
 	}
 
 	/**

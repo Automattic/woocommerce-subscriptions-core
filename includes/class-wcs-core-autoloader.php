@@ -175,12 +175,14 @@ class WCS_Core_Autoloader {
 	 */
 	protected function is_class_data_store( $class ) {
 		static $data_stores = array(
-			'wcs_related_order_store_cached_cpt'  => true,
-			'wcs_related_order_store_cpt'         => true,
-			'wcs_customer_store_cached_cpt'       => true,
-			'wcs_customer_store_cpt'              => true,
-			'wcs_product_variable_data_store_cpt' => true,
-			'wcs_subscription_data_store_cpt'     => true,
+			'wcs_orders_table_subscription_data_store' => true,
+			'wcs_orders_table_data_store_controller'   => true,
+			'wcs_related_order_store_cached_cpt'       => true,
+			'wcs_related_order_store_cpt'              => true,
+			'wcs_customer_store_cached_cpt'            => true,
+			'wcs_customer_store_cpt'                   => true,
+			'wcs_product_variable_data_store_cpt'      => true,
+			'wcs_subscription_data_store_cpt'          => true,
 		);
 
 		return isset( $data_stores[ $class ] );

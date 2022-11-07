@@ -96,36 +96,47 @@ function wcs_get_subscription( $the_subscription ) {
  * @since  2.0
  */
 function wcs_create_subscription( $args = array() ) {
-
 	$now   = gmdate( 'Y-m-d H:i:s' );
 	$order = ( isset( $args['order_id'] ) ) ? wc_get_order( $args['order_id'] ) : null;
-
-	if ( ! empty( $order ) ) {
-		$default_start_date = wcs_get_datetime_utc_string( wcs_get_objects_property( $order, 'date_created' ) );
-	} else {
-		$default_start_date = ( isset( $args['date_created'] ) ) ? $args['date_created'] : $now;
-	}
 
 	$default_args = array(
 		'status'             => '',
 		'order_id'           => 0,
 		'customer_note'      => null,
-		'customer_id'        => ( ! empty( $order ) ) ? $order->get_user_id() : null,
-		'start_date'         => $default_start_date,
+		'customer_id'        => null,
+		'start_date'         => $args['date_created'] ?? $now,
 		'date_created'       => $now,
-		'created_via'        => ( ! empty( $order ) ) ? wcs_get_objects_property( $order, 'created_via' ) : '',
-		'order_version'      => ( ! empty( $order ) ) ? wcs_get_objects_property( $order, 'version' ) : WC_VERSION,
-		'currency'           => ( ! empty( $order ) ) ? wcs_get_objects_property( $order, 'currency' ) : get_woocommerce_currency(),
-		'prices_include_tax' => ( ! empty( $order ) ) ? ( ( wcs_get_objects_property( $order, 'prices_include_tax' ) ) ? 'yes' : 'no' ) : get_option( 'woocommerce_prices_include_tax' ), // we don't use wc_prices_include_tax() here because WC doesn't use it in wc_create_order(), not 100% sure why it doesn't also check the taxes are enabled, but there could forseeably be a reason
+		'created_via'        => '',
+		'currency'           => get_woocommerce_currency(),
+		'prices_include_tax' => get_option( 'woocommerce_prices_include_tax' ), // we don't use wc_prices_include_tax() here because WC doesn't use it in wc_create_order(), not 100% sure why it doesn't also check the taxes are enabled, but there could forseeably be a reason
 	);
 
-	$args              = wp_parse_args( $args, $default_args );
-	$subscription_data = array();
+	// If we are creating a subscription from an order, we use some of the order's data as defaults.
+	if ( $order instanceof \WC_Order ) {
+		$default_args['customer_id']        = $order->get_user_id();
+		$default_args['created_via']        = $order->get_created_via( 'edit' );
+		$default_args['currency']           = $order->get_currency( 'edit' );
+		$default_args['prices_include_tax'] = $order->get_prices_include_tax( 'edit' ) ? 'yes' : 'no';
+		$default_args['date_created']       = wcs_get_datetime_utc_string( $order->get_date_created( 'edit' ) );
+	}
+
+	if ( isset( $args['order_version'] ) ) {
+		wcs_deprecated_argument( __FUNCTION__, '2.4', 'The "order_version" argument is no longer changeable due to a change in the WC order creation process.' );
+	}
+
+	$args = wp_parse_args( $args, $default_args );
+
+	// Check that the given status exists.
+	if ( ! empty( $args['status'] ) && ! array_key_exists( 'wc-' . $args['status'], wcs_get_subscription_statuses() ) ) {
+		return new WP_Error( 'woocommerce_invalid_subscription_status', __( 'Invalid subscription status given.', 'woocommerce-subscriptions' ) );
+	}
 
 	// Validate the date_created arg.
 	if ( ! is_string( $args['date_created'] ) || false === wcs_is_datetime_mysql_format( $args['date_created'] ) ) {
 		return new WP_Error( 'woocommerce_subscription_invalid_date_created_format', _x( 'Invalid created date. The date must be a string and of the format: "Y-m-d H:i:s".', 'Error message while creating a subscription', 'woocommerce-subscriptions' ) );
-	} elseif ( wcs_date_to_time( $args['date_created'] ) > current_time( 'timestamp', true ) ) {
+	}
+	// Check if the date is in the future.
+	if ( wcs_date_to_time( $args['date_created'] ) > time() ) {
 		return new WP_Error( 'woocommerce_subscription_invalid_date_created', _x( 'Subscription created date must be before current day.', 'Error message while creating a subscription', 'woocommerce-subscriptions' ) );
 	}
 
@@ -134,77 +145,52 @@ function wcs_create_subscription( $args = array() ) {
 		return new WP_Error( 'woocommerce_subscription_invalid_start_date_format', _x( 'Invalid date. The date must be a string and of the format: "Y-m-d H:i:s".', 'Error message while creating a subscription', 'woocommerce-subscriptions' ) );
 	}
 
-	// check customer id is set
+	// Check customer id is set.
 	if ( empty( $args['customer_id'] ) || ! is_numeric( $args['customer_id'] ) || $args['customer_id'] <= 0 ) {
 		return new WP_Error( 'woocommerce_subscription_invalid_customer_id', _x( 'Invalid subscription customer_id.', 'Error message while creating a subscription', 'woocommerce-subscriptions' ) );
 	}
 
-	// check the billing period
-	if ( empty( $args['billing_period'] ) || ! in_array( strtolower( $args['billing_period'] ), array_keys( wcs_get_subscription_period_strings() ) ) ) {
+	// Check the billing period.
+	if ( empty( $args['billing_period'] ) || ! array_key_exists( strtolower( $args['billing_period'] ), wcs_get_subscription_period_strings() ) ) {
 		return new WP_Error( 'woocommerce_subscription_invalid_billing_period', __( 'Invalid subscription billing period given.', 'woocommerce-subscriptions' ) );
 	}
 
-	// check the billing interval
+	// Check the billing interval.
 	if ( empty( $args['billing_interval'] ) || ! is_numeric( $args['billing_interval'] ) || absint( $args['billing_interval'] ) <= 0 ) {
 		return new WP_Error( 'woocommerce_subscription_invalid_billing_interval', __( 'Invalid subscription billing interval given. Must be an integer greater than 0.', 'woocommerce-subscriptions' ) );
 	}
 
-	$subscription_data['post_type']     = 'shop_subscription';
-	$subscription_data['post_status']   = 'wc-' . apply_filters( 'woocommerce_default_subscription_status', 'pending' );
-	$subscription_data['ping_status']   = 'closed';
-	$subscription_data['post_author']   = 1;
-	$subscription_data['post_password'] = uniqid( 'order_' );
-	// translators: Order date parsed by strftime
-	$post_title_date = strftime( _x( '%b %d, %Y @ %I:%M %p', 'Used in subscription post title. "Subscription renewal order - <this>"', 'woocommerce-subscriptions' ) ); // phpcs:ignore WordPress.WP.I18n.UnorderedPlaceholdersText
-	// translators: placeholder is order date parsed by strftime
-	$subscription_data['post_title']    = sprintf( _x( 'Subscription &ndash; %s', 'The post title for the new subscription', 'woocommerce-subscriptions' ), $post_title_date );
-	$subscription_data['post_date_gmt'] = $args['date_created'];
-	$subscription_data['post_date']     = get_date_from_gmt( $args['date_created'] );
+	$subscription = new \WC_Subscription();
+
+	// Only call set_status() if required as this triggers a number of WC flows. Default status of 'wc-pending' is during
+	if ( $args['status'] ) {
+		$subscription->set_status( $args['status'] );
+	}
+
+	$subscription->set_customer_note( $args['customer_note'] ?? '' );
+	$subscription->set_customer_id( $args['customer_id'] );
+	$subscription->set_date_created( $args['date_created'] );
+	$subscription->set_created_via( $args['created_via'] );
+	$subscription->set_currency( $args['currency'] );
+	$subscription->set_prices_include_tax( 'no' !== $args['prices_include_tax'] );
+	$subscription->set_billing_period( $args['billing_period'] );
+	$subscription->set_billing_interval( absint( $args['billing_interval'] ) );
+	$subscription->set_start_date( $args['start_date'] );
 
 	if ( $args['order_id'] > 0 ) {
-		$subscription_data['post_parent'] = absint( $args['order_id'] );
+		$subscription->set_parent_id( $args['order_id'] );
 	}
 
-	if ( ! is_null( $args['customer_note'] ) && ! empty( $args['customer_note'] ) ) {
-		$subscription_data['post_excerpt'] = $args['customer_note'];
-	}
-
-	// Only set the status if creating a new subscription, use wcs_update_subscription to update the status
-	if ( $args['status'] ) {
-		if ( ! in_array( 'wc-' . $args['status'], array_keys( wcs_get_subscription_statuses() ) ) ) {
-			return new WP_Error( 'woocommerce_invalid_subscription_status', __( 'Invalid subscription status given.', 'woocommerce-subscriptions' ) );
-		}
-		$subscription_data['post_status']  = 'wc-' . $args['status'];
-	}
-
-	$subscription_id = wp_insert_post( apply_filters( 'woocommerce_new_subscription_data', $subscription_data, $args ), true );
-
-	if ( is_wp_error( $subscription_id ) ) {
-		return $subscription_id;
-	}
-
-	// Default order meta data.
-	update_post_meta( $subscription_id, '_order_key', wcs_generate_order_key() );
-	update_post_meta( $subscription_id, '_order_currency', $args['currency'] );
-	update_post_meta( $subscription_id, '_prices_include_tax', $args['prices_include_tax'] );
-	update_post_meta( $subscription_id, '_created_via', sanitize_text_field( $args['created_via'] ) );
-
-	// add/update the billing
-	update_post_meta( $subscription_id, '_billing_period', $args['billing_period'] );
-	update_post_meta( $subscription_id, '_billing_interval', absint( $args['billing_interval'] ) );
-
-	update_post_meta( $subscription_id, '_customer_user', $args['customer_id'] );
-	update_post_meta( $subscription_id, '_order_version', $args['order_version'] );
-
-	update_post_meta( $subscription_id, '_schedule_start', $args['start_date'] );
+	$subscription->save();
 
 	/**
 	 * Filter the newly created subscription object.
+	 * We need to fetch the subscription from the database as the current object state doesn't match the loaded state.
 	 *
 	 * @since 2.2.22
 	 * @param WC_Subscription $subscription
 	 */
-	$subscription = apply_filters( 'wcs_created_subscription', wcs_get_subscription( $subscription_id ) );
+	$subscription = apply_filters( 'wcs_created_subscription', wcs_get_subscription( $subscription ) );
 
 	/**
 	 * Triggered after a new subscription is created.

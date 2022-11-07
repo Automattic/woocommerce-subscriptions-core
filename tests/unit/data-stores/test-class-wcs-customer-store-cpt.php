@@ -42,4 +42,16 @@ class WCS_Customer_Store_CPT_Test extends WCS_Base_Customer_Store_Test_Case {
 
 		$this->assertEquals( $subscription_ids, self::$store->get_users_subscription_ids( $this->customer_id ) );
 	}
+
+	public function test_new_subscription_data_hook() {
+		$hook_callback = function ( $args ) {
+			$args['post_title'] = 'Test Title';
+			return $args;
+		};
+		add_filter( 'woocommerce_new_subscription_data', $hook_callback );
+		$subscription_object = WCS_Helper_Subscription::create_subscription( array( 'status' => 'active' ) );
+		remove_filter( 'woocommerce_new_subscription_data', $hook_callback );
+
+		$this->assertStringContainsString( 'Test Title', get_the_title( $subscription_object->get_id() ) );
+	}
 }

@@ -104,6 +104,8 @@ class WCS_Cart_Renewal {
 
 			// Update customer's address on the subscription if it is changed during renewal
 			add_filter( 'woocommerce_checkout_update_user_meta', array( &$this, 'maybe_update_subscription_address_data' ), 10, 2 );
+			add_filter( 'woocommerce_store_api_checkout_update_customer_from_request', array( &$this, 'maybe_update_subscription_address_data_from_store_api' ), 10, 2 );
+
 		}
 	}
 
@@ -451,7 +453,10 @@ class WCS_Cart_Renewal {
 					}
 				}
 
-				$_product->set_price( $price / $item_to_renew['qty'] );
+				// In rare cases quantity can be zero. Check first to prevent triggering a fatal error in php8+
+				if ( 0 !== (int) $item_to_renew['qty'] ) {
+					$_product->set_price( $price / $item_to_renew['qty'] );
+				}
 
 				// Don't carry over any sign up fee
 				wcs_set_objects_property( $_product, 'subscription_sign_up_fee', 0, 'set_prop_only' );
@@ -1156,7 +1161,6 @@ class WCS_Cart_Renewal {
 		if ( false !== $cart_renewal_item ) {
 			$subscription    = wcs_get_subscription( $cart_renewal_item[ $this->cart_item_key ]['subscription_id'] );
 			$billing_address = $shipping_address = array();
-
 			foreach ( array( 'billing', 'shipping' ) as $address_type ) {
 				$checkout_fields = WC()->checkout()->get_checkout_fields( $address_type );
 
@@ -1169,9 +1173,35 @@ class WCS_Cart_Renewal {
 					}
 				}
 			}
-
 			$subscription->set_address( $billing_address, 'billing' );
 			$subscription->set_address( $shipping_address, 'shipping' );
+		}
+	}
+
+	/**
+	 * When completing checkout for a subscription renewal, update the subscription's address to match
+	 * the shipping/billing address entered on checkout.
+	 *
+	 * @param \WC_Customer $customer
+	 * @param \WP_REST_Request $request Full details about the request.
+	 * @since 4.1.1
+	 */
+	public function maybe_update_subscription_address_data_from_store_api( $customer, $request ) {
+		$cart_renewal_item = $this->cart_contains();
+
+		if ( false !== $cart_renewal_item ) {
+			$subscription = wcs_get_subscription( $cart_renewal_item[ $this->cart_item_key ]['subscription_id'] );
+
+			// Billing address is a required field.
+			foreach ( $request['billing_address'] as $key => $value ) {
+				if ( is_callable( [ $customer, "set_billing_$key" ] ) ) {
+					$customer->{"set_billing_$key"}( $value );
+				}
+			}
+			// Billing address is a required field.
+			$subscription->set_address( $request['billing_address'], 'billing' );
+			// If shipping address (optional field) was not provided, set it to the given billing address (required field).
+			$subscription->set_address( $request['shipping_address'] ?? $request['billing_address'], 'shipping' );
 		}
 	}
 
