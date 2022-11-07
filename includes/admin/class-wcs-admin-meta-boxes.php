@@ -158,7 +158,7 @@ class WCS_Admin_Meta_Boxes {
 				'wcs-admin-coupon-meta-boxes',
 				WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/meta-boxes-coupon.js' ),
 				array( 'jquery', 'wc-admin-meta-boxes' ),
-				WC_Subscriptions_Core_Plugin::instance()->get_plugin_version()
+				WC_Subscriptions_Core_Plugin::instance()->get_library_version()
 			);
 		}
 	}
