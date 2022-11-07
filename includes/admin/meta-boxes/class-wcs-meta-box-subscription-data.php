@@ -7,7 +7,7 @@
  * @author   Prospress
  * @category Admin
  * @package  WooCommerce Subscriptions/Admin/Meta Boxes
- * @version  3.0.0
+ * @version  1.0.0 - Migrated from WooCommerce Subscriptions v3.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -408,7 +408,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 			/**
 			 * Fire an action after a subscription is created via the admin screen.
 			 *
-			 * @since 2.4.1
+			 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.4.1
 			 * @param WC_Subscription $subscription The subscription object.
 			 */
 			do_action( 'woocommerce_admin_created_subscription', $subscription );

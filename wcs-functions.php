@@ -2,7 +2,7 @@
 /**
  * WooCommerce Subscriptions Functions
  *
- * @version 2.0
+ * @version 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -32,7 +32,7 @@ if ( is_admin() ) {
  * Check if a given object is a WC_Subscription (or child class of WC_Subscription), or if a given ID
  * belongs to a post with the subscription post type ('shop_subscription')
  *
- * @since  2.0
+ * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  * @return boolean true if anything is found
  */
 function wcs_is_subscription( $subscription ) {
@@ -52,7 +52,7 @@ function wcs_is_subscription( $subscription ) {
  * A very simple check. Basically if we have ANY subscriptions in the database, then the user has probably set at
  * least one up, so we can give them the standard message. Otherwise
  *
- * @since  2.0
+ * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  * @return boolean true if anything is found
  */
 function wcs_do_subscriptions_exist() {
@@ -68,7 +68,7 @@ function wcs_do_subscriptions_exist() {
 /**
  * Main function for returning subscriptions. Wrapper for the wc_get_order() method.
  *
- * @since  2.0
+ * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  * @param  mixed $the_subscription Post object or post ID of the order.
  * @return WC_Subscription|false The subscription object, or false if it cannot be found.
  */
@@ -93,7 +93,7 @@ function wcs_get_subscription( $the_subscription ) {
  * Returns a new WC_Subscription object on success which can then be used to add additional data.
  *
  * @return WC_Subscription | WP_Error A WC_Subscription on success or WP_Error object on failure
- * @since  2.0
+ * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_create_subscription( $args = array() ) {
 	$now   = gmdate( 'Y-m-d H:i:s' );
@@ -187,7 +187,7 @@ function wcs_create_subscription( $args = array() ) {
 	 * Filter the newly created subscription object.
 	 * We need to fetch the subscription from the database as the current object state doesn't match the loaded state.
 	 *
-	 * @since 2.2.22
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.22
 	 * @param WC_Subscription $subscription
 	 */
 	$subscription = apply_filters( 'wcs_created_subscription', wcs_get_subscription( $subscription ) );
@@ -195,7 +195,7 @@ function wcs_create_subscription( $args = array() ) {
 	/**
 	 * Triggered after a new subscription is created.
 	 *
-	 * @since 2.2.22
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.22
 	 * @param WC_Subscription $subscription
 	 */
 	do_action( 'wcs_create_subscription', $subscription );
@@ -206,7 +206,7 @@ function wcs_create_subscription( $args = array() ) {
 /**
  * Return an array of subscription status types, similar to @see wc_get_order_statuses()
  *
- * @since  2.0
+ * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  * @return array
  */
 function wcs_get_subscription_statuses() {
@@ -227,7 +227,7 @@ function wcs_get_subscription_statuses() {
 /**
  * Get the nice name for a subscription's status
  *
- * @since  2.0
+ * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  * @param  string $status
  * @return string
  */
@@ -277,7 +277,7 @@ function wcs_get_address_type_to_display( $address_type ) {
 /**
  * Returns an array of subscription dates
  *
- * @since  2.0
+ * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  * @return array
  */
 function wcs_get_subscription_date_types() {
@@ -299,7 +299,7 @@ function wcs_get_subscription_date_types() {
  *
  * @param string A subscription date type key. One of the array key values returned by @see wcs_get_subscription_date_types().
  * @param WC_Subscription
- * @since 2.1
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.1
  * @return bool
  */
 function wcs_display_date_type( $date_type, $subscription ) {
@@ -319,7 +319,7 @@ function wcs_display_date_type( $date_type, $subscription ) {
  * Get the meta key value for storing a date in the subscription's post meta table.
  *
  * @param string $date_type Internally, 'trial_end', 'next_payment' or 'end', but can be any string
- * @since 2.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_get_date_meta_key( $date_type ) {
 	if ( ! is_string( $date_type ) ) {
@@ -337,7 +337,7 @@ function wcs_get_date_meta_key( $date_type ) {
  * to make sure they pass the correct date type key, which can involve transforming a prop key or
  * deprecated date type key.
  *
- * @since 2.2.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
  * @param string $date_type_key String referring to a valid date type, can be: 'date_created', 'trial_end', 'next_payment', 'last_order_date_created' or 'end', or any other value returned by @see this->get_valid_date_types()
  * @return string
  */
@@ -403,7 +403,7 @@ function wcs_sanitize_subscription_status_key( $status_key ) {
  *   'order_id' The post ID of a shop_order post/WC_Order object which was used to create the subscription
  *   'subscription_status' Any valid subscription status. Can be 'any', 'active', 'cancelled', 'on-hold', 'expired', 'pending' or 'trash'. Defaults to 'any'.
  * @return array Subscription details in post_id => WC_Subscription form.
- * @since  2.0
+ * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_get_subscriptions( $args ) {
 	global $wpdb;
@@ -531,7 +531,7 @@ function wcs_get_subscriptions( $args ) {
  *      'limit' The number of subscriptions to return. Default is all (-1).
  *      'offset' An optional number of subscriptions to displace or pass over. Default 0. A limit arg is required for the offset to be applied.
  * @return array
- * @since  2.0
+ * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_get_subscriptions_for_product( $product_ids, $fields = 'ids', $args = array() ) {
 	global $wpdb;
@@ -591,7 +591,7 @@ function wcs_get_subscriptions_for_product( $product_ids, $fields = 'ids', $args
  *
  * @param mixed WC_Subscription|post_id
  * @return array
- * @since 2.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_get_line_items_with_a_trial( $subscription_id ) {
 
@@ -612,7 +612,7 @@ function wcs_get_line_items_with_a_trial( $subscription_id ) {
  * Checks if the user can be granted the permission to remove a line item from the subscription.
  *
  * @param WC_Subscription $subscription An instance of a WC_Subscription object
- * @since 2.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_can_items_be_removed( $subscription ) {
 	$allow_remove = false;
@@ -629,7 +629,7 @@ function wcs_can_items_be_removed( $subscription ) {
  *
  * @param WC_Order_item $item An instance of a WC_Order_item object
  * @param WC_Subscription $subscription An instance of a WC_Subscription object
- * @since 2.2.15
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.15
  */
 function wcs_can_item_be_removed( $item, $subscription ) {
 	return apply_filters( 'wcs_can_item_be_removed', true, $item, $subscription );
@@ -640,7 +640,7 @@ function wcs_can_item_be_removed( $item, $subscription ) {
  * is for a variation).
  *
  * @param int An order item ID
- * @since 2.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_get_order_items_product_id( $item_id ) {
 	global $wpdb;
@@ -681,7 +681,7 @@ function wcs_get_canonical_product_id( $item_or_product ) {
  * Return an array statuses used to describe when a subscriptions has been marked as ending or has ended.
  *
  * @return array
- * @since 2.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_get_subscription_ended_statuses() {
 	return apply_filters( 'wcs_subscription_ended_statuses', array( 'cancelled', 'trash', 'expired', 'switched', 'pending-cancel' ) );
@@ -691,7 +691,7 @@ function wcs_get_subscription_ended_statuses() {
  * Returns true when on the My Account > View Subscription front end page.
  *
  * @return bool
- * @since 2.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_is_view_subscription_page() {
 	global $wp;
@@ -704,7 +704,7 @@ function wcs_is_view_subscription_page() {
  *
  * @param string $file_name The image file name.
  * @return string The image asset url.
- * @since 2.2.20
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.20
  */
 function wcs_get_image_asset_url( $file_name ) {
 	return WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( "assets/images/{$file_name}" );
@@ -715,7 +715,7 @@ function wcs_get_image_asset_url( $file_name ) {
  *
  * @param string $term Term to search
  * @return array of subscription ids
- * @since 2.3.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
  */
 function wcs_subscription_search( $term ) {
 	global $wpdb;
@@ -801,7 +801,7 @@ function wcs_subscription_search( $term ) {
 /**
  * Set payment method meta data for a subscription or order.
  *
- * @since 2.4.3
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.4.3
  * @param WC_Subscription|WC_Order $subscription The subscription or order to set the post payment meta on.
  * @param array $payment_meta Associated array of the form: $database_table => array( 'meta_key' => array( 'value' => '' ) )
  * @throws InvalidArgumentException
@@ -838,7 +838,7 @@ function wcs_set_payment_meta( $subscription, $payment_meta ) {
 /**
  * Get total quantity of a product on a subscription or order, even across multiple line items. So we can determine if product has stock available.
  *
- * @since 2.6.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.6.0
  *
  * @param WC_Order|WC_Subscription $subscription Order or subscription object.
  * @param WC_Product $product                    The product to get the total quantity of.
@@ -887,7 +887,7 @@ function wcs_get_total_line_item_product_quantity( $order, $product, $product_ma
  *
  * Sites are considered large if they have more than 3000 subscriptions or more than 25000 orders.
  *
- * @since 3.0.7
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.0.7
  * @return bool True for large sites, otherwise false.
  */
 function wcs_is_large_site() {
