@@ -13,13 +13,6 @@ require_once dirname( __FILE__ ) . '/class-wcs-core-autoloader.php';
 class WC_Subscriptions_Core_Plugin {
 
 	/**
-	 * The plugin version core is based off.
-	 *
-	 * @var string
-	 */
-	protected $plugin_version = '3.1.6';
-
-	/**
 	 * The version of subscriptions-core library.
 	 * @var string
 	 */
@@ -265,10 +258,11 @@ class WC_Subscriptions_Core_Plugin {
 	/**
 	 * Gets the plugin's version
 	 *
+	 * @deprecated x.x.x This function is no longer recommended for version detection. Use get_library_version() instead.
 	 * @since 4.0.0
 	 */
 	public function get_plugin_version() {
-		return $this->plugin_version;
+		return $this->library_version;
 	}
 
 	/**
