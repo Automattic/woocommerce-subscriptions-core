@@ -78,50 +78,7 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 		$related_subscription_ids = array_map( 'absint', $related_subscription_ids );
 		$related_subscription_ids = array_values( $related_subscription_ids );
 
-		$related_subscription_ids = $this->apply_deprecated_related_order_filter( $related_subscription_ids, $order, $relation_type );
-
 		return apply_filters( 'wcs_orders_related_subscription_ids', $related_subscription_ids, $order, $relation_type );
-	}
-
-	/**
-	 * Apply the deprecated 'wcs_subscriptions_for_renewal_order' and 'wcs_subscriptions_for_resubscribe_order' filters
-	 * to maintain backward compatibility.
-	 *
-	 * @param array $subscription_ids The IDs of subscription linked to the given order, if any.
-	 * @param WC_Order $order An instance of an order that may be linked with subscriptions.
-	 * @param string $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe'.
-	 *
-	 * @return array
-	 */
-	protected function apply_deprecated_related_order_filter( $subscription_ids, WC_Order $order, $relation_type ) {
-
-		$deprecated_filter_hook = "wcs_subscriptions_for_{$relation_type}_order";
-
-		if ( has_filter( $deprecated_filter_hook ) ) {
-			wcs_deprecated_function( sprintf( '"%s" hook should no longer be used and', esc_html( $deprecated_filter_hook ) ), '2.3.2', '"wcs_orders_related_subscription_ids" with a check on the 3rd param, to take advantage of the new persistent caching layer for related subscription IDs' );
-
-			$subscriptions = array();
-
-			foreach ( $subscription_ids as $subscription_id ) {
-				if ( wcs_is_subscription( $subscription_id ) ) {
-					$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
-				}
-			}
-
-			$filtered_subscriptions = apply_filters( $deprecated_filter_hook, $subscriptions, $order );
-
-			// Although this array was previously ordered by ID => instance, that key requirement wasn't enforced so it's possible 3rd party code was not using the ID as the key, and instead, numerical indexes are being used, so its safest not to rely on IDs as keys
-			if ( $filtered_subscriptions != $subscriptions ) {
-
-				$subscription_ids = array();
-
-				foreach ( $filtered_subscriptions as $subscription ) {
-					$subscription_ids[] = $subscription->get_id();
-				}
-			}
-		}
-
-		return $subscription_ids;
 	}
 
 	/**
