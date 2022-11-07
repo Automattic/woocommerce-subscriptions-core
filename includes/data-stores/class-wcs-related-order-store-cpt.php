@@ -71,15 +71,12 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 */
 	public function get_related_subscription_ids( WC_Order $order, $relation_type ) {
 		$related_order_meta_key = $this->get_meta_key( $relation_type );
-		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
-			$related_subscription_ids = get_post_meta( wcs_get_objects_property( $order, 'id' ), $related_order_meta_key, false );
-		} else {
-			$related_subscription_ids = $order->get_meta( $related_order_meta_key, false );
-			// Normalise the return value: WooCommerce returns a set of WC_Meta_Data objects, with values cast to strings, even if they're integers
-			$related_subscription_ids = wp_list_pluck( $related_subscription_ids, 'value' );
-			$related_subscription_ids = array_map( 'absint', $related_subscription_ids );
-			$related_subscription_ids = array_values( $related_subscription_ids );
-		}
+
+		$related_subscription_ids = $order->get_meta( $related_order_meta_key, false );
+		// Normalise the return value: WooCommerce returns a set of WC_Meta_Data objects, with values cast to strings, even if they're integers
+		$related_subscription_ids = wp_list_pluck( $related_subscription_ids, 'value' );
+		$related_subscription_ids = array_map( 'absint', $related_subscription_ids );
+		$related_subscription_ids = array_values( $related_subscription_ids );
 
 		$related_subscription_ids = $this->apply_deprecated_related_order_filter( $related_subscription_ids, $order, $relation_type );
 
@@ -140,27 +137,17 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 * @return void
 	 */
 	public function add_relation( WC_Order $order, WC_Order $subscription, $relation_type ) {
-
 		// We can't rely on $subscription->get_id() being available here, because we only require a WC_Order, not a WC_Subscription, and WC_Order does not have get_id() available with WC < 3.0
 		$subscription_id        = wcs_get_objects_property( $subscription, 'id' );
 		$related_order_meta_key = $this->get_meta_key( $relation_type );
 
-		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
-			$order_id             = wcs_get_objects_property( $order, 'id' );
-			$existing_related_ids = get_post_meta( $order_id, $related_order_meta_key, false );
+		// We want to allow more than one piece of meta per key on the order, but we don't want to duplicate the same meta key => value combination, so we need to check if it is set first
+		$existing_relations   = $order->get_meta( $related_order_meta_key, false );
+		$existing_related_ids = wp_list_pluck( $existing_relations, 'value' );
 
-			if ( empty( $existing_related_ids ) || ! in_array( $subscription_id, $existing_related_ids ) ) {
-				add_post_meta( $order_id, $related_order_meta_key, $subscription_id, false );
-			}
-		} else {
-			// We want to allow more than one piece of meta per key on the order, but we don't want to duplicate the same meta key => value combination, so we need to check if it is set first
-			$existing_relations   = $order->get_meta( $related_order_meta_key, false );
-			$existing_related_ids = wp_list_pluck( $existing_relations, 'value' );
-
-			if ( empty( $existing_relations ) || ! in_array( $subscription_id, $existing_related_ids ) ) {
-				$order->add_meta_data( $related_order_meta_key, $subscription_id, false );
-				$order->save_meta_data();
-			}
+		if ( empty( $existing_relations ) || ! in_array( $subscription_id, $existing_related_ids, true ) ) {
+			$order->add_meta_data( $related_order_meta_key, $subscription_id, false );
+			$order->save_meta_data();
 		}
 	}
 
@@ -175,16 +162,14 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 */
 	public function delete_relation( WC_Order $order, WC_Order $subscription, $relation_type ) {
 		$related_order_meta_key = $this->get_meta_key( $relation_type );
-		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
-			delete_post_meta( wcs_get_objects_property( $order, 'id' ), $related_order_meta_key, wcs_get_objects_property( $subscription, 'id' ) );
-		} else {
-			foreach ( $order->get_meta_data() as $meta ) {
-				if ( $meta->key == $related_order_meta_key && $meta->value == wcs_get_objects_property( $subscription, 'id' ) ) { // we can't do strict comparison here, because WC_Meta_Data casts the subscription ID to be a string
-					$order->delete_meta_data_by_mid( $meta->id );
-				}
+
+		foreach ( $order->get_meta_data() as $meta ) {
+			if ( $related_order_meta_key === $meta->key && $subscription->get_id() === (int) $meta->value ) {
+				$order->delete_meta_data_by_mid( $meta->id );
 			}
-			$order->save_meta_data();
 		}
+
+		$order->save_meta_data();
 	}
 
 	/**
@@ -195,12 +180,8 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 */
 	public function delete_relations( WC_Order $order, $relation_type ) {
 		$related_order_meta_key = $this->get_meta_key( $relation_type );
-		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
-			delete_post_meta( wcs_get_objects_property( $order, 'id' ), $related_order_meta_key, null );
-		} else {
-			$order->delete_meta_data( $related_order_meta_key );
-			$order->save_meta_data();
-		}
+		$order->delete_meta_data( $related_order_meta_key );
+		$order->save_meta_data();
 	}
 
 	/**
