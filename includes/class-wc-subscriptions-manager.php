@@ -12,21 +12,21 @@
  * @subpackage  WC_Subscriptions_Manager
  * @category    Class
  * @author      Brent Shepherd
- * @since       1.0
+ * @since       1.0.0 - Migrated from WooCommerce Subscriptions v1.0
  */
 class WC_Subscriptions_Manager {
 
 	/**
 	 * The database key for user's subscriptions.
 	 *
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static $users_meta_key = 'woocommerce_subscriptions';
 
 	/**
 	 * Set up the class, including it's hooks & filters, when the file is loaded.
 	 *
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 **/
 	public static function init() {
 
@@ -80,7 +80,7 @@ class WC_Subscriptions_Manager {
 	 * This function is hooked early on the scheduled subscription payment hook.
 	 *
 	 * @param int $subscription_id The ID of a 'shop_subscription' post
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function prepare_renewal( $subscription_id ) {
 
@@ -100,7 +100,7 @@ class WC_Subscriptions_Manager {
 	 * @param int $subscription_id The ID of a 'shop_subscription' post
 	 * @param string $required_status The subscription status required to process a renewal order
 	 * @param string $order_note Reason for subscription status change
-	 * @since 2.2.12
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.12
 	 */
 	public static function process_renewal( $subscription_id, $required_status, $order_note ) {
 
@@ -151,7 +151,7 @@ class WC_Subscriptions_Manager {
 	 * Expires a single subscription on a users account.
 	 *
 	 * @param int $subscription_id The ID of a 'shop_subscription' post
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function expire_subscription( $subscription_id, $deprecated = null ) {
 
@@ -174,7 +174,7 @@ class WC_Subscriptions_Manager {
 	 * Fires when a cancelled subscription reaches the end of its prepaid term.
 	 *
 	 * @param int $subscription_id The ID of a 'shop_subscription' post
-	 * @since 1.3
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.3
 	 */
 	public static function subscription_end_of_prepaid_term( $subscription_id, $deprecated = null ) {
 
@@ -195,7 +195,7 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @param int $user_id The id of the user who owns the subscription.
 	 * @param string $subscription_key A subscription key of the form obtained by @see get_subscription_key( $order_id, $product_id )
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function process_subscription_payment( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::payment_complete()' );
@@ -216,7 +216,7 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @param int $user_id The id of the user who owns the expiring subscription.
 	 * @param string $subscription_key A subscription key of the form obtained by @see get_subscription_key( $order_id, $product_id )
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function process_subscription_payment_failure( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::payment_failed()' );
@@ -246,7 +246,7 @@ class WC_Subscriptions_Manager {
 	 * function directly, do not call this function also.
 	 *
 	 * @param WC_Order|int $order The order or ID of the order for which subscription payments should be marked against.
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function process_subscription_payments_on_order( $order, $product_id = '' ) {
 		wcs_deprecated_function( __METHOD__, '2.6.0' );
@@ -269,7 +269,7 @@ class WC_Subscriptions_Manager {
 	 * function directly, do not call this function also.
 	 *
 	 * @param int|WC_Order $order The order or ID of the order for which subscription payments should be marked against.
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function process_subscription_payment_failure_on_order( $order, $product_id = '' ) {
 		wcs_deprecated_function( __METHOD__, '2.6.0' );
@@ -289,7 +289,7 @@ class WC_Subscriptions_Manager {
 	 * Activates all the subscriptions created by a given order.
 	 *
 	 * @param WC_Order|int $order The order or ID of the order for which subscriptions should be marked as activated.
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function activate_subscriptions_for_order( $order ) {
 
@@ -315,7 +315,7 @@ class WC_Subscriptions_Manager {
 	 * Suspends all the subscriptions on an order by changing their status to "on-hold".
 	 *
 	 * @param WC_Order|int $order The order or ID of the order for which subscriptions should be marked as activated.
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function put_subscription_on_hold_for_order( $order ) {
 
@@ -343,7 +343,7 @@ class WC_Subscriptions_Manager {
 	 * Mark all subscriptions in an order as cancelled on the user's account.
 	 *
 	 * @param WC_Order|int $order The order or ID of the order for which subscriptions should be marked as cancelled.
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function cancel_subscriptions_for_order( $order ) {
 
@@ -371,7 +371,7 @@ class WC_Subscriptions_Manager {
 	 * Marks all the subscriptions in an order as expired
 	 *
 	 * @param WC_Order|int $order The order or ID of the order for which subscriptions should be marked as expired.
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function expire_subscriptions_for_order( $order ) {
 
@@ -399,7 +399,7 @@ class WC_Subscriptions_Manager {
 	 * Called when a sign up fails during the payment processing step.
 	 *
 	 * @param WC_Order|int $order The order or ID of the order for which subscriptions should be marked as failed.
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function failed_subscription_sign_ups_for_order( $order ) {
 
@@ -440,7 +440,7 @@ class WC_Subscriptions_Manager {
 	 * @param array $args An array of name => value pairs to customise the details of the subscription, including:
 	 *     'start_date' A MySQL formatted date/time string on which the subscription should start, in UTC timezone
 	 *     'expiry_date' A MySQL formatted date/time string on which the subscription should expire, in UTC timezone
-	 * @since 1.1
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.1
 	 */
 	public static function create_pending_subscription_for_order( $order, $product_id, $args = array() ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_create_subscription()' );
@@ -574,7 +574,7 @@ class WC_Subscriptions_Manager {
 	 * an order containing subscriptions.
 	 *
 	 * @param int|WC_Order $order The order ID or WC_Order object to create the subscription from.
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function process_subscriptions_on_checkout( $order ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscriptions_Checkout::process_checkout()' );
@@ -589,7 +589,7 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @param WC_Order $order The order to get subscriptions and user details from.
 	 * @param string $status (optional) A status to change the subscriptions in an order to. Default is 'active'.
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function update_users_subscriptions_for_order( $order, $status = 'pending' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscriptions::update_status()' );
@@ -643,7 +643,7 @@ class WC_Subscriptions_Manager {
 	 *        'completed_payments'  An array of MySQL formatted dates for all payments that have been made on the subscription
 	 *        'failed_payments'     An integer representing a count of failed payments
 	 *        'suspension_count'    An integer representing a count of the number of times the subscription has been suspended for this billing period
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function update_users_subscriptions( $user_id, $subscriptions ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscriptions API methods' );
@@ -679,7 +679,7 @@ class WC_Subscriptions_Manager {
 	 *        'completed_payments'  An array of MySQL formatted dates for all payments that have been made on the subscription
 	 *        'failed_payments'     An integer representing a count of failed payments
 	 *        'suspension_count'    An integer representing a count of the number of times the subscription has been suspended for this billing period
-	 * @since 1.4
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.4
 	 */
 	public static function update_subscription( $subscription_key, $new_subscription_details ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscriptions API methods' );
@@ -726,7 +726,7 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @uses wp_parse_args To allow only part of a subscription's details to be updated, like status.
 	 * @param int $user_id The ID of the user for whom subscription details should be updated
-	 * @since 1.3.8
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.3.8
 	 */
 	public static function cancel_users_subscriptions( $user_id ) {
 
@@ -749,7 +749,7 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @uses wp_parse_args To allow only part of a subscription's details to be updated, like status.
 	 * @param int $user_id The ID of the user for whom subscription details should be updated
-	 * @since 1.3.8
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.3.8
 	 */
 	public static function cancel_users_subscriptions_for_network( $user_id ) {
 
@@ -774,7 +774,7 @@ class WC_Subscriptions_Manager {
 	 * Clear all subscriptions for a given order.
 	 *
 	 * @param WC_Order $order The order for which subscriptions should be cleared.
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function clear_users_subscriptions_from_order( $order ) {
 
@@ -791,7 +791,7 @@ class WC_Subscriptions_Manager {
 	 * Also make sure all related scheduled actions are cancelled when deleting a subscription.
 	 *
 	 * @param int $post_id The post ID of the WC Subscription or WC Order being trashed
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function maybe_trash_subscription( $post_id ) {
 		if ( 'shop_order' === WC_Data_Store::load( 'order' )->get_order_type( $post_id ) ) {
@@ -806,7 +806,7 @@ class WC_Subscriptions_Manager {
 	/**
 	 * Untrash all subscriptions attached to an order when it's restored.
 	 * @param int $post_id The post ID of the WC Order being restored
-	 * @since 2.2.17
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.17
 	 */
 	public static function maybe_untrash_subscription( $post_id ) {
 		if ( 'shop_order' === WC_Data_Store::load( 'order' )->get_order_type( $post_id ) ) {
@@ -842,7 +842,7 @@ class WC_Subscriptions_Manager {
 	 * Make sure a subscription is cancelled before it is trashed or deleted
 	 *
 	 * @param int $post_id
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function maybe_cancel_subscription( $post_id ) {
 
@@ -869,7 +869,7 @@ class WC_Subscriptions_Manager {
 	 * is something that can not be restored.
 	 *
 	 * @param int $post_id
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function fix_trash_meta_status( $post_id ) {
 
@@ -882,7 +882,7 @@ class WC_Subscriptions_Manager {
 	 * Trigger action hook after a subscription has been trashed.
 	 *
 	 * @param int $post_id
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function trigger_subscription_trashed_hook( $post_id ) {
 
@@ -895,7 +895,7 @@ class WC_Subscriptions_Manager {
 	 * Takes a user ID and trashes any subscriptions that user has.
 	 *
 	 * @param int $user_id The ID of the user whose subscriptions will be trashed
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function trash_users_subscriptions( $user_id ) {
 		$subscriptions = wcs_get_users_subscriptions( $user_id );
@@ -926,7 +926,7 @@ class WC_Subscriptions_Manager {
 	 * Takes a user ID and trashes any subscriptions that user has on any site in a WordPress network
 	 *
 	 * @param int $user_id The ID of the user whose subscriptions will be trashed
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function trash_users_subscriptions_for_network( $user_id ) {
 
@@ -949,7 +949,7 @@ class WC_Subscriptions_Manager {
 	 * Trigger action hook after a subscription has been deleted.
 	 *
 	 * @param int $post_id
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function trigger_subscription_deleted_hook( $post_id ) {
 
@@ -962,8 +962,8 @@ class WC_Subscriptions_Manager {
 	 * Checks if the current request is by a user to change the status of their subscription, and if it is
 	 * validate the subscription cancellation request and maybe processes the cancellation.
 	 *
-	 * @since 1.0
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function maybe_change_users_subscription() {
 		_deprecated_function( __METHOD__, '2.0', 'WCS_User_Change_Status_Handler::maybe_change_users_subscription()' );
@@ -979,7 +979,7 @@ class WC_Subscriptions_Manager {
 	 * @param string $new_status_or_meta The status or meta data you want to change th subscription to. Can be 'active', 'on-hold', 'cancelled', 'expired', 'trash', 'deleted', 'failed', 'new-payment-date' or some other value attached to the 'woocommerce_can_subscription_be_changed_to' filter.
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
 	 * @param int $user_id The ID of the user who owns the subscriptions. Although this parameter is optional, if you have the User ID you should pass it to improve performance.
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function can_subscription_be_changed_to( $new_status_or_meta, $subscription_key, $user_id = '' ) {
 
@@ -1027,7 +1027,7 @@ class WC_Subscriptions_Manager {
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
 	 * @param deprecated don't use
 	 * @return array Subscription details
-	 * @since 1.1
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.1
 	 */
 	public static function get_subscription( $subscription_key, $deprecated = null ) {
 
@@ -1052,7 +1052,7 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @param string $status An subscription status of it's internal form.
 	 * @return string A translated subscription status string for display.
-	 * @since 1.2.3
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2.3
 	 */
 	public static function get_status_to_display( $status, $subscription_key = '', $user_id = 0 ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_get_subscription_statuses()' );
@@ -1087,8 +1087,8 @@ class WC_Subscriptions_Manager {
 	/**
 	 * Return an i18n'ified associative array of all possible subscription periods.
 	 *
-	 * @since 1.1
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.1
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function get_subscription_period_strings( $number = 1, $period = '' ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_get_subscription_period_strings()' );
@@ -1098,8 +1098,8 @@ class WC_Subscriptions_Manager {
 	/**
 	 * Return an i18n'ified associative array of all possible subscription periods.
 	 *
-	 * @since 1.0
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function get_subscription_period_interval_strings( $interval = '' ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_get_subscription_period_interval_strings()' );
@@ -1116,8 +1116,8 @@ class WC_Subscriptions_Manager {
 	 * Y – for years; allowable range is 1 to 5
 	 *
 	 * @param subscription_period string (optional) One of day, week, month or year. If empty, all subscription ranges are returned.
-	 * @since 1.0
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function get_subscription_ranges( $subscription_period = '' ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_get_subscription_ranges()' );
@@ -1129,8 +1129,8 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @see self::get_subscription_ranges()
 	 * @param subscription_period string (optional) One of day, week, month or year. If empty, all subscription ranges are returned.
-	 * @since 1.1
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.1
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function get_subscription_trial_lengths( $subscription_period = '' ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_get_subscription_trial_lengths( $subscription_period )' );
@@ -1140,8 +1140,8 @@ class WC_Subscriptions_Manager {
 	/**
 	 * Return an i18n'ified associative array of all possible subscription trial periods.
 	 *
-	 * @since 1.2
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function get_subscription_trial_period_strings( $number = 1, $period = '' ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_get_subscription_trial_period_strings( $number, $period )' );
@@ -1152,8 +1152,8 @@ class WC_Subscriptions_Manager {
 	 * Return an i18n'ified associative array of all time periods allowed for subscriptions.
 	 *
 	 * @param string $form Either 'singular' for singular trial periods or 'plural'.
-	 * @since 1.2
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function get_available_time_periods( $form = 'singular' ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_get_available_time_periods( $form )' );
@@ -1166,7 +1166,7 @@ class WC_Subscriptions_Manager {
 	 * @param order_id int The ID of the order in which the subscription was purchased.
 	 * @param product_id int The ID of the subscription product.
 	 * @return string The key representing the given subscription.
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function get_subscription_key( $order_id, $product_id = '' ) {
 
@@ -1208,8 +1208,8 @@ class WC_Subscriptions_Manager {
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
 	 * @param int $user_id The ID of the user who owns the subscriptions. Although this parameter is optional, if you have the User ID you should pass it to improve performance.
 	 * @return int The number of outstanding failed payments on the subscription, if any.
-	 * @since 1.0
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function get_subscriptions_failed_payment_count( $subscription_key, $user_id = '' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_failed_payment_count()' );
@@ -1222,8 +1222,8 @@ class WC_Subscriptions_Manager {
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
 	 * @param int $user_id The ID of the user who owns the subscriptions. Although this parameter is optional, if you have the User ID you should pass it to improve performance.
 	 * @return int The number of outstanding failed payments on the subscription, if any.
-	 * @since 1.4
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.4
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function get_subscriptions_completed_payment_count( $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_payment_count()' );
@@ -1237,8 +1237,8 @@ class WC_Subscriptions_Manager {
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
 	 * @param int $user_id The ID of the user who owns the subscriptions. Although this parameter is optional, if you have the User ID you should pass it to improve performance.
 	 * @param string $type (optional) The format for the Either 'mysql' or 'timestamp'.
-	 * @since 1.1
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.1
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function get_subscription_expiration_date( $subscription_key, $user_id = '', $type = 'mysql' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_date( "end" )' );
@@ -1254,8 +1254,8 @@ class WC_Subscriptions_Manager {
 	 * @param int $user_id (optional) The ID of the user who owns the subscriptions. Although this parameter is optional, if you have the User ID you should pass it to improve performance.
 	 * @param (optional) $next_payment string | int The date and time the next payment is due, either as MySQL formatted datetime string or a Unix timestamp. If empty, @see self::calculate_subscription_expiration_date() will be called.
 	 * @return mixed If the expiration does not get set, returns false, otherwise it will return a MySQL datetime formatted string for the new date when the subscription will expire
-	 * @since 1.2.4
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2.4
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function set_expiration_date( $subscription_key, $user_id = '', $expiration_date = '' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_dates( array( "end" => $expiration_date ) )' );
@@ -1277,8 +1277,8 @@ class WC_Subscriptions_Manager {
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
 	 * @param int $user_id The ID of the user who owns the subscriptions. Although this parameter is optional, if you have the User ID you should pass it to improve performance.
 	 * @param string $type (optional) The format for the Either 'mysql' or 'timestamp'.
-	 * @since 1.1
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.1
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function calculate_subscription_expiration_date( $subscription_key, $user_id = '', $type = 'mysql' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_date( "end" )' );
@@ -1294,8 +1294,8 @@ class WC_Subscriptions_Manager {
 	 * @param int $user_id The ID of the user who owns the subscriptions. Although this parameter is optional, if you have the User ID you should pass it to improve performance.
 	 * @param string $type (optional) The format for the Either 'mysql' or 'timestamp'.
 	 * @return mixed If there is no future payment set, returns 0, otherwise it will return a date of the next payment in the form specified by $type
-	 * @since 1.2
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function get_next_payment_date( $subscription_key, $user_id = '', $type = 'mysql' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_date( "next_payment" )' );
@@ -1314,8 +1314,8 @@ class WC_Subscriptions_Manager {
 	 * @param int $user_id (optional) The ID of the user who owns the subscriptions. Although this parameter is optional, if you have the User ID you should pass it to improve performance.
 	 * @param (optional) $next_payment string | int The date and time the next payment is due, either as MySQL formatted datetime string or a Unix timestamp. If empty, @see self::calculate_next_payment_date() will be called.
 	 * @return mixed If there is no future payment set, returns 0, otherwise it will return a MySQL datetime formatted string for the date of the next payment
-	 * @since 1.2
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function set_next_payment_date( $subscription_key, $user_id = '', $next_payment = '' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_dates( array( "next_payment" => $next_payment ) )' );
@@ -1336,8 +1336,8 @@ class WC_Subscriptions_Manager {
 	 * @param int $user_id The ID of the user who owns the subscriptions. Although this parameter is optional, if you have the User ID you should pass it to improve performance.
 	 * @param string $type (optional) The format for the Either 'mysql' or 'timestamp'.
 	 * @return mixed If there is no future payment set, returns 0, otherwise it will return a date of the next payment in the form specified by $type
-	 * @since 1.2
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function get_last_payment_date( $subscription_key, $user_id = '', $type = 'mysql' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_date( "last_payment" )' );
@@ -1352,8 +1352,8 @@ class WC_Subscriptions_Manager {
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
 	 * @param int $lock_time The amount of time to lock for in seconds from now, the lock will be set 1 hour before this time
 	 * @param int $user_id (optional) The ID of the user who owns the subscriptions. Although this parameter is optional, if you have the User ID you should pass it to improve performance.
-	 * @since 1.2
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function update_wp_cron_lock( $subscription_key, $lock_time, $user_id = '' ) {
 		_deprecated_function( __METHOD__, '2.0' );
@@ -1366,8 +1366,8 @@ class WC_Subscriptions_Manager {
 	 * @param int $user_id (optional) The ID of the user who owns the subscriptions. Although this parameter is optional, if you have the User ID you should pass it to improve performance.
 	 * @param string $type (optional) The format for the Either 'mysql' or 'timestamp'.
 	 * @return mixed If there is no future payment set, returns 0, otherwise it will return a date of the next payment of the type specified with $type
-	 * @since 1.2
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function calculate_next_payment_date( $subscription_key, $user_id = '', $type = 'mysql', $from_date = '' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::calculate_date( "next_payment" )' );
@@ -1382,7 +1382,7 @@ class WC_Subscriptions_Manager {
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
 	 * @param int $user_id The ID of the user who owns the subscriptions. Although this parameter is optional, if you have the User ID you should pass it to improve performance.
 	 * @return mixed If the subscription has no trial period, returns 0, otherwise it will return the date the trial period ends or ended in the form specified by $type
-	 * @since 1.2
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
 	 */
 	public static function get_trial_expiration_date( $subscription_key, $user_id = '', $type = 'mysql' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_date( "trial_end" )' );
@@ -1398,7 +1398,7 @@ class WC_Subscriptions_Manager {
 	 * @param int $user_id (optional) The ID of the user who owns the subscription. Although this parameter is optional, if you have the User ID you should pass it to improve performance.
 	 * @param (optional) $next_payment string | int The date and time the next payment is due, either as MySQL formatted datetime string or a Unix timestamp. If empty, @see self::calculate_next_payment_date() will be called.
 	 * @return mixed If the trial expiration does not get set, returns false, otherwise it will return a MySQL datetime formatted string for the new date when the trial will expire
-	 * @since 1.2.4
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2.4
 	 */
 	public static function set_trial_expiration_date( $subscription_key, $user_id = '', $trial_expiration_date = '' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_dates( array( "trial_end" => $expiration_date ) )' );
@@ -1416,7 +1416,7 @@ class WC_Subscriptions_Manager {
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
 	 * @param int $user_id The ID of the user who owns the subscriptions. Although this parameter is optional, if you have the User ID you should pass it to improve performance.
 	 * @param string $type (optional) The format for the Either 'mysql' or 'timestamp'.
-	 * @since 1.1
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.1
 	 */
 	public static function calculate_trial_expiration_date( $subscription_key, $user_id = '', $type = 'mysql' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::calculate_date( "trial_end" )' );
@@ -1431,7 +1431,7 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
 	 * @return int The ID of the user who owns the subscriptions, or 0 if no user can be found with the subscription
-	 * @since 1.2
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
 	 */
 	public static function get_user_id_from_subscription_key( $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::get_user_id()' );
@@ -1446,8 +1446,8 @@ class WC_Subscriptions_Manager {
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
 	 * @param int $user_id The ID of the user who owns the subscriptions. Although this parameter is optional, if you have the User ID you should pass it to improve performance.
 	 * @return bool | null True if the subscription exists and requires manual payments, false if the subscription uses automatic payments, null if the subscription doesn't exist.
-	 * @since 1.2
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function requires_manual_renewal( $subscription_key, $user_id = '' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::is_manual()' );
@@ -1460,7 +1460,7 @@ class WC_Subscriptions_Manager {
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
 	 * @param int $user_id The ID of the user who owns the subscriptions. Although this parameter is optional, if you have the User ID you should pass it to improve performance.
 	 * @return bool True if the subscription has an unpaid renewal order, false if the subscription has no unpaid renewal orders.
-	 * @since 1.2
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
 	 */
 	public static function subscription_requires_payment( $subscription_key, $user_id ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::needs_payment()' );
@@ -1480,8 +1480,8 @@ class WC_Subscriptions_Manager {
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
 	 * @param int $user_id (optional) int The ID of the user to check against. Defaults to the currently logged in user.
 	 * @return bool True if the user has the subscription (or any subscription if no subscription specified), otherwise false.
-	 * @since 1.3
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.3
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function user_owns_subscription( $subscription_key, $user_id = 0 ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscriptions::get_user_id()' );
@@ -1508,7 +1508,7 @@ class WC_Subscriptions_Manager {
 	 * @param product_id int (optional) The ID of a subscription product.
 	 * @param status string (optional) A subscription status to check against. For example, for a $status of 'active', a subscriber must have an active subscription for a return value of true.
 	 * @return bool True if the user has the subscription (or any subscription if no subscription specified), otherwise false.
-	 * @version 1.3.5
+	 * @version 1.0.0 - Migrated from WooCommerce Subscriptions v1.3.5
 	 */
 	public static function user_has_subscription( $user_id = 0, $product_id = '', $status = 'any' ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_user_has_subscription()' );
@@ -1519,7 +1519,7 @@ class WC_Subscriptions_Manager {
 	 * Gets all the active and inactive subscriptions for all users.
 	 *
 	 * @return array An associative array containing all users with subscriptions and the details of their subscriptions: 'user_id' => $subscriptions
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function get_all_users_subscriptions() {
 		_deprecated_function( __METHOD__, '2.0' );
@@ -1538,7 +1538,7 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @param int $user_id (optional) The id of the user whose subscriptions you want. Defaults to the currently logged in user.
 	 * @param array $order_ids (optional) An array of post_ids of WC_Order objects as a way to get only subscriptions for certain orders. Defaults to null, which will return subscriptions for all orders.
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function get_users_subscriptions( $user_id = 0, $order_ids = array() ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_get_users_subscriptions( $user_id )' );
@@ -1556,7 +1556,7 @@ class WC_Subscriptions_Manager {
 	 * Gets all the subscriptions for a user that have been trashed, as specified by $user_id
 	 *
 	 * @param int $user_id (optional) The id of the user whose subscriptions you want. Defaults to the currently logged in user.
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function get_users_trashed_subscriptions( $user_id = '' ) {
 
@@ -1575,8 +1575,8 @@ class WC_Subscriptions_Manager {
 	 * A convenience wrapper to assign the inactive subscriber role to a user.
 	 *
 	 * @param int $user_id The id of the user whose role should be changed
-	 * @since 1.2
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function make_user_inactive( $user_id ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_make_user_inactive()' );
@@ -1589,8 +1589,8 @@ class WC_Subscriptions_Manager {
 	 * Hooked to 'subscription_end_of_prepaid_term' hook.
 	 *
 	 * @param int $user_id The id of the user whose role should be changed
-	 * @since 1.3.2
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.3.2
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function maybe_assign_user_cancelled_role( $user_id ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_maybe_make_user_inactive()' );
@@ -1602,8 +1602,8 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @param int $user_id The id of the user whose role should be changed
 	 * @param string $role_name Either a WordPress role or one of the WCS keys: 'default_subscriber_role' or 'default_cancelled_role'
-	 * @since 1.0
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function update_users_role( $user_id, $role_name ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_update_users_role()' );
@@ -1616,8 +1616,8 @@ class WC_Subscriptions_Manager {
 	 * A wrapper for the @see woocommerce_paying_customer() function.
 	 *
 	 * @param int $order_id The id of the order for which customers should be pulled from and marked as paying.
-	 * @since 1.0
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function mark_paying_customer( $order ) {
 		_deprecated_function( __METHOD__, '2.0' );
@@ -1636,8 +1636,8 @@ class WC_Subscriptions_Manager {
 	 * Deprecated as orders now take care of the customer's status as paying or not paying
 	 *
 	 * @param object $order The order for which a customer ID should be pulled from and marked as paying.
-	 * @since 1.0
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function mark_not_paying_customer( $order ) {
 		_deprecated_function( __METHOD__, '2.0' );
@@ -1655,8 +1655,8 @@ class WC_Subscriptions_Manager {
 	 * Return a link for subscribers to change the status of their subscription, as specified with $status parameter
 	 *
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @since 1.0
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function get_users_change_status_link( $subscription_key, $status ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_get_users_change_status_link( $subscription_id, $status )' );
@@ -1684,8 +1684,8 @@ class WC_Subscriptions_Manager {
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
 	 * @param int $user_id The id of the user who purchased the subscription
 	 * @param string $timezone Either 'server' or 'user' to describe the timezone of the $new_payment_date.
-	 * @since 1.2
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function update_next_payment_date( $new_payment_date, $subscription_key, $user_id = '', $timezone = 'server' ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_dates( array( "next_payment" => $new_payment_date ) )' );
@@ -1719,7 +1719,7 @@ class WC_Subscriptions_Manager {
 	/**
 	 * Because neither PHP nor WP include a real array merge function that works recursively.
 	 *
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function array_merge_recursive_for_real( $first_array, $second_array ) {
 
@@ -1745,7 +1745,7 @@ class WC_Subscriptions_Manager {
 	 * Used mainly to calculate the recurring amount from a total which may also include a sign up fee.
 	 *
 	 * @param float $total The total amount
-	 * @since 1.2
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
 	 * @return float $proportion A proportion of the total (e.g. 0.5 is half of the total)
 	 */
 	public static function get_amount_from_proportion( $total, $proportion ) {
@@ -1775,8 +1775,8 @@ class WC_Subscriptions_Manager {
 	 *     'subscription_length': The total number of periods the subscription should continue for. Default 0, meaning continue indefinitely.
 	 *     'trial_length': The total number of periods the subscription trial period should continue for.  Default 0, meaning no trial period.
 	 *     'trial_period': The temporal period for the subscription's trial period. Should be one of {day|week|month|year} as used by @see self::get_subscription_period_strings()
-	 * @since 1.2
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 * @return float $proportion A proportion of the total (e.g. 0.5 is half of the total)
 	 */
 	public static function get_subscription_price_string( $subscription_details ) {
@@ -1796,7 +1796,7 @@ class WC_Subscriptions_Manager {
 	 *     'include_time': (bool) whether to include a specific time for the selector. Default true.
 	 *     'include_year': (bool) whether to include a the year field. Default true.
 	 *     'include_buttons': (bool) whether to include submit buttons on the selector. Default true.
-	 * @since 1.2
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
 	 */
 	public static function touch_time( $args = array() ) {
 		global $wp_locale;
@@ -1896,8 +1896,8 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @param int $user_id The id of the user whose subscription should be put on-hold.
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @since 1.2.5
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2.5
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function maybe_put_subscription_on_hold( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_status()' );
@@ -1923,7 +1923,7 @@ class WC_Subscriptions_Manager {
 	 * bug in upgrade process for 2.0.0 of Subscriptions (i.e. not 2.0.1 or newer). See WCS_Repair_2_0_2::maybe_repair_status() for more details.
 	 *
 	 * @param int $subscription_id The ID of a 'shop_subscription' post
-	 * @since 2.0.2
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0.2
 	 */
 	public static function maybe_process_failed_renewal_for_repair( $subscription_id ) {
 
@@ -1962,8 +1962,8 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @param int $user_id The id of the user who the subscription belongs to
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @since 1.3.2
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.3.2
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function maybe_process_subscription_payment( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', __CLASS__ . '::prepare_renewal( $subscription_id )' );
@@ -1974,7 +1974,7 @@ class WC_Subscriptions_Manager {
 	 * Return a link for subscribers to change the status of their subscription, as specified with $status parameter
 	 *
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function current_user_can_suspend_subscription( $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_can_user_put_subscription_on_hold( $subscription, $user )' );
@@ -1989,8 +1989,8 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @param string $search_query The query to search the database for.
 	 * @return array Subscription details
-	 * @since 1.1
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.1
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function search_subscriptions( $search_query ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_get_subscriptions()' );
@@ -2040,7 +2040,7 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @param int $user_id The id of the user whose subscription is to be activated.
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function activate_subscription( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0' );
@@ -2079,7 +2079,7 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @param int $user_id The id of the user whose subscription is to be activated.
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function reactivate_subscription( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0' );
@@ -2094,7 +2094,7 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @param int $user_id The id of the user whose subscription should be put on-hold.
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function put_subscription_on_hold( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_status( "on-hold" )' );
@@ -2129,7 +2129,7 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @param int $user_id The id of the user whose subscription should be cancelled.
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function cancel_subscription( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscriptions::cancel_order()' );
@@ -2162,7 +2162,7 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @param int $user_id The id of the user whose subscription should be cancelled.
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function failed_subscription_signup( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0' );
@@ -2192,7 +2192,7 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @param int $user_id The ID of the user who the subscription belongs to
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function trash_subscription( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', 'wp_trash_post()' );
@@ -2229,7 +2229,7 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @param int $user_id The ID of the user who the subscription belongs to
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @since 1.2
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
 	 */
 	public static function delete_subscription( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', 'wp_delete_post()' );
@@ -2263,8 +2263,8 @@ class WC_Subscriptions_Manager {
 	 *
 	 * Deprecated because editing a subscription's next payment date is now done from the Edit Subscription screen.
 	 *
-	 * @since 1.2
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function ajax_update_next_payment_date() {
 		_deprecated_function( __METHOD__, '2.0', 'wp_delete_post()' );
@@ -2338,8 +2338,8 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @param int $user_id The id of the user who purchased the subscription
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @since 1.1.2
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.1.2
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function safeguard_scheduled_payments( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0' );
@@ -2354,8 +2354,8 @@ class WC_Subscriptions_Manager {
 	 *
 	 * @param int $user_id The id of the user who the subscription belongs to
 	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @since 1.1.5
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.1.5
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function maybe_reschedule_subscription_payment( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0' );
@@ -2377,8 +2377,8 @@ class WC_Subscriptions_Manager {
 	 * Fires when the trial period for a subscription has completed.
 	 *
 	 * @param int $subscription_id The ID of a 'shop_subscription' post
-	 * @since 1.0
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function subscription_trial_end( $subscription_id, $deprecated = null ) {
 		_deprecated_function( __METHOD__, '2.0' );

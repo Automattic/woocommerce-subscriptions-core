@@ -10,14 +10,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  * relationships instead of add_post_meta() or get_post_meta(). This ensures that the relationship is stored, regardless
  * of the order data store being used.
  *
- * @version 1.0.0
+ * @version 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
  */
 class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 
 	/**
 	 * Meta keys used to link an order with a subscription for each type of relationship.
 	 *
-	 * @since 2.3.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
 	 * @var array $meta_keys Relationship => Meta key
 	 */
 	private $meta_keys;
