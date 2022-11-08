@@ -713,7 +713,7 @@ class WCS_PayPal {
 					'post_type'      => 'shop_subscription',
 					'post_status'    => 'any',
 					'fields'         => 'ids',
-					'meta_query'     => [
+					'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 						[
 							'key'     => '_paypal_subscription_id',
 							'compare' => '=',
