@@ -356,9 +356,10 @@ function wcs_order_contains_subscription( $order, $order_type = array( 'parent',
 }
 
 /**
- * Drop in replacement for `get_posts()` function to help aid with transition to wc_get_orders
+ * Fetches Orders and Subscriptions using wc_get_orders() with a built-in handler for meta_query arg.
+ * This function is a replacement for the get_posts() function to help aid with transitioning over to using wc_get_orders.
  *
- * @param array $args
+ * @param array $args Accepts the same arguments as get_posts() and wc_get_orders().
  *
  * @return array
  */
