@@ -4,7 +4,6 @@
  *
  * Display the related orders table on the Edit Order and Edit Subscription screens.
  *
- * @author   Prospress
  * @category Admin
  * @package  WooCommerce Subscriptions/Admin/Meta Boxes
  * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.0

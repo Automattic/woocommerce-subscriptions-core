@@ -8,7 +8,6 @@
  * @package WooCommerce Subscriptions
  * @subpackage WC_Subscriptions_Admin
  * @category Class
- * @author Brent Shepherd
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
  */
 class WC_Subscriptions_Admin {
