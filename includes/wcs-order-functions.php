@@ -356,12 +356,15 @@ function wcs_order_contains_subscription( $order, $order_type = array( 'parent',
 }
 
 /**
- * Fetches Orders and Subscriptions using wc_get_orders() with a built-in handler for meta_query arg.
+ * Fetches Orders and Subscriptions using wc_get_orders() with a built-in handler for the meta_query arg.
+ *
  * This function is a replacement for the get_posts() function to help aid with transitioning over to using wc_get_orders.
+ * Args and usage: https://github.com/woocommerce/woocommerce/wiki/wc_get_orders-and-WC_Order_Query
  *
- * @param array $args Accepts the same arguments as get_posts() and wc_get_orders().
+ * @since 5.0.0
  *
- * @return array
+ * @param array $args Accepts the same arguments as wc_get_orders().
+ * @return array An array of WC_Order or WC_Subscription objects or IDs based on the args.
  */
 function wcs_get_orders_with_meta_query( $args ) {
 	if ( defined( 'WCS_DEBUG' ) && WCS_DEBUG ) {
