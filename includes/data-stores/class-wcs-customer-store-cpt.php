@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Gets subscriptions for users via the '_customer_user' post meta value.
  *
- * @version  2.3.0
+ * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
  * @category Class
  * @author   Prospress
  */
