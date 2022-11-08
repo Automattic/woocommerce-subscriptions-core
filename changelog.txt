@@ -1,6 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 2.6.0 - 2020-xx-xx =
+= 5.0.0 - 2022-xx-xx =
+* Dev - Code that was tagged with a version and moved from WooCommerce Subscriptions now explicitly mentions this and shows the correct subscriptions-core and WC Subscriptions versions.
 * Add - Display related orders table when viewing the new "Edit Order" page (HPOS enabled stores)
 
 = 2.5.1 - 2022-11-04 =

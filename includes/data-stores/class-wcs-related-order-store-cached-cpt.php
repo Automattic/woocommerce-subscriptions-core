@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Adds a persistent caching layer on top of WCS_Related_Order_Store_CPT for more
  * performant queries on related orders.
  *
- * @version  2.3.0
+ * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
  * @category Class
  * @author   Prospress
  */

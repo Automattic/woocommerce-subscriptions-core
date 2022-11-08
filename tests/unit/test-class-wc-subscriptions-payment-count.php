@@ -21,7 +21,7 @@ class WC_Subscriptions_Payment_Count_Test extends WP_UnitTestCase {
 	/**
 	 * Setup the suite for testing the WC_Subscription::get_payment_count() function.
 	 *
-	 * @since 2.6.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.6.0
 	 */
 	public function set_up() {
 		parent::set_up();
@@ -52,7 +52,7 @@ class WC_Subscriptions_Payment_Count_Test extends WP_UnitTestCase {
 	 *
 	 * @expectedDeprecated woocommerce_subscription_payment_completed_count
 	 * @group subscriptions-payment-count
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_payment_count_deprecated() {
 		$deprecated_hook = 'woocommerce_subscription_payment_completed_count';
