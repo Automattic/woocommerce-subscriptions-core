@@ -82,7 +82,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 */
 	public function get_related_order_ids( WC_Order $subscription, $relation_type ) {
 		$subscription_id   = $subscription->get_id();
-		$related_order_ids = $this->get_related_order_ids_from_cache( $subscription, $relation_type );
+		$related_order_ids = $this->get_related_order_ids_from_cache( $subscription_id, $relation_type );
 
 		// Fetching post meta returns false if the post ID is invalid. This can arise when the subscription hasn't been created yet. In any case, the related IDs should be an empty array to avoid a boolean return from this function.
 		if ( false === $related_order_ids ) {
@@ -160,11 +160,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @return string|array An array of related orders in the cache, or an empty string when no matching row is found for the given key, meaning it's cache is not set yet or has been deleted
 	 */
 	protected function get_related_order_ids_from_cache( $subscription, $relation_type ) {
-		if ( ! is_object( $subscription ) ) {
-			$subscription = wcs_get_subscription( $subscription );
-		}
-
-		return $subscription->get_meta( $this->get_cache_meta_key( $relation_type ) );
+		return WC_Data_Store::load( 'subscription' )->get_metadata_by_key( $subscription, $this->get_cache_meta_key( $relation_type ) );
 	}
 
 	/**
@@ -424,13 +420,13 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			$limit = $batch_size - count( $subscription_ids );
 			$ids   = wcs_get_orders_with_meta_query(
 				[
-					'limit'   => $limit,
-					'return'  => 'ids',
-					'orderby' => 'ID',
-					'order'   => 'ASC',
-					'type'    => 'shop_subscription',
-					'status'  => array_keys( wcs_get_subscription_statuses() ),
-					'meta_query' => [
+					'number'      => $limit,
+					'fields'      => 'ids',
+					'orderby'     => 'ID',
+					'order'       => 'ASC',
+					'post_type'   => 'shop_subscription',
+					'post_status' => array_keys( wcs_get_subscription_statuses() ),
+					'meta_query'  => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 						[
 							'key'     => $this->get_cache_meta_key( $relation_type ),
 							'compare' => 'NOT EXISTS',

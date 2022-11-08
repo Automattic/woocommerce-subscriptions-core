@@ -559,4 +559,17 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		// Set variables to workaround ambiguous parameters of delete_metadata()
 		delete_metadata( 'post', null, $meta_key, null, true );
 	}
+
+	/**
+	 * Fetches meta data directly from the wp_postmeta table.
+	 *
+	 * @param int    $subscription_id The subscription ID.
+	 * @param string $meta_key        The meta key to fetch.
+	 * @param bool   $single          Whether to return a single value. Defaults to true.
+	 *
+	 * @return mixed The meta value.
+	 */
+	public function get_metadata_by_key( $subscription_id, $meta_key, $single = true ) {
+		return get_post_meta( $subscription_id, $meta_key, $single );
+	}
 }
