@@ -510,7 +510,7 @@ function wcs_get_subscriptions( $args ) {
 
 	$query_args = apply_filters( 'woocommerce_get_subscriptions_query_args', $query_args, $args );
 
-	$subscription_post_ids = wcs_get_orders( $query_args );
+	$subscription_post_ids = wcs_get_orders_with_meta_query( $query_args );
 
 	$subscriptions = array();
 
