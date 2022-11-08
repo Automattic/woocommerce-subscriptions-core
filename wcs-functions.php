@@ -461,7 +461,7 @@ function wcs_get_subscriptions( $args ) {
 	);
 
 	// Maybe only get subscriptions created by a certain order
-	if ( 0 != $args['order_id'] && is_numeric( $args['order_id'] ) ) {
+	if ( 0 !== $args['order_id'] && is_numeric( $args['order_id'] ) ) {
 		$query_args['post_parent'] = $args['order_id'];
 	}
 
