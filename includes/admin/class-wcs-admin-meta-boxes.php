@@ -100,7 +100,7 @@ class WCS_Admin_Meta_Boxes {
 	}
 
 	/**
-	 * Don't save save some order related meta boxes
+	 * Don't save some order related meta boxes
 	 */
 	public function remove_meta_box_save( $post_id, $post ) {
 
