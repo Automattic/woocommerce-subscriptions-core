@@ -468,7 +468,7 @@ function wcs_get_subscriptions( $args ) {
 	// Map subscription specific orderby values to internal keys.
 	switch ( $args['orderby'] ) {
 		case 'status':
-			$query_args['orderby'] = 'post_status';
+			wcs_deprecated_argument( __FUNCTION__, 'subscriptions-core 5.0.0', 'The "status" orderby value is deprecated.' );
 			break;
 		case 'start_date':
 			$query_args['orderby'] = 'date';
