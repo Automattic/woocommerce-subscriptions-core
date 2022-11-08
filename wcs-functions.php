@@ -494,11 +494,10 @@ function wcs_get_subscriptions( $args ) {
 			break;
 	}
 
-	// Maybe filter to a specific user
-	if ( 0 != $args['customer_id'] && is_numeric( $args['customer_id'] ) ) {
-		$users_subscription_ids = WCS_Customer_Store::instance()->get_users_subscription_ids( $args['customer_id'] );
-		$query_args             = WCS_Admin_Post_Types::set_post__in_query_var( $query_args, $users_subscription_ids );
-	};
+	// Maybe filter to a specific customer.
+	if ( 0 !== $args['customer_id'] && is_numeric( $args['customer_id'] ) ) {
+		$query_args['customer_id'] = absint( $args['customer_id'] );
+	}
 
 	// We need to restrict subscriptions to those which contain a certain product/variation
 	if ( ( 0 != $args['product_id'] && is_numeric( $args['product_id'] ) ) || ( 0 != $args['variation_id'] && is_numeric( $args['variation_id'] ) ) ) {
