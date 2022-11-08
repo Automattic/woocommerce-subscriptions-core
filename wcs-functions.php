@@ -450,25 +450,26 @@ function wcs_get_subscriptions( $args ) {
 
 	// Prepare the args for WC_Order_Query.
 	$query_args = array(
-		'post_type'      => 'shop_subscription',
-		'post_status'    => $args['subscription_status'],
-		'posts_per_page' => $args['subscriptions_per_page'],
-		'paged'          => $args['paged'],
-		'offset'         => $args['offset'],
-		'order'          => $args['order'],
-		'fields'         => 'ids',
-		'meta_query'     => isset( $args['meta_query'] ) ? $args['meta_query'] : array(), // just in case we need to filter or order by meta values later
+		'type'       => 'shop_subscription',
+		'status'     => $args['subscription_status'],
+		'limit'      => $args['subscriptions_per_page'],
+		'page'       => $args['paged'],
+		'offset'     => $args['offset'],
+		'order'      => $args['order'],
+		'return'     => 'ids',
+		// Just in case we need to filter or order by meta values later.
+		'meta_query' => isset( $args['meta_query'] ) ? $args['meta_query'] : array(), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 	);
 
-	// Maybe only get subscriptions created by a certain order
-	if ( 0 != $args['order_id'] && is_numeric( $args['order_id'] ) ) {
-		$query_args['post_parent'] = $args['order_id'];
+	// Maybe only get subscriptions with a certain parent order.
+	if ( 0 !== $args['order_id'] && is_numeric( $args['order_id'] ) ) {
+		$query_args['parent'] = absint( $args['order_id'] );
 	}
 
 	// Map subscription specific orderby values to internal keys.
 	switch ( $args['orderby'] ) {
 		case 'status':
-			$query_args['orderby'] = 'post_status';
+			wcs_deprecated_argument( __FUNCTION__, 'subscriptions-core 5.0.0', 'The "status" orderby value is deprecated.' );
 			break;
 		case 'start_date':
 			$query_args['orderby'] = 'date';
