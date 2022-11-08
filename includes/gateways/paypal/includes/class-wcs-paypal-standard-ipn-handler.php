@@ -600,22 +600,26 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 		// First try and get the order ID by the subscription ID
 		if ( ! empty( $subscription_id ) ) {
-
 			$posts = wcs_get_orders_with_meta_query(
 				[
-					'numberposts'      => 1,
-					'orderby'          => 'ID',
-					'order'            => 'ASC',
-					'meta_key'         => $meta_key,
-					'meta_value'       => $subscription_id,
-					'post_type'        => $order_type,
-					'post_status'      => 'any',
-					'suppress_filters' => true,
+					'posts_per_page' => 1,
+					'orderby'        => 'ID',
+					'order'          => 'ASC',
+					'post_type'      => $order_type,
+					'post_status'    => 'any',
+					'fields'         => 'ids',
+					'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+						[
+							'key'     => $meta_key,
+							'value'   => $subscription_id,
+							'compare' => '=',
+						],
+					],
 				]
 			);
 
 			if ( ! empty( $posts ) ) {
-				$order_id  = $posts[0]->ID;
+				$order_id  = $posts[0];
 				$order_key = get_post_meta( $order_id, '_order_key', true );
 			}
 		}
