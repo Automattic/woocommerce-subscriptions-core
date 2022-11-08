@@ -74,7 +74,7 @@ class WCS_Core_Autoloader {
 	/**
 	 * Gets the base path for a given class.
 	 *
-	 * @since 4.0.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v4.0.0
 	 * @return string
 	 */
 	public function get_class_base_path( $class ) {

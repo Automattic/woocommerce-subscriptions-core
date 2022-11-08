@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * This can be done already on sites running custom order data stores as WCS_Related_Order_Store::instance() is
  * filterable. It will eventually also be the default implementation in a future version of Subscriptions.
  *
- * @version  2.3.0
+ * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
  * @category Class
  * @author   Prospress
  */
@@ -30,7 +30,7 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	/**
 	 * Meta keys used to link an order with a subscription for each type of relationship.
 	 *
-	 * @since 2.3.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
 	 * @var array $meta_keys Relationship => Meta key
 	 */
 	private $meta_keys;

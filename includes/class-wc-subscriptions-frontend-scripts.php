@@ -3,7 +3,7 @@
  * Enqueues WC Subscriptions frontend scripts.
  *
  * @package WooCommerce Subscriptions
- * @since 3.1.3
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.1.3
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -21,7 +21,7 @@ class WC_Subscriptions_Frontend_Scripts {
 	/**
 	 * Gets the plugin URL for an assets file.
 	 *
-	 * @since 3.1.3
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.1.3
 	 * @return string The file URL.
 	 */
 	public static function get_file_url( $file_relative_url = '' ) {
@@ -31,7 +31,7 @@ class WC_Subscriptions_Frontend_Scripts {
 	/**
 	 * Enqueues scripts for frontend.
 	 *
-	 * @since 3.1.3
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.1.3
 	 */
 	public static function enqueue_scripts() {
 		$dependencies = array( 'jquery' );
@@ -63,7 +63,7 @@ class WC_Subscriptions_Frontend_Scripts {
 	/**
 	 * Enqueues stylesheets.
 	 *
-	 * @since 3.1.3
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.1.3
 	 */
 	public static function enqueue_styles( $styles ) {
 

@@ -3,6 +3,7 @@
 = 5.0.0 - 2022-xx-xx =
 * Dev - The library has been bumped to version to 5.0.0 to reduce confusion with the version of WooCommerce Subscriptions.
 * Dev - Usage of \WC_Subscriptions_Core_Plugin::get_plugin_version() is no longer recommended for version detection. \WC_Subscriptions_Core_Plugin::get_library_version() should be used instead.
+* Dev - Code that was tagged with a version and moved from WooCommerce Subscriptions now explicitly mentions this and shows the correct subscriptions-core and WC Subscriptions versions.
 
 = 2.5.1 - 2022-11-04 =
 * Dev - Replace the use of the deprecated wcs_renewal_order_meta hook with wc_subscription_renewal_order_data in the WCS_Related_Order_Store_Cached_CPT class.

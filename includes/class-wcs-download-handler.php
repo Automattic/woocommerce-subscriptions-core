@@ -8,7 +8,7 @@
  * @subpackage WCS_Download_Handler
  * @category   Class
  * @author     Prospress
- * @since      2.0
+ * @since      1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -20,7 +20,7 @@ class WCS_Download_Handler {
 	/**
 	 * Initialize filters and hooks for class.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function init() {
 		add_action( 'woocommerce_grant_product_download_permissions', __CLASS__ . '::save_downloadable_product_permissions' );
@@ -169,7 +169,7 @@ class WCS_Download_Handler {
 	 * Hooked into 'woocommerce_admin_created_subscription' to grant permissions to admin created subscriptions.
 	 *
 	 * @param WC_Subscription $subscription
-	 * @since 2.4.2
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.4.2
 	 */
 	public static function grant_download_permissions( $subscription ) {
 		wc_downloadable_product_permissions( $subscription->get_id() );
@@ -178,7 +178,7 @@ class WCS_Download_Handler {
 	/**
 	 * Remove download permissions attached to a subscription when it is permenantly deleted.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function delete_subscription_permissions( $post_id ) {
 		global $wpdb;
@@ -195,7 +195,7 @@ class WCS_Download_Handler {
 	 * @param int $product_id
 	 * @param int $variation_id
 	 * @param array $downloadable_files product downloadable files
-	 * @since 2.0.18
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0.18
 	 */
 	public static function grant_new_file_product_permissions( $product_id, $variation_id, $downloadable_files ) {
 		global $wpdb;
@@ -242,14 +242,14 @@ class WCS_Download_Handler {
 	 * When adding new downloadable content to a subscription product, check if we don't
 	 * want to automatically add the new downloadable files to the subscription or initial and renewal orders.
 	 *
-	 * @deprecated 4.0.0
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v4.0.0
 	 *
 	 * @param bool $grant_access
 	 * @param string $download_id
 	 * @param int $product_id
 	 * @param WC_Order $order
 	 * @return bool
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function maybe_revoke_immediate_access( $grant_access, $download_id, $product_id, $order ) {
 		wcs_deprecated_function( __METHOD__, '4.0.0', 'WCS_Drip_Downloads_Manager::maybe_revoke_immediate_access() if available' );
