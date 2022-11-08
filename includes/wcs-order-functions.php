@@ -395,7 +395,7 @@ function wcs_get_orders_with_meta_query( $args ) {
 				return $query;
 			}
 
-			$query['meta_query'] = $meta;
+			$query['meta_query'] = $meta; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 
 			return $query;
 		};
@@ -413,10 +413,10 @@ function wcs_get_orders_with_meta_query( $args ) {
 	if ( ! empty( $get_post_results ) && $results !== $get_post_results ) {
 		throw new \Exception(
 			'Call to wcs_get_orders_with_meta_query gave differing results with the following args: <pre>' .
-			"\n\n" . 'get_posts(' . var_export( $request_args, true ) . "):\n" .
-			var_export( $get_post_results, true ) .
-			"\n\n" . 'wc_get_orders(' . var_export( $args, true ) . "):\n" .
-			var_export( $results, true ) .
+			"\n\n" . 'get_posts(' . var_export( $request_args, true ) . "):\n" . // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			var_export( $get_post_results, true ) . // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			"\n\n" . 'wc_get_orders(' . var_export( $args, true ) . "):\n" . // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			var_export( $results, true ) . // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 			'</pre>'
 		);
 
@@ -485,15 +485,20 @@ function wcs_get_subscription_orders( $return_fields = 'ids', $order_type = 'par
 		}
 
 		if ( count( $meta_query ) > 1 ) {
-			$order_ids = array_merge( $order_ids, wcs_get_orders_with_meta_query( array(
-				'posts_per_page' => -1,
-				'post_type'      => 'shop_order',
-				'post_status'    => 'any',
-				'fields'         => 'ids',
-				'orderby'        => 'ID',
-				'order'          => 'DESC',
-				'meta_query'     => $meta_query,
-			) ) );
+			$order_ids = array_merge(
+				$order_ids,
+				wcs_get_orders_with_meta_query(
+					[
+						'posts_per_page' => -1,
+						'post_type'      => 'shop_order',
+						'post_status'    => 'any',
+						'fields'         => 'ids',
+						'orderby'        => 'ID',
+						'order'          => 'DESC',
+						'meta_query'     => $meta_query,
+					]
+				)
+			);
 		}
 	}
 
