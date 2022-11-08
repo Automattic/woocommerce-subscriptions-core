@@ -89,9 +89,7 @@ class WCS_Admin_Meta_Boxes {
 		// Only display the meta box if an order relates to a subscription
 		if ( wcs_order_contains_subscription( $post_or_order_object, 'any' ) ) {
 			// If HPOS is enabled, we need to get the screen id and provide it to add_meta_box().
-			$screen = wc_get_container()->get( CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled()
-				? wc_get_page_screen_id( 'shop-order' )
-				: 'shop_order';
+			$screen = wcs_is_custom_order_tables_usage_enabled() ? wc_get_page_screen_id( 'shop-order' ) : 'shop_order';
 			add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', $screen, 'normal', 'low' );
 		}
 	}
