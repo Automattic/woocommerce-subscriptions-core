@@ -516,13 +516,13 @@ function wcs_get_subscription_orders( $return_fields = 'ids', $order_type = 'par
 				$order_ids,
 				wcs_get_orders_with_meta_query(
 					[
-						'posts_per_page' => -1,
-						'post_type'      => 'shop_order',
-						'post_status'    => 'any',
-						'fields'         => 'ids',
-						'orderby'        => 'ID',
-						'order'          => 'DESC',
-						'meta_query'     => $meta_query,
+						'limit'      => -1,
+						'type'       => 'shop_order',
+						'status'     => 'any',
+						'return'     => 'ids',
+						'orderby'    => 'ID',
+						'order'      => 'DESC',
+						'meta_query' => $meta_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 					]
 				)
 			);

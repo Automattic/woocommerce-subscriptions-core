@@ -709,11 +709,11 @@ class WCS_PayPal {
 		if ( ! isset( self::$subscriptions_by_paypal_id[ $paypal_id ] ) ) {
 			$subscription_ids = wcs_get_orders_with_meta_query(
 				[
-					'posts_per_page' => -1,
-					'post_type'      => 'shop_subscription',
-					'post_status'    => 'any',
-					'fields'         => 'ids',
-					'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					'limit'      => -1,
+					'type'       => 'shop_subscription',
+					'status'     => 'any',
+					'return'     => 'ids',
+					'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 						[
 							'key'     => '_paypal_subscription_id',
 							'compare' => '=',
