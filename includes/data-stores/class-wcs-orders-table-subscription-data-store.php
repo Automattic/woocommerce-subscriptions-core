@@ -609,7 +609,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 *
 	 * @param string $meta_key The meta key to delete.
 	 */
-	public function delete_all_meta_data_with_key( $meta_key ) {
+	public function delete_all_metadata_by_key( $meta_key ) {
 		global $wpdb;
 		$table_name = self::get_meta_table_name();
 

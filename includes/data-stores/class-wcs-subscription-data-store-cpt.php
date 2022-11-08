@@ -555,7 +555,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 *
 	 * @param string $meta_key The meta key to delete.
 	 */
-	public function delete_all_meta_data_with_key( $meta_key ) {
+	public function delete_all_metadata_by_key( $meta_key ) {
 		// Set variables to workaround ambiguous parameters of delete_metadata()
 		delete_metadata( 'post', null, $meta_key, null, true );
 	}

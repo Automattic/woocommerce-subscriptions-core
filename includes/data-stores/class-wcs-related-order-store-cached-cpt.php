@@ -291,7 +291,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 		}
 
 		foreach ( $relation_types as $relation_type ) {
-			WC_Data_Store::load( 'subscription' )->delete_all_meta_data_with_key( $this->get_cache_meta_key( $relation_type ) );
+			WC_Data_Store::load( 'subscription' )->delete_all_metadata_by_key( $this->get_cache_meta_key( $relation_type ) );
 		}
 	}
 
