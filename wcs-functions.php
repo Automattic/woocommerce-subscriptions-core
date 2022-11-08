@@ -500,9 +500,14 @@ function wcs_get_subscriptions( $args ) {
 	}
 
 	// We need to restrict subscriptions to those which contain a certain product/variation
-	if ( ( 0 != $args['product_id'] && is_numeric( $args['product_id'] ) ) || ( 0 != $args['variation_id'] && is_numeric( $args['variation_id'] ) ) ) {
+	if ( ( 0 !== $args['product_id'] && is_numeric( $args['product_id'] ) ) || ( 0 !== $args['variation_id'] && is_numeric( $args['variation_id'] ) ) ) {
 		$subscriptions_for_product = wcs_get_subscriptions_for_product( array( $args['product_id'], $args['variation_id'] ) );
-		$query_args                = WCS_Admin_Post_Types::set_post__in_query_var( $query_args, $subscriptions_for_product );
+
+		if ( empty( $subscriptions_for_product ) ) {
+			return array();
+		}
+
+		$query_args = WCS_Admin_Post_Types::set_post__in_query_var( $query_args, $subscriptions_for_product );
 	}
 
 	if ( ! empty( $query_args['meta_query'] ) ) {
