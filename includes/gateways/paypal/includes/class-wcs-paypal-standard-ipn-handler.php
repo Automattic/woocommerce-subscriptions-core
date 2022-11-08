@@ -601,7 +601,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 		// First try and get the order ID by the subscription ID
 		if ( ! empty( $subscription_id ) ) {
 
-			$posts = wcs_get_orders( array(
+			$posts = wcs_get_orders_with_meta_query( array(
 				'numberposts'      => 1,
 				'orderby'          => 'ID',
 				'order'            => 'ASC',

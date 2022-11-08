@@ -842,7 +842,7 @@ class WCS_Admin_Post_Types {
 					$query_vars['post__in'] = $vars['post__in'];
 				}
 
-				$subscription_ids = wcs_get_orders( $query_vars );
+				$subscription_ids = wcs_get_orders_with_meta_query( $query_vars );
 
 				if ( ! empty( $subscription_ids ) ) {
 					$vars['post__in'] = $subscription_ids;

@@ -147,7 +147,7 @@ function wcs_get_subscription_id_from_key( $subscription_key ) {
 
 	} elseif ( ! empty( $order_and_product_id[0] ) ) {
 
-		$subscription_ids = wcs_get_orders( array(
+		$subscription_ids = get_posts( array(
 			'posts_per_page' => 1,
 			'post_parent'    => $order_and_product_id[0],
 			'post_status'    => 'any',
