@@ -367,28 +367,40 @@ function wcs_order_contains_subscription( $order, $order_type = array( 'parent',
  * @return array An array of WC_Order or WC_Subscription objects or IDs based on the args.
  */
 function wcs_get_orders_with_meta_query( $args ) {
+
+	// The following block is only for testing purposes to make sure the new function returns the same result as the old one.
 	if ( defined( 'WCS_DEBUG' ) && WCS_DEBUG ) {
-		$get_post_results = get_posts( array_merge( $args, [ 'fields' => 'ids' ] ) );
-	}
+		$post_args = $args;
+		$mapping   = [
+			'type'   => 'post_type',
+			'status' => 'post_status',
+			'limit'  => 'posts_per_page',
+			'parent' => 'post_parent',
+			'return' => 'fields',
+			'limit'  => 'number',
+		];
 
-	$request_args          = $args;
-	$use_meta_query_filter = wcs_is_custom_order_tables_usage_enabled() ? false : true;
-	$mapping               = [
-		'post_type'      => 'type',
-		'post_status'    => 'status',
-		'posts_per_page' => 'limit',
-		'post_parent'    => 'parent',
-		'fields'         => 'return',
-		'number'         => 'limit',
-	];
-
-	// Roughly remap source => destination key and remove source key.
-	foreach ( $mapping as $source_key => $dest_key ) {
-		if ( isset( $args[ $source_key ] ) ) {
-			$args[ $dest_key ] = $args[ $source_key ];
-			unset( $args[ $source_key ] );
+		// Roughly remap source => destination key and remove source key.
+		foreach ( $mapping as $from_key => $to_key ) {
+			if ( isset( $post_args[ $from_key ] ) ) {
+				$post_args[ $to_key ] = $args[ $from_key ];
+				unset( $post_args[ $from_key ] );
+			}
 		}
+
+		// Remap customer_id to limit the query to customer orders or subscriptions.
+		if ( isset( $post_args['customer_id'] ) ) {
+			if ( 'shop_subscription' === $post_args['post_type'] ) {
+				$post_args = WCS_Admin_Post_Types::set_post__in_query_var( $post_args, WCS_Customer_Store::instance()->get_users_subscription_ids( $args['customer_id'] ) );
+			} else {
+				$post_args = WCS_Admin_Post_Types::set_post__in_query_var( $post_args, wc_get_orders( [ 'customer_id' => $args['customer_id'] ] ) );
+			}
+		}
+
+		$get_post_results = get_posts( array_merge( $post_args, [ 'fields' => 'ids' ] ) );
 	}
+
+	$use_meta_query_filter = wcs_is_custom_order_tables_usage_enabled() ? false : true;
 
 	if ( $use_meta_query_filter ) {
 		$meta = $args['meta_query'] ?? [];
@@ -415,15 +427,23 @@ function wcs_get_orders_with_meta_query( $args ) {
 
 	// The following if block is for testing only, to compare results between the two lookups. It can be removed once testing is complete.
 	if ( defined( 'WCS_DEBUG' ) && WCS_DEBUG ) {
-		$wc_get_orders_result_ids = ( ! empty( $results ) && ( empty( $args['return'] ) || 'ids' !== $args['return'] ) ) ? array_map( [ $results[0], 'get_id' ], $results ) : $results;
+		$wc_get_orders_result_ids = $results;
+
+		// Only compare the IDs
+		if ( ! empty( $results ) && ( empty( $args['return'] ) || 'ids' !== $args['return'] ) ) {
+			$wc_get_orders_result_ids = [];
+			foreach ( $results as $result ) {
+				$wc_get_orders_result_ids[] = $result->get_id();
+			}
+		}
 
 		if ( $wc_get_orders_result_ids !== $get_post_results ) {
 			throw new \Exception(
 				'Call to wcs_get_orders_with_meta_query gave differing results with the following args: <pre>' .
-				"\n\n" . 'get_posts(' . var_export( $request_args, true ) . "):\n" . // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+				"\n\n" . 'get_posts(' . var_export( $post_args, true ) . "):\n" . // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 				var_export( $get_post_results, true ) . // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 				"\n\n" . 'wc_get_orders(' . var_export( $args, true ) . "):\n" . // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-				var_export( $results, true ) . // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+				var_export( $wc_get_orders_result_ids, true ) . // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 				'</pre>'
 			);
 		}
