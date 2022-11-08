@@ -122,7 +122,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param string   $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
 	 */
 	public function add_relation( WC_Order $order, WC_Order $subscription, $relation_type ) {
-		$this->add_related_order_id_to_cache( wcs_get_objects_property( $order, 'id' ), wcs_get_objects_property( $subscription, 'id' ), $relation_type );
+		$this->delete_related_order_id_from_cache( $order->get_id(), $subscription->get_id(), $relation_type );
 		parent::add_relation( $order, $subscription, $relation_type );
 	}
 
@@ -134,7 +134,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param string   $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
 	 */
 	public function delete_relation( WC_Order $order, WC_Order $subscription, $relation_type ) {
-		$this->delete_related_order_id_from_cache( wcs_get_objects_property( $order, 'id' ), wcs_get_objects_property( $subscription, 'id' ), $relation_type );
+		$this->delete_related_order_id_from_cache( $order->get_id(), $subscription->get_id(), $relation_type );
 		parent::delete_relation( $order, $subscription, $relation_type );
 	}
 
@@ -145,7 +145,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param string $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
 	 */
 	public function delete_relations( WC_Order $order, $relation_type ) {
-		$this->delete_related_order_id_from_caches( wcs_get_objects_property( $order, 'id' ), $relation_type );
+		$this->delete_related_order_id_from_caches( $order->get_id(), $relation_type );
 		parent::delete_relations( $order, $relation_type );
 	}
 
@@ -289,7 +289,6 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param array $relation_types The relations to clear, or an empty array to clear all relations (default).
 	 */
 	public function delete_caches_for_all_subscriptions( $relation_types = array() ) {
-
 		if ( empty( $relation_types ) ) {
 			$relation_types = $this->get_relation_types();
 		}
@@ -354,7 +353,6 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param mixed  $old_subscription_id The previous value stored in the database for the related subscription. Optional.
 	 */
 	public function maybe_update_for_post_meta_change( $update_type, $order_id, $post_meta_key, $subscription_id, $old_subscription_id = '' ) {
-
 		$relation_type = $this->get_relation_type_for_meta_key( $post_meta_key );
 
 		if ( false === $relation_type ) {
