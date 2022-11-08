@@ -222,12 +222,14 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @return bool True if the cache was updated.
 	 */
 	protected function update_related_order_id_cache( $subscription, array $related_order_ids, $relation_type ) {
-		if ( ! is_object( $subscription ) ) {
-			$subscription = wcs_get_subscription( $subscription );
-		}
+		// We want to remove the props to ignore filter here so that when we read a Subscription from the database, we also read the all related order cache meta data into memory. Without this, when we go to save/update this meta, we will create a duplicate of it.
+		remove_filter( 'wcs_subscription_data_store_props_to_ignore', array( $this, 'add_related_order_cache_props' ) );
 
+		$subscription = wcs_get_subscription( $subscription );
 		$subscription->update_meta_data( $this->get_cache_meta_key( $relation_type ), $related_order_ids );
 		$subscription->save();
+
+		add_filter( 'wcs_subscription_data_store_props_to_ignore', array( $this, 'add_related_order_cache_props' ), 10, 2 );
 
 		return true;
 	}
