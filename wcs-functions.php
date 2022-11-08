@@ -523,12 +523,8 @@ function wcs_get_subscriptions( $args ) {
 	$query_args    = apply_filters( 'woocommerce_get_subscriptions_query_args', $query_args, $args );
 	$subscriptions = array();
 
-	$subscription_post_ids = wcs_get_orders_with_meta_query( $query_args );
-
-	$subscriptions = array();
-
-	foreach ( $subscription_post_ids as $post_id ) {
-		$subscriptions[ $post_id ] = wcs_get_subscription( $post_id );
+	foreach ( wcs_get_orders_with_meta_query( $query_args ) as $subscription_id ) {
+		$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
 	}
 
 	return apply_filters( 'woocommerce_got_subscriptions', $subscriptions, $args );
