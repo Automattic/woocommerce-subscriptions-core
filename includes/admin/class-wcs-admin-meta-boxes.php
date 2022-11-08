@@ -7,7 +7,7 @@
  * @author   Prospress
  * @category Admin
  * @package  WooCommerce Subscriptions/Admin
- * @version  2.0
+ * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -168,7 +168,7 @@ class WCS_Admin_Meta_Boxes {
 	 *
 	 * @param array $actions An array of available actions
 	 * @return array An array of updated actions
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function add_subscription_actions( $actions ) {
 		global $theorder;
@@ -200,7 +200,7 @@ class WCS_Admin_Meta_Boxes {
 	 * Handles the action request to process a renewal order.
 	 *
 	 * @param array $subscription
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function process_renewal_action_request( $subscription ) {
 		$subscription->add_order_note( __( 'Process renewal order action requested by admin.', 'woocommerce-subscriptions' ), false, true );
@@ -211,7 +211,7 @@ class WCS_Admin_Meta_Boxes {
 	 * Handles the action request to create a pending renewal order.
 	 *
 	 * @param array $subscription
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function create_pending_renewal_action_request( $subscription ) {
 		$subscription->add_order_note( __( 'Create pending renewal order requested by admin action.', 'woocommerce-subscriptions' ), false, true );
@@ -233,7 +233,7 @@ class WCS_Admin_Meta_Boxes {
 	 * Handles the action request to create a pending parent order.
 	 *
 	 * @param array $subscription
-	 * @since 2.3
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3
 	 */
 	public static function create_pending_parent_action_request( $subscription ) {
 
@@ -263,7 +263,7 @@ class WCS_Admin_Meta_Boxes {
 	 * Removes order related emails from the available actions.
 	 *
 	 * @param array $available_emails
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function remove_order_email_actions( $email_actions ) {
 		global $theorder;
@@ -279,7 +279,7 @@ class WCS_Admin_Meta_Boxes {
 	 * Process the action request to retry renewal payment for failed renewal orders.
 	 *
 	 * @param WC_Order $order
-	 * @since 2.1
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.1
 	 */
 	public static function process_retry_renewal_payment_action_request( $order ) {
 
@@ -304,7 +304,7 @@ class WCS_Admin_Meta_Boxes {
 	 *
 	 * @param WC_Order $order
 	 * @return bool
-	 * @since 2.1
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.1
 	 */
 	private static function can_renewal_order_be_retried( $order ) {
 
@@ -330,7 +330,7 @@ class WCS_Admin_Meta_Boxes {
 	/**
 	 * Disables stock managment while adding items to a subscription via the edit subscription screen.
 	 *
-	 * @since 3.0.6
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.0.6
 	 *
 	 * @param string $manage_stock The default manage stock setting.
 	 * @return string Whether the stock should be managed.
@@ -355,7 +355,7 @@ class WCS_Admin_Meta_Boxes {
 	 * - The order's currency matches the base store currency.
 	 * - The order contains a line item with a subtotal greater than the product's current live price.
 	 *
-	 * @since 3.0.10
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.0.10
 	 *
 	 * @param WC_Order $order The order being edited.
 	 */
@@ -398,7 +398,7 @@ class WCS_Admin_Meta_Boxes {
 	/**
 	 * Saves the manual price increase lock via Edit order save and ajax request.
 	 *
-	 * @since 3.0.10
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.0.10
 	 *
 	 * @param string $order_id Optional. The order ID. For non-ajax requests, this parameter is required.
 	 */
@@ -426,7 +426,7 @@ class WCS_Admin_Meta_Boxes {
 	/**
 	 * Stores the subtracted base location tax totals for subscription and renewal line items.
 	 *
-	 * @since 3.0.10
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.0.10
 	 *
 	 * @param int                   $item_id   The ID of the order item added.
 	 * @param WC_Order_Item_Product $line_item The line item added.
@@ -490,7 +490,7 @@ class WCS_Admin_Meta_Boxes {
 	 *    - WC_AJAX::remove_order_item().
 	 *    - wc_save_order_items().
 	 *
-	 * @since 3.1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.1.0
 	 *
 	 * @param WC_Order_Item $item The line item being saved/updated via the edit subscription screen.
 	 * @return bool Whether to reduce stock for the line item.
@@ -507,7 +507,7 @@ class WCS_Admin_Meta_Boxes {
 	/**
 	 * Updates the `_subtracted_base_location_tax` meta when admin users update a line item's quantity.
 	 *
-	 * @since 3.0.14
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.0.14
 	 *
 	 * @param int   $order_id  The edited order or subscription ID.
 	 * @param array $item_data An array of data about all line item changes.
@@ -556,7 +556,7 @@ class WCS_Admin_Meta_Boxes {
 	/**
 	 * Updates the `_subtracted_base_location_taxes` meta when admin users update a line item's price.
 	 *
-	 * @since 3.1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.1.0
 	 *
 	 * @param int   $order_id  The edited order or subscription ID.
 	 * @param array $item_data An array of data about all line item changes.
@@ -621,7 +621,7 @@ class WCS_Admin_Meta_Boxes {
 	 *
 	 * Populates the parent order list on the edit subscription screen with orders belonging to the customer.
 	 *
-	 * @since 4.0.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v4.0.0
 	 */
 	public static function get_customer_orders() {
 		check_ajax_referer( 'get-customer-orders', 'security' );

@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Cache is based on the current blog in case of a multisite environment.
  *
- * @version  2.3.0
+ * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
  * @category Class
  * @author   Prospress
  */
@@ -301,7 +301,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	 *
 	 * On multi-site installations, the current site ID is appended.
 	 *
-	 * @since 3.1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.1.0
 	 * @return string
 	 */
 	public function get_cache_meta_key() {

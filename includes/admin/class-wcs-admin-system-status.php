@@ -8,7 +8,7 @@
  * @subpackage WC_Subscriptions_Admin
  * @category   Class
  * @author     Prospress
- * @since      2.3.0
+ * @since      1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
  */
 class WCS_Admin_System_Status {
 
@@ -20,7 +20,7 @@ class WCS_Admin_System_Status {
 	/**
 	 * Attach callbacks
 	 *
-	 * @since 2.3.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
 	 */
 	public static function init() {
 		add_filter( 'woocommerce_system_status_report', array( __CLASS__, 'render_system_status_items' ) );
@@ -29,7 +29,7 @@ class WCS_Admin_System_Status {
 	/**
 	 * Renders the Subscription information in the WC status page
 	 *
-	 * @since 2.3.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
 	 */
 	public static function render_system_status_items() {
 
@@ -344,7 +344,7 @@ class WCS_Admin_System_Status {
 	/**
 	 * Gets the store's subscription broken down by payment gateway and status.
 	 *
-	 * @since 3.1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.1.0
 	 * @return array The subscription gateway and status data array( 'gateway_id' => array( 'status' => count ) );
 	 */
 	public static function get_subscriptions_by_gateway() {
@@ -367,7 +367,7 @@ class WCS_Admin_System_Status {
 	/**
 	 * Gets the store's subscriptions by status.
 	 *
-	 * @since 3.1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.1.0
 	 * @return array
 	 */
 	public static function get_subscription_statuses() {

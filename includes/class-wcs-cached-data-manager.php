@@ -3,8 +3,8 @@
  * Subscription Cached Data Manager Class
  *
  * @class    WCS_Cached_Data_Manager
- * @version  2.3.0
- * @since    2.1.2
+ * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
+ * @since    1.0.0 - Migrated from WooCommerce Subscriptions v2.1.2
  * @package  WooCommerce Subscriptions/Classes
  * @category Class
  * @author   Prospress
@@ -121,7 +121,7 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 	 * Wrapper function to clear the cache that relates to related orders
 	 *
 	 * @param null $subscription_id
-	 * @deprecated 2.3.0
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
 	 */
 	protected function clear_related_order_cache( $subscription_id ) {
 		wcs_deprecated_function( __METHOD__, '2.3.0', __( 'new related order methods in WCS_Related_Order_Store', 'woocommerce-subscriptions' ) );
@@ -198,7 +198,7 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 	/**
 	 * Check once each week if the log file has exceeded the limits.
 	 *
-	 * @since 2.2.9
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.9
 	 */
 	public function initialize_cron_check_size() {
 
@@ -215,7 +215,7 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 	 * Add a weekly schedule for clearing up the cache
 	 *
 	 * @param $scheduled array
-	 * @since 2.2.9
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.9
 	 */
 	function add_weekly_cron_schedule( $schedules ) {
 
