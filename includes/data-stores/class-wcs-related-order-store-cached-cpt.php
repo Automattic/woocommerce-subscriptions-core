@@ -171,8 +171,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param string $relation_type   The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
 	 */
 	protected function add_related_order_id_to_cache( $order_id, $subscription_id, $relation_type ) {
-
-		$subscription = wcs_get_subscription( $subscription_id );
+		$subscription = $this->get_subscription_with_cache_meta( $subscription_id );
 
 		// If we can't get a valid subscription, we can't update its cache
 		if ( false === $subscription ) {
@@ -196,8 +195,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param string $relation_type   The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.e.
 	 */
 	protected function delete_related_order_id_from_cache( $order_id, $subscription_id, $relation_type ) {
-
-		$subscription = wcs_get_subscription( $subscription_id );
+		$subscription = $this->get_subscription_with_cache_meta( $subscription_id );
 
 		// If we can't get a valid subscription, we can't udpate its cache
 		if ( false === $subscription ) {
@@ -222,14 +220,10 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @return bool True if the cache was updated.
 	 */
 	protected function update_related_order_id_cache( $subscription, array $related_order_ids, $relation_type ) {
-		// We want to remove the props to ignore filter here so that when we read a Subscription from the database, we also read the all related order cache meta data into memory. Without this, when we go to save/update this meta, we will create a duplicate of it.
-		remove_filter( 'wcs_subscription_data_store_props_to_ignore', array( $this, 'add_related_order_cache_props' ) );
+		$subscription = $this->get_subscription_with_cache_meta( $subscription );
 
-		$subscription = wcs_get_subscription( $subscription );
 		$subscription->update_meta_data( $this->get_cache_meta_key( $relation_type ), $related_order_ids );
 		$subscription->save();
-
-		add_filter( 'wcs_subscription_data_store_props_to_ignore', array( $this, 'add_related_order_cache_props' ), 10, 2 );
 
 		return true;
 	}
@@ -255,9 +249,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param string              $relation_type   The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented. Use 'any' to delete all cached.
 	 */
 	public function delete_caches_for_subscription( $subscription, $relation_type = 'any' ) {
-		if ( ! is_object( $subscription ) ) {
-			$subscription = wcs_get_subscription( $subscription );
-		}
+		$subscription = $this->get_subscription_with_cache_meta( $subscription );
 
 		foreach ( $this->get_relation_types() as $possible_relation_type ) {
 			if ( 'any' === $relation_type || $relation_type === $possible_relation_type ) {
@@ -276,7 +268,12 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 */
 	public function delete_related_order_id_from_caches( $order_id, $relation_type = 'any' ) {
 		$relation_types = 'any' === $relation_type ? $this->get_relation_types() : array( $relation_type );
-		foreach ( wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => $relation_types ) ) as $subscription_id => $subscription ) {
+
+		remove_filter( 'wcs_subscription_data_store_props_to_ignore', array( $this, 'add_related_order_cache_props' ) );
+		$subscriptions = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => $relation_types ) );
+		add_filter( 'wcs_subscription_data_store_props_to_ignore', array( $this, 'add_related_order_cache_props' ), 10, 2 );
+
+		foreach ( $subscriptions as $subscription ) {
 			foreach ( $relation_types as $type ) {
 				$this->delete_related_order_id_from_cache( $order_id, $subscription, $type );
 			}
@@ -296,6 +293,24 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 		foreach ( $relation_types as $relation_type ) {
 			WC_Data_Store::load( 'subscription' )->delete_all_meta_data_with_key( $this->get_cache_meta_key( $relation_type ) );
 		}
+	}
+
+	/**
+	 * Gets a new subscription instance from the datbase without our related order cache props not being ignored.
+	 *
+	 * @param WC_Subscription|int $subscription A subscription object or subscription ID.
+	 *
+	 * @return WC_Subscription|bool The subscription object, or false if it doesn't exist.
+	 */
+	public function get_subscription_with_cache_meta( $subscription ) {
+		if ( ! is_object( $subscription ) || ! $subscription->meta_exists( $this->get_cache_meta_key( 'renewal' ) ) ) {
+			// We want to remove the props to ignore filter here so that when we read a Subscription from the database, we also read the all related order cache meta data into memory. Without this, when we go to save/update this meta, we will create a duplicate of it.
+			remove_filter( 'wcs_subscription_data_store_props_to_ignore', array( $this, 'add_related_order_cache_props' ) );
+			$subscription = wcs_get_subscription( $subscription );
+			add_filter( 'wcs_subscription_data_store_props_to_ignore', array( $this, 'add_related_order_cache_props' ), 10, 2 );
+		}
+
+		return $subscription;
 	}
 
 	/* Public methods used as callbacks on hooks for managing cache */
@@ -493,7 +508,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param mixed $item The item to update.
 	 */
 	public function update_items_cache( $subscription_id ) {
-		$subscription = wcs_get_subscription( $subscription_id );
+		$subscription = $this->get_subscription_with_cache_meta( $subscription_id );
+
 		if ( $subscription ) {
 			foreach ( $this->get_relation_types() as $relation_type ) {
 				// Getting the related IDs also sets the cache when it's not already set
