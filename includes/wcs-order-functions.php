@@ -410,7 +410,7 @@ function wcs_get_orders_with_meta_query( $args ) {
 	}
 
 	// The following if block is for testing only, to compare results between the two lookups. It can be removed once testing is complete.
-	if ( ! empty( $get_post_results ) && $results !== $get_post_results ) {
+	if ( defined( 'WCS_DEBUG' ) && WCS_DEBUG && $results !== $get_post_results ) {
 		throw new \Exception(
 			'Call to wcs_get_orders_with_meta_query gave differing results with the following args: <pre>' .
 			"\n\n" . 'get_posts(' . var_export( $request_args, true ) . "):\n" . // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
