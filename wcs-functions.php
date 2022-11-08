@@ -432,10 +432,10 @@ function wcs_get_subscriptions( $args ) {
 	}
 
 	// Ensure subscription_status is an array.
-	$args['subscription_status'] = $args['subscription_status'] ? (array) $args['subscription_status'] : array();
+	$args['subscription_status'] = $args['subscription_status'] ? (array) $args['subscription_status'] : [];
 
 	// Grab the native post stati, removing pending and adding any.
-	$builtin = get_post_stati( array( '_builtin' => true ) );
+	$builtin = get_post_stati( [ '_builtin' => true ] );
 	unset( $builtin['pending'] );
 	$builtin['any'] = 'any';
 
