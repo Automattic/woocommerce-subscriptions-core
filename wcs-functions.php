@@ -450,19 +450,20 @@ function wcs_get_subscriptions( $args ) {
 
 	// Prepare the args for WC_Order_Query.
 	$query_args = array(
-		'post_type'      => 'shop_subscription',
-		'post_status'    => $args['subscription_status'],
-		'posts_per_page' => $args['subscriptions_per_page'],
-		'paged'          => $args['paged'],
-		'offset'         => $args['offset'],
-		'order'          => $args['order'],
-		'fields'         => 'ids',
-		'meta_query'     => isset( $args['meta_query'] ) ? $args['meta_query'] : array(), // just in case we need to filter or order by meta values later
+		'type'       => 'shop_subscription',
+		'status'     => $args['subscription_status'],
+		'limit'      => $args['subscriptions_per_page'],
+		'page'       => $args['paged'],
+		'offset'     => $args['offset'],
+		'order'      => $args['order'],
+		'return'     => 'ids',
+		// just in case we need to filter or order by meta values later
+		'meta_query' => isset( $args['meta_query'] ) ? $args['meta_query'] : array(), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 	);
 
 	// Maybe only get subscriptions created by a certain order
 	if ( 0 !== $args['order_id'] && is_numeric( $args['order_id'] ) ) {
-		$query_args['post_parent'] = $args['order_id'];
+		$query_args['parent'] = $args['order_id'];
 	}
 
 	// Map subscription specific orderby values to internal keys.
@@ -495,9 +496,8 @@ function wcs_get_subscriptions( $args ) {
 
 	// Maybe filter to a specific customer.
 	if ( 0 !== $args['customer_id'] && is_numeric( $args['customer_id'] ) ) {
-		$users_subscription_ids = WCS_Customer_Store::instance()->get_users_subscription_ids( absint( $args['customer_id'] ) );
-		$query_args             = WCS_Admin_Post_Types::set_post__in_query_var( $query_args, $users_subscription_ids );
-	};
+		$query_args['customer_id'] = $args['customer_id'];
+	}
 
 	// We need to restrict subscriptions to those which contain a certain product/variation
 	if ( ( 0 !== $args['product_id'] && is_numeric( $args['product_id'] ) ) || ( 0 !== $args['variation_id'] && is_numeric( $args['variation_id'] ) ) ) {
