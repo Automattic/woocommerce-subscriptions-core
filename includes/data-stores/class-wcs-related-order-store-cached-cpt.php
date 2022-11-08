@@ -108,7 +108,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 				delete_transient( $transient_key ); // we migrate the data to our new cache so want to remote this cache
 			}
 
-			$this->update_related_order_id_cache( $subscription_id, $related_order_ids, $relation_type );
+			$this->update_related_order_id_cache( $subscription, $related_order_ids, $relation_type );
 		}
 
 		return $related_order_ids;
@@ -184,7 +184,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 		if ( ! in_array( $order_id, $related_order_ids ) ) {
 			// Add the new order to the beginning of the array to preserve sort order from newest to oldest
 			array_unshift( $related_order_ids, $order_id );
-			$this->update_related_order_id_cache( $subscription_id, $related_order_ids, $relation_type );
+			$this->update_related_order_id_cache( $subscription, $related_order_ids, $relation_type );
 		}
 	}
 
@@ -208,7 +208,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 
 		if ( ( $index = array_search( $order_id, $related_order_ids ) ) !== false ) {
 			unset( $related_order_ids[ $index ] );
-			$this->update_related_order_id_cache( $subscription_id, $related_order_ids, $relation_type );
+			$this->update_related_order_id_cache( $subscription, $related_order_ids, $relation_type );
 		}
 	}
 
@@ -278,7 +278,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 		$relation_types = 'any' === $relation_type ? $this->get_relation_types() : array( $relation_type );
 		foreach ( wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => $relation_types ) ) as $subscription_id => $subscription ) {
 			foreach ( $relation_types as $type ) {
-				$this->delete_related_order_id_from_cache( $order_id, $subscription_id, $type );
+				$this->delete_related_order_id_from_cache( $order_id, $subscription, $type );
 			}
 		}
 	}
