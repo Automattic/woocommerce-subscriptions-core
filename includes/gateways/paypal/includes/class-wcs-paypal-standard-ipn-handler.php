@@ -607,7 +607,6 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 					'order'          => 'ASC',
 					'post_type'      => $order_type,
 					'post_status'    => 'any',
-					'fields'         => 'ids',
 					'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 						[
 							'key'     => $meta_key,
@@ -619,7 +618,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			);
 
 			if ( ! empty( $posts ) ) {
-				$order_id  = $posts[0];
+				$order_id  = $posts[0]->get_id();
 				$order_key = get_post_meta( $order_id, '_order_key', true );
 			}
 		}

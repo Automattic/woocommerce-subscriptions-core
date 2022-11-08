@@ -364,7 +364,7 @@ function wcs_order_contains_subscription( $order, $order_type = array( 'parent',
  */
 function wcs_get_orders_with_meta_query( $args ) {
 	if ( defined( 'WCS_DEBUG' ) && WCS_DEBUG ) {
-		$get_post_results = get_posts( $args );
+		$get_post_results = get_posts( array_merge( $args, [ 'fields' => 'ids' ] ) );
 	}
 
 	$request_args          = $args;
@@ -410,16 +410,19 @@ function wcs_get_orders_with_meta_query( $args ) {
 	}
 
 	// The following if block is for testing only, to compare results between the two lookups. It can be removed once testing is complete.
-	if ( defined( 'WCS_DEBUG' ) && WCS_DEBUG && $results !== $get_post_results ) {
-		throw new \Exception(
-			'Call to wcs_get_orders_with_meta_query gave differing results with the following args: <pre>' .
-			"\n\n" . 'get_posts(' . var_export( $request_args, true ) . "):\n" . // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-			var_export( $get_post_results, true ) . // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-			"\n\n" . 'wc_get_orders(' . var_export( $args, true ) . "):\n" . // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-			var_export( $results, true ) . // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-			'</pre>'
-		);
+	if ( defined( 'WCS_DEBUG' ) && WCS_DEBUG ) {
+		$wc_get_orders_result_ids = ( ! empty( $results ) && ( empty( $args['return'] ) || 'ids' !== $args['return'] ) ) ? array_map( [ $results[0], 'get_id' ], $results ) : $results;
 
+		if ( $wc_get_orders_result_ids !== $get_post_results ) {
+			throw new \Exception(
+				'Call to wcs_get_orders_with_meta_query gave differing results with the following args: <pre>' .
+				"\n\n" . 'get_posts(' . var_export( $request_args, true ) . "):\n" . // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+				var_export( $get_post_results, true ) . // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+				"\n\n" . 'wc_get_orders(' . var_export( $args, true ) . "):\n" . // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+				var_export( $results, true ) . // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+				'</pre>'
+			);
+		}
 	}
 
 	return $results;
