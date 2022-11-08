@@ -55,7 +55,7 @@ class WCS_Admin_Meta_Boxes {
 		// Parent order line item price lock option.
 		add_action( 'woocommerce_order_item_add_action_buttons', array( __CLASS__, 'output_price_lock_html' ) );
 		add_action( 'woocommerce_process_shop_order_meta', array( __CLASS__, 'save_increased_price_lock' ) );
-		add_action( 'wp_ajax_wcs_order_price_lock' , array( __CLASS__, 'save_increased_price_lock' ) );
+		add_action( 'wp_ajax_wcs_order_price_lock', array( __CLASS__, 'save_increased_price_lock' ) );
 
 		// After calculating subscription/renewal order line item taxes, update base location tax item meta.
 		add_action( 'woocommerce_ajax_add_order_item_meta', array( __CLASS__, 'store_item_base_location_tax' ), 10, 3 );
@@ -127,21 +127,28 @@ class WCS_Admin_Meta_Boxes {
 
 			wp_enqueue_script( 'wcs-admin-meta-boxes-subscription', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/meta-boxes-subscription.js' ), array( 'wc-admin-meta-boxes', 'jstz', 'momentjs' ), WC_VERSION );
 
-			wp_localize_script( 'wcs-admin-meta-boxes-subscription', 'wcs_admin_meta_boxes', apply_filters( 'woocommerce_subscriptions_admin_meta_boxes_script_parameters', array(
-				'i18n_start_date_notice'         => __( 'Please enter a start date in the past.', 'woocommerce-subscriptions' ),
-				'i18n_past_date_notice'          => WCS_Staging::is_duplicate_site() ? __( 'Please enter a date at least 2 minutes into the future.', 'woocommerce-subscriptions' ) : __( 'Please enter a date at least one hour into the future.', 'woocommerce-subscriptions' ),
-				'i18n_next_payment_start_notice' => __( 'Please enter a date after the trial end.', 'woocommerce-subscriptions' ),
-				'i18n_next_payment_trial_notice' => __( 'Please enter a date after the start date.', 'woocommerce-subscriptions' ),
-				'i18n_trial_end_start_notice'    => __( 'Please enter a date after the start date.', 'woocommerce-subscriptions' ),
-				'i18n_trial_end_next_notice'     => __( 'Please enter a date before the next payment.', 'woocommerce-subscriptions' ),
-				'i18n_end_date_notice'           => __( 'Please enter a date after the next payment.', 'woocommerce-subscriptions' ),
-				'process_renewal_action_warning' => __( "Are you sure you want to process a renewal?\n\nThis will charge the customer and email them the renewal order (if emails are enabled).", 'woocommerce-subscriptions' ),
-				'payment_method'                 => wcs_get_subscription( $post )->get_payment_method(),
-				'search_customers_nonce'         => wp_create_nonce( 'search-customers' ),
-				'get_customer_orders_nonce'      => wp_create_nonce( 'get-customer-orders' ),
-				'is_duplicate_site'              => WCS_Staging::is_duplicate_site(),
-			) ) );
-		} else if ( 'shop_order' == $screen_id ) {
+			wp_localize_script(
+				'wcs-admin-meta-boxes-subscription',
+				'wcs_admin_meta_boxes',
+				apply_filters(
+					'woocommerce_subscriptions_admin_meta_boxes_script_parameters',
+					array(
+						'i18n_start_date_notice'         => __( 'Please enter a start date in the past.', 'woocommerce-subscriptions' ),
+						'i18n_past_date_notice'          => WCS_Staging::is_duplicate_site() ? __( 'Please enter a date at least 2 minutes into the future.', 'woocommerce-subscriptions' ) : __( 'Please enter a date at least one hour into the future.', 'woocommerce-subscriptions' ),
+						'i18n_next_payment_start_notice' => __( 'Please enter a date after the trial end.', 'woocommerce-subscriptions' ),
+						'i18n_next_payment_trial_notice' => __( 'Please enter a date after the start date.', 'woocommerce-subscriptions' ),
+						'i18n_trial_end_start_notice'    => __( 'Please enter a date after the start date.', 'woocommerce-subscriptions' ),
+						'i18n_trial_end_next_notice'     => __( 'Please enter a date before the next payment.', 'woocommerce-subscriptions' ),
+						'i18n_end_date_notice'           => __( 'Please enter a date after the next payment.', 'woocommerce-subscriptions' ),
+						'process_renewal_action_warning' => __( "Are you sure you want to process a renewal?\n\nThis will charge the customer and email them the renewal order (if emails are enabled).", 'woocommerce-subscriptions' ),
+						'payment_method'                 => wcs_get_subscription( $post )->get_payment_method(),
+						'search_customers_nonce'         => wp_create_nonce( 'search-customers' ),
+						'get_customer_orders_nonce'      => wp_create_nonce( 'get-customer-orders' ),
+						'is_duplicate_site'              => WCS_Staging::is_duplicate_site(),
+					)
+				)
+			);
+		} elseif ( 'shop_order' == $screen_id ) {
 
 			wp_enqueue_script( 'wcs-admin-meta-boxes-order', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/wcs-meta-boxes-order.js' ) );
 
@@ -191,7 +198,7 @@ class WCS_Admin_Meta_Boxes {
 					$actions['wcs_create_pending_parent'] = esc_html__( 'Create pending parent order', 'woocommerce-subscriptions' );
 				}
 			}
-		} else if ( self::can_renewal_order_be_retried( $theorder ) ) {
+		} elseif ( self::can_renewal_order_be_retried( $theorder ) ) {
 			$actions['wcs_retry_renewal_payment'] = esc_html__( 'Retry Renewal Payment', 'woocommerce-subscriptions' );
 		}
 
@@ -319,7 +326,7 @@ class WCS_Admin_Meta_Boxes {
 
 			foreach ( wcs_get_subscriptions_for_renewal_order( $order ) as $subscription ) {
 				$supports_date_changes = $subscription->payment_method_supports( 'subscription_date_changes' );
-				$is_automatic = ! $subscription->is_manual();
+				$is_automatic          = ! $subscription->is_manual();
 				break;
 			}
 
@@ -641,7 +648,6 @@ class WCS_Admin_Meta_Boxes {
 				'posts_per_page' => '-1',
 			)
 		);
-
 
 		foreach ( $orders as $order ) {
 			$customer_orders[ $order->get_id() ] = $order->get_order_number();
