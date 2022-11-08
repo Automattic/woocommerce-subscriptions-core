@@ -1,6 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 2.6.0 - 2022-xx-xx =
+= 5.0.0 - 2022-xx-xx =
+* Dev - Code that was tagged with a version and moved from WooCommerce Subscriptions now explicitly mentions this and shows the correct subscriptions-core and WC Subscriptions versions.
 * Dev - Refactor the saving of subscription dates in the subscription datastore to separate fetching changes and saving. Enables backfilling subscription dates when HPOS syncing is enabled.
 
 = 2.5.1 - 2022-11-04 =

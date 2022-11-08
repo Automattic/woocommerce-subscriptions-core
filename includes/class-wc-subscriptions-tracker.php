@@ -3,7 +3,7 @@
  * Tracker for Subscriptions usage.
  *
  * @class     WC_Subscriptions_Tracker
- * @version   2.6.4
+ * @version   1.0.0 - Migrated from WooCommerce Subscriptions v2.6.4
  * @package   WooCommerce Subscriptions/Classes
  * @category  Class
  * @author    WooCommerce

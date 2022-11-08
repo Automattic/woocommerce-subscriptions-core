@@ -69,7 +69,7 @@ class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 	/**
 	 * Testing wcs_get_subscription_trial_period_strings()
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_wcs_get_subscription_trial_period_strings() {
 		// base cases

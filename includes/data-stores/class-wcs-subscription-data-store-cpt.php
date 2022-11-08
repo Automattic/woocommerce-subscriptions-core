@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Extends WC_Order_Data_Store_CPT to make sure subscription related meta data is read/updated.
  *
- * @version  2.2.0
+ * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
  * @category Class
  * @author   Prospress
  */
@@ -21,7 +21,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * the $internal_meta_keys property from WC_Order_Data_Store_CPT because we want its value
 	 * too, so instead we create our own and merge it into $internal_meta_keys in __construct.
 	 *
-	 * @since 2.2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
 	 * @var array
 	 */
 	protected $subscription_internal_meta_keys = array(
@@ -39,7 +39,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 *
 	 * Used to read/update props on the subscription.
 	 *
-	 * @since 2.2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
 	 * @var array
 	 */
 	protected $subscription_meta_keys_to_props = array(
@@ -91,7 +91,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * Create a new subscription in the database.
 	 *
 	 * @param WC_Subscription $subscription
-	 * @since 2.2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
 	 */
 	public function create( &$subscription ) {
 
@@ -120,7 +120,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 *
 	 * Ignore meta data that we don't want accessible on the object via meta APIs.
 	 *
-	 * @since  2.3.0
+	 * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
 	 * @param  WC_Data $object
 	 * @return array
 	 */
@@ -143,7 +143,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 *
 	 * @param WC_Subscription $subscription
 	 * @param object $post_object
-	 * @since 2.2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
 	 */
 	protected function read_order_data( &$subscription, $post_object ) {
 
@@ -195,7 +195,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * Update subscription in the database.
 	 *
 	 * @param WC_Subscription $subscription
-	 * @since 2.2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
 	 */
 	public function update( &$subscription ) {
 
@@ -212,7 +212,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * Update post meta for a subscription based on it's settings in the WC_Subscription class.
 	 *
 	 * @param WC_Subscription $subscription
-	 * @since 2.2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
 	 */
 	protected function update_post_meta( &$subscription ) {
 
@@ -260,7 +260,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 *
 	 * @param WC_Subscription $subscription
 	 * @return string
-	 * @since 2.2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
 	 */
 	public function get_total_refunded( $subscription ) {
 
@@ -278,7 +278,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 *
 	 * @param WC_Subscription $subscription
 	 * @return float
-	 * @since 2.2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
 	 */
 	public function get_total_tax_refunded( $subscription ) {
 
@@ -296,7 +296,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 *
 	 * @param WC_Subscription $subscription
 	 * @return float
-	 * @since 2.2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
 	 */
 	public function get_total_shipping_refunded( $subscription ) {
 
@@ -314,7 +314,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 *
 	 * @param  string $type
 	 * @return int
-	 * @since 2.2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
 	 */
 	public function get_order_count( $status ) {
 		global $wpdb;
@@ -327,7 +327,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * @see    wc_get_orders()
 	 * @param  array $args
 	 * @return array of orders
-	 * @since 2.2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
 	 */
 	public function get_orders( $args = array() ) {
 
@@ -372,7 +372,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 *
 	 * @param WC_Subscription $subscription
 	 * @return array The date properties saved to the database in the format: array( $prop_name => DateTime Object )
-	 * @since 2.2.6
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.6
 	 */
 	public function save_dates( $subscription ) {
 		$dates_to_save  = [];
@@ -507,7 +507,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 *
 	 * @param string $term Term to search
 	 * @return array of subscription ids
-	 * @since 2.3.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
 	 */
 	public function search_subscriptions( $term ) {
 		global $wpdb;
@@ -566,7 +566,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	/**
 	 * Get the user IDs for customers who have a subscription.
 	 *
-	 * @since 3.4.3
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.4.3
 	 * @return array The user IDs.
 	 */
 	public function get_subscription_customer_ids() {

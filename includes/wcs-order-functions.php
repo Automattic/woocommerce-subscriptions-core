@@ -5,7 +5,7 @@
  * @author   Prospress
  * @category Core
  * @package  WooCommerce Subscriptions/Functions
- * @version  2.0
+ * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -27,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *    'subscription_status' Any valid subscription status. Can be 'any', 'active', 'cancelled', 'on-hold', 'expired', 'pending' or 'trash'. Defaults to 'any'.
  *    'order_type' Get subscriptions for the any order type in this array. Can include 'any', 'parent', 'renewal' or 'switch', defaults to parent.
  * @return WC_Subscription[] Subscription details in post_id => WC_Subscription form.
- * @since  2.0
+ * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_get_subscriptions_for_order( $order, $args = array() ) {
 
@@ -322,7 +322,7 @@ function wcs_get_order_address( $order, $address_type = 'shipping' ) {
  * @param mixed $order A WC_Order object or the ID of the order which the subscription was purchased in.
  * @param array|string $order_type Can include 'parent', 'renewal', 'resubscribe' and/or 'switch'. Defaults to 'parent', 'resubscribe' and 'switch' orders.
  * @return bool True if the order contains a subscription that belongs to any of the given order types, otherwise false.
- * @since 2.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_order_contains_subscription( $order, $order_type = array( 'parent', 'resubscribe', 'switch' ) ) {
 
@@ -362,7 +362,7 @@ function wcs_order_contains_subscription( $order, $order_type = array( 'parent',
  * @param string $return_fields The columns to return, either 'all' or 'ids'
  * @param array|string $order_type Can include 'any', 'parent', 'renewal', 'resubscribe' and/or 'switch'. Defaults to 'parent'.
  * @return array The orders that relate to a subscription, if any. Will contain either as just IDs or WC_Order objects depending on $return_fields value.
- * @since 2.1
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.1
  */
 function wcs_get_subscription_orders( $return_fields = 'ids', $order_type = 'parent' ) {
 	global $wpdb;
@@ -451,7 +451,7 @@ function wcs_get_subscription_orders( $return_fields = 'ids', $order_type = 'par
  *
  * @return WC_Order_Item|array The order item object or an empty array if the item doesn't exist.
  *
- * @since 2.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_get_order_item( $item_id, $order ) {
 
@@ -481,7 +481,7 @@ function wcs_get_order_item( $item_id, $order ) {
  * @param int $item_id The ID of an order item
  * @param string $new_type The new type to set as the 'order_item_type' value on the order item.
  * @param int $order_or_subscription_id The order or subscription ID the line item belongs to - optional. Deletes the order item cache if provided.
- * @since 2.2.12
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.12
  */
 function wcs_update_order_item_type( $item_id, $new_type, $order_or_subscription_id = 0 ) {
 	wc_update_order_item( $item_id, array( 'order_item_type' => $new_type ) );
@@ -498,7 +498,7 @@ function wcs_update_order_item_type( $item_id, $new_type, $order_or_subscription
  *
  * @param array
  * @return WC_Order_Item_Meta
- * @since 2.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_get_order_item_meta( $item, $product = null ) {
 	if ( false === wcs_is_woocommerce_pre( '3.0' ) ) {
@@ -511,7 +511,7 @@ function wcs_get_order_item_meta( $item, $product = null ) {
  * Create a string representing an order item's name and optionally include attributes.
  *
  * @param array $order_item An order item.
- * @since 2.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_get_order_item_name( $order_item, $include = array() ) {
 
@@ -626,7 +626,7 @@ function wcs_get_line_item_name( $line_item ) {
 /**
  * Display item meta data in a version compatible way.
  *
- * @since  2.2.0
+ * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
  * @param  WC_Item $item
  * @param  WC_Order $order
  * @return void
@@ -642,7 +642,7 @@ function wcs_display_item_meta( $item, $order ) {
 /**
  * Display item download links in a version compatible way.
  *
- * @since  2.2.0
+ * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
  * @param  WC_Item $item
  * @param  WC_Order $order
  * @return void
@@ -660,7 +660,7 @@ function wcs_display_item_downloads( $item, $order ) {
 /**
  * Copy the order item data and meta data from one item to another.
  *
- * @since  2.2.0
+ * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
  * @param  WC_Order_Item $from_item The order item to copy data from
  * @param  WC_Order_Item $to_item The order item to copy data to
  */
@@ -747,7 +747,7 @@ function wcs_copy_order_item( $from_item, &$to_item ) {
 /**
  * Checks an order to see if it contains a manual subscription.
  *
- * @since 2.4.3
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.4.3
  * @param WC_Order|int $order The WC_Order object or ID to get related subscriptions from.
  * @param string|array $order_type The order relationship type(s). Can be single string or an array of order types. Optional. Default is 'any'.
  * @return bool
@@ -769,7 +769,7 @@ function wcs_order_contains_manual_subscription( $order, $order_type = 'any' ) {
 /**
  * Copy payment method from a subscription to an order.
  *
- * @since 2.4.3
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.4.3
  * @param WC_Subscription $subscription
  * @param WC_Order $order
  */
@@ -796,7 +796,7 @@ function wcs_copy_payment_method_to_order( $subscription, $order ) {
  * @param WC_Order $order
  *
  * @return int
- * @since 2.5.3
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.5.3
  */
 function wcs_minutes_since_order_created( $order ) {
 	$now             = new WC_DateTime( 'now', $order->get_date_created()->getTimezone() );
@@ -811,7 +811,7 @@ function wcs_minutes_since_order_created( $order ) {
  * @param WC_Order $order
  *
  * @return int
- * @since 2.5.3
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.5.3
  */
 function wcs_seconds_since_order_created( $order ) {
 	return time() - $order->get_date_created()->getTimestamp();
@@ -820,7 +820,7 @@ function wcs_seconds_since_order_created( $order ) {
 /**
  * Finds a corresponding subscription line item on an order.
  *
- * @since 2.6.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.6.0
  *
  * @param WC_Abstract_Order $order         The order object to look for the item in.
  * @param WC_Order_Item $subscription_item The line item on the the subscription to find on the order.
@@ -857,7 +857,7 @@ function wcs_find_matching_line_item( $order, $subscription_item, $match_type = 
 /**
  * Checks if an order contains a product.
  *
- * @since 2.6.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.6.0
  *
  * @param WC_Order $order     An order object
  * @param WC_Product $product A product object
@@ -882,7 +882,7 @@ function wcs_order_contains_product( $order, $product ) {
  * Check if a given order is a subscription renewal order.
  *
  * @param WC_Order|int $order The WC_Order object or ID of a WC_Order order.
- * @since 2.3.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
  * @return bool True if the order contains an early renewal, otherwise false.
  */
 function wcs_order_contains_early_renewal( $order ) {
@@ -897,7 +897,7 @@ function wcs_order_contains_early_renewal( $order ) {
 	/**
 	 * Allow third-parties to filter whether this order contains the early renewal flag.
 	 *
-	 * @since 2.3.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
 	 * @param bool     $is_renewal True if early renewal meta was found on the order, otherwise false.
 	 * @param WC_Order $order The WC_Order object.
 	 */
