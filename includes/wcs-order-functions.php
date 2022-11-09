@@ -529,7 +529,7 @@ function wcs_get_subscription_orders( $return_fields = 'ids', $order_type = 'par
 		}
 	}
 
-	if ( 'all' == $return_fields ) {
+	if ( 'all' === $return_fields ) {
 		foreach ( $order_ids as $order_id ) {
 			$orders[ $order_id ] = wc_get_order( $order_id );
 		}
