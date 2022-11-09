@@ -48,11 +48,9 @@ Version_Replace::maybe_replace(
 );
 
 // We need to bump the version in the main plugin class-file as well (includes/class-wc-subscriptions-core.php).
-// This can't be done without hacking on WooRelease as it only supports the main plugin file (woocommerce-subscriptions-core.php), so we'll haven't to manually replace the version for \WC_Subscriptions_Core_Plugin::$library_version
+// This can't be done without hacking on WooRelease as it only supports the main plugin file (woocommerce-subscriptions-core.php), so we'll have to manually replace the version for \WC_Subscriptions_Core_Plugin::$library_version
 $core_plugin_file = $plugin_folder . '/includes/class-wc-subscriptions-core-plugin.php';
 update_library_version_constant( $core_plugin_file, $version );
-
-
 
 /**
  * Update the library version constant in the given file.
@@ -63,11 +61,13 @@ update_library_version_constant( $core_plugin_file, $version );
 function update_library_version_constant( $file, $version ) {
 	$contents = file_get_contents( $file ); //phpcs:ignore
 
-	/*
-	* Constant declaration version bump.
-	* We're looking for a comment with this
-	* format // WRCS: DEFINED_VERSION.
-	*/
+	/**
+	 * Constant declaration version bump.
+	 * We're looking for a comment with this
+	 * format // WRCS: DEFINED_VERSION.
+	 *
+	 * @see https://github.com/woocommerce/woorelease/blob/c32542690bace8669de4774bb14d029eb76a8b1c/includes/tools/class-version-bump.php#L175-L195
+	 */
 
 	// Group the matches into 3 separate values.
 	preg_match( '/\/\/\sWRCS:\sDEFINED_VERSION\./', $contents, $matches );
