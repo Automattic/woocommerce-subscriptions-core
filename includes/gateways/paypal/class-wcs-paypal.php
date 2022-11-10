@@ -627,7 +627,7 @@ class WCS_PayPal {
 	}
 
 	public function get_version() {
-		return WC_Subscriptions_Core_Plugin::instance()->get_plugin_version();
+		return WC_Subscriptions_Core_Plugin::instance()->get_library_version();
 	}
 
 	public function get_id() {
