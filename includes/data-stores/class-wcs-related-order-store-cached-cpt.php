@@ -186,8 +186,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 
 		$related_order_ids = $this->get_related_order_ids( $subscription, $relation_type );
 
-		// TODO check that the $order ID and related order IDs are both ints. If not, we should cast them and turn this into a strict condition.
-		if ( ! in_array( $order_id, $related_order_ids ) ) {
+		if ( ! in_array( $order_id, $related_order_ids, true ) ) {
 			// Add the new order to the beginning of the array to preserve sort order from newest to oldest.
 			array_unshift( $related_order_ids, $order_id );
 			$this->update_related_order_id_cache( $subscription, $related_order_ids, $relation_type );
@@ -210,7 +209,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 		}
 
 		$related_order_ids   = $this->get_related_order_ids( $subscription, $relation_type );
-		$related_order_index = array_search( $order_id, $related_order_ids );
+		$related_order_index = array_search( $order_id, $related_order_ids, true );
 
 		if ( false !== $related_order_index ) {
 			unset( $related_order_ids[ $related_order_index ] );
