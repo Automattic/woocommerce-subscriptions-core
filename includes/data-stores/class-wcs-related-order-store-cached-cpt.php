@@ -9,10 +9,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Subscription related orders (renewals, switch and resubscribe orders) record their relationship in order meta.
  * Historically finding subscription-related orders was costly as it required querying the database for all orders with specific meta key and meta value.
  * This required a performance heavy postmeta query and wp_post join. To fix this, in WC Subscriptions 2.3.0 we introduced a persistent caching layer. In
- * subscription metadata we now store a single key to keep track of the subscriptions related orders.
+ * subscription metadata we now store a single key to keep track of the subscription's related orders.
  *
  * This class adds a persistent caching layer on top of WCS_Related_Order_Store_CPT for more
- * performant queries on related orders.
+ * performant queries on related orders. This class contains the methods to fetch, update and delete the meta caches.
  *
  * @version 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
  */
@@ -33,6 +33,17 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 */
 	private $relation_keys;
 
+	/**
+	 * A flag to indicate whether the related order cache keys should be ignored.
+	 *
+	 * By default the related order cache keys are ignored via $this->add_related_order_cache_props(). In order to fetch the subscription's
+	 * meta with this cache's keys present, we need a way to bypass that function.
+	 *
+	 * Important: We use a static variable here because it is possible to have multiple instances of this class in memory, and we want to make sure we bypass
+	 * the function in all instances. This is especially true in unit tests. We can't make add_related_order_cache_props static because it uses $this in scope.
+	 *
+	 * @var bool $override_ignored_props True if the related order cache keys should be ignored otherwise false.
+	 */
 	private static $override_ignored_props = false;
 
 	/**
