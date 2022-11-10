@@ -61,8 +61,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	}
 
 	/**
-	 * Attaches callbacks to keep related order caches up-to-date and make sure
-	 * the cache doesn't mess with other data stores.
+	 * Attaches callbacks to keep related order caches up-to-date.
 	 */
 	protected function init() {
 
@@ -88,7 +87,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	/* Public methods required by WCS_Related_Order_Store */
 
 	/**
-	 * Finds orders related to a given subscription in a given way.
+	 * Finds orders related to a given subscription.
 	 *
 	 * This function is a wrapper to support getting related orders regardless of whether they are cached or not yet,
 	 * either in the old transient cache, or new persistent cache.
@@ -112,7 +111,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 
 			// If the cache is empty attempt to get the renewal order IDs from the old transient cache.
 			if ( 'renewal' === $relation_type ) {
-				$transient_key = "wcs-related-orders-to-{$subscription_id}"; // despite the name, this transient only stores renewal orders, not all related orders, so we can only use it for finding renewal orders.
+				$transient_key = "wcs-related-orders-to-{$subscription_id}"; // Despite the name, this transient only stores renewal orders, not all related orders, so we can only use it for finding renewal orders.
 
 				// We do this here rather than in get_related_order_ids_from_cache(), because we want to make sure the new persistent cache is updated too.
 				$related_order_ids = get_transient( $transient_key );
@@ -173,7 +172,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	/**
 	 * Finds orders related to a given subscription in a given way from the cache.
 	 *
-	 * @param WC_Subscription|int $subscription_id The ID of the subscription for which calling code wants the related orders.
+	 * @param WC_Subscription|int $subscription_id The Subscription ID or subscription object to fetch related orders.
 	 * @param string              $relation_type   The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
 	 *
 	 * @return string|array An array of related orders in the cache, or an empty string when no matching row is found for the given key, meaning it's cache is not set yet or has been deleted
@@ -191,11 +190,11 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	}
 
 	/**
-	 * Adds a order ID to a subscription's related order cache for a given relationship.
+	 * Adds an order ID to a subscription's related order cache for a given relationship.
 	 *
-	 * @param int    $order_id        An order to link with the subscription.
-	 * @param int    $subscription_id A subscription to link the order to.
-	 * @param string $relation_type   The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe.
+	 * @param int                 $order_id      An order to link with the subscription.
+	 * @param WC_Subscription|int $subscription  A subscription to link the order to. Accepts a subscription object or ID.
+	 * @param string              $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe.
 	 */
 	protected function add_related_order_id_to_cache( $order_id, $subscription_id, $relation_type ) {
 		$subscription = wcs_get_subscription( $subscription_id );
@@ -217,9 +216,9 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	/**
 	 * Deletes a related order ID from a subscription's related orders cache for a given order relationship.
 	 *
-	 * @param int    $order_id        The order that may be linked with subscriptions.
-	 * @param int    $subscription_id A subscription to remove a linked order from.
-	 * @param string $relation_type   The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.e.
+	 * @param int                 $order_id      The order that may be linked with subscriptions.
+	 * @param WC_Subscription|int $subscription  A subscription to remove a linked order from. Accepts a subscription object or ID.
+	 * @param string              $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.e.
 	 */
 	protected function delete_related_order_id_from_cache( $order_id, $subscription_id, $relation_type ) {
 		$subscription = wcs_get_subscription( $subscription_id );
@@ -357,6 +356,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 */
 	public function add_related_order_cache_props( $props_to_ignore, $data_store ) {
 
+		// Bail out early if the flag to bypass ignored cache props is set to true.
 		if ( self::$override_ignored_props ) {
 			return $props_to_ignore;
 		}

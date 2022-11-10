@@ -88,8 +88,6 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 * @param WC_Order $order         The order to link with the subscription.
 	 * @param WC_Order $subscription  The order or subscription to link the order to.
 	 * @param string   $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
-	 *
-	 * @return void
 	 */
 	public function add_relation( WC_Order $order, WC_Order $subscription, $relation_type ) {
 		// We can't rely on $subscription->get_id() being available here, because we only require a WC_Order, not a WC_Subscription, and WC_Order does not have get_id() available with WC < 3.0
