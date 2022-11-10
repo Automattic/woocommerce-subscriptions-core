@@ -42,13 +42,13 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	public function get_related_order_ids( WC_Order $subscription, $relation_type ) {
 		return wcs_get_orders_with_meta_query(
 			[
-				'posts_per_page' => -1,
-				'post_type'      => 'shop_order',
-				'post_status'    => 'any',
-				'fields'         => 'ids',
-				'order_by'       => 'id',
-				'order'          => 'DESC',
-				'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				'limit'      => -1,
+				'type'       => 'shop_order',
+				'status'     => 'any',
+				'return'     => 'ids',
+				'orderby'    => 'ID',
+				'order'      => 'DESC',
+				'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 					[
 						'key'     => $this->get_meta_key( $relation_type ),
 						'compare' => '=',

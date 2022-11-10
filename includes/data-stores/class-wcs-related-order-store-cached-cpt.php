@@ -128,7 +128,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param string   $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
 	 */
 	public function add_relation( WC_Order $order, WC_Order $subscription, $relation_type ) {
-		$this->delete_related_order_id_from_cache( $order->get_id(), $subscription->get_id(), $relation_type );
+		$this->add_related_order_id_to_cache( $order->get_id(), $subscription->get_id(), $relation_type );
 		parent::add_relation( $order, $subscription, $relation_type );
 	}
 
@@ -446,13 +446,13 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			$limit = $batch_size - count( $subscription_ids );
 			$ids   = wcs_get_orders_with_meta_query(
 				[
-					'number'      => $limit,
-					'fields'      => 'ids',
-					'orderby'     => 'ID',
-					'order'       => 'ASC',
-					'post_type'   => 'shop_subscription',
-					'post_status' => array_keys( wcs_get_subscription_statuses() ),
-					'meta_query'  => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					'limit'      => $limit,
+					'fields'     => 'ids',
+					'orderby'    => 'ID',
+					'order'      => 'ASC',
+					'type'       => 'shop_subscription',
+					'status'     => array_keys( wcs_get_subscription_statuses() ),
+					'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 						[
 							'key'     => $this->get_cache_meta_key( $relation_type ),
 							'compare' => 'NOT EXISTS',
