@@ -375,16 +375,11 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.6
 	 */
 	public function save_dates( $subscription ) {
-		$saved_dates    = array();
+		$dates_to_save  = [];
 		$changes        = $subscription->get_changes();
-		$date_meta_keys = array(
-			'_schedule_trial_end',
-			'_schedule_next_payment',
-			'_schedule_cancelled',
-			'_schedule_end',
-			'_schedule_payment_retry',
-			'_schedule_start',
-		);
+		$date_meta_keys = [
+			'_schedule_payment_retry' => 'schedule_payment_retry', // This is the only date potentially missing from wcs_get_subscription_date_types().
+		];
 
 		// Add any custom date types to the date meta keys we need to save.
 		foreach ( wcs_get_subscription_date_types() as $date_type => $date_name ) {
@@ -392,43 +387,77 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 				continue;
 			}
 
-			$date_meta_key = wcs_get_date_meta_key( $date_type );
-
-			if ( ! in_array( $date_meta_key, $date_meta_keys ) ) {
-				$date_meta_keys[] = $date_meta_key;
-			}
+			$date_meta_keys[ wcs_get_date_meta_key( $date_type ) ] = wcs_maybe_prefix_key( $date_type, 'schedule_' );
 		}
 
-		$date_meta_keys_to_props = array_intersect_key( $this->subscription_meta_keys_to_props, array_flip( $date_meta_keys ) );
+		// Get the date meta keys we need to save.
+		$date_meta_keys_to_props = array_intersect_key( $this->subscription_meta_keys_to_props, $date_meta_keys );
 
-		// Save the changes to scheduled dates
-		foreach ( $this->get_props_to_update( $subscription, $date_meta_keys_to_props ) as $meta_key => $prop ) {
-			update_post_meta( $subscription->get_id(), $meta_key, $subscription->get_date( $prop ) );
-			$saved_dates[ $prop ] = wcs_get_datetime_from( $subscription->get_time( $prop ) );
+		// Save the changes to scheduled dates.
+		foreach ( $this->get_props_to_update( $subscription, $date_meta_keys_to_props ) as $prop ) {
+			$dates_to_save[] = $prop;
 		}
 
-		$post_data = array();
-
-		// Save any changes to the created date
+		// Save any changes to the created date.
 		if ( isset( $changes['date_created'] ) ) {
-			$post_data['post_date']      = gmdate( 'Y-m-d H:i:s', $subscription->get_date_created( 'edit' )->getOffsetTimestamp() );
-			$post_data['post_date_gmt']  = gmdate( 'Y-m-d H:i:s', $subscription->get_date_created( 'edit' )->getTimestamp() );
-			$saved_dates['date_created'] = $subscription->get_date_created();
+			$dates_to_save[] = 'date_created';
 		}
 
-		// Save any changes to the modified date
+		// Save any changes to the modified date.
 		if ( isset( $changes['date_modified'] ) ) {
+			$dates_to_save[] = 'date_modified';
+		}
+
+		return $this->write_dates_to_database( $subscription, $dates_to_save );
+	}
+
+	/**
+	 * Writes subscription dates to the database.
+	 *
+	 * @param WC_Subscription $subscription  The subscription to write date changes for.
+	 * @param array           $dates_to_save The dates to write to the database.
+	 *
+	 * @return WC_DateTime[] The date properties saved to the database in the format: array( $prop_name => WC_DateTime Object )
+	 */
+	public function write_dates_to_database( $subscription, $dates_to_save ) {
+		// Flip the dates for easier access and removal.
+		$dates_to_save = array_flip( $dates_to_save );
+		$dates_saved   = [];
+		$post_data     = [];
+
+		if ( isset( $dates_to_save['date_created'] ) ) {
+			$post_data['post_date']     = gmdate( 'Y-m-d H:i:s', $subscription->get_date_created( 'edit' )->getOffsetTimestamp() );
+			$post_data['post_date_gmt'] = gmdate( 'Y-m-d H:i:s', $subscription->get_date_created( 'edit' )->getTimestamp() );
+
+			// Mark the created date as saved.
+			$dates_saved['date_created'] = $subscription->get_date_created();
+			unset( $dates_to_save['date_created'] );
+		}
+
+		if ( isset( $dates_to_save['date_modified'] ) ) {
 			$post_data['post_modified']     = gmdate( 'Y-m-d H:i:s', $subscription->get_date_modified( 'edit' )->getOffsetTimestamp() );
 			$post_data['post_modified_gmt'] = gmdate( 'Y-m-d H:i:s', $subscription->get_date_modified( 'edit' )->getTimestamp() );
-			$saved_dates['date_modified']   = $subscription->get_date_modified();
+
+			// Mark the modified date as saved.
+			$dates_saved['date_modified'] = $subscription->get_date_modified();
+			unset( $dates_to_save['date_modified'] );
 		}
 
+		// Write the dates stored on in post data.
 		if ( ! empty( $post_data ) ) {
 			$post_data['ID'] = $subscription->get_id();
 			wp_update_post( $post_data );
 		}
 
-		return $saved_dates;
+		// Write the remaining dates to meta.
+		foreach ( $dates_to_save as $date_prop => $index ) {
+			$date_type = wcs_normalise_date_type_key( $date_prop );
+
+			update_post_meta( $subscription->get_id(), wcs_get_date_meta_key( $date_type ), $subscription->get_date( $date_type ) );
+			$dates_saved[ $date_prop ] = wcs_get_datetime_from( $subscription->get_time( $date_type ) );
+		}
+
+		return $dates_saved;
 	}
 
 	/**
