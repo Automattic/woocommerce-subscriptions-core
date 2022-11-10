@@ -95,6 +95,6 @@ class WCS_Blocks_Integration implements IntegrationInterface {
 		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG && file_exists( $file ) ) {
 			return filemtime( $file );
 		}
-		return \WC_Subscriptions_Core_Plugin::instance()->get_plugin_version();
+		return \WC_Subscriptions_Core_Plugin::instance()->get_library_version();
 	}
 }
