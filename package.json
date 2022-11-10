@@ -8,7 +8,8 @@
 	"homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
 	"main": "Gruntfile.js",
 	"config": {
-		"translate": true
+		"translate": true,
+		"version_replace_paths": ["includes/"]
 	},
 	"repository": {
 		"type": "git",
