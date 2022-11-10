@@ -221,7 +221,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param string              $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.e.
 	 */
 	protected function delete_related_order_id_from_cache( $order_id, $subscription, $relation_type ) {
-		$subscription = is_object( $subscription ) ? $$subscription : wcs_get_subscription( $subscription );
+		$subscription = is_object( $subscription ) ? $subscription : wcs_get_subscription( $subscription );
 
 		// If we can't get a valid subscription, we can't update its cache.
 		if ( false === $subscription ) {
