@@ -218,7 +218,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	}
 
 	/**
-	 * Setts a subscription's related order cache for a given relationship.
+	 * Sets a subscription's related order cache for a given relationship.
 	 *
 	 * @param WC_Subscription|int $subscription      A subscription to update the linked order IDs for.
 	 * @param array               $related_order_ids Set of orders related to the given subscription.
