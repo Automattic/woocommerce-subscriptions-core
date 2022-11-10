@@ -229,6 +229,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 		}
 
 		$related_order_ids   = $this->get_related_order_ids( $subscription, $relation_type );
+		$related_order_ids   = array_map( 'absint', $related_order_ids );
 		$related_order_index = array_search( $order_id, $related_order_ids, true );
 
 		if ( false !== $related_order_index ) {

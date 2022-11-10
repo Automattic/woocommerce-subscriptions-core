@@ -91,12 +91,13 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 */
 	public function add_relation( WC_Order $order, WC_Order $subscription, $relation_type ) {
 		// We can't rely on $subscription->get_id() being available here, because we only require a WC_Order, not a WC_Subscription, and WC_Order does not have get_id() available with WC < 3.0
-		$subscription_id        = wcs_get_objects_property( $subscription, 'id' );
+		$subscription_id        = $subscription->get_id();
 		$related_order_meta_key = $this->get_meta_key( $relation_type );
 
 		// We want to allow more than one piece of meta per key on the order, but we don't want to duplicate the same meta key => value combination, so we need to check if it is set first
 		$existing_relations   = $order->get_meta( $related_order_meta_key, false );
 		$existing_related_ids = wp_list_pluck( $existing_relations, 'value' );
+		$existing_related_ids = array_map( 'absint', $existing_related_ids );
 
 		if ( empty( $existing_relations ) || ! in_array( $subscription_id, $existing_related_ids, true ) ) {
 			$order->add_meta_data( $related_order_meta_key, $subscription_id, false );
