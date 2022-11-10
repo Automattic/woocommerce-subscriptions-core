@@ -614,42 +614,4 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 
 		$wpdb->delete( self::get_meta_table_name(), [ 'meta_key' => $meta_key ], [ '%s' ] ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 	}
-
-	/**
-	 * Fetches meta data directly from the wp_wc_orders_meta table.
-	 *
-	 * @param int    $subscription_id The subscription ID.
-	 * @param string $meta_key        The meta key to fetch.
-	 * @param bool   $single          Whether to return a single value.
-	 *
-	 * @return mixed The meta value.
-	 */
-	public function get_metadata_by_key( $subscription_id, $meta_key, $single = true ) {
-		global $wpdb;
-		$table_name = self::get_meta_table_name();
-
-		if ( is_object( $subscription_id ) ) {
-			$subscription_id = $subscription_id->get_id();
-		}
-
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$results = $wpdb->get_col(
-			$wpdb->prepare(
-				"SELECT meta_value FROM {$table_name} WHERE order_id = %d AND meta_key = %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				absint( $subscription_id ),
-				$meta_key
-			)
-		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-
-		if ( empty( $results ) ) {
-			return false;
-		}
-
-		if ( $single ) {
-			return maybe_unserialize( $results[0] );
-		} else {
-			return array_map( 'maybe_unserialize', (array) $results );
-		}
-	}
 }
