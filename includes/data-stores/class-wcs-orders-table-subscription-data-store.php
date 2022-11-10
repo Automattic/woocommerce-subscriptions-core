@@ -611,14 +611,8 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 */
 	public function delete_all_metadata_by_key( $meta_key ) {
 		global $wpdb;
-		$table_name = self::get_meta_table_name();
 
-		$wpdb->query(
-			$wpdb->prepare(
-				"DELETE FROM {$table_name} WHERE meta_key = %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				$meta_key
-			)
-		);
+		$wpdb->delete( self::get_meta_table_name(), [ 'meta_key' => $meta_key ], [ '%s' ] ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 	}
 
 	/**
