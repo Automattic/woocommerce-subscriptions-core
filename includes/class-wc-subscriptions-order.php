@@ -449,85 +449,86 @@ class WC_Subscriptions_Order {
 	 */
 	public static function maybe_record_subscription_payment( $order_id, $old_order_status, $new_order_status ) {
 
-		if ( wcs_order_contains_subscription( $order_id, 'parent' ) ) {
+		if ( ! wcs_order_contains_subscription( $order_id, 'parent' ) ) {
+			return;
+		}
 
-			$subscriptions   = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'parent' ) );
-			$was_activated   = false;
-			$order           = wc_get_order( $order_id );
-			$order_completed = in_array( $new_order_status, array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id, $order ), 'processing', 'completed' ) ) && in_array( $old_order_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ), $order ) );
+		$subscriptions   = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'parent' ) );
+		$was_activated   = false;
+		$order           = wc_get_order( $order_id );
+		$order_completed = in_array( $new_order_status, array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id, $order ), 'processing', 'completed' ) ) && in_array( $old_order_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ), $order ) );
 
-			foreach ( $subscriptions as $subscription ) {
-				// A special case where payment completes after user cancels subscription
-				if ( $order_completed && $subscription->has_status( 'cancelled' ) ) {
+		foreach ( $subscriptions as $subscription ) {
+			// A special case where payment completes after user cancels subscription
+			if ( $order_completed && $subscription->has_status( 'cancelled' ) ) {
 
-					// Store the actual cancelled_date so as to restore it after it is rewritten by update_status()
-					$cancelled_date = $subscription->get_date( 'cancelled' );
+				// Store the actual cancelled_date so as to restore it after it is rewritten by update_status()
+				$cancelled_date = $subscription->get_date( 'cancelled' );
 
-					// Force set cancelled_date and end date to 0 temporarily so that next_payment_date can be calculated properly
-					// This next_payment_date will be the end of prepaid term that will be picked by action scheduler
-					$subscription->update_dates( array( 'cancelled' => 0, 'end' => 0 ) );
+				// Force set cancelled_date and end date to 0 temporarily so that next_payment_date can be calculated properly
+				// This next_payment_date will be the end of prepaid term that will be picked by action scheduler
+				$subscription->update_dates( array( 'cancelled' => 0, 'end' => 0 ) );
 
-					$next_payment_date = $subscription->calculate_date( 'next_payment' );
-					$subscription->update_dates( array( 'next_payment' => $next_payment_date ) );
+				$next_payment_date = $subscription->calculate_date( 'next_payment' );
+				$subscription->update_dates( array( 'next_payment' => $next_payment_date ) );
 
-					$subscription->update_status( 'pending-cancel', __( 'Payment completed on order after subscription was cancelled.', 'woocommerce-subscriptions' ) );
+				$subscription->update_status( 'pending-cancel', __( 'Payment completed on order after subscription was cancelled.', 'woocommerce-subscriptions' ) );
 
-					// Restore the actual cancelled date
-					$subscription->update_dates( array( 'cancelled' => $cancelled_date ) );
-				}
+				// Restore the actual cancelled date
+				$subscription->update_dates( array( 'cancelled' => $cancelled_date ) );
+			}
 
-				// Do we need to activate a subscription?
-				if ( $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( 'active' ) ) {
+			// Do we need to activate a subscription?
+			if ( $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( 'active' ) ) {
 
-					$new_start_date_offset = current_time( 'timestamp', true ) - $subscription->get_time( 'start' );
+				$new_start_date_offset = current_time( 'timestamp', true ) - $subscription->get_time( 'start' );
 
-					// if the payment has been processed more than an hour after the order was first created, let's update the dates on the subscription to account for that, because it may have even been processed days after it was first placed
-					if ( abs( $new_start_date_offset ) > HOUR_IN_SECONDS ) {
+				// if the payment has been processed more than an hour after the order was first created, let's update the dates on the subscription to account for that, because it may have even been processed days after it was first placed
+				if ( abs( $new_start_date_offset ) > HOUR_IN_SECONDS ) {
 
-						$dates = array( 'start' => current_time( 'mysql', true ) );
+					$dates = array( 'start' => current_time( 'mysql', true ) );
 
-						if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
+					if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
 
-							$trial_end    = $subscription->get_time( 'trial_end' );
-							$next_payment = $subscription->get_time( 'next_payment' );
+						$trial_end    = $subscription->get_time( 'trial_end' );
+						$next_payment = $subscription->get_time( 'next_payment' );
 
-							// if either there is a free trial date or a next payment date that falls before now, we need to recalculate all the sync'd dates
-							if ( ( $trial_end > 0 && $trial_end < wcs_date_to_time( $dates['start'] ) ) || ( $next_payment > 0 && $next_payment < wcs_date_to_time( $dates['start'] ) ) ) {
+						// if either there is a free trial date or a next payment date that falls before now, we need to recalculate all the sync'd dates
+						if ( ( $trial_end > 0 && $trial_end < wcs_date_to_time( $dates['start'] ) ) || ( $next_payment > 0 && $next_payment < wcs_date_to_time( $dates['start'] ) ) ) {
 
-								foreach ( $subscription->get_items() as $item ) {
-									$product_id = wcs_get_canonical_product_id( $item );
+							foreach ( $subscription->get_items() as $item ) {
+								$product_id = wcs_get_canonical_product_id( $item );
 
-									if ( WC_Subscriptions_Synchroniser::is_product_synced( $product_id ) ) {
-										$dates['trial_end']    = WC_Subscriptions_Product::get_trial_expiration_date( $product_id, $dates['start'] );
-										$dates['next_payment'] = WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product_id, 'mysql', $dates['start'] );
-										$dates['end']          = WC_Subscriptions_Product::get_expiration_date( $product_id, $dates['start'] );
-										break;
-									}
-								}
-							}
-						} else {
-							// No sync'ing to mess about with, just add the offset to the existing dates
-							foreach ( array( 'trial_end', 'next_payment', 'end' ) as $date_type ) {
-								if ( 0 != $subscription->get_time( $date_type ) ) {
-									$dates[ $date_type ] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( $date_type ) + $new_start_date_offset );
+								if ( WC_Subscriptions_Synchroniser::is_product_synced( $product_id ) ) {
+									$dates['trial_end']    = WC_Subscriptions_Product::get_trial_expiration_date( $product_id, $dates['start'] );
+									$dates['next_payment'] = WC_Subscriptions_Synchroniser::calculate_first_payment_date( $product_id, 'mysql', $dates['start'] );
+									$dates['end']          = WC_Subscriptions_Product::get_expiration_date( $product_id, $dates['start'] );
+									break;
 								}
 							}
 						}
-
-						$subscription->update_dates( $dates );
+					} else {
+						// No sync'ing to mess about with, just add the offset to the existing dates
+						foreach ( array( 'trial_end', 'next_payment', 'end' ) as $date_type ) {
+							if ( 0 != $subscription->get_time( $date_type ) ) {
+								$dates[ $date_type ] = gmdate( 'Y-m-d H:i:s', $subscription->get_time( $date_type ) + $new_start_date_offset );
+							}
+						}
 					}
 
-					$subscription->payment_complete_for_order( $order );
-					$was_activated = true;
-
-				} elseif ( 'failed' == $new_order_status ) {
-					$subscription->payment_failed();
+					$subscription->update_dates( $dates );
 				}
-			}
 
-			if ( $was_activated ) {
-				do_action( 'subscriptions_activated_for_order', $order_id );
+				$subscription->payment_complete_for_order( $order );
+				$was_activated = true;
+
+			} elseif ( 'failed' == $new_order_status ) {
+				$subscription->payment_failed();
 			}
+		}
+
+		if ( $was_activated ) {
+			do_action( 'subscriptions_activated_for_order', $order_id );
 		}
 	}
 
