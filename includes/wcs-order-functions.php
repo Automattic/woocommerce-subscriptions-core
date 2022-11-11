@@ -387,6 +387,18 @@ function wcs_get_orders_with_meta_query( $args ) {
 		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $handle_meta, 10, 2 );
 	}
 
+	/**
+	 * Map the 'any' status to wcs_get_subscription_statuses() in HPOS environments.
+	 *
+	 * In HPOS environments, the 'any' status now maps to wc_get_order_statuses() statuses. Whereas, in
+	 * WP Post architecture 'any' meant any status except for ‘inherit’, ‘trash’ and ‘auto-draft’.
+	 *
+	 * If querying for subscriptions, we map 'any' to be all valid subscription statuses.
+	 */
+	if ( [ 'any' ] === $args['status'] && 'shop_subscription' === $args['type'] && wcs_is_custom_order_tables_usage_enabled() ) {
+		$args['status'] = array_keys( wcs_get_subscription_statuses() );
+	}
+
 	$results = wc_get_orders( $args );
 
 	if ( $use_meta_query_filter ) {
