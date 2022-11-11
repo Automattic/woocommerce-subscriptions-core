@@ -11,16 +11,6 @@
 class WC_Subscriptions_Order {
 
 	/**
-	 * Store a record of which product/item IDs need to have subscriptions details updated
-	 * whenever a subscription is saved via the "Edit Order" page.
-	 */
-	private static $requires_update = array(
-		'next_billing_date' => array(),
-		'trial_expiration'  => array(),
-		'expiration_date'   => array(),
-	);
-
-	/**
 	 * A flag to indicate whether subscription price strings should include the subscription length
 	 */
 	public static $recurring_only_price_strings = false;
