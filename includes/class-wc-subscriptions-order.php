@@ -7,7 +7,6 @@
  * @package    WooCommerce Subscriptions
  * @subpackage WC_Subscriptions_Order
  * @category   Class
- * @author     Brent Shepherd
  */
 class WC_Subscriptions_Order {
 
@@ -446,16 +445,17 @@ class WC_Subscriptions_Order {
 	/**
 	 * Records the initial payment against a subscription.
 	 *
-	 * This function is called when an orders status is changed to completed or processing
+	 * This function is called when an order's status is changed to completed or processing
 	 * for those gateways which never call @see WC_Order::payment_complete(), like the core
 	 * WooCommerce Cheque and Bank Transfer gateways.
 	 *
 	 * It will also set the start date on the subscription to the time the payment is completed.
 	 *
-	 * @param $order_id int|WC_Order
-	 * @param $old_order_status
-	 * @param $new_order_status
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
+	 *
+	 * @param int|WC_Order $order_id         The order ID or WC_Order object.
+	 * @param string       $old_order_status The old order status.
+	 * @param string       $new_order_status The new order status.
 	 */
 	public static function maybe_record_subscription_payment( $order_id, $old_order_status, $new_order_status ) {
 
