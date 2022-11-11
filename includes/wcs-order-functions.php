@@ -59,10 +59,11 @@ function wcs_get_subscriptions_for_order( $order, $args = array() ) {
 	if ( $get_all || in_array( 'parent', $args['order_type'] ) ) {
 
 		$get_subscriptions_args = array_merge( $args, array(
-			'order_id' => wcs_get_objects_property( $order, 'id' ),
+			'order_id' => $order->get_id(),
 		) );
 
 		$subscriptions = wcs_get_subscriptions( $get_subscriptions_args );
+
 	}
 
 	$all_relation_types = WCS_Related_Order_Store::instance()->get_relation_types();
@@ -338,7 +339,7 @@ function wcs_order_contains_subscription( $order, $order_type = array( 'parent',
 	$contains_subscription = false;
 	$get_all               = in_array( 'any', $order_type );
 
-	if ( ( in_array( 'parent', $order_type ) || $get_all ) && count( wcs_get_subscriptions_for_order( wcs_get_objects_property( $order, 'id' ), array( 'order_type' => 'parent' ) ) ) > 0 ) {
+	if ( ( in_array( 'parent', $order_type ) || $get_all ) && count( wcs_get_subscriptions_for_order( $order->get_id(), array( 'order_type' => 'parent' ) ) ) > 0 ) {
 		$contains_subscription = true;
 
 	} elseif ( ( in_array( 'renewal', $order_type ) || $get_all ) && wcs_order_contains_renewal( $order ) ) {
