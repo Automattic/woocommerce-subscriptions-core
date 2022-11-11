@@ -401,23 +401,37 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 		$props_to_set = [];
 		$dates_to_set = [];
 
+		// Pull the latest subscription meta data from the database to set on the subscription object.
+		$subscription_meta = array_column( $this->data_store_meta->read_meta( $subscription ), null, 'meta_key' );
+
 		foreach ( $this->subscription_meta_keys_to_props as $meta_key => $prop_key ) {
-			if ( 0 === strpos( $prop_key, 'schedule' ) || in_array( $meta_key, $this->subscription_internal_meta_keys, true ) ) {
+			$is_scheduled_date = 0 === strpos( $prop_key, 'schedule' );
+			$is_internal_meta  = in_array( $meta_key, $this->internal_meta_keys, true );
 
-				$meta_value = $subscription->get_meta( $meta_key, true );
+			// We only need to set props that are internal meta keys or dates. Everything else is treated as meta.
+			if ( ! $is_scheduled_date && ! $is_internal_meta ) {
+				continue;
+			}
 
-				// Dates are set via update_dates() to make sure relationships between dates are validated
-				if ( 0 === strpos( $prop_key, 'schedule' ) ) {
-					$date_type = str_replace( 'schedule_', '', $prop_key );
+			$existing_meta_data = $subscription_meta[ $meta_key ] ?? false;
 
-					if ( 'start' === $date_type && ! $meta_value ) {
-						$meta_value = $subscription->get_date( 'date_created' );
-					}
+			// If we're setting the start date and it's missing, we set it to the created date.
+			if ( 'schedule_start' === $prop_key && ! $existing_meta_data ) {
+				$existing_meta_data = (object) [
+					'meta_key'   => $meta_key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+					'meta_value' => $subscription->get_date( 'date_created' ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				];
+			}
 
-					$dates_to_set[ $date_type ] = ( false === $meta_value ) ? 0 : $meta_value;
-				} else {
-					$props_to_set[ $prop_key ] = $meta_value;
-				}
+			// If there's no meta data, we don't need to set anything.
+			if ( ! $existing_meta_data ) {
+				continue;
+			}
+
+			if ( $is_scheduled_date ) {
+				$dates_to_set[ $prop_key ] = $existing_meta_data->meta_value;
+			} else {
+				$props_to_set[ $prop_key ] = maybe_unserialize( $existing_meta_data->meta_value );
 			}
 		}
 
