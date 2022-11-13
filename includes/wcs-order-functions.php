@@ -337,18 +337,18 @@ function wcs_order_contains_subscription( $order, $order_type = array( 'parent',
 	}
 
 	$contains_subscription = false;
-	$get_all               = in_array( 'any', $order_type );
+	$get_all               = in_array( 'any', $order_type, true );
 
-	if ( ( in_array( 'parent', $order_type ) || $get_all ) && count( wcs_get_subscriptions_for_order( $order->get_id(), array( 'order_type' => 'parent' ) ) ) > 0 ) {
+	if ( ( in_array( 'parent', $order_type, true ) || $get_all ) && count( wcs_get_subscriptions_for_order( $order->get_id(), array( 'order_type' => 'parent' ) ) ) > 0 ) {
 		$contains_subscription = true;
 
-	} elseif ( ( in_array( 'renewal', $order_type ) || $get_all ) && wcs_order_contains_renewal( $order ) ) {
+	} elseif ( ( in_array( 'renewal', $order_type, true ) || $get_all ) && wcs_order_contains_renewal( $order ) ) {
 		$contains_subscription = true;
 
-	} elseif ( ( in_array( 'resubscribe', $order_type ) || $get_all ) && wcs_order_contains_resubscribe( $order ) ) {
+	} elseif ( ( in_array( 'resubscribe', $order_type, true ) || $get_all ) && wcs_order_contains_resubscribe( $order ) ) {
 		$contains_subscription = true;
 
-	} elseif ( ( in_array( 'switch', $order_type ) || $get_all ) && wcs_order_contains_switch( $order ) ) {
+	} elseif ( ( in_array( 'switch', $order_type, true ) || $get_all ) && wcs_order_contains_switch( $order ) ) {
 		$contains_subscription = true;
 
 	}
