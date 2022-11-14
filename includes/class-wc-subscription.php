@@ -634,22 +634,26 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Overrides the WC Order get_status function for draft and auto-draft statuses for a subscription
-	 * so that it will return a pending status instead of draft / auto-draft.
+	 * Sets the subscription status.
 	 *
-	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
-	 * @return string Status
+	 * Overrides the WC Order set_status() function to handle 'draft' and 'auto-draft' statuses for a subscription.
+	 *
+	 * 'draft' and 'auto-draft' statuses are WP statuses applied to the post when a subscription is created via admin. When
+	 * a subscription is being read from the database, and the status is set to the post's 'draft' or 'auto-draft' status, the
+	 * subscription status is treated as the default status - 'pending'.
+	 *
+	 * @since subscriptions-core 5.1.0
+	 *
+	 * @param string $new_status The new status.
+	 * @param string $note       Optional. The note to add to the subscription.
+	 * @param bool   $manual     Optional. Is the status change triggered manually? Default is false.
 	 */
-	public function get_status( $context = 'view' ) {
-
-		if ( in_array( $this->get_prop( 'status', $context ), array( 'draft', 'auto-draft' ), true ) ) {
-			$this->post_status = 'wc-pending';
-			$status = apply_filters( 'woocommerce_order_get_status', 'pending', $this );
-		} else {
-			$status = parent::get_status();
+	public function set_status( $new_status, $note = '', $manual_update = false ) {
+		if ( ! $this->object_read && in_array( $new_status, [ 'draft', 'auto-draft' ], true ) ) {
+			$new_status = apply_filters( 'woocommerce_default_order_status', 'pending' );
 		}
 
-		return $status;
+		parent::set_status( $new_status, $note, $manual_update );
 	}
 
 	/**
