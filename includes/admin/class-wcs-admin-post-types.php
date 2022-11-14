@@ -792,6 +792,7 @@ class WCS_Admin_Post_Types {
 					WCS_Customer_Store::instance()->get_users_subscription_ids( $customer_id ),
 					$customer_id
 				);
+
 				$vars = self::set_post__in_query_var( $vars, $subscription_ids );
 			}
 
@@ -803,6 +804,7 @@ class WCS_Admin_Post_Types {
 					array_keys( $subscription_ids ),
 					$product_id
 				);
+
 				$vars = self::set_post__in_query_var( $vars, $subscription_ids );
 			}
 
@@ -830,11 +832,11 @@ class WCS_Admin_Post_Types {
 				}
 
 				$query_vars = array(
-					'post_type'      => 'shop_subscription',
-					'posts_per_page' => -1,
-					'post_status'    => 'any',
-					'fields'         => 'ids',
-					'meta_query'     => $meta_query,
+					'type'       => 'shop_subscription',
+					'limit'      => -1,
+					'status'     => 'any',
+					'return'     => 'ids',
+					'meta_query' => $meta_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 				);
 
 				// If there are already set post restrictions (post__in) apply them to this query
@@ -842,7 +844,7 @@ class WCS_Admin_Post_Types {
 					$query_vars['post__in'] = $vars['post__in'];
 				}
 
-				$subscription_ids = get_posts( $query_vars );
+				$subscription_ids = wcs_get_orders_with_meta_query( $query_vars );
 
 				if ( ! empty( $subscription_ids ) ) {
 					$vars['post__in'] = $subscription_ids;

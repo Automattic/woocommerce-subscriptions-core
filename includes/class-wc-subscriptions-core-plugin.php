@@ -13,11 +13,10 @@ require_once dirname( __FILE__ ) . '/class-wcs-core-autoloader.php';
 class WC_Subscriptions_Core_Plugin {
 
 	/**
-	 * The plugin version core is based off.
-	 *
+	 * The version of subscriptions-core library.
 	 * @var string
 	 */
-	protected $plugin_version = '3.1.6';
+	protected $library_version = '5.0.0'; // WRCS: DEFINED_VERSION.
 
 	/**
 	 * The subscription scheduler instance.
@@ -259,10 +258,20 @@ class WC_Subscriptions_Core_Plugin {
 	/**
 	 * Gets the plugin's version
 	 *
+	 * @deprecated 5.0.0 This function is no longer recommended for version detection. Use get_library_version() instead.
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v4.0.0
 	 */
 	public function get_plugin_version() {
-		return $this->plugin_version;
+		return $this->library_version;
+	}
+
+	/**
+	 * Gets the subscription-core library version.
+	 *
+	 * @since 5.0.0
+	 */
+	public function get_library_version() {
+		return $this->library_version;
 	}
 
 	/**

@@ -90,4 +90,56 @@ class WCS_Order_Functions_Test extends WP_UnitTestCase {
 		$this->assertEquals( array(), wcs_get_subscriptions_for_order( wcs_get_objects_property( $renewal, 'id' ), array( 'order_type' => array( 'switch' ) ) ) );
 		$this->assertEquals( array(), wcs_get_subscriptions_for_order( wcs_get_objects_property( $renewal, 'id' ), array( 'order_type' => array( 'parent', 'switch' ) ) ) );
 	}
+
+	/**
+	 * Tests for wcs_get_subscription_orders()
+	 */
+	public function test_wcs_get_subscription_orders() {
+		$subscription   = WCS_Helper_Subscription::create_subscription();
+		$subscription_2 = WCS_Helper_Subscription::create_subscription();
+
+		// Create some orders related to the subscription and not.
+		$parent_order  = WCS_Helper_Subscription::create_parent_order( $subscription );
+		$renewal_order = WCS_Helper_Subscription::create_renewal_order( $subscription );
+		$switch_order  = WCS_Helper_Subscription::create_switch_order( $subscription );
+
+		$parent_order_2  = WCS_Helper_Subscription::create_parent_order( $subscription_2 );
+		$renewal_order_2 = WCS_Helper_Subscription::create_renewal_order( $subscription_2 );
+		$renewal_order_3 = WCS_Helper_Subscription::create_renewal_order( $subscription_2 );
+
+		// This order should never be returned.
+		$order = wc_create_order(); // no subscription relation (just a standard order) to test the negative case.
+
+		$parent_orders = wcs_get_subscription_orders( 'ids', 'parent' );
+
+		$this->assertEquals( 2, count( $parent_orders ) );
+		$this->assertArrayHasKey( $parent_order->get_id(), $parent_orders );
+		$this->assertArrayHasKey( $parent_order_2->get_id(), $parent_orders );
+		$this->assertArrayNotHasKey( $order->get_id(), $parent_orders );
+
+		$renewal_orders = wcs_get_subscription_orders( 'ids', 'renewal' );
+
+		$this->assertEquals( 3, count( $renewal_orders ) );
+		$this->assertArrayHasKey( $renewal_order->get_id(), $renewal_orders );
+		$this->assertArrayHasKey( $renewal_order_2->get_id(), $renewal_orders );
+		$this->assertArrayHasKey( $renewal_order_3->get_id(), $renewal_orders );
+		$this->assertArrayNotHasKey( $order->get_id(), $renewal_orders );
+
+		$switch_orders = wcs_get_subscription_orders( 'ids', 'switch' );
+
+		$this->assertEquals( 1, count( $switch_orders ) );
+		$this->assertArrayHasKey( $switch_order->get_id(), $switch_orders );
+		$this->assertArrayNotHasKey( $order->get_id(), $switch_orders );
+
+		$all_orders = wcs_get_subscription_orders( 'ids', 'any' );
+
+		$this->assertEquals( 6, count( $all_orders ) );
+		$this->assertArrayHasKey( $parent_order->get_id(), $all_orders );
+		$this->assertArrayHasKey( $parent_order_2->get_id(), $all_orders );
+		$this->assertArrayHasKey( $renewal_order->get_id(), $all_orders );
+		$this->assertArrayHasKey( $renewal_order_2->get_id(), $all_orders );
+		$this->assertArrayHasKey( $renewal_order_3->get_id(), $all_orders );
+		$this->assertArrayHasKey( $switch_order->get_id(), $all_orders );
+		$this->assertArrayNotHasKey( $order->get_id(), $all_orders );
+	}
 }

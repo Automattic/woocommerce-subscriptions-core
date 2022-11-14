@@ -627,7 +627,7 @@ class WCS_PayPal {
 	}
 
 	public function get_version() {
-		return WC_Subscriptions_Core_Plugin::instance()->get_plugin_version();
+		return WC_Subscriptions_Core_Plugin::instance()->get_library_version();
 	}
 
 	public function get_id() {
@@ -707,19 +707,21 @@ class WCS_PayPal {
 	public static function get_subscriptions_by_paypal_id( $paypal_id, $return = 'ids' ) {
 
 		if ( ! isset( self::$subscriptions_by_paypal_id[ $paypal_id ] ) ) {
-			$subscription_ids = get_posts( array(
-				'posts_per_page' => -1,
-				'post_type'      => 'shop_subscription',
-				'post_status'    => 'any',
-				'fields'         => 'ids',
-				'meta_query'     => array(
-					array(
-						'key'     => '_paypal_subscription_id',
-						'compare' => '=',
-						'value'   => $paypal_id,
-					),
-				),
-			) );
+			$subscription_ids = wcs_get_orders_with_meta_query(
+				[
+					'limit'      => -1,
+					'type'       => 'shop_subscription',
+					'status'     => 'any',
+					'return'     => 'ids',
+					'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+						[
+							'key'     => '_paypal_subscription_id',
+							'compare' => '=',
+							'value'   => $paypal_id,
+						],
+					],
+				]
+			);
 
 			self::$subscriptions_by_paypal_id[ $paypal_id ] = array_combine( $subscription_ids, $subscription_ids );
 		}

@@ -356,6 +356,46 @@ function wcs_order_contains_subscription( $order, $order_type = array( 'parent',
 }
 
 /**
+ * Fetches Orders and Subscriptions using wc_get_orders() with a built-in handler for the meta_query arg.
+ *
+ * This function is a replacement for the get_posts() function to help aid with transitioning over to using wc_get_orders.
+ * Args and usage: https://github.com/woocommerce/woocommerce/wiki/wc_get_orders-and-WC_Order_Query
+ *
+ * @since 5.0.0
+ *
+ * @param array $args Accepts the same arguments as wc_get_orders().
+ * @return array An array of WC_Order or WC_Subscription objects or IDs based on the args.
+ */
+function wcs_get_orders_with_meta_query( $args ) {
+	$use_meta_query_filter = wcs_is_custom_order_tables_usage_enabled() ? false : true;
+
+	if ( $use_meta_query_filter ) {
+		$meta = $args['meta_query'] ?? [];
+		unset( $args['meta_query'] );
+
+		$handle_meta = function ( $query, $query_vars ) use ( $meta ) {
+			if ( [] === $meta ) {
+				return $query;
+			}
+
+			$query['meta_query'] = $meta; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+
+			return $query;
+		};
+
+		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $handle_meta, 10, 2 );
+	}
+
+	$results = wc_get_orders( $args );
+
+	if ( $use_meta_query_filter ) {
+		remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $handle_meta, 10 );
+	}
+
+	return $results;
+}
+
+/**
  * Get all the orders that relate to a subscription in some form (rather than only the orders associated with
  * a specific subscription).
  *
@@ -415,19 +455,24 @@ function wcs_get_subscription_orders( $return_fields = 'ids', $order_type = 'par
 		}
 
 		if ( count( $meta_query ) > 1 ) {
-			$order_ids = array_merge( $order_ids, get_posts( array(
-				'posts_per_page' => -1,
-				'post_type'      => 'shop_order',
-				'post_status'    => 'any',
-				'fields'         => 'ids',
-				'orderby'        => 'ID',
-				'order'          => 'DESC',
-				'meta_query'     => $meta_query,
-			) ) );
+			$order_ids = array_merge(
+				$order_ids,
+				wcs_get_orders_with_meta_query(
+					[
+						'limit'      => -1,
+						'type'       => 'shop_order',
+						'status'     => 'any',
+						'return'     => 'ids',
+						'orderby'    => 'ID',
+						'order'      => 'DESC',
+						'meta_query' => $meta_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					]
+				)
+			);
 		}
 	}
 
-	if ( 'all' == $return_fields ) {
+	if ( 'all' === $return_fields ) {
 		foreach ( $order_ids as $order_id ) {
 			$orders[ $order_id ] = wc_get_order( $order_id );
 		}

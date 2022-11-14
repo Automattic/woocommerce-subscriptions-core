@@ -468,17 +468,10 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 * @return DateTime[] The date properties which were saved to the database in array format: [ $prop_name => DateTime Object ]
 	 */
 	public function save_dates( $subscription ) {
-		global $wpdb;
-
-		$saved_dates    = [];
+		$dates_to_save  = [];
 		$changes        = $subscription->get_changes();
 		$date_meta_keys = [
-			'_schedule_trial_end',
-			'_schedule_next_payment',
-			'_schedule_cancelled',
-			'_schedule_end',
-			'_schedule_payment_retry',
-			'_schedule_start',
+			'_schedule_payment_retry' => 'schedule_payment_retry', // This is the only date potentially missing from wcs_get_subscription_date_types().
 		];
 
 		// Add any custom date types to the date meta keys we need to save.
@@ -487,46 +480,63 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 				continue;
 			}
 
-			$date_meta_key = wcs_get_date_meta_key( $date_type );
-
-			if ( ! in_array( $date_meta_key, $date_meta_keys, true ) ) {
-				$date_meta_keys[] = $date_meta_key;
-			}
+			$date_meta_keys[ wcs_get_date_meta_key( $date_type ) ] = wcs_maybe_prefix_key( $date_type, 'schedule_' );
 		}
 
-		$date_meta_keys_to_props = array_intersect_key( $this->subscription_meta_keys_to_props, array_flip( $date_meta_keys ) );
-		$subscription_meta_data  = array_column( $this->data_store_meta->read_meta( $subscription ), null, 'meta_key' );
+		$date_meta_keys_to_props = array_intersect_key( $this->subscription_meta_keys_to_props, $date_meta_keys );
 
-		// Save the changes to scheduled dates
-		foreach ( $this->get_props_to_update( $subscription, $date_meta_keys_to_props ) as $meta_key => $prop ) {
-			$existing_meta_data = $subscription_meta_data[ $meta_key ] ?? false;
-			$new_meta_data      = [
-				'key'   => $meta_key,
-				'value' => $subscription->get_date( $prop ),
-			];
-
-			if ( ! empty( $existing_meta_data ) ) {
-				$new_meta_data['id'] = $existing_meta_data->meta_id;
-				$this->data_store_meta->update_meta( $subscription, (object) $new_meta_data );
-			} else {
-				$this->data_store_meta->add_meta( $subscription, (object) $new_meta_data );
-			}
-
-			$saved_dates[ $prop ] = wcs_get_datetime_from( $subscription->get_time( $prop ) );
+		// Save the changes to scheduled dates.
+		foreach ( $this->get_props_to_update( $subscription, $date_meta_keys_to_props ) as $prop ) {
+			$dates_to_save[] = $prop;
 		}
-
-		$order_update_query = [];
 
 		// Record any changes to the created date.
 		if ( isset( $changes['date_created'] ) ) {
-			$order_update_query[]        = $wpdb->prepare( '`date_created_gmt` = %s', gmdate( 'Y-m-d H:i:s', $subscription->get_date_created( 'edit' )->getTimestamp() ) );
-			$saved_dates['date_created'] = $subscription->get_date_created();
+			$dates_to_save[] = 'date_created';
 		}
 
 		// Record any changes to the modified date.
 		if ( isset( $changes['date_modified'] ) ) {
-			$order_update_query[]         = $wpdb->prepare( '`date_updated_gmt` = %s', gmdate( 'Y-m-d H:i:s', $subscription->get_date_modified( 'edit' )->getTimestamp() ) );
-			$saved_dates['date_modified'] = $subscription->get_date_modified();
+			$dates_to_save[] = 'date_modified';
+		}
+
+		// Backfill the saved dates if syncing is enabled.
+		$data_synchronizer = wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer::class );
+		if ( $data_synchronizer && $data_synchronizer->data_sync_is_enabled() ) {
+			$this->get_post_data_store_for_backfill()->write_dates_to_database( $subscription, $dates_to_save );
+		}
+
+		return $this->write_dates_to_database( $subscription, $dates_to_save );
+	}
+
+	/**
+	 * Writes subscription dates to the database.
+	 *
+	 * @param WC_Subscription $subscription  The subscription to write date changes for.
+	 * @param array           $dates_to_save The dates to write to the database.
+	 *
+	 * @return WC_DateTime[] The date properties saved to the database in the format: array( $prop_name => WC_DateTime Object ).
+	 */
+	public function write_dates_to_database( $subscription, $dates_to_save ) {
+		global $wpdb;
+		$dates_to_save      = array_flip( $dates_to_save );
+		$dates_saved        = [];
+		$order_update_query = [];
+
+		if ( isset( $dates_to_save['date_created'] ) ) {
+			$order_update_query[] = $wpdb->prepare( '`date_created_gmt` = %s', gmdate( 'Y-m-d H:i:s', $subscription->get_date_created( 'edit' )->getTimestamp() ) );
+
+			// Mark the created date as saved.
+			unset( $dates_to_save['date_created'] );
+			$dates_saved['date_created'] = $subscription->get_date_created();
+		}
+
+		if ( isset( $dates_to_save['date_modified'] ) ) {
+			$order_update_query[] = $wpdb->prepare( '`date_updated_gmt` = %s', gmdate( 'Y-m-d H:i:s', $subscription->get_date_modified( 'edit' )->getTimestamp() ) );
+
+			// Mark the modified date as saved.
+			unset( $dates_to_save['date_modified'] );
+			$dates_saved['date_modified'] = $subscription->get_date_modified();
 		}
 
 		// Manually update the order's created and/or modified date if it has changed.
@@ -536,13 +546,35 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 
 			$wpdb->query(
 				$wpdb->prepare(
-					"UPDATE {$table_name} SET {$set} WHERE order_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					"UPDATE {$table_name} SET {$set} WHERE id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 					$subscription->get_id()
 				)
 			);
 		}
 
-		return $saved_dates;
+		$subscription_meta_data = array_column( $this->data_store_meta->read_meta( $subscription ), null, 'meta_key' );
+
+		// Write the remaining dates to meta.
+		foreach ( $dates_to_save as $date_prop => $index ) {
+			$date_type          = wcs_normalise_date_type_key( $date_prop );
+			$meta_key           = wcs_get_date_meta_key( $date_type );
+			$existing_meta_data = $subscription_meta_data[ $meta_key ] ?? false;
+			$new_meta_data      = [
+				'key'   => $meta_key,
+				'value' => $subscription->get_date( $date_type ),
+			];
+
+			if ( ! empty( $existing_meta_data ) ) {
+				$new_meta_data['id'] = $existing_meta_data->meta_id;
+				$this->data_store_meta->update_meta( $subscription, (object) $new_meta_data );
+			} else {
+				$this->data_store_meta->add_meta( $subscription, (object) $new_meta_data );
+			}
+
+			$dates_saved[ $date_prop ] = wcs_get_datetime_from( $subscription->get_time( $date_type ) );
+		}
+
+		return $dates_saved;
 	}
 
 	/**

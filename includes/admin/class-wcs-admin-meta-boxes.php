@@ -113,7 +113,7 @@ class WCS_Admin_Meta_Boxes {
 	 */
 	public function enqueue_styles_scripts() {
 		global $post;
-		$ver = WC_Subscriptions_Core_Plugin::instance()->get_plugin_version();
+		$ver = WC_Subscriptions_Core_Plugin::instance()->get_library_version();
 
 		// Get admin screen id
 		$screen    = get_current_screen();
