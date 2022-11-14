@@ -395,7 +395,11 @@ function wcs_get_orders_with_meta_query( $args ) {
 	 *
 	 * If we're querying for subscriptions, we need to map 'any' to be all valid subscription statuses otherwise it would just search for order statuses.
 	 */
-	if ( [ 'any' ] === $args['status'] && 'shop_subscription' === $args['type'] && wcs_is_custom_order_tables_usage_enabled() ) {
+	if ( isset( $args['status'], $args['type'] ) &&
+		[ 'any' ] === $args['status'] &&
+		'shop_subscription' === $args['type'] &&
+		wcs_is_custom_order_tables_usage_enabled()
+	) {
 		$args['status'] = array_keys( wcs_get_subscription_statuses() );
 	}
 
