@@ -393,7 +393,11 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Sets subscription props.
+	 * Sets subscription core properties.
+	 *
+	 * This function is called when the subscription is being read from the database and ensures that
+	 * core subscription properties ($this->subscription_meta_keys_to_props) are loaded directly from the
+	 * database and set on the subscription via the equivalent setter.
 	 *
 	 * @param \WC_Order $subscription Subscription object.
 	 */
@@ -442,7 +446,11 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	/**
 	 * Updates meta data based on a subscription object.
 	 *
-	 * / Called on create only. See persist_updates() for updates.
+	 * This function in HPOS datastores is ONLY called during the `create` flow via `persist_save().
+	 * The purpose of this function is to set core subscription properties ($subscription_meta_keys_to_props) as meta via
+	 * `update_meta_data()` so that the rest of the `create` flow, handled by WC core, will save them to the database.
+	 *
+	 * @see $this->persist_updates() for the equivalent function for saving these properties to the database during subscription update.
 	 *
 	 * @param \WC_Subscription $subscription Subscription object.
 	 */
@@ -473,7 +481,14 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Undocumented function
+	 * Saves core subscription property updates to the database.
+	 *
+	 * This function in HPOS datastores is ONLY called during the `update` flow via `parent::update()`.
+	 * The purpose of this function is to save core subscription properties ($subscription_meta_keys_to_props) to the database.
+	 *
+	 * This function uses $this->data_store_meta->update_meta() and $this->data_store_meta->add_meta() to save the data directly in the database.
+	 *
+	 * @see $this->update_order_meta() for the equivalent function for saving these properties as meta during subscription creation.
 	 *
 	 * @param WC_Subscription $subscription The subscription object to save updates for.
 	 * @param bool            $backfill     Whether to backfill the subscription's meta data.
