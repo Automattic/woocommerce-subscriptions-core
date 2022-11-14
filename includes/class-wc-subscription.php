@@ -642,7 +642,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_status( $context = 'view' ) {
 
-		if ( in_array( get_post_status( $this->get_id() ), array( 'draft', 'auto-draft' ) ) ) {
+		if ( in_array( $this->get_prop( 'status', $context ), array( 'draft', 'auto-draft' ), true ) ) {
 			$this->post_status = 'wc-pending';
 			$status = apply_filters( 'woocommerce_order_get_status', 'pending', $this );
 		} else {
