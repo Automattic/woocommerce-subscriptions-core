@@ -16,7 +16,7 @@ class WC_Subscriptions_Core_Plugin {
 	 * The version of subscriptions-core library.
 	 * @var string
 	 */
-	protected $library_version = '3.1.6'; // WRCS: DEFINED_VERSION.
+	protected $library_version = '5.0.0'; // WRCS: DEFINED_VERSION.
 
 	/**
 	 * The subscription scheduler instance.
@@ -268,7 +268,7 @@ class WC_Subscriptions_Core_Plugin {
 	/**
 	 * Gets the subscription-core library version.
 	 *
-	 * @since x.x.x
+	 * @since 5.0.0
 	 */
 	public function get_library_version() {
 		return $this->library_version;
