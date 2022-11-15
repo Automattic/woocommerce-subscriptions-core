@@ -257,7 +257,8 @@ class WC_Subscriptions_Checkout {
 			return new WP_Error( 'checkout-error', $e->getMessage() );
 		}
 
-		return $subscription;
+		// After saving the subscription, we need to fetch the subscription from the database as the current object state doesn't match the loaded state.
+		return wcs_get_subscription( $subscription );
 	}
 
 
