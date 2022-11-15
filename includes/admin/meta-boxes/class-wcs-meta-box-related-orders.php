@@ -113,7 +113,33 @@ class WCS_Meta_Box_Related_Orders {
 			}
 		}
 
-		$orders_to_display = apply_filters( 'woocommerce_subscriptions_admin_related_orders_to_display', $orders_to_display, $subscriptions, $order );
+		if ( has_filter( 'woocommerce_subscriptions_admin_related_orders_to_display' ) ) {
+			wcs_deprecated_hook( 'woocommerce_subscriptions_admin_related_orders_to_display', 'subscriptions-core 5.0.0', 'wcs_admin_subscription_related_orders_to_display' );
+
+			/**
+			 * Filters the orders to display in the Related Orders meta box.
+			 *
+			 * This filter is deprecated in favour of 'wcs_admin_subscription_related_orders_to_display'.
+			 *
+			 * @deprecated subscriptions-core 5.0.0
+			 *
+			 * @param array   $orders_to_display An array of orders to display in the Related Orders meta box.
+			 * @param array   $subscriptions An array of subscriptions related to the order.
+			 * @param WP_Post $post The order post object.
+			 */
+			$orders_to_display = apply_filters( 'woocommerce_subscriptions_admin_related_orders_to_display', $orders_to_display, $subscriptions, get_post( $order->get_id() ) );
+		}
+
+		/**
+		 * Filters the orders to display in the Related Orders meta box.
+		 *
+		 * @since subscriptions-core 5.0.0
+		 *
+		 * @param array    $orders_to_display An array of orders to display in the Related Orders meta box.
+		 * @param array    $subscriptions An array of subscriptions related to the order.
+		 * @param WC_Order $order The order object.
+		 */
+		$orders_to_display = apply_filters( 'wcs_admin_subscription_related_orders_to_display', $orders_to_display, $subscriptions, $order );
 
 		wcs_sort_objects( $orders_to_display, 'date_created', 'descending' );
 
