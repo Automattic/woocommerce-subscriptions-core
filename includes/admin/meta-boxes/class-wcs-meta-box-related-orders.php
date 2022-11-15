@@ -49,15 +49,14 @@ class WCS_Meta_Box_Related_Orders {
 
 		// If this is a subscriptions screen,
 		if ( $is_subscription ) {
-			$subscription      = wcs_get_subscription( $order );
-			$this_subscription = wcs_get_subscription( $order->get_id() );
-			$subscriptions[]   = $this_subscription;
+			$subscription    = wcs_get_subscription( $order );
+			$subscriptions[] = $subscription;
 
 			$order = ( false === $subscription->get_parent_id() ) ? $subscription : $subscription->get_parent();
 
 			// Resubscribed subscriptions and orders.
-			$initial_subscriptions         = wcs_get_subscriptions_for_resubscribe_order( $this_subscription );
-			$orders_by_type['resubscribe'] = WCS_Related_Order_Store::instance()->get_related_order_ids( $this_subscription, 'resubscribe' );
+			$initial_subscriptions         = wcs_get_subscriptions_for_resubscribe_order( $subscription );
+			$orders_by_type['resubscribe'] = WCS_Related_Order_Store::instance()->get_related_order_ids( $subscription, 'resubscribe' );
 		} else {
 			$subscriptions         = wcs_get_subscriptions_for_order( $order, array( 'order_type' => array( 'parent', 'renewal' ) ) );
 			$initial_subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => array( 'resubscribe' ) ) );
