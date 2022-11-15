@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 2.5.2 - 2022-xx-xx =
+= 2.5.2 - 2022-11-15 =
 * Fix - When creating a subscription via the checkout, make sure a new instance of the subscription is attached to the `woocommerce_checkout_subscription_created` action hook.
 
 = 2.5.1 - 2022-11-04 =
