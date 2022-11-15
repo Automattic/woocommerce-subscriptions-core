@@ -105,6 +105,7 @@ class WC_Subscriptions_Cart {
 		// When WooCommerce determines the taxable address only return pick up shipping methods chosen for the recurring cart being calculated.
 		add_filter( 'woocommerce_local_pickup_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 100, 1 );
 		add_filter( 'wc_shipping_local_pickup_plus_chosen_shipping_methods', __CLASS__ . '::filter_recurring_cart_chosen_shipping_method', 10, 1 );
+		add_action( 'woocommerce_store_api_cart_select_shipping_rate', __CLASS__ . '::set_recurring_cart_chosen_shipping_method', 10, 2 );
 
 		// Validate chosen recurring shipping methods
 		add_action( 'woocommerce_after_checkout_validation', __CLASS__ . '::validate_recurring_shipping_methods' );
@@ -1125,6 +1126,30 @@ class WC_Subscriptions_Cart {
 		}
 
 		return $shipping_methods;
+	}
+
+	/**
+	 * Updates all packages in the recurring cart to use a given shipping method if requested via Store API.
+	 * 
+	 * @see woocommerce_store_api_cart_select_shipping_rate
+	 *
+	 * @param string|null $package_id The sanitized ID of the package being updated. Null if all packages are being updated.
+	 * @param string $rate_id The sanitized chosen rate ID for the package.
+	 */
+	public static function set_recurring_cart_chosen_shipping_method( $package_id, $rate_id ) {
+		if ( ! is_null( $package_id ) ) {
+			return;
+		}
+		$chosen_shipping_methods = wc()->session->get( 'chosen_shipping_methods' ) ? wc()->session->get( 'chosen_shipping_methods' ) : [];
+		
+		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
+			foreach ( $recurring_cart->get_shipping_packages() as $package_index => $recurring_cart_package ) {
+				$recurring_cart_package_key = self::get_recurring_shipping_package_key( $recurring_cart_key, $package_index );
+				$chosen_shipping_methods[ $recurring_cart_package_key ] = $rate_id;
+			}
+		}
+
+		wc()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
 	}
 
 	/**
