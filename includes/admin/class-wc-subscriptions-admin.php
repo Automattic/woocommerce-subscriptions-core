@@ -1214,7 +1214,12 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function get_settings() {
 
-		return apply_filters(
+		/**
+		 * Filter the settings for the Subscriptions extension.
+		 *
+		 * @param array $settings Array of settings in the format required by the woocommerce_admin_fields() function.
+		 */
+		return apply_filters( 'woocommerce_subscription_settings', array(
 			'woocommerce_subscription_settings',
 			array(
 
