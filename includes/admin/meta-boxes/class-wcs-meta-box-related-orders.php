@@ -30,7 +30,30 @@ class WCS_Meta_Box_Related_Orders {
 
 		include_once dirname( __FILE__ ) . '/views/html-related-orders-table.php';
 
-		do_action( 'woocommerce_subscriptions_related_orders_meta_box', $order );
+		if ( has_action( 'woocommerce_subscriptions_related_orders_meta_box' ) ) {
+			wcs_deprecated_hook( 'woocommerce_subscriptions_related_orders_meta_box', 'subscriptions-core 5.1.0', 'wcs_related_orders_meta_box' );
+
+			/**
+			 * Fires after the Related Orders meta box has been displayed.
+			 *
+			 * This action is deprecated in favour of 'wcs_related_orders_meta_box'.
+			 *
+			 * @deprecated subscriptions-core 5.1.0
+			 *
+			 * @param WC_Order|WC_Subscription $order The order or subscription that is being displayed.
+			 * @param WP_Post $post The post object that is being displayed.
+			 */
+			do_action( 'woocommerce_subscriptions_related_orders_meta_box', $order, $post );
+		}
+
+		/**
+		 * Fires after the Related Orders meta box has been displayed.
+		 *
+		 * @since subscriptions-core 5.1.0
+		 *
+		 * @param WC_Order|WC_Subscription $order The order or subscription that is being displayed.
+		 */
+		do_action( 'wcs_related_orders_meta_box', $order );
 	}
 
 	/**
