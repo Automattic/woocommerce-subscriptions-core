@@ -1219,29 +1219,32 @@ class WC_Subscriptions_Admin {
 		 *
 		 * @param array $settings Array of settings in the format required by the woocommerce_admin_fields() function.
 		 */
-		return apply_filters( 'woocommerce_subscription_settings', array(
+		return apply_filters(
 			'woocommerce_subscription_settings',
 			array(
-
+				'woocommerce_subscription_settings',
 				array(
-					'name' => _x( 'Miscellaneous', 'options section heading', 'woocommerce-subscriptions' ),
-					'type' => 'title',
-					'desc' => '',
-					'id'   => self::$option_prefix . '_miscellaneous',
-				),
 
-				array(
-					'name'     => __( 'Mixed Checkout', 'woocommerce-subscriptions' ),
-					'desc'     => __( 'Allow multiple subscriptions and products to be purchased simultaneously.', 'woocommerce-subscriptions' ),
-					'id'       => self::$option_prefix . '_multiple_purchase',
-					'default'  => 'no',
-					'type'     => 'checkbox',
-					'desc_tip' => __( 'Allow a subscription product to be purchased with other products and subscriptions in the same transaction.', 'woocommerce-subscriptions' ),
-				),
+					array(
+						'name' => _x( 'Miscellaneous', 'options section heading', 'woocommerce-subscriptions' ),
+						'type' => 'title',
+						'desc' => '',
+						'id'   => self::$option_prefix . '_miscellaneous',
+					),
 
-				array(
-					'type' => 'sectionend',
-					'id'   => self::$option_prefix . '_miscellaneous',
+					array(
+						'name'     => __( 'Mixed Checkout', 'woocommerce-subscriptions' ),
+						'desc'     => __( 'Allow multiple subscriptions and products to be purchased simultaneously.', 'woocommerce-subscriptions' ),
+						'id'       => self::$option_prefix . '_multiple_purchase',
+						'default'  => 'no',
+						'type'     => 'checkbox',
+						'desc_tip' => __( 'Allow a subscription product to be purchased with other products and subscriptions in the same transaction.', 'woocommerce-subscriptions' ),
+					),
+
+					array(
+						'type' => 'sectionend',
+						'id'   => self::$option_prefix . '_miscellaneous',
+					),
 				),
 			)
 		);
