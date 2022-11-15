@@ -24,8 +24,9 @@ class WCS_Meta_Box_Related_Orders {
 	 */
 	public static function output( $post_or_order_object ) {
 		$order = ( $post_or_order_object instanceof WP_Post ) ? wc_get_order( $post_or_order_object->ID ) : $post_or_order_object;
+		$post  = ( $post_or_order_object instanceof WP_Post ) ? $post_or_order_object : get_post( $order->get_id() );
 
-		add_action( 'woocommerce_subscriptions_related_orders_meta_box_rows', __CLASS__ . '::output_rows', 10 );
+		add_action( 'wcs_related_orders_meta_box_rows', __CLASS__ . '::output_rows', 10 );
 
 		include_once dirname( __FILE__ ) . '/views/html-related-orders-table.php';
 
