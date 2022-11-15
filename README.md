@@ -64,3 +64,4 @@ npm run build
 - Checkout Blocks + Subscriptions support
 - Support for the WooCommerce Payments gateway
 - Privacy/GDPR exporters for Subscriptions
+
