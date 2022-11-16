@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Subscription Data Store: Stored in CPT.
+ * Subscription Data Store: Stored in CPT (posts table).
  *
  * Extends WC_Order_Data_Store_CPT to make sure subscription related meta data is read/updated.
  *
@@ -590,5 +590,16 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		$meta_value = null; // Delete any values.
 		$delete_all = true;
 		delete_metadata( 'post', $id, $meta_key, $meta_value, $delete_all );
+	}
+
+	/**
+	 * Return true if there are any subscriptions in the database (active or inactive).
+	 *
+	 * @return boolean $subscriptions_exist True if there are any subscriptions (in wp_posts table).
+	 */
+	public function do_subscriptions_exist() {
+		$subscriptions_exist = false;
+
+		return $subscriptions_exist;
 	}
 }

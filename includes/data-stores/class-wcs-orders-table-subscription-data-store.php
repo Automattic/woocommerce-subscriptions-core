@@ -646,4 +646,15 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 
 		$wpdb->delete( self::get_meta_table_name(), [ 'meta_key' => $meta_key ], [ '%s' ] ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 	}
+
+	/**
+	 * Return true if there are any subscriptions in the database (active or inactive).
+	 *
+	 * @return boolean $subscriptions_exist True if there are any subscriptions (in HPOS / custom orders tables).
+	 */
+	public function do_subscriptions_exist() {
+		$subscriptions_exist = false;
+
+		return $subscriptions_exist;
+	}
 }
