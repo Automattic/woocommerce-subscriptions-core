@@ -650,7 +650,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function set_status( $new_status, $note = '', $manual_update = false ) {
 		if ( ! $this->object_read && in_array( $new_status, [ 'draft', 'auto-draft' ], true ) ) {
-			$new_status = apply_filters( 'woocommerce_default_order_status', 'pending' );
+			$new_status = apply_filters( 'woocommerce_default_subscription_status', 'pending' );
 		}
 
 		parent::set_status( $new_status, $note, $manual_update );
