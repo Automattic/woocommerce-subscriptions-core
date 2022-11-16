@@ -15,6 +15,9 @@
 * Dev - Code that was tagged with a version and moved from WooCommerce Subscriptions now explicitly mentions this and shows the correct subscriptions-core and WC Subscriptions versions.
 * Dev - Refactor the saving of subscription dates in the subscription datastore to separate fetching changes and saving. Enables backfilling subscription dates when HPOS syncing is enabled.
 
+= 2.5.2 - 2022-11-15 =
+* Fix - When creating a subscription via the checkout, make sure a new instance of the subscription is attached to the `woocommerce_checkout_subscription_created` action hook.
+
 = 2.5.1 - 2022-11-04 =
 * Dev - Replace the use of the deprecated wcs_renewal_order_meta hook with wc_subscription_renewal_order_data in the WCS_Related_Order_Store_Cached_CPT class.
 * Dev - Fix typo in deprecation notice for the 'wcs_{type}_meta_query' filter. Incorrect replacement hook.
