@@ -1130,7 +1130,7 @@ class WC_Subscriptions_Cart {
 
 	/**
 	 * Updates all packages in the recurring cart to use a given shipping method if requested via Store API.
-	 * 
+	 *
 	 * @see woocommerce_store_api_cart_select_shipping_rate
 	 *
 	 * @param string|null $package_id The sanitized ID of the package being updated. Null if all packages are being updated.
@@ -1141,10 +1141,10 @@ class WC_Subscriptions_Cart {
 			return;
 		}
 		$chosen_shipping_methods = wc()->session->get( 'chosen_shipping_methods' ) ? wc()->session->get( 'chosen_shipping_methods' ) : [];
-		
+
 		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
 			foreach ( $recurring_cart->get_shipping_packages() as $package_index => $recurring_cart_package ) {
-				$recurring_cart_package_key = self::get_recurring_shipping_package_key( $recurring_cart_key, $package_index );
+				$recurring_cart_package_key                             = self::get_recurring_shipping_package_key( $recurring_cart_key, $package_index );
 				$chosen_shipping_methods[ $recurring_cart_package_key ] = $rate_id;
 			}
 		}
