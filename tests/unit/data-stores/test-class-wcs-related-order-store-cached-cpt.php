@@ -41,7 +41,7 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 		// Create some related orders
 		for ( $i = 0; $i < 3; $i++ ) {
 			$order       = WCS_Helper_Subscription::create_order();
-			$order_id    = wcs_get_objects_property( $order, 'id' );
+			$order_id    = $order->get_id();
 			$order_ids[] = $order_id;
 
 			$this->add_relation_mock( $order, $subscription, $relation_type );

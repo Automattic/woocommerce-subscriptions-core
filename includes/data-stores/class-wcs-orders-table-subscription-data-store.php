@@ -678,4 +678,15 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 
 		return $wpdb->get_col( "SELECT DISTINCT customer_id FROM {$table_name} WHERE type = 'shop_subscription'" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	}
+
+	/**
+	 * Deletes all rows in the postmeta table with the given meta key.
+	 *
+	 * @param string $meta_key The meta key to delete.
+	 */
+	public function delete_all_metadata_by_key( $meta_key ) {
+		global $wpdb;
+
+		$wpdb->delete( self::get_meta_table_name(), [ 'meta_key' => $meta_key ], [ '%s' ] ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+	}
 }
