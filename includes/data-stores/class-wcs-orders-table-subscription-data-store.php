@@ -398,6 +398,61 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
+	 * Saves a subscription to the database.
+	 *
+	 * When a subscription is saved to the database we need to ensure we also save core subscription properties. The
+	 * parent::persist_order_to_db() will create and save the WC_Order inherited data, this method will save the
+	 * subscription core properties.
+	 *
+	 * @param WC_Subscription $subscription The subscription to save.
+	 * @param bool            $force_all_fields Optional. Whether to force all fields to be saved. Default false.
+	 */
+	protected function persist_order_to_db( &$subscription, bool $force_all_fields = false ) {
+		$is_update = ( 0 !== absint( $subscription->get_id() ) );
+
+		// Call the parent function first so WC can get an ID if this a new subscription.
+		parent::persist_order_to_db( $subscription, $force_all_fields );
+
+		// Get the subscription's current raw metadata.
+		$subscription_meta_data = array_column( $this->data_store_meta->read_meta( $subscription ), null, 'meta_key' );
+
+		// Determine what fields need to be saved. Forcing all fields to be saved is only allowed when updating.
+		if ( $force_all_fields && $is_update ) {
+			$props_to_save = $this->subscription_meta_keys_to_props;
+		} else {
+			$props_to_save = $this->get_props_to_update( $subscription, $this->subscription_meta_keys_to_props );
+		}
+
+		foreach ( $props_to_save as $meta_key => $prop ) {
+			$is_date_prop = ( 'schedule_' === substr( $prop, 0, 9 ) );
+
+			if ( $is_date_prop ) {
+				$meta_value = $subscription->get_date( $prop );
+			} else {
+				$meta_value = $subscription->{"get_$prop"}( 'edit' );
+			}
+
+			// Store as a string of the boolean for backward compatibility (yep, it's gross)
+			if ( 'requires_manual_renewal' === $prop ) {
+				$meta_value = wc_string_to_bool( $meta_value ) ? 'true' : 'false';
+			}
+
+			$existing_meta_data = $subscription_meta_data[ $meta_key ] ?? false;
+			$new_meta_data      = [
+				'key'   => $meta_key,
+				'value' => $meta_value,
+			];
+
+			if ( empty( $existing_meta_data ) ) {
+				$this->data_store_meta->add_meta( $subscription, (object) $new_meta_data );
+			} elseif ( $existing_meta_data->meta_value !== $new_meta_data['value'] ) {
+				$new_meta_data['id'] = $existing_meta_data->meta_id;
+				$this->data_store_meta->update_meta( $subscription, (object) $new_meta_data );
+			}
+		}
+	}
+
+	/**
 	 * Sets subscription core properties.
 	 *
 	 * This function is called when the subscription is being read from the database and ensures that
@@ -446,90 +501,6 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 
 		$subscription->update_dates( $dates_to_set );
 		$subscription->set_props( $props_to_set );
-	}
-
-	/**
-	 * Updates meta data based on a subscription object.
-	 *
-	 * This function in HPOS datastores is ONLY called during the `create` flow via `persist_save().
-	 * The purpose of this function is to set core subscription properties ($subscription_meta_keys_to_props) as meta via
-	 * `update_meta_data()` so that the rest of the `create` flow, handled by WC core, will save them to the database.
-	 *
-	 * @see $this->persist_updates() for the equivalent function for saving these properties to the database during subscription update.
-	 *
-	 * @param \WC_Subscription $subscription Subscription object.
-	 */
-	public function update_order_meta( &$subscription ) {
-		$updated_props = [];
-
-		foreach ( $this->get_props_to_update( $subscription, $this->subscription_meta_keys_to_props ) as $meta_key => $prop ) {
-			$is_date_prop = ( 'schedule_' === substr( $prop, 0, 9 ) );
-
-			if ( $is_date_prop ) {
-				$meta_value = $subscription->get_date( $prop );
-			} else {
-				$meta_value = $subscription->{"get_$prop"}( 'edit' );
-			}
-
-			// Store as a string of the boolean for backward compatibility (yep, it's gross)
-			if ( 'requires_manual_renewal' === $prop ) {
-				$meta_value = wc_string_to_bool( $meta_value ) ? 'true' : 'false';
-			}
-
-			$subscription->update_meta_data( $meta_key, $meta_value );
-			$updated_props[] = $prop;
-		}
-
-		do_action( 'woocommerce_subscription_object_updated_props', $subscription, $updated_props );
-
-		parent::update_order_meta( $subscription );
-	}
-
-	/**
-	 * Saves core subscription property updates to the database.
-	 *
-	 * This function in HPOS datastores is ONLY called during the `update` flow via `parent::update()`.
-	 * The purpose of this function is to save core subscription properties ($subscription_meta_keys_to_props) to the database.
-	 *
-	 * This function uses $this->data_store_meta->update_meta() and $this->data_store_meta->add_meta() to save the data directly in the database.
-	 *
-	 * @see $this->update_order_meta() for the equivalent function for saving these properties as meta during subscription creation.
-	 *
-	 * @param WC_Subscription $subscription The subscription object to save updates for.
-	 * @param bool            $backfill     Whether to backfill the subscription's meta data.
-	 */
-	protected function persist_updates( &$subscription, $backfill = true ) {
-		$subscription_meta_data = array_column( $this->data_store_meta->read_meta( $subscription ), null, 'meta_key' );
-
-		foreach ( $this->get_props_to_update( $subscription, $this->subscription_meta_keys_to_props ) as $meta_key => $prop ) {
-			$is_date_prop = ( 'schedule_' === substr( $prop, 0, 9 ) );
-
-			if ( $is_date_prop ) {
-				$meta_value = $subscription->get_date( $prop );
-			} else {
-				$meta_value = $subscription->{"get_$prop"}( 'edit' );
-			}
-
-			// Store as a string of the boolean for backward compatibility (yep, it's gross)
-			if ( 'requires_manual_renewal' === $prop ) {
-				$meta_value = wc_string_to_bool( $meta_value ) ? 'true' : 'false';
-			}
-
-			$existing_meta_data = $subscription_meta_data[ $meta_key ] ?? false;
-			$new_meta_data      = [
-				'key'   => $meta_key,
-				'value' => $meta_value,
-			];
-
-			if ( ! empty( $existing_meta_data ) ) {
-				$new_meta_data['id'] = $existing_meta_data->meta_id;
-				$this->data_store_meta->update_meta( $subscription, (object) $new_meta_data );
-			} else {
-				$this->data_store_meta->add_meta( $subscription, (object) $new_meta_data );
-			}
-		}
-
-		parent::persist_updates( $subscription, $backfill );
 	}
 
 	/**
