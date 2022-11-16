@@ -9,7 +9,7 @@
  * @subpackage WCS_Cart_Renewal
  * @category   Class
  * @author     Prospress
- * @since      2.0
+ * @since      1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 
 class WCS_Cart_Renewal {
@@ -20,7 +20,7 @@ class WCS_Cart_Renewal {
 	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function __construct() {
 
@@ -73,7 +73,7 @@ class WCS_Cart_Renewal {
 	/**
 	 * Attach WooCommerce version dependent hooks
 	 *
-	 * @since 2.2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
 	 */
 	public function attach_dependant_hooks() {
 
@@ -112,7 +112,7 @@ class WCS_Cart_Renewal {
 	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function setup_hooks() {
 
@@ -161,7 +161,7 @@ class WCS_Cart_Renewal {
 	/**
 	 * Attach callbacks dependant on WC versions
 	 *
-	 * @since 2.2.11
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.11
 	 */
 	public function attach_dependant_callbacks() {
 
@@ -178,7 +178,7 @@ class WCS_Cart_Renewal {
 	 * redirect the order into a cart/checkout payment flow so that the customer can
 	 * choose payment method, apply discounts set shipping and pay for the order.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function maybe_setup_cart() {
 		global $wp;
@@ -271,7 +271,7 @@ class WCS_Cart_Renewal {
 	/**
 	 * Set up cart item meta data to complete a subscription renewal via the cart.
 	 *
-	 * @since 2.2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
 	 *
 	 * @param WC_Abstract_Order $subscription The subscription or Order object to set up the cart from.
 	 * @param array             $cart_item_data Additional cart item data to set on the cart items.
@@ -418,7 +418,7 @@ class WCS_Cart_Renewal {
 	/**
 	 * Restore renewal flag when cart is reset and modify Product object with renewal order related info
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function get_cart_item_from_session( $cart_item_session_data, $cart_item, $key ) {
 
@@ -548,7 +548,7 @@ class WCS_Cart_Renewal {
 	 * When completing checkout for a subscription renewal, update the address on the subscription to use
 	 * the shipping/billing address entered in case it has changed since the subscription was first created.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function maybe_update_subscription_customer_data( $update_customer_data, $checkout_object ) {
 
@@ -585,7 +585,7 @@ class WCS_Cart_Renewal {
 	 * If a product is being marked as not purchasable because it is limited and the customer has a subscription,
 	 * but the current request is to resubscribe to the subscription, then mark it as purchasable.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 * @return bool
 	 */
 	public function is_purchasable( $is_purchasable, $product ) {
@@ -599,7 +599,7 @@ class WCS_Cart_Renewal {
 	 *
 	 * This is particularly important to ensure renewals of limited subscriptions can be completed.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function get_checkout_payment_url( $pay_url, $order ) {
 
@@ -613,7 +613,7 @@ class WCS_Cart_Renewal {
 	/**
 	 * Customise which actions are shown against a subscription renewal order on the My Account page.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function filter_my_account_my_orders_actions( $actions, $order ) {
 
@@ -641,7 +641,7 @@ class WCS_Cart_Renewal {
 	 * so that we can correctly identify the status change in @see self::maybe_change_subscription_status().
 	 *
 	 * @param string Default order status for orders paid for via checkout. Default 'pending'
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function maybe_preserve_order_status( $order_status ) {
 
@@ -666,7 +666,7 @@ class WCS_Cart_Renewal {
 	 * Removes all the linked renewal/resubscribe items from the cart if a renewal/resubscribe item is removed.
 	 *
 	 * @param string $cart_item_key The cart item key of the item removed from the cart.
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function maybe_remove_items( $cart_item_key ) {
 
@@ -701,7 +701,7 @@ class WCS_Cart_Renewal {
 	 *
 	 * @see wcs_cart_contains_renewal()
 	 * @return bool | Array The cart item containing the renewal, else false.
-	 * @since  2.0.10
+	 * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.0.10
 	 */
 	protected function cart_contains() {
 		return wcs_cart_contains_renewal();
@@ -714,7 +714,7 @@ class WCS_Cart_Renewal {
 	 * @param string $product_title
 	 * @param $cart_item
 	 * @return string $product_title
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function items_removed_title( $product_title, $cart_item ) {
 
@@ -730,7 +730,7 @@ class WCS_Cart_Renewal {
 	 * Restores all linked renewal/resubscribe items to the cart if the customer has restored one.
 	 *
 	 * @param string $cart_item_key The cart item key of the item being restored to the cart.
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function maybe_restore_items( $cart_item_key ) {
 
@@ -759,7 +759,7 @@ class WCS_Cart_Renewal {
 	 * @param array $data the coupon data
 	 * @param string $code the coupon code that data is being requested for
 	 * @return array the custom coupon data
-	 * @since 2.0.10
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0.10
 	 */
 	public function renewal_coupon_data( $data, $code ) {
 
@@ -803,7 +803,7 @@ class WCS_Cart_Renewal {
 	 *
 	 * @param  object WC_Order | WC_Subscription $order
 	 * @return array $product_ids an array of product ids on a subscription/order
-	 * @since 2.0.10
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0.10
 	 */
 	protected function get_products( $order ) {
 
@@ -826,7 +826,7 @@ class WCS_Cart_Renewal {
 	 *
 	 * @param  int $subscription_id subscription id
 	 * @param  object $coupon coupon
-	 * @since 2.0.10
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0.10
 	 */
 	protected function store_coupon( $order_id, $coupon ) {
 		if ( ! empty( $order_id ) && ! empty( $coupon ) ) {
@@ -888,7 +888,7 @@ class WCS_Cart_Renewal {
 	/**
 	 * Clear renewal coupons - protects against confusing customer facing notices if customers add one renewal order to the cart with a set of coupons and then decide to add another renewal order with a different set of coupons
 	 *
-	 * @since 2.0.10
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0.10
 	 */
 	public function clear_coupons() {
 
@@ -911,7 +911,7 @@ class WCS_Cart_Renewal {
 	 * Add order/subscription fee line items to the cart when a renewal order, initial order or resubscribe is in the cart.
 	 *
 	 * @param WC_Cart $cart
-	 * @since 2.0.13
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0.13
 	 */
 	public function maybe_add_fees( $cart ) {
 
@@ -925,7 +925,7 @@ class WCS_Cart_Renewal {
 			 *
 			 * @param WC_Order $order is renderd by reference - change meta data of this object
 			 * @param WC_Cart $cart
-			 * @since 2.2.9
+			 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.9
 			 */
 			do_action( 'woocommerce_adjust_order_fees_for_setup_cart_for_' . $this->cart_item_key, $order, $cart );
 
@@ -942,7 +942,7 @@ class WCS_Cart_Renewal {
 	 * a renewal or resubscribe, do not adjust the price because the original order's price will
 	 * be used, and this includes the addons amounts.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function product_addons_adjust_price( $adjust_price, $cart_item ) {
 
@@ -958,7 +958,7 @@ class WCS_Cart_Renewal {
 	 *
 	 * @param Array The renewal cart item.
 	 * @return WC_Order | The order object
-	 * @since  2.0.13
+	 * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.0.13
 	 */
 	protected function get_order( $cart_item = '' ) {
 		$order = false;
@@ -979,7 +979,7 @@ class WCS_Cart_Renewal {
 	 * order items haven't changed by checking for a cart hash on the order, so we need to set
 	 * that here. @see WC_Checkout::create_order()
 	 *
-	 * @since 2.0.14
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0.14
 	 */
 	protected function set_cart_hash( $order_id ) {
 		$order = wc_get_order( $order_id );
@@ -1000,7 +1000,7 @@ class WCS_Cart_Renewal {
 	 *
 	 * @param Mixed | An order generated by third party plugins
 	 * @return Mixed | The unchanged order param
-	 * @since  2.2.11
+	 * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.2.11
 	 */
 	public function update_cart_hash( $order ) {
 
@@ -1027,7 +1027,7 @@ class WCS_Cart_Renewal {
 	 *
 	 * @param string | redirect URL after successful login
 	 * @return string
-	 * @since  2.1.0
+	 * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.1.0
 	 */
 	function maybe_redirect_after_login( $redirect ) {
 		if ( isset( $_GET['wcs_redirect'], $_GET['wcs_redirect_id'] ) && 'pay_for_order' == $_GET['wcs_redirect'] ) {
@@ -1048,7 +1048,7 @@ class WCS_Cart_Renewal {
 	 * WCS_Cart_Renewal->update_line_item_cart_data() for WC < 3.0), are also reflected
 	 * in the session cart.
 	 *
-	 * @since 2.1.3
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.1.3
 	 */
 	public function update_session_cart_after_updating_renewal_order() {
 
@@ -1066,7 +1066,7 @@ class WCS_Cart_Renewal {
 	* @param bool Whether to apply the dynamic discount
 	* @param string The cart item key of the cart item the dynamic discount is being applied to.
 	* @return bool
-	* @since  2.1.4
+	* @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.1.4
 	*/
 	function prevent_compounding_dynamic_discounts( $adjust_price, $cart_item_key ) {
 
@@ -1086,7 +1086,7 @@ class WCS_Cart_Renewal {
 	 * @param WC_Order_Item_Product $order_item
 	 * @param string $cart_item_key The hash used to identify the item in the cart
 	 * @param array $cart_item The cart item's data.
-	 * @since 2.2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
 	 */
 	public function add_line_item_meta( $order_item, $cart_item_key, $cart_item ) {
 		if ( isset( $cart_item[ $this->cart_item_key ] ) ) {
@@ -1101,7 +1101,7 @@ class WCS_Cart_Renewal {
 	 *
 	 * @param int|WC_Order $order_id
 	 * @param array $checkout_posted_data
-	 * @since 2.2.1
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.1
 	 */
 	public function set_order_item_id( $order_id, $posted_checkout_data = array() ) {
 
@@ -1127,7 +1127,7 @@ class WCS_Cart_Renewal {
 	 *
 	 * @param string $cart_item_key
 	 * @param int $order_item_id
-	 * @since 2.2.1
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.1
 	 */
 	protected function set_cart_item_order_item_id( $cart_item_key, $order_item_id ) {
 		WC()->cart->cart_contents[ $cart_item_key ][ $this->cart_item_key ]['line_item_id'] = $order_item_id;
@@ -1136,7 +1136,7 @@ class WCS_Cart_Renewal {
 	/**
 	 * Do not display cart item key order item meta keys unless Subscriptions is in debug mode.
 	 *
-	 * @since 2.2.1
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.1
 	 */
 	public function hidden_order_itemmeta( $hidden_meta_keys ) {
 
@@ -1153,7 +1153,7 @@ class WCS_Cart_Renewal {
 	 *
 	 * @param int $customer_id
 	 * @param array $checkout_data the posted checkout data
-	 * @since 2.2.7
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.7
 	 */
 	public function maybe_update_subscription_address_data( $customer_id, $checkout_data ) {
 		$cart_renewal_item = $this->cart_contains();
@@ -1210,7 +1210,7 @@ class WCS_Cart_Renewal {
 	 *
 	 * @param array $cart_item_data
 	 * @param array $cart_item
-	 * @since 2.2.11
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.11
 	 */
 	public function display_line_item_data_in_cart( $cart_item_data, $cart_item ) {
 
@@ -1236,7 +1236,7 @@ class WCS_Cart_Renewal {
 	 *
 	 * @param int $item_id
 	 * @param array $cart_item_data
-	 * @since 2.2.11
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.11
 	 */
 	public function add_order_item_meta( $item_id, $cart_item_data ) {
 		if ( ! empty( $cart_item_data[ $this->cart_item_key ]['custom_line_item_meta'] ) ) {
@@ -1255,7 +1255,7 @@ class WCS_Cart_Renewal {
 	 * @param WC_Order_Item_Product
 	 * @param string $cart_item_key
 	 * @param array $cart_item_data
-	 * @since 2.2.11
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.11
 	 */
 	public function add_order_line_item_meta( $item, $cart_item_key, $cart_item_data ) {
 		if ( ! empty( $cart_item_data[ $this->cart_item_key ]['custom_line_item_meta'] ) ) {
@@ -1309,7 +1309,7 @@ class WCS_Cart_Renewal {
 	 * Filters the shipping packages to remove subscriptions that have "one time shipping" enabled and, as such,
 	 * shouldn't have a shipping amount associated during a renewal.
 	 *
-	 * @since 2.3.3
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.3
 	 */
 	public function maybe_update_shipping_packages( $packages ) {
 		if ( ! $this->cart_contains() ) {
@@ -1337,7 +1337,7 @@ class WCS_Cart_Renewal {
 	 * or add pseudo coupon equivalents if the coupons no longer exist.
 	 *
 	 * @param WC_Order $order The order to copy coupons and discounts from.
-	 * @since 2.4.3
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.4.3
 	 */
 	public function setup_discounts( $order ) {
 		$order_discount = $order->get_total_discount();
@@ -1464,7 +1464,7 @@ class WCS_Cart_Renewal {
 	 * Makes sure a renewal order's "created via" meta is not changed to "checkout" by WC during checkout.
 	 *
 	 * @param WC_Order $order
-	 * @since 2.5.4
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.5.4
 	 */
 	public function maybe_preserve_order_created_via( $order ) {
 		$changes      = $order->get_changes();
@@ -1479,7 +1479,7 @@ class WCS_Cart_Renewal {
 	/**
 	 * Deteremines if the cart should honor the granfathered subscription/order line item total.
 	 *
-	 * @since 3.0.10
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.0.10
 	 *
 	 * @param array $cart_item The cart item to check.
 	 * @return bool Whether the cart should honor the order's prices.
@@ -1491,7 +1491,7 @@ class WCS_Cart_Renewal {
 	/**
 	 * Disables renewal cart stock validation if the store has switched it off via a filter.
 	 *
-	 * @since 2.6.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.6.0
 	 */
 	public function maybe_disable_manual_renewal_stock_validation() {
 		if ( apply_filters( 'woocommerce_subscriptions_disable_manual_renewal_stock_validation', false ) ) {
@@ -1502,7 +1502,7 @@ class WCS_Cart_Renewal {
 	/**
 	 * Overrides the place order button text on the checkout when the cart contains renewal order items, exclusively.
 	 *
-	 * @since 3.1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.1.0
 	 *
 	 * @param string $place_order_text The place order button text.
 	 * @return string The place order button text. 'Renew subscription' if the cart contains only renewals, otherwise the default.
@@ -1578,7 +1578,7 @@ class WCS_Cart_Renewal {
 	/**
 	 * For subscription renewal via cart, use original order discount
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function set_renewal_discounts( $cart ) {
 		_deprecated_function( __METHOD__, '2.0.10', 'Applying original subscription discounts to renewals via cart are now handled within ' . __CLASS__ . '::maybe_setup_cart()' );
@@ -1589,7 +1589,7 @@ class WCS_Cart_Renewal {
 	 *
 	 * No longer required as of 1.3.5 as totals are calculated correctly internally.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function get_discounted_price_for_renewal( $price, $cart_item, $cart ) {
 		_deprecated_function( __METHOD__, '2.0.10', 'No longer required as of 1.3.5 as totals are calculated correctly internally.' );
@@ -1599,7 +1599,7 @@ class WCS_Cart_Renewal {
 	 * Add subscription fee line items to the cart when a renewal order or resubscribe is in the cart.
 	 *
 	 * @param WC_Cart $cart
-	 * @since 2.0.10
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0.10
 	 */
 	public function maybe_add_subscription_fees( $cart ) {
 		_deprecated_function( __METHOD__, '2.0.13', __CLASS__ . '::maybe_add_fees()' );
@@ -1609,7 +1609,7 @@ class WCS_Cart_Renewal {
 	 * After updating renewal order line items, update the values stored in cart item data
 	 * which would now reference old line item IDs.
 	 *
-	 * @since 2.1.3
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.1.3
 	 */
 	public function update_line_item_cart_data( $item_id, $cart_item_data, $cart_item_key ) {
 
@@ -1630,8 +1630,8 @@ class WCS_Cart_Renewal {
 	 * Used when WC 3.0 or newer is active. When prior versions are active,
 	 * @see WCS_Cart_Renewal->update_line_item_cart_data()
 	 *
-	 * @deprecated 2.2.1
-	 * @since 2.2.0
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.1
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
 	 */
 	public function update_order_item_data_in_cart( $order_item, $cart_item_key, $cart_item ) {
 		_deprecated_function( __METHOD__, '2.2.1', __CLASS__ . '::add_line_item_meta( $order_item, $cart_item_key, $cart_item )' );
@@ -1644,7 +1644,7 @@ class WCS_Cart_Renewal {
 	 *
 	 * @param Mixed | An order generated by third party plugins
 	 * @return Mixed | The unchanged order param
-	 * @since  2.1.0
+	 * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.1.0
 	 */
 	public function set_renewal_order_cart_hash( $order ) {
 		_deprecated_function( __METHOD__, '2.3', __CLASS__ . '::update_cart_hash( $order )' );
@@ -1658,8 +1658,8 @@ class WCS_Cart_Renewal {
 	 * @param WC_Subscription $subscription subscription
 	 * @param WC_Order $order
 	 *
-	 * @since 2.0.10
-	 * @deprecated 2.4.3
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0.10
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.4.3
 	 */
 	public function maybe_setup_discounts( $subscription, $order = null ) {
 		wcs_deprecated_function( __METHOD__, '2.4.3' );

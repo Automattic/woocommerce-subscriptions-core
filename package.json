@@ -3,12 +3,13 @@
 	"title": "WooCommerce Subscriptions Core",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
-	"version": "2.5.2",
+	"version": "5.0.0",
 	"description": "",
 	"homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
 	"main": "Gruntfile.js",
 	"config": {
-		"translate": true
+		"translate": true,
+		"version_replace_paths": ["includes/"]
 	},
 	"repository": {
 		"type": "git",

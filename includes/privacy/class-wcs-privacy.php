@@ -5,7 +5,7 @@
  * @author   Prospress
  * @category Class
  * @package  WooCommerce Subscriptions\Privacy
- * @version  2.2.20
+ * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.2.20
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -76,7 +76,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 	/**
 	 * Spawn events for subscription cleanup.
 	 *
-	 * @since 2.2.20
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.20
 	 */
 	public function queue_cleanup_personal_data() {
 		self::$background_process->schedule_ended_subscription_anonymization();
@@ -85,7 +85,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 	/**
 	 * Add privacy policy content for the privacy policy page.
 	 *
-	 * @since 2.2.20
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.20
 	 */
 	public function get_privacy_message() {
 		return '' .
@@ -102,7 +102,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 	/**
 	 * Add the option to remove personal data from subscription via a bulk action.
 	 *
-	 * @since 2.2.20
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.20
 	 * @param array $bulk_actions Subscription bulk actions.
 	 */
 	public static function add_remove_personal_data_bulk_action( $bulk_actions ) {
@@ -113,7 +113,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 	/**
 	 * Process the request to delete personal data from subscriptions via admin bulk action.
 	 *
-	 * @since 2.2.20
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.20
 	 */
 	public static function process_bulk_action() {
 
@@ -162,7 +162,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 	/**
 	 * Add admin notice after processing personal data removal bulk action.
 	 *
-	 * @since 2.2.20
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.20
 	 */
 	public static function bulk_admin_notices() {
 		global $post_type, $pagenow;
@@ -180,7 +180,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 	/**
 	 * Add a note to WC Personal Data Retention settings explaining that subscription orders aren't affected.
 	 *
-	 * @since 2.2.20
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.20
 	 * @param array $settings WooCommerce Account and Privacy settings.
 	 * @return array Account and Privacy settings.
 	 */
@@ -203,7 +203,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 	/**
 	 * Add admin setting to turn subscription data removal when processing erasure requests on or off.
 	 *
-	 * @since 2.2.20
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.20
 	 * @param array $settings WooCommerce Account and Privacy settings.
 	 * @return array Account and Privacy settings.
 	 */
@@ -247,7 +247,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 	/**
 	 * Remove subscription related order types from the order anonymization query.
 	 *
-	 * @since 2.2.20
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.20
 	 * @param  array $query_args @see wc_get_orders() args.
 	 * @return array The args used to get orders to anonymize.
 	 */
@@ -267,7 +267,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 	/**
 	 * Add a note to the inactive user data retention setting noting that users with a subscription are excluded.
 	 *
-	 * @since 2.3.4
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.4
 	 * @param array $settings WooCommerce Account and Privacy settings.
 	 * @return array Account and Privacy settings.
 	 */
@@ -285,7 +285,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 	/**
 	 * Set a flag to record inactive user account deletion.
 	 *
-	 * @since 2.3.4
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.4
 	 * @param  array $user_roles The user roles included in the inactive user query.
 	 * @return array
 	 */
@@ -297,7 +297,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 	/**
 	 * Exclude customers who have subscriptions from the inactive user cleanup query.
 	 *
-	 * @since 2.3.4
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.4
 	 * @param WP_User_Query $user_query
 	 */
 	public static function maybe_exclude_subscription_customers( $user_query ) {

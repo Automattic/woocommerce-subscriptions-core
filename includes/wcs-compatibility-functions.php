@@ -7,7 +7,7 @@
  * @author Prospress
  * @category Core
  * @package WooCommerce Subscriptions/Functions
- * @version     2.0
+ * @version     1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Display a tooltip in the WordPress administration area.
  *
- * @since 2.1.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.1.0
  *
  * @param string $tip        The content to display in the tooltip.
  * @param bool   $allow_html Allow sanitized HTML if true or escape. Optional. False by default.
@@ -51,7 +51,7 @@ function wcs_help_tip( $tip, $allow_html = false, $class = 'woocommerce-help-tip
  * @param string                              $single   Whether to return just the first piece of meta data with the given property key, or all meta data.
  * @param mixed                               $default  (optional) The value to return if no value is found - defaults to single -> null, multiple -> array().
  *
- * @since  2.2.0
+ * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
  * @deprecated 2.4.0 Use of this compatibility function is no longer required, getters should be used on the objects instead. Please note there may be differences in dates between this function and the getter.
  * @return mixed
  */
@@ -137,7 +137,7 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
  * @param int $meta_id The meta ID of existing meta data if you wish to overwrite an existing piece of meta.
  * @param string $prefix_meta_key Whether the key should be prefixed with an '_' when stored in meta. Defaulted to 'prefix_meta_key', pass any other value to bypass automatic prefixing (optional)
  * @deprecated 2.4.0 Use of this compatibility function is no longer required, setters should be used on the objects instead.
- * @since  2.2.0
+ * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
  * @return mixed
  */
 function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta_id = '', $prefix_meta_key = 'prefix_meta_key' ) {
@@ -196,7 +196,7 @@ function wcs_set_objects_property( &$object, $key, $value, $save = 'save', $meta
  * @param string $key The meta key name without '_' prefix
  * @param mixed $value The data to set as the value of the meta
  * @param string $save Whether to save the data or not, 'save' to save the data, otherwise it won't be saved.
- * @since  2.2.0
+ * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
  * @deprecated 2.4.0 Use of this compatibility function is no longer required, setters should be used on the objects instead.
  * @return mixed
  */
@@ -231,7 +231,7 @@ function wcs_delete_objects_property( &$object, $key, $save = 'save', $meta_id =
  * property which returned 'simple', so we need to check for both.
  *
  * @param WC_Order $order
- * @since  2.2.0
+ * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
  * @return bool
  */
 function wcs_is_order( $order ) {
@@ -255,7 +255,7 @@ function wcs_is_order( $order ) {
  *
  * @param string $property
  * @param WC_Product $product
- * @since  2.2.0
+ * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
  * @return mixed
  */
 function wcs_product_deprecated_property_handler( $property, $product ) {
@@ -328,7 +328,7 @@ function wcs_product_deprecated_property_handler( $property, $product ) {
  *
  * @param WC_Coupon $coupon The coupon whose property we want to access.
  * @param string $property The property name.
- * @since  2.2
+ * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.2
  * @return mixed
  */
 function wcs_get_coupon_property( $coupon, $property ) {
@@ -374,7 +374,7 @@ function wcs_get_coupon_property( $coupon, $property ) {
  * @param WC_Coupon $coupon The coupon whose property we want to set.
  * @param string $property The property name.
  * @param mixed $value The data to set as the value
- * @since  2.2
+ * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.2
  */
 function wcs_set_coupon_property( &$coupon, $property, $value ) {
 
@@ -419,7 +419,7 @@ function wcs_set_coupon_property( &$coupon, $property, $value ) {
  * This is a compatibility wrapper for @see wc_generate_order_key() which was introduced in WC 3.5.4.
  *
  * @return string $order_key.
- * @since 2.5.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.5.0
  */
 function wcs_generate_order_key() {
 
@@ -440,7 +440,7 @@ function wcs_generate_order_key() {
  * @param WC_Settings_API $settings_api The object to update the option for.
  * @param string $key Option key.
  * @param mixed $value Value to set.
- * @since 2.5.1
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.5.1
  */
 function wcs_update_settings_option( $settings_api, $key, $value ) {
 
@@ -463,7 +463,7 @@ function wcs_update_settings_option( $settings_api, $key, $value ) {
  *
  * This function is a compatibility wrapper for WC()->is_rest_api_request() which was introduced in WC 3.6.
  *
- * @since 2.5.7
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.5.7
  *
  * @return bool True if it's a REST API request, false otherwise.
  */
@@ -510,7 +510,7 @@ function wcs_is_checkout_blocks_api_request( $endpoint = '' ) {
  *
  * This function is a compatibility wrapper for wp_doing_cron() which was introduced in WP 4.8.
  *
- * @since 2.5.7
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.5.7
  *
  * @return bool True if it's a WordPress cron request, false otherwise.
  */
@@ -521,7 +521,7 @@ function wcs_doing_cron() {
 /**
  * Determines whether the current request is a WordPress Ajax request.
  *
- * @since 2.5.7
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.5.7
  *
  * @return bool True if it's a WordPress Ajax request, false otherwise.
  */
@@ -534,7 +534,7 @@ function wcs_doing_ajax() {
  *
  * WC 3.7 deprecated @see WC_Abstract_Order::get_used_coupons() in favour of WC_Abstract_Order::get_coupon_codes().
  *
- * @since 2.6.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.6.0
  *
  * @param WC_Abstract_Order $order An order or subscription object to get the coupon codes for.
  * @return array The coupon codes applied to the $order.
@@ -549,7 +549,7 @@ function wcs_get_used_coupon_codes( $order ) {
  * Enables attaching a callback if WooCommerce is before, after, equal or not equal to a given version.
  * This function is a wrapper for @see WCS_Dependent_Hook_Manager::add_woocommerce_dependent_action().
  *
- * @since 2.6.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.6.0
  *
  * @param string $tag The action or filter tag to attach the callback too.
  * @param string|array $function The callable function to attach to the hook.
@@ -565,7 +565,7 @@ function wcs_add_woocommerce_dependent_action( $tag, $function, $woocommerce_ver
 /**
  * Checks if the installed version of WooCommerce is older than a specified version.
  *
- * @since 4.0.0
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v4.0.0
  *
  * @param  string The version string to check in a version_compare() compatible format.
  * @return bool   Whether the installed version of WC is prior to the given version string.
