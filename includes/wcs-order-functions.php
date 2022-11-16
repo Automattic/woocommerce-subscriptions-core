@@ -368,9 +368,10 @@ function wcs_order_contains_subscription( $order, $order_type = array( 'parent',
  * @return array An array of WC_Order or WC_Subscription objects or IDs based on the args.
  */
 function wcs_get_orders_with_meta_query( $args ) {
-	$use_meta_query_filter = wcs_is_custom_order_tables_usage_enabled() ? false : true;
+	$is_hpos_in_use = wcs_is_custom_order_tables_usage_enabled();
 
-	if ( $use_meta_query_filter ) {
+	// In CPT datastores, we have to hook into the orders query to insert any meta query args.
+	if ( ! $is_hpos_in_use ) {
 		$meta = $args['meta_query'] ?? [];
 		unset( $args['meta_query'] );
 
@@ -398,14 +399,14 @@ function wcs_get_orders_with_meta_query( $args ) {
 	if ( isset( $args['status'], $args['type'] ) &&
 		[ 'any' ] === $args['status'] &&
 		'shop_subscription' === $args['type'] &&
-		wcs_is_custom_order_tables_usage_enabled()
+		$is_hpos_in_use
 	) {
 		$args['status'] = array_keys( wcs_get_subscription_statuses() );
 	}
 
 	$results = wc_get_orders( $args );
 
-	if ( $use_meta_query_filter ) {
+	if ( ! $is_hpos_in_use ) {
 		remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $handle_meta, 10 );
 	}
 
