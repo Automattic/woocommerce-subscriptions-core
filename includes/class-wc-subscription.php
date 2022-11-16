@@ -642,7 +642,7 @@ class WC_Subscription extends WC_Order {
 	 * a subscription is being read from the database, and the status is set to the post's 'draft' or 'auto-draft' status, the
 	 * subscription status is treated as the default status - 'pending'.
 	 *
-	 * @since subscriptions-core 5.1.0
+	 * @since 5.1.0
 	 *
 	 * @param string $new_status The new status.
 	 * @param string $note       Optional. The note to add to the subscription.
