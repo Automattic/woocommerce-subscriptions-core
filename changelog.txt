@@ -3,11 +3,15 @@
 = 5.1.0 - 2022-xx-xx =
 * Fix - Set payment tokens when copying data between orders and subscriptions in a CRUD compatible way. Fixes PHP notices during renewal order process.
 * Fix - Infinite loop that can occur with `WCS_Orders_Table_Subscription_Data_Store::read_multiple()` on HPOS-enabled stores.
+* Fix - On HPOS stores, when querying for subscriptions with wcs_get_orders_with_meta_query() with status 'any', ensure that wc_get_orders() queries for subscription statuses.
+* Fix - On HPOS stores, when saving a subscription make sure subscription properties (ie `_requires_manual_renewal`) are saved to the database.
+* Fix - On HPOS stores, when a subscription is loaded from the database, make sure all core subscription properties are read directly from meta.
 * Update - Refactor our Related Orders data store classes (WCS_Related_Order_Store_Cached_CPT and WCS_Related_Order_Store_CPT) to use CRUD methods to support subscriptions and orders stored in HPOS.
 * Dev - Removed the deprecated "wcs_subscriptions_for_{$relation_type}_order" dynamic hook used to filter the list of related subscriptions for the given relation type. The following hooks have been removed with no alternative:
         wcs_subscriptions_for_renewal_order
         wcs_subscriptions_for_switch_order
         wcs_subscriptions_for_resubscribe_order
+* Dev - Introduce a WC_Subscription::set_status() function to handle subscriptions set with a draft or auto-draft status. Replaces the need for the overriding WC_Subscription::get_status() which has been deleted.
 
 = 5.0.0 - 2022-11-14 =
 * Dev - The library has been bumped to version to 5.0.0 to reduce confusion with the version of WooCommerce Subscriptions.
