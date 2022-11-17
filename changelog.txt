@@ -9,7 +9,6 @@
         wcs_subscriptions_for_switch_order
         wcs_subscriptions_for_resubscribe_order
 
-
 = 5.0.0 - 2022-11-14 =
 * Dev - The library has been bumped to version to 5.0.0 to reduce confusion with the version of WooCommerce Subscriptions.
 * Dev - Usage of \WC_Subscriptions_Core_Plugin::get_plugin_version() is no longer recommended for version detection. \WC_Subscriptions_Core_Plugin::get_library_version() should be used instead.
