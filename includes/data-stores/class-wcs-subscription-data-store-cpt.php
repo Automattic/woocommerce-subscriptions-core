@@ -591,23 +591,4 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		$delete_all = true;
 		delete_metadata( 'post', $id, $meta_key, $meta_value, $delete_all );
 	}
-
-	/**
-	 * Return true if there are any subscriptions in the database (active or inactive).
-	 *
-	 * @return boolean $subscriptions_exist True if there are any subscriptions (in wp_posts table).
-	 */
-	public function do_subscriptions_exist() {
-		$subscriptions_exist = false;
-
-		$results             = wc_get_orders(
-			array(
-				'type'  => 'shop_subscription',
-				'limit' => 1,
-			)
-		);
-		$subscriptions_exist = count( $results ) > 0;
-
-		return $subscriptions_exist;
-	}
 }
