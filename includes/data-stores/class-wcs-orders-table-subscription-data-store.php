@@ -344,6 +344,16 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
+	 * Reads a subscription object from custom tables.
+	 *
+	 * @param \WC_Subscription $subscription Subscription object.
+	 */
+	public function read( &$subscription ) {
+		parent::read( $subscription );
+		$this->set_subscription_props( $subscription );
+	}
+
+	/**
 	 * Reads multiple subscription objects from custom tables.
 	 *
 	 * @param \WC_Order $subscriptions Subscription objects.
