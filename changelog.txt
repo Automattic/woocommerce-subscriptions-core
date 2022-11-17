@@ -1,9 +1,10 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
 = 5.1.0 - 2022-xx-xx =
-* Update - Display related orders table when viewing the new "Edit Order" page (HPOS enabled stores)
-* Update - Add support for HPOS edit order URL in related orders table.
+* Fix - infinite loop that can occur with `WCS_Orders_Table_Subscription_Data_Store::read_multiple()` on HPOS-enabled stores.
 * Update - Refactor our Related Orders data store classes (WCS_Related_Order_Store_Cached_CPT and WCS_Related_Order_Store_CPT) to use CRUD methods to support subscriptions and orders stored in HPOS.
+* Update - Display related orders table when viewing the new "Edit Order" page (HPOS enabled stores).
+* Update - Add support for HPOS edit order URL in related orders table.
 * Dev - Removed the deprecated "wcs_subscriptions_for_{$relation_type}_order" dynamic hook used to filter the list of related subscriptions for the given relation type. The following hooks have been removed with no alternative:
         wcs_subscriptions_for_renewal_order
         wcs_subscriptions_for_switch_order
@@ -16,6 +17,9 @@
 * Update - Replace instances of `get_posts()` across codebase with new wcs_get_orders_with_meta_query() function.
 * Dev - Code that was tagged with a version and moved from WooCommerce Subscriptions now explicitly mentions this and shows the correct subscriptions-core and WC Subscriptions versions.
 * Dev - Refactor the saving of subscription dates in the subscription datastore to separate fetching changes and saving. Enables backfilling subscription dates when HPOS syncing is enabled.
+
+= 2.5.2 - 2022-11-15 =
+* Fix - When creating a subscription via the checkout, make sure a new instance of the subscription is attached to the `woocommerce_checkout_subscription_created` action hook.
 
 = 2.5.1 - 2022-11-04 =
 * Dev - Replace the use of the deprecated wcs_renewal_order_meta hook with wc_subscription_renewal_order_data in the WCS_Related_Order_Store_Cached_CPT class.
