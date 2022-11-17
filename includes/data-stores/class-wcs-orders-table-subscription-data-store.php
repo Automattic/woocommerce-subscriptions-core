@@ -344,16 +344,6 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Reads a subscription object from custom tables.
-	 *
-	 * @param \WC_Subscription $subscription Subscription object.
-	 */
-	public function read( &$subscription ) {
-		parent::read( $subscription );
-		$this->set_subscription_props( $subscription );
-	}
-
-	/**
 	 * Reads multiple subscription objects from custom tables.
 	 *
 	 * @param \WC_Order $subscriptions Subscription objects.
@@ -361,7 +351,12 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	public function read_multiple( &$subscriptions ) {
 		parent::read_multiple( $subscriptions );
 		foreach ( $subscriptions as $subscription ) {
+			// Flag the subscription as still being read so props we set aren't considered changes.
+			$subscription->set_object_read( false );
+
 			$this->set_subscription_props( $subscription );
+
+			$subscription->set_object_read( true );
 		}
 	}
 
