@@ -88,7 +88,7 @@ class WCS_Meta_Box_Related_Orders {
 
 		foreach ( $subscriptions as $subscription ) {
 			// If we're on a single subscription or renewal order's page, display the parent orders
-			if ( 1 == count( $subscriptions ) && $subscription->get_parent_id() ) {
+			if ( 1 === count( $subscriptions ) && $subscription->get_parent_id() ) {
 				$orders_by_type['parent'][] = $subscription->get_parent_id();
 			}
 
