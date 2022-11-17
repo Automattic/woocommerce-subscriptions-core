@@ -69,14 +69,12 @@ class WCS_Meta_Box_Related_Orders {
 		$orders_by_type        = array();
 		$unknown_orders        = array(); // Orders which couldn't be loaded.
 		$is_subscription       = wcs_is_subscription( $order );
-		$this_order_id         = $order->get_id();
+		$this_order            = $order;
 
 		// If this is a subscriptions screen,
 		if ( $is_subscription ) {
 			$subscription    = wcs_get_subscription( $order );
 			$subscriptions[] = $subscription;
-
-			$order = ( false === $subscription->get_parent_id() ) ? $subscription : $subscription->get_parent();
 
 			// Resubscribed subscriptions and orders.
 			$initial_subscriptions         = wcs_get_subscriptions_for_resubscribe_order( $subscription );
@@ -88,7 +86,7 @@ class WCS_Meta_Box_Related_Orders {
 
 		foreach ( $subscriptions as $subscription ) {
 			// If we're on a single subscription or renewal order's page, display the parent orders
-			if ( 1 == count( $subscriptions ) && $subscription->get_parent_id() ) {
+			if ( 1 === count( $subscriptions ) && $subscription->get_parent_id() ) {
 				$orders_by_type['parent'][] = $subscription->get_parent_id();
 			}
 
@@ -151,7 +149,7 @@ class WCS_Meta_Box_Related_Orders {
 			 * @param array   $subscriptions An array of subscriptions related to the order.
 			 * @param WP_Post $post The order post object.
 			 */
-			$orders_to_display = apply_filters( 'woocommerce_subscriptions_admin_related_orders_to_display', $orders_to_display, $subscriptions, get_post( $order->get_id() ) );
+			$orders_to_display = apply_filters( 'woocommerce_subscriptions_admin_related_orders_to_display', $orders_to_display, $subscriptions, get_post( $this_order->get_id() ) );
 		}
 
 		/**
@@ -163,13 +161,13 @@ class WCS_Meta_Box_Related_Orders {
 		 * @param array    $subscriptions An array of subscriptions related to the order.
 		 * @param WC_Order $order The order object.
 		 */
-		$orders_to_display = apply_filters( 'wcs_admin_subscription_related_orders_to_display', $orders_to_display, $subscriptions, $order );
+		$orders_to_display = apply_filters( 'wcs_admin_subscription_related_orders_to_display', $orders_to_display, $subscriptions, $this_order );
 
 		wcs_sort_objects( $orders_to_display, 'date_created', 'descending' );
 
 		foreach ( $orders_to_display as $row_order ) {
 			// Skip the current order or subscription being viewed.
-			if ( $row_order->get_id() === $this_order_id ) {
+			if ( $row_order->get_id() === $this_order->get_id() ) {
 				continue;
 			}
 
