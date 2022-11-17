@@ -600,6 +600,14 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	public function do_subscriptions_exist() {
 		$subscriptions_exist = false;
 
+		$results             = wc_get_orders(
+			array(
+				'type'  => 'shop_subscription',
+				'limit' => 1,
+			)
+		);
+		$subscriptions_exist = count( $results ) > 0;
+
 		return $subscriptions_exist;
 	}
 }
