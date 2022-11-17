@@ -52,7 +52,7 @@ function wcs_is_subscription( $subscription ) {
  * Return true if there are any subscriptions in the database (active or inactive).
  *
  * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
- * @return boolean $subscriptions_exist True if there are any subscriptions (in wp_posts table).
+ * @return boolean $subscriptions_exist True if the store has any subscriptions.
  */
 function wcs_do_subscriptions_exist() {
 	$subscriptions_exist = false;
