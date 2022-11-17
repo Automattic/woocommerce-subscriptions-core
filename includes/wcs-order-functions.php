@@ -59,10 +59,11 @@ function wcs_get_subscriptions_for_order( $order, $args = array() ) {
 	if ( $get_all || in_array( 'parent', $args['order_type'] ) ) {
 
 		$get_subscriptions_args = array_merge( $args, array(
-			'order_id' => wcs_get_objects_property( $order, 'id' ),
+			'order_id' => $order->get_id(),
 		) );
 
 		$subscriptions = wcs_get_subscriptions( $get_subscriptions_args );
+
 	}
 
 	$all_relation_types = WCS_Related_Order_Store::instance()->get_relation_types();
@@ -336,18 +337,18 @@ function wcs_order_contains_subscription( $order, $order_type = array( 'parent',
 	}
 
 	$contains_subscription = false;
-	$get_all               = in_array( 'any', $order_type );
+	$get_all               = in_array( 'any', $order_type, true );
 
-	if ( ( in_array( 'parent', $order_type ) || $get_all ) && count( wcs_get_subscriptions_for_order( wcs_get_objects_property( $order, 'id' ), array( 'order_type' => 'parent' ) ) ) > 0 ) {
+	if ( ( in_array( 'parent', $order_type, true ) || $get_all ) && count( wcs_get_subscriptions_for_order( $order->get_id(), array( 'order_type' => 'parent' ) ) ) > 0 ) {
 		$contains_subscription = true;
 
-	} elseif ( ( in_array( 'renewal', $order_type ) || $get_all ) && wcs_order_contains_renewal( $order ) ) {
+	} elseif ( ( in_array( 'renewal', $order_type, true ) || $get_all ) && wcs_order_contains_renewal( $order ) ) {
 		$contains_subscription = true;
 
-	} elseif ( ( in_array( 'resubscribe', $order_type ) || $get_all ) && wcs_order_contains_resubscribe( $order ) ) {
+	} elseif ( ( in_array( 'resubscribe', $order_type, true ) || $get_all ) && wcs_order_contains_resubscribe( $order ) ) {
 		$contains_subscription = true;
 
-	} elseif ( ( in_array( 'switch', $order_type ) || $get_all ) && wcs_order_contains_switch( $order ) ) {
+	} elseif ( ( in_array( 'switch', $order_type, true ) || $get_all ) && wcs_order_contains_switch( $order ) ) {
 		$contains_subscription = true;
 
 	}
@@ -367,9 +368,10 @@ function wcs_order_contains_subscription( $order, $order_type = array( 'parent',
  * @return array An array of WC_Order or WC_Subscription objects or IDs based on the args.
  */
 function wcs_get_orders_with_meta_query( $args ) {
-	$use_meta_query_filter = wcs_is_custom_order_tables_usage_enabled() ? false : true;
+	$is_hpos_in_use = wcs_is_custom_order_tables_usage_enabled();
 
-	if ( $use_meta_query_filter ) {
+	// In CPT datastores, we have to hook into the orders query to insert any meta query args.
+	if ( ! $is_hpos_in_use ) {
 		$meta = $args['meta_query'] ?? [];
 		unset( $args['meta_query'] );
 
@@ -386,9 +388,25 @@ function wcs_get_orders_with_meta_query( $args ) {
 		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $handle_meta, 10, 2 );
 	}
 
+	/**
+	 * Map the 'any' status to wcs_get_subscription_statuses() in HPOS environments.
+	 *
+	 * In HPOS environments, the 'any' status now maps to wc_get_order_statuses() statuses. Whereas, in
+	 * WP Post architecture 'any' meant any status except for ‘inherit’, ‘trash’ and ‘auto-draft’.
+	 *
+	 * If we're querying for subscriptions, we need to map 'any' to be all valid subscription statuses otherwise it would just search for order statuses.
+	 */
+	if ( isset( $args['status'], $args['type'] ) &&
+		[ 'any' ] === $args['status'] &&
+		'shop_subscription' === $args['type'] &&
+		$is_hpos_in_use
+	) {
+		$args['status'] = array_keys( wcs_get_subscription_statuses() );
+	}
+
 	$results = wc_get_orders( $args );
 
-	if ( $use_meta_query_filter ) {
+	if ( ! $is_hpos_in_use ) {
 		remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $handle_meta, 10 );
 	}
 
