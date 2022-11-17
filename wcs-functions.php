@@ -59,8 +59,9 @@ function wcs_do_subscriptions_exist() {
 
 	$results             = wc_get_orders(
 		array(
-			'type'  => 'shop_subscription',
-			'limit' => 1,
+			'type'   => 'shop_subscription',
+			'limit'  => 1,
+			'return' => 'ids',
 		)
 	);
 	$subscriptions_exist = count( $results ) > 0;
