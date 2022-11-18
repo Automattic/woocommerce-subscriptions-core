@@ -55,7 +55,7 @@ class WCS_Admin_Meta_Boxes {
 		// Parent order line item price lock option.
 		add_action( 'woocommerce_order_item_add_action_buttons', array( __CLASS__, 'output_price_lock_html' ) );
 		add_action( 'woocommerce_process_shop_order_meta', array( __CLASS__, 'save_increased_price_lock' ) );
-		add_action( 'wp_ajax_wcs_order_price_lock' , array( __CLASS__, 'save_increased_price_lock' ) );
+		add_action( 'wp_ajax_wcs_order_price_lock', array( __CLASS__, 'save_increased_price_lock' ) );
 
 		// After calculating subscription/renewal order line item taxes, update base location tax item meta.
 		add_action( 'woocommerce_ajax_add_order_item_meta', array( __CLASS__, 'store_item_base_location_tax' ), 10, 3 );
