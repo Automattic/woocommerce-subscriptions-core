@@ -32,10 +32,15 @@ class WCS_Meta_Box_Schedule {
 
 	/**
 	 * Save meta box data
+	 *
+	 * @see woocommerce_process_shop_order_meta
+	 *
+	 * @param int $order_id
+	 * @param WC_Order $order
 	 */
-	public static function save( $post_id, $post ) {
+	public static function save( $order_id, $order ) {
 
-		if ( 'shop_subscription' == $post->post_type && ! empty( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) {
+		if ( 'shop_subscription' === $order->get_type() && ! empty( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) {
 
 			if ( isset( $_POST['_billing_interval'] ) ) {
 				update_post_meta( $post_id, '_billing_interval', $_POST['_billing_interval'] );
@@ -45,7 +50,7 @@ class WCS_Meta_Box_Schedule {
 				update_post_meta( $post_id, '_billing_period', $_POST['_billing_period'] );
 			}
 
-			$subscription = wcs_get_subscription( $post_id );
+			$subscription = wcs_get_subscription( $order );
 
 			$dates = array();
 
@@ -73,7 +78,7 @@ class WCS_Meta_Box_Schedule {
 			try {
 				$subscription->update_dates( $dates, 'gmt' );
 
-				wp_cache_delete( $post_id, 'posts' );
+				wp_cache_delete( $order_id, 'posts' );
 			} catch ( Exception $e ) {
 				wcs_add_admin_notice( $e->getMessage(), 'error' );
 			}
