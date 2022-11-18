@@ -312,18 +312,18 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 	/**
 	 * Save meta box data
 	 *
-	 * @param int     $post_id
-	 * @param WP_Post $post
+	 * @param int      $order_id
+	 * @param WC_Order $order
 	 */
-	public static function save( $post_id, $post = null ) {
-		if ( 'shop_subscription' != $post->post_type || empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) {
+	public static function save( $order_id, $order = null ) {
+		if ( 'shop_subscription' !== $order->get_type() || empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) {
 			return;
 		}
 
 		self::init_address_fields();
 
 		// Get subscription object.
-		$subscription = wcs_get_subscription( $post_id );
+		$subscription = wcs_get_subscription( $order );
 		$props        = array();
 
 		// Ensure there is an order key.
@@ -414,6 +414,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 			do_action( 'woocommerce_admin_created_subscription', $subscription );
 		}
 
-		do_action( 'woocommerce_process_shop_subscription_meta', $post_id, $post );
+		// TODO: deprecate this hook
+		do_action( 'woocommerce_process_shop_subscription_meta', $order_id, $order );
 	}
 }
