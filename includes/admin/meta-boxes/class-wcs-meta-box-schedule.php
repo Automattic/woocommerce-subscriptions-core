@@ -60,7 +60,7 @@ class WCS_Meta_Box_Schedule {
 
 				// A subscription needs a created date, even if it wasn't set or is empty
 				if ( 'date_created' === $date_key && empty( $_POST[ $utc_timestamp_key ] ) ) {
-					$datetime = current_time( 'timestamp', true );
+					$datetime = time();
 				} elseif ( isset( $_POST[ $utc_timestamp_key ] ) ) {
 					$datetime = $_POST[ $utc_timestamp_key ];
 				} else { // No date to set
