@@ -111,6 +111,7 @@ class WCS_Admin_Meta_Boxes {
 	 */
 	public function enqueue_styles_scripts() {
 		global $post;
+		$ver = WC_Subscriptions_Core_Plugin::instance()->get_library_version();
 
 		// Get admin screen id
 		$screen    = get_current_screen();
@@ -118,11 +119,11 @@ class WCS_Admin_Meta_Boxes {
 
 		if ( 'shop_subscription' == $screen_id ) {
 
-			wp_register_script( 'jstz', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/jstz.min.js' ) );
+			wp_register_script( 'jstz', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/jstz.min.js' ), [], $ver, false );
 
-			wp_register_script( 'momentjs', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/moment.min.js' ) );
+			wp_register_script( 'momentjs', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/moment.min.js' ), [], $ver, false );
 
-			wp_enqueue_script( 'wcs-admin-meta-boxes-subscription', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/meta-boxes-subscription.js' ), array( 'wc-admin-meta-boxes', 'jstz', 'momentjs' ), WC_VERSION );
+			wp_enqueue_script( 'wcs-admin-meta-boxes-subscription', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/meta-boxes-subscription.js' ), array( 'wc-admin-meta-boxes', 'jstz', 'momentjs' ), $ver, false );
 
 			wp_localize_script(
 				'wcs-admin-meta-boxes-subscription',
@@ -147,7 +148,7 @@ class WCS_Admin_Meta_Boxes {
 			);
 		} elseif ( 'shop_order' == $screen_id ) {
 
-			wp_enqueue_script( 'wcs-admin-meta-boxes-order', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/wcs-meta-boxes-order.js' ) );
+			wp_enqueue_script( 'wcs-admin-meta-boxes-order', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/wcs-meta-boxes-order.js' ), [], $ver, false );
 
 			wp_localize_script(
 				'wcs-admin-meta-boxes-order',
@@ -164,7 +165,8 @@ class WCS_Admin_Meta_Boxes {
 				'wcs-admin-coupon-meta-boxes',
 				WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/meta-boxes-coupon.js' ),
 				array( 'jquery', 'wc-admin-meta-boxes' ),
-				WC_Subscriptions_Core_Plugin::instance()->get_library_version()
+				$ver,
+				false
 			);
 		}
 	}
