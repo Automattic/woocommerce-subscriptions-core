@@ -346,7 +346,7 @@ class WCS_Admin_Meta_Boxes {
 	public static function override_stock_management( $manage_stock ) {
 
 		// Override stock management while adding line items to a subscription via AJAX.
-		if ( isset( $_POST['order_id'], $_REQUEST['security'] ) && wp_verify_nonce( $_REQUEST['security'], 'order-item' ) && doing_action( 'wp_ajax_woocommerce_add_order_item' ) && wcs_is_subscription( absint( wp_unslash( $_POST['order_id'] ) ) ) ) {
+		if ( isset( $_POST['order_id'], $_REQUEST['security'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_REQUEST['security'] ) ), 'order-item' ) && doing_action( 'wp_ajax_woocommerce_add_order_item' ) && wcs_is_subscription( absint( wp_unslash( $_POST['order_id'] ) ) ) ) {
 			$manage_stock = 'no';
 		}
 
