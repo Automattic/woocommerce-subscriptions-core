@@ -402,11 +402,12 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 		try {
 			WCS_Change_Payment_Method_Admin::save_meta( $subscription );
+			$order_status = isset( $_POST['order_status'] ) ?? wc_clean( wp_unslash( $_POST['order_status'] ) );
 
-			if ( 'cancelled' === wc_clean( wp_unslash( $_POST['order_status'] ) ) ) {
+			if ( 'cancelled' === $order_status ) {
 				$subscription->cancel_order();
 			} else {
-				$subscription->update_status( wc_clean( wp_unslash( $_POST['order_status'] ) ), '', true );
+				$subscription->update_status( $order_status, '', true );
 			}
 		} catch ( Exception $e ) {
 			// translators: placeholder is error message from the payment gateway or subscriptions when updating the status
