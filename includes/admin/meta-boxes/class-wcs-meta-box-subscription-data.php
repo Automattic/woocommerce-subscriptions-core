@@ -43,23 +43,27 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 			<input name="post_status" type="hidden" value="<?php echo esc_attr( 'wc-' . $subscription->get_status() ); ?>" />
 			<div id="order_data" class="panel">
 
-				<h2><?php
+				<h2>
+				<?php
 				// translators: placeholder is the ID of the subscription
-				printf( esc_html_x( 'Subscription #%s details', 'edit subscription header', 'woocommerce-subscriptions' ), esc_html( $subscription->get_order_number() ) ); ?></h2>
+				printf( esc_html_x( 'Subscription #%s details', 'edit subscription header', 'woocommerce-subscriptions' ), esc_html( $subscription->get_order_number() ) );
+				?>
+				</h2>
 
 				<div class="order_data_column_container">
 					<div class="order_data_column">
 						<h3><?php esc_html_e( 'General', 'woocommerce-subscriptions' ); ?></h3>
 
 						<p class="form-field form-field-wide wc-customer-user">
-							<label for="customer_user"><?php esc_html_e( 'Customer:', 'woocommerce-subscriptions' ) ?> <?php
+							<label for="customer_user"><?php esc_html_e( 'Customer:', 'woocommerce-subscriptions' ); ?> <?php
 							if ( $subscription->get_user_id() ) {
 								$args = array(
 									'post_status'    => 'all',
 									'post_type'      => 'shop_subscription',
 									'_customer_user' => absint( $subscription->get_user_id() ),
 								);
-								printf( '<a href="%s">%s</a>',
+								printf(
+									'<a href="%s">%s</a>',
 									esc_url( add_query_arg( $args, admin_url( 'edit.php' ) ) ),
 									esc_html__( 'View other subscriptions &rarr;', 'woocommerce-subscriptions' )
 								);
@@ -69,7 +73,8 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 									esc_html__( 'Profile &rarr;', 'woocommerce-subscriptions' )
 								);
 							}
-							?></label>
+							?>
+							</label>
 							<?php
 							$user_string = '';
 							$user_id     = '';
@@ -78,14 +83,16 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 								$user        = get_user_by( 'id', $user_id );
 								$user_string = esc_html( $user->display_name ) . ' (#' . absint( $user->ID ) . ' &ndash; ' . esc_html( $user->user_email ) . ')';
 							}
-							WCS_Select2::render( array(
-								'class'       => 'wc-customer-search',
-								'name'        => 'customer_user',
-								'id'          => 'customer_user',
-								'placeholder' => esc_attr__( 'Search for a customer&hellip;', 'woocommerce-subscriptions' ),
-								'selected'    => $user_string,
-								'value'       => $user_id,
-							) );
+							WCS_Select2::render(
+								array(
+									'class'       => 'wc-customer-search',
+									'name'        => 'customer_user',
+									'id'          => 'customer_user',
+									'placeholder' => esc_attr__( 'Search for a customer&hellip;', 'woocommerce-subscriptions' ),
+									'selected'    => $user_string,
+									'value'       => $user_id,
+								)
+							);
 							?>
 						</p>
 
@@ -105,31 +112,37 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 						</p>
 						<?php
 						$parent_order = $subscription->get_parent();
-						if ( $parent_order ) { ?>
+						if ( $parent_order ) {
+							?>
 						<p class="form-field form-field-wide">
-						<?php echo esc_html__( 'Parent order: ', 'woocommerce-subscriptions' ) ?>
+							<?php echo esc_html__( 'Parent order: ', 'woocommerce-subscriptions' ); ?>
 						<a href="<?php echo esc_url( get_edit_post_link( $subscription->get_parent_id() ) ); ?>">
-						<?php
-						// translators: placeholder is an order number.
-						echo sprintf( esc_html__( '#%1$s', 'woocommerce-subscriptions' ), esc_html( $parent_order->get_order_number() ) );
-						?>
+							<?php
+							// translators: placeholder is an order number.
+							echo sprintf( esc_html__( '#%1$s', 'woocommerce-subscriptions' ), esc_html( $parent_order->get_order_number() ) );
+							?>
 						</a>
 						</p>
-						<?php } else {
-						?>
+							<?php
+						} else {
+							?>
 						<p class="form-field form-field-wide">
 							<label for="parent-order-id"><?php esc_html_e( 'Parent order:', 'woocommerce-subscriptions' ); ?> </label>
 							<?php
-							WCS_Select2::render( array(
-								'class'       => 'wc-enhanced-select',
-								'name'        => 'parent-order-id',
-								'id'          => 'parent-order-id',
-								'placeholder' => esc_attr__( 'Select an order&hellip;', 'woocommerce-subscriptions' ),
-							) );
+							WCS_Select2::render(
+								array(
+									'class'       => 'wc-enhanced-select',
+									'name'        => 'parent-order-id',
+									'id'          => 'parent-order-id',
+									'placeholder' => esc_attr__( 'Select an order&hellip;', 'woocommerce-subscriptions' ),
+								)
+							);
 							?>
 						</p>
-						<?php }
-						do_action( 'woocommerce_admin_order_data_after_order_details', $subscription ); ?>
+							<?php
+						}
+						do_action( 'woocommerce_admin_order_data_after_order_details', $subscription );
+						?>
 
 					</div>
 					<div class="order_data_column">
@@ -192,10 +205,10 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							switch ( $field['type'] ) {
 								case 'select':
 									woocommerce_wp_select( $field );
-								break;
+									break;
 								default:
 									woocommerce_wp_text_input( $field );
-								break;
+									break;
 							}
 						}
 
@@ -281,17 +294,17 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 								switch ( $field['type'] ) {
 									case 'select':
 										woocommerce_wp_select( $field );
-									break;
+										break;
 									default:
 										woocommerce_wp_text_input( $field );
-									break;
+										break;
 								}
 							}
 						}
 
 						if ( apply_filters( 'woocommerce_enable_order_notes_field', 'yes' == get_option( 'woocommerce_enable_order_comments', 'yes' ) ) ) {
 							?>
-							<p class="form-field form-field-wide"><label for="excerpt"><?php esc_html_e( 'Customer Provided Note', 'woocommerce-subscriptions' ) ?>:</label>
+							<p class="form-field form-field-wide"><label for="excerpt"><?php esc_html_e( 'Customer Provided Note', 'woocommerce-subscriptions' ); ?>:</label>
 								<textarea rows="1" cols="40" name="excerpt" tabindex="6" id="excerpt" placeholder="<?php esc_attr_e( 'Customer\'s notes about the order', 'woocommerce-subscriptions' ); ?>"><?php echo wp_kses_post( $post->post_excerpt ); ?></textarea>
 							</p>
 							<?php
