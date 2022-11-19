@@ -34,7 +34,7 @@ class WCS_Meta_Box_Schedule {
 	 */
 	public static function save( $post_id, $post ) {
 
-		if ( 'shop_subscription' == $post->post_type && ! empty( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) {
+		if ( 'shop_subscription' === $post->post_type && ! empty( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) {
 
 			if ( isset( $_POST['_billing_interval'] ) ) {
 				update_post_meta( $post_id, '_billing_interval', $_POST['_billing_interval'] );
@@ -51,7 +51,7 @@ class WCS_Meta_Box_Schedule {
 			foreach ( wcs_get_subscription_date_types() as $date_type => $date_label ) {
 				$date_key = wcs_normalise_date_type_key( $date_type );
 
-				if ( 'last_order_date_created' == $date_key ) {
+				if ( 'last_order_date_created' === $date_key ) {
 					continue;
 				}
 
