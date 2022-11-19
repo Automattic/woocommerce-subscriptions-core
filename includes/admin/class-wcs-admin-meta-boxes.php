@@ -397,7 +397,8 @@ class WCS_Admin_Meta_Boxes {
 				'<div id="wcs_order_price_lock"><label for="wcs-order-price-lock">%s</label>%s<input id="wcs-order-price-lock" type="checkbox" name="wcs_order_price_lock" value="yes" %s></div>',
 				esc_html__( 'Lock manual price increases', 'woocommerce-subscriptions' ),
 				// So the help tip is initialized when the line items are reloaded, we need to add the 'tips' class to the element.
-				wcs_help_tip( $help_tip, false, 'woocommerce-help-tip tips' ),
+				// PHPCS warning ignored since escaping is handled by wc_help_tip().
+				wcs_help_tip( $help_tip, false, 'woocommerce-help-tip tips' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				checked( $order->get_meta( '_manual_price_increases_locked' ), 'true', false )
 			);
 		}
