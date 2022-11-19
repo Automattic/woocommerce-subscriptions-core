@@ -160,7 +160,7 @@ class WCS_Admin_Meta_Boxes {
 		}
 
 		// Enqueue the metabox script for coupons.
-		if ( ! wcs_is_woocommerce_pre( '3.2' ) && in_array( $screen_id, array( 'shop_coupon', 'edit-shop_coupon' ) ) ) {
+		if ( ! wcs_is_woocommerce_pre( '3.2' ) && in_array( $screen_id, array( 'shop_coupon', 'edit-shop_coupon' ), true ) ) {
 			wp_enqueue_script(
 				'wcs-admin-coupon-meta-boxes',
 				WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/meta-boxes-coupon.js' ),
