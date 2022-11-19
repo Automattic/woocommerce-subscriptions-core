@@ -318,7 +318,7 @@ class WCS_Admin_Meta_Boxes {
 
 		$can_be_retried = false;
 
-		if ( wcs_order_contains_renewal( $order ) && $order->needs_payment() && '' != wcs_get_objects_property( $order, 'payment_method' ) ) {
+		if ( wcs_order_contains_renewal( $order ) && $order->needs_payment() && '' != wcs_get_objects_property( $order, 'payment_method' ) ) { // phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison
 			$supports_date_changes          = false;
 			$order_payment_gateway          = wc_get_payment_gateway_by_order( $order );
 			$order_payment_gateway_supports = ( isset( $order_payment_gateway->id ) ) ? has_action( 'woocommerce_scheduled_subscription_payment_' . $order_payment_gateway->id ) : false;
