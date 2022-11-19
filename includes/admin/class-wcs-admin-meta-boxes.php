@@ -101,7 +101,7 @@ class WCS_Admin_Meta_Boxes {
 	 */
 	public function remove_meta_box_save( $post_id, $post ) {
 
-		if ( 'shop_subscription' == $post->post_type ) {
+		if ( 'shop_subscription' === $post->post_type ) {
 			remove_action( 'woocommerce_process_shop_order_meta', 'WC_Meta_Box_Order_Data::save', 40 );
 		}
 	}
@@ -117,7 +117,7 @@ class WCS_Admin_Meta_Boxes {
 		$screen    = get_current_screen();
 		$screen_id = isset( $screen->id ) ? $screen->id : '';
 
-		if ( 'shop_subscription' == $screen_id ) {
+		if ( 'shop_subscription' === $screen_id ) {
 
 			wp_register_script( 'jstz', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/jstz.min.js' ), [], $ver, false );
 
@@ -146,7 +146,7 @@ class WCS_Admin_Meta_Boxes {
 					)
 				)
 			);
-		} elseif ( 'shop_order' == $screen_id ) {
+		} elseif ( 'shop_order' === $screen_id ) {
 
 			wp_enqueue_script( 'wcs-admin-meta-boxes-order', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/wcs-meta-boxes-order.js' ), [], $ver, false );
 
