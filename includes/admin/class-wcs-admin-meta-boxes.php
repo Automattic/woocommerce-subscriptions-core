@@ -48,7 +48,7 @@ class WCS_Admin_Meta_Boxes {
 
 		add_action( 'woocommerce_order_action_wcs_retry_renewal_payment', array( __CLASS__, 'process_retry_renewal_payment_action_request' ), 10, 1 );
 
-		// Disable stock managment while adding line items to a subscription via AJAX.
+		// Disable stock management while adding line items to a subscription via AJAX.
 		add_action( 'option_woocommerce_manage_stock', array( __CLASS__, 'override_stock_management' ) );
 
 		// Parent order line item price lock option.
@@ -97,7 +97,7 @@ class WCS_Admin_Meta_Boxes {
 	}
 
 	/**
-	 * Don't save save some order related meta boxes
+	 * Don't save some order related meta boxes
 	 */
 	public function remove_meta_box_save( $post_id, $post ) {
 
@@ -334,7 +334,7 @@ class WCS_Admin_Meta_Boxes {
 	}
 
 	/**
-	 * Disables stock managment while adding items to a subscription via the edit subscription screen.
+	 * Disables stock management while adding items to a subscription via the edit subscription screen.
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.0.6
 	 *
