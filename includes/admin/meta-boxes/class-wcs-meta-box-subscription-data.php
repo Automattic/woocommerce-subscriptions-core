@@ -4,7 +4,6 @@
  *
  * Functions for displaying the order data meta box.
  *
- * @author   Prospress
  * @category Admin
  * @package  WooCommerce Subscriptions/Admin/Meta Boxes
  * @version  1.0.0 - Migrated from WooCommerce Subscriptions v3.0.0
