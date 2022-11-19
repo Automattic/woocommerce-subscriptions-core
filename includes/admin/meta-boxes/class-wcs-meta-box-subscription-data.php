@@ -328,7 +328,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 	 * @param WP_Post $post
 	 */
 	public static function save( $post_id, $post = null ) {
-		if ( 'shop_subscription' != $post->post_type || empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) { // phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison
+		if ( 'shop_subscription' != $post->post_type || empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( wc_clean( wp_unslash( $_POST['woocommerce_meta_nonce'] ) ), 'woocommerce_save_data' ) ) { // phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison
 			return;
 		}
 
@@ -389,12 +389,12 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 		// Save the linked parent order id
 		if ( ! empty( $_POST['parent-order-id'] ) ) {
 			// if the parent order to be set is a renewal order
-			if ( wcs_order_contains_renewal( $_POST['parent-order-id'] ) ) {
+			if ( wcs_order_contains_renewal( wc_clean( wp_unslash( $_POST['parent-order-id'] ) ) ) ) {
 				// remove renewal meta
-				$parent = wc_get_order( $_POST['parent-order-id'] );
+				$parent = wc_get_order( wc_clean( wp_unslash( $_POST['parent-order-id'] ) ) );
 				wcs_delete_objects_property( $parent, 'subscription_renewal' );
 			}
-			$subscription->set_parent_id( wc_clean( $_POST['parent-order-id'] ) );
+			$subscription->set_parent_id( wc_clean( wp_unslash( $_POST['parent-order-id'] ) ) );
 			// translators: %s: parent order number (linked to its details screen).
 			$subscription->add_order_note( sprintf( _x( 'Subscription linked to parent order %s via admin.', 'subscription note after linking to a parent order', 'woocommerce-subscriptions' ), sprintf( '<a href="%1$s">#%2$s</a> ', esc_url( wcs_get_edit_post_link( $subscription->get_parent_id() ) ), $subscription->get_parent()->get_order_number() ) ), false, true );
 			$subscription->save();
@@ -403,10 +403,10 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 		try {
 			WCS_Change_Payment_Method_Admin::save_meta( $subscription );
 
-			if ( 'cancelled' === $_POST['order_status'] ) {
+			if ( 'cancelled' === wc_clean( wp_unslash( $_POST['order_status'] ) ) ) {
 				$subscription->cancel_order();
 			} else {
-				$subscription->update_status( $_POST['order_status'], '', true );
+				$subscription->update_status( wc_clean( wp_unslash( $_POST['order_status'] ) ), '', true );
 			}
 		} catch ( Exception $e ) {
 			// translators: placeholder is error message from the payment gateway or subscriptions when updating the status
