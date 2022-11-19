@@ -179,10 +179,10 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							echo '<p><strong>' . esc_html( $field['label'] ) . ':</strong> ' . wp_kses_post( make_clickable( esc_html( $field_value ) ) ) . '</p>';
 						}
 
-						echo '<p' . ( ( '' != $subscription->get_payment_method() ) ? ' class="' . esc_attr( $subscription->get_payment_method() ) . '"' : '' ) . '><strong>' . esc_html__( 'Payment Method', 'woocommerce-subscriptions' ) . ':</strong>' . wp_kses_post( nl2br( $subscription->get_payment_method_to_display() ) );
+						echo '<p' . ( ( '' != $subscription->get_payment_method() ) ? ' class="' . esc_attr( $subscription->get_payment_method() ) . '"' : '' ) . '><strong>' . esc_html__( 'Payment Method', 'woocommerce-subscriptions' ) . ':</strong>' . wp_kses_post( nl2br( $subscription->get_payment_method_to_display() ) ); // phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison
 
 						// Display help tip
-						if ( '' != $subscription->get_payment_method() && ! $subscription->is_manual() ) {
+						if ( '' != $subscription->get_payment_method() && ! $subscription->is_manual() ) { // phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison
 							// translators: %s: gateway ID.
 							echo wcs_help_tip( sprintf( _x( 'Gateway ID: [%s]', 'The gateway ID displayed on the Edit Subscriptions screen when editing payment method.', 'woocommerce-subscriptions' ), $subscription->get_payment_method() ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 						}
@@ -328,7 +328,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 	 * @param WP_Post $post
 	 */
 	public static function save( $post_id, $post = null ) {
-		if ( 'shop_subscription' != $post->post_type || empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) {
+		if ( 'shop_subscription' != $post->post_type || empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) { // phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison
 			return;
 		}
 
