@@ -34,14 +34,14 @@ class WCS_Meta_Box_Schedule {
 	 */
 	public static function save( $post_id, $post ) {
 
-		if ( 'shop_subscription' === $post->post_type && ! empty( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) {
+		if ( 'shop_subscription' === $post->post_type && ! empty( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_POST['woocommerce_meta_nonce'] ) ), 'woocommerce_save_data' ) ) {
 
 			if ( isset( $_POST['_billing_interval'] ) ) {
-				update_post_meta( $post_id, '_billing_interval', $_POST['_billing_interval'] );
+				update_post_meta( $post_id, '_billing_interval', wc_clean( wp_unslash( $_POST['_billing_interval'] ) ) );
 			}
 
 			if ( ! empty( $_POST['_billing_period'] ) ) {
-				update_post_meta( $post_id, '_billing_period', $_POST['_billing_period'] );
+				update_post_meta( $post_id, '_billing_period', wc_clean( wp_unslash( $_POST['_billing_period'] ) ) );
 			}
 
 			$subscription = wcs_get_subscription( $post_id );
@@ -61,7 +61,7 @@ class WCS_Meta_Box_Schedule {
 				if ( 'date_created' === $date_key && empty( $_POST[ $utc_timestamp_key ] ) ) {
 					$datetime = time();
 				} elseif ( isset( $_POST[ $utc_timestamp_key ] ) ) {
-					$datetime = $_POST[ $utc_timestamp_key ];
+					$datetime = wc_clean( wp_unslash( $_POST[ $utc_timestamp_key ] ) );
 				} else { // No date to set
 					continue;
 				}
