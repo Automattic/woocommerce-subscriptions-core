@@ -423,7 +423,7 @@ class WCS_Admin_Meta_Boxes {
 			return;
 		}
 
-		if ( isset( $_POST['wcs_order_price_lock'] ) && 'yes' === wc_clean( $_POST['wcs_order_price_lock'] ) ) {
+		if ( isset( $_POST['wcs_order_price_lock'] ) && 'yes' === wc_clean( wp_unslash( $_POST['wcs_order_price_lock'] ) ) ) {
 			$order->update_meta_data( '_manual_price_increases_locked', 'true' );
 			$order->save();
 		} elseif ( $order->meta_exists( '_manual_price_increases_locked' ) ) {
