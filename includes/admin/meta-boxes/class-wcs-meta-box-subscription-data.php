@@ -184,7 +184,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 						// Display help tip
 						if ( '' != $subscription->get_payment_method() && ! $subscription->is_manual() ) {
 							// translators: %s: gateway ID.
-							echo wcs_help_tip( sprintf( _x( 'Gateway ID: [%s]', 'The gateway ID displayed on the Edit Subscriptions screen when editing payment method.', 'woocommerce-subscriptions' ), $subscription->get_payment_method() ) );
+							echo wcs_help_tip( sprintf( _x( 'Gateway ID: [%s]', 'The gateway ID displayed on the Edit Subscriptions screen when editing payment method.', 'woocommerce-subscriptions' ), $subscription->get_payment_method() ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 						}
 
 						echo '</p>';
