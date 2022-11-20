@@ -644,7 +644,7 @@ class WCS_Admin_Meta_Boxes {
 		}
 
 		$customer_orders = array();
-		$user_id         = isset( $_POST['user_id'] ) ?? absint( $_POST['user_id'] );
+		$user_id         = absint( $_POST['user_id'] ?? null );
 		$orders          = wc_get_orders(
 			array(
 				'customer'       => $user_id,
