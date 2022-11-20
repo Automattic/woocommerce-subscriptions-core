@@ -2,7 +2,6 @@
 /**
  * Subscription Billing Schedule
  *
- * @author   Prospress
  * @category Admin
  * @package  WooCommerce Subscriptions/Admin/Meta Boxes
  * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
@@ -27,7 +26,7 @@ class WCS_Meta_Box_Schedule {
 			$the_subscription = wcs_get_subscription( $post->ID );
 		}
 
-		include( dirname( __FILE__ ) . '/views/html-subscription-schedule.php' );
+		include dirname( __FILE__ ) . '/views/html-subscription-schedule.php';
 	}
 
 	/**
@@ -35,14 +34,14 @@ class WCS_Meta_Box_Schedule {
 	 */
 	public static function save( $post_id, $post ) {
 
-		if ( 'shop_subscription' == $post->post_type && ! empty( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) {
+		if ( 'shop_subscription' === $post->post_type && ! empty( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_POST['woocommerce_meta_nonce'] ) ), 'woocommerce_save_data' ) ) {
 
 			if ( isset( $_POST['_billing_interval'] ) ) {
-				update_post_meta( $post_id, '_billing_interval', $_POST['_billing_interval'] );
+				update_post_meta( $post_id, '_billing_interval', wc_clean( wp_unslash( $_POST['_billing_interval'] ) ) );
 			}
 
 			if ( ! empty( $_POST['_billing_period'] ) ) {
-				update_post_meta( $post_id, '_billing_period', $_POST['_billing_period'] );
+				update_post_meta( $post_id, '_billing_period', wc_clean( wp_unslash( $_POST['_billing_period'] ) ) );
 			}
 
 			$subscription = wcs_get_subscription( $post_id );
@@ -52,7 +51,7 @@ class WCS_Meta_Box_Schedule {
 			foreach ( wcs_get_subscription_date_types() as $date_type => $date_label ) {
 				$date_key = wcs_normalise_date_type_key( $date_type );
 
-				if ( 'last_order_date_created' == $date_key ) {
+				if ( 'last_order_date_created' === $date_key ) {
 					continue;
 				}
 
@@ -60,9 +59,9 @@ class WCS_Meta_Box_Schedule {
 
 				// A subscription needs a created date, even if it wasn't set or is empty
 				if ( 'date_created' === $date_key && empty( $_POST[ $utc_timestamp_key ] ) ) {
-					$datetime = current_time( 'timestamp', true );
+					$datetime = time();
 				} elseif ( isset( $_POST[ $utc_timestamp_key ] ) ) {
-					$datetime = $_POST[ $utc_timestamp_key ];
+					$datetime = wc_clean( wp_unslash( $_POST[ $utc_timestamp_key ] ) );
 				} else { // No date to set
 					continue;
 				}
