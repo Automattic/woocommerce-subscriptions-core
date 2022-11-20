@@ -31,20 +31,25 @@ class WCS_Meta_Box_Schedule {
 
 	/**
 	 * Save meta box data
+	 *
+	 * @see woocommerce_process_shop_order_meta
+	 *
+	 * @param int $post_or_order_id
+	 * @param WP_Post|WC_Order $post_or_order_object
 	 */
-	public static function save( $post_id, $post ) {
+	public static function save( $post_or_order_id, $post_or_order_object ) {
 
-		if ( 'shop_subscription' === $post->post_type && ! empty( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_POST['woocommerce_meta_nonce'] ) ), 'woocommerce_save_data' ) ) {
+		if ( wcs_is_subscription( $post_or_order_id ) && ! empty( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_POST['woocommerce_meta_nonce'] ) ), 'woocommerce_save_data' ) ) {
 
 			if ( isset( $_POST['_billing_interval'] ) ) {
-				update_post_meta( $post_id, '_billing_interval', wc_clean( wp_unslash( $_POST['_billing_interval'] ) ) );
+				update_post_meta( $post_or_order_object, '_billing_interval', wc_clean( wp_unslash( $_POST['_billing_interval'] ) ) );
 			}
 
 			if ( ! empty( $_POST['_billing_period'] ) ) {
-				update_post_meta( $post_id, '_billing_period', wc_clean( wp_unslash( $_POST['_billing_period'] ) ) );
+				update_post_meta( $post_or_order_object, '_billing_period', wc_clean( wp_unslash( $_POST['_billing_period'] ) ) );
 			}
 
-			$subscription = wcs_get_subscription( $post_id );
+			$subscription = wcs_get_subscription( $post_or_order_object );
 
 			$dates = array();
 
@@ -72,7 +77,7 @@ class WCS_Meta_Box_Schedule {
 			try {
 				$subscription->update_dates( $dates, 'gmt' );
 
-				wp_cache_delete( $post_id, 'posts' );
+				wp_cache_delete( $post_or_order_id, 'posts' );
 			} catch ( Exception $e ) {
 				wcs_add_admin_notice( $e->getMessage(), 'error' );
 			}
