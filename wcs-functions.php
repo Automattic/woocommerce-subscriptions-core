@@ -39,7 +39,7 @@ function wcs_is_subscription( $subscription ) {
 
 	if ( is_object( $subscription ) && is_a( $subscription, 'WC_Subscription' ) ) {
 		$is_subscription = true;
-	} elseif ( is_numeric( $subscription ) && 'shop_subscription' == get_post_type( $subscription ) ) {
+	} elseif ( is_numeric( $subscription ) && 'shop_subscription' === WC_Data_Store::load( 'subscription' )->get_order_type( $subscription ) ) {
 		$is_subscription = true;
 	} else {
 		$is_subscription = false;
