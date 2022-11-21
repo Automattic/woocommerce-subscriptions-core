@@ -8,6 +8,7 @@
 * Fix - On HPOS stores, when a subscription is loaded from the database, make sure all core subscription properties are read directly from meta.
 * Fix - On HPOS stores, ensure payment tokens are copied from the subscription to the renewal order.
 * Fix - Refactor `WCS_Meta_Box_Schedule::save` to support HPOS stores, fixing a PHP warning notice when updating an order via the Edit Order screen.
+* Update - Refactor the `wcs_is_subscription` helper function to support HPOS.
 * Update - Refactor our Related Orders data store classes (WCS_Related_Order_Store_Cached_CPT and WCS_Related_Order_Store_CPT) to use CRUD methods to support subscriptions and orders stored in HPOS.
 * Dev - Removed the deprecated "wcs_subscriptions_for_{$relation_type}_order" dynamic hook used to filter the list of related subscriptions for the given relation type. The following hooks have been removed with no alternative:
         wcs_subscriptions_for_renewal_order
