@@ -83,7 +83,10 @@ class WCS_Meta_Box_Schedule {
 		try {
 			$subscription->update_dates( $dates, 'gmt' );
 
-			wp_cache_delete( $post_or_order_id, 'posts' );
+			// Clear the posts cache for non-HPOS stores.
+			if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
+				wp_cache_delete( $post_or_order_id, 'posts' );
+			}
 		} catch ( Exception $e ) {
 			wcs_add_admin_notice( $e->getMessage(), 'error' );
 		}
