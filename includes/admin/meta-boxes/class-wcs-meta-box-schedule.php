@@ -47,15 +47,15 @@ class WCS_Meta_Box_Schedule {
 			return;
 		}
 
+		$subscription = wcs_get_subscription( $post_or_order_object );
+
 		if ( isset( $_POST['_billing_interval'] ) ) {
-			$post_or_order_object->update_meta_data( '_billing_interval', wc_clean( wp_unslash( $_POST['_billing_interval'] ) ) );
+			$subscription->set_billing_interval( wc_clean( wp_unslash( $_POST['_billing_interval'] ) ) );
 		}
 
 		if ( ! empty( $_POST['_billing_period'] ) ) {
-			$post_or_order_object->update_meta_data( '_billing_period', wc_clean( wp_unslash( $_POST['_billing_period'] ) ) );
+			$subscription->set_billing_period( wc_clean( wp_unslash( $_POST['_billing_period'] ) ) );
 		}
-
-		$subscription = wcs_get_subscription( $post_or_order_object );
 
 		$dates = array();
 
