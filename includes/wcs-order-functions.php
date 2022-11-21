@@ -217,8 +217,8 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 		/**
 		 * Filters the new order created from the subscription.
 		 *
-		 * Fetches a fresh instance of the the order because the current order instance has an empty line item cache generated before we copied the line items.
-		 * Fetching a new instance will ensure the line items are available.
+		 * Fetches a fresh instance of the order because the current order instance has an empty line item cache generated before we had copied the line items.
+		 * Fetching a new instance will ensure the line items are available via $new_order->get_items().
 		 *
 		 * @param WC_Order        $new_order    The new order created from the subscription.
 		 * @param WC_Subscription $subscription The subscription the order was created from.
