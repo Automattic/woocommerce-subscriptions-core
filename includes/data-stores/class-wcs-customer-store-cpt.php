@@ -47,7 +47,7 @@ class WCS_Customer_Store_CPT extends WCS_Customer_Store {
 				'limit'       => -1,
 				'status'      => 'any',
 				'return'      => 'ids',
-				'orderby'     => 'date',
+				'orderby'     => 'ID',
 				'order'       => 'DESC',
 			]
 		);
