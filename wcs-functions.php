@@ -30,9 +30,11 @@ if ( is_admin() ) {
 
 /**
  * Check if a given object is a WC_Subscription (or child class of WC_Subscription), or if a given ID
- * belongs to a post with the subscription post type ('shop_subscription')
+ * belongs to a post with the subscription post type ('shop_subscription').
  *
  * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
+ *
+ * @param mixed $subscription A WC_Subscription object or post ID
  * @return boolean true if anything is found
  */
 function wcs_is_subscription( $subscription ) {
