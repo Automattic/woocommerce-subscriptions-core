@@ -71,6 +71,9 @@ class WCS_Admin_Meta_Boxes {
 
 	/**
 	 * Add WC Meta boxes
+	 *
+	 * @see add_meta_boxes
+	 *
 	 * @param string $post_type The post type of the current post being edited.
 	 * @param WP_Post|WC_Order $post_or_order_object The post or order currently being edited.
 	 */
