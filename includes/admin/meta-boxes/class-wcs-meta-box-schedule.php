@@ -34,12 +34,12 @@ class WCS_Meta_Box_Schedule {
 	 *
 	 * @see woocommerce_process_shop_order_meta
 	 *
-	 * @param int $post_or_order_id
-	 * @param WP_Post|WC_Order $post_or_order_object
+	 * @param int $order_id
+	 * @param WC_Order $order
 	 */
-	public static function save( $post_or_order_id, $post_or_order_object ) {
+	public static function save( $order_id, $order ) {
 
-		if ( ! wcs_is_subscription( $post_or_order_id ) ) {
+		if ( ! wcs_is_subscription( $order_id ) ) {
 			return;
 		}
 
@@ -47,7 +47,7 @@ class WCS_Meta_Box_Schedule {
 			return;
 		}
 
-		$subscription = wcs_get_subscription( $post_or_order_object );
+		$subscription = wcs_get_subscription( $order );
 
 		if ( isset( $_POST['_billing_interval'] ) ) {
 			$subscription->set_billing_interval( wc_clean( wp_unslash( $_POST['_billing_interval'] ) ) );
@@ -85,7 +85,7 @@ class WCS_Meta_Box_Schedule {
 
 			// Clear the posts cache for non-HPOS stores.
 			if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
-				wp_cache_delete( $post_or_order_id, 'posts' );
+				wp_cache_delete( $order_id, 'posts' );
 			}
 		} catch ( Exception $e ) {
 			wcs_add_admin_notice( $e->getMessage(), 'error' );
