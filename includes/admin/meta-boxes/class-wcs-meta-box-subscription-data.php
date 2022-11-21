@@ -326,11 +326,11 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 	 *
 	 * @see woocommerce_process_shop_order_meta
 	 *
-	 * @param int     $post_or_order_id
-	 * @param WP_Post|WC_Order $post_or_order_object
+	 * @param int     $order_id
+	 * @param WC_Order $order
 	 */
-	public static function save( $post_or_order_id, $post_or_order_object = null ) {
-		if ( ! wcs_is_subscription( $post_or_order_id ) ) {
+	public static function save( $order_id, $order = null ) {
+		if ( ! wcs_is_subscription( $order_id ) ) {
 			return;
 		}
 
@@ -341,7 +341,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 		self::init_address_fields();
 
 		// Get subscription object.
-		$subscription = wcs_get_subscription( $post_or_order_id );
+		$subscription = wcs_get_subscription( $order_id );
 		$props        = array();
 
 		// Ensure there is an order key.
@@ -433,6 +433,6 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 			do_action( 'woocommerce_admin_created_subscription', $subscription );
 		}
 
-		do_action( 'woocommerce_process_shop_subscription_meta', $post_or_order_id, $post_or_order_object );
+		do_action( 'woocommerce_process_shop_subscription_meta', $order_id, $order );
 	}
 }
