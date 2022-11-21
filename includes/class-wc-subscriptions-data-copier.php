@@ -107,6 +107,15 @@ class WC_Subscriptions_Data_Copier {
 			$data += $this->get_operational_data();
 			$data += $this->get_address_data();
 
+			// Payment token meta isn't accounted from in the above methods, so we need to add it separately.
+			if ( ! isset( $data['_payment_tokens'] ) ) {
+				$tokens = $this->from_object->get_payment_tokens();
+
+				if ( ! empty( $tokens ) ) {
+					$data['_payment_tokens'] = $tokens;
+				}
+			}
+
 			// Remove any excluded meta keys.
 			$data = $this->filter_excluded_meta_keys_via_query( $data );
 		}
