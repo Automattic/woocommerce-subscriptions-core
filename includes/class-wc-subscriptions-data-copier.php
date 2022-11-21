@@ -107,6 +107,15 @@ class WC_Subscriptions_Data_Copier {
 			$data += $this->get_operational_data();
 			$data += $this->get_address_data();
 
+			// Payment token meta isn't accounted from in the above methods, so we need to add it separately.
+			if ( ! isset( $data['_payment_tokens'] ) ) {
+				$tokens = $this->from_object->get_payment_tokens();
+
+				if ( ! empty( $tokens ) ) {
+					$data['_payment_tokens'] = $tokens;
+				}
+			}
+
 			// Remove any excluded meta keys.
 			$data = $this->filter_excluded_meta_keys_via_query( $data );
 		}
@@ -194,6 +203,9 @@ class WC_Subscriptions_Data_Copier {
 			}
 
 			$this->to_object->{$setter}( $value );
+		} elseif ( '_payment_tokens' === $key ) {
+			// Payment tokens don't have a setter and cannot be set via metadata so we need to set them via the datastore.
+			$this->to_object->get_data_store()->update_payment_token_ids( $this->to_object, $value );
 		} else {
 			$this->to_object->update_meta_data( $key, $value );
 		}
