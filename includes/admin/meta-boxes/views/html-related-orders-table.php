@@ -36,7 +36,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				 *
 				 * @param WC_Post $post The order post object.
 				 */
-				do_action( 'woocommerce_subscriptions_related_orders_meta_box_rows', wc_get_order( $post ) );
+				do_action( 'woocommerce_subscriptions_related_orders_meta_box_rows', $post );
 			}
 
 			/**

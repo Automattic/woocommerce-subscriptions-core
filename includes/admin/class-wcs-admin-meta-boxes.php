@@ -32,7 +32,7 @@ class WCS_Admin_Meta_Boxes {
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles_scripts' ), 20 );
 
-		// We need to hook to the 'shop_order' rather than 'shop_subscription' because we declared that the 'shop_susbcription' order type supports 'order-meta-boxes'
+		// We need to hook to the 'shop_order' rather than 'shop_subscription' because we declared that the 'shop_subscription' order type supports 'order-meta-boxes'.
 		add_action( 'woocommerce_process_shop_order_meta', 'WCS_Meta_Box_Schedule::save', 10, 2 );
 		add_action( 'woocommerce_process_shop_order_meta', 'WCS_Meta_Box_Subscription_Data::save', 10, 2 );
 
@@ -48,7 +48,7 @@ class WCS_Admin_Meta_Boxes {
 
 		add_action( 'woocommerce_order_action_wcs_retry_renewal_payment', array( __CLASS__, 'process_retry_renewal_payment_action_request' ), 10, 1 );
 
-		// Disable stock managment while adding line items to a subscription via AJAX.
+		// Disable stock management while adding line items to a subscription via AJAX.
 		add_action( 'option_woocommerce_manage_stock', array( __CLASS__, 'override_stock_management' ) );
 
 		// Parent order line item price lock option.
@@ -71,10 +71,14 @@ class WCS_Admin_Meta_Boxes {
 
 	/**
 	 * Add WC Meta boxes
+	 *
+	 * @see add_meta_boxes
+	 *
 	 * @param string $post_type The post type of the current post being edited.
-	 * @param WP_Post|WC_Order $post_or_order_object The post or order currently being edited.
+	 * @param WP_Post|WC_Order|null $post_or_order_object The post or order currently being edited.
 	 */
-	public function add_meta_boxes( $post_type, $post_or_order_object ) {
+	public function add_meta_boxes( $post_type = '', $post_or_order_object = null ) {
+
 		add_meta_box( 'woocommerce-subscription-data', _x( 'Subscription Data', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Subscription_Data::output', 'shop_subscription', 'normal', 'high' );
 
 		add_meta_box( 'woocommerce-subscription-schedule', _x( 'Schedule', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Schedule::output', 'shop_subscription', 'side', 'default' );
@@ -83,12 +87,18 @@ class WCS_Admin_Meta_Boxes {
 
 		add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', 'shop_subscription', 'normal', 'low' );
 
+		// Ensure backwards compatibility if $post_or_order_object not provided and is 'shop_order' post type.
+		if ( ! $post_or_order_object && 'shop_order' === $post_type ) {
+			global $post_ID;
+			$post_or_order_object = wc_get_order( $post_ID );
+		}
+
 		// Get "Edit Order" screen ID, which differs if HPOS is enabled.
 		$screen         = wcs_is_custom_order_tables_usage_enabled() ? wc_get_page_screen_id( 'shop-order' ) : 'shop_order';
 		$current_screen = get_current_screen();
 
 		// Only display the meta box if viewing an order that contains a subscription.
-		if ( $current_screen->id === $screen && wcs_order_contains_subscription( $post_or_order_object, 'any' ) ) {
+		if ( $post_or_order_object && $current_screen->id === $screen && wcs_order_contains_subscription( $post_or_order_object, 'any' ) ) {
 			add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', $screen, 'normal', 'low' );
 		}
 	}
@@ -105,7 +115,7 @@ class WCS_Admin_Meta_Boxes {
 	 */
 	public function remove_meta_box_save( $post_id, $post ) {
 
-		if ( 'shop_subscription' == $post->post_type ) {
+		if ( 'shop_subscription' === $post->post_type ) {
 			remove_action( 'woocommerce_process_shop_order_meta', 'WC_Meta_Box_Order_Data::save', 40 );
 		}
 	}
@@ -121,7 +131,7 @@ class WCS_Admin_Meta_Boxes {
 		$screen    = get_current_screen();
 		$screen_id = isset( $screen->id ) ? $screen->id : '';
 
-		if ( 'shop_subscription' == $screen_id ) {
+		if ( 'shop_subscription' === $screen_id ) {
 
 			wp_register_script( 'jstz', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/jstz.min.js' ), [], $ver, false );
 
@@ -150,7 +160,7 @@ class WCS_Admin_Meta_Boxes {
 					)
 				)
 			);
-		} elseif ( 'shop_order' == $screen_id ) {
+		} elseif ( 'shop_order' === $screen_id ) {
 
 			wp_enqueue_script( 'wcs-admin-meta-boxes-order', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/wcs-meta-boxes-order.js' ), [], $ver, false );
 
@@ -164,7 +174,7 @@ class WCS_Admin_Meta_Boxes {
 		}
 
 		// Enqueue the metabox script for coupons.
-		if ( ! wcs_is_woocommerce_pre( '3.2' ) && in_array( $screen_id, array( 'shop_coupon', 'edit-shop_coupon' ) ) ) {
+		if ( ! wcs_is_woocommerce_pre( '3.2' ) && in_array( $screen_id, array( 'shop_coupon', 'edit-shop_coupon' ), true ) ) {
 			wp_enqueue_script(
 				'wcs-admin-coupon-meta-boxes',
 				WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/meta-boxes-coupon.js' ),
@@ -322,7 +332,7 @@ class WCS_Admin_Meta_Boxes {
 
 		$can_be_retried = false;
 
-		if ( wcs_order_contains_renewal( $order ) && $order->needs_payment() && '' != wcs_get_objects_property( $order, 'payment_method' ) ) {
+		if ( wcs_order_contains_renewal( $order ) && $order->needs_payment() && '' != wcs_get_objects_property( $order, 'payment_method' ) ) { // phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison
 			$supports_date_changes          = false;
 			$order_payment_gateway          = wc_get_payment_gateway_by_order( $order );
 			$order_payment_gateway_supports = ( isset( $order_payment_gateway->id ) ) ? has_action( 'woocommerce_scheduled_subscription_payment_' . $order_payment_gateway->id ) : false;
@@ -340,7 +350,7 @@ class WCS_Admin_Meta_Boxes {
 	}
 
 	/**
-	 * Disables stock managment while adding items to a subscription via the edit subscription screen.
+	 * Disables stock management while adding items to a subscription via the edit subscription screen.
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.0.6
 	 *
@@ -350,7 +360,7 @@ class WCS_Admin_Meta_Boxes {
 	public static function override_stock_management( $manage_stock ) {
 
 		// Override stock management while adding line items to a subscription via AJAX.
-		if ( isset( $_POST['order_id'], $_REQUEST['security'] ) && wp_verify_nonce( $_REQUEST['security'], 'order-item' ) && doing_action( 'wp_ajax_woocommerce_add_order_item' ) && wcs_is_subscription( absint( wp_unslash( $_POST['order_id'] ) ) ) ) {
+		if ( isset( $_POST['order_id'], $_REQUEST['security'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_REQUEST['security'] ) ), 'order-item' ) && doing_action( 'wp_ajax_woocommerce_add_order_item' ) && wcs_is_subscription( absint( wp_unslash( $_POST['order_id'] ) ) ) ) {
 			$manage_stock = 'no';
 		}
 
@@ -401,7 +411,8 @@ class WCS_Admin_Meta_Boxes {
 				'<div id="wcs_order_price_lock"><label for="wcs-order-price-lock">%s</label>%s<input id="wcs-order-price-lock" type="checkbox" name="wcs_order_price_lock" value="yes" %s></div>',
 				esc_html__( 'Lock manual price increases', 'woocommerce-subscriptions' ),
 				// So the help tip is initialized when the line items are reloaded, we need to add the 'tips' class to the element.
-				wcs_help_tip( $help_tip, false, 'woocommerce-help-tip tips' ),
+				// PHPCS warning ignored since escaping is handled by wc_help_tip().
+				wcs_help_tip( $help_tip, false, 'woocommerce-help-tip tips' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				checked( $order->get_meta( '_manual_price_increases_locked' ), 'true', false )
 			);
 		}
@@ -416,7 +427,7 @@ class WCS_Admin_Meta_Boxes {
 	 */
 	public static function save_increased_price_lock( $order_id = '' ) {
 
-		if ( empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) {
+		if ( empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( wc_clean( wp_unslash( $_POST['woocommerce_meta_nonce'] ) ), 'woocommerce_save_data' ) ) {
 			return;
 		}
 
@@ -426,7 +437,7 @@ class WCS_Admin_Meta_Boxes {
 			return;
 		}
 
-		if ( isset( $_POST['wcs_order_price_lock'] ) && 'yes' === wc_clean( $_POST['wcs_order_price_lock'] ) ) {
+		if ( isset( $_POST['wcs_order_price_lock'] ) && 'yes' === wc_clean( wp_unslash( $_POST['wcs_order_price_lock'] ) ) ) {
 			$order->update_meta_data( '_manual_price_increases_locked', 'true' );
 			$order->save();
 		} elseif ( $order->meta_exists( '_manual_price_increases_locked' ) ) {
@@ -643,7 +654,7 @@ class WCS_Admin_Meta_Boxes {
 		}
 
 		$customer_orders = array();
-		$user_id         = absint( $_POST['user_id'] );
+		$user_id         = absint( $_POST['user_id'] ?? null );
 		$orders          = wc_get_orders(
 			array(
 				'customer'       => $user_id,

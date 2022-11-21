@@ -165,9 +165,9 @@ class WCS_Meta_Box_Related_Orders {
 
 		wcs_sort_objects( $orders_to_display, 'date_created', 'descending' );
 
-		foreach ( $orders_to_display as $row_order ) {
+		foreach ( $orders_to_display as $order ) {
 			// Skip the current order or subscription being viewed.
-			if ( $row_order->get_id() === $this_order->get_id() ) {
+			if ( $order->get_id() === $this_order->get_id() ) {
 				continue;
 			}
 
