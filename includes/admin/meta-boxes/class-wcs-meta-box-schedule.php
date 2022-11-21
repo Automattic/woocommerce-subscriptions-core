@@ -55,9 +55,9 @@ class WCS_Meta_Box_Schedule {
 			$post_or_order_object->update_meta_data( '_billing_period', wc_clean( wp_unslash( $_POST['_billing_period'] ) ) );
 		}
 
-			$subscription = wcs_get_subscription( $post_or_order_object );
+		$subscription = wcs_get_subscription( $post_or_order_object );
 
-			$dates = array();
+		$dates = array();
 
 		foreach ( wcs_get_subscription_date_types() as $date_type => $date_label ) {
 			$date_key = wcs_normalise_date_type_key( $date_type );
