@@ -34,7 +34,7 @@ if ( is_admin() ) {
  *
  * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  *
- * @param mixed $subscription A WC_Subscription object or post ID
+ * @param mixed $subscription A WC_Subscription object or an ID.
  * @return boolean true if anything is found
  */
 function wcs_is_subscription( $subscription ) {
