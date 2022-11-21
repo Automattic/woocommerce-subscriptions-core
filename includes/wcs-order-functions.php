@@ -214,7 +214,17 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 		// If we got here, the subscription was created without problems
 		$transaction->commit();
 
-		return apply_filters( 'wcs_new_order_created', $new_order, $subscription, $type );
+		/**
+		 * Filters the new order created from the subscription.
+		 *
+		 * Fetches a fresh instance of the the order because the current order instance has an empty line item cache generated before we copied the line items.
+		 * Fetching a new instance will ensure the line items are available.
+		 *
+		 * @param WC_Order        $new_order    The new order created from the subscription.
+		 * @param WC_Subscription $subscription The subscription the order was created from.
+		 * @param string          $type         The type of order being created. Either 'renewal_order' or 'resubscribe_order'.
+		 */
+		return apply_filters( 'wcs_new_order_created', wc_get_order( $new_order->get_id() ), $subscription, $type );
 
 	} catch ( Exception $e ) {
 		// There was an error adding the subscription
