@@ -39,50 +39,55 @@ class WCS_Meta_Box_Schedule {
 	 */
 	public static function save( $post_or_order_id, $post_or_order_object ) {
 
-		if ( wcs_is_subscription( $post_or_order_id ) && ! empty( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_POST['woocommerce_meta_nonce'] ) ), 'woocommerce_save_data' ) ) {
+		if ( ! wcs_is_subscription( $post_or_order_id ) ) {
+			return;
+		}
 
-			if ( isset( $_POST['_billing_interval'] ) ) {
-				update_post_meta( $post_or_order_object, '_billing_interval', wc_clean( wp_unslash( $_POST['_billing_interval'] ) ) );
-			}
+		if ( empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( wc_clean( wp_unslash( $_POST['woocommerce_meta_nonce'] ) ), 'woocommerce_save_data' ) ) {
+			return;
+		}
 
-			if ( ! empty( $_POST['_billing_period'] ) ) {
-				update_post_meta( $post_or_order_object, '_billing_period', wc_clean( wp_unslash( $_POST['_billing_period'] ) ) );
-			}
+		if ( isset( $_POST['_billing_interval'] ) ) {
+			update_post_meta( $post_or_order_object, '_billing_interval', wc_clean( wp_unslash( $_POST['_billing_interval'] ) ) );
+		}
+
+		if ( ! empty( $_POST['_billing_period'] ) ) {
+			update_post_meta( $post_or_order_object, '_billing_period', wc_clean( wp_unslash( $_POST['_billing_period'] ) ) );
+		}
 
 			$subscription = wcs_get_subscription( $post_or_order_object );
 
 			$dates = array();
 
-			foreach ( wcs_get_subscription_date_types() as $date_type => $date_label ) {
-				$date_key = wcs_normalise_date_type_key( $date_type );
+		foreach ( wcs_get_subscription_date_types() as $date_type => $date_label ) {
+			$date_key = wcs_normalise_date_type_key( $date_type );
 
-				if ( 'last_order_date_created' === $date_key ) {
-					continue;
-				}
-
-				$utc_timestamp_key = $date_type . '_timestamp_utc';
-
-				// A subscription needs a created date, even if it wasn't set or is empty
-				if ( 'date_created' === $date_key && empty( $_POST[ $utc_timestamp_key ] ) ) {
-					$datetime = time();
-				} elseif ( isset( $_POST[ $utc_timestamp_key ] ) ) {
-					$datetime = wc_clean( wp_unslash( $_POST[ $utc_timestamp_key ] ) );
-				} else { // No date to set
-					continue;
-				}
-
-				$dates[ $date_key ] = gmdate( 'Y-m-d H:i:s', $datetime );
+			if ( 'last_order_date_created' === $date_key ) {
+				continue;
 			}
 
-			try {
-				$subscription->update_dates( $dates, 'gmt' );
+			$utc_timestamp_key = $date_type . '_timestamp_utc';
 
-				wp_cache_delete( $post_or_order_id, 'posts' );
-			} catch ( Exception $e ) {
-				wcs_add_admin_notice( $e->getMessage(), 'error' );
+			// A subscription needs a created date, even if it wasn't set or is empty
+			if ( 'date_created' === $date_key && empty( $_POST[ $utc_timestamp_key ] ) ) {
+				$datetime = time();
+			} elseif ( isset( $_POST[ $utc_timestamp_key ] ) ) {
+				$datetime = wc_clean( wp_unslash( $_POST[ $utc_timestamp_key ] ) );
+			} else { // No date to set
+				continue;
 			}
+
+			$dates[ $date_key ] = gmdate( 'Y-m-d H:i:s', $datetime );
+		}
+
+		try {
+			$subscription->update_dates( $dates, 'gmt' );
+
+			wp_cache_delete( $post_or_order_id, 'posts' );
+		} catch ( Exception $e ) {
+			wcs_add_admin_notice( $e->getMessage(), 'error' );
+		}
 
 			$subscription->save();
-		}
 	}
 }
