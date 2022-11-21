@@ -101,11 +101,11 @@ class WCS_Admin_Meta_Boxes {
 	 *
 	 * @see woocommerce_process_shop_order_meta
 	 *
-	 * @param int $post_or_order_id
-	 * @param WC_Order|WP_Post $post_or_order_object
+	 * @param int $order_id
+	 * @param WC_Order $order
 	 */
-	public function remove_meta_box_save( $post_or_order_id, $post_or_order_object ) {
-		if ( wcs_is_subscription( $post_or_order_id ) ) {
+	public function remove_meta_box_save( $order_id, $order ) {
+		if ( wcs_is_subscription( $order_id ) ) {
 			remove_action( 'woocommerce_process_shop_order_meta', 'WC_Meta_Box_Order_Data::save', 40 );
 		}
 	}
