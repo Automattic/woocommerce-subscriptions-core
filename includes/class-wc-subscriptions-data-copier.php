@@ -203,6 +203,9 @@ class WC_Subscriptions_Data_Copier {
 			}
 
 			$this->to_object->{$setter}( $value );
+		} elseif ( '_payment_tokens' === $key ) {
+			// Payment tokens don't have a setter and cannot be set via metadata so we need to set them via the datastore.
+			$this->to_object->get_data_store()->update_payment_token_ids( $this->to_object, $value );
 		} else {
 			$this->to_object->update_meta_data( $key, $value );
 		}
