@@ -453,7 +453,7 @@ class WCS_Admin_Post_Types {
 	public function render_shop_subscription_columns( $column, $order = null ) {
 		global $post, $the_subscription, $wp_list_table;
 
-		if ( ! empty( $order ) ) {
+		if ( ! empty( $order ) && is_a( $order, 'WC_Order' ) ) {
 			$the_subscription = wcs_get_subscription( $order->get_id() );
 		} else {
 			if ( empty( $the_subscription ) || $the_subscription->get_id() != $post->ID ) {
