@@ -288,8 +288,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * To fix this, this function manually updates the post meta table with the new values.
 	 *
 	 * @param WC_Subscription $subscription  The subscription object to backfill.
-	 * @param array           $metadata      The metadata to set update/add in the CPT data store.
-	 * @param string          $relation_type The relationship between the subscription and the order.
+	 * @param string          $relation_type The related order relationship type. Can be 'renewal', 'switch' or 'resubscribe'.
+	 * @param array           $metadata      The metadata to set update/add in the CPT data store. Should be an array with 'key' and 'value' keys.
 	 */
 	protected function maybe_backfill_related_order_cache( $subscription, $relation_type, $metadata ) {
 		if ( ! wcs_is_custom_order_tables_usage_enabled() || ! wcs_is_custom_order_tables_data_sync_enabled() || empty( $metadata['key'] ) ) {
