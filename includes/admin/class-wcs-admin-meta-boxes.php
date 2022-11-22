@@ -23,7 +23,7 @@ class WCS_Admin_Meta_Boxes {
 	 */
 	public function __construct() {
 
-		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ), 25 );
+		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ), 25, 2 );
 
 		add_action( 'add_meta_boxes', array( $this, 'remove_meta_boxes' ), 35 );
 
@@ -71,9 +71,13 @@ class WCS_Admin_Meta_Boxes {
 
 	/**
 	 * Add WC Meta boxes
+	 *
+	 * @see add_meta_boxes
+	 *
+	 * @param string $post_type The post type of the current post being edited.
+	 * @param WP_Post|WC_Order|null $post_or_order_object The post or order currently being edited.
 	 */
-	public function add_meta_boxes() {
-		global $post_ID;
+	public function add_meta_boxes( $post_type = '', $post_or_order_object = null ) {
 
 		add_meta_box( 'woocommerce-subscription-data', _x( 'Subscription Data', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Subscription_Data::output', 'shop_subscription', 'normal', 'high' );
 
@@ -83,9 +87,19 @@ class WCS_Admin_Meta_Boxes {
 
 		add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', 'shop_subscription', 'normal', 'low' );
 
-		// Only display the meta box if an order relates to a subscription
-		if ( 'shop_order' === WC_Data_Store::load( 'order' )->get_order_type( $post_ID ) && wcs_order_contains_subscription( $post_ID, 'any' ) ) {
-			add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', 'shop_order', 'normal', 'low' );
+		// Ensure backwards compatibility if $post_or_order_object not provided and is 'shop_order' post type.
+		if ( ! $post_or_order_object && 'shop_order' === $post_type ) {
+			global $post_ID;
+			$post_or_order_object = wc_get_order( $post_ID );
+		}
+
+		// Get "Edit Order" screen ID, which differs if HPOS is enabled.
+		$screen         = wcs_is_custom_order_tables_usage_enabled() ? wc_get_page_screen_id( 'shop-order' ) : 'shop_order';
+		$current_screen = get_current_screen();
+
+		// Only display the meta box if viewing an order that contains a subscription.
+		if ( $post_or_order_object && $current_screen->id === $screen && wcs_order_contains_subscription( $post_or_order_object, 'any' ) ) {
+			add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', $screen, 'normal', 'low' );
 		}
 	}
 
