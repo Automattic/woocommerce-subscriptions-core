@@ -592,7 +592,7 @@ function wcs_is_wc_feature_enabled( $feature_name ) {
 }
 
 /**
- * Helper function to determine whether custom orders table usage is enabled.
+ * Determines whether custom order tables usage is enabled.
  *
  * Custom order table feature can be enabled but the store is still using WP posts as the authoriative source of order data,
  * therefore this function will only return true if:
@@ -611,9 +611,9 @@ function wcs_is_custom_order_tables_usage_enabled() {
 }
 
 /**
- * Helper function to determine whether orders tables are synchronized with WP posts.
+ * Determines whether the order tables are synchronized with WP posts.
  *
- * @return bool
+ * @return bool True if the order tables are synchronized with WP posts, false otherwise.
  */
 function wcs_is_custom_order_tables_data_sync_enabled() {
 	if ( ! class_exists( '\Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer' ) ) {
