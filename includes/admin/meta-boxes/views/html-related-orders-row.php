@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 <tr>
 	<td>
-		<a href="<?php echo esc_url( get_edit_post_link( $order->get_id() ) ); ?>">
+		<a href="<?php echo esc_url( $order->get_edit_order_url() ); ?>">
 			<?php
 			// translators: placeholder is an order number.
 			echo sprintf( esc_html_x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), esc_html( $order->get_order_number() ) );
@@ -29,7 +29,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 			$t_time          = $order->get_date_created()->date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) );
 			$date_to_display = ucfirst( wcs_get_human_time_diff( $date_created->getTimestamp() ) );
 		} else {
-			$t_time = $date_to_display = __( 'Unpublished', 'woocommerce-subscriptions' );
+			$t_time          = __( 'Unpublished', 'woocommerce-subscriptions' );
+			$date_to_display = $t_time;
 		}
 
 		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
