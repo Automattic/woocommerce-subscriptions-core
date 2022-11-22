@@ -264,18 +264,16 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			'value' => $related_order_ids,
 		);
 
-		// If there is metadata for this key, update it, otherwise add it.
-		if ( $current_metadata ) {
-			$new_metadata['id'] = $current_metadata->meta_id;
-			$updated_meta       = $subscription_data_store->update_meta( $subscription, (object) $new_metadata );
-		} else {
-			$updated_meta = $subscription_data_store->add_meta( $subscription, (object) $new_metadata );
-		}
-
 		// Check if HPOS and data syncing is enabled then manually backfill the related orders cache values to WP Posts table.
 		$this->maybe_backfill_related_order_cache( $subscription, $relation_type, $new_metadata );
 
-		return $updated_meta;
+		// If there is metadata for this key, update it, otherwise add it.
+		if ( $current_metadata ) {
+			$new_metadata['id'] = $current_metadata->meta_id;
+			return $subscription_data_store->update_meta( $subscription, (object) $new_metadata );
+		} else {
+			return $subscription_data_store->add_meta( $subscription, (object) $new_metadata );
+		}
 	}
 
 	/**
