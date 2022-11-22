@@ -91,6 +91,6 @@ class WCS_Meta_Box_Schedule {
 			wcs_add_admin_notice( $e->getMessage(), 'error' );
 		}
 
-			$subscription->save();
+		$subscription->save();
 	}
 }
