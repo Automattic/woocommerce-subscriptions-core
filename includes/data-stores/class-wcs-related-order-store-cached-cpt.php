@@ -267,9 +267,36 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 		// If there is metadata for this key, update it, otherwise add it.
 		if ( $current_metadata ) {
 			$new_metadata['id'] = $current_metadata->meta_id;
-			return $subscription_data_store->update_meta( $subscription, (object) $new_metadata );
+			$updated_meta       = $subscription_data_store->update_meta( $subscription, (object) $new_metadata );
 		} else {
-			return $subscription_data_store->add_meta( $subscription, (object) $new_metadata );
+			$updated_meta = $subscription_data_store->add_meta( $subscription, (object) $new_metadata );
+		}
+
+		$this->maybe_backfill_related_order_cache( $subscription, $relation_type, $new_metadata );
+
+		return $updated_meta;
+	}
+
+	/**
+	 * Backfills the related order cache for a subscription if data sync is enabled.
+	 *
+	 * @param WC_Subscription $subscription
+	 * @param array           $metadata
+	 * @param string          $relation_type
+	 */
+	protected function maybe_backfill_related_order_cache( $subscription, $relation_type, $metadata ) {
+		if ( ! wcs_is_custom_order_tables_usage_enabled() || ! wcs_is_custom_order_tables_data_sync_enabled() || empty( $metadata['key'] ) ) {
+			return;
+		}
+
+		$cpt_data_store   = $subscription->get_data_store()->get_cpt_data_store_instance();
+		$current_metadata = $this->get_related_order_metadata( $subscription, $relation_type, $cpt_data_store );
+
+		if ( $current_metadata ) {
+			$metadata['id'] = $current_metadata->meta_id;
+			$cpt_data_store->update_meta( $subscription, (object) $metadata );
+		} else {
+			$cpt_data_store->add_meta( $subscription, (object) $metadata );
 		}
 	}
 
