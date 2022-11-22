@@ -4,13 +4,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Customer data store for subscriptions stored in Custom Post Types.
+ * Customer data store for subscriptions.
  *
- * Gets subscriptions for users via the '_customer_user' post meta value.
+ * This class is responsible for getting subscriptions for users.
  *
  * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
- * @category Class
- * @author   Prospress
  */
 class WCS_Customer_Store_CPT extends WCS_Customer_Store {
 
@@ -31,7 +29,7 @@ class WCS_Customer_Store_CPT extends WCS_Customer_Store {
 	}
 
 	/**
-	 * Get the IDs for a given user's subscriptions by querying post meta.
+	 * Get the IDs for a given user's subscriptions.
 	 *
 	 * @param int $user_id The id of the user whose subscriptions you want.
 	 * @return array
@@ -42,25 +40,16 @@ class WCS_Customer_Store_CPT extends WCS_Customer_Store {
 			return array();
 		}
 
-		$query = new WP_Query();
-
-		return $query->query( array(
-			'post_type'           => 'shop_subscription',
-			'posts_per_page'      => -1,
-			'post_status'         => 'any',
-			'orderby'             => array(
-				'date' => 'DESC',
-				'ID'   => 'DESC',
-			),
-			'fields'              => 'ids',
-			'no_found_rows'       => true,
-			'ignore_sticky_posts' => true,
-			'meta_query'          => array(
-				array(
-					'key'   => $this->get_meta_key(),
-					'value' => $user_id,
-				),
-			),
-		) );
+		return wcs_get_orders_with_meta_query(
+			[
+				'type'        => 'shop_subscription',
+				'customer_id' => $user_id,
+				'limit'       => -1,
+				'status'      => 'any',
+				'return'      => 'ids',
+				'orderby'     => 'ID',
+				'order'       => 'DESC',
+			]
+		);
 	}
 }
