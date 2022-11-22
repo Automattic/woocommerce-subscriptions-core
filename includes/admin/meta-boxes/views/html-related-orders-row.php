@@ -2,7 +2,7 @@
 /**
  * Display a row in the related orders table for a subscription or order
  *
- * @var array $order A WC_Order or WC_Subscription order object to display
+ * @var WC_Order|WC_Subscription $order A WC_Order or WC_Subscription order object to display.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -32,8 +32,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 			$t_time = $date_to_display = __( 'Unpublished', 'woocommerce-subscriptions' );
 		}
 
-		// Backwards compatibility for third-parties using the generic WP post time filter.
-		$date_to_display = apply_filters( 'post_date_column_time', $date_to_display, get_post( $order->get_id() ) );
+		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
+			// Backwards compatibility for third-parties using the generic WP post time filter.
+			// Only apply this filter if HPOS is not enabled, as the filter is not compatible with HPOS.
+			$date_to_display = apply_filters( 'post_date_column_time', $date_to_display, get_post( $order->get_id() ) );
+		}
+
 		?>
 		<abbr title="<?php echo esc_attr( $t_time ); ?>">
 			<?php echo esc_html( apply_filters( 'wc_subscriptions_related_order_date_column', $date_to_display, $order ) ); ?>
