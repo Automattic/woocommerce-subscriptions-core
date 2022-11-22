@@ -563,13 +563,15 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	/**
 	 * Gets the subscription's related order cached stored in meta.
 	 *
-	 * @param WC_Subscription $subscription The subscription to get the cache meta for.
-	 * @param string $relation_type         The relation type to get the cache meta for.
+	 * @param WC_Subscription $subscription  The subscription to get the cache meta for.
+	 * @param string          $relation_type The relation type to get the cache meta for.
+	 * @param mixed           $data_store    The data store to use to get the meta. Defaults to the current subscription's data store.
 	 *
 	 * @return stdClass|bool The meta data object if it exists, or false if it doesn't.
 	 */
-	protected function get_related_order_metadata( WC_Subscription $subscription, $relation_type ) {
+	protected function get_related_order_metadata( WC_Subscription $subscription, $relation_type, $data_store = null ) {
 		$cache_meta_key = $this->get_cache_meta_key( $relation_type );
+		$data_store     = empty( $data_store ) ? WC_Data_Store::load( 'subscription' ) : $data_store;
 
 		/**
 		 * Bypass the related order cache keys being ignored when fetching subscription meta.
@@ -581,7 +583,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 		 * the function in all instances.
 		 */
 		self::$override_ignored_props = true;
-		$subscription_meta            = WC_Data_Store::load( 'subscription' )->read_meta( $subscription );
+		$subscription_meta            = $data_store->read_meta( $subscription );
 		self::$override_ignored_props = false;
 
 		foreach ( $subscription_meta as $meta ) {
