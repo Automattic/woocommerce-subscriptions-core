@@ -609,3 +609,18 @@ function wcs_is_custom_order_tables_usage_enabled() {
 
 	return \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
 }
+
+/**
+ * Helper function to determine whether orders tables are synchronized with WP posts.
+ *
+ * @return bool
+ */
+function wcs_is_custom_order_tables_data_sync_enabled() {
+	if ( ! class_exists( '\Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer' ) ) {
+		return false;
+	}
+
+	$data_synchronizer = wc_get_container()->get( \Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer::class );
+
+	return $data_synchronizer && $data_synchronizer->data_sync_is_enabled();
+}
