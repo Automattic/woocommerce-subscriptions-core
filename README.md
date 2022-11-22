@@ -64,3 +64,7 @@ npm run build
 - Checkout Blocks + Subscriptions support
 - Support for the WooCommerce Payments gateway
 - Privacy/GDPR exporters for Subscriptions
+
+
+## Docs
+- [Deprecation guide: When and how to deprecate hooks and non-private functions in subscriptions-core](docs/deprecation-guide.md)
