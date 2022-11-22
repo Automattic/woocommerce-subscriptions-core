@@ -24,8 +24,10 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 	public static function output( $post ) {
 		global $the_subscription;
 
-		if ( ! is_object( $the_subscription ) || $the_subscription->get_id() !== $post->ID ) {
-			$the_subscription = wc_get_order( $post->ID );
+		$order = ( $post instanceof WP_Post ) ? wc_get_order( $post->ID ) : $post;
+
+		if ( ! is_object( $the_subscription ) || $the_subscription->get_id() !== $order->get_id() ) {
+			$the_subscription = $order;
 		}
 
 		$subscription = $the_subscription;
@@ -38,7 +40,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 			#post-body-content, #titlediv, #major-publishing-actions, #minor-publishing-actions, #visibility, #submitdiv { display:none }
 		</style>
 		<div class="panel-wrap woocommerce">
-			<input name="post_title" type="hidden" value="<?php echo empty( $post->post_title ) ? esc_attr( get_post_type_object( $post->post_type )->labels->singular_name ) : esc_attr( $post->post_title ); ?>" />
+			<input name="post_title" type="hidden" value="<?php echo empty( $post->post_title ) ? esc_attr( get_post_type_object( $order->get_type() )->labels->singular_name ) : esc_attr( $post->post_title ); ?>" />
 			<input name="post_status" type="hidden" value="<?php echo esc_attr( 'wc-' . $subscription->get_status() ); ?>" />
 			<div id="order_data" class="panel">
 

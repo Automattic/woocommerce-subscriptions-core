@@ -449,7 +449,8 @@ class WCS_PayPal {
 	 */
 	public static function maybe_add_change_payment_method_warning( $script_parameters ) {
 		global $post;
-		$subscription = wcs_get_subscription( $post );
+		$post_id      = ! empty( $post ) ? $post->ID : ( isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0 );
+		$subscription = wcs_get_subscription( $post_id );
 
 		if ( 'paypal' === $subscription->get_payment_method() ) {
 

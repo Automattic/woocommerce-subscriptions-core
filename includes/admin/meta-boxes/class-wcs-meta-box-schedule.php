@@ -19,11 +19,15 @@ class WCS_Meta_Box_Schedule {
 	/**
 	 * Output the metabox
 	 */
-	public static function output( $post ) {
+	public static function output( $order ) {
 		global $post, $the_subscription;
 
-		if ( empty( $the_subscription ) ) {
-			$the_subscription = wcs_get_subscription( $post->ID );
+		if ( $order && is_a( $order, 'WC_Subscription' ) ) {
+			$the_subscription = $order;
+		} else {
+			if ( empty( $the_subscription ) ) {
+				$the_subscription = wcs_get_subscription( $post->ID );
+			}
 		}
 
 		include dirname( __FILE__ ) . '/views/html-subscription-schedule.php';

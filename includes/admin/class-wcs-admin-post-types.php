@@ -8,6 +8,8 @@
  * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 
+use Automattic\WooCommerce\Utilities\OrderUtil;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 } // Exit if accessed directly
@@ -41,10 +43,16 @@ class WCS_Admin_Post_Types {
 	 */
 	public function __construct() {
 
+		// add_filter( "manage_{$this->screen->id}_columns", array( $this, 'get_columns' ), 0 );
+
 		// Subscription list table columns and their content
 		add_filter( 'manage_edit-shop_subscription_columns', array( $this, 'shop_subscription_columns' ) );
 		add_filter( 'manage_edit-shop_subscription_sortable_columns', array( $this, 'shop_subscription_sortable_columns' ) );
-		add_action( 'manage_shop_subscription_posts_custom_column', array( $this, 'render_shop_subscription_columns' ), 2 );
+		add_action( 'manage_shop_subscription_posts_custom_column', array( $this, 'render_shop_subscription_columns' ), 2, 2 );
+
+		add_filter( 'woocommerce_shop_subscription_list_table_columns', array( $this, 'shop_subscription_columns' ) );
+		add_filter( 'woocommerce_shop_subscription_list_table_sortable_columns', array( $this, 'shop_subscription_sortable_columns' ) );
+		add_action( 'woocommerce_shop_subscription_list_table_custom_column', array( $this, 'render_shop_subscription_columns' ), 2, 2 );
 
 		// Bulk actions
 		add_filter( 'bulk_actions-edit-shop_subscription', array( $this, 'remove_bulk_actions' ) );
@@ -54,6 +62,7 @@ class WCS_Admin_Post_Types {
 
 		// Subscription order/filter
 		add_filter( 'request', array( $this, 'request_query' ) );
+		add_filter( 'woocommerce_shop_subscription_list_table_request', array( $this, 'request_query_hpos' ) );
 
 		// Subscription Search
 		add_filter( 'get_search_query', array( $this, 'shop_subscription_search_label' ) );
@@ -441,11 +450,15 @@ class WCS_Admin_Post_Types {
 	 * Output custom columns for subscriptions
 	 * @param string $column
 	 */
-	public function render_shop_subscription_columns( $column ) {
+	public function render_shop_subscription_columns( $column, $order = null ) {
 		global $post, $the_subscription, $wp_list_table;
 
-		if ( empty( $the_subscription ) || $the_subscription->get_id() != $post->ID ) {
-			$the_subscription = wcs_get_subscription( $post->ID );
+		if ( ! empty( $order ) ) {
+			$the_subscription = wcs_get_subscription( $order->get_id() );
+		} else {
+			if ( empty( $the_subscription ) || $the_subscription->get_id() != $post->ID ) {
+				$the_subscription = wcs_get_subscription( $post->ID );
+			}
 		}
 
 		// If the subscription failed to load, only display the ID.
@@ -477,7 +490,7 @@ class WCS_Admin_Post_Types {
 				// The status label
 				$column_content = sprintf( '<mark class="subscription-status order-status status-%1$s %1$s tips" data-tip="%2$s"><span>%3$s</span></mark>', sanitize_title( $the_subscription->get_status() ), wcs_get_subscription_status_name( $the_subscription->get_status() ), wcs_get_subscription_status_name( $the_subscription->get_status() ) );
 
-				$post_type_object = get_post_type_object( $post->post_type );
+				$post_type_object = get_post_type_object( ! empty( $post->post_type ) ? $post->post_type : $order->get_type() );
 
 				$actions = array();
 
@@ -507,15 +520,15 @@ class WCS_Admin_Post_Types {
 
 						if ( in_array( $status, array( 'trash', 'deleted' ) ) ) {
 
-							if ( current_user_can( $post_type_object->cap->delete_post, $post->ID ) ) {
+							if ( current_user_can( $post_type_object->cap->delete_post, $the_subscription->get_id() ) ) {
 
-								if ( 'trash' == $post->post_status ) {
+								if ( 'trash' == $the_subscription->get_status() ) {
 									$actions['untrash'] = '<a title="' . esc_attr( __( 'Restore this item from the Trash', 'woocommerce-subscriptions' ) ) . '" href="' . wp_nonce_url( admin_url( sprintf( $post_type_object->_edit_link . '&amp;action=untrash', $post->ID ) ), 'untrash-post_' . $post->ID ) . '">' . __( 'Restore', 'woocommerce-subscriptions' ) . '</a>';
 								} elseif ( EMPTY_TRASH_DAYS ) {
-									$actions['trash'] = '<a class="submitdelete" title="' . esc_attr( __( 'Move this item to the Trash', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $post->ID ) . '">' . __( 'Trash', 'woocommerce-subscriptions' ) . '</a>';
+									$actions['trash'] = '<a class="submitdelete" title="' . esc_attr( __( 'Move this item to the Trash', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $the_subscription->get_id() ) . '">' . __( 'Trash', 'woocommerce-subscriptions' ) . '</a>';
 								}
 
-								if ( 'trash' == $post->post_status || ! EMPTY_TRASH_DAYS ) {
+								if ( 'trash' == $the_subscription->get_status() || ! EMPTY_TRASH_DAYS ) {
 									$actions['delete'] = '<a class="submitdelete" title="' . esc_attr( __( 'Delete this item permanently', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $post->ID, '', true ) . '">' . __( 'Delete Permanently', 'woocommerce-subscriptions' ) . '</a>';
 								}
 							}
@@ -540,7 +553,7 @@ class WCS_Admin_Post_Types {
 
 				$actions = apply_filters( 'woocommerce_subscription_list_table_actions', $actions, $the_subscription );
 
-				$column_content .= $wp_list_table->row_actions( $actions );
+				// $column_content .= $wp_list_table->row_actions( $actions );
 
 				$column_content = apply_filters( 'woocommerce_subscription_list_table_column_status_content', $column_content, $the_subscription, $actions );
 				break;
@@ -587,8 +600,9 @@ class WCS_Admin_Post_Types {
 				} elseif ( $the_subscription->get_billing_first_name() || $the_subscription->get_billing_last_name() ) {
 					$username = trim( $the_subscription->get_billing_first_name() . ' ' . $the_subscription->get_billing_last_name() );
 				}
+
 				// translators: $1: is opening link, $2: is subscription order number, $3: is closing link tag, $4: is user's name
-				$column_content = sprintf( _x( '%1$s#%2$s%3$s for %4$s', 'Subscription title on admin table. (e.g.: #211 for John Doe)', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post.php?post=' . absint( $post->ID ) . '&action=edit' ) ) . '">', '<strong>' . esc_attr( $the_subscription->get_order_number() ) . '</strong>', '</a>', $username );
+				$column_content = sprintf( _x( '%1$s#%2$s%3$s for %4$s', 'Subscription title on admin table. (e.g.: #211 for John Doe)', 'woocommerce-subscriptions' ), '<a href="' . esc_url( wc_get_container()->get( OrderUtil::class )->get_order_admin_edit_url( $the_subscription->get_id() ) ) . '">', '<strong>' . esc_attr( $the_subscription->get_order_number() ) . '</strong>', '</a>', $username );
 
 				$column_content .= '</div>';
 
@@ -882,6 +896,14 @@ class WCS_Admin_Post_Types {
 			if ( empty( $vars['post_status'] ) ) {
 				$vars['post_status'] = array_keys( wcs_get_subscription_statuses() );
 			}
+		}
+
+		return $vars;
+	}
+
+	public function request_query_hpos( $vars ) {
+		if ( empty( $vars['status'] ) ) {
+			$vars['status'] = array_keys( wcs_get_subscription_statuses() );
 		}
 
 		return $vars;

@@ -78,14 +78,20 @@ class WCS_Admin_Meta_Boxes {
 	 * @param WP_Post|WC_Order|null $post_or_order_object The post or order currently being edited.
 	 */
 	public function add_meta_boxes( $post_type = '', $post_or_order_object = null ) {
+		$current_screen = get_current_screen();
+		$subscriptions_screen_id = wcs_is_custom_order_tables_usage_enabled() ? wc_get_page_screen_id( 'shop_subscription' ) : 'shop_subscription';
 
-		add_meta_box( 'woocommerce-subscription-data', _x( 'Subscription Data', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Subscription_Data::output', 'shop_subscription', 'normal', 'high' );
+		if ( $subscriptions_screen_id !== $current_screen->id ) {
+			return;
+		}
 
-		add_meta_box( 'woocommerce-subscription-schedule', _x( 'Schedule', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Schedule::output', 'shop_subscription', 'side', 'default' );
+		add_meta_box( 'woocommerce-subscription-data', _x( 'Subscription Data', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Subscription_Data::output', $subscriptions_screen_id, 'normal', 'high' );
 
-		remove_meta_box( 'woocommerce-order-data', 'shop_subscription', 'normal' );
+		add_meta_box( 'woocommerce-subscription-schedule', _x( 'Schedule', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Schedule::output', $subscriptions_screen_id, 'side', 'default' );
 
-		add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', 'shop_subscription', 'normal', 'low' );
+		remove_meta_box( 'woocommerce-order-data', $subscriptions_screen_id, 'normal' );
+
+		add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', $subscriptions_screen_id, 'normal', 'low' );
 
 		// Ensure backwards compatibility if $post_or_order_object not provided and is 'shop_order' post type.
 		if ( ! $post_or_order_object && 'shop_order' === $post_type ) {
@@ -94,8 +100,7 @@ class WCS_Admin_Meta_Boxes {
 		}
 
 		// Get "Edit Order" screen ID, which differs if HPOS is enabled.
-		$screen         = wcs_is_custom_order_tables_usage_enabled() ? wc_get_page_screen_id( 'shop-order' ) : 'shop_order';
-		$current_screen = get_current_screen();
+		$screen = wcs_is_custom_order_tables_usage_enabled() ? wc_get_page_screen_id( 'shop-order' ) : 'shop_order';
 
 		// Only display the meta box if viewing an order that contains a subscription.
 		if ( $post_or_order_object && $current_screen->id === $screen && wcs_order_contains_subscription( $post_or_order_object, 'any' ) ) {
@@ -125,13 +130,14 @@ class WCS_Admin_Meta_Boxes {
 	 */
 	public function enqueue_styles_scripts() {
 		global $post;
+		$post_id = ! empty( $post ) ? $post->ID : ( isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0 );
 		$ver = WC_Subscriptions_Core_Plugin::instance()->get_library_version();
 
 		// Get admin screen id
 		$screen    = get_current_screen();
 		$screen_id = isset( $screen->id ) ? $screen->id : '';
 
-		if ( 'shop_subscription' === $screen_id ) {
+		if ( in_array( $screen_id, array( 'shop_subscription', wc_get_page_screen_id( 'shop_subscription' ) ), true ) && $post_id ) {
 
 			wp_register_script( 'jstz', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/jstz.min.js' ), [], $ver, false );
 
@@ -153,7 +159,7 @@ class WCS_Admin_Meta_Boxes {
 						'i18n_trial_end_next_notice'     => __( 'Please enter a date before the next payment.', 'woocommerce-subscriptions' ),
 						'i18n_end_date_notice'           => __( 'Please enter a date after the next payment.', 'woocommerce-subscriptions' ),
 						'process_renewal_action_warning' => __( "Are you sure you want to process a renewal?\n\nThis will charge the customer and email them the renewal order (if emails are enabled).", 'woocommerce-subscriptions' ),
-						'payment_method'                 => wcs_get_subscription( $post )->get_payment_method(),
+						'payment_method'                 => wcs_get_subscription( $post_id )->get_payment_method(),
 						'search_customers_nonce'         => wp_create_nonce( 'search-customers' ),
 						'get_customer_orders_nonce'      => wp_create_nonce( 'get-customer-orders' ),
 						'is_duplicate_site'              => WCS_Staging::is_duplicate_site(),
