@@ -272,17 +272,26 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			$updated_meta = $subscription_data_store->add_meta( $subscription, (object) $new_metadata );
 		}
 
+		// Check if HPOS and data syncing is enabled then manually backfill the related orders cache values to WP Posts table.
 		$this->maybe_backfill_related_order_cache( $subscription, $relation_type, $new_metadata );
 
 		return $updated_meta;
 	}
 
 	/**
-	 * Backfills the related order cache for a subscription if data sync is enabled.
+	 * Backfills the related order cache for a subscription when the "Keep the posts table and the orders tables synchronized"
+	 * setting is enabled.
 	 *
-	 * @param WC_Subscription $subscription
-	 * @param array           $metadata
-	 * @param string          $relation_type
+	 * In this class we update the related orders cache metadata directly to ensure the
+	 * proper value is written to the database. To do this we use the data store's update_meta() and
+	 * add_meta() functions.
+	 *
+	 * Using these functions bypasses the DataSynchronizer resulting in order and post data becoming out of sync.
+	 * To fix this, this function manually updates the post meta table with the new values.
+	 *
+	 * @param WC_Subscription $subscription  The subscription object to backfill.
+	 * @param array           $metadata      The metadata to set update/add in the CPT data store.
+	 * @param string          $relation_type The relationship between the subscription and the order.
 	 */
 	protected function maybe_backfill_related_order_cache( $subscription, $relation_type, $metadata ) {
 		if ( ! wcs_is_custom_order_tables_usage_enabled() || ! wcs_is_custom_order_tables_data_sync_enabled() || empty( $metadata['key'] ) ) {
