@@ -18,9 +18,9 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 
 	/**
 	 * Keep the cache up-to-date with changes to our meta data via WordPress post meta APIs
-	 * or WC CRUD APIs by using a object data cache manager.
+	 * or WC CRUD APIs by using a data cache manager.
 	 *
-	 * @var
+	 * @var WCS_Post_Meta_Cache_Manager_Many_To_One|WCS_Object_Data_Cache_Manager_Many_To_One Depending on the HPOS environment.
 	 */
 	protected $object_data_cache_manager;
 
@@ -32,7 +32,12 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	const _CACHE_META_KEY = '_wcs_subscription_ids_cache';
 
 	/**
+	 * Gets the legacy protected variables for backwards compatibility.
 	 *
+	 * Throws a deprecated warning if accessing the now deprecated variables.
+	 *
+	 * @param string $name The variable name.
+	 * @return WCS_Post_Meta_Cache_Manager_Many_To_One|WCS_Object_Data_Cache_Manager_Many_To_One Depending on the HPOS environment.
 	 */
 	public function __get( $name ) {
 		if ( 'post_meta_cache_manager' === $name ) {
