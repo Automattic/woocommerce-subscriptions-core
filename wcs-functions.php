@@ -55,11 +55,10 @@ function wcs_is_subscription( $subscription ) {
  * @return bool True if the store has any subscriptions, otherwise false.
  */
 function wcs_do_subscriptions_exist() {
-	$subscriptions_exist = false;
-
 	$results             = wc_get_orders(
 		array(
 			'type'   => 'shop_subscription',
+			'status' => 'all',
 			'limit'  => 1,
 			'return' => 'ids',
 		)
