@@ -105,8 +105,8 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 			} elseif ( isset( $base_data[ $data_key ] ) && $force_all_fields ) {
 				// If we're forcing all fields, fetch the base data as the new value.
 				$this->object_changes[ $object->get_id() ][ $data_key ] = [
-					'new'      => $base_data[ $data_key ],
-					'type'     => 'add',
+					'new'  => $base_data[ $data_key ],
+					'type' => 'add',
 				];
 
 				continue;
@@ -132,8 +132,8 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 				} elseif ( empty( $meta->id ) ) {
 					// If the value is being added.
 					$this->object_changes[ $object->get_id() ][ $data_key ] = [
-						'new'      => $meta->value,
-						'type'     => 'add',
+						'new'  => $meta->value,
+						'type' => 'add',
 					];
 				} elseif ( $meta->get_changes() ) {
 					// If the value is being updated.
@@ -145,8 +145,8 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 				} elseif ( $force_all_fields ) {
 					// If we're forcing all fields to be recorded.
 					$this->object_changes[ $object->get_id() ][ $data_key ] = [
-						'new'      => $meta->value,
-						'type'     => 'add',
+						'new'  => $meta->value,
+						'type' => 'add',
 					];
 				}
 
