@@ -264,12 +264,46 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			'value' => $related_order_ids,
 		);
 
+		// Check if HPOS and data syncing is enabled then manually backfill the related orders cache values to WP Posts table.
+		$this->maybe_backfill_related_order_cache( $subscription, $relation_type, $new_metadata );
+
 		// If there is metadata for this key, update it, otherwise add it.
 		if ( $current_metadata ) {
 			$new_metadata['id'] = $current_metadata->meta_id;
 			return $subscription_data_store->update_meta( $subscription, (object) $new_metadata );
 		} else {
 			return $subscription_data_store->add_meta( $subscription, (object) $new_metadata );
+		}
+	}
+
+	/**
+	 * Backfills the related order cache for a subscription when the "Keep the posts table and the orders tables synchronized"
+	 * setting is enabled.
+	 *
+	 * In this class we update the related orders cache metadata directly to ensure the
+	 * proper value is written to the database. To do this we use the data store's update_meta() and
+	 * add_meta() functions.
+	 *
+	 * Using these functions bypasses the DataSynchronizer resulting in order and post data becoming out of sync.
+	 * To fix this, this function manually updates the post meta table with the new values.
+	 *
+	 * @param WC_Subscription $subscription  The subscription object to backfill.
+	 * @param string          $relation_type The related order relationship type. Can be 'renewal', 'switch' or 'resubscribe'.
+	 * @param array           $metadata      The metadata to set update/add in the CPT data store. Should be an array with 'key' and 'value' keys.
+	 */
+	protected function maybe_backfill_related_order_cache( $subscription, $relation_type, $metadata ) {
+		if ( ! wcs_is_custom_order_tables_usage_enabled() || ! wcs_is_custom_order_tables_data_sync_enabled() || empty( $metadata['key'] ) ) {
+			return;
+		}
+
+		$cpt_data_store   = $subscription->get_data_store()->get_cpt_data_store_instance();
+		$current_metadata = $this->get_related_order_metadata( $subscription, $relation_type, $cpt_data_store );
+
+		if ( $current_metadata ) {
+			$metadata['id'] = $current_metadata->meta_id;
+			$cpt_data_store->update_meta( $subscription, (object) $metadata );
+		} else {
+			$cpt_data_store->add_meta( $subscription, (object) $metadata );
 		}
 	}
 
@@ -563,13 +597,15 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	/**
 	 * Gets the subscription's related order cached stored in meta.
 	 *
-	 * @param WC_Subscription $subscription The subscription to get the cache meta for.
-	 * @param string $relation_type         The relation type to get the cache meta for.
+	 * @param WC_Subscription $subscription  The subscription to get the cache meta for.
+	 * @param string          $relation_type The relation type to get the cache meta for.
+	 * @param mixed           $data_store    The data store to use to get the meta. Defaults to the current subscription's data store.
 	 *
 	 * @return stdClass|bool The meta data object if it exists, or false if it doesn't.
 	 */
-	protected function get_related_order_metadata( WC_Subscription $subscription, $relation_type ) {
+	protected function get_related_order_metadata( WC_Subscription $subscription, $relation_type, $data_store = null ) {
 		$cache_meta_key = $this->get_cache_meta_key( $relation_type );
+		$data_store     = empty( $data_store ) ? WC_Data_Store::load( 'subscription' ) : $data_store;
 
 		/**
 		 * Bypass the related order cache keys being ignored when fetching subscription meta.
@@ -581,7 +617,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 		 * the function in all instances.
 		 */
 		self::$override_ignored_props = true;
-		$subscription_meta            = WC_Data_Store::load( 'subscription' )->read_meta( $subscription );
+		$subscription_meta            = $data_store->read_meta( $subscription );
 		self::$override_ignored_props = false;
 
 		foreach ( $subscription_meta as $meta ) {
