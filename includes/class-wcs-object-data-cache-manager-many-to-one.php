@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Class for managing caches of object data that have a many-to-one relationship.
  *
- * This applies to caches where only one should exist for the meta value. This differs to WCS_Post_Meta_Cache_Manager
+ * This applies to caches where only one should exist for the meta value. This differs to WCS_Object_Data_Cache_Manager
  * which allows multiple caches for the same meta value i.e. a many-to-many relationship.
  *
  * @version  5.2.0
