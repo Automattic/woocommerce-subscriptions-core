@@ -344,16 +344,6 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Reads a subscription object from custom tables.
-	 *
-	 * @param \WC_Subscription $subscription Subscription object.
-	 */
-	public function read( &$subscription ) {
-		parent::read( $subscription );
-		$this->set_subscription_props( $subscription );
-	}
-
-	/**
 	 * Reads multiple subscription objects from custom tables.
 	 *
 	 * @param \WC_Order $subscriptions Subscription objects.
@@ -361,7 +351,12 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	public function read_multiple( &$subscriptions ) {
 		parent::read_multiple( $subscriptions );
 		foreach ( $subscriptions as $subscription ) {
+			// Flag the subscription as still being read so props we set aren't considered changes.
+			$subscription->set_object_read( false );
+
 			$this->set_subscription_props( $subscription );
+
+			$subscription->set_object_read( true );
 		}
 	}
 
@@ -403,7 +398,66 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Sets subscription props.
+	 * Saves a subscription to the database.
+	 *
+	 * When a subscription is saved to the database we need to ensure we also save core subscription properties. The
+	 * parent::persist_order_to_db() will create and save the WC_Order inherited data, this method will save the
+	 * subscription core properties.
+	 *
+	 * @param WC_Subscription $subscription The subscription to save.
+	 * @param bool            $force_all_fields Optional. Whether to force all fields to be saved. Default false.
+	 */
+	protected function persist_order_to_db( &$subscription, bool $force_all_fields = false ) {
+		$is_update = ( 0 !== absint( $subscription->get_id() ) );
+
+		// Call the parent function first so WC can get an ID if this a new subscription.
+		parent::persist_order_to_db( $subscription, $force_all_fields );
+
+		// Get the subscription's current raw metadata.
+		$subscription_meta_data = array_column( $this->data_store_meta->read_meta( $subscription ), null, 'meta_key' );
+
+		// Determine what fields need to be saved. Forcing all fields to be saved is only allowed when updating.
+		if ( $force_all_fields && $is_update ) {
+			$props_to_save = $this->subscription_meta_keys_to_props;
+		} else {
+			$props_to_save = $this->get_props_to_update( $subscription, $this->subscription_meta_keys_to_props );
+		}
+
+		foreach ( $props_to_save as $meta_key => $prop ) {
+			$is_date_prop = ( 'schedule_' === substr( $prop, 0, 9 ) );
+
+			if ( $is_date_prop ) {
+				$meta_value = $subscription->get_date( $prop );
+			} else {
+				$meta_value = $subscription->{"get_$prop"}( 'edit' );
+			}
+
+			// Store as a string of the boolean for backward compatibility (yep, it's gross)
+			if ( 'requires_manual_renewal' === $prop ) {
+				$meta_value = wc_string_to_bool( $meta_value ) ? 'true' : 'false';
+			}
+
+			$existing_meta_data = $subscription_meta_data[ $meta_key ] ?? false;
+			$new_meta_data      = [
+				'key'   => $meta_key,
+				'value' => $meta_value,
+			];
+
+			if ( empty( $existing_meta_data ) ) {
+				$this->data_store_meta->add_meta( $subscription, (object) $new_meta_data );
+			} elseif ( $existing_meta_data->meta_value !== $new_meta_data['value'] ) {
+				$new_meta_data['id'] = $existing_meta_data->meta_id;
+				$this->data_store_meta->update_meta( $subscription, (object) $new_meta_data );
+			}
+		}
+	}
+
+	/**
+	 * Sets subscription core properties.
+	 *
+	 * This function is called when the subscription is being read from the database and ensures that
+	 * core subscription properties ($this->subscription_meta_keys_to_props) are loaded directly from the
+	 * database and set on the subscription via the equivalent setter.
 	 *
 	 * @param \WC_Order $subscription Subscription object.
 	 */
@@ -411,53 +465,42 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 		$props_to_set = [];
 		$dates_to_set = [];
 
+		// Pull the latest subscription meta data from the database to set on the subscription object.
+		$subscription_meta = array_column( $this->data_store_meta->read_meta( $subscription ), null, 'meta_key' );
+
 		foreach ( $this->subscription_meta_keys_to_props as $meta_key => $prop_key ) {
-			if ( 0 === strpos( $prop_key, 'schedule' ) || in_array( $meta_key, $this->subscription_internal_meta_keys, true ) ) {
+			$is_scheduled_date = 0 === strpos( $prop_key, 'schedule' );
+			$is_internal_meta  = in_array( $meta_key, $this->internal_meta_keys, true );
 
-				$meta_value = $subscription->get_meta( $meta_key, true );
+			// We only need to set props that are internal meta keys or dates. Everything else is treated as meta.
+			if ( ! $is_scheduled_date && ! $is_internal_meta ) {
+				continue;
+			}
 
-				// Dates are set via update_dates() to make sure relationships between dates are validated
-				if ( 0 === strpos( $prop_key, 'schedule' ) ) {
-					$date_type = str_replace( 'schedule_', '', $prop_key );
+			$existing_meta_data = $subscription_meta[ $meta_key ] ?? false;
 
-					if ( 'start' === $date_type && ! $meta_value ) {
-						$meta_value = $subscription->get_date( 'date_created' );
-					}
+			// If we're setting the start date and it's missing, we set it to the created date.
+			if ( 'schedule_start' === $prop_key && ! $existing_meta_data ) {
+				$existing_meta_data = (object) [
+					'meta_key'   => $meta_key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+					'meta_value' => $subscription->get_date( 'date_created' ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				];
+			}
 
-					$dates_to_set[ $date_type ] = ( false === $meta_value ) ? 0 : $meta_value;
-				} else {
-					$props_to_set[ $prop_key ] = $meta_value;
-				}
+			// If there's no meta data, we don't need to set anything.
+			if ( ! $existing_meta_data ) {
+				continue;
+			}
+
+			if ( $is_scheduled_date ) {
+				$dates_to_set[ $prop_key ] = $existing_meta_data->meta_value;
+			} else {
+				$props_to_set[ $prop_key ] = maybe_unserialize( $existing_meta_data->meta_value );
 			}
 		}
 
 		$subscription->update_dates( $dates_to_set );
 		$subscription->set_props( $props_to_set );
-	}
-
-	/**
-	 * Updates meta data based on a subscription object.
-	 *
-	 * @param \WC_Subscription $subscription Subscription object.
-	 */
-	public function update_order_meta( &$subscription ) {
-		$updated_props = [];
-
-		foreach ( $this->get_props_to_update( $subscription, $this->subscription_meta_keys_to_props ) as $meta_key => $prop ) {
-			$meta_value = ( 'schedule_' === substr( $prop, 0, 9 ) ) ? $subscription->get_date( $prop ) : $subscription->{"get_$prop"}( 'edit' );
-
-			// Store as a string of the boolean for backward compatibility (yep, it's gross)
-			if ( 'requires_manual_renewal' === $prop ) {
-				$meta_value = $meta_value ? 'true' : 'false';
-			}
-
-			$subscription->update_meta_data( $meta_key, $meta_value );
-			$updated_props[] = $prop;
-		}
-
-		do_action( 'woocommerce_subscription_object_updated_props', $subscription, $updated_props );
-
-		parent::update_order_meta( $subscription );
 	}
 
 	/**

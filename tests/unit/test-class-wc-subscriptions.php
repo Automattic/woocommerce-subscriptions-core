@@ -1659,24 +1659,33 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		foreach ( $subscriptions as $status => $subscription ) {
 			$this->assertEquals( $status, $subscription->get_status() );
 		}
+	}
 
+	/**
+	 * Tests that subscriptions loaded from the database with draft or auto-draft status are treated as pending.
+	 */
+	public function test_draft_subscription_statuses() {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
+
 		wp_update_post(
 			[
 				'ID'          => $subscription->get_id(),
 				'post_status' => 'draft',
 			]
 		);
-		$this->assertEquals( 'pending', $subscription->get_status() );
 
-		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
+		// Confirm that a draft subscription when loaded has a pending status.
+		$this->assertEquals( 'pending', wcs_get_subscription( $subscription->get_id() )->get_status() );
+
 		wp_update_post(
 			[
 				'ID'          => $subscription->get_id(),
 				'post_status' => 'auto-draft',
 			]
 		);
-		$this->assertEquals( 'pending', $subscription->get_status() );
+
+		// Confirm that a draft subscription when loaded has a pending status.
+		$this->assertEquals( 'pending', wcs_get_subscription( $subscription->get_id() )->get_status() );
 	}
 
 	/**
