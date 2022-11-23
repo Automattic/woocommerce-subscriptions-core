@@ -13,17 +13,16 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
  * @category Class
- * @author   Prospress
  */
 class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WCS_Cache_Updater {
 
 	/**
-	 * Keep cache up-to-date with changes to our meta data via WordPress post meta APIs
-	 * by using a post meta cache manager.
+	 * Keep the cache up-to-date with changes to our meta data via WordPress post meta APIs
+	 * or WC CRUD APIs by using a object data cache manager.
 	 *
-	 * @var WCS_Post_Meta_Cache_Manager_Many_To_One
+	 * @var
 	 */
-	protected $post_meta_cache_manager;
+	protected $object_data_cache_manager;
 
 	/**
 	 * Meta key used to store all of a customer's subscription IDs in their user meta.
@@ -33,10 +32,24 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	const _CACHE_META_KEY = '_wcs_subscription_ids_cache';
 
 	/**
+	 *
+	 */
+	public function __get( $name ) {
+		if ( 'post_meta_cache_manager' === $name ) {
+			wcs_deprecated_argument( 'WCS_Customer_Store_Cached_CPT::post_meta_cache_manager', '5.2.0', 'WCS_Customer_Store_Cached_CPT::object_data_cache_manager' );
+			return $this->object_data_cache_manager;
+		}
+	}
+
+	/**
 	 * Constructor
 	 */
 	public function __construct() {
-		$this->post_meta_cache_manager = new WCS_Post_Meta_Cache_Manager_Many_To_One( 'shop_subscription', array( $this->get_meta_key() ) );
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			$this->object_data_cache_manager = new WCS_Object_Data_Cache_Manager_One_To_Many( 'subscription', array( 'customer_id' ) );
+		} else {
+			$this->object_data_cache_manager = new WCS_Post_Meta_Cache_Manager_Many_To_One( 'shop_subscription', array( $this->get_meta_key() ) );
+		}
 	}
 
 	/**
@@ -44,7 +57,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	 */
 	protected function init() {
 
-		$this->post_meta_cache_manager->init();
+		$this->object_data_cache_manager->init();
 
 		// When a user is first added, make sure the subscription cache is empty because it can not have any data yet, and we want to avoid running the query needlessly
 		add_filter( 'user_register', array( $this, 'set_empty_cache' ) );
@@ -213,7 +226,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	 */
 	public function maybe_update_for_post_meta_change( $update_type, $subscription_id, $meta_key, $user_id, $old_user_id = '' ) {
 
-		if ( $this->get_meta_key() !== $meta_key ) {
+		if ( $this->get_meta_key() !== $meta_key && 'customer_id' !== $meta_key ) {
 			return;
 		}
 

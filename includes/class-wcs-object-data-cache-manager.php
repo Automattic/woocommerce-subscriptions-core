@@ -4,37 +4,49 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class for managing caches of post meta
+ * Class for managing caches of object data.
  *
- * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
+ * @version  5.2.0
  * @category Class
- * @author   Prospress
  */
-class WCS_Object_Data_Cache_Manager {
+class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 
 	/**
-	 * The object type this cache manager is interested in. eg 'shop_order', 'shop_subscription'.
+	 * The WC_Data object type this cache manager will track changes to. eg 'order', 'subscription'.
 	 *
 	 * @var string
 	 */
 	protected $object_type;
 
 	/**
-	 * The object data keys this cache manager will track changes. eg '_customer_user'.
+	 * The data keys this cache manager will track changes to on the object type. Can be an object property key ('customer_id') or meta key ('_subscription_renewal').
 	 *
 	 * @var array
 	 */
 	protected $data_keys;
 
 	/**
-	 * Undocumented variable
+	 * An internal record of changes to the object that this manager is tracking.
 	 *
-	 * @var array
+	 * This internal record is generated before the object is saved, so we can determine
+	 * if the value has changed, what the previous value was, and what the new value is.
+	 *
+	 * In the event that the object is being created (doesn't have an ID prior to save), this
+	 * record will be generated after the object is saved, and all the data this manager
+	 * is tracking will be set.
+	 *
+	 * @var array Each element is keyed by the object's ID, and contains an array of tracked changes {
+	 *     Data about the change that was made to the object.
+	 *
+	 *     @type mixed  $new      The new value.
+	 *     @type mixed  $previous The previous value before it was changed.
+	 *     @type string $type     The type of change. Can be 'update', 'add' or 'delete'.
+	 * }
 	 */
-	protected $incoming_changes = [];
+	protected $object_changes = [];
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 *
 	 * @param string The post type this cache manage acts on.
 	 * @param array The post meta keys this cache manager should act on.
@@ -47,254 +59,149 @@ class WCS_Object_Data_Cache_Manager {
 	}
 
 	/**
-	 * Attach callbacks to keep related order caches up-to-date.
+	 * Attaches callbacks to keep the caches up-to-date.
 	 */
 	public function init() {
-
-		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			add_action( 'woocommerce_before_' . $this->object_type . '_object_save', [ $this, 'prepare_object_changes' ] );
-			add_action( 'woocommerce_after_' . $this->object_type . '_object_save', [ $this, 'action_object_cache_changes' ] );
-		} else {
-			// When the post for a related order is deleted or untrashed, make sure the corresponding related order cache is updated
-			add_action( 'before_delete_post', array( $this, 'post_deleted' ) );
-			add_action( 'trashed_post', array( $this, 'post_deleted' ) );
-			add_action( 'untrashed_post', array( $this, 'post_untrashed' ) );
-
-			// When a related order post meta flag is modified, make sure the corresponding related order cache is updated
-			add_action( 'added_post_meta', array( $this, 'meta_added' ), 10, 4 );
-			add_action( 'update_post_meta', array( $this, 'meta_updated' ), 10, 4 );
-			add_action( 'deleted_post_meta', array( $this, 'meta_deleted' ), 10, 4 );
-
-			// Special handling for meta updates containing a previous order ID to make sure we also delete any previously linked relationship
-			add_action( 'update_post_metadata', array( $this, 'meta_updated_with_previous' ), 10, 5 );
-
-			// Special handling for meta deletion on all posts/orders, not a specific post/order ID
-			add_action( 'delete_post_metadata', array( $this, 'meta_deleted_all' ), 100, 5 );
-		}
+		add_action( "woocommerce_before_{$this->object_type}_object_save", [ $this, 'prepare_object_changes' ] );
+		add_action( "woocommerce_after_{$this->object_type}_object_save", [ $this, 'action_object_cache_changes' ] );
 	}
 
 	/**
-	 * Check if the post meta change is one to act on or ignore, based on the post type and meta key being changed.
+	 * Generates a set of changes for tracked meta keys and properties.
 	 *
-	 * One gotcha here: the 'delete_post_metadata' hook can be triggered with a $post_id of null. This is done when
-	 * meta is deleted by key (i.e. delete_post_meta_by_key()) or when meta is being deleted for a specific value for
-	 * all posts (as done by wp_delete_attachment() to remove the attachment from posts). To handle these cases,
-	 * we only check the post type when the $post_id is non-null.
+	 * This method is hooked onto an action which is fired before the object is saved.
+	 * Changes to the object's data is stored in the $this->object_changes property to
+	 * be processed after the object is saved.
 	 *
-	 * @param int $post_id The post the meta is being changed on.
-	 * @param string $meta_key The post meta key being changed.
-	 * @return bool False if the change should not be ignored, true otherwise.
+	 * @param WC_Data $object        The object which is being saved.
+	 * @param string  $generate_type Optional. The data to generate changes from. Defaults to 'changes_only' which will generate the data from strictly changes to the object. 'all_fields' will fetch all tracked data keys.
 	 */
-	protected function is_change_to_ignore( $object_id, $meta_key = '' ) {
-		if ( ! is_null( $object_id ) && false === $this->is_managed_post_type( $object_id ) ) {
-			return true;
-		} elseif ( empty( $meta_key ) || ! isset( $this->meta_keys[ $meta_key ] ) ) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	/* Callbacks for post meta hooks */
-
-	/**
-	 * When post meta is added, check if this class instance cares about updating its cache
-	 * to reflect the change.
-	 *
-	 * @param int $meta_id The ID of the post meta row in the database.
-	 * @param int $post_id The post the meta is being changed on.
-	 * @param string $meta_key The post meta key being changed.
-	 * @param mixed $meta_value The value being set in the database.
-	 */
-	public function meta_added( $meta_id, $object_id, $meta_key, $meta_value ) {
-		$this->maybe_trigger_update_cache_hook( 'add', $object_id, $meta_key, $meta_value );
-	}
-
-	/**
-	 * When post meta is deleted, check if this class instance cares about updating its cache
-	 * to reflect the change.
-	 *
-	 * @param int $meta_id The ID of the post meta row in the database.
-	 * @param int $post_id The post the meta is being changed on.
-	 * @param string $meta_key The post meta key being changed.
-	 * @param mixed $meta_value The value being delete from the database.
-	 */
-	public function meta_deleted( $meta_id, $object_id, $meta_key, $meta_value ) {
-		$this->maybe_trigger_update_cache_hook( 'delete', $object_id, $meta_key, $meta_value );
-	}
-
-	/**
-	 * When post meta is updated from a previous value, check if this class instance cares about
-	 * updating its cache to reflect the change.
-	 *
-	 * @param mixed $check Whether to update the meta or not. By default, this is null, meaning it will be updated. Callbacks may override it to prevent that.
-	 * @param int $post_id The post the meta is being changed on.
-	 * @param string $meta_key The post meta key being changed.
-	 * @param mixed $meta_value The new value being saved in the database.
-	 * @param mixed $prev_value The previous value stored in the database.
-	 * @return mixed $check This method is attached to the "update_{$meta_type}_metadata" filter, which is used as a pre-check on whether to update meta data, so it needs to return the $check value passed in.
-	 */
-	public function meta_updated_with_previous( $check, $object_id, $meta_key, $meta_value, $prev_value ) {
-
-		// If the meta data isn't actually being changed, we don't need to do anything. The use of == instead of === is deliberate to account for typecasting that can happen in WC's CRUD classes (e.g. ints cast as strings or bools as ints)
-		if ( $check || $prev_value == $meta_value ) {
-			return $check;
+	public function prepare_object_changes( $object, $generate_type = 'changes_only' ) {
+		// If the object hasn't been created yet, we can't do anything here.
+		if ( ! $object->get_id() ) {
+			return;
 		}
 
-		$this->maybe_trigger_update_cache_hook( 'update', $object_id, $meta_key, $meta_value, $prev_value );
+		$force_all_fields = 'all_fields' === $generate_type;
+		$changes          = $object->get_changes();
+		$base_data        = $object->get_base_data();
+		$meta_data        = $object->get_meta_data();
 
-		return $check;
-	}
-
-	/**
-	 * When post meta is updated, check if this class instance cares about updating its cache
-	 * to reflect the change.
-	 *
-	 * @param int $meta_id The ID of the post meta row in the database.
-	 * @param int $post_id The post the meta is being changed on.
-	 * @param string $meta_key The post meta key being changed.
-	 * @param mixed $meta_value The value being deleted from the database.
-	 */
-	public function meta_updated( $meta_id, $object_id, $meta_key, $meta_value ) {
-		$this->meta_updated_with_previous( null, $object_id, $meta_key, $meta_value, '' );
-	}
-
-	/**
-	 * When all post meta rows for a given key are about to be deleted, check if this class instance
-	 * cares about updating its cache to reflect the change.
-	 *
-	 * WordPress has special handling for meta deletion on all posts rather than a specific post ID.
-	 * This method handles that case.
-	 *
-	 * @param mixed $check Whether to delete the meta or not. By default, this is null, meaning it will be deleted. Callbacks may override it to prevent that.
-	 * @param int $post_id The post the meta is being changed on.
-	 * @param string $meta_key The post meta key being changed.
-	 * @param mixed $meta_value The value being deleted from the database.
-	 * @param bool $delete_all Whether meta data is being deleted on all posts, not a specific post.
-	 * @return mixed $check This method is attached to the "update_{$meta_type}_metadata" filter, which is used as a pre-check on whether to update meta data, so it needs to return the $check value passed in.
-	 */
-	public function meta_deleted_all( $check, $object_id, $meta_key, $meta_value, $delete_all ) {
-
-		if ( $delete_all && null === $check && false === $this->is_change_to_ignore( $object_id, $meta_key ) ) {
-			$this->trigger_delete_all_caches_hook( $meta_key );
-		}
-
-		return $check;
-	}
-
-	/* Callbacks for post hooks */
-
-	/**
-	 * When a post object is restored from the trash, check if this class instance cares about updating its cache
-	 * to reflect the change.
-	 *
-	 * @param int $post_id The post being restored.
-	 */
-	public function post_untrashed( $object_id ) {
-		$this->maybe_update_for_post_change( 'add', $object_id );
-	}
-
-	/**
-	 * When a post object is deleted or trashed, check if this class instance cares about updating its cache
-	 * to reflect the change.
-	 *
-	 * @param int $post_id The post being restored.
-	 */
-	public function post_deleted( $object_id ) {
-		$this->maybe_update_for_post_change( 'delete', $object_id );
-	}
-
-	/**
-	 *
-	 */
-	public function prepare_object_changes( $object ) {
-		$changes = $object->get_changes();
+		// Record the object ID so we know that it has been handled, in action_object_cache_changes().
+		$this->object_changes[ $object->get_id() ] = [];
 
 		foreach ( $this->data_keys as $data_key => $index ) {
 
+			// Check if the data key is a base property and if it has changed.
 			if ( isset( $changes[ $data_key ] ) ) {
-				// Store the changes.
+				$this->object_changes[ $object->get_id() ][ $data_key ] = [
+					'new'      => $changes[ $data_key ],
+					'previous' => isset( $base_data[ $data_key ] ) ? $base_data[ $data_key ] : null,
+					'type'     => 'update',
+				];
+
+				continue;
+			} elseif ( isset( $base_data[ $data_key ] ) && $force_all_fields ) {
+				// If we're forcing all fields, record the base data as the new value.
+				$this->object_changes[ $object->get_id() ][ $data_key ] = [
+					'new'      => $base_data[ $data_key ],
+					'type'     => 'add',
+				];
+
 				continue;
 			}
 
-			// Look for meta data.
-			if ( isset( $changes ) ) {
+			// Check if the data key is stored as meta.
+			foreach ( $meta_data as $meta ) {
+				if ( $meta->key !== $data_key ) {
+					continue;
+				}
 
+				$previous_meta = $meta->get_data();
+
+				// If the value is being deleted.
+				if ( is_null( $meta->value ) ) {
+					if ( ! empty( $meta->id ) ) {
+						$this->object_changes[ $object->get_id() ][ $data_key ] = [
+							'new'      => $meta->value,
+							'previous' => isset( $previous_meta['value'] ) ? $previous_meta['value'] : null,
+							'type'     => 'delete',
+						];
+					}
+				} elseif ( empty( $meta->id ) ) {
+					// If the value is being added.
+					$this->object_changes[ $object->get_id() ][ $data_key ] = [
+						'new'      => $meta->value,
+						'type'     => 'add',
+					];
+				} elseif ( $meta->get_changes() ) {
+					// If the value is being updated.
+					$this->object_changes[ $object->get_id() ][ $data_key ] = [
+						'new'      => $meta->value,
+						'previous' => isset( $previous_meta['value'] ) ? $previous_meta['value'] : null,
+						'type'     => 'update',
+					];
+				} elseif ( $force_all_fields ) {
+					// If we're forcing all fields to be recorded.
+					$this->object_changes[ $object->get_id() ][ $data_key ] = [
+						'new'      => $meta->value,
+						'type'     => 'add',
+					];
+				}
+
+				break;
 			}
 		}
 	}
 
-
 	/**
-	 * When a post object is changed, check if this class instance cares about updating its cache
-	 * to reflect the change.
+	 * Actions all the changes that were made to object by triggering the update cache hook.
 	 *
-	 * @param string $update_type The type of update to check. Only 'add' or 'delete' should be used.
-	 * @param int $post_id The post being changed.
-	 * @throws InvalidArgumentException If the given update type is not 'add' or 'delete'.
+	 * This method is hooked onto an action which is fired after the object is saved.
+	 *
+	 * @param WC_Data $object The object which was saved.
 	 */
-	protected function maybe_update_for_post_change( $update_type, $object_id ) {
-
-		if ( ! in_array( $update_type, array( 'add', 'delete' ) ) ) {
-			// translators: %s: invalid type of update argument.
-			throw new InvalidArgumentException( sprintf( __( 'Invalid update type: %s. Post update types supported are "add" or "delete". Updates are done on post meta directly.', 'woocommerce-subscriptions' ), $update_type ) );
+	public function action_object_cache_changes( $object ) {
+		if ( ! $object->get_id() ) {
+			return;
 		}
 
-		$object = ( 'shop_order' === $this->post_type ) ? wc_get_order( $object_id ) : get_post( $object_id );
-
-		foreach ( $this->meta_keys as $meta_key => $value ) {
-			$property   = preg_replace( '/^_/', '', $meta_key );
-			$meta_value = ( 'add' === $update_type ) ? wcs_get_objects_property( $object, $property ) : '';
-
-			$this->maybe_trigger_update_cache_hook( $update_type, $object_id, $meta_key, $meta_value );
+		/**
+		 * If the object ID hasn't been recorded, this object must have just been created (not updated).
+		 * Without an ID prepare_object_changes() (pre-save) would have skipped it.
+		 *
+		 * Now that we have an ID, generate the changes now.
+		 */
+		if ( ! isset( $this->object_changes[ $object->get_id() ] ) ) {
+			$this->prepare_object_changes( $object, 'all_fields' );
 		}
-	}
 
-	/**
-	 * When post data is changed, check if this class instance cares about updating its cache
-	 * to reflect the change.
-	 *
-	 * @param string $update_type The type of update to check. Only 'add' or 'delete' should be used.
-	 * @param int $post_id The post the meta is being changed on.
-	 * @param string $meta_key The post meta key being changed.
-	 * @param mixed $meta_value The meta value.
-	 * @param mixed $prev_value The previous value stored in the database. Optional.
-	 */
-	protected function maybe_trigger_update_cache_hook( $update_type, $object_id, $meta_key, $meta_value, $prev_value = '' ) {
-		if ( false === $this->is_change_to_ignore( $object_id, $meta_key ) ) {
-			$this->trigger_update_cache_hook( $update_type, $object_id, $meta_key, $meta_value, $prev_value );
+		if ( empty( $this->object_changes[ $object->get_id() ] ) ) {
+			return;
+		}
+
+		$object_changes = $this->object_changes[ $object->get_id() ];
+		unset( $this->object_changes[ $object->get_id() ] );
+
+		foreach ( $object_changes as $key => $change ) {
+			$this->trigger_update_cache_hook_from_change( $object, $key, $change );
 		}
 	}
 
 	/**
-	 * Trigger a hook to allow 3rd party code to update its cache for data that it cares about.
+	 * Triggers the update cache hook for an object change.
 	 *
-	 * @param string $update_type The type of update to check. Only 'add' or 'delete' should be used.
-	 * @param int $post_id The post the meta is being changed on.
-	 * @param string $meta_key The post meta key being changed.
-	 * @param mixed $meta_value The meta value.
-	 * @param mixed $prev_value The previous value stored in the database. Optional.
-	 */
-	protected function trigger_update_cache_hook( $update_type, $object_id, $meta_key, $meta_value, $prev_value = '' ) {
-		do_action( 'wcs_update_post_meta_caches', $update_type, $object_id, $meta_key, $meta_value, $prev_value );
-	}
-
-	/**
-	 * Trigger a hook to allow 3rd party code to delete its cache for data that it cares about.
+	 * @param WC_Data $object The object that was changed.
+	 * @param string  $key    The object's key that was changed. Can be a base property ('customer_id') or a meta key ('_subscription_renewal').
+	 * @param array   $change {
+	 *     Data about the change that was made to the object.
 	 *
-	 * @param string $meta_key The post meta key being changed.
+	 *     @type mixed  $new      The new value.
+	 *     @type mixed  $previous The previous value before it was changed.
+	 *     @type string $type     The type of change. Can be 'update', 'add' or 'delete'.
+	 * }
 	 */
-	protected function trigger_delete_all_caches_hook( $meta_key ) {
-		do_action( 'wcs_delete_all_post_meta_caches', $meta_key );
-	}
-
-	/**
-	 * Abstract the check against get_post_type() so that it can be mocked for unit tests.
-	 *
-	 * @param int $post_id Post ID or post object.
-	 * @return bool Whether the post type for the given post ID is the post type this instance manages.
-	 */
-	protected function is_managed_post_type( $object_id ) {
-		return $this->post_type === get_post_type( $object_id );
+	protected function trigger_update_cache_hook_from_change( $object, $key, $change ) {
+		$this->trigger_update_cache_hook( $change['type'], $object->get_id(), $key, $change['new'] );
 	}
 }
