@@ -35,5 +35,4 @@ class WCS_Object_Data_Cache_Manager_Many_To_One extends WCS_Object_Data_Cache_Ma
 		$previous_value = ! empty( $change['previous'] ) ? $change['previous'] : '';
 		$this->trigger_update_cache_hook( $change['type'], $object->get_id(), $key, $change['new'], $previous_value );
 	}
-
 }
