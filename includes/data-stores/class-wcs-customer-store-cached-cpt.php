@@ -46,7 +46,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	 */
 	public function __construct() {
 		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			$this->object_data_cache_manager = new WCS_Object_Data_Cache_Manager_One_To_Many( 'subscription', array( 'customer_id' ) );
+			$this->object_data_cache_manager = new WCS_Object_Data_Cache_Manager_Many_To_One( 'subscription', array( 'customer_id' ) );
 		} else {
 			$this->object_data_cache_manager = new WCS_Post_Meta_Cache_Manager_Many_To_One( 'shop_subscription', array( $this->get_meta_key() ) );
 		}
