@@ -10,6 +10,7 @@
 * Fix - On HPOS stores, ensure payment tokens are copied from the subscription to the renewal order.
 * Fix - Refactor `WCS_Meta_Box_Schedule::save` to support HPOS stores, fixing a PHP warning notice when updating an order via the Edit Order screen.
 * Fix - Return a fresh instance of the renewal order after creating it. Fixes caching issues on HPOS sites where the returned order has no line items.
+* Fix - Processing a manual renewal order with HPOS and data syncing enabled correctly saves the related order cache metadata on the subscription and prevents the post and order meta data getting out of sync.
 * Update - Refactor the `wcs_is_subscription` helper function to support HPOS.
 * Update - Refactor our Related Orders data store classes (WCS_Related_Order_Store_Cached_CPT and WCS_Related_Order_Store_CPT) to use CRUD methods to support subscriptions and orders stored in HPOS.
 * Update - Display related orders table when viewing the new "Edit Order" page (HPOS enabled stores).
