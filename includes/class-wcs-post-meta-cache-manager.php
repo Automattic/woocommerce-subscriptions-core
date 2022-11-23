@@ -180,8 +180,8 @@ class WCS_Post_Meta_Cache_Manager {
 	 * @param int $post_id The post being restored.
 	 */
 	public function post_deleted( $post_id ) {
-		$this->maybe_update_for_post_change( 'delete', $object_id );
-	}$post_id
+		$this->maybe_update_for_post_change( 'delete', $post_id );
+	}
 
 	/**
 	 * When a post object is changed, check if this class instance cares about updating its cache
