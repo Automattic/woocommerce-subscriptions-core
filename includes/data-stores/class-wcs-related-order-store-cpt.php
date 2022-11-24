@@ -101,7 +101,7 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 
 		if ( empty( $existing_relations ) || ! in_array( $subscription_id, $existing_related_ids, true ) ) {
 			$order->add_meta_data( $related_order_meta_key, $subscription_id, false );
-			$order->save_meta_data();
+			$order->save();
 		}
 	}
 
@@ -123,7 +123,7 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 			}
 		}
 
-		$order->save_meta_data();
+		$order->save();
 	}
 
 	/**
@@ -135,7 +135,7 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	public function delete_relations( WC_Order $order, $relation_type ) {
 		$related_order_meta_key = $this->get_meta_key( $relation_type );
 		$order->delete_meta_data( $related_order_meta_key );
-		$order->save_meta_data();
+		$order->save();
 	}
 
 	/**
