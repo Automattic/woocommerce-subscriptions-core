@@ -20,11 +20,15 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 	/**
 	 * Output the metabox
+	 *
+	 * @param WC_Subscription $order
 	 */
-	public static function output( $post ) {
+	public static function output( $order ) {
 		global $the_subscription;
 
-		$order = ( $post instanceof WP_Post ) ? wc_get_order( $post->ID ) : $post;
+		if ( $order instanceof WP_Post ) {
+			$order = wc_get_order( $order->ID );
+		}
 
 		if ( ! is_object( $the_subscription ) || $the_subscription->get_id() !== $order->get_id() ) {
 			$the_subscription = $order;
@@ -35,12 +39,14 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 		self::init_address_fields();
 
 		wp_nonce_field( 'woocommerce_save_data', 'woocommerce_meta_nonce' );
+
+		$order_title = $order->get_data_store()->get_title( $order );
 		?>
 		<style type="text/css">
 			#post-body-content, #titlediv, #major-publishing-actions, #minor-publishing-actions, #visibility, #submitdiv { display:none }
 		</style>
 		<div class="panel-wrap woocommerce">
-			<input name="post_title" type="hidden" value="<?php echo empty( $post->post_title ) ? esc_attr( get_post_type_object( $order->get_type() )->labels->singular_name ) : esc_attr( $post->post_title ); ?>" />
+			<input name="post_title" type="hidden" value="<?php echo empty( $order_title ) ? esc_attr( get_post_type_object( $order->get_type() )->labels->singular_name ) : esc_attr( $order_title ); ?>" />
 			<input name="post_status" type="hidden" value="<?php echo esc_attr( 'wc-' . $subscription->get_status() ); ?>" />
 			<div id="order_data" class="panel">
 
@@ -274,8 +280,8 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							}
 						}
 
-						if ( apply_filters( 'woocommerce_enable_order_notes_field', 'yes' === get_option( 'woocommerce_enable_order_comments', 'yes' ) ) && $post->post_excerpt ) {
-							echo '<p><strong>' . esc_html__( 'Customer Provided Note', 'woocommerce-subscriptions' ) . ':</strong> ' . wp_kses_post( nl2br( $post->post_excerpt ) ) . '</p>';
+						if ( apply_filters( 'woocommerce_enable_order_notes_field', 'yes' === get_option( 'woocommerce_enable_order_comments', 'yes' ) ) && $order->get_customer_note() ) {
+							echo '<p><strong>' . esc_html__( 'Customer Provided Note', 'woocommerce-subscriptions' ) . ':</strong> ' . wp_kses_post( nl2br( $order->get_customer_note() ) ) . '</p>';
 						}
 
 						echo '</div>';
@@ -306,7 +312,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 						if ( apply_filters( 'woocommerce_enable_order_notes_field', 'yes' === get_option( 'woocommerce_enable_order_comments', 'yes' ) ) ) {
 							?>
 							<p class="form-field form-field-wide"><label for="excerpt"><?php esc_html_e( 'Customer Provided Note', 'woocommerce-subscriptions' ); ?>:</label>
-								<textarea rows="1" cols="40" name="excerpt" tabindex="6" id="excerpt" placeholder="<?php esc_attr_e( 'Customer\'s notes about the order', 'woocommerce-subscriptions' ); ?>"><?php echo wp_kses_post( $post->post_excerpt ); ?></textarea>
+								<textarea rows="1" cols="40" name="excerpt" tabindex="6" id="excerpt" placeholder="<?php esc_attr_e( 'Customer\'s notes about the order', 'woocommerce-subscriptions' ); ?>"><?php echo wp_kses_post( $order->get_customer_note() ); ?></textarea>
 							</p>
 							<?php
 						}
