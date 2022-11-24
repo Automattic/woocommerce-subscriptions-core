@@ -51,20 +51,23 @@ function wcs_is_subscription( $subscription ) {
 }
 
 /**
- * A very simple check. Basically if we have ANY subscriptions in the database, then the user has probably set at
- * least one up, so we can give them the standard message. Otherwise
+ * Determines if there are any subscriptions in the database (active or inactive).
  *
  * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
- * @return boolean true if anything is found
+ * @return bool True if the store has any subscriptions, otherwise false.
  */
 function wcs_do_subscriptions_exist() {
-	global $wpdb;
-	$sql = $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_type = %s LIMIT 1;", 'shop_subscription' );
+	$results             = wc_get_orders(
+		array(
+			'type'   => 'shop_subscription',
+			'status' => 'all',
+			'limit'  => 1,
+			'return' => 'ids',
+		)
+	);
+	$subscriptions_exist = count( $results ) > 0;
 
-	// query is the fastest, every other built in method uses this. Plus, the return value is the number of rows found
-	$num_rows_found = $wpdb->query( $sql );
-
-	return 0 !== $num_rows_found;
+	return $subscriptions_exist;
 }
 
 /**
