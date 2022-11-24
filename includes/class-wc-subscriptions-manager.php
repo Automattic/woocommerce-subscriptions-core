@@ -892,8 +892,8 @@ class WC_Subscriptions_Manager {
 			return;
 		}
 
-		if ( ! in_array( get_post_meta( $post_id, '_wp_trash_meta_status', true ), array( 'wc-pending', 'wc-expired', 'wc-cancelled' ), true ) ) {
-			update_post_meta( $post_id, '_wp_trash_meta_status', 'wc-cancelled' );
+		if ( ! in_array( get_post_meta( $id, '_wp_trash_meta_status', true ), array( 'wc-pending', 'wc-expired', 'wc-cancelled' ), true ) ) {
+			update_post_meta( $id, '_wp_trash_meta_status', 'wc-cancelled' );
 		}
 	}
 
