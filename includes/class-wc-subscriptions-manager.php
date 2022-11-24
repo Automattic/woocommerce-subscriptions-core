@@ -841,20 +841,29 @@ class WC_Subscriptions_Manager {
 	/**
 	 * Make sure a subscription is cancelled before it is trashed or deleted
 	 *
-	 * @param int $post_id
+	 * @param int $id
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
-	public static function maybe_cancel_subscription( $post_id ) {
+	public static function maybe_cancel_subscription( $id ) {
 
-		if ( 'shop_subscription' == get_post_type( $post_id ) && 'auto-draft' !== get_post_status( $post_id ) ) {
+		$subscription = wcs_get_subscription( $id );
+		if ( ! $subscription ) {
+			return;
+		}
 
-			$subscription = wcs_get_subscription( $post_id );
+		// Check its type because $subscription might be WC_Subscription's child class.
+		if ( $subscription->get_type() !== 'shop_subscription' ) {
+			return;
+		}
 
-			if ( $subscription->can_be_updated_to( 'cancelled' ) ) {
+		if ( 'auto-draft' === $subscription->get_status() ) {
+			return;
+		}
 
-				$subscription->update_status( 'cancelled' );
+		if ( $subscription->can_be_updated_to( 'cancelled' ) ) {
 
-			}
+			$subscription->update_status( 'cancelled' );
+
 		}
 	}
 
@@ -868,12 +877,22 @@ class WC_Subscriptions_Manager {
 	 * This function fixes that by setting '_wp_trash_meta_status' to 'wc-cancelled' whenever its former status
 	 * is something that can not be restored.
 	 *
-	 * @param int $post_id
+	 * @param int $id
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
-	public static function fix_trash_meta_status( $post_id ) {
+	public static function fix_trash_meta_status( $id ) {
 
-		if ( 'shop_subscription' == get_post_type( $post_id ) && ! in_array( get_post_meta( $post_id, '_wp_trash_meta_status', true ), array( 'wc-pending', 'wc-expired', 'wc-cancelled' ) ) ) {
+		$subscription = wcs_get_subscription( $id );
+		if ( ! $subscription ) {
+			return;
+		}
+
+		// Check its type because $subscription might be WC_Subscription's child class.
+		if ( $subscription->get_type() !== 'shop_subscription' ) {
+			return;
+		}
+
+		if ( ! in_array( get_post_meta( $post_id, '_wp_trash_meta_status', true ), array( 'wc-pending', 'wc-expired', 'wc-cancelled' ), true ) ) {
 			update_post_meta( $post_id, '_wp_trash_meta_status', 'wc-cancelled' );
 		}
 	}
@@ -881,13 +900,13 @@ class WC_Subscriptions_Manager {
 	/**
 	 * Trigger action hook after a subscription has been trashed.
 	 *
-	 * @param int $post_id
+	 * @param int $id
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
-	public static function trigger_subscription_trashed_hook( $post_id ) {
+	public static function trigger_subscription_trashed_hook( $id ) {
 
-		if ( 'shop_subscription' == get_post_type( $post_id ) ) {
-			do_action( 'woocommerce_subscription_trashed', $post_id );
+		if ( 'shop_subscription' === WC_Data_Store::load( 'subscription' )->get_order_type( $id ) ) {
+			do_action( 'woocommerce_subscription_trashed', $id );
 		}
 	}
 
@@ -948,13 +967,13 @@ class WC_Subscriptions_Manager {
 	/**
 	 * Trigger action hook after a subscription has been deleted.
 	 *
-	 * @param int $post_id
+	 * @param int $id
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
-	public static function trigger_subscription_deleted_hook( $post_id ) {
+	public static function trigger_subscription_deleted_hook( $id ) {
 
-		if ( 'shop_subscription' == get_post_type( $post_id ) ) {
-			do_action( 'woocommerce_subscription_deleted', $post_id );
+		if ( 'shop_subscription' === WC_Data_Store::load( 'subscription' )->get_order_type( $id ) ) {
+			do_action( 'woocommerce_subscription_deleted', $id );
 		}
 	}
 
