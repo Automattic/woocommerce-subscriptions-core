@@ -851,7 +851,6 @@ class WC_Subscriptions_Manager {
 			return;
 		}
 
-		// Check its type because $subscription might be WC_Subscription's child class.
 		if ( $subscription->get_type() !== 'shop_subscription' ) {
 			return;
 		}
@@ -883,7 +882,6 @@ class WC_Subscriptions_Manager {
 			return;
 		}
 
-		// Check the object type is shop_subscription
 		if ( $subscription->get_type() !== 'shop_subscription' ) {
 			return;
 		}
