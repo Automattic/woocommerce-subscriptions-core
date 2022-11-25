@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Subscription Data Store: Stored in CPT.
+ * Subscription Data Store: Stored in CPT (posts table).
  *
  * Extends WC_Order_Data_Store_CPT to make sure subscription related meta data is read/updated.
  *
