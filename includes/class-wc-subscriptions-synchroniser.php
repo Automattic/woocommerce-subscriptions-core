@@ -1529,7 +1529,7 @@ class WC_Subscriptions_Synchroniser {
 	public static function get_sign_up_fee( $sign_up_fee, $order, $product_id, $non_subscription_total ) {
 		_deprecated_function( __METHOD__, '2.0', __CLASS__ . '::get_synced_sign_up_fee' );
 
-		if ( 'shop_order' == get_post_type( $order ) && self::order_contains_synced_subscription( wcs_get_objects_property( $order, 'id' ) ) && WC_Subscriptions_Order::get_subscription_trial_length( $order ) < 1 ) {
+		if ( 'shop_order' === WC_Data_Store::load( 'order' )->get_order_type( $order ) && self::order_contains_synced_subscription( wcs_get_objects_property( $order, 'id' ) ) && WC_Subscriptions_Order::get_subscription_trial_length( $order ) < 1 ) {
 			$sign_up_fee = max( WC_Subscriptions_Order::get_total_initial_payment( $order ) - $non_subscription_total, 0 );
 		}
 
