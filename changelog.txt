@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 5.2.0 - 2022-xx-xx =
+* - Fix - Removed the potential for an infinite loop when getting a subscription's related orders while the subscription is being loaded.
+
 = 5.1.0 - 2022-11-24 =
 * Fix - Set payment tokens when copying data between orders and subscriptions in a CRUD compatible way. Fixes PHP notices during renewal order process.
 * Fix - Infinite loop that can occur with `WCS_Orders_Table_Subscription_Data_Store::read_multiple()` on HPOS-enabled stores.
