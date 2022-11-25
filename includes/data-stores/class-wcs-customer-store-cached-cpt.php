@@ -41,7 +41,9 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	 */
 	public function __get( $name ) {
 		if ( 'post_meta_cache_manager' === $name ) {
-			wcs_deprecated_argument( 'WCS_Customer_Store_Cached_CPT::post_meta_cache_manager', '5.2.0', 'WCS_Customer_Store_Cached_CPT::object_data_cache_manager' );
+			$old         = get_class( $this ) . '::post_meta_cache_manager';
+			$replacement = get_class( $this ) . '::object_data_cache_manager';
+			wcs_doing_it_wrong( $old, "$old has been deprecated, use $replacement instead.", '5.2.0' );
 			return $this->object_data_cache_manager;
 		}
 	}
