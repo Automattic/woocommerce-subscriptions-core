@@ -856,10 +856,6 @@ class WC_Subscriptions_Manager {
 			return;
 		}
 
-		if ( 'auto-draft' === $subscription->get_status() ) {
-			return;
-		}
-
 		if ( $subscription->can_be_updated_to( 'cancelled' ) ) {
 
 			$subscription->update_status( 'cancelled' );
