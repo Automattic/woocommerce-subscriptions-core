@@ -78,12 +78,7 @@ class WCS_Admin_Meta_Boxes {
 	 * @param WP_Post|WC_Order|null $post_or_order_object The post or order currently being edited.
 	 */
 	public function add_meta_boxes( $post_type = '', $post_or_order_object = null ) {
-		$current_screen = get_current_screen();
 		$subscriptions_screen_id = wcs_is_custom_order_tables_usage_enabled() ? wc_get_page_screen_id( 'shop_subscription' ) : 'shop_subscription';
-
-		if ( $subscriptions_screen_id !== $current_screen->id ) {
-			return;
-		}
 
 		add_meta_box( 'woocommerce-subscription-data', _x( 'Subscription Data', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Subscription_Data::output', $subscriptions_screen_id, 'normal', 'high' );
 
@@ -130,8 +125,9 @@ class WCS_Admin_Meta_Boxes {
 	 */
 	public function enqueue_styles_scripts() {
 		global $post;
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		$post_id = ! empty( $post ) ? $post->ID : ( isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0 );
-		$ver = WC_Subscriptions_Core_Plugin::instance()->get_library_version();
+		$ver     = WC_Subscriptions_Core_Plugin::instance()->get_library_version();
 
 		// Get admin screen id
 		$screen    = get_current_screen();
