@@ -111,11 +111,15 @@ class WCS_Admin_Meta_Boxes {
 	}
 
 	/**
-	 * Don't save some order related meta boxes
+	 * Don't save some order related meta boxes.
+	 *
+	 * @see woocommerce_process_shop_order_meta
+	 *
+	 * @param int      $order_id
+	 * @param WC_Order $order
 	 */
-	public function remove_meta_box_save( $post_id, $post ) {
-
-		if ( 'shop_subscription' === $post->post_type ) {
+	public function remove_meta_box_save( $order_id, $order ) {
+		if ( wcs_is_subscription( $order_id ) ) {
 			remove_action( 'woocommerce_process_shop_order_meta', 'WC_Meta_Box_Order_Data::save', 40 );
 		}
 	}
