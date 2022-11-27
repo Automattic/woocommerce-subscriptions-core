@@ -326,7 +326,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 	 *
 	 * @see woocommerce_process_shop_order_meta
 	 *
-	 * @param int     $order_id
+	 * @param int      $order_id
 	 * @param WC_Order $order
 	 */
 	public static function save( $order_id, $order = null ) {

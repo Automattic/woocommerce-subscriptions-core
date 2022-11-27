@@ -115,7 +115,7 @@ class WCS_Admin_Meta_Boxes {
 	 *
 	 * @see woocommerce_process_shop_order_meta
 	 *
-	 * @param int $order_id
+	 * @param int      $order_id
 	 * @param WC_Order $order
 	 */
 	public function remove_meta_box_save( $order_id, $order ) {
