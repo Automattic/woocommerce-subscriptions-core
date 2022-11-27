@@ -1,6 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
 = 5.2.0 - 2022-xx-xx =
+* Fix - Set the `download_permissions_granted` value when purchasing a downloadable subscription product when HPOS is enabled.
 * Update - Replace `get_post_type()` calls in `WC_Subscriptions_Manager` for HPOS support.
 * Update - Replace `get_post_type()` calls in `WC_Subscriptions_Synchroniser` for HPOS support.
 
