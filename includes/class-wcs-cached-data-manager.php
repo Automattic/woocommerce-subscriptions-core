@@ -110,7 +110,7 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 		wcs_deprecated_argument( __METHOD__, '2.3.0', sprintf( __( 'Customer subscription caching is now handled by %1$s and %2$s.', 'woocommerce-subscriptions' ), 'WCS_Customer_Store_Cached_CPT', 'WCS_Post_Meta_Cache_Manager' ) ); // phpcs:ignore WordPress.WP.I18n.MissingTranslatorsComment
 
 		// Ensure we're handling a meta key we actually care about.
-		if ( '_customer_user' !== $meta_key || 'shop_subscription' !== get_post_type( $object_id ) ) {
+		if ( '_customer_user' !== $meta_key || 'shop_subscription' !== WC_Data_Store::load( 'subscription' )->get_order_type( $object_id ) ) {
 			return;
 		}
 
