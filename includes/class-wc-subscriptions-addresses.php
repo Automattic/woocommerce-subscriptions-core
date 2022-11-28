@@ -159,7 +159,6 @@ class WC_Subscriptions_Addresses {
 		}
 
 		if ( isset( $_POST['update_all_subscriptions_addresses'] ) ) {
-
 			$users_subscriptions = wcs_get_users_subscriptions( $user_id );
 
 			foreach ( $users_subscriptions as $subscription ) {
