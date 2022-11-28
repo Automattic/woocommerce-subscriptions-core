@@ -73,16 +73,14 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 	public function purge_delete( $post_id, $post = null ) {
 		wcs_deprecated_function( __METHOD__, '2.3.0' );
 
-		$post_type = WC_Data_Store::load( 'subscription' )->get_order_type( $post_id );
-
-		if ( 'shop_order' === $post_type ) {
+		if ( 'shop_order' === WC_Data_Store::load( 'order' )->get_order_type( $post_id ) ) {
 			wcs_deprecated_argument( __METHOD__, '2.3.0', sprintf( __( 'Related order caching is now handled by %1$s.', 'woocommerce-subscriptions' ), 'WCS_Related_Order_Store' ) ); // phpcs:ignore WordPress.WP.I18n.MissingTranslatorsComment
 			if ( is_callable( array( WCS_Related_Order_Store::instance(), 'delete_related_order_id_from_caches' ) ) ) {
 				WCS_Related_Order_Store::instance()->delete_related_order_id_from_caches( $post_id );
 			}
 		}
 
-		if ( 'shop_subscription' === $post_type ) {
+		if ( 'shop_subscription' === WC_Data_Store::load( 'subscription' )->get_order_type( $post_id ) ) {
 			wcs_deprecated_argument( __METHOD__, '2.3.0', sprintf( __( 'Customer subscription caching is now handled by %1$s.', 'woocommerce-subscriptions' ), 'WCS_Customer_Store_Cached_CPT' ) ); // phpcs:ignore WordPress.WP.I18n.MissingTranslatorsComment
 
 			// Purge wcs_do_subscriptions_exist cache, but only on the before_delete_post hook.
