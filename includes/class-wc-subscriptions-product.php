@@ -724,7 +724,7 @@ class WC_Subscriptions_Product {
 	public static function user_can_not_delete_subscription( $allcaps, $caps, $args ) {
 		global $wpdb;
 
-		if ( isset( $args[0] ) && in_array( $args[0], array( 'delete_post', 'delete_product' ) ) && isset( $args[2] ) && ( ! isset( $_GET['action'] ) || 'untrash' != $_GET['action'] ) && 0 === strpos( WC_Data_Store::load( 'subscription' )->get_order_type( $args[2] ), 'product' ) ) { // phpcs:ignore
+		if ( isset( $args[0] ) && in_array( $args[0], array( 'delete_post', 'delete_product' ), true ) && isset( $args[2] ) && ( ! isset( $_GET['action'] ) || 'untrash' !== $_GET['action'] ) && 0 === strpos( WC_Data_Store::load( 'subscription' )->get_order_type( $args[2] ), 'product' ) ) { // phpcs:ignore
 
 			$user_id = $args[2];
 			$post_id = $args[2];
