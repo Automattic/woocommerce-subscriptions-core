@@ -163,7 +163,8 @@ class WC_Subscriptions_Addresses {
 
 			foreach ( $users_subscriptions as $subscription ) {
 				if ( $subscription->has_status( array( 'active', 'on-hold' ) ) ) {
-					$subscription->set_address( $address, $address_type );
+					wcs_set_order_address( $subscription, $address, $address_type );
+					$subscription->save();
 				}
 			}
 		} elseif ( isset( $_POST['update_subscription_address'] ) ) {
