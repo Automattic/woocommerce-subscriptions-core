@@ -168,12 +168,12 @@ class WC_Subscriptions_Addresses {
 				}
 			}
 		} elseif ( isset( $_POST['update_subscription_address'] ) ) {
-
 			$subscription = wcs_get_subscription( absint( $_POST['update_subscription_address'] ) );
 
+			// Update the address only if the user actually owns the subscription
 			if ( $subscription && self::can_user_edit_subscription_address( $subscription->get_id() ) ) {
-				// Update the address only if the user actually owns the subscription
-				$subscription->set_address( $address, $address_type );
+				wcs_set_order_address( $subscription, $address, $address_type );
+				$subscription->save();
 
 				wp_safe_redirect( $subscription->get_view_order_url() );
 				exit();
