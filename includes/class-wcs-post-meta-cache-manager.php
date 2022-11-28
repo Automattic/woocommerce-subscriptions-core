@@ -248,12 +248,12 @@ class WCS_Post_Meta_Cache_Manager {
 	}
 
 	/**
-	 * Abstract the check against get_post_type() so that it can be mocked for unit tests.
+	 * Abstract the check against WC_Data_Store::load( 'subscription' )->get_order_type() so that it can be mocked for unit tests.
 	 *
 	 * @param int $post_id Post ID or post object.
 	 * @return bool Whether the post type for the given post ID is the post type this instance manages.
 	 */
 	protected function is_managed_post_type( $post_id ) {
-		return $this->post_type === get_post_type( $post_id );
+		return WC_Data_Store::load( 'subscription' )->get_order_type( $post_id ) === $this->post_type;
 	}
 }

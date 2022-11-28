@@ -73,7 +73,7 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 	public function purge_delete( $post_id, $post = null ) {
 		wcs_deprecated_function( __METHOD__, '2.3.0' );
 
-		$post_type = get_post_type( $post_id );
+		$post_type = WC_Data_Store::load( 'subscription' )->get_order_type( $post_id );
 
 		if ( 'shop_order' === $post_type ) {
 			wcs_deprecated_argument( __METHOD__, '2.3.0', sprintf( __( 'Related order caching is now handled by %1$s.', 'woocommerce-subscriptions' ), 'WCS_Related_Order_Store' ) ); // phpcs:ignore WordPress.WP.I18n.MissingTranslatorsComment

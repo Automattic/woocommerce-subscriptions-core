@@ -189,7 +189,7 @@ class WCS_Download_Handler {
 	public static function delete_subscription_permissions( $post_id ) {
 		global $wpdb;
 
-		if ( 'shop_subscription' == get_post_type( $post_id ) ) {
+		if ( 'shop_subscription' === WC_Data_Store::load( 'subscription' )->get_order_type( $post_id ) ) {
 			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions WHERE order_id = %d", $post_id ) );
 		}
 	}
