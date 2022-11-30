@@ -42,9 +42,6 @@ class WCS_Admin_Post_Types {
 	 * Constructor
 	 */
 	public function __construct() {
-
-		// add_filter( "manage_{$this->screen->id}_columns", array( $this, 'get_columns' ), 0 );
-
 		// Subscription list table columns and their content
 		add_filter( 'manage_edit-shop_subscription_columns', array( $this, 'shop_subscription_columns' ) );
 		add_filter( 'manage_edit-shop_subscription_sortable_columns', array( $this, 'shop_subscription_sortable_columns' ) );
@@ -55,9 +52,12 @@ class WCS_Admin_Post_Types {
 		add_action( 'woocommerce_shop_subscription_list_table_custom_column', array( $this, 'render_shop_subscription_columns' ), 2, 2 );
 
 		// Bulk actions
-		add_filter( 'bulk_actions-edit-shop_subscription', array( $this, 'remove_bulk_actions' ) );
-		add_action( 'admin_print_footer_scripts', array( $this, 'print_bulk_actions_script' ) );
+		// CPT based screens
+		add_filter( 'bulk_actions-edit-shop_subscription', array( $this, 'filter_bulk_actions' ) );
 		add_action( 'load-edit.php', array( $this, 'parse_bulk_actions' ) );
+		// HPOS based screens
+		add_filter( 'bulk_actions-woocommerce_page_wc-orders--shop_subscription', array( $this, 'filter_bulk_actions' ) );
+
 		add_action( 'admin_notices', array( $this, 'bulk_admin_notices' ) );
 
 		// Subscription order/filter
@@ -244,57 +244,69 @@ class WCS_Admin_Post_Types {
 	}
 
 	/**
-	 * Add extra options to the bulk actions dropdown
+	 * Remove "edit" from the bulk actions.
 	 *
-	 * It's only on the All Shop Subscriptions screen.
-	 * Introducing new filter: woocommerce_subscription_bulk_actions. This has to be done through jQuery as the
-	 * 'bulk_actions' filter that WordPress has can only be used to remove bulk actions, not to add them.
-	 *
-	 * This is a filterable array where the key is the action (will become query arg), and the value is a translatable
-	 * string. The same array is used to
-	 *
+	 * @param array $actions
+	 * @return array
 	 */
-	public function print_bulk_actions_script() {
+	public function filter_bulk_actions( $actions ) {
+		// 'post_status' is used in CPT datastore, 'status' is used in HPOS datastore.
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$post_status = $_GET['post_status'] ?? $_GET['status'] ?? '';
 
-		$post_status = ( isset( $_GET['post_status'] ) ) ? $_GET['post_status'] : '';
+		// List of actions to remove that are irrelevant for subscriptions
+		$actions_to_remove = array(
+			'edit',
+			'mark_processing',
+			'mark_on-hold',
+			'mark_completed',
+			'mark_cancelled',
+		);
 
-		if ( 'shop_subscription' !== get_post_type() || in_array( $post_status, array( 'cancelled', 'trash', 'wc-expired' ) ) ) {
-			return;
+		// Remove actions that are not relevant for subscriptions.
+		$actions = array_filter(
+			$actions,
+			function( $action_key ) use ( $actions_to_remove ) {
+				return ! in_array( $action_key, $actions_to_remove, true );
+			},
+			ARRAY_FILTER_USE_KEY
+		);
+
+		// If we are currently in trash, expired or cancelled listing. We don't need to add subscriptions specific actions.
+		if ( in_array( $post_status, array( 'cancelled', 'trash', 'wc-expired' ), true ) ) {
+			return $actions;
 		}
 
-		// Make it filterable in case extensions want to change this
-		$bulk_actions = apply_filters( 'woocommerce_subscription_bulk_actions', array(
-			'active'    => _x( 'Activate', 'an action on a subscription', 'woocommerce-subscriptions' ),
-			'on-hold'   => _x( 'Put on-hold', 'an action on a subscription', 'woocommerce-subscriptions' ),
-			'cancelled' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
-		) );
+		/**
+		 * Subscriptions bulk actions filter.
+		 *
+		 * This is a filterable array where the key is the action (will become query arg), and the value is a translatable
+		 * string.
+		 *
+		 * @since 1.0.0 - Moved over from WooCommerce Subscriptions prior to 4.0.0
+		 */
+		$subscriptions_actions = apply_filters(
+			'woocommerce_subscription_bulk_actions',
+			[
+				'active'    => _x( 'Activate', 'an action on a subscription', 'woocommerce-subscriptions' ),
+				'on-hold'   => _x( 'Put on-hold', 'an action on a subscription', 'woocommerce-subscriptions' ),
+				'cancelled' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
+			]
+		);
+
+		$actions = array_merge( $actions, $subscriptions_actions );
 
 		// No need to display certain bulk actions if we know all the subscriptions on the page have that status already
 		switch ( $post_status ) {
 			case 'wc-active':
-				unset( $bulk_actions['active'] );
+				unset( $actions['active'] );
 				break;
 			case 'wc-on-hold':
-				unset( $bulk_actions['on-hold'] );
+				unset( $actions['on-hold'] );
 				break;
 		}
 
-		?>
-		<script type="text/javascript">
-			jQuery( function( $ ) {
-				<?php
-				foreach ( $bulk_actions as $action => $title ) {
-					?>
-					$( '<option>' )
-						.val( '<?php echo esc_attr( $action ); ?>' )
-						.text( '<?php echo esc_html( $title ); ?>' )
-						.appendTo( "select[name='action'], select[name='action2']" );
-					<?php
-				}
-				?>
-			} );
-		</script>
-		<?php
+		return $actions;
 	}
 
 	/**
@@ -522,13 +534,13 @@ class WCS_Admin_Post_Types {
 
 							if ( current_user_can( $post_type_object->cap->delete_post, $the_subscription->get_id() ) ) {
 
-								if ( 'trash' == $the_subscription->get_status() ) {
+								if ( 'trash' === $the_subscription->get_status() ) {
 									$actions['untrash'] = '<a title="' . esc_attr( __( 'Restore this item from the Trash', 'woocommerce-subscriptions' ) ) . '" href="' . wp_nonce_url( admin_url( sprintf( $post_type_object->_edit_link . '&amp;action=untrash', $post->ID ) ), 'untrash-post_' . $post->ID ) . '">' . __( 'Restore', 'woocommerce-subscriptions' ) . '</a>';
 								} elseif ( EMPTY_TRASH_DAYS ) {
 									$actions['trash'] = '<a class="submitdelete" title="' . esc_attr( __( 'Move this item to the Trash', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $the_subscription->get_id() ) . '">' . __( 'Trash', 'woocommerce-subscriptions' ) . '</a>';
 								}
 
-								if ( 'trash' == $the_subscription->get_status() || ! EMPTY_TRASH_DAYS ) {
+								if ( 'trash' === $the_subscription->get_status() || ! EMPTY_TRASH_DAYS ) {
 									$actions['delete'] = '<a class="submitdelete" title="' . esc_attr( __( 'Delete this item permanently', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $post->ID, '', true ) . '">' . __( 'Delete Permanently', 'woocommerce-subscriptions' ) . '</a>';
 								}
 							}
@@ -552,8 +564,6 @@ class WCS_Admin_Post_Types {
 				}
 
 				$actions = apply_filters( 'woocommerce_subscription_list_table_actions', $actions, $the_subscription );
-
-				// $column_content .= $wp_list_table->row_actions( $actions );
 
 				$column_content = apply_filters( 'woocommerce_subscription_list_table_column_status_content', $column_content, $the_subscription, $actions );
 				break;
