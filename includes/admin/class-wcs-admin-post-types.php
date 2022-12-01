@@ -249,7 +249,12 @@ class WCS_Admin_Post_Types {
 
 		$post_status = ( isset( $_GET['post_status'] ) ) ? $_GET['post_status'] : '';
 
-		if ( 'shop_subscription' !== WC_Data_Store::load( 'subscription' )->get_order_type() || in_array( $post_status, array( 'cancelled', 'trash', 'wc-expired' ), true ) ) {
+		$subscription_id = $GLOBALS['post'] ?? '';
+		if ( ! $subscription_id ) {
+			return;
+		}
+
+		if ( 'shop_subscription' !== WC_Data_Store::load( 'subscription' )->get_order_type( $subscription_id ) || in_array( $post_status, array( 'cancelled', 'trash', 'wc-expired' ), true ) ) {
 			return;
 		}
 
