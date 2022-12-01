@@ -52,12 +52,11 @@ class WC_Subscriptions_Addresses {
 	 * Add a "Change Shipping Address" button to the "My Subscriptions" table for those subscriptions
 	 * which require shipping.
 	 *
-	 * @param array $all_actions The $subscription_id => $actions array with all actions that will be displayed for a subscription on the "My Subscriptions" table
-	 * @param array $subscriptions All of a given users subscriptions that will be displayed on the "My Subscriptions" table
+	 * @param array $actions The $subscription_id => $actions array with all actions that will be displayed for a subscription on the "My Subscriptions" table
+	 * @param \WC_Subscription $subscription the Subscription object that is being viewed.
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.3
 	 */
 	public static function add_edit_address_subscription_action( $actions, $subscription ) {
-
 		if ( $subscription->needs_shipping_address() && $subscription->has_status( array( 'active', 'on-hold' ) ) ) {
 			$actions['change_address'] = array(
 				'url'  => add_query_arg( array( 'subscription' => $subscription->get_id() ), wc_get_endpoint_url( 'edit-address', 'shipping' ) ),
