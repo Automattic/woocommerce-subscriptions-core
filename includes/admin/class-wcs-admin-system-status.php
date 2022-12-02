@@ -38,6 +38,7 @@ class WCS_Admin_System_Status {
 		self::set_debug_mode( $subscriptions_data );
 		self::set_staging_mode( $subscriptions_data );
 		self::set_live_site_url( $subscriptions_data );
+		self::set_library_version( $subscriptions_data );
 		self::set_theme_overrides( $subscriptions_data );
 		self::set_subscription_statuses( $subscriptions_data );
 		self::set_woocommerce_account_data( $subscriptions_data );
@@ -119,6 +120,19 @@ class WCS_Admin_System_Status {
 			'name'      => _x( 'Subscriptions Live URL', 'Live URL, Label on WooCommerce -> System Status page', 'woocommerce-subscriptions' ),
 			'label'     => 'Subscriptions Live URL',
 			'note'      => '<a href="' . esc_url( WCS_Staging::get_site_url_from_source( 'subscriptions_install' ) ) . '">' . esc_html( WCS_Staging::get_site_url_from_source( 'subscriptions_install' ) ) . '</a>',
+			'mark'      => '',
+			'mark_icon' => '',
+		);
+	}
+
+	/**
+	 * @param array $debug_data
+	 */
+	private static function set_library_version( &$debug_data ) {
+		$debug_data['wcs_subs_core_version'] = array(
+			'name'      => _x( 'Subscriptions Library Version', 'Subscriptions-Core Version, Label on WooCommerce -> System Status page', 'woocommerce-subscriptions' ),
+			'label'     => 'Subscriptions Library Version',
+			'note'      => WC_Subscriptions_Core_Plugin::instance()->get_plugin_version(),
 			'mark'      => '',
 			'mark_icon' => '',
 		);
