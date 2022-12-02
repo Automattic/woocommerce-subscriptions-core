@@ -4,6 +4,7 @@
 * Fix - Refactor `WCS_Meta_Box_Subscription_Data::save` to support HPOS stores, fixing a PHP warning notice when updating an order via the Edit Order screen.
 * Update - Replace `get_post_type()` calls in `WC_Subscriptions_Manager` for HPOS support.
 * Update - Replace `get_post_type()` calls in `WC_Subscriptions_Synchroniser` for HPOS support.
+* Dev - Add subscriptions-core library version to the system status report.
 
 = 5.1.0 - 2022-11-24 =
 * Fix - Set payment tokens when copying data between orders and subscriptions in a CRUD compatible way. Fixes PHP notices during renewal order process.
