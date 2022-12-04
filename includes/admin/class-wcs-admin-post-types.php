@@ -249,7 +249,7 @@ class WCS_Admin_Post_Types {
 
 		$post_status = ( isset( $_GET['post_status'] ) ) ? $_GET['post_status'] : '';
 
-		$subscription_id = $GLOBALS['post'] ?? '';
+		$subscription_id = ( ! empty( $GLOBALS['post']->ID ) ) ? $GLOBALS['post']->ID : '';
 		if ( ! $subscription_id ) {
 			return;
 		}
