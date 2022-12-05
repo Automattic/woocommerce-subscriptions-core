@@ -7,6 +7,7 @@
 * Fix - When a customer changes their address on their account or subscription, make sure the new address is saved when HPOS is enabled.
 * Update - Replace `get_post_type()` calls in `WC_Subscriptions_Manager` for HPOS support.
 * Update - Replace `get_post_type()` calls in `WC_Subscriptions_Synchroniser` for HPOS support.
+8 Fix - Refactor `WC_Subscriptions_Renewal_Order::get_failed_order_replaced_by()` to support HPOS stores.
 
 = 5.1.0 - 2022-11-24 =
 * Fix - Set payment tokens when copying data between orders and subscriptions in a CRUD compatible way. Fixes PHP notices during renewal order process.
