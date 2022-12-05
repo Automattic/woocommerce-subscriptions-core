@@ -186,12 +186,14 @@ class WCS_Download_Handler {
 	 * Remove download permissions attached to a subscription when it is permenantly deleted.
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
+	 *
+	 * @param $id The ID of the subscription whose downloadable product permission being deleted.
 	 */
-	public static function delete_subscription_permissions( $post_id ) {
+	public static function delete_subscription_permissions( $id ) {
 		global $wpdb;
 
-		if ( 'shop_subscription' == get_post_type( $post_id ) ) {
-			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions WHERE order_id = %d", $post_id ) );
+		if ( 'shop_subscription' === WC_Data_Store::load( 'subscription' )->get_order_type( $id ) ) {
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions WHERE order_id = %d", $id ) );
 		}
 	}
 
