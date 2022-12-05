@@ -436,7 +436,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Sets Subscription properties based on data received from the database.
+	 * Sets subscription properties based on data received from the database.
 	 *
 	 * @param WC_Subscription $subscription      The subscription object.
 	 * @param object          $subscription_data All the subscription's data, retrieved from the database.
