@@ -6,6 +6,7 @@
 * Fix - Set the `download_permissions_granted` value when purchasing a downloadable subscription product when HPOS is enabled.
 * Fix - When a customer changes their address on their account or subscription, make sure the new address is saved when HPOS is enabled.
 * Fix - Removed the potential for an infinite loop when getting a subscription's related orders while the subscription is being loaded.
+* Fix - Refactor `WC_Subscriptions_Renewal_Order::get_failed_order_replaced_by()` to support HPOS stores.
 * Dev - Replace code using get_post_type( $subscription_id ) with WC Data Store get_order_type().
 * Dev - Add subscriptions-core library version to the WooCommerce system status report.
 
