@@ -72,7 +72,8 @@ class WCS_Download_Handler {
 					}
 				}
 			}
-			update_post_meta( $subscription->get_id(), '_download_permissions_granted', 1 );
+
+			$subscription->get_data_store()->set_download_permissions_granted( $subscription, true );
 		}
 	}
 
