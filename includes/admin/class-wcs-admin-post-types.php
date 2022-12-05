@@ -1153,6 +1153,10 @@ class WCS_Admin_Post_Types {
 		if ( 'shop_subscription' !== $order_type || wcs_is_woocommerce_pre( '3.3' ) ) {
 			return;
 		}
+		// When HPOS is enabled WC displays the customer filter so this doesn't need to be duplicated.
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			return;
+		}
 
 		$user_string = '';
 		$user_id     = '';
