@@ -58,7 +58,7 @@ class WC_Subscriptions_Renewal_Order {
 
 		// Get orders where order meta '_failed_order_replaced_by' = $renewal_order_id
 		$failed_orders = wcs_get_orders_with_meta_query(
-			array(
+			[
 				'limit'      => 1,
 				'return'     => 'ids',
 				'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
@@ -68,7 +68,7 @@ class WC_Subscriptions_Renewal_Order {
 						'value'   => $renewal_order_id,
 					],
 				],
-			)
+			]
 		);
 
 		return $failed_orders[0] ?? false;
