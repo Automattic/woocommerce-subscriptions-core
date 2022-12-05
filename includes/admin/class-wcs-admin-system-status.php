@@ -130,9 +130,9 @@ class WCS_Admin_System_Status {
 	 */
 	private static function set_library_version( &$debug_data ) {
 		$debug_data['wcs_subs_core_version'] = array(
-			'name'      => _x( 'Subscriptions Library Version', 'Subscriptions-Core Version, Label on WooCommerce -> System Status page', 'woocommerce-subscriptions' ),
-			'label'     => 'Subscriptions Library Version',
-			'note'      => WC_Subscriptions_Core_Plugin::instance()->get_plugin_version(),
+			'name'      => _x( 'Subscriptions-core Library Version', 'Subscriptions-core Version, Label on WooCommerce -> System Status page', 'woocommerce-subscriptions' ),
+			'label'     => 'Subscriptions-core Library Version',
+			'note'      => WC_Subscriptions_Core_Plugin::instance()->get_library_version(),
 			'mark'      => '',
 			'mark_icon' => '',
 		);
