@@ -98,8 +98,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @return array An array of related order IDs.
 	 */
 	public function get_related_order_ids( WC_Order $subscription, $relation_type ) {
-		$subscription_id   = $subscription->get_id();
-		$related_order_ids = $this->get_related_order_ids_from_cache( $subscription_id, $relation_type );
+		$related_order_ids = $this->get_related_order_ids_from_cache( $subscription, $relation_type );
 
 		// get_related_order_ids_from_cache() returns false if the ID is invalid. This can arise when the subscription hasn't been created yet. In any case, the related IDs should be an empty array to avoid a boolean return from this function.
 		if ( false === $related_order_ids ) {
@@ -111,7 +110,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 
 			// If the cache is empty attempt to get the renewal order IDs from the old transient cache.
 			if ( 'renewal' === $relation_type ) {
-				$transient_key = "wcs-related-orders-to-{$subscription_id}"; // Despite the name, this transient only stores renewal orders, not all related orders, so we can only use it for finding renewal orders.
+				$transient_key = "wcs-related-orders-to-{$subscription->get_id()}"; // Despite the name, this transient only stores renewal orders, not all related orders, so we can only use it for finding renewal orders.
 
 				// We do this here rather than in get_related_order_ids_from_cache(), because we want to make sure the new persistent cache is updated too.
 				$related_order_ids = get_transient( $transient_key );
