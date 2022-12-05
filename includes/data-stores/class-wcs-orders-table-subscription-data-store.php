@@ -436,19 +436,20 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Sets order properties based on a row from the database.
+	 * Sets Subscription properties based on data received from the database.
 	 *
 	 * @param WC_Subscription $subscription      The subscription object.
 	 * @param object          $subscription_data All the subscription's data, retrieved from the database.
 	 */
 	protected function set_order_props_from_data( &$subscription, $subscription_data ) {
+		// Call the parent version of this function which will set all the core order properties that a subscription inherits.
 		parent::set_order_props_from_data( $subscription, $subscription_data );
 
-		// Set subscription properties that we store in meta.
 		if ( empty( $subscription_data->meta_data ) ) {
 			return;
 		}
 
+		// Set subscription specific properties that we store in meta.
 		$meta_data = wp_list_pluck( $subscription_data->meta_data, 'meta_value', 'meta_key' );
 
 		foreach ( $this->subscription_meta_keys_to_props as $meta_key => $prop_key ) {
