@@ -624,3 +624,26 @@ function wcs_is_custom_order_tables_data_sync_enabled() {
 
 	return $data_synchronizer && $data_synchronizer->data_sync_is_enabled();
 }
+
+/**
+ * Sets the address on an order or subscription using WC 7.1 functions if they exist.
+ *
+ * For stores pre WC 7.1, use the individual addresss type and key setter i.e. `set_billing_address_1()` method.
+ *
+ * @since 5.2.0
+ *
+ * @param WC_Order|WC_Subscription $order        The order or subscription object to set the address on.
+ * @param string                   $address_type The address type to set. Either 'billing' or 'shipping'.
+ * @param array                    $address      The address to set.
+ */
+function wcs_set_order_address( $order, $address, $address_type = 'billing' ) {
+	if ( method_exists( $order, "set_{$address_type}" ) ) {
+		$order->{"set_{$address_type}"}( $address );
+	} else {
+		foreach ( $address as $key => $value ) {
+			if ( method_exists( $order, "set_{$address_type}_{$key}" ) ) {
+				$order->{"set_{$address_type}_{$key}"}( $value );
+			}
+		}
+	}
+}
