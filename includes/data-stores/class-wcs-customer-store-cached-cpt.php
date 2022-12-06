@@ -40,12 +40,16 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	 * @return WCS_Post_Meta_Cache_Manager_Many_To_One|WCS_Object_Data_Cache_Manager_Many_To_One Depending on the HPOS environment.
 	 */
 	public function __get( $name ) {
-		if ( 'post_meta_cache_manager' === $name ) {
-			$old         = get_class( $this ) . '::post_meta_cache_manager';
-			$replacement = get_class( $this ) . '::object_data_cache_manager';
-			wcs_doing_it_wrong( $old, "$old has been deprecated, use $replacement instead.", '5.2.0' );
-			return $this->object_data_cache_manager;
+		if ( 'post_meta_cache_manager' !== $name ) {
+			return;
 		}
+
+		$old         = get_class( $this ) . '::post_meta_cache_manager';
+		$replacement = get_class( $this ) . '::object_data_cache_manager';
+
+		wcs_doing_it_wrong( $old, "$old has been deprecated, use $replacement instead.", '5.2.0' );
+
+		return $this->object_data_cache_manager;
 	}
 
 	/**
