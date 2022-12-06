@@ -13,19 +13,37 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WCS_Customer_Store_CPT extends WCS_Customer_Store {
 
 	/**
-	 * The meta key used to link a customer with a subscription.
+	 * The post meta key used to link a customer with a subscription.
 	 *
 	 * @var string
 	 */
 	private $meta_key = '_customer_user';
 
 	/**
-	 * Get the meta key used to link a customer with a subscription.
+	 * The object data key (property) used to link a customer with a subscription.
 	 *
-	 * @return string
+	 * @var string
+	 */
+	private $data_key = 'customer_id';
+
+	/**
+	 * Gets the post meta key used to link a customer with a subscription.
+	 *
+	 * @return string The customer user post meta key.
 	 */
 	protected function get_meta_key() {
 		return $this->meta_key;
+	}
+
+	/**
+	 * Gets the data key used to link the customer with a subscription.
+	 *
+	 * This can be the post meta key on stores using the WP Post architecture and the property name on HPOS architecture.
+	 *
+	 * @return string The customer user post meta key or the customer ID property key.
+	 */
+	protected function get_data_key() {
+		return wcs_is_custom_order_tables_usage_enabled() ? $this->data_key : $this->meta_key;
 	}
 
 	/**
