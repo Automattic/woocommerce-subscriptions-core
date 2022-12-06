@@ -2,9 +2,11 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-
 /**
- * Class for managing caches of post meta
+ * Class for managing caches of post meta.
+ *
+ * This class is intended to be used on stores using WP post architecture.
+ * Post related APIs and references in this class are expected, and shouldn't be replaced with CRUD equivalents.
  *
  * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
  * @category Class
