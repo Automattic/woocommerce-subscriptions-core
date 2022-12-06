@@ -331,7 +331,12 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			// Process payment for the new method (with a $0 order total)
 			if ( wc_notice_count( 'error' ) == 0 ) {
 
-				$result = $available_gateways[ $new_payment_method ]->process_payment( $subscription->get_id() );
+				try {
+					$result = $available_gateways[ $new_payment_method ]->process_payment( $subscription->get_id() );
+				} catch ( Exception $e ) {
+					wc_add_notice( $e->getMessage(), 'error' );
+					return;
+				}
 
 				if ( 'success' == $result['result'] && wc_get_page_permalink( 'myaccount' ) == $result['redirect'] ) {
 					$result['redirect'] = $subscription->get_view_order_url();
