@@ -72,7 +72,8 @@ class WCS_Download_Handler {
 					}
 				}
 			}
-			update_post_meta( $subscription->get_id(), '_download_permissions_granted', 1 );
+
+			$subscription->get_data_store()->set_download_permissions_granted( $subscription, true );
 		}
 	}
 
@@ -143,25 +144,31 @@ class WCS_Download_Handler {
 	 * Repairs a glitch in WordPress's save function. You cannot save a null value on update, see
 	 * https://github.com/woocommerce/woocommerce/issues/7861 for more info on this.
 	 *
-	 * @param integer $post_id The ID of the subscription
+	 * @param integer $id The ID of the subscription
 	 */
-	public static function repair_permission_data( $post_id ) {
-		if ( absint( $post_id ) !== $post_id ) {
+	public static function repair_permission_data( $id ) {
+		if ( absint( $id ) !== $id ) {
 			return;
 		}
 
-		if ( 'shop_subscription' !== get_post_type( $post_id ) ) {
+		if ( 'shop_subscription' !== WC_Data_Store::load( 'subscription' )->get_order_type( $id ) ) {
 			return;
 		}
 
 		global $wpdb;
 
-		$wpdb->query( $wpdb->prepare( "
-			UPDATE {$wpdb->prefix}woocommerce_downloadable_product_permissions
-			SET access_expires = null
-			WHERE order_id = %d
-			AND access_expires = %s
-		", $post_id, '0000-00-00 00:00:00' ) );
+		$wpdb->query(
+			$wpdb->prepare(
+				"
+				UPDATE {$wpdb->prefix}woocommerce_downloadable_product_permissions
+				SET access_expires = null
+				WHERE order_id = %d
+				AND access_expires = %s
+				",
+				$id,
+				'0000-00-00 00:00:00'
+			)
+		);
 	}
 
 	/**
@@ -179,12 +186,14 @@ class WCS_Download_Handler {
 	 * Remove download permissions attached to a subscription when it is permenantly deleted.
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
+	 *
+	 * @param $id The ID of the subscription whose downloadable product permission being deleted.
 	 */
-	public static function delete_subscription_permissions( $post_id ) {
+	public static function delete_subscription_permissions( $id ) {
 		global $wpdb;
 
-		if ( 'shop_subscription' == get_post_type( $post_id ) ) {
-			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions WHERE order_id = %d", $post_id ) );
+		if ( 'shop_subscription' === WC_Data_Store::load( 'subscription' )->get_order_type( $id ) ) {
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions WHERE order_id = %d", $id ) );
 		}
 	}
 
