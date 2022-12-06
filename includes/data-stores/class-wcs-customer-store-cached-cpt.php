@@ -57,9 +57,9 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	 */
 	public function __construct() {
 		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			$this->object_data_cache_manager = new WCS_Object_Data_Cache_Manager_Many_To_One( 'subscription', array( 'customer_id' ) );
+			$this->object_data_cache_manager = new WCS_Object_Data_Cache_Manager_Many_To_One( 'subscription', array( $this->get_data_key() ) );
 		} else {
-			$this->object_data_cache_manager = new WCS_Post_Meta_Cache_Manager_Many_To_One( 'shop_subscription', array( $this->get_meta_key() ) );
+			$this->object_data_cache_manager = new WCS_Post_Meta_Cache_Manager_Many_To_One( 'shop_subscription', array( $this->get_data_key() ) );
 		}
 	}
 
@@ -229,15 +229,15 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 	/**
 	 * If there is a change to a subscription's post meta key, update the user meta cache.
 	 *
-	 * @param string $update_type The type of update to check. Can be 'add', 'update' or 'delete'.
-	 * @param int $subscription_id The subscription's post ID where the customer is being changed.
-	 * @param string $meta_key The post meta key being changed.
-	 * @param mixed $user_id The meta value, which will be subscriber's user ID when $meta_key is '_customer_user'.
-	 * @param mixed $old_user_id The previous value stored in the database for the subscription's '_customer_user'. Optional.
+	 * @param string $update_type      The type of update to check. Can be 'add', 'update' or 'delete'.
+	 * @param int    $subscription_id  The subscription's ID where the customer is being changed.
+	 * @param string $updated_data_key The object's data key being changed. Can be a post meta key or a property name.
+	 * @param mixed  $user_id          The new value stored in the database for the subscription's customer. This could be any type of value but is a user ID when the customer is being changed.
+	 * @param mixed  $old_user_id      The previous value stored in the database for the subscription's customer ID. Optional.
 	 */
-	public function maybe_update_for_post_meta_change( $update_type, $subscription_id, $meta_key, $user_id, $old_user_id = '' ) {
+	public function maybe_update_for_post_meta_change( $update_type, $subscription_id, $updated_data_key, $user_id, $old_user_id = '' ) {
 
-		if ( $this->get_meta_key() !== $meta_key && 'customer_id' !== $meta_key ) {
+		if ( $this->get_data_key() !== $updated_data_key ) {
 			return;
 		}
 
