@@ -45,6 +45,7 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 		}
 
 		$subscription->update_meta_data( $token_meta_key, $new_token->get_token() );
+		$subscription->add_payment_token( $new_token );
 		$subscription->save();
 
 		// Copy the new token to the last renewal order if it needs payment so the retry system will pick up the new method.
