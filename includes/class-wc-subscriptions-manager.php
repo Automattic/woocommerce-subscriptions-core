@@ -47,31 +47,58 @@ class WC_Subscriptions_Manager {
 		// Whenever a renewal payment is due, put the subscription on hold and create a renewal order before anything else, in case things don't go to plan
 		add_action( 'woocommerce_scheduled_subscription_payment', __CLASS__ . '::prepare_renewal', 1, 1 );
 
-		// Order is trashed, trash subscription
-		add_action( 'wp_trash_post', __CLASS__ . '::maybe_trash_subscription', 10 );
-
-		// Order is restored (untrashed), restore subscription
-		add_action( 'untrashed_post', __CLASS__ . '::maybe_untrash_subscription', 10 );
-
-		// When order is deleted, delete the subscription.
-		add_action( 'before_delete_post', array( __CLASS__, 'maybe_delete_subscription' ) );
+		// Attach hooks that depend on WooCommerce being loaded.
+		add_action( 'woocommerce_loaded', [ __CLASS__, 'attach_wc_dependant_hooks' ] );
 
 		// When a user is being deleted from the site, via standard WordPress functions, make sure their subscriptions are cancelled
 		add_action( 'delete_user', __CLASS__ . '::trash_users_subscriptions' );
 
 		// Do the same thing for WordPress networks
 		add_action( 'wpmu_delete_user', __CLASS__ . '::trash_users_subscriptions_for_network' );
+	}
 
-		// make sure a subscription is cancelled before it is trashed/deleted
-		add_action( 'wp_trash_post', __CLASS__ . '::maybe_cancel_subscription', 10, 1 );
-		add_action( 'before_delete_post', __CLASS__ . '::maybe_cancel_subscription', 10, 1 );
+	/**
+	 * Attaches hooks that depend on WooCommerce being loaded.
+	 *
+	 * We need to use different hooks on stores that have HPOS enabled but to check if this feature
+	 * is enabled, we must wait for WooCommerce to be loaded first.
+	 *
+	 * @since 5.2.0
+	 */
+	public static function attach_wc_dependant_hooks() {
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			// When a parent order is trashed, untrashed or deleted, make sure the appropriate action is taken on the related subscription
+			add_action( 'woocommerce_before_trash_order', [ __CLASS__, 'maybe_trash_subscription' ], 10 );
+			add_action( 'woocommerce_untrash_order', [ __CLASS__, 'maybe_untrash_subscription' ], 10 );
+			add_action( 'woocommerce_before_delete_order', [ __CLASS__, 'maybe_delete_subscription' ] );
 
-		// set correct status to restore after a subscription is trashed/deleted
-		add_action( 'trashed_post', __CLASS__ . '::fix_trash_meta_status' );
+			// make sure a subscription is cancelled before it is trashed/deleted
+			add_action( 'woocommerce_before_trash_order', [ __CLASS__, 'maybe_cancel_subscription' ], 10, 1 );
+			add_action( 'woocommerce_before_delete_order', [ __CLASS__, 'maybe_cancel_subscription' ], 10, 1 );
 
-		// call special hooks when a subscription is trashed/deleted
-		add_action( 'trashed_post', __CLASS__ . '::trigger_subscription_trashed_hook' );
-		add_action( 'deleted_post', __CLASS__ . '::trigger_subscription_deleted_hook' );
+			// set correct status to restore after a subscription is trashed/deleted
+			add_action( 'woocommerce_trash_order', [ __CLASS__, 'fix_trash_meta_status' ] );
+
+			// call special hooks when a subscription is trashed/deleted
+			add_action( 'woocommerce_trash_order', [ __CLASS__, 'trigger_subscription_trashed_hook' ] );
+			add_action( 'woocommerce_delete_order', [ __CLASS__, 'trigger_subscription_deleted_hook' ] );
+		} else {
+			// When a parent order is trashed, untrashed or deleted, make sure the appropriate action is taken on the related subscription
+			add_action( 'wp_trash_post', __CLASS__ . '::maybe_trash_subscription', 10 );
+			add_action( 'untrashed_post', __CLASS__ . '::maybe_untrash_subscription', 10 );
+			add_action( 'before_delete_post', array( __CLASS__, 'maybe_delete_subscription' ) );
+
+			// make sure a subscription is cancelled before it is trashed/deleted
+			add_action( 'wp_trash_post', __CLASS__ . '::maybe_cancel_subscription', 10, 1 );
+			add_action( 'before_delete_post', __CLASS__ . '::maybe_cancel_subscription', 10, 1 );
+
+			// set correct status to restore after a subscription is trashed/deleted
+			add_action( 'trashed_post', __CLASS__ . '::fix_trash_meta_status' );
+
+			// call special hooks when a subscription is trashed/deleted
+			add_action( 'trashed_post', __CLASS__ . '::trigger_subscription_trashed_hook' );
+			add_action( 'deleted_post', __CLASS__ . '::trigger_subscription_deleted_hook' );
+		}
 	}
 
 	/**
