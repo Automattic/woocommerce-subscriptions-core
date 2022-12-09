@@ -936,9 +936,19 @@ class WC_Subscriptions_Manager {
 			return;
 		}
 
-		if ( ! in_array( $subscription->get_meta( '_wp_trash_meta_status', true ), array( 'wc-pending', 'wc-expired', 'wc-cancelled' ), true ) ) {
-			$subscription->update_meta_data( '_wp_trash_meta_status', 'wc-cancelled' );
-			$subscription->save_meta_data(); // this data does not need to be synced to WP posts table and comes after the order is trashed/deleted so we don't need to use save() here.
+		$data_store = $subscription->get_data_store();
+		$meta_data  = $data_store->read_meta( $subscription );
+
+		foreach ( $meta_data as $meta ) {
+			if ( '_wp_trash_meta_status' === $meta->meta_key && ! in_array( $meta->meta_value, [ 'wc-pending', 'wc-expired', 'wc-cancelled' ], true ) ) {
+				$new_meta = (object) [
+					'id'    => $meta->meta_id,
+					'key'   => $meta->meta_key,
+					'value' => 'wc-cancelled',
+				];
+				$data_store->update_meta( $subscription, $new_meta );
+				break;
+			}
 		}
 	}
 
