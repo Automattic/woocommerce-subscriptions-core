@@ -884,21 +884,24 @@ class WC_Subscriptions_Manager {
 	}
 
 	/**
-	 * When WordPress trashes a post, it sets a '_wp_trash_meta_status' post meta value so that the post can
-	 * be restored to its original status. However, when setting that value, it uses the 'post_status' of a
-	 * $post variable in memory. If that status is changed on the 'wp_trash_post' or 'wp_delete_post' hooks,
+	 * When an order is trashed, store the '_wp_trash_meta_status' meta value with a cancelled subscription status
+	 * to prevent subscriptions being restored with an active status.
+	 *
+	 * When WordPress and WooCommerce set this meta value, they use the status of the order in memory.
+	 * If that status is changed on the before trashed or before deleted hooks,
 	 * as is the case with a subscription, which is cancelled before being trashed if it is active or on-hold,
 	 * then the '_wp_trash_meta_status' value will be incorrectly set to its status before being trashed.
 	 *
 	 * This function fixes that by setting '_wp_trash_meta_status' to 'wc-cancelled' whenever its former status
 	 * is something that can not be restored.
 	 *
-	 * @param int $id
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
+	 *
+	 * @param int $id
 	 */
 	public static function fix_trash_meta_status( $id ) {
-
 		$subscription = wcs_get_subscription( $id );
+
 		if ( ! $subscription ) {
 			return;
 		}
