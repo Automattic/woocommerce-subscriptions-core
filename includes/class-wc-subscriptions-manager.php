@@ -790,15 +790,16 @@ class WC_Subscriptions_Manager {
 	 *
 	 * Also make sure all related scheduled actions are cancelled when deleting a subscription.
 	 *
-	 * @param int $post_id The post ID of the WC Subscription or WC Order being trashed
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
+	 *
+	 * @param int $order_id The order ID of the WC Subscription or WC Order being trashed
 	 */
-	public static function maybe_trash_subscription( $post_id ) {
-		if ( 'shop_order' === WC_Data_Store::load( 'order' )->get_order_type( $post_id ) ) {
+	public static function maybe_trash_subscription( $order_id ) {
+		if ( 'shop_order' === WC_Data_Store::load( 'order' )->get_order_type( $order_id ) ) {
 
 			// delete subscription
-			foreach ( wcs_get_subscriptions_for_order( $post_id, array( 'order_type' => 'parent' ) ) as $subscription ) {
-				wp_trash_post( $subscription->get_id() );
+			foreach ( wcs_get_subscriptions_for_order( $order_id, [ 'order_type' => 'parent' ] ) as $subscription ) {
+				$subscription->delete();
 			}
 		}
 	}
