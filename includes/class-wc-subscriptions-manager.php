@@ -838,22 +838,24 @@ class WC_Subscriptions_Manager {
 	/**
 	 * Delete related subscriptions when an order is deleted.
 	 *
-	 * @author Jeremy Pry
-	 *
-	 * @param int $post_id The post ID being deleted.
+	 * @param int $order_id The post ID being deleted.
 	 */
-	public static function maybe_delete_subscription( $post_id ) {
-		if ( 'shop_order' !== WC_Data_Store::load( 'order' )->get_order_type( $post_id ) ) {
+	public static function maybe_delete_subscription( $order_id ) {
+		if ( 'shop_order' !== WC_Data_Store::load( 'order' )->get_order_type( $order_id ) ) {
 			return;
 		}
 
 		/** @var WC_Subscription[] $subscriptions */
-		$subscriptions = wcs_get_subscriptions_for_order( $post_id, array(
-			'subscription_status' => array( 'any', 'trash' ),
-			'order_type'          => 'parent',
-		) );
+		$subscriptions = wcs_get_subscriptions_for_order(
+			$order_id,
+			[
+				'order_type'          => 'parent',
+				'subscription_status' => [ 'any', 'trash' ],
+			]
+		);
+
 		foreach ( $subscriptions as $subscription ) {
-			wp_delete_post( $subscription->get_id() );
+			$subscription->delete( true );
 		}
 	}
 
