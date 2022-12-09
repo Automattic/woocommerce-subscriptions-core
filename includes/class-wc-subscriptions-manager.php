@@ -806,12 +806,30 @@ class WC_Subscriptions_Manager {
 
 	/**
 	 * Untrash all subscriptions attached to an order when it's restored.
-	 * @param int $post_id The post ID of the WC Order being restored
+	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.17
+	 *
+	 * @param int $order_id The Order ID of the order being restored
 	 */
-	public static function maybe_untrash_subscription( $post_id ) {
-		if ( 'shop_order' === WC_Data_Store::load( 'order' )->get_order_type( $post_id ) ) {
-			foreach ( wcs_get_subscriptions_for_order( $post_id, array( 'order_type' => 'parent', 'subscription_status' => array( 'trash' ) ) ) as $subscription ) { // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
+	public static function maybe_untrash_subscription( $order_id ) {
+		if ( 'shop_order' !== WC_Data_Store::load( 'order' )->get_order_type( $order_id ) ) {
+			return;
+		}
+
+		$data_store      = WC_Data_Store::load( 'subscription' );
+		$use_crud_method = method_exists( $data_store, 'untrash_order' );
+		$subscriptions   = wcs_get_subscriptions_for_order(
+			$order_id,
+			[
+				'order_type'          => 'parent',
+				'subscription_status' => [ 'trash' ],
+			]
+		);
+
+		foreach ( $subscriptions as $subscription ) {
+			if ( $use_crud_method ) {
+				$data_store->untrash_order( $subscription );
+			} else {
 				wp_untrash_post( $subscription->get_id() );
 			}
 		}
