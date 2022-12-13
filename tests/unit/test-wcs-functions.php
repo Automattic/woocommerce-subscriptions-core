@@ -109,7 +109,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$this->assertEquals( $subscription_object, wcs_get_subscription( $subscription_object->get_id() ) );
 
 		$this->assertEquals( false, wcs_get_subscription( $non_subscription_object ) );
-		$this->assertEquals( false, wcs_get_subscription( $non_subscription_object ) );
 
 		$this->assertEquals( false, wcs_get_subscription( 'foo' ), 'Passing a string does not return false.' );
 		$this->assertEquals( false, wcs_get_subscription( null ), 'Passing null does not return false.' );
@@ -155,7 +154,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'start_date'         => wcs_strtotime_dark_knight( 'now' ),
 					'date_created'       => gmdate( 'Y-m-d H:i:s' ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -174,7 +172,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'start_date'         => gmdate( 'Y-m-d H:i:s', wcs_strtotime_dark_knight( '-1 week' ) ),
 					'date_created'       => gmdate( 'Y-m-d H:i:s', wcs_strtotime_dark_knight( '+1 week' ) ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -192,7 +189,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'customer_id'        => 1,
 					'start_date'         => null,
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -212,7 +208,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'start_date'         => false,
 					'date_created'       => gmdate( 'Y-m-d H:i:s' ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -232,7 +227,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'start_date'         => true,
 					'date_created'       => gmdate( 'Y-m-d H:i:s' ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -252,7 +246,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'start_date'         => 'foo',
 					'created_via'        => '',
 					'date_created'       => gmdate( 'Y-m-d H:i:s' ),
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -272,7 +265,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'start_date'         => array( 42 ),
 					'date_created'       => gmdate( 'Y-m-d H:i:s' ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -292,7 +284,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'start_date'         => array( 'foo' ),
 					'date_created'       => gmdate( 'Y-m-d H:i:s' ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -312,7 +303,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'start_date'         => new stdClass(),
 					'date_created'       => gmdate( 'Y-m-d H:i:s' ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -332,7 +322,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'start_date'         => -1,
 					'date_created'       => gmdate( 'Y-m-d H:i:s' ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -350,7 +339,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'customer_note'      => '',
 					'start_date'         => gmdate( 'Y-m-d H:i:s' ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -368,7 +356,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'customer_id'        => 'foo',
 					'start_date'         => gmdate( 'Y-m-d H:i:s' ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -386,7 +373,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'customer_id'        => array( 1 ),
 					'start_date'         => gmdate( 'Y-m-d H:i:s' ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -404,7 +390,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'customer_id'        => -1,
 					'start_date'         => gmdate( 'Y-m-d H:i:s' ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -423,7 +408,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'customer_id'        => false,
 					'start_date'         => gmdate( 'Y-m-d H:i:s' ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -442,7 +426,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'customer_id'        => true,
 					'start_date'         => gmdate( 'Y-m-d H:i:s' ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -460,7 +443,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'customer_id'        => 1,
 					'start_date'         => gmdate( 'Y-m-d H:i:s' ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_interval'   => 3,
@@ -477,7 +459,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'customer_id'        => 1,
 					'start_date'         => gmdate( 'Y-m-d H:i:s' ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'eon',
@@ -495,7 +476,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'customer_id'        => 1,
 					'start_date'         => gmdate( 'Y-m-d H:i:s' ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -513,7 +493,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'customer_id'        => 1,
 					'start_date'         => gmdate( 'Y-m-d H:i:s' ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -530,7 +509,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'customer_id'        => 1,
 					'start_date'         => gmdate( 'Y-m-d H:i:s' ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -548,7 +526,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'customer_id'        => 1,
 					'start_date'         => gmdate( 'Y-m-d H:i:s' ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -567,7 +544,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'customer_id'        => 1,
 					'start_date'         => gmdate( 'Y-m-d H:i:s' ),
 					'created_via'        => '',
-					'order_version'      => WC_VERSION,
 					'currency'           => 'GBP',
 					'prices_include_tax' => 'yes',
 					'billing_period'     => 'month',
@@ -648,7 +624,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'customer_note'    => 'This is a test',
 					'created_via'      => 'Woo Subs 2 test case',
 					'customer_id'      => 2,
-					'order_version'    => '1.5.11',
 					'start_date'       => $custom_start_date,
 					'date_created'     => $custom_start_date,
 				),
@@ -657,7 +632,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 					'period'        => 'day',
 					'interval'      => 9,
 					'customer'      => 2,
-					'version'       => '1.5.11',
+					'version'       => WC_VERSION, // Version is no longer settable, will always be set to current WC version.
 					'include_tax'   => 'no',
 					'set_tax'       => 'no',
 					'status'        => 'wc-active',
@@ -1112,81 +1087,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$this->assertArrayHasKey( $subscription_3->get_id(), $subscriptions_2 );
 		$this->assertArrayNotHasKey( $subscription_1->get_id(), $subscriptions_2 );
 
-	}
-
-	/**
-	 * Tests ordering by status
-	 */
-	public function test_4_wcs_get_subscriptions() {
-		$subscription_1 = WCS_Helper_Subscription::create_subscription(
-			array(
-				'status' => 'active',
-			)
-		);
-
-		$subscription_2 = WCS_Helper_Subscription::create_subscription(
-			array(
-				'status' => 'pending',
-			)
-		);
-
-		$subscription_3 = WCS_Helper_Subscription::create_subscription(
-			array(
-				'status' => 'on-hold',
-			)
-		);
-
-		$subscription_4 = WCS_Helper_Subscription::create_subscription(
-			array(
-				'status' => 'switched',
-			)
-		);
-
-		$subscription_5 = WCS_Helper_Subscription::create_subscription(
-			array(
-				'status' => 'expired',
-			)
-		);
-
-		$subscription_6 = WCS_Helper_Subscription::create_subscription(
-			array(
-				'status' => 'cancelled',
-			)
-		);
-
-		$subscription_7 = WCS_Helper_Subscription::create_subscription(
-			array(
-				'status' => 'active',
-			)
-		);
-
-		$subscription_8 = WCS_Helper_Subscription::create_subscription(
-			array(
-				'status' => 'pending-cancel',
-			)
-		);
-
-		$subscription_9 = WCS_Helper_Subscription::create_subscription(
-			array(
-				'status' => 'expired',
-			)
-		);
-
-		$subscriptions = wcs_get_subscriptions( array( 'orderby' => 'status' ) );
-		$this->assertIsArray( $subscriptions );
-		$this->assertEquals( 9, count( $subscriptions ) );
-		$correct_order = array(
-			$subscription_1->get_id() => $subscription_1,
-			$subscription_7->get_id() => $subscription_7,
-			$subscription_6->get_id() => $subscription_6,
-			$subscription_5->get_id() => $subscription_5,
-			$subscription_9->get_id() => $subscription_9,
-			$subscription_3->get_id() => $subscription_3,
-			$subscription_2->get_id() => $subscription_2,
-			$subscription_8->get_id() => $subscription_8,
-			$subscription_4->get_id() => $subscription_4,
-		);
-		$this->assertEquals( $subscriptions, $correct_order );
 	}
 
 	/**

@@ -7,7 +7,7 @@
  * @package  WooCommerce Subscriptions
  * @category Class
  * @author   Prospress
- * @since    2.5.0
+ * @since    1.0.0 - Migrated from WooCommerce Subscriptions v2.5.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -78,7 +78,7 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 	 * @param WC_Subscription $subscription The subscription to update.
 	 * @param string $gateway_id The target gateway ID.
 	 * @return bool|array Payment meta data. False if no meta is found.
-	 * @since 2.5.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.5.0
 	 */
 	public static function get_subscription_payment_meta( $subscription, $gateway_id ) {
 		$payment_method_meta = apply_filters( 'woocommerce_subscription_payment_meta', array(), $subscription );
@@ -95,7 +95,7 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 	 *
 	 * @param  WC_Payment_Token $payment_token Payment token object.
 	 * @return array subscription posts
-	 * @since  2.5.0
+	 * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.5.0
 	 */
 	public static function get_subscriptions_from_token( $payment_token ) {
 		$user_subscriptions     = array();
@@ -146,7 +146,7 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 	 * @param  int (optional) The customer id - defaults to the current user.
 	 * @param  string (optional) Gateway ID for getting tokens for a specific gateway.
 	 * @return array of WC_Payment_Token objects.
-	 * @since  2.2.7
+	 * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.2.7
 	 */
 	public static function get_customer_tokens( $customer_id = '', $gateway_id = '' ) {
 		if ( '' === $customer_id ) {
@@ -165,7 +165,7 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 	 *
 	 * @param  WC_Payment_Token $token The token to find an alternative for.
 	 * @return WC_Payment_Token The customer's alternative token.
-	 * @since  2.2.7
+	 * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.2.7
 	 */
 	public static function get_customers_alternative_token( $token ) {
 		$payment_tokens    = self::get_customer_tokens( $token->get_user_id(), $token->get_gateway_id() );
@@ -194,7 +194,7 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 	 *
 	 * @param  WC_Payment_Token $token Payment token object.
 	 * @return bool
-	 * @since  2.2.7
+	 * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.2.7
 	 */
 	public static function customer_has_alternative_token( $token ) {
 		return self::get_customers_alternative_token( $token ) !== null;

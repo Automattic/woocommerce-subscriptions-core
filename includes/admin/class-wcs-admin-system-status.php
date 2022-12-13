@@ -8,7 +8,7 @@
  * @subpackage WC_Subscriptions_Admin
  * @category   Class
  * @author     Prospress
- * @since      2.3.0
+ * @since      1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
  */
 class WCS_Admin_System_Status {
 
@@ -20,7 +20,7 @@ class WCS_Admin_System_Status {
 	/**
 	 * Attach callbacks
 	 *
-	 * @since 2.3.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
 	 */
 	public static function init() {
 		add_filter( 'woocommerce_system_status_report', array( __CLASS__, 'render_system_status_items' ) );
@@ -29,7 +29,7 @@ class WCS_Admin_System_Status {
 	/**
 	 * Renders the Subscription information in the WC status page
 	 *
-	 * @since 2.3.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
 	 */
 	public static function render_system_status_items() {
 
@@ -38,6 +38,7 @@ class WCS_Admin_System_Status {
 		self::set_debug_mode( $subscriptions_data );
 		self::set_staging_mode( $subscriptions_data );
 		self::set_live_site_url( $subscriptions_data );
+		self::set_library_version( $subscriptions_data );
 		self::set_theme_overrides( $subscriptions_data );
 		self::set_subscription_statuses( $subscriptions_data );
 		self::set_woocommerce_account_data( $subscriptions_data );
@@ -119,6 +120,19 @@ class WCS_Admin_System_Status {
 			'name'      => _x( 'Subscriptions Live URL', 'Live URL, Label on WooCommerce -> System Status page', 'woocommerce-subscriptions' ),
 			'label'     => 'Subscriptions Live URL',
 			'note'      => '<a href="' . esc_url( WCS_Staging::get_site_url_from_source( 'subscriptions_install' ) ) . '">' . esc_html( WCS_Staging::get_site_url_from_source( 'subscriptions_install' ) ) . '</a>',
+			'mark'      => '',
+			'mark_icon' => '',
+		);
+	}
+
+	/**
+	 * @param array $debug_data
+	 */
+	private static function set_library_version( &$debug_data ) {
+		$debug_data['wcs_subs_core_version'] = array(
+			'name'      => _x( 'Subscriptions-core Library Version', 'Subscriptions-core Version, Label on WooCommerce -> System Status page', 'woocommerce-subscriptions' ),
+			'label'     => 'Subscriptions-core Library Version',
+			'note'      => WC_Subscriptions_Core_Plugin::instance()->get_library_version(),
 			'mark'      => '',
 			'mark_icon' => '',
 		);
@@ -344,7 +358,7 @@ class WCS_Admin_System_Status {
 	/**
 	 * Gets the store's subscription broken down by payment gateway and status.
 	 *
-	 * @since 3.1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.1.0
 	 * @return array The subscription gateway and status data array( 'gateway_id' => array( 'status' => count ) );
 	 */
 	public static function get_subscriptions_by_gateway() {
@@ -367,7 +381,7 @@ class WCS_Admin_System_Status {
 	/**
 	 * Gets the store's subscriptions by status.
 	 *
-	 * @since 3.1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.1.0
 	 * @return array
 	 */
 	public static function get_subscription_statuses() {
