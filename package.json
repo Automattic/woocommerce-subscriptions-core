@@ -9,7 +9,9 @@
 	"main": "Gruntfile.js",
 	"config": {
 		"translate": true,
-		"version_replace_paths": ["includes/"]
+		"version_replace_paths": [
+			"includes/"
+		]
 	},
 	"repository": {
 		"type": "git",
@@ -49,7 +51,7 @@
 	"devDependencies": {
 		"@woocommerce/dependency-extraction-webpack-plugin": "^2.2.0",
 		"@woocommerce/eslint-plugin": "^2.2.0",
-		"@wordpress/scripts": "^24.4.0",
+		"@wordpress/scripts": "^25.0.0",
 		"exec": "^0.1.2",
 		"husky": "^8.0.1",
 		"lint-staged": "^13.0.3",
@@ -61,6 +63,6 @@
 	},
 	"dependencies": {
 		"@wordpress/dependency-extraction-webpack-plugin": "^4.3.0",
-		"@wordpress/plugins": "^4.18.0"
+		"@wordpress/plugins": "^5.0.0"
 	}
 }
