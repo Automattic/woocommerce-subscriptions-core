@@ -136,7 +136,6 @@ class WCS_Helper_Functions_Test extends WP_UnitTestCase {
 		$order->set_shipping_state( $order->get_billing_state() );
 		$order->set_shipping_postcode( $order->get_billing_postcode() );
 		$order->set_shipping_country( $order->get_billing_country() );
-		$order->set_shipping_phone( $order->get_billing_phone() );
 
 		$this->assertTrue( wcs_compare_order_billing_shipping_address( $order ) );
 
