@@ -508,6 +508,43 @@ class WCS_Cart_Renewal {
 	}
 
 	/**
+	 * If the cart contains a renewal order that needs to ship to an address that is different
+	 * to the order's billing address, tell the checkout to toggle the ship to a different address
+	 * checkbox and make sure the shipping fields are displayed by default.
+	 *
+	 * @deprecated subscription-core 5.3.0 - This method has moved to the WC_Subscriptions_Checkout class.
+	 *
+	 * @param bool $ship_to_different_address Whether the order will ship to a different address
+	 * @return bool $ship_to_different_address
+	 */
+	public function maybe_check_ship_to_different_address( $ship_to_different_address ) {
+		wcs_deprecated_function( __METHOD__, '5.3.0', 'WC_Subscriptions_Checkout::maybe_check_ship_to_different_address( $ship_to_different_address )' );
+
+		if ( ! $ship_to_different_address && false !== ( $item = $this->cart_contains() ) ) {
+
+			$order = $this->get_order( $item );
+
+			$renewal_shipping_address = $order->get_address( 'shipping' );
+			$renewal_billing_address  = $order->get_address( 'billing' );
+
+			if ( isset( $renewal_billing_address['email'] ) ) {
+				unset( $renewal_billing_address['email'] );
+			}
+
+			if ( isset( $renewal_billing_address['phone'] ) ) {
+				unset( $renewal_billing_address['phone'] );
+			}
+
+			// If the order's addresses are different, we need to display the shipping fields otherwise the billing address will override it
+			if ( $renewal_shipping_address != $renewal_billing_address ) {
+				$ship_to_different_address = 1;
+			}
+		}
+
+		return $ship_to_different_address;
+	}
+
+	/**
 	 * When completing checkout for a subscription renewal, update the address on the subscription to use
 	 * the shipping/billing address entered in case it has changed since the subscription was first created.
 	 *
