@@ -512,13 +512,13 @@ class WCS_Cart_Renewal {
 	 * to the order's billing address, tell the checkout to toggle the ship to a different address
 	 * checkbox and make sure the shipping fields are displayed by default.
 	 *
-	 * @deprecated subscription-core 5.3.0 - This method has moved to the WC_Subscriptions_Checkout class.
+	 * @deprecated subscription-core 5.2.0 - This method has moved to the WC_Subscriptions_Checkout class.
 	 *
 	 * @param bool $ship_to_different_address Whether the order will ship to a different address
 	 * @return bool $ship_to_different_address
 	 */
 	public function maybe_check_ship_to_different_address( $ship_to_different_address ) {
-		wcs_deprecated_function( __METHOD__, '5.3.0', 'WC_Subscriptions_Checkout::maybe_check_ship_to_different_address( $ship_to_different_address )' );
+		wcs_deprecated_function( __METHOD__, '5.2.0', 'WC_Subscriptions_Checkout::maybe_check_ship_to_different_address( $ship_to_different_address )' );
 
 		if ( ! $ship_to_different_address && false !== ( $item = $this->cart_contains() ) ) {
 
