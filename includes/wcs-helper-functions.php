@@ -315,6 +315,10 @@ function wcs_apply_array_filter( $filter, $array, $property = '' ) {
 /**
  * Compares an order's billing address and shipping address and returns true if they are the same.
  *
+ * @since 5.3.0
+ *
+ * @see woocommerce_ship_to_different_address_checked
+ *
  * @param  WC_Order $order
  * @return bool     True if the order's billing address and shipping address are the same, false otherwise.
  */
