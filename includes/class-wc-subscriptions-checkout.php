@@ -16,7 +16,7 @@ class WC_Subscriptions_Checkout {
 	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function init() {
 
@@ -52,7 +52,7 @@ class WC_Subscriptions_Checkout {
 	}
 
 	/**
-	 * @since 2.2.17
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.17
 	 */
 	public static function attach_dependant_hooks() {
 		// Make sure guest checkout is not enabled in option param passed to WC JS
@@ -69,7 +69,7 @@ class WC_Subscriptions_Checkout {
 	 *
 	 * @param int $order_id The post_id of a shop_order post/WC_Order object
 	 * @param array $posted_data The data posted on checkout
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function process_checkout( $order_id, $posted_data = array() ) {
 
@@ -117,7 +117,7 @@ class WC_Subscriptions_Checkout {
 	 *
 	 * @param WC_Order $order
 	 * @param WC_Cart $cart
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function create_subscription( $order, $cart, $posted_data ) {
 
@@ -257,7 +257,13 @@ class WC_Subscriptions_Checkout {
 			return new WP_Error( 'checkout-error', $e->getMessage() );
 		}
 
-		return $subscription;
+		/**
+		 * Fetch and return a fresh instance of the subscription from the database.
+		 *
+		 * After saving the subscription, we need to fetch the subscription from the database as the current object state may not match the loaded state.
+		 * This occurs because different instances of the subscription might have been saved in any one of the processes above resulting in this object being out of sync.
+		 */
+		return wcs_get_subscription( $subscription );
 	}
 
 
@@ -289,7 +295,7 @@ class WC_Subscriptions_Checkout {
 				if ( isset( $package['rates'][ $shipping_method_id ] ) ) {
 					$shipping_rate            = $package['rates'][ $shipping_method_id ];
 					$item                     = new WC_Order_Item_Shipping();
-					$item->legacy_package_key = $package_key; // @deprecated For legacy actions.
+					$item->legacy_package_key = $package_key; // @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions, For legacy actions.
 					$item->set_props(
 						array(
 							'method_title' => $shipping_rate->label,
@@ -333,7 +339,7 @@ class WC_Subscriptions_Checkout {
 	 * @param string $cart_item_key The hash used to identify the item in the cart
 	 * @param array $cart_item The cart item's data.
 	 * @param WC_Order|WC_Subscription $subscription The order or subscription object to which the line item relates
-	 * @since 2.2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
 	 */
 	public static function remove_backorder_meta_from_subscription_line_item( $item, $cart_item_key, $cart_item, $subscription ) {
 
@@ -349,7 +355,7 @@ class WC_Subscriptions_Checkout {
 	 * @param string $cart_item_key The item's cart item key.
 	 * @param array $cart_item The cart item.
 	 * @param WC_Subscription $subscription The subscription the item is being added to.
-	 * @since 2.6.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.6.0
 	 */
 	public static function maybe_add_free_trial_item_meta( $item, $cart_item_key, $cart_item, $subscription ) {
 		if ( wcs_is_subscription( $subscription ) && WC_Subscriptions_Product::get_trial_length( $item->get_product() ) > 0 ) {
@@ -360,7 +366,7 @@ class WC_Subscriptions_Checkout {
 	/**
 	 * Add a cart item to a subscription.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function add_cart_item( $subscription, $cart_item, $cart_item_key ) {
 		_deprecated_function( __METHOD__, '2.2.0', 'WC_Checkout::create_order_line_items( $subscription, $cart )' );
@@ -401,7 +407,7 @@ class WC_Subscriptions_Checkout {
 	/**
 	 * When a new order is inserted, add subscriptions related order meta.
 	 *
-	 * @since 1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function add_order_meta( $order_id, $posted ) {
 		_deprecated_function( __METHOD__, '2.0' );
@@ -410,7 +416,7 @@ class WC_Subscriptions_Checkout {
 	/**
 	 * Add each subscription product's details to an order so that the state of the subscription persists even when a product is changed
 	 *
-	 * @since 1.2.5
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2.5
 	 */
 	public static function add_order_item_meta( $item_id, $values ) {
 		_deprecated_function( __METHOD__, '2.0' );
@@ -423,7 +429,7 @@ class WC_Subscriptions_Checkout {
 	 * @param string $handle Default empty string ('').
 	 * @param array  $woocommerce_params
 	 *
-	 * @since 2.5.3
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.5.3
 	 * @return array
 	 */
 	public static function filter_woocommerce_script_parameters( $woocommerce_params, $handle = '' ) {
@@ -442,7 +448,7 @@ class WC_Subscriptions_Checkout {
 	/**
 	 * Stores the subtracted base location tax totals in the subscription line item meta.
 	 *
-	 * @since 3.0.10
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.0.10
 	 *
 	 * @param WC_Line_Item_Product $line_item     The line item added to the order/subscription.
 	 * @param string               $cart_item_key The key of the cart item being added to the cart.
@@ -459,8 +465,8 @@ class WC_Subscriptions_Checkout {
 	 * Also make sure the guest checkout option value passed to the woocommerce.js forces registration.
 	 * Otherwise the registration form is hidden by woocommerce.js.
 	 *
-	 * @since      1.1
-	 * @deprecated 2.5.3
+	 * @since      1.0.0 - Migrated from WooCommerce Subscriptions v1.1
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.5.3
 	 */
 	public static function filter_woocommerce_script_paramaters( $woocommerce_params, $handle = '' ) {
 		wcs_deprecated_function( __METHOD__, '2.5.3', 'WC_Subscriptions_Admin::filter_woocommerce_script_parameters( $woocommerce_params, $handle )' );
@@ -471,7 +477,7 @@ class WC_Subscriptions_Checkout {
 	/**
 	 * Enables the 'registeration required' (guest checkout) setting when purchasing subscriptions.
 	 *
-	 * @since 3.1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.1.0
 	 *
 	 * @param bool $account_required Whether an account is required to checkout.
 	 * @return bool
@@ -487,7 +493,7 @@ class WC_Subscriptions_Checkout {
 	/**
 	 * During the checkout process, force registration when the cart contains a subscription.
 	 *
-	 * @since 1.1
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.1
 	 * @param $woocommerce_params This parameter is not used.
 	 */
 	public static function force_registration_during_checkout( $woocommerce_params ) {
@@ -504,7 +510,7 @@ class WC_Subscriptions_Checkout {
 	 *
 	 * The message will redirect the customer to the My Account page if registration is enabled there, otherwise a generic 'you need an account' message will be displayed.
 	 *
-	 * @since 3.0.11
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.0.11
 	 * @return string The error message.
 	 */
 	private static function get_registration_error_message() {
@@ -523,7 +529,7 @@ class WC_Subscriptions_Checkout {
 	/**
 	 * Enables registration for carts containing subscriptions if admin allow it.
 	 *
-	 * @since 3.1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.1.0
 	 *
 	 * @param  bool $registration_enabled Whether registration is enabled on checkout by default.
 	 * @return bool
@@ -549,8 +555,8 @@ class WC_Subscriptions_Checkout {
 	 * When creating an order at checkout, if the checkout is to renew a subscription from a failed
 	 * payment, hijack the order creation to make a renewal order - not a plain WooCommerce order.
 	 *
-	 * @since 1.3
-	 * @deprecated 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.3
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function filter_woocommerce_create_order( $order_id, $checkout_object ) {
 		_deprecated_function( __METHOD__, '2.0' );
@@ -560,7 +566,7 @@ class WC_Subscriptions_Checkout {
 	/**
 	 * Customise which actions are shown against a subscriptions order on the My Account page.
 	 *
-	 * @since 1.3
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.3
 	 */
 	public static function filter_woocommerce_my_account_my_orders_actions( $actions, $order ) {
 		_deprecated_function( __METHOD__, '2.0', 'WCS_Cart_Renewal::filter_my_account_my_orders_actions()' );
@@ -570,8 +576,8 @@ class WC_Subscriptions_Checkout {
 	/**
 	 * If shopping cart contains subscriptions, make sure a user can register on the checkout page
 	 *
-	 * @since 1.0
-	 * @deprecated 3.1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v3.1.0
 	 */
 	public static function make_checkout_registration_possible( $checkout = '' ) {
 		wcs_deprecated_function( __METHOD__, '3.1.0' );
@@ -590,8 +596,8 @@ class WC_Subscriptions_Checkout {
 	/**
 	 * Make sure account fields display the required "*" when they are required.
 	 *
-	 * @since 1.3.5
-	 * @deprecated 3.1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.3.5
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v3.1.0
 	 */
 	public static function make_checkout_account_fields_required( $checkout_fields ) {
 		wcs_deprecated_function( __METHOD__, '3.1.0' );
@@ -616,8 +622,8 @@ class WC_Subscriptions_Checkout {
 	/**
 	 * After displaying the checkout form, restore the store's original registration settings.
 	 *
-	 * @since 1.1
-	 * @deprecated 3.1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.1
+	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v3.1.0
 	 */
 	public static function restore_checkout_registration_settings( $checkout = '' ) {
 		wcs_deprecated_function( __METHOD__, '3.1.0' );
@@ -632,7 +638,7 @@ class WC_Subscriptions_Checkout {
 	/**
 	 * Overrides the "Place order" button text with "Sign up now" when the cart contains initial subscription purchases.
 	 *
-	 * @since 4.0.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v4.0.0
 	 *
 	 * @param string  $button_text The place order button text.
 	 * @return string $button_text
