@@ -344,6 +344,10 @@ function wcs_order_contains_subscription( $order, $order_type = array( 'parent',
 
 	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
 		$order = wc_get_order( $order );
+
+		if ( ! $order ) {
+			return false;
+		}
 	}
 
 	$contains_subscription = false;
