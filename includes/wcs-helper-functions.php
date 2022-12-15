@@ -340,7 +340,7 @@ function wcs_compare_order_billing_shipping_address( $order ) {
 	}
 
 	// Compare the two addresses using array equality operator.
-	// phpcs:ignore -- using `==` is suitable here to ignore the order of array keys.
+	// phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison -- using `==` is suitable here to ignore the order of array keys.
 	$addresses_are_equal = $shipping_address == $billing_address;
 
 	return $addresses_are_equal;
