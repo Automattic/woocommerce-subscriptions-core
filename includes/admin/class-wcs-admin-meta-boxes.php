@@ -95,11 +95,12 @@ class WCS_Admin_Meta_Boxes {
 		}
 
 		// Get "Edit Order" screen ID, which differs if HPOS is enabled.
-		$screen = wcs_is_custom_order_tables_usage_enabled() ? wc_get_page_screen_id( 'shop-order' ) : 'shop_order';
+		$order_screen_id = wcs_is_custom_order_tables_usage_enabled() ? wc_get_page_screen_id( 'shop-order' ) : 'shop_order';
+		$current_screen  = get_current_screen();
 
 		// Only display the meta box if viewing an order that contains a subscription.
-		if ( $post_or_order_object && $current_screen->id === $screen && wcs_order_contains_subscription( $post_or_order_object, 'any' ) ) {
-			add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', $screen, 'normal', 'low' );
+		if ( $post_or_order_object && $current_screen && $current_screen->id === $order_screen_id && wcs_order_contains_subscription( $post_or_order_object, 'any' ) ) {
+			add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', $order_screen_id, 'normal', 'low' );
 		}
 	}
 
