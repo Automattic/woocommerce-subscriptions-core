@@ -75,10 +75,11 @@ class WCS_Admin_Post_Types {
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_product' ) );
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_payment_method' ) );
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_customer' ) );
+
 		// Add ListTable filters when HPOS is enabled
-		add_action( 'woocommerce_order_list_table_extra_tablenav', array( $this, 'restrict_by_product' ) );
-		add_action( 'woocommerce_order_list_table_extra_tablenav', array( $this, 'restrict_by_payment_method' ) );
-		add_action( 'woocommerce_order_list_table_extra_tablenav', array( $this, 'restrict_by_customer' ) );
+		add_action( 'woocommerce_order_list_table_restrict_manage_orders', array( $this, 'restrict_by_product' ) );
+		add_action( 'woocommerce_order_list_table_restrict_manage_orders', array( $this, 'restrict_by_payment_method' ) );
+		add_action( 'woocommerce_order_list_table_restrict_manage_orders', array( $this, 'restrict_by_customer' ) );
 
 		add_action( 'list_table_primary_column', array( $this, 'list_table_primary_column' ), 10, 2 );
 		add_filter( 'post_row_actions', array( $this, 'shop_subscription_row_actions' ), 10, 2 );
