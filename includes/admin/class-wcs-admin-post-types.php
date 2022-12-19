@@ -254,12 +254,18 @@ class WCS_Admin_Post_Types {
 	 */
 	public function filter_bulk_actions( $actions ) {
 		/**
-		 * Get the status the list table is being filtered by.
+		 * Get the status that the list table is being filtered by.
 		 * The 'post_status' key is used for CPT datastores, 'status' is used for HPOS datastores.
 		 *
 		 * Note: The nonce check is ignored below as there is no nonce value provided on status filter requests.
 		 */
-		$post_status = sanitize_key( wp_unslash( $_GET['post_status'] ) ) ?? sanitize_key( wp_unslash( $_GET['status'] ) ) ?? ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['status'] ) ) {
+			$post_status = sanitize_key( wp_unslash( $_GET['status'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		} elseif ( isset( $_GET['post_status'] ) ) {
+			$post_status = sanitize_key( wp_unslash( $_GET['post_status'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		} else {
+			$post_status = '';
+		}
 
 		// List of actions to remove that are irrelevant to subscriptions.
 		$actions_to_remove = [
