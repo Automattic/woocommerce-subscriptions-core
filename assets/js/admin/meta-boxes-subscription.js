@@ -331,7 +331,7 @@ jQuery( function ( $ ) {
 		if (
 			'wcs_process_renewal' ==
 			$(
-				"body.post-type-shop_subscription select[name='wc_order_action'], body.woocommerce_page_wc-orders--shop_subscription select[name='wc_order_action']"
+				'body.post-type-shop_subscription select[name="wc_order_action"], body.woocommerce_page_wc-orders--shop_subscription select[name="wc_order_action"]'
 			).val()
 		) {
 			return confirm(
