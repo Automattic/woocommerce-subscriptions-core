@@ -52,12 +52,11 @@ class WC_Subscriptions_Addresses {
 	 * Add a "Change Shipping Address" button to the "My Subscriptions" table for those subscriptions
 	 * which require shipping.
 	 *
-	 * @param array $all_actions The $subscription_id => $actions array with all actions that will be displayed for a subscription on the "My Subscriptions" table
-	 * @param array $subscriptions All of a given users subscriptions that will be displayed on the "My Subscriptions" table
+	 * @param array $actions The $subscription_id => $actions array with all actions that will be displayed for a subscription on the "My Subscriptions" table
+	 * @param \WC_Subscription $subscription the Subscription object that is being viewed.
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.3
 	 */
 	public static function add_edit_address_subscription_action( $actions, $subscription ) {
-
 		if ( $subscription->needs_shipping_address() && $subscription->has_status( array( 'active', 'on-hold' ) ) ) {
 			$actions['change_address'] = array(
 				'url'  => add_query_arg( array( 'subscription' => $subscription->get_id() ), wc_get_endpoint_url( 'edit-address', 'shipping' ) ),
@@ -159,21 +158,21 @@ class WC_Subscriptions_Addresses {
 		}
 
 		if ( isset( $_POST['update_all_subscriptions_addresses'] ) ) {
-
 			$users_subscriptions = wcs_get_users_subscriptions( $user_id );
 
 			foreach ( $users_subscriptions as $subscription ) {
 				if ( $subscription->has_status( array( 'active', 'on-hold' ) ) ) {
-					$subscription->set_address( $address, $address_type );
+					wcs_set_order_address( $subscription, $address, $address_type );
+					$subscription->save();
 				}
 			}
 		} elseif ( isset( $_POST['update_subscription_address'] ) ) {
-
 			$subscription = wcs_get_subscription( absint( $_POST['update_subscription_address'] ) );
 
+			// Update the address only if the user actually owns the subscription
 			if ( $subscription && self::can_user_edit_subscription_address( $subscription->get_id() ) ) {
-				// Update the address only if the user actually owns the subscription
-				$subscription->set_address( $address, $address_type );
+				wcs_set_order_address( $subscription, $address, $address_type );
+				$subscription->save();
 
 				wp_safe_redirect( $subscription->get_view_order_url() );
 				exit();
