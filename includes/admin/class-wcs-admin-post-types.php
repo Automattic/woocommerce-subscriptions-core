@@ -1231,4 +1231,64 @@ class WCS_Admin_Post_Types {
 
 		return $item_html;
 	}
+
+	/**
+	 * Add extra options to the bulk actions dropdown
+	 *
+	 * It's only on the All Shop Subscriptions screen.
+	 * Introducing new filter: woocommerce_subscription_bulk_actions. This has to be done through jQuery as the
+	 * 'bulk_actions' filter that WordPress has can only be used to remove bulk actions, not to add them.
+	 *
+	 * This is a filterable array where the key is the action (will become query arg), and the value is a translatable
+	 * string. The same array is used to
+	 *
+	 * @deprecated 5.3.0
+	 */
+	public function print_bulk_actions_script() {
+		wcs_deprecated_function( __METHOD__, '5.3.0' );
+		$post_status = ( isset( $_GET['post_status'] ) ) ? $_GET['post_status'] : '';
+
+		$subscription_id = ( ! empty( $GLOBALS['post']->ID ) ) ? $GLOBALS['post']->ID : '';
+		if ( ! $subscription_id ) {
+			return;
+		}
+
+		if ( 'shop_subscription' !== WC_Data_Store::load( 'subscription' )->get_order_type( $subscription_id ) || in_array( $post_status, array( 'cancelled', 'trash', 'wc-expired' ), true ) ) {
+			return;
+		}
+
+		// Make it filterable in case extensions want to change this
+		$bulk_actions = apply_filters( 'woocommerce_subscription_bulk_actions', array(
+			'active'    => _x( 'Activate', 'an action on a subscription', 'woocommerce-subscriptions' ),
+			'on-hold'   => _x( 'Put on-hold', 'an action on a subscription', 'woocommerce-subscriptions' ),
+			'cancelled' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
+		) );
+
+		// No need to display certain bulk actions if we know all the subscriptions on the page have that status already
+		switch ( $post_status ) {
+			case 'wc-active':
+				unset( $bulk_actions['active'] );
+				break;
+			case 'wc-on-hold':
+				unset( $bulk_actions['on-hold'] );
+				break;
+		}
+
+		?>
+		<script type="text/javascript">
+			jQuery( function( $ ) {
+				<?php
+				foreach ( $bulk_actions as $action => $title ) {
+					?>
+					$( '<option>' )
+						.val( '<?php echo esc_attr( $action ); ?>' )
+						.text( '<?php echo esc_html( $title ); ?>' )
+						.appendTo( "select[name='action'], select[name='action2']" );
+					<?php
+				}
+				?>
+			} );
+		</script>
+		<?php
+	}
 }
