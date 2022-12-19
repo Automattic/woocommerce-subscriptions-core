@@ -71,9 +71,15 @@ class WCS_Admin_Post_Types {
 
 		add_filter( 'post_updated_messages', array( $this, 'post_updated_messages' ) );
 
+		// Add ListTable filters when CPT is enabled
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_product' ) );
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_payment_method' ) );
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_customer' ) );
+
+		// Add ListTable filters when HPOS is enabled
+		add_action( 'woocommerce_order_list_table_restrict_manage_orders', array( $this, 'restrict_by_product' ) );
+		add_action( 'woocommerce_order_list_table_restrict_manage_orders', array( $this, 'restrict_by_payment_method' ) );
+		add_action( 'woocommerce_order_list_table_restrict_manage_orders', array( $this, 'restrict_by_customer' ) );
 
 		add_action( 'list_table_primary_column', array( $this, 'list_table_primary_column' ), 10, 2 );
 		add_filter( 'post_row_actions', array( $this, 'shop_subscription_row_actions' ), 10, 2 );
@@ -200,12 +206,17 @@ class WCS_Admin_Post_Types {
 
 	/**
 	 * Displays the dropdown for the product filter
+	 *
+	 * @param string $order_type The type of order. This will be 'shop_subscription' for Subscriptions.
+	 *
 	 * @return string the html dropdown element
 	 */
-	public function restrict_by_product() {
-		global $typenow;
+	public function restrict_by_product( $order_type = '' ) {
+		if ( '' === $order_type ) {
+			$order_type = isset( $GLOBALS['typenow'] ) ? $GLOBALS['typenow'] : '';
+		}
 
-		if ( 'shop_subscription' !== $typenow ) {
+		if ( 'shop_subscription' !== $order_type ) {
 			return;
 		}
 
@@ -989,12 +1000,16 @@ class WCS_Admin_Post_Types {
 	/**
 	 * Displays the dropdown for the payment method filter.
 	 *
+	 * @param string $order_type The type of order. This will be 'shop_subscription' for Subscriptions.
+	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
-	public static function restrict_by_payment_method() {
-		global $typenow;
+	public static function restrict_by_payment_method( $order_type = '' ) {
+		if ( '' === $order_type ) {
+			$order_type = isset( $GLOBALS['typenow'] ) ? $GLOBALS['typenow'] : '';
+		}
 
-		if ( 'shop_subscription' !== $typenow ) {
+		if ( 'shop_subscription' !== $order_type ) {
 			return;
 		}
 
@@ -1135,13 +1150,21 @@ class WCS_Admin_Post_Types {
 	/**
 	 * Renders the dropdown for the customer filter.
 	 *
+	 * @param string $order_type The type of order. This will be 'shop_subscription' for Subscriptions.
+	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.17
 	 */
-	public static function restrict_by_customer() {
-		global $typenow;
+	public static function restrict_by_customer( $order_type = '' ) {
+		if ( '' === $order_type ) {
+			$order_type = isset( $GLOBALS['typenow'] ) ? $GLOBALS['typenow'] : '';
+		}
 
 		// Prior to WC 3.3 this was handled by WC core so exit early if an earlier version of WC is active.
-		if ( 'shop_subscription' !== $typenow || wcs_is_woocommerce_pre( '3.3' ) ) {
+		if ( 'shop_subscription' !== $order_type || wcs_is_woocommerce_pre( '3.3' ) ) {
+			return;
+		}
+		// When HPOS is enabled WC displays the customer filter so this doesn't need to be duplicated.
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
 			return;
 		}
 
