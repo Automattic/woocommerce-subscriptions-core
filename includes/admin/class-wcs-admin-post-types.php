@@ -261,7 +261,7 @@ class WCS_Admin_Post_Types {
 		 */
 		$post_status = sanitize_key( wp_unslash( $_GET['post_status'] ) ) ?? sanitize_key( wp_unslash( $_GET['status'] ) ) ?? ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-		// List of actions to remove that are irrelevant for subscriptions.
+		// List of actions to remove that are irrelevant to subscriptions.
 		$actions_to_remove = [
 			'edit',
 			'mark_processing',
