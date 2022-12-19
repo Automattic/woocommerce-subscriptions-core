@@ -210,7 +210,10 @@ class WCS_Admin_Post_Types {
 	 *
 	 * @return string the html dropdown element
 	 */
-	public function restrict_by_product( $order_type ) {
+	public function restrict_by_product( $order_type = '' ) {
+		if ( '' === $order_type ) {
+			$order_type = isset( $GLOBALS['typenow'] ) ? $GLOBALS['typenow'] : '';
+		}
 
 		if ( 'shop_subscription' !== $order_type ) {
 			return;
@@ -1000,7 +1003,10 @@ class WCS_Admin_Post_Types {
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
-	public static function restrict_by_payment_method( $order_type ) {
+	public static function restrict_by_payment_method( $order_type = '' ) {
+		if ( '' === $order_type ) {
+			$order_type = isset( $GLOBALS['typenow'] ) ? $GLOBALS['typenow'] : '';
+		}
 
 		if ( 'shop_subscription' !== $order_type ) {
 			return;
@@ -1147,7 +1153,10 @@ class WCS_Admin_Post_Types {
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.17
 	 */
-	public static function restrict_by_customer( $order_type ) {
+	public static function restrict_by_customer( $order_type = '' ) {
+		if ( '' === $order_type ) {
+			$order_type = isset( $GLOBALS['typenow'] ) ? $GLOBALS['typenow'] : '';
+		}
 
 		// Prior to WC 3.3 this was handled by WC core so exit early if an earlier version of WC is active.
 		if ( 'shop_subscription' !== $order_type || wcs_is_woocommerce_pre( '3.3' ) ) {
