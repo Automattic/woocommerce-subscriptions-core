@@ -55,11 +55,23 @@ class WC_Subscriptions_Renewal_Order {
 	 * @return mixed If the renewal order did replace a failed order, the ID of the fail order, else false
 	 */
 	public static function get_failed_order_replaced_by( $renewal_order_id ) {
-		global $wpdb;
 
-		$failed_order_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_failed_order_replaced_by' AND meta_value = %s", $renewal_order_id ) );
+		// Get orders where order meta '_failed_order_replaced_by' = $renewal_order_id
+		$failed_orders = wcs_get_orders_with_meta_query(
+			[
+				'limit'      => 1,
+				'return'     => 'ids',
+				'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					[
+						'key'     => '_failed_order_replaced_by',
+						'compare' => '=',
+						'value'   => $renewal_order_id,
+					],
+				],
+			]
+		);
 
-		return ( null === $failed_order_id ) ? false : $failed_order_id;
+		return $failed_orders[0] ?? false;
 	}
 
 	/**
