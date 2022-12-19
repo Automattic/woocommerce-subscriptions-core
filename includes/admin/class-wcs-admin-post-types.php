@@ -244,36 +244,37 @@ class WCS_Admin_Post_Types {
 	}
 
 	/**
-	 * Remove "edit" from the bulk actions.
+	 * Alters the default bulk actions for the subscription object type.
 	 *
-	 * @param array $actions
-	 * @return array
+	 * Removes the default "edit", "mark_processing", "mark_on-hold", "mark_completed", "mark_cancelled" options from the bulk actions.
+	 * Adds subscription-related actions for activating, suspending and cancelling.
+	 *
+	 * @param array $actions An array of bulk actions admin users can take on subscriptions. In the format ( 'name' => 'i18n_text' ).
+	 * @return array The bulk actions.
 	 */
 	public function filter_bulk_actions( $actions ) {
-		// 'post_status' is used in CPT datastore, 'status' is used in HPOS datastore.
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$post_status = $_GET['post_status'] ?? $_GET['status'] ?? '';
+		/**
+		 * Get the status the list table is being filtered by.
+		 * The 'post_status' key is used for CPT datastores, 'status' is used for HPOS datastores.
+		 *
+		 * Note: The nonce check is ignored below as there is no nonce value provided on status filter requests.
+		 */
+		$post_status = sanitize_key( wp_unslash( $_GET['post_status'] ) ) ?? sanitize_key( wp_unslash( $_GET['status'] ) ) ?? ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-		// List of actions to remove that are irrelevant for subscriptions
-		$actions_to_remove = array(
+		// List of actions to remove that are irrelevant for subscriptions.
+		$actions_to_remove = [
 			'edit',
 			'mark_processing',
 			'mark_on-hold',
 			'mark_completed',
 			'mark_cancelled',
-		);
+		];
 
-		// Remove actions that are not relevant for subscriptions.
-		$actions = array_filter(
-			$actions,
-			function( $action_key ) use ( $actions_to_remove ) {
-				return ! in_array( $action_key, $actions_to_remove, true );
-			},
-			ARRAY_FILTER_USE_KEY
-		);
+		// Remove actions that are not relevant to subscriptions.
+		$actions = array_diff_key( $actions, array_flip( $actions_to_remove ) );
 
 		// If we are currently in trash, expired or cancelled listing. We don't need to add subscriptions specific actions.
-		if ( in_array( $post_status, array( 'cancelled', 'trash', 'wc-expired' ), true ) ) {
+		if ( in_array( $post_status, [ 'cancelled', 'trash', 'wc-expired' ], true ) ) {
 			return $actions;
 		}
 
@@ -296,7 +297,7 @@ class WCS_Admin_Post_Types {
 
 		$actions = array_merge( $actions, $subscriptions_actions );
 
-		// No need to display certain bulk actions if we know all the subscriptions on the page have that status already
+		// No need to display certain bulk actions if we know all the subscriptions on the page have that status already.
 		switch ( $post_status ) {
 			case 'wc-active':
 				unset( $actions['active'] );
