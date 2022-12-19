@@ -340,7 +340,7 @@ jQuery( function ( $ ) {
 		}
 	} );
 
-	$( 'body.post-type-shop_subscription #post,body.woocommerce_page_wc-orders--shop_subscription #order' ).on( 'submit', function () {
+	$( 'body.post-type-shop_subscription #post, body.woocommerce_page_wc-orders--shop_subscription #order' ).on( 'submit', function () {
 		if (
 			typeof wcs_admin_meta_boxes.change_payment_method_warning !=
 				'undefined' &&
