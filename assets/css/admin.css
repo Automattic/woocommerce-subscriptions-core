@@ -5,10 +5,10 @@
 .woocommerce-subscriptions-activated a.button-primary:hover {
 	background: #bb77ae;
 	border-color: #aa559a;
-	-webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25),
-		0 1px 0 rgba(0, 0, 0, 0.15);
-	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25),
-		0 1px 0 rgba(0, 0, 0, 0.15);
+	-webkit-box-shadow: inset 0 1px 0 rgba( 255, 255, 255, 0.25 ),
+		0 1px 0 rgba( 0, 0, 0, 0.15 );
+	box-shadow: inset 0 1px 0 rgba( 255, 255, 255, 0.25 ),
+		0 1px 0 rgba( 0, 0, 0, 0.15 );
 }
 .woocommerce-subscriptions-activated a.button-primary:active,
 .woocommerce-subscriptions-activated a.button-primary:active {
@@ -87,7 +87,7 @@ a.close-subscriptions-search {
 	display: block;
 	width: 50%;
 }
-@media only screen and (max-width: 1280px) {
+@media only screen and ( max-width: 1280px ) {
 	.woocommerce_options_panel ._subscription_price_fields .wrap,
 	.woocommerce_options_panel ._subscription_trial_length_field .wrap,
 	.woocommerce_options_panel
@@ -396,7 +396,7 @@ a.close-subscriptions-search {
 	.wc_input_subscription_payment_sync_month {
 	max-width: 86%;
 }
-@media screen and (max-width: 1190px) {
+@media screen and ( max-width: 1190px ) {
 	#variable_product_options
 		.variable_subscription_pricing_2_3
 		p._subscription_price_field,
@@ -691,7 +691,7 @@ table.wp-list-table .subscription_renewal_order::after {
 	left: 0;
 }
 
-@media only screen and (max-width: 782px) {
+@media only screen and ( max-width: 782px ) {
 	table.wp-list-table .subscription_parent_order,
 	table.wp-list-table .subscription_resubscribe_order,
 	table.wp-list-table .subscription_renewal_order {
@@ -757,7 +757,7 @@ body.post-type-shop_subscription .add-items .description.tips,
 body.post-type-shop_subscription .add-items .button.refund-items {
 	display: none;
 }
-@media only screen and (max-width: 782px) {
+@media only screen and ( max-width: 782px ) {
 	#woocommerce-subscription-schedule
 		.wcs-date-input
 		input[type='text']:first-of-type {
@@ -765,7 +765,7 @@ body.post-type-shop_subscription .add-items .button.refund-items {
 	}
 	#woocommerce-subscription-schedule
 		.wcs-date-input
-		input[type='text']:not(:first-of-type) {
+		input[type='text']:not( :first-of-type ) {
 		width: 19%;
 	}
 
