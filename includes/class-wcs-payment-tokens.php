@@ -102,28 +102,25 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 		$users_subscription_ids = WCS_Customer_Store::instance()->get_users_subscription_ids( $payment_token->get_user_id() );
 
 		if ( ! empty( $users_subscription_ids ) ) {
-			$meta_query = array(
-				array(
-					'key'   => '_payment_method',
-					'value' => $payment_token->get_gateway_id(),
-				),
-				array(
-					'key'   => '_requires_manual_renewal',
-					'value' => 'false',
-				),
-				array(
-					'value' => $payment_token->get_token(),
-				),
+			$subscription_ids = wcs_get_orders_with_meta_query(
+				[
+					'type'           => 'shop_subscription',
+					'status'         => [ 'wc-pending', 'wc-active', 'wc-on-hold' ],
+					'payment_method' => $payment_token->get_gateway_id(),
+					'meta_query'     => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+						[
+							'key'   => '_requires_manual_renewal',
+							'value' => 'false',
+						],
+						[
+							'value' => $payment_token->get_token(),
+						],
+					],
+					'limit'          => -1,
+					'return'         => 'ids',
+					'post__in'       => $users_subscription_ids,
+				]
 			);
-
-			$subscription_ids = get_posts( array(
-				'post_type'      => 'shop_subscription',
-				'post_status'    => array( 'wc-pending', 'wc-active', 'wc-on-hold' ),
-				'meta_query'     => $meta_query,
-				'posts_per_page' => -1,
-				'fields'         => 'ids',
-				'post__in'       => $users_subscription_ids,
-			) );
 
 			if ( has_filter( 'woocommerce_subscriptions_by_payment_token' ) ) {
 				wcs_deprecated_function( 'The "woocommerce_subscriptions_by_payment_token" hook should no longer be used. It previously filtered post objects and in moving to CRUD and Subscription APIs the "woocommerce_subscriptions_by_payment_token"', '2.5.0', 'woocommerce_subscriptions_from_payment_token' );
