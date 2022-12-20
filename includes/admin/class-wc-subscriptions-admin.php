@@ -836,10 +836,10 @@ class WC_Subscriptions_Admin {
 	public static function enqueue_styles_scripts() {
 		global $post;
 
-		// Get admin screen id
+		// Get admin screen ID.
 		$screen = get_current_screen();
 
-		$subscriptions_screen_id = wc_get_page_screen_id( 'shop_subscription' );
+		$subscriptions_screen_id = wcs_is_woocommerce_pre( '6.9.0' ) ? 'shop_subscription' : wc_get_page_screen_id( 'shop_subscription' );
 		$is_woocommerce_screen   = in_array( $screen->id, array( 'product', 'edit-shop_order', 'shop_order', 'edit-shop_subscription', 'shop_subscription', 'users', 'woocommerce_page_wc-settings', 'woocommerce_page_wc-orders', $subscriptions_screen_id ), true );
 
 		if ( $is_woocommerce_screen ) {
