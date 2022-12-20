@@ -62,7 +62,7 @@ class WCS_Admin_Post_Types {
 
 		// Subscription order/filter
 		add_filter( 'request', array( $this, 'request_query' ) );
-		add_filter( 'woocommerce_shop_subscription_list_table_request', array( $this, 'request_query_hpos' ) );
+		add_filter( 'woocommerce_shop_subscription_list_table_request', array( $this, 'add_subscription_list_table_query_defaults' ) );
 
 		// Subscription Search
 		add_filter( 'get_search_query', array( $this, 'shop_subscription_search_label' ) );
@@ -923,12 +923,22 @@ class WCS_Admin_Post_Types {
 		return $vars;
 	}
 
-	public function request_query_hpos( $vars ) {
-		if ( empty( $vars['status'] ) ) {
-			$vars['status'] = array_keys( wcs_get_subscription_statuses() );
+	/**
+	 * Adds default query arguments for displaying subscriptions in the admin list table.
+	 *
+	 * By default, WC will fetch items to display in the list table by query the DB using
+	 * order params (eg order statuses). This function is responsible for making sure the
+	 * default request includes required values to return subscriptions.
+	 *
+	 * @param array $query_args The admin subscription's list table query args.
+	 * @return array $query_args
+	 */
+	public function add_subscription_list_table_query_defaults( $query_args ) {
+		if ( empty( $query_args['status'] ) ) {
+			$query_args['status'] = array_keys( wcs_get_subscription_statuses() );
 		}
 
-		return $vars;
+		return $query_args;
 	}
 
 	/**
