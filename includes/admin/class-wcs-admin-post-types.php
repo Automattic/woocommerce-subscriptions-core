@@ -270,13 +270,7 @@ class WCS_Admin_Post_Types {
 		 *
 		 * Note: The nonce check is ignored below as there is no nonce value provided on status filter requests.
 		 */
-		if ( isset( $_GET['status'] ) ) {
-			$post_status = sanitize_key( wp_unslash( $_GET['status'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		} elseif ( isset( $_GET['post_status'] ) ) {
-			$post_status = sanitize_key( wp_unslash( $_GET['post_status'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		} else {
-			$post_status = '';
-		}
+		$post_status = sanitize_key( wp_unslash( $_GET['post_status'] ?? $_GET['status'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		// List of actions to remove that are irrelevant to subscriptions.
 		$actions_to_remove = [
@@ -1275,7 +1269,7 @@ class WCS_Admin_Post_Types {
 	 */
 	public function print_bulk_actions_script() {
 		wcs_deprecated_function( __METHOD__, '5.3.0' );
-		$post_status = ( isset( $_GET['post_status'] ) ) ? $_GET['post_status'] : '';
+		$post_status = ( isset( $_GET['post_status'] ) ) ? $_GET['post_status'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		$subscription_id = ( ! empty( $GLOBALS['post']->ID ) ) ? $GLOBALS['post']->ID : '';
 		if ( ! $subscription_id ) {
@@ -1287,11 +1281,14 @@ class WCS_Admin_Post_Types {
 		}
 
 		// Make it filterable in case extensions want to change this
-		$bulk_actions = apply_filters( 'woocommerce_subscription_bulk_actions', array(
-			'active'    => _x( 'Activate', 'an action on a subscription', 'woocommerce-subscriptions' ),
-			'on-hold'   => _x( 'Put on-hold', 'an action on a subscription', 'woocommerce-subscriptions' ),
-			'cancelled' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
-		) );
+		$bulk_actions = apply_filters(
+			'woocommerce_subscription_bulk_actions',
+			array(
+				'active'    => _x( 'Activate', 'an action on a subscription', 'woocommerce-subscriptions' ),
+				'on-hold'   => _x( 'Put on-hold', 'an action on a subscription', 'woocommerce-subscriptions' ),
+				'cancelled' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
+			)
+		);
 
 		// No need to display certain bulk actions if we know all the subscriptions on the page have that status already
 		switch ( $post_status ) {
