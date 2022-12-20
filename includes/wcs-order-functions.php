@@ -391,7 +391,7 @@ function wcs_get_orders_with_meta_query( $args ) {
 			}
 
 			if ( ! isset( $query['meta_query'] ) ) {
-				$query['meta_query'] = $meta;
+				$query['meta_query'] = $meta; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 			} else {
 				$query['meta_query'] = array_merge( $query['meta_query'], $meta ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 			}
