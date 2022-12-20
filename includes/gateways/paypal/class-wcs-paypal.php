@@ -447,11 +447,12 @@ class WCS_PayPal {
 	 * @return array $script_parameters
 	 */
 	public static function maybe_add_change_payment_method_warning( $script_parameters ) {
+		global $post, $theorder;
 
 		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			$subscription = $GLOBALS['theorder'];
+			$subscription = $theorder; // $theorder is a subscription object on Edit subscription admin screens.
 		} else {
-			$subscription = wcs_get_subscription( $GLOBALS['post']->ID );
+			$subscription = wcs_get_subscription( $post->ID );
 		}
 
 		if ( ! $subscription || 'paypal' !== $subscription->get_payment_method() ) {
