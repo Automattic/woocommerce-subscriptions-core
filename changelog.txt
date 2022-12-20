@@ -10,6 +10,7 @@
 * Fix - Refactor `WC_Subscriptions_Renewal_Order::get_failed_order_replaced_by()` to support HPOS stores.
 * Fix - Check whether the order actually exists before accessing order properties in wcs_order_contains_subscription()
 * Fix - Replace the get_posts() used in get_subscriptions_from_token() to support HPOS stores.
+* Fix - Merge any custom meta_query args passed to wcs_get_orders_with_meta_query() to avoid overriding WC core args that map onto meta_query.
 * Dev - Replace code using get_post_type( $subscription_id ) with WC Data Store get_order_type().
 * Dev - Add subscriptions-core library version to the WooCommerce system status report.
 * Dev - Introduced a WCS_Object_Data_Cache_Manager and WCS_Object_Data_Cache_Manager_Many_To_One class as HPOS equivalents of the WCS_Post_Meta_Cache_Manager classes.
