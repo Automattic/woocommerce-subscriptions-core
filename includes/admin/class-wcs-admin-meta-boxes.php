@@ -78,7 +78,7 @@ class WCS_Admin_Meta_Boxes {
 	 * @param WP_Post|WC_Order|null $post_or_order_object The post or order currently being edited.
 	 */
 	public function add_meta_boxes( $post_type = '', $post_or_order_object = null ) {
-		$subscriptions_screen_id = wcs_is_custom_order_tables_usage_enabled() ? wc_get_page_screen_id( 'shop_subscription' ) : 'shop_subscription';
+		$subscriptions_screen_id = wcs_get_page_screen_id( 'shop_subscription' );
 
 		add_meta_box( 'woocommerce-subscription-data', _x( 'Subscription Data', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Subscription_Data::output', $subscriptions_screen_id, 'normal', 'high' );
 
@@ -95,7 +95,7 @@ class WCS_Admin_Meta_Boxes {
 		}
 
 		// Get "Edit Order" screen ID, which differs if HPOS is enabled.
-		$order_screen_id = wcs_is_custom_order_tables_usage_enabled() ? wc_get_page_screen_id( 'shop-order' ) : 'shop_order';
+		$order_screen_id = wcs_get_page_screen_id( 'shop_order' );
 		$current_screen  = get_current_screen();
 
 		// Only display the meta box if viewing an order that contains a subscription.
@@ -138,7 +138,7 @@ class WCS_Admin_Meta_Boxes {
 		$screen    = get_current_screen();
 		$screen_id = isset( $screen->id ) ? $screen->id : '';
 
-		if ( in_array( $screen_id, array( 'shop_subscription', wc_get_page_screen_id( 'shop_subscription' ) ), true ) && $post_id ) {
+		if ( in_array( $screen_id, array( 'shop_subscription', wcs_get_page_screen_id( 'shop_subscription' ) ), true ) && $post_id ) {
 
 			wp_register_script( 'jstz', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/jstz.min.js' ), [], $ver, false );
 

@@ -839,11 +839,23 @@ class WC_Subscriptions_Admin {
 		// Get admin screen ID.
 		$screen = get_current_screen();
 
-		$subscriptions_screen_id = wcs_is_woocommerce_pre( '6.9.0' ) ? 'shop_subscription' : wc_get_page_screen_id( 'shop_subscription' );
-		$is_woocommerce_screen   = in_array( $screen->id, array( 'product', 'edit-shop_order', 'shop_order', 'edit-shop_subscription', 'shop_subscription', 'users', 'woocommerce_page_wc-settings', 'woocommerce_page_wc-orders', $subscriptions_screen_id ), true );
+		$is_woocommerce_screen = in_array(
+			$screen->id,
+			[
+				'product',
+				'edit-shop_order',
+				'shop_order',
+				'edit-shop_subscription',
+				'shop_subscription',
+				'users',
+				'woocommerce_page_wc-settings',
+				'woocommerce_page_wc-orders',
+				wcs_get_page_screen_id( 'shop_subscription' ),
+			],
+			true
+		);
 
 		if ( $is_woocommerce_screen ) {
-
 			$dependencies = array( 'jquery' );
 
 			$woocommerce_admin_script_handle     = 'wc-admin-meta-boxes';
