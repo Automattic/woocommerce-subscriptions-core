@@ -893,12 +893,7 @@ class WC_Subscriptions_Admin {
 			} elseif ( 'shop_order' == $screen->id ) {
 				$dependencies[] = $woocommerce_admin_script_handle;
 				$dependencies[] = 'wc-admin-order-meta-boxes';
-
-				if ( wcs_is_woocommerce_pre( '2.6' ) ) {
-					$dependencies[] = 'wc-admin-order-meta-boxes-modal';
-				}
-
-				$script_params = array(
+				$script_params  = array(
 					'trashWarning'      => $trashing_subscription_order_warning,
 					'changeMetaWarning' => __( "WARNING: Bad things are about to happen!\n\nThe payment gateway used to purchase this subscription does not support modifying a subscription's details.\n\nChanges to the billing period, recurring discount, recurring tax or recurring total may not be reflected in the amount charged by the payment gateway.", 'woocommerce-subscriptions' ),
 					'removeItemWarning' => __( 'You are deleting a subscription item. You will also need to manually cancel and trash the subscription on the Manage Subscriptions screen.', 'woocommerce-subscriptions' ),
@@ -946,10 +941,6 @@ class WC_Subscriptions_Admin {
 		if ( $is_woocommerce_screen || 'edit-product' == $screen->id || ( isset( $_GET['page'], $_GET['tab'] ) && 'wc-reports' === $_GET['page'] && 'subscriptions' === $_GET['tab'] ) ) {
 			wp_enqueue_style( 'woocommerce_admin_styles', WC()->plugin_url() . '/assets/css/admin.css', array(), WC_Subscriptions_Core_Plugin::instance()->get_library_version() );
 			wp_enqueue_style( 'woocommerce_subscriptions_admin', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/css/admin.css' ), array( 'woocommerce_admin_styles' ), WC_Subscriptions_Core_Plugin::instance()->get_library_version() );
-		}
-
-		if ( in_array( $screen->id, array( 'shop_order', 'edit-shop_subscription', 'shop_subscription' ) ) && wcs_is_woocommerce_pre( '3.3' ) ) {
-			wp_enqueue_style( 'wc_subscriptions_statuses_admin', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/css/admin-order-statuses.css' ), array( 'woocommerce_admin_styles' ), WC_Subscriptions_Core_Plugin::instance()->get_library_version() );
 		}
 	}
 
