@@ -1269,7 +1269,7 @@ class WCS_Admin_Post_Types {
 	 */
 	public function print_bulk_actions_script() {
 		wcs_deprecated_function( __METHOD__, '5.3.0' );
-		$post_status = ( isset( $_GET['post_status'] ) ) ? $_GET['post_status'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$post_status = ( isset( $_GET['post_status'] ) ) ? sanitize_key( wp_unslash( $_GET['post_status'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		$subscription_id = ( ! empty( $GLOBALS['post']->ID ) ) ? $GLOBALS['post']->ID : '';
 		if ( ! $subscription_id ) {
