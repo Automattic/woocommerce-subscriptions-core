@@ -62,7 +62,7 @@ class WCS_Admin_Post_Types {
 
 		// Subscription order/filter
 		add_filter( 'request', array( $this, 'request_query' ) );
-		add_filter( 'woocommerce_shop_subscription_list_table_request', array( $this, 'add_subscription_list_table_query_defaults' ) );
+		add_filter( 'woocommerce_shop_subscription_list_table_request', array( $this, 'add_subscription_list_table_query_default_args' ) );
 
 		// Subscription Search
 		add_filter( 'get_search_query', array( $this, 'shop_subscription_search_label' ) );
@@ -933,7 +933,7 @@ class WCS_Admin_Post_Types {
 	 * @param array $query_args The admin subscription's list table query args.
 	 * @return array $query_args
 	 */
-	public function add_subscription_list_table_query_defaults( $query_args ) {
+	public function add_subscription_list_table_query_default_args( $query_args ) {
 		if ( empty( $query_args['status'] ) ) {
 			$query_args['status'] = array_keys( wcs_get_subscription_statuses() );
 		}
@@ -1278,7 +1278,7 @@ class WCS_Admin_Post_Types {
 	 * @deprecated 5.3.0
 	 */
 	public function print_bulk_actions_script() {
-		wcs_deprecated_function( __METHOD__, '5.3.0' );
+		wcs_deprecated_function( __METHOD__, 'subscription-core 5.3.0' );
 		$post_status = ( isset( $_GET['post_status'] ) ) ? sanitize_key( wp_unslash( $_GET['post_status'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		$subscription_id = ( ! empty( $GLOBALS['post']->ID ) ) ? $GLOBALS['post']->ID : '';
