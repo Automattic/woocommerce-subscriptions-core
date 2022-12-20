@@ -334,6 +334,110 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
+	 * Attempts to restore the specified subscription back to its original status (after having been trashed).
+	 *
+	 * @param \WC_Subscription $order The order to be untrashed.
+	 *
+	 * @return bool If the operation was successful.
+	 */
+	public function untrash_order( WC_Order $subscription ): bool {
+		$id     = $subscription->get_id();
+		$status = $subscription->get_status();
+
+		if ( 'trash' !== $status ) {
+			wc_get_logger()->warning(
+				sprintf(
+					/* translators: 1: subscription ID, 2: subscription status */
+					__( 'Subscription %1$d cannot be restored from the trash: it has already been restored to status "%2$s".', 'woocommerce' ),
+					$id,
+					$status
+				)
+			);
+			return false;
+		}
+
+		$previous_status           = $subscription->get_meta( '_wp_trash_meta_status' );
+		$valid_statuses            = wcs_get_subscription_statuses();
+		$previous_state_is_invalid = ! array_key_exists( $previous_status, $valid_statuses );
+		$pending_is_valid_status   = array_key_exists( 'wc-pending', $valid_statuses );
+
+		if ( $previous_state_is_invalid && $pending_is_valid_status ) {
+			// If the previous status is no longer valid, let's try to restore it to "pending" instead.
+			wc_get_logger()->warning(
+				sprintf(
+					/* translators: 1: subscription ID, 2: subscription status */
+					__( 'The previous status of subscription %1$d ("%2$s") is invalid. It has been restored to "pending" status instead.', 'woocommerce' ),
+					$id,
+					$previous_status
+				)
+			);
+
+			$previous_status = 'pending';
+		} elseif ( $previous_state_is_invalid ) {
+			// If we cannot restore to pending, we should probably stand back and let the merchant intervene some other way.
+			wc_get_logger()->warning(
+				sprintf(
+					/* translators: 1: subscription ID, 2: subscription status */
+					__( 'The previous status of subscription %1$d ("%2$s") is invalid. It could not be restored.', 'woocommerce' ),
+					$id,
+					$previous_status
+				)
+			);
+
+			return false;
+		}
+
+		/**
+		 * Fires before a subscription is restored from the trash.
+		 *
+		 * @since 5.2.0
+		 *
+		 * @param int    $subscription_id Subscription ID.
+		 * @param string $previous_status The status of the subscription before it was trashed.
+		 */
+		do_action( 'woocommerce_untrash_subscription', $subscription->get_id(), $previous_status );
+
+		$subscription->set_status( $previous_status );
+		$subscription->save();
+
+		// Was the status successfully restored? Let's clean up the meta and indicate success...
+		if ( 'wc-' . $subscription->get_status() === $previous_status ) {
+			$subscription->delete_meta_data( '_wp_trash_meta_status' );
+			$subscription->delete_meta_data( '_wp_trash_meta_time' );
+			$subscription->delete_meta_data( '_wp_trash_meta_comments_status' );
+			$subscription->save_meta_data();
+
+			$data_synchronizer = wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer::class );
+			if ( $data_synchronizer->data_sync_is_enabled() ) {
+				//The previous $subscription->save() will have forced a sync to the posts table,
+				//this implies that the post status is not "trash" anymore, and thus
+				//wp_untrash_post would do nothing.
+				wp_update_post(
+					array(
+						'ID'          => $id,
+						'post_status' => 'trash',
+					)
+				);
+
+				wp_untrash_post( $id );
+			}
+
+			return true;
+		}
+
+		// ...Or log a warning and bail.
+		wc_get_logger()->warning(
+			sprintf(
+				/* translators: 1: subscription ID, 2: subscription status */
+				__( 'Something went wrong when trying to restore subscription %d from the trash. It could not be restored.', 'woocommerce' ),
+				$id
+			)
+		);
+
+		return false;
+	}
+
+	/**
 	 * Creates a new subscription in the database.
 	 *
 	 * @param \WC_Subscription $subscription Subscription object.
