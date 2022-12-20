@@ -843,7 +843,7 @@ class WC_Subscriptions_Manager {
 		}
 
 		$data_store      = WC_Data_Store::load( 'subscription' );
-		$use_crud_method = method_exists( $data_store, 'untrash_order' );
+		$use_crud_method = method_exists( $data_store, 'has_callable' ) && $data_store->has_callable( 'untrash_order' );
 		$subscriptions   = wcs_get_subscriptions_for_order(
 			$order_id,
 			[
