@@ -1,8 +1,7 @@
 <?php
 /**
- * Post Types Admin
+ * WooCommerce Subscriptions Admin Post Types.
  *
- * @author   Prospress
  * @category Admin
  * @package  WooCommerce Subscriptions/Admin
  * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
