@@ -179,10 +179,7 @@ class WCS_Admin_Meta_Boxes {
 					'retry_renewal_payment_action_warning' => __( "Are you sure you want to retry payment for this renewal order?\n\nThis will attempt to charge the customer and send renewal order emails (if emails are enabled).", 'woocommerce-subscriptions' ),
 				)
 			);
-		}
-
-		// Enqueue the metabox script for coupons.
-		if ( ! wcs_is_woocommerce_pre( '3.2' ) && in_array( $screen_id, array( 'shop_coupon', 'edit-shop_coupon' ), true ) ) {
+		} elseif ( in_array( $screen_id, array( 'shop_coupon', 'edit-shop_coupon' ), true ) ) {
 			wp_enqueue_script(
 				'wcs-admin-coupon-meta-boxes',
 				WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/meta-boxes-coupon.js' ),
