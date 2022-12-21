@@ -675,14 +675,25 @@ class WCS_Admin_Post_Types {
 
 		$date_type_map = array( 'last_payment_date' => 'last_order_date_created' );
 		$date_type     = array_key_exists( $column, $date_type_map ) ? $date_type_map[ $column ] : $column;
+		$date_value    = $subscription->get_time( $date_type, 'site' );
 
 		if ( 0 == $subscription->get_time( $date_type, 'gmt' ) ) {
 			$column_content = '-';
 		} else {
-			$column_content = sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( date( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ), $subscription->get_time( $date_type, 'site' ) ) ), esc_html( $subscription->get_date_to_display( $date_type ) ) );
+			$column_content = sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( date( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ), $date_value ) ), esc_html( $subscription->get_date_to_display( $date_type ) ) );
 
-			if ( 'next_payment_date' == $column && $subscription->payment_method_supports( 'gateway_scheduled_payments' ) && ! $subscription->is_manual() && $subscription->has_status( 'active' ) ) {
-				$column_content .= '<div class="woocommerce-help-tip" data-tip="' . esc_attr__( 'This date should be treated as an estimate only. The payment gateway for this subscription controls when payments are processed.', 'woocommerce-subscriptions' ) . '"></div>';
+			// Custom handling for `Next payment` date column.
+			if ( 'next_payment_date' == $column ) {
+				$subscription_is_active = $subscription->has_status( 'active' );
+
+				// Render icon + tooltip for offsite renewals.
+				if ( $subscription->payment_method_supports( 'gateway_scheduled_payments' ) && ! $subscription->is_manual() && $subscription_is_active ) {
+					$column_content .= '<div class="woocommerce-help-tip" data-tip="' . esc_attr__( 'This date should be treated as an estimate only. The payment gateway for this subscription controls when payments are processed.', 'woocommerce-subscriptions' ) . '"></div>';
+				}
+
+				if ( $subscription_is_active && $date_value < time() ) {
+					$column_content .= '</br><span class="woocommerce-subscriptions-overdue">Payment overdue!</span>';
+				}
 			}
 		}
 

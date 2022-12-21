@@ -44,6 +44,10 @@
 	width: 160px;
 	text-align: left;
 }
+.woocommerce-subscriptions-overdue {
+    color: #c80101;
+    font-weight: 500;
+}
 /* Product List table */
 table.wp-list-table span.product-type.variable-subscription {
 	background-position: -48px 0;
