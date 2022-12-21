@@ -683,7 +683,7 @@ class WCS_Admin_Post_Types {
 			$column_content = sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( date( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ), $date_value ) ), esc_html( $subscription->get_date_to_display( $date_type ) ) );
 
 			// Custom handling for `Next payment` date column.
-			if ( 'next_payment_date' == $column ) {
+			if ( 'next_payment_date' === $column ) {
 				$subscription_is_active = $subscription->has_status( 'active' );
 
 				// Render icon + tooltip for offsite renewals.
@@ -691,7 +691,7 @@ class WCS_Admin_Post_Types {
 					$column_content .= '<div class="woocommerce-help-tip" data-tip="' . esc_attr__( 'This date should be treated as an estimate only. The payment gateway for this subscription controls when payments are processed.', 'woocommerce-subscriptions' ) . '"></div>';
 				}
 
-				if ( $subscription_is_active && $date_value < time() ) {
+				if ( $subscription_is_active && $date_value < gmdate() ) {
 					$column_content .= '</br><span class="woocommerce-subscriptions-overdue">Payment overdue!</span>';
 				}
 			}
