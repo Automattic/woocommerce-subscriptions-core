@@ -129,19 +129,20 @@ class WCS_Admin_Meta_Boxes {
 	 * Print admin styles/scripts
 	 */
 	public function enqueue_styles_scripts() {
-		global $post;
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended
-		$post_id = ! empty( $post ) ? $post->ID : ( isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0 );
-		$ver     = WC_Subscriptions_Core_Plugin::instance()->get_library_version();
+		global $theorder;
 
-		// Get admin screen id
+		// Get admin screen ID.
 		$screen    = get_current_screen();
 		$screen_id = isset( $screen->id ) ? $screen->id : '';
 
-		if ( in_array( $screen_id, array( 'shop_subscription', wcs_get_page_screen_id( 'shop_subscription' ) ), true ) && $post_id ) {
+		// Get the script version.
+		$ver = WC_Subscriptions_Core_Plugin::instance()->get_library_version();
+
+		if ( wcs_get_page_screen_id( 'shop_subscription' ) === $screen_id && wcs_is_subscription( $theorder ) ) {
+			// Declare a subscription variable for clearer use. The $theorder global on edit subscription screens is a subscription.
+			$subscription = $theorder;
 
 			wp_register_script( 'jstz', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/jstz.min.js' ), [], $ver, false );
-
 			wp_register_script( 'momentjs', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/moment.min.js' ), [], $ver, false );
 
 			wp_enqueue_script( 'wcs-admin-meta-boxes-subscription', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/meta-boxes-subscription.js' ), array( 'wc-admin-meta-boxes', 'jstz', 'momentjs' ), $ver, false );
@@ -160,7 +161,7 @@ class WCS_Admin_Meta_Boxes {
 						'i18n_trial_end_next_notice'     => __( 'Please enter a date before the next payment.', 'woocommerce-subscriptions' ),
 						'i18n_end_date_notice'           => __( 'Please enter a date after the next payment.', 'woocommerce-subscriptions' ),
 						'process_renewal_action_warning' => __( "Are you sure you want to process a renewal?\n\nThis will charge the customer and email them the renewal order (if emails are enabled).", 'woocommerce-subscriptions' ),
-						'payment_method'                 => wcs_get_subscription( $post_id )->get_payment_method(),
+						'payment_method'                 => $subscription->get_payment_method(),
 						'search_customers_nonce'         => wp_create_nonce( 'search-customers' ),
 						'get_customer_orders_nonce'      => wp_create_nonce( 'get-customer-orders' ),
 						'is_duplicate_site'              => WCS_Staging::is_duplicate_site(),
