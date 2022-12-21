@@ -8,11 +8,8 @@
  * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 
-use Automattic\WooCommerce\Utilities\OrderUtil;
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-} // Exit if accessed directly
+// Exit if accessed directly
+defined( 'ABSPATH' ) || exit;
 
 if ( class_exists( 'WCS_Admin_Post_Types' ) ) {
 	return;
@@ -623,8 +620,14 @@ class WCS_Admin_Post_Types {
 					$username = trim( $the_subscription->get_billing_first_name() . ' ' . $the_subscription->get_billing_last_name() );
 				}
 
-				// translators: $1: is opening link, $2: is subscription order number, $3: is closing link tag, $4: is user's name
-				$column_content = sprintf( _x( '%1$s#%2$s%3$s for %4$s', 'Subscription title on admin table. (e.g.: #211 for John Doe)', 'woocommerce-subscriptions' ), '<a href="' . esc_url( wc_get_container()->get( OrderUtil::class )->get_order_admin_edit_url( $the_subscription->get_id() ) ) . '">', '<strong>' . esc_attr( $the_subscription->get_order_number() ) . '</strong>', '</a>', $username );
+				$column_content = sprintf(
+					// translators: $1: is opening link, $2: is subscription order number, $3: is closing link tag, $4: is user's name
+					_x( '%1$s#%2$s%3$s for %4$s', 'Subscription title on admin table. (e.g.: #211 for John Doe)', 'woocommerce-subscriptions' ),
+					'<a href="' . esc_url( $the_subscription->get_edit_order_url() ) . '">',
+					'<strong>' . esc_attr( $the_subscription->get_order_number() ) . '</strong>',
+					'</a>',
+					$username
+				);
 
 				$column_content .= '</div>';
 
