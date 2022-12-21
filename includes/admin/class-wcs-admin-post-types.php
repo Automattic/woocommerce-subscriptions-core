@@ -467,39 +467,48 @@ class WCS_Admin_Post_Types {
 	}
 
 	/**
-	 * Output custom columns for subscriptions
-	 * @param string $column
+	 * Outputs column content for the admin subscriptions list table.
+	 *
+	 * @param string   $column       The column name.
+	 * @param WC_Order $subscription Optional. The subscription being displayed. Defaults to the global $post object.
 	 */
-	public function render_shop_subscription_columns( $column, $order = null ) {
-		global $post, $the_subscription, $wp_list_table;
+	public function render_shop_subscription_columns( $column, $subscription = null ) {
+		global $post, $the_subscription;
 
-		if ( ! empty( $order ) && is_a( $order, 'WC_Order' ) ) {
-			$the_subscription = wcs_get_subscription( $order->get_id() );
+		// Attempt to get the subscription ID for the current row from the passed variable or the global $post object.
+		if ( ! empty( $subscription ) ) {
+			$subscription_id = $subscription->get_id();
 		} else {
-			if ( empty( $the_subscription ) || $the_subscription->get_id() != $post->ID ) {
-				$the_subscription = wcs_get_subscription( $post->ID );
-			}
+			$subscription_id = $post->ID;
+		}
+
+		// If we have a subscription ID, set the global $the_subscription object.
+		if ( empty( $the_subscription ) || $the_subscription->get_id() !== $subscription_id ) {
+			$the_subscription = wcs_get_subscription( $subscription_id );
 		}
 
 		// If the subscription failed to load, only display the ID.
 		if ( empty( $the_subscription ) ) {
-			if ( 'order_title' === $column ) {
-				// translators: placeholder is a subscription ID.
-				echo '<strong>' . sprintf( esc_html_x( '#%s', 'hash before subscription number', 'woocommerce-subscriptions' ), esc_html( $post->ID ) ) . '</strong>';
-				?>
-				<div class="wcs-unknown-order-info-wrapper">
-					<a href="https://woocommerce.com/document/subscriptions/store-manager-guide/#section-18">
-						<?php
-						// Translators: Placeholder is a <br> HTML tag.
-						echo wcs_help_tip( sprintf( __( "This subscription couldn't be loaded from the database. %s Click to learn more.", 'woocommerce-subscriptions' ), '</br>' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-						?>
-					</a>
-				</div>
-				<?php
-			} else {
+			if ( 'order_title' !== $column ) {
 				echo '&mdash;';
+				return;
 			}
 
+			// translators: placeholder is a subscription ID.
+			echo '<strong>' . sprintf( esc_html_x( '#%s', 'hash before subscription number', 'woocommerce-subscriptions' ), esc_html( $subscription_id ) ) . '</strong>';
+
+			/**
+			 * Display a help tip to explain why the subscription couldn't be loaded.
+			 *
+			 * Note: The wcs_help_tip() call below is not escaped because it is escaped in the function via wc_help_tip() which uses esc_attr().
+			 */
+			echo sprintf(
+				'<div class="%1$s"><a href="%2$s">%3$s</a></div>',
+				'wcs-unknown-order-info-wrapper',
+				esc_url( 'https://woocommerce.com/document/subscriptions/store-manager-guide/#section-19' ),
+				// translators: Placeholder is a <br> HTML tag.
+				wcs_help_tip( sprintf( __( "This subscription couldn't be loaded from the database. %s Click to learn more.", 'woocommerce-subscriptions' ), '</br>' ) ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			);
 			return;
 		}
 
@@ -507,71 +516,26 @@ class WCS_Admin_Post_Types {
 
 		switch ( $column ) {
 			case 'status':
-				// The status label
-				$column_content = sprintf( '<mark class="subscription-status order-status status-%1$s %1$s tips" data-tip="%2$s"><span>%3$s</span></mark>', sanitize_title( $the_subscription->get_status() ), wcs_get_subscription_status_name( $the_subscription->get_status() ), wcs_get_subscription_status_name( $the_subscription->get_status() ) );
-
-				$post_type_object = get_post_type_object( ! empty( $post->post_type ) ? $post->post_type : $order->get_type() );
-
-				$actions = array();
-
-				$action_url = add_query_arg(
-					array(
-						'post'     => $the_subscription->get_id(),
-						// Using the bulk actions nonce name as defined in WP core.
-						'_wpnonce' => wp_create_nonce( 'bulk-posts' ),
-					)
+				// The status label.
+				$column_content = sprintf(
+					'<mark class="subscription-status order-status status-%1$s %1$s tips" data-tip="%2$s"><span>%2$s</span></mark>',
+					sanitize_title( $the_subscription->get_status() ),
+					wcs_get_subscription_status_name( $the_subscription->get_status() )
 				);
 
-				if ( isset( $_REQUEST['status'] ) ) {
-					$action_url = add_query_arg( array( 'status' => $_REQUEST['status'] ), $action_url );
+				$actions = self::get_subscription_list_table_actions( $the_subscription );
+
+				// Display the subscription quick actions links.
+				$action_links = [];
+				foreach ( $actions as $action_name => $action_url ) {
+					$action_links[] = sprintf(
+						'<span class="%1$s">%2$s</span>',
+						esc_attr( $action_name ),
+						$action_url
+					);
 				}
 
-				$all_statuses = array(
-					'active'    => __( 'Reactivate', 'woocommerce-subscriptions' ),
-					'on-hold'   => __( 'Suspend', 'woocommerce-subscriptions' ),
-					'cancelled' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
-					'trash'     => __( 'Trash', 'woocommerce-subscriptions' ),
-					'deleted'   => __( 'Delete Permanently', 'woocommerce-subscriptions' ),
-				);
-
-				foreach ( $all_statuses as $status => $label ) {
-
-					if ( $the_subscription->can_be_updated_to( $status ) ) {
-
-						if ( in_array( $status, array( 'trash', 'deleted' ) ) ) {
-
-							if ( current_user_can( $post_type_object->cap->delete_post, $the_subscription->get_id() ) ) {
-
-								if ( 'trash' === $the_subscription->get_status() ) {
-									$actions['untrash'] = '<a title="' . esc_attr( __( 'Restore this item from the Trash', 'woocommerce-subscriptions' ) ) . '" href="' . wp_nonce_url( admin_url( sprintf( $post_type_object->_edit_link . '&amp;action=untrash', $post->ID ) ), 'untrash-post_' . $post->ID ) . '">' . __( 'Restore', 'woocommerce-subscriptions' ) . '</a>';
-								} elseif ( EMPTY_TRASH_DAYS ) {
-									$actions['trash'] = '<a class="submitdelete" title="' . esc_attr( __( 'Move this item to the Trash', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $the_subscription->get_id() ) . '">' . __( 'Trash', 'woocommerce-subscriptions' ) . '</a>';
-								}
-
-								if ( 'trash' === $the_subscription->get_status() || ! EMPTY_TRASH_DAYS ) {
-									$actions['delete'] = '<a class="submitdelete" title="' . esc_attr( __( 'Delete this item permanently', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $post->ID, '', true ) . '">' . __( 'Delete Permanently', 'woocommerce-subscriptions' ) . '</a>';
-								}
-							}
-						} else {
-
-							if ( 'cancelled' === $status && 'pending-cancel' === $the_subscription->get_status() ) {
-								$label = __( 'Cancel Now', 'woocommerce-subscriptions' );
-							}
-
-							$actions[ $status ] = sprintf( '<a href="%s">%s</a>', add_query_arg( 'action', $status, $action_url ), $label );
-
-						}
-					}
-				}
-
-				if ( 'pending' === $the_subscription->get_status() ) {
-					unset( $actions['active'] );
-					unset( $actions['trash'] );
-				} elseif ( ! in_array( $the_subscription->get_status(), array( 'cancelled', 'pending-cancel', 'expired', 'switched', 'suspended' ) ) ) {
-					unset( $actions['trash'] );
-				}
-
-				$actions = apply_filters( 'woocommerce_subscription_list_table_actions', $actions, $the_subscription );
+				$column_content .= sprintf( '<div class="row-actions">%s</div>', implode( ' | ', $action_links ) );
 
 				$column_content = apply_filters( 'woocommerce_subscription_list_table_column_status_content', $column_content, $the_subscription, $actions );
 				break;
@@ -1211,6 +1175,79 @@ class WCS_Admin_Post_Types {
 			<option value="<?php echo esc_attr( $user_id ); ?>" selected="selected"><?php echo wp_kses_post( $user_string ); ?></option>
 		</select>
 		<?php
+	}
+
+	/**
+	 * Generates the list of actions available on the Subscriptions list table.
+	 *
+	 * @param WC_Subscription $subscription The subscription to generate the actions for.
+	 * @return array $actions The actions. Array keys are the action names, values are the action link (<a>) tags.
+	 */
+	private function get_subscription_list_table_actions( $subscription ) {
+		$actions = [];
+
+		// We need an instance of the post object type to be able to check user capabilities for status transition actions.
+		$post_type_object = get_post_type_object( $subscription->get_type() );
+
+		$action_url = add_query_arg(
+			array(
+				'post'     => $subscription->get_id(),
+				// Using the bulk actions nonce name as defined in WP core.
+				'_wpnonce' => wp_create_nonce( 'bulk-posts' ),
+			)
+		);
+
+		// HUH?
+		if ( isset( $_REQUEST['status'] ) ) {
+			$action_url = add_query_arg( array( 'status' => $_REQUEST['status'] ), $action_url );
+		}
+
+		$all_statuses = array(
+			'active'    => __( 'Reactivate', 'woocommerce-subscriptions' ),
+			'on-hold'   => __( 'Suspend', 'woocommerce-subscriptions' ),
+			'cancelled' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
+			'trash'     => __( 'Trash', 'woocommerce-subscriptions' ),
+			'deleted'   => __( 'Delete Permanently', 'woocommerce-subscriptions' ),
+		);
+
+		foreach ( $all_statuses as $status => $label ) {
+			if ( ! $subscription->can_be_updated_to( $status ) ) {
+				continue;
+			}
+
+			if ( in_array( $status, array( 'trash', 'deleted' ), true ) ) {
+
+				if ( current_user_can( $post_type_object->cap->delete_post, $subscription->get_id() ) ) {
+
+					if ( 'trash' === $subscription->get_status() ) {
+						$actions['untrash'] = '<a title="' . esc_attr( __( 'Restore this item from the Trash', 'woocommerce-subscriptions' ) ) . '" href="' . wp_nonce_url( admin_url( sprintf( $post_type_object->_edit_link . '&amp;action=untrash', $subscription->get_id() ) ), 'untrash-post_' . $subscription->get_id() ) . '">' . __( 'Restore', 'woocommerce-subscriptions' ) . '</a>';
+					} elseif ( EMPTY_TRASH_DAYS ) {
+						$actions['trash'] = '<a class="submitdelete" title="' . esc_attr( __( 'Move this item to the Trash', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $subscription->get_id() ) . '">' . __( 'Trash', 'woocommerce-subscriptions' ) . '</a>';
+					}
+
+					if ( 'trash' === $subscription->get_status() || ! EMPTY_TRASH_DAYS ) {
+						$actions['delete'] = '<a class="submitdelete" title="' . esc_attr( __( 'Delete this item permanently', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $subscription->get_id(), '', true ) . '">' . __( 'Delete Permanently', 'woocommerce-subscriptions' ) . '</a>';
+					}
+				}
+			} else {
+
+				if ( 'cancelled' === $status && 'pending-cancel' === $subscription->get_status() ) {
+					$label = __( 'Cancel Now', 'woocommerce-subscriptions' );
+				}
+
+				$actions[ $status ] = sprintf( '<a href="%s">%s</a>', add_query_arg( 'action', $status, $action_url ), $label );
+
+			}
+		}
+
+		if ( 'pending' === $subscription->get_status() ) {
+			unset( $actions['active'] );
+			unset( $actions['trash'] );
+		} elseif ( ! in_array( $subscription->get_status(), array( 'cancelled', 'pending-cancel', 'expired', 'switched', 'suspended' ) ) ) {
+			unset( $actions['trash'] );
+		}
+
+		return apply_filters( 'woocommerce_subscription_list_table_actions', $actions, $subscription );
 	}
 
 	/** Deprecated Functions */
