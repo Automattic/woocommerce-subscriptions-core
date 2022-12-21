@@ -1197,11 +1197,6 @@ class WCS_Admin_Post_Types {
 			)
 		);
 
-		// HUH?
-		if ( isset( $_REQUEST['status'] ) ) {
-			$action_url = add_query_arg( array( 'status' => $_REQUEST['status'] ), $action_url );
-		}
-
 		$all_statuses = array(
 			'active'    => __( 'Reactivate', 'woocommerce-subscriptions' ),
 			'on-hold'   => __( 'Suspend', 'woocommerce-subscriptions' ),
