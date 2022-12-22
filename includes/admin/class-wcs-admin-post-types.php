@@ -1164,7 +1164,7 @@ class WCS_Admin_Post_Types {
 		 *
 		 * Note: The nonce verification is not required here because we're populating a filter field, not processing a form.
 		 */
-		if ( empty( $_GET['_customer_user'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! empty( $_GET['_customer_user'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$user_id = absint( $_GET['_customer_user'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$user    = get_user_by( 'id', $user_id );
 
