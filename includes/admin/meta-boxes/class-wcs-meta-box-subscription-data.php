@@ -19,34 +19,32 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 	/**
-	 * Output the metabox
+	 * Outputs the Subscription data metabox.
 	 *
-	 * @param WC_Subscription $order
+	 * @param WC_Subscription|WP_Post $subscription The subscription object to display the data metabox for. On CPT stores, this will be a WP Post object.
 	 */
-	public static function output( $order ) {
+	public static function output( $subscription ) {
 		global $the_subscription;
 
-		if ( $order instanceof WP_Post ) {
-			$order = wc_get_order( $order->ID );
+		if ( $subscription instanceof WP_Post ) {
+			$subscription = wcs_get_subscription( $subscription->ID );
 		}
 
-		if ( ! is_object( $the_subscription ) || $the_subscription->get_id() !== $order->get_id() ) {
-			$the_subscription = $order;
+		if ( ! is_object( $the_subscription ) || $the_subscription->get_id() !== $subscription->get_id() ) {
+			$the_subscription = $subscription;
 		}
-
-		$subscription = $the_subscription;
 
 		self::init_address_fields();
 
 		wp_nonce_field( 'woocommerce_save_data', 'woocommerce_meta_nonce' );
 
-		$order_title = $order->get_data_store()->get_title( $order );
+		$subscription_title = $subscription->get_data_store()->get_title( $subscription );
 		?>
 		<style type="text/css">
 			#post-body-content, #titlediv, #major-publishing-actions, #minor-publishing-actions, #visibility, #submitdiv { display:none }
 		</style>
 		<div class="panel-wrap woocommerce">
-			<input name="post_title" type="hidden" value="<?php echo empty( $order_title ) ? esc_attr( get_post_type_object( $order->get_type() )->labels->singular_name ) : esc_attr( $order_title ); ?>" />
+			<input name="post_title" type="hidden" value="<?php echo empty( $order_title ) ? esc_attr( get_post_type_object( $subscription->get_type() )->labels->singular_name ) : esc_attr( $subscription_title ); ?>" />
 			<input name="post_status" type="hidden" value="<?php echo esc_attr( 'wc-' . $subscription->get_status() ); ?>" />
 			<div id="order_data" class="panel">
 
@@ -330,15 +328,15 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 	}
 
 	/**
-	 * Save meta box data
+	 * Saves the subscription data meta box.
 	 *
 	 * @see woocommerce_process_shop_order_meta
 	 *
-	 * @param int      $order_id
-	 * @param WC_Order $order
+	 * @param int             $subscription_id Subscription ID.
+	 * @param WC_Subscription $subscription Optional. Subscription object. Default null - will be loaded from the ID.
 	 */
-	public static function save( $order_id, $order = null ) {
-		if ( ! wcs_is_subscription( $order_id ) ) {
+	public static function save( $subscription_id, $subscription = null ) {
+		if ( ! wcs_is_subscription( $subscription_id ) ) {
 			return;
 		}
 
@@ -349,7 +347,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 		self::init_address_fields();
 
 		// Get subscription object.
-		$subscription = wcs_get_subscription( $order_id );
+		$subscription = is_a( $subscription, 'WC_Subscription' ) ? $subscription : wcs_get_subscription( $subscription_id );
 		$props        = array();
 
 		// Ensure there is an order key.
@@ -357,7 +355,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 			$props['order_key'] = wcs_generate_order_key();
 		}
 
-		// Update meta
+		// Update customer.
 		$customer_id = isset( $_POST['customer_user'] ) ? absint( $_POST['customer_user'] ) : 0;
 		if ( $customer_id !== $subscription->get_customer_id() ) {
 			$props['customer_id'] = $customer_id;
@@ -400,15 +398,16 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 		$subscription->set_props( $props );
 		$subscription->save();
 
-		// Save the linked parent order id
+		// Save the linked parent order ID.
 		if ( ! empty( $_POST['parent-order-id'] ) ) {
-			// if the parent order to be set is a renewal order
-			if ( wcs_order_contains_renewal( wc_clean( wp_unslash( $_POST['parent-order-id'] ) ) ) ) {
-				// remove renewal meta
-				$parent = wc_get_order( wc_clean( wp_unslash( $_POST['parent-order-id'] ) ) );
+			$parent_order_id = wc_clean( wp_unslash( $_POST['parent-order-id'] ) );
+			// If the parent order to be set is a renewal order.
+			if ( wcs_order_contains_renewal( $parent_order_id ) ) {
+				// remove renewal order meta flag.
+				$parent = wc_get_order( $parent_order_id );
 				wcs_delete_objects_property( $parent, 'subscription_renewal' );
 			}
-			$subscription->set_parent_id( wc_clean( wp_unslash( $_POST['parent-order-id'] ) ) );
+			$subscription->set_parent_id( $parent_order_id );
 			// translators: %s: parent order number (linked to its details screen).
 			$subscription->add_order_note( sprintf( _x( 'Subscription linked to parent order %s via admin.', 'subscription note after linking to a parent order', 'woocommerce-subscriptions' ), sprintf( '<a href="%1$s">#%2$s</a> ', esc_url( wcs_get_edit_post_link( $subscription->get_parent_id() ) ), $subscription->get_parent()->get_order_number() ) ), false, true );
 			$subscription->save();
@@ -441,6 +440,6 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 			do_action( 'woocommerce_admin_created_subscription', $subscription );
 		}
 
-		do_action( 'woocommerce_process_shop_subscription_meta', $order_id, $order );
+		do_action( 'woocommerce_process_shop_subscription_meta', $subscription_id, $subscription );
 	}
 }

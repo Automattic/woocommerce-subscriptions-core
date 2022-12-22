@@ -264,7 +264,8 @@ class WCS_Admin_Post_Types {
 		 * Get the status that the list table is being filtered by.
 		 * The 'post_status' key is used for CPT datastores, 'status' is used for HPOS datastores.
 		 *
-		 * Note: The nonce check is ignored below as there is no nonce value provided on status filter requests.
+		 * Note: The nonce check is ignored below as there is no nonce provided on status filter requests and it's not necessary
+		 * because we're filtering an admin screen, not processing or acting on the data.
 		 */
 		$post_status = sanitize_key( wp_unslash( $_GET['post_status'] ?? $_GET['status'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
@@ -500,7 +501,7 @@ class WCS_Admin_Post_Types {
 			/**
 			 * Display a help tip to explain why the subscription couldn't be loaded.
 			 *
-			 * Note: The wcs_help_tip() call below is not escaped because it is escaped in the function via wc_help_tip() which uses esc_attr().
+			 * Note: The wcs_help_tip() call below is not escaped here because the contents of the tip is escaped in the function via wc_help_tip() which uses esc_attr().
 			 */
 			echo sprintf(
 				'<div class="%1$s"><a href="%2$s">%3$s</a></div>',
@@ -1146,11 +1147,11 @@ class WCS_Admin_Post_Types {
 			$order_type = isset( $GLOBALS['typenow'] ) ? $GLOBALS['typenow'] : '';
 		}
 
-		// Prior to WC 3.3 this was handled by WC core so exit early if an earlier version of WC is active.
-		if ( 'shop_subscription' !== $order_type || wcs_is_woocommerce_pre( '3.3' ) ) {
+		if ( 'shop_subscription' !== $order_type ) {
 			return;
 		}
-		// When HPOS is enabled WC displays the customer filter so this doesn't need to be duplicated.
+
+		// When HPOS is enabled, WC displays the customer filter so this doesn't need to be duplicated.
 		if ( wcs_is_custom_order_tables_usage_enabled() ) {
 			return;
 		}
@@ -1158,8 +1159,13 @@ class WCS_Admin_Post_Types {
 		$user_string = '';
 		$user_id     = '';
 
-		if ( ! empty( $_GET['_customer_user'] ) ) {
-			$user_id = absint( $_GET['_customer_user'] );
+		/**
+		 * If the user is being filtered, get the user object and set the user string.
+		 *
+		 * Note: The nonce verification is not required here because we're populating a filter field, not processing a form.
+		 */
+		if ( empty( $_GET['_customer_user'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$user_id = absint( $_GET['_customer_user'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$user    = get_user_by( 'id', $user_id );
 
 			$user_string = sprintf(
