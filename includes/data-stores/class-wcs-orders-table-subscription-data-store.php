@@ -348,7 +348,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 			wc_get_logger()->warning(
 				sprintf(
 					/* translators: 1: subscription ID, 2: subscription status */
-					__( 'Subscription %1$d cannot be restored from the trash: it has already been restored to status "%2$s".', 'woocommerce' ),
+					__( 'Subscription %1$d cannot be restored from the trash: it has already been restored to status "%2$s".', 'woocommerce-subscriptions' ),
 					$id,
 					$status
 				)
@@ -366,7 +366,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 			wc_get_logger()->warning(
 				sprintf(
 					/* translators: 1: subscription ID, 2: subscription status */
-					__( 'The previous status of subscription %1$d ("%2$s") is invalid. It has been restored to "pending" status instead.', 'woocommerce' ),
+					__( 'The previous status of subscription %1$d ("%2$s") is invalid. It has been restored to "pending" status instead.', 'woocommerce-subscriptions' ),
 					$id,
 					$previous_status
 				)
@@ -378,7 +378,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 			wc_get_logger()->warning(
 				sprintf(
 					/* translators: 1: subscription ID, 2: subscription status */
-					__( 'The previous status of subscription %1$d ("%2$s") is invalid. It could not be restored.', 'woocommerce' ),
+					__( 'The previous status of subscription %1$d ("%2$s") is invalid. It could not be restored.', 'woocommerce-subscriptions' ),
 					$id,
 					$previous_status
 				)
@@ -429,7 +429,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 		wc_get_logger()->warning(
 			sprintf(
 				/* translators: 1: subscription ID, 2: subscription status */
-				__( 'Something went wrong when trying to restore subscription %d from the trash. It could not be restored.', 'woocommerce' ),
+				__( 'Something went wrong when trying to restore subscription %d from the trash. It could not be restored.', 'woocommerce-subscriptions' ),
 				$id
 			)
 		);
