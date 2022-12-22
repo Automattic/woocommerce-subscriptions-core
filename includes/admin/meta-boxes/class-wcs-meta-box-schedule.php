@@ -38,8 +38,8 @@ class WCS_Meta_Box_Schedule {
 	 *
 	 * @see woocommerce_process_shop_order_meta
 	 *
-	 * @param int             $subscription_id The subscription ID to save the schedule for.
-	 * @param WC_Subscription $subscription The subscription object to save the schedule for.
+	 * @param int                     $subscription_id The subscription ID to save the schedule for.
+	 * @param WC_Subscription/WP_Post $subscription    The subscription object to save the schedule for.
 	 */
 	public static function save( $subscription_id, $subscription ) {
 
@@ -49,6 +49,10 @@ class WCS_Meta_Box_Schedule {
 
 		if ( empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( wc_clean( wp_unslash( $_POST['woocommerce_meta_nonce'] ) ), 'woocommerce_save_data' ) ) {
 			return;
+		}
+
+		if ( $subscription instanceof WP_Post ) {
+			$subscription = wcs_get_subscription( $subscription->ID );
 		}
 
 		if ( isset( $_POST['_billing_interval'] ) ) {
