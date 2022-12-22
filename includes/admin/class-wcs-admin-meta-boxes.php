@@ -131,6 +131,11 @@ class WCS_Admin_Meta_Boxes {
 	public function enqueue_styles_scripts() {
 		global $theorder;
 
+		// If $theorder is empty, fallback to using the global post object.
+		if ( empty( $theorder ) && ! empty( $GLOBALS['post']->ID ) ) {
+			$theorder = wcs_get_subscription( $GLOBALS['post']->ID );
+		}
+
 		// Get admin screen ID.
 		$screen    = get_current_screen();
 		$screen_id = isset( $screen->id ) ? $screen->id : '';
