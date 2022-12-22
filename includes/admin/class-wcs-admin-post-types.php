@@ -470,15 +470,15 @@ class WCS_Admin_Post_Types {
 	/**
 	 * Outputs column content for the admin subscriptions list table.
 	 *
-	 * @param string   $column       The column name.
-	 * @param WC_Order $subscription Optional. The subscription being displayed. Defaults to the global $post object.
+	 * @param string       $column       The column name.
+	 * @param WC_Order|int $subscription Optional. The subscription being displayed. Defaults to the global $post object.
 	 */
 	public function render_shop_subscription_columns( $column, $subscription = null ) {
 		global $post, $the_subscription;
 
 		// Attempt to get the subscription ID for the current row from the passed variable or the global $post object.
 		if ( ! empty( $subscription ) ) {
-			$subscription_id = $subscription->get_id();
+			$subscription_id = is_int( $subscription ) ? $subscription : $subscription->get_id();
 		} else {
 			$subscription_id = $post->ID;
 		}
