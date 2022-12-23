@@ -439,8 +439,8 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 * Initializes the subscription based on data received from the database.
 	 *
 	 * @param WC_Abstract_Order $subscription      The subscription object.
-	 * @param int              $subscription_id   The subscription's ID.
-	 * @param stdClass         $subscription_data All the subscription's data, retrieved from the database.
+	 * @param int               $subscription_id   The subscription's ID.
+	 * @param stdClass          $subscription_data All the subscription's data, retrieved from the database.
 	 */
 	protected function init_order_record( \WC_Abstract_Order &$subscription, int $subscription_id, \stdClass $subscription_data ) {
 		// Call the parent version of this function which will set all the core order properties that a subscription inherits.
