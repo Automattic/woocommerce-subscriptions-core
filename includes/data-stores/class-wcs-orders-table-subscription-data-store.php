@@ -436,21 +436,27 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Sets subscription properties based on data received from the database.
+	 * Initializes the subscription based on data received from the database.
 	 *
-	 * @param WC_Subscription $subscription      The subscription object.
-	 * @param object          $subscription_data All the subscription's data, retrieved from the database.
+	 * @param WC_Abstract_Order $subscription      The subscription object.
+	 * @param int              $subscription_id   The subscription's ID.
+	 * @param stdClass         $subscription_data All the subscription's data, retrieved from the database.
 	 */
-	protected function set_order_props_from_data( &$subscription, $subscription_data ) {
+	protected function init_order_record( \WC_Abstract_Order &$subscription, int $subscription_id, \stdClass $subscription_data ) {
 		// Call the parent version of this function which will set all the core order properties that a subscription inherits.
-		parent::set_order_props_from_data( $subscription, $subscription_data );
+		parent::init_order_record( $subscription, $subscription_id, $subscription_data );
 
 		if ( empty( $subscription_data->meta_data ) ) {
 			return;
 		}
 
+		// Flag the subscription as still being read from the database while we set our subscription properties.
+		$subscription->set_object_read( false );
+
 		// Set subscription specific properties that we store in meta.
-		$meta_data = wp_list_pluck( $subscription_data->meta_data, 'meta_value', 'meta_key' );
+		$meta_data    = wp_list_pluck( $subscription_data->meta_data, 'meta_value', 'meta_key' );
+		$dates_to_set = [];
+		$props_to_set = [];
 
 		foreach ( $this->subscription_meta_keys_to_props as $meta_key => $prop_key ) {
 			$is_scheduled_date = 0 === strpos( $prop_key, 'schedule' );
@@ -478,8 +484,15 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 			}
 		}
 
-		$subscription->update_dates( $dates_to_set );
+		// Set the dates and props.
+		if ( $dates_to_set ) {
+			$subscription->update_dates( $dates_to_set );
+		}
+
 		$subscription->set_props( $props_to_set );
+
+		// Flag the subscription as read.
+		$subscription->set_object_read( true );
 	}
 
 	/**
