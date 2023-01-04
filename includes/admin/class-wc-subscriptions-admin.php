@@ -111,10 +111,12 @@ class WC_Subscriptions_Admin {
 
 		add_action( 'woocommerce_admin_field_informational', __CLASS__ . '::add_informational_admin_field' );
 
+		// Filter Orders list table.
 		add_filter( 'posts_where', array( __CLASS__, 'filter_orders' ) );
+		add_filter( 'woocommerce_shop_order_list_table_prepare_items_query_args', [ __CLASS__, 'filter_orders_table_by_related_orders' ] );
 
+		// Filter get_posts used by Subscription Reports.
 		add_filter( 'posts_where', array( __CLASS__, 'filter_orders_and_subscriptions_from_list' ) );
-
 		add_filter( 'posts_where', array( __CLASS__, 'filter_paid_subscription_orders_for_user' ) );
 
 		add_action( 'admin_notices', __CLASS__ . '::display_renewal_filter_notice' );
@@ -1351,6 +1353,31 @@ class WC_Subscriptions_Admin {
 		}
 
 		return $where;
+	}
+
+	/**
+	 * Filter the Orders Table in HPOS to show only orders associated with a specific subscription.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param array $query_vars
+	 *
+	 * @return array
+	 */
+	public static function filter_orders_table_by_related_orders( $query_vars ) {
+		if ( ! ( is_admin() && isset( $_GET['_subscription_related_orders'] ) && $_GET['_subscription_related_orders'] > 0 ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return $query_vars;
+		}
+
+		$subscription = wcs_get_subscription( absint( $_GET['_subscription_related_orders'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		if ( ! wcs_is_subscription( $subscription ) ) {
+			$query_vars['post__in'] = [ 0 ];
+		} else {
+			$query_vars['post__in'] = array_unique( $subscription->get_related_orders( 'ids' ) );
+		}
+
+		return $query_vars;
 	}
 
 	/**
