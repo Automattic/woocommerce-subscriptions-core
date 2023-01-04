@@ -1484,7 +1484,6 @@ class WC_Subscriptions_Admin {
 	 * @see self::filter_orders()
 	 */
 	public static function display_renewal_filter_notice() {
-		$query_arg      = '_subscription_related_orders';
 		$is_hpos_in_use = wcs_is_custom_order_tables_usage_enabled();
 
 		// When HPOS is enabled, we can't use the $found_related_orders static variable to determine if the list is filtered or not.
@@ -1492,17 +1491,16 @@ class WC_Subscriptions_Admin {
 			return;
 		}
 
-		if ( isset( $_GET[ $query_arg ] ) && $_GET[ $query_arg ] > 0 ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-
-			$initial_order = wc_get_order( absint( $_GET[ $query_arg ] ) );
+		if ( isset( $_GET['_subscription_related_orders'] ) && $_GET['_subscription_related_orders'] > 0 ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$initial_order = wc_get_order( absint( $_GET['_subscription_related_orders'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 			echo '<div class="updated dismiss-subscriptions-search"><p>';
 			// translators: placeholders are opening link tag, ID of sub, and closing link tag
-			printf( esc_html__( 'Showing orders for %1$sSubscription %2$s%3$s', 'woocommerce-subscriptions' ), '<a href="' . esc_url( get_edit_post_link( absint( $_GET[ $query_arg ] ) ) ) . '">', esc_html( $initial_order->get_order_number() ), '</a>' );
+			printf( esc_html__( 'Showing orders for %1$sSubscription %2$s%3$s', 'woocommerce-subscriptions' ), '<a href="' . esc_url( get_edit_post_link( absint( $_GET['_subscription_related_orders'] ) ) ) . '">', esc_html( $initial_order->get_order_number() ), '</a>' ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			echo '</p>';
 			printf(
 				'<a href="%1$s" class="notice-dismiss"><span class="screen-reader-text">Dismiss this notice.</span></a>',
-				esc_url( remove_query_arg( $query_arg ) )
+				esc_url( remove_query_arg( '_subscription_related_orders' ) )
 			);
 
 			echo '</div>';
