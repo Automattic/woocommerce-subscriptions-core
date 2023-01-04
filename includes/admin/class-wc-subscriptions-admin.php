@@ -1484,9 +1484,15 @@ class WC_Subscriptions_Admin {
 	 * @see self::filter_orders()
 	 */
 	public static function display_renewal_filter_notice() {
-		$query_arg = '_subscription_related_orders';
+		$query_arg      = '_subscription_related_orders';
+		$is_hpos_in_use = wcs_is_custom_order_tables_usage_enabled();
 
-		if ( isset( $_GET[ $query_arg ] ) && $_GET[ $query_arg ] > 0 && true === self::$found_related_orders ) {
+		// When HPOS is enabled, we can't use the $found_related_orders static variable to determine if the list is filtered or not.
+		if ( ! $is_hpos_in_use && ! self::$found_related_orders ) {
+			return;
+		}
+
+		if ( isset( $_GET[ $query_arg ] ) && $_GET[ $query_arg ] > 0 ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 			$initial_order = wc_get_order( absint( $_GET[ $query_arg ] ) );
 
