@@ -1484,34 +1484,20 @@ class WC_Subscriptions_Admin {
 	 * @see self::filter_orders()
 	 */
 	public static function display_renewal_filter_notice() {
-
-		global $wp_version;
-
 		$query_arg = '_subscription_related_orders';
 
 		if ( isset( $_GET[ $query_arg ] ) && $_GET[ $query_arg ] > 0 && true === self::$found_related_orders ) {
 
 			$initial_order = wc_get_order( absint( $_GET[ $query_arg ] ) );
 
-			if ( version_compare( $wp_version, '4.2', '<' ) ) {
-				echo '<div class="updated"><p>';
-				printf(
-					'<a href="%1$s" class="close-subscriptions-search">&times;</a>',
-					esc_url( remove_query_arg( $query_arg ) )
-				);
-				// translators: placeholders are opening link tag, ID of sub, and closing link tag
-				printf( esc_html__( 'Showing orders for %1$sSubscription %2$s%3$s', 'woocommerce-subscriptions' ), '<a href="' . esc_url( get_edit_post_link( absint( $_GET[ $query_arg ] ) ) ) . '">', esc_html( $initial_order->get_order_number() ), '</a>' );
-				echo '</p>';
-			} else {
-				echo '<div class="updated dismiss-subscriptions-search"><p>';
-				// translators: placeholders are opening link tag, ID of sub, and closing link tag
-				printf( esc_html__( 'Showing orders for %1$sSubscription %2$s%3$s', 'woocommerce-subscriptions' ), '<a href="' . esc_url( get_edit_post_link( absint( $_GET[ $query_arg ] ) ) ) . '">', esc_html( $initial_order->get_order_number() ), '</a>' );
-				echo '</p>';
-				printf(
-					'<a href="%1$s" class="notice-dismiss"><span class="screen-reader-text">Dismiss this notice.</span></a>',
-					esc_url( remove_query_arg( $query_arg ) )
-				);
-			}
+			echo '<div class="updated dismiss-subscriptions-search"><p>';
+			// translators: placeholders are opening link tag, ID of sub, and closing link tag
+			printf( esc_html__( 'Showing orders for %1$sSubscription %2$s%3$s', 'woocommerce-subscriptions' ), '<a href="' . esc_url( get_edit_post_link( absint( $_GET[ $query_arg ] ) ) ) . '">', esc_html( $initial_order->get_order_number() ), '</a>' );
+			echo '</p>';
+			printf(
+				'<a href="%1$s" class="notice-dismiss"><span class="screen-reader-text">Dismiss this notice.</span></a>',
+				esc_url( remove_query_arg( $query_arg ) )
+			);
 
 			echo '</div>';
 		}
