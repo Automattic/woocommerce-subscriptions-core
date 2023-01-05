@@ -1486,7 +1486,7 @@ class WC_Subscriptions_Admin {
 	public static function display_renewal_filter_notice() {
 		$is_hpos_in_use = wcs_is_custom_order_tables_usage_enabled();
 
-		// When HPOS is enabled, we can't use the $found_related_orders static variable to determine if the list is filtered or not.
+		// When HPOS is disabled, use the $found_related_orders static variable to determine if the Orders list is filtered or not.
 		if ( ! $is_hpos_in_use && ! self::$found_related_orders ) {
 			return;
 		}
