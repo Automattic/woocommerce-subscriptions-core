@@ -1492,11 +1492,21 @@ class WC_Subscriptions_Admin {
 		}
 
 		if ( isset( $_GET['_subscription_related_orders'] ) && $_GET['_subscription_related_orders'] > 0 ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$initial_order = wc_get_order( absint( $_GET['_subscription_related_orders'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$subscription_id = absint( $_GET['_subscription_related_orders'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$subscription    = wcs_get_subscription( $subscription_id );
+
+			// Display an error notice if we can't find the subscription.
+			if ( ! $subscription ) {
+				echo '<div id="moderated" class="error"><p>';
+				// translators: placeholder is a subscription ID.
+				printf( esc_html__( 'We can\'t find a subscription with ID #%d. Perhaps it was deleted?', 'woocommerce-subscriptions' ), esc_html( $subscription_id ) );
+				echo '</p></div>';
+				return;
+			}
 
 			echo '<div class="updated dismiss-subscriptions-search"><p>';
 			// translators: placeholders are opening link tag, ID of sub, and closing link tag
-			printf( esc_html__( 'Showing orders for %1$sSubscription %2$s%3$s', 'woocommerce-subscriptions' ), '<a href="' . esc_url( wcs_get_edit_post_link( absint( $_GET['_subscription_related_orders'] ) ) ) . '">', esc_html( $subscription->get_order_number() ), '</a>' ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			printf( esc_html__( 'Showing orders for %1$sSubscription %2$s%3$s', 'woocommerce-subscriptions' ), '<a href="' . esc_url( wcs_get_edit_post_link( $subscription ) ) . '">', esc_html( $subscription->get_order_number() ), '</a>' );
 			echo '</p>';
 			printf(
 				'<a href="%1$s" class="notice-dismiss"><span class="screen-reader-text">Dismiss this notice.</span></a>',
