@@ -583,20 +583,16 @@ function wcs_get_subscriptions_for_product( $product_ids, $fields = 'ids', $args
 	$offset = ( $args['limit'] > 0 && $args['offset'] > 0 ) ? $wpdb->prepare( 'OFFSET %d', $args['offset'] ) : '';
 	$where  = implode( ' AND ', $where );
 
+	// @codingStandardsIgnoreStart
 	$subscription_ids = $wpdb->get_col(
-		$wpdb->prepare(
-			"SELECT DISTINCT order_items.order_id
-			FROM {$wpdb->prefix}woocommerce_order_items as order_items
-			LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS itemmeta ON order_items.order_item_id = itemmeta.order_item_id
-			LEFT JOIN {$wpdb->prefix}%s AS orders ON order_items.order_id = orders.%s
-			WHERE {$where}
-			ORDER BY order_items.order_id %d %d",
-			$orders_table_name,
-			$orders_id_column_name,
-			$limit,
-			$offset,
-		)
+		"SELECT DISTINCT order_items.order_id
+		FROM {$wpdb->prefix}woocommerce_order_items as order_items
+		LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS itemmeta ON order_items.order_item_id = itemmeta.order_item_id
+		LEFT JOIN {$wpdb->prefix}{$orders_table_name} AS orders ON order_items.order_id = orders.{$orders_id_column_name}
+		WHERE {$where}
+		ORDER BY order_items.order_id {$limit} {$offset}",
 	);
+	// @codingStandardsIgnoreEnd
 
 	$subscriptions = [];
 
