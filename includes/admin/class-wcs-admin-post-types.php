@@ -862,7 +862,7 @@ class WCS_Admin_Post_Types {
 	 * @return array $query_args
 	 */
 	public function add_subscription_list_table_query_default_args( $query_args ) {
-		if ( empty( $query_args['status'] ) ) {
+		if ( empty( $query_args['status'] ) || ( isset( $_GET['status'] ) && 'all' === $_GET['status'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$query_args['status'] = array_keys( wcs_get_subscription_statuses() );
 		}
 
