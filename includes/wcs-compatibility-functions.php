@@ -665,6 +665,8 @@ function wcs_get_page_screen_id( $object_type ) {
  *
  * This function is a compatibility wrapper for woocommerce_wp_select() which introduced the second parameter necessary for working with HPOS in WC 6.9.0.
  *
+ * @since 5.2.0
+ *
  * @param array   $field_args Field data.
  * @param WC_Data $object     The WC object to get the field value from. Only used in WC 6.9.0+. On older versions of WC, the value is fetched from the global $post object.
  */
