@@ -778,7 +778,7 @@ class WCS_Admin_Post_Types {
 	}
 
 	/**
-	 * Filters and sorting handler for Subscriptions stored WP Post tables.
+	 * Filters and sorts the request for subscriptions stored in WP Post tables.
 	 *
 	 * @param array $vars
 	 *
