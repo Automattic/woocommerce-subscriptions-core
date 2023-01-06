@@ -936,19 +936,22 @@ class WCS_Admin_Post_Types {
 			return $request_query;
 		}
 
-		if ( '_manual_renewal' === trim( $_GET['_payment_method'] ) ) {
+		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
 			$query_vars = [
-				'type'       => 'shop_subscription',
-				'limit'      => -1,
-				'status'     => 'any',
-				'return'     => 'ids',
-				'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-					[
-						'key'   => '_requires_manual_renewal',
-						'value' => 'true',
-					],
-				],
+				'type'   => 'shop_subscription',
+				'limit'  => -1,
+				'status' => 'any',
+				'return' => 'ids',
 			];
+
+			if ( '_manual_renewal' === trim( $_GET['_payment_method'] ) ) {
+				$query_vars['meta_query'][] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					'key'   => '_requires_manual_renewal',
+					'value' => 'true',
+				];
+			} else {
+				$query_vars['payment_method'] = wc_clean( wp_unslash( $_GET['_payment_method'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			}
 
 			// If there are already set post restrictions (post__in) apply them to this query
 			if ( isset( $request_query['post__in'] ) ) {
@@ -957,6 +960,12 @@ class WCS_Admin_Post_Types {
 
 			$subscription_ids = wcs_get_orders_with_meta_query( $query_vars );
 			$request_query    = self::set_post__in_query_var( $request_query, $subscription_ids );
+
+		} elseif ( '_manual_renewal' === trim( wc_clean( wp_unslash( $_GET['_payment_method'] ) ) ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$request_query['meta_query'][] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				'key'   => '_requires_manual_renewal',
+				'value' => 'true',
+			];
 		} else {
 			$request_query['payment_method'] = wc_clean( wp_unslash( $_GET['_payment_method'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		}
