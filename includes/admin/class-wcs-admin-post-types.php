@@ -937,38 +937,31 @@ class WCS_Admin_Post_Types {
 		}
 
 		if ( '_manual_renewal' === trim( $_GET['_payment_method'] ) ) {
-			$meta_query = array(
-				array(
-					'key'   => '_requires_manual_renewal',
-					'value' => 'true',
-				),
-			);
+			$query_vars = [
+				'type'       => 'shop_subscription',
+				'limit'      => -1,
+				'status'     => 'any',
+				'return'     => 'ids',
+				'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					[
+						'key'   => '_requires_manual_renewal',
+						'value' => 'true',
+					],
+				],
+			];
+
+			// If there are already set post restrictions (post__in) apply them to this query
+			if ( isset( $request_query['post__in'] ) ) {
+				$query_vars['post__in'] = $request_query['post__in'];
+			}
+
+			$subscription_ids = wcs_get_orders_with_meta_query( $query_vars );
+			$request_query    = self::set_post__in_query_var( $request_query, $subscription_ids );
 		} else {
-			$payment_gateway_filter = ( 'none' == $_GET['_payment_method'] ) ? '' : $_GET['_payment_method'];
-			$meta_query             = array(
-				array(
-					'key'   => '_payment_method',
-					'value' => $payment_gateway_filter,
-				),
-			);
+			$request_query['payment_method'] = wc_clean( wp_unslash( $_GET['_payment_method'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		}
 
-		$query_vars = array(
-			'type'       => 'shop_subscription',
-			'limit'      => -1,
-			'status'     => 'any',
-			'return'     => 'ids',
-			'meta_query' => $meta_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-		);
-
-		// If there are already set post restrictions (post__in) apply them to this query
-		if ( isset( $request_query['post__in'] ) ) {
-			$query_vars['post__in'] = $request_query['post__in'];
-		}
-
-		$subscription_ids = wcs_get_orders_with_meta_query( $query_vars );
-
-		return self::set_post__in_query_var( $request_query, $subscription_ids );
+		return $request_query;
 	}
 
 	/**
