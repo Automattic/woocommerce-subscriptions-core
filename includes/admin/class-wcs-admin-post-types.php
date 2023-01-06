@@ -59,6 +59,7 @@ class WCS_Admin_Post_Types {
 		// Subscription order/filter
 		add_filter( 'request', array( $this, 'request_query' ) );
 		add_filter( 'woocommerce_shop_subscription_list_table_request', array( $this, 'add_subscription_list_table_query_default_args' ) );
+		add_filter( 'woocommerce_shop_subscription_list_table_prepare_items_query_args', array( $this, 'filter_subscription_list_table_request_query' ) );
 
 		// Subscription Search
 		add_filter( 'get_search_query', array( $this, 'shop_subscription_search_label' ) );
@@ -831,6 +832,23 @@ class WCS_Admin_Post_Types {
 		}
 
 		return $vars;
+	}
+
+	/**
+	 * Filters the List Table request for Subscriptions stored in HPOS.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param array $request_query The query args sent to wc_get_orders().
+	 *
+	 * @return array $request_query
+	 */
+	public function filter_subscription_list_table_request_query( $request_query ) {
+		$request_query = $this->set_filter_by_customer_query( $request_query );
+		$request_query = $this->set_filter_by_product_query( $request_query );
+		$request_query = $this->set_filter_by_payment_method_query( $request_query );
+
+		return $request_query;
 	}
 
 	/**
