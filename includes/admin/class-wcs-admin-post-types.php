@@ -777,9 +777,10 @@ class WCS_Admin_Post_Types {
 	}
 
 	/**
-	 * Filters and sorting handler
+	 * Filters and sorting handler for Subscriptions stored WP Post tables.
 	 *
-	 * @param  array $vars
+	 * @param array $vars
+	 *
 	 * @return array
 	 */
 	public function request_query( $vars ) {
