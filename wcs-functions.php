@@ -556,9 +556,15 @@ function wcs_get_subscriptions_for_product( $product_ids, $fields = 'ids', $args
 	$args['limit']               = (int) $args['limit'];
 	$args['offset']              = (int) $args['offset'];
 
+	// Set variables to be used in the DB query based on whether HPOS is enabled or not.
+	$is_hpos_in_use          = wcs_is_custom_order_tables_usage_enabled();
+	$orders_table_name       = $is_hpos_in_use ? 'wc_orders' : 'posts';
+	$orders_type_column_name = $is_hpos_in_use ? 'type' : 'post_type';
+	$orders_id_column_name   = $is_hpos_in_use ? 'id' : 'ID';
+
 	// Start to build the query WHERE array.
 	$where = array(
-		"posts.post_type = 'shop_subscription'",
+		"orders.{$orders_type_column_name} = 'shop_subscription'",
 		"itemmeta.meta_key IN ( '_variation_id', '_product_id' )",
 		"order_items.order_item_type = 'line_item'",
 	);
@@ -578,12 +584,18 @@ function wcs_get_subscriptions_for_product( $product_ids, $fields = 'ids', $args
 	$where  = implode( ' AND ', $where );
 
 	$subscription_ids = $wpdb->get_col(
-		"SELECT DISTINCT order_items.order_id
-		FROM {$wpdb->prefix}woocommerce_order_items as order_items
-		LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS itemmeta ON order_items.order_item_id = itemmeta.order_item_id
-		LEFT JOIN {$wpdb->posts} AS posts ON order_items.order_id = posts.ID
-		WHERE {$where}
-		ORDER BY order_items.order_id {$limit} {$offset}"
+		$wpdb->prepare(
+			"SELECT DISTINCT order_items.order_id
+			FROM {$wpdb->prefix}woocommerce_order_items as order_items
+			LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS itemmeta ON order_items.order_item_id = itemmeta.order_item_id
+			LEFT JOIN {$wpdb->prefix}%s AS orders ON order_items.order_id = orders.%s
+			WHERE {$where}
+			ORDER BY order_items.order_id %d %d",
+			$orders_table_name,
+			$orders_id_column_name,
+			$limit,
+			$offset,
+		)
 	);
 
 	$subscriptions = array();
