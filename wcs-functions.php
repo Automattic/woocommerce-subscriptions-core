@@ -542,7 +542,7 @@ function wcs_get_subscriptions( $args ) {
  * @return array
  * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
-function wcs_get_subscriptions_for_product( $product_ids, $fields = 'ids', $args = array() ) {
+function wcs_get_subscriptions_for_product( $product_ids, $fields = 'ids', $args = [] ) {
 	global $wpdb;
 
 	$args = wp_parse_args( $args, array(
@@ -563,11 +563,11 @@ function wcs_get_subscriptions_for_product( $product_ids, $fields = 'ids', $args
 	$orders_id_column_name   = $is_hpos_in_use ? 'id' : 'ID';
 
 	// Start to build the query WHERE array.
-	$where = array(
+	$where = [
 		"orders.{$orders_type_column_name} = 'shop_subscription'",
 		"itemmeta.meta_key IN ( '_variation_id', '_product_id' )",
 		"order_items.order_item_type = 'line_item'",
-	);
+	];
 
 	$product_ids = implode( "', '", array_map( 'absint', array_unique( array_filter( (array) $product_ids ) ) ) );
 	$where[]     = sprintf( "itemmeta.meta_value IN ( '%s' )", $product_ids );
@@ -598,7 +598,7 @@ function wcs_get_subscriptions_for_product( $product_ids, $fields = 'ids', $args
 		)
 	);
 
-	$subscriptions = array();
+	$subscriptions = [];
 
 	foreach ( $subscription_ids as $post_id ) {
 		$subscriptions[ $post_id ] = ( 'ids' !== $fields ) ? wcs_get_subscription( $post_id ) : $post_id;
