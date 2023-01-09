@@ -30,6 +30,13 @@ class WCS_Meta_Box_Schedule {
 			$the_subscription = wcs_get_subscription( $post->ID );
 		}
 
+		/**
+		 * If the subscription has no start date, it's a new subscription and we need to get the subscription object again to get the start date.
+		 */
+		if ( 0 === $subscription->get_time( 'start' ) ) {
+			$the_subscription = wcs_get_subscription( $the_subscription->get_id() );
+		}
+
 		include dirname( __FILE__ ) . '/views/html-subscription-schedule.php';
 	}
 
