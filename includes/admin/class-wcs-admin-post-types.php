@@ -862,6 +862,9 @@ class WCS_Admin_Post_Types {
 	 * @return array $query_args
 	 */
 	public function add_subscription_list_table_query_default_args( $query_args ) {
+		/**
+		 * Note this request isn't nonced as we're only filtering a list table by status and not modifying data.
+		 */
 		if ( empty( $query_args['status'] ) || ( isset( $_GET['status'] ) && 'all' === $_GET['status'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$query_args['status'] = array_keys( wcs_get_subscription_statuses() );
 		}
@@ -880,6 +883,9 @@ class WCS_Admin_Post_Types {
 	 * @return array $request_query
 	 */
 	private function set_filter_by_customer_query( $request_query ) {
+		/**
+		 * Note this request isn't nonced as we're only filtering a list table and not modifying data.
+		 */
 		if ( ! isset( $_GET['_customer_user'] ) || ! $_GET['_customer_user'] > 0 ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return $request_query;
 		}
@@ -905,6 +911,9 @@ class WCS_Admin_Post_Types {
 	 * @return array $request_query
 	 */
 	private function set_filter_by_product_query( $request_query ) {
+		/**
+		 * Note this request isn't nonced as we're only filtering a list table by product ID and not modifying data.
+		 */
 		if ( ! isset( $_GET['_wcs_product'] ) || ! $_GET['_wcs_product'] > 0 ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return $request_query;
 		}
@@ -931,10 +940,16 @@ class WCS_Admin_Post_Types {
 	 * @return array $request_query
 	 */
 	private function set_filter_by_payment_method_query( $request_query ) {
-		// If we've using the 'none' flag for the post__in query var, there's no need to apply other query filters, as we're going to return no subscriptions anyway
+		/**
+		 * If we've using the 'none' flag for the post__in query var, there's no need to apply other query filters, as we're going to return no subscriptions anyway.
+		 *
+		 * Note this request isn't nonced as we're only filtering a list table by payment method ID and not modifying data.
+		 */
 		if ( empty( $_GET['_payment_method'] ) || ( isset( $request_query['post__in'] ) && self::$post__in_none === $request_query['post__in'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return $request_query;
 		}
+
+		$payment_method = wc_clean( wp_unslash( $_GET['_payment_method'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
 			$query_vars = [
@@ -944,13 +959,13 @@ class WCS_Admin_Post_Types {
 				'return' => 'ids',
 			];
 
-			if ( '_manual_renewal' === trim( $_GET['_payment_method'] ) ) {
+			if ( '_manual_renewal' === $payment_method ) {
 				$query_vars['meta_query'][] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 					'key'   => '_requires_manual_renewal',
 					'value' => 'true',
 				];
 			} else {
-				$query_vars['payment_method'] = wc_clean( wp_unslash( $_GET['_payment_method'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$query_vars['payment_method'] = $payment_method;
 			}
 
 			// If there are already set post restrictions (post__in) apply them to this query
@@ -961,13 +976,13 @@ class WCS_Admin_Post_Types {
 			$subscription_ids = wcs_get_orders_with_meta_query( $query_vars );
 			$request_query    = self::set_post__in_query_var( $request_query, $subscription_ids );
 
-		} elseif ( '_manual_renewal' === trim( wc_clean( wp_unslash( $_GET['_payment_method'] ) ) ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		} elseif ( '_manual_renewal' === $payment_method ) {
 			$request_query['meta_query'][] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 				'key'   => '_requires_manual_renewal',
 				'value' => 'true',
 			];
 		} else {
-			$request_query['payment_method'] = wc_clean( wp_unslash( $_GET['_payment_method'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$request_query['payment_method'] = $payment_method;
 		}
 
 		return $request_query;
