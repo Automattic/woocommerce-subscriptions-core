@@ -468,7 +468,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 			}
 
 			// If we're setting the start date and it's missing, we set it to the created date.
-			if ( 'schedule_start' === $prop_key && ! isset( $meta_data[ $meta_key ] ) ) {
+			if ( 'schedule_start' === $prop_key && empty( $meta_data[ $meta_key ] ) ) {
 				$meta_data[ $meta_key ] = $subscription->get_date( 'date_created' );
 			}
 
