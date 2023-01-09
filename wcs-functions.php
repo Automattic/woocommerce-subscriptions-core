@@ -590,7 +590,7 @@ function wcs_get_subscriptions_for_product( $product_ids, $fields = 'ids', $args
 		LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS itemmeta ON order_items.order_item_id = itemmeta.order_item_id
 		LEFT JOIN {$wpdb->prefix}{$orders_table_name} AS orders ON order_items.order_id = orders.{$orders_id_column_name}
 		WHERE {$where}
-		ORDER BY order_items.order_id {$limit} {$offset}",
+		ORDER BY order_items.order_id {$limit} {$offset}"
 	);
 	// @codingStandardsIgnoreEnd
 
