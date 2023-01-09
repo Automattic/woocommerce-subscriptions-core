@@ -1356,15 +1356,20 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Filter the Orders Table in HPOS to show only orders associated with a specific subscription.
+	 * Filters the Orders Table in HPOS to display_renewal_filter_noticehow only orders associated with a specific subscription.
 	 *
 	 * @since 5.2.0
 	 *
-	 * @param array $query_vars
+	 * @param array $query_vars The query variables.
 	 *
-	 * @return array
+	 * @return array The query variables.
 	 */
 	public static function filter_orders_table_by_related_orders( $query_vars ) {
+		/**
+		 * Exit early if the request is not to filter the order list table.
+		 *
+		 * Note this request isn't nonced as we're only filtering an admin list table and not modifying data.
+		 */
 		if ( ! ( is_admin() && isset( $_GET['_subscription_related_orders'] ) && $_GET['_subscription_related_orders'] > 0 ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return $query_vars;
 		}
@@ -1489,6 +1494,9 @@ class WC_Subscriptions_Admin {
 			return;
 		}
 
+		/**
+		 * This request URL isn't nonced because it's only used to display a notice to the user.
+		 */
 		if ( isset( $_GET['_subscription_related_orders'] ) && $_GET['_subscription_related_orders'] > 0 ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$subscription_id = absint( $_GET['_subscription_related_orders'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$subscription    = wcs_get_subscription( $subscription_id );
