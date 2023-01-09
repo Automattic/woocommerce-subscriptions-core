@@ -557,10 +557,11 @@ function wcs_get_subscriptions_for_product( $product_ids, $fields = 'ids', $args
 	$args['offset']              = (int) $args['offset'];
 
 	// Set variables to be used in the DB query based on whether HPOS is enabled or not.
-	$is_hpos_in_use          = wcs_is_custom_order_tables_usage_enabled();
-	$orders_table_name       = $is_hpos_in_use ? 'wc_orders' : 'posts';
-	$orders_type_column_name = $is_hpos_in_use ? 'type' : 'post_type';
-	$orders_id_column_name   = $is_hpos_in_use ? 'id' : 'ID';
+	$is_hpos_in_use            = wcs_is_custom_order_tables_usage_enabled();
+	$orders_table_name         = $is_hpos_in_use ? 'wc_orders' : 'posts';
+	$orders_type_column_name   = $is_hpos_in_use ? 'type' : 'post_type';
+	$orders_status_column_name = $is_hpos_in_use ? 'status' : 'post_status';
+	$orders_id_column_name     = $is_hpos_in_use ? 'id' : 'ID';
 
 	// Start to build the query WHERE array.
 	$where = [
@@ -576,7 +577,7 @@ function wcs_get_subscriptions_for_product( $product_ids, $fields = 'ids', $args
 		// Sanitize and format statuses into status string keys.
 		$statuses = array_map( 'wcs_sanitize_subscription_status_key', array_map( 'esc_sql', array_unique( array_filter( $args['subscription_status'] ) ) ) );
 		$statuses = implode( "', '", $statuses );
-		$where[]  = sprintf( "posts.post_status IN ( '%s' )", $statuses );
+		$where[]  = sprintf( "%s.%s IN ( '%s' )", $orders_table_name, $orders_status_column_name, $statuses );
 	}
 
 	$limit  = ( $args['limit'] > 0 ) ? $wpdb->prepare( 'LIMIT %d', $args['limit'] ) : '';
