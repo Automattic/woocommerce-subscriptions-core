@@ -577,7 +577,7 @@ function wcs_get_subscriptions_for_product( $product_ids, $fields = 'ids', $args
 		// Sanitize and format statuses into status string keys.
 		$statuses = array_map( 'wcs_sanitize_subscription_status_key', array_map( 'esc_sql', array_unique( array_filter( $args['subscription_status'] ) ) ) );
 		$statuses = implode( "', '", $statuses );
-		$where[]  = sprintf( "%s.%s IN ( '%s' )", $orders_table_name, $orders_status_column_name, $statuses );
+		$where[]  = sprintf( "orders.%s IN ( '%s' )", $orders_status_column_name, $statuses );
 	}
 
 	$limit  = ( $args['limit'] > 0 ) ? $wpdb->prepare( 'LIMIT %d', $args['limit'] ) : '';
