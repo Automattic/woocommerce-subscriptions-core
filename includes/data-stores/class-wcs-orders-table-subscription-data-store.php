@@ -407,7 +407,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 			$subscription->delete_meta_data( '_wp_trash_meta_comments_status' );
 			$subscription->save_meta_data();
 
-			$data_synchronizer = wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer::class );
+			$data_synchronizer = wc_get_container()->get( \Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer::class );
 			if ( $data_synchronizer->data_sync_is_enabled() ) {
 				//The previous $subscription->save() will have forced a sync to the posts table,
 				//this implies that the post status is not "trash" anymore, and thus
