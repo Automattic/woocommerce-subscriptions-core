@@ -978,11 +978,11 @@ class WCS_Admin_Post_Types {
 	 * @return string the link string
 	 */
 	public function get_related_orders_link( $the_subscription ) {
-		$orders_table_url = wcs_is_custom_order_tables_usage_enabled() ? 'admin.php?page=wc-orders' : 'edit.php?post_type=shop_order';
+		$orders_table_url = wcs_is_custom_order_tables_usage_enabled() ? 'admin.php?page=wc-orders&status=all' : 'edit.php?post_type=shop_order&post_status=all';
 
 		return sprintf(
 			'<a href="%s">%s</a>',
-			admin_url( $orders_table_url . '&post_status=all&_subscription_related_orders=' . absint( $the_subscription->get_id() ) ),
+			admin_url( $orders_table_url . '&_subscription_related_orders=' . absint( $the_subscription->get_id() ) ),
 			count( $the_subscription->get_related_orders() )
 		);
 	}
