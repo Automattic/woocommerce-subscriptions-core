@@ -207,11 +207,13 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							if ( ! isset( $field['id'] ) ) {
 								$field['id'] = '_billing_' . $key;
 							}
+
 							switch ( $field['type'] ) {
 								case 'select':
-									woocommerce_wp_select( $field );
+									wcs_woocommerce_wp_select( $field, $subscription );
 									break;
 								default:
+									$field['value'] = $subscription->{"get_billing_$key"}();
 									woocommerce_wp_text_input( $field );
 									break;
 							}
@@ -298,9 +300,10 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 
 								switch ( $field['type'] ) {
 									case 'select':
-										woocommerce_wp_select( $field );
+										wcs_woocommerce_wp_select( $field, $subscription );
 										break;
 									default:
+										$field['value'] = $subscription->{"get_shipping_$key"}();
 										woocommerce_wp_text_input( $field );
 										break;
 								}
