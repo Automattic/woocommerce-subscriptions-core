@@ -13,6 +13,8 @@
 * Fix - Replace the get_posts() used in get_subscriptions_from_token() to support HPOS stores.
 * Fix - Merge any custom meta_query args passed to wcs_get_orders_with_meta_query() to avoid overriding WC core args that map onto meta_query.
 * Fix - Prevent erroneously resyncing a subscription every time it is loaded from the database on HPOS environments.
+* Fix - Fix "Trying to get property 'ID' of non-object" errors on the edit subscription screen when HPOS is enabled.
+* Fix - When HPOS is enabled, clicking the related orders link on the Subscriptions Table now filters the table with the related orders (previously all orders were shown).
 * Dev - Replace code using get_post_type( $subscription_id ) with WC Data Store get_order_type().
 * Dev - Add subscriptions-core library version to the WooCommerce system status report.
 * Dev - Introduced a WCS_Object_Data_Cache_Manager and WCS_Object_Data_Cache_Manager_Many_To_One class as HPOS equivalents of the WCS_Post_Meta_Cache_Manager classes.
