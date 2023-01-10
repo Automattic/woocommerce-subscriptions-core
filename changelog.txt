@@ -14,6 +14,7 @@
 * Fix - On HPOS stores, when a subscription's parent order is trashed or deleted, make sure the related subscription is also trashed or deleted.
 * Fix - On HPOS stores, when a subscription is trashed or deleted, make sure it is cancelled first.
 * Fix - Merge any custom meta_query args passed to wcs_get_orders_with_meta_query() to avoid overriding WC core args that map onto meta_query.
+* Fix - Filtering the Subscriptions List Table by customer, product ID and payment method, now works on stores with HPOS enabled.
 * Fix - Prevent erroneously resyncing a subscription every time it is loaded from the database on HPOS environments.
 * Fix - Fix "Trying to get property 'ID' of non-object" errors on the edit subscription screen when HPOS is enabled.
 * Fix - When HPOS is enabled, clicking the related orders link on the Subscriptions Table now filters the table with the related orders (previously all orders were shown).

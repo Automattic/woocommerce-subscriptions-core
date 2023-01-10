@@ -59,6 +59,7 @@ class WCS_Admin_Post_Types {
 		// Subscription order/filter
 		add_filter( 'request', array( $this, 'request_query' ) );
 		add_filter( 'woocommerce_shop_subscription_list_table_request', array( $this, 'add_subscription_list_table_query_default_args' ) );
+		add_filter( 'woocommerce_shop_subscription_list_table_prepare_items_query_args', array( $this, 'filter_subscription_list_table_request_query' ) );
 
 		// Subscription Search
 		add_filter( 'get_search_query', array( $this, 'shop_subscription_search_label' ) );
@@ -777,9 +778,10 @@ class WCS_Admin_Post_Types {
 	}
 
 	/**
-	 * Filters and sorting handler
+	 * Filters and sorts the request for subscriptions stored in WP Post tables.
 	 *
-	 * @param  array $vars
+	 * @param array $vars
+	 *
 	 * @return array
 	 */
 	public function request_query( $vars ) {
@@ -787,97 +789,39 @@ class WCS_Admin_Post_Types {
 
 		if ( 'shop_subscription' === $typenow ) {
 
-			// Filter the orders by the posted customer.
-			if ( isset( $_GET['_customer_user'] ) && $_GET['_customer_user'] > 0 ) {
-				$customer_id      = absint( $_GET['_customer_user'] );
-				$subscription_ids = apply_filters(
-					'wcs_admin_request_query_subscriptions_for_customer',
-					WCS_Customer_Store::instance()->get_users_subscription_ids( $customer_id ),
-					$customer_id
-				);
-
-				$vars = self::set_post__in_query_var( $vars, $subscription_ids );
-			}
-
-			if ( isset( $_GET['_wcs_product'] ) && $_GET['_wcs_product'] > 0 ) {
-				$product_id       = absint( $_GET['_wcs_product'] );
-				$subscription_ids = wcs_get_subscriptions_for_product( $product_id );
-				$subscription_ids = apply_filters(
-					'wcs_admin_request_query_subscriptions_for_product',
-					array_keys( $subscription_ids ),
-					$product_id
-				);
-
-				$vars = self::set_post__in_query_var( $vars, $subscription_ids );
-			}
-
-			// If we've using the 'none' flag for the post__in query var, there's no need to apply other query filters, as we're going to return no subscriptions anyway
-			if ( isset( $vars['post__in'] ) && self::$post__in_none === $vars['post__in'] ) {
-				return $vars;
-			}
-
-			if ( ! empty( $_GET['_payment_method'] ) ) {
-				if ( '_manual_renewal' === trim( $_GET['_payment_method'] ) ) {
-					$meta_query = array(
-						array(
-							'key'   => '_requires_manual_renewal',
-							'value' => 'true',
-						),
-					);
-				} else {
-					$payment_gateway_filter = ( 'none' == $_GET['_payment_method'] ) ? '' : $_GET['_payment_method'];
-					$meta_query             = array(
-						array(
-							'key'   => '_payment_method',
-							'value' => $payment_gateway_filter,
-						),
-					);
-				}
-
-				$query_vars = array(
-					'type'       => 'shop_subscription',
-					'limit'      => -1,
-					'status'     => 'any',
-					'return'     => 'ids',
-					'meta_query' => $meta_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-				);
-
-				// If there are already set post restrictions (post__in) apply them to this query
-				if ( isset( $vars['post__in'] ) ) {
-					$query_vars['post__in'] = $vars['post__in'];
-				}
-
-				$subscription_ids = wcs_get_orders_with_meta_query( $query_vars );
-
-				if ( ! empty( $subscription_ids ) ) {
-					$vars['post__in'] = $subscription_ids;
-				} else {
-					$vars['post__in'] = self::$post__in_none;
-				}
-			}
+			// Filter the orders by the customer, product or payment method
+			$vars = $this->set_filter_by_customer_query( $vars );
+			$vars = $this->set_filter_by_product_query( $vars );
+			$vars = $this->set_filter_by_payment_method_query( $vars );
 
 			// Sorting
 			if ( isset( $vars['orderby'] ) ) {
 				switch ( $vars['orderby'] ) {
 					case 'order_total':
-						$vars = array_merge( $vars, array(
-							'meta_key' => '_order_total',
-							'orderby'  => 'meta_value_num',
-						) );
-					break;
+						$vars = array_merge(
+							$vars,
+							[
+								'meta_key' => '_order_total', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+								'orderby'  => 'meta_value_num',
+							]
+						);
+						break;
 					case 'last_payment_date':
-						add_filter( 'posts_clauses', array( $this, 'posts_clauses' ), 10, 2 );
+						add_filter( 'posts_clauses', [ $this, 'posts_clauses' ], 10, 2 );
 						break;
 					case 'start_date':
 					case 'trial_end_date':
 					case 'next_payment_date':
 					case 'end_date':
-						$vars = array_merge( $vars, array(
-							'meta_key'  => sprintf( '_schedule_%s', str_replace( '_date', '', $vars['orderby'] ) ),
-							'meta_type' => 'DATETIME',
-							'orderby'   => 'meta_value',
-						) );
-					break;
+						$vars = array_merge(
+							$vars,
+							[
+								'meta_key'  => sprintf( '_schedule_%s', str_replace( '_date', '', $vars['orderby'] ) ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+								'meta_type' => 'DATETIME',
+								'orderby'   => 'meta_value',
+							]
+						);
+						break;
 				}
 			}
 
@@ -891,6 +835,23 @@ class WCS_Admin_Post_Types {
 	}
 
 	/**
+	 * Filters the List Table request for Subscriptions stored in HPOS.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param array $request_query The query args sent to wc_get_orders().
+	 *
+	 * @return array $request_query
+	 */
+	public function filter_subscription_list_table_request_query( $request_query ) {
+		$request_query = $this->set_filter_by_customer_query( $request_query );
+		$request_query = $this->set_filter_by_product_query( $request_query );
+		$request_query = $this->set_filter_by_payment_method_query( $request_query );
+
+		return $request_query;
+	}
+
+	/**
 	 * Adds default query arguments for displaying subscriptions in the admin list table.
 	 *
 	 * By default, WC will fetch items to display in the list table by query the DB using
@@ -901,11 +862,130 @@ class WCS_Admin_Post_Types {
 	 * @return array $query_args
 	 */
 	public function add_subscription_list_table_query_default_args( $query_args ) {
-		if ( empty( $query_args['status'] ) ) {
+		/**
+		 * Note this request isn't nonced as we're only filtering a list table by status and not modifying data.
+		 */
+		if ( empty( $query_args['status'] ) || ( isset( $_GET['status'] ) && 'all' === $_GET['status'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$query_args['status'] = array_keys( wcs_get_subscription_statuses() );
 		}
 
 		return $query_args;
+	}
+
+	/**
+	 * Checks if the current request is filtering query by customer user and then fetches the subscriptions
+	 * that belong to that customer and sets the post__in query var to filter the request.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param array $request_query The query args sent to wc_get_orders().
+	 *
+	 * @return array $request_query
+	 */
+	private function set_filter_by_customer_query( $request_query ) {
+		/**
+		 * Note this request isn't nonced as we're only filtering a list table and not modifying data.
+		 */
+		if ( ! isset( $_GET['_customer_user'] ) || ! $_GET['_customer_user'] > 0 ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return $request_query;
+		}
+
+		$customer_id      = absint( $_GET['_customer_user'] );
+		$subscription_ids = apply_filters(
+			'wcs_admin_request_query_subscriptions_for_customer',
+			WCS_Customer_Store::instance()->get_users_subscription_ids( $customer_id ),
+			$customer_id
+		);
+
+		return self::set_post__in_query_var( $request_query, $subscription_ids );
+	}
+
+	/**
+	 * Checks if the current request is filtering query by product and then fetches all subscription IDs for that product
+	 * and sets the post__in query var to filter the request for the given array of subscription IDs.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param array $request_query The query args sent to wc_get_orders().
+	 *
+	 * @return array $request_query
+	 */
+	private function set_filter_by_product_query( $request_query ) {
+		/**
+		 * Note this request isn't nonced as we're only filtering a list table by product ID and not modifying data.
+		 */
+		if ( ! isset( $_GET['_wcs_product'] ) || ! $_GET['_wcs_product'] > 0 ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return $request_query;
+		}
+
+		$product_id       = absint( $_GET['_wcs_product'] );
+		$subscription_ids = wcs_get_subscriptions_for_product( $product_id );
+		$subscription_ids = apply_filters(
+			'wcs_admin_request_query_subscriptions_for_product',
+			array_keys( $subscription_ids ),
+			$product_id
+		);
+
+		return self::set_post__in_query_var( $request_query, $subscription_ids );
+	}
+
+	/**
+	 * Checks if the current request is filtering query by payment method and then fetches all subscription IDs
+	 * for that payment method and sets the post__in query var to filter the request.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param array $request_query The query args sent to wc_get_orders().
+	 *
+	 * @return array $request_query
+	 */
+	private function set_filter_by_payment_method_query( $request_query ) {
+		/**
+		 * If we've using the 'none' flag for the post__in query var, there's no need to apply other query filters, as we're going to return no subscriptions anyway.
+		 *
+		 * Note this request isn't nonced as we're only filtering a list table by payment method ID and not modifying data.
+		 */
+		if ( empty( $_GET['_payment_method'] ) || ( isset( $request_query['post__in'] ) && self::$post__in_none === $request_query['post__in'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return $request_query;
+		}
+
+		$payment_method = wc_clean( wp_unslash( $_GET['_payment_method'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
+			$query_vars = [
+				'type'   => 'shop_subscription',
+				'limit'  => -1,
+				'status' => 'any',
+				'return' => 'ids',
+			];
+
+			if ( '_manual_renewal' === $payment_method ) {
+				$query_vars['meta_query'][] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					'key'   => '_requires_manual_renewal',
+					'value' => 'true',
+				];
+			} else {
+				$query_vars['payment_method'] = $payment_method;
+			}
+
+			// If there are already set post restrictions (post__in) apply them to this query
+			if ( isset( $request_query['post__in'] ) ) {
+				$query_vars['post__in'] = $request_query['post__in'];
+			}
+
+			$subscription_ids = wcs_get_orders_with_meta_query( $query_vars );
+			$request_query    = self::set_post__in_query_var( $request_query, $subscription_ids );
+
+		} elseif ( '_manual_renewal' === $payment_method ) {
+			$request_query['meta_query'][] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				'key'   => '_requires_manual_renewal',
+				'value' => 'true',
+			];
+		} else {
+			$request_query['payment_method'] = $payment_method;
+		}
+
+		return $request_query;
 	}
 
 	/**
