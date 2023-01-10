@@ -72,15 +72,11 @@ class WC_Subscriptions_Manager {
 			add_action( 'woocommerce_before_delete_order', [ __CLASS__, 'maybe_delete_subscription' ] );
 
 			// make sure a subscription is cancelled before it is trashed/deleted
-			add_action( 'woocommerce_before_trash_order', [ __CLASS__, 'maybe_cancel_subscription' ], 10, 1 );
-			add_action( 'woocommerce_before_delete_order', [ __CLASS__, 'maybe_cancel_subscription' ], 10, 1 );
+			add_action( 'woocommerce_before_trash_subscription', [ __CLASS__, 'maybe_cancel_subscription' ], 10, 1 );
+			add_action( 'woocommerce_before_delete_subscription', [ __CLASS__, 'maybe_cancel_subscription' ], 10, 1 );
 
 			// set correct status to restore after a subscription is trashed/deleted
-			add_action( 'woocommerce_trash_order', [ __CLASS__, 'fix_trash_meta_status' ] );
-
-			// call special hooks when a subscription is trashed/deleted
-			add_action( 'woocommerce_trash_order', [ __CLASS__, 'trigger_subscription_trashed_hook' ] );
-			add_action( 'woocommerce_delete_order', [ __CLASS__, 'trigger_subscription_deleted_hook' ] );
+			add_action( 'woocommerce_trash_subscription', [ __CLASS__, 'fix_trash_meta_status' ] );
 		} else {
 			// When a parent order is trashed, untrashed or deleted, make sure the appropriate action is taken on the related subscription
 			add_action( 'wp_trash_post', __CLASS__ . '::maybe_trash_subscription', 10 );
