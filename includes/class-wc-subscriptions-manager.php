@@ -29,7 +29,6 @@ class WC_Subscriptions_Manager {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 **/
 	public static function init() {
-
 		// When an order's status is changed, run the appropriate subscription function
 		add_action( 'woocommerce_order_status_cancelled', __CLASS__ . '::cancel_subscriptions_for_order' );
 		add_action( 'woocommerce_order_status_failed', __CLASS__ . '::failed_subscription_sign_ups_for_order' );
@@ -47,31 +46,54 @@ class WC_Subscriptions_Manager {
 		// Whenever a renewal payment is due, put the subscription on hold and create a renewal order before anything else, in case things don't go to plan
 		add_action( 'woocommerce_scheduled_subscription_payment', __CLASS__ . '::prepare_renewal', 1, 1 );
 
-		// Order is trashed, trash subscription
-		add_action( 'wp_trash_post', __CLASS__ . '::maybe_trash_subscription', 10 );
-
-		// Order is restored (untrashed), restore subscription
-		add_action( 'untrashed_post', __CLASS__ . '::maybe_untrash_subscription', 10 );
-
-		// When order is deleted, delete the subscription.
-		add_action( 'before_delete_post', array( __CLASS__, 'maybe_delete_subscription' ) );
+		// Attach hooks that depend on WooCommerce being loaded.
+		add_action( 'woocommerce_loaded', [ __CLASS__, 'attach_wc_dependant_hooks' ] );
 
 		// When a user is being deleted from the site, via standard WordPress functions, make sure their subscriptions are cancelled
 		add_action( 'delete_user', __CLASS__ . '::trash_users_subscriptions' );
 
 		// Do the same thing for WordPress networks
 		add_action( 'wpmu_delete_user', __CLASS__ . '::trash_users_subscriptions_for_network' );
+	}
 
-		// make sure a subscription is cancelled before it is trashed/deleted
-		add_action( 'wp_trash_post', __CLASS__ . '::maybe_cancel_subscription', 10, 1 );
-		add_action( 'before_delete_post', __CLASS__ . '::maybe_cancel_subscription', 10, 1 );
+	/**
+	 * Attaches hooks that depend on WooCommerce being loaded.
+	 *
+	 * We need to use different hooks on stores that have HPOS enabled but to check if this feature
+	 * is enabled, we must wait for WooCommerce to be loaded first.
+	 *
+	 * @since 5.2.0
+	 */
+	public static function attach_wc_dependant_hooks() {
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			// When a parent order is trashed, untrashed or deleted, make sure the appropriate action is taken on the related subscription
+			add_action( 'woocommerce_before_trash_order', [ __CLASS__, 'maybe_trash_subscription' ], 10 );
+			add_action( 'woocommerce_untrash_order', [ __CLASS__, 'maybe_untrash_subscription' ], 10 );
+			add_action( 'woocommerce_before_delete_order', [ __CLASS__, 'maybe_delete_subscription' ] );
 
-		// set correct status to restore after a subscription is trashed/deleted
-		add_action( 'trashed_post', __CLASS__ . '::fix_trash_meta_status' );
+			// make sure a subscription is cancelled before it is trashed/deleted
+			add_action( 'woocommerce_before_trash_subscription', [ __CLASS__, 'maybe_cancel_subscription' ], 10, 1 );
+			add_action( 'woocommerce_before_delete_subscription', [ __CLASS__, 'maybe_cancel_subscription' ], 10, 1 );
 
-		// call special hooks when a subscription is trashed/deleted
-		add_action( 'trashed_post', __CLASS__ . '::trigger_subscription_trashed_hook' );
-		add_action( 'deleted_post', __CLASS__ . '::trigger_subscription_deleted_hook' );
+			// set correct status to restore after a subscription is trashed/deleted
+			add_action( 'woocommerce_trash_subscription', [ __CLASS__, 'fix_trash_meta_status' ] );
+		} else {
+			// When a parent order is trashed, untrashed or deleted, make sure the appropriate action is taken on the related subscription
+			add_action( 'wp_trash_post', __CLASS__ . '::maybe_trash_subscription', 10 );
+			add_action( 'untrashed_post', __CLASS__ . '::maybe_untrash_subscription', 10 );
+			add_action( 'before_delete_post', array( __CLASS__, 'maybe_delete_subscription' ) );
+
+			// make sure a subscription is cancelled before it is trashed/deleted
+			add_action( 'wp_trash_post', __CLASS__ . '::maybe_cancel_subscription', 10, 1 );
+			add_action( 'before_delete_post', __CLASS__ . '::maybe_cancel_subscription', 10, 1 );
+
+			// set correct status to restore after a subscription is trashed/deleted
+			add_action( 'trashed_post', __CLASS__ . '::fix_trash_meta_status' );
+
+			// call special hooks when a subscription is trashed/deleted
+			add_action( 'trashed_post', __CLASS__ . '::trigger_subscription_trashed_hook' );
+			add_action( 'deleted_post', __CLASS__ . '::trigger_subscription_deleted_hook' );
+		}
 	}
 
 	/**
@@ -790,27 +812,46 @@ class WC_Subscriptions_Manager {
 	 *
 	 * Also make sure all related scheduled actions are cancelled when deleting a subscription.
 	 *
-	 * @param int $post_id The post ID of the WC Subscription or WC Order being trashed
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
+	 *
+	 * @param int $order_id The order ID of the WC Subscription or WC Order being trashed
 	 */
-	public static function maybe_trash_subscription( $post_id ) {
-		if ( 'shop_order' === WC_Data_Store::load( 'order' )->get_order_type( $post_id ) ) {
+	public static function maybe_trash_subscription( $order_id ) {
+		if ( 'shop_order' === WC_Data_Store::load( 'order' )->get_order_type( $order_id ) ) {
 
 			// delete subscription
-			foreach ( wcs_get_subscriptions_for_order( $post_id, array( 'order_type' => 'parent' ) ) as $subscription ) {
-				wp_trash_post( $subscription->get_id() );
+			foreach ( wcs_get_subscriptions_for_order( $order_id, [ 'order_type' => 'parent' ] ) as $subscription ) {
+				$subscription->delete();
 			}
 		}
 	}
 
 	/**
 	 * Untrash all subscriptions attached to an order when it's restored.
-	 * @param int $post_id The post ID of the WC Order being restored
+	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.17
+	 *
+	 * @param int $order_id The Order ID of the order being restored
 	 */
-	public static function maybe_untrash_subscription( $post_id ) {
-		if ( 'shop_order' === WC_Data_Store::load( 'order' )->get_order_type( $post_id ) ) {
-			foreach ( wcs_get_subscriptions_for_order( $post_id, array( 'order_type' => 'parent', 'subscription_status' => array( 'trash' ) ) ) as $subscription ) { // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
+	public static function maybe_untrash_subscription( $order_id ) {
+		if ( 'shop_order' !== WC_Data_Store::load( 'order' )->get_order_type( $order_id ) ) {
+			return;
+		}
+
+		$data_store      = WC_Data_Store::load( 'subscription' );
+		$use_crud_method = method_exists( $data_store, 'has_callable' ) && $data_store->has_callable( 'untrash_order' );
+		$subscriptions   = wcs_get_subscriptions_for_order(
+			$order_id,
+			[
+				'order_type'          => 'parent',
+				'subscription_status' => [ 'trash' ],
+			]
+		);
+
+		foreach ( $subscriptions as $subscription ) {
+			if ( $use_crud_method ) {
+				$data_store->untrash_order( $subscription );
+			} else {
 				wp_untrash_post( $subscription->get_id() );
 			}
 		}
@@ -819,22 +860,24 @@ class WC_Subscriptions_Manager {
 	/**
 	 * Delete related subscriptions when an order is deleted.
 	 *
-	 * @author Jeremy Pry
-	 *
-	 * @param int $post_id The post ID being deleted.
+	 * @param int $order_id The post ID being deleted.
 	 */
-	public static function maybe_delete_subscription( $post_id ) {
-		if ( 'shop_order' !== WC_Data_Store::load( 'order' )->get_order_type( $post_id ) ) {
+	public static function maybe_delete_subscription( $order_id ) {
+		if ( 'shop_order' !== WC_Data_Store::load( 'order' )->get_order_type( $order_id ) ) {
 			return;
 		}
 
 		/** @var WC_Subscription[] $subscriptions */
-		$subscriptions = wcs_get_subscriptions_for_order( $post_id, array(
-			'subscription_status' => array( 'any', 'trash' ),
-			'order_type'          => 'parent',
-		) );
+		$subscriptions = wcs_get_subscriptions_for_order(
+			$order_id,
+			[
+				'order_type'          => 'parent',
+				'subscription_status' => [ 'any', 'trash' ],
+			]
+		);
+
 		foreach ( $subscriptions as $subscription ) {
-			wp_delete_post( $subscription->get_id() );
+			$subscription->delete( true );
 		}
 	}
 
@@ -863,21 +906,24 @@ class WC_Subscriptions_Manager {
 	}
 
 	/**
-	 * When WordPress trashes a post, it sets a '_wp_trash_meta_status' post meta value so that the post can
-	 * be restored to its original status. However, when setting that value, it uses the 'post_status' of a
-	 * $post variable in memory. If that status is changed on the 'wp_trash_post' or 'wp_delete_post' hooks,
+	 * When an order is trashed, store the '_wp_trash_meta_status' meta value with a cancelled subscription status
+	 * to prevent subscriptions being restored with an active status.
+	 *
+	 * When WordPress and WooCommerce set this meta value, they use the status of the order in memory.
+	 * If that status is changed on the before trashed or before deleted hooks,
 	 * as is the case with a subscription, which is cancelled before being trashed if it is active or on-hold,
 	 * then the '_wp_trash_meta_status' value will be incorrectly set to its status before being trashed.
 	 *
 	 * This function fixes that by setting '_wp_trash_meta_status' to 'wc-cancelled' whenever its former status
 	 * is something that can not be restored.
 	 *
-	 * @param int $id
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
+	 *
+	 * @param int $id
 	 */
 	public static function fix_trash_meta_status( $id ) {
-
 		$subscription = wcs_get_subscription( $id );
+
 		if ( ! $subscription ) {
 			return;
 		}
@@ -886,8 +932,19 @@ class WC_Subscriptions_Manager {
 			return;
 		}
 
-		if ( ! in_array( get_post_meta( $id, '_wp_trash_meta_status', true ), array( 'wc-pending', 'wc-expired', 'wc-cancelled' ), true ) ) {
-			update_post_meta( $id, '_wp_trash_meta_status', 'wc-cancelled' );
+		$data_store = $subscription->get_data_store();
+		$meta_data  = $data_store->read_meta( $subscription );
+
+		foreach ( $meta_data as $meta ) {
+			if ( '_wp_trash_meta_status' === $meta->meta_key && ! in_array( $meta->meta_value, [ 'wc-pending', 'wc-expired', 'wc-cancelled' ], true ) ) {
+				$new_meta = (object) [
+					'id'    => $meta->meta_id,
+					'key'   => $meta->meta_key,
+					'value' => 'wc-cancelled',
+				];
+				$data_store->update_meta( $subscription, $new_meta );
+				break;
+			}
 		}
 	}
 

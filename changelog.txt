@@ -11,6 +11,8 @@
 * Fix - Refactor `WC_Subscriptions_Renewal_Order::get_failed_order_replaced_by()` to support HPOS stores.
 * Fix - Check whether the order actually exists before accessing order properties in wcs_order_contains_subscription()
 * Fix - Replace the get_posts() used in get_subscriptions_from_token() to support HPOS stores.
+* Fix - On HPOS stores, when a subscription's parent order is trashed or deleted, make sure the related subscription is also trashed or deleted.
+* Fix - On HPOS stores, when a subscription is trashed or deleted, make sure it is cancelled first.
 * Fix - Merge any custom meta_query args passed to wcs_get_orders_with_meta_query() to avoid overriding WC core args that map onto meta_query.
 * Fix - Prevent erroneously resyncing a subscription every time it is loaded from the database on HPOS environments.
 * Fix - Fix "Trying to get property 'ID' of non-object" errors on the edit subscription screen when HPOS is enabled.
@@ -18,6 +20,8 @@
 * Dev - Replace code using get_post_type( $subscription_id ) with WC Data Store get_order_type().
 * Dev - Add subscriptions-core library version to the WooCommerce system status report.
 * Dev - Introduced a WCS_Object_Data_Cache_Manager and WCS_Object_Data_Cache_Manager_Many_To_One class as HPOS equivalents of the WCS_Post_Meta_Cache_Manager classes.
+* Dev - Introduced a new `untrash_order()` in the `WCS_Orders_Table_Subscription_Data_Store` class to fix untrashing subscriptions on stores that have HPOS enabled.
+* Dev - Moved the trash, untrash & delete related `add_actions()` in the `WC_Subscriptions_Manager` class to be added on the `woocommerce_loaded` action.
 
 = 5.1.0 - 2022-11-24 =
 * Fix - Set payment tokens when copying data between orders and subscriptions in a CRUD compatible way. Fixes PHP notices during renewal order process.
