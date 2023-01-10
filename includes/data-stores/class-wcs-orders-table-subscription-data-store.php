@@ -438,6 +438,84 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
+	 * Method to delete a subscription from the database.
+	 *
+	 * @param \WC_Subscription $subscription Subscription object.
+	 * @param array            $args Array of args to pass to the delete method.
+	 *
+	 * @return void
+	 */
+	public function delete( &$subscription, $args = array() ) {
+		$subscription_id = $subscription->get_id();
+
+		if ( ! $subscription_id ) {
+			return;
+		}
+
+		if ( ! empty( $args['force_delete'] ) ) {
+
+			/**
+			 * Fires immediately before a subscription is deleted from the database.
+			 *
+			 * @since 5.2.0
+			 *
+			 * @param int             $subscription_id ID of the subscription about to be deleted.
+			 * @param WC_Subscription $subscription    Instance of the subscription that is about to be deleted.
+			 */
+			do_action( 'woocommerce_before_delete_subscription', $subscription_id, $subscription );
+
+			$this->delete_order_data_from_custom_order_tables( $subscription_id );
+
+			$subscription->set_id( 0 );
+
+			// If this datastore method is called while the posts table is authoritative, refrain from deleting post data.
+			if ( $subscription->get_data_store()->get_current_class_name() !== self::class ) {
+				return;
+			}
+
+			// Delete the associated post, which in turn deletes the subscription items, etc. through {@see WC_Post_Data}.
+			// Once we stop creating placehold_order in posts, we should do the cleanup here instead.
+			wp_delete_post( $subscription_id );
+
+			/**
+			 * Fires immediately after a subscription is deleted from the database.
+			 *
+			 * Also calls `woocommerce_subscription_deleted` hook for backwards compatibility @see WC_Subscriptions_Manager::trigger_subscription_deleted_hook()
+			 *
+			 * @since 5.2.0
+			 *
+			 * @param int $subscription_id ID of the subscription about to be deleted.
+			 */
+			do_action( 'woocommerce_delete_subscription', $subscription_id );
+			do_action( 'woocommerce_subscription_deleted', $subscription_id );
+		} else {
+			/**
+			 * Fires immediately before a subscription is trashed.
+			 *
+			 * @since 5.2.0
+			 *
+			 * @param int             $subscription_id ID of the subscription about to be trashed.
+			 * @param WC_Subscription $subscription    Instance of the subscription that is about to be trashed.
+			 */
+			do_action( 'woocommerce_before_trash_subscription', $subscription_id, $subscription );
+
+			$this->trash_order( $subscription );
+
+			/**
+			 * Fires immediately after a subscription is trashed.
+			 *
+			 * Also calls `woocommerce_subscription_trashed` for backwards compatibility @see WC_Subscriptions_Manager::trigger_subscription_trashed_hook()
+			 *
+			 * @since 5.2.0
+			 *
+			 * @param int $subscription_id ID of the order about to be deleted.
+			 */
+			do_action( 'woocommerce_trash_subscription', $subscription_id );
+			do_action( 'woocommerce_subscription_trashed', $subscription_id );
+		}
+	}
+
+	/**
 	 * Creates a new subscription in the database.
 	 *
 	 * @param \WC_Subscription $subscription Subscription object.
