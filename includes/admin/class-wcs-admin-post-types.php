@@ -1224,10 +1224,12 @@ class WCS_Admin_Post_Types {
 		}
 
 		$new_status    = $action;
+		$report_action = 'marked_' . $action;
 		$sendback_args = [
-			'ids'         => join( ',', $subscription_ids ),
-			'changed'     => 0,
-			'error_count' => 0,
+			'ids'          => join( ',', $subscription_ids ),
+			$report_action => true,
+			'changed'      => 0,
+			'error_count'  => 0,
 		];
 
 		foreach ( $subscription_ids as $subscription_id ) {
@@ -1252,14 +1254,13 @@ class WCS_Admin_Post_Types {
 			}
 		}
 
-		$report_action = 'marked_' . $action;
+
 
 		// Format the return URL based on the environment.
 		if ( wcs_is_custom_order_tables_usage_enabled() ) {
 			$sendback_args['bulk_action'] = $report_action;
 		} else {
-			$sendback_args['post_type']      = 'shop_subscription';
-			$sendback_args[ $report_action ] = true;
+			$sendback_args['post_type'] = 'shop_subscription';
 		}
 
 		return esc_url_raw( add_query_arg( $sendback_args, $redirect_to ) );
