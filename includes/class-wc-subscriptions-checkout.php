@@ -89,7 +89,7 @@ class WC_Subscriptions_Checkout {
 
 			remove_action( $action_hook, 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 			foreach ( $subscriptions as $subscription ) {
-				$subscription->delete();
+				$subscription->delete( true );
 			}
 			add_action( $action_hook, 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 		}
