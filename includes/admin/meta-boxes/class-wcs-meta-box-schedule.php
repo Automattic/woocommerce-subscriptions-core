@@ -31,10 +31,11 @@ class WCS_Meta_Box_Schedule {
 		}
 
 		/**
-		 * If the subscription has no start date, it's a new subscription and we need to get the subscription object again to get the start date.
+		 * Subscriptions without a start date are freshly created subscriptions.
+		 * In order to display the schedule meta box we need to pre-populate the start date with the created date.
 		 */
-		if ( 0 === $subscription->get_time( 'start' ) ) {
-			$the_subscription = wcs_get_subscription( $the_subscription->get_id() );
+		if ( 0 === $the_subscription->get_time( 'start' ) ) {
+			$the_subscription->set_start_date( $the_subscription->get_date( 'date_created' ) );
 		}
 
 		include dirname( __FILE__ ) . '/views/html-subscription-schedule.php';
