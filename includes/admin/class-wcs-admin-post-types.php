@@ -350,41 +350,72 @@ class WCS_Admin_Post_Types {
 	}
 
 	/**
-	 * Show confirmation message that subscription status was changed
+	 * Shows confirmation message that subscription statuses were changed via bulk action.
 	 */
 	public function bulk_admin_notices() {
-		global $post_type, $pagenow;
+		$is_subscription_list_table = false;
 
-		// Bail out if not on shop order list page
-		if ( 'edit.php' !== $pagenow || 'shop_subscription' !== $post_type ) {
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			$current_screen             = get_current_screen();
+			$is_subscription_list_table = $current_screen && $current_screen->id === wcs_get_page_screen_id( 'shop_subscription' );
+		} else {
+			global $post_type, $pagenow;
+			$is_subscription_list_table = 'edit.php' === $pagenow && 'shop_subscription' === $post_type;
+		}
+
+		// Bail out if not on shop subscription list page.
+		if ( ! $is_subscription_list_table ) {
 			return;
 		}
 
-		$subscription_statuses = wcs_get_subscription_statuses();
+		// Check if any status changes happened.
+		foreach ( wcs_get_subscription_statuses() as $slug => $name ) {
+			$action_status = 'marked_' . str_replace( 'wc-', '', $slug );
 
-		// Check if any status changes happened
-		foreach ( $subscription_statuses as $slug => $name ) {
-
-			if ( isset( $_REQUEST[ 'marked_' . str_replace( 'wc-', '', $slug ) ] ) ) {
-
-				$number = isset( $_REQUEST['changed'] ) ? absint( $_REQUEST['changed'] ) : 0;
-
-				// translators: placeholder is the number of subscriptions updated
-				$message = sprintf( _n( '%s subscription status changed.', '%s subscription statuses changed.', $number, 'woocommerce-subscriptions' ), number_format_i18n( $number ) );
-				echo '<div class="updated"><p>' . esc_html( $message ) . '</p></div>';
-
-				if ( ! empty( $_REQUEST['error_count'] ) ) {
-					$error_msg = isset( $_REQUEST['error'] ) ? stripslashes( $_REQUEST['error'] ) : '';
-					$error_count = isset( $_REQUEST['error_count'] ) ? absint( $_REQUEST['error_count'] ) : 0;
-					// translators: 1$: is the number of subscriptions not updated, 2$: is the error message
-					$message = sprintf( _n( '%1$s subscription could not be updated: %2$s', '%1$s subscriptions could not be updated: %2$s', $error_count, 'woocommerce-subscriptions' ), number_format_i18n( $error_count ), $error_msg );
-					echo '<div class="error"><p>' . esc_html( $message ) . '</p></div>';
-				}
-
-				$_SERVER['REQUEST_URI'] = remove_query_arg( array( 'error_count', 'marked_active' ), $_SERVER['REQUEST_URI'] );
-
-				break;
+			/**
+			 * If the action isn't set, move on to the next one.
+			 *
+			 * Note: Nonce verification is not required here because we're just displaying an admin notice after a verified request was made.
+			 */
+			if ( ! isset( $_REQUEST[ $action_status ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				continue;
 			}
+
+			$number = isset( $_REQUEST['changed'] ) ? absint( $_REQUEST['changed'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+			$admin_notice = new WCS_Admin_Notice( 'updated' );
+			$admin_notice->set_simple_content(
+				sprintf(
+					// translators: placeholder is the number of subscriptions updated
+					_n( '%s subscription status changed.', '%s subscription statuses changed.', $number, 'woocommerce-subscriptions' ),
+					number_format_i18n( $number )
+				)
+			);
+			$admin_notice->display();
+
+			/**
+			 * Display an admin notice for any errors that occurred processing the bulk action
+			 *
+			 * Note: Nonce verification is ignored as we're not acting on any data from the request. We're simply displaying a message.
+			 */
+			if ( ! empty( $_REQUEST['error_count'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$error_message = isset( $_REQUEST['error'] ) ? wc_clean( wp_unslash( $_REQUEST['error'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$error_count   = isset( $_REQUEST['error_count'] ) ? absint( $_REQUEST['error_count'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+				$admin_notice = new WCS_Admin_Notice( 'error' );
+				$admin_notice->set_simple_content(
+					sprintf(
+						// translators: 1$: is the number of subscriptions not updated, 2$: is the error message
+						_n( '%1$s subscription could not be updated: %2$s', '%1$s subscriptions could not be updated: %2$s', $error_count, 'woocommerce-subscriptions' ),
+						number_format_i18n( $error_count ),
+						$error_message
+					)
+				);
+				$admin_notice->display();
+			}
+
+			// To prevent WC core from displaying a duplicate notice, we remove the query args which flags this bulk action request.
+			$_SERVER['REQUEST_URI'] = remove_query_arg( array( 'error_count', $action_status, 'error', 'bulk_action' ), $_SERVER['REQUEST_URI'] );
 		}
 	}
 
