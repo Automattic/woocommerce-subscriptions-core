@@ -659,3 +659,21 @@ function wcs_set_order_address( $order, $address, $address_type = 'billing' ) {
 function wcs_get_page_screen_id( $object_type ) {
 	return wcs_is_woocommerce_pre( '7.3.0' ) ? $object_type : wc_get_page_screen_id( $object_type );
 }
+
+/**
+ * Outputs a select input box.
+ *
+ * This function is a compatibility wrapper for woocommerce_wp_select() which introduced the second parameter necessary for working with HPOS in WC 6.9.0.
+ *
+ * @since 5.2.0
+ *
+ * @param array   $field_args Field data.
+ * @param WC_Data $object     The WC object to get the field value from. Only used in WC 6.9.0+. On older versions of WC, the value is fetched from the global $post object.
+ */
+function wcs_woocommerce_wp_select( $field_args, $object ) {
+	if ( wcs_is_woocommerce_pre( '6.9.0' ) ) {
+		woocommerce_wp_select( $field_args );
+	} else {
+		woocommerce_wp_select( $field_args, $object );
+	}
+}
