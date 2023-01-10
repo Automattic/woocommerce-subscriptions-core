@@ -1197,14 +1197,20 @@ class WCS_Admin_Post_Types {
 		// We need an instance of the post object type to be able to check user capabilities for status transition actions.
 		$post_type_object = get_post_type_object( $subscription->get_type() );
 
-		$action_url = add_query_arg(
-			array(
+		// On HPOS environments, WC expects a slightly different format for the bulk actions.
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			$action_url_args = [
+				'order'    => [ $subscription->get_id() ],
+				'_wpnonce' => wp_create_nonce( 'bulk-orders' ),
+			];
+		} else {
+			$action_url_args = [
 				'post'     => $subscription->get_id(),
-				// Using the bulk actions nonce name as defined in WP core.
 				'_wpnonce' => wp_create_nonce( 'bulk-posts' ),
-			)
-		);
+			];
+		}
 
+		$action_url   = add_query_arg( $action_url_args );
 		$all_statuses = array(
 			'active'    => __( 'Reactivate', 'woocommerce-subscriptions' ),
 			'on-hold'   => __( 'Suspend', 'woocommerce-subscriptions' ),
