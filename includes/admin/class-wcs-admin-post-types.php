@@ -368,55 +368,51 @@ class WCS_Admin_Post_Types {
 			return;
 		}
 
-		// Check if any status changes happened.
-		foreach ( wcs_get_subscription_statuses() as $slug => $name ) {
-			$action_status = 'marked_' . str_replace( 'wc-', '', $slug );
+		/**
+		 * If the action isn't set, return early.
+		 *
+		 * Note: Nonce verification is not required here because we're just displaying an admin notice after a verified request was made.
+		 */
+		if ( ! isset( $_REQUEST[ 'bulk_action' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
+		}
 
-			/**
-			 * If the action isn't set, move on to the next one.
-			 *
-			 * Note: Nonce verification is not required here because we're just displaying an admin notice after a verified request was made.
-			 */
-			if ( ! isset( $_REQUEST[ $action_status ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				continue;
-			}
+		$number = isset( $_REQUEST['changed'] ) ? absint( $_REQUEST['changed'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-			$number = isset( $_REQUEST['changed'] ) ? absint( $_REQUEST['changed'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$admin_notice = new WCS_Admin_Notice( 'updated' );
+		$admin_notice->set_simple_content(
+			sprintf(
+				// translators: placeholder is the number of subscriptions updated
+				_n( '%s subscription status changed.', '%s subscription statuses changed.', $number, 'woocommerce-subscriptions' ),
+				number_format_i18n( $number )
+			)
+		);
+		$admin_notice->display();
 
-			$admin_notice = new WCS_Admin_Notice( 'updated' );
+		/**
+		 * Display an admin notice for any errors that occurred processing the bulk action
+		 *
+		 * Note: Nonce verification is ignored as we're not acting on any data from the request. We're simply displaying a message.
+		 */
+		if ( ! empty( $_REQUEST['error_count'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$error_message = isset( $_REQUEST['error'] ) ? wc_clean( wp_unslash( $_REQUEST['error'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$error_count   = isset( $_REQUEST['error_count'] ) ? absint( $_REQUEST['error_count'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+			$admin_notice = new WCS_Admin_Notice( 'error' );
 			$admin_notice->set_simple_content(
 				sprintf(
-					// translators: placeholder is the number of subscriptions updated
-					_n( '%s subscription status changed.', '%s subscription statuses changed.', $number, 'woocommerce-subscriptions' ),
-					number_format_i18n( $number )
+					// translators: 1$: is the number of subscriptions not updated, 2$: is the error message
+					_n( '%1$s subscription could not be updated: %2$s', '%1$s subscriptions could not be updated: %2$s', $error_count, 'woocommerce-subscriptions' ),
+					number_format_i18n( $error_count ),
+					$error_message
 				)
 			);
 			$admin_notice->display();
-
-			/**
-			 * Display an admin notice for any errors that occurred processing the bulk action
-			 *
-			 * Note: Nonce verification is ignored as we're not acting on any data from the request. We're simply displaying a message.
-			 */
-			if ( ! empty( $_REQUEST['error_count'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				$error_message = isset( $_REQUEST['error'] ) ? wc_clean( wp_unslash( $_REQUEST['error'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				$error_count   = isset( $_REQUEST['error_count'] ) ? absint( $_REQUEST['error_count'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-
-				$admin_notice = new WCS_Admin_Notice( 'error' );
-				$admin_notice->set_simple_content(
-					sprintf(
-						// translators: 1$: is the number of subscriptions not updated, 2$: is the error message
-						_n( '%1$s subscription could not be updated: %2$s', '%1$s subscriptions could not be updated: %2$s', $error_count, 'woocommerce-subscriptions' ),
-						number_format_i18n( $error_count ),
-						$error_message
-					)
-				);
-				$admin_notice->display();
-			}
-
-			// To prevent WC core from displaying a duplicate notice, we remove the query args which flags this bulk action request.
-			$_SERVER['REQUEST_URI'] = remove_query_arg( array( 'error_count', $action_status, 'error', 'bulk_action' ), $_SERVER['REQUEST_URI'] );
 		}
+
+		// Remove the query args which flags this bulk action request so WC doesn't duplicate the notice and so links generated on this page don't contain these flags.
+		$_SERVER['REQUEST_URI'] = remove_query_arg( [ 'error_count', 'error', 'bulk_action', 'changed', 'ids' ], $_SERVER['REQUEST_URI'] );
+		unset( $_REQUEST['ids'], $_REQUEST['bulk_action'], $_REQUEST['changed'], $_REQUEST['error_count'], $_REQUEST['error'] );
 	}
 
 	/**
@@ -1191,6 +1187,7 @@ class WCS_Admin_Post_Types {
 		}
 
 		$action_url   = add_query_arg( $action_url_args );
+		$action_url   = remove_query_arg( [ 'changed', 'ids' ], $action_url );
 		$all_statuses = array(
 			'active'    => __( 'Reactivate', 'woocommerce-subscriptions' ),
 			'on-hold'   => __( 'Suspend', 'woocommerce-subscriptions' ),
@@ -1255,12 +1252,11 @@ class WCS_Admin_Post_Types {
 		}
 
 		$new_status    = $action;
-		$report_action = 'marked_' . $action;
 		$sendback_args = [
-			'ids'          => join( ',', $subscription_ids ),
-			$report_action => true,
-			'changed'      => 0,
-			'error_count'  => 0,
+			'ids'         => join( ',', $subscription_ids ),
+			'bulk_action' => 'marked_' . $action,
+			'changed'     => 0,
+			'error_count' => 0,
 		];
 
 		foreach ( $subscription_ids as $subscription_id ) {
@@ -1285,12 +1281,9 @@ class WCS_Admin_Post_Types {
 			}
 		}
 
-
-
-		// Format the return URL based on the environment.
-		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			$sendback_args['bulk_action'] = $report_action;
-		} else {
+		// On CPT stores, the return URL requires the post type.
+		// TODO: Double check this is required.
+		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
 			$sendback_args['post_type'] = 'shop_subscription';
 		}
 
