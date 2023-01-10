@@ -79,8 +79,9 @@ class WCS_Admin_Post_Types {
 
 		add_action( 'list_table_primary_column', array( $this, 'list_table_primary_column' ), 10, 2 );
 		add_filter( 'post_row_actions', array( $this, 'shop_subscription_row_actions' ), 10, 2 );
-	}
 
+		add_filter( 'handle_bulk_actions-woocommerce_page_wc-orders--shop_subscription', [ $this, 'handle_subscription_bulk_actions' ], 10, 3 );
+	}
 
 	/**
 	 * Modifies the actual SQL that is needed to order by last payment date on subscriptions. Data is pulled from related
@@ -340,63 +341,11 @@ class WCS_Admin_Post_Types {
 			$action = wc_clean( wp_unslash( $_REQUEST['action2'] ) );
 		}
 
-		switch ( $action ) {
-			case 'active':
-			case 'on-hold':
-			case 'cancelled':
-				$new_status = $action;
-				break;
-			default:
-				return;
-		}
+		$subscription_ids  = array_map( 'absint', (array) $_REQUEST['post'] );
+		$base_redirect_url = wp_get_referer() ? wp_get_referer() : '';
+		$redirect_url      = $this->handle_subscription_bulk_actions( $base_redirect_url, $action, $subscription_ids );
 
-		$report_action = 'marked_' . $new_status;
-
-		$changed = 0;
-
-		$subscription_ids = array_map( 'absint', (array) $_REQUEST['post'] );
-
-		$sendback_args = array(
-			'post_type'    => 'shop_subscription',
-			$report_action => true,
-			'ids'          => join( ',', $subscription_ids ),
-			'error_count'  => 0,
-		);
-
-		foreach ( $subscription_ids as $subscription_id ) {
-			$subscription = wcs_get_subscription( $subscription_id );
-			$order_note   = _x( 'Subscription status changed by bulk edit:', 'Used in order note. Reason why status changed.', 'woocommerce-subscriptions' );
-
-			try {
-
-				if ( 'cancelled' === $action ) {
-					$subscription->cancel_order( $order_note );
-				} else {
-					$subscription->update_status( $new_status, $order_note, true );
-				}
-
-				// Fire the action hooks
-				switch ( $action ) {
-					case 'active':
-					case 'on-hold':
-					case 'cancelled':
-					case 'trash':
-						do_action( 'woocommerce_admin_changed_subscription_to_' . $action, $subscription_id );
-						break;
-				}
-
-				$changed++;
-
-			} catch ( Exception $e ) {
-				$sendback_args['error'] = urlencode( $e->getMessage() );
-				$sendback_args['error_count']++;
-			}
-		}
-
-		$sendback_args['changed'] = $changed;
-		$sendback                 = add_query_arg( $sendback_args, wp_get_referer() ? wp_get_referer() : '' );
-		wp_safe_redirect( esc_url_raw( $sendback ) );
-
+		wp_safe_redirect( $redirect_url );
 		exit();
 	}
 
@@ -1257,6 +1206,63 @@ class WCS_Admin_Post_Types {
 		}
 
 		return apply_filters( 'woocommerce_subscription_list_table_actions', $actions, $subscription );
+	}
+
+	/**
+	 * Handles bulk action requests for Subscriptions.
+	 *
+	 * @param string $redirect_to      The default URL to redirect to after handling the bulk action request.
+	 * @param string $action           The action to take against the list of subscriptions.
+	 * @param array  $subscription_ids The list of subscription to run the action against.
+	 *
+	 * @return string The URL to redirect to after handling the bulk action request.
+	 */
+	public function handle_subscription_bulk_actions( $redirect_to, $action, $subscription_ids ) {
+
+		if ( ! in_array( $action, array( 'active', 'on-hold', 'cancelled' ), true ) ) {
+			return $redirect_to;
+		}
+
+		$new_status    = $action;
+		$sendback_args = [
+			'ids'         => join( ',', $subscription_ids ),
+			'changed'     => 0,
+			'error_count' => 0,
+		];
+
+		foreach ( $subscription_ids as $subscription_id ) {
+			$subscription = wcs_get_subscription( $subscription_id );
+			$note         = _x( 'Subscription status changed by bulk edit:', 'Used in order note. Reason why status changed.', 'woocommerce-subscriptions' );
+
+			try {
+				if ( 'cancelled' === $action ) {
+					$subscription->cancel_order( $note );
+				} else {
+					$subscription->update_status( $new_status, $note, true );
+				}
+
+				// Fire the action hooks.
+				do_action( 'woocommerce_admin_changed_subscription_to_' . $action, $subscription_id );
+
+				$sendback_args['changed']++;
+
+			} catch ( Exception $e ) {
+				$sendback_args['error'] = urlencode( $e->getMessage() );
+				$sendback_args['error_count']++;
+			}
+		}
+
+		$report_action = 'marked_' . $action;
+
+		// Format the return URL based on the environment.
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			$sendback_args['bulk_action'] = $report_action;
+		} else {
+			$sendback_args['post_type']      = 'shop_subscription';
+			$sendback_args[ $report_action ] = true;
+		}
+
+		return esc_url_raw( add_query_arg( $sendback_args, $redirect_to ) );
 	}
 
 	/** Deprecated Functions */
