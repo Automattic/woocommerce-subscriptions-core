@@ -412,7 +412,7 @@ class WCS_Admin_Post_Types {
 
 		// Remove the query args which flags this bulk action request so WC doesn't duplicate the notice and so links generated on this page don't contain these flags.
 		if ( isset( $_SERVER['REQUEST_URI'] ) ) {
-			$_SERVER['REQUEST_URI'] = remove_query_arg( [ 'error_count', 'error', 'bulk_action', 'changed', 'ids' ], wp_unslash( $_SERVER['REQUEST_URI'] ) );
+			$_SERVER['REQUEST_URI'] = remove_query_arg( [ 'error_count', 'error', 'bulk_action', 'changed', 'ids' ], esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
 		}
 		unset( $_REQUEST['ids'], $_REQUEST['bulk_action'], $_REQUEST['changed'], $_REQUEST['error_count'], $_REQUEST['error'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
