@@ -1175,8 +1175,11 @@ class WCS_Admin_Post_Types {
 		// We need an instance of the post object type to be able to check user capabilities for status transition actions.
 		$post_type_object = get_post_type_object( $subscription->get_type() );
 
+		// Some actions URLS change depending on the environment.
+		$is_hpos_enabled = wcs_is_custom_order_tables_usage_enabled();
+
 		// On HPOS environments, WC expects a slightly different format for the bulk actions.
-		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+		if ( $is_hpos_enabled ) {
 			$action_url_args = [
 				'order'    => [ $subscription->get_id() ],
 				'_wpnonce' => wp_create_nonce( 'bulk-orders' ),
@@ -1203,29 +1206,53 @@ class WCS_Admin_Post_Types {
 				continue;
 			}
 
-			if ( in_array( $status, array( 'trash', 'deleted' ), true ) ) {
-
-				if ( current_user_can( $post_type_object->cap->delete_post, $subscription->get_id() ) ) {
-
-					if ( 'trash' === $subscription->get_status() ) {
-						$actions['untrash'] = '<a title="' . esc_attr( __( 'Restore this item from the Trash', 'woocommerce-subscriptions' ) ) . '" href="' . wp_nonce_url( admin_url( sprintf( $post_type_object->_edit_link . '&amp;action=untrash', $subscription->get_id() ) ), 'untrash-post_' . $subscription->get_id() ) . '">' . __( 'Restore', 'woocommerce-subscriptions' ) . '</a>';
-					} elseif ( EMPTY_TRASH_DAYS ) {
-						$actions['trash'] = '<a class="submitdelete" title="' . esc_attr( __( 'Move this item to the Trash', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $subscription->get_id() ) . '">' . __( 'Trash', 'woocommerce-subscriptions' ) . '</a>';
-					}
-
-					if ( 'trash' === $subscription->get_status() || ! EMPTY_TRASH_DAYS ) {
-						$actions['delete'] = '<a class="submitdelete" title="' . esc_attr( __( 'Delete this item permanently', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $subscription->get_id(), '', true ) . '">' . __( 'Delete Permanently', 'woocommerce-subscriptions' ) . '</a>';
-					}
-				}
-			} else {
-
-				if ( 'cancelled' === $status && 'pending-cancel' === $subscription->get_status() ) {
-					$label = __( 'Cancel Now', 'woocommerce-subscriptions' );
-				}
-
-				$actions[ $status ] = sprintf( '<a href="%s">%s</a>', add_query_arg( 'action', $status, $action_url ), $label );
-
+			// Trashing and deleting requires specific user capabilities.
+			if ( in_array( $status, array( 'trash', 'deleted' ), true ) && ! current_user_can( $post_type_object->cap->delete_post, $subscription->get_id() ) ) {
+				continue;
 			}
+
+			if ( 'trash' === $status ) {
+				// If the subscription is already trashed, add an untrash action instead.
+				if ( 'trash' === $subscription->get_status() ) {
+					$untrash_url        = $is_hpos_enabled ? add_query_arg( 'action', 'untrash', $action_url ) : wp_nonce_url( admin_url( sprintf( $post_type_object->_edit_link . '&amp;action=untrash', $subscription->get_id() ) ), 'untrash-post_' . $subscription->get_id() );
+					$actions['untrash'] = sprintf(
+						'<a title="%s" href="%s">%s</a>',
+						esc_attr( __( 'Restore this item from the Trash', 'woocommerce-subscriptions' ) ),
+						$untrash_url,
+						__( 'Restore', 'woocommerce-subscriptions' )
+					 );
+				} elseif ( EMPTY_TRASH_DAYS ) {
+					$actions['trash'] = sprintf(
+						'<a class="submitdelete" title="%s" href="%s">%s</a>',
+						esc_attr( __( 'Move this item to the Trash', 'woocommerce-subscriptions' ) ),
+						$this->get_trash_or_delete_subscription_link( $subscription->get_id(), $action_url, 'trash' ),
+						$label
+					);
+				}
+
+				// The trash action has been handled so continue to the next one.
+				continue;
+			}
+
+			// The delete action is only shown on already trashed subscriptions, or where there is no trash period.
+			if ( 'deleted' === $status && ( 'trash' === $subscription->get_status() || ! EMPTY_TRASH_DAYS ) ) {
+				$actions['delete'] = sprintf(
+					'<a class="submitdelete" title="%s" href="%s">%s</a>',
+					esc_attr( __( 'Delete this item permanently', 'woocommerce-subscriptions' ) ),
+					$this->get_trash_or_delete_subscription_link( $subscription->get_id(), $action_url, 'delete' ),
+					$label
+				);
+
+				// The delete action has been handled so continue to the next one.
+				continue;
+			}
+
+			// Modify the label for canceling if the subscription is pending cancel.
+			if ( 'cancelled' === $status && 'pending-cancel' === $subscription->get_status() ) {
+				$label = __( 'Cancel Now', 'woocommerce-subscriptions' );
+			}
+
+			$actions[ $status ] = sprintf( '<a href="%s">%s</a>', add_query_arg( 'action', $status, $action_url ), $label );
 		}
 
 		if ( 'pending' === $subscription->get_status() ) {
@@ -1284,6 +1311,24 @@ class WCS_Admin_Post_Types {
 		}
 
 		return esc_url_raw( add_query_arg( $sendback_args, $redirect_to ) );
+	}
+
+	/**
+	 * Generates an admin trash or delete subscription URL in a HPOS environment compatible way.
+	 *
+	 * @param int    $subscription_id The subscription to generate a trash or delete URL for.
+	 * @param string $base_action_url The base URL to add the query args to.
+	 * @param string $status          The status to generate the URL for. Should be 'trash' or 'delete'.
+	 *
+	 * @return string The admin trash or delete subscription URL.
+	 */
+	private function get_trash_or_delete_subscription_link( $subscription_id, $base_action_url, $status ) {
+
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			return add_query_arg( 'action', $status, $base_action_url );
+		}
+
+		return get_delete_post_link( $subscription_id, '', 'delete' === $status );
 	}
 
 	/** Deprecated Functions */
