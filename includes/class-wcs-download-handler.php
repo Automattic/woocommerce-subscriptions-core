@@ -43,7 +43,7 @@ class WCS_Download_Handler {
 	 */
 	public static function attach_wc_dependent_hooks() {
 		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			add_action( 'woocommerce_delete_subscription', [ __CLASS__, 'delete_subscription_permissions' ] );
+			add_action( 'woocommerce_delete_subscription', [ __CLASS__, 'delete_subscription_download_permissions' ] );
 		} else {
 			add_action( 'deleted_post', [ __CLASS__, 'delete_subscription_permissions' ] );
 		}
@@ -203,11 +203,21 @@ class WCS_Download_Handler {
 	 * @param $id The ID of the subscription whose downloadable product permission being deleted.
 	 */
 	public static function delete_subscription_permissions( $id ) {
-		global $wpdb;
-
 		if ( 'shop_subscription' === WC_Data_Store::load( 'subscription' )->get_order_type( $id ) ) {
-			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions WHERE order_id = %d", $id ) );
+			self::delete_subscription_download_permissions_query( $id );
 		}
+	}
+
+	/**
+	 * Remove download permissions attached to a subscription when it is permenantly deleted.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param $id The ID of the subscription whose downloadable product permission being deleted.
+	 */
+	public static function delete_subscription_download_permissions( $id ) {
+		global $wpdb;
+		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions WHERE order_id = %d", $id ) );
 	}
 
 	/**
