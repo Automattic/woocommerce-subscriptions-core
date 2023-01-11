@@ -85,7 +85,7 @@ class WC_Subscriptions_Checkout {
 		$subscriptions = wcs_get_subscriptions_for_order( wcs_get_objects_property( $order, 'id' ), array( 'order_type' => 'parent' ) );
 
 		if ( ! empty( $subscriptions ) ) {
-			$action_hook = wcs_is_custom_order_tables_usage_enabled() ? 'woocommerce_before_trash_subscription' : 'before_delete_post';
+			$action_hook = wcs_is_custom_order_tables_usage_enabled() ? 'woocommerce_before_delete_subscription' : 'before_delete_post';
 
 			remove_action( $action_hook, 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 			foreach ( $subscriptions as $subscription ) {
