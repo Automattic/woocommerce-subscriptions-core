@@ -1283,12 +1283,6 @@ class WCS_Admin_Post_Types {
 			}
 		}
 
-		// On CPT stores, the return URL requires the post type.
-		// TODO: Double check this is required.
-		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
-			$sendback_args['post_type'] = 'shop_subscription';
-		}
-
 		return esc_url_raw( add_query_arg( $sendback_args, $redirect_to ) );
 	}
 
