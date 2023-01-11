@@ -801,7 +801,7 @@ class WC_Subscriptions_Manager {
 	public static function clear_users_subscriptions_from_order( $order ) {
 
 		foreach ( wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'parent' ) ) as $subscription_id => $subscription ) {
-			wp_delete_post( $subscription->get_id() );
+			$subscription->delete( true );
 		}
 
 		do_action( 'cleared_users_subscriptions_from_order', $order );
