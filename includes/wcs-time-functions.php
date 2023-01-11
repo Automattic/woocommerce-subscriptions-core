@@ -629,7 +629,8 @@ function wcs_is_datetime_mysql_format( $time ) {
 		return false;
 	}
 
-	if ( function_exists( 'strptime' ) ) {
+	if ( function_exists( 'strptime' ) && PHP_VERSION_ID < 80100 ) {
+		// strptime is deprecated since PHP 8.1
 		$valid_time = $match = ( false !== strptime( $time, '%Y-%m-%d %H:%M:%S' ) );
 	} else {
 		// parses for the pattern of YYYY-MM-DD HH:MM:SS, but won't check whether it's a valid timedate
