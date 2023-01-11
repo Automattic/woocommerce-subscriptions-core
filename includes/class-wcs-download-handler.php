@@ -204,7 +204,7 @@ class WCS_Download_Handler {
 	 */
 	public static function delete_subscription_permissions( $id ) {
 		if ( 'shop_subscription' === WC_Data_Store::load( 'subscription' )->get_order_type( $id ) ) {
-			self::delete_subscription_download_permissions_query( $id );
+			self::delete_subscription_download_permissions( $id );
 		}
 	}
 
