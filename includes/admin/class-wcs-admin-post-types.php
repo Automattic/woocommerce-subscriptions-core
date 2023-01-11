@@ -357,7 +357,7 @@ class WCS_Admin_Post_Types {
 
 		if ( wcs_is_custom_order_tables_usage_enabled() ) {
 			$current_screen             = get_current_screen();
-			$is_subscription_list_table = $current_screen && $current_screen->id === wcs_get_page_screen_id( 'shop_subscription' );
+			$is_subscription_list_table = $current_screen && wcs_get_page_screen_id( 'shop_subscription' ) === $current_screen->id;
 		} else {
 			global $post_type, $pagenow;
 			$is_subscription_list_table = 'edit.php' === $pagenow && 'shop_subscription' === $post_type;
@@ -373,7 +373,7 @@ class WCS_Admin_Post_Types {
 		 *
 		 * Note: Nonce verification is not required here because we're just displaying an admin notice after a verified request was made.
 		 */
-		if ( ! isset( $_REQUEST[ 'bulk_action' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! isset( $_REQUEST['bulk_action'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return;
 		}
 
@@ -411,8 +411,10 @@ class WCS_Admin_Post_Types {
 		}
 
 		// Remove the query args which flags this bulk action request so WC doesn't duplicate the notice and so links generated on this page don't contain these flags.
-		$_SERVER['REQUEST_URI'] = remove_query_arg( [ 'error_count', 'error', 'bulk_action', 'changed', 'ids' ], $_SERVER['REQUEST_URI'] );
-		unset( $_REQUEST['ids'], $_REQUEST['bulk_action'], $_REQUEST['changed'], $_REQUEST['error_count'], $_REQUEST['error'] );
+		if ( isset( $_SERVER['REQUEST_URI'] ) ) {
+			$_SERVER['REQUEST_URI'] = remove_query_arg( [ 'error_count', 'error', 'bulk_action', 'changed', 'ids' ], wp_unslash( $_SERVER['REQUEST_URI'] ) );
+		}
+		unset( $_REQUEST['ids'], $_REQUEST['bulk_action'], $_REQUEST['changed'], $_REQUEST['error_count'], $_REQUEST['error'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
@@ -1276,7 +1278,7 @@ class WCS_Admin_Post_Types {
 				$sendback_args['changed']++;
 
 			} catch ( Exception $e ) {
-				$sendback_args['error'] = urlencode( $e->getMessage() );
+				$sendback_args['error'] = rawurlencode( $e->getMessage() );
 				$sendback_args['error_count']++;
 			}
 		}
