@@ -78,6 +78,9 @@ class WCS_Admin_Post_Types {
 		add_action( 'woocommerce_order_list_table_restrict_manage_orders', array( $this, 'restrict_by_payment_method' ) );
 		add_action( 'woocommerce_order_list_table_restrict_manage_orders', array( $this, 'restrict_by_customer' ) );
 
+		// Add Subscription list table status views when HPOS is enabled.
+		add_filter( 'views_woocommerce_page_wc-orders--shop_subscription', array( $this, 'filter_subscription_list_table_views' ) );
+
 		add_action( 'list_table_primary_column', array( $this, 'list_table_primary_column' ), 10, 2 );
 		add_filter( 'post_row_actions', array( $this, 'shop_subscription_row_actions' ), 10, 2 );
 	}
@@ -1331,6 +1334,142 @@ class WCS_Admin_Post_Types {
 		}
 
 		return apply_filters( 'woocommerce_subscription_list_table_actions', $actions, $subscription );
+	}
+
+	/**
+	 * Handles bulk action requests for Subscriptions.
+	 *
+	 * @param string $redirect_to      The default URL to redirect to after handling the bulk action request.
+	 * @param string $action           The action to take against the list of subscriptions.
+	 * @param array  $subscription_ids The list of subscription to run the action against.
+	 *
+	 * @return string The URL to redirect to after handling the bulk action request.
+	 */
+	public function handle_subscription_bulk_actions( $redirect_to, $action, $subscription_ids ) {
+
+		if ( ! in_array( $action, array( 'active', 'on-hold', 'cancelled' ), true ) ) {
+			return $redirect_to;
+		}
+
+		$new_status    = $action;
+		$sendback_args = [
+			'ids'         => join( ',', $subscription_ids ),
+			'bulk_action' => 'marked_' . $action,
+			'changed'     => 0,
+			'error_count' => 0,
+		];
+
+		foreach ( $subscription_ids as $subscription_id ) {
+			$subscription = wcs_get_subscription( $subscription_id );
+			$note         = _x( 'Subscription status changed by bulk edit:', 'Used in order note. Reason why status changed.', 'woocommerce-subscriptions' );
+
+			try {
+				if ( 'cancelled' === $action ) {
+					$subscription->cancel_order( $note );
+				} else {
+					$subscription->update_status( $new_status, $note, true );
+				}
+
+				// Fire the action hooks.
+				do_action( 'woocommerce_admin_changed_subscription_to_' . $action, $subscription_id );
+
+				$sendback_args['changed']++;
+
+			} catch ( Exception $e ) {
+				$sendback_args['error'] = rawurlencode( $e->getMessage() );
+				$sendback_args['error_count']++;
+			}
+		}
+
+		return esc_url_raw( add_query_arg( $sendback_args, $redirect_to ) );
+	}
+
+	/**
+	 * Filters the list of available list table views for Subscriptions when HPOS enabled.
+	 *
+	 * This function adds links to the top of the Subscriptions List Table to filter the table by status while also showing status count.
+	 *
+	 * In HPOS, WooCommerce extends the WP_List_Table class and generates these views for Orders, but we need to override this and
+	 * manually add the views for Subscriptions which is done by this function.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param array $views
+	 *
+	 * @return array
+	 */
+	public function filter_subscription_list_table_views( $views ) {
+		$view_counts     = [];
+		$views           = [];
+		$all_count       = 0;
+		$statuses        = $this->get_list_table_view_statuses();
+		$count_by_status = WC_Data_Store::load( 'subscription' )->get_subscriptions_count_by_status();
+
+		/**
+		 * The nonce check is ignored below as there is no nonce provided on status filter requests and it's not necessary
+		 * because we're filtering an admin screen, not processing or acting on the data.
+		 */
+		$current_status = ! empty( $_GET['status'] ) ? wc_clean( wp_unslash( $_GET['status'] ) ) : 'all'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		foreach ( array_keys( $statuses ) as $slug ) {
+			$total_in_status = isset( $count_by_status[ $slug ] ) ? $count_by_status[ $slug ] : 0;
+
+			if ( $total_in_status > 0 ) {
+				$view_counts[ $slug ] = $total_in_status;
+			}
+
+			if ( ( get_post_status_object( $slug ) )->show_in_admin_all_list ) {
+				$all_count += $total_in_status;
+			}
+		}
+
+		$views['all'] = $this->get_list_table_view_status_link( 'all', __( 'All', 'woocommerce-subscriptions' ), $all_count, '' === $current_status || 'all' === $current_status );
+
+		foreach ( $view_counts as $slug => $count ) {
+			$views[ $slug ] = $this->get_list_table_view_status_link( $slug, $statuses[ $slug ], $count, $slug === $current_status );
+		}
+
+		return $views;
+	}
+
+	/**
+	 * Returns a HTML link to filter the subscriptions list table view by status.
+	 *
+	 * @param string $status_slug  Status slug used to identify the view.
+	 * @param string $status_name  Human-readable name of the view.
+	 * @param int    $status_count Number of statuses in this view.
+	 * @param bool   $current      If this is the current view.
+	 *
+	 * @return string
+	 */
+	private function get_list_table_view_status_link( $status_slug, $status_name, $status_count, $current ) {
+		$base_url = get_admin_url( null, 'admin.php?page=wc-orders--shop_subscription' );
+
+		return sprintf(
+			'<a href="%s" %s>%s <span class="count">(%d)</span></a>',
+			esc_url( add_query_arg( 'status', $status_slug, $base_url ) ),
+			$current ? 'class="current"' : '',
+			esc_html( $status_name ),
+			absint( $status_count ),
+		);
+	}
+
+	/**
+	 * Returns a list of subscription status slugs and labels that should be visible in the status list.
+	 *
+	 * @return array slug => label array of order statuses.
+	 */
+	private function get_list_table_view_statuses() {
+		return array_intersect_key(
+			array_merge(
+				wcs_get_subscription_statuses(),
+				array(
+					'trash' => ( get_post_status_object( 'trash' ) )->label,
+					'draft' => ( get_post_status_object( 'draft' ) )->label,
+				)
+			),
+			array_flip( get_post_stati( array( 'show_in_admin_status_list' => true ) ) )
+		);
 	}
 
 	/** Deprecated Functions */
