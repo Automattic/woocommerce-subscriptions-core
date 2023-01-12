@@ -103,9 +103,9 @@ class WCS_Admin_Meta_Boxes {
 			add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', $order_screen_id, 'normal', 'low' );
 		}
 
-		// On HPOS environments we need to remove and readd the line items metabox so it appears after the subscription data.
+		// On HPOS environments we need to remove and readd the line items meta box so it appears after the subscription data.
 		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			self::reorder_subscription_line_items_metabox();
+			self::reorder_subscription_line_items_meta_box();
 		}
 	}
 
@@ -686,40 +686,40 @@ class WCS_Admin_Meta_Boxes {
 	}
 
 	/**
-	 * Reorders the edit subscription screen metaboxes.
+	 * Reorders the edit subscription screen meta boxes.
 	 *
-	 * Removes and readds the order items metabox so it appears after the subscription data.
+	 * Removes and readds the order items meta box so it appears after the subscription data.
 	 *
-	 * On HPOS environments, WC core registers the order-data and order-items metaboxes on a high priority before we've had a chance to add ours.
-	 * This means, on the edit subscription screen, when we remove the order-data metabox and add our own, it will appear after the line items.
+	 * On HPOS environments, WC core registers the order-data and order-items meta boxes on a high priority before we've had a chance to add ours.
+	 * This means, on the edit subscription screen, when we remove the order-data meta box and add our own, it will appear after the line items.
 	 *
-	 * In order to keep the correct ordering of the metaboxes on the edit subscription screen, we need to remove the line items metabox and
-	 * readd it after we've added the subscription-data metabox.
+	 * In order to keep the correct ordering of the meta boxes on the edit subscription screen, we need to remove the line items meta box and
+	 * readd it after we've added the subscription-data meta box.
 	 */
-	private static function reorder_subscription_line_items_metabox() {
+	private static function reorder_subscription_line_items_meta_box() {
 		global $wp_meta_boxes;
 		$subscriptions_screen_id = wcs_get_page_screen_id( 'shop_subscription' );
 
-		// If the line items metabox isn't registered, bail.
+		// If the line items meta box isn't registered, bail.
 		if ( empty( $wp_meta_boxes[ $subscriptions_screen_id ]['normal']['high']['woocommerce-order-items'] ) ) {
 			return;
 		}
 
-		// Get a copy of the line items metabox.
-		$items_metabox = $wp_meta_boxes[ $subscriptions_screen_id ]['normal']['high']['woocommerce-order-items'];
+		// Get a copy of the line items meta box.
+		$items_meta_box = $wp_meta_boxes[ $subscriptions_screen_id ]['normal']['high']['woocommerce-order-items'];
 
-		// Forcibly remove the line items metabox to reset its ordering in the list.
+		// Forcibly remove the line items meta box to reset its ordering in the list.
 		unset( $wp_meta_boxes[ $subscriptions_screen_id ]['normal']['high']['woocommerce-order-items'] );
 
 		// Readd it.
 		add_meta_box(
-			$items_metabox['id'],
-			$items_metabox['title'],
-			$items_metabox['callback'],
+			$items_meta_box['id'],
+			$items_meta_box['title'],
+			$items_meta_box['callback'],
 			$subscriptions_screen_id,
 			'normal',
 			'high',
-			$items_metabox['args']
+			$items_meta_box['args']
 		);
 	}
 }
