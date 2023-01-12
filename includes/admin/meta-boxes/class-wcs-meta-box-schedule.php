@@ -17,29 +17,41 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WCS_Meta_Box_Schedule {
 
 	/**
-	 * Output the metabox
+	 * Outputs the subscription schedule metabox.
+	 *
+	 * @param WC_Subscription|WP_Post $subscription The subscription object to display the schedule metabox for. This will be a WP Post object on CPT stores.
 	 */
-	public static function output( $post ) {
+	public static function output( $subscription ) {
 		global $post, $the_subscription;
 
-		if ( empty( $the_subscription ) ) {
+		if ( $subscription && is_a( $subscription, 'WC_Subscription' ) ) {
+			$the_subscription = $subscription;
+		} elseif ( empty( $the_subscription ) ) {
 			$the_subscription = wcs_get_subscription( $post->ID );
+		}
+
+		/**
+		 * Subscriptions without a start date are freshly created subscriptions.
+		 * In order to display the schedule meta box we need to pre-populate the start date with the created date.
+		 */
+		if ( 0 === $the_subscription->get_time( 'start' ) ) {
+			$the_subscription->set_start_date( $the_subscription->get_date( 'date_created' ) );
 		}
 
 		include dirname( __FILE__ ) . '/views/html-subscription-schedule.php';
 	}
 
 	/**
-	 * Save meta box data
+	 * Saves the subscription schedule meta box data.
 	 *
 	 * @see woocommerce_process_shop_order_meta
 	 *
-	 * @param int $order_id
-	 * @param WC_Order $order
+	 * @param int                     $subscription_id The subscription ID to save the schedule for.
+	 * @param WC_Subscription/WP_Post $subscription    The subscription object to save the schedule for.
 	 */
-	public static function save( $order_id, $order ) {
+	public static function save( $subscription_id, $subscription ) {
 
-		if ( ! wcs_is_subscription( $order_id ) ) {
+		if ( ! wcs_is_subscription( $subscription_id ) ) {
 			return;
 		}
 
@@ -47,7 +59,9 @@ class WCS_Meta_Box_Schedule {
 			return;
 		}
 
-		$subscription = wcs_get_subscription( $order );
+		if ( $subscription instanceof WP_Post ) {
+			$subscription = wcs_get_subscription( $subscription->ID );
+		}
 
 		if ( isset( $_POST['_billing_interval'] ) ) {
 			$subscription->set_billing_interval( wc_clean( wp_unslash( $_POST['_billing_interval'] ) ) );
@@ -85,7 +99,7 @@ class WCS_Meta_Box_Schedule {
 
 			// Clear the posts cache for non-HPOS stores.
 			if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
-				wp_cache_delete( $order_id, 'posts' );
+				wp_cache_delete( $subscription_id, 'posts' );
 			}
 		} catch ( Exception $e ) {
 			wcs_add_admin_notice( $e->getMessage(), 'error' );

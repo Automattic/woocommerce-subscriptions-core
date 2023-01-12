@@ -1,16 +1,14 @@
 <?php
 /**
- * Post Types Admin
+ * WooCommerce Subscriptions Admin Post Types.
  *
- * @author   Prospress
  * @category Admin
  * @package  WooCommerce Subscriptions/Admin
  * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-} // Exit if accessed directly
+// Exit if accessed directly
+defined( 'ABSPATH' ) || exit;
 
 if ( class_exists( 'WCS_Admin_Post_Types' ) ) {
 	return;
@@ -40,20 +38,28 @@ class WCS_Admin_Post_Types {
 	 * Constructor
 	 */
 	public function __construct() {
-
 		// Subscription list table columns and their content
 		add_filter( 'manage_edit-shop_subscription_columns', array( $this, 'shop_subscription_columns' ) );
 		add_filter( 'manage_edit-shop_subscription_sortable_columns', array( $this, 'shop_subscription_sortable_columns' ) );
-		add_action( 'manage_shop_subscription_posts_custom_column', array( $this, 'render_shop_subscription_columns' ), 2 );
+		add_action( 'manage_shop_subscription_posts_custom_column', array( $this, 'render_shop_subscription_columns' ), 2, 2 );
+
+		add_filter( 'woocommerce_shop_subscription_list_table_columns', array( $this, 'shop_subscription_columns' ) );
+		add_filter( 'woocommerce_shop_subscription_list_table_sortable_columns', array( $this, 'shop_subscription_sortable_columns' ) );
+		add_action( 'woocommerce_shop_subscription_list_table_custom_column', array( $this, 'render_shop_subscription_columns' ), 2, 2 );
 
 		// Bulk actions
-		add_filter( 'bulk_actions-edit-shop_subscription', array( $this, 'remove_bulk_actions' ) );
-		add_action( 'admin_print_footer_scripts', array( $this, 'print_bulk_actions_script' ) );
+		// CPT based screens
+		add_filter( 'bulk_actions-edit-shop_subscription', array( $this, 'filter_bulk_actions' ) );
 		add_action( 'load-edit.php', array( $this, 'parse_bulk_actions' ) );
+		// HPOS based screens
+		add_filter( 'bulk_actions-woocommerce_page_wc-orders--shop_subscription', array( $this, 'filter_bulk_actions' ) );
+
 		add_action( 'admin_notices', array( $this, 'bulk_admin_notices' ) );
 
 		// Subscription order/filter
 		add_filter( 'request', array( $this, 'request_query' ) );
+		add_filter( 'woocommerce_shop_subscription_list_table_request', array( $this, 'add_subscription_list_table_query_default_args' ) );
+		add_filter( 'woocommerce_shop_subscription_list_table_prepare_items_query_args', array( $this, 'filter_subscription_list_table_request_query' ) );
 
 		// Subscription Search
 		add_filter( 'get_search_query', array( $this, 'shop_subscription_search_label' ) );
@@ -62,9 +68,15 @@ class WCS_Admin_Post_Types {
 
 		add_filter( 'post_updated_messages', array( $this, 'post_updated_messages' ) );
 
+		// Add ListTable filters when CPT is enabled
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_product' ) );
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_payment_method' ) );
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_customer' ) );
+
+		// Add ListTable filters when HPOS is enabled
+		add_action( 'woocommerce_order_list_table_restrict_manage_orders', array( $this, 'restrict_by_product' ) );
+		add_action( 'woocommerce_order_list_table_restrict_manage_orders', array( $this, 'restrict_by_payment_method' ) );
+		add_action( 'woocommerce_order_list_table_restrict_manage_orders', array( $this, 'restrict_by_customer' ) );
 
 		add_action( 'list_table_primary_column', array( $this, 'list_table_primary_column' ), 10, 2 );
 		add_filter( 'post_row_actions', array( $this, 'shop_subscription_row_actions' ), 10, 2 );
@@ -191,12 +203,17 @@ class WCS_Admin_Post_Types {
 
 	/**
 	 * Displays the dropdown for the product filter
+	 *
+	 * @param string $order_type The type of order. This will be 'shop_subscription' for Subscriptions.
+	 *
 	 * @return string the html dropdown element
 	 */
-	public function restrict_by_product() {
-		global $typenow;
+	public function restrict_by_product( $order_type = '' ) {
+		if ( '' === $order_type ) {
+			$order_type = isset( $GLOBALS['typenow'] ) ? $GLOBALS['typenow'] : '';
+		}
 
-		if ( 'shop_subscription' !== $typenow ) {
+		if ( 'shop_subscription' !== $order_type ) {
 			return;
 		}
 
@@ -235,62 +252,71 @@ class WCS_Admin_Post_Types {
 	}
 
 	/**
-	 * Add extra options to the bulk actions dropdown
+	 * Alters the default bulk actions for the subscription object type.
 	 *
-	 * It's only on the All Shop Subscriptions screen.
-	 * Introducing new filter: woocommerce_subscription_bulk_actions. This has to be done through jQuery as the
-	 * 'bulk_actions' filter that WordPress has can only be used to remove bulk actions, not to add them.
+	 * Removes the default "edit", "mark_processing", "mark_on-hold", "mark_completed", "mark_cancelled" options from the bulk actions.
+	 * Adds subscription-related actions for activating, suspending and cancelling.
 	 *
-	 * This is a filterable array where the key is the action (will become query arg), and the value is a translatable
-	 * string. The same array is used to
-	 *
+	 * @param array $actions An array of bulk actions admin users can take on subscriptions. In the format ( 'name' => 'i18n_text' ).
+	 * @return array The bulk actions.
 	 */
-	public function print_bulk_actions_script() {
+	public function filter_bulk_actions( $actions ) {
+		/**
+		 * Get the status that the list table is being filtered by.
+		 * The 'post_status' key is used for CPT datastores, 'status' is used for HPOS datastores.
+		 *
+		 * Note: The nonce check is ignored below as there is no nonce provided on status filter requests and it's not necessary
+		 * because we're filtering an admin screen, not processing or acting on the data.
+		 */
+		$post_status = sanitize_key( wp_unslash( $_GET['post_status'] ?? $_GET['status'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-		$post_status = ( isset( $_GET['post_status'] ) ) ? $_GET['post_status'] : '';
+		// List of actions to remove that are irrelevant to subscriptions.
+		$actions_to_remove = [
+			'edit',
+			'mark_processing',
+			'mark_on-hold',
+			'mark_completed',
+			'mark_cancelled',
+		];
 
-		$subscription_id = ( ! empty( $GLOBALS['post']->ID ) ) ? $GLOBALS['post']->ID : '';
-		if ( ! $subscription_id ) {
-			return;
+		// Remove actions that are not relevant to subscriptions.
+		$actions = array_diff_key( $actions, array_flip( $actions_to_remove ) );
+
+		// If we are currently in trash, expired or cancelled listing. We don't need to add subscriptions specific actions.
+		if ( in_array( $post_status, [ 'cancelled', 'trash', 'wc-expired' ], true ) ) {
+			return $actions;
 		}
 
-		if ( 'shop_subscription' !== WC_Data_Store::load( 'subscription' )->get_order_type( $subscription_id ) || in_array( $post_status, array( 'cancelled', 'trash', 'wc-expired' ), true ) ) {
-			return;
-		}
+		/**
+		 * Subscriptions bulk actions filter.
+		 *
+		 * This is a filterable array where the key is the action (will become query arg), and the value is a translatable
+		 * string.
+		 *
+		 * @since 1.0.0 - Moved over from WooCommerce Subscriptions prior to 4.0.0
+		 */
+		$subscriptions_actions = apply_filters(
+			'woocommerce_subscription_bulk_actions',
+			[
+				'active'    => _x( 'Activate', 'an action on a subscription', 'woocommerce-subscriptions' ),
+				'on-hold'   => _x( 'Put on-hold', 'an action on a subscription', 'woocommerce-subscriptions' ),
+				'cancelled' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
+			]
+		);
 
-		// Make it filterable in case extensions want to change this
-		$bulk_actions = apply_filters( 'woocommerce_subscription_bulk_actions', array(
-			'active'    => _x( 'Activate', 'an action on a subscription', 'woocommerce-subscriptions' ),
-			'on-hold'   => _x( 'Put on-hold', 'an action on a subscription', 'woocommerce-subscriptions' ),
-			'cancelled' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
-		) );
+		$actions = array_merge( $actions, $subscriptions_actions );
 
-		// No need to display certain bulk actions if we know all the subscriptions on the page have that status already
+		// No need to display certain bulk actions if we know all the subscriptions on the page have that status already.
 		switch ( $post_status ) {
 			case 'wc-active':
-				unset( $bulk_actions['active'] );
+				unset( $actions['active'] );
 				break;
 			case 'wc-on-hold':
-				unset( $bulk_actions['on-hold'] );
+				unset( $actions['on-hold'] );
 				break;
 		}
 
-		?>
-		<script type="text/javascript">
-			jQuery( function( $ ) {
-				<?php
-				foreach ( $bulk_actions as $action => $title ) {
-					?>
-					$( '<option>' )
-						.val( '<?php echo esc_attr( $action ); ?>' )
-						.text( '<?php echo esc_html( $title ); ?>' )
-						.appendTo( "select[name='action'], select[name='action2']" );
-					<?php
-				}
-				?>
-			} );
-		</script>
-		<?php
+		return $actions;
 	}
 
 	/**
@@ -443,35 +469,48 @@ class WCS_Admin_Post_Types {
 	}
 
 	/**
-	 * Output custom columns for subscriptions
-	 * @param string $column
+	 * Outputs column content for the admin subscriptions list table.
+	 *
+	 * @param string       $column       The column name.
+	 * @param WC_Order|int $subscription Optional. The subscription being displayed. Defaults to the global $post object.
 	 */
-	public function render_shop_subscription_columns( $column ) {
-		global $post, $the_subscription, $wp_list_table;
+	public function render_shop_subscription_columns( $column, $subscription = null ) {
+		global $post, $the_subscription;
 
-		if ( empty( $the_subscription ) || $the_subscription->get_id() != $post->ID ) {
-			$the_subscription = wcs_get_subscription( $post->ID );
+		// Attempt to get the subscription ID for the current row from the passed variable or the global $post object.
+		if ( ! empty( $subscription ) ) {
+			$subscription_id = is_int( $subscription ) ? $subscription : $subscription->get_id();
+		} else {
+			$subscription_id = $post->ID;
+		}
+
+		// If we have a subscription ID, set the global $the_subscription object.
+		if ( empty( $the_subscription ) || $the_subscription->get_id() !== $subscription_id ) {
+			$the_subscription = wcs_get_subscription( $subscription_id );
 		}
 
 		// If the subscription failed to load, only display the ID.
 		if ( empty( $the_subscription ) ) {
-			if ( 'order_title' === $column ) {
-				// translators: placeholder is a subscription ID.
-				echo '<strong>' . sprintf( esc_html_x( '#%s', 'hash before subscription number', 'woocommerce-subscriptions' ), esc_html( $post->ID ) ) . '</strong>';
-				?>
-				<div class="wcs-unknown-order-info-wrapper">
-					<a href="https://woocommerce.com/document/subscriptions/store-manager-guide/#section-18">
-						<?php
-						// Translators: Placeholder is a <br> HTML tag.
-						echo wcs_help_tip( sprintf( __( "This subscription couldn't be loaded from the database. %s Click to learn more.", 'woocommerce-subscriptions' ), '</br>' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-						?>
-					</a>
-				</div>
-				<?php
-			} else {
+			if ( 'order_title' !== $column ) {
 				echo '&mdash;';
+				return;
 			}
 
+			// translators: placeholder is a subscription ID.
+			echo '<strong>' . sprintf( esc_html_x( '#%s', 'hash before subscription number', 'woocommerce-subscriptions' ), esc_html( $subscription_id ) ) . '</strong>';
+
+			/**
+			 * Display a help tip to explain why the subscription couldn't be loaded.
+			 *
+			 * Note: The wcs_help_tip() call below is not escaped here because the contents of the tip is escaped in the function via wc_help_tip() which uses esc_attr().
+			 */
+			echo sprintf(
+				'<div class="%1$s"><a href="%2$s">%3$s</a></div>',
+				'wcs-unknown-order-info-wrapper',
+				esc_url( 'https://woocommerce.com/document/subscriptions/store-manager-guide/#section-19' ),
+				// translators: Placeholder is a <br> HTML tag.
+				wcs_help_tip( sprintf( __( "This subscription couldn't be loaded from the database. %s Click to learn more.", 'woocommerce-subscriptions' ), '</br>' ) ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			);
 			return;
 		}
 
@@ -479,73 +518,26 @@ class WCS_Admin_Post_Types {
 
 		switch ( $column ) {
 			case 'status':
-				// The status label
-				$column_content = sprintf( '<mark class="subscription-status order-status status-%1$s %1$s tips" data-tip="%2$s"><span>%3$s</span></mark>', sanitize_title( $the_subscription->get_status() ), wcs_get_subscription_status_name( $the_subscription->get_status() ), wcs_get_subscription_status_name( $the_subscription->get_status() ) );
-
-				$post_type_object = get_post_type_object( $post->post_type );
-
-				$actions = array();
-
-				$action_url = add_query_arg(
-					array(
-						'post'     => $the_subscription->get_id(),
-						// Using the bulk actions nonce name as defined in WP core.
-						'_wpnonce' => wp_create_nonce( 'bulk-posts' ),
-					)
+				// The status label.
+				$column_content = sprintf(
+					'<mark class="subscription-status order-status status-%1$s %1$s tips" data-tip="%2$s"><span>%2$s</span></mark>',
+					sanitize_title( $the_subscription->get_status() ),
+					wcs_get_subscription_status_name( $the_subscription->get_status() )
 				);
 
-				if ( isset( $_REQUEST['status'] ) ) {
-					$action_url = add_query_arg( array( 'status' => $_REQUEST['status'] ), $action_url );
+				$actions = self::get_subscription_list_table_actions( $the_subscription );
+
+				// Display the subscription quick actions links.
+				$action_links = [];
+				foreach ( $actions as $action_name => $action_url ) {
+					$action_links[] = sprintf(
+						'<span class="%1$s">%2$s</span>',
+						esc_attr( $action_name ),
+						$action_url
+					);
 				}
 
-				$all_statuses = array(
-					'active'    => __( 'Reactivate', 'woocommerce-subscriptions' ),
-					'on-hold'   => __( 'Suspend', 'woocommerce-subscriptions' ),
-					'cancelled' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
-					'trash'     => __( 'Trash', 'woocommerce-subscriptions' ),
-					'deleted'   => __( 'Delete Permanently', 'woocommerce-subscriptions' ),
-				);
-
-				foreach ( $all_statuses as $status => $label ) {
-
-					if ( $the_subscription->can_be_updated_to( $status ) ) {
-
-						if ( in_array( $status, array( 'trash', 'deleted' ) ) ) {
-
-							if ( current_user_can( $post_type_object->cap->delete_post, $post->ID ) ) {
-
-								if ( 'trash' == $post->post_status ) {
-									$actions['untrash'] = '<a title="' . esc_attr( __( 'Restore this item from the Trash', 'woocommerce-subscriptions' ) ) . '" href="' . wp_nonce_url( admin_url( sprintf( $post_type_object->_edit_link . '&amp;action=untrash', $post->ID ) ), 'untrash-post_' . $post->ID ) . '">' . __( 'Restore', 'woocommerce-subscriptions' ) . '</a>';
-								} elseif ( EMPTY_TRASH_DAYS ) {
-									$actions['trash'] = '<a class="submitdelete" title="' . esc_attr( __( 'Move this item to the Trash', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $post->ID ) . '">' . __( 'Trash', 'woocommerce-subscriptions' ) . '</a>';
-								}
-
-								if ( 'trash' == $post->post_status || ! EMPTY_TRASH_DAYS ) {
-									$actions['delete'] = '<a class="submitdelete" title="' . esc_attr( __( 'Delete this item permanently', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $post->ID, '', true ) . '">' . __( 'Delete Permanently', 'woocommerce-subscriptions' ) . '</a>';
-								}
-							}
-						} else {
-
-							if ( 'cancelled' === $status && 'pending-cancel' === $the_subscription->get_status() ) {
-								$label = __( 'Cancel Now', 'woocommerce-subscriptions' );
-							}
-
-							$actions[ $status ] = sprintf( '<a href="%s">%s</a>', add_query_arg( 'action', $status, $action_url ), $label );
-
-						}
-					}
-				}
-
-				if ( 'pending' === $the_subscription->get_status() ) {
-					unset( $actions['active'] );
-					unset( $actions['trash'] );
-				} elseif ( ! in_array( $the_subscription->get_status(), array( 'cancelled', 'pending-cancel', 'expired', 'switched', 'suspended' ) ) ) {
-					unset( $actions['trash'] );
-				}
-
-				$actions = apply_filters( 'woocommerce_subscription_list_table_actions', $actions, $the_subscription );
-
-				$column_content .= $wp_list_table->row_actions( $actions );
+				$column_content .= sprintf( '<div class="row-actions">%s</div>', implode( ' | ', $action_links ) );
 
 				$column_content = apply_filters( 'woocommerce_subscription_list_table_column_status_content', $column_content, $the_subscription, $actions );
 				break;
@@ -592,8 +584,15 @@ class WCS_Admin_Post_Types {
 				} elseif ( $the_subscription->get_billing_first_name() || $the_subscription->get_billing_last_name() ) {
 					$username = trim( $the_subscription->get_billing_first_name() . ' ' . $the_subscription->get_billing_last_name() );
 				}
-				// translators: $1: is opening link, $2: is subscription order number, $3: is closing link tag, $4: is user's name
-				$column_content = sprintf( _x( '%1$s#%2$s%3$s for %4$s', 'Subscription title on admin table. (e.g.: #211 for John Doe)', 'woocommerce-subscriptions' ), '<a href="' . esc_url( admin_url( 'post.php?post=' . absint( $post->ID ) . '&action=edit' ) ) . '">', '<strong>' . esc_attr( $the_subscription->get_order_number() ) . '</strong>', '</a>', $username );
+
+				$column_content = sprintf(
+					// translators: $1: is opening link, $2: is subscription order number, $3: is closing link tag, $4: is user's name
+					_x( '%1$s#%2$s%3$s for %4$s', 'Subscription title on admin table. (e.g.: #211 for John Doe)', 'woocommerce-subscriptions' ),
+					'<a href="' . esc_url( $the_subscription->get_edit_order_url() ) . '">',
+					'<strong>' . esc_attr( $the_subscription->get_order_number() ) . '</strong>',
+					'</a>',
+					$username
+				);
 
 				$column_content .= '</div>';
 
@@ -779,9 +778,10 @@ class WCS_Admin_Post_Types {
 	}
 
 	/**
-	 * Filters and sorting handler
+	 * Filters and sorts the request for subscriptions stored in WP Post tables.
 	 *
-	 * @param  array $vars
+	 * @param array $vars
+	 *
 	 * @return array
 	 */
 	public function request_query( $vars ) {
@@ -789,97 +789,39 @@ class WCS_Admin_Post_Types {
 
 		if ( 'shop_subscription' === $typenow ) {
 
-			// Filter the orders by the posted customer.
-			if ( isset( $_GET['_customer_user'] ) && $_GET['_customer_user'] > 0 ) {
-				$customer_id      = absint( $_GET['_customer_user'] );
-				$subscription_ids = apply_filters(
-					'wcs_admin_request_query_subscriptions_for_customer',
-					WCS_Customer_Store::instance()->get_users_subscription_ids( $customer_id ),
-					$customer_id
-				);
-
-				$vars = self::set_post__in_query_var( $vars, $subscription_ids );
-			}
-
-			if ( isset( $_GET['_wcs_product'] ) && $_GET['_wcs_product'] > 0 ) {
-				$product_id       = absint( $_GET['_wcs_product'] );
-				$subscription_ids = wcs_get_subscriptions_for_product( $product_id );
-				$subscription_ids = apply_filters(
-					'wcs_admin_request_query_subscriptions_for_product',
-					array_keys( $subscription_ids ),
-					$product_id
-				);
-
-				$vars = self::set_post__in_query_var( $vars, $subscription_ids );
-			}
-
-			// If we've using the 'none' flag for the post__in query var, there's no need to apply other query filters, as we're going to return no subscriptions anyway
-			if ( isset( $vars['post__in'] ) && self::$post__in_none === $vars['post__in'] ) {
-				return $vars;
-			}
-
-			if ( ! empty( $_GET['_payment_method'] ) ) {
-				if ( '_manual_renewal' === trim( $_GET['_payment_method'] ) ) {
-					$meta_query = array(
-						array(
-							'key'   => '_requires_manual_renewal',
-							'value' => 'true',
-						),
-					);
-				} else {
-					$payment_gateway_filter = ( 'none' == $_GET['_payment_method'] ) ? '' : $_GET['_payment_method'];
-					$meta_query             = array(
-						array(
-							'key'   => '_payment_method',
-							'value' => $payment_gateway_filter,
-						),
-					);
-				}
-
-				$query_vars = array(
-					'type'       => 'shop_subscription',
-					'limit'      => -1,
-					'status'     => 'any',
-					'return'     => 'ids',
-					'meta_query' => $meta_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-				);
-
-				// If there are already set post restrictions (post__in) apply them to this query
-				if ( isset( $vars['post__in'] ) ) {
-					$query_vars['post__in'] = $vars['post__in'];
-				}
-
-				$subscription_ids = wcs_get_orders_with_meta_query( $query_vars );
-
-				if ( ! empty( $subscription_ids ) ) {
-					$vars['post__in'] = $subscription_ids;
-				} else {
-					$vars['post__in'] = self::$post__in_none;
-				}
-			}
+			// Filter the orders by the customer, product or payment method
+			$vars = $this->set_filter_by_customer_query( $vars );
+			$vars = $this->set_filter_by_product_query( $vars );
+			$vars = $this->set_filter_by_payment_method_query( $vars );
 
 			// Sorting
 			if ( isset( $vars['orderby'] ) ) {
 				switch ( $vars['orderby'] ) {
 					case 'order_total':
-						$vars = array_merge( $vars, array(
-							'meta_key' => '_order_total',
-							'orderby'  => 'meta_value_num',
-						) );
-					break;
+						$vars = array_merge(
+							$vars,
+							[
+								'meta_key' => '_order_total', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+								'orderby'  => 'meta_value_num',
+							]
+						);
+						break;
 					case 'last_payment_date':
-						add_filter( 'posts_clauses', array( $this, 'posts_clauses' ), 10, 2 );
+						add_filter( 'posts_clauses', [ $this, 'posts_clauses' ], 10, 2 );
 						break;
 					case 'start_date':
 					case 'trial_end_date':
 					case 'next_payment_date':
 					case 'end_date':
-						$vars = array_merge( $vars, array(
-							'meta_key'  => sprintf( '_schedule_%s', str_replace( '_date', '', $vars['orderby'] ) ),
-							'meta_type' => 'DATETIME',
-							'orderby'   => 'meta_value',
-						) );
-					break;
+						$vars = array_merge(
+							$vars,
+							[
+								'meta_key'  => sprintf( '_schedule_%s', str_replace( '_date', '', $vars['orderby'] ) ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+								'meta_type' => 'DATETIME',
+								'orderby'   => 'meta_value',
+							]
+						);
+						break;
 				}
 			}
 
@@ -890,6 +832,160 @@ class WCS_Admin_Post_Types {
 		}
 
 		return $vars;
+	}
+
+	/**
+	 * Filters the List Table request for Subscriptions stored in HPOS.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param array $request_query The query args sent to wc_get_orders().
+	 *
+	 * @return array $request_query
+	 */
+	public function filter_subscription_list_table_request_query( $request_query ) {
+		$request_query = $this->set_filter_by_customer_query( $request_query );
+		$request_query = $this->set_filter_by_product_query( $request_query );
+		$request_query = $this->set_filter_by_payment_method_query( $request_query );
+
+		return $request_query;
+	}
+
+	/**
+	 * Adds default query arguments for displaying subscriptions in the admin list table.
+	 *
+	 * By default, WC will fetch items to display in the list table by query the DB using
+	 * order params (eg order statuses). This function is responsible for making sure the
+	 * default request includes required values to return subscriptions.
+	 *
+	 * @param array $query_args The admin subscription's list table query args.
+	 * @return array $query_args
+	 */
+	public function add_subscription_list_table_query_default_args( $query_args ) {
+		/**
+		 * Note this request isn't nonced as we're only filtering a list table by status and not modifying data.
+		 */
+		if ( empty( $query_args['status'] ) || ( isset( $_GET['status'] ) && 'all' === $_GET['status'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$query_args['status'] = array_keys( wcs_get_subscription_statuses() );
+		}
+
+		return $query_args;
+	}
+
+	/**
+	 * Checks if the current request is filtering query by customer user and then fetches the subscriptions
+	 * that belong to that customer and sets the post__in query var to filter the request.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param array $request_query The query args sent to wc_get_orders().
+	 *
+	 * @return array $request_query
+	 */
+	private function set_filter_by_customer_query( $request_query ) {
+		/**
+		 * Note this request isn't nonced as we're only filtering a list table and not modifying data.
+		 */
+		if ( ! isset( $_GET['_customer_user'] ) || ! $_GET['_customer_user'] > 0 ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return $request_query;
+		}
+
+		$customer_id      = absint( $_GET['_customer_user'] );
+		$subscription_ids = apply_filters(
+			'wcs_admin_request_query_subscriptions_for_customer',
+			WCS_Customer_Store::instance()->get_users_subscription_ids( $customer_id ),
+			$customer_id
+		);
+
+		return self::set_post__in_query_var( $request_query, $subscription_ids );
+	}
+
+	/**
+	 * Checks if the current request is filtering query by product and then fetches all subscription IDs for that product
+	 * and sets the post__in query var to filter the request for the given array of subscription IDs.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param array $request_query The query args sent to wc_get_orders().
+	 *
+	 * @return array $request_query
+	 */
+	private function set_filter_by_product_query( $request_query ) {
+		/**
+		 * Note this request isn't nonced as we're only filtering a list table by product ID and not modifying data.
+		 */
+		if ( ! isset( $_GET['_wcs_product'] ) || ! $_GET['_wcs_product'] > 0 ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return $request_query;
+		}
+
+		$product_id       = absint( $_GET['_wcs_product'] );
+		$subscription_ids = wcs_get_subscriptions_for_product( $product_id );
+		$subscription_ids = apply_filters(
+			'wcs_admin_request_query_subscriptions_for_product',
+			array_keys( $subscription_ids ),
+			$product_id
+		);
+
+		return self::set_post__in_query_var( $request_query, $subscription_ids );
+	}
+
+	/**
+	 * Checks if the current request is filtering query by payment method and then fetches all subscription IDs
+	 * for that payment method and sets the post__in query var to filter the request.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param array $request_query The query args sent to wc_get_orders().
+	 *
+	 * @return array $request_query
+	 */
+	private function set_filter_by_payment_method_query( $request_query ) {
+		/**
+		 * If we've using the 'none' flag for the post__in query var, there's no need to apply other query filters, as we're going to return no subscriptions anyway.
+		 *
+		 * Note this request isn't nonced as we're only filtering a list table by payment method ID and not modifying data.
+		 */
+		if ( empty( $_GET['_payment_method'] ) || ( isset( $request_query['post__in'] ) && self::$post__in_none === $request_query['post__in'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return $request_query;
+		}
+
+		$payment_method = wc_clean( wp_unslash( $_GET['_payment_method'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
+			$query_vars = [
+				'type'   => 'shop_subscription',
+				'limit'  => -1,
+				'status' => 'any',
+				'return' => 'ids',
+			];
+
+			if ( '_manual_renewal' === $payment_method ) {
+				$query_vars['meta_query'][] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					'key'   => '_requires_manual_renewal',
+					'value' => 'true',
+				];
+			} else {
+				$query_vars['payment_method'] = $payment_method;
+			}
+
+			// If there are already set post restrictions (post__in) apply them to this query
+			if ( isset( $request_query['post__in'] ) ) {
+				$query_vars['post__in'] = $request_query['post__in'];
+			}
+
+			$subscription_ids = wcs_get_orders_with_meta_query( $query_vars );
+			$request_query    = self::set_post__in_query_var( $request_query, $subscription_ids );
+
+		} elseif ( '_manual_renewal' === $payment_method ) {
+			$request_query['meta_query'][] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				'key'   => '_requires_manual_renewal',
+				'value' => 'true',
+			];
+		} else {
+			$request_query['payment_method'] = $payment_method;
+		}
+
+		return $request_query;
 	}
 
 	/**
@@ -962,9 +1058,11 @@ class WCS_Admin_Post_Types {
 	 * @return string the link string
 	 */
 	public function get_related_orders_link( $the_subscription ) {
+		$orders_table_url = wcs_is_custom_order_tables_usage_enabled() ? 'admin.php?page=wc-orders&status=all' : 'edit.php?post_type=shop_order&post_status=all';
+
 		return sprintf(
 			'<a href="%s">%s</a>',
-			admin_url( 'edit.php?post_status=all&post_type=shop_order&_subscription_related_orders=' . absint( $the_subscription->get_id() ) ),
+			admin_url( $orders_table_url . '&_subscription_related_orders=' . absint( $the_subscription->get_id() ) ),
 			count( $the_subscription->get_related_orders() )
 		);
 	}
@@ -972,12 +1070,16 @@ class WCS_Admin_Post_Types {
 	/**
 	 * Displays the dropdown for the payment method filter.
 	 *
+	 * @param string $order_type The type of order. This will be 'shop_subscription' for Subscriptions.
+	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
-	public static function restrict_by_payment_method() {
-		global $typenow;
+	public static function restrict_by_payment_method( $order_type = '' ) {
+		if ( '' === $order_type ) {
+			$order_type = isset( $GLOBALS['typenow'] ) ? $GLOBALS['typenow'] : '';
+		}
 
-		if ( 'shop_subscription' !== $typenow ) {
+		if ( 'shop_subscription' !== $order_type ) {
 			return;
 		}
 
@@ -1118,21 +1220,34 @@ class WCS_Admin_Post_Types {
 	/**
 	 * Renders the dropdown for the customer filter.
 	 *
+	 * @param string $order_type The type of order. This will be 'shop_subscription' for Subscriptions.
+	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.17
 	 */
-	public static function restrict_by_customer() {
-		global $typenow;
+	public static function restrict_by_customer( $order_type = '' ) {
+		if ( '' === $order_type ) {
+			$order_type = isset( $GLOBALS['typenow'] ) ? $GLOBALS['typenow'] : '';
+		}
 
-		// Prior to WC 3.3 this was handled by WC core so exit early if an earlier version of WC is active.
-		if ( 'shop_subscription' !== $typenow || wcs_is_woocommerce_pre( '3.3' ) ) {
+		if ( 'shop_subscription' !== $order_type ) {
+			return;
+		}
+
+		// When HPOS is enabled, WC displays the customer filter so this doesn't need to be duplicated.
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
 			return;
 		}
 
 		$user_string = '';
 		$user_id     = '';
 
-		if ( ! empty( $_GET['_customer_user'] ) ) {
-			$user_id = absint( $_GET['_customer_user'] );
+		/**
+		 * If the user is being filtered, get the user object and set the user string.
+		 *
+		 * Note: The nonce verification is not required here because we're populating a filter field, not processing a form.
+		 */
+		if ( ! empty( $_GET['_customer_user'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$user_id = absint( $_GET['_customer_user'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$user    = get_user_by( 'id', $user_id );
 
 			$user_string = sprintf(
@@ -1148,6 +1263,74 @@ class WCS_Admin_Post_Types {
 			<option value="<?php echo esc_attr( $user_id ); ?>" selected="selected"><?php echo wp_kses_post( $user_string ); ?></option>
 		</select>
 		<?php
+	}
+
+	/**
+	 * Generates the list of actions available on the Subscriptions list table.
+	 *
+	 * @param WC_Subscription $subscription The subscription to generate the actions for.
+	 * @return array $actions The actions. Array keys are the action names, values are the action link (<a>) tags.
+	 */
+	private function get_subscription_list_table_actions( $subscription ) {
+		$actions = [];
+
+		// We need an instance of the post object type to be able to check user capabilities for status transition actions.
+		$post_type_object = get_post_type_object( $subscription->get_type() );
+
+		$action_url = add_query_arg(
+			array(
+				'post'     => $subscription->get_id(),
+				// Using the bulk actions nonce name as defined in WP core.
+				'_wpnonce' => wp_create_nonce( 'bulk-posts' ),
+			)
+		);
+
+		$all_statuses = array(
+			'active'    => __( 'Reactivate', 'woocommerce-subscriptions' ),
+			'on-hold'   => __( 'Suspend', 'woocommerce-subscriptions' ),
+			'cancelled' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
+			'trash'     => __( 'Trash', 'woocommerce-subscriptions' ),
+			'deleted'   => __( 'Delete Permanently', 'woocommerce-subscriptions' ),
+		);
+
+		foreach ( $all_statuses as $status => $label ) {
+			if ( ! $subscription->can_be_updated_to( $status ) ) {
+				continue;
+			}
+
+			if ( in_array( $status, array( 'trash', 'deleted' ), true ) ) {
+
+				if ( current_user_can( $post_type_object->cap->delete_post, $subscription->get_id() ) ) {
+
+					if ( 'trash' === $subscription->get_status() ) {
+						$actions['untrash'] = '<a title="' . esc_attr( __( 'Restore this item from the Trash', 'woocommerce-subscriptions' ) ) . '" href="' . wp_nonce_url( admin_url( sprintf( $post_type_object->_edit_link . '&amp;action=untrash', $subscription->get_id() ) ), 'untrash-post_' . $subscription->get_id() ) . '">' . __( 'Restore', 'woocommerce-subscriptions' ) . '</a>';
+					} elseif ( EMPTY_TRASH_DAYS ) {
+						$actions['trash'] = '<a class="submitdelete" title="' . esc_attr( __( 'Move this item to the Trash', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $subscription->get_id() ) . '">' . __( 'Trash', 'woocommerce-subscriptions' ) . '</a>';
+					}
+
+					if ( 'trash' === $subscription->get_status() || ! EMPTY_TRASH_DAYS ) {
+						$actions['delete'] = '<a class="submitdelete" title="' . esc_attr( __( 'Delete this item permanently', 'woocommerce-subscriptions' ) ) . '" href="' . get_delete_post_link( $subscription->get_id(), '', true ) . '">' . __( 'Delete Permanently', 'woocommerce-subscriptions' ) . '</a>';
+					}
+				}
+			} else {
+
+				if ( 'cancelled' === $status && 'pending-cancel' === $subscription->get_status() ) {
+					$label = __( 'Cancel Now', 'woocommerce-subscriptions' );
+				}
+
+				$actions[ $status ] = sprintf( '<a href="%s">%s</a>', add_query_arg( 'action', $status, $action_url ), $label );
+
+			}
+		}
+
+		if ( 'pending' === $subscription->get_status() ) {
+			unset( $actions['active'] );
+			unset( $actions['trash'] );
+		} elseif ( ! in_array( $subscription->get_status(), array( 'cancelled', 'pending-cancel', 'expired', 'switched', 'suspended' ), true ) ) {
+			unset( $actions['trash'] );
+		}
+
+		return apply_filters( 'woocommerce_subscription_list_table_actions', $actions, $subscription );
 	}
 
 	/** Deprecated Functions */
@@ -1202,5 +1385,68 @@ class WCS_Admin_Post_Types {
 		$item_html .= '</div>';
 
 		return $item_html;
+	}
+
+	/**
+	 * Add extra options to the bulk actions dropdown
+	 *
+	 * It's only on the All Shop Subscriptions screen.
+	 * Introducing new filter: woocommerce_subscription_bulk_actions. This has to be done through jQuery as the
+	 * 'bulk_actions' filter that WordPress has can only be used to remove bulk actions, not to add them.
+	 *
+	 * This is a filterable array where the key is the action (will become query arg), and the value is a translatable
+	 * string. The same array is used to
+	 *
+	 * @deprecated 5.3.0
+	 */
+	public function print_bulk_actions_script() {
+		wcs_deprecated_function( __METHOD__, 'subscription-core 5.3.0' );
+		$post_status = ( isset( $_GET['post_status'] ) ) ? sanitize_key( wp_unslash( $_GET['post_status'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		$subscription_id = ( ! empty( $GLOBALS['post']->ID ) ) ? $GLOBALS['post']->ID : '';
+		if ( ! $subscription_id ) {
+			return;
+		}
+
+		if ( 'shop_subscription' !== WC_Data_Store::load( 'subscription' )->get_order_type( $subscription_id ) || in_array( $post_status, array( 'cancelled', 'trash', 'wc-expired' ), true ) ) {
+			return;
+		}
+
+		// Make it filterable in case extensions want to change this
+		$bulk_actions = apply_filters(
+			'woocommerce_subscription_bulk_actions',
+			array(
+				'active'    => _x( 'Activate', 'an action on a subscription', 'woocommerce-subscriptions' ),
+				'on-hold'   => _x( 'Put on-hold', 'an action on a subscription', 'woocommerce-subscriptions' ),
+				'cancelled' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
+			)
+		);
+
+		// No need to display certain bulk actions if we know all the subscriptions on the page have that status already
+		switch ( $post_status ) {
+			case 'wc-active':
+				unset( $bulk_actions['active'] );
+				break;
+			case 'wc-on-hold':
+				unset( $bulk_actions['on-hold'] );
+				break;
+		}
+
+		?>
+		<script type="text/javascript">
+			jQuery( function( $ ) {
+				<?php
+				foreach ( $bulk_actions as $action => $title ) {
+					?>
+					$( '<option>' )
+						.val( '<?php echo esc_attr( $action ); ?>' )
+						.text( '<?php echo esc_html( $title ); ?>' )
+						.appendTo( "select[name='action'], select[name='action2']" );
+					<?php
+				}
+				?>
+			} );
+		</script>
+		<?php
 	}
 }
