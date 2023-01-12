@@ -1220,7 +1220,7 @@ class WCS_Admin_Post_Types {
 						esc_attr( __( 'Restore this item from the Trash', 'woocommerce-subscriptions' ) ),
 						$untrash_url,
 						__( 'Restore', 'woocommerce-subscriptions' )
-					 );
+					);
 				} elseif ( EMPTY_TRASH_DAYS ) {
 					$actions['trash'] = sprintf(
 						'<a class="submitdelete" title="%s" href="%s">%s</a>',
@@ -1303,7 +1303,6 @@ class WCS_Admin_Post_Types {
 				do_action( 'woocommerce_admin_changed_subscription_to_' . $action, $subscription_id );
 
 				$sendback_args['changed']++;
-
 			} catch ( Exception $e ) {
 				$sendback_args['error'] = rawurlencode( $e->getMessage() );
 				$sendback_args['error_count']++;
