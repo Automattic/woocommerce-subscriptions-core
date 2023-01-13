@@ -170,28 +170,32 @@ class WC_Subscriptions_Tracker {
 	/**
 	 * Gets first and last subscription created dates.
 	 *
-	 * @return array
+	 * @return array 'first' and 'last' created subscription dates as a string in the date format 'Y-m-d H:i:s' or '-'.
 	 */
 	private static function get_subscription_dates() {
-		global $wpdb;
-
-		$min_max = $wpdb->get_row(
-			"
-			SELECT
-				MIN( post_date_gmt ) as 'first', MAX( post_date_gmt ) as 'last'
-			FROM {$wpdb->prefix}posts
-			WHERE post_type = 'shop_subscription'
-			AND post_status NOT IN ( 'trash', 'auto-draft' )
-		",
-			ARRAY_A
+		// Ignore subscriptions with status 'trash'.
+		$first = wcs_get_subscriptions(
+			array(
+				'subscriptions_per_page' => 1,
+				'orderby'                => 'date',
+				'order'                  => 'ASC',
+				'subscription_status'    => [ 'active', 'on-hold', 'pending', 'cancelled', 'expired' ],
+			)
+		);
+		$last  = wcs_get_subscriptions(
+			array(
+				'subscriptions_per_page' => 1,
+				'orderby'                => 'date',
+				'order'                  => 'DESC',
+				'subscription_status'    => [ 'active', 'on-hold', 'pending', 'cancelled', 'expired' ],
+			)
 		);
 
-		if ( is_null( $min_max ) ) {
-			$min_max = array(
-				'first' => '-',
-				'last'  => '-',
-			);
-		}
+		// Return each date in 'Y-m-d H:i:s' format or '-' if no subscriptions found.
+		$min_max = array(
+			'first' => count( $first ) ? array_shift( $first )->get_date( 'date_created' ) : '-',
+			'last'  => count( $last ) ? array_shift( $last )->get_date( 'date_created' ) : '-',
+		);
 
 		return $min_max;
 	}
