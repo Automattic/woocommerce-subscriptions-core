@@ -100,7 +100,7 @@ class WC_Subscriptions_Tracker {
 	 * @return array
 	 */
 	private static function get_subscription_counts() {
-		$subscription_counts      = array();
+		$subscription_counts      = [];
 		$subscription_counts_data = wp_count_posts( 'shop_subscription' );
 		foreach ( wcs_get_subscription_statuses() as $status_slug => $status_name ) {
 			$subscription_counts[ $status_slug ] = $subscription_counts_data->{ $status_slug };
@@ -200,27 +200,27 @@ class WC_Subscriptions_Tracker {
 	private static function get_subscription_dates() {
 		// Ignore subscriptions with status 'trash'.
 		$first = wcs_get_subscriptions(
-			array(
+			[
 				'subscriptions_per_page' => 1,
 				'orderby'                => 'date',
 				'order'                  => 'ASC',
 				'subscription_status'    => [ 'active', 'on-hold', 'pending', 'cancelled', 'expired' ],
-			)
+			]
 		);
 		$last  = wcs_get_subscriptions(
-			array(
+			[
 				'subscriptions_per_page' => 1,
 				'orderby'                => 'date',
 				'order'                  => 'DESC',
 				'subscription_status'    => [ 'active', 'on-hold', 'pending', 'cancelled', 'expired' ],
-			)
+			]
 		);
 
 		// Return each date in 'Y-m-d H:i:s' format or '-' if no subscriptions found.
-		$min_max = array(
+		$min_max = [
 			'first' => count( $first ) ? array_shift( $first )->get_date( 'date_created' ) : '-',
 			'last'  => count( $last ) ? array_shift( $last )->get_date( 'date_created' ) : '-',
-		);
+		];
 
 		return $min_max;
 	}
