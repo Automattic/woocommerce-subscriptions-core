@@ -115,54 +115,87 @@ class WC_Subscriptions_Tracker {
 	 * @return array
 	 */
 	private static function get_subscription_orders() {
-		global $wpdb;
-
-		$order_totals   = array();
-		$relation_types = array(
+		$order_totals   = [];
+		$relation_types = [
 			'switch',
 			'renewal',
 			'resubscribe',
-		);
+		];
 
+		// Get the subtotal and count for each subscription type.
 		foreach ( $relation_types as $relation_type ) {
 
-			$total_and_count = $wpdb->get_row( sprintf(
-				"SELECT
-					SUM( order_total.meta_value ) AS 'gross_total', COUNT( orders.ID ) as 'count'
-				FROM {$wpdb->prefix}posts AS orders
-					LEFT JOIN {$wpdb->prefix}postmeta AS order_relation ON order_relation.post_id = orders.ID
-					LEFT JOIN {$wpdb->prefix}postmeta AS order_total ON order_total.post_id = orders.ID
-				WHERE order_relation.meta_key = '_subscription_%s'
-					AND orders.post_status in ( 'wc-completed', 'wc-processing', 'wc-refunded' )
-					AND order_total.meta_key = '_order_total'
-				GROUP BY order_total.meta_key
-				", $relation_type
-			), ARRAY_A );
+			// Prepare the handler for the query to get the orders for this relation type.
+			$relation_type_query_handler = function( $query ) use ( $relation_type ) {
+				$query['meta_query'][] = [
+					'key'     => '_subscription_' . $relation_type,
+					'compare' => 'EXISTS',
+				];
+				return $query;
+			};
+			add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $relation_type_query_handler, 10 );
 
-			$order_totals[ $relation_type . '_gross' ] = is_null( $total_and_count ) ? 0 : $total_and_count['gross_total'];
-			$order_totals[ $relation_type . '_count' ] = is_null( $total_and_count ) ? 0 : $total_and_count['count'];
+			// Fetch the orders.
+			$relation_orders = wc_get_orders(
+				[
+					'type'   => 'shop_order',
+					'status' => [ 'wc-completed', 'wc-processing', 'wc-refunded' ],
+					'limit'  => -1,
+				]
+			);
+
+			remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $relation_type_query_handler, 10 );
+
+			// Sum the totals and count the orders.
+			$count = count( $relation_orders );
+			$total = array_reduce(
+				$relation_orders,
+				function( $total, $order ) {
+					return $total + $order->get_total();
+				},
+				0
+			);
+
+			$order_totals[ $relation_type . '_count' ] = $count;
+			$order_totals[ $relation_type . '_gross' ] = $total;
 		}
 
-		// Finally get the initial revenue and count
-		$total_and_count = $wpdb->get_row(
-			"SELECT
-				SUM( order_total.meta_value ) AS 'gross_total', COUNT( * ) as 'count'
-			FROM {$wpdb->prefix}posts AS orders
-				LEFT JOIN {$wpdb->prefix}posts AS subscriptions ON subscriptions.post_parent = orders.ID
-				LEFT JOIN {$wpdb->prefix}postmeta AS order_total ON order_total.post_id = orders.ID
-			WHERE orders.post_status in ( 'wc-completed', 'wc-processing', 'wc-refunded' )
-				AND subscriptions.post_type = 'shop_subscription'
-				AND orders.post_type = 'shop_order'
-				AND order_total.meta_key = '_order_total'
-			GROUP BY order_total.meta_key
-		", ARRAY_A );
+		// Finally, get the initial revenue and count.
+		// Prepare the handler for the query to get the orders for all initial subscription orders (no switch, renewal or resubscribe meta key).
+		$initial_type_query_handler = function( $query ) use ( $relation_types ) {
+			foreach ( $relation_types as $relation_type ) {
+				$query['meta_query'][] = [
+					'key'     => '_subscription_' . $relation_type,
+					'compare' => 'NOT EXISTS',
+				];
+			}
+			return $query;
+		};
+		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $initial_type_query_handler, 10 );
 
-		$initial_order_total = is_null( $total_and_count ) ? 0 : $total_and_count['gross_total'];
-		$initial_order_count = is_null( $total_and_count ) ? 0 : $total_and_count['count'];
+		// Fetch the orders.
+		$initial_subscription_orders = wc_get_orders(
+			[
+				'type'   => 'shop_order',
+				'status' => [ 'wc-completed', 'wc-processing', 'wc-refunded' ],
+				'limit'  => -1,
+			]
+		);
 
-		// Don't double count resubscribe revenue and count
-		$order_totals['initial_gross'] = $initial_order_total - $order_totals['resubscribe_gross'];
-		$order_totals['initial_count'] = $initial_order_count - $order_totals['resubscribe_count'];
+		remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $initial_type_query_handler, 10 );
+
+		// Sum the totals and count the orders.
+		$initial_order_count = count( $initial_subscription_orders );
+		$initial_order_total = array_reduce(
+			$initial_subscription_orders,
+			function( $total, $order ) {
+				return $total + $order->get_total();
+			},
+			0
+		);
+
+		$order_totals['initial_gross'] = $initial_order_total;
+		$order_totals['initial_count'] = $initial_order_count;
 
 		return $order_totals;
 	}
