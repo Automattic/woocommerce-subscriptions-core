@@ -1450,7 +1450,7 @@ class WCS_Admin_Post_Types {
 			esc_url( add_query_arg( 'status', $status_slug, $base_url ) ),
 			$current ? 'class="current"' : '',
 			esc_html( $status_name ),
-			absint( $status_count ),
+			absint( $status_count )
 		);
 	}
 
