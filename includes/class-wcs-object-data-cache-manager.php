@@ -203,6 +203,10 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 	 * }
 	 */
 	protected function trigger_update_cache_hook_from_change( $object, $key, $change ) {
-		$this->trigger_update_cache_hook( $change['type'], $object->get_id(), $key, $change['new'] );
+		if ( 'update' === $change['type'] ) {
+			$this->trigger_update_cache_hook( $change['type'], $object->get_id(), $key, $change['new'], $change['previous'] );
+		} else {
+			$this->trigger_update_cache_hook( $change['type'], $object->get_id(), $key, $change['new'] );
+		}
 	}
 }
