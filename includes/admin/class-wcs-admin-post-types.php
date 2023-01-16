@@ -342,6 +342,10 @@ class WCS_Admin_Post_Types {
 			$action = wc_clean( wp_unslash( $_REQUEST['action2'] ) );
 		}
 
+		if ( ! in_array( $action, array( 'active', 'on-hold', 'cancelled' ), true ) ) {
+			return;
+		}
+
 		$subscription_ids  = array_map( 'absint', (array) $_REQUEST['post'] );
 		$base_redirect_url = wp_get_referer() ? wp_get_referer() : '';
 		$redirect_url      = $this->handle_subscription_bulk_actions( $base_redirect_url, $action, $subscription_ids );
