@@ -123,27 +123,20 @@ class WC_Subscriptions_Tracker {
 
 		// Get the subtotal and count for each subscription type.
 		foreach ( $relation_types as $relation_type ) {
-
-			// Prepare the handler for the query to get the orders for this relation type.
-			$relation_type_query_handler = function( $query ) use ( $relation_type ) {
-				$query['meta_query'][] = [
-					'key'     => '_subscription_' . $relation_type,
-					'compare' => 'EXISTS',
-				];
-				return $query;
-			};
-			add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $relation_type_query_handler, 10 );
-
-			// Fetch the orders.
-			$relation_orders = wc_get_orders(
+			// Get orders with the given relation type.
+			$relation_orders = wcs_get_orders_with_meta_query(
 				[
-					'type'   => 'shop_order',
-					'status' => [ 'wc-completed', 'wc-processing', 'wc-refunded' ],
-					'limit'  => -1,
+					'type'       => 'shop_order',
+					'status'     => [ 'wc-completed', 'wc-processing', 'wc-refunded' ],
+					'limit'      => -1,
+					'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+						[
+							'key'     => '_subscription_' . $relation_type,
+							'compare' => 'EXISTS',
+						],
+					],
 				]
 			);
-
-			remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $relation_type_query_handler, 10 );
 
 			// Sum the totals and count the orders.
 			$count = count( $relation_orders );
@@ -160,28 +153,28 @@ class WC_Subscriptions_Tracker {
 		}
 
 		// Finally, get the initial revenue and count.
-		// Prepare the handler for the query to get the orders for all initial subscription orders (no switch, renewal or resubscribe meta key).
-		$initial_type_query_handler = function( $query ) use ( $relation_types ) {
-			foreach ( $relation_types as $relation_type ) {
-				$query['meta_query'][] = [
-					'key'     => '_subscription_' . $relation_type,
-					'compare' => 'NOT EXISTS',
-				];
-			}
-			return $query;
-		};
-		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $initial_type_query_handler, 10 );
-
-		// Fetch the orders.
-		$initial_subscription_orders = wc_get_orders(
+		// Get the orders for all initial subscription orders (no switch, renewal or resubscribe meta key).
+		$initial_subscription_orders = wcs_get_orders_with_meta_query(
 			[
-				'type'   => 'shop_order',
-				'status' => [ 'wc-completed', 'wc-processing', 'wc-refunded' ],
-				'limit'  => -1,
+				'type'       => 'shop_order',
+				'status'     => [ 'wc-completed', 'wc-processing', 'wc-refunded' ],
+				'limit'      => -1,
+				'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					[
+						'key'     => '_subscription_switch',
+						'compare' => 'NOT EXISTS',
+					],
+					[
+						'key'     => '_subscription_renewal',
+						'compare' => 'NOT EXISTS',
+					],
+					[
+						'key'     => '_subscription_resubscribe',
+						'compare' => 'NOT EXISTS',
+					],
+				],
 			]
 		);
-
-		remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $initial_type_query_handler, 10 );
 
 		// Sum the totals and count the orders.
 		$initial_order_count = count( $initial_subscription_orders );
