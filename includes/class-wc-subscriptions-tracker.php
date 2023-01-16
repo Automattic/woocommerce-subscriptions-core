@@ -18,7 +18,7 @@ class WC_Subscriptions_Tracker {
 	public static function init() {
 		// Only add data if Tracker enabled
 		if ( 'yes' === get_option( 'woocommerce_allow_tracking', 'no' ) ) {
-			add_filter( 'woocommerce_tracker_data', array( __CLASS__, 'add_subscriptions_tracking_data' ), 10, 1 );
+			add_filter( 'woocommerce_tracker_data', [ __CLASS__, 'add_subscriptions_tracking_data' ], 10, 1 );
 		}
 	}
 
@@ -41,7 +41,7 @@ class WC_Subscriptions_Tracker {
 	 * @return array Subscriptions options data.
 	 */
 	private static function get_subscriptions_options() {
-		return array(
+		return [
 			// Staging and live site
 			'wc_subscriptions_staging'             => WCS_Staging::is_duplicate_site() ? 'staging' : 'live',
 			'wc_subscriptions_live_url'            => esc_url( WCS_Staging::get_site_url_from_source( 'subscriptions_install' ) ),
@@ -79,7 +79,7 @@ class WC_Subscriptions_Tracker {
 			'allow_zero_initial_order_without_payment_method' => get_option( WC_Subscriptions_Admin::$option_prefix . '_zero_initial_payment_requires_payment' ),
 			'drip_downloadable_content_on_renewal' => get_option( WC_Subscriptions_Admin::$option_prefix . '_drip_downloadable_content_on_renewal' ),
 			'enable_retry'                         => get_option( WC_Subscriptions_Admin::$option_prefix . '_enable_retry' ),
-		);
+		];
 	}
 
 	/**
