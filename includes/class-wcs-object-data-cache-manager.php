@@ -88,6 +88,11 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 		$base_data        = $object->get_base_data();
 		$meta_data        = $object->get_meta_data();
 
+		// Deleted meta won't be included in the changes, so we need to fetch the previous value via the raw meta data.
+		$data_store       = $object->get_data_store();
+		$raw_meta_data    = $data_store->read_meta( $object );
+		$raw_meta_key_map = wp_list_pluck( $raw_meta_data, 'meta_key' );
+
 		// Record the object ID so we know that it has been handled in $this->action_object_cache_changes().
 		$this->object_changes[ $object->get_id() ] = [];
 
@@ -120,16 +125,7 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 
 				$previous_meta = $meta->get_data();
 
-				// If the value is being deleted.
-				if ( is_null( $meta->value ) ) {
-					if ( ! empty( $meta->id ) ) {
-						$this->object_changes[ $object->get_id() ][ $data_key ] = [
-							'new'      => $meta->value,
-							'previous' => isset( $previous_meta['value'] ) ? $previous_meta['value'] : null,
-							'type'     => 'delete',
-						];
-					}
-				} elseif ( empty( $meta->id ) ) {
+				if ( empty( $meta->id ) ) {
 					// If the value is being added.
 					$this->object_changes[ $object->get_id() ][ $data_key ] = [
 						'new'  => $meta->value,
@@ -150,7 +146,18 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 					];
 				}
 
-				break;
+				// We've found the meta data for this data key, so we can move on to the next data key.
+				break 2;
+			}
+
+			// If we got this far, then the data key is stored as meta and has been deleted.
+			// When meta is deleted it won't be returned by $object->get_meta_data(). So we need to check the raw meta data.
+			if ( in_array( $data_key, $raw_meta_key_map, true ) ) {
+				$previous_meta = $raw_meta_data[ array_search( $data_key, $raw_meta_key_map, true ) ]->meta_value;
+				$this->object_changes[ $object->get_id() ][ $data_key ] = [
+					'previous' => $previous_meta,
+					'type'     => 'delete',
+				];
 			}
 		}
 	}
@@ -203,10 +210,16 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 	 * }
 	 */
 	protected function trigger_update_cache_hook_from_change( $object, $key, $change ) {
-		if ( 'update' === $change['type'] ) {
-			$this->trigger_update_cache_hook( $change['type'], $object->get_id(), $key, $change['new'], $change['previous'] );
-		} else {
-			$this->trigger_update_cache_hook( $change['type'], $object->get_id(), $key, $change['new'] );
+		switch ( $change['type'] ) {
+			case 'update':
+				$this->trigger_update_cache_hook( $change['type'], $object->get_id(), $key, $change['new'], $change['previous'] );
+				break;
+			case 'delete':
+				$this->trigger_update_cache_hook( $change['type'], $object->get_id(), $key, $change['previous'] );
+				break;
+			default:
+				$this->trigger_update_cache_hook( $change['type'], $object->get_id(), $key, $change['new'] );
+				break;
 		}
 	}
 }
