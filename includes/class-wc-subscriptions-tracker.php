@@ -156,8 +156,8 @@ class WC_Subscriptions_Tracker {
 				0
 			);
 
-			$order_totals[ $relation_type . '_count' ] = $count;
 			$order_totals[ $relation_type . '_gross' ] = $total;
+			$order_totals[ $relation_type . '_count' ] = $count;
 		}
 
 		// Finally, get the initial revenue and count.
