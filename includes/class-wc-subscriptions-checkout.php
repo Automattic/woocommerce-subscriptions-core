@@ -85,11 +85,13 @@ class WC_Subscriptions_Checkout {
 		$subscriptions = wcs_get_subscriptions_for_order( wcs_get_objects_property( $order, 'id' ), array( 'order_type' => 'parent' ) );
 
 		if ( ! empty( $subscriptions ) ) {
-			remove_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
+			$action_hook = wcs_is_custom_order_tables_usage_enabled() ? 'woocommerce_before_delete_subscription' : 'before_delete_post';
+
+			remove_action( $action_hook, 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 			foreach ( $subscriptions as $subscription ) {
-				wp_delete_post( $subscription->get_id() );
+				$subscription->delete( true );
 			}
-			add_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
+			add_action( $action_hook, 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 		}
 
 		WC_Subscriptions_Cart::set_global_recurring_shipping_packages();
