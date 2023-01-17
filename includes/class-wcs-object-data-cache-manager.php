@@ -228,11 +228,11 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 			throw new InvalidArgumentException( sprintf( __( 'Invalid update type: %s. Order update types supported are "add" or "delete". Updates are done on order meta directly.', 'woocommerce-subscriptions' ), $update_type ) );
 		}
 
-		$object = ( 'shop_order' === $this->post_type ) ? wc_get_order( $order_id ) : get_post( $order_id );
+		$order = wc_get_order( $order_id );
 
 		foreach ( $this->meta_keys as $meta_key => $value ) {
 			$property   = preg_replace( '/^_/', '', $meta_key );
-			$meta_value = ( 'add' === $update_type ) ? wcs_get_objects_property( $object, $property ) : '';
+			$meta_value = ( 'add' === $update_type ) ? wcs_get_objects_property( $order, $property ) : '';
 
 			$this->maybe_trigger_update_cache_hook( $update_type, $order_id, $meta_key, $meta_value );
 		}
