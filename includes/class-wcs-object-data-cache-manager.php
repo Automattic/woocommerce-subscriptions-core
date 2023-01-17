@@ -65,6 +65,10 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 	public function init() {
 		add_action( "woocommerce_before_{$this->object_type}_object_save", [ $this, 'prepare_object_changes' ] );
 		add_action( "woocommerce_after_{$this->object_type}_object_save", [ $this, 'action_object_cache_changes' ] );
+
+		add_action( "woocommerce_{$this->object_type}_deleted", [ $this, 'deleted' ] );
+		add_action( "woocommerce_{$this->object_type}_trashed", [ $this, 'deleted' ] );
+		add_action( "woocommerce_{$this->object_type}_untrashed", [ $this, 'untrashed' ] );
 	}
 
 	/**
@@ -186,6 +190,51 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 
 		foreach ( $object_changes as $key => $change ) {
 			$this->trigger_update_cache_hook_from_change( $object, $key, $change );
+		}
+	}
+
+	/**
+	 * When an order is restored from the trash, check if this class instance cares about updating its cache
+	 * to reflect the change.
+	 *
+	 * @param int $order_id The order being restored.
+	 */
+	public function untrashed( $order_id ) {
+		$this->maybe_update_for_order_change( 'add', $order_id );
+	}
+
+	/**
+	 * When an order is deleted or trashed, check if this class instance cares about updating its cache
+	 * to reflect the change.
+	 *
+	 * @param int $order_id The id of order being restored.
+	 */
+	public function deleted( $order_id ) {
+		$this->maybe_update_for_order_change( 'delete', $order_id );
+	}
+
+	/**
+	 * When an order is changed, check if this class instance cares about updating its cache
+	 * to reflect the change.
+	 *
+	 * @param string $update_type The type of update to check. Only 'add' or 'delete' should be used.
+	 * @param int $order_id The id of order being changed.
+	 * @throws InvalidArgumentException If the given update type is not 'add' or 'delete'.
+	 */
+	protected function maybe_update_for_order_change( $update_type, $order_id ) {
+
+		if ( ! in_array( $update_type, array( 'add', 'delete' ), true ) ) {
+			// translators: %s: invalid type of update argument.
+			throw new InvalidArgumentException( sprintf( __( 'Invalid update type: %s. Order update types supported are "add" or "delete". Updates are done on order meta directly.', 'woocommerce-subscriptions' ), $update_type ) );
+		}
+
+		$object = ( 'shop_order' === $this->post_type ) ? wc_get_order( $order_id ) : get_post( $order_id );
+
+		foreach ( $this->meta_keys as $meta_key => $value ) {
+			$property   = preg_replace( '/^_/', '', $meta_key );
+			$meta_value = ( 'add' === $update_type ) ? wcs_get_objects_property( $object, $property ) : '';
+
+			$this->maybe_trigger_update_cache_hook( $update_type, $order_id, $meta_key, $meta_value );
 		}
 	}
 
