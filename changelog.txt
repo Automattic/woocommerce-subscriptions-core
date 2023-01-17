@@ -19,9 +19,12 @@
 * Fix - Prevent erroneously resyncing a subscription every time it is loaded from the database on HPOS environments.
 * Fix - Fix "Trying to get property 'ID' of non-object" errors on the edit subscription screen when HPOS is enabled.
 * Fix - When HPOS is enabled, clicking the related orders link on the Subscriptions Table now filters the table with the related orders (previously all orders were shown).
+* Fix - Show subscription status filters/views above the subscriptions list table on stores with HPOS enabled.
 * Fix - Reorder the edit subscription meta boxes on HPOS environments so the line items meta box appears after the subscription data.
 * Fix - On HPOS environments, prepopulate the subscription start date when creating a new subscription via the admin edit screen.
 * Fix - On HPOS environments, handle the admin subscriptions list table bulk actions and row actions in a HPOS compatible way.
+* Fix - On HPOS environments, admin notices might show incorrect subscription or order link as part of the admin notice.
+* Fix - On HPOS environments, parent order link on subscription edit page, in subscription details box, is incorrect.
 * Dev - Replace code using get_post_type( $subscription_id ) with WC Data Store get_order_type().
 * Dev - Add subscriptions-core library version to the WooCommerce system status report.
 * Dev - Introduced a WCS_Object_Data_Cache_Manager and WCS_Object_Data_Cache_Manager_Many_To_One class as HPOS equivalents of the WCS_Post_Meta_Cache_Manager classes.
