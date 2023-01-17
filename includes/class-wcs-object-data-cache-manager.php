@@ -66,8 +66,12 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 		add_action( "woocommerce_before_{$this->object_type}_object_save", [ $this, 'prepare_object_changes' ] );
 		add_action( "woocommerce_after_{$this->object_type}_object_save", [ $this, 'action_object_cache_changes' ] );
 
+		add_action( "woocommerce_before_delete_{$this->object_type}", [ $this, 'prepare_object_to_be_deleted' ], 10, 2 );
 		add_action( "woocommerce_{$this->object_type}_deleted", [ $this, 'deleted' ] );
+
+		add_action( "woocommerce_before_trash_{$this->object_type}", [ $this, 'prepare_object_to_be_deleted' ], 10, 2 );
 		add_action( "woocommerce_{$this->object_type}_trashed", [ $this, 'deleted' ] );
+
 		add_action( "woocommerce_{$this->object_type}_untrashed", [ $this, 'untrashed' ] );
 	}
 
@@ -78,16 +82,18 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 	 * Relevant changes to the object's data is stored in the $this->object_changes property
 	 * to be processed after the object is saved. See $this->action_object_cache_changes().
 	 *
-	 * @param WC_Data $object        The object which is being saved.
-	 * @param string  $generate_type Optional. The data to generate the changes from. Defaults to 'changes_only' which will generate the data from changes to the object. 'all_fields' will fetch data from the object for all tracked data keys.
+	 * @param WC_Data $object           The object which is being saved.
+	 * @param string  $generate_type    Optional. The data to generate the changes from. Defaults to 'changes_only' which will generate the data from changes to the object. 'all_fields' will fetch data from the object for all tracked data keys.
+	 * @param bool    $is_delete_object Optional. Whether the object is being deleted. Defaults to false.
 	 */
-	public function prepare_object_changes( $object, $generate_type = 'changes_only' ) {
+	public function prepare_object_changes( $object, $generate_type = 'changes_only', $is_delete_object = false ) {
 		// If the object hasn't been created yet, we can't do anything yet. We'll have to wait until after the object is saved.
 		if ( ! $object->get_id() ) {
 			return;
 		}
 
-		$force_all_fields = 'all_fields' === $generate_type;
+		// If object is to be deleted, we want to update all fields, ignoring $generate_type.
+		$force_all_fields = 'all_fields' === $generate_type || $is_delete_object;
 		$changes          = $object->get_changes();
 		$base_data        = $object->get_base_data();
 		$meta_data        = $object->get_meta_data();
@@ -157,6 +163,13 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 				break;
 			}
 		}
+
+		// If the object is being deleted, we want to record all the changes as deletes.
+		if ( $is_delete_object ) {
+			foreach ( $this->object_changes[ $object->get_id() ] as $data_key => $data ) {
+				$this->object_changes[ $object->get_id() ][ $data_key ]['type'] = 'delete';
+			}
+		}
 	}
 
 	/**
@@ -200,7 +213,19 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 	 * @param int $order_id The order being restored.
 	 */
 	public function untrashed( $order_id ) {
-		$this->maybe_update_for_order_change( 'add', $order_id );
+		$order = wc_get_order( $order_id );
+		$this->action_object_cache_changes( $order );
+	}
+
+	/**
+	 * When an order is deleted, call prepare_object_changes() to update all fields
+	 * and pass a flag to indicate that the object is being deleted.
+	 *
+	 * @param int      $order_id The id of order being deleted.
+	 * @param WC_Order $order    The order being deleted.
+	 */
+	public function prepare_object_to_be_deleted( $order_id, $order ) {
+		$this->prepare_object_changes( $order, 'all_fields', true );
 	}
 
 	/**
@@ -210,32 +235,8 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 	 * @param int $order_id The id of order being restored.
 	 */
 	public function deleted( $order_id ) {
-		$this->maybe_update_for_order_change( 'delete', $order_id );
-	}
-
-	/**
-	 * When an order is changed, check if this class instance cares about updating its cache
-	 * to reflect the change.
-	 *
-	 * @param string $update_type The type of update to check. Only 'add' or 'delete' should be used.
-	 * @param int $order_id The id of order being changed.
-	 * @throws InvalidArgumentException If the given update type is not 'add' or 'delete'.
-	 */
-	protected function maybe_update_for_order_change( $update_type, $order_id ) {
-
-		if ( ! in_array( $update_type, array( 'add', 'delete' ), true ) ) {
-			// translators: %s: invalid type of update argument.
-			throw new InvalidArgumentException( sprintf( __( 'Invalid update type: %s. Order update types supported are "add" or "delete". Updates are done on order meta directly.', 'woocommerce-subscriptions' ), $update_type ) );
-		}
-
 		$order = wc_get_order( $order_id );
-
-		foreach ( $this->meta_keys as $meta_key => $value ) {
-			$property   = preg_replace( '/^_/', '', $meta_key );
-			$meta_value = ( 'add' === $update_type ) ? wcs_get_objects_property( $order, $property ) : '';
-
-			$this->maybe_trigger_update_cache_hook( $update_type, $order_id, $meta_key, $meta_value );
-		}
+		$this->action_object_cache_changes( $order );
 	}
 
 	/**
