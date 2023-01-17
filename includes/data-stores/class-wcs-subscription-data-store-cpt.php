@@ -591,4 +591,13 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		$delete_all = true;
 		delete_metadata( 'post', $id, $meta_key, $meta_value, $delete_all );
 	}
+
+	/**
+	 * Count subscriptions by status.
+	 *
+	 * @return array
+	 */
+	public function get_subscriptions_count_by_status() {
+		return (array) wp_count_posts( 'shop_subscription' );
+	}
 }

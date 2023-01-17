@@ -121,7 +121,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							?>
 						<p class="form-field form-field-wide">
 							<?php echo esc_html__( 'Parent order: ', 'woocommerce-subscriptions' ); ?>
-						<a href="<?php echo esc_url( get_edit_post_link( $subscription->get_parent_id() ) ); ?>">
+						<a href="<?php echo esc_url( wcs_get_edit_post_link( $subscription->get_parent_id() ) ); ?>">
 							<?php
 							// translators: placeholder is an order number.
 							echo sprintf( esc_html__( '#%1$s', 'woocommerce-subscriptions' ), esc_html( $parent_order->get_order_number() ) );
