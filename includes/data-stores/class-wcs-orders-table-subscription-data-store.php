@@ -863,4 +863,89 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 
 		$wpdb->delete( self::get_meta_table_name(), [ 'meta_key' => $meta_key ], [ '%s' ] ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 	}
+
+	/**
+	 * Migrate post record setters.
+	 *
+	 * When WC discovers a subscription post record is out of sync with the HPOS record, it attempts to resync the data by calling setters on the subscription object.
+	 * Because subscription date properties don't have individual setters, WC will attempt to call a setter on the datastore.
+	 * The following methods exist purely to fill the gaps in setters to support this migration from out of sync posts.
+	 */
+
+	/**
+	 * Sets a subscription date property.
+	 *
+	 * @param WC_Subscription        $subscription The subscription to set the date for.
+	 * @param string                 $date_type    The subscription date type. See wcs_get_subscription_date_types().
+	 * @param WC_Datetime|string|int $date         The date to set.
+	 */
+	private function set_subscription_date_type( $subscription, $date_type, $date ) {
+
+		if ( empty( $date ) || '0000-00-00 00:00:00' === $date ) {
+			$subscription->delete_date( $date_type );
+			return;
+		}
+
+		$subscription->update_dates( [ $date_type => $date->date( 'y-m-d h:i:s' ) ] );
+	}
+
+	/**
+	 * Sets the subscription's scheduled trial end date.
+	 *
+	 * @param WC_Subscription $subscription The subscription to set the trial end date for.
+	 * @param WC_DateTime     $date         The date to set.
+	 */
+	protected function set_schedule_trial_end( $subscription, $date ) {
+		$this->set_subscription_date_type( $subscription, 'trial_end', $date );
+	}
+
+	/**
+	 * Sets the subscription's scheduled next payment date.
+	 *
+	 * @param WC_Subscription $subscription The subscription to set the trial end date for.
+	 * @param WC_DateTime     $date         The date to set.
+	 */
+	protected function set_schedule_next_payment( $subscription, $date ) {
+		$this->set_subscription_date_type( $subscription, 'next_payment', $date );
+	}
+
+	/**
+	 * Sets the subscription's scheduled cancelled date.
+	 *
+	 * @param WC_Subscription $subscription The subscription to set the trial end date for.
+	 * @param WC_DateTime     $date         The date to set.
+	 */
+	protected function set_schedule_cancelled( $subscription, $date ) {
+		$this->set_subscription_date_type( $subscription, 'cancelled', $date );
+	}
+
+	/**
+	 * Sets the subscription's scheduled end date.
+	 *
+	 * @param WC_Subscription $subscription The subscription to set the trial end date for.
+	 * @param WC_DateTime     $date         The date to set.
+	 */
+	protected function set_schedule_end( $subscription, $date ) {
+		$this->set_subscription_date_type( $subscription, 'end', $date );
+	}
+
+	/**
+	 * Sets the subscription's scheduled payment retry date.
+	 *
+	 * @param WC_Subscription $subscription The subscription to set the trial end date for.
+	 * @param WC_DateTime     $date         The date to set.
+	 */
+	protected function set_schedule_payment_retry( $subscription, $date ) {
+		$this->set_subscription_date_type( $subscription, 'payment_retry', $date );
+	}
+
+	/**
+	 * Sets the subscription's scheduled start date.
+	 *
+	 * @param WC_Subscription $subscription The subscription to set the trial end date for.
+	 * @param WC_DateTime     $date         The date to set.
+	 */
+	protected function set_schedule_start( $subscription, $date ) {
+		$this->set_subscription_date_type( $subscription, 'start', $date );
+	}
 }
