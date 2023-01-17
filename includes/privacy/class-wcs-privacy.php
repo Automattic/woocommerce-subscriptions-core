@@ -51,7 +51,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 		parent::init();
 		self::$background_process->init();
 
-		add_filter( 'woocommerce_subscription_bulk_actions', array( __CLASS__, 'add_remove_personal_data_bulk_action' ) );
+		add_filter( 'woocommerce_subscription_bulk_actions', array( __CLASS__, 'add_privacy_bulk_action' ) );
 		add_action( 'load-edit.php', array( __CLASS__, 'process_bulk_action' ) );
 		add_action( 'woocommerce_remove_subscription_personal_data', array( 'WCS_Privacy_Erasers', 'remove_subscription_personal_data' ) );
 		add_action( 'admin_notices', array( __CLASS__, 'bulk_admin_notices' ) );
@@ -100,13 +100,16 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 	}
 
 	/**
-	 * Add the option to remove personal data from subscription via a bulk action.
+	 * Adds the option to remove personal data from subscription via a bulk action.
 	 *
-	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.20
+	 * @since 5.2.0
+	 *
 	 * @param array $bulk_actions Subscription bulk actions.
+	 *
+	 * @return array
 	 */
-	public static function add_remove_personal_data_bulk_action( $bulk_actions ) {
-		$bulk_actions['remove_personal_data'] = __( 'Cancel and remove personal data', 'woocommerce-subscriptions' );
+	public static function add_privacy_bulk_action( $bulk_actions ) {
+		$bulk_actions['wcs_remove_personal_data'] = __( 'Cancel and remove personal data', 'woocommerce-subscriptions' );
 		return $bulk_actions;
 	}
 
@@ -311,5 +314,20 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 		) );
 
 		self::$doing_user_inactivity_query = false;
+	}
+
+	/* Deprecated Functions */
+
+	/**
+	 * Add the option to remove personal data from subscription via a bulk action.
+	 *
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.20
+	 * @param array $bulk_actions Subscription bulk actions.
+	 */
+	public static function add_remove_personal_data_bulk_action( $bulk_actions ) {
+		wcs_deprecated_function( __METHOD__, 'subscriptions-core 5.2.0', 'WCS_Privacy_Exporters::add_privacy_bulk_action' );
+		$bulk_actions['remove_personal_data'] = __( 'Cancel and remove personal data', 'woocommerce-subscriptions' );
+
+		return $bulk_actions;
 	}
 }
