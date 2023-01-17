@@ -101,10 +101,10 @@ class WC_Subscriptions_Tracker {
 	 * @return array
 	 */
 	private static function get_subscription_counts() {
-		$subscription_counts      = [];
-		$subscription_counts_data = wp_count_posts( 'shop_subscription' );
+		$subscription_counts = [];
+		$count_by_status     = WC_Data_Store::load( 'subscription' )->get_subscriptions_count_by_status();
 		foreach ( wcs_get_subscription_statuses() as $status_slug => $status_name ) {
-			$subscription_counts[ $status_slug ] = $subscription_counts_data->{ $status_slug };
+			$subscription_counts[ $status_slug ] = $count_by_status[ $status_slug ] ?? 0;
 		}
 		return $subscription_counts;
 	}
