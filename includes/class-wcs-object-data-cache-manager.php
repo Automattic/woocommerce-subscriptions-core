@@ -93,7 +93,7 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 		}
 
 		// If object is to be deleted, we want to update all fields, ignoring $generate_type.
-		$force_all_fields = 'all_fields' === $generate_type || $is_delete_object;
+		$force_all_fields = $is_delete_object || 'all_fields' === $generate_type;
 		$changes          = $object->get_changes();
 		$base_data        = $object->get_base_data();
 		$meta_data        = $object->get_meta_data();
@@ -207,8 +207,8 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 	}
 
 	/**
-	 * When an order is restored from the trash, check if this class instance cares about updating its cache
-	 * to reflect the change.
+	 * When an order is restored from the trash, call action_object_cache_changes().
+	 * Since in this case, we didn't call prepare_object_changes(), object will be considered as new.
 	 *
 	 * @param int $order_id The order being restored.
 	 */
@@ -218,7 +218,7 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 	}
 
 	/**
-	 * When an order is deleted, call prepare_object_changes() to update all fields
+	 * When an order is to be deleted, call prepare_object_changes() to update all fields
 	 * and pass a flag to indicate that the object is being deleted.
 	 *
 	 * @param int      $order_id The id of order being deleted.
@@ -229,8 +229,9 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 	}
 
 	/**
-	 * When an order is deleted or trashed, check if this class instance cares about updating its cache
-	 * to reflect the change.
+	 * When an order is deleted or trashed, call action_object_cache_changes().
+	 * Since in this case, we called prepare_object_to_be_deleted(), object will be deleted
+	 * from cache.
 	 *
 	 * @param int $order_id The id of order being restored.
 	 */
