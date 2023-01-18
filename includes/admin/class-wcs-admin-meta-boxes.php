@@ -78,14 +78,15 @@ class WCS_Admin_Meta_Boxes {
 	 * @param WP_Post|WC_Order|null $post_or_order_object The post or order currently being edited.
 	 */
 	public function add_meta_boxes( $post_type = '', $post_or_order_object = null ) {
+		$subscriptions_screen_id = wcs_get_page_screen_id( 'shop_subscription' );
 
-		add_meta_box( 'woocommerce-subscription-data', _x( 'Subscription Data', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Subscription_Data::output', 'shop_subscription', 'normal', 'high' );
+		add_meta_box( 'woocommerce-subscription-data', _x( 'Subscription Data', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Subscription_Data::output', $subscriptions_screen_id, 'normal', 'high' );
 
-		add_meta_box( 'woocommerce-subscription-schedule', _x( 'Schedule', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Schedule::output', 'shop_subscription', 'side', 'default' );
+		add_meta_box( 'woocommerce-subscription-schedule', _x( 'Schedule', 'meta box title', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Schedule::output', $subscriptions_screen_id, 'side', 'default' );
 
-		remove_meta_box( 'woocommerce-order-data', 'shop_subscription', 'normal' );
+		remove_meta_box( 'woocommerce-order-data', $subscriptions_screen_id, 'normal' );
 
-		add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', 'shop_subscription', 'normal', 'low' );
+		add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', $subscriptions_screen_id, 'normal', 'low' );
 
 		// Ensure backwards compatibility if $post_or_order_object not provided and is 'shop_order' post type.
 		if ( ! $post_or_order_object && 'shop_order' === $post_type ) {
@@ -94,12 +95,17 @@ class WCS_Admin_Meta_Boxes {
 		}
 
 		// Get "Edit Order" screen ID, which differs if HPOS is enabled.
-		$screen         = wcs_is_custom_order_tables_usage_enabled() ? wc_get_page_screen_id( 'shop-order' ) : 'shop_order';
-		$current_screen = get_current_screen();
+		$order_screen_id = wcs_get_page_screen_id( 'shop_order' );
+		$current_screen  = get_current_screen();
 
 		// Only display the meta box if viewing an order that contains a subscription.
-		if ( $post_or_order_object && $current_screen->id === $screen && wcs_order_contains_subscription( $post_or_order_object, 'any' ) ) {
-			add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', $screen, 'normal', 'low' );
+		if ( $post_or_order_object && $current_screen && $current_screen->id === $order_screen_id && wcs_order_contains_subscription( $post_or_order_object, 'any' ) ) {
+			add_meta_box( 'subscription_renewal_orders', __( 'Related Orders', 'woocommerce-subscriptions' ), 'WCS_Meta_Box_Related_Orders::output', $order_screen_id, 'normal', 'low' );
+		}
+
+		// On HPOS environments we need to remove and readd the line items meta box so it appears after the subscription data.
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			self::reorder_subscription_line_items_meta_box();
 		}
 	}
 
@@ -128,17 +134,25 @@ class WCS_Admin_Meta_Boxes {
 	 * Print admin styles/scripts
 	 */
 	public function enqueue_styles_scripts() {
-		global $post;
-		$ver = WC_Subscriptions_Core_Plugin::instance()->get_library_version();
+		global $theorder;
 
-		// Get admin screen id
+		// If $theorder is empty, fallback to using the global post object.
+		if ( empty( $theorder ) && ! empty( $GLOBALS['post']->ID ) ) {
+			$theorder = wcs_get_subscription( $GLOBALS['post']->ID );
+		}
+
+		// Get admin screen ID.
 		$screen    = get_current_screen();
 		$screen_id = isset( $screen->id ) ? $screen->id : '';
 
-		if ( 'shop_subscription' === $screen_id ) {
+		// Get the script version.
+		$ver = WC_Subscriptions_Core_Plugin::instance()->get_library_version();
+
+		if ( wcs_get_page_screen_id( 'shop_subscription' ) === $screen_id && wcs_is_subscription( $theorder ) ) {
+			// Declare a subscription variable for clearer use. The $theorder global on edit subscription screens is a subscription.
+			$subscription = $theorder;
 
 			wp_register_script( 'jstz', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/jstz.min.js' ), [], $ver, false );
-
 			wp_register_script( 'momentjs', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/moment.min.js' ), [], $ver, false );
 
 			wp_enqueue_script( 'wcs-admin-meta-boxes-subscription', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/meta-boxes-subscription.js' ), array( 'wc-admin-meta-boxes', 'jstz', 'momentjs' ), $ver, false );
@@ -157,7 +171,7 @@ class WCS_Admin_Meta_Boxes {
 						'i18n_trial_end_next_notice'     => __( 'Please enter a date before the next payment.', 'woocommerce-subscriptions' ),
 						'i18n_end_date_notice'           => __( 'Please enter a date after the next payment.', 'woocommerce-subscriptions' ),
 						'process_renewal_action_warning' => __( "Are you sure you want to process a renewal?\n\nThis will charge the customer and email them the renewal order (if emails are enabled).", 'woocommerce-subscriptions' ),
-						'payment_method'                 => wcs_get_subscription( $post )->get_payment_method(),
+						'payment_method'                 => $subscription->get_payment_method(),
 						'search_customers_nonce'         => wp_create_nonce( 'search-customers' ),
 						'get_customer_orders_nonce'      => wp_create_nonce( 'get-customer-orders' ),
 						'is_duplicate_site'              => WCS_Staging::is_duplicate_site(),
@@ -175,10 +189,7 @@ class WCS_Admin_Meta_Boxes {
 					'retry_renewal_payment_action_warning' => __( "Are you sure you want to retry payment for this renewal order?\n\nThis will attempt to charge the customer and send renewal order emails (if emails are enabled).", 'woocommerce-subscriptions' ),
 				)
 			);
-		}
-
-		// Enqueue the metabox script for coupons.
-		if ( ! wcs_is_woocommerce_pre( '3.2' ) && in_array( $screen_id, array( 'shop_coupon', 'edit-shop_coupon' ), true ) ) {
+		} elseif ( in_array( $screen_id, array( 'shop_coupon', 'edit-shop_coupon' ), true ) ) {
 			wp_enqueue_script(
 				'wcs-admin-coupon-meta-boxes',
 				WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/meta-boxes-coupon.js' ),
@@ -672,5 +683,43 @@ class WCS_Admin_Meta_Boxes {
 		}
 
 		wp_send_json( $customer_orders );
+	}
+
+	/**
+	 * Reorders the edit subscription screen meta boxes.
+	 *
+	 * Removes and readds the order items meta box so it appears after the subscription data.
+	 *
+	 * On HPOS environments, WC core registers the order-data and order-items meta boxes on a high priority before we've had a chance to add ours.
+	 * This means, on the edit subscription screen, when we remove the order-data meta box and add our own, it will appear after the line items.
+	 *
+	 * In order to keep the correct ordering of the meta boxes on the edit subscription screen, we need to remove the line items meta box and
+	 * readd it after we've added the subscription-data meta box.
+	 */
+	private static function reorder_subscription_line_items_meta_box() {
+		global $wp_meta_boxes;
+		$subscriptions_screen_id = wcs_get_page_screen_id( 'shop_subscription' );
+
+		// If the line items meta box isn't registered, bail.
+		if ( empty( $wp_meta_boxes[ $subscriptions_screen_id ]['normal']['high']['woocommerce-order-items'] ) ) {
+			return;
+		}
+
+		// Get a copy of the line items meta box.
+		$items_meta_box = $wp_meta_boxes[ $subscriptions_screen_id ]['normal']['high']['woocommerce-order-items'];
+
+		// Forcibly remove the line items meta box to reset its ordering in the list.
+		unset( $wp_meta_boxes[ $subscriptions_screen_id ]['normal']['high']['woocommerce-order-items'] );
+
+		// Readd it.
+		add_meta_box(
+			$items_meta_box['id'],
+			$items_meta_box['title'],
+			$items_meta_box['callback'],
+			$subscriptions_screen_id,
+			'normal',
+			'high',
+			$items_meta_box['args']
+		);
 	}
 }

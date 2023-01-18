@@ -111,10 +111,12 @@ class WC_Subscriptions_Admin {
 
 		add_action( 'woocommerce_admin_field_informational', __CLASS__ . '::add_informational_admin_field' );
 
+		// Filter Orders list table.
 		add_filter( 'posts_where', array( __CLASS__, 'filter_orders' ) );
+		add_filter( 'woocommerce_shop_order_list_table_prepare_items_query_args', [ __CLASS__, 'filter_orders_table_by_related_orders' ] );
 
+		// Filter get_posts used by Subscription Reports.
 		add_filter( 'posts_where', array( __CLASS__, 'filter_orders_and_subscriptions_from_list' ) );
-
 		add_filter( 'posts_where', array( __CLASS__, 'filter_paid_subscription_orders_for_user' ) );
 
 		add_action( 'admin_notices', __CLASS__ . '::display_renewal_filter_notice' );
@@ -836,13 +838,26 @@ class WC_Subscriptions_Admin {
 	public static function enqueue_styles_scripts() {
 		global $post;
 
-		// Get admin screen id
+		// Get admin screen ID.
 		$screen = get_current_screen();
 
-		$is_woocommerce_screen = in_array( $screen->id, array( 'product', 'edit-shop_order', 'shop_order', 'edit-shop_subscription', 'shop_subscription', 'users', 'woocommerce_page_wc-settings', 'woocommerce_page_wc-orders' ), true );
+		$is_woocommerce_screen = in_array(
+			$screen->id,
+			[
+				'product',
+				'edit-shop_order',
+				'shop_order',
+				'edit-shop_subscription',
+				'shop_subscription',
+				'users',
+				'woocommerce_page_wc-settings',
+				'woocommerce_page_wc-orders',
+				wcs_get_page_screen_id( 'shop_subscription' ),
+			],
+			true
+		);
 
 		if ( $is_woocommerce_screen ) {
-
 			$dependencies = array( 'jquery' );
 
 			$woocommerce_admin_script_handle     = 'wc-admin-meta-boxes';
@@ -880,12 +895,7 @@ class WC_Subscriptions_Admin {
 			} elseif ( 'shop_order' == $screen->id ) {
 				$dependencies[] = $woocommerce_admin_script_handle;
 				$dependencies[] = 'wc-admin-order-meta-boxes';
-
-				if ( wcs_is_woocommerce_pre( '2.6' ) ) {
-					$dependencies[] = 'wc-admin-order-meta-boxes-modal';
-				}
-
-				$script_params = array(
+				$script_params  = array(
 					'trashWarning'      => $trashing_subscription_order_warning,
 					'changeMetaWarning' => __( "WARNING: Bad things are about to happen!\n\nThe payment gateway used to purchase this subscription does not support modifying a subscription's details.\n\nChanges to the billing period, recurring discount, recurring tax or recurring total may not be reflected in the amount charged by the payment gateway.", 'woocommerce-subscriptions' ),
 					'removeItemWarning' => __( 'You are deleting a subscription item. You will also need to manually cancel and trash the subscription on the Manage Subscriptions screen.', 'woocommerce-subscriptions' ),
@@ -901,6 +911,8 @@ class WC_Subscriptions_Admin {
 				$script_params = array(
 					'enablePayPalWarning' => __( 'PayPal Standard has a number of limitations and does not support all subscription features.', 'woocommerce-subscriptions' ) . "\n\n" . __( 'Because of this, it is not recommended as a payment method for Subscriptions unless it is the only available option for your country.', 'woocommerce-subscriptions' ),
 				);
+			} elseif ( in_array( $screen->id, [ wcs_get_page_screen_id( 'shop_subscription' ), 'edit-shop_subscription' ], true ) ) {
+				$script_params['i18n_remove_personal_data_notice'] = __( 'This action cannot be reversed. Are you sure you wish to erase personal data from the selected subscriptions?', 'woocommerce-subscriptions' );
 			}
 
 			$script_params['ajaxLoaderImage'] = WC()->plugin_url() . '/assets/images/ajax-loader.gif';
@@ -933,10 +945,6 @@ class WC_Subscriptions_Admin {
 		if ( $is_woocommerce_screen || 'edit-product' == $screen->id || ( isset( $_GET['page'], $_GET['tab'] ) && 'wc-reports' === $_GET['page'] && 'subscriptions' === $_GET['tab'] ) ) {
 			wp_enqueue_style( 'woocommerce_admin_styles', WC()->plugin_url() . '/assets/css/admin.css', array(), WC_Subscriptions_Core_Plugin::instance()->get_library_version() );
 			wp_enqueue_style( 'woocommerce_subscriptions_admin', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/css/admin.css' ), array( 'woocommerce_admin_styles' ), WC_Subscriptions_Core_Plugin::instance()->get_library_version() );
-		}
-
-		if ( in_array( $screen->id, array( 'shop_order', 'edit-shop_subscription', 'shop_subscription' ) ) && wcs_is_woocommerce_pre( '3.3' ) ) {
-			wp_enqueue_style( 'wc_subscriptions_statuses_admin', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/css/admin-order-statuses.css' ), array( 'woocommerce_admin_styles' ), WC_Subscriptions_Core_Plugin::instance()->get_library_version() );
 		}
 	}
 
@@ -1350,6 +1358,36 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
+	 * Filters the Orders Table in HPOS to display_renewal_filter_noticehow only orders associated with a specific subscription.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param array $query_vars The query variables.
+	 *
+	 * @return array The query variables.
+	 */
+	public static function filter_orders_table_by_related_orders( $query_vars ) {
+		/**
+		 * Exit early if the request is not to filter the order list table.
+		 *
+		 * Note this request isn't nonced as we're only filtering an admin list table and not modifying data.
+		 */
+		if ( ! ( is_admin() && isset( $_GET['_subscription_related_orders'] ) && $_GET['_subscription_related_orders'] > 0 ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return $query_vars;
+		}
+
+		$subscription = wcs_get_subscription( absint( $_GET['_subscription_related_orders'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		if ( ! wcs_is_subscription( $subscription ) ) {
+			$query_vars['post__in'] = [ 0 ];
+		} else {
+			$query_vars['post__in'] = array_unique( $subscription->get_related_orders( 'ids' ) );
+		}
+
+		return $query_vars;
+	}
+
+	/**
 	 * Filters the Admin orders and subscriptions table results based on a list of IDs returned by a report query.
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.6.2
@@ -1453,34 +1491,35 @@ class WC_Subscriptions_Admin {
 	 * @see self::filter_orders()
 	 */
 	public static function display_renewal_filter_notice() {
+		// When HPOS is disabled, use the $found_related_orders static variable to determine if the Orders list is filtered or not.
+		if ( ! wcs_is_custom_order_tables_usage_enabled() && ! self::$found_related_orders ) {
+			return;
+		}
 
-		global $wp_version;
+		/**
+		 * This request URL isn't nonced because it's only used to display a notice to the user.
+		 */
+		if ( isset( $_GET['_subscription_related_orders'] ) && $_GET['_subscription_related_orders'] > 0 ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$subscription_id = absint( $_GET['_subscription_related_orders'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$subscription    = wcs_get_subscription( $subscription_id );
 
-		$query_arg = '_subscription_related_orders';
-
-		if ( isset( $_GET[ $query_arg ] ) && $_GET[ $query_arg ] > 0 && true === self::$found_related_orders ) {
-
-			$initial_order = wc_get_order( absint( $_GET[ $query_arg ] ) );
-
-			if ( version_compare( $wp_version, '4.2', '<' ) ) {
-				echo '<div class="updated"><p>';
-				printf(
-					'<a href="%1$s" class="close-subscriptions-search">&times;</a>',
-					esc_url( remove_query_arg( $query_arg ) )
-				);
-				// translators: placeholders are opening link tag, ID of sub, and closing link tag
-				printf( esc_html__( 'Showing orders for %1$sSubscription %2$s%3$s', 'woocommerce-subscriptions' ), '<a href="' . esc_url( get_edit_post_link( absint( $_GET[ $query_arg ] ) ) ) . '">', esc_html( $initial_order->get_order_number() ), '</a>' );
-				echo '</p>';
-			} else {
-				echo '<div class="updated dismiss-subscriptions-search"><p>';
-				// translators: placeholders are opening link tag, ID of sub, and closing link tag
-				printf( esc_html__( 'Showing orders for %1$sSubscription %2$s%3$s', 'woocommerce-subscriptions' ), '<a href="' . esc_url( get_edit_post_link( absint( $_GET[ $query_arg ] ) ) ) . '">', esc_html( $initial_order->get_order_number() ), '</a>' );
-				echo '</p>';
-				printf(
-					'<a href="%1$s" class="notice-dismiss"><span class="screen-reader-text">Dismiss this notice.</span></a>',
-					esc_url( remove_query_arg( $query_arg ) )
-				);
+			// Display an error notice if we can't find the subscription.
+			if ( ! $subscription ) {
+				echo '<div id="moderated" class="error"><p>';
+				// translators: placeholder is a subscription ID.
+				printf( esc_html__( 'We can\'t find a subscription with ID #%d. Perhaps it was deleted?', 'woocommerce-subscriptions' ), esc_html( $subscription_id ) );
+				echo '</p></div>';
+				return;
 			}
+
+			echo '<div class="updated dismiss-subscriptions-search"><p>';
+			// translators: placeholders are opening link tag, ID of sub, and closing link tag
+			printf( esc_html__( 'Showing orders for %1$sSubscription %2$s%3$s', 'woocommerce-subscriptions' ), '<a href="' . esc_url( wcs_get_edit_post_link( $subscription ) ) . '">', esc_html( $subscription->get_order_number() ), '</a>' );
+			echo '</p>';
+			printf(
+				'<a href="%1$s" class="notice-dismiss"><span class="screen-reader-text">Dismiss this notice.</span></a>',
+				esc_url( remove_query_arg( '_subscription_related_orders' ) )
+			);
 
 			echo '</div>';
 		}
