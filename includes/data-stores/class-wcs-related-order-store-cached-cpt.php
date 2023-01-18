@@ -21,9 +21,9 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	/**
 	 * Keep cache up-to-date with changes to our meta data using a meta cache manager.
 	 *
-	 * @var WCS_Post_Meta_Cache_Manager
+	 * @var WCS_Post_Meta_Cache_Manager|WCS_Object_Data_Cache_Manager
 	 */
-	protected $post_meta_cache_manager;
+	protected $object_data_cache_manager;
 
 	/**
 	 * Store order relations using meta keys as the array key for more performant searches
@@ -57,7 +57,32 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			$this->relation_keys[ $meta_key ] = $relation_type;
 		}
 
-		$this->post_meta_cache_manager = new WCS_Post_Meta_Cache_Manager( 'shop_order', $this->get_meta_keys() );
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			$this->object_data_cache_manager = new WCS_Object_Data_Cache_Manager( 'order', $this->get_meta_keys() );
+		} else {
+			$this->object_data_cache_manager = new WCS_Post_Meta_Cache_Manager( 'shop_order', $this->get_meta_keys() );
+		}
+	}
+
+	/**
+	 * Gets the legacy protected variables for backwards compatibility.
+	 *
+	 * Throws a deprecated warning if accessing the now deprecated variables.
+	 *
+	 * @param string $name The variable name.
+	 * @return WCS_Post_Meta_Cache_Manager_Many_To_One|WCS_Object_Data_Cache_Manager_Many_To_One Depending on the HPOS environment.
+	 */
+	public function __get( $name ) {
+		if ( 'post_meta_cache_manager' !== $name ) {
+			return;
+		}
+
+		$old         = get_class( $this ) . '::post_meta_cache_manager';
+		$replacement = get_class( $this ) . '::object_data_cache_manager';
+
+		wcs_doing_it_wrong( $old, "$old has been deprecated, use $replacement instead.", '5.2.0' );
+
+		return $this->object_data_cache_manager;
 	}
 
 	/**
@@ -65,7 +90,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 */
 	protected function init() {
 
-		$this->post_meta_cache_manager->init();
+		$this->object_data_cache_manager->init();
 
 		// When a subscription is being read from the database, don't load cached related order meta data into subscriptions.
 		add_filter( 'wcs_subscription_data_store_props_to_ignore', array( $this, 'add_related_order_cache_props' ), 10, 2 );
