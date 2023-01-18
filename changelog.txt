@@ -18,6 +18,7 @@
 * Fix - Prevent erroneously resyncing a subscription every time it is loaded from the database on HPOS environments.
 * Fix - Fix "Trying to get property 'ID' of non-object" errors on the edit subscription screen when HPOS is enabled.
 * Fix - When HPOS is enabled, clicking the related orders link on the Subscriptions Table now filters the table with the related orders (previously all orders were shown).
+* Fix - On HPOS environments, ensure subscription related order caches are updated when relationship order meta (eg `_subscription_renewal` or `_subscription_switch`) is updated.
 * Fix - Show subscription status filters/views above the subscriptions list table on stores with HPOS enabled.
 * Fix - Reorder the edit subscription meta boxes on HPOS environments so the line items meta box appears after the subscription data.
 * Fix - On HPOS environments, prepopulate the subscription start date when creating a new subscription via the admin edit screen.
