@@ -98,7 +98,7 @@ class WC_Subscriptions_Tracker {
 	/**
 	 * Gets subscription counts.
 	 *
-	 * @return array
+	 * @return array Subscription count by status. Keys are subscription status slugs, values are subscription counts (string).
 	 */
 	private static function get_subscription_counts() {
 		$subscription_counts = [];
@@ -106,13 +106,15 @@ class WC_Subscriptions_Tracker {
 		foreach ( wcs_get_subscription_statuses() as $status_slug => $status_name ) {
 			$subscription_counts[ $status_slug ] = $count_by_status[ $status_slug ] ?? 0;
 		}
+		// Ensure all values are strings.
+		$subscription_counts = array_map( 'strval', $subscription_counts );
 		return $subscription_counts;
 	}
 
 	/**
 	 * Gets subscription order counts and totals.
 	 *
-	 * @return array
+	 * @return array Subscription order counts and totals by type (initial, switch, renewal, resubscribe). Values are returned as strings.
 	 */
 	private static function get_subscription_orders() {
 		$order_totals   = [];
@@ -189,6 +191,9 @@ class WC_Subscriptions_Tracker {
 
 		$order_totals['initial_gross'] = $initial_order_total;
 		$order_totals['initial_count'] = $initial_order_count;
+
+		// Ensure all values are strings.
+		$order_totals = array_map( 'strval', $order_totals );
 
 		return $order_totals;
 	}
