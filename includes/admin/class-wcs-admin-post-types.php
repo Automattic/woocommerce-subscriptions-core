@@ -281,6 +281,7 @@ class WCS_Admin_Post_Types {
 			'mark_on-hold',
 			'mark_completed',
 			'mark_cancelled',
+			'remove_personal_data',
 		];
 
 		// Remove actions that are not relevant to subscriptions.
