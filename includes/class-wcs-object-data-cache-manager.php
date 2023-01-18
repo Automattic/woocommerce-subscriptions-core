@@ -70,7 +70,7 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 		add_action( "woocommerce_{$this->object_type}_deleted", [ $this, 'deleted' ] );
 
 		add_action( "woocommerce_before_trash_{$this->object_type}", [ $this, 'prepare_object_to_be_deleted' ], 10, 2 );
-		add_action( "woocommerce_{$this->object_type}_trashed", [ $this, 'deleted' ] );
+		add_action( "woocommerce_{$this->object_type}_trashed", [ $this, 'trashed' ] );
 
 		add_action( "woocommerce_{$this->object_type}_untrashed", [ $this, 'untrashed' ] );
 	}
@@ -229,9 +229,27 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 	}
 
 	/**
-	 * When an order is deleted or trashed, call action_object_cache_changes().
-	 * Since in this case, we called prepare_object_to_be_deleted(), object will be deleted
+	 * When an order is trashed, call action_object_cache_changes().
+	 * We would have called prepare_object_to_be_deleted(), so object will be deleted
 	 * from cache.
+	 *
+	 * @param int $order_id The id of order being restored.
+	 */
+	public function trashed( $order_id ) {
+		if ( ! isset( $this->object_changes[ $order_id ] ) ) {
+			return;
+		}
+
+		$object_changes = $this->object_changes[ $order_id ];
+		unset( $this->object_changes[ $order_id ] );
+
+		foreach ( $object_changes as $key => $change ) {
+			$this->trigger_update_cache_hook( $change['type'], $order_id, $key, $change['new'] );
+		}
+	}
+
+	/**
+	 * When an order has been deleted, we would have called prepare_object_to_be_deleted().
 	 *
 	 * @param int $order_id The id of order being restored.
 	 */
