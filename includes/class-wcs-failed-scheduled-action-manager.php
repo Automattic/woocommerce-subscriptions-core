@@ -139,7 +139,7 @@ class WCS_Failed_Scheduled_Action_Manager {
 			}
 
 			if ( $id ) {
-				$subject = '<a href="' . get_edit_post_link( $id ) . '">#' . $id . '</a>';
+				$subject = '<a href="' . wcs_get_edit_post_link( $id ) . '">#' . $id . '</a>';
 			} else {
 				$subject = 'unknown';
 			}
