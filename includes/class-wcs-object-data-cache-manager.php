@@ -209,10 +209,9 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 	}
 
 	/**
-	 * When an order is restored from the trash, call action_object_cache_changes().
-	 * Since in this case, we didn't call prepare_object_changes(), object will be considered as new.
+	 * When an order is restored from the trash, action on object changes.
 	 *
-	 * @param int $order_id The order being restored.
+	 * @param int $order_id The order id being restored.
 	 */
 	public function untrashed( $order_id ) {
 		$order = wc_get_order( $order_id );
@@ -231,13 +230,21 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 	}
 
 	/**
-	 * When an order is trashed, call action_object_cache_changes().
-	 * We would have called prepare_object_to_be_deleted(), so object will be deleted
-	 * from cache.
+	 * When an order is trashed, gets the object and action on object changes.
 	 *
 	 * @param int $order_id The id of order being restored.
 	 */
 	public function trashed( $order_id ) {
+		$order = wc_get_order( $order_id );
+		$this->action_object_cache_changes( $order );
+	}
+
+	/**
+	 * When an order has been deleted, trigger update cache hook.
+	 *
+	 * @param int $order_id The id of order being deleted.
+	 */
+	public function deleted( $order_id ) {
 		if ( ! isset( $this->object_changes[ $order_id ] ) ) {
 			return;
 		}
@@ -248,16 +255,6 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 		foreach ( $object_changes as $key => $change ) {
 			$this->trigger_update_cache_hook( $change['type'], $order_id, $key, $change['new'] );
 		}
-	}
-
-	/**
-	 * When an order has been deleted, we would have called prepare_object_to_be_deleted().
-	 *
-	 * @param int $order_id The id of order being restored.
-	 */
-	public function deleted( $order_id ) {
-		$order = wc_get_order( $order_id );
-		$this->action_object_cache_changes( $order );
 	}
 
 	/**
