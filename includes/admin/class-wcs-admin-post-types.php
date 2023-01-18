@@ -671,15 +671,21 @@ class WCS_Admin_Post_Types {
 			if ( 'next_payment_date' === $column ) {
 				$subscription_is_active = $subscription->has_status( 'active' );
 
-				// Render icon + tooltip for offsite renewals.
-				if ( $subscription->payment_method_supports( 'gateway_scheduled_payments' ) && ! $subscription->is_manual() && $subscription_is_active ) {
-					$column_content .= '<div class="woocommerce-help-tip" data-tip="' . esc_attr__( 'This date should be treated as an estimate only. The payment gateway for this subscription controls when payments are processed.', 'woocommerce-subscriptions' ) . '"></div>';
+				$tooltip_message = '';
+				$tooltip_classes = 'woocommerce-help-tip';
+
+				if ( $subscription_is_active && $date_timestamp < current_time( 'timestamp', false ) ) {
+					$tooltip_message .= __( 'Subscription payment overdue.</br>', 'woocommerce-subscriptions' );
+					$tooltip_classes .= ' wcs-payment-overdue';
 				}
 
-				// Render red icon + tooltip for overdue subscriptions.
-				// TODO combine into a single tooltip + icon.
-				if ( $subscription_is_active && $date_timestamp < current_time( 'timestamp', false ) ) {
-					$column_content .= '<div class="woocommerce-help-tip woocommerce-subscriptions-overdue-icon" data-tip="' . esc_attr__( 'Subscription payment overdue.', 'woocommerce-subscriptions' ) . '"></div>';
+				if ( $subscription->payment_method_supports( 'gateway_scheduled_payments' ) && ! $subscription->is_manual() && $subscription_is_active ) {
+					$tooltip_message .= __( 'This date should be treated as an estimate only. The payment gateway for this subscription controls when payments are processed.</br>', 'woocommerce-subscriptions' );
+					$tooltip_classes .= ' wcs-offsite-renewal';
+				}
+
+				if ( $tooltip_message ) {
+					$column_content .= '<div class="' . esc_attr( $tooltip_classes ). '" data-tip="' . esc_attr( $tooltip_message ) . '"></div>';
 				}
 			}
 		}
