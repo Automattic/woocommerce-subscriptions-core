@@ -195,6 +195,8 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 		}
 
 		if ( empty( $this->object_changes[ $object->get_id() ] ) ) {
+			// No changes to record. Unset the object ID to 'reset' $this->object_changes' state.
+			unset( $this->object_changes[ $object->get_id() ] );
 			return;
 		}
 
