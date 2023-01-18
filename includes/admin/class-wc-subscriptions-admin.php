@@ -911,6 +911,8 @@ class WC_Subscriptions_Admin {
 				$script_params = array(
 					'enablePayPalWarning' => __( 'PayPal Standard has a number of limitations and does not support all subscription features.', 'woocommerce-subscriptions' ) . "\n\n" . __( 'Because of this, it is not recommended as a payment method for Subscriptions unless it is the only available option for your country.', 'woocommerce-subscriptions' ),
 				);
+			} elseif ( in_array( $screen->id, [ wcs_get_page_screen_id( 'shop_subscription' ), 'edit-shop_subscription' ], true ) ) {
+				$script_params['i18n_remove_personal_data_notice'] = __( 'This action cannot be reversed. Are you sure you wish to erase personal data from the selected subscriptions?', 'woocommerce-subscriptions' );
 			}
 
 			$script_params['ajaxLoaderImage'] = WC()->plugin_url() . '/assets/images/ajax-loader.gif';
