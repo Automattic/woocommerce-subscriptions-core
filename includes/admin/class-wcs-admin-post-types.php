@@ -660,12 +660,12 @@ class WCS_Admin_Post_Types {
 
 		$date_type_map = array( 'last_payment_date' => 'last_order_date_created' );
 		$date_type     = array_key_exists( $column, $date_type_map ) ? $date_type_map[ $column ] : $column;
-		$date_value    = $subscription->get_time( $date_type, 'site' );
+		$date_timestamp    = $subscription->get_time( $date_type, 'site' );
 
 		if ( 0 == $subscription->get_time( $date_type, 'gmt' ) ) {
 			$column_content = '-';
 		} else {
-			$column_content = sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( date( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ), $date_value ) ), esc_html( $subscription->get_date_to_display( $date_type ) ) );
+			$column_content = sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( date( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ), $date_timestamp ) ), esc_html( $subscription->get_date_to_display( $date_type ) ) );
 
 			// Custom handling for `Next payment` date column.
 			if ( 'next_payment_date' === $column ) {
@@ -676,8 +676,10 @@ class WCS_Admin_Post_Types {
 					$column_content .= '<div class="woocommerce-help-tip" data-tip="' . esc_attr__( 'This date should be treated as an estimate only. The payment gateway for this subscription controls when payments are processed.', 'woocommerce-subscriptions' ) . '"></div>';
 				}
 
-				if ( $subscription_is_active && $date_value < gmdate() ) {
-					$column_content .= '</br><span class="woocommerce-subscriptions-overdue">Payment overdue!</span>';
+				// Render red icon + tooltip for overdue subscriptions.
+				// TODO combine into a single tooltip + icon.
+				if ( $subscription_is_active && $date_timestamp < current_time( 'timestamp', false ) ) {
+					$column_content .= '<div class="woocommerce-help-tip woocommerce-subscriptions-overdue-icon" data-tip="' . esc_attr__( 'Subscription payment overdue.', 'woocommerce-subscriptions' ) . '"></div>';
 				}
 			}
 		}
