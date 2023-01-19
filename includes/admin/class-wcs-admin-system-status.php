@@ -32,7 +32,10 @@ class WCS_Admin_System_Status {
 	 */
 	public static function render_system_status_items() {
 
-		$store_data = $subscriptions_data = $subscriptions_by_payment_gateway_data = $payment_gateway_data = array();
+		$store_data                            = [];
+		$subscriptions_data                    = [];
+		$subscriptions_by_payment_gateway_data = [];
+		$payment_gateway_data                  = [];
 
 		self::set_debug_mode( $subscriptions_data );
 		self::set_staging_mode( $subscriptions_data );
