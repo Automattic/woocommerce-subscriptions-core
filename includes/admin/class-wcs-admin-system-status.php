@@ -383,7 +383,7 @@ class WCS_Admin_System_Status {
 				ARRAY_A
 			);
 		} else {
-			// With HPOS disabled, `_payment_method` is a column in the `post_meta` table.
+			// With HPOS disabled, `_payment_method` is a column in the `postmeta` table.
 			$results = $wpdb->get_results(
 				"SELECT
 					COUNT(subscriptions.ID) as count,
