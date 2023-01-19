@@ -364,10 +364,8 @@ class WCS_Admin_System_Status {
 	public static function get_subscriptions_by_gateway() {
 		global $wpdb;
 		$subscription_gateway_data = [];
-
-		// Set variables to be used in the DB query based on whether HPOS is enabled or not.
-		$is_hpos_in_use           = wcs_is_custom_order_tables_usage_enabled();
-		$order_status_column_name = $is_hpos_in_use ? 'status' : 'post_status';
+		$is_hpos_in_use            = wcs_is_custom_order_tables_usage_enabled();
+		$order_status_column_name  = $is_hpos_in_use ? 'status' : 'post_status';
 
 		// Conduct a different query for HPOS and non-HPOS stores.
 		if ( $is_hpos_in_use ) {
