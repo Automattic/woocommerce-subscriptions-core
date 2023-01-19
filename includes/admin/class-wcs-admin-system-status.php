@@ -176,7 +176,7 @@ class WCS_Admin_System_Status {
 		$templates        = WC_Admin_Status::scan_template_files( $wcs_template_dir );
 
 		foreach ( $templates as $file ) {
-			$theme_file = $is_outdated = false;
+			$theme_file = false;
 			$locations  = array(
 				get_stylesheet_directory() . "/{$file}",
 				get_stylesheet_directory() . "/{$wc_template_path}{$file}",
