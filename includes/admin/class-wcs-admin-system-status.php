@@ -80,7 +80,7 @@ class WCS_Admin_System_Status {
 			$section_tooltip = $section['tooltip'];
 			$debug_data      = $section['data'];
 
-			include( WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/admin/status.php' ) );
+			include WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/admin/status.php' );
 		}
 	}
 
@@ -199,7 +199,7 @@ class WCS_Admin_System_Status {
 				$overridden_template_output = sprintf( '<code>%s</code>', esc_html( str_replace( $theme_root, '', $theme_file ) ) );
 
 				if ( $core_version && ( empty( $theme_version ) || version_compare( $theme_version, $core_version, '<' ) ) ) {
-					$outdated = true;
+					$outdated                    = true;
 					$overridden_template_output .= sprintf(
 						/* translators: %1$s is the file version, %2$s is the core version */
 						esc_html__( 'version %1$s is out of date. The core version is %2$s', 'woocommerce-subscriptions' ),
