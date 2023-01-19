@@ -363,19 +363,49 @@ class WCS_Admin_System_Status {
 	 */
 	public static function get_subscriptions_by_gateway() {
 		global $wpdb;
-		$subscription_gatway_data = array();
+		$subscription_gateway_data = [];
+		$is_hpos_in_use            = wcs_is_custom_order_tables_usage_enabled();
+		$order_status_column_name  = $is_hpos_in_use ? 'status' : 'post_status';
 
-		$results = $wpdb->get_results( "
-			SELECT COUNT(subscriptions.ID) as count, post_meta.meta_value as payment_method, subscriptions.post_status
-			FROM $wpdb->posts as subscriptions RIGHT JOIN $wpdb->postmeta as post_meta ON post_meta.post_id = subscriptions.ID
-			WHERE subscriptions.post_type = 'shop_subscription' && post_meta.meta_key = '_payment_method'
-			GROUP BY post_meta.meta_value, subscriptions.post_status", ARRAY_A );
-
-		foreach ( $results as $result ) {
-			$subscription_gatway_data[ $result['payment_method'] ][ $result['post_status'] ] = $result['count'];
+		// Conduct a different query for HPOS and non-HPOS stores.
+		if ( $is_hpos_in_use ) {
+			// With HPOS enabled, `payment_method` is a column in the `wc_orders` table.
+			$results = $wpdb->get_results(
+				"SELECT
+					COUNT(subscriptions.id) as count,
+					subscriptions.payment_method,
+					subscriptions.status
+				FROM {$wpdb->prefix}wc_orders as subscriptions
+				WHERE subscriptions.type = 'shop_subscription'
+				GROUP BY subscriptions.payment_method, subscriptions.status",
+				ARRAY_A
+			);
+		} else {
+			// With HPOS disabled, `_payment_method` is a column in the `postmeta` table.
+			$results = $wpdb->get_results(
+				"SELECT
+					COUNT(subscriptions.ID) as count,
+					post_meta.meta_value as payment_method,
+					subscriptions.post_status
+				FROM {$wpdb->prefix}posts as subscriptions
+				RIGHT JOIN {$wpdb->prefix}postmeta as post_meta ON post_meta.post_id = subscriptions.ID
+				WHERE
+					subscriptions.post_type = 'shop_subscription'
+					&& post_meta.meta_key = '_payment_method'
+				GROUP BY post_meta.meta_value, subscriptions.post_status",
+				ARRAY_A
+			);
 		}
 
-		return $subscription_gatway_data;
+		foreach ( $results as $result ) {
+			// Ignore any results that don't have a payment method.
+			if ( empty( $result['payment_method'] ) ) {
+				continue;
+			}
+			$subscription_gateway_data[ $result['payment_method'] ][ $result[ $order_status_column_name ] ] = $result['count'];
+		}
+
+		return $subscription_gateway_data;
 	}
 
 	/**
