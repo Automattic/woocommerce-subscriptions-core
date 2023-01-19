@@ -46,7 +46,7 @@ class WCS_Admin_System_Status {
 		self::set_woocommerce_account_data( $subscriptions_data );
 
 		// Subscriptions by Payment Gateway
-		self::set_subscriptions_by_payment_gateway( $subscriptions_by_payment_gateway );
+		self::set_subscriptions_by_payment_gateway( $subscriptions_by_payment_gateway_data );
 
 		// Payment gateway features
 		self::set_subscriptions_payment_gateway_support( $payment_gateway_data );
@@ -68,7 +68,7 @@ class WCS_Admin_System_Status {
 			array(
 				'title'   => __( 'Subscriptions by Payment Gateway', 'woocommerce-subscriptions' ),
 				'tooltip' => __( 'This section shows information about Subscription payment methods.', 'woocommerce-subscriptions' ),
-				'data'    => $subscriptions_by_payment_gateway,
+				'data'    => $subscriptions_by_payment_gateway_data,
 			),
 			array(
 				'title'   => __( 'Payment Gateway Support', 'woocommerce-subscriptions' ),
