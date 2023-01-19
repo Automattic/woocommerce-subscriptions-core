@@ -371,7 +371,7 @@ class WCS_Admin_System_Status {
 
 		// Conduct a different query for HPOS and non-HPOS stores.
 		if ( $is_hpos_in_use ) {
-			// For HPOS stores, `payment_method` is a column in the `wc_orders` table.
+			// With HPOS enabled, `payment_method` is a column in the `wc_orders` table.
 			$results = $wpdb->get_results(
 				"SELECT
 					COUNT(subscriptions.id) as count,
@@ -383,7 +383,7 @@ class WCS_Admin_System_Status {
 				ARRAY_A
 			);
 		} else {
-			// For non-HPOS stores, `_payment_method` is a column in the `post_meta` table.
+			// With HPOS disabled, `_payment_method` is a column in the `post_meta` table.
 			$results = $wpdb->get_results(
 				"SELECT
 					COUNT(subscriptions.ID) as count,
