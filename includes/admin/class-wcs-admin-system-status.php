@@ -281,9 +281,11 @@ class WCS_Admin_System_Status {
 
 		foreach ( self::get_subscriptions_by_gateway() as $payment_method => $status_counts ) {
 			if ( isset( $gateways[ $payment_method ] ) ) {
-				$payment_method_name = $payment_method_label = $gateways[ $payment_method ]->method_title;
+				$payment_method_name  = $gateways[ $payment_method ]->method_title;
+				$payment_method_label = $gateways[ $payment_method ]->method_title;
 			} else {
-				$payment_method_label = $payment_method = 'other';
+				$payment_method_label = 'other';
+				$payment_method       = 'other';
 				$payment_method_name  = _x( 'Other', 'label for the system status page', 'woocommerce-subscriptions' );
 			}
 
