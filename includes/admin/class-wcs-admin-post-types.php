@@ -675,7 +675,7 @@ class WCS_Admin_Post_Types {
 				$tooltip_classes = 'woocommerce-help-tip';
 
 				if ( $subscription_is_active && $date_timestamp < current_time( 'timestamp', false ) ) {
-					$tooltip_message .= __( 'Subscription payment overdue.</br>', 'woocommerce-subscriptions' );
+					$tooltip_message .= __( '<b>Subscription payment overdue.</b></br>', 'woocommerce-subscriptions' );
 					$tooltip_classes .= ' wcs-payment-overdue';
 				}
 
