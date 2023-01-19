@@ -658,9 +658,9 @@ class WCS_Admin_Post_Types {
 	 */
 	public static function get_date_column_content( $subscription, $column ) {
 
-		$date_type_map = array( 'last_payment_date' => 'last_order_date_created' );
-		$date_type     = array_key_exists( $column, $date_type_map ) ? $date_type_map[ $column ] : $column;
-		$date_timestamp    = $subscription->get_time( $date_type, 'site' );
+		$date_type_map  = array( 'last_payment_date' => 'last_order_date_created' );
+		$date_type      = array_key_exists( $column, $date_type_map ) ? $date_type_map[ $column ] : $column;
+		$date_timestamp = $subscription->get_time( $date_type, 'site' );
 
 		if ( 0 == $subscription->get_time( $date_type, 'gmt' ) ) {
 			$column_content = '-';
