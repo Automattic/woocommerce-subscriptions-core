@@ -7,7 +7,6 @@
  * @package    WooCommerce Subscriptions
  * @subpackage WC_Subscriptions_Admin
  * @category   Class
- * @author     Prospress
  * @since      1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
  */
 class WCS_Admin_System_Status {
@@ -165,7 +164,6 @@ class WCS_Admin_System_Status {
 	/**
 	 * Determine which of our files have been overridden by the theme.
 	 *
-	 * @author Jeremy Pry
 	 * @return array Theme override data.
 	 */
 	private static function get_theme_overrides() {
