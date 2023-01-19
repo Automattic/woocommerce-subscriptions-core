@@ -260,7 +260,7 @@ class WCS_Admin_System_Status {
 
 		foreach ( $woocommerce_account_subscriptions as $subscription ) {
 			if ( isset( $subscription['product_id'] ) && self::WCS_PRODUCT_ID === $subscription['product_id'] ) {
-				$has_active_product_key = in_array( $site_id, $subscription['connections'], true );
+				$has_active_product_key = in_array( $site_id, $subscription['connections'], false ); // phpcs:ignore WordPress.PHP.StrictInArray.FoundNonStrictFalse
 				break;
 			}
 		}
