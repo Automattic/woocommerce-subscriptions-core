@@ -225,6 +225,15 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 	 */
 	public function prepare_object_to_be_deleted( $order_id, $order ) {
 		$this->prepare_object_changes( $order, 'all_fields', true );
+
+		// If the object is being deleted, we want to record all the changes as deletes.
+		foreach ( $this->object_changes[ $order->get_id() ] as $data_key => $data ) {
+			$this->object_changes[ $order->get_id() ][ $data_key ]['type'] = 'delete';
+			if ( ! isset( $this->object_changes[ $order->get_id() ][ $data_key ]['previous'] ) ) {
+				$this->object_changes[ $order->get_id() ][ $data_key ]['previous'] = $data['new'];
+				unset( $this->object_changes[ $order->get_id() ][ $data_key ]['new'] );
+			}
+		}
 	}
 
 	/**
