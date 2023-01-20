@@ -7,7 +7,6 @@
  * @package    WooCommerce Subscriptions
  * @subpackage WC_Subscriptions_Admin
  * @category   Class
- * @author     Prospress
  * @since      1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
  */
 class WCS_Admin_System_Status {
@@ -33,7 +32,10 @@ class WCS_Admin_System_Status {
 	 */
 	public static function render_system_status_items() {
 
-		$store_data = $subscriptions_data = $subscriptions_by_payment_gateway_data = $payment_gateway_data = array();
+		$store_data                            = [];
+		$subscriptions_data                    = [];
+		$subscriptions_by_payment_gateway_data = [];
+		$payment_gateway_data                  = [];
 
 		self::set_debug_mode( $subscriptions_data );
 		self::set_staging_mode( $subscriptions_data );
@@ -44,7 +46,7 @@ class WCS_Admin_System_Status {
 		self::set_woocommerce_account_data( $subscriptions_data );
 
 		// Subscriptions by Payment Gateway
-		self::set_subscriptions_by_payment_gateway( $subscriptions_by_payment_gateway );
+		self::set_subscriptions_by_payment_gateway( $subscriptions_by_payment_gateway_data );
 
 		// Payment gateway features
 		self::set_subscriptions_payment_gateway_support( $payment_gateway_data );
@@ -66,7 +68,7 @@ class WCS_Admin_System_Status {
 			array(
 				'title'   => __( 'Subscriptions by Payment Gateway', 'woocommerce-subscriptions' ),
 				'tooltip' => __( 'This section shows information about Subscription payment methods.', 'woocommerce-subscriptions' ),
-				'data'    => $subscriptions_by_payment_gateway,
+				'data'    => $subscriptions_by_payment_gateway_data,
 			),
 			array(
 				'title'   => __( 'Payment Gateway Support', 'woocommerce-subscriptions' ),
@@ -80,7 +82,7 @@ class WCS_Admin_System_Status {
 			$section_tooltip = $section['tooltip'];
 			$debug_data      = $section['data'];
 
-			include( WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/admin/status.php' ) );
+			include WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/admin/status.php' );
 		}
 	}
 
@@ -165,7 +167,6 @@ class WCS_Admin_System_Status {
 	/**
 	 * Determine which of our files have been overridden by the theme.
 	 *
-	 * @author Jeremy Pry
 	 * @return array Theme override data.
 	 */
 	private static function get_theme_overrides() {
@@ -177,7 +178,7 @@ class WCS_Admin_System_Status {
 		$templates        = WC_Admin_Status::scan_template_files( $wcs_template_dir );
 
 		foreach ( $templates as $file ) {
-			$theme_file = $is_outdated = false;
+			$theme_file = false;
 			$locations  = array(
 				get_stylesheet_directory() . "/{$file}",
 				get_stylesheet_directory() . "/{$wc_template_path}{$file}",
@@ -199,7 +200,7 @@ class WCS_Admin_System_Status {
 				$overridden_template_output = sprintf( '<code>%s</code>', esc_html( str_replace( $theme_root, '', $theme_file ) ) );
 
 				if ( $core_version && ( empty( $theme_version ) || version_compare( $theme_version, $core_version, '<' ) ) ) {
-					$outdated = true;
+					$outdated                    = true;
 					$overridden_template_output .= sprintf(
 						/* translators: %1$s is the file version, %2$s is the core version */
 						esc_html__( 'version %1$s is out of date. The core version is %2$s', 'woocommerce-subscriptions' ),
@@ -261,7 +262,7 @@ class WCS_Admin_System_Status {
 
 		foreach ( $woocommerce_account_subscriptions as $subscription ) {
 			if ( isset( $subscription['product_id'] ) && self::WCS_PRODUCT_ID === $subscription['product_id'] ) {
-				$has_active_product_key = in_array( $site_id, $subscription['connections'] );
+				$has_active_product_key = in_array( $site_id, $subscription['connections'], false ); // phpcs:ignore WordPress.PHP.StrictInArray.FoundNonStrictFalse -- In case the value from $subscription['connections'] is a string.
 				break;
 			}
 		}
@@ -282,9 +283,11 @@ class WCS_Admin_System_Status {
 
 		foreach ( self::get_subscriptions_by_gateway() as $payment_method => $status_counts ) {
 			if ( isset( $gateways[ $payment_method ] ) ) {
-				$payment_method_name = $payment_method_label = $gateways[ $payment_method ]->method_title;
+				$payment_method_name  = $gateways[ $payment_method ]->method_title;
+				$payment_method_label = $gateways[ $payment_method ]->method_title;
 			} else {
-				$payment_method_label = $payment_method = 'other';
+				$payment_method_label = 'other';
+				$payment_method       = 'other';
 				$payment_method_name  = _x( 'Other', 'label for the system status page', 'woocommerce-subscriptions' );
 			}
 
