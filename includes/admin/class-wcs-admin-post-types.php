@@ -282,13 +282,33 @@ class WCS_Admin_Post_Types {
 			'mark_completed',
 			'mark_cancelled',
 			'remove_personal_data',
+			'trash',
+			'delete',
+			'untrash',
 		];
 
 		// Remove actions that are not relevant to subscriptions.
 		$actions = array_diff_key( $actions, array_flip( $actions_to_remove ) );
 
-		// If we are currently in trash, expired or cancelled listing. We don't need to add subscriptions specific actions.
-		if ( in_array( $post_status, [ 'cancelled', 'trash', 'wc-expired' ], true ) ) {
+		// If we are currently in trash, expired or cancelled listing. We only need to add specific subscriptions actions.
+		if ( in_array( $status_filter, [ 'cancelled', 'wc-expired' ], true ) ) {
+			$actions = array_merge(
+				$actions,
+				[
+					'trash_subscriptions' => _x( 'Move to Trash', 'an action on a subscription', 'woocommerce-subscriptions' ),
+				]
+			);
+
+			return $actions;
+		} elseif ( 'trash' === $status_filter ) {
+			$actions = array_merge(
+				$actions,
+				[
+					'untrash_subscriptions' => _x( 'Restore', 'an action on a subscription', 'woocommerce-subscriptions' ),
+					'delete_subscriptions'  => _x( 'Delete Permanently', 'an action on a subscription', 'woocommerce-subscriptions' ),
+				]
+			);
+
 			return $actions;
 		}
 
@@ -303,16 +323,17 @@ class WCS_Admin_Post_Types {
 		$subscriptions_actions = apply_filters(
 			'woocommerce_subscription_bulk_actions',
 			[
-				'active'    => _x( 'Activate', 'an action on a subscription', 'woocommerce-subscriptions' ),
-				'on-hold'   => _x( 'Put on-hold', 'an action on a subscription', 'woocommerce-subscriptions' ),
-				'cancelled' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
+				'active'              => _x( 'Activate', 'an action on a subscription', 'woocommerce-subscriptions' ),
+				'on-hold'             => _x( 'Put on-hold', 'an action on a subscription', 'woocommerce-subscriptions' ),
+				'cancelled'           => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
+				'trash_subscriptions' => _x( 'Move to Trash', 'an action on a subscription', 'woocommerce-subscriptions' ),
 			]
 		);
 
 		$actions = array_merge( $actions, $subscriptions_actions );
 
 		// No need to display certain bulk actions if we know all the subscriptions on the page have that status already.
-		switch ( $post_status ) {
+		switch ( $status_filter ) {
 			case 'wc-active':
 				unset( $actions['active'] );
 				break;
@@ -346,7 +367,7 @@ class WCS_Admin_Post_Types {
 			$action = wc_clean( wp_unslash( $_REQUEST['action2'] ) );
 		}
 
-		if ( ! in_array( $action, array( 'active', 'on-hold', 'cancelled' ), true ) ) {
+		if ( ! in_array( $action, [ 'active', 'on-hold', 'cancelled', 'trash_subscriptions', 'untrash_subscriptions', 'delete_subscriptions' ], true ) ) {
 			return;
 		}
 
