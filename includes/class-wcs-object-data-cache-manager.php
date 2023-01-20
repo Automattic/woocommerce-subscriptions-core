@@ -67,7 +67,7 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 		add_action( "woocommerce_after_{$this->object_type}_object_save", [ $this, 'action_object_cache_changes' ] );
 
 		add_action( "woocommerce_before_delete_{$this->object_type}", [ $this, 'prepare_object_to_be_deleted' ], 10, 2 );
-		add_action( "woocommerce_{$this->object_type}_deleted", [ $this, 'deleted' ] );
+		add_action( "woocommerce_delete_{$this->object_type}", [ $this, 'deleted' ] );
 
 		add_action( "woocommerce_before_trash_{$this->object_type}", [ $this, 'prepare_object_to_be_deleted' ], 10, 2 );
 		add_action( "woocommerce_trash_{$object_type}", [ $this, 'trashed' ] );
