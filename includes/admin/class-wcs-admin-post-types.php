@@ -272,7 +272,7 @@ class WCS_Admin_Post_Types {
 		 * Note: The nonce check is ignored below as there is no nonce provided on status filter requests and it's not necessary
 		 * because we're filtering an admin screen, not processing or acting on the data.
 		 */
-		$post_status = sanitize_key( wp_unslash( $_GET['post_status'] ?? $_GET['status'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$status_filter = sanitize_key( wp_unslash( $_GET['post_status'] ?? $_GET['status'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		// List of actions to remove that are irrelevant to subscriptions.
 		$actions_to_remove = [
