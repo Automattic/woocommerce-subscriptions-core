@@ -10,6 +10,7 @@
 * Fix - Removed the potential for an infinite loop when getting a subscription's related orders while the subscription is being loaded.
 * Fix - Refactor `WC_Subscriptions_Renewal_Order::get_failed_order_replaced_by()` to support HPOS stores.
 * Fix - Refactor the `WC_Subscriptions_Tracker` class to support HPOS stores.
+* Fix - "Subscriptions by Payment Gateway" in WooCommerce → Status now shows the correct values when HPOS is enabled.
 * Fix - Check whether the order actually exists before accessing order properties in wcs_order_contains_subscription()
 * Fix - Replace the get_posts() used in get_subscriptions_from_token() to support HPOS stores.
 * Fix - On HPOS stores, when a subscription's parent order is trashed or deleted, make sure the related subscription is also trashed or deleted.
@@ -33,6 +34,7 @@
 * Dev - Introduced a new `untrash_order()` in the `WCS_Orders_Table_Subscription_Data_Store` class to fix untrashing subscriptions on stores that have HPOS enabled.
 * Dev - Moved the trash, untrash & delete related `add_actions()` in the `WC_Subscriptions_Manager` class to be added on the `woocommerce_loaded` action.
 * Dev - Update `wp_delete_post()` code that was used to delete a subscription to use CRUD methods to support HPOS.
+* Dev - Fix phpcs violations in the `WCS_Admin_System_Status` class to improve code quality.
 
 = 5.1.0 - 2022-11-24 =
 * Fix - Set payment tokens when copying data between orders and subscriptions in a CRUD compatible way. Fixes PHP notices during renewal order process.
