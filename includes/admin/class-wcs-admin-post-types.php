@@ -1409,7 +1409,7 @@ class WCS_Admin_Post_Types {
 	/**
 	 * Handles bulk updating the status subscriptions.
 	 *
-	 * @param array  $ids Subscription IDs to be trashed or deleted.
+	 * @param array  $ids        Subscription IDs to be trashed or deleted.
 	 * @param string $new_status The new status to update the subscriptions to.
 	 *
 	 * @return array Array of query args to redirect to after handling the bulk action request.
@@ -1417,7 +1417,7 @@ class WCS_Admin_Post_Types {
 	private function do_bulk_action_update_status( $subscription_ids, $new_status ) {
 		$sendback_args = [
 			'ids'         => join( ',', $subscription_ids ),
-			'bulk_action' => 'marked_' . $action,
+			'bulk_action' => 'marked_' . $new_status,
 			'changed'     => 0,
 			'error_count' => 0,
 		];
@@ -1427,14 +1427,14 @@ class WCS_Admin_Post_Types {
 			$note         = _x( 'Subscription status changed by bulk edit:', 'Used in order note. Reason why status changed.', 'woocommerce-subscriptions' );
 
 			try {
-				if ( 'cancelled' === $action ) {
+				if ( 'cancelled' === $new_status ) {
 					$subscription->cancel_order( $note );
 				} else {
 					$subscription->update_status( $new_status, $note, true );
 				}
 
 				// Fire the action hooks.
-				do_action( 'woocommerce_admin_changed_subscription_to_' . $action, $subscription_id );
+				do_action( 'woocommerce_admin_changed_subscription_to_' . $new_status, $subscription_id );
 
 				$sendback_args['changed']++;
 			} catch ( Exception $e ) {
