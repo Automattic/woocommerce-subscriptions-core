@@ -82,18 +82,16 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 	 * Relevant changes to the object's data is stored in the $this->object_changes property
 	 * to be processed after the object is saved. See $this->action_object_cache_changes().
 	 *
-	 * @param WC_Data $object           The object which is being saved.
-	 * @param string  $generate_type    Optional. The data to generate the changes from. Defaults to 'changes_only' which will generate the data from changes to the object. 'all_fields' will fetch data from the object for all tracked data keys.
-	 * @param bool    $is_delete_object Optional. Whether the object is being deleted. Defaults to false.
+	 * @param WC_Data $object        The object which is being saved.
+	 * @param string  $generate_type Optional. The data to generate the changes from. Defaults to 'changes_only' which will generate the data from changes to the object. 'all_fields' will fetch data from the object for all tracked data keys.
 	 */
-	public function prepare_object_changes( $object, $generate_type = 'changes_only', $is_delete_object = false ) {
+	public function prepare_object_changes( $object, $generate_type = 'changes_only' ) {
 		// If the object hasn't been created yet, we can't do anything yet. We'll have to wait until after the object is saved.
 		if ( ! $object->get_id() ) {
 			return;
 		}
 
-		// If object is to be deleted, we want to update all fields.
-		$force_all_fields = $is_delete_object || 'all_fields' === $generate_type;
+		$force_all_fields = 'all_fields' === $generate_type;
 		$changes          = $object->get_changes();
 		$base_data        = $object->get_base_data();
 		$meta_data        = $object->get_meta_data();
@@ -168,13 +166,6 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 					'previous' => $previous_meta,
 					'type'     => 'delete',
 				];
-			}
-		}
-
-		// If the object is being deleted, we want to record all the changes as deletes.
-		if ( $is_delete_object ) {
-			foreach ( $this->object_changes[ $object->get_id() ] as $data_key => $data ) {
-				$this->object_changes[ $object->get_id() ][ $data_key ]['type'] = 'delete';
 			}
 		}
 	}
