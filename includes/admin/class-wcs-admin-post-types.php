@@ -1463,7 +1463,7 @@ class WCS_Admin_Post_Types {
 
 		foreach ( $subscription_ids as $id ) {
 			$subscription = wcs_get_subscription( $id );
-			$subscription->delete( $order, $force_delete );
+			$subscription->delete( $force_delete );
 			$updated_subscription = wcs_get_subscription( $id );
 
 			if ( ( $force_delete && false === $updated_subscription ) || ( ! $force_delete && $updated_subscription->get_status() === 'trash' ) ) {
