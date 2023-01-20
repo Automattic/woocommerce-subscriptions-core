@@ -422,16 +422,6 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 				wp_untrash_post( $id );
 			}
 
-			/**
-			 * Fires after a subscription is restored from the trash.
-			 *
-			 * @since 5.2.0
-			 *
-			 * @param int    $subscription_id Subscription ID.
-			 * @param string $previous_status The status of the subscription before it was trashed.
-			 */
-			do_action( 'woocommerce_subscription_untrashed', $subscription->get_id(), $previous_status );
-
 			return true;
 		}
 
