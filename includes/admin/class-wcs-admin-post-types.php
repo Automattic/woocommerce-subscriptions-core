@@ -1323,7 +1323,7 @@ class WCS_Admin_Post_Types {
 			if ( 'trash' === $status ) {
 				// If the subscription is already trashed, add an untrash action instead.
 				if ( 'trash' === $subscription->get_status() ) {
-					$untrash_url        = $is_hpos_enabled ? add_query_arg( 'action', 'untrash', $action_url ) : wp_nonce_url( admin_url( sprintf( $post_type_object->_edit_link . '&amp;action=untrash', $subscription->get_id() ) ), 'untrash-post_' . $subscription->get_id() );
+					$untrash_url        = $is_hpos_enabled ? add_query_arg( 'action', 'untrash_subscriptions', $action_url ) : wp_nonce_url( admin_url( sprintf( $post_type_object->_edit_link . '&amp;action=untrash', $subscription->get_id() ) ), 'untrash-post_' . $subscription->get_id() );
 					$actions['untrash'] = sprintf(
 						'<a title="%s" href="%s">%s</a>',
 						esc_attr( __( 'Restore this item from the Trash', 'woocommerce-subscriptions' ) ),
@@ -1603,7 +1603,7 @@ class WCS_Admin_Post_Types {
 	private function get_trash_or_delete_subscription_link( $subscription_id, $base_action_url, $status ) {
 
 		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			return add_query_arg( 'action', $status, $base_action_url );
+			return add_query_arg( 'action', $status . '_subscriptions', $base_action_url );
 		}
 
 		return get_delete_post_link( $subscription_id, '', 'delete' === $status );
