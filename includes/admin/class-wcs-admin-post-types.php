@@ -897,7 +897,7 @@ class WCS_Admin_Post_Types {
 			return $request_query;
 		}
 
-		$customer_id      = absint( $_GET['_customer_user'] );
+		$customer_id      = absint( $_GET['_customer_user'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$subscription_ids = apply_filters(
 			'wcs_admin_request_query_subscriptions_for_customer',
 			WCS_Customer_Store::instance()->get_users_subscription_ids( $customer_id ),
@@ -925,7 +925,7 @@ class WCS_Admin_Post_Types {
 			return $request_query;
 		}
 
-		$product_id       = absint( $_GET['_wcs_product'] );
+		$product_id       = absint( $_GET['_wcs_product'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$subscription_ids = wcs_get_subscriptions_for_product( $product_id );
 		$subscription_ids = apply_filters(
 			'wcs_admin_request_query_subscriptions_for_product',
@@ -1385,11 +1385,36 @@ class WCS_Admin_Post_Types {
 	 */
 	public function handle_subscription_bulk_actions( $redirect_to, $action, $subscription_ids ) {
 
-		if ( ! in_array( $action, array( 'active', 'on-hold', 'cancelled' ), true ) ) {
+		if ( ! in_array( $action, [ 'active', 'on-hold', 'cancelled', 'trash_subscriptions', 'untrash_subscriptions', 'delete_subscriptions' ], true ) ) {
 			return $redirect_to;
 		}
 
-		$new_status    = $action;
+		switch ( $action ) {
+			case 'trash_subscriptions':
+				$sendback_args = $this->do_bulk_action_delete_subscriptions( $subscription_ids );
+				break;
+			case 'untrash_subscriptions':
+				$sendback_args = $this->do_bulk_action_untrash_subscriptions( $subscription_ids );
+				break;
+			case 'delete_subscriptions':
+				$sendback_args = $this->do_bulk_action_delete_subscriptions( $subscription_ids, true );
+				break;
+			default:
+				$sendback_args = $this->do_bulk_action_update_status( $subscription_ids, $action );
+		}
+
+		return esc_url_raw( add_query_arg( $sendback_args, $redirect_to ) );
+	}
+
+	/**
+	 * Handles bulk updating the status subscriptions.
+	 *
+	 * @param array  $ids Subscription IDs to be trashed or deleted.
+	 * @param string $new_status The new status to update the subscriptions to.
+	 *
+	 * @return array Array of query args to redirect to after handling the bulk action request.
+	 */
+	private function do_bulk_action_update_status( $subscription_ids, $new_status ) {
 		$sendback_args = [
 			'ids'         => join( ',', $subscription_ids ),
 			'bulk_action' => 'marked_' . $action,
@@ -1418,7 +1443,64 @@ class WCS_Admin_Post_Types {
 			}
 		}
 
-		return esc_url_raw( add_query_arg( $sendback_args, $redirect_to ) );
+		return $sendback_args;
+	}
+
+	/**
+	 * Handles bulk trashing and deleting of subscriptions.
+	 *
+	 * @param array $ids Subscription IDs to be trashed or deleted.
+	 * @param bool  $force_delete When set, the subscription will be completed deleted. Otherwise, it will be trashed.
+	 *
+	 * @return array Array of query args to redirect to after handling the bulk action request.
+	 */
+	private function do_bulk_action_delete_subscriptions( $subscription_ids, $force_delete = false ) {
+		$sendback_args = [
+			'ids'         => join( ',', $subscription_ids ),
+			'bulk_action' => $force_delete ? 'deleted' : 'trashed',
+			'changed'     => 0,
+		];
+
+		foreach ( $subscription_ids as $id ) {
+			$subscription = wcs_get_subscription( $id );
+			$subscription->delete( $order, $force_delete );
+			$updated_subscription = wcs_get_subscription( $id );
+
+			if ( ( $force_delete && false === $updated_subscription ) || ( ! $force_delete && $updated_subscription->get_status() === 'trash' ) ) {
+				$sendback_args['changed']++;
+			}
+		}
+
+		return $sendback_args;
+	}
+
+	/**
+	 * Handles bulk untrashing of subscriptions.
+	 *
+	 * @param array $ids Subscription IDs to be restored.
+	 *
+	 * @return array Array of query args to redirect to after handling the bulk action request.
+	 */
+	private function do_bulk_action_untrash_subscriptions( $subscription_ids ) {
+		$data_store      = WC_Data_Store::load( 'subscription' );
+		$use_crud_method = method_exists( $data_store, 'has_callable' ) && $data_store->has_callable( 'untrash_order' );
+		$sendback_args   = [
+			'ids'         => join( ',', $subscription_ids ),
+			'bulk_action' => 'untrashed',
+			'changed'     => 0,
+		];
+
+		foreach ( $subscription_ids as $id ) {
+			if ( $use_crud_method ) {
+				$data_store->untrash_order( wcs_get_subscription( $id ) );
+			} else {
+				wp_untrash_post( $id );
+			}
+
+			$sendback_args['changed']++;
+		}
+
+		return $sendback_args;
 	}
 
 	/**
