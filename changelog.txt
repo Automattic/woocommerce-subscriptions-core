@@ -34,6 +34,7 @@
 * Dev - Introduced a new `untrash_order()` in the `WCS_Orders_Table_Subscription_Data_Store` class to fix untrashing subscriptions on stores that have HPOS enabled.
 * Dev - Moved the trash, untrash & delete related `add_actions()` in the `WC_Subscriptions_Manager` class to be added on the `woocommerce_loaded` action.
 * Dev - Update `wp_delete_post()` code that was used to delete a subscription to use CRUD methods to support HPOS.
+* Dev - Fix phpcs violations in the `WC_Subscriptions_Tracker` class to improve code quality.
 * Dev - Fix phpcs violations in the `WCS_Admin_System_Status` class to improve code quality.
 
 = 5.1.0 - 2022-11-24 =
