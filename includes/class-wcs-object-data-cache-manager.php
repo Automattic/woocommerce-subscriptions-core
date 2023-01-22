@@ -218,7 +218,7 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 
 	/**
 	 * When an order is to be deleted, prepare object changes to update all fields
-	 * and pass a flag to indicate that the object is being deleted.
+	 * and mark those changes as deletes.
 	 *
 	 * @param int   $order_id The id of the order being deleted.
 	 * @param mixed $order    The order being deleted.
