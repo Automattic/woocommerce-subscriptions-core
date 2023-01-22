@@ -598,6 +598,6 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * @return array
 	 */
 	public function get_subscriptions_count_by_status() {
-		return WC_Data_Store::load( 'subscription' )->get_subscriptions_count_by_status();
+		return (array) wp_count_posts( 'shop_subscription' );
 	}
 }
