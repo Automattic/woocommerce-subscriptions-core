@@ -224,7 +224,15 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 	 * @param mixed $order    The order being deleted.
 	 */
 	public function prepare_object_to_be_deleted( $order_id, $order ) {
+		if ( ! $order->get_id() ) {
+			return;
+		}
+
 		$this->prepare_object_changes( $order, 'all_fields', true );
+
+		if ( ! isset( $this->object_changes[ $order->get_id() ] ) ) {
+			return;
+		}
 
 		// If the object is being deleted, we want to record all the changes as deletes.
 		foreach ( $this->object_changes[ $order->get_id() ] as $data_key => $data ) {
