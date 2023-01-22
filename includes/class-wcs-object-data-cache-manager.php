@@ -207,72 +207,80 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 	}
 
 	/**
-	 * When an order is restored from the trash, action on object changes.
+	 * When an object is restored from the trash, action on object changes.
 	 *
-	 * @param int $order_id The order id being restored.
+	 * @param int $object_id The object id being restored.
 	 */
-	public function untrashed( $order_id ) {
-		$order = wc_get_order( $order_id );
-		$this->action_object_cache_changes( $order );
-	}
-
-	/**
-	 * When an order is to be deleted, prepare object changes to update all fields
-	 * and mark those changes as deletes.
-	 *
-	 * @param int   $order_id The id of the order being deleted.
-	 * @param mixed $order    The order being deleted.
-	 */
-	public function prepare_object_to_be_deleted( $order_id, $order ) {
-		if ( ! $order->get_id() ) {
+	public function untrashed( $object_id ) {
+		$object = $this->get_object( $object_id );
+		if ( null === $object ) {
 			return;
 		}
 
-		$this->prepare_object_changes( $order, 'all_fields', true );
+		$this->action_object_cache_changes( $object );
+	}
 
-		if ( ! isset( $this->object_changes[ $order->get_id() ] ) ) {
+	/**
+	 * When an object is to be deleted, prepare object changes to update all fields
+	 * and mark those changes as deletes.
+	 *
+	 * @param int   $object_id The id of the object being deleted.
+	 * @param mixed $object    The object being deleted.
+	 */
+	public function prepare_object_to_be_deleted( $object_id, $object ) {
+		if ( ! $object->get_id() ) {
+			return;
+		}
+
+		$this->prepare_object_changes( $object, 'all_fields', true );
+
+		if ( ! isset( $this->object_changes[ $object->get_id() ] ) ) {
 			return;
 		}
 
 		// If the object is being deleted, we want to record all the changes as deletes.
-		foreach ( $this->object_changes[ $order->get_id() ] as $data_key => $data ) {
-			$this->object_changes[ $order->get_id() ][ $data_key ]['type'] = 'delete';
-			if ( ! isset( $this->object_changes[ $order->get_id() ][ $data_key ]['previous'] ) ) {
-				$this->object_changes[ $order->get_id() ][ $data_key ]['previous'] = $data['new'];
+		foreach ( $this->object_changes[ $object->get_id() ] as $data_key => $data ) {
+			$this->object_changes[ $object->get_id() ][ $data_key ]['type'] = 'delete';
+			if ( ! isset( $this->object_changes[ $object->get_id() ][ $data_key ]['previous'] ) ) {
+				$this->object_changes[ $object->get_id() ][ $data_key ]['previous'] = $data['new'];
 			}
-			if ( isset( $this->object_changes[ $order->get_id() ][ $data_key ]['new'] ) ) {
-				unset( $this->object_changes[ $order->get_id() ][ $data_key ]['new'] );
+			if ( isset( $this->object_changes[ $object->get_id() ][ $data_key ]['new'] ) ) {
+				unset( $this->object_changes[ $object->get_id() ][ $data_key ]['new'] );
 			}
 		}
 	}
 
 	/**
-	 * When an order is trashed, action on object changes.
+	 * When an object is trashed, action on object changes.
 	 *
-	 * @param int $order_id The id of order being restored.
+	 * @param int $object_id The id of object being restored.
 	 */
-	public function trashed( $order_id ) {
-		$order = wc_get_order( $order_id );
-		$this->action_object_cache_changes( $order );
-	}
-
-	/**
-	 * When an order has been deleted, trigger update cache hook on all the object changes.
-	 * We cannot use action_object_cache_changes(), which requires an object, here because
-	 * object has been deleted.
-	 *
-	 * @param int $order_id The id of the order being deleted.
-	 */
-	public function deleted( $order_id ) {
-		if ( ! isset( $this->object_changes[ $order_id ] ) ) {
+	public function trashed( $object_id ) {
+		$object = $this->get_object( $object_id );
+		if ( null === $object ) {
 			return;
 		}
 
-		$object_changes = $this->object_changes[ $order_id ];
-		unset( $this->object_changes[ $order_id ] );
+		$this->action_object_cache_changes( $object );
+	}
+
+	/**
+	 * When an object has been deleted, trigger update cache hook on all the object changes.
+	 * We cannot use action_object_cache_changes(), which requires an object, here because
+	 * object has been deleted.
+	 *
+	 * @param int $object_id The id of the object being deleted.
+	 */
+	public function deleted( $object_id ) {
+		if ( ! isset( $this->object_changes[ $object_id ] ) ) {
+			return;
+		}
+
+		$object_changes = $this->object_changes[ $object_id ];
+		unset( $this->object_changes[ $object_id ] );
 
 		foreach ( $object_changes as $key => $change ) {
-			$this->trigger_update_cache_hook( $change['type'], $order_id, $key, $change['new'] );
+			$this->trigger_update_cache_hook( $change['type'], $object_id, $key, $change['new'] );
 		}
 	}
 
@@ -300,6 +308,17 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 			default:
 				$this->trigger_update_cache_hook( $change['type'], $object->get_id(), $key, $change['new'] );
 				break;
+		}
+	}
+
+	private function get_object( $id ) {
+		switch ( $this->object_type ) {
+			case 'order':
+				return wc_get_order( $id );
+			case 'subscription':
+				return wcs_get_subscription( $id );
+			default:
+				return apply_filters( "wcs_object_data_cache_manager_get_{$this->object_type}_object", null, $id );
 		}
 	}
 }
