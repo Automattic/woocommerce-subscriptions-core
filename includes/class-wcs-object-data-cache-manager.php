@@ -232,7 +232,7 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 			return;
 		}
 
-		$this->prepare_object_changes( $object, 'all_fields', true );
+		$this->prepare_object_changes( $object, 'all_fields' );
 
 		if ( ! isset( $this->object_changes[ $object->get_id() ] ) ) {
 			return;
