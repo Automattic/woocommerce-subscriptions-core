@@ -229,7 +229,7 @@ class WC_Subscriptions_Deprecation_Handler extends WCS_Deprecated_Functions_Hand
 	 * @deprecated
 	 */
 	protected function _get_subscription_status_counts() {
-		$results = wp_count_posts( 'shop_subscription' );
+		$results = WC_Data_Store::load( 'subscription' )->get_subscriptions_count_by_status();
 		$counts  = array();
 
 		foreach ( $results as $status => $count ) {

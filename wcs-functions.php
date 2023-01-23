@@ -914,7 +914,10 @@ function wcs_is_large_site() {
 	// If an option has been set previously, convert it to a bool.
 	if ( false !== $is_large_site ) {
 		$is_large_site = wc_string_to_bool( $is_large_site );
-	} elseif ( array_sum( (array) wp_count_posts( 'shop_subscription' ) ) > 3000 || array_sum( (array) wp_count_posts( 'shop_order' ) ) > 25000 ) {
+	} elseif (
+		array_sum( WC_Data_Store::load( 'subscription' )->get_subscriptions_count_by_status() ) > 3000
+		|| ( ! wcs_is_custom_order_tables_usage_enabled() && array_sum( (array) wp_count_posts( 'shop_order' ) ) > 25000 )
+	) {
 		$is_large_site = true;
 		update_option( 'wcs_is_large_site', wc_bool_to_string( $is_large_site ), false );
 	} else {
