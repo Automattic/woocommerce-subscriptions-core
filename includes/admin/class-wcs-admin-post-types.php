@@ -291,7 +291,7 @@ class WCS_Admin_Post_Types {
 		$actions = array_diff_key( $actions, array_flip( $actions_to_remove ) );
 
 		// If we are currently in expired or cancelled listing. We only need to add specific subscriptions actions.
-		if ( in_array( $status_filter, [ 'cancelled', 'wc-expired' ], true ) ) {
+		if ( in_array( $status_filter, [ 'wc-cancelled', 'wc-expired' ], true ) ) {
 			$actions = array_merge(
 				$actions,
 				[
