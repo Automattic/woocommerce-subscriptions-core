@@ -272,7 +272,7 @@ class WCS_Admin_Post_Types {
 		 * Note: The nonce check is ignored below as there is no nonce provided on status filter requests and it's not necessary
 		 * because we're filtering an admin screen, not processing or acting on the data.
 		 */
-		$post_status = sanitize_key( wp_unslash( $_GET['post_status'] ?? $_GET['status'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$status_filter = sanitize_key( wp_unslash( $_GET['post_status'] ?? $_GET['status'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		// List of actions to remove that are irrelevant to subscriptions.
 		$actions_to_remove = [
@@ -282,13 +282,33 @@ class WCS_Admin_Post_Types {
 			'mark_completed',
 			'mark_cancelled',
 			'remove_personal_data',
+			'trash',
+			'delete',
+			'untrash',
 		];
 
 		// Remove actions that are not relevant to subscriptions.
 		$actions = array_diff_key( $actions, array_flip( $actions_to_remove ) );
 
-		// If we are currently in trash, expired or cancelled listing. We don't need to add subscriptions specific actions.
-		if ( in_array( $post_status, [ 'cancelled', 'trash', 'wc-expired' ], true ) ) {
+		// If we are currently in expired or cancelled listing. We only need to add specific subscriptions actions.
+		if ( in_array( $status_filter, [ 'wc-cancelled', 'wc-expired' ], true ) ) {
+			$actions = array_merge(
+				$actions,
+				[
+					'trash_subscriptions' => _x( 'Move to Trash', 'an action on a subscription', 'woocommerce-subscriptions' ),
+				]
+			);
+
+			return $actions;
+		} elseif ( 'trash' === $status_filter ) {
+			$actions = array_merge(
+				$actions,
+				[
+					'untrash_subscriptions' => _x( 'Restore', 'an action on a subscription', 'woocommerce-subscriptions' ),
+					'delete_subscriptions'  => _x( 'Delete Permanently', 'an action on a subscription', 'woocommerce-subscriptions' ),
+				]
+			);
+
 			return $actions;
 		}
 
@@ -303,16 +323,17 @@ class WCS_Admin_Post_Types {
 		$subscriptions_actions = apply_filters(
 			'woocommerce_subscription_bulk_actions',
 			[
-				'active'    => _x( 'Activate', 'an action on a subscription', 'woocommerce-subscriptions' ),
-				'on-hold'   => _x( 'Put on-hold', 'an action on a subscription', 'woocommerce-subscriptions' ),
-				'cancelled' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
+				'active'              => _x( 'Activate', 'an action on a subscription', 'woocommerce-subscriptions' ),
+				'on-hold'             => _x( 'Put on-hold', 'an action on a subscription', 'woocommerce-subscriptions' ),
+				'cancelled'           => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
+				'trash_subscriptions' => _x( 'Move to Trash', 'an action on a subscription', 'woocommerce-subscriptions' ),
 			]
 		);
 
 		$actions = array_merge( $actions, $subscriptions_actions );
 
 		// No need to display certain bulk actions if we know all the subscriptions on the page have that status already.
-		switch ( $post_status ) {
+		switch ( $status_filter ) {
 			case 'wc-active':
 				unset( $actions['active'] );
 				break;
@@ -346,7 +367,7 @@ class WCS_Admin_Post_Types {
 			$action = wc_clean( wp_unslash( $_REQUEST['action2'] ) );
 		}
 
-		if ( ! in_array( $action, array( 'active', 'on-hold', 'cancelled' ), true ) ) {
+		if ( ! in_array( $action, [ 'active', 'on-hold', 'cancelled', 'trash_subscriptions', 'untrash_subscriptions', 'delete_subscriptions' ], true ) ) {
 			return;
 		}
 
@@ -876,7 +897,7 @@ class WCS_Admin_Post_Types {
 			return $request_query;
 		}
 
-		$customer_id      = absint( $_GET['_customer_user'] );
+		$customer_id      = absint( $_GET['_customer_user'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$subscription_ids = apply_filters(
 			'wcs_admin_request_query_subscriptions_for_customer',
 			WCS_Customer_Store::instance()->get_users_subscription_ids( $customer_id ),
@@ -904,7 +925,7 @@ class WCS_Admin_Post_Types {
 			return $request_query;
 		}
 
-		$product_id       = absint( $_GET['_wcs_product'] );
+		$product_id       = absint( $_GET['_wcs_product'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$subscription_ids = wcs_get_subscriptions_for_product( $product_id );
 		$subscription_ids = apply_filters(
 			'wcs_admin_request_query_subscriptions_for_product',
@@ -1302,7 +1323,7 @@ class WCS_Admin_Post_Types {
 			if ( 'trash' === $status ) {
 				// If the subscription is already trashed, add an untrash action instead.
 				if ( 'trash' === $subscription->get_status() ) {
-					$untrash_url        = $is_hpos_enabled ? add_query_arg( 'action', 'untrash', $action_url ) : wp_nonce_url( admin_url( sprintf( $post_type_object->_edit_link . '&amp;action=untrash', $subscription->get_id() ) ), 'untrash-post_' . $subscription->get_id() );
+					$untrash_url        = $is_hpos_enabled ? add_query_arg( 'action', 'untrash_subscriptions', $action_url ) : wp_nonce_url( admin_url( sprintf( $post_type_object->_edit_link . '&amp;action=untrash', $subscription->get_id() ) ), 'untrash-post_' . $subscription->get_id() );
 					$actions['untrash'] = sprintf(
 						'<a title="%s" href="%s">%s</a>',
 						esc_attr( __( 'Restore this item from the Trash', 'woocommerce-subscriptions' ) ),
@@ -1364,14 +1385,39 @@ class WCS_Admin_Post_Types {
 	 */
 	public function handle_subscription_bulk_actions( $redirect_to, $action, $subscription_ids ) {
 
-		if ( ! in_array( $action, array( 'active', 'on-hold', 'cancelled' ), true ) ) {
+		if ( ! in_array( $action, [ 'active', 'on-hold', 'cancelled', 'trash_subscriptions', 'untrash_subscriptions', 'delete_subscriptions' ], true ) ) {
 			return $redirect_to;
 		}
 
-		$new_status    = $action;
+		switch ( $action ) {
+			case 'trash_subscriptions':
+				$sendback_args = $this->do_bulk_action_delete_subscriptions( $subscription_ids );
+				break;
+			case 'untrash_subscriptions':
+				$sendback_args = $this->do_bulk_action_untrash_subscriptions( $subscription_ids );
+				break;
+			case 'delete_subscriptions':
+				$sendback_args = $this->do_bulk_action_delete_subscriptions( $subscription_ids, true );
+				break;
+			default:
+				$sendback_args = $this->do_bulk_action_update_status( $subscription_ids, $action );
+		}
+
+		return esc_url_raw( add_query_arg( $sendback_args, $redirect_to ) );
+	}
+
+	/**
+	 * Handles bulk updating the status subscriptions.
+	 *
+	 * @param array  $ids        Subscription IDs to be trashed or deleted.
+	 * @param string $new_status The new status to update the subscriptions to.
+	 *
+	 * @return array Array of query args to redirect to after handling the bulk action request.
+	 */
+	private function do_bulk_action_update_status( $subscription_ids, $new_status ) {
 		$sendback_args = [
 			'ids'         => join( ',', $subscription_ids ),
-			'bulk_action' => 'marked_' . $action,
+			'bulk_action' => 'marked_' . $new_status,
 			'changed'     => 0,
 			'error_count' => 0,
 		];
@@ -1381,14 +1427,14 @@ class WCS_Admin_Post_Types {
 			$note         = _x( 'Subscription status changed by bulk edit:', 'Used in order note. Reason why status changed.', 'woocommerce-subscriptions' );
 
 			try {
-				if ( 'cancelled' === $action ) {
+				if ( 'cancelled' === $new_status ) {
 					$subscription->cancel_order( $note );
 				} else {
 					$subscription->update_status( $new_status, $note, true );
 				}
 
 				// Fire the action hooks.
-				do_action( 'woocommerce_admin_changed_subscription_to_' . $action, $subscription_id );
+				do_action( 'woocommerce_admin_changed_subscription_to_' . $new_status, $subscription_id );
 
 				$sendback_args['changed']++;
 			} catch ( Exception $e ) {
@@ -1397,7 +1443,64 @@ class WCS_Admin_Post_Types {
 			}
 		}
 
-		return esc_url_raw( add_query_arg( $sendback_args, $redirect_to ) );
+		return $sendback_args;
+	}
+
+	/**
+	 * Handles bulk trashing and deleting of subscriptions.
+	 *
+	 * @param array $ids          Subscription IDs to be trashed or deleted.
+	 * @param bool  $force_delete When set, the subscription will be completed deleted. Otherwise, it will be trashed.
+	 *
+	 * @return array Array of query args to redirect to after handling the bulk action request.
+	 */
+	private function do_bulk_action_delete_subscriptions( $subscription_ids, $force_delete = false ) {
+		$sendback_args = [
+			'ids'         => join( ',', $subscription_ids ),
+			'bulk_action' => $force_delete ? 'deleted' : 'trashed',
+			'changed'     => 0,
+		];
+
+		foreach ( $subscription_ids as $id ) {
+			$subscription = wcs_get_subscription( $id );
+			$subscription->delete( $force_delete );
+			$updated_subscription = wcs_get_subscription( $id );
+
+			if ( ( $force_delete && false === $updated_subscription ) || ( ! $force_delete && $updated_subscription->get_status() === 'trash' ) ) {
+				$sendback_args['changed']++;
+			}
+		}
+
+		return $sendback_args;
+	}
+
+	/**
+	 * Handles bulk untrashing of subscriptions.
+	 *
+	 * @param array $ids Subscription IDs to be restored.
+	 *
+	 * @return array Array of query args to redirect to after handling the bulk action request.
+	 */
+	private function do_bulk_action_untrash_subscriptions( $subscription_ids ) {
+		$data_store      = WC_Data_Store::load( 'subscription' );
+		$use_crud_method = method_exists( $data_store, 'has_callable' ) && $data_store->has_callable( 'untrash_order' );
+		$sendback_args   = [
+			'ids'         => join( ',', $subscription_ids ),
+			'bulk_action' => 'untrashed',
+			'changed'     => 0,
+		];
+
+		foreach ( $subscription_ids as $id ) {
+			if ( $use_crud_method ) {
+				$data_store->untrash_order( wcs_get_subscription( $id ) );
+			} else {
+				wp_untrash_post( $id );
+			}
+
+			$sendback_args['changed']++;
+		}
+
+		return $sendback_args;
 	}
 
 	/**
@@ -1500,7 +1603,7 @@ class WCS_Admin_Post_Types {
 	private function get_trash_or_delete_subscription_link( $subscription_id, $base_action_url, $status ) {
 
 		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			return add_query_arg( 'action', $status, $base_action_url );
+			return add_query_arg( 'action', $status . '_subscriptions', $base_action_url );
 		}
 
 		return get_delete_post_link( $subscription_id, '', 'delete' === $status );
