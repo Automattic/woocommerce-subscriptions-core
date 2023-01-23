@@ -418,7 +418,7 @@ class WCS_Admin_System_Status {
 	 * @return array
 	 */
 	public static function get_subscription_statuses() {
-		$subscriptions_by_status        = (array) wp_count_posts( 'shop_subscription' );
+		$subscriptions_by_status        = WC_Data_Store::load( 'subscription' )->get_subscriptions_count_by_status();
 		$subscriptions_by_status_output = array();
 
 		foreach ( $subscriptions_by_status as $status => $count ) {

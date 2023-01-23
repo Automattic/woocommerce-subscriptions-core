@@ -27,6 +27,7 @@
 * Fix - On HPOS environments, handle the admin subscriptions list table bulk actions and row actions in a HPOS compatible way.
 * Fix - On HPOS environments, admin notices might show incorrect subscription or order link as part of the admin notice.
 * Fix - On HPOS environments, parent order link on subscription edit page, in subscription details box, is incorrect.
+* Fix - Replace code using wp_count_posts( 'shop_subscription' ) with data store function to count subscriptions grouped by statuses on stores with HPOS enabled.
 * Dev - Replace code using get_post_type( $subscription_id ) with WC Data Store get_order_type().
 * Dev - Add subscriptions-core library version to the WooCommerce system status report.
 * Dev - Introduced a WCS_Object_Data_Cache_Manager and WCS_Object_Data_Cache_Manager_Many_To_One class as HPOS equivalents of the WCS_Post_Meta_Cache_Manager classes.
