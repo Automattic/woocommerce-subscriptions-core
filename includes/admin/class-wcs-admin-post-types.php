@@ -1449,7 +1449,7 @@ class WCS_Admin_Post_Types {
 	/**
 	 * Handles bulk trashing and deleting of subscriptions.
 	 *
-	 * @param array $ids Subscription IDs to be trashed or deleted.
+	 * @param array $ids          Subscription IDs to be trashed or deleted.
 	 * @param bool  $force_delete When set, the subscription will be completed deleted. Otherwise, it will be trashed.
 	 *
 	 * @return array Array of query args to redirect to after handling the bulk action request.
