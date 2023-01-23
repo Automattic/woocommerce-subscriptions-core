@@ -313,6 +313,13 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 		}
 	}
 
+	/**
+	 * Fetches an instance of the object with the given ID.
+	 *
+	 * @param int $object_id The ID of the object to fetch.
+	 *
+	 * @return mixed The object instance, or null if it doesn't exist.
+	 */
 	private function get_object( $id ) {
 		switch ( $this->object_type ) {
 			case 'order':
