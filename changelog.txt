@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 5.3.0 - 2023-xx-xx =
+* Fix - Use shipping address at checkout when renewing, resubscribing or switching subscriptions that contain different billing and shipping addresses.
+
 = 5.2.0 - 2023-01-23 =
 * Add - New wcs_set_order_address() helper function to set an array of address fields on an order or subscription.
 * Fix - Edit, add, and list Subscription admin pages now work when HPOS is enabled.
@@ -9,7 +12,6 @@
 * Fix - When a customer changes their address on their account or subscription, make sure the new address is saved when HPOS is enabled.
 * Fix - Removed the potential for an infinite loop when getting a subscription's related orders while the subscription is being loaded.
 * Fix - Refactor `WC_Subscriptions_Renewal_Order::get_failed_order_replaced_by()` to support HPOS stores.
-* Fix - Use shipping address at checkout when renewing, resubscribing or switching subscriptions that contain different billing and shipping addresses.
 * Fix - Refactor the `WC_Subscriptions_Tracker` class to support HPOS stores.
 * Fix - "Subscriptions by Payment Gateway" in WooCommerce → Status now shows the correct values when HPOS is enabled.
 * Fix - Check whether the order actually exists before accessing order properties in wcs_order_contains_subscription()

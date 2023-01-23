@@ -666,7 +666,7 @@ class WC_Subscriptions_Checkout {
 	 * that needs to ship to an address that is different to the order's billing address,
 	 * tell the checkout to check the "Ship to different address" checkbox.
 	 *
-	 * @since 5.2.0
+	 * @since 5.3.0
 	 *
 	 * @param  bool $ship_to_different_address Whether the order will check the "Ship to different address" checkbox
 	 * @return bool $ship_to_different_address
