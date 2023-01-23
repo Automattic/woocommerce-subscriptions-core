@@ -6,7 +6,6 @@
  * @version   1.0.0 - Migrated from WooCommerce Subscriptions v2.6.4
  * @package   WooCommerce Subscriptions/Classes
  * @category  Class
- * @author    WooCommerce
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -19,7 +18,7 @@ class WC_Subscriptions_Tracker {
 	public static function init() {
 		// Only add data if Tracker enabled
 		if ( 'yes' === get_option( 'woocommerce_allow_tracking', 'no' ) ) {
-			add_filter( 'woocommerce_tracker_data', array( __CLASS__, 'add_subscriptions_tracking_data' ), 10, 1 );
+			add_filter( 'woocommerce_tracker_data', [ __CLASS__, 'add_subscriptions_tracking_data' ], 10, 1 );
 		}
 	}
 
@@ -42,7 +41,7 @@ class WC_Subscriptions_Tracker {
 	 * @return array Subscriptions options data.
 	 */
 	private static function get_subscriptions_options() {
-		return array(
+		return [
 			// Staging and live site
 			'wc_subscriptions_staging'             => WCS_Staging::is_duplicate_site() ? 'staging' : 'live',
 			'wc_subscriptions_live_url'            => esc_url( WCS_Staging::get_site_url_from_source( 'subscriptions_install' ) ),
@@ -55,12 +54,12 @@ class WC_Subscriptions_Tracker {
 
 			// Renewals
 			'accept_manual_renewals'               => get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals' ),
-			'turn_off_automatic_payments'          => 'no' == get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals' ) ? 'none' : get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'none' ),
+			'turn_off_automatic_payments'          => 'no' === get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals' ) ? 'none' : get_option( WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments', 'none' ),
 			'enable_auto_renewal_toggle'           => get_option( WC_Subscriptions_Admin::$option_prefix . '_enable_auto_renewal_toggle' ),
 
 			// Early renewal
 			'enable_early_renewal'                 => get_option( WC_Subscriptions_Admin::$option_prefix . '_enable_early_renewal' ),
-			'enable_early_renewal_via_modal'       => 'no' == get_option( WC_Subscriptions_Admin::$option_prefix . '_enable_early_renewal' ) ? 'none' : get_option( WC_Subscriptions_Admin::$option_prefix . '_enable_early_renewal_via_modal', 'none' ),
+			'enable_early_renewal_via_modal'       => 'no' === get_option( WC_Subscriptions_Admin::$option_prefix . '_enable_early_renewal' ) ? 'none' : get_option( WC_Subscriptions_Admin::$option_prefix . '_enable_early_renewal_via_modal', 'none' ),
 
 			// Switching
 			'allow_switching'                      => get_option( WC_Subscriptions_Admin::$option_prefix . '_allow_switching' ),
@@ -71,8 +70,8 @@ class WC_Subscriptions_Tracker {
 
 			// Synchronization
 			'sync_payments'                        => get_option( WC_Subscriptions_Admin::$option_prefix . '_sync_payments' ),
-			'prorate_synced_payments'              => $prorate_synced_payments = ( 'no' == get_option( WC_Subscriptions_Admin::$option_prefix . '_sync_payments' ) ? 'none' : get_option( WC_Subscriptions_Admin::$option_prefix . '_prorate_synced_payments', 'none' ) ),
-			'days_no_fee'                          => 'recurring' == $prorate_synced_payments ? get_option( WC_Subscriptions_Admin::$option_prefix . '_days_no_fee', 'none' ) : 'none',
+			'prorate_synced_payments'              => $prorate_synced_payments = ( 'no' === get_option( WC_Subscriptions_Admin::$option_prefix . '_sync_payments' ) ? 'none' : get_option( WC_Subscriptions_Admin::$option_prefix . '_prorate_synced_payments', 'none' ) ),
+			'days_no_fee'                          => 'recurring' === $prorate_synced_payments ? get_option( WC_Subscriptions_Admin::$option_prefix . '_days_no_fee', 'none' ) : 'none',
 
 			// Miscellaneous
 			'max_customer_suspensions'             => get_option( WC_Subscriptions_Admin::$option_prefix . '_max_customer_suspensions' ),
@@ -80,7 +79,7 @@ class WC_Subscriptions_Tracker {
 			'allow_zero_initial_order_without_payment_method' => get_option( WC_Subscriptions_Admin::$option_prefix . '_zero_initial_payment_requires_payment' ),
 			'drip_downloadable_content_on_renewal' => get_option( WC_Subscriptions_Admin::$option_prefix . '_drip_downloadable_content_on_renewal' ),
 			'enable_retry'                         => get_option( WC_Subscriptions_Admin::$option_prefix . '_enable_retry' ),
-		);
+		];
 	}
 
 	/**
