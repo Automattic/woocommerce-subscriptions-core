@@ -658,14 +658,14 @@ class WCS_Admin_Post_Types {
 	 */
 	public static function get_date_column_content( $subscription, $column ) {
 
-		$date_type_map  = array( 'last_payment_date' => 'last_order_date_created' );
-		$date_type      = array_key_exists( $column, $date_type_map ) ? $date_type_map[ $column ] : $column;
-		$date_timestamp = $subscription->get_time( $date_type, 'site' );
+		$date_type_map = array( 'last_payment_date' => 'last_order_date_created' );
+		$date_type     = array_key_exists( $column, $date_type_map ) ? $date_type_map[ $column ] : $column;
+		$datetime      = wcs_get_datetime_from( $subscription->get_time( $date_type ) );
 
 		if ( 0 == $subscription->get_time( $date_type, 'gmt' ) ) {
 			$column_content = '-';
 		} else {
-			$column_content = sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( date( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ), $date_timestamp ) ), esc_html( $subscription->get_date_to_display( $date_type ) ) );
+			$column_content = sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( $datetime->date_i18n( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ) ) ), esc_html( $subscription->get_date_to_display( $date_type ) ) );
 
 			// Custom handling for `Next payment` date column.
 			if ( 'next_payment_date' === $column ) {
@@ -674,7 +674,7 @@ class WCS_Admin_Post_Types {
 				$tooltip_message = '';
 				$tooltip_classes = 'woocommerce-help-tip';
 
-				if ( $subscription_is_active && $date_timestamp < current_time( 'timestamp', false ) ) {
+				if ( $subscription_is_active && $datetime->getTimestamp() < time() ) {
 					$tooltip_message .= __( '<b>Subscription payment overdue.</b></br>', 'woocommerce-subscriptions' );
 					$tooltip_classes .= ' wcs-payment-overdue';
 				}
@@ -685,7 +685,7 @@ class WCS_Admin_Post_Types {
 				}
 
 				if ( $tooltip_message ) {
-					$column_content .= '<div class="' . esc_attr( $tooltip_classes ). '" data-tip="' . esc_attr( $tooltip_message ) . '"></div>';
+					$column_content .= '<div class="' . esc_attr( $tooltip_classes ) . '" data-tip="' . esc_attr( $tooltip_message ) . '"></div>';
 				}
 			}
 		}
