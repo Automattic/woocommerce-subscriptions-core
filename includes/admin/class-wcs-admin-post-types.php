@@ -681,14 +681,40 @@ class WCS_Admin_Post_Types {
 
 		$date_type_map = array( 'last_payment_date' => 'last_order_date_created' );
 		$date_type     = array_key_exists( $column, $date_type_map ) ? $date_type_map[ $column ] : $column;
+		$datetime      = wcs_get_datetime_from( $subscription->get_time( $date_type ) );
 
 		if ( 0 == $subscription->get_time( $date_type, 'gmt' ) ) {
 			$column_content = '-';
 		} else {
-			$column_content = sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( date( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ), $subscription->get_time( $date_type, 'site' ) ) ), esc_html( $subscription->get_date_to_display( $date_type ) ) );
+			$accurate_date    = $datetime->date_i18n( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ) );
+			$fuzzy_human_date = $subscription->get_date_to_display( $date_type );
+			$column_content   = sprintf(
+				'<time class="%s" title="%s">%s</time>',
+				esc_attr( $column ),
+				esc_attr( $accurate_date ),
+				esc_html( $fuzzy_human_date )
+			);
 
-			if ( 'next_payment_date' == $column && $subscription->payment_method_supports( 'gateway_scheduled_payments' ) && ! $subscription->is_manual() && $subscription->has_status( 'active' ) ) {
-				$column_content .= '<div class="woocommerce-help-tip" data-tip="' . esc_attr__( 'This date should be treated as an estimate only. The payment gateway for this subscription controls when payments are processed.', 'woocommerce-subscriptions' ) . '"></div>';
+			// Custom handling for `Next payment` date column.
+			if ( 'next_payment_date' === $column ) {
+				$subscription_is_active = $subscription->has_status( 'active' );
+
+				$tooltip_message = '';
+				$tooltip_classes = 'woocommerce-help-tip';
+
+				if ( $subscription_is_active && $datetime->getTimestamp() < time() ) {
+					$tooltip_message .= __( '<b>Subscription payment overdue.</b></br>', 'woocommerce-subscriptions' );
+					$tooltip_classes .= ' wcs-payment-overdue';
+				}
+
+				if ( $subscription->payment_method_supports( 'gateway_scheduled_payments' ) && ! $subscription->is_manual() && $subscription_is_active ) {
+					$tooltip_message .= __( 'This date should be treated as an estimate only. The payment gateway for this subscription controls when payments are processed.</br>', 'woocommerce-subscriptions' );
+					$tooltip_classes .= ' wcs-offsite-renewal';
+				}
+
+				if ( $tooltip_message ) {
+					$column_content .= '<div class="' . esc_attr( $tooltip_classes ) . '" data-tip="' . esc_attr( $tooltip_message ) . '"></div>';
+				}
 			}
 		}
 
