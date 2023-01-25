@@ -665,7 +665,14 @@ class WCS_Admin_Post_Types {
 		if ( 0 == $subscription->get_time( $date_type, 'gmt' ) ) {
 			$column_content = '-';
 		} else {
-			$column_content = sprintf( '<time class="%s" title="%s">%s</time>', esc_attr( $column ), esc_attr( $datetime->date_i18n( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ) ) ), esc_html( $subscription->get_date_to_display( $date_type ) ) );
+			$accurate_date    = $datetime->date_i18n( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ) );
+			$fuzzy_human_date = $subscription->get_date_to_display( $date_type );
+			$column_content   = sprintf(
+				'<time class="%s" title="%s">%s</time>',
+				esc_attr( $column ),
+				esc_attr( $accurate_date ),
+				esc_html( $fuzzy_human_date )
+			);
 
 			// Custom handling for `Next payment` date column.
 			if ( 'next_payment_date' === $column ) {
