@@ -542,7 +542,7 @@ function wcs_get_subscriptions( $args ) {
  * @return array
  * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
-function wcs_get_subscriptions_for_product( $product_ids, $fields = 'ids', $args = array() ) {
+function wcs_get_subscriptions_for_product( $product_ids, $fields = 'ids', $args = [] ) {
 	global $wpdb;
 
 	$args = wp_parse_args( $args, array(
@@ -556,12 +556,19 @@ function wcs_get_subscriptions_for_product( $product_ids, $fields = 'ids', $args
 	$args['limit']               = (int) $args['limit'];
 	$args['offset']              = (int) $args['offset'];
 
+	// Set variables to be used in the DB query based on whether HPOS is enabled or not.
+	$is_hpos_in_use            = wcs_is_custom_order_tables_usage_enabled();
+	$orders_table_name         = $is_hpos_in_use ? 'wc_orders' : 'posts';
+	$orders_type_column_name   = $is_hpos_in_use ? 'type' : 'post_type';
+	$orders_status_column_name = $is_hpos_in_use ? 'status' : 'post_status';
+	$orders_id_column_name     = $is_hpos_in_use ? 'id' : 'ID';
+
 	// Start to build the query WHERE array.
-	$where = array(
-		"posts.post_type = 'shop_subscription'",
+	$where = [
+		"orders.{$orders_type_column_name} = 'shop_subscription'",
 		"itemmeta.meta_key IN ( '_variation_id', '_product_id' )",
 		"order_items.order_item_type = 'line_item'",
-	);
+	];
 
 	$product_ids = implode( "', '", array_map( 'absint', array_unique( array_filter( (array) $product_ids ) ) ) );
 	$where[]     = sprintf( "itemmeta.meta_value IN ( '%s' )", $product_ids );
@@ -570,23 +577,25 @@ function wcs_get_subscriptions_for_product( $product_ids, $fields = 'ids', $args
 		// Sanitize and format statuses into status string keys.
 		$statuses = array_map( 'wcs_sanitize_subscription_status_key', array_map( 'esc_sql', array_unique( array_filter( $args['subscription_status'] ) ) ) );
 		$statuses = implode( "', '", $statuses );
-		$where[]  = sprintf( "posts.post_status IN ( '%s' )", $statuses );
+		$where[]  = sprintf( "orders.%s IN ( '%s' )", $orders_status_column_name, $statuses );
 	}
 
 	$limit  = ( $args['limit'] > 0 ) ? $wpdb->prepare( 'LIMIT %d', $args['limit'] ) : '';
 	$offset = ( $args['limit'] > 0 && $args['offset'] > 0 ) ? $wpdb->prepare( 'OFFSET %d', $args['offset'] ) : '';
 	$where  = implode( ' AND ', $where );
 
+	// @codingStandardsIgnoreStart
 	$subscription_ids = $wpdb->get_col(
 		"SELECT DISTINCT order_items.order_id
 		FROM {$wpdb->prefix}woocommerce_order_items as order_items
 		LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS itemmeta ON order_items.order_item_id = itemmeta.order_item_id
-		LEFT JOIN {$wpdb->posts} AS posts ON order_items.order_id = posts.ID
+		LEFT JOIN {$wpdb->prefix}{$orders_table_name} AS orders ON order_items.order_id = orders.{$orders_id_column_name}
 		WHERE {$where}
 		ORDER BY order_items.order_id {$limit} {$offset}"
 	);
+	// @codingStandardsIgnoreEnd
 
-	$subscriptions = array();
+	$subscriptions = [];
 
 	foreach ( $subscription_ids as $post_id ) {
 		$subscriptions[ $post_id ] = ( 'ids' !== $fields ) ? wcs_get_subscription( $post_id ) : $post_id;
@@ -905,7 +914,10 @@ function wcs_is_large_site() {
 	// If an option has been set previously, convert it to a bool.
 	if ( false !== $is_large_site ) {
 		$is_large_site = wc_string_to_bool( $is_large_site );
-	} elseif ( array_sum( (array) wp_count_posts( 'shop_subscription' ) ) > 3000 || array_sum( (array) wp_count_posts( 'shop_order' ) ) > 25000 ) {
+	} elseif (
+		array_sum( WC_Data_Store::load( 'subscription' )->get_subscriptions_count_by_status() ) > 3000
+		|| ( ! wcs_is_custom_order_tables_usage_enabled() && array_sum( (array) wp_count_posts( 'shop_order' ) ) > 25000 )
+	) {
 		$is_large_site = true;
 		update_option( 'wcs_is_large_site', wc_bool_to_string( $is_large_site ), false );
 	} else {

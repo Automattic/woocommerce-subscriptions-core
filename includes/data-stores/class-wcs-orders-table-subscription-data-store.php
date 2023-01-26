@@ -334,6 +334,188 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
+	 * Attempts to restore the specified subscription back to its original status (after having been trashed).
+	 *
+	 * @param \WC_Subscription $order The order to be untrashed.
+	 *
+	 * @return bool If the operation was successful.
+	 */
+	public function untrash_order( WC_Order $subscription ): bool {
+		$id     = $subscription->get_id();
+		$status = $subscription->get_status();
+
+		if ( 'trash' !== $status ) {
+			wc_get_logger()->warning(
+				sprintf(
+					/* translators: 1: subscription ID, 2: subscription status */
+					__( 'Subscription %1$d cannot be restored from the trash: it has already been restored to status "%2$s".', 'woocommerce-subscriptions' ),
+					$id,
+					$status
+				)
+			);
+			return false;
+		}
+
+		$previous_status           = $subscription->get_meta( '_wp_trash_meta_status' );
+		$valid_statuses            = wcs_get_subscription_statuses();
+		$previous_state_is_invalid = ! array_key_exists( $previous_status, $valid_statuses );
+		$pending_is_valid_status   = array_key_exists( 'wc-pending', $valid_statuses );
+
+		if ( $previous_state_is_invalid && $pending_is_valid_status ) {
+			// If the previous status is no longer valid, let's try to restore it to "pending" instead.
+			wc_get_logger()->warning(
+				sprintf(
+					/* translators: 1: subscription ID, 2: subscription status */
+					__( 'The previous status of subscription %1$d ("%2$s") is invalid. It has been restored to "pending" status instead.', 'woocommerce-subscriptions' ),
+					$id,
+					$previous_status
+				)
+			);
+
+			$previous_status = 'pending';
+		} elseif ( $previous_state_is_invalid ) {
+			// If we cannot restore to pending, we should probably stand back and let the merchant intervene some other way.
+			wc_get_logger()->warning(
+				sprintf(
+					/* translators: 1: subscription ID, 2: subscription status */
+					__( 'The previous status of subscription %1$d ("%2$s") is invalid. It could not be restored.', 'woocommerce-subscriptions' ),
+					$id,
+					$previous_status
+				)
+			);
+
+			return false;
+		}
+
+		/**
+		 * Fires before a subscription is restored from the trash.
+		 *
+		 * @since 5.2.0
+		 *
+		 * @param int    $subscription_id Subscription ID.
+		 * @param string $previous_status The status of the subscription before it was trashed.
+		 */
+		do_action( 'woocommerce_untrash_subscription', $subscription->get_id(), $previous_status );
+
+		$subscription->set_status( $previous_status );
+		$subscription->save();
+
+		// Was the status successfully restored? Let's clean up the meta and indicate success...
+		if ( 'wc-' . $subscription->get_status() === $previous_status ) {
+			$subscription->delete_meta_data( '_wp_trash_meta_status' );
+			$subscription->delete_meta_data( '_wp_trash_meta_time' );
+			$subscription->delete_meta_data( '_wp_trash_meta_comments_status' );
+			$subscription->save_meta_data();
+
+			$data_synchronizer = wc_get_container()->get( \Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer::class );
+			if ( $data_synchronizer->data_sync_is_enabled() ) {
+				//The previous $subscription->save() will have forced a sync to the posts table,
+				//this implies that the post status is not "trash" anymore, and thus
+				//wp_untrash_post would do nothing.
+				wp_update_post(
+					array(
+						'ID'          => $id,
+						'post_status' => 'trash',
+					)
+				);
+
+				wp_untrash_post( $id );
+			}
+
+			return true;
+		}
+
+		// ...Or log a warning and bail.
+		wc_get_logger()->warning(
+			sprintf(
+				/* translators: 1: subscription ID, 2: subscription status */
+				__( 'Something went wrong when trying to restore subscription %d from the trash. It could not be restored.', 'woocommerce-subscriptions' ),
+				$id
+			)
+		);
+
+		return false;
+	}
+
+	/**
+	 * Method to delete a subscription from the database.
+	 *
+	 * @param \WC_Subscription $subscription Subscription object.
+	 * @param array            $args Array of args to pass to the delete method.
+	 *
+	 * @return void
+	 */
+	public function delete( &$subscription, $args = array() ) {
+		$subscription_id = $subscription->get_id();
+
+		if ( ! $subscription_id ) {
+			return;
+		}
+
+		if ( ! empty( $args['force_delete'] ) ) {
+
+			/**
+			 * Fires immediately before a subscription is deleted from the database.
+			 *
+			 * @since 5.2.0
+			 *
+			 * @param int             $subscription_id ID of the subscription about to be deleted.
+			 * @param WC_Subscription $subscription    Instance of the subscription that is about to be deleted.
+			 */
+			do_action( 'woocommerce_before_delete_subscription', $subscription_id, $subscription );
+
+			$this->delete_order_data_from_custom_order_tables( $subscription_id );
+
+			$subscription->set_id( 0 );
+
+			// If this datastore method is called while the posts table is authoritative, refrain from deleting post data.
+			if ( $subscription->get_data_store()->get_current_class_name() !== self::class ) {
+				return;
+			}
+
+			// Delete the associated post, which in turn deletes the subscription items, etc. through {@see WC_Post_Data}.
+			// Once we stop creating placehold_order in posts, we should do the cleanup here instead.
+			wp_delete_post( $subscription_id );
+
+			/**
+			 * Fires immediately after a subscription is deleted from the database.
+			 *
+			 * Also calls `woocommerce_subscription_deleted` hook for backwards compatibility @see WC_Subscriptions_Manager::trigger_subscription_deleted_hook()
+			 *
+			 * @since 5.2.0
+			 *
+			 * @param int $subscription_id ID of the subscription about to be deleted.
+			 */
+			do_action( 'woocommerce_delete_subscription', $subscription_id );
+			do_action( 'woocommerce_subscription_deleted', $subscription_id );
+		} else {
+			/**
+			 * Fires immediately before a subscription is trashed.
+			 *
+			 * @since 5.2.0
+			 *
+			 * @param int             $subscription_id ID of the subscription about to be trashed.
+			 * @param WC_Subscription $subscription    Instance of the subscription that is about to be trashed.
+			 */
+			do_action( 'woocommerce_before_trash_subscription', $subscription_id, $subscription );
+
+			$this->trash_order( $subscription );
+
+			/**
+			 * Fires immediately after a subscription is trashed.
+			 *
+			 * Also calls `woocommerce_subscription_trashed` for backwards compatibility @see WC_Subscriptions_Manager::trigger_subscription_trashed_hook()
+			 *
+			 * @since 5.2.0
+			 *
+			 * @param int $subscription_id ID of the order about to be deleted.
+			 */
+			do_action( 'woocommerce_trash_subscription', $subscription_id );
+			do_action( 'woocommerce_subscription_trashed', $subscription_id );
+		}
+	}
+
+	/**
 	 * Creates a new subscription in the database.
 	 *
 	 * @param \WC_Subscription $subscription Subscription object.
@@ -341,23 +523,6 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	public function create( &$subscription ) {
 		parent::create( $subscription );
 		do_action( 'woocommerce_new_subscription', $subscription->get_id() );
-	}
-
-	/**
-	 * Reads multiple subscription objects from custom tables.
-	 *
-	 * @param \WC_Order $subscriptions Subscription objects.
-	 */
-	public function read_multiple( &$subscriptions ) {
-		parent::read_multiple( $subscriptions );
-		foreach ( $subscriptions as $subscription ) {
-			// Flag the subscription as still being read so props we set aren't considered changes.
-			$subscription->set_object_read( false );
-
-			$this->set_subscription_props( $subscription );
-
-			$subscription->set_object_read( true );
-		}
 	}
 
 	/**
@@ -453,20 +618,27 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	}
 
 	/**
-	 * Sets subscription core properties.
+	 * Initializes the subscription based on data received from the database.
 	 *
-	 * This function is called when the subscription is being read from the database and ensures that
-	 * core subscription properties ($this->subscription_meta_keys_to_props) are loaded directly from the
-	 * database and set on the subscription via the equivalent setter.
-	 *
-	 * @param \WC_Order $subscription Subscription object.
+	 * @param WC_Abstract_Order $subscription      The subscription object.
+	 * @param int               $subscription_id   The subscription's ID.
+	 * @param stdClass          $subscription_data All the subscription's data, retrieved from the database.
 	 */
-	private function set_subscription_props( $subscription ) {
-		$props_to_set = [];
-		$dates_to_set = [];
+	protected function init_order_record( \WC_Abstract_Order &$subscription, int $subscription_id, \stdClass $subscription_data ) {
+		// Call the parent version of this function which will set all the core order properties that a subscription inherits.
+		parent::init_order_record( $subscription, $subscription_id, $subscription_data );
 
-		// Pull the latest subscription meta data from the database to set on the subscription object.
-		$subscription_meta = array_column( $this->data_store_meta->read_meta( $subscription ), null, 'meta_key' );
+		if ( empty( $subscription_data->meta_data ) ) {
+			return;
+		}
+
+		// Flag the subscription as still being read from the database while we set our subscription properties.
+		$subscription->set_object_read( false );
+
+		// Set subscription specific properties that we store in meta.
+		$meta_data    = wp_list_pluck( $subscription_data->meta_data, 'meta_value', 'meta_key' );
+		$dates_to_set = [];
+		$props_to_set = [];
 
 		foreach ( $this->subscription_meta_keys_to_props as $meta_key => $prop_key ) {
 			$is_scheduled_date = 0 === strpos( $prop_key, 'schedule' );
@@ -477,30 +649,32 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 				continue;
 			}
 
-			$existing_meta_data = $subscription_meta[ $meta_key ] ?? false;
-
 			// If we're setting the start date and it's missing, we set it to the created date.
-			if ( 'schedule_start' === $prop_key && ! $existing_meta_data ) {
-				$existing_meta_data = (object) [
-					'meta_key'   => $meta_key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-					'meta_value' => $subscription->get_date( 'date_created' ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-				];
+			if ( 'schedule_start' === $prop_key && empty( $meta_data[ $meta_key ] ) ) {
+				$meta_data[ $meta_key ] = $subscription->get_date( 'date_created' );
 			}
 
 			// If there's no meta data, we don't need to set anything.
-			if ( ! $existing_meta_data ) {
+			if ( ! isset( $meta_data[ $meta_key ] ) ) {
 				continue;
 			}
 
 			if ( $is_scheduled_date ) {
-				$dates_to_set[ $prop_key ] = $existing_meta_data->meta_value;
+				$dates_to_set[ $prop_key ] = $meta_data[ $meta_key ];
 			} else {
-				$props_to_set[ $prop_key ] = maybe_unserialize( $existing_meta_data->meta_value );
+				$props_to_set[ $prop_key ] = maybe_unserialize( $meta_data[ $meta_key ] );
 			}
 		}
 
-		$subscription->update_dates( $dates_to_set );
+		// Set the dates and props.
+		if ( $dates_to_set ) {
+			$subscription->update_dates( $dates_to_set );
+		}
+
 		$subscription->set_props( $props_to_set );
+
+		// Flag the subscription as read.
+		$subscription->set_object_read( true );
 	}
 
 	/**
@@ -688,5 +862,19 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 		global $wpdb;
 
 		$wpdb->delete( self::get_meta_table_name(), [ 'meta_key' => $meta_key ], [ '%s' ] ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+	}
+
+	/**
+	 * Count subscriptions by status.
+	 *
+	 * @return array
+	 */
+	public function get_subscriptions_count_by_status() {
+		global $wpdb;
+
+		$table   = self::get_orders_table_name();
+		$results = $wpdb->get_results( "SELECT status, COUNT(*) AS cnt FROM {$table} WHERE type = 'shop_subscription' GROUP BY status", ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+		return $results ? array_combine( array_column( $results, 'status' ), array_map( 'absint', array_column( $results, 'cnt' ) ) ) : array();
 	}
 }

@@ -49,6 +49,9 @@ class WC_Subscriptions_Checkout {
 
 		// Override the WC default "Add to cart" text to "Sign up now" (in various places/templates)
 		add_filter( 'woocommerce_order_button_text', array( __CLASS__, 'order_button_text' ) );
+
+		// Check the "Ship to different address" checkbox if the shipping address of the originating order is different to the billing address.
+		add_filter( 'woocommerce_ship_to_different_address_checked', array( __CLASS__, 'maybe_check_ship_to_different_address' ), 10, 1 );
 	}
 
 	/**
@@ -85,11 +88,13 @@ class WC_Subscriptions_Checkout {
 		$subscriptions = wcs_get_subscriptions_for_order( wcs_get_objects_property( $order, 'id' ), array( 'order_type' => 'parent' ) );
 
 		if ( ! empty( $subscriptions ) ) {
-			remove_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
+			$action_hook = wcs_is_custom_order_tables_usage_enabled() ? 'woocommerce_before_delete_subscription' : 'before_delete_post';
+
+			remove_action( $action_hook, 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 			foreach ( $subscriptions as $subscription ) {
-				wp_delete_post( $subscription->get_id() );
+				$subscription->delete( true );
 			}
-			add_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
+			add_action( $action_hook, 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 		}
 
 		WC_Subscriptions_Cart::set_global_recurring_shipping_packages();
@@ -654,5 +659,46 @@ class WC_Subscriptions_Checkout {
 		}
 
 		return apply_filters( 'wcs_place_subscription_order_text', __( 'Sign up now', 'woocommerce-subscriptions' ) );
+	}
+
+	/**
+	 * If the cart contains a renewal order, resubscribe order or a subscription switch
+	 * that needs to ship to an address that is different to the order's billing address,
+	 * tell the checkout to check the "Ship to different address" checkbox.
+	 *
+	 * @since 5.3.0
+	 *
+	 * @param  bool $ship_to_different_address Whether the order will check the "Ship to different address" checkbox
+	 * @return bool $ship_to_different_address
+	 */
+	public static function maybe_check_ship_to_different_address( $ship_to_different_address ) {
+		$switch_items     = wcs_cart_contains_switches();
+		$renewal_item     = wcs_cart_contains_renewal();
+		$resubscribe_item = wcs_cart_contains_resubscribe();
+
+		if ( ! $switch_items && ! $renewal_item && ! $resubscribe_item ) {
+			return $ship_to_different_address;
+		}
+
+		if ( ! $ship_to_different_address ) {
+			// Get the subscription ID from the corresponding cart item
+			if ( $switch_items ) {
+				$subscription_id = array_values( $switch_items )[0]['subscription_id'];
+			} elseif ( $renewal_item ) {
+				$subscription_id = $renewal_item['subscription_renewal']['subscription_id'];
+			} elseif ( $resubscribe_item ) {
+				$subscription_id = $resubscribe_item['subscription_resubscribe']['subscription_id'];
+			}
+
+			$order = wc_get_order( $subscription_id );
+
+			// If the order's addresses are different, we need to display the shipping fields otherwise the billing address will override it
+			$addresses_are_equal = wcs_compare_order_billing_shipping_address( $order );
+			if ( ! $addresses_are_equal ) {
+				$ship_to_different_address = 1;
+			}
+		}
+
+		return $ship_to_different_address;
 	}
 }
