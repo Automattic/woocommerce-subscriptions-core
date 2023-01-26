@@ -59,6 +59,9 @@
 	width: 160px;
 	text-align: left;
 }
+.wcs-payment-overdue {
+    color: #d63539;
+}
 /* Product List table */
 table.wp-list-table span.product-type.variable-subscription {
 	background-position: -48px 0;
