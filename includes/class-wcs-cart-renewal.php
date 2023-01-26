@@ -143,9 +143,6 @@ class WCS_Cart_Renewal {
 		// When loading checkout address details, use the renewal order address details for renewals
 		add_filter( 'woocommerce_checkout_get_value', array( &$this, 'checkout_get_value' ), 10, 2 );
 
-		// If the shipping address on a renewal order differs to the order's billing address, check the "Ship to different address" automatically to make sure the renewal order's fields are used by default
-		add_filter( 'woocommerce_ship_to_different_address_checked', array( &$this, 'maybe_check_ship_to_different_address' ), 100, 1 );
-
 		add_filter( 'woocommerce_get_item_data', array( &$this, 'display_line_item_data_in_cart' ), 10, 2 );
 
 		// Attach hooks which depend on WooCommerce version constants. Differs from @see attach_dependant_hooks() in that this is hooked inside an inherited function and so extended classes will also inherit these callbacks
@@ -515,10 +512,13 @@ class WCS_Cart_Renewal {
 	 * to the order's billing address, tell the checkout to toggle the ship to a different address
 	 * checkbox and make sure the shipping fields are displayed by default.
 	 *
+	 * @deprecated subscriptions-core 5.3.0 - This method has moved to the WC_Subscriptions_Checkout class.
+	 *
 	 * @param bool $ship_to_different_address Whether the order will ship to a different address
 	 * @return bool $ship_to_different_address
 	 */
 	public function maybe_check_ship_to_different_address( $ship_to_different_address ) {
+		wcs_deprecated_function( __METHOD__, '5.3.0', 'WC_Subscriptions_Checkout::maybe_check_ship_to_different_address( $ship_to_different_address )' );
 
 		if ( ! $ship_to_different_address && false !== ( $item = $this->cart_contains() ) ) {
 
