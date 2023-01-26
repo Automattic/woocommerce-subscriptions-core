@@ -5,6 +5,7 @@
 * Fix - Shipping address correctly set when resubscribing or switching subscriptions that contain different billing and shipping addresses.
 * Fix - When processing customer requests to update all their subscription payment methods, ensure the updated subscription is used fetch the new payment meta, not and old instance.
 * Dev - Remove deprecated `strptime` function in favour of `DateTime::createFromFormat`.
+* Fix - Catch exceptions when changing payment method associated with a subscription to avoid fatal errors.
 
 = 5.2.0 - 2023-01-23 =
 * Add - New wcs_set_order_address() helper function to set an array of address fields on an order or subscription.
