@@ -632,7 +632,14 @@ function wcs_is_datetime_mysql_format( $time ) {
 	$format = 'Y-m-d H:i:s';
 
 	$date_object = DateTime::createFromFormat( $format, $time );
-	return $date_object && $date_object->format( $format ) === $time;
+
+	// DateTime::createFromFormat will return false if it is an invalid date.
+	return $date_object
+			// We also need to check the output of the format() method against the provided string as it will sometimes return
+			// the closest date. Passing `2022-02-29 01:02:03` will return `2022-03-01 01:02:03`
+			&& $date_object->format( $format ) === $time
+			// we check the year is greater than or equal to 1900 as mysql will not accept dates before this.
+			&& (int) $date_object->format( 'Y' ) >= 1900;
 }
 
 /**
