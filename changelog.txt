@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 5.3.0 - 2023-xx-xx =
+* Fix - When processing customer requests to update all their subscription payment methods, ensure the updated subscription is used fetch the new payment meta, not and old instance.
+
 = 5.2.0 - 2023-01-23 =
 * Add - New wcs_set_order_address() helper function to set an array of address fields on an order or subscription.
 * Add - Highlight subscriptions with overdue payment in list view with red icon & tooltip.
