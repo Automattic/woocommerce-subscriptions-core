@@ -343,6 +343,14 @@ class WC_Subscriptions_Change_Payment_Gateway {
 					return;
 				}
 
+				/**
+				 * After processing the payment result, make sure we get a new instance of the subscription.
+				 *
+				 * Because process_payment() is sent an ID, all subscription meta changes would occur on a different instance on the subscription.
+				 * We need a new instance to ensure we have the latest changes when processing the update all subscription payment method request below.
+				 */
+				$subscription = wcs_get_subscription( $subscription->get_id() );
+
 				$subscription->set_requires_manual_renewal( false );
 				$subscription->save();
 
