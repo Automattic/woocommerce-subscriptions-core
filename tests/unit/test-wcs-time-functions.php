@@ -775,6 +775,7 @@ class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 			array( 'foo' ),
 			array( '2015:12:32 11:11:11' ),
 			array( '2015-13-34 24:11:92' ),
+			array( '1899-12-30 23:11:12' ),
 			array( '0000-00-00 00:00:00' ),
 			array( 4 ),
 			array( -1 ),
