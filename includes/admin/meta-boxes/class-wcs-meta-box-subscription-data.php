@@ -216,7 +216,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 									if ( is_callable( array( $subscription, 'get_billing_' . $key ) ) ) {
 										$field['value'] = $subscription->{"get_billing_$key"}();
 									} else {
-										$field['value'] = $subscription->get_meta( '_billing_' . $key );
+										$field['value'] = $subscription->get_meta( $field['id'] );
 									}
 
 									woocommerce_wp_text_input( $field );
