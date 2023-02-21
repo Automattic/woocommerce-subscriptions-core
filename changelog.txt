@@ -1,5 +1,11 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 5.4.0 - 2023-xx-xx =
+* Fix - Remove the recurring shipping method cache that caused bugs for third-party plugins like Conditional Shipping and Payments. #407
+
+= 5.3.1 - 2023-02-01 =
+* Fix - Fatal error when loading the Edit Subscription page with custom admin billing or shipping fields. #403
+
 = 5.3.0 - 2023-01-26 =
 * Add - Highlight subscriptions with overdue payment in list view with red icon & tooltip.
 * Fix - Shipping address correctly set when resubscribing or switching subscriptions that contain different billing and shipping addresses.
