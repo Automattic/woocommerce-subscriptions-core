@@ -1485,7 +1485,7 @@ class WC_Subscriptions_Cart {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0.18
 	 */
 	public static function get_calculated_shipping_for_package( $package ) {
-		_deprecated_function( __METHOD__, '5.4.0', 'WC()->shipping->calculate_shipping_for_package()' );
+		_deprecated_function( __METHOD__, 'subscriptions-core 5.4.0', 'WC()->shipping->calculate_shipping_for_package()' );
 		return WC()->shipping->calculate_shipping_for_package( $package );
 	}
 
