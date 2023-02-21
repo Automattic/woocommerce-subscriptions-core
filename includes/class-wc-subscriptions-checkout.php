@@ -287,7 +287,7 @@ class WC_Subscriptions_Checkout {
 		if ( $cart->needs_shipping() ) {
 			foreach ( $cart->get_shipping_packages() as $recurring_cart_package_key => $recurring_cart_package ) {
 				$package_index      = isset( $recurring_cart_package['package_index'] ) ? $recurring_cart_package['package_index'] : 0;
-				$package            = WC_Subscriptions_Cart::get_calculated_shipping_for_package( $recurring_cart_package );
+				$package            = WC()->shipping->calculate_shipping_for_package( $recurring_cart_package );
 				$shipping_method_id = isset( WC()->checkout()->shipping_methods[ $package_index ] ) ? WC()->checkout()->shipping_methods[ $package_index ] : '';
 
 				if ( isset( WC()->checkout()->shipping_methods[ $recurring_cart_package_key ] ) ) {

@@ -62,7 +62,7 @@ function wcs_cart_totals_shipping_html() {
 			foreach ( $recurring_cart->get_shipping_packages() as $recurring_cart_package_key => $recurring_cart_package ) {
 				$package_index = isset( $recurring_cart_package['package_index'] ) ? $recurring_cart_package['package_index'] : 0;
 				$product_names = array();
-				$package       = WC_Subscriptions_Cart::get_calculated_shipping_for_package( $recurring_cart_package );
+				$package       = WC()->shipping->calculate_shipping_for_package( $recurring_cart_package );
 
 				if ( $show_package_details ) {
 					foreach ( $package['contents'] as $item_id => $values ) {
