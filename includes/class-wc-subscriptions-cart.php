@@ -1142,15 +1142,18 @@ class WC_Subscriptions_Cart {
 		// Temporarily store the current calculation type and recurring cart key so we can restore them later.
 		$calculation_type        = self::$calculation_type;
 		$recurring_cart_key_flag = self::$recurring_cart_key;
+		$cached_recurring_cart   = self::$cached_recurring_cart;
 
 		self::set_calculation_type( 'recurring_total' );
 
 		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
-			self::set_recurring_cart_key( $recurring_cart_key );
-
 			if ( false === $recurring_cart->needs_shipping() || 0 == $recurring_cart->next_payment_date ) {
 				continue;
 			}
+
+			// Set the recurring cart flags so shipping calculations have the recurring cart as context.
+			self::set_recurring_cart_key( $recurring_cart_key );
+			self::set_cached_recurring_cart( $recurring_cart );
 
 			foreach ( $recurring_cart->get_shipping_packages() as $recurring_cart_package_key => $recurring_cart_package ) {
 				$package_index = isset( $recurring_cart_package['package_index'] ) ? $recurring_cart_package['package_index'] : 0;
@@ -1183,6 +1186,7 @@ class WC_Subscriptions_Cart {
 		// Restore the calculation type and recurring cart key.
 		self::set_calculation_type( $calculation_type );
 		self::set_recurring_cart_key( $recurring_cart_key_flag );
+		self::set_cached_recurring_cart( $cached_recurring_cart );
 	}
 
 	/**
