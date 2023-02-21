@@ -1500,7 +1500,7 @@ class WC_Subscriptions_Cart {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0.18
 	 */
 	public static function cache_package_rates( $rates, $package ) {
-		_deprecated_function( __METHOD__, '5.4.0' );
+		_deprecated_function( __METHOD__, 'subscriptions-core 5.4.0' );
 		return $rates;
 	}
 
