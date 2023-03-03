@@ -1159,9 +1159,11 @@ class WCS_Cart_Renewal {
 		$cart_renewal_item = $this->cart_contains();
 
 		if ( false !== $cart_renewal_item ) {
-			$subscription    = wcs_get_subscription( $cart_renewal_item[ $this->cart_item_key ]['subscription_id'] );
-			$billing_address = $shipping_address = array();
-			foreach ( array( 'billing', 'shipping' ) as $address_type ) {
+			$subscription     = wcs_get_subscription( $cart_renewal_item[ $this->cart_item_key ]['subscription_id'] );
+			$billing_address  = [];
+			$shipping_address = [];
+
+			foreach ( [ 'billing', 'shipping' ] as $address_type ) {
 				$checkout_fields = WC()->checkout()->get_checkout_fields( $address_type );
 
 				if ( is_array( $checkout_fields ) ) {
