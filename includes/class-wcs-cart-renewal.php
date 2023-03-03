@@ -1210,7 +1210,7 @@ class WCS_Cart_Renewal {
 				$subscription->set_address( $request['shipping_address'] ?? $request['billing_address'], 'shipping' );
 			} else {
 				$subscription->set_billing_address( $request['billing_address'] );
-				$subscription->set_billing_address( $request['shipping_address'] ?? $request['billing_address'] );
+				$subscription->set_shipping_address( $request['shipping_address'] ?? $request['billing_address'] );
 
 				$subscription->save();
 			}
