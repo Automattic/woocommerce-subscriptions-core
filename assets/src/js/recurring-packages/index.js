@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { useMemo } from '@wordpress/element';
+import { getSetting } from '@woocommerce/settings';
 
 /**
  * This component is responsible for rending recurring shippings.
@@ -17,7 +18,7 @@ import { useMemo } from '@wordpress/element';
  * @param {boolean} props.showItems             If shipping rates should show items inside them.
  * @param {Element} props.noResultsMessage      Message shown when no rate are found.
  * @param {Function} props.renderOption          Function that decides how rates are going to render.
- * @param {Object}props.components
+ * @param {Object} props.components
  */
 export const SubscriptionsRecurringPackages = ( {
 	extensions,
@@ -48,16 +49,23 @@ export const SubscriptionsRecurringPackages = ( {
 		packages.length,
 		showItems,
 	] );
-	return packages.map( ( { package_id: packageId, ...packageData } ) => (
-		<ShippingRatesControlPackage
-			key={ packageId }
-			packageId={ packageId }
-			packageData={ packageData }
-			collapsible={ collapsible }
-			collapse={ shouldCollapse }
-			showItems={ shouldShowItems }
-			noResultsMessage={ noResultsMessage }
-			renderOption={ renderOption }
-		/>
-	) );
+	const collectableRateIds = getSetting( 'collectableMethodIds', [] );
+
+	return packages.map( ( { package_id: packageId, ...packageData } ) => {
+		packageData.shipping_rates = packageData.shipping_rates.filter(
+			( rate ) => ! collectableRateIds.includes( rate.method_id )
+		);
+		return (
+			<ShippingRatesControlPackage
+				key={ packageId }
+				packageId={ packageId }
+				packageData={ packageData }
+				collapsible={ collapsible }
+				collapse={ shouldCollapse }
+				showItems={ shouldShowItems }
+				noResultsMessage={ noResultsMessage }
+				renderOption={ renderOption }
+			/>
+		);
+	} );
 };
