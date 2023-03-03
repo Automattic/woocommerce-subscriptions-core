@@ -5,6 +5,7 @@ import { registerPlugin } from '@wordpress/plugins';
 import {
 	ExperimentalOrderMeta,
 	ExperimentalOrderShippingPackages,
+	ExperimentalOrderLocalPickupPackages,
 } from '@woocommerce/blocks-checkout';
 
 /**
@@ -12,6 +13,7 @@ import {
  */
 import { SubscriptionsRecurringTotals } from './recurring-totals';
 import { SubscriptionsRecurringPackages } from './recurring-packages';
+import { SubscriptionsPickupRecurringPackages } from './recurring-packages/subscriptions-pickup-recurring-packages';
 import { registerFilters } from './filters';
 import './index.scss';
 
@@ -30,6 +32,9 @@ const render = () => {
 			<ExperimentalOrderShippingPackages>
 				<SubscriptionsRecurringPackages />
 			</ExperimentalOrderShippingPackages>
+			<ExperimentalOrderLocalPickupPackages>
+				<SubscriptionsPickupRecurringPackages />
+			</ExperimentalOrderLocalPickupPackages>
 			<ExperimentalOrderMeta>
 				<SubscriptionsRecurringTotals />
 			</ExperimentalOrderMeta>
