@@ -95,6 +95,11 @@ class WCS_Failed_Scheduled_Action_Manager {
 				break;
 		}
 
+		// Not log when there is not a hook associated with the scheduled action
+		if ( strpos( $error->getMessage(), 'not be executed as no callbacks are registered' ) ) {
+			return;
+		}
+
 		$this->log( sprintf( 'action args: %s', $this->get_action_args_string( $action->get_args() ) ) );
 
 		// Store information about the scheduled action for displaying an admin notice
