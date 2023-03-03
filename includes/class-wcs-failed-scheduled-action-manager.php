@@ -85,7 +85,7 @@ class WCS_Failed_Scheduled_Action_Manager {
 
 		// Not log when there is not a hook associated with the scheduled action
 		if ( strpos( $error->getMessage(), 'not be executed as no callbacks are registered' ) ) {
-					return;
+			return;
 		}
 
 		switch ( current_filter() ) {
