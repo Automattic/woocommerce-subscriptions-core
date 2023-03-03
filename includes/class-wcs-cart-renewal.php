@@ -1203,10 +1203,17 @@ class WCS_Cart_Renewal {
 					$customer->{"set_billing_$key"}( $value );
 				}
 			}
-			// Billing address is a required field.
-			$subscription->set_address( $request['billing_address'], 'billing' );
-			// If shipping address (optional field) was not provided, set it to the given billing address (required field).
-			$subscription->set_address( $request['shipping_address'] ?? $request['billing_address'], 'shipping' );
+
+			// Save Billing & Shipping addresses. Billing address is a required field, if shipping address (optional field) was not provided, set it to the given billing address.
+			if ( wcs_is_woocommerce_pre( '7.1' ) ) {
+				$subscription->set_address( $request['billing_address'], 'billing' );
+				$subscription->set_address( $request['shipping_address'] ?? $request['billing_address'], 'shipping' );
+			} else {
+				$subscription->set_billing_address( $request['billing_address'] );
+				$subscription->set_billing_address( $request['shipping_address'] ?? $request['billing_address'] );
+
+				$subscription->save();
+			}
 		}
 	}
 
