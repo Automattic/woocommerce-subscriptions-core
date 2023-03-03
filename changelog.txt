@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 5.5.0 - 2023-xx-xx =
+* Fix - When HPOS is enabled, changing your address while paying for a renewal order will update the address on the subscription. #413
+
 = 5.4.0 - 2023-02-21 =
 * Fix - Remove the recurring shipping method cache that caused bugs for third-party plugins like Conditional Shipping and Payments. #407
 
