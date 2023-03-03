@@ -1159,24 +1159,27 @@ class WCS_Cart_Renewal {
 		$cart_renewal_item = $this->cart_contains();
 
 		if ( false !== $cart_renewal_item ) {
-			$subscription     = wcs_get_subscription( $cart_renewal_item[ $this->cart_item_key ]['subscription_id'] );
-			$billing_address  = [];
-			$shipping_address = [];
+			$subscription         = wcs_get_subscription( $cart_renewal_item[ $this->cart_item_key ]['subscription_id'] );
+			$subscription_updated = false;
+			$billing_address      = [];
+			$shipping_address     = [];
 
 			foreach ( [ 'billing', 'shipping' ] as $address_type ) {
 				$checkout_fields = WC()->checkout()->get_checkout_fields( $address_type );
 
 				if ( is_array( $checkout_fields ) ) {
 					foreach ( array_keys( $checkout_fields ) as $field ) {
-						if ( isset( $checkout_data[ $field ] ) ) {
-							$field_name                                  = str_replace( $address_type . '_', '', $field );
-							${$address_type . '_address'}[ $field_name ] = $checkout_data[ $field ];
+						if ( isset( $checkout_data[ $field ] ) && is_callable( [ $subscription, "set_$field" ] ) ) {
+							$subscription->{"set_$field"}( $checkout_data[ $field ] );
+							$subscription_updated = true;
 						}
 					}
 				}
 			}
-			$subscription->set_address( $billing_address, 'billing' );
-			$subscription->set_address( $shipping_address, 'shipping' );
+
+			if ( $subscription_updated ) {
+				$subscription->save();
+			}
 		}
 	}
 
