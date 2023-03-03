@@ -83,6 +83,11 @@ class WCS_Failed_Scheduled_Action_Manager {
 
 		$subscription_action = $this->get_action_hook_label( $action->get_hook() );
 
+		// Not log when there is not a hook associated with the scheduled action
+		if ( strpos( $error->getMessage(), 'not be executed as no callbacks are registered' ) ) {
+					return;
+		}
+
 		switch ( current_filter() ) {
 			case 'action_scheduler_failed_action':
 				$this->log( sprintf( 'scheduled action %s (%s) failed to finish processing after %s seconds', $action_id, $subscription_action, absint( $error ) ) );
@@ -93,11 +98,6 @@ class WCS_Failed_Scheduled_Action_Manager {
 			case 'action_scheduler_unexpected_shutdown':
 				$this->log( sprintf( 'scheduled action %s (%s) failed to finish processing due to the following error: %s', $action_id, $subscription_action, $error['message'] ) );
 				break;
-		}
-
-		// Not log when there is not a hook associated with the scheduled action
-		if ( strpos( $error->getMessage(), 'not be executed as no callbacks are registered' ) ) {
-			return;
 		}
 
 		$this->log( sprintf( 'action args: %s', $this->get_action_args_string( $action->get_args() ) ) );
