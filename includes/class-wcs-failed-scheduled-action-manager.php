@@ -83,8 +83,8 @@ class WCS_Failed_Scheduled_Action_Manager {
 
 		$subscription_action = $this->get_action_hook_label( $action->get_hook() );
 
-		// Not log when there is not a hook associated with the scheduled action
-		if ( strpos( $error->getMessage(), 'not be executed as no callbacks are registered' ) ) {
+		// Don't log errors for Trial End and Payment Rety scheduled actions when there are no callbacks associated with the scheduled action.
+		if ( strpos( $error->getMessage(), 'not be executed as no callbacks are registered' ) && in_array( $action->get_hook(), [ 'woocommerce_scheduled_subscription_trial_end', 'woocommerce_scheduled_subscription_payment_retry' ], true ) ) {
 			return;
 		}
 
