@@ -1159,22 +1159,25 @@ class WCS_Cart_Renewal {
 		$cart_renewal_item = $this->cart_contains();
 
 		if ( false !== $cart_renewal_item ) {
-			$subscription    = wcs_get_subscription( $cart_renewal_item[ $this->cart_item_key ]['subscription_id'] );
-			$billing_address = $shipping_address = array();
-			foreach ( array( 'billing', 'shipping' ) as $address_type ) {
+			$subscription         = wcs_get_subscription( $cart_renewal_item[ $this->cart_item_key ]['subscription_id'] );
+			$subscription_updated = false;
+
+			foreach ( [ 'billing', 'shipping' ] as $address_type ) {
 				$checkout_fields = WC()->checkout()->get_checkout_fields( $address_type );
 
 				if ( is_array( $checkout_fields ) ) {
 					foreach ( array_keys( $checkout_fields ) as $field ) {
-						if ( isset( $checkout_data[ $field ] ) ) {
-							$field_name                                  = str_replace( $address_type . '_', '', $field );
-							${$address_type . '_address'}[ $field_name ] = $checkout_data[ $field ];
+						if ( isset( $checkout_data[ $field ] ) && is_callable( [ $subscription, "set_$field" ] ) ) {
+							$subscription->{"set_$field"}( $checkout_data[ $field ] );
+							$subscription_updated = true;
 						}
 					}
 				}
 			}
-			$subscription->set_address( $billing_address, 'billing' );
-			$subscription->set_address( $shipping_address, 'shipping' );
+
+			if ( $subscription_updated ) {
+				$subscription->save();
+			}
 		}
 	}
 
@@ -1198,10 +1201,17 @@ class WCS_Cart_Renewal {
 					$customer->{"set_billing_$key"}( $value );
 				}
 			}
-			// Billing address is a required field.
-			$subscription->set_address( $request['billing_address'], 'billing' );
-			// If shipping address (optional field) was not provided, set it to the given billing address (required field).
-			$subscription->set_address( $request['shipping_address'] ?? $request['billing_address'], 'shipping' );
+
+			// Save Billing & Shipping addresses. Billing address is a required field, if shipping address (optional field) was not provided, set it to the given billing address.
+			if ( wcs_is_woocommerce_pre( '7.1' ) ) {
+				$subscription->set_address( $request['billing_address'], 'billing' );
+				$subscription->set_address( $request['shipping_address'] ?? $request['billing_address'], 'shipping' );
+			} else {
+				$subscription->set_billing_address( $request['billing_address'] );
+				$subscription->set_shipping_address( $request['shipping_address'] ?? $request['billing_address'] );
+
+				$subscription->save();
+			}
 		}
 	}
 
