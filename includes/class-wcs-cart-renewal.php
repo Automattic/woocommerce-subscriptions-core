@@ -1161,8 +1161,6 @@ class WCS_Cart_Renewal {
 		if ( false !== $cart_renewal_item ) {
 			$subscription         = wcs_get_subscription( $cart_renewal_item[ $this->cart_item_key ]['subscription_id'] );
 			$subscription_updated = false;
-			$billing_address      = [];
-			$shipping_address     = [];
 
 			foreach ( [ 'billing', 'shipping' ] as $address_type ) {
 				$checkout_fields = WC()->checkout()->get_checkout_fields( $address_type );
