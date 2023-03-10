@@ -1,5 +1,10 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 5.5.0 - 2023-03-10 =
+* Fix - When HPOS is enabled, changing your address while paying for a renewal order will update the address on the subscription. #413
+* Fix - Prevent admin error notices being shown for the "subscription trial end" event that was caused by no callbacks being attached to this scheduled action. #414
+* Fix - Prevent fatal error when copying the `_shipping_address` meta data where the value is not an array. #417
+
 = 5.4.0 - 2023-02-21 =
 * Fix - Remove the recurring shipping method cache that caused bugs for third-party plugins like Conditional Shipping and Payments. #407
 * Fix - Correctly determine subscription free shipping eligibility when the initial payment cart isn't eligible. Fixes erroneous "Invalid recurring shipping method" errors on checkout. #409

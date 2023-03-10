@@ -46,6 +46,9 @@ class WC_Subscriptions_Manager {
 		// Whenever a renewal payment is due, put the subscription on hold and create a renewal order before anything else, in case things don't go to plan
 		add_action( 'woocommerce_scheduled_subscription_payment', __CLASS__ . '::prepare_renewal', 1, 1 );
 
+		// When a subscriptions trial end scheduled action is run, attach a callback to trigger a subscription specific trial ended hook.
+		add_action( 'woocommerce_scheduled_subscription_trial_end', __CLASS__ . '::trigger_subscription_trial_ended_hook', 10, 1 );
+
 		// Attach hooks that depend on WooCommerce being loaded.
 		add_action( 'woocommerce_loaded', [ __CLASS__, 'attach_wc_dependant_hooks' ] );
 
@@ -210,6 +213,17 @@ class WC_Subscriptions_Manager {
 		if ( $subscription ) {
 			$subscription->update_status( 'cancelled' );
 		}
+	}
+
+	/**
+	 * Trigger action hook after a subscription's trial period has ended.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param int $subscription_id
+	 */
+	public static function trigger_subscription_trial_ended_hook( $subscription_id ) {
+		do_action( 'woocommerce_subscription_trial_ended', $subscription_id );
 	}
 
 	/**
