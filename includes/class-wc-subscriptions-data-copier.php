@@ -181,6 +181,14 @@ class WC_Subscriptions_Data_Copier {
 			return;
 		}
 
+		// The WC_Order setter for these keys will expect an array of values, return early if the value is not an array.
+		if (
+			in_array( $key, [ '_shipping_address', '_shipping', '_billing_address', '_billing' ], true )
+			&& ! is_array( $value )
+		) {
+			return;
+		}
+
 		// Special cases where properties with setters don't map nicely to their function names.
 		$setter_map = [
 			'_cart_discount'      => 'set_discount_total',
