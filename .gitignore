@@ -37,5 +37,3 @@ phpunit.xml
 
 # Release Packages
 *.zip
-
-/build
