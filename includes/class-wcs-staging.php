@@ -174,7 +174,12 @@ class WCS_Staging {
 		$scheme   = parse_url( $site_url, PHP_URL_SCHEME ) . '://';
 		$site_url = str_replace( $scheme, '', $site_url );
 
-		return $scheme . substr_replace( $site_url, '_[wc_subscriptions_siteurl]_', strlen( $site_url ) / 2, 0 );
+		return $scheme . substr_replace(
+			$site_url,
+			'_[wc_subscriptions_siteurl]_',
+			intval( strlen( $site_url ) / 2 ),
+			0
+		);
 	}
 
 	/**
