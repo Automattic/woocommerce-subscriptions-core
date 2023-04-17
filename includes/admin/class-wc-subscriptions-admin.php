@@ -1299,7 +1299,7 @@ class WC_Subscriptions_Admin {
 		$add_subscription_url = admin_url( 'post-new.php?post_type=product&select_subscription=true' );
 
 		if ( true == $show_pointers ) {
-			$add_subscription_url = add_query_arg( 'subscription_pointers', 'true', $add_subscription_url );
+			$add_subscription_url = esc_url( add_query_arg( 'subscription_pointers', 'true', $add_subscription_url ) );
 		}
 
 		return $add_subscription_url;
