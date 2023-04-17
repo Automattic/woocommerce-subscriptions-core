@@ -377,7 +377,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 				// Redirect to success/confirmation/payment page
 				wc_add_notice( $notice );
-				wp_redirect( $result['redirect'] );
+				wp_safe_redirect( $result['redirect'] );
 				exit;
 			}
 		}
