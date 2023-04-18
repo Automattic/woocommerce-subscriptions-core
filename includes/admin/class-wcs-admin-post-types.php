@@ -1429,7 +1429,7 @@ class WCS_Admin_Post_Types {
 				$sendback_args = $this->do_bulk_action_update_status( $subscription_ids, $action );
 		}
 
-		return esc_url_raw( add_query_arg( $sendback_args, $redirect_to ) );
+		return esc_url_raw( add_query_arg( $sendback_args, $redirect_to ) ); // nosemgrep: audit.php.wp.security.xss.query-arg   -- The output of add_query_arg is being escaped.
 	}
 
 	/**
