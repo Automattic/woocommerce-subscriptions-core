@@ -36,8 +36,6 @@ class WCS_Core_Autoloader {
 
 	/**
 	 * Register the autoloader.
-	 *
-	 * @author Jeremy Pry
 	 */
 	public function register() {
 		spl_autoload_register( array( $this, 'autoload' ) );
@@ -53,8 +51,6 @@ class WCS_Core_Autoloader {
 	/**
 	 * Autoload a class.
 	 *
-	 * @author Jeremy Pry
-	 *
 	 * @param string $class The class name to autoload.
 	 */
 	public function autoload( $class ) {
@@ -67,7 +63,7 @@ class WCS_Core_Autoloader {
 		$full_path = $this->get_class_base_path( $class ) . $this->get_relative_class_path( $class ) . $this->get_file_name( $class );
 
 		if ( is_readable( $full_path ) ) {
-			require_once( $full_path );
+			require_once $full_path; // nosemgrep: audit.php.lang.security.file.inclusion-arg -- This is a safe file inclusion, since the autoloader is only used for classes in the includes dir.
 		}
 	}
 
@@ -84,8 +80,6 @@ class WCS_Core_Autoloader {
 	/**
 	 * Determine whether we should autoload a given class.
 	 *
-	 * @author Jeremy Pry
-	 *
 	 * @param string $class The class name.
 	 *
 	 * @return bool
@@ -101,8 +95,6 @@ class WCS_Core_Autoloader {
 
 	/**
 	 * Convert the class name into an appropriate file name.
-	 *
-	 * @author Jeremy Pry
 	 *
 	 * @param string $class The class name.
 	 *
@@ -122,8 +114,6 @@ class WCS_Core_Autoloader {
 
 	/**
 	 * Determine if the class is one of our abstract classes.
-	 *
-	 * @author Jeremy Pry
 	 *
 	 * @param string $class The class name.
 	 *
@@ -192,8 +182,6 @@ class WCS_Core_Autoloader {
 	 * Get the relative path for the class location.
 	 *
 	 * This handles all of the special class locations and exceptions.
-	 *
-	 * @author Jeremy Pry
 	 *
 	 * @param string $class The class name.
 	 *
