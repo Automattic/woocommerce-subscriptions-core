@@ -104,6 +104,9 @@ class WCS_PayPal {
 		// Remove PayPal from the available payment methods if it's disabled for subscription purchases.
 		add_filter( 'woocommerce_available_payment_gateways', array( __CLASS__, 'maybe_remove_paypal_standard' ) );
 
+		// Add PayPal domains to the list of allowed hosts for safe redirect.
+		add_filter( 'allowed_redirect_hosts', __CLASS__ . '::allow_paypal_redirect' );
+
 		WCS_PayPal_Supports::init();
 		WCS_PayPal_Status_Manager::init();
 		WCS_PayPal_Standard_Switcher::init();
@@ -535,6 +538,21 @@ class WCS_PayPal {
 			$order->delete_meta_data( 'wcs_lock_order_payment' );
 			$order->save();
 		}
+	}
+
+	/**
+	 * Allow PayPal domains for redirect.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array $hosts Add PayPal domains for `wp_safe_redirect`.
+	 *
+	 * @return array
+	 */
+	public static function allow_paypal_redirect( $hosts ) {
+		$hosts[] = 'www.paypal.com';
+		$hosts[] = 'www.sandbox.paypal.com';
+		return $hosts;
 	}
 
 	/** Getters ******************************************************/
