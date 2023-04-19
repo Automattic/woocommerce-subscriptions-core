@@ -604,7 +604,7 @@ class WCS_Cart_Renewal {
 	public function get_checkout_payment_url( $pay_url, $order ) {
 
 		if ( wcs_order_contains_renewal( $order ) ) {
-			$pay_url = add_query_arg( array( $this->cart_item_key => 'true' ), $pay_url );
+			$pay_url = esc_url( add_query_arg( array( $this->cart_item_key => 'true' ), $pay_url ) );
 		}
 
 		return $pay_url;

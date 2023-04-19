@@ -1302,7 +1302,7 @@ class WC_Subscriptions_Admin {
 			$add_subscription_url = add_query_arg( 'subscription_pointers', 'true', $add_subscription_url );
 		}
 
-		return $add_subscription_url;
+		return esc_url( $add_subscription_url );
 	}
 
 	/**
