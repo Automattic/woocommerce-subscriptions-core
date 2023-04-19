@@ -1129,30 +1129,34 @@ class WC_Subscriptions_Cart {
 		$added_invalid_notice = false;
 		$standard_packages    = WC()->shipping->get_packages();
 
-		// temporarily store the current calculation type and recurring cart key so we can restore them later
+		// Temporarily store the current calculation type and recurring cart key so we can restore them later.
 		$calculation_type        = self::$calculation_type;
 		$recurring_cart_key_flag = self::$recurring_cart_key;
+		$cached_recurring_cart   = self::$cached_recurring_cart;
 
 		self::set_calculation_type( 'recurring_total' );
 
 		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
-			self::set_recurring_cart_key( $recurring_cart_key );
-
 			if ( false === $recurring_cart->needs_shipping() || 0 == $recurring_cart->next_payment_date ) {
 				continue;
 			}
+
+			// Set the recurring cart flags so shipping calculations have the recurring cart as context.
+			self::set_recurring_cart_key( $recurring_cart_key );
+			self::set_cached_recurring_cart( $recurring_cart );
 
 			foreach ( $recurring_cart->get_shipping_packages() as $recurring_cart_package_key => $recurring_cart_package ) {
 				$package_index = isset( $recurring_cart_package['package_index'] ) ? $recurring_cart_package['package_index'] : 0;
 				$package       = WC()->shipping->calculate_shipping_for_package( $recurring_cart_package );
 
 				if ( ( isset( $standard_packages[ $package_index ] ) && $package['rates'] == $standard_packages[ $package_index ]['rates'] ) ) {
-					// the recurring package rates match the initial package rates, there won't be a selected shipping method for this recurring cart package move on to the next package.
+					// The recurring package rates match the initial package rates, there won't be a selected shipping method for this recurring cart package move on to the next package.
 					if ( apply_filters( 'wcs_cart_totals_shipping_html_price_only', true, $package, $recurring_cart ) ) {
 						continue;
 					}
 				}
 
+				// If the chosen shipping method is not available for this recurring cart package, display an error and unset the selected method.
 				if ( ! isset( $package['rates'][ $shipping_methods[ $recurring_cart_package_key ] ] ) ) {
 					if ( ! $added_invalid_notice ) {
 						wc_add_notice( __( 'Invalid recurring shipping method.', 'woocommerce-subscriptions' ), 'error' );
@@ -1169,8 +1173,10 @@ class WC_Subscriptions_Cart {
 			WC()->checkout()->shipping_methods = $shipping_methods;
 		}
 
+		// Restore the calculation type and recurring cart key.
 		self::set_calculation_type( $calculation_type );
 		self::set_recurring_cart_key( $recurring_cart_key_flag );
+		self::set_cached_recurring_cart( $cached_recurring_cart );
 	}
 
 	/**
