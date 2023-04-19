@@ -1,10 +1,10 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 5.6.0- 2023-xx-xx =
+= 5.6.0 - 2023-04-19 =
 * Fix - Correctly determine subscription free shipping eligibility when the initial payment cart isn't eligible. Fixes erroneous "Invalid recurring shipping method" errors on checkout. #409
 * Dev - Fixed precision loss notice that occurs when running PHP 8.1. #428
-* Dev - Fix phpcs and semgrep warnings to improve code quality.
-* Dev - Use `wp_safe_redirect()` when processing a payment method change request.
+* Dev - Fix phpcs and semgrep warnings to improve code quality. #429
+* Dev - Use `wp_safe_redirect()` when processing a payment method change request. #429
 
 = 5.5.0 - 2023-03-10 =
 * Fix - When HPOS is enabled, changing your address while paying for a renewal order will update the address on the subscription. #413
