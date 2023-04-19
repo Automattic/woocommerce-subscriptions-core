@@ -48,7 +48,7 @@ class WCS_My_Account_Payment_Methods {
 						'wcs_nonce'                 => wp_create_nonce( 'delete_subscription_token_' . $payment_token->get_id() ),
 					);
 
-					$payment_token_data['actions']['delete']['url'] = add_query_arg( $delete_subscription_token_args, $payment_token_data['actions']['delete']['url'] );
+					$payment_token_data['actions']['delete']['url'] = esc_url( add_query_arg( $delete_subscription_token_args, $payment_token_data['actions']['delete']['url'] ) );
 				} else {
 					/**
 					 * Allow third-party gateways to override whether the token delete button should be removed.

@@ -274,7 +274,15 @@ class WCS_PayPal_Reference_Transaction_API extends WCS_SV_API_Base {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function get_callback_url( $action ) {
-		return add_query_arg( 'action', $action, WC()->api_request_url( 'wcs_paypal' ) );
+		return esc_url(
+			add_query_arg(
+				'action',
+				$action,
+				WC()->api_request_url( 'wcs_paypal' )
+			),
+			null,
+			'db'
+		);
 	}
 
 	/**
