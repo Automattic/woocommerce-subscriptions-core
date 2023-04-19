@@ -6,7 +6,7 @@ on:
 jobs:
   lint:
     name:    JS linting
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       # clone the repository
       - uses: actions/checkout@v2
