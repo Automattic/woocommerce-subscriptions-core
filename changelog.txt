@@ -1,6 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
 = 5.6.0- 2023-xx-xx =
+* Fix - Correctly determine subscription free shipping eligibility when the initial payment cart isn't eligible. Fixes erroneous "Invalid recurring shipping method" errors on checkout. #409
 * Dev - Fix phpcs and semgrep warnings to improve code quality.
 * Dev - Use `wp_safe_redirect()` when processing a payment method change request.
 
@@ -11,7 +12,6 @@
 
 = 5.4.0 - 2023-02-21 =
 * Fix - Remove the recurring shipping method cache that caused bugs for third-party plugins like Conditional Shipping and Payments. #407
-* Fix - Correctly determine subscription free shipping eligibility when the initial payment cart isn't eligible. Fixes erroneous "Invalid recurring shipping method" errors on checkout. #409
 
 = 5.3.1 - 2023-02-01 =
 * Fix - Fatal error when loading the Edit Subscription page with custom admin billing or shipping fields. #403
