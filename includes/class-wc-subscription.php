@@ -653,7 +653,7 @@ class WC_Subscription extends WC_Order {
 			$new_status = apply_filters( 'woocommerce_default_subscription_status', 'pending' );
 		}
 
-		parent::set_status( $new_status, $note, $manual_update );
+		return parent::set_status( $new_status, $note, $manual_update );
 	}
 
 	/**
