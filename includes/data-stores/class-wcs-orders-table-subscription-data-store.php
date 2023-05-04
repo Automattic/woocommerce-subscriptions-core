@@ -559,7 +559,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 		// For backwards compatibility we trigger the `woocommerce_update_order` hook.
 		do_action( 'woocommerce_update_order', $subscription->get_id(), $subscription );
 
-		do_action( 'woocommerce_update_subscription', $subscription->get_id() );
+		do_action( 'woocommerce_update_subscription', $subscription->get_id(), $subscription );
 	}
 
 	/**
