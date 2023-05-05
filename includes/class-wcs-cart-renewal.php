@@ -1360,8 +1360,11 @@ class WCS_Cart_Renewal {
 		$total_coupon_discount = floatval( array_sum( wc_list_pluck( $coupon_items, 'get_discount' ) ) + array_sum( wc_list_pluck( $coupon_items, 'get_discount_tax' ) ) );
 		$coupons               = array();
 
-		// If the order total discount is different from the discount applied from coupons we have a manually applied discount.
-		$order_has_manual_discount = $order_discount !== $total_coupon_discount;
+		// If the order total discount is different from the discount applied from coupons then we have a manually applied discount.
+		$delta_threshold = 1; // Allow for floating point rounding errors.
+
+		// Add the rounding number precision (eg convert to cents) to compare the order discount and coupon discount at the same precision.
+		$order_has_manual_discount = abs( wc_add_number_precision( $order_discount ) - wc_add_number_precision( $total_coupon_discount ) ) > $delta_threshold;
 
 		// Get all coupon line items as coupon objects.
 		if ( ! empty( $coupon_items ) ) {
