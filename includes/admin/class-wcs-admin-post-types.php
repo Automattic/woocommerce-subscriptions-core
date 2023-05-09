@@ -1629,7 +1629,7 @@ class WCS_Admin_Post_Types {
 	private function get_trash_or_delete_subscription_link( $subscription_id, $base_action_url, $status ) {
 
 		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			return esc_url( add_query_arg( 'action', $status . '_subscriptions', $base_action_url ) );
+			return add_query_arg( 'action', $status . '_subscriptions', $base_action_url ); // nosemgrep: audit.php.wp.security.xss.query-arg -- False positive. The URL returned from this function is escaped at the point of output.
 		}
 
 		return get_delete_post_link( $subscription_id, '', 'delete' === $status );
