@@ -604,10 +604,10 @@ class WCS_Cart_Renewal {
 	public function get_checkout_payment_url( $pay_url, $order ) {
 
 		if ( wcs_order_contains_renewal( $order ) ) {
-			$pay_url = esc_url( add_query_arg( array( $this->cart_item_key => 'true' ), $pay_url ) );
+			$pay_url = add_query_arg( array( $this->cart_item_key => 'true' ), $pay_url );
 		}
 
-		return $pay_url;
+		return $pay_url; // nosemgrep: audit.php.wp.security.xss.query-arg -- False positive. $pay_url should be escaped at the point of output or usage. Keep the URL in tact for functions hooked in further down the chain.
 	}
 
 	/**

@@ -267,10 +267,11 @@ class WCS_PayPal_Reference_Transaction_API extends WCS_SV_API_Base {
 	/** Helper methods ******************************************************/
 
 	/**
-	 * Get the wc-api URL to redirect to
+	 * Get the wc-api URL to redirect to.
 	 *
-	 * @param string $action checkout action, either `set_express_checkout or `get_express_checkout_details`
-	 * @return string URL
+	 * @param string $action checkout action, either `set_express_checkout or `get_express_checkout_details`.
+	 *
+	 * @return string URL The URL. Note: this URL is escaped.
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function get_callback_url( $action ) {
