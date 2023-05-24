@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 5.7.2 - 2023-xx-xx =
+= 5.7.2 - 2023-05-24 =
 * Fix - Resolved an issue that resulted in customers being incorrectly redirected to an invalid Pay for Order URL after login.
 
 = 5.7.1 - 2023-05-11 =
