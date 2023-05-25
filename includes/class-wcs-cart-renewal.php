@@ -1034,8 +1034,11 @@ class WCS_Cart_Renewal {
 		if ( isset( $_GET['wcs_redirect'], $_GET['wcs_redirect_id'] ) && 'pay_for_order' === $_GET['wcs_redirect'] ) {
 			$order = wc_get_order( $_GET['wcs_redirect_id'] );
 
-			if ( $order && user_can( $user, 'pay_for_order', $order->get_id() ) ) {
+			if ( $order && $order->get_user_id() && user_can( $user, 'pay_for_order', $order->get_id() ) ) {
 				$redirect = $order->get_checkout_payment_url();
+			} else {
+				// Remove the wcs_redirect query args if the user doesn't have permission to pay for the order.
+				$redirect = remove_query_arg( array( 'wcs_redirect', 'wcs_redirect_id' ), $redirect );
 			}
 		}
 
