@@ -1030,7 +1030,7 @@ class WCS_Cart_Renewal {
 	 * @return string
 	 * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.1.0
 	 */
-	function maybe_redirect_after_login( $redirect, $user = null ) {
+	public function maybe_redirect_after_login( $redirect, $user = null ) {
 		if ( isset( $_GET['wcs_redirect'], $_GET['wcs_redirect_id'] ) && 'pay_for_order' === $_GET['wcs_redirect'] ) {
 			$order = wc_get_order( $_GET['wcs_redirect_id'] );
 
