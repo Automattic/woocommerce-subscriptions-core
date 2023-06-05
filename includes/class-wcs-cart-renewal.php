@@ -42,7 +42,7 @@ class WCS_Cart_Renewal {
 		add_filter( 'woocommerce_create_order', array( &$this, 'update_cart_hash' ), 10, 1 );
 
 		// When a user is prevented from paying for a failed/pending renewal order because they aren't logged in, redirect them back after login
-		add_filter( 'woocommerce_login_redirect', array( &$this, 'maybe_redirect_after_login' ), 10, 1 );
+		add_filter( 'woocommerce_login_redirect', array( &$this, 'maybe_redirect_after_login' ), 10, 2 );
 
 		// Once we have finished updating the renewal order on checkout, update the session cart so the cart changes are honoured.
 		add_action( 'woocommerce_checkout_order_processed', array( &$this, 'update_session_cart_after_updating_renewal_order' ), 10 );
@@ -1025,16 +1025,20 @@ class WCS_Cart_Renewal {
 	/**
 	 * Redirect back to pay for an order after successfully logging in.
 	 *
-	 * @param string | redirect URL after successful login
+	 * @param string  The redirect URL after successful login.
+	 * @param WP_User The newly logged in user object.
 	 * @return string
 	 * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.1.0
 	 */
-	function maybe_redirect_after_login( $redirect ) {
-		if ( isset( $_GET['wcs_redirect'], $_GET['wcs_redirect_id'] ) && 'pay_for_order' == $_GET['wcs_redirect'] ) {
+	public function maybe_redirect_after_login( $redirect, $user = null ) {
+		if ( isset( $_GET['wcs_redirect'], $_GET['wcs_redirect_id'] ) && 'pay_for_order' === $_GET['wcs_redirect'] ) {
 			$order = wc_get_order( $_GET['wcs_redirect_id'] );
 
-			if ( $order ) {
+			if ( $order && $order->get_user_id() && user_can( $user, 'pay_for_order', $order->get_id() ) ) {
 				$redirect = $order->get_checkout_payment_url();
+			} else {
+				// Remove the wcs_redirect query args if the user doesn't have permission to pay for the order.
+				$redirect = remove_query_arg( array( 'wcs_redirect', 'wcs_redirect_id' ), $redirect );
 			}
 		}
 
