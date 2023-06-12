@@ -130,6 +130,7 @@ class WCS_Helper_Subscription {
 		}
 
 		$subscription->set_meta_data( $subscription_meta_data );
+		$subscription->save();
 
 		return $subscription;
 	}

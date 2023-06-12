@@ -44,7 +44,7 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 			[
 				'limit'      => -1,
 				'type'       => 'shop_order',
-				'status'     => 'any',
+				'status' => array_keys( wcs_get_subscription_statuses() ),
 				'return'     => 'ids',
 				'orderby'    => 'ID',
 				'order'      => 'DESC',
@@ -90,7 +90,6 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 * @param string   $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
 	 */
 	public function add_relation( WC_Order $order, WC_Order $subscription, $relation_type ) {
-		// We can't rely on $subscription->get_id() being available here, because we only require a WC_Order, not a WC_Subscription, and WC_Order does not have get_id() available with WC < 3.0
 		$subscription_id        = $subscription->get_id();
 		$related_order_meta_key = $this->get_meta_key( $relation_type );
 
