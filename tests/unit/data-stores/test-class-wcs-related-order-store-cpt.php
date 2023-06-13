@@ -10,14 +10,6 @@
  */
 class WCS_Related_Order_Store_CPT_Test extends WCS_Base_Related_Order_Store_Test_Case {
 
-	public function setUp(): void {
-		parent::setUp();
-		return;
-		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			$this->markTestSkipped( __CLASS__ . ' does not apply with HPOS enabled.' );
-		}
-	}
-
 	/**
 	 * @var WCS_Related_Order_Store_CPT
 	 */
