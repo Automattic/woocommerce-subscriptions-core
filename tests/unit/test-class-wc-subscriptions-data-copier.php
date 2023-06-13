@@ -24,6 +24,11 @@ class WC_Subscriptions_Data_Copier_Test extends WP_UnitTestCase {
 									->getMock();
 
 		$this->copier = new WC_Subscriptions_Data_Copier( $this->mock_order, $this->mock_subscription, 'subscription' );
+
+		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
+			// @todo Avoid the error caused by mocking the DB in mock_meta_database_query_results. This method of mocking should be replaced.
+			update_option( 'woocommerce_feature_custom_order_tables_enabled', 'no' );
+		}
 	}
 
 	public function tear_down() {

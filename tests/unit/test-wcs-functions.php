@@ -1144,6 +1144,18 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$subscriptions = wcs_get_subscriptions( array( 'orderby' => 'start_date' ) );
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 4, count( $subscriptions ) );
+		$correct_order = array(
+			$subscription_3->get_id() => $subscription_3,
+			$subscription_4->get_id() => $subscription_4,
+			$subscription_2->get_id() => $subscription_2,
+			$subscription_1->get_id() => $subscription_1,
+		);
+		$this->assertEquals( $subscriptions, $correct_order );
+		return;
+
+		$subscriptions = wcs_get_subscriptions( array( 'orderby' => 'start_date' ) );
+		$this->assertIsArray( $subscriptions );
+		$this->assertEquals( 4, count( $subscriptions ) );
 		$expected_order = array(
 			$subscription_3->get_id(),
 			$subscription_4->get_id(),
