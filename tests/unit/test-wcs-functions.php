@@ -14,7 +14,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		remove_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 		remove_action( 'woocommerce_before_delete_subscription', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 		_delete_all_posts();
-		$subscriptions = wcs_get_subscriptions([]);
+		$subscriptions = wcs_get_subscriptions( [] );
 		foreach ( $subscriptions as $subscription ) {
 			$subscription->delete( true );
 		}
@@ -1162,9 +1162,12 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 			$subscription_2->get_id(),
 			$subscription_1->get_id(),
 		);
-		$actual_order = array_map( function ( $subscription ) {
-			return $subscription->get_id();
-		}, $subscriptions );
+		$actual_order   = array_map(
+			function ( $subscription ) {
+				return $subscription->get_id();
+			},
+			$subscriptions
+		);
 
 		// Only compare the IDs since the order MetaData values load may not be guaranteed to match.
 		$this->assertEquals( $expected_order, array_values( $actual_order ) );

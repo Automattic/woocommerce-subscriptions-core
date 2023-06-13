@@ -167,10 +167,10 @@ class WCS_Related_Order_Store_CPT_Test extends WCS_Base_Related_Order_Store_Test
 	 * @dataProvider provider_relation_type
 	 */
 	public function test_delete_relation( $relation_type ) {
-		$subscription_one   = WCS_Helper_Subscription::create_subscription();
-		$subscription_two   = WCS_Helper_Subscription::create_subscription();
-		$order_to_delete    = WCS_Helper_Subscription::create_order();
-		$order_to_keep      = WCS_Helper_Subscription::create_order();
+		$subscription_one = WCS_Helper_Subscription::create_subscription();
+		$subscription_two = WCS_Helper_Subscription::create_subscription();
+		$order_to_delete  = WCS_Helper_Subscription::create_order();
+		$order_to_keep    = WCS_Helper_Subscription::create_order();
 
 		$persistent_relation_type = 'persistent_relation';
 
@@ -189,8 +189,8 @@ class WCS_Related_Order_Store_CPT_Test extends WCS_Base_Related_Order_Store_Test
 		foreach ( [ $persistent_relation_type, $relation_type ] as $type ) {
 			foreach ( [ $order_to_delete, $order_to_keep ] as $order ) {
 				$order->read_meta_data( true );
-				$related_subscriptions_meta_data = $order->get_meta($this->get_meta_key( $type ), false);
-				$related_subscriptions = array_column( $related_subscriptions_meta_data, 'value' );
+				$related_subscriptions_meta_data = $order->get_meta( $this->get_meta_key( $type ), false );
+				$related_subscriptions           = array_column( $related_subscriptions_meta_data, 'value' );
 				$this->assertTrue( in_array( (string) $subscription_one->get_id(), $related_subscriptions, true ) );
 				$this->assertTrue( in_array( (string) $subscription_two->get_id(), $related_subscriptions, true ) );
 			}
