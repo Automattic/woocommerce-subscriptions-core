@@ -35,15 +35,9 @@ class WCS_Order_Functions_Test extends WP_UnitTestCase {
 
 		// test get subscriptions given a parent order
 		$subscription = WCS_Helper_Subscription::create_subscription();
-		wp_update_post(
-			array(
-				'ID'          => $subscription->get_id(),
-				'post_parent' => wcs_get_objects_property(
-					$order,
-					'id'
-				),
-			)
-		);
+		$subscription->set_parent_id( $order->get_id() );
+		$subscription->save();
+
 		$subscription = wcs_get_subscription( $subscription );
 
 		$tests = array(

@@ -12,10 +12,16 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 	public function tear_down() {
 		remove_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
+		remove_action( 'woocommerce_before_delete_subscription', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 		_delete_all_posts();
+		$subscriptions = wcs_get_subscriptions( [] );
+		foreach ( $subscriptions as $subscription ) {
+			$subscription->delete( true );
+		}
 		$this->commit_transaction();
 		parent::tear_down();
 		add_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription', 10, 1 );
+		add_action( 'woocommerce_before_delete_subscription', 'WC_Subscriptions_Manager::maybe_cancel_subscription', 10, 1 );
 	}
 
 	public function test_wcs_cleanup_logs_no_changes() {
@@ -59,6 +65,10 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	}
 
 	public function test_wcs_is_subscription() {
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			$this->markTestIncomplete( 'Test has not yet been updated to support HPOS.' );
+		}
+
 		// test cases
 		$subscription_object     = WCS_Helper_Subscription::create_subscription( array( 'status' => 'active' ) );
 		$subscription_id_int     = $subscription_object->get_id();
@@ -93,6 +103,9 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	}
 
 	public function test_wcs_do_subscriptions_exist() {
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			$this->markTestIncomplete( 'Test has not yet been updated to support HPOS.' );
+		}
 		$this->assertEquals( false, wcs_do_subscriptions_exist(), 'Subscriptions should not exist, yet wcs_do_subscriptions_exist is reporting they do' );
 
 		WCS_Helper_Subscription::create_subscription( array( 'status' => 'active' ) );
@@ -102,6 +115,9 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 
 	public function test_wcs_get_subscription() {
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			$this->markTestIncomplete( 'Test has not yet been updated to support HPOS.' );
+		}
 		$subscription_object     = WCS_Helper_Subscription::create_subscription( array( 'status' => 'active' ) );
 		$non_subscription_object = $this->factory->post->create_and_get();
 
@@ -560,6 +576,9 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	 * @dataProvider wcs_create_subscription_provider
 	 */
 	public function test_wcs_create_subscription_no_order( $args, $expects ) {
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			$this->markTestIncomplete( 'Test has not yet been updated to support HPOS.' );
+		}
 		$default_expects = array(
 			'post_date_gmt' => gmdate( 'Y-m-d H:i:s' ),
 		);
@@ -844,6 +863,10 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	 * Deals with cases where order_id is not a shop_order
 	 */
 	public function test_1_wcs_get_subscriptions() {
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			$this->markTestIncomplete( 'Test has not yet been updated to support HPOS.' );
+		}
+
 		$non_subscription_id = $this->factory->post->create();
 
 		$args = array( 'order_id' => $non_subscription_id );
@@ -1128,7 +1151,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 			$subscription_1->get_id() => $subscription_1,
 		);
 		$this->assertEquals( $subscriptions, $correct_order );
-
 	}
 
 	/**
@@ -1808,6 +1830,8 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	}
 
 	public function test_set_payment_meta() {
+		$hpos_enabled = wcs_is_custom_order_tables_usage_enabled();
+
 		$subscription = WCS_Helper_Subscription::create_subscription();
 
 		// user_meta, usermeta
@@ -1822,11 +1846,17 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		// post_meta, postmeta
 		wcs_set_payment_meta( $subscription, array( 'post_meta' => array( 'post_meta_1' => array( 'value' => 'post_meta_1_value' ) ) ) );
 		$subscription->save();
-		$this->assertContains( 'post_meta_1_value', get_post_meta( $subscription->get_id(), 'post_meta_1' ) );
+		$this->assertContains( 'post_meta_1_value', array_column( $subscription->get_meta( 'post_meta_1', false ), 'value' ) );
+		if ( ! $hpos_enabled ) {
+			$this->assertContains( 'post_meta_1_value', get_post_meta( $subscription->get_id(), 'post_meta_1' ) );
+		}
 
 		wcs_set_payment_meta( $subscription, array( 'postmeta' => array( 'post_meta_2' => array( 'value' => 'post_meta_2_value' ) ) ) );
 		$subscription->save();
-		$this->assertContains( 'post_meta_2_value', get_post_meta( $subscription->get_id(), 'post_meta_2' ) );
+		$this->assertContains( 'post_meta_2_value', array_column( $subscription->get_meta( 'post_meta_2', false ), 'value' ) );
+		if ( ! $hpos_enabled ) {
+			$this->assertContains( 'post_meta_2_value', get_post_meta( $subscription->get_id(), 'post_meta_2' ) );
+		}
 
 		// options
 		wcs_set_payment_meta( $subscription, array( 'options' => array( 'option_1' => array( 'value' => 'option_1_value' ) ) ) );

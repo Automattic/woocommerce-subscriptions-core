@@ -107,6 +107,7 @@ class WCS_Helper_Functions_Test extends WP_UnitTestCase {
 				'trial_end' => gmdate( 'Y-m-d H:i:s', strtotime( '+1 weeks' ) ),
 			)
 		);
+		$subscription->save();
 
 		// Validate WP_Error.
 		$this->assertWPError( wcs_trial_has_passed( 'INVALID_SUBSCRIPTION' ) );
@@ -117,10 +118,12 @@ class WCS_Helper_Functions_Test extends WP_UnitTestCase {
 
 		// Trial finished yesterday.
 		$subscription->update_dates( array( 'trial_end' => gmdate( 'Y-m-d H:i:s', strtotime( '-1 day' ) ) ) );
+		$subscription->save();
 		$this->assertTrue( wcs_trial_has_passed( $subscription ) );
 
 		// Subscription with no trial.
 		$subscription->update_dates( array( 'trial_end' => 0 ) );
+		$subscription->save();
 		$this->assertFalse( wcs_trial_has_passed( $subscription ) );
 	}
 
