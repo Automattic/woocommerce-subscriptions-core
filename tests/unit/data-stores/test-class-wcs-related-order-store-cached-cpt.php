@@ -124,8 +124,11 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 
 		self::$cache_store->add_relation( $order, $subscription, $relation_type );
 
-		$this->assertEquals( $subscription->get_id(), get_post_meta( $order_id, $this->get_meta_key( $relation_type ), true ) );
-		$this->assertTrue( in_array( $order_id, $this->get_cache_from_source( $subscription, $relation_type ), true ) );
+		$this->assertEquals( $subscription->get_id(), $order->get_meta( $this->get_meta_key( $relation_type ), true ) );
+		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
+			$this->assertEquals( $subscription->get_id(), get_post_meta( $order_id, $this->get_meta_key( $relation_type ), true ) );
+		}
+		$this->assertContains( $order_id, $this->get_cache_from_source( $subscription, $relation_type ), true );
 	}
 
 	/**
@@ -279,28 +282,66 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 	 * @param int|WC_Order $order An order that may be linked with the subscription.
 	 * @param string $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
 	 */
-	private function add_relation_mock( $order_id, $subscription_id, $relation_type ) {
-		if ( is_object( $order_id ) ) {
-			$order_id = wcs_get_objects_property( $order_id, 'id' );
+	private function add_relation_mock( $order, $subscription, $relation_type ) {
+		if ( ! is_object( $order ) ) {
+			$order = wc_get_order( $order );
 		}
 
-		if ( is_object( $subscription_id ) ) {
-			$subscription_id = $subscription_id->get_id();
+		if ( ! is_object( $subscription ) ) {
+			$subscription = wcs_get_subscription( $subscription );
 		}
+
+		// Remove the filtering of cached props so we can use the data stores to directly manipulate the meta for stubbing.
+		add_filter( 'wcs_subscription_data_store_props_to_ignore', '__return_empty_array', 999, 2 );
+
+		$subscription_data_store = WC_Data_Store::load( 'subscription' );
+		$order_data_store        = WC_Data_Store::load( 'order' );
 
 		// This needs to be added so any calls to get_related_subscription_ids() will return correct values.
-		add_post_meta( $order_id, $this->get_meta_key( $relation_type ), $subscription_id, false );
+		$order_data_store->add_meta(
+			$order,
+			(object) [
+				'key'   => $this->get_meta_key( $relation_type ),
+				'value' => $subscription->get_id(),
+			]
+		);
+		$relationship_cache_meta_key = $this->get_cache_meta_key( $relation_type );
+		$meta_data                   = $subscription_data_store->read_meta( $subscription );
 
-		$related_order_ids = get_post_meta( $subscription_id, $this->get_cache_meta_key( $relation_type ), true );
-
-		if ( '' === $related_order_ids ) {
-			$related_order_ids = [];
+		$related_order_ids = [];
+		$existing_meta_id  = null;
+		foreach ( $meta_data as $meta ) {
+			if ( $meta->meta_key === $relationship_cache_meta_key ) {
+				$related_order_ids = maybe_unserialize( $meta->meta_value ) ?? [];
+				$existing_meta_id  = $meta->meta_id;
+				break;
+			}
 		}
 
-		if ( ! in_array( $order_id, $related_order_ids, true ) ) {
-			array_unshift( $related_order_ids, $order_id );
-			update_post_meta( $subscription_id, $this->get_cache_meta_key( $relation_type ), $related_order_ids, false );
+		if ( ! in_array( $order->get_id(), $related_order_ids, true ) ) {
+			// Fill in the stubbed cached meta
+			array_unshift( $related_order_ids, $order->get_id() );
+			if ( $existing_meta_id !== null ) {
+				$subscription_data_store->instance->update_meta(
+					$subscription,
+					(object) [
+						'id'    => $existing_meta_id,
+						'key'   => $relationship_cache_meta_key,
+						'value' => $related_order_ids,
+					]
+				);
+			} else {
+				$subscription_data_store->instance->add_meta(
+					$subscription,
+					(object) [
+						'key'   => $relationship_cache_meta_key,
+						'value' => $related_order_ids,
+					]
+				);
+			}
 		}
+
+		remove_filter( 'wcs_subscription_data_store_props_to_ignore', '__return_empty_array', 999 );
 	}
 
 	/**
@@ -318,9 +359,24 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 	 * @return mixed String or array.
 	 */
 	private function get_cache_from_source( $subscription, $relation_type ) {
-		if ( is_object( $subscription ) ) {
-			$subscription = $subscription->get_id();
+		if ( ! is_object( $subscription ) ) {
+			$subscription = wcs_get_subscription( $subscription );
 		}
-		return get_post_meta( $subscription, $this->get_cache_meta_key( $relation_type ), true );
+
+		$cache_meta_key = $this->get_cache_meta_key( $relation_type );
+
+		// Cached relationship meta is filtered out meta props, so we must load it directly from the Datastore.
+		add_filter( 'wcs_subscription_data_store_props_to_ignore', '__return_empty_array', 999, 2 );
+		$data_store = WC_Data_Store::load( 'subscription' );
+
+		$meta_data = $data_store->read_meta( $subscription );
+		remove_filter( 'wcs_subscription_data_store_props_to_ignore', '__return_empty_array', 999 );
+		foreach ( $meta_data as $meta ) {
+			if ( $meta->meta_key === $cache_meta_key ) {
+				return maybe_unserialize( $meta->meta_value ) ?? '';
+			}
+		}
+
+		return '';
 	}
 }
