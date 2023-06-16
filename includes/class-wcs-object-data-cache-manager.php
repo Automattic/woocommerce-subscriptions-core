@@ -282,7 +282,7 @@ class WCS_Object_Data_Cache_Manager extends WCS_Post_Meta_Cache_Manager {
 		unset( $this->object_changes[ $object_id ] );
 
 		foreach ( $object_changes as $key => $change ) {
-			$this->trigger_update_cache_hook( $change['type'], $object_id, $key, $change['new'] );
+			$this->trigger_update_cache_hook( $change['type'], $object_id, $key, $change['previous'] );
 		}
 	}
 
