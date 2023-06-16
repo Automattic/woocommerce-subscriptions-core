@@ -246,7 +246,7 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 	 *
 	 * @dataProvider provider_relation_type
 	 */
-	public function test_cache_updates_after_related_object_is_deleted_foo( $relation_type ) {
+	public function test_cache_updates_after_related_object_is_deleted_one_to_many( $relation_type ) {
 		$subscription       = WCS_Helper_Subscription::create_subscription();
 		$order_to_delete    = WCS_Helper_Subscription::create_order();
 		$order_id_to_delete = $order_to_delete->get_id();
