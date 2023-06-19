@@ -322,7 +322,7 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 			// Fill in the stubbed cached meta
 			array_unshift( $related_order_ids, $order->get_id() );
 			if ( $existing_meta_id !== null ) {
-				$subscription_data_store->instance->update_meta(
+				$subscription_data_store->update_meta(
 					$subscription,
 					(object) [
 						'id'    => $existing_meta_id,
@@ -331,7 +331,7 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 					]
 				);
 			} else {
-				$subscription_data_store->instance->add_meta(
+				$subscription_data_store->add_meta(
 					$subscription,
 					(object) [
 						'key'   => $relationship_cache_meta_key,
