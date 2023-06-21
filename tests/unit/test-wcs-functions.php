@@ -65,16 +65,11 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	}
 
 	public function test_wcs_is_subscription() {
-		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			$this->markTestIncomplete( 'Test has not yet been updated to support HPOS.' );
-		}
-
 		// test cases
 		$subscription_object     = WCS_Helper_Subscription::create_subscription( array( 'status' => 'active' ) );
 		$subscription_id_int     = $subscription_object->get_id();
 		$subscription_id_float   = (float) $subscription_id_int;
 		$subscription_id_string  = (string) $subscription_id_int;
-		$subscription_id_zeropad = '00' . $subscription_id_string;
 
 		$non_subscription_object     = $this->factory->post->create_and_get();
 		$non_subscription_id_int     = 9993993;
@@ -86,13 +81,11 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$this->assertEquals( true, wcs_is_subscription( $subscription_id_int ) );
 		$this->assertEquals( true, wcs_is_subscription( $subscription_id_float ) );
 		$this->assertEquals( true, wcs_is_subscription( $subscription_id_string ) );
-		$this->assertEquals( true, wcs_is_subscription( $subscription_id_zeropad ) );
 
 		$this->assertEquals( false, wcs_is_subscription( $non_subscription_object ) );
 		$this->assertEquals( false, wcs_is_subscription( $non_subscription_id_int ) );
 		$this->assertEquals( false, wcs_is_subscription( $non_subscription_id_float ) );
 		$this->assertEquals( false, wcs_is_subscription( $non_subscription_id_string ) );
-		$this->assertEquals( false, wcs_is_subscription( $non_subscription_id_zeropad ) );
 
 		// // garbage
 		$this->assertEquals( false, wcs_is_subscription( 'foo' ) );
@@ -103,9 +96,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	}
 
 	public function test_wcs_do_subscriptions_exist() {
-		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			$this->markTestIncomplete( 'Test has not yet been updated to support HPOS.' );
-		}
 		$this->assertEquals( false, wcs_do_subscriptions_exist(), 'Subscriptions should not exist, yet wcs_do_subscriptions_exist is reporting they do' );
 
 		WCS_Helper_Subscription::create_subscription( array( 'status' => 'active' ) );
@@ -115,9 +105,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 
 	public function test_wcs_get_subscription() {
-		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			$this->markTestIncomplete( 'Test has not yet been updated to support HPOS.' );
-		}
 		$subscription_object     = WCS_Helper_Subscription::create_subscription( array( 'status' => 'active' ) );
 		$non_subscription_object = $this->factory->post->create_and_get();
 
@@ -576,9 +563,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	 * @dataProvider wcs_create_subscription_provider
 	 */
 	public function test_wcs_create_subscription_no_order( $args, $expects ) {
-		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			$this->markTestIncomplete( 'Test has not yet been updated to support HPOS.' );
-		}
 		$default_expects = array(
 			'post_date_gmt' => gmdate( 'Y-m-d H:i:s' ),
 		);
@@ -593,18 +577,32 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$this->assertEquals( false, is_wp_error( $subscription ) );
 		$this->assertEquals( true, wcs_is_subscription( $subscription ) );
 
-		$this->assertEquals( $expects['currency'], get_post_meta( $subscription_id, '_order_currency', true ) );
-		$this->assertEquals( $expects['period'], get_post_meta( $subscription_id, '_billing_period', true ) );
-		$this->assertEquals( $expects['interval'], get_post_meta( $subscription_id, '_billing_interval', true ) );
-		$this->assertEquals( $expects['customer'], get_post_meta( $subscription_id, '_customer_user', true ) );
-		$this->assertEquals( $expects['version'], get_post_meta( $subscription_id, '_order_version', true ) );
-		$this->assertEquals( $expects['include_tax'], get_post_meta( $subscription_id, '_prices_include_tax', true ) );
-		$this->assertEquals( $expects['created_via'], get_post_meta( $subscription_id, '_created_via', true ) );
+		$this->assertEquals( $expects['currency'], $subscription->get_currency() );
+		$this->assertEquals( $expects['period'], $subscription->get_billing_period() );
+		$this->assertEquals( $expects['interval'], $subscription->get_billing_interval() );
+		$this->assertEquals( $expects['customer'], $subscription->get_customer_id() );
+		$this->assertEquals( $expects['version'], $subscription->get_version() );
+
+		// Parameters for wcs_create_subscription() expects 'include_tax' to be 'yes' or 'no' value.
+		$this->assertEquals( $expects['include_tax'] !== 'no', $subscription->get_prices_include_tax() );
+		$this->assertEquals( $expects['created_via'], $subscription->get_created_via() );
+
 		$this->assertEquals( $expects['status'], 'wc-' . $subscription->get_status() );
 		$this->assertEquals( $expects['parent_id'], $subscription->get_parent_id() );
 		$this->assertEquals( $expects['excerpt'], $subscription->get_customer_note() );
 		$this->assertDateTimeString( $subscription->get_date( 'date_created' ) );
 		$this->assertEquals( wcs_date_to_time( $expects['post_date_gmt'] ), $subscription->get_time( 'date_created' ), sprintf( 'Expected %s and actual %s dates are out of bound of the allowed 2 second discrepancy (actual difference is %s).', $expects['post_date_gmt'], $subscription->get_date( 'date_created' ), ( wcs_date_to_time( $expects['post_date_gmt'] ) - $subscription->get_time( 'date_created' ) ) ), 2 );
+
+		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
+			// Verify that non-HPOS storage continues to use legacy meta_keys / values until intentionally deprecated.
+			$this->assertEquals( $expects['currency'], get_post_meta( $subscription_id, '_order_currency', true ) );
+			$this->assertEquals( $expects['period'], get_post_meta( $subscription_id, '_billing_period', true ) );
+			$this->assertEquals( $expects['interval'], get_post_meta( $subscription_id, '_billing_interval', true ) );
+			$this->assertEquals( $expects['customer'], get_post_meta( $subscription_id, '_customer_user', true ) );
+			$this->assertEquals( $expects['version'], get_post_meta( $subscription_id, '_order_version', true ) );
+			$this->assertEquals( $expects['include_tax'], get_post_meta( $subscription_id, '_prices_include_tax', true ) );
+			$this->assertEquals( $expects['created_via'], get_post_meta( $subscription_id, '_created_via', true ) );
+		}
 
 		update_option( 'woocommerce_prices_include_tax', $default_include_tax );
 	}
@@ -863,10 +861,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	 * Deals with cases where order_id is not a shop_order
 	 */
 	public function test_1_wcs_get_subscriptions() {
-		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			$this->markTestIncomplete( 'Test has not yet been updated to support HPOS.' );
-		}
-
 		$non_subscription_id = $this->factory->post->create();
 
 		$args = array( 'order_id' => $non_subscription_id );

@@ -448,9 +448,10 @@ class WCS_Post_Meta_Cache_Manager_Test extends WP_UnitTestCase {
 	 */
 	public function test_post_untrashed( $expected_to_run, $post_id, $meta_key, $meta_value ) {
 
-		// We don't need to test meta keys outside of the known keys here
 		if ( ! in_array( $meta_key, $this->meta_keys, true ) ) {
-			$this->markTestSkipped( 'Test not required - unknown key' );
+			// We don't need to test meta keys outside of the known keys here
+			$this->expectNotToPerformAssertions();
+			return;
 		}
 
 		$cache_manager = $this->get_mock_cache_manager( $post_id );
@@ -496,9 +497,10 @@ class WCS_Post_Meta_Cache_Manager_Test extends WP_UnitTestCase {
 	 */
 	public function test_post_deleted( $expected_to_run, $post_id, $meta_key, $meta_value ) {
 
-		// We don't need to test meta keys outside of the known keys here
 		if ( ! in_array( $meta_key, $this->meta_keys, true ) ) {
-			$this->markTestSkipped( 'Test not required - unknown key' );
+			// We don't need to test meta keys outside of the known keys here
+			$this->expectNotToPerformAssertions();
+			return;
 		}
 
 		$cache_manager = $this->get_mock_cache_manager( $post_id );

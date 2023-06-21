@@ -62,7 +62,9 @@ class WCS_Deprecated_Functions_Test extends WP_UnitTestCase {
 	 */
 	public function test_wcs_get_subscription_id_from_key() {
 		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			$this->markTestSkipped( 'Deprecated function wcs_get_subscription_from_key does not work with HPOS enabled.' );
+			// Deprecated function wcs_get_subscription_from_key does not work with HPOS enabled.
+			$this->expectNotToPerformAssertions();
+			return;
 		}
 		$product = WCS_Helper_Product::create_simple_subscription_product();
 
@@ -100,7 +102,9 @@ class WCS_Deprecated_Functions_Test extends WP_UnitTestCase {
 	 */
 	public function test_wcs_get_subscription_from_key() {
 		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			$this->markTestSkipped( 'Deprecated function wcs_get_subscription_from_key does not work with HPOS enabled.' );
+			// Deprecated function wcs_get_subscription_from_key does not work with HPOS enabled.
+			$this->expectNotToPerformAssertions();
+			return;
 		}
 		$product = WCS_Helper_Product::create_simple_subscription_product();
 
