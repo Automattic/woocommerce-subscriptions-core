@@ -245,6 +245,34 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 	}
 
 	/**
+	 * Make sure a related order is removed from the cached relationship array after deletion.
+	 *
+	 * @dataProvider provider_relation_type
+	 */
+	public function test_cache_updates_after_related_object_is_deleted_one_to_many( $relation_type ) {
+		$subscription       = WCS_Helper_Subscription::create_subscription();
+		$order_to_delete    = WCS_Helper_Subscription::create_order();
+		$order_id_to_delete = $order_to_delete->get_id();
+		$order_to_keep      = WCS_Helper_Subscription::create_order();
+		$order_id_to_keep   = $order_to_keep->get_id();
+
+		self::$cache_store->add_relation( $order_to_delete, $subscription, $relation_type );
+		self::$cache_store->add_relation( $order_to_keep, $subscription, $relation_type );
+
+		// Verify that the related orders are correct and cached.
+		$related_order_ids = self::$cache_store->get_related_order_ids( $subscription, $relation_type );
+		$this->assertContains( $order_id_to_keep, $related_order_ids );
+		$this->assertContains( $order_id_to_delete, $related_order_ids );
+
+		$order_to_delete->delete( true );
+
+		// Verify that the deleted order was removed from the cached relationship
+		$related_order_ids = self::$cache_store->get_related_order_ids( $subscription, $relation_type );
+		$this->assertContains( $order_id_to_keep, $related_order_ids );
+		$this->assertNotContains( $order_id_to_delete, $related_order_ids );
+	}
+
+	/**
 	 * Check the related renewal order cache value is set when creating a subscription, becuase it should be set by
 	 * WCS_Related_Order_Store_Cached_CPT::set_empty_renewal_order_cache()
 	 */
