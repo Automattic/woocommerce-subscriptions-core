@@ -1578,8 +1578,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 		// For pending status, the renewal order checks are by passed anyway as parent::needs_payment() evaluates true
 		if ( 'pending' === $status ) {
-			$this->expectNotToPerformAssertions();
-			return;
+			$this->markTestSkipped( 'Test not required' );
 		}
 
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => $status ] );
@@ -1947,8 +1946,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_cancel_order_data_provider( $status ) {
 		if ( in_array( $status, [ 'cancelled', 'expired' ], true ) ) {
 			// Test not required for these statuses.
-			$this->expectNotToPerformAssertions();
-			return;
+			$this->markTestSkipped( 'Test not required' );
 		}
 
 		$subscription = WCS_Helper_Subscription::create_subscription(
@@ -2416,8 +2414,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 		if ( in_array( $status, [ 'expired', 'pending-cancel', 'cancelled' ], true ) ) {
 			// Test not required for these statuses.
-			$this->expectNotToPerformAssertions();
-			return;
+			$this->markTestSkipped( 'Test not required' );
 		}
 
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => $status ] );

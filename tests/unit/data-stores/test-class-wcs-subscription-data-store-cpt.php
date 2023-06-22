@@ -12,9 +12,7 @@ class WCS_Subscription_Data_Store_CPT_Test extends WP_UnitTestCase {
 
 	public function test_new_subscription_data_hook() {
 		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			// Filter 'woocommerce_new_subscription_data' does not run for HPOS.
-			$this->expectNotToPerformAssertions();
-			return;
+			$this->markTestSkipped( "Filter 'woocommerce_new_subscription_data' does not run for HPOS." );
 		}
 		$hook_callback = function ( $args ) {
 			$args['post_title'] = 'Test Title';
