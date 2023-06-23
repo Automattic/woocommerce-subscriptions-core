@@ -349,7 +349,7 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 		if ( ! in_array( $order->get_id(), $related_order_ids, true ) ) {
 			// Fill in the stubbed cached meta
 			array_unshift( $related_order_ids, $order->get_id() );
-			if ( $existing_meta_id !== null ) {
+			if ( null !== $existing_meta_id ) {
 				$subscription_data_store->update_meta(
 					$subscription,
 					(object) [

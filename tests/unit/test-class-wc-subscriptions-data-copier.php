@@ -29,10 +29,10 @@ class WC_Subscriptions_Data_Copier_Test extends WP_UnitTestCase {
 	 */
 	public function test_copy_data() {
 		$expected_customer_id = 1230;
-		$order = WC_Helper_Order::create_order($expected_customer_id);
+		$order                = WC_Helper_Order::create_order( $expected_customer_id );
 
 		$expected_order_meta = [
-			'_custom_meta' => 'test meta value',
+			'_custom_meta'       => 'test meta value',
 			'_custom_meta_array' => [ 'an' => 'array' ],
 		];
 
@@ -42,8 +42,8 @@ class WC_Subscriptions_Data_Copier_Test extends WP_UnitTestCase {
 		$order->save();
 
 		$subscription = $this->getMockBuilder( WC_Subscription::class )
-		                     ->disableOriginalConstructor()
-		                     ->getMock();
+			->disableOriginalConstructor()
+			->getMock();
 
 		$subscription
 			->expects( $this->once() )
@@ -84,8 +84,7 @@ class WC_Subscriptions_Data_Copier_Test extends WP_UnitTestCase {
 		$subscription
 			->expects( $this->atLeast( count( $expected_order_meta ) ) )
 			->method( 'update_meta_data' )
-			->will( $this->returnCallback( $update_meta_callback )
-			);
+			->will( $this->returnCallback( $update_meta_callback ) );
 
 		$copier = new WC_Subscriptions_Data_Copier( $order, $subscription, 'subscription' );
 		$copier->copy_data();
@@ -114,8 +113,8 @@ class WC_Subscriptions_Data_Copier_Test extends WP_UnitTestCase {
 		$order->save();
 
 		$subscription = $this->getMockBuilder( WC_Subscription::class )
-		                     ->disableOriginalConstructor()
-		                     ->getMock();
+			->disableOriginalConstructor()
+			->getMock();
 
 		// Mock a third-party hooking onto the deprecated filter to remove their meta.
 		add_filter(
@@ -158,8 +157,7 @@ class WC_Subscriptions_Data_Copier_Test extends WP_UnitTestCase {
 
 		$subscription
 			->method( 'update_meta_data' )
-			->will( $this->returnCallback( $update_meta_callback )
-			);
+			->will( $this->returnCallback( $update_meta_callback ) );
 
 		$copier = new WC_Subscriptions_Data_Copier( $order, $subscription, 'subscription' );
 		$copier->copy_data();

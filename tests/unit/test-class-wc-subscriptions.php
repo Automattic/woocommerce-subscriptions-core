@@ -1198,8 +1198,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 *
 	 */
 	public function test_set_suspension_count() {
-		$subscription = WCS_Helper_Subscription::create_subscription();
-		$expected_suspensions  = 10;
+		$subscription         = WCS_Helper_Subscription::create_subscription();
+		$expected_suspensions = 10;
 
 		$this->assertNotEquals( $expected_suspensions, $subscription->get_suspension_count() );
 		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {

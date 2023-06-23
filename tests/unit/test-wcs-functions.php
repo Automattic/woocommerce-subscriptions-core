@@ -66,10 +66,10 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 	public function test_wcs_is_subscription() {
 		// test cases
-		$subscription_object     = WCS_Helper_Subscription::create_subscription( array( 'status' => 'active' ) );
-		$subscription_id_int     = $subscription_object->get_id();
-		$subscription_id_float   = (float) $subscription_id_int;
-		$subscription_id_string  = (string) $subscription_id_int;
+		$subscription_object    = WCS_Helper_Subscription::create_subscription( array( 'status' => 'active' ) );
+		$subscription_id_int    = $subscription_object->get_id();
+		$subscription_id_float  = (float) $subscription_id_int;
+		$subscription_id_string = (string) $subscription_id_int;
 
 		$non_subscription_object     = $this->factory->post->create_and_get();
 		$non_subscription_id_int     = 9993993;
@@ -584,7 +584,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$this->assertEquals( $expects['version'], $subscription->get_version() );
 
 		// Parameters for wcs_create_subscription() expects 'include_tax' to be 'yes' or 'no' value.
-		$this->assertEquals( $expects['include_tax'] !== 'no', $subscription->get_prices_include_tax() );
+		$this->assertEquals( 'no' !== $expects['include_tax'], $subscription->get_prices_include_tax() );
 		$this->assertEquals( $expects['created_via'], $subscription->get_created_via() );
 
 		$this->assertEquals( $expects['status'], 'wc-' . $subscription->get_status() );
