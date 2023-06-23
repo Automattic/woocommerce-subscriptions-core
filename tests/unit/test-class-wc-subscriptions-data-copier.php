@@ -10,8 +10,6 @@ class WC_Subscriptions_Data_Copier_Test extends WP_UnitTestCase {
 
 	public $copier;
 
-	private $original_db;
-
 	public function set_up() {
 		parent::set_up();
 
@@ -24,155 +22,149 @@ class WC_Subscriptions_Data_Copier_Test extends WP_UnitTestCase {
 									->getMock();
 
 		$this->copier = new WC_Subscriptions_Data_Copier( $this->mock_order, $this->mock_subscription, 'subscription' );
-
-		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
-			// @todo Avoid the error caused by mocking the DB in mock_meta_database_query_results. This method of mocking should be replaced.
-			update_option( 'woocommerce_feature_custom_order_tables_enabled', 'no' );
-		}
-	}
-
-	public function tear_down() {
-		parent::tear_down();
-
-		// Restore the database to its original state.
-		if ( $this->original_db ) {
-			$GLOBALS['wpdb'] = $this->original_db;
-		}
 	}
 
 	/**
 	 * Test WC_Subscription_Data_Copier::copy_data() sets the data correctly via object setters.
 	 */
 	public function test_copy_data() {
-		// Mock order data
-		$order_meta_data   = [];
-		$order_meta_data[] = [
-			'meta_key'   => '_billing_first_name', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-			'meta_value' => 'John', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-		];
-		$order_meta_data[] = [
-			'meta_key'   => '_billing_last_name', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-			'meta_value' => 'Doe', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-		];
-		$order_meta_data[] = [
-			'meta_key'   => '_customer_user', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-			'meta_value' => '1230', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-		];
-		$order_meta_data[] = [
-			'meta_key'   => '_prices_include_tax', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-			'meta_value' => 'yes', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-		];
-		$order_meta_data[] = [
-			'meta_key'   => '_order_currency', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-			'meta_value' => 'USD', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-		];
-		$order_meta_data[] = [
-			'meta_key'   => '_custom_meta', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-			'meta_value' => 'test meta value', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-		];
-		// Test the serialized data is set as meta as an array.
-		$order_meta_data[] = [
-			'meta_key'   => '_custom_meta_array', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-			'meta_value' => maybe_serialize( [ 'an' => 'array' ] ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+		$expected_customer_id = 1230;
+		$order                = WC_Helper_Order::create_order( $expected_customer_id );
+
+		$expected_order_meta = [
+			'_custom_meta'       => 'test meta value',
+			'_custom_meta_array' => [ 'an' => 'array' ],
 		];
 
-		// Mock the direct database query to return the order meta data.
-		$this->mock_meta_database_query_results( $order_meta_data );
+		foreach ( $expected_order_meta as $meta_key => $meta_value ) {
+			$order->add_meta_data( $meta_key, $meta_value );
+		}
+		$order->save();
 
-		// Setup expectations for the setters to be called on the mock subscription (the "to" object).
-		$this->mock_subscription
+		$subscription = $this->getMockBuilder( WC_Subscription::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$subscription
 			->expects( $this->once() )
 			->method( 'set_billing_first_name' )
-			->with( 'John' );
+			->with( $order->get_billing_first_name() );
 
-		$this->mock_subscription
+		$subscription
 			->expects( $this->once() )
 			->method( 'set_billing_last_name' )
-			->with( 'Doe' );
+			->with( $order->get_billing_last_name() );
 
-		$this->mock_subscription
+		$subscription
 			->expects( $this->once() )
 			->method( 'set_customer_id' )
-			->with( '1230' );
+			->with( $expected_customer_id );
 
-		$this->mock_subscription
+		$subscription
 			->expects( $this->once() )
 			->method( 'set_prices_include_tax' )
-			->with( true );
+			->with( $order->get_prices_include_tax() );
 
-		$this->mock_subscription
+		$subscription
 			->expects( $this->once() )
 			->method( 'set_currency' )
-			->with( 'USD' );
+			->with( $order->get_currency() );
 
-		$this->mock_subscription
-			->expects( $this->exactly( 2 ) )
+		// Callback used to verify that update_meta is called for expected meta keys.
+		$set_meta_keys        = [];
+		$update_meta_callback = function ( $meta_key, $meta_value ) use ( $expected_order_meta, &$set_meta_keys ) {
+			if ( key_exists( $meta_key, $expected_order_meta ) ) {
+				$this->assertEquals( $expected_order_meta[ $meta_key ], $meta_value );
+				$set_meta_keys[ $meta_key ] = true;
+			}
+
+			return true;
+		};
+
+		$subscription
+			->expects( $this->atLeast( count( $expected_order_meta ) ) )
 			->method( 'update_meta_data' )
-			->withConsecutive(
-				[ '_custom_meta', 'test meta value' ],
-				[ '_custom_meta_array', [ 'an' => 'array' ] ] // <-- Test that the serialized data from the database is set as an array.
-			);
+			->will( $this->returnCallback( $update_meta_callback ) );
 
-		$this->copier->copy_data();
+		$copier = new WC_Subscriptions_Data_Copier( $order, $subscription, 'subscription' );
+		$copier->copy_data();
+
+		// Verify that all update_meta was called for the expected meta keys.
+		$uncalled_set_meta_keys = array_keys( array_diff_key( $expected_order_meta, $set_meta_keys ) );
+		$this->assertEmpty( $uncalled_set_meta_keys );
+
 	}
 
 	/**
 	 * @expectedDeprecated wcs_subscription_meta
 	 */
 	public function test_deprecated_wcs_subscription_meta() {
-		// Mock order data
-		$order_meta_data   = [];
-		$order_meta_data[] = [
-			'meta_key'   => '_billing_first_name', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-			'meta_value' => 'John', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-		];
-		$order_meta_data[] = [
-			'meta_key'   => '_billing_last_name', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-			'meta_value' => 'Doe', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-		];
-		$order_meta_data[] = [
-			'meta_key'   => '_3pd_custom_meta', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-			'meta_value' => 'doodacky', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-		];
-		$order_meta_data[] = [
-			'meta_key'   => '_3pd_custom_meta_too', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-			'meta_value' => 'doovalacky', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+		$expected_customer_id = 1230;
+		$order                = WC_Helper_Order::create_order( $expected_customer_id );
+
+		$order_meta = [
+			'_3pd_custom_meta'     => 'doodacky',
+			'_3pd_custom_meta_too' => 'doovalacky',
 		];
 
-		// Mock the direct database query to return the order meta data.
-		$this->mock_meta_database_query_results( $order_meta_data );
+		foreach ( $order_meta as $meta_key => $meta_value ) {
+			$order->add_meta_data( $meta_key, $meta_value );
+		}
+		$order->save();
+
+		$subscription = $this->getMockBuilder( WC_Subscription::class )
+			->disableOriginalConstructor()
+			->getMock();
 
 		// Mock a third-party hooking onto the deprecated filter to remove their meta.
 		add_filter(
 			'wcs_subscription_meta',
-			function( $data ) {
+			function ( $data ) {
 				foreach ( $data as $index => $meta_data ) {
 					if ( '_3pd_custom_meta' === $meta_data['meta_key'] ) {
 						unset( $data[ $index ] );
 					}
 				}
+
 				return $data;
 			}
 		);
 
 		// Setup expectations for the setters to be called on the mock subscription (the "to" object).
-		$this->mock_subscription
+		$subscription
 			->expects( $this->once() )
 			->method( 'set_billing_first_name' )
-			->with( 'John' );
+			->with( $order->get_billing_first_name() );
 
-		$this->mock_subscription
+		$subscription
 			->expects( $this->once() )
 			->method( 'set_billing_last_name' )
-			->with( 'Doe' );
+			->with( $order->get_billing_last_name() );
 
-		// Only expect the update_meta_data to be called once for the custom meta data that remains.
-		$this->mock_subscription
-			->expects( $this->once() )
+		// Expect the update_meta_data to be called only for the non-deprecated meta key.
+		$set_meta_keys                             = [];
+		$expected_order_meta                       = [ '_3pd_custom_meta_too' => 'doovalacky' ];
+		$expected_deprecated_order_meta_not_called = [ '_3pd_custom_meta' ];
+		$update_meta_callback                      = function ( $meta_key, $meta_value ) use ( $expected_order_meta, $expected_deprecated_order_meta_not_called, &$set_meta_keys ) {
+			$this->assertNotContains( $meta_key, $expected_deprecated_order_meta_not_called, "::update_meta() with the meta_key of $meta_key should not have been called." );
+			if ( key_exists( $meta_key, $expected_order_meta ) ) {
+				$this->assertEquals( $expected_order_meta[ $meta_key ], $meta_value );
+				$set_meta_keys[ $meta_key ] = true;
+			}
+
+			return true;
+		};
+
+		$subscription
 			->method( 'update_meta_data' )
-			->with( '_3pd_custom_meta_too', 'doovalacky' );
+			->will( $this->returnCallback( $update_meta_callback ) );
 
-		$this->copier->copy_data();
+		$copier = new WC_Subscriptions_Data_Copier( $order, $subscription, 'subscription' );
+		$copier->copy_data();
+
+		// Verify that all update_meta was called for the non-deprecated meta key.
+		$uncalled_set_meta_keys = array_keys( array_diff_key( $expected_order_meta, $set_meta_keys ) );
+		$this->assertEmpty( $uncalled_set_meta_keys );
 	}
 
 	/**
@@ -268,21 +260,5 @@ class WC_Subscriptions_Data_Copier_Test extends WP_UnitTestCase {
 		foreach ( $excluded_data as $key => $value ) {
 			$this->assertArrayNotHasKey( $key, $data );
 		}
-	}
-
-	private function mock_meta_database_query_results( $return, $function = 'get_results' ) {
-		$mock_db = $this->getMockBuilder( wpdb::class )
-			->disableOriginalConstructor()
-			->getMock();
-
-		$mock_db->expects( $this->any() )
-			->method( $function )
-			->will( $this->returnValue( $return ) );
-
-		// Keep a record of the wpdb instance so we can restore it later.
-		$this->original_db = $GLOBALS['wpdb'];
-
-		// Override the global $wpdb object with our mock.
-		$GLOBALS['wpdb'] = $mock_db;
 	}
 }

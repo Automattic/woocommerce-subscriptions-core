@@ -981,17 +981,10 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_failed_payment_count_one() {
-		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			$this->markTestIncomplete( 'Test has not yet been updated to support HPOS.' );
-		}
-
 		$order = WCS_Helper_Subscription::create_order();
-		wp_update_post(
-			[
-				'ID'          => wcs_get_objects_property( $order, 'id' ),
-				'post_status' => 'wc-failed',
-			]
-		);
+
+		$order->set_status( 'wc-failed' );
+		$order->save();
 
 		foreach ( [ 'active', 'on-hold', 'pending' ] as $status ) {
 
@@ -1003,8 +996,6 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 			$this->assertEquals( $expected_count, $failed_payments );
 		}
-
-		// use this approach if $order->update_status( 'failed' ) creates issues
 	}
 
 	/**
@@ -1014,21 +1005,13 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_failed_payment_count_many() {
-		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			$this->markTestIncomplete( 'Test has not yet been updated to support HPOS.' );
-		}
-
 		$orders = [];
 
 		for ( $i = 0; $i < 20; $i++ ) {
 
 			$order = WCS_Helper_Subscription::create_order();
-			wp_update_post(
-				[
-					'ID'          => wcs_get_objects_property( $order, 'id' ),
-					'post_status' => 'wc-failed',
-				]
-			);
+			$order->update_status( 'wc-failed' );
+			$order->save();
 			$orders[] = $order;
 		}
 
@@ -1215,19 +1198,20 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 *
 	 */
 	public function test_set_suspension_count() {
-		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			$this->markTestIncomplete( 'Test has not yet been updated to support HPOS.' );
+		$subscription         = WCS_Helper_Subscription::create_subscription();
+		$expected_suspensions = 10;
+
+		$this->assertNotEquals( $expected_suspensions, $subscription->get_suspension_count() );
+		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
+			$this->assertNotEquals( $expected_suspensions, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
 		}
-		$subscription = WCS_Helper_Subscription::create_subscription();
-		$suspensions  = 10;
 
-		$this->assertNotEquals( $suspensions, $subscription->get_suspension_count() );
-		$this->assertNotEquals( $suspensions, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
-
-		$subscription->set_suspension_count( $suspensions );
+		$subscription->set_suspension_count( $expected_suspensions );
 		$subscription->save();
-		$this->assertEquals( $suspensions, $subscription->get_suspension_count() );
-		$this->assertEquals( $suspensions, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+		$this->assertEquals( $expected_suspensions, $subscription->get_suspension_count() );
+		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
+			$this->assertEquals( $expected_suspensions, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+		}
 	}
 
 	/**
@@ -1595,7 +1579,6 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		// For pending status, the renewal order checks are by passed anyway as parent::needs_payment() evaluates true
 		if ( 'pending' === $status ) {
 			$this->markTestSkipped( 'Test not required' );
-			return;
 		}
 
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => $status ] );
@@ -1675,27 +1658,15 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Tests that subscriptions loaded from the database with draft or auto-draft status are treated as pending.
 	 */
 	public function test_draft_subscription_statuses() {
-		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			$this->markTestIncomplete( 'Test has not yet been updated to support HPOS.' );
-		}
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
-
-		wp_update_post(
-			[
-				'ID'          => $subscription->get_id(),
-				'post_status' => 'draft',
-			]
-		);
+		$subscription->set_status( 'draft' );
+		$subscription->save();
 
 		// Confirm that a draft subscription when loaded has a pending status.
 		$this->assertEquals( 'pending', wcs_get_subscription( $subscription->get_id() )->get_status() );
 
-		wp_update_post(
-			[
-				'ID'          => $subscription->get_id(),
-				'post_status' => 'auto-draft',
-			]
-		);
+		$subscription->set_status( 'auto-draft' );
+		$subscription->save();
 
 		// Confirm that a draft subscription when loaded has a pending status.
 		$this->assertEquals( 'pending', wcs_get_subscription( $subscription->get_id() )->get_status() );
@@ -1974,6 +1945,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public function test_cancel_order_data_provider( $status ) {
 		if ( in_array( $status, [ 'cancelled', 'expired' ], true ) ) {
+			// Test not required for these statuses.
 			$this->markTestSkipped( 'Test not required' );
 		}
 
@@ -2441,6 +2413,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_payment_failed_statuses( $status ) {
 
 		if ( in_array( $status, [ 'expired', 'pending-cancel', 'cancelled' ], true ) ) {
+			// Test not required for these statuses.
 			$this->markTestSkipped( 'Test not required' );
 		}
 
