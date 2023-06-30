@@ -1050,7 +1050,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$this->assertArrayNotHasKey( $subscription_7->get_id(), $subscriptions );
 		unset( $subscriptions );
 
-		// Rubbish
+		// An invalid status is ignored and does not apply as a clause to the query.
 		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'rubbish' ) );
 
 		$this->assertIsArray( $subscriptions );
@@ -1063,6 +1063,53 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$this->assertArrayHasKey( $subscription_6->get_id(), $subscriptions );
 		$this->assertArrayHasKey( $subscription_7->get_id(), $subscriptions );
 		$this->assertArrayHasKey( $subscription_8->get_id(), $subscriptions );
+		unset( $subscriptions );
+
+		// An invalid status is ignored and does not apply as a clause to the query.
+		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => [ 'rubbish' ] ) );
+
+		$this->assertIsArray( $subscriptions );
+		$this->assertEquals( 8, count( $subscriptions ) );
+		$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
+		$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions );
+		$this->assertArrayHasKey( $subscription_3->get_id(), $subscriptions );
+		$this->assertArrayHasKey( $subscription_4->get_id(), $subscriptions );
+		$this->assertArrayHasKey( $subscription_5->get_id(), $subscriptions );
+		$this->assertArrayHasKey( $subscription_6->get_id(), $subscriptions );
+		$this->assertArrayHasKey( $subscription_7->get_id(), $subscriptions );
+		$this->assertArrayHasKey( $subscription_8->get_id(), $subscriptions );
+
+		unset( $subscriptions );
+
+		// Multiple invalid stati are ignored and does not apply as a clause to the query.
+		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => [ 'rubbish', 'more-rubbish' ] ) );
+
+		$this->assertIsArray( $subscriptions );
+		$this->assertEquals( 8, count( $subscriptions ) );
+		$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
+		$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions );
+		$this->assertArrayHasKey( $subscription_3->get_id(), $subscriptions );
+		$this->assertArrayHasKey( $subscription_4->get_id(), $subscriptions );
+		$this->assertArrayHasKey( $subscription_5->get_id(), $subscriptions );
+		$this->assertArrayHasKey( $subscription_6->get_id(), $subscriptions );
+		$this->assertArrayHasKey( $subscription_7->get_id(), $subscriptions );
+		$this->assertArrayHasKey( $subscription_8->get_id(), $subscriptions );
+
+		unset( $subscriptions );
+
+		// An invalid status is ignored and does not apply as a clause to the query, while the valid status still applies.
+		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => ['rubbish', 'active'] ) );
+
+		$this->assertIsArray( $subscriptions );
+		$this->assertEquals( 1, count( $subscriptions ) );
+		$this->assertArrayHasKey( $subscription_5->get_id(), $subscriptions );
+		$this->assertArrayNotHasKey( $subscription_1->get_id(), $subscriptions );
+		$this->assertArrayNotHasKey( $subscription_2->get_id(), $subscriptions );
+		$this->assertArrayNotHasKey( $subscription_3->get_id(), $subscriptions );
+		$this->assertArrayNotHasKey( $subscription_4->get_id(), $subscriptions );
+		$this->assertArrayNotHasKey( $subscription_6->get_id(), $subscriptions );
+		$this->assertArrayNotHasKey( $subscription_7->get_id(), $subscriptions );
+		$this->assertArrayNotHasKey( $subscription_8->get_id(), $subscriptions );
 
 		unset( $subscriptions );
 
