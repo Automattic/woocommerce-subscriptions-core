@@ -444,9 +444,8 @@ function wcs_get_orders_with_meta_query( $args ) {
 			 * To mimic this in HPOS environments, we're simply setting the status to 'publish' so the end argument ends
 			 * up the same.
 			 */
-			$args['status'] = ['publish'];
+			$args['status'] = [ 'publish' ];
 		}
-
 	}
 
 	$results = wc_get_orders( $args );

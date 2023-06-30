@@ -1098,7 +1098,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		unset( $subscriptions );
 
 		// An invalid status is ignored and does not apply as a clause to the query, while the valid status still applies.
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => ['rubbish', 'active'] ) );
+		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => [ 'rubbish', 'active' ] ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
