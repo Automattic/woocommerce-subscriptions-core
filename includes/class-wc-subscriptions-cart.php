@@ -1150,6 +1150,7 @@ class WC_Subscriptions_Cart {
 
 				$package_rates_match = false;
 				if ( isset( $standard_packages[ $package_index ] ) ) {
+					// phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison
 					$package_rates_match = apply_filters( 'wcs_recurring_shipping_package_rates_match_standard_rates', $package['rates'] == $standard_packages[ $package_index ]['rates'], $package['rates'], $standard_packages[ $package_index ]['rates'], $recurring_cart_key );
 				}
 

@@ -136,18 +136,29 @@ class WCS_Related_Order_Store_CPT_Test extends WCS_Base_Related_Order_Store_Test
 	 * @dataProvider provider_relation_type
 	 */
 	public function test_add_relation( $relation_type ) {
+		$hpos_enabled = wcs_is_custom_order_tables_usage_enabled();
+
 		$subscription = WCS_Helper_Subscription::create_subscription();
 		$order        = WCS_Helper_Subscription::create_order();
 		$order_id     = wcs_get_objects_property( $order, 'id' );
 
 		self::$store->add_relation( $order, $subscription, $relation_type );
 
-		$this->assertEquals( $subscription->get_id(), get_post_meta( $order_id, $this->get_meta_key( $relation_type ), true ) );
+		$order->read_meta_data( true );
+		$this->assertEquals( $subscription->get_id(), $order->get_meta( $this->get_meta_key( $relation_type ) ) );
+		if ( ! $hpos_enabled ) {
+			$this->assertEquals( $subscription->get_id(), get_post_meta( $order_id, $this->get_meta_key( $relation_type ), true ) );
+		}
 
 		// Also make sure the same ID is not added more than once on subsequent calls
 		self::$store->add_relation( $order, $subscription, $relation_type );
-		$meta_values = get_post_meta( $order_id, $this->get_meta_key( $relation_type ) );
+		$order->read_meta_data( true );
+		$meta_values = $order->get_meta( $this->get_meta_key( $relation_type ), false );
 		$this->assertEquals( 1, count( $meta_values ) );
+		if ( ! $hpos_enabled ) {
+			$meta_values = get_post_meta( $order_id, $this->get_meta_key( $relation_type ) );
+			$this->assertEquals( 1, count( $meta_values ) );
+		}
 	}
 
 	/**
@@ -156,12 +167,10 @@ class WCS_Related_Order_Store_CPT_Test extends WCS_Base_Related_Order_Store_Test
 	 * @dataProvider provider_relation_type
 	 */
 	public function test_delete_relation( $relation_type ) {
-		$subscription_one   = WCS_Helper_Subscription::create_subscription();
-		$subscription_two   = WCS_Helper_Subscription::create_subscription();
-		$order_to_delete    = WCS_Helper_Subscription::create_order();
-		$order_id_to_delete = wcs_get_objects_property( $order_to_delete, 'id' );
-		$order_to_keep      = WCS_Helper_Subscription::create_order();
-		$order_id_to_keep   = wcs_get_objects_property( $order_to_keep, 'id' );
+		$subscription_one = WCS_Helper_Subscription::create_subscription();
+		$subscription_two = WCS_Helper_Subscription::create_subscription();
+		$order_to_delete  = WCS_Helper_Subscription::create_order();
+		$order_to_keep    = WCS_Helper_Subscription::create_order();
 
 		$persistent_relation_type = 'persistent_relation';
 
@@ -178,8 +187,10 @@ class WCS_Related_Order_Store_CPT_Test extends WCS_Base_Related_Order_Store_Test
 
 		// Make sure all relations are setup correctly
 		foreach ( [ $persistent_relation_type, $relation_type ] as $type ) {
-			foreach ( [ $order_id_to_delete, $order_id_to_keep ] as $order_id ) {
-				$related_subscriptions = get_post_meta( $order_id, $this->get_meta_key( $type ), false );
+			foreach ( [ $order_to_delete, $order_to_keep ] as $order ) {
+				$order->read_meta_data( true );
+				$related_subscriptions_meta_data = $order->get_meta( $this->get_meta_key( $type ), false );
+				$related_subscriptions           = array_column( $related_subscriptions_meta_data, 'value' );
 				$this->assertTrue( in_array( (string) $subscription_one->get_id(), $related_subscriptions, true ) );
 				$this->assertTrue( in_array( (string) $subscription_two->get_id(), $related_subscriptions, true ) );
 			}
@@ -188,20 +199,25 @@ class WCS_Related_Order_Store_CPT_Test extends WCS_Base_Related_Order_Store_Test
 		self::$store->delete_relation( $order_to_delete, $subscription_one, $relation_type );
 
 		// Make sure the specified relation was deleted
-		$order_to_delete_related_subscriptions = get_post_meta( $order_id_to_delete, $this->get_meta_key( $relation_type ), false );
+		$order_to_delete->read_meta_data( true );
+		$order_to_delete_related_subscriptions_metadata = $order_to_delete->get_meta( $this->get_meta_key( $relation_type ), false );
+		$order_to_delete_related_subscriptions          = array_column( $order_to_delete_related_subscriptions_metadata, 'value' );
 		$this->assertFalse( in_array( (string) $subscription_one->get_id(), $order_to_delete_related_subscriptions, true ) );
 
 		// But not the same relation on the same order for other subscriptions
 		$this->assertTrue( in_array( (string) $subscription_two->get_id(), $order_to_delete_related_subscriptions, true ) );
 
 		// And not the same relation for the same subscriptions for other orders
-		$order_to_keep_related_subscriptions = get_post_meta( $order_id_to_keep, $this->get_meta_key( $relation_type ), false );
+		$order_to_keep->read_meta_data( true );
+		$order_to_keep_related_subscriptions_metadata = $order_to_keep->get_meta( $this->get_meta_key( $relation_type ), false );
+		$order_to_keep_related_subscriptions          = array_column( $order_to_keep_related_subscriptions_metadata, 'value' );
 		$this->assertTrue( in_array( (string) $subscription_one->get_id(), $order_to_keep_related_subscriptions, true ) );
 		$this->assertTrue( in_array( (string) $subscription_two->get_id(), $order_to_keep_related_subscriptions, true ) );
 
 		// And not other relation types for the same subscriptions on the same order
-		$persistent_related_subscriptions = get_post_meta( $order_id_to_delete, $this->get_meta_key( $persistent_relation_type ), false );
-		$this->assertTrue( in_array( (string) $subscription_one->get_id(), $persistent_related_subscriptions, true ) );
+		$persistent_related_subscriptions_metadata = $order_to_delete->get_meta( $this->get_meta_key( $persistent_relation_type ), false );
+		$persistent_related_subscriptions          = array_column( $order_to_keep_related_subscriptions_metadata, 'value' );
+
 		$this->assertTrue( in_array( (string) $subscription_two->get_id(), $persistent_related_subscriptions, true ) );
 	}
 
@@ -233,48 +249,49 @@ class WCS_Related_Order_Store_CPT_Test extends WCS_Base_Related_Order_Store_Test
 
 		// Make sure all relations are setup correctly
 		foreach ( [ $persistent_relation_type, $relation_type ] as $type ) {
-			foreach ( [ $order_id_one, $order_id_two ] as $order_id ) {
-				$related_subscriptions = get_post_meta( $order_id, $this->get_meta_key( $type ), false );
-				$this->assertTrue( in_array( (string) $subscription_one->get_id(), $related_subscriptions, true ) );
-				$this->assertTrue( in_array( (string) $subscription_two->get_id(), $related_subscriptions, true ) );
+			foreach ( [ $order_one, $order_two ] as $order ) {
+				$related_subscriptions = array_column( $order->get_meta( $this->get_meta_key( $type ), false ), 'value' );
+				$this->assertTrue( in_array( $subscription_one->get_id(), $related_subscriptions, true ) );
+				$this->assertTrue( in_array( $subscription_two->get_id(), $related_subscriptions, true ) );
 			}
 		}
 
 		self::$store->delete_relations( $order_one, $relation_type );
 
 		// Make sure all of the specified relation from the specified order was deleted
-		$order_one_related_subscriptions = get_post_meta( $order_id_one, $this->get_meta_key( $relation_type ), false );
+		$order_one_related_subscriptions = array_column( $order_one->get_meta( $this->get_meta_key( $relation_type ), false ), 'value' );
 		$this->assertEquals( [], $order_one_related_subscriptions );
 
 		// But not the same relation for the same subscriptions for other orders
-		$order_two_related_subscriptions = get_post_meta( $order_id_two, $this->get_meta_key( $relation_type ), false );
-		$this->assertTrue( in_array( (string) $subscription_one->get_id(), $order_two_related_subscriptions, true ) );
-		$this->assertTrue( in_array( (string) $subscription_two->get_id(), $order_two_related_subscriptions, true ) );
+		$order_two_related_subscriptions = array_column( $order_two->get_meta( $this->get_meta_key( $relation_type ), false ), 'value' );
+		$this->assertTrue( in_array( $subscription_one->get_id(), $order_two_related_subscriptions, true ) );
+		$this->assertTrue( in_array( $subscription_two->get_id(), $order_two_related_subscriptions, true ) );
 
 		// And not other relation types for the same subscriptions on the same order
-		$persistent_related_subscriptions = get_post_meta( $order_id_one, $this->get_meta_key( $persistent_relation_type ), false );
-		$this->assertTrue( in_array( (string) $subscription_one->get_id(), $persistent_related_subscriptions, true ) );
-		$this->assertTrue( in_array( (string) $subscription_two->get_id(), $persistent_related_subscriptions, true ) );
+		$persistent_related_subscriptions = array_column( $order_one->get_meta( $this->get_meta_key( $persistent_relation_type ), false ), 'value' );
+		$this->assertTrue( in_array( $subscription_one->get_id(), $persistent_related_subscriptions, true ) );
+		$this->assertTrue( in_array( $subscription_two->get_id(), $persistent_related_subscriptions, true ) );
 	}
 
 	/**
-	 * Provide a method to set the relation directly to avoid a breakage of WCS_Related_Order_Store::add_relation_mock()
-	 * breaking tests that aren't primarily design to test add_relation_mock().
+	 * Provide a method to set the relation directly to avoid a breakage of WCS_Related_Order_Store::add_relation()
+	 * breaking tests that aren't primarily design to test add_relation().
 	 *
-	 * @param int|WC_Order $subscription A subscription to remove a linked order from.
-	 * @param int|WC_Order $order An order that may be linked with the subscription.
+	 * @param int|WC_Order $subscription The order to link with the subscription.
+	 * @param int|WC_Order $order The order or subscription to link the order to.
 	 * @param string $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
 	 */
-	private function add_relation_mock( $order_id, $subscription_id, $relation_type ) {
+	private function add_relation_mock( $order, $subscription_id, $relation_type ) {
 
-		if ( is_object( $order_id ) ) {
-			$order_id = wcs_get_objects_property( $order_id, 'id' );
+		if ( ! is_object( $order ) ) {
+			$order = wc_get_order( $order );
 		}
 
 		if ( is_object( $subscription_id ) ) {
 			$subscription_id = $subscription_id->get_id();
 		}
 
-		add_post_meta( $order_id, $this->get_meta_key( $relation_type ), $subscription_id, false );
+		$order->add_meta_data( $this->get_meta_key( $relation_type ), $subscription_id );
+		$order->save();
 	}
 }

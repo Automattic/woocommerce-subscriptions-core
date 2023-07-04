@@ -981,14 +981,10 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_failed_payment_count_one() {
-
 		$order = WCS_Helper_Subscription::create_order();
-		wp_update_post(
-			[
-				'ID'          => wcs_get_objects_property( $order, 'id' ),
-				'post_status' => 'wc-failed',
-			]
-		);
+
+		$order->set_status( 'wc-failed' );
+		$order->save();
 
 		foreach ( [ 'active', 'on-hold', 'pending' ] as $status ) {
 
@@ -1000,8 +996,6 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 			$this->assertEquals( $expected_count, $failed_payments );
 		}
-
-		// use this approach if $order->update_status( 'failed' ) creates issues
 	}
 
 	/**
@@ -1016,12 +1010,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		for ( $i = 0; $i < 20; $i++ ) {
 
 			$order = WCS_Helper_Subscription::create_order();
-			wp_update_post(
-				[
-					'ID'          => wcs_get_objects_property( $order, 'id' ),
-					'post_status' => 'wc-failed',
-				]
-			);
+			$order->update_status( 'wc-failed' );
+			$order->save();
 			$orders[] = $order;
 		}
 
@@ -1208,16 +1198,20 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 *
 	 */
 	public function test_set_suspension_count() {
-		$subscription = WCS_Helper_Subscription::create_subscription();
-		$suspensions  = 10;
+		$subscription         = WCS_Helper_Subscription::create_subscription();
+		$expected_suspensions = 10;
 
-		$this->assertNotEquals( $suspensions, $subscription->get_suspension_count() );
-		$this->assertNotEquals( $suspensions, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+		$this->assertNotEquals( $expected_suspensions, $subscription->get_suspension_count() );
+		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
+			$this->assertNotEquals( $expected_suspensions, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+		}
 
-		$subscription->set_suspension_count( $suspensions );
+		$subscription->set_suspension_count( $expected_suspensions );
 		$subscription->save();
-		$this->assertEquals( $suspensions, $subscription->get_suspension_count() );
-		$this->assertEquals( $suspensions, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+		$this->assertEquals( $expected_suspensions, $subscription->get_suspension_count() );
+		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
+			$this->assertEquals( $expected_suspensions, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+		}
 	}
 
 	/**
@@ -1585,7 +1579,6 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		// For pending status, the renewal order checks are by passed anyway as parent::needs_payment() evaluates true
 		if ( 'pending' === $status ) {
 			$this->markTestSkipped( 'Test not required' );
-			return;
 		}
 
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => $status ] );
@@ -1666,23 +1659,14 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public function test_draft_subscription_statuses() {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
-
-		wp_update_post(
-			[
-				'ID'          => $subscription->get_id(),
-				'post_status' => 'draft',
-			]
-		);
+		$subscription->set_status( 'draft' );
+		$subscription->save();
 
 		// Confirm that a draft subscription when loaded has a pending status.
 		$this->assertEquals( 'pending', wcs_get_subscription( $subscription->get_id() )->get_status() );
 
-		wp_update_post(
-			[
-				'ID'          => $subscription->get_id(),
-				'post_status' => 'auto-draft',
-			]
-		);
+		$subscription->set_status( 'auto-draft' );
+		$subscription->save();
 
 		// Confirm that a draft subscription when loaded has a pending status.
 		$this->assertEquals( 'pending', wcs_get_subscription( $subscription->get_id() )->get_status() );
@@ -1830,12 +1814,16 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 		$initial_order = WCS_Helper_Subscription::create_order();
 		$initial_order = self::set_paid_dates_on_order( $initial_order, '2014-07-07 10:10:10' );
+		$initial_order->save();
+
 		$subscription->set_parent_id( wcs_get_objects_property( $initial_order, 'id' ) );
+		$subscription->save();
 
 		$this->assertEquals( '2014-07-07 10:10:10', PHPUnit_Utils::call_method( $subscription, 'get_last_payment_date' ) );
 
 		$renewal_order = WCS_Helper_Subscription::create_renewal_order( $subscription );
 		$renewal_order = self::set_paid_dates_on_order( $renewal_order, '2015-07-07 12:12:12' );
+		$renewal_order->save();
 
 		$this->assertEquals( '2015-07-07 12:12:12', PHPUnit_Utils::call_method( $subscription, 'get_last_payment_date' ) );
 	}
@@ -1847,8 +1835,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public static function set_paid_dates_on_order( $order, $paid_date ) {
 
-		if ( is_callable( [ $order, 'set_date_create' ] ) ) {
-			$order->set_date_create( wcs_date_to_time( $paid_date ) );
+		if ( is_callable( [ $order, 'set_date_created' ] ) ) {
+			$order->set_date_created( wcs_date_to_time( $paid_date ) );
 		} else {
 			wp_update_post(
 				[
@@ -1957,6 +1945,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public function test_cancel_order_data_provider( $status ) {
 		if ( in_array( $status, [ 'cancelled', 'expired' ], true ) ) {
+			// Test not required for these statuses.
 			$this->markTestSkipped( 'Test not required' );
 		}
 
@@ -2424,6 +2413,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_payment_failed_statuses( $status ) {
 
 		if ( in_array( $status, [ 'expired', 'pending-cancel', 'cancelled' ], true ) ) {
+			// Test not required for these statuses.
 			$this->markTestSkipped( 'Test not required' );
 		}
 
@@ -2484,6 +2474,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_payment_complete() {
+		$hpos_enabled = wcs_is_custom_order_tables_usage_enabled();
 
 		$subscription = WCS_Helper_Subscription::create_subscription();
 		$order        = WCS_Helper_Subscription::create_order();
@@ -2494,7 +2485,9 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$subscription->set_suspension_count( 3 );
 		$subscription->save();
 		$this->assertEquals( 3, $subscription->get_suspension_count() );
-		$this->assertEquals( 3, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+		if ( ! $hpos_enabled ) {
+			$this->assertEquals( 3, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+		}
 
 		$subscription->payment_complete();
 		$subscription->save();
@@ -2502,7 +2495,9 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( 'active', $subscription->get_status() );
 		$this->assertEquals( 0, $subscription->get_suspension_count() );
-		$this->assertEquals( 0, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+		if ( ! $hpos_enabled ) {
+			$this->assertEquals( 0, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+		}
 		$this->assertThat(
 			$order->get_status(),
 			$this->logicalOr(

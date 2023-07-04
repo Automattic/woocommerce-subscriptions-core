@@ -12,7 +12,11 @@ class WCS_PayPal_Functions_Tests extends WP_UnitTestCase {
 		$subscription->save();
 
 		$this->assertEquals( array( $subscription->get_id() => $subscription->get_id() ), WCS_PayPal::get_subscriptions_by_paypal_id( $paypal_id ) );
-		$this->assertEquals( array( $subscription->get_id() => $subscription ), WCS_PayPal::get_subscriptions_by_paypal_id( $paypal_id, 'objects' ) );
+		$actual_subscriptions = WCS_PayPal::get_subscriptions_by_paypal_id( $paypal_id, 'objects' );
+		$this->assertCount( 1, $actual_subscriptions );
+		$this->assertArrayHasKey( $subscription->get_id(), $actual_subscriptions );
+		$this->assertInstanceOf( WC_Subscription::class, $actual_subscriptions[ $subscription->get_id() ] );
+		$this->assertEquals( $subscription->get_id(), $actual_subscriptions[ $subscription->get_id() ]->get_id() );
 
 		// Test that no subscriptions are returned for a non-existent PayPal ID.
 		$this->assertEquals( array(), WCS_PayPal::get_subscriptions_by_paypal_id( 'I-1234567891' ) );

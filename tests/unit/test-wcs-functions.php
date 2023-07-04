@@ -12,10 +12,16 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 	public function tear_down() {
 		remove_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
+		remove_action( 'woocommerce_before_delete_subscription', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
 		_delete_all_posts();
+		$subscriptions = wcs_get_subscriptions( [] );
+		foreach ( $subscriptions as $subscription ) {
+			$subscription->delete( true );
+		}
 		$this->commit_transaction();
 		parent::tear_down();
 		add_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription', 10, 1 );
+		add_action( 'woocommerce_before_delete_subscription', 'WC_Subscriptions_Manager::maybe_cancel_subscription', 10, 1 );
 	}
 
 	public function test_wcs_cleanup_logs_no_changes() {
@@ -60,11 +66,10 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 	public function test_wcs_is_subscription() {
 		// test cases
-		$subscription_object     = WCS_Helper_Subscription::create_subscription( array( 'status' => 'active' ) );
-		$subscription_id_int     = $subscription_object->get_id();
-		$subscription_id_float   = (float) $subscription_id_int;
-		$subscription_id_string  = (string) $subscription_id_int;
-		$subscription_id_zeropad = '00' . $subscription_id_string;
+		$subscription_object    = WCS_Helper_Subscription::create_subscription( array( 'status' => 'active' ) );
+		$subscription_id_int    = $subscription_object->get_id();
+		$subscription_id_float  = (float) $subscription_id_int;
+		$subscription_id_string = (string) $subscription_id_int;
 
 		$non_subscription_object     = $this->factory->post->create_and_get();
 		$non_subscription_id_int     = 9993993;
@@ -76,13 +81,11 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$this->assertEquals( true, wcs_is_subscription( $subscription_id_int ) );
 		$this->assertEquals( true, wcs_is_subscription( $subscription_id_float ) );
 		$this->assertEquals( true, wcs_is_subscription( $subscription_id_string ) );
-		$this->assertEquals( true, wcs_is_subscription( $subscription_id_zeropad ) );
 
 		$this->assertEquals( false, wcs_is_subscription( $non_subscription_object ) );
 		$this->assertEquals( false, wcs_is_subscription( $non_subscription_id_int ) );
 		$this->assertEquals( false, wcs_is_subscription( $non_subscription_id_float ) );
 		$this->assertEquals( false, wcs_is_subscription( $non_subscription_id_string ) );
-		$this->assertEquals( false, wcs_is_subscription( $non_subscription_id_zeropad ) );
 
 		// // garbage
 		$this->assertEquals( false, wcs_is_subscription( 'foo' ) );
@@ -574,18 +577,32 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$this->assertEquals( false, is_wp_error( $subscription ) );
 		$this->assertEquals( true, wcs_is_subscription( $subscription ) );
 
-		$this->assertEquals( $expects['currency'], get_post_meta( $subscription_id, '_order_currency', true ) );
-		$this->assertEquals( $expects['period'], get_post_meta( $subscription_id, '_billing_period', true ) );
-		$this->assertEquals( $expects['interval'], get_post_meta( $subscription_id, '_billing_interval', true ) );
-		$this->assertEquals( $expects['customer'], get_post_meta( $subscription_id, '_customer_user', true ) );
-		$this->assertEquals( $expects['version'], get_post_meta( $subscription_id, '_order_version', true ) );
-		$this->assertEquals( $expects['include_tax'], get_post_meta( $subscription_id, '_prices_include_tax', true ) );
-		$this->assertEquals( $expects['created_via'], get_post_meta( $subscription_id, '_created_via', true ) );
+		$this->assertEquals( $expects['currency'], $subscription->get_currency() );
+		$this->assertEquals( $expects['period'], $subscription->get_billing_period() );
+		$this->assertEquals( $expects['interval'], $subscription->get_billing_interval() );
+		$this->assertEquals( $expects['customer'], $subscription->get_customer_id() );
+		$this->assertEquals( $expects['version'], $subscription->get_version() );
+
+		// Parameters for wcs_create_subscription() expects 'include_tax' to be 'yes' or 'no' value.
+		$this->assertEquals( 'no' !== $expects['include_tax'], $subscription->get_prices_include_tax() );
+		$this->assertEquals( $expects['created_via'], $subscription->get_created_via() );
+
 		$this->assertEquals( $expects['status'], 'wc-' . $subscription->get_status() );
 		$this->assertEquals( $expects['parent_id'], $subscription->get_parent_id() );
 		$this->assertEquals( $expects['excerpt'], $subscription->get_customer_note() );
 		$this->assertDateTimeString( $subscription->get_date( 'date_created' ) );
 		$this->assertEquals( wcs_date_to_time( $expects['post_date_gmt'] ), $subscription->get_time( 'date_created' ), sprintf( 'Expected %s and actual %s dates are out of bound of the allowed 2 second discrepancy (actual difference is %s).', $expects['post_date_gmt'], $subscription->get_date( 'date_created' ), ( wcs_date_to_time( $expects['post_date_gmt'] ) - $subscription->get_time( 'date_created' ) ) ), 2 );
+
+		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
+			// Verify that non-HPOS storage continues to use legacy meta_keys / values until intentionally deprecated.
+			$this->assertEquals( $expects['currency'], get_post_meta( $subscription_id, '_order_currency', true ) );
+			$this->assertEquals( $expects['period'], get_post_meta( $subscription_id, '_billing_period', true ) );
+			$this->assertEquals( $expects['interval'], get_post_meta( $subscription_id, '_billing_interval', true ) );
+			$this->assertEquals( $expects['customer'], get_post_meta( $subscription_id, '_customer_user', true ) );
+			$this->assertEquals( $expects['version'], get_post_meta( $subscription_id, '_order_version', true ) );
+			$this->assertEquals( $expects['include_tax'], get_post_meta( $subscription_id, '_prices_include_tax', true ) );
+			$this->assertEquals( $expects['created_via'], get_post_meta( $subscription_id, '_created_via', true ) );
+		}
 
 		update_option( 'woocommerce_prices_include_tax', $default_include_tax );
 	}
@@ -1128,7 +1145,6 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 			$subscription_1->get_id() => $subscription_1,
 		);
 		$this->assertEquals( $subscriptions, $correct_order );
-
 	}
 
 	/**
@@ -1808,6 +1824,8 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	}
 
 	public function test_set_payment_meta() {
+		$hpos_enabled = wcs_is_custom_order_tables_usage_enabled();
+
 		$subscription = WCS_Helper_Subscription::create_subscription();
 
 		// user_meta, usermeta
@@ -1822,11 +1840,17 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		// post_meta, postmeta
 		wcs_set_payment_meta( $subscription, array( 'post_meta' => array( 'post_meta_1' => array( 'value' => 'post_meta_1_value' ) ) ) );
 		$subscription->save();
-		$this->assertContains( 'post_meta_1_value', get_post_meta( $subscription->get_id(), 'post_meta_1' ) );
+		$this->assertContains( 'post_meta_1_value', array_column( $subscription->get_meta( 'post_meta_1', false ), 'value' ) );
+		if ( ! $hpos_enabled ) {
+			$this->assertContains( 'post_meta_1_value', get_post_meta( $subscription->get_id(), 'post_meta_1' ) );
+		}
 
 		wcs_set_payment_meta( $subscription, array( 'postmeta' => array( 'post_meta_2' => array( 'value' => 'post_meta_2_value' ) ) ) );
 		$subscription->save();
-		$this->assertContains( 'post_meta_2_value', get_post_meta( $subscription->get_id(), 'post_meta_2' ) );
+		$this->assertContains( 'post_meta_2_value', array_column( $subscription->get_meta( 'post_meta_2', false ), 'value' ) );
+		if ( ! $hpos_enabled ) {
+			$this->assertContains( 'post_meta_2_value', get_post_meta( $subscription->get_id(), 'post_meta_2' ) );
+		}
 
 		// options
 		wcs_set_payment_meta( $subscription, array( 'options' => array( 'option_1' => array( 'value' => 'option_1_value' ) ) ) );

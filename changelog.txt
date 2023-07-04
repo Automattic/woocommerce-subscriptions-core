@@ -1,5 +1,11 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 5.8.0 - 2023-xx-xx =
+* Fix - When HPOS is enabled, permanently deleting a subscription related order wasn't updating the related orders cache properly.
+
+= 5.7.2 - 2023-06-05 =
+* Fix - Resolved an issue with customers being redirected to an incorrect Pay for Order URL after login.
+
 = 5.7.1 - 2023-05-11 =
 * Dev - Resolve errors for third-party code using the URLs returned from WC_Subscriptions_Admin::add_subscription_url() and WCS_Cart_Renewal::get_checkout_payment_url() because they were erroneously escaped. #440
 * Dev - Enable third-party code to alter the delete payment token URL returned from flag_subscription_payment_token_deletions. #440
