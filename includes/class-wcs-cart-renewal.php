@@ -1031,7 +1031,10 @@ class WCS_Cart_Renewal {
 	 * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.1.0
 	 */
 	public function maybe_redirect_after_login( $redirect, $user = null ) {
-		if ( isset( $_GET['wcs_redirect'], $_GET['wcs_redirect_id'] ) && 'pay_for_order' === $_GET['wcs_redirect'] ) {
+		/**
+		 * Nonce verification is not needed here as it was already checked during the log-in process, see WC_Form_Handler::process_login().
+		 */
+		if ( isset( $_GET['wcs_redirect'], $_GET['wcs_redirect_id'] ) && 'pay_for_order' === $_GET['wcs_redirect'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$order = wc_get_order( $_GET['wcs_redirect_id'] );
 
 			if ( $order && $order->get_user_id() && user_can( $user, 'pay_for_order', $order->get_id() ) ) {
