@@ -2,6 +2,7 @@
 
 = 5.8.0 - 2023-07-05 =
 * Fix - When HPOS is enabled, permanently deleting a subscription related order wasn't updating the related orders cache properly.
+* Fix - Added logic to check if the recurring cart array is present before displaying the recurring totals section in the cart.
 
 = 5.7.2 - 2023-06-05 =
 * Fix - Resolved an issue with customers being redirected to an incorrect Pay for Order URL after login.
