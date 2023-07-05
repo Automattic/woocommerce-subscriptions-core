@@ -1050,12 +1050,12 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$this->assertArrayNotHasKey( $subscription_7->get_id(), $subscriptions );
 		unset( $subscriptions );
 
-		$is_HPOS_enabled = wcs_is_custom_order_tables_usage_enabled();
+		$is_hpos_enabled = wcs_is_custom_order_tables_usage_enabled();
 
 		// An invalid status
 		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'rubbish' ) );
 
-		if ( $is_HPOS_enabled ) {
+		if ( $is_hpos_enabled ) {
 			// No subscriptions should match the invalid status.
 			$this->assertIsArray( $subscriptions );
 			$this->assertEquals( 0, count( $subscriptions ) );
@@ -1093,7 +1093,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => '' ) );
 
-		if ( $is_HPOS_enabled ) {
+		if ( $is_hpos_enabled ) {
 			// In HPOS environments, WooCommerce core will convert an empty `status` to all valid statuses, the equivalent of
 			// setting status = 'any'
 			$this->assertIsArray( $subscriptions );
