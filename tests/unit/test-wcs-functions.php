@@ -1050,50 +1050,28 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$this->assertArrayNotHasKey( $subscription_7->get_id(), $subscriptions );
 		unset( $subscriptions );
 
-		// An invalid status is ignored and does not apply as a clause to the query.
+		$is_HPOS_enabled = wcs_is_custom_order_tables_usage_enabled();
+
+		// An invalid status
 		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'rubbish' ) );
 
-		$this->assertIsArray( $subscriptions );
-		$this->assertEquals( 8, count( $subscriptions ) );
-		$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_3->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_4->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_5->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_6->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_7->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_8->get_id(), $subscriptions );
-		unset( $subscriptions );
-
-		// An invalid status is ignored and does not apply as a clause to the query.
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => [ 'rubbish' ] ) );
-
-		$this->assertIsArray( $subscriptions );
-		$this->assertEquals( 8, count( $subscriptions ) );
-		$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_3->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_4->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_5->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_6->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_7->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_8->get_id(), $subscriptions );
-
-		unset( $subscriptions );
-
-		// Multiple invalid stati are ignored and does not apply as a clause to the query.
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => [ 'rubbish', 'more-rubbish' ] ) );
-
-		$this->assertIsArray( $subscriptions );
-		$this->assertEquals( 8, count( $subscriptions ) );
-		$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_3->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_4->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_5->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_6->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_7->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_8->get_id(), $subscriptions );
+		if ( $is_HPOS_enabled ) {
+			// No subscriptions should match the invalid status.
+			$this->assertIsArray( $subscriptions );
+			$this->assertEquals( 0, count( $subscriptions ) );
+		} else {
+			// In non-HPOS environments, WP_Query simply ignores invalid post_stati, so no clause would be applied.
+			$this->assertIsArray( $subscriptions );
+			$this->assertEquals( 8, count( $subscriptions ) );
+			$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_3->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_4->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_5->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_6->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_7->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_8->get_id(), $subscriptions );
+		}
 
 		unset( $subscriptions );
 
@@ -1115,10 +1093,24 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => '' ) );
 
-		$this->assertIsArray( $subscriptions );
-		$this->assertEquals( 0, count( $subscriptions ) );
-
-		unset( $subscriptions );
+		if ( $is_HPOS_enabled ) {
+			// In HPOS environments, WooCommerce core will convert an empty `status` to all valid statuses, the equivalent of
+			// setting status = 'any'
+			$this->assertIsArray( $subscriptions );
+			$this->assertEquals( 8, count( $subscriptions ) );
+			$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_3->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_4->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_5->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_6->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_7->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_8->get_id(), $subscriptions );
+		} else {
+			// In non-HPOS environments, WP_Query will set an empty post_status argument to `publish`.
+			$this->assertIsArray( $subscriptions );
+			$this->assertEquals( 0, count( $subscriptions ) );
+		}
 
 	}
 

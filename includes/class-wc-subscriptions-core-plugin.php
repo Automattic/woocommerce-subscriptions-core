@@ -221,6 +221,8 @@ class WC_Subscriptions_Core_Plugin {
 		// Register our custom subscription order statuses before WC_Post_types::register_post_status()
 		add_action( 'init', array( $this, 'register_post_statuses' ), 9 );
 
+		add_action( 'wc_order_statuses', array( $this, 'add_subscription_statuses' ) );
+
 		// Load translation files
 		add_action( 'init', array( $this, 'load_plugin_textdomain' ), 3 );
 
@@ -445,6 +447,13 @@ class WC_Subscriptions_Core_Plugin {
 				);
 			}
 		}
+	}
+
+	/**
+	 * Merges statuses used for subscriptions into the valid order statuses.
+	 */
+	public function add_subscription_statuses( $order_statuses ) {
+		return array_merge( wcs_get_subscription_statuses(), $order_statuses );
 	}
 
 	/**

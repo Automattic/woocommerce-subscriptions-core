@@ -406,48 +406,6 @@ function wcs_get_orders_with_meta_query( $args ) {
 		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $handle_meta, 10, 2 );
 	}
 
-	if ( isset( $args['status'], $args['type'] ) &&
-		'shop_subscription' === $args['type'] &&
-		$is_hpos_in_use
-	) {
-		if ( [ 'any' ] === (array) $args['status'] ) {
-			/**
-			 * Map the 'any' status to wcs_get_subscription_statuses() in HPOS environments.
-			 *
-			 * In HPOS environments, the 'any' status now maps to wc_get_order_statuses() statuses. Whereas, in
-			 * WP Post architecture 'any' meant any status except for ‘inherit’, ‘trash’ and ‘auto-draft’.
-			 *
-			 * If we're querying for subscriptions, we need to map 'any' to be all valid subscription statuses otherwise it would just search for order statuses.
-			 */
-			$args['status'] = array_keys( wcs_get_subscription_statuses() );
-		} elseif ( ! empty( $args['status'] ) ) {
-			/**
-			 * In non-HPOS environments, WP_Query would simply ignore any invalid status when building the where clauses.
-			 * The result meant that if only invalid statuses arguments were passed in, no filtering of status would be applied,
-			 * but if any valid status argument was included, only subscriptions of those valid status would get returned.
-			 *
-			 * Mimicking this for HPOS environments requires filtering the status to only valid stati, but then passing in all
-			 * valid stati if no status arguments remain.
-			 */
-			$args['status'] = array_intersect( (array) $args['status'], get_post_stati() );
-			if ( empty( $args['status'] ) ) {
-				$args['status'] = array_keys( wcs_get_subscription_statuses() );
-			}
-		} else {
-			/**
-			 * wcs_get_subscriptions() will convert a falsy value for `$args['status']` to an empty array.
-			 * In a non-HPOS environment, WP_Query will force the query to run with the default status of 'publish'.
-			 *
-			 * This is an invalid status for subscriptions and unless being filtered, would always return an empty result.
-			 * We could consider short-circuiting here and just returning an empty array.
-			 *
-			 * To mimic this in HPOS environments, we're simply setting the status to 'publish' so the end argument ends
-			 * up the same.
-			 */
-			$args['status'] = [ 'publish' ];
-		}
-	}
-
 	$results = wc_get_orders( $args );
 
 	if ( ! $is_hpos_in_use ) {

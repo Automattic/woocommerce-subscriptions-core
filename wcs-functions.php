@@ -426,7 +426,7 @@ function wcs_get_subscriptions( $args ) {
 			'product_id'             => 0,
 			'variation_id'           => 0,
 			'order_id'               => 0,
-			'subscription_status'    => array( 'any' ),
+			'subscription_status'    => 'any',
 			'meta_query_relation'    => 'AND',
 		)
 	);
@@ -436,21 +436,26 @@ function wcs_get_subscriptions( $args ) {
 		return array();
 	}
 
-	// Ensure subscription_status is an array.
-	$args['subscription_status'] = $args['subscription_status'] ? (array) $args['subscription_status'] : [];
+	if ( 'any' !== $args['subscription_status'] ) {
+		// With HPOS enabled, WooCommerce core will treat the 'any' value within an array as a status value clause, so
+		// we should avoid converting the default 'any' to an array.
 
-	// Grab the native post stati, removing pending and adding any.
-	$builtin = get_post_stati( [ '_builtin' => true ] );
-	unset( $builtin['pending'] );
-	$builtin['any'] = 'any';
+		// Ensure subscription_status is an array.
+		$args['subscription_status'] = $args['subscription_status'] ? (array) $args['subscription_status'] : [];
 
-	// Make sure statuses start with 'wc-'.
-	foreach ( $args['subscription_status'] as &$status ) {
-		if ( isset( $builtin[ $status ] ) ) {
-			continue;
+		// Grab the native post stati, removing pending and adding any.
+		$builtin = get_post_stati( [ '_builtin' => true ] );
+		unset( $builtin['pending'] );
+		$builtin['any'] = 'any';
+
+		// Make sure statuses start with 'wc-'.
+		foreach ( $args['subscription_status'] as &$status ) {
+			if ( isset( $builtin[ $status ] ) ) {
+				continue;
+			}
+
+			$status = wcs_sanitize_subscription_status_key( $status );
 		}
-
-		$status = wcs_sanitize_subscription_status_key( $status );
 	}
 
 	// Prepare the args for WC_Order_Query.
