@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 5.8.0 - 2023-xx-xx =
+= 5.8.0 - 2023-07-05 =
 * Fix - When HPOS is enabled, permanently deleting a subscription related order wasn't updating the related orders cache properly.
 
 = 5.7.2 - 2023-06-05 =
