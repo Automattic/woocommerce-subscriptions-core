@@ -77,8 +77,8 @@ class WC_Subscriptions_Addresses {
 	 */
 	public static function add_edit_address_subscription_action( $actions, $subscription ) {
 		if ( $subscription->needs_shipping_address() && $subscription->has_status( array( 'active', 'on-hold' ) ) ) {
-			// If WC Blocks is used for checkout, use the existing edit-address url.
-			$edit_address_url = self::is_checkout_using_blocks()
+			// If WC Blocks is used for checkout or the subscription doesn't support amount changes use the existing edit-address url.
+			$edit_address_url = self::is_checkout_using_blocks() || ! $subscription->payment_method_supports( 'subscription_amount_changes' )
 				? add_query_arg( array( 'subscription' => $subscription->get_id() ), wc_get_endpoint_url( 'edit-address', 'shipping' ) )
 				: add_query_arg( array( 'update_subscription_address' => $subscription->get_id() ), wc_get_checkout_url() );
 
@@ -280,7 +280,7 @@ class WC_Subscriptions_Addresses {
 	public static function maybe_add_subscription_to_cart_for_address_change() {
 		$subscription_id = absint( $_GET['update_subscription_address'] ?? null ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-		if ( $subscription_id ) {
+		if ( $subscription_id && self::can_user_edit_subscription_address( $subscription_id ) ) {
 			$subscription       = wcs_get_subscription( $subscription_id );
 			$subscription_items = $subscription->get_items();
 
@@ -305,7 +305,6 @@ class WC_Subscriptions_Addresses {
 			add_filter( 'gettext', array( __CLASS__, 'fields_for_address_change' ), 20, 3 );
 			add_filter( 'the_title', array( __CLASS__, 'title_for_address_change' ), 100 );
 			add_filter( 'woocommerce_get_breadcrumb', array( __CLASS__, 'crumbs_for_address_change' ), 10, 1 );
-
 		}
 	}
 
