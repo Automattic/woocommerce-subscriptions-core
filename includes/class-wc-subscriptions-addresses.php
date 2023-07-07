@@ -36,6 +36,9 @@ class WC_Subscriptions_Addresses {
 		add_filter( 'woocommerce_update_order_review_fragments', array( __CLASS__, 'maybe_modify_checkout_template_for_address_change' ) );
 		add_action( 'woocommerce_checkout_process', array( __CLASS__, 'process_address_change' ) );
 		add_action( 'wp_loaded', array( __CLASS__, 'maybe_navigated_away_from_change_address_page' ) );
+		add_filter( 'woocommerce_cart_needs_payment', array( __CLASS__, 'cart_requires_payment' ) );
+		// woocommerce_get_checkout_order_received_url --- change the order's redirect URL to send the customer back to the subscription page.
+		//add_action( 'woocommerce_store_api_checkout_update_order_meta', array( __CLASS__, 'maybe_update_subscription_addresses_from_rest_api' ), 10, 2 );
 	}
 
 	/**
@@ -205,7 +208,7 @@ class WC_Subscriptions_Addresses {
 	}
 
 	/**
-	 * Prepopulate the address fields on a subscription item
+	 * Pre-populates the address fields on a subscription item.
 	 *
 	 * @param array $address A WooCommerce address array
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.5
@@ -277,6 +280,11 @@ class WC_Subscriptions_Addresses {
 		return $crumbs;
 	}
 
+	/**
+	 * Loads a subscription into the cart to enable the customer to change their address and for shipping to be recalculated.
+	 *
+	 * This function also saves the current cart contents to the user's meta so that they can be restored after the address change is complete.
+	 */
 	public static function maybe_add_subscription_to_cart_for_address_change() {
 		$subscription_id = absint( $_GET['update_subscription_address'] ?? null ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
@@ -297,7 +305,8 @@ class WC_Subscriptions_Addresses {
 
 			// Add all the subscription items to cart temporarily.
 			foreach ( $subscription_items as $subscription_item ) {
-				WC()->cart->add_to_cart( $subscription_item['product_id'], $subscription_item['qty'] );
+				$cart_item_data = array( 'update_subscription_address' => [ 'subscription_id' => $subscription_id ] );
+				WC()->cart->add_to_cart( $subscription_item->get_product_id(), $subscription_item->get_quantity(), $subscription_item->get_variation_id(), [], $cart_item_data );
 			}
 
 			add_filter( 'woocommerce_coupons_enabled', '__return_false' );
@@ -330,8 +339,7 @@ class WC_Subscriptions_Addresses {
 			return $title;
 		}
 
-		$title = 'Change subscription address';
-		return $title;
+		return __( 'Change subscription address', 'woocommerce-subscriptions' );
 	}
 
 	public static function crumbs_for_address_change( $crumbs ) {
@@ -377,22 +385,30 @@ class WC_Subscriptions_Addresses {
 		// Ignoring the nonce check here as it's already been verified in WC_AJAX::update_order_review().
 		$form_data = wp_parse_args( wc_clean( wp_unslash( $_POST['post_data'] ?? null ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
-		if ( isset( $form_data['update_subscription_address'] ) ) {
-			ob_start();
-
-			wc_get_template(
-				'checkout/update-address-for-subscription.php',
-				array(
-					'subscription'      => wcs_get_subscription( absint( $form_data['update_subscription_address'] ) ),
-					'order_button_text' => apply_filters( 'wcs_update_address_button_text', __( 'Update Address', 'woocommerce-subscriptions' ) ),
-				),
-				'',
-				WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' )
-			);
-
-			$new_fragment = ob_get_clean(); // @codingStandardsIgnoreLine
-			$fragments['.woocommerce-checkout-payment'] = $new_fragment;
+		if ( ! isset( $form_data['update_subscription_address'] ) ) {
+			return $fragments;
 		}
+
+		$subscription_id = absint( $form_data['update_subscription_address'] );
+
+		if ( ! self::can_user_edit_subscription_address( $subscription_id ) ) {
+			return $fragments;
+		}
+
+		ob_start();
+
+		wc_get_template(
+			'checkout/update-address-for-subscription.php',
+			array(
+				'subscription'      => wcs_get_subscription( $subscription_id ),
+				'order_button_text' => apply_filters( 'wcs_update_address_button_text', __( 'Update Address', 'woocommerce-subscriptions' ) ),
+			),
+			'',
+			WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' )
+		);
+
+		$new_fragment = ob_get_clean(); // @codingStandardsIgnoreLine
+		$fragments['.woocommerce-checkout-payment'] = $new_fragment;
 
 		return $fragments;
 	}
@@ -401,7 +417,7 @@ class WC_Subscriptions_Addresses {
 		// Ignoring the nonce check here as it's already been verified in WC_Checkout::process_checkout().
 		$subscription_id = absint( wc_clean( wp_unslash( $_POST['update_subscription_address'] ?? null ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
-		if ( ! $subscription_id ) {
+		if ( ! $subscription_id || ! self::can_user_edit_subscription_address( $subscription_id ) ) {
 			return;
 		}
 
@@ -496,5 +512,35 @@ class WC_Subscriptions_Addresses {
 			// Delete saved cart contents.
 			delete_user_meta( get_current_user_id(), '_wcs_address_change_cart_' . get_current_blog_id() );
 		}
+	}
+
+	/**
+	 * Undocumented function
+	 *
+	 * @return void
+	 */
+	public static function cart_contains_change_address_request() {
+
+		if ( ! isset( WC()->cart ) ) {
+			return false;
+		}
+
+		$cart_contents = WC()->cart->get_cart();
+
+		foreach ( $cart_contents as $cart_item ) {
+			if ( isset( $cart_item['update_subscription_address'] ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public static function cart_requires_payment( $requires_payment ) {
+		if ( ! $requires_payment ) {
+			return $requires_payment;
+		}
+
+		return ! self::cart_contains_change_address_request();
 	}
 }
