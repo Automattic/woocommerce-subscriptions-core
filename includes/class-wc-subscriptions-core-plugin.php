@@ -468,8 +468,8 @@ class WC_Subscriptions_Core_Plugin {
 			 * If we're querying for subscriptions, we need to map 'any' to be all valid subscription statuses otherwise it would just search for order statuses.
 			 */
 			if ( isset( $query_vars['status'], $query_vars['type'] ) &&
-			     ( [ 'any' ] === (array) $query_vars['status'] || [ '' ] === (array) $query_vars['status'] ) &&
-			     'shop_subscription' === $query_vars['type']
+				( [ 'any' ] === (array) $query_vars['status'] || [ '' ] === (array) $query_vars['status'] ) &&
+				'shop_subscription' === $query_vars['type']
 			) {
 				$query_vars['status'] = array_keys( wcs_get_subscription_statuses() );
 			}

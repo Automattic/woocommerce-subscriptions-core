@@ -266,7 +266,7 @@ class WCS_Order_Functions_Test extends WP_UnitTestCase {
 			array(
 				'return' => 'ids',
 				'type'   => 'shop_subscription',
-				'status' => ['rubbish', 'wc-active'],
+				'status' => [ 'rubbish', 'wc-active' ],
 			)
 		);
 
