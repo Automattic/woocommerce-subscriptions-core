@@ -83,7 +83,7 @@ class WC_Subscriptions_Addresses {
 				: add_query_arg( array( 'update_subscription_address' => $subscription->get_id() ), wc_get_checkout_url() );
 
 			$actions['change_address'] = array(
-				'url'  => esc_url(  $edit_address_url ),
+				'url'  => esc_url( $edit_address_url ),
 				'name' => __( 'Change address', 'woocommerce-subscriptions' ),
 			);
 		}
