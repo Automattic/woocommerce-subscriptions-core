@@ -136,4 +136,174 @@ class WCS_Order_Functions_Test extends WP_UnitTestCase {
 		$this->assertArrayHasKey( $switch_order->get_id(), $all_orders );
 		$this->assertArrayNotHasKey( $order->get_id(), $all_orders );
 	}
+
+	/**
+	 * Test the wcs_get_orders_with_meta_query behavior.
+	 */
+	public function test_wcs_get_orders_with_meta_query() {
+
+		$subscription_on_hold = WCS_Helper_Subscription::create_subscription(
+			array(
+				'status' => 'on-hold',
+			)
+		);
+
+		$subscription_active = WCS_Helper_Subscription::create_subscription(
+			array(
+				'status' => 'active',
+			)
+		);
+
+		$order_pending = wc_create_order(
+			array(
+				'status' => 'pending',
+			)
+		);
+
+		$order_on_hold = wc_create_order(
+			array(
+				'status' => 'on-hold',
+			)
+		);
+
+		$order_complete = wc_create_order(
+			array(
+				'status' => 'complete',
+			)
+		);
+
+		// On-hold - a status used by both Orders and Subscriptions
+		$subscriptions = wcs_get_orders_with_meta_query(
+			array(
+				'return' => 'ids',
+				'type'   => 'shop_subscription',
+				'status' => 'on-hold',
+			)
+		);
+		$this->assertIsArray( $subscriptions );
+		$this->assertEquals( [ $subscription_on_hold->get_id() ], $subscriptions );
+
+		// Active - a subscriptions only status.
+		$subscriptions = wcs_get_orders_with_meta_query(
+			array(
+				'return' => 'ids',
+				'type'   => 'shop_subscription',
+				'status' => 'wc-active',
+			)
+		);
+
+		$this->assertIsArray( $subscriptions );
+		$this->assertEquals( [ $subscription_active->get_id() ], $subscriptions );
+
+		// Any status with type set to shop_subscription should return all subscriptions with all statuses.
+		$subscriptions = wcs_get_orders_with_meta_query(
+			array(
+				'return' => 'ids',
+				'type'   => 'shop_subscription',
+				'status' => 'any',
+			)
+		);
+
+		$this->assertIsArray( $subscriptions );
+		sort( $subscriptions );
+		$this->assertEquals(
+			[
+				$subscription_on_hold->get_id(),
+				$subscription_active->get_id(),
+			],
+			$subscriptions
+		);
+
+		// Verify that we aren't modifying queries without type set, which should only return orders with any order statuses.
+		$orders = wcs_get_orders_with_meta_query(
+			array(
+				'return' => 'ids',
+				'status' => 'any',
+			)
+		);
+
+		$this->assertIsArray( $orders );
+		sort( $orders );
+		$this->assertEquals(
+			[
+				$order_pending->get_id(),
+				$order_on_hold->get_id(),
+				$order_complete->get_id(),
+			],
+			$orders
+		);
+
+		$is_hpos_enabled = wcs_is_custom_order_tables_usage_enabled();
+
+		// An invalid status
+		$subscriptions = wcs_get_orders_with_meta_query(
+			array(
+				'return' => 'ids',
+				'type'   => 'shop_subscription',
+				'status' => 'rubbish',
+			)
+		);
+
+		if ( $is_hpos_enabled ) {
+			// No subscriptions should match the invalid status.
+			$this->assertIsArray( $subscriptions );
+			$this->assertEmpty( $subscriptions );
+		} else {
+			// In non-HPOS environments, WP_Query simply ignores invalid post_stati, so no clause would be applied.
+			$this->assertIsArray( $subscriptions );
+			sort( $subscriptions );
+			$this->assertEquals(
+				[
+					$subscription_on_hold->get_id(),
+					$subscription_active->get_id(),
+				],
+				$subscriptions
+			);
+		}
+
+		// An invalid status is ignored and does not apply as a clause to the query, while the valid, active status still applies.
+		$subscriptions = wcs_get_orders_with_meta_query(
+			array(
+				'return' => 'ids',
+				'type'   => 'shop_subscription',
+				'status' => ['rubbish', 'wc-active'],
+			)
+		);
+
+		$this->assertIsArray( $subscriptions );
+		$this->assertEquals(
+			[
+				$subscription_active->get_id(),
+			],
+			$subscriptions
+		);
+
+		// An empty status
+		$subscriptions = wcs_get_orders_with_meta_query(
+			array(
+				'return' => 'ids',
+				'type'   => 'shop_subscription',
+				'status' => '',
+			)
+		);
+
+		if ( $is_hpos_enabled ) {
+			// In HPOS environments, WooCommerce core will convert an empty `status` to all valid statuses, the equivalent of
+			// setting status = 'any'
+			$this->assertIsArray( $subscriptions );
+			sort( $subscriptions );
+			$this->assertEquals(
+				[
+					$subscription_on_hold->get_id(),
+					$subscription_active->get_id(),
+				],
+				$subscriptions
+			);
+		} else {
+			// In non-HPOS environments, WP_Query will set an empty post_status argument to `publish`.
+			$this->assertIsArray( $subscriptions );
+			$this->assertEmpty( $subscriptions );
+		}
+
+	}
 }

@@ -221,7 +221,7 @@ class WC_Subscriptions_Core_Plugin {
 		// Register our custom subscription order statuses before WC_Post_types::register_post_status()
 		add_action( 'init', array( $this, 'register_post_statuses' ), 9 );
 
-		add_action( 'wc_order_statuses', array( $this, 'add_subscription_statuses' ) );
+		add_filter( 'woocommerce_order_query_args', array( $this, 'fix_any_status_query_for_subscriptions' ) );
 
 		// Load translation files
 		add_action( 'init', array( $this, 'load_plugin_textdomain' ), 3 );
@@ -450,10 +450,32 @@ class WC_Subscriptions_Core_Plugin {
 	}
 
 	/**
-	 * Merges statuses used for subscriptions into the valid order statuses.
+	 * Filter the query_vars of a wc_get_orders() query to map 'any' to be all valid subscription statuses instead of
+	 * defaulting to only valid order statuses.
+	 *
+	 * @param $query_vars
+	 *
+	 * @return mixed
 	 */
-	public function add_subscription_statuses( $order_statuses ) {
-		return array_merge( wcs_get_subscription_statuses(), $order_statuses );
+	public function fix_any_status_query_for_subscriptions( $query_vars ) {
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			/**
+			 * Map the 'any' status to wcs_get_subscription_statuses() in HPOS environments.
+			 *
+			 * In HPOS environments, the 'any' status now maps to wc_get_order_statuses() statuses. Whereas, in
+			 * WP Post architecture 'any' meant any status except for ‘inherit’, ‘trash’ and ‘auto-draft’.
+			 *
+			 * If we're querying for subscriptions, we need to map 'any' to be all valid subscription statuses otherwise it would just search for order statuses.
+			 */
+			if ( isset( $query_vars['status'], $query_vars['type'] ) &&
+			     ( [ 'any' ] === (array) $query_vars['status'] || [ '' ] === (array) $query_vars['status'] ) &&
+			     'shop_subscription' === $query_vars['type']
+			) {
+				$query_vars['status'] = array_keys( wcs_get_subscription_statuses() );
+			}
+		}
+
+		return $query_vars;
 	}
 
 	/**
