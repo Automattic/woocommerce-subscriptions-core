@@ -477,7 +477,7 @@ class WC_Subscriptions_Cart {
 	 * @return array $package Package contents.
 	 */
 	public static function change_initial_shipping_package_name( $package_name, $package_id, $package ) {
-		if ( ! self::cart_contains_subscription() || isset( $package['recurring_cart_key'] ) ) {
+		if ( ! self::cart_contains_subscription() || isset( $package['recurring_cart_key'] ) || WC_Subscriptions_Change_Address_Via_Checkout_Handler::cart_contains_change_address_request() ) {
 			return $package_name;
 		}
 		return __( 'Initial Shipment', 'woocommerce-subscriptions' );
