@@ -1,14 +1,17 @@
 <?php
 /**
+ * Handles the change address via checkout flow.
  *
+ * @package WooCommerce Subscriptions
+ * @since 5.9.0
  */
+
+defined( 'ABSPATH' ) || exit;
 
 class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 
 	/**
-	 * Undocumented function
-	 *
-	 * @return void
+	 * Initializes the class and hooks.
 	 */
 	public static function init() {
 		add_action( 'wp_loaded', array( __CLASS__, 'maybe_add_subscription_to_cart_for_address_change' ) );
@@ -17,9 +20,7 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 		add_action( 'woocommerce_checkout_process', array( __CLASS__, 'process_address_change' ) );
 		add_action( 'wp_loaded', array( __CLASS__, 'maybe_navigated_away_from_change_address_page' ) );
 		add_filter( 'woocommerce_cart_needs_payment', array( __CLASS__, 'cart_requires_payment' ) );
-
-		// woocommerce_get_checkout_order_received_url --- change the order's redirect URL to send the customer back to the subscription page.
-		//
+		add_filter( 'woocommerce_add_cart_item_data', array( __CLASS__, 'validate_add_to_cart' ), 10, 1 );
 
 		if ( function_exists( 'is_checkout' ) && is_checkout() && self::cart_contains_change_address_request() ) {
 			self::attach_callbacks_for_address_change_request();
@@ -28,6 +29,9 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 		// BLOCK CHECKOUT SUPPORT
 		add_action( 'woocommerce_store_api_checkout_order_processed', array( __CLASS__, 'maybe_update_subscription_addresses_from_rest_api' ), 10, 2 );
 		add_action( 'woocommerce_order_needs_payment', array( __CLASS__, 'order_does_not_need_payment' ), 10, 2 );
+		///woocommerce_get_checkout_order_received_url --- change the order's redirect URL to send the customer back to the subscription page.
+		// To filter the block checkout we need to use JS hook/filters. See examples here:
+		//https://github.com/woocommerce/woocommerce-blocks/blob/trunk/docs/third-party-developers/extensibility/checkout-block/available-filters.md#changing-the-wording-and-the-link-on-the-proceed-to-checkout-button-when-a-specific-item-is-in-the-cart
 	}
 
 	/**
@@ -68,6 +72,7 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 		}
 
 		WC()->cart->empty_cart( true );
+
 		self::setup_cart( $subscription );
 		self::attach_callbacks_for_address_change_request();
 	}
@@ -78,7 +83,7 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 	 * @param WC_Subscription $subscription The subscription to load into the cart.
 	 */
 	private static function setup_cart( WC_Subscription $subscription ) {
-		// Add all the subscription items to cart temporarily.
+		// Add all the subscription items to cart.
 		foreach ( $subscription->get_items() as $subscription_item ) {
 			WC()->cart->add_to_cart(
 				$subscription_item->get_product_id(),
@@ -147,36 +152,6 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 	}
 
 	/**
-	 * Undocumented function
-	 *
-	 * @param [type] $needs_payment
-	 * @param [type] $order
-	 * @return void
-	 */
-	public static function order_does_not_need_payment( $needs_payment, $order ) {
-		if ( $order->meta_exists( '_subscription_address_change' ) ) {
-			return false;
-		}
-
-		return $needs_payment;
-	}
-
-	/**
-	 * Undocumented function
-	 *
-	 * @param [type] $needs_payment
-	 * @param [type] $order
-	 * @return void
-	 */
-	public static function redirect_after_change( $needs_payment, $order ) {
-		if ( $order->meta_exists( '_subscription_address_change' ) ) {
-			return false;
-		}
-
-		return $needs_payment;
-	}
-
-	/**
 	 * Attaches the callback to change the order review heading.
 	 */
 	public static function attach_callback_to_change_order_review_heading() {
@@ -207,6 +182,9 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 		return $translated_text;
 	}
 
+	/**
+	 * Adds a hidden input to the checkout form to indicate that the address is being changed.
+	 */
 	public static function maybe_add_hidden_input_for_address_change() {
 		$subscription_id = absint( wc_clean( wp_unslash( $_GET['update_subscription_address'] ?? null ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
@@ -215,6 +193,12 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 		}
 	}
 
+	/**
+	 * Replaces the default checkout pay button with the address change button.
+	 *
+	 * @param array $fragments Fragments of the checkout page.
+	 * @return array Fragments of the checkout page.
+	 */
 	public static function maybe_modify_checkout_template_for_address_change( $fragments ) {
 		// Ignoring the nonce check here as it's already been verified in WC_AJAX::update_order_review().
 		$form_data = wp_parse_args( wc_clean( wp_unslash( $_POST['post_data'] ?? null ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -247,39 +231,34 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 		return $fragments;
 	}
 
-	public static function maybe_update_subscription_addresses_from_rest_api( $order ) {
+	/**
+	 * Processes the address change for a subscription.
+	 */
+	public static function process_address_change() {
 		$subscription = self::get_subscription_from_cart();
 
 		if ( ! $subscription ) {
 			return;
 		}
 
-		$order->update_meta_data( '_subscription_address_change', $subscription->get_id() );
-		$order->save();
-
-		// Update the subscription from the order.
-		// Set order meta so this order can be tied up later.
-	}
-
-	public static function process_address_change() {
-		// Ignoring the nonce check here as it's already been verified in WC_Checkout::process_checkout().
-		$subscription_id = absint( wc_clean( wp_unslash( $_POST['update_subscription_address'] ?? null ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-
-		if ( ! $subscription_id || ! WC_Subscriptions_Addresses::can_user_edit_subscription_address( $subscription_id ) ) {
-			return;
+		if ( ! WC_Subscriptions_Addresses::can_user_edit_subscription_address( $subscription ) ) {
+			self::handle_redirect( $subscription, 'failure' );
 		}
 
-		$subscription = wcs_get_subscription( $subscription_id );
+		$checkout_data = WC()->checkout->get_posted_data();
 
-		// Prepare the new shipping address for the subscription.
-		$address_type   = 'billing';
-		$address_fields = WC()->countries->get_address_fields( wc_clean( wp_unslash( $_POST[ $address_type . '_country' ] ?? '' ) ), $address_type . '_' );// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$address        = array();
+		// Prepare the new address data for the subscription.
+		foreach ( [ 'billing', 'shipping' ] as $address_type ) {
+			$address_fields = WC()->countries->get_address_fields( wc_clean( wp_unslash( $checkout_data[ $address_type . '_country' ] ?? '' ) ), $address_type . '_' );
+			$address        = array();
 
-		foreach ( $address_fields as $key => $field ) {
-			if ( isset( $_POST[ $key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-				$address[ str_replace( $address_type . '_', '', $key ) ] = wc_clean( wp_unslash( $_POST[ $key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			foreach ( $address_fields as $key => $field ) {
+				if ( isset( $_POST[ $key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+					$address[ str_replace( $address_type . '_', '', $key ) ] = wc_clean( wp_unslash( $checkout_data[ $key ] ) );
+				}
 			}
+
+			$subscription->set_address( $address, $address_type );
 		}
 
 		// Remove existing subscription shipping items before updating.
@@ -290,22 +269,11 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 			}
 		}
 
-		// Remove existing subscription line items before updating.
-		$subscription_line_items = (array) $subscription->get_items( 'line_item' );
-		foreach ( $subscription_line_items as $item_id => $item ) {
-			$subscription->remove_item( $item_id );
-		}
-
 		$cart = WC()->cart;
-
-		// Add the subscription line items with the latest product changes from the cart.
-		WC()->checkout->create_order_line_items( $subscription, $cart );
-
-		// Update the subscription shipping address.
-		$subscription->set_address( $address, 'shipping' );
 
 		// Update the subscription shipping items.
 		WC_Subscriptions_Checkout::add_shipping( $subscription, $cart );
+
 		$subscription->set_shipping_total( $cart->shipping_total );
 		$subscription->set_cart_tax( $cart->tax_total );
 		$subscription->set_shipping_tax( $cart->shipping_tax_total );
@@ -316,7 +284,20 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 			WC()->cart->empty_cart();
 		}
 
-		self::maybe_restore_saved_cart_contents();
+		self::handle_redirect( $subscription, 'success' );
+	}
+
+	/**
+	 * Redirects the user after the change address request has been handled.
+	 *
+	 * @param WC_Subscription $subscription The subscription.
+	 * @param string          $result       The result type. Can be 'success' or 'failure'.
+	 */
+	private static function handle_redirect( $subscription, $result ) {
+
+		if ( 'success' !== $result ) {
+			wc_add_notice( __( 'There was a problem updating your address. Please try again.', 'woocommerce-subscriptions' ), 'error' );
+		}
 
 		// IF NOT AJAX
 		if ( ! is_ajax() ) {
@@ -327,31 +308,40 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 		// IF AJAX
 		wp_send_json(
 			array(
-				'result'   => 'success',
+				'messages' => wc_print_notices( true ),
+				'result'   => $result,
 				'redirect' => $subscription->get_view_order_url(),
 			)
 		);
 	}
 
+	/**
+	 * Empties the cart for a change address request when the user navigates away from the change address page.
+	 */
 	public static function maybe_navigated_away_from_change_address_page() {
-		if ( ! is_admin() && ! isset( $_GET['update_subscription_address'] ) && ! is_ajax() && self::cart_contains_change_address_request() ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		// We're only interested in carts that contain a change address request.
+		if ( ! self::cart_contains_change_address_request() ) {
+			return;
+		}
+
+		if ( ! is_admin() && ! isset( $_GET['update_subscription_address'] ) && ! is_ajax() ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			WC()->cart->empty_cart( true );
 		}
 	}
 
 	/**
-	 * Undocumented function
+	 * Checks whether the cart contains a change address request.
 	 *
-	 * @return void
+	 * @return bool Whether the cart contains a change address request.
 	 */
 	public static function cart_contains_change_address_request() {
 		return (bool) self::get_subscription_from_cart();
 	}
 
 	/**
-	 * Undocumented function
+	 * Gets the subscription being changed from the cart, otherwise returns false.
 	 *
-	 * @return void
+	 * @return bool|WC_Subscription The subscription being changed, or false if none.
 	 */
 	public static function get_subscription_from_cart() {
 		if ( ! function_exists( 'WC' ) || ! isset( WC()->cart ) ) {
@@ -370,11 +360,68 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 		return $subscription;
 	}
 
+	/**
+	 * Checks if the cart needs payment.
+	 *
+	 * Carts that contain a change address request do not need payment.
+	 *
+	 * @param bool $requires_payment The default value for if the cart requires payment.
+	 * @return bool The updated value for if the cart requires payment.
+	 */
 	public static function cart_requires_payment( $requires_payment ) {
 		if ( ! $requires_payment ) {
 			return $requires_payment;
 		}
 
 		return ! self::cart_contains_change_address_request();
+	}
+
+	/**
+	 * Validates an add to cart request when the cart contains a change address request.
+	 *
+	 * @throws Exception When the cart contains a change address request and an item is being added to the cart.
+	 *
+	 * @param array $cart_item_data The cart item data for the item being added to the cart.
+	 * @return array The cart item data.
+	 */
+	public static function validate_add_to_cart( $cart_item_data ) {
+		if ( isset( $cart_item_data['update_subscription_address'] ) || ! self::cart_contains_change_address_request() ) {
+			return $cart_item_data;
+		}
+
+		throw new Exception( __( 'You cannot add items to the cart while changing the address of a subscription.', 'woocommerce-subscriptions' ) );
+	}
+
+	/**
+	 * BLOCK CHECKOUT INTEGRATION METHODS
+	 */
+
+	/**
+	 * Filters the default value for the needs_payment property of an created during the checkout block.
+	 *
+	 * @param [type] $needs_payment
+	 * @param [type] $order
+	 * @return void
+	 */
+	public static function order_does_not_need_payment( $needs_payment, $order ) {
+		if ( $order->meta_exists( '_subscription_address_change' ) ) {
+			return false;
+		}
+
+		return $needs_payment;
+	}
+
+	public static function maybe_update_subscription_addresses_from_rest_api( $order ) {
+		$subscription = self::get_subscription_from_cart();
+
+		if ( ! $subscription ) {
+			return;
+		}
+
+		$order->update_meta_data( '_subscription_address_change', $subscription->get_id() );
+		$order->save();
+
+		// Update the subscription from the order.
+		// Set order meta so this order can be tied up later.
 	}
 }
