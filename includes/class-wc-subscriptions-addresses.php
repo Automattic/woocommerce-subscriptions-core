@@ -7,7 +7,6 @@
  * @package    WooCommerce Subscriptions
  * @subpackage WC_Subscriptions_Addresses
  * @category   Class
- * @author     Brent Shepherd
  * @since      1.0.0 - Migrated from WooCommerce Subscriptions v1.3
  */
 class WC_Subscriptions_Addresses {
@@ -41,7 +40,7 @@ class WC_Subscriptions_Addresses {
 	 * @return bool Whether the user can edit the subscription's address.
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.0.15
 	 */
-	private static function can_user_edit_subscription_address( $subscription, $user_id = 0 ) {
+	public static function can_user_edit_subscription_address( $subscription, $user_id = 0 ) {
 		$subscription = wcs_get_subscription( $subscription );
 		$user_id      = empty( $user_id ) ? get_current_user_id() : absint( $user_id );
 
@@ -58,8 +57,13 @@ class WC_Subscriptions_Addresses {
 	 */
 	public static function add_edit_address_subscription_action( $actions, $subscription ) {
 		if ( $subscription->needs_shipping_address() && $subscription->has_status( array( 'active', 'on-hold' ) ) ) {
+			// If WC Blocks is used for checkout or the subscription doesn't support amount changes use the existing edit-address url.
+			$edit_address_url = ! $subscription->payment_method_supports( 'subscription_amount_changes' )
+				? add_query_arg( array( 'subscription' => $subscription->get_id() ), wc_get_endpoint_url( 'edit-address', 'shipping' ) )
+				: add_query_arg( array( 'update_subscription_address' => $subscription->get_id() ), wc_get_checkout_url() );
+
 			$actions['change_address'] = array(
-				'url'  => esc_url( add_query_arg( array( 'subscription' => $subscription->get_id() ), wc_get_endpoint_url( 'edit-address', 'shipping' ) ) ),
+				'url'  => esc_url( $edit_address_url ),
 				'name' => __( 'Change address', 'woocommerce-subscriptions' ),
 			);
 		}
@@ -79,7 +83,7 @@ class WC_Subscriptions_Addresses {
 
 		if ( ! self::can_user_edit_subscription_address( absint( $_GET['subscription'] ) ) ) {
 			wc_add_notice( 'Invalid subscription.', 'error' );
-			wp_redirect( wc_get_account_endpoint_url( 'dashboard' ) );
+			wp_safe_redirect( wc_get_account_endpoint_url( 'dashboard' ) );
 			exit();
 		}
 	}
@@ -181,7 +185,7 @@ class WC_Subscriptions_Addresses {
 	}
 
 	/**
-	 * Prepopulate the address fields on a subscription item
+	 * Pre-populates the address fields on a subscription item.
 	 *
 	 * @param array $address A WooCommerce address array
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.5

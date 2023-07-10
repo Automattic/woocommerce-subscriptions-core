@@ -477,7 +477,7 @@ class WC_Subscriptions_Cart {
 	 * @return array $package Package contents.
 	 */
 	public static function change_initial_shipping_package_name( $package_name, $package_id, $package ) {
-		if ( ! self::cart_contains_subscription() || isset( $package['recurring_cart_key'] ) ) {
+		if ( ! self::cart_contains_subscription() || isset( $package['recurring_cart_key'] ) || WC_Subscriptions_Change_Address_Via_Checkout_Handler::cart_contains_change_address_request() ) {
 			return $package_name;
 		}
 		return __( 'Initial Shipment', 'woocommerce-subscriptions' );
@@ -986,6 +986,13 @@ class WC_Subscriptions_Cart {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function display_recurring_totals() {
+		// Ignoring the nonce check here as it's already been verified in WC_Checkout::process_checkout().
+		$form_data = wp_parse_args( wc_clean( wp_unslash( $_POST['post_data'] ?? null ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		// Don't show recurring totals if we're updating the shipping address.
+		if ( isset( $_GET['update_subscription_address'] ) || isset( $form_data['update_subscription_address'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
+		}
 
 		if ( self::cart_contains_subscription() && ! empty( WC()->cart->recurring_carts ) ) {
 			// We only want shipping for recurring amounts, and they need to be calculated again here.
@@ -1432,7 +1439,7 @@ class WC_Subscriptions_Cart {
 		if ( 'none' !== self::$recurring_cart_key && isset( $chosen_methods[ $recurring_cart_package_key ], $available_methods[ $chosen_methods[ $recurring_cart_package_key ] ] ) ) {
 			$default_method = $chosen_methods[ $recurring_cart_package_key ];
 
-		// Set the chosen shipping method (if available) to workaround WC_Shipping::get_default_method() setting the default shipping method whenever method count changes
+			// Set the chosen shipping method (if available) to workaround WC_Shipping::get_default_method() setting the default shipping method whenever method count changes
 		} elseif ( isset( $chosen_methods[ $package_index ], $available_methods[ $chosen_methods[ $package_index ] ] ) && $default_method !== $chosen_methods[ $package_index ] ) {
 			$default_method = $chosen_methods[ $package_index ];
 		}
@@ -2400,7 +2407,7 @@ class WC_Subscriptions_Cart {
 					return sprintf(
 						// translators: 1$: period, 2$: day of the week (e.g. "every 2nd week on Wednesday").
 						__( 'every %1$s on %2$s', 'woocommerce-subscriptions' ),
-						wcs_get_subscription_period_strings( $interval,$period ),
+						wcs_get_subscription_period_strings( $interval, $period ),
 						$payment_day_of_week
 					);
 				}
