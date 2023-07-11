@@ -83,11 +83,11 @@ function wcs_cart_totals_shipping_html() {
 					$chosen_recurring_method = empty( $package['rates'] ) ? '' : current( $package['rates'] )->id;
 				}
 
-				$shipping_selection_displayed       = false;
-				$only_one_shipping_option           = count( $package['rates'] ) === 1;
-				$recurring_rates_match_intial_rates = isset( $package['rates'][ $chosen_initial_method ] ) && isset( $initial_packages[ $package_index ] ) && $package['rates'] == $initial_packages[ $package_index ]['rates'];
+				$shipping_selection_displayed        = false;
+				$only_one_shipping_option            = count( $package['rates'] ) === 1;
+				$recurring_rates_match_initial_rates = isset( $package['rates'][ $chosen_initial_method ] ) && isset( $initial_packages[ $package_index ] ) && $package['rates'] == $initial_packages[ $package_index ]['rates']; // phpcs:ignore WordPress.PHP.StrictComparisons
 
-				if ( $only_one_shipping_option || ( $recurring_rates_match_intial_rates && apply_filters( 'wcs_cart_totals_shipping_html_price_only', true, $package, $recurring_cart ) ) ) {
+				if ( $only_one_shipping_option || ( $recurring_rates_match_initial_rates && apply_filters( 'wcs_cart_totals_shipping_html_price_only', true, $package, $recurring_cart ) ) ) {
 					$shipping_method = ( 1 === count( $package['rates'] ) ) ? current( $package['rates'] ) : $package['rates'][ $chosen_initial_method ];
 					// packages match, display shipping amounts only
 					?>
@@ -110,7 +110,7 @@ function wcs_cart_totals_shipping_html() {
 							<?php if ( ! empty( $show_package_details ) ) : ?>
 								<?php echo '<p class="woocommerce-shipping-contents"><small>' . esc_html( $package_details ) . '</small></p>'; ?>
 							<?php endif; ?>
-							<?php if ( $recurring_rates_match_intial_rates ) : ?>
+							<?php if ( $recurring_rates_match_initial_rates ) : ?>
 								<?php wcs_cart_print_inherit_shipping_flag( $recurring_cart_package_key ); ?>
 							<?php endif; ?>
 						</td>
