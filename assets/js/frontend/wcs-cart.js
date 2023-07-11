@@ -36,7 +36,7 @@ jQuery( function ( $ ) {
 				return;
 			}
 
-			// Find all recurring cart shipping info elements that match the same package index as the shipping method that was changed.
+			// Find all recurring cart info elements with the same package index as the changed shipping method.
 			$( '.recurring-cart-shipping-mapping-info[data-index=' + package_index + ']' ).each( function() {
 				// Update the corresponding subscription's hidden chosen shipping method.
 				$( 'input[name="shipping_method[' + $( this ).data( 'recurring_index' ) + ']"]' ).val( shipping_method_id );
