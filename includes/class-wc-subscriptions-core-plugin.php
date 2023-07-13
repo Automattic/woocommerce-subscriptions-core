@@ -467,11 +467,33 @@ class WC_Subscriptions_Core_Plugin {
 			 *
 			 * If we're querying for subscriptions, we need to map 'any' to be all valid subscription statuses otherwise it would just search for order statuses.
 			 */
-			if ( isset( $query_vars['status'], $query_vars['type'] ) &&
-				( [ 'any' ] === (array) $query_vars['status'] || [ '' ] === (array) $query_vars['status'] ) &&
-				'shop_subscription' === $query_vars['type']
-			) {
-				$query_vars['status'] = array_keys( wcs_get_subscription_statuses() );
+
+			if ( isset( $query_vars['post_type'] ) && '' !== $query_vars['post_type'] ) {
+				// OrdersTableQuery::maybe_remap_args() will overwrite `type` with the `post_type` value.
+				if ( 'shop_subscription' !== $query_vars['post_type'] ) {
+					return $query_vars;
+				}
+
+				// Simplify the type logic.
+				$query_vars['type'] = 'shop_subscription';
+				unset( $query_vars['post_type'] );
+			}
+
+			if ( isset( $query_vars['type'] ) && 'shop_subscription' === $query_vars['type'] ) {
+				if ( isset( $query_vars['post_status'] ) && '' !== $query_vars['post_status'] ) {
+					// OrdersTableQuery::maybe_remap_args() will overwrite `status` with the `post_status` value.
+					if ( 'any' !== $query_vars['post_status'] ) {
+						return $query_vars;
+					}
+
+					// Simplify the status logic.
+					$query_vars['status'] = 'any';
+					unset( $query_vars['post_status'] );
+				}
+
+				if ( [ 'any' ] === (array) $query_vars['status'] || [ '' ] === (array) $query_vars['status'] ) {
+					$query_vars['status'] = array_keys( wcs_get_subscription_statuses() );
+				}
 			}
 		}
 

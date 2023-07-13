@@ -436,39 +436,6 @@ function wcs_get_subscriptions( $args ) {
 		return array();
 	}
 
-	/**
-	 * wc_get_orders():
-	 * HPOS
-	 * 'any' => valid order statuses
-	 * ['any'] => converted to status in ('any')
-	 * '' => valid order statuses - just like 'any'
-	 * [''] => no order status restriction applied
-	 *
-	 * non-HPOS
-	 * 'any' => valid order statuses
-	 * ['any'] => converted to status not in ('trash', 'auto-draft')
-	 * '' => status = publish
-	 * [''] => no order status restriction applied
-	 *
-	 * wcs_get_subscriptions() would historically overwrite 'any' and '' with ['any'] and [''] resulting in different behavior
-	 * than expected if just querying orders.  We should probably keep this behavior of wcs_get_subscriptions(), but
-	 * makes ure that wcs_get_orders_with_meta_query() behaves like wc_get_orders() as much as possible.
-	 *
-	 * I should probably:
-	 * - create tests for wcs_get_orders_with_meta_query() to behave as expected.
-	 * - use the filter on `woocommerce_order_query_args` to deal with subscription status in the right context.
-	 * - adjust wcs_get_orders_with_meta_query() as needed.
-	 *
-	 * - revert the functionality here to the previous
-	 * - decipher how that effects expectations for the tests and update the tests against wcs_get_subscriptions() = the default 'anuy' should probably go bacck to ['any']
-	 *
-	 */
-
-	// If the order ID arg is not a shop_order then there's no need to proceed with the query.
-	if ( 0 !== $args['order_id'] && 'shop_order' !== WC_Data_Store::load( 'order' )->get_order_type( $args['order_id'] ) ) {
-		return array();
-	}
-
 	// Ensure subscription_status is an array.
 	$args['subscription_status'] = $args['subscription_status'] ? (array) $args['subscription_status'] : [];
 
