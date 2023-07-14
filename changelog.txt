@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 5.9.0 - 2023-xx-xx =
+= 5.9.0 - 2023-07-14 =
 * Fix - Ensure when a customer changes the shipping method on cart and checkout that the recurring totals correctly reflect the chosen method.
 
 = 5.8.0 - 2023-07-05 =
