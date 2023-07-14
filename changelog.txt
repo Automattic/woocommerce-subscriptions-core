@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 5.9.0 - 2023-xx-xx =
+* Fix - Ensure when a customer changes the shipping method on cart and checkout that the recurring totals correctly reflect the chosen method.
+
 = 5.8.0 - 2023-07-05 =
 * Fix - When HPOS is enabled, permanently deleting a subscription related order wasn't updating the related orders cache properly.
 * Fix - Added logic to check if the recurring cart array is present before displaying the recurring totals section in the cart.
