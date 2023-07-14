@@ -206,7 +206,7 @@ function wcs_cart_print_inherit_shipping_flag( $shipping_method_index ) {
 		'<input type="hidden" data-recurring_index="%1$s" data-index="%2$s" data-recurring-cart-key="%3$s" data-recurring-cart-key="%2$s" value="true" class="recurring-cart-shipping-mapping-info"/>',
 		esc_attr( $shipping_method_index ),
 		esc_attr( $package_index ),
-		esc_attr( $recurring_cart_key ),
+		esc_attr( $recurring_cart_key )
 	);
 }
 
