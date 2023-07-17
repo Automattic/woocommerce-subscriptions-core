@@ -10,21 +10,6 @@ class WCS_Deprecated_Functions_Test extends WP_UnitTestCase {
 		add_filter( 'woocommerce_order_item_get_subtotal', array( $this, 'return_0_if_empty' ) );
 	}
 
-	public function tear_down() {
-		global $wpdb;
-
-		remove_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
-		_delete_all_posts();
-
-		// Delete line items
-		$wpdb->query( "TRUNCATE TABLE {$wpdb->prefix}woocommerce_order_items" );
-		$wpdb->query( "TRUNCATE TABLE {$wpdb->prefix}woocommerce_order_itemmeta" );
-
-		$this->commit_transaction();
-		parent::tear_down();
-		add_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription', 10, 1 );
-	}
-
 	/**
 	 * includes/wcs-deprecated-functions.php
 	 */
