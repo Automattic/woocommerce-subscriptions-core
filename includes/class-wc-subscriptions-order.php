@@ -1255,7 +1255,7 @@ class WC_Subscriptions_Order {
 		if ( isset( $query_vars['type'] ) && 'shop_subscription' === $query_vars['type'] ) {
 			if ( isset( $query_vars['post_status'] ) && '' !== $query_vars['post_status'] ) {
 				// OrdersTableQuery::maybe_remap_args() will overwrite `status` with the `post_status` value.
-				if ( 'any' !== $query_vars['post_status'] ) {
+				if ( [ 'any' ] !== (array) $query_vars['post_status'] ) {
 					return $query_vars;
 				}
 
