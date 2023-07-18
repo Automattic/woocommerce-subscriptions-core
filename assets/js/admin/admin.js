@@ -768,7 +768,6 @@ jQuery( function ( $ ) {
 	});
 
 	$( 'input#_downloadable, input#_virtual' ).on( 'change', function () {
-
 		$.showHideSubscriptionMeta();
 		$.showHideVariableSubscriptionMeta();
 	} );
