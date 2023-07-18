@@ -6,15 +6,16 @@
 class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 	/** An array of basic subscriptions used to test against */
-	public static $subscriptions = [];
+	private $subscriptions = [];
 
 	/**
 	 * Setup the suite for testing the WC_Subscription class
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
-	public static function set_up_before_class() {
-		self::$subscriptions = WCS_Helper_Subscription::create_subscriptions();
+	public function set_up() {
+		parent::set_up();
+		$this->subscriptions = WCS_Helper_Subscription::create_subscriptions();
 	}
 
 	/**
@@ -56,7 +57,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_be_updated_to( 'pending' );
 			$this->assertEquals( $expected_result, $actual_result, '[FAILED]: ' . $status . ' to pending.' );
@@ -82,7 +83,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'  => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 
 			if ( ! isset( $expected_results[ $status ] ) ) {
 				continue;
@@ -98,7 +99,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		}
 
 		// Subscriptions pending cancelation can only be reactivated if the subscription's end date is still in the future.
-		$subcription = self::$subscriptions['pending-cancel'];
+		$subcription = $this->subscriptions['pending-cancel'];
 
 		// End date in the future
 		$subcription->update_dates( [ 'end' => gmdate( 'Y-m-d H:i:s', wcs_add_months( time(), 1 ) ) ] );
@@ -123,8 +124,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		// Additional test cases checking the logic around WC_Subscription::payment_method_supports() function
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 
-		$this->assertEquals( false, self::$subscriptions['on-hold']->can_be_updated_to( 'active' ), '[FAILED]: Should not be able to activate an on-hold subscription if the payment gateway does not support it.' );
-		$this->assertEquals( true, self::$subscriptions['pending']->can_be_updated_to( 'active' ), '[FAILED]: Should be able to update pending status to active if the payment method does not support subscription reactivation.' );
+		$this->assertEquals( false, $this->subscriptions['on-hold']->can_be_updated_to( 'active' ), '[FAILED]: Should not be able to activate an on-hold subscription if the payment gateway does not support it.' );
+		$this->assertEquals( true, $this->subscriptions['pending']->can_be_updated_to( 'active' ), '[FAILED]: Should be able to update pending status to active if the payment method does not support subscription reactivation.' );
 
 		remove_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 	}
@@ -145,7 +146,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_be_updated_to( 'on-hold' );
 			$this->assertEquals( $expected_result, $actual_result, '[FAILED]: ' . $status . ' to on-hold.' );
@@ -158,8 +159,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		// Additional test cases checking the logic around WC_Subscription::payment_method_supports() function
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 
-		$this->assertEquals( false, self::$subscriptions['active']->can_be_updated_to( 'on-hold' ), '[FAILED]: Should not be able to put subscription on-hold if the payment gateway does not support it.' );
-		$this->assertEquals( false, self::$subscriptions['pending']->can_be_updated_to( 'on-hold' ), '[FAILED]: Should be able to update pending status on-hold if the payment method does not support subscription suspension.' );
+		$this->assertEquals( false, $this->subscriptions['active']->can_be_updated_to( 'on-hold' ), '[FAILED]: Should not be able to put subscription on-hold if the payment gateway does not support it.' );
+		$this->assertEquals( false, $this->subscriptions['pending']->can_be_updated_to( 'on-hold' ), '[FAILED]: Should be able to update pending status on-hold if the payment method does not support subscription suspension.' );
 
 		remove_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 	}
@@ -180,7 +181,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_be_updated_to( 'wc-cancelled' );
 			$this->assertEquals( $expected_result, $actual_result, '[FAILED]: ' . $status . ' to wc-cancelled.' );
@@ -193,10 +194,10 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		// Additional test cases checking the logic around WC_Subscription::payment_method_supports() function
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 
-		$this->assertEquals( false, self::$subscriptions['pending-cancel']->can_be_updated_to( 'cancelled' ) );
-		$this->assertEquals( false, self::$subscriptions['active']->can_be_updated_to( 'cancelled' ) );
-		$this->assertEquals( false, self::$subscriptions['pending']->can_be_updated_to( 'cancelled' ) );
-		$this->assertEquals( false, self::$subscriptions['on-hold']->can_be_updated_to( 'cancelled' ) );
+		$this->assertEquals( false, $this->subscriptions['pending-cancel']->can_be_updated_to( 'cancelled' ) );
+		$this->assertEquals( false, $this->subscriptions['active']->can_be_updated_to( 'cancelled' ) );
+		$this->assertEquals( false, $this->subscriptions['pending']->can_be_updated_to( 'cancelled' ) );
+		$this->assertEquals( false, $this->subscriptions['on-hold']->can_be_updated_to( 'cancelled' ) );
 
 		remove_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 	}
@@ -217,7 +218,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false, // should statuses be able to be udpated to their previous status ?!
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_be_updated_to( 'wc-switched' );
 
@@ -241,7 +242,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_be_updated_to( 'wc-expired' );
 
@@ -265,7 +266,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_be_updated_to( 'pending-cancel' );
 
@@ -275,7 +276,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		// Additional test cases checking the logic around WC_Subscription::payment_method_supports() function
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 
-		$this->assertEquals( false, self::$subscriptions['active']->can_be_updated_to( 'pending-cancel' ), '[FAILED]: Active Subscription statuses cannot be updated to pending-cancel if the payment method does not support it.' );
+		$this->assertEquals( false, $this->subscriptions['active']->can_be_updated_to( 'pending-cancel' ), '[FAILED]: Active Subscription statuses cannot be updated to pending-cancel if the payment method does not support it.' );
 
 		remove_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 	}
@@ -296,7 +297,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => true,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
 			// although wc-trash is not a legitimate status, it should still work
 			$actual_result = $subscription->can_be_updated_to( 'wc-trash' );
@@ -307,8 +308,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		// Additional test cases checking the logic around WC_Subscription::payment_method_supports() function
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 
-		$this->assertEquals( false, self::$subscriptions['active']->can_be_updated_to( 'trash' ), '[FAILED]: Should not be able to  move active subscription to the trash if the payment method does not support it.' );
-		$this->assertEquals( false, self::$subscriptions['pending']->can_be_updated_to( 'trash' ), '[FAILED]: Should not be able to move a Pending subscription with a payment method that does not support subscription cancellation to the trash.' );
+		$this->assertEquals( false, $this->subscriptions['active']->can_be_updated_to( 'trash' ), '[FAILED]: Should not be able to  move active subscription to the trash if the payment method does not support it.' );
+		$this->assertEquals( false, $this->subscriptions['pending']->can_be_updated_to( 'trash' ), '[FAILED]: Should not be able to move a Pending subscription with a payment method that does not support subscription cancellation to the trash.' );
 
 		remove_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 	}
@@ -329,7 +330,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_be_updated_to( 'deleted' );
@@ -354,7 +355,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_be_updated_to( 'fgsdyfg' );
 			$this->assertEquals( $expected_result, $actual_result, '[FAILED]: Should not be able to update subscription (' . $status . ') to fgsdyfg.' );
@@ -380,7 +381,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_date_be_updated( 'date_created' );
 
@@ -405,7 +406,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_date_be_updated( 'trial_end' );
@@ -423,9 +424,9 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		// Additional test cases checking the logic around WC_Subscription::payment_method_supports() function
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 
-		$this->assertEquals( true, self::$subscriptions['pending']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should able to update pending subscription even if the payment gateway does not support it.' );
-		$this->assertEquals( false, self::$subscriptions['active']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should not be able to update an active subscription trial_end date if the payment gateway does not support it.' );
-		$this->assertEquals( false, self::$subscriptions['on-hold']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should not be able to update an active subscription trial_end date if the payment gateway does not support it.' );
+		$this->assertEquals( true, $this->subscriptions['pending']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should able to update pending subscription even if the payment gateway does not support it.' );
+		$this->assertEquals( false, $this->subscriptions['active']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should not be able to update an active subscription trial_end date if the payment gateway does not support it.' );
+		$this->assertEquals( false, $this->subscriptions['on-hold']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should not be able to update an active subscription trial_end date if the payment gateway does not support it.' );
 
 		remove_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 	}
@@ -447,7 +448,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_date_be_updated( 'next_payment' );
 			$this->assertEquals( $expected_result, $actual_result, '[FAILED]: Updating next_payment date of subscription (' . $status . ').' );
@@ -460,9 +461,9 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		// Additional test cases checking the logic around WC_Subscription::payment_method_supports() function
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 
-		$this->assertEquals( true, self::$subscriptions['pending']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should able to update pending subscription even if the payment gateway does not support it.' );
-		$this->assertEquals( false, self::$subscriptions['active']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should not be able to update an active subscription trial_end date if the payment gateway does not support it.' );
-		$this->assertEquals( false, self::$subscriptions['on-hold']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should not be able to update an active subscription trial_end date if the payment gateway does not support it.' );
+		$this->assertEquals( true, $this->subscriptions['pending']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should able to update pending subscription even if the payment gateway does not support it.' );
+		$this->assertEquals( false, $this->subscriptions['active']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should not be able to update an active subscription trial_end date if the payment gateway does not support it.' );
+		$this->assertEquals( false, $this->subscriptions['on-hold']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should not be able to update an active subscription trial_end date if the payment gateway does not support it.' );
 
 		remove_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 	}
@@ -474,7 +475,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public function test_calculate_date_rubbish() {
 
-		$this->assertEmpty( self::$subscriptions['active']->calculate_date( 'dhfu' ) );
+		$this->assertEmpty( $this->subscriptions['active']->calculate_date( 'dhfu' ) );
 	}
 
 	/**
@@ -866,9 +867,9 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$caught = false;
 
 		try {
-			self::$subscriptions['active']->delete_date( 'last_order_date_created' );
+			$this->subscriptions['active']->delete_date( 'last_order_date_created' );
 		} catch ( Exception $e ) {
-			$caught = 'Subscription #' . self::$subscriptions['active']->get_id() . ': The last_order_date_created date of a subscription can not be deleted. You must delete the order.' === $e->getMessage();
+			$caught = 'Subscription #' . $this->subscriptions['active']->get_id() . ': The last_order_date_created date of a subscription can not be deleted. You must delete the order.' === $e->getMessage();
 		}
 
 		$this->assertTrue( $caught, '[FAILED]: Exception and the correct message should have been caught when trying to delete a subscriptions last payment date.' );
@@ -880,13 +881,13 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_delete_date_valid() {
-		$old_date = self::$subscriptions['active']->get_date( 'end' );
+		$old_date = $this->subscriptions['active']->get_date( 'end' );
 
-		self::$subscriptions['active']->delete_date( 'end' );
-		$this->assertEquals( 0, self::$subscriptions['active']->get_date( 'end' ) );
-		$this->assertEmpty( get_post_meta( self::$subscriptions['active']->get_id(), wcs_get_date_meta_key( 'end' ), true ) );
+		$this->subscriptions['active']->delete_date( 'end' );
+		$this->assertEquals( 0, $this->subscriptions['active']->get_date( 'end' ) );
+		$this->assertEmpty( get_post_meta( $this->subscriptions['active']->get_id(), wcs_get_date_meta_key( 'end' ), true ) );
 
-		update_post_meta( self::$subscriptions['active']->get_id(), wcs_get_date_meta_key( 'end' ), $old_date );
+		update_post_meta( $this->subscriptions['active']->get_id(), wcs_get_date_meta_key( 'end' ), $old_date );
 	}
 
 	/**
@@ -895,9 +896,9 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_delete_date_other() {
-		self::$subscriptions['pending']->delete_date( 'wcs_rubbish' );
-		$this->assertEquals( 0, self::$subscriptions['pending']->get_date( 'wcs_rubbish' ) );
-		$this->assertEmpty( get_post_meta( self::$subscriptions['pending']->get_id(), wcs_get_date_meta_key( 'wcs_rubbish' ), true ) );
+		$this->subscriptions['pending']->delete_date( 'wcs_rubbish' );
+		$this->assertEquals( 0, $this->subscriptions['pending']->get_date( 'wcs_rubbish' ) );
+		$this->assertEmpty( get_post_meta( $this->subscriptions['pending']->get_id(), wcs_get_date_meta_key( 'wcs_rubbish' ), true ) );
 	}
 
 	/**
@@ -927,7 +928,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public function test_get_completed_count_none() {
 		foreach ( [ 'active', 'on-hold', 'pending' ] as $status ) {
-			$completed_payments = self::$subscriptions[ $status ]->get_payment_count();
+			$completed_payments = $this->subscriptions[ $status ]->get_payment_count();
 			$this->assertEmpty( $completed_payments );
 		}
 	}
@@ -970,9 +971,9 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			]
 		);
 
-		update_post_meta( $post_id, '_subscription_renewal', self::$subscriptions['active']->get_id() );
+		update_post_meta( $post_id, '_subscription_renewal', $this->subscriptions['active']->get_id() );
 
-		$this->assertEmpty( self::$subscriptions['active']->get_payment_count() );
+		$this->assertEmpty( $this->subscriptions['active']->get_payment_count() );
 	}
 
 	/**
@@ -988,9 +989,9 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 		foreach ( [ 'active', 'on-hold', 'pending' ] as $status ) {
 
-			WCS_Related_Order_Store::instance()->add_relation( $order, self::$subscriptions[ $status ], 'renewal' );
+			WCS_Related_Order_Store::instance()->add_relation( $order, $this->subscriptions[ $status ], 'renewal' );
 
-			$failed_payments = self::$subscriptions[ $status ]->get_failed_payment_count();
+			$failed_payments = $this->subscriptions[ $status ]->get_failed_payment_count();
 
 			$expected_count = 1;
 
@@ -1020,10 +1021,10 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			$expected_count = 0;
 			foreach ( $orders as $order ) {
 
-				WCS_Related_Order_Store::instance()->add_relation( $order, self::$subscriptions[ $status ], 'renewal' );
+				WCS_Related_Order_Store::instance()->add_relation( $order, $this->subscriptions[ $status ], 'renewal' );
 				$expected_count++;
 
-				$failed_payments = self::$subscriptions[ $status ]->get_failed_payment_count();
+				$failed_payments = $this->subscriptions[ $status ]->get_failed_payment_count();
 
 				$this->assertEquals( $expected_count, $failed_payments );
 			}
@@ -1460,7 +1461,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public function test_update_status_exception_thrown_one() {
 		$this->setExpectedException( 'Exception', 'Unable to change subscription status to "pending".' );
-		self::$subscriptions['active']->update_status( 'pending' );
+		$this->subscriptions['active']->update_status( 'pending' );
 	}
 
 	/**
@@ -1470,7 +1471,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public function test_update_status_exception_thrown_two() {
 		$this->setExpectedException( 'Exception', 'Unable to change subscription status to "pending-cancel".' );
-		self::$subscriptions['pending']->update_status( 'pending-cancel' );
+		$this->subscriptions['pending']->update_status( 'pending-cancel' );
 	}
 
 	/**
