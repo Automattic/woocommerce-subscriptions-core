@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 6.0.0 - 2023-xx-xx =
+= 6.0.0 - 2023-07-18 =
 * Fix - Resolve an issue that prevented the "Used for variations" checkbox from being enabled on the variable subscription product edit screen on WC version v7.9.0.
 
 = 5.9.0 - 2023-07-14 =
