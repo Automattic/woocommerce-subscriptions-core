@@ -86,13 +86,14 @@ jQuery( function ( $ ) {
 					.addClass( 'form-row-last' );
 			}
 		},
-		enableProductFields: function () {
+		enableSubscriptionProductFields: function () {
 			product_type = $( 'select#product-type' ).val();
 			enable_type  = '';
 
-			if ( product_type == 'variable-subscription' ) {
+			// Variable subscriptions need to enable variable product fields and subscriptions products need to enable simple product fields.
+			if ( 'variable-subscription' === product_type ) {
 				enable_type = 'variable'
-			} else {
+			} else if ( 'subscription' === product_type ) {
 				enable_type = 'simple';
 			}
 
@@ -737,14 +738,14 @@ jQuery( function ( $ ) {
 	$( 'body' ).on( 'woocommerce-product-type-change', function () {
 		$.showHideSubscriptionMeta();
 		$.showHideVariableSubscriptionMeta();
-		$.enableProductFields();
+		$.enableSubscriptionProductFields();
 		$.showHideSyncOptions();
 		$.showHideSubscriptionsPanels();
 	} );
 
 	// WC Core enable/disable product fields when saving attributes. We need to make sure we re-enable our fields.
 	$( document.body ).on( 'woocommerce_attributes_saved', function () {
-		$.enableProductFields();
+		$.enableSubscriptionProductFields();
 	} );
 
 	/**
@@ -762,7 +763,7 @@ jQuery( function ( $ ) {
 		setTimeout( function() {
 			$.showHideSubscriptionMeta();
 			$.showHideVariableSubscriptionMeta();
-			$.enableProductFields();
+			$.enableSubscriptionProductFields();
 		}, 100 );
 	});
 
