@@ -133,7 +133,7 @@ class WC_Subscriptions_Core_Plugin {
 		WCS_Dependent_Hook_Manager::init();
 		WCS_Admin_Product_Import_Export_Manager::init();
 		WC_Subscriptions_Frontend_Scripts::init();
-		WCS_Admin_List_Empty_Content_Manager::init();
+		WCS_Admin_Empty_List_Content_Manager::init();
 
 		add_action( 'init', array( 'WC_Subscriptions_Synchroniser', 'init' ) );
 		add_action( 'after_setup_theme', array( 'WC_Subscriptions_Upgrader', 'init' ), 11 );
@@ -345,7 +345,7 @@ class WC_Subscriptions_Core_Plugin {
 						'view'               => _x( 'View Subscription', 'custom post type setting', 'woocommerce-subscriptions' ),
 						'view_item'          => _x( 'View Subscription', 'custom post type setting', 'woocommerce-subscriptions' ),
 						'search_items'       => __( 'Search Subscriptions', 'woocommerce-subscriptions' ),
-						'not_found'          => WCS_Admin_List_Empty_Content_Manager::get_content(),
+						'not_found'          => WCS_Admin_Empty_List_Content_Manager::get_content(),
 						'not_found_in_trash' => _x( 'No Subscriptions found in trash', 'custom post type setting', 'woocommerce-subscriptions' ),
 						'parent'             => _x( 'Parent Subscriptions', 'custom post type setting', 'woocommerce-subscriptions' ),
 						'menu_name'          => __( 'Subscriptions', 'woocommerce-subscriptions' ),

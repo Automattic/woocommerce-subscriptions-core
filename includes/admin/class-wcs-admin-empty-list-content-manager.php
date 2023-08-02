@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WCS_Admin_List_Empty_Content_Manager
+ * Class WCS_Admin_Empty_List_Content_Manager
  *
  * @package WooCommerce Subscriptions
  * @since 6.1.0
@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * A class for managing the content displayed in the WooCommerce → Subscriptions admin list table when no results are found.
  */
-class WCS_Admin_List_Empty_Content_Manager {
+class WCS_Admin_Empty_List_Content_Manager {
 
 	/**
 	 * Initializes the class and attach callbacks.
