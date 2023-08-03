@@ -1,7 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 6.1.0 - 2023-xx-xx =
+= 6.1.0 - 2023-07-26 =
 * Add - Introduce an updated empty state screen for the WooCommerce > Subscriptions list table.
+* Fix - Resolved an issue that prevented the "Used for variations" checkbox to not be enabled on the edit product page load causing variations to be deleted erroneously.
 * Dev - Fixed wcs_get_subscription_orders() returning an empty list when querying parent orders when HPOS is enabled with data syncing off.
 * Dev - Deprecated the 'woocommerce_subscriptions_not_found_label' filter.
 
