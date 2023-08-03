@@ -1,7 +1,10 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 6.1.0 - 2023-xx-xx =
+= 6.2.0 - 2023-xx-xx =
 * Fix - Ensure subscription checkout and cart block integrations are loaded on store environments where WooPayments is not enabled.
+
+= 6.1.0 - 2023-07-26 =
+* Fix - Resolved an issue that prevented the "Used for variations" checkbox to not be enabled on the edit product page load causing variations to be deleted erroneously.
 * Dev - Fixed wcs_get_subscription_orders() returning an empty list when querying parent orders when HPOS is enabled with data syncing off.
 
 = 6.0.0 - 2023-07-18 =
