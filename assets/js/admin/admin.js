@@ -1427,4 +1427,9 @@ jQuery( function ( $ ) {
 			);
 		}
 	} );
+
+	// On the subscriptions list table empty state screen, add the is-busy class to the button when clicked.
+	$( '.woo_subscriptions_empty_state__button_container a' ).on( 'click', function ( e ) {
+		$( this ).addClass( 'is-busy' );
+	} );
 } );
