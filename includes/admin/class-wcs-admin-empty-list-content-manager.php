@@ -3,7 +3,7 @@
  * Class WCS_Admin_Empty_List_Content_Manager
  *
  * @package WooCommerce Subscriptions
- * @since 6.1.0
+ * @since 6.2.0
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -39,7 +39,7 @@ class WCS_Admin_Empty_List_Content_Manager {
 
 		// Backwards compatibility for the woocommerce_subscriptions_not_found_label filter.
 		if ( has_action( 'woocommerce_subscriptions_not_found_label' ) ) {
-			wcs_deprecated_hook( 'woocommerce_subscriptions_not_found_label', '6.1.0', 'woocommerce_subscriptions_not_found_content' );
+			wcs_deprecated_hook( 'woocommerce_subscriptions_not_found_label', '6.2.0', 'woocommerce_subscriptions_not_found_content' );
 
 			/**
 			 * Filters the HTML for the empty state.
@@ -48,7 +48,7 @@ class WCS_Admin_Empty_List_Content_Manager {
 			 * more complex - it is no longer just a string. For backwards compatibility we still filter the
 			 * full content shown in the empty state.
 			 *
-			 * @deprecated 6.1.0 Use the woocommerce_subscriptions_not_found_html filter instead.
+			 * @deprecated 6.2.0 Use the woocommerce_subscriptions_not_found_html filter instead.
 			 * @param string $content The HTML for the empty state.
 			 */
 			$content = apply_filters( 'woocommerce_subscriptions_not_found_label', $content );
@@ -57,7 +57,7 @@ class WCS_Admin_Empty_List_Content_Manager {
 		/**
 		 * Filters the HTML for the empty state.
 		 *
-		 * @since 6.1.0
+		 * @since 6.2.0
 		 * @param string $html The HTML for the empty state.
 		 */
 		return apply_filters( 'woocommerce_subscriptions_not_found_content', $content );
