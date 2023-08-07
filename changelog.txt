@@ -1,8 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-
 = 6.1.0 - 2023-07-26 =
 * Fix - Resolved an issue that prevented the "Used for variations" checkbox to not be enabled on the edit product page load causing variations to be deleted erroneously.
+* Fix - Ensure the shipping phone number field is copied to subscriptions and their orders when copying address meta.
 * Dev - Fixed wcs_get_subscription_orders() returning an empty list when querying parent orders when HPOS is enabled with data syncing off.
 
 = 6.0.0 - 2023-07-18 =
