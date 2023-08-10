@@ -10,20 +10,6 @@ function wcs_max_log_size_filter() {
  */
 class WCS_Functions_Test extends WP_UnitTestCase {
 
-	public function tear_down() {
-		remove_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
-		remove_action( 'woocommerce_before_delete_subscription', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
-		_delete_all_posts();
-		$subscriptions = wcs_get_subscriptions( [] );
-		foreach ( $subscriptions as $subscription ) {
-			$subscription->delete( true );
-		}
-		$this->commit_transaction();
-		parent::tear_down();
-		add_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription', 10, 1 );
-		add_action( 'woocommerce_before_delete_subscription', 'WC_Subscriptions_Manager::maybe_cancel_subscription', 10, 1 );
-	}
-
 	public function test_wcs_cleanup_logs_no_changes() {
 		$file = wc_get_log_file_path( 'wcs-cache' );
 
@@ -1050,29 +1036,46 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$this->assertArrayNotHasKey( $subscription_7->get_id(), $subscriptions );
 		unset( $subscriptions );
 
-		// Rubbish
+		$is_hpos_enabled = wcs_is_custom_order_tables_usage_enabled();
+
+		// An invalid status
 		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'rubbish' ) );
 
+		if ( $is_hpos_enabled ) {
+			// No subscriptions should match the invalid status.
+			$this->assertIsArray( $subscriptions );
+			$this->assertEquals( 0, count( $subscriptions ) );
+		} else {
+			// In non-HPOS environments, WP_Query simply ignores invalid post_stati, so no clause would be applied.
+			$this->assertIsArray( $subscriptions );
+			$this->assertEquals( 8, count( $subscriptions ) );
+			$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_3->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_4->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_5->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_6->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_7->get_id(), $subscriptions );
+			$this->assertArrayHasKey( $subscription_8->get_id(), $subscriptions );
+		}
+
+		unset( $subscriptions );
+
+		// An invalid status is ignored and does not apply as a clause to the query, while the valid status still applies.
+		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => [ 'rubbish', 'active' ] ) );
+
 		$this->assertIsArray( $subscriptions );
-		$this->assertEquals( 8, count( $subscriptions ) );
-		$this->assertArrayHasKey( $subscription_1->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_2->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_3->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_4->get_id(), $subscriptions );
+		$this->assertEquals( 1, count( $subscriptions ) );
 		$this->assertArrayHasKey( $subscription_5->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_6->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_7->get_id(), $subscriptions );
-		$this->assertArrayHasKey( $subscription_8->get_id(), $subscriptions );
+		$this->assertArrayNotHasKey( $subscription_1->get_id(), $subscriptions );
+		$this->assertArrayNotHasKey( $subscription_2->get_id(), $subscriptions );
+		$this->assertArrayNotHasKey( $subscription_3->get_id(), $subscriptions );
+		$this->assertArrayNotHasKey( $subscription_4->get_id(), $subscriptions );
+		$this->assertArrayNotHasKey( $subscription_6->get_id(), $subscriptions );
+		$this->assertArrayNotHasKey( $subscription_7->get_id(), $subscriptions );
+		$this->assertArrayNotHasKey( $subscription_8->get_id(), $subscriptions );
 
 		unset( $subscriptions );
-
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => '' ) );
-
-		$this->assertIsArray( $subscriptions );
-		$this->assertEquals( 0, count( $subscriptions ) );
-
-		unset( $subscriptions );
-
 	}
 
 	/**
