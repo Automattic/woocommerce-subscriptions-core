@@ -2,6 +2,8 @@
 
 = 6.2.0 - 2023-xx-xx =
 * Add - Introduce an updated empty state screen for the WooCommerce > Subscriptions list table.
+* Fix - Ensure subscription checkout and cart block integrations are loaded on store environments where WooPayments is not enabled.
+* Update - When HPOS is disabled, fetch subscriptions by customer_id using the user's subscription cache to improve performance.
 * Dev - Deprecated the 'woocommerce_subscriptions_not_found_label' filter.
 
 = 6.1.0 - 2023-07-26 =

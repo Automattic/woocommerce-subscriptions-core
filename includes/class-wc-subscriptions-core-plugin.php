@@ -154,11 +154,9 @@ class WC_Subscriptions_Core_Plugin {
 		// Initialise the cache.
 		$this->cache = WCS_Cache_Manager::get_instance();
 
-		if ( class_exists( 'Automattic\WooCommerce\Blocks\Package' ) && version_compare( \Automattic\WooCommerce\Blocks\Package::get_version(), '4.4.0', '>' ) ) {
-			// When WooCommerceBlocks is loaded, set up the Integration class.
-			add_action( 'woocommerce_blocks_loaded', array( $this, 'setup_blocks_integration' ) );
-			add_action( 'woocommerce_blocks_loaded', array( 'WC_Subscriptions_Extend_Store_Endpoint', 'init' ) );
-		}
+		// When WooCommerceBlocks is loaded, set up the Integration class.
+		add_action( 'woocommerce_blocks_loaded', array( $this, 'setup_blocks_integration' ) );
+		add_action( 'woocommerce_blocks_loaded', array( 'WC_Subscriptions_Extend_Store_Endpoint', 'init' ) );
 
 		if ( ! $payment_gateways_handler::are_zero_total_subscriptions_allowed() ) {
 			WC_Subscriptions_Gateway_Restrictions_Manager::init();
@@ -548,6 +546,9 @@ class WC_Subscriptions_Core_Plugin {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v4.0.0
 	 */
 	public function setup_blocks_integration() {
+		if ( ! class_exists( 'Automattic\WooCommerce\Blocks\Package' ) || ! version_compare( \Automattic\WooCommerce\Blocks\Package::get_version(), '4.4.0', '>' ) ) {
+			return;
+		}
 		/**
 		 * Filter the compatible blocks for WooCommerce Subscriptions.
 		 */
