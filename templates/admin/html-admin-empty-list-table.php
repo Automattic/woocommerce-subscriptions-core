@@ -2,7 +2,7 @@
 /**
  * The template for displaying the empty state for the subscriptions list table.
  *
- * @version 6.1.0
+ * @version 6.2.0
  */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
