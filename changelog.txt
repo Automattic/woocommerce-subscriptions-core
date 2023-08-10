@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 6.2.0 - 2023-xx-xx =
+= 6.2.0 - 2023-08-10 =
 * Add - Introduce an updated empty state screen for the WooCommerce > Subscriptions list table.
 * Fix - Ensure subscription checkout and cart block integrations are loaded on store environments where WooPayments is not enabled.
 * Fix - Ensure the shipping phone number field is copied to subscriptions and their orders when copying address meta.
