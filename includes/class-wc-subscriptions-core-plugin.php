@@ -133,6 +133,7 @@ class WC_Subscriptions_Core_Plugin {
 		WCS_Dependent_Hook_Manager::init();
 		WCS_Admin_Product_Import_Export_Manager::init();
 		WC_Subscriptions_Frontend_Scripts::init();
+		WCS_Admin_Empty_List_Content_Manager::init();
 
 		add_action( 'init', array( 'WC_Subscriptions_Synchroniser', 'init' ) );
 		add_action( 'after_setup_theme', array( 'WC_Subscriptions_Upgrader', 'init' ), 11 );
@@ -324,19 +325,6 @@ class WC_Subscriptions_Core_Plugin {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v4.0.0
 	 */
 	public function register_order_types() {
-		$subscriptions_exist = $this->cache->cache_and_get( 'wcs_do_subscriptions_exist', 'wcs_do_subscriptions_exist' );
-
-		if ( true === (bool) apply_filters( 'woocommerce_subscriptions_not_empty', $subscriptions_exist ) ) {
-			$not_found_text = __( 'No Subscriptions found', 'woocommerce-subscriptions' );
-		} else {
-			$not_found_text = '<p>' . __( 'Subscriptions will appear here for you to view and manage once purchased by a customer.', 'woocommerce-subscriptions' ) . '</p>';
-			// translators: placeholders are opening and closing link tags
-			$not_found_text .= '<p>' . sprintf( __( '%1$sLearn more about managing subscriptions &raquo;%2$s', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/store-manager-guide/#section-3" target="_blank">', '</a>' ) . '</p>';
-			// translators: placeholders are opening and closing link tags
-			$not_found_text .= '<p>' . sprintf( __( '%1$sAdd a subscription product &raquo;%2$s', 'woocommerce-subscriptions' ), '<a href="' . esc_url( WC_Subscriptions_Admin::add_subscription_url() ) . '">', '</a>' ) . '</p>';
-		}
-
-		$subscriptions_not_found_text = apply_filters( 'woocommerce_subscriptions_not_found_label', $not_found_text );
 
 		wc_register_order_type(
 			'shop_subscription',
@@ -355,7 +343,7 @@ class WC_Subscriptions_Core_Plugin {
 						'view'               => _x( 'View Subscription', 'custom post type setting', 'woocommerce-subscriptions' ),
 						'view_item'          => _x( 'View Subscription', 'custom post type setting', 'woocommerce-subscriptions' ),
 						'search_items'       => __( 'Search Subscriptions', 'woocommerce-subscriptions' ),
-						'not_found'          => $subscriptions_not_found_text,
+						'not_found'          => WCS_Admin_Empty_List_Content_Manager::get_content(),
 						'not_found_in_trash' => _x( 'No Subscriptions found in trash', 'custom post type setting', 'woocommerce-subscriptions' ),
 						'parent'             => _x( 'Parent Subscriptions', 'custom post type setting', 'woocommerce-subscriptions' ),
 						'menu_name'          => __( 'Subscriptions', 'woocommerce-subscriptions' ),
