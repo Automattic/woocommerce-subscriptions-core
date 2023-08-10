@@ -2,6 +2,7 @@
 
 = 6.2.0 - 2023-xx-xx =
 * Fix - Ensure subscription checkout and cart block integrations are loaded on store environments where WooPayments is not enabled.
+* Fix - Ensure the shipping phone number field is copied to subscriptions and their orders when copying address meta.
 * Update - When HPOS is disabled, fetch subscriptions by customer_id using the user's subscription cache to improve performance.
 
 = 6.1.0 - 2023-07-26 =
