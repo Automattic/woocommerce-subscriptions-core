@@ -711,7 +711,7 @@ class WC_Subscriptions_Order {
 	public static function restrict_manage_subscriptions() {
 		global $typenow;
 
-		if ( 'shop_order' != $typenow ) {
+		if ( 'shop_order' !== $typenow ) {
 			return;
 		}
 
