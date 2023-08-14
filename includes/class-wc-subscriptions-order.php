@@ -44,6 +44,9 @@ class WC_Subscriptions_Order {
 		// Add dropdown to admin orders screen to filter on order type
 		add_action( 'restrict_manage_posts', __CLASS__ . '::restrict_manage_subscriptions', 50 );
 
+		// For HPOS - Add dropdown to admin orders screen to filter on order type.
+		add_action( 'woocommerce_order_list_table_restrict_manage_orders', __CLASS__ . '::restrict_manage_subscriptions_hpos' );
+
 		// Add filter to queries on admin orders screen to filter on order type. To avoid WC overriding our query args, we need to hook on after them on 10.
 		add_filter( 'request', __CLASS__ . '::orders_by_type_query', 11 );
 
@@ -712,36 +715,22 @@ class WC_Subscriptions_Order {
 			return;
 		}
 
-		$order_types = apply_filters(
-			'woocommerce_subscriptions_order_type_dropdown',
-			array(
-				'original'    => _x( 'Original', 'An order type', 'woocommerce-subscriptions' ),
-				'parent'      => _x( 'Subscription Parent', 'An order type', 'woocommerce-subscriptions' ),
-				'renewal'     => _x( 'Subscription Renewal', 'An order type', 'woocommerce-subscriptions' ),
-				'resubscribe' => _x( 'Subscription Resubscribe', 'An order type', 'woocommerce-subscriptions' ),
-				'switch'      => _x( 'Subscription Switch', 'An order type', 'woocommerce-subscriptions' ),
-				'regular'     => _x( 'Non-subscription', 'An order type', 'woocommerce-subscriptions' ),
-			)
-		);
+		self::render_restrict_manage_subscriptions_dropdown();
+	}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$selected_shop_order_subtype = isset( $_GET['shop_order_subtype'] ) ? wc_clean( wp_unslash( $_GET['shop_order_subtype'] ) ) : '';
+	/**
+	 * When HPOS is active, adds admin dropdown for order types to Woocommerce -> Orders screen
+	 *
+	 * @since 6.3.0
+	 *
+	 * @param string $order_type The order type.
+	 */
+	public static function restrict_manage_subscriptions_hpos( string $order_type ) {
+		if ( 'shop_order' !== $order_type ) {
+			return;
+		}
 
-		?>
-		<select name='shop_order_subtype' id='dropdown_shop_order_subtype'>
-			<option value=""><?php esc_html_e( 'All orders types', 'woocommerce-subscriptions' ); ?></option>
-
-			<?php foreach ( $order_types as $order_type_key => $order_type_description ) : ?>
-				<option
-					value="<?php echo esc_attr( $order_type_key ); ?>"
-					<?php selected( $selected_shop_order_subtype, $order_type_key ); ?>
-				>
-					<?php echo esc_html( $order_type_description ); ?>
-				</option>
-			<?php endforeach; ?>
-
-		</select>
-		<?php
+		self::render_restrict_manage_subscriptions_dropdown();
 	}
 
 	/**
@@ -2286,5 +2275,43 @@ class WC_Subscriptions_Order {
 		}
 
 		return $meta_value;
+	}
+
+	/**
+	 * Prints the HTML for the admin dropdown for order types to Woocommerce -> Orders screen.
+	 *
+	 * @since 6.3.0
+	 */
+	private static function render_restrict_manage_subscriptions_dropdown() {
+		$order_types = apply_filters(
+			'woocommerce_subscriptions_order_type_dropdown',
+			array(
+				'original'    => _x( 'Original', 'An order type', 'woocommerce-subscriptions' ),
+				'parent'      => _x( 'Subscription Parent', 'An order type', 'woocommerce-subscriptions' ),
+				'renewal'     => _x( 'Subscription Renewal', 'An order type', 'woocommerce-subscriptions' ),
+				'resubscribe' => _x( 'Subscription Resubscribe', 'An order type', 'woocommerce-subscriptions' ),
+				'switch'      => _x( 'Subscription Switch', 'An order type', 'woocommerce-subscriptions' ),
+				'regular'     => _x( 'Non-subscription', 'An order type', 'woocommerce-subscriptions' ),
+			)
+		);
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$selected_shop_order_subtype = isset( $_GET['shop_order_subtype'] ) ? wc_clean( wp_unslash( $_GET['shop_order_subtype'] ) ) : '';
+
+		?>
+		<select name='shop_order_subtype' id='dropdown_shop_order_subtype'>
+			<option value=""><?php esc_html_e( 'All orders types', 'woocommerce-subscriptions' ); ?></option>
+
+			<?php foreach ( $order_types as $order_type_key => $order_type_description ) : ?>
+				<option
+					value="<?php echo esc_attr( $order_type_key ); ?>"
+					<?php selected( $selected_shop_order_subtype, $order_type_key ); ?>
+				>
+					<?php echo esc_html( $order_type_description ); ?>
+				</option>
+			<?php endforeach; ?>
+
+		</select>
+		<?php
 	}
 }
