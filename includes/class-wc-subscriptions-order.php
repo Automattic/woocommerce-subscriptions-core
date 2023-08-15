@@ -744,7 +744,7 @@ class WC_Subscriptions_Order {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.5
 	 */
 	public static function orders_by_type_query( $vars ) {
-		global $typenow, $wpdb;
+		global $typenow;
 
 		if ( 'shop_order' === $typenow ) {
 			return self::maybe_modify_orders_by_type_query_from_request( $vars );
