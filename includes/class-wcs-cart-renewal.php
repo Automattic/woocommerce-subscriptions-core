@@ -40,6 +40,7 @@ class WCS_Cart_Renewal {
 
 		// When a failed/pending renewal order is paid for via checkout, ensure a new order isn't created due to mismatched cart hashes
 		add_filter( 'woocommerce_create_order', array( &$this, 'update_cart_hash' ), 10, 1 );
+		add_filter( 'woocommerce_order_has_status', array( &$this, 'override_order_status_for_checkout_block' ), 10, 3 );
 
 		// When a user is prevented from paying for a failed/pending renewal order because they aren't logged in, redirect them back after login
 		add_filter( 'woocommerce_login_redirect', array( &$this, 'maybe_redirect_after_login' ), 10, 2 );
@@ -416,6 +417,10 @@ class WCS_Cart_Renewal {
 	 * Restore renewal flag when cart is reset and modify Product object with renewal order related info
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
+	 *
+	 * @param array  $cart_item_session_data Cart item session data.
+	 * @param array  $cart_item              Cart item data.
+	 * @param string $key                   Cart item key.
 	 */
 	public function get_cart_item_from_session( $cart_item_session_data, $cart_item, $key ) {
 
@@ -429,7 +434,23 @@ class WCS_Cart_Renewal {
 
 			if ( $subscription ) {
 				$subscription_items = $subscription->get_items();
-				$item_to_renew      = $subscription_items[ $cart_item_session_data[ $this->cart_item_key ]['line_item_id'] ];
+
+				/**
+				 * Find the subscription or order line item that represents this cart item.
+				 *
+				 * If cart item data correctly records a valid line item ID, use that to find the line item.
+				 * Otherwise, use the cart item key stored in line item meta.
+				 */
+				if ( isset( $subscription_items[ $cart_item_session_data[ $this->cart_item_key ]['line_item_id'] ] ) ) {
+					$item_to_renew = $subscription_items[ $cart_item_session_data[ $this->cart_item_key ]['line_item_id'] ];
+				} else {
+					foreach ( $subscription_items as $item ) {
+						if ( $item->get_meta( '_cart_item_key_' . $this->cart_item_key, true ) === $key ) {
+							$item_to_renew = $item;
+							break;
+						}
+					}
+				}
 
 				$price = $item_to_renew['line_subtotal'];
 
@@ -1588,6 +1609,50 @@ class WCS_Cart_Renewal {
 	 */
 	public function validate_current_user( $order ) {
 		return current_user_can( 'pay_for_order', $order->get_id() );
+	}
+
+	/**
+	 * Overrides the order has_status check used in the Store API Checkout Block to determine if an existing order can be resumed.
+	 *
+	 * This hacky overriding of the default logic is only applied during REST API requests, only applies to the 'checkout-draft' status
+	 * and to renewal orders that are currently being paid for in the cart. All other order statuses checks remain unaffected by this function.
+	 *
+	 * This function is necessary to override the default logic in @see DraftOrderTrait::is_valid_draft_order().
+	 *
+	 * @param bool     $has_status Whether the order has the status.
+	 * @param WC_Order $order      The order.
+	 * @param string   $status     The status to check.
+	 *
+	 * @return bool Whether the order has the status.
+	 */
+	public function override_order_status_for_checkout_block( $has_status, $order, $status ) {
+		if ( $has_status ) {
+			return $has_status;
+		}
+
+		// We only need to override 'checkout-draft' statuses which is used only by the checkout block.
+		if ( 'checkout-draft' !== $status ) {
+			return $has_status;
+		}
+
+		/**
+		 * This function is only interested in overriding the `has_status` value during REST API requests - which is the request context where
+		 * the Store API Checkout Block validates the order for payment resumption.
+		 */
+		if ( ! WC()->is_rest_api_request() ) {
+			return $has_status;
+		}
+
+		// If the order being validated is the order being paid for in the cart, then we need to override the has_status( 'checkout-draft' ) check and return true so it can be resumed.
+		if ( $order && $order->get_id() === WC()->session->get( 'store_api_draft_order', 0 ) ) {
+			$cart_order = $this->get_order();
+
+			if ( $cart_order && $cart_order->get_id() === $order->get_id() ) {
+				$has_status = true;
+			}
+		}
+
+		return $has_status;
 	}
 
 	/* Deprecated */
