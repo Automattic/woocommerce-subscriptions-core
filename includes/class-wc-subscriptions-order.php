@@ -762,7 +762,7 @@ class WC_Subscriptions_Order {
 	 *
 	 * @return array
 	 */
-	public function maybe_modify_orders_by_type_query_from_request( array $order_query_args ): array {
+	public static function maybe_modify_orders_by_type_query_from_request( array $order_query_args ): array {
 		// The order subtype selected by the user in the dropdown.
 		$selected_shop_order_subtype = isset( $_GET['shop_order_subtype'] ) ? wc_clean( wp_unslash( $_GET['shop_order_subtype'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
