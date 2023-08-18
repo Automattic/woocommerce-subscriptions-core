@@ -1648,7 +1648,7 @@ class WCS_Cart_Renewal {
 			$cart_order = $this->get_order();
 
 			if ( $cart_order && $cart_order->get_id() === $order->get_id() ) {
-				$has_status = true;
+				$this->set_cart_hash( $order->get_id() );
 			}
 		}
 
