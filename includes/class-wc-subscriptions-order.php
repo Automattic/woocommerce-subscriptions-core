@@ -34,7 +34,7 @@ class WC_Subscriptions_Order {
 
 		// HPOS - Add column that indicates whether an order is parent or renewal for a subscription.
 		add_filter( 'woocommerce_shop_order_list_table_columns', __CLASS__ . '::add_contains_subscription_column' );
-		add_action( 'woocommerce_shop_order_list_table_custom_column', __CLASS__ . '::add_contains_subscription_column_content_hpos', 10, 2 );
+		add_action( 'woocommerce_shop_order_list_table_custom_column', __CLASS__ . '::add_contains_subscription_column_content_orders_table', 10, 2 );
 
 		// Record initial payment against the subscription & set start date based on that payment
 		add_action( 'woocommerce_order_status_changed', __CLASS__ . '::maybe_record_subscription_payment', 9, 3 );
@@ -440,7 +440,7 @@ class WC_Subscriptions_Order {
 	 * @param string   $column_name Identifier for the custom column.
 	 * @param WC_Order $order       Current WooCommerce order object.
 	 */
-	public static function add_contains_subscription_column_content_hpos( string $column_name, WC_Order $order ) {
+	public static function add_contains_subscription_column_content_orders_table( string $column_name, WC_Order $order ) {
 		if ( 'subscription_relationship' === $column_name ) {
 			self::render_contains_subscription_column_content( $order->get_id() );
 		}
