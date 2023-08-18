@@ -1012,7 +1012,8 @@ class WCS_Cart_Renewal {
 			$cart_hash = md5( json_encode( wc_clean( WC()->cart->get_cart_for_session() ) ) . WC()->cart->total );
 		}
 
-		wcs_set_objects_property( $order, 'cart_hash', $cart_hash );
+		$order->set_cart_hash( $cart_hash );
+		$order->save();
 	}
 
 	/**
