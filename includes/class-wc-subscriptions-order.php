@@ -415,12 +415,13 @@ class WC_Subscriptions_Order {
 	}
 
 	/**
-	* Add column content to the WooCommerce -> Orders admin screen to indicate whether an
-	* order is a parent of a subscription, a renewal order for a subscription, or a
-	* regular order.
-	*
-	* @param string $column The string of the current column
-	* @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.1
+	 * Add column content to the WooCommerce -> Orders admin screen to indicate whether an
+	 * order is a parent of a subscription, a renewal order for a subscription, or a regular order.
+	 *
+	 * @see add_contains_subscription_column_content_orders_table For when HPOS is enabled.
+	 *
+	 * @param string $column The string of the current column
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.1
 	*/
 	public static function add_contains_subscription_column_content( $column ) {
 		global $post;
@@ -431,9 +432,10 @@ class WC_Subscriptions_Order {
 	}
 
 	/**
-	 * For HPOS - Add column content to the WooCommerce -> Orders admin screen to indicate whether an
-	 * order is a parent of a subscription, a renewal order for a subscription, or a
-	 * regular order.
+	 * Add column content to the WooCommerce -> Orders admin screen to indicate whether an
+	 * order is a parent of a subscription, a renewal order for a subscription, or a regular order.
+	 *
+	 * @see add_contains_subscription_column_content For when HPOS is disabled.
 	 *
 	 * @since 6.3.0
 	 *
