@@ -32,6 +32,10 @@ class WC_Subscriptions_Order {
 		add_filter( 'manage_edit-shop_order_columns', __CLASS__ . '::add_contains_subscription_column' );
 		add_action( 'manage_shop_order_posts_custom_column', __CLASS__ . '::add_contains_subscription_column_content', 10, 1 );
 
+		// HPOS - Add column that indicates whether an order is parent or renewal for a subscription.
+		add_filter( 'woocommerce_shop_order_list_table_columns', __CLASS__ . '::add_contains_subscription_column' );
+		add_action( 'woocommerce_shop_order_list_table_custom_column', __CLASS__ . '::add_contains_subscription_column_content_orders_table', 10, 2 );
+
 		// Record initial payment against the subscription & set start date based on that payment
 		add_action( 'woocommerce_order_status_changed', __CLASS__ . '::maybe_record_subscription_payment', 9, 3 );
 
@@ -416,26 +420,36 @@ class WC_Subscriptions_Order {
 	}
 
 	/**
-	* Add column content to the WooCommerce -> Orders admin screen to indicate whether an
-	* order is a parent of a subscription, a renewal order for a subscription, or a
-	* regular order.
-	*
-	* @param string $column The string of the current column
-	* @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.1
+	 * Add column content to the WooCommerce -> Orders admin screen to indicate whether an
+	 * order is a parent of a subscription, a renewal order for a subscription, or a regular order.
+	 *
+	 * @see add_contains_subscription_column_content_orders_table For when HPOS is enabled.
+	 *
+	 * @param string $column The string of the current column
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.1
 	*/
 	public static function add_contains_subscription_column_content( $column ) {
 		global $post;
 
-		if ( 'subscription_relationship' == $column ) {
-			if ( wcs_order_contains_subscription( $post->ID, 'renewal' ) ) {
-				echo '<span class="subscription_renewal_order tips" data-tip="' . esc_attr__( 'Renewal Order', 'woocommerce-subscriptions' ) . '"></span>';
-			} elseif ( wcs_order_contains_subscription( $post->ID, 'resubscribe' ) ) {
-				echo '<span class="subscription_resubscribe_order tips" data-tip="' . esc_attr__( 'Resubscribe Order', 'woocommerce-subscriptions' ) . '"></span>';
-			} elseif ( wcs_order_contains_subscription( $post->ID, 'parent' ) ) {
-				echo '<span class="subscription_parent_order tips" data-tip="' . esc_attr__( 'Parent Order', 'woocommerce-subscriptions' ) . '"></span>';
-			} else {
-				echo '<span class="normal_order">&ndash;</span>';
-			}
+		if ( 'subscription_relationship' === $column ) {
+			self::render_contains_subscription_column_content( $post->ID );
+		}
+	}
+
+	/**
+	 * Add column content to the WooCommerce -> Orders admin screen to indicate whether an
+	 * order is a parent of a subscription, a renewal order for a subscription, or a regular order.
+	 *
+	 * @see add_contains_subscription_column_content For when HPOS is disabled.
+	 *
+	 * @since 6.3.0
+	 *
+	 * @param string   $column_name Identifier for the custom column.
+	 * @param WC_Order $order       Current WooCommerce order object.
+	 */
+	public static function add_contains_subscription_column_content_orders_table( string $column_name, WC_Order $order ) {
+		if ( 'subscription_relationship' === $column_name ) {
+			self::render_contains_subscription_column_content( $order->get_id() );
 		}
 	}
 
@@ -2337,5 +2351,27 @@ class WC_Subscriptions_Order {
 
 		</select>
 		<?php
+	}
+
+	/**
+	 * Renders the contents of the "contains_subscription" column.
+	 *
+	 * This column indicates whether an order is a parent of a subscription,
+	 * a renewal order for a subscription, or a regular order.
+	 *
+	 * @since 6.3.0
+	 *
+	 * @param integer $order_id The ID of the order in the current row.
+	 */
+	private static function render_contains_subscription_column_content( int $order_id ) {
+		if ( wcs_order_contains_subscription( $order_id, 'renewal' ) ) {
+			echo '<span class="subscription_renewal_order tips" data-tip="' . esc_attr__( 'Renewal Order', 'woocommerce-subscriptions' ) . '"></span>';
+		} elseif ( wcs_order_contains_subscription( $order_id, 'resubscribe' ) ) {
+			echo '<span class="subscription_resubscribe_order tips" data-tip="' . esc_attr__( 'Resubscribe Order', 'woocommerce-subscriptions' ) . '"></span>';
+		} elseif ( wcs_order_contains_subscription( $order_id, 'parent' ) ) {
+			echo '<span class="subscription_parent_order tips" data-tip="' . esc_attr__( 'Parent Order', 'woocommerce-subscriptions' ) . '"></span>';
+		} else {
+			echo '<span class="normal_order">&ndash;</span>';
+		}
 	}
 }
