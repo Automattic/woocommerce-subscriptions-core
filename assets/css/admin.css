@@ -735,7 +735,7 @@ table.wp-list-table .subscription_renewal_order::after {
 	height: 100%;
 	text-align: center;
 	content: '\e018';
-	color: #a46497;
+	color: var(--wp-admin-theme-color);
 }
 
 table.wc_gateways .renewals .tips {
